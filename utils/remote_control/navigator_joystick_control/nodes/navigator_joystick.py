@@ -72,10 +72,10 @@ class Joystick(object):
         raise_kill = bool(joy.buttons[1])  # B
         clear_kill = bool(joy.buttons[2])  # X
         station_hold = bool(joy.buttons[0])  # A
-        rc_control = bool(joy.buttons[11])  # d-pad left
-        emergency_control = bool(joy.buttons[13])  # d-pad up
-        keyboard_control = bool(joy.buttons[14])  # d-pad down
-        auto_control = bool(joy.buttons[12])  # d-pad right
+        rc_control = bool(joy.axes[6] > 0.9)  # d-pad left
+        emergency_control = False
+        keyboard_control = False
+        auto_control = bool(joy.axes[6] < -0.9)  # d-pad right
         thruster_retract = bool(joy.buttons[4])  # LB
         thruster_deploy = bool(joy.buttons[5])  # RB
 
