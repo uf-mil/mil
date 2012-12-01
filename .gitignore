@@ -1,2 +1,16 @@
-build
 *~
+*pyc
+
+/build
+
+/*/cfg/*cfgc
+/*/cfg/cpp/
+/*/CMakeCache.txt
+/*/CMakeFiles/
+/*/cmake_install.cmake
+/*/docs/
+/*/Makefile
+/*/msg_gen/
+/*/src/*/cfg/
+/*/src/*/__init__.py
+/*/src/*/msg/
