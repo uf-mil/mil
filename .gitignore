@@ -8,6 +8,10 @@
 /*/cfg/cpp/
 /*/docs/
 /*/lib/
+/*/msg/*Action.msg
+/*/msg/*Feedback.msg
+/*/msg/*Goal.msg
+/*/msg/*Result.msg
 /*/msg_gen/
 /*/src/*/cfg/
 /*/src/*/__init__.py
