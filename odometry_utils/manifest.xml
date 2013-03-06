@@ -1,0 +1,24 @@
+<package>
+  <description brief="odometry_utils">
+
+     odometry_utils
+
+  </description>
+  <author>Forrest Voight</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/odometry_utils</url>
+  <depend package="roscpp"/>
+  <depend package="nodelet"/>
+  <depend package="geometry_msgs"/>
+  <depend package="nav_msgs"/>
+  <depend package="tf"/>
+  
+  <depend package="uf_common"/>
+
+  <export>
+    <nodelet plugin="${prefix}/nodelet.xml"/>
+  </export>
+</package>
+
+

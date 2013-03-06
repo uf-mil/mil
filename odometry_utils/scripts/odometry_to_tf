@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+
+from __future__ import division
+
+import numpy
+
+import roslib
+roslib.load_manifest('odometry_utils')
+import rospy
+from nav_msgs.msg import Odometry
+import tf
+
+from uf_common.orientation_helpers import xyz_array, xyzw_array
+
+
+rospy.init_node('odometry_to_tf')
+
+tf_broadcaster = tf.TransformBroadcaster()
+def callback(msg):
+    tf_broadcaster.sendTransform(xyz_array(msg.pose.pose.position), xyzw_array(msg.pose.pose.orientation), msg.header.stamp, msg.child_frame_id, msg.header.frame_id)
+rospy.Subscriber('odom', Odometry, callback)
+
+rospy.spin()
