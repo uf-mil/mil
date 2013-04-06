@@ -1,0 +1,14 @@
+<package>
+  <description brief="skytraq_driver">
+
+     skytraq_driver
+
+  </description>
+  <author>Forrest Voight</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/skytraq_driver</url>
+
+</package>
+
+
