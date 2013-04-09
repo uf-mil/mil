@@ -230,4 +230,5 @@ rospy.init_node('gps')
 
 serialport.SerialPort(MyGPS(), rospy.get_param('~port'), reactor, 115200)
 
+reactor.callWhenRunning(lambda: rospy.core.add_client_shutdown_hook(lambda reason=None: reactor.callFromThread(reactor.stop)))
 reactor.run()
