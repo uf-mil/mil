@@ -9,6 +9,8 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/skytraq_driver</url>
 
+  <depend package="geometry_msgs"/>
+
 </package>
 
 

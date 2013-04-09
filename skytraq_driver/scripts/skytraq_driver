@@ -16,8 +16,8 @@ from geometry_msgs.msg import Vector3, Vector3Stamped
 import rospy
 from std_msgs.msg import Header
 
-from skytraq_driver import datachunker
-from skytraq_driver import gps
+from skytraq_driver import datachunker, gps
+from skytraq_driver.msg import Measurement
 
 def sleep(dt):
     d = defer.Deferred()
@@ -62,6 +62,7 @@ class GPS(protocol.Protocol, object):
     def dataReceiver(self):
         while True:
             if (yield 1) != '\xa0': continue
+            stamp = rospy.Time.now()
             if (yield 1) != '\xa1': continue
             length, = struct.unpack('>H', (yield 2))
             payload = yield length
@@ -81,17 +82,20 @@ class GPS(protocol.Protocol, object):
             if not hasattr(self, 'handle_' + message_name):
                 #print 'no handler for', message_name
                 continue
-            getattr(self, 'handle_' + message_name)(message_body)
+            getattr(self, 'handle_' + message_name)(message_body, stamp)
 
 
 class MyGPS(GPS):
-    def __init__(self):
+    def __init__(self, frame_id):
         GPS.__init__(self)
+        self.frame_id = frame_id
+        
         self.time_of_week_minus_time = None
         self.position = None
         self.ephemerises = {}
         self.poll_task = task.LoopingCall(lambda: self.send_get_ephemeris(chr(0)))
         self.pub = rospy.Publisher('/gps_vel', Vector3Stamped)
+        self.pub2 = rospy.Publisher('/gps_measurements', Measurement)
     
     @defer.inlineCallbacks
     def connectionMade(self):
@@ -103,12 +107,13 @@ class MyGPS(GPS):
         self.send_configure_binary_measurement_output_rates('\x04\x01\x01\x01\x01\x01\x00')
         yield sleep(.3)
         
-        self.poll_task.start(20)
+        self.poll_task.start(10)
     
     def connectionLost(self, reason):
-        self.poll_task.stop()
+        if self.poll_task.running:
+            self.poll_task.stop()
     
-    def handle_gps_ephemeris_data(self, data):
+    def handle_gps_ephemeris_data(self, data, stamp):
         if all(x == '\x00' for x in data[3:]):
             return
         sv, = struct.unpack('>H', data[0:2])
@@ -144,19 +149,22 @@ class MyGPS(GPS):
         plt.show()
         '''
         
-        a = eph.predict(eph.t_oe)
-        print math.sqrt(a[0]**2 + a[1]**2 + a[2]**2)
+        #a = eph.predict(eph.t_oe)
+        #print math.sqrt(a[0]**2 + a[1]**2 + a[2]**2)
         
         self.ephemerises[sv] = eph
     
-    def handle_raw_meas(self, data):
-        if self.position is None or self.time_of_week_minus_time is None: return
-        
+    def handle_raw_meas(self, data, stamp):
         iod, nmeas = struct.unpack('>BB', data[0:2])
         measurements = [struct.unpack('>BBddfB', data[2+i*23:2+i*23+23])
             for i in xrange(nmeas)]
         assert 2+nmeas*23 == len(data)
         
+        print nmeas, 'SATELLITES'
+        
+        if self.position is None or self.time_of_week_minus_time is None:
+            print '   ', 'NO FIX'
+            return
         t = self.time_of_week_minus_time + time.time()
         
         pairs = []
@@ -176,59 +184,64 @@ class MyGPS(GPS):
             
             measured_vel = doppler_freq*gps.c/gps.L1_f0
             sat_vel = -gps.deriv(lambda t: numpy.linalg.norm(self.position-eph.predict(t)), t)
-            pairs.append((prn, measured_vel, sat_vel, eph.predict(t)))
-        if not pairs:
-            return
+            sat_pos = eph.predict(t)
+            sat_dir = sat_pos - self.position;sat_dir /= numpy.linalg.norm(sat_dir)
+            pairs.append((prn, measured_vel, sat_vel, sat_pos))
+            self.pub2.publish(Measurement(
+                header=Header(
+                    stamp=stamp,
+                    frame_id=self.frame_id,
+                ),
+                direction_enu=Vector3(*gps.enu_from_ecef(sat_dir, self.position)),
+                velocity_plus_drift=measured_vel - sat_vel,
+            ))
+        print len(pairs), 'GOOD SATELLITES'
         
-        dv = sum(a-b for sv, a, b, sat_pos in pairs)/len(pairs)
-        print "clock drift estimate:", dv, "m/s"
-        for sv, a, b, sat_pos in pairs:
-            print sv, a-dv-b
-        
-        def find_vel(pairs):
-            if len(pairs) < 4:
-                return numpy.zeros(3), 1e300, []
-            A = numpy.zeros((len(pairs), 4))
-            for i, (sv, a, b, sat_pos) in enumerate(pairs):
-                eph = self.ephemerises[sv]
-                n = sat_pos - self.position
-                n /= numpy.linalg.norm(n)
-                A[i] = [n[0], n[1], n[2], -1]
-            b_v = [a-b for sv, a, b, sat_pos in pairs]
-            #print "A", A
-            #print "b_v", b_v
-            x, residuals, rank, s = numpy.linalg.lstsq(A, b_v)
-            return x, math.sqrt(numpy.linalg.norm(A.dot(x) - b_v)**2/len(pairs)), A.dot(x) - b_v
-        
-        j, k, (x, error, res) = min([(j, k, find_vel([p for i, p in enumerate(pairs) if i != j and i != k]))
-            for j in xrange(len(pairs)) for k in xrange(j+1)], key=lambda (j, k, (vel, error, res)): error)
-        print "DROPPED", pairs[j][0] if j < len(pairs) else None, k
-        #x, error = find_vel(pairs)
-        print "RES", res
-        print "x", x, error
-        #if error > .4: return
-        #print "XYZ VEL", map(float, x[:3])
-        
-        self.pub.publish(Vector3Stamped(
-            header=Header(
-                stamp=rospy.Time.now(),
-                frame_id='/gps',
-            ),
-            vector=Vector3(*list(gps.enu_from_ecef(x[:3], self.position)[:2]) + [error]),
-        ))
+        if self.pub.get_num_connections() and pairs:
+            def find_vel(pairs):
+                if len(pairs) < 4:
+                    return numpy.zeros(3), 1e300, []
+                A = numpy.zeros((len(pairs), 4))
+                for i, (sv, a, b, sat_pos) in enumerate(pairs):
+                    eph = self.ephemerises[sv]
+                    n = sat_pos - self.position
+                    n /= numpy.linalg.norm(n)
+                    A[i] = [n[0], n[1], n[2], -1]
+                b_v = [a-b for sv, a, b, sat_pos in pairs]
+                #print "A", A
+                #print "b_v", b_v
+                x, residuals, rank, s = numpy.linalg.lstsq(A, b_v)
+                return x, math.sqrt(numpy.linalg.norm(A.dot(x) - b_v)**2/len(pairs)), A.dot(x) - b_v
+            
+            j, k, (x, error, res) = min([(j, k, find_vel([p for i, p in enumerate(pairs) if i != j and i != k]))
+                for j in xrange(len(pairs)) for k in xrange(j+1)], key=lambda (j, k, (vel, error, res)): error)
+            print "DROPPED", pairs[j][0] if j < len(pairs) else None, k
+            #x, error = find_vel(pairs)
+            print "RES", res
+            print "x", x, error
+            #if error > .4: return
+            #print "XYZ VEL", map(float, x[:3])
+            
+            self.pub.publish(Vector3Stamped(
+                header=Header(
+                    stamp=stamp,
+                    frame_id=self.frame_id,
+                ),
+                vector=Vector3(*list(gps.enu_from_ecef(x[:3], self.position))),
+            ))
     
-    def handle_rcv_state(self, data):
+    def handle_rcv_state(self, data, stamp):
         iod, navigation_state, wn, tow, ecef_x, ecef_y, ecef_z, ecef_dx, ecef_dy, ecef_dz, clock_bias, clock_drift, gdop, pdop, hdop, vdop, tdop = struct.unpack('>BBHddddfffdffffff', data)
         del data
         print locals()
         
-        self.time_of_week_minus_time = tow - time.time()
+        self.time_of_week_minus_time = tow - stamp.to_sec()
         self.position = numpy.array([ecef_x, ecef_y, ecef_z])
 
 
-rospy.init_node('gps')
+rospy.init_node('skytraq_driver')
 
-serialport.SerialPort(MyGPS(), rospy.get_param('~port'), reactor, 115200)
+serialport.SerialPort(MyGPS(rospy.get_param('~frame_id')), rospy.get_param('~port'), reactor, 115200)
 
 reactor.callWhenRunning(lambda: rospy.core.add_client_shutdown_hook(lambda reason=None: reactor.callFromThread(reactor.stop)))
 reactor.run()
