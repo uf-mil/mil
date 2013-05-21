@@ -1,0 +1,22 @@
+<package>
+  <description brief="odom_estimator">
+
+     odom_estimator
+
+  </description>
+  <author>Forrest Voight</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/odom_estimator</url>
+  <depend package="nodelet"/>
+  <depend package="sensor_msgs"/>
+  <depend package="skytraq_driver"/>
+  
+  <rosdep name="eigen" />
+
+  <export>
+    <nodelet plugin="${prefix}/nodelet.xml"/>
+  </export>
+</package>
+
+

@@ -1,0 +1,122 @@
+#!/usr/bin/python
+
+import math
+
+import numpy
+
+import roslib
+roslib.load_manifest('odom_estimator')
+
+import rospy
+from sensor_msgs.msg import Imu, FluidPressure, MagneticField
+from skytraq_driver.msg import Measurements, Satellite
+from std_msgs.msg import Header
+from geometry_msgs.msg import Vector3, PoseStamped, Pose, Point, Quaternion
+from tf import transformations
+
+rospy.init_node('test')
+
+imu_pub = rospy.Publisher('/imu/data_raw', Imu)
+press_pub = rospy.Publisher('/imu/pressure', FluidPressure)
+mag_pub = rospy.Publisher('/imu/mag_raw', MagneticField)
+gps_pub = rospy.Publisher('/gps', Measurements)
+pose_pub = rospy.Publisher('/testpose', PoseStamped)
+
+
+G = numpy.array([0, 0, -9.80665])
+mag_world = numpy.array([-2341.1e-9, 24138.5e-9, -40313.5e-9])
+air_density = 1.225
+ground_air_pressure = 101234
+
+t = t0 = rospy.Time(1234567)
+
+angvel = numpy.array([0, 0, 0])
+
+def rotvec_to_quat(rotvec):
+    return transformations.quaternion_about_axis(numpy.linalg.norm(rotvec), rotvec)
+
+orient = transformations.random_quaternion()
+orient = numpy.array([0, 0, 0, 1])
+
+def pos_func(real_tt):
+    if real_tt < 3:
+        tt = 0
+    else:
+        x = real_tt - 3
+        tt = x + math.e**-x - 1
+    return numpy.array([ 5*math.sin(tt), 5*math.cos(tt)-5, 5*math.sin(tt/math.pi)])
+nddt = 1e-6
+nderiv = lambda f: lambda tt: (f(tt+nddt)-f(tt-nddt))/(2*nddt)
+vel_func = nderiv(pos_func)
+acc_func = nderiv(vel_func)
+
+gps_clock_drift = 420
+
+def random_normal_vector():
+    direction_enu = numpy.random.randn(3);direction_enu /= numpy.linalg.norm(direction_enu)
+    return direction_enu
+
+i = 0
+while not rospy.is_shutdown():
+    dt = .01
+    rospy.sleep(dt)
+    
+    tt = (t - t0).to_sec()
+    pos, vel, acc = pos_func(tt), vel_func(tt), acc_func(tt)
+    
+    angacc = 10*numpy.random.randn(3) - .1 * angvel
+    angvel = angvel + dt * angacc
+    #angvel = numpy.array([0, 0, .1])
+    orient = transformations.quaternion_multiply(rotvec_to_quat(dt * angvel), orient)
+    
+    gps_clock_drift += 20*numpy.random.randn()
+    
+    body_from_world = transformations.quaternion_matrix(orient)[:3, :3].T
+    imu_pub.publish(Imu(
+        header=Header(
+            stamp=t,
+            frame_id="/imu",
+        ),
+        angular_velocity=Vector3(*body_from_world.dot(angvel) + [.1, .2, .3] + 0.002*numpy.random.randn(3)),
+        linear_acceleration=Vector3(*body_from_world.dot(acc - G) + 0.04*numpy.random.randn(3) + [.1, .2, .3]),
+    ))
+    pose_pub.publish(PoseStamped(
+        header=Header(
+            stamp=t,
+            frame_id="/map",
+        ),
+        pose=Pose(
+            position=Point(*pos),
+            orientation=Quaternion(*orient),
+        ),
+    ))
+    press_pub.publish(FluidPressure(
+        header=Header(
+            stamp=t,
+            frame_id="/imu",
+        ),
+        fluid_pressure=ground_air_pressure + air_density*G.dot(pos) + 10*numpy.random.randn(),
+        variance=10**2,
+    ))
+    mag_pub.publish(MagneticField(
+        header=Header(
+            stamp=t,
+            frame_id="/imu",
+        ),
+        magnetic_field=Vector3(*body_from_world.dot(mag_world*[1,-1,1] if tt > 3 and False else mag_world) + 2e-7*numpy.random.randn(3)),
+        magnetic_field_covariance=numpy.diag([2e-7**2]*3).flatten(),
+    ))
+    if i % 10 == 0:
+        gps_pub.publish(Measurements(
+            header=Header(
+                stamp=t,
+                frame_id="/imu",
+            ),
+            satellites=[(lambda direction_enu: Satellite(
+                direction_enu=Vector3(*direction_enu),
+                velocity_plus_drift=direction_enu.dot(vel) + gps_clock_drift + .05*numpy.random.randn(),
+            ))(random_normal_vector()) for i in xrange(6)],
+        ))
+    
+    t += rospy.Duration(dt)
+    i += 1
