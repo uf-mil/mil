@@ -181,6 +181,9 @@ class MyGPS(GPS):
                 print 'no ephemeris, dropping', prn
                 continue
             eph = self.ephemerises[prn]
+            if not eph.is_healthy():
+                print 'unhealthy, dropping', prn
+                continue
             
             measured_vel = doppler_freq*gps.c/gps.L1_f0
             sat_vel = -gps.deriv(lambda t: numpy.linalg.norm(self.position-eph.predict(t)), t)

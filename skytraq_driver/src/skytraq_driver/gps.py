@@ -123,4 +123,7 @@ class Ephemeris(object):
     
     def predict_vel(self, t):
         return (self.predict(t+.1)-self.predict(t-.1))/.2
+    
+    def is_healthy(self):
+        return self.health == 0
 
