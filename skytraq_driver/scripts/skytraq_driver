@@ -194,6 +194,8 @@ class MyGPS(GPS):
                 ),
                 direction_enu=Vector3(*gps.enu_from_ecef(sat_dir, self.position)),
                 velocity_plus_drift=measured_vel - sat_vel,
+                prn=prn,
+                cn0=cn0,
             ))
         print len(pairs), 'GOOD SATELLITES'
         
