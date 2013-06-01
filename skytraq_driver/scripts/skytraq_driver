@@ -17,7 +17,7 @@ import rospy
 from std_msgs.msg import Header
 
 from skytraq_driver import datachunker, gps
-from skytraq_driver.msg import Measurement
+from skytraq_driver.msg import Measurements, Satellite
 
 def sleep(dt):
     d = defer.Deferred()
@@ -167,6 +167,13 @@ class MyGPS(GPS):
             return
         t = self.time_of_week_minus_time + time.time()
         
+        msg = Measurements(
+            header=Header(
+                stamp=stamp,
+                frame_id=self.frame_id,
+            ),
+            satellites=[],
+        )
         pairs = []
         for prn, cn0, pseudorange, acc_carrier_cycle, doppler_freq, status in measurements:
             (pseudorange_avail, doppler_freq_avail, acc_carrier_cycle_avail,
@@ -190,17 +197,14 @@ class MyGPS(GPS):
             sat_pos = eph.predict(t)
             sat_dir = sat_pos - self.position;sat_dir /= numpy.linalg.norm(sat_dir)
             pairs.append((prn, measured_vel, sat_vel, sat_pos))
-            self.pub2.publish(Measurement(
-                header=Header(
-                    stamp=stamp,
-                    frame_id=self.frame_id,
-                ),
+            msg.satellites.append(Satellite(
                 direction_enu=Vector3(*gps.enu_from_ecef(sat_dir, self.position)),
                 velocity_plus_drift=measured_vel - sat_vel,
                 prn=prn,
                 cn0=cn0,
             ))
         print len(pairs), 'GOOD SATELLITES'
+        self.pub2.publish(msg)
         
         if self.pub.get_num_connections() and pairs:
             def find_vel(pairs):
