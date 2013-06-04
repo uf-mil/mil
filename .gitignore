@@ -16,3 +16,5 @@
 /*/src/*/cfg/
 /*/src/*/__init__.py
 /*/src/*/msg/
+/*/src/*/srv/
+/*/srv_gen/
