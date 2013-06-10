@@ -368,8 +368,16 @@ class Nodelet : public nodelet::Nodelet {
       }
       return res;
     }
+    static bool cmp_cn0(const skytraq_driver::Satellite &a, const skytraq_driver::Satellite &b) {
+      return a.cn0 > b.cn0;
+    }
     void got_gps(const skytraq_driver::MeasurementsConstPtr &msgp) {
-      const skytraq_driver::Measurements &msg = *msgp;
+      skytraq_driver::Measurements msg = *msgp;
+      
+      std::sort(msg.satellites.begin(), msg.satellites.end(), cmp_cn0);
+      while(msg.satellites.size() > 4 && msg.satellites[msg.satellites.size()-1].cn0 < msg.satellites[3].cn0 - 5) {
+        msg.satellites.pop_back();
+      }
       
       if(!state) return;
       
