@@ -278,6 +278,8 @@ class Nodelet : public nodelet::Nodelet {
       
       state = state->predict(msg);
       
+      fake_depth();
+      
       //std::cout << "cov " << state->cov << std::endl << std::endl;
       
       {
@@ -388,6 +390,13 @@ class Nodelet : public nodelet::Nodelet {
       state = state->update<Dynamic, Dynamic>(
         boost::bind(&Nodelet::gps_observer, this, msg, _1, _2),
       stddev.cwiseProduct(stddev).asDiagonal());
+    }
+    
+    Vector1d depth_observer(double msg, const State &state, Vector1d noise) {
+      return scalar_matrix(msg - (-state.pos(2) + noise(0)));
+    }
+    void fake_depth() {
+      state = state->update<1, 1>(boost::bind(&Nodelet::depth_observer, this, 0., _1, _2), scalar_matrix(pow(0.3, 2)));
     }
     
     
