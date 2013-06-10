@@ -25,17 +25,16 @@ struct State {
   Quaterniond orient;
   Vector3d vel;
   Vector3d gyro_bias;
-  Vector3d accel_bias;
   double local_g;
   double ground_air_pressure;
-  static const int STATE_LENGTH = 3*5 + 2;
+  static const int STATE_LENGTH = 3*4 + 2;
   typedef Matrix<double, STATE_LENGTH, 1> StateType;
   
   State(ros::Time t, Vector3d pos, Quaterniond orient,
-      Vector3d vel, Vector3d gyro_bias, Vector3d accel_bias,
+      Vector3d vel, Vector3d gyro_bias,
       double local_g, double ground_air_pressure) :
     t(t), pos(pos), orient(orient.normalized()), vel(vel),
-    gyro_bias(gyro_bias), accel_bias(accel_bias), local_g(local_g),
+    gyro_bias(gyro_bias), local_g(local_g),
     ground_air_pressure(ground_air_pressure) { }
   
   static const int PREDICT_EXTRA_NOISE_LENGTH = 1;
@@ -52,7 +51,7 @@ struct State {
     
     Quaterniond world_from_newbody = orient * oldbody_from_newbody;
     
-    Vector3d accelnograv_accelbody = accel - accel_bias;
+    Vector3d accelnograv_accelbody = accel;
     Quaterniond world_from_accelbody = rightSideAccelFrame ?
       world_from_newbody : orient;
     Vector3d accelnograv_world = world_from_accelbody._transformVector(
@@ -65,7 +64,6 @@ struct State {
       world_from_newbody,
       vel + dt * accel_world,
       gyro_bias,
-      accel_bias,
       local_g,
       ground_air_pressure + sqrt(dt) * noise(0));
   }
@@ -76,7 +74,6 @@ struct State {
       rotvec_from_quat(orient * other.orient.conjugate()),
       vel - other.vel,
       gyro_bias - other.gyro_bias,
-      accel_bias - other.accel_bias,
       local_g - other.local_g,
       ground_air_pressure - other.ground_air_pressure).finished();
   }
@@ -87,9 +84,8 @@ struct State {
       quat_from_rotvec(other.segment<3>(3)) * orient,
       vel + other.segment<3>(6),
       gyro_bias + other.segment<3>(9),
-      accel_bias + other.segment<3>(12),
-      local_g + other(15),
-      ground_air_pressure + other(16));
+      local_g + other(12),
+      ground_air_pressure + other(13));
   }
 };
 
@@ -259,13 +255,13 @@ class Nodelet : public nodelet::Nodelet {
       if(!state) {
         if(last_mag) {
           State::StateType stdev = (State::StateType() <<
-            0,0,0, .05,.05,.05, .1,.1,.1, .5,.5,.5, .5,.5,.5, 0.1, 1e3).finished();
+            0,0,0, .05,.05,.05, .1,.1,.1, .5,.5,.5, 0.1, 1e3).finished();
           AugmentedState::CovType tmp = stdev.asDiagonal();
           Vector3d accel = xyz2vec(msg.linear_acceleration);
           Quaterniond orient = triad(Vector3d(0, 0, -1), mag_world, -accel, *last_mag);
           state = AugmentedState(
             State(msg.header.stamp, Vector3d::Zero(), orient,
-              Vector3d::Zero(), Vector3d::Zero(), Vector3d::Zero(), 9.80665, 101325),
+              Vector3d::Zero(), Vector3d::Zero(), 9.80665, 101325),
             tmp*tmp);
         }
         return;
@@ -276,9 +272,8 @@ class Nodelet : public nodelet::Nodelet {
       //state = state->update(Vector3d::Zero());
       
       std::cout << "gyro_bias " << state->gyro_bias.transpose() << "  " << sqrt(state->cov(9,9)) << " " << sqrt(state->cov(10, 10)) << " " << sqrt(state->cov(11,11)) << std::endl;
-      std::cout << "accel_bias " << state->accel_bias.transpose() << "  " << sqrt(state->cov(12,12)) << " " << sqrt(state->cov(13, 13)) << " " << sqrt(state->cov(14,14)) << std::endl;
-      std::cout << "grav: " << state->local_g << "  " << sqrt(state->cov(15,15)) << std::endl;
-      std::cout << "ground air pressure: " << state->ground_air_pressure << "  " << sqrt(state->cov(16,16)) << std::endl;
+      std::cout << "grav: " << state->local_g << "  " << sqrt(state->cov(12,12)) << std::endl;
+      std::cout << "ground air pressure: " << state->ground_air_pressure << "  " << sqrt(state->cov(13,13)) << std::endl;
       std::cout << std::endl;
       
       state = state->predict(msg);
