@@ -8,8 +8,8 @@
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/Imu.h>
-#include <sensor_msgs/MagneticField.h>
-#include <sensor_msgs/FluidPressure.h>
+#include <geometry_msgs/Vector3Stamped.h>
+//#include <sensor_msgs/FluidPressure.h>
 #include <skytraq_driver/Measurements.h>
 
 #include "util.h"
@@ -229,10 +229,10 @@ class Nodelet : public nodelet::Nodelet {
       ros::NodeHandle& nh = getNodeHandle();
       imu_sub = nh.subscribe<sensor_msgs::Imu>("imu/data_raw", 10,
         boost::bind(&Nodelet::got_imu, this, _1));
-      mag_sub = nh.subscribe<sensor_msgs::MagneticField>("imu/mag", 10,
+      mag_sub = nh.subscribe<geometry_msgs::Vector3Stamped>("imu/mag", 10,
         boost::bind(&Nodelet::got_mag, this, _1));
-      press_sub = nh.subscribe<sensor_msgs::FluidPressure>("imu/pressure", 10,
-        boost::bind(&Nodelet::got_press, this, _1));
+      //press_sub = nh.subscribe<sensor_msgs::FluidPressure>("imu/pressure", 10,
+      //  boost::bind(&Nodelet::got_press, this, _1));
       gps_sub = nh.subscribe<skytraq_driver::Measurements>("gps", 10,
         boost::bind(&Nodelet::got_gps, this, _1));
       
@@ -311,10 +311,10 @@ class Nodelet : public nodelet::Nodelet {
     typedef Matrix<double, 1, 1> Matrix1d;
     typedef Matrix<double, 1, 1> Vector1d;
     
-    Vector1d mag_observer(const sensor_msgs::MagneticField &msg, const State &state, Vector3d noise) {
+    Vector1d mag_observer(const geometry_msgs::Vector3Stamped &msg, const State &state, Vector3d noise) {
       //Vector3d predicted = state.orient.conjugate()._transformVector(mag_world);
       double predicted_angle = atan2(mag_world(1), mag_world(0));
-      Vector3d measured_world = state.orient._transformVector(xyz2vec(msg.magnetic_field) + noise); // noise shouldn't be here
+      Vector3d measured_world = state.orient._transformVector(xyz2vec(msg.vector) + noise); // noise shouldn't be here
       double measured_angle = atan2(measured_world(1), measured_world(0));
       double error_angle = measured_angle - predicted_angle;
       double pi = boost::math::constants::pi<double>();
@@ -322,14 +322,14 @@ class Nodelet : public nodelet::Nodelet {
       while(error_angle > pi) error_angle -= 2*pi;
       return scalar_matrix(error_angle);
     }
-    void got_mag(const sensor_msgs::MagneticFieldConstPtr &msgp) {
-      const sensor_msgs::MagneticField &msg = *msgp;
+    void got_mag(const geometry_msgs::Vector3StampedConstPtr &msgp) {
+      const geometry_msgs::Vector3Stamped &msg = *msgp;
       
-      last_mag = xyz2vec(msg.magnetic_field);
+      last_mag = xyz2vec(msg.vector);
       
       if(!state) return;
       
-      Matrix3d cov = Map<const Matrix3d>(msg.magnetic_field_covariance.data());
+      Matrix3d cov = Matrix3d::Zero(); //Map<const Matrix3d>(msg.magnetic_field_covariance.data());
       if(cov == Matrix3d::Zero()) {
         Vector3d stddev(2e-7, 2e-7, 2e-7);
         stddev *= 100;
@@ -342,7 +342,7 @@ class Nodelet : public nodelet::Nodelet {
     }
     
     
-    Vector1d press_observer(const sensor_msgs::FluidPressure &msg,
+    /* Vector1d press_observer(const sensor_msgs::FluidPressure &msg,
                                         const State &state,
                                         Vector1d noise) {
       double predicted = state.ground_air_pressure +
@@ -360,7 +360,7 @@ class Nodelet : public nodelet::Nodelet {
       state = state->update<1, 1>(
         boost::bind(&Nodelet::press_observer, this, msg, _1, _2),
       cov);
-    }
+    } */
     
     
     VectorXd gps_observer(const skytraq_driver::Measurements &msg,
