@@ -95,7 +95,7 @@ class MyGPS(GPS):
         self.ephemerises = {}
         self.poll_task = task.LoopingCall(lambda: self.send_get_ephemeris(chr(0)))
         self.pub = rospy.Publisher('/gps_vel', Vector3Stamped)
-        self.pub2 = rospy.Publisher('/gps_measurements', Measurement)
+        self.pub2 = rospy.Publisher('/gps', Measurements)
     
     @defer.inlineCallbacks
     def connectionMade(self):
