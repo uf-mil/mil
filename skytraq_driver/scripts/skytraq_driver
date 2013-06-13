@@ -17,7 +17,7 @@ import rospy
 from std_msgs.msg import Header, String
 
 from skytraq_driver import datachunker, gps
-from skytraq_driver.msg import Measurements, Satellite
+from rawgps_common.msg import Measurements, Satellite
 
 def sleep(dt):
     d = defer.Deferred()

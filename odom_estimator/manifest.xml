@@ -10,7 +10,7 @@
   <url>http://ros.org/wiki/odom_estimator</url>
   <depend package="nodelet"/>
   <depend package="sensor_msgs"/>
-  <depend package="skytraq_driver"/>
+  <depend package="rawgps_common"/>
   
   <rosdep name="eigen" />
 

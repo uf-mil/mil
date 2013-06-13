@@ -1,17 +1,15 @@
 <package>
-  <description brief="skytraq_driver">
+  <description brief="rawgps_common">
 
-     skytraq_driver
+     rawgps_common
 
   </description>
   <author>Forrest Voight</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/skytraq_driver</url>
+  <url>http://ros.org/wiki/rawgps_common</url>
 
   <depend package="geometry_msgs"/>
-  <depend package="rawgps_common"/>
-
 </package>
 
 
