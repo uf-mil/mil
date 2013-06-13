@@ -126,4 +126,7 @@ class Ephemeris(object):
     
     def is_healthy(self):
         return self.health == 0
+    
+    def __str__(self):
+        return 'Ephemeris(\n' + ''.join('    %s=%r\n' % (k, v) for k, v in sorted(self.__dict__.iteritems())) + ')'
 

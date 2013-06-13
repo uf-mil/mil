@@ -14,7 +14,7 @@ import roslib
 roslib.load_manifest('skytraq_driver')
 from geometry_msgs.msg import Vector3, Vector3Stamped
 import rospy
-from std_msgs.msg import Header
+from std_msgs.msg import Header, String
 
 from skytraq_driver import datachunker, gps
 from skytraq_driver.msg import Measurements, Satellite
@@ -74,6 +74,8 @@ class GPS(protocol.Protocol, object):
                 print 'invalid checksum'
                 continue
             
+            self.all_handler(payload)
+            
             message_id = ord(payload[0])
             message_body = payload[1:]
             if message_id not in self.message_names:
@@ -96,6 +98,10 @@ class MyGPS(GPS):
         self.poll_task = task.LoopingCall(lambda: self.send_get_ephemeris(chr(0)))
         self.pub = rospy.Publisher('/gps_vel', Vector3Stamped)
         self.pub2 = rospy.Publisher('/gps', Measurements)
+        self.pub3 = rospy.Publisher('~raw', String)
+    
+    def all_handler(self, payload):
+        self.pub3.publish(payload)
     
     @defer.inlineCallbacks
     def connectionMade(self):
