@@ -219,7 +219,7 @@ struct AugmentedState : public State {
 static const Vector3d mag_world = Vector3d(-2341.1e-9, 24138.5e-9, -40313.5e-9); // T
 class Nodelet : public nodelet::Nodelet {
   public:
-    Nodelet() : last_mag(boost::none), state(boost::none) { }
+    Nodelet() : last_mag(boost::none), last_good_gps(boost::none), state(boost::none) { }
     
     virtual void onInit() {
       ros::NodeHandle& nh = getNodeHandle();
@@ -251,9 +251,12 @@ class Nodelet : public nodelet::Nodelet {
         last_mag = boost::none;
         state = boost::none;
       }
+      if(state && (last_good_gps < ros::Time::now() - ros::Duration(5.))) {
+        NODELET_ERROR("reset due to no good gps data");
+      }
       
       if(!state) {
-        if(last_mag) {
+        if(last_mag && last_good_gps && *last_good_gps > ros::Time::now() - ros::Duration(1.)) {
           State::StateType stdev = (State::StateType() <<
             0,0,0, .05,.05,.05, .1,.1,.1, .5,.5,.5, 0.1, 1e3).finished();
           AugmentedState::CovType tmp = stdev.asDiagonal();
@@ -381,6 +384,10 @@ class Nodelet : public nodelet::Nodelet {
         msg.satellites.pop_back();
       }
       
+      if(msg.satellites.size() >= 4) {
+        last_good_gps = ros::Time::now();
+      }
+      
       if(!state) return;
       
       VectorXd stddev(msg.satellites.size() + 1);
@@ -407,6 +414,7 @@ class Nodelet : public nodelet::Nodelet {
     ros::Publisher odom_pub;
     
     boost::optional<Vector3d> last_mag;
+    boost::optional<ros::Time> last_good_gps;
     boost::optional<AugmentedState> state;
 };
 
