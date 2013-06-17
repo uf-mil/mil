@@ -85,13 +85,18 @@ class Ephemeris(object):
         self.IDOT = subframe_3.read_signed(14) * 2**-43 * pi
         subframe_3.read(2)
         assert subframe_3.at_end()
+        
+        self.t_oe += self.WN * 7*24*60*60
     
-    def predict(self, t):
+    def _predict(self, t):
         A = self.sqrt_A**2
         n_0 = sqrt(mu/A**3)
         t_k = t - self.t_oe
-        while t_k > +302400: t_k -= 604800
-        while t_k < -302400: t_k += 604800
+        time_wraparound = 1024*7*24*60*60
+        while t_k > +time_wraparound/2: t_k -= time_wraparound
+        while t_k < -time_wraparound/2: t_k += time_wraparound
+        if not (abs(t_k) < 6*60*60):
+            print 'ERROR: ephemeris predicting more than 6 hours from now (%f hours)' % (t_k/60/60,)
         n = n_0 + self.delta_n
         M_k = self.M_0 + n * t_k
         E_k = newton(M_k,
@@ -121,8 +126,8 @@ class Ephemeris(object):
         
         return numpy.array([x_k, y_k, z_k])
     
-    def predict_vel(self, t):
-        return (self.predict(t+.1)-self.predict(t-.1))/.2
+    def predict(self, t):
+        return self._predict(t), (self._predict(t+.1)-self._predict(t-.1))/.2
     
     def is_healthy(self):
         return self.health == 0

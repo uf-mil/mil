@@ -4,60 +4,29 @@ from __future__ import division
 
 import operator
 import struct
-import time
-import math
 
-import numpy
-from twisted.internet import protocol, reactor, serialport, task, defer
+from twisted.internet import defer, protocol, reactor, serialport, task
 
 import roslib
 roslib.load_manifest('skytraq_driver')
-from geometry_msgs.msg import Vector3, Vector3Stamped
 import rospy
-from std_msgs.msg import Header, String
+from std_msgs.msg import Header
 
-from skytraq_driver import datachunker, gps
-from rawgps_common.msg import Measurements, Satellite
+from skytraq_driver import datachunker, protocol as skytraq_protocol
+from skytraq_driver.msg import SerialPacket
 
 def sleep(dt):
     d = defer.Deferred()
     reactor.callLater(dt, d.callback, None)
     return d
 
-class GPS(protocol.Protocol, object):
-    message_ids = dict(
-        configure_output_message_format=0x09,
-        configure_binary_measurement_output_rates=0x12,
-        get_almanac=0x11,
-        get_ephemeris=0x30,
-        software_version=0x80,
-        software_crc=0x81,
-        ack=0x83,
-        nack=0x84,
-        gps_almanac_data=0x87,
-        gps_ephemeris_data=0xB1,
-        meas_time=0xDC,
-        raw_meas=0xDD,
-        sv_ch_status=0xDE,
-        rcv_state=0xDF,
-        subframe=0xE0,
-    )
-    message_names = dict((id_, name) for name, id_ in message_ids.iteritems())
-    
-    def connectionMade(self):
+class GPS(protocol.Protocol):
+    def __init__(self):
+        self.poll_task = task.LoopingCall(self.think)
+        self.pub = rospy.Publisher('skytraq_serial', SerialPacket)
+        self.last_message = None
+        self.send = skytraq_protocol.SendProxy(self.send_raw)
         self.dataReceived = datachunker.DataChunker(self.dataReceiver())
-    
-    def send(self, message_id, data):
-        payload = chr(message_id) + data
-        x = '\xa0\xa1' + struct.pack('>H', len(payload)) + payload + chr(reduce(operator.xor, map(ord, payload), 0)) + '\x0d\x0a'
-        self.transport.write(x)
-    
-    def __getattr__(self, name):
-        prefix = 'send_'
-        if name.startswith(prefix):
-            message_name = name[len(prefix):]
-            return lambda data: self.send(self.message_ids[message_name], data)
-        raise AttributeError(name)
     
     def dataReceiver(self):
         while True:
@@ -74,189 +43,49 @@ class GPS(protocol.Protocol, object):
                 print 'invalid checksum'
                 continue
             
-            self.all_handler(payload)
-            
-            message_id = ord(payload[0])
-            message_body = payload[1:]
-            if message_id not in self.message_names:
-                print 'Unknown message_id: %r' % (message_id,)
-            message_name = self.message_names[message_id]
-            if not hasattr(self, 'handle_' + message_name):
-                #print 'no handler for', message_name
-                continue
-            getattr(self, 'handle_' + message_name)(message_body, stamp)
-
-
-class MyGPS(GPS):
-    def __init__(self, frame_id):
-        GPS.__init__(self)
-        self.frame_id = frame_id
-        
-        self.time_of_week_minus_time = None
-        self.position = None
-        self.ephemerises = {}
-        self.poll_task = task.LoopingCall(lambda: self.send_get_ephemeris(chr(0)))
-        self.pub = rospy.Publisher('/gps_vel', Vector3Stamped)
-        self.pub2 = rospy.Publisher('/gps', Measurements)
-        self.pub3 = rospy.Publisher('~raw', String)
-    
-    def all_handler(self, payload):
-        self.pub3.publish(payload)
-    
-    @defer.inlineCallbacks
-    def connectionMade(self):
-        GPS.connectionMade(self)
-        
-        self.send_configure_output_message_format('\x02\x00')
-        yield sleep(.3)
-        
-        self.send_configure_binary_measurement_output_rates('\x04\x01\x01\x01\x01\x01\x00')
-        yield sleep(.3)
-        
-        self.poll_task.start(10)
-    
-    def connectionLost(self, reason):
-        if self.poll_task.running:
-            self.poll_task.stop()
-    
-    def handle_gps_ephemeris_data(self, data, stamp):
-        if all(x == '\x00' for x in data[3:]):
-            return
-        sv, = struct.unpack('>H', data[0:2])
-        
-        eph = gps.Ephemeris(
-            data[2+1+28*0:2+1+28*0+27],
-            data[2+1+28*1:2+1+28*1+27],
-            data[2+1+28*2:2+1+28*2+27],
-        )
-        assert len(data) == 2+1+28*2+27, len(data)
-        del data
-        
-        print
-        print sv
-        for k, v in eph.__dict__.iteritems():
-            print k, repr(v)
-        print
-        '''
-        import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        def inertial_from_ecef((x, y, z), t):
-            w = -omega_dot_e * t
-            return (
-                 cos(w)*x + sin(w)*y,
-                -sin(w)*x + cos(w)*y,
-                z,
-            )
-        data = [inertial_from_ecef(eph.predict(eph.t_oe + i*100), i*100) for i in xrange(216*16//10)]
-        data.append((0, 0, 0))
-        ax.scatter(*zip(*data))
-        plt.show()
-        '''
-        
-        #a = eph.predict(eph.t_oe)
-        #print math.sqrt(a[0]**2 + a[1]**2 + a[2]**2)
-        
-        self.ephemerises[sv] = eph
-    
-    def handle_raw_meas(self, data, stamp):
-        iod, nmeas = struct.unpack('>BB', data[0:2])
-        measurements = [struct.unpack('>BBddfB', data[2+i*23:2+i*23+23])
-            for i in xrange(nmeas)]
-        assert 2+nmeas*23 == len(data)
-        
-        print nmeas, 'SATELLITES'
-        
-        if self.position is None or self.time_of_week_minus_time is None:
-            print '   ', 'NO FIX'
-            return
-        t = self.time_of_week_minus_time + time.time()
-        
-        msg = Measurements(
-            header=Header(
-                stamp=stamp,
-                frame_id=self.frame_id,
-            ),
-            satellites=[],
-        )
-        pairs = []
-        for prn, cn0, pseudorange, acc_carrier_cycle, doppler_freq, status in measurements:
-            (pseudorange_avail, doppler_freq_avail, acc_carrier_cycle_avail,
-                cycle_slip_possible, integration_time_greater_10ms) = [
-                bool(status & 2**i) for i in xrange(5)]
-            
-            if not doppler_freq_avail:
-                print 'no doppler frequency, dropping', prn
-                continue
-            
-            if prn not in self.ephemerises:
-                print 'no ephemeris, dropping', prn
-                continue
-            eph = self.ephemerises[prn]
-            if not eph.is_healthy():
-                print 'unhealthy, dropping', prn
-                continue
-            
-            measured_vel = doppler_freq*gps.c/gps.L1_f0
-            sat_vel = -gps.deriv(lambda t: numpy.linalg.norm(self.position-eph.predict(t)), t)
-            sat_pos = eph.predict(t)
-            sat_dir = sat_pos - self.position;sat_dir /= numpy.linalg.norm(sat_dir)
-            pairs.append((prn, measured_vel, sat_vel, sat_pos))
-            msg.satellites.append(Satellite(
-                direction_enu=Vector3(*gps.enu_from_ecef(sat_dir, self.position)),
-                velocity_plus_drift=measured_vel - sat_vel,
-                prn=prn,
-                cn0=cn0,
-            ))
-        print len(pairs), 'GOOD SATELLITES'
-        self.pub2.publish(msg)
-        
-        if self.pub.get_num_connections() and pairs:
-            def find_vel(pairs):
-                if len(pairs) < 4:
-                    return numpy.zeros(3), 1e300, []
-                A = numpy.zeros((len(pairs), 4))
-                for i, (sv, a, b, sat_pos) in enumerate(pairs):
-                    eph = self.ephemerises[sv]
-                    n = sat_pos - self.position
-                    n /= numpy.linalg.norm(n)
-                    A[i] = [n[0], n[1], n[2], -1]
-                b_v = [a-b for sv, a, b, sat_pos in pairs]
-                #print "A", A
-                #print "b_v", b_v
-                x, residuals, rank, s = numpy.linalg.lstsq(A, b_v)
-                return x, math.sqrt(numpy.linalg.norm(A.dot(x) - b_v)**2/len(pairs)), A.dot(x) - b_v
-            
-            j, k, (x, error, res) = min([(j, k, find_vel([p for i, p in enumerate(pairs) if i != j and i != k]))
-                for j in xrange(len(pairs)) for k in xrange(j+1)], key=lambda (j, k, (vel, error, res)): error)
-            print "DROPPED", pairs[j][0] if j < len(pairs) else None, k
-            #x, error = find_vel(pairs)
-            print "RES", res
-            print "x", x, error
-            #if error > .4: return
-            #print "XYZ VEL", map(float, x[:3])
-            
-            self.pub.publish(Vector3Stamped(
+            self.pub.publish(SerialPacket(
                 header=Header(
                     stamp=stamp,
-                    frame_id=self.frame_id,
                 ),
-                vector=Vector3(*list(gps.enu_from_ecef(x[:3], self.position))),
+                payload=payload,
             ))
     
-    def handle_rcv_state(self, data, stamp):
-        iod, navigation_state, wn, tow, ecef_x, ecef_y, ecef_z, ecef_dx, ecef_dy, ecef_dz, clock_bias, clock_drift, gdop, pdop, hdop, vdop, tdop = struct.unpack('>BBHddddfffdffffff', data)
-        del data
-        print locals()
+    def connectionMade(self):
+        self.poll_task.start(0.5)
+    
+    def think(self):
+        if self.last_message is None or not (reactor.seconds() - 5 < self.last_message < reactor.seconds()):
+            rospy.logerr('nothing received for 5 seconds, reinitializing device')
+            self.init()
+            return
         
-        self.time_of_week_minus_time = tow - stamp.to_sec()
-        self.position = numpy.array([ecef_x, ecef_y, ecef_z])
-
+        self.send.get_ephemeris(chr(self.cv_counter))
+        self.sv_counter += 1
+        if self.sv_counter == 33:
+            self.sv_counter = 1
+    
+    @defer.inlineCallbacks
+    def init(self):
+        self.send.configure_output_message_format('\x02\x00')
+        yield sleep(.3)
+        self.send.configure_binary_measurement_output_rates('\x04\x01\x01\x01\x01\x01\x00')
+        yield sleep(.3)
+        self.sv_counter = 1
+    
+    def send_raw(self, payload):
+        self.transport.write(
+            '\xa0\xa1' +
+            struct.pack('>H', len(payload)) +
+            payload +
+            chr(reduce(operator.xor, map(ord, payload), 0)) +
+            '\x0d\x0a')
+    
+    def connectionLost(self, reason):
+        self.poll_task.stop()
 
 rospy.init_node('skytraq_driver')
 
-serialport.SerialPort(MyGPS(rospy.get_param('~frame_id')), rospy.get_param('~port'), reactor, 115200)
+serialport.SerialPort(GPS(), rospy.get_param('~port'), reactor, 115200)
 
 reactor.callWhenRunning(lambda: rospy.core.add_client_shutdown_hook(lambda reason=None: reactor.callFromThread(reactor.stop)))
 reactor.run()

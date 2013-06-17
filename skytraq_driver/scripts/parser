@@ -1,0 +1,137 @@
+#!/usr/bin/python
+
+from __future__ import division
+
+import struct
+
+import numpy
+
+import roslib
+roslib.load_manifest('skytraq_driver')
+import rospy
+from std_msgs.msg import Header
+from geometry_msgs.msg import Vector3
+
+from rawgps_common import gps
+from rawgps_common.msg import Measurements, Satellite
+from skytraq_driver import protocol
+from skytraq_driver.msg import SerialPacket
+
+class Handlers(object):
+    def __init__(self, frame_id):
+        self.frame_id = frame_id
+        
+        self.time_of_week_minus_time = None
+        self.position = None
+        self.ephemerises = {}
+        self.pub = rospy.Publisher('gps', Measurements)
+    
+    def gps_ephemeris_data(self, data, stamp):
+        sv, = struct.unpack('>H', data[0:2])
+        if all(x == '\x00' for x in data[3:]):
+            return
+        
+        eph = gps.Ephemeris(
+            data[2+1+28*0:2+1+28*0+27],
+            data[2+1+28*1:2+1+28*1+27],
+            data[2+1+28*2:2+1+28*2+27],
+        )
+        assert len(data) == 2+1+28*2+27, len(data)
+        del data
+        
+        print
+        print sv
+        for k, v in eph.__dict__.iteritems():
+            print k, repr(v)
+        print
+        '''
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        def inertial_from_ecef((x, y, z), t):
+            w = -omega_dot_e * t
+            return (
+                cos(w)*x + sin(w)*y,
+            -sin(w)*x + cos(w)*y,
+                z,
+            )
+        data = [inertial_from_ecef(eph.predict(eph.t_oe + i*100), i*100) for i in xrange(216*16//10)]
+        data.append((0, 0, 0))
+        ax.scatter(*zip(*data))
+        plt.show()
+        '''
+        
+        #a = eph.predict(eph.t_oe)
+        #print math.sqrt(a[0]**2 + a[1]**2 + a[2]**2)
+        
+        self.ephemerises[sv] = eph
+    
+    def raw_meas(self, data, stamp):
+        iod, nmeas = struct.unpack('>BB', data[0:2])
+        measurements = [struct.unpack('>BBddfB', data[2+i*23:2+i*23+23])
+            for i in xrange(nmeas)]
+        assert 2+nmeas*23 == len(data)
+        
+        print nmeas, 'SATELLITES'
+        
+        if self.position is None or self.time_of_week_minus_time is None:
+            print '   ', 'NO FIX'
+            return
+        t = self.time_of_week_minus_time + stamp.to_sec()
+        
+        msg = Measurements(
+            header=Header(
+                stamp=stamp,
+                frame_id=self.frame_id,
+            ),
+            satellites=[],
+        )
+        for prn, cn0, pseudorange, acc_carrier_cycle, doppler_freq, status in measurements:
+            (pseudorange_avail, doppler_freq_avail, acc_carrier_cycle_avail,
+                cycle_slip_possible, integration_time_greater_10ms) = [
+                bool(status & 2**i) for i in xrange(5)]
+            
+            if not doppler_freq_avail:
+                print 'no doppler frequency, dropping', prn
+                continue
+            
+            if prn not in self.ephemerises:
+                print 'no ephemeris, dropping', prn
+                continue
+            eph = self.ephemerises[prn]
+            if not eph.is_healthy():
+                print 'unhealthy, dropping', prn
+                continue
+            
+            measured_vel = doppler_freq*gps.c/gps.L1_f0
+            sat_pos, sat_3vel = eph.predict(t)
+            sat_dir = sat_pos - self.position;sat_dir /= numpy.linalg.norm(sat_dir)
+            sat_vel = -sat_3vel.dot(sat_dir)
+            msg.satellites.append(Satellite(
+                direction_enu=Vector3(*gps.enu_from_ecef(sat_dir, self.position)),
+                velocity_plus_drift=measured_vel - sat_vel,
+                prn=prn,
+                cn0=cn0,
+            ))
+        print len(msg.satellites), 'GOOD SATELLITES'
+        self.pub.publish(msg)
+    
+    def rcv_state(self, data, stamp):
+        iod, navigation_state, wn, tow, ecef_x, ecef_y, ecef_z, ecef_dx, ecef_dy, ecef_dz, clock_bias, clock_drift, gdop, pdop, hdop, vdop, tdop = struct.unpack('>BBHddddfffdffffff', data)
+        del data
+        print locals()
+        
+        self.time_of_week_minus_time = wn * 7*24*60*60 + tow - stamp.to_sec()
+        self.position = numpy.array([ecef_x, ecef_y, ecef_z])
+
+
+rospy.init_node('skytraq_parser')
+
+handlers = Handlers(rospy.get_param('~frame_id'))
+
+def got_serial(msg):
+    protocol.dispatch(msg.payload, handlers, stamp=msg.header.stamp)
+rospy.Subscriber('skytraq_serial', SerialPacket, got_serial)
+
+rospy.spin()
