@@ -1,5 +1,6 @@
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
+#include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/math/constants/constants.hpp>
 
@@ -379,9 +380,9 @@ class Nodelet : public nodelet::Nodelet {
     void got_gps(const rawgps_common::MeasurementsConstPtr &msgp) {
       rawgps_common::Measurements msg = *msgp;
       
-      std::sort(msg.satellites.begin(), msg.satellites.end(), cmp_cn0);
-      while(msg.satellites.size() > 4 && msg.satellites[msg.satellites.size()-1].cn0 < msg.satellites[3].cn0 - 5) {
-        msg.satellites.pop_back();
+      double max_cn0 = -std::numeric_limits<double>::infinity();
+      BOOST_FOREACH(const rawgps_common::Satellite &satellite, msg.satellites) {
+        max_cn0 = std::max(max_cn0, satellite.cn0);
       }
       
       if(msg.satellites.size() >= 4) {
@@ -393,8 +394,11 @@ class Nodelet : public nodelet::Nodelet {
       if(!state) return;
       
       VectorXd stddev(msg.satellites.size() + 1);
-      stddev.head(msg.satellites.size()) = .05 * VectorXd::Ones(msg.satellites.size());
+      BOOST_FOREACH(const rawgps_common::Satellite &satellite, msg.satellites) {
+        stddev[&satellite - msg.satellites.data()] = .15 / sqrt(pow(10, satellite.cn0/10) / pow(10, max_cn0/10));
+      }
       stddev[msg.satellites.size()] = 5000;
+      std::cout << "stddev:" << std::endl << stddev << std::endl << std::endl;
       
       state = state->update<Dynamic, Dynamic>(
         boost::bind(&Nodelet::gps_observer, this, msg, _1, _2),
