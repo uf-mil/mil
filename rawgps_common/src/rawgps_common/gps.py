@@ -10,6 +10,21 @@ import bitstream
 
 deriv = lambda f, x: (f(x+.1)-f(x-.1))/.2
 
+def ecef_from_latlongheight(latitude, longitude, height):
+    # WGS 84
+    a = 6378137.0
+    f = 1/298.257223563
+
+    e = 2*f - f**2
+
+    N = a/sqrt(1 - e**2*sin(latitude)**2)
+    return numpy.array([
+        (N + height)*cos(latitude)*cos(longitude),
+        (N + height)*cos(latitude)*sin(longitude),
+        (N*(1 - e**2) + height)*sin(latitude),
+    ])
+
+
 def enu_from_ecef(v, pos):
     up_ecef = transformations.unit_vector(pos)
     east_ecef = transformations.unit_vector(numpy.cross([0, 0, 1], up_ecef))
