@@ -10,7 +10,7 @@ import roslib
 roslib.load_manifest('skytraq_driver')
 import rospy
 from std_msgs.msg import Header
-from geometry_msgs.msg import Vector3
+from geometry_msgs.msg import Vector3, PointStamped, Point
 
 from rawgps_common import gps
 from rawgps_common.msg import Measurements, Satellite
@@ -25,6 +25,7 @@ class Handlers(object):
         self.position = None
         self.ephemerises = {}
         self.pub = rospy.Publisher('gps', Measurements)
+        self.pos_pub = rospy.Publisher('~pos', PointStamped)
     
     def gps_ephemeris_data(self, data, stamp):
         sv, = struct.unpack('>H', data[0:2])
@@ -124,6 +125,14 @@ class Handlers(object):
         
         self.time_of_week_minus_time = wn * 7*24*60*60 + tow - stamp.to_sec()
         self.position = numpy.array([ecef_x, ecef_y, ecef_z])
+        
+        self.pos_pub.publish(PointStamped(
+            header=Header(
+                stamp=stamp,
+                frame_id='/ecef',
+            ),
+            point=Point(ecef_x, ecef_y, ecef_z),
+        ))
 
 
 rospy.init_node('skytraq_parser')
