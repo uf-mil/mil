@@ -22,7 +22,7 @@ class SendProxy(object):
         self._send_func = send_func
     
     def __getattr__(self, name):
-        return lambda data: self._send_func(chr(self.message_ids[name]) + data)
+        return lambda data: self._send_func(chr(message_ids[name]) + data)
 
 def dispatch(payload, obj, **kwargs):
     if len(payload) == 0:
