@@ -24,7 +24,6 @@ class GPS(protocol.Protocol):
     def __init__(self):
         self.poll_task = task.LoopingCall(self.think)
         self.pub = rospy.Publisher('skytraq_serial', SerialPacket)
-        self.last_message = None
         self.send = skytraq_protocol.SendProxy(self.send_raw)
         self.dataReceived = datachunker.DataChunker(self.dataReceiver())
     
@@ -43,6 +42,8 @@ class GPS(protocol.Protocol):
                 print 'invalid checksum'
                 continue
             
+            self.last_message = reactor.seconds()
+            
             self.pub.publish(SerialPacket(
                 header=Header(
                     stamp=stamp,
@@ -51,8 +52,18 @@ class GPS(protocol.Protocol):
             ))
     
     def connectionMade(self):
-        self.sv_counter = 0
+        self.init_df = self.init()
+    
+    @defer.inlineCallbacks
+    def init(self):
+        self.send.configure_output_message_format('\x02\x00')
+        yield sleep(.3)
+        
+        self.send.configure_binary_measurement_output_rates('\x05\x01\x01\x01\x01\x01\x00')
+        yield sleep(.3)
+        
         self.last_message = reactor.seconds()
+        self.sv_counter = 1
         self.poll_task.start(0.5)
     
     def think(self):
@@ -66,14 +77,6 @@ class GPS(protocol.Protocol):
         if self.sv_counter == 33:
             self.sv_counter = 1
     
-    @defer.inlineCallbacks
-    def init(self):
-        self.send.configure_output_message_format('\x02\x00')
-        yield sleep(.3)
-        self.send.configure_binary_measurement_output_rates('\x04\x01\x01\x01\x01\x01\x00')
-        yield sleep(.3)
-        self.sv_counter = 1
-    
     def send_raw(self, payload):
         self.transport.write(
             '\xa0\xa1' +
@@ -82,7 +85,9 @@ class GPS(protocol.Protocol):
             chr(reduce(operator.xor, map(ord, payload), 0)) +
             '\x0d\x0a')
     
+    @defer.inlineCallbacks
     def connectionLost(self, reason):
+        yield self.init_df
         self.poll_task.stop()
         reactor.callLater(0, connect)
 
