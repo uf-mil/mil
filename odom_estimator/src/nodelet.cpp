@@ -259,7 +259,7 @@ class Nodelet : public nodelet::Nodelet {
       if(!state) {
         if(last_mag && last_good_gps && *last_good_gps > ros::Time::now() - ros::Duration(1.)) {
           State::StateType stdev = (State::StateType() <<
-            0,0,0, .05,.05,.05, .1,.1,.1, .5,.5,.5, 0.1, 1e3).finished();
+            0,0,0, .05,.05,.05, .1,.1,.1, .05,.05,.05, 0.1, 1e3).finished();
           AugmentedState::CovType tmp = stdev.asDiagonal();
           Vector3d accel = xyz2vec(msg.linear_acceleration);
           Quaterniond orient = triad(Vector3d(0, 0, -1), mag_world, -accel, *last_mag);
