@@ -15,7 +15,7 @@ def ecef_from_latlongheight(latitude, longitude, height):
     a = 6378137.0
     f = 1/298.257223563
 
-    e = 2*f - f**2
+    e = sqrt(2*f - f**2)
 
     N = a/sqrt(1 - e**2*sin(latitude)**2)
     return numpy.array([

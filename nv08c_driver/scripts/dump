@@ -1,15 +1,16 @@
 #!/usr/bin/python
 
-import numpy
-
+import math
 import struct
+
+import numpy
 
 import roslib
 roslib.load_manifest('nv08c_driver')
 
 import rospy
 from std_msgs.msg import String, Header
-from geometry_msgs.msg import Vector3
+from geometry_msgs.msg import Vector3, Point, PointStamped
 
 from rawgps_common import gps, glonass
 from rawgps_common.msg import Measurements, Satellite
@@ -26,6 +27,7 @@ antenna_pos = None
 
 pub = rospy.Publisher('/gps', Measurements)
 pub2 = rospy.Publisher('/gps_cp', Measurements)
+pos_pub = rospy.Publisher('~pos', PointStamped)
 last_carrier_phase = {}
 def cb(msg):
     global antenna_pos
@@ -111,7 +113,14 @@ def cb(msg):
         pub2.publish(m2)
     elif msg.data.startswith('\x88'):
         lat, lon, alt, err, t, week, lat_vel, lon_vel, alt_vel, dev, status = struct.unpack('<dddf10shdddfB', msg.data[1:])
-        #print 'PVT', lat, lon, alt, err, None, week, lat_vel, lon_vel, alt_vel, dev, status
+        print 'PVT', math.degrees(lat), math.degrees(lon), alt, err, None, week, lat_vel, lon_vel, alt_vel, dev, status
+        pos_pub.publish(PointStamped(
+            header=Header(
+                stamp=rospy.Time.now(), # XXX
+                frame_id='/ecef',
+            ),
+            point=Point(*gps.ecef_from_latlongheight(lat, lon, alt)),
+        ))
     elif msg.data.startswith('\xf6'):
         x, y, z, x_err, y_err, z_err, flags = struct.unpack('<ddddddB', msg.data[1:])
         #print 'GCA', x, y, z, x_err, y_err, z_err, flags
