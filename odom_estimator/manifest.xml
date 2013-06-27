@@ -9,7 +9,12 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/odom_estimator</url>
   <depend package="nodelet"/>
+  <depend package="roscpp"/>
+  <depend package="tf"/>
+  <depend package="geometry_msgs"/>
+  <depend package="pluginlib"/>
   <depend package="sensor_msgs"/>
+
   <depend package="rawgps_common"/>
   
   <rosdep name="eigen" />

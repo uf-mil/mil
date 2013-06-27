@@ -7,6 +7,9 @@
 #include <nodelet/nodelet.h>
 #include <pluginlib/class_list_macros.h>
 #include <ros/ros.h>
+#include <message_filters/subscriber.h>
+#include <tf/message_filter.h>
+#include <tf/transform_listener.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/Imu.h>
 #include <geometry_msgs/Vector3Stamped.h>
@@ -218,21 +221,26 @@ struct AugmentedState : public State {
 
 
 static const Vector3d mag_world = Vector3d(-2341.1e-9, 24138.5e-9, -40313.5e-9); // T
-class Nodelet : public nodelet::Nodelet {
+class NodeImpl {
+  private:
+    boost::function<const std::string&()> getName;
+    ros::NodeHandle &nh;
+    ros::NodeHandle &private_nh;
   public:
-    Nodelet() : last_mag(boost::none), last_good_gps(boost::none), state(boost::none) { }
-    
-    virtual void onInit() {
-      ros::NodeHandle& nh = getNodeHandle();
+    NodeImpl(boost::function<const std::string&()> getName, ros::NodeHandle *nh_, ros::NodeHandle *private_nh_) :
+        getName(getName),
+        nh(*nh_),
+        private_nh(*private_nh_),
+        gps_sub(nh, "gps", 1),
+        gps_filter(gps_sub, tf_listener, "", 10),
+        last_mag(boost::none), last_good_gps(boost::none), state(boost::none) {
       imu_sub = nh.subscribe<sensor_msgs::Imu>("imu/data_raw", 10,
-        boost::bind(&Nodelet::got_imu, this, _1));
+        boost::bind(&NodeImpl::got_imu, this, _1));
       mag_sub = nh.subscribe<geometry_msgs::Vector3Stamped>("imu/mag", 10,
-        boost::bind(&Nodelet::got_mag, this, _1));
+        boost::bind(&NodeImpl::got_mag, this, _1));
       //press_sub = nh.subscribe<sensor_msgs::FluidPressure>("imu/pressure", 10,
-      //  boost::bind(&Nodelet::got_press, this, _1));
-      gps_sub = nh.subscribe<rawgps_common::Measurements>("gps", 10,
-        boost::bind(&Nodelet::got_gps, this, _1));
-      
+      //  boost::bind(&NodeImpl::got_press, this, _1));
+      gps_filter.registerCallback(boost::bind(&NodeImpl::got_gps, this, _1));
       odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
     }
   
@@ -246,6 +254,10 @@ class Nodelet : public nodelet::Nodelet {
         pow(0.002, 2)*Matrix3d::Identity();
       Map<Matrix3d>(msg.linear_acceleration_covariance.data()) =
         pow(0.04, 2)*Matrix3d::Identity();
+      
+      gps_filter.setTargetFrame(msg.header.frame_id);
+      last_gyro = xyz2vec(msg.angular_velocity);
+      local_frame_id = msg.header.frame_id;
       
       if(state && (msg.header.stamp < state->t || msg.header.stamp > state->t + ros::Duration(.1))) {
         NODELET_ERROR("reset due to invalid stamp");
@@ -338,7 +350,7 @@ class Nodelet : public nodelet::Nodelet {
       }
       
       state = state->update<1, 3>(
-        boost::bind(&Nodelet::mag_observer, this, msg, _1, _2),
+        boost::bind(&NodeImpl::mag_observer, this, msg, _1, _2),
       cov);
     }
     
@@ -359,17 +371,19 @@ class Nodelet : public nodelet::Nodelet {
       if(!state) return;
       
       state = state->update<1, 1>(
-        boost::bind(&Nodelet::press_observer, this, msg, _1, _2),
+        boost::bind(&NodeImpl::press_observer, this, msg, _1, _2),
       cov);
     } */
     
     
     VectorXd gps_observer(const rawgps_common::Measurements &msg,
-        const State &state, VectorXd noise) {
+        const Vector3d &gps_pos, const State &state, VectorXd noise) {
       VectorXd res(msg.satellites.size());
+      Vector3d gps_vel = state.vel + state.orient._transformVector(
+        (*last_gyro - state.gyro_bias).cross(gps_pos));
       for(unsigned int i = 0; i < msg.satellites.size(); i++) {
         const rawgps_common::Satellite &sat = msg.satellites[i];
-        double predicted = state.vel.dot(xyz2vec(sat.direction_enu)) + noise(i) + noise(noise.size()-1);
+        double predicted = gps_vel.dot(xyz2vec(sat.direction_enu)) + noise(i) + noise(noise.size()-1);
         res[i] = sat.velocity_plus_drift - predicted;
       }
       return res;
@@ -379,6 +393,16 @@ class Nodelet : public nodelet::Nodelet {
     }
     void got_gps(const rawgps_common::MeasurementsConstPtr &msgp) {
       rawgps_common::Measurements msg = *msgp;
+      
+      tf::StampedTransform transform;
+      try {
+        tf_listener.lookupTransform(local_frame_id,
+          msg.header.frame_id, msg.header.stamp, transform);
+      } catch (tf::TransformException ex) {
+        NODELET_ERROR("%s", ex.what());
+        return;
+      }
+      Vector3d local_gps_pos(transform.getOrigin().x(), transform.getOrigin().y(), transform.getOrigin().z());
       
       double max_cn0 = -std::numeric_limits<double>::infinity();
       BOOST_FOREACH(const rawgps_common::Satellite &satellite, msg.satellites) {
@@ -401,7 +425,7 @@ class Nodelet : public nodelet::Nodelet {
       std::cout << "stddev:" << std::endl << stddev << std::endl << std::endl;
       
       state = state->update<Dynamic, Dynamic>(
-        boost::bind(&Nodelet::gps_observer, this, msg, _1, _2),
+        boost::bind(&NodeImpl::gps_observer, this, msg, local_gps_pos, _1, _2),
       stddev.cwiseProduct(stddev).asDiagonal());
     }
     
@@ -409,21 +433,37 @@ class Nodelet : public nodelet::Nodelet {
       return scalar_matrix(msg - (-state.pos(2) + noise(0)));
     }
     void fake_depth() {
-      state = state->update<1, 1>(boost::bind(&Nodelet::depth_observer, this, 0., _1, _2), scalar_matrix(pow(0.3, 2)));
+      state = state->update<1, 1>(boost::bind(&NodeImpl::depth_observer, this, 0., _1, _2), scalar_matrix(pow(0.3, 2)));
     }
     
     
+    tf::TransformListener tf_listener;
     ros::Subscriber imu_sub;
     ros::Subscriber mag_sub;
-    ros::Subscriber press_sub;
-    ros::Subscriber gps_sub;
+    //ros::Subscriber press_sub;
+    message_filters::Subscriber<rawgps_common::Measurements> gps_sub;
+    tf::MessageFilter<rawgps_common::Measurements> gps_filter;
     ros::Publisher odom_pub;
     
     boost::optional<Vector3d> last_mag;
     boost::optional<ros::Time> last_good_gps;
     boost::optional<AugmentedState> state;
+    boost::optional<Vector3d> last_gyro;
+    std::string local_frame_id;
 };
 
+class Nodelet : public nodelet::Nodelet {
+public:
+    Nodelet() { }
+    
+    virtual void onInit() {
+        nodeimpl = boost::in_place(boost::bind(&Nodelet::getName, this),
+          &getNodeHandle(), &getPrivateNodeHandle());
+    }
+
+private:
+    boost::optional<NodeImpl> nodeimpl;
+};
 PLUGINLIB_DECLARE_CLASS(odom_estimator, nodelet, odom_estimator::Nodelet, nodelet::Nodelet);
 
 }
