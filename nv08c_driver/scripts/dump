@@ -28,6 +28,7 @@ antenna_pos = None
 pub = rospy.Publisher('/gps', Measurements)
 pub2 = rospy.Publisher('/gps_cp', Measurements)
 pos_pub = rospy.Publisher('~pos', PointStamped)
+latlong_pub = rospy.Publisher('/latlong', PointStamped)
 last_carrier_phase = {}
 def cb(msg):
     global antenna_pos
@@ -120,6 +121,13 @@ def cb(msg):
                 frame_id='/ecef',
             ),
             point=Point(*gps.ecef_from_latlongheight(lat, lon, alt)),
+        ))
+         latlong_pub.publish(PointStamped(
+            header=Header(
+                stamp=rospy.Time.now(), # XXX
+                frame_id='/latlong',
+            ),
+            point=Point(lat, lon, alt),
         ))
     elif msg.data.startswith('\xf6'):
         x, y, z, x_err, y_err, z_err, flags = struct.unpack('<ddddddB', msg.data[1:])
