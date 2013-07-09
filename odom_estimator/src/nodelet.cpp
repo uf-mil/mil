@@ -233,6 +233,7 @@ class NodeImpl {
         private_nh(*private_nh_),
         gps_sub(nh, "gps", 1),
         gps_filter(gps_sub, tf_listener, "", 10),
+        start_pos(0, 0, 0),
         last_mag(boost::none), last_good_gps(boost::none), state(boost::none) {
       imu_sub = nh.subscribe<sensor_msgs::Imu>("imu/data_raw", 10,
         boost::bind(&NodeImpl::got_imu, this, _1));
@@ -251,17 +252,18 @@ class NodeImpl {
       //const sensor_msgs::Imu &msg = *msgp;
       sensor_msgs::Imu msg = *msgp;
       Map<Matrix3d>(msg.angular_velocity_covariance.data()) =
-        pow(0.002, 2)*Matrix3d::Identity();
+        pow(0.02, 2)*Matrix3d::Identity();
       Map<Matrix3d>(msg.linear_acceleration_covariance.data()) =
-        pow(0.04, 2)*Matrix3d::Identity();
+        pow(0.06, 2)*Matrix3d::Identity();
       
       gps_filter.setTargetFrame(msg.header.frame_id);
       last_gyro = xyz2vec(msg.angular_velocity);
       local_frame_id = msg.header.frame_id;
       
-      if(state && (msg.header.stamp < state->t || msg.header.stamp > state->t + ros::Duration(.1))) {
+      if(state && (msg.header.stamp < state->t || msg.header.stamp > state->t + ros::Duration(2))) {
         NODELET_ERROR("reset due to invalid stamp");
         last_mag = boost::none;
+        start_pos = state->pos;
         state = boost::none;
       }
       if(state && (last_good_gps < ros::Time::now() - ros::Duration(5.))) {
@@ -276,7 +278,7 @@ class NodeImpl {
           Vector3d accel = xyz2vec(msg.linear_acceleration);
           Quaterniond orient = triad(Vector3d(0, 0, -1), mag_world, -accel, *last_mag);
           state = AugmentedState(
-            State(msg.header.stamp, Vector3d::Zero(), orient,
+            State(msg.header.stamp, start_pos, orient,
               Vector3d::Zero(), Vector3d::Zero(), 9.80665, 101325),
             tmp*tmp);
         }
@@ -296,6 +298,15 @@ class NodeImpl {
       
       fake_depth();
       
+
+      if(state->gyro_bias.norm() > .5) {
+        NODELET_ERROR("reset due to bad gyro biases");
+        last_mag = boost::none;
+        start_pos = state->pos;
+        state = boost::none;
+        return;
+      }
+
       //std::cout << "cov " << state->cov << std::endl << std::endl;
       
       {
@@ -445,6 +456,7 @@ class NodeImpl {
     tf::MessageFilter<rawgps_common::Measurements> gps_filter;
     ros::Publisher odom_pub;
     
+    Vector3d start_pos;
     boost::optional<Vector3d> last_mag;
     boost::optional<ros::Time> last_good_gps;
     boost::optional<AugmentedState> state;
