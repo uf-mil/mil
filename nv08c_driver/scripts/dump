@@ -122,7 +122,7 @@ def cb(msg):
             ),
             point=Point(*gps.ecef_from_latlongheight(lat, lon, alt)),
         ))
-         latlong_pub.publish(PointStamped(
+        latlong_pub.publish(PointStamped(
             header=Header(
                 stamp=rospy.Time.now(), # XXX
                 frame_id='/latlong',
