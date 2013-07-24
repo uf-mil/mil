@@ -23,6 +23,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 #common commands for building c++ executables and libraries
 rosbuild_add_library(transform_odometry src/transform_odometry.cpp)
+rosbuild_add_library(odometry_to_tf src/odometry_to_tf.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
