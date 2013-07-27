@@ -1,3 +1,6 @@
+#ifndef ODOM_ESTIMATOR_INCLUDE_UTIL_H
+#define ODOM_ESTIMATOR_INCLUDE_UTIL_H
+
 #include <boost/math/special_functions/sinc.hpp>
 
 #include <Eigen/Dense>
@@ -71,3 +74,5 @@ Eigen::Matrix<double, N, N> cholesky(Eigen::Matrix<double, N, N> x) {
   Eigen::LDLT<Eigen::Matrix<double, N, N> > ldlt = x.ldlt();
   return ldlt.transpositionsP().transpose() * Eigen::Matrix<double, N, N>(ldlt.matrixL()) * Eigen::Matrix<double, N, 1>(ldlt.vectorD().array().sqrt()).asDiagonal();
 }
+
+#endif
