@@ -26,13 +26,13 @@ namespace odom_estimator {
 struct State {
   ros::Time t;
   
-  Vector3d pos;
-  Quaterniond orient;
-  Vector3d vel;
-  Vector3d gyro_bias;
-  double local_g;
-  double ground_air_pressure;
-  static const int DELTA_SIZE = 3*4 + 2;
+  static const unsigned int POS = 0; Vector3d pos;
+  static const unsigned int ORIENT = POS + 3; Quaterniond orient;
+  static const unsigned int VEL = ORIENT + 3; Vector3d vel;
+  static const unsigned int GYRO_BIAS = VEL + 3; Vector3d gyro_bias;
+  static const unsigned int LOCAL_G = GYRO_BIAS + 3; double local_g;
+  static const unsigned int GROUND_AIR_PRESSURE = LOCAL_G + 1; double ground_air_pressure;
+  static const unsigned int DELTA_SIZE = GROUND_AIR_PRESSURE + 1;
   typedef Matrix<double, DELTA_SIZE, 1> DeltaType;
   
   State(ros::Time t, Vector3d pos, Quaterniond orient,
@@ -85,12 +85,12 @@ struct State {
   State operator+(const DeltaType &other) const {
     return State(
       t,
-      pos + other.segment<3>(0),
-      quat_from_rotvec(other.segment<3>(3)) * orient,
-      vel + other.segment<3>(6),
-      gyro_bias + other.segment<3>(9),
-      local_g + other(12),
-      ground_air_pressure + other(13));
+      pos + other.segment<3>(POS),
+      quat_from_rotvec(other.segment<3>(ORIENT)) * orient,
+      vel + other.segment<3>(VEL),
+      gyro_bias + other.segment<3>(GYRO_BIAS),
+      local_g + other(LOCAL_G),
+      ground_air_pressure + other(GROUND_AIR_PRESSURE));
   }
 };
 
@@ -284,9 +284,12 @@ class NodeImpl {
       //std::cout << "precov " << state->cov << std::endl << std::endl;
       //state = state->update(Vector3d::Zero());
       
-      std::cout << "gyro_bias " << state->gyro_bias.transpose() << "  " << sqrt(state->cov(9,9)) << " " << sqrt(state->cov(10, 10)) << " " << sqrt(state->cov(11,11)) << std::endl;
-      std::cout << "grav: " << state->local_g << "  " << sqrt(state->cov(12,12)) << std::endl;
-      std::cout << "ground air pressure: " << state->ground_air_pressure << "  " << sqrt(state->cov(13,13)) << std::endl;
+      std::cout << "gyro_bias " << state->gyro_bias.transpose()
+        << " " << sqrt(state->cov(State::GYRO_BIAS+0, State::GYRO_BIAS+0))
+        << " " << sqrt(state->cov(State::GYRO_BIAS+1, State::GYRO_BIAS+1))
+        << " " << sqrt(state->cov(State::GYRO_BIAS+2, State::GYRO_BIAS+2)) << std::endl;
+      std::cout << "grav: " << state->local_g << "  " << sqrt(state->cov(State::LOCAL_G, State::LOCAL_G)) << std::endl;
+      std::cout << "ground air pressure: " << state->ground_air_pressure << "  " << sqrt(state->cov(State::GROUND_AIR_PRESSURE, State::GROUND_AIR_PRESSURE)) << std::endl;
       std::cout << std::endl;
       
       state = state->predict(msg);
@@ -314,14 +317,15 @@ class NodeImpl {
         
         output.pose.pose.position = vec2xyz<geometry_msgs::Point>(state->pos);
         output.pose.pose.orientation = quat2xyzw<geometry_msgs::Quaternion>(state->orient);
-        Map<Matrix6d>(output.pose.covariance.data()) = state->cov.block<6, 6>(0, 0);
+        Map<Matrix6d>(output.pose.covariance.data()) <<
+          state->cov.block<3, 3>(State::POS, State::POS), state->cov.block<3, 3>(State::POS, State::ORIENT),
+          state->cov.block<3, 3>(State::ORIENT, State::POS), state->cov.block<3, 3>(State::ORIENT, State::ORIENT);
         
         output.twist.twist.linear = vec2xyz<geometry_msgs::Vector3>(state->orient.conjugate()._transformVector(state->vel));
         output.twist.twist.angular = vec2xyz<geometry_msgs::Vector3>(xyz2vec(msg.angular_velocity) - state->gyro_bias);
-        Map<Matrix6d> twist_cov(output.twist.covariance.data());
-        twist_cov = Matrix6d::Zero();
-        twist_cov.block<3, 3>(0, 0) = state->cov.block<3, 3>(6, 6);
-        twist_cov.block<3, 3>(3, 3) = Map<Matrix3d>(msg.angular_velocity_covariance.data()) + state->cov.block<3, 3>(9, 9);
+        Map<Matrix6d>(output.twist.covariance.data()) <<
+          state->cov.block<3, 3>(State::VEL, State::VEL), Matrix3d::Zero(),
+          Matrix3d::Zero(), Map<Matrix3d>(msg.angular_velocity_covariance.data()) + state->cov.block<3, 3>(State::GYRO_BIAS, State::GYRO_BIAS);
         
         odom_pub.publish(output);
       }
