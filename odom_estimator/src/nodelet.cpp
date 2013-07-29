@@ -321,7 +321,7 @@ class NodeImpl {
         Map<Matrix6d> twist_cov(output.twist.covariance.data());
         twist_cov = Matrix6d::Zero();
         twist_cov.block<3, 3>(0, 0) = state->cov.block<3, 3>(6, 6);
-        twist_cov.block<3, 3>(3, 3) = Map<Matrix3d>(msg.angular_velocity_covariance.data());
+        twist_cov.block<3, 3>(3, 3) = Map<Matrix3d>(msg.angular_velocity_covariance.data()) + state->cov.block<3, 3>(9, 9);
         
         odom_pub.publish(output);
       }
