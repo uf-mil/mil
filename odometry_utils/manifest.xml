@@ -13,8 +13,10 @@
   <depend package="geometry_msgs"/>
   <depend package="nav_msgs"/>
   <depend package="tf"/>
-  
-  <depend package="uf_common"/>
+  <depend package="tf_conversions"/>
+  <depend package="eigen_conversions"/>
+
+  <depend package="odom_estimator"/>
 
   <export>
     <nodelet plugin="${prefix}/nodelet.xml"/>
