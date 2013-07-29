@@ -8,10 +8,10 @@ import roslib
 roslib.load_manifest('odom_estimator')
 
 import rospy
-from sensor_msgs.msg import Imu
+from sensor_msgs.msg import Imu, MagneticField, FluidPressure
 from rawgps_common.msg import Measurements, Satellite
 from std_msgs.msg import Header
-from geometry_msgs.msg import Vector3, Vector3Stamped, PoseStamped, Pose, Point, Quaternion
+from geometry_msgs.msg import Vector3, PoseStamped, Pose, Point, Quaternion
 from tf import transformations, TransformBroadcaster
 
 rospy.init_node('test')
@@ -20,7 +20,7 @@ tf_br = TransformBroadcaster()
 
 imu_pub = rospy.Publisher('/imu/data_raw', Imu)
 #press_pub = rospy.Publisher('/imu/pressure', FluidPressure)
-mag_pub = rospy.Publisher('/imu/mag', Vector3Stamped)
+mag_pub = rospy.Publisher('/imu/mag', MagneticField)
 gps_pub = rospy.Publisher('/gps', Measurements)
 pose_pub = rospy.Publisher('/testpose', PoseStamped)
 
@@ -100,12 +100,12 @@ while not rospy.is_shutdown():
         fluid_pressure=ground_air_pressure + air_density*G.dot(pos) + 10*numpy.random.randn(),
         variance=10**2,
     ))'''
-    mag_pub.publish(Vector3Stamped(
+    mag_pub.publish(MagneticField(
         header=Header(
             stamp=t,
             frame_id="/imu",
         ),
-        vector=Vector3(*body_from_world.dot(mag_world*[1,-1,1] if tt > 3 and False else mag_world) + 2e-7*numpy.random.randn(3)),
+        magnetic_field=Vector3(*body_from_world.dot(mag_world*[1,-1,1] if tt > 3 and False else mag_world) + 2e-7*numpy.random.randn(3)),
     ))
     if i % 10 == 0:
         gps_vel = vel + numpy.cross(angvel, body_from_world.T.dot([5, 0, 0]))

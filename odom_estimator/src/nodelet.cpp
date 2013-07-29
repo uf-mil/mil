@@ -12,8 +12,8 @@
 #include <tf/transform_listener.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/Imu.h>
-#include <geometry_msgs/Vector3Stamped.h>
-//#include <sensor_msgs/FluidPressure.h>
+#include <sensor_msgs/MagneticField.h>
+#include <sensor_msgs/FluidPressure.h>
 #include <rawgps_common/Measurements.h>
 
 #include "unscented_transform.h"
@@ -231,10 +231,10 @@ class NodeImpl {
         last_mag(boost::none), last_good_gps(boost::none), state(boost::none) {
       imu_sub = nh.subscribe<sensor_msgs::Imu>("imu/data_raw", 10,
         boost::bind(&NodeImpl::got_imu, this, _1));
-      mag_sub = nh.subscribe<geometry_msgs::Vector3Stamped>("imu/mag", 10,
+      mag_sub = nh.subscribe<sensor_msgs::MagneticField>("imu/mag", 10,
         boost::bind(&NodeImpl::got_mag, this, _1));
-      //press_sub = nh.subscribe<sensor_msgs::FluidPressure>("imu/pressure", 10,
-      //  boost::bind(&NodeImpl::got_press, this, _1));
+      press_sub = nh.subscribe<sensor_msgs::FluidPressure>("imu/pressure", 10,
+        boost::bind(&NodeImpl::got_press, this, _1));
       gps_filter.registerCallback(boost::bind(&NodeImpl::got_gps, this, _1));
       odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
       
@@ -330,10 +330,10 @@ class NodeImpl {
     typedef Matrix<double, 1, 1> Matrix1d;
     typedef Matrix<double, 1, 1> Vector1d;
     
-    Vector1d mag_observer(const geometry_msgs::Vector3Stamped &msg, const StateWithMeasurementNoise<3> &state) {
+    Vector1d mag_observer(const sensor_msgs::MagneticField &msg, const StateWithMeasurementNoise<3> &state) {
       //Vector3d predicted = state.orient.conjugate()._transformVector(mag_world);
       double predicted_angle = atan2(mag_world(1), mag_world(0));
-      Vector3d measured_world = state.orient._transformVector(xyz2vec(msg.vector) + state.measurement_noise); // noise shouldn't be here
+      Vector3d measured_world = state.orient._transformVector(xyz2vec(msg.magnetic_field) + state.measurement_noise); // noise shouldn't be here
       double measured_angle = atan2(measured_world(1), measured_world(0));
       double error_angle = measured_angle - predicted_angle;
       double pi = boost::math::constants::pi<double>();
@@ -341,14 +341,14 @@ class NodeImpl {
       while(error_angle > pi) error_angle -= 2*pi;
       return scalar_matrix(error_angle);
     }
-    void got_mag(const geometry_msgs::Vector3StampedConstPtr &msgp) {
-      const geometry_msgs::Vector3Stamped &msg = *msgp;
+    void got_mag(const sensor_msgs::MagneticFieldConstPtr &msgp) {
+      const sensor_msgs::MagneticField &msg = *msgp;
       
-      last_mag = xyz2vec(msg.vector);
+      last_mag = xyz2vec(msg.magnetic_field);
       
       if(!state) return;
       
-      Matrix3d cov = Matrix3d::Zero(); //Map<const Matrix3d>(msg.magnetic_field_covariance.data());
+      Matrix3d cov = Map<const Matrix3d>(msg.magnetic_field_covariance.data());
       if(cov == Matrix3d::Zero()) {
         Vector3d stddev(2e-7, 2e-7, 2e-7);
         stddev *= 100;
@@ -361,7 +361,7 @@ class NodeImpl {
     }
     
     
-    /* Vector1d press_observer(const sensor_msgs::FluidPressure &msg,
+    Vector1d press_observer(const sensor_msgs::FluidPressure &msg,
                                const StateWithMeasurementNoise<1> &state) {
       double predicted = state.ground_air_pressure +
           air_density*Vector3d(0, 0, -state.local_g).dot(state.pos) +
@@ -378,7 +378,7 @@ class NodeImpl {
       state = state->update<1, 1>(
         boost::bind(&NodeImpl::press_observer, this, msg, _1),
       cov);
-    } */
+    }
     
     
     VectorXd gps_observer(const rawgps_common::Measurements &msg,
@@ -446,7 +446,7 @@ class NodeImpl {
     tf::TransformListener tf_listener;
     ros::Subscriber imu_sub;
     ros::Subscriber mag_sub;
-    //ros::Subscriber press_sub;
+    ros::Subscriber press_sub;
     message_filters::Subscriber<rawgps_common::Measurements> gps_sub;
     tf::MessageFilter<rawgps_common::Measurements> gps_filter;
     ros::Publisher odom_pub;
