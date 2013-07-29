@@ -16,8 +16,8 @@
 #include <sensor_msgs/FluidPressure.h>
 #include <rawgps_common/Measurements.h>
 
-#include "unscented_transform.h"
-#include "util.h"
+#include "odom_estimator/unscented_transform.h"
+#include "odom_estimator/util.h"
 
 using namespace Eigen;
 
