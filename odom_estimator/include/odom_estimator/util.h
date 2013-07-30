@@ -6,32 +6,6 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
-template <class T>
-inline T make_xyz(double x, double y, double z) {
-    T p;
-    p.x = x; p.y = y; p.z = z;
-    return p;
-}
-template <class T>
-inline T vec2xyz(Eigen::Vector3d v) {
-    return make_xyz<T>(v(0), v(1), v(2));
-}
-template <class T>
-inline Eigen::Vector3d xyz2vec(T m) {
-    return Eigen::Vector3d(m.x, m.y, m.z);
-}
-template <class T>
-inline T make_xyzw(double x, double y, double z, double w) {
-    T q;
-    q.x = x; q.y = y; q.z = z; q.w = w;
-    return q;
-}
-template <class T>
-inline T quat2xyzw(Eigen::Quaterniond q) {
-    return make_xyzw<T>(q.x(), q.y(), q.z(), q.w());
-}
-
-
 Eigen::Quaterniond quat_from_rotvec(Eigen::Vector3d r) {
     double angle = r.norm();
     Eigen::Quaterniond res;

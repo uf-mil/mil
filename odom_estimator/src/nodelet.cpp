@@ -15,6 +15,8 @@
 #include <sensor_msgs/MagneticField.h>
 #include <sensor_msgs/FluidPressure.h>
 #include <rawgps_common/Measurements.h>
+#include <eigen_conversions/eigen_msg.h>
+#include <tf_conversions/tf_eigen.h>
 
 #include "odom_estimator/unscented_transform.h"
 #include "odom_estimator/util.h"
@@ -22,6 +24,11 @@
 using namespace Eigen;
 
 namespace odom_estimator {
+
+inline Vector3d xyz2vec(const geometry_msgs::Vector3 &msg) {
+  Vector3d res; tf::vectorMsgToEigen(msg, res);
+  return res;
+}
 
 struct State {
   ros::Time t;
@@ -315,14 +322,14 @@ class NodeImpl {
         
         typedef Matrix<double, 6, 6> Matrix6d;
         
-        output.pose.pose.position = vec2xyz<geometry_msgs::Point>(state->pos);
-        output.pose.pose.orientation = quat2xyzw<geometry_msgs::Quaternion>(state->orient);
+        tf::pointEigenToMsg(state->pos, output.pose.pose.position);
+        tf::quaternionEigenToMsg(state->orient, output.pose.pose.orientation);
         Map<Matrix6d>(output.pose.covariance.data()) <<
           state->cov.block<3, 3>(State::POS, State::POS), state->cov.block<3, 3>(State::POS, State::ORIENT),
           state->cov.block<3, 3>(State::ORIENT, State::POS), state->cov.block<3, 3>(State::ORIENT, State::ORIENT);
         
-        output.twist.twist.linear = vec2xyz<geometry_msgs::Vector3>(state->orient.conjugate()._transformVector(state->vel));
-        output.twist.twist.angular = vec2xyz<geometry_msgs::Vector3>(xyz2vec(msg.angular_velocity) - state->gyro_bias);
+        tf::vectorEigenToMsg(state->orient.conjugate()._transformVector(state->vel), output.twist.twist.linear);
+        tf::vectorEigenToMsg(xyz2vec(msg.angular_velocity) - state->gyro_bias, output.twist.twist.angular);
         Map<Matrix6d>(output.twist.covariance.data()) <<
           state->cov.block<3, 3>(State::VEL, State::VEL), Matrix3d::Zero(),
           Matrix3d::Zero(), Map<Matrix3d>(msg.angular_velocity_covariance.data()) + state->cov.block<3, 3>(State::GYRO_BIAS, State::GYRO_BIAS);
@@ -412,7 +419,7 @@ class NodeImpl {
         NODELET_ERROR("%s", ex.what());
         return;
       }
-      Vector3d local_gps_pos(transform.getOrigin().x(), transform.getOrigin().y(), transform.getOrigin().z());
+      Vector3d local_gps_pos; tf::vectorTFToEigen(transform.getOrigin(), local_gps_pos);
       
       double max_cn0 = -std::numeric_limits<double>::infinity();
       BOOST_FOREACH(const rawgps_common::Satellite &satellite, msg.satellites) {
