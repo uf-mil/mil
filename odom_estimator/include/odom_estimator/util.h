@@ -42,8 +42,8 @@ Eigen::Quaterniond quat_from_rotvec(Eigen::Vector3d r) {
 
 Eigen::Vector3d rotvec_from_quat(Eigen::Quaterniond q) {
   q = q.normalized();
-  if(q.w() < 0) q = Eigen::Quaterniond(-q.x(), -q.y(), -q.z(), -q.w());
-  return 2/boost::math::sinc_pi(acos(q.w())) * q.vec();
+  if(q.w() < 0) q = Eigen::Quaterniond(-q.coeffs());
+  return 2/boost::math::sinc_pi(acos(std::min(1., q.w()))) * q.vec();
 }
 
 Eigen::Quaterniond triad(Eigen::Vector3d v1_world, Eigen::Vector3d v2_world,
