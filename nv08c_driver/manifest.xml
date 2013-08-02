@@ -11,7 +11,6 @@
   <depend package="roscpp"/>
   <depend package="nodelet"/>
 
-  <depend package="skytraq_driver"/>
   <depend package="rawgps_common"/>
 
   <export>
