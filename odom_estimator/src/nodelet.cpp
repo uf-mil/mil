@@ -30,6 +30,15 @@ inline Vector3d xyz2vec(const geometry_msgs::Vector3 &msg) {
   return res;
 }
 
+template<typename Derived>
+void assert_none_nan(const MatrixBase<Derived> &m) {
+  for(unsigned int i = 0; i < m.rows(); i++) {
+    for(unsigned int j = 0; j < m.cols(); j++) {
+      assert(std::isfinite(m(i, j)));
+    }
+  }
+}
+
 struct State {
   ros::Time t;
   
@@ -47,7 +56,11 @@ struct State {
       double local_g, double ground_air_pressure) :
     t(t), pos(pos), orient(orient.normalized()), vel(vel),
     gyro_bias(gyro_bias), local_g(local_g),
-    ground_air_pressure(ground_air_pressure) { }
+    ground_air_pressure(ground_air_pressure) {
+      assert_none_nan(pos); assert_none_nan(orient.coeffs());
+      assert_none_nan(vel); assert_none_nan(gyro_bias);
+      assert(std::isfinite(local_g)); assert(std::isfinite(ground_air_pressure));
+  }
   
   static const int PREDICT_EXTRA_NOISE_LENGTH = 1;
   Matrix<double, PREDICT_EXTRA_NOISE_LENGTH, PREDICT_EXTRA_NOISE_LENGTH> get_extra_noise_cov() const {
@@ -156,7 +169,9 @@ struct AugmentedState : public State {
   typedef Matrix<double, State::DELTA_SIZE, State::DELTA_SIZE> CovType;
   CovType cov;
   AugmentedState(const State &state, const CovType &cov) :
-    State(state), cov(cov/2 + cov.transpose()/2) { }
+    State(state), cov(cov/2 + cov.transpose()/2) {
+    assert_none_nan(cov);
+  }
   
   AugmentedState predict(const sensor_msgs::Imu &imu) const {
     const unsigned int NOISE_LENGTH = 3*2+PREDICT_EXTRA_NOISE_LENGTH;
