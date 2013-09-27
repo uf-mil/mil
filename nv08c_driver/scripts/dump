@@ -15,6 +15,8 @@ from geometry_msgs.msg import Vector3, Point, PointStamped
 from rawgps_common import gps, glonass
 from rawgps_common.msg import Measurements, Satellite
 
+from nv08c_driver.msg import Packet, PacketSet
+
 rospy.init_node('dump', anonymous=True)
 
 class MyEphemeris(gps.Ephemeris):
@@ -25,12 +27,14 @@ ephs = {}
 
 antenna_pos = None
 
-pub = rospy.Publisher('/gps', Measurements)
-pub2 = rospy.Publisher('/gps_cp', Measurements)
+pub = rospy.Publisher('~gps', Measurements)
+pub2 = rospy.Publisher('~gps_cp', Measurements)
 pos_pub = rospy.Publisher('~pos', PointStamped)
-latlong_pub = rospy.Publisher('/latlong', PointStamped)
+latlong_pub = rospy.Publisher('~latlong', PointStamped)
 last_carrier_phase = {}
 def cb(msg):
+    msg.data = chr(msg.id) + msg.data
+    packet = msg
     global antenna_pos
     if msg.data.startswith('\xf5'):
         msg = msg.data[1:]
@@ -41,15 +45,15 @@ def cb(msg):
         assert len(msg[27:]) % 30 == 0
         m = Measurements(
             header=Header(
-                stamp=rospy.Time.now(),
-                frame_id='/gps',
+                stamp=packet.header.stamp,
+                frame_id=packet.header.frame_id,
             ),
             satellites=[],
         )
         m2 = Measurements(
             header=Header(
-                stamp=rospy.Time.now(),
-                frame_id='/gps',
+                stamp=packet.header.stamp,
+                frame_id=packet.header.frame_id,
             ),
             satellites=[],
         )
@@ -117,14 +121,14 @@ def cb(msg):
         print 'PVT', math.degrees(lat), math.degrees(lon), alt, err, None, week, lat_vel, lon_vel, alt_vel, dev, status
         pos_pub.publish(PointStamped(
             header=Header(
-                stamp=rospy.Time.now(), # XXX
+                stamp=packet.header.stamp,
                 frame_id='/ecef',
             ),
             point=Point(*gps.ecef_from_latlongheight(lat, lon, alt)),
         ))
         latlong_pub.publish(PointStamped(
             header=Header(
-                stamp=rospy.Time.now(), # XXX
+                stamp=packet.header.stamp,
                 frame_id='/latlong',
             ),
             point=Point(lat, lon, alt),
@@ -165,6 +169,8 @@ def cb(msg):
             print 'unknown sat_type', sat_type
     else:
         print msg.data.encode('hex'), len(msg.data)
-rospy.Subscriber('/gps_serial', String, cb)
+
+rospy.Subscriber('~ephemeral', Packet, cb)
+rospy.Subscriber('~persistent', PacketSet, lambda packet_set: map(cb, packet_set.packets))
 
 rospy.spin()

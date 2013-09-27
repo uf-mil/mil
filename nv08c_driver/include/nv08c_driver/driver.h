@@ -2,11 +2,13 @@
 #define DRIVER_H
 
 #include <boost/asio/serial_port.hpp>
+#include <boost/foreach.hpp>
 
 
 namespace nv08c_driver {
     static const uint8_t DLE = 0x10;
     static const uint8_t ETX = 0x03;
+    static const uint8_t CRC = 0xFF;
     
     class Device {
         private:
@@ -26,6 +28,22 @@ namespace nv08c_driver {
                 }
             }
             
+            void try_write(const std::vector<uint8_t> out) {
+                try {
+                    size_t written = 0;
+                    while(written < out.size()) {
+                        written += p.write_some(boost::asio::buffer(out.data() + written, out.size() - written));
+                    }
+                } catch(const std::exception &exc) {
+                    ROS_ERROR("error on write: %s; dropping", exc.what());
+                }
+                std::cout << "wrote: ";
+                BOOST_FOREACH(const uint8_t &x, out) {
+                    std::cout << std::hex << (int)x << " ";
+                }
+                std::cout << std::endl;
+            }
+            
             void open() {
                 try {
                     p.close();
@@ -43,74 +61,82 @@ namespace nv08c_driver {
                 // open is called on first read() in the _polling_ thread
             }
             
-            bool read(std::string &res) {
+            boost::optional<std::pair<uint8_t, std::vector<uint8_t> > > read_packet() {
                 if(!p.is_open()) {
                     open();
-                    return false;
+                    return boost::none;
                 }
                 
-                uint8_t firstbyte; if(!read_byte(firstbyte)) return false;
+                uint8_t firstbyte; if(!read_byte(firstbyte)) return boost::none;
                 if(firstbyte != DLE) {
                     std::cout << "firstbyte wasn't DLE" << std::endl;
-                    return false;
+                    return boost::none;
                 }
                 
-                uint8_t ID; if(!read_byte(ID)) return false;
-                if(ID == ETX) {
-                    std::cout << "ID was ETX" << std::endl;
-                    return false;
+                uint8_t id; if(!read_byte(id)) return boost::none;
+                if(id == ETX) {
+                    std::cout << "id was ETX" << std::endl;
+                    return boost::none;
                 }
-                if(ID == DLE) {
-                    std::cout << "ID was DLE" << std::endl;
-                    return false;
+                if(id == DLE) {
+                    std::cout << "id was DLE" << std::endl;
+                    return boost::none;
+                }
+                if(id == CRC) {
+                    std::cout << "id was CRC" << std::endl;
+                    return boost::none;
                 }
                 
                 std::vector<uint8_t> data;
-                data.push_back(ID);
                 while(true) {
-                    uint8_t b; if(!read_byte(b)) return false;
+                    uint8_t b; if(!read_byte(b)) return boost::none;
                     if(b == DLE) {
-                        uint8_t b2; if(!read_byte(b2)) return false;
+                        uint8_t b2; if(!read_byte(b2)) return boost::none;
                         if(b2 == DLE) {
                             data.push_back(DLE);
                         } else if(b2 == ETX) {
                             break;
                         } else {
                             std::cout << "DLE followed by " << (int)b2 << "!" << std::endl;
-                            return false;
+                            return boost::none;
                         }
                     } else {
                         data.push_back(b);
                     }
                 }
                 
-                std::cout << "finished" << std::endl;
-                
-                res = std::string(data.begin(), data.end());
-                
-                return true;
+                return make_pair(id, data);
             }
             
-            void send_packet(const std::vector<uint8_t> out) {
-                try {
-                    size_t written = 0;
-                    while(written < out.size()) {
-                        written += p.write_some(boost::asio::buffer(out.data() + written, out.size() - written));
+            void write_packet(uint8_t const id, std::vector<uint8_t> const msg) {
+                assert(id != DLE && id != ETX && id != CRC);
+                
+                std::vector<uint8_t> res;
+                res.push_back(DLE);
+                res.push_back(id);
+                BOOST_FOREACH(const uint8_t &byte, msg) {
+                    if(byte == DLE) {
+                        res.push_back(DLE);
+                        res.push_back(DLE);
+                    } else {
+                        res.push_back(byte);
                     }
-                } catch(const std::exception &exc) {
-                    ROS_ERROR("error on write: %s; dropping", exc.what());
                 }
+                res.push_back(DLE);
+                res.push_back(ETX);
+                
+                try_write(res);
             }
             
             void send_heartbeat() {
-                { uint8_t d[] = {DLE, 0x0E, DLE, ETX}; // disable all
-                  send_packet(std::vector<uint8_t>(d, d+sizeof(d)/sizeof(d[0]))); }
-                { uint8_t d[] = {DLE, 0xD7, 0x02, 0x0A, DLE, ETX}; // set navigation rate to 10hz
-                  send_packet(std::vector<uint8_t>(d, d+sizeof(d)/sizeof(d[0]))); }
-                { uint8_t d[] = {DLE, 0xF4, 1, DLE, ETX}; // output raw data as fast as possible
-                  send_packet(std::vector<uint8_t>(d, d+sizeof(d)/sizeof(d[0]))); }
-                { uint8_t d[] = {DLE, 0x27, 1, DLE, ETX}; // PVT too
-                  send_packet(std::vector<uint8_t>(d, d+sizeof(d)/sizeof(d[0]))); }
+                { uint8_t d[] = {}; // disable all
+                  write_packet(0x0E, std::vector<uint8_t>(d, d+sizeof(d)/sizeof(d[0]))); }
+                { uint8_t d[] = {0x02, 0x0A}; // set navigation rate to 10hz
+                  write_packet(0xD7, std::vector<uint8_t>(d, d+sizeof(d)/sizeof(d[0]))); }
+                { uint8_t d[] = {1}; // output raw data as fast as possible
+                  write_packet(0xF4, std::vector<uint8_t>(d, d+sizeof(d)/sizeof(d[0]))); }
+                { uint8_t d[] = {1}; // PVT too
+                  write_packet(0x27, std::vector<uint8_t>(d, d+sizeof(d)/sizeof(d[0]))); }
             }
             void abort() {
                 p.close();
