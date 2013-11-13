@@ -223,9 +223,22 @@ struct AugmentedState : public State {
       res(observe, mean, Pa);
     unsigned int realN = res.mean.rows();
     
+    //Matrix<double, State::DELTA_SIZE, N> K =
+    //  res.cross_cov.transpose().template topLeftCorner(State::DELTA_SIZE, realN) *
+    //  res.cov.inverse();
+
+    // a = res.cross_cov.transpose().template topLeftCorner(State::DELTA_SIZE, realN)
+    // b = res.cov
+    // K = a b^-1
+    // K b = a
+    // b' K' = a'
+    // K' = solve(b', a')
+    // K = solve(b', a')'
     Matrix<double, State::DELTA_SIZE, N> K =
-      res.cross_cov.transpose().template topLeftCorner(State::DELTA_SIZE, realN) *
-      res.cov.inverse();
+      res.cov.transpose().ldlt().solve(
+        res.cross_cov.transpose()
+          .template topLeftCorner(State::DELTA_SIZE, realN).transpose()
+      ).transpose();
     
     State new_state = static_cast<const State&>(*this) + K*-res.mean;
     CovType new_cov = cov - K*res.cov*K.transpose();
