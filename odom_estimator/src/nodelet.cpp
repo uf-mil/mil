@@ -444,7 +444,7 @@ class NodeImpl {
         tf_listener.lookupTransform(local_frame_id,
           msg.header.frame_id, msg.header.stamp, transform);
       } catch (tf::TransformException ex) {
-        NODELET_ERROR("%s", ex.what());
+        NODELET_ERROR("Error in got_gps: %s", ex.what());
         return;
       }
       Vector3d local_gps_pos; tf::vectorTFToEigen(transform.getOrigin(), local_gps_pos);
