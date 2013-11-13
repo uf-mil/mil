@@ -1,3 +1,6 @@
+from __future__ import division
+
+import math
 from math import sin, cos, atan, sqrt, acos, pi, atan2
 
 import numpy
@@ -10,12 +13,14 @@ import bitstream
 
 deriv = lambda f, x: (f(x+.1)-f(x-.1))/.2
 
-def ecef_from_latlongheight(latitude, longitude, height):
-    # WGS 84
-    a = 6378137.0
-    f = 1/298.257223563
+# WGS 84
+a = 6378137.0
+f = 1/298.257223563
 
-    e = sqrt(2*f - f**2)
+e = sqrt(2*f - f**2)
+b = a*(1 - f)
+
+def ecef_from_latlongheight(latitude, longitude, height):
 
     N = a/sqrt(1 - e**2*sin(latitude)**2)
     return numpy.array([
@@ -23,14 +28,38 @@ def ecef_from_latlongheight(latitude, longitude, height):
         (N + height)*cos(latitude)*sin(longitude),
         (N*(1 - e**2) + height)*sin(latitude),
     ])
+def latlongheight_from_ecef((x, y, z)):
+    # Ferrari's solution
+    zeta = (1 - e**2) * z**2 / a**2
+    p = math.sqrt(x**2 + y**2)
+    rho = (p**2 / a**2 + zeta - e**4) / 6
+    s = e**4 * zeta * p**2 / (4 * a**2)
+    t = (rho**3 + s + math.sqrt(s * (s + 2*rho**3)))**(1/3)
+    u = rho + t + rho**2 / t
+    v = math.sqrt(u**2 + e**4 * zeta)
+    w = e**2 * (u + v - zeta) / (2 * v)
+    k = 1 + e**2*(math.sqrt(u + v + w**2) + w) / (u + v)
+    k0 = (1 - e**2)**-1
+    h = e**-2*(k**-1-k0**-1)*math.sqrt(p**2 + z**2*k**2)
+    return math.atan(z*k/p), math.atan2(y, x), h
 
+for i in xrange(100):
+    import random
+    x, y, z = random.uniform(-a, a), random.uniform(-a, a), random.uniform(-a, a)
+    lat, lon, height = latlongheight_from_ecef((x, y, z))
+    assert numpy.linalg.norm(ecef_from_latlongheight(lat, lon, height) - (x, y, z)) < 1e-6
 
-def enu_from_ecef(v, pos):
-    up_ecef = transformations.unit_vector(pos)
+def enu_from_ecef_tf(ecef_pos):
+    up_ecef = transformations.unit_vector(ecef_from_latlongheight(*latlongheight_from_ecef(ecef_pos)+numpy.array([0, 0, 1]))-ecef_pos)
     east_ecef = transformations.unit_vector(numpy.cross([0, 0, 1], up_ecef))
     north_ecef = numpy.cross(up_ecef, east_ecef)
     enu_from_ecef = numpy.array([east_ecef, north_ecef, up_ecef])
-    return enu_from_ecef.dot(v)
+    return enu_from_ecef
+
+def enu_from_ecef(ecef_v, ecef_pos):
+    return enu_from_ecef_tf(ecef_pos).dot(ecef_v)
+def ecef_from_enu(enu_v, ecef_pos):
+    return enu_from_ecef_tf(ecef_pos).T.dot(enu_v)
 
 def newton(x0, f, f_prime):
     x = x0
@@ -40,10 +69,10 @@ def newton(x0, f, f_prime):
     return x
 
 
-L1_f0 = 1575.42e6
-c = 299792458
-mu = 3.986005e14
-omega_dot_e = 7.2921151467e-5
+L1_f0 = 1575.42e6 # Hz
+c = 299792458 # m/s
+mu = 3.986005e14 # m^3/s^2
+omega_dot_e = 7.2921151467e-5 # rad/s
 
 class Ephemeris(object):
     def __init__(self, subframe_1_data, subframe_2_data, subframe_3_data):
@@ -139,10 +168,15 @@ class Ephemeris(object):
         y_k = x_k_prime * sin(omega_k) + y_k_prime * cos(i_k) * cos(omega_k)
         z_k = y_k_prime * sin(i_k)
         
-        return numpy.array([x_k, y_k, z_k])
+        F = -2*mu**(1/2)/c**2
+        deltat_r = F * e * A**(1/2) * sin(E_k)
+        
+        return numpy.array([x_k, y_k, z_k]), deltat_r
     
     def predict(self, t):
-        return self._predict(t), (self._predict(t+.1)-self._predict(t-.1))/.2
+        pos, deltat_r = self._predict(t)
+        vel = (self._predict(t+.1)[0] - self._predict(t-.1)[0])/.2
+        return pos, deltat_r, vel
     
     def is_healthy(self):
         return self.health == 0

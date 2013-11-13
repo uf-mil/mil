@@ -25,23 +25,21 @@ class MyEphemeris(gps.Ephemeris):
 
 ephs = {}
 
-antenna_pos = None
+nan = 1e600/1e600
+assert math.isnan(nan)
 
 pub = rospy.Publisher('~gps', Measurements)
-pub2 = rospy.Publisher('~gps_cp', Measurements)
 pos_pub = rospy.Publisher('~pos', PointStamped)
 latlong_pub = rospy.Publisher('~latlong', PointStamped)
-last_carrier_phase = {}
 def cb(msg):
     msg.data = chr(msg.id) + msg.data
     packet = msg
-    global antenna_pos
     if msg.data.startswith('\xf5'):
         msg = msg.data[1:]
-        t_ms, week, gpsutc, glonassutc, timecorr = struct.unpack('<dHddb', msg[:27])
-        t = t_ms/1000 + gpsutc/1000
-        glonass_t = t_ms/1000 + glonassutc/1000
-        print 'RAW', t_ms/1000, week, gpsutc/1000, glonassutc/1000, timecorr/1000
+        utc_t_ms, week, gpsutc, glonassutc, timecorr = struct.unpack('<dHddb', msg[:27])
+        gps_t = utc_t_ms/1000 + gpsutc/1000
+        glonass_t = utc_t_ms/1000 + glonassutc/1000
+        print 'RAW', utc_t_ms/1000, week, gpsutc/1000, glonassutc/1000, timecorr/1000
         assert len(msg[27:]) % 30 == 0
         m = Measurements(
             header=Header(
@@ -70,52 +68,55 @@ def cb(msg):
             print '    %3i %3i %3i %3i %20.9f:%s %15.10f:%s %15.7f:%s %3i %3i' % (sig_type, sat_num, carrier_num, snr, carrier_phase, carrier_phase_good, pseudo_range, pseudorange_good, doppler_freq, doppler_freq_good, flags, res)
             
             if sig_type == 0x02:
-                if antenna_pos is not None and ('gps', sat_num) in ephs:
+                if ('gps', sat_num) in ephs and flags & 0x02 and flags & 0x10:
                     eph = ephs[('gps', sat_num)]
-                    sat_pos, sat_3vel = eph.predict(t)
-                    sat_dir = sat_pos - antenna_pos;sat_dir /= numpy.linalg.norm(sat_dir)
-                    sat_vel = -sat_3vel.dot(sat_dir)
-                    if flags & 0x02:
-                        measured_vel = doppler_freq*gps.c/gps.L1_f0
-                        m.satellites.append(Satellite(
-                            direction_enu=Vector3(*gps.enu_from_ecef(sat_dir, antenna_pos)),
-                            velocity_plus_drift=measured_vel - sat_vel,
-                            prn=sat_num,
-                            cn0=snr,
-                        ))
-                    #print ' '*7, carrier_phase*gps.c/gps.L1_f0 + numpy.linalg.norm(antenna_pos-eph.predict(t))
-                    if sat_num in last_carrier_phase and flags & 0x08:
-                        a, b = last_carrier_phase[sat_num]
-                        #print '       d/dt', -(carrier_phase-a)/(t-b)*gps.c/gps.L1_f0 - sat_vel#, measured_vel - sat_vel
-                        m2.satellites.append(Satellite(
-                            direction_enu=Vector3(*gps.enu_from_ecef(sat_dir, antenna_pos)),
-                            velocity_plus_drift=-(carrier_phase-a)/(t-b)*gps.c/gps.L1_f0 - sat_vel,
-                            prn=sat_num,
-                            cn0=snr,
-                        ))
-                last_carrier_phase[sat_num] = carrier_phase, t
-                if not (flags & 0x08):
-                    last_carrier_phase.pop(sat_num, None)
-            elif sig_type == 0x01:
-                if antenna_pos is not None and ('glonass', sat_num, carrier_num) in ephs:
+                    t_SV = gps_t - pseudo_range * 1e-3
+                    
+                    t = t_SV # initialize
+                    for i in xrange(3):
+                        deltat_r = 0
+                        dt = t - eph.t_oc
+                        while dt > 302400: dt -= 604800
+                        while dt < -302400: dt += 604800
+                        deltat_SV_L1 = eph.a_f0 + eph.a_f1 * dt + eph.a_f2 * dt**2 + deltat_r - eph.T_GD
+                        t = t_SV - deltat_SV_L1
+                        sat_pos, deltat_r, sat_vel = eph.predict(t)
+                        print i, -pseudo_range * 1e-3 - deltat_SV_L1
+                        print i, sat_pos
+                    
+                    m.satellites.append(Satellite(
+                        prn=sat_num,
+                        cn0=snr,
+                        position=Point(*sat_pos),
+                        velocity=Vector3(*sat_vel),
+                        time=-pseudo_range * 1e-3 - deltat_SV_L1,
+                        carrier_distance=carrier_phase*gps.c/gps.L1_f0 if flags & 0x08 else nan,
+                        doppler_velocity=doppler_freq*gps.c/gps.L1_f0 if flags & 0x02 else nan,
+                    ))
+            elif sig_type == 0x01 and False:
+                if ('glonass', sat_num, carrier_num) in ephs and flags & 0x02 and flags & 0x10:
                     eph = ephs[('glonass', sat_num, carrier_num)]
+                    sat_pos, sat_vel = eph.predict(glonass_t - pseudo_range*1e-3)
+                    m.satellites.append(Satellite(
+                        prn=1000000 + 1000*sat_num + carrier_num,
+                        cn0=snr,
+                        position=Point(*sat_pos),
+                        velocity=Vector3(*sat_vel),
+                        time=-pseudo_range*1e-3 + eph.tau_n,
+                        carrier_distance=carrier_phase*gps.c/glonass.L1_f0 if flags & 0x08 else nan,
+                        doppler_velocity=doppler_freq*gps.c/glonass.L1_f0 if flags & 0x02 else nan,
+                    ))
                     if flags & 0x02:
                         measured_vel = doppler_freq*gps.c/glonass.L1_f0
                         #print ' '*7, sat_vel, measured_vel
-                        sat_pos, sat_3vel = eph.predict(glonass_t)
-                        sat_dir = sat_pos - antenna_pos;sat_dir /= numpy.linalg.norm(sat_dir)
-                        sat_vel = -sat_3vel.dot(sat_dir)
                         '''m.satellites.append(Satellite(
                             direction_enu=Vector3(*gps.enu_from_ecef(sat_dir, antenna_pos)),
                             velocity_plus_drift=measured_vel - sat_vel,
                             prn=1000000 + 1000*sat_num + carrier_num,
                             cn0=-snr,
                         ))'''
-                        #print carrier_num, measured_vel - sat_vel
-                        #print 'added', 1000000 + 1000*sat_num + carrier_num
-        #print
+        print
         pub.publish(m)
-        pub2.publish(m2)
     elif msg.data.startswith('\x88'):
         lat, lon, alt, err, t, week, lat_vel, lon_vel, alt_vel, dev, status = struct.unpack('<dddf10shdddfB', msg.data[1:])
         print 'PVT', math.degrees(lat), math.degrees(lon), alt, err, None, week, lat_vel, lon_vel, alt_vel, dev, status
@@ -155,13 +156,13 @@ def cb(msg):
             Crs, Dn, M0, Cuc, E, Cus, SqrtA, Toe, Cic, Omega0, Cis, I0, Crc, W, OmegaR, Ir, Tgd, Toc, Af2, Af1, Af0, URA, IODE, IODC, CodeL2, L2_Pdata_flag, WeekN = struct.unpack('<ffdfdfddfdfdfdddfdfffHHHHHH', msg.data[3:])
             #print 'EPH', sat_num, Crs, Dn, M0, Cuc, E, Cus, SqrtA, Toe, Cic, Omega0, Cis, I0, Crc, W, OmegaR, Ir, Tgd, Toc, Af2, Af1, Af0, URA, IODE, IODC, CodeL2, L2_Pdata_flag, WeekN
             eph = MyEphemeris()
-            eph.C_rs, eph.delta_n, eph.M_0, eph.C_uc, eph.e, eph.C_us, eph.sqrt_A, eph.t_oe, eph.C_ic, eph.omega_0, eph.C_is, eph.i_0, eph.C_rc, eph.omega, eph.omega_dot, eph.IDOT, eph.t_gd, eph.t_oc, eph.a_f2, eph.a_f1, eph.a_f0, eph.URA, eph.IODE, eph.IODC = Crs, Dn*1000, M0, Cuc, E, Cus, SqrtA, Toe/1000, Cic, Omega0, Cis, I0, Crc, W, OmegaR*1000, Ir*1000, Tgd/1000, Toc/1000, Af2*1000, Af1, Af0/1000, URA, IODE, IODC
+            eph.C_rs, eph.delta_n, eph.M_0, eph.C_uc, eph.e, eph.C_us, eph.sqrt_A, eph.t_oe, eph.C_ic, eph.omega_0, eph.C_is, eph.i_0, eph.C_rc, eph.omega, eph.omega_dot, eph.IDOT, eph.T_GD, eph.t_oc, eph.a_f2, eph.a_f1, eph.a_f0, eph.URA, eph.IODE, eph.IODC = Crs, Dn*1000, M0, Cuc, E, Cus, SqrtA, Toe/1000, Cic, Omega0, Cis, I0, Crc, W, OmegaR*1000, Ir*1000, Tgd/1000, Toc/1000, Af2*1000, Af1, Af0/1000, URA, IODE, IODC
             print sat_num, eph
             #print eph.predict(0)
             ephs[('gps', sat_num)] = eph
         elif sat_type == 2: # GLONASS
             carrier, X, Y, Z, Vx, Vy, Vz, Ax, Ay, Az, t_b, gamma_n, tau_n, E_n = struct.unpack('<bddddddddddffH', msg.data[3:])
-            eph = glonass.Ephemeris(t_b/1e3, X, Y, Z, Vx*1e3, Vy*1e3, Vz*1e3, Ax*1e6, Ay*1e6, Az*1e6, gamma_n, tau_n*1e3)
+            eph = glonass.Ephemeris(t_b/1e3, X, Y, Z, Vx*1e3, Vy*1e3, Vz*1e3, Ax*1e6, Ay*1e6, Az*1e6, gamma_n, tau_n*1e-3)
             #print eph.predict(0)
             ephs[('glonass', sat_num, carrier)] = eph
             print 'GPH', eph
