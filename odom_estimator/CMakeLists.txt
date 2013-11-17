@@ -61,6 +61,7 @@ include_directories(${EIGEN_INCLUDE_DIRS} include ${Boost_INCLUDE_DIR} ${catkin_
 add_library(odom_estimator_nodelet src/nodelet.cpp)
 target_link_libraries(odom_estimator_nodelet ${catkin_LIBRARIES})
 add_dependencies(odom_estimator_nodelet ${catkin_EXPORTED_TARGETS})
+set_target_properties(odom_estimator_nodelet PROPERTIES COMPILE_FLAGS -std=c++0x)
 #target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)

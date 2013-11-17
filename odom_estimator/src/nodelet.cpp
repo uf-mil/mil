@@ -20,139 +20,14 @@
 
 #include "odom_estimator/unscented_transform.h"
 #include "odom_estimator/util.h"
+#include "odom_estimator/state.h"
 
 using namespace Eigen;
 
 namespace odom_estimator {
 
-struct State {
-  ros::Time t;
-  
-  static const unsigned int POS = 0; Vector3d pos;
-  static const unsigned int ORIENT = POS + 3; Quaterniond orient;
-  static const unsigned int VEL = ORIENT + 3; Vector3d vel;
-  static const unsigned int GYRO_BIAS = VEL + 3; Vector3d gyro_bias;
-  static const unsigned int LOCAL_G = GYRO_BIAS + 3; double local_g;
-  static const unsigned int GROUND_AIR_PRESSURE = LOCAL_G + 1; double ground_air_pressure;
-  static const unsigned int DELTA_SIZE = GROUND_AIR_PRESSURE + 1;
-  typedef Matrix<double, DELTA_SIZE, 1> DeltaType;
-  
-  State(ros::Time t, Vector3d pos, Quaterniond orient,
-      Vector3d vel, Vector3d gyro_bias,
-      double local_g, double ground_air_pressure) :
-    t(t), pos(pos), orient(orient.normalized()), vel(vel),
-    gyro_bias(gyro_bias), local_g(local_g),
-    ground_air_pressure(ground_air_pressure) {
-      assert_none_nan(pos); assert_none_nan(orient.coeffs());
-      assert_none_nan(vel); assert_none_nan(gyro_bias);
-      assert(std::isfinite(local_g)); assert(std::isfinite(ground_air_pressure));
-  }
-  
-  static const int PREDICT_EXTRA_NOISE_LENGTH = 1;
-  Matrix<double, PREDICT_EXTRA_NOISE_LENGTH, PREDICT_EXTRA_NOISE_LENGTH> get_extra_noise_cov() const {
-    return scalar_matrix(5);
-  }
-  State predict(ros::Time t, Vector3d gyro, Vector3d accel,
-      Matrix<double, PREDICT_EXTRA_NOISE_LENGTH, 1> noise,
-      bool rightSideAccelFrame=false) const {
-    double dt = (t - this->t).toSec();
-    
-    Vector3d angvel_body = gyro - gyro_bias;
-    Quaterniond oldbody_from_newbody = quat_from_rotvec(dt * angvel_body);
-    
-    Quaterniond world_from_newbody = orient * oldbody_from_newbody;
-    
-    Vector3d accelnograv_accelbody = accel;
-    Quaterniond world_from_accelbody = rightSideAccelFrame ?
-      world_from_newbody : orient;
-    Vector3d accelnograv_world = world_from_accelbody._transformVector(
-      accelnograv_accelbody);
-    Vector3d accel_world = accelnograv_world + Vector3d(0, 0, -local_g);
-    
-    return State(
-      t,
-      pos + dt * vel + dt*dt/2 * accel_world,
-      world_from_newbody,
-      vel + dt * accel_world,
-      gyro_bias,
-      local_g,
-      ground_air_pressure + sqrt(dt) * noise(0));
-  }
-  
-  DeltaType operator-(const State &other) const {
-    return (DeltaType() <<
-      pos - other.pos,
-      rotvec_from_quat(orient * other.orient.conjugate()),
-      vel - other.vel,
-      gyro_bias - other.gyro_bias,
-      local_g - other.local_g,
-      ground_air_pressure - other.ground_air_pressure).finished();
-  }
-  State operator+(const DeltaType &other) const {
-    return State(
-      t,
-      pos + other.segment<3>(POS),
-      quat_from_rotvec(other.segment<3>(ORIENT)) * orient,
-      vel + other.segment<3>(VEL),
-      gyro_bias + other.segment<3>(GYRO_BIAS),
-      local_g + other(LOCAL_G),
-      ground_air_pressure + other(GROUND_AIR_PRESSURE));
-  }
-};
-
-class StateWithImuDataAndProcessNoise : public State {
-private:
-  Vector3d angular_velocity, linear_acceleration;
-  Matrix<double, PREDICT_EXTRA_NOISE_LENGTH, 1> process_noise;
-public:
-  static const unsigned int SIZE = State::DELTA_SIZE + 6 + PREDICT_EXTRA_NOISE_LENGTH;
-  StateWithImuDataAndProcessNoise(const State &state,
-      Vector3d angular_velocity, Vector3d linear_acceleration,
-      Matrix<double, PREDICT_EXTRA_NOISE_LENGTH, 1> noise) :
-    State(state), angular_velocity(angular_velocity),
-    linear_acceleration(linear_acceleration), process_noise(process_noise) { }
-  Matrix<double, SIZE, 1> operator-(const StateWithImuDataAndProcessNoise &other) const {
-    return (Matrix<double, SIZE, 1>() <<
-      static_cast<const State&>(*this) - static_cast<const State&>(other),
-      angular_velocity - other.angular_velocity,
-      linear_acceleration - other.linear_acceleration,
-      process_noise - other.process_noise).finished();
-  }
-  StateWithImuDataAndProcessNoise operator+(const Matrix<double, SIZE, 1> &other) const {
-    return StateWithImuDataAndProcessNoise(
-      static_cast<const State&>(*this) + other.segment<State::DELTA_SIZE>(0),
-      angular_velocity + other.segment<3>(State::DELTA_SIZE),
-      linear_acceleration + other.segment<3>(State::DELTA_SIZE + 3),
-      process_noise + other.segment<PREDICT_EXTRA_NOISE_LENGTH>(State::DELTA_SIZE + 6));
-  }
-  State predict(ros::Time t) const {
-    return static_cast<const State&>(*this).predict(t,
-      angular_velocity, linear_acceleration, process_noise);
-  }
-};
-
-template<int NN>
-class StateWithMeasurementNoise : public State {
-public:
-  Matrix<double, NN, 1> measurement_noise;
-  static const unsigned int DELTA_SIZE = NN != Dynamic ? State::DELTA_SIZE + NN : Dynamic;
-  typedef Matrix<double, DELTA_SIZE, 1> DeltaType;
-  StateWithMeasurementNoise(const State &state, Matrix<double, NN, 1> measurement_noise) :
-    State(state), measurement_noise(measurement_noise) { }
-  DeltaType operator-(const StateWithMeasurementNoise<NN> &other) {
-    return (DeltaType() <<
-        static_cast<const State&>(*this) - static_cast<const State&>(other),
-        measurement_noise - other.measurement_noise).finished();
-  }
-  StateWithMeasurementNoise<NN> operator+(DeltaType &other) const {
-    return StateWithMeasurementNoise<NN>(
-      static_cast<const State&>(*this) + other.template segment<State::DELTA_SIZE>(0),
-      measurement_noise + other.tail(other.rows() - State::DELTA_SIZE));
-  }
-};
-
 struct AugmentedState : public State {
-  typedef Matrix<double, State::DELTA_SIZE, State::DELTA_SIZE> CovType;
+  typedef Matrix<double, State::RowsAtCompileTime, State::RowsAtCompileTime> CovType;
   CovType cov;
   AugmentedState(const State &state, const CovType &cov) :
     State(state), cov(cov/2 + cov.transpose()/2) {
@@ -160,29 +35,35 @@ struct AugmentedState : public State {
   }
   
   AugmentedState predict(const sensor_msgs::Imu &imu) const {
-    const unsigned int NOISE_LENGTH = 3*2+PREDICT_EXTRA_NOISE_LENGTH;
+    typedef ManifoldPair<Vector3d, Vector3d> IMUData;
+    typedef ManifoldPair<IMUData,
+      Matrix<double, PREDICT_EXTRA_NOISE_LENGTH, 1> > IMUDataAndProcessNoise;
+    typedef ManifoldPair<State, IMUDataAndProcessNoise>
+      StateWithImuDataAndProcessNoise;
     
     StateWithImuDataAndProcessNoise mean = StateWithImuDataAndProcessNoise(
       static_cast<const State&>(*this),
-      xyz2vec(imu.angular_velocity),
-      xyz2vec(imu.linear_acceleration),
-      Matrix<double, PREDICT_EXTRA_NOISE_LENGTH, 1>::Zero());
+      IMUDataAndProcessNoise(
+        IMUData(
+          xyz2vec(imu.angular_velocity),
+          xyz2vec(imu.linear_acceleration)),
+        Matrix<double, PREDICT_EXTRA_NOISE_LENGTH, 1>::Zero()));
+    StateWithImuDataAndProcessNoise::CovType Pa =
+      StateWithImuDataAndProcessNoise::build_cov(
+        cov,
+        IMUDataAndProcessNoise::build_cov(
+          IMUData::build_cov(
+            Map<const Matrix3d>(imu.angular_velocity_covariance.data()),
+            Map<const Matrix3d>(imu.linear_acceleration_covariance.data())),
+          get_extra_noise_cov()));
     
-    typedef Matrix<double, State::DELTA_SIZE + NOISE_LENGTH,
-      State::DELTA_SIZE + NOISE_LENGTH> AugmentedMatrixType;
-    AugmentedMatrixType Pa = AugmentedMatrixType::Zero();
-    Pa.block<State::DELTA_SIZE, State::DELTA_SIZE>(0, 0) = cov;
-    Pa.block<3, 3>(State::DELTA_SIZE, State::DELTA_SIZE) =
-      Map<const Matrix3d>(imu.angular_velocity_covariance.data());
-    Pa.block<3, 3>(State::DELTA_SIZE + 3, State::DELTA_SIZE + 3) =
-      Map<const Matrix3d>(imu.linear_acceleration_covariance.data());
-    Pa.block<PREDICT_EXTRA_NOISE_LENGTH, PREDICT_EXTRA_NOISE_LENGTH>(
-      State::DELTA_SIZE + 6, State::DELTA_SIZE + 6) = get_extra_noise_cov();
-    
-    UnscentedTransform<State, State::DELTA_SIZE,
-      StateWithImuDataAndProcessNoise, State::DELTA_SIZE + NOISE_LENGTH> res(
-        boost::bind(&StateWithImuDataAndProcessNoise::predict, _1, imu.header.stamp),
-        mean, Pa);
+    UnscentedTransform<State, State::RowsAtCompileTime,
+      StateWithImuDataAndProcessNoise, StateWithImuDataAndProcessNoise::RowsAtCompileTime> res(
+        [&imu](StateWithImuDataAndProcessNoise const &x) {
+          return x.first.predict(imu.header.stamp,
+            x.second.first.first, x.second.first.second,
+            x.second.second);
+        }, mean, Pa);
     
     return AugmentedState(res.mean, res.cov);
   }
@@ -196,34 +77,34 @@ struct AugmentedState : public State {
     
     StateWithMeasurementNoise<NN> mean = StateWithMeasurementNoise<NN>(
       static_cast<const State&>(*this), Matrix<double, NN, 1>::Zero(realNN));
-    typedef Matrix<double, NN != Dynamic ? State::DELTA_SIZE + NN : Dynamic,
-                           NN != Dynamic ? State::DELTA_SIZE + NN : Dynamic>
+    typedef Matrix<double, NN != Dynamic ? State::RowsAtCompileTime + NN : Dynamic,
+                           NN != Dynamic ? State::RowsAtCompileTime + NN : Dynamic>
       AugmentedMatrixType;
     AugmentedMatrixType Pa = AugmentedMatrixType::Zero(
-      State::DELTA_SIZE + realNN, State::DELTA_SIZE + realNN);
-    Pa.template block<State::DELTA_SIZE, State::DELTA_SIZE>(0, 0) = cov;
+      State::RowsAtCompileTime + realNN, State::RowsAtCompileTime + realNN);
+    Pa.template block<State::RowsAtCompileTime, State::RowsAtCompileTime>(0, 0) = cov;
     Pa.template bottomRightCorner(realNN, realNN) = noise_cov;
     
     UnscentedTransform<Matrix<double, N, 1>, N,
-      StateWithMeasurementNoise<NN>, NN != Dynamic ? State::DELTA_SIZE + NN : Dynamic>
+      StateWithMeasurementNoise<NN>, NN != Dynamic ? State::RowsAtCompileTime + NN : Dynamic>
       res(observe, mean, Pa);
     unsigned int realN = res.mean.rows();
     
-    //Matrix<double, State::DELTA_SIZE, N> K =
-    //  res.cross_cov.transpose().template topLeftCorner(State::DELTA_SIZE, realN) *
+    //Matrix<double, State::RowsAtCompileTime, N> K =
+    //  res.cross_cov.transpose().template topLeftCorner(State::RowsAtCompileTime, realN) *
     //  res.cov.inverse();
 
-    // a = res.cross_cov.transpose().template topLeftCorner(State::DELTA_SIZE, realN)
+    // a = res.cross_cov.transpose().template topLeftCorner(State::RowsAtCompileTime, realN)
     // b = res.cov
     // K = a b^-1
     // K b = a
     // b' K' = a'
     // K' = solve(b', a')
     // K = solve(b', a')'
-    Matrix<double, State::DELTA_SIZE, N> K =
+    Matrix<double, State::RowsAtCompileTime, N> K =
       res.cov.transpose().ldlt().solve(
         res.cross_cov.transpose()
-          .template topLeftCorner(State::DELTA_SIZE, realN).transpose()
+          .template topLeftCorner(State::RowsAtCompileTime, realN).transpose()
       ).transpose();
     
     State new_state = static_cast<const State&>(*this) + K*-res.mean;
@@ -240,7 +121,7 @@ class NodeImpl {
     ros::NodeHandle &nh;
     ros::NodeHandle &private_nh;
     Vector3d mag_world;
-    static const double air_density = 1.225; // kg/m^3
+    constexpr static const double air_density = 1.225; // kg/m^3
   public:
     NodeImpl(boost::function<const std::string&()> getName, ros::NodeHandle *nh_, ros::NodeHandle *private_nh_) :
         getName(getName),
@@ -355,10 +236,12 @@ class NodeImpl {
     typedef Matrix<double, 1, 1> Matrix1d;
     typedef Matrix<double, 1, 1> Vector1d;
     
-    Vector1d mag_observer(const sensor_msgs::MagneticField &msg, const StateWithMeasurementNoise<3> &state) {
+    Vector1d mag_observer(const sensor_msgs::MagneticField &msg, const StateWithMeasurementNoise<3> &tmp) {
+      State const &state = tmp.first;
+      Matrix<double, 3, 1> measurement_noise = tmp.second;
       //Vector3d predicted = state.orient.conjugate()._transformVector(mag_world);
       double predicted_angle = atan2(mag_world(1), mag_world(0));
-      Vector3d measured_world = state.orient._transformVector(xyz2vec(msg.magnetic_field) + state.measurement_noise); // noise shouldn't be here
+      Vector3d measured_world = state.orient._transformVector(xyz2vec(msg.magnetic_field) + measurement_noise); // noise shouldn't be here
       double measured_angle = atan2(measured_world(1), measured_world(0));
       double error_angle = measured_angle - predicted_angle;
       double pi = boost::math::constants::pi<double>();
@@ -387,10 +270,12 @@ class NodeImpl {
     
     
     Vector1d press_observer(const sensor_msgs::FluidPressure &msg,
-                               const StateWithMeasurementNoise<1> &state) {
+                               const StateWithMeasurementNoise<1> &tmp) {
+      State const &state = tmp.first;
+      Matrix<double, 1, 1> measurement_noise = tmp.second;
       double predicted = state.ground_air_pressure +
           air_density*Vector3d(0, 0, -state.local_g).dot(state.pos) +
-          state.measurement_noise(0);
+          measurement_noise(0);
       return scalar_matrix(msg.fluid_pressure - predicted);
     }
     void got_press(const sensor_msgs::FluidPressureConstPtr &msgp) {
@@ -407,14 +292,16 @@ class NodeImpl {
     
     
     VectorXd gps_observer(const rawgps_common::Measurements &msg,
-        const Vector3d &gps_pos, const StateWithMeasurementNoise<Dynamic> &state) {
+        const Vector3d &gps_pos, const StateWithMeasurementNoise<Dynamic> &tmp) {
+      State const &state = tmp.first;
+      Matrix<double, Dynamic, 1> measurement_noise = tmp.second;
       VectorXd res(msg.satellites.size());
       Vector3d gps_vel = state.vel + state.orient._transformVector(
         (*last_gyro - state.gyro_bias).cross(gps_pos));
       for(unsigned int i = 0; i < msg.satellites.size(); i++) {
         const rawgps_common::Satellite &sat = msg.satellites[i];
         double predicted = gps_vel.dot(xyz2vec(sat.direction_enu)) +
-          state.measurement_noise(i) + state.measurement_noise(state.measurement_noise.size()-1);
+          measurement_noise(i) + measurement_noise(measurement_noise.size()-1);
         res[i] = sat.velocity_plus_drift - predicted;
       }
       return res;
@@ -460,8 +347,10 @@ class NodeImpl {
       stddev.cwiseProduct(stddev).asDiagonal());
     }
     
-    Vector1d depth_observer(double msg, const StateWithMeasurementNoise<1> &state) {
-      return scalar_matrix(msg - (-state.pos(2) + state.measurement_noise(0)));
+    Vector1d depth_observer(double msg, const StateWithMeasurementNoise<1> &tmp) {
+      State const &state = tmp.first;
+      Matrix<double, 1, 1> measurement_noise = tmp.second;
+      return scalar_matrix(msg - (-state.pos(2) + measurement_noise(0)));
     }
     void fake_depth() {
       state = state->update<1, 1>(boost::bind(&NodeImpl::depth_observer, this, 0., _1), scalar_matrix(pow(0.3, 2)));
