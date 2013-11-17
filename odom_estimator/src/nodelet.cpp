@@ -25,20 +25,6 @@ using namespace Eigen;
 
 namespace odom_estimator {
 
-inline Vector3d xyz2vec(const geometry_msgs::Vector3 &msg) {
-  Vector3d res; tf::vectorMsgToEigen(msg, res);
-  return res;
-}
-
-template<typename Derived>
-void assert_none_nan(const MatrixBase<Derived> &m) {
-  for(unsigned int i = 0; i < m.rows(); i++) {
-    for(unsigned int j = 0; j < m.cols(); j++) {
-      assert(std::isfinite(m(i, j)));
-    }
-  }
-}
-
 struct State {
   ros::Time t;
   

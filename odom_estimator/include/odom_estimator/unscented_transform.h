@@ -1,8 +1,14 @@
+#ifndef _XKKEVSNRDUHFBKBB_
+#define _XKKEVSNRDUHFBKBB_
+
 #include <Eigen/Dense>
 #include <boost/function.hpp>
 #include <boost/optional.hpp>
 
 #include "util.h"
+
+namespace odom_estimator {
+
 
 using namespace Eigen;
 
@@ -67,3 +73,8 @@ struct UnscentedTransform {
     this->cross_cov = out_cross_cov;
   }
 };
+
+
+}
+
+#endif

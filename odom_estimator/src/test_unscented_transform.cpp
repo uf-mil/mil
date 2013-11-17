@@ -3,6 +3,7 @@
 #include "odom_estimator/unscented_transform.h"
 
 using namespace Eigen;
+using namespace odom_estimator;
 
 Vector4d func(Vector3d p) {
   return Vector4d(exp(p(1)), p(0), -p(2), p(1) + p(2)) + Vector4d(1, 2, 4, 3);
