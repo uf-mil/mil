@@ -7,6 +7,8 @@
 
 namespace odom_estimator {
 
+
+
 using namespace Eigen;
 
 struct State {
@@ -36,37 +38,6 @@ struct State {
     return RowsAtCompileTime;
   }
   
-  static const int PREDICT_EXTRA_NOISE_LENGTH = 1;
-  Matrix<double, PREDICT_EXTRA_NOISE_LENGTH, PREDICT_EXTRA_NOISE_LENGTH> get_extra_noise_cov() const {
-    return scalar_matrix(5);
-  }
-  State predict(ros::Time t, Vector3d gyro, Vector3d accel,
-      Matrix<double, PREDICT_EXTRA_NOISE_LENGTH, 1> noise,
-      bool rightSideAccelFrame=false) const {
-    double dt = (t - this->t).toSec();
-    
-    Vector3d angvel_body = gyro - gyro_bias;
-    Quaterniond oldbody_from_newbody = quat_from_rotvec(dt * angvel_body);
-    
-    Quaterniond world_from_newbody = orient * oldbody_from_newbody;
-    
-    Vector3d accelnograv_accelbody = accel;
-    Quaterniond world_from_accelbody = rightSideAccelFrame ?
-      world_from_newbody : orient;
-    Vector3d accelnograv_world = world_from_accelbody._transformVector(
-      accelnograv_accelbody);
-    Vector3d accel_world = accelnograv_world + Vector3d(0, 0, -local_g);
-    
-    return State(
-      t,
-      pos + dt * vel + dt*dt/2 * accel_world,
-      world_from_newbody,
-      vel + dt * accel_world,
-      gyro_bias,
-      local_g,
-      ground_air_pressure + sqrt(dt) * noise(0));
-  }
-  
   DeltaType operator-(const State &other) const {
     return (DeltaType() <<
       pos - other.pos,
@@ -88,8 +59,61 @@ struct State {
   }
 };
 
-template<int NN>
-using StateWithMeasurementNoise = ManifoldPair<State, Matrix<double, NN, 1> >;
+class StateUpdater {
+  sensor_msgs::Imu const imu;
+  bool const rightSideAccelFrame;
+  typedef ManifoldPair<Vector3d, Vector3d> IMUData;
+  typedef Matrix<double, 1, 1> NoiseType;
+public:
+  StateUpdater(sensor_msgs::Imu const &imu, bool rightSideAccelFrame=false) :
+    imu(imu), rightSideAccelFrame(rightSideAccelFrame) {
+  }
+  
+  typedef ManifoldPair<IMUData, NoiseType> ExtraType;
+  ExtraType get_extra_mean() const {
+    return ExtraType(
+        IMUData(
+          xyz2vec(imu.angular_velocity),
+          xyz2vec(imu.linear_acceleration)),
+        NoiseType::Zero());
+  }
+  ExtraType::CovType get_extra_cov() const {
+    return ExtraType::build_cov(
+      IMUData::build_cov(
+        Map<const Matrix3d>(imu.angular_velocity_covariance.data()),
+        Map<const Matrix3d>(imu.linear_acceleration_covariance.data())),
+      scalar_matrix(5));
+  }
+  
+  State predict(State const &state, ExtraType const &extra) const {
+    IMUData const &imudata = extra.first;
+    NoiseType const &noise = extra.second;
+    
+    double dt = (imu.header.stamp - state.t).toSec();
+    
+    Vector3d angvel_body = imudata.first - state.gyro_bias;
+    Quaterniond oldbody_from_newbody = quat_from_rotvec(dt * angvel_body);
+    
+    Quaterniond world_from_newbody = state.orient * oldbody_from_newbody;
+    
+    Vector3d accelnograv_accelbody = imudata.second;
+    Quaterniond world_from_accelbody = rightSideAccelFrame ?
+      world_from_newbody : state.orient;
+    Vector3d accelnograv_world = world_from_accelbody._transformVector(
+      accelnograv_accelbody);
+    Vector3d accel_world = accelnograv_world + Vector3d(0, 0, -state.local_g);
+    
+    return State(
+      imu.header.stamp,
+      state.pos + dt * state.vel + dt*dt/2 * accel_world,
+      world_from_newbody,
+      state.vel + dt * accel_world,
+      state.gyro_bias,
+      state.local_g,
+      state.ground_air_pressure + sqrt(dt) * noise(0));
+  }
+};
+
 
 
 }

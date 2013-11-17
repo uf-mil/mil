@@ -21,98 +21,13 @@
 #include "odom_estimator/unscented_transform.h"
 #include "odom_estimator/util.h"
 #include "odom_estimator/state.h"
+#include "odom_estimator/kalman.h"
 
 using namespace Eigen;
 
 namespace odom_estimator {
 
-struct AugmentedState : public State {
-  typedef Matrix<double, State::RowsAtCompileTime, State::RowsAtCompileTime> CovType;
-  CovType cov;
-  AugmentedState(const State &state, const CovType &cov) :
-    State(state), cov(cov/2 + cov.transpose()/2) {
-    assert_none_nan(cov);
-  }
-  
-  AugmentedState predict(const sensor_msgs::Imu &imu) const {
-    typedef ManifoldPair<Vector3d, Vector3d> IMUData;
-    typedef ManifoldPair<IMUData,
-      Matrix<double, PREDICT_EXTRA_NOISE_LENGTH, 1> > IMUDataAndProcessNoise;
-    typedef ManifoldPair<State, IMUDataAndProcessNoise>
-      StateWithImuDataAndProcessNoise;
-    
-    StateWithImuDataAndProcessNoise mean = StateWithImuDataAndProcessNoise(
-      static_cast<const State&>(*this),
-      IMUDataAndProcessNoise(
-        IMUData(
-          xyz2vec(imu.angular_velocity),
-          xyz2vec(imu.linear_acceleration)),
-        Matrix<double, PREDICT_EXTRA_NOISE_LENGTH, 1>::Zero()));
-    StateWithImuDataAndProcessNoise::CovType Pa =
-      StateWithImuDataAndProcessNoise::build_cov(
-        cov,
-        IMUDataAndProcessNoise::build_cov(
-          IMUData::build_cov(
-            Map<const Matrix3d>(imu.angular_velocity_covariance.data()),
-            Map<const Matrix3d>(imu.linear_acceleration_covariance.data())),
-          get_extra_noise_cov()));
-    
-    UnscentedTransform<State, State::RowsAtCompileTime,
-      StateWithImuDataAndProcessNoise, StateWithImuDataAndProcessNoise::RowsAtCompileTime> res(
-        [&imu](StateWithImuDataAndProcessNoise const &x) {
-          return x.first.predict(imu.header.stamp,
-            x.second.first.first, x.second.first.second,
-            x.second.second);
-        }, mean, Pa);
-    
-    return AugmentedState(res.mean, res.cov);
-  }
-  
-  template <int N, int NN>
-  AugmentedState update(
-      const boost::function<Matrix<double, N, 1> (StateWithMeasurementNoise<NN>)> &observe,
-      const Matrix<double, NN, NN> &noise_cov) const {
-    unsigned int realNN = NN != Dynamic ? NN : noise_cov.rows();
-    assert(noise_cov.rows() == noise_cov.cols());
-    
-    StateWithMeasurementNoise<NN> mean = StateWithMeasurementNoise<NN>(
-      static_cast<const State&>(*this), Matrix<double, NN, 1>::Zero(realNN));
-    typedef Matrix<double, NN != Dynamic ? State::RowsAtCompileTime + NN : Dynamic,
-                           NN != Dynamic ? State::RowsAtCompileTime + NN : Dynamic>
-      AugmentedMatrixType;
-    AugmentedMatrixType Pa = AugmentedMatrixType::Zero(
-      State::RowsAtCompileTime + realNN, State::RowsAtCompileTime + realNN);
-    Pa.template block<State::RowsAtCompileTime, State::RowsAtCompileTime>(0, 0) = cov;
-    Pa.template bottomRightCorner(realNN, realNN) = noise_cov;
-    
-    UnscentedTransform<Matrix<double, N, 1>, N,
-      StateWithMeasurementNoise<NN>, NN != Dynamic ? State::RowsAtCompileTime + NN : Dynamic>
-      res(observe, mean, Pa);
-    unsigned int realN = res.mean.rows();
-    
-    //Matrix<double, State::RowsAtCompileTime, N> K =
-    //  res.cross_cov.transpose().template topLeftCorner(State::RowsAtCompileTime, realN) *
-    //  res.cov.inverse();
 
-    // a = res.cross_cov.transpose().template topLeftCorner(State::RowsAtCompileTime, realN)
-    // b = res.cov
-    // K = a b^-1
-    // K b = a
-    // b' K' = a'
-    // K' = solve(b', a')
-    // K = solve(b', a')'
-    Matrix<double, State::RowsAtCompileTime, N> K =
-      res.cov.transpose().ldlt().solve(
-        res.cross_cov.transpose()
-          .template topLeftCorner(State::RowsAtCompileTime, realN).transpose()
-      ).transpose();
-    
-    State new_state = static_cast<const State&>(*this) + K*-res.mean;
-    CovType new_cov = cov - K*res.cov*K.transpose();
-    
-    return AugmentedState(new_state, new_cov);
-  }
-};
 
 
 class NodeImpl {
@@ -170,16 +85,17 @@ class NodeImpl {
       if(!state) {
         if(last_mag && last_good_gps && *last_good_gps > ros::Time::now() - ros::Duration(1.)) {
           State::DeltaType stdev = (State::DeltaType() <<
-            0,0,0, .05,.05,.05, .1,.1,.1, .05,.05,.05, 0.1, 1e3).finished();
-          AugmentedState::CovType tmp = stdev.asDiagonal();
+            0,0,0, .05,.05,.05, 1,1,1, 1e-3,1e-3,1e-3, 0.1, 1e3).finished();
+          State::CovType tmp = stdev.asDiagonal();
           Vector3d accel = xyz2vec(msg.linear_acceleration);
           Quaterniond orient = triad(Vector3d(0, 0, -1), mag_world, -accel, *last_mag);
-          state = AugmentedState(
+          state = AugmentedState<State>(
             State(msg.header.stamp, start_pos, orient,
               Vector3d::Zero(), Vector3d::Zero(), 9.80665, 101325),
             tmp*tmp);
         }
-        return;
+      } else {
+        state = state->predict<StateUpdater>(StateUpdater(msg));
       }
       
       //std::cout << "precov " << state->cov << std::endl << std::endl;
@@ -193,10 +109,6 @@ class NodeImpl {
       std::cout << "grav: " << state->local_g << "  " << sqrt(state->cov(State::LOCAL_G, State::LOCAL_G)) << std::endl;
       std::cout << "ground air pressure: " << state->ground_air_pressure << "  " << sqrt(state->cov(State::GROUND_AIR_PRESSURE, State::GROUND_AIR_PRESSURE)) << std::endl;
       std::cout << std::endl;
-      
-      state = state->predict(msg);
-      
-      fake_depth();
       
 
       if(state->gyro_bias.norm() > .5) {
@@ -368,7 +280,7 @@ class NodeImpl {
     Vector3d start_pos;
     boost::optional<Vector3d> last_mag;
     boost::optional<ros::Time> last_good_gps;
-    boost::optional<AugmentedState> state;
+    boost::optional<AugmentedState<State> > state;
     boost::optional<Vector3d> last_gyro;
     std::string local_frame_id;
 };
