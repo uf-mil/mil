@@ -32,46 +32,69 @@ struct AugmentedState : public State {
     return AugmentedState(res.mean, res.cov);
   }
   
+  template<typename StateErrorObserver>
+  AugmentedState update(StateErrorObserver const &stateerrorobserver) const {
+    typedef ManifoldPair<State, typename StateErrorObserver::ExtraType> StateWithExtra;
+    typedef typename StateErrorObserver::ErrorType ErrorType;
+    State const &state = static_cast<State const &>(*this);
+    
+    UnscentedTransform<ErrorType, ErrorType::RowsAtCompileTime,
+      StateWithExtra, StateWithExtra::RowsAtCompileTime> res(
+        [&stateerrorobserver](StateWithExtra const &x) {
+          return stateerrorobserver.observe_error(x.first, x.second);
+        },
+        StateWithExtra(state, stateerrorobserver.get_extra_mean()),
+        StateWithExtra::build_cov(cov, stateerrorobserver.get_extra_cov()));
+    
+    Matrix<double, State::RowsAtCompileTime, ErrorType::RowsAtCompileTime> P_xz =
+      res.cross_cov.transpose().template topLeftCorner(state.rows(), res.mean.rows());
+    Matrix<double, ErrorType::RowsAtCompileTime, ErrorType::RowsAtCompileTime> P_zz = res.cov;
+    
+    //Matrix<double, State::RowsAtCompileTime, N> K = P_xz * P_zz.inverse();
+    // instead, using matrix solver:
+    // K = P_xz P_zz^-1
+    // K P_zz = P_xz
+    // P_zz' K' = P_xz'
+    // K' = solve(P_zz', P_xz')
+    // K = solve(P_zz', P_xz')'
+    Matrix<double, State::RowsAtCompileTime, ErrorType::RowsAtCompileTime> K =
+      P_zz.transpose().ldlt().solve(P_xz.transpose()).transpose();
+    
+    State new_state = state + K*-res.mean;
+    typename State::CovType new_cov = cov - K*res.cov*K.transpose();
+    
+    return AugmentedState(new_state, new_cov);
+  }
+  
   template <int N, int NN>
   AugmentedState update(
       const boost::function<Matrix<double, N, 1> (StateWithMeasurementNoise<NN>)> &observe,
       const Matrix<double, NN, NN> &noise_cov) const {
-    unsigned int realNN = NN != Dynamic ? NN : noise_cov.rows();
+    State const &state = static_cast<State const &>(*this);
     assert(noise_cov.rows() == noise_cov.cols());
     
-    StateWithMeasurementNoise<NN> mean = StateWithMeasurementNoise<NN>(
-      static_cast<const State&>(*this), Matrix<double, NN, 1>::Zero(realNN));
-    typedef Matrix<double, NN != Dynamic ? State::RowsAtCompileTime + NN : Dynamic,
-                           NN != Dynamic ? State::RowsAtCompileTime + NN : Dynamic>
-      AugmentedMatrixType;
-    AugmentedMatrixType Pa = AugmentedMatrixType::Zero(
-      State::RowsAtCompileTime + realNN, State::RowsAtCompileTime + realNN);
-    Pa.template block<State::RowsAtCompileTime, State::RowsAtCompileTime>(0, 0) = cov;
-    Pa.template bottomRightCorner(realNN, realNN) = noise_cov;
-    
     UnscentedTransform<Matrix<double, N, 1>, N,
-      StateWithMeasurementNoise<NN>, NN != Dynamic ? State::RowsAtCompileTime + NN : Dynamic>
-      res(observe, mean, Pa);
-    unsigned int realN = res.mean.rows();
-    
-    //Matrix<double, State::RowsAtCompileTime, N> K =
-    //  res.cross_cov.transpose().template topLeftCorner(State::RowsAtCompileTime, realN) *
-    //  res.cov.inverse();
+      StateWithMeasurementNoise<NN>, StateWithMeasurementNoise<NN>::RowsAtCompileTime> res(
+        observe,
+        StateWithMeasurementNoise<NN>(
+          state, Matrix<double, NN, 1>::Zero(noise_cov.rows())),
+        StateWithMeasurementNoise<NN>::build_cov(cov, noise_cov));
 
-    // a = res.cross_cov.transpose().template topLeftCorner(State::RowsAtCompileTime, realN)
-    // b = res.cov
-    // K = a b^-1
-    // K b = a
-    // b' K' = a'
-    // K' = solve(b', a')
-    // K = solve(b', a')'
-    Matrix<double, State::RowsAtCompileTime, N> K =
-      res.cov.transpose().ldlt().solve(
-        res.cross_cov.transpose()
-          .template topLeftCorner(State::RowsAtCompileTime, realN).transpose()
-      ).transpose();
+    Matrix<double, State::RowsAtCompileTime, N> P_xz =
+      res.cross_cov.transpose().template topLeftCorner(state.rows(), res.mean.rows());
+    Matrix<double, N, N> P_zz = res.cov;
     
-    State new_state = static_cast<const State&>(*this) + K*-res.mean;
+    //Matrix<double, State::RowsAtCompileTime, N> K = P_xz * P_zz.inverse();
+    // instead, using matrix solver:
+    // K = P_xz P_zz^-1
+    // K P_zz = P_xz
+    // P_zz' K' = P_xz'
+    // K' = solve(P_zz', P_xz')
+    // K = solve(P_zz', P_xz')'
+    Matrix<double, State::RowsAtCompileTime, N> K =
+      P_zz.transpose().ldlt().solve(P_xz.transpose()).transpose();
+    
+    State new_state = state + K*-res.mean;
     typename State::CovType new_cov = cov - K*res.cov*K.transpose();
     
     return AugmentedState(new_state, new_cov);

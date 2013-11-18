@@ -216,29 +216,16 @@ class NodeImpl {
       }
       Vector3d local_gps_pos; tf::vectorTFToEigen(transform.getOrigin(), local_gps_pos);
       
-      double max_cn0 = -std::numeric_limits<double>::infinity();
-      BOOST_FOREACH(const rawgps_common::Satellite &satellite, msg.satellites) {
-        max_cn0 = std::max(max_cn0, satellite.cn0);
-      }
-      
       if(msg.satellites.size() >= 4) {
         last_good_gps = ros::Time::now();
       } else {
-        return;
+        std::cout << "bad gps" << std::endl;
       }
       
       if(!state) return;
       
-      VectorXd stddev(msg.satellites.size() + 1);
-      BOOST_FOREACH(const rawgps_common::Satellite &satellite, msg.satellites) {
-        stddev[&satellite - msg.satellites.data()] = .15 / sqrt(pow(10, satellite.cn0/10) / pow(10, max_cn0/10));
-      }
-      stddev[msg.satellites.size()] = 5000;
-      std::cout << "stddev:" << std::endl << stddev << std::endl << std::endl;
-      
-      state = state->update<Dynamic, Dynamic>(
-        boost::bind(gps_observer, msg, local_gps_pos, *last_gyro, _1),
-      stddev.cwiseProduct(stddev).asDiagonal());
+      state = state->update<GPSErrorObserver>(
+        GPSErrorObserver(msg, local_gps_pos, *last_gyro));
     }
     
     
