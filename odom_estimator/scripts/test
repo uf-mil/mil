@@ -79,8 +79,8 @@ while not rospy.is_shutdown():
             stamp=t,
             frame_id="/imu",
         ),
-        angular_velocity=Vector3(*body_from_world.dot(angvel) + [.1, .2, .3] + 0.002*numpy.random.randn(3)),
-        linear_acceleration=Vector3(*body_from_world.dot(acc - G) + 0.04*numpy.random.randn(3) + [.1, .2, .3]),
+        angular_velocity=Vector3(*body_from_world.dot(angvel)+ 0.002*numpy.random.randn(3)),
+        linear_acceleration=Vector3(*body_from_world.dot(acc - G) + 0.04*numpy.random.randn(3)),
     ))
     pose_pub.publish(PoseStamped(
         header=Header(
