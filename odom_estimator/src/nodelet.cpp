@@ -22,6 +22,7 @@
 #include "odom_estimator/util.h"
 #include "odom_estimator/state.h"
 #include "odom_estimator/kalman.h"
+#include "odom_estimator/gps.h"
 
 using namespace Eigen;
 
@@ -202,25 +203,6 @@ class NodeImpl {
       cov);
     }
     
-    
-    VectorXd gps_observer(const rawgps_common::Measurements &msg,
-        const Vector3d &gps_pos, const StateWithMeasurementNoise<Dynamic> &tmp) {
-      State const &state = tmp.first;
-      Matrix<double, Dynamic, 1> measurement_noise = tmp.second;
-      VectorXd res(msg.satellites.size());
-      Vector3d gps_vel = state.vel + state.orient._transformVector(
-        (*last_gyro - state.gyro_bias).cross(gps_pos));
-      for(unsigned int i = 0; i < msg.satellites.size(); i++) {
-        const rawgps_common::Satellite &sat = msg.satellites[i];
-        double predicted = gps_vel.dot(xyz2vec(sat.direction_enu)) +
-          measurement_noise(i) + measurement_noise(measurement_noise.size()-1);
-        res[i] = sat.velocity_plus_drift - predicted;
-      }
-      return res;
-    }
-    static bool cmp_cn0(const rawgps_common::Satellite &a, const rawgps_common::Satellite &b) {
-      return a.cn0 > b.cn0;
-    }
     void got_gps(const rawgps_common::MeasurementsConstPtr &msgp) {
       rawgps_common::Measurements msg = *msgp;
       
@@ -255,9 +237,10 @@ class NodeImpl {
       std::cout << "stddev:" << std::endl << stddev << std::endl << std::endl;
       
       state = state->update<Dynamic, Dynamic>(
-        boost::bind(&NodeImpl::gps_observer, this, msg, local_gps_pos, _1),
+        boost::bind(gps_observer, msg, local_gps_pos, *last_gyro, _1),
       stddev.cwiseProduct(stddev).asDiagonal());
     }
+    
     
     Vector1d depth_observer(double msg, const StateWithMeasurementNoise<1> &tmp) {
       State const &state = tmp.first;

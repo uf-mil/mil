@@ -60,6 +60,10 @@ inline Eigen::Vector3d xyz2vec(const geometry_msgs::Vector3 &msg) {
   Eigen::Vector3d res; tf::vectorMsgToEigen(msg, res);
   return res;
 }
+inline Eigen::Vector3d point2vec(const geometry_msgs::Point &msg) {
+  Eigen::Vector3d res; tf::pointMsgToEigen(msg, res);
+  return res;
+}
 
 template<typename Derived>
 void assert_none_nan(const Eigen::MatrixBase<Derived> &m) {
