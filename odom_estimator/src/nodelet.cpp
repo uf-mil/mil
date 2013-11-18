@@ -139,7 +139,7 @@ class NodeImpl {
         tf::vectorEigenToMsg(state->orient.conjugate()._transformVector(state->vel), output.twist.twist.linear);
         tf::vectorEigenToMsg(xyz2vec(msg.angular_velocity) - state->gyro_bias, output.twist.twist.angular);
         Map<Matrix6d>(output.twist.covariance.data()) <<
-          state->cov.block<3, 3>(State::VEL, State::VEL), Matrix3d::Zero(),
+          state->cov.block<3, 3>(State::VEL, State::VEL), Matrix3d::Zero(), // XXX covariance needs to be adjusted since velocity was transformed to body frame
           Matrix3d::Zero(), Map<Matrix3d>(msg.angular_velocity_covariance.data()) + state->cov.block<3, 3>(State::GYRO_BIAS, State::GYRO_BIAS);
         
         odom_pub.publish(output);
