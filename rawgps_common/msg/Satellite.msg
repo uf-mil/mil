@@ -9,3 +9,7 @@ float64 time
 
 float64 carrier_distance # m with (half-?)integer multiple of wavelength bias
 float64 doppler_velocity # m/s with bias common to all sibling Satellites
+
+# legacy
+geometry_msgs/Vector3 direction_enu
+float64 velocity_plus_drift

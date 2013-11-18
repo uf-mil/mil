@@ -28,10 +28,13 @@ ephs = {}
 nan = 1e600/1e600
 assert math.isnan(nan)
 
+last_pos = None
+
 pub = rospy.Publisher('~gps', Measurements)
 pos_pub = rospy.Publisher('~pos', PointStamped)
 latlong_pub = rospy.Publisher('~latlong', PointStamped)
 def cb(msg):
+    global last_pos
     msg.data = chr(msg.id) + msg.data
     packet = msg
     if msg.data.startswith('\xf5'):
@@ -84,6 +87,13 @@ def cb(msg):
                         print i, -pseudo_range * 1e-3 - deltat_SV_L1
                         print i, sat_pos
                     
+                    if last_pos is not None:
+                        direction = sat_pos - last_pos; direction /= numpy.linalg.norm(direction)
+                        direction_enu = gps.enu_from_ecef(direction, last_pos)
+                        velocity_plus_drift = doppler_freq*gps.c/gps.L1_f0 + direction.dot(sat_vel)
+                    else:
+                        continue
+                    
                     m.satellites.append(Satellite(
                         prn=sat_num,
                         cn0=snr,
@@ -92,6 +102,9 @@ def cb(msg):
                         time=-pseudo_range * 1e-3 - deltat_SV_L1,
                         carrier_distance=carrier_phase*gps.c/gps.L1_f0 if flags & 0x08 else nan,
                         doppler_velocity=doppler_freq*gps.c/gps.L1_f0 if flags & 0x02 else nan,
+                        
+                        direction_enu=Vector3(*direction_enu),
+                        velocity_plus_drift=velocity_plus_drift,
                     ))
             elif sig_type == 0x01 and False:
                 if ('glonass', sat_num, carrier_num) in ephs and flags & 0x02 and flags & 0x10:
@@ -120,6 +133,7 @@ def cb(msg):
     elif msg.data.startswith('\x88'):
         lat, lon, alt, err, t, week, lat_vel, lon_vel, alt_vel, dev, status = struct.unpack('<dddf10shdddfB', msg.data[1:])
         print 'PVT', math.degrees(lat), math.degrees(lon), alt, err, None, week, lat_vel, lon_vel, alt_vel, dev, status
+        last_pos = gps.ecef_from_latlongheight(lat, lon, alt)
         pos_pub.publish(PointStamped(
             header=Header(
                 stamp=packet.header.stamp,
