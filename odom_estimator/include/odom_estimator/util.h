@@ -1,5 +1,5 @@
-#ifndef _WHZHAUEWIGIZVWRS_
-#define _WHZHAUEWIGIZVWRS_
+#ifndef GUARD_MJABIWMKOFIHVAOG
+#define GUARD_MJABIWMKOFIHVAOG
 
 #include <boost/math/special_functions/sinc.hpp>
 
@@ -11,6 +11,16 @@
 #include <eigen_conversions/eigen_msg.h>
 
 namespace odom_estimator {
+
+
+template<int N>
+using Vec = Eigen::Matrix<double, N, 1>;
+
+template<int M, int N>
+using Mat = Eigen::Matrix<double, M, N>;
+
+template<int N>
+using SqMat = Eigen::Matrix<double, N, N>;
 
 
 Eigen::Quaterniond quat_from_rotvec(Eigen::Vector3d r) {

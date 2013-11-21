@@ -1,5 +1,5 @@
-#ifndef _IDNPEJCVJIKZHSKG_
-#define _IDNPEJCVJIKZHSKG_
+#ifndef GUARD_MWTDQGRCKCNYRUAC
+#define GUARD_MWTDQGRCKCNYRUAC
 
 #include <Eigen/Dense>
 

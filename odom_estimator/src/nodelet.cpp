@@ -73,10 +73,10 @@ class NodeImpl {
       last_gyro = xyz2vec(msg.angular_velocity);
       local_frame_id = msg.header.frame_id;
       
-      if(state && (msg.header.stamp < state->t || msg.header.stamp > state->t + ros::Duration(2))) {
+      if(state && (msg.header.stamp < state->mean.t || msg.header.stamp > state->mean.t + ros::Duration(2))) {
         NODELET_ERROR("reset due to invalid stamp");
         last_mag = boost::none;
-        start_pos = state->pos;
+        start_pos = state->mean.pos;
         state = boost::none;
       }
       if(state && (last_good_gps < ros::Time::now() - ros::Duration(5.))) {
@@ -92,32 +92,32 @@ class NodeImpl {
             stdev.asDiagonal();
           Vector3d accel = xyz2vec(msg.linear_acceleration);
           Quaterniond orient = triad(Vector3d(0, 0, -1), mag_world, -accel, *last_mag);
-          state = AugmentedState<State>(
+          state = GaussianDistribution<State>(
             State(msg.header.stamp, start_pos, orient,
               Vector3d::Zero(), Vector3d::Zero(), 9.80665, 101325),
             tmp*tmp);
         }
       } else {
-        state = state->predict<StateUpdater>(StateUpdater(msg));
+        state = StateUpdater(msg)(*state);
       }
       
       //std::cout << "precov " << state->cov << std::endl << std::endl;
       //std::cout << "precov " << state->cov << std::endl << std::endl;
       //state = state->update(Vector3d::Zero());
       
-      std::cout << "gyro_bias " << state->gyro_bias.transpose()
+      std::cout << "gyro_bias " << state->mean.gyro_bias.transpose()
         << " " << sqrt(state->cov(State::GYRO_BIAS+0, State::GYRO_BIAS+0))
         << " " << sqrt(state->cov(State::GYRO_BIAS+1, State::GYRO_BIAS+1))
         << " " << sqrt(state->cov(State::GYRO_BIAS+2, State::GYRO_BIAS+2)) << std::endl;
-      std::cout << "grav: " << state->local_g << "  " << sqrt(state->cov(State::LOCAL_G, State::LOCAL_G)) << std::endl;
-      std::cout << "ground air pressure: " << state->ground_air_pressure << "  " << sqrt(state->cov(State::GROUND_AIR_PRESSURE, State::GROUND_AIR_PRESSURE)) << std::endl;
+      std::cout << "grav: " << state->mean.local_g << "  " << sqrt(state->cov(State::LOCAL_G, State::LOCAL_G)) << std::endl;
+      std::cout << "ground air pressure: " << state->mean.ground_air_pressure << "  " << sqrt(state->cov(State::GROUND_AIR_PRESSURE, State::GROUND_AIR_PRESSURE)) << std::endl;
       std::cout << std::endl;
       
 
-      if(state->gyro_bias.norm() > .5) {
+      if(state->mean.gyro_bias.norm() > .5) {
         NODELET_ERROR("reset due to bad gyro biases");
         last_mag = boost::none;
-        start_pos = state->pos;
+        start_pos = state->mean.pos;
         state = boost::none;
         return;
       }
@@ -132,14 +132,14 @@ class NodeImpl {
         
         typedef Matrix<double, 6, 6> Matrix6d;
         
-        tf::pointEigenToMsg(state->pos, output.pose.pose.position);
-        tf::quaternionEigenToMsg(state->orient, output.pose.pose.orientation);
+        tf::pointEigenToMsg(state->mean.pos, output.pose.pose.position);
+        tf::quaternionEigenToMsg(state->mean.orient, output.pose.pose.orientation);
         Map<Matrix6d>(output.pose.covariance.data()) <<
           state->cov.block<3, 3>(State::POS, State::POS), state->cov.block<3, 3>(State::POS, State::ORIENT),
           state->cov.block<3, 3>(State::ORIENT, State::POS), state->cov.block<3, 3>(State::ORIENT, State::ORIENT);
         
-        tf::vectorEigenToMsg(state->orient.conjugate()._transformVector(state->vel), output.twist.twist.linear);
-        tf::vectorEigenToMsg(xyz2vec(msg.angular_velocity) - state->gyro_bias, output.twist.twist.angular);
+        tf::vectorEigenToMsg(state->mean.orient.conjugate()._transformVector(state->mean.vel), output.twist.twist.linear);
+        tf::vectorEigenToMsg(xyz2vec(msg.angular_velocity) - state->mean.gyro_bias, output.twist.twist.angular);
         Map<Matrix6d>(output.twist.covariance.data()) <<
           state->cov.block<3, 3>(State::VEL, State::VEL), Matrix3d::Zero(), // XXX covariance needs to be adjusted since velocity was transformed to body frame
           Matrix3d::Zero(), Map<Matrix3d>(msg.angular_velocity_covariance.data()) + state->cov.block<3, 3>(State::GYRO_BIAS, State::GYRO_BIAS);
@@ -165,19 +165,18 @@ class NodeImpl {
         cov = stddev.cwiseProduct(stddev).asDiagonal();
       }
       
-      state = state->update<1, 3>([&msg, this](const StateWithMeasurementNoise<3> &tmp) {
-        State const &state = tmp.first;
-        Matrix<double, 3, 1> measurement_noise = tmp.second;
-        //Vector3d predicted = state.orient.conjugate()._transformVector(mag_world);
-        double predicted_angle = atan2(mag_world(1), mag_world(0));
-        Vector3d measured_world = state.orient._transformVector(xyz2vec(msg.magnetic_field) + measurement_noise); // noise shouldn't be here
-        double measured_angle = atan2(measured_world(1), measured_world(0));
-        double error_angle = measured_angle - predicted_angle;
-        double pi = boost::math::constants::pi<double>();
-        while(error_angle < pi) error_angle += 2*pi;
-        while(error_angle > pi) error_angle -= 2*pi;
-        return scalar_matrix(error_angle);
-      }, cov);
+      kalman_thing(EasyDistributionFunction<State, Vec<1>, Vec<3> >(
+        [&msg, this](State const &state, Vec<3> const &measurement_noise) {
+          //Vector3d predicted = state.orient.conjugate()._transformVector(mag_world);
+          double predicted_angle = atan2(mag_world(1), mag_world(0));
+          Vector3d measured_world = state.orient._transformVector(xyz2vec(msg.magnetic_field) + measurement_noise); // noise shouldn't be here
+          double measured_angle = atan2(measured_world(1), measured_world(0));
+          double error_angle = measured_angle - predicted_angle;
+          double pi = boost::math::constants::pi<double>();
+          while(error_angle < pi) error_angle += 2*pi;
+          while(error_angle > pi) error_angle -= 2*pi;
+          return scalar_matrix(error_angle);
+        }, GaussianDistribution<Vec<3> >(Vec<3>::Zero(), cov)), *state);
     }
     
     
@@ -197,9 +196,9 @@ class NodeImpl {
       
       if(!state) return;
       
-      state = state->update<1, 1>(
-        boost::bind(&NodeImpl::press_observer, this, msg, _1),
-      cov);
+      //state = state->update<1, 1>(
+      //  boost::bind(&NodeImpl::press_observer, this, msg, _1),
+      //cov);
     }
     
     void got_gps(const rawgps_common::MeasurementsConstPtr &msgp) {
@@ -223,8 +222,8 @@ class NodeImpl {
       
       if(!state) return;
       
-      state = state->update<GPSErrorObserver>(
-        GPSErrorObserver(msg, local_gps_pos, *last_gyro));
+      //state = state->update<GPSErrorObserver>(
+      //  GPSErrorObserver(msg, local_gps_pos, *last_gyro));
     }
     
     
@@ -234,7 +233,7 @@ class NodeImpl {
       return scalar_matrix(msg - (-state.pos(2) + measurement_noise(0)));
     }
     void fake_depth() {
-      state = state->update<1, 1>(boost::bind(&NodeImpl::depth_observer, this, 0., _1), scalar_matrix(pow(0.3, 2)));
+      //state = state->update<1, 1>(boost::bind(&NodeImpl::depth_observer, this, 0., _1), scalar_matrix(pow(0.3, 2)));
     }
     
     
@@ -249,7 +248,7 @@ class NodeImpl {
     Vector3d start_pos;
     boost::optional<Vector3d> last_mag;
     boost::optional<ros::Time> last_good_gps;
-    boost::optional<AugmentedState<State> > state;
+    boost::optional<GaussianDistribution<State> > state;
     boost::optional<Vector3d> last_gyro;
     std::string local_frame_id;
 };

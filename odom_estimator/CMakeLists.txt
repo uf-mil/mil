@@ -68,6 +68,7 @@ set_target_properties(odom_estimator_nodelet PROPERTIES COMPILE_FLAGS -std=c++0x
 add_executable(test_unscented_transform src/test_unscented_transform.cpp)
 target_link_libraries(test_unscented_transform ${catkin_LIBRARIES})
 add_dependencies(test_unscented_transform ${catkin_EXPORTED_TARGETS})
+set_target_properties(test_unscented_transform PROPERTIES COMPILE_FLAGS -std=c++0x)
 #target_link_libraries(example ${PROJECT_NAME})
 
 install(PROGRAMS scripts/test DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

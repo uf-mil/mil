@@ -1,9 +1,11 @@
-#ifndef _NSMWBYMZVDQFHNLS_
-#define _NSMWBYMZVDQFHNLS_
+#ifndef GUARD_OPRKZNWIUHZBHYYB
+#define GUARD_OPRKZNWIUHZBHYYB
 
 #include <ros/time.h>
 
 #include <Eigen/Dense>
+
+#include <odom_estimator/kalman.h>
 
 namespace odom_estimator {
 
@@ -59,34 +61,130 @@ struct State {
   }
 };
 
-class StateUpdater {
-  sensor_msgs::Imu const imu;
-  bool const rightSideAccelFrame;
-  typedef ManifoldPair<Vector3d, Vector3d> IMUData;
-  typedef Matrix<double, 1, 1> NoiseType;
-public:
-  StateUpdater(sensor_msgs::Imu const &imu, bool rightSideAccelFrame=false) :
-    imu(imu), rightSideAccelFrame(rightSideAccelFrame) {
+template<int NN>
+using StateWithMeasurementNoise = ManifoldPair<State, Vec<NN> >;
+
+
+
+template<typename State>
+struct AugmentedState : public State {
+  
+  typename State::CovType cov;
+  AugmentedState(const State &state, const typename State::CovType &cov) :
+    State(state), cov(cov/2 + cov.transpose()/2) {
+    assert_none_nan(cov);
   }
   
+  template<typename StateUpdator>
+  AugmentedState predict(StateUpdator const &stateupdator) const {
+    typedef ManifoldPair<State, typename StateUpdator::ExtraType> StateWithExtra;
+    
+    UnscentedTransform<State, State::RowsAtCompileTime,
+      StateWithExtra, StateWithExtra::RowsAtCompileTime> res(
+        [&stateupdator](StateWithExtra const &x) {
+          return stateupdator.predict(x.first, x.second);
+        },
+        StateWithExtra(static_cast<const State&>(*this), stateupdator.get_extra_mean()),
+        StateWithExtra::build_cov(cov, stateupdator.get_extra_cov()));
+    
+    return AugmentedState(res.mean, res.cov);
+  }
+  
+  template<typename StateErrorObserver>
+  AugmentedState update(StateErrorObserver const &stateerrorobserver) const {
+    typedef ManifoldPair<State, typename StateErrorObserver::ExtraType> StateWithExtra;
+    typedef typename StateErrorObserver::ErrorType ErrorType;
+    State const &state = static_cast<State const &>(*this);
+    
+    UnscentedTransform<ErrorType, ErrorType::RowsAtCompileTime,
+      StateWithExtra, StateWithExtra::RowsAtCompileTime> res(
+        [&stateerrorobserver](StateWithExtra const &x) {
+          return stateerrorobserver.observe_error(x.first, x.second);
+        },
+        StateWithExtra(state, stateerrorobserver.get_extra_mean()),
+        StateWithExtra::build_cov(cov, stateerrorobserver.get_extra_cov()));
+    
+    Matrix<double, State::RowsAtCompileTime, ErrorType::RowsAtCompileTime> P_xz =
+      res.cross_cov.transpose().template topLeftCorner(state.rows(), res.mean.rows());
+    Matrix<double, ErrorType::RowsAtCompileTime, ErrorType::RowsAtCompileTime> P_zz = res.cov;
+    
+    //Matrix<double, State::RowsAtCompileTime, N> K = P_xz * P_zz.inverse();
+    // instead, using matrix solver:
+    // K = P_xz P_zz^-1
+    // K P_zz = P_xz
+    // P_zz' K' = P_xz'
+    // K' = solve(P_zz', P_xz')
+    // K = solve(P_zz', P_xz')'
+    Matrix<double, State::RowsAtCompileTime, ErrorType::RowsAtCompileTime> K =
+      P_zz.transpose().ldlt().solve(P_xz.transpose()).transpose();
+    
+    State new_state = state + K*-res.mean;
+    typename State::CovType new_cov = cov - K*res.cov*K.transpose();
+    
+    return AugmentedState(new_state, new_cov);
+  }
+  
+  template <int N, int NN>
+  AugmentedState update(
+      const boost::function<Matrix<double, N, 1> (StateWithMeasurementNoise<NN>)> &observe,
+      const Matrix<double, NN, NN> &noise_cov) const {
+    State const &state = static_cast<State const &>(*this);
+    assert(noise_cov.rows() == noise_cov.cols());
+    
+    UnscentedTransform<Matrix<double, N, 1>, N,
+      StateWithMeasurementNoise<NN>, StateWithMeasurementNoise<NN>::RowsAtCompileTime> res(
+        observe,
+        StateWithMeasurementNoise<NN>(
+          state, Matrix<double, NN, 1>::Zero(noise_cov.rows())),
+        StateWithMeasurementNoise<NN>::build_cov(cov, noise_cov));
+
+    Matrix<double, State::RowsAtCompileTime, N> P_xz =
+      res.cross_cov.transpose().template topLeftCorner(state.rows(), res.mean.rows());
+    Matrix<double, N, N> P_zz = res.cov;
+    
+    //Matrix<double, State::RowsAtCompileTime, N> K = P_xz * P_zz.inverse();
+    // instead, using matrix solver:
+    // K = P_xz P_zz^-1
+    // K P_zz = P_xz
+    // P_zz' K' = P_xz'
+    // K' = solve(P_zz', P_xz')
+    // K = solve(P_zz', P_xz')'
+    Matrix<double, State::RowsAtCompileTime, N> K =
+      P_zz.transpose().ldlt().solve(P_xz.transpose()).transpose();
+    
+    State new_state = state + K*-res.mean;
+    typename State::CovType new_cov = cov - K*res.cov*K.transpose();
+    
+    return AugmentedState(new_state, new_cov);
+  }
+};
+
+class StateUpdater : public IDistributionFunction<State, State,
+  // argh, no way to use a typedef defined within the class for the base class
+  // this is ExtraType:
+  ManifoldPair<ManifoldPair<Vec<3>, Vec<3> >, Vec<1> >
+> {
+  typedef ManifoldPair<Vec<3>, Vec<3> > IMUData;
+  typedef Vec<1> NoiseType;
   typedef ManifoldPair<IMUData, NoiseType> ExtraType;
-  ExtraType get_extra_mean() const {
-    return ExtraType(
+  
+  sensor_msgs::Imu const imu;
+  bool const rightSideAccelFrame;
+  
+  GaussianDistribution<ExtraType> get_extra() const {
+    return GaussianDistribution<ExtraType>(
+      ExtraType(
         IMUData(
           xyz2vec(imu.angular_velocity),
           xyz2vec(imu.linear_acceleration)),
-        NoiseType::Zero());
+        NoiseType::Zero()),
+      ExtraType::build_cov(
+        IMUData::build_cov(
+          Map<const Matrix3d>(imu.angular_velocity_covariance.data()),
+          Map<const Matrix3d>(imu.linear_acceleration_covariance.data())),
+        scalar_matrix(5)));
   }
-  Matrix<double, ExtraType::RowsAtCompileTime, ExtraType::RowsAtCompileTime>
-  get_extra_cov() const {
-    return ExtraType::build_cov(
-      IMUData::build_cov(
-        Map<const Matrix3d>(imu.angular_velocity_covariance.data()),
-        Map<const Matrix3d>(imu.linear_acceleration_covariance.data())),
-      scalar_matrix(5));
-  }
-  
-  State predict(State const &state, ExtraType const &extra) const {
+  State apply(State const &state, ExtraType const &extra) const {
     IMUData const &imudata = extra.first;
     NoiseType const &noise = extra.second;
     
@@ -112,6 +210,11 @@ public:
       state.gyro_bias,
       state.local_g,
       state.ground_air_pressure + sqrt(dt) * noise(0));
+  }
+
+public:
+  StateUpdater(sensor_msgs::Imu const &imu, bool rightSideAccelFrame=false) :
+    imu(imu), rightSideAccelFrame(rightSideAccelFrame) {
   }
 };
 
