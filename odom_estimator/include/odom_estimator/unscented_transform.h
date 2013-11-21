@@ -13,9 +13,10 @@ namespace odom_estimator {
 
 using namespace Eigen;
 
-template<class OutPointType, int OutVecLen,
-         class  InPointType, int  InVecLen>
+template<typename OutPointType, typename InPointType>
 struct UnscentedTransform {
+  static const int OutVecLen = OutPointType::RowsAtCompileTime;
+  static const int InVecLen = InPointType::RowsAtCompileTime;
   OutPointType mean;
   SqMat<OutVecLen> cov;
   Mat<OutVecLen, InVecLen> cross_cov;

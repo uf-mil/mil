@@ -40,8 +40,7 @@ public:
     
     GaussianDistribution<ExtraType> extra = get_extra();
     
-    UnscentedTransform<OutType, OutType::RowsAtCompileTime,
-      InAndExtraType, InAndExtraType::RowsAtCompileTime> res(
+    UnscentedTransform<OutType, InAndExtraType> res(
         [this](InAndExtraType const &x) {
           return apply(x.first, x.second);
         },

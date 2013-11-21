@@ -180,7 +180,7 @@ class NodeImpl {
     }
     
     
-    Vector1d press_observer(const sensor_msgs::FluidPressure &msg,
+    /*Vector1d press_observer(const sensor_msgs::FluidPressure &msg,
                                const StateWithMeasurementNoise<1> &tmp) {
       State const &state = tmp.first;
       Matrix<double, 1, 1> measurement_noise = tmp.second;
@@ -188,7 +188,7 @@ class NodeImpl {
           air_density*Vector3d(0, 0, -state.local_g).dot(state.pos) +
           measurement_noise(0);
       return scalar_matrix(msg.fluid_pressure - predicted);
-    }
+    }*/
     void got_press(const sensor_msgs::FluidPressureConstPtr &msgp) {
       const sensor_msgs::FluidPressure &msg = *msgp;
       
@@ -227,11 +227,11 @@ class NodeImpl {
     }
     
     
-    Vector1d depth_observer(double msg, const StateWithMeasurementNoise<1> &tmp) {
+    /*Vector1d depth_observer(double msg, const StateWithMeasurementNoise<1> &tmp) {
       State const &state = tmp.first;
       Matrix<double, 1, 1> measurement_noise = tmp.second;
       return scalar_matrix(msg - (-state.pos(2) + measurement_noise(0)));
-    }
+    }*/
     void fake_depth() {
       //state = state->update<1, 1>(boost::bind(&NodeImpl::depth_observer, this, 0., _1), scalar_matrix(pow(0.3, 2)));
     }

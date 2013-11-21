@@ -25,13 +25,13 @@ int main() {
     0, 1, 0,
     0, 0, 1).finished();
   
-  UnscentedTransform<Vector4d, 4, Vector3d, 3> res1(func, initial, cov);
+  UnscentedTransform<Vector4d, Vector3d> res1(func, initial, cov);
   std::cout << "STATIC" << std::endl;
   print(res1);
   
   std::cout << std::endl;
   
-  UnscentedTransform<VectorXd, Dynamic, VectorXd, Dynamic> res2(func, initial, cov);
+  UnscentedTransform<VectorXd, VectorXd> res2(func, initial, cov);
   std::cout << "DYNAMIC" << std::endl;
   print(res2);
   
