@@ -10,8 +10,30 @@
 
 namespace odom_estimator {
 
+template<typename PointType>
+struct GaussianDistribution {
+  PointType mean;
+  SqMat<PointType::RowsAtCompileTime> cov;
+  
+  GaussianDistribution(PointType const &mean,
+                       SqMat<PointType::RowsAtCompileTime> const &cov) :
+    mean(mean), cov(cov/2 + cov.transpose()/2) {
+    assert(mean.rows() == cov.rows());
+    assert(cov.cols() == cov.rows());
+  }
+};
 
-using namespace Eigen;
+template<typename PointType, typename VarType>
+class GaussianDistributionWithCrossCov : public GaussianDistribution<PointType> {
+  typedef Mat<PointType::RowsAtCompileTime, VarType::RowsAtCompileTime> CrossCovType;
+public:
+  CrossCovType cross_cov;
+  
+  GaussianDistributionWithCrossCov(GaussianDistribution<PointType> const &gd,
+                                   CrossCovType const &cross_cov) :
+    GaussianDistribution<PointType>(gd), cross_cov(cross_cov) {
+  }
+};
 
 template<typename OutPointType, typename InPointType>
 struct UnscentedTransform {
@@ -28,7 +50,7 @@ struct UnscentedTransform {
                      double beta = 2,
                      double kappa = 0) :
     mean(func(mean)) {
-    unsigned int in_vec_len = InVecLen != Dynamic ? InVecLen : cov.rows();
+    unsigned int in_vec_len = InVecLen != Eigen::Dynamic ? InVecLen : cov.rows();
     
     unsigned int L = in_vec_len;
     double lambda = pow(alpha, 2)*(L + kappa) - L;
@@ -48,7 +70,7 @@ struct UnscentedTransform {
       out_points[i] = func(mean + dx);
     }
     
-    unsigned int out_vec_len = OutVecLen != Dynamic ? OutVecLen :
+    unsigned int out_vec_len = OutVecLen != Eigen::Dynamic ? OutVecLen :
       (*out_points[0] - *out_points[0]).rows();
     Vec<OutVecLen> out_mean_minus_out_points_0 =
       Vec<OutVecLen>::Zero(out_vec_len, 1);
@@ -80,8 +102,8 @@ template<typename First, typename Second>
 class ManifoldPair {
 public:
   static int const RowsAtCompileTime = 
-    First::RowsAtCompileTime == Dynamic ? Dynamic :
-    Second::RowsAtCompileTime == Dynamic ? Dynamic :
+    First::RowsAtCompileTime == Eigen::Dynamic ? Eigen::Dynamic :
+    Second::RowsAtCompileTime == Eigen::Dynamic ? Eigen::Dynamic :
     First::RowsAtCompileTime + Second::RowsAtCompileTime;
 private:
   typedef Vec<RowsAtCompileTime> DeltaType;

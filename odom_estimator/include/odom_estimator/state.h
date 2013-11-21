@@ -11,23 +11,21 @@ namespace odom_estimator {
 
 
 
-using namespace Eigen;
-
 struct State {
   ros::Time t;
   
-  static const unsigned int POS = 0; Vector3d pos;
-  static const unsigned int ORIENT = POS + 3; Quaterniond orient;
-  static const unsigned int VEL = ORIENT + 3; Vector3d vel;
-  static const unsigned int GYRO_BIAS = VEL + 3; Vector3d gyro_bias;
+  static const unsigned int POS = 0; Vec<3> pos;
+  static const unsigned int ORIENT = POS + 3; Quaternion orient;
+  static const unsigned int VEL = ORIENT + 3; Vec<3> vel;
+  static const unsigned int GYRO_BIAS = VEL + 3; Vec<3> gyro_bias;
   static const unsigned int LOCAL_G = GYRO_BIAS + 3; double local_g;
   static const unsigned int GROUND_AIR_PRESSURE = LOCAL_G + 1; double ground_air_pressure;
   static const int RowsAtCompileTime = GROUND_AIR_PRESSURE + 1;
-  typedef Matrix<double, RowsAtCompileTime, 1> DeltaType;
-  typedef Matrix<double, RowsAtCompileTime, RowsAtCompileTime> CovType;
+  typedef Vec<RowsAtCompileTime> DeltaType;
+  typedef SqMat<RowsAtCompileTime> CovType;
   
-  State(ros::Time t, Vector3d pos, Quaterniond orient,
-      Vector3d vel, Vector3d gyro_bias,
+  State(ros::Time t, Vec<3> pos, Quaternion orient,
+      Vec<3> vel, Vec<3> gyro_bias,
       double local_g, double ground_air_pressure) :
     t(t), pos(pos), orient(orient.normalized()), vel(vel),
     gyro_bias(gyro_bias), local_g(local_g),
@@ -83,8 +81,8 @@ class StateUpdater : public IDistributionFunction<State, State,
         NoiseType::Zero()),
       ExtraType::build_cov(
         IMUData::build_cov(
-          Map<const Matrix3d>(imu.angular_velocity_covariance.data()),
-          Map<const Matrix3d>(imu.linear_acceleration_covariance.data())),
+          Eigen::Map<const SqMat<3> >(imu.angular_velocity_covariance.data()),
+          Eigen::Map<const SqMat<3> >(imu.linear_acceleration_covariance.data())),
         scalar_matrix(5)));
   }
   State apply(State const &state, ExtraType const &extra) const {
@@ -93,17 +91,17 @@ class StateUpdater : public IDistributionFunction<State, State,
     
     double dt = (imu.header.stamp - state.t).toSec();
     
-    Vector3d angvel_body = imudata.first - state.gyro_bias;
-    Quaterniond oldbody_from_newbody = quat_from_rotvec(dt * angvel_body);
+    Vec<3> angvel_body = imudata.first - state.gyro_bias;
+    Quaternion oldbody_from_newbody = quat_from_rotvec(dt * angvel_body);
     
-    Quaterniond world_from_newbody = state.orient * oldbody_from_newbody;
+    Quaternion world_from_newbody = state.orient * oldbody_from_newbody;
     
-    Vector3d accelnograv_accelbody = imudata.second;
-    Quaterniond world_from_accelbody = rightSideAccelFrame ?
+    Vec<3> accelnograv_accelbody = imudata.second;
+    Quaternion world_from_accelbody = rightSideAccelFrame ?
       world_from_newbody : state.orient;
-    Vector3d accelnograv_world = world_from_accelbody._transformVector(
+    Vec<3> accelnograv_world = world_from_accelbody._transformVector(
       accelnograv_accelbody);
-    Vector3d accel_world = accelnograv_world + Vector3d(0, 0, -state.local_g);
+    Vec<3> accel_world = accelnograv_world + Vec<3>(0, 0, -state.local_g);
     
     return State(
       imu.header.stamp,

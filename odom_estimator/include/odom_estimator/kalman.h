@@ -5,30 +5,6 @@
 
 namespace odom_estimator {
 
-template<typename PointType>
-struct GaussianDistribution {
-  PointType mean;
-  SqMat<PointType::RowsAtCompileTime> cov;
-  
-  GaussianDistribution(PointType const &mean,
-                       SqMat<PointType::RowsAtCompileTime> const &cov) :
-    mean(mean), cov(cov/2 + cov.transpose()/2) {
-    assert(mean.rows() == cov.rows());
-    assert(cov.cols() == cov.rows());
-  }
-};
-
-template<typename PointType, typename VarType>
-class GaussianDistributionWithCrossCov : public GaussianDistribution<PointType> {
-  typedef Mat<PointType::RowsAtCompileTime, VarType::RowsAtCompileTime> CrossCovType;
-public:
-  CrossCovType cross_cov;
-  
-  GaussianDistributionWithCrossCov(GaussianDistribution<PointType> const &gd,
-                                   CrossCovType const &cross_cov) :
-    GaussianDistribution<PointType>(gd), cross_cov(cross_cov) {
-  }
-};
 
 template<typename InType, typename OutType, typename ExtraType>
 class IDistributionFunction {
@@ -58,18 +34,18 @@ GaussianDistribution<InType> kalman_thing(DistributionFunction const &df,
                                           GaussianDistribution<InType> const &input) {
   auto res = df(input);
   
-  Matrix<double, InType::RowsAtCompileTime, res.mean.RowsAtCompileTime> P_xz =
+  Mat<InType::RowsAtCompileTime, res.mean.RowsAtCompileTime> P_xz =
     res.cross_cov.transpose();
-  Matrix<double, res.mean.RowsAtCompileTime, res.mean.RowsAtCompileTime> P_zz = res.cov;
+  Mat<res.mean.RowsAtCompileTime, res.mean.RowsAtCompileTime> P_zz = res.cov;
   
-  //Matrix<double, InType::RowsAtCompileTime, res.mean.RowsAtCompileTime> K = P_xz * P_zz.inverse();
+  //Mat<InType::RowsAtCompileTime, res.mean.RowsAtCompileTime> K = P_xz * P_zz.inverse();
   // instead, using matrix solver:
   // K = P_xz P_zz^-1
   // K P_zz = P_xz
   // P_zz' K' = P_xz'
   // K' = solve(P_zz', P_xz')
   // K = solve(P_zz', P_xz')'
-  Matrix<double, InType::RowsAtCompileTime, res.mean.RowsAtCompileTime> K =
+  Mat<InType::RowsAtCompileTime, res.mean.RowsAtCompileTime> K =
     P_zz.transpose().ldlt().solve(P_xz.transpose()).transpose();
   
   InType new_mean = input.mean + K*-res.mean;
@@ -95,39 +71,6 @@ public:
   }
 };
 
-/*template<typename ErrorObserver> // ErrorObserver should implement IDistributionFunction
-AugmentedState update(ErrorObserver const &ErrorObserver) const {
-  typedef ManifoldPair<State, typename ErrorObserver::ExtraType> StateWithExtra;
-  typedef typename ErrorObserver::ErrorType ErrorType;
-  State const &state = static_cast<State const &>(*this);
-  
-  UnscentedTransform<ErrorType, ErrorType::RowsAtCompileTime,
-    StateWithExtra, StateWithExtra::RowsAtCompileTime> res(
-      [&ErrorObserver](StateWithExtra const &x) {
-        return ErrorObserver.observe_error(x.first, x.second);
-      },
-      StateWithExtra(state, ErrorObserver.get_extra_mean()),
-      StateWithExtra::build_cov(cov, ErrorObserver.get_extra_cov()));
-  
-  Matrix<double, State::RowsAtCompileTime, ErrorType::RowsAtCompileTime> P_xz =
-    res.cross_cov.transpose().template topLeftCorner(state.rows(), res.mean.rows());
-  Matrix<double, ErrorType::RowsAtCompileTime, ErrorType::RowsAtCompileTime> P_zz = res.cov;
-  
-  //Matrix<double, State::RowsAtCompileTime, N> K = P_xz * P_zz.inverse();
-  // instead, using matrix solver:
-  // K = P_xz P_zz^-1
-  // K P_zz = P_xz
-  // P_zz' K' = P_xz'
-  // K' = solve(P_zz', P_xz')
-  // K = solve(P_zz', P_xz')'
-  Matrix<double, State::RowsAtCompileTime, ErrorType::RowsAtCompileTime> K =
-    P_zz.transpose().ldlt().solve(P_xz.transpose()).transpose();
-  
-  State new_state = state + K*-res.mean;
-  typename State::CovType new_cov = cov - K*res.cov*K.transpose();
-  
-  return AugmentedState(new_state, new_cov);
-}*/
 
 
 }

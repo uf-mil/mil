@@ -22,10 +22,14 @@ using Mat = Eigen::Matrix<double, M, N>;
 template<int N>
 using SqMat = Eigen::Matrix<double, N, N>;
 
+using Eigen::Dynamic;
 
-Eigen::Quaterniond quat_from_rotvec(Eigen::Vector3d r) {
+typedef Eigen::Quaterniond Quaternion;
+
+
+Quaternion quat_from_rotvec(Vec<3> r) {
     double angle = r.norm();
-    Eigen::Quaterniond res;
+    Quaternion res;
     res.w() = cos(angle/2);
     res.vec() = boost::math::sinc_pi(angle/2)/2 * r; // = sin(angle/2) * r.normalized(), without the singularity
     return res;
