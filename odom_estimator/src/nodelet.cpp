@@ -85,9 +85,11 @@ class NodeImpl {
       
       if(!state) {
         if(last_mag && last_good_gps && *last_good_gps > ros::Time::now() - ros::Duration(1.)) {
-          State::DeltaType stdev = (State::DeltaType() <<
+          Matrix<double, State::RowsAtCompileTime, 1> stdev =
+            (Matrix<double, State::RowsAtCompileTime, 1>() <<
             0,0,0, .05,.05,.05, 1,1,1, 1e-3,1e-3,1e-3, 0.1, 1e3).finished();
-          State::CovType tmp = stdev.asDiagonal();
+          Matrix<double, State::RowsAtCompileTime, State::RowsAtCompileTime> tmp =
+            stdev.asDiagonal();
           Vector3d accel = xyz2vec(msg.linear_acceleration);
           Quaterniond orient = triad(Vector3d(0, 0, -1), mag_world, -accel, *last_mag);
           state = AugmentedState<State>(
@@ -149,19 +151,6 @@ class NodeImpl {
     typedef Matrix<double, 1, 1> Matrix1d;
     typedef Matrix<double, 1, 1> Vector1d;
     
-    Vector1d mag_observer(const sensor_msgs::MagneticField &msg, const StateWithMeasurementNoise<3> &tmp) {
-      State const &state = tmp.first;
-      Matrix<double, 3, 1> measurement_noise = tmp.second;
-      //Vector3d predicted = state.orient.conjugate()._transformVector(mag_world);
-      double predicted_angle = atan2(mag_world(1), mag_world(0));
-      Vector3d measured_world = state.orient._transformVector(xyz2vec(msg.magnetic_field) + measurement_noise); // noise shouldn't be here
-      double measured_angle = atan2(measured_world(1), measured_world(0));
-      double error_angle = measured_angle - predicted_angle;
-      double pi = boost::math::constants::pi<double>();
-      while(error_angle < pi) error_angle += 2*pi;
-      while(error_angle > pi) error_angle -= 2*pi;
-      return scalar_matrix(error_angle);
-    }
     void got_mag(const sensor_msgs::MagneticFieldConstPtr &msgp) {
       const sensor_msgs::MagneticField &msg = *msgp;
       
@@ -176,9 +165,19 @@ class NodeImpl {
         cov = stddev.cwiseProduct(stddev).asDiagonal();
       }
       
-      state = state->update<1, 3>(
-        boost::bind(&NodeImpl::mag_observer, this, msg, _1),
-      cov);
+      state = state->update<1, 3>([&msg, this](const StateWithMeasurementNoise<3> &tmp) {
+        State const &state = tmp.first;
+        Matrix<double, 3, 1> measurement_noise = tmp.second;
+        //Vector3d predicted = state.orient.conjugate()._transformVector(mag_world);
+        double predicted_angle = atan2(mag_world(1), mag_world(0));
+        Vector3d measured_world = state.orient._transformVector(xyz2vec(msg.magnetic_field) + measurement_noise); // noise shouldn't be here
+        double measured_angle = atan2(measured_world(1), measured_world(0));
+        double error_angle = measured_angle - predicted_angle;
+        double pi = boost::math::constants::pi<double>();
+        while(error_angle < pi) error_angle += 2*pi;
+        while(error_angle > pi) error_angle -= 2*pi;
+        return scalar_matrix(error_angle);
+      }, cov);
     }
     
     

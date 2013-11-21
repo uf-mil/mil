@@ -77,7 +77,8 @@ public:
           xyz2vec(imu.linear_acceleration)),
         NoiseType::Zero());
   }
-  ExtraType::CovType get_extra_cov() const {
+  Matrix<double, ExtraType::RowsAtCompileTime, ExtraType::RowsAtCompileTime>
+  get_extra_cov() const {
     return ExtraType::build_cov(
       IMUData::build_cov(
         Map<const Matrix3d>(imu.angular_velocity_covariance.data()),

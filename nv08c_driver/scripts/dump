@@ -34,6 +34,7 @@ pub = rospy.Publisher('~gps', Measurements)
 pos_pub = rospy.Publisher('~pos', PointStamped)
 latlong_pub = rospy.Publisher('~latlong', PointStamped)
 def cb(msg):
+    print 'in', msg.header
     global last_pos
     msg.data = chr(msg.id) + msg.data
     packet = msg
@@ -84,8 +85,8 @@ def cb(msg):
                         deltat_SV_L1 = eph.a_f0 + eph.a_f1 * dt + eph.a_f2 * dt**2 + deltat_r - eph.T_GD
                         t = t_SV - deltat_SV_L1
                         sat_pos, deltat_r, sat_vel = eph.predict(t)
-                        print i, -pseudo_range * 1e-3 - deltat_SV_L1
-                        print i, sat_pos
+                        #print i, -pseudo_range * 1e-3 - deltat_SV_L1
+                        #print i, sat_pos
                     
                     if last_pos is not None:
                         direction = sat_pos - last_pos; direction /= numpy.linalg.norm(direction)
@@ -129,6 +130,7 @@ def cb(msg):
                             cn0=-snr,
                         ))'''
         print
+        print 'out', m.header
         pub.publish(m)
     elif msg.data.startswith('\x88'):
         lat, lon, alt, err, t, week, lat_vel, lon_vel, alt_vel, dev, status = struct.unpack('<dddf10shdddfB', msg.data[1:])

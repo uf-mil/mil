@@ -21,14 +21,14 @@ struct UnscentedTransform {
   
   UnscentedTransform(const boost::function<OutPointType(InPointType)> &func,
                      const InPointType &mean,
-                     const Matrix<double, InVecLen, InVecLen> &cov) :
+                     const Matrix<double, InVecLen, InVecLen> &cov,
+                     double alpha = 1e-3,
+                     double beta = 2,
+                     double kappa = 0) :
     mean(func(mean)) {
     unsigned int in_vec_len = InVecLen != Dynamic ? InVecLen : cov.rows();
     
     unsigned int L = in_vec_len;
-    double alpha = 1e-3;
-    double beta = 2;
-    double kappa = 0;
     double lambda = pow(alpha, 2)*(L + kappa) - L;
     
     Matrix<double, InVecLen, InVecLen> sqrt_cov =
@@ -75,13 +75,16 @@ struct UnscentedTransform {
 };
 
 template<typename First, typename Second>
-struct ManifoldPair {
+class ManifoldPair {
+public:
   static int const RowsAtCompileTime = 
     First::RowsAtCompileTime == Dynamic ? Dynamic :
     Second::RowsAtCompileTime == Dynamic ? Dynamic :
     First::RowsAtCompileTime + Second::RowsAtCompileTime;
+private:
   typedef Matrix<double, RowsAtCompileTime, 1> DeltaType;
-  
+  typedef Matrix<double, RowsAtCompileTime, RowsAtCompileTime> CovType;
+public:
   First const first;
   Second const second;
   ManifoldPair(First const &first, Second const &second) :
@@ -91,7 +94,6 @@ struct ManifoldPair {
   unsigned int rows() const {
     return first.rows() + second.rows();
   }
-  
   DeltaType operator-(const ManifoldPair<First, Second> &other) const {
     return (DeltaType() <<
       first - other.first,
@@ -103,7 +105,6 @@ struct ManifoldPair {
       second + other.tail(second.rows()));
   }
   
-  typedef Matrix<double, RowsAtCompileTime, RowsAtCompileTime> CovType;
   static CovType build_cov(
       Matrix<double, First::RowsAtCompileTime, First::RowsAtCompileTime> const &first_cov,
       Matrix<double, Second::RowsAtCompileTime, Second::RowsAtCompileTime> const &second_cov) {
