@@ -24,8 +24,6 @@
 #include "odom_estimator/kalman.h"
 #include "odom_estimator/gps.h"
 
-using namespace Eigen;
-
 namespace odom_estimator {
 
 
@@ -36,7 +34,7 @@ class NodeImpl {
     boost::function<const std::string&()> getName;
     ros::NodeHandle &nh;
     ros::NodeHandle &private_nh;
-    Vector3d mag_world;
+    Vec<3> mag_world;
     constexpr static const double air_density = 1.225; // kg/m^3
   public:
     NodeImpl(boost::function<const std::string&()> getName, ros::NodeHandle *nh_, ros::NodeHandle *private_nh_) :
@@ -56,7 +54,7 @@ class NodeImpl {
       gps_filter.registerCallback(boost::bind(&NodeImpl::got_gps, this, _1));
       odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
       
-      mag_world = Vector3d(-2341.1e-9, 24138.5e-9, -40313.5e-9); // T
+      mag_world = Vec<3>(-2341.1e-9, 24138.5e-9, -40313.5e-9); // T
     }
   
   private:
@@ -64,10 +62,10 @@ class NodeImpl {
     void got_imu(const sensor_msgs::ImuConstPtr &msgp) {
       //const sensor_msgs::Imu &msg = *msgp;
       sensor_msgs::Imu msg = *msgp;
-      Map<Matrix3d>(msg.angular_velocity_covariance.data()) =
-        pow(0.02, 2)*Matrix3d::Identity();
-      Map<Matrix3d>(msg.linear_acceleration_covariance.data()) =
-        pow(0.06, 2)*Matrix3d::Identity();
+      Eigen::Map<SqMat<3> >(msg.angular_velocity_covariance.data()) =
+        pow(0.02, 2)*SqMat<3>::Identity();
+      Eigen::Map<SqMat<3> >(msg.linear_acceleration_covariance.data()) =
+        pow(0.06, 2)*SqMat<3>::Identity();
       
       gps_filter.setTargetFrame(msg.header.frame_id);
       last_gyro = xyz2vec(msg.angular_velocity);
@@ -85,16 +83,16 @@ class NodeImpl {
       
       if(!state) {
         if(last_mag && last_good_gps && *last_good_gps > ros::Time::now() - ros::Duration(1.)) {
-          Matrix<double, State::RowsAtCompileTime, 1> stdev =
-            (Matrix<double, State::RowsAtCompileTime, 1>() <<
+          Vec<State::RowsAtCompileTime> stdev =
+            (Vec<State::RowsAtCompileTime>() <<
             0,0,0, .05,.05,.05, 1,1,1, 1e-3,1e-3,1e-3, 0.1, 1e3).finished();
-          Matrix<double, State::RowsAtCompileTime, State::RowsAtCompileTime> tmp =
+          SqMat<State::RowsAtCompileTime> tmp =
             stdev.asDiagonal();
-          Vector3d accel = xyz2vec(msg.linear_acceleration);
-          Quaterniond orient = triad(Vector3d(0, 0, -1), mag_world, -accel, *last_mag);
+          Vec<3> accel = xyz2vec(msg.linear_acceleration);
+          Quaternion orient = triad(Vec<3>(0, 0, -1), mag_world, -accel, *last_mag);
           state = GaussianDistribution<State>(
             State(msg.header.stamp, start_pos, orient,
-              Vector3d::Zero(), Vector3d::Zero(), 9.80665, 101325),
+              Vec<3>::Zero(), Vec<3>::Zero(), 9.80665, 101325),
             tmp*tmp);
         }
       } else {
@@ -103,7 +101,7 @@ class NodeImpl {
       
       //std::cout << "precov " << state->cov << std::endl << std::endl;
       //std::cout << "precov " << state->cov << std::endl << std::endl;
-      //state = state->update(Vector3d::Zero());
+      //state = state->update(Vec<3>::Zero());
       
       std::cout << "gyro_bias " << state->mean.gyro_bias.transpose()
         << " " << sqrt(state->cov(State::GYRO_BIAS+0, State::GYRO_BIAS+0))
@@ -130,26 +128,21 @@ class NodeImpl {
         output.header.frame_id = "/map";
         output.child_frame_id = msg.header.frame_id;
         
-        typedef Matrix<double, 6, 6> Matrix6d;
-        
         tf::pointEigenToMsg(state->mean.pos, output.pose.pose.position);
         tf::quaternionEigenToMsg(state->mean.orient, output.pose.pose.orientation);
-        Map<Matrix6d>(output.pose.covariance.data()) <<
+        Eigen::Map<SqMat<6> >(output.pose.covariance.data()) <<
           state->cov.block<3, 3>(State::POS, State::POS), state->cov.block<3, 3>(State::POS, State::ORIENT),
           state->cov.block<3, 3>(State::ORIENT, State::POS), state->cov.block<3, 3>(State::ORIENT, State::ORIENT);
         
         tf::vectorEigenToMsg(state->mean.orient.conjugate()._transformVector(state->mean.vel), output.twist.twist.linear);
         tf::vectorEigenToMsg(xyz2vec(msg.angular_velocity) - state->mean.gyro_bias, output.twist.twist.angular);
-        Map<Matrix6d>(output.twist.covariance.data()) <<
-          state->cov.block<3, 3>(State::VEL, State::VEL), Matrix3d::Zero(), // XXX covariance needs to be adjusted since velocity was transformed to body frame
-          Matrix3d::Zero(), Map<Matrix3d>(msg.angular_velocity_covariance.data()) + state->cov.block<3, 3>(State::GYRO_BIAS, State::GYRO_BIAS);
+        Eigen::Map<SqMat<6> >(output.twist.covariance.data()) <<
+          state->cov.block<3, 3>(State::VEL, State::VEL), SqMat<3>::Zero(), // XXX covariance needs to be adjusted since velocity was transformed to body frame
+          SqMat<3>::Zero(), Eigen::Map<SqMat<3> >(msg.angular_velocity_covariance.data()) + state->cov.block<3, 3>(State::GYRO_BIAS, State::GYRO_BIAS);
         
         odom_pub.publish(output);
       }
     }
-    
-    typedef Matrix<double, 1, 1> Matrix1d;
-    typedef Matrix<double, 1, 1> Vector1d;
     
     void got_mag(const sensor_msgs::MagneticFieldConstPtr &msgp) {
       const sensor_msgs::MagneticField &msg = *msgp;
@@ -158,18 +151,18 @@ class NodeImpl {
       
       if(!state) return;
       
-      Matrix3d cov = Map<const Matrix3d>(msg.magnetic_field_covariance.data());
-      if(cov == Matrix3d::Zero()) {
-        Vector3d stddev(2e-7, 2e-7, 2e-7);
+      SqMat<3> cov = Eigen::Map<const SqMat<3> >(msg.magnetic_field_covariance.data());
+      if(cov == SqMat<3>::Zero()) {
+        Vec<3> stddev(2e-7, 2e-7, 2e-7);
         stddev *= 100;
         cov = stddev.cwiseProduct(stddev).asDiagonal();
       }
       
       kalman_thing(EasyDistributionFunction<State, Vec<1>, Vec<3> >(
         [&msg, this](State const &state, Vec<3> const &measurement_noise) {
-          //Vector3d predicted = state.orient.conjugate()._transformVector(mag_world);
+          //Vec<3> predicted = state.orient.conjugate()._transformVector(mag_world);
           double predicted_angle = atan2(mag_world(1), mag_world(0));
-          Vector3d measured_world = state.orient._transformVector(xyz2vec(msg.magnetic_field) + measurement_noise); // noise shouldn't be here
+          Vec<3> measured_world = state.orient._transformVector(xyz2vec(msg.magnetic_field) + measurement_noise); // noise shouldn't be here
           double measured_angle = atan2(measured_world(1), measured_world(0));
           double error_angle = measured_angle - predicted_angle;
           double pi = boost::math::constants::pi<double>();
@@ -180,19 +173,19 @@ class NodeImpl {
     }
     
     
-    /*Vector1d press_observer(const sensor_msgs::FluidPressure &msg,
+    /*Vec<1> press_observer(const sensor_msgs::FluidPressure &msg,
                                const StateWithMeasurementNoise<1> &tmp) {
       State const &state = tmp.first;
-      Matrix<double, 1, 1> measurement_noise = tmp.second;
+      Vec<1> measurement_noise = tmp.second;
       double predicted = state.ground_air_pressure +
-          air_density*Vector3d(0, 0, -state.local_g).dot(state.pos) +
+          air_density*Vec<3>(0, 0, -state.local_g).dot(state.pos) +
           measurement_noise(0);
       return scalar_matrix(msg.fluid_pressure - predicted);
     }*/
     void got_press(const sensor_msgs::FluidPressureConstPtr &msgp) {
       const sensor_msgs::FluidPressure &msg = *msgp;
       
-      Matrix1d cov = scalar_matrix(msg.variance ? msg.variance : pow(10, 2));
+      SqMat<1> cov = scalar_matrix(msg.variance ? msg.variance : pow(10, 2));
       
       if(!state) return;
       
@@ -212,7 +205,7 @@ class NodeImpl {
         NODELET_ERROR("Error in got_gps: %s", ex.what());
         return;
       }
-      Vector3d local_gps_pos; tf::vectorTFToEigen(transform.getOrigin(), local_gps_pos);
+      Vec<3> local_gps_pos; tf::vectorTFToEigen(transform.getOrigin(), local_gps_pos);
       
       if(msg.satellites.size() >= 4) {
         last_good_gps = ros::Time::now();
@@ -227,9 +220,9 @@ class NodeImpl {
     }
     
     
-    /*Vector1d depth_observer(double msg, const StateWithMeasurementNoise<1> &tmp) {
+    /*Vec<1> depth_observer(double msg, const StateWithMeasurementNoise<1> &tmp) {
       State const &state = tmp.first;
-      Matrix<double, 1, 1> measurement_noise = tmp.second;
+      Vec<1> measurement_noise = tmp.second;
       return scalar_matrix(msg - (-state.pos(2) + measurement_noise(0)));
     }*/
     void fake_depth() {
@@ -245,11 +238,11 @@ class NodeImpl {
     tf::MessageFilter<rawgps_common::Measurements> gps_filter;
     ros::Publisher odom_pub;
     
-    Vector3d start_pos;
-    boost::optional<Vector3d> last_mag;
+    Vec<3> start_pos;
+    boost::optional<Vec<3> > last_mag;
     boost::optional<ros::Time> last_good_gps;
     boost::optional<GaussianDistribution<State> > state;
-    boost::optional<Vector3d> last_gyro;
+    boost::optional<Vec<3> > last_gyro;
     std::string local_frame_id;
 };
 

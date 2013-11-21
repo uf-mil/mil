@@ -50,7 +50,7 @@ struct UnscentedTransform {
                      double beta = 2,
                      double kappa = 0) :
     mean(func(mean)) {
-    unsigned int in_vec_len = InVecLen != Eigen::Dynamic ? InVecLen : cov.rows();
+    unsigned int in_vec_len = InVecLen != Dynamic ? InVecLen : cov.rows();
     
     unsigned int L = in_vec_len;
     double lambda = pow(alpha, 2)*(L + kappa) - L;
@@ -70,7 +70,7 @@ struct UnscentedTransform {
       out_points[i] = func(mean + dx);
     }
     
-    unsigned int out_vec_len = OutVecLen != Eigen::Dynamic ? OutVecLen :
+    unsigned int out_vec_len = OutVecLen != Dynamic ? OutVecLen :
       (*out_points[0] - *out_points[0]).rows();
     Vec<OutVecLen> out_mean_minus_out_points_0 =
       Vec<OutVecLen>::Zero(out_vec_len, 1);
@@ -102,8 +102,8 @@ template<typename First, typename Second>
 class ManifoldPair {
 public:
   static int const RowsAtCompileTime = 
-    First::RowsAtCompileTime == Eigen::Dynamic ? Eigen::Dynamic :
-    Second::RowsAtCompileTime == Eigen::Dynamic ? Eigen::Dynamic :
+    First::RowsAtCompileTime == Dynamic ? Dynamic :
+    Second::RowsAtCompileTime == Dynamic ? Dynamic :
     First::RowsAtCompileTime + Second::RowsAtCompileTime;
 private:
   typedef Vec<RowsAtCompileTime> DeltaType;

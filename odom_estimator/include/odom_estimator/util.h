@@ -35,47 +35,47 @@ Quaternion quat_from_rotvec(Vec<3> r) {
     return res;
 }
 
-Eigen::Vector3d rotvec_from_quat(Eigen::Quaterniond q) {
+Vec<3> rotvec_from_quat(Quaternion q) {
   q = q.normalized();
-  if(q.w() < 0) q = Eigen::Quaterniond(-q.coeffs());
+  if(q.w() < 0) q = Quaternion(-q.coeffs());
   return 2/boost::math::sinc_pi(acos(std::min(1., q.w()))) * q.vec();
 }
 
-Eigen::Quaterniond triad(Eigen::Vector3d v1_world, Eigen::Vector3d v2_world,
-                  Eigen::Vector3d v1_body, Eigen::Vector3d v2_body) {
-  Eigen::Matrix3d R_world_T;
+Quaternion triad(Vec<3> v1_world, Vec<3> v2_world,
+                 Vec<3> v1_body, Vec<3> v2_body) {
+  SqMat<3> R_world_T;
   R_world_T.col(0) = v1_world.normalized();
   R_world_T.col(1) = v1_world.cross(v2_world).normalized();
   R_world_T.col(2) = v1_world.cross(R_world_T.col(1)).normalized();
   
-  Eigen::Matrix3d R_body_T;
+  SqMat<3> R_body_T;
   R_body_T.col(0) = v1_body.normalized();
   R_body_T.col(1) = v1_body.cross(v2_body).normalized();
   R_body_T.col(2) = v1_body.cross(R_body_T.col(1)).normalized();
 
   // R_body_T^-1 = R_T_body, but since they are orthogonal
   // R_body_T^-1 = R_body_T'
-  Eigen::Matrix3d R_world_body = R_world_T * R_body_T.transpose();
+  SqMat<3> R_world_body = R_world_T * R_body_T.transpose();
 
-  return Eigen::Quaterniond(R_world_body);
+  return Quaternion(R_world_body);
 }
 
-Eigen::Matrix<double, 1, 1> scalar_matrix(double x) {
-  return (Eigen::Matrix<double, 1, 1>() << x).finished();
+SqMat<1> scalar_matrix(double x) {
+  return (SqMat<1>() << x).finished();
 }
 
 template<int N>
-Eigen::Matrix<double, N, N> cholesky(Eigen::Matrix<double, N, N> x) {
-  Eigen::LDLT<Eigen::Matrix<double, N, N> > ldlt = x.ldlt();
-  return ldlt.transpositionsP().transpose() * Eigen::Matrix<double, N, N>(ldlt.matrixL()) * Eigen::Matrix<double, N, 1>(ldlt.vectorD().array().sqrt()).asDiagonal();
+SqMat<N> cholesky(SqMat<N> x) {
+  Eigen::LDLT<SqMat<N> > ldlt = x.ldlt();
+  return ldlt.transpositionsP().transpose() * SqMat<N>(ldlt.matrixL()) * Vec<N>(ldlt.vectorD().array().sqrt()).asDiagonal();
 }
 
-inline Eigen::Vector3d xyz2vec(const geometry_msgs::Vector3 &msg) {
-  Eigen::Vector3d res; tf::vectorMsgToEigen(msg, res);
+inline Vec<3> xyz2vec(const geometry_msgs::Vector3 &msg) {
+  Vec<3> res; tf::vectorMsgToEigen(msg, res);
   return res;
 }
-inline Eigen::Vector3d point2vec(const geometry_msgs::Point &msg) {
-  Eigen::Vector3d res; tf::pointMsgToEigen(msg, res);
+inline Vec<3> point2vec(const geometry_msgs::Point &msg) {
+  Vec<3> res; tf::pointMsgToEigen(msg, res);
   return res;
 }
 

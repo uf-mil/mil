@@ -2,11 +2,10 @@
 
 #include "odom_estimator/unscented_transform.h"
 
-using namespace Eigen;
 using namespace odom_estimator;
 
-Vector4d func(Vector3d p) {
-  return Vector4d(exp(p(1)), p(0), -p(2), p(1) + p(2)) + Vector4d(1, 2, 4, 3);
+Vec<4> func(Vec<3> p) {
+  return Vec<4>(exp(p(1)), p(0), -p(2), p(1) + p(2)) + Vec<4>(1, 2, 4, 3);
 }
 
 template<class T>
@@ -19,19 +18,19 @@ void print(const T &res) {
 }
 
 int main() {
-  Vector3d initial(1, 2, 3);
-  Matrix3d cov = (Matrix3d() <<
+  Vec<3> initial(1, 2, 3);
+  SqMat<3> cov = (SqMat<3>() <<
     1, 0, 0,
     0, 1, 0,
     0, 0, 1).finished();
   
-  UnscentedTransform<Vector4d, Vector3d> res1(func, initial, cov);
+  UnscentedTransform<Vec<4>, Vec<3> > res1(func, initial, cov);
   std::cout << "STATIC" << std::endl;
   print(res1);
   
   std::cout << std::endl;
   
-  UnscentedTransform<VectorXd, VectorXd> res2(func, initial, cov);
+  UnscentedTransform<Vec<Dynamic>, Vec<Dynamic> > res2(func, initial, cov);
   std::cout << "DYNAMIC" << std::endl;
   print(res2);
   
