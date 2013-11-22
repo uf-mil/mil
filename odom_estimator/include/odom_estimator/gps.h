@@ -1,9 +1,14 @@
 #ifndef GUARD_MWTDQGRCKCNYRUAC
 #define GUARD_MWTDQGRCKCNYRUAC
 
+#include <rawgps_common/Measurements.h>
+
+#include <boost/foreach.hpp>
+
 #include <Eigen/Dense>
 
 #include <odom_estimator/util.h>
+#include <odom_estimator/state.h>
 
 namespace odom_estimator {
 

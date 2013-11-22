@@ -5,10 +5,12 @@
 #include <boost/function.hpp>
 #include <boost/optional.hpp>
 
-#include "util.h"
-#include "math.h"
+#include <odom_estimator/util.h>
+#include <odom_estimator/manifold.h>
 
 namespace odom_estimator {
+
+
 
 template<typename PointType>
 struct GaussianDistribution {
@@ -34,6 +36,7 @@ public:
     GaussianDistribution<PointType>(gd), cross_cov(cross_cov) {
   }
 };
+
 
 template<typename OutPointType, typename InPointType>
 struct UnscentedTransform {
@@ -98,47 +101,48 @@ struct UnscentedTransform {
   }
 };
 
-template<typename First, typename Second>
-class ManifoldPair {
+
+template<typename InType, typename OutType, typename ExtraType>
+class IDistributionFunction {
+  virtual GaussianDistribution<ExtraType> get_extra_distribution() const = 0;
+  virtual OutType apply(InType const &input, ExtraType const &extra) const = 0;
 public:
-  static int const RowsAtCompileTime = 
-    First::RowsAtCompileTime == Dynamic ? Dynamic :
-    Second::RowsAtCompileTime == Dynamic ? Dynamic :
-    First::RowsAtCompileTime + Second::RowsAtCompileTime;
-private:
-  typedef Vec<RowsAtCompileTime> DeltaType;
-  typedef SqMat<RowsAtCompileTime> CovType;
-public:
-  First const first;
-  Second const second;
-  ManifoldPair(First const &first, Second const &second) :
-    first(first), second(second) {
-  }
-  
-  unsigned int rows() const {
-    return first.rows() + second.rows();
-  }
-  DeltaType operator-(const ManifoldPair<First, Second> &other) const {
-    return (DeltaType() <<
-      first - other.first,
-      second - other.second).finished();
-  }
-  ManifoldPair<First, Second> operator+(const DeltaType &other) const {
-    return ManifoldPair<First, Second>(
-      first + other.head(first.rows()),
-      second + other.tail(second.rows()));
-  }
-  
-  static CovType build_cov(
-      SqMat<First::RowsAtCompileTime> const &first_cov,
-      SqMat<Second::RowsAtCompileTime> const &second_cov) {
-    CovType res = CovType::Zero(first_cov.rows() + second_cov.rows(),
-                                first_cov.rows() + second_cov.rows());
-    res.topLeftCorner(first_cov.rows(), first_cov.rows()) = first_cov;
-    res.bottomRightCorner(second_cov.rows(), second_cov.rows()) = second_cov;
-    return res;
+  virtual GaussianDistributionWithCrossCov<OutType, InType> operator()(GaussianDistribution<InType> const &input) const final {
+    typedef ManifoldPair<InType, ExtraType> InAndExtraType;
+    
+    GaussianDistribution<ExtraType> extra = get_extra_distribution();
+    
+    UnscentedTransform<OutType, InAndExtraType> res(
+        [this](InAndExtraType const &x) {
+          return apply(x.first, x.second);
+        },
+        InAndExtraType(input.mean, extra.mean),
+        InAndExtraType::build_cov(input.cov, extra.cov));
+    
+    return GaussianDistributionWithCrossCov<OutType, InType>(
+      GaussianDistribution<OutType>(res.mean, res.cov),
+      res.cross_cov.template topLeftCorner(res.mean.rows(), input.mean.rows()));
   }
 };
+
+template<typename InType, typename OutType, typename ExtraType>
+class EasyDistributionFunction : public IDistributionFunction<InType, OutType, ExtraType> {
+  std::function<OutType(InType, ExtraType)> func;
+  GaussianDistribution<ExtraType> extra_distribution;
+  GaussianDistribution<ExtraType> get_extra_distribution() const {
+    return extra_distribution;
+  }
+  OutType apply(InType const &input, ExtraType const &extra) const {
+    return func(input, extra);
+  }
+public:
+  EasyDistributionFunction(std::function<OutType(InType, ExtraType)> func,
+                           GaussianDistribution<ExtraType> const &extra_distribution) :
+    func(func), extra_distribution(extra_distribution) {
+  }
+};
+
+
 
 }
 

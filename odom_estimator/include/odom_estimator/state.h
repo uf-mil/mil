@@ -2,10 +2,13 @@
 #define GUARD_OPRKZNWIUHZBHYYB
 
 #include <ros/time.h>
+#include <sensor_msgs/Imu.h>
 
 #include <Eigen/Dense>
 
-#include <odom_estimator/kalman.h>
+#include <odom_estimator/util.h>
+#include <odom_estimator/unscented_transform.h>
+#include <odom_estimator/manifold.h>
 
 namespace odom_estimator {
 
@@ -72,7 +75,7 @@ class StateUpdater : public IDistributionFunction<State, State,
   sensor_msgs::Imu const imu;
   bool const rightSideAccelFrame;
   
-  GaussianDistribution<ExtraType> get_extra() const {
+  GaussianDistribution<ExtraType> get_extra_distribution() const {
     return GaussianDistribution<ExtraType>(
       ExtraType(
         IMUData(
