@@ -9,7 +9,7 @@ namespace odom_estimator {
 
 
 template<typename DistributionFunction, typename InType>
-GaussianDistribution<InType> kalman_thing(DistributionFunction const &df,
+GaussianDistribution<InType> kalman_update(DistributionFunction const &df,
                                           GaussianDistribution<InType> const &input) {
   auto res = df(input);
   

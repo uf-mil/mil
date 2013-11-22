@@ -158,40 +158,41 @@ class NodeImpl {
         cov = stddev.cwiseProduct(stddev).asDiagonal();
       }
       
-      kalman_thing(EasyDistributionFunction<State, Vec<1>, Vec<3> >(
-        [&msg, this](State const &state, Vec<3> const &measurement_noise) {
-          //Vec<3> predicted = state.orient.conjugate()._transformVector(mag_world);
-          double predicted_angle = atan2(mag_world(1), mag_world(0));
-          Vec<3> measured_world = state.orient._transformVector(xyz2vec(msg.magnetic_field) + measurement_noise); // noise shouldn't be here
-          double measured_angle = atan2(measured_world(1), measured_world(0));
-          double error_angle = measured_angle - predicted_angle;
-          double pi = boost::math::constants::pi<double>();
-          while(error_angle < pi) error_angle += 2*pi;
-          while(error_angle > pi) error_angle -= 2*pi;
-          return scalar_matrix(error_angle);
-        }, GaussianDistribution<Vec<3> >(Vec<3>::Zero(), cov)), *state);
+      state = kalman_update(
+        EasyDistributionFunction<State, Vec<1>, Vec<3> >(
+          [&msg, this](State const &state, Vec<3> const &measurement_noise) {
+            //Vec<3> predicted = state.orient.conjugate()._transformVector(mag_world);
+            double predicted_angle = atan2(mag_world(1), mag_world(0));
+            Vec<3> measured_world = state.orient._transformVector(xyz2vec(msg.magnetic_field) + measurement_noise); // noise shouldn't be here
+            double measured_angle = atan2(measured_world(1), measured_world(0));
+            double error_angle = measured_angle - predicted_angle;
+            double pi = boost::math::constants::pi<double>();
+            while(error_angle < pi) error_angle += 2*pi;
+            while(error_angle > pi) error_angle -= 2*pi;
+            return scalar_matrix(error_angle);
+          },
+          GaussianDistribution<Vec<3> >(Vec<3>::Zero(), cov)),
+        *state);
     }
     
     
-    /*Vec<1> press_observer(const sensor_msgs::FluidPressure &msg,
-                               const StateWithMeasurementNoise<1> &tmp) {
-      State const &state = tmp.first;
-      Vec<1> measurement_noise = tmp.second;
-      double predicted = state.ground_air_pressure +
-          air_density*Vec<3>(0, 0, -state.local_g).dot(state.pos) +
-          measurement_noise(0);
-      return scalar_matrix(msg.fluid_pressure - predicted);
-    }*/
     void got_press(const sensor_msgs::FluidPressureConstPtr &msgp) {
       const sensor_msgs::FluidPressure &msg = *msgp;
       
-      SqMat<1> cov = scalar_matrix(msg.variance ? msg.variance : pow(10, 2));
-      
       if(!state) return;
       
-      //state = state->update<1, 1>(
-      //  boost::bind(&NodeImpl::press_observer, this, msg, _1),
-      //cov);
+      state = kalman_update(
+        EasyDistributionFunction<State, Vec<1>, Vec<1> >(
+          [&msg](State const &state, Vec<1> const &measurement_noise) {
+            double predicted = state.ground_air_pressure +
+              air_density*Vec<3>(0, 0, -state.local_g).dot(state.pos) +
+              measurement_noise(0);
+            return scalar_matrix(msg.fluid_pressure - predicted);
+          },
+          GaussianDistribution<Vec<1> >(
+            Vec<1>::Zero(),
+            scalar_matrix(msg.variance ? msg.variance : pow(10, 2)))),
+        *state);
     }
     
     void got_gps(const rawgps_common::MeasurementsConstPtr &msgp) {
@@ -215,18 +216,24 @@ class NodeImpl {
       
       if(!state) return;
       
-      //state = state->update<GPSErrorObserver>(
-      //  GPSErrorObserver(msg, local_gps_pos, *last_gyro));
+      state = kalman_update(
+        GPSErrorObserver(msg, local_gps_pos, *last_gyro),
+        *state);
     }
     
     
-    /*Vec<1> depth_observer(double msg, const StateWithMeasurementNoise<1> &tmp) {
-      State const &state = tmp.first;
-      Vec<1> measurement_noise = tmp.second;
-      return scalar_matrix(msg - (-state.pos(2) + measurement_noise(0)));
-    }*/
     void fake_depth() {
-      //state = state->update<1, 1>(boost::bind(&NodeImpl::depth_observer, this, 0., _1), scalar_matrix(pow(0.3, 2)));
+      state = kalman_update(
+        EasyDistributionFunction<State, Vec<1>, Vec<1> >(
+          [](State const &state, Vec<1> const &measurement_noise) {
+            double measured = 0;
+            double predicted = -state.pos(2) + measurement_noise(0);
+            return scalar_matrix(measured - predicted);
+          },
+          GaussianDistribution<Vec<1> >(
+            Vec<1>::Zero(),
+            scalar_matrix(pow(0.3, 2)))),
+        *state);
     }
     
     

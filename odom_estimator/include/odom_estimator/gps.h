@@ -12,27 +12,12 @@
 
 namespace odom_estimator {
 
-class GPSErrorObserver {
+class GPSErrorObserver : public IDistributionFunction<State, Vec<Dynamic>, Vec<Dynamic> > {
   rawgps_common::Measurements const &msg;
   Vec<3> const gps_pos;
   Vec<3> const last_gyro;
-  typedef Vec<Dynamic> NoiseType;
-  typedef SqMat<Dynamic> NoiseCovType;
-public:
-  GPSErrorObserver(rawgps_common::Measurements const &msg,
-                   Vec<3> const &gps_pos,
-                   Vec<3> const &last_gyro) :
-    msg(msg), gps_pos(gps_pos), last_gyro(last_gyro) {
-  }
   
-  typedef Vec<Dynamic> ErrorType;
-  
-  typedef NoiseType ExtraType;
-  typedef NoiseCovType ExtraCovType;
-  ExtraType get_extra_mean() const {
-    return ExtraType::Zero(msg.satellites.size());
-  }
-  ExtraCovType get_extra_cov() const {
+  GaussianDistribution<Vec<Dynamic> > get_extra_distribution() const {
     double max_cn0 = -std::numeric_limits<double>::infinity();
     BOOST_FOREACH(const rawgps_common::Satellite &satellite, msg.satellites) {
       max_cn0 = std::max(max_cn0, satellite.cn0);
@@ -45,12 +30,12 @@ public:
     stddev[msg.satellites.size()] = 5000;
     std::cout << "stddev:" << std::endl << stddev << std::endl << std::endl;
     
-    return stddev.cwiseProduct(stddev).asDiagonal();
+    return GaussianDistribution<Vec<Dynamic> >(
+      Vec<Dynamic>::Zero(msg.satellites.size()),
+      stddev.cwiseProduct(stddev).asDiagonal());
   }
   
-  ErrorType observe_error(State const &state, ExtraType const &extra) const {
-    NoiseType const &noise = extra;
-    
+  Vec<Dynamic> apply(State const &state, Vec<Dynamic> const &noise) const {
     Vec<3> gps_vel = state.vel + state.orient._transformVector(
       (last_gyro - state.gyro_bias).cross(gps_pos));
     
@@ -60,9 +45,16 @@ public:
       
       double predicted = xyz2vec(sat.direction_enu).dot(gps_vel) +
         noise(i) + noise(noise.size()-1);
-      res[i] = sat.velocity_plus_drift - predicted;
+      res(i) = sat.velocity_plus_drift - predicted;
     }
     return res;
+  }
+
+public:
+  GPSErrorObserver(rawgps_common::Measurements const &msg,
+                   Vec<3> const &gps_pos,
+                   Vec<3> const &last_gyro) :
+    msg(msg), gps_pos(gps_pos), last_gyro(last_gyro) {
   }
 };
 
