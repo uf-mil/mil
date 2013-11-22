@@ -24,13 +24,16 @@ int main() {
     0, 1, 0,
     0, 0, 1).finished();
   
-  UnscentedTransform<Vec<4>, Vec<3> > res1(func, initial, cov);
+  GaussianDistributionWithCrossCov<Vec<4>, Vec<3> > res1 =
+    unscented_transform<Vec<4>, Vec<3> >(func, GaussianDistribution<Vec<3> >(initial, cov));
   std::cout << "STATIC" << std::endl;
   print(res1);
   
   std::cout << std::endl;
   
-  UnscentedTransform<Vec<Dynamic>, Vec<Dynamic> > res2(func, initial, cov);
+  GaussianDistributionWithCrossCov<Vec<Dynamic>, Vec<Dynamic> > res2 =
+    unscented_transform<Vec<Dynamic>, Vec<Dynamic> >(func,
+                                                     GaussianDistribution<Vec<Dynamic> >(initial, cov));
   std::cout << "DYNAMIC" << std::endl;
   print(res2);
   
