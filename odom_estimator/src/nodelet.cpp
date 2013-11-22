@@ -1,7 +1,4 @@
-#include <boost/thread.hpp>
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/math/constants/constants.hpp>
 
 #include <nodelet/nodelet.h>
@@ -14,9 +11,10 @@
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/MagneticField.h>
 #include <sensor_msgs/FluidPressure.h>
-#include <rawgps_common/Measurements.h>
 #include <eigen_conversions/eigen_msg.h>
 #include <tf_conversions/tf_eigen.h>
+
+#include <rawgps_common/Measurements.h>
 
 #include "odom_estimator/unscented_transform.h"
 #include "odom_estimator/util.h"
