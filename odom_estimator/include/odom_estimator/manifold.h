@@ -18,8 +18,8 @@ private:
   typedef Vec<RowsAtCompileTime> DeltaType;
   typedef SqMat<RowsAtCompileTime> CovType;
 public:
-  First const first;
-  Second const second;
+  First first;
+  Second second;
   ManifoldPair(First const &first, Second const &second) :
     first(first), second(second) {
   }
