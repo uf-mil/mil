@@ -18,22 +18,6 @@ namespace odom_estimator {
 
 
 static const double c = 299792458;
-static const double w_E = 0.729211510e-4; // from glonass
-
-Vec<3> inertial_from_ecef(double t, Vec<3> pos) {
-  double th = w_E * t;
-  return Vec<3>(
-    pos(0)*cos(th) - pos(1)*sin(th),
-    pos(0)*sin(th) + pos(1)*cos(th),
-    pos(2));
-}
-Vec<3> inertial_vel_from_ecef_vel(double t, Vec<3> ecef_vel, Vec<3> inertial_point) {
-  double th = w_E * t;
-  return Vec<3>(
-      ecef_vel(0)*cos(th) - ecef_vel(1)*sin(th) - w_E * inertial_point[1],
-      ecef_vel(0)*sin(th) + ecef_vel(1)*cos(th) + w_E * inertial_point[0],
-      ecef_vel(2));
-}
 
 typedef ManifoldPair<Vec<3>, Vec<3> > Fix;
 
@@ -52,7 +36,7 @@ public:
       
       double cn0 = pow(10, sat.cn0/10.);
       
-      stddev(2 + i) = 1;
+      stddev(2 + i) = 5;
       stddev(2 + msg.satellites.size() + i) =
         20.5564182949/pow(cn0, 0.691171572741);
     }
@@ -112,48 +96,27 @@ GaussianDistribution<Fix> get_fix(rawgps_common::Measurements const &msg) {
 }
 
 class GPSErrorObserver : public IDistributionFunction<State, Vec<Dynamic>, Vec<Dynamic> > {
-  rawgps_common::Measurements const &msg;
+  E inner;
   Vec<3> const gps_pos;
   Vec<3> const last_gyro;
   
   GaussianDistribution<Vec<Dynamic> > get_extra_distribution() const {
-    double max_cn0 = -std::numeric_limits<double>::infinity();
-    BOOST_FOREACH(const rawgps_common::Satellite &satellite, msg.satellites) {
-      max_cn0 = std::max(max_cn0, satellite.cn0);
-    }
-    
-    Vec<Dynamic> stddev(msg.satellites.size() + 1);
-    BOOST_FOREACH(const rawgps_common::Satellite &satellite, msg.satellites) {
-      stddev[&satellite - msg.satellites.data()] = .15 / sqrt(pow(10, satellite.cn0/10) / pow(10, max_cn0/10));
-    }
-    stddev[msg.satellites.size()] = 5000;
-    std::cout << "stddev:" << std::endl << stddev << std::endl << std::endl;
-    
-    return GaussianDistribution<Vec<Dynamic> >(
-      Vec<Dynamic>::Zero(msg.satellites.size()),
-      stddev.cwiseProduct(stddev).asDiagonal());
+    return inner.get_extra_distribution();
   }
   
   Vec<Dynamic> apply(State const &state, Vec<Dynamic> const &noise) const {
-    Vec<3> gps_vel = state.vel + state.orient._transformVector(
-      (last_gyro - state.gyro_bias).cross(gps_pos));
-    
-    Vec<Dynamic> res(msg.satellites.size());
-    for(unsigned int i = 0; i < msg.satellites.size(); i++) {
-      const rawgps_common::Satellite &sat = msg.satellites[i];
-      
-      double predicted = xyz2vec(sat.direction_enu).dot(gps_vel) +
-        noise(i) + noise(noise.size()-1);
-      res(i) = sat.velocity_plus_drift - predicted;
-    }
-    return res;
+    return inner.apply(
+      Fix(
+        state.getPosECEF(gps_pos),
+        state.getVelECEF(gps_pos, last_gyro)),
+      noise);
   }
 
 public:
   GPSErrorObserver(rawgps_common::Measurements const &msg,
                    Vec<3> const &gps_pos,
                    Vec<3> const &last_gyro) :
-    msg(msg), gps_pos(gps_pos), last_gyro(last_gyro) {
+    inner(msg), gps_pos(gps_pos), last_gyro(last_gyro) {
   }
 };
 

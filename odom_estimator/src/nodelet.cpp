@@ -19,12 +19,57 @@
 #include "odom_estimator/unscented_transform.h"
 #include "odom_estimator/util.h"
 #include "odom_estimator/state.h"
+#include "odom_estimator/earth.h"
+#include "odom_estimator/magnetic.h"
 #include "odom_estimator/kalman.h"
 #include "odom_estimator/gps.h"
 
 namespace odom_estimator {
 
 
+GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
+                                       Vec<3> last_mag,
+                                       Vec<3> pos_ecef,
+                                       Vec<3> vel_ecef) {
+  Vec<3> pos_eci = inertial_from_ecef(
+    msg.header.stamp.toSec(), pos_ecef);
+  Vec<3> vel_eci = inertial_vel_from_ecef_vel(
+    msg.header.stamp.toSec(), vel_ecef, pos_eci);
+  
+  Vec<3> mag_eci = magnetic::getMagneticField(pos_eci);
+  Vec<3> predicted_acc_eci = inertial_acc_from_ecef_acc(
+    msg.header.stamp.toSec(), Vec<3>::Zero(), pos_eci);
+  Vec<3> predicted_accelerometer_eci =
+    predicted_acc_eci - gravity::gravity(pos_eci);
+  Vec<3> accel_body = xyz2vec(msg.linear_acceleration);
+  Quaternion orient_eci = triad(
+    predicted_accelerometer_eci, mag_eci,
+    accel_body, last_mag);
+  
+  Vec<State::RowsAtCompileTime> stdev =
+    (Vec<State::RowsAtCompileTime>() <<
+    0,0,0, .05,.05,.05, 1,1,1, 1e-3,1e-3,1e-3, 0.1, 1e3).finished();
+  SqMat<State::RowsAtCompileTime> tmp =
+    stdev.asDiagonal();
+  
+  return GaussianDistribution<State>(
+    State(msg.header.stamp,
+      pos_eci,
+      orient_eci,
+      vel_eci,
+      Vec<3>::Zero(),
+      9.80665,
+      101325),
+    tmp*tmp);
+}
+
+GaussianDistribution<State>
+init_state(sensor_msgs::Imu const &msg,
+           Vec<3> last_mag,
+           rawgps_common::Measurements const &gps) {
+  GaussianDistribution<Fix> fix = get_fix(gps);
+  return init_state(msg, last_mag, fix.mean.first, fix.mean.second);
+}
 
 
 class NodeImpl {
@@ -32,7 +77,6 @@ class NodeImpl {
     boost::function<const std::string&()> getName;
     ros::NodeHandle &nh;
     ros::NodeHandle &private_nh;
-    Vec<3> mag_world;
     constexpr static const double air_density = 1.225; // kg/m^3
   public:
     NodeImpl(boost::function<const std::string&()> getName, ros::NodeHandle *nh_, ros::NodeHandle *private_nh_) :
@@ -51,8 +95,6 @@ class NodeImpl {
         boost::bind(&NodeImpl::got_press, this, _1));
       gps_filter.registerCallback(boost::bind(&NodeImpl::got_gps, this, _1));
       odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
-      
-      mag_world = Vec<3>(-2341.1e-9, 24138.5e-9, -40313.5e-9); // T
     }
   
   private:
@@ -72,7 +114,7 @@ class NodeImpl {
       if(state && (msg.header.stamp < state->mean.t || msg.header.stamp > state->mean.t + ros::Duration(2))) {
         NODELET_ERROR("reset due to invalid stamp");
         last_mag = boost::none;
-        start_pos = state->mean.pos;
+        start_pos = state->mean.getPosECEF();
         state = boost::none;
       }
       if(state && (last_good_gps < ros::Time::now() - ros::Duration(5.))) {
@@ -81,17 +123,10 @@ class NodeImpl {
       
       if(!state) {
         if(last_mag && last_good_gps && *last_good_gps > ros::Time::now() - ros::Duration(1.)) {
-          Vec<State::RowsAtCompileTime> stdev =
-            (Vec<State::RowsAtCompileTime>() <<
-            0,0,0, .05,.05,.05, 1,1,1, 1e-3,1e-3,1e-3, 0.1, 1e3).finished();
-          SqMat<State::RowsAtCompileTime> tmp =
-            stdev.asDiagonal();
-          Vec<3> accel = xyz2vec(msg.linear_acceleration);
-          Quaternion orient = triad(Vec<3>(0, 0, -1), mag_world, -accel, *last_mag);
-          state = GaussianDistribution<State>(
-            State(msg.header.stamp, start_pos, orient,
-              Vec<3>::Zero(), Vec<3>::Zero(), 9.80665, 101325),
-            tmp*tmp);
+          state = init_state(msg, *last_mag, *last_good_gps_msg);
+        } else {
+          std::cout << "something missing" << std::endl;
+          return;
         }
       } else {
         state = StateUpdater(msg)(*state);
@@ -113,7 +148,7 @@ class NodeImpl {
       if(state->mean.gyro_bias.norm() > .5) {
         NODELET_ERROR("reset due to bad gyro biases");
         last_mag = boost::none;
-        start_pos = state->mean.pos;
+        start_pos = state->mean.getPosECEF();
         state = boost::none;
         return;
       }
@@ -123,16 +158,16 @@ class NodeImpl {
       {
         nav_msgs::Odometry output;
         output.header.stamp = msg.header.stamp;
-        output.header.frame_id = "/map";
+        output.header.frame_id = "/ecef";
         output.child_frame_id = msg.header.frame_id;
         
-        tf::pointEigenToMsg(state->mean.pos, output.pose.pose.position);
-        tf::quaternionEigenToMsg(state->mean.orient, output.pose.pose.orientation);
+        tf::pointEigenToMsg(state->mean.getPosECEF(), output.pose.pose.position);
+        tf::quaternionEigenToMsg(state->mean.getOrientECEF(), output.pose.pose.orientation);
         Eigen::Map<SqMat<6> >(output.pose.covariance.data()) <<
-          state->cov.block<3, 3>(State::POS, State::POS), state->cov.block<3, 3>(State::POS, State::ORIENT),
-          state->cov.block<3, 3>(State::ORIENT, State::POS), state->cov.block<3, 3>(State::ORIENT, State::ORIENT);
+          state->cov.block<3, 3>(State::POS_ECI, State::POS_ECI), state->cov.block<3, 3>(State::POS_ECI, State::ORIENT),
+          state->cov.block<3, 3>(State::ORIENT, State::POS_ECI), state->cov.block<3, 3>(State::ORIENT, State::ORIENT);
         
-        tf::vectorEigenToMsg(state->mean.orient.conjugate()._transformVector(state->mean.vel), output.twist.twist.linear);
+        tf::vectorEigenToMsg(state->mean.getOrientECEF().conjugate()._transformVector(state->mean.getVelECEF()), output.twist.twist.linear);
         tf::vectorEigenToMsg(xyz2vec(msg.angular_velocity) - state->mean.gyro_bias, output.twist.twist.angular);
         Eigen::Map<SqMat<6> >(output.twist.covariance.data()) <<
           state->cov.block<3, 3>(State::VEL, State::VEL), SqMat<3>::Zero(), // XXX covariance needs to be adjusted since velocity was transformed to body frame
@@ -159,6 +194,7 @@ class NodeImpl {
       state = kalman_update(
         EasyDistributionFunction<State, Vec<1>, Vec<3> >(
           [&msg, this](State const &state, Vec<3> const &measurement_noise) {
+            Vec<3> mag_world = magnetic::getMagneticField(state.pos_eci);
             //Vec<3> predicted = state.orient.conjugate()._transformVector(mag_world);
             double predicted_angle = atan2(mag_world(1), mag_world(0));
             Vec<3> measured_world = state.orient._transformVector(xyz2vec(msg.magnetic_field) + measurement_noise); // noise shouldn't be here
@@ -175,7 +211,7 @@ class NodeImpl {
     
     
     void got_press(const sensor_msgs::FluidPressureConstPtr &msgp) {
-      const sensor_msgs::FluidPressure &msg = *msgp;
+      /*const sensor_msgs::FluidPressure &msg = *msgp;
       
       if(!state) return;
       
@@ -190,7 +226,7 @@ class NodeImpl {
           GaussianDistribution<Vec<1> >(
             Vec<1>::Zero(),
             scalar_matrix(msg.variance ? msg.variance : pow(10, 2)))),
-        *state);
+        *state);*/
     }
     
     void got_gps(const rawgps_common::MeasurementsConstPtr &msgp) {
@@ -208,6 +244,8 @@ class NodeImpl {
       
       if(msg.satellites.size() >= 4) {
         last_good_gps = ros::Time::now();
+        last_good_gps_msg = msg;
+        std::cout << "got gps" << std::endl;
       } else {
         std::cout << "bad gps" << std::endl;
       }
@@ -220,7 +258,7 @@ class NodeImpl {
     }
     
     
-    void fake_depth() {
+    /*void fake_depth() {
       state = kalman_update(
         EasyDistributionFunction<State, Vec<1>, Vec<1> >(
           [](State const &state, Vec<1> const &measurement_noise) {
@@ -232,7 +270,7 @@ class NodeImpl {
             Vec<1>::Zero(),
             scalar_matrix(pow(0.3, 2)))),
         *state);
-    }
+    }*/
     
     
     tf::TransformListener tf_listener;
@@ -246,6 +284,7 @@ class NodeImpl {
     Vec<3> start_pos;
     boost::optional<Vec<3> > last_mag;
     boost::optional<ros::Time> last_good_gps;
+    boost::optional<rawgps_common::Measurements> last_good_gps_msg;
     boost::optional<GaussianDistribution<State> > state;
     boost::optional<Vec<3> > last_gyro;
     std::string local_frame_id;
