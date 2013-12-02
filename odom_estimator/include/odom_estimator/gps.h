@@ -40,6 +40,7 @@ typedef ManifoldPair<Vec<3>, Vec<3> > Fix;
 class E : public IDistributionFunction<Fix, Vec<Dynamic>, Vec<Dynamic> > {
   rawgps_common::Measurements const &msg;
   
+public:
   GaussianDistribution<Vec<Dynamic> > get_extra_distribution() const {
     Vec<Dynamic> mean = Vec<Dynamic>::Zero(2 + 2*msg.satellites.size());
     
@@ -85,7 +86,6 @@ class E : public IDistributionFunction<Fix, Vec<Dynamic>, Vec<Dynamic> > {
     return res;
   }
   
-public:
   E(rawgps_common::Measurements const &msg) :
     msg(msg) {
   }

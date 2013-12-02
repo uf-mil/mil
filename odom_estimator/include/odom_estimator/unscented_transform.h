@@ -97,9 +97,9 @@ unscented_transform(boost::function<OutPointType(InPointType)> const &func,
 
 template<typename InType, typename OutType, typename ExtraType>
 class IDistributionFunction {
+public:
   virtual GaussianDistribution<ExtraType> get_extra_distribution() const = 0;
   virtual OutType apply(InType const &input, ExtraType const &extra) const = 0;
-public:
   virtual GaussianDistributionWithCrossCov<OutType, InType> operator()(GaussianDistribution<InType> const &input) const final {
     typedef ManifoldPair<InType, ExtraType> InAndExtraType;
     
@@ -124,13 +124,13 @@ template<typename InType, typename OutType, typename ExtraType>
 class EasyDistributionFunction : public IDistributionFunction<InType, OutType, ExtraType> {
   std::function<OutType(InType, ExtraType)> func;
   GaussianDistribution<ExtraType> extra_distribution;
+public:
   GaussianDistribution<ExtraType> get_extra_distribution() const {
     return extra_distribution;
   }
   OutType apply(InType const &input, ExtraType const &extra) const {
     return func(input, extra);
   }
-public:
   EasyDistributionFunction(std::function<OutType(InType, ExtraType)> func,
                            GaussianDistribution<ExtraType> const &extra_distribution) :
     func(func), extra_distribution(extra_distribution) {
