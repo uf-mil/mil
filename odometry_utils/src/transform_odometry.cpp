@@ -13,6 +13,8 @@
 
 namespace odometry_utils {
 
+using namespace odom_estimator;
+
 using namespace Eigen;
 typedef Matrix<double, 6, 6> Matrix6d;
 typedef Matrix<double, 12, 12> Matrix12d;
@@ -22,8 +24,10 @@ struct Odom {
   Quaterniond orient;
   Vector3d vel;
   Vector3d ang_vel;
-  static const int DELTA_SIZE = 3*4;
-  typedef Matrix<double, DELTA_SIZE, 1> DeltaType;
+  static const int RowsAtCompileTime = 3*4;
+  unsigned int rows() const {
+    return RowsAtCompileTime;
+  }
   
   Odom(Vector3d pos, Quaterniond orient,
       Vector3d vel, Vector3d ang_vel) :
@@ -37,14 +41,14 @@ struct Odom {
     tf::vectorMsgToEigen(twist.angular, ang_vel);
   }
   
-  DeltaType operator-(const Odom &other) const {
-    return (DeltaType() <<
+  Vec<RowsAtCompileTime> operator-(const Odom &other) const {
+    return (Vec<RowsAtCompileTime>() <<
       pos - other.pos,
       rotvec_from_quat(orient * other.orient.conjugate()),
       vel - other.vel,
       ang_vel - other.ang_vel).finished();
   }
-  Odom operator+(const DeltaType &other) const {
+  Odom operator+(const Vec<RowsAtCompileTime> &other) const {
     return Odom(
       pos + other.segment<3>(0),
       quat_from_rotvec(other.segment<3>(3)) * orient,
@@ -99,10 +103,15 @@ private:
       Matrix12d cov = Matrix12d::Zero();
       cov.block<6, 6>(0, 0) = Map<const Matrix6d>(msg->pose.covariance.data());
       cov.block<6, 6>(6, 6) = Map<const Matrix6d>(msg->twist.covariance.data());
-      UnscentedTransform<Odom, 12, Odom, 12> res(
-        boost::bind(&Odom::transform, _1, lefttransform, righttransform),
-        Odom(msg->pose.pose, msg->twist.twist),
-        cov);
+      GaussianDistribution<Odom> res =
+        EasyDistributionFunction<Odom, Odom, Vec<0> >(
+          [&lefttransform, &righttransform](Odom const &odom, Vec<0> const &extra) {
+            return odom.transform(lefttransform, righttransform);
+          },
+          GaussianDistribution<Vec<0> >(Vec<0>(), SqMat<0>()))
+        (GaussianDistribution<Odom>(
+          Odom(msg->pose.pose, msg->twist.twist),
+          cov));
       
       nav_msgs::Odometry result;
       result.header.frame_id = frame_id;
