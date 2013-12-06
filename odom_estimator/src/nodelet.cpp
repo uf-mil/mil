@@ -117,12 +117,13 @@ class NodeImpl {
         start_pos = state->mean.getPosECEF();
         state = boost::none;
       }
-      if(state && (last_good_gps < ros::Time::now() - ros::Duration(5.))) {
+      if(state && (last_good_gps < msg.header.stamp - ros::Duration(5.))) {
         NODELET_ERROR("reset due to no good gps data");
       }
       
       if(!state) {
-        if(last_mag && last_good_gps && *last_good_gps > ros::Time::now() - ros::Duration(1.)) {
+        if(last_mag && last_good_gps && *last_good_gps > msg.header.stamp - ros::Duration(1.5) &&
+                                        *last_good_gps < msg.header.stamp + ros::Duration(1.5)) {
           state = init_state(msg, *last_mag, *last_good_gps_msg);
         } else {
           std::cout << "something missing" << std::endl;
@@ -243,7 +244,7 @@ class NodeImpl {
       Vec<3> local_gps_pos; tf::vectorTFToEigen(transform.getOrigin(), local_gps_pos);
       
       if(msg.satellites.size() >= 4) {
-        last_good_gps = ros::Time::now();
+        last_good_gps = msg.header.stamp;
         last_good_gps_msg = msg;
         std::cout << "got gps" << std::endl;
       } else {

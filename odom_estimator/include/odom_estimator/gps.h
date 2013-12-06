@@ -36,7 +36,7 @@ public:
       
       double cn0 = pow(10, sat.cn0/10.);
       
-      stddev(2 + i) = 5;
+      stddev(2 + i) = 1;
       stddev(2 + msg.satellites.size() + i) =
         20.5564182949/pow(cn0, 0.691171572741);
     }

@@ -24,6 +24,7 @@ GaussianDistribution<InType> kalman_update(DistributionFunction const &df,
   // P_zz' K' = P_xz'
   // K' = solve(P_zz', P_xz')
   // K = solve(P_zz', P_xz')'
+  if(P_zz.rows() == 0) return input; // Matrix<>.ldlt() crashes for size-zero matrices
   Mat<InType::RowsAtCompileTime, res.mean.RowsAtCompileTime> K =
     P_zz.transpose().ldlt().solve(P_xz.transpose()).transpose();
   
