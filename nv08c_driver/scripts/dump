@@ -29,13 +29,14 @@ nan = 1e600/1e600
 assert math.isnan(nan)
 
 last_pos = None
+ionospheric_model = None
 
 pub = rospy.Publisher('~gps', Measurements)
 pos_pub = rospy.Publisher('~pos', PointStamped)
 latlong_pub = rospy.Publisher('~latlong', PointStamped)
 def cb(msg):
     print 'in', msg.header
-    global last_pos
+    global last_pos, ionospheric_model
     msg.data = chr(msg.id) + msg.data
     packet = msg
     if msg.data.startswith('\xf5'):
@@ -92,6 +93,12 @@ def cb(msg):
                         direction = sat_pos - last_pos; direction /= numpy.linalg.norm(direction)
                         direction_enu = gps.enu_from_ecef(direction, last_pos)
                         velocity_plus_drift = doppler_freq*gps.c/gps.L1_f0 + direction.dot(sat_vel)
+                        if ionospheric_model is not None:
+                            T_iono = ionospheric_model.evaluate(last_pos, sat_pos, gps_t)
+                            print "T_iono", T_iono
+                        else:
+                            print 'no model'
+                            T_iono = 0
                     else:
                         continue
                     
@@ -100,7 +107,7 @@ def cb(msg):
                         cn0=snr,
                         position=Point(*sat_pos),
                         velocity=Vector3(*sat_vel),
-                        time=-pseudo_range * 1e-3 - deltat_SV_L1,
+                        time=-pseudo_range * 1e-3 - deltat_SV_L1 + T_iono,
                         carrier_distance=carrier_phase*gps.c/gps.L1_f0 if flags & 0x08 else nan,
                         doppler_velocity=doppler_freq*gps.c/gps.L1_f0 if flags & 0x02 else nan,
                         
@@ -159,7 +166,9 @@ def cb(msg):
         #print 'VER', channels, description, serial, res1, res2, res3, res4
     elif msg.data.startswith('\x4a'):
         a0, a1, a2, a3, b0, b1, b2, b3, reliable = struct.unpack('<ffffffffB', msg.data[1:])
-        #print 'ION', a0, a1, a2, a3, b0, b1, b2, b3, reliable
+        if reliable:
+            ionospheric_model = gps.IonosphericModel([a0, a1, a2, a3], [b0, b1, b2, b3])
+        print 'ION', a0, a1, a2, a3, b0, b1, b2, b3, reliable
     elif msg.data.startswith('\x4b'):
         A1, A0, t_ot, WN_t, dt_LS, WN_LSF, DN, dt_LSF, reliable, NA, tau_C, glonass_reliable = struct.unpack('<ddIHhHHhBHdB', msg.data[1:])
         print 'TSP', A1, A0, t_ot, WN_t, dt_LS, WN_LSF, DN, dt_LSF, reliable, NA, tau_C, glonass_reliable

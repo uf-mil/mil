@@ -184,3 +184,45 @@ class Ephemeris(object):
     def __str__(self):
         return 'Ephemeris(\n' + ''.join('    %s=%r\n' % (k, v) for k, v in sorted(self.__dict__.iteritems())) + ')'
 
+class IonosphericModel(object):
+    def __init__(self, a, b):
+        assert len(a) == 4 and len(b) == 4
+        self.a, self.b = a, b
+    
+    def evaluate(self, ground_pos_ecef, sat_pos_ecef, GPS_time):
+        lat, lon, height = latlongheight_from_ecef(ground_pos_ecef)
+        sat_pos_enu = enu_from_ecef(sat_pos_ecef - ground_pos_ecef, ground_pos_ecef)
+        sat_dir_enu = sat_pos_enu / numpy.linalg.norm(sat_pos_enu)
+        
+        E = math.asin(sat_dir_enu[2]) / math.pi
+        A = math.atan2(sat_dir_enu[0], sat_dir_enu[1]) / math.pi
+        phi_u = lat / math.pi
+        lambda_u = lon / math.pi
+        
+        psi = 0.00137/(E + 0.11) - 0.022
+        
+        phi_i = phi_u + psi * math.cos(A * math.pi)
+        if phi_i > 0.416: phi_i = 0.416
+        if phi_i < -0.416: phi_i = -0.416
+        
+        lambda_i = lambda_u + psi * math.sin(A * math.pi) / math.cos(phi_i * math.pi)
+        phi_m = phi_i + 0.064 * math.cos((lambda_i - 1.617) * math.pi)
+        
+        t = (4.32e4 * lambda_i + GPS_time) % 86400
+        
+        F = 1 + 16 * (0.53 - E)**3
+        
+        PER = sum(self.b[n] * phi_m**n for n in xrange(4))
+        if PER < 72000: PER = 72000
+        
+        AMP = sum(self.a[n] * phi_m**n for n in xrange(4))
+        if AMP < 0: AMP = 0
+        
+        x = 2*math.pi*(t - 50400)/PER
+        
+        if abs(x) < 1.57:
+            T_iono = F * (5e-9 + AMP * (1 - x**2/2 + x**4/24))
+        else:
+            T_iono = F * 5e-9
+        
+        return T_iono
