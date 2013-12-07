@@ -199,7 +199,7 @@ class IonosphericModel(object):
         phi_u = lat / math.pi
         lambda_u = lon / math.pi
         
-        psi = 0.00137/(E + 0.11) - 0.022
+        psi = 0.0137/(E + 0.11) - 0.022
         
         phi_i = phi_u + psi * math.cos(A * math.pi)
         if phi_i > 0.416: phi_i = 0.416
@@ -226,3 +226,26 @@ class IonosphericModel(object):
             T_iono = F * 5e-9
         
         return T_iono
+
+if __name__ == '__main__':
+    station_pos = ecef_from_latlongheight(math.radians(40), -math.radians(100), 0)
+    print 'station_pos', station_pos
+    sat_pos_enu = 5000e3 * numpy.array([
+        math.cos(math.radians(20))*math.sin(math.radians(210)),
+        math.cos(math.radians(20))*math.cos(math.radians(210)),
+        math.sin(math.radians(20)),
+    ])
+    print 'sat_pos_enu', sat_pos_enu
+    sat_pos = ecef_from_enu(sat_pos_enu, station_pos) + station_pos
+    print 'sat_pos', sat_pos
+    
+    im = IonosphericModel(
+        [3.82e-8, 1.49e-8, -1.79e-7, 0],
+        [1.43e5, 0, -3.28e5, 1.13e5],
+    )
+    
+    print
+    
+    print im.evaluate(station_pos, sat_pos, (20*60+45)*60)
+
+
