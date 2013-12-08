@@ -47,7 +47,7 @@ GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
     accel_body, last_mag);
   
   Vec<State::RowsAtCompileTime> stdev =
-    (Vec<State::RowsAtCompileTime>() <<
+    (Vec<State::RowsAtCompileTime>(14) <<
     0,0,0, .05,.05,.05, 1,1,1, 1e-3,1e-3,1e-3, 0.1, 1e3).finished();
   SqMat<State::RowsAtCompileTime> tmp =
     stdev.asDiagonal();
@@ -59,7 +59,9 @@ GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
       vel_eci,
       Vec<3>::Zero(),
       9.80665,
-      101325),
+      101325,
+      std::vector<int>{},
+      Vec<Dynamic>::Zero(0)),
     tmp*tmp);
 }
 
@@ -143,6 +145,12 @@ class NodeImpl {
         << " " << sqrt(state->cov(State::GYRO_BIAS+2, State::GYRO_BIAS+2)) << std::endl;
       std::cout << "grav: " << state->mean.local_g << "  " << sqrt(state->cov(State::LOCAL_G, State::LOCAL_G)) << std::endl;
       std::cout << "ground air pressure: " << state->mean.ground_air_pressure << "  " << sqrt(state->cov(State::GROUND_AIR_PRESSURE, State::GROUND_AIR_PRESSURE)) << std::endl;
+      for(unsigned int i = 0; i < state->mean.gps_prn.size(); i++) {
+        std::cout << state->mean.gps_prn[i]
+          << " " << state->mean.gps_bias[i]
+          << " " << sqrt(state->cov(State::GPS_BIAS + i, State::GPS_BIAS + i))
+          << std::endl;
+      }
       std::cout << std::endl;
       
 
@@ -253,8 +261,33 @@ class NodeImpl {
       
       if(!state) return;
       
+      std::vector<int> new_prns;
+      std::vector<rawgps_common::Satellite> const &sats = msg.satellites;
+      for(unsigned int i = 0; i < sats.size(); i++) {
+        rawgps_common::Satellite const &sat = sats[i];
+        if(std::find(state->mean.gps_prn.begin(), state->mean.gps_prn.end(), sat.prn) == state->mean.gps_prn.end()) {
+          new_prns.push_back(sat.prn);
+        }
+      }
+      
+      state = EasyDistributionFunction<State, State, Vec<Dynamic> >(
+        [&new_prns](State const &state, Vec<Dynamic> const &new_bias) {
+          State new_state = state;
+          for(unsigned int i = 0; i < new_prns.size(); i++) {
+            new_state.gps_prn.push_back(new_prns[i]);
+          }
+          new_state.gps_bias = 
+            (Vec<Dynamic>(state.gps_bias.rows()+new_bias.rows())
+              << state.gps_bias, new_bias).finished();
+          return new_state;
+        },
+        GaussianDistribution<Vec<Dynamic> >(
+          Vec<Dynamic>::Zero(new_prns.size()),
+          9*Vec<Dynamic>::Ones(new_prns.size()).asDiagonal())
+      )(*state);
+      
       state = kalman_update(
-        GPSErrorObserver(msg, local_gps_pos, *last_gyro),
+        GPSErrorObserver(msg, state->mean.gps_prn, local_gps_pos, *last_gyro),
         *state);
     }
     

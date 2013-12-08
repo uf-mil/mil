@@ -81,8 +81,8 @@ def cb(msg):
                     t_SV = gps_t - pseudo_range * 1e-3
                     
                     t = t_SV # initialize
+                    deltat_r = 0
                     for i in xrange(3):
-                        deltat_r = 0
                         dt = t - eph.t_oc
                         while dt > 302400: dt -= 604800
                         while dt < -302400: dt += 604800
@@ -110,7 +110,8 @@ def cb(msg):
                         cn0=snr,
                         position=Point(*sat_pos),
                         velocity=Vector3(*sat_vel),
-                        time=-pseudo_range * 1e-3 - deltat_SV_L1 + T_iono,
+                        time=-pseudo_range * 1e-3 - deltat_SV_L1,
+                        T_iono=T_iono,
                         carrier_distance=carrier_phase*gps.c/gps.L1_f0 if flags & 0x08 else nan,
                         doppler_velocity=doppler_freq*gps.c/gps.L1_f0 if flags & 0x02 else nan,
                         

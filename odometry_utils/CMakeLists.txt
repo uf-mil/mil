@@ -17,7 +17,7 @@ find_package(catkin REQUIRED COMPONENTS nav_msgs roscpp eigen_conversions odom_e
 #  Release        : w/o debug symbols, w/ optimization
 #  RelWithDebInfo : w/ debug symbols, w/ optimization
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+set(ROS_BUILD_TYPE Debug)
 
 
 # CATKIN_MIGRATION: removed during catkin migration

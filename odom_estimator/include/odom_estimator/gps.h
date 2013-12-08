@@ -20,9 +20,11 @@ namespace odom_estimator {
 static const double c = 299792458;
 
 typedef ManifoldPair<Vec<3>, Vec<3> > Fix;
+typedef ManifoldPair<Fix, Vec<Dynamic>> FixWithBias;
 
-class E : public IDistributionFunction<Fix, Vec<Dynamic>, Vec<Dynamic> > {
+class E : public IDistributionFunction<FixWithBias, Vec<Dynamic>, Vec<Dynamic> > {
   rawgps_common::Measurements const &msg;
+  std::vector<int> gps_prn;
   
 public:
   GaussianDistribution<Vec<Dynamic> > get_extra_distribution() const {
@@ -45,7 +47,8 @@ public:
       stddev.cwiseProduct(stddev).asDiagonal());
   }
   
-  Vec<Dynamic> apply(Fix const &fix, Vec<Dynamic> const &noise) const {
+  Vec<Dynamic> apply(FixWithBias const &fixwithbias, Vec<Dynamic> const &noise) const {
+    Fix const &fix = fixwithbias.first;
     std::vector<rawgps_common::Satellite> const &sats = msg.satellites;
     
     Vec<3> pos = fix.first;
@@ -63,33 +66,52 @@ public:
       Vec<3> sat_eci_pos = inertial_from_ecef(sat.time, point2vec(sat.position));
       Vec<3> sat_eci_vel = inertial_vel_from_ecef_vel(sat.time, xyz2vec(sat.velocity), sat_eci_pos);
       
-      res(i) = (eci_pos - sat_eci_pos).norm() - (t - sat.time)*c + noise(2 + i);
+      unsigned int index = std::find(gps_prn.begin(), gps_prn.end(), sat.prn) - gps_prn.begin();
+      assert(index != gps_prn.size());
+      double bias = fixwithbias.second[index];
+      res(i) = (eci_pos - sat_eci_pos).norm() - (t - sat.time - sat.T_iono)*c + noise(2 + i) + bias;
       res(i + sats.size()) = (sat_eci_pos - eci_pos).normalized().dot(eci_vel - sat_eci_vel)
         - (skew + sat.doppler_velocity) + noise(2 + sats.size() + i);
     }
     return res;
   }
   
-  E(rawgps_common::Measurements const &msg) :
-    msg(msg) {
+  E(rawgps_common::Measurements const &msg, std::vector<int> const &gps_prn) :
+    msg(msg), gps_prn(gps_prn) {
   }
 };
 
 GaussianDistribution<Fix> get_fix(rawgps_common::Measurements const &msg) {
+  std::vector<int> prns;
+  for(unsigned int i = 0; i < msg.satellites.size(); i++) {
+    prns.push_back(msg.satellites[i].prn);
+  }
+  
   Fix trial(Vec<3>::Zero(), Vec<3>::Zero());
   
   for(int i = 0; i < 10; i++) {
     Vec<6> prior_stddev = (Vec<6>() << 1e3, 1e3, 1e3, 1e3, 1e3, 1e3).finished();
-    GaussianDistribution<Fix> res =
+    GaussianDistribution<FixWithBias> res =
       kalman_update(
-        E(msg),
-        GaussianDistribution<Fix>(
-          trial,
-          prior_stddev.cwiseProduct(prior_stddev).asDiagonal()));
+        E(msg, prns),
+        GaussianDistribution<FixWithBias>(
+          FixWithBias(
+            trial,
+            Vec<Dynamic>::Zero(prns.size())),
+          FixWithBias::build_cov(
+            prior_stddev.cwiseProduct(prior_stddev).asDiagonal(),
+            Vec<Dynamic>::Ones(prns.size()).asDiagonal())));
     
-    if(i == 9) return res;
+    if(i == 9) {
+      return EasyDistributionFunction<FixWithBias, Fix, Vec<0> >(
+        [](FixWithBias const &fixwithbias, Vec<0> const &) {
+          return fixwithbias.first;
+        },
+        GaussianDistribution<Vec<0> >(Vec<0>(), SqMat<0>())
+      )(res);
+    }
     
-    trial = res.mean;
+    trial = res.mean.first;
   }
   
   assert(false);
@@ -106,17 +128,20 @@ class GPSErrorObserver : public IDistributionFunction<State, Vec<Dynamic>, Vec<D
   
   Vec<Dynamic> apply(State const &state, Vec<Dynamic> const &noise) const {
     return inner.apply(
-      Fix(
-        state.getPosECEF(gps_pos),
-        state.getVelECEF(gps_pos, last_gyro)),
+      FixWithBias(
+        Fix(
+          state.getPosECEF(gps_pos),
+          state.getVelECEF(gps_pos, last_gyro)),
+        state.gps_bias),
       noise);
   }
 
 public:
   GPSErrorObserver(rawgps_common::Measurements const &msg,
+                   std::vector<int> gps_prn,
                    Vec<3> const &gps_pos,
                    Vec<3> const &last_gyro) :
-    inner(msg), gps_pos(gps_pos), last_gyro(last_gyro) {
+    inner(msg, gps_prn), gps_pos(gps_pos), last_gyro(last_gyro) {
   }
 };
 

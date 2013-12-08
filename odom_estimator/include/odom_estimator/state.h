@@ -25,32 +25,40 @@ struct State {
   static const unsigned int GYRO_BIAS = VEL + 3; Vec<3> gyro_bias;
   static const unsigned int LOCAL_G = GYRO_BIAS + 3; double local_g;
   static const unsigned int GROUND_AIR_PRESSURE = LOCAL_G + 1; double ground_air_pressure;
-  static const int RowsAtCompileTime = GROUND_AIR_PRESSURE + 1;
+  
+  std::vector<int> gps_prn;
+  static const unsigned int GPS_BIAS = GROUND_AIR_PRESSURE + 1; Vec<Dynamic> gps_bias;
+  
+  static const int RowsAtCompileTime = Dynamic;
   typedef Vec<RowsAtCompileTime> DeltaType;
   typedef SqMat<RowsAtCompileTime> CovType;
   
   State(ros::Time t, Vec<3> pos_eci, Quaternion orient,
       Vec<3> vel, Vec<3> gyro_bias,
-      double local_g, double ground_air_pressure) :
+      double local_g, double ground_air_pressure,
+      std::vector<int> gps_prn, Vec<Dynamic> gps_bias) :
     t(t), pos_eci(pos_eci), orient(orient.normalized()), vel(vel),
     gyro_bias(gyro_bias), local_g(local_g),
-    ground_air_pressure(ground_air_pressure) {
+    ground_air_pressure(ground_air_pressure),
+    gps_prn(gps_prn), gps_bias(gps_bias) {
       assert_none_nan(pos_eci); assert_none_nan(orient.coeffs());
       assert_none_nan(vel); assert_none_nan(gyro_bias);
       assert(std::isfinite(local_g)); assert(std::isfinite(ground_air_pressure));
+      assert_none_nan(gps_bias);
   }
   unsigned int rows() const {
-    return RowsAtCompileTime;
+    return GPS_BIAS + gps_bias.rows();
   }
   
   DeltaType operator-(const State &other) const {
-    return (DeltaType() <<
+    return (DeltaType(rows()) <<
       pos_eci - other.pos_eci,
       rotvec_from_quat(orient * other.orient.conjugate()),
       vel - other.vel,
       gyro_bias - other.gyro_bias,
       local_g - other.local_g,
-      ground_air_pressure - other.ground_air_pressure).finished();
+      ground_air_pressure - other.ground_air_pressure,
+      gps_bias - other.gps_bias).finished();
   }
   State operator+(const DeltaType &other) const {
     return State(
@@ -60,7 +68,9 @@ struct State {
       vel + other.segment<3>(VEL),
       gyro_bias + other.segment<3>(GYRO_BIAS),
       local_g + other(LOCAL_G),
-      ground_air_pressure + other(GROUND_AIR_PRESSURE));
+      ground_air_pressure + other(GROUND_AIR_PRESSURE),
+      gps_prn,
+      gps_bias + other.tail(other.rows() - GPS_BIAS));
   }
   
   Vec<3> getPosECI(Vec<3> body_point=Vec<3>::Zero()) const {
@@ -141,7 +151,9 @@ class StateUpdater : public IDistributionFunction<State, State,
       state.vel + dt * accel_world,
       state.gyro_bias,
       state.local_g,
-      state.ground_air_pressure + sqrt(dt) * noise(0));
+      state.ground_air_pressure + sqrt(dt) * noise(0),
+      state.gps_prn,
+      state.gps_bias);
   }
 
 public:

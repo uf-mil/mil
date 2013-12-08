@@ -7,6 +7,8 @@ geometry_msgs/Point position
 geometry_msgs/Vector3 velocity
 float64 time
 
+float64 T_iono # ionospheric delay (s)
+
 float64 carrier_distance # m with (half-?)integer multiple of wavelength bias
 float64 doppler_velocity # m/s with bias common to all sibling Satellites
 

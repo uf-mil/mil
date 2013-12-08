@@ -169,7 +169,7 @@ class Ephemeris(object):
         z_k = y_k_prime * sin(i_k)
         
         F = -2*mu**(1/2)/c**2
-        deltat_r = F * e * A**(1/2) * sin(E_k)
+        deltat_r = F * self.e * A**(1/2) * sin(E_k)
         
         return numpy.array([x_k, y_k, z_k]), deltat_r
     
