@@ -16,6 +16,8 @@
 
 #include <rawgps_common/Measurements.h>
 
+#include <odom_estimator/Info.h>
+
 #include "odom_estimator/unscented_transform.h"
 #include "odom_estimator/util.h"
 #include "odom_estimator/state.h"
@@ -97,6 +99,7 @@ class NodeImpl {
         boost::bind(&NodeImpl::got_press, this, _1));
       gps_filter.registerCallback(boost::bind(&NodeImpl::got_gps, this, _1));
       odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
+      info_pub = private_nh.advertise<odom_estimator::Info>("info", 10);
     }
   
   private:
@@ -183,6 +186,19 @@ class NodeImpl {
           SqMat<3>::Zero(), Eigen::Map<SqMat<3> >(msg.angular_velocity_covariance.data()) + state->cov.block<3, 3>(State::GYRO_BIAS, State::GYRO_BIAS);
         
         odom_pub.publish(output);
+      }
+      
+      {
+        odom_estimator::Info output;
+        output.header.stamp = msg.header.stamp;
+        
+        for(unsigned int i = 0; i < state->mean.gps_prn.size(); i++) {
+          output.gps_bias_prns.push_back(state->mean.gps_prn[i]);
+          output.gps_bias_biases.push_back(state->mean.gps_bias[i]);
+          output.gps_bias_stddevs.push_back(sqrt(state->cov(State::GPS_BIAS + i, State::GPS_BIAS + i)));
+        }
+        
+        info_pub.publish(output);
       }
     }
     
@@ -283,7 +299,7 @@ class NodeImpl {
         },
         GaussianDistribution<Vec<Dynamic> >(
           Vec<Dynamic>::Zero(new_prns.size()),
-          9*Vec<Dynamic>::Ones(new_prns.size()).asDiagonal())
+          pow(10, 2)*Vec<Dynamic>::Ones(new_prns.size()).asDiagonal())
       )(*state);
       
       state = kalman_update(
@@ -314,6 +330,7 @@ class NodeImpl {
     message_filters::Subscriber<rawgps_common::Measurements> gps_sub;
     tf::MessageFilter<rawgps_common::Measurements> gps_filter;
     ros::Publisher odom_pub;
+    ros::Publisher info_pub;
     
     Vec<3> start_pos;
     boost::optional<Vec<3> > last_mag;

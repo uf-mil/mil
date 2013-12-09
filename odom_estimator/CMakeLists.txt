@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(odom_estimator)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS roscpp pluginlib rawgps_common sensor_msgs eigen_conversions geometry_msgs tf nodelet tf_conversions)
+find_package(catkin REQUIRED COMPONENTS roscpp pluginlib rawgps_common sensor_msgs eigen_conversions geometry_msgs tf nodelet tf_conversions std_msgs message_generation)
 # CATKIN_MIGRATION: removed during catkin migration
 # cmake_minimum_required(VERSION 2.4.6)
 
@@ -41,15 +41,19 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
 find_package(Eigen REQUIRED)
 include_directories(${Eigen_INCLUDE_DIRS})
 ## Generate added messages and services with any dependencies listed here
-#generate_messages(
-#    DEPENDENCIES 
-#)
+add_message_files(
+    FILES
+    Info.msg
+)
+generate_messages(
+    DEPENDENCIES std_msgs
+)
 
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
 # TODO: fill in what other packages will need to use this package
 catkin_package(
     DEPENDS Eigen # TODO
-    CATKIN_DEPENDS roscpp pluginlib rawgps_common sensor_msgs eigen_conversions geometry_msgs tf nodelet tf_conversions
+    CATKIN_DEPENDS roscpp pluginlib rawgps_common sensor_msgs eigen_conversions geometry_msgs tf nodelet tf_conversions std_msgs message_runtime
     INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS} include# TODO include
     LIBRARIES # TODO
 )
@@ -62,6 +66,7 @@ include_directories(${EIGEN_INCLUDE_DIRS} include ${Boost_INCLUDE_DIR} ${catkin_
 add_library(odom_estimator_nodelet src/nodelet.cpp)
 target_link_libraries(odom_estimator_nodelet ${catkin_LIBRARIES})
 add_dependencies(odom_estimator_nodelet ${catkin_EXPORTED_TARGETS})
+add_dependencies(odom_estimator_nodelet ${PROJECT_NAME}_generate_messages_cpp)
 set_target_properties(odom_estimator_nodelet PROPERTIES COMPILE_FLAGS -std=c++0x)
 #target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
