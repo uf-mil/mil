@@ -28,21 +28,22 @@ class E : public IDistributionFunction<FixWithBias, Vec<Dynamic>, Vec<Dynamic> >
   
 public:
   GaussianDistribution<Vec<Dynamic> > get_extra_distribution() const {
-    Vec<Dynamic> mean = Vec<Dynamic>::Zero(2*msg.satellites.size());
+    Vec<Dynamic> mean = Vec<Dynamic>::Zero(2 + 2*msg.satellites.size());
     
-    Vec<Dynamic> stddev(2*msg.satellites.size());
+    Vec<Dynamic> stddev(2 + 2*msg.satellites.size());
+    stddev(0) = 1e-3;
+    stddev(1) = 100;
     for(unsigned int i = 0; i < msg.satellites.size(); i++) {
       rawgps_common::Satellite const &sat = msg.satellites[i];
       
       double cn0 = pow(10, sat.cn0/10.);
       
-      stddev(i) = 1;
-      stddev(msg.satellites.size() + i) =
+      stddev(2 + i) = 1;
+      stddev(2 + msg.satellites.size() + i) =
         20.5564182949/pow(cn0, 0.691171572741);
     }
     
-    return GaussianDistribution<Vec<Dynamic> >(
-      mean,
+    return GaussianDistribution<Vec<Dynamic> >(mean,
       stddev.cwiseProduct(stddev).asDiagonal());
   }
   
@@ -53,11 +54,13 @@ public:
     Vec<3> pos = fix.first;
     Vec<3> vel = fix.second;
     
+    double t = noise(0);
+    double skew = noise(1);
+    
     Vec<3> eci_pos = inertial_from_ecef(t, pos);
     Vec<3> eci_vel = inertial_vel_from_ecef_vel(t, vel, eci_pos);
     
-    Vec<Dynamic> pseudorange_error = Vec<Dynamic>(sats.size());
-    Vec<Dynamic> dopplervel_error = Vec<Dynamic>(sats.size());
+    Vec<Dynamic> res = Vec<Dynamic>(2*sats.size());
     for(unsigned int i = 0; i < sats.size(); i++) {
       rawgps_common::Satellite const &sat = sats[i];
       Vec<3> sat_eci_pos = inertial_from_ecef(sat.time, point2vec(sat.position));
@@ -66,13 +69,11 @@ public:
       unsigned int index = std::find(gps_prn.begin(), gps_prn.end(), sat.prn) - gps_prn.begin();
       assert(index != gps_prn.size());
       double bias = fixwithbias.second[index];
-      pseudorange_error(i) = (eci_pos - sat_eci_pos).norm() - (0 - sat.time - sat.T_iono)*c + noise(i) + bias;
-      dopplervel_error(i) = (sat_eci_pos - eci_pos).normalized().dot(eci_vel - sat_eci_vel)
-        - (0 + sat.doppler_velocity) + noise(sats.size() + i);
+      res(i) = (eci_pos - sat_eci_pos).norm() - (t - sat.time - sat.T_iono)*c + noise(2 + i) + bias;
+      res(i + sats.size()) = (sat_eci_pos - eci_pos).normalized().dot(eci_vel - sat_eci_vel)
+        - (skew + sat.doppler_velocity) + noise(2 + sats.size() + i);
     }
-    return (Vec<Dynamic>(2*(sats.size())) <<
-      (pseudorange_error.array() - pseudorange_error.sum()/sats.size()).head(sats.size()),
-      (dopplervel_error.array() - dopplervel_error.sum()/sats.size()).head(sats.size())).finished();
+    return res;
   }
   
   E(rawgps_common::Measurements const &msg, std::vector<int> const &gps_prn) :
