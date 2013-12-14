@@ -38,7 +38,7 @@ public:
       
       double cn0 = pow(10, sat.cn0/10.);
       
-      stddev(2 + i) = 1;
+      stddev(2 + i) = 5;
       stddev(2 + msg.satellites.size() + i) =
         20.5564182949/pow(cn0, 0.691171572741);
     }
@@ -69,7 +69,7 @@ public:
       unsigned int index = std::find(gps_prn.begin(), gps_prn.end(), sat.prn) - gps_prn.begin();
       assert(index != gps_prn.size());
       double bias = fixwithbias.second[index];
-      res(i) = (eci_pos - sat_eci_pos).norm() - (t - sat.time - sat.T_iono)*c + noise(2 + i) + bias;
+      res(i) = (eci_pos - sat_eci_pos).norm() - (t - sat.time - sat.T_iono)*c + noise(2 + i); // + bias;
       res(i + sats.size()) = (sat_eci_pos - eci_pos).normalized().dot(eci_vel - sat_eci_vel)
         - (skew + sat.doppler_velocity) + noise(2 + sats.size() + i);
     }

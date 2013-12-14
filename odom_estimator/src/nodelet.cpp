@@ -50,7 +50,7 @@ GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
   
   Vec<State::RowsAtCompileTime> stdev =
     (Vec<State::RowsAtCompileTime>(14) <<
-    0,0,0, .05,.05,.05, 1,1,1, 1e-3,1e-3,1e-3, 0.1, 1e3).finished();
+    100,100,100, .05,.05,.05, 10,10,10, 1e-3,1e-3,1e-3, 0.1, 1e3).finished();
   SqMat<State::RowsAtCompileTime> tmp =
     stdev.asDiagonal();
   
@@ -299,12 +299,23 @@ class NodeImpl {
         },
         GaussianDistribution<Vec<Dynamic> >(
           Vec<Dynamic>::Zero(new_prns.size()),
-          pow(10, 2)*Vec<Dynamic>::Ones(new_prns.size()).asDiagonal())
+          pow(.1, 2)*Vec<Dynamic>::Ones(new_prns.size()).asDiagonal())
       )(*state);
       
       state = kalman_update(
         GPSErrorObserver(msg, state->mean.gps_prn, local_gps_pos, *last_gyro),
         *state);
+      
+      if(state->mean.gps_prn.size()) {
+        state = kalman_update(
+          EasyDistributionFunction<State, Vec<1>, Vec<1> >(
+            [](State const &state, Vec<1> const &measurement_noise) {
+              return scalar_matrix(state.gps_bias.sum() / state.gps_prn.size()
+                - measurement_noise(0));
+            },
+            GaussianDistribution<Vec<1> >(Vec<1>::Zero(), scalar_matrix(pow(.1, 2)))),
+          *state);
+      }
     }
     
     

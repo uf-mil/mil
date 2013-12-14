@@ -45,6 +45,7 @@ struct State {
       assert_none_nan(vel); assert_none_nan(gyro_bias);
       assert(std::isfinite(local_g)); assert(std::isfinite(ground_air_pressure));
       assert_none_nan(gps_bias);
+      assert(gps_bias.rows() == gps_prn.size());
   }
   unsigned int rows() const {
     return GPS_BIAS + gps_bias.rows();
