@@ -17,6 +17,8 @@ from rawgps_common.msg import Measurements, Satellite
 from skytraq_driver import protocol
 from skytraq_driver.msg import SerialPacket
 
+nan = 1e1000/1e1000
+
 class Handlers(object):
     def __init__(self, frame_id):
         self.frame_id = frame_id
@@ -40,11 +42,11 @@ class Handlers(object):
         assert len(data) == 2+1+28*2+27, len(data)
         del data
         
-        print
-        print sv
-        for k, v in eph.__dict__.iteritems():
-            print k, repr(v)
-        print
+        #print
+        #print sv
+        #for k, v in eph.__dict__.iteritems():
+        #    print k, repr(v)
+        #print
         '''
         import matplotlib.pyplot as plt
         from mpl_toolkits.mplot3d import Axes3D
@@ -88,10 +90,26 @@ class Handlers(object):
             ),
             satellites=[],
         )
+        print
+        print
+        print
+        print
+        print
+        print
         for prn, cn0, pseudorange, acc_carrier_cycle, doppler_freq, status in measurements:
             (pseudorange_avail, doppler_freq_avail, acc_carrier_cycle_avail,
                 cycle_slip_possible, integration_time_greater_10ms) = [
                 bool(status & 2**i) for i in xrange(5)]
+            print 'prn: ', prn
+            #print '    cn0:', cn0
+            #print '    pseudorange:', pseudorange
+            print '    acc_carrier_cycle:', acc_carrier_cycle
+            #print '    doppler_freq:', doppler_freq
+            #print '    pseudorange_avail:', pseudorange_avail
+            #print '    doppler_freq_avail:', doppler_freq_avail
+            print '    acc_carrier_cycle_avail:', acc_carrier_cycle_avail
+            print '    cycle_slip_possible:', cycle_slip_possible
+            #print '    integration_time_greater_10ms:', integration_time_greater_10ms
             
             if not doppler_freq_avail:
                 print 'no doppler frequency, dropping', prn
@@ -106,7 +124,7 @@ class Handlers(object):
                 continue
             
             measured_vel = doppler_freq*gps.c/gps.L1_f0
-            sat_pos, sat_3vel = eph.predict(t)
+            sat_pos, _, sat_3vel = eph.predict(t)
             sat_dir = sat_pos - self.position;sat_dir /= numpy.linalg.norm(sat_dir)
             sat_vel = -sat_3vel.dot(sat_dir)
             msg.satellites.append(Satellite(
@@ -114,6 +132,7 @@ class Handlers(object):
                 velocity_plus_drift=measured_vel - sat_vel,
                 prn=prn,
                 cn0=cn0,
+                carrier_distance=acc_carrier_cycle,
             ))
         print len(msg.satellites), 'GOOD SATELLITES'
         self.pub.publish(msg)
@@ -121,7 +140,7 @@ class Handlers(object):
     def rcv_state(self, data, stamp):
         iod, navigation_state, wn, tow, ecef_x, ecef_y, ecef_z, ecef_dx, ecef_dy, ecef_dz, clock_bias, clock_drift, gdop, pdop, hdop, vdop, tdop = struct.unpack('>BBHddddfffdffffff', data)
         del data
-        print locals()
+        #print locals()
         
         self.time_of_week_minus_time = wn * 7*24*60*60 + tow - stamp.to_sec()
         self.position = numpy.array([ecef_x, ecef_y, ecef_z])
@@ -139,8 +158,11 @@ rospy.init_node('skytraq_parser')
 
 handlers = Handlers(rospy.get_param('~frame_id'))
 
+import threading
+l = threading.Lock()
 def got_serial(msg):
-    protocol.dispatch(msg.payload, handlers, stamp=msg.header.stamp)
+    with l:
+        protocol.dispatch(msg.payload, handlers, stamp=msg.header.stamp)
 rospy.Subscriber('skytraq_serial', SerialPacket, got_serial)
 
 rospy.spin()

@@ -49,14 +49,16 @@ GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
     accel_body, last_mag);
   
   Vec<State::RowsAtCompileTime> stdev =
-    (Vec<State::RowsAtCompileTime>(14) <<
-    100,100,100, .05,.05,.05, 10,10,10, 1e-3,1e-3,1e-3, 0.1, 1e3).finished();
+    (Vec<State::RowsAtCompileTime>(17) <<
+    100,100,100, 0,0,0, .05,.05,.05, 10,10,10, 1e-3,1e-3,1e-3, 0.1, 1e3).finished();
   SqMat<State::RowsAtCompileTime> tmp =
     stdev.asDiagonal();
   
   return GaussianDistribution<State>(
     State(msg.header.stamp,
+      msg.header.stamp,
       pos_eci,
+      Vec<3>::Zero(),
       orient_eci,
       vel_eci,
       Vec<3>::Zero(),
@@ -173,7 +175,7 @@ class NodeImpl {
         output.header.frame_id = "/ecef";
         output.child_frame_id = msg.header.frame_id;
         
-        tf::pointEigenToMsg(state->mean.getPosECEF(), output.pose.pose.position);
+        tf::pointEigenToMsg(state->mean.getRelPosECEF(), output.pose.pose.position);
         tf::quaternionEigenToMsg(state->mean.getOrientECEF(), output.pose.pose.orientation);
         Eigen::Map<SqMat<6> >(output.pose.covariance.data()) <<
           state->cov.block<3, 3>(State::POS_ECI, State::POS_ECI), state->cov.block<3, 3>(State::POS_ECI, State::ORIENT),

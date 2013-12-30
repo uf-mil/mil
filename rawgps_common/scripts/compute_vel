@@ -40,7 +40,10 @@ def got_msg(msg):
     vel_and_drift, _, _, _ = numpy.linalg.lstsq(A, b)
     
     vel, drift = vel_and_drift[:3], float(vel_and_drift[3])
+    print vel
     print drift
+    print numpy.linalg.norm(vel)*2.236
+    print
     
     pub.publish(Vector3Stamped(
         header=Header(

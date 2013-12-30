@@ -129,16 +129,13 @@ class Ephemeris(object):
         self.IDOT = subframe_3.read_signed(14) * 2**-43 * pi
         subframe_3.read(2)
         assert subframe_3.at_end()
-        
-        self.t_oe += self.WN * 7*24*60*60
     
     def _predict(self, t):
         A = self.sqrt_A**2
         n_0 = sqrt(mu/A**3)
         t_k = t - self.t_oe
-        time_wraparound = 1024*7*24*60*60
-        while t_k > +time_wraparound/2: t_k -= time_wraparound
-        while t_k < -time_wraparound/2: t_k += time_wraparound
+        time_wraparound = 7*24*60*60
+        t_k = (t_k + time_wraparound/2) % time_wraparound - time_wraparound/2
         if not (abs(t_k) < 6*60*60):
             print 'ERROR: ephemeris predicting more than 6 hours from now (%f hours)' % (t_k/60/60,)
         n = n_0 + self.delta_n
@@ -226,6 +223,16 @@ class IonosphericModel(object):
             T_iono = F * 5e-9
         
         return T_iono
+
+def tropospheric_model(ground_pos_ecef, sat_pos_ecef): # returns meters
+    sat_pos_enu = enu_from_ecef(sat_pos_ecef - ground_pos_ecef, ground_pos_ecef)
+    sat_dir_enu = sat_pos_enu / numpy.linalg.norm(sat_pos_enu)
+    
+    E = math.asin(sat_dir_enu[2])
+    
+    return 2.312 / math.sin(math.sqrt(E * E + 1.904E-3)) + \
+           0.084 / math.sin(math.sqrt(E * E + 0.6854E-3))
+
 
 if __name__ == '__main__':
     station_pos = ecef_from_latlongheight(math.radians(40), -math.radians(100), 0)

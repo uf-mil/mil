@@ -18,9 +18,11 @@ namespace odom_estimator {
 
 struct State {
   ros::Time t;
+  ros::Time t_start;
   
   static const unsigned int POS_ECI = 0; Vec<3> pos_eci;
-  static const unsigned int ORIENT = POS_ECI + 3; Quaternion orient;
+  static const unsigned int REL_POS_ECI = POS_ECI + 3; Vec<3> rel_pos_eci;
+  static const unsigned int ORIENT = REL_POS_ECI + 3; Quaternion orient;
   static const unsigned int VEL = ORIENT + 3; Vec<3> vel;
   static const unsigned int GYRO_BIAS = VEL + 3; Vec<3> gyro_bias;
   static const unsigned int LOCAL_G = GYRO_BIAS + 3; double local_g;
@@ -33,11 +35,14 @@ struct State {
   typedef Vec<RowsAtCompileTime> DeltaType;
   typedef SqMat<RowsAtCompileTime> CovType;
   
-  State(ros::Time t, Vec<3> pos_eci, Quaternion orient,
+  State(ros::Time t, ros::Time t_start,
+      Vec<3> pos_eci, Vec<3> rel_pos_eci, Quaternion orient,
       Vec<3> vel, Vec<3> gyro_bias,
       double local_g, double ground_air_pressure,
       std::vector<int> gps_prn, Vec<Dynamic> gps_bias) :
-    t(t), pos_eci(pos_eci), orient(orient.normalized()), vel(vel),
+    t(t), t_start(t_start),
+    pos_eci(pos_eci), rel_pos_eci(rel_pos_eci),
+    orient(orient.normalized()), vel(vel),
     gyro_bias(gyro_bias), local_g(local_g),
     ground_air_pressure(ground_air_pressure),
     gps_prn(gps_prn), gps_bias(gps_bias) {
@@ -45,15 +50,20 @@ struct State {
       assert_none_nan(vel); assert_none_nan(gyro_bias);
       assert(std::isfinite(local_g)); assert(std::isfinite(ground_air_pressure));
       assert_none_nan(gps_bias);
-      assert(gps_bias.rows() == gps_prn.size());
+      assert(static_cast<int64_t>(gps_bias.rows()) ==
+             static_cast<int64_t>(gps_prn.size()));
   }
   unsigned int rows() const {
     return GPS_BIAS + gps_bias.rows();
   }
   
   DeltaType operator-(const State &other) const {
+    assert(other.t == t);
+    assert(other.t_start == t_start);
+    assert(other.gps_prn == gps_prn);
     return (DeltaType(rows()) <<
       pos_eci - other.pos_eci,
+      rel_pos_eci - other.rel_pos_eci,
       rotvec_from_quat(orient * other.orient.conjugate()),
       vel - other.vel,
       gyro_bias - other.gyro_bias,
@@ -64,7 +74,9 @@ struct State {
   State operator+(const DeltaType &other) const {
     return State(
       t,
+      t_start,
       pos_eci + other.segment<3>(POS_ECI),
+      rel_pos_eci + other.segment<3>(REL_POS_ECI),
       quat_from_rotvec(other.segment<3>(ORIENT)) * orient,
       vel + other.segment<3>(VEL),
       gyro_bias + other.segment<3>(GYRO_BIAS),
@@ -79,6 +91,10 @@ struct State {
   }
   Vec<3> getPosECEF(Vec<3> body_point=Vec<3>::Zero()) const {
     return ecef_from_inertial(t.toSec(), getPosECI(body_point));
+  }
+  Vec<3> getRelPosECEF() const {
+    return ecef_from_inertial(t.toSec(), pos_eci) -
+      ecef_from_inertial(t_start.toSec(), pos_eci - rel_pos_eci);
   }
   Vec<3> getVelECI(Vec<3> body_point=Vec<3>::Zero(),
                    boost::optional<Vec<3> > gyro=boost::none) const {
@@ -147,7 +163,9 @@ class StateUpdater : public IDistributionFunction<State, State,
     
     return State(
       imu.header.stamp,
+      state.t_start,
       state.pos_eci + dt * state.vel + dt*dt/2 * accel_world,
+      state.rel_pos_eci + dt * state.vel + dt*dt/2 * accel_world,
       world_from_newbody,
       state.vel + dt * accel_world,
       state.gyro_bias,

@@ -137,6 +137,12 @@ namespace nv08c_driver {
                   write_packet(0xF4, std::vector<uint8_t>(d, d+sizeof(d)/sizeof(d[0]))); }
                 { uint8_t d[] = {1}; // PVT too
                   write_packet(0x27, std::vector<uint8_t>(d, d+sizeof(d)/sizeof(d[0]))); }
+                { uint8_t d[] = {1}; // Iono too
+                  write_packet(0x2A, std::vector<uint8_t>(d, d+sizeof(d)/sizeof(d[0]))); }
+                { uint8_t d[] = {1}; // Atmospheric corrections too
+                  write_packet(0x5C, std::vector<uint8_t>(d, d+sizeof(d)/sizeof(d[0]))); }
+                { uint8_t d[] = {1}; // Bit information too
+                  write_packet(0xD5, std::vector<uint8_t>(d, d+sizeof(d)/sizeof(d[0]))); }
             }
             void abort() {
                 p.close();

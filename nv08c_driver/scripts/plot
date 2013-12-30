@@ -1,0 +1,62 @@
+#!/usr/bin/python
+
+from __future__ import division
+
+import random
+import math
+import roslib
+roslib.load_manifest('nv08c_driver')
+
+import pygame
+import rospy
+from rawgps_common.msg import Measurements
+
+
+rospy.init_node('blah')
+
+bp = pygame.Surface((640, 480), 32)
+d = pygame.display.set_mode((640, 480))
+
+r = lambda x: int(x+.5)
+
+points = []
+
+def cb(msg):
+    avg = sum(satellite.velocity_plus_drift for satellite in msg.satellites)/len(msg.satellites)
+    for satellite in msg.satellites:
+        bp.set_at((r((satellite.cn0+random.random())*10), r(240 + (satellite.velocity_plus_drift-avg)*1000)), (255, 255, 255))
+        points.append((satellite.cn0, satellite.velocity_plus_drift - avg))
+    d.blit(bp, (0, 0))
+    for i in xrange(100):
+       X1 = i*6.4
+       X2 = (i+1)*6.4
+       cn0_1 = X1/10
+       cn0_2 = X2/10
+       try:
+         ex_1 = func(cn0_1)
+         ex_2 = func(cn0_2)
+       except: continue
+       pygame.draw.line(d, (255, 0, 0), (r(X1), r(240 + ex_1*1000)), (r(X2), r(240 + ex_2*1000)))
+       pygame.draw.line(d, (0, 0, 255), (r(X1), r(240)), (r(X2), r(240)))
+    pygame.display.update()
+rospy.Subscriber('/nv08c/gps', Measurements, cb)
+
+import time
+import numpy
+best = None
+func=lambda snr: math.sqrt(10**best.T.dot([1, snr]))
+while True:
+    time.sleep(1)
+    my_points = list(points)
+    res = numpy.linalg.lstsq([[1, snr] for snr, err in my_points], [[math.log10(err**2)] for snr, err in my_points])
+    best = res[0]
+    print res
+    print "0", func(0)
+    print "10", func(10)
+    print "20", func(20)
+    print "30", func(30)
+    print "40", func(40)
+    print "50", func(50)
+    print "100", func(100)
+
+rospy.spin()

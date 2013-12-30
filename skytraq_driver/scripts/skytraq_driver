@@ -41,6 +41,7 @@ class GPS(protocol.Protocol):
             if ord(checksum) != reduce(operator.xor, map(ord, payload), 0):
                 print 'invalid checksum'
                 continue
+            print payload.encode('hex')
             
             self.last_message = reactor.seconds()
             

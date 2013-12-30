@@ -29,10 +29,12 @@ nan = 1e600/1e600
 assert math.isnan(nan)
 
 last_pos = None
-ionospheric_model = gps.IonosphericModel(
+ionospheric_model = None
+gps.IonosphericModel(
     [1.49011611938e-08, 7.45058059692e-09, -1.19209289551e-07, -5.96046447754e-08],
     [106496.0, 32768.0, -262144.0, -65536.0],
 )
+should = {}
 
 pub = rospy.Publisher('~gps', Measurements)
 pos_pub = rospy.Publisher('~pos', PointStamped)
@@ -96,14 +98,24 @@ def cb(msg):
                         direction = sat_pos - last_pos; direction /= numpy.linalg.norm(direction)
                         direction_enu = gps.enu_from_ecef(direction, last_pos)
                         velocity_plus_drift = doppler_freq*gps.c/gps.L1_f0 + direction.dot(sat_vel)
+                        sh = should.get((sig_type, sat_num))
                         if ionospheric_model is not None:
                             T_iono = ionospheric_model.evaluate(last_pos, sat_pos, gps_t)
-                            print "T_iono", T_iono
+                            print "iono", -T_iono * gps.c, (sh[1] if sh is not None else '')
                         else:
                             print 'no model'
                             T_iono = 0
+                        D_tropo = gps.tropospheric_model(last_pos, sat_pos)
+                        print 'tropo', -D_tropo, (sh[0] if sh is not None else '')
                     else:
                         continue
+                    
+                    
+                    sat_pos_enu = gps.enu_from_ecef(sat_pos - last_pos, last_pos)
+                    sat_dir_enu = sat_pos_enu / numpy.linalg.norm(sat_pos_enu)
+                    
+                    E = math.asin(sat_dir_enu[2])
+                    if E < math.radians(5): continue
                     
                     m.satellites.append(Satellite(
                         prn=sat_num,
@@ -111,8 +123,8 @@ def cb(msg):
                         position=Point(*sat_pos),
                         velocity=Vector3(*sat_vel),
                         time=-pseudo_range * 1e-3 - deltat_SV_L1,
-                        T_iono=T_iono,
-                        carrier_distance=carrier_phase*gps.c/gps.L1_f0 if flags & 0x08 else nan,
+                        T_iono=T_iono + D_tropo/gps.c,
+                        carrier_distance=carrier_phase*gps.c/gps.L1_f0 if flags & 0x08 and not flags & 0x20 else nan,
                         doppler_velocity=doppler_freq*gps.c/gps.L1_f0 if flags & 0x02 else nan,
                         
                         direction_enu=Vector3(*direction_enu),
@@ -197,6 +209,14 @@ def cb(msg):
             print 'GPH', eph
         else:
             print 'unknown sat_type', sat_type
+    elif msg.data.startswith('\x5d'):
+        number_of_sats, = struct.unpack('<B', msg.data[1:2])
+        print 'Atmospheric corrections:'
+        for i in xrange(number_of_sats):
+            system, number, tropo_delay, iono_delay, reserved = \
+                struct.unpack('<BBfff', msg.data[2+14*i:2+14*(i+1)])
+            print system, number, tropo_delay, iono_delay, reserved
+            should[3-system, number] = tropo_delay, iono_delay
     else:
         print msg.data.encode('hex'), len(msg.data)
 
