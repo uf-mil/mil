@@ -26,7 +26,7 @@ include_directories(${Eigen_INCLUDE_DIRS})
 
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-rosbuild_add_library(nodelet src/nodelet.cpp)
+rosbuild_add_library(odom_estimator_nodelet src/nodelet.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)

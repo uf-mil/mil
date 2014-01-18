@@ -22,11 +22,11 @@ rosbuild_genmsg()
 #rosbuild_gensrv()
 
 #common commands for building c++ executables and libraries
-rosbuild_add_library(nodelet src/nodelet.cpp)
+rosbuild_add_library(nv08c_driver_nodelet src/nodelet.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
-rosbuild_add_compile_flags(nodelet -std=c++11)
+rosbuild_add_compile_flags(nv08c_driver_nodelet -std=c++11)
 

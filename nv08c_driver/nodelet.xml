@@ -1,4 +1,4 @@
-<library path="lib/libnodelet">
+<library path="lib/libnv08c_driver_nodelet">
   <class name="nv08c_driver/nodelet" type="nv08c_driver::Nodelet" base_class_type="nodelet::Nodelet">
     <description> 
       nv08c_driver
