@@ -1,5 +1,6 @@
-This repository contains ROS packages sufficient to create a
-GPS/INS system useful on an outdoor robot.
+This repository contains ROS packages for working with
+raw GPS data, sufficient to create a GPS/INS system
+useful on an outdoor robot.
 
 Requirements:
 
@@ -9,3 +10,5 @@ Requirements:
    drivers in this repository
     1. Skytraq S1315F-RAW
     2. NVS NV08C-CSM
+
+This software was sponsored as NSF project #00108192.
