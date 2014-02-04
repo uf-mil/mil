@@ -28,4 +28,7 @@ def dispatch(payload, obj, **kwargs):
     if len(payload) == 0:
         raise ValueError('payload must have nonzero length')
     message_name = message_names[ord(payload[0])]
-    getattr(obj, message_name, lambda data, **kwargs: None)(payload[1:], **kwargs)
+    if not hasattr(obj, message_name):
+        print message_name, 'unhandled'
+        return
+    getattr(obj, message_name)(payload[1:], **kwargs)

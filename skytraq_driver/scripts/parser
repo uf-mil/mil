@@ -12,18 +12,18 @@ import rospy
 from std_msgs.msg import Header
 from geometry_msgs.msg import Vector3, PointStamped, Point
 
-from rawgps_common import gps
+from rawgps_common import gps, bitstream
 from rawgps_common.msg import Measurements, Satellite
 from skytraq_driver import protocol
 from skytraq_driver.msg import SerialPacket
 
-nan = 1e1000/1e1000
 
 class Handlers(object):
     def __init__(self, frame_id):
         self.frame_id = frame_id
         
-        self.time_of_week_minus_time = None
+        self.ionospheric_model = None
+        self.last_meas_time = None
         self.position = None
         self.ephemerises = {}
         self.pub = rospy.Publisher('gps', Measurements)
@@ -70,18 +70,31 @@ class Handlers(object):
         
         self.ephemerises[sv] = eph
     
+    def ack(self, data, stamp):
+        pass
+    
+    def sv_ch_status(self, data, stamp):
+        pass
+    
+    def meas_time(self, data, stamp):
+        IOD, WN, TOW_ms, measurement_period_ms = struct.unpack('>BHIH', data)
+        self.last_meas_time = IOD, gps.Time(WN, TOW_ms*1e-3)
+    
     def raw_meas(self, data, stamp):
         iod, nmeas = struct.unpack('>BB', data[0:2])
+        assert len(data) == 2+nmeas*23
         measurements = [struct.unpack('>BBddfB', data[2+i*23:2+i*23+23])
             for i in xrange(nmeas)]
-        assert 2+nmeas*23 == len(data)
         
-        print nmeas, 'SATELLITES'
+        if self.last_meas_time is None or self.last_meas_time[0] != iod:
+            print "IOD didn't match!"
+            return
+        t = self.last_meas_time[1]
         
-        if self.position is None or self.time_of_week_minus_time is None:
+        #print nmeas, 'SATELLITES'
+        if self.position is None:
             print '   ', 'NO FIX'
             return
-        t = self.time_of_week_minus_time + stamp.to_sec()
         
         msg = Measurements(
             header=Header(
@@ -90,51 +103,39 @@ class Handlers(object):
             ),
             satellites=[],
         )
-        print
-        print
-        print
-        print
-        print
-        print
+        #print
+        #print
+        #print
+        #print
+        #print
+        #print
         for prn, cn0, pseudorange, acc_carrier_cycle, doppler_freq, status in measurements:
             (pseudorange_avail, doppler_freq_avail, acc_carrier_cycle_avail,
                 cycle_slip_possible, integration_time_greater_10ms) = [
                 bool(status & 2**i) for i in xrange(5)]
-            print 'prn: ', prn
-            #print '    cn0:', cn0
-            #print '    pseudorange:', pseudorange
-            print '    acc_carrier_cycle:', acc_carrier_cycle
-            #print '    doppler_freq:', doppler_freq
-            #print '    pseudorange_avail:', pseudorange_avail
-            #print '    doppler_freq_avail:', doppler_freq_avail
-            print '    acc_carrier_cycle_avail:', acc_carrier_cycle_avail
-            print '    cycle_slip_possible:', cycle_slip_possible
-            #print '    integration_time_greater_10ms:', integration_time_greater_10ms
-            
+            if not pseudorange_avail:
+                pseudorange = None
             if not doppler_freq_avail:
+                doppler_freq = None
+            if not acc_carrier_cycle_avail:
+                acc_carrier_cycle = None
+            
+            if doppler_freq is None:
                 print 'no doppler frequency, dropping', prn
                 continue
             
             if prn not in self.ephemerises:
-                print 'no ephemeris, dropping', prn
+                #print 'no ephemeris, dropping', prn
                 continue
             eph = self.ephemerises[prn]
             if not eph.is_healthy():
                 print 'unhealthy, dropping', prn
                 continue
             
-            measured_vel = doppler_freq*gps.c/gps.L1_f0
-            sat_pos, _, sat_3vel = eph.predict(t)
-            sat_dir = sat_pos - self.position;sat_dir /= numpy.linalg.norm(sat_dir)
-            sat_vel = -sat_3vel.dot(sat_dir)
-            msg.satellites.append(Satellite(
-                direction_enu=Vector3(*gps.enu_from_ecef(sat_dir, self.position)),
-                velocity_plus_drift=measured_vel - sat_vel,
-                prn=prn,
-                cn0=cn0,
-                carrier_distance=acc_carrier_cycle,
-            ))
-        print len(msg.satellites), 'GOOD SATELLITES'
+            sat_msg = gps.generate_satellite_message(prn, eph, cn0, t, pseudorange, acc_carrier_cycle, doppler_freq, self.position, self.ionospheric_model)
+            if sat_msg is not None:
+                msg.satellites.append(sat_msg)
+        #print len(msg.satellites), 'GOOD SATELLITES'
         self.pub.publish(msg)
     
     def rcv_state(self, data, stamp):
@@ -142,7 +143,6 @@ class Handlers(object):
         del data
         #print locals()
         
-        self.time_of_week_minus_time = wn * 7*24*60*60 + tow - stamp.to_sec()
         self.position = numpy.array([ecef_x, ecef_y, ecef_z])
         
         self.pos_pub.publish(PointStamped(
@@ -152,6 +152,45 @@ class Handlers(object):
             ),
             point=Point(ecef_x, ecef_y, ecef_z),
         ))
+    
+    def subframe(self, data, stamp):
+        PRN, SFID, subframe_data = struct.unpack('>BB30s', data)
+        bs = bitstream.BitStream(subframe_data)
+        if SFID == 4:
+            TLM = bs.read(22)
+            TLM_C = bs.read(2)
+            HOW = bs.read(22)
+            t = bs.read(2)
+            
+            data_id = bs.read(2)
+            sv_id = bs.read(6)
+            
+            if sv_id == 56: # page 18
+                alpha = [
+                    bs.read_signed(8) * 2**-30,
+                    bs.read_signed(8) * 2**-27,
+                    bs.read_signed(8) * 2**-24,
+                    bs.read_signed(8) * 2**-24,
+                ]
+                beta = [
+                    bs.read_signed(8) * 2**11,
+                    bs.read_signed(8) * 2**14,
+                    bs.read_signed(8) * 2**16,
+                    bs.read_signed(8) * 2**16,
+                ]
+                A_1 = bs.read_signed(24) * 2**-50
+                A_0 = bs.read_signed(32) * 2**-30
+                t_ot = bs.read(8) * 2**12
+                WN_t = bs.read(8)
+                Deltat_LS = bs.read_signed(8)
+                WN_LSF = bs.read(8)
+                DN = bs.read(8)
+                Deltat_LSF = bs.read_signed(8)
+                reserved = bs.read(14)
+                t = bs.read(2)
+                assert bs.at_end()
+                
+                self.ionospheric_model = gps.IonosphericModel(alpha, beta)
 
 
 rospy.init_node('skytraq_parser')

@@ -2,16 +2,22 @@ from __future__ import division
 
 import math
 from math import sin, cos, atan, sqrt, acos, pi, atan2
+import functools
 
 import numpy
 
 import roslib
 roslib.load_manifest('tf')
 from tf import transformations
+from geometry_msgs.msg import Point, Vector3
 
+from rawgps_common.msg import Satellite
 import bitstream
 
 deriv = lambda f, x: (f(x+.1)-f(x-.1))/.2
+
+inf = 1e1000; assert math.isinf(inf)
+nan = inf/inf
 
 # WGS 84
 a = 6378137.0
@@ -68,6 +74,27 @@ def newton(x0, f, f_prime):
     assert abs(f(x)/f_prime(x)/x) < 1e-6
     return x
 
+@functools.total_ordering
+class Time(object):
+    def __init__(self, WN, TOW):
+        self.WN = WN
+        self.TOW = TOW
+    def __repr__(self):
+        print 'gps.Time(%r, %r)' % (self.WN, self.TOW)
+    def __sub__(self, other):
+        if not isinstance(other, Time):
+            return self + (-other)
+        return 7*24*60*60*(self.WN - other.WN) + (self.TOW - other.TOW)
+    def __add__(self, other):
+        assert not isinstance(other, Time)
+        return Time(self.WN, self.TOW + other)
+    def __eq__(self, other):
+        return self.WN == other.WN and self.TOW == other.TOW
+    def __ne__(self, other):
+        return not (self == other)
+    def __lt__(self, other):
+        assert isinstance(other, Time)
+        return self - other < 0
 
 L1_f0 = 1575.42e6 # Hz
 c = 299792458 # m/s
@@ -92,6 +119,7 @@ class Ephemeris(object):
         self.T_GD = subframe_1.read_signed(8) * 2**-31
         self.iodc = iodc_msb*2**256  + subframe_1.read(8)
         self.t_oc = subframe_1.read(16) * 2**4
+        self.t_oc = Time(self.WN, self.t_oc) # XXX
         self.a_f2 = subframe_1.read_signed(8) * 2 **-55
         self.a_f1 = subframe_1.read_signed(16) * 2**-43
         self.a_f0 = subframe_1.read_signed(22) * 2**-31
@@ -110,6 +138,7 @@ class Ephemeris(object):
         self.C_us = subframe_2.read_signed(16) * 2**-29
         self.sqrt_A = subframe_2.read(32) * 2**-19
         self.t_oe = subframe_2.read(16) * 2**4
+        self.t_oe = Time(self.WN, self.t_oe) # XXX
         subframe_2.read(1)
         subframe_2.read(5)
         subframe_2.read(2)
@@ -159,7 +188,7 @@ class Ephemeris(object):
         x_k_prime = r_k * cos(u_k)
         y_k_prime = r_k * sin(u_k)
         
-        omega_k = self.omega_0 + (self.omega_dot - omega_dot_e) * t_k - omega_dot_e * self.t_oe
+        omega_k = self.omega_0 + (self.omega_dot - omega_dot_e) * t_k - omega_dot_e * self.t_oe.TOW
         
         x_k = x_k_prime * cos(omega_k) - y_k_prime * cos(i_k) * sin(omega_k)
         y_k = x_k_prime * sin(omega_k) + y_k_prime * cos(i_k) * cos(omega_k)
@@ -205,7 +234,7 @@ class IonosphericModel(object):
         lambda_i = lambda_u + psi * math.sin(A * math.pi) / math.cos(phi_i * math.pi)
         phi_m = phi_i + 0.064 * math.cos((lambda_i - 1.617) * math.pi)
         
-        t = (4.32e4 * lambda_i + GPS_time) % 86400
+        t = (4.32e4 * lambda_i + GPS_time.TOW) % 86400
         
         F = 1 + 16 * (0.53 - E)**3
         
@@ -233,6 +262,55 @@ def tropospheric_model(ground_pos_ecef, sat_pos_ecef): # returns meters
     return 2.312 / math.sin(math.sqrt(E * E + 1.904E-3)) + \
            0.084 / math.sin(math.sqrt(E * E + 0.6854E-3))
 
+def generate_satellite_message(prn, eph, cn0, gps_t, pseudo_range, carrier_cycles, doppler_freq, approximate_receiver_position=None, ionospheric_model=None):
+    t_SV = gps_t - pseudo_range/c
+    
+    t = t_SV # initialize
+    deltat_r = 0
+    for i in xrange(3):
+        dt = t - eph.t_oc
+        while dt > 302400: dt -= 604800
+        while dt < -302400: dt += 604800
+        deltat_SV_L1 = eph.a_f0 + eph.a_f1 * dt + eph.a_f2 * dt**2 + deltat_r - eph.T_GD
+        t = t_SV - deltat_SV_L1
+        sat_pos, deltat_r, sat_vel = eph.predict(t)
+        #print i, -pseudo_range * 1e-3 - deltat_SV_L1
+        #print i, sat_pos
+    
+    if approximate_receiver_position is not None:
+        direction = sat_pos - approximate_receiver_position; direction /= numpy.linalg.norm(direction)
+        direction_enu = enu_from_ecef(direction, approximate_receiver_position)
+        velocity_plus_drift = doppler_freq*c/L1_f0 + direction.dot(sat_vel)
+        if ionospheric_model is not None:
+            T_iono = ionospheric_model.evaluate(approximate_receiver_position, sat_pos, t_SV) # technically should be receiver time, but doesn't matter
+            #print "iono", -T_iono * c
+        else:
+            #print 'no model'
+            T_iono = 0
+        D_tropo = tropospheric_model(approximate_receiver_position, sat_pos)
+    else:
+        return None
+    
+    
+    sat_pos_enu = enu_from_ecef(sat_pos - approximate_receiver_position, approximate_receiver_position)
+    sat_dir_enu = sat_pos_enu / numpy.linalg.norm(sat_pos_enu)
+    
+    E = math.asin(sat_dir_enu[2])
+    if E < math.radians(5): return None
+    
+    return Satellite(
+        prn=prn,
+        cn0=cn0,
+        position=Point(*sat_pos),
+        velocity=Vector3(*sat_vel),
+        time=-pseudo_range/c - deltat_SV_L1,
+        T_iono=T_iono + D_tropo/c,
+        carrier_distance=carrier_cycles*c/L1_f0,
+        doppler_velocity=doppler_freq*c/L1_f0,
+        
+        direction_enu=Vector3(*direction_enu),
+        velocity_plus_drift=velocity_plus_drift,
+    )
 
 if __name__ == '__main__':
     station_pos = ecef_from_latlongheight(math.radians(40), -math.radians(100), 0)

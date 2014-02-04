@@ -68,10 +68,10 @@ class GPS(protocol.Protocol):
         self.poll_task.start(0.5)
     
     def think(self):
-        if not (reactor.seconds() - 5 < self.last_message < reactor.seconds() + 100):
-            rospy.logerr('nothing received for 5 seconds, reinitializing device')
-            self.transport.loseConnection()
-            return
+        #if not (reactor.seconds() - 5 < self.last_message < reactor.seconds() + 100):
+        #    rospy.logerr('nothing received for 5 seconds, reinitializing device')
+        #    self.transport.loseConnection()
+        #    return
         
         self.send.get_ephemeris(chr(self.sv_counter))
         self.sv_counter += 1
