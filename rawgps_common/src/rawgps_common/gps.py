@@ -74,7 +74,7 @@ def newton(x0, f, f_prime):
     assert abs(f(x)/f_prime(x)/x) < 1e-6
     return x
 
-week_length = 24*7*60*60
+week_length = 7*24*60*60
 @functools.total_ordering
 class Time(object):
     def __init__(self, WN, TOW):
@@ -122,16 +122,21 @@ class SubframeHeader(object):
         self.TLM_C = bs.read(2)
         assert data.at_end()
 
+class HOW(object):
+    def __init__(self, bs):
+        self.TOW = bs.read(17) * 6
+        self.alert_flag = bs.read(1)
+        self.antispoof_flag = bs.read(1)
+        self.subframe_ID = bs.read(3)
+        bs.read(2) # t
+
 class Subframe1(object):
     def __init__(self, data):
         assert len(data) == 27
         subframe_1 = bitstream.BitStream(data)
-        self.HOW_TOW = subframe_1.read(17) * 2**2
-        self.HOW_alert_flag = subframe_1.read(1)
-        self.HOW_antispoof_flag = subframe_1.read(1)
-        self.subframe_ID = subframe_1.read(3)
-        assert self.subframe_ID == 1
-        subframe_1.read(2) # t
+        
+        self.HOW = HOW(subframe_1)
+        assert self.HOW.subframe_ID == 1
         
         self.WN = subframe_1.read(10)
         self.CA_or_P_on_L2 = subframe_1.read(2)
@@ -153,15 +158,17 @@ class Subframe1(object):
         subframe_1.read(2) # t
         assert subframe_1.at_end()
         
-        self.approx_recv_time = Time(self.WN, self.HOW_TOW)
+        self.approx_recv_time = Time(self.WN, self.HOW.TOW)
         self.IODE = self.IODC % (2**8)
 
 class Subframe2(object):
     def __init__(self, data):
         assert len(data) == 27
         subframe_2 = bitstream.BitStream(data)
-        self.HOW = subframe_2.read(22)
-        subframe_2.read(2) # t
+        
+        self.HOW = HOW(subframe_2)
+        assert self.HOW.subframe_ID == 2
+        
         self.IODE = subframe_2.read(8)
         self.C_rs = subframe_2.read_signed(16) * 2**-5
         self.Deltan = subframe_2.read_signed(16) * 2**-43 * pi
@@ -180,8 +187,10 @@ class Subframe3(object):
     def __init__(self, data):
         assert len(data) == 27
         subframe_3 = bitstream.BitStream(data)
-        self.HOW = subframe_3.read(22)
-        subframe_3.read(2) # t
+        
+        self.HOW = HOW(subframe_3)
+        assert self.HOW.subframe_ID == 3
+        
         self.C_ic = subframe_3.read_signed(16) * 2**-29
         self.Omega_0 = subframe_3.read_signed(32) * 2**-31 * pi
         self.C_is = subframe_3.read_signed(16) * 2**-29
@@ -199,8 +208,8 @@ class Subframe4(object):
         assert len(data) == 27
         bs = bitstream.BitStream(data)
         
-        self.HOW = bs.read(22)
-        bs.read(2) # t
+        self.HOW = HOW(bs)
+        assert self.HOW.subframe_ID == 4
         
         self.data_id = bs.read(2)
         self.sv_id = bs.read(6)
@@ -235,8 +244,8 @@ class Subframe5(object):
         assert len(data) == 27
         bs = bitstream.BitStream(data)
         
-        self.HOW = bs.read(22)
-        bs.read(2) # t
+        self.HOW = HOW(bs)
+        assert self.HOW.subframe_ID == 5
         
         self.data_id = bs.read(2)
         self.sv_id = bs.read(6)
@@ -259,8 +268,7 @@ class Ephemeris(object):
         A = self.sqrtA**2
         n_0 = sqrt(mu/A**3)
         t_k = t - self.t_oe
-        time_wraparound = 7*24*60*60
-        t_k = (t_k + time_wraparound/2) % time_wraparound - time_wraparound/2
+        assert abs(t_k) < week_length/2
         if not (abs(t_k) < 6*60*60):
             print 'ERROR: ephemeris predicting more than 6 hours from now (%f hours)' % (t_k/60/60,)
         n = n_0 + self.Deltan
@@ -365,8 +373,7 @@ def generate_satellite_message(prn, eph, cn0, gps_t, pseudo_range, carrier_cycle
     deltat_r = 0
     for i in xrange(3):
         dt = t - eph.t_oc
-        while dt > 302400: dt -= 604800
-        while dt < -302400: dt += 604800
+        assert abs(dt) < week_length/2
         deltat_SV_L1 = eph.a_f0 + eph.a_f1 * dt + eph.a_f2 * dt**2 + deltat_r - eph.T_GD
         t = t_SV - deltat_SV_L1
         sat_pos, deltat_r, sat_vel = eph.predict(t)
