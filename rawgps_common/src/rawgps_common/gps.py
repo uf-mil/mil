@@ -74,17 +74,30 @@ def newton(x0, f, f_prime):
     assert abs(f(x)/f_prime(x)/x) < 1e-6
     return x
 
+week_length = 24*7*60*60
 @functools.total_ordering
 class Time(object):
     def __init__(self, WN, TOW):
         self.WN = WN
         self.TOW = TOW
+        while self.TOW >= week_length:
+            self.WN += 1
+            self.TOW -= week_length
+        while self.TOW < 0:
+            self.WN -= 1
+            self.TOW += week_length
+        self.WN = self.WN % 1024
     def __repr__(self):
         return 'gps.Time(%r, %r)' % (self.WN, self.TOW)
     def __sub__(self, other):
         if not isinstance(other, Time):
             return self + (-other)
-        return 7*24*60*60*(self.WN - other.WN) + (self.TOW - other.TOW)
+        res = week_length*(self.WN - other.WN) + (self.TOW - other.TOW)
+        while res > 512*week_length:
+            res -= 1024*week_length
+        while res < -512*week_length:
+            res += 1024*week_length
+        return res
     def __add__(self, other):
         assert not isinstance(other, Time)
         return Time(self.WN, self.TOW + other)
@@ -113,8 +126,13 @@ class Subframe1(object):
     def __init__(self, data):
         assert len(data) == 27
         subframe_1 = bitstream.BitStream(data)
-        self.HOW = subframe_1.read(22)
+        self.HOW_TOW = subframe_1.read(17) * 2**2
+        self.HOW_alert_flag = subframe_1.read(1)
+        self.HOW_antispoof_flag = subframe_1.read(1)
+        self.subframe_ID = subframe_1.read(3)
+        assert self.subframe_ID == 1
         subframe_1.read(2) # t
+        
         self.WN = subframe_1.read(10)
         self.CA_or_P_on_L2 = subframe_1.read(2)
         self.URA_index = subframe_1.read(4)
@@ -135,6 +153,7 @@ class Subframe1(object):
         subframe_1.read(2) # t
         assert subframe_1.at_end()
         
+        self.approx_recv_time = Time(self.WN, self.HOW_TOW)
         self.IODE = self.IODC % (2**8)
 
 class Subframe2(object):
@@ -210,8 +229,6 @@ class Subframe4(object):
             bs.read(14) # reserved
             bs.read(2) # t
             assert bs.at_end()
-        else:
-            raise NotImplementedError("unknown page")
 
 class Subframe5(object):
     def __init__(self, data):

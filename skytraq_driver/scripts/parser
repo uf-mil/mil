@@ -119,8 +119,9 @@ class Handlers(object):
     
     def rcv_state(self, data, stamp):
         iod, navigation_state, wn, tow, ecef_x, ecef_y, ecef_z, ecef_dx, ecef_dy, ecef_dz, clock_bias, clock_drift, gdop, pdop, hdop, vdop, tdop = struct.unpack('>BBHddddfffdffffff', data)
-        del data
-        #print locals()
+        
+        if navigation_state < 0x02:
+            return
         
         self.position = numpy.array([ecef_x, ecef_y, ecef_z])
         
@@ -140,11 +141,9 @@ class Handlers(object):
             self.ephemeris_data.setdefault(PRN, {}).setdefault(subframe.IODE, [None]*3)[SFID-1] = subframe
             self._ephemeris_think(PRN, subframe.IODE)
         elif SFID == 4:
-            try:
-                subframe = gps.Subframe4(subframe_data[3:])
-            except NotImplementedError: # not page 18
-                return
-            self.ionospheric_model = gps.IonosphericModel(subframe.alpha, subframe.beta)
+            subframe = gps.Subframe4(subframe_data[3:])
+            if subframe.sv_id == 56: # page 18
+                self.ionospheric_model = gps.IonosphericModel(subframe.alpha, subframe.beta)
     
     def _ephemeris_think(self, prn, iode):
         subframes = self.ephemeris_data[prn][iode]
