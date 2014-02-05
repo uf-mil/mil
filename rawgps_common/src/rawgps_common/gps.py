@@ -108,6 +108,15 @@ class Time(object):
     def __lt__(self, other):
         assert isinstance(other, Time)
         return self - other < 0
+    def new_minimizing_dt(self, TOW):
+        res = Time(self.WN, TOW)
+        
+        while abs(Time(res.WN-1, res.TOW) - self) < abs(res - self):
+            res = Time(res.WN-1, res.TOW)
+        while abs(Time(res.WN+1, res.TOW) - self) < abs(res - self):
+            res = Time(res.WN+1, res.TOW)
+        
+        return res
 
 L1_f0 = 1575.42e6 # Hz
 c = 299792458 # m/s
@@ -150,8 +159,7 @@ class Subframe1(object):
         subframe_1.read(16) # reserved
         self.T_GD = subframe_1.read_signed(8) * 2**-31
         self.IODC = IODC_MSB * 2**8 + subframe_1.read(8)
-        t_oc_TOW = subframe_1.read(16) * 2**4
-        self.t_oc = Time(self.WN, t_oc_TOW) # XXX
+        self.t_oc_TOW = subframe_1.read(16) * 2**4
         self.a_f2 = subframe_1.read_signed(8) * 2 **-55
         self.a_f1 = subframe_1.read_signed(16) * 2**-43
         self.a_f0 = subframe_1.read_signed(22) * 2**-31
@@ -262,7 +270,8 @@ class Ephemeris(object):
         self.__dict__.update(subframe_2.__dict__)
         self.__dict__.update(subframe_3.__dict__)
         
-        self.t_oe = Time(self.WN, self.t_oe_TOW) # XXX
+        self.t_oc = self.approx_recv_time.new_minimizing_dt(self.t_oc_TOW)
+        self.t_oe = self.approx_recv_time.new_minimizing_dt(self.t_oe_TOW)
     
     def _predict(self, t):
         A = self.sqrtA**2
