@@ -24,11 +24,12 @@ class SendProxy(object):
     def __getattr__(self, name):
         return lambda data: self._send_func(chr(message_ids[name]) + data)
 
-def dispatch(payload, obj, **kwargs):
-    if len(payload) == 0:
-        raise ValueError('payload must have nonzero length')
-    message_name = message_names[ord(payload[0])]
+def dispatch(message_id, body, obj, **kwargs):
+    if message_id not in message_names:
+        print hex(message_id), 'unknown'
+        return
+    message_name = message_names[message_id]
     if not hasattr(obj, message_name):
         print message_name, 'unhandled'
         return
-    getattr(obj, message_name)(payload[1:], **kwargs)
+    getattr(obj, message_name)(body, **kwargs)

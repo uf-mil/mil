@@ -37,10 +37,8 @@ catkin_python_setup()
 #uncomment if you have defined messages
 add_message_files(
   FILES
-  SerialPacket.msg
-  Satellite.msg
-  Measurement.msg
-  Measurements.msg
+  Packet.msg
+  PacketSet.msg
 )
 ## Generate added messages and services with any dependencies listed here
 generate_messages(

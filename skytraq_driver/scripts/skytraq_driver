@@ -12,8 +12,9 @@ roslib.load_manifest('skytraq_driver')
 import rospy
 from std_msgs.msg import Header
 
+from rawgps_common import gps
 from skytraq_driver import datachunker, protocol as skytraq_protocol
-from skytraq_driver.msg import SerialPacket
+from skytraq_driver.msg import Packet, PacketSet
 
 def sleep(dt):
     d = defer.Deferred()
@@ -23,9 +24,11 @@ def sleep(dt):
 class GPS(protocol.Protocol):
     def __init__(self):
         self.poll_task = task.LoopingCall(self.think)
-        self.pub = rospy.Publisher('skytraq_serial', SerialPacket)
+        self.ephemeral_pub = rospy.Publisher('skytraq_serial/ephemeral', Packet)
+        self.persistent_pub = rospy.Publisher('skytraq_serial/persistent', PacketSet, latch=True)
         self.send = skytraq_protocol.SendProxy(self.send_raw)
         self.dataReceived = datachunker.DataChunker(self.dataReceiver())
+        self.persistent_data = {}
     
     def dataReceiver(self):
         while True:
@@ -41,16 +44,62 @@ class GPS(protocol.Protocol):
             if ord(checksum) != reduce(operator.xor, map(ord, payload), 0):
                 print 'invalid checksum'
                 continue
-            print payload.encode('hex')
+            
+            if len(payload) == 0:
+                print 'empty packet'
+                continue
             
             self.last_message = reactor.seconds()
             
-            self.pub.publish(SerialPacket(
+            if ord(payload[0]) not in skytraq_protocol.message_names:
+                print 'unknown message id', hex(ord(payload[0]))
+                continue
+            message_name = skytraq_protocol.message_names[ord(payload[0])]
+            
+            ephemeral_messages = set([
+                'meas_time',
+                'raw_meas',
+                'sv_ch_status',
+                'rcv_state',
+            ])
+            def get_subframe_id(body):
+                PRN, SFID, subframe_data = struct.unpack('>BB30s', body)
+                if SFID == 4 or SFID == 5:
+                    subframe = gps.subframes[SFID](subframe_data[3:])
+                    return PRN, SFID, subframe.data_id, subframe.sv_id
+                else:
+                    return PRN, SFID
+            persistent_messages = dict(
+                software_version=lambda body: None,
+                software_crc=lambda body: None,
+                gps_almanac_data=lambda body: struct.unpack('>B', body[:1]),
+                gps_ephemeris_data=lambda body: struct.unpack('>H', body[:2]),
+                subframe=get_subframe_id,
+            )
+            ignore_messages = set([
+                'ack',
+                'nack',
+            ])
+            
+            packet = Packet(
                 header=Header(
                     stamp=stamp,
                 ),
-                payload=payload,
-            ))
+                id=ord(payload[0]),
+                data=payload[1:],
+            )
+            
+            if message_name in ephemeral_messages:
+                self.ephemeral_pub.publish(packet)
+            elif message_name in persistent_messages:
+                id_tuple = ord(payload[0]), persistent_messages[message_name](payload[1:])
+                if id_tuple not in self.persistent_data or packet.data != self.persistent_data[id_tuple].data:
+                    self.persistent_data[id_tuple] = packet
+                    self.persistent_pub.publish(PacketSet(self.persistent_data.values()))
+            elif message_name in ignore_messages:
+                pass
+            else:
+                assert False
     
     def connectionMade(self):
         self.init_df = self.init()
@@ -63,20 +112,17 @@ class GPS(protocol.Protocol):
         self.send.configure_binary_measurement_output_rates('\x05\x01\x01\x01\x01\x01\x00')
         yield sleep(.3)
         
+        self.send.get_ephemeris('\x00')
+        yield sleep(.3)
+        
         self.last_message = reactor.seconds()
-        self.sv_counter = 1
         self.poll_task.start(0.5)
     
     def think(self):
-        #if not (reactor.seconds() - 5 < self.last_message < reactor.seconds() + 100):
+        pass#if not (reactor.seconds() - 5 < self.last_message < reactor.seconds() + 100):
         #    rospy.logerr('nothing received for 5 seconds, reinitializing device')
         #    self.transport.loseConnection()
         #    return
-        
-        self.send.get_ephemeris(chr(self.sv_counter))
-        self.sv_counter += 1
-        if self.sv_counter == 33:
-            self.sv_counter = 1
     
     def send_raw(self, payload):
         self.transport.write(
