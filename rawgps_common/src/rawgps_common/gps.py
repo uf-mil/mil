@@ -273,7 +273,7 @@ class Ephemeris(object):
         self.t_oc = self.approx_recv_time.new_minimizing_dt(self.t_oc_TOW)
         self.t_oe = self.approx_recv_time.new_minimizing_dt(self.t_oe_TOW)
     
-    def _predict(self, t):
+    def predict_pos_deltat_r(self, t):
         A = self.sqrtA**2
         n_0 = sqrt(mu/A**3)
         t_k = t - self.t_oe
@@ -313,8 +313,8 @@ class Ephemeris(object):
         return numpy.array([x_k, y_k, z_k]), deltat_r
     
     def predict(self, t):
-        pos, deltat_r = self._predict(t)
-        vel = (self._predict(t+.1)[0] - self._predict(t-.1)[0])/.2
+        pos, deltat_r = self.predict_pos_deltat_r(t)
+        vel = (self.predict_pos_deltat_r(t+.1)[0] - self.predict_pos_deltat_r(t-.1)[0])/.2
         return pos, deltat_r, vel
     
     def is_healthy(self):
@@ -376,18 +376,21 @@ def tropospheric_model(ground_pos_ecef, sat_pos_ecef): # returns meters
            0.084 / math.sin(math.sqrt(E * E + 0.6854E-3))
 
 def generate_satellite_message(prn, eph, cn0, gps_t, pseudo_range, carrier_cycles, doppler_freq, approximate_receiver_position=None, ionospheric_model=None):
+    if pseudo_range is None: # need pseudorange
+        return None
+    
     t_SV = gps_t - pseudo_range/c
     
     t = t_SV # initialize
     deltat_r = 0
-    for i in xrange(3):
-        dt = t - eph.t_oc
-        assert abs(dt) < week_length/2
+    for i in xrange(2):
+        dt = t - eph.t_oc; assert abs(dt) < week_length/2
         deltat_SV_L1 = eph.a_f0 + eph.a_f1 * dt + eph.a_f2 * dt**2 + deltat_r - eph.T_GD
         t = t_SV - deltat_SV_L1
-        sat_pos, deltat_r, sat_vel = eph.predict(t)
-        #print i, -pseudo_range * 1e-3 - deltat_SV_L1
-        #print i, sat_pos
+        if i == 1:
+            sat_pos, deltat_r, sat_vel = eph.predict(t)
+        else:
+            sat_pos, deltat_r = eph.predict_pos_deltat_r(t)
     
     if approximate_receiver_position is not None:
         direction = sat_pos - approximate_receiver_position; direction /= numpy.linalg.norm(direction)

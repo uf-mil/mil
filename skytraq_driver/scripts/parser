@@ -32,6 +32,7 @@ class Handlers(object):
         self.ephemeris_data = {} # prn -> (iode -> [frame*3])
     
     def gps_ephemeris_data(self, data, stamp):
+        return
         sv, = struct.unpack('>H', data[0:2])
         if all(x == '\x00' for x in data[3:]):
             #assert False # XXX
@@ -135,6 +136,8 @@ class Handlers(object):
     
     def subframe(self, data, stamp):
         PRN, SFID, subframe_data = struct.unpack('>BB30s', data)
+        
+        print PRN, SFID
         
         if SFID in [1, 2, 3]:
             subframe = gps.subframes[SFID](subframe_data[3:])
