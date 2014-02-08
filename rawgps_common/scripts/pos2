@@ -79,35 +79,47 @@ def cb(msg):
 import threading
 lock = threading.Lock()
 
-half_wavelength = (gps.c / gps.L1_f0) / 2
+wavelength = gps.c / gps.L1_f0
+half_wavelength = wavelength / 2
 
-hist = {}
+history = {}
+
+first = {}
+
 def match(name, msg):
-  with lock:
-    hist[name] = msg
-    if max(x.header.stamp for x in hist.itervalues()) - \
-       min(x.header.stamp for x in hist.itervalues()) < rospy.Duration(.01) and len(hist) == 2:
-        
-        #print hist
-        common_prns = reduce(set.intersection,
-            [set(sat.prn for sat in x.satellites if not math.isnan(sat.carrier_distance)) for x in hist.itervalues()])
-        
-        new = [Measurements(satellites=[sat for sat in x.satellites if sat.prn in common_prns])
-            for x in hist.itervalues()]
-        
-        for x in new:
-            x.satellites.sort(key=lambda sat: sat.prn)
-        
-        print new
-        q = [a.carrier_distance - b.carrier_distance
-            for a, b in zip(new[0].satellites, new[1].satellites) if a.prn == 21]
-        for a, b in zip(new[0].satellites, new[1].satellites):
-            print a.prn,
-            print a.carrier_distance - b.carrier_distance - mean(q), xyz_array(a.direction_enu)
-        print
+    with lock:
+        history.setdefault(msg.sync, {})[name] = msg
+        if len(history[msg.sync]) == 2:
+            hist = history.pop(msg.sync)
+            
+            #print hist
+            common_prns = reduce(set.intersection,
+                [set(sat.prn for sat in x.satellites if not math.isnan(sat.carrier_distance)) for x in hist.itervalues()])
+            
+            new = [Measurements(satellites=[sat for sat in x.satellites if sat.prn in common_prns])
+                for x in hist.itervalues()]
+            
+            for x in new:
+                x.satellites.sort(key=lambda sat: sat.prn)
+            
+            #print new
+            if not first:
+                first.update((a.prn, a.carrier_distance - b.carrier_distance)
+                    for a, b in zip(new[0].satellites, new[1].satellites))
+            for x in first.keys():
+                if x not in common_prns:
+                    first.remove(x)
+            print
+            print first.keys()
+            q = [a.carrier_distance - b.carrier_distance
+                for a, b in zip(new[0].satellites, new[1].satellites)]
+            for a, b in zip(new[0].satellites, new[1].satellites):
+                print '%2i % 10.6f %s' % (a.prn, a.carrier_distance - b.carrier_distance - mean(q), xyz_array(a.direction_enu))
 
-rospy.Subscriber('/nv08c_front/gps', Measurements, lambda msg: match('front', msg))
-rospy.Subscriber('/nv08c_rear/gps', Measurements, lambda msg: match('back', msg))
+rospy.init_node('pos2')
+
+rospy.Subscriber('/front_gps/gps', Measurements, lambda msg: match('front', msg))
+rospy.Subscriber('/back_gps/gps', Measurements, lambda msg: match('back', msg))
 
 rospy.spin()
 
