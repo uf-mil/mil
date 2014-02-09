@@ -101,6 +101,7 @@ class NodeImpl {
         boost::bind(&NodeImpl::got_press, this, _1));
       gps_filter.registerCallback(boost::bind(&NodeImpl::got_gps, this, _1));
       odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
+      absodom_pub = nh.advertise<nav_msgs::Odometry>("absodom", 10);
       info_pub = private_nh.advertise<odom_estimator::Info>("info", 10);
     }
   
@@ -172,11 +173,15 @@ class NodeImpl {
       {
         nav_msgs::Odometry output;
         output.header.stamp = msg.header.stamp;
-        output.header.frame_id = "/ecef";
+        output.header.frame_id = "/enu";
         output.child_frame_id = msg.header.frame_id;
         
-        tf::pointEigenToMsg(state->mean.getRelPosECEF(), output.pose.pose.position);
-        tf::quaternionEigenToMsg(state->mean.getOrientECEF(), output.pose.pose.orientation);
+        SqMat<3> m = enu_from_ecef_mat(state->mean.getPosECEF());
+        Vec<3> relpos_enu = m * state->mean.getRelPosECEF();
+        Quaternion x = Quaternion(m) * state->mean.getOrientECEF();
+        
+        tf::pointEigenToMsg(relpos_enu, output.pose.pose.position);
+        tf::quaternionEigenToMsg(x, output.pose.pose.orientation);
         Eigen::Map<SqMat<6> >(output.pose.covariance.data()) <<
           state->cov.block<3, 3>(State::POS_ECI, State::POS_ECI), state->cov.block<3, 3>(State::POS_ECI, State::ORIENT),
           state->cov.block<3, 3>(State::ORIENT, State::POS_ECI), state->cov.block<3, 3>(State::ORIENT, State::ORIENT);
@@ -188,6 +193,27 @@ class NodeImpl {
           SqMat<3>::Zero(), Eigen::Map<SqMat<3> >(msg.angular_velocity_covariance.data()) + state->cov.block<3, 3>(State::GYRO_BIAS, State::GYRO_BIAS);
         
         odom_pub.publish(output);
+      }
+      
+      {
+        nav_msgs::Odometry output;
+        output.header.stamp = msg.header.stamp;
+        output.header.frame_id = "/ecef";
+        output.child_frame_id = msg.header.frame_id;
+        
+        tf::pointEigenToMsg(state->mean.getPosECEF(), output.pose.pose.position);
+        tf::quaternionEigenToMsg(state->mean.getOrientECEF(), output.pose.pose.orientation);
+        Eigen::Map<SqMat<6> >(output.pose.covariance.data()) <<
+          state->cov.block<3, 3>(State::POS_ECI, State::POS_ECI), state->cov.block<3, 3>(State::POS_ECI, State::ORIENT),
+          state->cov.block<3, 3>(State::ORIENT, State::POS_ECI), state->cov.block<3, 3>(State::ORIENT, State::ORIENT);
+        
+        tf::vectorEigenToMsg(state->mean.getOrientECEF().conjugate()._transformVector(state->mean.getVelECEF()), output.twist.twist.linear);
+        tf::vectorEigenToMsg(xyz2vec(msg.angular_velocity) - state->mean.gyro_bias, output.twist.twist.angular);
+        Eigen::Map<SqMat<6> >(output.twist.covariance.data()) <<
+          state->cov.block<3, 3>(State::VEL, State::VEL), SqMat<3>::Zero(), // XXX covariance needs to be adjusted since velocity was transformed to body frame
+          SqMat<3>::Zero(), Eigen::Map<SqMat<3> >(msg.angular_velocity_covariance.data()) + state->cov.block<3, 3>(State::GYRO_BIAS, State::GYRO_BIAS);
+        
+        absodom_pub.publish(output);
       }
       
       {
@@ -343,6 +369,7 @@ class NodeImpl {
     message_filters::Subscriber<rawgps_common::Measurements> gps_sub;
     tf::MessageFilter<rawgps_common::Measurements> gps_filter;
     ros::Publisher odom_pub;
+    ros::Publisher absodom_pub;
     ros::Publisher info_pub;
     
     Vec<3> start_pos;

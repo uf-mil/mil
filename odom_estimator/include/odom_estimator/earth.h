@@ -3,6 +3,8 @@
 
 #include <Eigen/Geometry>
 
+#include <odom_estimator/gravity.h>
+
 namespace odom_estimator {
 
 
@@ -35,6 +37,14 @@ Quaternion ecef_orient_from_inertial_orient(double t, Quaternion inertial_orient
   return quat_from_rotvec(-w_E * t) * inertial_orient;
 }
 
+
+
+SqMat<3> enu_from_ecef_mat(Vec<3> zero_pos_ecef) {
+  Vec<3> up_ecef = -gravity::gravity(zero_pos_ecef).normalized(); // maybe this should be perpendicular to the ellipsoid instead?
+  Vec<3> east_ecef = Vec<3>(0, 0, 1).cross(up_ecef).normalized();
+  Vec<3> north_ecef = up_ecef.cross(east_ecef);
+  return (SqMat<3>() << east_ecef, north_ecef, up_ecef).finished().transpose();
+}
 
 }
 
