@@ -13,14 +13,14 @@
 namespace odom_estimator {
 
 
-template<int N>
-using Vec = Eigen::Matrix<double, N, 1>;
+template<int N, typename T=double>
+using Vec = Eigen::Matrix<T, N, 1>;
 
-template<int M, int N>
-using Mat = Eigen::Matrix<double, M, N>;
+template<int M, int N, typename T=double>
+using Mat = Eigen::Matrix<T, M, N>;
 
-template<int N>
-using SqMat = Eigen::Matrix<double, N, N>;
+template<int N, typename T=double>
+using SqMat = Eigen::Matrix<T, N, N>;
 
 using Eigen::Dynamic;
 

@@ -18,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp pluginlib rawgps_common sensor_ms
 #  RelWithDebInfo : w/ debug symbols, w/ optimization
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 
 # CATKIN_MIGRATION: removed during catkin migration
@@ -79,6 +79,10 @@ add_executable(test_gps src/test_gps.cpp)
 target_link_libraries(test_gps ${catkin_LIBRARIES})
 add_dependencies(test_gps ${catkin_EXPORTED_TARGETS})
 set_target_properties(test_gps PROPERTIES COMPILE_FLAGS -std=c++0x)
+add_executable(test_mag src/test_mag.cpp)
+target_link_libraries(test_mag ${catkin_LIBRARIES})
+add_dependencies(test_mag ${catkin_EXPORTED_TARGETS})
+set_target_properties(test_mag PROPERTIES COMPILE_FLAGS -std=c++0x)
 #target_link_libraries(example ${PROJECT_NAME})
 
 install(PROGRAMS scripts/test DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
