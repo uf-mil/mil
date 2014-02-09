@@ -228,7 +228,7 @@ class NodeImpl {
             double measured_angle = atan2(measured_world(1), measured_world(0));
             double error_angle = measured_angle - predicted_angle;
             double pi = boost::math::constants::pi<double>();
-            while(error_angle < pi) error_angle += 2*pi;
+            while(error_angle < -pi) error_angle += 2*pi;
             while(error_angle > pi) error_angle -= 2*pi;
             return scalar_matrix(error_angle);
           },
