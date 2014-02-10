@@ -29,6 +29,8 @@
 namespace odom_estimator {
 
 
+static magnetic::MagneticModel const magnetic_model(ros::package::getPath("odom_estimator") + "/data/WMM.COF");
+
 GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
                                        Vec<3> last_mag,
                                        Vec<3> pos_ecef,
@@ -38,7 +40,7 @@ GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
   Vec<3> vel_eci = inertial_vel_from_ecef_vel(
     msg.header.stamp.toSec(), vel_ecef, pos_eci);
   
-  Vec<3> mag_eci = magnetic::getMagneticField(pos_eci);
+  Vec<3> mag_eci = magnetic_model.getField(pos_eci, msg.header.stamp.toSec());
   Vec<3> predicted_acc_eci = inertial_acc_from_ecef_acc(
     msg.header.stamp.toSec(), Vec<3>::Zero(), pos_eci);
   Vec<3> predicted_accelerometer_eci =
@@ -247,7 +249,7 @@ class NodeImpl {
       state = kalman_update(
         EasyDistributionFunction<State, Vec<1>, Vec<3> >(
           [&msg, this](State const &state, Vec<3> const &measurement_noise) {
-            Vec<3> mag_world = magnetic::getMagneticField(state.pos_eci);
+            Vec<3> mag_world = magnetic_model.getField(state.pos_eci, state.t.toSec());
             //Vec<3> predicted = state.orient.conjugate()._transformVector(mag_world);
             double predicted_angle = atan2(mag_world(1), mag_world(0));
             Vec<3> measured_world = state.orient._transformVector(xyz2vec(msg.magnetic_field) + measurement_noise); // noise shouldn't be here
