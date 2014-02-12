@@ -39,6 +39,7 @@ namespace nv08c_driver {
         public:
             Nodelet() {}
             ~Nodelet() {
+                if(!device) return;
                 heartbeat_timer.stop();
                 running = false;
                 device->abort();
@@ -53,11 +54,13 @@ namespace nv08c_driver {
                 persistent_patterns.push_back(PersistentPacketPattern(0xF7, std::vector<uint8_t>({1}), 1)); // Ephemeris for GPS satellite
                 persistent_patterns.push_back(PersistentPacketPattern(0xF7, std::vector<uint8_t>({2}), 2)); // Ephemeris for GLONASS satellite
                 
-                std::string port; ROS_ASSERT_MSG(getPrivateNodeHandle().getParam("port", port),
-                    "\"port\" param missing");
+                std::string port; if(!getPrivateNodeHandle().getParam("port", port)) {
+                    throw std::runtime_error("param port required");
+                }
                 int baudrate = 115200; getPrivateNodeHandle().getParam("baudrate", baudrate);
-                ROS_ASSERT_MSG(getPrivateNodeHandle().getParam("frame_id", frame_id),
-                    "\"frame_id\" param missing");
+                if(!getPrivateNodeHandle().getParam("frame_id", frame_id)) {
+                    throw std::runtime_error("param frame_id required");
+                }
                 
                 pub = ros::NodeHandle(getNodeHandle(), "nv08c_serial").advertise<nv08c_driver::Packet>("ephemeral", 10);
                 latch_pub = ros::NodeHandle(getNodeHandle(), "nv08c_serial").advertise<nv08c_driver::PacketSet>("persistent", 10, true);

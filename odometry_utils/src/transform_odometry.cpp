@@ -133,15 +133,19 @@ public:
   transform_odometry() {}
   
   virtual void onInit() {
-      ROS_ASSERT(getPrivateNodeHandle().getParam("frame_id", frame_id));
-      ROS_ASSERT(getPrivateNodeHandle().getParam("child_frame_id", child_frame_id));
-      
-      sub = getNodeHandle().subscribe<nav_msgs::Odometry>("orig_odom", 10,
-        boost::bind(&transform_odometry::handle, this, _1));
-      pub = getNodeHandle().advertise<nav_msgs::Odometry>("odom", 10);
+    if(!getPrivateNodeHandle().getParam("frame_id", frame_id)) {
+      throw std::runtime_error("param frame_id required");
+    }
+    if(!getPrivateNodeHandle().getParam("child_frame_id", child_frame_id)) {
+      throw std::runtime_error("param child_frame_id required");
+    }
+    
+    sub = getNodeHandle().subscribe<nav_msgs::Odometry>("orig_odom", 10,
+      boost::bind(&transform_odometry::handle, this, _1));
+    pub = getNodeHandle().advertise<nav_msgs::Odometry>("odom", 10);
   }
 };
 PLUGINLIB_DECLARE_CLASS(odometry_utils, transform_odometry,
-  odometry_utils::transform_odometry, nodelet::Nodelet);
+    odometry_utils::transform_odometry, nodelet::Nodelet);
 
 }

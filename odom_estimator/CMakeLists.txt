@@ -17,8 +17,6 @@ find_package(catkin REQUIRED COMPONENTS roscpp pluginlib rawgps_common sensor_ms
 #  Release        : w/o debug symbols, w/ optimization
 #  RelWithDebInfo : w/ debug symbols, w/ optimization
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 
 # CATKIN_MIGRATION: removed during catkin migration
