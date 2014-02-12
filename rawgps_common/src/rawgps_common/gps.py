@@ -2,16 +2,18 @@ from __future__ import division
 
 import math
 from math import sin, cos, atan, sqrt, acos, pi, atan2
+import os
 import functools
 
 import numpy
+import yaml
 
-import roslib
-roslib.load_manifest('tf')
+import rospy
 from tf import transformations
-from geometry_msgs.msg import Point, Vector3
+from geometry_msgs.msg import Point, Vector3, PointStamped
+from std_msgs.msg import Header
 
-from rawgps_common.msg import Satellite
+from rawgps_common.msg import Satellite, Measurements
 import bitstream
 
 deriv = lambda f, x: (f(x+.1)-f(x-.1))/.2
@@ -123,102 +125,118 @@ c = 299792458 # m/s
 mu = 3.986005e14 # m^3/s^2
 omega_dot_e = 7.2921151467e-5 # rad/s
 
-class SubframeHeader(object):
+class TLM(object):
     def __init__(self, data):
         assert len(data) == 3
+        
         bs = bitstream.BitStream(data)
-        self.TLM = bs.read(22)
-        self.TLM_C = bs.read(2)
-        assert data.at_end()
+        preamble = bs.read(8)
+        assert preamble == 0b10001011, bin(preamble)
+        self.TLM_message = bs.read(14)
+        self.integrity_status_flag = bs.read(1)
+        bs.read(1) # reserved
+        assert bs.at_end()
 
 class HOW(object):
-    def __init__(self, bs):
+    def __init__(self, data):
+        assert len(data) == 3
+        
+        bs = bitstream.BitStream(data)
         self.TOW = bs.read(17) * 6
         self.alert_flag = bs.read(1)
         self.antispoof_flag = bs.read(1)
         self.subframe_ID = bs.read(3)
         bs.read(2) # t
+        assert bs.at_end()
 
 class Subframe1(object):
     def __init__(self, data):
-        assert len(data) == 27
-        subframe_1 = bitstream.BitStream(data)
+        assert len(data) == 30
         
-        self.HOW = HOW(subframe_1)
+        self.TLM = TLM(data[:3])
+        
+        self.HOW = HOW(data[3:6])
         assert self.HOW.subframe_ID == 1
         
-        self.WN = subframe_1.read(10)
-        self.CA_or_P_on_L2 = subframe_1.read(2)
-        self.URA_index = subframe_1.read(4)
-        self.SV_health = subframe_1.read(6)
-        IODC_MSB = subframe_1.read(2)
-        self.L2_P_data_flag = subframe_1.read(1)
-        subframe_1.read(23) # reserved
-        subframe_1.read(24) # reserved
-        subframe_1.read(24) # reserved
-        subframe_1.read(16) # reserved
-        self.T_GD = subframe_1.read_signed(8) * 2**-31
-        self.IODC = IODC_MSB * 2**8 + subframe_1.read(8)
-        self.t_oc_TOW = subframe_1.read(16) * 2**4
-        self.a_f2 = subframe_1.read_signed(8) * 2 **-55
-        self.a_f1 = subframe_1.read_signed(16) * 2**-43
-        self.a_f0 = subframe_1.read_signed(22) * 2**-31
-        subframe_1.read(2) # t
-        assert subframe_1.at_end()
+        bs = bitstream.BitStream(data[6:])
+        self.WN = bs.read(10)
+        self.CA_or_P_on_L2 = bs.read(2)
+        self.URA_index = bs.read(4)
+        self.SV_health = bs.read(6)
+        IODC_MSB = bs.read(2)
+        self.L2_P_data_flag = bs.read(1)
+        bs.read(23) # reserved
+        bs.read(24) # reserved
+        bs.read(24) # reserved
+        bs.read(16) # reserved
+        self.T_GD = bs.read_signed(8) * 2**-31
+        self.IODC = IODC_MSB * 2**8 + bs.read(8)
+        self.t_oc_TOW = bs.read(16) * 2**4
+        self.a_f2 = bs.read_signed(8) * 2 **-55
+        self.a_f1 = bs.read_signed(16) * 2**-43
+        self.a_f0 = bs.read_signed(22) * 2**-31
+        bs.read(2) # t
+        assert bs.at_end()
         
         self.approx_recv_time = Time(self.WN, self.HOW.TOW)
         self.IODE = self.IODC % (2**8)
 
 class Subframe2(object):
     def __init__(self, data):
-        assert len(data) == 27
-        subframe_2 = bitstream.BitStream(data)
+        assert len(data) == 30
         
-        self.HOW = HOW(subframe_2)
+        self.TLM = TLM(data[:3])
+        
+        self.HOW = HOW(data[3:6])
         assert self.HOW.subframe_ID == 2
         
-        self.IODE = subframe_2.read(8)
-        self.C_rs = subframe_2.read_signed(16) * 2**-5
-        self.Deltan = subframe_2.read_signed(16) * 2**-43 * pi
-        self.M_0 = subframe_2.read_signed(32) * 2**-31 * pi
-        self.C_uc = subframe_2.read_signed(16) * 2**-29
-        self.e = subframe_2.read(32) * 2**-33
-        self.C_us = subframe_2.read_signed(16) * 2**-29
-        self.sqrtA = subframe_2.read(32) * 2**-19
-        self.t_oe_TOW = subframe_2.read(16) * 2**4
-        self.fit_interval_flag = subframe_2.read(1)
-        self.AODO = subframe_2.read(5) * 900
-        subframe_2.read(2) # t
-        assert subframe_2.at_end()
+        bs = bitstream.BitStream(data[6:])
+        self.IODE = bs.read(8)
+        self.C_rs = bs.read_signed(16) * 2**-5
+        self.Deltan = bs.read_signed(16) * 2**-43 * pi
+        self.M_0 = bs.read_signed(32) * 2**-31 * pi
+        self.C_uc = bs.read_signed(16) * 2**-29
+        self.e = bs.read(32) * 2**-33
+        self.C_us = bs.read_signed(16) * 2**-29
+        self.sqrtA = bs.read(32) * 2**-19
+        self.t_oe_TOW = bs.read(16) * 2**4
+        self.fit_interval_flag = bs.read(1)
+        self.AODO = bs.read(5) * 900
+        bs.read(2) # t
+        assert bs.at_end()
 
 class Subframe3(object):
     def __init__(self, data):
-        assert len(data) == 27
-        subframe_3 = bitstream.BitStream(data)
+        assert len(data) == 30
         
-        self.HOW = HOW(subframe_3)
+        self.TLM = TLM(data[:3])
+        
+        self.HOW = HOW(data[3:6])
         assert self.HOW.subframe_ID == 3
         
-        self.C_ic = subframe_3.read_signed(16) * 2**-29
-        self.Omega_0 = subframe_3.read_signed(32) * 2**-31 * pi
-        self.C_is = subframe_3.read_signed(16) * 2**-29
-        self.i_0 = subframe_3.read_signed(32) * 2**-31 * pi
-        self.C_rc = subframe_3.read_signed(16) * 2**-5
-        self.omega = subframe_3.read_signed(32) * 2**-31 * pi
-        self.Omega_dot = subframe_3.read_signed(24) * 2**-43 * pi
-        self.IODE = subframe_3.read(8)
-        self.IDOT = subframe_3.read_signed(14) * 2**-43 * pi
-        subframe_3.read(2) # t
-        assert subframe_3.at_end()
+        bs = bitstream.BitStream(data[6:])
+        self.C_ic = bs.read_signed(16) * 2**-29
+        self.Omega_0 = bs.read_signed(32) * 2**-31 * pi
+        self.C_is = bs.read_signed(16) * 2**-29
+        self.i_0 = bs.read_signed(32) * 2**-31 * pi
+        self.C_rc = bs.read_signed(16) * 2**-5
+        self.omega = bs.read_signed(32) * 2**-31 * pi
+        self.Omega_dot = bs.read_signed(24) * 2**-43 * pi
+        self.IODE = bs.read(8)
+        self.IDOT = bs.read_signed(14) * 2**-43 * pi
+        bs.read(2) # t
+        assert bs.at_end()
 
 class Subframe4(object):
     def __init__(self, data):
-        assert len(data) == 27
-        bs = bitstream.BitStream(data)
+        assert len(data) == 30
         
-        self.HOW = HOW(bs)
+        self.TLM = TLM(data[:3])
+        
+        self.HOW = HOW(data[3:6])
         assert self.HOW.subframe_ID == 4
         
+        bs = bitstream.BitStream(data[6:])
         self.data_id = bs.read(2)
         self.sv_id = bs.read(6)
         
@@ -246,22 +264,32 @@ class Subframe4(object):
             bs.read(14) # reserved
             bs.read(2) # t
             assert bs.at_end()
+        else:
+            # ...
+            pass
 
 class Subframe5(object):
     def __init__(self, data):
-        assert len(data) == 27
-        bs = bitstream.BitStream(data)
+        assert len(data) == 30
         
-        self.HOW = HOW(bs)
+        self.TLM = TLM(data[:3])
+        
+        self.HOW = HOW(data[3:6])
         assert self.HOW.subframe_ID == 5
         
+        bs = bitstream.BitStream(data[6:])
         self.data_id = bs.read(2)
         self.sv_id = bs.read(6)
+        # ...
 
 subframes = {
     1: Subframe1, 2: Subframe2, 3: Subframe3,
     4: Subframe4, 5: Subframe5,
 }
+def parse_subframe(data):
+    assert len(data) == 30
+    TLM(data[:3])
+    return subframes[HOW(data[3:6]).subframe_ID](data)
 
 class Ephemeris(object):
     def __init__(self, subframe_1, subframe_2, subframe_3):
@@ -375,6 +403,94 @@ def tropospheric_model(ground_pos_ecef, sat_pos_ecef): # returns meters
     return 2.312 / math.sin(math.sqrt(E * E + 1.904E-3)) + \
            0.084 / math.sin(math.sqrt(E * E + 0.6854E-3))
 
+class GPSPublisher(object):
+    def __init__(self, frame_id):
+        self.frame_id = frame_id
+        
+        self.ephemeris_data = {} # prn -> (iode -> [frame*3])
+        self.ephemerises = {}
+        self.last_position = None
+        
+        home = os.path.expanduser('~')
+        if home == '~': raise AssertionError("home path expansion didn't work")
+        self._ionospheric_model_path = os.path.join(home, '.ros',
+            'rawgps_common', 'ionospheric_model.yaml')
+        if os.path.exists(self._ionospheric_model_path):
+            with open(self._ionospheric_model_path, 'rb') as f:
+                self.ionospheric_model = IonosphericModel(**yaml.load(f))
+        else:
+            self.ionospheric_model = None
+        
+        self.pub = rospy.Publisher('gps', Measurements)
+        self.pos_pub = rospy.Publisher('gps_pos', PointStamped)
+    
+    def _set_ionospheric_model(self, ionospheric_model):
+        self.ionospheric_model = ionospheric_model
+        
+        if not os.path.exists(os.path.dirname(self._ionospheric_model_path)):
+            os.makedirs(os.path.dirname(self._ionospheric_model_path))
+        with open(self._ionospheric_model_path, 'wb') as f:
+            yaml.dump(dict(
+                a=self.ionospheric_model.a,
+                b=self.ionospheric_model.b,
+            ), f)
+    
+    def handle_pos_estimate(self, stamp, pos_estimate):
+        self.last_position = pos_estimate
+        self.pos_pub.publish(PointStamped(
+            header=Header(
+                stamp=stamp,
+                frame_id='/ecef',
+            ),
+            point=Point(*pos_estimate),
+        ))
+    
+    def handle_raw_measurements(self, stamp, gps_time, sats, sync=nan):
+        satellites = []
+        for sat in sats:
+            print sat['prn'], sat['cn0'], sat['pseudo_range'], sat['carrier_cycles'], sat['doppler_freq']
+            
+            if sat['prn'] not in self.ephemerises:
+                print 'no ephemeris, dropping', sat['prn']
+                continue
+            eph = self.ephemerises[sat['prn']]
+            if not eph.is_healthy():
+                print 'unhealthy, dropping', sat['prn']
+                continue
+            
+            sat_msg = generate_satellite_message(
+                sat['prn'], eph, sat['cn0'], gps_time,
+                sat['pseudo_range'], sat['carrier_cycles'], sat['doppler_freq'],
+                self.last_position, self.ionospheric_model)
+            if sat_msg is not None:
+                satellites.append(sat_msg)
+        
+        self.pub.publish(Measurements(
+            header=Header(
+                stamp=stamp,
+                frame_id=self.frame_id,
+            ),
+            sync=sync,
+            satellites=satellites,
+        ))
+        print
+    
+    def handle_subframe(self, stamp, prn, data):
+        assert len(data) == 30
+        subframe = parse_subframe(data)
+        
+        if subframe.HOW.subframe_ID in [1, 2, 3]:
+            self.ephemeris_data.setdefault(prn, {}).setdefault(subframe.IODE, [None]*3)[subframe.HOW.subframe_ID-1] = subframe
+            self._ephemeris_think(prn, subframe.IODE)
+        elif subframe.HOW.subframe_ID == 4:
+            if subframe.sv_id == 56: # page 18
+                self._set_ionospheric_model(IonosphericModel(subframe.alpha, subframe.beta))
+    
+    def _ephemeris_think(self, prn, iode):
+        subframes = self.ephemeris_data[prn][iode]
+        if any(x is None for x in subframes): return
+        self.ephemerises[prn] = Ephemeris(*subframes)
+
 def generate_satellite_message(prn, eph, cn0, gps_t, pseudo_range, carrier_cycles, doppler_freq, approximate_receiver_position=None, ionospheric_model=None):
     if pseudo_range is None: # need pseudorange
         return None
@@ -392,19 +508,14 @@ def generate_satellite_message(prn, eph, cn0, gps_t, pseudo_range, carrier_cycle
         else:
             sat_pos, deltat_r = eph.predict_pos_deltat_r(t)
     
-    if approximate_receiver_position is not None:
-        direction = sat_pos - approximate_receiver_position; direction /= numpy.linalg.norm(direction)
-        direction_enu = enu_from_ecef(direction, approximate_receiver_position)
-        velocity_plus_drift = doppler_freq*c/L1_f0 + direction.dot(sat_vel)
-        if ionospheric_model is not None:
-            T_iono = ionospheric_model.evaluate(approximate_receiver_position, sat_pos, t_SV) # technically should be receiver time, but doesn't matter
-            print "iono", -T_iono * c
-        else:
-            #print 'no model'
-            T_iono = 0
-        D_tropo = tropospheric_model(approximate_receiver_position, sat_pos)
-    else:
+    if approximate_receiver_position is None:
         return None
+    
+    direction = sat_pos - approximate_receiver_position; direction /= numpy.linalg.norm(direction)
+    direction_enu = enu_from_ecef(direction, approximate_receiver_position)
+    T_iono = ionospheric_model.evaluate(approximate_receiver_position,
+        sat_pos, gps_t) if ionospheric_model is not None else nan
+    T_tropo = tropospheric_model(approximate_receiver_position, sat_pos)/c
     
     
     sat_pos_enu = enu_from_ecef(sat_pos - approximate_receiver_position, approximate_receiver_position)
@@ -420,12 +531,13 @@ def generate_satellite_message(prn, eph, cn0, gps_t, pseudo_range, carrier_cycle
         position=Point(*sat_pos),
         velocity=Vector3(*sat_vel),
         time=-pseudo_range/c - deltat_SV_L1,
-        T_iono=T_iono + D_tropo/c,
-        carrier_distance=carrier_cycles*c/L1_f0,
+        T_iono=T_iono,
+        T_tropo=T_tropo,
+        carrier_distance=carrier_cycles*c/L1_f0 if carrier_cycles is not None else nan,
         doppler_velocity=doppler_freq*c/L1_f0,
         
         direction_enu=Vector3(*direction_enu),
-        velocity_plus_drift=velocity_plus_drift,
+        velocity_plus_drift=doppler_freq*c/L1_f0 + direction.dot(sat_vel) if doppler_freq is not None else nan,
     )
 
 if __name__ == '__main__':

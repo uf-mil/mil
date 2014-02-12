@@ -17,7 +17,9 @@ find_package(catkin REQUIRED COMPONENTS rawgps_common roscpp message_runtime std
 #  Release        : w/o debug symbols, w/ optimization
 #  RelWithDebInfo : w/ debug symbols, w/ optimization
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-set(ROS_BUILD_TYPE Debug)
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
+
 
 
 # CATKIN_MIGRATION: removed during catkin migration

@@ -59,8 +59,8 @@ namespace nv08c_driver {
                 ROS_ASSERT_MSG(getPrivateNodeHandle().getParam("frame_id", frame_id),
                     "\"frame_id\" param missing");
                 
-                pub = ros::NodeHandle(getNodeHandle(), "nv08c").advertise<nv08c_driver::Packet>("ephemeral", 10);
-                latch_pub = ros::NodeHandle(getNodeHandle(), "nv08c").advertise<nv08c_driver::PacketSet>("persistent", 10, true);
+                pub = ros::NodeHandle(getNodeHandle(), "nv08c_serial").advertise<nv08c_driver::Packet>("ephemeral", 10);
+                latch_pub = ros::NodeHandle(getNodeHandle(), "nv08c_serial").advertise<nv08c_driver::PacketSet>("persistent", 10, true);
                 
                 device = boost::make_shared<Device>(port, baudrate);
                 heartbeat_timer = getNodeHandle().createTimer(ros::Duration(5), boost::bind(&Nodelet::heartbeat_callback, this, _1), true);

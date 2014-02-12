@@ -12,215 +12,138 @@ import rospy
 from std_msgs.msg import String, Header
 from geometry_msgs.msg import Vector3, Point, PointStamped
 
-from rawgps_common import gps, glonass
+from rawgps_common import gps, glonass, bitstream
 from rawgps_common.msg import Measurements, Satellite
 
 from nv08c_driver.msg import Packet, PacketSet
 
 rospy.init_node('dump', anonymous=True)
 
-class MyEphemeris(gps.Ephemeris):
-    def __init__(self):
-        pass
+gps_pub = gps.GPSPublisher(rospy.get_param('~frame_id'))
 
-ephs = {}
-
-nan = 1e600/1e600
-assert math.isnan(nan)
-
-last_pos = None
-ionospheric_model = None
-gps.IonosphericModel(
-    [1.49011611938e-08, 7.45058059692e-09, -1.19209289551e-07, -5.96046447754e-08],
-    [106496.0, 32768.0, -262144.0, -65536.0],
-)
-should = {}
-
-pub = rospy.Publisher('~gps', Measurements)
-pos_pub = rospy.Publisher('~pos', PointStamped)
-latlong_pub = rospy.Publisher('~latlong', PointStamped)
 def cb(msg):
-    print 'in', msg.header
-    global last_pos, ionospheric_model
-    msg.data = chr(msg.id) + msg.data
-    packet = msg
-    if msg.data.startswith('\xf5'):
-        msg = msg.data[1:]
-        utc_t_ms, week, gpsutc, glonassutc, timecorr = struct.unpack('<dHddb', msg[:27])
-        gps_t = utc_t_ms/1000 + gpsutc/1000
-        glonass_t = utc_t_ms/1000 + glonassutc/1000
-        print 'RAW', utc_t_ms/1000, week, gpsutc/1000, glonassutc/1000, timecorr/1000
-        assert len(msg[27:]) % 30 == 0
-        m = Measurements(
-            header=Header(
-                stamp=packet.header.stamp,
-                frame_id=packet.header.frame_id,
-            ),
-            satellites=[],
-        )
-        m2 = Measurements(
-            header=Header(
-                stamp=packet.header.stamp,
-                frame_id=packet.header.frame_id,
-            ),
-            satellites=[],
-        )
-        for i in xrange(len(msg[27:]) // 30):
-            d = msg[27+30*i:27+30*i+30]
-            sig_type, sat_num, carrier_num, snr, carrier_phase, pseudo_range, doppler_freq, flags, res = struct.unpack('<BBbBdddBB', d)
+    if msg.id == 0xf5:
+        utc_t_ms, week, gpsutc, glonassutc, timecorr = struct.unpack('<dHddb', msg.data[:27])
+        utc_t = gps.Time(week, utc_t_ms/1000)
+        gps_t = utc_t + gpsutc/1000
+        glonass_t = utc_t + glonassutc/1000
+        
+        print utc_t_ms
+        print utc_t, gps_t
+        
+        import time
+        print (utc_t - gps.Time(0, time.time()))/gps.week_length
+        
+        assert len(msg.data[27:]) % 30 == 0
+        sats = []
+        for i in xrange(len(msg.data[27:]) // 30):
+            d = msg.data[27+30*i:27+30*i+30]
+            (sig_type, sat_num, carrier_num, snr,
+                carrier_phase, pseudo_range, doppler_freq,
+                flags, _reserved) = struct.unpack('<BBbBdddBB', d)
             assert flags & 0x01
-            doppler_freq_good = 'G' if flags & 0x02 else 'g'
-            carrier_phase_good = 'G' if flags & 0x08 else 'g'
-            carrier_phase_good += 'F' if not flags & 0x20 else 'f'
-            pseudorange_good = 'G' if flags & 0x02 else 'g'
-            pseudorange_good += 'F' if flags & 0x10 else 'f'
-            pseudorange_good += 'S' if flags & 0x04 else 's'
-            print '    %3i %3i %3i %3i %20.9f:%s %15.10f:%s %15.7f:%s %3i %3i' % (sig_type, sat_num, carrier_num, snr, carrier_phase, carrier_phase_good, pseudo_range, pseudorange_good, doppler_freq, doppler_freq_good, flags, res)
+            if not flags & 0x02:
+                pseudo_range = doppler_freq = None
+            if not flags & 0x08:
+                carrier_phase = None
+            if not flags & 0x10:
+                pseudo_range = None
+                doppler_freq = None
             
-            if sig_type == 0x02:
-                if ('gps', sat_num) in ephs and flags & 0x02 and flags & 0x10:
-                    eph = ephs[('gps', sat_num)]
-                    t_SV = gps_t - pseudo_range * 1e-3
-                    
-                    t = t_SV # initialize
-                    deltat_r = 0
-                    for i in xrange(3):
-                        dt = t - eph.t_oc
-                        while dt > 302400: dt -= 604800
-                        while dt < -302400: dt += 604800
-                        deltat_SV_L1 = eph.a_f0 + eph.a_f1 * dt + eph.a_f2 * dt**2 + deltat_r - eph.T_GD
-                        t = t_SV - deltat_SV_L1
-                        sat_pos, deltat_r, sat_vel = eph.predict(t)
-                        #print i, -pseudo_range * 1e-3 - deltat_SV_L1
-                        #print i, sat_pos
-                    
-                    if last_pos is not None:
-                        direction = sat_pos - last_pos; direction /= numpy.linalg.norm(direction)
-                        direction_enu = gps.enu_from_ecef(direction, last_pos)
-                        velocity_plus_drift = doppler_freq*gps.c/gps.L1_f0 + direction.dot(sat_vel)
-                        sh = should.get((sig_type, sat_num))
-                        if ionospheric_model is not None:
-                            T_iono = ionospheric_model.evaluate(last_pos, sat_pos, gps_t)
-                            print "iono", -T_iono * gps.c, (sh[1] if sh is not None else '')
-                        else:
-                            print 'no model'
-                            T_iono = 0
-                        D_tropo = gps.tropospheric_model(last_pos, sat_pos)
-                        print 'tropo', -D_tropo, (sh[0] if sh is not None else '')
-                    else:
-                        continue
-                    
-                    
-                    sat_pos_enu = gps.enu_from_ecef(sat_pos - last_pos, last_pos)
-                    sat_dir_enu = sat_pos_enu / numpy.linalg.norm(sat_pos_enu)
-                    
-                    E = math.asin(sat_dir_enu[2])
-                    if E < math.radians(5): continue
-                    
-                    m.satellites.append(Satellite(
-                        prn=sat_num,
-                        cn0=snr,
-                        position=Point(*sat_pos),
-                        velocity=Vector3(*sat_vel),
-                        time=-pseudo_range * 1e-3 - deltat_SV_L1,
-                        T_iono=T_iono + D_tropo/gps.c,
-                        carrier_distance=carrier_phase*gps.c/gps.L1_f0 if flags & 0x08 and not flags & 0x20 else nan,
-                        doppler_velocity=doppler_freq*gps.c/gps.L1_f0 if flags & 0x02 else nan,
-                        
-                        direction_enu=Vector3(*direction_enu),
-                        velocity_plus_drift=velocity_plus_drift,
-                    ))
-            elif sig_type == 0x01 and False:
-                if ('glonass', sat_num, carrier_num) in ephs and flags & 0x02 and flags & 0x10:
-                    eph = ephs[('glonass', sat_num, carrier_num)]
-                    sat_pos, sat_vel = eph.predict(glonass_t - pseudo_range*1e-3)
-                    m.satellites.append(Satellite(
-                        prn=1000000 + 1000*sat_num + carrier_num,
-                        cn0=snr,
-                        position=Point(*sat_pos),
-                        velocity=Vector3(*sat_vel),
-                        time=-pseudo_range*1e-3 + eph.tau_n,
-                        carrier_distance=carrier_phase*gps.c/glonass.L1_f0 if flags & 0x08 else nan,
-                        doppler_velocity=doppler_freq*gps.c/glonass.L1_f0 if flags & 0x02 else nan,
-                    ))
-                    if flags & 0x02:
-                        measured_vel = doppler_freq*gps.c/glonass.L1_f0
-                        #print ' '*7, sat_vel, measured_vel
-                        '''m.satellites.append(Satellite(
-                            direction_enu=Vector3(*gps.enu_from_ecef(sat_dir, antenna_pos)),
-                            velocity_plus_drift=measured_vel - sat_vel,
-                            prn=1000000 + 1000*sat_num + carrier_num,
-                            cn0=-snr,
-                        ))'''
-        print
-        print 'out', m.header
-        pub.publish(m)
-    elif msg.data.startswith('\x88'):
-        lat, lon, alt, err, t, week, lat_vel, lon_vel, alt_vel, dev, status = struct.unpack('<dddf10shdddfB', msg.data[1:])
-        print 'PVT', math.degrees(lat), math.degrees(lon), alt, err, None, week, lat_vel, lon_vel, alt_vel, dev, status
-        last_pos = gps.ecef_from_latlongheight(lat, lon, alt)
-        pos_pub.publish(PointStamped(
-            header=Header(
-                stamp=packet.header.stamp,
-                frame_id='/ecef',
-            ),
-            point=Point(*gps.ecef_from_latlongheight(lat, lon, alt)),
-        ))
-        latlong_pub.publish(PointStamped(
-            header=Header(
-                stamp=packet.header.stamp,
-                frame_id='/latlong',
-            ),
-            point=Point(lat, lon, alt),
-        ))
-    elif msg.data.startswith('\xf6'):
-        x, y, z, x_err, y_err, z_err, flags = struct.unpack('<ddddddB', msg.data[1:])
+            if sig_type == 0x01:
+                # glonass support was included in the past, look in history
+                pass
+            elif sig_type == 0x02:
+                if flags & 0x20:
+                    print sat_num, 'half cycle ambiguity!'
+                sats.append(dict(
+                    prn=sat_num,
+                    cn0=snr,
+                    pseudo_range=pseudo_range,
+                    carrier_cycles=carrier_phase,
+                    doppler_freq=doppler_freq,
+                ))
+            elif sig_type == 0x04:
+                print sat_num, carrier_num, 'SBAS!'
+        
+        gps_pub.handle_raw_measurements(msg.header.stamp, gps_t, sats, math.floor(100*gps_t.TOW+0.5)/10) # receivers appear to align roughly to 0.1 second intervals of GPS time
+    elif msg.id == 0x88:
+        lat, lon, alt, err, t, week, lat_vel, lon_vel, alt_vel, dev, status = struct.unpack('<dddf10shdddfB', msg.data)
+        #print 'PVT', math.degrees(lat), math.degrees(lon), alt, err, None, week, lat_vel, lon_vel, alt_vel, dev, status
+        gps_pub.handle_pos_estimate(msg.header.stamp, gps.ecef_from_latlongheight(lat, lon, alt))
+    elif msg.id == 0xf6:
+        x, y, z, x_err, y_err, z_err, flags = struct.unpack('<ddddddB', msg.data)
         #print 'GCA', x, y, z, x_err, y_err, z_err, flags
-        antenna_pos = numpy.array([x, y, z])
-    elif msg.data.startswith('\x70'):
-        channels, description, serial, res1, res2, res3, res4 = struct.unpack('<B21sI21sI21sI', msg.data[1:])
+    elif msg.id == 0x70:
+        channels, description, serial, res1, res2, res3, res4 = struct.unpack('<B21sI21sI21sI', msg.data)
         #print 'VER', channels, description, serial, res1, res2, res3, res4
-    elif msg.data.startswith('\x4a'):
-        a0, a1, a2, a3, b0, b1, b2, b3, reliable = struct.unpack('<ffffffffB', msg.data[1:])
+    elif msg.id == 0x4a:
+        a0, a1, a2, a3, b0, b1, b2, b3, reliable = struct.unpack('<ffffffffB', msg.data)
+        #print 'ION', a0, a1, a2, a3, b0, b1, b2, b3, reliable
         if reliable:
             ionospheric_model = gps.IonosphericModel([a0, a1, a2, a3], [b0, b1, b2, b3])
-        print 'ION', a0, a1, a2, a3, b0, b1, b2, b3, reliable
-    elif msg.data.startswith('\x4b'):
-        A1, A0, t_ot, WN_t, dt_LS, WN_LSF, DN, dt_LSF, reliable, NA, tau_C, glonass_reliable = struct.unpack('<ddIHhHHhBHdB', msg.data[1:])
-        print 'TSP', A1, A0, t_ot, WN_t, dt_LS, WN_LSF, DN, dt_LSF, reliable, NA, tau_C, glonass_reliable
-    elif msg.data.startswith('\xe7'):
-        (data_type,), value = struct.unpack('<B', msg.data[1]), msg.data[2:]
+    elif msg.id == 0x4b:
+        A1, A0, t_ot, WN_t, dt_LS, WN_LSF, DN, dt_LSF, reliable, NA, tau_C, glonass_reliable = struct.unpack('<ddIHhHHhBHdB', msg.data)
+        #print 'TSP', A1, A0, t_ot, WN_t, dt_LS, WN_LSF, DN, dt_LSF, reliable, NA, tau_C, glonass_reliable
+    elif msg.id == 0xe7:
+        (data_type,), value = struct.unpack('<B', msg.data[:1]), msg.data[1:]
         #print 'AOP', data_type, value.encode('hex')
-    elif msg.data.startswith('\xf7'):
-        sat_type, sat_num = struct.unpack('<BB', msg.data[1:3])
+    elif msg.id == 0xf7:
+        sat_type, sat_num = struct.unpack('<BB', msg.data[:2])
         if sat_type == 1: # GPS
-            Crs, Dn, M0, Cuc, E, Cus, SqrtA, Toe, Cic, Omega0, Cis, I0, Crc, W, OmegaR, Ir, Tgd, Toc, Af2, Af1, Af0, URA, IODE, IODC, CodeL2, L2_Pdata_flag, WeekN = struct.unpack('<ffdfdfddfdfdfdddfdfffHHHHHH', msg.data[3:])
+            Crs, Dn, M0, Cuc, E, Cus, SqrtA, Toe, Cic, Omega0, Cis, I0, Crc, W, OmegaR, Ir, Tgd, Toc, Af2, Af1, Af0, URA, IODE, IODC, CodeL2, L2_Pdata_flag, WeekN = struct.unpack('<ffdfdfddfdfdfdddfdfffHHHHHH', msg.data[2:])
             #print 'EPH', sat_num, Crs, Dn, M0, Cuc, E, Cus, SqrtA, Toe, Cic, Omega0, Cis, I0, Crc, W, OmegaR, Ir, Tgd, Toc, Af2, Af1, Af0, URA, IODE, IODC, CodeL2, L2_Pdata_flag, WeekN
-            eph = MyEphemeris()
-            eph.C_rs, eph.delta_n, eph.M_0, eph.C_uc, eph.e, eph.C_us, eph.sqrt_A, eph.t_oe, eph.C_ic, eph.omega_0, eph.C_is, eph.i_0, eph.C_rc, eph.omega, eph.omega_dot, eph.IDOT, eph.T_GD, eph.t_oc, eph.a_f2, eph.a_f1, eph.a_f0, eph.URA, eph.IODE, eph.IODC = Crs, Dn*1000, M0, Cuc, E, Cus, SqrtA, Toe/1000, Cic, Omega0, Cis, I0, Crc, W, OmegaR*1000, Ir*1000, Tgd/1000, Toc/1000, Af2*1000, Af1, Af0/1000, URA, IODE, IODC
-            print sat_num, eph
+            #eph = MyEphemeris()
+            #eph.C_rs, eph.delta_n, eph.M_0, eph.C_uc, eph.e, eph.C_us, eph.sqrt_A, eph.t_oe, eph.C_ic, eph.omega_0, eph.C_is, eph.i_0, eph.C_rc, eph.omega, eph.omega_dot, eph.IDOT, eph.T_GD, eph.t_oc, eph.a_f2, eph.a_f1, eph.a_f0, eph.URA, eph.IODE, eph.IODC = Crs, Dn*1000, M0, Cuc, E, Cus, SqrtA, Toe/1000, Cic, Omega0, Cis, I0, Crc, W, OmegaR*1000, Ir*1000, Tgd/1000, Toc/1000, Af2*1000, Af1, Af0/1000, URA, IODE, IODC
+            #print sat_num, eph
             #print eph.predict(0)
-            ephs[('gps', sat_num)] = eph
+            #ephs[('gps', sat_num)] = eph
         elif sat_type == 2: # GLONASS
-            carrier, X, Y, Z, Vx, Vy, Vz, Ax, Ay, Az, t_b, gamma_n, tau_n, E_n = struct.unpack('<bddddddddddffH', msg.data[3:])
+            carrier, X, Y, Z, Vx, Vy, Vz, Ax, Ay, Az, t_b, gamma_n, tau_n, E_n = struct.unpack('<bddddddddddffH', msg.data[2:])
             eph = glonass.Ephemeris(t_b/1e3, X, Y, Z, Vx*1e3, Vy*1e3, Vz*1e3, Ax*1e6, Ay*1e6, Az*1e6, gamma_n, tau_n*1e-3)
             #print eph.predict(0)
-            ephs[('glonass', sat_num, carrier)] = eph
-            print 'GPH', eph
+            #ephs[('glonass', sat_num, carrier)] = eph
+            #print 'GPH', eph
         else:
             print 'unknown sat_type', sat_type
-    elif msg.data.startswith('\x5d'):
-        number_of_sats, = struct.unpack('<B', msg.data[1:2])
-        print 'Atmospheric corrections:'
-        for i in xrange(number_of_sats):
-            system, number, tropo_delay, iono_delay, reserved = \
-                struct.unpack('<BBfff', msg.data[2+14*i:2+14*(i+1)])
-            print system, number, tropo_delay, iono_delay, reserved
-            should[3-system, number] = tropo_delay, iono_delay
+    elif msg.id == 0x5d:
+        number_of_sats, = struct.unpack('<B', msg.data[:1])
+        #print 'Atmospheric corrections:'
+        #for i in xrange(number_of_sats):
+            #system, number, tropo_delay, iono_delay, reserved = \
+            #    struct.unpack('<BBfff', msg.data[1+14*i:1+14*(i+1)])
+            #print system, number, tropo_delay, iono_delay, reserved
+            #should[3-system, number] = tropo_delay, iono_delay
+    elif msg.id == 0xe5:
+        number_of_blocks, = struct.unpack('<B', msg.data[:1]); pos = 1
+        for i in xrange(number_of_blocks):
+            channel, sat_type, sat_number, time = struct.unpack('<BBBI', msg.data[pos:pos+7]); pos += 7
+            if sat_type == 1: # GLONASS
+                subframe = msg.data[pos:pos+12]; pos += 12
+            elif sat_type == 2: # GPS
+                subframe = msg.data[pos:pos+40]; pos += 40
+                
+                subframe = struct.pack('>10I', *struct.unpack('<10I', subframe))
+                
+                bs = bitstream.BitStream(subframe)
+                res = ''
+                for i in xrange(10):
+                    bs.read(2)
+                    for j in xrange(3):
+                        res += chr(bs.read(8))
+                    bs.read(6)
+                assert bs.at_end()
+                
+                gps_pub.handle_subframe(msg.header.stamp, sat_number, res)
+            elif sat_type == 4: # SBAS
+                subframe = msg.data[pos:pos+32]; pos += 32
+            else:
+                assert False, sat_type
+        assert pos == len(msg.data)
     else:
-        print msg.data.encode('hex'), len(msg.data)
+        print 'unknown message:', hex(msg.id), msg.data.encode('hex'), len(msg.data)
 
-rospy.Subscriber('~ephemeral', Packet, cb)
-rospy.Subscriber('~persistent', PacketSet, lambda packet_set: map(cb, packet_set.packets))
+rospy.Subscriber('nv08c_serial/ephemeral', Packet, cb)
+rospy.Subscriber('nv08c_serial/persistent', PacketSet, lambda packet_set: map(cb, packet_set.packets))
 
 rospy.spin()

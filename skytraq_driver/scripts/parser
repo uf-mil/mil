@@ -26,8 +26,6 @@ class Handlers(object):
         self.last_meas_time = None
         self.position = None
         self.ephemerises = {}
-        self.pub = rospy.Publisher('gps', Measurements)
-        self.pos_pub = rospy.Publisher('~pos', PointStamped)
         
         self.ephemeris_data = {} # prn -> (iode -> [frame*3])
     
@@ -153,7 +151,6 @@ class Handlers(object):
         subframes = self.ephemeris_data[prn][iode]
         if any(x is None for x in subframes): return
         self.ephemerises[prn] = gps.Ephemeris(*subframes)
-        
 
 
 rospy.init_node('skytraq_parser')
