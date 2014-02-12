@@ -2,6 +2,12 @@ This repository contains ROS packages for working with
 raw GPS data, sufficient to create a GPS/INS system
 useful on an outdoor robot.
 
+This repository depends on [SciPy](http://www.scipy.org/),
+installable with:
+
+    sudo apt-get install python-scipy
+
+
 Sensors required:
 
 1. An IMU (inertial measurement unit) and driver publishing
