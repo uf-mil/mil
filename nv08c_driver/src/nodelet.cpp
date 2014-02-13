@@ -58,9 +58,6 @@ namespace nv08c_driver {
                     throw std::runtime_error("param port required");
                 }
                 int baudrate = 115200; getPrivateNodeHandle().getParam("baudrate", baudrate);
-                if(!getPrivateNodeHandle().getParam("frame_id", frame_id)) {
-                    throw std::runtime_error("param frame_id required");
-                }
                 
                 pub = ros::NodeHandle(getNodeHandle(), "nv08c_serial").advertise<nv08c_driver::Packet>("ephemeral", 10);
                 latch_pub = ros::NodeHandle(getNodeHandle(), "nv08c_serial").advertise<nv08c_driver::PacketSet>("persistent", 10, true);
@@ -85,7 +82,6 @@ namespace nv08c_driver {
                     
                     nv08c_driver::Packet packet;
                     packet.header.stamp = ros::Time::now();
-                    packet.header.frame_id = frame_id;
                     packet.id = packet_data->first;
                     packet.data = packet_data->second;
                     
@@ -119,7 +115,6 @@ namespace nv08c_driver {
             
             std::vector<PersistentPacketPattern> persistent_patterns;
             std::map<std::vector<uint8_t>, nv08c_driver::Packet> persistent_packets;
-            std::string frame_id;
             ros::Publisher pub;
             ros::Publisher latch_pub;
             boost::shared_ptr<Device> device;
