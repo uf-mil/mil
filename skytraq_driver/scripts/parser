@@ -6,8 +6,6 @@ import struct
 
 import numpy
 
-import roslib
-roslib.load_manifest('skytraq_driver')
 import rospy
 from std_msgs.msg import Header
 from geometry_msgs.msg import Vector3, PointStamped, Point
@@ -20,28 +18,14 @@ from skytraq_driver.msg import Packet, PacketSet
 
 class Handlers(object):
     def __init__(self, frame_id):
+        self.gps_pub = gps.GPSPublisher(frame_id)
         self.frame_id = frame_id
         
-        self.ionospheric_model = None
         self.last_meas_time = None
-        self.position = None
-        self.ephemerises = {}
-        
-        self.ephemeris_data = {} # prn -> (iode -> [frame*3])
     
     def gps_ephemeris_data(self, data, stamp):
-        return
-        sv, = struct.unpack('>H', data[0:2])
-        if all(x == '\x00' for x in data[3:]):
-            #assert False # XXX
-            return
-        
-        subframes = ['\x00'*3 + data[2+1+28*i:2+1+28*i+27] for i in xrange(3)]
-        
-        for i, subframe in enumerate(subframes):
-            self.subframe(chr(sv) + chr(i+1) + subframe, stamp=stamp)
-        self._ephemeris_think(sv, gps.Subframe1(subframes[0][3:]).IODE)
-        assert len(data) == 2+1+28*2+27, len(data)
+        # just ignore this, subframes are received fast enough
+        pass
     
     def ack(self, data, stamp):
         pass
@@ -54,7 +38,6 @@ class Handlers(object):
         self.last_meas_time = IOD, gps.Time(WN, TOW_ms*1e-3)
     
     def raw_meas(self, data, stamp):
-        print
         iod, nmeas = struct.unpack('>BB', data[0:2])
         assert len(data) == 2+nmeas*23
         measurements = [struct.unpack('>BBddfB', data[2+i*23:2+i*23+23])
@@ -65,24 +48,7 @@ class Handlers(object):
             return
         t = self.last_meas_time[1]
         
-        #print nmeas, 'SATELLITES'
-        if self.position is None:
-            print '   ', 'NO FIX'
-            return
-        
-        msg = Measurements(
-            header=Header(
-                stamp=stamp,
-                frame_id=self.frame_id,
-            ),
-            sync=t.TOW,
-            satellites=[],
-        )
-        #print
-        #print
-        #print
-        #print
-        #print
+        sats = []
         for prn, cn0, pseudorange, acc_carrier_cycle, doppler_freq, status in measurements:
             (pseudorange_avail, doppler_freq_avail, acc_carrier_cycle_avail,
                 cycle_slip_possible, integration_time_greater_10ms) = [
@@ -94,63 +60,23 @@ class Handlers(object):
             if not acc_carrier_cycle_avail:
                 acc_carrier_cycle = None
             
-            print prn, cn0, pseudorange, acc_carrier_cycle, doppler_freq
-            
-            if doppler_freq is None:
-                print 'no doppler frequency, dropping', prn
-                continue
-            
-            if prn not in self.ephemerises:
-                print 'no ephemeris, dropping', prn
-                continue
-            eph = self.ephemerises[prn]
-            if not eph.is_healthy():
-                print 'unhealthy, dropping', prn
-                continue
-            
-            sat_msg = gps.generate_satellite_message(
-                prn, eph, cn0, t,
-                pseudorange, acc_carrier_cycle, doppler_freq,
-                self.position, self.ionospheric_model)
-            if sat_msg is not None:
-                msg.satellites.append(sat_msg)
-        print len(msg.satellites), 'GOOD SATELLITES'
-        self.pub.publish(msg)
+            sats.append(dict(
+                prn=prn,
+                cn0=cn0,
+                pseudo_range=pseudorange,
+                carrier_cycles=acc_carrier_cycle,
+                doppler_freq=doppler_freq,
+            ))
+        self.gps_pub.handle_raw_measurements(stamp, t, sats, t.TOW)
     
     def rcv_state(self, data, stamp):
         iod, navigation_state, wn, tow, ecef_x, ecef_y, ecef_z, ecef_dx, ecef_dy, ecef_dz, clock_bias, clock_drift, gdop, pdop, hdop, vdop, tdop = struct.unpack('>BBHddddfffdffffff', data)
-        
-        if navigation_state < 0x02:
-            return
-        
-        self.position = numpy.array([ecef_x, ecef_y, ecef_z])
-        
-        self.pos_pub.publish(PointStamped(
-            header=Header(
-                stamp=stamp,
-                frame_id='/ecef',
-            ),
-            point=Point(ecef_x, ecef_y, ecef_z),
-        ))
+        if navigation_state >= 0x02: # require at least a 2D fix
+            self.gps_pub.handle_pos_estimate(stamp, numpy.array([ecef_x, ecef_y, ecef_z]))
     
     def subframe(self, data, stamp):
         PRN, SFID, subframe_data = struct.unpack('>BB30s', data)
-        
-        print PRN, SFID
-        
-        if SFID in [1, 2, 3]:
-            subframe = gps.subframes[SFID](subframe_data[3:])
-            self.ephemeris_data.setdefault(PRN, {}).setdefault(subframe.IODE, [None]*3)[SFID-1] = subframe
-            self._ephemeris_think(PRN, subframe.IODE)
-        elif SFID == 4:
-            subframe = gps.Subframe4(subframe_data[3:])
-            if subframe.sv_id == 56: # page 18
-                self.ionospheric_model = gps.IonosphericModel(subframe.alpha, subframe.beta)
-    
-    def _ephemeris_think(self, prn, iode):
-        subframes = self.ephemeris_data[prn][iode]
-        if any(x is None for x in subframes): return
-        self.ephemerises[prn] = gps.Ephemeris(*subframes)
+        self.gps_pub.handle_subframe(stamp, PRN, subframe_data)
 
 
 rospy.init_node('skytraq_parser')

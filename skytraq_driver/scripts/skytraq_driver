@@ -7,8 +7,6 @@ import struct
 
 from twisted.internet import defer, protocol, reactor, serialport, task
 
-import roslib
-roslib.load_manifest('skytraq_driver')
 import rospy
 from std_msgs.msg import Header
 
@@ -65,7 +63,7 @@ class GPS(protocol.Protocol):
             def get_subframe_id(body):
                 PRN, SFID, subframe_data = struct.unpack('>BB30s', body)
                 if SFID == 4 or SFID == 5:
-                    subframe = gps.subframes[SFID](subframe_data[3:])
+                    subframe = gps.subframes[SFID](subframe_data)
                     return PRN, SFID, subframe.data_id, subframe.sv_id
                 else:
                     return PRN, SFID
