@@ -39,6 +39,7 @@ add_message_files(
   FILES
   Packet.msg
   PacketSet.msg
+  SerialPacket.msg
 )
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
