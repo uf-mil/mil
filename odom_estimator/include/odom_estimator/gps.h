@@ -22,7 +22,7 @@ static const double c = 299792458;
 typedef ManifoldPair<Vec<3>, Vec<3> > Fix;
 typedef ManifoldPair<Fix, Vec<Dynamic>> FixWithBias;
 
-class E : public IDistributionFunction<FixWithBias, Vec<Dynamic>, Vec<Dynamic> > {
+class E : public UnscentedTransformDistributionFunction<FixWithBias, Vec<Dynamic>, Vec<Dynamic> > {
   rawgps_common::Measurements const &msg;
   std::vector<int> gps_prn;
   
@@ -117,7 +117,7 @@ GaussianDistribution<Fix> get_fix(rawgps_common::Measurements const &msg) {
   assert(false);
 }
 
-class GPSErrorObserver : public IDistributionFunction<State, Vec<Dynamic>, Vec<Dynamic> > {
+class GPSErrorObserver : public UnscentedTransformDistributionFunction<State, Vec<Dynamic>, Vec<Dynamic> > {
   E inner;
   Vec<3> const gps_pos;
   Vec<3> const last_gyro;

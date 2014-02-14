@@ -11,7 +11,7 @@
 namespace odom_estimator {
 
 
-
+// is a gaussian distribution on an arbitrary manifold
 template<typename PointType>
 struct GaussianDistribution {
   PointType mean;
@@ -20,24 +20,32 @@ struct GaussianDistribution {
   GaussianDistribution(PointType const &mean,
                        SqMat<PointType::RowsAtCompileTime> const &cov) :
     mean(mean), cov(cov/2 + cov.transpose()/2) {
-    assert(mean.rows() == cov.rows());
-    assert(cov.cols() == cov.rows());
+    assert(cov.rows() == mean.rows());
+    assert(cov.cols() == mean.rows());
   }
 };
 
-template<typename PointType, typename VarType>
-class GaussianDistributionWithCrossCov : public GaussianDistribution<PointType> {
-  typedef Mat<PointType::RowsAtCompileTime, VarType::RowsAtCompileTime> CrossCovType;
+// is a GaussianDistribution that also has cross-covariance information
+// between this and another implied distribution
+template<typename PointType, typename CrossPointType>
+class GaussianDistributionWithCrossCov :
+public GaussianDistribution<PointType> {
+  typedef Mat<PointType::RowsAtCompileTime, CrossPointType::RowsAtCompileTime>
+    CrossCovType;
 public:
-  CrossCovType cross_cov;
+  CrossCovType cross_cov; // = E[(this - this.mean) * (other - other.mean)^T]
   
   GaussianDistributionWithCrossCov(GaussianDistribution<PointType> const &gd,
                                    CrossCovType const &cross_cov) :
     GaussianDistribution<PointType>(gd), cross_cov(cross_cov) {
+    assert(cross_cov.rows() == mean.rows());
   }
 };
 
 
+// approximately transforms a distribution, `in`, by a function, `func`,
+// resulting in a new distribution (along with the cross-correlation with the
+// original distribution)
 template<typename OutPointType, typename InPointType>
 GaussianDistributionWithCrossCov<OutPointType, InPointType>
 unscented_transform(boost::function<OutPointType(InPointType)> const &func,
@@ -95,12 +103,28 @@ unscented_transform(boost::function<OutPointType(InPointType)> const &func,
 }
 
 
-template<typename InType, typename OutType, typename ExtraType>
+// is an interface describing functors that take a GaussianDistribution and
+// produce a GaussianDistributionWithCrossCov, possibly with distinct point
+// types
+template<typename InType, typename OutType>
 class IDistributionFunction {
+public:
+  virtual GaussianDistributionWithCrossCov<OutType, InType>
+  operator()(GaussianDistribution<InType> const &input) const = 0;
+};
+
+// is an implementation of IDistributionFunction that allows subclasses to
+// fill in a point propagation function and then uses it to transform
+// distributions using the unscented transform
+template<typename InType, typename OutType, typename ExtraType>
+class UnscentedTransformDistributionFunction :
+public IDistributionFunction<InType, OutType> {
 public:
   virtual GaussianDistribution<ExtraType> get_extra_distribution() const = 0;
   virtual OutType apply(InType const &input, ExtraType const &extra) const = 0;
-  virtual GaussianDistributionWithCrossCov<OutType, InType> operator()(GaussianDistribution<InType> const &input) const final {
+  
+  GaussianDistributionWithCrossCov<OutType, InType>
+  operator()(GaussianDistribution<InType> const &input) const final override {
     typedef ManifoldPair<InType, ExtraType> InAndExtraType;
     
     GaussianDistribution<ExtraType> extra = get_extra_distribution();
@@ -120,19 +144,23 @@ public:
   }
 };
 
+// is a specialization of UnscentedTransformDistributionFunction that allows
+// the point propagation function to be provided as an argument
 template<typename InType, typename OutType, typename ExtraType>
-class EasyDistributionFunction : public IDistributionFunction<InType, OutType, ExtraType> {
+class EasyDistributionFunction :
+public UnscentedTransformDistributionFunction<InType, OutType, ExtraType> {
   std::function<OutType(InType, ExtraType)> func;
-  GaussianDistribution<ExtraType> extra_distribution;
+  typedef GaussianDistribution<ExtraType> ExtraDistributionType;
+  ExtraDistributionType extra_distribution;
 public:
-  GaussianDistribution<ExtraType> get_extra_distribution() const {
+  ExtraDistributionType get_extra_distribution() const override {
     return extra_distribution;
   }
-  OutType apply(InType const &input, ExtraType const &extra) const {
+  OutType apply(InType const &input, ExtraType const &extra) const override {
     return func(input, extra);
   }
   EasyDistributionFunction(std::function<OutType(InType, ExtraType)> func,
-                           GaussianDistribution<ExtraType> const &extra_distribution) :
+                           ExtraDistributionType const &extra_distribution) :
     func(func), extra_distribution(extra_distribution) {
   }
 };

@@ -118,7 +118,7 @@ struct State {
 };
 
 
-class StateUpdater : public IDistributionFunction<State, State,
+class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
   // argh, no way to use a typedef defined within the class for the base class
   // this is ExtraType:
   ManifoldPair<ManifoldPair<Vec<3>, Vec<3> >, Vec<1> >
