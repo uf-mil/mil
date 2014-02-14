@@ -38,7 +38,7 @@ public:
   GaussianDistributionWithCrossCov(GaussianDistribution<PointType> const &gd,
                                    CrossCovType const &cross_cov) :
     GaussianDistribution<PointType>(gd), cross_cov(cross_cov) {
-    assert(cross_cov.rows() == mean.rows());
+    assert(cross_cov.rows() == this->mean.rows());
   }
 };
 
