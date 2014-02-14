@@ -57,7 +57,7 @@ class Handlers(object):
                 pseudorange = None
             if not doppler_freq_avail:
                 doppler_freq = None
-            if not acc_carrier_cycle_avail:
+            if not acc_carrier_cycle_avail or cycle_slip_possible:
                 acc_carrier_cycle = None
             
             sats.append(dict(

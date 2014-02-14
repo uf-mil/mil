@@ -39,7 +39,7 @@ def cb(pos, filename):
 		<LookAt>
 			<longitude>%s</longitude>
 			<latitude>%s</latitude>
-			<range>200</range>
+			<range>20</range>
 			<heading>0</heading>
 			<tilt>30</tilt>
 		</LookAt>

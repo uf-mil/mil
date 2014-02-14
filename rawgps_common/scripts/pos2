@@ -86,6 +86,10 @@ history = {}
 
 first = {}
 
+rospy.init_node('pos2')
+
+pub = rospy.Publisher('offsetoffset', PointStamped)
+
 def match(name, msg):
     with lock:
         history.setdefault(msg.sync, {})[name] = msg
@@ -96,7 +100,7 @@ def match(name, msg):
             common_prns = reduce(set.intersection,
                 [set(sat.prn for sat in x.satellites if not math.isnan(sat.carrier_distance)) for x in hist.itervalues()])
             
-            new = [Measurements(satellites=[sat for sat in x.satellites if sat.prn in common_prns])
+            new = [Measurements(satellites=[sat for sat in x.satellites if sat.prn in common_prns and (not first or sat.prn in first)])
                 for x in hist.itervalues()]
             
             for x in new:
@@ -108,15 +112,26 @@ def match(name, msg):
                     for a, b in zip(new[0].satellites, new[1].satellites))
             for x in first.keys():
                 if x not in common_prns:
-                    first.remove(x)
+                    first.pop(x)
             print
             print first.keys()
-            q = [a.carrier_distance - b.carrier_distance
+            q = [a.carrier_distance - b.carrier_distance - first[a.prn]
                 for a, b in zip(new[0].satellites, new[1].satellites)]
+            
+            A, B = [], []
             for a, b in zip(new[0].satellites, new[1].satellites):
-                print '%2i % 10.6f %s' % (a.prn, a.carrier_distance - b.carrier_distance - mean(q), xyz_array(a.direction_enu))
-
-rospy.init_node('pos2')
+                print '%2i % 10.6f %s' % (a.prn, a.carrier_distance - b.carrier_distance - first[a.prn] - mean(q), xyz_array(a.direction_enu))
+                A.append(numpy.concatenate([xyz_array(a.direction_enu), [1]]))
+                B.append(a.carrier_distance - b.carrier_distance - first[a.prn])
+            x, residuals, rank, s = numpy.linalg.lstsq(A, B)
+            print x
+            pub.publish(PointStamped(
+                header=Header(
+                    stamp=hist.itervalues().next().header.stamp,
+                    frame_id='/enu',
+                ),
+                point=Point(*x[:3]),
+            ))
 
 rospy.Subscriber('/front_gps/gps', Measurements, lambda msg: match('front', msg))
 rospy.Subscriber('/back_gps/gps', Measurements, lambda msg: match('back', msg))
