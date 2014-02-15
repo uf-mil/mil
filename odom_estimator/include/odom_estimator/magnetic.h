@@ -19,12 +19,11 @@ namespace odom_estimator {
 namespace magnetic {
 
 
+// computes pairs
+//   res[n] = (cos(n theta), sin(n theta))
+// with n from 0 to max_n, given x = cos(theta) and y = sin(theta).
 template<typename T>
 std::vector<std::pair<T, T> > compute_cos_sin(T x, T y, int max_n) {
-  // compute cos(n theta) and sin(n theta)
-  // with n from 0 to max_n
-  // given x = cos(theta) and y = sin(theta)
-
   std::vector<std::pair<T, T> > res;
   res.push_back(std::make_pair(1, 0));
   res.push_back(std::make_pair(x, y));
@@ -33,13 +32,20 @@ std::vector<std::pair<T, T> > compute_cos_sin(T x, T y, int max_n) {
       2 * x * res[n-1].first  - res[n-2].first,
       2 * x * res[n-1].second - res[n-2].second));
   }
-  
   return res;
 }
 
 
+// computes a table of values:
+//   result(m, k) = \tilde{P}_k^{(m,m)}(x)
+// of the Jacobi polynomials P_k^{(m,m)}(x) normalized (divided) by
+//   \sqrt{\dfrac{2^{2m+1}\Gamma^2(k+m+1)}{(2k+2m+1)\Gamma(k+1)\Gamma(k+2m+1)}}
+// using a stable recurrence relation.
+// Source: http://www.ohio.edu/people/mohlenka/research/uguide.pdf section 3.1
+//   (mirrored at doc/uguide.pdf)
 template <typename T>
-Eigen::Matrix<T, Dynamic, Dynamic> p2(int max_m, int max_k, T x) {
+Eigen::Matrix<T, Dynamic, Dynamic>
+normalized_jacobi(int max_m, int max_k, T x) {
   Eigen::Matrix<T, Dynamic, Dynamic> result(max_m+1, max_k+1);
   for(int m = 0; m <= max_m; m++) {
     if(m == 0) {
@@ -48,17 +54,23 @@ Eigen::Matrix<T, Dynamic, Dynamic> p2(int max_m, int max_k, T x) {
       result(m, 0) = result(m-1, 0)*sqrt(1+1/(2.*m));
     }
     for(int k = 1; k <= max_k; k++) {
-      T prek = result(m, k-1);
       T preprek = k == 1 ? T(0) : result(m, k-2);
+      T prek = result(m, k-1);
       result(m, k) = 2*x*prek*sqrt((1 + (m-1./2)/k)*(1-(m-1./2)/(k+2*m))) -
         preprek*sqrt((1+4/(2.*k+2.*m-3))*(1-1./k)*(1-1/(k+2.*m)));
     }
   }
   return result;
 }
+// computes a table of values:
+//   result(m, n) = \breve{P}_n^m(arg)
+// of the Schmidt semi-normalized associated Legendre functions.
+// See http://www.ngdc.noaa.gov/geomag/WMM/data/WMM2010/WMM2010_Report.pdf section 1.2
 template<typename T>
-Eigen::Matrix<T, Dynamic, Dynamic> lpmn(int max_m, int max_n, T arg) {
-  Eigen::Matrix<T, Dynamic, Dynamic> p = p2<T>(max_m, max_n, arg);
+Eigen::Matrix<T, Dynamic, Dynamic>
+semi_normalized_associated_legendre(int max_m, int max_n, T arg) {
+  Eigen::Matrix<T, Dynamic, Dynamic> p =
+    normalized_jacobi<T>(max_m, max_n, arg);
   Eigen::Matrix<T, Dynamic, Dynamic> result(max_m+1, max_n+1);
   for(int m = 0; m <= max_m; m++) {
     for(int n = 0; n <= max_n; n++) {
@@ -124,14 +136,15 @@ public:
       pos_ecef(0) / hypot(pos_ecef(0), pos_ecef(1)),
       pos_ecef(1) / hypot(pos_ecef(0), pos_ecef(1)),
       max_m);
-    Eigen::Matrix<T, Dynamic, Dynamic> blah = lpmn<T>(max_m, max_n, pos_ecef(2)/r);
+    Eigen::Matrix<T, Dynamic, Dynamic> p =
+      semi_normalized_associated_legendre<T>(max_m, max_n, pos_ecef(2)/r);
     
     T res = 0;
     BOOST_FOREACH(Coeff const &coeff, coeffs) {
       res += a * (
         (coeff.g + coeff.gdot * (t_year - t0_year)) * cos_sin[coeff.m].first +
         (coeff.h + coeff.hdot * (t_year - t0_year)) * cos_sin[coeff.m].second) *
-      pow(a/r, coeff.n+1) * blah(coeff.m, coeff.n);
+      pow(a/r, coeff.n+1) * p(coeff.m, coeff.n);
     }
     return res;
   }
