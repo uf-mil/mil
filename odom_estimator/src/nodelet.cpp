@@ -329,7 +329,7 @@ class NodeImpl {
         GPSErrorObserver(msg, state->mean.gps_prn, local_gps_pos, *last_gyro),
         *state);
       
-      if(state->mean.gps_prn.size()) {
+      /*if(state->mean.gps_prn.size()) {
         state = kalman_update(
           EasyDistributionFunction<State, Vec<1>, Vec<1> >(
             [](State const &state, Vec<1> const &measurement_noise) {
@@ -338,7 +338,7 @@ class NodeImpl {
             },
             GaussianDistribution<Vec<1> >(Vec<1>::Zero(), scalar_matrix(pow(.1, 2)))),
           *state);
-      }
+      }*/
     }
     
     

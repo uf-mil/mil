@@ -31,7 +31,7 @@ public:
     Vec<Dynamic> mean = Vec<Dynamic>::Zero(2 + 2*msg.satellites.size());
     
     Vec<Dynamic> stddev(2 + 2*msg.satellites.size());
-    stddev(0) = 1e-3;
+    stddev(0) = 100;
     stddev(1) = 100;
     for(unsigned int i = 0; i < msg.satellites.size(); i++) {
       rawgps_common::Satellite const &sat = msg.satellites[i];
@@ -63,7 +63,7 @@ public:
       estimated_ts.push_back((sat.time + sat.T_iono + sat.T_tropo) + (pos - point2vec(sat.position)).norm()/c);
       estimated_skews.push_back((point2vec(sat.position) - pos).normalized().dot(vel - xyz2vec(sat.velocity)) - sat.doppler_velocity);
     }
-    double t = noise(0) + std::accumulate(estimated_ts.begin(), estimated_ts.end(), 0.)/estimated_ts.size();
+    double t = noise(0)/c + std::accumulate(estimated_ts.begin(), estimated_ts.end(), 0.)/estimated_ts.size();
     double skew = noise(1) + std::accumulate(estimated_skews.begin(), estimated_skews.end(), 0.)/estimated_skews.size();
     
     Vec<3> eci_pos = inertial_from_ecef(t, pos);
