@@ -146,7 +146,7 @@ public:
         (coeff.h + coeff.hdot * (t_year - t0_year)) * cos_sin[coeff.m].second) *
       pow(a/r, coeff.n+1) * p(coeff.m, coeff.n);
     }
-    return res;
+    return res*1e-9; // convert nT to T
   }
   
   Vec<3> getField(Vec<3> pos_eci, double t) const {
