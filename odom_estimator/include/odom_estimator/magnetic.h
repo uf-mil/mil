@@ -39,7 +39,8 @@ std::vector<std::pair<T, T> > compute_cos_sin(T x, T y, int max_n) {
 // computes a table of values:
 //   result(m, k) = \tilde{P}_k^{(m,m)}(x)
 // of the Jacobi polynomials P_k^{(m,m)}(x) normalized (divided) by
-//   \sqrt{\dfrac{2^{2m+1}\Gamma^2(k+m+1)}{(2k+2m+1)\Gamma(k+1)\Gamma(k+2m+1)}}
+//   \sqrt{\dfrac{2^{2m+1}\Gamma^2(k+m+1)}
+//               {(2k+2m+1)\Gamma(k+1)\Gamma(k+2m+1)}}
 // using a stable recurrence relation.
 // Source: http://www.ohio.edu/people/mohlenka/research/uguide.pdf section 3.1
 //   (mirrored at doc/uguide.pdf)
@@ -65,7 +66,8 @@ normalized_jacobi(int max_m, int max_k, T x) {
 // computes a table of values:
 //   result(m, n) = \breve{P}_n^m(arg)
 // of the Schmidt semi-normalized associated Legendre functions.
-// See http://www.ngdc.noaa.gov/geomag/WMM/data/WMM2010/WMM2010_Report.pdf section 1.2
+// See http://www.ngdc.noaa.gov/geomag/WMM/data/WMM2010/WMM2010_Report.pdf
+//   section 1.2
 template<typename T>
 Eigen::Matrix<T, Dynamic, Dynamic>
 semi_normalized_associated_legendre(int max_m, int max_n, T arg) {
@@ -111,7 +113,8 @@ public:
     
     std::string header; getline(f, header);
     std::istringstream header_ss(header);
-    header_ss.exceptions(std::ios::eofbit | std::ios::failbit | std::ios::badbit);
+    header_ss.exceptions(
+      std::ios::eofbit | std::ios::failbit | std::ios::badbit);
     header_ss >> t0_year;
     
     while(true) {
@@ -127,7 +130,8 @@ public:
 
   template<typename T>
   T getPotential(Vec<3, T> pos_eci, double t) const {
-    Vec<3, T> pos_ecef = quat_from_rotvec(-w_E * t).cast<T>() * pos_eci; // would use ecef_from_inertial, but it's not templated to work here
+    // would use ecef_from_inertial, but it's not templated to work here
+    Vec<3, T> pos_ecef = quat_from_rotvec(-w_E * t).cast<T>() * pos_eci;
     double t_year = (t - 1262322000)/(365.25*86400) + 2010;
     
     double a = 6371200;
@@ -143,8 +147,8 @@ public:
     BOOST_FOREACH(Coeff const &coeff, coeffs) {
       res += a * (
         (coeff.g + coeff.gdot * (t_year - t0_year)) * cos_sin[coeff.m].first +
-        (coeff.h + coeff.hdot * (t_year - t0_year)) * cos_sin[coeff.m].second) *
-      pow(a/r, coeff.n+1) * p(coeff.m, coeff.n);
+        (coeff.h + coeff.hdot * (t_year - t0_year)) * cos_sin[coeff.m].second
+      ) * pow(a/r, coeff.n+1) * p(coeff.m, coeff.n);
     }
     return res*1e-9; // convert nT to T
   }
