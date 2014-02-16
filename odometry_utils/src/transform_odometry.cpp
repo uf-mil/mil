@@ -53,12 +53,12 @@ private:
     Quaterniond right_q; tf::quaternionTFToEigen(righttransform.getRotation(), right_q);
     
     EasyDistributionFunction<Odom, Odom, Vec<0> > transformer(
-      [&left_p, &left_q, &right_p, &right_q](Odom const &odom,
-                                             Vec<0> const &extra) {
+      [this, &left_p, &left_q, &right_p, &right_q](Odom const &odom,
+                                                    Vec<0> const &extra) {
         return Odom(
           odom.stamp,
-          odom.frame_id,
-          odom.child_frame_id,
+          frame_id,
+          child_frame_id,
           left_p + left_q._transformVector(odom.pos + odom.orient._transformVector(right_p)),
           left_q * odom.orient * right_q,
           right_q.inverse()._transformVector(odom.vel - right_p.cross(odom.ang_vel)),
