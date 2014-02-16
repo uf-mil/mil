@@ -247,18 +247,11 @@ class NodeImpl {
       }
       
       state = kalman_update(
-        EasyDistributionFunction<State, Vec<1>, Vec<3> >(
+        EasyDistributionFunction<State, Vec<3>, Vec<3> >(
           [&msg, this](State const &state, Vec<3> const &measurement_noise) {
-            Vec<3> mag_world = magnetic_model.getField(state.pos_eci, state.t.toSec());
-            //Vec<3> predicted = state.orient.conjugate()._transformVector(mag_world);
-            double predicted_angle = atan2(mag_world(1), mag_world(0));
-            Vec<3> measured_world = state.orient._transformVector(xyz2vec(msg.magnetic_field) + measurement_noise); // noise shouldn't be here
-            double measured_angle = atan2(measured_world(1), measured_world(0));
-            double error_angle = measured_angle - predicted_angle;
-            double pi = boost::math::constants::pi<double>();
-            while(error_angle < -pi) error_angle += 2*pi;
-            while(error_angle > pi) error_angle -= 2*pi;
-            return scalar_matrix(error_angle);
+            Vec<3> mag_eci = magnetic_model.getField(state.pos_eci, state.t.toSec());
+            Vec<3> predicted = state.orient.conjugate()._transformVector(mag_eci) + measurement_noise;
+            return predicted - xyz2vec(msg.magnetic_field);
           },
           GaussianDistribution<Vec<3> >(Vec<3>::Zero(), cov)),
         *state);

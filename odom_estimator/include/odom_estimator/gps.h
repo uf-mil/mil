@@ -54,8 +54,17 @@ public:
     Vec<3> pos = fix.first;
     Vec<3> vel = fix.second;
     
-    double t = noise(0);
-    double skew = noise(1);
+    // estimate t of reception, ignoring earth's rotation (rotation's effect
+    // only adds about +/-120 ns, which shouldn't matter)
+    std::vector<double> estimated_ts;
+    std::vector<double> estimated_skews;
+    for(unsigned int i = 0; i < sats.size(); i++) {
+      rawgps_common::Satellite const &sat = sats[i];
+      estimated_ts.push_back((sat.time + sat.T_iono + sat.T_tropo) + (pos - point2vec(sat.position)).norm()/c);
+      estimated_skews.push_back((point2vec(sat.position) - pos).normalized().dot(vel - xyz2vec(sat.velocity)) - sat.doppler_velocity);
+    }
+    double t = noise(0) + std::accumulate(estimated_ts.begin(), estimated_ts.end(), 0.)/estimated_ts.size();
+    double skew = noise(1) + std::accumulate(estimated_skews.begin(), estimated_skews.end(), 0.)/estimated_skews.size();
     
     Vec<3> eci_pos = inertial_from_ecef(t, pos);
     Vec<3> eci_vel = inertial_vel_from_ecef_vel(t, vel, eci_pos);
@@ -69,7 +78,7 @@ public:
       unsigned int index = std::find(gps_prn.begin(), gps_prn.end(), sat.prn) - gps_prn.begin();
       assert(index != gps_prn.size());
       double bias = fixwithbias.second[index];
-      res(i) = (eci_pos - sat_eci_pos).norm() - (t - sat.time - sat.T_iono)*c + noise(2 + i); // + bias;
+      res(i) = (eci_pos - sat_eci_pos).norm() - (t - (sat.time + sat.T_iono + sat.T_tropo))*c + noise(2 + i);
       res(i + sats.size()) = (sat_eci_pos - eci_pos).normalized().dot(eci_vel - sat_eci_vel)
         - (skew + sat.doppler_velocity) + noise(2 + sats.size() + i);
     }
