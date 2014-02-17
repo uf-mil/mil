@@ -93,7 +93,6 @@ class NodeImpl {
         private_nh(*private_nh_),
         gps_sub(nh, "gps", 1),
         gps_filter(gps_sub, tf_listener, "", 10),
-        start_pos(0, 0, 0),
         last_mag(boost::none), last_good_gps(boost::none), state(boost::none) {
       imu_sub = nh.subscribe<sensor_msgs::Imu>("imu/data_raw", 10,
         boost::bind(&NodeImpl::got_imu, this, _1));
@@ -124,7 +123,6 @@ class NodeImpl {
       if(state && (msg.header.stamp < state->mean.t || msg.header.stamp > state->mean.t + ros::Duration(2))) {
         NODELET_ERROR("reset due to invalid stamp");
         last_mag = boost::none;
-        start_pos = state->mean.getPosECEF();
         state = boost::none;
       }
       if(state && (last_good_gps < msg.header.stamp - ros::Duration(5.))) {
@@ -165,7 +163,6 @@ class NodeImpl {
       if(state->mean.gyro_bias.norm() > .5) {
         NODELET_ERROR("reset due to bad gyro biases");
         last_mag = boost::none;
-        start_pos = state->mean.getPosECEF();
         state = boost::none;
         return;
       }
@@ -367,7 +364,6 @@ class NodeImpl {
     ros::Publisher absodom_pub;
     ros::Publisher info_pub;
     
-    Vec<3> start_pos;
     boost::optional<Vec<3> > last_mag;
     boost::optional<ros::Time> last_good_gps;
     boost::optional<rawgps_common::Measurements> last_good_gps_msg;
