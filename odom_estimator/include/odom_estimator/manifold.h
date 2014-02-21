@@ -19,11 +19,6 @@ static inline constexpr int addRowsAtCompileTime(int a, int b) {
     BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(seq)), \
     BOOST_PP_SEQ_FOLD_LEFT(op, state, BOOST_PP_SEQ_TAIL(seq)), \
     state)
-#define FOR_EACH_I_SKIPPING_FIRST(macro, data, seq) \
-  BOOST_PP_IF( \
-    BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(seq)), \
-    BOOST_PP_SEQ_FOR_EACH_I_R(1, macro, data, BOOST_PP_SEQ_TAIL(seq)), \
-    BOOST_PP_EMPTY())
 
 #define BOOST_FUSION_DEFINE_STRUCT_ATTR_I(R, ATTRIBUTE_TUPLE_SIZE, ATTRIBUTE)   \
                                                                                 \
@@ -65,7 +60,7 @@ static inline constexpr int addRowsAtCompileTime(int a, int b) {
             1,                                                                      \
             BOOST_FUSION_DEFINE_STRUCT_ATTR_I,                                      \
             ATTRIBUTE_TUPLE_SIZE,                                                   \
-            ATTRIBUTES_SEQ)                                                         \
+            BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ))                                                         \
                                                                                     \
         static int const RowsAtCompileTime =                                        \
             FOLD_LEFT_SKIPPING_FIRST(myop, 0, ATTRIBUTES_SEQ);                       \
@@ -91,7 +86,7 @@ static inline constexpr int addRowsAtCompileTime(int a, int b) {
                 1,                                                                  \
                 BOOST_FUSION_DEFINE_STRUCT_COPY_CTOR_FILLER_I,                      \
                 ATTRIBUTE_TUPLE_SIZE,                                               \
-                ATTRIBUTES_SEQ)                                                     \
+                BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ))                                                     \
         {} \
                                                                                 \
         BOOST_FUSION_DEFINE_STRUCT_CTOR(                                        \
