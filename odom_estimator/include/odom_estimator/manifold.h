@@ -42,9 +42,7 @@ static inline constexpr int addRowsAtCompileTime(int a, int b) {
     BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE)(BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE))
 
 #define ODOM_ESTIMATOR_DEFINE_MANIFOLD_IMPL( \
-    NAMESPACE_SEQ, NAME, ATTRIBUTES_SEQ, ATTRIBUTE_TUPLE_SIZE) \
-\
-    BOOST_FUSION_ADAPT_STRUCT_NAMESPACE_DEFINITION_BEGIN(NAMESPACE_SEQ) \
+    NAME, ATTRIBUTES_SEQ, ATTRIBUTE_TUPLE_SIZE) \
 \
     struct NAME \
     { \
@@ -83,34 +81,27 @@ static inline constexpr int addRowsAtCompileTime(int a, int b) {
                                       GENERATE_SETTER, \
                                       ATTRIBUTE_TUPLE_SIZE, \
                                       BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) { } \
-    }; \
-\
-    BOOST_FUSION_ADAPT_STRUCT_NAMESPACE_DEFINITION_END(NAMESPACE_SEQ)
+    };
 
 
-#define ODOM_ESTIMATOR_DEFINE_MANIFOLD(NAMESPACE_SEQ, NAME, ATTRIBUTES) \
+#define ODOM_ESTIMATOR_DEFINE_MANIFOLD(NAME, ATTRIBUTES) \
     ODOM_ESTIMATOR_DEFINE_MANIFOLD_IMPL( \
-        (0)NAMESPACE_SEQ, \
         NAME, \
         BOOST_PP_CAT(BOOST_FUSION_ADAPT_STRUCT_FILLER_0(0,0)ATTRIBUTES,_END), \
         2)
 
 
-
+namespace odom_estimator {
 
 ODOM_ESTIMATOR_DEFINE_MANIFOLD(
-  (odom_estimator),
   NewManifoldPair,
   (Vec<3>, first)
   (Vec<3>, second)
   )
 
 ODOM_ESTIMATOR_DEFINE_MANIFOLD(
-  (odom_estimator),
   EmptyTestManifold,
   )
-
-namespace odom_estimator {
 
 template<typename First, typename Second>
 class ManifoldPair {
