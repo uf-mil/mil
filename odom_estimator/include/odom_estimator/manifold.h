@@ -20,119 +20,95 @@ static inline constexpr int addRowsAtCompileTime(int a, int b) {
     BOOST_PP_SEQ_FOLD_LEFT(op, state, BOOST_PP_SEQ_TAIL(seq)), \
     state)
 
-#define BOOST_FUSION_DEFINE_STRUCT_ATTR_I(R, ATTRIBUTE_TUPLE_SIZE, ATTRIBUTE)   \
-                                                                                \
-    BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,0,ATTRIBUTE)                       \
-        BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE);
+#define GENERATE_FIELD(R, ATTRIBUTE_TUPLE_SIZE, ATTRIBUTE) \
+\
+  BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,0,ATTRIBUTE) \
+    BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE);
 
-#define BOOST_FUSION_DEFINE_STRUCT_SEQ_DEFAULT_CTOR_FILLER_I(                   \
-    R, ATTRIBUTE_TUPLE_SIZE, I, ATTRIBUTE)                                      \
-                                                                                \
-    BOOST_PP_COMMA_IF(I)                                                        \
-    BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE)()
-
-#define BOOST_FUSION_DEFINE_STRUCT_COPY_CTOR_FILLER_I(                          \
-    R, ATTRIBUTE_TUPLE_SIZE, I, ATTRIBUTE)                                      \
-                                                                                \
-    BOOST_PP_COMMA_IF(I)                                                        \
-    BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE)(                      \
-        other_self.BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE))
 
 #define myop(s, state, x) addRowsAtCompileTime(state, BOOST_PP_TUPLE_ELEM(2,0,x)::RowsAtCompileTime)
 #define myop2(s, state, x) state + BOOST_PP_TUPLE_ELEM(2,1,x).rows()
 
-#define GENERATE_ARG(                   \
-    R, ATTRIBUTE_TUPLE_SIZE, I, ATTRIBUTE)                                      \
-                                                                                \
-    BOOST_PP_COMMA_IF(I)                                                        \
+#define GENERATE_ARG( \
+    R, ATTRIBUTE_TUPLE_SIZE, I, ATTRIBUTE) \
+\
+    BOOST_PP_COMMA_IF(I) \
     BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE)()
 
-#define BOOST_FUSION_DEFINE_STRUCT_IMPL(                                        \
-    NAMESPACE_SEQ, NAME, ATTRIBUTES_SEQ, ATTRIBUTE_TUPLE_SIZE)                  \
-                                                                                \
-    BOOST_FUSION_ADAPT_STRUCT_NAMESPACE_DEFINITION_BEGIN(NAMESPACE_SEQ)         \
-                                                                                \
-    struct NAME                                                                 \
-    {                                                                           \
-        typedef NAME self_type;                                                 \
-                                                                                \
-        BOOST_PP_SEQ_FOR_EACH_R(                                                    \
-            1,                                                                      \
-            BOOST_FUSION_DEFINE_STRUCT_ATTR_I,                                      \
-            ATTRIBUTE_TUPLE_SIZE,                                                   \
-            BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ))                                                         \
-                                                                                    \
-        static int const RowsAtCompileTime =                                        \
-            FOLD_LEFT_SKIPPING_FIRST(myop, 0, ATTRIBUTES_SEQ);                       \
-                                                                                    \
-        unsigned int rows() const {                                                 \
-            return FOLD_LEFT_SKIPPING_FIRST(myop2, 0, ATTRIBUTES_SEQ);               \
-        }                                                                           \
-                                                                                    \
-        Vec<RowsAtCompileTime>()                                                    \
-        operator-(self_type const &other) const {       \
-          return (Vec<RowsAtCompileTime>() <<                                                    \
-            first - other.first,                                                    \
-            second - other.second).finished();                                      \
-        }                                                                           \
-        self_type operator+(const DeltaType &other) const {       \
-          return self_type(                                       \
-            first + other.head(first.rows()),                                       \
-            second + other.tail(second.rows()));                                    \
-        }                                                                           \
-                                                                                    \
-        NAME(self_type const& other_self)                                           \
-          : BOOST_PP_SEQ_FOR_EACH_I_R(                                              \
-                1,                                                                  \
-                BOOST_FUSION_DEFINE_STRUCT_COPY_CTOR_FILLER_I,                      \
-                ATTRIBUTE_TUPLE_SIZE,                                               \
-                BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ))                                                     \
-        {} \
-                                                                                \
-        BOOST_FUSION_DEFINE_STRUCT_CTOR(                                        \
-            NAME, ATTRIBUTES_SEQ, ATTRIBUTE_TUPLE_SIZE) \
-        \
-    };                                                                          \
-                                                                                \
+#define GENERATE_SETTER( \
+    R, ATTRIBUTE_TUPLE_SIZE, I, ATTRIBUTE) \
+\
+    BOOST_PP_COMMA_IF(I) \
+    BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE)(BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE))
+
+#define ODOM_ESTIMATOR_DEFINE_MANIFOLD_IMPL( \
+    NAMESPACE_SEQ, NAME, ATTRIBUTES_SEQ, ATTRIBUTE_TUPLE_SIZE) \
+\
+    BOOST_FUSION_ADAPT_STRUCT_NAMESPACE_DEFINITION_BEGIN(NAMESPACE_SEQ) \
+\
+    struct NAME \
+    { \
+        typedef NAME self_type; \
+\
+        BOOST_PP_SEQ_FOR_EACH_R( \
+            1, \
+            GENERATE_FIELD, \
+            ATTRIBUTE_TUPLE_SIZE, \
+            BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) \
+\
+        static int const RowsAtCompileTime = \
+            FOLD_LEFT_SKIPPING_FIRST(myop, 0, ATTRIBUTES_SEQ); \
+\
+        unsigned int rows() const { \
+            return FOLD_LEFT_SKIPPING_FIRST(myop2, 0, ATTRIBUTES_SEQ); \
+        } \
+\
+        Vec<RowsAtCompileTime>() \
+        operator-(self_type const &other) const { \
+          return (Vec<RowsAtCompileTime>() << \
+            first - other.first, \
+            second - other.second).finished(); \
+        } \
+        self_type operator+(const DeltaType &other) const { \
+          return self_type( \
+            first + other.head(first.rows()), \
+            second + other.tail(second.rows())); \
+        } \
+\
+        NAME(BOOST_PP_SEQ_FOR_EACH_I_R(1, \
+                                       GENERATE_ARG, \
+                                       ATTRIBUTE_TUPLE_SIZE, \
+                                       BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ))) \
+          : BOOST_PP_SEQ_FOR_EACH_I_R(1, \
+                                      GENERATE_SETTER, \
+                                      ATTRIBUTE_TUPLE_SIZE, \
+                                      BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) { } \
+    }; \
+\
     BOOST_FUSION_ADAPT_STRUCT_NAMESPACE_DEFINITION_END(NAMESPACE_SEQ)
 
 
-#define BOOST_FUSION_DEFINE_STRUCT(NAMESPACE_SEQ, NAME, ATTRIBUTES)             \
-    BOOST_FUSION_DEFINE_STRUCT_IMPL(                                            \
-        (0)NAMESPACE_SEQ,                                                       \
-        NAME,                                                                   \
-        BOOST_PP_CAT(BOOST_FUSION_ADAPT_STRUCT_FILLER_0(0,0)ATTRIBUTES,_END),   \
+#define ODOM_ESTIMATOR_DEFINE_MANIFOLD(NAMESPACE_SEQ, NAME, ATTRIBUTES) \
+    ODOM_ESTIMATOR_DEFINE_MANIFOLD_IMPL( \
+        (0)NAMESPACE_SEQ, \
+        NAME, \
+        BOOST_PP_CAT(BOOST_FUSION_ADAPT_STRUCT_FILLER_0(0,0)ATTRIBUTES,_END), \
         2)
 
 
-//        newnew \
-//        NAME(FOR_EACH_I_SKIPPING_FIRST(GENERATE_ARG, ATTRIBUTE_TUPLE_SIZE, ATTRIBUTES_SEQ)) { } \
-//        endnewnew \
 
-BOOST_FUSION_DEFINE_STRUCT(
+
+ODOM_ESTIMATOR_DEFINE_MANIFOLD(
   (odom_estimator),
   NewManifoldPair,
   (Vec<3>, first)
   (Vec<3>, second)
   )
 
-BOOST_FUSION_DEFINE_STRUCT(
+ODOM_ESTIMATOR_DEFINE_MANIFOLD(
   (odom_estimator),
-  NewManifoldPair,
-  
+  EmptyTestManifold,
   )
-
-START
-
-FOLD_LEFT_SKIPPING_FIRST(myop, 0, ((a, b))((c, d))((e, f)))
-
-END
-
-
-
-a
-BOOST_FUSION_ADAPT_STRUCT_FILLER_0(0,0)
-b
 
 namespace odom_estimator {
 
