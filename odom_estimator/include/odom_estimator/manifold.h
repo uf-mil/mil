@@ -33,7 +33,8 @@ static inline constexpr int addRowsAtCompileTime(int a, int b) {
     R, ATTRIBUTE_TUPLE_SIZE, I, ATTRIBUTE) \
 \
     BOOST_PP_COMMA_IF(I) \
-    BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE)()
+    BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,0,ATTRIBUTE) \
+    BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE)
 
 #define GENERATE_SETTER( \
     R, ATTRIBUTE_TUPLE_SIZE, I, ATTRIBUTE) \
@@ -61,13 +62,13 @@ static inline constexpr int addRowsAtCompileTime(int a, int b) {
             return FOLD_LEFT_SKIPPING_FIRST(myop2, 0, ATTRIBUTES_SEQ); \
         } \
 \
-        Vec<RowsAtCompileTime>() \
+        Vec<RowsAtCompileTime> \
         operator-(self_type const &other) const { \
           return (Vec<RowsAtCompileTime>() << \
             first - other.first, \
             second - other.second).finished(); \
         } \
-        self_type operator+(const DeltaType &other) const { \
+        self_type operator+(const Vec<RowsAtCompileTime> &other) const { \
           return self_type( \
             first + other.head(first.rows()), \
             second + other.tail(second.rows())); \
@@ -90,18 +91,14 @@ static inline constexpr int addRowsAtCompileTime(int a, int b) {
         BOOST_PP_CAT(BOOST_FUSION_ADAPT_STRUCT_FILLER_0(0,0)ATTRIBUTES,_END), \
         2)
 
+template<typename First, typename Second>
+ODOM_ESTIMATOR_DEFINE_MANIFOLD(NewManifoldPair,
+  (First, first)
+  (Second, second)
+)
 
-namespace odom_estimator {
-
-ODOM_ESTIMATOR_DEFINE_MANIFOLD(
-  NewManifoldPair,
-  (Vec<3>, first)
-  (Vec<3>, second)
-  )
-
-ODOM_ESTIMATOR_DEFINE_MANIFOLD(
-  EmptyTestManifold,
-  )
+//ODOM_ESTIMATOR_DEFINE_MANIFOLD(EmptyTestManifold,
+//)
 
 template<typename First, typename Second>
 class ManifoldPair {
