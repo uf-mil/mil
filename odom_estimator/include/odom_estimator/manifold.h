@@ -12,6 +12,27 @@
 
 namespace odom_estimator {
 
+
+// A manifold is a mathematical space that can behave in any possible way
+// globally, but locally must act like an Euclidean space of a certain
+// dimension, D. Points on manifolds are made more amenable to analysis by
+// only looking at D-dimensional Euclidean vector between points, obtained by
+// subtracting points (operator-) and by adding a D-dimensional Euclidean
+// vector to a point (operator+).
+// This type acts like Eigen vectors so instances can be used interchangably
+// with them.
+template<typename Derived, int D>
+struct IManifold {
+  static int const RowsAtCompileTime = D;
+  virtual unsigned int rows() const = 0;
+  virtual Vec<D> operator-(Derived const &other) const = 0;
+  virtual Derived operator+(Vec<D> const &other) const = 0;
+};
+
+
+// Macro magic to define a new manifold type that just combines multiple
+// named manifold types
+
 #define FOLD_LEFT_SKIPPING_FIRST(op, state, seq) \
   BOOST_PP_IF( \
     BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(seq)), \
@@ -135,18 +156,18 @@ struct EmptyTestManifold {
 };
 
 
-struct QuaternionManifold {
-  // if the quaternion represents the rotation of a vector from the body frame
-  // into the world frame, as orientations are usually represented, this class
-  // will result in the orientation's covariance being represented in the
-  // world frame
+// is an IManifold type for unit quaternions.
+// If the quaternion represents the rotation of a vector from the body frame
+// into the world frame, as orientations are usually represented, this class
+// will result in the orientation's covariance being represented in the
+// world frame.
+struct QuaternionManifold : IManifold<QuaternionManifold, 3> {
 private:
   Quaternion q;
 public:
   QuaternionManifold(Quaternion q) :
     q(q.normalized()) {
   }
-  static int const RowsAtCompileTime = 3;
   unsigned int rows() const {
     return RowsAtCompileTime;
   }
