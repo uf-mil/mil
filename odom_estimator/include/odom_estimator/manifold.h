@@ -7,6 +7,7 @@
 #include <boost/fusion/adapted/struct/define_struct.hpp>
 #include <boost/preprocessor/seq/for_each_product.hpp>
 #include <boost/preprocessor/seq/push_front.hpp>
+#include <boost/preprocessor/seq/push_back.hpp>
 #include <boost/preprocessor/seq/pop_back.hpp>
 
 namespace odom_estimator {
@@ -118,11 +119,16 @@ static inline constexpr int addRowsAtCompileTime(int a, int b) {
                                       BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) { } \
     };
 
+#define APPEND_IF_SEQ_LENGTH_IS_1(SEQ, ITEM) \
+  BOOST_PP_IF( \
+    BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(SEQ)), \
+    SEQ, \
+    BOOST_PP_SEQ_PUSH_BACK(SEQ, ITEM))
 
 #define ODOM_ESTIMATOR_DEFINE_MANIFOLD(NAME, ATTRIBUTES) \
     ODOM_ESTIMATOR_DEFINE_MANIFOLD_IMPL( \
         NAME, \
-        BOOST_PP_CAT(BOOST_FUSION_ADAPT_STRUCT_FILLER_0(0,0)ATTRIBUTES,_END), \
+        APPEND_IF_SEQ_LENGTH_IS_1(BOOST_PP_CAT(BOOST_FUSION_ADAPT_STRUCT_FILLER_0(0,0)ATTRIBUTES,_END), (Vec<0>, _dummy)), \
         2)
 
 
@@ -132,8 +138,8 @@ ODOM_ESTIMATOR_DEFINE_MANIFOLD(NewManifoldPair,
   (Second, second)
 )
 
-//ODOM_ESTIMATOR_DEFINE_MANIFOLD(EmptyTestManifold,
-//)
+ODOM_ESTIMATOR_DEFINE_MANIFOLD(EmptyTestManifold,
+)
 
 template<typename First, typename Second>
 class ManifoldPair {
