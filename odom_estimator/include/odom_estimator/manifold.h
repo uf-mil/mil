@@ -75,7 +75,7 @@ struct IManifold {
 #define GENERATE_DEF( \
     R, ATTRIBUTES_SEQ, I, ATTRIBUTE) \
 \
-  unsigned int const BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,1,ATTRIBUTE),_start) = BOOST_PP_IF(I,BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,1,BOOST_PP_SEQ_ELEM(BOOST_PP_DEC(I), ATTRIBUTES_SEQ)),_start),0); \
+  unsigned int const BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,1,ATTRIBUTE),_start) = BOOST_PP_IF(I,BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,1,BOOST_PP_SEQ_ELEM(BOOST_PP_DEC(I), ATTRIBUTES_SEQ)),_end),0); \
   unsigned int const BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,1,ATTRIBUTE), _end) = BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,1,ATTRIBUTE),_start) + BOOST_PP_TUPLE_ELEM(2,1,ATTRIBUTE).rows();
 
 #define GENERATE_ADDER( \
@@ -134,6 +134,10 @@ struct IManifold {
             GENERATE_DEF, \
             BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ), \
             BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) \
+          assert(BOOST_PP_CAT( \
+            BOOST_PP_TUPLE_ELEM(2,1,BOOST_PP_SEQ_ELEM(BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(ATTRIBUTES_SEQ)), ATTRIBUTES_SEQ)), \
+            _end \
+          ) == other.rows()); \
           return NAME( \
             BOOST_PP_SEQ_FOR_EACH_I_R(1, \
               GENERATE_PARAM, \
