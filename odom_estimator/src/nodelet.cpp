@@ -59,6 +59,7 @@ GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
   return GaussianDistribution<State>(
     State(msg.header.stamp,
       msg.header.stamp,
+      std::vector<int>{},
       pos_eci,
       Vec<3>::Zero(),
       orient_eci,
@@ -66,7 +67,6 @@ GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
       Vec<3>::Zero(),
       9.80665,
       101325,
-      std::vector<int>{},
       Vec<Dynamic>::Zero(0)),
     tmp*tmp);
 }

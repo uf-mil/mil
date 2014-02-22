@@ -19,6 +19,7 @@ namespace odom_estimator {
 struct State {
   ros::Time t;
   ros::Time t_start;
+  std::vector<int> gps_prn;
   
   static const unsigned int POS_ECI = 0; Vec<3> pos_eci;
   static const unsigned int REL_POS_ECI = POS_ECI + 3; Vec<3> rel_pos_eci;
@@ -27,25 +28,23 @@ struct State {
   static const unsigned int GYRO_BIAS = VEL + 3; Vec<3> gyro_bias;
   static const unsigned int LOCAL_G = GYRO_BIAS + 3; double local_g;
   static const unsigned int GROUND_AIR_PRESSURE = LOCAL_G + 1; double ground_air_pressure;
-  
-  std::vector<int> gps_prn;
   static const unsigned int GPS_BIAS = GROUND_AIR_PRESSURE + 1; Vec<Dynamic> gps_bias;
   
   static const int RowsAtCompileTime = Dynamic;
   typedef Vec<RowsAtCompileTime> DeltaType;
   typedef SqMat<RowsAtCompileTime> CovType;
   
-  State(ros::Time t, ros::Time t_start,
+  State(ros::Time t, ros::Time t_start, std::vector<int> gps_prn,
       Vec<3> pos_eci, Vec<3> rel_pos_eci, Quaternion orient,
       Vec<3> vel, Vec<3> gyro_bias,
       double local_g, double ground_air_pressure,
-      std::vector<int> gps_prn, Vec<Dynamic> gps_bias) :
-    t(t), t_start(t_start),
+      Vec<Dynamic> gps_bias) :
+    t(t), t_start(t_start), gps_prn(gps_prn),
     pos_eci(pos_eci), rel_pos_eci(rel_pos_eci),
     orient(orient.normalized()), vel(vel),
     gyro_bias(gyro_bias), local_g(local_g),
     ground_air_pressure(ground_air_pressure),
-    gps_prn(gps_prn), gps_bias(gps_bias) {
+    gps_bias(gps_bias) {
       assert_none_nan(pos_eci); assert_none_nan(orient.coeffs());
       assert_none_nan(vel); assert_none_nan(gyro_bias);
       assert(std::isfinite(local_g)); assert(std::isfinite(ground_air_pressure));
@@ -75,6 +74,7 @@ struct State {
     return State(
       t,
       t_start,
+      gps_prn,
       pos_eci + other.segment<3>(POS_ECI),
       rel_pos_eci + other.segment<3>(REL_POS_ECI),
       quat_from_rotvec(other.segment<3>(ORIENT)) * orient,
@@ -82,7 +82,6 @@ struct State {
       gyro_bias + other.segment<3>(GYRO_BIAS),
       local_g + other(LOCAL_G),
       ground_air_pressure + other(GROUND_AIR_PRESSURE),
-      gps_prn,
       gps_bias + other.tail(other.rows() - GPS_BIAS));
   }
   
@@ -164,6 +163,7 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
     return State(
       imu.header.stamp,
       state.t_start,
+      state.gps_prn,
       state.pos_eci + dt * state.vel + dt*dt/2 * accel_world,
       state.rel_pos_eci + dt * state.vel + dt*dt/2 * accel_world,
       world_from_newbody,
@@ -171,7 +171,6 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
       state.gyro_bias,
       state.local_g,
       state.ground_air_pressure + sqrt(dt) * noise(0),
-      state.gps_prn,
       state.gps_bias);
   }
 
