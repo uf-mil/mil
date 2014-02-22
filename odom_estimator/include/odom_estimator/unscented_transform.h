@@ -146,7 +146,7 @@ public:
 
 // is a specialization of UnscentedTransformDistributionFunction that allows
 // the point propagation function to be provided as an argument
-template<typename InType, typename OutType, typename ExtraType>
+template<typename InType, typename OutType, typename ExtraType=Vec<0>>
 class EasyDistributionFunction :
 public UnscentedTransformDistributionFunction<InType, OutType, ExtraType> {
   std::function<OutType(InType, ExtraType)> func;
@@ -160,7 +160,7 @@ public:
     return func(input, extra);
   }
   EasyDistributionFunction(std::function<OutType(InType, ExtraType)> func,
-                           ExtraDistributionType const &extra_distribution) :
+                           ExtraDistributionType const &extra_distribution=ExtraDistributionType(ExtraType(), SqMat<0>())) :
     func(func), extra_distribution(extra_distribution) {
   }
 };

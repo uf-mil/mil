@@ -25,6 +25,7 @@
 #include "odom_estimator/magnetic.h"
 #include "odom_estimator/kalman.h"
 #include "odom_estimator/gps.h"
+#include "odom_estimator/odometry.h"
 
 namespace odom_estimator {
 
@@ -145,16 +146,23 @@ class NodeImpl {
       //std::cout << "precov " << state->cov << std::endl << std::endl;
       //state = state->update(Vec<3>::Zero());
       
-      std::cout << "gyro_bias " << state->mean.gyro_bias.transpose()
-        << " " << sqrt(state->cov(State::GYRO_BIAS+0, State::GYRO_BIAS+0))
-        << " " << sqrt(state->cov(State::GYRO_BIAS+1, State::GYRO_BIAS+1))
-        << " " << sqrt(state->cov(State::GYRO_BIAS+2, State::GYRO_BIAS+2)) << std::endl;
-      std::cout << "grav: " << state->mean.local_g << "  " << sqrt(state->cov(State::LOCAL_G, State::LOCAL_G)) << std::endl;
-      std::cout << "ground air pressure: " << state->mean.ground_air_pressure << "  " << sqrt(state->cov(State::GROUND_AIR_PRESSURE, State::GROUND_AIR_PRESSURE)) << std::endl;
+      GaussianDistribution<Vec<3>> gyro_bias_dist =
+        EasyDistributionFunction<State, Vec<3>>(
+          [](State const &state, Vec<0> const &) { return state.gyro_bias; }
+        )(*state);
+      std::cout << "gyro_bias " << gyro_bias_dist.mean.transpose()
+        << " stddev: " << gyro_bias_dist.cov.diagonal().array().sqrt()
+        << std::endl;
+      //std::cout << "grav: " << state->mean.local_g << "  " << sqrt(state->cov(State::LOCAL_G, State::LOCAL_G)) << std::endl;
+      //std::cout << "ground air pressure: " << state->mean.ground_air_pressure << "  " << sqrt(state->cov(State::GROUND_AIR_PRESSURE, State::GROUND_AIR_PRESSURE)) << std::endl;
+      GaussianDistribution<Vec<Dynamic>> gps_bias_dist =
+        EasyDistributionFunction<State, Vec<Dynamic>>(
+          [](State const &state, Vec<0> const &) { return state.gps_bias; }
+        )(*state);
       for(unsigned int i = 0; i < state->mean.gps_prn.size(); i++) {
         std::cout << state->mean.gps_prn[i]
-          << " " << state->mean.gps_bias[i]
-          << " " << sqrt(state->cov(State::GPS_BIAS + i, State::GPS_BIAS + i))
+          << " " << gps_bias_dist.mean(i)
+          << " " << sqrt(gps_bias_dist.cov(i, i))
           << std::endl;
       }
       std::cout << std::endl;
@@ -170,49 +178,36 @@ class NodeImpl {
       //std::cout << "cov " << state->cov << std::endl << std::endl;
       
       {
-        nav_msgs::Odometry output;
-        output.header.stamp = msg.header.stamp;
-        output.header.frame_id = "/enu";
-        output.child_frame_id = msg.header.frame_id;
+        EasyDistributionFunction<State, Odom> transformer(
+          [&msg](State const &state, Vec<0> const &) {
+            SqMat<3> m = enu_from_ecef_mat(state.getPosECEF());
+            return Odom(
+              state.t,
+              "/enu",
+              msg.header.frame_id,
+              m * state.getRelPosECEF(),
+              Quaternion(m) * state.getOrientECEF(),
+              state.getOrientECEF().conjugate()._transformVector(state.getVelECEF()),
+              xyz2vec(msg.angular_velocity) - state.gyro_bias);
+          });
         
-        SqMat<3> m = enu_from_ecef_mat(state->mean.getPosECEF());
-        Vec<3> relpos_enu = m * state->mean.getRelPosECEF();
-        Quaternion x = Quaternion(m) * state->mean.getOrientECEF();
-        
-        tf::pointEigenToMsg(relpos_enu, output.pose.pose.position);
-        tf::quaternionEigenToMsg(x, output.pose.pose.orientation);
-        Eigen::Map<SqMat<6> >(output.pose.covariance.data()) <<
-          state->cov.block<3, 3>(State::POS_ECI, State::POS_ECI), state->cov.block<3, 3>(State::POS_ECI, State::ORIENT),
-          state->cov.block<3, 3>(State::ORIENT, State::POS_ECI), state->cov.block<3, 3>(State::ORIENT, State::ORIENT);
-        
-        tf::vectorEigenToMsg(state->mean.getOrientECEF().conjugate()._transformVector(state->mean.getVelECEF()), output.twist.twist.linear);
-        tf::vectorEigenToMsg(xyz2vec(msg.angular_velocity) - state->mean.gyro_bias, output.twist.twist.angular);
-        Eigen::Map<SqMat<6> >(output.twist.covariance.data()) <<
-          state->cov.block<3, 3>(State::VEL, State::VEL), SqMat<3>::Zero(), // XXX covariance needs to be adjusted since velocity was transformed to body frame
-          SqMat<3>::Zero(), Eigen::Map<SqMat<3> >(msg.angular_velocity_covariance.data()) + state->cov.block<3, 3>(State::GYRO_BIAS, State::GYRO_BIAS);
-        
-        odom_pub.publish(output);
+        odom_pub.publish(msg_from_odom(transformer(*state)));
       }
       
       {
-        nav_msgs::Odometry output;
-        output.header.stamp = msg.header.stamp;
-        output.header.frame_id = "/ecef";
-        output.child_frame_id = msg.header.frame_id;
+        EasyDistributionFunction<State, Odom> transformer(
+          [&msg](State const &state, Vec<0> const &) {
+            return Odom(
+              state.t,
+              "/ecef",
+              msg.header.frame_id,
+              state.getPosECEF(),
+              state.getOrientECEF(),
+              state.getOrientECEF().conjugate()._transformVector(state.getVelECEF()),
+              xyz2vec(msg.angular_velocity) - state.gyro_bias);
+          });
         
-        tf::pointEigenToMsg(state->mean.getPosECEF(), output.pose.pose.position);
-        tf::quaternionEigenToMsg(state->mean.getOrientECEF(), output.pose.pose.orientation);
-        Eigen::Map<SqMat<6> >(output.pose.covariance.data()) <<
-          state->cov.block<3, 3>(State::POS_ECI, State::POS_ECI), state->cov.block<3, 3>(State::POS_ECI, State::ORIENT),
-          state->cov.block<3, 3>(State::ORIENT, State::POS_ECI), state->cov.block<3, 3>(State::ORIENT, State::ORIENT);
-        
-        tf::vectorEigenToMsg(state->mean.getOrientECEF().conjugate()._transformVector(state->mean.getVelECEF()), output.twist.twist.linear);
-        tf::vectorEigenToMsg(xyz2vec(msg.angular_velocity) - state->mean.gyro_bias, output.twist.twist.angular);
-        Eigen::Map<SqMat<6> >(output.twist.covariance.data()) <<
-          state->cov.block<3, 3>(State::VEL, State::VEL), SqMat<3>::Zero(), // XXX covariance needs to be adjusted since velocity was transformed to body frame
-          SqMat<3>::Zero(), Eigen::Map<SqMat<3> >(msg.angular_velocity_covariance.data()) + state->cov.block<3, 3>(State::GYRO_BIAS, State::GYRO_BIAS);
-        
-        absodom_pub.publish(output);
+        absodom_pub.publish(msg_from_odom(transformer(*state)));
       }
       
       {
@@ -221,8 +216,8 @@ class NodeImpl {
         
         for(unsigned int i = 0; i < state->mean.gps_prn.size(); i++) {
           output.gps_bias_prns.push_back(state->mean.gps_prn[i]);
-          output.gps_bias_biases.push_back(state->mean.gps_bias[i]);
-          output.gps_bias_stddevs.push_back(sqrt(state->cov(State::GPS_BIAS + i, State::GPS_BIAS + i)));
+          output.gps_bias_biases.push_back(gps_bias_dist.mean(i));
+          output.gps_bias_stddevs.push_back(sqrt(gps_bias_dist.cov(i, i)));
         }
         
         info_pub.publish(output);
