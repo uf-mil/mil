@@ -5,6 +5,9 @@
 
 #include <boost/preprocessor/seq/fold_right.hpp>
 #include <boost/fusion/adapted/struct/define_struct.hpp>
+#include <boost/preprocessor/seq/for_each_product.hpp>
+#include <boost/preprocessor/seq/push_front.hpp>
+#include <boost/preprocessor/seq/pop_back.hpp>
 
 namespace odom_estimator {
 
@@ -42,6 +45,23 @@ static inline constexpr int addRowsAtCompileTime(int a, int b) {
     BOOST_PP_COMMA_IF(I) \
     BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE)(BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE))
 
+#define GENERATE_SUBTRACTOR( \
+    R, ATTRIBUTE_TUPLE_SIZE, I, ATTRIBUTE) \
+\
+    BOOST_PP_COMMA_IF(I) \
+    BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE) - other.BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE)
+
+#define GENERATE_DEF(R, PRODUCT) \
+\
+  unsigned int BOOST_PP_TUPLE_ELEM(2,1,BOOST_PP_SEQ_ELEM(0, PRODUCT)) _start = BOOST_PP_TUPLE_ELEM(2,1,BOOST_PP_SEQ_ELEM(1, PRODUCT)) _end; \
+  unsigned int BOOST_PP_TUPLE_ELEM(2,1,BOOST_PP_SEQ_ELEM(0, PRODUCT)) _end = BOOST_PP_TUPLE_ELEM(2,1,BOOST_PP_SEQ_ELEM(0, PRODUCT)) _start + BOOST_PP_TUPLE_ELEM(2,1,BOOST_PP_SEQ_ELEM(0, PRODUCT)).rows();
+
+#define GENERATE_ADDER( \
+    R, ATTRIBUTE_TUPLE_SIZE, I, ATTRIBUTE) \
+\
+    BOOST_PP_COMMA_IF(I) \
+    BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE) + other.segment(BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE)_start, BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE)_end)
+
 #define ODOM_ESTIMATOR_DEFINE_MANIFOLD_IMPL( \
     NAME, ATTRIBUTES_SEQ, ATTRIBUTE_TUPLE_SIZE) \
 \
@@ -65,13 +85,24 @@ static inline constexpr int addRowsAtCompileTime(int a, int b) {
         Vec<RowsAtCompileTime> \
         operator-(self_type const &other) const { \
           return (Vec<RowsAtCompileTime>() << \
-            first - other.first, \
-            second - other.second).finished(); \
+            BOOST_PP_SEQ_FOR_EACH_I_R(1, \
+              GENERATE_SUBTRACTOR, \
+              ATTRIBUTE_TUPLE_SIZE, \
+              BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) \
+          ).finished(); \
         } \
         self_type operator+(const Vec<RowsAtCompileTime> &other) const { \
+          unsigned int _dummy_end = 0; \
+          BOOST_PP_SEQ_FOR_EACH_PRODUCT( \
+            GENERATE_DEF, \
+            (BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) \
+              (BOOST_PP_SEQ_PUSH_FRONT(BOOST_PP_SEQ_POP_BACK(BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)), (_, _dummy)))) \
           return self_type( \
-            first + other.head(first.rows()), \
-            second + other.tail(second.rows())); \
+            BOOST_PP_SEQ_FOR_EACH_I_R(1, \
+              GENERATE_ADDER, \
+              ATTRIBUTE_TUPLE_SIZE, \
+              BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) \
+          ); \
         } \
 \
         NAME(BOOST_PP_SEQ_FOR_EACH_I_R(1, \
@@ -90,6 +121,32 @@ static inline constexpr int addRowsAtCompileTime(int a, int b) {
         NAME, \
         BOOST_PP_CAT(BOOST_FUSION_ADAPT_STRUCT_FILLER_0(0,0)ATTRIBUTES,_END), \
         2)
+
+
+template<typename First, typename Second>
+struct NewManifoldPair {
+  typedef NewManifoldPair self_type;
+  First first; 
+  Second second; 
+  static int const RowsAtCompileTime = addRowsAtCompileTime(addRowsAtCompileTime(0, First::RowsAtCompileTime), Second::RowsAtCompileTime); 
+  unsigned int rows() const { return 0 + first.rows() + second.rows(); } 
+  Vec<RowsAtCompileTime> operator-(self_type const &other) const {
+    return (Vec<RowsAtCompileTime>() << first - other.first , second - other.second ).finished(); } 
+  self_type operator+(const Vec<RowsAtCompileTime> &other) const {
+    unsigned int _dummy_end = 0;
+    unsigned int first _start = BOOST_PP_TUPLE_ELEM_1 BOOST_PP_TUPLE_ELEM_E_2 _dummy _end;
+    unsigned int first _end = first _start + first.rows();
+    unsigned int first _start = first _end;
+    unsigned int first _end = first _start + first.rows();
+    unsigned int second _start = BOOST_PP_TUPLE_ELEM_1 BOOST_PP_TUPLE_ELEM_E_2 _dummy _end;
+    unsigned int second _end = second _start + second.rows();
+    unsigned int second _start = first _end;
+    unsigned int second _end = second _start + second.rows();
+    return self_type( first + other.segment(first _start, first _end) , second + other.segment(second _start, second _end) ); }
+  NewManifoldPair( First first , Second second ) : first(first) , second(second) { }
+};
+
+
 
 template<typename First, typename Second>
 ODOM_ESTIMATOR_DEFINE_MANIFOLD(NewManifoldPair,
