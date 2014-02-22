@@ -9,51 +9,17 @@
 namespace odom_estimator {
 
 
-struct Odom {
-  ros::Time stamp;
-  std::string frame_id;
-  std::string child_frame_id;
+ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(Odom,
+  (ros::Time, stamp)
+  (std::string, frame_id)
+  (std::string, child_frame_id),
   
-  Vec<3> pos;
-  Quaternion orient;
-  Vec<3> vel;
-  Vec<3> ang_vel;
-  static const int RowsAtCompileTime = 3*4;
-  unsigned int rows() const {
-    return RowsAtCompileTime;
-  }
-  
-  Odom(ros::Time stamp,
-       std::string frame_id, std::string child_frame_id,
-       Vec<3> pos, Quaternion orient,
-       Vec<3> vel, Vec<3> ang_vel) :
-    stamp(stamp),
-    frame_id(frame_id), child_frame_id(child_frame_id),
-    pos(pos), orient(orient.normalized()),
-    vel(vel), ang_vel(ang_vel) {
-  }
-  
-  Vec<RowsAtCompileTime> operator-(const Odom &other) const {
-    assert(other.stamp == stamp);
-    assert(other.frame_id == frame_id);
-    assert(other.child_frame_id == child_frame_id);
-    return (Vec<RowsAtCompileTime>() <<
-      pos - other.pos,
-      rotvec_from_quat(orient * other.orient.conjugate()),
-      vel - other.vel,
-      ang_vel - other.ang_vel).finished();
-  }
-  Odom operator+(const Vec<RowsAtCompileTime> &other) const {
-    return Odom(
-      stamp,
-      frame_id,
-      child_frame_id,
-      pos + other.segment<3>(0),
-      quat_from_rotvec(other.segment<3>(3)) * orient,
-      vel + other.segment<3>(6),
-      ang_vel + other.segment<3>(9));
-  }
-};
+  (Vec<3>, pos)
+  (QuaternionManifold, orient)
+  (Vec<3>, vel)
+  (Vec<3>, ang_vel)
+)
+ODOM_ESTIMATOR_DEFINE_MANIFOLD_END()
 
 
 template<typename ArgType, typename ResType>
