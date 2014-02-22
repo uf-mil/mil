@@ -64,10 +64,6 @@ namespace odom_estimator {
 #define ODOM_ESTIMATOR_DEFINE_MANIFOLD_IMPL( \
     NAME, ATTRIBUTES_SEQ, ATTRIBUTE_TUPLE_SIZE) \
 \
-    struct NAME \
-    { \
-        typedef NAME self_type; \
-\
         BOOST_PP_SEQ_FOR_EACH_R( \
             1, \
             GENERATE_FIELD, \
@@ -82,7 +78,7 @@ namespace odom_estimator {
         } \
 \
         Vec<RowsAtCompileTime> \
-        operator-(self_type const &other) const { \
+        operator-(NAME const &other) const { \
           return (Vec<RowsAtCompileTime>(rows()) << \
             BOOST_PP_SEQ_FOR_EACH_I_R(1, \
               GENERATE_SUBTRACTOR, \
@@ -90,12 +86,12 @@ namespace odom_estimator {
               BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) \
           ).finished(); \
         } \
-        self_type operator+(const Vec<RowsAtCompileTime> &other) const { \
+        NAME operator+(const Vec<RowsAtCompileTime> &other) const { \
           BOOST_PP_SEQ_FOR_EACH_I_R(1, \
             GENERATE_DEF, \
             BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ), \
             BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) \
-          return self_type( \
+          return NAME( \
             BOOST_PP_SEQ_FOR_EACH_I_R(1, \
               GENERATE_ADDER, \
               ATTRIBUTE_TUPLE_SIZE, \
@@ -110,8 +106,7 @@ namespace odom_estimator {
           : BOOST_PP_SEQ_FOR_EACH_I_R(1, \
                                       GENERATE_SETTER, \
                                       ATTRIBUTE_TUPLE_SIZE, \
-                                      BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) { } \
-    };
+                                      BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) { }
 
 #define APPEND_IF_SEQ_LENGTH_IS_1(SEQ, ITEM) \
   BOOST_PP_IF( \
@@ -127,13 +122,41 @@ namespace odom_estimator {
 
 
 template<typename First, typename Second>
-ODOM_ESTIMATOR_DEFINE_MANIFOLD(ManifoldPair,
-  (First, first)
-  (Second, second)
-)
+struct ManifoldPair {
+  ODOM_ESTIMATOR_DEFINE_MANIFOLD(ManifoldPair,
+    (First, first)
+    (Second, second)
+  )
+};
 
-ODOM_ESTIMATOR_DEFINE_MANIFOLD(EmptyTestManifold,
-)
+struct EmptyTestManifold {
+  ODOM_ESTIMATOR_DEFINE_MANIFOLD(EmptyTestManifold,
+  )
+};
+
+
+struct QuaternionManifold {
+  // if the quaternion represents the rotation of a vector from the body frame
+  // into the world frame, as orientations are usually represented, this class
+  // will result in the orientation's covariance being represented in the
+  // world frame
+private:
+  Quaternion q;
+public:
+  QuaternionManifold(Quaternion q) :
+    q(q.normalized()) {
+  }
+  static int const RowsAtCompileTime = 3;
+  unsigned int rows() const {
+    return RowsAtCompileTime;
+  }
+  Vec<RowsAtCompileTime> operator-(QuaternionManifold const &other) const {
+    return rotvec_from_quat(q * other.q.conjugate());
+  }
+  QuaternionManifold operator+(Vec<RowsAtCompileTime> const &other) const {
+    return quat_from_rotvec(other) * q;
+  }
+};
 
 
 }
