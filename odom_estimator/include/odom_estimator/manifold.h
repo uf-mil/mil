@@ -127,45 +127,13 @@ namespace odom_estimator {
 
 
 template<typename First, typename Second>
-ODOM_ESTIMATOR_DEFINE_MANIFOLD(NewManifoldPair,
+ODOM_ESTIMATOR_DEFINE_MANIFOLD(ManifoldPair,
   (First, first)
   (Second, second)
 )
 
 ODOM_ESTIMATOR_DEFINE_MANIFOLD(EmptyTestManifold,
 )
-
-template<typename First, typename Second>
-class ManifoldPair {
-public:
-  static int const RowsAtCompileTime = 
-    First::RowsAtCompileTime == Dynamic ? Dynamic :
-    Second::RowsAtCompileTime == Dynamic ? Dynamic :
-    First::RowsAtCompileTime + Second::RowsAtCompileTime;
-private:
-  typedef Vec<RowsAtCompileTime> DeltaType;
-  typedef SqMat<RowsAtCompileTime> CovType;
-public:
-  First first;
-  Second second;
-  ManifoldPair(First const &first, Second const &second) :
-    first(first), second(second) {
-  }
-  
-  unsigned int rows() const {
-    return first.rows() + second.rows();
-  }
-  DeltaType operator-(const ManifoldPair<First, Second> &other) const {
-    return (DeltaType() <<
-      first - other.first,
-      second - other.second).finished();
-  }
-  ManifoldPair<First, Second> operator+(const DeltaType &other) const {
-    return ManifoldPair<First, Second>(
-      first + other.head(first.rows()),
-      second + other.tail(second.rows()));
-  }
-};
 
 
 }
