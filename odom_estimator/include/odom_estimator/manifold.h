@@ -51,10 +51,11 @@ static inline constexpr int addRowsAtCompileTime(int a, int b) {
     BOOST_PP_COMMA_IF(I) \
     BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE) - other.BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE)
 
-#define GENERATE_DEF(R, PRODUCT) \
+#define GENERATE_DEF( \
+    R, ATTRIBUTES_SEQ, I, ATTRIBUTE) \
 \
-  unsigned int BOOST_PP_TUPLE_ELEM(2,1,BOOST_PP_SEQ_ELEM(0, PRODUCT)) _start = BOOST_PP_TUPLE_ELEM(2,1,BOOST_PP_SEQ_ELEM(1, PRODUCT)) _end; \
-  unsigned int BOOST_PP_TUPLE_ELEM(2,1,BOOST_PP_SEQ_ELEM(0, PRODUCT)) _end = BOOST_PP_TUPLE_ELEM(2,1,BOOST_PP_SEQ_ELEM(0, PRODUCT)) _start + BOOST_PP_TUPLE_ELEM(2,1,BOOST_PP_SEQ_ELEM(0, PRODUCT)).rows();
+  unsigned int BOOST_PP_TUPLE_ELEM(2,1,ATTRIBUTE) _start = BOOST_PP_IF(I,BOOST_PP_TUPLE_ELEM(2,1,BOOST_PP_SEQ_ELEM(BOOST_PP_DEC(I), ATTRIBUTES_SEQ)),0); \
+  unsigned int BOOST_PP_TUPLE_ELEM(2,1,ATTRIBUTE) _end = BOOST_PP_TUPLE_ELEM(2,1,ATTRIBUTE) _start + BOOST_PP_TUPLE_ELEM(2,1,ATTRIBUTE).rows();
 
 #define GENERATE_ADDER( \
     R, ATTRIBUTE_TUPLE_SIZE, I, ATTRIBUTE) \
@@ -92,11 +93,10 @@ static inline constexpr int addRowsAtCompileTime(int a, int b) {
           ).finished(); \
         } \
         self_type operator+(const Vec<RowsAtCompileTime> &other) const { \
-          unsigned int _dummy_end = 0; \
-          BOOST_PP_SEQ_FOR_EACH_PRODUCT( \
+          BOOST_PP_SEQ_FOR_EACH_I_R(1, \
             GENERATE_DEF, \
-            (BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) \
-              (BOOST_PP_SEQ_PUSH_FRONT(BOOST_PP_SEQ_POP_BACK(BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)), (_, _dummy)))) \
+            BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ), \
+            BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) \
           return self_type( \
             BOOST_PP_SEQ_FOR_EACH_I_R(1, \
               GENERATE_ADDER, \
