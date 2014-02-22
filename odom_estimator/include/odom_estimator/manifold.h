@@ -55,6 +55,11 @@ struct IManifold {
     BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,0,ATTRIBUTE) \
     BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE)
 
+#define GENERATE_PARAM( \
+    R, ATTRIBUTE_TUPLE_SIZE, I, ATTRIBUTE) \
+\
+    BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE), \
+
 #define GENERATE_SETTER( \
     R, ATTRIBUTE_TUPLE_SIZE, I, ATTRIBUTE) \
 \
@@ -131,6 +136,10 @@ struct IManifold {
             BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) \
           return NAME( \
             BOOST_PP_SEQ_FOR_EACH_I_R(1, \
+              GENERATE_PARAM, \
+              ATTRIBUTE_TUPLE_SIZE, \
+              BOOST_PP_SEQ_TAIL(TYPE_ATTRIBUTES_SEQ)) \
+            BOOST_PP_SEQ_FOR_EACH_I_R(1, \
               GENERATE_ADDER, \
               ATTRIBUTE_TUPLE_SIZE, \
               BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) \
@@ -198,6 +207,9 @@ public:
   }
   QuaternionManifold operator+(Vec<RowsAtCompileTime> const &other) const {
     return quat_from_rotvec(other) * q;
+  }
+  operator Quaternion() const {
+    return q;
   }
 };
 
