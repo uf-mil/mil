@@ -85,7 +85,7 @@ struct IManifold {
 #define ODOM_ESTIMATOR_DEFINE_MANIFOLD_IMPL( \
     NAME, ATTRIBUTES_SEQ, ATTRIBUTE_TUPLE_SIZE) \
 \
-    struct NAME : IManifold<NAME, FOLD_LEFT_SKIPPING_FIRST(myop, 0, ATTRIBUTES_SEQ)> { \
+    struct NAME { \
 \
         BOOST_PP_SEQ_FOR_EACH_R( \
             1, \
