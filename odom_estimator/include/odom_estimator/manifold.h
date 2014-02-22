@@ -85,6 +85,8 @@ struct IManifold {
 #define ODOM_ESTIMATOR_DEFINE_MANIFOLD_IMPL( \
     NAME, ATTRIBUTES_SEQ, ATTRIBUTE_TUPLE_SIZE) \
 \
+    struct NAME : IManifold<NAME, FOLD_LEFT_SKIPPING_FIRST(myop, 0, ATTRIBUTES_SEQ)> { \
+\
         BOOST_PP_SEQ_FOR_EACH_R( \
             1, \
             GENERATE_FIELD, \
@@ -135,25 +137,25 @@ struct IManifold {
     SEQ, \
     BOOST_PP_SEQ_PUSH_BACK(SEQ, ITEM))
 
-#define ODOM_ESTIMATOR_DEFINE_MANIFOLD(NAME, ATTRIBUTES) \
+#define ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(NAME, ATTRIBUTES) \
     ODOM_ESTIMATOR_DEFINE_MANIFOLD_IMPL( \
         NAME, \
         APPEND_IF_SEQ_LENGTH_IS_1(BOOST_PP_CAT(BOOST_FUSION_ADAPT_STRUCT_FILLER_0(0,0)ATTRIBUTES,_END), (Vec<0>, _dummy)), \
         2)
 
+#define ODOM_ESTIMATOR_DEFINE_MANIFOLD_END() };
+
 
 template<typename First, typename Second>
-struct ManifoldPair {
-  ODOM_ESTIMATOR_DEFINE_MANIFOLD(ManifoldPair,
-    (First, first)
-    (Second, second)
-  )
-};
+ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(ManifoldPair,
+  (First, first)
+  (Second, second)
+)
+ODOM_ESTIMATOR_DEFINE_MANIFOLD_END()
 
-struct EmptyTestManifold {
-  ODOM_ESTIMATOR_DEFINE_MANIFOLD(EmptyTestManifold,
-  )
-};
+ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(EmptyTestManifold,
+)
+ODOM_ESTIMATOR_DEFINE_MANIFOLD_END()
 
 
 // is an IManifold type for unit quaternions.
