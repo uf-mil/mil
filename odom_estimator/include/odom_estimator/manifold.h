@@ -192,24 +192,42 @@ ODOM_ESTIMATOR_DEFINE_MANIFOLD_END()
 // into the world frame, as orientations are usually represented, this class
 // will result in the orientation's covariance being represented in the
 // world frame.
-struct QuaternionManifold : IManifold<QuaternionManifold, 3> {
-private:
-  Quaternion q;
-public:
+struct QuaternionManifold : public IManifold<QuaternionManifold, 3>, public Quaternion {
   QuaternionManifold(Quaternion q) :
-    q(q.normalized()) {
+    Quaternion(q.normalized()) {
   }
   unsigned int rows() const {
     return RowsAtCompileTime;
   }
   Vec<RowsAtCompileTime> operator-(QuaternionManifold const &other) const {
-    return rotvec_from_quat(q * other.q.conjugate());
+    return rotvec_from_quat(*this * other.conjugate());
   }
   QuaternionManifold operator+(Vec<RowsAtCompileTime> const &other) const {
-    return quat_from_rotvec(other) * q;
+    return quat_from_rotvec(other) * *this;
   }
   operator Quaternion() const {
-    return q;
+    return *this;
+  }
+};
+
+struct WrappedScalar : public IManifold<WrappedScalar, 1> {
+private:
+  double s;
+public:
+  WrappedScalar(double s) :
+    s(s) {
+  }
+  unsigned int rows() const {
+    return RowsAtCompileTime;
+  }
+  Vec<RowsAtCompileTime> operator-(WrappedScalar const &other) const {
+    return (Vec<1>() << s - other.s).finished();
+  }
+  WrappedScalar operator+(Vec<RowsAtCompileTime> const &other) const {
+    return WrappedScalar(s + other(0));
+  }
+  operator double() const {
+    return s;
   }
 };
 
