@@ -82,10 +82,20 @@ struct IManifold {
       BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE),_end) - \
       BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE),_start))
 
+#define GENERATE_ASSERT(R, ATTRIBUTE_TUPLE_SIZE, ATTRIBUTE) \
+\
+  assert(BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE) == other.BOOST_PP_TUPLE_ELEM(ATTRIBUTE_TUPLE_SIZE,1,ATTRIBUTE));
+
 #define ODOM_ESTIMATOR_DEFINE_MANIFOLD_IMPL( \
-    NAME, ATTRIBUTES_SEQ, ATTRIBUTE_TUPLE_SIZE) \
+    NAME, TYPE_ATTRIBUTES_SEQ, ATTRIBUTES_SEQ, ATTRIBUTE_TUPLE_SIZE) \
 \
     struct NAME { \
+\
+        BOOST_PP_SEQ_FOR_EACH_R( \
+            1, \
+            GENERATE_FIELD, \
+            ATTRIBUTE_TUPLE_SIZE, \
+            BOOST_PP_SEQ_TAIL(TYPE_ATTRIBUTES_SEQ)) \
 \
         BOOST_PP_SEQ_FOR_EACH_R( \
             1, \
@@ -102,6 +112,11 @@ struct IManifold {
 \
         Vec<RowsAtCompileTime> \
         operator-(NAME const &other) const { \
+          BOOST_PP_SEQ_FOR_EACH_R( \
+              1, \
+              GENERATE_ASSERT, \
+              ATTRIBUTE_TUPLE_SIZE, \
+              BOOST_PP_SEQ_TAIL(TYPE_ATTRIBUTES_SEQ)) \
           return (Vec<RowsAtCompileTime>(rows()) << \
             BOOST_PP_SEQ_FOR_EACH_I_R(1, \
               GENERATE_SUBTRACTOR, \
@@ -125,10 +140,12 @@ struct IManifold {
         NAME(BOOST_PP_SEQ_FOR_EACH_I_R(1, \
                                        GENERATE_ARG, \
                                        ATTRIBUTE_TUPLE_SIZE, \
+                                       BOOST_PP_SEQ_TAIL(TYPE_ATTRIBUTES_SEQ) \
                                        BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ))) \
           : BOOST_PP_SEQ_FOR_EACH_I_R(1, \
                                       GENERATE_SETTER, \
                                       ATTRIBUTE_TUPLE_SIZE, \
+                                      BOOST_PP_SEQ_TAIL(TYPE_ATTRIBUTES_SEQ) \
                                       BOOST_PP_SEQ_TAIL(ATTRIBUTES_SEQ)) { }
 
 #define APPEND_IF_SEQ_LENGTH_IS_1(SEQ, ITEM) \
@@ -137,9 +154,10 @@ struct IManifold {
     SEQ, \
     BOOST_PP_SEQ_PUSH_BACK(SEQ, ITEM))
 
-#define ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(NAME, ATTRIBUTES) \
+#define ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(NAME, TYPE_ATTRIBUTES, ATTRIBUTES) \
     ODOM_ESTIMATOR_DEFINE_MANIFOLD_IMPL( \
         NAME, \
+        BOOST_PP_CAT(BOOST_FUSION_ADAPT_STRUCT_FILLER_0(0,0)TYPE_ATTRIBUTES,_END), \
         APPEND_IF_SEQ_LENGTH_IS_1(BOOST_PP_CAT(BOOST_FUSION_ADAPT_STRUCT_FILLER_0(0,0)ATTRIBUTES,_END), (Vec<0>, _dummy)), \
         2)
 
@@ -148,12 +166,14 @@ struct IManifold {
 
 template<typename First, typename Second>
 ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(ManifoldPair,
+  ,
   (First, first)
   (Second, second)
 )
 ODOM_ESTIMATOR_DEFINE_MANIFOLD_END()
 
 ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(EmptyTestManifold,
+  ,
 )
 ODOM_ESTIMATOR_DEFINE_MANIFOLD_END()
 
