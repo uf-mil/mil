@@ -137,8 +137,8 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
           xyz2vec(imu.angular_velocity),
           xyz2vec(imu.linear_acceleration)),
         NoiseType::Zero()),
-      ExtraType::build_cov(
-        IMUData::build_cov(
+      joinDiagonally(
+        joinDiagonally(
           Eigen::Map<const SqMat<3> >(imu.angular_velocity_covariance.data()),
           Eigen::Map<const SqMat<3> >(imu.linear_acceleration_covariance.data())),
         scalar_matrix(5)));

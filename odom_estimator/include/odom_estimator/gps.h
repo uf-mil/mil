@@ -107,7 +107,7 @@ GaussianDistribution<Fix> get_fix(rawgps_common::Measurements const &msg) {
           FixWithBias(
             trial,
             Vec<Dynamic>::Zero(prns.size())),
-          FixWithBias::build_cov(
+          joinDiagonally(
             prior_stddev.cwiseProduct(prior_stddev).asDiagonal(),
             Vec<Dynamic>::Ones(prns.size()).asDiagonal())));
     

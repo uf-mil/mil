@@ -12,12 +12,6 @@
 
 namespace odom_estimator {
 
-static inline constexpr int addRowsAtCompileTime(int a, int b) {
-  return a == Dynamic ? Dynamic :
-         b == Dynamic ? Dynamic :
-         a + b;
-}
-
 #define FOLD_LEFT_SKIPPING_FIRST(op, state, seq) \
   BOOST_PP_IF( \
     BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(seq)), \
@@ -170,16 +164,6 @@ public:
     return ManifoldPair<First, Second>(
       first + other.head(first.rows()),
       second + other.tail(second.rows()));
-  }
-  
-  static CovType build_cov(
-      SqMat<First::RowsAtCompileTime> const &first_cov,
-      SqMat<Second::RowsAtCompileTime> const &second_cov) {
-    CovType res = CovType::Zero(first_cov.rows() + second_cov.rows(),
-                                first_cov.rows() + second_cov.rows());
-    res.topLeftCorner(first_cov.rows(), first_cov.rows()) = first_cov;
-    res.bottomRightCorner(second_cov.rows(), second_cov.rows()) = second_cov;
-    return res;
   }
 };
 

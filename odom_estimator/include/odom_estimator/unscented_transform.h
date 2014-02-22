@@ -136,7 +136,7 @@ public:
         },
         GaussianDistribution<InAndExtraType>(
           InAndExtraType(input.mean, extra.mean),
-          InAndExtraType::build_cov(input.cov, extra.cov)));
+          joinDiagonally(input.cov, extra.cov)));
     
     return GaussianDistributionWithCrossCov<OutType, InType>(
       GaussianDistribution<OutType>(res.mean, res.cov),

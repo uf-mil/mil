@@ -12,7 +12,6 @@
 
 namespace odom_estimator {
 
-
 template<int N, typename T=double>
 using Vec = Eigen::Matrix<T, N, 1>;
 
@@ -26,6 +25,11 @@ using Eigen::Dynamic;
 
 typedef Eigen::Quaterniond Quaternion;
 
+static inline constexpr int addRowsAtCompileTime(int a, int b) {
+  return a == Dynamic ? Dynamic :
+         b == Dynamic ? Dynamic :
+         a + b;
+}
 
 Quaternion quat_from_rotvec(Vec<3> r) {
     double angle = r.norm();
@@ -62,6 +66,27 @@ Quaternion triad(Vec<3> v1_world, Vec<3> v2_world,
 
 SqMat<1> scalar_matrix(double x) {
   return (SqMat<1>() << x).finished();
+}
+
+template<typename Derived1, typename Derived2>
+SqMat<addRowsAtCompileTime(Derived1::RowsAtCompileTime,
+                           Derived2::RowsAtCompileTime)>
+joinDiagonally(Eigen::EigenBase<Derived1> const &a,
+                Eigen::EigenBase<Derived2> const &b) {
+  static_assert(Derived1::RowsAtCompileTime == Derived1::ColsAtCompileTime,
+    "a must be square");
+  static_assert(Derived2::RowsAtCompileTime == Derived2::ColsAtCompileTime,
+    "a must be square");
+  assert(a.rows() == a.cols() && b.rows() == b.cols());
+  SqMat<addRowsAtCompileTime(Derived1::RowsAtCompileTime,
+                             Derived2::RowsAtCompileTime)> res =
+    SqMat<addRowsAtCompileTime(Derived1::RowsAtCompileTime,
+                               Derived2::RowsAtCompileTime)>::Zero(
+      a.rows() + b.rows(),
+      a.cols() + b.cols());
+  res.topLeftCorner(a.rows(), a.cols()) = a.derived();
+  res.bottomRightCorner(b.rows(), b.cols()) = b.derived();
+  return res;
 }
 
 template<int N>
