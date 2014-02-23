@@ -22,12 +22,12 @@ ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(State,
   (Vec<Dynamic>, gps_bias)
 )
   double getGPSBias(int prn) const {
-    unsigned int index = std::find(gps_prn.begin(), gps_prn.end(), prn) - gps_prn.end();
+    unsigned int index = std::find(gps_prn.begin(), gps_prn.end(), prn) - gps_prn.begin();
     assert(index != gps_prn.size());
     return gps_bias(index);
   }
   boost::optional<double> maybeGetGPSBias(int prn) const {
-    unsigned int index = std::find(gps_prn.begin(), gps_prn.end(), prn) - gps_prn.end();
+    unsigned int index = std::find(gps_prn.begin(), gps_prn.end(), prn) - gps_prn.begin();
     if(index == gps_prn.size()) return boost::none;
     return gps_bias(index);
   }
@@ -108,9 +108,10 @@ class ErrorObserver : public UnscentedTransformDistributionFunction<State, Vec<D
   
   Vec<Dynamic> apply(State const &state, Vec<Dynamic> const &noise) const {
     std::set<int> good_prns = get_good_prns(a, b);
+    if(good_prns.size() == 0) return Vec<Dynamic>();
     
-    double carrier_distance_bias = 10*noise(0);
-    double doppler_velocity_bias = 10*noise(1);
+    double carrier_distance_bias_sum = 0, doppler_velocity_bias_sum = 0;
+    unsigned int count = 0;
     BOOST_FOREACH(int prn, good_prns) {
       rawgps_common::Satellite const & a_sat = get_sat(a, prn);
       rawgps_common::Satellite const & b_sat = get_sat(b, prn);
@@ -118,9 +119,13 @@ class ErrorObserver : public UnscentedTransformDistributionFunction<State, Vec<D
       double carrier_distance_difference = a_sat.carrier_distance - b_sat.carrier_distance;
       double doppler_velocity_difference = a_sat.doppler_velocity - b_sat.doppler_velocity;
       
-      carrier_distance_bias += (carrier_distance_difference - (xyz2vec(a_sat.direction_enu).dot(state.relpos_enu) + state.getGPSBias(prn)))/good_prns.size();
-      doppler_velocity_bias += (doppler_velocity_difference - xyz2vec(a_sat.direction_enu).dot(state.relvel_enu))/good_prns.size();
+      carrier_distance_bias_sum += carrier_distance_difference - (xyz2vec(a_sat.direction_enu).dot(state.relpos_enu) + state.getGPSBias(prn));
+      doppler_velocity_bias_sum += doppler_velocity_difference - xyz2vec(a_sat.direction_enu).dot(state.relvel_enu);
+      count++;
     }
+    assert(count);
+    double carrier_distance_bias = carrier_distance_bias_sum/count + 10*noise(0);
+    double doppler_velocity_bias = doppler_velocity_bias_sum/count + 10*noise(1);
     
     Vec<Dynamic> res(2*good_prns.size());
     { int i = 0; BOOST_FOREACH(int prn, good_prns) {
@@ -155,12 +160,38 @@ update_gps_bias_set(GaussianDistribution<State> const &state,
   
   return EasyDistributionFunction<State, State, Vec<Dynamic> >(
     [&a, &b, &good_prns](State const &state, Vec<Dynamic> const &noise) {
-      State new_state = state;
-      new_state.gps_prn.assign(good_prns.begin(), good_prns.end());
-      new_state.gps_bias = Vec<Dynamic>(good_prns.size());
+      double carrier_distance_bias_sum = 0;
+      unsigned int count = 0;
       BOOST_FOREACH(int prn, good_prns) {
-        ;
+        if(!state.maybeGetGPSBias(prn)) continue;
+        
+        rawgps_common::Satellite const & a_sat = get_sat(a, prn);
+        rawgps_common::Satellite const & b_sat = get_sat(b, prn);
+        
+        double carrier_distance_difference = a_sat.carrier_distance - b_sat.carrier_distance;
+        
+        carrier_distance_bias_sum += carrier_distance_difference - (xyz2vec(a_sat.direction_enu).dot(state.relpos_enu) + state.getGPSBias(prn));
+        count++;
       }
+      double carrier_distance_bias = count ? carrier_distance_bias_sum/count : 0;
+      
+      State new_state = state;
+      new_state.gps_prn = std::vector<int>(good_prns.begin(), good_prns.end());
+      new_state.gps_bias = Vec<Dynamic>(good_prns.size());
+      { int i = 0; BOOST_FOREACH(int prn, good_prns) {
+        boost::optional<double> old_bias = state.maybeGetGPSBias(prn);
+        if(old_bias) {
+          new_state.gps_bias(i) = *old_bias;
+        } else {
+          std::cout << prn << " joined" << std::endl;
+          rawgps_common::Satellite const & a_sat = get_sat(a, prn);
+          rawgps_common::Satellite const & b_sat = get_sat(b, prn);
+          
+          double carrier_distance_difference = a_sat.carrier_distance - b_sat.carrier_distance;
+          
+          new_state.gps_bias(i) = carrier_distance_difference - (xyz2vec(a_sat.direction_enu).dot(state.relpos_enu) + carrier_distance_bias) + 100*noise(i);
+        }
+      i++; } }
       return new_state;
     },
     GaussianDistribution<Vec<Dynamic> >(
@@ -205,6 +236,15 @@ struct Worker {
     opt_state_dist = kalman_update(ErrorObserver(a, b), *opt_state_dist);
     
     opt_state_dist = center_gps_biases(*opt_state_dist);
+    
+    opt_state_dist = kalman_update(
+      EasyDistributionFunction<State, Vec<1>, Vec<1> >(
+        [](State const &state, Vec<1> const &measurement_noise) {
+          return scalar_matrix(state.relpos_enu.dot(state.relvel_enu)
+            - .1*measurement_noise(0));
+        },
+        GaussianDistribution<Vec<1> >(Vec<1>::Zero(), scalar_matrix(1))),
+      *opt_state_dist);
   }
 };
   
