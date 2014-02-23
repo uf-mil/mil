@@ -151,7 +151,7 @@ class NodeImpl {
           [](State const &state, Vec<0> const &) { return state.gyro_bias; }
         )(*state);
       std::cout << "gyro_bias " << gyro_bias_dist.mean.transpose()
-        << " stddev: " << gyro_bias_dist.cov.diagonal().array().sqrt()
+        << " stddev: " << gyro_bias_dist.cov.diagonal().array().sqrt().transpose()
         << std::endl;
       //std::cout << "grav: " << state->mean.local_g << "  " << sqrt(state->cov(State::LOCAL_G, State::LOCAL_G)) << std::endl;
       //std::cout << "ground air pressure: " << state->mean.ground_air_pressure << "  " << sqrt(state->cov(State::GROUND_AIR_PRESSURE, State::GROUND_AIR_PRESSURE)) << std::endl;
