@@ -118,7 +118,7 @@ class ErrorObserver : public UnscentedTransformDistributionFunction<State, Vec<D
       
       double carrier_distance_difference = a_sat.carrier_distance - b_sat.carrier_distance;
       
-      carrier_distance_bias_sum += carrier_distance_difference - (xyz2vec(a_sat.direction_enu).dot(state.relpos_enu) + state.getGPSBias(prn));
+      carrier_distance_bias_sum += carrier_distance_difference - (xyz2vec(a_sat.direction_enu).dot(-state.relpos_enu) + state.getGPSBias(prn));
       count++;
     }
     assert(count);
@@ -131,7 +131,7 @@ class ErrorObserver : public UnscentedTransformDistributionFunction<State, Vec<D
       
       double carrier_distance_difference = a_sat.carrier_distance - b_sat.carrier_distance;
       
-      double predicted_carrier_distance_difference = xyz2vec(a_sat.direction_enu).dot(state.relpos_enu) + state.getGPSBias(prn) + carrier_distance_bias + 0.05*noise(1+i);
+      double predicted_carrier_distance_difference = xyz2vec(a_sat.direction_enu).dot(-state.relpos_enu) + state.getGPSBias(prn) + carrier_distance_bias + 0.05*noise(1+i);
       
       res(i) = carrier_distance_difference - predicted_carrier_distance_difference;
     i++; } }
@@ -164,7 +164,7 @@ update_gps_bias_set(GaussianDistribution<State> const &state,
         
         double carrier_distance_difference = a_sat.carrier_distance - b_sat.carrier_distance;
         
-        carrier_distance_bias_sum += carrier_distance_difference - (xyz2vec(a_sat.direction_enu).dot(state.relpos_enu) + state.getGPSBias(prn));
+        carrier_distance_bias_sum += carrier_distance_difference - (xyz2vec(a_sat.direction_enu).dot(-state.relpos_enu) + state.getGPSBias(prn));
         count++;
       }
       double carrier_distance_bias = (count ? carrier_distance_bias_sum/count : 0) + 10*noise(0);
@@ -183,7 +183,7 @@ update_gps_bias_set(GaussianDistribution<State> const &state,
           
           double carrier_distance_difference = a_sat.carrier_distance - b_sat.carrier_distance;
           
-          new_state.gps_bias(i) = carrier_distance_difference - (xyz2vec(a_sat.direction_enu).dot(state.relpos_enu) + carrier_distance_bias) + 1*noise(1+i);
+          new_state.gps_bias(i) = carrier_distance_difference - (xyz2vec(a_sat.direction_enu).dot(-state.relpos_enu) + carrier_distance_bias) + 1*noise(1+i);
         }
       i++; } }
       return new_state;
