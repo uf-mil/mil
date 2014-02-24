@@ -9,6 +9,7 @@
 #include <boost/preprocessor/seq/push_front.hpp>
 #include <boost/preprocessor/seq/push_back.hpp>
 #include <boost/preprocessor/seq/pop_back.hpp>
+#include <boost/math/constants/constants.hpp>
 
 namespace odom_estimator {
 
@@ -232,6 +233,34 @@ public:
   }
   operator double() const {
     return s;
+  }
+};
+
+static double const pi = boost::math::constants::pi<double>();
+double wrapAngle(double angle) {
+  return angle - (2*pi)*round(angle/(2*pi));
+}
+
+struct AngleManifold : public IManifold<AngleManifold, 1> {
+private:
+  double angle;
+public:
+  AngleManifold(double angle) :
+    angle(wrapAngle(angle)) {
+    assert(this->angle > -4);
+    assert(this->angle < 4);
+  }
+  unsigned int rows() const {
+    return RowsAtCompileTime;
+  }
+  Vec<RowsAtCompileTime> operator-(AngleManifold const &other) const {
+    return scalar_matrix(wrapAngle(angle - other.angle));
+  }
+  AngleManifold operator+(Vec<RowsAtCompileTime> const &other) const {
+    return AngleManifold(angle + other(0));
+  }
+  operator double() const {
+    return angle;
   }
 };
 

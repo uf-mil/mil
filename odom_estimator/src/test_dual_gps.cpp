@@ -7,14 +7,22 @@
 using namespace odom_estimator;
 
 
-void callback(dual_gps::State const & state) {
+void callback(GaussianDistribution<dual_gps::State> const & state_dist) {
+  GaussianDistribution<AngleManifold> yaw = EasyDistributionFunction<dual_gps::State, AngleManifold>(
+    [](dual_gps::State const & state, Vec<0> const &) {
+      return atan2(state.relpos_enu(1), state.relpos_enu(0));
+    })(state_dist);
+  std::cout << "yaw:" << yaw.mean << " stddev: " << sqrt(yaw.cov(0,0)) << std::endl;
 }
 
 class GPSHandler {
-  std::function<void(dual_gps::State const &)> cb;
+public:
+  typedef std::function<void(GaussianDistribution<dual_gps::State> const &)> CallbackType;
+private:
+  CallbackType cb;
   dual_gps::Worker w;
 public:
-  GPSHandler(std::function<void(dual_gps::State const &)> cb) :
+  GPSHandler(CallbackType const & cb) :
     cb(cb) {
   }
   
@@ -33,18 +41,19 @@ public:
     BOOST_FOREACH(int prn, good_prns) {
       rawgps_common::Satellite const & a_sat = dual_gps::get_sat(a, prn);
       rawgps_common::Satellite const & b_sat = dual_gps::get_sat(b, prn);
-      std::cout << "prn " << a_sat.carrier_distance - b_sat.carrier_distance - m << " " << a_sat.doppler_velocity - b_sat.doppler_velocity << " " << xyz2vec(a_sat.direction_enu).transpose() << std::endl;
+      std::cout << "prn " << prn << "> carrier_difference: " << a_sat.carrier_distance - b_sat.carrier_distance - m << " direction: " << xyz2vec(a_sat.direction_enu).transpose() << std::endl;
     }
     std::cout << std::endl;
     
     w.handle_gps_pair(a, b);
-    cb(w.opt_state_dist->mean);
+    cb(*w.opt_state_dist);
     
     std::cout << "relpos_enu: " << w.opt_state_dist->mean.relpos_enu.transpose() << " stddev: " << w.opt_state_dist->cov.block<3,3>(0,0).diagonal().array().sqrt().transpose() << std::endl;
     std::cout << "relvel_enu: " << w.opt_state_dist->mean.relvel_enu.transpose() << " stddev: " << w.opt_state_dist->cov.block<3,3>(3,3).diagonal().array().sqrt().transpose() << std::endl;
     { int i = 0; BOOST_FOREACH(int prn, w.opt_state_dist->mean.gps_prn) {
       std::cout << prn << ": " << w.opt_state_dist->mean.getGPSBias(prn) << " stddev: " << sqrt(w.opt_state_dist->cov(6+i,6+i)) << std::endl;
     i++; } }
+    std::cout << w.opt_state_dist->mean.gps_bias.transpose() << std::endl;
     std::cout << std::endl;
     std::cout << std::endl;
     std::cout << std::endl;
