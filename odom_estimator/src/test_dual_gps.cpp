@@ -82,7 +82,7 @@ private:
     std::cout << "relvel_enu: " << w.opt_state_dist->mean.relvel_enu.transpose() << " stddev: " << w.opt_state_dist->cov.block<3,3>(3,3).diagonal().array().sqrt().transpose() << std::endl;
     std::cout << "centerpos_enu: " << w.opt_state_dist->mean.centerpos_enu.transpose() << " stddev: " << w.opt_state_dist->cov.block<3,3>(6,6).diagonal().array().sqrt().transpose() << std::endl;
     { int i = 0; BOOST_FOREACH(int prn, w.opt_state_dist->mean.gps_prn) {
-      std::cout << prn << ": " << w.opt_state_dist->mean.getGPSBias(prn) << " stddev: " << sqrt(w.opt_state_dist->cov(6+i,6+i)) << std::endl;
+      std::cout << prn << ": " << w.opt_state_dist->mean.getGPSBias(prn) << " stddev: " << sqrt(w.opt_state_dist->cov(9+i,9+i)) << std::endl;
     i++; } }
     std::cout << w.opt_state_dist->mean.gps_bias.transpose() << std::endl;
     
