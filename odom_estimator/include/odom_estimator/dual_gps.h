@@ -19,6 +19,7 @@ ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(State,
 ,
   (Vec<3>, relpos_enu)
   (Vec<3>, relvel_enu)
+  (Vec<3>, centerpos_enu)
   (Vec<Dynamic>, gps_bias)
 )
   double getGPSBias(int prn) const {
@@ -55,6 +56,7 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
       state.gps_prn,
       state.relpos_enu + dt * state.relvel_enu + dt*dt/2 * relaccel_enu,
       state.relvel_enu + dt * relaccel_enu,
+      state.centerpos_enu,
       state.gps_bias);
   }
 
@@ -217,9 +219,9 @@ struct Worker {
     assert(a.sync == b.sync);
     
     if(!opt_state_dist) {
-      Vec<6> stddev; stddev << 10,10,10, 1,1,1;
+      Vec<9> stddev; stddev << 0,0,0, 1,1,1, 10,10,10;
       opt_state_dist = GaussianDistribution<State>(
-        State(a.header.stamp, std::vector<int>{}, Vec<3>::Zero(), Vec<3>::Zero(), Vec<Dynamic>()),
+        State(a.header.stamp, std::vector<int>{}, Vec<3>::Zero(), Vec<3>::Zero(), Vec<3>::Zero(), Vec<Dynamic>()),
         stddev.cwiseProduct(stddev).asDiagonal());
     } else {
       opt_state_dist = StateUpdater(a.header.stamp)(*opt_state_dist);
@@ -240,7 +242,7 @@ struct Worker {
     opt_state_dist = kalman_update(
       EasyDistributionFunction<State, Vec<1>, Vec<1> >(
         [](State const &state, Vec<1> const &measurement_noise) {
-          return scalar_matrix(state.relpos_enu.dot(state.relvel_enu)
+          return scalar_matrix((state.relpos_enu-state.centerpos_enu).dot(state.relvel_enu)
             - .1*measurement_noise(0));
         },
         GaussianDistribution<Vec<1> >(Vec<1>::Zero(), scalar_matrix(1))),

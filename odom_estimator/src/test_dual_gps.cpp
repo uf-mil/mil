@@ -80,6 +80,7 @@ private:
     
     std::cout << "relpos_enu: " << w.opt_state_dist->mean.relpos_enu.transpose() << " stddev: " << w.opt_state_dist->cov.block<3,3>(0,0).diagonal().array().sqrt().transpose() << std::endl;
     std::cout << "relvel_enu: " << w.opt_state_dist->mean.relvel_enu.transpose() << " stddev: " << w.opt_state_dist->cov.block<3,3>(3,3).diagonal().array().sqrt().transpose() << std::endl;
+    std::cout << "centerpos_enu: " << w.opt_state_dist->mean.centerpos_enu.transpose() << " stddev: " << w.opt_state_dist->cov.block<3,3>(6,6).diagonal().array().sqrt().transpose() << std::endl;
     { int i = 0; BOOST_FOREACH(int prn, w.opt_state_dist->mean.gps_prn) {
       std::cout << prn << ": " << w.opt_state_dist->mean.getGPSBias(prn) << " stddev: " << sqrt(w.opt_state_dist->cov(6+i,6+i)) << std::endl;
     i++; } }
@@ -87,7 +88,8 @@ private:
     
     GaussianDistribution<AngleManifold> yaw = EasyDistributionFunction<dual_gps::State, AngleManifold>(
       [](dual_gps::State const & state, Vec<0> const &) {
-        return atan2(state.relpos_enu(1), state.relpos_enu(0));
+        Vec<3> v = state.relpos_enu - state.centerpos_enu;
+        return atan2(v(1), v(0));
       })(*w.opt_state_dist);
     std::cout << "yaw:" << yaw.mean << " stddev: " << sqrt(yaw.cov(0,0)) << std::endl;
     
@@ -95,7 +97,7 @@ private:
       geometry_msgs::PointStamped msg;
       msg.header.stamp = a.header.stamp;
       msg.header.frame_id = "/enu";
-      tf::pointEigenToMsg(w.opt_state_dist->mean.relpos_enu, msg.point);
+      tf::pointEigenToMsg(w.opt_state_dist->mean.relpos_enu - w.opt_state_dist->mean.centerpos_enu, msg.point);
       pub.publish(msg);
     }
     
