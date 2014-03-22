@@ -136,6 +136,12 @@ class ErrorObserver : public UnscentedTransformDistributionFunction<State, Vec<D
       double predicted_carrier_distance_difference = xyz2vec(a_sat.direction_enu).dot(-state.relpos_enu) + state.getGPSBias(prn) + carrier_distance_bias + 0.05*noise(1+i);
       
       res(i) = carrier_distance_difference - predicted_carrier_distance_difference;
+      {
+        double L1_f0 = 1575.42e6; // Hz
+        double c = 299792458; // m/s
+        double wl = c/L1_f0;
+        res(i) -= wl*round(res(i)/wl);
+      }
     i++; } }
     return res;
   }
