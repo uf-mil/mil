@@ -15,6 +15,8 @@
 #include <tf_conversions/tf_eigen.h>
 
 #include <rawgps_common/Measurements.h>
+#include <uf_common/VelocityMeasurements.h>
+#include <uf_common/Float64Stamped.h>
 
 #include <odom_estimator/Info.h>
 
@@ -86,15 +88,31 @@ class NodeImpl {
     boost::function<const std::string&()> getName;
     ros::NodeHandle &nh;
     ros::NodeHandle &private_nh;
+    bool have_gps;
+    double start_x_ecef, start_y_ecef, start_z_ecef;
     constexpr static const double air_density = 1.225; // kg/m^3
+    std::string local_frame;
   public:
     NodeImpl(boost::function<const std::string&()> getName, ros::NodeHandle *nh_, ros::NodeHandle *private_nh_) :
         getName(getName),
         nh(*nh_),
         private_nh(*private_nh_),
+        have_gps(true),
+        local_frame("/enu"),
         gps_sub(nh, "gps", 1),
         gps_filter(gps_sub, tf_listener, "", 10),
+        dvl_sub(nh, "dvl", 1),
+        dvl_filter(dvl_sub, tf_listener, "", 10),
+        depth_sub(nh, "depth", 1),
+        depth_filter(depth_sub, tf_listener, "", 10),
         last_mag(boost::none), last_good_gps(boost::none), state(boost::none) {
+      
+      private_nh.getParam("have_gps", have_gps);
+      private_nh.getParam("start_x_ecef", start_x_ecef);
+      private_nh.getParam("start_y_ecef", start_y_ecef);
+      private_nh.getParam("start_z_ecef", start_z_ecef);
+      private_nh.getParam("local_frame", local_frame);
+      
       imu_sub = nh.subscribe<sensor_msgs::Imu>("imu/data_raw", 10,
         boost::bind(&NodeImpl::got_imu, this, _1));
       mag_sub = nh.subscribe<sensor_msgs::MagneticField>("imu/mag", 10,
@@ -102,6 +120,8 @@ class NodeImpl {
       press_sub = nh.subscribe<sensor_msgs::FluidPressure>("imu/pressure", 10,
         boost::bind(&NodeImpl::got_press, this, _1));
       gps_filter.registerCallback(boost::bind(&NodeImpl::got_gps, this, _1));
+      dvl_filter.registerCallback(boost::bind(&NodeImpl::got_dvl, this, _1));
+      depth_filter.registerCallback(boost::bind(&NodeImpl::got_depth, this, _1));
       odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
       absodom_pub = nh.advertise<nav_msgs::Odometry>("absodom", 10);
       info_pub = private_nh.advertise<odom_estimator::Info>("info", 10);
@@ -118,6 +138,8 @@ class NodeImpl {
         pow(0.06, 2)*SqMat<3>::Identity();
       
       gps_filter.setTargetFrame(msg.header.frame_id);
+      dvl_filter.setTargetFrame(msg.header.frame_id);
+      depth_filter.setTargetFrame(msg.header.frame_id);
       last_gyro = xyz2vec(msg.angular_velocity);
       local_frame_id = msg.header.frame_id;
       
@@ -126,17 +148,25 @@ class NodeImpl {
         last_mag = boost::none;
         state = boost::none;
       }
-      if(state && (last_good_gps < msg.header.stamp - ros::Duration(5.))) {
+      if(state && have_gps && (last_good_gps < msg.header.stamp - ros::Duration(5.))) {
         NODELET_ERROR("reset due to no good gps data");
       }
       
       if(!state) {
-        if(last_mag && last_good_gps && *last_good_gps > msg.header.stamp - ros::Duration(1.5) &&
-                                        *last_good_gps < msg.header.stamp + ros::Duration(1.5)) {
-          state = init_state(msg, *last_mag, *last_good_gps_msg);
-        } else {
-          std::cout << "something missing" << std::endl;
+        if(!last_mag) {
+          std::cout << "mag missing" << std::endl;
           return;
+        }
+        if(have_gps) {
+          if(last_good_gps && *last_good_gps > msg.header.stamp - ros::Duration(1.5) &&
+                              *last_good_gps < msg.header.stamp + ros::Duration(1.5)) {
+            state = init_state(msg, *last_mag, *last_good_gps_msg);
+          } else {
+            std::cout << "gps missing" << std::endl;
+            return;
+          }
+        } else {
+          state = init_state(msg, *last_mag, Vec<3>(start_x_ecef, start_y_ecef, start_z_ecef), Vec<3>::Zero());
         }
       } else {
         state = StateUpdater(msg)(*state);
@@ -179,11 +209,11 @@ class NodeImpl {
       
       {
         EasyDistributionFunction<State, Odom> transformer(
-          [&msg](State const &state, Vec<0> const &) {
+          [this, &msg](State const &state, Vec<0> const &) {
             SqMat<3> m = enu_from_ecef_mat(state.getPosECEF());
             return Odom(
               state.t,
-              "/enu",
+              local_frame,
               msg.header.frame_id,
               m * state.getRelPosECEF(),
               Quaternion(m) * state.getOrientECEF(),
@@ -333,6 +363,79 @@ class NodeImpl {
       }*/
     }
     
+    void got_dvl(const uf_common::VelocityMeasurementsConstPtr &msgp) {
+      uf_common::VelocityMeasurements const & msg = *msgp;
+      
+      tf::StampedTransform transform;
+      try {
+        tf_listener.lookupTransform(local_frame_id,
+          msg.header.frame_id, msg.header.stamp, transform);
+      } catch (tf::TransformException ex) {
+        NODELET_ERROR("Error in got_dvl: %s", ex.what());
+        return;
+      }
+      Vec<3> local_dvl_pos; tf::vectorTFToEigen(transform.getOrigin(), local_dvl_pos);
+      Quaternion local_dvl_orientation; tf::quaternionTFToEigen(transform.getRotation(), local_dvl_orientation); 
+      
+      if(!state) return;
+      
+      std::vector<uf_common::VelocityMeasurement> good;
+      for(unsigned int i = 0; i < msg.velocity_measurements.size(); i++) {
+        uf_common::VelocityMeasurement const & vm = msg.velocity_measurements[i];
+        if(!std::isnan(vm.velocity)) {
+          good.push_back(vm);
+        }
+      }
+      
+      state = kalman_update(
+        EasyDistributionFunction<State, Vec<Dynamic>, Vec<Dynamic> >(
+          [&good, &local_dvl_pos, &local_dvl_orientation, this](State const &state, Vec<Dynamic> const &measurement_noise) {
+            Vec<3> dvl_vel = local_dvl_orientation.inverse()._transformVector(
+              state.getOrientECEF().inverse()._transformVector(
+                state.getVelECEF(local_dvl_pos, *last_gyro)));
+            
+            Vec<Dynamic> res(good.size());
+            for(unsigned int i = 0; i < good.size(); i++) {
+              uf_common::VelocityMeasurement const & vm = good[i];
+              res(i) = (xyz2vec(vm.direction).dot(dvl_vel) + measurement_noise(i)) - vm.velocity;
+            }
+            return res;
+          },
+          GaussianDistribution<Vec<Dynamic> >(
+            Vec<Dynamic>::Zero(good.size()),
+            pow(.01, 2) * Vec<Dynamic>::Ones(good.size()).asDiagonal())),
+        *state);
+    }
+    
+    void got_depth(const uf_common::Float64StampedConstPtr &msgp) {
+      uf_common::Float64Stamped const & msg = *msgp;
+      
+      
+      tf::StampedTransform transform;
+      try {
+        tf_listener.lookupTransform(local_frame_id,
+          msg.header.frame_id, msg.header.stamp, transform);
+      } catch (tf::TransformException ex) {
+        NODELET_ERROR("Error in got_depth: %s", ex.what());
+        return;
+      }
+      Vec<3> local_depth_pos; tf::vectorTFToEigen(transform.getOrigin(), local_depth_pos);
+      
+      if(!state) return;
+      
+      state = kalman_update(
+        EasyDistributionFunction<State, Vec<1>, Vec<1> >(
+          [&](State const &state, Vec<1> const &measurement_noise) {
+            SqMat<3> m = enu_from_ecef_mat(state.getPosECEF());
+            double estimated = -(m * state.getRelPosECEF())(2) + measurement_noise(0); // XXX doesn't account for local_depth_pos
+            return scalar_matrix(estimated - msg.data);
+          },
+          GaussianDistribution<Vec<1> >(
+            Vec<1>::Zero(),
+            pow(.1, 2) * Vec<1>::Ones().asDiagonal())),
+        *state);
+    }
+    
     
     /*void fake_depth() {
       state = kalman_update(
@@ -355,6 +458,10 @@ class NodeImpl {
     ros::Subscriber press_sub;
     message_filters::Subscriber<rawgps_common::Measurements> gps_sub;
     tf::MessageFilter<rawgps_common::Measurements> gps_filter;
+    message_filters::Subscriber<uf_common::VelocityMeasurements> dvl_sub;
+    tf::MessageFilter<uf_common::VelocityMeasurements> dvl_filter;
+    message_filters::Subscriber<uf_common::Float64Stamped> depth_sub;
+    tf::MessageFilter<uf_common::Float64Stamped> depth_filter;
     ros::Publisher odom_pub;
     ros::Publisher absodom_pub;
     ros::Publisher info_pub;
