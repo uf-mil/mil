@@ -48,7 +48,7 @@ add_service_files(
     SetIgnoreMagnetometer.srv
 )
 generate_messages(
-    DEPENDENCIES std_msgs
+    DEPENDENCIES std_msgs geometry_msgs
 )
 
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package

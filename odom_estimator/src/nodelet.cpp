@@ -257,6 +257,12 @@ class NodeImpl {
         odom_estimator::Info output;
         output.header.stamp = msg.header.stamp;
         
+        tf::vectorEigenToMsg(gyro_bias_dist.mean, output.gyro_bias);
+        tf::vectorEigenToMsg(gyro_bias_dist.cov.diagonal().array().sqrt().eval(), output.gyro_bias_stddev);
+        
+        tf::vectorEigenToMsg(accel_bias_dist.mean, output.accel_bias);
+        tf::vectorEigenToMsg(accel_bias_dist.cov.diagonal().array().sqrt().eval(), output.accel_bias_stddev);
+        
         for(unsigned int i = 0; i < state->mean.gps_prn.size(); i++) {
           output.gps_bias_prns.push_back(state->mean.gps_prn[i]);
           output.gps_bias_biases.push_back(gps_bias_dist.mean(i));
