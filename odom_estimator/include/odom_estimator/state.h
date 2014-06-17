@@ -25,6 +25,7 @@ ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(State,
   (QuaternionManifold, orient)
   (Vec<3>, vel)
   (Vec<3>, gyro_bias)
+  (Vec<3>, accel_bias)
   (WrappedScalar, local_g)
   (WrappedScalar, ground_air_pressure)
   (Vec<Dynamic>, gps_bias)
@@ -97,7 +98,7 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
     
     Quaternion world_from_newbody = state.orient * oldbody_from_newbody;
     
-    Vec<3> accelnograv_accelbody = imudata.second;
+    Vec<3> accelnograv_accelbody = imudata.second - state.accel_bias;
     Quaternion world_from_accelbody = rightSideAccelFrame ?
       world_from_newbody : Quaternion(state.orient);
     Vec<3> accelnograv_world = world_from_accelbody._transformVector(
@@ -113,6 +114,7 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
       world_from_newbody,
       state.vel + dt * accel_world,
       state.gyro_bias,
+      state.accel_bias,
       state.local_g,
       state.ground_air_pressure + sqrt(dt) * noise(0),
       state.gps_bias);

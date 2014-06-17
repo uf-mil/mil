@@ -55,8 +55,8 @@ GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
     accel_body, last_mag);
   
   Vec<State::RowsAtCompileTime> stdev =
-    (Vec<State::RowsAtCompileTime>(17) <<
-    100,100,100, 0,0,0, .05,.05,.05, 10,10,10, 1e-3,1e-3,1e-3, 0.1, 1e3).finished();
+    (Vec<State::RowsAtCompileTime>(20) <<
+    100,100,100, 0,0,0, .05,.05,.05, 10,10,10, 1e-3,1e-3,1e-3, 1e-2,1e-2,1e-2, 0.1, 1e3).finished();
   SqMat<State::RowsAtCompileTime> tmp =
     stdev.asDiagonal();
   
@@ -68,6 +68,7 @@ GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
       Vec<3>::Zero(),
       orient_eci,
       vel_eci,
+      Vec<3>::Zero(),
       Vec<3>::Zero(),
       9.80665,
       101325,
@@ -187,6 +188,13 @@ class NodeImpl {
         )(*state);
       std::cout << "gyro_bias " << gyro_bias_dist.mean.transpose()
         << " stddev: " << gyro_bias_dist.cov.diagonal().array().sqrt().transpose()
+        << std::endl;
+      GaussianDistribution<Vec<3>> accel_bias_dist =
+        EasyDistributionFunction<State, Vec<3>>(
+          [](State const &state, Vec<0> const &) { return state.accel_bias; }
+        )(*state);
+      std::cout << "accel_bias " << accel_bias_dist.mean.transpose()
+        << " stddev: " << accel_bias_dist.cov.diagonal().array().sqrt().transpose()
         << std::endl;
       //std::cout << "grav: " << state->mean.local_g << "  " << sqrt(state->cov(State::LOCAL_G, State::LOCAL_G)) << std::endl;
       //std::cout << "ground air pressure: " << state->mean.ground_air_pressure << "  " << sqrt(state->cov(State::GROUND_AIR_PRESSURE, State::GROUND_AIR_PRESSURE)) << std::endl;
