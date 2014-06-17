@@ -19,6 +19,7 @@
 #include <uf_common/Float64Stamped.h>
 
 #include <odom_estimator/Info.h>
+#include <odom_estimator/SetIgnoreMagnetometer.h>
 
 #include "odom_estimator/unscented_transform.h"
 #include "odom_estimator/util.h"
@@ -92,6 +93,8 @@ class NodeImpl {
     double start_x_ecef, start_y_ecef, start_z_ecef;
     constexpr static const double air_density = 1.225; // kg/m^3
     std::string local_frame;
+    ros::ServiceServer set_ignore_magnetometer_srv;
+    bool ignoreMagnetometer;
   public:
     NodeImpl(boost::function<const std::string&()> getName, ros::NodeHandle *nh_, ros::NodeHandle *private_nh_) :
         getName(getName),
@@ -99,6 +102,7 @@ class NodeImpl {
         private_nh(*private_nh_),
         have_gps(true),
         local_frame("/enu"),
+        ignoreMagnetometer(false),
         gps_sub(nh, "gps", 1),
         gps_filter(gps_sub, tf_listener, "", 10),
         dvl_sub(nh, "dvl", 1),
@@ -125,6 +129,7 @@ class NodeImpl {
       odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
       absodom_pub = nh.advertise<nav_msgs::Odometry>("absodom", 10);
       info_pub = private_nh.advertise<odom_estimator::Info>("info", 10);
+      set_ignore_magnetometer_srv = private_nh.advertiseService("set_ignore_magnetometer", &NodeImpl::setIgnoreMagnetometer, this);
     }
   
   private:
@@ -260,6 +265,7 @@ class NodeImpl {
       last_mag = xyz2vec(msg.magnetic_field);
       
       if(!state) return;
+      if(ignoreMagnetometer) return;
       
       SqMat<3> cov = Eigen::Map<const SqMat<3> >(msg.magnetic_field_covariance.data());
       if(cov == SqMat<3>::Zero()) {
@@ -450,6 +456,12 @@ class NodeImpl {
             scalar_matrix(pow(0.3, 2)))),
         *state);
     }*/
+    
+    bool setIgnoreMagnetometer(SetIgnoreMagnetometer::Request &request,
+                               SetIgnoreMagnetometer::Response &response) {
+        ignoreMagnetometer = request.ignore;
+        return true;
+    }
     
     
     tf::TransformListener tf_listener;
