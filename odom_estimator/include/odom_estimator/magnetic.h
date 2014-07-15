@@ -146,12 +146,18 @@ public:
     Eigen::Matrix<T, Dynamic, Dynamic> p =
       semi_normalized_associated_legendre<T>(max_m, max_n, pos_ecef(2)/r);
     
+    T pow_aoverr_n[max_n+2];
+    pow_aoverr_n[0] = 1;
+    for(unsigned int i = 1; i < max_n+2; i++) {
+      pow_aoverr_n[i] = pow_aoverr_n[i-1] * (a/r);
+    }
+    
     T res = 0;
     BOOST_FOREACH(Coeff const &coeff, coeffs) {
       res += a * (
         (coeff.g + coeff.gdot * (t_year - t0_year)) * cos_sin[coeff.m].first +
         (coeff.h + coeff.hdot * (t_year - t0_year)) * cos_sin[coeff.m].second
-      ) * pow(a/r, coeff.n+1) * p(coeff.m, coeff.n);
+      ) * pow_aoverr_n[coeff.n+1] * p(coeff.m, coeff.n);
     }
     return res*1e-9; // convert nT to T
   }
