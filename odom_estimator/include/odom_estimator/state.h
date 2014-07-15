@@ -62,43 +62,45 @@ ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(State,
 ODOM_ESTIMATOR_DEFINE_MANIFOLD_END()
 
 
-class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
-  // argh, no way to use a typedef defined within the class for the base class
-  // this is ExtraType:
-  ManifoldPair<ManifoldPair<Vec<3>, Vec<3> >, Vec<1> >
-> {
-  typedef ManifoldPair<Vec<3>, Vec<3> > IMUData;
-  typedef Vec<1> NoiseType;
-  typedef ManifoldPair<IMUData, NoiseType> ExtraType;
-  
+ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(_PredictNoise, ,
+  (Vec<3>, gyro)
+  (Vec<3>, accel)
+  (WrappedScalar, ground_air_pressure_noise)
+  (Vec<3>, gyro_bias_noise)
+  (Vec<3>, accel_bias_noise)
+)
+ODOM_ESTIMATOR_DEFINE_MANIFOLD_END()
+class StateUpdater : public UnscentedTransformDistributionFunction<State, State, _PredictNoise> {
   sensor_msgs::Imu const imu;
   bool const rightSideAccelFrame;
   
-  GaussianDistribution<ExtraType> get_extra_distribution() const {
-    return GaussianDistribution<ExtraType>(
-      ExtraType(
-        IMUData(
-          xyz2vec(imu.angular_velocity),
-          xyz2vec(imu.linear_acceleration)),
-        NoiseType::Zero()),
+  GaussianDistribution<_PredictNoise> get_extra_distribution() const {
+    return GaussianDistribution<_PredictNoise>(
+      _PredictNoise(
+        xyz2vec(imu.angular_velocity),
+        xyz2vec(imu.linear_acceleration),
+        0,
+        Vec<3>::Zero(),
+        Vec<3>::Zero()),
       joinDiagonally(
         joinDiagonally(
           Eigen::Map<const SqMat<3> >(imu.angular_velocity_covariance.data()),
           Eigen::Map<const SqMat<3> >(imu.linear_acceleration_covariance.data())),
-        scalar_matrix(5)));
+        joinDiagonally(
+          scalar_matrix(5),
+          joinDiagonally(
+            (Vec<3>::Ones()*pow(1e-3, 2)).asDiagonal(),
+            (Vec<3>::Ones()*pow(1e-3, 2)).asDiagonal()))));
   }
-  State apply(State const &state, ExtraType const &extra) const {
-    IMUData const &imudata = extra.first;
-    NoiseType const &noise = extra.second;
-    
+  State apply(State const &state, _PredictNoise const &extra) const {
     double dt = (imu.header.stamp - state.t).toSec();
     
-    Vec<3> angvel_body = imudata.first - state.gyro_bias;
+    Vec<3> angvel_body = extra.gyro - state.gyro_bias;
     Quaternion oldbody_from_newbody = quat_from_rotvec(dt * angvel_body);
     
     Quaternion world_from_newbody = state.orient * oldbody_from_newbody;
     
-    Vec<3> accelnograv_accelbody = imudata.second - state.accel_bias;
+    Vec<3> accelnograv_accelbody = extra.accel - state.accel_bias;
     Quaternion world_from_accelbody = rightSideAccelFrame ?
       world_from_newbody : Quaternion(state.orient);
     Vec<3> accelnograv_world = world_from_accelbody._transformVector(
@@ -113,10 +115,10 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
       state.rel_pos_eci + dt * state.vel + dt*dt/2 * accel_world,
       world_from_newbody,
       state.vel + dt * accel_world,
-      state.gyro_bias,
-      state.accel_bias,
+      state.gyro_bias + sqrt(dt) * extra.gyro_bias_noise,
+      state.accel_bias + sqrt(dt) * extra.accel_bias_noise,
       state.local_g,
-      state.ground_air_pressure + sqrt(dt) * noise(0),
+      state.ground_air_pressure + sqrt(dt) * extra.ground_air_pressure_noise,
       state.gps_bias);
   }
 
