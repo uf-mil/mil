@@ -74,17 +74,20 @@ semi_normalized_associated_legendre(int max_m, int max_n, T arg) {
   Eigen::Matrix<T, Dynamic, Dynamic> p =
     normalized_jacobi<T>(max_m, max_n, arg);
   Eigen::Matrix<T, Dynamic, Dynamic> result(max_m+1, max_n+1);
+  T sqrt1marg2 = sqrt(1-arg*arg);
+  T pow_sqrt1marg2_m = 1;
   for(int m = 0; m <= max_m; m++) {
     for(int n = 0; n <= max_n; n++) {
       if(n-m < 0) {
         result(m, n) = NAN;
         continue;
       }
-      result(m, n) = pow(sqrt(1-arg*arg), m) * p(m, n-m)/sqrt((2*n+1)/2.);
+      result(m, n) = pow_sqrt1marg2_m * p(m, n-m)/sqrt((2*n+1)/2.);
       if(m > 0) {
         result(m, n) *= sqrt(2);
       }
     }
+    pow_sqrt1marg2_m *= sqrt1marg2;
   }
   return result;
 }
