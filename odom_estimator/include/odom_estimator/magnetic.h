@@ -25,12 +25,12 @@ namespace magnetic {
 template<typename T>
 std::vector<std::pair<T, T> > compute_cos_sin(T x, T y, int max_n) {
   std::vector<std::pair<T, T> > res;
-  res.push_back(std::make_pair(1, 0));
+  res.push_back(std::make_pair(T(1), T(0)));
   res.push_back(std::make_pair(x, y));
   for(int n = 2; n <= max_n; n++) {
     res.push_back(std::make_pair(
-      2 * x * res[n-1].first  - res[n-2].first,
-      2 * x * res[n-1].second - res[n-2].second));
+      T(2) * x * res[n-1].first  - res[n-2].first,
+      T(2) * x * res[n-1].second - res[n-2].second));
   }
   return res;
 }
@@ -50,14 +50,14 @@ normalized_jacobi(int max_m, int max_k, T x) {
   Eigen::Matrix<T, Dynamic, Dynamic> result(max_m+1, max_k+1);
   for(int m = 0; m <= max_m; m++) {
     if(m == 0) {
-      result(m, 0) = 1/sqrt(2);
+      result(m, 0) = T(1/sqrt(2));
     } else {
       result(m, 0) = result(m-1, 0)*sqrt(1+1/(2.*m));
     }
     for(int k = 1; k <= max_k; k++) {
       T preprek = k == 1 ? T(0) : result(m, k-2);
       T prek = result(m, k-1);
-      result(m, k) = 2*x*prek*sqrt((1 + (m-1./2)/k)*(1-(m-1./2)/(k+2*m))) -
+      result(m, k) = T(2)*x*prek*sqrt((1 + (m-1./2)/k)*(1-(m-1./2)/(k+2*m))) -
         preprek*sqrt((1+4/(2.*k+2.*m-3))*(1-1./k)*(1-1/(k+2.*m)));
     }
   }
@@ -74,12 +74,12 @@ semi_normalized_associated_legendre(int max_m, int max_n, T arg) {
   Eigen::Matrix<T, Dynamic, Dynamic> p =
     normalized_jacobi<T>(max_m, max_n, arg);
   Eigen::Matrix<T, Dynamic, Dynamic> result(max_m+1, max_n+1);
-  T sqrt1marg2 = sqrt(1-arg*arg);
-  T pow_sqrt1marg2_m = 1;
+  T sqrt1marg2 = sqrt(T(1)-arg*arg);
+  T pow_sqrt1marg2_m = T(1);
   for(int m = 0; m <= max_m; m++) {
     for(int n = 0; n <= max_n; n++) {
       if(n-m < 0) {
-        result(m, n) = NAN;
+        result(m, n) = T(NAN);
         continue;
       }
       result(m, n) = pow_sqrt1marg2_m * p(m, n-m)/sqrt((2*n+1)/2.);
@@ -137,7 +137,7 @@ public:
     Vec<3, T> pos_ecef = quat_from_rotvec(-w_E * t).cast<T>() * pos_eci;
     double t_year = (t - 1262322000)/(365.25*86400) + 2010;
     
-    double a = 6371200;
+    T a = T(6371200);
     T r = pos_ecef.norm();
     std::vector<std::pair<T, T> > cos_sin = compute_cos_sin<T>(
       pos_ecef(0) / hypot(pos_ecef(0), pos_ecef(1)),
@@ -147,30 +147,49 @@ public:
       semi_normalized_associated_legendre<T>(max_m, max_n, pos_ecef(2)/r);
     
     T pow_aoverr_n[max_n+2];
-    pow_aoverr_n[0] = 1;
+    pow_aoverr_n[0] = T(1);
     for(unsigned int i = 1; i < max_n+2; i++) {
-      pow_aoverr_n[i] = pow_aoverr_n[i-1] * (a/r);
+      pow_aoverr_n[i] = pow_aoverr_n[i-1] * T(a/r);
     }
     
-    T res = 0;
+    T res = T(0);
     BOOST_FOREACH(Coeff const &coeff, coeffs) {
       res += a * (
-        (coeff.g + coeff.gdot * (t_year - t0_year)) * cos_sin[coeff.m].first +
-        (coeff.h + coeff.hdot * (t_year - t0_year)) * cos_sin[coeff.m].second
+        T(coeff.g + coeff.gdot * (t_year - t0_year)) * cos_sin[coeff.m].first +
+        T(coeff.h + coeff.hdot * (t_year - t0_year)) * cos_sin[coeff.m].second
       ) * pow_aoverr_n[coeff.n+1] * p(coeff.m, coeff.n);
     }
     return res*1e-9; // convert nT to T
   }
   
-  Vec<3> getField(Vec<3> pos_eci, double t) const {
-    typedef Eigen::AutoDiffScalar<Vec<3> > ScalarWithGradient;
+  template<typename T>
+  Vec<3, T> getField(Vec<3, T> pos_eci, double t) const {
+    typedef Eigen::AutoDiffScalar<Vec<3, T> > ScalarWithGradient;
     ScalarWithGradient x = getPotential<ScalarWithGradient>(
-      Eigen::Matrix<ScalarWithGradient, 3, 1>(
-        ScalarWithGradient(pos_eci(0), 3, 0),
-        ScalarWithGradient(pos_eci(1), 3, 1),
-        ScalarWithGradient(pos_eci(2), 3, 2)),
+      Vec<3, ScalarWithGradient>(
+        ScalarWithGradient(pos_eci(0), Vec<3, T>(1, 0, 0)),
+        ScalarWithGradient(pos_eci(1), Vec<3, T>(0, 1, 0)),
+        ScalarWithGradient(pos_eci(2), Vec<3, T>(0, 0, 1))),
       t);
     return -x.derivatives();
+  }
+  
+  std::pair<Vec<3>, SqMat<3> > getFieldAndJacobian(Vec<3> pos_eci, double t) const {
+    typedef Eigen::AutoDiffScalar<Vec<3> > ScalarWithGradient;
+    typedef Vec<3, ScalarWithGradient> VectorWithJacobian;
+    VectorWithJacobian x = getField<ScalarWithGradient>(
+      VectorWithJacobian(
+        ScalarWithGradient(pos_eci(0), Vec<3>(1, 0, 0)),
+        ScalarWithGradient(pos_eci(1), Vec<3>(0, 1, 0)),
+        ScalarWithGradient(pos_eci(2), Vec<3>(0, 0, 1))),
+      t);
+    Vec<3> y;
+    SqMat<3> res;
+    for(int i = 0; i < 3; i++) {
+      y(i) = x(i).value();
+      res.row(i) = x(i).derivatives();
+    }
+    return std::make_pair(y, res);
   }
 };
 
