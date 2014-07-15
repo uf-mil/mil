@@ -162,14 +162,13 @@ public:
     return res*1e-9; // convert nT to T
   }
   
-  template<typename T>
-  Vec<3, T> getField(Vec<3, T> pos_eci, double t) const {
-    typedef Eigen::AutoDiffScalar<Vec<3, T> > ScalarWithGradient;
+  Vec<3> getField(Vec<3> pos_eci, double t) const {
+    typedef Eigen::AutoDiffScalar<Vec<3> > ScalarWithGradient;
     ScalarWithGradient x = getPotential<ScalarWithGradient>(
       Vec<3, ScalarWithGradient>(
-        ScalarWithGradient(pos_eci(0), Vec<3, T>(1, 0, 0)),
-        ScalarWithGradient(pos_eci(1), Vec<3, T>(0, 1, 0)),
-        ScalarWithGradient(pos_eci(2), Vec<3, T>(0, 0, 1))),
+        ScalarWithGradient(pos_eci(0), Vec<3>(1, 0, 0)),
+        ScalarWithGradient(pos_eci(1), Vec<3>(0, 1, 0)),
+        ScalarWithGradient(pos_eci(2), Vec<3>(0, 0, 1))),
       t);
     return -x.derivatives();
   }
@@ -177,17 +176,27 @@ public:
   std::pair<Vec<3>, SqMat<3> > getFieldAndJacobian(Vec<3> pos_eci, double t) const {
     typedef Eigen::AutoDiffScalar<Vec<3> > ScalarWithGradient;
     typedef Vec<3, ScalarWithGradient> VectorWithJacobian;
-    VectorWithJacobian x = getField<ScalarWithGradient>(
-      VectorWithJacobian(
-        ScalarWithGradient(pos_eci(0), Vec<3>(1, 0, 0)),
-        ScalarWithGradient(pos_eci(1), Vec<3>(0, 1, 0)),
-        ScalarWithGradient(pos_eci(2), Vec<3>(0, 0, 1))),
+    typedef Eigen::AutoDiffScalar<VectorWithJacobian> ScalarWithHessian;
+    typedef Vec<3, ScalarWithHessian> VectorWithHessian;
+    struct make {
+      static ScalarWithHessian func(double val, int i) {
+        return ScalarWithHessian(ScalarWithGradient(val, 3, i), (VectorWithJacobian() <<
+          ScalarWithGradient(i == 0),
+          ScalarWithGradient(i == 1),
+          ScalarWithGradient(i == 2)).finished());
+      }
+    };
+    ScalarWithHessian x = getPotential<ScalarWithHessian>(
+      VectorWithHessian(
+        make::func(pos_eci(0), 0),
+        make::func(pos_eci(1), 1),
+        make::func(pos_eci(2), 2)),
       t);
     Vec<3> y;
     SqMat<3> res;
     for(int i = 0; i < 3; i++) {
-      y(i) = x(i).value();
-      res.row(i) = x(i).derivatives();
+      y(i) = -x.derivatives()(i).value();
+      res.row(i) = x.derivatives()(i).derivatives();
     }
     return std::make_pair(y, res);
   }
