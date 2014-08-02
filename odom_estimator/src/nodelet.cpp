@@ -423,7 +423,7 @@ class NodeImpl {
           },
           GaussianDistribution<Vec<Dynamic> >(
             Vec<Dynamic>::Zero(good.size()),
-            pow(.01, 2) * Vec<Dynamic>::Ones(good.size()).asDiagonal())),
+            pow(.05, 2) * Vec<Dynamic>::Ones(good.size()).asDiagonal())),
         *state);
     }
     
