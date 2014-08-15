@@ -140,8 +140,8 @@ public:
     T a = T(6371200);
     T r = pos_ecef.norm();
     std::vector<std::pair<T, T> > cos_sin = compute_cos_sin<T>(
-      pos_ecef(0) / hypot(pos_ecef(0), pos_ecef(1)),
-      pos_ecef(1) / hypot(pos_ecef(0), pos_ecef(1)),
+      pos_ecef(0) / Vec<2, T>(pos_ecef(0), pos_ecef(1)).norm(),
+      pos_ecef(1) / Vec<2, T>(pos_ecef(0), pos_ecef(1)).norm(),
       max_m);
     Eigen::Matrix<T, Dynamic, Dynamic> p =
       semi_normalized_associated_legendre<T>(max_m, max_n, pos_ecef(2)/r);

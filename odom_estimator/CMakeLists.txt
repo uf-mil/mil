@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(odom_estimator)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS roscpp pluginlib rawgps_common sensor_msgs eigen_conversions geometry_msgs tf nodelet tf_conversions std_msgs message_generation)
+find_package(catkin REQUIRED COMPONENTS roscpp pluginlib rawgps_common sensor_msgs eigen_conversions geometry_msgs tf nodelet tf_conversions std_msgs message_generation cmake_modules)
 # CATKIN_MIGRATION: removed during catkin migration
 # cmake_minimum_required(VERSION 2.4.6)
 
