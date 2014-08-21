@@ -70,7 +70,7 @@ def cb(msg):
     elif msg.id == 0x88:
         lat, lon, alt, err, t, week, lat_vel, lon_vel, alt_vel, dev, status = struct.unpack('<dddf10shdddfB', msg.data)
         #print 'PVT', math.degrees(lat), math.degrees(lon), alt, err, None, week, lat_vel, lon_vel, alt_vel, dev, status
-        gps_pub.handle_pos_estimate(msg.header.stamp, gps.ecef_from_latlongheight(lat, lon, alt))
+        #gps_pub.handle_pos_estimate(msg.header.stamp, gps.ecef_from_latlongheight(lat, lon, alt))
     elif msg.id == 0xf6:
         x, y, z, x_err, y_err, z_err, flags = struct.unpack('<ddddddB', msg.data)
         #print 'GCA', x, y, z, x_err, y_err, z_err, flags

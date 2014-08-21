@@ -71,8 +71,8 @@ class Handlers(object):
     
     def rcv_state(self, data, stamp):
         iod, navigation_state, wn, tow, ecef_x, ecef_y, ecef_z, ecef_dx, ecef_dy, ecef_dz, clock_bias, clock_drift, gdop, pdop, hdop, vdop, tdop = struct.unpack('>BBHddddfffdffffff', data)
-        if navigation_state >= 0x02: # require at least a 2D fix
-            self.gps_pub.handle_pos_estimate(stamp, numpy.array([ecef_x, ecef_y, ecef_z]))
+        #if navigation_state >= 0x02: # require at least a 2D fix
+        #    self.gps_pub.handle_pos_estimate(stamp, numpy.array([ecef_x, ecef_y, ecef_z]))
     
     def subframe(self, data, stamp):
         PRN, SFID, subframe_data = struct.unpack('>BB30s', data)

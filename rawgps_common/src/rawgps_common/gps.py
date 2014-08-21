@@ -16,6 +16,8 @@ from std_msgs.msg import Header
 from rawgps_common.msg import Satellite, Measurements
 import bitstream
 
+xyz_array = lambda o: numpy.array([o.x, o.y, o.z])
+
 deriv = lambda f, x: (f(x+.1)-f(x-.1))/.2
 
 inf = 1e1000; assert math.isinf(inf)
@@ -409,7 +411,6 @@ class GPSPublisher(object):
         
         self.ephemeris_data = {} # prn -> (iode -> [frame*3])
         self.ephemerises = {}
-        self.last_position = None
         
         home = os.path.expanduser('~')
         if home == '~': raise AssertionError("home path expansion didn't work")
@@ -423,6 +424,8 @@ class GPSPublisher(object):
         
         self.pub = rospy.Publisher('gps', Measurements)
         self.pos_pub = rospy.Publisher('gps_pos', PointStamped)
+        
+        self._last_pos = None
     
     def _set_ionospheric_model(self, ionospheric_model):
         self.ionospheric_model = ionospheric_model
@@ -435,17 +438,39 @@ class GPSPublisher(object):
                 b=self.ionospheric_model.b,
             ), f)
     
-    def handle_pos_estimate(self, stamp, pos_estimate):
-        self.last_position = pos_estimate
-        self.pos_pub.publish(PointStamped(
-            header=Header(
-                stamp=stamp,
-                frame_id='/ecef',
-            ),
-            point=Point(*pos_estimate),
-        ))
-    
     def handle_raw_measurements(self, stamp, gps_time, sats, sync=nan):
+        satellites = []
+        for sat in sats:
+            #print sat['prn'], sat['cn0'], sat['pseudo_range'], sat['carrier_cycles'], sat['doppler_freq']
+            
+            if sat['prn'] not in self.ephemerises:
+                #print 'no ephemeris, dropping', sat['prn']
+                continue
+            eph = self.ephemerises[sat['prn']]
+            if not eph.is_healthy():
+                #print 'unhealthy, dropping', sat['prn']
+                continue
+            
+            sat_msg = generate_satellite_message(
+                sat['prn'], eph, sat['cn0'], gps_time,
+                sat['pseudo_range'], sat['carrier_cycles'], sat['doppler_freq'],
+                self._last_pos, self.ionospheric_model)
+            if sat_msg is not None:
+                satellites.append(sat_msg)
+        
+        if len(satellites) >= 4:
+            pos_estimate = estimate_pos(satellites, use_corrections=self._last_pos is not None)
+            self.pos_pub.publish(PointStamped(
+                header=Header(
+                    stamp=stamp,
+                    frame_id='/ecef',
+                ),
+                point=Point(*pos_estimate),
+            ))
+        else:
+            pos_estimate = None
+        self._last_pos = pos_estimate
+        
         satellites = []
         for sat in sats:
             print sat['prn'], sat['cn0'], sat['pseudo_range'], sat['carrier_cycles'], sat['doppler_freq']
@@ -461,7 +486,7 @@ class GPSPublisher(object):
             sat_msg = generate_satellite_message(
                 sat['prn'], eph, sat['cn0'], gps_time,
                 sat['pseudo_range'], sat['carrier_cycles'], sat['doppler_freq'],
-                self.last_position, self.ionospheric_model)
+                pos_estimate, self.ionospheric_model)
             if sat_msg is not None:
                 satellites.append(sat_msg)
         
@@ -509,21 +534,23 @@ def generate_satellite_message(prn, eph, cn0, gps_t, pseudo_range, carrier_cycle
             sat_pos, deltat_r = eph.predict_pos_deltat_r(t)
     
     if approximate_receiver_position is None:
-        return None
-    
-    direction = sat_pos - approximate_receiver_position; direction /= numpy.linalg.norm(direction)
-    direction_enu = enu_from_ecef(direction, approximate_receiver_position)
-    T_iono = ionospheric_model.evaluate(approximate_receiver_position,
-        sat_pos, gps_t) if ionospheric_model is not None else nan
-    T_tropo = tropospheric_model(approximate_receiver_position, sat_pos)/c
-    
-    
-    sat_pos_enu = enu_from_ecef(sat_pos - approximate_receiver_position, approximate_receiver_position)
-    sat_dir_enu = sat_pos_enu / numpy.linalg.norm(sat_pos_enu)
-    
-    E = math.asin(sat_dir_enu[2])
-    if E < math.radians(5):
-        return None
+        direction = direction_enu = numpy.array([nan, nan, nan])
+        T_iono = nan
+        T_tropo = nan
+    else:
+        direction = sat_pos - approximate_receiver_position; direction /= numpy.linalg.norm(direction)
+        direction_enu = enu_from_ecef(direction, approximate_receiver_position)
+        T_iono = ionospheric_model.evaluate(approximate_receiver_position,
+            sat_pos, gps_t) if ionospheric_model is not None else nan
+        T_tropo = tropospheric_model(approximate_receiver_position, sat_pos)/c
+        
+        
+        sat_pos_enu = enu_from_ecef(sat_pos - approximate_receiver_position, approximate_receiver_position)
+        sat_dir_enu = sat_pos_enu / numpy.linalg.norm(sat_pos_enu)
+        
+        E = math.asin(sat_dir_enu[2])
+        if E < math.radians(5):
+            return None
     
     return Satellite(
         prn=prn,
@@ -539,6 +566,62 @@ def generate_satellite_message(prn, eph, cn0, gps_t, pseudo_range, carrier_cycle
         direction_enu=Vector3(*direction_enu),
         velocity_plus_drift=doppler_freq*c/L1_f0 + direction.dot(sat_vel) if doppler_freq is not None else nan,
     )
+
+
+    
+def estimate_pos(sats, use_corrections):
+    def mean(xs):
+        xs = list(xs)
+        return sum(xs)/len(xs)
+    
+    def jacobian(f, x):
+        x = numpy.array(x)
+        c = numpy.array(f(x))
+        return numpy.array([(f(x+[1 if j == i else 0 for j in xrange(len(x))]) - c)/1 for i in xrange(len(x))]).T
+    
+    def find_minimum(x0, residuals):
+        #print 'x0', x0
+        x = x0
+        for i in xrange(10):
+            r = residuals(x)
+            #print 'r', r
+            #print sum(r)
+            print '|r|', numpy.linalg.norm(r)/math.sqrt(len(r)), use_corrections
+            J = jacobian(residuals, x)
+            #print 'J', J
+            try:
+                x = x - numpy.linalg.inv(J.T.dot(J)).dot(J.T).dot(r)
+            except:
+                numpy.set_printoptions(threshold=numpy.nan)
+                print repr(sats), use_corrections
+                print 'J =', J
+                raise
+            #lat, lon, height = latlongheight_from_ecef(x[:3])
+            #print 'x', x, '=', math.degrees(lat), math.degrees(lon), height
+        return x
+    
+    def residuals(x):
+        assert len(x) == 4
+        pos = x[0:3]
+        t = x[3]
+        
+        import glonass # for inertial_from_ecef
+        #for sat in sats:
+        #    print sat.prn, (sat.T_iono + sat.T_tropo if use_corrections else 0)*c
+        return [
+            numpy.linalg.norm(
+                glonass.inertial_from_ecef(t, pos) -
+                glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
+            ) - (t - sat.time - (sat.T_iono + sat.T_tropo if use_corrections else 0))*c
+        for sat in sats]
+    x = find_minimum([0, 0, 0,
+        mean(sat.time + numpy.linalg.norm(xyz_array(sat.position))/c for sat in sats),
+        #0,
+    ], residuals)
+    pos = x[:3]
+    t = x[3]
+    
+    return pos
 
 if __name__ == '__main__':
     station_pos = ecef_from_latlongheight(math.radians(40), -math.radians(100), 0)

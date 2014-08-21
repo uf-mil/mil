@@ -77,7 +77,7 @@ def cb(msg):
 #print gps.ecef_from_latlongheight(math.radians(29.636597),math.radians(-82.358356),0)
 # [  737793.47470689 -5499013.87053299  3135423.99413285]
 
-rospy.Subscriber('/nv08c/gps', Measurements, cb)
+rospy.Subscriber('gps', Measurements, cb)
 
 rospy.spin()
 
