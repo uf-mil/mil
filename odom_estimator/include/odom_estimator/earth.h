@@ -3,7 +3,7 @@
 
 #include <Eigen/Geometry>
 
-#include <odom_estimator/gravity.h>
+#include "odom_estimator/gravity.h"
 
 namespace odom_estimator {
 

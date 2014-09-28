@@ -11,8 +11,8 @@
 
 #include <ros/package.h>
 
-#include <odom_estimator/util.h>
-#include <odom_estimator/earth.h>
+#include "odom_estimator/util.h"
+#include "odom_estimator/earth.h"
 
 
 namespace odom_estimator {

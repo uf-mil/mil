@@ -1,8 +1,6 @@
 #ifndef GUARD_UIBAPTOZSJJMTCMG
 #define GUARD_UIBAPTOZSJJMTCMG
 
-#include <odom_estimator/util.h>
-
 #include <boost/preprocessor/seq/fold_right.hpp>
 #include <boost/fusion/adapted/struct/define_struct.hpp>
 #include <boost/preprocessor/seq/for_each_product.hpp>
@@ -10,6 +8,8 @@
 #include <boost/preprocessor/seq/push_back.hpp>
 #include <boost/preprocessor/seq/pop_back.hpp>
 #include <boost/math/constants/constants.hpp>
+
+#include "odom_estimator/util.h"
 
 namespace odom_estimator {
 

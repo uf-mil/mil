@@ -5,8 +5,8 @@
 #include <boost/function.hpp>
 #include <boost/optional.hpp>
 
-#include <odom_estimator/util.h>
-#include <odom_estimator/manifold.h>
+#include "odom_estimator/util.h"
+#include "odom_estimator/manifold.h"
 
 namespace odom_estimator {
 
