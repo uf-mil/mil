@@ -288,10 +288,10 @@ class NodeImpl {
         cov = stddev.cwiseProduct(stddev).asDiagonal();
       }
       
+      Vec<3> mag_eci = magnetic_model.getField(state->mean.pos_eci, state->mean.t.toSec());
       state = kalman_update(
         EasyDistributionFunction<State, Vec<3>, Vec<3> >(
-          [&msg, this](State const &state, Vec<3> const &measurement_noise) {
-            Vec<3> mag_eci = magnetic_model.getField(state.pos_eci, state.t.toSec());
+          [&msg, &mag_eci, this](State const &state, Vec<3> const &measurement_noise) {
             Vec<3> predicted = state.orient.conjugate()._transformVector(mag_eci) + measurement_noise;
             return predicted - xyz2vec(msg.magnetic_field);
           },
