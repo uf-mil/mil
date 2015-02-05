@@ -81,7 +81,7 @@ unscented_transform(boost::function<OutPointType(InPointType)> const &func,
     Vec<OutVecLen>::Zero(out_vec_len, 1);
   for(unsigned int i = 0; i <= 2*L; i++) {
     double W_s = i == 0 ? lambda/(L + lambda) : 1./2/(L+lambda);
-    out_mean_minus_out_points_0 += W_s * (*out_points[i] - *out_points[0]);
+    out_mean_minus_out_points_0.noalias() += W_s * (*out_points[i] - *out_points[0]);
   }
   OutPointType out_mean = *out_points[0] + out_mean_minus_out_points_0;
   
@@ -93,8 +93,8 @@ unscented_transform(boost::function<OutPointType(InPointType)> const &func,
     double W_c = i == 0 ?
       lambda/(L + lambda) + (1 - pow(alpha, 2) + beta) : 1./2/(L+lambda);
     Vec<OutVecLen> dx = *out_points[i] - out_mean;
-    out_cov += W_c * dx * dx.transpose();
-    out_cross_cov += W_c * dx * in_vecs[i].transpose();
+    out_cov.noalias() += W_c * dx * dx.transpose();
+    out_cross_cov.noalias() += W_c * dx * in_vecs[i].transpose();
   }
   
   return GaussianDistributionWithCrossCov<OutPointType, InPointType>(
