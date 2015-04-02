@@ -67,7 +67,7 @@ add_dependencies(nv08c_driver_nodelet ${PROJECT_NAME}_generate_messages_cpp)
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
-set_target_properties(nv08c_driver_nodelet PROPERTIES COMPILE_FLAGS -std=c++0x)
+set_target_properties(nv08c_driver_nodelet PROPERTIES COMPILE_FLAGS "-std=c++0x -Wall")
 
 
 install(PROGRAMS scripts/dump DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

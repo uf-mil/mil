@@ -1,4 +1,6 @@
 class BitStream(object):
+    # reads MSB of each byte first
+    
     def __init__(self, bytes):
         self.bytes = bytes
         self.bit_pos = 0

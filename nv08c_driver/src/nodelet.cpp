@@ -13,28 +13,6 @@
 
 namespace nv08c_driver {
     
-    class PersistentPacketPattern {
-        private:
-            uint8_t id;
-            std::vector<uint8_t> data_prefix;
-            uint8_t data_key_length;
-        public:
-            PersistentPacketPattern(uint8_t id, std::vector<uint8_t> data_prefix, uint8_t data_key_length) :
-                id(id), data_prefix(data_prefix), data_key_length(data_key_length) { }
-            boost::optional<std::vector<uint8_t> > matches(Packet packet) const {
-                if(packet.id != id) return boost::none;
-                if(packet.data.size() < data_prefix.size() + data_key_length) return boost::none;
-                for(unsigned int i = 0; i < data_prefix.size(); i++)
-                    if(packet.data[i] != data_prefix[i]) return boost::none;
-                std::vector<uint8_t> key;
-                key.push_back(id);
-                key.insert(key.end(), data_prefix.begin(), data_prefix.end());
-                for(unsigned int i = data_prefix.size(); i < data_prefix.size() + data_key_length; i++)
-                    key.push_back(packet.data[i]);
-                return key;
-            }
-    };
-    
     class Nodelet : public nodelet::Nodelet {
         public:
             Nodelet() {}
@@ -47,12 +25,13 @@ namespace nv08c_driver {
             }
             
             virtual void onInit() {
-                persistent_patterns.push_back(PersistentPacketPattern(0x4A, std::vector<uint8_t>({}), 0)); // Ionosphere Parameters
-                persistent_patterns.push_back(PersistentPacketPattern(0x4B, std::vector<uint8_t>({}), 0)); // GPS, GLONASS and UTC Time Scales Parameters
-                persistent_patterns.push_back(PersistentPacketPattern(0x70, std::vector<uint8_t>({}), 0)); // Software Version
-                persistent_patterns.push_back(PersistentPacketPattern(0xF6, std::vector<uint8_t>({}), 0)); // Geocentric Coordinates of Antenna
-                persistent_patterns.push_back(PersistentPacketPattern(0xF7, std::vector<uint8_t>({1}), 1)); // Ephemeris for GPS satellite
-                persistent_patterns.push_back(PersistentPacketPattern(0xF7, std::vector<uint8_t>({2}), 2)); // Ephemeris for GLONASS satellite
+                persistent_patterns.push_back([](Packet p) -> boost::optional<std::vector<uint8_t> > { if(p.id == 0x4A) return std::vector<uint8_t>{p.id}; return boost::none; }); // Ionosphere Parameters
+                persistent_patterns.push_back([](Packet p) -> boost::optional<std::vector<uint8_t> > { if(p.id == 0x4B) return std::vector<uint8_t>{p.id}; return boost::none; }); // GPS, GLONASS and UTC Time Scales Parameters
+                persistent_patterns.push_back([](Packet p) -> boost::optional<std::vector<uint8_t> > { if(p.id == 0x70) return std::vector<uint8_t>{p.id}; return boost::none; }); // Software Version
+                persistent_patterns.push_back([](Packet p) -> boost::optional<std::vector<uint8_t> > { if(p.id == 0xF6) return std::vector<uint8_t>{p.id}; return boost::none; }); // Geocentric Coordinates of Antenna
+                persistent_patterns.push_back([](Packet p) -> boost::optional<std::vector<uint8_t> > { if(p.id == 0xF7 && p.data.size() >= 2 && p.data[0] == 1) return std::vector<uint8_t>{p.id, 0, p.data[1]}; return boost::none; }); // Ephemeris for GPS satellite
+                persistent_patterns.push_back([](Packet p) -> boost::optional<std::vector<uint8_t> > { if(p.id == 0xF7 && p.data.size() >= 3 && p.data[0] == 2) return std::vector<uint8_t>{p.id, 1, p.data[1], p.data[2]}; return boost::none; }); // Ephemeris for GLONASS satellite
+                persistent_patterns.push_back([](Packet p) -> boost::optional<std::vector<uint8_t> > { if(p.id == 0xE5 && p.data.size() >= 8 && p.data[0] == 1 && p.data[2] == 2) return std::vector<uint8_t>{p.id, p.data[3], p.data[8+6]&0b111}; return boost::none; }); // bit information
                 
                 std::string port; if(!getPrivateNodeHandle().getParam("port", port)) {
                     throw std::runtime_error("param port required");
@@ -73,6 +52,39 @@ namespace nv08c_driver {
                 device->send_heartbeat();
             }
             
+            void handle_packet(std::pair<uint8_t, std::vector<uint8_t> > const & packet_data) {
+                nv08c_driver::Packet packet;
+                packet.header.stamp = ros::Time::now();
+                packet.id = packet_data.first;
+                packet.data = packet_data.second;
+                
+                std::cout << "received packet. ID: " << (int)packet.id << std::endl;
+                bool was_persistent = false;
+                BOOST_FOREACH(const std::function<boost::optional<std::vector<uint8_t> >(Packet)> &pattern, persistent_patterns) {
+                    boost::optional<std::vector<uint8_t> > match_res = pattern(packet);
+                    //std::cout << "    match " << &pattern - persistent_patterns.data() << " " << static_cast<bool>(match_res) << std::endl;
+                    if(match_res) {
+                        std::cout << "received match: " << (int)packet_data.first << std::endl;
+                        persistent_packets[*match_res] = packet;
+                        
+                        nv08c_driver::PacketSet packet_set;
+                        BOOST_FOREACH(const Packet &other_packet, persistent_packets | boost::adaptors::map_values)
+                            packet_set.packets.push_back(other_packet);
+                        latch_pub.publish(packet_set);
+                        
+                        was_persistent = true;
+                        break;
+                    }
+                }
+                if(was_persistent) {
+                    return;
+                }
+                
+                //std::cout << "received: " << (int)packet_data.first << " not persistant" << std::endl;
+                // not a persistent message
+                pub.publish(packet);
+            }
+            
             void polling_thread() {
                 while(running) {
                     boost::optional<std::pair<uint8_t, std::vector<uint8_t> > > packet_data =
@@ -80,40 +92,40 @@ namespace nv08c_driver {
                     if(!packet_data)
                         continue;
                     
-                    nv08c_driver::Packet packet;
-                    packet.header.stamp = ros::Time::now();
-                    packet.id = packet_data->first;
-                    packet.data = packet_data->second;
-                    
-                    std::cout << "received packet. ID: " << (int)packet.id << std::endl;
-                    bool was_persistent = false;
-                    BOOST_FOREACH(const PersistentPacketPattern &pattern, persistent_patterns) {
-                        boost::optional<std::vector<uint8_t> > match_res = pattern.matches(packet);
-                        std::cout << "    match " << &pattern - persistent_patterns.data() << " " << static_cast<bool>(match_res) << std::endl;
-                        if(match_res) {
-                            std::cout << "received match: " << (int)packet_data->first << std::endl;
-                            persistent_packets[*match_res] = packet;
-                            
-                            nv08c_driver::PacketSet packet_set;
-                            BOOST_FOREACH(const Packet &other_packet, persistent_packets | boost::adaptors::map_values)
-                                packet_set.packets.push_back(other_packet);
-                            latch_pub.publish(packet_set);
-                            
-                            was_persistent = true;
-                            break;
+                    // split up bit information packets so they can be correctly cached
+                    if(packet_data->first == 0xE5 && packet_data->second.size() >= 1) {
+                        unsigned int pos = 1;
+                        for(unsigned int i = 0; i < packet_data->second[0]; i++) {
+                            unsigned int start = pos;
+                            if(packet_data->second.size() < pos + 7) { std::cout << "early end" << std::endl; break; }
+                            unsigned int type = packet_data->second[pos + 1]; pos += 7;
+                            unsigned int length;
+                            if(type == 1) length = 12;
+                            else if(type == 2) length = 40;
+                            else if(type == 4) length = 32;
+                            else {
+                                std::cout << "unknown SNS type in bit information packet" << std::endl;
+                                break;
+                            }
+                            if(packet_data->second.size() < pos + length) { std::cout << "early end" << std::endl; break; }
+                            pos += length;
+                            std::pair<uint8_t, std::vector<uint8_t> > p2;
+                            p2.first = 0xE5;
+                            p2.second.resize(1 + 7 + length);
+                            p2.second[0] = 1;
+                            for(unsigned int j = 0; j < 7 + length; j++) {
+                                p2.second[1 + j] = packet_data->second[start + j];
+                            }
+                            handle_packet(p2);
                         }
+                        if(pos != packet_data->second.size()) { std::cout << "late end" << std::endl; break; }
+                    } else {
+                        handle_packet(*packet_data);
                     }
-                    if(was_persistent) {
-                        continue;
-                    }
-                    
-                    //std::cout << "received: " << (int)packet_data->first << " not persistant" << std::endl;
-                    // not a persistent message
-                    pub.publish(packet);
                 }
             }
             
-            std::vector<PersistentPacketPattern> persistent_patterns;
+            std::vector<std::function<boost::optional<std::vector<uint8_t> >(Packet)> > persistent_patterns;
             std::map<std::vector<uint8_t>, nv08c_driver::Packet> persistent_packets;
             ros::Publisher pub;
             ros::Publisher latch_pub;
