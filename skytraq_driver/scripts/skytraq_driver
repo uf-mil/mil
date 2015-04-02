@@ -107,10 +107,14 @@ class GPS(protocol.Protocol):
         self.send.configure_output_message_format('\x02\x00')
         yield sleep(.3)
         
-        self.send.configure_binary_measurement_output_rates('\x05\x01\x01\x01\x01\x01\x00')
+        self.send.configure_binary_measurement_output_rates('\x04\x01\x01\x01\x01\x01\x00')
         yield sleep(.3)
         
         self.send.get_ephemeris('\x00')
+        yield sleep(.3)
+        
+        # for S1315F8-RAW
+        self.send_raw('1e04010101010f00'.decode('hex'))
         yield sleep(.3)
         
         self.last_message = reactor.seconds()
