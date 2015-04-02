@@ -582,7 +582,7 @@ def estimate_pos(sats, use_corrections):
     def find_minimum(x0, residuals):
         #print 'x0', x0
         x = x0
-        for i in xrange(10):
+        for i in xrange(6):
             r = residuals(x)
             #print 'r', r
             #print sum(r)
