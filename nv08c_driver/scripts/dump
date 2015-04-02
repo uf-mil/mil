@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from __future__ import division
+
 import math
 import struct
 
@@ -59,7 +61,7 @@ def cb(msg):
                 sats.append(dict(
                     prn=sat_num,
                     cn0=snr,
-                    pseudo_range=pseudo_range,
+                    pseudo_range=pseudo_range * 1e-3 * gps.c if pseudo_range is not None else None,
                     carrier_cycles=carrier_phase,
                     doppler_freq=doppler_freq,
                 ))
