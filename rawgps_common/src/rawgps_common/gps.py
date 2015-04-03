@@ -495,7 +495,10 @@ class GPSPublisher(object):
                 stamp=stamp,
                 frame_id=self.frame_id,
             ),
-            sync=sync,
+            sync_WN=gps_time.WN,
+            sync=gps_time.TOW,
+            position=Point(*pos_estimate if pos_estimate is not None else (0, 0, 0)),
+            position_valid=pos_estimate is not None,
             satellites=satellites,
         ))
         print
@@ -569,7 +572,7 @@ def generate_satellite_message(prn, eph, cn0, gps_t, pseudo_range, carrier_cycle
 
 
     
-def estimate_pos(sats, use_corrections):
+def estimate_pos(sats, use_corrections, quiet=False):
     def mean(xs):
         xs = list(xs)
         return sum(xs)/len(xs)
@@ -586,7 +589,7 @@ def estimate_pos(sats, use_corrections):
             r = residuals(x)
             #print 'r', r
             #print sum(r)
-            print '|r|', numpy.linalg.norm(r)/math.sqrt(len(r)), use_corrections
+            if not quiet: print '|r|', numpy.linalg.norm(r)/math.sqrt(len(r)), use_corrections, x
             J = jacobian(residuals, x)
             #print 'J', J
             try:
