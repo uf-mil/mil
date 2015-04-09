@@ -606,7 +606,7 @@ def estimate_pos(sats, use_corrections, quiet=False):
     def residuals(x):
         assert len(x) == 4
         pos = x[0:3]
-        t = x[3]
+        t = x[3]/c
         
         import glonass # for inertial_from_ecef
         #for sat in sats:
@@ -618,7 +618,7 @@ def estimate_pos(sats, use_corrections, quiet=False):
             ) - (t - sat.time - (sat.T_iono + sat.T_tropo if use_corrections else 0))*c
         for sat in sats]
     x = find_minimum([0, 0, 0,
-        mean(sat.time + numpy.linalg.norm(xyz_array(sat.position))/c for sat in sats),
+        mean(sat.time*c + numpy.linalg.norm(xyz_array(sat.position)) for sat in sats),
         #0,
     ], residuals)
     pos = x[:3]
