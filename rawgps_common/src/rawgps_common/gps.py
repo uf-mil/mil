@@ -440,38 +440,7 @@ class GPSPublisher(object):
     
     def handle_raw_measurements(self, stamp, gps_time, sats, sync=nan):
         satellites = []
-        for sat in sats:
-            #print sat['prn'], sat['cn0'], sat['pseudo_range'], sat['carrier_cycles'], sat['doppler_freq']
-            
-            if sat['prn'] not in self.ephemerises:
-                #print 'no ephemeris, dropping', sat['prn']
-                continue
-            eph = self.ephemerises[sat['prn']]
-            if not eph.is_healthy():
-                #print 'unhealthy, dropping', sat['prn']
-                continue
-            
-            sat_msg = generate_satellite_message(
-                sat['prn'], eph, sat['cn0'], gps_time,
-                sat['pseudo_range'], sat['carrier_cycles'], sat['doppler_freq'],
-                self._last_pos, self.ionospheric_model)
-            if sat_msg is not None:
-                satellites.append(sat_msg)
-        
-        if len(satellites) >= 4:
-            pos_estimate = estimate_pos(satellites, use_corrections=self._last_pos is not None)
-            self.pos_pub.publish(PointStamped(
-                header=Header(
-                    stamp=stamp,
-                    frame_id='/ecef',
-                ),
-                point=Point(*pos_estimate),
-            ))
-        else:
-            pos_estimate = None
-        self._last_pos = pos_estimate
-        
-        satellites = []
+        print gps_time
         for sat in sats:
             print sat['prn'], sat['cn0'], sat['pseudo_range'], sat['carrier_cycles'], sat['doppler_freq']
             
@@ -486,9 +455,23 @@ class GPSPublisher(object):
             sat_msg = generate_satellite_message(
                 sat['prn'], eph, sat['cn0'], gps_time,
                 sat['pseudo_range'], sat['carrier_cycles'], sat['doppler_freq'],
-                pos_estimate, self.ionospheric_model)
+                self._last_pos, self.ionospheric_model)
             if sat_msg is not None:
                 satellites.append(sat_msg)
+        
+        if len(satellites) >= 4:
+            pos_estimate = estimate_pos(satellites, use_corrections=self._last_pos is not None,
+                pos_guess=self._last_pos if self._last_pos is not None and numpy.linalg.norm(self._last_pos) < a*1.2 else None)
+            self.pos_pub.publish(PointStamped(
+                header=Header(
+                    stamp=stamp,
+                    frame_id='/ecef',
+                ),
+                point=Point(*pos_estimate),
+            ))
+        else:
+            pos_estimate = None
+        self._last_pos = pos_estimate
         
         self.pub.publish(Measurements(
             header=Header(
@@ -572,28 +555,28 @@ def generate_satellite_message(prn, eph, cn0, gps_t, pseudo_range, carrier_cycle
 
 
     
-def estimate_pos(sats, use_corrections, quiet=False):
+def estimate_pos(sats, use_corrections, quiet=False, pos_guess=None):
+    if pos_guess is None:
+        pos_guess = [0, 0, 0]
+    
     def mean(xs):
         xs = list(xs)
         return sum(xs)/len(xs)
     
-    def jacobian(f, x):
-        x = numpy.array(x)
-        c = numpy.array(f(x))
-        return numpy.array([(f(x+[1 if j == i else 0 for j in xrange(len(x))]) - c)/1 for i in xrange(len(x))]).T
-    
     def find_minimum(x0, residuals):
         #print 'x0', x0
         x = x0
-        for i in xrange(6):
-            r = residuals(x)
+        for i in xrange(2):
+            r, J = residuals(x)
             #print 'r', r
             #print sum(r)
             if not quiet: print '|r|', numpy.linalg.norm(r)/math.sqrt(len(r)), use_corrections, x
-            J = jacobian(residuals, x)
             #print 'J', J
             try:
-                x = x - numpy.linalg.inv(J.T.dot(J)).dot(J.T).dot(r)
+                # dx = (J^T J)^-1 J^T r
+                # (J^T J) dx = J^T r
+                # dx = numpy.linalg.solve(J^T J, J^T r)
+                x = x - numpy.linalg.solve(J.T.dot(J), J.T.dot(r))
             except:
                 numpy.set_printoptions(threshold=numpy.nan)
                 print repr(sats), use_corrections
@@ -616,13 +599,25 @@ def estimate_pos(sats, use_corrections, quiet=False):
                 glonass.inertial_from_ecef(t, pos) -
                 glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
             ) - (t - sat.time - (sat.T_iono + sat.T_tropo if use_corrections else 0))*c
-        for sat in sats]
-    x = find_minimum([0, 0, 0,
-        mean(sat.time*c + numpy.linalg.norm(xyz_array(sat.position)) for sat in sats),
+        for sat in sats], numpy.array([[transformations.unit_vector(
+                glonass.inertial_from_ecef(t, pos) -
+                glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
+            ).dot(glonass.inertial_from_ecef(t, [1, 0, 0])), transformations.unit_vector(
+                glonass.inertial_from_ecef(t, pos) -
+                glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
+            ).dot(glonass.inertial_from_ecef(t, [0, 1, 0])), transformations.unit_vector(
+                glonass.inertial_from_ecef(t, pos) -
+                glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
+            ).dot(glonass.inertial_from_ecef(t, [0, 0, 1])), transformations.unit_vector(
+                glonass.inertial_from_ecef(t, pos) -
+                glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
+            ).dot(glonass.inertial_vel_from_ecef_vel(t, [0, 0, 0], pos))/c-1] for sat in sats])
+    x = find_minimum([pos_guess[0], pos_guess[1], pos_guess[2],
+        mean((sat.time+(sat.T_iono+sat.T_tropo if use_corrections else 0))*c + numpy.linalg.norm(xyz_array(sat.position) - pos_guess) for sat in sats),
         #0,
     ], residuals)
     pos = x[:3]
-    t = x[3]
+    t = x[3]/c
     
     return pos
 
