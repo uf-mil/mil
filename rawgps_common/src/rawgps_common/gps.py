@@ -8,7 +8,6 @@ import functools
 import numpy
 import yaml
 
-import rospy
 from tf import transformations
 from geometry_msgs.msg import Point, Vector3, PointStamped
 from std_msgs.msg import Header
@@ -406,7 +405,7 @@ def tropospheric_model(ground_pos_ecef, sat_pos_ecef): # returns meters
            0.084 / math.sin(math.sqrt(E * E + 0.6854E-3))
 
 class GPSPublisher(object):
-    def __init__(self, frame_id):
+    def __init__(self, frame_id, pub, pos_pub):
         self.frame_id = frame_id
         
         self.ephemeris_data = {} # prn -> (iode -> [frame*3])
@@ -422,8 +421,8 @@ class GPSPublisher(object):
         else:
             self.ionospheric_model = None
         
-        self.pub = rospy.Publisher('gps', Measurements)
-        self.pos_pub = rospy.Publisher('gps_pos', PointStamped)
+        self.pub = pub
+        self.pos_pub = pos_pub
         
         self._last_pos = None
     

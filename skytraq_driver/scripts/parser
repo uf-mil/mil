@@ -19,7 +19,7 @@ from skytraq_driver.msg import Packet, PacketSet
 
 class Handlers(object):
     def __init__(self, frame_id):
-        self.gps_pub = gps.GPSPublisher(frame_id)
+        self.gps_pub = gps.GPSPublisher(frame_id, rospy.Publisher('gps', Measurements), rospy.Publisher('gps_pos', PointStamped))
         self.frame_id = frame_id
         
         self.last_meas_time = None
@@ -54,7 +54,7 @@ class Handlers(object):
             (pseudorange_avail, doppler_freq_avail, acc_carrier_cycle_avail,
                 cycle_slip_possible, integration_time_greater_10ms) = [
                 bool(status & 2**i) for i in xrange(5)]
-            if not pseudorange_avail:
+            if not pseudorange_avail or pseudorange == 0:
                 pseudorange = None
             if not doppler_freq_avail:
                 doppler_freq = None
