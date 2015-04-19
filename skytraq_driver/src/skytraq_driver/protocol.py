@@ -1,3 +1,81 @@
+from __future__ import division
+
+import struct
+import math
+
+import numpy
+
+import rospy
+from std_msgs.msg import Header
+from geometry_msgs.msg import Vector3, PointStamped, Point
+
+from rawgps_common import gps, bitstream
+from rawgps_common.msg import Measurements, Satellite
+from skytraq_driver.msg import Packet, PacketSet
+
+
+class Handlers(object):
+    def __init__(self, frame_id, gps_pub, gps_pos_pub):
+        self.gps_pub = gps.GPSPublisher(frame_id, gps_pub, gps_pos_pub)
+        self.frame_id = frame_id
+        
+        self.last_meas_time = None
+    
+    def gps_ephemeris_data(self, data, stamp):
+        # just ignore this, subframes are received fast enough
+        pass
+    
+    def ack(self, data, stamp):
+        pass
+    
+    def sv_ch_status(self, data, stamp):
+        pass
+    
+    def meas_time(self, data, stamp):
+        IOD, WN, TOW_ms, measurement_period_ms = struct.unpack('>BHIH', data)
+        self.last_meas_time = IOD, gps.Time(WN, TOW_ms*1e-3)
+    
+    def raw_meas(self, data, stamp):
+        iod, nmeas = struct.unpack('>BB', data[0:2])
+        assert len(data) == 2+nmeas*23
+        measurements = [struct.unpack('>BBddfB', data[2+i*23:2+i*23+23])
+            for i in xrange(nmeas)]
+        
+        if self.last_meas_time is None or self.last_meas_time[0] != iod:
+            print "IOD didn't match!"
+            return
+        t = self.last_meas_time[1]
+        
+        sats = []
+        for prn, cn0, pseudorange, acc_carrier_cycle, doppler_freq, status in measurements:
+            (pseudorange_avail, doppler_freq_avail, acc_carrier_cycle_avail,
+                cycle_slip_possible, integration_time_greater_10ms) = [
+                bool(status & 2**i) for i in xrange(5)]
+            if not pseudorange_avail or pseudorange == 0:
+                pseudorange = None
+            if not doppler_freq_avail:
+                doppler_freq = None
+            if not acc_carrier_cycle_avail or cycle_slip_possible:
+                acc_carrier_cycle = None
+            
+            sats.append(dict(
+                prn=prn,
+                cn0=cn0,
+                pseudo_range=pseudorange,
+                carrier_cycles=acc_carrier_cycle,
+                doppler_freq=doppler_freq,
+            ))
+        self.gps_pub.handle_raw_measurements(stamp, t, sats, math.floor(t.TOW*100+.5))
+    
+    def rcv_state(self, data, stamp):
+        iod, navigation_state, wn, tow, ecef_x, ecef_y, ecef_z, ecef_dx, ecef_dy, ecef_dz, clock_bias, clock_drift, gdop, pdop, hdop, vdop, tdop = struct.unpack('>BBHddddfffdffffff', data)
+        #if navigation_state >= 0x02: # require at least a 2D fix
+        #    self.gps_pub.handle_pos_estimate(stamp, numpy.array([ecef_x, ecef_y, ecef_z]))
+    
+    def subframe(self, data, stamp):
+        PRN, SFID, subframe_data = struct.unpack('>BB30s', data)
+        self.gps_pub.handle_subframe(stamp, PRN, subframe_data)
+
 message_ids = dict(
     configure_output_message_format=0x09,
     configure_binary_measurement_output_rates=0x12,
