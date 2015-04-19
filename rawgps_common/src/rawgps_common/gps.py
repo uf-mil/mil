@@ -439,7 +439,38 @@ class GPSPublisher(object):
     
     def handle_raw_measurements(self, stamp, gps_time, sats, sync=nan):
         satellites = []
-        print gps_time
+        for sat in sats:
+            #print sat['prn'], sat['cn0'], sat['pseudo_range'], sat['carrier_cycles'], sat['doppler_freq']
+            
+            if sat['prn'] not in self.ephemerises:
+                #print 'no ephemeris, dropping', sat['prn']
+                continue
+            eph = self.ephemerises[sat['prn']]
+            if not eph.is_healthy():
+                #print 'unhealthy, dropping', sat['prn']
+                continue
+            
+            sat_msg = generate_satellite_message(
+                sat['prn'], eph, sat['cn0'], gps_time,
+                sat['pseudo_range'], sat['carrier_cycles'], sat['doppler_freq'],
+                self._last_pos, self.ionospheric_model)
+            if sat_msg is not None:
+                satellites.append(sat_msg)
+        
+        if len(satellites) >= 4:
+            pos_estimate = estimate_pos(satellites, use_corrections=self._last_pos is not None)
+            self.pos_pub.publish(PointStamped(
+                header=Header(
+                    stamp=stamp,
+                    frame_id='/ecef',
+                ),
+                point=Point(*pos_estimate),
+            ))
+        else:
+            pos_estimate = None
+        self._last_pos = pos_estimate
+        
+        satellites = []
         for sat in sats:
             print sat['prn'], sat['cn0'], sat['pseudo_range'], sat['carrier_cycles'], sat['doppler_freq']
             
@@ -454,23 +485,9 @@ class GPSPublisher(object):
             sat_msg = generate_satellite_message(
                 sat['prn'], eph, sat['cn0'], gps_time,
                 sat['pseudo_range'], sat['carrier_cycles'], sat['doppler_freq'],
-                self._last_pos, self.ionospheric_model)
+                pos_estimate, self.ionospheric_model)
             if sat_msg is not None:
                 satellites.append(sat_msg)
-        
-        if len(satellites) >= 4:
-            pos_estimate = estimate_pos(satellites, use_corrections=self._last_pos is not None,
-                pos_guess=self._last_pos if self._last_pos is not None and numpy.linalg.norm(self._last_pos) < a*1.2 else None)
-            self.pos_pub.publish(PointStamped(
-                header=Header(
-                    stamp=stamp,
-                    frame_id='/ecef',
-                ),
-                point=Point(*pos_estimate),
-            ))
-        else:
-            pos_estimate = None
-        self._last_pos = pos_estimate
         
         self.pub.publish(Measurements(
             header=Header(
@@ -565,7 +582,7 @@ def estimate_pos(sats, use_corrections, quiet=False, pos_guess=None):
     def find_minimum(x0, residuals):
         #print 'x0', x0
         x = x0
-        for i in xrange(2):
+        for i in xrange(6):
             r, J = residuals(x)
             #print 'r', r
             #print sum(r)
