@@ -320,6 +320,7 @@ class NodeImpl {
     }
     
     void got_gps(const rawgps_common::MeasurementsConstPtr &msgp) {
+      if(!have_gps) return;
       rawgps_common::Measurements msg = *msgp;
       
       tf::StampedTransform transform;
