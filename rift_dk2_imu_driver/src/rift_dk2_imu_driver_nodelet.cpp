@@ -190,7 +190,8 @@ class NodeImpl : public Sink {
         imu.angular_velocity.x = sample.gyro[0];
         imu.angular_velocity.y = sample.gyro[1];
         imu.angular_velocity.z = sample.gyro[2];
-        pub.publish(imu);
+        static unsigned int c = 0;
+        if(c++ % 20 == 0) pub.publish(imu);
     }
   
     void handle_mag_sample(MagSample const & sample) {
@@ -200,7 +201,8 @@ class NodeImpl : public Sink {
         imu.magnetic_field.x = sample.mag[0];
         imu.magnetic_field.y = sample.mag[1];
         imu.magnetic_field.z = sample.mag[2];
-        mag_pub.publish(imu);
+        static unsigned int c = 0;
+        if(c++ % 4 == 0) mag_pub.publish(imu);
     }
     
     ~NodeImpl() {

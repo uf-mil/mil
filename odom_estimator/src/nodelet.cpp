@@ -283,11 +283,12 @@ class NodeImpl {
       SqMat<3> cov = Eigen::Map<const SqMat<3> >(msg.magnetic_field_covariance.data());
       if(cov == SqMat<3>::Zero()) {
         Vec<3> stddev(2e-7, 2e-7, 2e-7);
-        stddev *= 100;
+        //stddev *= 100;
         cov = stddev.cwiseProduct(stddev).asDiagonal();
       }
       
       Vec<3> mag_eci = magnetic_model.getField(state->mean.pos_eci, state->mean.t.toSec());
+      std::cout << state->mean.orient.conjugate()._transformVector(mag_eci).transpose() << " -- " << xyz2vec(msg.magnetic_field).transpose();
       state = kalman_update(
         EasyDistributionFunction<State, Vec<3>, Vec<3> >(
           [&msg, &mag_eci, this](State const &state, Vec<3> const &measurement_noise) {
