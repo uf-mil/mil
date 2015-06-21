@@ -35,8 +35,8 @@ ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(State,
   Vec<3> getPosECEF(Vec<3> body_point=Vec<3>::Zero()) const {
     return ecef_from_inertial(t.toSec(), getPosECI(body_point));
   }
-  Vec<3> getRelPosECEF() const {
-    return ecef_from_inertial(t.toSec(), pos_eci) -
+  Vec<3> getRelPosECEF(Vec<3> body_point=Vec<3>::Zero()) const {
+    return ecef_from_inertial(t.toSec(), getPosECI(body_point)) -
       ecef_from_inertial(t_start.toSec(), pos_eci - rel_pos_eci);
   }
   Vec<3> getVelECI(Vec<3> body_point=Vec<3>::Zero(),

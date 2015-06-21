@@ -447,7 +447,7 @@ class NodeImpl {
         EasyDistributionFunction<State, Vec<1>, Vec<1> >(
           [&](State const &state, Vec<1> const &measurement_noise) {
             SqMat<3> m = enu_from_ecef_mat(state.getPosECEF());
-            double estimated = -(m * state.getRelPosECEF())(2) + measurement_noise(0); // XXX doesn't account for local_depth_pos
+            double estimated = -(m * state.getRelPosECEF(local_depth_pos))(2) + measurement_noise(0);
             return scalar_matrix(estimated - msg.data);
           },
           GaussianDistribution<Vec<1> >(
