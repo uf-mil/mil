@@ -26,7 +26,6 @@ ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(State,
   (Vec<3>, vel)
   (Vec<3>, gyro_bias)
   (Vec<3>, accel_bias)
-  (WrappedScalar, local_g)
   (WrappedScalar, ground_air_pressure)
   (Vec<Dynamic>, gps_bias)
 )
@@ -117,7 +116,6 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
       state.vel + dt * accel_world,
       state.gyro_bias + sqrt(dt) * extra.gyro_bias_noise,
       state.accel_bias + sqrt(dt) * extra.accel_bias_noise,
-      state.local_g,
       state.ground_air_pressure + sqrt(dt) * extra.ground_air_pressure_noise,
       state.gps_bias);
   }

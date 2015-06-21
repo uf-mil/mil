@@ -55,8 +55,8 @@ GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
     accel_body, last_mag);
   
   Vec<State::RowsAtCompileTime> stdev =
-    (Vec<State::RowsAtCompileTime>(20) <<
-    100,100,100, 0,0,0, .05,.05,.05, 10,10,10, 1e-3,1e-3,1e-3, 1e-2,1e-2,1e-2, 0.1, 1e3).finished();
+    (Vec<State::RowsAtCompileTime>(19) <<
+    100,100,100, 0,0,0, .05,.05,.05, 10,10,10, 1e-3,1e-3,1e-3, 1e-2,1e-2,1e-2, 1e3).finished();
   SqMat<State::RowsAtCompileTime> tmp =
     stdev.asDiagonal();
   
@@ -70,7 +70,6 @@ GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
       vel_eci,
       Vec<3>::Zero(),
       Vec<3>::Zero(),
-      9.80665,
       101325,
       Vec<Dynamic>::Zero(0)),
     tmp*tmp);
