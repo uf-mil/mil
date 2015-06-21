@@ -289,10 +289,19 @@ class NodeImpl {
       
       Vec<3> mag_eci = magnetic_model.getField(state->mean.pos_eci, state->mean.t.toSec());
       state = kalman_update(
-        EasyDistributionFunction<State, Vec<3>, Vec<3> >(
+        EasyDistributionFunction<State, Vec<1>, Vec<3> >(
           [&msg, &mag_eci, this](State const &state, Vec<3> const &measurement_noise) {
+            SqMat<3> enu_from_ecef = enu_from_ecef_mat(state.getPosECEF());
             Vec<3> predicted = state.orient.conjugate()._transformVector(mag_eci) + measurement_noise;
-            return predicted - xyz2vec(msg.magnetic_field);
+            Vec<3> predicted_enu = enu_from_ecef * state.getOrientECEF()._transformVector(predicted);
+            double predicted_angle = atan2(predicted_enu(1), predicted_enu(0));
+            Vec<3> measured_enu = enu_from_ecef * state.getOrientECEF()._transformVector(xyz2vec(msg.magnetic_field));
+            double measured_angle = atan2(measured_enu(1), measured_enu(0));
+            double error_angle = measured_angle - predicted_angle;
+            double pi = boost::math::constants::pi<double>();
+            while(error_angle < -pi) error_angle += 2*pi;
+            while(error_angle > pi) error_angle -= 2*pi;
+            return scalar_matrix(error_angle);
           },
           GaussianDistribution<Vec<3> >(Vec<3>::Zero(), cov)),
         *state);

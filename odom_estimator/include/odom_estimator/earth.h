@@ -44,17 +44,38 @@ Vec<3> ecef_acc_from_inertial_acc(double t, Vec<3> eci_acc, Vec<3> eci_pos) {
 
 
 SqMat<3> enu_from_ecef_mat(Vec<3> zero_pos_ecef) {
-  // FIXME this should use the perpendicular to the ellipsoid instead of the
-  // local gravity vector to be true ENU
+  double x = zero_pos_ecef(0), y = zero_pos_ecef(1), z = zero_pos_ecef(2);
   
-  double t = 0; // gravity model doesn't vary with time or longitude (for now), so time doesn't matter
-  Vec<3> zero_pos_eci = inertial_from_ecef(t, zero_pos_ecef);
-  Vec<3> grav_at_zero_pos_eci = gravity::gravity(zero_pos_eci);
-  Vec<3> grav_at_zero_pos_ecef = ecef_acc_from_inertial_acc(t, grav_at_zero_pos_eci, zero_pos_eci);
+  // WGS 84
+  double a = 6378137.0;
+  double f = 1/298.257223563;
+
+  double e = sqrt(2*f - f*f);
+  double b = a*(1 - f);
   
-  Vec<3> up_ecef = -grav_at_zero_pos_ecef.normalized();
-  Vec<3> east_ecef = Vec<3>(0, 0, 1).cross(up_ecef).normalized();
-  Vec<3> north_ecef = up_ecef.cross(east_ecef);
+  // Ferrari's solution
+  double zeta = (1 - (e*e)) * (z*z) / (a*a);
+  double p = sqrt((x*x) + (y*y));
+  double rho = ((p*p) / (a*a) + zeta - (e*e*e*e)) / 6;
+  double s = (e*e*e*e) * zeta * (p*p) / (4 * (a*a));
+  double t = cbrt((rho*rho*rho*rho) + s + sqrt(s * (s + 2*(rho*rho*rho*rho))));
+  double u = rho + t + (rho*rho) / t;
+  double v = sqrt((u*u) + (e*e*e*e) * zeta);
+  double w = (e*e) * (u + v - zeta) / (2 * v);
+  double k = 1 + (e*e)*(sqrt(u + v + (w*w)) + w) / (u + v);
+  double k0_inv = 1 - (e*e);
+  double h = 1/(e*e)*(1/k-k0_inv)*sqrt((p*p) + (z*z)*(k*k));
+  double tan_lat = z*k/p;
+  
+  double sin_lat = tan_lat/sqrt(tan_lat*tan_lat + 1);
+  double cos_lat = 1/sqrt(tan_lat*tan_lat + 1);
+  
+  double cos_lon = x/p;
+  double sin_lon = y/p;
+  
+  Vec<3> up_ecef = (Vec<3>() << cos_lat*cos_lon, cos_lat*sin_lon, sin_lat).finished();
+  Vec<3> east_ecef = (Vec<3>() << -sin_lon, cos_lon, 0).finished();
+  Vec<3> north_ecef = (Vec<3>() << -sin_lat*cos_lon, -sin_lat*sin_lon, cos_lat).finished();
   return (SqMat<3>() << east_ecef, north_ecef, up_ecef).finished().transpose();
 }
 
