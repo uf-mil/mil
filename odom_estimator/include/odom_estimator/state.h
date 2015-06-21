@@ -25,6 +25,7 @@ ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(State,
   (QuaternionManifold, orient)
   (Vec<3>, vel)
   (Vec<3>, gyro_bias)
+  (Vec<3>, accel_bias)
   (WrappedScalar, local_g)
   (WrappedScalar, ground_air_pressure)
   (Vec<Dynamic>, gps_bias)
@@ -66,6 +67,7 @@ ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(_PredictNoise, ,
   (Vec<3>, accel)
   (WrappedScalar, ground_air_pressure_noise)
   (Vec<3>, gyro_bias_noise)
+  (Vec<3>, accel_bias_noise)
 )
 ODOM_ESTIMATOR_DEFINE_MANIFOLD_END()
 class StateUpdater : public UnscentedTransformDistributionFunction<State, State, _PredictNoise> {
@@ -78,6 +80,7 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
         xyz2vec(imu.angular_velocity),
         xyz2vec(imu.linear_acceleration),
         0,
+        Vec<3>::Zero(),
         Vec<3>::Zero()),
       joinDiagonally(
         joinDiagonally(
@@ -85,7 +88,9 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
           Eigen::Map<const SqMat<3> >(imu.linear_acceleration_covariance.data())),
         joinDiagonally(
           scalar_matrix(5),
-          (Vec<3>::Ones()*pow(1e-3, 2)).asDiagonal())));
+          joinDiagonally(
+            (Vec<3>::Ones()*pow(1e-3, 2)).asDiagonal(),
+            (Vec<3>::Ones()*pow(1e-3, 2)).asDiagonal()))));
   }
   State apply(State const &state, _PredictNoise const &extra) const {
     double dt = (imu.header.stamp - state.t).toSec();
@@ -95,7 +100,7 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
     
     Quaternion world_from_newbody = state.orient * oldbody_from_newbody;
     
-    Vec<3> accelnograv_accelbody = extra.accel;
+    Vec<3> accelnograv_accelbody = extra.accel - state.accel_bias;
     Quaternion world_from_accelbody = rightSideAccelFrame ?
       world_from_newbody : Quaternion(state.orient);
     Vec<3> accelnograv_world = world_from_accelbody._transformVector(
@@ -111,6 +116,7 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
       world_from_newbody,
       state.vel + dt * accel_world,
       state.gyro_bias + sqrt(dt) * extra.gyro_bias_noise,
+      state.accel_bias + sqrt(dt) * extra.accel_bias_noise,
       state.local_g,
       state.ground_air_pressure + sqrt(dt) * extra.ground_air_pressure_noise,
       state.gps_bias);
