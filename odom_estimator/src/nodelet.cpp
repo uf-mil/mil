@@ -38,7 +38,8 @@ static magnetic::MagneticModel const magnetic_model(ros::package::getPath("odom_
 GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
                                        Vec<3> last_mag,
                                        Vec<3> pos_ecef,
-                                       Vec<3> vel_ecef) {
+                                       Vec<3> vel_ecef,
+                                       Vec<3> rel_pos_ecef) {
   Vec<3> pos_eci = inertial_from_ecef(
     msg.header.stamp.toSec(), pos_ecef);
   Vec<3> vel_eci = inertial_vel_from_ecef_vel(
@@ -65,7 +66,7 @@ GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
       msg.header.stamp,
       std::vector<int>{},
       pos_eci,
-      Vec<3>::Zero(),
+      inertial_from_ecef(msg.header.stamp.toSec(), rel_pos_ecef),
       orient_eci,
       vel_eci,
       Vec<3>::Zero(),
@@ -78,9 +79,10 @@ GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
 GaussianDistribution<State>
 init_state(sensor_msgs::Imu const &msg,
            Vec<3> last_mag,
-           rawgps_common::Measurements const &gps) {
+           rawgps_common::Measurements const &gps,
+           Vec<3> rel_pos_ecef) {
   GaussianDistribution<Fix> fix = get_fix(gps);
-  return init_state(msg, last_mag, fix.mean.first, fix.mean.second);
+  return init_state(msg, last_mag, fix.mean.first, fix.mean.second, rel_pos_ecef);
 }
 
 
@@ -95,6 +97,7 @@ class NodeImpl {
     std::string local_frame;
     ros::ServiceServer set_ignore_magnetometer_srv;
     bool ignoreMagnetometer;
+    Vec<3> last_rel_pos_ecef_;
   public:
     NodeImpl(boost::function<const std::string&()> getName, ros::NodeHandle *nh_, ros::NodeHandle *private_nh_) :
         getName(getName),
@@ -130,6 +133,8 @@ class NodeImpl {
       absodom_pub = nh.advertise<nav_msgs::Odometry>("absodom", 10);
       info_pub = private_nh.advertise<odom_estimator::Info>("info", 10);
       set_ignore_magnetometer_srv = private_nh.advertiseService("set_ignore_magnetometer", &NodeImpl::setIgnoreMagnetometer, this);
+      
+      last_rel_pos_ecef_ = Vec<3>::Zero();
     }
   
   private:
@@ -165,13 +170,13 @@ class NodeImpl {
         if(have_gps) {
           if(last_good_gps && *last_good_gps > msg.header.stamp - ros::Duration(1.5) &&
                               *last_good_gps < msg.header.stamp + ros::Duration(1.5)) {
-            state = init_state(msg, *last_mag, *last_good_gps_msg);
+            state = init_state(msg, *last_mag, *last_good_gps_msg, last_rel_pos_ecef_);
           } else {
             std::cout << "gps missing" << std::endl;
             return;
           }
         } else {
-          state = init_state(msg, *last_mag, Vec<3>(start_x_ecef, start_y_ecef, start_z_ecef), Vec<3>::Zero());
+          state = init_state(msg, *last_mag, Vec<3>(start_x_ecef, start_y_ecef, start_z_ecef), Vec<3>::Zero(), last_rel_pos_ecef_);
         }
       } else {
         state = StateUpdater(msg)(*state);
@@ -216,6 +221,8 @@ class NodeImpl {
         state = boost::none;
         return;
       }
+      
+      last_rel_pos_ecef_ = state->mean.getRelPosECEF();
 
       //std::cout << "cov " << state->cov << std::endl << std::endl;
       
