@@ -112,7 +112,7 @@ class NodeImpl {
         dvl_filter(dvl_sub, tf_listener, "", 10),
         depth_sub(nh, "depth", 1),
         depth_filter(depth_sub, tf_listener, "", 10),
-        last_mag(boost::none), last_good_gps(boost::none), state(boost::none) {
+        last_mag(boost::none), last_good_gps(boost::none), last_good_dvl(boost::none), state(boost::none) {
       
       private_nh.getParam("have_gps", have_gps);
       private_nh.getParam("start_x_ecef", start_x_ecef);
@@ -176,7 +176,13 @@ class NodeImpl {
             return;
           }
         } else {
-          state = init_state(msg, *last_mag, Vec<3>(start_x_ecef, start_y_ecef, start_z_ecef), Vec<3>::Zero(), last_rel_pos_ecef_);
+          if(last_good_dvl && *last_good_dvl > msg.header.stamp - ros::Duration(1.5) &&
+                              *last_good_dvl < msg.header.stamp + ros::Duration(1.5)) {
+            state = init_state(msg, *last_mag, Vec<3>(start_x_ecef, start_y_ecef, start_z_ecef), Vec<3>::Zero(), last_rel_pos_ecef_);
+          } else {
+            std::cout << "dvl missing" << std::endl;
+            return;
+          }
         }
       } else {
         state = StateUpdater(msg)(*state);
@@ -423,6 +429,13 @@ class NodeImpl {
         }
       }
       
+      if(good.size() >= 3) {
+        last_good_dvl = msg.header.stamp;
+        std::cout << "got dvl" << std::endl;
+      } else {
+        std::cout << "bad dvl" << std::endl;
+      }
+      
       state = kalman_update(
         EasyDistributionFunction<State, Vec<Dynamic>, Vec<Dynamic> >(
           [&good, &local_dvl_pos, &local_dvl_orientation, this](State const &state, Vec<Dynamic> const &measurement_noise) {
@@ -511,6 +524,7 @@ class NodeImpl {
     boost::optional<Vec<3> > last_mag;
     boost::optional<ros::Time> last_good_gps;
     boost::optional<rawgps_common::Measurements> last_good_gps_msg;
+    boost::optional<ros::Time> last_good_dvl;
     boost::optional<GaussianDistribution<State> > state;
     boost::optional<Vec<3> > last_gyro;
     std::string local_frame_id;
