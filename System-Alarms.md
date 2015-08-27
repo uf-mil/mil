@@ -10,11 +10,11 @@ An alarm will be described by the following:
 
 ## Alarm criticality 
 
-0 - FAILURE (fatal)
-1 - CRITICAL (Usually fatal) 
-2 - WARNING (Non-fatal) 
-3 - INFO 
-4 - DEBUG 
+* 0 - FAILURE (fatal)
+* 1 - CRITICAL (Usually fatal) 
+* 2 - WARNING (Non-fatal) 
+* 3 - INFO 
+* 4 - DEBUG 
 
 ## Alarm Node
 
