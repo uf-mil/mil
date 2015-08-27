@@ -21,7 +21,7 @@ An alarm will be described by the following:
 The Sub8 system will have an alarm ROS node that encapsulates how the system will respond to each 
 alarm type 
 
-## Component Specific Alarms
+## Component-Specific Alarms
 
 > _Alarm description (severity level): response_
 
