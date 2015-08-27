@@ -26,7 +26,11 @@ the list of future waypoints will collide with the new obstacles
 12. Be able to recognize when re-planning is needed based on the new map 
 13. Be able to handle planning and re-planning failures by switching to a safety path or requesting a system shutdown when appropriate 
 
+### Data input  ###
 
+### Data output ###
+
+### UML diagrams ###
 
 
 
