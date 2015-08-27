@@ -1,18 +1,32 @@
-# Alarm Structure
+## Alarm Structure
 
 An alarm will be described by the following: 
 
-1. Action required (y/n)
+1. Action required (bool)
 2. Problem description (String)
 3. Criticality level (int) -> 0 is most severe 
 4. Problem flag (char) -> indexes into table of possible system alarms maintained by the alarm node
 5. node_id (String) -> the node where the alarm originated from 
 
-# Alarm Node
+## Alarm criticality 
 
-The Sub8 system will have an alarm ROS node that is responsible for handling all alarms and  
+0 - FAILURE (fatal)
+1 - CRITICAL (Usually fatal) 
+2 - WARNING (Non-fatal) 
+3 - INFO 
+4 - DEBUG 
+
+## Alarm Node
+
+The Sub8 system will have an alarm ROS node that encapsulates how the system will respond to each 
+alarm type 
 
 ## Trajectory Generator Alarms
 
-1. 
-2. 
+1. Planning failed (2) -> Will try to use a safety path
+2. Switching to safety path (4)  -> Continue
+3. Entered unavoidable collision zone (0) -> abort
+4. Starting to re-plan (3) -> Continue
+5. Re-plan success (3) -> Continue
+6. Re-plan failure (2) -> Will try to use a safety path 
+7. No usable safety paths (1) -> No where to go, abort 
