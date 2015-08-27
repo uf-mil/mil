@@ -25,7 +25,7 @@ alarm type
 
 > _Alarm description (severity level): response_
 
-### Trajectory Generator Alarms
+### Trajectory Generator
 
 1. Planning failed (2): Will try to use a safety path
 1. Switching to safety path (4): Continue
