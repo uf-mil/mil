@@ -1,4 +1,4 @@
-# ROS Exceptions
+## ROS Exceptions
 
 In order to efficiently handle crashes within ROS nodes, we should define a Sub8Exception class that extends the ROSException base class. Then, we can create different exception types that extend Sub8Exception that can catch different types of potential failures (i.e. a Sub8NoSuchObjectException class).
 
