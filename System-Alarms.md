@@ -1,4 +1,4 @@
-# Core Alarm Structure
+# Alarm Structure
 
 An alarm will be described by the following: 
 
