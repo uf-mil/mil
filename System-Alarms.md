@@ -2,11 +2,11 @@
 
 An alarm will be described by the following: 
 
-1. Action required (bool)
-2. Problem description (String)
-3. Criticality level (int) -> 0 is most severe 
-4. Problem flag (char) -> indexes into table of possible system alarms maintained by the alarm node
-5. node_id (String) -> the node where the alarm originated from 
+1. **action_required** (bool)
+1. **problem_description** (String)
+1. **severity** (int) -> 0 is most severe 
+1. **problem_flag** (char) -> indexes into table of possible system alarms maintained by the alarm node
+1. **node_id** (String) -> the node where the alarm originated from 
 
 ## Alarm criticality 
 
@@ -24,9 +24,9 @@ alarm type
 ## Trajectory Generator Alarms
 
 1. Planning failed (2) -> Will try to use a safety path
-2. Switching to safety path (4)  -> Continue
-3. Entered unavoidable collision zone (0) -> abort
-4. Starting to re-plan (3) -> Continue
-5. Re-plan success (3) -> Continue
-6. Re-plan failure (2) -> Will try to use a safety path 
-7. No usable safety paths (1) -> No where to go, abort 
+1. Switching to safety path (4)  -> Continue
+1. Entered unavoidable collision zone (0) -> abort
+1. Starting to re-plan (3) -> Continue
+1. Re-plan success (3) -> Continue
+1. Re-plan failure (2) -> Will try to use a safety path 
+1. No usable safety paths (1) -> No where to go, abort 
