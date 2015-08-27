@@ -8,7 +8,7 @@ An alarm will be described by the following:
 1. **problem_flag**: char -> indexes into table of possible system alarms maintained by the alarm node
 1. **node_id**: string -> the node where the alarm originated from 
 
-## Alarm criticality 
+## Alarm severity 
 
 * 0 - FAILURE (fatal)
 * 1 - CRITICAL (Usually fatal) 
