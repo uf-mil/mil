@@ -15,6 +15,20 @@ Before submitting changes, read the rest of this page. Any code that is pull-req
 There is *exactly one* exception to this policy:
 If on pool-test day, there are critical changes that you need to make to the sub, you may commit them directly too the **sub's** onboard git. Only minor changes are permissible at this time, this still does not belong in the main sub8/master. On competition days, *all* changes must be pair-programmed.
 
+# Git
+## Commit Messages
+* Follow [this guide](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html) for writing a good commit message
+    * The first part of the message should be under 50 characters (So that it fits in the summary on github), then the remainder can be any length.
+    * Commits should be capitalized and properly spelled
+    * The commit message should outline all of the major changes made, and reference the issue if applicable
+* Every commit message should be prepended with a topic, ex:
+
+`git commit -m CONTROLLER: Implement unit tests"`
+
+`git commit -m "AZI_DRIVE: Add CVXGEN solver"
+
+* Every commit should represent a logical unit, both in code and in message
+
 ## What should I not commit?
 * Do not commit debug print statements (ROS Logging is okay)
 * Do not open GUI windows (PCL or OpenCV or anything of that sort) in production code. This will often cause crashes
@@ -61,5 +75,4 @@ If you have any questions about what you should unit tests, talk to Patrick Emam
 ## C++ 
 * [Google Styleguide](https://google-styleguide.googlecode.com/svn/trunk/cppguide.html)
 * [Google styleguide linter](https://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py) or find a Sublime plugin/linter that enforces the google styleguide
-
 
