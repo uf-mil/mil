@@ -26,8 +26,8 @@ the list of future waypoints will collide with the new obstacles
 
 ### Theory ###
 
-[RRT* Reference](http://ijr.sagepub.com/content/30/7/846.full.pdf)
-[Why RRT* is awesome, and why the distance metric and node-extension heuristics are key](http://lis.csail.mit.edu/pubs/perez-icra12.pdf)
+* [RRT* Reference](http://ijr.sagepub.com/content/30/7/846.full.pdf)
+* [Why RRT* is awesome, and why the distance metric and node-extension heuristics are key](http://lis.csail.mit.edu/pubs/perez-icra12.pdf)
 
 ### Data input  ###
 
