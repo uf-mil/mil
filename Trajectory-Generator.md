@@ -1,5 +1,3 @@
-## Trajectory Generator ##
-
 ### Terminology ###
 
 1. **Point**: 6D vector containing the sway, surge, heave, roll, pitch, and yaw of the vehicle at a point in time
