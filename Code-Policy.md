@@ -31,7 +31,7 @@ If on pool-test day, there are critical changes that you need to make to the sub
 ## Testing
 * Operation critical code shall have unit-tests. Unit tests should fail if you code no longer works
 * General code should have unit-tests
-* Automated test-by-Simulation (Automatic Hardware-out-of-the-loop testing), is highly recommended for all software
+* Automated test-by-Simulation (Automatic Hardware-out-of-the-loop testing), e.g. Monte-Carlo testing is highly recommended for all software
 * [C++ unit testing w/ gtest](https://code.google.com/p/googletest/)
 * [Python unit testing w/ Nose](https://nose.readthedocs.org/en/latest/)
 
