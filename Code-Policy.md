@@ -15,7 +15,6 @@ Before submitting changes, read the rest of this page. Any code that is pull-req
 There is *exactly one* exception to this policy:
 If on pool-test day, there are critical changes that you need to make to the sub, you may commit them directly too the **sub's** onboard git. Only minor changes are permissible at this time, this still does not belong in the main sub8/master. On competition days, *all* changes must be pair-programmed.
 
-# Git
 ## Commit Messages
 * Follow [this guide](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html) for writing a good commit message
     * The first part of the message should be under 50 characters (So that it fits in the summary on github), then the remainder can be any length.
