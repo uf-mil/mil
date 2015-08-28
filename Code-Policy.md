@@ -10,9 +10,8 @@ We follow the [fork-and-pull](https://guides.github.com/activities/contributing-
 4. Assign the pull-request to an appropriate reviewer, or someone random on the team if there is no obvious reviewer. Ask questions at meetings if you have any questions about review policy.
 5. Code that is to be run on the sub (Obeying all style-guides, and the MIL internal guides) should go into the master branch. Code that obeys the style-guides, but is still in development, belongs in the dev branch.
 
-
 There is *exactly one* exception to this policy:
-If on pool-test day, there are critical changes that you need to make to the sub, you may commit them directly too the **sub's** onboard git. Only minor changes are permissible at this time. On competition day, all changes must be pair-programmed.
+If on pool-test day, there are critical changes that you need to make to the sub, you may commit them directly too the **sub's** onboard git. Only minor changes are permissible at this time, this still does not belong in the main sub8/master. On competition days, *all* changes must be pair-programmed.
 
 ## What should I not commit?
 * Do not commit debug print statements (ROS Logging is okay)
