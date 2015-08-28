@@ -25,13 +25,16 @@ If on pool-test day, there are critical changes that you need to make to the sub
 
 `git commit -m CONTROLLER: Implement unit tests"`
 
-`git commit -m "AZI_DRIVE: Add CVXGEN solver"
+`git commit -m "AZI_DRIVE: Add CVXGEN solver"`
 
-* Every commit should represent a logical unit, both in code and in message
+* Every commit should represent a logical unit, both in code and in message, never just "[work](https://github.com/uf-mil/SubjuGator/commits/master?page=4)" or "fix"
+* [Don't do this](http://www.commitlogsfromlastnight.com/)
 
 ## What should I not commit?
 * Do not commit debug print statements (ROS Logging is okay)
 * Do not open GUI windows (PCL or OpenCV or anything of that sort) in production code. This will often cause crashes
+* If you have many small commits, [squash](http://stackoverflow.com/questions/5189560/squash-my-last-x-commits-together-using-git) your commits before pull-requesting (Making many small commits is good, but squash them before pull-requesting)
+* Do not merge when pulling code, always rebase `git pull --rebase` unless impossible
 
 ## Documentation
 * Include a readme in *every* new package, that describes what it is, what it does, and how to use it (in the form of example console commands/switches)
