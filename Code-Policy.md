@@ -15,6 +15,14 @@ Before submitting changes, read the rest of this page. Any code that is pull-req
 There is *exactly one* exception to this policy:
 If on pool-test day, there are critical changes that you need to make to the sub, you may commit them directly too the **sub's** onboard git. Only minor changes are permissible at this time, this still does not belong in the main sub8/master. On competition days, *all* changes must be pair-programmed.
 
+## Review
+* When your code is reviewed and approved, it will be pulled into the main sub8 repository
+* If your code is not approved, the following must happen
+    * If your pull-request is multiple commits, add a new commit that makes the suggested changes
+    * If your pull-request is a single commit, [amend](https://www.atlassian.com/git/tutorials/rewriting-history/git-commit--amend) that commit with the suggested changes
+* If you are reviewing code, use github's line-comment feature on their commits to outline issues with an individual line
+* Broader issues should be outlined in a comment on the pull-request
+
 ## Commit Messages
 * Follow [this guide](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html) for writing a good commit message
     * The first part of the message should be under 50 characters (So that it fits in the summary on github), then the remainder can be any length.
