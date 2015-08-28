@@ -26,6 +26,10 @@ the list of future waypoints will collide with the new obstacles
 12. Be able to recognize when re-planning is needed based on the new map 
 13. Be able to handle planning and re-planning failures by switching to a safety path or requesting a system shutdown when appropriate 
 
+### Theory ###
+
+[Why RRT* is awesome, and why the distance metric and node-extension methods are problem-specific](http://lis.csail.mit.edu/pubs/perez-icra12.pdf)
+
 ### Data input  ###
 
 ### Data output ###
