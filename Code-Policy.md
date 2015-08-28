@@ -36,6 +36,7 @@ If on pool-test day, there are critical changes that you need to make to the sub
 
 * Every commit should represent a logical unit, both in code and in message, never just "[work](https://github.com/uf-mil/SubjuGator/commits/master?page=4)" or "fix"
 * [Don't do this](http://www.commitlogsfromlastnight.com/)
+* Include a brief line about how you tested your code
 
 ## What should I not commit?
 * Do not commit debug print statements (ROS Logging is okay)
