@@ -31,6 +31,7 @@ the list of future waypoints will collide with the new obstacles
 * [FLANN Kd-Trees Doc](http://www.cs.ubc.ca/research/flann/uploads/FLANN/flann_visapp09.pdf)
 * [FLANN download](http://www.cs.ubc.ca/research/flann/)
 * [Speeding up RRT* with a GPU](http://sertac.scripts.mit.edu/web/wp-content/papercite-data/pdf/bialkowski.karaman.ea-iros11.pdf)
+
 ### Data input  ###
 
 ### Data output ###
