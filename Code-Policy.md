@@ -4,6 +4,8 @@ Code Policy
 # Adding Code
 We follow the [fork-and-pull](https://guides.github.com/activities/contributing-to-open-source/) model of repository code management. 
 
+Before submitting changes, read the rest of this page. Any code that is pull-requested should *absolutely never* break catkin_make for master. Test locally before pull-requesting. Incomplete code should be pull-requested to the dev branch, and it should not break the dev branch.
+
 1. [Fork the repository](https://help.github.com/articles/fork-a-repo/)
 2. Make your changes and commit the to that fork
 3. Submit a [pull request](https://help.github.com/articles/using-pull-requests/)
@@ -15,7 +17,7 @@ If on pool-test day, there are critical changes that you need to make to the sub
 
 ## What should I not commit?
 * Do not commit debug print statements (ROS Logging is okay)
-* Do not open GUI windows (PCL or OpenCV or anything of that sort) in production code.
+* Do not open GUI windows (PCL or OpenCV or anything of that sort) in production code. This will often cause crashes
 
 ## Documentation
 * Include a readme in *every* new package, that describes what it is, what it does, and how to use it (in the form of example console commands/switches)
