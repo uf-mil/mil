@@ -25,7 +25,7 @@ alarm type
 
 ### Trajectory Generator
 
-1. Entered unavoidable collision zone (0): abort
-1. No usable safety paths (1): No where to go, abort 
-1. Planning failed (2): Will try to use a safety path
-1. Re-plan failure (2): Will try to use a safety path 
+1. Entered unavoidable collision zone (0): abort mission
+1. No usable safety paths (1): abort mission
+1. Planning failed (2): try to use a safety path
+1. Re-plan failure (2): try to use a safety path 
