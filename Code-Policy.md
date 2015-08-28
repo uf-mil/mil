@@ -18,6 +18,26 @@ If on pool-test day, there are critical changes that you need to make to the sub
 * Do not commit debug print statements (ROS Logging is okay)
 * Do not open GUI windows (PCL or OpenCV or anything of that sort) in production code.
 
+## Documentation
+* Include a readme in *every* new package, that describes what it is, what it does, and how to use it (in the form of example console commands/switches)
+* Add a *wiki* page for every new logical component, that describes in some depth (including citations, dependencies, and alarms) the behavior and uses of that component.
+* Someone should be able to use your node or package without needing you to be present
+* Python code: Every class and method should have a [docstring](https://en.wikipedia.org/wiki/Docstring#Python). 
+    * Class docstring should contain what the class is responsible for/what it encapsulates, caveats, TODO's, and citations
+    * Method/function docstrings should contain a list of parameters and their purpose (Someone should be able to determine exactly what would happen if they changed a parameter), and a list of returns and their purpose. It should also include TODO's, and citations, and a summary of methods purpose and behavior.
+    * Again, someone should be able to read your docstring and understand the purpose of your code without consulting you
+* C++ code: Add docstrings in the same manner as Python, using multi-line comments
+
+## Testing
+* Operation critical code shall have unit-tests. Unit tests should fail if you code no longer works
+* General code should have unit-tests
+* Automated test-by-Simulation (Automatic Hardware-out-of-the-loop testing), is highly recommended for all software
+* [C++ unit testing w/ gtest](https://code.google.com/p/googletest/)
+* [Python unit testing w/ Nose](https://nose.readthedocs.org/en/latest/)
+
+Unit testing generally saves time for the developer. Despite the initial time spent implementing the test, unit tests make it very easy to make changes to your code, and verify that your code will work.
+If you have any questions about what you should unit tests, talk to Patrick Emami.
+
 ## Logging
 [Take a look at the ROS logging guide](http://wiki.ros.org/roscpp/Overview/Logging)
 * Make sure you have good ROS logging, with appropriate log-levels for the information logged
@@ -25,6 +45,10 @@ If on pool-test day, there are critical changes that you need to make to the sub
 * Log anything that could be considered fatal, with some description as to what happened
 * If your node interacts with hardware, hardware connection/loss, kill/unkill state transitions
 * Be diligent in logging, but don't feel that you need to log every single possible state change
+
+## Alarms
+* [See the alarm page on this wiki](https://github.com/uf-mil/Sub8/wiki/System-Alarms)
+* Every node should raise alarms over the alarm system for indicating problems
 
 # Style Guides
 
