@@ -79,3 +79,7 @@ If you have any questions about what you should unit tests, talk to Patrick Emam
 * [Google Styleguide](https://google-styleguide.googlecode.com/svn/trunk/cppguide.html)
 * [Google styleguide linter](https://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py) or find a Sublime plugin/linter that enforces the google styleguide
 
+
+# Questions?
+
+If you have any questions, talk to Jake, don't just go committing willy-nilly to master!
