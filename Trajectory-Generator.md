@@ -28,6 +28,8 @@ the list of future waypoints will collide with the new obstacles
 
 * [RRT* Reference](http://ijr.sagepub.com/content/30/7/846.full.pdf)
 * [Why RRT* is awesome, and why the distance metric and node-extension heuristics are key](http://lis.csail.mit.edu/pubs/perez-icra12.pdf)
+* [FLANN Kd-Trees Doc](http://www.cs.ubc.ca/research/flann/uploads/FLANN/flann_visapp09.pdf)
+* [FLANN download](http://www.cs.ubc.ca/research/flann/)
 
 ### Data input  ###
 
