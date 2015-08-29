@@ -1,8 +1,11 @@
 ROS Conventions
 ================
 
-Packages should be prepended with sub8_*. Ex:
+Packages should be prepended with sub8_*. 
+Ex:
+
 `sub8_thruster_driver`
+
 `sub8_control`
 
 And so on.
