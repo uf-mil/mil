@@ -47,6 +47,7 @@ If on pool-test day, there are critical changes that you need to make to the sub
 ## Documentation
 * Include a readme in *every* new package, that describes what it is, what it does, and how to use it (in the form of example console commands/switches)
 * Add a *wiki* page for every new logical component, that describes in some depth (including citations, dependencies, and alarms) the behavior and uses of that component.
+    * Feel free to edit the wiki at any time. Adding a page will require you to edit the sidebar manually.
 * Someone should be able to use your node or package without needing you to be present
 * Python code: Every class and method should have a [docstring](https://en.wikipedia.org/wiki/Docstring#Python). 
     * Class docstring should contain what the class is responsible for/what it encapsulates, caveats, TODO's, and citations

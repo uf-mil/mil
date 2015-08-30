@@ -6,5 +6,6 @@
 * Implementation
     * [[Trajectory Generator]]
     * [[System Alarms]]
+    * [[Thrusters]]
 * [[Code Policy]]
     * [[ROS Conventions]]
