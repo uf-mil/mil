@@ -6,6 +6,5 @@
 * Implementation
     * [[Trajectory Generator]]
     * [[System Alarms]]
-* Code Policy
-    * [[Code Policy]]
+* [[Code Policy]]
     * [[ROS Conventions]]
