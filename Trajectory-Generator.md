@@ -37,7 +37,7 @@ the list of future waypoints will collide with the new obstacles
 * [Safety Paths with RRT*-AR](https://www.ri.cmu.edu/pub_files/2013/5/RRTS_AR.pdf)
 
 ### Splines ###
-* [Much Ado About Splines](http://graphics.stanford.edu/courses/cs348a-12-winter/Handouts/handout27.pdf)
+* [Much Ado About Splines and CX Continuity](http://graphics.stanford.edu/courses/cs348a-12-winter/Handouts/handout27.pdf)
 * [Fast Smoothing of Motion Planning Trajectories using B-Splines](https://wwwx.cs.unc.edu/~panj/index_files/files/ICRA11.pdf)
 
 # System Details #
