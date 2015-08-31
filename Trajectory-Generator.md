@@ -43,12 +43,12 @@ the list of future waypoints will collide with the new obstacles
 # System Details #
 
 ## Configuration ##
-* Any kinematic/dynamic constraints that can be provided ahead-of-time to the T-generator
+* Any kinematic and/or dynamic constraints that can be provided ahead-of-time to the T-Generator
 * TBD
 
 ## Data input  ##
-* Starting point for trajectory - query for new trajectory should be received in a ROS action msg
-* Variable vehicle-specific limitations on the trajectory generation (TBD)
+* Starting point for trajectory - query for new trajectory should be received via ROS actionlib 
+* Variable vehicle-specific limitations on the trajectory generation
 
 ## Data output
 * Next waypoint - Should be a ROS topic?
