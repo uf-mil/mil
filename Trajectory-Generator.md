@@ -83,7 +83,7 @@ the list of future waypoints will collide with the new obstacles
     1. If the current waypoint is no longer valid, re-plan starting from the obstructed waypoints
     1. This module will be tightly coupled with the Motion-Planner; it should use the same path-planning algorithm and the same kinodynamics as the MP
     1. If re-planning fails, the SPC should be called to provide a safety path 
-1. **Message-Handler / ROS Node "main" **
+1. **Message-Handler / ROS Node "main"**
     1. Encapsulates all topic/service/action logic and callbacks 
     1. Should be loosely coupled from all other modules - only needs to know the T-Generator Mediator, who will handle delegating tasks to the other modules
 1. **T-Generator Mediator**
