@@ -47,11 +47,11 @@ the list of future waypoints will collide with the new obstacles
 * TBD
 
 ## Data input  ##
-* Starting point 
+* Starting point for trajectory - query for new trajectory should be received in a ROS action msg
 * Variable vehicle-specific limitations on the trajectory generation (TBD)
 
 ## Data output
-* Next waypoint
+* Next waypoint - Should be a ROS topic?
 
 ## Alarms
 
