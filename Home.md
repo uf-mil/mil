@@ -1,3 +1,4 @@
-Sub 8 
+# Sub8 Wiki 
 
-Wiki for important sub things 
+## Helpful Hints ## 
+* [When should I use a ROS topic/service/action?](http://answers.ros.org/question/11834/when-should-i-use-topics-vs-services-vs-actionlib-actions-vs-dynamic_reconfigure/)
