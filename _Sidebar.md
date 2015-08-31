@@ -1,4 +1,5 @@
 * [[Home]]
+    * [[Editing the Wiki]]
 * Plans
     * [[Exception Handling]]
     * [[Implementation Plans]]
