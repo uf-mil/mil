@@ -47,9 +47,10 @@ the list of future waypoints will collide with the new obstacles
 * TBD
 
 ## ROS msgs 
-* Waypoints will consist of:
-    * ROS geometry_msgs/PoseWithCovarianceStamped for position
-    * ROS geometry_msgs/TwistStamped for velocity 
+* A sub8_waypoint msg will consist of:
+    * header 
+    * geometry_msgs/PoseWithCovariance for position
+    * geometry_msgs/Twist for velocity 
 
 ## Data input  ##
 * Starting waypoint for trajectory - query for new trajectory should be received via ROS actionlib
@@ -57,7 +58,7 @@ the list of future waypoints will collide with the new obstacles
 * Variable vehicle-specific limitations on the trajectory generation
 
 ## Data output
-* Next waypoint - Should be a ROS topic?
+* Next viable waypoint - Should be a ROS topic?
 
 ## Alarms
 
