@@ -1,8 +1,8 @@
 * [[Home]]
 * Plans
-    * [[Exception-Handling]]
+    * [[Exception Handling]]
     * [[Implementation Plans]]
-    * [[Stretch-Goals]]
+    * [[Stretch Goals]]
 * Implementation
     * [[Trajectory Generator]]
     * [[System Alarms]]
