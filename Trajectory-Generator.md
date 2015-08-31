@@ -94,4 +94,5 @@ the list of future waypoints will collide with the new obstacles
 * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) 
 * [CUDA in C/C++](https://developer.nvidia.com/how-to-cuda-c-cpp)
 * [RRT* Implementation in C++ - Sertac Karaman](https://svn.csail.mit.edu/rrtstar/)
+* [Boost](http://stackoverflow.com/questions/8851670/relevant-boost-features-vs-c11) - Smart Pointers, foreach, etc 
 * [c3_trajectory_generator OLD](https://github.com/uf-mil/software-common/tree/master/c3_trajectory_generator)
