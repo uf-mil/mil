@@ -19,13 +19,4 @@ An alarm will be described by the following:
 The Sub8 system will have an alarm ROS node that encapsulates how the system will respond to each 
 alarm type 
 
-## Component-Specific Alarms
 
-> _Alarm description (severity level): response_
-
-### Trajectory Generator
-
-1. Entered unavoidable collision zone (0): abort mission
-1. No usable safety paths (1): abort mission
-1. Planning failed (2): try to use a safety path
-1. Re-plan failure (2): try to use a safety path 
