@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package>
+  <name>sub8_thruster_mapper</name>
+  <version>1.0.0</version>
+  <description>The sub8_thruster_mapper package</description>
+
+  <maintainer email="jpanikulam@ufl.edu">Jacob Panikulam</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <run_depend>rospy</run_depend>
+  <export>
+  </export>
+</package>
