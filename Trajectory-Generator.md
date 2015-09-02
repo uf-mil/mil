@@ -53,7 +53,7 @@ the list of future waypoints will collide with the new obstacles
 
 ## Configuration ##
 * Any kinematic and/or dynamic constraints that can be provided ahead-of-time to the T-Generator
-* TBD
+* TODO
 
 ## ROS msgs 
 * A sub8_waypoint msg will consist of:
