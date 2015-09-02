@@ -112,5 +112,6 @@ the list of future waypoints will collide with the new obstacles
 * [CUDA in C/C++](https://developer.nvidia.com/how-to-cuda-c-cpp)
 * [OMPL](http://ompl.kavrakilab.org/)
 * [OMPL - RRT*](ompl.kavrakilab.org/classompl_1_1geometric_1_1RRTstar.html)
+* [OMPL - Parallel RRT](http://ompl.kavrakilab.org/classompl_1_1geometric_1_1pRRT.html)
 * [Boost](http://stackoverflow.com/questions/8851670/relevant-boost-features-vs-c11) - smart pointers, foreach, etc 
 * [c3_trajectory_generator OLD](https://github.com/uf-mil/software-common/tree/master/c3_trajectory_generator)
