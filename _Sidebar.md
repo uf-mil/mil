@@ -10,3 +10,5 @@
     * [[Thrusters]]
 * [[Code Policy]]
     * [[ROS Conventions]]
+* Tips and Tricks
+    * [[SSH into the sub]]
