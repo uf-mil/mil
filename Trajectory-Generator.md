@@ -80,7 +80,7 @@ the list of future waypoints will collide with the new obstacles
 
 ## Modules ##
 1. **Motion-Planner**
-    1. Can contain a variable number of path-planning algorithms
+    1. Implementation of OMPL for AUVs
     1. Autonomously engages a path-planning algorithm to generate a trajectory
     1. Encapsulates the implementation details of the path-planning algorithms - other modules should not know whether the trajectory is computed by GPU or CPU, etc
     1. Should be customized for each vehicle it is used for, since certain steps within different path-planning algorithms require knowledge of problem-specific kinodynamics. Use Inheritance, Template Method, or Dependency Injection
@@ -110,6 +110,7 @@ the list of future waypoints will collide with the new obstacles
 * C++
 * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) 
 * [CUDA in C/C++](https://developer.nvidia.com/how-to-cuda-c-cpp)
+* [OMPL](http://ompl.kavrakilab.org/)
 * [RRT* Implementation in C++ - Sertac Karaman](https://svn.csail.mit.edu/rrtstar/)
 * [Boost](http://stackoverflow.com/questions/8851670/relevant-boost-features-vs-c11) - smart pointers, foreach, etc 
 * [c3_trajectory_generator OLD](https://github.com/uf-mil/software-common/tree/master/c3_trajectory_generator)
