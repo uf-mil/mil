@@ -36,7 +36,8 @@ class Image_Publisher(object):
             image_message = self.bridge.cv2_to_imgmsg(cv_image, self.encoding)
             self.im_pub.publish(image_message)
         except CvBridgeError, e:
-            print e
+            # Intentionally absorb CvBridge Errors
+            rospy.logerr(e)
 
 
 class Image_Subscriber(object):
@@ -55,4 +56,5 @@ class Image_Subscriber(object):
             image = self.bridge.imgmsg_to_cv2(data, desired_encoding=self.encoding)
             self.callback(image)
         except CvBridgeError, e:
-            print e
+            # Intentionally absorb CvBridge Errors
+            rospy.logerr(e)
