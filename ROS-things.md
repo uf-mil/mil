@@ -12,3 +12,6 @@ rospy.wait_for_message: Creates a new subscription to a topic, waits for a singl
 catkin_make will automatically build the unit tests in your package's "test" directory. Run your gtests with:
 >      catkin_make run_tests_packageName
 >      catkin_make run_tests_packageName_gtest_testTarget
+
+Run all unit tests with: 
+>      catkin_make run_tests
