@@ -4,7 +4,7 @@
     1. In the **body coordinate system**, a **point** is a 6D vector describing the sway, surge, heave, roll, pitch, and yaw of the vehicle at an instance in time
     1. In the **world coordinate system**, a **point** is a 6D vector describing the x, y, and z (depth) positions and the angular rotation about each axis (read: quaternion) of the vehicle at an instance in time
 * **Waypoint**: A desired position and desired velocity within the world coordinate system
-* **RRT**: Rapidly-Exploring Random Trees - [Seminal paper on RRTs](http://webpages.uncc.edu/xiao/itcs6151-8151/RRT.pdf)
+* **RRT**: [Rapidly-Exploring Random Trees] (http://webpages.uncc.edu/xiao/itcs6151-8151/RRT.pdf)
 * **Workspace**: The physical space that the robot operates in. It is assumed that the boundary of the
 workspace represents an obstacle for the robot
 * **State space**: The parameter space for the robot. This space represents all possible configurations
