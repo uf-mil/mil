@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def rosmsg_to_numpy(rosmsg, keys=None):
     '''Convert a ROS Vector or Quaternion to a numpy vector
     Ex:
@@ -8,7 +9,7 @@ def rosmsg_to_numpy(rosmsg, keys=None):
 
     But wait, there's hope!
         rosmsg_to_numpy(quat) -> array([1.0, 0.0, 0.0, 0.0])
-    Which you can do math on!
+    Yielding a vector, which you can do math on!
 
     '''
     if keys is None:
