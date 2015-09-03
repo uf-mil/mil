@@ -10,7 +10,7 @@ def wait_for_param(param_name, timeout=None, poll_rate=0.1):
     This function intentionally leaves failure logging duties to the developer
     '''
     start_time = time()
-    rate = Rospy.Rate(poll_rate)
+    rate = rospy.Rate(poll_rate)
     while not rospy.is_shutdown():
 
         # Check if the parameter now exists

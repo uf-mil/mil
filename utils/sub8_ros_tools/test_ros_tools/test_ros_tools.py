@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from geometry_msgs.msg import Quaternion, Vector3
+from geometry_msgs.msg import Quaternion, Vector3, Pose2D
 from sensor_msgs.msg import Image
 from sub8_ros_tools import make_image_msg, get_image_msg
 from sub8_ros_tools import rosmsg_to_numpy
@@ -9,7 +9,7 @@ from sub8_ros_tools import rosmsg_to_numpy
 
 class TestROSTools(unittest.TestCase):
     def test_rosmsg_to_numpy_quaternion(self):
-        '''Test the quaternion case'''
+        '''Test a rosmsg conversion for a geometry_msgs/Quaternion'''
         # I know this is not  unit quaternion
         q = Quaternion(x=0.7, y=0.7, z=0.1, w=0.2)
         numpy_array = rosmsg_to_numpy(q)
@@ -20,12 +20,22 @@ class TestROSTools(unittest.TestCase):
         )
 
     def test_rosmsg_to_numpy_vector(self):
-        '''Test the vector case'''
+        '''Test a rosmsg conversion for a geometry_msgs/Vector'''
         v = Vector3(0.1, 99., 21.)
         numpy_array = rosmsg_to_numpy(v)
 
         np.testing.assert_allclose(
             np.array([0.1, 99., 21.]), 
+            numpy_array
+        )
+
+    def test_rosmsg_to_numpy_custom(self):
+        '''Test a rosmsg conversion for a custom msg'''
+        pose_2d = Pose2D(x=1.0, y=2.0, theta=3.14)
+        numpy_array = rosmsg_to_numpy(pose_2d, ['x', 'y', 'theta'])
+
+        np.testing.assert_allclose(
+            np.array([1.0, 2.0, 3.14]), 
             numpy_array
         )
 
