@@ -10,5 +10,6 @@
     * [[Thrusters]]
 * [[Code Policy]]
     * [[ROS Conventions]]
-* Tips and Tricks
+* Tribal Knowledge
     * [[SSH into the sub]]
+    * [[ROS things]]
