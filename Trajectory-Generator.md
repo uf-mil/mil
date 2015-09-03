@@ -44,6 +44,7 @@ the list of future waypoints will collide with the new obstacles
 * [Why RRT* is awesome, and why the distance metric and node-extension heuristics are key](http://lis.csail.mit.edu/pubs/perez-icra12.pdf)
 * [Speeding up RRT* with a GPU](http://sertac.scripts.mit.edu/web/wp-content/papercite-data/pdf/bialkowski.karaman.ea-iros11.pdf)
 * [Safety Paths with RRT*-AR](https://www.ri.cmu.edu/pub_files/2013/5/RRTS_AR.pdf)
+* [MIT's RRT planner from the DUC](http://acl.mit.edu/papers/KuwataTCST09.pdf)
 
 ### Splines ###
 * [Much Ado About Splines and CX Continuity](http://graphics.stanford.edu/courses/cs348a-12-winter/Handouts/handout27.pdf)
