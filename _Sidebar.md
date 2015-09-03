@@ -13,3 +13,4 @@
 * Tribal Knowledge
     * [[SSH into the sub]]
     * [[ROS things]]
+    * [[Git]]
