@@ -6,7 +6,7 @@ We have 8 VideoRay M5 Thrusters on Subjugator 8. These are the primary mode of a
 # TODO
 
 * [ ] Implement numerical thrust allocation
-    * [ ] Determine thruster layout configuration file format
+    * [x] Determine thruster layout configuration file format
     * [ ] Construct control-input matrix from configuration
     * [ ] Handle thruster-out events
 * [ ] Implement thruster communication protocol
