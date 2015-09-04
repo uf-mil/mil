@@ -1,4 +1,5 @@
 * [[Home]]
+    * [[Getting Started]]
     * [[Editing the Wiki]]
 * Plans
     * [[Architecture]]
