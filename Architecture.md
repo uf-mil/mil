@@ -6,7 +6,7 @@ Todo: Visual diagrams
 # Considerations
 The sub should be able to...
 - Change its trajectory based on new information at any time
-- Respond to safely respond to an unrecoverable error
+- Safely respond to an unrecoverable error
 - Internally handle typical problems, without needing a restart
 - Perform actions while moving
 - Perform multiple non-conflicting actions at once 
