@@ -1,6 +1,7 @@
 * [[Home]]
     * [[Editing the Wiki]]
 * Plans
+    * [[Architecture]]
     * [[Exception Handling]]
     * [[Implementation Plans]]
     * [[Stretch Goals]]
