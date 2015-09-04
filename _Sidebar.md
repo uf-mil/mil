@@ -14,3 +14,4 @@
     * [[SSH into the sub]]
     * [[ROS things]]
     * [[Git]]
+    * [[Glossary]]
