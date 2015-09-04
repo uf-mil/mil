@@ -10,6 +10,16 @@ Add the following aliases to your ~/.bashrc file
     alias unsub='unset ROS_IP; export ROS_MASTER_URI=http://localhost:11311'
 
 
+Then, whenever you want to connect to the sub in a terminal instance, just run
+
+    rsub
+
+And when you would like to return to your own roscore on your local machine, just run
+
+    unsub
+
+Don't feel that you have to use these silly names.
+
 # Hosts
 
 Add the following line to your /etc/hosts file
