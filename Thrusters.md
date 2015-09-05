@@ -12,13 +12,13 @@ We have 8 VideoRay M5 Thrusters on Subjugator 8. These are the primary mode of a
 
 * [ ] Implement numerical thrust allocation
     * [x] Determine thruster layout configuration file format
-    * [ ] Construct control-input matrix from configuration
+    * [x] Construct control-input matrix from configuration
     * [ ] Handle thruster-out events
 * [ ] Implement thruster communication protocol
     * [ ] Implement simulated thruster output
 * [ ] Implement ROS thruster interface
     * [x] Handle thruster Newtons -> Thruster input calibration
-    * [ ] Implement srv/msg types
+    * [x] Implement srv/msg types
         * Thrusters should communicate their capabilities
     * [ ] Implement alarms
         * [ ] Implement thruster-out handling
