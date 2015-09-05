@@ -8,6 +8,10 @@ We have 8 VideoRay M5 Thrusters on Subjugator 8. These are the primary mode of a
 - The individual thrusters within the driver should not have or need knowledge of their location on the physical vehicle
 - Tracking positions through TF is a conversation to have - I am not convinced that it is worth extra  headaches spawned by publishing the static transforms. Instead, the positions and directions are held in a rosparam whose format was defined by Forrest.
 
+# Hardware Documentation
+[Faults](http://download.videoray.com/documentation/m5_thruster/html/configuration_mode.html)
+[User's Manual](http://download.videoray.com/documentation/m5_thruster/html/)
+
 # TODO
 
 * [ ] Implement numerical thrust allocation
