@@ -42,13 +42,16 @@ class ThrusterMapper(object):
 
     @thread_lock(lock)
     def update_layout(self, srv):
-        '''Respond to a thruster-out alarm'''
+        '''Update the physical thruster layout.
+        This should only be done in a thruster-out event
+        '''
         raise(NotImplementedError("Layout Updates Not Implemented"))
         self.layout = '...'
         self.B = self.generate_B(self.layout)
 
     def get_ranges(self):
-        '''Todo: Actually do something
+        '''Get upper and lower thrust limits for each thruster
+        Todo: Actually do something
             --> Wait for a service in the thruster driver to say something
             - We have this information in the form of calibration.json
         '''
