@@ -3,6 +3,11 @@ Thrusters
 
 We have 8 VideoRay M5 Thrusters on Subjugator 8. These are the primary mode of actuation for vehicle motion, other than throwing.
 
+# Notes
+
+- The individual thrusters within the driver should not have or need knowledge of their location on the physical vehicle
+- Tracking positions through TF is a conversation to have - I am not convinced that it is worth extra  headaches spawned by publishing the static transforms. Instead, the positions and directions are held in a rosparam whose format was defined by Forrest.
+
 # TODO
 
 * [ ] Implement numerical thrust allocation
