@@ -1,10 +1,30 @@
 Simulation
 ==========
 
-## Why are we creating our own simulation?
-Why not use V-REP or Gazebo?
+# Tools
 
-At the time of writing, neither was really designed for water vehicles. We determined that it would take as much time to configure one of those simulators as it would to write our own. Ours would exactly satisfy our needs, while specifically targeting all of the MIL vehicles.
+### V-REP
+- Very fully featured
+- Has in-built velodyne support
+- Hard to configure
+- No built-in water resistance
+
+### Gazebo
+- Bloated
+- Hard to configure
+- No built-in water resistance
+
+### UWSim
+- Already has DVL, imaging sonar, depth sensor support
+- Water-resistance support
+- Surface wave support
+- Installs as an apt package
+- This...might be perfect...
+
+### Implement our own
+- Will take time
+- Have to support internally
+- Will do everything we want exactly the way we want it
 
 # Considerations
 
