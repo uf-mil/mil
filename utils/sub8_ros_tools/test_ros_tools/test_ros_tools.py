@@ -5,12 +5,13 @@ from geometry_msgs.msg import Quaternion, Vector3, Pose2D
 from sensor_msgs.msg import Image
 from sub8_ros_tools import make_image_msg, get_image_msg
 from sub8_ros_tools import rosmsg_to_numpy
+from sub8_ros_tools import thread_lock
 
 
 class TestROSTools(unittest.TestCase):
     def test_rosmsg_to_numpy_quaternion(self):
         '''Test a rosmsg conversion for a geometry_msgs/Quaternion'''
-        # I know this is not  unit quaternion
+        # I know this is not a unit quaternion
         q = Quaternion(x=0.7, y=0.7, z=0.1, w=0.2)
         numpy_array = rosmsg_to_numpy(q)
 
@@ -21,7 +22,7 @@ class TestROSTools(unittest.TestCase):
 
     def test_rosmsg_to_numpy_vector(self):
         '''Test a rosmsg conversion for a geometry_msgs/Vector'''
-        v = Vector3(0.1, 99., 21.)
+        v = Vector3(x=0.1, y=99., z=21.)
         numpy_array = rosmsg_to_numpy(v)
 
         np.testing.assert_allclose(
@@ -52,6 +53,31 @@ class TestROSTools(unittest.TestCase):
 
         cv_im = get_image_msg(im_msg)
         np.testing.assert_array_equal(im, cv_im)
+
+    def test_thread_lock(self):
+        ran = False
+
+        class FakeLock(object):
+            def __init__(self):
+                self.entry = False
+                self.exit = False
+
+            def __enter__(self):
+                self.entry = True
+
+            def __exit__(self, *args):
+                self.exit = True
+
+        fake_lock = FakeLock()
+        @thread_lock(fake_lock)
+        def lock_test(a):
+            return (fake_lock.entry is True) and (fake_lock.exit is False)
+
+        result = lock_test(1)
+
+        self.assertTrue(fake_lock.entry, msg='Thread was never locked')
+        self.assertTrue(fake_lock.exit, msg='Thread was never released')
+        self.assertTrue(result, msg='Thread was not locked while the function was executed')
 
 
 if __name__ == '__main__':
