@@ -21,6 +21,13 @@ Simulation
 - Installs as an apt package
 - This...might be perfect...
 
+#### Installing UWSIM
+1. Following the instructions for [source-based installation avoiding catkin_make_isolated](http://www.irs.uji.es/uwsim/wiki/index.php?title=Installing_UWSim#Source-based_installation_in_Groovy_and_later_distributions_avoiding_catkin_make_isolated)
+
+2. Change all of the instance of 'hydro' to 'indigo'
+
+3. `rosrun uwsim uwsim
+
 ### Implement our own
 - Will take time
 - Have to support internally
