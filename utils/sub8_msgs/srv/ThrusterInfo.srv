@@ -1,0 +1,4 @@
+uint8 thruster_id
+---
+float32 min_force
+float32 max_force
