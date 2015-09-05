@@ -1,3 +1,3 @@
 * Alarm system - Each node publishes alarms on a single topic (a'la tf), and the system reports (SysRep) node determines the appropriate action
 * Better simulation - The ability to run simulated monte-carlo tests, simulate depth images, simulate water and wind resistance accounting for sub geometry
-* Get an [imaging sonar](http://www.humminbird.com/Category/Technology/Down-Imaging/), there are some very affordable imaging sonars available from Hummingbird
+* Get an [imaging sonar](http://www.humminbird.com/Category/Technology/Down-Imaging/), there are some very reasonably priced imaging sonars available from Hummingbird, we need to figure out sponsorship to get ahold of one.
