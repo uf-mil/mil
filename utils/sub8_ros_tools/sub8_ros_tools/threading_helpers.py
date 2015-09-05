@@ -27,4 +27,4 @@ def thread_lock(lock):
         # Return the function with locking added
         return locked_function
 
-    return thread_lock
+    return lock_thread
