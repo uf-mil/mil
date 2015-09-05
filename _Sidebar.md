@@ -6,6 +6,7 @@
     * [[Exception Handling]]
     * [[Implementation Plans]]
     * [[Stretch Goals]]
+    * [[Simulation]]
 * Implementation
     * [[Trajectory Generator]]
     * [[System Alarms]]
