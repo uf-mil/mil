@@ -41,7 +41,6 @@ def rosmsg_to_numpy(rosmsg, keys=None):
     else:
         output_array = np.zeros(len(keys), np.float32)
         for n, key in enumerate(keys):
-            print key
             output_array[n] = getattr(rosmsg, key)
 
         return output_array
