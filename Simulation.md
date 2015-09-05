@@ -1,7 +1,10 @@
 Simulation
 ==========
 
+## Why are we creating our own simulation?
+Why not use V-REP or Gazebo?
 
+At the time of writing, neither was really designed for water vehicles. We determined that it would take as much time to configure one of those simulators as it would to write our own. Ours would exactly satisfy our needs, while specifically targeting all of the MIL vehicles.
 
 # Considerations
 
