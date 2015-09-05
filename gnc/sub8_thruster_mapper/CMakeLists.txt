@@ -8,3 +8,10 @@ catkin_package()
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
+
+if(CATKIN_ENABLE_TESTING)
+  foreach(T
+      test/test_sub8_mapper.test)
+     add_rostest(${T})
+  endforeach()
+endif()
