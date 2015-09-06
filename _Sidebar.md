@@ -13,6 +13,7 @@
     * [[Thrusters]]
 * [[Code Policy]]
     * [[ROS Conventions]]
+    * [[Other Conventions]]
 * Tribal Knowledge
     * [[SSH into the sub]]
     * [[ROS things]]
