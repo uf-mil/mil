@@ -9,26 +9,26 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_message_files(
+  FILES
+  Alarm.msg
+  Thrust.msg
+  ThrusterCmd.msg
+)
+add_service_files(
+  FILES
+  ThrusterInfo.srv
+)
+
 # add_action_files(
 #   FILES
 #   Action1.action
-#   Action2.action
 # )
-# generate_messages(
-#   DEPENDENCIES
-#   geometry_msgs
-#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  geometry_msgs
+  std_msgs
+)
 
 catkin_package(
     LIBRARIES sub8_msgs
