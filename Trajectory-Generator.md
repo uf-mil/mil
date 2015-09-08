@@ -50,6 +50,9 @@ the list of future waypoints will collide with the new obstacles
 * [Much Ado About Splines and CX Continuity](http://graphics.stanford.edu/courses/cs348a-12-winter/Handouts/handout27.pdf)
 * [Fast Smoothing of Motion Planning Trajectories using B-Splines](https://wwwx.cs.unc.edu/~panj/index_files/files/ICRA11.pdf)
 
+# 3D Occupancy Grid
+[OctoMap](http://www2.informatik.uni-freiburg.de/~hornunga/pub/hornung13auro.pdf)
+
 # System Details #
 
 ## Configuration ##
