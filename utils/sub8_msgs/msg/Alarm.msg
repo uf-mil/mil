@@ -1,7 +1,7 @@
 # Sub8 Alarm message. All alarms should be published on the /alarm topic
 
 # Does the alarm require an action?
-bool (1) action_required
+bool action_required
 
 # A brief human-readable description of the alarm
 string problem_description
