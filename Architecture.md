@@ -1,7 +1,7 @@
 Architecture Overview
 ====================
 
-Todo: Visual diagrams
+![Simple Architecture Diagram](http://imgur.com/imkjbCL)
 
 # Considerations
 The sub should be able to...
