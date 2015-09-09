@@ -1,7 +1,7 @@
 Architecture Overview
 ====================
 
-![Simple Architecture Diagram](http://imgur.com/imkjbCL)
+![Simple Architecture Diagram](http://i.imgur.com/imkjbCL.png?1)
 
 # Considerations
 The sub should be able to...
