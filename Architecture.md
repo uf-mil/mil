@@ -1,6 +1,9 @@
 Architecture Overview
 ====================
 
+# Simple Diagram
+This diagram is a draft, and is not all-inclusive, but should contain all of the information one needs to begin adding software.
+
 ![Simple Architecture Diagram](http://i.imgur.com/imkjbCL.png?1)
 
 # Considerations
