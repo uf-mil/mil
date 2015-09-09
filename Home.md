@@ -16,6 +16,8 @@ Zach Goins
 
 Ralph Leyva
 
+David Soto
+
 Annie Luc
 
 Jacob Panikulam
