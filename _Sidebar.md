@@ -1,6 +1,7 @@
 * [[Home]]
     * [[Getting Started]]
     * [[Editing the Wiki]]
+    * [[Tech Talks]]
 * Plans
     * [[Architecture]]
     * [[Exception Handling]]
