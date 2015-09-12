@@ -40,8 +40,8 @@ class ThrusterMapper(object):
         # Make thruster layout
         self.B = self.generate_B(layout)
 
-        self.wrench_sub = rospy.Subscriber('/wrench', WrenchStamped, self.request_wrench_cb, queue_size=1)
-        self.thruster_pub = rospy.Publisher('/thrust', Thrust, queue_size=1)
+        self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.request_wrench_cb, queue_size=1)
+        self.thruster_pub = rospy.Publisher('thrusters/thrust', Thrust, queue_size=1)
 
     @thread_lock(lock)
     def update_layout(self, srv):
@@ -57,7 +57,7 @@ class ThrusterMapper(object):
             --> Add range service proxy using thruster names
                 --> This is not necessary, since they are all the same thruster
         '''
-        range_service = 'thruster_range'
+        range_service = 'thrusters/thruster_range'
         rospy.logwarn("Waiting for service {}".format(range_service))
         rospy.wait_for_service(range_service)
         rospy.logwarn("Got {}".format(range_service))
@@ -68,7 +68,7 @@ class ThrusterMapper(object):
 
     def get_thruster_wrench(self, position, direction):
         '''Compute a single column of B, or the wrench created by a particular thruster'''
-        assert np.close(1.0, np.linalg.norm(direction), atol=1e-3), "Direction must be a unit vector"
+        assert np.isclose(1.0, np.linalg.norm(direction), atol=1e-3), "Direction must be a unit vector"
         forces = direction
         torques = np.cross(position, forces)
         wrench_column = np.hstack([forces, torques])
