@@ -26,11 +26,13 @@ We have 8 VideoRay M5 Thrusters on Subjugator 8. These are the primary mode of a
     * [x] Implement srv/msg types
         * Thrusters should communicate their capabilities
     * [x] Implement thruster info publisher
-    * [ ] Publish thruster status messages
+    * [x] Publish thruster status messages
     * [ ] Implement alarms
         * [ ] Implement thruster-out handling
         * [ ] Add temp/voltage alarms
-
+* [ ] Testing
+    * [x] Add nosetests
+    * [ ] Add rostest integration tests
 * Stretch Goals
     * [ ] Poll the thrusters without issuing a command
 
