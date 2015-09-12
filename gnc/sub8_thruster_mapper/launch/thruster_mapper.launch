@@ -1,6 +1,6 @@
 <launch>
     <rosparam>
-      busses:
+      busses: 
         - port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A403IMC9-if00-port0
           thrusters:
             FLV: {
