@@ -29,6 +29,7 @@ We have 8 VideoRay M5 Thrusters on Subjugator 8. These are the primary mode of a
     * [ ] Publish thruster status messages
     * [ ] Implement alarms
         * [ ] Implement thruster-out handling
+        * [ ] Add temp/voltage alarms
 
 * Stretch Goals
     * [ ] Poll the thrusters without issuing a command
