@@ -1,6 +1,8 @@
 Simulation
 ==========
 
+We require a full dynamic simulation of the Sub. This includes some things listed in the considerations section of this page. 
+
 # Tools
 
 ### V-REP
@@ -17,9 +19,9 @@ Simulation
 ### UWSim
 - Already has DVL, imaging sonar, depth sensor support
 - Water-resistance support
-- Surface wave support
-- Installs as an apt package
-- This...might be perfect...
+- Surface wave support (But apparently not physical simulation?)
+- Hard to install
+- Hard to configure
 
 #### Installing UWSIM
 1. Following the instructions for [source-based installation avoiding catkin_make_isolated](http://www.irs.uji.es/uwsim/wiki/index.php?title=Installing_UWSim#Source-based_installation_in_Groovy_and_later_distributions_avoiding_catkin_make_isolated)
@@ -32,6 +34,7 @@ Simulation
 - Will take time
 - Have to support internally
 - Will do everything we want exactly the way we want it
+- We can easily adapt it to RobotX
 
 # Considerations
 
