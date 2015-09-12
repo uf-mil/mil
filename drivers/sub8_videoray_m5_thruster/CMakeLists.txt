@@ -3,6 +3,7 @@ project(sub8_videoray_m5_thruster)
 find_package(catkin REQUIRED COMPONENTS
   rospy
 )
+catkin_python_setup()
 catkin_package()
 include_directories(
   ${catkin_INCLUDE_DIRS}
