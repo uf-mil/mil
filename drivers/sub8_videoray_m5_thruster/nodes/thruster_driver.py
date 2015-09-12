@@ -5,7 +5,8 @@ import rospy
 import scipy.interpolate
 import threading
 import argparse
-from sub8_msgs.msg import Thrust, ThrusterCmd
+from std_msgs.msg import Header
+from sub8_msgs.msg import Thrust, ThrusterCmd, ThrusterStatus
 from sub8_ros_tools import wait_for_param, thread_lock
 from sub8_msgs.srv import ThrusterInfo, ThrusterInfoResponse
 from sub8_thruster_comm import thruster_comm_factory
@@ -19,10 +20,7 @@ class ThrusterDriver(object):
             - Instantiate ThrusterPorts, (Either simulated or real), for communicating with thrusters
             - Track a thrust_dict, which maps thruster names to the appropriate port
             - Given a command message, route that command to the appropriate port/thruster
-
-        TODO:
-            - Publish thruster status messages
-
+            - Send a thruster status message describing the status of the particular thruster
         '''
         self.make_fake = rospy.get_param('simulate', False)
         if self.make_fake:
@@ -35,8 +33,9 @@ class ThrusterDriver(object):
         # Bus configuration
         self.port_dict = self.load_bus_layout(bus_layout)
 
-        thrust_service = rospy.Service('thruster_range', ThrusterInfo, self.get_thruster_info)
-        self.thrust_sub = rospy.Subscriber('/thrust', Thrust, self.thrust_cb, queue_size=1)
+        thrust_service = rospy.Service('thrusters/thruster_range', ThrusterInfo, self.get_thruster_info)
+        self.thrust_sub = rospy.Subscriber('thrusters/thrust', Thrust, self.thrust_cb, queue_size=1)
+        self.status_pub = rospy.Publisher('thrusters/thruster_status', ThrusterStatus, queue_size=8)
 
     def load_config(self, path):
         '''Load the configuration data:
@@ -92,6 +91,23 @@ class ThrusterDriver(object):
 
         # We immediately get thruster_status back
         thruster_status = target_port.command_thruster(name, force)
+        message_contents = [
+            'rpm',
+            'bus_voltage',
+            'bus_current',
+            'temperature',
+            'fault',
+            'response_node_id',
+        ]
+        message_keyword_args = {key: thruster_status[key] for key in message_contents}
+
+        self.status_pub.publish(
+            ThrusterStatus(
+                header=Header(stamp=rospy.Time.now()),
+                name=name,
+                **message_keyword_args
+            )
+        )
 
     def thrust_cb(self, msg):
         '''Callback for recieving thrust commands
@@ -102,9 +118,6 @@ class ThrusterDriver(object):
 
 
 if __name__ == '__main__':
-    '''
-        --> Simulation capabilities (Return thruster ranges)
-    '''
     usage_msg = "Interface to Sub8's VideoRay M5 thrusters"
     desc_msg = "Specify a path to the configuration.json file containing the thrust calibration data"
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)

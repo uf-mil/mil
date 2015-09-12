@@ -16,3 +16,4 @@ Run with the argument `--configuration_path=$(find sub8_videoray_m5_thruster)/co
 
 
 # ROS
+The thruster driver takes commands over the topic `thrusters/thrust` and publishes status over `thrusters/thruster_status`

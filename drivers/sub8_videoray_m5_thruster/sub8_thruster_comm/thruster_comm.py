@@ -4,6 +4,7 @@ import struct
 import binascii
 from .protocol import Const
 import serial
+import rospy
 
 
 class ThrusterPort(object):
@@ -109,9 +110,9 @@ class ThrusterPort(object):
             'header_checksum',
             'device_type',
             'rpm',
-            'bus_v',
-            'bus_i',
-            'temp',
+            'bus_voltage',
+            'bus_current',
+            'temperature',
             'fault',
             'payload_checksum',
         ]

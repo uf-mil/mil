@@ -14,6 +14,7 @@ add_message_files(
   Alarm.msg
   Thrust.msg
   ThrusterCmd.msg
+  ThrusterStatus.msg
 )
 add_service_files(
   FILES
@@ -24,6 +25,7 @@ add_service_files(
 #   FILES
 #   Action1.action
 # )
+
 generate_messages(
   DEPENDENCIES
   geometry_msgs

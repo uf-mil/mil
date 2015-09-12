@@ -17,8 +17,8 @@ class FakeThrusterPort(object):
         self.status_dict[thruster_name] = {
             'fault': 0,
             'rpm': 0,
-            'temp': 30,
-            'bus_v': 48,
+            'temperature': 30,
+            'bus_voltage': 48,
         }
 
     def read_status(self, thruster_name):
@@ -35,13 +35,13 @@ class FakeThrusterPort(object):
             'header_checksum',
             'device_type',
             'rpm',
-            'bus_v',
-            'bus_i',
-            'temp',
+            'bus_voltage',
+            'bus_current',
+            'temperature',
             'fault',
             'payload_checksum',
         ]
-        response_dict = {key: self.status_dict.get(key, 0) for key in response_keys}
+        response_dict = {key: self.status_dict[thruster_name].get(key, 0) for key in response_keys}
         return response_dict
 
     def command_thruster(self, thruster_name, normalized_thrust):
