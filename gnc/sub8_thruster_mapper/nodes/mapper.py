@@ -5,6 +5,7 @@ import numpy as np
 from sub8_ros_tools import wait_for_param, thread_lock, rosmsg_to_numpy
 import threading
 from sub8_msgs.msg import Thrust, ThrusterCmd
+from sub8_msgs.srv import ThrusterInfo
 from geometry_msgs.msg import WrenchStamped
 
 
@@ -35,10 +36,12 @@ class ThrusterMapper(object):
 
         '''
         self.min_thrust, self.max_thrust = self.get_ranges()
+
         # Make thruster layout
         self.B = self.generate_B(layout)
-        self.wrench_sub = rospy.Subscriber('/wrench', WrenchStamped, self.request_wrench_cb, queue_size=1)
-        self.thruster_pub = rospy.Publisher('/thrust', Thrust, queue_size=1)
+
+        self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.request_wrench_cb, queue_size=1)
+        self.thruster_pub = rospy.Publisher('thrusters/thrust', Thrust, queue_size=1)
 
     @thread_lock(lock)
     def update_layout(self, srv):
@@ -51,15 +54,21 @@ class ThrusterMapper(object):
 
     def get_ranges(self):
         '''Get upper and lower thrust limits for each thruster
-        Todo: Actually do something
-            --> Wait for a service in the thruster driver to say something
-            - We have this information in the form of calibration.json
+            --> Add range service proxy using thruster names
+                --> This is not necessary, since they are all the same thruster
         '''
-        rospy.logwarn("Thruster mapper not querying thrusters for range data")
-        return np.array([-90] * 8), np.array([90] * 8)
+        range_service = 'thrusters/thruster_range'
+        rospy.logwarn("Waiting for service {}".format(range_service))
+        rospy.wait_for_service(range_service)
+        rospy.logwarn("Got {}".format(range_service))
+        range_service_proxy = rospy.ServiceProxy(range_service, ThrusterInfo)
+        thruster_range = range_service_proxy(0)
+
+        return np.array([thruster_range.min_force] * 8), np.array([thruster_range.max_force] * 8)
 
     def get_thruster_wrench(self, position, direction):
         '''Compute a single column of B, or the wrench created by a particular thruster'''
+        assert np.isclose(1.0, np.linalg.norm(direction), atol=1e-3), "Direction must be a unit vector"
         forces = direction
         torques = np.cross(position, forces)
         wrench_column = np.hstack([forces, torques])
@@ -153,13 +162,6 @@ class ThrusterMapper(object):
 
 
 if __name__ == '__main__':
-    '''
-        --> Deal with ranges
-        --> Deal with getting B
-        --> Figure out how to communicate with the thrusters
-        --> Do these things in TF
-            - Decided not to do this to avoid needless traffic for a lot of static transforms
-    '''
     rospy.init_node('thruster_mapper')
     busses = wait_for_param('busses')
     mapper = ThrusterMapper(busses)
