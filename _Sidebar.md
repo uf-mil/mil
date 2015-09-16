@@ -8,6 +8,7 @@
     * [[Implementation Plans]]
     * [[Stretch Goals]]
     * [[Simulation]]
+        * [[SubSim]]
 * Implementation
     * [[Trajectory Generator]]
     * [[System Alarms]]
