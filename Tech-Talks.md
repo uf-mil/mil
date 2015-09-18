@@ -1,5 +1,8 @@
 # Done
-Intro to CUDA
+9/11/15 - Intro to CUDA - J. Panikulam
+
+# Schedule
+9/25/15 - Intro to Reinforcement Learning and Applications - P. Emami
 
 # Candidates
 * Linear Kalman Filtering
