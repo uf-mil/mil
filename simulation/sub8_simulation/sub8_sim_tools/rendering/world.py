@@ -35,6 +35,7 @@ class Entity(object):
         self.model = np.eye(4, dtype=np.float32)
         self.model = self.model.dot(translate(self.position))
         self.view = np.eye(4, dtype=np.float32)
+
         self.projection = perspective(30.0, 800 / float(800), 2.0, 100.0)
         self.program['u_model'] = self.model
         self.program['u_view'] = self.view
@@ -111,27 +112,55 @@ class Box(Entity):
     _fragment_shader = Shaders.lighting['lambert']['fragment']
 
     def __init__(self, position, width, height, depth, color):
-        cube_mesh, cube_faces, _ = geometry.create_box(
+        box_mesh, box_faces, _ = geometry.create_box(
             width, height, depth,
             width_segments=int(width * 5),
             height_segments=int(height * 5),
             depth_segments=int(depth * 5)
         )
 
-        cube_buffer = np.zeros(
-            len(cube_mesh['position']), 
+        box_buffer = np.zeros(
+            len(box_mesh['position']), 
             dtype=[
                 ('a_position', np.float32, 3),
                 ('a_normal', np.float32, 3)
             ]
         )
 
-        cube_buffer['a_position'] = cube_mesh['position']
-        cube_buffer['a_normal'] = cube_mesh['normal'] 
+        box_buffer['a_position'] = box_mesh['position']
+        box_buffer['a_normal'] = box_mesh['normal'] 
         # No textures for now
         # vertex_buffer['a_texcoord'] = cube_buffer['texcoord'] 
 
-        super(self.__class__, self).__init__(gloo.VertexBuffer(cube_buffer), faces=cube_faces, position=position, color=color)
+        super(self.__class__, self).__init__(gloo.VertexBuffer(box_buffer), faces=box_faces, position=position, color=color)
+
+
+class Plane(Entity):
+    _vertex_shader = Shaders.lighting['lambert']['vertex']
+    _fragment_shader = Shaders.lighting['lambert']['fragment']
+
+    def __init__(self, position, width, height, color=(0, 255, 0), orientation=None):
+        '''TODO:
+            - Add set plane normal
+        '''
+        plane_mesh, plane_faces, _ = geometry.create_plane(
+            width, height,
+            width_segments=int(width * 5),
+            height_segments=int(height * 5),
+        )
+
+        plane_buffer = np.zeros(
+            len(plane_mesh['position']), 
+            dtype=[
+                ('a_position', np.float32, 3),
+                ('a_normal', np.float32, 3)
+            ]
+        )
+
+        plane_buffer['a_position'] = plane_mesh['position']
+        plane_buffer['a_normal'] = plane_mesh['normal'] 
+        super(self.__class__, self).__init__(gloo.VertexBuffer(plane_buffer), faces=plane_faces, position=position, color=color)
+        self.set_debug()
 
 
 class World(object):
@@ -158,6 +187,11 @@ class World(object):
         box = Box(position, width, height, depth, color)
         self.entities.append(box)
         return box
+
+    def add_plane(self, position, width, height, color=(0, 255, 0), orientation=None):
+        plane = Plane(position, width, height, color, orientation)
+        self.entities.append(plane)
+        return plane
 
     def add_camera(self, position, orientation, topic, projection=None):
         '''Add a ros-camera to view the scene'''

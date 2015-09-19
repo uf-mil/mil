@@ -6,43 +6,34 @@ from sub8_sim_tools.rendering import Sphere, Box, World
 
 
 class Canvas(app.Canvas):
-
     def __init__(self):
         app.Canvas.__init__(self, keys='interactive', size=(800, 800))
         self.size = (800, 800)
-
-        self.world = World()
-        self.world.add_sphere((0.0, 0.0, 0.0), 1.0, (0.0, 50.0, 0.0))
-        self.world.add_sphere((0.0, 0.0, -10), 1.0, (100., 50.0, 0.0))
-        self.world.add_sphere((0.0, 0.8, -8), 0.4, (100., 50.0, 0.0))
-        self.world.add_sphere((0.8, 0.0, -10), 1.0, (100., 50.0, 0.0))
-        self.world.add_sphere((0.0, -0.8, -8), 0.4, (100., 50.0, 0.0))
-        self.world.add_box((0.8, 0.8, 5), 5.0, 2.0, 3.0, (50, 100, 100))
-
-        self.world.add_point_light((0.0, 0.0, 0.0), (0.1, 0.8, 0.5))
 
         self.translate = np.array([0.0, 0.0, 0.0])
         self.rotate = np.array([0.0, 0.0, 0.0])
 
         gloo.set_state(depth_test=True, blend=True)
         self._timer = app.Timer('auto', connect=self.on_timer, start=True)
+        self.physics_timer = app.Timer(1 / 29., connect=self.step_physics, start=True)
         self.clock = 0
-        self.stop_rotation = False
         self.view = np.eye(4)
+        # self.view = rotate(45, (1, 0, 0)).dot(
+            # )
+
         self.show()
 
-    def on_key_press(self, event):
-        if event.text == ' ':
-            self.stop_rotation = not self.stop_rotation
-
     def on_timer(self, event):
-        self.clock += np.pi / 100
+        self.clock += 0.1
         self.update()
 
     def on_resize(self, event):
         width, height = event.size
         gloo.set_viewport(0, 0, width, height)
     
+    def step_physics(self, event):
+        pass
+
     def on_draw(self, event):
         gloo.set_viewport(0, 0, *self.size)
         gloo.clear(color=True, depth=True)
@@ -59,7 +50,7 @@ class Canvas(app.Canvas):
             self.translate[0] += 0.3
         elif(event.text.lower() == ' '):
             self.translate[1] += -0.3
-        elif(event.key == 'Control'):
+        elif(event.text.lower() == 'c'):
             self.translate[1] += 0.3
         elif(event.text.lower() == 's'):
             self.translate[2] += -0.3
@@ -86,6 +77,17 @@ class Canvas(app.Canvas):
         )
         self.view = self.view.dot(translate(list(self.translate)))
 
+
 if __name__ == '__main__':
     c = Canvas()
+    c.world = World()
+    c.world.add_sphere((0.0, 0.0, 0.0), 1.0, (0.0, 50.0, 0.0))
+    c.world.add_sphere((0.0, 0.0, 0.3), 1.0, (100., 50.0, 0.0))
+    c.world.add_sphere((0.0, 0.8, 0.0), 0.4, (100., 50.0, 0.0))
+    c.world.add_sphere((0.8, 0.0, 0.5), 1.0, (100., 50.0, 0.0))
+    c.world.add_sphere((0.0, -0.8, -8), 0.4, (100., 50.0, 0.0))
+    c.world.add_box((0.8, 0.8, 5), 5.0, 2.0, 3.0, (50, 100, 100))
+    c.world.add_plane((0.0, 0.0, -1.0), 20.0, 20.0)
+    c.world.add_point_light((0.0, 0.0, 0.0), (0.1, 0.8, 0.5))
+
     app.run()
