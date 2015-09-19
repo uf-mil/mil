@@ -3,7 +3,6 @@
 Original Author: Annie Luc
 '''
 from __future__ import division
-import random
 import traceback
 import numpy as np
 import time
@@ -14,10 +13,6 @@ import random
 import time
 
 import ode
-import rospy
-from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Point, Vector3, Quaternion, WrenchStamped
-from sub8_msgs.msg import Thrust, ThrusterCmd
 
 
 class World(object):
@@ -29,8 +24,7 @@ class World(object):
         self.entities = []
         # Create a world object
         self.ode_world = ode.World()
-        # self.ode_world.setGravity(np.array([0, 0, -9.81]))    
-        self.ode_world.setGravity(np.array([0, 0, -1.81]))    
+        self.ode_world.setGravity(np.array([0, 0, -9.81]))    
 
         self.ode_world.setERP(0.8)
         self.ode_world.setCFM(1E-5)
@@ -47,6 +41,11 @@ class World(object):
         box = Box(self.ode_world, self.space, position, density, lx, ly, lz)
         self.entities.append(box)
         return box
+
+    def add_entity(self, Entity_Type, *args, **kwargs):
+        entity = Entity_Type(self.ode_world, self.space, *args, **kwargs)
+        self.entities.append(entity)
+        return entity
 
     def step(self, dt=None):
         if dt is None:
@@ -102,6 +101,16 @@ class Entity(object):
         pose[3, 3] = 1.
         return pose
 
+    def apply_damping_force(self):
+        velocity = np.array(self.body.getLinearVel(), dtype=np.float32)
+        norm_velocity = -0.2 * np.linalg.norm(velocity)
+        # self.body.addForce(norm_velocity * velocity)
+
+    def apply_damping_torque(self):
+        angular_velocity = np.array(self.body.getAngularVel(), dtype=np.float32)
+        norm_velocity = -0.2 * np.linalg.norm(angular_velocity)
+        # self.body.addTorque(norm_velocity * angular_velocity)
+
 
 class Box(Entity):
     def __init__(self, world, space, position, density, lx, ly, lz):
@@ -112,20 +121,14 @@ class Box(Entity):
         M.setBox(density, lx, ly, lz)
         self.body.setMass(M)
 
-        self.body.shape = "box"
-        self.body.boxsize = (lx, ly, lz)
-
         self.geom = ode.GeomBox(space, lengths=(lx, ly, lz))
         self.geom.setBody(self.body)
 
     def step(self, dt):
         # TODO: Improve from spherical approximation
         # self.body.addForce(real_buoyancy_force(-self.position[2], self.body.boxsize[0] / 2.)) 
-
-        # Damping force
-        velocity = np.array(self.body.getLinearVel())
-        norm_velocity = -100. * np.linalg.norm(velocity)
-        self.body.addForce(norm_velocity * velocity)
+        self.apply_damping_force()
+        self.apply_damping_torque()
 
 
 class Sphere(Entity):
@@ -242,45 +245,3 @@ def thruster_callback(msg):
                 defaultThrusters.forces[index] = thruster.thrust
                 index += 1
     testSphere.updateThrusters(defaultThrusters.forces)
-
-
-# Some variables used inside the simulation loop
-fps = 50
-dt = 1.0 / fps
-running = True
-
-# idle callback
-def _idlefunc ():
-    glutPostRedisplay ()
-    # Simulate
-    n = 2
-    for i in range(n):
-        # Detect collisions and create contact joints
-        space.collide((world,contactgroup), near_callback)
-
-        # Simulation step
-        testSphere.step(dt / n)
-        testBox.step(dt / n)
-
-        world.step(dt / n)
-
-        # Remove all contact joints
-        contactgroup.empty()
-
-if __name__ == '__main__':
-    testSphere = Sphere((-10*random.gauss(0,0.1),-2.0,-2*random.gauss(0,0.1)), 100, 1, (0,0,0))
-    testBox = Box((random.gauss(0,0.1),1.0,random.gauss(0,0.1)), 50, 1, 1, 1, (.6,.2,1))
-
-    ######################################################################
-    '''This sections incorporates ROS to be able to send messages to control the thruster values
-    as well as publish messages on body odometry'''
-    
-    rospy.init_node('subsim')                                   #Initialization of ROS node called 'subsim' for process
-    
-    #odom_pub = rospy.Publisher('/sim_odom', Odometry)          #Initializes a publisher to report odometry of the simulation submarine
-    thruster_subscriber = rospy.Subscriber('/thrust', Thrust, thruster_callback)
-    
-    glutIdleFunc (_idlefunc)
-    glutMainLoop ()
-
-    rospy.spin()
