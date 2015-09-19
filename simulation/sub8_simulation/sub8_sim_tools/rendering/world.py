@@ -92,8 +92,8 @@ class Entity(object):
 
 
 class Sphere(Entity):
-    _vertex_shader = Shaders.lighting['lambert']['vertex']
-    _fragment_shader = Shaders.lighting['lambert']['fragment']
+    _vertex_shader = Shaders.lighting['phong']['vertex']
+    _fragment_shader = Shaders.lighting['phong']['fragment']
 
     def __init__(self, position, radius, color, **kwargs):
         sphere_mesh = geometry.create_sphere(
