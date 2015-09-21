@@ -18,9 +18,6 @@ class Canvas(app.Canvas):
         self.physics_timer = app.Timer(1 / 29., connect=self.step_physics, start=True)
         self.clock = 0
         self.view = np.eye(4)
-        # self.view = rotate(45, (1, 0, 0)).dot(
-            # )
-
         self.show()
 
     def on_timer(self, event):

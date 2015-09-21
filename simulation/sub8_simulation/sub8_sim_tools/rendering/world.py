@@ -28,7 +28,6 @@ class Entity(object):
         self.color = np.array(color, dtype=np.float32) / 255.  # Normalize to [0, 1]
 
         self.program = gloo.Program(self._vertex_shader, self._fragment_shader)
-        # self.program.bind(gloo.VertexBuffer(mesh))
         self.program.bind(mesh)
         self.faces = gloo.IndexBuffer(faces)
 
@@ -130,7 +129,7 @@ class Box(Entity):
         box_buffer['a_position'] = box_mesh['position']
         box_buffer['a_normal'] = box_mesh['normal'] 
         # No textures for now
-        # vertex_buffer['a_texcoord'] = cube_buffer['texcoord'] 
+        # vertex_buffer['a_texcoord'] = box_buffer['texcoord'] 
 
         super(self.__class__, self).__init__(gloo.VertexBuffer(box_buffer), faces=box_faces, position=position, color=color)
 
@@ -170,10 +169,6 @@ class World(object):
         - Add mesh
         - Add ros-camera (How to handle rigid-body offsets?)
         '''
-        # Set up vispy objects
-        # Initialize list of objects to render
-        # Initialize global shader
-        # World.add_object
         self.entities = []
 
     def add_sphere(self, position, radius, color, **kwargs):
@@ -194,10 +189,13 @@ class World(object):
         return plane
 
     def add_camera(self, position, orientation, topic, projection=None):
-        '''Add a ros-camera to view the scene'''
+        '''Add a ros-camera to view the scene
+            TODO: Only draw when the frame is going to be needed
+        '''
         raise(NotImplementedError('add_camera not implemented!'))
         camera = Camera((640, 640), position, orientation, topic, projection=projection)
         self.views.append(camera)
+        return camera
 
     def add_sonar(self, position, orientation, projection=None, maxdepth=100):
         '''Add a ros-sonar to view the scene'''
@@ -207,8 +205,10 @@ class World(object):
         '''Add a point-light to illuminate the scene
             Shading implemented: 
                 - Diffuse (Lambert)
-            TODO:
                 - Blinn-Phong
+            TODO:
+                - Multiple lights
+                - Shadows
             '''
         for entity in self.entities:
             entity.program['u_light_position'] = position

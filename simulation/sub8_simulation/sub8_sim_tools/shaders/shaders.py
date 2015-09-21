@@ -88,9 +88,9 @@ for _file in os.listdir(filepath):
 
 
 if __name__ == '__main__':
-    print Shaders.passthrough['point']['vertex']
+    print Shaders.passthrough['debug']['vertex']
     print '---------'
-    print Shaders.passthrough['point']['fragment']
+    print Shaders.passthrough['debug']['fragment']
     print '========='
     print Shaders.passthrough['mesh']['vertex']
     print '---------'
