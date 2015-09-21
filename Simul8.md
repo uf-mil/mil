@@ -6,6 +6,7 @@ Simul8 is our internally implemented sub dynamics and vision simulation.
 # How do I run it?
 
 Run...
+    
     roslaunch sub8_simulation sim_full.launch
 
 Which will run all of the necessary nodes to run simulations.
