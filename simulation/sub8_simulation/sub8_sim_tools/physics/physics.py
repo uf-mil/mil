@@ -59,7 +59,6 @@ class World(object):
         if dt is None:
             dt = self.dt
 
-        # for i in range(2):
         self.space.collide((self.ode_world, self.contact_group), self.near_callback)
         self.ode_world.step(dt / 2)
         for entity in self.entities:

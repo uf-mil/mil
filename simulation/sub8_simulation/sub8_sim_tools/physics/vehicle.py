@@ -20,8 +20,10 @@ class Sub8(Box):
 
         See Annie for how the thrusters work
         '''
-        lx, ly, lz = 0.5, 0.2, 0.2
-        density = 5
+        lx, ly, lz = 10 * 0.5588, 10 * 0.5588, 10 * 0.381  # Meters
+        volume = lx * ly * lz
+        weight = 31.75  # kg
+        density = weight / volume
         super(self.__class__, self).__init__(world, space, position, density, lx, ly, lz)
 
         self.truth_odom_pub = rospy.Publisher('truth/odom', Odometry, queue_size=1)
@@ -91,9 +93,8 @@ class Sub8(Box):
         for i, (name, rel_dir, rel_pos) in enumerate(self.thruster_list):
             thruster_force = self.thrust_dict.get(name, 0.0)
             body_force = rel_dir * thruster_force
-            # print name, body_force
             self.body.addRelForceAtRelPos(body_force, rel_pos)
 
         self.apply_damping_force()
-        self.apply_damping_torque()
+        # self.apply_damping_torque()
         self.publish_pose()
