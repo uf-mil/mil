@@ -4,7 +4,8 @@ import tf
 from time import time
 from sub8_sim_tools.physics.physics import Box
 from sub8_msgs.msg import Thrust, ThrusterCmd
-from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion
+import geometry_msgs.msg as geometry
+from nav_msgs.msg import Odometry
 from std_msgs.msg import Header
 
 
@@ -20,10 +21,10 @@ class Sub8(Box):
         See Annie for how the thrusters work
         '''
         lx, ly, lz = 0.5, 0.2, 0.2
-        density = 20
+        density = 5
         super(self.__class__, self).__init__(world, space, position, density, lx, ly, lz)
 
-        self.truth_pose_pub = rospy.Publisher('truth/pose', PoseStamped, queue_size=1)
+        self.truth_odom_pub = rospy.Publisher('truth/odom', Odometry, queue_size=1)
         self.thruster_sub = rospy.Subscriber('thrusters/thrust', Thrust, self.thrust_cb, queue_size=2)
         self.thrust_dict = {}
         # Make this a parameter
@@ -43,20 +44,36 @@ class Sub8(Box):
 
     def publish_pose(self):
         pose_matrix = np.transpose(self.pose)
+        linear_vel, angular_vel = self.velocity
         quaternion = tf.transformations.quaternion_from_matrix(pose_matrix)
         translation = tf.transformations.translation_from_matrix(pose_matrix)
 
-        pose_msg = PoseStamped(
-            header=Header(
-                stamp=rospy.Time.now(),
-                frame_id='/odom'
+        header = Header(
+            stamp=rospy.Time.now(),
+            frame_id='/world'
+        )
+        pose = geometry.Pose(
+            position=geometry.Point(*translation),
+            orientation=geometry.Quaternion(*quaternion),
+        )
+
+        twist = geometry.Twist(
+            linear=geometry.Vector3(*linear_vel),
+            angular=geometry.Vector3(*angular_vel)
+        )
+
+        odom_msg = Odometry(
+            header=header,
+            child_frame_id='/body',
+            pose=geometry.PoseWithCovariance(
+                pose=pose
             ),
-            pose=Pose(
-                position=Point(*translation),
-                orientation=Quaternion(*quaternion),
+            twist=geometry.TwistWithCovariance(
+                twist=twist
             )
         )
-        self.truth_pose_pub.publish(pose_msg)
+
+        self.truth_odom_pub.publish(odom_msg)
 
     def thrust_cb(self, msg):
         '''TODO: Clamp'''
