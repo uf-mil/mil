@@ -1,0 +1,3 @@
+<launch>
+	<node pkg="sub8_trajectory_generator" type="trajectory_generator" name="sub8_trajectory_generator" />
+</launch>
