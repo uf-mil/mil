@@ -3,7 +3,7 @@
 ##RobotX Wam-V on board softare git
 ==========
 
-This is the repository for the University of Florida's RobotX Autonomous Robot. It contains all ROS packages specifically to PropaGator2
+This is the repository for the University of Florida's RobotX Autonomous Robot. It contains all ROS packages specifically to RobotX
 ## Installation instructions
 
 1. Install Ubuntu
