@@ -1,0 +1,6 @@
+<launch>
+    <param name="simulate" value="true" />
+    <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper.launch" />
+    <include file="$(find sub8_videoray_m5_thruster)/launch/thruster_driver.launch" />
+    <node pkg="sub8_simulation" type="simulate.py" name="sub8_simulation" output="screen" />
+</launch>
