@@ -1,9 +1,9 @@
-# PropaGator2
+# AUVSI Maritime RobotX Challenge
 
-PropaGator
+##RobotX Wam-V on board softare git
 ==========
 
-This is the repository for the University of Florida's PropaGator2 Autonomous Robot. It contains all ROS packages specifically to PropaGator2
+This is the repository for the University of Florida's RobotX Autonomous Robot. It contains all ROS packages specifically to PropaGator2
 ## Installation instructions
 
 1. Install Ubuntu
@@ -34,8 +34,8 @@ http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment.
 
 BEFORE YOU BEGIN MAKING WORKSPACE - The ROS wiki will advise you to name your 
 workspace `/catkin_ws` but this folder name can be named whatever you like. It
-is advised to name the folder `/PropaGator2` instead of `/catkin_ws` and then keep 
-all things related to PropaGator2 and only things related to PropaGator2 in this
+is advised to name the folder `/RobotX` instead of `/catkin_ws` and then keep 
+all things related to RobotX and only things related to RobotX in this
 workspace. This will keep your build time low. 
 
 The linked tutorial omits this, but you have to add the following to your
@@ -47,24 +47,24 @@ the tutorial) in order to finish setting up your workspace:
 After adding those lines to your `.bashrc` file, open a new shell so the
 settings take effect.
 
-4. Add PropaGator2 repository
+4. Add RobotX repository
 --------------------------
 
 Run:
 
-    roscd && cd ~WORKSPACE_NAME/src && git clone git@github.com:uf-mil/PropaGator2.git
+    roscd && cd ~WORKSPACE_NAME/src && git clone git@github.com:uf-mil/RobotX.git
 
 If this fails with a "Permission denied" error, you need to create an SSH key and
 add it to your GitHub account.
 
 [Creating SSH Keys] (https://help.github.com/articles/generating-ssh-keys/)
 
-Then, go into the PropaGator directory and type `git pull` to pull the newest commits.
+Then, go into the RobotX directory and type `git pull` to pull the newest commits.
 
 5. Run catkin_make
 ------------------
 
-Move to your ROS PropaGator2 workspace and run: 
+Move to your ROS RobotX workspace and run: 
 
     catkin_make
 
