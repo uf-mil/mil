@@ -35,7 +35,7 @@ namespace sub8 {
 				StateType() : CompoundStateSpace::StateType() {}
 
 				// The as<SomeStateSpace::StateType>(i) call returns a reference 
-				// to the i'th subspace of the SompoundStateSpace "SomeStateSpace"
+				// to the i'th subspace of the CompoundStateSpace, of type "SomeStateSpace"
 
 				// Get the x component of the position
 				double x() const {
@@ -68,17 +68,17 @@ namespace sub8 {
 				}
 
 				// Get the angular velocity about the x axis
-				double alpha_dot() const {
+				double ang_vel_x() const {
 					return as<RealVectorStateSpace::StateType>(2)->values[0]; 
 				}
 
 				// Get the angular velocity about the y axis
-				double beta_dot() const {
+				double ang_vel_y() const {
 					return as<RealVectorStateSpace::StateType>(2)->values[1]; 
 				}
 
 				// Get the angular velocity about the z axis
-				double gamma_dot() const {
+				double ang_vel_z() const {
 					return as<RealVectorStateSpace::StateType>(2)->values[2]; 
 				}
 
@@ -166,9 +166,9 @@ namespace sub8 {
 			// Get the maximum value a call to distance() can return (or an upper bound).
 			// For unbounded state spaces, this function can return infinity.
 			//
-    		// Tight upper bounds are preferred because the value of the extent is used
-    		// in the automatic computation of parameters for planning. If the bounds
-    		// are less tight, the automatically computed parameters will be less useful. 
+			// Tight upper bounds are preferred because the value of the extent is used
+			// in the automatic computation of parameters for planning. If the bounds
+			// are less tight, the automatically computed parameters will be less useful.
 			virtual double getMaximumExtent() const; 
 
 			// Define equality between states
