@@ -1,8 +1,12 @@
 # Done
 9/11/15 - Intro to CUDA - J. Panikulam
 
-# Schedule
 9/25/15 - Intro to Reinforcement Learning and Applications - P. Emami
+
+
+# Schedule
+
+
 
 # Candidates
 * Linear Kalman Filtering
@@ -29,3 +33,7 @@
 * Intro to SLAM, probabilistic robotics
 
 * Bundle Adjustment for 3D reconstruction from images
+
+* Walking robots
+
+* Grasping
