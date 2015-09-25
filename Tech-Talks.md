@@ -6,7 +6,7 @@
 
 # Schedule
 
-
+10/2/15 - Intro to genetic Algorithms - R. Leyva
 
 # Candidates
 * Linear Kalman Filtering
