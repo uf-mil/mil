@@ -34,6 +34,6 @@
 
 * Bundle Adjustment for 3D reconstruction from images
 
-* Walking robots
+* Walking robots (How to walk, ZPM)
 
-* Grasping
+* Grasping (Grasp generation, grasp algorithms)
