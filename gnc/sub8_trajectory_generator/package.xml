@@ -9,9 +9,14 @@
 
   <license>MIT</license>
   
+  <url>https://github.com/uf-mil/Sub8/wiki/Trajectory-Generator</url>
+  <author>Patrick Emami</author>
+  
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>OMPL</build_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>roscpp</run_depend>
+  <run_depend>OMPL</run_depend>
 </package>
