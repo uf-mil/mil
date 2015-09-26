@@ -35,7 +35,7 @@ class Entity(object):
         self.model = self.model.dot(translate(self.position))
         self.view = np.eye(4, dtype=np.float32)
 
-        self.projection = perspective(30.0, 800 / float(800), 2.0, 100.0)
+        self.projection = perspective(30.0, 800 / float(800), 2.0, 500.0)
         self.program['u_model'] = self.model
         self.program['u_view'] = self.view
         self.program['u_projection'] = self.projection
@@ -135,8 +135,8 @@ class Box(Entity):
 
 
 class Plane(Entity):
-    _vertex_shader = Shaders.lighting['lambert']['vertex']
-    _fragment_shader = Shaders.lighting['lambert']['fragment']
+    _vertex_shader = Shaders.lighting['phong']['vertex']
+    _fragment_shader = Shaders.lighting['phong']['fragment']
 
     def __init__(self, position, width, height, color=(0, 255, 0), orientation=None):
         '''TODO:

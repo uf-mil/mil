@@ -18,7 +18,7 @@ class SimWorld(rendering.Canvas):
         self.entity_pairs = []
 
         # Physics world starts with such a plane
-        plane = self.rendering_world.add_plane((0.0, 0.0, -5.0), 20.0, 20.0)
+        plane = self.rendering_world.add_plane((0.0, 0.0, -5.0), 100.0, 100.0)
         plane.set_debug()
         super(self.__class__, self).__init__()
         self.view = np.array([
