@@ -1,0 +1,3 @@
+# Set the pose of something
+geometry_msgs/Pose pose
+---

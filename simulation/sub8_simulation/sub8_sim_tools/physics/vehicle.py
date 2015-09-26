@@ -2,7 +2,9 @@ import numpy as np
 import rospy
 import tf
 from time import time
+from sub8_ros_tools import rosmsg_to_numpy
 from sub8_sim_tools.physics.physics import Box
+from sub8_simulation.srv import SimSetPose, SimSetPoseResponse
 from sub8_msgs.msg import Thrust, ThrusterCmd
 import geometry_msgs.msg as geometry
 from nav_msgs.msg import Odometry
@@ -29,8 +31,8 @@ class Sub8(Box):
         self.truth_odom_pub = rospy.Publisher('truth/odom', Odometry, queue_size=1)
         self.thruster_sub = rospy.Subscriber('thrusters/thrust', Thrust, self.thrust_cb, queue_size=2)
         self.thrust_dict = {}
-        # Make this a parameter
 
+        # Make this a parameter
         # name, relative direction, relative position (COM)
         self.thruster_list = [
             ("FLV", np.array([ 0.000,  0.0, -1]), np.array([ 0.1583, 0.16900, 0.0142])),
@@ -43,6 +45,31 @@ class Sub8(Box):
             ("BRL", np.array([ 0.866, -0.5,  0]), np.array([-0.2678, -0.2795, 0.0000])),
         ]
         self.last_cmd_time = time()
+        self.set_up_ros()
+
+    def set_up_ros(self):
+        '''TODO:
+            Add pointAt
+        '''
+        self.position_server = rospy.Service('/sim/vehicle/set_pose', SimSetPose, self.set_pose_server)
+
+    def set_pose_server(self, srv):
+        '''Set the pose of the submarine
+        TODO: Make this an 'abstract' method of Entity, and assign each new Entity a name/id
+        '''
+        position = rosmsg_to_numpy(srv.pose.position)
+        self.body.setPosition(position)
+
+        rotation_q = rosmsg_to_numpy(srv.pose.orientation)
+        rotation_norm = np.linalg.norm(rotation_q)
+
+        # If the commanded rotation is valid
+        if np.isclose(rotation_norm, 1.):
+            self.body.setQuaternion(rotation_q)
+        else:
+            rospy.logwarn("Commanded quaternion was not a unit quaternion, NOT setting rotation")
+
+        return SimSetPoseResponse()
 
     def publish_pose(self):
         pose_matrix = np.transpose(self.pose)
