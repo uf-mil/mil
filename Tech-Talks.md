@@ -8,9 +8,10 @@
 
 10/2/15 - Intro to genetic Algorithms - R. Leyva
 
-# Candidates
-* Linear Kalman Filtering
+10/8/15 - State estimation and Kalman Filtering - Z. Goins
 
+
+# Candidates
 * Intro to computer vision
 
 * Intro to point cloud analysis
