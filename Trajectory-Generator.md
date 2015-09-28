@@ -110,6 +110,10 @@ the list of future waypoints will collide with the new obstacles
 1. **T-Generator Mediator**
     1. Encapsulates all communication between T-Generator modules to promote loose-coupling  
 
+## Sequence Diagrams 
+
+![Basic Usage](http://imgur.com/yS2aByP)
+
 ## Languages and Libraries ##
 * C++
 * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) 
