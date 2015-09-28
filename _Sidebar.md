@@ -2,7 +2,7 @@
     * [[Getting Started]]
     * [[Editing the Wiki]]
     * [[Tech Talks]]
-    * [[Manifesto]]]
+    * [[Manifesto]]
 * Plans
     * [[Architecture]]
     * [[Exception Handling]]
