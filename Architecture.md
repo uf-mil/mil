@@ -1,6 +1,8 @@
 Architecture Overview
 ====================
 
+TODO: Update to include navigation nodelet
+
 # Simple Diagram
 This diagram is a draft, and is not all-inclusive, but should contain all of the information one needs to begin adding software. Note: It does not contain the alarm system.
 
