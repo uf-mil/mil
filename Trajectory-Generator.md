@@ -91,6 +91,7 @@ The Trajectory Generator should...
 ## Sequence Diagrams 
 
 ![Basic Usage](http://imgur.com/yS2aByP.png)
+![New obstacle in Traversability Map](http://imgur.com/chpn1cL.png)
 
 ## Languages and Libraries ##
 * C++
