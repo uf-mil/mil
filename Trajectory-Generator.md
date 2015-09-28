@@ -112,7 +112,7 @@ the list of future waypoints will collide with the new obstacles
 
 ## Sequence Diagrams 
 
-![Basic Usage](http://imgur.com/yS2aByP)
+![Basic Usage](http://imgur.com/yS2aByP.png)
 
 ## Languages and Libraries ##
 * C++
