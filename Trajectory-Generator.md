@@ -46,7 +46,7 @@ The Trajectory Generator should...
     * geometry_msgs/Twist for velocity 
 
 ## Data input  ##
-* State state
+* Start state
 * Goal state
 
 ## Data output
