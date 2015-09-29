@@ -77,16 +77,15 @@ The Trajectory Generator should...
     1. It is advisable to maintain at least (2) viable "safety" paths, if possible.
     1. SPC should provide options for returning the "best" safety-path: the path that keeps the vehicle farthest from any obstacles, the path that will get the vehicle to a safe location in the shortest time, the path that expends the least amount of energy, etc. **This probably isn't necessary for the MVP**
 1. **Re-Planner**
-    1. This module will utilize the functionality of the motion-planner, and will only encapsulate algorithms that control the re-planning logic 
-    1. When the T-Generator is handed a new traversability map and told that there are new obstacles, the motion-planner will be queried to assess whether the new obstacles will obstruct the current trajectory at any point
-    1. If the current trajectory is obstructed, the motion-planner will begin to attempt to replan and will output an alarm alerting the system that the old trajectory should be invalidated
     1. An algorithm that uses as a metric the ratio of obstructed to unobstructed waypoints will determine how much of the current trajectory needs to be re-planned. This way, time is not wasted re-planning the entire trajectory for a small obstacle, but if a large obstacle is obstructing the majority of the trajectory, a new trajectory will be generated
+    1. Stretch goal is to do partial-trajectory re-planning. For starters, just replan starting from the affected waypoint
     1. If re-planning fails, the SPC should be notified to provide a safety path 
 1. **TGEN Node**
     1. Encapsulates all topic/service/action logic and callbacks 
     1. Should be loosely coupled from all other modules - only needs to know the T-Generator Mediator, who will handle delegating tasks to the other modules
-1. **T-Generator Mediator**
-    1. Encapsulates all communication between T-Generator modules to promote loose-coupling  
+1. **TGEN Manager**
+    1. Encapsulates all communication between T-Generator modules to promote loose-coupling
+    1. Facade for the OMPL-implementation
 
 ## Sequence Diagrams 
 
