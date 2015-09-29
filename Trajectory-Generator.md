@@ -92,6 +92,7 @@ The Trajectory Generator should...
 
 ![Basic Usage](http://imgur.com/U5gxEO3.png)
 ![New obstacle in Traversability Map](http://imgur.com/chpn1cL.png)
+[Link to enlarge](http://imgur.com/chpn1cL.png)
 
 ## Languages and Libraries ##
 * C++
