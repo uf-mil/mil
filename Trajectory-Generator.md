@@ -42,7 +42,7 @@ The Trajectory Generator should...
 
 * A sub8_waypoint msg will consist of:
     * header 
-    * geometry_msgs/PoseWithCovariance for position
+    * geometry_msgs/Pose for position
     * geometry_msgs/Twist for velocity 
 
 ## Data input  ##
