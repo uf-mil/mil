@@ -86,6 +86,7 @@ If you have any questions about what you should unit tests, talk to Patrick Emam
 * We will follow PEP8 with one exception: the line length may be up to 100 characters
 
 ## C++ 
+* [Clang-format](https://github.com/rosshemsley/SublimeClangFormat) to automatically format your code
 * [Google Styleguide](https://google-styleguide.googlecode.com/svn/trunk/cppguide.html)
 * [Google styleguide linter](https://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py) or find a Sublime plugin/linter that enforces the google styleguide
 
