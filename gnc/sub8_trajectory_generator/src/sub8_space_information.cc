@@ -4,6 +4,8 @@
 */
 #include "sub8_space_information.h"
 #include "sub8_state_validity_checker.h"
+#include "sub8_ode_solver.h"
+#include "ompl/control/ODESolver.h"
 
 using sub8::trajectory_generator::Sub8SpaceInformation;
 using sub8::trajectory_generator::Sub8SpaceInformationGenerator; 
@@ -22,9 +24,14 @@ Sub8SpaceInformationPtr Sub8SpaceInformationGenerator::generate() {
 	
 	Sub8SpaceInformationPtr si_ptr(new Sub8SpaceInformation(space, cspace));
 	
-	// Set state validity checker
+	// Create and set the state validity checker
 	Sub8StateValidityCheckerPtr vc_ptr(new Sub8StateValidityChecker(si_ptr));
 	si_ptr->setStateValidityChecker(static_cast<ompl::base::StateValidityCheckerPtr>(vc_ptr));
+	si_ptr->setStateValidityCheckingResolution(0.03); // 3 % -- TODO
+
+ 	// Create and set the ODEBasicSolver
+ 	ODESolverPtr ode_solver(new ompl::control::ODEBasicSolver<>(si_ptr, &sub8ODE));
+ 	si_ptr->setODESolver(ode_solver);
 
 	// Must be run once before use
 	si_ptr->setup();
@@ -38,6 +45,10 @@ void Sub8SpaceInformationGenerator::setStateSpaceBounds(const StateSpacePtr& spa
 
 void Sub8SpaceInformationGenerator::setControlSpaceBounds(const ControlSpacePtr& space) {
 	// TODO
+}
+
+void Sub8SpaceInformation::setODESolver(const ODESolverPtr& ode_solver) {
+	_sub8_ode_solver = ode_solver;
 }
 
 void Sub8SpaceInformation::propagate(const State* state, const Control* control, const double duration, State* result) const {

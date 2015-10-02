@@ -15,6 +15,8 @@ add_message_files(
   Thrust.msg
   ThrusterCmd.msg
   ThrusterStatus.msg
+  Trajectory.msg
+  Waypoint.msg
 )
 add_service_files(
   FILES

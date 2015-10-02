@@ -82,12 +82,12 @@ namespace sub8 {
 					return as<RealVectorStateSpace::StateType>(2)->values[2]; 
 				}
 
-				// Get a const reference to the orientation as a unit quaternion
+				// Get a const reference to the orientation (internally a unit quaternion)
 				const SO3StateSpace::StateType& rotation() const {
 					return *as<SO3StateSpace::StateType>(3);
 				}
 
-				// Get a reference to the orientation as a unit quaternion
+				// Get a reference to the orientation 
 				SO3StateSpace::StateType& rotation() {
 					return *as<SO3StateSpace::StateType>(3);
 				}
