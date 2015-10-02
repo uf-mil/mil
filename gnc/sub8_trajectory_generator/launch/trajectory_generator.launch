@@ -1,3 +1,11 @@
 <launch>
 	<node pkg="sub8_trajectory_generator" type="trajectory_generator" name="sub8_trajectory_generator" />
+	
+	<!-- Node configuration 	-->
+
+	<!-- Acceptable planners: 	-->
+	<!-- OMPL's PDST (1)		-->
+	<!-- OMPL's RRT  (2)		-->
+	<param name="planner" value="2" type="int"/>
+
 </launch>

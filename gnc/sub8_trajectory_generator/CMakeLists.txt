@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 set(PROJECT_NAME sub8_trajectory_generator)
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 project(${PROJECT_NAME})
 
 find_package(catkin REQUIRED COMPONENTS roscpp)
@@ -23,6 +24,7 @@ add_executable(
 	src/sub8_state_space.cc
 	src/sub8_space_information.cc
 	src/sub8_state_validity_checker.cc
+	src/sub8_tgen_manager.cc
 )
 
 target_link_libraries(trajectory_generator
