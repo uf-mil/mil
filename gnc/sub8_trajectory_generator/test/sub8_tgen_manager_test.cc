@@ -5,6 +5,8 @@
 #include <gtest/gtest.h>
 #include "sub8_tgen_manager.h"
 #include "sub8_state_space.h"
+#include "sub8_msgs/Waypoint.h"
+#include "sub8_msgs/Trajectory.h"
 
 using sub8::trajectory_generator::Sub8TGenManager;
 using sub8::trajectory_generator::Sub8StateSpace;
@@ -37,4 +39,48 @@ TEST(Sub8TGenManager, testSolveRRT) { ADD_FAILURE() << "Unimplemented test"; }
 // TODO
 TEST(Sub8TGenManager, testTrajectoryValidation) {
   ADD_FAILURE() << "Unimplemented test";
+}
+
+TEST(Sub8TGenManager, testStateToWaypoint) {
+  boost::shared_ptr<Sub8TGenManager> test_tgen_manager(new Sub8TGenManager(2));
+  boost::shared_ptr<Sub8StateSpace> test_state_space(new Sub8StateSpace());
+
+  State* state = test_state_space->allocState();
+  state->as<Sub8StateSpace::StateType>()->setPosition(1, 1, 1);
+  state->as<Sub8StateSpace::StateType>()->setLinearVelocity(1, 1, 1);
+  state->as<Sub8StateSpace::StateType>()->setAngularVelocity(1, 1, 1);
+  state->as<Sub8StateSpace::StateType>()->setOrientation(0.78, 0, 0, 0.78);
+
+  sub8_msgs::Waypoint wpoint = test_tgen_manager->stateToWaypoint(state);
+
+  std::vector<double> pos;
+  state->as<Sub8StateSpace::StateType>()->getPosition(pos); 
+
+  ASSERT_EQ(pos[0], wpoint.pos.position.x);
+  ASSERT_EQ(pos[1], wpoint.pos.position.y);
+  ASSERT_EQ(pos[2], wpoint.pos.position.z); 
+}
+
+TEST(Sub8TGenManager, testWaypointToState) {
+  boost::shared_ptr<Sub8TGenManager> test_tgen_manager(new Sub8TGenManager(2));
+  boost::shared_ptr<Sub8StateSpace> test_state_space(new Sub8StateSpace());
+  State* state = test_state_space->allocState();
+
+  boost::shared_ptr<sub8_msgs::Waypoint> wpoint(new sub8_msgs::Waypoint()); 
+  wpoint->pos.position.x = 1; 
+  wpoint->pos.position.y = 1; 
+  wpoint->pos.position.z = 2; 
+
+  state = test_tgen_manager->waypointToState(wpoint);
+
+  std::vector<double> pos;  
+  state->as<Sub8StateSpace::StateType>()->getPosition(pos); 
+
+  ASSERT_EQ(wpoint->pos.position.x, pos[0]); 
+  ASSERT_EQ(wpoint->pos.position.y, pos[1]); 
+  ASSERT_EQ(wpoint->pos.position.z, pos[2]); 
+}
+
+TEST(Sub8TGenManager, getTrajectory) {
+    ADD_FAILURE() << "Unimplemented test";
 }

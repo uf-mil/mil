@@ -15,8 +15,8 @@ class TGenNode;
 
 typedef boost::shared_ptr<TGenNode> TGenNodePtr;
 
-// Maintains a TGenManager object and defines a callback for a MotionPlanning
-// service
+// Maintains a TGenManager object and defines callbacks for service
+// requests
 class TGenNode {
  public:
   TGenNode(int& planner_id) : _tgen(new Sub8TGenManager(planner_id)) {}
@@ -29,7 +29,19 @@ class TGenNode {
 
     _tgen->setProblemDefinition(_tgen->waypointToState(start_state_wpoint),
                                 _tgen->waypointToState(goal_state_wpoint));
-    _tgen->solve();
+
+    // What is the desired behavior here? If planning fails and no
+    // solution path is found, should we return false from the callback? 
+    // Or just set "resp.success" to false? If this happens, is it a 
+    // system-shutdown-worthy event? 
+
+    resp.success = _tgen->solve();
+    if (resp.success) {
+       resp.trajectory = _tgen->getTrajectory();   
+    } else {
+      // ALARM?
+    }
+    return true;
   }
 
  private:

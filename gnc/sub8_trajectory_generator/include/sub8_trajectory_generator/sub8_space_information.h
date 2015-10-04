@@ -12,30 +12,26 @@
 #include "sub8_state_space.h"
 
 using ompl::base::StateSpacePtr;
-using ompl::base::State;
 using ompl::control::ControlSpacePtr;
-using ompl::control::Control;
 using ompl::control::ODESolverPtr;
-using ompl::control::SpaceInformation; 
+using ompl::control::SpaceInformationPtr; 
 
 namespace sub8 {
 
 namespace trajectory_generator {
 
 // forward declarations for typedefs
-class Sub8SpaceInformation;
 class Sub8SpaceInformationGenerator;
 
 // Typedefs for shared_ptr wrappers
 typedef boost::shared_ptr<Sub8SpaceInformationGenerator>
     Sub8SpaceInformationGeneratorPtr;
-typedef boost::shared_ptr<Sub8SpaceInformation> Sub8SpaceInformationPtr;
 
 class Sub8SpaceInformationGenerator {
  public:
   // method that handles instantiation and customization of the
   // Sub8SpaceInformation state and control spaces
-  Sub8SpaceInformationPtr generate();
+  SpaceInformationPtr generate();
 
  private:
   // Boundary definitions for the subspaces that
@@ -49,29 +45,6 @@ class Sub8SpaceInformationGenerator {
   // Number of dimensions in the control space.
   // Currently set to 8, which is num thrusters
   const static int _CSPACE_DIMS = 8;
-};
-
-// SpaceInformation encapsulates the state and control spaces for the sub
-// and provides functionality commonly used by motion planners
-//
-// This is really just a wrapper class for ompl::control::SpaceInformation,
-// and is normally constructed by Sub8SpaceInformationGenerator, which
-// handles StateSpace and ControlSpace customization
-class Sub8SpaceInformation : public SpaceInformation {
- public:
-  Sub8SpaceInformation(const StateSpacePtr& space,
-                       const ControlSpacePtr& cspace)
-      : SpaceInformation(space, cspace) {}
-  // Sets the ODE solver used by the propagate method
-  void setODESolver(const ODESolverPtr& ode_solver);
-
-  // Propagate from a state, given a control, for some specified amount of time
-  void propagate(const State* state, const Control* control,
-                 const double duration, State* result) const;
-
- private:
-  // Shared ptr to an ODEBasicSolver used by the propagate method
-  ODESolverPtr _sub8_ode_solver;
 };
 }
 }

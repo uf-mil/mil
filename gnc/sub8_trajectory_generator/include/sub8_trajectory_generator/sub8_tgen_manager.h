@@ -11,6 +11,7 @@
 #include "ompl/base/State.h"
 #include "sub8_space_information.h"
 #include "sub8_msgs/Waypoint.h"
+#include "sub8_msgs/Trajectory.h"
 
 using ompl::base::PlannerPtr;
 using ompl::base::State;
@@ -30,7 +31,7 @@ typedef boost::shared_ptr<ProblemDefinition> ProblemDefinitionPtr;
 class Sub8TGenManager {
  public:
   // The planner param will be passed in from the
-  // param server. Instantiates the Sub8SpaceInformation
+  // param server. Instantiates a SpaceInformation
   // obj and the Planner
   Sub8TGenManager(int planner);
 
@@ -49,10 +50,24 @@ class Sub8TGenManager {
   // Automatically start replanning if the path is invalid
   void validateCurrentTrajectory();
 
-  // Convert a Waypoint msg into an OMPL state object 
+  /////////////////////////////////////////
+  // ROS->OMPL and OMPL->ROS conversions 
+  /////////////////////////////////////////
+
+  // Converts a sub8_msgs::Waypoint msg into an OMPL state object 
   State* waypointToState(const boost::shared_ptr<sub8_msgs::Waypoint>& wpoint); 
-  
- private:
+
+  // Converts an OMPL State obj to a sub8_msgs::Waypoint
+  sub8_msgs::Waypoint stateToWaypoint(const State* state);
+
+  // If a solution was found by the planner, then that 
+  // path is converted to a sub8_msgs::Trajectory message type 
+  // and returned, to be sent back in a MotionPlan service response
+  // 
+  // To use the trajectory in Python, the caller will need to 
+  // convert from std::vector to list
+  sub8_msgs::Trajectory getTrajectory(); 
+ private: 
   // If the current trajectory is determined to be invalid,
   // generate a new ProblemDefinition and solve again.
   //
