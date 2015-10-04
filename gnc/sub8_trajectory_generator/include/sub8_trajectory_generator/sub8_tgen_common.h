@@ -14,6 +14,14 @@ namespace sub8 {
 
 namespace trajectory_generator {
 
+// Encodes the different planners
+// supported by the TGEN with an integer
+enum PlannerType {
+  PDST = 1, 
+  RRT
+};
+
+// Strings used for logging statements in the TGEN
 class Sub8TGenMsgs {
  public:
   // PlannerStatus responses

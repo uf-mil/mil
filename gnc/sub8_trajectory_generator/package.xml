@@ -16,7 +16,10 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>OMPL</build_depend>
+  <build_depend>sub8_msgs</build_depend>
+  
   <run_depend>geometry_msgs</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>OMPL</run_depend>
+  <run_depend>sub8_msgs</run_depend>
 </package>

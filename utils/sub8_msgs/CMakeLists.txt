@@ -10,17 +10,21 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 add_message_files(
+  DIRECTORY msg
   FILES
   Alarm.msg
   Thrust.msg
   ThrusterCmd.msg
   ThrusterStatus.msg
-  Trajectory.msg
   Waypoint.msg
+  Trajectory.msg
 )
+
 add_service_files(
+  DIRECTORY srv
   FILES
   ThrusterInfo.srv
+  MotionPlan.srv
 )
 
 # add_action_files(
@@ -35,9 +39,9 @@ generate_messages(
 )
 
 catkin_package(
-    LIBRARIES sub8_msgs
     CATKIN_DEPENDS geometry_msgs message_generation rospy std_msgs
 )
+
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
