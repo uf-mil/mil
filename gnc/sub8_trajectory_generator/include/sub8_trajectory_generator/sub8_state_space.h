@@ -34,12 +34,12 @@ class Sub8StateSpace : public CompoundStateSpace {
     // The as<SomeStateSpace::StateType>(i) call returns a reference
     // to the i'th subspace of the CompoundStateSpace, of type "SomeStateSpace"
 
-    // Get the x component of the position
+    // Set the x component of the position
     void setX(double x) const {
       as<RealVectorStateSpace::StateType>(0)->values[0] = x;
     }
 
-    // Get the y component of the position
+    // Set the y component of the position
     void setY(double y) const {
       as<RealVectorStateSpace::StateType>(0)->values[1] = y;
     }
@@ -49,52 +49,52 @@ class Sub8StateSpace : public CompoundStateSpace {
       as<RealVectorStateSpace::StateType>(0)->values[2] = z;
     }
 
-    // Get the linear velocity in the x direction
+    // Set the linear velocity in the x direction
     void setXDot(double xdot) const {
       as<RealVectorStateSpace::StateType>(1)->values[0] = xdot;
     }
 
-    // Get the linear velocity in the y direction
+    // Set the linear velocity in the y direction
     void setYDot(double ydot) const {
       as<RealVectorStateSpace::StateType>(1)->values[1] = ydot;
     }
 
-    // Get the linear velocity in the z direction
+    // Set the linear velocity in the z direction
     void setZDot(double zdot) const {
       as<RealVectorStateSpace::StateType>(1)->values[2] = zdot;
     }
 
-    // Get the angular velocity about the x axis
+    // Set the angular velocity about the x axis
     void setWx(double wx) const {
       as<RealVectorStateSpace::StateType>(2)->values[0] = wx;
     }
 
-    // Get the angular velocity about the y axis
+    // Set the angular velocity about the y axis
     void setWy(double wy) const {
       as<RealVectorStateSpace::StateType>(2)->values[1] = wy;
     }
 
-    // Get the angular velocity about the z axis
+    // Set the angular velocity about the z axis
     void setWz(double wz) const {
       as<RealVectorStateSpace::StateType>(2)->values[2] = wz;
     }
 
-    // Get q_x from quaternion
+    // Set q_x from quaternion
     void setQx(double qx) const {
       as<RealVectorStateSpace::StateType>(3)->values[0] = qx;
     }
 
-    // Get q_y from quaternion
+    // Set q_y from quaternion
     void setQy(double qy) const {
       as<RealVectorStateSpace::StateType>(3)->values[1] = qy;
     }
 
-    // Get q_z from quaternion
+    // Set q_z from quaternion
     void setQz(double qz) const {
       as<RealVectorStateSpace::StateType>(3)->values[2] = qz;
     }
 
-    // Get q_w from quaternion
+    // Set q_w from quaternion
     void setQw(double qw) const {
       as<RealVectorStateSpace::StateType>(3)->values[3] = qw;
     }
