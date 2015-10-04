@@ -7,25 +7,28 @@
 #define SUB8_TGEN_MANAGER
 
 #include "ompl/base/ProblemDefinition.h"
-#include "ompl/base/Planner.h"	
+#include "ompl/base/Planner.h"
 #include "ompl/base/State.h"
 #include "sub8_space_information.h"
+#include "sub8_msgs/Waypoint.h"
 
 using ompl::base::PlannerPtr;
-using ompl::base::State; 
-using ompl::base::ProblemDefinition; 
+using ompl::base::State;
+using ompl::base::ProblemDefinition;
 using ompl::control::SpaceInformationPtr;
 
 namespace sub8 {
 
 namespace trajectory_generator {
 
+class Sub8TGenManager;
+// typedefs
+typedef boost::shared_ptr<Sub8TGenManager> Sub8TGenManagerPtr;
+typedef boost::shared_ptr<ProblemDefinition> ProblemDefinitionPtr;
+
 // Mediates communication between ROS and the TGEN
 class Sub8TGenManager {
  public:
-  // typedefs
-  typedef boost::shared_ptr<ProblemDefinition> ProblemDefinitionPtr;
-
   // The planner param will be passed in from the
   // param server. Instantiates the Sub8SpaceInformation
   // obj and the Planner
@@ -33,8 +36,14 @@ class Sub8TGenManager {
 
   // Create an ompl::base::ProblemDefinition object for planning a trajectory
   // from start_state to goal_state
-  void setProblemDefinition(const State* start_state,
-                            const State* goal_state);
+  // Takes in Waypoint start and goal messages and converts them to
+  // type State*
+  void setProblemDefinition(const boost::shared_ptr<sub8_msgs::Waypoint>& start_state,
+                            const boost::shared_ptr<sub8_msgs::Waypoint>& goal_state);
+
+  // Create an ompl::base::ProblemDefinition object for planning a trajectory
+  // from start_state to goal_state
+  void setProblemDefinition(const State* start_state, const State* goal_state); 
 
   // Call the Planner's solve function, returning a flag marking success
   // or failure to the caller
@@ -47,6 +56,9 @@ class Sub8TGenManager {
   // Automatically start replanning if the path is invalid
   void validateCurrentTrajectory();
 
+  // Convert a Waypoint msg into an OMPL state object 
+  State* waypointToState(const boost::shared_ptr<sub8_msgs::Waypoint>& wpoint); 
+  
  private:
   // If the current trajectory is determined to be invalid,
   // generate a new ProblemDefinition and solve again.
@@ -54,7 +66,7 @@ class Sub8TGenManager {
   // On failure, send out system alarm and default to a safety-path,
   // if available. System shutdown?
   bool replan();
-
+  
   PlannerPtr _sub8_planner;
 
   SpaceInformationPtr _sub8_si;

@@ -40,7 +40,7 @@ Sub8SpaceInformationPtr Sub8SpaceInformationGenerator::generate() {
 }
 
 void Sub8SpaceInformationGenerator::setStateSpaceBounds(const StateSpacePtr& space) {
-	// TODO 
+	// TODO
 } 
 
 void Sub8SpaceInformationGenerator::setControlSpaceBounds(const ControlSpacePtr& space) {
