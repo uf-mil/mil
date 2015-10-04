@@ -15,14 +15,17 @@ class TGenNode;
 
 typedef boost::shared_ptr<TGenNode> TGenNodePtr;
 
-// Maintains a TGenManager object and defines a callback for a MotionPlanning service 
+// Maintains a TGenManager object and defines a callback for a MotionPlanning
+// service
 class TGenNode {
  public:
   TGenNode(int& planner_id) : _tgen(new Sub8TGenManager(planner_id)) {}
   bool findTrajectory(sub8_msgs::MotionPlan::Request& req,
                       sub8_msgs::MotionPlan::Response& resp) {
-    boost::shared_ptr<sub8_msgs::Waypoint> start_state_wpoint = boost::make_shared<sub8_msgs::Waypoint>(req.start_state); 
-    boost::shared_ptr<sub8_msgs::Waypoint> goal_state_wpoint = boost::make_shared<sub8_msgs::Waypoint>(req.goal_state);
+    boost::shared_ptr<sub8_msgs::Waypoint> start_state_wpoint =
+        boost::make_shared<sub8_msgs::Waypoint>(req.start_state);
+    boost::shared_ptr<sub8_msgs::Waypoint> goal_state_wpoint =
+        boost::make_shared<sub8_msgs::Waypoint>(req.goal_state);
 
     _tgen->setProblemDefinition(_tgen->waypointToState(start_state_wpoint),
                                 _tgen->waypointToState(goal_state_wpoint));
@@ -45,12 +48,11 @@ int main(int argc, char** argv) {
   sub8::trajectory_generator::TGenNodePtr tgen(
       new sub8::trajectory_generator::TGenNode(planner_id));
 
-  // Name of service subject to change
-  ros::ServiceServer mission_planner_srv = nh.advertiseService(
-      "mission_plan_request",
-      &sub8::trajectory_generator::TGenNode::findTrajectory, tgen);
+  ros::ServiceServer motion_planning_srv = nh.advertiseService(
+      "motion_plan", &sub8::trajectory_generator::TGenNode::findTrajectory,
+      tgen);
 
-  // Spin while listening for srv requests from the mission planner to plan
+  // Spin while listening for srv requests from the mission planner
   while (ros::ok()) {
     ros::spinOnce();
   }

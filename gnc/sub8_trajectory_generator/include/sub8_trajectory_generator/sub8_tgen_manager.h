@@ -36,13 +36,6 @@ class Sub8TGenManager {
 
   // Create an ompl::base::ProblemDefinition object for planning a trajectory
   // from start_state to goal_state
-  // Takes in Waypoint start and goal messages and converts them to
-  // type State*
-  void setProblemDefinition(const boost::shared_ptr<sub8_msgs::Waypoint>& start_state,
-                            const boost::shared_ptr<sub8_msgs::Waypoint>& goal_state);
-
-  // Create an ompl::base::ProblemDefinition object for planning a trajectory
-  // from start_state to goal_state
   void setProblemDefinition(const State* start_state, const State* goal_state); 
 
   // Call the Planner's solve function, returning a flag marking success
