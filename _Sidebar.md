@@ -10,6 +10,7 @@
     * [[Stretch Goals]]
     * [[Simulation]]
         * [[Simul8]]
+    * [[Open Questions]]
 * Implementation
     * [[Trajectory Generator]]
     * [[System Alarms]]
