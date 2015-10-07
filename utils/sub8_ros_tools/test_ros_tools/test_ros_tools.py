@@ -6,6 +6,8 @@ from sensor_msgs.msg import Image
 from sub8_ros_tools import make_image_msg, get_image_msg
 from sub8_ros_tools import rosmsg_to_numpy
 from sub8_ros_tools import thread_lock
+from sub8_ros_tools import AlarmBroadcaster
+from sub8_ros_tools import skew_symmetric_cross, make_rotation
 
 
 class TestROSTools(unittest.TestCase):
@@ -55,6 +57,7 @@ class TestROSTools(unittest.TestCase):
         np.testing.assert_array_equal(im, cv_im)
 
     def test_thread_lock(self):
+        '''Test that the thread lock decorator correctly locks, in the correct order'''
         ran = False
 
         class FakeLock(object):
@@ -79,6 +82,43 @@ class TestROSTools(unittest.TestCase):
         self.assertTrue(fake_lock.exit, msg='Thread was never released')
         self.assertTrue(result, msg='Thread was not locked while the function was executed')
 
+    def test_instantiate_alarm_broadcaster(self):
+        '''Ensure that the alarm broadcaster instantiates without errors'''
+        broadcaster = AlarmBroadcaster()
+
+    def test_add_alarm(self):
+        '''Ensure that adding an alarm succeeds without errors'''
+        broadcaster = AlarmBroadcaster()
+        alarm = broadcaster.add_alarm(
+            name='wake-up',
+            action_required=True,
+            severity=1,
+            problem_description='This is a problem',
+            json_parameters='{"concern": ["a", "b", "c"]}' 
+        )
+
+    def test_skew_symmetric_cross(self):
+        '''Test that the skew symmetric cross product matrix produces the definition
+            [1] https://en.wikipedia.org/wiki/Cross_product#Skew-symmetric_matrix
+        '''
+        skew_sym = skew_symmetric_cross([1, 2, 3])
+        truth = np.array([
+            [+0, -3, +2],
+            [+3, +0, -1],
+            [-2, +1, +0],
+        ])
+        np.testing.assert_allclose(skew_sym, truth)
+
+    def test_make_rotation(self):
+        '''Test several random vector pairs, and see if we can generate a valid alignment'''
+        for k in range(10):
+            p = np.random.random(3) * 10
+            q = np.random.random(3) * 10
+
+            R = make_rotation(p, q)
+            p_rotated = R.dot(p)
+
+            np.testing.assert_allclose([0.0, 0.0, 0.0], np.cross(p_rotated, q), atol=1e-5)
 
 if __name__ == '__main__':
     unittest.main()
