@@ -105,6 +105,8 @@ Todo
     * [ ] Headless simulation (No rendering) - This is important!
         * We can optimize controller gains, path planners, do monte-carlos, etc
 
+* [ ] Add a way to visually specify a waypoint (Like, move a ghost of the sub around then publish that waypoint)
+* [ ] Make the sim a sub-window of a QT gui
 
 # Bug-hunt
 
