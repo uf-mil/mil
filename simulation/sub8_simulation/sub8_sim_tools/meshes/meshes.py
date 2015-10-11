@@ -28,7 +28,7 @@ def load_from_cache(path):
 def load_mesh(path):
     dir_, file_ = os.path.split(path)
     urls = {
-        'Sub.obj': "https://doc-10-5k-docs.googleusercontent.com/docs/securesc/ha0ro937gcuc7l7deffksulhg5h7mbp1/afivhj1jtemmjum4flk2sdl674545lme/1444536000000/10637387184977454351/*/0B5MtehifpQQAa0JEeExzYmF5RlU?e=download"
+        'Sub.obj': "http://goo.gl/f0ennf?gdriveurl"
     }
 
     # Is this a file we downloaded?

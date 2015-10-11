@@ -53,5 +53,5 @@ def download(url, output_filename=None):
 
 
 if __name__ == '__main__':
-    sub_model_url = "https://doc-10-5k-docs.googleusercontent.com/docs/securesc/ha0ro937gcuc7l7deffksulhg5h7mbp1/afivhj1jtemmjum4flk2sdl674545lme/1444536000000/10637387184977454351/*/0B5MtehifpQQAa0JEeExzYmF5RlU?e=download"
+    sub_model_url = "http://goo.gl/f0ennf?gdriveurl"
     download_and_unzip(sub_model_url, '.')
