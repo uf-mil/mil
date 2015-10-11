@@ -29,6 +29,8 @@
 
 * [ ] Fault-tolerance
     * [ ] Alarm system
+    * [ ] Handle loss of DVL track
+    * [ ] Navigate using optical flow
 
 * [ ] Testing/Modelling
     * [x] Unit-test requirements
