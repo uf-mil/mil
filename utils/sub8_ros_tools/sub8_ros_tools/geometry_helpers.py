@@ -13,9 +13,11 @@ def make_rotation(vector_a, vector_b):
 
         [1] Calculate Rotation Matrix to align Vector A to Vector B in 3d?
             http://math.stackexchange.com/questions/180418
+        [2] N. Ho, Finding Optimal Rotation...Between Corresponding 3D Points
+            http://nghiaho.com/?page_id=671
     '''
-    unit_a = vector_a / np.linalg.norm(vector_a)
-    unit_b = vector_b / np.linalg.norm(vector_b)
+    unit_a = normalize(vector_a)
+    unit_b = normalize(vector_b)
 
     v = np.cross(unit_a, unit_b)
     s = np.linalg.norm(v)
@@ -24,9 +26,22 @@ def make_rotation(vector_a, vector_b):
 
     skew_cross = skew_symmetric_cross(v)
     skew_squared = np.linalg.matrix_power(skew_cross, 2)
+
+    if np.isclose(c, 1.0, atol=1e-4):
+        R = np.eye(3)
+        return R
+    elif np.isclose(c, -1.0, atol=1e-4):
+        R = np.eye(3)
+        R[2, 2] *= -1
+        return R
+
     normalization = (1 - c) / (s ** 2)
 
     R = np.eye(3) + skew_cross + (skew_squared * normalization)
+
+    # Address the reflection case
+    if np.linalg.det(R) < 0:
+        R[:, 3] *= -1
 
     return R
 
@@ -42,3 +57,5 @@ def skew_symmetric_cross(a):
     ], dtype=np.float32)
     return skew_symm
 
+def normalize(vector):
+    return vector / np.linalg.norm(vector)
