@@ -1,2 +1,2 @@
-from .world import Sphere, Box, World
+from .world import *
 from .visualization import Canvas
