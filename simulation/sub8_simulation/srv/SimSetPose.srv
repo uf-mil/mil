@@ -1,3 +1,4 @@
 # Set the pose of something
 geometry_msgs/Pose pose
+geometry_msgs/Twist twist
 ---
