@@ -67,6 +67,7 @@ Todo
         * [x] Unified Entity model
     * [x] Easy-to-use rendering interface
     * [ ] ROS-Cameras
+    * [ ] Lock camera to sub
     * [ ] Simulated depth imaging
     * [ ] Assemblies/SceneGraphs (Does ODE do this?)
     * [x] Simple .stl or .obj loading
