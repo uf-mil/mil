@@ -69,7 +69,8 @@ Todo
     * [ ] ROS-Cameras
     * [ ] Simulated depth imaging
     * [ ] Assemblies/SceneGraphs (Does ODE do this?)
-    * [x] .stl or .obj loading
+    * [x] Simple .stl or .obj loading
+        * [ ] .obj loading WITH textures -- Important!
     * [ ] Simulated caustics -- Important! (Use a randomized texture, or actually draw)
     * Stretch Goals
         * [ ] Shadows
