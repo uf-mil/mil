@@ -5,7 +5,7 @@
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;
-uniform vec3 u_color;
+uniform vec4 u_color;
 
 attribute vec3 a_position;
 attribute vec3 a_normal;
@@ -19,7 +19,7 @@ void main()
 {
     v_normal = a_normal;
     v_position = a_position;
-    v_color = 1 * vec4(u_color, 1.0);
+    v_color = u_color;
     gl_Position = u_projection * u_view * u_model * vec4(a_position, 1.0);
 }
 
@@ -77,16 +77,19 @@ void main(){
 // Shamelessly lifted from wikipedia
 uniform vec3 u_light_position;
 uniform vec3 u_light_intensity;
+uniform vec4 u_color;
+uniform vec3 u_specular_color;// = vec3(1.0, 1.0, 1.0);
+uniform float u_shininess;// = 16.0;
 
 varying vec3 v_normal;
 varying vec3 v_position;
 
-const vec3 ambient_color = vec3(0.1, 0.0, 0.0);
-const vec3 specular_color = vec3(1.0, 1.0, 1.0);
-const float shininess = 16.0;
+// uniform vec3 ambient_color = vec3(0.1, 0.0, 0.0);
+// const float u_shininess = 16.0;
 const float screen_gamma = 2.2; // Assume the monitor is calibrated to the sRGB color space
 
 void main() {
+    vec3 ambient_color = u_color.rgb;
     vec3 normal = normalize(v_normal);
     vec3 light_direction = normalize(u_light_position - v_position);
 
@@ -100,15 +103,15 @@ void main() {
         // this is blinn phong
         vec3 half_direction = normalize(light_direction + view_direction);
         float specular_angle = max(dot(half_direction, normal), 0.0);
-        specular = pow(specular_angle, shininess);
+        specular = pow(specular_angle, u_shininess);
            
     }
   vec3 color_linear = ambient_color +
                      lambertian * u_light_intensity +
-                     specular * specular_color;
-  // apply gamma correction (assume ambient_color, u_light_intensity and specular_color
+                     specular * u_specular_color;
+  // apply gamma correction (assume ambient_color, u_light_intensity and u_specular_color
   // have been linearized, i.e. have no gamma correction in them)
   vec3 color_gamma_corrected = pow(color_linear, vec3(1.0 / screen_gamma));
   // use the gamma corrected color in the fragment
-  gl_FragColor = vec4(color_gamma_corrected, 1.0);
+  gl_FragColor = vec4(color_gamma_corrected, u_color.a);
 }

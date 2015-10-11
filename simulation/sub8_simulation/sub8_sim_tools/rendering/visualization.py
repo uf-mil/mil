@@ -3,6 +3,7 @@ from vispy import gloo
 from vispy import app
 from vispy.util.transforms import perspective, translate, rotate
 from sub8_sim_tools.rendering import Sphere, Box, World
+from sub8_sim_tools.meshes import Transdec
 
 
 class Canvas(app.Canvas):
@@ -13,9 +14,9 @@ class Canvas(app.Canvas):
         self.translate = np.array([0.0, 0.0, 0.0])
         self.rotate = np.array([0.0, 0.0, 0.0])
 
-        gloo.set_state(depth_test=True, blend=True)
+        gloo.set_state(depth_test=True, blend=True, preset='translucent')
         self._timer = app.Timer('auto', connect=self.on_timer, start=True)
-        self.physics_timer = app.Timer(1 / 29., connect=self.step_physics, start=True)
+        self.physics_timer = app.Timer(1 / 30., connect=self.step_physics, start=True)
         self.clock = 0
         self.view = np.eye(4)
         self.show()
@@ -84,7 +85,6 @@ if __name__ == '__main__':
     c.world.add_sphere((0.8, 0.0, 0.5), 1.0, (100., 50.0, 0.0))
     c.world.add_sphere((0.0, -0.8, -8), 0.4, (100., 50.0, 0.0))
     c.world.add_box((0.8, 0.8, 5), 5.0, 2.0, 3.0, (50, 100, 100))
-    c.world.add_plane((0.0, 0.0, -1.0), 20.0, 20.0)
+    # c.world.add_plane((0.0, 0.0, -1.0), 20.0, 20.0)
     c.world.add_point_light((0.0, 0.0, 0.0), (0.1, 0.8, 0.5))
-
     app.run()
