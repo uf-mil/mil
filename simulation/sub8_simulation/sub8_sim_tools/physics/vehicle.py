@@ -137,7 +137,6 @@ class Sub8(Box):
                 thruster_force = self.thrust_dict.get(name, 0.0)
                 body_force = rel_dir * thruster_force
                 self.body.addRelForceAtRelPos(body_force, rel_pos)
-                total_force += body_force
 
         self.last_force = self.body.getForce()
 
