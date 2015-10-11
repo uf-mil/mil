@@ -6,7 +6,7 @@ Simul8 is our internally implemented sub dynamics and vision simulation.
 # How do I run it?
 
 Run...
-    
+
     roslaunch sub8_simulation sim_full.launch
 
 Which will run all of the necessary nodes to run simulations.
@@ -48,28 +48,29 @@ Todo
 # Todo
 
 ## Document
-* [ ] Installation
-* [ ] How to run
+* [x] Installation
+* [x] How to run
 * [ ] How to expand
 
 ## Implement
 * [ ] Scene
-    * [ ] Transdec model
-    * [ ] Sub8 Model
+    * [x] Transdec model
+    * [x] Sub8 Model
     * [ ] AUVSI models
 
 * [ ] Rendering
     * [x] View control
     * [x] Diffuse lighting (Blinn-Phong)
     * [x] Multi-shader files
-    * [ ] Water shading
+    * [x] Transparent water
     * [x] Multi-object rendering
         * [x] Unified Entity model
     * [x] Easy-to-use rendering interface
     * [ ] ROS-Cameras
     * [ ] Simulated depth imaging
     * [ ] Assemblies/SceneGraphs (Does ODE do this?)
-    * [ ] .stl or .obj loading
+    * [x] .stl or .obj loading
+    * [ ] Simulated caustics -- Important! (Use a randomized texture, or actually draw)
     * Stretch Goals
         * [ ] Shadows
         * [ ] Multiple light sources
@@ -81,12 +82,12 @@ Todo
     * [x] Simple object interface
     * [x] Collision
     * [x] Buoyancy simulation
-    * [ ] Depth plane
     * [ ] Grasping
 
 * [ ] Sensing
     * [ ] Depth Sensor
-    * [ ] DVL
+    * [ ] DVL (We need to simulate all 4 beams if we want to test flipping)
+    * [ ] IMU (This is conceptually simple, but will take a good bit of work)
     * [ ] Imaging Sonar (OpenGL)
     * [ ] Stereo depth estimation (OpenGL)
     * [ ] Visible-light camera (OpenGL)
@@ -99,3 +100,15 @@ Todo
         * [ ] Critical navigation sensor out (Is this necessary?)
         * [ ] Various mission failure scenarios
         * [ ] Controller: Target state cannot be made stable
+
+    * [ ] Headless simulation (No rendering) - This is important!
+        * We can optimize controller gains, path planners, do monte-carlos, etc
+
+
+# Bug-hunt
+
+There are a few bugs in the simulator that should be chased down, but are not breaking.
+
+* The velocity and force indicators point in the wrong direction sometimes (But not always...?)
+* A light source has to be the last thing added
+    * In addition, we only support one light-source, any ideas on fixing this?
