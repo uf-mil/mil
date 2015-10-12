@@ -143,14 +143,14 @@ State* Sub8TGenManager::waypointToState(
   State* state = _sub8_si->getStateSpace()->allocState();
 
   state->as<Sub8StateSpace::StateType>()->setPosition(
-      wpoint->pos.position.x, wpoint->pos.position.y, wpoint->pos.position.z);
+      wpoint->pose.position.x, wpoint->pose.position.y, wpoint->pose.position.z);
   state->as<Sub8StateSpace::StateType>()->setLinearVelocity(
-      wpoint->vel.linear.x, wpoint->vel.linear.y, wpoint->vel.linear.z);
+      wpoint->twist.linear.x, wpoint->twist.linear.y, wpoint->twist.linear.z);
   state->as<Sub8StateSpace::StateType>()->setAngularVelocity(
-      wpoint->vel.angular.x, wpoint->vel.angular.y, wpoint->vel.angular.z);
+      wpoint->twist.angular.x, wpoint->twist.angular.y, wpoint->twist.angular.z);
   state->as<Sub8StateSpace::StateType>()->setOrientation(
-      wpoint->pos.orientation.x, wpoint->pos.orientation.y,
-      wpoint->pos.orientation.z, wpoint->pos.orientation.w);
+      wpoint->pose.orientation.x, wpoint->pose.orientation.y,
+      wpoint->pose.orientation.z, wpoint->pose.orientation.w);
   return state;
 }
 
@@ -167,19 +167,19 @@ sub8_msgs::Waypoint Sub8TGenManager::stateToWaypoint(const State* state) {
   state->as<Sub8StateSpace::StateType>()->getAngularVelocity(w);
   state->as<Sub8StateSpace::StateType>()->getOrientation(orientation);
 
-  wpoint.pos.position.x = pos[0];
-  wpoint.pos.position.y = pos[1];
-  wpoint.pos.position.z = pos[2];
-  wpoint.vel.linear.x = vel[0];
-  wpoint.vel.linear.y = vel[1];
-  wpoint.vel.linear.z = vel[2];
-  wpoint.vel.angular.x = w[0];
-  wpoint.vel.angular.y = w[1];
-  wpoint.vel.angular.z = w[2];
-  wpoint.pos.orientation.x = orientation[0];
-  wpoint.pos.orientation.y = orientation[1];
-  wpoint.pos.orientation.z = orientation[2];
-  wpoint.pos.orientation.w = orientation[3];
+  wpoint.pose.position.x = pos[0];
+  wpoint.pose.position.y = pos[1];
+  wpoint.pose.position.z = pos[2];
+  wpoint.twist.linear.x = vel[0];
+  wpoint.twist.linear.y = vel[1];
+  wpoint.twist.linear.z = vel[2];
+  wpoint.twist.angular.x = w[0];
+  wpoint.twist.angular.y = w[1];
+  wpoint.twist.angular.z = w[2];
+  wpoint.pose.orientation.x = orientation[0];
+  wpoint.pose.orientation.y = orientation[1];
+  wpoint.pose.orientation.z = orientation[2];
+  wpoint.pose.orientation.w = orientation[3];
   return wpoint;
 }
 

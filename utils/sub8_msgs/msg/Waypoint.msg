@@ -1,4 +1,4 @@
 # Waypoint
 
-geometry_msgs/Pose pos
-geometry_msgs/Twist vel
+geometry_msgs/Pose pose
+geometry_msgs/Twist twist
