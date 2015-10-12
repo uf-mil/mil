@@ -5,7 +5,6 @@
 #include "sub8_space_information.h"
 #include "sub8_state_validity_checker.h"
 #include "sub8_ode_solver.h"
-#include "sub8_state_propagator.h"
 #include "ompl/control/ODESolver.h"
 
 using sub8::trajectory_generator::Sub8SpaceInformationGenerator;

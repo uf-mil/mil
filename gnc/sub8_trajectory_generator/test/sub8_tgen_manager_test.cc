@@ -56,9 +56,9 @@ TEST(Sub8TGenManager, testStateToWaypoint) {
   std::vector<double> pos;
   state->as<Sub8StateSpace::StateType>()->getPosition(pos); 
 
-  ASSERT_EQ(pos[0], wpoint.pos.position.x);
-  ASSERT_EQ(pos[1], wpoint.pos.position.y);
-  ASSERT_EQ(pos[2], wpoint.pos.position.z); 
+  ASSERT_EQ(pos[0], wpoint.pose.position.x);
+  ASSERT_EQ(pos[1], wpoint.pose.position.y);
+  ASSERT_EQ(pos[2], wpoint.pose.position.z); 
 }
 
 TEST(Sub8TGenManager, testWaypointToState) {
@@ -67,18 +67,18 @@ TEST(Sub8TGenManager, testWaypointToState) {
   State* state = test_state_space->allocState();
 
   boost::shared_ptr<sub8_msgs::Waypoint> wpoint(new sub8_msgs::Waypoint()); 
-  wpoint->pos.position.x = 1; 
-  wpoint->pos.position.y = 1; 
-  wpoint->pos.position.z = 2; 
+  wpoint->pose.position.x = 1; 
+  wpoint->pose.position.y = 1; 
+  wpoint->pose.position.z = 2; 
 
   state = test_tgen_manager->waypointToState(wpoint);
 
   std::vector<double> pos;  
   state->as<Sub8StateSpace::StateType>()->getPosition(pos); 
 
-  ASSERT_EQ(wpoint->pos.position.x, pos[0]); 
-  ASSERT_EQ(wpoint->pos.position.y, pos[1]); 
-  ASSERT_EQ(wpoint->pos.position.z, pos[2]); 
+  ASSERT_EQ(wpoint->pose.position.x, pos[0]); 
+  ASSERT_EQ(wpoint->pose.position.y, pos[1]); 
+  ASSERT_EQ(wpoint->pose.position.z, pos[2]); 
 }
 
 TEST(Sub8TGenManager, getTrajectory) {
