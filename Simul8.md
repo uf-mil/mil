@@ -86,8 +86,12 @@ Todo
     * [ ] Lock camera to sub
     * [ ] Simulated depth imaging
     * [ ] Assemblies/SceneGraphs (Does ODE do this?)
+        * [x] Track a relative position for offset-indicators
+            * Current method of doing this is garbage, should make a scenegraph
+        * [ ] Track a relative position for sensors
     * [x] Simple .stl or .obj loading
         * [ ] .obj loading WITH textures -- Important!
+    * [x] .stl or .obj loading
     * [ ] Simulated caustics -- Important! (Use a randomized texture, or actually draw)
     * Stretch Goals
         * [ ] Shadows
