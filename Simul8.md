@@ -129,5 +129,5 @@ Todo
 
 There are a few bugs in the simulator that should be chased down, but are not breaking.
 
-* A light source has to be the last thing added
+* A light source has to be the last thing added - We know exactly why this is the case, but don't have a great structure for fixing it
     * In addition, we only support one light-source, any ideas on fixing this?
