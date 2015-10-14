@@ -1,5 +1,6 @@
 from __future__ import division
 from sub8_sim_tools import Shaders
+from sub8_ros_tools.geometry_helpers import make_rotation
 from vispy import geometry, gloo
 import numpy as np
 from vispy.util.transforms import perspective, translate, rotate
@@ -16,7 +17,7 @@ class Entity(object):
             - Draw outlines of faces in red'''
         self.debug = debug
 
-    def __init__(self, mesh, position=(0.0, 0.0, 0.0), orientation=None, color=(255., 0., 0.), faces=None):
+    def __init__(self, mesh, position=(0.0, 0.0, 0.0), orientation=None, color=(255., 0., 0., 255.0), faces=None):
         '''Orientation must be a 4x4 rotation matrix'''
         self.position = np.array(position, dtype=np.float32)
         if orientation is None:
@@ -25,6 +26,8 @@ class Entity(object):
             assert orientation.shape == (4, 4), "Orientation must be a 4x4 numpy array"
             self.orientation = orientation
 
+        if len(color) == 3:
+            color = color + (255,)
         self.color = np.array(color, dtype=np.float32) / 255.  # Normalize to [0, 1]
 
         self.program = gloo.Program(self._vertex_shader, self._fragment_shader)
@@ -35,7 +38,7 @@ class Entity(object):
         self.model = self.model.dot(translate(self.position))
         self.view = np.eye(4, dtype=np.float32)
 
-        self.projection = perspective(30.0, 800 / float(800), 2.0, 100.0)
+        self.projection = perspective(30.0, 800 / float(800), 2.0, 500.0)
         self.program['u_model'] = self.model
         self.program['u_view'] = self.view
         self.program['u_projection'] = self.projection
@@ -104,6 +107,8 @@ class Sphere(Entity):
         )
         sphere_buffer, faces = self.make_buffer(sphere_mesh)
         super(self.__class__, self).__init__(sphere_buffer, faces=faces, position=position, color=color)
+        self.program['u_shininess'] = 16.0
+        self.program['u_specular_color'] = self.color[:3]
 
 
 class Box(Entity):
@@ -135,8 +140,10 @@ class Box(Entity):
 
 
 class Plane(Entity):
-    _vertex_shader = Shaders.lighting['lambert']['vertex']
-    _fragment_shader = Shaders.lighting['lambert']['fragment']
+    # _vertex_shader = Shaders.lighting['phong']['vertex']
+    # _fragment_shader = Shaders.lighting['phong']['fragment']
+    _vertex_shader = Shaders.passthrough['mesh']['vertex']
+    _fragment_shader = Shaders.passthrough['mesh']['fragment']
 
     def __init__(self, position, width, height, color=(0, 255, 0), orientation=None):
         '''TODO:
@@ -160,6 +167,75 @@ class Plane(Entity):
         plane_buffer['a_normal'] = plane_mesh['normal'] 
         super(self.__class__, self).__init__(gloo.VertexBuffer(plane_buffer), faces=plane_faces, position=position, color=color)
         self.set_debug()
+        self.program['u_shininess'] = 16.0
+        self.program['u_specular_color'] = self.color[:3]
+
+
+class Indicator(Entity):
+    _vertex_shader = Shaders.indicators['thrust_indicator']['vertex']
+    _fragment_shader = Shaders.indicators['thrust_indicator']['fragment']
+
+    def __init__(self, physics_entity, radius, get_param=lambda physent: physent.velocity, 
+                 color=(0, 255, 0), scaling_factor=1.0):
+        self.physics_entity = physics_entity
+        self.get_param_func = get_param
+        self.scaling_factor = scaling_factor
+
+        arrow_mesh = geometry.create_arrow(
+            rows=int(radius * 30),
+            cols=int(radius * 30),
+            radius=radius,
+            length=1,
+            cone_radius=radius
+        )
+        arrow_buffer, faces = self.make_buffer(arrow_mesh)
+        super(self.__class__, self).__init__(arrow_buffer, faces=faces, color=color)
+        print 'New indicator'
+
+    def draw(self):
+        # pose = self.physics_entity.pose
+        pos = self.physics_entity.pos
+        directed_quantity = self.get_param_func(self.physics_entity)
+        norm = np.linalg.norm(directed_quantity)
+
+        if np.isclose(norm, 0.0, atol=1e-3):
+            return
+
+        R = make_rotation(np.array([0.0, 0.0, 1.0]), directed_quantity)
+        model = np.zeros((4, 4))
+        model[:3, :3] = R
+        model[3, :3] = pos
+        model[3, 3] = 1.0
+
+        self.program['u_model'] = model
+        self.program['u_length_scale'] = norm * self.scaling_factor
+
+        # Draw
+        self.program.draw('triangles', self.faces)
+
+
+class Mesh(Entity):
+    _vertex_shader = Shaders.lighting['phong']['vertex']
+    _fragment_shader = Shaders.lighting['phong']['fragment']
+
+    def __init__(self, mesh, position, orientation=None, color=(0, 255, 0), shininess=16.0):
+        '''TODO: Make loading this consistent with everything else'''
+        # Texcoords is always none in the current version of Vispy
+        mesh_vertices, mesh_faces, mesh_normals, texcoords = mesh
+
+        mesh_buffer = np.zeros(
+            len(mesh_vertices), 
+            dtype=[
+                ('a_position', np.float32, 3),
+                ('a_normal', np.float32, 3)
+            ]
+        )
+
+        mesh_buffer['a_position'] = mesh_vertices
+        mesh_buffer['a_normal'] = mesh_normals
+        super(self.__class__, self).__init__(gloo.VertexBuffer(mesh_buffer), faces=mesh_faces, position=position, orientation=orientation, color=color)
+        self.program['u_shininess'] = shininess
+        self.program['u_specular_color'] = self.color[:3]
 
 
 class World(object):
@@ -183,10 +259,20 @@ class World(object):
         self.entities.append(box)
         return box
 
-    def add_plane(self, position, width, height, color=(0, 255, 0), orientation=None):
+    def add_plane(self, position, width, height, color=(0, 0, 255), orientation=None):
         plane = Plane(position, width, height, color, orientation)
         self.entities.append(plane)
         return plane
+
+    def add_mesh(self, mesh, *args, **kwargs):
+        mesh = Mesh(mesh, *args, **kwargs)
+        self.entities.append(mesh)
+        return mesh        
+
+    def add_entity(self, Entity_Type, *args, **kwargs):
+        entity = Entity_Type(*args, **kwargs)
+        self.entities.append(entity)
+        return entity
 
     def add_camera(self, position, orientation, topic, projection=None):
         '''Add a ros-camera to view the scene
@@ -222,7 +308,7 @@ class World(object):
         '''Todo:
             Swappable shaders'''
         # Draw the objects to the screen
-        for entity in self.entities:
+        for entity in self.entities[::-1]:
                 entity.set_view(cur_view)
                 entity.draw()
 

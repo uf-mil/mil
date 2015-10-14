@@ -4,26 +4,22 @@
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;
-uniform vec3 u_color;
+uniform mat4 u_normal;
+uniform vec4 u_color;
 
 attribute vec3 a_position;
-// varying float v_distance;
 
 void main () {
-    // No alpha, just yet
     gl_Position = u_projection * u_view * u_model * vec4(a_position, 1.0);
-    // v_distance = clamp(length(gl_Position), 0., 10.) / 10.;
-    gl_PointSize = 4;
 }
 
 >mesh:fragment
 
 #version 120
-uniform vec3 u_color;
-// varying float v_distance;
+uniform vec4 u_color;
 
 void main () {
-    gl_FragColor = vec4(u_color, 1.0);
+    gl_FragColor = u_color;
 }
 
 >debug:vertex
