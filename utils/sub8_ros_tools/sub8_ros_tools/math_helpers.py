@@ -44,3 +44,37 @@ def rosmsg_to_numpy(rosmsg, keys=None):
             output_array[n] = getattr(rosmsg, key)
 
         return output_array
+
+
+def pose_to_numpy(pose):
+    '''TODO: Unit-test
+    returns (position, orientation)
+    '''
+    position = rosmsg_to_numpy(pose.position)
+    orientation = rosmsg_to_numpy(pose.orientation)
+    return position, orientation
+
+
+def twist_to_numpy(twist):
+    '''TODO: Unit-test
+    Convert a twist message into a tuple of numpy arrays
+    returns (linear, angular)
+    '''
+
+    linear = rosmsg_to_numpy(twist.linear)
+    angular = rosmsg_to_numpy(twist.angular)
+    return linear, angular
+
+
+def odometry_to_numpy(odom):
+    '''TODO: Unit-test
+    Convert an odometry message into a tuple of numpy arrays
+    returns (pose, twist, pose_covariance, twist_covariance)
+    '''
+    pose = pose_to_numpy(odom.pose.pose)
+    pose_covariance = np.array(odom.pose.covariance).reshape(6, 6)
+
+    twist = twist_to_numpy(odom.twist.twist)
+    twist_covariance = np.array(odom.twist.covariance).reshape(6, 6)
+
+    return pose, twist, pose_covariance, twist_covariance
