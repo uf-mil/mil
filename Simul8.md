@@ -129,6 +129,5 @@ Todo
 
 There are a few bugs in the simulator that should be chased down, but are not breaking.
 
-* The velocity and force indicators point in the wrong direction sometimes (But not always...?)
 * A light source has to be the last thing added
     * In addition, we only support one light-source, any ideas on fixing this?
