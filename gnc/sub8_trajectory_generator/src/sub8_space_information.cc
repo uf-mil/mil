@@ -10,7 +10,6 @@
 using sub8::trajectory_generator::Sub8SpaceInformationGenerator;
 using sub8::trajectory_generator::Sub8StateValidityChecker;
 using sub8::trajectory_generator::Sub8StateValidityCheckerPtr;
-using sub8::trajectory_generator::Sub8StatePropagator; 
 using ompl::control::SpaceInformationPtr;
 
 SpaceInformationPtr Sub8SpaceInformationGenerator::generate() {
