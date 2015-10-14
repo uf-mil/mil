@@ -12,6 +12,9 @@ Simul8 is our internally implemented sub dynamics and vision simulation.
     git checkout b48e4d3cf410b853a74b666c475c603e46725e55
     sudo python setup.py develop
 
+# Install ODE
+    rm -fr /tmp/pyode-build && mkdir -p /tmp/pyode-build && cd /tmp/pyode-build && sudo apt-get build-dep -y python-pyode && sudo apt-get remove -y python-pyode && apt-get source --compile python-pyode && sudo dpkg -i python-pyode_*.deb
+
 
 # How do I run it?
 
