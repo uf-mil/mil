@@ -41,10 +41,6 @@ class Sub8SpaceInformationGenerator {
   // Boundary definitions for the control space-
   // e.g. thruster limitations
   void setControlSpaceBounds(const ControlSpacePtr& space);
-
-  // Number of dimensions in the control space.
-  // Currently set to 8, which is num thrusters
-  const static int _CSPACE_DIMS = 8;
 };
 }
 }

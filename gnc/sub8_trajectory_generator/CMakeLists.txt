@@ -3,9 +3,10 @@ set(PROJECT_NAME sub8_trajectory_generator)
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 project(${PROJECT_NAME})
 
-find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs sub8_msgs)
+find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs sub8_msgs cmake_modules)
 find_package(OMPL REQUIRED)
 find_package(Boost REQUIRED)
+find_package(Eigen REQUIRED)
 
 
 set(catkin_LIBRARIES
@@ -20,6 +21,7 @@ include_directories(
  	${catkin_INCLUDE_DIRS}
   	${OMPL_INCLUDE_DIRS}
   	${Boost_INCLUDE_DIRS}
+  	${Eigen_INCLUDE_DIRS}
 )
 
 
@@ -35,6 +37,7 @@ add_executable(
 target_link_libraries(trajectory_generator
 	${catkin_LIBRARIES}
 	${OMPL_LIBRARIES}
+	${Eigen_LIBRARIES}
 )
 
 catkin_add_gtest(${PROJECT_NAME}_unit_tests 
@@ -53,4 +56,5 @@ target_link_libraries(
 	${PROJECT_NAME}_unit_tests
 	${catkin_LIBRARIES}
 	${OMPL_LIBRARIES}
+	${Eigen_LIBRARIES}
 )

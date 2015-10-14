@@ -5,6 +5,7 @@
 #include "sub8_space_information.h"
 #include "sub8_state_validity_checker.h"
 #include "sub8_ode_solver.h"
+#include "sub8_tgen_common.h"
 #include "ompl/control/ODESolver.h"
 
 using sub8::trajectory_generator::Sub8SpaceInformationGenerator;
@@ -22,7 +23,8 @@ SpaceInformationPtr Sub8SpaceInformationGenerator::generate() {
   // Set bounds for cspace
   setControlSpaceBounds(cspace);
 
-  SpaceInformationPtr si_ptr(new ompl::control::SpaceInformation(space, cspace));
+  SpaceInformationPtr si_ptr(
+      new ompl::control::SpaceInformation(space, cspace));
 
   // Create and set the state validity checker
   Sub8StateValidityCheckerPtr vc_ptr(new Sub8StateValidityChecker(si_ptr));
@@ -33,16 +35,17 @@ SpaceInformationPtr Sub8SpaceInformationGenerator::generate() {
   // Create and set the StatePropagator with our ODESolver
   ODESolverPtr ode_solver(
       new ompl::control::ODEBasicSolver<>(si_ptr, &sub8ODE));
-  si_ptr->setStatePropagator(ompl::control::ODESolver::getStatePropagator(ode_solver));
+  si_ptr->setStatePropagator(
+      ompl::control::ODESolver::getStatePropagator(ode_solver));
 
   // TODO -- placeholder values
-  // 
+  //
   // When controls are applied to states, they are applied for a time duration
   // that is an integer multiple of the stepSize, within the bounds specified by
   // setMinMaxControlDuration()
-  si_ptr->setPropagationStepSize(2.0); 
+  si_ptr->setPropagationStepSize(2.0);
   si_ptr->setMinMaxControlDuration(1.0, 100.0);
-   
+
   // Must be run once before use
   si_ptr->setup();
 
