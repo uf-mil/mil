@@ -10,10 +10,10 @@
     * [[Implementation Plans]]
     * [[Stretch Goals]]
     * [[Simulation]]
-        * [[Simul8]]
         * [[Monte Carlo Engine]]
     * [[Open Questions]]
 * Implementation
+    * [[Simul8]]
     * [[Trajectory Generator]]
     * [[System Alarms]]
     * [[Thrusters]]
