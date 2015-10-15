@@ -13,11 +13,17 @@ We use a simple sequential least squares solver, provided by Numpy, to compute a
 * **wrench** - a vector, **w**, a 6 element vector: [XYZ Forces, XYZ torques]
 
 ## Method
+**Mundane setup:** 
+
 We query the thrusters for their bounds, and then set up a control-input matrix, B, using our knowledge of the vehicle's thruster configuration. This knowledge is recovered from a parameter stored on '/busses'. This parameter contains the locations and and directions of the thrusters relative to the center-of-mass-centered, FLU coordinate system of the sub. 
+
+**Computation setup:** 
 
 Each column of B represents the contribution of a single thruster to the sub's net wrench. This looks like [direction_vector, cross(position_vector, direction_vector)], transposed.
 
 B is a 6x8 matrix, so that B * u yields a wrench which is a 6x1 column vector.
+
+**Solving:** 
 
 We compute a solution by minimizing k<sub>1</sub>\*norm(B\*u - w<sub>desired</sub>) + k<sub>2</sub>\*norm(u). 
 
