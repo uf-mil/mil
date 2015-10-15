@@ -60,6 +60,7 @@ If on pool-test day, there are critical changes that you need to make to the sub
 
 ## Adding Dependencies
 * If you add a new library that your code depends on, that is not installed with ROS-desktop-full or Ubuntu by default, you MUST note it in the wiki, your readme, and finally, add it to the SemaphoreCI build script. 
+    * Once you are a collaborator on Semaphore (Ask someone to add you), there are some easy tutorials there for editing the setup script. Unlike travis-ci, the build script only exists on SemaphoreCI, not in our repository.
 * If you submit a PR that requires some new library without updating the SemaphoreCI setup-build script, the Semaphore build will fail and yell at you.
 
 ## Testing
