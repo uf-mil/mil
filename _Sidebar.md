@@ -1,6 +1,6 @@
 * [[Home]]
     * [[Getting Started]]
-    * [[Dependencies]]
+    * [[Installing Dependencies]]
     * [[Editing the Wiki]]
     * [[Tech Talks]]
     * [[Manifesto]]
