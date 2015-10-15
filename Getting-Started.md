@@ -70,3 +70,7 @@ If you are working on robotics in general, you should know...
 * Know what "PID" means, and at the very least be interested in MPC and adaptive control methods
 
 * And know why we don't do these using Euler angles
+
+### Start with
+
+* [Lavalle's Planning Algorithms](http://planning.cs.uiuc.edu/)
