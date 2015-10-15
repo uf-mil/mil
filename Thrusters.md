@@ -29,7 +29,10 @@ We compute a solution by minimizing k<sub>1</sub>\*norm(B\*u - w<sub>desired</su
 
 This amounts to a multi-criterion optimization problem, and by adjusting the scaling of error cost (k<sub>1</sub>) and norm(u) cost (k<sub>2</sub>), we select a pareto *optimal* solution. So long as we both k<sub>1</sub> and k<sub>2</sub> are *positive*, there will always be a unique *optimum* for our vehicle.
 
-# Notes
+## Implementation Notes
+norm(u) does not represent the actual power consumed, *however*, since power consumed is monotonic with norm(u), it make no difference whether we use a heuristic or some wacky nonconvex function that exactly represents power.
+
+# Design Notes
 
 - The individual thrusters within the driver should not have or need knowledge of their location on the physical vehicle
 - Tracking positions through TF is a conversation to have - I am not convinced that it is worth extra  headaches spawned by publishing the static transforms. Instead, the positions and directions are held in a rosparam whose format was defined by Forrest.
