@@ -5,7 +5,9 @@ Getting Started Guide
 
 2. Read the code policy page on this wiki. 
 
-3. Get to know the people on the team
+3. [Install dependencies](https://github.com/uf-mil/Sub8/wiki/Installing-Dependencies)
+
+4. Get to know the people on the team
 
 
 Check out a few libraries:
