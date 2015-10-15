@@ -12,7 +12,7 @@ Check out a few libraries:
 [OpenCV](http://opencv.org/), [PCL](pointclouds.org), [OMPL](http://ompl.kavrakilab.org/)
 
 And a few courses:
-[Linear Algebra](https://www.khanacademy.org/math/linear-algebra), [Intro to Algorithms](http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/), [Underactuated Robotics](http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-832-underactuated-robotics-spring-2009/)
+[Linear Algebra](https://www.khanacademy.org/math/linear-algebra), [Intro to Algorithms](http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/), [Underactuated Robotics](http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-832-underactuated-robotics-spring-2009/), [Convex Optimization](http://stanford.edu/class/ee364a/)
 
 There is another Underactuated robotics course taught by the same guy on Edx. The Edx course is much better.
 
