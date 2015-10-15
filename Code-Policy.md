@@ -47,6 +47,7 @@ If on pool-test day, there are critical changes that you need to make to the sub
 * Do not merge when pulling code, always rebase `git pull --rebase` unless impossible
 
 ## Documentation
+* Your code must be attributed, if you borrow it from other proejects, or use code from stackoverflow, etc
 * Include a readme in *every* new package, that describes what it is, what it does, and how to use it (in the form of example console commands/switches)
 * Add a *wiki* page for every new logical component, that describes in some depth (including citations, dependencies, and alarms) the behavior and uses of that component (i.e. how it works, what knowledge is necessary to make improvements).
     * Feel free to edit the wiki at any time. Adding a page will require you to edit the sidebar manually.
@@ -59,7 +60,7 @@ If on pool-test day, there are critical changes that you need to make to the sub
 * C++ code: Add docstrings in the same manner as Python, using multi-line comments
 
 ## Adding Dependencies
-* If you add a new library that your code depends on, that is not installed with ROS-desktop-full or Ubuntu by default, you MUST note it in the wiki, your readme, and finally, add it to the SemaphoreCI build script. 
+* If you add a new library that your code depends on, that is not installed with ROS-desktop-full or Ubuntu by default, you MUST note it in the [wiki](https://github.com/uf-mil/Sub8/wiki/Installing-Dependencies), your readme, and finally, add it to the SemaphoreCI build script. 
     * Once you are a collaborator on Semaphore (Ask someone to add you), there are some easy tutorials there for editing the setup script. Unlike travis-ci, the build script only exists on SemaphoreCI, not in our repository.
 * If you submit a PR that requires some new library without updating the SemaphoreCI setup-build script, the Semaphore build will fail and yell at you.
 
