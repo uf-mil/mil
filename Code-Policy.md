@@ -59,7 +59,8 @@ If on pool-test day, there are critical changes that you need to make to the sub
 * C++ code: Add docstrings in the same manner as Python, using multi-line comments
 
 ## Adding Dependencies
-* If you add a new library that your code depends on, that is not installed with ROS-desktop-full or Ubuntu by default, you MUST note it in the wiki, your readme, and finally, add it to the SemaphoreCI build script. If you submit a PR that requires some new library without updating the setup-build script, the Semaphore build will fail and yell at you.
+* If you add a new library that your code depends on, that is not installed with ROS-desktop-full or Ubuntu by default, you MUST note it in the wiki, your readme, and finally, add it to the SemaphoreCI build script. 
+* If you submit a PR that requires some new library without updating the SemaphoreCI setup-build script, the Semaphore build will fail and yell at you.
 
 ## Testing
 * We use SemaphoreCI to automatically test pull-requests and new commits to the uf-mil/Sub8 repo. You still need to test your code locally, but know that everyone can view make and unit-test results on Semaphore before considering your pull-request.
