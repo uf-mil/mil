@@ -31,6 +31,8 @@
 
 * Convex Optimization
 
+* Methods in depth recovery (Light field cameras, stereo algorithms, structure from motion, shape from shading, lambertian inverse method)
+
 * Intro to SLAM, probabilistic robotics
 
 * Bundle Adjustment for 3D reconstruction from images
