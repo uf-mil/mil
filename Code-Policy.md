@@ -10,6 +10,8 @@ Before submitting changes, read the rest of this page. Any code that is pull-req
 2. Make your changes and commit the to that fork
 3. Submit a [pull request](https://help.github.com/articles/using-pull-requests/)
 4. Assign the pull-request to an appropriate reviewer, or someone random on the team if there is no obvious reviewer. Ask questions at meetings if you have any questions about review policy.
+    * MAKE SURE you are a collaborator on SemaphoreCI. If the CI build fails, you will get a notification, and likely not respond to your PR on the assumption that you noticed the failed build.
+    * You may not see movement on your PR for some time, as the reviewer waits for it to build on Semaphore, the continuous integration service that we use
 5. Code that is to be run on the sub (Obeying all style-guides, and the MIL internal guides) should go into the master branch. Code that obeys the style-guides, but is still in development, belongs in the dev branch.
 
 There is *exactly one* exception to this policy:
@@ -56,7 +58,11 @@ If on pool-test day, there are critical changes that you need to make to the sub
     * Again, someone should be able to read your docstring and understand the purpose of your code without consulting you
 * C++ code: Add docstrings in the same manner as Python, using multi-line comments
 
+## Adding Dependencies
+* If you add a new library that your code depends on, that is not installed with ROS-desktop-full or Ubuntu by default, you MUST note it in the wiki, your readme, and finally, add it to the SemaphoreCI build script. If you submit a PR that requires some new library without updating the setup-build script, the Semaphore build will fail and yell at you.
+
 ## Testing
+* We use SemaphoreCI to automatically test pull-requests and new commits to the uf-mil/Sub8 repo. You still need to test your code locally, but know that everyone can view make and unit-test results on Semaphore before considering your pull-request.
 * Operation critical code shall have unit-tests. Unit tests should fail if you code no longer works
 * General code should have unit-tests
 * Automated test-by-Simulation (Automatic Hardware-out-of-the-loop testing), e.g. Monte-Carlo testing is highly recommended for all software
@@ -94,3 +100,5 @@ If you have any questions about what you should unit tests, talk to Patrick Emam
 # Questions?
 
 If you have any questions, talk to Jake, don't just go committing willy-nilly to master!
+
+This policy was conceived of and written by Jacob Panikulam and Patrick Emami. You know where to find us if you want to start a fight.
