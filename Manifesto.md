@@ -31,4 +31,4 @@ This is the mantra of the Sub software team.
     * I have a background in robotics
     * I already know Python and am learning ROS
 
-If you don't, you may be better suited to working on the IEEE hardware team until their competition, to develop a good background
+If you don't, you may be better suited to working on the IEEE hardware team until their competition, to develop a strong background coming into the sub.
