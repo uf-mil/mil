@@ -30,7 +30,7 @@ We require a full dynamic simulation of the Sub. This includes some things liste
 
 3. `rosrun uwsim uwsim`
 
-### Implement our own
+### Implement our own  -- NOTE for posterity, we chose this.
 - Will take time
 - Have to support internally
 - Will do everything we want exactly the way we want it
