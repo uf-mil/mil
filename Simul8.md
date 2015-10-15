@@ -1,7 +1,7 @@
 Simul8
 ======
 
-Simul8 is our internally implemented sub dynamics and vision simulation.
+Simul8 is our internally implemented water vehicle dynamics and vision simulation. It is designed to support multiple vehicles at once, and always with one eye toward surface vessels. At least some part of this is to anticipate the possibility of both the RobotX WAM-V and some sub (probably not Sub8) interacting in the water.
 
 # How to install
 
