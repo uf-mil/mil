@@ -73,4 +73,4 @@ If you are working on robotics in general, you should know...
 
 ### Start with
 
-* [Lavalle's Planning Algorithms](http://planning.cs.uiuc.edu/)
+* Lavalle's [Planning Algorithms](http://planning.cs.uiuc.edu/)
