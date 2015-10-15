@@ -5,8 +5,8 @@ Simul8 is our internally implemented sub dynamics and vision simulation.
 
 # How to install
 
-    mkdir repos
-    cd repos
+    mkdir -p ~/repos
+    cd ~/repos
     git clone https://github.com/vispy/vispy.git
     cd vispy
     git checkout b48e4d3cf410b853a74b666c475c603e46725e55
