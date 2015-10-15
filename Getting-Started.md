@@ -16,6 +16,8 @@ Check out a few libraries:
 And a few courses:
 [Linear Algebra](https://www.khanacademy.org/math/linear-algebra), [Intro to Algorithms](http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/), [Underactuated Robotics](http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-832-underactuated-robotics-spring-2009/), [Convex Optimization](http://stanford.edu/class/ee364a/)
 
+And some guides: [Git the Simple Guide](http://rogerdudler.github.io/git-guide/)
+
 There is another Underactuated robotics course taught by the same guy on Edx. The Edx course is much better.
 
 
