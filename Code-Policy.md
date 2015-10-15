@@ -10,8 +10,8 @@ Before submitting changes, read the rest of this page. Any code that is pull-req
 2. Make your changes and commit the to that fork
 3. Submit a [pull request](https://help.github.com/articles/using-pull-requests/)
 4. Assign the pull-request to an appropriate reviewer, or someone random on the team if there is no obvious reviewer. Ask questions at meetings if you have any questions about review policy.
-    * MAKE SURE you are a collaborator on SemaphoreCI. If the CI build fails, you will get a notification, and likely not respond to your PR on the assumption that you noticed the failed build.
     * You may not see movement on your PR for some time, as the reviewer waits for it to build on Semaphore, the continuous integration service that we use
+    * MAKE SURE you are a collaborator on SemaphoreCI. If the CI build fails, everyone will get a notification, and will likely not respond to your PR on the assumption that you noticed the failed build.
 5. Code that is to be run on the sub (Obeying all style-guides, and the MIL internal guides) should go into the master branch. Code that obeys the style-guides, but is still in development, belongs in the dev branch.
 
 There is *exactly one* exception to this policy:
