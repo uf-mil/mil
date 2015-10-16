@@ -16,7 +16,7 @@ This is the mantra of the Sub software team.
 
 * Uncommented code is garbage code
 
-* Meetings should happen as infrequently as possible
+* [Meetings should happen as infrequently as possible](http://fortune.com/2015/09/30/workplace-bureaucracy-simple-sabotage/)
 
 * No bullshit tasks for new people
 
