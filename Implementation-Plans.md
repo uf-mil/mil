@@ -4,7 +4,7 @@
 
 * Get an [imaging sonar](http://www.humminbird.com/Category/Technology/Down-Imaging/), there are some very reasonably priced imaging sonars available from Hummingbird, we need to figure out sponsorship to get ahold of one.
 
-
+* A node that makes "beeping sounds" when bus voltage is low, etc
 
 * [ ] Simulation
     * [x] Visualization
