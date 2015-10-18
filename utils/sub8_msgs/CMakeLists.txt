@@ -18,6 +18,7 @@ add_message_files(
   ThrusterStatus.msg
   Waypoint.msg
   Trajectory.msg
+  PoseTwist.msg
 )
 
 add_service_files(
@@ -25,6 +26,8 @@ add_service_files(
   FILES
   ThrusterInfo.srv
   MotionPlan.srv
+  UpdateThrusterLayout.srv
+  FailThruster.srv
 )
 
 # add_action_files(
