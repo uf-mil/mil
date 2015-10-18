@@ -13,19 +13,19 @@ We use a simple sequential least squares solver, provided by Numpy, to compute a
 * **wrench** - a vector, **w**, a 6 element vector: [XYZ Forces, XYZ torques]
 
 ## Method
-**Mundane setup:** 
+**Mundane setup:**
 
-We query the thrusters for their bounds, and then set up a control-input matrix, B, using our knowledge of the vehicle's thruster configuration. This knowledge is recovered from a parameter stored on '/busses'. This parameter contains the locations and and directions of the thrusters relative to the center-of-mass-centered, FLU coordinate system of the sub. 
+We query the thrusters for their bounds, and then set up a control-input matrix, B, using our knowledge of the vehicle's thruster configuration. This knowledge is recovered from a parameter stored on '/busses'. This parameter contains the locations and and directions of the thrusters relative to the center-of-mass-centered, FLU coordinate system of the sub.
 
-**Computation setup:** 
+**Computation setup:**
 
 Each column of B represents the contribution of a single thruster to the sub's net wrench. This looks like [direction_vector, cross(position_vector, direction_vector)], transposed.
 
 B is a 6x8 matrix, so that B * u yields a wrench which is a 6x1 column vector.
 
-**Solving:** 
+**Solving:**
 
-We compute a solution by minimizing k<sub>1</sub>\*norm(B\*u - w<sub>desired</sub>) + k<sub>2</sub>\*norm(u). 
+We compute a solution by minimizing k<sub>1</sub>\*norm(B\*u - w<sub>desired</sub>) + k<sub>2</sub>\*norm(u).
 
 This amounts to a multi-criterion optimization problem, and by adjusting the scaling of error cost (k<sub>1</sub>) and norm(u) cost (k<sub>2</sub>), we select a pareto *optimal* solution. So long as we both k<sub>1</sub> and k<sub>2</sub> are *positive*, there will always be a unique *optimum* for our vehicle.
 
@@ -46,10 +46,10 @@ norm(u) does not represent the actual power consumed, *however*, since power con
 * [ ] Implement numerical thrust allocation
     * [x] Determine thruster layout configuration file format
     * [x] Construct control-input matrix from configuration
-    * [ ] Handle thruster-out events
+    * [x] Handle thruster-out events
 * [x] Implement thruster communication protocol
     * [x] Implement simulated thruster output
-        * [ ] Expose services for simulating thruster-out events
+        * [x] Expose services for simulating thruster-out events
 * [ ] Implement ROS thruster interface
     * [x] Handle thruster Newtons -> Thruster input calibration
     * [x] Implement srv/msg types
@@ -57,10 +57,10 @@ norm(u) does not represent the actual power consumed, *however*, since power con
     * [x] Implement thruster info publisher
     * [x] Publish thruster status messages
     * [ ] Implement alarms
-        * [ ] Implement thruster-out handling
+        * [x] Implement thruster-out handling
         * [ ] Add temp/voltage alarms
     * [x] Shut down after a timeout
-* [ ] Testing
+* [x] Testing
     * [x] Add nosetests
     * [x] Add rostest integration tests
 * Stretch Goals
