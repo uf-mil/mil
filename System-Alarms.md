@@ -65,13 +65,13 @@ Then we add an alarm to our broadcaster. This alarm is called "thruster_out", be
 The other parameter is severity. A lower severity numeber is more urgent. This is because we wanted to allow easy addition of lower importance alarm severities. When many alarms must be handled, they will be handled as a priority queue, and not a deque. The priority of each alarm in the queue will be the severity.
 
 
-        thruster_out_alarm.raise_alarm(
-            problem_description='Thruster {} has failed'.format('BRV'),
-            parameters={
-                'thruster_name': 'BRV',
-                'fault_info': {'bus_voltage': 45, 'fault': 0x20}
-            }
-        )
+    thruster_out_alarm.raise_alarm(
+        problem_description='Thruster {} has failed'.format('BRV'),
+        parameters={
+            'thruster_name': 'BRV',
+            'fault_info': {'bus_voltage': 45, 'fault': 0x20}
+        }
+    )
 
 
 Finally, we raise our alarm. We give the alarm a **human readable** `problem_description`. We also supply a non-necessarily-human-readable description. Note that we simply supply a dictionary (You could also supply just a list, or a string or int, or whatever you like). The parameters you supply are serialized to JSON, internally, and sent over the alarm topic. It is then deserialized on the other end.
