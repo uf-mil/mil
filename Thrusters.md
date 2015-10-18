@@ -43,7 +43,7 @@ norm(u) does not represent the actual power consumed, *however*, since power con
 
 # TODO
 
-* [ ] Implement numerical thrust allocation
+* [x] Implement numerical thrust allocation
     * [x] Determine thruster layout configuration file format
     * [x] Construct control-input matrix from configuration
     * [x] Handle thruster-out events
@@ -65,6 +65,7 @@ norm(u) does not represent the actual power consumed, *however*, since power con
     * [x] Add rostest integration tests
 * Stretch Goals
     * [ ] Poll the thrusters without issuing a command
+
 
 # References
 

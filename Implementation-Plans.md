@@ -28,10 +28,18 @@
     * [ ] Real-time visual odometry
 
 * [ ] Fault-tolerance
-    * [ ] Alarm system
+    * [x] Alarm system
     * [ ] Handle loss of DVL track
     * [ ] Navigate using optical flow
 
 * [ ] Testing/Modelling
     * [x] Unit-test requirements
     * [ ] Automated NLLS model-fitting for both sim and pool
+
+
+
+# Bounty problems
+
+If you're looking for something to solve, here's a list of bounty problems. Solving
+
+    * [ ]
