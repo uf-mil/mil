@@ -101,3 +101,8 @@ Here is an example...
 
 
 Change suggestions are very welcome, this is the first iteration of what will be one day a more mature tool.
+
+
+# Things to worry about
+
+- [Monitor the queue_size in the alarm subscribe](https://github.com/uf-mil/Sub8/pull/23#discussion_r42393150), let's see how many alarms show up at max.
