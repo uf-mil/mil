@@ -8,8 +8,8 @@ def make_rotation(vector_a, vector_b):
 
         >> R = make_rotation(a, b)
         >> p = R.dot(a)
-        >> np.dot(p, a) 
-        >>>  0.0
+        >> np.cross(p, a)
+        >>>  array([0.0, 0.0, 0.0])
 
         [1] Calculate Rotation Matrix to align Vector A to Vector B in 3d?
             http://math.stackexchange.com/questions/180418
@@ -45,6 +45,7 @@ def make_rotation(vector_a, vector_b):
 
     return R
 
+
 def skew_symmetric_cross(a):
     '''Return the skew symmetric matrix representation of a vector
         [1] https://en.wikipedia.org/wiki/Cross_product#Skew-symmetric_matrix
@@ -57,5 +58,15 @@ def skew_symmetric_cross(a):
     ], dtype=np.float32)
     return skew_symm
 
+
 def normalize(vector):
     return vector / np.linalg.norm(vector)
+
+
+def compose_transformation(R, t):
+    '''Compose a transformation from a rotation matrix and a translation matrix'''
+    transformation = np.zeros((4, 4))
+    transformation[:3, :3] = R
+    transformation[3, :3] = t
+    transformation[3, 3] = 1.0
+    return transformation
