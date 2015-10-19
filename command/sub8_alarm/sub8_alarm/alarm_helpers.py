@@ -17,6 +17,7 @@ class AlarmBroadcaster(object):
         self.node_name = rospy.get_name()
 
         # Alarms associated with this broadcaster
+        # In the future, there will be some background bookkeeping
         self.alarms = []
 
     def add_alarm(self, name, action_required=False, severity=5, problem_description=None, parameters=None):
