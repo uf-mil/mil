@@ -9,6 +9,7 @@ import numpy as np
 from sub8_msgs.msg import Thrust, ThrusterCmd
 from sub8_msgs.srv import ThrusterInfo, ThrusterInfoResponse
 from geometry_msgs.msg import WrenchStamped, Wrench, Vector3
+from sub8_ros_tools import wait_for_subscriber
 import rospy
 import rostest
 import time
@@ -24,7 +25,6 @@ class TestMapThrusters(unittest.TestCase):
         self.got_msg = False
         self.test_data = []
         thrust_service = rospy.Service('thrusters/thruster_range', ThrusterInfo, self.get_thruster_info)
-
 
     def thrust_callback(self, msg):
         self.got_msg = True
@@ -43,19 +43,13 @@ class TestMapThrusters(unittest.TestCase):
     def test_map_good(self):
         '''Test desired wrenches that are known to be achievable
         '''
-        # wait at most 5 seconds for the thruster_mapper to be registered
-        timeout_t = time.time() + 5.0
-        while not (rostest.is_subscriber(
-            rospy.resolve_name('/wrench'),
-            rospy.resolve_name('thruster_mapper')) and time.time() < timeout_t):
-            time.sleep(0.1)
+        target_node = 'thruster_mapper'
+        target_topic = '/wrench'
 
-        self.assert_(
-            rostest.is_subscriber(
-                rospy.resolve_name('/wrench'),
-                rospy.resolve_name('thruster_mapper')
-            ), 
-            "{} is not up".format('thruster_mapper')
+        subscribed = wait_for_subscriber(target_node, target_topic)
+        self.assertTrue(
+            subscribed,
+            "{} did not not come up in time".format(target_node)
         )
 
         thrust_pub = rospy.Publisher('/wrench', WrenchStamped, queue_size=1, latch=True)
@@ -70,6 +64,7 @@ class TestMapThrusters(unittest.TestCase):
         ]
 
         rospy.Subscriber("/thrusters/thrust", Thrust, self.thrust_callback)
+        time.sleep(0.1)  # Wait for the Subscriber to 'wake up'
 
         for num, wrench in enumerate(wrenches):
             wrench_msg = WrenchStamped(
@@ -80,7 +75,7 @@ class TestMapThrusters(unittest.TestCase):
             )
 
             thrust_pub.publish(wrench_msg)
-            timeout_t = time.time() + 0.2
+            timeout_t = time.time() + 0.01
             while not rospy.is_shutdown() and time.time() < timeout_t and not self.got_msg:
                 time.sleep(0.01)
 

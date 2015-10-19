@@ -1,0 +1,3 @@
+# Set a thruster into some 'failure' mode
+string thruster_name
+---

@@ -25,6 +25,8 @@ add_service_files(
   FILES
   ThrusterInfo.srv
   MotionPlan.srv
+  UpdateThrusterLayout.srv
+  FailThruster.srv
 )
 
 # add_action_files(

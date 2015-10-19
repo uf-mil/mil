@@ -8,8 +8,9 @@ import argparse
 from std_msgs.msg import Header
 from sub8_msgs.msg import Thrust, ThrusterCmd, ThrusterStatus
 from sub8_ros_tools import wait_for_param, thread_lock
-from sub8_msgs.srv import ThrusterInfo, ThrusterInfoResponse
+from sub8_msgs.srv import ThrusterInfo, ThrusterInfoResponse, FailThruster, FailThrusterResponse
 from sub8_thruster_comm import thruster_comm_factory
+from sub8_alarm import AlarmBroadcaster
 
 
 lock = threading.Lock()
@@ -22,6 +23,14 @@ class ThrusterDriver(object):
             - Given a command message, route that command to the appropriate port/thruster
             - Send a thruster status message describing the status of the particular thruster
         '''
+        self.alarm_broadcaster = AlarmBroadcaster()
+        self.thruster_out_alarm = self.alarm_broadcaster.add_alarm(
+            name='thruster_out',
+            action_required=True,
+            severity=3
+        )
+        self.failed_thrusters = []
+
         self.make_fake = rospy.get_param('simulate', False)
         if self.make_fake:
             rospy.logwarn("Running fake thrusters for simulation, based on parameter '/simulate'")
@@ -36,6 +45,10 @@ class ThrusterDriver(object):
         thrust_service = rospy.Service('thrusters/thruster_range', ThrusterInfo, self.get_thruster_info)
         self.thrust_sub = rospy.Subscriber('thrusters/thrust', Thrust, self.thrust_cb, queue_size=1)
         self.status_pub = rospy.Publisher('thrusters/thruster_status', ThrusterStatus, queue_size=8)
+
+        # This is essentially only for testing
+        self.fail_thruster_server = rospy.Service('fail_thruster', FailThruster, self.fail_thruster)
+
 
     def load_config(self, path):
         '''Load the configuration data:
@@ -84,7 +97,14 @@ class ThrusterDriver(object):
     def command_thruster(self, name, force):
         '''Issue a a force command (in Newtons) to a named thruster
             Example names are BLR, FLL, etc
+
+            TODO:
+                Make this still get a thruster status when the thruster is failed
+                (We could figure out if it has stopped being failed!)
         '''
+        if name in self.failed_thrusters:
+            return
+
         target_port = self.port_dict[name]
         clipped_force = np.clip(force, min(self.interpolate.x), max(self.interpolate.x))
         normalized_force = self.interpolate(clipped_force)
@@ -99,7 +119,10 @@ class ThrusterDriver(object):
             'fault',
             'response_node_id',
         ]
+
         message_keyword_args = {key: thruster_status[key] for key in message_contents}
+        if message_keyword_args['fault'] != 0:
+            self.alert_thruster_loss(thruster_name, message_keyword_args)
 
         self.status_pub.publish(
             ThrusterStatus(
@@ -115,6 +138,20 @@ class ThrusterDriver(object):
         '''
         for thrust_cmd in msg.thruster_commands:
             self.command_thruster(thrust_cmd.name, thrust_cmd.thrust)
+
+    def alert_thruster_loss(self, thruster_name, fault_info):
+        self.thruster_out_alarm.raise_alarm(
+            problem_description='Thruster {} has failed'.format(thruster_name),
+            parameters={
+                'thruster_name': thruster_name,
+                'fault_info': fault_info
+            }
+        )
+        self.failed_thrusters.append(thruster_name)
+
+    def fail_thruster(self, srv):
+        self.alert_thruster_loss(srv.thruster_name, None)
+        return FailThrusterResponse()
 
 
 if __name__ == '__main__':

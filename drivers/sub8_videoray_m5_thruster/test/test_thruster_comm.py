@@ -3,6 +3,7 @@ import unittest
 import numpy as np
 from sub8_thruster_comm import thruster_comm_factory, FakeThrusterPort
 
+
 class TestThrusterComm(unittest.TestCase):
     def setUp(self):
         port = '/dev/fake_port'

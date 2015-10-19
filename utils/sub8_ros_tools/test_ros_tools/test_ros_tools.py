@@ -18,7 +18,7 @@ class TestROSTools(unittest.TestCase):
         numpy_array = rosmsg_to_numpy(q)
 
         np.testing.assert_allclose(
-            np.array([0.7, 0.7, 0.1, 0.2]), 
+            np.array([0.7, 0.7, 0.1, 0.2]),
             numpy_array
         )
 
@@ -28,7 +28,7 @@ class TestROSTools(unittest.TestCase):
         numpy_array = rosmsg_to_numpy(v)
 
         np.testing.assert_allclose(
-            np.array([0.1, 99., 21.]), 
+            np.array([0.1, 99., 21.]),
             numpy_array
         )
 
@@ -38,7 +38,7 @@ class TestROSTools(unittest.TestCase):
         numpy_array = rosmsg_to_numpy(pose_2d, ['x', 'y', 'theta'])
 
         np.testing.assert_allclose(
-            np.array([1.0, 2.0, 3.14]), 
+            np.array([1.0, 2.0, 3.14]),
             numpy_array
         )
 
@@ -82,23 +82,6 @@ class TestROSTools(unittest.TestCase):
         self.assertTrue(fake_lock.exit, msg='Thread was never released')
         self.assertTrue(result, msg='Thread was not locked while the function was executed')
 
-    @unittest.skip("Not ready for primetime")
-    def test_instantiate_alarm_broadcaster(self):
-        '''Ensure that the alarm broadcaster instantiates without errors'''
-        broadcaster = AlarmBroadcaster()
-
-    @unittest.skip("Not ready for primetime")
-    def test_add_alarm(self):
-        '''Ensure that adding an alarm succeeds without errors'''
-        broadcaster = AlarmBroadcaster()
-        alarm = broadcaster.add_alarm(
-            name='wake-up',
-            action_required=True,
-            severity=1,
-            problem_description='This is a problem',
-            json_parameters='{"concern": ["a", "b", "c"]}' 
-        )
-
     def test_skew_symmetric_cross(self):
         '''Test that the skew symmetric cross product matrix produces the definition
             [1] https://en.wikipedia.org/wiki/Cross_product#Skew-symmetric_matrix
@@ -109,20 +92,24 @@ class TestROSTools(unittest.TestCase):
             [+3, +0, -1],
             [-2, +1, +0],
         ])
-        np.testing.assert_allclose(skew_sym, truth)
+        np.testing.assert_allclose(skew_sym, truth, err_msg="Did not make a Skew-symmetric matrix. Pretty big screw-up imho.")
 
     def test_make_rotation(self):
         '''Test several random vector pairs, and see if we can generate a valid alignment'''
+        scaling = 10
         for k in range(10):
-            p = np.random.random(3) * 10
-            q = np.random.random(3) * 10
+            p = (np.random.random(3) - 0.5) * scaling
+            q = (np.random.random(3) - 0.5) * scaling
 
             R = make_rotation(p, q)
             p_rotated = R.dot(p)
 
             # Test that the matrix actually aligns p with q
             np.testing.assert_allclose([0.0, 0.0, 0.0], np.cross(p_rotated, q), atol=1e-5,
-                                       err_msg="The generated rotation matrix did not align the input vectors")
+                                       err_msg="The generated rotation matrix did not align the input vectors, {} to {}".format(
+                                       p, q)
+                                      )
+            self.assertGreater(np.dot(p_rotated, q), 0.0, msg="The rotation did wacky inversion")
 
     def test_normalize_vector(self):
         '''Test vector normalization'''
