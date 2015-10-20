@@ -60,6 +60,7 @@ norm(u) does not represent the actual power consumed, *however*, since power con
         * [x] Implement thruster-out handling
         * [ ] Add temp/voltage alarms
     * [x] Shut down after a timeout
+    * [ ] Handle arbitrary frames (Easy, but we have to set up TF!)
 * [x] Testing
     * [x] Add nosetests
     * [x] Add rostest integration tests

@@ -116,7 +116,7 @@ Todo
 
 * [ ] Testing
     * [ ] Simulated alarm scenarios
-        * [ ] Thruster out, both detected and undetected
+        * [x] Thruster out, both detected and undetected
         * [ ] Sudden obstacle detection
         * [ ] Battery low
         * [ ] Critical navigation sensor out (Is this necessary?)
@@ -128,6 +128,10 @@ Todo
 
 * [ ] Add a way to visually specify a waypoint (Like, move a ghost of the sub around then publish that waypoint)
 * [ ] Make the sim a sub-window of a QT gui
+* [ ] Add multiplayer functionality
+    * [ ] Multiple subs
+    * [ ] Torpedoes
+    * [ ] ROS-networking
 
 # Bug-hunt
 
