@@ -37,9 +37,22 @@
     * [ ] Automated NLLS model-fitting for both sim and pool
 
 
-
 # Bounty problems
 
 If you're looking for something to solve, here's a list of bounty problems. Solving
 
-    * [ ]
+    * [ ] Simulated imaging sonar
+    * [ ] Scene-graph system for simulator
+    * [ ] C++ Implementation of alarms
+    * [ ] Easier `rostopic pub` tool that doesn't require you to specify message type!
+    * [ ] Add visualization to the monte-carlo engine
+    * [ ] Add monte-carlo optimization for controller
+    * [ ] Figure out automatic differentiation
+        * [ ] Or Make a jacobian-generator for the sub's dynamics!
+    * [ ] Real-time visual odometry
+    * [ ] Get us an imaging sonar
+    * [ ] A method for calibrating imaging sonar
+    * [ ] Implement alarms for existing nodes
+        * [ ] Alarm for bus undervoltage
+        * [ ] Alarm for thruster temperature
+    * [ ] Implement simulated integration tests for all systems

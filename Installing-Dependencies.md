@@ -20,7 +20,7 @@ rm -fr /tmp/pyode-build && mkdir -p /tmp/pyode-build && cd /tmp/pyode-build && s
 
 sudo apt-get install -qq ros-indigo-spacenav-node
 rosdep install spacenav_node
-rosmake install spacenav_node
+rosmake spacenav_node
 
 ```
 
