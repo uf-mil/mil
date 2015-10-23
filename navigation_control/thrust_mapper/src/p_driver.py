@@ -47,6 +47,7 @@ from geometry_msgs.msg import WrenchStamped
 from std_msgs.msg import Float32MultiArray
 from roboteq_msgs.msg import *
 
+rospy.init_node('primitive_driver')
 thruster_one_cog = rospy.get_param('~thruster_one_cog')
 thruster_two_cog = rospy.get_param('~thruster_two_cog')
 
@@ -122,7 +123,7 @@ class P_Driver(object):
         
 if __name__ == "__main__":
     
-    rospy.init_node('primitive_driver')
+    
     rate = rospy.Rate(10)
     # Create two thrusters
     BL_lateral = Thruster(B_L_LAT_COG, B_L_THEDA)
