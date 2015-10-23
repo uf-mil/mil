@@ -34,13 +34,10 @@ import rospy
 import roslib
 import numpy as np 
 import numpy.linalg
-import scipy.linalg
 import math,tf,threading
-from scipy import optimize
-from kill_handling.listener import KillListener
-from kill_handling.broadcaster import KillBroadcaster
 from geometry_msgs.msg import WrenchStamped
 from std_msgs.msg import Float32MultiArray
+from roboteq_msgs.msg import *
 
 rospy.init_node('primitive_driver')
 
@@ -66,6 +63,7 @@ class P_Driver(object):
         self.des_force = np.array(([0,0,0])).astype(np.float32)
         rospy.Subscriber("/wrench", WrenchStamped, self.wrench_cb)
         self.pub = rospy.Publisher("/motors" , Float32MultiArray, queue_size = 1)
+        self.temp_pub = rospy.Publisher("/roboteq_driver/cmd" , Command, queue_size = 1)
         self.positions = positions
 
     def wrench_cb(self, msg):
@@ -91,8 +89,11 @@ class P_Driver(object):
         b = self.des_force
         one, two = np.linalg.lstsq(A, b)[0]
         msg = Float32MultiArray()
+        msg2 = Command()
+        msg2.setpoint = one
         msg.data = [one,two]
         self.pub.publish(msg)
+        self.temp_pub.publish(msg2)
         
 if __name__ == "__main__":
     

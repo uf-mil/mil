@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <name>roboteq_driver</name>
+  <version>0.1.2</version>
+  <description>The roboteq_driver package</description>
+
+  <maintainer email="mpurvis@clearpathrobotics.com">Mike Purvis</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roboteq_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>serial</build_depend>
+  <run_depend>roboteq_msgs</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>serial</run_depend>
+
+  <export>
+  </export>
+</package>

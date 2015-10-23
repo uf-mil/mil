@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <name>roboteq_diagnostics</name>
+  <version>0.1.2</version>
+  <description>
+    Republish basic Roboteq motor controller data to the standard ROS
+    diagnostics topic.
+  </description>
+
+  <maintainer email="mpurvis@clearpathrobotics.com">Mike Purvis</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>diagnostic_msgs</run_depend>
+  <run_depend>roboteq_msgs</run_depend>
+
+  <export>
+  </export>
+</package>

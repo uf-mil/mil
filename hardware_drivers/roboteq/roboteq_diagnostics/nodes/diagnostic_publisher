@@ -1,0 +1,205 @@
+#!/usr/bin/env python
+# Software License Agreement (BSD) 
+#
+# @author    Mike Irvine <mirvine@clearpathrobotics.com>
+# @copyright (c) 2013, Clearpath Robotics, Inc., All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+# following conditions are met:
+# * Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+#   disclaimer.
+# * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
+#   disclaimer in the documentation and/or other materials provided with the distribution.
+# * Neither the name of Clearpath Robotics nor the names of its contributors may be used to endorse or promote products
+#   derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import rospy
+
+from roboteq_msgs.msg import Feedback, Status
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
+
+MOTOR_OVERCURRENT = 160
+MOTOR_OVERTEMP = 70
+CH_OVERTEMP = 50
+IC_OVERTEMP = 50
+
+class RoboteqDiagnostics():
+    def __init__(self):
+        rospy.init_node('roboteq_diagnostics')
+        self.diag_pub = rospy.Publisher('/diagnostics', DiagnosticArray, queue_size=1)
+        self.motor_desc = rospy.get_param('~motor_desc', rospy.get_namespace().split("/")[-2])
+
+        self.last_diagnostics_time = rospy.get_rostime()
+
+        self.roboteq_fault = []
+        self.roboteq_status = []
+        self.motor_current = []
+        self.motor_rpm = []
+        self.motor_power = []
+
+        self.supply_volt = []
+        self.supply_current = []
+        self.sys_temp = []
+
+        rospy.Subscriber('status', Status, self.HandleSystemStatus)  
+        rospy.Subscriber('feedback',Feedback, self.HandleSystemFeedback)
+
+
+    def publish_diag(self, time):
+
+        if (time -self.last_diagnostics_time).to_sec() < 1.0:
+            return
+        self.last_diagnostics_time = time
+
+        diag = DiagnosticArray()
+        diag.header.stamp = time
+        # Motor Status info
+        if self.roboteq_fault:
+            diag.status.append(self.roboteq_fault)
+        if self.roboteq_status:
+            diag.status.append(self.roboteq_status)
+        if self.sys_temp:
+            diag.status.append(self.sys_temp)
+
+        # Motor Feedback Info
+        if self.motor_current:
+            diag.status.append(self.motor_current)
+        if self.motor_rpm:
+            diag.status.append(self.motor_rpm)
+        if self.supply_volt:
+            diag.status.append(self.supply_volt)
+        if self.supply_current:
+            diag.status.append(self.supply_current)
+        if self.motor_power:
+            diag.status.append(self.motor_power)
+
+        self.diag_pub.publish(diag)
+
+
+    def HandleSystemStatus(self, data):
+        self.roboteq_fault = DiagnosticStatus(name=self.motor_desc + " Motor Fault Status", level=DiagnosticStatus.OK, message="OK")
+        fault = data.fault
+        if fault == Status.FAULT_OVERHEAT:
+            self.roboteq_fault.level = DiagnosticStatus.ERROR
+            self.roboteq_fault.message = self.motor_desc + " Motor Controller overheat fault"
+        elif fault==Status.FAULT_OVERVOLTAGE:
+            self.roboteq_fault.level = DiagnosticStatus.ERROR
+            self.roboteq_fault.message = self.motor_desc + " Motor controller overvoltage fault"
+        elif fault==Status.FAULT_SHORT_CIRCUIT:
+            self.roboteq_fault.level = DiagnosticStatus.ERROR
+            self.roboteq_fault.message = self.motor_desc + " Motor controller short circuit fault"
+        elif fault==Status.FAULT_MOSFET_FAILURE:
+            self.roboteq_fault.level = DiagnosticStatus.ERROR
+            self.roboteq_fault.message = self.motor_desc + " Motor controller mosfet failure fault"
+        elif fault==Status.FAULT_UNDERVOLTAGE:
+            self.roboteq_fault.level = DiagnosticStatus.WARN
+            self.roboteq_fault.message = self.motor_desc + " Motor controller undervoltage fault"
+        elif fault==Status.FAULT_EMERGENCY_STOP:
+            self.roboteq_fault.level = DiagnosticStatus.WARN
+            self.roboteq_fault.message = self.motor_desc + " Motor Controller emergency stop activated"
+        elif fault==Status.FAULT_SEPEX_EXCITATION_FAULT:
+            self.roboteq_fault.level = DiagnosticStatus.WARN
+            self.roboteq_fault.message = self.motor_desc + " Motor Controller sepex excitation faulted"
+        elif fault==Status.FAULT_STARTUP_CONFIG_FAULT:
+            self.roboteq_fault.level = DiagnosticStatus.WARN
+            self.roboteq_fault.message = self.motor_desc + " Motor Controller startup configuration is faulty"
+
+        self.roboteq_status = DiagnosticStatus(name=self.motor_desc + " Motor General Status", level=DiagnosticStatus.OK, message="OK")
+        status = data.status
+        self.roboteq_status.values.append(KeyValue("Serial Mode", str(bool(status & Status.STATUS_SERIAL_MODE))))
+        self.roboteq_status.values.append(KeyValue("Pulse Mode", str(bool(status & Status.STATUS_PULSE_MODE))))
+        self.roboteq_status.values.append(KeyValue("Analog Mode", str(bool(status & Status.STATUS_ANALOG_MODE))))
+        self.roboteq_status.values.append(KeyValue("Power Stage Off", str(bool(status & Status.STATUS_POWER_STAGE_OFF))))
+        self.roboteq_status.values.append(KeyValue("Stall Detected", str(bool(status & Status.STATUS_STALL_DETECTED))))
+        self.roboteq_status.values.append(KeyValue("At Motion Limit", str(bool(status & Status.STATUS_AT_LIMIT))))
+        self.roboteq_status.values.append(KeyValue("Microbasic Script Running", str(bool(status & Status.STATUS_MICROBASIC_SCRIPT_RUNNING))))
+        if status & Status.STATUS_POWER_STAGE_OFF:
+            self.roboteq_status.level = DiagnosticStatus.WARN
+            self.roboteq_status.message = self.motor_desc + " motor_controller has its power stage off"
+        if status & Status.STATUS_STALL_DETECTED:
+            self.roboteq_status.level = DiagnosticStatus.ERROR
+            self.roboteq_status.message = self.motor_desc + " motor controller detected a stall"
+        if status & Status.STATUS_AT_LIMIT:
+            self.roboteq_status.level = DiagnosticStatus.ERROR
+            self.roboteq_status.message = self.motor_desc + " motor controller is at limit"
+
+        self.ic_temp = DiagnosticStatus(name=self.motor_desc + " IC temperature", level = DiagnosticStatus.OK, message = "OK")
+        ic_temp = data.ic_temperature
+        if (ic_temp > IC_OVERTEMP - 10):
+            self.ic_temp.level = DiagnosticStatus.WARN
+            self.ic_temp.message = self.motor_desc + " bridge IC is approaching unsafe temperatures" 
+        if (ic_temp > IC_OVERTEMP):
+            self.ic_temp.level = DiagnosticStatus.ERROR
+            self.ic_temp.message = self.motor_desc + " bridge IC is above safe operating temperature"
+        self.ic_temp.values = [KeyValue(self.motor_desc + " Bridge IC temperature (C)", str(ic_temp))]
+
+        #Publish
+        self.publish_diag(rospy.get_rostime())
+
+                                
+    def HandleSystemFeedback(self, data):
+        #Motor Current
+        self.motor_current = DiagnosticStatus(name=self.motor_desc + " Motor Current", level = DiagnosticStatus.OK, message="OK")
+
+        current = data.motor_current
+        if (current > (MOTOR_OVERCURRENT - 20)):
+            self.motor_current.level = DiagnosticStatus.WARN 
+            self.motor_current.message = self.motor_desc + " Motor Current Very High"
+        elif (current > MOTOR_OVERCURRENT):
+            self.motor_current.level = DiagnosticStatus.ERROR
+            self.motor_current.message = self.motor_desc + " Motor Current Dangerously High. Reduce torque requirement"
+
+        self.motor_current.values = [KeyValue(self.motor_desc + " Current (A)", str(current))]
+
+        #Motor RPM
+        self.motor_rpm = DiagnosticStatus(name=self.motor_desc + " Motor Velocity", level = DiagnosticStatus.OK, message="OK")
+        rpm = data.measured_velocity
+        self.motor_rpm.values = [KeyValue(self.motor_desc + " rad/s",str(rpm))]
+        
+        #Supply Volt
+        self.supply_volt = DiagnosticStatus(name=self.motor_desc + " Supply Voltage", level=DiagnosticStatus.OK, message="OK")
+        volt = data.supply_voltage
+        self.supply_volt.values = [KeyValue(self.motor_desc + " Supply Voltage (V)", str(volt))]
+
+        #Supply Current
+        self.supply_current = DiagnosticStatus(name=self.motor_desc + " Supply Current", level=DiagnosticStatus.OK, message="OK")
+        sup_current = data.supply_current
+        self.supply_current.values = [KeyValue(self.motor_desc + " Supply Current (A)", str(sup_current))]
+
+        #Power Input
+        self.motor_power = DiagnosticStatus(name=self.motor_desc + " Motor Power", level=DiagnosticStatus.OK, message="OK")
+        mot_power = data.motor_power
+        self.motor_power.values = [KeyValue(self.motor_desc + " Motor Power (%)", str(mot_power * 100))]
+
+        self.sys_temp = DiagnosticStatus(name=self.motor_desc + " Motor & Channel temperatures", level = DiagnosticStatus.OK, message = "OK")
+        ch_temp = data.channel_temperature
+        motor_temp = data.motor_temperature
+        if (ch_temp > CH_OVERTEMP - 10):
+            self.sys_temp.level = DiagnosticStatus.WARN
+            self.sys_temp.message = self.motor_desc + " channel is approaching unsafe temperatures"
+        if (ch_temp > CH_OVERTEMP):
+            self.sys_temp.level = DiagnosticStatus.ERROR
+            self.sys_temp.message = self.motor_desc + " channel above safe operating temperature"
+        if (motor_temp > MOTOR_OVERTEMP - 20):
+            self.sys_temp.level = DiagnosticStatus.WARN 
+            self.sys_temp.message = self.motor_desc + " motor is approaching unsafe temperatures"
+        if (motor_temp > MOTOR_OVERTEMP):
+            self.sys_temp.level = DiagnosticStatus.ERROR
+            self.sys_temp.message = self.motor_desc + " motor above safe operating temperature"
+        self.sys_temp.values = [KeyValue(self.motor_desc + " Motor temperature (C)", str(motor_temp)),
+                                KeyValue(self.motor_desc + " Channel temperature (C)", str(ch_temp))]
+
+        self.publish_diag(rospy.get_rostime())
+
+            
+if __name__ == "__main__":
+    rd = RoboteqDiagnostics()
+    rospy.spin()
