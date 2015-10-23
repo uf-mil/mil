@@ -1,0 +1,17 @@
+<package>
+  <description brief="learning_joy">
+
+     learning_joy
+
+  </description>
+  <author>Yi Chen</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/learning_joy</url>
+  <depend package="roscpp"/>
+  <depend package="turtlesim"/>
+  <depend package="joy"/>
+
+</package>
+
+
