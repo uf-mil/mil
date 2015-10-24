@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="thrust_mapper" type="p_driver.py" name="primitive_driver">
+  <node pkg="thrust_mapper" type="p_driver.py" name="primitive_driver" output="screen">
     <rosparam param="thruster_one_cog">[-0.7239, 0.3048]</rosparam>
     <rosparam param="thruster_two_cog">[-0.7239, -0.3048]</rosparam>
   </node>

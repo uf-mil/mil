@@ -20,13 +20,21 @@ CODE DETAILS -------------------------------------------------------------------
 
 Please include inputs, outputs, and fill with a pseudo-code or description of the source to follow
 
-inputs: /topic
-output: /topic
+inputs: /wrench
+output: /motors
 
-1. Step 1
-2. Step 2
-3. Step 3
-N. Step N
+This program recieves a wrench from the controller or xbox_node and solves for 
+the optimal thrust vector configurations. Thruster center of gravity offset are 
+located in the the launch file. 
+
+Thruters are added to the solver by creating new THRUSTER obects and adding 
+them to the P_DRIVER class. A transition matrix is created based on the number of thrusters
+and then a linear least squares solution is used to minimize Ax=b
+
+Bibliography:
+    [1] Christiaan De Wit
+        "Optimal Thrust Allocation Methods for Dynamic Positioning of Ships"
+        see: http://repository.tudelft.nl/assets/uuid:4c9685ac-3f76-41c0-bae5-a2a96f4d757e/DP_Report_FINAL.pdf
 
 '''
 
@@ -39,18 +47,15 @@ from geometry_msgs.msg import WrenchStamped
 from std_msgs.msg import Float32MultiArray
 from roboteq_msgs.msg import *
 
-rospy.init_node('primitive_driver')
-
 thruster_one_cog = rospy.get_param('~thruster_one_cog')
 thruster_two_cog = rospy.get_param('~thruster_two_cog')
 
 B_L_LAT_COG = thruster_one_cog
 B_R_LAT_COG = thruster_two_cog
-BOAT_COG = (0.0,0.0)
 B_L_THEDA = 0
 B_R_THEDA = 0
 
-class THRUSTER(object):
+class Thruster(object):
 
     def __init__(self, cog, theda_constraint):
         self.thruster_cog = np.array(([cog[0], cog[1]]))
@@ -59,48 +64,74 @@ class THRUSTER(object):
 class P_Driver(object):
 
     def __init__(self, positions):
+
         self.boat_cog = np.array(([0.0,0.0]))
         self.des_force = np.array(([0,0,0])).astype(np.float32)
-        rospy.Subscriber("/wrench", WrenchStamped, self.wrench_cb)
+        
+        # ROS data
         self.pub = rospy.Publisher("/motors" , Float32MultiArray, queue_size = 1)
         self.temp_pub = rospy.Publisher("/roboteq_driver/cmd" , Command, queue_size = 1)
+        rospy.Subscriber("/wrench", WrenchStamped, self.wrench_cb)
+
+        # list of  thruster positions center of gravity offsets
         self.positions = positions
 
     def wrench_cb(self, msg):
+        """ grab new wrench """
         force = msg.wrench.force
         torque = msg.wrench.torque
         self.des_force = np.array((force.x, force.y, torque.z))
 
     def thrust_matrix(self, angle):
+        """ Iterate through thruster positions and create thruster trans matrix"""
+
         thruster_matrix = []
+        # loop through all sub positions and compute collumns of A
         for thruster, position in enumerate(self.positions):
+            # l_x and l_y are the offset for the center of gravity
             l_x, l_y = np.subtract(position, self.boat_cog)
+            # sin and cos of the angle of the thrusters 
             cos = np.cos(angle)
             sin = np.sin(angle)
-            thruster_column = np.transpose(
-                np.array([[ cos, -sin, np.cross((l_x, l_y), (cos, -sin))
-                ]]))
+            torque_effect = np.cross((l_x, l_y), (cos, -sin))
+            # must transpose to stack correctly
+            thruster_column = np.transpose(np.array([[ cos, -sin, torque_effect]]))
             thruster_matrix.append(thruster_column)
 
+        # returns a matrix made of the thruster collumns
         return np.hstack(thruster_matrix)
 
     def allocate(self, angle):
+        """ Solve for thrust vectors after creating trans matrix """
+
+        # create thrust matrix
         A = self.thrust_matrix(angle)
         b = self.des_force
+        # solve Ax = b
+        # solutions are given respectively by one, two, three, n...
         one, two = np.linalg.lstsq(A, b)[0]
+        # publish as float array
         msg = Float32MultiArray()
-        msg2 = Command()
-        msg2.setpoint = one
         msg.data = [one,two]
         self.pub.publish(msg)
+
+        # Temporarily sending the left thruster command to the motor driver
+        msg2 = Command()
+        msg2.setpoint = one
         self.temp_pub.publish(msg2)
         
 if __name__ == "__main__":
     
-    BL_lateral = THRUSTER(B_L_LAT_COG, B_L_THEDA)
-    BR_lateral = THRUSTER(B_R_LAT_COG, B_R_THEDA)
-    mapper = P_Driver([BR_lateral.thruster_cog, BL_lateral.thruster_cog])
+    rospy.init_node('primitive_driver')
     rate = rospy.Rate(10)
+    # Create two thrusters
+    BL_lateral = Thruster(B_L_LAT_COG, B_L_THEDA)
+    BR_lateral = Thruster(B_R_LAT_COG, B_R_THEDA)
+
+    # Pass current thruster data to mapper
+    mapper = P_Driver([BR_lateral.thruster_cog, BL_lateral.thruster_cog])
+
     while not rospy.is_shutdown():
+        # map thruster
         mapper.allocate(BR_lateral.angle_constrain)
         rate.sleep()
