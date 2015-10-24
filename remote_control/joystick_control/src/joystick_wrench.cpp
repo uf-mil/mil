@@ -38,12 +38,8 @@ JoystickWrench::JoystickWrench()
 // %EndTag(PARAMS)% 
 
 // %Tag(PUB)%
-   wrench_pub_=nh_.advertise<geometry_msgs::WrenchStamped>("/wrench", 1);
+   wrench_pub_=nh_.advertise<geometry_msgs::WrenchStamped>("/wrench/rc", 1);
 // %EndTag(PUB)%
-
-// %Tag(Wrench to Turtle)%
-   vel_pub_ = nh_.advertise<geometry_msgs::Twist>("turtle1/cmd_vel", 1);
-// %EndTag(Wrench to Turtle)%
 
 // %Tag(SUB)%
    joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("joy", 10, &JoystickWrench::joyCallback, this);
