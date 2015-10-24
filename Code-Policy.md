@@ -1,6 +1,7 @@
 Code Policy
 ===========
 
+Thank you to [Jacob Panikulum](https://github.com/jpanikulam) for putting together this wonderful code policy. May he reclaim his honor.
 # Adding Code
 We follow the [fork-and-pull](https://guides.github.com/activities/contributing-to-open-source/) model of repository code management. 
 
