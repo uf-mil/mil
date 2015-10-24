@@ -1,7 +1,7 @@
 // %Tag(FULL)%
 // %Tag(INCLUDE)%
 #include <ros/ros.h>
-#include <geometry_msgs/Wrench.h>
+#include <geometry_msgs/WrenchStamped.h>
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/Joy.h>
 // %EndTag(INCLUDE)%
@@ -17,7 +17,8 @@ class JoystickWrench
      ros::NodeHandle nh_;
      double force_scale_;
      double torque_scale_;
-     int axis_force_;
+     int axis_x_force_;
+     int axis_y_force_;
      int axis_torque_;
      ros::Publisher wrench_pub_;
      ros::Subscriber joy_sub_;
@@ -31,12 +32,13 @@ JoystickWrench::JoystickWrench()
 // %Tag(Param)%
    nh_.param("force_scale", force_scale_, force_scale_);
    nh_.param("torque_scale", torque_scale_, torque_scale_);
-   nh_.param("axis_force", axis_force_, axis_force_);
+   nh_.param("axis_x_force", axis_x_force_, axis_x_force_);
+   nh_.param("axis_y_force", axis_y_force_, axis_y_force_);
    nh_.param("axis_torque", axis_torque_, axis_torque_);
 // %EndTag(PARAMS)% 
 
 // %Tag(PUB)%
-   wrench_pub_=nh_.advertise<geometry_msgs::Wrench>("motor/cmd_wrench", 1);
+   wrench_pub_=nh_.advertise<geometry_msgs::WrenchStamped>("/wrench", 1);
 // %EndTag(PUB)%
 
 // %Tag(Wrench to Turtle)%
@@ -52,17 +54,13 @@ JoystickWrench::JoystickWrench()
 // %Tag(CALLBACK)%
 void JoystickWrench::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 {
-  //Motor::Wrench wrench
-  geometry_msgs::Wrench wrench;
-  wrench.force.x = force_scale_*joy->axes[axis_force_];
-  wrench.torque.z = torque_scale_*joy->axes[axis_torque_];
-  wrench_pub_.publish(wrench);
 
-  //turtlesim::Velocity vel;
-  geometry_msgs::Twist vel;
-  vel.angular.z = torque_scale_*joy->axes[axis_torque_];
-  vel.linear.x = force_scale_*joy->axes[axis_force_];
-  vel_pub_.publish(vel);
+  //Motor::Wrench wrench
+  geometry_msgs::WrenchStamped wrench;
+  wrench.wrench.force.x = force_scale_*joy->axes[axis_x_force_];
+  wrench.wrench.force.y = -1*force_scale_*joy->axes[axis_y_force_];
+  wrench.wrench.torque.z = -1*torque_scale_*joy->axes[axis_torque_];
+  wrench_pub_.publish(wrench);
 
 }
 // %EndTag(CALLBACK)%
