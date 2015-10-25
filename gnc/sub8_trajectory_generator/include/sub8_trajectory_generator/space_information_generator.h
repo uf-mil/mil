@@ -2,36 +2,39 @@
 * Author: Patrick Emami
 * Date: 9/22/15
 */
-#ifndef SUB8_STATE_SPACE_INFORMATION_H_
-#define SUB8_STATE_SPACE_INFORMATION_H_
+#ifndef SPACE_INFORMATION_GENERATOR_H_
+#define SPACE_INFORMATION_GENERATOR_H_
 
-#include "sub8_state_validity_checker.h"
+#include <ros/ros.h>
 #include "ompl/control/spaces/RealVectorControlSpace.h"
 #include "ompl/control/ODESolver.h"
 #include "ompl/control/SpaceInformation.h"
+#include "sub8_state_validity_checker.h"
 #include "sub8_state_space.h"
+#include "sub_dynamics.h"
 
 using ompl::base::StateSpacePtr;
 using ompl::control::ControlSpacePtr;
 using ompl::control::ODESolverPtr;
 using ompl::control::SpaceInformationPtr; 
+using sub8::trajectory_generator::SubDynamicsPtr; 
 
 namespace sub8 {
 
 namespace trajectory_generator {
 
 // forward declarations for typedefs
-class Sub8SpaceInformationGenerator;
+class SpaceInformationGenerator;
 
 // Typedefs for shared_ptr wrappers
-typedef boost::shared_ptr<Sub8SpaceInformationGenerator>
-    Sub8SpaceInformationGeneratorPtr;
+typedef boost::shared_ptr<SpaceInformationGenerator>
+    SpaceInformationGeneratorPtr;
 
-class Sub8SpaceInformationGenerator {
+class SpaceInformationGenerator {
  public:
   // method that handles instantiation and customization of the
-  // Sub8SpaceInformation state and control spaces
-  SpaceInformationPtr generate();
+  // SpaceInformation state and control spaces
+  SpaceInformationPtr generate(SubDynamicsPtr& sub_dynamics);
 
  private:
   // Boundary definitions for the subspaces that
@@ -44,4 +47,4 @@ class Sub8SpaceInformationGenerator {
 };
 }
 }
-#endif /* SUB8_SPACE_INFORMATION */
+#endif /* SPACE_INFORMATION_GENERATOR */

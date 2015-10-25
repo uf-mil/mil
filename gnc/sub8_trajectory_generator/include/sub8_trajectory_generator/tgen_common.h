@@ -3,8 +3,8 @@
  * Date: 9/29/15
  *
  */
-#ifndef SUB8_TGEN_COMMON_H_
-#define SUB8_TGEN_COMMON_H_
+#ifndef TGEN_COMMON_H_
+#define TGEN_COMMON_H_
 
 #include <string>
 #include <Eigen/Dense>
@@ -22,17 +22,22 @@ enum PlannerType { PDST = 1, RRT };
 
 // Number of dimensions in the control space.
 // Corresponds to num thrusters used for motion planning
-const static int _CSPACE_DIMS = 6;
+const static int _CSPACE_DIMS = 8;
 const static int _SSPACE_DIMS = 13;
 
-// typedef for control vector
-typedef Matrix<double, _CSPACE_DIMS, 1> VectorCd;
+// Thruster node ID range
+const static int _THRUSTERS_ID_BEGIN = 10;
+const static int _THRUSTERS_ID_END = 17;
 
-// typedef for sspace vector
-typedef Matrix<double, _SSPACE_DIMS, 1> VectorSd;
+// typedef for control vector
+typedef Matrix<double, _CSPACE_DIMS, 1> Vector8d;
+// typedef for state space vector
+typedef Matrix<double, _SSPACE_DIMS, 1> Vector13d;
+// typedef for 3 x 8 matrix
+typedef Matrix<double, 3, _CSPACE_DIMS> Matrix3_8d; 
 
 // Strings used for logging statements in the TGEN
-class Sub8TGenMsgs {
+class TGenMsgs {
  public:
   // PlannerStatus responses
   static constexpr const char* INVALID_START =
@@ -58,4 +63,4 @@ class Sub8TGenMsgs {
 };
 }
 }
-#endif /* SUB8_TGEN_COMMON */
+#endif /* TGEN_COMMON */

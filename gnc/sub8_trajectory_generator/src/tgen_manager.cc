@@ -4,20 +4,22 @@
  *
  */
 
-#include "sub8_tgen_manager.h"
-#include "sub8_tgen_common.h"
+#include "tgen_manager.h"
+#include "tgen_common.h"
 #include "ompl/base/PlannerStatus.h"
 #include "ompl/base/goals/GoalState.h"
 #include "ompl/control/planners/pdst/PDST.h"
 #include "ompl/control/planners/rrt/RRT.h"
 #include "ompl/control/PathControl.h"
-
 #include <ros/console.h>
+#include <Eigen/Dense>
 
-using sub8::trajectory_generator::Sub8TGenManager;
-using sub8::trajectory_generator::Sub8TGenMsgs;
-using sub8::trajectory_generator::Sub8SpaceInformationGeneratorPtr;
+using sub8::trajectory_generator::TGenManager;
+using sub8::trajectory_generator::TGenMsgs;
+using sub8::trajectory_generator::SpaceInformationGeneratorPtr;
 using sub8::trajectory_generator::Sub8StateSpace;
+using sub8::trajectory_generator::SubDynamicsPtr;
+using sub8::trajectory_generator::SubDynamics;
 using ompl::base::Planner;
 using ompl::base::PlannerStatus;
 using ompl::base::GoalState;
@@ -26,26 +28,27 @@ using ompl::control::RRT;
 using ompl::control::PDST;
 using ompl::control::PathControl;
 
-Sub8TGenManager::Sub8TGenManager(int planner) {
-  Sub8SpaceInformationGeneratorPtr ss_gen(new Sub8SpaceInformationGenerator());
-  _sub8_si = ss_gen->generate();
+TGenManager::TGenManager(int planner, TGenThrusterInfoPtr& thruster_info) {
+  SubDynamicsPtr sub_dynamics(new SubDynamics(thruster_info));
+  SpaceInformationGeneratorPtr ss_gen(new SpaceInformationGenerator());
+  _sub8_si = ss_gen->generate(sub_dynamics);
 
-  // Instantiate the planner indicated in the launch file
-  // Switch on the PlannerType
   switch (planner) {
     case PlannerType::PDST:
       _sub8_planner =
           boost::shared_ptr<Planner>(new ompl::control::PDST(_sub8_si));
+      _planner_type = PlannerType::PDST;
       break;
     default:
       _sub8_planner =
           boost::shared_ptr<Planner>(new ompl::control::RRT(_sub8_si));
+      _planner_type = PlannerType::RRT;
       break;
   }
 }
 
-void Sub8TGenManager::setProblemDefinition(const State* start_state,
-                                           const State* goal_state) {
+void TGenManager::setProblemDefinition(const State* start_state,
+                                       const State* goal_state) {
   if (_sub8_planner->isSetup()) {
     _sub8_planner->clear();
     ProblemDefinitionPtr pdef(new ProblemDefinition(_sub8_si));
@@ -62,7 +65,7 @@ void Sub8TGenManager::setProblemDefinition(const State* start_state,
   }
 }
 
-bool Sub8TGenManager::solve() {
+bool TGenManager::solve() {
   bool on_success = false;
 
   // Need to supply a real terminating condition
@@ -71,19 +74,19 @@ bool Sub8TGenManager::solve() {
   // Switch on the value of the PlannerStatus enum "StateType"
   switch (pstatus.operator StatusType()) {
     case PlannerStatus::INVALID_START:
-      ROS_ERROR("%s", Sub8TGenMsgs::INVALID_START);
+      ROS_ERROR("%s", TGenMsgs::INVALID_START);
       // TODO - ALARM
       break;
     case PlannerStatus::INVALID_GOAL:
-      ROS_ERROR("%s", Sub8TGenMsgs::INVALID_GOAL);
+      ROS_ERROR("%s", TGenMsgs::INVALID_GOAL);
       // TODO - ALARM
       break;
     case PlannerStatus::UNRECOGNIZED_GOAL_TYPE:
-      ROS_ERROR("%s", Sub8TGenMsgs::UNRECOGNIZED_GOAL_TYPE);
+      ROS_ERROR("%s", TGenMsgs::UNRECOGNIZED_GOAL_TYPE);
       // TODO - ALARM
       break;
     case PlannerStatus::TIMEOUT:
-      ROS_ERROR("%s", Sub8TGenMsgs::TIMEOUT);
+      ROS_ERROR("%s", TGenMsgs::TIMEOUT);
       // The logical flow here should be:
       //
       // 1. Check any safety paths?
@@ -94,15 +97,15 @@ bool Sub8TGenManager::solve() {
       // Q: How many times do I retry replanning if failure?
       break;
     case PlannerStatus::APPROXIMATE_SOLUTION:
-      ROS_DEBUG("%s", Sub8TGenMsgs::APPROXIMATE_SOLUTION);
+      ROS_DEBUG("%s", TGenMsgs::APPROXIMATE_SOLUTION);
       on_success = true;
       break;
     case PlannerStatus::EXACT_SOLUTION:
-      ROS_DEBUG("%s", Sub8TGenMsgs::EXACT_SOLUTION);
+      ROS_DEBUG("%s", TGenMsgs::EXACT_SOLUTION);
       on_success = true;
       break;
     case PlannerStatus::CRASH:
-      ROS_ERROR("%s", Sub8TGenMsgs::CRASH);
+      ROS_ERROR("%s", TGenMsgs::CRASH);
       // ALARM
       break;
     default:
@@ -112,7 +115,7 @@ bool Sub8TGenManager::solve() {
   return on_success;
 }
 
-void Sub8TGenManager::validateCurrentTrajectory() {
+void TGenManager::validateCurrentTrajectory() {
   // Planner get start state, get goal state
   unsigned int first_invalid_state = 0;
 
@@ -121,7 +124,7 @@ void Sub8TGenManager::validateCurrentTrajectory() {
 
   if (!_sub8_si->checkMotion(spath->getStates(), spath->getStateCount(),
                              first_invalid_state)) {
-    ROS_WARN("%s", Sub8TGenMsgs::REPLAN_FAILED);
+    ROS_WARN("%s", TGenMsgs::REPLAN_FAILED);
     // Go ahead and supply the controller with a safety path
 
     // naive replanning; will implement smarter re-planning later
@@ -134,56 +137,52 @@ void Sub8TGenManager::validateCurrentTrajectory() {
     solve();
 
   } else {
-    ROS_INFO("%s", Sub8TGenMsgs::TRAJECTORY_VALIDATED);
+    ROS_INFO("%s", TGenMsgs::TRAJECTORY_VALIDATED);
   }
 }
 
-State* Sub8TGenManager::waypointToState(
+State* TGenManager::waypointToState(
     const boost::shared_ptr<sub8_msgs::Waypoint>& wpoint) {
   State* state = _sub8_si->getStateSpace()->allocState();
 
-  state->as<Sub8StateSpace::StateType>()->setPosition(
-      wpoint->pose.position.x, wpoint->pose.position.y, wpoint->pose.position.z);
+  state->as<Sub8StateSpace::StateType>()->setPosition(wpoint->pose.position.x,
+                                                      wpoint->pose.position.y,
+                                                      wpoint->pose.position.z);
   state->as<Sub8StateSpace::StateType>()->setLinearVelocity(
       wpoint->twist.linear.x, wpoint->twist.linear.y, wpoint->twist.linear.z);
   state->as<Sub8StateSpace::StateType>()->setAngularVelocity(
-      wpoint->twist.angular.x, wpoint->twist.angular.y, wpoint->twist.angular.z);
+      wpoint->twist.angular.x, wpoint->twist.angular.y,
+      wpoint->twist.angular.z);
   state->as<Sub8StateSpace::StateType>()->setOrientation(
       wpoint->pose.orientation.x, wpoint->pose.orientation.y,
       wpoint->pose.orientation.z, wpoint->pose.orientation.w);
   return state;
 }
 
-sub8_msgs::Waypoint Sub8TGenManager::stateToWaypoint(const State* state) {
+sub8_msgs::Waypoint TGenManager::stateToWaypoint(const State* state) {
   sub8_msgs::Waypoint wpoint;
-  std::vector<double> pos;
-  std::vector<double> vel;
-  std::vector<double> w;
-  std::vector<double> orientation;
+  Vector13d state_vector; 
 
-  // Initalize the vectors with the state data
-  state->as<Sub8StateSpace::StateType>()->getPosition(pos);
-  state->as<Sub8StateSpace::StateType>()->getLinearVelocity(vel);
-  state->as<Sub8StateSpace::StateType>()->getAngularVelocity(w);
-  state->as<Sub8StateSpace::StateType>()->getOrientation(orientation);
+  state->as<Sub8StateSpace::StateType>()->getState(state_vector); 
 
-  wpoint.pose.position.x = pos[0];
-  wpoint.pose.position.y = pos[1];
-  wpoint.pose.position.z = pos[2];
-  wpoint.twist.linear.x = vel[0];
-  wpoint.twist.linear.y = vel[1];
-  wpoint.twist.linear.z = vel[2];
-  wpoint.twist.angular.x = w[0];
-  wpoint.twist.angular.y = w[1];
-  wpoint.twist.angular.z = w[2];
-  wpoint.pose.orientation.x = orientation[0];
-  wpoint.pose.orientation.y = orientation[1];
-  wpoint.pose.orientation.z = orientation[2];
-  wpoint.pose.orientation.w = orientation[3];
+  wpoint.pose.position.x = state_vector(0);
+  wpoint.pose.position.y = state_vector(1);
+  wpoint.pose.position.z = state_vector(2);
+  wpoint.twist.linear.x = state_vector(3);
+  wpoint.twist.linear.y = state_vector(4);
+  wpoint.twist.linear.z = state_vector(5);
+  wpoint.twist.angular.x = state_vector(6);
+  wpoint.twist.angular.y = state_vector(7);
+  wpoint.twist.angular.z = state_vector(8);
+  wpoint.pose.orientation.x = state_vector(9);
+  wpoint.pose.orientation.y = state_vector(10);
+  wpoint.pose.orientation.z = state_vector(11);
+  wpoint.pose.orientation.w = state_vector(12);
+  
   return wpoint;
 }
 
-sub8_msgs::Trajectory Sub8TGenManager::getTrajectory() {
+sub8_msgs::Trajectory TGenManager::getTrajectory() {
   std::vector<State*> states =
       (static_cast<PathControl*>(
            _sub8_planner->getProblemDefinition()->getSolutionPath().get()))

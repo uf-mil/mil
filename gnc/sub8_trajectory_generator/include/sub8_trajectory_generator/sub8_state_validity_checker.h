@@ -9,7 +9,7 @@
 #include "ompl/base/StateValidityChecker.h"
 #include "ompl/control/SpaceInformation.h"
 #include "ompl/base/Path.h"
-#include "sub8_tgen_common.h"
+#include "tgen_common.h"
 
 using ompl::base::StateValidityChecker;
 using ompl::base::Path;

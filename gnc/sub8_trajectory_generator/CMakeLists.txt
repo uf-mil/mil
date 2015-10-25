@@ -14,8 +14,9 @@ set(catkin_LIBRARIES
 )
 catkin_package(
    	CATKIN_DEPENDS roscpp sub8_msgs
-   	DEPENDS system_lib
+   	DEPENDS system_lib 
 )
+
 include_directories(
   	include/${PROJECT_NAME}
  	${catkin_INCLUDE_DIRS}
@@ -29,9 +30,11 @@ add_executable(
 	trajectory_generator 
 	src/trajectory_generator.cc 
 	src/sub8_state_space.cc
-	src/sub8_space_information.cc
+	src/space_information_generator.cc
 	src/sub8_state_validity_checker.cc
-	src/sub8_tgen_manager.cc
+	src/tgen_manager.cc
+	src/tgen_thruster_info.cc
+	src/sub_dynamics.cc
 )
 
 target_link_libraries(trajectory_generator
@@ -43,13 +46,15 @@ target_link_libraries(trajectory_generator
 catkin_add_gtest(${PROJECT_NAME}_unit_tests 
 	test/sub8_state_space_test.cc
 	test/sub8_state_validity_checker_test.cc
-	test/sub8_space_information_test.cc
-	test/sub8_tgen_manager_test.cc
+	test/space_information_test.cc
+	test/tgen_manager_test.cc
 	test/test_driver.cc
 	src/sub8_state_space.cc
-	src/sub8_space_information.cc
+	src/space_information_generator.cc
 	src/sub8_state_validity_checker.cc
-	src/sub8_tgen_manager.cc
+	src/tgen_manager.cc
+	src/tgen_thruster_info.cc
+	src/sub_dynamics.cc
 )
 
 target_link_libraries(

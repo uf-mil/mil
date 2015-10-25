@@ -4,6 +4,7 @@
  */
 #include <gtest/gtest.h>
 #include "sub8_state_space.h"
+#include <cmath>
 
 using sub8::trajectory_generator::Sub8StateSpace;
 
@@ -41,8 +42,16 @@ TEST(Sub8StateSpaceTest, boundsTest) {
   EXPECT_EQ(bounds.getVolume(), r.getVolume());
 }
 
-TEST(Sub8StateSpaceTest, distanceTest) {
-  ADD_FAILURE() << "Unimplemented test";
+TEST(Sub8StateSpaceTest, euclideanDistanceTest) {
+  boost::shared_ptr<Sub8StateSpace> test_state_space(new Sub8StateSpace());
+
+  State* state1 = test_state_space->allocState();
+  state1->as<Sub8StateSpace::StateType>()->setPosition(1, 1, 1);
+
+  State* state2 = test_state_space->allocState();
+  state2->as<Sub8StateSpace::StateType>()->setPosition(-1, -1, -1);
+
+  ASSERT_EQ(sqrt(12), test_state_space->distance(state1, state2));
 }
 
 TEST(Sub8StateSpaceTest, equalStatesTest) {

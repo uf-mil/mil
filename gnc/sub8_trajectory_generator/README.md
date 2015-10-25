@@ -3,7 +3,7 @@
 ## Author
 Patrick Emami - pemami@ufl.edu
 
-To launch the node (currently does nothing): 
+To launch the tgen node: 
 	`roslaunch sub8_trajectory_generator trajectory_generator.launch`
 
 To run unit tests: 
@@ -14,10 +14,12 @@ To run unit tests:
 * [ ] Path validity checking (batch state checking)
 * [ ] ODE solver (OMPL)
 * [ ] RRTstar planner for controls (OMPL only has RRTstar for geometric MP)
-* [ ] LQR as an RRTstar heuristic
-* [ ] ROS alarms and msgs
-* [ ] OMPL.app for viewing paths
-* [ ] Re-planning component 
+* [ ] distance metric
+* [ ] ROS alarms
+* [ ] OMPL.app or simul8 for viewing paths
 * [ ] Safety-path planner
 
+# Notes
+
+* filenames beginning with "sub8_" are extensions to the OMPL framework
 

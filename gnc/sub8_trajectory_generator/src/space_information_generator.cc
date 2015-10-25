@@ -2,18 +2,19 @@
 * Author: Patrick Emami
 * Date: 9/22/15
 */
-#include "sub8_space_information.h"
+#include "space_information_generator.h"
 #include "sub8_state_validity_checker.h"
-#include "sub8_ode_solver.h"
-#include "sub8_tgen_common.h"
+#include "tgen_common.h"
 #include "ompl/control/ODESolver.h"
+#include "sub8_msgs/ThrusterInfo.h"
 
-using sub8::trajectory_generator::Sub8SpaceInformationGenerator;
+using sub8::trajectory_generator::SpaceInformationGenerator;
 using sub8::trajectory_generator::Sub8StateValidityChecker;
 using sub8::trajectory_generator::Sub8StateValidityCheckerPtr;
 using ompl::control::SpaceInformationPtr;
 
-SpaceInformationPtr Sub8SpaceInformationGenerator::generate() {
+SpaceInformationPtr SpaceInformationGenerator::generate(
+    SubDynamicsPtr& sub_dynamics) {
   StateSpacePtr space(new Sub8StateSpace());
   // Set bounds for Sub8StateSpace
   setStateSpaceBounds(space);
@@ -33,8 +34,8 @@ SpaceInformationPtr Sub8SpaceInformationGenerator::generate() {
   si_ptr->setStateValidityCheckingResolution(0.03);  // 3 % -- TODO
 
   // Create and set the StatePropagator with our ODESolver
-  ODESolverPtr ode_solver(
-      new ompl::control::ODEBasicSolver<>(si_ptr, &sub8ODE));
+  ODESolverPtr ode_solver(new ompl::control::ODEBasicSolver<>(
+      si_ptr, boost::bind(&SubDynamics::ode, sub_dynamics, _1, _2, _3)));
   si_ptr->setStatePropagator(
       ompl::control::ODESolver::getStatePropagator(ode_solver));
 
@@ -52,7 +53,7 @@ SpaceInformationPtr Sub8SpaceInformationGenerator::generate() {
   return si_ptr;
 }
 
-void Sub8SpaceInformationGenerator::setStateSpaceBounds(
+void SpaceInformationGenerator::setStateSpaceBounds(
     const StateSpacePtr& space) {
   // TODO
   // When setting start and goal states, when are those states validated with
@@ -110,7 +111,9 @@ void Sub8SpaceInformationGenerator::setStateSpaceBounds(
       ->set_orientation_bounds(q_bounds);
 }
 
-void Sub8SpaceInformationGenerator::setControlSpaceBounds(
+void SpaceInformationGenerator::setControlSpaceBounds(
     const ControlSpacePtr& space) {
-  // TODO
+  for (int i = _THRUSTERS_ID_BEGIN; i <= _THRUSTERS_ID_END; ++i) {
+    // TODO
+  }
 }
