@@ -7,3 +7,9 @@
 **Motor Driver:**
 
     sudo apt-get install ros-indigo-roboteq-driver
+
+**Open Motion Planning Library**
+
+Follow the instructions at the link below word for word to install OMPL
+
+    Instructions: http://ompl.kavrakilab.org/installation.html
