@@ -56,3 +56,4 @@ If you're looking for something to solve, here's a list of bounty problems. Solv
         * [ ] Alarm for bus undervoltage
         * [ ] Alarm for thruster temperature
     * [ ] Implement simulated integration tests for all systems
+    * [ ] Add an install_dependencies.sh file to the repo, and make SemaphoreCI automatically run it
