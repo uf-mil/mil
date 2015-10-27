@@ -5,16 +5,16 @@
 #include <gtest/gtest.h>
 #include "space_information_generator.h"
 #include "ompl/control/SpaceInformation.h"
- #include "sub_dynamics.h"
- #include "tgen_thruster_info.h"
+#include "sub_dynamics.h"
+#include "tgen_thruster_info.h"
 
 using sub8::trajectory_generator::SpaceInformationGenerator;
 using sub8::trajectory_generator::SpaceInformationGeneratorPtr;
 using sub8::trajectory_generator::SubDynamics;
-using sub8::trajectory_generator::SubDynamicsPtr; 
-using sub8::trajectory_generator::TGenThrusterInfo; 
-using sub8::trajectory_generator::TGenThrusterInfoPtr; 
-using ompl::control::SpaceInformationPtr; 
+using sub8::trajectory_generator::SubDynamicsPtr;
+using sub8::trajectory_generator::TGenThrusterInfo;
+using sub8::trajectory_generator::TGenThrusterInfoPtr;
+using ompl::control::SpaceInformationPtr;
 
 // Test the factory method, and verify that it correctly initializes the
 // Sub8SpaceInformation object

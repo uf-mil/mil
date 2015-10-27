@@ -29,9 +29,9 @@ const static int _SSPACE_DIMS = 13;
 const static int _THRUSTERS_ID_BEGIN = 10;
 const static int _THRUSTERS_ID_END = 17;
 
-// typedef for control vector
+// typedef for control column-vector
 typedef Matrix<double, _CSPACE_DIMS, 1> Vector8d;
-// typedef for state space vector
+// typedef for state space column-vector
 typedef Matrix<double, _SSPACE_DIMS, 1> Vector13d;
 // typedef for 3 x 8 matrix
 typedef Matrix<double, 3, _CSPACE_DIMS> Matrix3_8d; 

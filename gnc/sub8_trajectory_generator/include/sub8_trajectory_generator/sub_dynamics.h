@@ -24,14 +24,21 @@ namespace trajectory_generator {
 class SubDynamics;
 typedef boost::shared_ptr<SubDynamics> SubDynamicsPtr;
 
+// The class encapsulates all information
+// necessary for carrying out the sub's ODE
+// calculations, along with the ode function
+// that is passed to the OMPL StatePropagator
 class SubDynamics {
  public:
   SubDynamics(const TGenThrusterInfoPtr& ti);
   void ode(const oc::ODESolver::StateType& q_t, const oc::Control* c,
-               oc::ODESolver::StateType& qdot_t);
+           oc::ODESolver::StateType& qdot_t);
 
  private:
+  void get_transform(const Vector4d& orientation, Matrix3d& dcm) const;
+  void get_skew_symmetric(const Vector3d& in, Matrix3d& skew) const;
   TGenThrusterInfoPtr _thruster_info_ptr;
+  double _mass;
 };
 }
 }

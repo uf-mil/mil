@@ -46,6 +46,7 @@ target_link_libraries(trajectory_generator
 catkin_add_gtest(${PROJECT_NAME}_unit_tests 
 	test/sub8_state_space_test.cc
 	test/sub8_state_validity_checker_test.cc
+	test/sub_dynamics_test.cc
 	test/space_information_test.cc
 	test/tgen_manager_test.cc
 	test/test_driver.cc
