@@ -7,8 +7,16 @@ from sub8_sim_tools.meshes import Transdec
 
 
 class Canvas(app.Canvas):
-    def __init__(self):
+    def __init__(self, time_acceleration=1.0, show_window=True):
         app.Canvas.__init__(self, keys='interactive', size=(800, 800))
+
+        # How much sim time should pass for each real world second
+        self.dt_per_second = time_acceleration
+
+        # How much physics time should pass for each physics iteration
+        self.physics_dt = 1 / 30.
+        print 'Time per second', self.dt_per_second, 'gaptime:', self.physics_dt / self.dt_per_second
+
         self.size = (800, 800)
 
         self.translate = np.array([0.0, 0.0, 0.0])
@@ -16,21 +24,24 @@ class Canvas(app.Canvas):
 
         gloo.set_state(depth_test=True, blend=True, preset='translucent')
         self._timer = app.Timer('auto', connect=self.on_timer, start=True)
-        self.physics_timer = app.Timer(1 / 30., connect=self.step_physics, start=True)
+        self.physics_timer = app.Timer(self.physics_dt / self.dt_per_second, connect=self.step_physics, start=True)
         self.clock = 0
         self.view = np.eye(4)
-        self.show()
+
+        # Do any visualization?
+        # TODO: Can we do any rendering at all like this?
+        if show_window:
+            self.show()
 
     def on_timer(self, event):
-        self.clock += 0.1
         self.update()
 
     def on_resize(self, event):
         width, height = event.size
         gloo.set_viewport(0, 0, width, height)
-    
+
     def step_physics(self, event):
-        pass
+        self.clock += self.physics_dt
 
     def on_draw(self, event):
         gloo.set_viewport(0, 0, *self.size)
