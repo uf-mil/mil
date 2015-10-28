@@ -16,6 +16,8 @@ This is the mantra of the Sub software team.
 
 * Uncommented code is garbage code
 
+* If you cannot understand someone else's code without consulting them, their code should never have been pulled
+
 * [Meetings should happen as infrequently as possible](http://fortune.com/2015/09/30/workplace-bureaucracy-simple-sabotage/)
 
 * No bullshit tasks for new people
@@ -23,6 +25,8 @@ This is the mantra of the Sub software team.
 * Work done for free is always open source. No exceptions.
 
 * You shouldn't be restricted to working on things that you understand, but you should *absolutely* understand once you're done working on it
+
+* Testing code you didn't write should be automatic, and never a nuisance [1]
 
 # Can I work on the sub?
 
@@ -32,3 +36,7 @@ This is the mantra of the Sub software team.
     * I already know Python and am learning ROS
 
 If you don't, you may be better suited to working on the IEEE hardware team until their competition, to develop a strong background coming into the sub.
+
+
+# Footnotes
+- *[1]* To test other people's code, you should be able to easily run `catkin_make run_tests`, and immediately see that the integration tests passed. You should not have to follow a page-long instruction list about which nodes to start in which order. In fact, you should need only a *cursory* understanding of the rest of the sub to test your node. Moreover, it should be possible to see the results of full-simulation integration tests *directly from* continuous integration, when viewing a pull-request.

@@ -3,6 +3,7 @@
     * [[Installing Dependencies]]
     * [[Editing the Wiki]]
     * [[Tech Talks]]
+    * [[Reading List]]
     * [[Manifesto]]
 * Plans
     * [[Architecture]]

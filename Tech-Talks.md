@@ -18,6 +18,8 @@
 
 * Intro to motion planning
 
+* Intro to inferential statistics and probabilistic inference
+
 * Advanced techniques in computer vision
 
 * Medical image analysis (MRI, CT, etc)
@@ -33,7 +35,7 @@
 
 * Methods in depth recovery (Light field cameras, stereo algorithms, structure from motion, shape from shading, lambertian inverse method)
 
-* Intro to SLAM, probabilistic robotics
+* Intro to SLAM
 
 * Bundle Adjustment for 3D reconstruction from images
 

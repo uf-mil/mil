@@ -15,5 +15,16 @@ For code like the controller, unit-tests just tell us that each function/class d
 * Should be able to use this outside of a unit-test, for gain optimization or whatever
 
 
+# Examples
 
-Any takers?
+Monte-Carlo's:
+This is an automatically generated plot of 20 runs with random initial conditions, all with the same randomly offset gains.
+
+![Monte-Carlo Random Xnought](http://i.imgur.com/YecGkfo.png?1)
+
+The Monte-Carlo approach can be used to verify that a controller has behavior that "makes sense" - but that's just one minor application.
+
+We can test much more rich behaviors, like:
+* Behavior of the sub when it's dropped into the water from random heights or random orientations
+* Drop N thrusters 10 seconds into a trajectory
+* Lose DVL track at a random time in the trajectory
