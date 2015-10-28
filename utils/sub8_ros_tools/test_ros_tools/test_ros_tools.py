@@ -4,9 +4,8 @@ import numpy as np
 from geometry_msgs.msg import Quaternion, Vector3, Pose2D
 from sensor_msgs.msg import Image
 from sub8_ros_tools import make_image_msg, get_image_msg
-from sub8_ros_tools import rosmsg_to_numpy
+from sub8_ros_tools import rosmsg_to_numpy, make_wrench_stamped
 from sub8_ros_tools import thread_lock
-# from sub8_ros_tools import AlarmBroadcaster
 from sub8_ros_tools import skew_symmetric_cross, make_rotation, normalize
 
 
@@ -41,6 +40,16 @@ class TestROSTools(unittest.TestCase):
             np.array([1.0, 2.0, 3.14]),
             numpy_array
         )
+
+    def test_make_wrench_stamped(self):
+        '''Test that wrenchmaking works'''
+        for k in range(10):
+            force = np.random.random(3) * 10
+            torque = np.random.random(3) * 10
+        wrench_msg = make_wrench_stamped(force, torque, frame='/enu')
+
+        msg_force = rosmsg_to_numpy(wrench_msg.wrench.force)
+        msg_torque = rosmsg_to_numpy(wrench_msg.wrench.torque)
 
     def test_make_image_msg(self):
         '''Test that make ros image message doesn't fail'''
