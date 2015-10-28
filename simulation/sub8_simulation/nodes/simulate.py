@@ -3,15 +3,22 @@ from sub8_sim_tools import rendering, physics
 from sub8_sim_tools.physics import Sub8, Box, Sphere, Mesh
 from sub8_sim_tools.meshes import Transdec
 from sub8_sim_tools.meshes import Sub8 as Sub8Visual
+from sub8_ros_tools import make_rotation, compose_transformation
+from rosgraph_msgs.msg import Clock
 from vispy import app, gloo
 import numpy as np
 import rospy
 import sys
+import time
 
 
 class SimWorld(rendering.Canvas):
     def __init__(self):
         rospy.init_node('simulator')
+        self.clock_pub = rospy.Publisher('/clock', Clock, queue_size=1)
+        self.time_acceleration = rospy.get_param('time_acceleration', 1.0)
+        self.draw = rospy.get_param('draw', True)
+
         rospy.on_shutdown(self.end)
         self.rendering_world = rendering.World()
         self.physics_world = physics.World()
@@ -25,18 +32,15 @@ class SimWorld(rendering.Canvas):
                                       orientation=None, color=(155, 155, 100), shininess=3.0)
         self.physics_world.add_entity(Mesh, (0.0, 0.0, 0.0), 10., Transdec, body=False)
 
-        plane.set_debug()
-        super(self.__class__, self).__init__()
+        self.start_time = None
+        super(self.__class__, self).__init__(self.time_acceleration, show_window=False)
+
         self.view = np.array([
             [1.,     0.,      0., 0.],
             [0.,    0.5,  -0.866, 0.],
             [0.,  0.866,     0.5, 0.],
             [0., -1.685, -36.931, 1.]
         ])
-       #  self.view = np.array([[ -0.98426778,  -0.09466092,   0.1491853 ,   0.        ],
-       # [  0.17061886,  -0.28998841,   0.94167506,   0.        ],
-       # [ -0.04587782,   0.95231425,   0.30157719,   0.        ],
-       # [-24.24570675,   2.97674952,  -3.7736146 ,   1.        ]])
 
     def end(self):
         '''This sometimes generates errors due to unfavorable ROS-Vispy interactions
@@ -55,21 +59,65 @@ class SimWorld(rendering.Canvas):
         self.entity_pairs.append((visual, physical))
 
     def add_sub(self, position):
+        '''
+        TODO:
+            This should be some kind of seperate widget, but alas, it is currently just jammed in here
+        '''
         visual = self.rendering_world.add_mesh(Sub8Visual, position,
                                       orientation=None, color=(20, 20, 20, 1), shininess=20)
         physical = self.physics_world.add_entity(Sub8, position)
-        self.rendering_world.add_entity(rendering.Indicator, physical, radius=0.2)
+        self.rendering_world.add_entity(rendering.Indicator, physical, radius=0.05)
 
-        self.rendering_world.add_entity(rendering.Indicator, physical, get_param=lambda o: np.array(o.last_force), 
-                                        radius=0.1, color=(200, 10, 0), scaling_factor=0.01)
+        self.rendering_world.add_entity(rendering.Indicator, physical, get_param=lambda o: np.array(o.last_force),
+                                        radius=0.025, color=(200, 10, 0), scaling_factor=0.01)
+
+        thruster_list = [
+            ("FLV", np.array([ 0.000,  0.0, -1]), np.array([ 0.1583, 0.16900, 0.0142])),
+            ("FLL", np.array([-0.866,  0.5,  0]), np.array([ 0.2678, 0.27950, 0.0000])),
+            ("FRV", np.array([ 0.000,  0.0, -1]), np.array([ 0.1583, -0.1690, 0.0142])),
+            ("FRL", np.array([-0.866, -0.5,  0]), np.array([ 0.2678, -0.2795, 0.0000])),
+            ("BLV", np.array([ 0.000,  0.0,  1]), np.array([-0.1583, 0.16900, 0.0142])),
+            ("BLL", np.array([ 0.866,  0.5,  0]), np.array([-0.2678, 0.27950, 0.0000])),
+            ("BRV", np.array([ 0.000,  0.0,  1]), np.array([-0.1583, -0.1690, 0.0142])),
+            ("BRL", np.array([ 0.866, -0.5,  0]), np.array([-0.2678, -0.2795, 0.0000])),
+        ]
+
+        # add the thrust indicators
+        for name, rel_direction, rel_position in thruster_list:
+
+            R = make_rotation(np.array([0.0, 0.0, 1.0]), rel_direction)
+            transformation = compose_transformation(np.transpose(R), rel_position)
+
+            class ThrustGetter(object):
+                def __init__(self, thruster_name, rdir):
+                    self.thruster_name = thruster_name
+                    self.rdir = rdir
+
+                def __call__(self, entity):
+                    return entity.thrust_dict.get(self.thruster_name, 0.0) * np.array([0.0, 0.0, 1.0])
+
+            t = ThrustGetter(name, rel_direction)
+            self.rendering_world.add_entity(rendering.Indicator, physical,
+               get_param=t, rigid=True,
+               offset=transformation, radius=0.01, scaling_factor=0.01, color=(0, 40, 200)
+            )
         self.entity_pairs.append((visual, physical))
 
     def on_draw(self, event):
+        '''TODO:
+            Make a better way to skip drawing...this is a hack at best
+        '''
         gloo.set_viewport(0, 0, *self.size)
         gloo.clear(color=True, depth=True)
         self.rendering_world.draw(self.view)
 
     def step_physics(self, event):
+        if self.start_time is None:
+            self.start_time = time.time()
+        self.clock += self.physics_dt
+        self.clock_pub.publish(Clock(clock=rospy.Time(self.clock)))
+        # print 'delta_t', self.clock, time.time() - self.start_time
+
         self.physics_world.step()
         for rendered, physical in self.entity_pairs:
             rendered.set_pose(physical.pose)
@@ -77,7 +125,6 @@ class SimWorld(rendering.Canvas):
 
 if __name__ == '__main__':
     sim = SimWorld()
-    # box = sim.add_box((-3.0, -3.0, 5.0), 1, 3, 3, 3, (255., 0.0, 0.0))
     sphere = sim.add_sphere((-3.0, -3.0, 15.0), 4.2, 1.0, (255., 0.0, 0.0))
     sub = sim.add_sub((0.0, 0.0, 0.0))
     sim.rendering_world.add_point_light((0.0, 0.0, 0.0), (0.8, 0.8, 0.8))

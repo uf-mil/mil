@@ -1,6 +1,6 @@
 from __future__ import division
 from sub8_sim_tools import Shaders
-from sub8_ros_tools.geometry_helpers import make_rotation
+from sub8_ros_tools import make_rotation, compose_transformation
 from vispy import geometry, gloo
 import numpy as np
 from vispy.util.transforms import perspective, translate, rotate
@@ -43,6 +43,10 @@ class Entity(object):
         self.program['u_view'] = self.view
         self.program['u_projection'] = self.projection
         self.program['u_color'] = self.color
+        self.children = []
+
+    def add_child(self, child):
+        self.children.append(child)
 
     def translate(self, position):
         self.model = self.model.dot(translate(position))
@@ -54,6 +58,8 @@ class Entity(object):
 
     def set_pose(self, matrix):
         self.model = matrix
+        for child in self.children:
+            child.set_pose(matrix)
         self.program['u_model'] = self.model
 
     def set_view(self, matrix):
@@ -81,7 +87,7 @@ class Entity(object):
         normals = mesh.get_vertex_normals()
 
         vertex_buffer = np.zeros(
-            len(vertices), 
+            len(vertices),
             dtype=[
                 ('a_position', np.float32, 3),
                 ('a_normal', np.float32, 3)
@@ -124,7 +130,7 @@ class Box(Entity):
         )
 
         box_buffer = np.zeros(
-            len(box_mesh['position']), 
+            len(box_mesh['position']),
             dtype=[
                 ('a_position', np.float32, 3),
                 ('a_normal', np.float32, 3)
@@ -132,18 +138,16 @@ class Box(Entity):
         )
 
         box_buffer['a_position'] = box_mesh['position']
-        box_buffer['a_normal'] = box_mesh['normal'] 
+        box_buffer['a_normal'] = box_mesh['normal']
         # No textures for now
-        # vertex_buffer['a_texcoord'] = box_buffer['texcoord'] 
+        # vertex_buffer['a_texcoord'] = box_buffer['texcoord']
 
         super(self.__class__, self).__init__(gloo.VertexBuffer(box_buffer), faces=box_faces, position=position, color=color)
 
 
 class Plane(Entity):
-    # _vertex_shader = Shaders.lighting['phong']['vertex']
-    # _fragment_shader = Shaders.lighting['phong']['fragment']
-    _vertex_shader = Shaders.passthrough['mesh']['vertex']
-    _fragment_shader = Shaders.passthrough['mesh']['fragment']
+    _vertex_shader = Shaders.lighting['phong']['vertex']
+    _fragment_shader = Shaders.lighting['phong']['fragment']
 
     def __init__(self, position, width, height, color=(0, 255, 0), orientation=None):
         '''TODO:
@@ -156,7 +160,7 @@ class Plane(Entity):
         )
 
         plane_buffer = np.zeros(
-            len(plane_mesh['position']), 
+            len(plane_mesh['position']),
             dtype=[
                 ('a_position', np.float32, 3),
                 ('a_normal', np.float32, 3)
@@ -164,7 +168,7 @@ class Plane(Entity):
         )
 
         plane_buffer['a_position'] = plane_mesh['position']
-        plane_buffer['a_normal'] = plane_mesh['normal'] 
+        plane_buffer['a_normal'] = plane_mesh['normal']
         super(self.__class__, self).__init__(gloo.VertexBuffer(plane_buffer), faces=plane_faces, position=position, color=color)
         self.set_debug()
         self.program['u_shininess'] = 16.0
@@ -175,22 +179,23 @@ class Indicator(Entity):
     _vertex_shader = Shaders.indicators['thrust_indicator']['vertex']
     _fragment_shader = Shaders.indicators['thrust_indicator']['fragment']
 
-    def __init__(self, physics_entity, radius, get_param=lambda physent: physent.velocity, 
-                 color=(0, 255, 0), scaling_factor=1.0):
+    def __init__(self, physics_entity, radius, offset=np.eye(4), get_param=lambda physent: physent.velocity,
+                 get_offset=None, color=(0, 255, 0), scaling_factor=1.0, rigid=False):
         self.physics_entity = physics_entity
         self.get_param_func = get_param
         self.scaling_factor = scaling_factor
+        self.offset = offset
+        self.rigid = rigid
 
         arrow_mesh = geometry.create_arrow(
-            rows=int(radius * 30),
-            cols=int(radius * 30),
+            rows=int(30),
+            cols=int(30),
             radius=radius,
             length=1,
-            cone_radius=radius
+            cone_radius=1.2 * radius
         )
         arrow_buffer, faces = self.make_buffer(arrow_mesh)
         super(self.__class__, self).__init__(arrow_buffer, faces=faces, color=color)
-        print 'New indicator'
 
     def draw(self):
         # pose = self.physics_entity.pose
@@ -202,12 +207,12 @@ class Indicator(Entity):
             return
 
         R = make_rotation(np.array([0.0, 0.0, 1.0]), directed_quantity)
-        model = np.zeros((4, 4))
-        model[:3, :3] = R
-        model[3, :3] = pos
-        model[3, 3] = 1.0
+        if not self.rigid:
+            model = compose_transformation(np.transpose(R), pos)
+        else:
+            model = compose_transformation(R, (0, 0, 0)).dot(self.physics_entity.pose)
 
-        self.program['u_model'] = model
+        self.program['u_model'] = self.offset.dot(model)
         self.program['u_length_scale'] = norm * self.scaling_factor
 
         # Draw
@@ -224,10 +229,10 @@ class Mesh(Entity):
         mesh_vertices, mesh_faces, mesh_normals, texcoords = mesh
 
         mesh_buffer = np.zeros(
-            len(mesh_vertices), 
+            len(mesh_vertices),
             dtype=[
                 ('a_position', np.float32, 3),
-                ('a_normal', np.float32, 3)
+                ('a_normal', np.float32, 3),
             ]
         )
 
@@ -267,7 +272,7 @@ class World(object):
     def add_mesh(self, mesh, *args, **kwargs):
         mesh = Mesh(mesh, *args, **kwargs)
         self.entities.append(mesh)
-        return mesh        
+        return mesh
 
     def add_entity(self, Entity_Type, *args, **kwargs):
         entity = Entity_Type(*args, **kwargs)
@@ -289,7 +294,7 @@ class World(object):
 
     def add_point_light(self, position, intensity):
         '''Add a point-light to illuminate the scene
-            Shading implemented: 
+            Shading implemented:
                 - Diffuse (Lambert)
                 - Blinn-Phong
             TODO:
