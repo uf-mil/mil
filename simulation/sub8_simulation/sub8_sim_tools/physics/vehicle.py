@@ -2,7 +2,7 @@ import numpy as np
 import rospy
 import tf
 from time import time
-from sub8_ros_tools import rosmsg_to_numpy
+from sub8_ros_tools import rosmsg_to_numpy, normalize
 from sub8_sim_tools.physics.physics import Box
 from sub8_simulation.srv import SimSetPose, SimSetPoseResponse
 from sub8_msgs.msg import Thrust, ThrusterCmd
@@ -12,6 +12,8 @@ from std_msgs.msg import Header
 
 
 class Sub8(Box):
+    _linear_damping_coeff = -50  # TODO: Estimate area
+    _rotational_damping_coeff = -0.5  # TODO: Estimate area
     _cmd_timeout = 2.
     def __init__(self, world, space, position):
         '''Yes, right now we're approximating the sub as a box
@@ -61,6 +63,7 @@ class Sub8(Box):
         '''Set the pose of the submarine
         TODO: Make this an 'abstract' method of Entity, and assign each new Entity a name/id
         '''
+        rospy.logwarn("Manually setting position of simulated vehicle")
         position = rosmsg_to_numpy(srv.pose.position)
         self.body.setPosition(position)
 
@@ -74,14 +77,17 @@ class Sub8(Box):
         self.body.setAngularVel(angular)
 
         # If the commanded rotation is valid
-        if np.isclose(rotation_norm, 1., atol=1e-3):
-            self.body.setQuaternion(rotation_q)
+        if np.isclose(rotation_norm, 1., atol=1e-2):
+            self.body.setQuaternion(normalize(rotation_q))
         else:
             rospy.logwarn("Commanded quaternion was not a unit quaternion, NOT setting rotation")
 
         return SimSetPoseResponse()
 
     def publish_pose(self):
+        '''TODO:
+            Publish velocity in body frame
+        '''
         pose_matrix = np.transpose(self.pose)
         linear_vel = self.velocity
         angular_vel = self.angular_vel
