@@ -12,6 +12,9 @@ In order...
     - [ ] Actual quality assessment
         - [ ] Rise/settling time is pretty meaningless
         - [ ] Optimization is the only way
+    - [x] Visualize many trajectories
+- [x] Get sim to run faster than real-time
+- [ ] Submit a pull-request for the 3D Mouse
 - [ ] Add headless simulation so we can run on Semaphore
     - [ ] OR! Figure out how to run vispy headless on Semaphore
 - [ ] Add integration tests for the PD Controller

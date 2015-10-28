@@ -91,6 +91,8 @@ Prize: Glory, Jake might get you ice cream
     * [ ] Alarm and response for DVL track lost (Should we even do anything?)
 * [ ] Unit-tests for all of the tools that are not unit-tested
 * [ ] Add an install_dependencies.sh file to the repo, and make SemaphoreCI automatically run it
+* [ ] A script to run on Semaphore to compare performance metrics for current build vs pull
+    i.e. if build[n]'s controller and vision performed better than build[n + 1], then something may have gone wrong, and we should be cautious pulling those changes
 
 # Small Bounty
 Prize: Glory
