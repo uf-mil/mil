@@ -12,7 +12,7 @@ To run unit tests:
 # TODO
 
 * [ ] Path validity checking (batch state checking)
-* [ ] ODE solver (OMPL)
+* [x] ODE solver (OMPL)
 * [ ] RRTstar planner for controls (OMPL only has RRTstar for geometric MP)
 * [ ] distance metric
 * [ ] ROS alarms

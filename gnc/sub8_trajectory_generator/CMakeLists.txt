@@ -49,6 +49,7 @@ catkin_add_gtest(${PROJECT_NAME}_unit_tests
 	test/sub_dynamics_test.cc
 	test/space_information_test.cc
 	test/tgen_manager_test.cc
+	test/tgen_thruster_info_test.cc
 	test/test_driver.cc
 	src/sub8_state_space.cc
 	src/space_information_generator.cc

@@ -4,9 +4,9 @@
 */
 #include "space_information_generator.h"
 #include "sub8_state_validity_checker.h"
-#include "tgen_common.h"
 #include "ompl/control/ODESolver.h"
 #include "sub8_msgs/ThrusterInfo.h"
+#include <ros/console.h>
 
 using sub8::trajectory_generator::SpaceInformationGenerator;
 using sub8::trajectory_generator::Sub8StateValidityChecker;
@@ -14,7 +14,7 @@ using sub8::trajectory_generator::Sub8StateValidityCheckerPtr;
 using ompl::control::SpaceInformationPtr;
 
 SpaceInformationPtr SpaceInformationGenerator::generate(
-    SubDynamicsPtr& sub_dynamics) {
+    const SubDynamicsPtr& sub_dynamics, const Matrix2_8d& cspace_bounds) {
   StateSpacePtr space(new Sub8StateSpace());
   // Set bounds for Sub8StateSpace
   setStateSpaceBounds(space);
@@ -22,7 +22,7 @@ SpaceInformationPtr SpaceInformationGenerator::generate(
   ControlSpacePtr cspace(
       new ompl::control::RealVectorControlSpace(space, _CSPACE_DIMS));
   // Set bounds for cspace
-  setControlSpaceBounds(cspace);
+  setControlSpaceBounds(cspace, cspace_bounds);
 
   SpaceInformationPtr si_ptr(
       new ompl::control::SpaceInformation(space, cspace));
@@ -112,8 +112,25 @@ void SpaceInformationGenerator::setStateSpaceBounds(
 }
 
 void SpaceInformationGenerator::setControlSpaceBounds(
-    const ControlSpacePtr& space) {
-  for (int i = _THRUSTERS_ID_BEGIN; i <= _THRUSTERS_ID_END; ++i) {
-    // TODO
-  }
+    const ControlSpacePtr& space, const Matrix2_8d& cspace_bounds) {
+  RealVectorBounds bounds(8);
+
+  bounds.setLow(0, cspace_bounds(0,0));
+  bounds.setHigh(0, cspace_bounds(1,0));
+  bounds.setLow(1, cspace_bounds(0,1));
+  bounds.setHigh(1, cspace_bounds(1,1));
+  bounds.setLow(2, cspace_bounds(0,2));
+  bounds.setHigh(2, cspace_bounds(1,2));
+  bounds.setLow(3, cspace_bounds(0,3));
+  bounds.setHigh(3, cspace_bounds(1,3));
+  bounds.setLow(4, cspace_bounds(0,4));
+  bounds.setHigh(4, cspace_bounds(1,4));
+  bounds.setLow(5, cspace_bounds(0,5));
+  bounds.setHigh(5, cspace_bounds(1,5));
+  bounds.setLow(6, cspace_bounds(0,6));
+  bounds.setHigh(6, cspace_bounds(1,6));
+  bounds.setLow(7, cspace_bounds(0,7));
+  bounds.setHigh(7, cspace_bounds(1,7));
+
+  space->as<ompl::control::RealVectorControlSpace>()->setBounds(bounds);
 }

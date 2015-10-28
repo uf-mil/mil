@@ -5,7 +5,13 @@
 #include <ros/ros.h>
 #include "sub8_state_space.h"
 #include "tgen_manager.h"
+#include "tgen_common.h"
 #include "sub8_msgs/MotionPlan.h"
+#include "sub8_msgs/ThrusterInfo.h"
+
+using sub8::trajectory_generator::Matrix2_8d;
+using sub8::trajectory_generator::_THRUSTERS_ID_BEGIN;
+using sub8::trajectory_generator::_THRUSTERS_ID_END;
 
 namespace sub8 {
 namespace trajectory_generator {
@@ -19,8 +25,8 @@ typedef boost::shared_ptr<TGenNode> TGenNodePtr;
 // requests
 class TGenNode {
  public:
-  TGenNode(int& planner_id, TGenThrusterInfoPtr& thruster_info)
-      : _tgen(new TGenManager(planner_id, thruster_info)) {}
+  TGenNode(int& planner_id, const Matrix2_8d& cspace_bounds)
+      : _tgen(new TGenManager(planner_id, cspace_bounds)) {}
   bool findTrajectory(sub8_msgs::MotionPlan::Request& req,
                       sub8_msgs::MotionPlan::Response& resp) {
     boost::shared_ptr<sub8_msgs::Waypoint> start_state_wpoint =
@@ -54,12 +60,29 @@ int main(int argc, char** argv) {
   int planner_id = 0;
   nh.getParam("planner", planner_id);
 
-  // Grabs info on thrusters from the /busses param
-  sub8::trajectory_generator::TGenThrusterInfoPtr thruster_info(
-      new sub8::trajectory_generator::TGenThrusterInfo());
+  ros::ServiceClient sc =
+      nh.serviceClient<sub8_msgs::ThrusterInfo>("thrusters/thruster_range");
+  // Block until this service is available
+  sc.waitForExistence(); 
+
+  int dim_idx = 0;
+  Matrix2_8d cspace_bounds;
+  for (int i = _THRUSTERS_ID_BEGIN; i <= _THRUSTERS_ID_END; ++i) {
+    sub8_msgs::ThrusterInfo ti;
+    ti.request.thruster_id = i;
+    ROS_WARN("Retrieving thruster ranges for thruster %d", i);
+    if (sc.call(ti)) {
+      cspace_bounds(0, dim_idx) = ti.response.min_force;
+      cspace_bounds(1, dim_idx) = ti.response.max_force;
+    } else {
+      ROS_ERROR("Could not get thruster ranges for thruster %d", i);
+      return 1;
+    }
+    ++dim_idx;
+  }
 
   sub8::trajectory_generator::TGenNodePtr tgen(
-      new sub8::trajectory_generator::TGenNode(planner_id, thruster_info));
+      new sub8::trajectory_generator::TGenNode(planner_id, cspace_bounds));
 
   ros::ServiceServer motion_planning_srv = nh.advertiseService(
       "motion_plan", &sub8::trajectory_generator::TGenNode::findTrajectory,

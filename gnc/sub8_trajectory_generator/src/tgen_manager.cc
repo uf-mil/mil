@@ -28,12 +28,13 @@ using ompl::control::RRT;
 using ompl::control::PDST;
 using ompl::control::PathControl;
 
-TGenManager::TGenManager(int planner, TGenThrusterInfoPtr& thruster_info) {
+TGenManager::TGenManager(int planner_id, const Matrix2_8d& cspace_bounds) {
+  TGenThrusterInfoPtr thruster_info(new TGenThrusterInfo()); 
   SubDynamicsPtr sub_dynamics(new SubDynamics(thruster_info));
   SpaceInformationGeneratorPtr ss_gen(new SpaceInformationGenerator());
-  _sub8_si = ss_gen->generate(sub_dynamics);
+  _sub8_si = ss_gen->generate(sub_dynamics, cspace_bounds);
 
-  switch (planner) {
+  switch (planner_id) {
     case PlannerType::PDST:
       _sub8_planner =
           boost::shared_ptr<Planner>(new ompl::control::PDST(_sub8_si));

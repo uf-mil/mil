@@ -35,6 +35,8 @@ typedef Matrix<double, _CSPACE_DIMS, 1> Vector8d;
 typedef Matrix<double, _SSPACE_DIMS, 1> Vector13d;
 // typedef for 3 x 8 matrix
 typedef Matrix<double, 3, _CSPACE_DIMS> Matrix3_8d; 
+// typedef for 2 x 8 matrix
+typedef Matrix<double, 2, _CSPACE_DIMS> Matrix2_8d; 
 
 // Strings used for logging statements in the TGEN
 class TGenMsgs {

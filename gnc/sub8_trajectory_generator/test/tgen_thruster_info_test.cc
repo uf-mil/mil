@@ -8,7 +8,7 @@
 using sub8::trajectory_generator::TGenThrusterInfo; 
 using sub8::trajectory_generator::TGenThrusterInfoPtr; 
 
-// Test that the L and D matrices are set 
+// Test that the L and D matrices are set on constructor call 
 TEST(TGenThrusterInfoTest, testTGenThrusterInfoConstructor) {
-
+  ADD_FAILURE() << "Unimplemented test";
 }

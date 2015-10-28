@@ -12,12 +12,13 @@
 #include "sub8_state_validity_checker.h"
 #include "sub8_state_space.h"
 #include "sub_dynamics.h"
+#include "tgen_common.h"
 
 using ompl::base::StateSpacePtr;
 using ompl::control::ControlSpacePtr;
 using ompl::control::ODESolverPtr;
-using ompl::control::SpaceInformationPtr; 
-using sub8::trajectory_generator::SubDynamicsPtr; 
+using ompl::control::SpaceInformationPtr;
+using sub8::trajectory_generator::SubDynamicsPtr;
 
 namespace sub8 {
 
@@ -34,7 +35,8 @@ class SpaceInformationGenerator {
  public:
   // method that handles instantiation and customization of the
   // SpaceInformation state and control spaces
-  SpaceInformationPtr generate(SubDynamicsPtr& sub_dynamics);
+  SpaceInformationPtr generate(const SubDynamicsPtr& sub_dynamics,
+                               const Matrix2_8d& cspace_bounds);
 
  private:
   // Boundary definitions for the subspaces that
@@ -43,7 +45,8 @@ class SpaceInformationGenerator {
 
   // Boundary definitions for the control space-
   // e.g. thruster limitations
-  void setControlSpaceBounds(const ControlSpacePtr& space);
+  void setControlSpaceBounds(const ControlSpacePtr& space,
+                             const Matrix2_8d& cspace_bounds);
 };
 }
 }

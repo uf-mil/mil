@@ -4,6 +4,7 @@
  */
 #include <gtest/gtest.h>
 #include "tgen_manager.h"
+#include "tgen_common.h"
 #include "sub8_state_space.h"
 #include "sub8_msgs/Waypoint.h"
 #include "sub8_msgs/Trajectory.h"
@@ -15,22 +16,29 @@ using sub8::trajectory_generator::Sub8StateSpace;
 using sub8::trajectory_generator::Sub8StateSpacePtr;
 using sub8::trajectory_generator::TGenThrusterInfo;
 using sub8::trajectory_generator::TGenThrusterInfoPtr;
+using sub8::trajectory_generator::Matrix2_8d;
+using sub8::trajectory_generator::_CSPACE_DIMS; 
 
 TEST(TGenManager, testConstructorRRT) {
-  TGenThrusterInfoPtr thruster_info(new TGenThrusterInfo());
-  TGenManagerPtr test_tgen_manager(new TGenManager(2, thruster_info));
+  Matrix2_8d test_thruster_ranges;
+  test_thruster_ranges.row(0) = -MatrixXd::Ones(1, _CSPACE_DIMS);
+  test_thruster_ranges.row(1) = MatrixXd::Ones(1, _CSPACE_DIMS);
+  TGenManagerPtr test_tgen_manager(new TGenManager(2, test_thruster_ranges));
 }
 
 TEST(TGenManager, testConstructorPDST) {
-  TGenThrusterInfoPtr thruster_info(new TGenThrusterInfo());
-  TGenManagerPtr test_tgen_manager(new TGenManager(1, thruster_info));
+  Matrix2_8d test_thruster_ranges;
+  test_thruster_ranges.row(0) = -MatrixXd::Ones(1, _CSPACE_DIMS);
+  test_thruster_ranges.row(1) = MatrixXd::Ones(1, _CSPACE_DIMS);
+  TGenManagerPtr test_tgen_manager(new TGenManager(1, test_thruster_ranges));
 }
 
 TEST(TGenManager, testSetProblemDefinition) {
-  TGenThrusterInfoPtr thruster_info(new TGenThrusterInfo());
-
+  Matrix2_8d test_thruster_ranges;
+  test_thruster_ranges.row(0) = -MatrixXd::Ones(1, _CSPACE_DIMS);
+  test_thruster_ranges.row(1) = MatrixXd::Ones(1, _CSPACE_DIMS);
   // Instantiate RRT planner
-  TGenManagerPtr test_tgen_manager(new TGenManager(2, thruster_info));
+  TGenManagerPtr test_tgen_manager(new TGenManager(2, test_thruster_ranges));
   Sub8StateSpacePtr test_state_space(new Sub8StateSpace());
 
   // Set up start and goal states
@@ -54,9 +62,11 @@ TEST(TGenManager, testTrajectoryValidation) {
 }
 
 TEST(TGenManager, testStateToWaypoint) {
-  TGenThrusterInfoPtr thruster_info(new TGenThrusterInfo());
+  Matrix2_8d test_thruster_ranges;
+  test_thruster_ranges.row(0) = -MatrixXd::Ones(1, _CSPACE_DIMS);
+  test_thruster_ranges.row(1) = MatrixXd::Ones(1, _CSPACE_DIMS);
 
-  TGenManagerPtr test_tgen_manager(new TGenManager(2, thruster_info));
+  TGenManagerPtr test_tgen_manager(new TGenManager(2, test_thruster_ranges));
   Sub8StateSpacePtr test_state_space(new Sub8StateSpace());
 
   State* state = test_state_space->allocState();
@@ -78,9 +88,11 @@ TEST(TGenManager, testStateToWaypoint) {
 }
 
 TEST(TGenManager, testWaypointToState) {
-  TGenThrusterInfoPtr thruster_info(new TGenThrusterInfo());
+  Matrix2_8d test_thruster_ranges;
+  test_thruster_ranges.row(0) = -MatrixXd::Ones(1, _CSPACE_DIMS);
+  test_thruster_ranges.row(1) = MatrixXd::Ones(1, _CSPACE_DIMS);
 
-  TGenManagerPtr test_tgen_manager(new TGenManager(2, thruster_info));
+  TGenManagerPtr test_tgen_manager(new TGenManager(2, test_thruster_ranges));
   Sub8StateSpacePtr test_state_space(new Sub8StateSpace());
   State* state = test_state_space->allocState();
 

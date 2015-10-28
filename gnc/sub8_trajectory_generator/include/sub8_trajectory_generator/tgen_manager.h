@@ -35,7 +35,7 @@ class TGenManager {
   // The planner param will be passed in from the
   // param server. Instantiates a SpaceInformation
   // obj and the Planner
-  TGenManager(int planner, TGenThrusterInfoPtr& thruster_info);
+  TGenManager(int planner, const Matrix2_8d& cspace_bounds);
 
   // Create an ompl::base::ProblemDefinition object for planning a trajectory
   // from start_state to goal_state
