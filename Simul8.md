@@ -13,7 +13,7 @@ Simul8 is our internally implemented water vehicle dynamics and vision simulatio
     sudo python setup.py develop
 
 # Install ODE
-    sudo apt-get install python-ode
+    sudo apt-get install python-pyode
     rm -fr /tmp/pyode-build && mkdir -p /tmp/pyode-build && cd /tmp/pyode-build && sudo apt-get build-dep -y python-pyode && sudo apt-get remove -y python-pyode && apt-get source --compile python-pyode && sudo dpkg -i python-pyode_*.deb
 
 Credit to Forrest for this - the Pyode on apt doesn't behave, but compiling from source works
