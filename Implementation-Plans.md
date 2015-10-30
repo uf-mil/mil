@@ -1,5 +1,7 @@
 * Alarm system - Each node publishes alarms on a single topic (a'la tf), and the system reports (SysRep) node determines the appropriate action
+
 * Better simulation - The ability to run simulated monte-carlo tests, simulate depth images, simulate water and wind resistance accounting for sub geometry
+
 * Automatic controller/motion planner quality assessment via unit-test (For both real world and simulation)
 
 * Get an [imaging sonar](http://www.humminbird.com/Category/Technology/Down-Imaging/), there are some very reasonably priced imaging sonars available from Hummingbird, we need to figure out sponsorship to get ahold of one.
@@ -41,7 +43,7 @@
 
 # Bounty problems
 
-If you're looking for something to solve, here's a list of bounty problems. Solving
+If you're looking for something to solve, here's a list of bounty problems. Giant bounty problems are determined not by their difficulty, but how important they are to the sub right now.
 
 # Giant Bounty
 Prize: We will get Korean Barbeque
@@ -53,30 +55,32 @@ Prize: We will get Korean Barbeque
 # Big Bounty
 Prize: Jake will get you ice cream
 
-* [ ] Pure physics simulation (Without Vispy)
+* [x] Pure physics simulation (Without Vispy)
     - This is "easy" with the current backend design, but there is a rough edge due to the design of simulate.py
-* [ ] Get simulation running on Semaphore Continuous Integration (Ask Jake about the roadblocks here)
-* [ ] Get everything working on sim-time or real-time seamlessly
+* [x] Get simulation running on Semaphore Continuous Integration (Ask Jake about the roadblocks here)
+* [x] Get everything working on sim-time or real-time seamlessly
     * [ ] And write a short doc explaining how nodes need to be written to support this
 * [ ] Real-time visual odometry -- David
 * [ ] Path indicator 3D orientation estimation + caustics -- Nathan
-* [ ] Depth estimation from cautics -- Matt
+* [ ] Depth estimation from caustics -- Matt
     * [ ] Special bonus for rendering new images without caustics, to do CV on
+* [ ] Get us an imaging sonar
+* [ ] 3D Pose estimation for the vehicle
+* [ ] Task recognition + 3d pose estimation
+* [ ] Generate a traversability map
 
 # Medium Bounty
 Prize: Glory, Jake might get you ice cream
 
 * [ ] Come up with a good rostest framework/process for using full simulation
     * [ ] Should we break it up into little bits? Or something
-* [ ] Get us an imaging sonar
-* [ ] Simulated imaging sonar
 * [ ] Scene-graph system for simulator
 * [ ] C++ Implementation of alarms
 * [ ] Add visualization to the monte-carlo engine
 * [ ] Implement simulated integration tests for all systems
 * [ ] Add monte-carlo optimization for controller
 * [x] Add visualization to the monte-carlo engine
-* [ ] Add monte-carlo verification
+* [ ] Add monte-carlo verification (And many monte-carlo test cases)
     * [ ] Controller
     * [ ] Vision
     * [ ] Motion planning
@@ -84,7 +88,6 @@ Prize: Glory, Jake might get you ice cream
     * The sub should be able to handle *almost* completely random conditions (With some constraints on orientation and systems functional)
 * [ ] Figure out automatic differentiation
     * [ ] Or Make a jacobian-generator for the sub's dynamics
-* [ ] A method for calibrating imaging sonar (Make a huge chessboard and cut out the white parts)
 * [ ] Implement alarms for existing nodes
     * [ ] Alarm for bus undervoltage
     * [ ] Alarm for thruster temperature
@@ -93,9 +96,44 @@ Prize: Glory, Jake might get you ice cream
 * [ ] Add an install_dependencies.sh file to the repo, and make SemaphoreCI automatically run it
 * [ ] A script to run on Semaphore to compare performance metrics for current build vs pull
     i.e. if build[n]'s controller and vision performed better than build[n + 1], then something may have gone wrong, and we should be cautious pulling those changes
+* [ ] Add widgets to the simulator
+* [ ] CUDA water physics for Simul8
+    * [ ] Or better water resistance at all
+
+## Machine Learning
+* [ ] Toolset for object recognition
+* [ ] Fit a dynamic model for the sub (TDQ learning?)
+* [ ] Automatic controller optimization (Once we have a good model for the sub)
+
+## Perception
+* [ ] Simulated cameras
+* [ ] Simulated imaging sonar
+* [ ] Monte-carlos for perception testing
+* [ ] A method for calibrating imaging sonar (Make a huge chessboard and cut out the white parts)
+* [ ] Build an apparatus of LED's for generating random patterns, to create artificial stereo disparity underwater
+* [ ] Get ArrayFire working using OpenCL to do 3D pose estimation
+* [ ] Diver pose and gesture recognition
+* [ ] Handle moving objects in whatever SLAM process we use
+    * [ ] Also handle variation in surface appearance due to sand moving
+* [ ] Predict the world-frame trajectories of moving objects
+    * Docking with the moving WAM-V
+    * Water-stunts, like grabbing a falling ring
+* [ ] Statistical noise rejection for sonar and stereo data
+* [ ] Implement PCL functions in OpenCL and/or CUDA
+* [ ] Implement point-cloud research using PCL (Ask Jake about this - there are many many great PCL results that do not publish source code)
 
 # Small Bounty
 Prize: Glory
 
 * [ ] Easier `rostopic pub` tool that doesn't require you to specify message type!
 * [ ] Easy "make_*stamped" message helper function (or wrappers around the uglier parts of Rospy, like 6 lines to send a trivial WrenchStamped)
+
+
+This is not a complete list. It should be made especially clear: If you think of a really cool project you'd like to do, you absolutely have free reign to do so.
+
+
+# If we raise more money
+
+* [ ] 7-DOF underwater manipulator
+* [ ] Multiple imaging sonars
+* [ ] GPU Vessel (Or better solution, for getting CUDA into the sub)

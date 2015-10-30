@@ -3,7 +3,7 @@ Getting Started Guide
 
 1. Clone this repository. As of now, Sub8 has no dependencies on the rest of uf-mil, so it can exist in its own catkin workspace.
 
-2. Read the code policy page on this wiki. 
+2. Read the code policy page on this wiki.
 
 3. [Install dependencies](https://github.com/uf-mil/Sub8/wiki/Installing-Dependencies)
 
@@ -45,6 +45,8 @@ If you are working on robotics in general, you should know...
 
 * C++ if you are interested in doing point cloud analysis
 
+* Some knowledge of computational geometry
+
 * Really, really know what a transformation matrix is
 
 #### Start with
@@ -74,3 +76,20 @@ If you are working on robotics in general, you should know...
 ### Start with
 
 * Lavalle's [Planning Algorithms](http://planning.cs.uiuc.edu/)
+
+
+## Other stuff
+
+Some other topics that are supremely useful:
+
+* Numerical Methods
+
+* Numerical Optimization (A subset of numerical methods, but optimization methods often have their own class)
+
+* Statistics and probability
+
+* Medical Imaging (A huge field with lots of research on crazy perception, but hardly any cross-over into robotics)
+
+* General planning (Task-planning beyond motion planning)
+
+* Computational geometry, for both perception and motion planning
