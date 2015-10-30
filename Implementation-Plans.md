@@ -121,6 +121,7 @@ Prize: Glory, Jake might get you ice cream
 * [ ] Statistical noise rejection for sonar and stereo data
 * [ ] Implement PCL functions in OpenCL and/or CUDA
 * [ ] Implement point-cloud research using PCL (Ask Jake about this - there are many many great PCL results that do not publish source code)
+* [ ] Come up with a way to use LED's or AR-tags to determine the pose of the camera relative to some landmark, e.g. the boat's docking adapter
 
 # Small Bounty
 Prize: Glory
