@@ -1,6 +1,28 @@
 <launch>
+    <arg name="3dmouse" default="false" />
+
+    <param name="3dmouse" value="$(arg 3dmouse)" type="bool" />
     <param name="simulate" value="true" />
+    <param name="use_sim_time" value="true" />
+
+    <!-- Alarm system -->
+    <node pkg="sub8_alarm" type="alarm_handler.py" name="sub8_alarm_handler" output="screen" />
+    <!-- Vehicle control -->
     <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper.launch" />
     <include file="$(find sub8_videoray_m5_thruster)/launch/thruster_driver.launch" />
+    <!-- Actual Simulation -->
     <node pkg="sub8_simulation" type="simulate.py" name="sub8_simulation" output="screen" />
+
+    <group if="$(arg 3dmouse)" >
+        <!-- ROS Node for interface with 3D Mouse -->
+        <node pkg="spacenav_node" type="spacenav_node" name="spacenav_node" output="screen">
+          <param name="zero_when_static" value="true"/>
+          <param name="static_count_threshold" value="30"/>
+        </node>
+
+        <!-- 3D Mouse Remapper node (Our own) -->
+        <node pkg="sub8_simulation" type="spacenav_remap.py" name="spacenav_remap" output="screen" >
+            <rosparam name="behavior" value="wrench" />
+        </node>
+    </group>
 </launch>
