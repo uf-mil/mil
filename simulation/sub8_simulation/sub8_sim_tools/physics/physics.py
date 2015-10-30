@@ -28,16 +28,16 @@ class World(object):
         self.entities = []
         # Create a world object
         self.ode_world = ode.World()
-        self.ode_world.setGravity(np.array([0, 0, Constants.g]))    
+        self.ode_world.setGravity(np.array([0, 0, Constants.g]))
 
         self.ode_world.setAngularDamping(0.2)
         # self.ode_world.setLinearDamping(0.2)
         self.ode_world.setERP(0.8)
         self.ode_world.setCFM(1E-5)
-    
+
         # Create a space object
         self.space = ode.Space()
-    
+
         self.contact_group = ode.JointGroup()
         self.ode_world.step(self.dt)
 
@@ -126,7 +126,7 @@ class Entity(object):
     def angular_vel(self):
         angular_vel = np.array(self.body.getAngularVel(), dtype=np.float32)
         return angular_vel
-    
+
     @property
     def submerged_volume(self):
         '''Assume water is at z = 0
@@ -151,8 +151,10 @@ class Entity(object):
         '''Apply a quadratic damping force'''
         velocity = np.array(self.body.getLinearVel(), dtype=np.float32)
         norm_velocity = np.linalg.norm(velocity)
-        unit_velocity = velocity / norm_velocity
-        self.body.addForce((norm_velocity ** 2) * self._linear_damping_coeff * unit_velocity)
+        if not np.isclose(norm_velocity, 0.0):
+            unit_velocity = velocity / norm_velocity
+            force = (norm_velocity ** 2) * self._linear_damping_coeff * unit_velocity
+            self.body.addForce(force)
 
     def apply_damping_torque(self):
         '''Apply a linear rotational damping torque'''

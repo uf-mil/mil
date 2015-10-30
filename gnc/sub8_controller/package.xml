@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+  <name>sub8_controller</name>
+  <version>1.0.0</version>
+  <description>The sub8_controller package</description>
+
+  <maintainer email="jpanikulam@ufl.edu">jacob</maintainer>
+  <license>MIT</license>
+  <!--   <test_depend>gtest</test_depend> -->
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
+  <build_depend>sub8_msgs</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>sub8_msgs</run_depend>
+  <run_depend>dynamic_reconfigure</run_depend>
+
+  <export>
+  </export>
+</package>
