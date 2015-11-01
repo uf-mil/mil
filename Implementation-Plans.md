@@ -59,7 +59,7 @@ Prize: Jake will get you ice cream
     - This is "easy" with the current backend design, but there is a rough edge due to the design of simulate.py
 * [x] Get simulation running on Semaphore Continuous Integration (Ask Jake about the roadblocks here)
 * [x] Get everything working on sim-time or real-time seamlessly
-    * [ ] And write a short doc explaining how nodes need to be written to support this
+    * [x] And write a short doc explaining how nodes need to be written to support this
 * [ ] Real-time visual odometry -- David
 * [ ] Path indicator 3D orientation estimation + caustics -- Nathan
 * [ ] Depth estimation from caustics -- Matt
@@ -72,6 +72,8 @@ Prize: Jake will get you ice cream
 # Medium Bounty
 Prize: Glory, Jake might get you ice cream
 
+* [ ] Mission scheduler
+    * [ ] Handle concurrency somehow
 * [ ] Come up with a good rostest framework/process for using full simulation
     * [ ] Should we break it up into little bits? Or something
 * [ ] Scene-graph system for simulator
