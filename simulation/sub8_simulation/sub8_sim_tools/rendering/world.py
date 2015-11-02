@@ -53,7 +53,6 @@ class Entity(object):
 
     def rotate(self, angle, axis):
         '''Angle in radians'''
-        rad_angle = np.radians(angle)
         self.model = self.model.dot(rotate(angle, axis))
 
     def set_pose(self, matrix):
@@ -238,7 +237,13 @@ class Mesh(Entity):
 
         mesh_buffer['a_position'] = mesh_vertices
         mesh_buffer['a_normal'] = mesh_normals
-        super(self.__class__, self).__init__(gloo.VertexBuffer(mesh_buffer), faces=mesh_faces, position=position, orientation=orientation, color=color)
+        super(self.__class__, self).__init__(
+            gloo.VertexBuffer(mesh_buffer),
+            faces=mesh_faces,
+            position=position,
+            orientation=orientation,
+            color=color
+        )
         self.program['u_shininess'] = shininess
         self.program['u_specular_color'] = self.color[:3]
 
@@ -284,9 +289,9 @@ class World(object):
             TODO: Only draw when the frame is going to be needed
         '''
         raise(NotImplementedError('add_camera not implemented!'))
-        camera = Camera((640, 640), position, orientation, topic, projection=projection)
-        self.views.append(camera)
-        return camera
+        # camera = Camera((640, 640), position, orientation, topic, projection=projection)
+        # self.views.append(camera)
+        # return camera
 
     def add_sonar(self, position, orientation, projection=None, maxdepth=100):
         '''Add a ros-sonar to view the scene'''
@@ -316,7 +321,6 @@ class World(object):
         for entity in self.entities[::-1]:
                 entity.set_view(cur_view)
                 entity.draw()
-
 
         # for view in self.views:
         #     # Attach to view framebuffer
