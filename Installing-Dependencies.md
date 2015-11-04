@@ -30,9 +30,9 @@ rosmake spacenav_node
 
 If your code depends on something not on this page, it will not be pulled!
 
+# SuperInstall
 
 To install absolutely everything, do this
-
 
 ```
 sudo apt-get install python-pip
