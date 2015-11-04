@@ -1,5 +1,4 @@
 from vispy import io
-import rospy
 import os
 from time import time
 import numpy as np

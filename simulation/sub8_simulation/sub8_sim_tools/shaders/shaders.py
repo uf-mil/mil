@@ -1,5 +1,4 @@
 import os
-import string
 import collections
 
 
@@ -16,9 +15,10 @@ class ShaderReader(object):
         for line in shader_text:
             if line.startswith('>'):
                 if current_shader_hierarchy is not None:
-                    self.update(shader_dict,
+                    self.update(
+                        shader_dict,
                         self.recursive_dictionary(
-                            current_shader_hierarchy, 
+                            current_shader_hierarchy,
                             current_shader_text
                         )
                     )
@@ -36,9 +36,10 @@ class ShaderReader(object):
 
         # Catch anything we missed
         if current_shader_hierarchy is not None:
-            self.update(shader_dict,
+            self.update(
+                shader_dict,
                 self.recursive_dictionary(
-                    current_shader_hierarchy, 
+                    current_shader_hierarchy,
                     current_shader_text
                 )
             )
@@ -66,7 +67,7 @@ class ShaderReader(object):
 
 
 class Shaders(object):
-    '''A Shaders class, which automatically contains all of the shaders 
+    '''A Shaders class, which automatically contains all of the shaders
         in the shaders folder
     WTF?
         shaders.Shaders.passthrough is a dictionary containing the point:vertex and point:fragment shaders

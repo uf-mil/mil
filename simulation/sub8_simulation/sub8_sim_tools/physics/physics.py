@@ -3,13 +3,7 @@
 Original Author: Annie Luc
 '''
 from __future__ import division
-import traceback
 import numpy as np
-import time
-import sys
-import os
-import random
-import time
 import ode
 
 
@@ -20,9 +14,9 @@ class Constants(object):
 
 
 class World(object):
-    def __init__(self, dt=1/45.):
+    def __init__(self, dt=(1 / 45.)):
         '''This section incorporates PyODE to define methods to create and draw three objects: a sphere, box, or cylinder.
-        Some code borrowed from http://sourceforge.net/p/pyode/mailman/message/19674697/.
+            Some code borrowed from http://sourceforge.net/p/pyode/mailman/message/19674697/.
         '''
         self.dt = dt
         self.entities = []
@@ -221,23 +215,16 @@ class Sphere(Entity):
 
 
 class Mesh(Entity):
-    def __init__(self, world, space, position, density, mesh_info, body=True):
-        '''Mesh object - set body to false if you don't want physics
+    def __init__(self, world, space, position, density, mesh_info):
+        '''Mesh object - Dynamics are *unsupported* right now
+            This spawns a static object that can only be collided with and does not move
+            TODO: Fix that
         '''
-        if body:
-            self.body = ode.Body(world)
-            self.body.setPosition(position)
-            M = ode.Mass()
-            M.setSphere(density, radius)
-            self.body.setMass(M)
-
         # Create a mesh geometry for collision detection
         mesh_vertices, mesh_faces, mesh_normals, texcoords = mesh_info
         meshdata = ode.TriMeshData()
         meshdata.build(mesh_vertices, mesh_faces)
         self.geom = ode.GeomTriMesh(meshdata, space)
-        if body:
-            self.geom.setBody(self.body)
 
     def step(self, dt):
         # self.apply_damping_force()

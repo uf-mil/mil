@@ -1,9 +1,8 @@
 import numpy as np
 from vispy import gloo
 from vispy import app
-from vispy.util.transforms import perspective, translate, rotate
-from sub8_sim_tools.rendering import Sphere, Box, World
-from sub8_sim_tools.meshes import Transdec
+from vispy.util.transforms import translate, rotate
+from sub8_sim_tools.rendering import World
 
 
 class Canvas(app.Canvas):

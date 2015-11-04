@@ -26,14 +26,14 @@ class SimWorld(rendering.Canvas):
         self.entity_pairs = []
 
         # Physics world starts with such a plane
-        plane = self.rendering_world.add_plane((0.0, 0.0, 1.0), 100.0, 100.0, color=(0, 0, 255, 170))
+        self.rendering_world.add_plane((0.0, 0.0, 1.0), 100.0, 100.0, color=(0, 0, 255, 170))
 
         self.rendering_world.add_mesh(Transdec, (0.0, 0.0, 0.0),
                                       orientation=None, color=(155, 155, 100), shininess=3.0)
-        self.physics_world.add_entity(Mesh, (0.0, 0.0, 0.0), 10., Transdec, body=False)
+        self.physics_world.add_entity(Mesh, (0.0, 0.0, 0.0), 10., Transdec)
 
         self.start_time = None
-        super(self.__class__, self).__init__(self.time_acceleration, show_window=False)
+        super(self.__class__, self).__init__(self.time_acceleration, show_window=self.draw)
 
         self.view = np.array([
             [1.,     0.,      0., 0.],
@@ -72,14 +72,14 @@ class SimWorld(rendering.Canvas):
                                         radius=0.025, color=(200, 10, 0), scaling_factor=0.01)
 
         thruster_list = [
-            ("FLV", np.array([ 0.000,  0.0, -1]), np.array([ 0.1583, 0.16900, 0.0142])),
-            ("FLL", np.array([-0.866,  0.5,  0]), np.array([ 0.2678, 0.27950, 0.0000])),
-            ("FRV", np.array([ 0.000,  0.0, -1]), np.array([ 0.1583, -0.1690, 0.0142])),
-            ("FRL", np.array([-0.866, -0.5,  0]), np.array([ 0.2678, -0.2795, 0.0000])),
-            ("BLV", np.array([ 0.000,  0.0,  1]), np.array([-0.1583, 0.16900, 0.0142])),
-            ("BLL", np.array([ 0.866,  0.5,  0]), np.array([-0.2678, 0.27950, 0.0000])),
-            ("BRV", np.array([ 0.000,  0.0,  1]), np.array([-0.1583, -0.1690, 0.0142])),
-            ("BRL", np.array([ 0.866, -0.5,  0]), np.array([-0.2678, -0.2795, 0.0000])),
+            ("FLV", np.array([ 0.000,  0.0, -1]), np.array([ 0.1583, 0.16900, 0.0142])),  # flake8: noqa
+            ("FLL", np.array([-0.866,  0.5,  0]), np.array([ 0.2678, 0.27950, 0.0000])),  # flake8: noqa
+            ("FRV", np.array([ 0.000,  0.0, -1]), np.array([ 0.1583, -0.1690, 0.0142])),  # flake8: noqa
+            ("FRL", np.array([-0.866, -0.5,  0]), np.array([ 0.2678, -0.2795, 0.0000])),  # flake8: noqa
+            ("BLV", np.array([ 0.000,  0.0,  1]), np.array([-0.1583, 0.16900, 0.0142])),  # flake8: noqa
+            ("BLL", np.array([ 0.866,  0.5,  0]), np.array([-0.2678, 0.27950, 0.0000])),  # flake8: noqa
+            ("BRV", np.array([ 0.000,  0.0,  1]), np.array([-0.1583, -0.1690, 0.0142])),  # flake8: noqa
+            ("BRL", np.array([ 0.866, -0.5,  0]), np.array([-0.2678, -0.2795, 0.0000])),  # flake8: noqa
         ]
 
         # add the thrust indicators
