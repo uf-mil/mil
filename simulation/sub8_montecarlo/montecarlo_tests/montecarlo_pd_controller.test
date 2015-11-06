@@ -1,0 +1,17 @@
+<launch>
+  <arg name="draw" default="false" />
+
+  <param name="draw" value="$(arg draw)" type="bool" />
+  <param name="time_acceleration" value="100" type="double"/>
+  <param name="physics_dt" value="0.05" type="double"/>
+
+  <include file="$(find sub8_simulation)/launch/sim_full.launch" />
+
+  <param name="runs" value="15" type="int" />
+  <param name="run_time" value="40" type="double" />
+  <param name="plot_results" value="False" type="bool" />
+
+  <node pkg="sub8_controller" type="pd_controller" name="pdcontroller" output="screen"/>
+  <!-- <node pkg="sub8_montecarlo" type="controller_verification.py" name="controller_verification" output="screen"/> -->
+  <test test-name="sub8_controller_montecarlo" pkg="sub8_montecarlo" type="montecarlo_pd_controller.py" time-limit="100.0" retry="1"/>
+</launch>
