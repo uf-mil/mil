@@ -2,12 +2,13 @@ Code Policy
 ===========
 
 # Adding Code
-We follow the [fork-and-pull](https://guides.github.com/activities/contributing-to-open-source/) model of repository code management. 
+We follow the [fork-and-pull](https://guides.github.com/activities/contributing-to-open-source/) model of repository code management.
 
 Before submitting changes, read the rest of this page. Any code that is pull-requested should *absolutely never* break catkin_make for master. Test locally before pull-requesting. Incomplete code should be pull-requested to the dev branch, and it should not break the dev branch.
 
 1. [Fork the repository](https://help.github.com/articles/fork-a-repo/)
 2. Make your changes and commit the to that fork
+    * Verify that your changes compile and pass a flake8 test
 3. Submit a [pull request](https://help.github.com/articles/using-pull-requests/)
 4. Assign the pull-request to an appropriate reviewer, or someone random on the team if there is no obvious reviewer. Ask questions at meetings if you have any questions about review policy.
     * You may not see movement on your PR for some time, as the reviewer waits for it to build on Semaphore, the continuous integration service that we use
@@ -53,14 +54,14 @@ If on pool-test day, there are critical changes that you need to make to the sub
     * Feel free to edit the wiki at any time. Adding a page will require you to edit the sidebar manually.
 * In short: Readme's are for how-to-use, Wiki pages should be how-does-this-work
 * Someone should be able to use your node or package without needing you to be present
-* Python code: Every class and method should have a [docstring](https://en.wikipedia.org/wiki/Docstring#Python). 
+* Python code: Every class and method should have a [docstring](https://en.wikipedia.org/wiki/Docstring#Python).
     * Class docstring should contain what the class is responsible for/what it encapsulates, caveats, TODO's, and citations
     * Method/function docstrings should contain a list of parameters and their purpose (Someone should be able to determine exactly what would happen if they changed a parameter), and a list of returns and their purpose. It should also include TODO's, and citations, and a summary of methods purpose and behavior.
     * Again, someone should be able to read your docstring and understand the purpose of your code without consulting you
 * C++ code: Add docstrings in the same manner as Python, using multi-line comments
 
 ## Adding Dependencies
-* If you add a new library that your code depends on, that is not installed with ROS-desktop-full or Ubuntu by default, you MUST note it in the [wiki](https://github.com/uf-mil/Sub8/wiki/Installing-Dependencies), your readme, and finally, add it to the SemaphoreCI build script. 
+* If you add a new library that your code depends on, that is not installed with ROS-desktop-full or Ubuntu by default, you MUST note it in the [wiki](https://github.com/uf-mil/Sub8/wiki/Installing-Dependencies), your readme, and finally, add it to the SemaphoreCI build script.
     * Once you are a collaborator on Semaphore (Ask someone to add you), there are some easy tutorials there for editing the setup script. Unlike travis-ci, the build script only exists on SemaphoreCI, not in our repository.
 * If you submit a PR that requires some new library without updating the SemaphoreCI setup-build script, the Semaphore build will fail and yell at you.
 
@@ -92,9 +93,12 @@ If you have any questions about what you should unit tests, talk to Patrick Emam
 ## Python
 * [PEP8](https://www.python.org/dev/peps/pep-0008/)
 * Enforce PEP8 with [flake8](https://pypi.python.org/pypi/flake8), or use the flake8 linter Subplime plugin.
+* Use (We ignore E201)
+    flake8 --max-line-length=130 --ignore=E201 ./
+
 * We will follow PEP8 with one exception: the line length may be up to 100 characters
 
-## C++ 
+## C++
 * [Clang-format](https://github.com/rosshemsley/SublimeClangFormat) to automatically format your code
 * [Google Styleguide](https://google-styleguide.googlecode.com/svn/trunk/cppguide.html)
 * [Google styleguide linter](https://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py) or find a Sublime plugin/linter that enforces the google styleguide
