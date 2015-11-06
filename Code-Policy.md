@@ -97,6 +97,7 @@ If you have any questions about what you should unit tests, talk to Patrick Emam
     flake8 --max-line-length=130 --ignore=E201 ./
 
 * We will follow PEP8 with one exception: the line length may be up to 100 characters
+* Your code will not be pulled if it is not PEP8 compliant
 
 ## C++
 * [Clang-format](https://github.com/rosshemsley/SublimeClangFormat) to automatically format your code
