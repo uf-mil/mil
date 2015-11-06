@@ -99,6 +99,7 @@ Prize: Glory, Jake might get you ice cream
 * [ ] A script to run on Semaphore to compare performance metrics for current build vs pull
     i.e. if build[n]'s controller and vision performed better than build[n + 1], then something may have gone wrong, and we should be cautious pulling those changes
 * [ ] Add widgets to the simulator
+* [ ] Simulated shadows
 * [ ] CUDA water physics for Simul8
     * [ ] Or better water resistance at all
 
