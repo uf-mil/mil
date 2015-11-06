@@ -33,7 +33,7 @@ class TestAlarmIntegration(unittest.TestCase):
         thruster_to_fail = 'BRV'
 
         # TODO: Compress this anymore
-        subscribed = wait_for_subscriber('thruster_mapper', 'wrench')
+        subscribed = wait_for_subscriber('thruster_mapper', 'wrench', timeout=10.0)
         self.assertTrue(
             subscribed,
             "{} did not not come up in time".format('thruster_mapper')
@@ -46,15 +46,19 @@ class TestAlarmIntegration(unittest.TestCase):
         fail_thruster_proxy(thruster_to_fail)
 
         time.sleep(0.1)
-        wrench_pub.publish(WrenchStamped(
-            # The actual force/torque is irrelevant, we still send a 0 command for every active thruster
-            wrench=Wrench(
-                force=Vector3(10.0, 10.0, 10.0),
-                torque=Vector3(10.0, 10.0, 10.0)
-            )
-        ))
+        give_up_time = time.time() + 1.5
+        while not(rospy.is_shutdown() and (time.time() < give_up_time)):
+            wrench_pub.publish(WrenchStamped(
+                # The actual force/torque is irrelevant, we still send a 0 command for every active thruster
+                wrench=Wrench(
+                    force=Vector3(10.0, 10.0, 10.0),
+                    torque=Vector3(10.0, 10.0, 10.0)
+                )
+            ))
+            if self.called:
+                break
+            time.sleep(0.1)
 
-        time.sleep(0.1)
         self.assertTrue(self.called)
         self.assertIsNotNone(self.last_thrust_cmd, msg="Never got thrust command after issuing wrench")
         names = []
@@ -69,6 +73,7 @@ class TestAlarmIntegration(unittest.TestCase):
         '''Test a 'kill' alarm'''
         pass
 
+    @unittest.skip("Not ready")
     def test_unkill(self):
         '''Test an unkill alarm'''
         pass
