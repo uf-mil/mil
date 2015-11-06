@@ -35,7 +35,7 @@ If your code depends on something not on this page, it will not be pulled!
 To install absolutely everything, do this
 
 ```
-sudo apt-get install python-pip
+sudo apt-get install -qq python-pip
 mkdir -p ~/repos
 # Add all the apt nonsense
 sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe"
