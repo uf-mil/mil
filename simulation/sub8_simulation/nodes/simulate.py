@@ -17,11 +17,12 @@ class SimWorld(rendering.Canvas):
         rospy.init_node('simulator')
         self.clock_pub = rospy.Publisher('/clock', Clock, queue_size=1)
         self.time_acceleration = rospy.get_param('time_acceleration', 1.0)
+        self.physics_dt = rospy.get_param('physics_dt', 1 / 30.)
         self.draw = rospy.get_param('draw', True)
 
         rospy.on_shutdown(self.end)
         self.rendering_world = rendering.World()
-        self.physics_world = physics.World()
+        self.physics_world = physics.World(self.physics_dt)
 
         self.entity_pairs = []
 
@@ -33,7 +34,7 @@ class SimWorld(rendering.Canvas):
         self.physics_world.add_entity(Mesh, (0.0, 0.0, 0.0), 10., Transdec)
 
         self.start_time = None
-        super(self.__class__, self).__init__(self.time_acceleration, show_window=self.draw)
+        super(self.__class__, self).__init__(self.time_acceleration, show_window=self.draw, physics_dt=self.physics_dt)
 
         self.view = np.array([
             [1.,     0.,      0., 0.],
@@ -116,11 +117,11 @@ class SimWorld(rendering.Canvas):
             self.start_time = time.time()
         self.clock += self.physics_dt
         self.clock_pub.publish(Clock(clock=rospy.Time(self.clock)))
-        # print 'delta_t', self.clock, time.time() - self.start_time
 
         self.physics_world.step()
-        for rendered, physical in self.entity_pairs:
-            rendered.set_pose(physical.pose)
+        if self.draw:
+            for rendered, physical in self.entity_pairs:
+                rendered.set_pose(physical.pose)
 
 
 if __name__ == '__main__':
