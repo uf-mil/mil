@@ -26,7 +26,13 @@ class TestAlarmIntegration(unittest.TestCase):
 
     def test_lose_thruster(self):
         '''Trigger a thruster loss and verify that it is no
-            longer used'''
+            longer used
+
+        Behavior:
+            1. Trigger the thruster failure alarm (By manually failing a simulated thruster)
+            2. Issue a wrench command
+            3. Verify that the sub8_msgs/Thrust command does not contain a command to that thruster
+        '''
         rospy.Subscriber("/thrusters/thrust", Thrust, self.thrust_callback)
         wrench_pub = rospy.Publisher('/wrench', WrenchStamped, queue_size=1, latch=True)
 
@@ -45,8 +51,9 @@ class TestAlarmIntegration(unittest.TestCase):
         fail_thruster_proxy = rospy.ServiceProxy('fail_thruster', FailThruster)
         fail_thruster_proxy(thruster_to_fail)
 
-        time.sleep(0.1)
-        give_up_time = time.time() + 1.5
+        # Spend up to 1.5 seconds waiting for a response (Bide time until the mapper finishes reacting)
+        # Looping because mapper ignores wrenches until it finishes remapping thrusters
+        give_up_time = time.time() + 0.2
         while not(rospy.is_shutdown() and (time.time() < give_up_time)):
             wrench_pub.publish(WrenchStamped(
                 # The actual force/torque is irrelevant, we still send a 0 command for every active thruster
