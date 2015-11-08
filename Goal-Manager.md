@@ -1,4 +1,4 @@
-I am pushing half of the goal manager and some math tools that assist with common functions of operating the boat. This is still very much in the making but here is a good first start. 
+I have added to the Sub8 repo thus far half of the goal manager and some math tools that assist with common functions of operating the boat. This is still very much in the making but here is a good first start. 
 
 ##### What is the goal manager?
 
