@@ -18,6 +18,7 @@
     * [[System Alarms]]
     * [[Thrusters]]
     * [[Monte Carlo Engine]]
+    * [[Goal Manager]]
 * [[Code Policy]]
     * [[ROS Conventions]]
     * [[Other Conventions]]
