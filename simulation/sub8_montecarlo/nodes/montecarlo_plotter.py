@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''Monte-Carlo controller verification
+'''Node for quickly plotting monte-carlo results
 '''
 import rospy
 from sub8_montecarlo_tools import VerifyController
