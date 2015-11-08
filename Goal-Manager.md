@@ -1,12 +1,12 @@
 I have added to the Sub8 repo thus far half of the goal manager and some math tools that assist with common functions of operating the boat. This is still very much in the making but here is a good first start. 
 
-# **What is the goal manager?:**
+# **What is the goal manager?**
 
 The goal manager will be used to control upper level move functions of the boat.
 It is what will be used to send the waypoint locations that the boat will plan a path
 to and arrive at. 
 
-# **How the goal manager will work?**:
+# **How the goal manager will work?**
 
 The client will take input from a called function and create a Odometry message
 It will send it the server where it will send the goal to the path planner and then 
