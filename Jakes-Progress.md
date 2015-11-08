@@ -18,7 +18,12 @@ In order...
 - [x] Submit a pull-request for the 3D Mouse
 - [x] Add headless simulation so we can run on Semaphore
     - [x] OR! Figure out how to run vispy headless on Semaphore
-- [ ] Add integration tests for the PD Controller
+
+- [x] Add controller-test montecarlos
+    - [ ] Submit a pull-request for controller-test montecarlos
+    - (I am expecting the integration tests here to fail because the controller is not implemented!)
+
+- [x] Add integration tests for the PD Controller
 - [ ] Submit a pull-request for the PD controller
 
 - [ ] Focus on vision (Implement visual odometry in some meaningful way - we need non-shitty cameras)
@@ -30,3 +35,8 @@ In order...
 Random:
     - [ ] Make increment-numbers again
     - [ ] Some reflection tool for automatically making *stamped messages using __getattr__ and parsing the request
+    - [ ] Fix the a=-b corner case for that make_rotation
+
+Not Sub:
+
+    - [ ] Study PoEE

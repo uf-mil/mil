@@ -28,6 +28,8 @@ This is the mantra of the Sub software team.
 
 * Testing code you didn't write should be automatic, and never a nuisance [1]
 
+* If you need to write a small novel justifying your design, something went wrong
+
 # Can I work on the sub?
 
 ## Yes, if you satisfy any or all of the following

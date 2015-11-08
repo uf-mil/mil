@@ -4,7 +4,7 @@ Code Policy
 # Adding Code
 We follow the [fork-and-pull](https://guides.github.com/activities/contributing-to-open-source/) model of repository code management.
 
-Before submitting changes, read the rest of this page. Any code that is pull-requested should *absolutely never* break catkin_make for master. Test locally before pull-requesting. Incomplete code should be pull-requested to the dev branch, and it should not break the dev branch.
+Before submitting changes, read the rest of this page. Any code that is pull-requested should *absolutely never* break catkin_make for master. Test locally before pull-requesting. Incomplete code should be pull-requested to a feature branch (It's okay if this doesn't pass unit-tests, but it does have to make).
 
 1. [Fork the repository](https://help.github.com/articles/fork-a-repo/)
 2. Make your changes and commit the to that fork
@@ -13,7 +13,7 @@ Before submitting changes, read the rest of this page. Any code that is pull-req
 4. Assign the pull-request to an appropriate reviewer, or someone random on the team if there is no obvious reviewer. Ask questions at meetings if you have any questions about review policy.
     * You may not see movement on your PR for some time, as the reviewer waits for it to build on Semaphore, the continuous integration service that we use
     * MAKE SURE you are a collaborator on SemaphoreCI. If the CI build fails, everyone will get a notification, and will likely not respond to your PR on the assumption that you noticed the failed build.
-5. Code that is to be run on the sub (Obeying all style-guides, and the MIL internal guides) should go into the master branch. Code that obeys the style-guides, but is still in development, belongs in the dev branch.
+5. Code that is to be run on the sub (Obeying all style-guides, and the MIL internal guides) should go into the master branch. Code that obeys the style-guides, but is still in development, belongs into your own feature branch (ex: sim, monte-carlo, controller), to be merged when complete.
 
 There is *exactly one* exception to this policy:
 If on pool-test day, there are critical changes that you need to make to the sub, you may commit them directly too the **sub's** onboard git. Only minor changes are permissible at this time, this still does not belong in the main sub8/master. On competition days, *all* changes must be pair-programmed.
