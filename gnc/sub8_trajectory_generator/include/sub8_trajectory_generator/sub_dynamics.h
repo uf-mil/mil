@@ -16,6 +16,7 @@ using namespace Eigen;
 using sub8::trajectory_generator::TGenThrusterInfoPtr;
 
 namespace oc = ompl::control;
+namespace ob = ompl::base;
 
 namespace sub8 {
 
@@ -33,10 +34,12 @@ class SubDynamics {
   SubDynamics(const TGenThrusterInfoPtr& ti);
   void ode(const oc::ODESolver::StateType& q_t, const oc::Control* c,
            oc::ODESolver::StateType& qdot_t);
+  void postPropagate(const ob::State* state, const oc::Control* control,
+                     const double duration, ob::State* result);
 
  private:
-  void get_transform(const Vector4d& orientation, Matrix3d& dcm) const;
-  void get_skew_symmetric(const Vector3d& in, Matrix3d& skew) const;
+  void getTransform(const Vector4d& orientation, Matrix3d& dcm) const;
+  void getSkewSymmetric(const Vector3d& in, Matrix3d& skew) const;
   TGenThrusterInfoPtr _thruster_info_ptr;
   double _mass;
 };

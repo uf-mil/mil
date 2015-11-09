@@ -74,7 +74,7 @@ void SubDynamics::ode(const oc::ODESolver::StateType& q_t, const oc::Control* c,
 
   // calculate direction cosine matrix given the orientation
   Matrix3d dcm;
-  get_transform(q.segment(9, 4), dcm);
+  getTransform(q.segment(9, 4), dcm);
 
   // calculate linear acceleration
   // 1/m*(R*D*u)
@@ -88,7 +88,7 @@ void SubDynamics::ode(const oc::ODESolver::StateType& q_t, const oc::Control* c,
   Matrix3d inertia = MatrixXd::Identity(3, 3);
   Vector3d w = q.segment(6, 3);
   Matrix3d w_ss;
-  get_skew_symmetric(w, w_ss);
+  getSkewSymmetric(w, w_ss);
   qdot.segment(6, 3) = inertia.inverse() * (-w_ss * inertia * w + Lu);
 
   // calculate angular velocities
@@ -102,7 +102,7 @@ void SubDynamics::ode(const oc::ODESolver::StateType& q_t, const oc::Control* c,
          sizeof(double) * qdot.rows() * qdot.cols());
 }
 
-void SubDynamics::get_transform(const Vector4d& orientation,
+void SubDynamics::getTransform(const Vector4d& orientation,
                                 Matrix3d& dcm) const {
   // scalar
   double q_w = orientation(3);
@@ -112,12 +112,17 @@ void SubDynamics::get_transform(const Vector4d& orientation,
   Matrix3d I = MatrixXd::Identity(3, 3);
   // get skew_symmetric form of q_hat
   Matrix3d q_hat_ss;
-  get_skew_symmetric(q_hat, q_hat_ss);
+  getSkewSymmetric(q_hat, q_hat_ss);
 
   dcm = (pow(q_w, 2) - q_hat.transpose() * q_hat) * I +
         2 * q_hat * q_hat.transpose() + 2 * q_w * q_hat_ss;
 }
 
-void SubDynamics::get_skew_symmetric(const Vector3d& v, Matrix3d& skew) const {
+void SubDynamics::getSkewSymmetric(const Vector3d& v, Matrix3d& skew) const {
   skew << 0, -v(2), v(1), v(2), 0, -v(0), -v(1), v(0), 0;
+}
+
+void SubDynamics::postPropagate(const ob::State* state, const oc::Control* control,
+                     const double duration, ob::State* result) {
+  
 }
