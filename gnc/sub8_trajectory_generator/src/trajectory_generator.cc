@@ -62,7 +62,8 @@ int main(int argc, char** argv) {
 
   ros::ServiceClient sc =
       nh.serviceClient<sub8_msgs::ThrusterInfo>("thrusters/thruster_range");
-  // Block until this service is available
+  // Alert that this node will block until this service is available
+  ROS_WARN("Waiting for service thrusters/thruster_range");
   sc.waitForExistence(); 
 
   int dim_idx = 0;
