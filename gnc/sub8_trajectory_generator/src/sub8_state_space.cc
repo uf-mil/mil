@@ -29,8 +29,7 @@ double Sub8StateSpace::distance(const State* state1,
   state1->as<Sub8StateSpace::StateType>()->getPosition(pos1);
   state2->as<Sub8StateSpace::StateType>()->getPosition(pos2);
 
-  return sqrt(pow(pos2(0) - pos1(0), 2) +
-              pow(pos2(1) - pos1(1), 2) + pow(pos2(2) - pos1(2), 2));
+  return (pos2 - pos1).norm();
 }
 
 double Sub8StateSpace::getMaximumExtent() const {
