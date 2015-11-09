@@ -34,6 +34,7 @@ class SubDynamics {
   SubDynamics(const TGenThrusterInfoPtr& ti);
   void ode(const oc::ODESolver::StateType& q_t, const oc::Control* c,
            oc::ODESolver::StateType& qdot_t);
+  // re-normalize the orientation to be a unit quaternion
   void postPropagate(const ob::State* state, const oc::Control* control,
                      const double duration, ob::State* result);
 

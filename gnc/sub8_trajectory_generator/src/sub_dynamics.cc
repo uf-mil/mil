@@ -6,11 +6,13 @@
  */
 
 #include "sub_dynamics.h"
+#include "sub8_state_space.h"
 #include "ompl/control/spaces/RealVectorControlSpace.h"
 #include <cmath>
 #include <cassert>
 
 using sub8::trajectory_generator::SubDynamics;
+using sub8::trajectory_generator::Sub8StateSpace;
 
 SubDynamics::SubDynamics(const TGenThrusterInfoPtr& ti)
     : _thruster_info_ptr(ti), _mass(25.0){};
@@ -65,45 +67,69 @@ void SubDynamics::ode(const oc::ODESolver::StateType& q_t, const oc::Control* c,
   Vector13d q(q_t.data());
   Vector13d qdot(qdot_t.data());
   Vector8d u(u_t);
+  Vector4d orientation = q.segment(9, 4);
 
+  // 3 x 1 matrices
   auto Lu = _thruster_info_ptr->L * u;
   auto Du = _thruster_info_ptr->D * u;
 
-  // calculate linear velocities
-  qdot.segment(0, 3) = q.segment(3, 3);
-
-  // calculate direction cosine matrix given the orientation
+  // Stores the direction cosine matrix
   Matrix3d dcm;
-  getTransform(q.segment(9, 4), dcm);
 
-  // calculate linear acceleration
-  // 1/m*(R*D*u)
-  qdot.segment(3, 3) = (1 / _mass) * dcm * Du;
-
-  // calculate angular acceleration
-  // w_dot = inv(I)(-w^x*I*w + Lu)
-  //
   // Use the identity matrix temporarily to
-  // represent the sub's inertia matrix
+  //    represent the sub's inertia matrix
   Matrix3d inertia = MatrixXd::Identity(3, 3);
   Vector3d w = q.segment(6, 3);
   Matrix3d w_ss;
+
+  Matrix4d omega;
+  // gain for driving the norm of the quaternion representing
+  //    orientation to 1
+  double K = 1.0;
+  auto epsilon = 1 - orientation.squaredNorm();
+
+  //////////////////////////////////////////////////////////////
+  // calculate linear velocities
+  //////////////////////////////////////////////////////////////
+
+  qdot.segment(0, 3) = q.segment(3, 3);
+
+  //////////////////////////////////////////////////////////////
+  // calculate linear acceleration
+  // 1/m*(R*D*u)
+  //////////////////////////////////////////////////////////////
+
+  // calculate direction cosine matrix given the orientation
+  getTransform(orientation, dcm);
+  qdot.segment(3, 3) = (1 / _mass) * dcm * Du;
+
+  //////////////////////////////////////////////////////////////
+  // calculate angular acceleration
+  // w_dot = inv(I)(-w^x*I*w + Lu)
+  //////////////////////////////////////////////////////////////
+
   getSkewSymmetric(w, w_ss);
   qdot.segment(6, 3) = inertia.inverse() * (-w_ss * inertia * w + Lu);
 
-  // calculate angular velocities
-  // 1/2 *omega(w)*q
-  Matrix4d omega;
-  omega << -w_ss, w, -w.transpose(), 0;
-  qdot.segment(9, 4) = 0.5 * omega * q.segment(9, 4);
+  //////////////////////////////////////////////////////////////
+  // calculate rate change of orientation
+  // See:
+  // http://www.mathworks.com/help/aeroblks/6dofquaternion.html
+  // 1/2 *omega(w)*q + K*epsilon*q
+  //////////////////////////////////////////////////////////////
 
-  assert(qdot_t.size()==qdot.size()); 
-  memcpy(&qdot_t[0], qdot.data(),
-         sizeof(double) * qdot.rows() * qdot.cols());
+  // construct matrix of angular velocities
+  omega << -w_ss, w, -w.transpose(), 0;
+  qdot.segment(9, 4) =
+      (0.5 * omega * orientation) + (K * epsilon * orientation);
+
+  // copy qdot into the ODESolver::StateType vector
+  assert(qdot_t.size() == qdot.size());
+  memcpy(&qdot_t[0], qdot.data(), sizeof(double) * qdot.rows() * qdot.cols());
 }
 
 void SubDynamics::getTransform(const Vector4d& orientation,
-                                Matrix3d& dcm) const {
+                               Matrix3d& dcm) const {
   // scalar
   double q_w = orientation(3);
   // 3 x 1 column vector
@@ -122,7 +148,12 @@ void SubDynamics::getSkewSymmetric(const Vector3d& v, Matrix3d& skew) const {
   skew << 0, -v(2), v(1), v(2), 0, -v(0), -v(1), v(0), 0;
 }
 
-void SubDynamics::postPropagate(const ob::State* state, const oc::Control* control,
-                     const double duration, ob::State* result) {
-  
+void SubDynamics::postPropagate(const ob::State* state,
+                                const oc::Control* control,
+                                const double duration, ob::State* result) {
+  Vector4d q;
+  result->as<Sub8StateSpace::StateType>()->getOrientation(q);
+  q = q / q.norm();
+  result->as<Sub8StateSpace::StateType>()->setOrientation(q(0), q(1), q(2),
+                                                          q(3));
 }
