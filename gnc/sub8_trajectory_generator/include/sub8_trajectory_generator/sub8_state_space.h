@@ -7,7 +7,10 @@
 
 #include "ompl/base/StateSpace.h"
 #include "ompl/base/spaces/RealVectorStateSpace.h"
+#include "tgen_common.h"
+#include <Eigen/Dense>
 
+using namespace Eigen;
 using ompl::base::CompoundStateSpace;
 using ompl::base::RealVectorStateSpace;
 using ompl::base::RealVectorBounds;
@@ -18,13 +21,16 @@ namespace sub8 {
 
 namespace trajectory_generator {
 
+class Sub8StateSpace;
+typedef boost::shared_ptr<Sub8StateSpace> Sub8StateSpacePtr;
+
 // Defines a custom state space, derived from
 // ompl::base::CompoundStateSpace.
 //
 // This state space consists of [q, qdot], where
 // [q] is defined as position and orientation in the world coordinate frame
 // and [qdot] is the time rate of change of [q].
-// See sub8_ode_solver.h for a description of the dynamics of the system
+// See sub_dynamics.h for a description of the dynamics of the system
 class Sub8StateSpace : public CompoundStateSpace {
  public:
   class StateType : public CompoundStateSpace::StateType {
@@ -47,17 +53,13 @@ class Sub8StateSpace : public CompoundStateSpace {
       as<RealVectorStateSpace::StateType>(0)->values[2] = z;
     }
 
-    // Get position as a std::vector<double> pos
-    // pos[0] = x
-    // pos[1] = y
-    // pos[2] = z
-    void getPosition(std::vector<double>& pos) const {
-      if (!pos.empty()) {
-        pos.clear();
-      }
-      pos.push_back(as<RealVectorStateSpace::StateType>(0)->values[0]);
-      pos.push_back(as<RealVectorStateSpace::StateType>(0)->values[1]);
-      pos.push_back(as<RealVectorStateSpace::StateType>(0)->values[2]);
+    // pos(0) = x
+    // pos(1) = y
+    // pos(2) = z
+    void getPosition(Vector3d& pos) const {
+      pos << as<RealVectorStateSpace::StateType>(0)->values[0],
+          as<RealVectorStateSpace::StateType>(0)->values[1],
+          as<RealVectorStateSpace::StateType>(0)->values[2];
     }
 
     // Set x,y,z velocities
@@ -67,17 +69,13 @@ class Sub8StateSpace : public CompoundStateSpace {
       as<RealVectorStateSpace::StateType>(1)->values[2] = zdot;
     }
 
-    // Get velocity as boost::shared_ptr to a std::vector<double> vel
-    // vel[0] = x
-    // vel[1] = y
-    // vel[2] = z
-    void getLinearVelocity(std::vector<double>& vel) const {
-      if (!vel.empty()) {
-        vel.clear();
-      }
-      vel.push_back(as<RealVectorStateSpace::StateType>(1)->values[0]);
-      vel.push_back(as<RealVectorStateSpace::StateType>(1)->values[1]);
-      vel.push_back(as<RealVectorStateSpace::StateType>(1)->values[2]);
+    // vel(0) = x
+    // vel(1) = y
+    // vel(2) = z
+    void getLinearVelocity(Vector3d& vel) const {
+      vel << as<RealVectorStateSpace::StateType>(1)->values[0],
+          as<RealVectorStateSpace::StateType>(1)->values[1],
+          as<RealVectorStateSpace::StateType>(1)->values[2];
     }
 
     // Set wx, wy, wz angular velocities
@@ -87,17 +85,13 @@ class Sub8StateSpace : public CompoundStateSpace {
       as<RealVectorStateSpace::StateType>(2)->values[2] = wz;
     }
 
-    // Get angular velocity as boost::shared_ptr to a std::vector<double> w
-    // w[0] = wx
-    // w[1] = wy
-    // w[2] = wz
-    void getAngularVelocity(std::vector<double>& w) const {
-      if (!w.empty()) {
-        w.clear();
-      }
-      w.push_back(as<RealVectorStateSpace::StateType>(2)->values[0]);
-      w.push_back(as<RealVectorStateSpace::StateType>(2)->values[1]);
-      w.push_back(as<RealVectorStateSpace::StateType>(2)->values[2]);
+    // w(0) = wx
+    // w(1) = wy
+    // w(2) = wz
+    void getAngularVelocity(Vector3d& w) const {
+      w << as<RealVectorStateSpace::StateType>(2)->values[0],
+          as<RealVectorStateSpace::StateType>(2)->values[1],
+          as<RealVectorStateSpace::StateType>(2)->values[2];
     }
 
     // Set qx, qy, qz, qw for the unit quaternion representing orientation
@@ -108,19 +102,27 @@ class Sub8StateSpace : public CompoundStateSpace {
       as<RealVectorStateSpace::StateType>(3)->values[3] = qw;
     }
 
-    // Get orientation as boost::shared_ptr to a std::vector<double> orientation
     // orientation[0] = qx
     // orientation[1] = qy
     // orientation[2] = qz
     // orientation[3] = qw
-    void getOrientation(std::vector<double>& orientation) const {
-      if (!orientation.empty()) {
-        orientation.clear();
-      }
-      orientation.push_back(as<RealVectorStateSpace::StateType>(3)->values[0]);
-      orientation.push_back(as<RealVectorStateSpace::StateType>(3)->values[1]);
-      orientation.push_back(as<RealVectorStateSpace::StateType>(3)->values[2]);
-      orientation.push_back(as<RealVectorStateSpace::StateType>(3)->values[3]);
+    void getOrientation(Vector4d& orientation) const {
+      orientation << as<RealVectorStateSpace::StateType>(3)->values[0],
+          as<RealVectorStateSpace::StateType>(3)->values[1],
+          as<RealVectorStateSpace::StateType>(3)->values[2],
+          as<RealVectorStateSpace::StateType>(3)->values[3];
+    }
+
+    void getState(Vector13d& state) const {
+      Vector3d position;
+      getPosition(position);
+      Vector3d linear_velocity;
+      getLinearVelocity(linear_velocity);
+      Vector3d angular_velocity;
+      getAngularVelocity(angular_velocity);
+      Vector4d orientation;
+      getOrientation(orientation);
+      state << position, linear_velocity, angular_velocity, orientation;
     }
   };
 
@@ -165,11 +167,11 @@ class Sub8StateSpace : public CompoundStateSpace {
     as<RealVectorStateSpace>(2)->setBounds(bounds);
   }
 
-  // Set bounds on the orientation (despite the fact that the 
-  // sub is holonomic, since we're using a 4D RealVectorSpace 
+  // Set bounds on the orientation (despite the fact that the
+  // sub is holonomic, since we're using a 4D RealVectorSpace
   // for its orientation, OMPL requires us to set bounds)
   void set_orientation_bounds(const RealVectorBounds& bounds) {
-    as<RealVectorStateSpace>(3)->setBounds(bounds); 
+    as<RealVectorStateSpace>(3)->setBounds(bounds);
   }
 
   const RealVectorBounds& get_volume_bounds() const {

@@ -3,12 +3,14 @@
  * Date: 9/29/15
  *
  */
-#ifndef SUB8_TGEN_COMMON_H_
-#define SUB8_TGEN_COMMON_H_
+#ifndef TGEN_COMMON_H_
+#define TGEN_COMMON_H_
 
 #include <string>
+#include <Eigen/Dense>
 
 using std::string;
+using namespace Eigen;
 
 namespace sub8 {
 
@@ -16,13 +18,28 @@ namespace trajectory_generator {
 
 // Encodes the different planners
 // supported by the TGEN with an integer
-enum PlannerType {
-  PDST = 1, 
-  RRT
-};
+enum PlannerType { PDST = 1, RRT };
+
+// Number of dimensions in the control space.
+// Corresponds to num thrusters used for motion planning
+const static int _CSPACE_DIMS = 8;
+const static int _SSPACE_DIMS = 13;
+
+// Thruster node ID range
+const static int _THRUSTERS_ID_BEGIN = 10;
+const static int _THRUSTERS_ID_END = 17;
+
+// typedef for control column-vector
+typedef Matrix<double, _CSPACE_DIMS, 1> Vector8d;
+// typedef for state space column-vector
+typedef Matrix<double, _SSPACE_DIMS, 1> Vector13d;
+// typedef for 3 x 8 matrix
+typedef Matrix<double, 3, _CSPACE_DIMS> Matrix3_8d; 
+// typedef for 2 x 8 matrix
+typedef Matrix<double, 2, _CSPACE_DIMS> Matrix2_8d; 
 
 // Strings used for logging statements in the TGEN
-class Sub8TGenMsgs {
+class TGenMsgs {
  public:
   // PlannerStatus responses
   static constexpr const char* INVALID_START =
@@ -31,10 +48,12 @@ class Sub8TGenMsgs {
   static constexpr const char* UNRECOGNIZED_GOAL_TYPE =
       "The goal is of a type that a planner does not "
       "recognize";
-  static constexpr const char* TIMEOUT = "The planner failed to find a solution";
+  static constexpr const char* TIMEOUT =
+      "The planner failed to find a solution";
   static constexpr const char* APPROXIMATE_SOLUTION =
       "The planner found an approximate solution";
-  static constexpr const char* EXACT_SOLUTION = "The planner found an exact solution";
+  static constexpr const char* EXACT_SOLUTION =
+      "The planner found an exact solution";
   static constexpr const char* CRASH = "The planner crashed!";
 
   // Trajectory Validation
@@ -46,4 +65,4 @@ class Sub8TGenMsgs {
 };
 }
 }
-#endif /* SUB8_TGEN_COMMON */
+#endif /* TGEN_COMMON */

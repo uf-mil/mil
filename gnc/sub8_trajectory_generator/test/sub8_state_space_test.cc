@@ -4,25 +4,27 @@
  */
 #include <gtest/gtest.h>
 #include "sub8_state_space.h"
+#include <cmath>
 
 using sub8::trajectory_generator::Sub8StateSpace;
+using sub8::trajectory_generator::Sub8StateSpacePtr; 
 
 // Test constructor and run sanity checks
 TEST(Sub8StateSpaceTest, sanityCheckTest) {
-  boost::shared_ptr<Sub8StateSpace> test_state_space(new Sub8StateSpace());
+  Sub8StateSpacePtr test_state_space(new Sub8StateSpace());
   test_state_space->sanityChecks();
 }
 
 // Test to ensure subspaces were correctly constructed
 TEST(Sub8StateSpaceTest, dimensionTest) {
-  boost::shared_ptr<Sub8StateSpace> test_state_space(new Sub8StateSpace());
+  Sub8StateSpacePtr test_state_space(new Sub8StateSpace());
   ASSERT_EQ(test_state_space->getDimension(), 13)
       << "Sub8's state space should have 13 dimensions";
 }
 
 // Test setting bounds on a subspace
 TEST(Sub8StateSpaceTest, boundsTest) {
-  boost::shared_ptr<Sub8StateSpace> test_state_space(new Sub8StateSpace());
+  Sub8StateSpacePtr test_state_space(new Sub8StateSpace());
 
   // Bounds on position (x, y, z)
   RealVectorBounds bounds(3);
@@ -41,8 +43,16 @@ TEST(Sub8StateSpaceTest, boundsTest) {
   EXPECT_EQ(bounds.getVolume(), r.getVolume());
 }
 
-TEST(Sub8StateSpaceTest, distanceTest) {
-  ADD_FAILURE() << "Unimplemented test";
+TEST(Sub8StateSpaceTest, euclideanDistanceTest) {
+  Sub8StateSpacePtr test_state_space(new Sub8StateSpace());
+
+  State* state1 = test_state_space->allocState();
+  state1->as<Sub8StateSpace::StateType>()->setPosition(1, 1, 1);
+
+  State* state2 = test_state_space->allocState();
+  state2->as<Sub8StateSpace::StateType>()->setPosition(-1, -1, -1);
+
+  ASSERT_EQ(sqrt(12), test_state_space->distance(state1, state2));
 }
 
 TEST(Sub8StateSpaceTest, equalStatesTest) {

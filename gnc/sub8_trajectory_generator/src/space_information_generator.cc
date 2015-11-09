@@ -2,17 +2,19 @@
 * Author: Patrick Emami
 * Date: 9/22/15
 */
-#include "sub8_space_information.h"
+#include "space_information_generator.h"
 #include "sub8_state_validity_checker.h"
-#include "sub8_ode_solver.h"
 #include "ompl/control/ODESolver.h"
+#include "sub8_msgs/ThrusterInfo.h"
+#include <ros/console.h>
 
-using sub8::trajectory_generator::Sub8SpaceInformationGenerator;
+using sub8::trajectory_generator::SpaceInformationGenerator;
 using sub8::trajectory_generator::Sub8StateValidityChecker;
 using sub8::trajectory_generator::Sub8StateValidityCheckerPtr;
 using ompl::control::SpaceInformationPtr;
 
-SpaceInformationPtr Sub8SpaceInformationGenerator::generate() {
+SpaceInformationPtr SpaceInformationGenerator::generate(
+    const SubDynamicsPtr& sub_dynamics, const Matrix2_8d& cspace_bounds) {
   StateSpacePtr space(new Sub8StateSpace());
   // Set bounds for Sub8StateSpace
   setStateSpaceBounds(space);
@@ -20,9 +22,10 @@ SpaceInformationPtr Sub8SpaceInformationGenerator::generate() {
   ControlSpacePtr cspace(
       new ompl::control::RealVectorControlSpace(space, _CSPACE_DIMS));
   // Set bounds for cspace
-  setControlSpaceBounds(cspace);
+  setControlSpaceBounds(cspace, cspace_bounds);
 
-  SpaceInformationPtr si_ptr(new ompl::control::SpaceInformation(space, cspace));
+  SpaceInformationPtr si_ptr(
+      new ompl::control::SpaceInformation(space, cspace));
 
   // Create and set the state validity checker
   Sub8StateValidityCheckerPtr vc_ptr(new Sub8StateValidityChecker(si_ptr));
@@ -31,25 +34,27 @@ SpaceInformationPtr Sub8SpaceInformationGenerator::generate() {
   si_ptr->setStateValidityCheckingResolution(0.03);  // 3 % -- TODO
 
   // Create and set the StatePropagator with our ODESolver
-  ODESolverPtr ode_solver(
-      new ompl::control::ODEBasicSolver<>(si_ptr, &sub8ODE));
-  si_ptr->setStatePropagator(ompl::control::ODESolver::getStatePropagator(ode_solver));
+  ODESolverPtr ode_solver(new ompl::control::ODEBasicSolver<>(
+      si_ptr, boost::bind(&SubDynamics::ode, sub_dynamics, _1, _2, _3)));
+  si_ptr->setStatePropagator(ompl::control::ODESolver::getStatePropagator(
+      ode_solver,
+      boost::bind(&SubDynamics::postPropagate, sub_dynamics, _1, _2, _3, _4)));
 
   // TODO -- placeholder values
-  // 
+  //
   // When controls are applied to states, they are applied for a time duration
   // that is an integer multiple of the stepSize, within the bounds specified by
   // setMinMaxControlDuration()
-  si_ptr->setPropagationStepSize(2.0); 
+  si_ptr->setPropagationStepSize(2.0);
   si_ptr->setMinMaxControlDuration(1.0, 100.0);
-   
+
   // Must be run once before use
   si_ptr->setup();
 
   return si_ptr;
 }
 
-void Sub8SpaceInformationGenerator::setStateSpaceBounds(
+void SpaceInformationGenerator::setStateSpaceBounds(
     const StateSpacePtr& space) {
   // TODO
   // When setting start and goal states, when are those states validated with
@@ -107,7 +112,26 @@ void Sub8SpaceInformationGenerator::setStateSpaceBounds(
       ->set_orientation_bounds(q_bounds);
 }
 
-void Sub8SpaceInformationGenerator::setControlSpaceBounds(
-    const ControlSpacePtr& space) {
-  // TODO
+void SpaceInformationGenerator::setControlSpaceBounds(
+    const ControlSpacePtr& space, const Matrix2_8d& cspace_bounds) {
+  RealVectorBounds bounds(8);
+
+  bounds.setLow(0, cspace_bounds(0, 0));
+  bounds.setHigh(0, cspace_bounds(1, 0));
+  bounds.setLow(1, cspace_bounds(0, 1));
+  bounds.setHigh(1, cspace_bounds(1, 1));
+  bounds.setLow(2, cspace_bounds(0, 2));
+  bounds.setHigh(2, cspace_bounds(1, 2));
+  bounds.setLow(3, cspace_bounds(0, 3));
+  bounds.setHigh(3, cspace_bounds(1, 3));
+  bounds.setLow(4, cspace_bounds(0, 4));
+  bounds.setHigh(4, cspace_bounds(1, 4));
+  bounds.setLow(5, cspace_bounds(0, 5));
+  bounds.setHigh(5, cspace_bounds(1, 5));
+  bounds.setLow(6, cspace_bounds(0, 6));
+  bounds.setHigh(6, cspace_bounds(1, 6));
+  bounds.setLow(7, cspace_bounds(0, 7));
+  bounds.setHigh(7, cspace_bounds(1, 7));
+
+  space->as<ompl::control::RealVectorControlSpace>()->setBounds(bounds);
 }

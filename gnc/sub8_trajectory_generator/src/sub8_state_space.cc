@@ -21,16 +21,15 @@ void Sub8StateSpace::freeState(State* state) const {
 double Sub8StateSpace::distance(const State* state1,
                                 const State* state2) const {
   // TODO
-  // return LQR cost to go to state 2 from state 1? 
+  // return LQR cost to go to state 2 from state 1?
 
   // naive implementation is euclidean distance in position
-  std::vector<double> pos1;
-  std::vector<double> pos2;
+  Vector3d pos1;
+  Vector3d pos2;
   state1->as<Sub8StateSpace::StateType>()->getPosition(pos1);
   state2->as<Sub8StateSpace::StateType>()->getPosition(pos2);
 
-  return sqrt(pow(pos2[0] - pos1[0], 2) +
-              pow(pos2[1] - pos1[1], 2 + pow(pos2[2] - pos1[2], 2)));
+  return (pos2 - pos1).norm();
 }
 
 double Sub8StateSpace::getMaximumExtent() const {
