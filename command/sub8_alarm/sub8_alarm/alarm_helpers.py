@@ -40,7 +40,7 @@ class AlarmRaiser(object):
         '''Alarm object, does alarms
         Generates alarm messages
         '''
-        assert severity in range(0, 5 + 1), "Severity must be an integer between 0 and 5"
+        assert severity in range(0, 2 + 1), "Severity must be an integer between 0 and 2"
         self._alarm_name = alarm_name
         self._node_name = node_name
         self._action_required = action_required

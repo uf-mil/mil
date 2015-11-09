@@ -51,7 +51,7 @@ class TestAlarmIntegration(unittest.TestCase):
         fail_thruster_proxy = rospy.ServiceProxy('fail_thruster', FailThruster)
         fail_thruster_proxy(thruster_to_fail)
 
-        # Spend up to 1.5 seconds waiting for a response (Bide time until the mapper finishes reacting)
+        # Spend up to 0.2 seconds waiting for a response (Bide time until the mapper finishes reacting)
         # Looping because mapper ignores wrenches until it finishes remapping thrusters
         give_up_time = time.time() + 0.2
         while not(rospy.is_shutdown() and (time.time() < give_up_time)):
