@@ -8,6 +8,8 @@
 * Plans
     * [[Architecture]]
     * [[Implementation Plans]]
+        * [[Visual SLAM]]
+        * [[Perception Stack]]
     * [[Mission Scheduler]]
     * [[Open Questions]]
 * Implementation
