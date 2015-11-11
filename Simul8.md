@@ -51,7 +51,9 @@ Each entity implements a "draw" method that is called each time it must be drawn
 
 An Entity can optionally implement texcoords for texturing.
 
-Currently implemented are spheres, planes and boxes. We will soon add arbitrary meshes.
+Currently implemented are spheres, planes and boxes, and arbitrary input meshes.
+
+Textures are not yet supported in .obj files due to a Vispy limitation. We are working on implementing a .obj reader that will include texture parameters.
 
 ### Lighting
 Implemented
@@ -141,4 +143,3 @@ Todo
 There are a few bugs in the simulator that should be chased down, but are not breaking.
 
 * A light source has to be the last thing added - We know exactly why this is the case, but don't have a great structure for fixing it
-    * In addition, we only support one light-source, any ideas on fixing this?
