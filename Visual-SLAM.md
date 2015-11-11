@@ -4,7 +4,9 @@ Visual SLAM
 Right now, there are three parallel paths to visual navigation:
 
 Ralph & David: Forward camera SLAM and stereo point cloud generation
+
 David: Visual Odometry from conventional optical flow
+
 Jake & Tess: MonoSLAM for down-camera
 
 # Considerations
