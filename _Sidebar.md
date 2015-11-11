@@ -7,11 +7,9 @@
     * [[Manifesto]]
 * Plans
     * [[Architecture]]
-    * [[Exception Handling]]
     * [[Implementation Plans]]
     * [[Stretch Goals]]
     * [[Mission Scheduler]]
-    * [[Simulation]]
     * [[Open Questions]]
 * Implementation
     * [[Simul8]]
@@ -23,8 +21,11 @@
 * [[Code Policy]]
     * [[ROS Conventions]]
     * [[Other Conventions]]
+    * [[Exception Handling]]
 * Tribal Knowledge
     * [[SSH into the sub]]
     * [[ROS things]]
     * [[Git]]
     * [[Glossary]]
+* Old Notes
+    * [[Simulation]]
