@@ -128,7 +128,7 @@ Todo
         * [ ] Various mission failure scenarios
         * [ ] Controller: Target state cannot be made stable
 
-    * [ ] Headless simulation (No rendering) - This is important!
+    * [x] Headless simulation (No rendering) - This is important!
         * We can optimize controller gains, path planners, do monte-carlos, etc
 
 * [ ] Add a way to visually specify a waypoint (Like, move a ghost of the sub around then publish that waypoint)
