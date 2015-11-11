@@ -13,6 +13,10 @@ Move left or right until we are pointing between them
 Go forward until 5 seconds after cannot see red lines
 ```
 
+# Reading
+
+[A massive repository of knowledge](https://github.com/jbhuang0604/awesome-computer-vision#books)
+
 # People and Tasks
 
 * David: Visual Odometry using conventional optical flow
