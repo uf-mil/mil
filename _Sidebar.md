@@ -8,7 +8,6 @@
 * Plans
     * [[Architecture]]
     * [[Implementation Plans]]
-    * [[Stretch Goals]]
     * [[Mission Scheduler]]
     * [[Open Questions]]
 * Implementation
