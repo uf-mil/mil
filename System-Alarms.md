@@ -106,3 +106,9 @@ Change suggestions are very welcome, this is the first iteration of what will be
 # Things to worry about
 
 - [Monitor the queue_size in the alarm subscribe](https://github.com/uf-mil/Sub8/pull/23#discussion_r42393150), let's see how many alarms show up at max.
+
+
+# Plans for 2.0
+
+* No asserts during alarm-raise
+* Should we require alarms to include a problem description?
