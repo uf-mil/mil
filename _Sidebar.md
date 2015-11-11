@@ -10,6 +10,7 @@
     * [[Exception Handling]]
     * [[Implementation Plans]]
     * [[Stretch Goals]]
+    * [[Mission Scheduler]]
     * [[Simulation]]
     * [[Open Questions]]
 * Implementation
