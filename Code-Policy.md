@@ -94,7 +94,8 @@ If you have any questions about what you should unit tests, talk to Patrick Emam
 * [PEP8](https://www.python.org/dev/peps/pep-0008/)
 * Enforce PEP8 with [flake8](https://pypi.python.org/pypi/flake8), or use the flake8 linter Subplime plugin.
 * Use (We ignore E201)
-    flake8 --max-line-length=130 --ignore=E201 ./
+
+    `flake8 --max-line-length=130 --ignore=E201 ./`
 
 * We will follow PEP8 with one exception: the line length may be up to 100 characters
 * Your code will not be pulled if it is not PEP8 compliant
