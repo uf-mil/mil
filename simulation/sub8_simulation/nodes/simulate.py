@@ -111,6 +111,7 @@ class SimWorld(rendering.Canvas):
         gloo.clear(color=True, depth=True)
         self.rendering_world.draw(self.view)
 
+
     def step_physics(self, event):
         if self.start_time is None:
             self.start_time = time.time()
@@ -127,6 +128,7 @@ if __name__ == '__main__':
     sim = SimWorld()
     sphere = sim.add_sphere((-3.0, -3.0, 15.0), 4.2, 1.0, (255., 0.0, 0.0))
     sub = sim.add_sub((0.0, 0.0, 0.0))
-    sim.rendering_world.add_point_light((0.0, 0.0, 0.0), (0.8, 0.8, 0.8))
-
+    sim.rendering_world.add_point_light((0.0, 1.0, 0.0), (0.2, 0.2, 0.2))
+    sim.rendering_world.add_point_light((0.0, 0.0, 1.0), (0.2, 0.2, 0.2))
+    sim.rendering_world.stop_adding_lights()
     app.run()
