@@ -15,7 +15,7 @@ Go forward until 5 seconds after cannot see red lines
 
 # Reading
 
-[A massive repository of knowledge](https://github.com/jbhuang0604/awesome-computer-vision#books)
+* [Awesome Computer Vision](https://github.com/jbhuang0604/awesome-computer-vision#books) - A massive repository of knowledge
 
 # People and Tasks
 
