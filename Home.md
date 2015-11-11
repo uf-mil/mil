@@ -12,8 +12,6 @@ Patrick Emami
 
 Lucas Basset-Audain
 
-Brandon Peterson
-
 Zach Goins
 
 Ralph Leyva
