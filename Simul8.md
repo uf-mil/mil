@@ -4,6 +4,7 @@ Simul8
 Simul8 is our internally implemented water vehicle dynamics and vision simulation. It is designed to support multiple vehicles at once, and always with one eye toward surface vessels. At least some part of this is to anticipate the possibility of both the RobotX WAM-V and some sub (probably not Sub8) interacting in the water.
 
 # How to install
+(You don't need to do any installation if you've run the script from [[Install Dependencies]]
 
     mkdir -p ~/repos
     cd ~/repos
@@ -12,7 +13,8 @@ Simul8 is our internally implemented water vehicle dynamics and vision simulatio
     git checkout b48e4d3cf410b853a74b666c475c603e46725e55
     sudo python setup.py develop
 
-# Install ODE
+## Install ODE
+If you have a weird ODE error on startup, this usually happens after updating Ubuntu. Here's a fix
 
     sudo apt-get install python-pyode
     rm -fr /tmp/pyode-build && mkdir -p /tmp/pyode-build && cd /tmp/pyode-build && sudo apt-get build-dep -y python-pyode && sudo apt-get remove -y python-pyode && apt-get source --compile python-pyode && sudo dpkg -i python-pyode_*.deb
