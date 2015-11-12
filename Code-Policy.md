@@ -25,6 +25,7 @@ If on pool-test day, there are critical changes that you need to make to the sub
     * If your pull-request is a single commit, [amend](https://www.atlassian.com/git/tutorials/rewriting-history/git-commit--amend) that commit with the suggested changes
 * If you are reviewing code, use github's line-comment feature on their commits to outline issues with an individual line
 * Broader issues should be outlined in a comment on the pull-request
+* Reviewers: Be sure to manually read the SemaphoreCI output, there may have been a quiet failure that didn't kill the build
 
 ## Commit Messages
 * Follow [this guide](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html) for writing a good commit message
@@ -75,14 +76,6 @@ If on pool-test day, there are critical changes that you need to make to the sub
 
 Unit testing generally saves time for the developer. Despite the initial time spent implementing the test, unit tests make it very easy to make changes to your code, and verify that your code will work.
 If you have any questions about what you should unit tests, talk to Patrick Emami.
-
-## Logging
-[Take a look at the ROS logging guide](http://wiki.ros.org/roscpp/Overview/Logging)
-* Make sure you have good ROS logging, with appropriate log-levels for the information logged
-* You should log anything that a human reviewer would want to know in the event of a problem
-* Log anything that could be considered fatal, with some description as to what happened
-* If your node interacts with hardware, hardware connection/loss, kill/unkill state transitions
-* Be diligent in logging, but don't feel that you need to log every single possible state change
 
 ## Alarms
 * [See the alarm page on this wiki](https://github.com/uf-mil/Sub8/wiki/System-Alarms)

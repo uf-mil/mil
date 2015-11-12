@@ -21,6 +21,7 @@
     * [[Goal Manager]]
 * [[Code Policy]]
     * [[ROS Conventions]]
+    * [[Logging]]
     * [[Other Conventions]]
     * [[Exception Handling]]
 * Tribal Knowledge

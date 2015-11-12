@@ -12,7 +12,7 @@ In order...
     - [ ] Actual quality assessment
         - [ ] Time-to-stable
         - [ ] Length of trajectory
-        - [ ] Size of convergence ball
+        - [x] Size of convergence ball
     - [x] Visualize many trajectories
 - [x] Get sim to run faster than real-time
 - [x] Submit a pull-request for the 3D Mouse
@@ -20,7 +20,7 @@ In order...
     - [x] OR! Figure out how to run vispy headless on Semaphore
 
 - [x] Add controller-test montecarlos
-    - [ ] Submit a pull-request for controller-test montecarlos
+    - [x] Submit a pull-request for controller-test montecarlos
     - (I am expecting the integration tests here to fail because the controller is not implemented!)
 
 - [x] Add integration tests for the PD Controller
@@ -31,6 +31,7 @@ In order...
 - [ ] Add controller integration tool for Jason
     - [ ] Write a tutorial for adding a simulation
 - [ ] Add vector of gains to controller
+- [ ] Reclaim Honor
 
 Random:
     - [ ] Make increment-numbers again
@@ -40,3 +41,4 @@ Random:
 Not Sub:
 
     - [ ] Study PoEE
+    - [ ] Call in to coast-to-coast AM next time up at 3AM (Ralph)

@@ -30,6 +30,8 @@ This is the mantra of the Sub software team.
 
 * If you need to write a small novel justifying your design, something went wrong
 
+* [The Joel Test](http://www.joelonsoftware.com/articles/fog0000000043.html)
+
 # Can I work on the sub?
 
 ## Yes, if you satisfy any or all of the following

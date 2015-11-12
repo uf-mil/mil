@@ -102,6 +102,8 @@ Prize: Glory, Jake might get you ice cream
 * [ ] Simulated shadows
 * [ ] CUDA water physics for Simul8
     * [ ] Or better water resistance at all
+* [x] Multiple light sources -- Tess
+
 
 ## Machine Learning
 * [ ] Toolset for object recognition

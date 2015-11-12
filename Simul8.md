@@ -100,7 +100,7 @@ Todo
     * [ ] Simulated caustics -- Important! (Use a randomized texture, or actually draw)
     * Stretch Goals
         * [ ] Shadows
-        * [ ] Multiple light sources
+        * [x] Multiple light sources
 
 * [ ] Physics
     * [x] pyODE driven dynamics
