@@ -112,4 +112,4 @@ Change suggestions are very welcome, this is the first iteration of what will be
 
 * No asserts during alarm-raise
 * Should we require alarms to include a problem description?
-* [ROS diagnostics - could be useful](http://wiki.ros.org/diagnostics?distro=jade)
+* [ROS diagnostics](http://wiki.ros.org/diagnostics?distro=jade) - could be useful
