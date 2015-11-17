@@ -3,12 +3,11 @@
 
 9/25/15 - Intro to Reinforcement Learning and Applications - P. Emami
 
-
-# Schedule
-
 10/2/15 - Intro to genetic Algorithms - R. Leyva
 
 10/8/15 - State estimation and Kalman Filtering - Z. Goins
+
+# Schedule
 
 
 # Candidates
