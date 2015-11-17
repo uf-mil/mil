@@ -27,6 +27,10 @@ In order...
 - [ ] Submit a pull-request for the PD controller
 
 - [ ] Focus on vision (Implement visual odometry in some meaningful way - we need non-shitty cameras)
+    - [x] Get simple n-point transformation estimation from fundamental matrix working
+    - [ ] Do it w/ LK Optical Flow
+    - [ ] Implement SVO-SLAM
+
 - [x] Make everything work on simulated time so we can run Monte-Carlos in faster than realtime
 - [ ] Add controller integration tool for Jason
     - [ ] Write a tutorial for adding a simulation
@@ -37,6 +41,9 @@ Random:
     - [ ] Make increment-numbers again
     - [ ] Some reflection tool for automatically making *stamped messages using __getattr__ and parsing the request
     - [ ] Fix the a=-b corner case for that make_rotation
+    - [ ] Make a function for homogeneous quick-inverse (Transpose R, negate t)
+    - [ ] Quick-inverse for structured matrices (lapack?!)
+        - [Some examples](http://stanford.edu/class/ee364a/lectures/num-lin-alg.pdf)
 
 Not Sub:
 
