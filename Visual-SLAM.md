@@ -30,46 +30,54 @@ Jake & Tess: MonoSLAM for down-camera
 ## Implementation Milestones
 
 Topics that appear to be common to essentially every monocular SLAM implementation, or will likely come in handy
-    * Depth-Filter
+* Depth-Filter
 
-    * 2D-2D correspondence -> 3D transform estimation
+* 2D-2D correspondence -> 3D transform estimation
 
-    * Spare bundle adjustment for depth initialization (Tools exist for this)
+* Spare bundle adjustment for depth initialization (Tools exist for this)
 
 ## Notes
-    * PTAM is widely regarded as one of the best MAV SLAM approaches
+* PTAM is widely regarded as one of the best MAV SLAM approaches
 
-    * **Why don't we just gather features and do the 5-pt algorithm?**
-        * The results are extremely noisy
-        * Can't make a useful map/recover scene depth
-        * No way to reason about the quality of the track produced
+* **Why don't we just gather features and do the 5-pt algorithm?**
+    * The results are extremely noisy
+    * Can't make a useful map/recover scene depth
+    * No way to reason about the quality of the track produced
 
 ## General Knowledge
-    * [Review of Epipolar geometry](https://www.robots.ox.ac.uk/~vgg/hzbook/hzbook1/HZepipolar.pdf)
-        * This is super important!
-    * [Representation in Homogeneous Coordinates](http://robotics.stanford.edu/~birch/projective/node4.html)
-    * [Multiple View Geometry in Computer Vision - Hartley, Zisserman](ftp://vista.eng.tau.ac.il/dropbox/aviad/Hartley,%20Zisserman%20-%20Multiple%20View%20Geometry%20in%20Computer%20Vision.pdf)
-        * This book is amazing, but the link will die someday. Just google $title + 'pdf'
-        * Jake has a pdf - ask him if you want it
+* [Review of Epipolar geometry](https://www.robots.ox.ac.uk/~vgg/hzbook/hzbook1/HZepipolar.pdf)
+    * This is super important!
+
+* [Representation in Homogeneous Coordinates](http://robotics.stanford.edu/~birch/projective/node4.html)
+
+* [Multiple View Geometry in Computer Vision - Hartley, Zisserman](ftp://vista.eng.tau.ac.il/dropbox/aviad/Hartley,%20Zisserman%20-%20Multiple%20View%20Geometry%20in%20Computer%20Vision.pdf)
+
+    * This book is amazing, but the link will die someday. Just google $title + 'pdf'
+
+    * Jake has a pdf - ask him if you want it
 
 ## References
 
-    * [1] [SVO (Semi-Direct monocular Visual Odometry)](http://rpg.ifi.uzh.ch/docs/ICRA14_Forster.pdf)
-            * [Other Link](https://github.com/uzh-rpg/rpg_svo)
+* [1] [SVO (Semi-Direct monocular Visual Odometry)](http://rpg.ifi.uzh.ch/docs/ICRA14_Forster.pdf)
 
-    * [2] [ORB_SLAM](http://webdiis.unizar.es/~raulmur/MurMontielTardosTRO15.pdf)
-            * [Other Link](https://github.com/raulmur/ORB_SLAM)
+        * [Other Link](https://github.com/uzh-rpg/rpg_svo)
 
-    * [3] [Inverse Depth Parameterization for Monocular SLAM](https://www.doc.ic.ac.uk/~ajd/Publications/civera_etal_tro2008.pdf)
+* [2] [ORB_SLAM](http://webdiis.unizar.es/~raulmur/MurMontielTardosTRO15.pdf)
 
-    * [4] [Five-Point Estimation Made Easy](http://users.cecs.anu.edu.au/~hongdong/new5pt_cameraREady_ver_1.pdf) - Estimate relative pose from 2d-2d correspondences
+        * [Other Link](https://github.com/raulmur/ORB_SLAM)
+
+* [3] [Inverse Depth Parameterization for Monocular SLAM](https://www.doc.ic.ac.uk/~ajd/Publications/civera_etal_tro2008.pdf)
+
+* [4] [Five-Point Estimation Made Easy](http://users.cecs.anu.edu.au/~hongdong/new5pt_cameraREady_ver_1.pdf) - Estimate relative pose from 2d-2d correspondences
 
 ## Tools
 
-    * [OpenGV](http://laurentkneip.github.io/opengv/index.html) - Open Geometric Computer Vision (C++)
-        * Documentation is sparse (Maybe I'm not looking hard enough?)
+* [OpenGV](http://laurentkneip.github.io/opengv/index.html) - Open Geometric Computer Vision (C++)
 
-    * [OpenMVG](http://imagine.enpc.fr/~moulonp/openMVG/) - Open Multi-View Geometry Tools (C++)
-        * (Is this a good idea?)
+    * Documentation is sparse (Maybe I'm not looking hard enough?)
 
-    * [SBA](http://users.ics.forth.gr/~lourakis/sba/) - Spare Bundle Adjustment library (C++)
+* [OpenMVG](http://imagine.enpc.fr/~moulonp/openMVG/) - Open Multi-View Geometry Tools (C++)
+
+    * (Is this a good idea?)
+
+* [SBA](http://users.ics.forth.gr/~lourakis/sba/) - Spare Bundle Adjustment library (C++)
