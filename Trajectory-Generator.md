@@ -57,9 +57,7 @@ The Trajectory Generator should...
 > _Alarm description (severity level): response_
 
 1. Entered unavoidable collision zone (0): abort mission
-1. No usable safety paths (1): abort mission
-1. Planning failed (2): try to use a safety path
-1. Re-plan failure (2): try to use a safety path 
+1. Planning and re-planning both failed (0): abort mission
 
 ## Components ##
 1. **Motion-Planner**
