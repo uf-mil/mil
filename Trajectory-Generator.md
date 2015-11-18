@@ -53,7 +53,7 @@ The Trajectory Generator should...
 > _Alarm description (severity level): response_
 
 1. Entered unavoidable collision zone (0): abort mission
-1. Planning and re-planning both failed (0): abort mission
+1. Planning and re-planning both failed (0): abort mission / attempt to flounder about blind (???)
 
 ## Main Components ##
 1. **Sub8 Motion-Planning**
