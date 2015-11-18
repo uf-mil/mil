@@ -9,7 +9,7 @@ The Trajectory Generator should...
 5. Know the location of all obstacles in its environment
 6. Be able to determine the planner being used at run-time
 7. Contain a module that encapsulates the construction and storage of "safety" paths in free space 
-8. Be able to determine whether an updated traversability map invalidates 
+8. Be able to determine whether an updated traversability map invalidates the current trajectory
 9. Make available a list of waypoints that make up the solution to the planning problem
 10. Be able to handle planning and re-planning failures by switching to a safety path or requesting a system shutdown
 
