@@ -16,7 +16,7 @@ The Trajectory Generator should...
 # Theory #
 
 ### Kinematics and Dynamics ###
-* ???
+* [Sub dynamics equations](http://ssl.mit.edu/spheres/library/ASS2011_11-033_spheres.pdf)
 
 ### Motion-Planning ###
 * [RRT* Reference](http://ijr.sagepub.com/content/30/7/846.full.pdf)
