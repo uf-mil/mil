@@ -102,6 +102,19 @@ Here is an example...
 
 Change suggestions are very welcome, this is the first iteration of what will be one day a more mature tool.
 
+# Using System Alarms with C++
+
+To use the Sub 8 alarm system with your C++ package, you'll need to link your executable or library to the sub8_alarm shared library in your package's CMakeLists.txt. To do that, add the following to your CMakeLists.txt: 
+* `find_package(sub8_alarm)`
+* `DEPENDS sub8_alarm` to `catkin_package(...)`
+* `${sub8_alarm_INCLUDE_DIRS}` to `include_directories(...)`
+* `${sub8_alarm_LIBRARIES}` to `target_link_libraries(...)`
+
+and to your `package.xml`, add the following: 
+* `<build_depend>sub8_alarm</build_depend>`
+* `<run_depend>sub8_alarm</run_depend>`
+
+Add the `#include <sub8_alarm/alarm_helpers.h>` include directive to your code to use the `AlarmBroadcaster` and `AlarmRaiser` classes
 
 # Things to worry about
 
