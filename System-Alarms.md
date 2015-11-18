@@ -114,4 +114,4 @@ Change suggestions are very welcome, this is the first iteration of what will be
 * Should we require alarms to include a problem description?
 * [ROS diagnostics](http://wiki.ros.org/diagnostics?distro=jade) - could be useful for monitoring hardware systems
 * Implement heartbeats
-* Generic "System Kill" alarm response 
+* Generic "System Kill" alarm response - have each node expose a kill/unkill service that can be called upon in times of trouble
