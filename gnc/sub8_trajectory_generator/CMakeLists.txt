@@ -8,10 +8,10 @@ find_package(OMPL REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Eigen REQUIRED)
 
-
 set(catkin_LIBRARIES
 	${catkin_LIBRARIES}
 )
+
 catkin_package(
    	CATKIN_DEPENDS roscpp sub8_msgs
    	DEPENDS system_lib 
