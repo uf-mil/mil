@@ -59,25 +59,28 @@ The Trajectory Generator should...
 1. Entered unavoidable collision zone (0): abort mission
 1. Planning and re-planning both failed (0): abort mission
 
-## Components ##
+## Main Components ##
 1. **Sub8 Motion-Planning**
     1. Implementation of OMPL for AUVs
     1. Main task is to use one of OMPL's path-planning algorithms (RRT) to generate a trajectory
     1. RRT* with a distance function that has a distance metric defined in the control space is being considered. It would need to be implemented from scratch. 
+1. **Re-Planner**
+    1. An algorithm that uses as a metric the ratio of obstructed to unobstructed waypoints will determine how much of the current trajectory needs to be re-planned. This way, time is not wasted re-planning the entire trajectory for a small obstacle, but if a large obstacle is obstructing the majority of the trajectory, a new trajectory will be generated
+    1. Stretch goal is to do partial-trajectory re-planning. For starters, just re-plan starting from the affected waypoint
+    1. If re-planning fails, a safety path should be used (if safety paths are being generated). Otherwise, alert the system that planning failed
+1. **TGEN Node**
+    1. ROS Node
+    1. Handles message-passing and TGEN initializations
+1. **TGEN Manager**
+    1. Facade for the OMPL-implementation
+
+(If deemed necessary and time permits)
 1. **Safety-Path Generation**
     1. Safety paths are trajectories that will keep the vehicle in free space 
     1. SPC is responsible for maintaining and updating a sorted-list of best-to-worst back-up paths that can be taken if the current trajectory becomes infeasible unexpectedly
     1. After the target trajectory is generated and the motion-planner is no longer engaged with carrying out that task, instead of having it sit idle, safety-paths would be generated
     1. It is advisable to maintain at least (2) viable "safety" paths, if possible.
     1. Note that this feature is utilized best when the vehicle is moving at speeds that make stopping in a relatively short period of time impossible
-1. **Re-Planner**
-    1. An algorithm that uses as a metric the ratio of obstructed to unobstructed waypoints will determine how much of the current trajectory needs to be re-planned. This way, time is not wasted re-planning the entire trajectory for a small obstacle, but if a large obstacle is obstructing the majority of the trajectory, a new trajectory will be generated
-    1. Stretch goal is to do partial-trajectory re-planning. For starters, just re-plan starting from the affected waypoint
-    1. If re-planning fails, a safety path should be used (if safety paths are being generated). Otherwise, alert the system that planning failed
-1. **TGEN Node**
-    1. Handles message-passing and TGEN initializations
-1. **TGEN Manager**
-    1. Facade for the OMPL-implementation
 
 ## Sequence Diagrams 
 
