@@ -69,8 +69,6 @@ The Trajectory Generator should...
     1. Handles message-passing and TGEN initializations
 1. **TGEN Manager**
     1. Facade for the OMPL-implementation
-
-(If deemed necessary and time permits)
 1. **Safety-Path Generation**
     1. Safety paths are trajectories that will keep the vehicle in free space 
     1. SPC is responsible for maintaining and updating a sorted-list of best-to-worst back-up paths that can be taken if the current trajectory becomes infeasible unexpectedly
