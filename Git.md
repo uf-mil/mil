@@ -1,6 +1,18 @@
 Git
 ===
 
+### Forking Workflow
+* [Tutorial](https://www.atlassian.com/git/tutorials/comparing-workflows/forking-workflow)
+
+The sub8 team is using the git "Forking Workflow". The general idea is to fork the uf-mil/sub8 repo, create a feature branch, make your changes, and then push your feature branch to your fork (in my case, pemami4911/sub8). GitHub will allow you to open a pull request to merge your feature branch into the uf-mil/sub8 master branch. At this point, a maintainer will provide you feedback on your changes. You can add commits to your pull request simply by creating the new commit and pushing to the relevant branch of your fork. Once the pull request is accepted, the maintainer will merge your pull request into the master branch. 
+
+#### What do I do if I have multiple feature branches open and one gets merged into master? 
+
+Once you have completed one feature branch and it is merged into master, you can pull the latest changes into your own local master branch (which should be tracking the upstream master branch). You can merge your local master branch into your other feature branches. This could potentially cause merge conflicts and may result with an extra merge commit (which is OK & better than rebasing, which potentially rewrites history and makes things very sad). 
+
+
+
+
 
 ### I want to retroactively change the commit message for my last commit
 
