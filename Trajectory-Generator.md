@@ -26,10 +26,6 @@ The Trajectory Generator should...
 * [MIT's RRT planner from the DUC](http://acl.mit.edu/papers/KuwataTCST09.pdf)
 * [LQR](http://ocw.mit.edu/courses/mechanical-engineering/2-154-maneuvering-and-control-of-surface-and-underwater-vehicles-13-49-fall-2004/lecture-notes/lec19.pdf)
 
-### Splines ###
-* [Much Ado About Splines and CX Continuity](http://graphics.stanford.edu/courses/cs348a-12-winter/Handouts/handout27.pdf)
-* [Fast Smoothing of Motion Planning Trajectories using B-Splines](https://wwwx.cs.unc.edu/~panj/index_files/files/ICRA11.pdf)
-
 # 3D Occupancy Grid
 [OctoMap](http://www2.informatik.uni-freiburg.de/~hornunga/pub/hornung13auro.pdf)
 
