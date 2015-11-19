@@ -127,4 +127,5 @@ Add the `#include <sub8_alarm/alarm_helpers.h>` include directive to your code t
 * Should we require alarms to include a problem description?
 * [ROS diagnostics](http://wiki.ros.org/diagnostics?distro=jade) - could be useful for monitoring hardware systems
 * Implement heartbeats
-* Generic "System Kill" alarm response - have each node expose a kill/unkill service that can be called upon in times of trouble
+* Each node should expose a generic "System Kill/Unkill" node
+* Remove action_required - all alarms should require an action and have a corresponding alarm handler
