@@ -3,6 +3,9 @@
  * Date: 11/9/2015
  */
 
+#ifndef ALARM_HELPERS_H_
+#define ALARM_HELPERS_H_
+
 #include <ros/ros.h>
 #include <string>
 #include <boost/filesystem.hpp>  // directory iterators, etc
@@ -76,3 +79,5 @@ class AlarmRaiser {
   PublisherPtr _alarm_publisher;
 };
 }
+
+#endif /* ALARM_HELPERS_H_ */
