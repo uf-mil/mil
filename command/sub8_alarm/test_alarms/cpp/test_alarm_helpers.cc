@@ -6,6 +6,10 @@
 #include "gtest/gtest.h"
 #include "sub8_alarm/alarm_helpers.h"
 #include <string>
+#include <boost/filesystem.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp> 
+#include <ros/package.h>
 
 using sub8::AlarmBroadcaster;
 using sub8::AlarmBroadcasterPtr;
@@ -40,7 +44,7 @@ TEST_F(AlarmHelpersTest, testAlarmRaiserConstructor) {
   EXPECT_EQ(alarm_name, alarm_raiser_ptr->getAlarmName());
   EXPECT_EQ(node_name, alarm_raiser_ptr->getNodeName());
   EXPECT_EQ(empty, alarm_raiser_ptr->getProblemDescription());
-  EXPECT_EQ(false, alarm_raiser_ptr->isActionRequired());
+  EXPECT_EQ(true, alarm_raiser_ptr->isActionRequired());
 }
 
 TEST_F(AlarmHelpersTest, testAddAlarm) {
@@ -49,8 +53,7 @@ TEST_F(AlarmHelpersTest, testAddAlarm) {
   const std::string node_name = ros::this_node::getName();
   const std::string empty = "";
 
-  // Sets action_required to true
-  AlarmRaiserPtr new_alarm = alarm_ptr->addAlarm(alarm_name, true);
+  AlarmRaiserPtr new_alarm = alarm_ptr->addAlarm(alarm_name);
 
   // Assert members are set
   EXPECT_EQ(alarm_name, new_alarm->getAlarmName());
@@ -65,7 +68,7 @@ TEST_F(AlarmHelpersTest, testRaisingAlarm) {
   const std::string node_name = ros::this_node::getName();
   const std::string empty = "";
 
-  AlarmRaiserPtr new_alarm = alarm_ptr->addAlarm(alarm_name, true);
+  AlarmRaiserPtr new_alarm = alarm_ptr->addAlarm(alarm_name);
 
   const std::string problem_description = "Entering black hole";
   const std::string parameters = "";
@@ -89,7 +92,7 @@ TEST_F(AlarmHelpersTest, testJSONBlob) {
   const std::string json_string =
       "{ \"ShowMe\": [\"What\", \"You\", \"Got\"] }";
 
-  AlarmRaiserPtr new_alarm = alarm_ptr->addAlarm(alarm_name, true);
+  AlarmRaiserPtr new_alarm = alarm_ptr->addAlarm(alarm_name);
 
   const std::string problem_description = "Entering black hole";
 
@@ -104,7 +107,97 @@ TEST_F(AlarmHelpersTest, testJSONBlob) {
   EXPECT_EQ(json_string, alarm_msg->parameters);
 }
 
-int main(int argc, char **argv) {
+TEST_F(AlarmHelpersTest, testBoostFilesystem) {
+  namespace fs = ::boost::filesystem;
+
+  char file_sep = '/';
+#ifdef _WIN32
+  file_sep = "\\";
+#endif
+  std::vector<std::string> test_alarms;
+  std::string pkg_path = ros::package::getPath("sub8_alarm");
+  // Will break if our file structure changes :/
+  fs::path dirname(pkg_path + file_sep + "test_alarms" + file_sep + "cpp" +
+                   file_sep + "cfg");
+  const std::string ext = ".json";
+
+  ASSERT_EQ(true, fs::exists(dirname)) << "\ndirname: " << dirname;
+  ASSERT_EQ(true, fs::is_directory(dirname)) << dirname;
+
+  fs::recursive_directory_iterator it(dirname);
+  fs::recursive_directory_iterator endit;
+
+  // iterate all files in the directory and store all with the extension in
+  // a vector for further processing
+  while (it != endit) {
+    if (fs::is_regular_file(*it) && it->path().extension() == ext) {
+      // Store the dirname + filename
+      test_alarms.push_back((dirname.string()) +
+                            (it->path().filename().string()));
+      ++it;
+    }
+  }
+
+  EXPECT_EQ(false, test_alarms.empty());
+}
+
+TEST_F(AlarmHelpersTest, testBoostJSONParser) {
+  namespace fs = ::boost::filesystem;
+
+  char file_sep = '/';
+#ifdef _WIN32
+  file_sep = "\\";
+#endif
+  std::vector<std::string> test_alarms;
+  std::string pkg_path = ros::package::getPath("sub8_alarm");
+  // Will break if our file structure changes :/
+  fs::path dirname(pkg_path + file_sep + "test_alarms" + file_sep + "cpp" +
+                   file_sep + "cfg");
+  fs::recursive_directory_iterator it(dirname);
+  if (fs::is_regular_file(*it)) {
+    std::string test_alarm = it->path().string();
+
+    boost::property_tree::ptree pt;
+
+    try {
+      boost::property_tree::read_json(test_alarm, pt);
+
+      EXPECT_EQ("test_alarm_1", pt.get<std::string>("alarm_name"));
+      EXPECT_EQ(true, pt.get<bool>("action_required"));
+      EXPECT_EQ(0, pt.get<int>("severity"));
+      EXPECT_EQ("This is test alarm 1", pt.get<std::string>("problem_description"));
+    } catch (const boost::property_tree::ptree_error& e) {
+      EXPECT_EQ(1,2) << e.what() << "\nfilename: " << test_alarm;
+    }
+  }
+}
+
+
+TEST_F(AlarmHelpersTest, testAddAlarms) {
+  AlarmBroadcasterPtr alarm_ptr(new AlarmBroadcaster(getNodeHandle()));
+  std::vector<AlarmRaiserPtr> test_alarms;
+
+  namespace fs = ::boost::filesystem;
+
+  char file_sep = '/';
+#ifdef _WIN32
+  file_sep = "\\";
+#endif
+  std::string pkg_path = ros::package::getPath("sub8_alarm");
+  // Will break if our file structure changes :/
+  fs::path dirname(pkg_path + file_sep + "test_alarms" + file_sep + "cpp" +
+                   file_sep + "cfg");
+  const std::string ext = ".json";
+  bool result = alarm_ptr->addAlarms(dirname, ext, test_alarms);
+
+  ASSERT_EQ(true, result);
+  EXPECT_EQ("test_alarm_1", test_alarms[0]->getAlarmName());
+  EXPECT_EQ("test_alarm_2", test_alarms[1]->getAlarmName());
+  EXPECT_EQ("This is test alarm 1", test_alarms[0]->getProblemDescription());
+  EXPECT_EQ("This is test alarm 2", test_alarms[1]->getProblemDescription());
+}
+
+int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   ros::init(argc, argv, "alarm_helpers_test");
   return RUN_ALL_TESTS();
