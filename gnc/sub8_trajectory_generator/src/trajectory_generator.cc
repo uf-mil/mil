@@ -6,12 +6,15 @@
 #include "sub8_state_space.h"
 #include "tgen_manager.h"
 #include "tgen_common.h"
+#include <sub8_alarm/alarm_helpers.h>
 #include "sub8_msgs/MotionPlan.h"
 #include "sub8_msgs/ThrusterInfo.h"
 
 using sub8::trajectory_generator::Matrix2_8d;
 using sub8::trajectory_generator::_THRUSTERS_ID_BEGIN;
 using sub8::trajectory_generator::_THRUSTERS_ID_END;
+using sub8::AlarmBroadcasterPtr; 
+using sub8::AlarmBroadcaster; 
 
 namespace sub8 {
 namespace trajectory_generator {
@@ -25,8 +28,10 @@ typedef boost::shared_ptr<TGenNode> TGenNodePtr;
 // requests
 class TGenNode {
  public:
-  TGenNode(int& planner_id, const Matrix2_8d& cspace_bounds)
-      : _tgen(new TGenManager(planner_id, cspace_bounds)) {}
+  TGenNode(int& planner_id, const Matrix2_8d& cspace_bounds,
+           AlarmBroadcasterPtr& ab)
+      : _tgen(new TGenManager(planner_id, cspace_bounds, ab)) {}
+      
   bool findTrajectory(sub8_msgs::MotionPlan::Request& req,
                       sub8_msgs::MotionPlan::Response& resp) {
     boost::shared_ptr<sub8_msgs::Waypoint> start_state_wpoint =
@@ -41,7 +46,13 @@ class TGenNode {
     if (resp.success) {
       resp.trajectory = _tgen->getTrajectory();
     } else {
-      // ALARM?
+      // Robot must make some decisions:
+      // 1. Try finding another trajectory
+      // 2. Try to navigate with dead-reckoning
+      //    e.g. (Do a simplistic calculation to do
+      //     navigation without 6DOF
+      //     motion-planning/Traversability map)
+      // 3. Abort mission
     }
     return true;
   }
@@ -56,6 +67,10 @@ int main(int argc, char** argv) {
   ros::init(argc, argv, "trajectory_generator");
   ros::NodeHandle nh;
 
+  // Create the AlarmBroadcaster; tgen_manager will maintain a reference to it
+  AlarmBroadcasterPtr ab(
+      new AlarmBroadcaster(boost::make_shared<ros::NodeHandle>(nh)));
+
   // Grabs the planner id from the param server
   int planner_id = 0;
   nh.getParam("planner", planner_id);
@@ -64,7 +79,7 @@ int main(int argc, char** argv) {
       nh.serviceClient<sub8_msgs::ThrusterInfo>("thrusters/thruster_range");
   // Alert that this node will block until this service is available
   ROS_WARN("Waiting for service thrusters/thruster_range");
-  sc.waitForExistence(); 
+  sc.waitForExistence();
 
   int dim_idx = 0;
   Matrix2_8d cspace_bounds;
@@ -83,7 +98,7 @@ int main(int argc, char** argv) {
   }
 
   sub8::trajectory_generator::TGenNodePtr tgen(
-      new sub8::trajectory_generator::TGenNode(planner_id, cspace_bounds));
+      new sub8::trajectory_generator::TGenNode(planner_id, cspace_bounds, ab));
 
   ros::ServiceServer motion_planning_srv = nh.advertiseService(
       "motion_plan", &sub8::trajectory_generator::TGenNode::findTrajectory,

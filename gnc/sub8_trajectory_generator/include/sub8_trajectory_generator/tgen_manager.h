@@ -12,6 +12,7 @@
 #include "space_information_generator.h"
 #include "sub8_msgs/Waypoint.h"
 #include "sub8_msgs/Trajectory.h"
+#include <sub8_alarm/alarm_helpers.h>
 #include "tgen_thruster_info.h"
 
 using ompl::base::PlannerPtr;
@@ -19,6 +20,7 @@ using ompl::base::State;
 using ompl::base::ProblemDefinition;
 using ompl::control::SpaceInformationPtr;
 using sub8::trajectory_generator::TGenThrusterInfoPtr;
+using sub8::AlarmBroadcasterPtr; 
 
 namespace sub8 {
 
@@ -35,7 +37,7 @@ class TGenManager {
   // The planner param will be passed in from the
   // param server. Instantiates a SpaceInformation
   // obj and the Planner
-  TGenManager(int planner, const Matrix2_8d& cspace_bounds);
+  TGenManager(int planner, const Matrix2_8d& cspace_bounds, AlarmBroadcasterPtr& ab);
 
   // Create an ompl::base::ProblemDefinition object for planning a trajectory
   // from start_state to goal_state
@@ -83,7 +85,6 @@ class TGenManager {
   PlannerType _planner_type; 
 
   SpaceInformationPtr _sub8_si;
-
 };
 }
 }

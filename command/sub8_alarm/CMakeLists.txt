@@ -13,8 +13,10 @@ set(catkin_LIBRARIES
 catkin_python_setup()
 
 catkin_package(
-  CATKIN_DEPENDS roscpp sub8_msgs
-  DEPENDS system_lib
+  CATKIN_DEPENDS roscpp 
+  DEPENDS system_lib sub8_msgs
+  INCLUDE_DIRS include 
+  LIBRARIES sub8_alarm
 )
 
 include_directories(

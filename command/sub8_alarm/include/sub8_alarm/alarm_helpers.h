@@ -3,6 +3,9 @@
  * Date: 11/9/2015
  */
 
+#ifndef ALARM_HELPERS_H_
+#define ALARM_HELPERS_H_
+
 #include <ros/ros.h>
 #include <string>
 #include <cstddef>
@@ -17,7 +20,7 @@ typedef boost::shared_ptr<AlarmRaiser> AlarmRaiserPtr;
 class AlarmBroadcaster;
 typedef boost::shared_ptr<AlarmBroadcaster> AlarmBroadcasterPtr;
 
-typedef boost::shared_ptr<ros::Publisher> PublisherPtr; 
+typedef boost::shared_ptr<ros::Publisher> PublisherPtr;
 
 class AlarmBroadcaster {
  public:
@@ -45,7 +48,8 @@ class AlarmRaiser {
               const std::string& parameters = "");
 
   boost::shared_ptr<sub8_msgs::Alarm> raiseAlarm(
-      const std::string& problem_description, const std::string& parameters) const;
+      const std::string& problem_description,
+      const std::string& parameters) const;
 
   // Getters for alarm info
   const std::string getAlarmName() const;
@@ -59,7 +63,7 @@ class AlarmRaiser {
   const std::string _alarm_name;
   const std::string _node_name;
   const std::string _problem_description;
-  const std::string _parameters; 
+  const std::string _parameters;
 
   bool _action_required;
   int _severity;
@@ -67,3 +71,5 @@ class AlarmRaiser {
   PublisherPtr _alarm_publisher;
 };
 }
+
+#endif /* alarm_helpers.h */

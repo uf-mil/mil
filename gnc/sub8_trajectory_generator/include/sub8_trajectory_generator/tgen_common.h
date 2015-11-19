@@ -57,7 +57,7 @@ class TGenMsgs {
   static constexpr const char* CRASH = "The planner crashed!";
 
   // Trajectory Validation
-  static constexpr const char* REPLAN_FAILED =
+  static constexpr const char* REPLAN_NEEDED =
       "Current trajectory is blocked-- starting naive replan";
   static constexpr const char* TRAJECTORY_VALIDATED =
       "Current trajectory successfully validated against new traversability "
