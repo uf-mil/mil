@@ -70,8 +70,8 @@ class P_Driver(object):
         self.des_force = np.array(([0,0,0])).astype(np.float32)
         
         # ROS data
-        self.pub = rospy.Publisher("/motors" , Float32MultiArray, queue_size = 1)
-        self.temp_pub = rospy.Publisher("/roboteq_driver/cmd" , Command, queue_size = 1)
+        self.left_pub = rospy.Publisher("/left_motor/cmd" , Command, queue_size = 1)
+        self.right_pub = rospy.Publisher("/right_motor/cmd" , Command, queue_size = 1)
         rospy.Subscriber("/wrench", WrenchStamped, self.wrench_cb)
 
         # list of  thruster positions center of gravity offsets
@@ -111,15 +111,17 @@ class P_Driver(object):
         # solve Ax = b
         # solutions are given respectively by one, two, three, n...
         one, two = np.linalg.lstsq(A, b)[0]
-        # publish as float array
-        msg = Float32MultiArray()
-        msg.data = [one,two]
-        self.pub.publish(msg)
 
         # Temporarily sending the left thruster command to the motor driver
-        msg2 = Command()
-        msg2.setpoint = one
-        self.temp_pub.publish(msg2)
+        right_msg = Command()
+        left_msg = Command()
+
+
+        right_msg.setpoint = one
+        left_msg.setpoint = two
+
+        self.right_pub.publish(right_msg)
+        self.left_pub.publish(left_msg)
         
 if __name__ == "__main__":
     

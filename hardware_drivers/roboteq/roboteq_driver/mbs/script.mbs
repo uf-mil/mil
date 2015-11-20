@@ -39,8 +39,8 @@ for ch = 1 andwhile ch <= MAX_CHANNELS evaluate ch++
 	setconfig(_ATRIG, ch, 550)
 
 	' Max acceleration/deceleration (p219)
-	setconfig(_MAC, ch, 20000)
-	setconfig(_MDEC, ch, 20000)
+	setconfig(_MAC, ch, 400)
+	setconfig(_MDEC, ch, 400)
 next
 
 top:

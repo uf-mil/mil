@@ -1,6 +1,10 @@
 <launch>
-  <node pkg="roboteq_driver" type="driver_node" name="roboteq_driver">
-    <param name="port" value="/dev/ttyACM0" />
+  <node pkg="roboteq_driver" type="driver_node" name="left_motor">
+    <param name="port" value="/dev/serial/by-path/pci-0000:00:14.0-usb-0:5:1.0" />
+    <param name="value" value="115200" />
+  </node>
+  <node pkg="roboteq_driver" type="driver_node" name="right_motor">
+    <param name="port" value="/dev/serial/by-path/pci-0000:00:14.0-usb-0:13:1.0" />
     <param name="value" value="115200" />
   </node>
 </launch>
