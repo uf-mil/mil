@@ -187,8 +187,7 @@ TEST_F(AlarmHelpersTest, testAddAlarms) {
   // Will break if our file structure changes :/
   fs::path dirname(pkg_path + file_sep + "test_alarms" + file_sep + "cpp" +
                    file_sep + "cfg");
-  const std::string ext = ".json";
-  bool result = alarm_ptr->addAlarms(dirname, ext, test_alarms);
+  bool result = alarm_ptr->addAlarms(dirname, test_alarms);
 
   ASSERT_EQ(true, result);
   EXPECT_EQ("test_alarm_1", test_alarms[0]->getAlarmName());

@@ -34,9 +34,9 @@ AlarmRaiserPtr AlarmBroadcaster::addAlarm(
 }
 
 bool AlarmBroadcaster::addAlarms(const fs::path& dirname,
-                                 const std::string& ext,
                                  std::vector<AlarmRaiserPtr>& alarms) {
   std::vector<std::string> paths;
+  const std::string ext = ".json"; 
 
   // alarm attributes
   std::string alarm_name;
@@ -46,7 +46,7 @@ bool AlarmBroadcaster::addAlarms(const fs::path& dirname,
   std::string parameters;
 
   if (!fs::exists(dirname) || !fs::is_directory(dirname)) {
-    ROS_WARN("Could not find the specified alarms directory");
+    ROS_WARN("Could not find the following alarms directory %s", dirname.string().c_str());
     return false;
   }
 
@@ -63,7 +63,7 @@ bool AlarmBroadcaster::addAlarms(const fs::path& dirname,
     }
   }
 
-  // no files with extension ext were found
+  // no json files were found
   if (paths.empty()) {
     ROS_WARN("Could not find any files with extension %s", ext.c_str());
     return false;

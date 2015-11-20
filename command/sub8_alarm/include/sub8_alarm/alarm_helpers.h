@@ -11,7 +11,7 @@
 #include <boost/filesystem.hpp>  // directory iterators, etc
 
 #include "sub8_msgs/Alarm.h"
- 
+
 namespace fs = ::boost::filesystem;
 
 namespace sub8 {
@@ -32,10 +32,9 @@ class AlarmBroadcaster {
   // Given a directory of JSON files, parse and auto-generate all alarms
   // and return them as a list.
   // Returns as false if parsing the JSON files failed.
-  bool addAlarms(const fs::path& dirname, const std::string& ext,
-                 std::vector<AlarmRaiserPtr>& alarms);
+  bool addAlarms(const fs::path& dirname, std::vector<AlarmRaiserPtr>& alarms);
 
-  // Factory method for creating new AlarmRaiser objects
+  // Factory method for creating individual AlarmRaiser objects
   AlarmRaiserPtr addAlarm(const std::string& name, bool action_required = true,
                           int severity = 2,
                           const std::string& problem_description = "",

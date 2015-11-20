@@ -7,7 +7,7 @@ from catkin_pkg.python_setup import generate_distutils_setup
 setup_args = generate_distutils_setup(
     packages=['sub8_alarm'],
     package_dir={
-        'sub8_alarm': '.',
+        '':'sub8_alarm',
     },
 )
 
