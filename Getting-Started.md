@@ -1,6 +1,8 @@
 Getting Started Guide
 =====================
 
+Assuming you've already spoken come by the lab and spoken to us
+
 1. Clone this repository. As of now, Sub8 has no dependencies on the rest of uf-mil, so it can exist in its own catkin workspace.
 
 2. Read the code policy page on this wiki.
@@ -8,6 +10,8 @@ Getting Started Guide
 3. [Install dependencies](https://github.com/uf-mil/Sub8/wiki/Installing-Dependencies)
 
 4. Get to know the people on the team
+
+Make sure you have some task or learning in progress before you start coming to Wednesday meetings.
 
 
 Check out a few libraries:
@@ -59,7 +63,12 @@ If you are working on robotics in general, you should know...
 
 * OpenCV
 
+    * Try "Learning OpenCV - Computer Vision with the OpenCV Library" by Gary Bradski and Adrian Kaehler
+
 * Machine learning for perception
+
+* Hartley & Zisserman's Geometric Computer Vision
+
 
 ## If you are working in control or motion planning
 

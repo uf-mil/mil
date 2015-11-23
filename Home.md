@@ -31,3 +31,7 @@ Matthew Langford
 ## Helpful Hints
 * [When should I use a ROS topic vs service vs action?](http://answers.ros.org/question/11834/when-should-i-use-topics-vs-services-vs-actionlib-actions-vs-dynamic_reconfigure/)
 * [param vs. rosparam](http://answers.ros.org/question/37916/when-to-use-param-and-rosparam-on-launch-file/)
+
+# Getting Involved
+
+Interested in working on the Sub? Schedule a one-on-one meeting with Jake (Jacob Panikulam). Find his contact information floating around in the repository.

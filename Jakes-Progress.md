@@ -26,16 +26,34 @@ In order...
 - [x] Add integration tests for the PD Controller
 - [ ] Submit a pull-request for the PD controller
 
-- [ ] Focus on vision (Implement visual odometry in some meaningful way - we need non-shitty cameras)
+# Optical Navigation
+- [ ] Implement visual odometry
     - [x] Get simple n-point transformation estimation from fundamental matrix working
-    - [ ] Do it w/ LK Optical Flow
+    - [x] Do it w/ LK Optical Flow
+    - [x] Triangulate points in 3D
+        - [ ] Visualize estimated camera poses using pyplot cones for debugging (Or use Vispy?)
+    - [ ] Estimate globally consistent 3d transform by solving PnP
+        - [ ] Internal PnP solver (OpenCV's is a disaster)
     - [ ] Implement SVO-SLAM
+## Problems
+    - [ ] Dismiss invalid pose transforms
+    - [x] Get motion estimation by PnP to match decomposition of Essential matrix
+        - [ ] Now match the sign!
+
 
 - [x] Make everything work on simulated time so we can run Monte-Carlos in faster than realtime
 - [ ] Add controller integration tool for Jason
     - [ ] Write a tutorial for adding a simulation
 - [ ] Add vector of gains to controller
 - [ ] Reclaim Honor
+
+
+Spring:
+    - [ ] DVL
+    - [ ] New IMU
+    - [ ] Magnetometer & Calibration
+    - [ ] UKF
+    - [ ] Modernize RISE at suggestion of Forrest
 
 Random:
     - [ ] Make increment-numbers again
