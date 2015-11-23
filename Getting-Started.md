@@ -1,7 +1,7 @@
 Getting Started Guide
 =====================
 
-Assuming you've already spoken come by the lab and spoken to us
+Assuming you've already come by the lab and spoken to us
 
 1. Clone this repository. As of now, Sub8 has no dependencies on the rest of uf-mil, so it can exist in its own catkin workspace.
 
