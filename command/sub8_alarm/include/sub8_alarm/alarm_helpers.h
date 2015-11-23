@@ -8,9 +8,11 @@
 
 #include <ros/ros.h>
 #include <string>
-#include <cstddef>
+#include <boost/filesystem.hpp>  // directory iterators, etc
 
 #include "sub8_msgs/Alarm.h"
+
+namespace fs = ::boost::filesystem;
 
 namespace sub8 {
 
@@ -27,8 +29,13 @@ class AlarmBroadcaster {
   // Initiates a ros publisher for sending alarms on the /alarm topic
   AlarmBroadcaster(boost::shared_ptr<ros::NodeHandle> n);
 
-  // Factory method for creating new AlarmRaiser objects
-  AlarmRaiserPtr addAlarm(const std::string& name, bool action_required = false,
+  // Given a directory of JSON files, parse and auto-generate all alarms
+  // and return them as a list.
+  // Returns as false if parsing the JSON files failed.
+  bool addAlarms(const fs::path& dirname, std::vector<AlarmRaiserPtr>& alarms);
+
+  // Factory method for creating individual AlarmRaiser objects
+  AlarmRaiserPtr addAlarm(const std::string& name, bool action_required = true,
                           int severity = 2,
                           const std::string& problem_description = "",
                           const std::string& parameters = "");
@@ -43,7 +50,7 @@ class AlarmRaiser {
  public:
   // Used to generate alarm messages
   AlarmRaiser(const std::string& alarm_name, const std::string& node_name,
-              PublisherPtr& alarm_publisher, bool action_required = false,
+              PublisherPtr& alarm_publisher, bool action_required = true,
               int severity = 2, const std::string& problem_description = "",
               const std::string& parameters = "");
 
@@ -72,4 +79,4 @@ class AlarmRaiser {
 };
 }
 
-#endif /* alarm_helpers.h */
+#endif /* ALARM_HELPERS_H_ */

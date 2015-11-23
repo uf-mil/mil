@@ -5,7 +5,10 @@
 
 #include "sub8_alarm/alarm_helpers.h"
 #include "std_msgs/Header.h"
+#include <ros/ros.h>
 #include <string>
+#include <boost/property_tree/ptree.hpp>        // ptree
+#include <boost/property_tree/json_parser.hpp>  // read_json
 
 using sub8::AlarmBroadcaster;
 using sub8::AlarmRaiserPtr;
@@ -28,6 +31,68 @@ AlarmRaiserPtr AlarmBroadcaster::addAlarm(
   // maintained by the AlarmBroadcaster
   _alarms.push_back(new_alarm);
   return new_alarm;
+}
+
+bool AlarmBroadcaster::addAlarms(const fs::path& dirname,
+                                 std::vector<AlarmRaiserPtr>& alarms) {
+  std::vector<std::string> paths;
+  const std::string ext = ".json"; 
+
+  // alarm attributes
+  std::string alarm_name;
+  bool action_required;
+  int severity;
+  std::string problem_description;
+  std::string parameters;
+
+  if (!fs::exists(dirname) || !fs::is_directory(dirname)) {
+    ROS_WARN("Could not find the following alarms directory %s", dirname.string().c_str());
+    return false;
+  }
+
+  fs::recursive_directory_iterator it(dirname);
+  fs::recursive_directory_iterator endit;
+
+  // iterate over all files in the directory and store all with the extension in
+  // a vector for further processing
+  while (it != endit) {
+    if (fs::is_regular_file(*it) && it->path().extension() == ext) {
+      // Store the dirname + filename
+      paths.push_back(it->path().string());
+      ++it;
+    }
+  }
+
+  // no json files were found
+  if (paths.empty()) {
+    ROS_WARN("Could not find any files with extension %s", ext.c_str());
+    return false;
+  }
+
+  for (std::vector<std::string>::iterator it = paths.begin(); it != paths.end();
+       ++it) {
+    boost::property_tree::ptree pt;
+    try {
+      boost::property_tree::read_json(*it, pt);
+
+      alarm_name = pt.get<std::string>("alarm_name");
+      action_required = pt.get<bool>("action_required");
+      severity = pt.get<int>("severity");
+      problem_description = pt.get<std::string>("problem_description");
+      parameters = pt.get<std::string>("parameters");
+    } catch (const boost::property_tree::ptree_error& e) {
+      ROS_WARN("%s", e.what());
+      return false;
+    }
+
+    // add the new alarm
+    addAlarm(alarm_name, action_required, severity, problem_description,
+             parameters);
+  }
+
+  alarms = _alarms;
+
+  return true;
 }
 
 AlarmRaiser::AlarmRaiser(const std::string& alarm_name,
