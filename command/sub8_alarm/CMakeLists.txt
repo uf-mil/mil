@@ -3,7 +3,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 project(sub8_alarm)
 
 find_package(catkin REQUIRED COMPONENTS
-  rospy rostest roscpp sub8_msgs
+  rospy rostest roscpp roslib sub8_msgs
 )
 
 set(catkin_LIBRARIES
@@ -13,7 +13,7 @@ set(catkin_LIBRARIES
 catkin_python_setup()
 
 catkin_package(
-  CATKIN_DEPENDS roscpp sub8_msgs
+  CATKIN_DEPENDS roscpp sub8_msgs roslib
   DEPENDS system_lib
 )
 
