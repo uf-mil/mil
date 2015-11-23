@@ -2,7 +2,7 @@
 	"alarm_name":"test_alarm_1",
 	"action_required":true,
 	"severity":0,
-	"problem_description":"This is test alarm 1",
+	"problem_description":"This is test_alarm_1",
 	"parameters":
 		{
 			"ShowMe":
