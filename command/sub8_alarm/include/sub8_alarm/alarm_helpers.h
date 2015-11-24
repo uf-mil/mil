@@ -3,8 +3,8 @@
  * Date: 11/9/2015
  */
 
-#ifndef ALARM_HELPERS_H_
-#define ALARM_HELPERS_H_
+#ifndef _ALARM_HELPERS_H
+#define _ALARM_HELPERS_H
 
 #include <ros/ros.h>
 #include <string>

@@ -15,6 +15,8 @@ catkin_python_setup()
 catkin_package(
   CATKIN_DEPENDS roscpp sub8_msgs roslib
   DEPENDS system_lib
+  INCLUDE_DIRS include
+  LIBRARIES ${PROJECT_NAME}
 )
 
 include_directories(
@@ -22,21 +24,9 @@ include_directories(
   include
 )
 
-# Build a shared lib for C++ alarm_helpers
 add_library(
   ${PROJECT_NAME}
   sub8_alarm/alarm_helpers.cc
-)
-
-add_dependencies(
-  ${PROJECT_NAME}
-  sub8_msgs_generate_msgs_cpp
-)
-
-# Export headers
-install(
-  DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
 # Add folders to be run by python nosetests
@@ -45,7 +35,7 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test_alarms/alarm_integration.test)
 endif()
 
-# Gtest for C++ alarms
+# Add gtest for C++ alarms
 if(CATKIN_ENABLE_TESTING)
   add_rostest_gtest(alarm_integration_cpp_tests 
   	test_alarms/cpp/alarm_integration_cpp.test

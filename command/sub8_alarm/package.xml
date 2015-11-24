@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>sub8_alarm</name>
   <version>1.0.0</version>
   <description>The sub8_alarm package</description>
@@ -9,14 +9,9 @@
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rostest</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>roslib</build_depend>
-  <build_depend>sub8_msgs</build_depend>
-  <run_depend>rospy</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>roslib</run_depend>
-  <run_depend>sub8_msgs</run_depend>
-  <export>
-  </export>
+  <depend>rospy</depend>
+  <depend>roscpp</depend>
+  <depend>roslib</depend>
+  <depend>sub8_msgs</depend>
+
 </package>
