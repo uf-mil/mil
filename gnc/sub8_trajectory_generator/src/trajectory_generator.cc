@@ -73,7 +73,8 @@ int main(int argc, char** argv) {
 
   // Grabs the planner id from the param server
   int planner_id = 0;
-  nh.getParam("planner", planner_id);
+  //nh.getParam("planner", planner_id);
+  ros::param::get("/planner", planner_id); 
 
   ros::ServiceClient sc =
       nh.serviceClient<sub8_msgs::ThrusterInfo>("thrusters/thruster_range");

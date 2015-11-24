@@ -7,7 +7,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs sub8_msgs cmake_mod
 find_package(OMPL REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Eigen REQUIRED)
-find_package(sub8_alarm)
+find_package(sub8_alarm REQUIRED)
 
 set(catkin_LIBRARIES
 	${catkin_LIBRARIES}

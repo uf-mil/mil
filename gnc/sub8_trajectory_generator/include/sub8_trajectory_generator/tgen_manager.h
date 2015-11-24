@@ -85,6 +85,8 @@ class TGenManager {
   PlannerType _planner_type; 
 
   SpaceInformationPtr _sub8_si;
+
+  std::vector<AlarmRaiserPtr> alarms; 
 };
 }
 }

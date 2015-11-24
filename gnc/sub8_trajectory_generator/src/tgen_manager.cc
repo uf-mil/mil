@@ -11,6 +11,7 @@
 #include "ompl/control/planners/pdst/PDST.h"
 #include "ompl/control/planners/rrt/RRT.h"
 #include "ompl/control/PathControl.h"
+#include <boost/filesystem.hpp>
 #include <ros/console.h>
 #include <Eigen/Dense>
 
@@ -27,6 +28,8 @@ using ompl::base::ProblemDefinitionPtr;
 using ompl::control::RRT;
 using ompl::control::PDST;
 using ompl::control::PathControl;
+
+namespace fs::boost::filesystem;
 
 TGenManager::TGenManager(int planner_id, const Matrix2_8d& cspace_bounds,
                          AlarmBroadcasterPtr& alarm_broadcaster) {
@@ -48,6 +51,9 @@ TGenManager::TGenManager(int planner_id, const Matrix2_8d& cspace_bounds,
       _planner_type = PlannerType::RRT;
       break;
   }
+
+  fs::path cfg_path("cfg"); 
+  alarm_broadcaster->addAlarms(cfg_path, alarms);
 }
 
 void TGenManager::setProblemDefinition(const State* start_state,
