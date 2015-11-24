@@ -29,7 +29,7 @@ using ompl::control::RRT;
 using ompl::control::PDST;
 using ompl::control::PathControl;
 
-namespace fs::boost::filesystem;
+namespace fs = ::boost::filesystem;
 
 TGenManager::TGenManager(int planner_id, const Matrix2_8d& cspace_bounds,
                          AlarmBroadcasterPtr& alarm_broadcaster) {
@@ -52,8 +52,11 @@ TGenManager::TGenManager(int planner_id, const Matrix2_8d& cspace_bounds,
       break;
   }
 
-  fs::path cfg_path("cfg"); 
-  alarm_broadcaster->addAlarms(cfg_path, alarms);
+  // initialize alarms
+  std::string alarms_dir;
+  ros::param::get("alarms_dir", alarms_dir);
+  fs::path alarms_path(alarms_dir);
+  alarm_broadcaster->addAlarms(alarms_path, alarms);
 }
 
 void TGenManager::setProblemDefinition(const State* start_state,
@@ -209,4 +212,21 @@ sub8_msgs::Trajectory TGenManager::getTrajectory() {
   }
 
   return t_msg;
+}
+
+void TGenManager::updatePlanningRegion(double xmin, double xmax, double ymin,
+                                       double ymax, double zmin, double zmax) {
+  // Bounds on position (x, y, z)
+  RealVectorBounds pos_bounds(3);
+
+  pos_bounds.setLow(0, xmin);   // x low
+  pos_bounds.setHigh(0, xmax);  // x high
+  pos_bounds.setLow(1, ymin);   // y low
+  pos_bounds.setHigh(1, ymax);  // y high
+  pos_bounds.setLow(2, zmin);   // z low
+  pos_bounds.setHigh(2, zmax);  // z high
+
+  _sub8_si->getStateSpace()
+      ->as<sub8::trajectory_generator::Sub8StateSpace>()
+      ->set_volume_bounds(pos_bounds);
 }
