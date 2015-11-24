@@ -18,8 +18,6 @@ Co-author email:
 
 CODE DETAILS --------------------------------------------------------------------
 
-Please include inputs, outputs, and fill with a pseudo-code or description of the source to follow
-
 inputs: /wrench
 output: /motors
 
