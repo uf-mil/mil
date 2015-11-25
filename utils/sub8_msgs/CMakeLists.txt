@@ -27,6 +27,7 @@ add_service_files(
   MotionPlan.srv
   UpdateThrusterLayout.srv
   FailThruster.srv
+  BMatrix.srv
 )
 
 # add_action_files(

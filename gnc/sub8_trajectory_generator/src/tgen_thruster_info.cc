@@ -8,6 +8,5 @@
 using sub8::trajectory_generator::TGenThrusterInfo;
 
 TGenThrusterInfo::TGenThrusterInfo() {
-  // TODO
-  // Load the thruster lever arms and directions matrices
+
 }
