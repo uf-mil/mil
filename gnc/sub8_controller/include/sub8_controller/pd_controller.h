@@ -1,4 +1,5 @@
 #include <eigen_conversions/eigen_msg.h>
+#include <Eigen/Geometry>
 #include <dynamic_reconfigure/server.h>
 #include <deque>
 #include "sub8_controller/GainConfig.h"
