@@ -6,6 +6,5 @@ from catkin_pkg.python_setup import generate_distutils_setup
 # fetch values from package.xml
 setup_args = generate_distutils_setup(
     packages=['sub8_sim_tools'],
-    package_dir={'sub8_sim_tools': '.'},
 )
 setup(**setup_args)

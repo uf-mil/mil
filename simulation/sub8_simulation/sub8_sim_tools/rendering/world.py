@@ -256,6 +256,7 @@ class World(object):
         - Add ros-camera (How to handle rigid-body offsets?)
         '''
         self.entities = []
+        self.my_lights = []
 
     def add_sphere(self, position, radius, color, **kwargs):
         '''Add a sphere entity to the scene'''
@@ -306,13 +307,23 @@ class World(object):
                 - Multiple lights
                 - Shadows
             '''
-        for entity in self.entities:
-            entity.program['u_light_position'] = position
-            entity.program['u_light_intensity'] = intensity
+        self.my_lights.append(position)
+        self.my_lights.append(intensity)
 
     def set_view(self, view):
-        for entity in self.entites:
+        for entity in self.entities:
             entity.set_view(view)
+
+    def stop_adding_lights(self):
+        length = len(self.my_lights) / 2
+        if(length > 8):
+            raise ValueError('This is too many lights')
+        else:
+            for entity in self.entities:
+                entity.program['u_numLights'] = length
+                for i in range(0, (len(self.my_lights))):
+                    number = "u_lights[" + str(i) + "]"
+                    entity.program[number] = self.my_lights[i]
 
     def draw(self, cur_view):
         '''Todo:
