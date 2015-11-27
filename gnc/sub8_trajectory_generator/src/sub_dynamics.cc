@@ -14,8 +14,12 @@
 using sub8::trajectory_generator::SubDynamics;
 using sub8::trajectory_generator::Sub8StateSpace;
 
-SubDynamics::SubDynamics(const TGenThrusterInfoPtr& ti)
-    : _thruster_info_ptr(ti), _mass(25.0){};
+SubDynamics::SubDynamics(TGenThrusterInfoPtr& ti) : _thruster_info_ptr(ti) {
+  // If grabbing the param fails, use a default value (25)
+  if (!ros::param::get("sub_mass", _mass)) {
+    _mass = 25.0;
+  }
+};
 
 // ****************** State representations ********************//
 //

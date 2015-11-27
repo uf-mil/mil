@@ -13,6 +13,7 @@
 #include "ompl/control/PathControl.h"
 #include <boost/filesystem.hpp>
 #include <ros/console.h>
+#include <ros/package.h>
 #include <Eigen/Dense>
 
 using sub8::trajectory_generator::TGenManager;
@@ -32,8 +33,8 @@ using ompl::control::PathControl;
 namespace fs = ::boost::filesystem;
 
 TGenManager::TGenManager(int planner_id, const Matrix2_8d& cspace_bounds,
+                         TGenThrusterInfoPtr thruster_info,
                          AlarmBroadcasterPtr& alarm_broadcaster) {
-  TGenThrusterInfoPtr thruster_info(new TGenThrusterInfo());
   SubDynamicsPtr sub_dynamics(new SubDynamics(thruster_info));
   SpaceInformationGeneratorPtr ss_gen(new SpaceInformationGenerator());
 
@@ -55,8 +56,13 @@ TGenManager::TGenManager(int planner_id, const Matrix2_8d& cspace_bounds,
   // initialize alarms
   std::string alarms_dir;
   ros::param::get("alarms_dir", alarms_dir);
-  fs::path alarms_path(alarms_dir);
-  alarm_broadcaster->addAlarms(alarms_path, alarms);
+  std::string pkg_path = ros::package::getPath("sub8_trajectory_generator");
+  char file_sep = '/';
+#ifdef _WIN32
+  file_sep = "\\";
+#endif
+  fs::path dirname(pkg_path + file_sep + alarms_dir);
+  alarm_broadcaster->addAlarms(dirname, alarms);
 }
 
 void TGenManager::setProblemDefinition(const State* start_state,

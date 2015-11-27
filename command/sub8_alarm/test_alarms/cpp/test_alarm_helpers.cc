@@ -119,7 +119,6 @@ TEST_F(AlarmHelpersTest, testBoostFilesystem) {
   // Will break if our file structure changes :/
   fs::path dirname(pkg_path + file_sep + "test_alarms" + file_sep + "cpp" +
                    file_sep + "cfg");
-  const std::string ext = ".json";
 
   ASSERT_TRUE(fs::exists(dirname)) << "\ndirname: " << dirname;
   ASSERT_TRUE(fs::is_directory(dirname)) << dirname;
@@ -130,7 +129,7 @@ TEST_F(AlarmHelpersTest, testBoostFilesystem) {
   // iterate all files in the directory and store all with the extension in
   // a vector for further processing
   while (it != endit) {
-    if (fs::is_regular_file(*it) && it->path().extension() == ext) {
+    if (fs::is_regular_file(*it)) {
       // Store the dirname + filename
       test_alarms.push_back((dirname.string()) +
                             (it->path().filename().string()));

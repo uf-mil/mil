@@ -86,7 +86,8 @@ class ThrusterMapper(object):
         return np.transpose(wrench_column)
 
     def get_b_matrix(self, srv):
-        return BMatrixResponse(self.B)
+        ''' Return a copy of the B matrix flattened into a 1-D row-major order list '''
+        return BMatrixResponse(self.B.flatten())
 
     @thread_lock(lock)
     def generate_B(self, layout):

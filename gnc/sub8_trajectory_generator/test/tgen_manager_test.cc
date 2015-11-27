@@ -26,29 +26,31 @@ class TGenManagerTest : public ::testing::Test {
  public:
   TGenManagerTest() : _node_handle(new ros::NodeHandle()){};
   boost::shared_ptr<ros::NodeHandle> getNodeHandle() { return _node_handle; }
-  
+
   TGenManagerPtr tgenManagerFactory(int planner_id) {
     AlarmBroadcasterPtr ab(new AlarmBroadcaster(getNodeHandle()));
+    TGenThrusterInfoPtr thruster_info(new TGenThrusterInfo());
     Matrix2_8d test_thruster_ranges;
     test_thruster_ranges.row(0) = -MatrixXd::Ones(1, _CSPACE_DIMS);
     test_thruster_ranges.row(1) = MatrixXd::Ones(1, _CSPACE_DIMS);
-    return TGenManagerPtr(new TGenManager(planner_id, test_thruster_ranges, ab));
+    return TGenManagerPtr(
+        new TGenManager(planner_id, test_thruster_ranges, thruster_info, ab));
   }
 
  private:
   boost::shared_ptr<ros::NodeHandle> _node_handle;
 };
 
-TEST_F(TGenManagerTest, testConstructorRRT) { 
-  TGenManagerPtr test_tgen_manager = tgenManagerFactory(2); 
+TEST_F(TGenManagerTest, testConstructorRRT) {
+  TGenManagerPtr test_tgen_manager = tgenManagerFactory(2);
 }
 
 TEST_F(TGenManagerTest, testConstructorPDST) {
-   TGenManagerPtr test_tgen_manager = tgenManagerFactory(1); 
+  TGenManagerPtr test_tgen_manager = tgenManagerFactory(1);
 }
 
 TEST_F(TGenManagerTest, testSetProblemDefinition) {
-  TGenManagerPtr test_tgen_manager = tgenManagerFactory(2); 
+  TGenManagerPtr test_tgen_manager = tgenManagerFactory(2);
   Sub8StateSpacePtr test_state_space(new Sub8StateSpace());
 
   // Set up start and goal states
@@ -72,7 +74,7 @@ TEST_F(TGenManagerTest, testTrajectoryValidation) {
 }
 
 TEST_F(TGenManagerTest, testStateToWaypoint) {
-  TGenManagerPtr test_tgen_manager = tgenManagerFactory(2); 
+  TGenManagerPtr test_tgen_manager = tgenManagerFactory(2);
   Sub8StateSpacePtr test_state_space(new Sub8StateSpace());
 
   State* state = test_state_space->allocState();
@@ -94,7 +96,7 @@ TEST_F(TGenManagerTest, testStateToWaypoint) {
 }
 
 TEST_F(TGenManagerTest, testWaypointToState) {
-  TGenManagerPtr test_tgen_manager = tgenManagerFactory(2); 
+  TGenManagerPtr test_tgen_manager = tgenManagerFactory(2);
   Sub8StateSpacePtr test_state_space(new Sub8StateSpace());
   State* state = test_state_space->allocState();
 

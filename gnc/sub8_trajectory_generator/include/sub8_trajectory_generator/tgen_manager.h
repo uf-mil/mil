@@ -38,7 +38,7 @@ class TGenManager {
   // param server. Instantiates a SpaceInformation
   // obj and the Planner
   TGenManager(int planner, const Matrix2_8d& cspace_bounds,
-              AlarmBroadcasterPtr& ab);
+              TGenThrusterInfoPtr thruster_info, AlarmBroadcasterPtr& ab);
 
   // Create an ompl::base::ProblemDefinition object for planning a trajectory
   // from start_state to goal_state
@@ -74,7 +74,8 @@ class TGenManager {
   sub8_msgs::Trajectory getTrajectory();
 
  private:
-  // If the planning region needs to grow or shrink based on a traversability map 
+  // If the planning region needs to grow or shrink based on a traversability
+  // map
   // update, can use this method to update the position bounds
   void updatePlanningRegion(double xmin, double xmax, double ymin, double ymax,
                             double zmin, double zmax);

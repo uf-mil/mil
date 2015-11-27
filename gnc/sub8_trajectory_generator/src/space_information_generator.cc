@@ -20,7 +20,7 @@ SpaceInformationPtr SpaceInformationGenerator::generate(
   double prop_step_size;
   double min_control_duration;
   double max_control_duration;
-  ros::param::get("state_validity_checking_res", checking_res);
+  ros::param::get("state_validity_checking_resolution", checking_res);
   ros::param::get("propagation_step_size", prop_step_size);
   ros::param::get("min_control_duration", min_control_duration);
   ros::param::get("max_control_duration", max_control_duration);
@@ -41,7 +41,7 @@ SpaceInformationPtr SpaceInformationGenerator::generate(
   Sub8StateValidityCheckerPtr vc_ptr(new Sub8StateValidityChecker(si_ptr));
   si_ptr->setStateValidityChecker(
       static_cast<ompl::base::StateValidityCheckerPtr>(vc_ptr));
-  si_ptr->setStateValidityCheckingResolution(checking_res); 
+  si_ptr->setStateValidityCheckingResolution(checking_res);
 
   // Create and set the StatePropagator with our ODESolver
   ODESolverPtr ode_solver(new ompl::control::ODEBasicSolver<>(

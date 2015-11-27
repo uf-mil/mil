@@ -31,7 +31,7 @@ typedef boost::shared_ptr<SubDynamics> SubDynamicsPtr;
 // that is passed to the OMPL StatePropagator
 class SubDynamics {
  public:
-  SubDynamics(const TGenThrusterInfoPtr& ti);
+  SubDynamics(TGenThrusterInfoPtr& ti);
   void ode(const oc::ODESolver::StateType& q_t, const oc::Control* c,
            oc::ODESolver::StateType& qdot_t);
   // re-normalize the orientation to be a unit quaternion

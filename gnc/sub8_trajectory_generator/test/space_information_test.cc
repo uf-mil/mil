@@ -50,3 +50,14 @@ TEST_F(SpaceInformationTest, testSpaceInformationGenerator) {
   // Verify that the SpaceInformation object's setup method has been called
   ASSERT_TRUE(si->isSetup());
 }
+
+TEST_F(SpaceInformationTest, testParameters) {
+  double checking_res;
+  double prop_step_size;
+  double min_control_duration;
+  double max_control_duration;
+  EXPECT_TRUE(ros::param::get("state_validity_checking_resolution", checking_res));
+  EXPECT_TRUE(ros::param::get("propagation_step_size", prop_step_size));
+  EXPECT_TRUE(ros::param::get("min_control_duration", min_control_duration));
+  EXPECT_TRUE(ros::param::get("max_control_duration", max_control_duration));
+}
