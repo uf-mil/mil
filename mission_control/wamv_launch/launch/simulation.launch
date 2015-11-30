@@ -1,0 +1,28 @@
+<launch>
+  <!--
+  <node pkg="boat_sim" type="thruster_conn" name="thruster_conn_FR" args="/tmp/thruster_FR 10030" respawn="true"/>
+  <node pkg="boat_sim" type="thruster_conn" name="thruster_conn_FL" args="/tmp/thruster_FL 10031" respawn="true"/>
+  <node pkg="boat_sim" type="thruster_conn" name="thruster_conn_BR" args="/tmp/thruster_BR 10032" respawn="true"/>
+  <node pkg="boat_sim" type="thruster_conn" name="thruster_conn_BL" args="/tmp/thruster_BL 10033" respawn="true"/>
+-->
+
+	<node pkg="murph_sim_model" type="sim.py" name="murph_sim_model">
+		<rosparam param="initial_position">[0, 0, 0]</rosparam>
+		<param name="boat_mass" value="36.2874" type="double"/>
+		<param name="boat_length" value="1.78" type="double"/>
+		<param name="boat_width" value=".88" type="double"/>
+		<param name="boat_height" value=".41" type="double"/>
+		<param name="port_servo_x_offset" value="-0.7239" type="double"/>
+		<param name="port_servo_y_offset" value="-0.3048" type="double"/>
+		<param name="starboard_servo_x_offset" value="-0.7239" type="double"/>
+		<param name="starboard_servo_y_offset" value="-0.3048" type="double"/>
+		<param name="friction_coefficient_forward" value="100.0181" type="double"/>
+		<param name="friction_coefficient_forward_reduction" value="0.76462" type="double"/>
+		<param name="friction_coefficient_lateral" value="200.0" type="double"/>
+		<param name="friction_coefficient_lateral_reduction" value="0.0" type="double"/>
+		<param name="friction_coefficient_rotational" value="100.3321" type="double"/>
+		<param name="friction_coefficient_rotational_reduction" value="0.0" type="double"/>
+	</node>
+
+	<include file="$(find wamv_launch)/launch/gnc.launch"/>
+</launch>
