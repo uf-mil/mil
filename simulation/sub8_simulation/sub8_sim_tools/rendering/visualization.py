@@ -3,6 +3,9 @@ from vispy import gloo
 from vispy import app
 from vispy.util.transforms import translate, rotate
 from sub8_sim_tools.rendering import World
+from std_msgs.msg import String
+import rospy
+import sys
 
 
 class Canvas(app.Canvas):
@@ -32,6 +35,9 @@ class Canvas(app.Canvas):
         if show_window:
             self.show()
 
+        self.keypressPub = rospy.Publisher('keypress', String, queue_size=10)
+
+
     def on_timer(self, event):
         self.update()
 
@@ -48,10 +54,40 @@ class Canvas(app.Canvas):
         self.world.draw(self.view)
 
     def on_key_press(self, event):
+        #Process events on a specific object
+        if(event.text.lower() == 'i'):
+            self.keypressPub.publish("i")
+        elif(event.text.lower() == 'j'):
+            self.keypressPub.publish("j")
+        elif(event.text.lower() == 'k'):
+            self.keypressPub.publish("k")
+        elif(event.text.lower() == 'l'):
+            self.keypressPub.publish("l")
+        elif(event.text.lower() == 'u'):
+            self.keypressPub.publish("u")
+        elif(event.text.lower() == 'o'):
+            self.keypressPub.publish("o")
+
+        if(event.text.lower() == 't'):
+            self.keypressPub.publish("t")
+        elif(event.text.lower() == 'f'):
+            self.keypressPub.publish("f")
+        elif(event.text.lower() == 'g'):
+            self.keypressPub.publish("g")
+        elif(event.text.lower() == 'h'):
+            self.keypressPub.publish("h")
+        elif(event.text.lower() == 'r'):
+            self.keypressPub.publish("r")
+        elif(event.text.lower() == 'v'):
+            self.keypressPub.publish("v")
+
+            
         self.translate = np.array([0.0, 0.0, 0.0])
         self.rotate = np.array([0.0, 0.0, 0.0])
         if(event.text.lower() == 'p'):
             print(repr(self.view))
+        elif(event.text.lower() == 'q'):
+            sys.exit(0)
         elif(event.text.lower() == 'd'):
             self.translate[0] += -0.3
         elif(event.text.lower() == 'a'):
