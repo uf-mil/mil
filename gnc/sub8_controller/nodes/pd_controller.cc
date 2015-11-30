@@ -18,7 +18,7 @@ PDController::PDController() {
   // Wrench Publisher
   wrench_pub = nh.advertise<geometry_msgs::WrenchStamped>("wrench", 1);
   // Target Waypoint
-  waypoint_sub = nh.subscribe("trajectory", 1, &PDController::waypoint_callback, this);
+  waypoint_sub = nh.subscribe("trajectory", 1, &PDController::trajectory_callback, this);
   // Get truth odometry
   truth_sub = nh.subscribe("truth/odom", 1, &PDController::truth_callback, this);
   control_timer = nh.createTimer(ros::Duration(control_period), &PDController::control_loop, this);
@@ -96,7 +96,7 @@ void PDController::control_loop(const ros::TimerEvent &timer_event) {
   wrench_pub.publish(wrench_stamped_msg);
 }
 
-void PDController::append_to_history(controller_deque &history, Eigen::Vector3d &datum, unsigned int length) {
+void PDController::append_to_history(ControllerDeque &history, Eigen::Vector3d &datum, unsigned int length) {
   if (history.size() < length) {
     history.push_back(datum);
   } else if (history.size() > length) {
@@ -108,13 +108,13 @@ void PDController::append_to_history(controller_deque &history, Eigen::Vector3d 
   }
 }
 
-Eigen::Vector3d PDController::estimate_integral(controller_deque &history) {
+Eigen::Vector3d PDController::estimate_integral(ControllerDeque &history) {
   /* Trapezoidal integration */
   Eigen::Vector3d integral;
   Eigen::Vector3d current;
   Eigen::Vector3d previous;
 
-  for (controller_deque::iterator it = history.begin() + 1; it != history.end(); ++it) {
+  for (ControllerDeque::iterator it = history.begin() + 1; it != history.end(); ++it) {
     current = *it;
     previous = *(it - 1);
     integral += (current + previous) * control_period / 2.0;
@@ -122,14 +122,14 @@ Eigen::Vector3d PDController::estimate_integral(controller_deque &history) {
   return integral;
 }
 
-Eigen::Vector3d PDController::estimate_derivative(controller_deque &history) {
+Eigen::Vector3d PDController::estimate_derivative(ControllerDeque &history) {
   /* Forward difference to compute derivative */
   Eigen::Vector3d gradient;
   Eigen::Vector3d sum_difference;
   Eigen::Vector3d current;
   Eigen::Vector3d previous;
 
-  for (controller_deque::iterator it = history.begin() + 1; it != history.end(); ++it) {
+  for (ControllerDeque::iterator it = history.begin() + 1; it != history.end(); ++it) {
     current = *it;
     previous = *(it - 1);
     sum_difference += (current - previous) / control_period;
@@ -179,7 +179,7 @@ void PDController::truth_callback(const nav_msgs::Odometry::ConstPtr &odom_msg) 
   current_state.angular_velocity << twist.tail<3>();
 }
 
-void PDController::waypoint_callback(const sub8_msgs::Trajectory::ConstPtr &target_pose_msg) {
+void PDController::trajectory_callback(const sub8_msgs::Trajectory::ConstPtr &target_pose_msg) {
   /* Callback on target waypoint */
   Eigen::Affine3d target_pose_matrix;
   Eigen::Matrix<double, 6, 1> twist;
