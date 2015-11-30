@@ -22,8 +22,8 @@ from sensor_msgs.msg import Image, CameraInfo
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, Vector3, Quaternion
 
-from vector import v, V
-import vector
+from sim_math_helpers import v, V
+import sim_math_helpers
 
 @apply
 class GLMatrix(object):
@@ -405,11 +405,11 @@ class Camera(object):
                      t,
                      "/" + self.name,
                      "/base_link")
-		
+        
         if not self.image_pub.get_num_connections():
             glViewport(0, 0, oldwidth, oldheight)
             return
-		
+        
         self.world.draw()
         
         x = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, outputType=None)
@@ -553,7 +553,7 @@ class Capsules(object):
             x.setPosition((start+end)/2 + v(random.gauss(0, .01), random.gauss(0, .01), random.gauss(0, .01)))
             a = (end - start).unit()
             b = v(0, 0, 1)
-            x.setQuaternion(vector.axisangle_to_quat((a%b).unit(), -math.acos(a*b)))
+            x.setQuaternion(sim_math_helpers.axisangle_to_quat((a%b).unit(), -math.acos(a*b)))
         
         self.color = color
         self.radius = radius

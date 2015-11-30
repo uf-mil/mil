@@ -1,4 +1,5 @@
-from murph_sim_rendering import threed, vector, util
+from murph_sim_rendering import sim_rendering_helpers as srh
+from murph_sim_rendering import sim_math_helpers as smh
 from OpenGL.GL import *
 from OpenGL.GLU import *
 

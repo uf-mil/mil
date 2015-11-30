@@ -1,4 +1,4 @@
-from murph_sim_rendering import threed, vector, util
+from murph_sim_rendering import sim_rendering_helpers as srh
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
@@ -15,7 +15,7 @@ class Buoys(object):
     def draw(self):
         q = gluNewQuadric()
         #for pos, color, size in self.buoys:
-        with threed.GLMatrix:
+        with srh.GLMatrix:
             glTranslate(*self.buoys[0])
             glColor3f(*self.buoys[1])
             gluSphere(q, self.buoys[2], 30, 15)

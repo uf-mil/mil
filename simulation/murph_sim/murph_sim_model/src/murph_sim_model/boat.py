@@ -1,4 +1,4 @@
-from murph_sim_rendering import threed, vector, util
+from murph_sim_rendering import sim_rendering_helpers as srh
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
@@ -10,27 +10,27 @@ class Boat(object):
         self.vectors = []
     
     def draw(self):
-        with threed.GLMatrix:
-            threed.rotate_to_body(self.body)
+        with srh.GLMatrix:
+            srh.rotate_to_body(self.body)
             
             q = gluNewQuadric()
-            with threed.GLMatrix:
+            with srh.GLMatrix:
                 glTranslate(+.2, 0, 0)
                 glColor3f(0, 1, 0)
                 gluSphere(q, 0.5, 40, 20)
-            with threed.GLMatrix:
+            with srh.GLMatrix:
                 glTranslate(-.2, 0, 0)
                 glColor3f(1, 0, 0)
                 gluSphere(q, 0.5, 40, 20)
-            with threed.GLMatrix:
+            with srh.GLMatrix:
                 glTranslate(+.4, -.2, +.3)
                 glColor3f(0, 0, 0)
                 gluSphere(q, 0.1, 40, 20)
-            with threed.GLMatrix:
+            with srh.GLMatrix:
                 glTranslate(+.4, +.2, +.3)
                 glColor3f(0, 0, 0)
                 gluSphere(q, 0.1, 40, 20)
-            with threed.GLMatrix:
+            with srh.GLMatrix:
                 glTranslate(0, 0, +.5)
                 glColor3f(0, 1, 0)
                 gluSphere(q, 0.1, 20, 10)
