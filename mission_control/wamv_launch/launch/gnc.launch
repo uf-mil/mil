@@ -1,6 +1,28 @@
 <launch>
   <node pkg="thrust_mapper" type="p_driver.py" name="primitive_driver" output="screen">
+    <!-- Parameters used to set the thruster locations relative to the center of gravity -->
     <rosparam param="thruster_one_cog">[-0.7239, 0.3048]</rosparam>
     <rosparam param="thruster_two_cog">[-0.7239, -0.3048]</rosparam>
+  </node>
+
+  <node name="pose_controller" pkg="position_control" type="pose_controller.py">
+    <!-- Parameters used to tune control gains -->
+      <rosparam>{p_x: 0, i_x: 0, d_x: 0, p_y: 0, i_y: 0, d_y: 0, p_z: 0, i_z: 0, d_z: 0}</rosparam>
+  </node>
+
+  <node pkg="joystick_control" type="joystick_control_node" name="joystick_wrench"/>
+  <!-- Parameters used to tune the remote control -->
+  <param name="axis_x_force" value="1" type="int"/>
+  <param name="axis_y_force" value="0" type="int"/>
+  <param name="axis_torque" value="3" type="int"/>
+  <param name="force_scale" value="100" type="double"/>
+  <param name="torque_scale" value="35" type="double"/>
+
+  <!-- Joy node -->
+  <node respawn="true" pkg="xbox_joy_node"
+        type="joy_node" name="joy_node" >
+    <param name="dev" type="string" value="/dev/input/js1" />
+    <param name="deadzone" value="0.12" />
+    <param name="autorepeat_rate" value="5"/>
   </node>
 </launch>
