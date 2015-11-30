@@ -54,9 +54,11 @@ class ThrusterMapper(object):
         '''Update the physical thruster layout.
         This should only be done in a thruster-out event
         '''
+        rospy.logwarn("Layout in update...")
         self.thruster_layout = wait_for_param('busses')
         self.B = self.generate_B(self.thruster_layout)
         self.min_thrust, self.max_thrust = self.get_ranges()
+        rospy.logwarn("Layout updated")
         return UpdateThrusterLayoutResponse()
 
     def get_ranges(self):
@@ -68,6 +70,7 @@ class ThrusterMapper(object):
         rospy.logwarn("Waiting for service {}".format(range_service))
         rospy.wait_for_service(range_service)
         rospy.logwarn("Got {}".format(range_service))
+
         range_service_proxy = rospy.ServiceProxy(range_service, ThrusterInfo)
         thruster_range = range_service_proxy(0)
 

@@ -7,14 +7,15 @@ find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs sub8_msgs)
 find_package(OMPL REQUIRED)
 find_package(Boost REQUIRED)
 
-
 set(catkin_LIBRARIES
 	${catkin_LIBRARIES}
 )
+
 catkin_package(
    	CATKIN_DEPENDS roscpp sub8_msgs
    	DEPENDS system_lib
 )
+
 include_directories(
   	include/${PROJECT_NAME}
  	${catkin_INCLUDE_DIRS}

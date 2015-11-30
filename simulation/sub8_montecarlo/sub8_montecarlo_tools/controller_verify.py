@@ -4,15 +4,15 @@
 import rospy
 import numpy as np
 import time
-import geometry_msgs.msg as geometry_msgs
 import sub8_ros_tools as sub8_utils
-from sub8_msgs.msg import Trajectory, Waypoint
 import sub8_ros_tools as sub8_utils
-from sub8_simulation.srv import SimSetPose
-import nav_msgs.msg as nav_msgs
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # flake8: noqa
-from scipy import cluster
+
+import geometry_msgs.msg as geometry_msgs
+import nav_msgs.msg as nav_msgs
+from sub8_simulation.srv import SimSetPose
+from sub8_msgs.msg import Trajectory, Waypoint
 
 
 class VerifyController(object):

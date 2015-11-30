@@ -49,7 +49,8 @@ class TestAlarmIntegration(unittest.TestCase):
         # TODO: Raise if waiting fails
         rospy.wait_for_service('fail_thruster', timeout=5.0)
         fail_thruster_proxy = rospy.ServiceProxy('fail_thruster', FailThruster)
-        fail_thruster_proxy(thruster_to_fail)
+        fail_thruster_proxy(thruster_to_fail)  # This will raise an alarm!
+        rospy.sleep(0.2)  # Wait some time for the update to finish
 
         # Spend up to 0.2 seconds waiting for a response (Bide time until the mapper finishes reacting)
         # Looping because mapper ignores wrenches until it finishes remapping thrusters
