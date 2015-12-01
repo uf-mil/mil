@@ -1,0 +1,1 @@
+from goal_client import goal_proxy

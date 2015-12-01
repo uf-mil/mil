@@ -14,6 +14,7 @@ add_message_files(
   PoseTwist.msg
   Coordinates.msg
   PoseTwistStamped.msg
+  Waypoint.msg
 )
 
 generate_messages(

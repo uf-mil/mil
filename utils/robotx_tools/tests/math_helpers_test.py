@@ -2,8 +2,8 @@
 import unittest
 import numpy as np
 from geometry_msgs.msg import Quaternion
-from math_helpers import quat_to_euler, euler_to_quat, normalize
-from math_helpers import compose_transformation
+from robotx_tools import quat_to_euler, euler_to_quat, normalize
+from robotx_tools import compose_transformation
 
 
 class TestROSTools(unittest.TestCase):
