@@ -77,13 +77,13 @@ Prize: Glory, Jake might get you ice cream
 * [ ] Come up with a good rostest framework/process for using full simulation
     * [ ] Should we break it up into little bits? Or something
 * [ ] Scene-graph system for simulator
-* [ ] C++ Implementation of alarms
+* [x] C++ Implementation of alarms -- Patrick
 * [ ] Add visualization to the monte-carlo engine
 * [ ] Implement simulated integration tests for all systems
 * [ ] Add monte-carlo optimization for controller
 * [x] Add visualization to the monte-carlo engine
 * [ ] Add monte-carlo verification (And many monte-carlo test cases)
-    * [ ] Controller
+    * [x] Controller
     * [ ] Vision
     * [ ] Motion planning
     * [ ] Alarms
@@ -94,16 +94,15 @@ Prize: Glory, Jake might get you ice cream
     * [ ] Alarm for bus undervoltage
     * [ ] Alarm for thruster temperature
     * [ ] Alarm and response for DVL track lost (Should we even do anything?)
-* [ ] Unit-tests for all of the tools that are not unit-tested
+* [ ] Unit-tests for all of the tools that are not yet unit-tested
 * [ ] Add an install_dependencies.sh file to the repo, and make SemaphoreCI automatically run it
 * [ ] A script to run on Semaphore to compare performance metrics for current build vs pull
     i.e. if build[n]'s controller and vision performed better than build[n + 1], then something may have gone wrong, and we should be cautious pulling those changes
-* [ ] Add widgets to the simulator
+* [ ] Add "widgets" to the simulator
 * [ ] Simulated shadows
 * [ ] CUDA water physics for Simul8
     * [ ] Or better water resistance at all
 * [x] Multiple light sources -- Tess
-
 
 ## Machine Learning
 * [ ] Toolset for object recognition
