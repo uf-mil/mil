@@ -43,6 +43,7 @@ Topics that appear to be common to essentially every monocular SLAM implementati
     * The results are extremely noisy
     * Can't make a useful map/recover scene depth
     * No way to reason about the quality of the track produced
+    * *Each relative pose is known only to a translational scaling!!!!*
 
 ## General Knowledge
 * [Review of Epipolar geometry](https://www.robots.ox.ac.uk/~vgg/hzbook/hzbook1/HZepipolar.pdf)
@@ -81,3 +82,7 @@ Topics that appear to be common to essentially every monocular SLAM implementati
     * (Is this a good idea?)
 
 * [SBA](http://users.ics.forth.gr/~lourakis/sba/) - Spare Bundle Adjustment library (C++)
+
+* [Theia](http://www.theia-sfm.org/applications.html) - Open Structure from Motion library
+
+* [Ceres Solver](http://ceres-solver.org/nnls_tutorial.html#introduction) - Google's very own "not-your-mother's-solver" NLLS/general minimization solver
