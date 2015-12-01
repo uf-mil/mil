@@ -28,6 +28,7 @@
 * Tribal Knowledge
     * [[SSH into the sub]]
     * [[ROS things]]
+    * [[Continuous Integration]]
     * [[Git]]
     * [[Glossary]]
 * Old Notes
