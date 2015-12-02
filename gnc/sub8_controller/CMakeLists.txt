@@ -45,8 +45,8 @@ include_directories(
   include
 )
 
-# add_executable(pd_controller nodes/pd_controller.cc)
-# target_link_libraries(pd_controller ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+add_executable(pd_controller nodes/pd_controller.cc)
+target_link_libraries(pd_controller ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 # add_executable(mpc nodes/mpc.cc)
 # target_link_libraries(mpc ${catkin_LIBRARIES} ${Boost_LIBRARIES})
