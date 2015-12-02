@@ -8,7 +8,6 @@
 * Plans
     * [[Architecture]]
     * [[Implementation Plans]]
-        * [[Imaging Sonar]]
         * [[Visual SLAM]]
         * [[Perception Stack]]
     * [[Mission Scheduler]]
