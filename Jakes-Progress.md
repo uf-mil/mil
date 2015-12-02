@@ -86,3 +86,4 @@ Not Sub:
 
     - [ ] Call in to coast-to-coast AM next time up at 3AM (Ralph)
     - [ ] Talk to Paracosm when we have SLAM working
+    - [ ] Give money to Jason
