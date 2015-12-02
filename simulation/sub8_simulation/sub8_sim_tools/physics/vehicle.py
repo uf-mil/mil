@@ -31,8 +31,8 @@ class Sub8(Box):
         self.radius = max((lx, ly, lz)) * 0.5  # For spherical approximation
         volume = lx * ly * lz * 0.25
         # weight = 32.75  # kg
-        weight = 25.0  # kg
-        density = weight / volume
+        self.weight = 25.0  # kg
+        density = self.weight / volume
         super(self.__class__, self).__init__(world, space, position, density, lx, ly, lz)
 
         self.truth_odom_pub = rospy.Publisher('truth/odom', Odometry, queue_size=1)
@@ -173,9 +173,11 @@ class Sub8(Box):
 
     def publish_imu(self):
         """Publishes imu sensor information - orientation, angular velocity, and linear acceleration"""
+        noise = np.random.random(3)
+
         pose_matrix = np.transpose(self.pose)
-        linear_vel = self.body.getRelPointVel(self.dvl_position)
-        angular_vel = self.body.getAngularVel()
+        linear_acc = (np.array(self.last_force) / self.weight) + noise
+        angular_vel = self.body.getAngularVel() + noise
         quaternion = tf.transformations.quaternion_from_matrix(pose_matrix)
        
         header = Header(
@@ -183,20 +185,17 @@ class Sub8(Box):
             frame_id='/world'
         )
 
-        linear=geometry.Vector3(*linear_vel)
+        
+
+        linear=geometry.Vector3(*linear_acc)
         angular=geometry.Vector3(*angular_vel)
 
-        noise = np.random.random(3)
-
-
-        covariance = [noise[0], 0., 0.,
-                      0., noise[1], 0.,
-                      0., 0., noise[2]]
+        covariance = [-1, 0., 0.,
+                      0., 0., 0.,
+                      0., 0., 0.]
 
         imu_msg = Imu(
             header=header,
-            orientation=geometry.Quaternion(*quaternion),
-            orientation_covariance=covariance,
             angular_velocity=angular,
             angular_velocity_covariance=covariance,
             linear_acceleration=linear,
@@ -221,7 +220,7 @@ class Sub8(Box):
 
         dvl_msg = DVLSim(
             twist=twist,
-            dvl_vel=tuple(self.get_dvl_vel())
+            dvl_vel=tuple(self.get_vel_dvl_body())
 
         )
 
@@ -281,16 +280,16 @@ class Sub8(Box):
         return 0
 
 
-    def get_dvl_vel(self):
+    def get_vel_dvl_body(self):
         """Returns array of 4 components of the vehicle's velocities based off of the dvl ray vectors"""
         dvl_ray_1 = np.array([0.866, -.5, -1])
         dvl_ray_2 = np.array([0.866, .5, -1])
         dvl_ray_3 = np.array([-0.866, .5, -1])
         dvl_ray_4 = np.array([-0.866, -.5, -1])
 
-        vel_sub_world = self.body.vectorFromWorld(self.body.getRelPointVel(self.dvl_position))
+        vel_dvl_body = self.body.vectorFromWorld(self.body.getRelPointVel(self.dvl_position))
         
-        return np.array([np.dot(dvl_ray_1, vel_sub_world), 
-                        np.dot(dvl_ray_2, vel_sub_world), 
-                        np.dot(dvl_ray_3, vel_sub_world), 
-                        np.dot(dvl_ray_4, vel_sub_world)])
+        return np.array([np.dot(dvl_ray_1, vel_dvl_body), 
+                        np.dot(dvl_ray_2, vel_dvl_body), 
+                        np.dot(dvl_ray_3, vel_dvl_body), 
+                        np.dot(dvl_ray_4, vel_dvl_body)])

@@ -37,7 +37,6 @@ class Canvas(app.Canvas):
 
         self.keypressPub = rospy.Publisher('keypress', String, queue_size=10)
 
-
     def on_timer(self, event):
         self.update()
 
@@ -54,64 +53,63 @@ class Canvas(app.Canvas):
         self.world.draw(self.view)
 
     def on_key_press(self, event):
-        #Process events on a specific object
+        # Process events on a specific object
         if(event.text.lower() == 'i'):
             self.keypressPub.publish("i")
-        elif(event.text.lower() == 'j'):
+        if(event.text.lower() == 'j'):
             self.keypressPub.publish("j")
-        elif(event.text.lower() == 'k'):
+        if(event.text.lower() == 'k'):
             self.keypressPub.publish("k")
-        elif(event.text.lower() == 'l'):
+        if(event.text.lower() == 'l'):
             self.keypressPub.publish("l")
-        elif(event.text.lower() == 'u'):
+        if(event.text.lower() == 'u'):
             self.keypressPub.publish("u")
-        elif(event.text.lower() == 'o'):
+        if(event.text.lower() == 'o'):
             self.keypressPub.publish("o")
 
         if(event.text.lower() == 't'):
             self.keypressPub.publish("t")
-        elif(event.text.lower() == 'f'):
+        if(event.text.lower() == 'f'):
             self.keypressPub.publish("f")
-        elif(event.text.lower() == 'g'):
+        if(event.text.lower() == 'g'):
             self.keypressPub.publish("g")
-        elif(event.text.lower() == 'h'):
+        if(event.text.lower() == 'h'):
             self.keypressPub.publish("h")
-        elif(event.text.lower() == 'r'):
+        if(event.text.lower() == 'r'):
             self.keypressPub.publish("r")
-        elif(event.text.lower() == 'v'):
+        if(event.text.lower() == 'v'):
             self.keypressPub.publish("v")
 
-            
         self.translate = np.array([0.0, 0.0, 0.0])
         self.rotate = np.array([0.0, 0.0, 0.0])
         if(event.text.lower() == 'p'):
             print(repr(self.view))
-        elif(event.text.lower() == 'q'):
+        if(event.text.lower() == 'q'):
             sys.exit(0)
-        elif(event.text.lower() == 'd'):
+        if(event.text.lower() == 'd'):
             self.translate[0] += -0.3
-        elif(event.text.lower() == 'a'):
+        if(event.text.lower() == 'a'):
             self.translate[0] += 0.3
-        elif(event.text.lower() == ' '):
+        if(event.text.lower() == ' '):
             self.translate[1] += -0.3
-        elif(event.text.lower() == 'c'):
+        if(event.text.lower() == 'c'):
             self.translate[1] += 0.3
-        elif(event.text.lower() == 's'):
+        if(event.text.lower() == 's'):
             self.translate[2] += -0.3
-        elif(event.text.lower() == 'w'):
+        if(event.text.lower() == 'w'):
             self.translate[2] += 0.3
 
-        elif(event.text == 'x'):
+        if(event.text == 'x'):
             self.rotate += [2, 0, 0]
-        elif(event.text == 'X'):
+        if(event.text == 'X'):
             self.rotate += [-2, 0, 0]
-        elif(event.text == 'y'):
+        if(event.text == 'y'):
             self.rotate += [0, 2, 0]
-        elif(event.text == 'Y'):
+        if(event.text == 'Y'):
             self.rotate += [0, -2, 0]
-        elif(event.text == 'z'):
+        if(event.text == 'z'):
             self.rotate += [0, 0, 2]
-        elif(event.text == 'Z'):
+        if(event.text == 'Z'):
             self.rotate += [0, 0, -2]
 
         self.view = self.view.dot(
@@ -120,7 +118,6 @@ class Canvas(app.Canvas):
             rotate(self.rotate[2], (0, 0, 1))
         )
         self.view = self.view.dot(translate(list(self.translate)))
-
 
 if __name__ == '__main__':
     c = Canvas()
