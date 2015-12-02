@@ -6,6 +6,8 @@
 * Software Dependencies
     * [[Open Motion Planning Library (OMPL)]]
     * [[Motor Drivers]]
+    * [[Pygame]]
+
 * Implementation Details
     * [[Goal Manager]]
 
