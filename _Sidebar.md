@@ -3,6 +3,7 @@
     * [[Adding to the Wiki]]
     * [[Code Policy]]
     * [[Architecture]]
+    * [[Helpful Reading]]
 * Software Dependencies
     * [[Open Motion Planning Library (OMPL)]]
     * [[Motor Drivers]]
