@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package>
+  <name>navigator_launch</name>
+  <version>0.0.0</version>
+  <description>The navigator_launch package</description>
+  <maintainer email="zach.a.goins@gmail.com">zachgoins</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export>
+  </export>
+</package>

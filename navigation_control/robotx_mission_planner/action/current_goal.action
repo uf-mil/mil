@@ -1,8 +1,0 @@
-#goal definition
-robotx_msgs/Waypoint waypoint
----
-#result definition
-bool flag
----
-#feedback
-robotx_msgs/PoseTwist current_pose

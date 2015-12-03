@@ -1,5 +1,0 @@
-<launch>
-	<include file="$(find wamv_launch)/launch/gnc.launch"/>
-	<include file="$(find wamv_launch)/launch/motor_controller.launch"/>
-	<include file="$(find wamv_launch)/launch/xbox_controller.launch"/>
-</launch>
