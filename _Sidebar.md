@@ -7,6 +7,7 @@
     * [[Open Motion Planning Library (OMPL)]]
     * [[Motor Drivers]]
     * [[Pygame]]
+    * [[PyODE]]
 * Implementation Details
     * [[Goal Manager]]
     * [[Position Controller]]
