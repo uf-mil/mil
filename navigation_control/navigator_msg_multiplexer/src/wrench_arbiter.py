@@ -44,9 +44,9 @@ import rospy
 import roslib
 import numpy,math,tf,threading
 from geometry_msgs.msg import WrenchStamped
-from control_arbiter.srv import arbiter
+from navigator_msg_multiplexer.srv import wrench_arbiter
 
-rospy.init_node('control_arbiter')
+rospy.init_node('wrench_arbiter')
 
 class control_arb(object):
     # Base class for whatever you are writing
@@ -58,7 +58,7 @@ class control_arb(object):
         self.control = "rc"
 
         self.wrench_pub = rospy.Publisher("/wrench/cmd", WrenchStamped, queue_size = 1)
-        rospy.Service('change_wrench', arbiter, self.change_wrench)
+        rospy.Service('change_wrench', wrench_arbiter, self.change_wrench)
         rospy.Subscriber("/wrench/rc", WrenchStamped, self.rc_cb)
         rospy.Subscriber("/wrench/autonomous", WrenchStamped, self.autonomous_cb)
        
@@ -69,6 +69,7 @@ class control_arb(object):
         self.autonomous_wrench = msg
 
     def change_wrench(self,req):
+        rospy.loginfo("Server recieved request for wrench control change - " + req.str)
         if req.str == "rc":
             self.control = "rc"
             return True

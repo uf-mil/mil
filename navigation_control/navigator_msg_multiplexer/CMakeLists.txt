@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
 
  add_service_files(
    FILES
-   arbiter.srv
+   wrench_arbiter.srv
  )
 
 generate_messages(

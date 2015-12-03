@@ -70,7 +70,7 @@ class P_Driver(object):
         # ROS data
         self.left_pub = rospy.Publisher("/left_motor/cmd" , Command, queue_size = 1)
         self.right_pub = rospy.Publisher("/right_motor/cmd" , Command, queue_size = 1)
-        rospy.Subscriber("/wrench", WrenchStamped, self.wrench_cb)
+        rospy.Subscriber("/wrench/cmd", WrenchStamped, self.wrench_cb)
 
         # list of  thruster positions center of gravity offsets
         self.positions = positions

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>navigator_control</name>
+  <name>navigator_controller</name>
   <version>1.0.0</version>
   <description>The position_control package</description>
   <maintainer email="zachgoins@gmail.com">zachgoins</maintainer>

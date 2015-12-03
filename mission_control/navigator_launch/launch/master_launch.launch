@@ -1,5 +1,4 @@
 <launch>
 	<include file="$(find navigator_launch)/launch/gnc.launch"/>
 	<include file="$(find navigator_launch)/launch/motor_controller.launch"/>
-	<include file="$(find navigator_launch)/launch/xbox_controller.launch"/>
 </launch>

@@ -1,9 +1,11 @@
 // %Tag(FULL)%
 // %Tag(INCLUDE)%
 #include <ros/ros.h>
+#include <ros/console.h>
 #include <geometry_msgs/WrenchStamped.h>
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/Joy.h>
+#include "navigator_msg_multiplexer/wrench_arbiter.h"
 // %EndTag(INCLUDE)%
 
 // %Tag(CLASSDEF)%
@@ -23,6 +25,8 @@ class JoystickWrench
      ros::Publisher wrench_pub_;
      ros::Subscriber joy_sub_;
      ros::Publisher vel_pub_;
+     ros::ServiceClient client;
+     bool wrench_controller;
 
 };
 // %EndTag(CLASSDEF)%
@@ -32,13 +36,12 @@ JoystickWrench::JoystickWrench()
 // %Tag(Param)%
    nh_.param("force_scale", force_scale_, force_scale_);
    nh_.param("torque_scale", torque_scale_, torque_scale_);
-   nh_.param("axis_x_force", axis_x_force_, axis_x_force_);
-   nh_.param("axis_y_force", axis_y_force_, axis_y_force_);
-   nh_.param("axis_torque", axis_torque_, axis_torque_);
 // %EndTag(PARAMS)% 
 
 // %Tag(PUB)%
    wrench_pub_=nh_.advertise<geometry_msgs::WrenchStamped>("/wrench/rc", 1);
+   client = nh_.serviceClient<navigator_msg_multiplexer::wrench_arbiter>("change_wrench");
+   wrench_controller = false;
 // %EndTag(PUB)%
 
 // %Tag(SUB)%
@@ -51,11 +54,37 @@ JoystickWrench::JoystickWrench()
 void JoystickWrench::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 {
 
+
   //Motor::Wrench wrench
   geometry_msgs::WrenchStamped wrench;
-  wrench.wrench.force.x = force_scale_*joy->axes[axis_x_force_];
-  wrench.wrench.force.y = -1*force_scale_*joy->axes[axis_y_force_];
-  wrench.wrench.torque.z = -1*torque_scale_*joy->axes[axis_torque_];
+  navigator_msg_multiplexer::wrench_arbiter w_control;
+  wrench.wrench.force.x = force_scale_*joy->axes[1];
+  wrench.wrench.force.y = -1*force_scale_*joy->axes[0];
+  wrench.wrench.torque.z = -1*torque_scale_*joy->axes[3];
+  
+  if (joy->buttons[7] == 1)
+  {
+    wrench_controller = !(wrench_controller);
+    if (wrench_controller == false)
+    {
+      w_control.request.str = "rc";
+      if (!client.call(w_control))
+      {
+        ROS_ERROR("Failed to change controller");
+      }
+    }
+    if (wrench_controller == true)
+    {
+      w_control.request.str = "autonomous";
+      if (!client.call(w_control))
+      {
+        ROS_ERROR("Failed to change controller");
+      }
+    }
+
+    
+    sleep(1);
+  }
   wrench_pub_.publish(wrench);
 
 }

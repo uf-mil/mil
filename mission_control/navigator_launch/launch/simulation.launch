@@ -17,5 +17,5 @@
 		<param name="friction_coefficient_rotational_reduction" value="0.0" type="double"/>
 	</node>
 
-	<include file="$(find wamv_launch)/launch/gnc.launch"/>
+	<include file="$(find navigator_launch)/launch/gnc.launch"/>
 </launch>

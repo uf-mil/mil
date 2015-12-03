@@ -1,4 +1,4 @@
-from murph_sim_rendering import sim_rendering_helpers as srh
+from navigator_sim_rendering import sim_rendering_helpers as srh
 from OpenGL.GL import *
 from OpenGL.GLU import *
 

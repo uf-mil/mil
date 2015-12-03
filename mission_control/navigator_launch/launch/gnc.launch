@@ -10,11 +10,10 @@
       <rosparam>{p_x: 0, i_x: 0, d_x: 0, p_y: 0, i_y: 0, d_y: 0, p_z: 0, i_z: 0, d_z: 0}</rosparam>
   </node>
 
+  <node name="wrench_arbiter" pkg="navigator_msg_multiplexer" type="wrench_arbiter.py"/>
+
   <node pkg="joystick_control" type="joystick_control_node" name="joystick_wrench"/>
   <!-- Parameters used to tune the remote control -->
-  <param name="axis_x_force" value="1" type="int"/>
-  <param name="axis_y_force" value="0" type="int"/>
-  <param name="axis_torque" value="3" type="int"/>
   <param name="force_scale" value="100" type="double"/>
   <param name="torque_scale" value="35" type="double"/>
 

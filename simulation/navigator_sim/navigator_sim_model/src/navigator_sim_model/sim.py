@@ -32,7 +32,6 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from twisted.internet import protocol, reactor, task
 import roslib
-roslib.load_manifest('murph_sim_model')
 
 import tf
 from nav_msgs.msg import Odometry
@@ -40,15 +39,15 @@ from geometry_msgs.msg import Point, Vector3, Quaternion, WrenchStamped
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Float64
 from std_msgs.msg import Header
-from murph_sim_rendering import sim_rendering_helpers as srh
-from murph_sim_rendering import sim_math_helpers as smh
-from murph_sim_model import lidar, Boat, Buoys
-from murph_sim_rendering.sim_math_helpers import v, V
+from navigator_sim_rendering import sim_rendering_helpers as srh
+from navigator_sim_rendering import sim_math_helpers as smh
+from navigator_sim_model import lidar, Boat, Buoys
+from navigator_sim_rendering.sim_math_helpers import v, V
 from roboteq_msgs.msg import *
-from murph_sim_model import devices
+from navigator_sim_model import devices
 
 
-rospy.init_node('murph_sim_model')
+rospy.init_node('navigator_sim_model')
 
 initial_position = rospy.get_param('~initial_position')
 boat_mass =  rospy.get_param('~boat_mass')
@@ -262,7 +261,7 @@ def setup(world, body, mass, space, g_world, body_geom, i, c1, boat_model):
     body.setQuaternion(smh.axisangle_to_quat(v(0, 0, 1), math.pi))
     #body.setQuaternion(smh.axisangle_to_quat(v(0, 0, 1), 0))
     body_geom.setBody(body)
-    lake_mesh = srh.mesh_from_obj(roslib.packages.resource_file('murph_sim_model', 'models', 'lake.obj'))
+    lake_mesh = srh.mesh_from_obj(roslib.packages.resource_file('navigator_sim_model', 'models', 'lake.obj'))
     lake_geom = ode.GeomTriMesh(lake_mesh.ode_trimeshdata, space)
 
     # TODO: Add obstacles here
@@ -275,7 +274,7 @@ def setup(world, body, mass, space, g_world, body_geom, i, c1, boat_model):
     geoms = []
     buoy_list = [v(54.5, -33.9, 0), v(53.5, -37.4, 0), v(38.0, -29.6, 0), v(35.7, -33.5, 0)]
     for pos in buoy_list:
-        newbuoy_mesh = srh.mesh_from_obj(roslib.packages.resource_file('murph_sim_model', 'models', 'green_buoy.obj'))
+        newbuoy_mesh = srh.mesh_from_obj(roslib.packages.resource_file('navigator_sim_model', 'models', 'green_buoy.obj'))
         newbuoy_mesh = newbuoy_mesh.translate(pos)
         g_world.objs.append(newbuoy_mesh)
         geoms.append(ode.GeomTriMesh(newbuoy_mesh.ode_trimeshdata, space))

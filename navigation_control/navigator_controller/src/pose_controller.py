@@ -115,7 +115,7 @@ class PID_controller:
         self.desired_state_set = False
 
         # ROS components
-        self.controller_wrench = rospy.Publisher('wrench', WrenchStamped, queue_size=1)
+        self.controller_wrench = rospy.Publisher('wrench/autonomous', WrenchStamped, queue_size=1)
         #self.kill_listener = KillListener(self.set_kill, self.clear_kill)
         rospy.Subscriber('/trajectory', PoseTwistStamped, self.trajectory_callback)
         rospy.Subscriber('/odom', Odometry, self.odom_callback)
