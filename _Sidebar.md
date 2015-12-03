@@ -11,6 +11,9 @@
 * Implementation Details
     * [[Goal Manager]]
     * [[Position Controller]]
+    * [[Thruster Allocation]]
+    * [[Message Multiplexer]]
+    * [[Simulation]]
 
 
 
