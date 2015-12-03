@@ -25,7 +25,7 @@ include_directories(
 
 
 add_executable(
-	trajectory_generator 
+	${PROJECT_NAME} 
 	src/trajectory_generator.cc 
 	src/sub8_state_space.cc
 	src/sub8_space_information.cc
@@ -33,9 +33,14 @@ add_executable(
 	src/sub8_tgen_manager.cc
 )
 
-target_link_libraries(trajectory_generator
+target_link_libraries(${PROJECT_NAME}
 	${catkin_LIBRARIES}
 	${OMPL_LIBRARIES}
+)
+
+add_dependencies(
+  ${PROJECT_NAME}
+  sub8_msgs_generate_msgs_cpp
 )
 
 catkin_add_gtest(${PROJECT_NAME}_unit_tests 
