@@ -9,6 +9,7 @@
     * [[Pygame]]
 * Implementation Details
     * [[Goal Manager]]
+    * [[Position Controller]]
 
 
 
