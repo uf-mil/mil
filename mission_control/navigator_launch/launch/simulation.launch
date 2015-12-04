@@ -6,7 +6,7 @@
 		<param name="boat_width" value=".88" type="double"/>
 		<param name="boat_height" value=".41" type="double"/>
 		<param name="port_servo_x_offset" value="-0.7239" type="double"/>
-		<param name="port_servo_y_offset" value="-0.3048" type="double"/>
+		<param name="port_servo_y_offset" value="0.3048" type="double"/>
 		<param name="starboard_servo_x_offset" value="-0.7239" type="double"/>
 		<param name="starboard_servo_y_offset" value="-0.3048" type="double"/>
 		<param name="friction_coefficient_forward" value="100.0181" type="double"/>

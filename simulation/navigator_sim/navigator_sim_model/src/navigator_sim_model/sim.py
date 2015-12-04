@@ -136,7 +136,6 @@ class Sim(object):
         friction_force_pitch=self.friction_coefficient_rotational*angular_velocity[1]-self.friction_coefficient_rotational_reduction*(-1.0*pow(angular_velocity[1],2) if angular_velocity[1]<0.0 else pow(angular_velocity[1],2))
         friction_force_yaw=self.friction_coefficient_rotational*angular_velocity[2]-self.friction_coefficient_rotational_reduction*(-1.0*pow(angular_velocity[2],2) if angular_velocity[2]<0.0 else pow(angular_velocity[2],2))
         body.addRelTorque([-friction_force_roll,-friction_force_pitch,-friction_force_yaw])
-        print "forward: ", friction_force_forward, " lateral: ", friction_force_lateral, " rotational: ", -friction_force_yaw
         #print thrusters
         # map the thrusters position on the boat
         self.boat_model.vectors = []
@@ -150,7 +149,6 @@ class Sim(object):
                 force = self.thrusts[thruster_id]
                 body.addRelForceAtRelPos(reldir*force, relpos)
                 self.boat_model.vectors.append((relpos, relpos - .02*reldir*force))
-                print "force: ", force, " angle: ", angle
         
         keys = pygame.key.get_pressed()
         for keycode, force in [

@@ -7,7 +7,7 @@
 
   <node name="pose_controller" pkg="navigator_controller" type="pose_controller.py">
     <!-- Parameters used to tune control gains -->
-      <rosparam>{p_x: 0, i_x: 0, d_x: 0, p_y: 0, i_y: 0, d_y: 0, p_z: 0, i_z: 0, d_z: 0}</rosparam>
+      <rosparam>{p_x: 100, i_x: 0, d_x: 0, p_y: 100, i_y: 0, d_y: 0, p_z: 10, i_z: 0, d_z: 0}</rosparam>
   </node>
 
   <node name="wrench_arbiter" pkg="navigator_msg_multiplexer" type="wrench_arbiter.py"/>
@@ -24,4 +24,8 @@
     <param name="deadzone" value="0.12" />
     <param name="autorepeat_rate" value="5"/>
   </node>
+
+  <node pkg="tf" type="static_transform_publisher" name="imu_broadcaster" args="+0.13 0 -0.10  1 0 0 0  /base_link /ins 100"/>
+  <node pkg="tf" type="static_transform_publisher" name="lidar_tf" args="1 0 0.25  0 0 0 1  /base_link /lidar 100" />
+  <node pkg="tf" type="static_transform_publisher" name="forward_camera_tf" args="1 0 0.345  0 0 0 1  /base_link /camera 100" />
 </launch>

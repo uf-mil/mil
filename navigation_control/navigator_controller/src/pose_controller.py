@@ -93,7 +93,6 @@ class PID_controller:
 
         # Kill functions
         self.odom_active = False
-        self.killed = False
 
         # Create arrays to be used
         self.desired_state = numpy.ones(6)
@@ -115,7 +114,7 @@ class PID_controller:
         self.desired_state_set = False
 
         # ROS components
-        self.controller_wrench = rospy.Publisher('wrench/autonomous', WrenchStamped, queue_size=1)
+        self.controller_wrench = rospy.Publisher('/wrench/autonomous', WrenchStamped, queue_size=1)
         #self.kill_listener = KillListener(self.set_kill, self.clear_kill)
         rospy.Subscriber('/trajectory', PoseTwistStamped, self.trajectory_callback)
         rospy.Subscriber('/odom', Odometry, self.odom_callback)
@@ -146,14 +145,6 @@ class PID_controller:
 
         self.K[0:2, 2] = [x, y]
         self.K[5, 2] = z
-
-    def set_kill(self):
-        self.killed = True
-        rospy.logdebug('PD_Controller KILLED: %s' % self.kill_listener.get_kills())
-
-    def clear_kill(self):
-        self.killed = False
-        rospy.logdebug('PD_Controller ACTIVE: %s' % self.kill_listener.get_kills())
 
     def trajectory_callback(self, desired_trajectory):
         self.lock.acquire()
@@ -194,6 +185,7 @@ class PID_controller:
             self.desired_state_set = True
 
         self.lock.release()
+        self.main_loop()
 
     def PID(self, variable):
 
@@ -214,9 +206,9 @@ class PID_controller:
             pass
 
         rospy.logdebug(self.current_error[state_number])
-        rospy.logwarn('P' + variable + ": " + str(p))
-        rospy.logwarn('I' + variable + ": " + str(i))
-        rospy.logwarn('D' + variable + ": " + str(d))
+        rospy.loginfo('P' + variable + ": " + str(p))
+        rospy.loginfo('I' + variable + ": " + str(i))
+        rospy.loginfo('D' + variable + ": " + str(d))
 
         # Set temporary variable for use in integrator sliding window
         sliding_window = self.i_history[state_number]
@@ -256,7 +248,7 @@ class PID_controller:
             [0, -sphi, cphi * ctheta], ]
         return J_inv
 
-    def main_loop(self, event):
+    def main_loop(self):
 
         def smallest_coterminal_angle(x):
             return (x + math.pi) % (2*math.pi) - math.pi
@@ -284,6 +276,8 @@ class PID_controller:
         y = self.PID('y')
         z = self.PID('z')
 
+        print x
+
         # Combine into final wrenches
         wrench = [x, y, 0, 0, 0, z]
 
@@ -291,34 +285,18 @@ class PID_controller:
         if not self.odom_active:
             wrench = [0, 0, 0, 0, 0, 0]
 
-        # If ready to go...
-        if self.killed is False:
-            self.controller_wrench.publish(WrenchStamped(
-                header=Header(
-                    stamp=rospy.Time.now(),
-                    frame_id="/base_link",
-                    ),
-                wrench=Wrench(
-                    force=Vector3(x=wrench[0], y=wrench[1], z=0),
-                    torque=Vector3(x=0, y=0, z=wrench[5]),
-                    )
+        self.controller_wrench.publish(WrenchStamped(
+            header=Header(
+                stamp=rospy.Time.now(),
+                frame_id="/base_link",
+                ),
+            wrench=Wrench(
+                force=Vector3(x=wrench[0], y=wrench[1], z=0),
+                torque=Vector3(x=0, y=0, z=wrench[5]),
                 )
             )
+        )
 
-        # If not ready to go...
-        if self.killed is True:
-            rospy.logdebug('PD_Controller KILLED: %s' % self.kill_listener.get_kills())
-            self.controller_wrench.publish(WrenchStamped(
-                header=Header(
-                    stamp=rospy.Time.now(),
-                    frame_id="/base_link",
-                    ),
-                wrench=Wrench(
-                    force=Vector3(x=0, y=0, z=0),
-                    torque=Vector3(x=0, y=0, z=0),
-                    )
-                )
-            )
 
 if __name__ == "__main__":
 
