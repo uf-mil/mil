@@ -27,6 +27,9 @@ class JoystickWrench
      ros::Publisher vel_pub_;
      ros::ServiceClient client;
      bool wrench_controller;
+     int last_controller_state;
+     int last_kill_state;
+     int killed;
 
 };
 // %EndTag(CLASSDEF)%
@@ -42,6 +45,9 @@ JoystickWrench::JoystickWrench()
    wrench_pub_=nh_.advertise<geometry_msgs::WrenchStamped>("/wrench/rc", 1);
    client = nh_.serviceClient<navigator_msg_multiplexer::wrench_arbiter>("change_wrench");
    wrench_controller = false;
+   killed = false;
+   last_controller_state = 0;
+   last_kill_state = 0;
 // %EndTag(PUB)%
 
 // %Tag(SUB)%
@@ -58,11 +64,9 @@ void JoystickWrench::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
   //Motor::Wrench wrench
   geometry_msgs::WrenchStamped wrench;
   navigator_msg_multiplexer::wrench_arbiter w_control;
-  wrench.wrench.force.x = force_scale_*joy->axes[1];
-  wrench.wrench.force.y = -1*force_scale_*joy->axes[0];
-  wrench.wrench.torque.z = -1*torque_scale_*joy->axes[3];
   
-  if (joy->buttons[7] == 1)
+  
+  if (joy->buttons[7] == 1 && joy->buttons[7] != last_controller_state)
   {
     wrench_controller = !(wrench_controller);
     if (wrench_controller == false)
@@ -81,10 +85,21 @@ void JoystickWrench::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
         ROS_ERROR("Failed to change controller");
       }
     }
-
-    
-    sleep(1);
   }
+
+  if (killed == false)
+  {
+    wrench.wrench.force.x = force_scale_*joy->axes[1];
+    wrench.wrench.force.y = -1*force_scale_*joy->axes[0];
+    wrench.wrench.torque.z = -1*torque_scale_*joy->axes[3];
+  }
+
+  if (joy->buttons[8] == 1 && joy->buttons[8] != last_controller_state)
+  {
+    killed = !(killed);
+  }
+  last_controller_state = joy->buttons[7];
+  last_kill_state = joy->buttons[8];
   wrench_pub_.publish(wrench);
 
 }

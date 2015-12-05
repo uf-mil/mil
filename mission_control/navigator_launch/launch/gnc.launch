@@ -28,4 +28,7 @@
   <node pkg="tf" type="static_transform_publisher" name="imu_broadcaster" args="+0.13 0 -0.10  1 0 0 0  /base_link /ins 100"/>
   <node pkg="tf" type="static_transform_publisher" name="lidar_tf" args="1 0 0.25  0 0 0 1  /base_link /lidar 100" />
   <node pkg="tf" type="static_transform_publisher" name="forward_camera_tf" args="1 0 0.345  0 0 0 1  /base_link /camera 100" />
+
+
+  <node name="move_helper_node" pkg="navigator_vis_helpers" type="move_helper.py"/>
 </launch>

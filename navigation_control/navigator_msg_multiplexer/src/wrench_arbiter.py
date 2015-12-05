@@ -55,7 +55,7 @@ class control_arb(object):
         
         self.rc_wrench = WrenchStamped()
         self.autonomous_wrench = WrenchStamped()
-        self.control = "rc"
+        self.control = "kill"
 
         self.wrench_pub = rospy.Publisher("/wrench/cmd", WrenchStamped, queue_size = 1)
         rospy.Service('change_wrench', wrench_arbiter, self.change_wrench)
@@ -76,6 +76,9 @@ class control_arb(object):
         if req.str == "autonomous":
             self.control = "autonomous"
             return True
+        if req.str == "kill":
+            self.control = "kill"
+            return True
         else:
             self.control = "null"
             return False
@@ -85,7 +88,7 @@ class control_arb(object):
             self.wrench_pub.publish(self.rc_wrench)
         if self.control == "autonomous": 
             self.wrench_pub.publish(self.autonomous_wrench)
-        if self.control == "null":
+        if self.control == "null" or self.control == "kill":
             blank_wrench = WrenchStamped()
             self.wrench_pub.publish(blank_wrench)
   
