@@ -1,7 +1,7 @@
-# AUVSI Maritime RobotX Challenge
+#NaviGator Autonomous Surface Vehicle
 
-##RobotX Wam-V on board softare git
+####Designed by the University of Florida for the [AUVSI Maritime RobotX Challenge](http://www.robotx.org)
 
-This is the repository for the University of Florida's RobotX Autonomous Robot. It contains all ROS packages specific to RobotX and the University of Florida's WAM-V ASV
+#####This is the repository for UF's NaviGator ASV. It contains all software packages specific to NaviGator
 
-To get started with the WAM-V view the "getting started" page in the RobotX wiki
+###To familiarize yourself with the repository view the [Getting Started](https://github.com/uf-mil/RobotX/wiki/Getting-started) page in the Navigator [wiki](https://github.com/uf-mil/RobotX/wiki).
