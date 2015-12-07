@@ -5,7 +5,6 @@
     * [[Code Policy]]
     * [[Architecture]]
     * [[Helpful Reading]]
-    
 * Implementation Details
     * [[Goal Manager]]
     * [[Position Controller]]
