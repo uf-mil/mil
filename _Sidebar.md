@@ -4,7 +4,7 @@
     * [[Adding to the Wiki]]
     * [[Code Policy]]
     * [[Architecture]]
-    * [[Helpful Reading]]
+    * [[Helpful Readings]]
 * Implementation Details
     * [[Goal Manager]]
     * [[Position Controller]]
