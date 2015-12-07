@@ -85,7 +85,7 @@ ________________________________________________________________________________
 
 ##Readings and Cool Things to Know:
 
-###[[Helpful Reading]]
+###[[Helpful Readings]]
 
 
 
