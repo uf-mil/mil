@@ -1,7 +1,7 @@
-Editing the RobotX Wiki
+Editing the NaviGator Wiki
 =====================
 
-Any team member can edit the wiki at any time. The contribution rules are much more lax than that of the regular RobotX repository, but there are still a few requirements.
+Any team member can edit the wiki at any time. The contribution rules are much more lax than that of the regular NaviGator repository, but there are still a few requirements.
 
 * Use proper English spelling
 * Use proper formatting to make an easily readable page (Section headers, links, etc)
