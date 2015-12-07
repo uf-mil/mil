@@ -1,10 +1,11 @@
 * [[Home]]
     * [[Getting started]]
+    * [[Software Dependencies]]
     * [[Adding to the Wiki]]
     * [[Code Policy]]
     * [[Architecture]]
     * [[Helpful Reading]]
-    * [[Software Dependencies]]
+    
 * Implementation Details
     * [[Goal Manager]]
     * [[Position Controller]]
