@@ -2,6 +2,8 @@
 
 **Please install all the dependencies below if you want to use the software on NaviGator. This page relies on you having done steps 1-4 in the [Getting Started](https://github.com/uf-mil/Navigator/wiki/Getting-started).**
 
+####Please add any outside dependencies for programs you create to this page! Please please!
+
 ##**Open Motion Planning Library**
 
 **The Open Motion Planning Library consists of many state-of-the-art sampling-based motion planning algorithms. It is used for path planning on the WAM-V**
