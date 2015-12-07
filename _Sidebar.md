@@ -4,11 +4,7 @@
     * [[Code Policy]]
     * [[Architecture]]
     * [[Helpful Reading]]
-* Software Dependencies
-    * [[Open Motion Planning Library (OMPL)]]
-    * [[Roboteq Motor Driver]]
-    * [[Pygame]]
-    * [[PyODE]]
+    * [[Software Dependencies]]
 * Implementation Details
     * [[Goal Manager]]
     * [[Position Controller]]
