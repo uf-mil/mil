@@ -1,14 +1,13 @@
 #**Getting Started**
 
-**Below are the instructions for how to get started working on NaviGator. This page includes instructions, a checklist, and some very helpful readings to start exploring once everything is installed.** 
+**Below are the instructions for how to get started working on NaviGator. This page includes instructions and some very helpful readings to start exploring once everything is installed.** 
 
 ##Installation
 
 There are three main components to the NaviGator installation: Ubuntu, ROS, and Git. Each of them and their purposes are described below. 
 
 Building the coolest robots can't be done on your grandma's Windows 98 OS. We use some special software and fun tools that require you to ditch the GUI and start using Ubuntu Linux. To communicate on the robot we use a messaging service called ROS. ROS runs on Ubuntu and we run all software with the ROS system. It is a part of the main installation process to get started working on NaviGator. And finally, Git (You are in the wiki right now - [Link to NaviGator GitHub](https://github.com/uf-mil/Navigator)) is the versioning system used to manage all the software used on NaviGator. 
-
-
+_______________________________________________________________________________________
 
 ###Installation instructions
 
@@ -23,6 +22,7 @@ http://releases.ubuntu.com/trusty/.
 
 Using a VM is not recommended - it requires a much more powerful system 
 and causes problems with 3D graphics.
+_______________________________________________________________________________________
 
 ####2. Install ROS Indigo
 
@@ -30,6 +30,7 @@ Follow all the instructions at
 http://wiki.ros.org/indigo/Installation/Ubuntu. Make sure to do the 
 "Desktop-Full Install," as opposed to the "Desktop Install" or 
 "ROS-Base."
+_______________________________________________________________________________________
 
 ####3. Make workspace
 
@@ -50,6 +51,7 @@ the tutorial) in order to finish setting up your workspace:
 
 After adding those lines to your `.bashrc` file, open a new shell so the
 settings take effect.
+_______________________________________________________________________________________
 
 ####4. Add NaviGator repository
 
@@ -63,10 +65,14 @@ add it to your GitHub account.
 [Creating SSH Keys] (https://help.github.com/articles/generating-ssh-keys/)
 
 Then, go into the Navigator directory and type `git pull` to pull the newest commits.
+_______________________________________________________________________________________
 
 ####5. Add all NaviGator Dependencies:
 
-* [[Software Dependencies]]
+All necessary dependencies can be found at the link below.
+
+### [[Software Dependencies]]
+_______________________________________________________________________________________
 
 ####6. Run catkin_make
 
@@ -74,7 +80,21 @@ Move to your ROS NaviGator workspace and run:
 
     catkin_make
 
-If everything was set up properly this should compile everything successfully
+If everything was set up properly this should compile everything successfully.
+_______________________________________________________________________________________
+
+##Readings and Cool Things to Know:
+
+[How Do I Use That Command Line Thing?](http://linuxcommand.org/learning_the_shell.php)
+
+[What is ROS?](http://wiki.ros.org/ROS/Introduction)
+
+[ROS Tutorials](http://wiki.ros.org/ROS/Tutorials)
+
+[How to Use Git](http://readwrite.com/2013/09/30/understanding-github-a-journey-for-beginners-part-1)
+
+[Khan Academy Linear Algebra](https://www.khanacademy.org/math/linear-algebra)
+
 
 
 
