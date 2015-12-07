@@ -66,7 +66,7 @@ Then, go into the Navigator directory and type `git pull` to pull the newest com
 
 ####5. Add all NaviGator Dependencies:
 
-*[[Software Dependencies]]
+* [[Software Dependencies]]
 
 ####6. Run catkin_make
 
