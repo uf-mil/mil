@@ -10,7 +10,6 @@
 #include "tgen_common.h"
 #include <Eigen/Dense>
 
-using namespace Eigen;
 using ompl::base::CompoundStateSpace;
 using ompl::base::RealVectorStateSpace;
 using ompl::base::RealVectorBounds;

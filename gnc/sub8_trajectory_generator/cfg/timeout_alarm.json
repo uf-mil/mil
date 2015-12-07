@@ -1,0 +1,7 @@
+  {
+    "alarm_name":"planning_timeout",
+    "action_required":true,
+    "severity":0,
+    "problem_description":"The trajectory-generator experienced a timeout while attempting to find a valid path.",
+    "parameters":""
+  }

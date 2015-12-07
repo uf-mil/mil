@@ -1,0 +1,54 @@
+<launch>
+	<!-- Planner ID 			-->
+	<!-- OMPL's PDST (1)		-->
+	<!-- OMPL's RRT  (2)		-->
+	<param name="planner" value="2" type="int"/>
+
+	<!-- directory of alarm config files relative to the  -->
+	<!-- sub8_trajectory_generator package root directory -->
+	<param name="alarms_dir" value="cfg" type="string"/>
+	
+	<param name="sub_mass" value="25.0" type="double"/>
+
+	<!-- OMPL constants -->
+	<param name="terminating_condition" value="1.0" type="double"/>
+	<param name="state_validity_checking_resolution" value="0.03" type="double"/>
+	<param name="propagation_step_size" value="2.0" type="double"/>
+	<param name="min_control_duration" value="1.0" type="double"/>
+	<param name="max_control_duration" value="100.0" type="double"/>
+
+	<!-- initial values for state space bounds -->
+	<!-- position bounds -->
+	<param name="xmin" value="-1.0" type="double"/>
+	<param name="xmax" value="1.0" type="double"/>
+	<param name="ymin" value="-1.0" type="double"/>
+	<param name="ymax" value="1.0" type="double"/>
+	<param name="zmin" value="-1.0" type="double"/>
+	<param name="zmax" value="1.0" type="double"/>
+
+	<!-- velocity bounds -->
+	<param name="v_xmin" value="-1.0" type="double"/>
+	<param name="v_xmax" value="1.0" type="double"/>
+	<param name="v_ymin" value="-1.0" type="double"/>
+	<param name="v_ymax" value="1.0" type="double"/>
+	<param name="v_zmin" value="-1.0" type="double"/>
+	<param name="v_zmax" value="1.0" type="double"/>
+
+	<!-- angular velocity bounds -->
+	<param name="w_xmin" value="-1.0" type="double"/>
+	<param name="w_xmax" value="1.0" type="double"/>
+	<param name="w_ymin" value="-1.0" type="double"/>
+	<param name="w_ymax" value="1.0" type="double"/>
+	<param name="w_zmin" value="-1.0" type="double"/>
+	<param name="w_zmax" value="1.0" type="double"/>
+
+	<!-- orientation bounds -->
+	<param name="q_xmin" value="-1.0" type="double"/>
+	<param name="q_xmax" value="1.0" type="double"/>
+	<param name="q_ymin" value="-1.0" type="double"/>
+	<param name="q_ymax" value="1.0" type="double"/>
+	<param name="q_zmin" value="-1.0" type="double"/>
+	<param name="q_zmax" value="1.0" type="double"/>
+	<param name="q_wmin" value="-1.0" type="double"/>
+	<param name="q_wmax" value="1.0" type="double"/>
+</launch>

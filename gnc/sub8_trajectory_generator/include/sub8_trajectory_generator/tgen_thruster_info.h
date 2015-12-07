@@ -7,37 +7,48 @@
 #ifndef TGEN_THRUSTER_INFO_H_
 #define TGEN_THRUSTER_INFO_H_
 
-#include <Eigen/Dense>
-#include <ros/ros.h>
 #include "tgen_common.h"
-
-using namespace Eigen;
+#include <ros/ros.h>  // boost::shared_ptr
 
 namespace sub8 {
 
 namespace trajectory_generator {
 
-// forward declarations for typedef
 class TGenThrusterInfo;
-// Typedef for shared_ptr wrapper
 typedef boost::shared_ptr<TGenThrusterInfo> TGenThrusterInfoPtr;
 
 //////////////////////////////////////////////////////////////
 //    Encapsulates information
 //    about the thrusters needed by the TGEN
-//    for its ODE 
+//    for its ODE
 //////////////////////////////////////////////////////////////
 struct TGenThrusterInfo {
-  // Gets the /busses param and 
-  // extracts the position and direction
-  // matrices
-  TGenThrusterInfo();
-  // Thruster lever arms 
+  // Convert a row-major order array containing the
+  // of the B matrix to the L and D matrix reps
+  void init(std::vector<double>& b) {
+    
+    unsigned int i = 0;  // thruster idx
+
+    for (std::vector<double>::iterator it = b.begin(); (it + 5) <= b.end();
+         it += 6) {
+      // i:i+2 - Level arms for thruster i
+      // i+3:i+5 - Directions for thruster i
+      L(0, i) = (*it);
+      L(1, i) = (*(it + 1));
+      L(2, i) = (*(it + 2));
+
+      D(0, i) = (*(it + 3));
+      D(1, i) = (*(it + 4));
+      D(2, i) = (*(it + 5));
+      i++;
+    }
+  }
+
+  // Thruster lever arms
   Matrix3_8d L;
   // Thruster directions
   Matrix3_8d D;
 };
 }
 }
-
 #endif /* TGEN_THRUSTER_INFO_H_ */

@@ -14,20 +14,34 @@ using sub8::trajectory_generator::SubDynamics;
 using sub8::trajectory_generator::SubDynamicsPtr;
 using sub8::trajectory_generator::TGenThrusterInfo;
 using sub8::trajectory_generator::TGenThrusterInfoPtr;
-using sub8::trajectory_generator::Matrix2_8d; 
+using sub8::trajectory_generator::Matrix2_8d;
 using sub8::trajectory_generator::_CSPACE_DIMS;
 using ompl::control::SpaceInformationPtr;
 
-// Test the factory method, and verify that it correctly initializes the
-// Sub8SpaceInformation object
-TEST(SpaceInformationTest, testSpaceInformationGenerator) {
+class SpaceInformationTest : public ::testing::Test {
+ public:
+  SpaceInformationTest() : _node_handle(new ros::NodeHandle()){};
+  boost::shared_ptr<ros::NodeHandle> getNodeHandle() { return _node_handle; }
+
+  SpaceInformationGeneratorPtr spaceInformationFactory() {
+    return SpaceInformationGeneratorPtr(new SpaceInformationGenerator());
+  }
+
+ private:
+  boost::shared_ptr<ros::NodeHandle> _node_handle;
+};
+
+// Test the "generate" factory method, and verify that it correctly initializes
+// the Sub8SpaceInformation object
+TEST_F(SpaceInformationTest, testSpaceInformationGenerator) {
+  SpaceInformationGeneratorPtr ss_gen = spaceInformationFactory();
+  TGenThrusterInfoPtr thruster_info(new TGenThrusterInfo());
+  SubDynamicsPtr sub_dynamics(new SubDynamics(thruster_info));
+
   Matrix2_8d test_thruster_ranges;
   test_thruster_ranges.row(0) = -MatrixXd::Ones(1, _CSPACE_DIMS);
   test_thruster_ranges.row(1) = MatrixXd::Ones(1, _CSPACE_DIMS);
-  // Create a Sub8SpaceInformationPtr using the SpaceInformationGenerator
-  SpaceInformationGeneratorPtr ss_gen(new SpaceInformationGenerator());
-  TGenThrusterInfoPtr thruster_info(new TGenThrusterInfo());
-  SubDynamicsPtr sub_dynamics(new SubDynamics(thruster_info));
+
   SpaceInformationPtr si = ss_gen->generate(sub_dynamics, test_thruster_ranges);
 
   ASSERT_EQ(si->getStateDimension(), 13)
@@ -35,4 +49,15 @@ TEST(SpaceInformationTest, testSpaceInformationGenerator) {
 
   // Verify that the SpaceInformation object's setup method has been called
   ASSERT_TRUE(si->isSetup());
+}
+
+TEST_F(SpaceInformationTest, testParameters) {
+  double checking_res;
+  double prop_step_size;
+  double min_control_duration;
+  double max_control_duration;
+  EXPECT_TRUE(ros::param::get("state_validity_checking_resolution", checking_res));
+  EXPECT_TRUE(ros::param::get("propagation_step_size", prop_step_size));
+  EXPECT_TRUE(ros::param::get("min_control_duration", min_control_duration));
+  EXPECT_TRUE(ros::param::get("max_control_duration", max_control_duration));
 }

@@ -6,7 +6,7 @@ from sub8_ros_tools import wait_for_param, thread_lock, rosmsg_to_numpy
 import threading
 from sub8_msgs.msg import Thrust, ThrusterCmd
 from sub8_msgs.srv import (ThrusterInfo, UpdateThrusterLayout, UpdateThrusterLayoutResponse,
-    FailThruster, FailThrusterResponse)
+    FailThruster, FailThrusterResponse, BMatrix, BMatrixResponse)
 from geometry_msgs.msg import WrenchStamped
 
 
@@ -46,6 +46,9 @@ class ThrusterMapper(object):
 
         self.update_layout_server = rospy.Service('update_thruster_layout', UpdateThrusterLayout, self.update_layout)
 
+        # Expose B matrix through a srv 
+        self.b_matrix_server = rospy.Service('b_matrix', BMatrix, self.get_b_matrix)
+
         self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.request_wrench_cb, queue_size=1)
         self.thruster_pub = rospy.Publisher('thrusters/thrust', Thrust, queue_size=1)
 
@@ -81,6 +84,10 @@ class ThrusterMapper(object):
         torques = np.cross(position, forces)
         wrench_column = np.hstack([forces, torques])
         return np.transpose(wrench_column)
+
+    def get_b_matrix(self, srv):
+        ''' Return a copy of the B matrix flattened into a 1-D row-major order list '''
+        return BMatrixResponse(self.B.flatten())
 
     @thread_lock(lock)
     def generate_B(self, layout):

@@ -8,6 +8,7 @@
 #include "sub8_state_space.h"
 #include "sub8_msgs/Waypoint.h"
 #include "sub8_msgs/Trajectory.h"
+#include <sub8_alarm/alarm_helpers.h>
 #include "tgen_thruster_info.h"
 
 using sub8::trajectory_generator::TGenManager;
@@ -17,28 +18,39 @@ using sub8::trajectory_generator::Sub8StateSpacePtr;
 using sub8::trajectory_generator::TGenThrusterInfo;
 using sub8::trajectory_generator::TGenThrusterInfoPtr;
 using sub8::trajectory_generator::Matrix2_8d;
-using sub8::trajectory_generator::_CSPACE_DIMS; 
+using sub8::trajectory_generator::_CSPACE_DIMS;
+using sub8::AlarmBroadcasterPtr;
+using sub8::AlarmBroadcaster;
 
-TEST(TGenManager, testConstructorRRT) {
-  Matrix2_8d test_thruster_ranges;
-  test_thruster_ranges.row(0) = -MatrixXd::Ones(1, _CSPACE_DIMS);
-  test_thruster_ranges.row(1) = MatrixXd::Ones(1, _CSPACE_DIMS);
-  TGenManagerPtr test_tgen_manager(new TGenManager(2, test_thruster_ranges));
+class TGenManagerTest : public ::testing::Test {
+ public:
+  TGenManagerTest() : _node_handle(new ros::NodeHandle()){};
+  boost::shared_ptr<ros::NodeHandle> getNodeHandle() { return _node_handle; }
+
+  TGenManagerPtr tgenManagerFactory(int planner_id) {
+    AlarmBroadcasterPtr ab(new AlarmBroadcaster(getNodeHandle()));
+    TGenThrusterInfoPtr thruster_info(new TGenThrusterInfo());
+    Matrix2_8d test_thruster_ranges;
+    test_thruster_ranges.row(0) = -MatrixXd::Ones(1, _CSPACE_DIMS);
+    test_thruster_ranges.row(1) = MatrixXd::Ones(1, _CSPACE_DIMS);
+    return TGenManagerPtr(
+        new TGenManager(planner_id, test_thruster_ranges, thruster_info, ab));
+  }
+
+ private:
+  boost::shared_ptr<ros::NodeHandle> _node_handle;
+};
+
+TEST_F(TGenManagerTest, testConstructorRRT) {
+  TGenManagerPtr test_tgen_manager = tgenManagerFactory(2);
 }
 
-TEST(TGenManager, testConstructorPDST) {
-  Matrix2_8d test_thruster_ranges;
-  test_thruster_ranges.row(0) = -MatrixXd::Ones(1, _CSPACE_DIMS);
-  test_thruster_ranges.row(1) = MatrixXd::Ones(1, _CSPACE_DIMS);
-  TGenManagerPtr test_tgen_manager(new TGenManager(1, test_thruster_ranges));
+TEST_F(TGenManagerTest, testConstructorPDST) {
+  TGenManagerPtr test_tgen_manager = tgenManagerFactory(1);
 }
 
-TEST(TGenManager, testSetProblemDefinition) {
-  Matrix2_8d test_thruster_ranges;
-  test_thruster_ranges.row(0) = -MatrixXd::Ones(1, _CSPACE_DIMS);
-  test_thruster_ranges.row(1) = MatrixXd::Ones(1, _CSPACE_DIMS);
-  // Instantiate RRT planner
-  TGenManagerPtr test_tgen_manager(new TGenManager(2, test_thruster_ranges));
+TEST_F(TGenManagerTest, testSetProblemDefinition) {
+  TGenManagerPtr test_tgen_manager = tgenManagerFactory(2);
   Sub8StateSpacePtr test_state_space(new Sub8StateSpace());
 
   // Set up start and goal states
@@ -54,19 +66,15 @@ TEST(TGenManager, testSetProblemDefinition) {
 }
 
 // TODO
-TEST(TGenManager, testSolveRRT) { ADD_FAILURE() << "Unimplemented test"; }
+TEST_F(TGenManagerTest, testSolveRRT) { ADD_FAILURE() << "Unimplemented test"; }
 
 // TODO
-TEST(TGenManager, testTrajectoryValidation) {
+TEST_F(TGenManagerTest, testTrajectoryValidation) {
   ADD_FAILURE() << "Unimplemented test";
 }
 
-TEST(TGenManager, testStateToWaypoint) {
-  Matrix2_8d test_thruster_ranges;
-  test_thruster_ranges.row(0) = -MatrixXd::Ones(1, _CSPACE_DIMS);
-  test_thruster_ranges.row(1) = MatrixXd::Ones(1, _CSPACE_DIMS);
-
-  TGenManagerPtr test_tgen_manager(new TGenManager(2, test_thruster_ranges));
+TEST_F(TGenManagerTest, testStateToWaypoint) {
+  TGenManagerPtr test_tgen_manager = tgenManagerFactory(2);
   Sub8StateSpacePtr test_state_space(new Sub8StateSpace());
 
   State* state = test_state_space->allocState();
@@ -87,12 +95,8 @@ TEST(TGenManager, testStateToWaypoint) {
   test_state_space->freeState(state);
 }
 
-TEST(TGenManager, testWaypointToState) {
-  Matrix2_8d test_thruster_ranges;
-  test_thruster_ranges.row(0) = -MatrixXd::Ones(1, _CSPACE_DIMS);
-  test_thruster_ranges.row(1) = MatrixXd::Ones(1, _CSPACE_DIMS);
-
-  TGenManagerPtr test_tgen_manager(new TGenManager(2, test_thruster_ranges));
+TEST_F(TGenManagerTest, testWaypointToState) {
+  TGenManagerPtr test_tgen_manager = tgenManagerFactory(2);
   Sub8StateSpacePtr test_state_space(new Sub8StateSpace());
   State* state = test_state_space->allocState();
 
@@ -113,4 +117,6 @@ TEST(TGenManager, testWaypointToState) {
   test_state_space->freeState(state);
 }
 
-TEST(TGenManager, getTrajectory) { ADD_FAILURE() << "Unimplemented test"; }
+TEST_F(TGenManagerTest, testGetTrajectory) {
+  ADD_FAILURE() << "Unimplemented test";
+}

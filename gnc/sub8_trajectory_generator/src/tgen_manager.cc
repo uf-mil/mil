@@ -11,7 +11,9 @@
 #include "ompl/control/planners/pdst/PDST.h"
 #include "ompl/control/planners/rrt/RRT.h"
 #include "ompl/control/PathControl.h"
+#include <boost/filesystem.hpp>
 #include <ros/console.h>
+#include <ros/package.h>
 #include <Eigen/Dense>
 
 using sub8::trajectory_generator::TGenManager;
@@ -28,10 +30,14 @@ using ompl::control::RRT;
 using ompl::control::PDST;
 using ompl::control::PathControl;
 
-TGenManager::TGenManager(int planner_id, const Matrix2_8d& cspace_bounds) {
-  TGenThrusterInfoPtr thruster_info(new TGenThrusterInfo()); 
+namespace fs = ::boost::filesystem;
+
+TGenManager::TGenManager(int planner_id, const Matrix2_8d& cspace_bounds,
+                         TGenThrusterInfoPtr thruster_info,
+                         AlarmBroadcasterPtr& alarm_broadcaster) {
   SubDynamicsPtr sub_dynamics(new SubDynamics(thruster_info));
   SpaceInformationGeneratorPtr ss_gen(new SpaceInformationGenerator());
+
   _sub8_si = ss_gen->generate(sub_dynamics, cspace_bounds);
 
   switch (planner_id) {
@@ -46,6 +52,17 @@ TGenManager::TGenManager(int planner_id, const Matrix2_8d& cspace_bounds) {
       _planner_type = PlannerType::RRT;
       break;
   }
+
+  // initialize alarms
+  std::string alarms_dir;
+  ros::param::get("alarms_dir", alarms_dir);
+  std::string pkg_path = ros::package::getPath("sub8_trajectory_generator");
+  char file_sep = '/';
+#ifdef _WIN32
+  file_sep = "\\";
+#endif
+  fs::path dirname(pkg_path + file_sep + alarms_dir);
+  alarm_broadcaster->addAlarms(dirname, alarms);
 }
 
 void TGenManager::setProblemDefinition(const State* start_state,
@@ -73,18 +90,18 @@ bool TGenManager::solve() {
   PlannerStatus pstatus = _sub8_planner->solve(1.0);
 
   // Switch on the value of the PlannerStatus enum "StateType"
+  // Only raise alarms on issues that require a system response.
+  // Most errors here are due to programming errors, so just
+  // display an error message to shame the programmer.
   switch (pstatus.operator StatusType()) {
     case PlannerStatus::INVALID_START:
       ROS_ERROR("%s", TGenMsgs::INVALID_START);
-      // TODO - ALARM
       break;
     case PlannerStatus::INVALID_GOAL:
       ROS_ERROR("%s", TGenMsgs::INVALID_GOAL);
-      // TODO - ALARM
       break;
     case PlannerStatus::UNRECOGNIZED_GOAL_TYPE:
       ROS_ERROR("%s", TGenMsgs::UNRECOGNIZED_GOAL_TYPE);
-      // TODO - ALARM
       break;
     case PlannerStatus::TIMEOUT:
       ROS_ERROR("%s", TGenMsgs::TIMEOUT);
@@ -95,10 +112,11 @@ bool TGenManager::solve() {
       // 3. If yes, send off safety path to controller, and then attempt to
       // replan
       //
-      // Q: How many times do I retry replanning if failure?
+      // Q: How many times do I retry replanning if failure? once?
       break;
     case PlannerStatus::APPROXIMATE_SOLUTION:
       ROS_DEBUG("%s", TGenMsgs::APPROXIMATE_SOLUTION);
+      // TODO: What is our tolerance for this?
       on_success = true;
       break;
     case PlannerStatus::EXACT_SOLUTION:
@@ -107,7 +125,6 @@ bool TGenManager::solve() {
       break;
     case PlannerStatus::CRASH:
       ROS_ERROR("%s", TGenMsgs::CRASH);
-      // ALARM
       break;
     default:
       break;
@@ -123,10 +140,15 @@ void TGenManager::validateCurrentTrajectory() {
   ProblemDefinitionPtr pdef = _sub8_planner->getProblemDefinition();
   PathControl* spath = static_cast<PathControl*>(pdef->getSolutionPath().get());
 
+  // Do trajectory validation; first_invalid_state is populated by checkMotion()
   if (!_sub8_si->checkMotion(spath->getStates(), spath->getStateCount(),
                              first_invalid_state)) {
-    ROS_WARN("%s", TGenMsgs::REPLAN_FAILED);
+    // Log that the current trajectory needs to be re-planned
+    ROS_WARN("%s", TGenMsgs::REPLAN_NEEDED);
+
     // Go ahead and supply the controller with a safety path
+    // at this point. For now, raise alarm to tell system to
+    // stop sub motion (but not abort mission)
 
     // naive replanning; will implement smarter re-planning later
     State* new_start_state = spath->getState(first_invalid_state);
@@ -162,9 +184,9 @@ State* TGenManager::waypointToState(
 
 sub8_msgs::Waypoint TGenManager::stateToWaypoint(const State* state) {
   sub8_msgs::Waypoint wpoint;
-  Vector13d state_vector; 
+  Vector13d state_vector;
 
-  state->as<Sub8StateSpace::StateType>()->getState(state_vector); 
+  state->as<Sub8StateSpace::StateType>()->getState(state_vector);
 
   wpoint.pose.position.x = state_vector(0);
   wpoint.pose.position.y = state_vector(1);
@@ -179,7 +201,7 @@ sub8_msgs::Waypoint TGenManager::stateToWaypoint(const State* state) {
   wpoint.pose.orientation.y = state_vector(10);
   wpoint.pose.orientation.z = state_vector(11);
   wpoint.pose.orientation.w = state_vector(12);
-  
+
   return wpoint;
 }
 
@@ -196,4 +218,21 @@ sub8_msgs::Trajectory TGenManager::getTrajectory() {
   }
 
   return t_msg;
+}
+
+void TGenManager::updatePlanningRegion(double xmin, double xmax, double ymin,
+                                       double ymax, double zmin, double zmax) {
+  // Bounds on position (x, y, z)
+  RealVectorBounds pos_bounds(3);
+
+  pos_bounds.setLow(0, xmin);   // x low
+  pos_bounds.setHigh(0, xmax);  // x high
+  pos_bounds.setLow(1, ymin);   // y low
+  pos_bounds.setHigh(1, ymax);  // y high
+  pos_bounds.setLow(2, zmin);   // z low
+  pos_bounds.setHigh(2, zmax);  // z high
+
+  _sub8_si->getStateSpace()
+      ->as<sub8::trajectory_generator::Sub8StateSpace>()
+      ->set_volume_bounds(pos_bounds);
 }

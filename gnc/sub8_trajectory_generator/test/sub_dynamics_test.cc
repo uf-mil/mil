@@ -53,7 +53,7 @@ TEST(SubDynamicsTest, testSegmentAssignment) {
 }
 
 // Use a contrived example to test the functionality
-// The test values were obtained through 
+// The test values were obtained through
 // a MATLAB implementation of the dynamics equations
 //
 // Will need to verify the correctness further
@@ -61,7 +61,6 @@ TEST(SubDynamicsTest, testSegmentAssignment) {
 TEST(SubDynamicsTest, testSubDynamicsODE) {
   Sub8StateSpacePtr test_state_space(new Sub8StateSpace());
   TGenThrusterInfoPtr thruster_info(new TGenThrusterInfo());
-  SubDynamicsPtr sub_dynamics(new SubDynamics(thruster_info));
 
   Vector3d FLV_p, FLL_p, FRV_p, FRL_p, BLV_p, BLL_p, BRV_p, BRL_p;
   Vector3d FLV_d, FLL_d, FRV_d, FRL_d, BLV_d, BLL_d, BRV_d, BRL_d;
@@ -95,6 +94,8 @@ TEST(SubDynamicsTest, testSubDynamicsODE) {
 
   // Set the thruster directions matrix
   thruster_info->D = D;
+
+  SubDynamicsPtr sub_dynamics(new SubDynamics(thruster_info));
 
   oc::ODESolver::StateType q;
   oc::ODESolver::StateType qdot;

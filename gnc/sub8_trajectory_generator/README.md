@@ -23,3 +23,11 @@ To run unit tests:
 
 * filenames beginning with "sub8_" are extensions to the OMPL framework
 
+# Alarms
+
+If trajectory generation fails, the sub need not go into a meltdown. However, the rest of the system can assume that if the TGEN fails to generate a trajectory, it will raise an alarm. In response, the system can: 
+
+* Attempt to navigate without a trajectory (?)
+* Shutdown (float to surface)
+
+Since the trajectory generator is responsible for trajectory validation, the trajectory generator will need to raise alarms if the current trajectory is invalid and the system needs to abort. If the trajectory generator can safely replan, no need to disrupt normal system ops. 
