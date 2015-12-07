@@ -6,7 +6,7 @@
     * [[Helpful Reading]]
 * Software Dependencies
     * [[Open Motion Planning Library (OMPL)]]
-    * [[Motor Drivers]]
+    * [[Roboteq Motor Driver]]
     * [[Pygame]]
     * [[PyODE]]
 * Implementation Details
