@@ -1,6 +1,6 @@
 #**Getting Started**
 
-**Below are the instructions for how to get started working on NaviGator. This page includes instructions and some very helpful readings to start exploring once everything is installed.** 
+**Below are the instructions for how to get started working on NaviGator. This page includes instructions and a link to some very helpful readings to start exploring once everything is installed.** 
 
 ##Installation
 
@@ -85,15 +85,7 @@ ________________________________________________________________________________
 
 ##Readings and Cool Things to Know:
 
-[How Do I Use That Command Line Thing?](http://linuxcommand.org/learning_the_shell.php)
-
-[What is ROS?](http://wiki.ros.org/ROS/Introduction)
-
-[ROS Tutorials](http://wiki.ros.org/ROS/Tutorials)
-
-[How to Use Git](http://readwrite.com/2013/09/30/understanding-github-a-journey-for-beginners-part-1)
-
-[Khan Academy Linear Algebra](https://www.khanacademy.org/math/linear-algebra)
+###[[Helpful Reading]]
 
 
 
