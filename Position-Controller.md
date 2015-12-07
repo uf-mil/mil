@@ -6,7 +6,7 @@ and command the wrenches to be given to the thruster mapper that will keep
 the boat on it's desired position**
 
 ####**Glossary**:
-* **wrench -** A force and a torque. Reference the info on screw theory in the [[Helpful Reading]] to see about      what a wrench is. For the purposes of NaviGator it is the pair of linear and angular vectors that describe the net movement of the vehicle. 
+* **wrench -** A force and a torque. Reference the info on screw theory in the [[Helpful Readings]] to see about      what a wrench is. For the purposes of NaviGator it is the pair of linear and angular vectors that describe the net movement of the vehicle. 
 * **body frame -** The coordinate system with the center of the boar placed at (0,0)
 * **world frame -** The coordinate system with the location of the boat at startup as (0,0)
 
