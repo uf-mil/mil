@@ -12,4 +12,4 @@
 
 [Khan Academy Linear Algebra](https://www.khanacademy.org/math/linear-algebra)
 
-[**Screw Theory**](https://en.wikipedia.org/wiki/Screw_theory) - The mathematics that describe the kinematics of rigid bodies. We use screw theory to describe the movement of our vessel.
+[Screw Theory](https://en.wikipedia.org/wiki/Screw_theory) - The mathematics that describe the kinematics of rigid bodies. We use screw theory to describe the movement of our vessel.
