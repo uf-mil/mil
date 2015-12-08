@@ -16,6 +16,11 @@
 	<param name="propagation_step_size" value="2.0" type="double"/>
 	<param name="min_control_duration" value="1.0" type="double"/>
 	<param name="max_control_duration" value="100.0" type="double"/>
+	
+	<param name="distance_gain_position" value="0.25" type="double"/>
+	<param name="distance_gain_velocity" value="0.25" type="double"/>
+	<param name="distance_gain_angular_velocity" value="0.25" type="double"/>
+	<param name="distance_gain_orientation" value="0.25" type="double"/>
 
 	<!-- initial values for state space bounds -->
 	<!-- position bounds -->

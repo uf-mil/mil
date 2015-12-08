@@ -141,6 +141,12 @@ class Sub8StateSpace : public CompoundStateSpace {
     addSubspace(StateSpacePtr(new RealVectorStateSpace(3)), 1.0);
     addSubspace(StateSpacePtr(new RealVectorStateSpace(3)), 1.0);
     addSubspace(StateSpacePtr(new RealVectorStateSpace(4)), 1.0);
+
+    ros::param::get("distance_gain_position", distance_gain_position);
+    ros::param::get("distance_gain_velocity", distance_gain_velocity);
+    ros::param::get("distance_gain_angular_velocity", distance_gain_angular_velocity);
+    ros::param::get("distance_gain_orientation", distance_gain_orientation);
+
     // Prevent clients from modifying the state space further
     lock();
   }
@@ -219,6 +225,13 @@ class Sub8StateSpace : public CompoundStateSpace {
 
  private:
   const static int SUB8_STATE_SPACE_ID = 99;
+
+  // Weights for distance function
+  double distance_gain_position;
+  double distance_gain_velocity; 
+  double distance_gain_angular_velocity; 
+  double distance_gain_orientation; 
+
 };
 }
 }
