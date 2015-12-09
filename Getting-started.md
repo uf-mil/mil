@@ -57,7 +57,7 @@ ________________________________________________________________________________
 
 Run:
 
-    roscd && cd ~WORKSPACE_NAME/src && git clone git@github.com:uf-mil/NaviGator.git
+    roscd && cd ~/WORKSPACE_NAME/src && git clone git@github.com:uf-mil/NaviGator.git
 
 If this fails with a "Permission denied" error, you need to create an SSH key and
 add it to your GitHub account.
