@@ -56,60 +56,60 @@ class Canvas(app.Canvas):
         # Process events on a specific object
         if(event.text.lower() == 'i'):
             self.keypressPub.publish("i")
-        if(event.text.lower() == 'j'):
+        elif(event.text.lower() == 'j'):
             self.keypressPub.publish("j")
-        if(event.text.lower() == 'k'):
+        elif(event.text.lower() == 'k'):
             self.keypressPub.publish("k")
-        if(event.text.lower() == 'l'):
+        elif(event.text.lower() == 'l'):
             self.keypressPub.publish("l")
-        if(event.text.lower() == 'u'):
+        elif(event.text.lower() == 'u'):
             self.keypressPub.publish("u")
-        if(event.text.lower() == 'o'):
+        elif(event.text.lower() == 'o'):
             self.keypressPub.publish("o")
 
-        if(event.text.lower() == 't'):
+        elif(event.text.lower() == 't'):
             self.keypressPub.publish("t")
-        if(event.text.lower() == 'f'):
+        elif(event.text.lower() == 'f'):
             self.keypressPub.publish("f")
-        if(event.text.lower() == 'g'):
+        elif(event.text.lower() == 'g'):
             self.keypressPub.publish("g")
-        if(event.text.lower() == 'h'):
+        elif(event.text.lower() == 'h'):
             self.keypressPub.publish("h")
-        if(event.text.lower() == 'r'):
+        elif(event.text.lower() == 'r'):
             self.keypressPub.publish("r")
-        if(event.text.lower() == 'v'):
+        elif(event.text.lower() == 'v'):
             self.keypressPub.publish("v")
 
         self.translate = np.array([0.0, 0.0, 0.0])
         self.rotate = np.array([0.0, 0.0, 0.0])
         if(event.text.lower() == 'p'):
             print(repr(self.view))
-        if(event.text.lower() == 'q'):
+        elif(event.text.lower() == 'q'):
             sys.exit(0)
-        if(event.text.lower() == 'd'):
+        elif(event.text.lower() == 'd'):
             self.translate[0] += -0.3
-        if(event.text.lower() == 'a'):
+        elif(event.text.lower() == 'a'):
             self.translate[0] += 0.3
-        if(event.text.lower() == ' '):
+        elif(event.text.lower() == ' '):
             self.translate[1] += -0.3
-        if(event.text.lower() == 'c'):
+        elif(event.text.lower() == 'c'):
             self.translate[1] += 0.3
-        if(event.text.lower() == 's'):
+        elif(event.text.lower() == 's'):
             self.translate[2] += -0.3
-        if(event.text.lower() == 'w'):
+        elif(event.text.lower() == 'w'):
             self.translate[2] += 0.3
 
-        if(event.text == 'x'):
+        elif(event.text == 'x'):
             self.rotate += [2, 0, 0]
-        if(event.text == 'X'):
+        elif(event.text == 'X'):
             self.rotate += [-2, 0, 0]
-        if(event.text == 'y'):
+        elif(event.text == 'y'):
             self.rotate += [0, 2, 0]
-        if(event.text == 'Y'):
+        elif(event.text == 'Y'):
             self.rotate += [0, -2, 0]
-        if(event.text == 'z'):
+        elif(event.text == 'z'):
             self.rotate += [0, 0, 2]
-        if(event.text == 'Z'):
+        elif(event.text == 'Z'):
             self.rotate += [0, 0, -2]
 
         self.view = self.view.dot(

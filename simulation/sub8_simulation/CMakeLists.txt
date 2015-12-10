@@ -9,11 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
 )
 catkin_python_setup()
 
-add_message_files(
-  FILES
-  DVLSim.msg
-)
-
 add_service_files(
   FILES
   SimSetPose.srv
@@ -27,7 +22,7 @@ generate_messages(
 
 catkin_package(
    LIBRARIES sub8_simulation
-   CATKIN_DEPENDS rospy geometry_msgs message_generation
+   CATKINs_DEPENDS rospy geometry_msgs message_generation
 )
 
 include_directories(

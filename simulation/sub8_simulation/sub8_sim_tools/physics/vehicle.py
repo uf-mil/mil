@@ -5,8 +5,7 @@ from time import time
 from sub8_ros_tools import rosmsg_to_numpy, normalize
 from sub8_sim_tools.physics.physics import Box
 from sub8_simulation.srv import SimSetPose, SimSetPoseResponse
-from sub8_simulation.msg import DVLSim
-from sub8_msgs.msg import Thrust, ThrusterCmd
+from sub8_msgs.msg import Thrust, ThrusterCmd, VelocityMeasurement, VelocityMeasurements
 import geometry_msgs.msg as geometry
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Header, String
@@ -38,7 +37,7 @@ class Sub8(Box):
         self.truth_odom_pub = rospy.Publisher('truth/odom', Odometry, queue_size=1)
         self.thruster_sub = rospy.Subscriber('thrusters/thrust', Thrust, self.thrust_cb, queue_size=2)
         self.imu_sensor_pub = rospy.Publisher('imu', Imu, queue_size=1)
-        self.dvl_sensor_pub = rospy.Publisher('dvl', DVLSim, queue_size=1)
+        self.dvl_sensor_pub = rospy.Publisher('dvl', VelocityMeasurements, queue_size=1)
         self.thruster_sub = rospy.Subscriber('thrusters/thrust', Thrust, self.thrust_cb, queue_size=2)
         self.thrust_dict = {}
 
@@ -54,6 +53,12 @@ class Sub8(Box):
         self.dvl_rays.append(ode.GeomRay(None, 1e3))
         self.dvl_rays.append(ode.GeomRay(None, 1e3))
         self.dvl_rays.append(ode.GeomRay(None, 1e3))
+
+        self.dvl_ray_orientations = (np.array([0.866, -.5, -1]),
+                                    np.array([0.866, .5, -1]),
+                                    np.array([-0.866, .5, -1]),
+                                    np.array([-0.866, -.5, -1]))
+
 
 
         # Make this a parameter
@@ -185,8 +190,6 @@ class Sub8(Box):
             frame_id='/world'
         )
 
-        
-
         linear=geometry.Vector3(*linear_acc)
         angular=geometry.Vector3(*angular_vel)
 
@@ -209,19 +212,27 @@ class Sub8(Box):
         linear_vel = self.body.getRelPointVel(self.dvl_position)
         angular_vel = self.body.getAngularVel()
 
-        covariance = [-1, 0., 0.,
-                      0., -1, 0.,
-                      0., 0., -1]
+        correlation = -1
 
-        twist = geometry.Twist(
-            linear=geometry.Vector3(*linear_vel),
-            angular=geometry.Vector3(*angular_vel)
+        header = Header(
+            stamp=rospy.Time.now(),
+            frame_id='/world'
         )
 
-        dvl_msg = DVLSim(
-            twist=twist,
-            dvl_vel=tuple(self.get_vel_dvl_body())
+        vel_dvl_body = self.body.vectorFromWorld(self.body.getRelPointVel(self.dvl_position))
 
+        velocityMeasurements = []
+
+        for ray in self.dvl_ray_orientations:
+            velocityMeasurements.append(VelocityMeasurement(
+                direction=geometry.Vector3(*ray),
+                velocity=np.dot(ray, vel_dvl_body),
+                correlation=correlation
+            ))
+
+        dvl_msg = VelocityMeasurements(
+            header=header,
+            velocity_measurements=velocityMeasurements
         )
 
         self.dvl_sensor_pub.publish(dvl_msg)
@@ -282,14 +293,10 @@ class Sub8(Box):
 
     def get_vel_dvl_body(self):
         """Returns array of 4 components of the vehicle's velocities based off of the dvl ray vectors"""
-        dvl_ray_1 = np.array([0.866, -.5, -1])
-        dvl_ray_2 = np.array([0.866, .5, -1])
-        dvl_ray_3 = np.array([-0.866, .5, -1])
-        dvl_ray_4 = np.array([-0.866, -.5, -1])
-
+        
         vel_dvl_body = self.body.vectorFromWorld(self.body.getRelPointVel(self.dvl_position))
         
-        return np.array([np.dot(dvl_ray_1, vel_dvl_body), 
-                        np.dot(dvl_ray_2, vel_dvl_body), 
-                        np.dot(dvl_ray_3, vel_dvl_body), 
-                        np.dot(dvl_ray_4, vel_dvl_body)])
+        return np.array([np.dot(self.dvl_ray_orienations[0], vel_dvl_body), 
+                        np.dot(self.dvl_ray_orienations[1], vel_dvl_body), 
+                        np.dot(self.dvl_ray_orienations[2], vel_dvl_body), 
+                        np.dot(self.dvl_ray_orienations[3], vel_dvl_body)])
