@@ -113,8 +113,8 @@ Todo
 
 * [ ] Sensing
     * [ ] Depth Sensor
-    * [ ] DVL (We need to simulate all 4 beams if we want to test flipping)
-    * [ ] IMU (This is conceptually simple, but will take a good bit of work)
+    * [x] DVL (We need to simulate all 4 beams if we want to test flipping)
+    * [x] IMU (This is conceptually simple, but will take a good bit of work)
     * [ ] Imaging Sonar (OpenGL)
     * [ ] Stereo depth estimation (OpenGL)
     * [ ] Visible-light camera (OpenGL)

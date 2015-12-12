@@ -76,9 +76,8 @@ Prize: Glory, Jake might get you ice cream
     * [ ] Handle concurrency somehow
 * [ ] Come up with a good rostest framework/process for using full simulation
     * [ ] Should we break it up into little bits? Or something
-* [ ] Scene-graph system for simulator
 * [x] C++ Implementation of alarms -- Patrick
-* [ ] Add visualization to the monte-carlo engine
+* [x] Add visualization to the monte-carlo engine
 * [ ] Implement simulated integration tests for all systems
 * [ ] Add monte-carlo optimization for controller
 * [x] Add visualization to the monte-carlo engine
@@ -88,7 +87,7 @@ Prize: Glory, Jake might get you ice cream
     * [ ] Motion planning
     * [ ] Alarms
     * The sub should be able to handle *almost* completely random conditions (With some constraints on orientation and systems functional)
-* [ ] Figure out automatic differentiation
+* [x] Figure out automatic differentiation
     * [ ] Or Make a jacobian-generator for the sub's dynamics
 * [ ] Implement alarms for existing nodes
     * [ ] Alarm for bus undervoltage
@@ -98,11 +97,17 @@ Prize: Glory, Jake might get you ice cream
 * [ ] Add an install_dependencies.sh file to the repo, and make SemaphoreCI automatically run it
 * [ ] A script to run on Semaphore to compare performance metrics for current build vs pull
     i.e. if build[n]'s controller and vision performed better than build[n + 1], then something may have gone wrong, and we should be cautious pulling those changes
+
+## Simulation
+* [ ] Add trajectory visualization to the simulator
+    * When a trajectory message is published, draw a bunch of spheres or something
 * [ ] Add "widgets" to the simulator
 * [ ] Simulated shadows
 * [ ] CUDA water physics for Simul8
     * [ ] Or better water resistance at all
 * [x] Multiple light sources -- Tess
+* [ ] Keyboard control of Sub (Requested by Zach and Patrick) -- Annie
+* [ ] Scene-graph system for simulator
 
 ## Machine Learning
 * [ ] Toolset for object recognition
@@ -126,7 +131,7 @@ Prize: Glory, Jake might get you ice cream
 * [ ] Implement PCL functions in OpenCL and/or CUDA
 * [ ] Implement point-cloud research using PCL (Ask Jake about this - there are many many great PCL results that do not publish source code)
 * [ ] Come up with a way to use LED's or AR-tags to determine the pose of the camera relative to some landmark, e.g. the boat's docking adapter
-* [ ] Add stuff to the setup.py for command to automatically set up bash aliases for kill/unkill, switch rosmaster, etc
+* [ ] Add stuff to the setup.py for sub8_command to automatically set up bash aliases for kill/unkill, switch rosmaster, etc
 
 # Small Bounty
 Prize: Glory

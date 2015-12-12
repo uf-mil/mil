@@ -7,7 +7,9 @@ Ralph & David: Forward camera SLAM and stereo point cloud generation
 
 David: Visual Odometry from conventional optical flow
 
-Jake & Tess: MonoSLAM for down-camera
+Tess: PTAM/DTAM + MonoSLAM for down-camera
+
+Jake: SVO + MonoSLAM for down-camera
 
 # Considerations
 * Work in an underwater "outdoor" environment
@@ -34,7 +36,7 @@ Topics that appear to be common to essentially every monocular SLAM implementati
 
 * 2D-2D correspondence -> 3D transform estimation
 
-* Spare bundle adjustment for depth initialization (Tools exist for this)
+* Sparse bundle adjustment for depth initialization (Tools exist for this)
 
 ## Notes
 * PTAM is widely regarded as one of the best MAV SLAM approaches
@@ -45,17 +47,24 @@ Topics that appear to be common to essentially every monocular SLAM implementati
     * No way to reason about the quality of the track produced
     * *Each relative pose is known only to a translational scaling!!!!*
 
+
 ## General Knowledge
 * [Review of Epipolar geometry](https://www.robots.ox.ac.uk/~vgg/hzbook/hzbook1/HZepipolar.pdf)
     * This is super important!
 
+
 * [Representation in Homogeneous Coordinates](http://robotics.stanford.edu/~birch/projective/node4.html)
+
 
 * [Multiple View Geometry in Computer Vision - Hartley, Zisserman](ftp://vista.eng.tau.ac.il/dropbox/aviad/Hartley,%20Zisserman%20-%20Multiple%20View%20Geometry%20in%20Computer%20Vision.pdf)
 
     * This book is amazing, but the link will die someday. Just google $title + 'pdf'
 
     * Jake has a pdf - ask him if you want it
+
+
+* [Markov Random Field Optimization](http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/AV0809/ORCHARD/)
+
 
 ## References
 
@@ -71,6 +80,7 @@ Topics that appear to be common to essentially every monocular SLAM implementati
 
 * [4] [Five-Point Estimation Made Easy](http://users.cecs.anu.edu.au/~hongdong/new5pt_cameraREady_ver_1.pdf) - Estimate relative pose from 2d-2d correspondences
 
+
 ## Tools
 
 * [OpenGV](http://laurentkneip.github.io/opengv/index.html) - Open Geometric Computer Vision (C++)
@@ -81,8 +91,14 @@ Topics that appear to be common to essentially every monocular SLAM implementati
 
     * (Is this a good idea?)
 
-* [SBA](http://users.ics.forth.gr/~lourakis/sba/) - Spare Bundle Adjustment library (C++)
+* [SBA](http://users.ics.forth.gr/~lourakis/sba/) - Sparse Bundle Adjustment library (C++)
 
 * [Theia](http://www.theia-sfm.org/applications.html) - Open Structure from Motion library
 
 * [Ceres Solver](http://ceres-solver.org/nnls_tutorial.html#introduction) - Google's very own "not-your-mother's-solver" NLLS/general minimization solver
+
+
+## Equipment
+* Structured Light Projector: 10 Lumens Pico Microvision laser projector
+    * [$130](http://www.amazon.com/MicroVision-SHOWWX-Classic-Laser-Projector/dp/B003G5ML9Y)
+    * [$285](http://www.amazon.com/MicroVision-SHOWWX-Classic-Laser-Projector/dp/B003G5ML9Y)
