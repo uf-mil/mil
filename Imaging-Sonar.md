@@ -51,6 +51,7 @@ We need an imaging sonar for underwater SLAM. A 3D forward looking sonar (FLS) w
     * Prove that we can do SLAM with the Velodyne
     * Or do Monocular SLAM
 * Some of the older models suit us well, we should contact labs, government agencies and companies that may have old ones
+* Just buy one if it's under $3000
 
 # Notes
 * Underwater SLAM for robots is not very common...people do obstacle avoidance, but not much in the way of true SLAM
