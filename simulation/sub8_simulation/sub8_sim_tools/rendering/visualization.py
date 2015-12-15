@@ -35,7 +35,7 @@ class Canvas(app.Canvas):
         if show_window:
             self.show()
 
-        self.keypressPub = rospy.Publisher('keypress', String, queue_size=10)
+        self.keypress_pub = rospy.Publisher('keypress', String, queue_size=10)
 
     def on_timer(self, event):
         self.update()
@@ -55,30 +55,30 @@ class Canvas(app.Canvas):
     def on_key_press(self, event):
         # Process events on a specific object
         if(event.text.lower() == 'i'):
-            self.keypressPub.publish("i")
+            self.keypress_pub.publish("i")
         elif(event.text.lower() == 'j'):
-            self.keypressPub.publish("j")
+            self.keypress_pub.publish("j")
         elif(event.text.lower() == 'k'):
-            self.keypressPub.publish("k")
+            self.keypress_pub.publish("k")
         elif(event.text.lower() == 'l'):
-            self.keypressPub.publish("l")
+            self.keypress_pub.publish("l")
         elif(event.text.lower() == 'u'):
-            self.keypressPub.publish("u")
+            self.keypress_pub.publish("u")
         elif(event.text.lower() == 'o'):
-            self.keypressPub.publish("o")
+            self.keypress_pub.publish("o")
 
         elif(event.text.lower() == 't'):
-            self.keypressPub.publish("t")
+            self.keypress_pub.publish("t")
         elif(event.text.lower() == 'f'):
-            self.keypressPub.publish("f")
+            self.keypress_pub.publish("f")
         elif(event.text.lower() == 'g'):
-            self.keypressPub.publish("g")
+            self.keypress_pub.publish("g")
         elif(event.text.lower() == 'h'):
-            self.keypressPub.publish("h")
+            self.keypress_pub.publish("h")
         elif(event.text.lower() == 'r'):
-            self.keypressPub.publish("r")
+            self.keypress_pub.publish("r")
         elif(event.text.lower() == 'v'):
-            self.keypressPub.publish("v")
+            self.keypress_pub.publish("v")
 
         self.translate = np.array([0.0, 0.0, 0.0])
         self.rotate = np.array([0.0, 0.0, 0.0])

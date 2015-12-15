@@ -5,7 +5,7 @@ from time import time
 from sub8_ros_tools import rosmsg_to_numpy, normalize
 from sub8_sim_tools.physics.physics import Box
 from sub8_simulation.srv import SimSetPose, SimSetPoseResponse
-from sub8_msgs.msg import Thrust, ThrusterCmd, VelocityMeasurement, VelocityMeasurements
+from sub8_msgs.msg import Thrust, VelocityMeasurement, VelocityMeasurements
 import geometry_msgs.msg as geometry
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Header, String
@@ -17,6 +17,7 @@ class Sub8(Box):
     _linear_damping_coeff = -50  # TODO: Estimate area
     _rotational_damping_coeff = -0.5  # TODO: Estimate area
     _cmd_timeout = 2.
+
     def __init__(self, world, space, position):
         '''Yes, right now we're approximating the sub as a box
         Not taking any parameters because this is the literal Sub8
@@ -29,9 +30,9 @@ class Sub8(Box):
         lx, ly, lz = 0.5588, 0.5588, 0.381  # Meters
         self.radius = max((lx, ly, lz)) * 0.5  # For spherical approximation
         volume = lx * ly * lz * 0.25
-        # weight = 32.75  # kg
-        self.weight = 25.0  # kg
-        density = self.weight / volume
+        # self.mass = 32.75  # kg
+        self.mass = 25.0  # kg
+        density = self.mass / volume
         super(self.__class__, self).__init__(world, space, position, density, lx, ly, lz)
 
         self.truth_odom_pub = rospy.Publisher('truth/odom', Odometry, queue_size=1)
@@ -41,12 +42,14 @@ class Sub8(Box):
         self.thruster_sub = rospy.Subscriber('thrusters/thrust', Thrust, self.thrust_cb, queue_size=2)
         self.thrust_dict = {}
 
-        self.last_force = (0.0, 0.0, 0.0)
+        self.last_vel = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        self.cur_vel = np.array([0.0, 0.0, 0.0], dtype=np.float32)
 
         self.space = space
 
-        #Define 4 rays to implement a DVL sensor and the relative position of the sensor on the sub
-        self.dvl_position = np.array([0,0,0])
+        # Define 4 rays to implement a DVL sensor and the relative position of the sensor on the sub
+        # TODO: Fix position of DVL
+        self.dvl_position = np.array([0.0, 0.0, 0.0])
 
         self.dvl_rays = []
         self.dvl_rays.append(ode.GeomRay(None, 1e3))
@@ -55,64 +58,61 @@ class Sub8(Box):
         self.dvl_rays.append(ode.GeomRay(None, 1e3))
 
         self.dvl_ray_orientations = (np.array([0.866, -.5, -1]),
-                                    np.array([0.866, .5, -1]),
-                                    np.array([-0.866, .5, -1]),
-                                    np.array([-0.866, -.5, -1]))
-
-
+                                     np.array([0.866, .5, -1]),
+                                     np.array([-0.866, .5, -1]),
+                                     np.array([-0.866, -.5, -1]))
 
         # Make this a parameter
         # name, relative direction, relative position (COM)
         self.thruster_list = [
-            ("FLV", np.array([ 0.000,  0.0, -1]), np.array([ 0.1583, 0.16900, 0.0142])),  # flake8: noqa
-            ("FLL", np.array([-0.866,  0.5,  0]), np.array([ 0.2678, 0.27950, 0.0000])),  # flake8: noqa
-            ("FRV", np.array([ 0.000,  0.0, -1]), np.array([ 0.1583, -0.1690, 0.0142])),  # flake8: noqa
-            ("FRL", np.array([-0.866, -0.5,  0]), np.array([ 0.2678, -0.2795, 0.0000])),  # flake8: noqa
-            ("BLV", np.array([ 0.000,  0.0,  1]), np.array([-0.1583, 0.16900, 0.0142])),  # flake8: noqa
-            ("BLL", np.array([ 0.866,  0.5,  0]), np.array([-0.2678, 0.27950, 0.0000])),  # flake8: noqa
-            ("BRV", np.array([ 0.000,  0.0,  1]), np.array([-0.1583, -0.1690, 0.0142])),  # flake8: noqa
-            ("BRL", np.array([ 0.866, -0.5,  0]), np.array([-0.2678, -0.2795, 0.0000])),  # flake8: noqa
+            ("FLV", np.array([ 0.000,  0.0, -1]), np.array([ 0.1583, 0.16900, 0.0142])),  # noqa
+            ("FLL", np.array([-0.866,  0.5,  0]), np.array([ 0.2678, 0.27950, 0.0000])),  # noqa
+            ("FRV", np.array([ 0.000,  0.0, -1]), np.array([ 0.1583, -0.1690, 0.0142])),  # noqa
+            ("FRL", np.array([-0.866, -0.5,  0]), np.array([ 0.2678, -0.2795, 0.0000])),  # noqa
+            ("BLV", np.array([ 0.000,  0.0,  1]), np.array([-0.1583, 0.16900, 0.0142])),  # noqa
+            ("BLL", np.array([ 0.866,  0.5,  0]), np.array([-0.2678, 0.27950, 0.0000])),  # noqa
+            ("BRV", np.array([ 0.000,  0.0,  1]), np.array([-0.1583, -0.1690, 0.0142])),  # noqa
+            ("BRL", np.array([ 0.866, -0.5,  0]), np.array([-0.2678, -0.2795, 0.0000])),  # noqa
         ]
         self.last_cmd_time = time()
         self.set_up_ros()
 
-    def keypressCallback(self, data):
+    def keypress_callback(self, data):
         """Allows you to manipulate the vehicle through keypress"""
-        #Force
+        # Force
         if(data.data == "j"):
-            self.body.addRelForce(np.array([-500,0,0]))
+            self.body.addRelForce(np.array([-500, 0, 0]), dtype=np.float32)
         elif(data.data == 'l'):
-            self.body.addRelForce(np.array([500,0,0]))
+            self.body.addRelForce(np.array([500, 0, 0]), dtype=np.float32)
         elif(data.data == 'i'):
-            self.body.addRelForce(np.array([0,500,0]))
+            self.body.addRelForce(np.array([0, 500, 0]), dtype=np.float32)
         elif(data.data == 'k'):
-            self.body.addRelForce(np.array([0,-500,0]))
+            self.body.addRelForce(np.array([0, -500, 0]), dtype=np.float32)
         elif(data.data == 'u'):
-            self.body.addRelForce(np.array([0,0,500]))
+            self.body.addRelForce(np.array([0, 0, 500]), dtype=np.float32)
         elif(data.data == 'o'):
-            self.body.addRelForce(np.array([0,0,-500]))
+            self.body.addRelForce(np.array([0, 0, -500]), dtype=np.float32)
 
-
-        #Torque
+        # Torque
         if(data.data == "f"):
-            self.body.addRelTorque(np.array([-500,0,0]))
+            self.body.addRelTorque(np.array([-500, 0, 0]), dtype=np.float32)
         elif(data.data == 'h'):
-            self.body.addRelTorque(np.array([500,0,0]))
+            self.body.addRelTorque(np.array([500, 0, 0]), dtype=np.float32)
         elif(data.data == 't'):
-            self.body.addRelTorque(np.array([0,500,0]))
+            self.body.addRelTorque(np.array([0, 500, 0]), dtype=np.float32)
         elif(data.data == 'g'):
-            self.body.addRelTorque(np.array([0,-500,0]))
+            self.body.addRelTorque(np.array([0, -500, 0]), dtype=np.float32)
         elif(data.data == 'r'):
-            self.body.addRelTorque(np.array([0,0,500]))
+            self.body.addRelTorque(np.array([0, 0, 500]), dtype=np.float32)
         elif(data.data == 'v'):
-            self.body.addRelTorque(np.array([0,0,-500]))
+            self.body.addRelTorque(np.array([0, 0, -500]), dtype=np.float32)
 
     def set_up_ros(self):
         '''TODO:
             Add pointAt
         '''
         self.position_server = rospy.Service('/sim/vehicle/set_pose', SimSetPose, self.set_pose_server)
-        self.keypress_sub = rospy.Subscriber('keypress', String, self.keypressCallback)
+        self.keypress_sub = rospy.Subscriber('keypress', String, self.keypress_callback)
 
     def set_pose_server(self, srv):
         '''Set the pose of the submarine
@@ -176,42 +176,47 @@ class Sub8(Box):
 
         self.truth_odom_pub.publish(odom_msg)
 
-    def publish_imu(self):
+    def publish_imu(self, dt):
         """Publishes imu sensor information - orientation, angular velocity, and linear acceleration"""
-        noise = np.random.random(3)
+        orientation_matrix = self.pose[:3, :3]
+        sigma = 0.01
+        noise = np.random.normal(0.0, sigma, 3)
 
-        pose_matrix = np.transpose(self.pose)
-        linear_acc = (np.array(self.last_force) / self.weight) + noise
-        angular_vel = self.body.getAngularVel() + noise
-        quaternion = tf.transformations.quaternion_from_matrix(pose_matrix)
-       
+        linear_acc = orientation_matrix.dot(self.velocity - self.last_vel) / dt
+        linear_acc += noise
+
+        # TODO: Fix frame
+        angular_vel = orientation_matrix.dot(self.body.getAngularVel()) + noise
+
         header = Header(
             stamp=rospy.Time.now(),
             frame_id='/world'
         )
 
-        linear=geometry.Vector3(*linear_acc)
-        angular=geometry.Vector3(*angular_vel)
+        linear = geometry.Vector3(*linear_acc)
+        angular = geometry.Vector3(*angular_vel)
 
-        covariance = [-1, 0., 0.,
-                      0., 0., 0.,
-                      0., 0., 0.]
+        covariance = [sigma ** 2, 0., 0.,
+                      0., sigma ** 2, 0.,
+                      0., 0., sigma ** 2]
+
+        orientation_covariance = [-1, 0., 0.,
+                                  0., 0., 0.,
+                                  0., 0., 0.]
 
         imu_msg = Imu(
             header=header,
             angular_velocity=angular,
             angular_velocity_covariance=covariance,
             linear_acceleration=linear,
-            linear_acceleration_covariance=covariance
+            linear_acceleration_covariance=covariance,
+            orientation_covariance=orientation_covariance
         )
 
         self.imu_sensor_pub.publish(imu_msg)
 
     def publish_dvl(self):
         """Publishes dvl sensor data - twist message, and array of 4 dvl velocities based off of ray orientations"""
-        linear_vel = self.body.getRelPointVel(self.dvl_position)
-        angular_vel = self.body.getAngularVel()
-
         correlation = -1
 
         header = Header(
@@ -221,10 +226,10 @@ class Sub8(Box):
 
         vel_dvl_body = self.body.vectorFromWorld(self.body.getRelPointVel(self.dvl_position))
 
-        velocityMeasurements = []
+        velocity_measurements = []
 
         for ray in self.dvl_ray_orientations:
-            velocityMeasurements.append(VelocityMeasurement(
+            velocity_measurements.append(VelocityMeasurement(
                 direction=geometry.Vector3(*ray),
                 velocity=np.dot(ray, vel_dvl_body),
                 correlation=correlation
@@ -232,7 +237,7 @@ class Sub8(Box):
 
         dvl_msg = VelocityMeasurements(
             header=header,
-            velocity_measurements=velocityMeasurements
+            velocity_measurements=velocity_measurements
         )
 
         self.dvl_sensor_pub.publish(dvl_msg)
@@ -260,25 +265,28 @@ class Sub8(Box):
                 body_force = rel_dir * thruster_force
                 self.body.addRelForceAtRelPos(body_force, rel_pos)
 
-        self.last_force = self.body.getForce()
-
         self.apply_buoyancy_force()
         self.apply_damping_force()
         # self.apply_damping_torque()
         self.publish_pose()
         self.publish_dvl()
-        self.publish_imu()
+        self.publish_imu(dt)
 
         # Sets the position of the DVL sensor rays to point below the current position of the sub
         self.dvl_rays[0].set(self.body.getRelPointPos(self.dvl_position), self.body.vectorToWorld(np.array([0.866, .5, -1])))
         self.dvl_rays[1].set(self.body.getRelPointPos(self.dvl_position), self.body.vectorToWorld(np.array([0.866, -.5, -1])))
         self.dvl_rays[2].set(self.body.getRelPointPos(self.dvl_position), self.body.vectorToWorld(np.array([-0.866, .5, -1])))
         self.dvl_rays[3].set(self.body.getRelPointPos(self.dvl_position), self.body.vectorToWorld(np.array([-0.866, -.5, -1])))
+        self.last_vel = self.velocity
 
     def get_dvl_range(self):
         """Returns the range of the ray, otherwise 0 represents contact with another object
-        For each dvl sensor ray object, collisions with the floor are detected, and parameters from the contact.getContactGeomParams() method 
-        are used to calculate the range of the dvl sensor to the floor - returns 0 if unable to get a measurement (unable to connect with the floor)"""
+            For each dvl sensor ray object, collisions with the floor are detected,
+                and parameters from the contact.getContactGeomParams() method
+                are used to calculate the range of the dvl sensor to the floor
+
+        Return 0 if unable to get a measurement (unable to connect with the floor)
+        """
         for ray in self.dvl_rays:
             for contact in ode.collide(ray, self.space):
                 pos, normal, depth, geom1, geom2 = contact.getContactGeomParams()
@@ -290,13 +298,13 @@ class Sub8(Box):
 
         return 0
 
-
     def get_vel_dvl_body(self):
         """Returns array of 4 components of the vehicle's velocities based off of the dvl ray vectors"""
-        
+
         vel_dvl_body = self.body.vectorFromWorld(self.body.getRelPointVel(self.dvl_position))
-        
-        return np.array([np.dot(self.dvl_ray_orienations[0], vel_dvl_body), 
-                        np.dot(self.dvl_ray_orienations[1], vel_dvl_body), 
-                        np.dot(self.dvl_ray_orienations[2], vel_dvl_body), 
-                        np.dot(self.dvl_ray_orienations[3], vel_dvl_body)])
+
+        return np.array([np.dot(self.dvl_ray_orienations[0], vel_dvl_body),
+                        np.dot(self.dvl_ray_orienations[1], vel_dvl_body),
+                        np.dot(self.dvl_ray_orienations[2], vel_dvl_body),
+                        np.dot(self.dvl_ray_orienations[3], vel_dvl_body)
+                         ])
