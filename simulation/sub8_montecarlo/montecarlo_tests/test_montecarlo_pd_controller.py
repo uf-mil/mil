@@ -21,27 +21,59 @@ class TestController(unittest.TestCase):
         self.time_limit = rospy.get_param('run_time', 10)
 
     def test_pd_controller(self):
-        # pretty loose for a crappy controller
+        '''Verify that the controller_verification tool *works* and produces useful results
+            Note: This is *absolutely not* intended to prove that the demo PD controller works or is useful in any way
+                It is *entirely* to prove that the monte-carlo tool works
+
+        Behavior:
+            1. Run N tests (Settable via parameter) using montecarlo controller verification
+            2. Verify that it fails on some ridiculous requirements
+            3. And succeeds on some super easy ones
+        '''
+
         criteria = {
-            'min_envelope': 0.7,
-            'max_enevelope': 1.1,
+            'impossible_min_envelope': 0.2,
+            'impossible_max_enevelope': 0.3,
+            'achievable_min_envelope': 1.5,
+            'achievable_max_enevelope': 2.0,
         }
         # Of course we don't want to plot!
         vc = VerifyController(self.num_runs, self.time_limit, do_plot=False)
         vc.run_loop()
         averages = vc.analyze_stability()
         avg_min, avg_max_envelope = averages[0], averages[1]
-        self.assertLess(
-            avg_min, criteria['min_envelope'],
+
+        # Verify that the controller fails when given ridiculous requirements
+        self.assertGreater(
+            avg_min, criteria['impossible_min_envelope'],
             msg='PD Controller did not satisy bounds for minimum, wanted {}, got {}'.format(
-                criteria['min_envelope'],
+                criteria['impossible_min_envelope'],
                 avg_min
             )
         )
-        self.assertLess(
-            avg_max_envelope, criteria['max_enevelope'],
+        # Verify again that the controller fails
+        self.assertGreater(
+            avg_max_envelope, criteria['impossible_max_enevelope'],
             msg='PD Controller did not satisy bounds for maximum convergence error, wanted {}, got {}'.format(
-                criteria['max_enevelope'],
+                criteria['impossible_max_enevelope'],
+                avg_max_envelope
+            )
+        )
+
+        # Now check that the controller could satisfy super easy bounds
+        self.assertGreater(
+            avg_min, criteria['achievable_min_envelope'],
+            msg='PD Controller did not satisy bounds for minimum, wanted {}, got {}'.format(
+                criteria['achievable_min_envelope'],
+                avg_min
+            )
+        )
+
+        # And again
+        self.assertGreater(
+            avg_max_envelope, criteria['achievable_max_enevelope'],
+            msg='PD Controller did not satisy bounds for maximum convergence error, wanted {}, got {}'.format(
+                criteria['achievable_max_enevelope'],
                 avg_max_envelope
             )
         )

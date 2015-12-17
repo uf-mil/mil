@@ -7,7 +7,7 @@
 
   <include file="$(find sub8_simulation)/launch/sim_full.launch" />
 
-  <param name="runs" value="15" type="int" />
+  <param name="runs" value="5" type="int" />
   <param name="run_time" value="40" type="double" />
   <param name="plot_results" value="False" type="bool" />
 
