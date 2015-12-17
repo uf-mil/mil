@@ -46,7 +46,7 @@ class TestController(unittest.TestCase):
         # Verify that the controller fails when given ridiculous requirements
         self.assertGreater(
             avg_min, criteria['impossible_min_envelope'],
-            msg='PD Controller did not satisy bounds for minimum, wanted {}, got {}'.format(
+            msg='VerifyController reported nonsense performance, expected {}, got {}'.format(
                 criteria['impossible_min_envelope'],
                 avg_min
             )
@@ -54,14 +54,14 @@ class TestController(unittest.TestCase):
         # Verify again that the controller fails
         self.assertGreater(
             avg_max_envelope, criteria['impossible_max_enevelope'],
-            msg='PD Controller did not satisy bounds for maximum convergence error, wanted {}, got {}'.format(
+            msg='VerifyController reported nonsense performance, expected {}, got {}'.format(
                 criteria['impossible_max_enevelope'],
                 avg_max_envelope
             )
         )
 
         # Now check that the controller could satisfy super easy bounds
-        self.assertGreater(
+        self.assertLess(
             avg_min, criteria['achievable_min_envelope'],
             msg='PD Controller did not satisy bounds for minimum, wanted {}, got {}'.format(
                 criteria['achievable_min_envelope'],
@@ -70,7 +70,7 @@ class TestController(unittest.TestCase):
         )
 
         # And again
-        self.assertGreater(
+        self.assertLess(
             avg_max_envelope, criteria['achievable_max_enevelope'],
             msg='PD Controller did not satisy bounds for maximum convergence error, wanted {}, got {}'.format(
                 criteria['achievable_max_enevelope'],

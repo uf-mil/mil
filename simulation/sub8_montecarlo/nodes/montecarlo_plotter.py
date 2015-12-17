@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     num_runs = rospy.get_param('runs', 4)
     time_limit = rospy.get_param('run_time', 10)
-    do_plot = rospy.get_param('plot_results', False)
+    do_plot = rospy.get_param('plot_results', True)
 
     verifier = VerifyController(num_runs, time_limit, do_plot=do_plot)
     verifier.run_loop()

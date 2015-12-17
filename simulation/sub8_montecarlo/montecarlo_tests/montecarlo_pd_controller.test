@@ -12,5 +12,5 @@
   <param name="plot_results" value="False" type="bool" />
 
   <node pkg="sub8_controller" type="pd_controller" name="pdcontroller" output="screen"/>
-  <test test-name="sub8_controller_montecarlo" pkg="sub8_montecarlo" type="test_montecarlo_pd_controller.py" time-limit="100.0" retry="1"/>
+  <test test-name="sub8_controller_montecarlo" pkg="sub8_montecarlo" type="test_montecarlo_pd_controller.py" time-limit="100.0"/>
 </launch>

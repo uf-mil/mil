@@ -5,9 +5,8 @@ import rospy
 import numpy as np
 import time
 import sub8_ros_tools as sub8_utils
-import sub8_ros_tools as sub8_utils
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # flake8: noqa
+from mpl_toolkits.mplot3d import Axes3D  # noqa
 
 import geometry_msgs.msg as geometry_msgs
 import nav_msgs.msg as nav_msgs
@@ -17,6 +16,7 @@ from sub8_msgs.msg import Trajectory, Waypoint
 
 class VerifyController(object):
     _sampling_period = rospy.Duration(0.1)
+
     def __init__(self, num_runs=4, time_limit=10, do_plot=False):
         '''Verify that a controller is...
 
@@ -86,7 +86,6 @@ class VerifyController(object):
         )
         self.target_pub.publish(target_msg)
 
-
     def traj_cb(self, msg):
         pose, twist = sub8_utils.posetwist_to_numpy(msg.trajectory[0])
         self.target_state = pose[0]
@@ -103,7 +102,7 @@ class VerifyController(object):
         linear, angular = twist
         self.cur_state_history.append(np.hstack((position, linear)))
 
-        state_section = self.cur_state_history[::-1][:self.T]
+        # state_section = self.cur_state_history[::-1][:self.T]
 
     def plot(self, close_after=None):
         '''TODO:
