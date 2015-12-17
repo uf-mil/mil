@@ -23,7 +23,7 @@ Jake: SVO + MonoSLAM for down-camera
 * Do we need to enhance the simulator to support visual SLAM activities?
 * Do we need better cameras?
 * Should we consider using a signed Distance Function (SFD) for mapping? The researchers at TMU show that is
-significantly faster than Octrees and claim that it is robust to noise and occlusion. Their paper [5] is listed under reference.
+significantly faster than Octrees and claim that it is robust to noise and occlusion. Their paper [5] is listed under references.
 
 # Notes
 * Down-camera and forward camera SLAM are almost certainly different problems. Each works with remarkably different scene disparity, and the forward cameras work with much more occlusion than the down-camera
