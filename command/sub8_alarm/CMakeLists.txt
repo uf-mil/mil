@@ -29,6 +29,20 @@ add_library(
   sub8_alarm/alarm_helpers.cc
 )
 
+
+add_dependencies(
+  ${PROJECT_NAME}
+  sub8_msgs_generate_messages_cpp
+  ${catkin_EXPORTED_TARGETS}
+)
+
+
+# Export headers
+install(
+  DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+
 # Add folders to be run by python nosetests
 if(CATKIN_ENABLE_TESTING)
   catkin_add_nosetests(test_alarms/test_alarm_helpers.py)
@@ -37,14 +51,14 @@ endif()
 
 # Add gtest for C++ alarms
 if(CATKIN_ENABLE_TESTING)
-  add_rostest_gtest(alarm_integration_cpp_tests 
+  add_rostest_gtest(alarm_integration_cpp_tests
   	test_alarms/cpp/alarm_integration_cpp.test
     test_alarms/cpp/test_alarm_helpers.cc
     sub8_alarm/alarm_helpers.cc
   )
 
   target_link_libraries(
-  	alarm_integration_cpp_tests 
+  	alarm_integration_cpp_tests
   	${catkin_LIBRARIES}
   	${PROJECT_NAME}
   )

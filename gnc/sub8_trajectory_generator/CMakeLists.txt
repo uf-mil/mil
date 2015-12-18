@@ -22,8 +22,8 @@ set(SRCS
 )
 
 catkin_package(
-   	CATKIN_DEPENDS roscpp 
-   	DEPENDS system_lib sub8_msgs sub8_alarm
+   	CATKIN_DEPENDS roscpp sub8_msgs
+   	DEPENDS system_lib sub8_msgs
 )
 
 include_directories(
@@ -36,49 +36,42 @@ include_directories(
 )
 
 
-add_executable(${PROJECT_NAME} 
-	src/trajectory_generator.cc 
-	${SRCS}
+add_executable(
+	${PROJECT_NAME}
+	src/trajectory_generator.cc
+	src/sub8_state_space.cc
+	src/sub8_space_information.cc
+	src/sub8_state_validity_checker.cc
+	src/sub8_tgen_manager.cc
 )
 
-target_link_libraries(${PROJECT_NAME} 
+
+target_link_libraries(
+    ${PROJECT_NAME}
+    ${catkin_LIBRARIES}
+    ${OMPL_LIBRARIES}
+)
+
+add_dependencies(${PROJECT_NAME}
+    sub8_msgs_generate_messages_cpp
+    ${catkin_EXPORTED_TARGETS}
+)
+
+catkin_add_gtest(${PROJECT_NAME}_unit_tests
+	test/sub8_state_space_test.cc
+	test/sub8_state_validity_checker_test.cc
+	test/sub8_space_information_test.cc
+	test/sub8_tgen_manager_test.cc
+	test/test_driver.cc
+	src/sub8_state_space.cc
+	src/sub8_space_information.cc
+	src/sub8_state_validity_checker.cc
+	src/sub8_tgen_manager.cc
+)
+
+
+target_link_libraries(
+	${PROJECT_NAME}_unit_tests
 	${catkin_LIBRARIES}
 	${OMPL_LIBRARIES}
-	${Eigen_LIBRARIES}
-	${sub8_alarm_LIBRARIES}
 )
-
-if(CATKIN_ENABLE_TESTING)
-	catkin_add_gtest(${PROJECT_NAME}_unit_tests 
-		test/sub8_state_validity_checker_test.cc
-		test/sub_dynamics_test.cc
-		test/test_driver.cc
-		${SRCS}
-	)
-
-	target_link_libraries(${PROJECT_NAME}_unit_tests
-		${catkin_LIBRARIES}
-		${OMPL_LIBRARIES}
-		${Eigen_LIBRARIES}
-		${sub8_alarm_LIBRARIES}
-	)
-  	
-  	# The test driver with your main function
-  	# must be listed last (before the source files)
-  	add_rostest_gtest(${PROJECT_NAME}_integration_tests 
-  		test/tgen_integration.test
-		test/tgen_manager_test.cc
-		test/tgen_thruster_info_test.cc
-		test/sub8_state_space_test.cc
-		test/space_information_test.cc
-		test/integration_test_driver.cc		
-		${SRCS}
-  	)
-
-  	target_link_libraries(${PROJECT_NAME}_integration_tests
-  		${catkin_LIBRARIES}
-  		${OMPL_LIBRARIES}
-		${Eigen_LIBRARIES}
-		${sub8_alarm_LIBRARIES}
-  	)
-endif()

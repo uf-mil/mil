@@ -18,6 +18,8 @@ add_message_files(
   ThrusterStatus.msg
   Waypoint.msg
   Trajectory.msg
+  VelocityMeasurement.msg
+  VelocityMeasurements.msg
 )
 
 add_service_files(

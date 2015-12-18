@@ -3,6 +3,9 @@ from vispy import gloo
 from vispy import app
 from vispy.util.transforms import translate, rotate
 from sub8_sim_tools.rendering import World
+from std_msgs.msg import String
+import rospy
+import sys
 
 
 class Canvas(app.Canvas):
@@ -32,6 +35,8 @@ class Canvas(app.Canvas):
         if show_window:
             self.show()
 
+        self.keypress_pub = rospy.Publisher('keypress', String, queue_size=10)
+
     def on_timer(self, event):
         self.update()
 
@@ -48,10 +53,39 @@ class Canvas(app.Canvas):
         self.world.draw(self.view)
 
     def on_key_press(self, event):
+        # Process events on a specific object
+        if(event.text.lower() == 'i'):
+            self.keypress_pub.publish("i")
+        elif(event.text.lower() == 'j'):
+            self.keypress_pub.publish("j")
+        elif(event.text.lower() == 'k'):
+            self.keypress_pub.publish("k")
+        elif(event.text.lower() == 'l'):
+            self.keypress_pub.publish("l")
+        elif(event.text.lower() == 'u'):
+            self.keypress_pub.publish("u")
+        elif(event.text.lower() == 'o'):
+            self.keypress_pub.publish("o")
+
+        elif(event.text.lower() == 't'):
+            self.keypress_pub.publish("t")
+        elif(event.text.lower() == 'f'):
+            self.keypress_pub.publish("f")
+        elif(event.text.lower() == 'g'):
+            self.keypress_pub.publish("g")
+        elif(event.text.lower() == 'h'):
+            self.keypress_pub.publish("h")
+        elif(event.text.lower() == 'r'):
+            self.keypress_pub.publish("r")
+        elif(event.text.lower() == 'v'):
+            self.keypress_pub.publish("v")
+
         self.translate = np.array([0.0, 0.0, 0.0])
         self.rotate = np.array([0.0, 0.0, 0.0])
         if(event.text.lower() == 'p'):
             print(repr(self.view))
+        elif(event.text.lower() == 'q'):
+            sys.exit(0)
         elif(event.text.lower() == 'd'):
             self.translate[0] += -0.3
         elif(event.text.lower() == 'a'):
@@ -84,7 +118,6 @@ class Canvas(app.Canvas):
             rotate(self.rotate[2], (0, 0, 1))
         )
         self.view = self.view.dot(translate(list(self.translate)))
-
 
 if __name__ == '__main__':
     c = Canvas()

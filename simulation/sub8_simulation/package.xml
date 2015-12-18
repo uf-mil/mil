@@ -3,7 +3,7 @@
   <name>sub8_simulation</name>
   <version>1.0.0</version>
   <description>The sub8_simulation package</description>
-  <maintainer email="annhiluc@ufl.edu">Annie Luc</maintainer>
+  <maintainer email="annieluc@ufl.edu">Annie Luc</maintainer>
   <maintainer email="jpanikulam@ufl.edu">Jacob Panikulam</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
