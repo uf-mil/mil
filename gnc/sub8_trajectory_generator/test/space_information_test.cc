@@ -44,8 +44,8 @@ TEST_F(SpaceInformationTest, testSpaceInformationGenerator) {
 
   SpaceInformationPtr si = ss_gen->generate(sub_dynamics, test_thruster_ranges);
 
-  ASSERT_EQ(si->getStateDimension(), 13)
-      << "The Sub8 state space should have 13 dimensions";
+  ASSERT_EQ(si->getStateDimension(), 12)
+      << "The Sub8 state space should have 12 dimensions";
 
   // Verify that the SpaceInformation object's setup method has been called
   ASSERT_TRUE(si->isSetup());
@@ -56,8 +56,17 @@ TEST_F(SpaceInformationTest, testParameters) {
   double prop_step_size;
   double min_control_duration;
   double max_control_duration;
+  double position_gain;
+  double velocity_gain;
+  double angular_velocity_gain;
+  double orientation_gain;
+  
   EXPECT_TRUE(ros::param::get("state_validity_checking_resolution", checking_res));
   EXPECT_TRUE(ros::param::get("propagation_step_size", prop_step_size));
   EXPECT_TRUE(ros::param::get("min_control_duration", min_control_duration));
   EXPECT_TRUE(ros::param::get("max_control_duration", max_control_duration));
+  EXPECT_TRUE(ros::param::get("position_gain", position_gain));
+  EXPECT_TRUE(ros::param::get("velocity_gain", velocity_gain));
+  EXPECT_TRUE(ros::param::get("angular_velocity_gain", angular_velocity_gain));
+  EXPECT_TRUE(ros::param::get("orientation_gain", orientation_gain));
 }

@@ -50,7 +50,6 @@ target_link_libraries(${PROJECT_NAME}
 
 if(CATKIN_ENABLE_TESTING)
 	catkin_add_gtest(${PROJECT_NAME}_unit_tests 
-		test/sub8_state_space_test.cc
 		test/sub8_state_validity_checker_test.cc
 		test/sub_dynamics_test.cc
 		test/test_driver.cc
@@ -70,6 +69,7 @@ if(CATKIN_ENABLE_TESTING)
   		test/tgen_integration.test
 		test/tgen_manager_test.cc
 		test/tgen_thruster_info_test.cc
+		test/sub8_state_space_test.cc
 		test/space_information_test.cc
 		test/integration_test_driver.cc		
 		${SRCS}

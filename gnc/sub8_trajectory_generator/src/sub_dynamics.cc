@@ -14,11 +14,7 @@
 using sub8::trajectory_generator::SubDynamics;
 using sub8::trajectory_generator::Sub8StateSpace;
 
-SubDynamics::SubDynamics(TGenThrusterInfoPtr& ti) : _thruster_info_ptr(ti) {
-  // If grabbing the param fails, use a default value (25)
-  if (!ros::param::get("sub_mass", _mass)) {
-    _mass = 25.0;
-  }
+SubDynamics::SubDynamics(TGenThrusterInfoPtr& ti) : _thruster_info_ptr(ti), _mass(25.0) {
 };
 
 // ****************** State representations ********************//
@@ -152,12 +148,10 @@ void SubDynamics::getSkewSymmetric(const Vector3d& v, Matrix3d& skew) const {
   skew << 0, -v(2), v(1), v(2), 0, -v(0), -v(1), v(0), 0;
 }
 
+// TODO: How much time is spent calling this method? 
 void SubDynamics::postPropagate(const ob::State* state,
                                 const oc::Control* control,
                                 const double duration, ob::State* result) {
-  Vector4d q;
-  result->as<Sub8StateSpace::StateType>()->getOrientation(q);
-  q = q / q.norm();
-  result->as<Sub8StateSpace::StateType>()->setOrientation(q(0), q(1), q(2),
-                                                          q(3));
+  Sub8StateSpace sub8_ss(std::move(std::vector<double>({1, 1, 1, 1}))); 
+  sub8_ss.enforceBounds(result);
 }

@@ -7,12 +7,15 @@
 
 #include "ompl/base/StateSpace.h"
 #include "ompl/base/spaces/RealVectorStateSpace.h"
+#include "ompl/base/spaces/SO3StateSpace.h"
 #include "tgen_common.h"
 #include <Eigen/Dense>
+#include <ros/ros.h>
 
 using ompl::base::CompoundStateSpace;
 using ompl::base::RealVectorStateSpace;
 using ompl::base::RealVectorBounds;
+using ompl::base::SO3StateSpace;
 using ompl::base::StateSpacePtr;
 using ompl::base::State;
 
@@ -55,10 +58,13 @@ class Sub8StateSpace : public CompoundStateSpace {
     // pos(0) = x
     // pos(1) = y
     // pos(2) = z
-    void getPosition(Vector3d& pos) const {
+    Vector3d getPosition() const {
+      Vector3d pos;
       pos << as<RealVectorStateSpace::StateType>(0)->values[0],
           as<RealVectorStateSpace::StateType>(0)->values[1],
           as<RealVectorStateSpace::StateType>(0)->values[2];
+
+      return pos;
     }
 
     // Set x,y,z velocities
@@ -71,10 +77,12 @@ class Sub8StateSpace : public CompoundStateSpace {
     // vel(0) = x
     // vel(1) = y
     // vel(2) = z
-    void getLinearVelocity(Vector3d& vel) const {
+    Vector3d getLinearVelocity() const {
+      Vector3d vel; 
       vel << as<RealVectorStateSpace::StateType>(1)->values[0],
           as<RealVectorStateSpace::StateType>(1)->values[1],
           as<RealVectorStateSpace::StateType>(1)->values[2];
+      return vel; 
     }
 
     // Set wx, wy, wz angular velocities
@@ -87,41 +95,40 @@ class Sub8StateSpace : public CompoundStateSpace {
     // w(0) = wx
     // w(1) = wy
     // w(2) = wz
-    void getAngularVelocity(Vector3d& w) const {
+    Vector3d getAngularVelocity() const {
+      Vector3d w;
       w << as<RealVectorStateSpace::StateType>(2)->values[0],
           as<RealVectorStateSpace::StateType>(2)->values[1],
           as<RealVectorStateSpace::StateType>(2)->values[2];
+      return w;
     }
 
-    // Set qx, qy, qz, qw for the unit quaternion representing orientation
-    void setOrientation(double qx, double qy, double qz, double qw) const {
-      as<RealVectorStateSpace::StateType>(3)->values[0] = qx;
-      as<RealVectorStateSpace::StateType>(3)->values[1] = qy;
-      as<RealVectorStateSpace::StateType>(3)->values[2] = qz;
-      as<RealVectorStateSpace::StateType>(3)->values[3] = qw;
+    // Use AxisAngle, internally converted to the a unit quaternion
+    void setOrientation(double ax, double ay, double az, double angle) {
+      as<SO3StateSpace::StateType>(3)->setAxisAngle(ax, ay, az, angle);
     }
 
     // orientation[0] = qx
     // orientation[1] = qy
     // orientation[2] = qz
     // orientation[3] = qw
-    void getOrientation(Vector4d& orientation) const {
-      orientation << as<RealVectorStateSpace::StateType>(3)->values[0],
-          as<RealVectorStateSpace::StateType>(3)->values[1],
-          as<RealVectorStateSpace::StateType>(3)->values[2],
-          as<RealVectorStateSpace::StateType>(3)->values[3];
+    Vector4d getOrientation() const {
+      Vector4d orientation;
+      orientation << as<SO3StateSpace::StateType>(3)->x,
+          as<SO3StateSpace::StateType>(3)->y,
+          as<SO3StateSpace::StateType>(3)->z,
+          as<SO3StateSpace::StateType>(3)->w;
+      return orientation;
     }
 
-    void getState(Vector13d& state) const {
-      Vector3d position;
-      getPosition(position);
-      Vector3d linear_velocity;
-      getLinearVelocity(linear_velocity);
-      Vector3d angular_velocity;
-      getAngularVelocity(angular_velocity);
-      Vector4d orientation;
-      getOrientation(orientation);
+    Vector13d getState() const {
+      Vector13d state;
+      Vector3d position = getPosition();
+      Vector3d linear_velocity = getLinearVelocity();
+      Vector3d angular_velocity = getAngularVelocity();
+      Vector4d orientation = getOrientation();
       state << position, linear_velocity, angular_velocity, orientation;
+      return state;
     }
   };
 
@@ -129,23 +136,17 @@ class Sub8StateSpace : public CompoundStateSpace {
   // 1. RealVectorStateSpace(3) - position
   // 2. RealVectorStateSpace(3) - linear velocities
   // 3. RealVectorStateSpace(3) - angular velocities
-  // 4. RealVectorStateSpace(4) - unit quaternion representing orientation
-  Sub8StateSpace() : CompoundStateSpace() {
+  // 4. SO3StateSpace(4) - unit quaternion representing orientation
+  Sub8StateSpace(std::vector<double>&& weights) : CompoundStateSpace() {
     setName("Sub8StateSpace");
     type_ = SUB8_STATE_SPACE_ID;
 
-    // the 1.0 arg refers to the distance fn weighting. Since we are using a
-    // custom
-    // distance function, these values are all set to 1.0
-    addSubspace(StateSpacePtr(new RealVectorStateSpace(3)), 1.0);
-    addSubspace(StateSpacePtr(new RealVectorStateSpace(3)), 1.0);
-    addSubspace(StateSpacePtr(new RealVectorStateSpace(3)), 1.0);
-    addSubspace(StateSpacePtr(new RealVectorStateSpace(4)), 1.0);
+    assert(weights.size() == 4);
 
-    ros::param::get("distance_gain_position", distance_gain_position);
-    ros::param::get("distance_gain_velocity", distance_gain_velocity);
-    ros::param::get("distance_gain_angular_velocity", distance_gain_angular_velocity);
-    ros::param::get("distance_gain_orientation", distance_gain_orientation);
+    addSubspace(StateSpacePtr(new RealVectorStateSpace(3)), weights[0]);
+    addSubspace(StateSpacePtr(new RealVectorStateSpace(3)), weights[1]);
+    addSubspace(StateSpacePtr(new RealVectorStateSpace(3)), weights[2]);
+    addSubspace(StateSpacePtr(new SO3StateSpace()), weights[3]);
 
     // Prevent clients from modifying the state space further
     lock();
@@ -172,13 +173,6 @@ class Sub8StateSpace : public CompoundStateSpace {
     as<RealVectorStateSpace>(2)->setBounds(bounds);
   }
 
-  // Set bounds on the orientation (despite the fact that the
-  // sub is holonomic, since we're using a 4D RealVectorSpace
-  // for its orientation, OMPL requires us to set bounds)
-  void set_orientation_bounds(const RealVectorBounds& bounds) {
-    as<RealVectorStateSpace>(3)->setBounds(bounds);
-  }
-
   const RealVectorBounds& get_volume_bounds() const {
     return as<RealVectorStateSpace>(0)->getBounds();
   }
@@ -189,10 +183,6 @@ class Sub8StateSpace : public CompoundStateSpace {
 
   const RealVectorBounds& get_angular_velocity_bounds() const {
     return as<RealVectorStateSpace>(2)->getBounds();
-  }
-
-  const RealVectorBounds& get_orientation_bounds() const {
-    return as<RealVectorStateSpace>(3)->getBounds();
   }
 
   //////////////////////////////////////////////////
@@ -207,9 +197,7 @@ class Sub8StateSpace : public CompoundStateSpace {
   // and all its subspaces
   virtual void freeState(State* state) const;
 
-  // Override the default distance metric, which is to use the L2 norm
-  // Instead, LQR  will be used to calculate a cost in the control space
-  // between two states
+  // Override the default distance metric
   virtual double distance(const State* state1, const State* state2) const;
 
   // Get the maximum value a call to distance() can return (or an upper bound).
@@ -223,15 +211,11 @@ class Sub8StateSpace : public CompoundStateSpace {
   // Define equality between states
   virtual bool equalStates(const State* state1, const State* state2) const;
 
+  // For ensuring the orientation is a unit quaternion
+  virtual void enforceBounds(State* state) const;
+
  private:
   const static int SUB8_STATE_SPACE_ID = 99;
-
-  // Weights for distance function
-  double distance_gain_position;
-  double distance_gain_velocity; 
-  double distance_gain_angular_velocity; 
-  double distance_gain_orientation; 
-
 };
 }
 }

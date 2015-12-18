@@ -17,19 +17,19 @@
 	<param name="min_control_duration" value="1.0" type="double"/>
 	<param name="max_control_duration" value="100.0" type="double"/>
 	
-	<param name="distance_gain_position" value="0.25" type="double"/>
-	<param name="distance_gain_velocity" value="0.25" type="double"/>
-	<param name="distance_gain_angular_velocity" value="0.25" type="double"/>
-	<param name="distance_gain_orientation" value="0.25" type="double"/>
+	<param name="position_gain" value="1.0" type="double"/>
+	<param name="velocity_gain" value="1.0" type="double"/>
+	<param name="angular_velocity_gain" value="1.0" type="double"/>
+	<param name="orientation_gain" value="1.0" type="double"/>
 
 	<!-- initial values for state space bounds -->
 	<!-- position bounds -->
-	<param name="xmin" value="-1.0" type="double"/>
-	<param name="xmax" value="1.0" type="double"/>
-	<param name="ymin" value="-1.0" type="double"/>
-	<param name="ymax" value="1.0" type="double"/>
-	<param name="zmin" value="-1.0" type="double"/>
-	<param name="zmax" value="1.0" type="double"/>
+	<param name="xmin" value="-100.0" type="double"/>
+	<param name="xmax" value="100.0" type="double"/>
+	<param name="ymin" value="-100.0" type="double"/>
+	<param name="ymax" value="100.0" type="double"/>
+	<param name="zmin" value="-100.0" type="double"/>
+	<param name="zmax" value="100.0" type="double"/>
 
 	<!-- velocity bounds -->
 	<param name="v_xmin" value="-1.0" type="double"/>
@@ -46,14 +46,4 @@
 	<param name="w_ymax" value="1.0" type="double"/>
 	<param name="w_zmin" value="-1.0" type="double"/>
 	<param name="w_zmax" value="1.0" type="double"/>
-
-	<!-- orientation bounds -->
-	<param name="q_xmin" value="-1.0" type="double"/>
-	<param name="q_xmax" value="1.0" type="double"/>
-	<param name="q_ymin" value="-1.0" type="double"/>
-	<param name="q_ymax" value="1.0" type="double"/>
-	<param name="q_zmin" value="-1.0" type="double"/>
-	<param name="q_zmax" value="1.0" type="double"/>
-	<param name="q_wmin" value="-1.0" type="double"/>
-	<param name="q_wmax" value="1.0" type="double"/>
 </launch>

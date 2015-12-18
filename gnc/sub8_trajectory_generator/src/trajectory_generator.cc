@@ -25,16 +25,15 @@ namespace trajectory_generator {
 
 // Forward declaration for typedef
 class TGenNode;
-
 typedef boost::shared_ptr<TGenNode> TGenNodePtr;
 
 // Maintains a TGenManager object and defines callbacks for service
 // requests
 class TGenNode {
  public:
-  TGenNode(int& planner_id, const Matrix2_8d& cspace_bounds,
+  TGenNode(const Matrix2_8d& cspace_bounds,
            TGenThrusterInfoPtr& thruster_info, AlarmBroadcasterPtr& ab)
-      : _tgen(new TGenManager(planner_id, cspace_bounds, thruster_info, ab)) {}
+      : _tgen(new TGenManager(cspace_bounds, thruster_info, ab)) {}
 
   bool findTrajectory(sub8_msgs::MotionPlan::Request& req,
                       sub8_msgs::MotionPlan::Response& resp) {
@@ -43,12 +42,13 @@ class TGenNode {
     boost::shared_ptr<sub8_msgs::Waypoint> goal_state_wpoint =
         boost::make_shared<sub8_msgs::Waypoint>(req.goal_state);
 
-    _tgen->setProblemDefinition(_tgen->waypointToState(start_state_wpoint),
+    bool error = false;
+    error = _tgen->setProblemDefinition(_tgen->waypointToState(start_state_wpoint),
                                 _tgen->waypointToState(goal_state_wpoint));
 
     resp.success = _tgen->solve();
     if (resp.success) {
-      resp.trajectory = _tgen->getTrajectory();
+      resp.trajectory = _tgen->getTrajectoryMessage();
     } else {
       // Robot must make some decisions:
       // 1. Try finding another trajectory
@@ -58,7 +58,7 @@ class TGenNode {
       //     motion-planning/Traversability map)
       // 3. Abort mission
     }
-    return true;
+    return error;
   }
 
  private:
@@ -81,9 +81,6 @@ int main(int argc, char** argv) {
   // Services needed to configure the TGEN
   std::string thruster_range_service = "thrusters/thruster_range";
   std::string b_matrix_service = "b_matrix";
-
-  // Grabs the planner id from the param server
-  ros::param::get("/planner", planner_id);
 
   // NodeHandle
   ros::NodeHandle nh;
@@ -139,7 +136,7 @@ int main(int argc, char** argv) {
 
   // Create the TGEN node
   sub8::trajectory_generator::TGenNodePtr tgen(
-      new sub8::trajectory_generator::TGenNode(planner_id, cspace_bounds,
+      new sub8::trajectory_generator::TGenNode(cspace_bounds,
                                                thruster_info, alarm_b));
 
   // Register the motion_plan service

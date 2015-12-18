@@ -59,7 +59,8 @@ TEST(SubDynamicsTest, testSegmentAssignment) {
 // Will need to verify the correctness further
 // with integration tests
 TEST(SubDynamicsTest, testSubDynamicsODE) {
-  Sub8StateSpacePtr test_state_space(new Sub8StateSpace());
+  std::vector<double> weights = {1, 1, 1, 1};
+  Sub8StateSpacePtr test_state_space(new Sub8StateSpace(std::move(weights)));
   TGenThrusterInfoPtr thruster_info(new TGenThrusterInfo());
 
   Vector3d FLV_p, FLL_p, FRV_p, FRL_p, BLV_p, BLL_p, BRV_p, BRL_p;
