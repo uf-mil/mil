@@ -13,7 +13,7 @@ set(catkin_LIBRARIES
 
 catkin_package(
    	CATKIN_DEPENDS roscpp sub8_msgs
-   	DEPENDS system_lib
+   	DEPENDS system_lib sub8_msgs
 )
 
 include_directories(
@@ -25,25 +25,27 @@ include_directories(
 
 
 add_executable(
-	${PROJECT_NAME} 
-	src/trajectory_generator.cc 
+	${PROJECT_NAME}
+	src/trajectory_generator.cc
 	src/sub8_state_space.cc
 	src/sub8_space_information.cc
 	src/sub8_state_validity_checker.cc
 	src/sub8_tgen_manager.cc
 )
 
-target_link_libraries(${PROJECT_NAME}
-	${catkin_LIBRARIES}
-	${OMPL_LIBRARIES}
+
+target_link_libraries(
+    ${PROJECT_NAME}
+    ${catkin_LIBRARIES}
+    ${OMPL_LIBRARIES}
 )
 
-add_dependencies(
-  ${PROJECT_NAME}
-  sub8_msgs_generate_msgs_cpp
+add_dependencies(${PROJECT_NAME}
+    sub8_msgs_generate_messages_cpp
+    ${catkin_EXPORTED_TARGETS}
 )
 
-catkin_add_gtest(${PROJECT_NAME}_unit_tests 
+catkin_add_gtest(${PROJECT_NAME}_unit_tests
 	test/sub8_state_space_test.cc
 	test/sub8_state_validity_checker_test.cc
 	test/sub8_space_information_test.cc
@@ -54,6 +56,7 @@ catkin_add_gtest(${PROJECT_NAME}_unit_tests
 	src/sub8_state_validity_checker.cc
 	src/sub8_tgen_manager.cc
 )
+
 
 target_link_libraries(
 	${PROJECT_NAME}_unit_tests
