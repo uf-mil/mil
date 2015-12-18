@@ -54,7 +54,7 @@ class VerifyController(object):
         self.target_pub = rospy.Publisher('/trajectory', Trajectory, latch=True, queue_size=1)
         self.target_state = None
 
-        rospy.wait_for_service('sim/vehicle/set_pose', timeout=5.0)
+        rospy.wait_for_service('sim/vehicle/set_pose', timeout=7.5)
         self.set_pose = rospy.ServiceProxy('sim/vehicle/set_pose', SimSetPose)
 
     def set_random_pose(self, center, scale):
