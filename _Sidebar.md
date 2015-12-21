@@ -6,7 +6,6 @@
     * [[Reading List]]
     * [[Manifesto]]
 * [[Code Policy]]
-    * [[Math]]
     * [[ROS Conventions]]
     * [[Logging]]
     * [[Other Conventions]]
