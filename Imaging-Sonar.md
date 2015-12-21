@@ -16,13 +16,14 @@ We need an imaging sonar for underwater SLAM. A 3D forward looking sonar (FLS) w
 
 # Products
 
-| Name/Link  | FOV |  Range | Update Rate (Hz)  |  Communication  |  Size  | Weight  | Price  |
-|-----------:|:---:|:------:|:-----------------:|:----------------|:------:|:-------:|:------:|
-| [Teledyne M900](http://www.blueview.com/products/2d-imaging-sonar/m900-series/) | 90 deg or 130 deg | 100m  | 25Hz | Ethernet/VDSL | 19.20 x 10.16 cm x 10 cm (LxWxH) | 0.86 lbs | UNKNOWN! |
-| [Teledyne m450](http://www.blueview.com/products/2d-imaging-sonar/m450-series/) | 90 deg or 130 deg | 300m | 25Hz | Ethernet/VDSL | 22.86 x 19.56 x 10.16 cm (LxWxH) | 0.86 lbs | UNKNOWN! |
-| [M900X FLS](http://www.blueview.com/products/2d-imaging-sonar/m900xm450x-forward-looking-multibeam-imaging-sonar-solutions/) (This is the dream) | 130x20 deg (Horizontal) 45x20 deg (Vertical) | 100m | 15 Hz | Ethernet | Unlisted  | Unlisted | UNKNOWN!|
-| [M450X FLS](http://www.blueview.com/products/2d-imaging-sonar/m900xm450x-forward-looking-multibeam-imaging-sonar-solutions/) | 130x15 deg (Horizontal) 45x15 deg (Vertical) | 280m | 15 Hz | Ethernet | Unlisted  | Unlisted | UNKNOWN!|
-| [Sonartronic WBMS 128 FLS](http://www.sonartronic.com/pdf/WBMS-128-FLS.pdf) | 90 deg horizontal 20 deg vertical | 100m | 20 Hz | Ethernet | 6.7 x 23.1 x 15.4 cm  (HxWxD) | 1.2 kg | UNKNOWN! |
+| Name/Link  | FOV |  Range | Update Rate (Hz)  |  Communication        |  Size  | Weight  | Price  | Notes |
+|-----------:|:---:|:------:|:-----------------:|:---------------------:|:------:|:-------:|:------:|:------:|
+| [Teledyne M900](http://www.blueview.com/products/2d-imaging-sonar/m900-series/) | 90 deg or 130 deg | 100m  | 25Hz | Ethernet/VDSL | 19.20 x 10.16 cm x 10 cm (LxWxH) | 0.86 lbs | UNKNOWN! | |
+| [Teledyne m450](http://www.blueview.com/products/2d-imaging-sonar/m450-series/) | 90 deg or 130 deg | 300m | 25Hz | Ethernet/VDSL | 22.86 x 19.56 x 10.16 cm (LxWxH) | 0.86 lbs | UNKNOWN! | |
+| [M900X FLS](http://www.blueview.com/products/2d-imaging-sonar/m900xm450x-forward-looking-multibeam-imaging-sonar-solutions/) (This is the dream) | 130x20 deg (Horizontal) 45x20 deg (Vertical) | 100m | 15 Hz | Ethernet | Unlisted  | Unlisted | UNKNOWN!| This guy is exactly what we're after (The P900's would also suffice) |
+| [M450X FLS](http://www.blueview.com/products/2d-imaging-sonar/m900xm450x-forward-looking-multibeam-imaging-sonar-solutions/) | 130x15 deg (Horizontal) 45x15 deg (Vertical) | 280m | 15 Hz | Ethernet | Unlisted  | Unlisted | UNKNOWN!| |
+| [Sonartronic WBMS 128 FLS](http://www.sonartronic.com/pdf/WBMS-128-FLS.pdf) | 90 deg horizontal 20 deg vertical | 100m | 20 Hz | Ethernet | 6.7 x 23.1 x 15.4 cm  (HxWxD) | 1.2 kg | UNKNOWN! | |
+| [Garmin Panoptix](https://buy.garmin.com/en-US/US/on-the-water/transducers/panoptix-ps30-down-transducer/prod149188.html) | 120x6 (User steerable) | 100m | Unknown, not very fast | UNKNOWN, proprietary (Probably ethernet) | Small | 1.8 lbs | $1,500 | Cheapest available sonar that will do the job. It's slow, and we'll have to reverse engineer the communication format (There is no guarantee that we will be able to do this at all) |
 
 
 # Yet to be explored
@@ -60,10 +61,19 @@ We need an imaging sonar for underwater SLAM. A 3D forward looking sonar (FLS) w
 # Need to call
 * Teledyne
 * VideoRay
+* RayMarine
 * Halliburton
 * BlueFin
 * Transocean
+* Gemini (UK)
+* Sonartronic (Denmark)
+
+# Other options
+- [Structured Light Sensor](http://dspace.mit.edu/bitstream/handle/1721.1/83705/864435344-MIT.pdf)
+- We can get our own Pico projector dev kit [here](http://www.ti.com/tool/dlp1picokit)
+    - Do we have friends at TI who can help us get ahold of one of these?
+    - If not, let's just do it with a scattering laser diode
 
 
-# So what's the plan
+# So what's the plan?
 Find a good sonar. Call the company, and prove to them that we can make *them* the face of underwater SLAM.

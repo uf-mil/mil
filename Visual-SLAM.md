@@ -101,6 +101,7 @@ Topics that appear to be common to essentially every monocular SLAM implementati
 
 * [Ceres Solver](http://ceres-solver.org/nnls_tutorial.html#introduction) - Google's very own "not-your-mother's-solver" NLLS/general minimization solver
 
+* [RobotOptim](http://www.roboptim.net/getting-started.html) - A robot optimization toolkit that binds to a IPOPT and a bunch of other optimization tools, doing all of the hard work. "Batteries included"
 
 ## Equipment
 * Structured Light Projector: 10 Lumens Pico Microvision laser projector
