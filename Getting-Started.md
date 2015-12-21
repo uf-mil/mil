@@ -1,18 +1,50 @@
-Getting Started Guide
-=====================
+Getting Started Guide for the Subjugator Software Team
+======================================================
+
+# How to join
+
+1. Email or contact Jake in person. You can find his contact information scattered in the repository, and you can find his body in MAE-C 126.
+
+2. You and Jake will walk through the next steps
+
+3. If you don't feel that you meet our requirements, but would still like to get started working on robots, there are other projects in the lab with less stringent requirements
+    * If you are sharp, funny and hard-working, we have a place for you, no matter what
+
+# Getting started with code
 
 Assuming you've already come by the lab and spoken to us
 
-1. Clone this repository. As of now, Sub8 has no dependencies on the rest of uf-mil, so it can exist in its own catkin workspace.
+1. Install Ubuntu 14.04
 
 2. Read the code policy page on this wiki.
 
 3. [Install dependencies](https://github.com/uf-mil/Sub8/wiki/Installing-Dependencies)
+    * We have a nice script that does all of the work for you. If you do not have ROS installed, run Super Install
 
-4. Get to know the people on the team
+4. Clone this repository. As of now, Sub8 has no dependencies on the rest of uf-mil, so it can exist in its own catkin workspace.
+
+5. If you do not already have a task, choose one from [[Implementation Plans]], or propose a project
+
+6. Ask someone to add you to the software mailing list
 
 Make sure you have some task or learning in progress before you start coming to Wednesday meetings.
 
+## Guide for Proposing a Project
+You: "Hey guys, I'd like to do XYZ"
+Everyone Else: "Okay."
+
+# Meetings
+
+* We meet every week on Wednesday in MIL at 5:15. MIL is in MAE-C 126.
+
+* Reply to the weekly meeting email with the progress you made in the last week
+    * Spent time learning XYZ is still progress!
+    * Writing code that didn't/doesn't work is still progress!
+    * Negative results are still results!
+
+* Don't be the sort of person who has a new excuse every week
+
+# Learning backgrond material
 
 Check out a few libraries:
 [OpenCV](http://opencv.org/), [PCL](pointclouds.org), [OMPL](http://ompl.kavrakilab.org/)
@@ -31,15 +63,20 @@ If you are working on robotics in general, you should know...
 
 * Python, enough to know how to Google syntax questions
 
-* Linear Algebra, enough to explain least-squares and the significance of an eigenvector
+* Linear Algebra at a Khan Academy level
 
 * Calculus, enough to understand the meaning of a derivative
+
+* How to communicate and spell clearly (in English)
+
+# Suggested Background Knowledge
+
+You should know...
 
 * What a rotation matrix is in 2 and 3 dimensions (And why not to use Euler angles)
 
     * Bonus points for understanding how a 4x4 matrix can represent both [translation and rotation](https://en.wikipedia.org/wiki/Transformation_matrix#Affine_transformations) in 3D.
 
-* How to communicate and spell clearly (in English)
 
 ## If you are working in perception
 
@@ -53,7 +90,7 @@ If you are working on robotics in general, you should know...
 
 * Really, really know what a transformation matrix is
 
-#### Start with
+#### To learn, start with
 
 * Sebastian Thrun's Probabilistic Robotics
 
@@ -80,9 +117,7 @@ If you are working on robotics in general, you should know...
 
 * Know what "PID" means, and at the very least be interested in MPC and adaptive control methods
 
-* And know why we don't do these using Euler angles
-
-### Start with
+### To learn, start with
 
 * Lavalle's [Planning Algorithms](http://planning.cs.uiuc.edu/)
 
@@ -93,11 +128,20 @@ Some other topics that are supremely useful:
 
 * Numerical Methods
 
-* Numerical Optimization (A subset of numerical methods, but optimization methods often have their own class)
+* Numerical Optimization (A subset of numerical methods, but optimization methods often have their own course)
+    * Convex optimization
+    * Gauss-Newton minimization
+    * Levenberg-Marquardt Algorithm (Damped least-squares)
 
 * Statistics and probability
+    * State estimation
+    * Model parameter estimation
+    * Probabilistic motion planning
+    * Statistical signal processing / statistical image analysis
+    * SLAM w/ uncertainty (All real-world SLAM)
 
-* Medical Imaging (A huge field with lots of research on crazy perception, but hardly any cross-over into robotics)
+* Medical Imaging (A huge field with lots of research on crazy perception)
+    * Active contours
 
 * General planning (Task-planning beyond motion planning)
 
