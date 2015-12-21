@@ -48,7 +48,7 @@ If you're looking for something to solve, here's a list of bounty problems. Gian
 # Giant Bounty
 Prize: We will get Korean Barbeque
 
-* [ ] Get the cameras working (Or get working cameras) -- Ralph
+* [x] Get the cameras working (Or get working cameras) -- Ralph
 * [ ] Get stereo producing point-clouds -- Gabe and Ralph
 * [ ] Get the sub station-holding on all new software (Excluding state-estimation)
 
@@ -59,7 +59,6 @@ Prize: Jake will get you ice cream
     - This is "easy" with the current backend design, but there is a rough edge due to the design of simulate.py
 * [x] Get simulation running on Semaphore Continuous Integration (Ask Jake about the roadblocks here)
 * [x] Get everything working on sim-time or real-time seamlessly
-    * [x] And write a short doc explaining how nodes need to be written to support this
 * [ ] Real-time visual odometry -- David
 * [ ] Path indicator 3D orientation estimation + caustics -- Nathan
 * [ ] Depth estimation from caustics -- Matt
@@ -68,6 +67,20 @@ Prize: Jake will get you ice cream
 * [ ] 3D Pose estimation for the vehicle
 * [ ] Task recognition + 3d pose estimation
 * [ ] Generate a traversability map
+* [ ] Mouse control of the simulation view (Plus lock-to-sub)
+* [ ] Simul8 v2.0
+    * [ ] Fix sim slowness
+    * [ ] Split out physics and rendering via ROS
+        * This way, we can reuse vispy visualization for viewing vehicle state
+    * [ ] Easily supported simulation widgets
+    * [ ] Easily supported relative positioning
+
+### Simulation
+* [ ] Simulated imaging sonar
+
+### Vision
+* [ ] Poseifier
+    * Given a sequence of segmented images, and the poses at which those images were taken, estimate the pose of the object in those images
 
 # Medium Bounty
 Prize: Glory, Jake might get you ice cream
@@ -95,19 +108,23 @@ Prize: Glory, Jake might get you ice cream
     * [ ] Alarm and response for DVL track lost (Should we even do anything?)
 * [ ] Unit-tests for all of the tools that are not yet unit-tested
 * [ ] Add an install_dependencies.sh file to the repo, and make SemaphoreCI automatically run it
+    * Can use this [[Installing Dependencies]] as a template
 * [ ] A script to run on Semaphore to compare performance metrics for current build vs pull
     i.e. if build[n]'s controller and vision performed better than build[n + 1], then something may have gone wrong, and we should be cautious pulling those changes
 
 ## Simulation
-* [ ] Add trajectory visualization to the simulator
+* [ ] Draw waypoints in the simulator
+    * [ ] Bonus points if we can draw a super nifty interpolating spline
     * When a trajectory message is published, draw a bunch of spheres or something
 * [ ] Add "widgets" to the simulator
+    - The sub is now a widget, but this needs work
 * [ ] Simulated shadows
 * [ ] CUDA water physics for Simul8
     * [ ] Or better water resistance at all
 * [x] Multiple light sources -- Tess
-* [ ] Keyboard control of Sub (Requested by Zach and Patrick) -- Annie
+* [x] Keyboard control of Sub (Requested by Zach and Patrick) -- Annie
 * [ ] Scene-graph system for simulator
+    * [ ] Get the DVL in its real position
 
 ## Machine Learning
 * [ ] Toolset for object recognition

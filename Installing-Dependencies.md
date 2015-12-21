@@ -1,5 +1,8 @@
 To run the Sub, you must install many dependencies. Here is a nice cheat sheet, copied from our Semaphore setup-build script.
 
+
+# Just some stuff
+
 This assumes you have installed ros-desktop-full and all the catkin nonsense already. Make sure you have changed your software settings to include "UNIVERSE" packages, and check the source code box.
 
 ```
@@ -30,9 +33,9 @@ rosmake spacenav_node
 
 If your code depends on something not on this page, it will not be pulled!
 
-# SuperInstall
+# Super Install
 
-To install absolutely everything, do this
+To install absolutely everything, (including ROS) - we run this on our continuous integration service
 
 ```
 sudo apt-get install -qq python-pip
@@ -64,7 +67,7 @@ cd ~/catkin_ws/src
 catkin_init_workspace
 echo $PYTHONPATH
 catkin_make -C ~/catkin_ws
-mv ~/Sub8 ~/catkin_ws/src
+git clone https://github.com/uf-mil/Sub8.git
 echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
 source ~/catkin_ws/devel/setup.bash
 
@@ -75,4 +78,5 @@ cd vispy
 sudo python setup.py develop
 
 catkin_make -C ~/catkin_ws
+cd ~/catkin_ws/src/Sub8
 ```

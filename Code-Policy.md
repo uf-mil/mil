@@ -46,7 +46,8 @@ If on pool-test day, there are critical changes that you need to make to the sub
 * Do not commit debug print statements (ROS Logging is okay)
 * Do not open GUI windows (PCL or OpenCV or anything of that sort) in production code. This will often cause crashes
 * If you have many small commits, [squash](http://stackoverflow.com/questions/5189560/squash-my-last-x-commits-together-using-git) your commits before pull-requesting (Making many small commits is good, but squash them before pull-requesting)
-* Do not merge when pulling code, always rebase `git pull --rebase` unless impossible
+* Avoiding unneded merging when pulling code, always rebase `git pull --rebase` unless impossible
+* If you must merge, you should always merge --no-ff to preserve history
 
 ## Documentation
 * Your code must be attributed, if you borrow it from other proejects, or use code from stackoverflow, etc
