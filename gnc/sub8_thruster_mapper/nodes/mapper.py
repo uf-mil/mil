@@ -52,13 +52,16 @@ class ThrusterMapper(object):
         self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.request_wrench_cb, queue_size=1)
         self.thruster_pub = rospy.Publisher('thrusters/thrust', Thrust, queue_size=1)
 
+    @thread_lock(lock)
     def update_layout(self, srv):
         '''Update the physical thruster layout.
         This should only be done in a thruster-out event
         '''
+        rospy.logwarn("Layout in update...")
         self.thruster_layout = wait_for_param('busses')
         self.B = self.generate_B(self.thruster_layout)
         self.min_thrust, self.max_thrust = self.get_ranges()
+        rospy.logwarn("Layout updated")
         return UpdateThrusterLayoutResponse()
 
     def get_ranges(self):
@@ -70,6 +73,7 @@ class ThrusterMapper(object):
         rospy.logwarn("Waiting for service {}".format(range_service))
         rospy.wait_for_service(range_service)
         rospy.logwarn("Got {}".format(range_service))
+
         range_service_proxy = rospy.ServiceProxy(range_service, ThrusterInfo)
         thruster_range = range_service_proxy(0)
 
@@ -117,7 +121,6 @@ class ThrusterMapper(object):
 
         return np.transpose(np.array(B))
 
-    @thread_lock(lock)
     def map(self, wrench):
         '''TODO:
             - Account for variable thrusters
@@ -160,6 +163,7 @@ class ThrusterMapper(object):
         )
         return minimization.x, minimization.success
 
+    @thread_lock(lock)
     def request_wrench_cb(self, msg):
         '''Callback for requesting a wrench'''
         force = rosmsg_to_numpy(msg.wrench.force)
