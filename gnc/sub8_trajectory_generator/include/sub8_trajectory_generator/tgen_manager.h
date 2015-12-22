@@ -37,12 +37,15 @@ class TGenManager {
   // The planner param will be passed in from the
   // param server. Instantiates a SpaceInformation
   // obj and the Planner
-  TGenManager(int planner, const Matrix2_8d& cspace_bounds,
+  TGenManager(const Matrix2_8d& cspace_bounds,
               TGenThrusterInfoPtr thruster_info, AlarmBroadcasterPtr& ab);
 
   // Create an ompl::base::ProblemDefinition object for planning a trajectory
   // from start_state to goal_state
-  void setProblemDefinition(const State* start_state, const State* goal_state);
+  //
+  // returns false if setting the problem definition failed due to providing
+  // invalid start or goal states
+  bool setProblemDefinition(const State* start_state, const State* goal_state);
 
   // Call the Planner's solve function, returning a flag marking success
   // or failure to the caller
@@ -71,7 +74,10 @@ class TGenManager {
   //
   // To use the trajectory in Python, the caller will need to
   // convert from std::vector to list
-  sub8_msgs::Trajectory getTrajectory();
+  sub8_msgs::Trajectory getTrajectoryMessage();
+
+  // Return the current trajectory as a vector of pointers to States
+  std::vector<State*> getTrajectory();
 
  private:
   // If the planning region needs to grow or shrink based on a traversability
@@ -84,9 +90,11 @@ class TGenManager {
 
   PlannerType _planner_type;
 
+  ProblemDefinitionPtr _pdef;
+
   SpaceInformationPtr _sub8_si;
 
-  std::vector<AlarmRaiserPtr> alarms;
+  std::vector<AlarmRaiserPtr> _alarms;
 };
 }
 }

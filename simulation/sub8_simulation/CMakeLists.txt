@@ -22,7 +22,7 @@ generate_messages(
 
 catkin_package(
    LIBRARIES sub8_simulation
-   CATKIN_DEPENDS rospy geometry_msgs message_generation
+   CATKINs_DEPENDS rospy geometry_msgs message_generation
 )
 
 include_directories(

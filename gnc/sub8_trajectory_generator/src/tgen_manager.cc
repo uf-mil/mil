@@ -32,13 +32,18 @@ using ompl::control::PathControl;
 
 namespace fs = ::boost::filesystem;
 
-TGenManager::TGenManager(int planner_id, const Matrix2_8d& cspace_bounds,
+TGenManager::TGenManager(const Matrix2_8d& cspace_bounds,
                          TGenThrusterInfoPtr thruster_info,
                          AlarmBroadcasterPtr& alarm_broadcaster) {
+  int planner_id;
+  _pdef = nullptr;  // Problem definition hasn't been set yet
   SubDynamicsPtr sub_dynamics(new SubDynamics(thruster_info));
   SpaceInformationGeneratorPtr ss_gen(new SpaceInformationGenerator());
 
   _sub8_si = ss_gen->generate(sub_dynamics, cspace_bounds);
+
+  // Grabs the planner id from the param server
+  ros::param::get("/planner", planner_id);
 
   switch (planner_id) {
     case PlannerType::PDST:
@@ -62,44 +67,47 @@ TGenManager::TGenManager(int planner_id, const Matrix2_8d& cspace_bounds,
   file_sep = "\\";
 #endif
   fs::path dirname(pkg_path + file_sep + alarms_dir);
-  alarm_broadcaster->addAlarms(dirname, alarms);
+  alarm_broadcaster->addAlarms(dirname, _alarms);
 }
 
-void TGenManager::setProblemDefinition(const State* start_state,
+bool TGenManager::setProblemDefinition(const State* start_state,
                                        const State* goal_state) {
-  if (_sub8_planner->isSetup()) {
-    _sub8_planner->clear();
-    ProblemDefinitionPtr pdef(new ProblemDefinition(_sub8_si));
-
-    // set the start state for the new ProblemDefinition
-    pdef->addStartState(start_state);
-    // set the goal state for the new ProblemDefinition
-    pdef->setGoalState(goal_state);
-
-    _sub8_planner->setProblemDefinition(pdef);
-
-    // Verifies that the problem definition was correctly set
-    _sub8_planner->checkValidity();
+  if (!(_sub8_si->satisfiesBounds(start_state)) ||
+      !(_sub8_si->satisfiesBounds(goal_state))) {
+    return false;
   }
+
+  if (!(_sub8_planner->isSetup())) {
+    _sub8_planner->setup();
+  }
+
+  _sub8_planner->clear();
+  _pdef = ProblemDefinitionPtr(new ProblemDefinition(_sub8_si));
+
+  // set the start state for the new ProblemDefinition
+  _pdef->addStartState(start_state);
+  // set the goal state for the new ProblemDefinition
+  _pdef->setGoalState(goal_state);
+
+  _sub8_planner->setProblemDefinition(_pdef);
+
+  // Verifies that the problem definition was correctly set
+  _sub8_planner->checkValidity();
+
+  return true;
 }
 
 bool TGenManager::solve() {
-  bool on_success = false;
+  bool success = false;
 
-  // Need to supply a real terminating condition
-  PlannerStatus pstatus = _sub8_planner->solve(1.0);
+  // arg for "solve" is the solve time
+  PlannerStatus pstatus = _sub8_planner->solve(30.0);
 
   // Switch on the value of the PlannerStatus enum "StateType"
   // Only raise alarms on issues that require a system response.
   // Most errors here are due to programming errors, so just
   // display an error message to shame the programmer.
   switch (pstatus.operator StatusType()) {
-    case PlannerStatus::INVALID_START:
-      ROS_ERROR("%s", TGenMsgs::INVALID_START);
-      break;
-    case PlannerStatus::INVALID_GOAL:
-      ROS_ERROR("%s", TGenMsgs::INVALID_GOAL);
-      break;
     case PlannerStatus::UNRECOGNIZED_GOAL_TYPE:
       ROS_ERROR("%s", TGenMsgs::UNRECOGNIZED_GOAL_TYPE);
       break;
@@ -117,11 +125,11 @@ bool TGenManager::solve() {
     case PlannerStatus::APPROXIMATE_SOLUTION:
       ROS_DEBUG("%s", TGenMsgs::APPROXIMATE_SOLUTION);
       // TODO: What is our tolerance for this?
-      on_success = true;
+      success = true;
       break;
     case PlannerStatus::EXACT_SOLUTION:
       ROS_DEBUG("%s", TGenMsgs::EXACT_SOLUTION);
-      on_success = true;
+      success = true;
       break;
     case PlannerStatus::CRASH:
       ROS_ERROR("%s", TGenMsgs::CRASH);
@@ -130,7 +138,7 @@ bool TGenManager::solve() {
       break;
   }
 
-  return on_success;
+  return success;
 }
 
 void TGenManager::validateCurrentTrajectory() {
@@ -182,37 +190,39 @@ State* TGenManager::waypointToState(
   return state;
 }
 
-sub8_msgs::Waypoint TGenManager::stateToWaypoint(const State* state) {
+sub8_msgs::Waypoint TGenManager::stateToWaypoint(const State* s) {
   sub8_msgs::Waypoint wpoint;
-  Vector13d state_vector;
+  Vector13d state = s->as<Sub8StateSpace::StateType>()->getState();
 
-  state->as<Sub8StateSpace::StateType>()->getState(state_vector);
-
-  wpoint.pose.position.x = state_vector(0);
-  wpoint.pose.position.y = state_vector(1);
-  wpoint.pose.position.z = state_vector(2);
-  wpoint.twist.linear.x = state_vector(3);
-  wpoint.twist.linear.y = state_vector(4);
-  wpoint.twist.linear.z = state_vector(5);
-  wpoint.twist.angular.x = state_vector(6);
-  wpoint.twist.angular.y = state_vector(7);
-  wpoint.twist.angular.z = state_vector(8);
-  wpoint.pose.orientation.x = state_vector(9);
-  wpoint.pose.orientation.y = state_vector(10);
-  wpoint.pose.orientation.z = state_vector(11);
-  wpoint.pose.orientation.w = state_vector(12);
+  wpoint.pose.position.x = state(0);
+  wpoint.pose.position.y = state(1);
+  wpoint.pose.position.z = state(2);
+  wpoint.twist.linear.x = state(3);
+  wpoint.twist.linear.y = state(4);
+  wpoint.twist.linear.z = state(5);
+  wpoint.twist.angular.x = state(6);
+  wpoint.twist.angular.y = state(7);
+  wpoint.twist.angular.z = state(8);
+  wpoint.pose.orientation.x = state(9);
+  wpoint.pose.orientation.y = state(10);
+  wpoint.pose.orientation.z = state(11);
+  wpoint.pose.orientation.w = state(12);
 
   return wpoint;
 }
 
-sub8_msgs::Trajectory TGenManager::getTrajectory() {
+std::vector<State*> TGenManager::getTrajectory() {
   std::vector<State*> states =
       (static_cast<PathControl*>(
            _sub8_planner->getProblemDefinition()->getSolutionPath().get()))
           ->getStates();
+  return states;
+}
+
+sub8_msgs::Trajectory TGenManager::getTrajectoryMessage() {
+  std::vector<State*> states = getTrajectory();
 
   sub8_msgs::Trajectory t_msg;
-
   for (State* s : states) {
     t_msg.trajectory.push_back(stateToWaypoint(s));
   }

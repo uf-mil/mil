@@ -29,6 +29,12 @@ add_library(
   sub8_alarm/alarm_helpers.cc
 )
 
+add_dependencies(
+  ${PROJECT_NAME}
+  sub8_msgs_generate_messages_cpp
+  ${catkin_EXPORTED_TARGETS}
+)
+
 # Add folders to be run by python nosetests
 if(CATKIN_ENABLE_TESTING)
   catkin_add_nosetests(test_alarms/test_alarm_helpers.py)

@@ -15,17 +15,30 @@ using ompl::control::SpaceInformationPtr;
 
 SpaceInformationPtr SpaceInformationGenerator::generate(
     const SubDynamicsPtr& sub_dynamics, const Matrix2_8d& cspace_bounds) {
-  // Grab config parameters
   double checking_res;
   double prop_step_size;
   double min_control_duration;
   double max_control_duration;
+  double position_gain;
+  double velocity_gain;
+  double angular_velocity_gain;
+  double orientation_gain;
+
+  // Grab config parameters
   ros::param::get("state_validity_checking_resolution", checking_res);
   ros::param::get("propagation_step_size", prop_step_size);
   ros::param::get("min_control_duration", min_control_duration);
   ros::param::get("max_control_duration", max_control_duration);
+  ros::param::get("position_gain", position_gain);
+  ros::param::get("velocity_gain", velocity_gain);
+  ros::param::get("angular_velocity_gain", angular_velocity_gain);
+  ros::param::get("orientation_gain", orientation_gain);
 
-  StateSpacePtr space(new Sub8StateSpace());
+  std::vector<double> weights = {position_gain, velocity_gain,
+                                 angular_velocity_gain, orientation_gain};
+
+  StateSpacePtr space(new Sub8StateSpace(std::move(weights)));
+
   // Set bounds for Sub8StateSpace
   setStateSpaceBounds(space);
 
@@ -76,8 +89,6 @@ void SpaceInformationGenerator::setStateSpaceBounds(
   RealVectorBounds vel_bounds(3);
   // Bounds on angular velocity (wx, wy, wz)
   RealVectorBounds w_bounds(3);
-  // Bounds on orientation (qx, qy, qz, qw)
-  RealVectorBounds q_bounds(4);
 
   ros::param::get("xmin", pos_bounds.low[0]);
   ros::param::get("xmax", pos_bounds.high[0]);
@@ -100,23 +111,12 @@ void SpaceInformationGenerator::setStateSpaceBounds(
   ros::param::get("w_zmin", w_bounds.low[2]);
   ros::param::get("w_zmax", w_bounds.high[2]);
 
-  ros::param::get("q_xmin", q_bounds.low[0]);
-  ros::param::get("q_xmax", q_bounds.high[0]);
-  ros::param::get("q_ymin", q_bounds.low[1]);
-  ros::param::get("q_ymax", q_bounds.high[1]);
-  ros::param::get("q_zmin", q_bounds.low[2]);
-  ros::param::get("q_zmax", q_bounds.high[2]);
-  ros::param::get("q_wmin", q_bounds.low[2]);
-  ros::param::get("q_wmax", q_bounds.high[2]);
-
   space->as<sub8::trajectory_generator::Sub8StateSpace>()->set_volume_bounds(
       pos_bounds);
   space->as<sub8::trajectory_generator::Sub8StateSpace>()
       ->set_linear_velocity_bounds(vel_bounds);
   space->as<sub8::trajectory_generator::Sub8StateSpace>()
       ->set_angular_velocity_bounds(w_bounds);
-  space->as<sub8::trajectory_generator::Sub8StateSpace>()
-      ->set_orientation_bounds(q_bounds);
 }
 
 void SpaceInformationGenerator::setControlSpaceBounds(
