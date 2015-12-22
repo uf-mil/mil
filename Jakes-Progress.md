@@ -138,5 +138,5 @@ Knowledge
 
 - [ ] Call in to coast-to-coast AM next time up at 3AM (Ralph)
 - [ ] Talk to Paracosm when we have SLAM working
-- [ ] Give money to Jason
+- [x] Give money to Jason -- Friendship submitted in lieu of money
 - [Writing good C++](https://youtu.be/0iWb_qi2-uI)
