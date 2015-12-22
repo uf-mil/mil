@@ -27,7 +27,7 @@ class ThrusterDriver(object):
         self.thruster_out_alarm = self.alarm_broadcaster.add_alarm(
             name='thruster_out',
             action_required=True,
-            severity=3
+            severity=2
         )
         self.failed_thrusters = []
 

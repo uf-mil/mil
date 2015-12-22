@@ -1,4 +1,4 @@
 <launch>
   <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper.launch" />
-  <test test-name="sub8_mapper_test" pkg="sub8_thruster_mapper" type="test_sub8_mapper.py" />
+  <test test-name="sub8_mapper_test" pkg="sub8_thruster_mapper" type="test_sub8_mapper.py" retry="1"/>
 </launch>
