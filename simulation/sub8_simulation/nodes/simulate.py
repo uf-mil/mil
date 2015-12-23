@@ -7,8 +7,6 @@ from rosgraph_msgs.msg import Clock
 from vispy import app, gloo
 import numpy as np
 import rospy
-import sys
-import time
 
 
 class SimWorld(rendering.Canvas):
