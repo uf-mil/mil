@@ -1,6 +1,6 @@
 import numpy as np
 import rospy
-import tf
+from tf import transformations
 import sub8_ros_tools as sub8_utils
 from sub8_sim_tools.physics.physics import Box
 from sub8_simulation.srv import SimSetPose, SimSetPoseResponse
@@ -51,11 +51,12 @@ class Sub8(Box):
         self.world = world
         self.space = space
 
-        # Define 4 rays to implement a DVL sensor and the relative position of the sensor on the sub
-        # TODO: Fix position of DVL
+        # TODO: Fix position of DVL, IMU
+        # We assume that the DVL and IMU are xyz-FLU aligned (No rotation w.r.t sub)
         self.dvl_position = np.array([0.0, 0.0, 0.0])
         self.imu_position = np.array([0.0, 0.0, 0.0])
 
+        # Define 4 rays to implement a DVL sensor and the relative position of the sensor on the sub
         self.dvl_ray_geoms = (
             ode.GeomRay(None, 1e3),
             ode.GeomRay(None, 1e3),
@@ -153,8 +154,9 @@ class Sub8(Box):
         '''TODO:
             Publish velocity in body frame
         '''
-        linear_vel = self.velocity
-        angular_vel = self.angular_vel
+        linear_vel = self.body.getRelPointVel((0.0, 0.0, 0.0))
+        # TODO: Check that this is right
+        angular_vel = self.orientation.transpose().dot(self.angular_vel)
         quaternion = self.body.getQuaternion()
         translation = self.body.getPosition()
 
@@ -200,7 +202,7 @@ class Sub8(Box):
         # TODO: Fix frame
         angular_vel = orientation_matrix.dot(self.body.getAngularVel()) + (noise * dt)
 
-        header = sub8_utils.make_header(frame='/world')
+        header = sub8_utils.make_header(frame='/body')
 
         linear = geometry.Vector3(*linear_acc)
         angular = geometry.Vector3(*angular_vel)
@@ -228,7 +230,7 @@ class Sub8(Box):
         """Publishes dvl sensor data - twist message, and array of 4 dvl velocities based off of ray orientations"""
         correlation = -1
 
-        header = sub8_utils.make_header(frame='/world')
+        header = sub8_utils.make_header(frame='/body')
 
         vel_dvl_body = self.body.vectorFromWorld(self.body.getRelPointVel(self.dvl_position))
 
