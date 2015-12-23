@@ -105,7 +105,7 @@ class Sub8(Box):
         }
 
         desired_force = forces.get(keypress, (0.0, 0.0, 0.0))
-        self.body.addRelForce(desired_force)
+        self.body.addForce(desired_force)
 
         # Map keys to torques
         torques = {
@@ -286,10 +286,6 @@ class Sub8(Box):
         for ray_geom, ray_orientation in self.dvl_rays:
             world_ray_orientation = self.body.vectorToWorld(ray_orientation)
             ray_geom.set(dvl_position, world_ray_orientation)
-        # self.dvl_rays[0].set(self.body.getRelPointPos(self.dvl_position), self.body.vectorToWorld(np.array([0.866, .5, -1])))
-        # self.dvl_rays[1].set(self.body.getRelPointPos(self.dvl_position), self.body.vectorToWorld(np.array([0.866, -.5, -1])))
-        # self.dvl_rays[2].set(self.body.getRelPointPos(self.dvl_position), self.body.vectorToWorld(np.array([-0.866, .5, -1])))
-        # self.dvl_rays[3].set(self.body.getRelPointPos(self.dvl_position), self.body.vectorToWorld(np.array([-0.866, -.5, -1])))
         self.last_vel = np.array(self.body.getRelPointVel(self.imu_position))
 
     def get_dvl_range(self):
