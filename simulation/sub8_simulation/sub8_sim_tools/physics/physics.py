@@ -95,17 +95,21 @@ class Entity(object):
         return np.array(self.body.getPosition(), dtype=np.float32)
 
     @property
+    def orientation(self):
+        r = np.array(self.body.getRotation(), dtype=np.float32)
+        R = r.reshape(3, 3)
+        return R
+
+    @property
     def pose(self):
         '''Construct a 4x4 homogeneous pose matrix,
         Pose changes frequently enough that we recompute each time
         Pose is in the world frame
         '''
         pose = np.zeros((4, 4))
-        orientation = np.array(self.body.getRotation(), dtype=np.float32)
-        orientation = orientation.reshape(3, 3)
-        # Don't use self.pos, to avoid a wasteful array cast
         position = self.body.getPosition()
-        pose[:3, :3] = orientation
+        # Don't use self.pos, to avoid a wasteful array cast
+        pose[:3, :3] = self.orientation
         pose[3, :3] = position
         pose[3, 3] = 1.
         return pose
@@ -136,9 +140,8 @@ class Entity(object):
     def apply_buoyancy_force(self):
         '''Apply buoyancy force based on submerged volume approximation
         '''
-        submerged_volume = self.submerged_volume
         # Negative, because g < 0
-        buoyancy_force = -Constants.density_water * Constants.g * submerged_volume
+        buoyancy_force = -Constants.density_water * Constants.g * self.submerged_volume
         self.body.addForce((0.0, 0.0, buoyancy_force))
 
     def apply_damping_force(self):
