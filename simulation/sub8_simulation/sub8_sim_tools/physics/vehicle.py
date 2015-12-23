@@ -1,6 +1,5 @@
 import numpy as np
 import rospy
-from tf import transformations
 import sub8_ros_tools as sub8_utils
 from sub8_sim_tools.physics.physics import Box
 from sub8_simulation.srv import SimSetPose, SimSetPoseResponse
@@ -31,11 +30,9 @@ class Sub8(Box):
         See Annie for how the thrusters work
         '''
         lx, ly, lz = 0.5588, 0.5588, 0.381  # Meters
-        self.radius = max((lx, ly, lz)) * 0.5  # For spherical approximation
-        volume = lx * ly * lz * 0.25
-        # self.mass = 32.75  # kg
-        self.mass = 25.0  # kg
-        density = self.mass / volume
+        self.radius = max((lx, ly, lz)) * 0.32  # For spherical approximation
+        self.mass = 32.75  # kg
+        density = self.mass / (lx * ly * lz)  # This is a leaky fix
         super(self.__class__, self).__init__(world, space, position, density, lx, ly, lz)
 
         self.truth_odom_pub = rospy.Publisher('truth/odom', Odometry, queue_size=1)
@@ -48,8 +45,8 @@ class Sub8(Box):
         self.last_vel = np.array([0.0, 0.0, 0.0], dtype=np.float32)
         self.cur_vel = np.array([0.0, 0.0, 0.0], dtype=np.float32)
 
-        self.world = world
         self.space = space
+        self.g = np.array(world.getGravity())
 
         # TODO: Fix position of DVL, IMU
         # We assume that the DVL and IMU are xyz-FLU aligned (No rotation w.r.t sub)
@@ -155,16 +152,17 @@ class Sub8(Box):
             Publish velocity in body frame
         '''
         linear_vel = self.body.getRelPointVel((0.0, 0.0, 0.0))
-        # TODO: Check that this is right
+        # TODO: Not 100% on this transpose
         angular_vel = self.orientation.transpose().dot(self.angular_vel)
         quaternion = self.body.getQuaternion()
+
         translation = self.body.getPosition()
 
         header = sub8_utils.make_header(frame='/world')
 
         pose = geometry.Pose(
             position=geometry.Point(*translation),
-            orientation=geometry.Quaternion(*quaternion),
+            orientation=geometry.Quaternion(-quaternion[1], -quaternion[2], -quaternion[3], quaternion[0]),
         )
 
         twist = geometry.Twist(
@@ -193,7 +191,7 @@ class Sub8(Box):
 
         # Work on a better way to get this
         # We can't get this nicely from body.getForce()
-        g = self.body.vectorFromWorld(self.world.getGravity())
+        g = self.body.vectorFromWorld(self.g)
         # Get current velocity of IMU in body frame
         cur_vel = np.array(self.body.vectorFromWorld(self.body.getRelPointVel(self.imu_position)))
         linear_acc = orientation_matrix.dot(cur_vel - self.last_vel) / dt
@@ -276,9 +274,9 @@ class Sub8(Box):
 
         self.apply_buoyancy_force()
         self.apply_damping_force()
-        self.last_force = np.array(self.body.getForce()) + self.world.getGravity()
-
         # self.apply_damping_torque()
+        self.last_force = np.array(self.body.getForce()) + (self.g * self.mass)
+
         self.publish_pose()
         self.publish_dvl()
         self.publish_imu(dt)

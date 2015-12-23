@@ -59,10 +59,11 @@ class Sub(object):
                 transformation = compose_transformation(np.transpose(R), rel_position)
 
                 t = ThrustGetter(name, rel_direction)
-                self.rendering_world.add_entity(rendering.Indicator, physical,
-                                                get_param=t, rigid=True,
-                                                offset=transformation, radius=0.01, scaling_factor=0.01,
-                                                color=(0, 40, 200)
-                                                )
+                self.rendering_world.add_entity(
+                    rendering.Indicator, physical,
+                    get_param=t, rigid=True,
+                    offset=transformation, radius=0.01, scaling_factor=0.01,
+                    color=(0, 40, 200)
+                )
 
         return visual
