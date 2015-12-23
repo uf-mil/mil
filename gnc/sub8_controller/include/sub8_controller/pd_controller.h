@@ -51,7 +51,6 @@ private:
   ControllerDeque translation_error_history;
   ControllerDeque orientation_error_history;
 
-  // TODO: Make these ROSParams
   double kp_trans = 30;
   double kd_trans = 13;
   double ki_trans = 25;
