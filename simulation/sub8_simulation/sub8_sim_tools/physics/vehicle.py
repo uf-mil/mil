@@ -22,7 +22,7 @@ class Sub8(Box):
         Not taking any parameters because this is the literal Sub8
         TODO:
             - Make the thruster list a parameter
-            - Stop the sub from being able to fly (Only thrust if thruster_z < 0)
+            -
 
         See Annie for how the thrusters work
         '''
@@ -281,31 +281,29 @@ class Sub8(Box):
         self.last_vel = self.velocity
 
     def get_dvl_range(self):
-        """Returns the range of the ray, otherwise 0 represents contact with another object
+        """Returns the range of each ray, otherwise 0 represents failure to contact the floor
             For each dvl sensor ray object, collisions with the floor are detected,
                 and parameters from the contact.getContactGeomParams() method
                 are used to calculate the range of the dvl sensor to the floor
-
-        Return 0 if unable to get a measurement (unable to connect with the floor)
         """
-        for ray in self.dvl_rays:
+        ranges = np.array([0.0, 0.0, 0.0, 0.0])
+        for n, ray in enumerate(self.dvl_rays):
             for contact in ode.collide(ray, self.space):
                 pos, normal, depth, geom1, geom2 = contact.getContactGeomParams()
 
                 assert geom1 is ray, geom1
-                if (geom2 == self.geom):
+                if (geom2 is self.geom):
                     continue
-                print (self.body.getRelPointPos(self.dvl_position) - np.array(pos))[2]
-
-        return 0
+                ranges[n] = np.min(depth, ranges[n])  # The closest object!
+        return ranges
 
     def get_vel_dvl_body(self):
         """Returns array of 4 components of the vehicle's velocities based off of the dvl ray vectors"""
 
         vel_dvl_body = self.body.vectorFromWorld(self.body.getRelPointVel(self.dvl_position))
 
-        return np.array([np.dot(self.dvl_ray_orienations[0], vel_dvl_body),
-                        np.dot(self.dvl_ray_orienations[1], vel_dvl_body),
-                        np.dot(self.dvl_ray_orienations[2], vel_dvl_body),
-                        np.dot(self.dvl_ray_orienations[3], vel_dvl_body)
+        return np.array([np.dot(self.dvl_ray_orientations[0], vel_dvl_body),
+                        np.dot(self.dvl_ray_orientations[1], vel_dvl_body),
+                        np.dot(self.dvl_ray_orientations[2], vel_dvl_body),
+                        np.dot(self.dvl_ray_orientations[3], vel_dvl_body)
                          ])
