@@ -1,7 +1,6 @@
 import numpy as np
 import rospy
 import tf
-from time import time
 from sub8_ros_tools import rosmsg_to_numpy, normalize
 from sub8_sim_tools.physics.physics import Box
 from sub8_simulation.srv import SimSetPose, SimSetPoseResponse
@@ -16,7 +15,7 @@ import ode
 class Sub8(Box):
     _linear_damping_coeff = -50  # TODO: Estimate area
     _rotational_damping_coeff = -0.5  # TODO: Estimate area
-    _cmd_timeout = 2.
+    _cmd_timeout = rospy.Duration(2.)
 
     def __init__(self, world, space, position):
         '''Yes, right now we're approximating the sub as a box
@@ -36,12 +35,12 @@ class Sub8(Box):
         super(self.__class__, self).__init__(world, space, position, density, lx, ly, lz)
 
         self.truth_odom_pub = rospy.Publisher('truth/odom', Odometry, queue_size=1)
-        self.thruster_sub = rospy.Subscriber('thrusters/thrust', Thrust, self.thrust_cb, queue_size=2)
         self.imu_sensor_pub = rospy.Publisher('imu', Imu, queue_size=1)
         self.dvl_sensor_pub = rospy.Publisher('dvl', VelocityMeasurements, queue_size=1)
         self.thruster_sub = rospy.Subscriber('thrusters/thrust', Thrust, self.thrust_cb, queue_size=2)
         self.thrust_dict = {}
 
+        self.last_force = (0.0, 0.0, 0.0)
         self.last_vel = np.array([0.0, 0.0, 0.0], dtype=np.float32)
         self.cur_vel = np.array([0.0, 0.0, 0.0], dtype=np.float32)
 
@@ -74,45 +73,44 @@ class Sub8(Box):
             ("BRV", np.array([ 0.000,  0.0,  1]), np.array([-0.1583, -0.1690, 0.0142])),  # noqa
             ("BRL", np.array([ 0.866, -0.5,  0]), np.array([-0.2678, -0.2795, 0.0000])),  # noqa
         ]
-        self.last_cmd_time = time()
+        self.last_cmd_time = rospy.Time.now()
         self.set_up_ros()
 
     def keypress_callback(self, data):
-        """Allows you to manipulate the vehicle through keypress"""
-        # Force
-        if(data.data == "j"):
-            self.body.addRelForce(np.array([-500, 0, 0]), dtype=np.float32)
-        elif(data.data == 'l'):
-            self.body.addRelForce(np.array([500, 0, 0]), dtype=np.float32)
-        elif(data.data == 'i'):
-            self.body.addRelForce(np.array([0, 500, 0]), dtype=np.float32)
-        elif(data.data == 'k'):
-            self.body.addRelForce(np.array([0, -500, 0]), dtype=np.float32)
-        elif(data.data == 'u'):
-            self.body.addRelForce(np.array([0, 0, 500]), dtype=np.float32)
-        elif(data.data == 'o'):
-            self.body.addRelForce(np.array([0, 0, -500]), dtype=np.float32)
+        """Allows you to manipulate the vehicle through keypress
+        TODO: move this into the widget
+        """
+        keypress = data.data
 
-        # Torque
-        if(data.data == "f"):
-            self.body.addRelTorque(np.array([-500, 0, 0]), dtype=np.float32)
-        elif(data.data == 'h'):
-            self.body.addRelTorque(np.array([500, 0, 0]), dtype=np.float32)
-        elif(data.data == 't'):
-            self.body.addRelTorque(np.array([0, 500, 0]), dtype=np.float32)
-        elif(data.data == 'g'):
-            self.body.addRelTorque(np.array([0, -500, 0]), dtype=np.float32)
-        elif(data.data == 'r'):
-            self.body.addRelTorque(np.array([0, 0, 500]), dtype=np.float32)
-        elif(data.data == 'v'):
-            self.body.addRelTorque(np.array([0, 0, -500]), dtype=np.float32)
+        # Map keys to forces
+        forces = {
+            'j': np.array([-500., 0.0, 0.0]),
+            'l': np.array([500., 0.0, 0.0]),
+            'i': np.array([0.0, 500., 0.0]),
+            'k': np.array([0.0, -500., 0.0]),
+            'u': np.array([0.0, 0.0, 500.]),
+            'o': np.array([0.0, 0.0, -500.]),
+        }
+
+        desired_force = forces[keypress]
+        self.body.addRelForce(desired_force)
+
+        # Map keys to torques
+        torques = {
+            'f': np.array([-500., 0.0, 0.0]),
+            'h': np.array([500., 0.0, 0.0]),
+            't': np.array([0.0, 500., 0.0]),
+            'g': np.array([0.0, -500., 0.0]),
+            'r': np.array([0.0, 0.0, 500.]),
+            'v': np.array([0.0, 0.0, -500.]),
+        }
+
+        desired_torque = torques[keypress]
+        self.body.addRelTorque(desired_torque)
 
     def set_up_ros(self):
-        '''TODO:
-            Add pointAt
-        '''
-        self.position_server = rospy.Service('/sim/vehicle/set_pose', SimSetPose, self.set_pose_server)
-        self.keypress_sub = rospy.Subscriber('keypress', String, self.keypress_callback)
+        self.position_server = rospy.Service('sim/vehicle/set_pose', SimSetPose, self.set_pose_server)
+        self.keypress_sub = rospy.Subscriber('sim/keypress', String, self.keypress_callback)
 
     def set_pose_server(self, srv):
         '''Set the pose of the submarine
@@ -182,11 +180,12 @@ class Sub8(Box):
         sigma = 0.01
         noise = np.random.normal(0.0, sigma, 3)
 
+        # TODO: Simulte gravitational bias (How is this affected by dt? dt*g?)
         linear_acc = orientation_matrix.dot(self.velocity - self.last_vel) / dt
-        linear_acc += noise
+        linear_acc += noise * dt
 
         # TODO: Fix frame
-        angular_vel = orientation_matrix.dot(self.body.getAngularVel()) + noise
+        angular_vel = orientation_matrix.dot(self.body.getAngularVel()) + (noise * dt)
 
         header = Header(
             stamp=rospy.Time.now(),
@@ -244,7 +243,7 @@ class Sub8(Box):
 
     def thrust_cb(self, msg):
         '''TODO: Clamp'''
-        self.last_cmd_time = time()
+        self.last_cmd_time = rospy.Time.now()
         self.thrust_dict = {}
         for thrust_cmd in msg.thruster_commands:
             self.thrust_dict[thrust_cmd.name] = thrust_cmd.thrust
@@ -254,7 +253,7 @@ class Sub8(Box):
             TODO: Check if thruster is underwater
         '''
         # If timeout, reset thrust commands
-        if (time() - self.last_cmd_time) > self._cmd_timeout:
+        if (rospy.Time.now() - self.last_cmd_time) > self._cmd_timeout:
             self.thrust_dict = {}
 
         if self.pos[2] < 0:
@@ -267,6 +266,8 @@ class Sub8(Box):
 
         self.apply_buoyancy_force()
         self.apply_damping_force()
+        self.last_force = self.body.getForce()
+
         # self.apply_damping_torque()
         self.publish_pose()
         self.publish_dvl()
