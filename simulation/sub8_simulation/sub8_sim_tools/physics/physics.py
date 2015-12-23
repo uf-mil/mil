@@ -146,8 +146,7 @@ class Entity(object):
         velocity = np.array(self.body.getLinearVel(), dtype=np.float32)
         norm_velocity = np.linalg.norm(velocity)
         if not np.isclose(norm_velocity, 0.0):
-            unit_velocity = velocity / norm_velocity
-            force = (norm_velocity ** 2) * self._linear_damping_coeff * unit_velocity
+            force = velocity * norm_velocity * self._linear_damping_coeff
             self.body.addForce(force)
 
     def apply_damping_torque(self):

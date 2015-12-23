@@ -33,7 +33,6 @@ class SimWorld(rendering.Canvas):
                                       orientation=None, color=(155, 155, 100), shininess=3.0)
         self.physics_world.add_entity(Mesh, (0.0, 0.0, 0.0), 10., Transdec)
 
-        self.start_time = None
         super(self.__class__, self).__init__(self.time_acceleration, show_window=self.draw, physics_dt=self.physics_dt)
 
         self.view = np.array([
@@ -114,8 +113,6 @@ class SimWorld(rendering.Canvas):
 
 
     def step_physics(self, event):
-        if self.start_time is None:
-            self.start_time = time.time()
         self.clock += self.physics_dt
         self.clock_pub.publish(Clock(clock=rospy.Time(self.clock)))
 

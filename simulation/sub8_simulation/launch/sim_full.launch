@@ -1,9 +1,9 @@
 <launch>
     <arg name="3dmouse" default="false" />
 
-    <param name="3dmouse" value="$(arg 3dmouse)" type="bool" />
-    <param name="simulate" value="true" />
     <param name="use_sim_time" value="true" />
+    <param name="simulate" value="true" />
+    <param name="3dmouse" value="$(arg 3dmouse)" type="bool" />
 
     <!-- Alarm system -->
     <node pkg="sub8_alarm" type="alarm_handler.py" name="sub8_alarm_handler" output="screen" />
@@ -16,8 +16,8 @@
     <group if="$(arg 3dmouse)" >
         <!-- ROS Node for interface with 3D Mouse -->
         <node pkg="spacenav_node" type="spacenav_node" name="spacenav_node" output="screen">
-          <param name="zero_when_static" value="true"/>
-          <param name="static_count_threshold" value="30"/>
+          <param name="zero_when_static" value="true" />
+          <param name="static_count_threshold" value="30" />
         </node>
 
         <!-- 3D Mouse Remapper node (Our own) -->
