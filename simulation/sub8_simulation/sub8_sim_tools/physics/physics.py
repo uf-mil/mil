@@ -95,17 +95,21 @@ class Entity(object):
         return np.array(self.body.getPosition(), dtype=np.float32)
 
     @property
+    def orientation(self):
+        r = np.array(self.body.getRotation(), dtype=np.float32)
+        R = r.reshape(3, 3)
+        return R
+
+    @property
     def pose(self):
         '''Construct a 4x4 homogeneous pose matrix,
         Pose changes frequently enough that we recompute each time
         Pose is in the world frame
         '''
         pose = np.zeros((4, 4))
-        orientation = np.array(self.body.getRotation(), dtype=np.float32)
-        orientation = orientation.reshape(3, 3)
-        # Don't use self.pos, to avoid a wasteful array cast
         position = self.body.getPosition()
-        pose[:3, :3] = orientation
+        # Don't use self.pos, to avoid a wasteful array cast
+        pose[:3, :3] = self.orientation
         pose[3, :3] = position
         pose[3, 3] = 1.
         return pose
@@ -127,7 +131,7 @@ class Entity(object):
         Volume of sphere: (4 / 3)pi * r**3
         Volume of a spherical cap of height h: (1 / 3)pi * h**2 * (3r - h)
         '''
-        h = np.clip(self.pos[2], 0.0, 2 * self.radius)
+        h = np.clip(self.pos[2] + self.radius, 0.0, 2 * self.radius)
         sphere_volume = (4. / 3.) * (np.pi * (self.radius ** 3.))
         above_water_volume = (1 / 3) * np.pi * (h ** 2) * ((3 * self.radius) - h)
         submerged_volume = sphere_volume - above_water_volume
@@ -136,9 +140,8 @@ class Entity(object):
     def apply_buoyancy_force(self):
         '''Apply buoyancy force based on submerged volume approximation
         '''
-        submerged_volume = self.submerged_volume
         # Negative, because g < 0
-        buoyancy_force = -Constants.density_water * Constants.g * submerged_volume
+        buoyancy_force = -Constants.density_water * Constants.g * self.submerged_volume
         self.body.addForce((0.0, 0.0, buoyancy_force))
 
     def apply_damping_force(self):
@@ -146,8 +149,7 @@ class Entity(object):
         velocity = np.array(self.body.getLinearVel(), dtype=np.float32)
         norm_velocity = np.linalg.norm(velocity)
         if not np.isclose(norm_velocity, 0.0):
-            unit_velocity = velocity / norm_velocity
-            force = (norm_velocity ** 2) * self._linear_damping_coeff * unit_velocity
+            force = velocity * norm_velocity * self._linear_damping_coeff
             self.body.addForce(force)
 
     def apply_damping_torque(self):
