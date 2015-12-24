@@ -131,7 +131,7 @@ class Entity(object):
         Volume of sphere: (4 / 3)pi * r**3
         Volume of a spherical cap of height h: (1 / 3)pi * h**2 * (3r - h)
         '''
-        h = np.clip(self.pos[2], 0.0, 2 * self.radius)
+        h = np.clip(self.pos[2] + self.radius, 0.0, 2 * self.radius)
         sphere_volume = (4. / 3.) * (np.pi * (self.radius ** 3.))
         above_water_volume = (1 / 3) * np.pi * (h ** 2) * ((3 * self.radius) - h)
         submerged_volume = sphere_volume - above_water_volume
