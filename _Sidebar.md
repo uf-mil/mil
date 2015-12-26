@@ -25,6 +25,7 @@
     * [[Thrusters]]
     * [[Monte Carlo Engine]]
     * [[Goal Manager]]
+    * [[Cameras]]
 * Tribal Knowledge
     * [[SSH into the sub]]
     * [[ROS things]]
