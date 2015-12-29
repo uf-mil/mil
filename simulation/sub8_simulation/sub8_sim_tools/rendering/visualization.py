@@ -11,7 +11,7 @@ import sys
 class Canvas(app.Canvas):
     def __init__(self, time_acceleration=1.0, show_window=True, physics_dt=(1 / 30.)):
         app.Canvas.__init__(self, keys='interactive', size=(800, 800))
-
+        rospy.on_shutdown(self.end)
         # How much sim time should pass for each real world second
         self.dt_per_second = time_acceleration
 
@@ -27,7 +27,7 @@ class Canvas(app.Canvas):
         gloo.set_state(depth_test=True, blend=True, preset='translucent')
         self._timer = app.Timer('auto', connect=self.on_timer, start=True)
         self.physics_timer = app.Timer(self.physics_dt / self.dt_per_second, connect=self.step_physics, start=True)
-        self.clock = 0
+        self.clock = 0.0
         self.view = np.eye(4)
 
         # Do any visualization?
@@ -35,7 +35,14 @@ class Canvas(app.Canvas):
         if show_window:
             self.show()
 
-        self.keypress_pub = rospy.Publisher('keypress', String, queue_size=10)
+        self.keypress_pub = rospy.Publisher('sim/keypress', String, queue_size=10)
+
+    def end(self):
+
+        '''This sometimes generates errors due to unfavorable ROS-Vispy interactions
+            when SIGINT is issued'''
+        self.close()
+        sys.exit()
 
     def on_timer(self, event):
         self.update()
@@ -50,7 +57,7 @@ class Canvas(app.Canvas):
     def on_draw(self, event):
         gloo.set_viewport(0, 0, *self.size)
         gloo.clear(color=True, depth=True)
-        self.world.draw(self.view)
+        self.rendering_world.draw(self.view)
 
     def on_key_press(self, event):
         # Process events on a specific object
@@ -120,14 +127,15 @@ class Canvas(app.Canvas):
         self.view = self.view.dot(translate(list(self.translate)))
 
 if __name__ == '__main__':
+    rospy.init_node('simulation_test')
     c = Canvas()
-    c.world = World()
-    c.world.add_sphere((0.0, 0.0, 0.0), 1.0, (0.0, 50.0, 0.0))
-    c.world.add_sphere((0.0, 0.0, 0.3), 1.0, (100., 50.0, 0.0))
-    c.world.add_sphere((0.0, 0.8, 0.0), 0.4, (100., 50.0, 0.0))
-    c.world.add_sphere((0.8, 0.0, 0.5), 1.0, (100., 50.0, 0.0))
-    c.world.add_sphere((0.0, -0.8, -8), 0.4, (100., 50.0, 0.0))
-    c.world.add_box((0.8, 0.8, 5), 5.0, 2.0, 3.0, (50, 100, 100))
-    # c.world.add_plane((0.0, 0.0, -1.0), 20.0, 20.0)
-    c.world.add_point_light((0.0, 0.0, 0.0), (0.1, 0.8, 0.5))
+    c.rendering_world = World()
+    c.rendering_world.add_sphere((0.0, 0.0, 0.0), 1.0, (0.0, 50.0, 0.0))
+    c.rendering_world.add_sphere((0.0, 0.0, 0.3), 1.0, (100., 50.0, 0.0))
+    c.rendering_world.add_sphere((0.0, 0.8, 0.0), 0.4, (100., 50.0, 0.0))
+    c.rendering_world.add_sphere((0.8, 0.0, 0.5), 1.0, (100., 50.0, 0.0))
+    c.rendering_world.add_sphere((0.0, -0.8, -8), 0.4, (100., 50.0, 0.0))
+    c.rendering_world.add_box((0.8, 0.8, 5), 5.0, 2.0, 3.0, (50, 100, 100))
+    # c.rendering_world.add_plane((0.0, 0.0, -1.0), 20.0, 20.0)
+    c.rendering_world.add_point_light((0.0, 0.0, 0.0), (0.1, 0.8, 0.5))
     app.run()
