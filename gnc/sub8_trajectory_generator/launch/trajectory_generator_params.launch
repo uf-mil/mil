@@ -13,8 +13,8 @@
 	<!-- OMPL constants -->
 	<param name="terminating_condition" value="1.0" type="double"/>
 	<param name="state_validity_checking_resolution" value="0.03" type="double"/>
-	<param name="propagation_step_size" value="2.0" type="double"/>
-	<param name="min_control_duration" value="1.0" type="double"/>
+	<param name="propagation_step_size" value="1.0" type="double"/>
+	<param name="min_control_duration" value="0.01" type="double"/>
 	<param name="max_control_duration" value="100.0" type="double"/>
 	
 	<param name="position_gain" value="1.0" type="double"/>

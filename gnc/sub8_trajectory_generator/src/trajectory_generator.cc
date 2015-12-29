@@ -68,9 +68,13 @@ class TGenNode {
 }
 
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "trajectory_generator");
+  ros::init(argc, argv, "sub8_trajectory_generator");
+  ros::NodeHandle nh; // start the node 
 
-  // Local vars
+  // Service names for services needed to configure the TGEN
+  std::string thruster_range_service = "thrusters/thruster_range";
+  std::string b_matrix_service = "b_matrix";
+
   int planner_id = 0;
   int dim_idx = 0;
   Matrix2_8d cspace_bounds;  // 2 x 8 Matrix <doubles> - thruster force ranges
@@ -78,18 +82,14 @@ int main(int argc, char** argv) {
   TGenThrusterInfoPtr thruster_info(
       new TGenThrusterInfo());  // stores info on the sub's thrusters
 
-  // Services needed to configure the TGEN
-  std::string thruster_range_service = "thrusters/thruster_range";
-  std::string b_matrix_service = "b_matrix";
-
-  // NodeHandle
-  ros::NodeHandle nh;
+  ROS_INFO_STREAM("Initializing sub8_trajectory_generator");
 
   ////////////////////////////////////////////
   // ServiceClient: thrusters/thruster_range
   ////////////////////////////////////////////
   ros::ServiceClient thrusters_srv_client =
       nh.serviceClient<sub8_msgs::ThrusterInfo>(thruster_range_service);
+
   // Alert that this node will block until this service is available
   ROS_WARN("Waiting for service %s", thruster_range_service.c_str());
   thrusters_srv_client.waitForExistence();
@@ -141,11 +141,13 @@ int main(int argc, char** argv) {
 
   // Register the motion_plan service
   ros::ServiceServer motion_planning_srv = nh.advertiseService(
-      "motion_plan", &sub8::trajectory_generator::TGenNode::findTrajectory,
+      "sub8_trajectory_generator/motion_plan", &sub8::trajectory_generator::TGenNode::findTrajectory,
       tgen);
-
+  
   // Spin while listening for srv requests from the mission planner
   while (ros::ok()) {
     ros::spinOnce();
   }
+
+  return 0;
 }

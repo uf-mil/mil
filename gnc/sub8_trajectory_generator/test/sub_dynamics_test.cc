@@ -32,26 +32,6 @@ TEST(SubDynamicsTest, testSubDynamicsConstructor) {
   SubDynamicsPtr sub_dynamics(new SubDynamics(thruster_info));
 }
 
-TEST(SubDynamicsTest, testVector13dConstructor) {
-  std::vector<double> test;
-  for (int i = 0; i < 13; ++i) test.push_back(i);
-  Vector13d test_vect(test.data());
-  ASSERT_EQ(13, test_vect.size());
-}
-
-TEST(SubDynamicsTest, testSegmentAssignment) {
-  Vector13d v1;
-  Vector13d v2;
-  for (int i = 0; i < 13; ++i) v1(i) = i;
-  for (int j = 0; j < 13; ++j) v2(j) = j * 2;
-
-  v2.segment(0, 3) = v1.segment(3, 3);
-
-  ASSERT_EQ(v1(3), v2(0));
-  ASSERT_EQ(v1(4), v2(1));
-  ASSERT_EQ(v1(5), v2(2));
-}
-
 // Use a contrived example to test the functionality
 // The test values were obtained through
 // a MATLAB implementation of the dynamics equations
