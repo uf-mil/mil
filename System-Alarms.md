@@ -129,3 +129,4 @@ Add the `#include <sub8_alarm/alarm_helpers.h>` include directive to your code t
 * Implement heartbeats
 * Each node should expose a generic "System Kill/Unkill" node
 * Remove action_required - all alarms should require an action and have a corresponding alarm handler
+* Add default "all-is-well" state
