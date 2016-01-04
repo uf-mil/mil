@@ -20,7 +20,7 @@ class AlarmBroadcaster(object):
         # In the future, there will be some background bookkeeping
         self.alarms = []
 
-    def add_alarm(self, name, action_required=False, severity=2, problem_description=None, parameters=None):
+    def add_alarm(self, name, action_required=False, severity=3, problem_description=None, parameters=None):
         '''Factory method for creating a new alarm'''
         new_alarm = AlarmRaiser(
             alarm_name=name,
@@ -37,11 +37,11 @@ class AlarmBroadcaster(object):
 
 
 class AlarmRaiser(object):
-    def __init__(self, alarm_name, node_name, alarm_publisher, action_required=False, severity=2, problem_description=None, parameters=None):
+    def __init__(self, alarm_name, node_name, alarm_publisher, action_required=False, severity=3, problem_description=None, parameters=None):
         '''Alarm object, does alarms
         Generates alarm messages
         '''
-        assert severity in range(0, 2 + 1), "Severity must be an integer between 0 and 2"
+        assert severity in range(0, 3 + 1), "Severity must be an integer between 0 and 3"
         self._alarm_name = alarm_name
         self._node_name = node_name
         self._action_required = action_required
