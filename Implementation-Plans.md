@@ -85,6 +85,7 @@ Prize: Jake will get you ice cream
 # Medium Bounty
 Prize: Glory, Jake might get you ice cream
 
+* [ ] Create a utility for "I'm ready" notifications, potentially a part of the existing alarm system
 * [ ] Mission scheduler
     * [ ] Handle concurrency somehow
 * [ ] Come up with a good rostest framework/process for using full simulation
