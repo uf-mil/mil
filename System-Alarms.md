@@ -29,7 +29,7 @@ Here is an example use of an AlarmBroadcaster
         alarm_broadcaster = AlarmBroadcaster()
         thruster_out_alarm = alarm_broadcaster.add_alarm(
             name='thruster_out',
-            action_required=True,
+            action_required=False,
             severity=3
         )
 
