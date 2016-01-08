@@ -19,7 +19,7 @@ Bits of information you might need if you're poking around with the cameras
 * camera1394 (ROS package)
 
 ## libusb 1.0
-In Ubuntu run: `sudo apt-get install libusb-1.0-0 libusb-1.0-1-dev`.
+In Ubuntu run: `sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev`.
 
 ## libdc1394
 1. Download the latest version of [libdc1394](http://sourceforge.net/projects/libdc1394/)
