@@ -11,10 +11,9 @@
 	<param name="sub_mass" value="25.0" type="double"/>
 
 	<!-- OMPL constants -->
-	<param name="terminating_condition" value="1.0" type="double"/>
 	<param name="state_validity_checking_resolution" value="0.03" type="double"/>
-	<param name="propagation_step_size" value="1.0" type="double"/>
-	<param name="min_control_duration" value="0.01" type="double"/>
+	<param name="propagation_step_size" value="0.1" type="double"/>
+	<param name="min_control_duration" value="1.0" type="double"/>
 	<param name="max_control_duration" value="100.0" type="double"/>
 	
 	<param name="position_gain" value="1.0" type="double"/>
@@ -23,15 +22,15 @@
 	<param name="orientation_gain" value="1.0" type="double"/>
 
 	<!-- initial values for state space bounds -->
-	<!-- position bounds -->
-	<param name="xmin" value="-100.0" type="double"/>
-	<param name="xmax" value="100.0" type="double"/>
-	<param name="ymin" value="-100.0" type="double"/>
-	<param name="ymax" value="100.0" type="double"/>
-	<param name="zmin" value="-100.0" type="double"/>
-	<param name="zmax" value="100.0" type="double"/>
+	<!-- position bounds, units = meters -->
+	<param name="xmin" value="-1.0" type="double"/>
+	<param name="xmax" value="1.0" type="double"/>
+	<param name="ymin" value="-1.0" type="double"/>
+	<param name="ymax" value="1.0" type="double"/>
+	<param name="zmin" value="-1.0" type="double"/>
+	<param name="zmax" value="1.0" type="double"/>
 
-	<!-- velocity bounds -->
+	<!-- velocity bounds, units = meters/sec -->
 	<param name="v_xmin" value="-1.0" type="double"/>
 	<param name="v_xmax" value="1.0" type="double"/>
 	<param name="v_ymin" value="-1.0" type="double"/>
@@ -39,7 +38,7 @@
 	<param name="v_zmin" value="-1.0" type="double"/>
 	<param name="v_zmax" value="1.0" type="double"/>
 
-	<!-- angular velocity bounds -->
+	<!-- angular velocity bounds units = radians/sec -->
 	<param name="w_xmin" value="-1.0" type="double"/>
 	<param name="w_xmax" value="1.0" type="double"/>
 	<param name="w_ymin" value="-1.0" type="double"/>

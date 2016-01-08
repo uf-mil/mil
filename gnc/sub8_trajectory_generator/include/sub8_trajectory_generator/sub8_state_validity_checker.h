@@ -45,10 +45,6 @@ class Sub8StateValidityChecker : public StateValidityChecker {
   // a call to ompl::control::SpaceInformation::satisfiesBounds().
   virtual bool isValid(const State* state) const;
 
-  // Return true if the state state is valid. In addition,
-  // set dist to the distance to the nearest invalid state.
-  virtual bool isValid(const State* state, double& dist) const;
-
   // Report the distance to the nearest invalid state
   // when starting from state. If the distance is negative,
   // the value of clearance is the penetration depth.

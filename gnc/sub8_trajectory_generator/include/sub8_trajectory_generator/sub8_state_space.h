@@ -206,7 +206,7 @@ class Sub8StateSpace : public CompoundStateSpace {
   // Tight upper bounds are preferred because the value of the extent is used
   // in the automatic computation of parameters for planning. If the bounds
   // are less tight, the automatically computed parameters will be less useful.
-  virtual double getMaximumExtent() const;
+  //virtual double getMaximumExtent() const;
 
   // Define equality between states
   virtual bool equalStates(const State* state1, const State* state2) const;

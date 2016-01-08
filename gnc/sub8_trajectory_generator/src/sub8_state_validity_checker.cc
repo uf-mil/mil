@@ -7,16 +7,10 @@
 using sub8::trajectory_generator::Sub8StateValidityChecker; 
  
 bool Sub8StateValidityChecker::isValid(const State* state) const {
-	// TODO
-	// Use Octree for collision checking 
-	return true;
+	// TODO - collision avoidance
+	return si_->satisfiesBounds(state);
 } 
 
-bool Sub8StateValidityChecker::isValid(const State* state, double& dist) const {
-	// TODO
-	return true;
-}
- 
 double Sub8StateValidityChecker::clearance(const State* state) const {
 	// TODO
 	return 0.0;

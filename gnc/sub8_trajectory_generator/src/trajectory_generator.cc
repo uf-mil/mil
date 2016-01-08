@@ -31,8 +31,8 @@ typedef boost::shared_ptr<TGenNode> TGenNodePtr;
 // requests
 class TGenNode {
  public:
-  TGenNode(const Matrix2_8d& cspace_bounds,
-           TGenThrusterInfoPtr& thruster_info, AlarmBroadcasterPtr& ab)
+  TGenNode(const Matrix2_8d& cspace_bounds, TGenThrusterInfoPtr& thruster_info,
+           AlarmBroadcasterPtr& ab)
       : _tgen(new TGenManager(cspace_bounds, thruster_info, ab)) {}
 
   bool findTrajectory(sub8_msgs::MotionPlan::Request& req,
@@ -42,12 +42,17 @@ class TGenNode {
     boost::shared_ptr<sub8_msgs::Waypoint> goal_state_wpoint =
         boost::make_shared<sub8_msgs::Waypoint>(req.goal_state);
 
-    bool error = false;
-    error = _tgen->setProblemDefinition(_tgen->waypointToState(start_state_wpoint),
-                                _tgen->waypointToState(goal_state_wpoint));
-
+    if (!(_tgen->setProblemDefinition(
+            _tgen->waypointToState(start_state_wpoint),
+            _tgen->waypointToState(goal_state_wpoint)))) {
+      // throw an error here? 
+      ROS_ERROR("Failed to set problem definition");
+      return false;
+    }
+    // add header 
     resp.success = _tgen->solve();
     if (resp.success) {
+      ROS_INFO("Successfully found a trajectory");
       resp.trajectory = _tgen->getTrajectoryMessage();
     } else {
       // Robot must make some decisions:
@@ -58,7 +63,7 @@ class TGenNode {
       //     motion-planning/Traversability map)
       // 3. Abort mission
     }
-    return error;
+    return resp.success;
   }
 
  private:
@@ -69,7 +74,7 @@ class TGenNode {
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "sub8_trajectory_generator");
-  ros::NodeHandle nh; // start the node 
+  ros::NodeHandle nh;  // start the node
 
   // Service names for services needed to configure the TGEN
   std::string thruster_range_service = "thrusters/thruster_range";
@@ -136,14 +141,14 @@ int main(int argc, char** argv) {
 
   // Create the TGEN node
   sub8::trajectory_generator::TGenNodePtr tgen(
-      new sub8::trajectory_generator::TGenNode(cspace_bounds,
-                                               thruster_info, alarm_b));
+      new sub8::trajectory_generator::TGenNode(cspace_bounds, thruster_info,
+                                               alarm_b));
 
   // Register the motion_plan service
   ros::ServiceServer motion_planning_srv = nh.advertiseService(
-      "sub8_trajectory_generator/motion_plan", &sub8::trajectory_generator::TGenNode::findTrajectory,
-      tgen);
-  
+      "sub8_trajectory_generator/motion_plan",
+      &sub8::trajectory_generator::TGenNode::findTrajectory, tgen);
+
   // Spin while listening for srv requests from the mission planner
   while (ros::ok()) {
     ros::spinOnce();

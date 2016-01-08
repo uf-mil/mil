@@ -40,7 +40,7 @@ double Sub8StateSpace::distance(const State* a, const State* b) const {
          (weights_[3] * acos(fabs(lambda)));
 }
 
-double Sub8StateSpace::getMaximumExtent() const { return INFINITY; }
+//double Sub8StateSpace::getMaximumExtent() const { return INFINITY; }
 
 bool Sub8StateSpace::equalStates(const State* a, const State* b) const {
   double error = 1e-4;

@@ -74,6 +74,7 @@ bool TGenManager::setProblemDefinition(const State* start_state,
                                        const State* goal_state) {
   if (!(_sub8_si->satisfiesBounds(start_state)) ||
       !(_sub8_si->satisfiesBounds(goal_state))) {
+    ROS_ERROR("Bad start state or goal state provided");
     return false;
   }
 
@@ -85,9 +86,11 @@ bool TGenManager::setProblemDefinition(const State* start_state,
   _pdef = ProblemDefinitionPtr(new ProblemDefinition(_sub8_si));
 
   // set the start state for the new ProblemDefinition
-  _pdef->addStartState(start_state);
+  //_pdef->addStartState(start_state);
   // set the goal state for the new ProblemDefinition
-  _pdef->setGoalState(goal_state);
+  //_pdef->setGoalState(goal_state);
+
+  _pdef->setStartAndGoalStates(start_state, goal_state, 0.05);
 
   _sub8_planner->setProblemDefinition(_pdef);
 
@@ -101,7 +104,7 @@ bool TGenManager::solve() {
   bool success = false;
 
   // arg for "solve" is the solve time
-  PlannerStatus pstatus = _sub8_planner->solve(30.0);
+  PlannerStatus pstatus = _sub8_planner->solve(1800.0);
 
   // Switch on the value of the PlannerStatus enum "StateType"
   // Only raise alarms on issues that require a system response.
@@ -123,12 +126,12 @@ bool TGenManager::solve() {
       // Q: How many times do I retry replanning if failure? once?
       break;
     case PlannerStatus::APPROXIMATE_SOLUTION:
-      ROS_DEBUG("%s", TGenMsgs::APPROXIMATE_SOLUTION);
+      ROS_WARN("%s", TGenMsgs::APPROXIMATE_SOLUTION);
       // TODO: What is our tolerance for this?
       success = true;
       break;
     case PlannerStatus::EXACT_SOLUTION:
-      ROS_DEBUG("%s", TGenMsgs::EXACT_SOLUTION);
+      ROS_INFO("%s", TGenMsgs::EXACT_SOLUTION);
       success = true;
       break;
     case PlannerStatus::CRASH:

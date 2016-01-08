@@ -14,11 +14,11 @@ set(catkin_LIBRARIES
 )
 
 set(SRCS 
-	src/sub8_state_space.cc
 	src/space_information_generator.cc
+	src/sub8_state_space.cc
 	src/sub8_state_validity_checker.cc
-	src/tgen_manager.cc
 	src/sub_dynamics.cc
+	src/tgen_manager.cc
 )
 
 catkin_package(
