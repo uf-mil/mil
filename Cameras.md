@@ -8,9 +8,9 @@ Sub8's visual stack will contain three cameras. They are the following:
 Bits of information you might need if you're poking around with the cameras
 
 * __Camera GUIDs:__ 
-    *__Left Stereo:__ 00b09d0100ea51c4
-    *__Right Stereo:__ 00b09d0100ea51be
-    *__Downward:__ 00b09d0100eabf6c
+    * __Left Stereo:__ 00b09d0100ea51c4
+    * __Right Stereo:__ 00b09d0100ea51be
+    * __Downward:__ 00b09d0100eabf6c
 
 * __Bus Transfer Speed:__ We're running the cameras in format7_mode4 (960x600 pixels) with raw_8 for color information. That gives us the following breakdown: 960 * 800 * 30 (fps) * 8 (raw_8) = ~139 MB/s. One USB bus in half for two cameras will give us ~157.29 MB/s of bandwidth per camera. 
 * __Useful Camera Registers:__ 0x604 for video_mode and 0x608 for video_format.  
