@@ -1,11 +1,17 @@
 # Cameras
 
-As of right now we will be using two Point Grey Blackfly U3-23S6Cs. They will serve as the forward facing cameras. Plans are in place for a third, downward facing camera.
+Sub8's visual stack will contain three cameras. They are the following: 
+    __Stereo System:__ Two Point Grey Chameleon3s (CM3-13S2C) 
+    __Downward System:__ One Point Grey Blackfly (U3-13S2C) 
 
 # At-a-glance Info
 Bits of information you might need if you're poking around with the cameras
 
-* __Camera GUIDs:__ 00b09d0100e84a44 and 00b09d0100e84a42
+* __Camera GUIDs:__ 
+    __Left Stereo:__ 00b09d0100ea51c4
+    __Right Stereo:__ 00b09d0100ea51be
+    __Downward:__ 00b09d0100eabf6c
+
 * __Bus Transfer Speed:__ We're running the cameras in format7_mode4 (960x600 pixels) with raw_8 for color information. That gives us the following breakdown: 960 * 800 * 30 (fps) * 8 (raw_8) = ~139 MB/s. One USB bus in half for two cameras will give us ~157.29 MB/s of bandwidth per camera. 
 * __Useful Camera Registers:__ 0x604 for video_mode and 0x608 for video_format.  
 
