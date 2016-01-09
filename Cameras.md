@@ -1,5 +1,4 @@
 # Cameras
-
 Sub8's visual stack will contain three cameras. They are the following: 
 
     * __Stereo System:__ Two Point Grey Chameleon3s (CM3-13S2C) 
