@@ -1,8 +1,8 @@
 # Cameras
 Sub8's visual stack will contain three cameras. They are the following: 
 
-    * __Stereo System:__ Two Point Grey Chameleon3s (CM3-13S2C) 
-    * __Downward System:__ One Point Grey Blackfly (U3-13S2C) 
+* __Stereo System:__ Two Point Grey Chameleon3s (CM3-13S2C) 
+* __Downward System:__ One Point Grey Blackfly (U3-13S2C) 
 
 # At-a-glance Info
 Bits of information you might need if you're poking around with the cameras
@@ -57,11 +57,11 @@ Once all of this has been done, go ahead and reboot your computer.
 
 The first time you run the camera system you will have to run coriander and set the frame rate on each of the cameras to ~30. This is accomplished by:
 
-    1. Under the "Camera" tab select the camera whose settings you want to modify
-    2. Select the Controls tab, and navigate to the bottom of the page
-    3. Select the "Abs" option, and set it to 30
-    4. Repeat for the other cameras onboard
-    5. Reboot system
+1. Under the "Camera" tab select the camera whose settings you want to modify
+2. Select the Controls tab, and navigate to the bottom of the page
+3. Select the "Abs" option, and set it to 30
+4. Repeat for the other cameras onboard
+5. Reboot system
 
 This process should only happen __once__, that is, when the camera system is first installed. 
 After this, we can simply run `roslaunch camera1394 stereo.launch` to launch the camera system. 
