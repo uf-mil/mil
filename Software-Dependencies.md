@@ -40,4 +40,6 @@ To install dependencies necessary to run OMPL code run:
 
 PyODE seems to be broken, so we must compile from source. Thanks to Forrest for this discovery.
 
+Verify that your computer allows source code (system settings >> Software and updates >> Ubuntu software).
+
     rm -fr /tmp/pyode-build && mkdir -p /tmp/pyode-build && cd /tmp/pyode-build && sudo apt-get build-dep -y python-pyode && sudo apt-get remove -y python-pyode && apt-get source --compile python-pyode && sudo dpkg -i python-pyode_*.deb
