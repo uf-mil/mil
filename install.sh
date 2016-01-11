@@ -1,4 +1,18 @@
 #!/bin/bash
+if [ $# -ge 1 ]; then
+    DEPS_DIR="$1"
+    CATKIN_DIR="$1"/catkin_ws
+elif [ $# -ge 2 ]; then
+    DEPS_DIR="$1"
+    CATKIN_DIR="$2"
+else
+    DEPS_DIR=~/repos/sub_dependencies
+    CATKIN_DIR=~/repos/catkin_ws
+fi
+
+echo "Installing dependencies in $DEPS_DIR"
+echo "Generating catkin workspace (If needed) at $CATKIN_DIR"
+
 set -e
 # TODO: Force this to be run as root, and manually run the non-root commands as w/e
 #if (( $EUID != 0 )); then
@@ -6,12 +20,9 @@ set -e
 #    exit
 #fi
 
-DEPS_DIR=~/repos/sub_dependencies
-CATKIN_DIR=~/repos/catkin_ws
 
 mkdir -p "$DEPS_DIR"
 cd "$DEPS_DIR"
-
 ####### Always Pre-requisites
 
 sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe"
@@ -47,6 +58,7 @@ set +e
 pip freeze | grep -i vispy
 if [ $? -eq 1 ]; then
     set -e
+    echo "INSTALLER: Looks like you don't have Vispy, let's grab it"
     # Let's force ourselves to stay at the latest version
     # TODO: python -c "import vispy; print vispy.__version__" -> Compare to what's available
     # TODO: Uninstall old Vispy if it is out of date
@@ -54,13 +66,13 @@ if [ $? -eq 1 ]; then
     cd vispy
     sudo python setup.py develop
 else
+    echo "INSTALLER: You have Vispy, don't worry, we'll make sure it's up to date"
     # How's that for a hack!? (Figure out location of Vispy)
     cd "$(dirname `python -c  "import vispy; print vispy.__file__"`)/.."
     sudo python setup.py develop --uninstall
     if [ $? -eq 1 ]; then
-        echo "Your Vispy installation is weird, don't install in manually, use the the sub install script"
+        echo "INSTALLER: Your Vispy installation is weird, don't install in manually, use the the sub install script"
     fi
-
     git pull
     sudo python setup.py develop
 fi
@@ -73,6 +85,7 @@ set +e
 ls /usr/local/share/ | grep -i ceres
 if [ $? -ne 0 ]; then
     set -e
+    echo "INSTALLER: Looks like to don't have Google Ceres, we'll install it"
     sudo apt-get -qq install libgoogle-glog-dev
     # BLAS & LAPACK
     sudo apt-get -qq install libatlas-base-dev
