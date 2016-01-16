@@ -12,8 +12,18 @@ Bits of information you might need if you're poking around with the cameras
     * __Right Stereo:__ 00b09d0100ea51be
     * __Downward:__ 00b09d0100eabf6c
 
-* __Bus Transfer Speed:__ We're running the cameras in format7_mode4 (960x600 pixels) with raw_8 for color information. That gives us the following breakdown: 960 * 800 * 30 (fps) * 8 (raw_8) = ~139 MB/s. One USB bus in half for two cameras will give us ~157.29 MB/s of bandwidth per camera. 
+* __Bus Transfer Speed:__ We're running the cameras in format7_mode1 (644x482 pixels) with raw8 for color information. That gives us the following breakdown: 644 * 482 * 30 (fps) * 8 (raw_8) = ~75 MB/s. For a total of three cameras, we will be using a total of 225 MB/s (Can be accommodated on a single USB3 bus).
+ 
+* __Justifications for Camera Options:__ The vision tasks for the AUVSI RoboSub competition do not require a large amount of resolution. All of the cameras that were selected for this vehicle contain the same sensor (Sony ICX445 CCD) with a 1288x964 resolution. Computationally it is much easier to work with lower resolution images, especially if we intend to do stereo correspondence for SLAM/Visual odometry. If it is needed we later decide to run the cameras at a higher resolution. 
+
 * __Useful Camera Registers:__ 0x604 for video_mode and 0x608 for video_format.  
+
+* __Notes:__
+
+    + All of the cameras contain an internal FPGA that handles debayering the images for color images. Typically image_raw in ROS would have to be [debayered using image_proc](http://wiki.ros.org/image_proc#image_proc.2BAC8-diamondback.image_proc.2BAC8-debayer), but in our case we can use image_raw without any problems. As a consequence we cannot decide how were introduce color information into the image (Billinear, EdgeAware, etc.). 
+By running the cameras in format7mode0 we can do this, but we cannot downsample the image. 
+
+    + Running the cameras in format7mode4 allows to run at ~50fps but only in mono. The image is incredibly sharp, but alas, we need the color information. 
 
 # Dependencies/Setup
 
