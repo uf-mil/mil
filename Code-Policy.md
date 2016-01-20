@@ -16,7 +16,7 @@ Before submitting changes, read the rest of this page. Any code that is pull-req
 5. Code that is to be run on the sub (Obeying all style-guides, and the MIL internal guides) should go into the master branch. Code that obeys the style-guides, but is still in development, belongs into your own feature branch (ex: sim, monte-carlo, controller), to be merged when complete.
 
 There is *exactly one* exception to this policy:
-If on pool-test day, there are critical changes that you need to make to the sub, you may commit them directly too the **sub's** onboard git. Only minor changes are permissible at this time, this still does not belong in the main sub8/master. On competition days, *all* changes must be pair-programmed.
+If on pool-test day, there are critical changes that you need to make to the sub, you may commit them directly too the **sub's** onboard git. Only minor changes are permissible at this time, this still does not belong in the main sub8/master.
 
 ## Review
 * When your code is reviewed and approved, it will be pulled into the main sub8 repository
@@ -41,6 +41,18 @@ If on pool-test day, there are critical changes that you need to make to the sub
 * Every commit should represent a logical unit, both in code and in message, never just "[work](https://github.com/uf-mil/SubjuGator/commits/master?page=4)" or "fix"
 * [Don't do this](http://www.commitlogsfromlastnight.com/)
 * Include a brief line about how you tested your code
+
+## Merging and Rebasing
+* If you have made commits **locally**, and want to take in commits from upstream, you should `rebase`
+
+    git pull --rebase upstream master
+
+* If you have made commits on your feature branch, and some of these commits exist on the uf-mil remote, you should `merge
+
+    git pull --no-ff upstream master  # This will merge with no fast-forwarding
+
+* You *DO NOT* need to merge master into your branch before submitting a pull request, the PR will do the merging.
+
 
 ## What should I not commit?
 * Do not commit debug print statements (ROS Logging is okay)
@@ -89,13 +101,15 @@ If you have any questions about what you should unit tests, talk to Patrick Emam
 * Enforce PEP8 with [flake8](https://pypi.python.org/pypi/flake8), or use the flake8 linter Subplime plugin.
 * Use (We ignore E201)
 
-    `flake8 --max-line-length=130 --ignore=E201 ./`
+    `flake8 --max-line-length=130 ./`
 
 * We will follow PEP8 with one exception: the line length may be up to 100 characters
 * Your code will not be pulled if it is not PEP8 compliant
 
 ## C++
 * [Clang-format](https://github.com/rosshemsley/SublimeClangFormat) to automatically format your code
+    * We use the Google styleguide, because LLVM style breaks nested template declarations
+    * We set the maximum line length to 130
 * [Google Styleguide](https://google-styleguide.googlecode.com/svn/trunk/cppguide.html)
 * [Google styleguide linter](https://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py) or find a Sublime plugin/linter that enforces the google styleguide
 

@@ -78,6 +78,7 @@ Todo
     * [x] Transdec model
     * [x] Sub8 Model
     * [ ] AUVSI models
+    * [ ] Global configuration register
 
 * [ ] Rendering
     * [x] View control

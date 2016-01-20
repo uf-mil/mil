@@ -103,6 +103,8 @@ Topics that appear to be common to essentially every monocular SLAM implementati
 
 * [RobotOptim](http://www.roboptim.net/getting-started.html) - A robot optimization toolkit that binds to a IPOPT and a bunch of other optimization tools, doing all of the hard work. "Batteries included"
 
+* [libviso (Crazy great visual odometry)](http://www.cvlibs.net/software/libviso/)
+
 ## Equipment
 * Structured Light Projector: 10 Lumens Pico Microvision laser projector
     * [$130](http://www.amazon.com/MicroVision-SHOWWX-Classic-Laser-Projector/dp/B003G5ML9Y)

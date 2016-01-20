@@ -74,6 +74,7 @@ Prize: Jake will get you ice cream
         * This way, we can reuse vispy visualization for viewing vehicle state
     * [ ] Easily supported simulation widgets
     * [ ] Easily supported relative positioning
+    * [ ] Make sim easier to add features to (simulate.py should just be a list of objects added and then sim.start())
 
 ### Simulation
 * [ ] Simulated imaging sonar
@@ -117,7 +118,7 @@ Prize: Glory, Jake might get you ice cream
 * [ ] Draw waypoints in the simulator
     * [ ] Bonus points if we can draw a super nifty interpolating spline
     * When a trajectory message is published, draw a bunch of spheres or something
-* [ ] Add "widgets" to the simulator
+* [x] Add "widgets" to the simulator
     - The sub is now a widget, but this needs work
 * [ ] Simulated shadows
 * [ ] CUDA water physics for Simul8

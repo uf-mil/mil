@@ -28,9 +28,11 @@ In order...
 - [x] Submit a pull-request for the PD controller
 - [ ] Add vector of gains to demo controller
 
+- [ ] Submit PR for Controller base-class
 - [ ] Get adaptive controller behaving nicely (The nonlinear project worked ~okay~)
     - [ ] Test w/ Monte-Carlos
     - [ ] Use history correctly
+- [ ] Submit PR for adaptive controller
 
 - [ ] Monte-carlo gain optimization (All permutations of some gain sets in some range)
     - For 10 combinations of each p, i and d, this is tenable at 1000 runs, and will take ~2 hrs
@@ -42,18 +44,41 @@ In order...
         - OR just run it on the CUDA computer...overnight
     - A good sub model means we can do this optimization we can do this well...so we need a good model
 
+- [ ] Multiscale direct collocation
+    - [ ] RHC with many guesses using OMP
+    - [ ] Generate time-optimal trajectories using Eric's method
+        - [ ] GN-solver; no dynamic constraints?
+    - [ ] Get PSOPT working
+    - [x] get SNOPT (They will call me "Mount Cleverest")
+
+- [ ] LQR
+    - [ ] Translation only LQR
+        - [x] Simple demo
+        - [ ] Lyapunov
+        - [ ] Robust
+    - [ ] Attitude LQR [iffy](http://automatica.dei.unipd.it/tl_files/events/20100907AlessandroSacconSeminario.pdf)
+    - [ ] Submit PR
+
 # Optical Navigation
 - [ ] Implement visual odometry
     - [x] Get simple n-point transformation estimation from fundamental matrix working
     - [x] Do it w/ LK Optical Flow
     - [x] Triangulate points in 3D
-        - [ ] Visualize estimated camera poses using pyplot cones for debugging (Or use Vispy?)
+        - [x] Visualize estimated camera poses using pyplot cones for debugging (Or use Vispy?)
     - [x] Estimate globally consistent 3d transform by solving PnP
     - [x] Record square video
     - [ ] Outlier detection
         - [ ] Depth estimate filtering
         - [ ] Pose kalman filtering
     - [ ] Implement SVO-SLAM
+- [ ] Bayesian outlier detection
+    - [x] Dense histogram method
+    - [ ] OpenCL implementation (I could use ArrayFire and not do it directly for the Sub...)
+    - [ ] Alpha-Beta method
+- [ ] Make everybody build PCL from source
+    - We get C++11
+        - We can use PCL visualization with sub8_slam
+        - We can use nice C++11 features (Hey-o move semantics!) with
 
 ## Problems
 - [?] Dismiss invalid pose transforms
@@ -67,7 +92,8 @@ In order...
 - [ ] Submit a PR for the sim format changes
 - [x] Add feature for issuing wrenches via keyboard -- Annie did this
 - [x] Make everything work on simulated time so we can run Monte-Carlos in faster than realtime
-- [ ] Write a tutorial for adding a simulation widget
+- [x] Simulated IMU -- Annie
+- [x] Simulated DVL -- Annie
 - [ ] Add simulated magnetometer
     - [ ] Add simulated magnetic field effects to thrusters
 - [ ] Simulated stereo depth + imaging sonar
@@ -75,24 +101,43 @@ In order...
 - [ ] Consistent widgets
     - Scenegraph is a preqrequisite to do this right
     - Do all widgets have pose?
-    - Do all widgets have collision (No!)
+    - Do all widgets have collision (No!)x
     - Should all add-remove behavior be abstracted into widgets
     - For you snoopers looking at my page: A widget is a simulation object that has some internal logic that isn't contained strictly within `step physics forward` and `draw me`
 - [ ] Figure out the problem with time-acceleration
     - For high simulated time acceleration, controllers have radically different behavior. Why?
+        - This may have been an aliasing effect from sampling rate
+- [x] The sim gets slower over time (Is it accumulating garbage?)
+    - Not getting slower, just responding more intermittently to keyboard input
+- [ ] Verification
+    - [ ] IMU
+    - [ ] DVL
+    - [ ] Magnetomter
+- [x] Submit final PR for monte-carlo branch
 
 # Solvers
 - [ ] Get Ceres or IPOPT working (Ceres seems more likely)
-    - **Do not** roll our own GN-minimizer
+- [ ] Inverse-compositional GN solver
 - [ ] Add single-state horizon quick-solver using CVXGEN
-- [ ]
+- [ ] Multi-scale quick-DirCol
+    - [ ] cvx and subdivide, abuse Jacobian
+    - [ ] For subdivides, constrain end collocation point to next subdivision start collocation
+        - [ ] Otherwise do unconstrained optimization
+- [ ] Finish quick-Ricatti stuff
 
 # Overall
 - [ ] Reclaim Honor
 
 # Christmas Break:
-- [ ] Ask Jason to seal the sub before break so we can do a few pool days
-- [ ] MAKE SURE Ralph Tess and self have building access during break (Or we will not be able to do anything)
+- [x] Ask Jason to seal the sub before break so we can do a few pool days
+- [x] MAKE SURE Ralph Tess and self have building access during break (Or we will not be able to do anything)
+- [ ] Get DVL working
+- [ ] Run real thrusters
+- [ ] Do LIDAR SLAM w/ Zach's data
+- [ ] Finish SVO
+- [x] Fix simulator bugs
+- [ ] Finish Jayne PTLS
+
 
 ## Boredom Goals (If critical things get boring, work on these):
 - Localization visualization tool using Vispy (What about for C++?)
@@ -101,7 +146,7 @@ In order...
 - Simulation improvements for boat use (Better submerged volume estimation, or constraints objects)
 - [ ] Pose-graph/scene-graph system
     - [ ] Widgets for simulation
-- [ ] Submit PR for widgets
+- [x] Submit PR for widgets
 - [ ] Submit PR for scenegraph
 
 Spring:
@@ -111,12 +156,11 @@ Spring:
 - [ ] MHE
 - [ ] Modernize RISE at suggestion of Forrest
     - [ ] Now do a RHC, geometric planner or something wacky and funtacular
-- [ ] Accurate
+    - [ ] Lyapunov-Robust LQR
 
 Random:
-- [ ] Make increment-numbers again
 - [ ] Some reflection tool for automatically making *stamped messages using __getattr__ and parsing the request
-- [ ] Fix the a=-b corner case for that make_rotation
+ the a=-b corner case for that make_rotation
 - [ ] Make a function for homogeneous quick-inverse (R.T, R.T * -t)
 - [ ] Quick-inverse for structured matrices (lapack?!)
     - [Some examples](http://stanford.edu/class/ee364a/lectures/num-lin-alg.pdf)
@@ -134,9 +178,15 @@ Not Sub:
 - [ ] Call in to coast-to-coast AM next time up at 3AM (Ralph)
 - [ ] Talk to Paracosm when we have SLAM working
 
-Knowledge
+Sublime plugins
+- [ ] Make increment-numbers again
+- [ ] Easy-GFM-Tables
 
+
+Knowledge
+- [ ] Learn how to use [Jekyll](http://jekyllrb.com/docs/posts/) for github page
 - [ ] Call in to coast-to-coast AM next time up at 3AM (Ralph)
 - [ ] Talk to Paracosm when we have SLAM working
 - [x] Give money to Jason -- Friendship submitted in lieu of money
 - [Writing good C++](https://youtu.be/0iWb_qi2-uI)
+- [SID](http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-435-system-identification-spring-2005/lecture-notes/)
