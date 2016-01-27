@@ -49,7 +49,7 @@ If you're looking for something to solve, here's a list of bounty problems. Gian
 Prize: We will get Korean Barbeque
 
 * [x] Get the cameras working (Or get working cameras) -- Ralph
-* [ ] Get stereo producing point-clouds -- Gabe and Ralph
+* [x] Get stereo producing point-clouds -- Ralph
 * [ ] Get the sub station-holding on all new software (Excluding state-estimation)
 
 # Big Bounty
@@ -82,6 +82,7 @@ Prize: Jake will get you ice cream
 ### Vision
 * [ ] Poseifier
     * Given a sequence of segmented images, and the poses at which those images were taken, estimate the pose of the object in those images
+* [ ] Pose calibration - accurately calibrate relative pose of all 3 cameras, and their pose relative to the DVL or IMU
 
 # Medium Bounty
 Prize: Glory, Jake might get you ice cream
