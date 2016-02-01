@@ -6,6 +6,7 @@
 #include "gtest/gtest.h"
 #include "sub8_alarm/alarm_helpers.h"
 #include <string>
+#include <map>
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -147,7 +148,6 @@ TEST_F(AlarmHelpersTest, testBoostJSONParser) {
 #ifdef _WIN32
   file_sep = "\\";
 #endif
-  std::vector<std::string> test_alarms;
   std::string pkg_path = ros::package::getPath("sub8_alarm");
   // Will break if our file structure changes :/
   fs::path dirname(pkg_path + file_sep + "test_alarms" + file_sep + "cpp" +
@@ -182,7 +182,7 @@ TEST_F(AlarmHelpersTest, testBoostJSONParser) {
 
 TEST_F(AlarmHelpersTest, testAddAlarms) {
   AlarmBroadcasterPtr alarm_ptr(new AlarmBroadcaster(getNodeHandle()));
-  std::vector<AlarmRaiserPtr> test_alarms;
+  std::map<std::string, AlarmRaiserPtr> test_alarms;
 
   namespace fs = ::boost::filesystem;
 
@@ -199,16 +199,11 @@ TEST_F(AlarmHelpersTest, testAddAlarms) {
   std::string alarm_name_1 = "test_alarm_1";
   std::string alarm_name_2 = "test_alarm_2";
 
-  if (test_alarms[0]->getAlarmName().find("1") == std::string::npos) {
-    alarm_name_1 = "test_alarm_2";
-    alarm_name_2 = "test_alarm_1";
-  }
-
   ASSERT_TRUE(result);
-  EXPECT_EQ(alarm_name_1, test_alarms[0]->getAlarmName());
-  EXPECT_EQ(alarm_name_2, test_alarms[1]->getAlarmName());
-  EXPECT_EQ("This is " + alarm_name_1, test_alarms[0]->getProblemDescription());
-  EXPECT_EQ("This is " + alarm_name_2, test_alarms[1]->getProblemDescription());
+  EXPECT_EQ(alarm_name_1, test_alarms[alarm_name_1]->getAlarmName());
+  EXPECT_EQ(alarm_name_2, test_alarms[alarm_name_2]->getAlarmName());
+  EXPECT_EQ("This is " + alarm_name_1, test_alarms[alarm_name_1]->getProblemDescription());
+  EXPECT_EQ("This is " + alarm_name_2, test_alarms[alarm_name_2]->getProblemDescription());
 }
 
 int main(int argc, char** argv) {

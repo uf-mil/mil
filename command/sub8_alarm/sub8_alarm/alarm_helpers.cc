@@ -29,14 +29,14 @@ AlarmRaiserPtr AlarmBroadcaster::addAlarm(
                                            problem_description, parameters));
   // Add the new alarm to the list of alarms
   // maintained by the AlarmBroadcaster
-  _alarms.push_back(new_alarm);
+  _alarms.insert(std::pair<std::string, AlarmRaiserPtr>(name, new_alarm));
   return new_alarm;
 }
 
 bool AlarmBroadcaster::addAlarms(const fs::path& dirname,
-                                 std::vector<AlarmRaiserPtr>& alarms) {
+                                 std::map<std::string, AlarmRaiserPtr>& alarms) {
   std::vector<std::string> paths;
-  const std::string ext = ".json"; 
+  const std::string ext = ".json";
 
   // alarm attributes
   std::string alarm_name;
@@ -46,7 +46,8 @@ bool AlarmBroadcaster::addAlarms(const fs::path& dirname,
   std::string parameters;
 
   if (!fs::exists(dirname) || !fs::is_directory(dirname)) {
-    ROS_WARN("Could not find the following alarms directory %s", dirname.string().c_str());
+    ROS_WARN("Could not find the following alarms directory %s",
+             dirname.string().c_str());
     return false;
   }
 
@@ -118,7 +119,6 @@ AlarmRaiser::AlarmRaiser(const std::string& alarm_name,
 boost::shared_ptr<sub8_msgs::Alarm> AlarmRaiser::raiseAlarm(
     const std::string& problem_description,
     const std::string& parameters) const {
-  // assert((_problem_description != "") || (problem_description != ""));
 
   std::string pd =
       (problem_description != "") ? problem_description : _problem_description;

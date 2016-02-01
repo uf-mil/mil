@@ -9,7 +9,7 @@
 #include <ros/ros.h>
 #include <string>
 #include <boost/filesystem.hpp>  // directory iterators, etc
-
+#include <map>
 #include "sub8_msgs/Alarm.h"
 
 namespace fs = ::boost::filesystem;
@@ -32,7 +32,7 @@ class AlarmBroadcaster {
   // Given a directory of JSON files, parse and auto-generate all alarms
   // and return them as a list.
   // Returns as false if parsing the JSON files failed.
-  bool addAlarms(const fs::path& dirname, std::vector<AlarmRaiserPtr>& alarms);
+  bool addAlarms(const fs::path& dirname, std::map<std::string, AlarmRaiserPtr>& alarms);
 
   // Factory method for creating individual AlarmRaiser objects
   AlarmRaiserPtr addAlarm(const std::string& name, bool action_required = true,
@@ -42,7 +42,7 @@ class AlarmBroadcaster {
 
  private:
   const std::string _node_name = ros::this_node::getName();
-  std::vector<AlarmRaiserPtr> _alarms;
+  std::map<std::string, AlarmRaiserPtr> _alarms;
   PublisherPtr _alarm_publisher;
 };
 
@@ -55,8 +55,8 @@ class AlarmRaiser {
               const std::string& parameters = "");
 
   boost::shared_ptr<sub8_msgs::Alarm> raiseAlarm(
-      const std::string& problem_description,
-      const std::string& parameters) const;
+      const std::string& problem_description = "",
+      const std::string& parameters = "") const;
 
   // Getters for alarm info
   const std::string getAlarmName() const;
