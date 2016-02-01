@@ -1,5 +1,5 @@
 from __future__ import division
-from sub8_sim_tools import Shaders
+from sub8_sim_tools import Shaders, ShaderManager
 from sub8_ros_tools import make_rotation, compose_transformation
 from vispy import geometry, gloo
 import numpy as np
@@ -17,7 +17,8 @@ class Entity(object):
             - Draw outlines of faces in red'''
         self.debug = debug
 
-    def __init__(self, mesh, position=(0.0, 0.0, 0.0), orientation=None, color=(255., 0., 0., 255.0), faces=None):
+    def __init__(self, mesh, position=(0.0, 0.0, 0.0), orientation=None, color=(255., 0., 0., 255.0), faces=None,
+                 shader_manager=None):
         '''Orientation must be a 4x4 rotation matrix'''
         self.position = np.array(position, dtype=np.float32)
         if orientation is None:
@@ -28,7 +29,8 @@ class Entity(object):
 
         if len(color) == 3:
             color = color + (255,)
-        self.color = np.array(color, dtype=np.float32) / 255.  # Normalize to [0, 1]
+        self.color = np.array(
+            color, dtype=np.float32) / 255.  # Normalize to [0, 1]
 
         self.program = gloo.Program(self._vertex_shader, self._fragment_shader)
         self.program.bind(mesh)
@@ -100,18 +102,20 @@ class Entity(object):
 
 
 class Sphere(Entity):
-    _vertex_shader = Shaders.lighting['phong']['vertex']
-    _fragment_shader = Shaders.lighting['phong']['fragment']
+    _vertex_shader = Shaders.base_shaders['phong']['vertex']
+    _fragment_shader = Shaders.base_shaders['phong']['fragment']
 
-    def __init__(self, position, radius, color, **kwargs):
+    def __init__(self, position, radius, color, shader_manager=None, **kwargs):
         sphere_mesh = geometry.create_sphere(
             rows=int(radius * 30),
             cols=int(radius * 30),
             radius=radius,
             **kwargs
         )
+
         sphere_buffer, faces = self.make_buffer(sphere_mesh)
         super(self.__class__, self).__init__(sphere_buffer, faces=faces, position=position, color=color)
+        shader_manager.register_lighting_shader(self)
         self.program['u_shininess'] = 16.0
         self.program['u_specular_color'] = self.color[:3]
 
@@ -120,7 +124,7 @@ class Box(Entity):
     _vertex_shader = Shaders.lighting['lambert']['vertex']
     _fragment_shader = Shaders.lighting['lambert']['fragment']
 
-    def __init__(self, position, width, height, depth, color):
+    def __init__(self, position, width, height, depth, color, shader_manager=None):
         box_mesh, box_faces, _ = geometry.create_box(
             width, height, depth,
             width_segments=int(width * 5),
@@ -141,14 +145,15 @@ class Box(Entity):
         # No textures for now
         # vertex_buffer['a_texcoord'] = box_buffer['texcoord']
 
-        super(self.__class__, self).__init__(gloo.VertexBuffer(box_buffer), faces=box_faces, position=position, color=color)
+        super(self.__class__, self).__init__(gloo.VertexBuffer(box_buffer), faces=box_faces, position=position,
+                                             color=color)
 
 
 class Plane(Entity):
-    _vertex_shader = Shaders.lighting['phong']['vertex']
-    _fragment_shader = Shaders.lighting['phong']['fragment']
+    _vertex_shader = Shaders.base_shaders['phong']['vertex']
+    _fragment_shader = Shaders.base_shaders['phong']['fragment']
 
-    def __init__(self, position, width, height, color=(0, 255, 0), orientation=None):
+    def __init__(self, position, width, height, color=(0, 255, 0), orientation=None, shader_manager=None):
         '''TODO:
             - Add set plane normal
         '''
@@ -165,11 +170,13 @@ class Plane(Entity):
                 ('a_normal', np.float32, 3)
             ]
         )
-
         plane_buffer['a_position'] = plane_mesh['position']
         plane_buffer['a_normal'] = plane_mesh['normal']
-        super(self.__class__, self).__init__(gloo.VertexBuffer(plane_buffer), faces=plane_faces, position=position, color=color)
+        super(self.__class__, self).__init__(gloo.VertexBuffer(plane_buffer), faces=plane_faces, position=position,
+                                             color=color)
+
         self.set_debug()
+        shader_manager.register_lighting_shader(self)
         self.program['u_shininess'] = 16.0
         self.program['u_specular_color'] = self.color[:3]
 
@@ -179,7 +186,7 @@ class Indicator(Entity):
     _fragment_shader = Shaders.indicators['thrust_indicator']['fragment']
 
     def __init__(self, physics_entity, radius, offset=np.eye(4), get_param=lambda physent: physent.velocity,
-                 get_offset=None, color=(0, 255, 0), scaling_factor=1.0, rigid=False):
+                 get_offset=None, color=(0, 255, 0), scaling_factor=1.0, rigid=False, shader_manager=None):
         self.physics_entity = physics_entity
         self.get_param_func = get_param
         self.scaling_factor = scaling_factor
@@ -193,6 +200,7 @@ class Indicator(Entity):
             length=1,
             cone_radius=1.2 * radius
         )
+
         arrow_buffer, faces = self.make_buffer(arrow_mesh)
         super(self.__class__, self).__init__(arrow_buffer, faces=faces, color=color)
 
@@ -219,10 +227,10 @@ class Indicator(Entity):
 
 
 class Mesh(Entity):
-    _vertex_shader = Shaders.lighting['phong']['vertex']
-    _fragment_shader = Shaders.lighting['phong']['fragment']
+    _vertex_shader = Shaders.base_shaders['phong']['vertex']
+    _fragment_shader = Shaders.base_shaders['phong']['fragment']
 
-    def __init__(self, mesh, position, orientation=None, color=(0, 255, 0), shininess=16.0):
+    def __init__(self, mesh, position, orientation=None, color=(0, 255, 0), shininess=16.0, shader_manager=None):
         '''TODO: Make loading this consistent with everything else'''
         # Texcoords is always none in the current version of Vispy
         mesh_vertices, mesh_faces, mesh_normals, texcoords = mesh
@@ -246,9 +254,11 @@ class Mesh(Entity):
         )
         self.program['u_shininess'] = shininess
         self.program['u_specular_color'] = self.color[:3]
+        shader_manager.register_lighting_shader(self)
 
 
 class World(object):
+
     def __init__(self):
         '''Future methods
         - Add light
@@ -257,30 +267,34 @@ class World(object):
         '''
         self.entities = []
         self.my_lights = []
+        self.shader_manager = ShaderManager()
 
     def add_sphere(self, position, radius, color, **kwargs):
         '''Add a sphere entity to the scene'''
+        kwargs["shader_manager"] = self.shader_manager
         sphere = Sphere(position, radius, color, **kwargs)
         self.entities.append(sphere)
         return sphere
 
     def add_box(self, position, width, height, depth, color):
         '''Add a box entity to the scene'''
-        box = Box(position, width, height, depth, color)
+        box = Box(position, width, height, depth, color, shader_manager=self.shader_manager)
         self.entities.append(box)
         return box
 
     def add_plane(self, position, width, height, color=(0, 0, 255), orientation=None):
-        plane = Plane(position, width, height, color, orientation)
+        plane = Plane(position, width, height, color, orientation, shader_manager=self.shader_manager)
         self.entities.append(plane)
         return plane
 
     def add_mesh(self, mesh, *args, **kwargs):
+        kwargs["shader_manager"] = self.shader_manager
         mesh = Mesh(mesh, *args, **kwargs)
         self.entities.append(mesh)
         return mesh
 
     def add_entity(self, Entity_Type, *args, **kwargs):
+        kwargs["shader_manager"] = self.shader_manager
         entity = Entity_Type(*args, **kwargs)
         self.entities.append(entity)
         return entity
@@ -303,35 +317,23 @@ class World(object):
             Shading implemented:
                 - Diffuse (Lambert)
                 - Blinn-Phong
-            TODO:
                 - Multiple lights
+            TODO:
                 - Shadows
             '''
-        self.my_lights.append(position)
-        self.my_lights.append(intensity)
+        self.shader_manager.get_lighting_manager().add_item(position, intensity)
 
     def set_view(self, view):
         for entity in self.entities:
             entity.set_view(view)
-
-    def stop_adding_lights(self):
-        length = len(self.my_lights) / 2
-        if(length > 8):
-            raise ValueError('This is too many lights')
-        else:
-            for entity in self.entities:
-                entity.program['u_numLights'] = length
-                for i in range(0, (len(self.my_lights))):
-                    number = "u_lights[" + str(i) + "]"
-                    entity.program[number] = self.my_lights[i]
 
     def draw(self, cur_view):
         '''Todo:
             Swappable shaders'''
         # Draw the objects to the screen
         for entity in self.entities[::-1]:
-                entity.set_view(cur_view)
-                entity.draw()
+            entity.set_view(cur_view)
+            entity.draw()
 
         # for view in self.views:
         #     # Attach to view framebuffer

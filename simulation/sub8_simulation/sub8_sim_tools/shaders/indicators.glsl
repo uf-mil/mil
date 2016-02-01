@@ -8,6 +8,7 @@ uniform vec4 u_color;
 uniform vec3 u_light_position;
 uniform float u_length_scale;
 attribute vec3 a_position;
+attribute vec3 a_normal;
 
 void main () {
     // Allow length changing within the shader
