@@ -6,56 +6,69 @@
 
 #include "tgen_manager.h"
 #include "tgen_common.h"
+#include "sub8_state_space.h"
 #include "ompl/base/PlannerStatus.h"
 #include "ompl/base/goals/GoalState.h"
-#include "ompl/control/planners/pdst/PDST.h"
-#include "ompl/control/planners/rrt/RRT.h"
-#include "ompl/control/PathControl.h"
+#include "ompl/geometric/planners/rrt/RRTstar.h"
+#include "ompl/geometric/planners/rrt/RRTConnect.h"
+#include "ompl/geometric/PathGeometric.h"
+#include "ompl/base/spaces/RealVectorBounds.h"
 #include <boost/filesystem.hpp>
 #include <ros/console.h>
 #include <ros/package.h>
 #include <Eigen/Dense>
+#include <Eigen/Geometry>
+#include <cmath>
+
+// File IO to save solution to file
+#if 0
+#include <iostream>
+#include <fstream>
+#endif
 
 using sub8::trajectory_generator::TGenManager;
 using sub8::trajectory_generator::TGenMsgs;
 using sub8::trajectory_generator::SpaceInformationGeneratorPtr;
 using sub8::trajectory_generator::Sub8StateSpace;
-using sub8::trajectory_generator::SubDynamicsPtr;
-using sub8::trajectory_generator::SubDynamics;
 using ompl::base::Planner;
 using ompl::base::PlannerStatus;
 using ompl::base::GoalState;
 using ompl::base::ProblemDefinitionPtr;
-using ompl::control::RRT;
-using ompl::control::PDST;
-using ompl::control::PathControl;
+using ompl::base::RealVectorBounds;
+using ompl::geometric::PathGeometric;
+using ompl::geometric::RRTConnect;
+using ompl::geometric::RRTstar;
 
 namespace fs = ::boost::filesystem;
 
-TGenManager::TGenManager(const Matrix2_8d& cspace_bounds,
-                         TGenThrusterInfoPtr thruster_info,
-                         AlarmBroadcasterPtr& alarm_broadcaster) {
-  int planner_id;
+TGenManager::TGenManager(AlarmBroadcasterPtr&& ab) : _alarm_broadcaster(ab) {
+  int planner_type;
+  int range;
+
   _pdef = nullptr;  // Problem definition hasn't been set yet
-  SubDynamicsPtr sub_dynamics(new SubDynamics(thruster_info));
   SpaceInformationGeneratorPtr ss_gen(new SpaceInformationGenerator());
 
-  _sub8_si = ss_gen->generate(sub_dynamics, cspace_bounds);
+  _sub8_si = ss_gen->generate();
 
-  // Grabs the planner id from the param server
-  ros::param::get("/planner", planner_id);
+  ros::param::get("planner_type", planner_type);
+  ros::param::get("range", range);
 
-  switch (planner_id) {
-    case PlannerType::PDST:
+  switch (planner_type) {
+    case 1:
       _sub8_planner =
-          boost::shared_ptr<Planner>(new ompl::control::PDST(_sub8_si));
-      _planner_type = PlannerType::PDST;
+          boost::shared_ptr<Planner>(new ompl::geometric::RRTstar(_sub8_si));
+      ROS_INFO("Using OMPL's RRTstar path-planner");
+      // set the maximum distance the planner can extend itself per "step" in
+      // meters
+      _sub8_planner->as<ompl::geometric::RRTstar>()->setRange(range);
       break;
     default:
       _sub8_planner =
-          boost::shared_ptr<Planner>(new ompl::control::RRT(_sub8_si));
-      _planner_type = PlannerType::RRT;
-      break;
+          boost::shared_ptr<Planner>(new ompl::geometric::RRTConnect(_sub8_si));
+      ROS_INFO("Using OMPL's RRTConnect path-planner");
+      // set the maximum distance the planner can extend itself per "step" in
+      // meters
+      _sub8_planner->as<ompl::geometric::RRTConnect>()->setRange(range);
   }
 
   // initialize alarms
@@ -67,7 +80,7 @@ TGenManager::TGenManager(const Matrix2_8d& cspace_bounds,
   file_sep = "\\";
 #endif
   fs::path dirname(pkg_path + file_sep + alarms_dir);
-  alarm_broadcaster->addAlarms(dirname, _alarms);
+  _alarm_broadcaster->addAlarms(dirname, _alarms);
 }
 
 bool TGenManager::setProblemDefinition(const State* start_state,
@@ -85,12 +98,8 @@ bool TGenManager::setProblemDefinition(const State* start_state,
   _sub8_planner->clear();
   _pdef = ProblemDefinitionPtr(new ProblemDefinition(_sub8_si));
 
-  // set the start state for the new ProblemDefinition
-  //_pdef->addStartState(start_state);
-  // set the goal state for the new ProblemDefinition
-  //_pdef->setGoalState(goal_state);
-
-  _pdef->setStartAndGoalStates(start_state, goal_state, 0.05);
+  // the third arg is the threshold for max distance allowed to the goal
+  _pdef->setStartAndGoalStates(start_state, goal_state);
 
   _sub8_planner->setProblemDefinition(_pdef);
 
@@ -104,7 +113,7 @@ bool TGenManager::solve() {
   bool success = false;
 
   // arg for "solve" is the solve time
-  PlannerStatus pstatus = _sub8_planner->solve(1800.0);
+  PlannerStatus pstatus = _sub8_planner->solve(30.0);
 
   // Switch on the value of the PlannerStatus enum "StateType"
   // Only raise alarms on issues that require a system response.
@@ -116,18 +125,10 @@ bool TGenManager::solve() {
       break;
     case PlannerStatus::TIMEOUT:
       ROS_ERROR("%s", TGenMsgs::TIMEOUT);
-      // The logical flow here should be:
-      //
-      // 1. Check any safety paths?
-      // 2. If no, set off ALARM
-      // 3. If yes, send off safety path to controller, and then attempt to
-      // replan
-      //
-      // Q: How many times do I retry replanning if failure? once?
       break;
     case PlannerStatus::APPROXIMATE_SOLUTION:
       ROS_WARN("%s", TGenMsgs::APPROXIMATE_SOLUTION);
-      // TODO: What is our tolerance for this?
+      // What is our tolerance for this?
       success = true;
       break;
     case PlannerStatus::EXACT_SOLUTION:
@@ -141,15 +142,27 @@ bool TGenManager::solve() {
       break;
   }
 
+  if (!success) {
+    // Try to raise an alarm if failure
+    std::string planning_failure_alarm = "planning_failure";
+
+    if (_alarms.count(planning_failure_alarm) == 0) {
+      ROS_ERROR("Failed to find a path; no alarm called %s exists",
+                planning_failure_alarm.c_str());
+    } else {
+      _alarms[planning_failure_alarm]->raiseAlarm(); 
+    }
+  }
   return success;
 }
 
-void TGenManager::validateCurrentTrajectory() {
+void TGenManager::validateCurrentPath() {
   // Planner get start state, get goal state
   unsigned int first_invalid_state = 0;
 
   ProblemDefinitionPtr pdef = _sub8_planner->getProblemDefinition();
-  PathControl* spath = static_cast<PathControl*>(pdef->getSolutionPath().get());
+  PathGeometric* spath =
+      static_cast<PathGeometric*>(pdef->getSolutionPath().get());
 
   // Do trajectory validation; first_invalid_state is populated by checkMotion()
   if (!_sub8_si->checkMotion(spath->getStates(), spath->getStateCount(),
@@ -175,77 +188,70 @@ void TGenManager::validateCurrentTrajectory() {
   }
 }
 
-State* TGenManager::waypointToState(
-    const boost::shared_ptr<sub8_msgs::Waypoint>& wpoint) {
+State* TGenManager::poseToState(const geometry_msgs::Pose& pose) {
   State* state = _sub8_si->getStateSpace()->allocState();
 
-  state->as<Sub8StateSpace::StateType>()->setPosition(wpoint->pose.position.x,
-                                                      wpoint->pose.position.y,
-                                                      wpoint->pose.position.z);
-  state->as<Sub8StateSpace::StateType>()->setLinearVelocity(
-      wpoint->twist.linear.x, wpoint->twist.linear.y, wpoint->twist.linear.z);
-  state->as<Sub8StateSpace::StateType>()->setAngularVelocity(
-      wpoint->twist.angular.x, wpoint->twist.angular.y,
-      wpoint->twist.angular.z);
-  state->as<Sub8StateSpace::StateType>()->setOrientation(
-      wpoint->pose.orientation.x, wpoint->pose.orientation.y,
-      wpoint->pose.orientation.z, wpoint->pose.orientation.w);
+  // set position
+  state->as<Sub8StateSpace::StateType>()->setXYZ(
+      pose.position.x, pose.position.y, pose.position.z);
+  double yaw = 0;
+  double qx = pose.orientation.x;
+  double qy = pose.orientation.y;
+  double qz = pose.orientation.z;
+  double qw = pose.orientation.w;
+
+  double t = qx * qy + qz * qw;
+  if (approx(t, 0.5)) {  // singularity at north pole
+    yaw = 2 * atan2(qx, qw);
+  } else if (approx(t, -0.5)) {  // singularity at south pole
+    yaw = -2 * atan2(qx, qw);
+  } else {
+    yaw = atan2(2 * qy * qw - 2 * qx * qz, 1 - 2 * pow(qy, 2) - 2 * pow(qz, 2));
+  }
+  // set yaw
+  state->as<Sub8StateSpace::StateType>()->setYaw(yaw);
+
   return state;
 }
 
-sub8_msgs::Waypoint TGenManager::stateToWaypoint(const State* s) {
-  sub8_msgs::Waypoint wpoint;
-  Vector13d state = s->as<Sub8StateSpace::StateType>()->getState();
+sub8_msgs::PathPoint TGenManager::stateToPathPoint(const State* s) {
+  sub8_msgs::PathPoint path_point;
+  const Sub8StateSpace::StateType* sub8_se3 =
+      s->as<Sub8StateSpace::StateType>();
 
-  wpoint.pose.position.x = state(0);
-  wpoint.pose.position.y = state(1);
-  wpoint.pose.position.z = state(2);
-  wpoint.twist.linear.x = state(3);
-  wpoint.twist.linear.y = state(4);
-  wpoint.twist.linear.z = state(5);
-  wpoint.twist.angular.x = state(6);
-  wpoint.twist.angular.y = state(7);
-  wpoint.twist.angular.z = state(8);
-  wpoint.pose.orientation.x = state(9);
-  wpoint.pose.orientation.y = state(10);
-  wpoint.pose.orientation.z = state(11);
-  wpoint.pose.orientation.w = state(12);
+  path_point.position.x = sub8_se3->getX();
+  path_point.position.y = sub8_se3->getY();
+  path_point.position.z = sub8_se3->getZ();
+  path_point.yaw = sub8_se3->getYaw();
 
-  return wpoint;
+  return path_point;
 }
 
-std::vector<State*> TGenManager::getTrajectory() {
+std::vector<State*> TGenManager::getPath() {
+#if 0
+  using namespace std;
+
+  ofstream out_file;
+  out_file.open("path.txt", ios::trunc);
+  (static_cast<PathGeometric*>(
+       _sub8_planner->getProblemDefinition()->getSolutionPath().get()))
+      ->printAsMatrix(out_file);
+  out_file.close();
+#endif
   std::vector<State*> states =
-      (static_cast<PathControl*>(
+      (static_cast<PathGeometric*>(
            _sub8_planner->getProblemDefinition()->getSolutionPath().get()))
           ->getStates();
   return states;
 }
 
-sub8_msgs::Trajectory TGenManager::getTrajectoryMessage() {
-  std::vector<State*> states = getTrajectory();
+sub8_msgs::Path TGenManager::generatePathMessage() {
+  std::vector<State*> states = getPath();
 
-  sub8_msgs::Trajectory t_msg;
+  sub8_msgs::Path p_msg;
   for (State* s : states) {
-    t_msg.trajectory.push_back(stateToWaypoint(s));
+    p_msg.path.push_back(stateToPathPoint(s));
   }
 
-  return t_msg;
-}
-
-void TGenManager::updatePlanningRegion(double xmin, double xmax, double ymin,
-                                       double ymax, double zmin, double zmax) {
-  // Bounds on position (x, y, z)
-  RealVectorBounds pos_bounds(3);
-
-  pos_bounds.setLow(0, xmin);   // x low
-  pos_bounds.setHigh(0, xmax);  // x high
-  pos_bounds.setLow(1, ymin);   // y low
-  pos_bounds.setHigh(1, ymax);  // y high
-  pos_bounds.setLow(2, zmin);   // z low
-  pos_bounds.setHigh(2, zmax);  // z high
-
-  _sub8_si->getStateSpace()
-      ->as<sub8::trajectory_generator::Sub8StateSpace>()
-      ->set_volume_bounds(pos_bounds);
+  return p_msg;
 }

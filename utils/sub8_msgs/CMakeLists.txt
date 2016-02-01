@@ -20,6 +20,8 @@ add_message_files(
   Trajectory.msg
   VelocityMeasurement.msg
   VelocityMeasurements.msg
+  Path.msg
+  PathPoint.msg
 )
 
 add_service_files(
@@ -30,6 +32,7 @@ add_service_files(
   UpdateThrusterLayout.srv
   FailThruster.srv
   BMatrix.srv
+  PathPlan.srv
 )
 
 # add_action_files(

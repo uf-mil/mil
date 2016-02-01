@@ -7,36 +7,12 @@
 #define TGEN_COMMON_H_
 
 #include <string>
-#include <Eigen/Dense>
 
 using std::string;
-using namespace Eigen;
 
 namespace sub8 {
 
 namespace trajectory_generator {
-
-// Encodes the different planners
-// supported by the TGEN with an integer
-enum PlannerType { PDST = 1, RRT };
-
-// Number of dimensions in the control space.
-// Corresponds to num thrusters used for motion planning
-const static int _CSPACE_DIMS = 8;
-const static int _SSPACE_DIMS = 12;
-
-// Thruster node ID range
-const static int _THRUSTERS_ID_BEGIN = 10;
-const static int _THRUSTERS_ID_END = 17;
-
-// typedef for control column-vector
-typedef Matrix<double, _CSPACE_DIMS, 1> Vector8d;
-// typedef for state space column-vector
-typedef Matrix<double, 13, 1> Vector13d;
-// typedef for 3 x 8 matrix
-typedef Matrix<double, 3, _CSPACE_DIMS> Matrix3_8d; 
-// typedef for 2 x 8 matrix
-typedef Matrix<double, 2, _CSPACE_DIMS> Matrix2_8d; 
 
 // Strings used for logging statements in the TGEN
 class TGenMsgs {

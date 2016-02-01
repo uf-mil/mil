@@ -7,14 +7,14 @@
 #define SUB8_STATE_VALIDITY_CHECKER_H_
 
 #include "ompl/base/StateValidityChecker.h"
-#include "ompl/control/SpaceInformation.h"
+#include "ompl/base/SpaceInformation.h"
 #include "ompl/base/Path.h"
 #include "tgen_common.h"
 
 using ompl::base::StateValidityChecker;
 using ompl::base::Path;
 using ompl::base::State;
-using ompl::control::SpaceInformationPtr;
+using ompl::base::SpaceInformationPtr;
 
 namespace sub8 {
 

@@ -15,9 +15,7 @@ set(catkin_LIBRARIES
 
 set(SRCS 
 	src/space_information_generator.cc
-	src/sub8_state_space.cc
 	src/sub8_state_validity_checker.cc
-	src/sub_dynamics.cc
 	src/tgen_manager.cc
 )
 
@@ -56,7 +54,6 @@ add_dependencies(${PROJECT_NAME}
 if(CATKIN_ENABLE_TESTING)
 	catkin_add_gtest(${PROJECT_NAME}_unit_tests 
 		test/sub8_state_validity_checker_test.cc
-		test/sub_dynamics_test.cc
 		test/test_driver.cc
 		${SRCS}
 	)
@@ -73,8 +70,6 @@ if(CATKIN_ENABLE_TESTING)
   	add_rostest_gtest(${PROJECT_NAME}_integration_tests 
   		test/tgen_integration.test
 		test/tgen_manager_test.cc
-		test/tgen_thruster_info_test.cc
-		test/sub8_state_space_test.cc
 		test/space_information_test.cc
 		test/integration_test_driver.cc		
 		${SRCS}

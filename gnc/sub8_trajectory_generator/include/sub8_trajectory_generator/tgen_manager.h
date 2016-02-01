@@ -10,16 +10,18 @@
 #include "ompl/base/Planner.h"
 #include "ompl/base/State.h"
 #include "space_information_generator.h"
-#include "sub8_msgs/Waypoint.h"
-#include "sub8_msgs/Trajectory.h"
-#include <sub8_alarm/alarm_helpers.h>
-#include "tgen_thruster_info.h"
+#include "sub8_msgs/Path.h"
+#include "sub8_msgs/PathPoint.h"
+#include "sub8_alarm/alarm_helpers.h"
+#include <geometry_msgs/Pose.h>
+#include <string>
+#include <map>
+#define eps_ 0.001
 
 using ompl::base::PlannerPtr;
 using ompl::base::State;
 using ompl::base::ProblemDefinition;
-using ompl::control::SpaceInformationPtr;
-using sub8::trajectory_generator::TGenThrusterInfoPtr;
+using ompl::base::SpaceInformationPtr;
 using sub8::AlarmBroadcasterPtr;
 
 namespace sub8 {
@@ -34,13 +36,10 @@ typedef boost::shared_ptr<ProblemDefinition> ProblemDefinitionPtr;
 // Mediates communication between ROS and the TGEN
 class TGenManager {
  public:
-  // The planner param will be passed in from the
-  // param server. Instantiates a SpaceInformation
-  // obj and the Planner
-  TGenManager(const Matrix2_8d& cspace_bounds,
-              TGenThrusterInfoPtr thruster_info, AlarmBroadcasterPtr& ab);
 
-  // Create an ompl::base::ProblemDefinition object for planning a trajectory
+  TGenManager(AlarmBroadcasterPtr&& ab);
+
+  // Create an ompl::base::ProblemDefinition object for planning a path
   // from start_state to goal_state
   //
   // returns false if setting the problem definition failed due to providing
@@ -52,49 +51,46 @@ class TGenManager {
   bool solve();
 
   // The traversability map has been updated, so check whether the current
-  // trajectory
-  // is still valid by calling SpaceInformation's StateValidityChecker
+  // path is still valid by calling SpaceInformation's StateValidityChecker
   //
-  // After issuing a "stop" trajectory, begin re-planning
-  void validateCurrentTrajectory();
+  // After issuing a "stop", begin re-planning
+  void validateCurrentPath();
 
   /////////////////////////////////////////
   // ROS->OMPL and OMPL->ROS conversions
   /////////////////////////////////////////
 
-  // Converts a sub8_msgs::Waypoint msg into an OMPL state object
-  State* waypointToState(const boost::shared_ptr<sub8_msgs::Waypoint>& wpoint);
+  // Converts a geometry_msgs::Pose into an OMPL state object
+  State* poseToState(const geometry_msgs::Pose& pose);
 
-  // Converts an OMPL State obj to a sub8_msgs::Waypoint
-  sub8_msgs::Waypoint stateToWaypoint(const State* state);
+  // Converts an OMPL State obj to a sub8_msgs::PathPoint path_point
+  sub8_msgs::PathPoint stateToPathPoint(const State* state);
 
   // If a solution was found by the planner, then that
-  // path is converted to a sub8_msgs::Trajectory message type
-  // and returned, to be sent back in a MotionPlan service response
+  // path is converted to a sub8_msgs::Path message type
+  // and returned, to be sent back in a PathPlan service response
   //
   // To use the trajectory in Python, the caller will need to
   // convert from std::vector to list
-  sub8_msgs::Trajectory getTrajectoryMessage();
+  sub8_msgs::Path generatePathMessage();
 
   // Return the current trajectory as a vector of pointers to States
-  std::vector<State*> getTrajectory();
+  std::vector<State*> getPath();
 
  private:
-  // If the planning region needs to grow or shrink based on a traversability
-  // map
-  // update, can use this method to update the position bounds
-  void updatePlanningRegion(double xmin, double xmax, double ymin, double ymax,
-                            double zmin, double zmax);
+  bool approx(double x, double y) {
+    return ((x < y + eps_) && (x > y - eps_)) ? true : false;
+  }
 
   PlannerPtr _sub8_planner;
-
-  PlannerType _planner_type;
 
   ProblemDefinitionPtr _pdef;
 
   SpaceInformationPtr _sub8_si;
 
-  std::vector<AlarmRaiserPtr> _alarms;
+  AlarmBroadcasterPtr _alarm_broadcaster; 
+  
+  std::map<std::string, AlarmRaiserPtr> _alarms;
 };
 }
 }

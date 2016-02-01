@@ -4,19 +4,10 @@
  */
 #include <gtest/gtest.h>
 #include "space_information_generator.h"
-#include "ompl/control/SpaceInformation.h"
-#include "sub_dynamics.h"
-#include "tgen_thruster_info.h"
 
 using sub8::trajectory_generator::SpaceInformationGenerator;
 using sub8::trajectory_generator::SpaceInformationGeneratorPtr;
-using sub8::trajectory_generator::SubDynamics;
-using sub8::trajectory_generator::SubDynamicsPtr;
-using sub8::trajectory_generator::TGenThrusterInfo;
-using sub8::trajectory_generator::TGenThrusterInfoPtr;
-using sub8::trajectory_generator::Matrix2_8d;
-using sub8::trajectory_generator::_CSPACE_DIMS;
-using ompl::control::SpaceInformationPtr;
+using ompl::base::SpaceInformationPtr;
 
 class SpaceInformationTest : public ::testing::Test {
  public:
@@ -35,38 +26,15 @@ class SpaceInformationTest : public ::testing::Test {
 // the Sub8SpaceInformation object
 TEST_F(SpaceInformationTest, testSpaceInformationGenerator) {
   SpaceInformationGeneratorPtr ss_gen = spaceInformationFactory();
-  TGenThrusterInfoPtr thruster_info(new TGenThrusterInfo());
-  SubDynamicsPtr sub_dynamics(new SubDynamics(thruster_info));
+  SpaceInformationPtr si = ss_gen->generate();
 
-  Matrix2_8d test_thruster_ranges;
-  test_thruster_ranges.row(0) = -MatrixXd::Ones(1, _CSPACE_DIMS);
-  test_thruster_ranges.row(1) = MatrixXd::Ones(1, _CSPACE_DIMS);
-
-  SpaceInformationPtr si = ss_gen->generate(sub_dynamics, test_thruster_ranges);
-
-  ASSERT_EQ(si->getStateDimension(), 12)
-      << "The Sub8 state space should have 12 dimensions";
+  ASSERT_EQ(si->getStateDimension(), 4)
+      << "The Sub8 state space should have 4 dimensions";
 
   // Verify that the SpaceInformation object's setup method has been called
   ASSERT_TRUE(si->isSetup());
 }
 
-TEST_F(SpaceInformationTest, testParameters) {
-  double checking_res;
-  double prop_step_size;
-  double min_control_duration;
-  double max_control_duration;
-  double position_gain;
-  double velocity_gain;
-  double angular_velocity_gain;
-  double orientation_gain;
-  
-  EXPECT_TRUE(ros::param::get("state_validity_checking_resolution", checking_res));
-  EXPECT_TRUE(ros::param::get("propagation_step_size", prop_step_size));
-  EXPECT_TRUE(ros::param::get("min_control_duration", min_control_duration));
-  EXPECT_TRUE(ros::param::get("max_control_duration", max_control_duration));
-  EXPECT_TRUE(ros::param::get("position_gain", position_gain));
-  EXPECT_TRUE(ros::param::get("velocity_gain", velocity_gain));
-  EXPECT_TRUE(ros::param::get("angular_velocity_gain", angular_velocity_gain));
-  EXPECT_TRUE(ros::param::get("orientation_gain", orientation_gain));
+TEST_F(SpaceInformationTest, testSetStateSpaceBounds) {
+    ADD_FAILURE() << "Unimplemented test";
 }

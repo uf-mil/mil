@@ -1,33 +1,27 @@
-# Sub8 Trajectory Generator
+# Sub8 Trajectory Generator #
 
-## Author
+## Author ##
 Patrick Emami - pemami@ufl.edu
 
+## Usage ##
 To launch the tgen node: 
 	`roslaunch sub8_trajectory_generator trajectory_generator.launch`
 
 To run unit tests: 
 	`catkin_make run_tests_sub8_trajectory_generator`
 
-# TODO
+The TGEN provides a service, `sub8_trajectory_generator/path_plan`, that takes in a planning request. The request is two `geometry_msgs::Pose` messages, one for a start state and one for a goal state. The response is a `sub8_msgs::Path`, which is a list of `sub8_msgs::PathPoint` messages. These are comprised of a `geometry_msgs::Point` and a `float64` for the heading at each point along the path. 
 
-* [ ] Path validity checking (batch state checking)
-* [x] ODE solver (OMPL)
-* [ ] RRTstar planner for controls (OMPL only has RRTstar for geometric MP)
-* [ ] distance metric
-* [ ] ROS alarms
-* [ ] OMPL.app or simul8 for viewing paths
-* [ ] Safety-path planner
+Since the TGEN only does geometric planning, the resultant path needs to be profiled in order to assemble the final trajectory, which will consist of a list of waypoints (having both a `geometry_msgs::Pose` and `geometry_msgs::Twist`). 
 
-# Notes
-
-* filenames beginning with "sub8_" are extensions to the OMPL framework
-
-# Alarms
+## Alarms ##
 
 If trajectory generation fails, the sub need not go into a meltdown. However, the rest of the system can assume that if the TGEN fails to generate a trajectory, it will raise an alarm. In response, the system can: 
 
-* Attempt to navigate without a trajectory (?)
+* Use a straightline path and hope for the best, or
 * Shutdown (float to surface)
 
-Since the trajectory generator is responsible for trajectory validation, the trajectory generator will need to raise alarms if the current trajectory is invalid and the system needs to abort. If the trajectory generator can safely replan, no need to disrupt normal system ops. 
+## Miscellaneous ##
+
+* filenames beginning with "sub8_" are extensions to the OMPL framework
+
