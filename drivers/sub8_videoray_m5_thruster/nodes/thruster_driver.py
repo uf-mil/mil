@@ -6,14 +6,14 @@ import scipy.interpolate
 import threading
 import argparse
 from std_msgs.msg import Header
-from sub8_msgs.msg import Thrust, ThrusterCmd, ThrusterStatus
+from sub8_msgs.msg import Thrust, ThrusterStatus
 from sub8_ros_tools import wait_for_param, thread_lock
 from sub8_msgs.srv import ThrusterInfo, ThrusterInfoResponse, FailThruster, FailThrusterResponse
 from sub8_thruster_comm import thruster_comm_factory
 from sub8_alarm import AlarmBroadcaster
-
-
 lock = threading.Lock()
+
+
 class ThrusterDriver(object):
     def __init__(self, config_path, bus_layout):
         '''Thruster driver, an object for commanding all of the sub's thrusters
@@ -42,13 +42,12 @@ class ThrusterDriver(object):
         # Bus configuration
         self.port_dict = self.load_bus_layout(bus_layout)
 
-        thrust_service = rospy.Service('thrusters/thruster_range', ThrusterInfo, self.get_thruster_info)
+        self.thrust_service = rospy.Service('thrusters/thruster_range', ThrusterInfo, self.get_thruster_info)
         self.thrust_sub = rospy.Subscriber('thrusters/thrust', Thrust, self.thrust_cb, queue_size=1)
         self.status_pub = rospy.Publisher('thrusters/thruster_status', ThrusterStatus, queue_size=8)
 
         # This is essentially only for testing
         self.fail_thruster_server = rospy.Service('fail_thruster', FailThruster, self.fail_thruster)
-
 
     def load_config(self, path):
         '''Load the configuration data:
@@ -70,7 +69,7 @@ class ThrusterDriver(object):
         Right now, this is only the min and max thrust data
         '''
         # Unused right now
-        query_id = srv.thruster_id
+        # query_id = srv.thruster_id
 
         min_thrust = min(self.interpolate.x)
         max_thrust = max(self.interpolate.x)
@@ -103,6 +102,7 @@ class ThrusterDriver(object):
                 (We could figure out if it has stopped being failed!)
         '''
         if name in self.failed_thrusters:
+            rospy.logwarn("Attempted to command failed thruster {}".format(name))
             return
 
         target_port = self.port_dict[name]
@@ -110,7 +110,7 @@ class ThrusterDriver(object):
         normalized_force = self.interpolate(clipped_force)
 
         # We immediately get thruster_status back
-        thruster_status = target_port.command_thruster(name, force)
+        thruster_status = target_port.command_thruster(name, normalized_force)
         message_contents = [
             'rpm',
             'bus_voltage',
@@ -121,8 +121,23 @@ class ThrusterDriver(object):
         ]
 
         message_keyword_args = {key: thruster_status[key] for key in message_contents}
-        if message_keyword_args['fault'] != 0:
-            self.alert_thruster_loss(thruster_name, message_keyword_args)
+        if message_keyword_args['fault'] >= 2:
+            fault_codes = {
+                (1 << 0): 'UNDERVOLT',
+                (1 << 1): 'OVERRVOLT',
+                (1 << 2): 'OVERCURRENT',
+                (1 << 3): 'OVERTEMP',
+                (1 << 4): 'STALL',
+                (1 << 5): 'STALL_WARN',
+            }
+            fault = int(message_keyword_args['fault'])
+            faults = []
+            for code, fault_name in fault_codes.items():
+                if code & fault != 0:
+                    faults.append(fault_name)
+            rospy.logwarn("Thruster: {} has entered fault with status {}".format(name, message_keyword_args))
+            rospy.logwarn("Fault causes are: {}".format(faults))
+            self.alert_thruster_loss(name, message_keyword_args)
 
         self.status_pub.publish(
             ThrusterStatus(
@@ -136,7 +151,7 @@ class ThrusterDriver(object):
         '''Callback for recieving thrust commands
         These messages contain a list of instructions, one for each thruster
         '''
-        for thrust_cmd in msg.thruster_commands:
+        for thrust_cmd in list(msg.thruster_commands):
             self.command_thruster(thrust_cmd.name, thrust_cmd.thrust)
 
     def alert_thruster_loss(self, thruster_name, fault_info):
@@ -159,7 +174,7 @@ if __name__ == '__main__':
     desc_msg = "Specify a path to the configuration.json file containing the thrust calibration data"
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
     parser.add_argument('--configuration_path', dest='config_path',
-                      help='Designate the absolute path of the calibration/configuration json file')
+                        help='Designate the absolute path of the calibration/configuration json file')
     args = parser.parse_args(rospy.myargv()[1:])
     config_path = args.config_path
 
