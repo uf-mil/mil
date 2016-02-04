@@ -1,7 +1,7 @@
 <launch>
   <arg name="dvl" default="true" />
-  <arg name="imu" default="true" />
-  <arg name="depth" default="true" />
+  <arg name="imu" default="false" />
+  <arg name="depth" default="false" />
 
   <!-- DVL -->
   <group if="$(arg dvl)">
@@ -34,14 +34,14 @@
     </node>
   </group>
 
-
   <!-- IMU -->
   <group if="$(arg imu)" >
-    <node pkg="sub_launch" type="imu_conn" name="imu_conn" respawn="true"/>
+    <node pkg="sub8_launch" type="imu_conn" name="imu_conn" respawn="true"/>
     <node pkg="nodelet" type="nodelet" name="imu_driver" args="standalone adis16400_imu/nodelet">
       <param name="port" type="string" value="/tmp/imu"/>
       <param name="frame_id" type="string" value="/imu"/>
     </node>
+<!--
     <node pkg="nodelet" type="nodelet" name="magnetic_dynamic_compensation" args="standalone magnetic_dynamic_compensation/nodelet">
       <remap from="/imu/mag" to="/imu/mag_lessraw"/>
     </node>
@@ -56,9 +56,9 @@
         shift: [-5.668732534487466e-07, 5.285996768333815e-07, 4.891925692189952e-07]
       </rosparam>
     </node>
+ -->
     <node pkg="tf" type="static_transform_publisher" name="imu_broadcaster"
       args="0.21236 0.00254 -0.10233  0.0 -0.70710678 0.0 0.70710678  base_link imu 100" />
   </group>
-
 
 </launch>
