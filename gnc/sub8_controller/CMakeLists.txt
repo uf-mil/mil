@@ -13,6 +13,7 @@ elseif(COMPILER_SUPPORTS_CXX0X)
 else()
     message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
+add_definitions ("-Wall")
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -47,6 +48,11 @@ include_directories(
 
 add_executable(pd_controller nodes/pd_controller.cc)
 target_link_libraries(pd_controller ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_dependencies(pd_controller
+    sub8_msgs_generate_messages_cpp
+    ${catkin_EXPORTED_TARGETS}
+)
 
 # add_executable(mpc nodes/mpc.cc)
 # target_link_libraries(mpc ${catkin_LIBRARIES} ${Boost_LIBRARIES})

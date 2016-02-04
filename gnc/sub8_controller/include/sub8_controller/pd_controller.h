@@ -7,6 +7,8 @@
 #include "nav_msgs/Odometry.h"
 #include "geometry_msgs/WrenchStamped.h"
 #include "sub8_msgs/Trajectory.h"
+#include "sub8_msgs/Waypoint.h"
+
 
 typedef std::deque<Eigen::Vector3d> ControllerDeque;
 
@@ -42,14 +44,18 @@ private:
     Eigen::Vector3d angular_velocity;
   };
 
+  sub8_msgs::Trajectory::ConstPtr current_trajectory;
   PoseStruct target_state;
   PoseStruct current_state;
 
   // Control Parameters
+  unsigned int waypoint_index = 0;
   unsigned int trans_history_length = 75;
   unsigned int angle_history_length = 75;
   ControllerDeque translation_error_history;
   ControllerDeque orientation_error_history;
+
+  double waypoint_achievement_distance = 0.4;
 
   double kp_trans = 30;
   double kd_trans = 13;
@@ -76,4 +82,5 @@ private:
 
   // Control
   void control_loop(const ros::TimerEvent &);
+  void set_target(unsigned int waypoint_index);
 };
