@@ -1,0 +1,2 @@
+#!/bin/sh
+exec socat -d -d pty,link=/tmp/depth,raw,echo=0 tcp:sub-gumstix:33056
