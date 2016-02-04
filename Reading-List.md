@@ -5,6 +5,9 @@
 
 [Projecting SURF features onto a 3D mesh for object recognition](http://www.eecs.berkeley.edu/~pabbeel/papers/2013-IROS-multimodal-final.pdf)
 
+[An Investigation into Computer Vision Techniques for Underwater Object Recognition]
+(http://www.cs.bath.ac.uk/~mdv/courses/CM30082/projects.bho/2005-6/wallis-clb-dissertation-2005-6v2.pdf)
+
 # Not yet on the reading list
 
 * [Localization from wi-fi signals](http://rse-lab.cs.washington.edu/papers/wifi-location-aaai-05.pdf)
