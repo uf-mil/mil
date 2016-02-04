@@ -1,0 +1,63 @@
+<launch>
+
+  <!-- DVL -->
+  <group>
+    <node pkg="sub8_launch" type="dvl_conn" name="dvl_conn" respawn="true"/>
+    <node pkg="nodelet" type="nodelet" name="dvl_driver" args="standalone rdi_explorer_dvl/nodelet">
+      <param name="port" type="string" value="/tmp/dvl"/>
+      <param name="frame_id" type="string" value="/dvl"/>
+    </node>
+
+    <node pkg="uf_common" type="velocitymeasurements_to_vector3" name="dvl_water_mass_converter">
+      <remap from="velocitymeasurements" to="dvl/water_mass"/>
+      <remap from="vel" to="dvl/water_mass_processed"/>
+    </node>
+
+    <node pkg="tf" type="static_transform_publisher" name="dvl_broadcaster"
+      args="0.0908 0 -0.2459  0 0 0.38268343 0.92387953  base_link dvl 100" >
+    </node>
+  </group>
+
+  <!-- Depth Sensor -->
+<!--
+  <group>
+    <node pkg="sub_launch" type="depth_conn" name="depth_conn" respawn="true"/>
+    <node pkg="nodelet" type="nodelet" name="depth_driver" args="standalone depth_driver/nodelet">
+      <param name="port" type="string" value="/tmp/depth"/>
+      <param name="frame_id" type="string" value="/depth"/>
+    </node>
+
+    <node pkg="tf" type="static_transform_publisher" name="depth_broadcaster"
+      args="-0.2352 0 -0.1701  0 0 0 1  base_link depth 100">
+    </node>
+  </group>
+ -->
+
+  <!-- IMU -->
+<!--
+  <group>
+    <node pkg="sub_launch" type="imu_conn" name="imu_conn" respawn="true"/>
+    <node pkg="nodelet" type="nodelet" name="imu_driver" args="standalone adis16400_imu/nodelet">
+      <param name="port" type="string" value="/tmp/imu"/>
+      <param name="frame_id" type="string" value="/imu"/>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="magnetic_dynamic_compensation" args="standalone magnetic_dynamic_compensation/nodelet">
+      <remap from="/imu/mag" to="/imu/mag_lessraw"/>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="magnetic_hardsoft_compensation" args="standalone magnetic_hardsoft_compensation/nodelet">
+      <remap from="/imu/mag_raw" to="/imu/mag_lessraw"/>
+      <param name="frame_id" type="string" value="/imu"/>
+      <rosparam>
+        scale:
+        - [0.9965992139969104, 0.002077593122232759, 0.001965448626711737]
+        - [0.0020775931222327686, 0.9975683379818083, -0.002217862383302691]
+        - [0.0019654486267117184, -0.002217862383302767, 1.0058714906986683]
+        shift: [-5.668732534487466e-07, 5.285996768333815e-07, 4.891925692189952e-07]
+      </rosparam>
+    </node>
+    <node pkg="tf" type="static_transform_publisher" name="imu_broadcaster"
+      args="0.21236 0.00254 -0.10233  0.0 -0.70710678 0.0 0.70710678  base_link imu 100" />
+  </group>
+ -->
+
+</launch>
