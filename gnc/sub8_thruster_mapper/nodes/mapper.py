@@ -5,12 +5,11 @@ import numpy as np
 from sub8_ros_tools import wait_for_param, thread_lock, rosmsg_to_numpy
 import threading
 from sub8_msgs.msg import Thrust, ThrusterCmd
-from sub8_msgs.srv import (ThrusterInfo, UpdateThrusterLayout, UpdateThrusterLayoutResponse,
-    FailThruster, FailThrusterResponse)
+from sub8_msgs.srv import ThrusterInfo, UpdateThrusterLayout, UpdateThrusterLayoutResponse
 from geometry_msgs.msg import WrenchStamped
-
-
 lock = threading.Lock()
+
+
 class ThrusterMapper(object):
     def __init__(self):
         '''The layout should be a dictionary of the form used in thruster_mapper.launch
@@ -38,8 +37,6 @@ class ThrusterMapper(object):
         '''
         self.num_thrusters = 0
         rospy.init_node('thruster_mapper')
-
-        self.min_thrust, self.max_thrust = self.get_ranges()
 
         # Make thruster layout
         self.update_layout(None)  # Fake service call hey!
@@ -168,6 +165,8 @@ class ThrusterMapper(object):
             # Assemble the list of thrust commands to send
             for name, thrust in zip(self.thruster_name_map, u):
                 # > Can speed this up by avoiding appends
+                if np.fabs(thrust) < 1e-4:
+                    thrust = 0
                 thrust_cmds.append(ThrusterCmd(name=name, thrust=thrust))
             self.thruster_pub.publish(thrust_cmds)
         else:
