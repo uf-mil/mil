@@ -11,11 +11,6 @@
       <param name="frame_id" type="string" value="/dvl"/>
     </node>
 
-    <node pkg="uf_common" type="velocitymeasurements_to_vector3" name="dvl_water_mass_converter">
-      <remap from="velocitymeasurements" to="dvl/water_mass"/>
-      <remap from="vel" to="dvl/water_mass_processed"/>
-    </node>
-
     <node pkg="tf" type="static_transform_publisher" name="dvl_broadcaster"
       args="0.0908 0 -0.2459  0 0 0.38268343 0.92387953  base_link dvl 100" >
     </node>
