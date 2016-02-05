@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+
+import math
+
+import rospy
+from std_msgs.msg import Header
+from geometry_msgs.msg import Vector3
+from uf_common.msg import VelocityMeasurements, VelocityMeasurement
+
+rospy.init_node('fake_dvl')
+
+pub = rospy.Publisher('dvl', VelocityMeasurements)
+
+while not rospy.is_shutdown():
+    rospy.sleep(.1)
+
+    pub.publish(VelocityMeasurements(
+        header=Header(
+            stamp=rospy.Time.now(),
+            frame_id='/dvl',
+        ),
+        velocity_measurements=[VelocityMeasurement(
+            velocity=0,
+            correlation=0,
+            direction=Vector3(*[math.cos(i * 2 * math.pi / 4), math.sin(i * 2 * math.pi / 4), 0]),
+        ) for i in xrange(4)],
+    ))

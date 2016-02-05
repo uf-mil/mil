@@ -1,20 +1,27 @@
 <package>
-  <name>rdi_explorer_dvl</name>
+  <name>adis16400_imu</name>
   <version>1.0.0</version>
-  <description>rdi_explorer_dvl</description>
+  <description>adis16400_imu</description>
   <maintainer email="forrest@forre.st">Forrest Voight</maintainer>
 
   <license>BSD</license>
 
-  <url type="website">http://ros.org/wiki/rdi_explorer_dvl</url>
+  <url type="website">http://ros.org/wiki/adis16400_imu</url>
   <author>Forrest Voight</author>
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>nodelet</build_depend>
+
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>nodelet</build_depend>
   <build_depend>uf_common</build_depend>
-  <run_depend>nodelet</run_depend>
+
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
   <run_depend>roscpp</run_depend>
+  <run_depend>nodelet</run_depend>
   <run_depend>uf_common</run_depend>
+
 <export>
     <nodelet plugin="${prefix}/nodelet.xml"/>
 </export>
