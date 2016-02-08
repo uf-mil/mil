@@ -52,11 +52,15 @@ def skew_symmetric_cross(a):
     '''
     assert len(a) == 3, "a must be in R3"
     skew_symm = np.array([
-        [0.,     -a[2], +a[1]],
-        [+a[2],     0., -a[0]],
-        [-a[1],  +a[0],    0.],
+        [0.,     -a[2], +a[1]], # noqa
+        [+a[2],     0., -a[0]], # noqa
+        [-a[1],  +a[0],    0.], # noqa
     ], dtype=np.float32)
     return skew_symm
+
+
+def deskew(A):
+    return np.array([A[2, 1], A[0, 2], A[1, 0]], dtype=np.float32)
 
 
 def normalize(vector):
@@ -70,3 +74,9 @@ def compose_transformation(R, t):
     transformation[3, :3] = t
     transformation[3, 3] = 1.0
     return transformation
+
+
+def project_pt_to_plane(point, plane_normal):
+    dist = np.dot(plane_normal, point)
+    projected = point - (dist * plane_normal)
+    return projected
