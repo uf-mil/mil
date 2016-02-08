@@ -150,6 +150,11 @@ if [ $? -ne 0 ]; then
     cd "$CATKIN_DIR/src"
     catkin_init_workspace
     catkin_make -C "$CATKIN_DIR"
+    echo "Cloning raw-gps tools"
+
+    sudo apt-get -qq install libusb-1.0-0-dev
+    git clone https://github.com/uf-mil/rawgps-tools.git
+
     source "$CATKIN_DIR/devel/setup.bash"
     echo "source $CATKIN_DIR/devel/setup.bash" >> ~/.bashrc
 
