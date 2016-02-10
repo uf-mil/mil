@@ -50,6 +50,7 @@ sudo dpkg -i python-pyode_*.deb
 # Normal things
 sudo apt-get install -qq libboost-all-dev python-dev python-qt4-dev python-qt4-gl python-opengl freeglut3-dev libassimp-dev
 sudo apt-get install -qq python-scipy python-pygame python-numpy python-serial
+sudo apt-get install -qq libpcl-1.7-all libpcl-1.7-all-dev ros-indigo-pcl-conversions
 
 ####### Vispy
 # Check if Vispy is installed
