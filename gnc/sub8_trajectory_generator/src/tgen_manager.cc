@@ -15,7 +15,6 @@
 #include "ompl/base/spaces/RealVectorBounds.h"
 #include <boost/filesystem.hpp>
 #include <ros/console.h>
-#include <ros/package.h>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include <cmath>
@@ -44,6 +43,7 @@ namespace fs = ::boost::filesystem;
 TGenManager::TGenManager(AlarmBroadcasterPtr&& ab) : _alarm_broadcaster(ab) {
   int planner_type;
   int range;
+  const std::string planning_failure_alarm = "planning_failure";
 
   _pdef = nullptr;  // Problem definition hasn't been set yet
   SpaceInformationGeneratorPtr ss_gen(new SpaceInformationGenerator());
@@ -72,15 +72,8 @@ TGenManager::TGenManager(AlarmBroadcasterPtr&& ab) : _alarm_broadcaster(ab) {
   }
 
   // initialize alarms
-  std::string alarms_dir;
-  ros::param::get("alarms_dir", alarms_dir);
-  std::string pkg_path = ros::package::getPath("sub8_trajectory_generator");
-  char file_sep = '/';
-#ifdef _WIN32
-  file_sep = "\\";
-#endif
-  fs::path dirname(pkg_path + file_sep + alarms_dir);
-  _alarm_broadcaster->addAlarms(dirname, _alarms);
+  _planning_failure_alarm =
+      _alarm_broadcaster->addJSONAlarm(planning_failure_alarm);
 }
 
 bool TGenManager::setProblemDefinition(const State* start_state,
@@ -143,15 +136,7 @@ bool TGenManager::solve() {
   }
 
   if (!success) {
-    // Try to raise an alarm if failure
-    std::string planning_failure_alarm = "planning_failure";
-
-    if (_alarms.count(planning_failure_alarm) == 0) {
-      ROS_ERROR("Failed to find a path; no alarm called %s exists",
-                planning_failure_alarm.c_str());
-    } else {
-      _alarms[planning_failure_alarm]->raiseAlarm(); 
-    }
+    _planning_failure_alarm->raiseAlarm();
   }
   return success;
 }

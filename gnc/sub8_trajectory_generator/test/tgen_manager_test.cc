@@ -13,6 +13,7 @@
 #include <Eigen/Dense>
 #include <gtest/gtest.h>
 #include <boost/math/constants/constants.hpp>
+#include <ros/console.h>
 
 using sub8::trajectory_generator::TGenManager;
 using sub8::trajectory_generator::TGenManagerPtr;
@@ -60,8 +61,80 @@ TEST_F(TGenManagerTest, testSetProblemDefinition) {
   ss()->freeState(goal_state);
 }
 
+TEST_F(TGenManagerTest, testGeneratePath) {
+  TGenManagerPtr test_tgen_manager = tgenManagerFactory();
+
+  // Set up start and goal states
+  State* start_state = ss()->allocState();
+  State* goal_state = ss()->allocState();
+
+  StateSamplerPtr state_sampler = ss()->allocStateSampler();
+  state_sampler->sampleUniform(start_state);
+  state_sampler->sampleUniform(goal_state);
+
+  // TGen Manager handles internal validation of the problem definition
+  // after setting it
+  test_tgen_manager->setProblemDefinition(start_state, goal_state);
+
+  ROS_WARN("Testing TGEN planning with a random start and goal...");
+
+  ASSERT_TRUE(test_tgen_manager->solve());
+
+  ss()->freeState(start_state);
+  ss()->freeState(goal_state);
+}
+
+TEST_F(TGenManagerTest, testGetPath) {
+  TGenManagerPtr test_tgen_manager = tgenManagerFactory();
+
+  // Set up start and goal states
+  State* start_state = ss()->allocState();
+  State* goal_state = ss()->allocState();
+
+  StateSamplerPtr state_sampler = ss()->allocStateSampler();
+  state_sampler->sampleUniform(start_state);
+  state_sampler->sampleUniform(goal_state);
+
+  // TGen Manager handles internal validation of the problem definition
+  // after setting it
+  test_tgen_manager->setProblemDefinition(start_state, goal_state);
+
+  ASSERT_TRUE(test_tgen_manager->solve());
+
+  std::vector<State*> path = test_tgen_manager->getPath();
+
+  ASSERT_GT(path.size(), 2);
+}
+
 TEST_F(TGenManagerTest, testGeneratePathMessage) {
-  ADD_FAILURE() << "Unimplemented test";
+  TGenManagerPtr test_tgen_manager = tgenManagerFactory();
+
+  // Set up start and goal states
+  State* start_state = ss()->allocState();
+  State* goal_state = ss()->allocState();
+
+  StateSamplerPtr state_sampler = ss()->allocStateSampler();
+  state_sampler->sampleUniform(start_state);
+  state_sampler->sampleUniform(goal_state);
+
+  // TGen Manager handles internal validation of the problem definition
+  // after setting it
+  test_tgen_manager->setProblemDefinition(start_state, goal_state);
+
+  ASSERT_TRUE(test_tgen_manager->solve());
+
+  sub8_msgs::Path path_msg = test_tgen_manager->generatePathMessage();
+
+  std::vector<sub8_msgs::PathPoint> pp = path_msg.path;
+
+  ASSERT_NEAR(start_state->as<Sub8StateSpace::StateType>()->getX(),
+              pp[0].position.x, 0.01);
+  ASSERT_NEAR(start_state->as<Sub8StateSpace::StateType>()->getY(),
+              pp[0].position.y, 0.01);
+  ASSERT_NEAR(start_state->as<Sub8StateSpace::StateType>()->getZ(),
+              pp[0].position.z, 0.01);
+  ASSERT_NEAR(start_state->as<Sub8StateSpace::StateType>()->getYaw(), pp[0].yaw,
+              0.01);
 }
 
 // TODO - needs Octomap

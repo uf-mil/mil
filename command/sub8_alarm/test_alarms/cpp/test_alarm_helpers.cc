@@ -180,30 +180,28 @@ TEST_F(AlarmHelpersTest, testBoostJSONParser) {
   }
 }
 
+TEST_F(AlarmHelpersTest, testAddAlarmNonexistant) {
+  AlarmBroadcasterPtr alarm_ptr(new AlarmBroadcaster(getNodeHandle()));
+  AlarmRaiserPtr alarm;
+
+  std::string alarm_name = "non_existant_alarm";
+
+  alarm = alarm_ptr->addJSONAlarm(alarm_name);
+
+  ASSERT_TRUE(alarm == nullptr);
+}
+
 TEST_F(AlarmHelpersTest, testAddAlarms) {
   AlarmBroadcasterPtr alarm_ptr(new AlarmBroadcaster(getNodeHandle()));
-  std::map<std::string, AlarmRaiserPtr> test_alarms;
+  AlarmRaiserPtr alarm;
 
-  namespace fs = ::boost::filesystem;
+  std::string alarm_name = "sub8_trajectory_generator_planning_failure";
 
-  char file_sep = '/';
-#ifdef _WIN32
-  file_sep = "\\";
-#endif
-  std::string pkg_path = ros::package::getPath("sub8_alarm");
-  // Will break if our file structure changes :/
-  fs::path dirname(pkg_path + file_sep + "test_alarms" + file_sep + "cpp" +
-                   file_sep + "cfg");
-  bool result = alarm_ptr->addAlarms(dirname, test_alarms);
+  alarm = alarm_ptr->addJSONAlarm(alarm_name);
 
-  std::string alarm_name_1 = "test_alarm_1";
-  std::string alarm_name_2 = "test_alarm_2";
-
-  ASSERT_TRUE(result);
-  EXPECT_EQ(alarm_name_1, test_alarms[alarm_name_1]->getAlarmName());
-  EXPECT_EQ(alarm_name_2, test_alarms[alarm_name_2]->getAlarmName());
-  EXPECT_EQ("This is " + alarm_name_1, test_alarms[alarm_name_1]->getProblemDescription());
-  EXPECT_EQ("This is " + alarm_name_2, test_alarms[alarm_name_2]->getProblemDescription());
+  EXPECT_EQ("planning_failure", alarm->getAlarmName());
+  EXPECT_EQ("The trajectory-generator failed to find a valid path",
+            alarm->getProblemDescription());
 }
 
 int main(int argc, char** argv) {

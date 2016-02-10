@@ -90,7 +90,7 @@ class TGenManager {
 
   AlarmBroadcasterPtr _alarm_broadcaster; 
   
-  std::map<std::string, AlarmRaiserPtr> _alarms;
+  AlarmRaiserPtr _planning_failure_alarm;
 };
 }
 }

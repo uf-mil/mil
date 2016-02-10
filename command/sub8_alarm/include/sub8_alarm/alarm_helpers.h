@@ -29,10 +29,10 @@ class AlarmBroadcaster {
   // Initiates a ros publisher for sending alarms on the /alarm topic
   AlarmBroadcaster(boost::shared_ptr<ros::NodeHandle> n);
 
-  // Given a directory of JSON files, parse and auto-generate all alarms
-  // and return them as a list.
-  // Returns as false if parsing the JSON files failed.
-  bool addAlarms(const fs::path& dirname, std::map<std::string, AlarmRaiserPtr>& alarms);
+  // Searches for an alarm JSON file with the given alarm name,
+  // parses, and auto-generates it.
+  // Returns the new alarm, or a nullptr on failure
+  AlarmRaiserPtr addJSONAlarm(const std::string& name);
 
   // Factory method for creating individual AlarmRaiser objects
   AlarmRaiserPtr addAlarm(const std::string& name, bool action_required = true,
@@ -41,6 +41,7 @@ class AlarmBroadcaster {
                           const std::string& parameters = "");
 
  private:
+  fs::path _dirname;
   const std::string _node_name = ros::this_node::getName();
   std::map<std::string, AlarmRaiserPtr> _alarms;
   PublisherPtr _alarm_publisher;

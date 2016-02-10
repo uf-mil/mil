@@ -2,6 +2,6 @@
     "alarm_name":"planning_failure",
     "action_required":true,
     "severity":0,
-    "problem_description":"The trajectory-generator failed to find a valid path within a permissible time.",
+    "problem_description":"The trajectory-generator failed to find a valid path",
     "parameters":""
   }
