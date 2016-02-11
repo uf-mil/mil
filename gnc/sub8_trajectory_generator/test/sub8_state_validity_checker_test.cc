@@ -5,12 +5,7 @@
 #include <gtest/gtest.h>
 
 // virtual bool isValid(const State* state) const
-TEST(Sub8StateValidityCheckerTest, testIsValid1) {
-  ADD_FAILURE() << "Unimplemented test";
-}
-
-// virtual bool isValid(const State* state, double& dist) const
-TEST(Sub8StateValidityCheckerTest, testIsValid2) {
+TEST(Sub8StateValidityCheckerTest, testIsValid) {
   ADD_FAILURE() << "Unimplemented test";
 }
 
