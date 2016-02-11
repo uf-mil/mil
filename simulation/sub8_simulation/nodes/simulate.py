@@ -10,6 +10,7 @@ import rospy
 
 
 class SimWorld(rendering.Canvas):
+
     def __init__(self):
         rospy.init_node('simulator')
         self.clock_pub = rospy.Publisher('/clock', Clock, queue_size=1)
@@ -25,11 +26,13 @@ class SimWorld(rendering.Canvas):
         # Physics world starts with such a plane
         self.rendering_world.add_plane((0.0, 0.0, 1.0), 100.0, 100.0, color=(0, 0, 255, 170))
 
-        self.rendering_world.add_mesh(Transdec, (0.0, 0.0, 0.0),
-                                      orientation=None, color=(155, 155, 100), shininess=3.0)
+        self.rendering_world.add_mesh(Transdec, (0.0, 0.0, 0.0), orientation=None, color=(155, 155, 100), shininess=3.0)
         self.physics_world.add_entity(Mesh, (0.0, 0.0, 0.0), 10., Transdec)
 
-        super(self.__class__, self).__init__(self.time_acceleration, show_window=self.draw, physics_dt=self.physics_dt)
+        self.rendering_world.add_point_light((0.0, 1.0, 0.0), (0.0, 0.0, 0.0))
+
+        super(self.__class__, self).__init__(
+            self.time_acceleration, show_window=self.draw, physics_dt=self.physics_dt)
 
         self.view = np.array([
             [1.,     0.,      0., 0.],  # noqa
@@ -40,12 +43,15 @@ class SimWorld(rendering.Canvas):
 
     def add_sphere(self, position, density, radius, color):
         visual = self.rendering_world.add_sphere(position, radius, color)
-        physical = self.physics_world.add_entity(Sphere, position, density, radius)
+        physical = self.physics_world.add_entity(
+            Sphere, position, density, radius)
         self.entity_pairs.append((visual, physical))
 
     def add_box(self, position, density, width, height, depth, color):
-        visual = self.rendering_world.add_box(position, width, height, depth, color)
-        physical = self.physics_world.add_entity(Box, position, density, width, height, depth)
+        visual = self.rendering_world.add_box(
+            position, width, height, depth, color)
+        physical = self.physics_world.add_entity(
+            Box, position, density, width, height, depth)
         self.entity_pairs.append((visual, physical))
 
     def add_sub(self, position):
@@ -76,8 +82,7 @@ class SimWorld(rendering.Canvas):
 if __name__ == '__main__':
     sim = SimWorld()
     sphere = sim.add_sphere((-3.0, -3.0, 15.0), 4.2, 1.0, (255., 0.0, 0.0))
-    sub = sim.add_sub((0.0, 0.0, 0.0))
-    sim.rendering_world.add_point_light((0.0, 1.0, 0.0), (0.2, 0.2, 0.2))
     sim.rendering_world.add_point_light((0.0, 0.0, 1.0), (0.2, 0.2, 0.2))
-    sim.rendering_world.stop_adding_lights()
+    sub = sim.add_sub((0.0, 0.0, 0.0))
+    sim.rendering_world.add_point_light((0.0, 1.0, 1.0), (0.2, 0.2, 0.2))
     app.run()

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>sub8_trajectory_generator</name>
   <version>1.0.0</version>
 
@@ -13,12 +13,11 @@
   <author>Patrick Emami</author>
   
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>OMPL</build_depend>
-  <build_depend>sub8_msgs</build_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>OMPL</run_depend>
-  <run_depend>sub8_msgs</run_depend>
+  <depend>geometry_msgs</depend>
+  <depend>OMPL</depend>
+  <depend>roscpp</depend>
+  <depend>sub8_msgs</depend>
+  <depend>sub8_alarm</depend>
+  <depend>cmake_modules</depend>
+
 </package>

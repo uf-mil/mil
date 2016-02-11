@@ -2,7 +2,7 @@
 	"alarm_name":"test_alarm_2",
 	"action_required":true,
 	"severity":0,
-	"problem_description":"This is test alarm 2",
+	"problem_description":"This is test_alarm_2",
 	"parameters":
 		{
 			"Am":
