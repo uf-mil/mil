@@ -1,0 +1,2 @@
+#!/bin/sh
+exec socat -d -d pipe:/tmp/imu,wronly=1 tcp:sub-gumstix:1382
