@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <pcl/filters/passthrough.h>
+#include <pcl/filters/crop_box.h>
 #include <pcl/segmentation/region_growing_rgb.h>
 #include <pcl/search/search.h>
 #include <pcl/search/kdtree.h>
@@ -59,5 +60,21 @@ void segment_rgb_region_growing(const typename pcl::PointCloud<PointT>::Ptr targ
   std::cout << "Constructing colored cloud" << colored_cloud->points.size() << std::endl;
   std::cout << indices.size() << std::endl;
   // colored_cloud.reset(region_grower.getColoredCloud());
+}
+
+template <typename PointT>
+void segment_box(const typename pcl::PointCloud<PointT>::Ptr input_cloud,
+                 const Eigen::Vector3f center, const double edge_length,
+                 pcl::PointCloud<PointT>& output_cloud) {
+  pcl::CropBox<PointT> box_cropper;
+  box_cropper.setInputCloud(input_cloud);
+
+  // Eigen::Vector3f min_pt, max_pt;
+  Eigen::Vector4f h_min_pt, h_max_pt;
+  h_min_pt << center.array() - (edge_length / 2.0), 1.0;
+  h_max_pt << center.array() + (edge_length / 2.0), 1.0;
+  box_cropper.setMin(h_min_pt);
+  box_cropper.setMax(h_max_pt);
+  box_cropper.extract(output_cloud);
 }
 }
