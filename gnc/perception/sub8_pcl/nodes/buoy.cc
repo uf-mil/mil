@@ -7,7 +7,6 @@
 #include <pcl/common/transforms.h>
 #include <pcl/common/time.h>
 #include <pcl/console/print.h>
-#include <pcl/visualization/cloud_viewer.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/PointIndices.h>
 #include <pcl/conversions.h>
@@ -27,12 +26,13 @@
 #include <sensor_msgs/image_encodings.h>
 
 #include <eigen_conversions/eigen_msg.h>
-#include <sub8_pcl/sub8_pcl.hpp>
+#include <sub8_pcl/pcl_tools.hpp>
+#include <sub8_pcl/cv_tools.hpp>
+
 #include "geometry_msgs/PoseStamped.h"
 #include "ros/ros.h"
 
 // For stack-tracing on seg-fault
-#define BACKWARD_HAS_BFD 1
 #include <sub8_build_tools/backward.hpp>
 
 #define VISUALIZE
@@ -53,6 +53,10 @@ class Sub8BuoyDetector {
   void cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &);
   void image_callback(const sensor_msgs::ImageConstPtr &msg,
                       const sensor_msgs::CameraInfoConstPtr &info_msg);
+  // Visualize
+  int vp1;
+  int vp2;
+  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
 
   ros::Timer compute_timer;
   ros::Subscriber data_sub;
@@ -63,15 +67,15 @@ class Sub8BuoyDetector {
   image_transport::ImageTransport image_transport;
   image_geometry::PinholeCameraModel cam_model;
 
-  // Visualize
-  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
-
   sub::PointCloudT::Ptr current_cloud;
   bool got_cloud, line_added, computing;
 };
 
 Sub8BuoyDetector::Sub8BuoyDetector()
-    : viewer(new pcl::visualization::PCLVisualizer("Incoming Cloud")), image_transport(nh) {
+    : viewer(new pcl::visualization::PCLVisualizer("Incoming Cloud")),
+      image_transport(nh),
+      vp1(0),
+      vp2(1) {
   pcl::console::print_highlight("Initializing PCL SLAM\n");
   // Perform match computations
   compute_timer = nh.createTimer(ros::Duration(0.05), &Sub8BuoyDetector::compute_loop, this);
@@ -79,6 +83,9 @@ Sub8BuoyDetector::Sub8BuoyDetector()
                                               &Sub8BuoyDetector::image_callback, this);
 
   viewer->addCoordinateSystem(1.0);
+  viewer->createViewPort(0.5, 0.0, 1.0, 1.0, vp1);
+  viewer->createViewPort(0.0, 0.0, 0.5, 1.0, vp2);
+
   got_cloud = false;
   line_added = false;
   computing = false;
@@ -108,14 +115,9 @@ void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_ms
     return;
   }
   cam_model.fromCameraInfo(info_msg);
-  // cv::cvtColor(image_raw, image_hsv, CV_BGR2HSV);
   // believe it or not, this is on purpose (So blue replaces red in HSV)
   cv::cvtColor(image_raw, image_hsv, CV_RGB2HSV);
 
-  // cv::Mat image_rect;
-  // rectifyImage (image_raw, image_rect);
-
-  // Compute by inverting K --> line (ray) in homogeneous
   if (!got_cloud) {
     return;
   }
@@ -124,35 +126,19 @@ void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_ms
   pcl_pt = sub::project_uv_to_cloud(*current_cloud, pt_cv_2d, cam_model);
 
 #ifdef VISUALIZE
-  if (!line_added) {
-    // viewer->addLine(sub::PointXYZT(0.0, 0.0, 0.0), pcl_pt, 255.0, 255.0, 0.0, "line", 0);
-    line_added = true;
-  } else {
-    // viewer->removeShape("line", 0);
-    viewer->removeAllShapes(0);
-    pcl::console::print_highlight("Drawing line\n");
-
-    // viewer->addLine(sub::PointXYZT(0.0, 0.0, 0.0), pcl_pt, 255.0, 255.0, 0.0, "line", 0);
-    // addCube (const Eigen::Vector3f &translation, const Eigen::Quaternionf &rotation, double
-    // width, double height, double depth, const std::string &id="cube", int viewport=0)
-  }
+  viewer->removeAllShapes(0);
+  pcl::console::print_highlight("Drawing line\n");
 #endif
   cv::Point2d cv_uv = cam_model.project3dToPixel(cv::Point3f(pcl_pt.x, pcl_pt.y, pcl_pt.z));
-  // cv::circle(image_raw, cv_uv, 12.0, cv::Scalar(0, 255, 0), -1);
-
-  // cv::threshold(image_raw, image_thresh, threshold_value, max_BINARY_value, threshold_type);
-  // cv::inRange(image_hsv, cv::Scalar(0, 135, 135), cv::Scalar(20, 255, 255), image_thresh);
-
-  // rgb to flip blue
   cv::inRange(image_hsv, cv::Scalar(105, 135, 135), cv::Scalar(120, 255, 255), image_thresh);
-  std::vector<std::vector<cv::Point> > contours;
+  std::vector<sub::Contour> contours;
   std::vector<cv::Vec4i> hierarchy;
   cv::findContours(image_thresh.clone(), contours, hierarchy, CV_RETR_EXTERNAL,
                    CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
+  std::vector<int> seed_points;
   for (size_t i = 0; i < contours.size(); i++) {
-    cv::Moments m = cv::moments(contours[i], true);
-    cv::Point center(m.m10 / m.m00, m.m01 / m.m00);
+    cv::Point center = sub::contour_centroid(contours[i]);
     std::vector<cv::Point> approx;
     cv::approxPolyDP(contours[i], approx, 5, true);
     double area = cv::contourArea(approx);
@@ -163,12 +149,15 @@ void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_ms
                      cv::Point());
 
     cv::Rect rect = cv::boundingRect(approx);
-    double max_r = std::max(rect.x / 1000, rect.y / 1000);
     cv::circle(image_raw, center, 6.0, cv::Scalar(0, 255, 0), -1);
 
     sub::PointXYZT centroid_projected = sub::project_uv_to_cloud(*current_cloud, center, cam_model);
-    // viewer->addLine(sub::PointXYZT(0.0, 0.0, 0.0), centroid_projected, 255.0, 255.0, 0.0,
-    // "line" + boost::to_string(i), 0);
+    size_t centroid_projected_index =
+        sub::project_uv_to_cloud_index(*current_cloud, center, cam_model);
+    seed_points.push_back(centroid_projected_index);
+
+    std::string title = "line" + boost::to_string(i);
+    viewer->addLine(sub::PointXYZT(0.0, 0.0, 0.0), centroid_projected, 0.0, 255.0, 255.0, title, 0);
     cv::Point3d pt_cv;
     pt_cv = cam_model.projectPixelTo3dRay(center);
     sub::PointXYZT pt1;
@@ -178,16 +167,21 @@ void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_ms
 
     sub::PointXYZT pt2(0.0, 0.0, 0.0);
 
-    std::string title = "line" + boost::to_string(i);
     std::cout << pt1 << std::endl;
-    viewer->addLine(pt1, pt2, 255.0, 255.0, 0.0, title, 0);
+    viewer->addLine(pt1, pt2, 255.0, 255.0, 0.0, title + "doop", 0);
 
     viewer->addCube(
         Eigen::Vector3f(centroid_projected.x, centroid_projected.y, centroid_projected.z),
-        Eigen::Quaternionf(0.0, 0.0, 0.0, 1.0), 0.3, 0.3, 0.3, "cube" + boost::to_string(i));
+        Eigen::Quaternionf(0.0, 0.0, 0.0, 1.0), 0.3, 0.3, 0.3, "cube" + boost::to_string(i), 0);
   }
+  viewer->removeAllPointClouds(vp2);
+  sub::PointCloudT::Ptr viz_cloud(new sub::PointCloudT());
+  std::vector<pcl::PointIndices> clusters;
+  sub::segment_rgb_region_growing<sub::PointXYZT>(current_cloud, seed_points, clusters, viz_cloud);
+  std::cout << viz_cloud->points.size() << std::endl;
+  viewer->addPointCloud(viz_cloud, "viz_cloud", vp2);
+  // viewer->addPointCloud(viz_cloud, "viz_cloud1", vp1);
 
-  // cv::imshow("input", image_thresh);
   cv::imshow("input", image_raw);
   cv::waitKey(50);
   computing = false;
@@ -209,7 +203,6 @@ void Sub8BuoyDetector::cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &
   voxel_filter.filter(*scene_buffer);
 
   // Add to pcl_tools
-  // pcl::console::print_highlight("Downsampling\n");
   pcl::StatisticalOutlierRemoval<sub::PointXYZT> outlier_remover;
   outlier_remover.setInputCloud(scene_buffer);
   outlier_remover.setMeanK(20);
@@ -220,9 +213,8 @@ void Sub8BuoyDetector::cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &
 #ifdef VISUALIZE
   if (!got_cloud) {
     pcl::console::print_highlight("Getting new\n");
-    viewer->addPointCloud(current_cloud, "current_input");
+    viewer->addPointCloud(current_cloud, "current_input", vp1);
   } else {
-    // pcl::console::print_highlight("Updating\n");
     viewer->updatePointCloud(current_cloud, "current_input");
     viewer->spinOnce();
     // Downsample
@@ -234,6 +226,6 @@ void Sub8BuoyDetector::cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "pcl_slam");
-  Sub8BuoyDetector *sub8_buoys(new Sub8BuoyDetector());
+  boost::shared_ptr<Sub8BuoyDetector> sub8_buoys(new Sub8BuoyDetector());
   ros::spin();
 }
