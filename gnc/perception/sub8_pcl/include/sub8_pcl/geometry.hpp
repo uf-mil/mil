@@ -8,6 +8,50 @@
 namespace sub {
 
 // Compute the point in $cloud that is closest to the ray defined by $direction and $line_pt
+// (Uses OpenMP to compute in parallel)
+// Compute the minimum over the set of points $cloud: dist(line_pt + direction*t, point)
+// TODO:
+//  ? Additional (wasteful) branching to check if something is actually in front of the ray (Always
+//  true for an image)
+//  - Does squaredNorm improve speed? (This will be miniscule at best, but saves computation)
+//
+// @param[in] cloud The point cloud over which to determine the closest point
+// @param[in] direction The direction of the ray with which we are concerned
+// @param[in] line_pt A point on the line, ideally the origin of the ray
+// @return The index of the point in the target point cloud that is closest to the ray of interest
+template <typename PointT>
+size_t closest_point_index_rayOMP(const pcl::PointCloud<PointT>& cloud,
+                                  const Eigen::Vector3f& direction_pre,
+                                  const Eigen::Vector3f& line_pt) {
+  Eigen::Vector3f direction = direction_pre / direction_pre.norm();
+  double min_distance = std::numeric_limits<double>::infinity();
+  size_t min_index = 0;
+  PointT point;
+  std::vector<double> distances(cloud.points.size(), 10);  // Initialize to value 10
+// Generate a vector of distances
+#pragma omp parallel for
+  for (size_t index = 0; index < cloud.points.size(); index++) {
+    point = cloud.points[index];
+
+    Eigen::Vector3f cloud_pt(point.x, point.y, point.z);
+    Eigen::Vector3f difference = (line_pt - cloud_pt);
+    double distance = (difference - (difference.dot(direction) * direction)).norm();
+    distances[index] = distance;
+  }
+
+  // Find index of maximum (TODO: Figure out how to OMP this)
+  for (size_t index = 0; index < cloud.points.size(); index++) {
+    const double distance = distances[index];
+    if (distance < min_distance) {
+      min_distance = distance;
+      min_index = index;
+    }
+  }
+
+  return (min_index);
+}
+
+// Compute the point in $cloud that is closest to the ray defined by $direction and $line_pt
 //
 // Compute the minimum over the set of points $cloud: dist(line_pt + direction*t, point)
 // TODO:
@@ -21,19 +65,16 @@ namespace sub {
 // @return The index of the point in the target point cloud that is closest to the ray of interest
 template <typename PointT>
 size_t closest_point_index_ray(const pcl::PointCloud<PointT>& cloud,
-                               const Eigen::Vector3f& direction_pre, const Eigen::Vector3f& line_pt) {
+                               const Eigen::Vector3f& direction_pre,
+                               const Eigen::Vector3f& line_pt) {
   // One number greater than all others...one number to rule them all...
-  // double min_distance = 10;
   Eigen::Vector3f direction = direction_pre / direction_pre.norm();
-  // line_pt.normalize();
   double min_distance = std::numeric_limits<double>::infinity();
   size_t min_index = 0;
-  PointT point;
   for (size_t index = 0; index < cloud.points.size(); index++) {
-    point = cloud.points[index];
+    const PointT point = cloud.points[index];
 
     Eigen::Vector3f cloud_pt(point.x, point.y, point.z);
-    // squared norm will be a little bit faster
     Eigen::Vector3f difference = (line_pt - cloud_pt);
     double distance = (difference - (difference.dot(direction) * direction)).norm();
 
@@ -49,7 +90,7 @@ size_t closest_point_index_ray(const pcl::PointCloud<PointT>& cloud,
 template <typename PointT>
 PointT closest_point_ray(const pcl::PointCloud<PointT>& cloud, const Eigen::Vector3f& direction,
                          const Eigen::Vector3f& line_pt) {
-  size_t index = closest_point_index_ray(cloud, direction, line_pt);
+  size_t index = closest_point_index_rayOMP(cloud, direction, line_pt);
   return (cloud.points[index]);
 }
 
@@ -65,7 +106,7 @@ size_t project_uv_to_cloud_index(const pcl::PointCloud<PointT>& cloud,
   Eigen::Vector3f direction_eig(pt_cv.x, pt_cv.y, pt_cv.z);
   Eigen::Vector3f origin_eig(0.0, 0.0, 0.0);
 
-  pt_pcl_index = closest_point_index_ray(cloud, direction_eig, origin_eig);
+  pt_pcl_index = closest_point_index_rayOMP(cloud, direction_eig, origin_eig);
   return (pt_pcl_index);
 }
 
