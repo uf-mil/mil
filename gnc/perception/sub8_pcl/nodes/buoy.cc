@@ -156,11 +156,7 @@ void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_ms
 
     sub::PointXYZT centroid_projected = sub::project_uv_to_cloud(*current_cloud, center, cam_model);
     size_t centroid_projected_index;
-    {
-      // 32...33 ms (16ms w/ OMP)
-      pcl::ScopeTime t1("calculation");
-      centroid_projected_index = sub::project_uv_to_cloud_index(*current_cloud, center, cam_model);
-    }
+    centroid_projected_index = sub::project_uv_to_cloud_index(*current_cloud, center, cam_model);
     seed_points.push_back(centroid_projected_index);
 
     std::string title = "line" + boost::to_string(i);
@@ -186,7 +182,6 @@ void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_ms
   }
   viewer->removeAllPointClouds(vp2);
   std::vector<pcl::PointIndices> clusters;
-  std::cout << segmented_cloud->points.size() << std::endl;
   viewer->addPointCloud(segmented_cloud, "viz_cloud", vp2);
 
   cv::imshow("input", image_raw);
