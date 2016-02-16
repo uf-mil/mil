@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(sub8_pcl)
 
 SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -rdynamic -Wall")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -g -rdynamic -Wall")
 
 find_package(catkin
   REQUIRED COMPONENTS

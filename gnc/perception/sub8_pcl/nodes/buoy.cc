@@ -72,10 +72,10 @@ class Sub8BuoyDetector {
 };
 
 Sub8BuoyDetector::Sub8BuoyDetector()
-    : viewer(new pcl::visualization::PCLVisualizer("Incoming Cloud")),
-      image_transport(nh),
-      vp1(0),
-      vp2(1) {
+    : vp1(0),
+      vp2(1),
+      viewer(new pcl::visualization::PCLVisualizer("Incoming Cloud")),
+      image_transport(nh) {
   pcl::console::print_highlight("Initializing PCL SLAM\n");
   // Perform match computations
   compute_timer = nh.createTimer(ros::Duration(0.05), &Sub8BuoyDetector::compute_loop, this);
@@ -137,6 +137,9 @@ void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_ms
                    CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
   std::vector<int> seed_points;
+  sub::PointCloudT::Ptr append_buffer(new sub::PointCloudT());
+  sub::PointCloudT::Ptr segmented_cloud(new sub::PointCloudT());
+
   for (size_t i = 0; i < contours.size(); i++) {
     cv::Point center = sub::contour_centroid(contours[i]);
     std::vector<cv::Point> approx;
@@ -152,11 +155,16 @@ void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_ms
     cv::circle(image_raw, center, 6.0, cv::Scalar(0, 255, 0), -1);
 
     sub::PointXYZT centroid_projected = sub::project_uv_to_cloud(*current_cloud, center, cam_model);
-    size_t centroid_projected_index =
-        sub::project_uv_to_cloud_index(*current_cloud, center, cam_model);
+    size_t centroid_projected_index;
+    {
+      // 32...33 ms (16ms w/ OMP)
+      pcl::ScopeTime t1("calculation");
+      centroid_projected_index = sub::project_uv_to_cloud_index(*current_cloud, center, cam_model);
+    }
     seed_points.push_back(centroid_projected_index);
 
     std::string title = "line" + boost::to_string(i);
+    // Line to actual projection
     viewer->addLine(sub::PointXYZT(0.0, 0.0, 0.0), centroid_projected, 0.0, 255.0, 255.0, title, 0);
     cv::Point3d pt_cv;
     pt_cv = cam_model.projectPixelTo3dRay(center);
@@ -167,20 +175,19 @@ void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_ms
 
     sub::PointXYZT pt2(0.0, 0.0, 0.0);
 
-    std::cout << pt1 << std::endl;
+    // Line of direction
     viewer->addLine(pt1, pt2, 255.0, 255.0, 0.0, title + "doop", 0);
 
-    viewer->addCube(
-        Eigen::Vector3f(centroid_projected.x, centroid_projected.y, centroid_projected.z),
-        Eigen::Quaternionf(0.0, 0.0, 0.0, 1.0), 0.3, 0.3, 0.3, "cube" + boost::to_string(i), 0);
+    viewer->addCube(sub::point_to_eigen(centroid_projected), Eigen::Quaternionf(0.0, 0.0, 0.0, 1.0),
+                    0.3, 0.3, 0.3, "cube" + boost::to_string(i), 0);
+    sub::segment_box(current_cloud, sub::point_to_eigen(centroid_projected), 0.3, *append_buffer);
+
+    (*segmented_cloud) += *append_buffer;
   }
   viewer->removeAllPointClouds(vp2);
-  sub::PointCloudT::Ptr viz_cloud(new sub::PointCloudT());
   std::vector<pcl::PointIndices> clusters;
-  sub::segment_rgb_region_growing<sub::PointXYZT>(current_cloud, seed_points, clusters, viz_cloud);
-  std::cout << viz_cloud->points.size() << std::endl;
-  viewer->addPointCloud(viz_cloud, "viz_cloud", vp2);
-  // viewer->addPointCloud(viz_cloud, "viz_cloud1", vp1);
+  std::cout << segmented_cloud->points.size() << std::endl;
+  viewer->addPointCloud(segmented_cloud, "viz_cloud", vp2);
 
   cv::imshow("input", image_raw);
   cv::waitKey(50);

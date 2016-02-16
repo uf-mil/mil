@@ -51,30 +51,28 @@ void segment_rgb_region_growing(const typename pcl::PointCloud<PointT>::Ptr targ
 
   region_grower.extract(clusters);
 
-  std::cout << "Cluster Sizes: " << clusters.size() << " " << IndicesPtr->size() << std::endl;
+  // std::cout << "Cluster Sizes: " << clusters.size() << " " << IndicesPtr->size() << std::endl;
   if (clusters.size() == 0) {
     return;
   }
-  // pcl::PointCloud<PointT>::Ptr colored_cloud_buffer = region_grower.getColoredCloud();
   colored_cloud = region_grower.getColoredCloud();
-  std::cout << "Constructing colored cloud" << colored_cloud->points.size() << std::endl;
-  std::cout << indices.size() << std::endl;
-  // colored_cloud.reset(region_grower.getColoredCloud());
+  // std::cout << "Constructing colored cloud" << colored_cloud->points.size() << std::endl;
+  // std::cout << indices.size() << std::endl;
 }
 
 template <typename PointT>
 void segment_box(const typename pcl::PointCloud<PointT>::Ptr input_cloud,
-                 const Eigen::Vector3f center, const double edge_length,
+                 const Eigen::Vector3f& center, const double edge_length,
                  pcl::PointCloud<PointT>& output_cloud) {
   pcl::CropBox<PointT> box_cropper;
   box_cropper.setInputCloud(input_cloud);
 
-  // Eigen::Vector3f min_pt, max_pt;
   Eigen::Vector4f h_min_pt, h_max_pt;
   h_min_pt << center.array() - (edge_length / 2.0), 1.0;
   h_max_pt << center.array() + (edge_length / 2.0), 1.0;
+
   box_cropper.setMin(h_min_pt);
   box_cropper.setMax(h_max_pt);
-  box_cropper.extract(output_cloud);
+  box_cropper.filter(output_cloud);
 }
 }
