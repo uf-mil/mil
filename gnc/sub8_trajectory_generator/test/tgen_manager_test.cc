@@ -35,7 +35,26 @@ class TGenManagerTest : public ::testing::Test {
     return TGenManagerPtr(new TGenManager(std::move(ab)));
   }
 
+  // return a reference to the state space
   const ompl::base::StateSpacePtr& ss() const { return _test_space; }
+
+  // Sample a random start and goal state
+  std::vector<State*> randomProblemDef() {
+    std::vector<State*> pd;
+
+    // Set up start and goal states
+    State* start_state = ss()->allocState();
+    State* goal_state = ss()->allocState();
+
+    StateSamplerPtr state_sampler = ss()->allocStateSampler();
+    state_sampler->sampleUniform(start_state);
+    state_sampler->sampleUniform(goal_state);
+
+    pd.push_back(start_state);
+    pd.push_back(goal_state);
+
+    return pd;
+  }
 
  private:
   boost::shared_ptr<ros::NodeHandle> _node_handle;
@@ -45,59 +64,45 @@ class TGenManagerTest : public ::testing::Test {
 TEST_F(TGenManagerTest, testSetProblemDefinition) {
   TGenManagerPtr test_tgen_manager = tgenManagerFactory();
 
+  std::vector<State*> pd = randomProblemDef();
+  test_tgen_manager->setProblemDefinition(pd[0], pd[1]);
+
+  ss()->freeState(pd[0]);
+  ss()->freeState(pd[1]);
+}
+
+TEST_F(TGenManagerTest, testBadProblemDefinition) {
+  TGenManagerPtr test_tgen_manager = tgenManagerFactory();
+
   // Set up start and goal states
   State* start_state = ss()->allocState();
   State* goal_state = ss()->allocState();
 
-  StateSamplerPtr state_sampler = ss()->allocStateSampler();
-  state_sampler->sampleUniform(start_state);
-  state_sampler->sampleUniform(goal_state);
+  std::vector<State*> pd = randomProblemDef();
+  pd[0]->as<Sub8StateSpace::StateType>()->setX(10000);
 
-  // TGen Manager handles internal validation of the problem definition
-  // after setting it
-  test_tgen_manager->setProblemDefinition(start_state, goal_state);
-
-  ss()->freeState(start_state);
-  ss()->freeState(goal_state);
+  ASSERT_FALSE(test_tgen_manager->setProblemDefinition(pd[0], pd[1]));
 }
 
 TEST_F(TGenManagerTest, testGeneratePath) {
   TGenManagerPtr test_tgen_manager = tgenManagerFactory();
 
-  // Set up start and goal states
-  State* start_state = ss()->allocState();
-  State* goal_state = ss()->allocState();
-
-  StateSamplerPtr state_sampler = ss()->allocStateSampler();
-  state_sampler->sampleUniform(start_state);
-  state_sampler->sampleUniform(goal_state);
-
-  // TGen Manager handles internal validation of the problem definition
-  // after setting it
-  test_tgen_manager->setProblemDefinition(start_state, goal_state);
+  std::vector<State*> pd = randomProblemDef();
+  test_tgen_manager->setProblemDefinition(pd[0], pd[1]);
 
   ROS_WARN("Testing TGEN planning with a random start and goal...");
 
   ASSERT_TRUE(test_tgen_manager->solve());
 
-  ss()->freeState(start_state);
-  ss()->freeState(goal_state);
+  ss()->freeState(pd[0]);
+  ss()->freeState(pd[1]);
 }
 
 TEST_F(TGenManagerTest, testGetPath) {
   TGenManagerPtr test_tgen_manager = tgenManagerFactory();
 
-  // Set up start and goal states
-  State* start_state = ss()->allocState();
-  State* goal_state = ss()->allocState();
-
-  StateSamplerPtr state_sampler = ss()->allocStateSampler();
-  state_sampler->sampleUniform(start_state);
-  state_sampler->sampleUniform(goal_state);
-
-  // TGen Manager handles internal validation of the problem definition
-  // after setting it
-  test_tgen_manager->setProblemDefinition(start_state, goal_state);
+  std::vector<State*> pd = randomProblemDef();
+  test_tgen_manager->setProblemDefinition(pd[0], pd[1]);
 
   ASSERT_TRUE(test_tgen_manager->solve());
 
@@ -109,17 +114,8 @@ TEST_F(TGenManagerTest, testGetPath) {
 TEST_F(TGenManagerTest, testGeneratePathMessage) {
   TGenManagerPtr test_tgen_manager = tgenManagerFactory();
 
-  // Set up start and goal states
-  State* start_state = ss()->allocState();
-  State* goal_state = ss()->allocState();
-
-  StateSamplerPtr state_sampler = ss()->allocStateSampler();
-  state_sampler->sampleUniform(start_state);
-  state_sampler->sampleUniform(goal_state);
-
-  // TGen Manager handles internal validation of the problem definition
-  // after setting it
-  test_tgen_manager->setProblemDefinition(start_state, goal_state);
+  std::vector<State*> pd = randomProblemDef();
+  test_tgen_manager->setProblemDefinition(pd[0], pd[1]);
 
   ASSERT_TRUE(test_tgen_manager->solve());
 
@@ -127,13 +123,13 @@ TEST_F(TGenManagerTest, testGeneratePathMessage) {
 
   std::vector<sub8_msgs::PathPoint> pp = path_msg.path;
 
-  ASSERT_NEAR(start_state->as<Sub8StateSpace::StateType>()->getX(),
-              pp[0].position.x, 0.01);
-  ASSERT_NEAR(start_state->as<Sub8StateSpace::StateType>()->getY(),
-              pp[0].position.y, 0.01);
-  ASSERT_NEAR(start_state->as<Sub8StateSpace::StateType>()->getZ(),
-              pp[0].position.z, 0.01);
-  ASSERT_NEAR(start_state->as<Sub8StateSpace::StateType>()->getYaw(), pp[0].yaw,
+  ASSERT_NEAR(pd[0]->as<Sub8StateSpace::StateType>()->getX(), pp[0].position.x,
+              0.01);
+  ASSERT_NEAR(pd[0]->as<Sub8StateSpace::StateType>()->getY(), pp[0].position.y,
+              0.01);
+  ASSERT_NEAR(pd[0]->as<Sub8StateSpace::StateType>()->getZ(), pp[0].position.z,
+              0.01);
+  ASSERT_NEAR(pd[0]->as<Sub8StateSpace::StateType>()->getYaw(), pp[0].yaw,
               0.01);
 }
 
