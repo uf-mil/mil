@@ -24,8 +24,6 @@ AlarmBroadcaster::AlarmBroadcaster(boost::shared_ptr<ros::NodeHandle> n) {
   std::string alarms_dir = "cpp_alarms";
   std::string pkg_path = ros::package::getPath("sub8_alarm");
   char file_sep = '/';
-  // fs::path dirname(pkg_path + file_sep + alarms_dir);
-  //_dirname = std::move(dirname);
   _dirname = std::move(fs::path(pkg_path + file_sep + alarms_dir));
 }
 
@@ -89,6 +87,7 @@ AlarmRaiserPtr AlarmBroadcaster::addJSONAlarm(const std::string& name) {
     ++it;
   }
 
+  ROS_WARN("Unable to find any alarms with the specified alarm name!");
   return nullptr;
 }
 

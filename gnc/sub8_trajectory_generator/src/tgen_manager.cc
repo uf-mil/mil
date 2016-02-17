@@ -43,7 +43,8 @@ namespace fs = ::boost::filesystem;
 TGenManager::TGenManager(AlarmBroadcasterPtr&& ab) : _alarm_broadcaster(ab) {
   int planner_type;
   int range;
-  const std::string planning_failure_alarm = "planning_failure";
+  const std::string planning_failure_alarm =
+      "sub8_trajectory_generator_planning_failure";
 
   _pdef = nullptr;  // Problem definition hasn't been set yet
   SpaceInformationGeneratorPtr ss_gen(new SpaceInformationGenerator());
@@ -74,6 +75,7 @@ TGenManager::TGenManager(AlarmBroadcasterPtr&& ab) : _alarm_broadcaster(ab) {
   // initialize alarms
   _planning_failure_alarm =
       _alarm_broadcaster->addJSONAlarm(planning_failure_alarm);
+   assert(_planning_failure_alarm != nullptr);
 }
 
 bool TGenManager::setProblemDefinition(const State* start_state,
