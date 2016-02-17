@@ -1,0 +1,7 @@
+<library path="lib/libmagnetic_dynamic_compensation_nodelet">
+  <class name="magnetic_dynamic_compensation/nodelet" type="magnetic_dynamic_compensation::Nodelet" base_class_type="nodelet::Nodelet">
+    <description> 
+      hard/soft magnetic compensator
+    </description>
+  </class>
+</library>

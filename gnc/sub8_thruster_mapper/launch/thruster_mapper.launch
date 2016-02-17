@@ -15,7 +15,7 @@
               position: [0.2678, 0.2795, 0],
               direction: [-0.866, 0.5, 0]
             }
-        - port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A403IMCI-if00-port0
+        - port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AI02L380-if00-port0
           thrusters:
             FRV: {
               node_id: 12,

@@ -11,7 +11,6 @@ class FakeThrusterPort(object):
         for thruster_name, thruster_info in port_info['thrusters'].items():
             self.load_thruster_config(thruster_name, thruster_info)
 
-
     def load_thruster_config(self, thruster_name, thruster_info):
         self.thruster_dict[thruster_name] = thruster_info['node_id']
         self.status_dict[thruster_name] = {
