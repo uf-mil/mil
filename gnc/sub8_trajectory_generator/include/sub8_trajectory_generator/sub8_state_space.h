@@ -14,6 +14,7 @@ using ompl::base::CompoundStateSpace;
 using ompl::base::RealVectorStateSpace;
 using ompl::base::RealVectorBounds;
 using ompl::base::SO2StateSpace; 
+using ompl::base::StateSpacePtr; 
 
 namespace sub8 {
 namespace trajectory_generator {

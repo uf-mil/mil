@@ -11,7 +11,7 @@
 	<!-- the tree of motions. Keeping this small means -->
 	<!-- that the path will have more waypoints but will --> 
 	<!-- take longer to compute	(units = meters) -->
-	<param name="range" value="0.1" type="double" />
+	<param name="range" value="0.05" type="double" />
 
 	<param name="state_validity_checking_resolution" value="0.03" type="double"/>
 

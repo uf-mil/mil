@@ -45,15 +45,7 @@ class TGenNode {
       ROS_INFO("Successfully found a trajectory");
       resp.path = _tgen->generatePathMessage();
       resp.path.header.stamp = ros::Time::now();
-    } else {
-      // Robot must make some decisions:
-      // 1. Try finding another trajectory
-      // 2. Try to navigate with dead-reckoning
-      //    e.g. (Do a simplistic calculation to do
-      //     navigation without 6DOF
-      //     motion-planning/Traversability map)
-      // 3. Abort mission
-    }
+    } 
     return resp.success;
   }
 
