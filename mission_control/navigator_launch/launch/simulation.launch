@@ -5,10 +5,10 @@
 		<param name="boat_length" value="1.78" type="double"/>
 		<param name="boat_width" value=".88" type="double"/>
 		<param name="boat_height" value=".41" type="double"/>
-		<param name="port_servo_x_offset" value="-0.7239" type="double"/>
-		<param name="port_servo_y_offset" value="0.3048" type="double"/>
-		<param name="starboard_servo_x_offset" value="-0.7239" type="double"/>
-		<param name="starboard_servo_y_offset" value="-0.3048" type="double"/>
+		<rosparam param="BR_offset">[-2.134, 0.978]</rosparam>
+    	<rosparam param="BL_offset">[-2.134, -0.978]</rosparam>
+    	<rosparam param="FR_offset">[2.134, 0.978]</rosparam>
+    	<rosparam param="FL_offset">[2.134, -0.978]</rosparam>
 		<param name="friction_coefficient_forward" value="100.0181" type="double"/>
 		<param name="friction_coefficient_forward_reduction" value="0.76462" type="double"/>
 		<param name="friction_coefficient_lateral" value="200.0" type="double"/>

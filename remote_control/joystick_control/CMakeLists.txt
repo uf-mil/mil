@@ -3,16 +3,18 @@ project(joystick_control)
 set(CMAKE_XX_FLAGS "-std=c++11")
 
 find_package(catkin REQUIRED COMPONENTS
-	roscpp 
-	std_msgs 
+	roscpp
+	std_msgs
 	geometry_msgs
 	navigator_msg_multiplexer
+	nav_msgs
 
 	)
 
 catkin_package(
-CATKIN_DEPENDS 
-	std_msgs 
+CATKIN_DEPENDS
+	std_msgs
+	nav_msgs
 	geometry_msgs
 	roscpp
 	navigator_msg_multiplexer
