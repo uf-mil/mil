@@ -12,6 +12,7 @@
   </node>
 
   <node name="pose_controller" pkg="navigator_controller" type="mrac_controller.py"/>
+  <node name="move_helper" pkg="navigator_tools" type="move_helper.py"/>
 
   <node name="wrench_arbiter" pkg="navigator_msg_multiplexer" type="wrench_arbiter.py"/>
 

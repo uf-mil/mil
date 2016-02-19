@@ -53,7 +53,7 @@ JoystickWrench::JoystickWrench()
 // %Tag(PUB)%
    wrench_pub_= nh_.advertise<geometry_msgs::WrenchStamped>("/wrench/rc", 1);
    kill_pub = nh_.advertise<std_msgs::Bool>("/killed", 1);
-   des_pose_pub = nh_.advertise<geometry_msgs::Point>("/desired_pose", 1);
+   des_pose_pub = nh_.advertise<geometry_msgs::Point>("/set_desired_pose", 1);
    client = nh_.serviceClient<navigator_msg_multiplexer::wrench_arbiter>("change_wrench");
    wrench_controller = true;
    killed = false;

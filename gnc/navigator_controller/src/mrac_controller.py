@@ -87,11 +87,12 @@ class MRAC_Controller:
         self.ang_vel = 0
         self.state = Odometry()
         # ayeeee subscrizzled
-        rospy.Subscriber("/desired_pose", Point, self.set_waypoint)
+        rospy.Subscriber("/set_desired_pose", Point, self.set_waypoint)
         rospy.Subscriber("/odom", Odometry, self.get_command)
         self.last_odom = None
         self.wrench_pub = rospy.Publisher("/wrench/autonomous", WrenchStamped, queue_size=0)
         self.pose_ref_pub = rospy.Publisher("pose_ref", PoseStamped, queue_size=0)
+        self.des_pose_pub = rospy.Publisher("desired_pose_ref", PoseStamped, queue_size=0)
         rospy.spin()
 
 
@@ -111,6 +112,17 @@ class MRAC_Controller:
         self.w_ref = self.ang_vel
         self.a_ref = np.array([0, 0])
         self.aa_ref = 0
+
+        self.des_pose_pub.publish(PoseStamped(
+             header=Header(
+                 frame_id='/enu',
+             ),
+             pose=Pose(
+                 position=Point(msg.x, msg.y, 0),
+                 orientation=Quaternion(*self.q_des),
+             ),
+        ))
+
 
 
     def get_command(self, msg):
