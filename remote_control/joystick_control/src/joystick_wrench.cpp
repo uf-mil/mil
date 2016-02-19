@@ -8,6 +8,7 @@
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/Bool.h>
 #include "navigator_msg_multiplexer/wrench_arbiter.h"
+#include <tf/transform_datatypes.h>
 // %EndTag(INCLUDE)%
 
 // %Tag(CLASSDEF)%
@@ -54,7 +55,7 @@ JoystickWrench::JoystickWrench()
    kill_pub = nh_.advertise<std_msgs::Bool>("/killed", 1);
    des_pose_pub = nh_.advertise<geometry_msgs::Point>("/desired_pose", 1);
    client = nh_.serviceClient<navigator_msg_multiplexer::wrench_arbiter>("change_wrench");
-   wrench_controller = false;
+   wrench_controller = true;
    killed = false;
    last_controller_state = 0;
    last_kill_state = 0;
@@ -105,6 +106,7 @@ void JoystickWrench::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 
   if (killed == false)
   {
+    wrench.header.frame_id = "/base_link";
     wrench.wrench.force.x = force_scale_*joy->axes[1];
     wrench.wrench.force.y = -1*force_scale_*joy->axes[0];
     wrench.wrench.torque.z = -1*torque_scale_*joy->axes[3];
@@ -120,13 +122,26 @@ void JoystickWrench::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
   if (joy->buttons[0] ==1)
   {
     geometry_msgs::Point point;
+
+
+
+    tf::Quaternion q(cur_pose.pose.pose.orientation.x, cur_pose.pose.pose.orientation.y, cur_pose.pose.pose.orientation.z, cur_pose.pose.pose.orientation.w);
+    tf::Matrix3x3 m(q);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
+
     point.x = cur_pose.pose.pose.position.x;
     point.y = cur_pose.pose.pose.position.y;
-    point.z = 0;
+    point.z = yaw;
+
 
     des_pose_pub.publish(point);
 
-
+    w_control.request.str = "autonomous";
+    if (!client.call(w_control))
+    {
+      ROS_ERROR("Failed to change controller");
+    }
 
   }
 

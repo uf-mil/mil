@@ -1,10 +1,10 @@
 <launch>
   <node pkg="navigator_thrust_allocater" type="p_driver.py" name="primitive_driver" output="screen">
     <!-- Parameters used to set the thruster locations relative to the center of gravity -->
-    <rosparam param="thruster_BR_cog">[-2.134, 0.978]</rosparam>
-    <rosparam param="thruster_BL_cog">[-2.134, -0.978]</rosparam>
-    <rosparam param="thruster_FR_cog">[2.134, 0.978]</rosparam>
-    <rosparam param="thruster_FL_cog">[2.134, -0.978]</rosparam>
+    <rosparam param="thruster_BR_cog">[-1.9304, 1.016]</rosparam>
+    <rosparam param="thruster_BL_cog">[-1.9304, -1.016]</rosparam>
+    <rosparam param="thruster_FR_cog">[1.5748, 0.6096]</rosparam>
+    <rosparam param="thruster_FL_cog">[1.5748, -0.6096]</rosparam>
     <rosparam param="thruster_BR_theta">-45</rosparam>
     <rosparam param="thruster_BL_theta">45</rosparam>
     <rosparam param="thruster_FR_theta">-45</rosparam>

@@ -64,7 +64,7 @@ class MRAC_Controller:
 
         #### MEMORY
         # Time since last controller call = 1/controller_frequency
-        self.timestep = 0.01
+        self.timestep = 0.02
         # Position waypoint
         self.p_des = np.array([0, 0])
         # Orientation waypoint
@@ -183,6 +183,7 @@ class MRAC_Controller:
 
         # Give wrench to ROS
         to_send = WrenchStamped()
+        to_send.header.frame_id = "/base_link"
         to_send.wrench.force.x = wrench[0]
         to_send.wrench.force.y = wrench[1]
         to_send.wrench.torque.z = wrench[2]

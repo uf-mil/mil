@@ -8,12 +8,14 @@ find_package(catkin REQUIRED COMPONENTS
 	geometry_msgs
 	navigator_msg_multiplexer
 	nav_msgs
+	tf
 
 	)
 
 catkin_package(
 CATKIN_DEPENDS
 	std_msgs
+	tf
 	nav_msgs
 	geometry_msgs
 	roscpp

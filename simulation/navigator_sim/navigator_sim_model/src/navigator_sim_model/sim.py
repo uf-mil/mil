@@ -166,8 +166,8 @@ class Sim(object):
 
                 angle = 0
                 force = self.thrusts[thruster_id]
-                body.addRelForceAtRelPos(reldir*force, relpos)
-                self.boat_model.vectors.append((relpos, relpos - .02*reldir*force))
+                body.addRelForceAtRelPos(reldir*force*.1, relpos)
+                self.boat_model.vectors.append((relpos, relpos - .005*reldir*force))
 
         keys = pygame.key.get_pressed()
         for keycode, force in [
@@ -218,7 +218,7 @@ class Sim(object):
                 j = ode.ContactJoint(world, contactgroup, contact)
                 j.attach(geom1.getBody(), geom2.getBody())
 
-        dt = 1/30
+        dt = 1/50
         self.world_time += dt
 
         world.step(dt)
