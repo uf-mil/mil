@@ -2,7 +2,7 @@
 '''
 
 This source is written for use in the Machine Intelligence Lab in the MAE
-Department at the University of Florida. 
+Department at the University of Florida.
 It is writen for use on the UF RobotX robot
 It is released under the BSD license and is intended for university use
 This code is provided "as is" and relies on specific hardware, use at your own risk
@@ -11,7 +11,7 @@ Title: RobotX Simulator
 Start Date: Date
 
 Author: Forrest Voight
-Author email: 
+Author email:
 
 Co-author: Zach Goins
 Co-author email: zach.a.goins@gmail.com
@@ -62,10 +62,10 @@ class Sim(object):
         self.boat_length =  rospy.get_param('~boat_length')
         self.boat_width = rospy.get_param('~boat_width')
         self.boat_height = rospy.get_param('~boat_height')
-        self.port_servo_x_offset = rospy.get_param('~port_servo_x_offset')
-        self.port_servo_y_offset = rospy.get_param('~port_servo_y_offset')
-        self.starboard_servo_x_offset = rospy.get_param('~starboard_servo_x_offset')
-        self.starboard_servo_y_offset = rospy.get_param('~starboard_servo_y_offset')
+        self.BL_offset = rospy.get_param('~BL_offset')
+        self.BR_offset = rospy.get_param('~BR_offset')
+        self.FL_offset = rospy.get_param('~FL_offset')
+        self.FR_offset = rospy.get_param('~FR_offset')
         self.friction_coefficient_forward = rospy.get_param('~friction_coefficient_forward')
         self.friction_coefficient_forward_reduction = rospy.get_param('~friction_coefficient_forward_reduction')
         self.friction_coefficient_lateral = rospy.get_param('~friction_coefficient_lateral')
@@ -77,8 +77,8 @@ class Sim(object):
 
         self.world_time = reactor.seconds()
 
-        self.thrusts = {2: 0, 3: 0}
-        self.positions = {2: 0, 3: 0}
+        self.thrusts = {0: 0, 1: 0, 2: 0, 3: 0}
+        self.positions = {0: 0, 1: 0, 2: 0, 3: 0}
 
         self.clip = lambda x, (low, high): min(max(x, low), high)
 
@@ -92,15 +92,17 @@ class Sim(object):
         self.base_tf_br = tf.TransformBroadcaster()
         self.enu_tf_br = tf.TransformBroadcaster()
 
-        rospy.Subscriber("/left_motor/cmd" , Command, self.left_motor_cb)
-        rospy.Subscriber("/right_motor/cmd" , Command, self.right_motor_cb)
+        rospy.Subscriber("/BL_motor/cmd" , Command, self.BL_motor_cb)
+        rospy.Subscriber("/BR_motor/cmd" , Command, self.BR_motor_cb)
+        rospy.Subscriber("/FL_motor/cmd" , Command, self.FL_motor_cb)
+        rospy.Subscriber("/FR_motor/cmd" , Command, self.FR_motor_cb)
 
 
     def get_water_vel(self, pos):
         return v(0, 0, 0)
         return (pos % v(0, 0, 1))*math.e**(-pos.mag()/3)
 
-    def buoyancy_force(self, depth, r):    
+    def buoyancy_force(self, depth, r):
         inf = 1e1000
         assert math.isinf(inf)
         sphere_antiderivative = lambda h: -h**3*math.pi/3 + h*math.pi*r**2
@@ -108,19 +110,24 @@ class Sim(object):
         vol_submerged = sphere_true_antiderivative(depth) - sphere_true_antiderivative(-inf)
         return 1000 * 9.81 * vol_submerged
 
-    def left_motor_cb(self, msg):
+    def BL_motor_cb(self, msg):
         self.thrusts[2] = msg.setpoint
-        
-    def right_motor_cb(self, msg):
+
+    def BR_motor_cb(self, msg):
         self.thrusts[3] = msg.setpoint
+    def FL_motor_cb(self, msg):
+        self.thrusts[0] = msg.setpoint
+
+    def FR_motor_cb(self, msg):
+        self.thrusts[1] = msg.setpoint
 
     def world_tick(self):
-        
+
         #if random.randrange(10) == 0:
           #boat_lidar.get_lidar_range() # Use and publish whoa!
 
         water_vel = self.get_water_vel(V(body.getPosition()))
-        
+
         body.addForceAtRelPos((0, 0, self.buoyancy_force(-body.getPosition()[2], 0.22728849402137372)), (0, 0, .1))
         # the following frictional forces are from darsen's models
         #frictional force opposite to the velocity of the boat
@@ -141,15 +148,27 @@ class Sim(object):
         self.boat_model.vectors = []
         # id2=starboard, id3=port
         if not self.killed:
-            for thruster_id in [2, 3]:
+            for thruster_id in [0, 1, 2, 3]:
                 # set the thrusters position on the boat
-                relpos = v(self.starboard_servo_x_offset, self.starboard_servo_y_offset, 0) if thruster_id == 2 else v(self.port_servo_x_offset, self.port_servo_y_offset, 0)
+                if thruster_id == 0:
+                    relpos = v(self.FL_offset[0], self.FL_offset[1], 0)
+                    reldir = v(1, 1, 0)
+                if thruster_id == 1:
+                    relpos = v(self.FR_offset[0], self.FR_offset[1], 0)
+                    reldir = v(1, -1, 0)
+                if thruster_id == 2:
+                    relpos = v(self.BL_offset[0], self.BL_offset[1], 0)
+                    reldir = v(1, 1, 0)
+                if thruster_id == 3:
+                    relpos = v(self.BR_offset[0], self.BR_offset[1], 0)
+                    reldir = v(1, -1, 0)
+
+
                 angle = 0
-                reldir = v(math.cos(angle), math.sin(angle), 0)
                 force = self.thrusts[thruster_id]
-                body.addRelForceAtRelPos(reldir*force, relpos)
-                self.boat_model.vectors.append((relpos, relpos - .02*reldir*force))
-        
+                body.addRelForceAtRelPos(reldir*force*.1, relpos)
+                self.boat_model.vectors.append((relpos, relpos - .005*reldir*force))
+
         keys = pygame.key.get_pressed()
         for keycode, force in [
             (pygame.K_k, v(-50, 0, 0)),
@@ -171,8 +190,8 @@ class Sim(object):
         ]:
             if keys[keycode]:
                 body.addRelTorque(torque*(10 if keys[pygame.K_RSHIFT] else 1)*(.1 if keys[pygame.K_RCTRL] else 1))
-        
-        
+
+
         if keys[pygame.K_1]:
             self.killed = True
         if keys[pygame.K_2]:
@@ -182,14 +201,14 @@ class Sim(object):
             locked = True
         if keys[pygame.K_4]:
             locked = False
-        
+
         contactgroup = ode.JointGroup()
-        
+
         if self.locked:
             j = ode.FixedJoint(world, contactgroup)
             j.attach(body, None)
             j.setFixed()
-        
+
         near_pairs = []
         space.collide(None, lambda _, geom1, geom2: near_pairs.append((geom1, geom2)))
         for geom1, geom2 in near_pairs:
@@ -198,12 +217,12 @@ class Sim(object):
                 contact.setMu(5000)
                 j = ode.ContactJoint(world, contactgroup, contact)
                 j.attach(geom1.getBody(), geom2.getBody())
-        
-        dt = 1/30
+
+        dt = 1/50
         self.world_time += dt
 
         world.step(dt)
-        
+
         contactgroup.empty()
 
         pos = body.getPosition()
@@ -216,7 +235,7 @@ class Sim(object):
             time = rospy.Time(self.world_time),
             child = '/base_link',
             parent = '/enu')
-        
+
         # Publish odom
         msg = Odometry()
         msg.header.stamp = rospy.Time(self.world_time)
@@ -224,11 +243,11 @@ class Sim(object):
         msg.child_frame_id = '/base_link'
         msg.pose.pose.position = Point(*pos)
         msg.pose.pose.orientation = Quaternion(q[1], q[2], q[3], q[0])
-       
+
         msg.twist.twist.linear = Vector3(*q.conj().quat_rot(body.getLinearVel()))
         msg.twist.twist.angular = Vector3(*q.conj().quat_rot(body.getAngularVel()))
         self.odom_pub.publish(msg)
-        
+
         # XXX
         msg = Odometry()
         msg.header.stamp = rospy.Time(self.world_time)
@@ -238,7 +257,7 @@ class Sim(object):
         enu_loc = numpy.array([53.6686215007, -20.8502282916, -0.0733864689281])
         # msg.pose.pose.position = Point(*gps.ecef_from_enu(enu_v=body.getPosition() - enu_loc, ecef_pos=ecef_loc) + ecef_loc)
         self.abs_odom_pub.publish(msg)
-        
+
         reactor.callLater(max(0, self.world_time + dt - reactor.seconds()), self.world_tick)
 
 def set_forward_view():
@@ -265,7 +284,7 @@ def setup(world, body, mass, space, g_world, body_geom, i, c1, boat_model):
     # TODO: Add obstacles here
 
     g_world.objs.append(lake_mesh)
-    
+
     g_world.objs.append(boat_model)
     g_world.objs.append(srh.VectorField(get_water_vel))
 

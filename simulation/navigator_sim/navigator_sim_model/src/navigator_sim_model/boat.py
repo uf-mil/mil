@@ -4,15 +4,15 @@ from OpenGL.GLU import *
 
 class Boat(object):
     is_base_link = True
-    
+
     def __init__(self, body):
         self.body = body
         self.vectors = []
-    
+
     def draw(self):
         with srh.GLMatrix:
             srh.rotate_to_body(self.body)
-            
+
             q = gluNewQuadric()
             with srh.GLMatrix:
                 glTranslate(+.2, 0, 0)
@@ -34,7 +34,7 @@ class Boat(object):
                 glTranslate(0, 0, +.5)
                 glColor3f(0, 1, 0)
                 gluSphere(q, 0.1, 20, 10)
-            
+
             glDisable(GL_DEPTH_TEST)
             glBegin(GL_LINES)
             for start, end in self.vectors:

@@ -1,21 +1,24 @@
 <launch>
   <node pkg="navigator_thrust_allocater" type="p_driver.py" name="primitive_driver" output="screen">
     <!-- Parameters used to set the thruster locations relative to the center of gravity -->
-    <rosparam param="thruster_one_cog">[-2.134, 0.978]</rosparam>
-    <rosparam param="thruster_two_cog">[-2.134, -0.978]</rosparam>
+    <rosparam param="thruster_BR_cog">[-1.9304, 1.016]</rosparam>
+    <rosparam param="thruster_BL_cog">[-1.9304, -1.016]</rosparam>
+    <rosparam param="thruster_FR_cog">[1.5748, 0.6096]</rosparam>
+    <rosparam param="thruster_FL_cog">[1.5748, -0.6096]</rosparam>
+    <rosparam param="thruster_BR_theta">-45</rosparam>
+    <rosparam param="thruster_BL_theta">45</rosparam>
+    <rosparam param="thruster_FR_theta">-45</rosparam>
+    <rosparam param="thruster_FL_theta">45</rosparam>
   </node>
 
-  <node name="pose_controller" pkg="navigator_controller" type="pose_controller.py">
-    <!-- Parameters used to tune control gains -->
-      <rosparam>{p_x: 100, i_x: 0, d_x: 0, p_y: 100, i_y: 0, d_y: 0, p_z: 10, i_z: 0, d_z: 0}</rosparam>
-  </node>
+  <node name="pose_controller" pkg="navigator_controller" type="mrac_controller.py"/>
 
   <node name="wrench_arbiter" pkg="navigator_msg_multiplexer" type="wrench_arbiter.py"/>
 
   <node pkg="joystick_control" type="joystick_control_node" name="joystick_wrench"/>
   <!-- Parameters used to tune the remote control -->
-  <param name="force_scale" value="100" type="double"/>
-  <param name="torque_scale" value="35" type="double"/>
+  <param name="force_scale" value="600" type="double"/>
+  <param name="torque_scale" value="500" type="double"/>
 
   <!-- Joy node -->
   <node respawn="true" pkg="xbox_joy_node"
@@ -25,10 +28,10 @@
     <param name="autorepeat_rate" value="5"/>
   </node>
 
-  <node pkg="tf" type="static_transform_publisher" name="imu_broadcaster" args="+0.13 0 -0.10  1 0 0 0  /base_link /ins 100"/>
-  <node pkg="tf" type="static_transform_publisher" name="lidar_tf" args="1 0 0.25  0 0 0 1  /base_link /lidar 100" />
-  <node pkg="tf" type="static_transform_publisher" name="forward_camera_tf" args="1 0 0.345  0 0 0 1  /base_link /camera 100" />
+  <node pkg="tf" type="static_transform_publisher" name="ins_tf" args=".37084 .0.05715 .7493  0 0 0 1  /base_link /ins 100"/>
+  <node pkg="tf" type="static_transform_publisher" name="lidar_tf" args=".5334 0.0127 .7493  0 0 0 1  /base_link /lidar 100" />
+  <node pkg="tf" type="static_transform_publisher" name="forward_camera_tf" args=".6096 -.254 .762  0 0 0 1  /base_link /camera 100" />
 
 
-  <node name="move_helper_node" pkg="navigator_vis_helpers" type="move_helper.py"/>
+  <!-- node name="move_helper_node" pkg="navigator_vis_helpers" type="move_helper.py"/-->
 </launch>
