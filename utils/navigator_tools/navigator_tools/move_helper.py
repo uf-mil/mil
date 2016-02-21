@@ -29,7 +29,7 @@ class move_helper(object):
         theta = gh.quat_to_euler(self.odom.pose.pose.orientation)
         to_send.x = self.odom.pose.pose.position.x + msg.x
         to_send.y = self.odom.pose.pose.position.y + msg.y
-        to_send.z = theta[2] + msg.z
+        to_send.z = np.rad2deg(theta[2]) + msg.z
 
         self.pose_pub.publish(to_send)
 
