@@ -2,11 +2,82 @@
 '''
 Model-Reference Adaptive Controller
 
-###Purpose
-###How to use
-###Conventions, units, and array orders
-###Explanation of controller
-###References
+################################################# BLACK BOX DESCRIPTION
+
+Inputs:
+    - desired pose waypoint [x, y, yaw] in world frame,
+      i.e. an end goal of "GO HERE AND STAY"
+    - current state (odometry) in world frame
+
+Outputs:
+    - the body frame wrench that should then be mapped to the thrusters
+
+################################################# DETAILED DESCRIPTION
+
+This controller implements typical PD feedback, but also adds on
+a feedforward term to improve tracking.
+
+The feedforward term makes use of an estimate of the boat's physical
+parameters; specifically the effects of drag.
+
+Instead of doing a bunch of experiments to find the true values of
+these parameters ahead of time, this controller performs realtime
+adaptation to determine them. The method it uses is tracking-error
+gradient descent. To learn more, see <https://en.wikipedia.org/wiki/Adaptive_control>.
+
+Additionally, this controller uses the "model-reference architecture."
+<https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/MRAC.svg/585px-MRAC.svg.png>
+This essentially means that the trajectory generator is built into it.
+
+The model reference used here is a boat with the same inertia and thrusters
+as our actual boat, but drag that is such that the terminal velocities
+achieved are those specified by self.vel_max_body. This vitual boat
+moves with ease (no disturbances) directly to the desired waypoint goal. The
+controller then tries to make the real boat track this "prescribed ideal" motion.
+
+The way it was implemented here, you may only set a positional waypoint that
+the controller will then plan out how to get to completely on its own. It always
+intends to come to rest / station-hold at the waypoint you give it.
+
+Until the distance to the x-y waypoint is less than self.heading_threshold,
+the boat will try to point towards the x-y waypoint instead of pointing
+in the direction specified by the desired yaw. "Smartyaw." It's, alright...
+Set self.heading_threshold really high if you don't want it to smartyaw.
+
+################################################# HOW TO USE
+
+All tunable quantities are hard-coded in the __init__.
+In addition to typical gains, you also have the ability to set a
+"v_max_body", which is the maximum velocity in the body frame (i.e.
+forwards, strafing, yawing) that the reference model will move with.
+
+Use set_waypoint to give the controller A NEW desired waypoint. It
+will overwrite the current desired pose with it, and reset the reference
+model (the trajectory generator) to the boat's current state.
+
+Use get_command to receive the necessary wrench for this instant.
+That is, get_command publishes a ROS wrench message, and is fed
+the current odometry and timestamp.
+
+################################################# INTERNAL SEMANTICS
+
+*_des: "desired", refers to the end goal, the "waypoint" we are trying to hold at.
+
+*_ref: "reference", it is basically the generated trajectory, the "bread crumb",
+       the instantaneous desired state on the way to the end goal waypoint.
+
+*_body: "body frame", unless it is labelled with _body, it is in world-frame.
+
+p: position
+v: velocity
+q: quaternion orientation
+w: angular velocity
+a: acceleration
+aa: angular acceleration
+
+################################################# OTHER
+
+Author: Jason Nezvadovitz
 
 '''
 from __future__ import division
@@ -22,14 +93,15 @@ class MRAC_Controller:
 
     def __init__(self):
         '''
-        ###Explain what is assigned here
+        Set hard-coded tunable parameters (gains and desired vehicle speed limit).
+        The boat model section's values are used 
 
         '''
         #### TUNABLES
         # Proportional gains, body frame
-        self.kp_body = np.diag([100, 100, 100])
+        self.kp_body = np.diag([600, 700, 700])
         # Derivative gains, body frame
-        self.kd_body = np.diag([100, 100, 100])
+        self.kd_body = np.diag([650, 750, 750])
         # Disturbance adaptation rates, world frame
         self.ki = np.array([0.1, 0.1, 0.1])
         # Drag adaptation rates, world frame
@@ -37,20 +109,23 @@ class MRAC_Controller:
         # Initial disturbance estimate
         self.dist_est = np.array([0, 0, 0])
         # Initial drag estimate
-        self.drag_est = np.array([30, 100, -2, -10, 100])  # [d1 d2 Lc1 Lc2 Lr]
+        self.drag_est = np.array([0, 0, 0, 0, 0])  # [d1 d2 Lc1 Lc2 Lr]
         # User-imposed speed limit
-        self.vel_max_body = np.array([3, 0.1, 1])
+        self.vel_max_body = np.array([1.5, 0.5, 0.5])  # [m/s, m/s, rad/s]
         # "Smart heading" threshold
-        self.heading_threshold = 2
+        self.heading_threshold = 500  # m
+        # Only use PD controller
+        self.only_PD = True
 
-        #### BOAT MODEL
-        self.mass = 42
-        self.inertia = 18.5
-        self.thrust_max = 60
-        self.thruster_positions = np.array([[-0.5215,  0.3048, -0.0123],
-                                            [-0.5215, -0.3048, -0.0123],
-                                            [ 0.5215, -0.3048, -0.0123],
-                                            [ 0.5215,  0.3048, -0.0123]]) # back-left, back-right, front-right front-left
+        #### REFERENCE MODEL (note that this is not the adaptively estimated TRUE model; rather,
+        #                     these parameters will govern the trajectory we want to achieve).
+        self.mass_ref = 300  # kg
+        self.inertia_ref = 300  # kg*m^2
+        self.thrust_max = 220  # N
+        self.thruster_positions = np.array([[-1.9000,  1.0000, -0.0123],
+                                            [-1.9000, -1.0000, -0.0123],
+                                            [ 1.6000, -0.6000, -0.0123],
+                                            [ 1.6000,  0.6000, -0.0123]]) # back-left, back-right, front-right front-left, m
         self.thruster_directions = np.array([[ 0.7071,  0.7071,  0.0000],
                                              [ 0.7071, -0.7071,  0.0000],
                                              [ 0.7071,  0.7071,  0.0000],
@@ -62,9 +137,7 @@ class MRAC_Controller:
         self.Mz_max_body = self.B_body.dot(self.thrust_max * np.array([-1, 1, 1, -1]))
         self.D_body = abs(np.array([self.Fx_max_body[0], self.Fy_max_body[1], self.Mz_max_body[5]])) / self.vel_max_body**2
 
-        #### MEMORY
-        # Time since last controller call = 1/controller_frequency
-        self.timestep = 0.02
+        #### BASIC INITIALIZATIONS
         # Position waypoint
         self.p_des = np.array([0, 0])
         # Orientation waypoint
@@ -80,6 +153,8 @@ class MRAC_Controller:
         self.aa_ref = 0
 
         #### ROS
+        # Time since last controller call = 1/controller_call_frequency
+        self.timestep = 0.02
         # For unpacking ROS messages later on
         self.position = np.zeros(2)
         self.orientation = np.array([1, 0, 0, 0])
@@ -98,8 +173,8 @@ class MRAC_Controller:
 
     def set_waypoint(self, msg):
         '''
-        ###Inputs and outputs
-        ###Explain what happens here
+        Sets desired waypoint ("GO HERE AND STAY").
+        Resets reference model to current state (i.e. resets trajectory generation).
 
         '''
         # Set desired to user specified waypoint
@@ -127,8 +202,10 @@ class MRAC_Controller:
 
     def get_command(self, msg):
         '''
-        ###Inputs and outputs
-        ###Explain what happens here
+        Publishes the wrench for this instant.
+        (Note: this is called get_command because it used to be used for
+        getting the actual thruster values, but now it is only being
+        used for getting the wrench which is then later mapped elsewhere).
 
         '''
 
@@ -158,8 +235,8 @@ class MRAC_Controller:
         self.ang_vel = R.dot(np.array([ang_vel_body.x, ang_vel_body.y, ang_vel_body.z]))[2]
 
         # Convert body PD gains to world frame
-        kp = np.diag(R.dot(self.kp_body).dot(R.T))
-        kd = np.diag(R.dot(self.kd_body).dot(R.T))
+        kp = R.dot(self.kp_body).dot(R.T)
+        kd = R.dot(self.kd_body).dot(R.T)
 
         # Compute error components (reference - true)
         p_err = self.p_ref - self.position
@@ -172,7 +249,7 @@ class MRAC_Controller:
         errdot = np.concatenate((v_err, [w_err]))
 
         # Compute "anticipation" feedforward based on the boat's inertia
-        inertial_feedforward = np.concatenate((self.a_ref, [self.aa_ref])) * [self.mass, self.mass, self.inertia]
+        inertial_feedforward = np.concatenate((self.a_ref, [self.aa_ref])) * [self.mass_ref, self.mass_ref, self.inertia_ref]
 
         # Compute the "learning" matrix
         drag_regressor = np.array([[               self.lin_vel[0]*np.cos(y)**2 + self.lin_vel[1]*np.sin(y)*np.cos(y),    self.lin_vel[0]/2 - (self.lin_vel[0]*np.cos(2*y))/2 - (self.lin_vel[1]*np.sin(2*y))/2,                             -self.ang_vel*np.sin(y),                               -self.ang_vel*np.cos(y),          0],
@@ -180,14 +257,26 @@ class MRAC_Controller:
                                    [                                                                     0,                                                                         0,    self.lin_vel[1]*np.cos(y) - self.lin_vel[0]*np.sin(y),    - self.lin_vel[0]*np.cos(y) - self.lin_vel[1]*np.sin(y),    self.ang_vel]])
 
         # wrench = PD + feedforward + I + adaptation
-        wrench = (kp * err) + (kd * errdot) + inertial_feedforward + self.dist_est + (drag_regressor.dot(self.drag_est))
+        if self.only_PD:
+            wrench = (kp.dot(err)) + (kd.dot(errdot))
+        else:
+            wrench = (kp.dot(err)) + (kd.dot(errdot)) + inertial_feedforward + self.dist_est + (drag_regressor.dot(self.drag_est))
 
         # Update disturbance estimate, drag estimates, and model reference for the next call
         self.dist_est = self.dist_est + (self.ki * err * self.timestep)
         self.drag_est = self.drag_est + (self.kg * (drag_regressor.T.dot(err + errdot)) * self.timestep)
         self.increment_reference()
 
-        # NOT NEEDED SINCE WE ARE USING AZIDRIVE
+        # ROS CURRENTLY TAKES WRENCHES IN BODY FRAME FORWARD-RIGHT-DOWN, NOT SURE WHY <<< to be fixed at some point
+        wrench_body = R.T.dot(wrench)
+        wrench_body[1:] = -wrench_body[1:]
+
+        # SAFETY SATURATION, NOT SURE WHY THIS NEEDS TO BE DONE IN SOFTWARE BUT RIGHT NOW IT DOES <<< to be fixed at some point
+        wrench_body[0] = np.clip(wrench_body[0], -600, 600)
+        wrench_body[1] = np.clip(wrench_body[1], -600, 600)
+        wrench_body[2] = np.clip(wrench_body[2], -600, 600)
+
+        # NOT NEEDED SINCE WE ARE USING A DIFFERENT NODE FOR ACTUAL THRUSTER MAPPING
         # # Compute world frame thruster matrix (B) from thruster geometry, and then map wrench to thrusts
         # B = np.concatenate((R.dot(self.thruster_directions.T), R.dot(self.lever_arms.T)))
         # B_3dof = np.concatenate((B[:2, :], [B[5, :]]))
@@ -196,9 +285,9 @@ class MRAC_Controller:
         # Give wrench to ROS
         to_send = WrenchStamped()
         to_send.header.frame_id = "/base_link"
-        to_send.wrench.force.x = wrench[0]
-        to_send.wrench.force.y = wrench[1]
-        to_send.wrench.torque.z = wrench[2]
+        to_send.wrench.force.x = wrench_body[0]
+        to_send.wrench.force.y = wrench_body[1]
+        to_send.wrench.torque.z = wrench_body[2]
         self.wrench_pub.publish(to_send)
 
         self.pose_ref_pub.publish(PoseStamped(
@@ -215,8 +304,7 @@ class MRAC_Controller:
 
     def increment_reference(self):
         '''
-        ###Inputs and outputs
-        ###Explain what happens here
+        Steps the model reference (trajectory to track) by one self.timestep.
 
         '''
         # Frame management quantities
@@ -224,8 +312,8 @@ class MRAC_Controller:
         y_ref = trns.euler_from_quaternion(self.q_ref)[2]
 
         # Convert body PD gains to world frame
-        kp = np.diag(R_ref.dot(self.kp_body).dot(R_ref.T))
-        kd = np.diag(R_ref.dot(self.kd_body).dot(R_ref.T))
+        kp = R_ref.dot(self.kp_body).dot(R_ref.T)
+        kd = R_ref.dot(self.kd_body).dot(R_ref.T)
 
         # Compute error components (desired - reference), using "smartyaw"
         p_err = self.p_des - self.p_ref
@@ -241,7 +329,7 @@ class MRAC_Controller:
         # Combine error components into error vectors
         err = np.concatenate((p_err, [y_err]))
         errdot = np.concatenate((v_err, [w_err]))
-        wrench = (kp * err) + (kd * errdot)
+        wrench = (kp.dot(err)) + (kd.dot(errdot))
 
         # Compute world frame thruster matrix (B) from thruster geometry, and then map wrench to thrusts
         B = np.concatenate((R_ref.dot(self.thruster_directions.T), R_ref.dot(self.lever_arms.T)))
@@ -254,8 +342,8 @@ class MRAC_Controller:
         drag_ref = R_ref.dot(self.D_body * twist_body * abs(twist_body))
 
         # Step forward the dynamics of the virtual boat
-        self.a_ref = (wrench_saturated[:2] - drag_ref[:2]) / self.mass
-        self.aa_ref = (wrench_saturated[5] - drag_ref[2]) / self.inertia
+        self.a_ref = (wrench_saturated[:2] - drag_ref[:2]) / self.mass_ref
+        self.aa_ref = (wrench_saturated[5] - drag_ref[2]) / self.inertia_ref
         self.p_ref = self.p_ref + (self.v_ref * self.timestep)
         self.q_ref = trns.quaternion_from_euler(0, 0, y_ref + (self.w_ref * self.timestep))
         self.v_ref = self.v_ref + (self.a_ref * self.timestep)
@@ -264,8 +352,9 @@ class MRAC_Controller:
 
     def thruster_mapper(self, wrench, B):
         '''
-        ###Inputs and outputs
-        ###Explain what happens here
+        Virtual thruster mapper used by the model reference.
+        Math-wise, it is the same as the thruster mapper used by
+        the actual boat.
 
         '''
         # Get minimum energy mapping using pseudoinverse
