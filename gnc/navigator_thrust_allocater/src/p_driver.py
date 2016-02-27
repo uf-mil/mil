@@ -158,7 +158,7 @@ class P_Driver(object):
 if __name__ == "__main__":
 
 
-    rate = rospy.Rate(10)
+    rate = rospy.Rate(50)
     # Create two thrusters
     BL = Thruster(thruster_BR_cog, thruster_BR_theta)
     BR = Thruster(thruster_BL_cog, thruster_BL_theta)

@@ -14,7 +14,6 @@ from OpenGL.arrays import vbo
 import pygame
 
 import roslib
-roslib.load_manifest('murph_sim_rendering')
 import rospy
 import tf
 from tf import transformations
