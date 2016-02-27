@@ -1,0 +1,11 @@
+# Example camera parameters (Sony XCD-SX910)
+
+guid: 08004602000b05d9
+video_mode: 1280x960_mono8
+frame_id: sony910
+iso_speed: 400
+camera_info_url: package://camera1394/tests/sony910_calibration.yaml
+
+# set some feature values:
+auto_gain: 2            # Auto
+auto_shutter: 2         # Auto

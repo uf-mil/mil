@@ -1,0 +1,26 @@
+<!-- -*- mode: XML -*- -->
+
+<!-- Start a standalone nodelet driver for a specific IEEE1394 digital camera.
+
+     this is a test script: NOT FOR GENERAL USE
+
+     arg: camera = base file name of camera YAML parameters
+                   (default: unibrain)
+-->
+
+<launch>
+
+  <arg name="camera" default="unibrain" />
+
+  <!-- nodelet manager process -->
+  <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager"
+        args="manager" />
+
+  <!-- camera driver nodelet -->
+  <node pkg="nodelet" type="nodelet" name="camera1394_nodelet"
+        args="load camera1394/driver camera_nodelet_manager" >
+    <rosparam
+       file="$(find camera1394)/tests/$(arg camera).yaml" /> 
+  </node>
+
+</launch>
