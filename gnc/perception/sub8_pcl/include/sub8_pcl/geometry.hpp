@@ -10,7 +10,7 @@ namespace sub {
 // TODO: "further" -- point in xyz, uv for camera_n --> a point $dist further along that ray
 
 // OMP: Compute the point in $cloud that is closest to the ray defined by $direction and $line_pt
-//
+// (For a pc with n cores, this has ~1/nth the runtime of the non-OMP version)
 // (Uses OpenMP to compute in parallel)
 // Compute the minimum over the set of points $cloud: dist(line_pt + direction*t, point)
 // TODO:
@@ -124,6 +124,7 @@ PointT project_uv_to_cloud(const pcl::PointCloud<PointT>& cloud, const cv::Point
   return (pt_pcl);
 }
 
+// Convert a pcl point to an eigen vector3f
 template <typename PointT>
 Eigen::Vector3f point_to_eigen(const PointT& pcl_point) {
   Eigen::Vector3f eig_point(pcl_point.x, pcl_point.y, pcl_point.z);

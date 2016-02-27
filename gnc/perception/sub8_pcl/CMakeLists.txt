@@ -75,7 +75,10 @@ install(DIRECTORY include/${PROJECT_NAME}/
   PATTERN ".svn" EXCLUDE
 )
 
-add_executable(pcl_buoy nodes/buoy.cc)
+add_executable(
+  pcl_buoy
+    nodes/buoy.cc
+)
 
 target_link_libraries(
   pcl_buoy
