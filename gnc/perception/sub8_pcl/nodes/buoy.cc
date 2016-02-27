@@ -1,21 +1,16 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include <pcl/point_types.h>
 #include <pcl/console/time.h>  // TicToc
-#include <pcl/registration/icp.h>
-#include <pcl/common/transforms.h>
 #include <pcl/common/time.h>
 #include <pcl/console/print.h>
 #include <pcl/visualization/pcl_visualizer.h>
-#include <pcl/PointIndices.h>
 #include <pcl/conversions.h>
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#include <string>
 #include <algorithm>
 #include <opencv2/opencv.hpp>
 #include <cv_bridge/cv_bridge.h>
@@ -29,13 +24,12 @@
 #include <sub8_pcl/pcl_tools.hpp>
 #include <sub8_pcl/cv_tools.hpp>
 
-#include "geometry_msgs/PoseStamped.h"
 #include "ros/ros.h"
 
 // For stack-tracing on seg-fault
 #include <sub8_build_tools/backward.hpp>
 
-#define VISUALIZE
+// #define VISUALIZE
 
 // ROS_NAMESPACE=/stereo/left rosrun image_proc image_proc
 // rosbag play ./holding_buoy_mil.bag -r 0.1
@@ -129,6 +123,7 @@ void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_ms
   viewer->removeAllShapes(0);
   pcl::console::print_highlight("Drawing line\n");
 #endif
+
   cv::Point2d cv_uv = cam_model.project3dToPixel(cv::Point3f(pcl_pt.x, pcl_pt.y, pcl_pt.z));
   cv::inRange(image_hsv, cv::Scalar(105, 135, 135), cv::Scalar(120, 255, 255), image_thresh);
   std::vector<sub::Contour> contours;
@@ -148,20 +143,12 @@ void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_ms
     if (area < 100) {
       continue;
     }
-    cv::drawContours(image_raw, contours, i, cv::Scalar(255, 255, 0), -1, 8, hierarchy, 0,
-                     cv::Point());
-
-    cv::Rect rect = cv::boundingRect(approx);
-    cv::circle(image_raw, center, 6.0, cv::Scalar(0, 255, 0), -1);
 
     sub::PointXYZT centroid_projected = sub::project_uv_to_cloud(*current_cloud, center, cam_model);
     size_t centroid_projected_index;
     centroid_projected_index = sub::project_uv_to_cloud_index(*current_cloud, center, cam_model);
     seed_points.push_back(centroid_projected_index);
 
-    std::string title = "line" + boost::to_string(i);
-    // Line to actual projection
-    viewer->addLine(sub::PointXYZT(0.0, 0.0, 0.0), centroid_projected, 0.0, 255.0, 255.0, title, 0);
     cv::Point3d pt_cv;
     pt_cv = cam_model.projectPixelTo3dRay(center);
     sub::PointXYZT pt1;
@@ -171,21 +158,32 @@ void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_ms
 
     sub::PointXYZT pt2(0.0, 0.0, 0.0);
 
+#ifdef VISUALIZE
+    cv::drawContours(image_raw, contours, i, cv::Scalar(255, 255, 0), -1, 8, hierarchy, 0,
+                     cv::Point());
+    cv::circle(image_raw, center, 6.0, cv::Scalar(0, 255, 0), -1);
+
+    std::string title = "line" + boost::to_string(i);
+    // Line to actual projection
+    viewer->addLine(sub::PointXYZT(0.0, 0.0, 0.0), centroid_projected, 0.0, 255.0, 255.0, title, 0);
+
     // Line of direction
     viewer->addLine(pt1, pt2, 255.0, 255.0, 0.0, title + "doop", 0);
 
     viewer->addCube(sub::point_to_eigen(centroid_projected), Eigen::Quaternionf(0.0, 0.0, 0.0, 1.0),
                     0.3, 0.3, 0.3, "cube" + boost::to_string(i), 0);
+#endif
     sub::segment_box(current_cloud, sub::point_to_eigen(centroid_projected), 0.3, *append_buffer);
 
     (*segmented_cloud) += *append_buffer;
   }
-  viewer->removeAllPointClouds(vp2);
-  std::vector<pcl::PointIndices> clusters;
-  viewer->addPointCloud(segmented_cloud, "viz_cloud", vp2);
 
+#ifdef VISUALIZE
+  viewer->removeAllPointClouds(vp2);
+  viewer->addPointCloud(segmented_cloud, "viz_cloud", vp2);
   cv::imshow("input", image_raw);
   cv::waitKey(50);
+#endif
   computing = false;
 }
 
