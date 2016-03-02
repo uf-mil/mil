@@ -6,6 +6,9 @@ from sub8_msgs.msg import Trajectory, Waypoint
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from tf import transformations as tr
+import uf_common.msg as uf_common_msgs
+import geometry_msgs.msg as geom_msgs
+import actionlib
 
 
 class SingletonCheck(object):
@@ -38,8 +41,28 @@ class Sub(object):
 
         # TODO: Handle this better - we should perhaps be publishing one pt at a time
         # TODO: Request trajectory instead of publishing one directly
-        self.trajectory_pub = rospy.Publisher('trajectory', Trajectory, queue_size=1)
-        rospy.sleep(1)  # Wait a second to gather state
+        self.client = actionlib.SimpleActionClient('/moveto', uf_common_msgs.MoveToAction)
+        # Wait a second to gather state
+        rospy.sleep(1)
+
+    def moveto(self, pose, block=False):
+        self.client.cancel_goal()
+        rospy.logwarn("going to waypoint {} ".format(pose.position))
+        rospy.logwarn("Found server")
+
+        goal = uf_common_msgs.MoveToGoal(
+            header=sub8_utils.make_header('/map'),
+            posetwist=uf_common_msgs.PoseTwist(
+                pose=pose
+            ),
+            # speed=1.0,
+            # linear_tolerance=0.1,
+            # angular_tolerance=0.1
+        )
+        self.client.send_goal(goal)
+        if block:
+            self.client.wait_for_result()
+            rospy.logwarn("Got to waypoint")
 
     def goto_position(self, position):
         '''Go to a position
@@ -47,27 +70,16 @@ class Sub(object):
             - Request a trajectory from the trajectory generator
         '''
         assert len(position) == 3, "Must give a world-position in normal cartesian coordinates"
-        self.goto_pose(np.eye(3), position)
+        self.goto_pose(np.eye(3), position, True)
 
-    def goto_pose(self, R, t):
+    def goto_pose(self, R, t, block=False):
         '''TODO:
             - Request a trajectory
         '''
         assert R.shape == (3, 3)
         assert len(t) == 3
         pose_msg = sub8_utils.numpy_pair_to_pose(R, t)
-        print pose_msg.orientation
-        single_pt_traj = [
-            Waypoint(pose=pose_msg, twist=Twist())
-        ]
-        self.trajectory_pub.publish(
-            Trajectory(
-                header=sub8_utils.make_header('/world'),
-                trajectory=single_pt_traj
-            )
-        )
-        print single_pt_traj[0]
-        self.block_until_near(t, timeout=30)
+        self.moveto(pose_msg, block)
 
     def point_at(self, target_position):
         '''Point at a position in the world'''
@@ -182,6 +194,9 @@ class Sub(object):
 
 if __name__ == '__main__':
     ss = Sub()
-    ss.goto_position(np.array([0.0, 0.0, -5.0]))
-    ss.point_at_yaw_only(np.array([-5.0, 0.0, 0.0]))
+    ss.goto_position(np.array([5.0, 5.0, -5.0]))
+    ss.point_at_yaw_only(np.array([0.0, 0.0, -5.0]))
+    ss.goto_position(np.array([2.5, 2.5, -7.0]))
+    ss.point_at_yaw_only(np.array([0.0, 0.0, -5.0]))
+
     rospy.spin()
