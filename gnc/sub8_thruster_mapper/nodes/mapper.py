@@ -12,6 +12,8 @@ lock = threading.Lock()
 
 
 class ThrusterMapper(object):
+    _min_command_time = rospy.Duration(0.05)
+
     def __init__(self):
         '''The layout should be a dictionary of the form used in thruster_mapper.launch
         an excerpt is quoted here for posterity
@@ -38,6 +40,7 @@ class ThrusterMapper(object):
         '''
         self.num_thrusters = 0
         rospy.init_node('thruster_mapper')
+        self.last_command_time = rospy.Time.now()
 
         # Make thruster layout
         self.update_layout(None)  # Fake service call hey!
@@ -163,12 +166,24 @@ class ThrusterMapper(object):
     @thread_lock(lock)
     def request_wrench_cb(self, msg):
         '''Callback for requesting a wrench'''
+        time_now = rospy.Time.now()
+        if (time_now - self.last_command_time) < self._min_command_time:
+            return
+        else:
+            self.last_command_time = rospy.Time.now()
+
         force = rosmsg_to_numpy(msg.wrench.force)
         torque = rosmsg_to_numpy(msg.wrench.torque)
         wrench = np.hstack([force, torque])
 
-        u, success = self.map(wrench)
-        if success:
+        success = False
+        while not success:
+            u, success = self.map(wrench)
+            if not success:
+                # If we fail to compute, shrink the wrench
+                wrench = wrench * 0.75
+                continue
+
             thrust_cmds = []
             # Assemble the list of thrust commands to send
             for name, thrust in zip(self.thruster_name_map, u):
@@ -176,10 +191,8 @@ class ThrusterMapper(object):
                 if np.fabs(thrust) < 1e-4:
                     thrust = 0
                 thrust_cmds.append(ThrusterCmd(name=name, thrust=thrust))
-            self.thruster_pub.publish(thrust_cmds)
-        else:
-            # I expect this to happen frequently enough that we should not raise
-            rospy.logwarn("Could not achieve wrench of {}".format(wrench))
+
+        self.thruster_pub.publish(thrust_cmds)
 
 
 if __name__ == '__main__':
