@@ -1,0 +1,34 @@
+<!-- -*- mode: XML -*- -->
+
+<!-- IEEE1394 digital camera triggering test.
+
+     Depends on having a real IIDC-compliant camera attached that supports
+     software triggering.
+
+     Tests that the driver can connect to the first device on the bus
+     and publish images at a requested rate of two frames per second.
+
+  -->
+
+<launch>
+
+  <!-- run the driver with software triggering enabled -->
+  <node pkg="camera1394" type="camera1394_node" name="camera1394_node">
+    <param name="external_trigger" value="true" />
+    <param name="software_trigger" value="true" />
+    <param name="trigger_source" value="source_software" />
+  </node>
+
+  <!-- run 2Hz S/W triggering test node -->
+  <node pkg="camera1394" type="camera1394_trigger_node" name="trigger_node"/>
+
+  <test test-name="camera_image_trigger_hz_test"
+        pkg="rostest" type="hztest" name="hztest_image_trigger" >
+    <param name="hz" value="2.0" />
+    <param name="hzerror" value="0.5" />
+    <param name="test_duration" value="5.0" />
+    <param name="topic" value="camera/image_raw" />  
+    <param name="wait_time" value="2.0" />  
+  </test>
+
+</launch>

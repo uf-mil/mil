@@ -25,6 +25,11 @@ mkdir -p "$DEPS_DIR"
 cd "$DEPS_DIR"
 ####### Always Pre-requisites
 
+# Temporary addition, Google removed i386 builds from their repos causing this script 
+# to terminate without completing. This prevents it from attempting to look for the 
+# 32-bit repo. 
+sudo sed -i -e 's/deb http/deb [arch=amd64] http/' "/etc/apt/sources.list.d/google-chrome.list"
+
 sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe"
 sudo sh -c 'echo "deb-src http://archive.ubuntu.com/ubuntu trusty main universe" >> /etc/apt/sources.list'
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -131,6 +136,8 @@ fi
 ####### Install the ROS packages that we use
 sudo apt-get install -qq libompl-dev
 sudo apt-get install -qq ros-indigo-sophus
+sudo apt-get install -qq ros-indigo-driver-base
+sudo apt-get install -qq ros-indigo-camera-info-manager
 
 ####### Check if the sub is set up, and if it isn't, set it up
 set +e

@@ -1,0 +1,28 @@
+<!-- -*- mode: XML -*- -->
+
+<!-- Example launch file for multiple cameras. -->
+
+<launch>
+
+  <!-- first camera and associated image pipeline -->
+  <group ns="unibrain" >
+    <node pkg="camera1394" type="camera1394_node" name="camera1394_node" >
+      <rosparam file="$(find camera1394)/tests/unibrain.yaml" /> 
+    </node>
+    <include file="$(find camera1394)/tests/image_pipeline.launch" />
+  </group>
+
+  <!-- second camera and associated image pipeline -->
+  <group ns="sony" >
+    <node pkg="camera1394" type="camera1394_node" name="camera1394_node" >
+      <rosparam file="$(find camera1394)/tests/sony.yaml" /> 
+    </node>
+    <include file="$(find camera1394)/tests/image_pipeline.launch" />
+  </group>
+
+  <!-- monitoring and configuration tools -->
+  <node pkg="rxtools" type="rxconsole" name="rxconsole" />
+  <node pkg="dynamic_reconfigure" type="reconfigure_gui"
+        name="reconfigure_gui" />
+
+</launch>
