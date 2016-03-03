@@ -114,6 +114,12 @@ def numpy_pair_to_pose(np_rotation_matrix, np_translation):
     return geometry_msgs.Pose(position=position, orientation=orientation)
 
 
+def numpy_quat_pair_to_pose(np_quaternion, np_translation):
+    orientation = numpy_to_quaternion(np_quaternion)
+    position = numpy_to_point(np_translation)
+    return geometry_msgs.Pose(position=position, orientation=orientation)
+
+
 def make_header(frame='/body'):
     try:
         cur_time = rospy.Time.now()
