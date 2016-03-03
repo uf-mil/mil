@@ -136,6 +136,7 @@ fi
 ####### Install the ROS packages that we use
 sudo apt-get install -qq libompl-dev
 sudo apt-get install -qq ros-indigo-sophus
+sudo apt-get install ros-indigo-driver-base
 sudo apt-get install -qq ros-indigo-camera-info-manager
 
 ####### Check if the sub is set up, and if it isn't, set it up
