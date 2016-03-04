@@ -3,7 +3,20 @@ Sub Mission Manager
 
 # Running the sub
 
+```bash
     roslaunch sub8_launch sub8.launch
+```
+
+# Running the 3d mouse waypoint tool
+
+    roslaunch sub8_launch waypoint_tool.launch
+
+To get results that are useful, you'll want to set up rviz to visualize tf, /wrench, /posegoal, and /odom (Set odom and posegoal to use axes instead of arrow). I use /odom, keeping a bunch of arrows, for some indication that movement has actually happened.
+
+With the wire facing away from you, right-button will snap the posegoal to the sub's current pose, and left-button will make the sub go to the current posegoal
+
+tags for greppers: 3dmouse 3d-mouse 3dconexxion
+
 
 # Running a Mission
 
@@ -39,7 +52,7 @@ In that file, write a run, like this (Be sure to use @util.cancellableInlineCall
         print "Done"
 ```
 
-`sub_singleton.move` creates a `PoseEditor`, one of Forrest's ideas. The pose editor can be "edited", i.e. `move.right(5)`, or `move.depth(3)`, (to set z to -3). `move.go()` returns a twisted object called a **Deferred**. When you *yield* a `Deferred`, the script will stop executing until that deferred completes. So in the above example, "Done" will not be printed until the sub has moved right 5 meters. Let's look at another example, with no yield.
+`sub_singleton.move` creates a `PoseEditor`, one of Forrest's ideas. The pose editor can be "edited", i.e. `move.right(5)` to move the sub right 5 meters, or `move.depth(3)`, to set z to -3. `move.go()` returns a twisted object called a **Deferred**. When you *yield* a `Deferred`, the script will stop executing until that deferred completes. So in the above example, "Done" will not be printed until the sub has moved right 5 meters. If you *don't*, yield, the rest of your script will continue to execute asynchronously. Let's look at another example, with no yield.
 
 ```python
     # move_right_asynchronous.py

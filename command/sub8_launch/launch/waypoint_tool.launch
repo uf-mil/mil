@@ -1,0 +1,7 @@
+<launch>
+
+  <node pkg="rviz" type="rviz" name="myrviz" />
+  <node pkg="spacenav_node" type="spacenav_node" name="spacenav_node" />
+  <node pkg="sub8_missions" type="waypoint_utility.py" name="waypoint_utility" />
+
+</launch>
