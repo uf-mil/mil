@@ -6,8 +6,6 @@ import traceback
 
 import numpy
 
-import roslib
-roslib.load_manifest('rise_6dof')
 import rospy
 from dynamic_reconfigure.server import Server as DynamicReconfigureServer
 from geometry_msgs.msg import Vector3, Wrench, WrenchStamped
@@ -15,15 +13,19 @@ from nav_msgs.msg import Odometry
 from std_msgs.msg import Header
 
 from uf_common.msg import PoseTwist, PoseTwistStamped
-from uf_common.orientation_helpers import xyz_array, xyzw_array
+# from uf_common.orientation_helpers import xyz_array, xyzw_array
+from sub8_ros_tools import pose_to_numpy, twist_to_numpy
+
+
 from kill_handling.listener import KillListener
 
 from rise_6dof import controller
 from rise_6dof.cfg import controllerConfig
 from rise_6dof.srv import SendConstantWrench
 
-def unpack_pose(pose): return xyz_array(pose.position), xyzw_array(pose.orientation)
-def unpack_twist(twist): return xyz_array(twist.linear), xyz_array(twist.angular)
+# def unpack_pose(pose): return xyz_array(pose.position), xyzw_array(pose.orientation)
+# def unpack_twist(twist): return xyz_array(twist.linear), xyz_array(twist.angular)
+
 
 class Node(object):
     def reconfigure(self, config, level):
@@ -49,7 +51,7 @@ class Node(object):
         self.kill_listener = KillListener()
 
         self.reconfigure(controllerConfig.defaults, 0)
-        server = DynamicReconfigureServer(controllerConfig, self.reconfigure)
+        self.server = DynamicReconfigureServer(controllerConfig, self.reconfigure)
 
         self.controller = controller.Controller(self.processed_config)
 
@@ -66,7 +68,7 @@ class Node(object):
         pub = rospy.Publisher('/output', WrenchStamped)
         pd_pub = rospy.Publisher('/pd_output', WrenchStamped)
 
-        dt = 1/50
+        dt = 1 / 50
 
         while not rospy.is_shutdown():
             rospy.sleep(dt)
@@ -79,7 +81,7 @@ class Node(object):
 
             if self.current is None:
                 print 'no current'
-                rospy.sleep(1/10)
+                rospy.sleep(1 / 10)
                 continue
             if self.desired is None:
                 # default to original pose
@@ -92,14 +94,25 @@ class Node(object):
                     ),
                 )
 
-            assert self.current.header.frame_id == self.desired.header.frame_id and self.current.header.frame_id in ['/map', '/odom', '/enu']
+            assert self.current.header.frame_id == self.desired.header.frame_id
+            assert self.current.header.frame_id in ['/map', '/odom', '/enu']
 
             if not self.is_constant_wrench_valid():
                 self.controller.config = self.processed_config
-                pd_wrench, wrench = self.controller.update(dt,
-                    (unpack_pose(self.desired.posetwist.pose), unpack_twist(self.desired.posetwist.twist), unpack_twist(self.desired.posetwist.acceleration)),
-                    (unpack_pose(self.current.pose.pose), unpack_twist(self.current.twist.twist)),
+                # pd_wrench, wrench = self.controller.update(dt,
+                #     (unpack_pose(self.desired.posetwist.pose), unpack_twist(self.desired.posetwist.twist),
+                #      unpack_twist(self.desired.posetwist.acceleration)),
+                #     (unpack_pose(self.current.pose.pose), unpack_twist(self.current.twist.twist)),
+                # )
+                pd_wrench, wrench = self.controller.update(
+                    dt,
+                    (
+                        pose_to_numpy(self.desired.posetwist.pose), twist_to_numpy(self.desired.posetwist.twist),
+                        twist_to_numpy(self.desired.posetwist.acceleration)
+                    ),
+                    (pose_to_numpy(self.current.pose.pose), twist_to_numpy(self.current.twist.twist)),
                 )
+
                 pd_pub.publish(WrenchStamped(
                     header=Header(
                         stamp=rospy.Time.now(),
