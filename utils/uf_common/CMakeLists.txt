@@ -3,6 +3,12 @@ project(uf_common)
 find_package(catkin REQUIRED COMPONENTS message_generation message_runtime geometry_msgs tf actionlib interactive_markers std_msgs actionlib_msgs cmake_modules)
 catkin_python_setup()
 
+add_action_files(
+  FILES
+    MoveTo.action
+)
+
+
 add_message_files(
   FILES
   PoseTwistStamped.msg
