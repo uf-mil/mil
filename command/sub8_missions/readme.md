@@ -24,6 +24,62 @@ Sub Mission Manager
 
 * Waiting for things to be ready is much more intelligent (Than initializing with None and then polling)
 
+# Tutorial
+
+Create a file in missions called "my_mission.py" (Or whatever you want). Add it to the __init__.py file in missions.
+In that file, write a run, like this (Be sure to use @util.cancellableInlineCallbacks)
+
+```python
+    # move_right.py
+
+    from txros import util
+    @util.cancellableInlineCallbacks
+    def run(sub_singleton):
+        yield sub_singleton.move.right(5).go()
+        print "Done"
+```
+
+`sub_singleton.move` creates a `PoseEditor`, one of Forrest's ideas. The pose editor can be "edited", i.e. `move.right(5)`, or `move.depth(3)`, (to set z to -3). `move.go()` returns a twisted object called a **Deferred**. When you *yield* a `Deferred`, the script will stop executing until that deferred completes. So in the above example, "Done" will not be printed until the sub has moved right 5 meters. Let's look at another example, with no yield.
+
+```python
+    # move_right_asynchronous.py
+
+    from txros import util
+    @util.cancellableInlineCallbacks
+    def run(sub_singleton):
+        sub_singleton.move.right(5).go()
+        print "Done"
+```
+
+Here, "Done" will print immediately after the mission starts running (Not waiting for the sub to move), and the sub will **continue to move** until it has gotten 5 meters to the right. Externally, the mission runner will wait for the whole mission script to finish before moving on.
+
+We haven't fully decided how vision data, etc will be shared with the mission manager, but at its core, it will be exposed as a Deferred inside of `sub8/tx_sub.py`. Here's how that might look.
+
+```python
+    # bump_buoy.py
+
+    from txros import util
+    @util.cancellableInlineCallbacks
+    def run(sub_singleton):
+        # buoy_search is a Deferred
+        buoy_search = sub_singleton.look_for_buoy('red')
+        print "We're looking for a buoy, executing a scan pattern"
+        yield sub_singleton.move.right(5).go()
+        yield sub_singleton.move.down(1).go()
+        # Now we'll wait until buoy_search poops out a result
+        buoy_location = yield buoy_search
+
+        # let's assume buoy_location is ~ np.array([x, y, z])
+        yield sub_singleton.move.height(buoy_location[2]).go()
+        yield sub_singleton.move.set_position(buoy_location).go()
+
+        # back off 2m
+        yield sub_singleton.move.backward(2).go()
+
+        print "Bumped the buoy"
+```
+
+
 # TODO
     - Chaining together multiple missions in the command line
     - Responding to sensor input
