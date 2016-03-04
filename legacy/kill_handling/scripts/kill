@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-
-import roslib
-roslib.load_manifest('kill_handling')
 import rospy
-
 from kill_handling.broadcaster import KillBroadcaster
 
 rospy.init_node('kill', anonymous=True)
@@ -18,4 +14,4 @@ rospy.spin()
 try:
     kill_br.clear()
 except rospy.service.ServiceException:
-    pass # This happens after rospy shutdown, but the server call goes through anyway
+    pass  # This happens after rospy shutdown, but the server call goes through anyway

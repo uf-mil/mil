@@ -13,7 +13,7 @@ class KillBroadcasterTxROS(object):
         self.description = description
 
         self.set_kill = nh.get_service_client('/set_kill', SetKill)
-    
+
     @util.cancellableInlineCallbacks
     def send(self, active):
         try:
@@ -43,4 +43,3 @@ class KillBroadcasterTxROS(object):
             ),
             clear=True,
         ))
-        

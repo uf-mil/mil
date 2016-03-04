@@ -3,6 +3,7 @@ import rospy
 from kill_handling.msg import KillsStamped
 from kill_handling.msg import Kill
 
+
 class KillListener(object):
     def _killmsg_callback(self, msg):
         self._kills = msg.kills
@@ -19,8 +20,7 @@ class KillListener(object):
         self._previously_killed = killed
 
     # Constructor with killed callback and unkilled callback
-    def __init__(self, killed_callback=lambda: None,
-            unkilled_callback=lambda: None):
+    def __init__(self, killed_callback=lambda: None, unkilled_callback=lambda: None):
         self._killed_callback = killed_callback
         self._unkilled_callback = unkilled_callback
 
