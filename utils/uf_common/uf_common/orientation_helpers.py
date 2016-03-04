@@ -10,6 +10,7 @@ from std_msgs.msg import Header
 from geometry_msgs.msg import Pose as Pose, Quaternion, Point, Vector3, Twist
 from sub8_ros_tools import rosmsg_to_numpy
 
+
 UP = np.array([0.0, 0.0, 1.0], np.float64)
 EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)]
 
@@ -86,20 +87,16 @@ def test_triad():
 def look_at(forward, upish=UP):
     # assumes standard forward-left-up body coordinate system
     return triad((forward, upish), ([1, 0, 0], UP))
-lookat = look_at  # deprecated
 
 
 def look_at_without_pitching(forwardish, up=UP):
     # assumes standard forward-left-up body coordinate system
     return triad((up, forwardish), (UP, [1, 0, 0]))
-lookat_without_pitching = look_at_without_pitching  # deprecated
 
 
 def look_at_camera(forward, upish=UP):
     # assumes camera right-down-forward coordinate system
     return triad((forward, upish), (UP, [0, -1, 0]))
-
-lookat_camera = look_at_camera  # deprecated
 
 
 def safe_wait_for_message(topic, topic_type):
@@ -282,7 +279,7 @@ class PoseEditor(object):
         return self.roll_left(np.radians(angle_degrees))
 
     def zero_roll(self):
-        return self.set_orientation(lookat(self.forward_vector))
+        return self.set_orientation(look_at(self.forward_vector))
 
     def pitch_down(self, angle):
         return self.set_orientation(transformations.quaternion_multiply(
@@ -300,7 +297,7 @@ class PoseEditor(object):
         return self.pitch_up(np.radians(angle_degrees))
 
     def zero_roll_and_pitch(self):
-        return self.set_orientation(lookat_without_pitching(self.forward_vector))
+        return self.set_orientation(look_at_without_pitching(self.forward_vector))
 
     def as_Pose(self):
         return Pose(
