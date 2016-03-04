@@ -7,7 +7,6 @@
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/rise_6dof</url>
-  <!-- <url type="bugtracker"></url> -->
 
   <author>Forrest Voight</author>
 
@@ -35,14 +34,5 @@
   <run_depend>kill_handling</run_depend>
   <run_depend>message_generation</run_depend>
   <run_depend>geometry_msgs</run_depend>
-
-  <!-- Dependencies needed only for running tests. -->
-  <!-- <test_depend>nav_msgs</test_depend> -->
-  <!-- <test_depend>dynamic_reconfigure</test_depend> -->
-  <!-- <test_depend>rospy</test_depend> -->
-  <!-- <test_depend>uf_common</test_depend> -->
-  <!-- <test_depend>kill_handling</test_depend> -->
-  <!-- <test_depend>tf</test_depend> -->
-  <!-- <test_depend>geometry_msgs</test_depend> -->
 
 </package>

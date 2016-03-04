@@ -7,8 +7,6 @@
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/c3_trajectory_generator</url>
-  <!-- <url type="bugtracker"></url> -->
-
   <author>Forrest Voight</author>
 
   <!-- Dependencies which this package needs to build itself. -->
@@ -32,12 +30,5 @@
   <run_depend>uf_common</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>kill_handling</run_depend>
-
-  <!-- Dependencies needed only for running tests. -->
-  <!-- <test_depend>nav_msgs</test_depend> -->
-  <!-- <test_depend>tf</test_depend> -->
-  <!-- <test_depend>actionlib</test_depend> -->
-  <!-- <test_depend>uf_common</test_depend> -->
-  <!-- <test_depend>kill_handling</test_depend> -->
 
 </package>

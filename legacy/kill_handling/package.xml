@@ -7,7 +7,6 @@
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/kill_handling</url>
-  <!-- <url type="bugtracker"></url> -->
 
   <author>Forrest Voight</author>
 
@@ -24,8 +23,6 @@
   <run_depend>message_runtime</run_depend>
   <run_depend>std_msgs</run_depend>
 
-  <!-- Dependencies needed only for running tests. -->
-  <!-- <test_depend>std_msgs</test_depend> -->
 
 <export>
     <cpp cflags="-I${prefix}/include"/>
