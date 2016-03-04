@@ -1,0 +1,19 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+\b rise_6dof is an implementation of a 6 degree-of-freedom vehicle controller based on the Robust-Integral-of-the-Sign-of-Error filter.
+
+
+You can view the functionality of this package by running each of these commands in a separate shell:
+
+roscore
+rosrun rise_6dof rise_6dof
+rosrun rise_6dof test_rviz
+rosrun rviz rviz
+rosrun dynamic_reconfigure reconfigure_gui
+
+And then add the InteractiveMarker display in rviz.
+
+
+*/
