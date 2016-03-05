@@ -29,8 +29,7 @@ class Entity(object):
 
         if len(color) == 3:
             color = color + (255,)
-        self.color = np.array(
-            color, dtype=np.float32) / 255.  # Normalize to [0, 1]
+        self.color = np.array(color, dtype=np.float32) / 255.  # Normalize to [0, 1]
 
         self.program = gloo.Program(self._vertex_shader, self._fragment_shader)
         self.program.bind(mesh)
@@ -81,6 +80,7 @@ class Entity(object):
             self.program.draw('lines', self.faces)
             self.program['u_color'] = self.color
 
+    @classmethod
     def make_buffer(self, mesh):
         assert isinstance(mesh, geometry.meshdata.MeshData)
         faces = mesh.get_faces()

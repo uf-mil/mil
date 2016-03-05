@@ -63,3 +63,5 @@ target/
 *.mtl
 *.obj
 !transdec.obj
+
+.DS_STORE

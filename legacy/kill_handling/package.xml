@@ -1,0 +1,31 @@
+<package>
+  <name>kill_handling</name>
+  <version>1.0.0</version>
+  <description>kill_handling</description>
+  <maintainer email="forrest@forre.st">Forrest Voight</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/kill_handling</url>
+
+  <author>Forrest Voight</author>
+
+  <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Dependencies needed to compile this package. -->
+  <build_depend>message_generation</build_depend>
+  <build_depend>message_runtime</build_depend>
+  <build_depend>std_msgs</build_depend>
+
+  <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>message_generation</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>std_msgs</run_depend>
+
+
+<export>
+    <cpp cflags="-I${prefix}/include"/>
+</export>
+
+</package>

@@ -25,7 +25,7 @@ class Canvas(app.Canvas):
         self.rotate = np.array([0.0, 0.0, 0.0])
 
         gloo.set_state(depth_test=True, blend=True, preset='translucent')
-        self._timer = app.Timer('auto', connect=self.on_timer, start=True)
+        self._timer = app.Timer(1 / 27, connect=self.on_timer, start=True)
         self.physics_timer = app.Timer(self.physics_dt / self.dt_per_second, connect=self.step_physics, start=True)
         self.clock = 0.0
         self.view = np.eye(4)

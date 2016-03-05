@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+
+import rospy
+from std_msgs.msg import Header
+from kill_handling.srv import SetKill
+from kill_handling.msg import KillsStamped, Kill
+
+kills = dict(initial=Kill(id='initial', active=True, description='initial kill'))
+initial = True
+
+
+def set_kill(req):
+    global initial
+    if not req.clear:
+        if initial and req.kill.active:
+            initial = False
+            del kills['initial']
+        kills[req.kill.id] = req.kill
+    else:
+        del kills[req.kill.id]
+    send_kills()
+    return {}
+
+
+def send_kills():
+    pub.publish(KillsStamped(
+        header=Header(stamp=rospy.Time.now()),
+        kills=kills.values()))
+
+rospy.init_node('kill', anonymous=True)
+srv = rospy.Service('/set_kill', SetKill, set_kill)
+pub = rospy.Publisher('/kill', KillsStamped)
+timer = rospy.Timer(rospy.Duration(.5), lambda _: send_kills())
+rospy.spin()

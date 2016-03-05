@@ -1,7 +1,7 @@
 import numpy as np
 import rospy
 import sub8_ros_tools as sub8_utils
-from sub8_sim_tools.physics.physics import Box
+from sub8_sim_tools.physics.physics import Entity
 from sub8_simulation.srv import SimSetPose, SimSetPoseResponse
 from sub8_msgs.msg import Thrust, VelocityMeasurement, VelocityMeasurements
 import geometry_msgs.msg as geometry
@@ -11,8 +11,8 @@ from sensor_msgs.msg import Imu
 import ode
 
 
-class Sub8(Box):
-    _linear_damping_coeff = -50  # TODO: Estimate area
+class Sub8(Entity):
+    _linear_damping_coeff = -250  # TODO: Estimate area
     _rotational_damping_coeff = -0.5  # TODO: Estimate area
     _cmd_timeout = rospy.Duration(2.)
 
@@ -30,10 +30,17 @@ class Sub8(Box):
         See Annie for how the thrusters work
         '''
         lx, ly, lz = 0.5588, 0.5588, 0.381  # Meters
-        self.radius = max((lx, ly, lz)) * 0.32  # For spherical approximation
+        self.radius = max((lx, ly, lz)) * 0.365  # For spherical approximation
         self.mass = 32.75  # kg
-        density = self.mass / (lx * ly * lz)  # This is a leaky fix
-        super(self.__class__, self).__init__(world, space, position, density, lx, ly, lz)
+        # super(self.__class__, self).__init__(world, space, position, density, lx, ly, lz)
+
+        self.body = ode.Body(world)
+        self.body.setPosition(position)
+        M = ode.Mass()
+        M.setBoxTotal(self.mass, lx, ly, lz)
+        self.body.setMass(M)
+        self.geom = ode.GeomBox(space, lengths=(lx, ly, lz))
+        self.geom.setBody(self.body)
 
         self.truth_odom_pub = rospy.Publisher('truth/odom', Odometry, queue_size=1)
         self.imu_sensor_pub = rospy.Publisher('imu', Imu, queue_size=1)
@@ -153,16 +160,18 @@ class Sub8(Box):
         '''
         linear_vel = self.body.getRelPointVel((0.0, 0.0, 0.0))
         # TODO: Not 100% on this transpose
-        angular_vel = self.orientation.transpose().dot(self.angular_vel)
+        angular_vel = self.orientation.dot(self.angular_vel)
+        # angular_vel = self.orientation.transpose().dot(self.angular_vel)
+
         quaternion = self.body.getQuaternion()
 
         translation = self.body.getPosition()
 
-        header = sub8_utils.make_header(frame='/world')
+        header = sub8_utils.make_header(frame='/map')
 
         pose = geometry.Pose(
             position=geometry.Point(*translation),
-            orientation=geometry.Quaternion(-quaternion[1], -quaternion[2], -quaternion[3], quaternion[0]),
+            orientation=geometry.Quaternion(quaternion[1], quaternion[2], quaternion[3], quaternion[0]),
         )
 
         twist = geometry.Twist(
@@ -172,7 +181,7 @@ class Sub8(Box):
 
         odom_msg = Odometry(
             header=header,
-            child_frame_id='/body',
+            child_frame_id='/base_link',
             pose=geometry.PoseWithCovariance(
                 pose=pose
             ),

@@ -1,0 +1,38 @@
+<package>
+  <name>rise_6dof</name>
+  <version>1.0.0</version>
+  <description>rise_6dof</description>
+  <maintainer email="forrest@forre.st">Forrest Voight</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/rise_6dof</url>
+
+  <author>Forrest Voight</author>
+
+  <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Dependencies needed to compile this package. -->
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
+  <build_depend>message_runtime</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>uf_common</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>kill_handling</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+
+  <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>nav_msgs</run_depend>
+  <run_depend>dynamic_reconfigure</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>uf_common</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>kill_handling</run_depend>
+  <run_depend>message_generation</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+
+</package>

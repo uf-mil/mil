@@ -1,0 +1,6 @@
+<launch>
+  <!-- This is not exactly right, because of weirdness in the K-matrix from camera_info for the stereo cams -->
+    <node pkg="tf" type="static_transform_publisher" name="stereo_front_broadcaster"
+      args="0.2559 0 0.1707   0.5 -0.5  0.5  -0.5 base_link stereo_front 100">
+    </node>
+</launch>
