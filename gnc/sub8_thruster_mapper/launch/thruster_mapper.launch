@@ -1,6 +1,6 @@
 <launch>
     <rosparam>
-      busses: 
+      busses:
         - port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A403IMC9-if00-port0
           thrusters:
             FLV: {
@@ -34,13 +34,13 @@
             BLV: {
               node_id: 14,
               frame_id: /base_link,
-              position: [-0.1583, 0.169, 0.0142], 
+              position: [-0.1583, 0.169, 0.0142],
               direction: [0, 0, 1]
             }
             BLL: {
               node_id: 15,
               frame_id: /base_link,
-              position: [-0.2678, 0.2795, 0], 
+              position: [-0.2678, 0.2795, 0],
               direction: [0.866, 0.5, 0]
             }
         - port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A403IN03-if00-port0

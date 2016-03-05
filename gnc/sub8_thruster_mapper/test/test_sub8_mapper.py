@@ -81,6 +81,7 @@ class TestMapThrusters(unittest.TestCase):
 
             self.assertEqual(len(self.test_data) - 1, num, msg="Could not compute wrench for " + str(wrench) + " within timeout")
             self.got_msg = False
+            rospy.sleep(0.06)  # Wait the timeout period
 
 
 if __name__ == '__main__':
