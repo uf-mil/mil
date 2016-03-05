@@ -198,18 +198,6 @@ class Sphere(Entity):
         self.geom = ode.GeomSphere(space, radius)
         self.geom.setBody(self.body)
 
-    @property
-    def submerged_volume(self):
-        '''Assume water is at z = 0
-        Volume of sphere: (4 / 3)pi * r**3
-        Volume of a spherical cap of height h: (1 / 3)pi * h**2 * (3r - h)
-        '''
-        h = np.clip(self.pos[2], 0.0, 2 * self.radius)
-        sphere_volume = (4. / 3.) * (np.pi * (self.radius ** 3.))
-        above_water_volume = (1 / 3) * np.pi * (h ** 2) * ((3 * self.radius) - h)
-        submerged_volume = sphere_volume - above_water_volume
-        return submerged_volume
-
     def step(self, dt):
         self.apply_damping_force()
         self.apply_damping_torque()
@@ -227,6 +215,7 @@ class Mesh(Entity):
         meshdata = ode.TriMeshData()
         meshdata.build(mesh_vertices, mesh_faces)
         self.geom = ode.GeomTriMesh(meshdata, space)
+        self.body = ode.Body(world)
 
     def step(self, dt):
         # self.apply_damping_force()

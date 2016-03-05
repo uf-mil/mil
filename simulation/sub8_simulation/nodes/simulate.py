@@ -15,7 +15,7 @@ class SimWorld(rendering.Canvas):
         rospy.init_node('simulator')
         self.clock_pub = rospy.Publisher('/clock', Clock, queue_size=1)
         self.time_acceleration = rospy.get_param('time_acceleration', 1.0)
-        self.physics_dt = rospy.get_param('physics_dt', 1 / 30.)
+        self.physics_dt = rospy.get_param('physics_dt', 1 / 100.)
         self.draw = rospy.get_param('draw', True)
 
         self.rendering_world = rendering.World()
@@ -55,7 +55,7 @@ class SimWorld(rendering.Canvas):
         self.entity_pairs.append((visual, physical))
 
     def add_sub(self, position):
-        self.sub = Sub(self.rendering_world, self.physics_world, position)
+        self.sub = Sub(self.rendering_world, self.physics_world, position, thrust_indicators=False)
         visual = self.sub.visual  # property
         physical = self.sub.physical  # property
         self.entity_pairs.append((visual, physical))
@@ -83,6 +83,6 @@ if __name__ == '__main__':
     sim = SimWorld()
     sphere = sim.add_sphere((-3.0, -3.0, 15.0), 4.2, 1.0, (255., 0.0, 0.0))
     sim.rendering_world.add_point_light((0.0, 0.0, 1.0), (0.2, 0.2, 0.2))
-    sub = sim.add_sub((0.0, 0.0, 0.0))
+    sub = sim.add_sub((0.0, 0.0, -5.0))
     sim.rendering_world.add_point_light((0.0, 1.0, 1.0), (0.2, 0.2, 0.2))
     app.run()
