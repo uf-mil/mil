@@ -32,5 +32,6 @@
     * [[Continuous Integration]]
     * [[Git]]
     * [[Glossary]]
+    * [[C++ Spells]]
 * Old Notes
     * [[Simulation]]
