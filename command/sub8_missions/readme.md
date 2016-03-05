@@ -22,6 +22,8 @@ tags for greppers: 3dmouse 3d-mouse 3dconnexion
 
 # Running a Mission
 
+Here are some examples of missions you might run. Ex: "stop" stops the sub where it is, forward_1_m goes forward 1 meter, level_off zeros roll and pitch.
+
 ```shell
     rosrun sub8_missions mission stop
 
