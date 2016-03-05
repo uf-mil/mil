@@ -3,28 +3,32 @@ Sub Mission Manager
 
 # Running the sub
 
-```bash
+```shell
     roslaunch sub8_launch sub8.launch
 ```
 
 # Running the 3d mouse waypoint tool
 
+```shell
     roslaunch sub8_launch waypoint_tool.launch
+```
 
 To get results that are useful, you'll want to set up rviz to visualize tf, /wrench, /posegoal, and /odom (Set odom and posegoal to use axes instead of arrow). I use /odom, keeping a bunch of arrows, for some indication that movement has actually happened.
 
 With the wire facing away from you, right-button will snap the posegoal to the sub's current pose, and left-button will make the sub go to the current posegoal
 
-tags for greppers: 3dmouse 3d-mouse 3dconexxion
+tags for greppers: 3dmouse 3d-mouse 3dconnexion
 
 
 # Running a Mission
 
+```shell
     rosrun sub8_missions mission stop
 
     rosrun sub8_missions mission forward_1_m
 
     rosrun sub8_missions mission level_off
+```
 
 
 # Why we're using TXROS
@@ -66,7 +70,7 @@ In that file, write a run, like this (Be sure to use @util.cancellableInlineCall
 
 Here, "Done" will print immediately after the mission starts running (Not waiting for the sub to move), and the sub will **continue to move** until it has gotten 5 meters to the right. Externally, the mission runner will wait for the whole mission script to finish before moving on.
 
-We haven't fully decided how vision data, etc will be shared with the mission manager, but at its core, it will be exposed as a Deferred inside of `sub8/tx_sub.py`. Here's how that might look.
+We haven't fully decided how vision data, etc will be shared with the mission manager, but at its core, it will be exposed as a `Deferred` inside of `sub8/tx_sub.py`. Here's how that might look.
 
 ```python
     # bump_buoy.py
@@ -77,17 +81,24 @@ We haven't fully decided how vision data, etc will be shared with the mission ma
         # buoy_search is a Deferred
         buoy_search = sub_singleton.look_for_buoy('red')
         print "We're looking for a buoy, executing a scan pattern"
+
         yield sub_singleton.move.right(5).go()
+        # Wait until we finish moving right (We yielded the Deferred)
         yield sub_singleton.move.down(1).go()
+        # Wait until we finish moving down (We yielded the Deferred)
+
         # Now we'll wait until buoy_search poops out a result
         buoy_location = yield buoy_search
 
         # let's assume buoy_location is ~ np.array([x, y, z])
         yield sub_singleton.move.height(buoy_location[2]).go()
+        # Wait until we finish matching the buoy's height (We yielded the Deferred)
         yield sub_singleton.move.set_position(buoy_location).go()
+        # Wait until we match the buoy's position, bumping it
 
         # back off 2m
         yield sub_singleton.move.backward(2).go()
+        # Wait until we have backed off
 
         print "Bumped the buoy"
 ```
