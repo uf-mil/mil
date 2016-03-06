@@ -65,3 +65,5 @@ target/
 !transdec.obj
 
 .DS_STORE
+# Autosave files from QtCreator
+*.autosave
