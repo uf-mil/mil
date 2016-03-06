@@ -1,0 +1,7 @@
+accel_feedforward: 49,49,49,0.6,3.2,3.4
+alpha: 0,0,1,1,1,0
+beta: 0,0,0,0,0,0
+k: 2,2,2,4,4,4
+ks: 300,300,600,10,10,20
+use_rise: true
+vel_feedforward: 47,67,113,0,0,0
