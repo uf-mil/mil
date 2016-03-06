@@ -1,1 +1,1 @@
-from gui import MyPlugin
+from gui import AlarmPlugin
