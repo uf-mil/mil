@@ -5,9 +5,10 @@
     </description>
     <qtgui>
       <group>
-        <icon type="file">mil_logo.png</icon>
+        <icon type="file">resource/mil_logo.png</icon>
         <label>MIL</label>
       </group>
+      <icon type="file">resource/mil_logo.png</icon>
       <label>Sub8 Alarm Plugin</label>
       <statustip>Mike Seese, you just googled your name.</statustip>
     </qtgui>
