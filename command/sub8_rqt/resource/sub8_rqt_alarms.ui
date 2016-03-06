@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>983</width>
+    <height>655</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QTableWidget" name="alarm_table">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>30</y>
+     <width>471</width>
+     <height>601</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QTreeWidget" name="alarm_tree">
+   <property name="geometry">
+    <rect>
+     <x>490</x>
+     <y>30</y>
+     <width>461</width>
+     <height>601</height>
+    </rect>
+   </property>
+   <column>
+    <property name="text">
+     <string>Alarm Breakdown</string>
+    </property>
+   </column>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
