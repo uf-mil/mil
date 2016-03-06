@@ -6,13 +6,14 @@ from sub8_ros_tools import wait_for_param, thread_lock, rosmsg_to_numpy
 import threading
 from sub8_msgs.msg import Thrust, ThrusterCmd
 from sub8_msgs.srv import (ThrusterInfo, UpdateThrusterLayout, UpdateThrusterLayoutResponse,
-    FailThruster, FailThrusterResponse, BMatrix, BMatrixResponse)
+                           BMatrix, BMatrixResponse)
 from geometry_msgs.msg import WrenchStamped
 lock = threading.Lock()
 
 
 class ThrusterMapper(object):
     _min_command_time = rospy.Duration(0.05)
+    min_commandable_thrust = 1e-2  # Newtons
 
     def __init__(self):
         '''The layout should be a dictionary of the form used in thruster_mapper.launch
@@ -41,13 +42,14 @@ class ThrusterMapper(object):
         self.num_thrusters = 0
         rospy.init_node('thruster_mapper')
         self.last_command_time = rospy.Time.now()
-
-        # Make thruster layout
-        self.update_layout(None)  # Fake service call hey!
+        self.thruster_layout = wait_for_param('busses')
+        self.thruster_name_map = []
+        self.dropped_thrusters = []
+        self.B = self.generate_B(self.thruster_layout)
+        self.min_thrusts, self.max_thrusts = self.get_ranges()
 
         self.update_layout_server = rospy.Service('update_thruster_layout', UpdateThrusterLayout, self.update_layout)
-
-        # Expose B matrix through a srv 
+        # Expose B matrix through a srv
         self.b_matrix_server = rospy.Service('b_matrix', BMatrix, self.get_b_matrix)
 
         self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.request_wrench_cb, queue_size=1)
@@ -59,9 +61,12 @@ class ThrusterMapper(object):
         This should only be done in a thruster-out event
         '''
         rospy.logwarn("Layout in update...")
-        self.thruster_layout = wait_for_param('busses')
-        self.B = self.generate_B(self.thruster_layout)
-        self.min_thrust, self.max_thrust = self.get_ranges()
+        self.dropped_thrusters = srv.dropped_thrusters
+        for thruster_name in self.dropped_thrusters:
+            thruster_index = self.thruster_name_map.index(thruster_name)
+            self.min_thrusts[thruster_index] = -self.min_commandable_thrust * 0.5
+            self.max_thrusts[thruster_index] = self.min_commandable_thrust * 0.5
+
         rospy.logwarn("Layout updated")
         return UpdateThrusterLayoutResponse()
 
@@ -107,6 +112,7 @@ class ThrusterMapper(object):
         # Maintain an ordered list, tracking which column corresponds to which thruster
         self.num_thrusters = 0
         self.thruster_name_map = []
+        self.thruster_bounds = []
         B = []
         for port in layout:
             for thruster_name, thruster_info in port['thrusters'].items():
@@ -157,8 +163,8 @@ class ThrusterMapper(object):
             method='slsqp',
             fun=objective,
             jac=obj_jacobian,
-            x0=(self.min_thrust + self.max_thrust) / 2,
-            bounds=zip(self.min_thrust, self.max_thrust),
+            x0=(self.min_thrusts + self.max_thrusts) / 2,
+            bounds=zip(self.min_thrusts, self.max_thrusts),
             tol=0.1
         )
         return minimization.x, minimization.success
@@ -188,7 +194,10 @@ class ThrusterMapper(object):
             # Assemble the list of thrust commands to send
             for name, thrust in zip(self.thruster_name_map, u):
                 # > Can speed this up by avoiding appends
-                if np.fabs(thrust) < 1e-4:
+                if name in self.dropped_thrusters:
+                    continue  # Ignore dropped thrusters
+
+                if np.fabs(thrust) < self.min_commandable_thrust:
                     thrust = 0
                 thrust_cmds.append(ThrusterCmd(name=name, thrust=thrust))
 
