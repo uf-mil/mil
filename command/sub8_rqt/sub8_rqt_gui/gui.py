@@ -49,7 +49,6 @@ def recurse_on_tree(tree):
             new_item = qtg.QTreeWidgetItem([name])
             items_children = recurse_on_tree(item)
             add_all_children(new_item, items_children)
-            # new_item.setExpanded(True)
             children.append(new_item)
     else:
         print "Encountered unparseable json entity of type {}".format(type(tree))
