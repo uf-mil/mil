@@ -2,8 +2,13 @@ cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 project(sub8_alarm)
 
-find_package(catkin REQUIRED COMPONENTS
-  rospy rostest roscpp roslib sub8_msgs
+find_package(catkin REQUIRED
+  COMPONENTS
+    rospy
+    rostest
+    roscpp
+    roslib
+    sub8_msgs
 )
 
 set(catkin_LIBRARIES
@@ -43,14 +48,14 @@ endif()
 
 # Add gtest for C++ alarms
 if(CATKIN_ENABLE_TESTING)
-  add_rostest_gtest(alarm_integration_cpp_tests 
+  add_rostest_gtest(alarm_integration_cpp_tests
   	test_alarms/cpp/alarm_integration_cpp.test
     test_alarms/cpp/test_alarm_helpers.cc
     sub8_alarm/alarm_helpers.cc
   )
 
   target_link_libraries(
-  	alarm_integration_cpp_tests 
+  	alarm_integration_cpp_tests
   	${catkin_LIBRARIES}
   	${PROJECT_NAME}
   )
