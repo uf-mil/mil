@@ -7,7 +7,6 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/conversions.h>
 #include <pcl/PCLPointCloud2.h>
-#include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl_conversions/pcl_conversions.h>
 
@@ -33,7 +32,7 @@
 #define BACKWARD_HAS_BFD 1
 #include <sub8_build_tools/backward.hpp>
 
-// #define VISUALIZE
+#define VISUALIZE
 
 // ROS_NAMESPACE=/stereo/left rosrun image_proc image_proc
 // rosbag play ./holding_buoy_mil.bag -r 0.1
@@ -239,16 +238,16 @@ void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_ms
 
 void Sub8BuoyDetector::cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &input_cloud) {
   if (computing) {
-    pcl::console::print_highlight("Ignoring new point cloud because computing\n");
     return;
   }
+
+  // Require reasonable time-similarity
+  // (Not using message filters because image_transport eats the image and info msgs. Is there a
+  // better way to do this?)
   if (((input_cloud->header.stamp - image_time) < ros::Duration(0.3)) and (need_new_cloud)) {
     last_cloud_time = input_cloud->header.stamp;
     need_new_cloud = false;
   } else {
-    // std::cout << input_cloud->header.stamp << std::endl;
-    // std::cout << image_time << std::endl;
-    pcl::console::print_highlight("Ignoring because time\n");
     return;
   }
   pcl::console::print_highlight("Getting Point Cloud\n");
@@ -257,19 +256,11 @@ void Sub8BuoyDetector::cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &
 
   pcl::fromROSMsg(*input_cloud, *scene);
 
-  // Add to pcl_tools
-  pcl::VoxelGrid<sub::PointXYZT> voxel_filter;
-  voxel_filter.setInputCloud(scene);
-  voxel_filter.setLeafSize(0.05f, 0.05f, 0.05f);
-  voxel_filter.filter(*scene_buffer);
+  sub::voxel_filter<sub::PointXYZT>(scene, scene_buffer, 0.05f);
 
-  // Add to pcl_tools
-  pcl::StatisticalOutlierRemoval<sub::PointXYZT> outlier_remover;
-  outlier_remover.setInputCloud(scene_buffer);
-  outlier_remover.setMeanK(20);
-  outlier_remover.setStddevMulThresh(0.05);
   current_cloud.reset(new sub::PointCloudT());
-  outlier_remover.filter(*current_cloud);
+  sub::statistical_outlier_filter<sub::PointXYZT>(scene_buffer, current_cloud, 20, 0.05);
+
 
 #ifdef VISUALIZE
   if (!got_cloud) {
