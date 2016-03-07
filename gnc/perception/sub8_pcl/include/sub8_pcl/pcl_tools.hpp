@@ -1,10 +1,11 @@
 #pragma once
 
 #include <pcl/features/normal_3d_omp.h>
-#define BACKWARD_HAS_BFD 1
-#include <sub8_build_tools/backward.hpp>
+// #define BACKWARD_HAS_BFD 1
+// #include <sub8_build_tools/backward.hpp>
 #include "geometry.hpp"
 #include "segmentation.hpp"
+#include "filtering.hpp"
 #include "typedefs.hpp"
 
 // TODO:
