@@ -1,0 +1,5 @@
+string target_name
+---
+# Pose, stamped at the time of image receipt
+geometry_msgs/PoseStamped pose
+bool found

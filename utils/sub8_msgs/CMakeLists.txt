@@ -33,6 +33,8 @@ add_service_files(
   FailThruster.srv
   BMatrix.srv
   PathPlan.srv
+  VisionRequest.srv
+
 )
 
 # add_action_files(
