@@ -1,0 +1,47 @@
+<!-- -*- mode: XML -*- -->
+
+<!-- Minimal IEEE1394 digital camera driver test.
+
+     Depends on having a real IIDC-compliant camera attached.
+
+     Tests that the driver can connect to the first device on the bus
+     and publish both images and camera info at the default rate of 15
+     frames per second.
+
+     Also tests that diagnostics are published once a second.
+
+  -->
+
+<launch>
+
+  <!-- run the driver with only default parameters -->
+  <node pkg="camera1394" type="camera1394_node" name="camera1394_node" />
+
+  <test test-name="camera_image_hz_test"
+        pkg="rostest" type="hztest" name="hztest_image" >
+    <param name="hz" value="15.0" />
+    <param name="hzerror" value="0.5" />
+    <param name="test_duration" value="5.0" />    
+    <param name="topic" value="camera/image_raw" />  
+    <param name="wait_time" value="2.0" />  
+  </test>
+
+  <test test-name="camera_info_hz_test"
+        pkg="rostest" type="hztest" name="hztest_info" >
+    <param name="hz" value="15.0" />
+    <param name="hzerror" value="0.5" />
+    <param name="test_duration" value="5.0" />    
+    <param name="topic" value="camera/camera_info" />  
+    <param name="wait_time" value="2.0" />  
+  </test>
+
+  <test test-name="diagnostics_hz_test"
+        pkg="rostest" type="hztest" name="hztest_diag" >
+    <param name="hz" value="1.0" />
+    <param name="hzerror" value="0.5" />
+    <param name="test_duration" value="5.0" />    
+    <param name="topic" value="diagnostics" />  
+    <param name="wait_time" value="2.0" />  
+  </test>
+
+</launch>

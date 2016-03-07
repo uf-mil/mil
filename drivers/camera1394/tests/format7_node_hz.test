@@ -1,0 +1,49 @@
+<!-- -*- mode: XML -*- -->
+
+<!-- IEEE1394 format7 digital camera test.
+
+     Depends on having a specific Sony XCD-SX90CR camera attached.
+
+     Tests that the driver can connect to the camera in format7 mode0,
+     and publish both images and camera info at approximately 30
+     frames per second.
+
+     Also tests that diagnostics are published once a second.
+
+  -->
+
+<launch>
+
+  <!-- run the driver with only default parameters -->
+  <node pkg="camera1394" type="camera1394_node" name="camera1394_node">
+    <rosparam file="$(find camera1394)/tests/sony_format7.yaml" />
+  </node>
+
+  <test test-name="camera_image_hz_test"
+        pkg="rostest" type="hztest" name="hztest_image" >
+    <param name="hz" value="30.0" />
+    <param name="hzerror" value="0.5" />
+    <param name="test_duration" value="5.0" />    
+    <param name="topic" value="camera/image_raw" />  
+    <param name="wait_time" value="2.0" />  
+  </test>
+
+  <test test-name="camera_info_hz_test"
+        pkg="rostest" type="hztest" name="hztest_info" >
+    <param name="hz" value="30.0" />
+    <param name="hzerror" value="0.5" />
+    <param name="test_duration" value="5.0" />    
+    <param name="topic" value="camera/camera_info" />  
+    <param name="wait_time" value="2.0" />  
+  </test>
+
+  <test test-name="diagnostics_hz_test"
+        pkg="rostest" type="hztest" name="hztest_diag" >
+    <param name="hz" value="1.0" />
+    <param name="hzerror" value="0.5" />
+    <param name="test_duration" value="5.0" />    
+    <param name="topic" value="diagnostics" />  
+    <param name="wait_time" value="2.0" />  
+  </test>
+
+</launch>

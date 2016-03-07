@@ -1,0 +1,8 @@
+*~
+*.cfgc
+bin
+build
+cfg/cpp
+docs
+lib
+src/camera1394

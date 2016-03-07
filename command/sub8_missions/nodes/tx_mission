@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+
+import signal
+import traceback
+import argparse
+from twisted.internet import defer, reactor
+import txros
+from sub8 import tx_sub
+import missions
+
+
+@txros.util.cancellableInlineCallbacks
+def main():
+    try:
+        nh, args = txros.NodeHandle.from_argv_with_remaining('run_method', anonymous=True)
+        available_missions = [mission_name for mission_name in dir(missions) if not mission_name.startswith('_')]
+
+        usage_msg = ("Input the name of the mission you would like to run.\nExamples: " +
+                     "\n\n\trosrun sub8_missions mission stop\n\trosrun sub8_missions mission forward_1_m")
+        desc_msg = "-- Mr. Mission Manager --"
+        parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
+        parser.add_argument(dest='mission_name',
+                            help="The name of the mission you'd like to run (ex: stop)")
+
+        # Get all of the missions in the mission folder
+        args = parser.parse_args(args[1:])
+        mission_name = args.mission_name
+        assert mission_name in available_missions, "'{}' is not an available mission; we have: {}".format(
+            mission_name, ', '.join(available_missions)
+        )
+
+        mission = getattr(missions, mission_name)
+
+        sub = yield tx_sub.get_sub(nh)
+        yield txros.util.sleep(1.0)
+        print 'Mission runner waiting for pose to be available'
+        yield sub.last_pose()
+        print 'Mission runner got pose'
+        yield mission.run(sub)
+
+    except Exception:
+        traceback.print_exc()
+
+    finally:
+        print 'Finishing mission execution'
+        reactor.stop()
+
+
+def _start():
+    # Handle errors in main
+    task = main().addErrback(lambda fail: fail.trap(defer.CancelledError))
+    # Handle ctrl+C
+    signal.signal(signal.SIGINT, lambda signum, frame: reactor.callFromThread(task.cancel))
+
+
+if __name__ == '__main__':
+
+    reactor.callWhenRunning(_start)
+    reactor.run()

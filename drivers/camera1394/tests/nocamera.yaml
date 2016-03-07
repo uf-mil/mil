@@ -1,0 +1,5 @@
+# Nonexistent camera parameters (for testing)
+
+guid: deadbeef00000000
+frame_id: nodev
+

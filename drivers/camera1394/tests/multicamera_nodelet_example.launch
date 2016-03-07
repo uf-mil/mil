@@ -1,0 +1,29 @@
+<!-- -*- mode: XML -*- -->
+
+<!-- Example launch file for multiple cameras using nodelets. 
+
+     Only a example: NOT FOR GENERAL USE.
+  -->
+
+<launch>
+
+  <!-- first camera and associated image pipeline -->
+  <group ns="first" >
+    <include file="$(find camera1394)/tests/nodelet_pipeline.launch" >
+      <arg name="camera" value="sony" />
+    </include>
+  </group>
+
+  <!-- second camera and associated image pipeline -->
+  <group ns="second" >
+    <include file="$(find camera1394)/tests/nodelet_pipeline.launch" >
+      <arg name="camera" value="sony2" />
+    </include>
+  </group>
+
+  <!-- monitoring and configuration tools -->
+  <node pkg="rxtools" type="rxconsole" name="rxconsole" />
+  <node pkg="dynamic_reconfigure" type="reconfigure_gui"
+        name="reconfigure_gui" />
+
+</launch>

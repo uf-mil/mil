@@ -1,0 +1,22 @@
+# Example camera parameters (Sony XCD-SX90CR)
+
+guid: 0800461000821fa2
+video_mode: format7_mode0
+frame_id: sony
+iso_speed: 800
+camera_info_url: package://camera1394/tests/sony_calibration.yaml
+frame_rate: 30                  # for diagnostics
+reset_on_open: false
+bayer_pattern: gbrg
+
+#roi_width: 1280
+#roi_height: 960
+#binning_x: 1
+#binning_y: 1
+
+# set some feature values:
+auto_gamma: 3           # Manual
+gamma: 2
+auto_gain: 2            # Auto
+auto_shutter: 2         # Auto
+auto_white_balance: 2   # Auto

@@ -6,9 +6,10 @@
 #include "gtest/gtest.h"
 #include "sub8_alarm/alarm_helpers.h"
 #include <string>
+#include <map>
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp> 
+#include <boost/property_tree/json_parser.hpp>
 #include <ros/package.h>
 
 using sub8::AlarmBroadcaster;
@@ -44,7 +45,7 @@ TEST_F(AlarmHelpersTest, testAlarmRaiserConstructor) {
   EXPECT_EQ(alarm_name, alarm_raiser_ptr->getAlarmName());
   EXPECT_EQ(node_name, alarm_raiser_ptr->getNodeName());
   EXPECT_EQ(empty, alarm_raiser_ptr->getProblemDescription());
-  EXPECT_EQ(true, alarm_raiser_ptr->isActionRequired());
+  EXPECT_TRUE(alarm_raiser_ptr->isActionRequired());
 }
 
 TEST_F(AlarmHelpersTest, testAddAlarm) {
@@ -59,7 +60,7 @@ TEST_F(AlarmHelpersTest, testAddAlarm) {
   EXPECT_EQ(alarm_name, new_alarm->getAlarmName());
   EXPECT_EQ(node_name, new_alarm->getNodeName());
   EXPECT_EQ(empty, new_alarm->getProblemDescription());
-  EXPECT_EQ(true, new_alarm->isActionRequired());
+  EXPECT_TRUE(new_alarm->isActionRequired());
 }
 
 TEST_F(AlarmHelpersTest, testRaisingAlarm) {
@@ -78,7 +79,7 @@ TEST_F(AlarmHelpersTest, testRaisingAlarm) {
 
   EXPECT_EQ(problem_description, alarm_msg->problem_description);
   EXPECT_EQ(node_name, alarm_msg->node_name);
-  EXPECT_EQ(true, alarm_msg->action_required);
+  EXPECT_TRUE(alarm_msg->action_required);
   EXPECT_EQ(2, alarm_msg->severity);
 }
 
@@ -102,7 +103,7 @@ TEST_F(AlarmHelpersTest, testJSONBlob) {
 
   EXPECT_EQ(problem_description, alarm_msg->problem_description);
   EXPECT_EQ(node_name, alarm_msg->node_name);
-  EXPECT_EQ(true, alarm_msg->action_required);
+  EXPECT_TRUE(alarm_msg->action_required);
   EXPECT_EQ(2, alarm_msg->severity);
   EXPECT_EQ(json_string, alarm_msg->parameters);
 }
@@ -119,10 +120,9 @@ TEST_F(AlarmHelpersTest, testBoostFilesystem) {
   // Will break if our file structure changes :/
   fs::path dirname(pkg_path + file_sep + "test_alarms" + file_sep + "cpp" +
                    file_sep + "cfg");
-  const std::string ext = ".json";
 
-  ASSERT_EQ(true, fs::exists(dirname)) << "\ndirname: " << dirname;
-  ASSERT_EQ(true, fs::is_directory(dirname)) << dirname;
+  ASSERT_TRUE(fs::exists(dirname)) << "\ndirname: " << dirname;
+  ASSERT_TRUE(fs::is_directory(dirname)) << dirname;
 
   fs::recursive_directory_iterator it(dirname);
   fs::recursive_directory_iterator endit;
@@ -130,7 +130,7 @@ TEST_F(AlarmHelpersTest, testBoostFilesystem) {
   // iterate all files in the directory and store all with the extension in
   // a vector for further processing
   while (it != endit) {
-    if (fs::is_regular_file(*it) && it->path().extension() == ext) {
+    if (fs::is_regular_file(*it)) {
       // Store the dirname + filename
       test_alarms.push_back((dirname.string()) +
                             (it->path().filename().string()));
@@ -138,7 +138,7 @@ TEST_F(AlarmHelpersTest, testBoostFilesystem) {
     }
   }
 
-  EXPECT_EQ(false, test_alarms.empty());
+  ASSERT_FALSE(test_alarms.empty());
 }
 
 TEST_F(AlarmHelpersTest, testBoostJSONParser) {
@@ -148,52 +148,60 @@ TEST_F(AlarmHelpersTest, testBoostJSONParser) {
 #ifdef _WIN32
   file_sep = "\\";
 #endif
-  std::vector<std::string> test_alarms;
   std::string pkg_path = ros::package::getPath("sub8_alarm");
   // Will break if our file structure changes :/
   fs::path dirname(pkg_path + file_sep + "test_alarms" + file_sep + "cpp" +
                    file_sep + "cfg");
   fs::recursive_directory_iterator it(dirname);
-  if (fs::is_regular_file(*it)) {
-    std::string test_alarm = it->path().string();
 
-    boost::property_tree::ptree pt;
+  ASSERT_TRUE(fs::is_regular_file(*it));
 
-    try {
-      boost::property_tree::read_json(test_alarm, pt);
+  std::string test_alarm = it->path().string();
 
-      EXPECT_EQ("test_alarm_1", pt.get<std::string>("alarm_name"));
-      EXPECT_EQ(true, pt.get<bool>("action_required"));
-      EXPECT_EQ(0, pt.get<int>("severity"));
-      EXPECT_EQ("This is test alarm 1", pt.get<std::string>("problem_description"));
-    } catch (const boost::property_tree::ptree_error& e) {
-      EXPECT_EQ(1,2) << e.what() << "\nfilename: " << test_alarm;
-    }
+  std::string alarm_name = "";
+  if (test_alarm.find("1") != std::string::npos) {
+    alarm_name = "test_alarm_1";
+  } else {
+    alarm_name = "test_alarm_2";
+  }
+
+  boost::property_tree::ptree pt;
+
+  try {
+    boost::property_tree::read_json(test_alarm, pt);
+
+    EXPECT_EQ(alarm_name, pt.get<std::string>("alarm_name"));
+    EXPECT_TRUE(pt.get<bool>("action_required"));
+    EXPECT_EQ(0, pt.get<int>("severity"));
+    EXPECT_EQ("This is " + alarm_name,
+              pt.get<std::string>("problem_description"));
+  } catch (const boost::property_tree::ptree_error& e) {
+    EXPECT_EQ(1, 2) << e.what() << "\nfilename: " << test_alarm;
   }
 }
 
+TEST_F(AlarmHelpersTest, testAddAlarmNonexistant) {
+  AlarmBroadcasterPtr alarm_ptr(new AlarmBroadcaster(getNodeHandle()));
+  AlarmRaiserPtr alarm;
+
+  std::string alarm_name = "non_existant_alarm";
+
+  alarm = alarm_ptr->addJSONAlarm(alarm_name);
+
+  ASSERT_TRUE(alarm == nullptr);
+}
 
 TEST_F(AlarmHelpersTest, testAddAlarms) {
   AlarmBroadcasterPtr alarm_ptr(new AlarmBroadcaster(getNodeHandle()));
-  std::vector<AlarmRaiserPtr> test_alarms;
+  AlarmRaiserPtr alarm;
 
-  namespace fs = ::boost::filesystem;
+  std::string alarm_name = "sub8_trajectory_generator_planning_failure";
 
-  char file_sep = '/';
-#ifdef _WIN32
-  file_sep = "\\";
-#endif
-  std::string pkg_path = ros::package::getPath("sub8_alarm");
-  // Will break if our file structure changes :/
-  fs::path dirname(pkg_path + file_sep + "test_alarms" + file_sep + "cpp" +
-                   file_sep + "cfg");
-  bool result = alarm_ptr->addAlarms(dirname, test_alarms);
+  alarm = alarm_ptr->addJSONAlarm(alarm_name);
 
-  ASSERT_EQ(true, result);
-  EXPECT_EQ("test_alarm_1", test_alarms[0]->getAlarmName());
-  EXPECT_EQ("test_alarm_2", test_alarms[1]->getAlarmName());
-  EXPECT_EQ("This is test alarm 1", test_alarms[0]->getProblemDescription());
-  EXPECT_EQ("This is test alarm 2", test_alarms[1]->getProblemDescription());
+  EXPECT_EQ("planning_failure", alarm->getAlarmName());
+  EXPECT_EQ("The trajectory-generator failed to find a valid path",
+            alarm->getProblemDescription());
 }
 
 int main(int argc, char** argv) {

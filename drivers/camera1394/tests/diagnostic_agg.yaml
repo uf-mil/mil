@@ -1,0 +1,17 @@
+## Diagnostic aggregator parameters for testing camera diagnostics.
+#
+#  $ rosparam load `rospack find camera1394`/tests/diagnostic_agg.yaml
+#  $ rosrun diagnostic_aggregator aggregator_node
+#
+diagnostic_aggregator:
+  analyzers:
+    sensors:
+      type: diagnostic_aggregator/AnalyzerGroup
+      path: Sensors
+      analyzers:
+        test_camera:
+          type: diagnostic_aggregator/GenericAnalyzer
+          path: Test Camera
+          timeout: 5.0
+          find_and_remove_prefix: camera
+          # num_items: 4

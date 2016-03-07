@@ -1,4 +1,5 @@
 import numpy as np
+from tf import transformations
 import geometry_msgs.msg as geometry_msgs
 import std_msgs.msg as std_msgs
 import nav_msgs.msg as nav_msgs
@@ -64,7 +65,6 @@ def twist_to_numpy(twist):
     Convert a twist message into a tuple of numpy arrays
     returns (linear, angular)
     '''
-
     linear = rosmsg_to_numpy(twist.linear)
     angular = rosmsg_to_numpy(twist.angular)
     return linear, angular
@@ -88,6 +88,36 @@ def odometry_to_numpy(odom):
     twist_covariance = np.array(odom.twist.covariance).reshape(6, 6)
 
     return pose, twist, pose_covariance, twist_covariance
+
+
+def numpy_to_point(np_vector):
+    return geometry_msgs.Point(*np_vector)
+
+
+def numpy_to_quaternion(np_quaternion):
+    return geometry_msgs.Quaternion(*np_quaternion)
+
+
+def numpy_matrix_to_quaternion(np_matrix):
+    '''Given a 3x3 rotation matrix, return its geometry_msgs Quaternion'''
+    assert np_matrix.shape == (3, 3), "Must submit 3x3 rotation matrix"
+    pose_mat = np.eye(4)
+    pose_mat[:3, :3] = np_matrix
+    np_quaternion = transformations.quaternion_from_matrix(pose_mat)
+    return geometry_msgs.Quaternion(*np_quaternion)
+
+
+def numpy_pair_to_pose(np_rotation_matrix, np_translation):
+    '''Convert a R, t pair to a geometry_msgs Pose'''
+    orientation = numpy_matrix_to_quaternion(np_rotation_matrix)
+    position = numpy_to_point(np_translation)
+    return geometry_msgs.Pose(position=position, orientation=orientation)
+
+
+def numpy_quat_pair_to_pose(np_quaternion, np_translation):
+    orientation = numpy_to_quaternion(np_quaternion)
+    position = numpy_to_point(np_translation)
+    return geometry_msgs.Pose(position=position, orientation=orientation)
 
 
 def make_header(frame='/body'):

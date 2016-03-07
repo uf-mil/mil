@@ -20,7 +20,7 @@ PDController::PDController() {
   // Target Waypoint
   waypoint_sub = nh.subscribe("trajectory", 1, &PDController::trajectory_callback, this);
   // Get truth odometry
-  truth_sub = nh.subscribe("truth/odom", 1, &PDController::truth_callback, this);
+  truth_sub = nh.subscribe("odom", 1, &PDController::truth_callback, this);
   control_timer = nh.createTimer(ros::Duration(control_period), &PDController::control_loop, this);
 }
 
@@ -30,7 +30,6 @@ void PDController::control_loop(const ros::TimerEvent &timer_event) {
   Eigen::Vector3d body_force;
   Eigen::Vector3d translation_error;
   Eigen::Vector3d translation_error_gradient;
-  Eigen::Vector3d translation_error_direction;
   Eigen::Vector3d translation_error_integral;
 
   // Orientation
@@ -53,8 +52,6 @@ void PDController::control_loop(const ros::TimerEvent &timer_event) {
 
   // ******* Translation Control *******
   translation_error = target_state.position - current_state.position;
-  translation_error_direction = translation_error;
-  translation_error_direction.normalize();
 
   append_to_history(translation_error_history, translation_error, trans_history_length);
 
@@ -84,9 +81,10 @@ void PDController::control_loop(const ros::TimerEvent &timer_event) {
   orientation_error_gradient = estimate_derivative(orientation_error_history);
   orientation_error_integral = estimate_integral(orientation_error_history);
 
-  world_torque =
-      -((kp_angle * angle_axis) + (kd_angle * orientation_error_gradient) + (ki_angle * orientation_error_integral));
+  world_torque = ((kp_angle * angle_axis) + (kd_angle * orientation_error_gradient) +
+                   (ki_angle * orientation_error_integral));
   body_torque = current_state.orientation * world_torque;
+  std::cout << world_torque.transpose() << std::endl;
 
   // ******* Transmit Wrenches *******
   body_wrench << body_force, body_torque;
@@ -96,7 +94,8 @@ void PDController::control_loop(const ros::TimerEvent &timer_event) {
   wrench_pub.publish(wrench_stamped_msg);
 }
 
-void PDController::append_to_history(ControllerDeque &history, Eigen::Vector3d &datum, unsigned int length) {
+void PDController::append_to_history(ControllerDeque &history, Eigen::Vector3d &datum,
+                                     unsigned int length) {
   if (history.size() < length) {
     history.push_back(datum);
   } else if (history.size() > length) {
@@ -138,11 +137,10 @@ Eigen::Vector3d PDController::estimate_derivative(ControllerDeque &history) {
   return gradient;
 }
 
-Eigen::AngleAxis<double> PDController::rotation_difference(Eigen::Matrix3d &rotation_a, Eigen::Matrix3d &rotation_b) {
+Eigen::AngleAxis<double> PDController::rotation_difference(Eigen::Matrix3d &rotation_a,
+                                                           Eigen::Matrix3d &rotation_b) {
   Eigen::AngleAxis<double> angle_axis;
-  double angle;
   Eigen::Matrix3d difference_matrix;
-  Eigen::Vector3d euler_error;
 
   difference_matrix = rotation_b * rotation_a.transpose();
   angle_axis.fromRotationMatrix(difference_matrix);
@@ -175,35 +173,60 @@ void PDController::truth_callback(const nav_msgs::Odometry::ConstPtr &odom_msg) 
   current_state.orientation = pose_matrix.rotation();
 
   tf::twistMsgToEigen(odom_msg->twist.twist, twist);
-  current_state.linear_velocity << twist.head(3);
-  current_state.angular_velocity << twist.tail<3>();
+  current_state.linear_velocity << current_state.orientation *(twist.head(3));
+  current_state.angular_velocity << current_state.orientation *(twist.tail<3>());
+
+  if (got_target) {
+    if (waypoint_index == current_trajectory->trajectory.size() - 1) {
+      // Hold at the last waypoint
+      return;
+    }
+
+    // For now, only doing waypoint achievement on position error
+    if ((current_state.position - target_state.position).norm() < waypoint_achievement_distance) {
+      set_target(++waypoint_index);
+    }
+  }
 }
 
-void PDController::trajectory_callback(const sub8_msgs::Trajectory::ConstPtr &target_pose_msg) {
+void PDController::trajectory_callback(const sub8_msgs::Trajectory::ConstPtr &trajectory) {
+  /* Callback on target trajectory */
+
+  got_target = true;
+  waypoint_index = 0;
+
+  // Clear the error history
+  current_trajectory = trajectory;
+  set_target(waypoint_index);
+}
+
+void PDController::set_target(unsigned int waypoint_index) {
   /* Callback on target waypoint */
   Eigen::Affine3d target_pose_matrix;
   Eigen::Matrix<double, 6, 1> twist;
   Eigen::Vector3d linear_velocity;
   Eigen::Vector3d angular_velocity;
 
-  got_target = true;
+  translation_error_history.erase(translation_error_history.begin(),
+                                  translation_error_history.end());
+  orientation_error_history.erase(orientation_error_history.begin(),
+                                  orientation_error_history.end());
 
-  // Clear the error history
-  translation_error_history.erase(translation_error_history.begin(), translation_error_history.end());
-
-  tf::poseMsgToEigen(target_pose_msg->trajectory[0].pose, target_pose_matrix);
+  tf::poseMsgToEigen(current_trajectory->trajectory[waypoint_index].pose, target_pose_matrix);
   target_state.position = target_pose_matrix.translation();
   target_state.orientation = target_pose_matrix.rotation();
-  if (target_state.orientation.norm() == 0.0) {
+
+  if (target_state.orientation.norm() < 0.01) {
     // If somebody passes a target with no orientation set, do something that makes sense
     if (got_state) {
+      // NEW: Transpose, not sureif good
       target_state.orientation = current_state.orientation;
     } else {
       target_state.orientation = Eigen::Affine3d::Identity().rotation();
     }
   }
 
-  tf::twistMsgToEigen(target_pose_msg->trajectory[0].twist, twist);
+  tf::twistMsgToEigen(current_trajectory->trajectory[waypoint_index].twist, twist);
   target_state.linear_velocity << twist.head(3);
   target_state.angular_velocity << twist.tail<3>();
 }
@@ -211,7 +234,7 @@ void PDController::trajectory_callback(const sub8_msgs::Trajectory::ConstPtr &ta
 int main(int argc, char **argv) {
   ROS_INFO("Starting up controller");
   ros::init(argc, argv, "pd_controller");
-  PDController pcd;
+  PDController pdc;
   ROS_INFO("Spinning");
   ros::spin();
   return 0;
