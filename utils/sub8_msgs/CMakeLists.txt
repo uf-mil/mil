@@ -29,6 +29,7 @@ add_service_files(
   MotionPlan.srv
   UpdateThrusterLayout.srv
   FailThruster.srv
+  VisionRequest.srv
 )
 
 # add_action_files(

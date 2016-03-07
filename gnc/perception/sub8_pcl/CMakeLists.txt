@@ -14,6 +14,7 @@ find_package(catkin
     image_geometry
     cv_bridge
     sub8_build_tools
+    sub8_msgs
 )
 
 find_package(PCL 1.7 REQUIRED)
@@ -26,12 +27,14 @@ catkin_package(
   CATKIN_DEPENDS
     roscpp
     rospy
+    sub8_msgs
   DEPENDS
     system_lib
     image_transport
     image_geometry
     cv_bridge
     sub8_build_tools
+    sub8_msgs
 )
 
 include_directories(
@@ -78,6 +81,12 @@ install(DIRECTORY include/${PROJECT_NAME}/
 add_executable(
   pcl_buoy
     nodes/buoy.cc
+)
+
+add_dependencies(
+  pcl_buoy
+   sub8_msgs_generate_messages_cpp
+   ${catkin_EXPORTED_TARGETS}
 )
 
 target_link_libraries(
