@@ -25,11 +25,6 @@ mkdir -p "$DEPS_DIR"
 cd "$DEPS_DIR"
 ####### Always Pre-requisites
 
-# Temporary addition, Google removed i386 builds from their repos causing this script
-# to terminate without completing. This prevents it from attempting to look for the
-# 32-bit repo.
-sudo sed -i -e 's/deb http/deb [arch=amd64] http/' "/etc/apt/sources.list.d/google-chrome.list"
-
 sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe"
 sudo sh -c 'echo "deb-src http://archive.ubuntu.com/ubuntu trusty main universe" >> /etc/apt/sources.list'
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -51,6 +46,7 @@ sudo apt-get build-dep -y python-pyode
 sudo apt-get remove -y python-pyode
 apt-get source --compile python-pyode
 sudo dpkg -i python-pyode_*.deb
+sudo apt-mark hold python-pyode
 
 # Normal things
 sudo apt-get install -qq libboost-all-dev python-dev python-qt4-dev python-qt4-gl python-opengl freeglut3-dev libassimp-dev
@@ -70,6 +66,7 @@ if [ $? -eq 1 ]; then
     # TODO: Uninstall old Vispy if it is out of date
     git clone -q https://github.com/vispy/vispy.git
     cd vispy
+    git checkout 30a9c3f2c29279795e3a94376b5db21bdf4970d0 .
     sudo python setup.py develop
 else
     echo "INSTALLER: You have Vispy, don't worry, we'll make sure it's up to date"
@@ -79,7 +76,8 @@ else
     if [ $? -eq 1 ]; then
         echo "INSTALLER: Your Vispy installation is weird, don't install in manually, use the the sub install script"
     fi
-    git pull
+    # git pull
+    git checkout 30a9c3f2c29279795e3a94376b5db21bdf4970d0 .
     sudo python setup.py develop
 fi
 ####### End Vispy
@@ -137,9 +135,6 @@ fi
 ####### Install the ROS packages that we use
 sudo apt-get install -qq libompl-dev
 sudo apt-get install -qq ros-indigo-sophus
-sudo apt-get install -qq ros-indigo-driver-base
-sudo apt-get install -qq ros-indigo-camera-info-manager
-sudo apt-get install -qq ros-indigo-spacenav-node
 
 ####### Check if the sub is set up, and if it isn't, set it up
 set +e
@@ -152,11 +147,6 @@ if [ $? -ne 0 ]; then
     cd "$CATKIN_DIR/src"
     catkin_init_workspace
     catkin_make -C "$CATKIN_DIR"
-    echo "Cloning raw-gps tools"
-
-    sudo apt-get -qq install libusb-1.0-0-dev
-    git clone https://github.com/uf-mil/rawgps-tools.git
-
     source "$CATKIN_DIR/devel/setup.bash"
     echo "source $CATKIN_DIR/devel/setup.bash" >> ~/.bashrc
 
