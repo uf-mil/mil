@@ -65,6 +65,7 @@ class Sub8BuoyDetector {
   int vp1;
   int vp2;
   boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
+  sub::RvizVisualizer rviz;
 
   ros::Timer compute_timer;
   ros::Subscriber data_sub;
@@ -109,7 +110,7 @@ Sub8BuoyDetector::Sub8BuoyDetector()
   pcl::console::print_highlight("--PCL SLAM Initialized\n");
   data_sub = nh.subscribe("/stereo/points2", 1, &Sub8BuoyDetector::cloud_callback, this);
   service =
-      nh.advertiseService("/vision/buoys/yellow", &Sub8BuoyDetector::request_buoy_position, this);
+      nh.advertiseService("/vision/buoys/red", &Sub8BuoyDetector::request_buoy_position, this);
 }
 
 Sub8BuoyDetector::~Sub8BuoyDetector() {
@@ -136,6 +137,7 @@ bool Sub8BuoyDetector::request_buoy_position(sub8_msgs::VisionRequest::Request &
 
   tf::pointEigenToMsg(position.cast<double>(), resp.pose.pose.position);
   resp.pose.header.frame_id = tf_frame;
+  rviz.visualize_buoy(resp.pose.pose, tf_frame);
 
 #ifdef VISUALIZE
   cv::Point2d cv_pt_uv =
@@ -221,8 +223,10 @@ void Sub8BuoyDetector::determine_buoy_position(
 void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_msg,
                                       const sensor_msgs::CameraInfoConstPtr &info_msg) {
   need_new_cloud = true;
+
+#ifdef VISUALIZE
   pcl::console::print_highlight("Getting image\n");
-  // cv::Mat current_image;
+#endif
 
   cv_bridge::CvImagePtr input_bridge;
   try {
@@ -250,19 +254,23 @@ void Sub8BuoyDetector::cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &
   } else {
     return;
   }
-  pcl::console::print_highlight("Getting Point Cloud\n");
   sub::PointCloudT::Ptr scene(new sub::PointCloudT());
   sub::PointCloudT::Ptr scene_buffer(new sub::PointCloudT());
 
   pcl::fromROSMsg(*input_cloud, *scene);
 
-  sub::voxel_filter<sub::PointXYZT>(scene, scene_buffer, 0.05f);
+  sub::voxel_filter<sub::PointXYZT>(scene, scene_buffer,
+                                    0.05f  // leaf size
+                                    );
 
   current_cloud.reset(new sub::PointCloudT());
-  sub::statistical_outlier_filter<sub::PointXYZT>(scene_buffer, current_cloud, 20, 0.05);
-
+  sub::statistical_outlier_filter<sub::PointXYZT>(scene_buffer, current_cloud,
+                                                  20,   // mean k
+                                                  0.05  // std_dev threshold
+                                                  );
 
 #ifdef VISUALIZE
+  pcl::console::print_highlight("Getting Point Cloud\n");
   if (!got_cloud) {
     pcl::console::print_highlight("Getting new\n");
     viewer->addPointCloud(current_cloud, "current_input", vp1);

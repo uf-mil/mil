@@ -6,6 +6,7 @@
 #include "geometry.hpp"
 #include "segmentation.hpp"
 #include "filtering.hpp"
+#include "visualization.hpp"
 #include "typedefs.hpp"
 
 // TODO:
