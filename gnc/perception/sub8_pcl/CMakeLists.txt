@@ -51,8 +51,7 @@ add_definitions(${PCL_DEFINITIONS})
 add_library(sub8_pcl SHARED
     src/sub8_pcl/align.cc
     src/sub8_pcl/cv_utils.cc
-    # src/pcl_tools/feature_matching.cpp
-    # src/pcl_tools/registration.cpp
+    src/sub8_pcl/visualization.cc
 )
 
 target_link_libraries(
