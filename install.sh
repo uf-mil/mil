@@ -38,15 +38,19 @@ sudo apt-get install -qq binutils-dev
 
 ####### Python stuff
 # Deal with pyODE
-sudo apt-get install -qq python-pyode
-rm -fr /tmp/pyode-build
-mkdir -p /tmp/pyode-build
-cd /tmp/pyode-build
-sudo apt-get build-dep -y python-pyode
-sudo apt-get remove -y python-pyode
-apt-get source --compile python-pyode
-sudo dpkg -i python-pyode_*.deb
-sudo apt-mark hold python-pyode
+set +e
+python -c "import ode; w = ode.World(); w.setAngularDamping(0.2)"
+if [ $? -eq 1 ]; then
+    sudo apt-get install -qq python-pyode
+    rm -fr /tmp/pyode-build
+    mkdir -p /tmp/pyode-build
+    cd /tmp/pyode-build
+    sudo apt-get build-dep -y python-pyode
+    sudo apt-get remove -y python-pyode
+    apt-get source --compile python-pyode
+    sudo dpkg -i python-pyode_*.deb
+    sudo apt-mark hold python-pyode
+fi
 
 # Normal things
 sudo apt-get install -qq libboost-all-dev python-dev python-qt4-dev python-qt4-gl python-opengl freeglut3-dev libassimp-dev
