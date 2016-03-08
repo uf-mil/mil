@@ -38,6 +38,7 @@ size_t closest_point_index_rayOMP(const pcl::PointCloud<PointT>& cloud,
 
     Eigen::Vector3f cloud_pt(point.x, point.y, point.z);
     Eigen::Vector3f difference = (line_pt - cloud_pt);
+    // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Vector_formulation
     double distance = (difference - (difference.dot(direction) * direction)).norm();
     distances[index] = distance;
   }
@@ -79,6 +80,7 @@ size_t closest_point_index_ray(const pcl::PointCloud<PointT>& cloud,
 
     Eigen::Vector3f cloud_pt(point.x, point.y, point.z);
     Eigen::Vector3f difference = (line_pt - cloud_pt);
+    // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Vector_formulation
     double distance = (difference - (difference.dot(direction) * direction)).norm();
 
     if (distance < min_distance) {

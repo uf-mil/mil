@@ -16,6 +16,8 @@ To handle potential timing discrepancy, the timestamp at which the images and po
 
 * Sphere fitting won't work, because buoys are fairly specular, and cause silly artifacts in stereo reconstruction, making the buoys very non-spherical in the pt cloud.
 
+* The buoy detector will give back an estimated center, that is not necessarily the actual center of the buoy.
+
 ##### TODO
 
 * TF integration (On mission side)
@@ -25,6 +27,7 @@ To handle potential timing discrepancy, the timestamp at which the images and po
 * Bayes filter buoy position for outlier removal
 * Implement more than one color
 * Add more visualization tools
+* Determine the physical center of the buoy
 
 ##### Usage
 
