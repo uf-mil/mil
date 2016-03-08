@@ -43,14 +43,19 @@ sudo apt-get install -qq binutils-dev
 
 ####### Python stuff
 # Deal with pyODE
-sudo apt-get install -qq python-pyode
-rm -fr /tmp/pyode-build
-mkdir -p /tmp/pyode-build
-cd /tmp/pyode-build
-sudo apt-get build-dep -y python-pyode
-sudo apt-get remove -y python-pyode
-apt-get source --compile python-pyode
-sudo dpkg -i python-pyode_*.deb
+
+set +e
+python -c "import ode; w = ode.World(); w.setAngularDamping(0.2)"
+if [ $? -eq 1 ]; then
+    sudo apt-get install -qq python-pyode
+    rm -fr /tmp/pyode-build
+    mkdir -p /tmp/pyode-build
+    cd /tmp/pyode-build
+    sudo apt-get build-dep -y python-pyode
+    sudo apt-get remove -y python-pyode
+    apt-get source --compile python-pyode
+    sudo dpkg -i python-pyode_*.deb
+fi
 
 # Normal things
 sudo apt-get install -qq libboost-all-dev python-dev python-qt4-dev python-qt4-gl python-opengl freeglut3-dev libassimp-dev
@@ -152,10 +157,6 @@ if [ $? -ne 0 ]; then
     cd "$CATKIN_DIR/src"
     catkin_init_workspace
     catkin_make -C "$CATKIN_DIR"
-    echo "Cloning raw-gps tools"
-
-    sudo apt-get -qq install libusb-1.0-0-dev
-    git clone https://github.com/uf-mil/rawgps-tools.git
 
     source "$CATKIN_DIR/devel/setup.bash"
     echo "source $CATKIN_DIR/devel/setup.bash" >> ~/.bashrc
@@ -182,4 +183,13 @@ if [ $? -ne 0 ]; then
             catkin_make -C "$CATKIN_DIR"
         fi
     fi
+fi
+
+set +e
+cd $CATKIN_DIR/src/rawgps-tools
+if [ $? -ne 0 ]; then
+    echo "Cloning raw-gps tools"
+    sudo apt-get -qq install libusb-1.0-0-dev
+    git clone https://github.com/uf-mil/rawgps-tools.git
+    catkin_make -C "$CATKIN_DIR"
 fi

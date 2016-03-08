@@ -3,6 +3,7 @@ from sub8_msgs.msg import Alarm
 from std_msgs.msg import Header
 import json
 
+
 class AlarmBroadcaster(object):
     def __init__(self):
         '''Alarm Broadcaster'''
@@ -37,11 +38,14 @@ class AlarmBroadcaster(object):
 
 
 class AlarmRaiser(object):
-    def __init__(self, alarm_name, node_name, alarm_publisher, action_required=False, severity=3, problem_description=None, parameters=None):
+    def __init__(self, alarm_name, node_name, alarm_publisher, action_required=False, severity=3, problem_description=None,
+                 parameters=None):
         '''Alarm object, does alarms
         Generates alarm messages
         '''
         assert severity in range(0, 3 + 1), "Severity must be an integer between 0 and 3"
+        if parameters is not None:
+            assert isinstance(parameters, dict), "Parameters must be in the form of  dictionary"
         self._alarm_name = alarm_name
         self._node_name = node_name
         self._action_required = action_required
@@ -53,7 +57,11 @@ class AlarmRaiser(object):
 
     def raise_alarm(self, problem_description=None, parameters=None):
         '''Arguments are override parameters'''
-        assert (problem_description != "") or (self._problem_description is not None), "No problem description has been set for this alarm"
+        got_problem_description = (problem_description != "") or (self._problem_description is not None)
+        assert got_problem_description, "No problem description has been set for this alarm"
+
+        if parameters is not None:
+            assert isinstance(parameters, dict), "Parameters must be in the form of  dictionary"
 
         if problem_description is not None:
             _problem_description = problem_description
