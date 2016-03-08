@@ -5,6 +5,7 @@ Original Author: Annie Luc
 from __future__ import division
 import numpy as np
 import ode
+import rospy
 
 
 class Constants(object):
@@ -24,7 +25,13 @@ class World(object):
         self.ode_world = ode.World()
         self.ode_world.setGravity(np.array([0, 0, Constants.g]))
 
-        self.ode_world.setAngularDamping(0.2)
+        try:
+            self.ode_world.setAngularDamping(0.2)
+        except AttributeError:
+            rospy.logerr("SIM ERROR: You need to re-run the install script, or manually fix pyode")
+            rospy.logerr("SIM ERROR: Killing simulation")
+            exit(0)
+
         # self.ode_world.setLinearDamping(0.2)
         self.ode_world.setERP(0.8)
         self.ode_world.setCFM(1E-5)
