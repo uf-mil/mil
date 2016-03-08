@@ -71,6 +71,7 @@ class Sub8BuoyDetector {
   ros::Subscriber data_sub;
   ros::NodeHandle nh;
   ros::ServiceServer service;
+  double buoy_radius;
 
   image_transport::CameraSubscriber image_sub;
   image_transport::ImageTransport image_transport;
@@ -80,7 +81,7 @@ class Sub8BuoyDetector {
   ros::Time last_cloud_time;
   sub::PointCloudT::Ptr current_cloud;
   cv::Mat current_image;
-  bool got_cloud, line_added, computing, need_new_cloud;
+  bool got_cloud, got_image, line_added, computing, need_new_cloud;
 };
 
 Sub8BuoyDetector::Sub8BuoyDetector()
@@ -91,8 +92,16 @@ Sub8BuoyDetector::Sub8BuoyDetector()
 #endif
       image_transport(nh) {
   pcl::console::print_highlight("Initializing PCL SLAM\n");
-  // Perform match computations
-  compute_timer = nh.createTimer(ros::Duration(0.05), &Sub8BuoyDetector::compute_loop, this);
+
+  // Check if radius parameter exists
+  // TODO: Make this templated library code, allow defaults
+  if (nh.hasParam("buoy_radius")) {
+    nh.getParam("buoy_radius", buoy_radius);
+  } else {
+    buoy_radius = 0.1016;  // m
+  }
+
+  compute_timer = nh.createTimer(ros::Duration(0.09), &Sub8BuoyDetector::compute_loop, this);
   image_sub = image_transport.subscribeCamera("stereo/left/image_rect_color", 1,
                                               &Sub8BuoyDetector::image_callback, this);
 
@@ -127,13 +136,30 @@ bool Sub8BuoyDetector::request_buoy_position(sub8_msgs::VisionRequest::Request &
   std::string tf_frame;
   Eigen::Vector3f position;
 
-  if (!got_cloud) {
+  if ((!got_cloud) && (!got_image)) {
     // Failure, yo!
+    ROS_ERROR("Requested buoy position before we had both image and point cloud data");
     return false;
   }
   computing = true;
   tf_frame = cam_model.tfFrame();
-  determine_buoy_position(cam_model, current_image, current_cloud, position);
+
+  // Cache the current image
+  cv::Mat target_image = current_image.clone();
+
+  // Filter the cached point cloud
+  sub::PointCloudT::Ptr target_cloud(new sub::PointCloudT());
+  sub::PointCloudT::Ptr current_cloud_filtered(new sub::PointCloudT());
+  sub::voxel_filter<sub::PointXYZT>(current_cloud, current_cloud_filtered,
+                                    0.05f  // leaf size
+                                    );
+
+  sub::statistical_outlier_filter<sub::PointXYZT>(current_cloud_filtered, target_cloud,
+                                                  20,   // mean k
+                                                  0.05  // std_dev threshold
+                                                  );
+
+  determine_buoy_position(cam_model, target_image, target_cloud, position);
 
   tf::pointEigenToMsg(position.cast<double>(), resp.pose.pose.position);
   resp.pose.header.frame_id = tf_frame;
@@ -157,6 +183,12 @@ void Sub8BuoyDetector::compute_loop(const ros::TimerEvent &timer_event) {
 #endif
 }
 
+// Compute a 3d point on the surface of the closest buoy
+//
+// @param[in] camera_model An image_geometry pinhole camera model (Must have data!)
+// @param[in] image_raw The current image (Must correspond to the point cloud)
+// @param[in] point_cloud_raw The current PointCloud (Must correspond to the image)
+// @param[out] center An approximate center of the buoy
 void Sub8BuoyDetector::determine_buoy_position(
     const image_geometry::PinholeCameraModel &camera_model, const cv::Mat &image_raw,
     const sub::PointCloudT::Ptr &point_cloud_raw, Eigen::Vector3f &center) {
@@ -202,7 +234,11 @@ void Sub8BuoyDetector::determine_buoy_position(
     }
     sub::PointXYZT centroid_projected =
         sub::project_uv_to_cloud(*point_cloud_raw, contour_centroid, camera_model);
-    buoy_centers.push_back(sub::point_to_eigen(centroid_projected));
+
+    Eigen::Vector3f surface_point = sub::point_to_eigen(centroid_projected);
+    // Slide the surface point one buoy radius away from the camera to approximate the 3d center
+    Eigen::Vector3f approximate_center = surface_point + (buoy_radius * surface_point.normalized());
+    buoy_centers.push_back(approximate_center);
   }
   // ^^^^ The above could be eliminated with better approach
 
@@ -223,6 +259,7 @@ void Sub8BuoyDetector::determine_buoy_position(
 void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_msg,
                                       const sensor_msgs::CameraInfoConstPtr &info_msg) {
   need_new_cloud = true;
+  got_image = true;
 
 #ifdef VISUALIZE
   pcl::console::print_highlight("Getting image\n");
@@ -254,21 +291,19 @@ void Sub8BuoyDetector::cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &
   } else {
     return;
   }
-  sub::PointCloudT::Ptr scene(new sub::PointCloudT());
-  sub::PointCloudT::Ptr scene_buffer(new sub::PointCloudT());
 
-  pcl::fromROSMsg(*input_cloud, *scene);
-
-  sub::voxel_filter<sub::PointXYZT>(scene, scene_buffer,
-                                    0.05f  // leaf size
-                                    );
+  // sub::PointCloudT::Ptr scene(new sub::PointCloudT());
+  // sub::PointCloudT::Ptr scene_buffer(new sub::PointCloudT());
 
   current_cloud.reset(new sub::PointCloudT());
-  sub::statistical_outlier_filter<sub::PointXYZT>(scene_buffer, current_cloud,
-                                                  20,   // mean k
-                                                  0.05  // std_dev threshold
-                                                  );
+  pcl::fromROSMsg(*input_cloud, *current_cloud);
 
+/*
+sub::statistical_outlier_filter<sub::PointXYZT>(scene_buffer, current_cloud,
+                                                20,   // mean k
+                                                0.05  // std_dev threshold
+                                                );
+                                                */
 #ifdef VISUALIZE
   pcl::console::print_highlight("Getting Point Cloud\n");
   if (!got_cloud) {
