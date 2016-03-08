@@ -33,7 +33,7 @@ To handle potential timing discrepancy, the timestamp at which the images and po
 
 ```shell
     # running
-    rosrun sub8_pcl pcl_buoy
+    rosrun sub8_perception pcl_buoy
 
     # requesting results
     rosservice call /vision/buoys/red "target_name: 'red'"
