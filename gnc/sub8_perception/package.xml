@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package>
+  <name>sub8_perception</name>
+  <version>1.0.0</version>
+  <description>The sub8_perception package</description>
+
+  <maintainer email="jpanikulam@ufl.edu">jacob</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <run_depend>roscpp</run_depend>
+  <build_depend>rospy</build_depend>
+  <run_depend>rospy</run_depend>
+  <build_depend>image_transport</build_depend>
+  <run_depend>image_transport</run_depend>
+  <build_depend>image_geometry</build_depend>
+  <run_depend>image_geometry</run_depend>
+  <build_depend>cv_bridge</build_depend>
+  <run_depend>cv_bridge</run_depend>
+  <build_depend>sub8_build_tools</build_depend>
+  <run_depend>sub8_build_tools</run_depend>
+  <build_depend>sub8_msgs</build_depend>
+  <run_depend>sub8_msgs</run_depend>
+
+  <export>
+  </export>
+</package>
