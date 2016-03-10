@@ -8,6 +8,10 @@
 [An Investigation into Computer Vision Techniques for Underwater Object Recognition]
 (http://www.cs.bath.ac.uk/~mdv/courses/CM30082/projects.bho/2005-6/wallis-clb-dissertation-2005-6v2.pdf)
 
+[Inference Machines](http://www.cs.cmu.edu/~dmunoz/projects/infer_machine.html)
+
+[Understanding Belief Propagation](http://www.merl.com/publications/docs/TR2001-22.pdf)
+
 # Not yet on the reading list
 
 * [Localization from wi-fi signals](http://rse-lab.cs.washington.edu/papers/wifi-location-aaai-05.pdf)
