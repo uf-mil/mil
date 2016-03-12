@@ -92,4 +92,3 @@ fi
 
 cd $CATKIN_DIR/src
 ./$CATKIN_DIR/src/Sub8/scripts/get_dependencies.sh -d $DEPS_DIR
-catkin_make -C "$CATKIN_DIR"
