@@ -33,14 +33,15 @@ class _Sub(object):
     def __init__(self, node_handle):
         self._node_handle = node_handle
 
+    @util.cancellableInlineCallbacks
     def _init(self):
-        self._moveto_action_client = action.ActionClient(self._node_handle, 'moveto', MoveToAction)
-        self._odom_sub = self._node_handle.subscribe('odom', Odometry)
-        self._trajectory_sub = self._node_handle.subscribe('trajectory', PoseTwistStamped)
-        self._trajectory_pub = self._node_handle.advertise('trajectory', PoseTwistStamped)
+        self._moveto_action_client = yield action.ActionClient(self._node_handle, 'moveto', MoveToAction)
+        self._odom_sub = yield self._node_handle.subscribe('odom', Odometry)
+        self._trajectory_sub = yield self._node_handle.subscribe('trajectory', PoseTwistStamped)
+        self._trajectory_pub = yield self._node_handle.advertise('trajectory', PoseTwistStamped)
 
-        self._dvl_range_sub = self._node_handle.subscribe('dvl/range', Float64Stamped)
-        self._tf_listener = tf.TransformListener(self._node_handle)
+        self._dvl_range_sub = yield self._node_handle.subscribe('dvl/range', Float64Stamped)
+        self._tf_listener = yield tf.TransformListener(self._node_handle)
         defer.returnValue(self)
 
     @property

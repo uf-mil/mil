@@ -7,12 +7,13 @@ from twisted.internet import defer, reactor
 import txros
 from sub8 import tx_sub
 import missions
+import sys
 
 
 @txros.util.cancellableInlineCallbacks
 def main():
     try:
-        nh, args = txros.NodeHandle.from_argv_with_remaining('run_method', anonymous=True)
+        nh_args = yield txros.NodeHandle.from_argv_with_remaining('run_method', anonymous=True)
         available_missions = [mission_name for mission_name in dir(missions) if not mission_name.startswith('_')]
 
         usage_msg = ("Input the name of the mission you would like to run.\nExamples: " +
@@ -23,6 +24,8 @@ def main():
                             help="The name of the mission you'd like to run (ex: stop)")
 
         # Get all of the missions in the mission folder
+        # print sys.argv[1:]
+        nh, args = nh_args
         args = parser.parse_args(args[1:])
         mission_name = args.mission_name
         assert mission_name in available_missions, "'{}' is not an available mission; we have: {}".format(

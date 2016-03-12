@@ -10,16 +10,20 @@ Sub8 has many dependencies, but we have a convenient install script. If you don'
 
 I suggest you do the following (Don't run as sudo!):
 
-    wget -O install_sub8.sh https://github.com/uf-mil/Sub8/blob/master/install.sh
+    wget -O install_sub8.sh https://raw.githubusercontent.com/uf-mil/Sub8/master/install.sh
     chmod +x ./install_sub8.sh
-    ./install_sub8.sh
+    ./install_sub8.sh -d ~/repos/sub_dependencies -c ~/catkin_ws
+    cd ~/catkin_ws
+    catkin_make
 
 
 #### If you have already cloned the sub (Or done sub work)
 
 You can just do (Don't run as sudo!)
 
-    ./install.sh
+    cd ~/catkin_ws/src
+    ./Sub8/scripts/get_dependencies.sh -d ~/sub_dependencies
+    catkin_make -C ..
 
 In the Sub8 root directory. It will check if you have dependencies installed and *not install them* if you already have them
 
