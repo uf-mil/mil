@@ -118,10 +118,10 @@ instlog "Getting misc make tools"
 sudo apt-get install -qq binutils-dev
 
 instlog "Getting packages we need to install from source"
-python_from_git https://github.com/txros/txros.git txros txros/txros
 python_from_git https://github.com/vispy/vispy.git vispy vispy 0495d8face28571ad19c64cbc047327b084a7c03
 
 # rawgps-tools
+ros_git_get https://github.com/txros/txros.git
 ros_git_get https://github.com/uf-mil/rawgps-tools.git
 
 # Ceres
