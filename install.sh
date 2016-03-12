@@ -91,4 +91,4 @@ if ! ls "$CATKIN_DIR/src" | grep Sub8; then
 fi
 
 cd $CATKIN_DIR/src
-./$CATKIN_DIR/src/Sub8/scripts/get_dependencies.sh -d $DEPS_DIR
+$CATKIN_DIR/src/Sub8/scripts/get_dependencies.sh -d $DEPS_DIR
