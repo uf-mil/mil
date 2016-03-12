@@ -177,6 +177,10 @@ sudo apt-get install -qq python-scipy python-pygame python-numpy python-serial
 sudo apt-get install -qq libpcl-1.7-all libpcl-1.7-all-dev ros-indigo-pcl-conversions
 sudo apt-get install -qq libompl-dev
 sudo apt-get install -qq ros-indigo-sophus
+sudo apt-get install -qq ros-indigo-driver-base
+sudo apt-get install -qq ros-indigo-camera-info-manager
+sudo apt-get install -qq ros-indigo-spacenav-node
+
 sudo apt-get -qq install libusb-1.0-0-dev
 
 catkin_make -C $INSTALL_FOLDER/..
