@@ -10,16 +10,16 @@ Sub8 has many dependencies, but we have a convenient install script. If you don'
 
 I suggest you do the following (Don't run as sudo!):
 
-    wget -O install_sub8.sh https://github.com/uf-mil/Sub8/blob/master/install.sh
-    chmod +x ./install_sub8.sh
-    ./install_sub8.sh
+	wget -O install_sub8.sh https://github.com/uf-mil/Sub8/blob/master/install.sh
+	chmod +x ./install_sub8.sh
+	./install_sub8.sh
 
 
 #### If you have already cloned the sub (Or done sub work)
 
 You can just do (Don't run as sudo!)
 
-    ./install.sh
+	./install.sh
 
 In the Sub8 root directory. It will check if you have dependencies installed and *not install them* if you already have them
 
