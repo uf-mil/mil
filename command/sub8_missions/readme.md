@@ -6,6 +6,9 @@ Sub Mission Manager
 ```shell
     # Only works if you're the sub!
     roslaunch sub8_launch sub8.launch
+    # If you're not the sub
+    rosparam set /draw false  # Set to true if you want visualization
+    roslaunch sub8_simulation sim_full.launch
 ```
 
 # Running the 3d mouse waypoint tool

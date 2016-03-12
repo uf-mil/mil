@@ -183,4 +183,4 @@ sudo apt-get install -qq ros-indigo-spacenav-node
 
 sudo apt-get -qq install libusb-1.0-0-dev
 
-catkin_make -C $INSTALL_FOLDER/..
+# catkin_make -C $INSTALL_FOLDER/..
