@@ -84,7 +84,6 @@ void PDController::control_loop(const ros::TimerEvent &timer_event) {
   world_torque = ((kp_angle * angle_axis) + (kd_angle * orientation_error_gradient) +
                    (ki_angle * orientation_error_integral));
   body_torque = current_state.orientation * world_torque;
-  std::cout << world_torque.transpose() << std::endl;
 
   // ******* Transmit Wrenches *******
   body_wrench << body_force, body_torque;

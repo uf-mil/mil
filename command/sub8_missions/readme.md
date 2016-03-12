@@ -4,6 +4,7 @@ Sub Mission Manager
 # Running the sub
 
 ```shell
+    # Only works if you're the sub!
     roslaunch sub8_launch sub8.launch
 ```
 
