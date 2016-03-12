@@ -98,16 +98,13 @@ if ! [ $(basename $PWD) == "src" ]; then
     exit
 fi
 
+mkdir -p $DEPS_DIR
 
 instlog "Fixing that stupid chrome thing"
 sudo sed -i -e 's/deb http/deb [arch=amd64] http/' "/etc/apt/sources.list.d/google-chrome.list"
 
 # Get ready to install ROS
 instlog "Getting stuff to install ROS"
-sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe"
-sudo sh -c 'echo "deb-src http://archive.ubuntu.com/ubuntu trusty main universe" >> /etc/apt/sources.list'
-sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xB01FA116
 
 instlog "Updating apt-get"
 sudo apt-get update -qq
@@ -181,3 +178,5 @@ sudo apt-get install -qq libpcl-1.7-all libpcl-1.7-all-dev ros-indigo-pcl-conver
 sudo apt-get install -qq libompl-dev
 sudo apt-get install -qq ros-indigo-sophus
 sudo apt-get -qq install libusb-1.0-0-dev
+
+catkin_make -C $INSTALL_FOLDER/..
