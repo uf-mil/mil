@@ -11,8 +11,8 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 if(CATKIN_ENABLE_TESTING)
-  foreach(T
-      montecarlo_tests/montecarlo_pd_controller.test)
-      add_rostest(${T})
-  endforeach()
+  # foreach(T
+      # montecarlo_tests/montecarlo_pd_controller.test)
+      # add_rostest(${T})
+  # endforeach()
 endif()

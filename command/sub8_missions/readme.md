@@ -4,7 +4,11 @@ Sub Mission Manager
 # Running the sub
 
 ```shell
+    # Only works if you're the sub!
     roslaunch sub8_launch sub8.launch
+    # If you're not the sub
+    rosparam set /draw false  # Set to true if you want visualization
+    roslaunch sub8_simulation sim_full.launch
 ```
 
 # Running the 3d mouse waypoint tool
@@ -25,11 +29,11 @@ tags for greppers: 3dmouse 3d-mouse 3dconnexion
 Here are some examples of missions you might run. Ex: "stop" stops the sub where it is, forward_1_m goes forward 1 meter, level_off zeros roll and pitch.
 
 ```shell
-    rosrun sub8_missions mission stop
+    rosrun sub8_missions tx_mission surface
 
-    rosrun sub8_missions mission forward_1_m
+    rosrun sub8_missions tx_mission level_off
 
-    rosrun sub8_missions mission level_off
+    rosrun sub8_missions tx_mission tx_test
 ```
 
 
@@ -107,6 +111,7 @@ We haven't fully decided how vision data, etc will be shared with the mission ma
 
 
 # TODO
+    - Add rosrun sub8_missions list_missions
     - Chaining together multiple missions in the command line
     - Responding to sensor input
     - Intelligently using motion planning (instead of simply using moveto)
