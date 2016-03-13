@@ -125,25 +125,6 @@ target_link_libraries(
     dl
 )
 
-add_executable(
-  frame_history
-    nodes/frame_history.cpp
-)
-
-add_dependencies(
-  frame_history
-   sub8_msgs_generate_messages_cpp
-   ${catkin_EXPORTED_TARGETS}
-)
-
-target_link_libraries(
-  frame_history
-    ${catkin_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${OpenCV_INCLUDE_DIRS}
-    bfd
-    dl
-)
 install(
   TARGETS
 )
