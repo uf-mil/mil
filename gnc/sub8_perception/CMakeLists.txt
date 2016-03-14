@@ -101,30 +101,6 @@ target_link_libraries(
     dl
 )
 
-add_executable(
-  torpedo_board
-    nodes/torpedo_board.cpp
-)
-
-add_dependencies(
-  torpedo_board
-   sub8_msgs_generate_messages_cpp
-   ${catkin_EXPORTED_TARGETS}
-)
-
-target_link_libraries(
-  torpedo_board
-    sub8_pcl
-    ${catkin_LIBRARIES}
-    ${PCL_COMMON_LIBRARIES}
-    ${PCL_IO_LIBRARIES}
-    ${PCL_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${OpenCV_INCLUDE_DIRS}
-    bfd
-    dl
-)
-
 install(
   TARGETS
 )
