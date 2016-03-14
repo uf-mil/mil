@@ -53,7 +53,7 @@ public:
 	int frames_available();
 
 	const std::string topic_name;
-	const unsigned int history_size;
+	const size_t history_size;
 
 private:
 	ros::NodeHandle nh;

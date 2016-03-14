@@ -34,8 +34,6 @@ add_service_files(
   VisionRequest.srv
   BMatrix.srv
   PathPlan.srv
-  VisionRequest.srv
-
 )
 
 # add_action_files(
