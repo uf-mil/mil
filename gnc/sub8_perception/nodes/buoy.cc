@@ -84,6 +84,27 @@ class Sub8BuoyDetector {
   bool got_cloud, got_image, line_added, computing, need_new_cloud;
 };
 
+class Sub8TorpedoBoardDetector {
+public:
+  Sub8TorpedoBoardDetector();
+  ~Sub8TorpedoBoardDetector();
+  void image_callback(const sensor_msgs::ImageConstPtr &image_msg,
+                      const sensor_msgs::CameraInfoConstPtr &info_msg);
+  void determine_torpedo_board_position(const image_geometry::PinholeCameraModel &cam_model,
+                               const cv::Mat &image_raw);
+  bool request_torpedo_board_position(sub8_msgs::VisionRequest::Request &req,
+                             sub8_msgs::VisionRequest::Response &resp);
+  
+  sub::FrameHistory frame_history;
+
+  ros::NodeHandle nh;
+
+  image_transport::CameraSubscriber image_sub;  // ?? gcc complains if I remove parentheses
+  image_transport::ImageTransport image_transport;
+  image_geometry::PinholeCameraModel cam_model;
+
+};
+
 Sub8BuoyDetector::Sub8BuoyDetector()
     : vp1(0),
       vp2(1),
@@ -319,8 +340,130 @@ sub::statistical_outlier_filter<sub::PointXYZT>(scene_buffer, current_cloud,
   got_cloud = true;
 }
 
+
+Sub8TorpedoBoardDetector::Sub8TorpedoBoardDetector()
+try : frame_history("/forward_camera/image_color", 10), image_transport(nh)
+{
+  std::string img_topic = "/stereo/left/image_raw";
+  ROS_INFO("Constructing Sub8TorpedoBoardDetector");
+  image_sub = image_transport.subscribeCamera(img_topic, 1, &Sub8TorpedoBoardDetector::image_callback, this);
+  // ROS_INFO("Subscribed to  %s ", img_topic.c_str());
+}
+catch(const std::exception &e){
+  ROS_ERROR("Error constructing Sub8TorpedoBoardDetector using initializer list: ");
+  ROS_ERROR(e.what());
+}
+
+
+Sub8TorpedoBoardDetector::~Sub8TorpedoBoardDetector(){
+
+}
+
+void plotHist(cv::Mat gray, std::string window_name, size_t filter_kernel_size = 0);
+void Sub8TorpedoBoardDetector::image_callback(const sensor_msgs::ImageConstPtr &image_msg,
+                               const sensor_msgs::CameraInfoConstPtr &info_msg){
+  ROS_INFO("Torpedo board image_callback receiving image message");
+  cv_bridge::CvImagePtr input_bridge;
+  cv::Mat current_image;
+  cv::Mat hsv_image, hue_blurred, sat_blurred;
+  std::vector<cv::Mat> hsv_channels;
+  cv::Mat yellow_thresh;
+  cv::Mat red_thresh;
+  try {
+    input_bridge = cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::BGR8);
+    current_image = input_bridge->image;
+  } catch (cv_bridge::Exception &ex) {
+    ROS_ERROR("[draw_frames] Failed to convert image");
+    return;
+  }
+  cam_model.fromCameraInfo(info_msg);
+  cv::resize(current_image, current_image, cv::Size(0,0), 0.5, 0.5);
+  // cv::imshow("Color median filtered", current_image);
+  cv::cvtColor(current_image, hsv_image, CV_BGR2HSV);
+  cv::split(hsv_image, hsv_channels);
+  cv::medianBlur(hsv_channels[0], hue_blurred, 5); // High numbers work better, need to select experimentally
+  cv::medianBlur(hsv_channels[1], sat_blurred, 5);
+  cv::inRange(hsv_channels[0], cv::Scalar(53), cv::Scalar(87), yellow_thresh);
+  cv::imshow("hue median filtered", hue_blurred);               plotHist(hue_blurred, "hue_blurred", 5);
+  // cv::imshow("saturation", hsv_channels[1]);
+  cv::imshow("saturation median filtered", sat_blurred);        plotHist(sat_blurred, "sat_blurred", 5);
+  // cv::imshow("yellow thresh 53-87 from hue_blurred", yellow_thresh);
+  cv::waitKey(1);
+  ROS_INFO("Done Displaying opencv output image");
+}
+
+
+void Sub8TorpedoBoardDetector::determine_torpedo_board_position(const image_geometry::PinholeCameraModel &cam_model,
+                                             const cv::Mat &image_raw){
+
+}
+
+
+bool Sub8TorpedoBoardDetector::request_torpedo_board_position(sub8_msgs::VisionRequest::Request &req,
+                                           sub8_msgs::VisionRequest::Response &resp){
+  return true;
+}
+
+
 int main(int argc, char **argv) {
   ros::init(argc, argv, "pcl_slam");
-  boost::shared_ptr<Sub8BuoyDetector> sub8_buoys(new Sub8BuoyDetector());
+  ROS_INFO("Initializing node /pcl_slam");
+  // boost::shared_ptr<Sub8BuoyDetector> sub8_buoys(new Sub8BuoyDetector());
+  Sub8TorpedoBoardDetector sub8_torp_board = Sub8TorpedoBoardDetector();
+  ROS_INFO("Spinning ros callbacks");
   ros::spin();
+}
+
+void plotHist(cv::Mat gray, std::string window_name, size_t filter_kernel_size){
+    // Initialize parameters
+    int histSize = 256;    // bin size
+    float range[] = { 0, 255 };
+    const float *ranges[] = { range };
+ 
+    // Calculate histogram
+    cv::MatND hist, hist_derivative;
+    cv::calcHist( &gray, 1, 0, cv::Mat(), hist, 1, &histSize, ranges, true, false );
+
+    // Smooth histogram
+    cv::MatND hist_smooth = sub::smooth_histogram(hist, 7, 1.5);
+
+    // Calculate histogram derivative
+    hist_derivative = hist.clone();
+    hist_derivative.at<float>(0) = 0;
+    hist_derivative.at<float>(histSize - 1) = 0;
+    for (int i = 1; i < histSize - 1; ++i)
+    {
+      hist_derivative.at<float>(i) = (hist.at<float>(i + 1) - hist.at<float>(i - 1)) / 2.0;
+    }
+ 
+    // Plot the histogram
+    int hist_w = 512; int hist_h = 400;
+    int bin_w = cvRound( (double) hist_w/histSize );
+ 
+    cv::Mat histImage( hist_h, hist_w, CV_8UC1, cv::Scalar( 0,0,0) );
+    cv::Mat histDerivImage( hist_h, hist_w, CV_8UC1, cv::Scalar( 0,0,0) );
+    cv::normalize(hist, hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat() );
+    cv::normalize(hist_derivative, hist_derivative, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat() );
+     
+    for( int i = 1; i < histSize; i++ )
+    {
+      // Plot image histogram
+      cv::line( histImage, cv::Point( bin_w*(i-1), hist_h - cvRound(hist.at<float>(i-1)) ) ,
+                       cv::Point( bin_w*(i), hist_h - cvRound(hist.at<float>(i)) ),
+                       cv::Scalar( 255, 0, 0), 2, 8, 0  );
+      // Plot image histogram derivative
+      cv::line( histDerivImage, cv::Point( bin_w*(i-1), hist_h - cvRound(hist_derivative.at<float>(i-1)) ) ,
+                       cv::Point( bin_w*(i), hist_h - cvRound(hist_derivative.at<float>(i)) ),
+                       cv::Scalar( 255, 0, 0), 2, 8, 0  );
+    }
+    cv::Mat zeros_like_hists = cv::Mat::zeros(histImage.size(), CV_8UC1);
+    std::vector<cv::Mat> hist_graphs_vec;
+    hist_graphs_vec.push_back(histImage); 
+    hist_graphs_vec.push_back(histDerivImage);
+    hist_graphs_vec.push_back(zeros_like_hists);
+    cv::Mat hist_graphs;
+    cv::merge(hist_graphs_vec, hist_graphs);
+ 
+    cv::namedWindow( window_name, 1 );    cv::imshow( window_name, hist_graphs );
+    // cv::namedWindow( window_name + "_derivative", 1 );    cv::imshow( window_name + "_derivative", histDerivImage);
 }

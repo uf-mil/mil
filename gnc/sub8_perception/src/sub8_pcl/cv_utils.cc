@@ -1,11 +1,61 @@
 #include <sub8_pcl/cv_tools.hpp>
 
 namespace sub {
+
 cv::Point contour_centroid(Contour& contour) {
   cv::Moments m = cv::moments(contour, true);
   cv::Point center(m.m10 / m.m00, m.m01 / m.m00);
   return center;
 }
+
+
+cv::MatND smooth_histogram(const cv::MatND &histogram, size_t filter_kernel_size, float sigma){
+	// Smoothen histogram
+	/**
+	    Currently only support smoothing using gaussian kernels with sigma = 1.2 of size 3 or 5
+	*/
+
+	cv::MatND hist = histogram.clone();
+	std::vector<float> gauss_kernel = generate_gaussian_kernel_1D(filter_kernel_size, sigma);
+	size_t histSize = hist.total();
+	int offset = (filter_kernel_size - 1) / 2;
+	for (int i = offset; i < histSize-offset; i++ )   // Convolve histogram values with gaussian kernel
+	{
+		int sum = 0;
+		int kernel_idx = 0;
+		for (int j = i - offset; j <= i + offset; j++){
+			sum += (hist.at<float>(j) * gauss_kernel[kernel_idx++]);
+	    }
+	    hist.at<float>(i) = sum;
+	}
+	for (int i = 0; i < offset; ++i)  // Pad filtered result with zeroes
+	{
+		hist.at<float>(i) = 0;
+		hist.at<float>(histSize - 1 - i) = 0;
+	}
+	return hist;
+}
+
+
+std::vector<float> generate_gaussian_kernel_1D(size_t kernel_size, float sigma){
+	std::vector<float> kernel;
+	int middle_index = (kernel_size - 1) / 2;
+	int first_discrete_sample_x = -(middle_index);
+	for (int i = first_discrete_sample_x; i <= 0; i++)
+	{
+		float power = -0.5 * (float(i)/sigma) * (float(i)/sigma);
+		kernel.push_back( exp(power) );				// From definition of Standard Normal Distribution
+	}
+	for(int i = 1; i <= middle_index; i++){			// Kernel is symmetric
+		kernel.push_back(kernel[middle_index - i]);
+	}
+	// Normalize kernel (sum of values should equal 1.0)
+	float sum = 0;
+	for (size_t i = 0; i < kernel_size; i++){ sum += kernel[i];	}
+	for (size_t i = 0; i < kernel_size; i++){ kernel[i] /= sum;	}
+	return kernel;
+}
+
 
 ImageWithCameraInfo::ImageWithCameraInfo(sensor_msgs::ImageConstPtr _image_msg,
 										 sensor_msgs::CameraInfoConstPtr _info_msg)
@@ -17,12 +67,12 @@ FrameHistory::FrameHistory(std::string img_topic, unsigned int hist_size)
 {
 	std::stringstream console_msg;
 	console_msg << "[FrameHistory] size set to " << history_size << std::endl
-				<< "\tSubscribing to image topic: " << topic_name << std::endl;
+				<< "\tSubscribing to image topic: " << topic_name;
 	ROS_INFO(console_msg.str().c_str());
 	_image_sub = _image_transport.subscribeCamera(img_topic, 1, &FrameHistory::image_callback, this);
 	if(_image_sub.getNumPublishers() == 0){
 		std::stringstream error_msg;
-		error_msg << "[FrameHistory] no publishers currently publishing to " << topic_name << std::endl;
+		error_msg << "[FrameHistory] no publishers currently publishing to " << topic_name;
 		ROS_WARN(error_msg.str().c_str());
 	}
 }
