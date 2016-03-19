@@ -10,16 +10,11 @@ cv::Point contour_centroid(Contour& contour) {
 
 
 cv::MatND smooth_histogram(const cv::MatND &histogram, size_t filter_kernel_size, float sigma){
-	// Smoothen histogram
-	/**
-	    Currently only support smoothing using gaussian kernels with sigma = 1.2 of size 3 or 5
-	*/
-
 	cv::MatND hist = histogram.clone();
 	std::vector<float> gauss_kernel = generate_gaussian_kernel_1D(filter_kernel_size, sigma);
 	size_t histSize = hist.total();
-	int offset = (filter_kernel_size - 1) / 2;
-	for (int i = offset; i < histSize-offset; i++ )   // Convolve histogram values with gaussian kernel
+	size_t offset = (filter_kernel_size - 1) / 2;
+	for (size_t i = offset; i < histSize-offset; i++ )   // Convolve histogram values with gaussian kernel
 	{
 		int sum = 0;
 		int kernel_idx = 0;
@@ -54,6 +49,31 @@ std::vector<float> generate_gaussian_kernel_1D(size_t kernel_size, float sigma){
 	for (size_t i = 0; i < kernel_size; i++){ sum += kernel[i];	}
 	for (size_t i = 0; i < kernel_size; i++){ kernel[i] /= sum;	}
 	return kernel;
+}
+
+
+std::vector<cv::Point> find_histogram_modes(const cv::MatND &histogram){
+  std::vector<cv::Point> local_maxima;
+  for(size_t idx = 1; idx < histogram.total() - 1; idx++){
+    if((histogram.at<float>(idx-1) < histogram.at<float>(idx)) && (histogram.at<float>(idx+1) < histogram.at<float>(idx))){
+      local_maxima.push_back(cv::Point(idx, histogram.at<float>(idx)));
+    }
+  }
+  return local_maxima;
+}
+
+
+unsigned int select_hist_mode(std::vector<cv::Point> &histogram_modes, unsigned int target){
+  int separation_threshold = 5;
+  std::vector<int> distances;
+  BOOST_FOREACH(cv::Point mode, histogram_modes){
+    distances.push_back(mode.x - target);
+  }
+  int min_idx = 0;
+  for(int i = 0; i < distances.size(); i++){
+    if(distances[i] <= distances[min_idx]) min_idx = i;
+  }
+  return histogram_modes[min_idx].x;
 }
 
 

@@ -344,7 +344,7 @@ sub::statistical_outlier_filter<sub::PointXYZT>(scene_buffer, current_cloud,
 Sub8TorpedoBoardDetector::Sub8TorpedoBoardDetector()
 try : frame_history("/forward_camera/image_color", 10), image_transport(nh)
 {
-  std::string img_topic = "/stereo/left/image_raw";
+  std::string img_topic = /*"/forward_camera/image_color"*/ "/stereo/left/image_raw";
   ROS_INFO("Constructing Sub8TorpedoBoardDetector");
   image_sub = image_transport.subscribeCamera(img_topic, 1, &Sub8TorpedoBoardDetector::image_callback, this);
   // ROS_INFO("Subscribed to  %s ", img_topic.c_str());
@@ -359,10 +359,12 @@ Sub8TorpedoBoardDetector::~Sub8TorpedoBoardDetector(){
 
 }
 
-void plotHist(cv::Mat gray, std::string window_name, size_t filter_kernel_size = 0);
+void torpedo_board_segmentation(cv::Mat image, std::string window_name, size_t filter_kernel_size = 0);
+
+
 void Sub8TorpedoBoardDetector::image_callback(const sensor_msgs::ImageConstPtr &image_msg,
                                const sensor_msgs::CameraInfoConstPtr &info_msg){
-  ROS_INFO("Torpedo board image_callback receiving image message");
+  // ROS_INFO("Torpedo board image_callback receiving image message");
   cv_bridge::CvImagePtr input_bridge;
   cv::Mat current_image;
   cv::Mat hsv_image, hue_blurred, sat_blurred;
@@ -384,12 +386,13 @@ void Sub8TorpedoBoardDetector::image_callback(const sensor_msgs::ImageConstPtr &
   cv::medianBlur(hsv_channels[0], hue_blurred, 5); // High numbers work better, need to select experimentally
   cv::medianBlur(hsv_channels[1], sat_blurred, 5);
   cv::inRange(hsv_channels[0], cv::Scalar(53), cv::Scalar(87), yellow_thresh);
-  cv::imshow("hue median filtered", hue_blurred);               plotHist(hue_blurred, "hue_blurred", 5);
+  cv::imshow("hue median filtered", hue_blurred);
+  torpedo_board_segmentation(hue_blurred, "hue_blurred", 5);
   // cv::imshow("saturation", hsv_channels[1]);
-  cv::imshow("saturation median filtered", sat_blurred);        plotHist(sat_blurred, "sat_blurred", 5);
-  // cv::imshow("yellow thresh 53-87 from hue_blurred", yellow_thresh);
+  // cv::imshow("saturation median filtered", sat_blurred);        plotHist(sat_blurred, "sat_blurred", 5);
+  cv::imshow("yellow thresh 53-87 from hue_blurred", yellow_thresh);
   cv::waitKey(1);
-  ROS_INFO("Done Displaying opencv output image");
+  // ROS_INFO("Done Displaying opencv output image");
 }
 
 
@@ -414,7 +417,7 @@ int main(int argc, char **argv) {
   ros::spin();
 }
 
-void plotHist(cv::Mat gray, std::string window_name, size_t filter_kernel_size){
+void torpedo_board_segmentation(cv::Mat image, std::string window_name, size_t filter_kernel_size){
     // Initialize parameters
     int histSize = 256;    // bin size
     float range[] = { 0, 255 };
@@ -422,18 +425,18 @@ void plotHist(cv::Mat gray, std::string window_name, size_t filter_kernel_size){
  
     // Calculate histogram
     cv::MatND hist, hist_derivative;
-    cv::calcHist( &gray, 1, 0, cv::Mat(), hist, 1, &histSize, ranges, true, false );
+    cv::calcHist( &image, 1, 0, cv::Mat(), hist, 1, &histSize, ranges, true, false );
 
     // Smooth histogram
     cv::MatND hist_smooth = sub::smooth_histogram(hist, 7, 1.5);
 
-    // Calculate histogram derivative
-    hist_derivative = hist.clone();
+    // Calculate histogram derivative (central finite difference)
+    hist_derivative = hist_smooth.clone();
     hist_derivative.at<float>(0) = 0;
     hist_derivative.at<float>(histSize - 1) = 0;
     for (int i = 1; i < histSize - 1; ++i)
     {
-      hist_derivative.at<float>(i) = (hist.at<float>(i + 1) - hist.at<float>(i - 1)) / 2.0;
+      hist_derivative.at<float>(i) = (hist_smooth.at<float>(i + 1) - hist_smooth.at<float>(i - 1)) / 2.0;
     }
  
     // Plot the histogram
@@ -442,19 +445,19 @@ void plotHist(cv::Mat gray, std::string window_name, size_t filter_kernel_size){
  
     cv::Mat histImage( hist_h, hist_w, CV_8UC1, cv::Scalar( 0,0,0) );
     cv::Mat histDerivImage( hist_h, hist_w, CV_8UC1, cv::Scalar( 0,0,0) );
-    cv::normalize(hist, hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat() );
+    cv::normalize(hist_smooth, hist_smooth, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat() );
     cv::normalize(hist_derivative, hist_derivative, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat() );
      
     for( int i = 1; i < histSize; i++ )
     {
       // Plot image histogram
-      cv::line( histImage, cv::Point( bin_w*(i-1), hist_h - cvRound(hist.at<float>(i-1)) ) ,
-                       cv::Point( bin_w*(i), hist_h - cvRound(hist.at<float>(i)) ),
+      cv::line( histImage, cv::Point( bin_w*(i-1), hist_h - cvRound(hist_smooth.at<float>(i-1)) ) ,
+                       cv::Point( bin_w*(i), hist_h - cvRound(hist_smooth.at<float>(i)) ),
                        cv::Scalar( 255, 0, 0), 2, 8, 0  );
       // Plot image histogram derivative
       cv::line( histDerivImage, cv::Point( bin_w*(i-1), hist_h - cvRound(hist_derivative.at<float>(i-1)) ) ,
                        cv::Point( bin_w*(i), hist_h - cvRound(hist_derivative.at<float>(i)) ),
-                       cv::Scalar( 255, 0, 0), 2, 8, 0  );
+                       cv::Scalar( 122, 0, 0), 1, 8, 0  );
     }
     cv::Mat zeros_like_hists = cv::Mat::zeros(histImage.size(), CV_8UC1);
     std::vector<cv::Mat> hist_graphs_vec;
@@ -466,4 +469,26 @@ void plotHist(cv::Mat gray, std::string window_name, size_t filter_kernel_size){
  
     cv::namedWindow( window_name, 1 );    cv::imshow( window_name, hist_graphs );
     // cv::namedWindow( window_name + "_derivative", 1 );    cv::imshow( window_name + "_derivative", histDerivImage);
+
+    std::vector<cv::Point> hue_modes = sub::find_histogram_modes(hist_smooth);
+    int yellow_mode = sub::select_hist_mode(hue_modes, 0);
+    // local minima to the right of yellow mode
+    int yellow_high_thresh = 0;
+    int yellow_low_thresh = 0;
+    cv::Scalar hist_deriv_mean;
+    cv::Scalar hist_deriv_stddev;
+    cv::meanStdDev(hist_derivative, hist_deriv_mean, hist_deriv_stddev);
+    float hist_slope_stddev = hist_deriv_stddev[0];
+    for(int i = yellow_mode + 1; i < histSize; i++){
+      if(hist_smooth.at<float>(i) - hist_smooth.at<float>(i + 1) < hist_deriv_stddev[0] / 2.0) { yellow_high_thresh = i; break; }
+    }
+    for(int i = yellow_mode - 1; i > 0; i--){
+      if(hist_smooth.at<float>(i) - hist_smooth.at<float>(i - 1) < hist_deriv_stddev[0] / 1.5) { yellow_low_thresh = i; break; }
+    }
+    ROS_INFO("HUE THRESH: low= %d,\t high= %d", yellow_low_thresh, yellow_high_thresh);
+    cv::Mat smart_thresh_hue;
+    cv::inRange(image, yellow_low_thresh, yellow_high_thresh, smart_thresh_hue);
+    cv::imshow("statistical hue thresholding" , smart_thresh_hue);
 }
+
+
