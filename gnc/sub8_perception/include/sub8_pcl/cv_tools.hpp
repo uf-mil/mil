@@ -16,6 +16,8 @@
 #include <sensor_msgs/image_encodings.h>
 #include "ros/ros.h"
 
+#define VISUALIZE
+
 namespace sub {
 
 typedef std::vector<cv::Point> Contour;
@@ -34,6 +36,13 @@ std::vector<cv::Point> find_histogram_modes(const cv::MatND &histogram);
 
 // Selects the mode of a multi-modal distribution closest to a given target value
 unsigned int select_hist_mode(std::vector<cv::Point> &histogram_modes, unsigned int target);
+
+// Takes in a grayscale image and segments out a semi-homogenous foreground object with
+// pixel intensities close to <target>. Tuning of last three parameters may imrove
+// results but default values should work well in most cases.
+void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, 
+		const int hist_size, const float** ranges, const int target, std::string image_name,
+        const float sigma = 1.5, const float low_thresh_gain = 0.5, const float high_thresh_gain = 0.5);
 
 struct ImageWithCameraInfo
 {	
