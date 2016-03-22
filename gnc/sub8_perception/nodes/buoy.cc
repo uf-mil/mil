@@ -32,7 +32,6 @@
 #define BACKWARD_HAS_BFD 1
 #include <sub8_build_tools/backward.hpp>
 
-#define VISUALIZE
 
 // ROS_NAMESPACE=/stereo/left rosrun image_proc image_proc
 // rosbag play ./holding_buoy_mil.bag -r 0.1
@@ -94,7 +93,7 @@ public:
                                const cv::Mat &image_raw);
   bool request_torpedo_board_position(sub8_msgs::VisionRequest::Request &req,
                              sub8_msgs::VisionRequest::Response &resp);
-  cv::Mat board_segmentation(const cv::Mat &image);
+  void board_segmentation(const cv::Mat &src, cv::Mat &dest);
   
   sub::FrameHistory frame_history;
 
@@ -360,8 +359,6 @@ Sub8TorpedoBoardDetector::~Sub8TorpedoBoardDetector(){
 
 }
 
-cv::Mat torpedo_board_segmentation(const cv::Mat &image);
-
 
 void Sub8TorpedoBoardDetector::image_callback(const sensor_msgs::ImageConstPtr &image_msg,
                                const sensor_msgs::CameraInfoConstPtr &info_msg){
@@ -375,7 +372,7 @@ void Sub8TorpedoBoardDetector::image_callback(const sensor_msgs::ImageConstPtr &
     return;
   }
   cam_model.fromCameraInfo(info_msg);
-  segmented_board_left = board_segmentation(current_image);
+  board_segmentation(current_image, segmented_board_left);
   cv::waitKey(1);
 }
 
@@ -392,12 +389,12 @@ bool Sub8TorpedoBoardDetector::request_torpedo_board_position(sub8_msgs::VisionR
 }
 
 
-cv::Mat Sub8TorpedoBoardDetector::board_segmentation(const cv::Mat &image){
+void Sub8TorpedoBoardDetector::board_segmentation(const cv::Mat &src, cv::Mat &dest){
 
   // Preprocessing
   cv::Mat processing_size_image, hsv_image, hue_blurred, sat_blurred;
   std::vector<cv::Mat> hsv_channels;
-  cv::resize(image, processing_size_image, cv::Size(0,0), 0.5, 0.5);
+  cv::resize(src, processing_size_image, cv::Size(0,0), 0.5, 0.5);
   cv::cvtColor(processing_size_image, hsv_image, CV_BGR2HSV);
   cv::split(hsv_image, hsv_channels);
   cv::medianBlur(hsv_channels[0], hue_blurred, 5); // Magic num: 5 (might need tuning)
@@ -425,14 +422,14 @@ cv::Mat Sub8TorpedoBoardDetector::board_segmentation(const cv::Mat &image){
 #endif
 
   cv::resize(segmented_board, segmented_board, cv::Size(0,0), 2, 2);
-  return segmented_board;
+  dest = segmented_board;
 }
 
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "pcl_slam");
   ROS_INFO("Initializing node /pcl_slam");
-  // boost::shared_ptr<Sub8BuoyDetector> sub8_buoys(new Sub8BuoyDetector());
+  boost::shared_ptr<Sub8BuoyDetector> sub8_buoys(new Sub8BuoyDetector());
   Sub8TorpedoBoardDetector sub8_torp_board = Sub8TorpedoBoardDetector();
   ROS_INFO("Spinning ros callbacks");
   ros::spin();

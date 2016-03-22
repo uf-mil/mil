@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 #include <boost/foreach.hpp>
 #include "boost/format.hpp"
@@ -18,6 +19,7 @@
 #include "ros/ros.h"
 
 #define VISUALIZE
+#define SEGMENTATION_DEBUG
 
 namespace sub {
 
@@ -32,10 +34,10 @@ cv::MatND smooth_histogram(const cv::MatND &histogram, size_t filter_kernel_size
 // Generate a one-dimensional gaussian kernel given a kernel size and it's standard deviation (sigma)
 std::vector<float> generate_gaussian_kernel_1D(size_t kernel_size = 3, float sigma = 1.0);
 
-// Finds positive local maxima greater than (global maximum * thresh)
+// Finds positive local maxima greater than (global maximum * thresh_multiplier)
 std::vector<cv::Point> find_local_maxima(const cv::MatND &histogram,  float thresh_multiplier);
 
-// Finds negative local minima less than (global minimum * thresh)
+// Finds negative local minima less than (global minimum * thresh_multiplier)
 std::vector<cv::Point> find_local_maxima(const cv::MatND &histogram,  float thresh_multiplier);
 
 // Selects the mode of a multi-modal distribution closest to a given target value
