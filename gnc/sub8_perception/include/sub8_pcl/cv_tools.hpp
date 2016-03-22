@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include <boost/foreach.hpp>
+#include "boost/format.hpp"
 
 #include <opencv2/opencv.hpp>
 
@@ -31,8 +32,11 @@ cv::MatND smooth_histogram(const cv::MatND &histogram, size_t filter_kernel_size
 // Generate a one-dimensional gaussian kernel given a kernel size and it's standard deviation (sigma)
 std::vector<float> generate_gaussian_kernel_1D(size_t kernel_size = 3, float sigma = 1.0);
 
-// Finds the modes of a 1-D histogram of type cv::MatND
-std::vector<cv::Point> find_histogram_modes(const cv::MatND &histogram);
+// Finds positive local maxima greater than (global maximum * thresh)
+std::vector<cv::Point> find_local_maxima(const cv::MatND &histogram,  float thresh_multiplier);
+
+// Finds negative local minima less than (global minimum * thresh)
+std::vector<cv::Point> find_local_maxima(const cv::MatND &histogram,  float thresh_multiplier);
 
 // Selects the mode of a multi-modal distribution closest to a given target value
 unsigned int select_hist_mode(std::vector<cv::Point> &histogram_modes, unsigned int target);
