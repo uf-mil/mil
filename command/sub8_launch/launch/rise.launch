@@ -1,5 +1,4 @@
 <launch>
-  <node pkg="kill_handling" type="kill_master" name="kill_master"/>
 
   <node pkg="rise_6dof" type="rise_6dof" name="rise_6dof" output="screen" >
     <remap from="/current" to="odom"/>
@@ -7,16 +6,6 @@
     <remap from="/output" to="wrench"/>
     <rosparam file="$(find sub8_launch)/config/rise_6dof.yaml"/>
   </node>
-
-<!--
-  <group ns="param_saver/rise_6dof">
-    <param name="filename" value="$(find sub8_launch)/config/rise_6dof.yaml"/>
-    <rosparam>
-      file_basepath: /rise_6dof
-      param_paths: [k, ks, alpha, beta, use_rise, accel_feedforward, vel_feedforward]
-    </rosparam>
-  </group>
- -->
 
   <node pkg="c3_trajectory_generator" type="c3_trajectory_generator" name="c3_trajectory_generator" output="screen">
     <rosparam>
