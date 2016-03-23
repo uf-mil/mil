@@ -55,10 +55,14 @@ class AlarmRaiser(object):
 
         self._alarm_pub = alarm_publisher
 
-    def raise_alarm(self, problem_description=None, parameters=None):
+    def raise_alarm(self, problem_description=None, parameters=None, severity=None):
         '''Arguments are override parameters'''
         got_problem_description = (problem_description != "") or (self._problem_description is not None)
         assert got_problem_description, "No problem description has been set for this alarm"
+
+        # Allow overrideable severity
+        if severity is None:
+            severity = self._severity
 
         if parameters is not None:
             assert isinstance(parameters, dict), "Parameters must be in the form of  dictionary"
