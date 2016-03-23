@@ -94,6 +94,8 @@ public:
   bool request_torpedo_board_position(sub8_msgs::VisionRequest::Request &req,
                              sub8_msgs::VisionRequest::Response &resp);
   void board_segmentation(const cv::Mat &src, cv::Mat &dest);
+
+  void find_board_corners(const cv::Mat &segmented_board, sub::Contour &corners);
   
   sub::FrameHistory frame_history;
 
@@ -417,12 +419,89 @@ void Sub8TorpedoBoardDetector::board_segmentation(const cv::Mat &src, cv::Mat &d
   segmented_board = threshed_hue / 2.0 + threshed_sat / 2.0;
   cv::threshold(segmented_board, segmented_board, 255*0.75, 255, cv::THRESH_BINARY);
   
+
+  sub::Contour board_corners;
+  find_board_corners(segmented_board, board_corners);
+  BOOST_FOREACH(cv::Point pt, board_corners){
+    cv::circle(segmented_board, pt, 5, cv::Scalar(120), -1);
+  }
+
 #ifdef VISUALIZE
   cv::imshow("segmented board", segmented_board);
 #endif
 
+  // cv::Mat canny_output = cv::Mat::zeros(segmented_board.size(), CV_8UC1);
+  // cv::Mat lines_output = canny_output.clone();
+  // double rho_resolution = 3.0;
+  // double theta_resolution = CV_PI/180;
+  // int accumulator_thresh = 50;
+  // std::vector<cv::Vec4i> lines;
+  // cv::Canny(segmented_board, canny_output, 100, 100, 3);
+  // cv::imshow("edges", canny_output);
+  // cv::HoughLinesP(canny_output, lines, rho_resolution, theta_resolution, accumulator_thresh, 40, 30);
+  // for( size_t i = 0; i < lines.size(); i++ )
+  // {
+  //     cv::line( lines_output, cv::Point(lines[i][0], lines[i][1]),
+  //         cv::Point(lines[i][2], lines[i][3]), cv::Scalar(255), 3, 8 );
+  // }
+  // cv::imshow("lines", lines_output);
+  // std::string ros_log = (boost::format("lines: qty=%1%") % lines.size()).str();
+  // ROS_INFO(ros_log.c_str());
   cv::resize(segmented_board, segmented_board, cv::Size(0,0), 2, 2);
   dest = segmented_board;
+}
+
+
+void Sub8TorpedoBoardDetector::find_board_corners(const cv::Mat &segmented_board, sub::Contour &corners){
+  cv::Mat convex_hull_working_img = segmented_board.clone();
+  std::vector<sub::Contour> contours, connected_contours;
+  sub::Contour convex_hull, corner_points;
+
+  /// Find contours
+  cv::findContours( convex_hull_working_img, contours, CV_RETR_EXTERNAL, 
+                    CV_CHAIN_APPROX_SIMPLE);
+
+  // Put longest 2 contours at beginning of "contours" vector
+  std::partial_sort(contours.begin(), contours.begin() + 2, contours.end(), sub::larger_contour);
+
+  // Connect yellow pannels
+  cv::Point pt1 = sub::contour_centroid(contours[0]);
+  cv::Point pt2 = sub::contour_centroid(contours[1]);
+  convex_hull_working_img = cv::Mat::zeros(convex_hull_working_img.size(), CV_8UC1);
+  cv::drawContours(convex_hull_working_img, contours, 0, cv::Scalar(255));
+  cv::drawContours(convex_hull_working_img, contours, 1, cv::Scalar(255));
+  cv::line(convex_hull_working_img, pt1, pt2, cv::Scalar(255));
+  cv::findContours( convex_hull_working_img, connected_contours, CV_RETR_EXTERNAL, 
+                    CV_CHAIN_APPROX_SIMPLE);
+
+  // Put longest contour at beginning of "connected_contours" vector
+  std::partial_sort(contours.begin(), contours.begin() + 1, contours.end(), sub::larger_contour);
+
+  // Find convex hull of connected panels
+  cv::convexHull(connected_contours[0], convex_hull);
+  cv::Point board_centroid = sub::contour_centroid(convex_hull);
+  ROS_INFO((boost::format("convex hull size = %1%") % convex_hull.size()).str().c_str() );
+  int poly_pts = convex_hull.size();
+  int max_iterations = 25;
+  int total_iterations = 0;
+  double epsilon = 1;
+  double epsilon_step = 0.5;
+  bool corners_success = false;
+  for(int i = 0; i < max_iterations; i++){
+    cv::approxPolyDP(convex_hull, convex_hull, epsilon, true);
+    if(convex_hull.size() == poly_pts) epsilon += epsilon_step;
+    poly_pts = convex_hull.size();
+    if(poly_pts == 4){
+      corners_success = true;
+      total_iterations = i + 1;
+      break;
+    }
+  }
+  if(!corners_success) ROS_WARN("Failed to generate the four corners of board from image");
+  else{
+    ROS_INFO((boost::format("corners size = %1% epsilon = %2% iterations = %3%") % convex_hull.size() % epsilon % total_iterations).str().c_str() );
+  }
+  corners = convex_hull;
 }
 
 

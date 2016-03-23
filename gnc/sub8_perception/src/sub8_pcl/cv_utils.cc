@@ -8,6 +8,11 @@ cv::Point contour_centroid(Contour& contour) {
   return center;
 }
 
+bool larger_contour(const Contour &c1, const Contour &c2){
+	if(cv::arcLength(c1, true) > cv::arcLength(c2, true)) return true;
+	else return false;
+}
+
 
 cv::MatND smooth_histogram(const cv::MatND &histogram, size_t filter_kernel_size, float sigma){
 	cv::MatND hist = histogram.clone();
@@ -253,6 +258,15 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, const int
 	// Threshold image
 	cv::inRange(src, low_thresh, high_thresh, dest);
 
+	// Closing Morphology operation
+	int dilation_size = 2;
+	cv::Mat structuring_element = cv::getStructuringElement(cv::MORPH_RECT, 
+															cv::Size(2 * dilation_size + 1, 2 * dilation_size + 1),
+															cv::Point(dilation_size, dilation_size) );
+	cv::dilate(dest, dest, structuring_element);
+	cv::erode(dest, dest, structuring_element);
+
+
 #ifdef VISUALIZE
 	// Prepare to draw graph of histogram and derivative
 	int hist_w = 512; int hist_h = 400;
@@ -294,7 +308,6 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, const int
 	cv::Mat debug_img;
 	cv::merge(debug_img_channels, debug_img);
 	cv::imshow((boost::format("Statistical Image Segmentation(%1%)") % image_name).str(), debug_img );
-
 #endif
 }
 
