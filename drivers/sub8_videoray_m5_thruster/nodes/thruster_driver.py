@@ -29,6 +29,12 @@ class ThrusterDriver(object):
             action_required=True,
             severity=2
         )
+        self.bus_voltage_alarm = self.alarm_broadcaster.add_alarm(
+            name='bus_voltage',
+            action_required=False,
+            severity=2
+        )
+
         self.failed_thrusters = []
 
         self.make_fake = rospy.get_param('simulate', False)
@@ -106,11 +112,21 @@ class ThrusterDriver(object):
             return
 
         target_port = self.port_dict[name]
-        clipped_force = np.clip(force, min(self.interpolate.x), max(self.interpolate.x))
+        margin_factor = 0.8
+        clipped_force = np.clip(
+            force,
+            margin_factor * min(self.interpolate.x),
+            margin_factor * max(self.interpolate.x)
+        )
         normalized_force = self.interpolate(clipped_force)
 
         # We immediately get thruster_status back
         thruster_status = target_port.command_thruster(name, normalized_force)
+
+        # Don't try to do anything if the thruster status is bad
+        if thruster_status is None:
+            return
+
         message_contents = [
             'rpm',
             'bus_voltage',
@@ -121,7 +137,18 @@ class ThrusterDriver(object):
         ]
 
         message_keyword_args = {key: thruster_status[key] for key in message_contents}
-        if message_keyword_args['fault'] >= 2:
+        self.status_pub.publish(
+            ThrusterStatus(
+                header=Header(stamp=rospy.Time.now()),
+                name=name,
+                **message_keyword_args
+            )
+        )
+        if message_keyword_args['bus_voltage'] < 44.0:
+            self.alert_bus_voltage(message_keyword_args['bus_voltage'])
+
+        # Undervolt/overvolt faults are unreliable
+        if message_keyword_args['fault'] > 2:
             fault_codes = {
                 (1 << 0): 'UNDERVOLT',
                 (1 << 1): 'OVERRVOLT',
@@ -139,14 +166,6 @@ class ThrusterDriver(object):
             rospy.logwarn("Fault causes are: {}".format(faults))
             self.alert_thruster_loss(name, message_keyword_args)
 
-        self.status_pub.publish(
-            ThrusterStatus(
-                header=Header(stamp=rospy.Time.now()),
-                name=name,
-                **message_keyword_args
-            )
-        )
-
     def thrust_cb(self, msg):
         '''Callback for recieving thrust commands
         These messages contain a list of instructions, one for each thruster
@@ -163,6 +182,14 @@ class ThrusterDriver(object):
             }
         )
         self.failed_thrusters.append(thruster_name)
+
+    def alert_bus_voltage(self, thruster_name, voltage):
+        self.thruster_out_alarm.raise_alarm(
+            problem_description='Bus voltage has fallen to {}'.format(voltage),
+            parameters={
+                'bus_voltage': voltage,
+            }
+        )
 
     def fail_thruster(self, srv):
         self.alert_thruster_loss(srv.thruster_name, None)

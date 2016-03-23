@@ -200,7 +200,10 @@ class ThrusterPort(object):
     def read_status(self):
         response_bytearray = self.port.read(Const.thrust_response_length)
         # We should always get $Const.thrust_response_length bytes, if we don't, we *are* failing to communicate
-        assert len(response_bytearray) == Const.thrust_response_length, "Cannot communicate with thruster"
+        if len(response_bytearray) != Const.thrust_response_length:
+            rospy.logwarn("Cannot communicate with thruster")
+            return None
+
         response = struct.unpack('<HBBBB I BffffB I', response_bytearray)
         response_contents = [
             'sync',

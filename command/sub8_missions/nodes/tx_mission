@@ -40,6 +40,7 @@ def main():
         yield sub.last_pose()
         print 'Mission runner got pose'
         yield mission.run(sub)
+        yield txros.util.sleep(1.0)
 
     except Exception:
         traceback.print_exc()
