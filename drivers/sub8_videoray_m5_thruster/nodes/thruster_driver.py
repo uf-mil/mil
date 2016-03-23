@@ -147,7 +147,8 @@ class ThrusterDriver(object):
         if message_keyword_args['bus_voltage'] < 44.0:
             self.alert_bus_voltage(message_keyword_args['bus_voltage'])
 
-        if message_keyword_args['fault'] >= 2:
+        # Undervolt/overvolt faults are unreliable
+        if message_keyword_args['fault'] > 2:
             fault_codes = {
                 (1 << 0): 'UNDERVOLT',
                 (1 << 1): 'OVERRVOLT',
@@ -189,7 +190,6 @@ class ThrusterDriver(object):
                 'bus_voltage': voltage,
             }
         )
-        self.failed_thrusters.append(thruster_name)
 
     def fail_thruster(self, srv):
         self.alert_thruster_loss(srv.thruster_name, None)
