@@ -39,7 +39,6 @@ class _Sub(object):
         self._odom_sub = yield self._node_handle.subscribe('odom', Odometry)
         self._trajectory_sub = yield self._node_handle.subscribe('trajectory', PoseTwistStamped)
         self._trajectory_pub = yield self._node_handle.advertise('trajectory', PoseTwistStamped)
-
         self._dvl_range_sub = yield self._node_handle.subscribe('dvl/range', Float64Stamped)
         self._tf_listener = yield tf.TransformListener(self._node_handle)
         defer.returnValue(self)
