@@ -1,1 +1,1 @@
-from gui import AlarmPlugin
+from alarm_gui import AlarmPlugin

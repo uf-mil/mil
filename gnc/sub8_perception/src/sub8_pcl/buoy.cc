@@ -68,6 +68,9 @@ bool Sub8BuoyDetector::request_buoy_position(sub8_msgs::VisionRequest::Request &
   // Filter the cached point cloud
   sub::PointCloudT::Ptr target_cloud(new sub::PointCloudT());
   sub::PointCloudT::Ptr current_cloud_filtered(new sub::PointCloudT());
+  if (target_cloud->points.size() > 1) {
+    return false;
+  }
   sub::voxel_filter<sub::PointXYZT>(current_cloud, current_cloud_filtered,
                                     0.05f  // leaf size
                                     );
@@ -79,14 +82,18 @@ bool Sub8BuoyDetector::request_buoy_position(sub8_msgs::VisionRequest::Request &
 
   determine_buoy_position(cam_model, target_image, target_cloud, position);
 
-  tf::pointEigenToMsg(position.cast<double>(), resp.pose.pose.position);
+  // Eigen::Vector3f filtered_position = (position + last_bump_target) / 2.0;
+  Eigen::Vector3f filtered_position = (0.3 * position) + (0.7 * last_bump_target);
+  last_bump_target = filtered_position;
+
+  tf::pointEigenToMsg(filtered_position.cast<double>(), resp.pose.pose.position);
   resp.pose.header.frame_id = tf_frame;
   rviz.visualize_buoy(resp.pose.pose, tf_frame);
 
 #ifdef VISUALIZE
   cv::Point2d cv_pt_uv =
       cam_model.project3dToPixel(cv::Point3f(position.x(), position.y(), position.z()));
-  cv::circle(current_image, cv_pt_uv, 7, cv::Scalar(0, 20, 240), 2);
+  cv::circle(current_image, cv_pt_uv, 10, cv::Scalar(0, 240, 30), 4);
   cv::imshow("input", current_image);
   cv::waitKey(50);
 #endif
@@ -216,12 +223,10 @@ void Sub8BuoyDetector::cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &
   current_cloud.reset(new sub::PointCloudT());
   pcl::fromROSMsg(*input_cloud, *current_cloud);
 
-/*
-sub::statistical_outlier_filter<sub::PointXYZT>(scene_buffer, current_cloud,
-                                                20,   // mean k
-                                                0.05  // std_dev threshold
-                                                );
-                                                */
+  sub8_msgs::VisionRequest::Request req;
+  sub8_msgs::VisionRequest::Response resp;
+  request_buoy_position(req, resp);
+
 #ifdef VISUALIZE
   pcl::console::print_highlight("Getting Point Cloud\n");
   if (!got_cloud) {
