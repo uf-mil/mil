@@ -1,5 +1,6 @@
 * [[Home]]
     * [[Getting started]]
+    * [[Current Testing Plans]]
     * [[Software Dependencies]]
     * [[Adding to the Wiki]]
     * [[Code Policy]]
