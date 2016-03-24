@@ -1,5 +1,6 @@
 # **Current Testing Plans**
 
+### These are things we want to get done before the next testing day at the lake
 * Fix coordinates system irregularities
 * Set software thrust limits to 600
 * Create a docking mode allowing for a front thruster only kill
