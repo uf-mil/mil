@@ -11,7 +11,7 @@ from nav_msgs.msg import Odometry
 from navigator_msg_multiplexer.srv import wrench_arbiter
 from sub8_alarm import AlarmBroadcaster
 
-rospy.init_node("joystick")
+rospy.init_node("joystick", log_level = rospy.DEBUG)
 
 class JOYSTICK(object):
     # Base class for whatever you are writing
@@ -26,14 +26,14 @@ class JOYSTICK(object):
         self.last_kill_state = 0
         self.current_pose = Odometry()
 
-        alarm_broadcaster = AlarmBroadcaster()
-        full_kill_alarm = alarm_broadcaster.add_alarm(
+        self.alarm_broadcaster = AlarmBroadcaster()
+        self.full_kill_alarm = self.alarm_broadcaster.add_alarm(
             name='full_kill',
             action_required=True,
             severity=0
         )
 
-        docking_alarm = alarm_broadcaster.add_alarm(
+        self.docking_alarm = self.alarm_broadcaster.add_alarm(
             name='docking',
             action_required=True,
             severity=0
@@ -54,50 +54,64 @@ class JOYSTICK(object):
         change_mode = joy.buttons[7]
         kill = joy.buttons[8]
         station_hold = joy.buttons[0]
+        docking = joy.buttons[6]
         left_stick_x = joy.axes[1]
         left_stick_y = joy.axes[0]
         right_stick_y = joy.axes[3]
 
-
         # Change vehicle mode
         if change_mode == 1 and change_mode != self.last_controller_state:
+            rospy.logdebug("Changing Control Mode")
             self.wrench_controller = not self.wrench_controller
             if self.wrench_controller == False:
                 self.wrench_changer("rc")
             if self.wrench_controller == True:
                 self.wrench_changer("autonomous")
 
+        # Station hold
         if station_hold == 1 and station_hold != self.last_station_hold_state:
+            rospy.logdebug("Station Holding")
             des_pose = Point()
-            q = np.array((self.current_pose.pose.orientation.x, self.current_pose.orientation.y, self.current_pose.pose.pose.orientation.z, self.current_pose.pose.pose.orientation.w))
+            orientation = self.current_pose.pose.pose.orientation
+            q = np.array((orientation.x, orientation.y, orientation.z, orientation.w))
             rotation = tf.transformations.euler_from_quaternion(q)
 
-            point.x = self.current_pose.pose.pose.position.x;
-            point.y = self.current_pose.pose.pose.position.y;
-            point.z = rotation[2];
+            des_pose.x = self.current_pose.pose.pose.position.x;
+            des_pose.y = self.current_pose.pose.pose.position.y;
+            des_pose.z = rotation[2];
             self.des_pose_pub.publish(des_pose);
             self.wrench_changer("autonomous")
 
+        # Turn on full system kill
         if kill == 1 and kill != self.last_kill_state:
-            full_kill_alarm.raise_alarm(
+            rospy.logdebug("Toggling Kill")
+            self.full_kill_alarm.raise_alarm(
                 problem_description='System kill from location: {}'.format("joystick"),
-                parameters={None}
+                parameters={None: None}
+            )
+
+        # Turn on docking mode
+        if docking == 1 and docking != self.last_docking_state:
+            rospy.logdebug("Toggling Docking")
+            self.docking_alarm.raise_alarm(
+                problem_description='Docking kill from location: {}'.format("joystick"),
+                parameters={None: None}
             )
 
         self.last_controller_state = change_mode
         self.last_kill_state = kill
         self.last_station_hold_state = station_hold
+        self.last_docking_state = docking
 
         wrench = WrenchStamped()
         wrench.header.frame_id = "/base_link";
         wrench.wrench.force.x = self.force_scale * left_stick_x;
-        wrench.wrench.force.y = -1 * self.force_scale_* left_stick_y;
-        wrench.wrench.torque.z = -1 * self.torque * right_stick_y;
+        wrench.wrench.force.y = -1 * self.force_scale * left_stick_y;
+        wrench.wrench.torque.z = -1 * self.torque_scale * right_stick_y;
         self.wrench_pub.publish(wrench);
 
 
 if __name__ == "__main__":
-
 
     joystick = JOYSTICK()
     rospy.spin()

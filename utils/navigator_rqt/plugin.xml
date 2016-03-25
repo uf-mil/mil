@@ -1,0 +1,11 @@
+<library path="src">
+  <class name="navigator_gui" type="navigator_rqt_gui.Navigator_gui" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      Navigator GUI
+    </description>
+    <qtgui>
+      <icon type="file">resource/boat.png</icon>
+      <label>NaviGator GUI</label>
+    </qtgui>
+  </class>
+</library>

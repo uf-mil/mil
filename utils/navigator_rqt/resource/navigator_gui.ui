@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>NaviGatorGUI</class>
+ <widget class="QWidget" name="NaviGatorGUI">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>506</width>
+    <height>420</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>NaviGator GUI</string>
+  </property>
+  <widget class="QWidget" name="nav_gui">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>10</y>
+     <width>211</width>
+     <height>194</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QPushButton" name="kill">
+      <property name="text">
+       <string>Kill</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="revive">
+      <property name="text">
+       <string>Revive</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="station_hold">
+      <property name="text">
+       <string>Station Hold</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="docking_mode">
+      <property name="text">
+       <string>Toggle Docking Mode</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="rc_mode">
+      <property name="text">
+       <string>RC Mode</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="au_mode">
+      <property name="text">
+       <string>AU Mode</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

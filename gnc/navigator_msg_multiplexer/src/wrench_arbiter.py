@@ -65,7 +65,7 @@ class control_arb(object):
     # Base class for whatever you are writing
     def __init__(self):
 
-    self.rc_wrench = WrenchStamped()
+        self.rc_wrench = WrenchStamped()
         self.autonomous_wrench = WrenchStamped()
         self.control = "kill"
         self.killed = True

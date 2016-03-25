@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package>
+  <name>navigator_rqt</name>
+  <version>0.0.0</version>
+  <description>The navigator_rqt package</description>
+
+  <maintainer email="zachgoins@todo.todo">zachgoins</maintainer>
+
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+    <rqt_gui plugin="${prefix}/plugin.xml"/>
+  </export>
+</package>
