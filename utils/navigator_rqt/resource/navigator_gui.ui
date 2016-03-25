@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>522</width>
-    <height>279</height>
+    <height>324</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <x>20</x>
      <y>20</y>
      <width>211</width>
-     <height>231</height>
+     <height>261</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -76,6 +76,13 @@
      <widget class="QPushButton" name="au_mode">
       <property name="text">
        <string>AU Mode</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="gui_mode">
+      <property name="text">
+       <string>GUI Mode</string>
       </property>
      </widget>
     </item>
@@ -275,7 +282,6 @@
   </widget>
   <zorder>frame</zorder>
   <zorder>nav_gui</zorder>
-  <zorder>TextLabel</zorder>
  </widget>
  <resources/>
  <connections/>

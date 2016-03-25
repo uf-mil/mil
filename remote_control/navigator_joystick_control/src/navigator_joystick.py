@@ -20,11 +20,12 @@ class JOYSTICK(object):
         self.force_scale = rospy.get_param("force_scale")
         self.torque_scale = rospy.get_param("torque_scale")
 
-        self.wrench_controller = True;
         self.last_controller_state = 0;
         self.last_station_hold_state = 0;
         self.last_kill_state = 0
         self.current_pose = Odometry()
+
+        self.wrench_toggle_turn = 0
 
         self.alarm_broadcaster = AlarmBroadcaster()
         self.full_kill_alarm = self.alarm_broadcaster.add_alarm(
@@ -62,11 +63,18 @@ class JOYSTICK(object):
         # Change vehicle mode
         if change_mode == 1 and change_mode != self.last_controller_state:
             rospy.logdebug("Changing Control Mode")
-            self.wrench_controller = not self.wrench_controller
-            if self.wrench_controller == False:
+            if self.wrench_toggle_turn == 0:
                 self.wrench_changer("rc")
-            if self.wrench_controller == True:
+                self.wrench_toggle_turn +=1
+            elif self.wrench_toggle_turn == 1:
                 self.wrench_changer("autonomous")
+                self.wrench_toggle_turn +=1
+            elif self.wrench_toggle_turn == 2:
+                self.wrench_changer("gui")
+                self.wrench_toggle_turn +=1
+
+            if self.wrench_toggle_turn == 3:
+                self.wrench_toggle_turn = 0
 
         # Station hold
         if station_hold == 1 and station_hold != self.last_station_hold_state:

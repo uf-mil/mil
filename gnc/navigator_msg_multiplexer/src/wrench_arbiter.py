@@ -67,15 +67,14 @@ class control_arb(object):
 
         self.rc_wrench = WrenchStamped()
         self.autonomous_wrench = WrenchStamped()
-        self.control = "kill"
-        self.killed = True
-
+        self.gui_wrench = WrenchStamped()
+        self.control = None
 
         rospy.Service('change_wrench', wrench_arbiter, self.change_wrench)
         self.wrench_pub = rospy.Publisher("/wrench/cmd", WrenchStamped, queue_size = 1)
         rospy.Subscriber("/wrench/rc", WrenchStamped, self.rc_cb)
-        rospy.Subscriber("/killed", Bool, self.kill_cb)
         rospy.Subscriber("/wrench/autonomous", WrenchStamped, self.autonomous_cb)
+        rospy.Subscriber("/wrench/gui", WrenchStamped, self.autonomous_cb)
 
     def rc_cb(self, msg):
         self.rc_wrench = msg
@@ -84,6 +83,10 @@ class control_arb(object):
     def autonomous_cb(self, msg):
         self.autonomous_wrench = msg
         self.autonomous_wrench.header.frame_id = "/base_link"
+
+    def autonomous_cb(self, msg):
+        self.gui_wrench = msg
+        self.gui_wrench.header.frame_id = "/base_link"
 
     def kill_cb(self, msg):
         self.killed = msg.data
@@ -97,14 +100,13 @@ class control_arb(object):
         if req.str == "autonomous":
             self.control = "autonomous"
             return True
+        if req.str == "gui":
+            self.control = "gui"
+            return True
         else:
             return False
 
     def publish_wrench(self):
-        if self.killed is True:
-            blank_wrench = WrenchStamped()
-            blank_wrench.header.frame_id = "/base_link"
-            self.wrench_pub.publish(blank_wrench)
 
         if self.control == "rc":
             self.wrench_pub.publish(self.rc_wrench)
@@ -112,6 +114,8 @@ class control_arb(object):
         if self.control == "autonomous":
             self.wrench_pub.publish(self.autonomous_wrench)
 
+        if self.control == "gui":
+            self.wrench_pub.publish(self.gui_wrench)
 
 
 if __name__ == "__main__":

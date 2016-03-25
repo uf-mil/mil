@@ -3,13 +3,12 @@ import rospy
 import rospkg
 from sensor_msgs.msg import Joy
 from tf2_msgs.msg import TFMessage
-
 from geometry_msgs.msg import WrenchStamped
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
 from python_qt_binding.QtGui import QWidget
 import python_qt_binding.QtGui as qtg
-
+from navigator_msg_multiplexer.srv import wrench_arbiter
 import time
 
 
@@ -57,10 +56,13 @@ class Navigator_gui(Plugin):
         station_hold_button.clicked.connect(self.toggle_docking)
 
         rc_mode_button = self._widget.findChild(qtg.QPushButton, 'rc_mode')
-        rc_mode_button.clicked.connect(self.toggle_mode)
+        rc_mode_button.clicked.connect(self.rc_mode)
 
         au_mode_button = self._widget.findChild(qtg.QPushButton, 'au_mode')
-        au_mode_button.clicked.connect(self.toggle_mode)
+        au_mode_button.clicked.connect(self.au_mode)
+
+        gui_mode_button = self._widget.findChild(qtg.QPushButton, 'gui_mode')
+        gui_mode_button.clicked.connect(self.gui_mode)
 
         forward_slider = self._widget.findChild(qtg.QSlider, 'forward_slider')
         forward_slider.valueChanged.connect(self.forward_slider)
@@ -88,32 +90,22 @@ class Navigator_gui(Plugin):
         context.add_widget(self._widget)
 
         self.wrench_pub = rospy.Publisher("/wrench/gui", WrenchStamped, queue_size=1)
+        self.wrench_changer = rospy.ServiceProxy('/change_wrench', wrench_arbiter)
         rospy.Subscriber("/tf", TFMessage, self.wrench_pub_cb)
 
 
     def wrench_pub_cb(self, msg):
         self.wrench_pub.publish(self.wrench_out)
 
-    def toggle_mode(self):
-        msg = Joy()
-        for x in xrange(0,7):
-            msg.buttons.append(0)
-        for x in xrange(0,4):
-            msg.axes.append(0)
-        msg.buttons.append(1)
-        msg.buttons.append(0)
-        self.joy_pub.publish(msg)
-        time.sleep(.1)
+    def rc_mode(self):
+        self.wrench_changer("rc")
 
-        clr_msg = Joy()
+    def au_mode(self):
+        self.wrench_changer("autonomous")
 
-        for x in xrange(0,7):
-            clr_msg.buttons.append(0)
-        for x in xrange(0,4):
-            clr_msg.axes.append(0)
-        clr_msg.buttons.append(0)
-        clr_msg.buttons.append(0)
-        self.joy_pub.publish(clr_msg)
+    def gui_mode(self):
+        self.wrench_changer("gui")
+
 
     def station_hold(self):
         msg = Joy()
