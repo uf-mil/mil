@@ -8,6 +8,11 @@ cv::Point contour_centroid(Contour& contour) {
   return center;
 }
 
+bool larger_contour(const Contour &c1, const Contour &c2){
+	if(cv::contourArea(c1) > cv::contourArea(c2)) return true;
+	else return false;
+}
+
 
 cv::MatND smooth_histogram(const cv::MatND &histogram, size_t filter_kernel_size, float sigma){
 	cv::MatND hist = histogram.clone();
@@ -253,6 +258,15 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, const int
 	// Threshold image
 	cv::inRange(src, low_thresh, high_thresh, dest);
 
+	// Closing Morphology operation
+	int dilation_size = 2;
+	cv::Mat structuring_element = cv::getStructuringElement(cv::MORPH_RECT, 
+															cv::Size(2 * dilation_size + 1, 2 * dilation_size + 1),
+															cv::Point(dilation_size, dilation_size) );
+	cv::dilate(dest, dest, structuring_element);
+	cv::erode(dest, dest, structuring_element);
+
+
 #ifdef VISUALIZE
 	// Prepare to draw graph of histogram and derivative
 	int hist_w = 512; int hist_h = 400;
@@ -294,9 +308,28 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, const int
 	cv::Mat debug_img;
 	cv::merge(debug_img_channels, debug_img);
 	cv::imshow((boost::format("Statistical Image Segmentation(%1%)") % image_name).str(), debug_img );
-
 #endif
 }
+
+// Work in progress
+
+// Eigen::Vector3f triangulate_image_coordinates(const cv::Point &pt1, const cv::Point &pt2, Eigen::Matrix3f fundamental){
+// 	/*
+// 		Optimal triangulation method for two cameras with parallel principal axes
+// 		Based of off this paper by Peter Lindstrom: https://e-reports-ext.llnl.gov/pdf/384387.pdf
+// 	*/
+// 	const unsigned int max_iterations = 3;
+// 	Eigen::Vector2f p1_old(pt1.x, pt1.y, 1.0);
+// 	Eigen::Vector2f p2_old(pt2.x, pt2.y, 1.0);
+// 	Eigen::Vector2f p1, p2 n1, n2;
+// 	Eigen::Vector<float, 2, 1> S;
+// 	S << 1, 0, 0
+// 		 0, 1, 0;
+// 	E_bar = E.topLeftCorner(2, 2);
+// 	for(unsigned int = 0; i < max_iterations; i++){
+
+// 	}
+// }
 
 
 ImageWithCameraInfo::ImageWithCameraInfo(sensor_msgs::ImageConstPtr _image_msg,
