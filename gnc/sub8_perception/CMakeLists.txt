@@ -52,6 +52,8 @@ add_library(sub8_pcl SHARED
     src/sub8_pcl/align.cc
     src/sub8_pcl/cv_utils.cc
     src/sub8_pcl/visualization.cc
+    src/sub8_pcl/buoy.cc
+    src/sub8_pcl/torpedo_board.cc
 )
 
 target_link_libraries(
@@ -78,18 +80,18 @@ install(DIRECTORY include/${PROJECT_NAME}/
 )
 
 add_executable(
-  pcl_buoy
-    nodes/buoy.cc
+  pcl_perception
+    nodes/perception.cc
 )
 
 add_dependencies(
-  pcl_buoy
+  pcl_perception
    sub8_msgs_generate_messages_cpp
    ${catkin_EXPORTED_TARGETS}
 )
 
 target_link_libraries(
-  pcl_buoy
+  pcl_perception
     sub8_pcl
     ${catkin_LIBRARIES}
     ${PCL_COMMON_LIBRARIES}
