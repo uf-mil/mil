@@ -27,8 +27,14 @@ class JOYSTICK(object):
         self.current_pose = Odometry()
 
         alarm_broadcaster = AlarmBroadcaster()
-        thruster_out_alarm = alarm_broadcaster.add_alarm(
+        full_kill_alarm = alarm_broadcaster.add_alarm(
             name='full_kill',
+            action_required=True,
+            severity=0
+        )
+
+        docking_alarm = alarm_broadcaster.add_alarm(
+            name='docking',
             action_required=True,
             severity=0
         )
@@ -73,7 +79,7 @@ class JOYSTICK(object):
             self.wrench_changer("autonomous")
 
         if kill == 1 and kill != self.last_kill_state:
-            thruster_out_alarm.raise_alarm(
+            full_kill_alarm.raise_alarm(
                 problem_description='System kill from location: {}'.format("joystick"),
                 parameters={None}
             )
