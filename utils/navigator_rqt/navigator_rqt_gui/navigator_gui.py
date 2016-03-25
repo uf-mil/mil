@@ -2,10 +2,14 @@ import os
 import rospy
 import rospkg
 from sensor_msgs.msg import Joy
+from tf2_msgs.msg import TFMessage
+
+from geometry_msgs.msg import WrenchStamped
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
 from python_qt_binding.QtGui import QWidget
 import python_qt_binding.QtGui as qtg
+
 import time
 
 
@@ -29,6 +33,8 @@ class Navigator_gui(Plugin):
             #print 'arguments: ', args
             #print 'unknowns: ', unknowns
 
+        self.wrench_out = WrenchStamped()
+
         # Create QWidget
         self._widget = QWidget()
         # Get path to UI file which should be in the "resource" folder of this package
@@ -47,15 +53,27 @@ class Navigator_gui(Plugin):
         station_hold_button = self._widget.findChild(qtg.QPushButton, 'station_hold')
         station_hold_button.clicked.connect(self.station_hold)
 
-
         station_hold_button = self._widget.findChild(qtg.QPushButton, 'docking_mode')
         station_hold_button.clicked.connect(self.toggle_docking)
 
-
         rc_mode_button = self._widget.findChild(qtg.QPushButton, 'rc_mode')
         rc_mode_button.clicked.connect(self.toggle_mode)
+
         au_mode_button = self._widget.findChild(qtg.QPushButton, 'au_mode')
         au_mode_button.clicked.connect(self.toggle_mode)
+
+        forward_slider = self._widget.findChild(qtg.QSlider, 'forward_slider')
+        forward_slider.valueChanged.connect(self.forward_slider)
+        backward_slider = self._widget.findChild(qtg.QSlider, 'backward_slider')
+        backward_slider.valueChanged.connect(self.backward_slider)
+        right_slider = self._widget.findChild(qtg.QSlider, 'right_slider')
+        right_slider.valueChanged.connect(self.right_slider)
+        left_slider = self._widget.findChild(qtg.QSlider, 'left_slider')
+        left_slider.valueChanged.connect(self.left_slider)
+        yaw_right_slider = self._widget.findChild(qtg.QSlider, 'yaw_right_slider')
+        yaw_right_slider.valueChanged.connect(self.yaw_right_slider)
+        yaw_left_slider = self._widget.findChild(qtg.QSlider, 'yaw_left_slider')
+        yaw_left_slider.valueChanged.connect(self.yaw_left_slider)
 
         # Show _widget.windowTitle on left-top of each plugin (when
         # it's set in _widget). This is useful when you open multiple
@@ -68,6 +86,13 @@ class Navigator_gui(Plugin):
             self._widget.setWindowTitle(self._widget.windowTitle() + (' (%d)' % context.serial_number()))
         # Add widget to the user interface
         context.add_widget(self._widget)
+
+        self.wrench_pub = rospy.Publisher("/wrench/gui", WrenchStamped, queue_size=1)
+        rospy.Subscriber("/tf", TFMessage, self.wrench_pub_cb)
+
+
+    def wrench_pub_cb(self, msg):
+        self.wrench_pub.publish(self.wrench_out)
 
     def toggle_mode(self):
         msg = Joy()
@@ -151,22 +176,26 @@ class Navigator_gui(Plugin):
             clr_msg.axes.append(0)
         self.joy_pub.publish(clr_msg)
 
+    def forward_slider(self, value):
+        if self.wrench_out.wrench.force.x >= 0:
+            self.wrench_out.wrench.force.x = value
 
-    def shutdown_plugin(self):
-        # TODO unregister all publishers here
-        pass
+    def backward_slider(self, value):
+        if self.wrench_out.wrench.force.x <= 0:
+            self.wrench_out.wrench.force.x = -value
 
-    def save_settings(self, plugin_settings, instance_settings):
-        # TODO save intrinsic configuration, usually using:
-        # instance_settings.set_value(k, v)
-        pass
+    def right_slider(self, value):
+        if self.wrench_out.wrench.force.y <= 0:
+            self.wrench_out.wrench.force.y = -value
 
-    def restore_settings(self, plugin_settings, instance_settings):
-        # TODO restore intrinsic configuration, usually using:
-        # v = instance_settings.value(k)
-        pass
+    def left_slider(self, value):
+        if self.wrench_out.wrench.force.y >= 0:
+            self.wrench_out.wrench.force.y = value
 
-    #def trigger_configuration(self):
-        # Comment in to signal that the plugin has a way to configure
-        # This will enable a setting button (gear icon) in each dock widget title bar
-        # Usually used to open a modal configuration dialog
+    def yaw_right_slider(self, value):
+        if self.wrench_out.wrench.torque.z >= 0:
+            self.wrench_out.wrench.torque.z = value
+
+    def yaw_left_slider(self, value):
+        if self.wrench_out.wrench.torque.z <= 0:
+            self.wrench_out.wrench.torque.z = -value
