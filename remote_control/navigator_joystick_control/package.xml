@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>joystick_control</name>
+  <name>navigator_joystick_control</name>
   <version>0.0.0</version>
   <description>The thrust_mapper package</description>
   <maintainer email="zachgoins@todo.todo">zachgoins</maintainer>
@@ -12,15 +12,12 @@
   <build_depend>message_runtime</build_depend>
   <build_depend>navigator_msg_multiplexer</build_depend>
   <build_depend>nav_msgs</build_depend>
-  <build_depend>tf</build_depend>
-
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>navigator_msg_multiplexer</run_depend>
   <run_depend>nav_msgs</run_depend>
-  <run_depend>tf</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

@@ -108,6 +108,7 @@ class P_Driver(object):
         """ Solve for thrust vectors after creating trans matrix """
 
         def clip_thrust(thrust):
+            new_thrust = thrust
             if thrust > self.thrust_limit:
                 new_thrust = self.thrust_limit
             return new_thrust

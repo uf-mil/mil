@@ -7,16 +7,16 @@
     <rosparam param="thruster_FL_cog">[1.5748, -0.6096]</rosparam>
     <rosparam param="thruster_BR_theta">-45</rosparam>
     <rosparam param="thruster_BL_theta">45</rosparam>
-    <rosparam param="thruster_FR_theta">-45</rosparam>
-    <rosparam param="thruster_FL_theta">45</rosparam>
+    <rosparam param="thruster_FR_theta">45</rosparam>
+    <rosparam param="thruster_FL_theta">-45</rosparam>
   </node>
 
-  <node name="pose_controller" pkg="navigator_controller" type="mrac_controller.py"/>
+  <!-- node name="pose_controller" pkg="navigator_controller" type="mrac_controller.py"/-->
   <node name="move_helper" pkg="navigator_tools" type="move_helper.py"/>
 
   <node name="wrench_arbiter" pkg="navigator_msg_multiplexer" type="wrench_arbiter.py"/>
 
-  <node pkg="joystick_control" type="joystick_control_node" name="joystick_wrench"/>
+  <node pkg="navigator_joystick_control" type="navigator_joystick.py" name="joystick_wrench"/>
   <!-- Parameters used to tune the remote control -->
   <param name="force_scale" value="600" type="double"/>
   <param name="torque_scale" value="500" type="double"/>

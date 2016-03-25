@@ -49,18 +49,30 @@ from std_msgs.msg import Bool
 
 rospy.init_node('wrench_arbiter')
 
+class ThrusterOut(object):
+    alarm_name = 'thruster_out'
+    def __init__(self):
+        # Keep some knowledge of which thrusters we have working
+        self.thruster_layout = wait_for_param('busses')
+        self.update_layout = rospy.ServiceProxy('update_thruster_layout', UpdateThrusterLayout)
+
+    def handle(self, time_sent, parameters):
+        new_thruster_layout = self.remove_thruster(parameters['thruster_name'])
+        rospy.set_param('busses', new_thruster_layout)
+        self.update_layout()
+
 class control_arb(object):
     # Base class for whatever you are writing
     def __init__(self):
 
-
-        self.rc_wrench = WrenchStamped()
+    self.rc_wrench = WrenchStamped()
         self.autonomous_wrench = WrenchStamped()
         self.control = "kill"
         self.killed = True
 
-        self.wrench_pub = rospy.Publisher("/wrench/cmd", WrenchStamped, queue_size = 1)
+
         rospy.Service('change_wrench', wrench_arbiter, self.change_wrench)
+        self.wrench_pub = rospy.Publisher("/wrench/cmd", WrenchStamped, queue_size = 1)
         rospy.Subscriber("/wrench/rc", WrenchStamped, self.rc_cb)
         rospy.Subscriber("/killed", Bool, self.kill_cb)
         rospy.Subscriber("/wrench/autonomous", WrenchStamped, self.autonomous_cb)
@@ -77,7 +89,7 @@ class control_arb(object):
         self.killed = msg.data
 
 
-    def change_wrench(self,req):
+    def change_wrench(self, req):
         rospy.loginfo("Server recieved request for wrench control change - " + req.str)
         if req.str == "rc":
             self.control = "rc"
