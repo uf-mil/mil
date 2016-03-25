@@ -45,17 +45,6 @@ from geometry_msgs.msg import WrenchStamped
 from std_msgs.msg import Float32MultiArray, Bool
 from roboteq_msgs.msg import *
 
-rospy.init_node('primitive_driver')
-thruster_BR_cog = rospy.get_param('~thruster_BR_cog')
-thruster_BL_cog = rospy.get_param('~thruster_BL_cog')
-thruster_FR_cog = rospy.get_param('~thruster_FR_cog')
-thruster_FL_cog = rospy.get_param('~thruster_FL_cog')
-
-thruster_BR_theta = rospy.get_param('~thruster_BR_theta')
-thruster_BL_theta = rospy.get_param('~thruster_BL_theta')
-thruster_FR_theta = rospy.get_param('~thruster_FR_theta')
-thruster_FL_theta = rospy.get_param('~thruster_FL_theta')
-
 class Thruster(object):
 
     def __init__(self, cog, theda_constraint):
@@ -64,18 +53,19 @@ class Thruster(object):
 
 class P_Driver(object):
 
-    def __init__(self, positions):
+    def __init__(self, positions, thrust_limit):
 
         self.boat_cog = np.array(([0.0,0.0]))
         self.des_force = np.array(([0,0,0])).astype(np.float32)
         self.kill = True
+
+        self.thrust_limit = thrust_limit
 
         # ROS data
         self.BL_pub = rospy.Publisher("/BL_motor/cmd" , Command, queue_size = 1)
         self.BR_pub = rospy.Publisher("/BR_motor/cmd" , Command, queue_size = 1)
         self.FL_pub = rospy.Publisher("/FL_motor/cmd" , Command, queue_size = 1)
         self.FR_pub = rospy.Publisher("/FR_motor/cmd" , Command, queue_size = 1)
-
 
         rospy.Subscriber("/wrench/cmd", WrenchStamped, self.wrench_cb)
         rospy.Subscriber("/killed", Bool, self.kill_cb)
@@ -117,9 +107,15 @@ class P_Driver(object):
     def allocate(self, angles):
         """ Solve for thrust vectors after creating trans matrix """
 
+        def clip_thrust(thrust):
+            if thrust > self.thrust_limit:
+                new_thrust = self.thrust_limit
+            return new_thrust
+
         # create thrust matrix
         A = self.thrust_matrix(angles)
         b = self.des_force
+
         # solve Ax = b
         # solutions are given respectively by one, two, three, n...
         one, two, three, four = np.linalg.lstsq(A, b)[0]
@@ -127,10 +123,10 @@ class P_Driver(object):
         # Temporarily sending the left thruster command to the motor driver
         BL_msg, BR_msg, FL_msg, FR_msg = Command(), Command(), Command(), Command()
 
-        BL_msg.setpoint = two
-        BR_msg.setpoint = one
-        FL_msg.setpoint = three
-        FR_msg.setpoint = four
+        BL_msg.setpoint = clip_thrust(two)
+        BR_msg.setpoint = clip_thrust(one)
+        FL_msg.setpoint = clip_thrust(three)
+        FR_msg.setpoint = clip_thrust(four)
 
         #print ""
         #print ""
@@ -140,23 +136,23 @@ class P_Driver(object):
         #print ""
         #print ""
 
-        if self.kill == True:
-            self.BL_pub.publish(BL_msg)
-            self.BR_pub.publish(BR_msg)
-            self.FL_pub.publish(FL_msg)
-            self.FR_pub.publish(FR_msg)
-        else:
-            BL_msg.setpoint = 0
-            BR_msg.setpoint = 0
-            FL_msg.setpoint = 0
-            FR_msg.setpoint = 0
-            self.BL_pub.publish(BL_msg)
-            self.BR_pub.publish(BR_msg)
-            self.FL_pub.publish(FL_msg)
-            self.FR_pub.publish(FR_msg)
+        self.BL_pub.publish(BL_msg)
+        self.BR_pub.publish(BR_msg)
+        self.FL_pub.publish(FL_msg)
+        self.FR_pub.publish(FR_msg)
 
 if __name__ == "__main__":
 
+    rospy.init_node('primitive_driver')
+
+    thruster_BR_cog = rospy.get_param('~thruster_BR_cog')
+    thruster_BL_cog = rospy.get_param('~thruster_BL_cog')
+    thruster_FR_cog = rospy.get_param('~thruster_FR_cog')
+    thruster_FL_cog = rospy.get_param('~thruster_FL_cog')
+    thruster_BR_theta = rospy.get_param('~thruster_BR_theta')
+    thruster_BL_theta = rospy.get_param('~thruster_BL_theta')
+    thruster_FR_theta = rospy.get_param('~thruster_FR_theta')
+    thruster_FL_theta = rospy.get_param('~thruster_FL_theta')
 
     rate = rospy.Rate(50)
     # Create two thrusters
@@ -165,8 +161,10 @@ if __name__ == "__main__":
     FL = Thruster(thruster_FR_cog, thruster_FR_theta)
     FR = Thruster(thruster_FL_cog, thruster_FL_theta)
 
+    thrust_limit = 600
+
     # Pass current thruster data to mapper
-    mapper = P_Driver([BR.thruster_cog, BL.thruster_cog, FL.thruster_cog, FR.thruster_cog])
+    mapper = P_Driver([BR.thruster_cog, BL.thruster_cog, FL.thruster_cog, FR.thruster_cog], thrust_limit)
 
     while not rospy.is_shutdown():
         # map thruster
