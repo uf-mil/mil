@@ -31,14 +31,16 @@ void Sub8TorpedoBoardDetector::image_callback(const sensor_msgs::ImageConstPtr &
     return;
   }
   cam_model.fromCameraInfo(info_msg);
-  board_segmentation(current_image, segmented_board_left);
+  segment_board(current_image, segmented_board_left);
 
   sub::Contour board_corners;
   find_board_corners(segmented_board_left, board_corners);
   BOOST_FOREACH(cv::Point pt, board_corners){
     cv::circle(segmented_board_left, pt, 5, cv::Scalar(120), -1);
   }
+#ifdef VISUALIZE
   cv::imshow("segmented board", segmented_board_left);
+#endif
 
   cv::waitKey(1);
 }
@@ -56,7 +58,7 @@ bool Sub8TorpedoBoardDetector::request_torpedo_board_position(sub8_msgs::VisionR
 }
 
 
-void Sub8TorpedoBoardDetector::board_segmentation(const cv::Mat &src, cv::Mat &dest){
+void Sub8TorpedoBoardDetector::segment_board(const cv::Mat &src, cv::Mat &dest){
 
   // Preprocessing
   cv::Mat processing_size_image, hsv_image, hue_blurred, sat_blurred;
@@ -116,7 +118,8 @@ void Sub8TorpedoBoardDetector::find_board_corners(const cv::Mat &segmented_board
                     CV_CHAIN_APPROX_SIMPLE);
 
   // Put longest contour at beginning of "connected_contours" vector
-  std::partial_sort(contours.begin(), contours.begin() + 1, contours.end(), sub::larger_contour);
+  std::partial_sort(connected_contours.begin(), connected_contours.begin() + 1,
+                                                connected_contours.end(), sub::larger_contour);
 
   // Find convex hull of connected panels
   cv::convexHull(connected_contours[0], convex_hull);

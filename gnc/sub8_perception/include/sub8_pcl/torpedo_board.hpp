@@ -32,7 +32,7 @@ public:
                                const cv::Mat &image_raw);
   bool request_torpedo_board_position(sub8_msgs::VisionRequest::Request &req,
                              sub8_msgs::VisionRequest::Response &resp);
-  void board_segmentation(const cv::Mat &src, cv::Mat &dest);
+  void segment_board(const cv::Mat &src, cv::Mat &dest);
 
   void find_board_corners(const cv::Mat &segmented_board, sub::Contour &corners);
   
