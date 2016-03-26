@@ -1,4 +1,5 @@
 <launch>
+
   <node pkg="navigator_thrust_allocater" type="p_driver.py" name="primitive_driver" output="screen">
     <!-- Parameters used to set the thruster locations relative to the center of gravity -->
     <rosparam param="thruster_BR_cog">[-1.9304, 1.016]</rosparam>
@@ -12,7 +13,12 @@
   </node>
 
   <node name="pose_controller" pkg="navigator_controller" type="mrac_controller.py"/>
-  <node name="move_helper" pkg="navigator_tools" type="move_helper.py"/>
+
+  <node unless="$(arg sim)" name="sdgps_solution_ros_bridge" pkg="navigator_state_estimation" type="solution_ros_bridge">
+    <param name="port" value="TODO"/>
+    <param name="child_frame_id" value="TODO"/>
+  </node>
+
 
   <node name="wrench_arbiter" pkg="navigator_msg_multiplexer" type="wrench_arbiter.py"/>
 
@@ -33,6 +39,4 @@
   <node pkg="tf" type="static_transform_publisher" name="lidar_tf" args=".5334 0.0127 .7493  0 0 0 1  /base_link /lidar 100" />
   <node pkg="tf" type="static_transform_publisher" name="forward_camera_tf" args=".6096 -.254 .762  0 0 0 1  /base_link /camera 100" />
 
-
-  <!-- node name="move_helper_node" pkg="navigator_vis_helpers" type="move_helper.py"/-->
 </launch>
