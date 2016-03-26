@@ -6,10 +6,11 @@
     * [[Code Policy]]
     * [[Architecture]]
     * [[Helpful Readings]]
-* Implementation Details
+* **Implementation Details**
+    * Guidance, Navigation, and Control (GNC)
+        * [[Position Controller]]
+        * [[Thruster Allocation]]
     * [[Goal Manager]]
-    * [[Position Controller]]
-    * [[Thruster Allocation]]
     * [[Message Multiplexer]]
     * [[Simulation]]
     * [[Kill System]]
