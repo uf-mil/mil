@@ -10,6 +10,7 @@
     * Guidance, Navigation, and Control (gnc)
         * [[Position Controller]]
         * [[Thruster Allocation]]
+        * [[State Estimation]]
     * Utilities (utils)
         * [[Message Multiplexer]]
         * [[RQT GUI]]
