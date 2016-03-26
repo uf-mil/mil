@@ -5,6 +5,7 @@
 * Fix coordinates system irregularities - DONE
 * Set software thrust limits to 600 - DONE
 * Create RQT GUI to allow for RC-less control - DONE
+* Finalize message arbitrating system - DONE
 * Create a docking mode allowing for a front thruster only kill - TODO
 * Add the ability to click a path into RVIZ - TODO
 * Test Trajectory Generator (Forrest)
