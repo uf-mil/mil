@@ -1,1 +1,1 @@
-# **How to run the simulator**
+# **How To Run The Simulator**
