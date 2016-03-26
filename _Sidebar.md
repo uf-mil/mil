@@ -6,7 +6,7 @@
     * [[Code Policy]]
     * [[Architecture]]
     * [[Helpful Readings]]
-* ** Operating Instructions**
+* **Operating Instructions**
     * [[How To Run The Boat]]
     * [[How To Run The Simulator]]
 * **[[Implementation Details (MUST READ)]]**
