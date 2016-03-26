@@ -18,12 +18,12 @@ cv::MatND smooth_histogram(const cv::MatND &histogram, size_t filter_kernel_size
 	cv::MatND hist = histogram.clone();
 	std::vector<float> gauss_kernel = generate_gaussian_kernel_1D(filter_kernel_size, sigma);
 	size_t histSize = hist.total();
-	size_t offset = (filter_kernel_size - 1) / 2;
+	int offset = (filter_kernel_size - 1) / 2;
 	for (size_t i = offset; i < histSize-offset; i++ )   // Convolve histogram values with gaussian kernel
 	{
 		int sum = 0;
 		int kernel_idx = 0;
-		for (int j = i - offset; j <= i + offset; j++){
+		for (int j = i - offset; j <= int(i + offset); j++){
 			sum += (hist.at<float>(j) * gauss_kernel[kernel_idx++]);
 	    }
 	    hist.at<float>(i) = sum;
@@ -137,7 +137,7 @@ unsigned int select_hist_mode(std::vector<cv::Point> &histogram_modes, int targe
     distances.push_back(mode.x - target);
   }
   int min_idx = 0;
-  for(int i = 0; i < distances.size(); i++){
+  for(size_t i = 0; i < distances.size(); i++){
     if(std::abs(distances[i]) <= std::abs(distances[min_idx])) min_idx = i;
   }
   return histogram_modes[min_idx].x;
@@ -189,7 +189,7 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, const int
 #ifdef SEGMENTATION_DEBUG
 	std::cout << "high_thresh_search_start: " << target_mode << std::endl;
 #endif
-	for(int i = 0; i < derivative_minima.size(); i++){
+	for(size_t i = 0; i < derivative_minima.size(); i++){
 #ifdef SEGMENTATION_DEBUG
 		std::cout << boost::format("derivative_minima[%1%].x = %2%  target_mode = %3%") % i % derivative_minima[i].x %  target_mode << std::endl;
 #endif
@@ -311,30 +311,50 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, const int
 #endif
 }
 
-// Work in progress
 
-// Eigen::Vector3f triangulate_image_coordinates(const cv::Point &pt1, const cv::Point &pt2, Eigen::Matrix3f fundamental){
-// 	/*
-// 		Optimal triangulation method for two cameras with parallel principal axes
-// 		Based of off this paper by Peter Lindstrom: https://e-reports-ext.llnl.gov/pdf/384387.pdf
-// 	*/
-// 	const unsigned int max_iterations = 3;
-// 	Eigen::Vector2f p1_old(pt1.x, pt1.y, 1.0);
-// 	Eigen::Vector2f p2_old(pt2.x, pt2.y, 1.0);
-// 	Eigen::Vector2f p1, p2 n1, n2;
-// 	Eigen::Vector<float, 2, 1> S;
-// 	S << 1, 0, 0
-// 		 0, 1, 0;
-// 	E_bar = E.topLeftCorner(2, 2);
-// 	for(unsigned int = 0; i < max_iterations; i++){
+Eigen::Vector3d triangulate_image_coordinates(const cv::Point &pt1, const cv::Point &pt2, 
+												const Eigen::Matrix3d &fundamental, const Eigen::Matrix3d &R){
+	/*
+		Optimal triangulation method for two cameras with parallel principal axes
+		Based of off this paper by Peter Lindstrom: https://e-reports-ext.llnl.gov/pdf/384387.pdf  **Listing 2**
+	*/
+	const unsigned int max_iterations = 3;
+	Eigen::Vector3d p1_old(pt1.x, pt1.y, 1.0);
+	Eigen::Vector3d p2_old(pt2.x, pt2.y, 1.0);
+	const Eigen::Vector3d p1_0(pt1.x, pt1.y, 1.0);
+	const Eigen::Vector3d p2_0(pt2.x, pt2.y, 1.0);
+	Eigen::Vector3d p1, p2;
+	Eigen::Vector2d n1, n2, delta_p1, delta_p2;
+	Eigen::Matrix<double, 2, 3> S;
+	S << 1, 0, 0,
+		 0, 1, 0;
+	Eigen::Matrix2d fundamental_bar = fundamental.topLeftCorner(2, 2);
+	double a, b, c, d, lambda;
+	c = p1_0.transpose() * (fundamental * p2_0);
+	for(unsigned int i = 0; i < max_iterations; i++){
+		n1 = S * (fundamental * p2_old);
+		n2 = S * (fundamental.transpose() * p1_old);
+		a = n1.transpose() * (fundamental_bar * n2);
+		b = (0.5 * ((n1.transpose() * n1) + (n2.transpose() * n2)))(0);
+		d = sqrt(b * b - a * c);
+		double signum_b = (b > 0) ? 1 : ((b < 0) ? -1 : 0);
+		lambda = c / (b + signum_b * d);
+		delta_p1 = lambda * n1;
+		delta_p2 = lambda * n2;
+		p1 = p1_0 - (S.transpose() * delta_p1);
+		p2 = p2_0 - (S.transpose() * delta_p2);
+		p1_old = p1;
+		p2_old = p2;
+	}
+	Eigen::Vector3d z = p1.cross(R * p2);
+	Eigen::Vector3d X = ( (z.transpose() * (fundamental * p2))(0) / (z.transpose() * z)(0) ) * p1;
+	return X;
+}
 
-// 	}
-// }
 
-
-ImageWithCameraInfo::ImageWithCameraInfo(sensor_msgs::ImageConstPtr _image_msg,
-										 sensor_msgs::CameraInfoConstPtr _info_msg)
-	: image_msg(_image_msg), info_msg(_info_msg), image_time(_image_msg->header.stamp) {}
+ImageWithCameraInfo::ImageWithCameraInfo(sensor_msgs::ImageConstPtr _image_msg_ptr,
+										 sensor_msgs::CameraInfoConstPtr _info_msg_ptr)
+	: image_msg_ptr(_image_msg_ptr), info_msg_ptr(_info_msg_ptr), image_time(_image_msg_ptr->header.stamp) {}
 
 
 FrameHistory::FrameHistory(std::string img_topic, unsigned int hist_size)
