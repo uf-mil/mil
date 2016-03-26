@@ -6,7 +6,10 @@
     * [[Code Policy]]
     * [[Architecture]]
     * [[Helpful Readings]]
-* **[[Implementation Details (READ FIRST)]]**
+* ** Operating Instructions
+    * [[How To Run The Boat]]
+    * [[How To Run The Simulator]]
+* **[[Implementation Details (MUST READ)]]**
     * Guidance, Navigation, and Control (gnc)
         * [[Position Controller]]
         * [[Thruster Allocation]]
