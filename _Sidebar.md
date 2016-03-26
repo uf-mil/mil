@@ -7,14 +7,16 @@
     * [[Architecture]]
     * [[Helpful Readings]]
 * **Implementation Details**
-    * Guidance, Navigation, and Control (GNC)
+    * Guidance, Navigation, and Control (gnc)
         * [[Position Controller]]
         * [[Thruster Allocation]]
-    * [[Goal Manager]]
-    * [[Message Multiplexer]]
+    * Utilities (utils)
+        * [[Message Multiplexer]]
+        * [[RQT GUI]]
+        * [[Custom Messages]]
+        * [[Remote Control]]
     * [[Simulation]]
-    * [[Kill System]]
-    * [[Cameras]]
+    * [[Alarm System]]
 
 
 
