@@ -6,7 +6,7 @@
     * [[Code Policy]]
     * [[Architecture]]
     * [[Helpful Readings]]
-* **Implementation Details**
+* **[[Implementation Details]]**
     * Guidance, Navigation, and Control (gnc)
         * [[Position Controller]]
         * [[Thruster Allocation]]
