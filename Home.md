@@ -14,9 +14,9 @@ Zach Goins
 
 Ralph Leyva
 
-Paul Chojecki
+Jason Nez
 
-Yi Chen
+Forrest Voight
 
 ##Getting Involved
 
