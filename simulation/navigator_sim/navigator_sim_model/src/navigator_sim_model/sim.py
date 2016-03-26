@@ -158,10 +158,10 @@ class Sim(object):
                     reldir = v(1, -1, 0)
                 if thruster_id == 2:
                     relpos = v(self.BL_offset[0], self.BL_offset[1], 0)
-                    reldir = v(1, 1, 0)
+                    reldir = v(1, -1, 0)
                 if thruster_id == 3:
                     relpos = v(self.BR_offset[0], self.BR_offset[1], 0)
-                    reldir = v(1, -1, 0)
+                    reldir = v(1, 1, 0)
 
 
                 angle = 0

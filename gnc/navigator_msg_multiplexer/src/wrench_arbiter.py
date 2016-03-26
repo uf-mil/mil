@@ -74,7 +74,7 @@ class control_arb(object):
         self.wrench_pub = rospy.Publisher("/wrench/cmd", WrenchStamped, queue_size = 1)
         rospy.Subscriber("/wrench/rc", WrenchStamped, self.rc_cb)
         rospy.Subscriber("/wrench/autonomous", WrenchStamped, self.autonomous_cb)
-        rospy.Subscriber("/wrench/gui", WrenchStamped, self.autonomous_cb)
+        rospy.Subscriber("/wrench/gui", WrenchStamped, self.gui_cb)
 
     def rc_cb(self, msg):
         self.rc_wrench = msg
@@ -84,7 +84,7 @@ class control_arb(object):
         self.autonomous_wrench = msg
         self.autonomous_wrench.header.frame_id = "/base_link"
 
-    def autonomous_cb(self, msg):
+    def gui_cb(self, msg):
         self.gui_wrench = msg
         self.gui_wrench.header.frame_id = "/base_link"
 
@@ -112,6 +112,7 @@ class control_arb(object):
             self.wrench_pub.publish(self.rc_wrench)
 
         if self.control == "autonomous":
+            self.autonomous_wrench.header.frame_id = "/base_link"
             self.wrench_pub.publish(self.autonomous_wrench)
 
         if self.control == "gui":

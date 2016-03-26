@@ -45,25 +45,18 @@ class Navigator_gui(Plugin):
 
         kill_button = self._widget.findChild(qtg.QPushButton, 'kill')
         kill_button.clicked.connect(self.toggle_kill)
-
         revive_button = self._widget.findChild(qtg.QPushButton, 'revive')
         revive_button.clicked.connect(self.toggle_kill)
-
         station_hold_button = self._widget.findChild(qtg.QPushButton, 'station_hold')
         station_hold_button.clicked.connect(self.station_hold)
-
         station_hold_button = self._widget.findChild(qtg.QPushButton, 'docking_mode')
         station_hold_button.clicked.connect(self.toggle_docking)
-
         rc_mode_button = self._widget.findChild(qtg.QPushButton, 'rc_mode')
         rc_mode_button.clicked.connect(self.rc_mode)
-
         au_mode_button = self._widget.findChild(qtg.QPushButton, 'au_mode')
         au_mode_button.clicked.connect(self.au_mode)
-
         gui_mode_button = self._widget.findChild(qtg.QPushButton, 'gui_mode')
         gui_mode_button.clicked.connect(self.gui_mode)
-
         forward_slider = self._widget.findChild(qtg.QSlider, 'forward_slider')
         forward_slider.valueChanged.connect(self.forward_slider)
         backward_slider = self._widget.findChild(qtg.QSlider, 'backward_slider')
@@ -170,24 +163,24 @@ class Navigator_gui(Plugin):
 
     def forward_slider(self, value):
         if self.wrench_out.wrench.force.x >= 0:
-            self.wrench_out.wrench.force.x = value
+            self.wrench_out.wrench.force.x = 5 * value
 
     def backward_slider(self, value):
         if self.wrench_out.wrench.force.x <= 0:
-            self.wrench_out.wrench.force.x = -value
+            self.wrench_out.wrench.force.x = -5 * value
 
     def right_slider(self, value):
         if self.wrench_out.wrench.force.y <= 0:
-            self.wrench_out.wrench.force.y = -value
+            self.wrench_out.wrench.force.y = -5 * value
 
     def left_slider(self, value):
         if self.wrench_out.wrench.force.y >= 0:
-            self.wrench_out.wrench.force.y = value
+            self.wrench_out.wrench.force.y = 5 * value
 
     def yaw_right_slider(self, value):
-        if self.wrench_out.wrench.torque.z >= 0:
-            self.wrench_out.wrench.torque.z = value
+        if self.wrench_out.wrench.torque.z <= 0:
+            self.wrench_out.wrench.torque.z = -5 * value
 
     def yaw_left_slider(self, value):
-        if self.wrench_out.wrench.torque.z <= 0:
-            self.wrench_out.wrench.torque.z = -value
+        if self.wrench_out.wrench.torque.z >= 0:
+            self.wrench_out.wrench.torque.z = 5 * value

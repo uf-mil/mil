@@ -11,7 +11,7 @@
     <rosparam param="thruster_FL_theta">-45</rosparam>
   </node>
 
-  <!-- node name="pose_controller" pkg="navigator_controller" type="mrac_controller.py"/-->
+  <node name="pose_controller" pkg="navigator_controller" type="mrac_controller.py"/>
   <node name="move_helper" pkg="navigator_tools" type="move_helper.py"/>
 
   <node name="wrench_arbiter" pkg="navigator_msg_multiplexer" type="wrench_arbiter.py"/>
@@ -24,7 +24,7 @@
   <!-- Joy node -->
   <node respawn="true" pkg="xbox_joy_node"
         type="joy_node" name="joy_node" >
-    <param name="dev" type="string" value="/dev/input/js1" />
+    <param name="dev" type="string" value="/dev/input/by-id/usb-©Microsoft_Xbox_360_Wireless_Receiver_for_Windows_E00F14A0-joystick" />
     <param name="deadzone" value="0.12" />
     <param name="autorepeat_rate" value="5"/>
   </node>
