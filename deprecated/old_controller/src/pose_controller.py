@@ -1,12 +1,5 @@
 #!/usr/bin/env python
-
 '''
-
-This source is written for use in the Machine Intelligence Lab in the MAE
-Department at the University of Florida.
-It is writen for use on the UF PropaGator robot
-It is released under the BSD license and is intended for university use
-This code is provided "as is" and relies on specific hardware, use at your own risk
 
 Title: PID position controller
 Start Date: 08-22-2015
@@ -302,7 +295,7 @@ if __name__ == "__main__":
 
     controller = PID_controller()
     rospy.spin()
-    
-    
+
+
 
 

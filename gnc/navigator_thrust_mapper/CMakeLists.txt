@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(navigator_thrust_allocater)
+project(navigator_thrust_mapper)
 
 find_package(catkin REQUIRED)
 
 catkin_package(
-  CATKIN_DEPENDS 
+  CATKIN_DEPENDS
   python_module
 )
 

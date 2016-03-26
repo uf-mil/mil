@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>navigator_thrust_allocater</name>
+  <name>navigator_thrust_mapper</name>
   <version>0.0.0</version>
   <description>The thrust_mapper package</description>
   <maintainer email="zachgoins@todo.todo">zachgoins</maintainer>
