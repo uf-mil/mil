@@ -90,17 +90,26 @@ bool Sub8BuoyDetector::request_buoy_position(sub8_msgs::VisionRequest::Request &
                                                   20,   // mean k
                                                   0.05  // std_dev threshold
                                                   );
+  bool detection_success;
+  detection_success =
+      determine_buoy_position(cam_model, target_name, target_image, target_cloud, position);
 
-  determine_buoy_position(cam_model, target_name, target_image, target_cloud, position);
-
-  if (last_bump_target == Eigen::Vector3f(0.0, 0.0, 0.0)) {
-    filtered_position = position;
-  } else {
-    filtered_position = (0.3 * position) + (0.7 * last_bump_target);
+  if (!detection_success) {
+    ROS_WARN("Could not detect %s buoy", target_name.c_str());
+    return false;
   }
 
-  last_bump_target = filtered_position;
-  tf::pointEigenToMsg(filtered_position.cast<double>(), resp.pose.pose.position);
+  //// Temporarily dead code -- filters instead of sending raw position estimate
+  // if (last_bump_target == Eigen::Vector3f(0.0, 0.0, 0.0)) {
+  //   filtered_position = position;
+  // } else {
+  //   filtered_position = (0.3 * position) + (0.7 * last_bump_target);
+  // }
+  // last_bump_target = filtered_position;
+  // tf::pointEigenToMsg(filtered_position.cast<double>(), resp.pose.pose.position);
+
+  tf::pointEigenToMsg(position.cast<double>(), resp.pose.pose.position);
+
   resp.pose.header.frame_id = tf_frame;
   rviz.visualize_buoy(resp.pose.pose, tf_frame);
 
@@ -128,7 +137,7 @@ void Sub8BuoyDetector::compute_loop(const ros::TimerEvent &timer_event) {
 // @param[in] image_raw The current image (Must correspond to the point cloud)
 // @param[in] point_cloud_raw The current PointCloud (Must correspond to the image)
 // @param[out] center An approximate center of the buoy
-void Sub8BuoyDetector::determine_buoy_position(
+bool Sub8BuoyDetector::determine_buoy_position(
     const image_geometry::PinholeCameraModel &camera_model, const std::string &target_color,
     const cv::Mat &image_raw, const sub::PointCloudT::Ptr &point_cloud_raw,
     Eigen::Vector3f &center) {
@@ -177,14 +186,31 @@ void Sub8BuoyDetector::determine_buoy_position(
     Eigen::Vector3f surface_point = sub::point_to_eigen(centroid_projected);
     // Slide the surface point one buoy radius away from the camera to approximate the 3d center
     Eigen::Vector3f approximate_center = surface_point + (buoy_radius * surface_point.normalized());
+
+    // Check if the estimated projection onto the point cloud is outside of the contour
+    cv::Point2d centroid_deprojected = cam_model.project3dToPixel(
+        cv::Point3f(approximate_center.x(), approximate_center.y(), approximate_center.z()));
+
+    // Check if the projected point falls within the contour
+    double insideness;
+    insideness = cv::pointPolygonTest(contours[i], centroid_deprojected, true);
+    // We accept up to 5 px outside of the contour
+    if (insideness < -5) {
+      continue;
+    }
+
     buoy_centers.push_back(approximate_center);
   }
   // ^^^^ The above could be eliminated with better approach
 
+  if (buoy_centers.size() == 0) {
+    return false;
+  }
+
   // TODO: initialize to inf
+  // Get the closest
   double closest_distance = 1000;
   size_t closest_buoy_index = 0;
-
   for (size_t buoy_index = 0; buoy_index < buoy_centers.size(); buoy_index++) {
     const double distance = buoy_centers[buoy_index].norm();
     if (buoy_centers[buoy_index].norm() < closest_distance) {
@@ -192,7 +218,10 @@ void Sub8BuoyDetector::determine_buoy_position(
       closest_buoy_index = buoy_index;
     }
   }
+
   center = buoy_centers[closest_buoy_index];
+
+  return true;
 }
 
 void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_msg,
@@ -234,14 +263,11 @@ void Sub8BuoyDetector::cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &
   current_cloud.reset(new sub::PointCloudT());
   pcl::fromROSMsg(*input_cloud, *current_cloud);
 
+#ifdef VISUALIZE
   sub8_msgs::VisionRequest::Request req;
   req.target_name = "red";
   sub8_msgs::VisionRequest::Response resp;
-#ifdef VISUALIZE
   request_buoy_position(req, resp);
-#endif
-
-#ifdef VISUALIZE
   pcl::console::print_highlight("Getting Point Cloud\n");
   if (!got_cloud) {
     pcl::console::print_highlight("Getting new\n");

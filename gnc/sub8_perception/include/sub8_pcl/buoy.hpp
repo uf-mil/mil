@@ -52,7 +52,7 @@ class Sub8BuoyDetector {
   void cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &);
   void image_callback(const sensor_msgs::ImageConstPtr &msg,
                       const sensor_msgs::CameraInfoConstPtr &info_msg);
-  void determine_buoy_position(const image_geometry::PinholeCameraModel &cam_model,
+  bool determine_buoy_position(const image_geometry::PinholeCameraModel &cam_model,
                                const std::string &target_color, const cv::Mat &image_raw,
                                const sub::PointCloudT::Ptr &point_cloud_raw,
                                Eigen::Vector3f &center);
