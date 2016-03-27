@@ -26,8 +26,7 @@ To handle potential timing discrepancy, the timestamp at which the images and po
 * Robustify for using on other vision tasks
 * Bayes filter buoy position for outlier removal
 * Implement more than one color
-* Add more visualization tools
-* Determine the physical center of the buoy
+
 
 ##### Usage
 
@@ -46,6 +45,10 @@ watch -n 0.1 "rosservice call /vision/buoys/red \"target_name: 'red'\""
 ```
 
 ##### Visualizing
+
+To compile with visualizations, do catkin_make -DVISUALIZE=true
+
+######## RViz
 
 In Rviz, make sure you have tf to whatever frame the cameras are broadcasting in. `roslaunch sub8_launch tf.launch` does that to base_link for the current setup.
 Add a "Marker" visualizer, and set its topic to `/visualization/buoys`. Buoy detection (and therefore visualization) will only be performed if the service is called.
