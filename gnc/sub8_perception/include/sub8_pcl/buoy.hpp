@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <map>
 #include <iostream>
 #include <pcl/console/time.h>  // TicToc
 #include <pcl/common/time.h>
@@ -33,7 +34,6 @@
 #define BACKWARD_HAS_BFD 1
 #include <sub8_build_tools/backward.hpp>
 
-
 // ROS_NAMESPACE=/stereo/left rosrun image_proc image_proc
 // rosbag play ./holding_buoy_mil.bag -r 0.1
 // [1]
@@ -44,7 +44,6 @@
   - Better cacheing (instead of immediate assignment)
 */
 
-
 class Sub8BuoyDetector {
  public:
   Sub8BuoyDetector();
@@ -54,7 +53,7 @@ class Sub8BuoyDetector {
   void image_callback(const sensor_msgs::ImageConstPtr &msg,
                       const sensor_msgs::CameraInfoConstPtr &info_msg);
   void determine_buoy_position(const image_geometry::PinholeCameraModel &cam_model,
-                               const cv::Mat &image_raw,
+                               const std::string &target_color, const cv::Mat &image_raw,
                                const sub::PointCloudT::Ptr &point_cloud_raw,
                                Eigen::Vector3f &center);
 
@@ -71,6 +70,9 @@ class Sub8BuoyDetector {
   ros::NodeHandle nh;
   ros::ServiceServer service;
   double buoy_radius;
+
+  std::map<std::string, sub::Range> color_ranges;
+  Eigen::Vector3f last_bump_target;
 
   image_transport::CameraSubscriber image_sub;
   image_transport::ImageTransport image_transport;

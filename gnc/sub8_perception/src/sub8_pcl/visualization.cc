@@ -23,7 +23,7 @@ void RvizVisualizer::visualize_buoy(geometry_msgs::Pose& pose, std::string& fram
   marker.pose = pose;
   marker.scale.x = 0.2;
   marker.scale.y = 0.2;
-  marker.scale.z = 0.2;
+  marker.scale.z = 0.3;
   marker.color.a = 0.8;
   marker.color.r = 0.2;
   marker.color.g = 1.0;
