@@ -11,9 +11,10 @@ namespace sub {
 // ******* 3D Visualization *******
 class RvizVisualizer {
  public:
-  ros::Publisher buoy_pub;
+  ros::Publisher rviz_pub;
   ros::NodeHandle nh;
-  RvizVisualizer();
+  RvizVisualizer(std::string rviz_topic);
   void visualize_buoy(geometry_msgs::Pose &pose, std::string &frame_id);
+  void visualize_torpedo_board(geometry_msgs::Pose& pose, std::string& frame_id);
 };
 }

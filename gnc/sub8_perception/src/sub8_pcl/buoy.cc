@@ -4,11 +4,12 @@
 Sub8BuoyDetector::Sub8BuoyDetector()
     : vp1(0),
       vp2(1),
+      rviz("/visualization/buoys"),
 #ifdef VISUALIZE
       viewer(new pcl::visualization::PCLVisualizer("Incoming Cloud")),
 #endif
       image_transport(nh) {
-  pcl::console::print_highlight("Initializing PCL SLAM\n");
+  pcl::console::print_highlight("Initializing PCL Sub8BuoyDetector\n");
 
   // Check if radius parameter exists
   // TODO: Make this templated library code, allow defaults
@@ -33,7 +34,7 @@ Sub8BuoyDetector::Sub8BuoyDetector()
   computing = false;
   need_new_cloud = false;
 
-  pcl::console::print_highlight("--PCL SLAM Initialized\n");
+  pcl::console::print_highlight("--PCL Sub8BuoyDetector Initialized\n");
   data_sub = nh.subscribe("/stereo/points2", 1, &Sub8BuoyDetector::cloud_callback, this);
   service =
       nh.advertiseService("/vision/buoys/red", &Sub8BuoyDetector::request_buoy_position, this);
@@ -120,8 +121,8 @@ void Sub8BuoyDetector::determine_buoy_position(
   pcl_pt_3d = sub::project_uv_to_cloud(*point_cloud_raw, pt_cv_2d, camera_model);
 
   // Reprojection (Useful for visualization)
-  cv::Point2d cv_pt_uv =
-      cam_model.project3dToPixel(cv::Point3f(pcl_pt_3d.x, pcl_pt_3d.y, pcl_pt_3d.z));
+  // cv::Point2d cv_pt_uv =
+  //     cam_model.project3dToPixel(cv::Point3f(pcl_pt_3d.x, pcl_pt_3d.y, pcl_pt_3d.z));
 
   // Threshold -- > This is what must be replaced with better 2d vision
   cv::inRange(image_hsv, cv::Scalar(105, 135, 135), cv::Scalar(120, 255, 255), image_thresh);

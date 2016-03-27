@@ -57,7 +57,8 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest,
 		const int hist_size, const float** ranges, const int target, std::string image_name,
         const float sigma = 1.5, const float low_thresh_gain = 0.5, const float high_thresh_gain = 0.5);
 
-Eigen::Vector3f triangulate_image_coordinates(const cv::Point &pt1, const cv::Point &pt2, Eigen::Matrix3f fundamental);
+Eigen::Vector3d triangulate_image_coordinates(const cv::Point &pt1, const cv::Point &pt2, 
+											  const Eigen::Matrix3d &fundamental, const Eigen::Matrix3d &R);
 
 struct ImageWithCameraInfo
 {	
@@ -66,9 +67,10 @@ struct ImageWithCameraInfo
 		into one object. Containers of these objects can be sorted by their image_time attribute
 	*/
 	public:
-		ImageWithCameraInfo(sensor_msgs::ImageConstPtr image_msg, sensor_msgs::CameraInfoConstPtr info_msg);
-		sensor_msgs::ImageConstPtr image_msg;
-		sensor_msgs::CameraInfoConstPtr info_msg;
+		ImageWithCameraInfo(){}
+		ImageWithCameraInfo(sensor_msgs::ImageConstPtr _image_msg_ptr, sensor_msgs::CameraInfoConstPtr _info_msg_ptr);
+		sensor_msgs::ImageConstPtr image_msg_ptr;
+		sensor_msgs::CameraInfoConstPtr info_msg_ptr;
 		ros::Time image_time;
 		bool operator <(const ImageWithCameraInfo& right) const {
 			return this->image_time < right.image_time;
