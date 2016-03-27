@@ -25,5 +25,8 @@
 
 * [ ] Photo Tourism
 
+* [TUM videos](https://www.youtube.com/user/cvprtum/playlists)
+    * These are *gold*
+
 * [Scene geometry from a single image](http://www.cs.cmu.edu/~abhinavg/papers/0586.pdf)
 
