@@ -119,14 +119,14 @@ In order...
     - [x] Figure out source of inversion in Odometry (Stray transpose?)
 - [ ] Add simulated success conditions
 - [ ] Add .OBJ color reader (and Phong parameter reader)
-- [ ] Learn Tess' shader swapping
+- [x] Learn Tess' shader swapping
     - [ ] Add simulated depth imaging
 - [ ] Add view swapping
     - [ ] Add simulated ROS cameras (Set camera parameters?)
 - [ ] "Regression testing" to force the simulator to match reality (Here, a learned dynamic model is guaranteed to be useful)
 
 # Solvers
-- [ ] Get Ceres or IPOPT working (Ceres seems more likely)
+- [x] Get Ceres or IPOPT working (Ceres seems more likely)
 - [ ] Inverse-compositional GN solver
 - [ ] Add single-state horizon quick-solver using CVXGEN
 - [ ] Multi-scale quick-DirCol
@@ -159,6 +159,48 @@ In order...
 - [x] Submit PR for widgets
 - [ ] Submit PR for scenegraph
 
+## Alarms
+    - [x] Add simple GUI (While waiting for mission PR)
+        - [ ] Full sub command gui
+        - [ ] Make the GUI take alarms of the same name/id and overwrite them (So we don't get spammed)
+    - [ ] Improve everything
+    - [x] Fix thrusters
+
+## Missions
+    - [x] Get TxROS back in the working tree
+    - [ ] Add buoy-bumping mission
+    - [ ] Write guide alignment mission
+
+
+## Perception
+    - [x] Buoys
+        - [ ] K-means optimal threshold
+        - [x] Visualize in RVIZ
+        - [ ] Noise rejection, bad cloud rejection
+            - [ ] Particle filter
+            - [ ] SBA for a much later date
+        - [x] Make "find-buoy" service (Or action? Not important! )
+
+    - [ ] Guides
+        - [x] K-Means optimal thresholding
+        - [x] PCA for principal orientation detection
+        - [ ] RANSAC for parallelogram fitting (From above, it's approx a parallelogram)
+            -- Really, its a trapezoid
+        - [ ] Implement service (Or action!?)
+        - [ ] Visualize in RVIZ
+
+    - [ ] "Bag-Nell", a tool for manually sifting through bags and selecting regions, then generating thresholds as parameter .yamls, and storing those
+        - [ ] We'd have "forrest_pool_cals.yaml", "easterling_pool_cals.yaml" and eventually "transdec_cals.yaml"
+    - [ ] "Occupancy" grid for "explored floor" - simple, 2d, using camera projection + TF of downward cam
+        -- Mostly useful for human visualization
+            -- Maybe someday we can use it as a search directive
+        - [ ] Project down camera (Need some tf monaaay)
+        - [ ] Visualize in RVIZ
+        - [ ] Restart when we restart sub
+        - [ ] Use DVL depth
+            - [ ] Visualize (Check orientation of DVL frame, this might be easy): Nope, not easy
+    - [ ] Script for auto-testing perception performance on manually segmented bags
+
 Spring:
 - [ ] Ready up for pool-day (Make DVL, etc nodes run w/o using kill system)
     - [ ] Perhaps switch them over to alarms?
@@ -186,14 +228,18 @@ Random:
 
 
 POOL
-    - [ ] Fix thrusters (Each should be its own node, we are getting rate issues)
+    - [x] Fix thrusters (Each should be its own node, we are getting rate issues)
     - [ ] Switch to Twisted (Or figure out a way to handle over-messaging)
     - [ ] Better polling process
     - [x] Tool for more easily specifying waypoints (Use 3D mouse?)
         - [x] Fix weird rotation bugs
         - [ ] Add yaw only mode (Not necessary now that it's easier to use)
-    - [ ] Visualize height estimated by DVL
-    - [ ] RISE can begin to command infinite thrusts after error too long, and the thruster mapper will start to fail to map
+    - [x] Visualize height estimated by DVL
+        - [x] Adding "range" messages for visualization creates pointless TF overhead
+            - [x] Instead, write an rviz-republisher that will send markers for depth and height
+    - [x] Visualize depth estimate
+
+    - [x] RISE can begin to command infinite thrusts after error too long, and the thruster mapper will start to fail to map
     - [x] Get RISE working in simulation
         --> Come up with safe way to avoid failure feedback loop
     - [ ] Script for uploading bags
