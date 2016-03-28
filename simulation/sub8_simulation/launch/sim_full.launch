@@ -12,7 +12,8 @@
     <!-- Vehicle control -->
     <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper.launch" />
     <include file="$(find sub8_videoray_m5_thruster)/launch/thruster_driver.launch" />
-    <include file="$(find sub8_launch)/launch/rise.launch" />
+    <include file="$(find sub8_launch)/launch/subsystems/rise.launch" />
+
     <group if="$(arg demo_mode)" >
         <!-- If we're in demo mode - we use a super simple perfect knowledge controller
             This is so that things like the TGEN can be tested when our sophisticated controllers are not yet ready -->
@@ -36,14 +37,7 @@
         </node>
     </group>
 
-    <!-- Old stuff -->
-    <node pkg="tf" type="static_transform_publisher" name="imu_broadcaster"
-        args="0.21236 0.00254 -0.10233  0.0 -0.70710678 0.0 0.70710678  base_link imu 100" />
-    <node pkg="tf" type="static_transform_publisher" name="depth_broadcaster"
-        args="-0.2352 0 -0.1701  0 0 0 1  base_link depth 100" />
-    <node pkg="tf" type="static_transform_publisher" name="dvl_broadcaster"
-        args="0.0908 0 -0.2459  0 0 0.38268343 0.92387953  base_link dvl 100" />
-
+    <include file="$(find sub8_launch)/launch/tf.launch" />
     <node pkg="nodelet" type="nodelet" args="standalone odometry_utils/odometry_to_tf" name="odometry_to_tf"/>
     <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry">
         <rosparam>
