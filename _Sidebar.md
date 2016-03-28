@@ -1,6 +1,6 @@
 * **[[Home]]**
 * **Getting Started**
-    * [[Getting started]]
+    * [[Getting Started]]
     * [[Networking with NaviGator]]
 * **General Information**
     * [[Current Testing Plans]]
