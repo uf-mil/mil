@@ -64,7 +64,7 @@ Add the following lines to this file in the list of hosts
     192.168.1.2     nav_router_onboard
     192.168.1.20    nav_router_onshore
 
-* Adding the necessary ROS master in your .bashrc
+### **3. Adding the necessary info to your .bashrc**
 
 **Justification:** This is what allows your version of ROS to see the messages being passed through the boat. Using the networking set above, if you change the ROS settings in your .bashrc you can tell your version of ROS which IP to look at. 
 
