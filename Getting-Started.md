@@ -83,7 +83,7 @@ Move to your ROS NaviGator workspace and run:
 If everything was set up properly this should compile everything successfully.
 _______________________________________________________________________________________
 
-## **If planning on using the boat while it is in the water, please see the [[Networking with NaviGator]] page
+### **If planning on using the boat while it is in the water, please see the [[Networking with NaviGator]] page**
 
 ##Readings and Cool Things to Know:
 
