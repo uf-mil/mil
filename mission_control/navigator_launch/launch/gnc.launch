@@ -1,45 +1,70 @@
+
+<!--
+        This file launches all nodes necessary for navigation.
+        Nodes launched:
+            * thruster mapper
+            * pose_controller
+            * sdgps_solution_ros_bridge
+            * wrench_arbiter
+            * joystick_wrench
+            * joy_node
+            * ins_tf
+            * lidar_tf
+            * forward_camera_tf
+
+        It takes in twp parameters
+        * 'sim' to launch only certain nodes.
+        * 'rc' to decide whether to launch the xbox remote control nodes
+
+        Nodes affected by the 'sim' arg:
+            * sdgps_solution_ros_bridge
+
+        Nodes affected by the 'rc' arg:
+            * joystick_wrench
+            * joy_node
+
+-->
+
 <launch>
 
-  <arg name="sim" default="true" />
+    <arg name="sim" default="true" />
+    <arg name="rc" default="false" />
 
-  <node pkg="navigator_thrust_mapper" type="thrust_mapper.py" name="thrust_mapper">
-    <!-- Parameters used to set the thruster locations relative to the center of gravity -->
-    <rosparam param="thruster_BR_cog">[-1.9304, 1.016]</rosparam>
-    <rosparam param="thruster_BL_cog">[-1.9304, -1.016]</rosparam>
-    <rosparam param="thruster_FR_cog">[1.5748, 0.6096]</rosparam>
-    <rosparam param="thruster_FL_cog">[1.5748, -0.6096]</rosparam>
-    <rosparam param="thruster_BR_theta">-45</rosparam>
-    <rosparam param="thruster_BL_theta">45</rosparam>
-    <rosparam param="thruster_FR_theta">45</rosparam>
-    <rosparam param="thruster_FL_theta">-45</rosparam>
-    <rosparam param="thrust_limit">-600</rosparam>
-  </node>
+    <node pkg="navigator_thrust_mapper" type="thrust_mapper.py" name="thrust_mapper">
+    <!-- Parameters used to set the thruster locations and angles relative to the center of gravity of the boat -->
+        <rosparam param="thruster_BR_cog">[-1.9304, 1.016]</rosparam>
+        <rosparam param="thruster_BL_cog">[-1.9304, -1.016]</rosparam>
+        <rosparam param="thruster_FR_cog">[1.5748, 0.6096]</rosparam>
+        <rosparam param="thruster_FL_cog">[1.5748, -0.6096]</rosparam>
+        <rosparam param="thruster_BR_theta">-45</rosparam>
+        <rosparam param="thruster_BL_theta">45</rosparam>
+        <rosparam param="thruster_FR_theta">45</rosparam>
+        <rosparam param="thruster_FL_theta">-45</rosparam>
+        <rosparam param="thrust_limit">-600</rosparam>
+    </node>
 
-  <node name="pose_controller" pkg="navigator_controller" type="mrac_controller.py"/>
+    <node name="wrench_arbiter" pkg="navigator_msg_multiplexer" type="wrench_arbiter.py"/>
 
-  <node unless="$(arg sim)" name="sdgps_solution_ros_bridge" pkg="navigator_state_estimation" type="solution_ros_bridge">
-    <param name="port" value="TODO"/>
-    <param name="child_frame_id" value="TODO"/>
-  </node>
+    <node name="pose_controller" pkg="navigator_controller" type="mrac_controller.py"/>
 
+    <node if="$(arg rc)" pkg="navigator_joystick_control" type="navigator_joystick.py" name="joystick_wrench">
+        <param name="force_scale" value="600" type="double"/>
+        <param name="torque_scale" value="500" type="double"/>
+    </node>
 
-  <node name="wrench_arbiter" pkg="navigator_msg_multiplexer" type="wrench_arbiter.py"/>
+    <node if="$(arg rc)" respawn="true" pkg="xbox_joy_node" type="joy_node" name="joy_node">
+        <param name="dev" type="string" value="/dev/input/by-id/usb-©Microsoft_Xbox_360_Wireless_Receiver_for_Windows_E00F14A0-joystick" />
+        <param name="deadzone" value="0.12" />
+        <param name="autorepeat_rate" value="5"/>
+    </node>
 
-  <node pkg="navigator_joystick_control" type="navigator_joystick.py" name="joystick_wrench"/>
-  <!-- Parameters used to tune the remote control -->
-  <param name="force_scale" value="600" type="double"/>
-  <param name="torque_scale" value="500" type="double"/>
+    <node pkg="tf" type="static_transform_publisher" name="ins_tf" args=".37084 .0.05715 .7493  0 0 0 1  /base_link /ins 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="lidar_tf" args=".5334 0.0127 .7493  0 0 0 1  /base_link /lidar 100" />
+    <node pkg="tf" type="static_transform_publisher" name="forward_camera_tf" args=".6096 -.254 .762  0 0 0 1  /base_link /camera 100" />
 
-  <!-- Joy node -->
-  <node respawn="true" pkg="xbox_joy_node"
-        type="joy_node" name="joy_node" >
-    <param name="dev" type="string" value="/dev/input/by-id/usb-©Microsoft_Xbox_360_Wireless_Receiver_for_Windows_E00F14A0-joystick" />
-    <param name="deadzone" value="0.12" />
-    <param name="autorepeat_rate" value="5"/>
-  </node>
-
-  <node pkg="tf" type="static_transform_publisher" name="ins_tf" args=".37084 .0.05715 .7493  0 0 0 1  /base_link /ins 100"/>
-  <node pkg="tf" type="static_transform_publisher" name="lidar_tf" args=".5334 0.0127 .7493  0 0 0 1  /base_link /lidar 100" />
-  <node pkg="tf" type="static_transform_publisher" name="forward_camera_tf" args=".6096 -.254 .762  0 0 0 1  /base_link /camera 100" />
+    <node unless="$(arg sim)" name="sdgps_solution_ros_bridge" pkg="navigator_state_estimation" type="solution_ros_bridge">
+        <param name="port" value="TODO"/>
+        <param name="child_frame_id" value="TODO"/>
+    </node>
 
 </launch>
