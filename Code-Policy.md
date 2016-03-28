@@ -15,10 +15,11 @@ Before submitting changes, read the rest of this page. Any code that is pull-req
     * MAKE SURE you are a collaborator on SemaphoreCI. If the CI build fails, everyone will get a notification, and will likely not respond to your PR on the assumption that you noticed the failed build.
 5. Code that is to be run on the sub (Obeying all style-guides, and the MIL internal guides) should go into the master branch. Code that obeys the style-guides, but is still in development, belongs into your own feature branch (ex: sim, monte-carlo, controller), to be merged when complete.
 
-There is *exactly one* exception to this policy:
-If on pool-test day, there are critical changes that you need to make to the sub, you may commit them directly too the **sub's** onboard git. Only minor changes are permissible at this time, this still does not belong in the main sub8/master.
 
 ## Review
+* Very minor changes (single line or less) require no serious review if you have push access
+* Somewhat minor changes should remain in review for no more then 24 hours (After which, pull so long as build is passing)
+    * This is to prevent blocking progress on innoccous changes
 * When your code is reviewed and approved, it will be pulled into the main sub8 repository
 * If your code is not approved, the following must happen
     * If your pull-request is multiple commits, add a new commit that makes the suggested changes
@@ -57,8 +58,7 @@ If on pool-test day, there are critical changes that you need to make to the sub
 ## What should I not commit?
 * Do not commit debug print statements (ROS Logging is okay)
 * Do not open GUI windows (PCL or OpenCV or anything of that sort) in production code. This will often cause crashes
-* If you have many small commits, [squash](http://stackoverflow.com/questions/5189560/squash-my-last-x-commits-together-using-git) your commits before pull-requesting (Making many small commits is good, but squash them before pull-requesting)
-* Avoiding unneded merging when pulling code, always rebase `git pull --rebase` unless impossible
+* Avoiding unneeded merging when pulling code, try to  rebase `git pull --rebase upstream master` unless impossible
 * If you must merge, you should always merge --no-ff to preserve history
 
 ## Documentation
@@ -68,7 +68,7 @@ If on pool-test day, there are critical changes that you need to make to the sub
     * Feel free to edit the wiki at any time. Adding a page will require you to edit the sidebar manually.
 * In short: Readme's are for how-to-use, Wiki pages should be how-does-this-work
 * Someone should be able to use your node or package without needing you to be present
-* Python code: Every class and method should have a [docstring](https://en.wikipedia.org/wiki/Docstring#Python).
+* Python code: Every nontrivial class and method should have a [docstring](https://en.wikipedia.org/wiki/Docstring#Python).
     * Class docstring should contain what the class is responsible for/what it encapsulates, caveats, TODO's, and citations
     * Method/function docstrings should contain a list of parameters and their purpose (Someone should be able to determine exactly what would happen if they changed a parameter), and a list of returns and their purpose. It should also include TODO's, and citations, and a summary of methods purpose and behavior.
     * Again, someone should be able to read your docstring and understand the purpose of your code without consulting you
