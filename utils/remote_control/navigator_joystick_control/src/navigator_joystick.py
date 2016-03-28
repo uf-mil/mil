@@ -17,8 +17,8 @@ class JOYSTICK(object):
     # Base class for whatever you are writing
     def __init__(self):
 
-        self.force_scale = rospy.get_param("force_scale")
-        self.torque_scale = rospy.get_param("torque_scale")
+        self.force_scale = rospy.get_param("~force_scale")
+        self.torque_scale = rospy.get_param("~torque_scale")
 
         self.last_controller_state = 0;
         self.last_station_hold_state = 0;
