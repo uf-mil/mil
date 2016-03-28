@@ -12,7 +12,7 @@
     <!-- Vehicle control -->
     <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper.launch" />
     <include file="$(find sub8_videoray_m5_thruster)/launch/thruster_driver.launch" />
-    <include file="$(find sub8_launch)/launch/rise.launch" />
+    <include file="$(find sub8_launch)/launch/subsystems/rise.launch" />
     <group if="$(arg demo_mode)" >
         <!-- If we're in demo mode - we use a super simple perfect knowledge controller
             This is so that things like the TGEN can be tested when our sophisticated controllers are not yet ready -->
