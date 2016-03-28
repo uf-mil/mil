@@ -9,11 +9,11 @@ void range_from_param(std::string &param_root, Range &range) {
 
   // No overhead in doing this
   ros::NodeHandle nh;
-  ROS_WARN("-- Waiting for parameter %s, (No timeout)", param_root.c_str());
+  ROS_INFO("-- Waiting for parameter %s, (No timeout)", param_root.c_str());
   while (!nh.hasParam(param_root + "/hsv_low") && ros::ok()) {
     ros::Duration(0.1).sleep();
   }
-  ROS_WARN("-- Got %s", param_root.c_str());
+  ROS_INFO("-- Got %s", param_root.c_str());
 
   std::vector<int> v_lower;
   std::vector<int> v_upper;

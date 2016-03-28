@@ -52,6 +52,7 @@ class Sub8BuoyDetector {
   void cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &);
   void image_callback(const sensor_msgs::ImageConstPtr &msg,
                       const sensor_msgs::CameraInfoConstPtr &info_msg);
+  bool get_last_image(cv::Mat &last_image);
   bool determine_buoy_position(const image_geometry::PinholeCameraModel &cam_model,
                                const std::string &target_color, const cv::Mat &image_raw,
                                const sub::PointCloudT::Ptr &point_cloud_raw,
@@ -81,6 +82,7 @@ class Sub8BuoyDetector {
   ros::Time image_time;
   ros::Time last_cloud_time;
   sub::PointCloudT::Ptr current_cloud;
-  cv::Mat current_image;
+  sensor_msgs::ImageConstPtr last_image_msg;
+
   bool got_cloud, got_image, line_added, computing, need_new_cloud;
 };

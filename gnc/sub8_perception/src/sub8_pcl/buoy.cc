@@ -74,7 +74,12 @@ bool Sub8BuoyDetector::request_buoy_position(sub8_msgs::VisionRequest::Request &
   tf_frame = cam_model.tfFrame();
 
   // Cache the current image
-  cv::Mat target_image = current_image.clone();
+  // cv::Mat target_image = current_image.clone();
+  cv::Mat target_image;
+  if (!get_last_image(target_image)) {
+    ROS_ERROR("Could not encode image");
+    return false;
+  }
 
   // Filter the cached point cloud
   sub::PointCloudT::Ptr target_cloud(new sub::PointCloudT());
@@ -114,10 +119,11 @@ bool Sub8BuoyDetector::request_buoy_position(sub8_msgs::VisionRequest::Request &
   rviz.visualize_buoy(resp.pose.pose, tf_frame);
 
 #ifdef VISUALIZE
+  cv::Mat draw_image = target_image.clone();
   cv::Point2d cv_pt_uv =
       cam_model.project3dToPixel(cv::Point3f(position.x(), position.y(), position.z()));
-  cv::circle(current_image, cv_pt_uv, 10, cv::Scalar(0, 240, 30), 4);
-  cv::imshow("input", current_image);
+  cv::circle(draw_image, cv_pt_uv, 10, cv::Scalar(0, 240, 30), 4);
+  cv::imshow("input", draw_image);
   cv::waitKey(50);
 #endif
   computing = false;
@@ -150,10 +156,6 @@ bool Sub8BuoyDetector::determine_buoy_position(
   cv::Point2d pt_cv_2d(250, 250);
   sub::PointXYZT pcl_pt_3d;
   pcl_pt_3d = sub::project_uv_to_cloud(*point_cloud_raw, pt_cv_2d, camera_model);
-
-  // Reprojection (Useful for visualization)
-  // cv::Point2d cv_pt_uv =
-  //     cam_model.project3dToPixel(cv::Point3f(pcl_pt_3d.x, pcl_pt_3d.y, pcl_pt_3d.z));
 
   // Threshold -- > This is what must be replaced with better 2d vision
   sub::inParamRange(image_hsv, color_ranges[target_color], image_thresh);
@@ -224,6 +226,18 @@ bool Sub8BuoyDetector::determine_buoy_position(
   return true;
 }
 
+bool Sub8BuoyDetector::get_last_image(cv::Mat &last_image) {
+  cv_bridge::CvImagePtr input_bridge;
+  try {
+    input_bridge = cv_bridge::toCvCopy(last_image_msg, sensor_msgs::image_encodings::BGR8);
+    last_image = input_bridge->image;
+  } catch (cv_bridge::Exception &ex) {
+    ROS_ERROR("Failed to convert image");
+    return false;
+  }
+  return true;
+}
+
 void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_msg,
                                       const sensor_msgs::CameraInfoConstPtr &info_msg) {
   need_new_cloud = true;
@@ -233,14 +247,7 @@ void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_ms
   pcl::console::print_highlight("Getting image\n");
 #endif
 
-  cv_bridge::CvImagePtr input_bridge;
-  try {
-    input_bridge = cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::BGR8);
-    current_image = input_bridge->image;
-  } catch (cv_bridge::Exception &ex) {
-    ROS_ERROR("[draw_frames] Failed to convert image");
-    return;
-  }
+  // cam_model message does not change with time, so syncing is not a big deal
   cam_model.fromCameraInfo(info_msg);
   image_time = image_msg->header.stamp;
 }
@@ -270,7 +277,6 @@ void Sub8BuoyDetector::cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &
   request_buoy_position(req, resp);
   pcl::console::print_highlight("Getting Point Cloud\n");
   if (!got_cloud) {
-    pcl::console::print_highlight("Getting new\n");
     viewer->addPointCloud(current_cloud, "current_input", vp1);
   } else {
     viewer->updatePointCloud(current_cloud, "current_input");
