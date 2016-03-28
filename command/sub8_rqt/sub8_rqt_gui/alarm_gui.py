@@ -13,6 +13,11 @@ import python_qt_binding.QtGui as qtg
 from python_qt_binding.QtCore import Qt
 
 
+'''TODO:
+- Store everything in a dictionary and write new rows
+'''
+
+
 def newTableWidgetItem(contents):
     '''Make a new table widget item, and do some additional bookkeeping'''
     new_item = qtg.QTableWidgetItem(str(contents))
@@ -52,12 +57,14 @@ def recurse_on_tree(tree):
             children.append(new_item)
     else:
         print "Encountered unparseable json entity of type {}".format(type(tree))
+
     return children
 
 
 def build_tree_from_json(tree, json_hierarchy):
     '''Helper function for pretty-printing json'''
     root_tree = tree
+
     if not isinstance(json_hierarchy, dict):
         print "Couldn't render non-dict properly"
         return
@@ -168,15 +175,19 @@ class AlarmPlugin(Plugin):
         items_selected = self.alarm_table.selectedItems()
         if len(items_selected) == 0:
             return
+
         row_selected = items_selected[0].row()
         self.alarm_table.selectRow(row_selected)
         key_item = self.alarm_table.itemAt(row_selected, 0)
+
         try:
             json_parameters = json.loads(self.alarm_parameter_cache[key_item])
         except ValueError:
             rospy.logwarn("Could not decode alarm message")
             return
+
         self.alarm_tree.clear()
+
         try:
             build_tree_from_json(self.alarm_tree, json_parameters)
         except AssertionError:
@@ -187,13 +198,9 @@ class AlarmPlugin(Plugin):
         self.alarm_sub.unregister()
 
     def save_settings(self, plugin_settings, instance_settings):
-        # TODO save intrinsic configuration, usually using:
-        # instance_settings.set_value(k, v)
         rospy.logwarn('Saving does not currently do anything')
         pass
 
     def restore_settings(self, plugin_settings, instance_settings):
-        # TODO restore intrinsic configuration, usually using:
-        # v = instance_settings.value(k)
         rospy.logwarn('Restoring does not currently do anything')
         pass

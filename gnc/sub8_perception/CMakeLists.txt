@@ -45,12 +45,17 @@ include_directories(
     ${catkin_INCLUDE_DIRS}
 )
 
+if(${VISUALIZE})
+  add_definitions(-DVISUALIZE)
+endif(${VISUALIZE})
+
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 add_library(sub8_pcl SHARED
     src/sub8_pcl/align.cc
     src/sub8_pcl/cv_utils.cc
+    src/sub8_pcl/cv_param_helpers.cc
     src/sub8_pcl/visualization.cc
     src/sub8_pcl/buoy.cc
     src/sub8_pcl/torpedo_board.cc
