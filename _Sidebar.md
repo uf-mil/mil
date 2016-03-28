@@ -1,10 +1,10 @@
 * **[[Home]]**
 * **Getting Started**
     * [[Getting Started]]
+    * [[Software Dependencies]]
     * [[Networking with NaviGator]]
 * **General Information**
     * [[Current Testing Plans]]
-    * [[Software Dependencies]]
     * [[Adding to the Wiki]]
     * [[Code Policy]]
     * [[Architecture]]
