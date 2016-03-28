@@ -1,4 +1,4 @@
-* [[Home]]
+* **[[Home]]**
 * **Getting Started**
     * [[Getting started]]
     * [[Networking with NaviGator]]
