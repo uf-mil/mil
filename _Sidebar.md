@@ -1,5 +1,7 @@
 * [[Home]]
-    * [[Getting started]]
+    * **Getting Started with NaviGator**
+        * [[Getting started]]
+        * [[Networking with NaviGator]]
     * [[Current Testing Plans]]
     * [[Software Dependencies]]
     * [[Adding to the Wiki]]
