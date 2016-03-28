@@ -1,14 +1,14 @@
 * [[Home]]
-    * **Getting Started**
-        * [[Getting started]]
-        * [[Networking with NaviGator]]
-    * **General Information**
-        * [[Current Testing Plans]]
-        * [[Software Dependencies]]
-        * [[Adding to the Wiki]]
-        * [[Code Policy]]
-        * [[Architecture]]
-        * [[Helpful Readings]]
+* **Getting Started**
+    * [[Getting started]]
+    * [[Networking with NaviGator]]
+* **General Information**
+    * [[Current Testing Plans]]
+    * [[Software Dependencies]]
+    * [[Adding to the Wiki]]
+    * [[Code Policy]]
+    * [[Architecture]]
+    * [[Helpful Readings]]
 * **Operating Instructions**
     * [[How To Run The Boat]]
     * [[How To Run The Simulator]]
