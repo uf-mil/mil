@@ -1,5 +1,5 @@
 * [[Home]]
-    * **Getting Started with NaviGator**
+    * **Getting Started**
         * [[Getting started]]
         * [[Networking with NaviGator]]
     * [[Current Testing Plans]]
