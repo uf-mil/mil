@@ -3,4 +3,16 @@
     <node pkg="tf" type="static_transform_publisher" name="stereo_front_broadcaster"
       args="0.2559 0 0.1707   0.5 -0.5  0.5  -0.5 base_link stereo_front 100">
     </node>
+
+    <node pkg="tf" type="static_transform_publisher" name="dvl_broadcaster"
+      args="0.0908 0 -0.2459  0 0 0.38268343 0.92387953  base_link dvl 100" >
+    </node>
+
+    <node pkg="tf" type="static_transform_publisher" name="depth_broadcaster"
+      args="-0.2352 0 -0.1701  0 0 0 1  base_link depth 100">
+    </node>
+
+    <node pkg="tf" type="static_transform_publisher" name="imu_broadcaster"
+      args="0.21236 0.00254 -0.10233  0.0 -0.70710678 0.0 0.70710678  base_link imu 100" />
+
 </launch>
