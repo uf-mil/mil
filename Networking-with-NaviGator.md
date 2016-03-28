@@ -77,5 +77,5 @@ Comment out the existing ROS into and add the following:
     export ROS_MASTER_URI=http://wamv:11311
     export ROS_IP=192.168.1.101
 
-** Don't forget to switch this back when not working on the boat**
+**Don't forget to switch this back when not working on the boat.**
 
