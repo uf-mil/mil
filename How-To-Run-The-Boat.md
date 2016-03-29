@@ -26,7 +26,7 @@ Finally run:
 
     screen -d
 
-3. On the shore computer open a new terminal and start the necessary launch files
+### 3. On the shore computer open a new terminal and start the necessary launch files
 
 Run:
 
