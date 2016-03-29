@@ -32,6 +32,10 @@ Run:
 
     roslaunch navigator_launch gnc.launch
 
+Open a new terminal and run: 
+
+    rqt
+
 Then navigate to the NaviGator GUI.  
 
 ## How To Use The GUI
