@@ -1,18 +1,36 @@
 # **How To Run The Boat**
 
-There are a few more steps to starting up the real boat than the simulator
+There are a few more steps to starting up the real boat than the simulator. 
 
-Open a new terminal and run:
+**Everything in this page assumes you have completed the step in the [[Networking with NaviGator]]**
 
-    roslaunch navigator_launch simulation.launch
+### 1. Verify that your computer can ping the boat and both routers by running the three commands below individually. 
 
-This file will start simulation as well as the gnc.launch file
+    ping navigator
+    ping nav_router_onboard
+    ping nav_router_onshore
 
-Right now the simulator is only able to simulate components of GNC. Perception is to come!
+If you can ping all three systems you are good to go!
 
-Open a new terminal and run:
+### 2. SSH into the boat and start the hardware launch files
 
-    rqt
+First, start a screen by running 
+
+    screen -t navigator_onboard_screen
+
+Next run:
+
+    roslaunch navigator_launch motor_control.launch
+
+Finally run:
+
+    screen -d
+
+3. On the shore computer open a new terminal and start the necessary launch files
+
+Run:
+
+    roslaunch navigator_launch gnc.launch
 
 Then navigate to the NaviGator GUI.  
 
