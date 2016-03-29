@@ -123,6 +123,7 @@ python_from_git https://github.com/vispy/vispy.git vispy vispy 0495d8face28571ad
 # rawgps-tools
 ros_git_get https://github.com/txros/txros.git
 ros_git_get https://github.com/uf-mil/rawgps-tools.git
+ros_git_get https://github.com/ros-simulation/gazebo_ros_pkgs.git
 
 # Ceres
 cd "$DEPS_DIR"

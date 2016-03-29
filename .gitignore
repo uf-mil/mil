@@ -67,3 +67,4 @@ target/
 .DS_STORE
 # Autosave files from QtCreator
 *.autosave
+*~
