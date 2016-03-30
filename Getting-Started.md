@@ -70,6 +70,8 @@ ________________________________________________________________________________
 
 ####5. Add SubjuGator repository
 
+**Some modules that the Sub8 team created are used on NaviGator.**
+
 Run:
 
     roscd && cd ~/WORKSPACE_NAME/src && git clone git@github.com:uf-mil/Sub8.git
