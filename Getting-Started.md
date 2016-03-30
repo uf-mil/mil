@@ -67,14 +67,39 @@ add it to your GitHub account.
 Then, go into the Navigator directory and type `git pull` to pull the newest commits.
 _______________________________________________________________________________________
 
-####5. Add all NaviGator Dependencies:
+
+####5. Add SubjuGator repository
+
+Run:
+
+    roscd && cd ~/WORKSPACE_NAME/src && git clone git@github.com:uf-mil/Sub8.git
+
+If this fails with a "Permission denied" error, you need to create an SSH key and
+add it to your GitHub account.
+
+[Creating SSH Keys] (https://help.github.com/articles/generating-ssh-keys/)
+
+Then, go into the Sub8 directory and type `git pull` to pull the newest commits.
+_______________________________________________________________________________________
+
+####6. Add all NaviGator Dependencies:
 
 All necessary dependencies can be found at the link below.
 
 ### [[Software Dependencies]]
 _______________________________________________________________________________________
 
-####6. Run catkin_make
+####7. Add all SubjuGator Dependencies:
+
+All necessary dependencies can be installed with the commands below.
+
+    cd ~/catkin_ws/src
+    ./Sub8/scripts/get_dependencies.sh -d ~/sub_dependencies
+    catkin_make -C ..
+_______________________________________________________________________________________
+
+
+####8. Run catkin_make
 
 Move to your ROS NaviGator workspace and run: 
 
