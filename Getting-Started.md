@@ -18,8 +18,8 @@ Assuming you've already come by the lab and spoken to us
 
 2. Read the code policy page on this wiki.
 
-3. [Install dependencies](https://github.com/uf-mil/Sub8/wiki/Installing-Dependencies)
-    * We have a nice script that does all of the work for you. If you do not have ROS installed, run Super Install
+3. Install dependencies (use install.sh, follow the instructions the Sub8 repository readme)
+
 
 4. Clone this repository. As of now, Sub8 has no dependencies on the rest of uf-mil, so it can exist in its own catkin workspace.
 
