@@ -267,7 +267,8 @@ class MRAC_Controller:
         self.drag_est = self.drag_est + (self.kg * (drag_regressor.T.dot(err + errdot)) * self.timestep)
         self.increment_reference()
 
-
+        # convert wrench to body frame
+        wrench_body = R.T.dot(wrench)
 
         # NOT NEEDED SINCE WE ARE USING A DIFFERENT NODE FOR ACTUAL THRUSTER MAPPING
         # # Compute world frame thruster matrix (B) from thruster geometry, and then map wrench to thrusts
@@ -278,9 +279,9 @@ class MRAC_Controller:
         # Give wrench to ROS
         to_send = WrenchStamped()
         to_send.header.frame_id = "/base_link"
-        to_send.wrench.force.x = wrench[0]
-        to_send.wrench.force.y = wrench[1]
-        to_send.wrench.torque.z = wrench[2]
+        to_send.wrench.force.x = wrench_body[0]
+        to_send.wrench.force.y = wrench_body[1]
+        to_send.wrench.torque.z = wrench_body[2]
         self.wrench_pub.publish(to_send)
 
         self.pose_ref_pub.publish(PoseStamped(
