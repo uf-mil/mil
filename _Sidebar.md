@@ -15,7 +15,7 @@
 * **[[Implementation Details (MUST READ)]]**
     * Guidance, Navigation, and Control (gnc)
         * [[Position Controller]]
-        * [[Thruster Allocation]]
+        * [[Thrust Mapper]]
         * [[State Estimation]]
     * Utilities (utils)
         * [[Message Multiplexer]]
