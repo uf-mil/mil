@@ -3,6 +3,7 @@
 import rospy
 import roslib
 import numpy,math,tf,threading
+from tf import transformations as trns
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point
 from navigator_tools import geometry_helper as gh
@@ -26,10 +27,17 @@ class move_helper(object):
     def move_cb(self, msg):
 
         to_send = Point()
+
+        R = trns.quaternion_matrix([self.odom.pose.pose.orientation.x, self.odom.pose.pose.orientation.y, self.odom.pose.pose.orientation.z, self.odom.pose.pose.orientation.w])[:2, :2]
         theta = gh.quat_to_euler(self.odom.pose.pose.orientation)
-        to_send.x = self.odom.pose.pose.position.x + msg.x
-        to_send.y = self.odom.pose.pose.position.y + msg.y
-        to_send.z = np.rad2deg(theta[2]) + msg.z
+
+        current = numpy.array([self.odom.pose.pose.position.x, self.odom.pose.pose.position.y, numpy.rad2deg(theta[2])])
+        shift = numpy.concatenate((R.dot([msg.x, msg.y]), [msg.z]))
+        desired = current + shift
+
+        to_send.x = desired[0]
+        to_send.y = desired[1]
+        to_send.z = desired[2]
 
         self.pose_pub.publish(to_send)
 
