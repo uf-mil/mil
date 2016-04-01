@@ -111,11 +111,12 @@ class MRAC_Controller:
         # Initial drag estimate
         self.drag_est = np.array([0, 0, 0, 0, 0])  # [d1 d2 Lc1 Lc2 Lr]
         # User-imposed speed limit
-        self.vel_max_body = np.array([1.5, 0.5, 0.5])  # [m/s, m/s, rad/s]
+        self.vel_max_body_positive = np.array([1.5, 0.75, 0.5])  # [m/s, m/s, rad/s]
+        self.vel_max_body_negative = np.array([0.75, 0.75, 0.5])  # [m/s, m/s, rad/s]
         # "Smart heading" threshold
         self.heading_threshold = 500  # m
         # Only use PD controller
-        self.only_PD = True
+        self.only_PD = False
 
         #### REFERENCE MODEL (note that this is not the adaptively estimated TRUE model; rather,
         #                     these parameters will govern the trajectory we want to achieve).
@@ -135,7 +136,8 @@ class MRAC_Controller:
         self.Fx_max_body = self.B_body.dot(self.thrust_max * np.array([1, 1, 1, 1]))
         self.Fy_max_body = self.B_body.dot(self.thrust_max * np.array([1, -1, -1, 1]))
         self.Mz_max_body = self.B_body.dot(self.thrust_max * np.array([-1, 1, -1, 1]))
-        self.D_body = abs(np.array([self.Fx_max_body[0], self.Fy_max_body[1], self.Mz_max_body[5]])) / self.vel_max_body**2
+        self.D_body_positive = abs(np.array([self.Fx_max_body[0], self.Fy_max_body[1], self.Mz_max_body[5]])) / self.vel_max_body_positive**2
+        self.D_body_negative = abs(np.array([self.Fx_max_body[0], self.Fy_max_body[1], self.Mz_max_body[5]])) / self.vel_max_body_negative**2
 
         #### BASIC INITIALIZATIONS
         # Position waypoint
@@ -261,10 +263,11 @@ class MRAC_Controller:
             wrench = (kp.dot(err)) + (kd.dot(errdot))
         else:
             wrench = (kp.dot(err)) + (kd.dot(errdot)) + inertial_feedforward + self.dist_est + (drag_regressor.dot(self.drag_est))
+            # Update disturbance estimate, drag estimates
+            self.dist_est = self.dist_est + (self.ki * err * self.timestep)
+            self.drag_est = self.drag_est + (self.kg * (drag_regressor.T.dot(err + errdot)) * self.timestep)
 
-        # Update disturbance estimate, drag estimates, and model reference for the next call
-        self.dist_est = self.dist_est + (self.ki * err * self.timestep)
-        self.drag_est = self.drag_est + (self.kg * (drag_regressor.T.dot(err + errdot)) * self.timestep)
+        # Update model reference for the next call
         self.increment_reference()
 
         # convert wrench to body frame
@@ -333,7 +336,8 @@ class MRAC_Controller:
 
         # Use model drag to find drag force on virtual boat
         twist_body = R_ref.T.dot(np.concatenate((self.v_ref, [self.w_ref])))
-        drag_ref = R_ref.dot(self.D_body * twist_body * abs(twist_body))
+        D_body = np.array([p if v > 0 else n for p, n, v in zip(self.D_body_positive, self.D_body_negative, twist_body)])
+        drag_ref = R_ref.dot(D_body * twist_body * abs(twist_body))
 
         # Step forward the dynamics of the virtual boat
         self.a_ref = (wrench_saturated[:2] - drag_ref[:2]) / self.mass_ref
