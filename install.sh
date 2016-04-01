@@ -53,8 +53,8 @@ source /opt/ros/indigo/setup.bash
 if ! cat ~/.bashrc | grep "source /opt/ros"; then
     echo "source /opt/ros/indigo/setup.bash" >> ~/.bashrc
 fi
-sudo rosdep init
-rosdep update
+# sudo rosdep init
+# rosdep update
 
 # Set up catkin directory
 mkdir -p "$CATKIN_DIR/src"
