@@ -66,6 +66,7 @@ class Sim(object):
         self.BR_offset = rospy.get_param('~BR_offset')
         self.FL_offset = rospy.get_param('~FL_offset')
         self.FR_offset = rospy.get_param('~FR_offset')
+        self.effort_ratio = rospy.get_param('~effort_ratio')  # for converting efforts back to thrusts
         self.friction_coefficient_forward = rospy.get_param('~friction_coefficient_forward')
         self.friction_coefficient_forward_reduction = rospy.get_param('~friction_coefficient_forward_reduction')
         self.friction_coefficient_lateral = rospy.get_param('~friction_coefficient_lateral')
@@ -111,15 +112,13 @@ class Sim(object):
         return 1000 * 9.81 * vol_submerged
 
     def BL_motor_cb(self, msg):
-        self.thrusts[2] = msg.setpoint
-
+        self.thrusts[0] = msg.setpoint / self.effort_ratio
     def BR_motor_cb(self, msg):
-        self.thrusts[3] = msg.setpoint
+        self.thrusts[1] = msg.setpoint / self.effort_ratio
     def FL_motor_cb(self, msg):
-        self.thrusts[0] = msg.setpoint
-
+        self.thrusts[2] = msg.setpoint / self.effort_ratio
     def FR_motor_cb(self, msg):
-        self.thrusts[1] = msg.setpoint
+        self.thrusts[3] = msg.setpoint / self.effort_ratio
 
     def world_tick(self):
 
@@ -128,14 +127,14 @@ class Sim(object):
 
         water_vel = self.get_water_vel(V(body.getPosition()))
 
-        body.addForceAtRelPos((0, 0, self.buoyancy_force(-body.getPosition()[2], 0.22728849402137372)), (0, 0, .1))
+        body.addForceAtRelPos((0, 0, self.buoyancy_force(-body.getPosition()[2], 0.5)), (0, 0, .1))
         # the following frictional forces are from darsen's models
         #frictional force opposite to the velocity of the boat
         body_velocity=body.vectorFromWorld(body.getLinearVel())
         # adds a resistance force for the water proportional to the velocity (where [0] is x, [1] is y, and [2] is z). units in N/(m/s)
         friction_force_forward=self.friction_coefficient_forward*body_velocity[0]-self.friction_coefficient_forward_reduction*(-1.0*pow(body_velocity[0],2) if body_velocity[0]<0.0 else pow(body_velocity[0],2))
         friction_force_lateral=self.friction_coefficient_lateral*body_velocity[1]-self.friction_coefficient_lateral_reduction*(-1.0*pow(body_velocity[1],2) if body_velocity[1]<0.0 else pow(body_velocity[1],2))
-        body.addRelForce([-friction_force_forward,-friction_force_lateral,body_velocity[2]*-40])
+        body.addRelForce([-friction_force_forward,-friction_force_lateral,body_velocity[2]*-450])
         # adds a angular resistance force for the water proportional to the velocity
         # angular_velocity is a 3-tuple ([0]=roll,[1]=pitch,[2]=yaw)
         angular_velocity=body.vectorFromWorld(body.getAngularVel())
@@ -151,23 +150,21 @@ class Sim(object):
             for thruster_id in [0, 1, 2, 3]:
                 # set the thrusters position on the boat
                 if thruster_id == 0:
-                    relpos = v(self.FL_offset[0], self.FL_offset[1], 0)
+                    relpos = v(self.BL_offset[0], self.BL_offset[1], 0)
                     reldir = v(1, 1, 0)
                 if thruster_id == 1:
-                    relpos = v(self.FR_offset[0], self.FR_offset[1], 0)
+                    relpos = v(self.BR_offset[0], self.BR_offset[1], 0)
                     reldir = v(1, -1, 0)
                 if thruster_id == 2:
-                    relpos = v(self.BL_offset[0], self.BL_offset[1], 0)
+                    relpos = v(self.FL_offset[0], self.FL_offset[1], 0)
                     reldir = v(1, -1, 0)
                 if thruster_id == 3:
-                    relpos = v(self.BR_offset[0], self.BR_offset[1], 0)
+                    relpos = v(self.FR_offset[0], self.FR_offset[1], 0)
                     reldir = v(1, 1, 0)
 
-
-                angle = 0
                 force = self.thrusts[thruster_id]
-                body.addRelForceAtRelPos(reldir*force*.1, relpos)
-                self.boat_model.vectors.append((relpos, relpos - .005*reldir*force))
+                body.addRelForceAtRelPos(reldir*force, relpos)
+                self.boat_model.vectors.append((relpos, relpos + 0.05*reldir*force))
 
         keys = pygame.key.get_pressed()
         for keycode, force in [

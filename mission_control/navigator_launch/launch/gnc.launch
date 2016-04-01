@@ -32,15 +32,16 @@
 
     <node pkg="navigator_thrust_mapper" type="thrust_mapper.py" name="thrust_mapper">
     <!-- Parameters used to set the thruster locations and angles relative to the center of gravity of the boat -->
-        <rosparam param="thruster_BR_cog">[-1.9304, 1.016]</rosparam>
-        <rosparam param="thruster_BL_cog">[-1.9304, -1.016]</rosparam>
-        <rosparam param="thruster_FR_cog">[1.5748, 0.6096]</rosparam>
-        <rosparam param="thruster_FL_cog">[1.5748, -0.6096]</rosparam>
-        <rosparam param="thruster_BR_theta">-45</rosparam>
+        <rosparam param="thruster_BL_cog">[-1.9304, 1.016]</rosparam>
+        <rosparam param="thruster_BR_cog">[-1.9304, -1.016]</rosparam>
+        <rosparam param="thruster_FL_cog">[1.5748, 0.6096]</rosparam>
+        <rosparam param="thruster_FR_cog">[1.5748, -0.6096]</rosparam>
         <rosparam param="thruster_BL_theta">45</rosparam>
-        <rosparam param="thruster_FR_theta">45</rosparam>
+        <rosparam param="thruster_BR_theta">-45</rosparam>
         <rosparam param="thruster_FL_theta">-45</rosparam>
-        <rosparam param="thrust_limit">-600</rosparam>
+        <rosparam param="thruster_FR_theta">45</rosparam>
+        <rosparam param="effort_ratio">2.7</rosparam><!-- map 220 newtons to 600 effort units -->
+        <rosparam param="effort_limit">600</rosparam>
     </node>
 
     <node name="wrench_arbiter" pkg="navigator_msg_multiplexer" type="wrench_arbiter.py"/>

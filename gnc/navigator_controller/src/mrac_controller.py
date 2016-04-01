@@ -124,17 +124,17 @@ class MRAC_Controller:
         self.thrust_max = 220  # N
         self.thruster_positions = np.array([[-1.9000,  1.0000, -0.0123],
                                             [-1.9000, -1.0000, -0.0123],
-                                            [ 1.6000, -0.6000, -0.0123],
-                                            [ 1.6000,  0.6000, -0.0123]]) # back-left, back-right, front-right front-left, m
+                                            [ 1.6000,  0.6000, -0.0123],
+                                            [ 1.6000, -0.6000, -0.0123]]) # back-left, back-right, front-left front-right, m
         self.thruster_directions = np.array([[ 0.7071,  0.7071,  0.0000],
                                              [ 0.7071, -0.7071,  0.0000],
-                                             [ 0.7071,  0.7071,  0.0000],
-                                             [ 0.7071, -0.7071,  0.0000]]) # back-left, back-right, front-right front-left
+                                             [ 0.7071, -0.7071,  0.0000],
+                                             [ 0.7071,  0.7071,  0.0000]]) # back-left, back-right, front-left front-right
         self.lever_arms = np.cross(self.thruster_positions, self.thruster_directions)
         self.B_body = np.concatenate((self.thruster_directions.T, self.lever_arms.T))
         self.Fx_max_body = self.B_body.dot(self.thrust_max * np.array([1, 1, 1, 1]))
-        self.Fy_max_body = self.B_body.dot(self.thrust_max * np.array([1, -1, 1, -1]))
-        self.Mz_max_body = self.B_body.dot(self.thrust_max * np.array([-1, 1, 1, -1]))
+        self.Fy_max_body = self.B_body.dot(self.thrust_max * np.array([1, -1, -1, 1]))
+        self.Mz_max_body = self.B_body.dot(self.thrust_max * np.array([-1, 1, -1, 1]))
         self.D_body = abs(np.array([self.Fx_max_body[0], self.Fy_max_body[1], self.Mz_max_body[5]])) / self.vel_max_body**2
 
         #### BASIC INITIALIZATIONS
