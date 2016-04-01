@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(duck_gazebo)
-
+project(sub8_gazebo)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -Wall")
 find_package(catkin REQUIRED COMPONENTS gazebo_ros roscpp)
 
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -14,16 +14,40 @@ include_directories(
     include
 )
 
-add_library(sub8_buoyancy src/sub8_buoyancy.cc)
-target_link_libraries(sub8_buoyancy ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_library(
+    sub8_buoyancy
+        src/sub8_buoyancy.cc
+)
+target_link_libraries(
+    sub8_buoyancy
+        ${catkin_LIBRARIES}
+        ${GAZEBO_LIBRARIES}
+)
 
-add_library(sub8_test src/sub8_test.cc)
-target_link_libraries(sub8_test ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_library(
+    sub8_thrusters
+        src/sub8_thrusters.cc
+)
+target_link_libraries(
+    sub8_thrusters
+        ${catkin_LIBRARIES}
+        ${GAZEBO_LIBRARIES}
+)
+
+add_library(
+    sub8_test
+        src/sub8_test.cc
+)
+target_link_libraries(
+    sub8_test
+        ${catkin_LIBRARIES}
+        ${GAZEBO_LIBRARIES}
+)
 
 
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES duck_gazebo
-  CATKIN_DEPENDS gazebo_ros roscpp
-  DEPENDS system_lib
+    INCLUDE_DIRS include
+    LIBRARIES duck_gazebo
+    CATKIN_DEPENDS gazebo_ros roscpp
+    DEPENDS system_lib
 )
