@@ -1,10 +1,19 @@
 <launch>
-  <node pkg="roboteq_driver" type="driver_node" name="left_motor">
-    <param name="port" value="/dev/serial/by-path/pci-0000:00:14.0-usb-0:5:1.0" />
+  <node pkg="roboteq_driver" type="driver_node" name="BL_motor">
+    <param name="port" value="/dev/serial/by-id/usb-FTDI_Roboteq_MDC1460_port-stern-if00-port0"/>
     <param name="value" value="115200" />
   </node>
-  <node pkg="roboteq_driver" type="driver_node" name="right_motor">
-    <param name="port" value="/dev/serial/by-path/pci-0000:00:14.0-usb-0:13:1.0" />
+  <node pkg="roboteq_driver" type="driver_node" name="FL_motor">
+    <param name="port" value="/dev/serial/by-id/usb-FTDI_Roboteq_MDC1460_port-bow-if00-port0"/>
+    <param name="value" value="115200" />
+  </node>
+  <node pkg="roboteq_driver" type="driver_node" name="FR_motor">
+    <param name="port" value="/dev/serial/by-id/usb-FTDI_Roboteq_MDC1460_stbd-stern-if00-port0"/>
+    <param name="value" value="115200" />
+  </node>
+  <node pkg="roboteq_driver" type="driver_node" name="BR_motor">
+    <param name="port" value="/dev/serial/by-id/usb-FTDI_Roboteq_MDC1460_stbd-bow-if00-port0"/>
     <param name="value" value="115200" />
   </node>
 </launch>
+
