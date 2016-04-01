@@ -1,7 +1,30 @@
 <launch>
-  <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+  <param name="simulate" value="true" />
+
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find duck_gazebo)/worlds/contact.world"/>
+    <arg name="world_name" value="$(find sub8_gazebo)/worlds/contact.world" />
     <!-- more default parameters can be changed here -->
   </include>
+
+  <node pkg="sub8_gazebo" type="gazebo_controller.py" name="gazebo_interface" />
+
+  <include file="$(find sub8_launch)/launch/subsystems/rise.launch" />
+  <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper.launch" />
+  <include file="$(find sub8_videoray_m5_thruster)/launch/thruster_driver.launch" />
+
+  <node pkg="kill_handling" type="kill_master" name="kill_master"/>
+  <node pkg="kill_handling" type="kill_on_cond" name="height_over_bottom_kill">
+      <remap from="topic" to="dvl/range"/>
+      <param name="cond" value="data &lt; .2"/>
+  </node>
+  <include file="$(find sub8_launch)/launch/tf.launch" />
+  <node pkg="nodelet" type="nodelet" args="standalone odometry_utils/odometry_to_tf" name="odometry_to_tf"/>
+  <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry">
+    <rosparam>
+      frame_id: /map
+      child_frame_id: /base_link
+    </rosparam>
+    <remap from="orig_odom" to="imu_odom"/>
+  </node>
+
 </launch>
