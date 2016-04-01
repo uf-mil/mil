@@ -46,7 +46,6 @@ void BuoyancyPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
     this->dragCoeff = this->sdf->Get<double>("drag_coefficient");
   }
 
-
   // Get "center of volume" and "volume" that were inputted in SDF
   // SDF input is recommended for mesh or polylines collision shapes
   if (this->sdf->HasElement("link")) {
@@ -148,8 +147,7 @@ void BuoyancyPlugin::OnUpdate() {
     // Simple water resistance model
     math::Vector3 bodyVelocity = link->GetWorldLinearVel();
     math::Vector3 bodyAngVelocity = link->GetWorldAngularVel();
-
-    // drag * v**2
+    // drag_coeff * v**2
     math::Vector3 linearResistance = -this->dragCoeff * bodyVelocity * bodyVelocity.GetLength();
     link->AddLinkForce(linearResistance, volumeProperties.cov);
 

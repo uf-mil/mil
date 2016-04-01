@@ -1,18 +1,15 @@
 <?xml version="1.0"?>
 <package format="2">
 
-
-  <name>duck_gazebo</name>
+  <name>sub8_gazebo</name>
   <version>1.0.0</version>
-  <description>The duck_gazebo package</description>
+  <description>The sub8_gazebo package</description>
 
   <maintainer email="guojiyao@todo.todo">Jiyao</maintainer>
   <maintainer email="jpanikulam@ufl.edu">Jake</maintainer>
   <depend>sub8_msgs</depend>
   <depend>roscpp</depend>
   <depend>gazebo_ros</depend>
-
-
 
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>

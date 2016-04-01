@@ -12,7 +12,9 @@ class GazeboInterface(object):
         self.target = target
         rospy.wait_for_service('/gazebo/apply_body_wrench')
         self.wrench_srv = rospy.ServiceProxy('/gazebo/apply_body_wrench', ApplyBodyWrench)
-        self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.wrench_cb)
+
+        # For now, let's skip the wrench
+        # self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.wrench_cb)
         self.state_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self.state_cb)
         self.state_pub = rospy.Publisher('odom', Odometry, queue_size=1)
 

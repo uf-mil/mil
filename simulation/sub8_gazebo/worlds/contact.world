@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <sdf version="1.6">
   <world name="default">
+    <plugin name="sub8_test" filename="libsub8_test.so"/>
 
-     <include>
+    <include>
       <uri>model://sun</uri>
     </include>
 
@@ -24,18 +25,11 @@
       <static>true</static>
       <pose>0 0 0 0 0 0</pose>
       <link name="link">
-<!--         <collision name="collision">
-          <geometry>
-            <box>
-              <size>100 100 .1</size>
-            </box>
-          </geometry>
-        </collision> -->
         <visual name="visual">
           <cast_shadows>false</cast_shadows>
           <geometry>
             <box>
-              <size>100 100 .5</size>
+              <size>100 100 .02</size>
             </box>
           </geometry>
           <material>
@@ -78,6 +72,7 @@
 
     <model name="sub8">
       <pose>0 0 -15 0 0 0</pose>
+
       <link name="base_link">
         <inertial>
           <mass>36.29</mass>
@@ -173,7 +168,7 @@
             <imageTopicName>image_raw</imageTopicName>
             <cameraInfoTopicName>camera_info</cameraInfoTopicName>
             <frameName>stereo_front</frameName>
-            <hackBaseline>0.89</hackBaseline>
+            <hackBaseline>0.89</hackBaseline>\
             <distortionK1>0</distortionK1>
             <distortionK2>0</distortionK2>
             <distortionK3>0</distortionK3>
@@ -185,13 +180,16 @@
         </sensor>
       </link>
       <plugin name="sub8_buoyancy" filename="libsub8_buoyancy.so">
-        <!-- a viscous liquid -->
         <fluid_density>1000</fluid_density>
+        <drag_coefficient>20</drag_coefficient>
         <link name="base_link">
           <center_of_volume>0 0 0</center_of_volume>
           <volume>0.037</volume>
-          <drag_coefficient>100</drag_coefficient>
         </link>
+      </plugin>
+      <plugin name="sub8_thrusters" filename="libsub8_thrusters.so">
+        <layout_param>thrusters</layout_param>
+        <link>base_link</link>
       </plugin>
     </model>
   </world>
