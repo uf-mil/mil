@@ -27,10 +27,6 @@ find_package(Eigen3 REQUIRED)
 
 include_directories(EIGEN3_INCLUDE_DIR)
 
-set(catkin_LIBRARIES
-    ${catkin_LIBRARIES}
-)
-
 generate_dynamic_reconfigure_options(
   cfg/pd_controller.cfg
 )
