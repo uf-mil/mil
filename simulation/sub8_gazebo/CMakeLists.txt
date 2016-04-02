@@ -18,6 +18,7 @@ add_library(
     sub8_buoyancy
         src/sub8_buoyancy.cc
 )
+
 target_link_libraries(
     sub8_buoyancy
         ${catkin_LIBRARIES}
@@ -38,6 +39,7 @@ add_library(
     sub8_test
         src/sub8_test.cc
 )
+
 target_link_libraries(
     sub8_test
         ${catkin_LIBRARIES}

@@ -42,7 +42,7 @@ ros_git_get() {
         builtin cd $INSTALL_FOLDER
     done
     if $NEEDS_INSTALL; then
-        instlog "Installing $INSTALL_FOLDER"
+        instlog "Installing $INSTALL_URL in $INSTALL_FOLDER"
         git clone -q $INSTALL_URL --depth=1
     fi
 }
