@@ -4,6 +4,7 @@
 ### The next testing day is TBA
 * Create a permanent version of move helper that is controlled from the GUI
 * Rethink the flow of data to set a waypoint as well as come up with logical and distinct topic names - **We will discuss this at the meeting**
+* Create a networking script that will set up someone's computer completely to work with the boat - ZACH
 * Create a docking mode allowing for a front thruster only kill - TODO
 * Add state estimation on computer startup - TODO
 * Add the ability to click a path into RVIZ - TODO
