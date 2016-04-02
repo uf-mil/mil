@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <sdf version="1.6">
   <world name="default">
-    <plugin name="sub8_test" filename="libsub8_test.so"/>
 
     <include>
       <uri>model://sun</uri>
@@ -10,7 +9,7 @@
      <model name="test">
       <static>true</static>
       <link name="tests">
-        <pose>10 0 1.2 0 0 0</pose>
+        <pose>10 0 -7 0 0 0</pose>
         <visual name="visualk">
           <geometry>
             <mesh>
@@ -74,6 +73,11 @@
       <pose>0 0 -15 0 0 0</pose>
 
       <link name="base_link">
+        <velocity_decay>
+          <linear>0.01</linear>
+          <angular>0.01</angular>
+        </velocity_decay>
+
         <inertial>
           <mass>36.29</mass>
           <inertia>
@@ -128,7 +132,7 @@
             <cameraName>stereo/left</cameraName>
             <imageTopicName>image_raw</imageTopicName>
             <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-            <frameName>camera_link</frameName>
+            <frameName>stereo_front</frameName>
             <hackBaseline>0.89</hackBaseline>
             <distortionK1>0</distortionK1>
             <distortionK2>0</distortionK2>

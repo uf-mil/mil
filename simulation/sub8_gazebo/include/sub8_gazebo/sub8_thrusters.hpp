@@ -50,6 +50,7 @@ class ThrusterPlugin : public ModelPlugin {
   virtual void OnUpdate();
 
  protected:
+  std::mutex mtx;
   event::ConnectionPtr updateConnection;
   physics::ModelPtr model;
   physics::PhysicsEnginePtr physicsEngine;

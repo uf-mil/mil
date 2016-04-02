@@ -149,7 +149,10 @@ void BuoyancyPlugin::OnUpdate() {
     math::Vector3 bodyAngVelocity = link->GetWorldAngularVel();
     // drag_coeff * v**2
     math::Vector3 linearResistance = -this->dragCoeff * bodyVelocity * bodyVelocity.GetLength();
-    link->AddLinkForce(linearResistance, volumeProperties.cov);
+    math::Vector3 angularResistance = -this->dragCoeff * bodyVelocity * bodyVelocity.GetLength();
+
+    // link->AddForce(linearResistance, volumeProperties.cov);
+    // link->AddTorque(angularResistance, volumeProperties.cov);
 
     if (linkFrame.pos.z < 0.0) {
       link->AddLinkForce(buoyancyLinkFrame, volumeProperties.cov);

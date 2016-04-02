@@ -38,18 +38,6 @@ void ThrusterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   this->targetLink = this->model->GetLink(link_name);
   GZ_ASSERT(this->targetLink, "Could not find specified link");
 
-  // for (sdf::ElementPtr linkElem = this->sdf->GetElement("link"); linkElem;
-  //      linkElem = this->sdf->GetNextElement("link")) {
-  //   int id = -1;
-  //   std::string name = "";
-  //   if (linkElem->HasAttribute("name")) {
-  //     name = linkElem->Get<std::string>("name");
-  //     this->targetLink = this->model->GetLink(name);
-  //     GZ_ASSERT(this->targetLink, "Could not find specified link");
-  //     id = this->targetLink->GetId();
-  //   }
-  // }
-
   std::vector<std::string> thrusterNames;
   ros::param::get(this->layoutParam + "/thruster_names", thrusterNames);
 
@@ -67,34 +55,37 @@ void ThrusterPlugin::Init() {
       event::Events::ConnectWorldUpdateBegin(std::bind(&ThrusterPlugin::OnUpdate, this));
 }
 
-void ThrusterPlugin::ThrustCallback(const sub8_msgs::Thrust::ConstPtr &thrust) {
+void ThrusterPlugin::ThrustCallback(const sub8_msgs::Thrust::ConstPtr& thrust) {
   math::Vector3 netForce = math::Vector3::Zero;
   math::Vector3 netTorque = math::Vector3::Zero;
 
-  this->cmdQueue.clear();
+  mtx.lock();
   this->lastTime = ros::Time::now();
   this->cmdQueue = thrust->thruster_commands;
-  // for (auto thrustCmd : thrust->thruster_commands) {
-  // this->cmdQueue.push_back(thrustCmd);
-  // }
+  mtx.unlock();
 }
 void ThrusterPlugin::OnUpdate() {
   if ((ros::Time::now() - this->lastTime) > ros::Duration(2.0)) {
-    ROS_ERROR("CLEARING COMMAND QUEUE");
-    this->cmdQueue.clear();
+    return;
   }
-  for (auto thrustCmd : this->cmdQueue) {
+  mtx.lock();
+  std::vector<sub8_msgs::ThrusterCmd> cmdBuffer;
+  cmdBuffer = this->cmdQueue;
+  mtx.unlock();
+
+  GZ_ASSERT(this->targetLink, "Could not find specified link");
+  for (auto thrustCmd : cmdBuffer) {
     const std::string name = thrustCmd.name;
     const double thrust = thrustCmd.thrust;
-    const Thruster thruster = this->thrusterMap[name];
 
     // clamp idea from: https://www.c-plusplus.net/forum/323030-full
     // email me (jake) if you ever find this line
-    // math::Vector3 force = thruster.direction * std::max(thruster.min, std::min(thruster.max,
-    // thrust));
-    math::Vector3 force = thruster.direction * thrust;
+    math::Vector3 force = thrusterMap[name].direction *
+                          std::max(thrusterMap[name].min, std::min(thrusterMap[name].max, thrust));
 
-    this->targetLink->AddForceAtRelativePosition(force, thruster.position);
+    // math::Vector3 force;
+    // force = thrusterMap[name].direction * thrust;
+    this->targetLink->AddForceAtRelativePosition(force, thrusterMap[name].position);
   }
 }
 }
