@@ -33,5 +33,6 @@
     * [[Git]]
     * [[Glossary]]
     * [[C++ Spells]]
+    * [[Aws]]
 * Old Notes
     * [[Simulation]]
