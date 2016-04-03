@@ -42,12 +42,20 @@ instlog "Generating catkin workspace (If needed) at $CATKIN_DIR"
 sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe"
 sudo sh -c 'echo "deb-src http://archive.ubuntu.com/ubuntu trusty main universe" >> /etc/apt/sources.list'
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu trusty main" > /etc/apt/sources.list.d/gazebo-latest.list'
+
+sudo sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'
+# sudo resolvconf -u
+
+wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xB01FA116
 sudo apt-get update -qq
+sudo apt-get upgrade -qq
 
 ####### Install ROS
 instlog "Looks like ROS is not installed, let's take care of that"
-sudo apt-get install -qq ros-indigo-desktop python-catkin-pkg python-rosdep
+sudo apt-get install -qq ros-indigo-desktop-full python-catkin-pkg python-rosdep
+sudo apt-get remove -qq ros-indigo-gazebo*
 set -e
 source /opt/ros/indigo/setup.bash
 if ! cat ~/.bashrc | grep "source /opt/ros"; then

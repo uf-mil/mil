@@ -57,8 +57,6 @@ add_library(sub8_pcl SHARED
     src/sub8_pcl/cv_utils.cc
     src/sub8_pcl/cv_param_helpers.cc
     src/sub8_pcl/visualization.cc
-    src/sub8_pcl/buoy.cc
-    src/sub8_pcl/torpedo_board.cc
 )
 
 target_link_libraries(
@@ -87,6 +85,8 @@ install(DIRECTORY include/${PROJECT_NAME}/
 add_executable(
   pcl_perception
     nodes/perception.cc
+    src/sub8_pcl/buoy.cc
+    src/sub8_pcl/torpedo_board.cc
 )
 
 add_dependencies(

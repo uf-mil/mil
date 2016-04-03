@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <world name="default">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+      <uri>model://sub8</uri>
+      <name>sub8</name>
+      <pose>-2.0 7.0 0 0 0 0</pose>
+    </include>
+        <include>
+      <uri>model://transdec</uri>
+      <name>sub8</name>
+      <pose>-5.0 -7.0 -10  -10 -10 -10</pose>
+    </include>
+  </world>
+</sdf>
