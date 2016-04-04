@@ -1,10 +1,14 @@
 <launch>
-  <include file="$(find sub8_launch)/launch/nav_box.launch" >
+
+  <include file="$(find sub8_launch)/launch/tf.launch" />
+
+  <include file="$(find sub8_launch)/launch/subsystems/nav_box.launch" >
     <arg name="imu" value="true" />
     <arg name="dvl" value="true" />
     <arg name="depth" value="true" />
   </include>
-  <include file="$(find sub8_launch)/launch/odometry.launch"/>
+
+  <include file="$(find sub8_launch)/launch/subsystems/odometry.launch"/>
 
   <node pkg="kill_handling" type="kill_master" name="kill_master"/>
   <node pkg="kill_handling" type="kill_on_cond" name="height_over_bottom_kill">
@@ -12,7 +16,7 @@
     <param name="cond" value="data &lt; .2"/>
   </node>
 
-  <include file="$(find sub8_launch)/launch/thrusters.launch"/>
-  <include file="$(find sub8_launch)/launch/rise.launch"/>
+  <include file="$(find sub8_launch)/launch/subsystems/thrusters.launch"/>
+  <include file="$(find sub8_launch)/launch/subsystems/rise.launch"/>
 
 </launch>

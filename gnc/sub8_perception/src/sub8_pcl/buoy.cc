@@ -60,6 +60,7 @@ bool Sub8BuoyDetector::request_buoy_position(sub8_msgs::VisionRequest::Request &
   Eigen::Vector3f position;
   Eigen::Vector3f filtered_position;
   std::string target_name = req.target_name;
+  ROS_ERROR("SERVICE CALL %s", target_name.c_str());
 
   if (!(color_ranges.count(target_name) > 0)) {
     ROS_ERROR("Requested buoy target (%s) had no color calibration on the parameter server",
@@ -76,11 +77,12 @@ bool Sub8BuoyDetector::request_buoy_position(sub8_msgs::VisionRequest::Request &
   // Cache the current image
   // cv::Mat target_image = current_image.clone();
   cv::Mat target_image;
-  if (!get_last_image(target_image)) {
+  bool got_last_image;
+  got_last_image = get_last_image(target_image);
+  if (!got_last_image) {
     ROS_ERROR("Could not encode image");
     return false;
   }
-
   // Filter the cached point cloud
   sub::PointCloudT::Ptr target_cloud(new sub::PointCloudT());
   sub::PointCloudT::Ptr current_cloud_filtered(new sub::PointCloudT());
@@ -98,7 +100,6 @@ bool Sub8BuoyDetector::request_buoy_position(sub8_msgs::VisionRequest::Request &
   bool detection_success;
   detection_success =
       determine_buoy_position(cam_model, target_name, target_image, target_cloud, position);
-
   if (!detection_success) {
     ROS_WARN("Could not detect %s buoy", target_name.c_str());
     return false;
@@ -228,6 +229,9 @@ bool Sub8BuoyDetector::determine_buoy_position(
 
 bool Sub8BuoyDetector::get_last_image(cv::Mat &last_image) {
   cv_bridge::CvImagePtr input_bridge;
+  if (!got_image) {
+      return false;
+  }
   try {
     input_bridge = cv_bridge::toCvCopy(last_image_msg, sensor_msgs::image_encodings::BGR8);
     last_image = input_bridge->image;
@@ -248,6 +252,7 @@ void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_ms
 #endif
 
   // cam_model message does not change with time, so syncing is not a big deal
+  last_image_msg = image_msg;
   cam_model.fromCameraInfo(info_msg);
   image_time = image_msg->header.stamp;
 }
