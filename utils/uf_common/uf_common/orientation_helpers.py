@@ -243,11 +243,10 @@ class PoseEditor(object):
         return self.set_orientation(triad((UP, towards_rel_point), (UP, body_vec)))
 
     def yaw_left(self, angle):
-        ori = self.set_orientation(transformations.quaternion_multiply(
+        return self.set_orientation(transformations.quaternion_multiply(
             transformations.quaternion_about_axis(angle, UP),
             self.orientation,
         ))
-        return ori
 
     def yaw_right(self, angle):
         return self.yaw_left(-angle)
