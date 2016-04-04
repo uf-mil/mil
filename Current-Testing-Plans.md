@@ -10,6 +10,7 @@
 * Add the ability to click a path into RVIZ - TODO
 * Test Trajectory Generator (Forrest)
 * Test Lidar SLAM (Zach)
+* Have a new student operate the boat solely using the WIKI
 
 ### Things tested at last testing day, April 1st
 * Fix coordinates system irregularities
