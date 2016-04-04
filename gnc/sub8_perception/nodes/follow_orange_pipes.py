@@ -14,11 +14,19 @@ from cv_bridge import CvBridge, CvBridgeError
 # define threshold for orange color detection
 # ORANGE_MIN = np.array([1, 90, 180], np.float32)
 # ORANGE_MAX = np.array([23, 255, 255], np.float32)
+# RANGE = np.array([
+    # [0., 9.9524],
+    # [0., 148.7415],
+    # [187.7055, 255.]
+# ])
+
 RANGE = np.array([
-    [0., 9.9524],
-    [0., 148.7415],
-    [187.7055, 255.]
-])
+    [1, 23],
+    [90, 255],
+    [180, 255]
+],
+    np.float32
+)
 
 
 class PipeFinder:
@@ -32,6 +40,8 @@ class PipeFinder:
         self.last_draw_image = None
 
     def publish_target_info(self, *args):
+        if self.last_image is None:
+            return
         self.find_pipe(np.copy(self.last_image))
         if self.last_draw_image is not None:
             self.image_pub.publish(self.last_draw_image)
