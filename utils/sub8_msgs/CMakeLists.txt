@@ -32,6 +32,7 @@ add_service_files(
   UpdateThrusterLayout.srv
   FailThruster.srv
   VisionRequest.srv
+  VisionRequest2D.srv
   BMatrix.srv
   PathPlan.srv
 )

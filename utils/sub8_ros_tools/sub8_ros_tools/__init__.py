@@ -8,4 +8,5 @@ from msg_helpers import (
     numpy_to_quaternion, numpy_pair_to_pose, numpy_to_point, numpy_quat_pair_to_pose
 )
 from threading_helpers import thread_lock
-from geometry_helpers import make_rotation, normalize, skew_symmetric_cross, deskew, compose_transformation, project_pt_to_plane
+from geometry_helpers import (make_rotation, normalize, skew_symmetric_cross, deskew, compose_transformation,
+                              project_pt_to_plane, clip_norm)

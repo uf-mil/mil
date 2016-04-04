@@ -99,6 +99,7 @@ void BuoyancyPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
     }
   }
 
+/*
   // For links the user didn't input, precompute the center of volume and
   // density. This will be accurate for simple shapes.
   for (auto link : this->model->GetLinks()) {
@@ -119,7 +120,9 @@ void BuoyancyPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
       this->volPropsMap[id].volume = volumeSum;
     }
   }
+*/
 }
+
 
 /////////////////////////////////////////////////
 void BuoyancyPlugin::Init() {
@@ -155,7 +158,9 @@ void BuoyancyPlugin::OnUpdate() {
     // link->AddTorque(angularResistance, volumeProperties.cov);
 
     if (linkFrame.pos.z < 0.0) {
-      link->AddLinkForce(buoyancyLinkFrame, volumeProperties.cov);
+      // link->AddLinkForce(buoyancyLinkFrame, volumeProperties.cov);
+      link->AddForceAtRelativePosition(buoyancyLinkFrame, volumeProperties.cov);
+
     }
   }
 }

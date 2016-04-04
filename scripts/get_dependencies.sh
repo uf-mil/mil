@@ -1,5 +1,6 @@
 INSTALL_FOLDER=$PWD;
 DEPS_DIR=$PWD
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 while [ "$#" -gt 0 ]; do
   case $1 in
@@ -14,8 +15,8 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-source $INSTALL_FOLDER/Sub8/scripts/bash_tools.sh
 
+source $DIR/bash_tools.sh
 instlog "Making sure we're in the catkin directory"
 # Check if directory is called "src"
 if ! ls | grep CMakeLists.txt; then

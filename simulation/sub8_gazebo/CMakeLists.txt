@@ -48,6 +48,11 @@ target_link_libraries(
         ${GAZEBO_LIBRARIES}
 )
 
+add_dependencies(sub8_thrusters
+    sub8_msgs_generate_messages_cpp
+    ${catkin_EXPORTED_TARGETS}
+)
+
 add_library(
     sub8_test
         src/sub8_test.cc
