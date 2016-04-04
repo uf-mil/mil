@@ -4,7 +4,7 @@ from twisted.internet import defer
 from txros import action, util, tf, serviceclient
 from uf_common.msg import MoveToAction, PoseTwistStamped, Float64Stamped
 from uf_common import orientation_helpers
-from sub8_msgs.srv import VisionRequest, VisionRequest2DRequest, VisionRequest2D
+from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D
 from nav_msgs.msg import Odometry
 
 
@@ -14,7 +14,6 @@ class VisionProxy(object):
         self._get_2d_service = node_handle.get_service_client(service_root + "/2D", VisionRequest2D)
         self._get_pose_service = node_handle.get_service_client(service_root + "/pose", VisionRequest)
 
-    # @util.cancellableInlineCallbacks
     def get_2d(self, target=''):
         '''Get the 2D projection of the thing
         TODO: Do something intelligent with the stamp
@@ -28,11 +27,9 @@ class VisionProxy(object):
         try:
             pose = self._get_2d_service(VisionRequest2DRequest(target_name=target))
         except(serviceclient.ServiceError):
-            # defer.returnValue(None)
             return None
         return pose
 
-    @util.cancellableInlineCallbacks
     def get_pose(self, target='', in_frame=None):
         '''Get the 3D pose of the object we're after
         TODO:
@@ -40,14 +37,10 @@ class VisionProxy(object):
             - Use the time information in the header
         '''
         try:
-            pose = self._get_pose_service(VisionRequest(target_name=target))
+            pose = self._get_pose_service(VisionRequestRequest(target_name=target))
         except(serviceclient.ServiceError):
-            defer.returnValue(None)
-
-        if pose.found:
-            defer.returnValue(pose.pose)
-        else:
-            defer.returnValue(None)
+            return None
+        return pose
 
     @classmethod
     def get_response_direction(self, vision_response):

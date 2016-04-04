@@ -10,7 +10,6 @@ def get_above(sub):
     '''
     response = yield sub.channel_marker.get_2d()
 
-    # print response
     if response is not None:
         if response.found:
             xy, theta = sub.channel_marker.get_response_direction(response)
@@ -27,7 +26,6 @@ def get_above(sub):
 @util.cancellableInlineCallbacks
 def run(sub_singleton):
     for k in range(5):
-        print 'at', k
         yield get_above(sub_singleton)
 
     print 'aligning'
@@ -36,7 +34,3 @@ def run(sub_singleton):
         if response.found:
             print response.pose.theta
             yield sub_singleton.move.yaw_left(response.pose.theta).go(speed=0.1)
-        else:
-            print 'did not find'
-    else:
-        print 'no response'

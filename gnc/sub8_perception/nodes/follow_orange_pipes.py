@@ -27,12 +27,17 @@ class PipeFinder:
         self.pose_service = rospy.Service("vision/channel_marker/2D", VisionRequest2D, self.request_pipe)
         self.image_sub = sub8_ros_tools.Image_Subscriber('/down/left/image_raw', self.image_cb)
         self.image_pub = sub8_ros_tools.Image_Publisher("down/left/target_info")
-        # rospy.Timer(rospy.Duration(0.03), self.publish_target_info)
+        self.timer = rospy.Timer(rospy.Duration(1), self.publish_target_info)
         self.last_image = None
+        self.last_draw_image = None
+
+    def publish_target_info(self, *args):
+        self.find_pipe(np.copy(self.last_image))
+        if self.last_draw_image is not None:
+            self.image_pub.publish(self.last_draw_image)
 
     def image_cb(self, image):
         self.last_image = image
-        self.find_pipe(np.copy(image))
 
     def find_pipe(self, img):
         rows, cols = img.shape[:2]
@@ -46,7 +51,7 @@ class PipeFinder:
         contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
         blank_img = np.zeros((rows, cols), np.uint8)
-        self.draw_image = np.copy(img)
+        draw_image = np.copy(img)
 
         if contours:
 
@@ -61,7 +66,7 @@ class PipeFinder:
 
                 # draw minAreaRect around pipe
                 cv2.drawContours(blank_img, [box], 0, (255, 255, 255), -1)
-                cv2.drawContours(self.draw_image, [box], 0, (255, 255, 255), -1)
+                cv2.drawContours(draw_image, [box], 0, (255, 255, 255), -1)
 
                 # get all coordinates (y,x) of pipe
                 why, whx = np.where(blank_img)
@@ -83,7 +88,6 @@ class PipeFinder:
                 center = np.average(wh, axis=1)
 
                 # define vertical vector (sub's current direction)
-                # vert_vect = np.array([0, -1 * np.int0(center[1])])
                 vert_vect = np.array([0.0, -1.0])
 
                 if max_eigv[1] > 0:
@@ -97,20 +101,11 @@ class PipeFinder:
                 if angle_rad >= np.pi / 2:
                     angle_rad -= np.pi / 2
 
-                cv2.line(self.draw_image, tuple(np.int0(center)), tuple(np.int0(center + (2 * max_eigv))), (0, 255, 30), 2)
-                cv2.line(self.draw_image, tuple(np.int0(center)), tuple(np.int0(center + (2 * min_eigv))), (0, 30, 255), 2)
+                cv2.line(draw_image, tuple(np.int0(center)), tuple(np.int0(center + (2 * max_eigv))), (0, 255, 30), 2)
+                cv2.line(draw_image, tuple(np.int0(center)), tuple(np.int0(center + (2 * min_eigv))), (0, 30, 255), 2)
 
-                # quaternion = transformations.quaternion_from_euler(0.0, 0.0, angle_rad)
-
-                # cv2.imshow("lll", self.draw_image)
-                # cv2.waitKey(10)
-                self.image_pub.publish(self.draw_image)
+                self.last_draw_image = np.copy(draw_image)
                 return center, angle_rad
-
-        # print 'nct'
-        # print self.draw_image.shape
-        # cv2.imshow("lll", self.draw_image)
-        # cv2.waitKey(15)
 
     def request_pipe(self, data):
         if self.last_image is None:
