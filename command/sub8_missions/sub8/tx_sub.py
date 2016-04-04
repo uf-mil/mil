@@ -1,11 +1,60 @@
 from __future__ import division
-
 import numpy as np
 from twisted.internet import defer
-from txros import action, util, tf
+from txros import action, util, tf, serviceclient
 from uf_common.msg import MoveToAction, PoseTwistStamped, Float64Stamped
 from uf_common import orientation_helpers
+from sub8_msgs.srv import VisionRequest, VisionRequest2DRequest, VisionRequest2D
 from nav_msgs.msg import Odometry
+
+
+class VisionProxy(object):
+    def __init__(self, service_root, node_handle):
+        assert 'vision' in service_root, "expected 'vision' in the name of service_root"
+        self._get_2d_service = node_handle.get_service_client(service_root + "/2D", VisionRequest2D)
+        self._get_pose_service = node_handle.get_service_client(service_root + "/pose", VisionRequest)
+
+    # @util.cancellableInlineCallbacks
+    def get_2d(self, target=''):
+        '''Get the 2D projection of the thing
+        TODO: Do something intelligent with the stamp
+            - This is not "obviously" in any reference frame
+            - We'll assume the user knows what they're doing
+            - Determine rotation around Z and undo that?
+
+        Camera deprojection stuff should be done elsewhere, this function is for when
+            we don't know the depth of the thing we're targeting
+        '''
+        try:
+            pose = self._get_2d_service(VisionRequest2DRequest(target_name=target))
+        except(serviceclient.ServiceError):
+            # defer.returnValue(None)
+            return None
+        return pose
+
+    @util.cancellableInlineCallbacks
+    def get_pose(self, target='', in_frame=None):
+        '''Get the 3D pose of the object we're after
+        TODO:
+            - Implement in_frame
+            - Use the time information in the header
+        '''
+        try:
+            pose = self._get_pose_service(VisionRequest(target_name=target))
+        except(serviceclient.ServiceError):
+            defer.returnValue(None)
+
+        if pose.found:
+            defer.returnValue(pose.pose)
+        else:
+            defer.returnValue(None)
+
+    @classmethod
+    def get_response_direction(self, vision_response):
+        xy = np.array([vision_response.pose.x, vision_response.pose.y])
+        bounds = np.array([[vision_response.max_x, vision_response.max_y]])
+        theta = vision_response.pose.theta
+        return (xy - (bounds / 2.0)) / bounds, theta
 
 
 class _PoseProxy(object):
@@ -41,6 +90,7 @@ class _Sub(object):
         self._trajectory_pub = yield self._node_handle.advertise('trajectory', PoseTwistStamped)
         self._dvl_range_sub = yield self._node_handle.subscribe('dvl/range', Float64Stamped)
         self._tf_listener = yield tf.TransformListener(self._node_handle)
+        self.channel_marker = VisionProxy('vision/channel_marker', self._node_handle)
         defer.returnValue(self)
 
     @property
