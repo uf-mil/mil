@@ -160,6 +160,9 @@ class PoseEditor(object):
         return type(self)(self.frame_id, position, self.orientation)
 
     def height(self, height):
+        '''TODO:
+        Make this distance from bottom
+        '''
         return self.set_position([self.position[0], self.position[1], height])
 
     def depth(self, depth):
@@ -167,6 +170,10 @@ class PoseEditor(object):
 
     def relative(self, rel_pos):
         return self.set_position(self.position + self._rot.dot(rel_pos))
+
+    def strafe_relative(self, rel_pos_2d):
+        rel_pos_3d = np.append(rel_pos_2d, 0.0)
+        return self.set_position(self.position + self._rot.dot(rel_pos_3d))
 
     def forward(self, distance):
         return self.relative([+distance, 0, 0])
@@ -236,10 +243,11 @@ class PoseEditor(object):
         return self.set_orientation(triad((UP, towards_rel_point), (UP, body_vec)))
 
     def yaw_left(self, angle):
-        return self.set_orientation(transformations.quaternion_multiply(
+        ori = self.set_orientation(transformations.quaternion_multiply(
             transformations.quaternion_about_axis(angle, UP),
             self.orientation,
         ))
+        return ori
 
     def yaw_right(self, angle):
         return self.yaw_left(-angle)
