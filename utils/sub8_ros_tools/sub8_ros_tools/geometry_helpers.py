@@ -80,3 +80,20 @@ def project_pt_to_plane(point, plane_normal):
     dist = np.dot(plane_normal, point)
     projected = point - (dist * plane_normal)
     return projected
+
+
+def clip_norm(vector, lower_bound, upper_bound):
+    '''Return a vector pointing the same direction as $vector,
+        with maximum norm $bound
+        if norm(vector) < bound, return vector unchanged
+
+        Like np.clip, but for vector norms
+    '''
+    norm = np.linalg.norm(vector)
+    if lower_bound < norm < upper_bound:
+        return np.copy(vector)
+    if norm < lower_bound:
+        v_new = (vector * lower_bound) / norm
+    else:
+        v_new = (vector * upper_bound) / norm
+    return v_new
