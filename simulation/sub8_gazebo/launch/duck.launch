@@ -13,10 +13,11 @@
   <include file="$(find sub8_videoray_m5_thruster)/launch/thruster_driver.launch" />
 
   <node pkg="kill_handling" type="kill_master" name="kill_master"/>
-  <node pkg="kill_handling" type="kill_on_cond" name="height_over_bottom_kill">
+<!--   <node pkg="kill_handling" type="kill_on_cond" name="height_over_bottom_kill">
       <remap from="topic" to="dvl/range"/>
       <param name="cond" value="data &lt; .2"/>
-  </node>
+  </node> -->
+
   <include file="$(find sub8_launch)/launch/tf.launch" />
   <node pkg="nodelet" type="nodelet" args="standalone odometry_utils/odometry_to_tf" name="odometry_to_tf"/>
   <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry">
@@ -26,5 +27,5 @@
     </rosparam>
     <remap from="orig_odom" to="imu_odom"/>
   </node>
-
+  <!-- <include file="$(find camera1394)/launch/stereo.launch"/> -->
 </launch>

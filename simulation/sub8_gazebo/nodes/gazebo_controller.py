@@ -14,8 +14,10 @@ class GazeboInterface(object):
         # self.wrench_srv = rospy.ServiceProxy('/gazebo/apply_body_wrench', ApplyBodyWrench)
         # For now, let's skip the wrench
         # self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.wrench_cb)
+        self.last_odom = None
         self.state_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self.state_cb)
         self.state_pub = rospy.Publisher('odom', Odometry, queue_size=1)
+        rospy.Timer(rospy.Duration(0.03), self.publish_odom)
 
     def send_wrench(self, wrench):
         self.wrench_srv(
@@ -29,8 +31,10 @@ class GazeboInterface(object):
         wrench = msg.wrench
         self.send_wrench(wrench)
 
-    def state_cb(self, msg):
-        '''TODO: add noise'''
+    def publish_odom(self, *args):
+        if self.last_odom is None:
+            return
+        msg = self.last_odom
         if self.target in msg.name:
             header = sub8_utils.make_header(frame='/map')
 
@@ -51,6 +55,10 @@ class GazeboInterface(object):
         else:
             # fail
             return
+
+    def state_cb(self, msg):
+        '''TODO: add noise'''
+        self.last_odom = msg
 
 
 if __name__ == '__main__':
