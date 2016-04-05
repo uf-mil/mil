@@ -201,6 +201,7 @@ bool Sub8BuoyDetector::request_buoy_position(sub8_msgs::VisionRequest::Request &
   tf::pointEigenToMsg(position.cast<double>(), resp.pose.pose.position);
 
   resp.pose.header.frame_id = tf_frame;
+  resp.pose.header.stamp = last_image_msg->header.stamp;
   rviz.visualize_buoy(resp.pose.pose, tf_frame);
 
 #ifdef VISUALIZE

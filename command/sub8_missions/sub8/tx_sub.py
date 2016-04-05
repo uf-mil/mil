@@ -84,6 +84,7 @@ class _Sub(object):
         self._dvl_range_sub = yield self._node_handle.subscribe('dvl/range', Float64Stamped)
         self._tf_listener = yield tf.TransformListener(self._node_handle)
         self.channel_marker = VisionProxy('vision/channel_marker', self._node_handle)
+        self.buoy = VisionProxy('vision/buoys', self._node_handle)
         defer.returnValue(self)
 
     @property
