@@ -58,12 +58,10 @@ class Sub8BuoyDetector {
                                const std::string &target_color, const cv::Mat &image_raw,
                                const sub::PointCloudT::Ptr &point_cloud_raw,
                                Eigen::Vector3f &center);
-
-  // bool get_buoy_centroid(sub8_msgs::VisionRequest::Request &req,
-  // sub8_msgs::VisionRequest::Response &resp);
+  bool segment_buoy(cv::Mat &input_image, cv::Point &center,
+                    std::vector<sub::Contour> &output_contours, std::string &target_name);
   bool request_buoy_position_2d(sub8_msgs::VisionRequest2D::Request &req,
                                 sub8_msgs::VisionRequest2D::Response &resp);
-
   bool request_buoy_position(sub8_msgs::VisionRequest::Request &req,
                              sub8_msgs::VisionRequest::Response &resp);
   // Visualize
