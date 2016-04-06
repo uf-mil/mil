@@ -29,7 +29,7 @@ def bump(sub):
     transform = yield sub._tf_listener.get_transform(
         '/map',
         '/stereo_front',
-        response.header.stamp)
+        response.pose.header.stamp)
     yield sub.move.height(response.pose.z).go()
 
 
@@ -37,22 +37,29 @@ def bump(sub):
 def run(sub):
     # buoy_search is a Deferred
     print "We're looking for a buoy"
-    for k in range(4):
-        yield align(sub)
+    response = yield sub.buoy.get_pose('red')
+    transform = yield sub._tf_listener.get_transform(
+        '/map',
+        '/stereo_front',
+        response.pose.header.stamp
+    )
+    tft = tf.Transform.from_Pose_message(response.pose.pose)
+    print transform
+    full_transform = transform * tft
+    print full_transform._p
+    yield sub.move.set_position(full_transform._p).go()
 
-    found = yield approach(sub)
-    if not found:
-        yieldsub.move.yaw_right(0.2)
+    # for k in range(4):
+    #     yield align(sub)
 
-    found = yield approach(sub)
-    if not found:
-        yield sub.move.yaw_right(-0.4)
+    # found = yield approach(sub)
+    # if not found:
+    #     yield sub.move.yaw_right(0.2)
+
+    # found = yield approach(sub)
+    # if not found:
+    #     yield sub.move.yaw_right(-0.4)
 
 
-    # yield sub.move.height(buoy_location[2]).go()
-    # yield sub.move.set_position(buoy_location).go()
-    # back off 2m
-    # yield sub.move.backward(2).go()
-    # Wait until we have backed off
 
     print "Bumped the buoy"
