@@ -1,4 +1,4 @@
-#include <sub8_pcl/buoy.hpp>
+#include <sub8_perception/buoy.hpp>
 #include <sub8_pcl/torpedo_board.hpp>
 
 #include "ros/ros.h"
