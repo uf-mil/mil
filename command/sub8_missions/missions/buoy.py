@@ -49,17 +49,4 @@ def run(sub):
     print full_transform._p
     yield sub.move.set_position(full_transform._p).go()
 
-    # for k in range(4):
-    #     yield align(sub)
-
-    # found = yield approach(sub)
-    # if not found:
-    #     yield sub.move.yaw_right(0.2)
-
-    # found = yield approach(sub)
-    # if not found:
-    #     yield sub.move.yaw_right(-0.4)
-
-
-
     print "Bumped the buoy"
