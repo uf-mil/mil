@@ -13,7 +13,7 @@ import sys
 @txros.util.cancellableInlineCallbacks
 def main():
     try:
-        nh_args = yield txros.NodeHandle.from_argv_with_remaining('run_method', anonymous=True)
+        nh_args = yield txros.NodeHandle.from_argv_with_remaining('sub8_mission', anonymous=True)
         available_missions = [mission_name for mission_name in dir(missions) if not mission_name.startswith('_')]
 
         usage_msg = ("Input the name of the mission you would like to run.\nExamples: " +
