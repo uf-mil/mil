@@ -1,55 +1,4 @@
-#include <sub8_pcl/buoy.hpp>
-
-Sub8BuoyDetector::Sub8BuoyDetector()
-    : vp1(0),
-      vp2(1),
-#ifdef VISUALIZE
-      viewer(new pcl::visualization::PCLVisualizer("Incoming Cloud")),
-#endif
-      rviz("/visualization/buoys"),
-      last_bump_target(0.0, 0.0, 0.0),
-      image_transport(nh) {
-  pcl::console::print_highlight("Initializing PCL Sub8BuoyDetector\n");
-
-  // Check if radius parameter exists
-  // TODO: Make this templated library code, allow defaults
-  if (nh.hasParam("vision/buoy_radius")) {
-    nh.getParam("vision/buoy_radius", buoy_radius);
-  } else {
-    buoy_radius = 0.1016;  // m
-  }
-
-  compute_timer = nh.createTimer(ros::Duration(0.09), &Sub8BuoyDetector::compute_loop, this);
-  image_sub = image_transport.subscribeCamera("stereo/left/image_rect_color", 1,
-                                              &Sub8BuoyDetector::image_callback, this);
-
-#ifdef VISUALIZE
-  viewer->addCoordinateSystem(1.0);
-  viewer->createViewPort(0.5, 0.0, 1.0, 1.0, vp1);
-  viewer->createViewPort(0.0, 0.0, 0.5, 1.0, vp2);
-#endif
-
-  got_cloud = false;
-  line_added = false;
-  computing = false;
-  need_new_cloud = false;
-
-  // Not yet able to build with C++11, should be done with an initialized vector
-  std::string red_topic = "/color/buoy/red";
-  sub::range_from_param(red_topic, color_ranges["red"]);
-  // TODO: color_ranges["green"] = ...
-  // TODO: color_ranges["yellow"] = ...
-
-  pcl::console::print_highlight("--PCL Sub8BuoyDetector Initialized\n");
-  data_sub = nh.subscribe("/stereo/points2", 1, &Sub8BuoyDetector::cloud_callback, this);
-  service = nh.advertiseService("/vision/buoys", &Sub8BuoyDetector::request_buoy_position, this);
-}
-
-Sub8BuoyDetector::~Sub8BuoyDetector() {
-#ifdef VISUALIZE
-  viewer->close();
-#endif
-}
+#include <sub8_perception/buoy.hpp>
 
 // Compute the buoy position in the camera model frame
 // TODO: Check if we have an image
@@ -60,12 +9,13 @@ bool Sub8BuoyDetector::request_buoy_position(sub8_msgs::VisionRequest::Request &
   Eigen::Vector3f position;
   Eigen::Vector3f filtered_position;
   std::string target_name = req.target_name;
+  ROS_ERROR("SERVICE CALL %s", target_name.c_str());
 
   if (!(color_ranges.count(target_name) > 0)) {
     ROS_ERROR("Requested buoy target (%s) had no color calibration on the parameter server",
               target_name.c_str());
     return false;
-  } else if ((!got_cloud) && (!got_image)) {
+  } else if ((!got_cloud) || (!got_image)) {
     // Failure, yo!
     ROS_ERROR("Requested buoy position before we had both image and point cloud data");
     return false;
@@ -76,18 +26,26 @@ bool Sub8BuoyDetector::request_buoy_position(sub8_msgs::VisionRequest::Request &
   // Cache the current image
   // cv::Mat target_image = current_image.clone();
   cv::Mat target_image;
-  if (!get_last_image(target_image)) {
+  bool got_last_image;
+  got_last_image = get_last_image(target_image);
+  if (!got_last_image) {
     ROS_ERROR("Could not encode image");
     return false;
   }
-
   // Filter the cached point cloud
+  sub::PointCloudT::Ptr denanned_cleaned_cloud(new sub::PointCloudT());
   sub::PointCloudT::Ptr target_cloud(new sub::PointCloudT());
   sub::PointCloudT::Ptr current_cloud_filtered(new sub::PointCloudT());
   if (target_cloud->points.size() > 1) {
     return false;
   }
-  sub::voxel_filter<sub::PointXYZT>(current_cloud, current_cloud_filtered,
+  std::vector<int> indices;
+  pcl::removeNaNFromPointCloud(*current_cloud, *denanned_cleaned_cloud, indices);
+  ROS_ERROR("%d", denanned_cleaned_cloud->size());
+  if (denanned_cleaned_cloud->size() == 0) {
+    return false;
+  }
+  sub::voxel_filter<sub::PointXYZT>(denanned_cleaned_cloud, current_cloud_filtered,
                                     0.05f  // leaf size
                                     );
 
@@ -98,7 +56,6 @@ bool Sub8BuoyDetector::request_buoy_position(sub8_msgs::VisionRequest::Request &
   bool detection_success;
   detection_success =
       determine_buoy_position(cam_model, target_name, target_image, target_cloud, position);
-
   if (!detection_success) {
     ROS_WARN("Could not detect %s buoy", target_name.c_str());
     return false;
@@ -116,6 +73,7 @@ bool Sub8BuoyDetector::request_buoy_position(sub8_msgs::VisionRequest::Request &
   tf::pointEigenToMsg(position.cast<double>(), resp.pose.pose.position);
 
   resp.pose.header.frame_id = tf_frame;
+  resp.pose.header.stamp = last_image_msg->header.stamp;
   rviz.visualize_buoy(resp.pose.pose, tf_frame);
 
 #ifdef VISUALIZE
@@ -127,14 +85,8 @@ bool Sub8BuoyDetector::request_buoy_position(sub8_msgs::VisionRequest::Request &
   cv::waitKey(50);
 #endif
   computing = false;
-
+  resp.found = true;
   return true;
-}
-
-void Sub8BuoyDetector::compute_loop(const ros::TimerEvent &timer_event) {
-#ifdef VISUALIZE
-  viewer->spinOnce();
-#endif
 }
 
 // Compute a 3d point on the surface of the closest buoy
@@ -151,11 +103,8 @@ bool Sub8BuoyDetector::determine_buoy_position(
   cv::Mat image_thresh;
 
   // believe it or not, this is on purpose (So blue replaces red in HSV)
-  cv::cvtColor(image_raw, image_hsv, CV_RGB2HSV);
-
-  cv::Point2d pt_cv_2d(250, 250);
-  sub::PointXYZT pcl_pt_3d;
-  pcl_pt_3d = sub::project_uv_to_cloud(*point_cloud_raw, pt_cv_2d, camera_model);
+  // cv::cvtColor(image_raw, image_hsv, CV_RGB2HSV);
+  cv::cvtColor(image_raw, image_hsv, CV_BGR2HSV);
 
   // Threshold -- > This is what must be replaced with better 2d vision
   sub::inParamRange(image_hsv, color_ranges[target_color], image_thresh);
@@ -179,7 +128,7 @@ bool Sub8BuoyDetector::determine_buoy_position(
     double area = cv::contourArea(approx);
 
     // Ignore small regions
-    if (area < 100) {
+    if (area < 20) {
       continue;
     }
     sub::PointXYZT centroid_projected =
@@ -224,66 +173,4 @@ bool Sub8BuoyDetector::determine_buoy_position(
   center = buoy_centers[closest_buoy_index];
 
   return true;
-}
-
-bool Sub8BuoyDetector::get_last_image(cv::Mat &last_image) {
-  cv_bridge::CvImagePtr input_bridge;
-  try {
-    input_bridge = cv_bridge::toCvCopy(last_image_msg, sensor_msgs::image_encodings::BGR8);
-    last_image = input_bridge->image;
-  } catch (cv_bridge::Exception &ex) {
-    ROS_ERROR("Failed to convert image");
-    return false;
-  }
-  return true;
-}
-
-void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_msg,
-                                      const sensor_msgs::CameraInfoConstPtr &info_msg) {
-  need_new_cloud = true;
-  got_image = true;
-
-#ifdef VISUALIZE
-  pcl::console::print_highlight("Getting image\n");
-#endif
-
-  // cam_model message does not change with time, so syncing is not a big deal
-  cam_model.fromCameraInfo(info_msg);
-  image_time = image_msg->header.stamp;
-}
-
-void Sub8BuoyDetector::cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &input_cloud) {
-  if (computing) {
-    return;
-  }
-
-  // Require reasonable time-similarity
-  // (Not using message filters because image_transport eats the image and info msgs. Is there a
-  // better way to do this?)
-  if (((input_cloud->header.stamp - image_time) < ros::Duration(0.3)) and (need_new_cloud)) {
-    last_cloud_time = input_cloud->header.stamp;
-    need_new_cloud = false;
-  } else {
-    return;
-  }
-
-  current_cloud.reset(new sub::PointCloudT());
-  pcl::fromROSMsg(*input_cloud, *current_cloud);
-
-#ifdef VISUALIZE
-  sub8_msgs::VisionRequest::Request req;
-  req.target_name = "red";
-  sub8_msgs::VisionRequest::Response resp;
-  request_buoy_position(req, resp);
-  pcl::console::print_highlight("Getting Point Cloud\n");
-  if (!got_cloud) {
-    viewer->addPointCloud(current_cloud, "current_input", vp1);
-  } else {
-    viewer->updatePointCloud(current_cloud, "current_input");
-    viewer->spinOnce();
-    // Downsample
-  }
-#endif
-
-  got_cloud = true;
 }

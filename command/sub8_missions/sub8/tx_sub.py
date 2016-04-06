@@ -40,6 +40,8 @@ class VisionProxy(object):
             pose = self._get_pose_service(VisionRequestRequest(target_name=target))
         except(serviceclient.ServiceError):
             return None
+        except Exception, e:
+            print type(e)
         return pose
 
     @classmethod
@@ -84,6 +86,7 @@ class _Sub(object):
         self._dvl_range_sub = yield self._node_handle.subscribe('dvl/range', Float64Stamped)
         self._tf_listener = yield tf.TransformListener(self._node_handle)
         self.channel_marker = VisionProxy('vision/channel_marker', self._node_handle)
+        self.buoy = VisionProxy('vision/buoys', self._node_handle)
         defer.returnValue(self)
 
     @property
@@ -108,6 +111,23 @@ class _Sub(object):
     def get_dvl_range(self):
         msg = yield self._dvl_range_sub.get_next_message()
         defer.returnValue(msg.data)
+
+    @util.cancellableInlineCallbacks
+    def get_in_frame(self, pose_stamped, frame='/map'):
+        '''TODO'''
+        transform = yield self._tf_listener.get_transform(
+            frame,
+            pose_stamped.header.frame_id,
+            pose_stamped.header.stamp
+        )
+        tft = tf.Transform.from_Pose_message(pose_stamped.pose)
+        full_transform = transform * tft
+        position = np.array(full_transform._p)
+        orientation = np.array(full_transform._q)
+
+        defer.returnValue([position, orientation])
+
+
 
 
 _subs = {}

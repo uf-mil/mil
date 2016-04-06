@@ -144,6 +144,7 @@ class ThrusterDriver(object):
                 **message_keyword_args
             )
         )
+        return
         if message_keyword_args['bus_voltage'] < 44.0:
             self.alert_bus_voltage(message_keyword_args['bus_voltage'])
 
