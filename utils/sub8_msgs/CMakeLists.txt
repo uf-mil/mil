@@ -35,6 +35,7 @@ add_service_files(
   VisionRequest2D.srv
   BMatrix.srv
   PathPlan.srv
+  ResetGazebo.srv
 )
 
 # add_action_files(

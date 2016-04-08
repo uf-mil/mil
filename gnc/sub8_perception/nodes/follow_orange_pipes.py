@@ -14,12 +14,11 @@ from cv_bridge import CvBridge, CvBridgeError
 # define threshold for orange color detection
 # ORANGE_MIN = np.array([1, 90, 180], np.float32)
 # ORANGE_MAX = np.array([23, 255, 255], np.float32)
-# RANGE = np.array([
-    # [0., 24.8631],
-    # [134.589, 201.8835],
-    # [74.3835, 226.6695]
-# ])
-
+RANGE = np.array([
+    [0., 24.8631],
+    [134.589, 201.8835],
+    [74.3835, 226.6695]
+])
 
 # RANGE = np.array([
     # [1, 23],
