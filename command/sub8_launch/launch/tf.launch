@@ -19,4 +19,6 @@
     <node pkg="tf" type="static_transform_publisher" name="imu_broadcaster"
       args="0.21236 0.00254 -0.10233  0.0 -0.70710678 0.0 0.70710678  base_link imu 100" />
 
+    <node pkg="sub8_launch" type="tf_republisher.py" name="tf_replublisher" />
+
 </launch>

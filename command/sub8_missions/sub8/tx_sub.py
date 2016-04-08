@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from __future__ import division
 import numpy as np
 from twisted.internet import defer
@@ -113,6 +114,19 @@ class _Sub(object):
         defer.returnValue(msg.data)
 
     @util.cancellableInlineCallbacks
+    def to_height(self, height):
+        print 'getting;'
+        trans = yield self._tf_listener.get_transform(
+            '/base_link',
+            '/ground',
+        )
+        # print trans._p[2]
+        delta_height = -trans._p[2] - height
+        # z = yield self.last_pose()
+        # print delta_height, self.pose.position[2]
+        yield self.move.up(delta_height).go()
+
+    @util.cancellableInlineCallbacks
     def get_in_frame(self, pose_stamped, frame='/map'):
         '''TODO'''
         transform = yield self._tf_listener.get_transform(
@@ -126,8 +140,6 @@ class _Sub(object):
         orientation = np.array(full_transform._q)
 
         defer.returnValue([position, orientation])
-
-
 
 
 _subs = {}

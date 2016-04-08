@@ -7,13 +7,12 @@ from twisted.internet import defer, reactor
 import txros
 from sub8 import tx_sub
 import missions
-import sys
 
 
 @txros.util.cancellableInlineCallbacks
 def main():
     try:
-        nh_args = yield txros.NodeHandle.from_argv_with_remaining('sub8_mission', anonymous=True)
+        nh_args = yield txros.NodeHandle.from_argv_with_remaining('sub8_mission')
         available_missions = [mission_name for mission_name in dir(missions) if not mission_name.startswith('_')]
 
         usage_msg = ("Input the name of the mission you would like to run.\nExamples: " +
@@ -23,8 +22,6 @@ def main():
         parser.add_argument(dest='mission_name',
                             help="The name of the mission you'd like to run (ex: stop)")
 
-        # Get all of the missions in the mission folder
-        # print sys.argv[1:]
         nh, args = nh_args
         args = parser.parse_args(args[1:])
         mission_name = args.mission_name
@@ -35,12 +32,12 @@ def main():
         mission = getattr(missions, mission_name)
 
         sub = yield tx_sub.get_sub(nh)
-        yield txros.util.sleep(1.0)
+        yield txros.util.wall_sleep(1.0)
         print 'Mission runner waiting for pose to be available'
         yield sub.last_pose()
         print 'Mission runner got pose'
         yield mission.run(sub)
-        yield txros.util.sleep(1.0)
+        yield txros.util.wall_sleep(1.0)
 
     except Exception:
         traceback.print_exc()

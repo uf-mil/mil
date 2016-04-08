@@ -136,7 +136,7 @@ bool Sub8BuoyDetector::determine_buoy_position(
 
     Eigen::Vector3f surface_point = sub::point_to_eigen(centroid_projected);
     // Slide the surface point one buoy radius away from the camera to approximate the 3d center
-    Eigen::Vector3f approximate_center = surface_point + (buoy_radius * surface_point.normalized());
+    Eigen::Vector3f approximate_center = surface_point;// + (buoy_radius * surface_point.normalized());
 
     // Check if the estimated projection onto the point cloud is outside of the contour
     cv::Point2d centroid_deprojected = cam_model.project3dToPixel(
