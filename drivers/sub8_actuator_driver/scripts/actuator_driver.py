@@ -28,9 +28,7 @@ class ActuatorDriver():
         self.load_yaml()
 
         rospy.init_node("actuator_driver")
-
-        #print self.actuators
-
+        
         self.ser = serial.Serial(port=port, baudrate=baud, timeout=.3)
 
         # Reset all valves
@@ -102,7 +100,7 @@ class ActuatorDriver():
         data = struct.pack("BB", op_code, chksum)
         
         rospy.loginfo("Writing: %s. Chksum: %s." % (hex(op_code), hex(chksum)))
-        #self.ser.write(data)
+        self.ser.write(data)
 
     def load_yaml(self):
         with open(VALVES_FILE, 'r') as f:
