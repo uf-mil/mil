@@ -1,0 +1,29 @@
+# Stores information about each actuator.
+# Times in seconds. Open_port should be the valve that needs to be turned on to open the device.
+# Default parameter is set per port - true opens the valve.
+
+shooter:
+  type: 'pulse'
+  ports:
+    port:
+      id: 0
+      default: 0
+  pulse_time: 1
+
+gripper:
+  type: 'set'
+  ports:
+    open_port:
+      id: 1
+      default: 0
+    close_port:
+      id: 2
+      default: 1
+
+dropper:
+  type: 'pulse'
+  ports:
+    port:
+      id: 3
+      default: 1
+  pulse_time: 1
