@@ -5,7 +5,7 @@ Networking with the sub
 
 Add the following aliases to your ~/.bashrc file
 
-    alias setrosip='export ROS_IP=`hostname -I | cut -f1 -d" "/`'
+    alias setrosip='export ROS_IP=`hostname -I | cut -f1 -d" "`'
     alias rsub='setrosip;export ROS_MASTER_URI=http://subjugator:11311'
     alias unsub='unset ROS_IP; export ROS_MASTER_URI=http://localhost:11311'
 
