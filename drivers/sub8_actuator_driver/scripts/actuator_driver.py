@@ -54,7 +54,7 @@ class ActuatorDriver():
         try:
             this_valve = self.actuators[srv.actuator]
         except:
-            rospy.logwarn("'%s' not found in valves.yaml and therefore no configuration has been set for that actuator."%srv.actuator)
+            rospy.logerr("'%s' not found in valves.yaml and therefore no configuration has been set for that actuator."%srv.actuator)
             return False
 
         if this_valve['type'] == 'pulse':
@@ -95,13 +95,13 @@ class ActuatorDriver():
         # Calculate checksum and send data to board.
         # A true state tells the pnuematics controller to allow air into the tube.
         base_code = 0x20
-        op_code = port*2 + base_code
+        op_code = port * 2 + base_code
         if state: op_code += 1
         chksum = op_code ^ 0xFF
 
         data = struct.pack("BB", op_code, chksum)
         
-        rospy.loginfo("Writing: %s. Chksum: %s." % (hex(op_code),hex(chksum)))
+        rospy.loginfo("Writing: %s. Chksum: %s." % (hex(op_code), hex(chksum)))
         #self.ser.write(data)
 
     def load_yaml(self):
@@ -110,7 +110,7 @@ class ActuatorDriver():
 
     def parse_response(self):
         # The board doesn't currently respond with data.
-        response = struct.unpack("BB",self.ser.read(2))
+        response = struct.unpack("BB", self.ser.read(2))
     
         data = response[0]
         chksum = response[1] ^ 0xFF
@@ -127,4 +127,4 @@ class ActuatorDriver():
         self.ser.write(bytes(0x1234))
 
 if __name__ == "__main__":
-    a = ActuatorDriver(rospy.get_param('~/actuator_driver/port'),9600)
+    a = ActuatorDriver(rospy.get_param('~/actuator_driver/port'), 9600)
