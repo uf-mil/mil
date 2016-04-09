@@ -91,3 +91,50 @@ class AlarmRaiser(object):
 
         self._alarm_pub.publish(alarm_msg)
         return alarm_msg
+
+
+class AlarmListener(object):
+    '''
+    Listens for alarms (similar to a TF listener) but can have a callback function (like a ros subscriber).
+
+    If an alarm with the 'alarm_name' is triggered, it (as well as an optional 'args') will be passed 
+    to the 'callback_funct'.
+    '''
+    def __init__(self, alarm_name=None, callback_funct=None, args=None):
+        # This dictionary will allow the user to listen to an arbitrary number of alarms
+        # and have sepreate callbacks and args for each alarm.
+        self.callback_linker = {}
+
+        if alarm_name is not None and callback_funct is not None:
+            self.callback_linker[alarm_name] = {'callback':callback_funct,
+                                                    'args':args}
+
+        rospy.Subscriber('/alarm', Alarm, self.check_alarm, queue_size=100)
+
+    def add_listener(self, alarm_name, callback_funct, args=None):
+        '''
+        Creates a new alarm listener and links it to a callback function.
+        '''
+        self.callback_linker[alarm_name] = {'callback':callback_funct,
+                                                'args':args}
+
+    def check_alarm(self, alarm):
+        '''
+        We've gotten an alarm, but don't panic! If it's one of the alarms we are listening for,
+        pass the alarm to the function callback with any specified args.
+        '''
+        try:
+            found_alarm = self.callback_linker[alarm.alarm_name]
+        except KeyError:
+            # These are not the alarms we are looking for.
+            #print "Not Found."
+            return
+
+        callback = found_alarm['callback']
+        args = found_alarm['args']
+
+        #Actaully call the callback function and pass args if nessicary.
+        if args is None:
+            callback(alarm)
+        else:
+            callback(alarm, args)
