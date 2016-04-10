@@ -6,5 +6,5 @@ color:
 
 
   channel_guide:
-    hsv_low: [0, 50, 180]
+    hsv_low: [0, 50, 74]
     hsv_high: [20, 250, 260]

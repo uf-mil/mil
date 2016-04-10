@@ -14,30 +14,27 @@ from cv_bridge import CvBridge, CvBridgeError
 # define threshold for orange color detection
 # ORANGE_MIN = np.array([1, 90, 180], np.float32)
 # ORANGE_MAX = np.array([23, 255, 255], np.float32)
-RANGE = np.array([
+range_default = np.array([
     [0., 24.8631],
     [134.589, 201.8835],
     [74.3835, 226.6695]
 ])
 
-# RANGE = np.array([
-    # [1, 23],
-    # [90, 255],
-    # [180, 255]
-# ],
-    # np.float32
-# )
-
 
 class PipeFinder:
     def __init__(self):
+        self.last_image = None
+        self.last_draw_image = None
         self.pose_pub = rospy.Publisher("orange_pipe_vision", Pose, queue_size=1)
         self.pose_service = rospy.Service("vision/channel_marker/2D", VisionRequest2D, self.request_pipe)
         self.image_sub = sub8_ros_tools.Image_Subscriber('/down/left/image_raw', self.image_cb)
         self.image_pub = sub8_ros_tools.Image_Publisher("down/left/target_info")
         self.timer = rospy.Timer(rospy.Duration(1), self.publish_target_info)
-        self.last_image = None
-        self.last_draw_image = None
+
+        self.range = sub8_ros_tools.get_parameter_range('/color/channel_guide')
+        print self.range
+        print range_default
+
 
     def publish_target_info(self, *args):
         if self.last_image is None:
@@ -57,7 +54,7 @@ class PipeFinder:
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
         # mask = cv2.inRange(hsv, ORANGE_MIN, ORANGE_MAX)
-        mask = cv2.inRange(hsv, RANGE[:, 0], RANGE[:, 1])
+        mask = cv2.inRange(hsv, self.range[:, 0], self.range[:, 1])
         contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
         blank_img = np.zeros((rows, cols), np.uint8)
