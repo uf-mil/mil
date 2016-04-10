@@ -5,14 +5,33 @@ Note:
      is intentional, to avoid the use of a global cvbridge, and to avoid reinstantiating a CvBrige for each use.
 '''
 import rospy
-import cv2
+import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
+from sub8_ros_tools import wait_for_param
+
+
+def get_parameter_range(parameter_root):
+    '''
+    ex: parameter_root='/vision/buoy/red'
+    this will then fetch /vision/buoy/red/hsv_low and hsv_high
+    '''
+    low_param, high_param = parameter_root + '/hsv_low', parameter_root + '/hsv_high'
+
+    rospy.logwarn("Blocking -- waiting for parameters {} and {}".format(low_param, high_param))
+
+    wait_for_param(low_param)
+    wait_for_param(high_param)
+    low = rospy.get_param(low_param)
+    high = rospy.get_param(high_param)
+
+    rospy.loginfo("Got {} and {}".format(low_param, high_param))
+    return np.array([low, high]).transpose()
 
 
 def make_image_msg(cv_image, encoding='bgr8'):
     '''Take a cv image, and produce a ROS image message'''
-    bridge = CvBridge()    
+    bridge = CvBridge()
     image_message = bridge.cv2_to_imgmsg(cv_image, encoding)
     return image_message
 
@@ -28,9 +47,9 @@ class Image_Publisher(object):
     def __init__(self, topic, encoding="bgr8", queue_size=1):
         '''Create an essentially normal publisher, that will publish images without conversion hassle'''
         self.im_pub = rospy.Publisher(topic, Image, queue_size=queue_size)
-        self.bridge = CvBridge()    
+        self.bridge = CvBridge()
         self.encoding = encoding
-    
+
     def publish(self, cv_image):
         try:
             image_message = self.bridge.cv2_to_imgmsg(cv_image, self.encoding)
