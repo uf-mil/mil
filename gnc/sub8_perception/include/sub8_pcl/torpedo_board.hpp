@@ -3,24 +3,23 @@
 #include <vector>
 #include <utility>
 #include <iostream>
-
 #include <algorithm>
+
 #include <opencv2/opencv.hpp>
+#include <Eigen/Core>
+#include <eigen_conversions/eigen_msg.h>
+#include <Eigen/StdVector>
+
+#include "ros/ros.h"
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 #include <image_geometry/pinhole_camera_model.h>
-
 #include <tf/transform_listener.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include <eigen_conversions/eigen_msg.h>
-#include <Eigen/StdVector>
 #include <sub8_pcl/pcl_tools.hpp>
 #include <sub8_pcl/cv_tools.hpp>
 #include <sub8_pcl/torpedo_board.hpp>
-
-#include "ros/ros.h"
-
 #include "sub8_msgs/VisionRequest.h"
 
 class Sub8TorpedoBoardDetector {

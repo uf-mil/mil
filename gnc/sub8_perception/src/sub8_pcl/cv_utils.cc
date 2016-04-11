@@ -249,11 +249,11 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, const int
 #ifdef SEGMENTATION_DEBUG
 	std::cout << "low_thresh = " << low_thresh << std::endl;
 	std::cout << std::endl;
-#endif
 	std::string ros_log = 
 		( boost::format("Target: %1%\nClosest distribution mode: %2%  Thresholds selected:  low=%3%  high=%4%")
 		% target % target_mode % low_thresh % high_thresh ).str() ;
 	ROS_INFO(ros_log.c_str());
+#endif
 
 	// Threshold image
 	cv::inRange(src, low_thresh, high_thresh, dest);
@@ -318,6 +318,7 @@ Eigen::Vector3d triangulate_image_coordinates(const cv::Point &pt1, const cv::Po
 		Optimal triangulation method for two cameras with parallel principal axes
 		Based of off this paper by Peter Lindstrom: https://e-reports-ext.llnl.gov/pdf/384387.pdf  **Listing 2**
 	*/
+	std::cout << "ptL: " << pt1 << "ptR: " << pt2 << std::endl;
 	const unsigned int max_iterations = 3;
 	Eigen::Vector3d p1_old(pt1.x, pt1.y, 1.0);
 	Eigen::Vector3d p2_old(pt2.x, pt2.y, 1.0);

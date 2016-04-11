@@ -10,6 +10,7 @@
 
 #include <eigen_conversions/eigen_msg.h>
 #include <Eigen/StdVector>
+#include <Eigen/SVD>
 
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
@@ -26,6 +27,9 @@
 namespace sub {
 
 /// UTILS
+
+template<typename _Matrix_Type_>
+bool pseudoInverse(const _Matrix_Type_ &a, _Matrix_Type_ &result, double epsilon = std::numeric_limits<typename _Matrix_Type_::Scalar>::epsilon());
 
 typedef std::vector<cv::Point> Contour;
 
@@ -119,4 +123,19 @@ void range_from_param(std::string &param_root, Range &range);
 
 void inParamRange(cv::Mat &src, Range &range, cv::Mat &dest);
 
-}  // namespace sub
+/// Templated function implementation
+template<typename _Matrix_Type_>
+bool pseudoInverse(const _Matrix_Type_ &a, _Matrix_Type_ &result, 
+				   double epsilon = std::numeric_limits<typename _Matrix_Type_::Scalar>::epsilon()){
+  if(a.rows()<a.cols())
+      return false;
+
+  Eigen::JacobiSVD< _Matrix_Type_ > svd = a.jacobiSvd();
+
+  typename _Matrix_Type_::Scalar tolerance = 
+  	epsilon * std::max(a.cols(), a.rows()) * svd.singularValues().array().abs().maxCoeff();
+
+  result = svd.matrixV() * _Matrix_Type_(_Matrix_Type_( (svd.singularValues().array().abs() > tolerance).
+  	select(svd.singularValues().array().inverse(), 0) ).diagonal()) * svd.matrixU().adjoint();
+}
+}  // namespace subprint 

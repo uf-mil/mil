@@ -4,8 +4,8 @@ Sub8TorpedoBoardDetector::Sub8TorpedoBoardDetector()
 try : image_transport(nh), rviz("/visualization/torpedo_board")
 {
   ROS_INFO("Initializing Sub8TorpedoBoardDetector");
-  std::string img_topic_left = "/stereo/left/image_raw";
-  std::string img_topic_right = "/stereo/right/image_raw";
+  std::string img_topic_left = "/stereo/left/image_rect_color";
+  std::string img_topic_right = "/stereo/right/image_rect_color";
   std::string service_name = "/vision/torpedo_board";
   
   left_image_sub = image_transport.subscribeCamera(img_topic_left, 1, &Sub8TorpedoBoardDetector::left_image_callback, this);
@@ -55,10 +55,18 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
     input_bridge = cv_bridge::toCvCopy(left_most_recent.image_msg_ptr, sensor_msgs::image_encodings::BGR8);
     current_image_left = input_bridge->image;
     left_cam_model.fromCameraInfo(left_most_recent.info_msg_ptr);
+    if(current_image_left.channels() != 3){
+      ROS_WARN("The left image topic does not contain a color image. Terminating torpedo board detection.");
+      return;
+    }
 
     input_bridge = cv_bridge::toCvCopy(right_most_recent.image_msg_ptr, sensor_msgs::image_encodings::BGR8);
     current_image_right = input_bridge->image;
     right_cam_model.fromCameraInfo(right_most_recent.info_msg_ptr);
+    if(current_image_left.channels() != 3){
+      ROS_WARN("The right image topic does not contain a color image. Terminating torpedo board detection.");
+      return;
+    }
   } catch (cv_bridge::Exception &ex) {
     ROS_ERROR("[torpedo_board] cv_bridge: Failed to convert images");
     return;
@@ -72,8 +80,12 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
   bool found_right = find_board_corners(segmented_board_right, board_corners_right);
   if(!found_left || !found_right){
     resp.found = false;
-    ROS_INFO("Unable to detect torpedo board");
+    resp.pose.header.stamp = ros::Time::now();
+    ROS_DEBUG("Unable to detect torpedo board");
     return;
+  }
+  else{
+    ROS_DEBUG("Detected torpedo board");
   }
 
   // Match corresponding corner coordinates from both images
@@ -92,35 +104,57 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
     corresponding_corners.push_back(std::pair<cv::Point, cv::Point>(left_corner, board_corners_right[matching_idx]));
   }
 
-  // Get Fundamental Matrix from full camera projection matrices
-  // Procedure described in section 8.2.2 of The Bible
-  cv::Matx34d P_L = left_cam_model.fullProjectionMatrix();
-  cv::Matx34d P_R = right_cam_model.fullProjectionMatrix();
-  cv::Matx41d C(0, 0, 0, 1);
-  cv::Matx43d P_L_inv;
-  cv::invert(P_L, P_L_inv);
-  cv::Matx31d epipole_im2 = P_R * C;
-  cv::Matx33d cross_with_epipole_im2( 0, -epipole_im2(2, 0),  epipole_im2(1, 0),
-                     epipole_im2(2, 0),                  0, -epipole_im2(0, 0),
-                    -epipole_im2(1, 0),  epipole_im2(0, 0),                  0);
-  cv::Matx33d fundamental_mat = cross_with_epipole_im2 * ( P_R * P_L_inv);
-  cv::Matx33d rot_matx_right = right_cam_model.rotationMatrix();
-  Eigen::Matrix3d fundamental_matrix;
-  fundamental_matrix << fundamental_mat(0, 0), fundamental_mat(0, 1), fundamental_mat(0, 2),
-                        fundamental_mat(1, 0), fundamental_mat(1, 1), fundamental_mat(1, 2),
-                        fundamental_mat(2, 0), fundamental_mat(2, 1), fundamental_mat(2, 2);
+  // Get fundamental matrix and rotation matrix in orer to triangulate points
+  // Procedure described in section 9.2.2 of The Bible
+  // P_L represents left projectin matrix
+  cv::Matx34d P_L_cv = left_cam_model.fullProjectionMatrix();
+  cv::Matx34d P_R_cv = right_cam_model.fullProjectionMatrix();
+  cv::Matx33d rot_right_cv = right_cam_model.rotationMatrix();
+
+  // Convert opencv Matx to Mat
+  cv::Mat P_L_cv_mat = cv::Mat(P_L_cv);
+  cv::Mat P_R_cv_mat = cv::Mat(P_R_cv);
+  cv::Mat rot_right_cv_mat = cv::Mat(rot_right_cv);
+
+  // Take pseudoinverse of P_L using cv
+  cv::Mat P_L_inv_cv_mat;
+  cv::invert(P_L_cv_mat, P_L_inv_cv_mat, cv::DECOMP_SVD);
+
+  // std::cout << "left_pcv\n" <<  P_L_cv_mat << std::endl;
+  // std::cout << "right_pcv\n" <<  P_R_cv_mat << std::endl;
+  // std::cout << "left_pinvcv\n" <<  P_L_inv_cv_mat << std::endl;
+
+  // Map Eigen matrix to opencv Mat data
+  Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > P_L_map(reinterpret_cast<double*>(P_L_cv_mat.data), 3 ,4);
+  Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > P_R_map(reinterpret_cast<double*>(P_R_cv_mat.data), 3 ,4);
+  Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > P_L_inv_map(reinterpret_cast<double*>(P_L_inv_cv_mat.data), 4 ,3);
+  Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > rot_right_map(reinterpret_cast<double*>(rot_right_cv_mat.data), 3 ,3);
+
+  // Create eigen matrix from map
+  Eigen::MatrixXd P_L = P_L_map;
+  Eigen::MatrixXd P_R = P_R_map;
+  Eigen::MatrixXd P_L_inv = P_L_inv_map;
+  Eigen::MatrixXd rot_right = rot_right_map;
+
+  // std::cout << "left_proj_eig\n" <<  P_L << std::endl;
+  // std::cout << "right_proj_eig\n" <<  P_R << std::endl;
+  // std::cout << "left_proj_inv_eig\n" <<  P_L_inv << std::endl;
+
+  Eigen::Vector4d C(0, 0, 0, 1);
+  Eigen::Vector3d epipole_im2 = P_R * C;
+  Eigen::Matrix3d cross_with_epipole_im2;
+  cross_with_epipole_im2 << 0, -epipole_im2(2, 0),  epipole_im2(1, 0),
+            epipole_im2(2, 0),                  0, -epipole_im2(0, 0),
+           -epipole_im2(1, 0),  epipole_im2(0, 0),                  0;
+  Eigen::Matrix3d fundamental_matrix = cross_with_epipole_im2 * ( P_R * P_L_inv);
 
   // Calculate 3d coordinates of corner points
-  Eigen::Matrix3d R;
-  R << rot_matx_right(0, 0), rot_matx_right(0, 1), rot_matx_right(0, 2),
-       rot_matx_right(1, 0), rot_matx_right(1, 1), rot_matx_right(1, 2),
-       rot_matx_right(2, 0), rot_matx_right(2, 1), rot_matx_right(2, 2);
   std::vector<Eigen::Vector3d> corners_3d;
   for(size_t i = 0; i < corresponding_corners.size(); i++){
     cv::Point pt_L, pt_R;
     pt_L = corresponding_corners[i].first;
     pt_R = corresponding_corners[i].second;
-    Eigen::Vector3d current_corner = sub::triangulate_image_coordinates(pt_L, pt_R, fundamental_matrix, R);
+    Eigen::Vector3d current_corner = sub::triangulate_image_coordinates(pt_L, pt_R, fundamental_matrix, rot_right);
     corners_3d.push_back(current_corner);
   }
 
@@ -131,6 +165,16 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
     sum = sum + corner;
   }
   position = sum / 4.0;
+
+  // Project board center into left image and visualize
+  Eigen::Vector4d position_hom;
+  position_hom << position(0), position(1), position(2), 1;
+  Eigen::Vector3d centroid_hom = P_L * position_hom;
+  cv::Point centroid_img_coords(centroid_hom(0) / centroid_hom(2), centroid_hom(1) / centroid_hom(2));
+  cv::circle(current_image_left, centroid_img_coords, 5, cv::Scalar(0, 0, 255), -1);
+  std::cout << "centroid_3d_hom\n" << centroid_hom.transpose() << std::endl;
+  std::cout << "centroid_img_coords " << centroid_img_coords << std::endl;
+  cv::imshow("centroid projected", current_image_left);
 
   // Calculate normal vector to torpedo board
   Eigen::Vector3d normal_vector, edge1, edge2;
@@ -154,12 +198,14 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
 }
 
 
-bool Sub8TorpedoBoardDetector::request_torpedo_board_position(sub8_msgs::VisionRequest::Request &req,
-                                           sub8_msgs::VisionRequest::Response &resp){
-  std::string left_tf_frame = left_cam_model.tfFrame();
+bool Sub8TorpedoBoardDetector::request_torpedo_board_position(sub8_msgs::VisionRequest::Request &req, 
+                                                              sub8_msgs::VisionRequest::Response &resp){
+  
   Eigen::Vector3f position;
   determine_torpedo_board_position(resp);
+  std::string left_tf_frame = left_cam_model.tfFrame();
   rviz.visualize_torpedo_board(resp.pose.pose, left_tf_frame);
+  cv::waitKey(1);
   return true;
 }
 
@@ -174,7 +220,6 @@ void Sub8TorpedoBoardDetector::segment_board(const cv::Mat &src, cv::Mat &dest){
   cv::split(hsv_image, hsv_channels);
   cv::medianBlur(hsv_channels[0], hue_blurred, 5); // Magic num: 5 (might need tuning)
   cv::medianBlur(hsv_channels[1], sat_blurred, 5);
-  // cv::imshow("hue median filtered", hue_blurred);
 
   // Histogram parameters
   int hist_size = 256;    // bin size
@@ -202,6 +247,7 @@ void Sub8TorpedoBoardDetector::segment_board(const cv::Mat &src, cv::Mat &dest){
 
 
 bool Sub8TorpedoBoardDetector::find_board_corners(const cv::Mat &segmented_board, sub::Contour &corners){
+  bool corners_success = false;
   cv::Mat convex_hull_working_img = segmented_board.clone();
   std::vector<sub::Contour> contours, connected_contours;
   sub::Contour convex_hull, corner_points;
@@ -211,7 +257,13 @@ bool Sub8TorpedoBoardDetector::find_board_corners(const cv::Mat &segmented_board
                     CV_CHAIN_APPROX_SIMPLE);
 
   // Put longest 2 contours at beginning of "contours" vector
-  std::partial_sort(contours.begin(), contours.begin() + 2, contours.end(), sub::larger_contour);
+  if(contours.size() > 2){
+    std::partial_sort(contours.begin(), contours.begin() + 2, contours.end(), sub::larger_contour);
+  }
+  if(contours.size() < 2){    // prevent out of range access of contours
+    corners_success = false;
+    return corners_success;
+  }
 
   // Connect yellow pannels
   cv::Point pt1 = sub::contour_centroid(contours[0]);
@@ -224,8 +276,10 @@ bool Sub8TorpedoBoardDetector::find_board_corners(const cv::Mat &segmented_board
                     CV_CHAIN_APPROX_SIMPLE);
 
   // Put longest contour at beginning of "connected_contours" vector
-  std::partial_sort(connected_contours.begin(), connected_contours.begin() + 1,
-                                                connected_contours.end(), sub::larger_contour);
+  if(contours.size() > 1){
+    std::partial_sort(connected_contours.begin(), connected_contours.begin() + 1,
+                                                  connected_contours.end(), sub::larger_contour);
+  }
 
   // Find convex hull of connected panels
   cv::convexHull(connected_contours[0], convex_hull);
@@ -235,7 +289,6 @@ bool Sub8TorpedoBoardDetector::find_board_corners(const cv::Mat &segmented_board
   int total_iterations = 0;
   double epsilon = 1;
   double epsilon_step = 0.5;
-  bool corners_success = false;
   for(int i = 0; i < max_iterations; i++){
     cv::approxPolyDP(convex_hull, convex_hull, epsilon, true);
     if(convex_hull.size() == poly_pts) epsilon += epsilon_step;
@@ -248,7 +301,7 @@ bool Sub8TorpedoBoardDetector::find_board_corners(const cv::Mat &segmented_board
   }
   if(!corners_success) ROS_WARN("Failed to generate the four corners of board from image");
   else{
-    ROS_INFO((boost::format("corners size = %1% epsilon = %2% iters = %3%") % convex_hull.size() % epsilon % total_iterations).str().c_str() );
+    ROS_DEBUG((boost::format("num_corners=%1% epsilon=%2% iters=%3%") % convex_hull.size() % epsilon % total_iterations).str().c_str() );
   }
 
   // Scale corner image coordinates back up to original scale
