@@ -56,7 +56,7 @@ void RvizVisualizer::visualize_buoy(geometry_msgs::Pose& pose, std::string& fram
 void RvizVisualizer::visualize_torpedo_board(geometry_msgs::Pose& pose, std::string& frame_id) {
   visualization_msgs::Marker marker;
 
-  // Generate sphere marker for the buoy
+  // Generate sphere marker for the torpedo_board centroid
   marker.header.frame_id = frame_id;
   marker.header.stamp = ros::Time();
   marker.ns = "sub";
@@ -73,7 +73,7 @@ void RvizVisualizer::visualize_torpedo_board(geometry_msgs::Pose& pose, std::str
   marker.color.b = 0.0;
   rviz_pub.publish(marker);
 
-  // Generate text to overlay on the buoy (TODO: Put the text offset from the buoy)
+  // Generate text to overlay on the torpedo_board centroid (TODO: Put the text offset from the marker)
   marker.header.stamp = ros::Time();
   marker.ns = "sub";
   marker.id = 1;
