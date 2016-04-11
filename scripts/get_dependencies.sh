@@ -42,8 +42,10 @@ instlog "Updating apt-get"
 sudo apt-get update -qq
 
 instlog "Getting build stuff"
-sudo pip install -q -U setuptools
 sudo apt-get install -qq cmake python-pip
+sudo pip install -q -U setuptools
+sudo pip install -q -U mayavi
+sudo pip install -q -U argcomplete
 
 ####### Make tools
 instlog "Getting misc make tools"
