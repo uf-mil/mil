@@ -51,7 +51,7 @@ class GazeboInterface(object):
         self.send_wrench(wrench)
 
     def publish_height(self, z):
-        '''HACK. Lanford to fix'''
+        '''HACK. Langford to fix'''
         self.dvl_pub.publish(
             Float64Stamped(
                 header=sub8_utils.make_header(),
