@@ -2,4 +2,5 @@
   <rosparam file="$(find sub8_launch)/config/course_geometry.yaml" />
   <rosparam file="$(find sub8_launch)/config/default_color_calibration.yaml" />
   <node pkg="sub8_perception" type="pcl_perception" name="sub_perception" output="screen" />
+  <node pkg="sub8_perception" type="follow_orange_pipes.py" name="sub_orange_pipes" output="screen" />
 </launch>

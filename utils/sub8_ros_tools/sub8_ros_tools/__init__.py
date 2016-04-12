@@ -7,7 +7,7 @@ import geometry_helpers
 
 # TODO: Adjust all existing code to not require these to be top-level imports
 from init_helpers import wait_for_param, wait_for_subscriber
-from image_helpers import Image_Subscriber, Image_Publisher, make_image_msg, get_image_msg
+from image_helpers import Image_Subscriber, Image_Publisher, make_image_msg, get_image_msg, get_parameter_range
 from msg_helpers import (
     make_header, odom_sub,
     rosmsg_to_numpy, pose_to_numpy, twist_to_numpy, odometry_to_numpy, posetwist_to_numpy,

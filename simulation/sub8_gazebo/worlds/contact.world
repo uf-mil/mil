@@ -4,11 +4,10 @@
 
     <light name="illum" type="point">
       <pose>5 5 -10 0 0 0</pose>
-
-      <diffuse>0.4 0.4 0.9 1</diffuse>
+      <diffuse>0.4 0.8 0.8 1</diffuse>
       <attenuation><constant>1</constant></attenuation>
-
     </light>
+
     <include>
       <uri>model://sun</uri>
     </include>
