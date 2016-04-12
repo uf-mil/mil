@@ -312,7 +312,7 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, const int
 }
 
 
-Eigen::Vector3d triangulate_image_coordinates(const cv::Point &pt1, const cv::Point &pt2, 
+Eigen::Vector3d triangulate_image_coordinates(const cv::Point2d &pt1, const cv::Point2d &pt2, 
 												const Eigen::Matrix3d &fundamental, const Eigen::Matrix3d &R){
 	/*
 		Optimal triangulation method for two cameras with parallel principal axes

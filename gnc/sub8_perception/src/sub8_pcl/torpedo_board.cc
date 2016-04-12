@@ -97,23 +97,6 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
     std::cout << right_corner << std::endl;
   }
 
-  // Match corresponding corner coordinates from both images
-  std::vector< std::pair<cv::Point, cv::Point> > corresponding_corners;
-  BOOST_FOREACH(cv::Point left_corner, board_corners_left){
-    double min_distance = std::numeric_limits<double>::infinity();
-    int matching_idx = 0;
-    for(size_t j = 0; j < board_corners_right.size(); j++){
-      cv::Point diff = left_corner - board_corners_right[j];
-      double distance = sqrt(pow(diff.x, 2.0) + pow(diff.y, 2.0));
-      if(distance < min_distance){
-        min_distance = distance;
-        matching_idx = j;
-      }
-    }
-    corresponding_corners.push_back(std::pair<cv::Point, cv::Point>(left_corner, board_corners_right[matching_idx]));
-    std::cout << "Matching Pair : " << corresponding_corners[corresponding_corners.size() -1].first << " | " << corresponding_corners[corresponding_corners.size() -1].second << std::endl;
-  }
-
   // Get fundamental matrix and rotation matrix in orer to triangulate points
   // Procedure described in section 9.2.2 of The Bible
   // P_L represents left projectin matrix
@@ -129,21 +112,43 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
   std::cout << "right intrinsic\n" << K_right << std::endl;
   std::cout << "left rotation\n" << rot_left_cv << std::endl;
   std::cout << "right rotation\n" << rot_right_cv << std::endl;
-  std::vector<cv::Matx31d> left_corners_norm_img_coords;
-  std::vector<cv::Matx31d> right_corners_norm_img_coords;
+  std::vector<cv::Point2d> left_corners_norm_img_coords;
+  std::vector<cv::Point2d> right_corners_norm_img_coords;
   std::cout << "left corners normalized" << std::endl;
-  BOOST_FOREACH(cv::Point left_corner, board_corners_left){
+  BOOST_FOREACH(cv::Point2d left_corner, board_corners_left){
     cv::Matx31d left_corner_hom(left_corner.x, left_corner.y, 1);
     cv::Matx31d left_corner_hom_normalized = Kinv_left * left_corner_hom;
     std::cout << left_corner_hom_normalized << std::endl;
+    double x = left_corner_hom_normalized(0) / left_corner_hom_normalized(2);
+    double y = left_corner_hom_normalized(1) / left_corner_hom_normalized(2);
+    left_corners_norm_img_coords.push_back(cv::Point2d(x, y));
   }
   std::cout << "right corners normalized" << std::endl;
-  BOOST_FOREACH(cv::Point right_corner, board_corners_right){
+  BOOST_FOREACH(cv::Point2d right_corner, board_corners_right){
     cv::Matx31d right_corner_hom(right_corner.x, right_corner.y, 1);
     cv::Matx31d right_corner_hom_normalized = Kinv_right * right_corner_hom;
     std::cout << right_corner_hom_normalized << std::endl;
+    double x = right_corner_hom_normalized(0) / right_corner_hom_normalized(2);
+    double y = right_corner_hom_normalized(1) / right_corner_hom_normalized(2);
+    right_corners_norm_img_coords.push_back(cv::Point2d(x, y));
   }
 
+    // Match corresponding corner coordinates from both images
+  std::vector< std::pair<cv::Point2d, cv::Point2d> > corresponding_corners;
+  BOOST_FOREACH(cv::Point2d left_corner, left_corners_norm_img_coords){
+    double min_distance = std::numeric_limits<double>::infinity();
+    int matching_idx = 0;
+    for(size_t j = 0; j < right_corners_norm_img_coords.size(); j++){
+      cv::Point2d diff = left_corner - right_corners_norm_img_coords[j];
+      double distance = sqrt(pow(diff.x, 2.0) + pow(diff.y, 2.0));
+      if(distance < min_distance){
+        min_distance = distance;
+        matching_idx = j;
+      }
+    }
+    corresponding_corners.push_back(std::pair<cv::Point2d, cv::Point2d>(left_corner, right_corners_norm_img_coords[matching_idx]));
+    std::cout << "Matching Pair : " << corresponding_corners[corresponding_corners.size() -1].first << " | " << corresponding_corners[corresponding_corners.size() -1].second << std::endl;
+  }
 
 
   // Convert opencv Matx to Mat
@@ -186,7 +191,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
   // Calculate 3d coordinates of corner points
   std::vector<Eigen::Vector3d> corners_3d;
   for(size_t i = 0; i < corresponding_corners.size(); i++){
-    cv::Point pt_L, pt_R;
+    cv::Point2d pt_L, pt_R;
     pt_L = corresponding_corners[i].first;
     pt_R = corresponding_corners[i].second;
     Eigen::Vector3d current_corner = sub::triangulate_image_coordinates(pt_L, pt_R, fundamental_matrix, rot_right);
