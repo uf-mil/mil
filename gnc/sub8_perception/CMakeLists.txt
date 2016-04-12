@@ -17,6 +17,8 @@ find_package(catkin
     sub8_msgs
 )
 
+catkin_python_setup()
+
 find_package(PCL 1.7 REQUIRED)
 
 catkin_package(
