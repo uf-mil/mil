@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<sdf version="1.5">
+  <model name="channel_marker">
+    <static>true</static>
+    <link name="shape">
+      <collision name="box_collision">
+        <geometry>
+          <box><size>1.2 .15 .05</size></box>
+        </geometry>
+      </collision>
+
+      <visual name="visual">
+        <geometry>
+          <box><size>1.2 .15 .05</size></box>
+        </geometry>
+        <material>
+          <ambient>0.35294118  0.25098039  0.14509804 1</ambient>
+          <diffuse>0.35294118  0.25098039  0.14509804 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+   </link>
+ </model>
+</sdf>
