@@ -88,6 +88,15 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
     ROS_DEBUG("Detected torpedo board");
   }
 
+  std::cout << "left corners:" << std::endl;
+  BOOST_FOREACH(cv::Point left_corner, board_corners_left){
+    std::cout << left_corner << std::endl;
+  }
+  std::cout << "right corners:" << std::endl;
+  BOOST_FOREACH(cv::Point right_corner, board_corners_right){
+    std::cout << right_corner << std::endl;
+  }
+
   // Match corresponding corner coordinates from both images
   std::vector< std::pair<cv::Point, cv::Point> > corresponding_corners;
   BOOST_FOREACH(cv::Point left_corner, board_corners_left){
@@ -102,6 +111,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
       }
     }
     corresponding_corners.push_back(std::pair<cv::Point, cv::Point>(left_corner, board_corners_right[matching_idx]));
+    std::cout << "Matching Pair : " << corresponding_corners[corresponding_corners.size() -1].first << " | " << corresponding_corners[corresponding_corners.size() -1].second << std::endl;
   }
 
   // Get fundamental matrix and rotation matrix in orer to triangulate points
@@ -110,6 +120,31 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
   cv::Matx34d P_L_cv = left_cam_model.fullProjectionMatrix();
   cv::Matx34d P_R_cv = right_cam_model.fullProjectionMatrix();
   cv::Matx33d rot_right_cv = right_cam_model.rotationMatrix();
+  cv::Matx33d rot_left_cv = left_cam_model.rotationMatrix(); // angle of rotation is only 0.03 radians, is this even significant?
+  cv::Matx33d K_left = left_cam_model.fullIntrinsicMatrix();
+  cv::Matx33d K_right = right_cam_model.fullIntrinsicMatrix();
+  cv::Matx33d Kinv_left = K_left.inv();
+  cv::Matx33d Kinv_right = K_right.inv();
+  std::cout << "left intrinsic\n" << K_left << std::endl;
+  std::cout << "right intrinsic\n" << K_right << std::endl;
+  std::cout << "left rotation\n" << rot_left_cv << std::endl;
+  std::cout << "right rotation\n" << rot_right_cv << std::endl;
+  std::vector<cv::Matx31d> left_corners_norm_img_coords;
+  std::vector<cv::Matx31d> right_corners_norm_img_coords;
+  std::cout << "left corners normalized" << std::endl;
+  BOOST_FOREACH(cv::Point left_corner, board_corners_left){
+    cv::Matx31d left_corner_hom(left_corner.x, left_corner.y, 1);
+    cv::Matx31d left_corner_hom_normalized = Kinv_left * left_corner_hom;
+    std::cout << left_corner_hom_normalized << std::endl;
+  }
+  std::cout << "right corners normalized" << std::endl;
+  BOOST_FOREACH(cv::Point right_corner, board_corners_right){
+    cv::Matx31d right_corner_hom(right_corner.x, right_corner.y, 1);
+    cv::Matx31d right_corner_hom_normalized = Kinv_right * right_corner_hom;
+    std::cout << right_corner_hom_normalized << std::endl;
+  }
+
+
 
   // Convert opencv Matx to Mat
   cv::Mat P_L_cv_mat = cv::Mat(P_L_cv);

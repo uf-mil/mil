@@ -318,7 +318,7 @@ Eigen::Vector3d triangulate_image_coordinates(const cv::Point &pt1, const cv::Po
 		Optimal triangulation method for two cameras with parallel principal axes
 		Based of off this paper by Peter Lindstrom: https://e-reports-ext.llnl.gov/pdf/384387.pdf  **Listing 2**
 	*/
-	std::cout << "ptL: " << pt1 << "ptR: " << pt2 << std::endl;
+	std::cout << "ptL_noisy: " << pt1 << " ptR_noisy: " << pt2 << std::endl;
 	const unsigned int max_iterations = 3;
 	Eigen::Vector3d p1_old(pt1.x, pt1.y, 1.0);
 	Eigen::Vector3d p2_old(pt2.x, pt2.y, 1.0);
@@ -347,6 +347,7 @@ Eigen::Vector3d triangulate_image_coordinates(const cv::Point &pt1, const cv::Po
 		p1_old = p1;
 		p2_old = p2;
 	}
+	std::cout << "ptL_est: [" << p1.transpose() << "] ptR_est: [" << p2.transpose() << "]" << std::endl;
 	Eigen::Vector3d z = p1.cross(R * p2);
 	Eigen::Vector3d X = ( (z.transpose() * (fundamental * p2))(0) / (z.transpose() * z)(0) ) * p1;
 	return X;
