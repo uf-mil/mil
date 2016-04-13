@@ -313,7 +313,7 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, const int
 
 
 Eigen::Vector3d triangulate_image_coordinates(const cv::Point2d &pt1, const cv::Point2d &pt2, 
-												const Eigen::Matrix3d &fundamental, const Eigen::Matrix3d &R){
+												const Eigen::Matrix3d &essential, const Eigen::Matrix3d &R){
 	/*
 		Optimal triangulation method for two cameras with parallel principal axes
 		Based of off this paper by Peter Lindstrom: https://e-reports-ext.llnl.gov/pdf/384387.pdf  **Listing 2**
@@ -329,13 +329,13 @@ Eigen::Vector3d triangulate_image_coordinates(const cv::Point2d &pt1, const cv::
 	Eigen::Matrix<double, 2, 3> S;
 	S << 1, 0, 0,
 		 0, 1, 0;
-	Eigen::Matrix2d fundamental_bar = fundamental.topLeftCorner(2, 2);
+	Eigen::Matrix2d essential_bar = essential.topLeftCorner(2, 2);
 	double a, b, c, d, lambda;
-	c = p1_0.transpose() * (fundamental * p2_0);
+	c = p1_0.transpose() * (essential * p2_0);
 	for(unsigned int i = 0; i < max_iterations; i++){
-		n1 = S * (fundamental * p2_old);
-		n2 = S * (fundamental.transpose() * p1_old);
-		a = n1.transpose() * (fundamental_bar * n2);
+		n1 = S * (essential * p2_old);
+		n2 = S * (essential.transpose() * p1_old);
+		a = n1.transpose() * (essential_bar * n2);
 		b = (0.5 * ((n1.transpose() * n1) + (n2.transpose() * n2)))(0);
 		d = sqrt(b * b - a * c);
 		double signum_b = (b > 0) ? 1 : ((b < 0) ? -1 : 0);
@@ -349,7 +349,7 @@ Eigen::Vector3d triangulate_image_coordinates(const cv::Point2d &pt1, const cv::
 	}
 	std::cout << "ptL_est: [" << p1.transpose() << "] ptR_est: [" << p2.transpose() << "]" << std::endl;
 	Eigen::Vector3d z = p1.cross(R * p2);
-	Eigen::Vector3d X = ( (z.transpose() * (fundamental * p2))(0) / (z.transpose() * z)(0) ) * p1;
+	Eigen::Vector3d X = ( (z.transpose() * (essential * p2))(0) / (z.transpose() * z)(0) ) * p1;
 	return X;
 }
 
