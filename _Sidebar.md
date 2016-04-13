@@ -34,5 +34,6 @@
     * [[Glossary]]
     * [[C++ Spells]]
     * [[Aws]]
+    * [[Unsupported OSes]]
 * Old Notes
     * [[Simulation]]
