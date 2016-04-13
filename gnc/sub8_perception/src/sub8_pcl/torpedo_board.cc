@@ -156,37 +156,36 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
   cv::Mat P_R_cv_mat = cv::Mat(P_R_cv);
   cv::Mat rot_right_cv_mat = cv::Mat(rot_right_cv);
 
-  // Take pseudoinverse of P_L using cv
+  // Take pseudoinverse (had to convert from matx to mat because mat .inv() method only supports square matrices)
   cv::Mat P_L_inv_cv_mat;
   cv::invert(P_L_cv_mat, P_L_inv_cv_mat, cv::DECOMP_SVD);
 
   // std::cout << "left_pcv\n" <<  P_L_cv_mat << std::endl;
   // std::cout << "right_pcv\n" <<  P_R_cv_mat << std::endl;
-  // std::cout << "left_pinvcv\n" <<  P_L_inv_cv_mat << std::endl;
+  std::cout << "left_pinvcv_mat\n" <<  P_L_inv_cv_mat << std::endl;
+
+  cv::Matx41d C(0, 0, 0, 1);
+  cv::Matx31d cv_epipole_im2 = P_R_cv * C;
+  cv::Matx33d cv_cross_with_epipole_im2;
+  cv_cross_with_epipole_im2 << 0, -cv_epipole_im2(2, 0),  cv_epipole_im2(1, 0),
+            cv_epipole_im2(2, 0),                  0,    -cv_epipole_im2(0, 0),
+           -cv_epipole_im2(1, 0),  cv_epipole_im2(0, 0),                     0;
+  cv::Mat cv_fundamental_matrix = cv::Mat(cv_cross_with_epipole_im2) * cv::Mat(P_R_cv) * P_L_inv_cv_mat;
+  cv::Mat essential = cv::Mat(K_right.t()) * cv_fundamental_matrix * cv::Mat(K_left);
 
   // Map Eigen matrix to opencv Mat data
-  Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > P_L_map(reinterpret_cast<double*>(P_L_cv_mat.data), 3 ,4);
-  Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > P_R_map(reinterpret_cast<double*>(P_R_cv_mat.data), 3 ,4);
-  Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > P_L_inv_map(reinterpret_cast<double*>(P_L_inv_cv_mat.data), 4 ,3);
-  Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > rot_right_map(reinterpret_cast<double*>(rot_right_cv_mat.data), 3 ,3);
+  Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > essential_eigen_map(reinterpret_cast<double*>(essential.data), 3 ,3);
+  Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > rot_right_eigen_map(reinterpret_cast<double*>(rot_right_cv_mat.data), 3 ,3);
 
   // Create eigen matrix from map
-  Eigen::MatrixXd P_L = P_L_map;
-  Eigen::MatrixXd P_R = P_R_map;
-  Eigen::MatrixXd P_L_inv = P_L_inv_map;
-  Eigen::MatrixXd rot_right = rot_right_map;
+  Eigen::MatrixXd essential_eigen = essential_eigen_map;
+  Eigen::MatrixXd rot_right = rot_right_eigen_map;
 
   // std::cout << "left_proj_eig\n" <<  P_L << std::endl;
   // std::cout << "right_proj_eig\n" <<  P_R << std::endl;
   // std::cout << "left_proj_inv_eig\n" <<  P_L_inv << std::endl;
 
-  Eigen::Vector4d C(0, 0, 0, 1);
-  Eigen::Vector3d epipole_im2 = P_R * C;
-  Eigen::Matrix3d cross_with_epipole_im2;
-  cross_with_epipole_im2 << 0, -epipole_im2(2, 0),  epipole_im2(1, 0),
-            epipole_im2(2, 0),                  0, -epipole_im2(0, 0),
-           -epipole_im2(1, 0),  epipole_im2(0, 0),                  0;
-  Eigen::Matrix3d fundamental_matrix = cross_with_epipole_im2 * ( P_R * P_L_inv);
+  std::cout << "fundamental_cv\n" << cv_fundamental_matrix << std::endl;
 
   // Calculate 3d coordinates of corner points
   std::vector<Eigen::Vector3d> corners_3d;
@@ -194,7 +193,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
     cv::Point2d pt_L, pt_R;
     pt_L = corresponding_corners[i].first;
     pt_R = corresponding_corners[i].second;
-    Eigen::Vector3d current_corner = sub::triangulate_image_coordinates(pt_L, pt_R, fundamental_matrix, rot_right);
+    Eigen::Vector3d current_corner = sub::triangulate_image_coordinates(pt_L, pt_R, essential_eigen, rot_right);
     corners_3d.push_back(current_corner);
   }
 
@@ -207,12 +206,11 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
   position = sum / 4.0;
 
   // Project board center into left image and visualize
-  Eigen::Vector4d position_hom;
-  position_hom << position(0), position(1), position(2), 1;
-  Eigen::Vector3d centroid_hom = P_L * position_hom;
+  cv::Matx41d position_hom(position(0), position(1), position(2), 1);
+  cv::Matx31d centroid_hom = P_L_cv * position_hom;
   cv::Point centroid_img_coords(centroid_hom(0) / centroid_hom(2), centroid_hom(1) / centroid_hom(2));
   cv::circle(current_image_left, centroid_img_coords, 5, cv::Scalar(0, 0, 255), -1);
-  std::cout << "centroid_3d_hom\n" << centroid_hom.transpose() << std::endl;
+  std::cout << "centroid_3d_hom\n" << centroid_hom.t() << std::endl;
   std::cout << "centroid_img_coords " << centroid_img_coords << std::endl;
   cv::imshow("centroid projected", current_image_left);
 
@@ -323,7 +321,7 @@ bool Sub8TorpedoBoardDetector::find_board_corners(const cv::Mat &segmented_board
 
   // Find convex hull of connected panels
   cv::convexHull(connected_contours[0], convex_hull);
-  ROS_INFO((boost::format("convex hull size = %1%") % convex_hull.size()).str().c_str() );
+  // ROS_INFO((boost::format("convex hull size = %1%") % convex_hull.size()).str().c_str() );
   size_t poly_pts = convex_hull.size();
   const int max_iterations = 50;
   int total_iterations = 0;
