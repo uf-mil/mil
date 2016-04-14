@@ -121,10 +121,10 @@ class _Sub(object):
             '/ground',
         )
         # print trans._p[2]
-        delta_height = -trans._p[2] - height
+        delta_height = -(-trans._p[2] - height)
         # z = yield self.last_pose()
-        # print delta_height, self.pose.position[2]
-        yield self.move.up(delta_height).go()
+        #print delta_height, self.pose.position[2]
+        yield self.move.up(delta_height).go(speed=0.1)
 
     @util.cancellableInlineCallbacks
     def get_in_frame(self, pose_stamped, frame='/map'):
