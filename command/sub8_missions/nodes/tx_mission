@@ -22,6 +22,9 @@ def main():
         parser.add_argument(dest='mission_name',
                             help="The name of the mission you'd like to run (ex: stop)")
 
+        parser.add_argument('--test', dest='test', action='store_true',
+                            help="Set this flag if you'd like to ignore motions")
+
         nh, args = nh_args
         args = parser.parse_args(args[1:])
         mission_name = args.mission_name
@@ -33,10 +36,16 @@ def main():
 
         sub = yield tx_sub.get_sub(nh)
         yield txros.util.wall_sleep(1.0)
-        print 'Mission runner waiting for pose to be available'
-        yield sub.last_pose()
+
+        if args.test:
+            sub.set_test_mode()
+
+        else:
+            print 'Mission runner waiting for pose to be available'
+            yield sub.last_pose()
+
         print 'Mission runner got pose'
-        yield mission.run(sub)
+        yield mission.run(sub).addErrback(catch_error)
         yield txros.util.wall_sleep(1.0)
 
     except Exception:
@@ -47,11 +56,19 @@ def main():
         reactor.stop()
 
 
+def catch_error(error):
+    print 'tx traceback'
+    print '>------------------------------<'
+    print error.printTraceback()
+    print '>------------------------------<'
+    # error.trap(defer.CancelledError)
+
+
 def _start():
-    # Handle errors in main
-    task = main().addErrback(lambda fail: fail.trap(defer.CancelledError))
     # Handle ctrl+C
     signal.signal(signal.SIGINT, lambda signum, frame: reactor.callFromThread(task.cancel))
+    # Handle errors in main
+    task = main().addErrback(lambda fail: fail.trap(defer.CancelledError))
 
 
 if __name__ == '__main__':
