@@ -2,28 +2,46 @@
 # Times in seconds. Open_port should be the valve that needs to be turned on to open the device.
 # Default parameter is set per port - true opens the valve.
 
-shooter:
+shooter_l:
   type: 'pulse'
   ports:
     port:
-      id: 0
-      default: 0
-  pulse_time: 1
-
-gripper:
-  type: 'set'
-  ports:
-    open_port:
       id: 1
       default: 0
-    close_port:
+  pulse_time: 1.5
+
+shooter_r:
+  type: 'pulse'
+  ports:
+    port:
       id: 2
-      default: 1
+      default: 0
+  pulse_time: 1.5
 
 dropper:
   type: 'pulse'
   ports:
     port:
       id: 3
-      default: 1
-  pulse_time: 1
+      default: 0
+  pulse_time: 1.5
+
+gripper:
+  type: 'set'
+  ports:
+    open_port:
+      id: 4
+      default: 0
+    close_port:
+      id: 5
+      default: 0
+
+test:
+  type: 'set'
+  ports:
+    open_port:
+      id: 6
+      default: 0
+    close_port:
+      id: 7
+      default: 0

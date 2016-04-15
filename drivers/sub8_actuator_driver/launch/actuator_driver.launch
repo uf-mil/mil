@@ -1,7 +1,6 @@
 <launch>
     <node pkg="sub8_actuator_driver" type="actuator_driver.py" name="actuator_driver" output="screen">
-        <param name="port" value="/dev/ttyUSB0" />
-        <param name="pulse_sleep" value="5" />
+        <param name="port" value="/dev/ttyUSB0"/>
     </node>
 </launch>
 
