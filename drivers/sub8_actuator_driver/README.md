@@ -5,11 +5,49 @@ This script allows high level ROS code to interface with the pneumatics board an
 ### Actuators:
 
 Currently only the following actuators are implemented:
-* grabber - `Set` Valve
-* dropper - `Pulse` Valve
 * shooter - `Pulse` Valve
+* gripper - `Set` Valve
+* dropper - `Pulse` Valve
 
-To add new actuators edit `valves.yaml`. Refer to prior actuator implementations in the yaml to add new ones.
+To add new actuators edit `valves.yaml` (see below).
+
+# How to setup
+Setup is done in the `valves.yaml` in the root directory of the package.
+Each entry contains information about an actuator. Here are two examples:
+    
+    shooter:
+      type: 'pulse'
+      ports:
+        port:
+          id: 1
+          default: 0
+      pulse_time: 1
+        
+    gripper:
+      type: 'set'
+      ports:
+        open_port:
+          id: 2
+          default: 0
+        close_port:
+          id: 3
+          default: 1
+
+The first actuator here is called `shooter`. It is of type `pulse`. 
+There are two actuator types: `pulse` and `set`. A `pulse` actuator will toggle breifly before returning back to the inital state (useful for the torpedo for example). A `set` actuator is toggleable between two states.
+
+For `pulse` actuators, you must specify two parameters:
+* `ports`: A `pulse` actuator only needs one port to function.
+* `pulse_time`: This specifies the pulse width (in seconds).
+
+For `set` actuators, you must specify only one parameter:
+* `ports`: Both the port connected to the actuator that should be enabled to open the gripper and the port connected to the actuator that should be enabled to close the gripper.
+
+Each listed `port` should contain:
+* `id`: The port number on the board.
+* `default`: `1` if the port should start opened, `0` if the port should start closed.
+
+It is important to perseve the structure of each yaml entry, so you can use a previous entry as a template when creating a new entry.
 
 # How to run
 To start the driver, run:
@@ -23,3 +61,5 @@ In order to control a given valve run the following code in a new terminal windo
     rosservice call /actuator_driver/actuate "actuator: 'NAME' opened: true" 
 
 Replacing `NAME` with the desired actuator from the list above. For `Set` valves, set opened to `true` or `false` to open or close the valve. For `Pulse` valves calling the service will pulse the valve.
+
+For troubleshooting there is a rosservice called /actuator_driver/actuate_raw that can be called in the same fashion as above but with the `port_id` instead of `NAME`.
