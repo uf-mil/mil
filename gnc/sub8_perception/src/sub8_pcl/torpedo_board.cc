@@ -18,7 +18,7 @@ try : image_transport(nh), rviz(viz_topic.empty()? "/visualization/torpedo_board
   left_image_sub = image_transport.subscribeCamera(img_topic_left, 1, &Sub8TorpedoBoardDetector::left_image_callback, this);
   right_image_sub = image_transport.subscribeCamera(img_topic_right, 1, &Sub8TorpedoBoardDetector::right_image_callback, this);
   std::stringstream log_msg;
-  log_msg << "Torpedo Board Detector camera subscriptions:" << std::left << std::endl
+  log_msg << "Torpedo Board Detector subscriptions:" << std::left << std::endl
           << std::setw(7) << "" << std::setw(8) << " left  = " << img_topic_left << std::endl 
           << std::setw(7) << "" << std::setw(8) << " right = " << img_topic_right;
   ROS_INFO(log_msg.str().c_str());
@@ -27,12 +27,8 @@ try : image_transport(nh), rviz(viz_topic.empty()? "/visualization/torpedo_board
   service = nh.advertiseService(service_name, &Sub8TorpedoBoardDetector::request_torpedo_board_position, this);
   log_msg.str(""); 
   log_msg.clear();
-  log_msg << "Advertisied Service: " << service_name;
+  log_msg << "Advertisied Service:" << std::left  << std::endl << std::setw(7) << "" << service_name;
   ROS_INFO(log_msg.str().c_str());
-  ROS_INFO("Sub8TorpedoBoardDetector Initialized");
-
-  // Advertize debug image topic
-  debug_image_pub = image_transport.advertise("dbg_imgs/torpedo_board", 1 , true);
 
   // Set image processing scale
   image_proc_scale =  im_proc_scale == 0? 0.5 : im_proc_scale;
@@ -41,6 +37,15 @@ try : image_transport(nh), rviz(viz_topic.empty()? "/visualization/torpedo_board
   log_msg << "Image Processing Scale: " << image_proc_scale;
   ROS_INFO(log_msg.str().c_str());
 
+  
+  // Advertize debug image topic
+  debug_image_pub = image_transport.advertise("/dbg_imgs/torpedo_board", 1 , true);
+  log_msg.str(""); 
+  log_msg.clear();
+  log_msg << "Advertisied debug image topic:" << std::left  << std::endl << std::setw(7) << "" << "/dbg_imgs/torpedo_board";
+  ROS_INFO(log_msg.str().c_str());
+  
+  // Setup debug image quadrants
   cv::Size input_frame_size(644, 482); // This needs to be changed if we ever change the camera settings for frame size
   cv::Size processing_size(cvRound(image_proc_scale * input_frame_size.width), cvRound(image_proc_scale * input_frame_size.height));
   cv::Size dbg_img_size(processing_size.width * 2, processing_size.height * 2);
@@ -50,6 +55,7 @@ try : image_transport(nh), rviz(viz_topic.empty()? "/visualization/torpedo_board
   lower_left = cv::Rect(cv::Point(0, processing_size.height), processing_size);
   lower_right = cv::Rect(cv::Point(processing_size.width, processing_size.height), processing_size);
 
+  ROS_INFO("Sub8TorpedoBoardDetector Initialized");
 }
 catch(const std::exception &e){
   ROS_ERROR("Exception from within Sub8TorpedoBoardDetector constructor initializer list: ");
@@ -104,6 +110,10 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
     return;
   }
 
+  // cv::imshow("dbg_left", current_image_left);
+  // cv::imshow("dbg_right", current_image_right);
+  // cv::waitKey(1);
+
 
   if(generate_dbg_img){
     std::cout << "processing img depth:" << processing_size_image_left.channels() << "dbg_img depth:" << debug_image.channels() << std::endl;
@@ -120,10 +130,10 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
   // Segment Board and find image coordinates of board corners
   cv::Mat left_segment_dbg_img, right_segment_dbg_img;
   sub::Contour board_corners_left, board_corners_right;
-  segment_board(processing_size_image_left, segmented_board_left, left_segment_dbg_img, true);
-  segment_board(processing_size_image_right, segmented_board_right, right_segment_dbg_img);
-  bool found_left = find_board_corners(segmented_board_left, board_corners_left);
-  bool found_right = find_board_corners(segmented_board_right, board_corners_right);
+  segment_board(processing_size_image_left, segmented_board_left, left_segment_dbg_img);
+  segment_board(processing_size_image_right, segmented_board_right, right_segment_dbg_img, true);
+  bool found_left = find_board_corners(segmented_board_left, board_corners_left, true);
+  bool found_right = find_board_corners(segmented_board_right, board_corners_right, false);
   if(!found_left || !found_right){
     resp.found = false;
     resp.pose.header.stamp = ros::Time::now();
@@ -131,68 +141,96 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
     return;
   }
   else{
-    ROS_DEBUG("Detected torpedo board");
+    ROS_DEBUG("Was able to generate 4 corners, more analysis needed to determine if they belong to the torpedo board.");
   }
 
-  std::cout << "left corners:" << std::endl;
+  // Match corresponding corner coordinates from left and right images
+  typedef std::pair<cv::Point, cv::Point> PointCorrespondence2i;
+  std::vector<PointCorrespondence2i> corresponding_corners_std;
   BOOST_FOREACH(cv::Point left_corner, board_corners_left){
-    std::cout << left_corner << std::endl;
+    double min_distance = std::numeric_limits<double>::infinity();
+    int matching_right_idx = 0;
+    for(size_t j = 0; j < board_corners_right.size(); j++){
+      cv::Point2d diff = left_corner - board_corners_right[j];
+      double distance = sqrt(pow(diff.x, 2.0) + pow(diff.y, 2.0));
+      if(distance < min_distance){
+        min_distance = distance;
+        matching_right_idx = j;
+      }
+    }
+    corresponding_corners_std.push_back(PointCorrespondence2i(left_corner, board_corners_right[matching_right_idx]));
+    std::cout << "Matching Pair : " << corresponding_corners_std[corresponding_corners_std.size() -1].first << " | " << corresponding_corners_std[corresponding_corners_std.size() -1].second << std::endl;
   }
-  std::cout << "right corners:" << std::endl;
-  BOOST_FOREACH(cv::Point right_corner, board_corners_right){
-    std::cout << right_corner << std::endl;
-  }
+
+  // Color code corner point correspondences on debug image
+  if(generate_dbg_img){
+    for(int i = 0; i < 4; i++){
+      cv::Mat ll_dbg_img = debug_image(lower_left);
+      cv::Mat lr_dbg_img = debug_image(lower_right);
+      cv::Point left_img_corner = corresponding_corners_std[i].first * image_proc_scale;
+      cv::Point right_img_corner = corresponding_corners_std[i].second * image_proc_scale;
+      cv::Scalar color(0, 0, 0);
+      switch(i){
+        case 0:
+          cv::circle(ll_dbg_img, left_img_corner, ll_dbg_img.rows / 50.0, color, -1);
+          cv::circle(lr_dbg_img, right_img_corner, ll_dbg_img.rows / 50.0, color, -1);
+          break;
+        case 1:
+          color = cv::Scalar(0, 0, 255);
+          cv::circle(ll_dbg_img, left_img_corner, ll_dbg_img.rows / 50.0, color, -1);
+          cv::circle(lr_dbg_img, right_img_corner, ll_dbg_img.rows / 50.0, color, -1);
+          break;
+        case 2:
+          color = cv::Scalar(0, 255, 0);
+          cv::circle(ll_dbg_img, left_img_corner, ll_dbg_img.rows / 50.0, color, -1);
+          cv::circle(lr_dbg_img, right_img_corner, ll_dbg_img.rows / 50.0, color, -1);
+          break;
+        case 3:
+          color = cv::Scalar(255, 0, 0);
+          cv::circle(ll_dbg_img, left_img_corner, ll_dbg_img.rows / 50.0, color, -1);
+          cv::circle(lr_dbg_img, right_img_corner, ll_dbg_img.rows / 50.0, color, -1);
+          break;
+        }
+      }
+    }
+
 
   // Get camera projection matrices
   cv::Matx34d P_L_cv = left_cam_model.fullProjectionMatrix();
   cv::Matx34d P_R_cv = right_cam_model.fullProjectionMatrix();
   cv::Matx33d rot_right_cv = right_cam_model.rotationMatrix();    // angle of rotation is only 0.03 radians, is this even significant?
 
-  // Convert corner coordinates to normalized image coordinates
+  // Convert corner coordinates from standard to normalized image coordinates
   cv::Matx33d K_left = left_cam_model.fullIntrinsicMatrix();
   cv::Matx33d K_right = right_cam_model.fullIntrinsicMatrix();
   cv::Matx33d Kinv_left = K_left.inv();
   cv::Matx33d Kinv_right = K_right.inv();
   std::vector<cv::Point2d> left_corners_norm_img_coords;
   std::vector<cv::Point2d> right_corners_norm_img_coords;
-  std::cout << "left corners normalized" << std::endl;
-  BOOST_FOREACH(cv::Point2d left_corner, board_corners_left){
-    cv::Matx31d left_corner_hom(left_corner.x, left_corner.y, 1);
-    cv::Matx31d left_corner_hom_normalized = Kinv_left * left_corner_hom;
-    std::cout << left_corner_hom_normalized << std::endl;
-    double x = left_corner_hom_normalized(0) / left_corner_hom_normalized(2);
-    double y = left_corner_hom_normalized(1) / left_corner_hom_normalized(2);
-    left_corners_norm_img_coords.push_back(cv::Point2d(x, y));
-  }
-  std::cout << "right corners normalized" << std::endl;
-  BOOST_FOREACH(cv::Point2d right_corner, board_corners_right){
-    cv::Matx31d right_corner_hom(right_corner.x, right_corner.y, 1);
-    cv::Matx31d right_corner_hom_normalized = Kinv_right * right_corner_hom;
-    std::cout << right_corner_hom_normalized << std::endl;
-    double x = right_corner_hom_normalized(0) / right_corner_hom_normalized(2);
-    double y = right_corner_hom_normalized(1) / right_corner_hom_normalized(2);
-    right_corners_norm_img_coords.push_back(cv::Point2d(x, y));
-  }
+  std::cout << "Corners in normalized image coordinates:\nleft <--> right" << std::endl;
+  typedef std::pair<cv::Point2d, cv::Point2d> PointCorrespondence2d;
+  std::vector<PointCorrespondence2d> corresponding_corners_normalized;
+  BOOST_FOREACH(PointCorrespondence2i matching_corners, corresponding_corners_std){
+    cv::Matx31d left_corner_hom_std(matching_corners.first.x, matching_corners.first.y, 1);
+    cv::Matx31d left_corner_hom_normalized = Kinv_left * left_corner_hom_std;
+    cv::Matx31d right_corner_hom_std(matching_corners.second.x, matching_corners.second.y, 1);
+    cv::Matx31d right_corner_hom_normalized = Kinv_right * right_corner_hom_std;
 
-  // Match corresponding corner coordinates from both images
-  std::vector< std::pair<cv::Point2d, cv::Point2d> > corresponding_corners;
-  BOOST_FOREACH(cv::Point2d left_corner, left_corners_norm_img_coords){
-    double min_distance = std::numeric_limits<double>::infinity();
-    int matching_idx = 0;
-    for(size_t j = 0; j < right_corners_norm_img_coords.size(); j++){
-      cv::Point2d diff = left_corner - right_corners_norm_img_coords[j];
-      double distance = sqrt(pow(diff.x, 2.0) + pow(diff.y, 2.0));
-      if(distance < min_distance){
-        min_distance = distance;
-        matching_idx = j;
-      }
-    }
-    corresponding_corners.push_back(std::pair<cv::Point2d, cv::Point2d>(left_corner, right_corners_norm_img_coords[matching_idx]));
-    std::cout << "Matching Pair : " << corresponding_corners[corresponding_corners.size() -1].first << " | " << corresponding_corners[corresponding_corners.size() -1].second << std::endl;
+    double left_x = left_corner_hom_normalized(0) / left_corner_hom_normalized(2);
+    double left_y = left_corner_hom_normalized(1) / left_corner_hom_normalized(2);
+    double right_x = right_corner_hom_normalized(0) / right_corner_hom_normalized(2);
+    double right_y = right_corner_hom_normalized(1) / right_corner_hom_normalized(2);
+
+    cv::Point2d left_corner_normalized(left_x, left_y);
+    cv::Point2d right_corner_normalized(right_x, right_y);
+
+    std::cout << left_corner_normalized << " <--> " << right_corner_normalized << std::endl;
+    corresponding_corners_normalized.push_back(PointCorrespondence2d(left_corner_normalized, right_corner_normalized));
   }
 
    // Get fundamental matrix, derivation in section 9.2.2 of The Bible
   cv::Mat P_L_cv_mat = cv::Mat(P_L_cv);
+  cv::Mat P_R_cv_mat = cv::Mat(P_R_cv);
   cv::Mat rot_right_cv_mat = cv::Mat(rot_right_cv);
   cv::Mat P_L_inv_cv_mat;
   cv::invert(P_L_cv_mat, P_L_inv_cv_mat, cv::DECOMP_SVD);
@@ -215,11 +253,13 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
 
   // Reconstruct 3d corners from corresponding image points
   std::vector<Eigen::Vector3d> corners_3d;
-  for(size_t i = 0; i < corresponding_corners.size(); i++){
+  for(size_t i = 0; i < corresponding_corners_normalized.size(); i++){
     cv::Point2d pt_L, pt_R;
-    pt_L = corresponding_corners[i].first;
-    pt_R = corresponding_corners[i].second;
-    Eigen::Vector3d current_corner = sub::triangulate_image_coordinates(pt_L, pt_R, essential_eigen, rot_right);
+    // pt_L = corresponding_corners_std[i].first;
+    // pt_R = corresponding_corners_std[i].second;
+    pt_L = corresponding_corners_normalized[i].first;
+    pt_R = corresponding_corners_normalized[i].second;
+    Eigen::Vector3d current_corner = sub::kanatani_triangulation(pt_L, pt_R, essential_eigen, rot_right);
     corners_3d.push_back(current_corner);
   }
 
@@ -336,7 +376,7 @@ void Sub8TorpedoBoardDetector::segment_board(const cv::Mat &src, cv::Mat &dest, 
 }
 
 
-bool Sub8TorpedoBoardDetector::find_board_corners(const cv::Mat &segmented_board, sub::Contour &corners, bool draw_dbg_img){
+bool Sub8TorpedoBoardDetector::find_board_corners(const cv::Mat &segmented_board, sub::Contour &corners, bool draw_dbg_left){
   bool corners_success = false;
   cv::Mat convex_hull_working_img = segmented_board.clone();
   std::vector<sub::Contour> contours, connected_contours;
@@ -353,16 +393,18 @@ bool Sub8TorpedoBoardDetector::find_board_corners(const cv::Mat &segmented_board
   if(contours.size() < 2){    // prevent out of range access of contours
     corners_success = false;
     return corners_success;
-
-    if(draw_dbg_img){
-      // cv::Mat ll_mat = debug_image(lower_left);
-      // cv::Mat lr_mat = debug_image(lower_right);
-      // cv::drawContours(ll_mat, contours, -1, cv::Scalar(255, 255, 255), 2);
-      // cv::drawContours(lr_mat, contours, -1, cv::Scalar(255, 255, 255), 2);
-    }
   }
 
-
+  // Draw preliminary edge of torpedo_board on debug_image
+  if(generate_dbg_img){
+    if(draw_dbg_left){  // Draw on lower left quadrant
+      cv::drawContours(debug_image(lower_left), contours, -1, cv::Scalar(255, 255, 255), 2);
+    }
+    else{               // Draw on lower right quadrant
+      cv::drawContours(debug_image(lower_right), contours, -1, cv::Scalar(255, 255, 255), 2);
+    }
+    // cv::imshow("dbg_img", debug_image); cv::waitKey(10);
+  }
 
   // Connect yellow pannels
   cv::Point pt1 = sub::contour_centroid(contours[0]);

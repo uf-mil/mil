@@ -35,7 +35,7 @@ public:
   bool request_torpedo_board_position(sub8_msgs::VisionRequest::Request &req,
                              sub8_msgs::VisionRequest::Response &resp);
   void segment_board(const cv::Mat &src, cv::Mat &dest, cv::Mat &dbg_img, bool draw_dbg_img = false);
-  bool find_board_corners(const cv::Mat &segmented_board, sub::Contour &corners, bool draw_dbg_img = false);
+  bool find_board_corners(const cv::Mat &segmented_board, sub::Contour &corners, bool draw_dbg_left = true);
   double image_proc_scale;
 private:
   ros::NodeHandle nh;
