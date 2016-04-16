@@ -144,9 +144,9 @@ unsigned int select_hist_mode(std::vector<cv::Point> &histogram_modes, int targe
 }
 
 
-void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, const int hist_size,
+void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, cv::Mat &debug_img, const int hist_size,
         							const float** ranges, const int target, std::string image_name, 
-        							const float sigma, const float low_thresh_gain, const float high_thresh_gain)
+        							bool ret_dbg_img, const float sigma, const float low_thresh_gain, const float high_thresh_gain)
 {
 	// Calculate histogram
 	cv::MatND hist, hist_smooth, hist_derivative;
@@ -168,12 +168,12 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, const int
 
 	// Find target mode
 #ifdef SEGMENTATION_DEBUG
-	std::cout << boost::format("Target: %1%") % target;
+	std::cout << "Target: " << target << std::endl;
 #endif
 	std::vector<cv::Point> histogram_modes = sub::find_local_maxima(hist_smooth, 0.1);
 	int target_mode = sub::select_hist_mode(histogram_modes, target);
 #ifdef SEGMENTATION_DEBUG
-	std::cout << boost::format("Mode Selected: %1%") % target_mode;
+	std::cout << "Mode Selected: " << target_mode << std::endl;
 #endif
 
 	// Calculate std dev of histogram slopes
@@ -191,7 +191,7 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, const int
 #endif
 	for(size_t i = 0; i < derivative_minima.size(); i++){
 #ifdef SEGMENTATION_DEBUG
-		std::cout << boost::format("derivative_minima[%1%].x = %2%  target_mode = %3%") % i % derivative_minima[i].x %  target_mode << std::endl;
+		std::cout << "derivative_minima[" << i << "].x = " << derivative_minima[i].x << "  target_mode = " << target_mode << std::endl;
 #endif
 		if(derivative_minima[i].x > target_mode){
 			high_thresh_search_start = derivative_minima[i].x;
@@ -206,7 +206,7 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, const int
 #endif
 	for(int i = derivative_maxima.size() - 1; i >= 0; i--){
 #ifdef SEGMENTATION_DEBUG
-		std::cout << boost::format("derivative_maxima[%1%].x = %2%  target_mode = %3%") % i % derivative_maxima[i].x %  target_mode << std::endl;
+		std::cout << "derivative_maxima[" << i << "].x = " << derivative_maxima[i].x << "  target_mode = " << target_mode << std::endl;
 #endif
 		if(derivative_maxima[i].x < target_mode){
 			low_thresh_search_start = derivative_maxima[i].x;
@@ -249,10 +249,10 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, const int
 #ifdef SEGMENTATION_DEBUG
 	std::cout << "low_thresh = " << low_thresh << std::endl;
 	std::cout << std::endl;
-	std::string ros_log = 
-		( boost::format("Target: %1%\nClosest distribution mode: %2%  Thresholds selected:  low=%3%  high=%4%")
-		% target % target_mode % low_thresh % high_thresh ).str() ;
-	ROS_INFO(ros_log.c_str());
+	std::stringstream ros_log;
+	ros_log << "Target: " << target << "\nClosest distribution mode: " <<  target_mode << " Thresholds selected:  low=" 
+			<< low_thresh << "  high=" << high_thresh;
+	ROS_INFO(ros_log.str().c_str());
 #endif
 
 	// Threshold image
@@ -267,48 +267,56 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, const int
 	cv::erode(dest, dest, structuring_element);
 
 
-#ifdef VISUALIZE
-	// Prepare to draw graph of histogram and derivative
-	int hist_w = 512; int hist_h = 400;
-	int bin_w = cvRound( (double) hist_w/hist_size );
-	cv::Mat histImage( hist_h, hist_w, CV_8UC1, cv::Scalar( 0,0,0) );
-	cv::Mat histDerivImage( hist_h, hist_w, CV_8UC1, cv::Scalar( 0,0,0) );
-	cv::normalize(hist_smooth, hist_smooth, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat() );
-	cv::normalize(hist_derivative, hist_derivative, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat() );
+	if(ret_dbg_img){
+		// Prepare to draw graph of histogram and derivative
+		int hist_w = src.cols; int hist_h = src.rows;
+		int bin_w = cvRound( (double) hist_w/hist_size );
+		cv::Mat histImage( hist_h, hist_w, CV_8UC1, cv::Scalar( 0,0,0) );
+		cv::Mat histDerivImage( hist_h, hist_w, CV_8UC1, cv::Scalar( 0,0,0) );
+		cv::normalize(hist_smooth, hist_smooth, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat() );
+		cv::normalize(hist_derivative, hist_derivative, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat() );
 
-	// Draw Graphs
-	for( int i = 1; i < hist_size; i++ )
-	{
-	// Plot image histogram
-	cv::line( histImage, cv::Point( bin_w*(i-1), hist_h - cvRound(hist_smooth.at<float>(i-1)) ) ,
-	                 cv::Point( bin_w*(i), hist_h - cvRound(hist_smooth.at<float>(i)) ),
-	                 cv::Scalar( 255, 0, 0), 2, 8, 0  );
-	// Plot image histogram derivative
-	cv::line( histDerivImage, cv::Point( bin_w*(i-1), hist_h - cvRound(hist_derivative.at<float>(i-1)) ) ,
-	                 cv::Point( bin_w*(i), hist_h - cvRound(hist_derivative.at<float>(i)) ),
-	                 cv::Scalar( 122, 0, 0), 1, 8, 0  );
+		// Draw Graphs
+		for( int i = 1; i < hist_size; i++ )
+		{
+		// Plot image histogram
+		cv::line( histImage, cv::Point( bin_w*(i-1), hist_h - cvRound(hist_smooth.at<float>(i-1)) ) ,
+		                 cv::Point( bin_w*(i), hist_h - cvRound(hist_smooth.at<float>(i)) ),
+		                 cv::Scalar( 255, 0, 0), 2, 8, 0  );
+		// Plot image histogram derivative
+		cv::line( histDerivImage, cv::Point( bin_w*(i-1), hist_h - cvRound(hist_derivative.at<float>(i-1)) ) ,
+		                 cv::Point( bin_w*(i), hist_h - cvRound(hist_derivative.at<float>(i)) ),
+		                 cv::Scalar( 122, 0, 0), 1, 8, 0  );
+		}
+
+		// Shade in area being segmented under histogram curve
+		cv::line( histImage, cv::Point( bin_w*low_thresh, hist_h - cvRound(hist_smooth.at<float>(low_thresh)) ) ,
+		                 cv::Point( bin_w*low_thresh, hist_h), cv::Scalar( 125, 0, 0),2);
+		cv::line( histImage, cv::Point( bin_w*high_thresh, hist_h - cvRound(hist_smooth.at<float>(high_thresh)) ) ,
+	                 cv::Point( bin_w*high_thresh, hist_h), cv::Scalar( 125, 0, 0),2);
+		cv::floodFill(histImage, cv::Point(bin_w * cvRound(float(low_thresh + high_thresh) / 2.0), hist_h - 1), cv::Scalar(155));
+
+		// Combine graphs into one image and display results
+		cv::Mat segmentation_channel = cv::Mat::zeros(histImage.size(), CV_8UC1);
+		std::vector<cv::Mat> debug_img_channels;
+		debug_img_channels.push_back(histImage); 
+		debug_img_channels.push_back(histDerivImage);
+		debug_img_channels.push_back(dest * 0.25);
+		cv::merge(debug_img_channels, debug_img);
+		cv::Point text_upper_left(debug_img.cols / 2.0, debug_img.rows / 10.0);
+		std::string text_ln1 = image_name;
+		std::stringstream text_ln2;
+		text_ln2 << "low = " << low_thresh;
+		std::stringstream text_ln3;
+		text_ln3 << "high = " << high_thresh;
+		int font = cv::FONT_HERSHEY_SIMPLEX;
+		double font_scale = debug_img.rows / 480.0;
+		cv::Point vert_offset = cv::Point(0, debug_img.rows / 10.0);
+		cv::Scalar text_color(255, 255, 255);
+		cv::putText(debug_img, text_ln1, text_upper_left, font, font_scale, text_color);
+		cv::putText(debug_img, text_ln2.str(), text_upper_left + vert_offset, font, font_scale, text_color);
+		cv::putText(debug_img, text_ln3.str(), text_upper_left + vert_offset + vert_offset, font, font_scale, text_color);
 	}
-
-	// Shade in area being segmented under histogram curve
-	cv::line( histImage, cv::Point( bin_w*low_thresh, hist_h - cvRound(hist_smooth.at<float>(low_thresh)) ) ,
-	                 cv::Point( bin_w*low_thresh, hist_h), cv::Scalar( 125, 0, 0),2);
-	cv::line( histImage, cv::Point( bin_w*high_thresh, hist_h - cvRound(hist_smooth.at<float>(high_thresh)) ) ,
-                 cv::Point( bin_w*high_thresh, hist_h), cv::Scalar( 125, 0, 0),2);
-	cv::floodFill(histImage, cv::Point(bin_w*cvRound(float(low_thresh + high_thresh) / 2.0), hist_h - 1), cv::Scalar(125));
-
-	// Combine graphs into one image and display results
-	cv::Mat segmentation_channel = cv::Mat::zeros(histImage.size(), CV_8UC1);
-	cv::Rect upper_right_corner = cv::Rect(histImage.cols - dest.cols - 1, 0, dest.cols, dest.rows);
-	dest.copyTo(segmentation_channel(upper_right_corner));
-	segmentation_channel = segmentation_channel * 0.3;
-	std::vector<cv::Mat> debug_img_channels;
-	debug_img_channels.push_back(histImage); 
-	debug_img_channels.push_back(histDerivImage);
-	debug_img_channels.push_back(segmentation_channel);
-	cv::Mat debug_img;
-	cv::merge(debug_img_channels, debug_img);
-	cv::imshow((boost::format("Statistical Image Segmentation(%1%)") % image_name).str(), debug_img );
-#endif
 }
 
 
