@@ -97,7 +97,7 @@ class AlarmListener(object):
     '''
     Listens for alarms (similar to a TF listener) but can have a callback function (like a ros subscriber).
 
-    If an alarm with the 'alarm_name' is triggered, it (as well as an optional 'args') will be passed 
+    If an alarm with the 'alarm_name' is triggered, it (as well as an optional 'args') will be passed
     to the 'callback_funct'.
     '''
     def __init__(self, alarm_name=None, callback_funct=None, args=None):
@@ -106,8 +106,10 @@ class AlarmListener(object):
         self.callback_linker = {}
 
         if alarm_name is not None and callback_funct is not None:
-            self.callback_linker[alarm_name] = {'callback':callback_funct,
-                                                    'args':args}
+            self.callback_linker[alarm_name] = {
+                'callback': callback_funct,
+                'args': args
+            }
 
         rospy.Subscriber('/alarm', Alarm, self.check_alarm, queue_size=100)
 
@@ -115,8 +117,10 @@ class AlarmListener(object):
         '''
         Creates a new alarm listener and links it to a callback function.
         '''
-        self.callback_linker[alarm_name] = {'callback':callback_funct,
-                                                'args':args}
+        self.callback_linker[alarm_name] = {
+            'callback': callback_funct,
+            'args': args
+        }
 
     def check_alarm(self, alarm):
         '''
@@ -127,13 +131,13 @@ class AlarmListener(object):
             found_alarm = self.callback_linker[alarm.alarm_name]
         except KeyError:
             # These are not the alarms we are looking for.
-            #print "Not Found."
+            # print "Not Found."
             return
 
         callback = found_alarm['callback']
         args = found_alarm['args']
 
-        #Actaully call the callback function and pass args if nessicary.
+        # Actaully call the callback function and pass args if nessicary.
         if args is None:
             callback(alarm)
         else:
