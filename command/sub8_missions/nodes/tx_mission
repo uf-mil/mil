@@ -39,7 +39,6 @@ def main():
 
         if args.test:
             sub.set_test_mode()
-
         else:
             print 'Mission runner waiting for pose to be available'
             yield sub.last_pose()

@@ -2,6 +2,7 @@
 from __future__ import division
 import numpy as np
 from twisted.internet import defer
+from tf import transformations
 from txros import action, util, tf, serviceclient
 from uf_common.msg import MoveToAction, PoseTwistStamped, Float64Stamped
 from uf_common import orientation_helpers
@@ -54,16 +55,21 @@ class VisionProxy(object):
 
 
 class _PoseProxy(object):
-    def __init__(self, sub, pose):
+    def __init__(self, sub, pose, print_only=False):
         self._sub = sub
         self._pose = pose
+        self.print_only = print_only
 
     def __getattr__(self, name):
         def sub_attr_proxy(*args, **kwargs):
-            return _PoseProxy(self._sub, getattr(self._pose, name)(*args, **kwargs))
+            return _PoseProxy(self._sub, getattr(self._pose, name)(*args, **kwargs), print_only=self.print_only)
         return sub_attr_proxy
 
     def go(self, *args, **kwargs):
+        if self.print_only:
+            print 'P: {}, Angles: {}'.format(self._pose.position, transformations.euler_from_quaternion(self._pose.orientation))
+            return self._sub._node_handle.sleep(0.1)
+
         goal = self._sub._moveto_action_client.send_goal(self._pose.as_MoveToGoal(*args, **kwargs))
         return goal.get_result()
 
@@ -90,12 +96,18 @@ class _Sub(object):
         self.buoy = VisionProxy('vision/buoys', self._node_handle)
         defer.returnValue(self)
 
+        self.test_mode = False
+
+    def set_test_mode(self):
+        self.test_mode = True
+
     @property
     def pose(self):
         # @forrest: Why trajectory -> last message and not odom??
-        # last_pose_msg = self._trajectory_sub.get_last_message()
-        # pose = orientation_helpers.PoseEditor.from_PoseTwistStamped(last_pose_msg)
+        # TODO: Make test mode actually change the position of the sub
         last_odom_msg = self._odom_sub.get_last_message()
+        if self.test_mode:
+            last_odom_msg = Odometry()  # All 0's
         pose = orientation_helpers.PoseEditor.from_Odometry(last_odom_msg)
         return pose
 
@@ -106,7 +118,7 @@ class _Sub(object):
 
     @property
     def move(self):
-        return _PoseProxy(self, self.pose)
+        return _PoseProxy(self, self.pose, self.test_mode)
 
     @util.cancellableInlineCallbacks
     def get_dvl_range(self):
