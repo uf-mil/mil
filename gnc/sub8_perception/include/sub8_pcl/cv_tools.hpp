@@ -13,7 +13,6 @@
 #include <Eigen/SVD>
 
 #include <boost/foreach.hpp>
-#include <boost/format.hpp>
 
 #include <opencv2/opencv.hpp>
 
@@ -60,9 +59,9 @@ unsigned int select_hist_mode(std::vector<cv::Point> &histogram_modes, unsigned 
 // Takes in a grayscale image and segments out a semi-homogenous foreground object with
 // pixel intensities close to <target>. Tuning of last three parameters may imrove
 // results but default values should work well in most cases.
-void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, const int hist_size,
+void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, cv::Mat &debug_img, const int hist_size,
                                     const float **ranges, const int target, std::string image_name,
-                                    const float sigma = 1.5, const float low_thresh_gain = 0.5,
+                                    bool ret_dbg_img = false, const float sigma = 1.5, const float low_thresh_gain = 0.5,
                                     const float high_thresh_gain = 0.5);
 
 Eigen::Vector3d triangulate_image_coordinates(const cv::Point2d &pt1, const cv::Point2d &pt2,
