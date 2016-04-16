@@ -64,9 +64,13 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, cv::Mat &
                                     bool ret_dbg_img = false, const float sigma = 1.5, const float low_thresh_gain = 0.5,
                                     const float high_thresh_gain = 0.5);
 
-Eigen::Vector3d triangulate_image_coordinates(const cv::Point2d &pt1, const cv::Point2d &pt2,
-                                              const Eigen::Matrix3d &fundamental,
-                                              const Eigen::Matrix3d &R);
+cv::Mat triangulate_Linear_LS(cv::Mat mat_P_l, cv::Mat mat_P_r, cv::Mat undistorted_l, cv::Mat undistorted_r);
+
+Eigen::Vector3d kanatani_triangulation(const cv::Point2d &pt1, const cv::Point2d &pt2, 
+                        const Eigen::Matrix3d &essential, const Eigen::Matrix3d &R);
+
+Eigen::Vector3d lindstrom_triangulation(const cv::Point2d &pt1, const cv::Point2d &pt2,
+                                        const Eigen::Matrix3d &essential, const Eigen::Matrix3d &R);
 
 struct ImageWithCameraInfo {
   /**

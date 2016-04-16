@@ -319,15 +319,80 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, cv::Mat &
 	}
 }
 
+cv::Mat triangulate_Linear_LS(cv::Mat mat_P_l, cv::Mat mat_P_r, cv::Mat undistorted_l, cv::Mat undistorted_r)
+{
+    cv::Mat A(4,3,CV_64FC1), b(4,1,CV_64FC1), X(3,1,CV_64FC1), X_homogeneous(4,1,CV_64FC1), W(1,1,CV_64FC1);
+    W.at<double>(0,0) = 1.0;
+    A.at<double>(0,0) = (undistorted_l.at<double>(0,0)/undistorted_l.at<double>(2,0))*mat_P_l.at<double>(2,0) - mat_P_l.at<double>(0,0);
+    A.at<double>(0,1) = (undistorted_l.at<double>(0,0)/undistorted_l.at<double>(2,0))*mat_P_l.at<double>(2,1) - mat_P_l.at<double>(0,1);
+    A.at<double>(0,2) = (undistorted_l.at<double>(0,0)/undistorted_l.at<double>(2,0))*mat_P_l.at<double>(2,2) - mat_P_l.at<double>(0,2);
+    A.at<double>(1,0) = (undistorted_l.at<double>(1,0)/undistorted_l.at<double>(2,0))*mat_P_l.at<double>(2,0) - mat_P_l.at<double>(1,0);
+    A.at<double>(1,1) = (undistorted_l.at<double>(1,0)/undistorted_l.at<double>(2,0))*mat_P_l.at<double>(2,1) - mat_P_l.at<double>(1,1);
+    A.at<double>(1,2) = (undistorted_l.at<double>(1,0)/undistorted_l.at<double>(2,0))*mat_P_l.at<double>(2,2) - mat_P_l.at<double>(1,2);
+    A.at<double>(2,0) = (undistorted_r.at<double>(0,0)/undistorted_r.at<double>(2,0))*mat_P_r.at<double>(2,0) - mat_P_r.at<double>(0,0);
+    A.at<double>(2,1) = (undistorted_r.at<double>(0,0)/undistorted_r.at<double>(2,0))*mat_P_r.at<double>(2,1) - mat_P_r.at<double>(0,1);
+    A.at<double>(2,2) = (undistorted_r.at<double>(0,0)/undistorted_r.at<double>(2,0))*mat_P_r.at<double>(2,2) - mat_P_r.at<double>(0,2);
+    A.at<double>(3,0) = (undistorted_r.at<double>(1,0)/undistorted_r.at<double>(2,0))*mat_P_r.at<double>(2,0) - mat_P_r.at<double>(1,0);
+    A.at<double>(3,1) = (undistorted_r.at<double>(1,0)/undistorted_r.at<double>(2,0))*mat_P_r.at<double>(2,1) - mat_P_r.at<double>(1,1);
+    A.at<double>(3,2) = (undistorted_r.at<double>(1,0)/undistorted_r.at<double>(2,0))*mat_P_r.at<double>(2,2) - mat_P_r.at<double>(1,2);
+    b.at<double>(0,0) = -((undistorted_l.at<double>(0,0)/undistorted_l.at<double>(2,0))*mat_P_l.at<double>(2,3) - mat_P_l.at<double>(0,3));
+    b.at<double>(1,0) = -((undistorted_l.at<double>(1,0)/undistorted_l.at<double>(2,0))*mat_P_l.at<double>(2,3) - mat_P_l.at<double>(1,3));
+    b.at<double>(2,0) = -((undistorted_r.at<double>(0,0)/undistorted_r.at<double>(2,0))*mat_P_r.at<double>(2,3) - mat_P_r.at<double>(0,3));
+    b.at<double>(3,0) = -((undistorted_r.at<double>(1,0)/undistorted_r.at<double>(2,0))*mat_P_r.at<double>(2,3) - mat_P_r.at<double>(1,3));
+    solve(A, b, X, cv::DECOMP_SVD);
+    vconcat(X,W,X_homogeneous);
+    return X_homogeneous;
+}
 
-Eigen::Vector3d triangulate_image_coordinates(const cv::Point2d &pt1, const cv::Point2d &pt2, 
-												const Eigen::Matrix3d &essential, const Eigen::Matrix3d &R){
+Eigen::Vector3d kanatani_triangulation(const cv::Point2d &pt1, const cv::Point2d &pt2, 
+									   const Eigen::Matrix3d &essential, const Eigen::Matrix3d &R){
+	/*
+		K. Kanatani, Y. Sugaya, and H. Niitsuma. Triangulation from two views revisited: Hartley-Sturm vs. optimal 
+		correction. In British Machine Vision Conference, page 55, 2008.
+	*/
+	std::cout << "ptL_noisy: " << pt1 << " ptR_noisy: " << pt2 << std::endl;
+	const unsigned int max_iterations = 7;
+	Eigen::Vector3d p1_old(pt1.x, pt1.y, 1.0);
+	Eigen::Vector3d p2_old(pt2.x, pt2.y, 1.0);
+	const Eigen::Vector3d p1_0(pt1.x, pt1.y, 1.0);
+	const Eigen::Vector3d p2_0(pt2.x, pt2.y, 1.0);
+	Eigen::Vector3d p1, p2;
+	Eigen::Vector2d n1, n2, delta_p1, delta_p2, delta_p1_old, delta_p2_old;
+	delta_p1_old << 0.0 ,0.0;
+	delta_p2_old << 0.0 ,0.0;
+	Eigen::Matrix<double, 2, 3> S;
+	S << 1, 0, 0,
+		 0, 1, 0;
+	Eigen::Matrix2d essential_bar = essential.topLeftCorner(2, 2);
+	double lambda;
+	for(unsigned int i = 0; i < max_iterations; i++){
+		n1 = S * (essential * p2_old);
+		n2 = S * (essential.transpose() * p1_old);
+		lambda = ((p1_0.transpose() * essential * p2_0)(0) - (delta_p1_old.transpose() * essential_bar * delta_p2_old)(0)) /
+			(n1.transpose() * n1 + n2.transpose() * n2)(0);
+		delta_p1 = lambda * n1;
+		delta_p2 = lambda * n2;
+		p1 = p1_0 - (S.transpose() * delta_p1);
+		p2 = p2_0 - (S.transpose() * delta_p2);
+		p1_old = p1;
+		p2_old = p2;
+		delta_p1_old = delta_p1;
+		delta_p2_old = delta_p2;
+		std::cout << "ptL_est: [" << p1.transpose() << "] ptR_est: [" << p2.transpose() << "]" << std::endl;
+	}
+	Eigen::Vector3d z = p1.cross(R * p2);
+	Eigen::Vector3d X = ( (z.transpose() * (essential * p2))(0) / (z.transpose() * z)(0) ) * p1;
+	return X;
+}
+
+Eigen::Vector3d lindstrom_triangulation(const cv::Point2d &pt1, const cv::Point2d &pt2, 
+										const Eigen::Matrix3d &essential, const Eigen::Matrix3d &R){
 	/*
 		Optimal triangulation method for two cameras with parallel principal axes
 		Based of off this paper by Peter Lindstrom: https://e-reports-ext.llnl.gov/pdf/384387.pdf  **Listing 2**
 	*/
 	std::cout << "ptL_noisy: " << pt1 << " ptR_noisy: " << pt2 << std::endl;
-	const unsigned int max_iterations = 3;
+	const unsigned int max_iterations = 7;
 	Eigen::Vector3d p1_old(pt1.x, pt1.y, 1.0);
 	Eigen::Vector3d p2_old(pt2.x, pt2.y, 1.0);
 	const Eigen::Vector3d p1_0(pt1.x, pt1.y, 1.0);
@@ -354,8 +419,8 @@ Eigen::Vector3d triangulate_image_coordinates(const cv::Point2d &pt1, const cv::
 		p2 = p2_0 - (S.transpose() * delta_p2);
 		p1_old = p1;
 		p2_old = p2;
+		std::cout << "ptL_est: [" << p1.transpose() << "] ptR_est: [" << p2.transpose() << "]" << std::endl;
 	}
-	std::cout << "ptL_est: [" << p1.transpose() << "] ptR_est: [" << p2.transpose() << "]" << std::endl;
 	Eigen::Vector3d z = p1.cross(R * p2);
 	Eigen::Vector3d X = ( (z.transpose() * (essential * p2))(0) / (z.transpose() * z)(0) ) * p1;
 	return X;
