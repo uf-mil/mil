@@ -6,9 +6,10 @@ Note:
 '''
 import rospy
 import numpy as np
+from os import path
 from cv_bridge import CvBridge, CvBridgeError
-from sensor_msgs.msg import Image
-from sub8_ros_tools import wait_for_param
+from sensor_msgs.msg import Image, CameraInfo
+from sub8_ros_tools.init_helpers import wait_for_param
 
 
 def get_parameter_range(parameter_root):
@@ -66,9 +67,19 @@ class Image_Subscriber(object):
         This behaves like a conventional subscriber, except handling the additional image conversion
         '''
         self.encoding = encoding
+        self.camera_info = None
         self.im_sub = rospy.Subscriber(topic, Image, self.convert, queue_size=queue_size)
+
+        root_topic, image_subtopic = path.split(topic)
+        self.info_sub = rospy.Subscriber(root_topic + '/camera_info', CameraInfo, self.info_cb, queue_size=queue_size)
+
         self.bridge = CvBridge()
         self.callback = callback
+
+    def info_cb(self, msg):
+        """The path trick here is a hack"""
+        self.info_sub.unregister()
+        self.camera_info = msg
 
     def convert(self, data):
         try:

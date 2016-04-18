@@ -51,7 +51,7 @@ class Segmenter(object):
             pass
 
     def segment(self):
-        while(not self.is_done):
+        while(not self.is_done and not rospy.is_shutdown()):
             if cv2.waitKey(50) & 0xFF == ord('q'):
                 break
 
@@ -128,7 +128,7 @@ if __name__ == '__main__':
     )
     thresholder = threshold_tools.make_extent_dialog(ranges=threshold_tools.color_ranges['hsv'], image=hsv)
 
-    while(True):
+    while not rospy.is_shutdown():
         if cv2.waitKey(50) & 0xFF == ord('q'):
             break
 

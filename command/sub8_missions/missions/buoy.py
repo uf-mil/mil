@@ -1,4 +1,5 @@
 from txros import util, tf
+from sub8_ros_tools import clip_norm
 import numpy as np
 
 
@@ -34,19 +35,57 @@ def bump(sub):
 
 
 @util.cancellableInlineCallbacks
-def run(sub):
-    # buoy_search is a Deferred
-    print "We're looking for a buoy"
-    response = yield sub.buoy.get_pose('red')
+def get_buoy_position(sub):
     transform = yield sub._tf_listener.get_transform(
         '/map',
         '/stereo_front',
         response.pose.header.stamp
     )
     tft = tf.Transform.from_Pose_message(response.pose.pose)
-    print transform
+    full_transform = transform * tft
+    util.defer.returnValue(full_transform)
+
+
+@util.cancellableInlineCallbacks
+def run(sub):
+    # buoy_search is a Deferred
+    print "We're looking for a buoy"
+    response = yield sub.buoy.get_pose('red')
+    if not response.found:
+        print 'failed to discover buoy location'
+        return
+    back = sub.move.forward(0.1)
+    transform = yield sub._tf_listener.get_transform(
+        '/map',
+        '/stereo_front',
+        response.pose.header.stamp
+    )
+    tft = tf.Transform.from_Pose_message(response.pose.pose)
     full_transform = transform * tft
     print full_transform._p
-    yield sub.move.set_position(full_transform._p).go()
+    #yield sub.move.set_position(full_transform._p).go()
+    print 'setting height'
+    if full_transform._p[2] > -0.2:
+        print 'Detected buoy above the water'
+        return
+
+    yield sub.move.height(full_transform._p[2]).go(speed=0.2)
+    yield util.wall_sleep(0.2)
+    print 'looking at'
+    yield sub.move.look_at(full_transform._p).go(speed=0.1)
+    print 'position'
+    yield util.wall_sleep(0.2)
+    #go = clip_norm(transform._p, 0.01, )
+    dist = response.pose.pose.position.z
+    print 'd', dist
+    if dist > 1.0:
+        print 'moving forward'
+        yield sub.move.forward(dist - 1.0).go(speed=0.2)
+
+    #yield sub.move.forward(0.2).go(speed=0.1)
+    #yield util.wall_sleep(0.1)
+    yield back.go(speed=0.1)
+    #yield sub.move.forward(
+
 
     print "Bumped the buoy"
