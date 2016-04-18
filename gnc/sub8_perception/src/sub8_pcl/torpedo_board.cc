@@ -64,7 +64,7 @@ catch(const std::exception &e){
 
 
 Sub8TorpedoBoardDetector::~Sub8TorpedoBoardDetector(){
-
+  ROS_INFO("Killed Torpedo Board Detector");
 }
 
 
@@ -72,6 +72,7 @@ void Sub8TorpedoBoardDetector::left_image_callback(const sensor_msgs::ImageConst
                                const sensor_msgs::CameraInfoConstPtr &info_msg_ptr){
   left_most_recent.image_msg_ptr = image_msg_ptr;
   left_most_recent.info_msg_ptr = info_msg_ptr;
+  ROS_DEBUG("Got left image");
 }
 
 
@@ -79,15 +80,20 @@ void Sub8TorpedoBoardDetector::right_image_callback(const sensor_msgs::ImageCons
                                const sensor_msgs::CameraInfoConstPtr &info_msg_ptr){
   right_most_recent.image_msg_ptr = image_msg_ptr;
   right_most_recent.info_msg_ptr = info_msg_ptr;
+  ROS_DEBUG("Got right image");
 }
 
 
 void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::VisionRequest::Response &resp){
-  cv_bridge::CvImagePtr input_bridge;
-  cv::Mat current_image_left, current_image_right, processing_size_image_left, processing_size_image_right, segmented_board_left, segmented_board_right;
+  
+  std::stringstream dbg_str;
 
   // Get the most recent frames and camera info for both cameras
+  cv_bridge::CvImagePtr input_bridge;
+  cv::Mat current_image_left, current_image_right, processing_size_image_left, processing_size_image_right, segmented_board_left, segmented_board_right;
   try {
+
+    // Left Camera
     input_bridge = cv_bridge::toCvCopy(left_most_recent.image_msg_ptr, sensor_msgs::image_encodings::BGR8);
     current_image_left = input_bridge->image;
     left_cam_model.fromCameraInfo(left_most_recent.info_msg_ptr);
@@ -97,6 +103,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
       return;
     }
 
+    // Right Camera
     input_bridge = cv_bridge::toCvCopy(right_most_recent.image_msg_ptr, sensor_msgs::image_encodings::BGR8);
     current_image_right = input_bridge->image;
     right_cam_model.fromCameraInfo(right_most_recent.info_msg_ptr);
@@ -105,25 +112,35 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
       ROS_WARN("The right image topic does not contain a color image. Terminating torpedo board detection.");
       return;
     }
-  } catch (cv_bridge::Exception &ex) {
+  } 
+  catch (cv_bridge::Exception &ex) {
     ROS_ERROR("[torpedo_board] cv_bridge: Failed to convert images");
     return;
   }
 
-  // cv::imshow("dbg_left", current_image_left);
-  // cv::imshow("dbg_right", current_image_right);
-  // cv::waitKey(1);
-
+  // Enforce approximate image synchronization
+  double left_stamp, right_stamp;
+  left_stamp = left_most_recent.image_msg_ptr->header.stamp.toSec();
+  right_stamp = right_most_recent.image_msg_ptr->header.stamp.toSec();
+  if(std::abs(left_stamp - right_stamp) > sync_thresh){
+    ROS_ERROR("Did not get images that were approximately synchronized. Aborting Torpedo Board detection.");
+    debug_image += cv::Scalar(0, 0, 50);
+    return;
+  }
 
   if(generate_dbg_img){
-    std::cout << "processing img depth:" << processing_size_image_left.channels() << "dbg_img depth:" << debug_image.channels() << std::endl;
-    std::cout << "processing img type:" << processing_size_image_left.type() << " dbg_img type:" << debug_image.type() << std::endl;
     try{
       processing_size_image_left.copyTo(debug_image(lower_left));
       processing_size_image_right.copyTo(debug_image(lower_right));
     }
     catch(std::exception& e){
-      std::cout << "Exception thrown from block starting at torpedo_board.cc:108\n" << e.what() << std::endl;
+      std::stringstream error_msg;
+      error_msg << "Exception drawing processing frame on debug image quadrant." << e.what() << std::endl
+                << "processing_size_image_left size: " << processing_size_image_left.size() << " upper_left size: " << upper_left.size() << std::endl
+                << "processing_size_image_right size: " << processing_size_image_right.size() << " upper_right size: " << upper_right.size() << std::endl
+                << "processing img depth:" << processing_size_image_left.channels() << " dbg_img depth:" << debug_image.channels() << std::endl
+                << "processing img type:" << processing_size_image_left.type() << " dbg_img type:" << debug_image.type();
+      ROS_WARN(error_msg.str().c_str());
     }
   }
 
@@ -147,6 +164,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
   // Match corresponding corner coordinates from left and right images
   typedef std::pair<cv::Point, cv::Point> PointCorrespondence2i;
   std::vector<PointCorrespondence2i> corresponding_corners_std;
+  dbg_str << "Matching Pair : " << std::endl;
   BOOST_FOREACH(cv::Point left_corner, board_corners_left){
     double min_distance = std::numeric_limits<double>::infinity();
     int matching_right_idx = 0;
@@ -159,8 +177,12 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
       }
     }
     corresponding_corners_std.push_back(PointCorrespondence2i(left_corner, board_corners_right[matching_right_idx]));
-    std::cout << "Matching Pair : " << corresponding_corners_std[corresponding_corners_std.size() -1].first << " | " << corresponding_corners_std[corresponding_corners_std.size() -1].second << std::endl;
+    dbg_str <<  corresponding_corners_std[corresponding_corners_std.size() -1].first << " | " << corresponding_corners_std[corresponding_corners_std.size() -1].second << std::endl;
   }
+  ROS_DEBUG(dbg_str.str().c_str());
+  dbg_str.str("");
+  dbg_str.clear();
+
 
   // Color code corner point correspondences on debug image
   if(generate_dbg_img){
@@ -194,132 +216,137 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
       }
     }
 
-
   // Get camera projection matrices
   cv::Matx34d P_L_cv = left_cam_model.fullProjectionMatrix();
   cv::Matx34d P_R_cv = right_cam_model.fullProjectionMatrix();
-  cv::Matx33d rot_right_cv = right_cam_model.rotationMatrix();    // angle of rotation is only 0.03 radians, is this even significant?
-
-  // Convert corner coordinates from standard to normalized image coordinates
-  cv::Matx33d K_left = left_cam_model.fullIntrinsicMatrix();
-  cv::Matx33d K_right = right_cam_model.fullIntrinsicMatrix();
-  cv::Matx33d Kinv_left = K_left.inv();
-  cv::Matx33d Kinv_right = K_right.inv();
-  std::vector<cv::Point2d> left_corners_norm_img_coords;
-  std::vector<cv::Point2d> right_corners_norm_img_coords;
-  std::cout << "Corners in normalized image coordinates:\nleft <--> right" << std::endl;
-  typedef std::pair<cv::Point2d, cv::Point2d> PointCorrespondence2d;
-  std::vector<PointCorrespondence2d> corresponding_corners_normalized;
-  BOOST_FOREACH(PointCorrespondence2i matching_corners, corresponding_corners_std){
-    cv::Matx31d left_corner_hom_std(matching_corners.first.x, matching_corners.first.y, 1);
-    cv::Matx31d left_corner_hom_normalized = Kinv_left * left_corner_hom_std;
-    cv::Matx31d right_corner_hom_std(matching_corners.second.x, matching_corners.second.y, 1);
-    cv::Matx31d right_corner_hom_normalized = Kinv_right * right_corner_hom_std;
-
-    double left_x = left_corner_hom_normalized(0) / left_corner_hom_normalized(2);
-    double left_y = left_corner_hom_normalized(1) / left_corner_hom_normalized(2);
-    double right_x = right_corner_hom_normalized(0) / right_corner_hom_normalized(2);
-    double right_y = right_corner_hom_normalized(1) / right_corner_hom_normalized(2);
-
-    cv::Point2d left_corner_normalized(left_x, left_y);
-    cv::Point2d right_corner_normalized(right_x, right_y);
-
-    std::cout << left_corner_normalized << " <--> " << right_corner_normalized << std::endl;
-    corresponding_corners_normalized.push_back(PointCorrespondence2d(left_corner_normalized, right_corner_normalized));
-  }
-
-   // Get fundamental matrix, derivation in section 9.2.2 of The Bible
-  cv::Mat P_L_cv_mat = cv::Mat(P_L_cv);
-  cv::Mat P_R_cv_mat = cv::Mat(P_R_cv);
-  cv::Mat rot_right_cv_mat = cv::Mat(rot_right_cv);
-  cv::Mat P_L_inv_cv_mat;
-  cv::invert(P_L_cv_mat, P_L_inv_cv_mat, cv::DECOMP_SVD);
-  cv::Matx41d C(0, 0, 0, 1);
-  cv::Matx31d cv_epipole_im2 = P_R_cv * C;
-  cv::Matx33d cv_cross_with_epipole_im2;
-  cv_cross_with_epipole_im2 << 0, -cv_epipole_im2(2, 0),  cv_epipole_im2(1, 0),
-            cv_epipole_im2(2, 0),                  0,    -cv_epipole_im2(0, 0),
-           -cv_epipole_im2(1, 0),  cv_epipole_im2(0, 0),                     0;
-  cv::Mat cv_fundamental_matrix = cv::Mat(cv_cross_with_epipole_im2) * cv::Mat(P_R_cv) * P_L_inv_cv_mat;
-
-  // Essential matrix from fundamental matrix, reference: CV Bible section 9.6 (formula 9.12)
-  cv::Mat essential = cv::Mat(K_right.t()) * cv_fundamental_matrix * cv::Mat(K_left);
-
-  // Convert essential and rotation OpenCV matrices to Eigen matrices
-  Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > essential_eigen_map(reinterpret_cast<double*>(essential.data), 3 ,3);
-  Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> > rot_right_eigen_map(reinterpret_cast<double*>(rot_right_cv_mat.data), 3 ,3);
-  Eigen::MatrixXd essential_eigen = essential_eigen_map;
-  Eigen::MatrixXd rot_right = rot_right_eigen_map;
 
   // Reconstruct 3d corners from corresponding image points
   std::vector<Eigen::Vector3d> corners_3d;
-  for(size_t i = 0; i < corresponding_corners_normalized.size(); i++){
-    cv::Point2d pt_L, pt_R;
-    // pt_L = corresponding_corners_std[i].first;
-    // pt_R = corresponding_corners_std[i].second;
-    pt_L = corresponding_corners_normalized[i].first;
-    pt_R = corresponding_corners_normalized[i].second;
-    Eigen::Vector3d current_corner = sub::kanatani_triangulation(pt_L, pt_R, essential_eigen, rot_right);
+  for(size_t i = 0; i < corresponding_corners_std.size(); i++){
+    cv::Point2d pt_L_, pt_R_;
+    pt_L_ = corresponding_corners_std[i].first;
+    pt_R_ = corresponding_corners_std[i].second;
+    cv::Matx31d pt_L(pt_L_.x, pt_L_.y, 1);
+    cv::Matx31d pt_R(pt_R_.x, pt_R_.y, 1);
+    cv::Mat X_hom = sub::triangulate_Linear_LS(cv::Mat(P_L_cv), cv::Mat(P_R_cv), cv::Mat(pt_L), cv::Mat(pt_R));
+    Eigen::Vector3d current_corner;
+    current_corner << X_hom.at<double>(0,0) / X_hom.at<double>(3,0),
+                      X_hom.at<double>(1,0) / X_hom.at<double>(3,0),
+                      X_hom.at<double>(2,0) / X_hom.at<double>(3,0);
     corners_3d.push_back(current_corner);
   }
 
   // Calculate 3d board position (center of board)
-  Eigen::Vector3d position;
-  Eigen::Vector3d sum(0,0,0);
+  Eigen::Vector3d position(0,0,0);
+  dbg_str << "3D Corners:" << std::endl;
   BOOST_FOREACH(Eigen::Vector3d corner, corners_3d){
-    sum = sum + corner;
+    dbg_str << corner.transpose() << std::endl;
+    position = position + (0.25 * corner);
   }
-  position = sum / 4.0;
-
-  // Project board center into left image and visualize
-  cv::Matx41d position_hom(position(0), position(1), position(2), 1);
-  cv::Matx31d centroid_hom = P_L_cv * position_hom;
-  cv::Point2d centroid_img_coords(centroid_hom(0) / centroid_hom(2), centroid_hom(1) / centroid_hom(2));
-  cv::circle(processing_size_image_left, cv::Point(centroid_img_coords.x / image_proc_scale, 
-             centroid_img_coords.x / image_proc_scale), 3, cv::Scalar(0, 0, 255), -1);
-  // std::cout << "centroid_3d_hom\n" << centroid_hom.t() << std::endl;
-  std::cout << "centroid_img_coords " << centroid_img_coords << std::endl;
-  // cv::imshow("left image with visualization", processing_size_image_left);
 
   // Calculate normal vector to torpedo board
-  Eigen::Vector3d normal_vector, edge1, edge2;
+  Eigen::Vector3d normal_vector, prelim_norm_vec1, prelim_norm_vec2, edge1, edge2, edge3, edge4;
   edge1 = corners_3d[0] - corners_3d[1];
   edge2 = corners_3d[2] - corners_3d[1];
-  normal_vector = edge1.cross(edge2);
+  edge3 = corners_3d[2] - corners_3d[3];
+  edge4 = corners_3d[3] - corners_3d[3];
+  prelim_norm_vec1 = edge1.cross(edge2);
+  prelim_norm_vec2 = edge3.cross(edge4);
+  normal_vector = (prelim_norm_vec1 + prelim_norm_vec2) / 2.0;
   normal_vector = normal_vector.normalized();
 
-  // Calculate Quaternion representing rotation from z-axis to normal vector
-  Eigen::Vector3d z_axis(0, 0, 1);
+  // Calculate the location of the board targets
+  Eigen::Vector3d vertical_avg, parallel_avg1, parallel_avg2;
+  parallel_avg1 = (edge1 - edge3) / 2.0;
+  parallel_avg2 = (edge2 - edge4) / 2.0;
+  if (parallel_avg1.squaredNorm() >= parallel_avg2.squaredNorm()){ // Vertical edges are longer
+    vertical_avg = parallel_avg1;
+  }
+  else vertical_avg = parallel_avg2;
+  if(vertical_avg(1) < 0) vertical_avg = -vertical_avg;
+  std::vector<Eigen::Vector3d> targets;
+  targets.push_back(position + vertical_avg / 4.0);
+  targets.push_back(position - vertical_avg / 4.0);
+
+
+  // Calculate Quaternion representing rotation from x-axis to normal vector
+  Eigen::Vector3d x_axis(1, 0, 0);
   Eigen::Quaterniond orientation;
-  orientation.setFromTwoVectors(z_axis, normal_vector);
+  orientation.setFromTwoVectors(x_axis, normal_vector);
 
   // Fill service response fields
-  // std::string tf_frame = left_cam_model.tfFrame();
-  // resp.pose.header.frame_id = tf_frame;
+  std::string tf_frame = left_cam_model.tfFrame();
+  resp.pose.header.frame_id = tf_frame;
   resp.pose.header.stamp = ros::Time::now();
   tf::pointEigenToMsg(position, resp.pose.pose.position);
   tf::quaternionEigenToMsg(orientation, resp.pose.pose.orientation);
   resp.found = true;
+
+  // Project 3d centroid and targets into both images and visualize
+  if(generate_dbg_img){
+    cv::Matx41d position_hom(position(0), position(1), position(2), 1);
+    cv::Matx41d target1_hom(targets[0](0), targets[0](1), targets[0](2), 1);
+    cv::Matx41d target2_hom(targets[1](0), targets[1](1), targets[1](2), 1);
+    cv::Matx31d centroid2d_hom_left = P_L_cv * position_hom;
+    cv::Matx31d centroid2d_hom_right = P_R_cv * position_hom;
+    cv::Matx31d target1_hom_left = P_L_cv * target1_hom;
+    cv::Matx31d target1_hom_right = P_R_cv * target1_hom;
+    cv::Matx31d target2_hom_left = P_L_cv * target2_hom;
+    cv::Matx31d target2_hom_right = P_R_cv * target2_hom;
+    cv::Point2d centroid_img_coords_left(centroid2d_hom_left(0) / centroid2d_hom_left(2), centroid2d_hom_left(1) / centroid2d_hom_left(2));
+    cv::Point2d centroid_img_coords_right(centroid2d_hom_right(0) / centroid2d_hom_right(2), centroid2d_hom_right(1) / centroid2d_hom_right(2));
+    cv::Point2d target1_img_coords_left(target1_hom_left(0) / target1_hom_left(2), target1_hom_left(1) / target1_hom_left(2));
+    cv::Point2d target1_img_coords_right(target1_hom_right(0) / target1_hom_right(2), target1_hom_right(1) / target1_hom_right(2));
+    cv::Point2d target2_img_coords_left(target2_hom_left(0) / target2_hom_left(2), target2_hom_left(1) / target2_hom_left(2));
+    cv::Point2d target2_img_coords_right(target2_hom_right(0) / target2_hom_right(2), target2_hom_right(1) / target2_hom_right(2));
+    cv::Mat dbg_ll_quadrant = debug_image(lower_left);
+    cv::Mat dbg_lr_quadrant = debug_image(lower_right);
+    cv::circle(dbg_ll_quadrant, centroid_img_coords_left * image_proc_scale, 5, cv::Scalar(255, 0, 255), -1);
+    cv::circle(dbg_lr_quadrant, centroid_img_coords_right * image_proc_scale, 5, cv::Scalar(255, 0, 255), -1);
+    cv::circle(dbg_ll_quadrant, target1_img_coords_left * image_proc_scale, 5, cv::Scalar(255, 255, 0), -1);
+    cv::circle(dbg_lr_quadrant, target1_img_coords_right * image_proc_scale, 5, cv::Scalar(255, 255, 0), -1);
+    cv::circle(dbg_ll_quadrant, target2_img_coords_left * image_proc_scale, 5, cv::Scalar(255, 255, 0), -1);
+    cv::circle(dbg_lr_quadrant, target2_img_coords_right * image_proc_scale, 5, cv::Scalar(255, 255, 0), -1);
+    dbg_str << "centroid_3d: " << position.transpose() << std::endl;
+    dbg_str << "centroid_dbg_img_coords_left: " << centroid_img_coords_left * image_proc_scale << std::endl;
+    dbg_str << "centroid_dbg_img_coords_right: " << centroid_img_coords_right * image_proc_scale << std::endl;
+
+    std::stringstream left_text, right_text;
+    int height = debug_image(lower_left).rows;
+    cv::Point header_text_pt(height / 20.0, height / 10.0);
+    left_text << "Left  " << left_most_recent.image_msg_ptr->header.stamp;
+    right_text << "Right " << right_most_recent.image_msg_ptr->header.stamp;
+    cv::Scalar color(255, 255, 0);
+    int font = cv::FONT_HERSHEY_SIMPLEX;
+    double font_scale = 0.0015 * height;
+    cv::putText(dbg_ll_quadrant, left_text.str(), header_text_pt, font, font_scale, color);
+    cv::putText(dbg_lr_quadrant, right_text.str(), header_text_pt, font, font_scale, color);
+  }
+  ROS_DEBUG(dbg_str.str().c_str());
+  dbg_str.str("");
+  dbg_str.clear();
+
+  // Rviz visualization
+  rviz.visualize_torpedo_board(resp.pose.pose, orientation, targets, corners_3d, tf_frame);
+
 }
 
 
 bool Sub8TorpedoBoardDetector::request_torpedo_board_position(sub8_msgs::VisionRequest::Request &req, 
                                                               sub8_msgs::VisionRequest::Response &resp){
+
   // Prevent segfault if service is called before we get valid img_msg_ptr's
   if (left_most_recent.image_msg_ptr == NULL || right_most_recent.image_msg_ptr == NULL) {;
     ROS_ERROR("Torpedo Board Detector: Image Pointers are NULL. Unable to continue.");
     return false;
   }
   else{
-    // Eigen::Vector3f position;
     determine_torpedo_board_position(resp);
-    std::string left_tf_frame = left_cam_model.tfFrame();
-    rviz.visualize_torpedo_board(resp.pose.pose, left_tf_frame);
+
+    // Visualization
     sensor_msgs::ImagePtr dbg_img_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", debug_image).toImageMsg();
     debug_image_pub.publish(dbg_img_msg);
     ros::spinOnce();
-    // cv::imshow("Debug Img", debug_image); 
-    // cv::waitKey(1);
     return true;
   }
 
@@ -354,25 +381,21 @@ void Sub8TorpedoBoardDetector::segment_board(const cv::Mat &src, cv::Mat &dest, 
   dest = segmented_board;
   
   if(generate_dbg_img && draw_dbg_img){
-    std::cout << "processing img depth: " << hue_segment_dbg_img.channels() << " dbg_img depth: " << debug_image.channels() << std::endl;
-    std::cout << "processing img type: " << hue_segment_dbg_img.type() << " dbg_img type: " << debug_image.type() << std::endl;
     try{
       hue_segment_dbg_img.copyTo(debug_image(upper_left));
       sat_segment_dbg_img.copyTo(debug_image(upper_right));
     }
     catch(std::exception& e){
-      std::stringstream dbg_str;
-      dbg_str << "hue_segment_dbg_img size: " << hue_segment_dbg_img.size() << " upper_left size: " << upper_left.size() << std::endl;
-      dbg_str << "sat_segment_dbg_img size: " << sat_segment_dbg_img.size() << " upper_right size: " << upper_right.size() << std::endl;
-      dbg_str << "debug_img size: " << debug_image.size() << std::endl;
-      std::cout << dbg_str.str() << "Error from torpedo_board.cc block starting at line 313:\n" << e.what() << std::endl;
+      std::stringstream error_msg;
+      error_msg << "Exception thrown drawing segmentation sbg image on debug_image quadrant" << std::endl
+                << "hue_segment_dbg_img size: " << hue_segment_dbg_img.size() << " upper_left size: " << upper_left.size() << std::endl
+                << "sat_segment_dbg_img size: " << sat_segment_dbg_img.size() << " upper_right size: " << upper_right.size() << std::endl
+                << "processing img depth: " << hue_segment_dbg_img.channels() << " dbg_img depth: " << debug_image.channels() << std::endl
+                << "processing img type: " << hue_segment_dbg_img.type() << " dbg_img type: " << debug_image.type() << std::endl
+                << e.what();
+      ROS_WARN(error_msg.str().c_str());
     }
-
   }
-    
-#ifdef VISUALIZE
-  // cv::imshow("segmented board", segmented_board);
-#endif
 }
 
 
@@ -398,12 +421,13 @@ bool Sub8TorpedoBoardDetector::find_board_corners(const cv::Mat &segmented_board
   // Draw preliminary edge of torpedo_board on debug_image
   if(generate_dbg_img){
     if(draw_dbg_left){  // Draw on lower left quadrant
-      cv::drawContours(debug_image(lower_left), contours, -1, cv::Scalar(255, 255, 255), 2);
+      cv::drawContours(debug_image(lower_left), contours, 0, cv::Scalar(255, 255, 255), 2);
+      cv::drawContours(debug_image(lower_left), contours, 1, cv::Scalar(255, 255, 255), 2);
     }
     else{               // Draw on lower right quadrant
-      cv::drawContours(debug_image(lower_right), contours, -1, cv::Scalar(255, 255, 255), 2);
+      cv::drawContours(debug_image(lower_right), contours, 0, cv::Scalar(255, 255, 255), 2);
+      cv::drawContours(debug_image(lower_right), contours, 1, cv::Scalar(255, 255, 255), 2);
     }
-    // cv::imshow("dbg_img", debug_image); cv::waitKey(10);
   }
 
   // Connect yellow pannels

@@ -310,9 +310,9 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, cv::Mat &
 		std::stringstream text_ln3;
 		text_ln3 << "high = " << high_thresh;
 		int font = cv::FONT_HERSHEY_SIMPLEX;
-		double font_scale = debug_img.rows / 480.0;
-		cv::Point vert_offset = cv::Point(0, debug_img.rows / 10.0);
-		cv::Scalar text_color(255, 255, 255);
+		double font_scale = 0.0015 * debug_img.rows;
+		cv::Point vert_offset = cv::Point(0, debug_img.rows / 15.0);
+		cv::Scalar text_color(255, 255, 0);
 		cv::putText(debug_img, text_ln1, text_upper_left, font, font_scale, text_color);
 		cv::putText(debug_img, text_ln2.str(), text_upper_left + vert_offset, font, font_scale, text_color);
 		cv::putText(debug_img, text_ln3.str(), text_upper_left + vert_offset + vert_offset, font, font_scale, text_color);
@@ -350,7 +350,7 @@ Eigen::Vector3d kanatani_triangulation(const cv::Point2d &pt1, const cv::Point2d
 		K. Kanatani, Y. Sugaya, and H. Niitsuma. Triangulation from two views revisited: Hartley-Sturm vs. optimal 
 		correction. In British Machine Vision Conference, page 55, 2008.
 	*/
-	std::cout << "ptL_noisy: " << pt1 << " ptR_noisy: " << pt2 << std::endl;
+	// std::cout << "ptL_noisy: " << pt1 << " ptR_noisy: " << pt2 << std::endl;
 	const unsigned int max_iterations = 7;
 	Eigen::Vector3d p1_old(pt1.x, pt1.y, 1.0);
 	Eigen::Vector3d p2_old(pt2.x, pt2.y, 1.0);
@@ -378,7 +378,7 @@ Eigen::Vector3d kanatani_triangulation(const cv::Point2d &pt1, const cv::Point2d
 		p2_old = p2;
 		delta_p1_old = delta_p1;
 		delta_p2_old = delta_p2;
-		std::cout << "ptL_est: [" << p1.transpose() << "] ptR_est: [" << p2.transpose() << "]" << std::endl;
+		// std::cout << "ptL_est: [" << p1.transpose() << "] ptR_est: [" << p2.transpose() << "]" << std::endl;
 	}
 	Eigen::Vector3d z = p1.cross(R * p2);
 	Eigen::Vector3d X = ( (z.transpose() * (essential * p2))(0) / (z.transpose() * z)(0) ) * p1;
@@ -391,7 +391,7 @@ Eigen::Vector3d lindstrom_triangulation(const cv::Point2d &pt1, const cv::Point2
 		Optimal triangulation method for two cameras with parallel principal axes
 		Based of off this paper by Peter Lindstrom: https://e-reports-ext.llnl.gov/pdf/384387.pdf  **Listing 2**
 	*/
-	std::cout << "ptL_noisy: " << pt1 << " ptR_noisy: " << pt2 << std::endl;
+	// std::cout << "ptL_noisy: " << pt1 << " ptR_noisy: " << pt2 << std::endl;
 	const unsigned int max_iterations = 7;
 	Eigen::Vector3d p1_old(pt1.x, pt1.y, 1.0);
 	Eigen::Vector3d p2_old(pt2.x, pt2.y, 1.0);
@@ -419,7 +419,7 @@ Eigen::Vector3d lindstrom_triangulation(const cv::Point2d &pt1, const cv::Point2
 		p2 = p2_0 - (S.transpose() * delta_p2);
 		p1_old = p1;
 		p2_old = p2;
-		std::cout << "ptL_est: [" << p1.transpose() << "] ptR_est: [" << p2.transpose() << "]" << std::endl;
+		// std::cout << "ptL_est: [" << p1.transpose() << "] ptR_est: [" << p2.transpose() << "]" << std::endl;
 	}
 	Eigen::Vector3d z = p1.cross(R * p2);
 	Eigen::Vector3d X = ( (z.transpose() * (essential * p2))(0) / (z.transpose() * z)(0) ) * p1;
