@@ -50,6 +50,8 @@ private:
   sub::ImageWithCameraInfo left_most_recent;
   sub::ImageWithCameraInfo right_most_recent;
 
+  static const double sync_thresh = 0.25;
+
   sub::RvizVisualizer rviz;
 
   cv::Mat debug_image;
