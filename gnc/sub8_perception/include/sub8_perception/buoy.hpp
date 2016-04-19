@@ -29,6 +29,7 @@
 #include "ros/ros.h"
 
 #include "sub8_msgs/VisionRequest.h"
+#include "sub8_msgs/VisionRequest2D.h"
 
 // For stack-tracing on seg-fault
 #define BACKWARD_HAS_BFD 1
@@ -57,7 +58,10 @@ class Sub8BuoyDetector {
                                const std::string &target_color, const cv::Mat &image_raw,
                                const sub::PointCloudT::Ptr &point_cloud_raw,
                                Eigen::Vector3f &center);
-
+  bool segment_buoy(cv::Mat &input_image, cv::Point &center,
+                    std::vector<sub::Contour> &output_contours, std::string &target_name);
+  bool request_buoy_position_2d(sub8_msgs::VisionRequest2D::Request &req,
+                                sub8_msgs::VisionRequest2D::Response &resp);
   bool request_buoy_position(sub8_msgs::VisionRequest::Request &req,
                              sub8_msgs::VisionRequest::Response &resp);
   // Visualize
@@ -69,7 +73,8 @@ class Sub8BuoyDetector {
   ros::Timer compute_timer;
   ros::Subscriber data_sub;
   ros::NodeHandle nh;
-  ros::ServiceServer service;
+  ros::ServiceServer service_2d;
+  ros::ServiceServer service_3d;
   double buoy_radius;
 
   std::map<std::string, sub::Range> color_ranges;
@@ -77,6 +82,9 @@ class Sub8BuoyDetector {
 
   image_transport::CameraSubscriber image_sub;
   image_transport::ImageTransport image_transport;
+  image_transport::Publisher image_pub;
+  cv::Mat last_draw_image;
+
   image_geometry::PinholeCameraModel cam_model;
 
   ros::Time image_time;

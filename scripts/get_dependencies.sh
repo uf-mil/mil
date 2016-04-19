@@ -33,6 +33,8 @@ mkdir -p $DEPS_DIR
 
 instlog "Fixing that stupid chrome thing"
 sudo sed -i -e 's/deb http/deb [arch=amd64] http/' "/etc/apt/sources.list.d/google-chrome.list"
+sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu trusty main" > /etc/apt/sources.list.d/gazebo-latest.list'
+wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 
 
 # Get ready to install ROS
@@ -42,8 +44,10 @@ instlog "Updating apt-get"
 sudo apt-get update -qq
 
 instlog "Getting build stuff"
-sudo pip install -q -U setuptools
 sudo apt-get install -qq cmake python-pip
+sudo pip install -q -U setuptools
+sudo pip install -q -U mayavi
+sudo pip install -q -U argcomplete
 
 ####### Make tools
 instlog "Getting misc make tools"
@@ -106,6 +110,8 @@ fi
 
 # Normal things
 instlog "Installing misc dependencies"
+
+sudo pip install -q -U scikit-learn
 
 sudo apt-get install -qq ros-indigo-gazebo7-msgs ros-indigo-gazebo7-ros ros-indigo-gazebo7-ros-pkgs ros-indigo-gazebo7-plugins ros-indigo-gazebo7-ros-control
 sudo apt-get install -qq ros-indigo-control-toolbox ros-indigo-controller-manager ros-indigo-transmission-interface ros-indigo-joint-limits-interface ros-indigo-hardware-interface

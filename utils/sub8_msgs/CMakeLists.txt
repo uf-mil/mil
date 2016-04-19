@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_runtime
   rospy
   std_msgs
+  sensor_msgs
 )
 
 add_message_files(
@@ -35,6 +36,7 @@ add_service_files(
   VisionRequest2D.srv
   BMatrix.srv
   PathPlan.srv
+  ResetGazebo.srv
 )
 
 # add_action_files(
@@ -46,6 +48,7 @@ generate_messages(
   DEPENDENCIES
   geometry_msgs
   std_msgs
+  sensor_msgs
 )
 
 catkin_package(

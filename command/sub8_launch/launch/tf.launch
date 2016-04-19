@@ -4,6 +4,10 @@
       args="0.2559 0 0.1707   0.5 -0.5  0.5  -0.5 base_link stereo_front 100">
     </node>
 
+    <node pkg="tf" type="static_transform_publisher" name="camera_down_broadcaster"
+      args="0.0537  0.1048 -0.2565   7.07106781e-01 7.07106781e-01 0.0 0.0 base_link downward 100">
+    </node>
+
     <node pkg="tf" type="static_transform_publisher" name="dvl_broadcaster"
       args="0.0908 0 -0.2459  0 0 0.38268343 0.92387953  base_link dvl 100" >
     </node>
@@ -14,5 +18,7 @@
 
     <node pkg="tf" type="static_transform_publisher" name="imu_broadcaster"
       args="0.21236 0.00254 -0.10233  0.0 -0.70710678 0.0 0.70710678  base_link imu 100" />
+
+    <node pkg="sub8_launch" type="tf_republisher.py" name="tf_replublisher" />
 
 </launch>

@@ -1,9 +1,9 @@
 color:
   buoy:
     red:
-      hsv_low: [105, 135, 135]
-      hsv_high: [120, 255, 255]
+      hsv_low: [0.0, 102.714, 70.839]
+      hsv_high: [57.1726, 255.0, 198.339]
 
   channel_guide:
-    hsv_low: [0, 50, 180]
-    hsv_high: [20, 250, 260]
+    hsv_low: [0, 0, 0]
+    hsv_high: [180, 80, 260]

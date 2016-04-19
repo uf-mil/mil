@@ -1,0 +1,165 @@
+<?xml version="1.0"?>
+<sdf version="1.5">
+  <model name="sub8">
+    <link name="base_link">
+      <velocity_decay>
+        <linear>0.01</linear>
+        <angular>0.1</angular>
+      </velocity_decay>
+
+      <inertial>
+        <mass>36.29</mass>
+        <inertia>
+          <ixx>1.18</ixx>
+          <ixy>-0.003</ixy>
+          <ixz>0.04</ixz>
+          <iyy>1.431</iyy>
+          <iyz>-0.034</iyz>
+          <izz>1.262</izz>
+        </inertia>
+      </inertial>
+
+      <collision name="box_collision">
+        <pose>0 0 0 0 0 1.5707</pose>
+        <geometry>
+          <!-- Can use sub instead -->
+          <box><size>.5588 .5588 .381</size></box>
+        </geometry>
+      </collision>
+
+      <visual name="visual">
+        <pose>0 0 0 0 0 1.5707</pose>
+        <geometry>
+            <box><size>.5588 .5588 .381</size></box>
+        </geometry>
+      </visual>
+
+      <sensor name="left_camera" type="camera">
+        <camera>
+          <pose>0.2559 0.0445 0.01707 0 0 0</pose>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>640</width>
+            <height>480</height>
+          </image>
+          <clip>
+            <near>0.1</near>
+            <far>20</far>
+          </clip>
+          <distortion>
+            <k1>0</k1>
+            <k2>0</k2>
+            <k3>0</k3>
+            <p1>0</p1>
+            <p2>0</p2>
+          </distortion>
+        </camera>
+        <plugin name="left_camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>15</updateRate>
+          <cameraName>stereo/left</cameraName>
+          <imageTopicName>image_raw</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>stereo_front</frameName>
+          <hackBaseline>0.089</hackBaseline>
+          <distortionK1>0</distortionK1>
+          <distortionK2>0</distortionK2>
+          <distortionK3>0</distortionK3>
+          <distortionT1>0</distortionT1>
+          <distortionT2>0</distortionT2>
+        </plugin>
+      </sensor>
+
+      <sensor name="right_camera" type="camera">
+        <camera>
+          <pose>0.2559 -0.0445 0.01707 0 0 0</pose>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>640</width>
+            <height>480</height>
+          </image>
+          <clip>
+            <near>0.1</near>
+            <far>20</far>
+          </clip>
+          <distortion>
+            <k1>0</k1>
+            <k2>0</k2>
+            <k3>0</k3>
+            <p1>0</p1>
+            <p2>0</p2>>
+          </distortion>
+        </camera>
+
+        <plugin name="right_camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>15</updateRate>
+          <cameraName>stereo/right</cameraName>
+          <imageTopicName>image_raw</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>stereo_front</frameName>
+          <hackBaseline>0.089</hackBaseline>\
+          <distortionK1>0</distortionK1>
+          <distortionK2>0</distortionK2>
+          <distortionK3>0</distortionK3>
+          <distortionT1>0</distortionT1>
+          <distortionT2>0</distortionT2>
+        </plugin>
+      </sensor>
+
+      <sensor name="down_camera" type="camera">
+        <camera>
+          <pose>0.0537 0.1048 -0.2565  0 1.57 3.1415</pose>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>640</width>
+            <height>480</height>
+          </image>
+          <clip>
+            <near>0.1</near>
+            <far>20</far>
+          </clip>
+          <distortion>
+            <k1>0</k1>
+            <k2>0</k2>
+            <k3>0</k3>
+            <p1>0</p1>
+            <p2>0</p2>>
+            <center>320 240</center>
+          </distortion>
+        </camera>
+        <plugin name="down_camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>15</updateRate>
+          <cameraName>down/left</cameraName>
+          <imageTopicName>image_raw</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>down_camera</frameName>
+          <hackBaseline>0.89</hackBaseline>\
+          <distortionK1>0</distortionK1>
+          <distortionK2>0</distortionK2>
+          <distortionK3>0</distortionK3>
+          <distortionT1>0</distortionT1>
+          <distortionT2>0</distortionT2>
+          <Cx>320</Cx>
+          <Cy>240</Cy>
+        </plugin>
+      </sensor>
+    </link>
+
+    <plugin name="sub8_buoyancy" filename="libsub8_buoyancy.so">
+      <fluid_density>1000</fluid_density>
+      <drag_coefficient>20</drag_coefficient>
+      <link name="base_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.037</volume>
+      </link>
+    </plugin>
+
+    <plugin name="sub8_thrusters" filename="libsub8_thrusters.so">
+      <layout_param>thrusters</layout_param>
+      <link>base_link</link>
+    </plugin>
+
+  </model>
+</sdf>

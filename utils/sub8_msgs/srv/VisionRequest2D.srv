@@ -7,4 +7,6 @@ geometry_msgs/Pose2D pose
 int16 max_x
 int16 max_y
 
+sensor_msgs/CameraInfo camera_info
+
 bool found

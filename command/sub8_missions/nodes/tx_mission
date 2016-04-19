@@ -7,13 +7,12 @@ from twisted.internet import defer, reactor
 import txros
 from sub8 import tx_sub
 import missions
-import sys
 
 
 @txros.util.cancellableInlineCallbacks
 def main():
     try:
-        nh_args = yield txros.NodeHandle.from_argv_with_remaining('run_method', anonymous=True)
+        nh_args = yield txros.NodeHandle.from_argv_with_remaining('sub8_mission')
         available_missions = [mission_name for mission_name in dir(missions) if not mission_name.startswith('_')]
 
         usage_msg = ("Input the name of the mission you would like to run.\nExamples: " +
@@ -23,8 +22,9 @@ def main():
         parser.add_argument(dest='mission_name',
                             help="The name of the mission you'd like to run (ex: stop)")
 
-        # Get all of the missions in the mission folder
-        # print sys.argv[1:]
+        parser.add_argument('--test', dest='test', action='store_true',
+                            help="Set this flag if you'd like to ignore motions")
+
         nh, args = nh_args
         args = parser.parse_args(args[1:])
         mission_name = args.mission_name
@@ -35,12 +35,17 @@ def main():
         mission = getattr(missions, mission_name)
 
         sub = yield tx_sub.get_sub(nh)
-        yield txros.util.sleep(1.0)
-        print 'Mission runner waiting for pose to be available'
-        yield sub.last_pose()
+        yield txros.util.wall_sleep(1.0)
+
+        if args.test:
+            sub.set_test_mode()
+        else:
+            print 'Mission runner waiting for pose to be available'
+            yield sub.last_pose()
+
         print 'Mission runner got pose'
-        yield mission.run(sub)
-        yield txros.util.sleep(1.0)
+        yield mission.run(sub).addErrback(catch_error)
+        yield txros.util.wall_sleep(1.0)
 
     except Exception:
         traceback.print_exc()
@@ -50,11 +55,19 @@ def main():
         reactor.stop()
 
 
+def catch_error(error):
+    print 'tx traceback'
+    print '>------------------------------<'
+    print error.printTraceback()
+    print '>------------------------------<'
+    # error.trap(defer.CancelledError)
+
+
 def _start():
-    # Handle errors in main
-    task = main().addErrback(lambda fail: fail.trap(defer.CancelledError))
     # Handle ctrl+C
     signal.signal(signal.SIGINT, lambda signum, frame: reactor.callFromThread(task.cancel))
+    # Handle errors in main
+    task = main().addErrback(lambda fail: fail.trap(defer.CancelledError))
 
 
 if __name__ == '__main__':

@@ -17,6 +17,8 @@ find_package(catkin
     sub8_msgs
 )
 
+catkin_python_setup()
+
 find_package(PCL 1.7 REQUIRED)
 
 catkin_package(
@@ -82,10 +84,15 @@ install(DIRECTORY include/${PROJECT_NAME}/
   PATTERN ".svn" EXCLUDE
 )
 
+file(GLOB BUOY_SOURCES
+    "src/sub8_perception/*.cc"
+)
+
 add_executable(
   pcl_perception
     nodes/perception.cc
-    src/sub8_pcl/buoy.cc
+    #src/sub8_pcl/buoy.cc
+    ${BUOY_SOURCES}
     src/sub8_pcl/torpedo_board.cc
 )
 

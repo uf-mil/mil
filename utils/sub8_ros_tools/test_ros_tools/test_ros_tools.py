@@ -3,10 +3,10 @@ import unittest
 import numpy as np
 from geometry_msgs.msg import Quaternion, Vector3, Pose2D
 from sensor_msgs.msg import Image
-from sub8_ros_tools import make_image_msg, get_image_msg
-from sub8_ros_tools import rosmsg_to_numpy, make_wrench_stamped
-from sub8_ros_tools import thread_lock
-from sub8_ros_tools import skew_symmetric_cross, make_rotation, normalize
+from sub8_ros_tools.image_helpers import make_image_msg, get_image_msg
+from sub8_ros_tools.msg_helpers import rosmsg_to_numpy, make_wrench_stamped
+from sub8_ros_tools.threading_helpers import thread_lock
+from sub8_ros_tools.geometry_helpers import skew_symmetric_cross, make_rotation, normalize
 
 
 class TestROSTools(unittest.TestCase):
