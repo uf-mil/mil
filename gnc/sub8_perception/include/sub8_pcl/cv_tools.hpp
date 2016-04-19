@@ -10,9 +10,9 @@
 
 #include <eigen_conversions/eigen_msg.h>
 #include <Eigen/StdVector>
+#include <Eigen/SVD>
 
 #include <boost/foreach.hpp>
-#include <boost/format.hpp>
 
 #include <opencv2/opencv.hpp>
 
@@ -26,6 +26,9 @@
 namespace sub {
 
 /// UTILS
+
+template<typename _Matrix_Type_>
+bool pseudoInverse(const _Matrix_Type_ &a, _Matrix_Type_ &result, double epsilon = std::numeric_limits<typename _Matrix_Type_::Scalar>::epsilon());
 
 typedef std::vector<cv::Point> Contour;
 
@@ -56,14 +59,18 @@ unsigned int select_hist_mode(std::vector<cv::Point> &histogram_modes, unsigned 
 // Takes in a grayscale image and segments out a semi-homogenous foreground object with
 // pixel intensities close to <target>. Tuning of last three parameters may imrove
 // results but default values should work well in most cases.
-void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, const int hist_size,
-                                    const float **ranges, const int target, std::string image_name,
-                                    const float sigma = 1.5, const float low_thresh_gain = 0.5,
+void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, cv::Mat &debug_img, const int hist_size,
+                                    const float **ranges, const int target, std::string image_name = "Unnamed Image",
+                                    bool ret_dbg_img = false, const float sigma = 1.5, const float low_thresh_gain = 0.5,
                                     const float high_thresh_gain = 0.5);
 
-Eigen::Vector3d triangulate_image_coordinates(const cv::Point &pt1, const cv::Point &pt2,
-                                              const Eigen::Matrix3d &fundamental,
-                                              const Eigen::Matrix3d &R);
+cv::Mat triangulate_Linear_LS(cv::Mat mat_P_l, cv::Mat mat_P_r, cv::Mat undistorted_l, cv::Mat undistorted_r);
+
+Eigen::Vector3d kanatani_triangulation(const cv::Point2d &pt1, const cv::Point2d &pt2, 
+                        const Eigen::Matrix3d &essential, const Eigen::Matrix3d &R);
+
+Eigen::Vector3d lindstrom_triangulation(const cv::Point2d &pt1, const cv::Point2d &pt2,
+                                        const Eigen::Matrix3d &essential, const Eigen::Matrix3d &R);
 
 struct ImageWithCameraInfo {
   /**
@@ -119,4 +126,19 @@ void range_from_param(std::string &param_root, Range &range);
 
 void inParamRange(cv::Mat &src, Range &range, cv::Mat &dest);
 
-}  // namespace sub
+/// Templated function implementation
+template<typename _Matrix_Type_>
+bool pseudoInverse(const _Matrix_Type_ &a, _Matrix_Type_ &result, 
+				   double epsilon = std::numeric_limits<typename _Matrix_Type_::Scalar>::epsilon()){
+  if(a.rows()<a.cols())
+      return false;
+
+  Eigen::JacobiSVD< _Matrix_Type_ > svd = a.jacobiSvd();
+
+  typename _Matrix_Type_::Scalar tolerance = 
+  	epsilon * std::max(a.cols(), a.rows()) * svd.singularValues().array().abs().maxCoeff();
+
+  result = svd.matrixV() * _Matrix_Type_(_Matrix_Type_( (svd.singularValues().array().abs() > tolerance).
+  	select(svd.singularValues().array().inverse(), 0) ).diagonal()) * svd.matrixU().adjoint();
+}
+}  // namespace subprint 
