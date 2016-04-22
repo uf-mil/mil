@@ -35,5 +35,7 @@
     * [[C++ Spells]]
     * [[Aws]]
     * [[Unsupported OSes]]
+* Electrical
+    * [[Navigation Vessel]]
 * Old Notes
     * [[Simulation]]
