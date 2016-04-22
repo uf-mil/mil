@@ -8,7 +8,11 @@ Actuator RS485
 * 3 (-) Black
 
 |---------|
+
 |XXXX3XXXX|
+
 |XX4XXX2XX|
+
 |5XXXXXXX1|
+
 |---------|
