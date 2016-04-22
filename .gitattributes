@@ -5,3 +5,5 @@
 *.tif
 *.obj
 *.mtl
+*.bin
+*.hex

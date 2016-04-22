@@ -4,8 +4,8 @@
 // Originally Written by Khaled Hassan
 
 void uart_setup() {
-     // UART1 (Clock is divided by 2 before entering UART, baud needs to be multiplied by 2. (9600 * 2 = 19200))
-     // Serial Settings: 9600, 8, N, 1, None
+     // UART1 (Clock is divided by 2 before entering UART, baud needs to be multiplied by 2 (9600 * 2 = 19200))
+     // Serial Settings - Baud Rate: 9600, Data Bits: 8, Parity: None, Stop Bits: 1, Flow Control: None
      UART1_Init_Advanced(19200, _UART_8_BIT_DATA, _UART_NOPARITY, _UART_ONE_STOPBIT, &_GPIO_MODULE_USART1_PA9_10);
      
      // UART1_TX_EN (25-B12)
