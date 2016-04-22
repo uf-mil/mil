@@ -44,7 +44,7 @@ sudo sh -c 'echo "deb-src http://archive.ubuntu.com/ubuntu trusty main universe"
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu trusty main" > /etc/apt/sources.list.d/gazebo-latest.list'
 
-sudo sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'
+# sudo sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'
 # sudo resolvconf -u
 
 wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -

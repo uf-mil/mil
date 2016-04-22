@@ -2,10 +2,12 @@
 import rospy
 import rosparam
 import rospkg
-from sub8_actuator_driver.srv import SetValve
 
+from sub8_actuator_driver.srv import SetValve
+from sub8_ros_tools import thread_lock
 from sub8_alarm import AlarmBroadcaster
 
+import threading
 import serial
 import binascii
 import struct
@@ -15,6 +17,7 @@ import os
 
 rospack = rospkg.RosPack()
 VALVES_FILE = os.path.join(rospack.get_path('sub8_actuator_driver'), 'valves.yaml')
+lock = threading.Lock()
 
 
 class ActuatorDriver():
@@ -24,10 +27,9 @@ class ActuatorDriver():
     For dropper and grabber, call service with True or False to open or close.
     For shooter, sending a True signal will pulse the valve.
 
-    TODO: Wait for response to return True or False. The board does not actually send
-        back responses right now. Needs to handle physical disconnect issues.
+    TODO: Add a function to try and reconnect to the serial port if we lose connection.
     '''
-    def __init__(self, port, baud=115200):
+    def __init__(self, port, baud=9600):
         self.load_yaml()
 
         rospy.init_node("actuator_driver")
@@ -60,19 +62,13 @@ class ActuatorDriver():
         rospy.Service('~actuate', SetValve, self.got_service_request)
         rospy.Service('~actuate_raw', SetValve, self.set_raw_valve)
 
-        #rospy.spin()
-        r = rospy.Rate(1)  # hz
+        r = rospy.Rate(.2)  # hz
         while not rospy.is_shutdown():
             # Heartbeat to make sure the board is still connected.
             r.sleep()
             self.ping()
-            if not self.parse_response(None):
-                rospy.logwarn("The board appears to be disconnected, trying again in 3 seconds.")
-                self.disconnection_alarm.raise_alarm(
-                    problem_description='The board appears to be disconnected.'
-                )
-                rospy.sleep(3)
 
+    @thread_lock(lock)
     def set_raw_valve(self, srv):
         '''
         Set the valves manually so you don't have to have them defined in the YAML.
@@ -84,11 +80,10 @@ class ActuatorDriver():
         self.send_data(int(srv.actuator), srv.opened)
         return True
 
+    @thread_lock(lock)
     def got_service_request(self, srv):
         '''
         Find out what actuator needs to be changed and how to change it with the valves.yaml file.
-
-        TODO: Allow pulsing of multi port actuators and setting of single port actuators.
         '''
         try:
             this_valve = self.actuators[srv.actuator]
@@ -126,7 +121,6 @@ class ActuatorDriver():
             close_id = close_port['id']
 
             if srv.opened:
-                # This may be too fast for the serial interface, maybe add a break if there are problems.
                 self.send_data(open_id, True)
                 self.send_data(close_id, False)
             else:
@@ -134,6 +128,21 @@ class ActuatorDriver():
                 self.send_data(close_id, True)
 
         return True
+
+    @thread_lock(lock)
+    def ping(self):
+        rospy.loginfo("ping")
+
+        ping = 0x10
+        chksum = ping ^ 0xFF
+        data = struct.pack("BB", ping, chksum)
+        self.ser.write(data)
+        if not self.parse_response(None):
+            rospy.logwarn("The board appears to be disconnected, trying again in 3 seconds.")
+            self.disconnection_alarm.raise_alarm(
+                problem_description='The board appears to be disconnected.'
+            )
+            rospy.sleep(3)
 
     def send_data(self, port, state):
         '''
@@ -158,7 +167,6 @@ class ActuatorDriver():
         '''
         if port == -1:
             return
-        #self.ser.flushInput()
 
         # Calculate checksum and send data to board.
         # A true state tells the pnuematics controller to allow air into the tube.
@@ -179,12 +187,7 @@ class ActuatorDriver():
             )
             return False
 
-        #rospy.sleep(.2)
         self.parse_response(state)
-
-    def load_yaml(self):
-        with open(VALVES_FILE, 'r') as f:
-            self.actuators = yaml.load(f)
 
     def parse_response(self, state):
         '''
@@ -193,10 +196,13 @@ class ActuatorDriver():
 
         TODO: Test with board and make sure all serial signals can be sent and received without need delays.
         '''
-        # Delay as to not spam the board. This is not required once we can recieve data too.
-        #rospy.sleep(.2)
-        # The board doesn't currently respond with data.
-        response = struct.unpack("BB", self.ser.read(2))
+        try:
+            response = struct.unpack("BB", self.ser.read(2))
+        except:
+            self.disconnection_alarm.raise_alarm(
+                problem_description="Actuator board serial connection has been terminated."
+            )
+            return False
 
         data = response[0]
         chksum = response[1]
@@ -231,13 +237,9 @@ class ActuatorDriver():
         )
         return False
 
-    def ping(self):
-        rospy.loginfo("ping")
-
-        ping = 0x10
-        chksum = ping ^ 0xFF
-        data = struct.pack("BB", ping, chksum)
-        self.ser.write(data)
+    def load_yaml(self):
+        with open(VALVES_FILE, 'r') as f:
+            self.actuators = yaml.load(f)
 
 if __name__ == "__main__":
     a = ActuatorDriver(rospy.get_param('~/actuator_driver/port'), 9600)

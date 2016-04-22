@@ -122,20 +122,19 @@ class MarkerOccGrid(OccGridUtils):
         x_y_position = trans[:2]
         depth = trans[2]
 
-        self.add_circle(x_y_position, self.calculate_visual_radius())
+        self.add_circle(x_y_position, self.calculate_visual_radius(depth))
         self.publish_grid()
 
-    def calculate_visual_radius(self):
+    def calculate_visual_radius(self, depth):
         '''
         Draws rays to find the radius of the FOV of the camera in meters.
         
         TODO: Implement with actual ros images and image info.
         '''
-        depth = self.depth
         edge_point = np.array([0, self.image.shape[0] / 2])
 
-        mid_ray = unit_vector(projectPixelTo3dRay(self.image / 2, 0, self.depth))
-        edge_ray = unit_vector(projectPixelTo3dRay(edge_point, 1, self.depth))
+        mid_ray = unit_vector(projectPixelTo3dRay(self.image / 2, 0, depth))
+        edge_ray = unit_vector(projectPixelTo3dRay(edge_point, 1, depth))
 
         # Calculate angle between vectors and use that to find r
         theta = np.arccos(np.dot(mid_ray, edge_ray))
