@@ -27,7 +27,7 @@ class ActuatorDriver():
     TODO: Wait for response to return True or False. The board does not actually send
         back responses right now. Needs to handle physical disconnect issues.
     '''
-    def __init__(self, port, baud=9600):
+    def __init__(self, port, baud=115200):
         self.load_yaml()
 
         rospy.init_node("actuator_driver")
@@ -45,6 +45,7 @@ class ActuatorDriver():
         )
 
         self.ser = serial.Serial(port=port, baudrate=baud, timeout=None)
+        self.ser.flushInput()
 
         # Reset all valves
         rospy.loginfo("Resetting valves.")
@@ -59,18 +60,18 @@ class ActuatorDriver():
         rospy.Service('~actuate', SetValve, self.got_service_request)
         rospy.Service('~actuate_raw', SetValve, self.set_raw_valve)
 
-        rospy.spin()
-        # r = rospy.Rate(1)  # hz
-        # while not rospy.is_shutdown():
-        #     # Heartbeat to make sure the board is still connected.
-        #     r.sleep()
-        #     self.ping()
-        #     if not self.parse_response(None):
-        #         rospy.logwarn("The board appears to be disconnected, trying again in 5 seconds.")
-        #         self.thruster_out_alarm.raise_alarm(
-        #             problem_description='The board appears to be disconnected.'
-        #         )
-        #         rospy.sleep(5)
+        #rospy.spin()
+        r = rospy.Rate(1)  # hz
+        while not rospy.is_shutdown():
+            # Heartbeat to make sure the board is still connected.
+            r.sleep()
+            self.ping()
+            if not self.parse_response(None):
+                rospy.logwarn("The board appears to be disconnected, trying again in 3 seconds.")
+                self.disconnection_alarm.raise_alarm(
+                    problem_description='The board appears to be disconnected.'
+                )
+                rospy.sleep(3)
 
     def set_raw_valve(self, srv):
         '''
@@ -86,26 +87,35 @@ class ActuatorDriver():
     def got_service_request(self, srv):
         '''
         Find out what actuator needs to be changed and how to change it with the valves.yaml file.
+
+        TODO: Allow pulsing of multi port actuators and setting of single port actuators.
         '''
         try:
             this_valve = self.actuators[srv.actuator]
         except:
-            rospy.logerr("'%s' not found in valves.yaml and therefore no configuration has been set for that actuator." % srv.actuator)
+            rospy.logerr("'%s' not found in valves.yaml so no configuration has been set for that actuator." % srv.actuator)
             return False
 
         if this_valve['type'] == 'pulse':
             # We want to pulse the port from the default value for the desired pulse_time then go back to the default value.
-            port_to_pulse = this_valve['ports']['port']
+            open_port = this_valve['ports']['open_port']
+            open_id = open_port['id']
+            open_default_value = open_port['default']
 
-            port_id = port_to_pulse['id']
-            default_value = port_to_pulse['default']
-            pulse_value = not default_value
+            close_port = this_valve['ports']['close_port']
+            close_id = close_port['id']
+            close_default_value = close_port['default']
+
+            open_pulse_value = not open_default_value
+            close_pulse_value = not close_default_value
 
             pulse_time = this_valve['pulse_time']
 
-            self.send_data(port_id, pulse_value)
+            self.send_data(open_id, open_pulse_value)
+            self.send_data(close_id, close_pulse_value)
             rospy.sleep(pulse_time)
-            self.send_data(port_id, default_value)
+            self.send_data(open_id, open_default_value)
+            self.send_data(close_id, close_default_value)
 
         elif this_valve['type'] == 'set':
             # If the desired action is to open, set the open valve to true and the closed false (and visa versa for closing).
@@ -146,6 +156,8 @@ class ActuatorDriver():
         - To read switch: send 0x40 + switch number (ex. 0x40 + 0x09 (valve #9) = 0x49 <-- byte to send), will reply with 0x00
         if switch is open (not pressed) or 0x01 if switch is closed (pressed).
         '''
+        if port == -1:
+            return
         #self.ser.flushInput()
 
         # Calculate checksum and send data to board.
@@ -167,10 +179,8 @@ class ActuatorDriver():
             )
             return False
 
-        # Delay as to not spam the board. This is not required once we can recieve data too.
-        rospy.sleep(.1)
-
-        #self.parse_response()
+        #rospy.sleep(.2)
+        self.parse_response(state)
 
     def load_yaml(self):
         with open(VALVES_FILE, 'r') as f:
@@ -183,15 +193,17 @@ class ActuatorDriver():
 
         TODO: Test with board and make sure all serial signals can be sent and received without need delays.
         '''
+        # Delay as to not spam the board. This is not required once we can recieve data too.
+        #rospy.sleep(.2)
         # The board doesn't currently respond with data.
         response = struct.unpack("BB", self.ser.read(2))
 
         data = response[0]
-        chksum = response[1] ^ 0xFF
+        chksum = response[1]
         rospy.loginfo("Received: %s. Chksum: %s." % (hex(data), hex(chksum)))
 
         # Check if packet is intact.
-        if data != chksum:
+        if data != chksum ^ 0xFF:
             rospy.logerr("CHKSUM NOT MATCHING.")
 
             self.packet_error_alarm.raise_alarm(
@@ -200,7 +212,6 @@ class ActuatorDriver():
                     'fault_info': {'expected': data ^ 0xFF, 'got': response[1]}
                 }
             )
-
             return False
 
         # Check if packet data is correct.
@@ -221,7 +232,12 @@ class ActuatorDriver():
         return False
 
     def ping(self):
-        self.ser.write(bytes(0x01))
+        rospy.loginfo("ping")
+
+        ping = 0x10
+        chksum = ping ^ 0xFF
+        data = struct.pack("BB", ping, chksum)
+        self.ser.write(data)
 
 if __name__ == "__main__":
     a = ActuatorDriver(rospy.get_param('~/actuator_driver/port'), 9600)
