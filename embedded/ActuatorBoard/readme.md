@@ -1,6 +1,6 @@
-Actuator Board
+**Actuator Board**
 
-Connection: RS485 - 9600, 8, N, 1, None
+Connection: RS485 - Baud Rate: 9600, Data Bits: 8, Parity: None, Stop Bits: 1, Flow Control: None
 
 Basic theory of operation: You send it a one byte command and it responds with the (a) state of the valve after the command, (b) state of the switch after the command, (c) a known byte that you can use to verify that the actuator board is operational, or (d) a known byte that means that that the opcode you sent is not supported. You then send it a checksum (the byte you just sent XOR with 0xFF). The board then sends back the response and the checksum.
 
