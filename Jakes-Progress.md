@@ -28,11 +28,11 @@ In order...
 - [x] Submit a pull-request for the PD controller
 - [x] Add vector of gains to demo controller
 
-- [ ] Submit PR for Controller base-class
+- [x] Submit PR for Controller base-class
 - [x] Get adaptive controller behaving nicely (The nonlinear project worked ~okay~)
     - [x] Test w/ Monte-Carlos
     - [x] Use history correctly
-- [ ] Submit PR for adaptive controller
+- [x] Submit PR for adaptive controller
 
 - [ ] Monte-carlo gain optimization (All permutations of some gain sets in some range)
     - For 10 combinations of each p, i and d, this is tenable at 1000 runs, and will take ~2 hrs
@@ -97,8 +97,13 @@ In order...
 - [x] Simulated DVL -- Annie
 - [ ] Add simulated magnetometer
     - [ ] Add simulated magnetic field effects to thrusters
-- [ ] Simulated stereo depth + imaging sonar
-- [ ] Scenegraph system
+
+- [ ] Simulated Sensors in Gazebo
+    - [ ] DVL
+    - [ ] Depth (easy-peasy)
+
+- [x] Simulated stereo depth + imaging sonar
+- [x] Scenegraph system
 - [ ] Consistent widgets
     - Scenegraph is a preqrequisite to do this right
     - Do all widgets have pose?
@@ -110,20 +115,31 @@ In order...
         - This may have been an aliasing effect from sampling rate
 - [x] The sim gets slower over time (Is it accumulating garbage?)
     - Not getting slower, just responding more intermittently to keyboard input
-- [ ] Verification
-    - [ ] IMU
-    - [ ] DVL
-    - [ ] Magnetomter
 - [x] Submit final PR for monte-carlo branch
-- [ ] Verify sub orientation
+- [x] Verify sub orientation
     - [x] Figure out source of inversion in Odometry (Stray transpose?)
 - [ ] Add simulated success conditions
-- [ ] Add .OBJ color reader (and Phong parameter reader)
+- [x] Add .OBJ color reader (and Phong parameter reader)
 - [x] Learn Tess' shader swapping
-    - [ ] Add simulated depth imaging
-- [ ] Add view swapping
-    - [ ] Add simulated ROS cameras (Set camera parameters?)
+    - [x] Add simulated depth imaging
+- [x] Add view swapping
+    - [x] Add simulated ROS cameras (Set camera parameters?)
 - [ ] "Regression testing" to force the simulator to match reality (Here, a learned dynamic model is guaranteed to be useful)
+- [x] Switch to Gazebo
+    - [x] Make Gazebo work in EC2
+    - [x] w/ cameras
+    - [x] Run local nodes
+        - Can't publish from router
+        - CAN publish from Ethernet
+            - Probably can't do this on campus
+    - [x] Add buoys
+    - [x] Add channel markers
+    - [x] Add Transdec (Joe did this, just need to integrate)
+    - [ ] Add easy method for downloading sub model
+- [x] Fix Gazebo stereo
+- [x] Split out models in Gazebo
+    - [ ] Submit PR (Waiting on PR#)
+
 
 # Solvers
 - [x] Get Ceres or IPOPT working (Ceres seems more likely)
@@ -154,43 +170,74 @@ In order...
     - Matplotpp
     - Ch++
 - Simulation improvements for boat use (Better submerged volume estimation, or constraints objects)
-- [ ] Pose-graph/scene-graph system
-    - [ ] Widgets for simulation
+- [x] Pose-graph/scene-graph system
+    - [x] Widgets for simulation
+    - Gazebo
 - [x] Submit PR for widgets
-- [ ] Submit PR for scenegraph
 
 ## Alarms
     - [x] Add simple GUI (While waiting for mission PR)
         - [ ] Full sub command gui
         - [ ] Make the GUI take alarms of the same name/id and overwrite them (So we don't get spammed)
+        - [ ] Better GUI in general
+
     - [ ] Improve everything
     - [x] Fix thrusters
+    - [ ] Make decentralized alarms (for Zach)
+        - [ ] Alarm listeners
+        - [ ] Triggers
 
 ## Missions
     - [x] Get TxROS back in the working tree
     - [ ] Add buoy-bumping mission
-    - [ ] Write guide alignment mission
+    - [x] Write guide alignment mission
+    - [ ] Service for adding things to the mission queue (without restarting the mission manager)
+    - [ ] More sane mission definition process
+        - [x] Remove the need to add the entry to __init__.py
+    - [ ] Terminal autocomplete for mission names (Requires a new dependency)
+    - [ ] Mission queue
+    - [ ] Make height-from-bottom a settable behavior (right now, height is just -depth)
+    - [ ] Make rosrun kill_handling kill actually do something
 
 
 ## Perception
+    - [ ] Radiometric calibration of cameras
     - [x] Buoys
-        - [ ] K-means optimal threshold
+        - [x] K-means optimal threshold
         - [x] Visualize in RVIZ
         - [ ] Noise rejection, bad cloud rejection
             - [ ] Particle filter
             - [ ] SBA for a much later date
         - [x] Make "find-buoy" service (Or action? Not important! )
+        - [ ] Mission
 
-    - [ ] Guides
+    - [x] Guides
         - [x] K-Means optimal thresholding
         - [x] PCA for principal orientation detection
         - [ ] RANSAC for parallelogram fitting (From above, it's approx a parallelogram)
             -- Really, its a trapezoid
-        - [ ] Implement service (Or action!?)
+        - [x] Implement service (Or action!?)
+        - [x] Mission for find/align
         - [ ] Visualize in RVIZ
+
+    - [ ] Start-gate -- Ralph
+
+    - [ ] Item-drop
+
+    - [ ] Open the torpedo door
+
+    - [ ] Grab the lid to the torps
+
+    - [ ] Manipulation before surfacing
+
+    - [ ] Torpedo alignment
+
+    - [ ] Switch buoy business to nodeley (Spend time on this someday)
+
 
     - [ ] "Bag-Nell", a tool for manually sifting through bags and selecting regions, then generating thresholds as parameter .yamls, and storing those
         - [ ] We'd have "forrest_pool_cals.yaml", "easterling_pool_cals.yaml" and eventually "transdec_cals.yaml"
+
     - [ ] "Occupancy" grid for "explored floor" - simple, 2d, using camera projection + TF of downward cam
         -- Mostly useful for human visualization
             -- Maybe someday we can use it as a search directive
@@ -199,12 +246,24 @@ In order...
         - [ ] Restart when we restart sub
         - [ ] Use DVL depth
             - [ ] Visualize (Check orientation of DVL frame, this might be easy): Nope, not easy
+
     - [ ] Script for auto-testing perception performance on manually segmented bags
+    - [x] Script for easily generating thresholds by grabbing the first image on a topic
+        - [ ] Pull-request
 
 Spring:
-- [ ] Ready up for pool-day (Make DVL, etc nodes run w/o using kill system)
-    - [ ] Perhaps switch them over to alarms?
-    - [ ] Reimplement all this nonsense in Python
+- [x] Ready up for pool-day (Make DVL, etc nodes run w/o using kill system)
+    - [ ] Switch them over to alarms?
+
+Drivers:
+    - [ ] Add new driver to support Daniel's changes to the actuator board
+    - [ ] Add new capabilities to tx_sub to support actuator board
+
+TF:
+    - [ ] Figure out how the hell to use txros tf
+    - [ ] Come up with a way to use TF for 2d stuff (At least the bottom camera)
+
+
 - [x] DVL
 - [x] Depth
 - [x] C3
@@ -217,6 +276,8 @@ Spring:
     - [ ] Now do a RHC, geometric planner or something wacky and funtacular
     - [ ] Lyapunov-Robust LQR
 - [ ] Simple multi-hypothesis tracking toolbox in both 2D and 3D
+- [ ] Particle filters for vision (We are not sufficiently robust)
+    - [ ] Good methods for handling crappy thresholds
 
 Random:
 - [ ] Pack-map: Draw the hierarchies of the sub packages
@@ -255,7 +316,7 @@ Not Sub:
     - [ ] Do what Bjarne talked about - C+Subset where abstractions are excused
     - [ ] Automatically generate headers (LOL DEFEATING THE POINT!)
     - [ ] Watch more Bjarne lectures
-- [ ] Move sub simulator to Gazebo (It's time, Gazebo is ready)
+- [x] Move sub simulator to Gazebo (It's time, Gazebo is ready)
 
 - [ ] Call in to coast-to-coast AM next time up at 3AM (Ralph)
 - [ ] Talk to Paracosm when we have SLAM working
@@ -267,12 +328,6 @@ Sublime plugins
 
 Knowledge
 - [ ] Learn how to use [Jekyll](http://jekyllrb.com/docs/posts/) for github page
-- [ ] Call in to coast-to-coast AM next time up at 3AM (Ralph)
-- [ ] Talk to Paracosm when we have SLAM working
 - [x] Give money to Jason -- Friendship submitted in lieu of money
 - [Writing good C++](https://youtu.be/0iWb_qi2-uI)
 - [SID](http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-435-system-identification-spring-2005/lecture-notes/)
-
-
-Notes
-- Downward camera is usb 3.0
