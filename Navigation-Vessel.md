@@ -1,7 +1,10 @@
 **Navigation Vessel**
 
+Overall info:
 * Gumstix board used in NAV vessel, running Linux
 * Custom board with IMU, designed by ???
+* FPGA is on custom board, provides basic level shifting functionality - configuration image is provided through Gumstix
+* Board is mounted to side with Ethernet bulkhead connector, very short cables from pressure sensor and DVL
 
 Linux disk commands:
 * List disks/partitions: sudo fdisk -l
