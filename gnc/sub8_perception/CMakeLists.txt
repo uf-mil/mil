@@ -17,6 +17,10 @@ find_package(catkin
     sub8_msgs
 )
 
+find_package(Ceres REQUIRED)
+include_directories(${CERES_INCLUDE_DIRS})
+include_directories(${CERES_INCLUDE_DIRS})
+
 catkin_python_setup()
 
 find_package(PCL 1.7 REQUIRED)
@@ -44,6 +48,7 @@ include_directories(
   SYSTEM
     ${PCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIR}
+    ${CERES_INCLUDE_DIRS}
     ${catkin_INCLUDE_DIRS}
 )
 
@@ -68,6 +73,7 @@ target_link_libraries(
     ${PCL_IO_LIBRARIES}
     ${PCL_LIBRARIES}
     ${Boost_LIBRARIES}
+    ${CERES_LIBRARIES}
     bfd
     dl
 )

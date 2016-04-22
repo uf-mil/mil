@@ -1,5 +1,9 @@
 #include <sub8_pcl/torpedo_board.hpp>
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Class: Sub8TorpedoBoardDetector ////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 Sub8TorpedoBoardDetector::Sub8TorpedoBoardDetector(double im_proc_scale, bool gen_dbg_img,
                                                    std::string l_img_topic, std::string r_img_topic,
                                                    std::string srv_name, std::string viz_topic)
@@ -15,8 +19,8 @@ try : image_transport(nh), rviz(viz_topic.empty()? "/visualization/torpedo_board
   std::string visualization_topic = viz_topic.empty()? "/visualization/torpedo_board" : viz_topic;
   
   // Subscribe to Cameras (image + camera_info)
-  left_image_sub = image_transport.subscribeCamera(img_topic_left, 1, &Sub8TorpedoBoardDetector::left_image_callback, this);
-  right_image_sub = image_transport.subscribeCamera(img_topic_right, 1, &Sub8TorpedoBoardDetector::right_image_callback, this);
+  left_image_sub = image_transport.subscribeCamera(img_topic_left, 1000, &Sub8TorpedoBoardDetector::left_image_callback, this);
+  right_image_sub = image_transport.subscribeCamera(img_topic_right, 1000, &Sub8TorpedoBoardDetector::right_image_callback, this);
   std::stringstream log_msg;
   log_msg << "Torpedo Board Detector subscriptions:" << std::left << std::endl
           << std::setw(7) << "" << std::setw(8) << " left  = " << img_topic_left << std::endl 
@@ -27,7 +31,7 @@ try : image_transport(nh), rviz(viz_topic.empty()? "/visualization/torpedo_board
   service = nh.advertiseService(service_name, &Sub8TorpedoBoardDetector::request_torpedo_board_position, this);
   log_msg.str(""); 
   log_msg.clear();
-  log_msg << "Advertisied Service:" << std::left  << std::endl << std::setw(7) << "" << service_name;
+  log_msg << "Advertised Service:" << std::left  << std::endl << std::setw(7) << "" << service_name;
   ROS_INFO(log_msg.str().c_str());
 
   // Set image processing scale
@@ -56,7 +60,8 @@ try : image_transport(nh), rviz(viz_topic.empty()? "/visualization/torpedo_board
   lower_right = cv::Rect(cv::Point(processing_size.width, processing_size.height), processing_size);
 
   ROS_INFO("Sub8TorpedoBoardDetector Initialized");
-}
+
+ }
 catch(const std::exception &e){
   ROS_ERROR("Exception from within Sub8TorpedoBoardDetector constructor initializer list: ");
   ROS_ERROR(e.what());
@@ -72,7 +77,7 @@ void Sub8TorpedoBoardDetector::left_image_callback(const sensor_msgs::ImageConst
                                const sensor_msgs::CameraInfoConstPtr &info_msg_ptr){
   left_most_recent.image_msg_ptr = image_msg_ptr;
   left_most_recent.info_msg_ptr = info_msg_ptr;
-  ROS_DEBUG("Got left image");
+  ROS_INFO("Got left image");
 }
 
 
@@ -80,7 +85,7 @@ void Sub8TorpedoBoardDetector::right_image_callback(const sensor_msgs::ImageCons
                                const sensor_msgs::CameraInfoConstPtr &info_msg_ptr){
   right_most_recent.image_msg_ptr = image_msg_ptr;
   right_most_recent.info_msg_ptr = info_msg_ptr;
-  ROS_DEBUG("Got right image");
+  ROS_INFO("Got right image");
 }
 
 
@@ -128,6 +133,14 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
     return;
   }
 
+  // Denoise Images
+  /*
+    TODO: 
+    Try inhomogenous diffusion, anisotropic diffusion for better filtering that preserves edges
+  */
+  cv::medianBlur(processing_size_image_left, processing_size_image_left, 5); // Magic num: 5 (might need tuning)
+  cv::medianBlur(processing_size_image_right, processing_size_image_right, 5);
+
   if(generate_dbg_img){
     try{
       processing_size_image_left.copyTo(debug_image(lower_left));
@@ -146,7 +159,8 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
 
   // Segment Board and find image coordinates of board corners
   cv::Mat left_segment_dbg_img, right_segment_dbg_img;
-  sub::Contour board_corners_left, board_corners_right;
+  // sub::Contour board_corners_left, board_corners_right;
+  std::vector<cv::Point> board_corners_left, board_corners_right;
   segment_board(processing_size_image_left, segmented_board_left, left_segment_dbg_img);
   segment_board(processing_size_image_right, segmented_board_right, right_segment_dbg_img, true);
   bool found_left = find_board_corners(segmented_board_left, board_corners_left, true);
@@ -274,6 +288,34 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
   Eigen::Quaterniond orientation;
   orientation.setFromTwoVectors(x_axis, normal_vector);
 
+  // Calculate quaternion encoding only the component of rotation about the y-axis (yaw)
+  double mag, x, y, z, w;
+  x = z = 0;
+  y = orientation.y();
+  w = orientation.w();
+  mag = pow(y * y + w * w, 0.5);
+  y /= mag;
+  w /= mag;
+  Eigen::Quaterniond yaw_quat(w, x, y, z);
+  
+  // Declare initial guess for optimization
+  double center_x = position(0);
+  double center_y = position(1);
+  double center_z = position(2);
+  double yaw = 2 * acos( yaw_quat.w());
+
+  // Define Problem and add residual block
+  // ceres::Problem max_likelihood_pose_estimation;
+  // TorpedoBoardReprojectionCost cost_functor(P_L_cv, P_R_cv, board_corners_left, board_corners_right);
+  // ceres::CostFunction* reprojection_error_cost = new ceres::AutoDiffCostFunction<TorpedoBoardReprojectionCost ,1 ,1, 1, 1, 1>(&cost_functor);
+  // max_likelihood_pose_estimation.AddResidualBlock(reprojection_error_cost, NULL, &center_x, &center_y, &center_z, &yaw);
+  // ceres::Solver::Options options;
+  // options.max_num_iterations = 100;
+  // options.linear_solver_type = ceres::DENSE_QR;
+  // ceres::Solve(options, &max_likelihood_pose_estimation, &summary);
+
+  // TODO: replace old estimate with result of optimization in the code below
+
   // Fill service response fields
   std::string tf_frame = left_cam_model.tfFrame();
   resp.pose.header.frame_id = tf_frame;
@@ -337,7 +379,7 @@ bool Sub8TorpedoBoardDetector::request_torpedo_board_position(sub8_msgs::VisionR
 
   // Prevent segfault if service is called before we get valid img_msg_ptr's
   if (left_most_recent.image_msg_ptr == NULL || right_most_recent.image_msg_ptr == NULL) {;
-    ROS_ERROR("Torpedo Board Detector: Image Pointers are NULL. Unable to continue.");
+    ROS_ERROR("Torpedo Board Detector: Image Pointers are NULL. Aborting Torpedo Board Detection.");
     return false;
   }
   else{
@@ -356,12 +398,12 @@ bool Sub8TorpedoBoardDetector::request_torpedo_board_position(sub8_msgs::VisionR
 void Sub8TorpedoBoardDetector::segment_board(const cv::Mat &src, cv::Mat &dest, cv::Mat &dbg_img, bool draw_dbg_img){
 
   // Preprocessing
-  cv::Mat hsv_image, hue_blurred, sat_blurred, hue_segment_dbg_img, sat_segment_dbg_img;
+  cv::Mat hsv_image, hue_img, sat_img, hue_segment_dbg_img, sat_segment_dbg_img;
   std::vector<cv::Mat> hsv_channels;
   cv::cvtColor(src, hsv_image, CV_BGR2HSV);
   cv::split(hsv_image, hsv_channels);
-  cv::medianBlur(hsv_channels[0], hue_blurred, 5); // Magic num: 5 (might need tuning)
-  cv::medianBlur(hsv_channels[1], sat_blurred, 5);
+  // cv::medianBlur(hsv_channels[0], hue_blurred, 5); // Magic num: 5 (might need tuning)
+  // cv::medianBlur(hsv_channels[1], sat_blurred, 5);
 
   // Histogram parameters
   int hist_size = 256;    // bin size
@@ -372,9 +414,9 @@ void Sub8TorpedoBoardDetector::segment_board(const cv::Mat &src, cv::Mat &dest, 
   cv::Mat threshed_hue, threshed_sat, segmented_board;
   int target_yellow = 20;
   int target_saturation = 180;
-  sub::statistical_image_segmentation(hue_blurred, threshed_hue, hue_segment_dbg_img, hist_size, ranges,
+  sub::statistical_image_segmentation(hue_img, threshed_hue, hue_segment_dbg_img, hist_size, ranges,
                                       target_yellow, "Hue", draw_dbg_img, 6, 0.5, 0.5);
-  sub::statistical_image_segmentation(sat_blurred, threshed_sat, sat_segment_dbg_img, hist_size, ranges,
+  sub::statistical_image_segmentation(sat_img, threshed_sat, sat_segment_dbg_img, hist_size, ranges,
                                       target_saturation, "Saturation", draw_dbg_img, 6, 0.1, 0.1);
   segmented_board = threshed_hue / 2.0 + threshed_sat / 2.0;
   cv::threshold(segmented_board, segmented_board, 255*0.75, 255, cv::THRESH_BINARY);
@@ -477,4 +519,105 @@ bool Sub8TorpedoBoardDetector::find_board_corners(const cv::Mat &segmented_board
   }
   corners = convex_hull;
   return corners_success;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Class: TorpedoBoardReprojectionCost ////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+TorpedoBoardReprojectionCost::TorpedoBoardReprojectionCost(cv::Matx34d &proj_mat_L, cv::Matx34d &proj_mat_R, std::vector<cv::Point> &image_corners_L, std::vector<cv::Point> &image_corners_R) :
+proj_L(proj_mat_L), 
+proj_R(proj_mat_R),
+img_corners_L(image_corners_L), 
+img_corners_R(image_corners_R)
+{
+  if (image_corners_L.size() != 4 || image_corners_R.size() != 4){
+    throw std::invalid_argument("Corner vectors should contain 4 points.");
+  }
+}
+
+
+TorpedoBoardReprojectionCost::~TorpedoBoardReprojectionCost(){
+  std::cout << "TorpedoBoardReprojectionCost being destructed." << std::endl;
+}
+
+std::vector<cv::Point> TorpedoBoardReprojectionCost::getProjectedCorners(double center_x, double center_y, double center_z, double yaw, cv::Matx34d &proj_matrix){
+  
+  // Calculate 3d Corners
+  std::vector<cv::Matx41d> corners3d;
+  double x, y, z;
+  x = center_x - 0.5 * width_m * cos(yaw);
+  y = center_y - 0.5 * height_m;
+  z = center_z - 0.5 * width_m * sin(yaw);
+  corners3d.push_back(cv::Matx41d(x, y, z, 1.0));
+  x = center_x + 0.5 * width_m * cos(yaw);
+  z = center_z + 0.5 * width_m * sin(yaw);
+  corners3d.push_back(cv::Matx41d(x, y, z, 1.0));
+  y = center_y + 0.5 * height_m;
+  corners3d.push_back(cv::Matx41d(x, y, z, 1.0));
+  x = center_x - 0.5 * width_m * cos(yaw);
+  z = center_z - 0.5 * width_m * sin(yaw);
+  corners3d.push_back(cv::Matx41d(x, y, z, 1.0));
+  // untested !
+
+  // Project Corners
+  std::vector<cv::Point> proj_corners;
+  cv::Matx31d proj_hom;
+  for(size_t i = 0; i < 4; i++){
+    proj_hom = proj_matrix * corners3d[i];
+    proj_corners.push_back(cv::Point(proj_hom(0, 0) / proj_hom(2, 0), proj_hom(1, 0) / proj_hom(2, 0)));
+  }
+  
+  return proj_corners;
+}
+
+template <typename T> 
+bool TorpedoBoardReprojectionCost::operator() (const T* const x, const T* const y, 
+               const T* const z, const T* const yaw, T* residual) const{
+  // Initialize residual in case of garbage within
+  residual[0] = 0;
+
+  // Calculate reprojection error from left image
+  std::vector<cv::Point2d> model_corners_L = getProjectedCorners(x, y, z, yaw, proj_L);
+
+  // Calculate reprojection error from right image
+  std::vector<cv::Point2d> model_corners_R = getProjectedCorners(x, y, z, yaw, proj_R);
+
+  double squared_distances_L[4][4];
+  double squared_distances_R[4][4];
+
+  // Calculate squared distances for all possible point pairs from the 2 sets
+  for (int i = 0; i < 4; i++){
+    for (int j = 0; j < 4; j++){
+      squared_distances_L[i][j] = pow(model_corners_L[i].x - img_corners_L[j].x, 2.0) + pow(model_corners_L[i].y - img_corners_L[j].y, 2.0);
+      squared_distances_R[i][j] = pow(model_corners_R[i].x - img_corners_R[j].x, 2.0) + pow(model_corners_R[i].y - img_corners_R[j].y, 2.0);
+      }
+  }
+
+  // Add only the smallest squared distance in each of the rows of the above arrays to the residual
+  // (smallest implies a point correspondence)
+  double least_dist_L, least_dist_R;
+  int idx_least_dist_L, idx_least_dist_R;
+  for (int i = 0; i < 4; i++){
+
+    least_dist_L = squared_distances_L[i][0];
+    least_dist_R = squared_distances_R[i][0];
+    idx_least_dist_L = idx_least_dist_R = 0;
+
+    for (int j = 1; j < 4; j++){
+      if(squared_distances_L[i][j] < least_dist_L){
+        least_dist_L = squared_distances_L[i][j];
+        idx_least_dist_L = j;
+      }
+      if(squared_distances_R[i][j] < least_dist_R){
+        least_dist_R = squared_distances_R[i][j];
+        idx_least_dist_R = j;
+      }
+    }
+
+    residual[0] += least_dist_L;
+    residual[0] += least_dist_R;
+  }
+
+  return true;
 }
