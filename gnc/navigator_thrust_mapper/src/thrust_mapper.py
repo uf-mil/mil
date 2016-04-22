@@ -49,6 +49,7 @@ import math,tf,threading
 from geometry_msgs.msg import WrenchStamped
 from std_msgs.msg import Float32MultiArray, Bool
 from roboteq_msgs.msg import *
+from sub8_alarm import AlarmListener
 
 
 class Thruster(object):
@@ -56,7 +57,6 @@ class Thruster(object):
     def __init__(self, cog, angle):
         self.cog = np.array([cog[0], cog[1]])
         self.angle = angle
-
 
 class Mapper(object):
 
@@ -74,12 +74,29 @@ class Mapper(object):
         # limit for the value sent to motor driver firmware
         self.effort_limit = effort_limit
 
+        self.full_kill = False
+        self.half_kill = False
+
+        self.full_kill_listener = AlarmListener('full_kill', self.full_kill_cb)
+        self.half_kill_listener = AlarmListener('half_kill', self.half_kill_cb)
+        self.revive_listener = AlarmListener('revive', self.revive_cb)
+
         # ROS data
         self.BL_pub = rospy.Publisher("/BL_motor/cmd" , Command, queue_size = 1)
         self.BR_pub = rospy.Publisher("/BR_motor/cmd" , Command, queue_size = 1)
         self.FL_pub = rospy.Publisher("/FL_motor/cmd" , Command, queue_size = 1)
         self.FR_pub = rospy.Publisher("/FR_motor/cmd" , Command, queue_size = 1)
         rospy.Subscriber("/wrench/cmd", WrenchStamped, self.wrench_cb)
+
+    def full_kill_cb(self, msg):
+        self.full_kill = True
+
+    def half_kill_cb(self, msg):
+        self.half_kill = True
+
+    def revive_cb(self, msg):
+        self.half_kill = False
+        self.full_kill = False
 
     def wrench_cb(self, msg):
         ''' Grab new wrench
@@ -133,10 +150,22 @@ class Mapper(object):
         FR_msg.setpoint = np.clip(fr * self.effort_ratio, -self.effort_limit, self.effort_limit)
 
         # publish ROS messages
-        self.BL_pub.publish(BL_msg)
-        self.BR_pub.publish(BR_msg)
-        self.FL_pub.publish(FL_msg)
-        self.FR_pub.publish(FR_msg)
+        if self.full_kill is True:
+            self.BL_pub.publish(Command(setpoint=0))
+            self.BR_pub.publish(Command(setpoint=0))
+            self.FL_pub.publish(Command(setpoint=0))
+            self.FR_pub.publish(Command(setpoint=0))
+        elif self.half_kill is True:
+            self.BL_pub.publish(BL_msg)
+            self.BR_pub.publish(BR_msg)
+            self.FL_pub.publish(Command(setpoint=0))
+            self.FR_pub.publish(Command(setpoint=0))
+        else:
+            self.BL_pub.publish(BL_msg)
+            self.BR_pub.publish(BR_msg)
+            self.FL_pub.publish(FL_msg)
+            self.FR_pub.publish(FR_msg)
+
 
 
 if __name__ == "__main__":

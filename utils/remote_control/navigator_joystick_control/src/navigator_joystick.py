@@ -23,26 +23,34 @@ class JOYSTICK(object):
         self.last_controller_state = 0;
         self.last_station_hold_state = 0;
         self.last_kill_state = 0
+        self.last_revive_state = 0
         self.current_pose = Odometry()
 
         self.wrench_toggle_turn = 0
 
         self.alarm_broadcaster = AlarmBroadcaster()
+
         self.full_kill_alarm = self.alarm_broadcaster.add_alarm(
             name='full_kill',
             action_required=True,
             severity=0
         )
 
+        self.revive_alarm = self.alarm_broadcaster.add_alarm(
+            name='revive',
+            action_required=True,
+            severity=0
+        )
+
         self.docking_alarm = self.alarm_broadcaster.add_alarm(
-            name='docking',
+            name='half_kill',
             action_required=True,
             severity=0
         )
 
         self.wrench_pub = rospy.Publisher("/wrench/rc", WrenchStamped, queue_size = 1)
         self.des_pose_pub = rospy.Publisher("/set_desired_pose", Point, queue_size = 1)
-        rospy.wait_for_service('/change_wrench')
+        #rospy.wait_for_service('/change_wrench')
         self.wrench_changer = rospy.ServiceProxy('/change_wrench', wrench_arbiter)
         rospy.Subscriber("joy", Joy, self.joy_cb)
         rospy.Subscriber("odom", Odometry, self.odom_cb)
@@ -52,7 +60,9 @@ class JOYSTICK(object):
 
     def joy_cb(self, joy):
 
+
         change_mode = joy.buttons[7]
+        revive = joy.buttons[1]
         kill = joy.buttons[8]
         station_hold = joy.buttons[0]
         docking = joy.buttons[6]
@@ -98,6 +108,13 @@ class JOYSTICK(object):
                 parameters={None: None}
             )
 
+        if revive == 1 and revive != self.last_revive_state:
+            rospy.logdebug("Toggling Kill")
+            self.revive_alarm.raise_alarm(
+                problem_description='Revive from location: {}'.format("joystick"),
+                parameters={None: None}
+            )
+
         # Turn on docking mode
         if docking == 1 and docking != self.last_docking_state:
             rospy.logdebug("Toggling Docking")
@@ -110,6 +127,7 @@ class JOYSTICK(object):
         self.last_kill_state = kill
         self.last_station_hold_state = station_hold
         self.last_docking_state = docking
+        self.last_revive_state = revive
 
         wrench = WrenchStamped()
         wrench.header.frame_id = "/base_link";

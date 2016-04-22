@@ -61,7 +61,7 @@
     <item>
      <widget class="QPushButton" name="docking_mode">
       <property name="text">
-       <string>Toggle Docking Mode</string>
+       <string>Docking Kill</string>
       </property>
      </widget>
     </item>

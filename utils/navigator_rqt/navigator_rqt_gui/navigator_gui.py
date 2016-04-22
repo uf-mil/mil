@@ -46,7 +46,7 @@ class Navigator_gui(Plugin):
         kill_button = self._widget.findChild(qtg.QPushButton, 'kill')
         kill_button.clicked.connect(self.toggle_kill)
         revive_button = self._widget.findChild(qtg.QPushButton, 'revive')
-        revive_button.clicked.connect(self.toggle_kill)
+        revive_button.clicked.connect(self.revive)
         station_hold_button = self._widget.findChild(qtg.QPushButton, 'station_hold')
         station_hold_button.clicked.connect(self.station_hold)
         station_hold_button = self._widget.findChild(qtg.QPushButton, 'docking_mode')
@@ -124,6 +124,27 @@ class Navigator_gui(Plugin):
         for x in xrange(0,8):
             msg.buttons.append(0)
         msg.buttons.append(1)
+        for x in xrange(0,4):
+            msg.axes.append(0)
+        self.joy_pub.publish(msg)
+        time.sleep(.1)
+
+        clr_msg = Joy()
+
+        for x in xrange(0,8):
+            clr_msg.buttons.append(0)
+        clr_msg.buttons.append(0)
+        for x in xrange(0,4):
+            clr_msg.axes.append(0)
+        self.joy_pub.publish(clr_msg)
+
+    def revive(self):
+        msg = Joy()
+
+        msg.buttons.append(0)
+        msg.buttons.append(1)
+        for x in xrange(0,7):
+            msg.buttons.append(0)
         for x in xrange(0,4):
             msg.axes.append(0)
         self.joy_pub.publish(msg)
