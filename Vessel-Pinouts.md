@@ -7,7 +7,7 @@ Actuator RS485
 * 5 (-) Red 
 * 3 (-) Black
 
-|---------|
+<Vessel Connector>
 
 |XXXX3XXXX|
 
@@ -15,4 +15,4 @@ Actuator RS485
 
 |5XXXXXXX1|
 
-|---------|
+</Vessel Connector>
