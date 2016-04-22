@@ -37,5 +37,6 @@
     * [[Unsupported OSes]]
 * Electrical
     * [[Navigation Vessel]]
+    * [[Vessel Pinouts]]
 * Old Notes
     * [[Simulation]]
