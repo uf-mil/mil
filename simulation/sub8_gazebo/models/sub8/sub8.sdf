@@ -145,6 +145,34 @@
           <Cy>240</Cy>
         </plugin>
       </sensor>
+
+      <!-- Uses LIDAR plugin to simulate 1 LIDAR ray to get distance to floor.
+           Best solution would be to write custom plugin but fuck it.-->
+      <sensor name="dvl_range" type="ray">
+        <!-- Same place as down cam, not sure where the real dvl is. -->
+        <pose>0.0537 0.1048 -0.2565  0 1.57 3.1415</pose>
+        <visualize>false</visualize>
+        <update_rate>25</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>1</samples>
+              <resolution>1</resolution>
+              <min_angle>-.0001</min_angle>
+              <max_angle>.0001</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.10</min>
+            <max>4000.0</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+        <plugin name="hokuyo_node" filename="libgazebo_ros_laser.so">
+          <topicName>/dvl/range_raw</topicName>
+          <frameName>dvl</frameName>
+        </plugin>
+      </sensor>
     </link>
 
     <plugin name="sub8_buoyancy" filename="libsub8_buoyancy.so">

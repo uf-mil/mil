@@ -9,32 +9,32 @@
   <node
     name="spawn_sub" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find sub8_gazebo)/models/sub8/sub8.sdf -sdf
-      -x 0.0 -y 0.0 -z -15.0 -model sub8"
+      -x 0.0 -y 0.0 -z -1.0 -model sub8"
     output="screen" />
 
   <!-- Buoys -->
   <node
     name="spawn_buoy_red" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find sub8_gazebo)/models/buoys/red.sdf -sdf
-      -x 7.0 -y 0.0 -z -17.0 -model red"
+      -x 20.1 -y 20.0 -z -1.0 -model red"
     output="screen" />
 
   <node
     name="spawn_buoy_green" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find sub8_gazebo)/models/buoys/green.sdf -sdf
-      -x 7.0 -y -1.0 -z -17.0 -model green"
+      -x 20.0 -y 21.2 -z -1.0 -model green"
     output="screen" />
 
   <node
     name="spawn_buoy_yellow" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find sub8_gazebo)/models/buoys/yellow.sdf -sdf
-      -x 7.0 -y 1.0 -z -17.0 -model yellow"
+      -x 20.03 -y 18.8 -z -1.0 -model yellow"
     output="screen" />
 
   <node
     name="spawn_chnl_marker_1" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find sub8_gazebo)/models/markers/channel_marker.sdf -sdf
-      -x 0.0 -y 0.0 -z -19.0 -Y 1.0 -model channel_marker_1"
+      -x 12.0 -y 24.0 -z -5.0 -Y -0.5 -model channel_marker_1"
     output="screen" />
 
   <node pkg="sub8_gazebo" type="gazebo_controller.py" name="gazebo_interface" />

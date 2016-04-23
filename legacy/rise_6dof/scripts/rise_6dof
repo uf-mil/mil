@@ -65,8 +65,8 @@ class Node(object):
         self.constant_wrench_time = None
         rospy.Service('send_constant_wrench', SendConstantWrench, self.send_constant_wrench)
 
-        pub = rospy.Publisher('/output', WrenchStamped)
-        pd_pub = rospy.Publisher('/pd_output', WrenchStamped)
+        pub = rospy.Publisher('/output', WrenchStamped, queue_size=2)
+        pd_pub = rospy.Publisher('/pd_output', WrenchStamped, queue_size=2)
 
         dt = 1 / 50
 

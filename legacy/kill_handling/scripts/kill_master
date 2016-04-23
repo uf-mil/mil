@@ -29,6 +29,6 @@ def send_kills():
 
 rospy.init_node('kill', anonymous=True)
 srv = rospy.Service('/set_kill', SetKill, set_kill)
-pub = rospy.Publisher('/kill', KillsStamped)
+pub = rospy.Publisher('/kill', KillsStamped, queue_size=2)
 timer = rospy.Timer(rospy.Duration(.5), lambda _: send_kills())
 rospy.spin()

@@ -84,6 +84,8 @@ class _Sub(object):
     def __init__(self, node_handle):
         self._node_handle = node_handle
 
+        self.test_mode = False
+
     @util.cancellableInlineCallbacks
     def _init(self):
         self._moveto_action_client = yield action.ActionClient(self._node_handle, 'moveto', MoveToAction)
@@ -96,7 +98,6 @@ class _Sub(object):
         self.buoy = VisionProxy('vision/buoys', self._node_handle)
         defer.returnValue(self)
 
-        self.test_mode = False
 
     def set_test_mode(self):
         self.test_mode = True
