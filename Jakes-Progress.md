@@ -143,6 +143,7 @@ In order...
 
 # Solvers
 - [x] Get Ceres or IPOPT working (Ceres seems more likely)
+- [ ] Fix Ceres + ROS Cmake issues
 - [ ] Inverse-compositional GN solver
 - [ ] Add single-state horizon quick-solver using CVXGEN
 - [ ] Multi-scale quick-DirCol
