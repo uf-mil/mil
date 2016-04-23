@@ -39,5 +39,6 @@
     * [[Navigation Vessel]]
     * [[Vessel Pinouts]]
     * [[Imaging Sonar - Electrical]]
+    * [[Spares]]
 * Old Notes
     * [[Simulation]]
