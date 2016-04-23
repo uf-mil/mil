@@ -40,5 +40,6 @@
     * [[Vessel Pinouts]]
     * [[Imaging Sonar - Electrical]]
     * [[Spares]]
+    * [[To Do (Electrical)]]
 * Old Notes
     * [[Simulation]]
