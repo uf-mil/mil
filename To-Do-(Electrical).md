@@ -10,6 +10,9 @@ Queue:
 4. RobotX motor controller for reel in sub
 5. RobotX wireless remote board
 6. Power merge board
+* Clean up inside of sub
+* Replace spliced down camera spliced USB cable to computer
+* Battery tray backplane system
 
 In Progress:
 
