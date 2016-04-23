@@ -1,4 +1,4 @@
-**Navigation Vessel**
+**Navigation Vessel (Electrical)**
 
 Overall info:
 * Gumstix board used in NAV vessel, running Linux
