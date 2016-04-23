@@ -28,6 +28,10 @@ Jiyao Guo
 
 Jason Nezvadovitz
 
+Little Man and Darla
+
+![Darla (left) & Little Man (right)](http://s31.postimg.org/s370klg23/IMG_20160423_014247.jpg)
+
 ## Helpful Hints
 * [When should I use a ROS topic vs service vs action?](http://answers.ros.org/question/11834/when-should-i-use-topics-vs-services-vs-actionlib-actions-vs-dynamic_reconfigure/)
 * [param vs. rosparam](http://answers.ros.org/question/37916/when-to-use-param-and-rosparam-on-launch-file/)
