@@ -48,6 +48,8 @@
       </link>
     </model>
 
+    <!-- Not sure how to get correct scaling here with Blender. Things are pretty much correct though.
+         Best option would be to remake transdec model in Solidworks with proper measurements. -->
     <model name="transdec">
       <pose>0 0 0  0 0 0</pose>
       <static>true</static>

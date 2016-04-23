@@ -4,10 +4,12 @@ import sub8_ros_tools as sub8_utils
 from tf import transformations
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import WrenchStamped, PoseWithCovariance, TwistWithCovariance, Pose, Point, Quaternion
+from sensor_msgs.msg import LaserScan
 from gazebo_msgs.srv import ApplyBodyWrench
 from gazebo_msgs.msg import LinkStates, ModelState
 from sub8_msgs.srv import ResetGazebo, ResetGazeboResponse
 from uf_common.msg import Float64Stamped
+import numpy as np
 
 
 class GazeboInterface(object):
@@ -21,6 +23,7 @@ class GazeboInterface(object):
         self.state_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self.state_cb)
         self.state_set_pub = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
 
+        self.raw_dvl_sub = rospy.Subscriber('dvl/range_raw', LaserScan, self.publish_height)
         self.dvl_pub = rospy.Publisher('dvl/range', Float64Stamped, queue_size=1)
 
         self.reset_srv = rospy.Service('gazebo/reset_gazebo', ResetGazebo, self.reset)
@@ -50,12 +53,13 @@ class GazeboInterface(object):
         wrench = msg.wrench
         self.send_wrench(wrench)
 
-    def publish_height(self, z):
-        '''HACK. Langford to fix'''
+    def publish_height(self, msg):
+        '''Sim DVL uses laserscan message to relay height'''
+        print msg
         self.dvl_pub.publish(
             Float64Stamped(
                 header=sub8_utils.make_header(),
-                data=(20.0 + z)
+                data=float(np.mean(msg.ranges))
             )
         )
 
@@ -80,7 +84,6 @@ class GazeboInterface(object):
                     twist=twist
                 )
             )
-            self.publish_height(pose.position.z)
 
         else:
             # fail
