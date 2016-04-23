@@ -27,3 +27,4 @@ There was a major schism, in which many people left the lab, as a result of a di
 * Doing motion planning for the first time
 * Every team in the lab is stacked with skilled people
 * We have alumni all over the country in many of the most prominent robotics groups in the world
+* Graphics card computing!
