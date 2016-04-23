@@ -1,4 +1,4 @@
-**Vessel Pinouts**
+**Vessel Pinouts (Electrical)**
 
 Actuator RS485
 * 2 (+) Orange - 24V
