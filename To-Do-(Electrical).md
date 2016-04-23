@@ -13,5 +13,4 @@ Queue:
 
 In Progress:
 
-* Actuator Board
-* * Order parts for 2nd spare
+* Actuator Board (Order parts for 2nd spare)
