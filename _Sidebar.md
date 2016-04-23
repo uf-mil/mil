@@ -36,8 +36,8 @@
     * [[Aws]]
     * [[Unsupported OSes]]
 * Electrical
-    * [[Navigation Vessel]]
-    * [[Vessel Pinouts]]
+    * [[Navigation Vessel (Electrical)]]
+    * [[Vessel Pinouts (Electrical)]]
     * [[Imaging Sonar (Electrical)]]
     * [[Spares (Electrical)]]
     * [[To Do (Electrical)]]
