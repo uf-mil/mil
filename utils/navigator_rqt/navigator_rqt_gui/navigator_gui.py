@@ -10,6 +10,7 @@ from python_qt_binding.QtGui import QWidget
 import python_qt_binding.QtGui as qtg
 from navigator_msg_multiplexer.srv import wrench_arbiter
 import time
+from geometry_msgs.msg import Point
 
 
 class Navigator_gui(Plugin):
@@ -47,6 +48,10 @@ class Navigator_gui(Plugin):
         kill_button.clicked.connect(self.toggle_kill)
         revive_button = self._widget.findChild(qtg.QPushButton, 'revive')
         revive_button.clicked.connect(self.revive)
+
+        revive_button = self._widget.findChild(qtg.QPushButton, 'move_send')
+        revive_button.clicked.connect(self.relative_move)
+
         station_hold_button = self._widget.findChild(qtg.QPushButton, 'station_hold')
         station_hold_button.clicked.connect(self.station_hold)
         station_hold_button = self._widget.findChild(qtg.QPushButton, 'docking_mode')
@@ -83,6 +88,7 @@ class Navigator_gui(Plugin):
         context.add_widget(self._widget)
 
         self.wrench_pub = rospy.Publisher("/wrench/gui", WrenchStamped, queue_size=1)
+        self.move_pub = rospy.Publisher('/move_helper', Point, queue_size=1)
         self.wrench_changer = rospy.ServiceProxy('/change_wrench', wrench_arbiter)
         rospy.Subscriber("/tf", TFMessage, self.wrench_pub_cb)
 
@@ -182,6 +188,16 @@ class Navigator_gui(Plugin):
             clr_msg.axes.append(0)
         self.joy_pub.publish(clr_msg)
 
+    def relative_move(self):
+        x = self._widget.findChild(qtg.QPlainTextEdit, 'x_send').toPlainText()
+        y = self._widget.findChild(qtg.QPlainTextEdit, 'y_send').toPlainText()
+        z = self._widget.findChild(qtg.QPlainTextEdit, 'z_send').toPlainText()
+        x,y,z = float(x), float(y), float(z)
+        to_send = Point(x,y,z)
+        self.move_pub.publish(to_send)
+
+
+
     def forward_slider(self, value):
         if self.wrench_out.wrench.force.x >= 0:
             self.wrench_out.wrench.force.x = 5 * value
@@ -205,3 +221,7 @@ class Navigator_gui(Plugin):
     def yaw_left_slider(self, value):
         if self.wrench_out.wrench.torque.z >= 0:
             self.wrench_out.wrench.torque.z = 5 * value
+
+    def forward_slider(self, value):
+        if self.wrench_out.wrench.force.x >= 0:
+            self.wrench_out.wrench.force.x = 5 * value

@@ -93,7 +93,6 @@ class JOYSTICK(object):
             orientation = self.current_pose.pose.pose.orientation
             q = np.array((orientation.x, orientation.y, orientation.z, orientation.w))
             rotation = tf.transformations.euler_from_quaternion(q)
-
             des_pose.x = self.current_pose.pose.pose.position.x;
             des_pose.y = self.current_pose.pose.pose.position.y;
             des_pose.z = rotation[2];

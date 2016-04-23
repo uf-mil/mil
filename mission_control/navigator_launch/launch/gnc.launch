@@ -28,7 +28,7 @@
 <launch>
 
     <arg name="sim" default="true" />
-    <arg name="rc" default="false" />
+    <arg name="rc" default="true" />
 
     <node pkg="navigator_thrust_mapper" type="thrust_mapper.py" name="thrust_mapper">
     <!-- Parameters used to set the thruster locations and angles relative to the center of gravity of the boat -->
@@ -54,7 +54,7 @@
     </node>
 
     <node if="$(arg rc)" respawn="true" pkg="xbox_joy_node" type="joy_node" name="joy_node">
-        <param name="dev" type="string" value="/dev/input/by-id/usb-©Microsoft_Xbox_360_Wireless_Receiver_for_Windows_E00F14A0-joystick" />
+        <param name="dev" type="string" value="/dev/input/by-id/usb-045e_0291-joystick" />
         <param name="deadzone" value="0.12" />
         <param name="autorepeat_rate" value="5"/>
     </node>
@@ -63,9 +63,7 @@
     <node pkg="tf" type="static_transform_publisher" name="lidar_tf" args=".5334 0.0127 .7493  0 0 0 1  /base_link /lidar 100" />
     <node pkg="tf" type="static_transform_publisher" name="forward_camera_tf" args=".6096 -.254 .762  0 0 0 1  /base_link /camera 100" />
 
-    <node unless="$(arg sim)" name="sdgps_solution_ros_bridge" pkg="navigator_state_estimation" type="solution_ros_bridge">
-        <param name="port" value="TODO"/>
-        <param name="child_frame_id" value="TODO"/>
-    </node>
+    <node name="move_helper" pkg="navigator_tools" type="move_helper.py"/>
+
 
 </launch>

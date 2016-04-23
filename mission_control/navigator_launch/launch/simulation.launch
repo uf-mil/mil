@@ -24,4 +24,5 @@
 	</node>
 
 	<include file="$(find navigator_launch)/launch/gnc.launch"/>
+	<node name="rqt_gui" pkg="rqt_gui" type="rqt_gui"/>
 </launch>

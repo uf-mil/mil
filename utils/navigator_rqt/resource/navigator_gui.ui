@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>522</width>
-    <height>324</height>
+    <width>641</width>
+    <height>398</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -94,7 +94,7 @@
      <x>260</x>
      <y>20</y>
      <width>241</width>
-     <height>231</height>
+     <height>271</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -280,8 +280,118 @@
     </property>
    </widget>
   </widget>
+  <widget class="QGroupBox" name="groupBox">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>310</y>
+     <width>541</width>
+     <height>80</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="title">
+    <string>Relative Movement</string>
+   </property>
+   <widget class="QPushButton" name="move_send">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>30</y>
+      <width>98</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Send!</string>
+    </property>
+   </widget>
+   <widget class="QPlainTextEdit" name="x_send">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>30</y>
+      <width>81</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="plainText">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_9">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>30</y>
+      <width>66</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>x:</string>
+    </property>
+   </widget>
+   <widget class="QPlainTextEdit" name="y_send">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>30</y>
+      <width>81</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="plainText">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_10">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>30</y>
+      <width>66</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>y:</string>
+    </property>
+   </widget>
+   <widget class="QPlainTextEdit" name="z_send">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>30</y>
+      <width>81</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="plainText">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_11">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>30</y>
+      <width>66</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>z:</string>
+    </property>
+   </widget>
+  </widget>
   <zorder>frame</zorder>
   <zorder>nav_gui</zorder>
+  <zorder>groupBox</zorder>
  </widget>
  <resources/>
  <connections/>
