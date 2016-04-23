@@ -1,4 +1,4 @@
-**Spares - Electrical**
+**Spares (Electrical)**
 
 We currently have spares for these components on Sub8:
 
