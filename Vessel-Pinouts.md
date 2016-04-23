@@ -9,8 +9,8 @@ Actuator RS485
 
 5 Pin Vessel Connector
 
-|XXXX3XXXX|
+|OOOO3OOOO|
 
-|XX4XXX2XX|
+|OO4OOO2OO|
 
-|5XXXXXXX1|
+|5OOOOOOO1|
