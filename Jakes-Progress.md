@@ -154,6 +154,7 @@ In order...
 
 # Overall
 - [ ] Reclaim Honor
+- [ ] Buy team Korean BBQ for moral
 
 # Christmas Break:
 - [x] Ask Jason to seal the sub before break so we can do a few pool days
