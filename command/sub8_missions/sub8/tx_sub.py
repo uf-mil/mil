@@ -83,7 +83,6 @@ class _PoseProxy(object):
 class _Sub(object):
     def __init__(self, node_handle):
         self._node_handle = node_handle
-
         self.test_mode = False
 
     @util.cancellableInlineCallbacks
@@ -97,7 +96,6 @@ class _Sub(object):
         self.channel_marker = VisionProxy('vision/channel_marker', self._node_handle)
         self.buoy = VisionProxy('vision/buoys', self._node_handle)
         defer.returnValue(self)
-
 
     def set_test_mode(self):
         self.test_mode = True
@@ -133,10 +131,7 @@ class _Sub(object):
             '/base_link',
             '/ground',
         )
-        # print trans._p[2]
         delta_height = -(-trans._p[2] - height)
-        # z = yield self.last_pose()
-        #print delta_height, self.pose.position[2]
         yield self.move.up(delta_height).go(speed=0.1)
 
     @util.cancellableInlineCallbacks
