@@ -105,14 +105,15 @@ if __name__ == '__main__':
     cv2.imshow("color", frame_unblurred)
 
     box = seg.segment()
+    print 'finished'
 
     cv2.drawContours(seg_image, [box], 0, 1, -2)
 
     hsv_in_box = hsv[seg_image.astype(np.bool)]
     hsv_list = np.reshape(hsv_in_box, (-1, 3))
 
-    clust = cluster.AgglomerativeClustering(
-    )
+    clust = cluster.KMeans(n_clusters=2)
+    print 'done clustering'
 
     clust.fit(hsv_list)
 

@@ -142,16 +142,18 @@ struct Node {
     if (c3trajectory) return;                            // already initialized
     if (kill_listener.get_killed() || disabled) return;  // only initialize when unkilled
 
+    ros::Time now = ros::Time::now();
+
     subjugator::C3Trajectory::Point current =
         Point_from_PoseTwist(odom->pose.pose, odom->twist.twist);
     current.q[3] = current.q[4] = 0;              // zero roll and pitch
     current.qdot = subjugator::Vector6d::Zero();  // zero velocities
 
     c3trajectory.reset(new subjugator::C3Trajectory(current, limits));
-    c3trajectory_t = odom->header.stamp;
+    c3trajectory_t = now;
 
     current_waypoint = current;
-    current_waypoint_t = odom->header.stamp;
+    current_waypoint_t = now;
   }
 
   void timer_callback(const ros::TimerEvent &) {
@@ -159,6 +161,15 @@ struct Node {
 
     ros::Time now = ros::Time::now();
 
+    if (actionserver.isNewGoalAvailable()) {
+      boost::shared_ptr<const uf_common::MoveToGoal> goal = actionserver.acceptNewGoal();
+      current_waypoint = subjugator::C3Trajectory::Waypoint(
+          Point_from_PoseTwist(goal->posetwist.pose, goal->posetwist.twist), goal->speed,
+          !goal->uncoordinated);
+      current_waypoint_t = now;
+      this->linear_tolerance = goal->linear_tolerance;
+      this->angular_tolerance = goal->angular_tolerance;
+    }
     if (actionserver.isPreemptRequested()) {
       current_waypoint = c3trajectory->getCurrentPoint();
       current_waypoint.r.qdot = subjugator::Vector6d::Zero();  // zero velocities
@@ -169,20 +180,7 @@ struct Node {
       c3trajectory_t = now;
     }
 
-    if (actionserver.isNewGoalAvailable()) {
-      boost::shared_ptr<const uf_common::MoveToGoal> goal = actionserver.acceptNewGoal();
-      current_waypoint = subjugator::C3Trajectory::Waypoint(
-          Point_from_PoseTwist(goal->posetwist.pose, goal->posetwist.twist), goal->speed,
-          !goal->uncoordinated);
-      current_waypoint_t = now;  // goal->header.stamp;
-      this->linear_tolerance = goal->linear_tolerance;
-      this->angular_tolerance = goal->angular_tolerance;
-      c3trajectory_t = now;
-    }
-
-    while ((c3trajectory_t + traj_dt < now) and ros::ok()) {
-      // ROS_INFO("Acting");
-
+    while (c3trajectory_t + traj_dt < now) {
       c3trajectory->update(traj_dt.toSec(), current_waypoint,
                            (c3trajectory_t - current_waypoint_t).toSec());
       c3trajectory_t += traj_dt;
@@ -211,6 +209,7 @@ struct Node {
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "c3_trajectory_generator");
+
   Node n;
 
   ros::spin();
