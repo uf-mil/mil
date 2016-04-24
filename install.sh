@@ -50,13 +50,12 @@ sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu trusty mai
 wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xB01FA116
 sudo apt-get update -qq
-sudo apt-get upgrade -qq
 
 ####### Install ROS
 instlog "Looks like ROS is not installed, let's take care of that"
 sudo apt-get install -qq ros-indigo-desktop-full python-catkin-pkg python-rosdep
 sudo apt-get remove -qq ros-indigo-gazebo*
-set -e
+
 source /opt/ros/indigo/setup.bash
 if ! cat ~/.bashrc | grep "source /opt/ros"; then
     echo "source /opt/ros/indigo/setup.bash" >> ~/.bashrc
