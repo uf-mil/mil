@@ -22,13 +22,20 @@
       <static>false</static>
       <link name="physics_engine">
         <pose>0 10 1 0 0 0</pose>
-        <visual name="visualk">
+        <visual name="visual_cessna">
           <geometry>
             <mesh>
               <uri>model://cessna/meshes/body.dae</uri>
             </mesh>
           </geometry>
         </visual>
+        <collision name="collision_cessna">
+          <geometry>
+            <mesh>
+              <uri>model://cessna/meshes/body.dae</uri>
+            </mesh>
+          </geometry>
+        </collision>
       </link>
     </model>
 
@@ -37,6 +44,7 @@
       <pose>0 0 0 0 3.1415 0</pose>
       <link name="link">
         <visual name="visual">
+          <transparency>0.8</transparency>
           <cast_shadows>false</cast_shadows>
           <geometry>
             <box>
@@ -44,10 +52,10 @@
             </box>
           </geometry>
           <material>
-            <ambient>0.2 0.2 0.9 .5</ambient>
-            <diffuse>0.2 0.2 0.9 .5</diffuse>
-            <specular>0.1 0.1 0.3 .5</specular>
-            <emissive>0 0 1 1</emissive>
+            <ambient>0.2 0.2 0.9 1</ambient>
+            <diffuse>0.2 0.2 0.9 1</diffuse>
+            <specular>0.1 0.1 0.3 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
       </link>
@@ -88,6 +96,10 @@
                 <uri>file://sky_box/sky.dae</uri>
               </mesh>
           </geometry>
+          <material>
+            <emissive>1 1 1 1</emissive>
+          </material>
+
         </visual>
       </link>
     </model>
