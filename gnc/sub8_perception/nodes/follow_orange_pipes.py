@@ -11,19 +11,20 @@ from marker_occ_grid import MarkerOccGrid
 
 class PipeFinder:
     def __init__(self):
-
-        self.occ_grid = MarkerOccGrid(res=.1, width=100, height=100, starting_pose=Pose2D(x=50, y=50, theta=0))
-
         self.last_image = None
         self.last_draw_image = None
-        self.pose_service = rospy.Service("vision/channel_marker/2D", VisionRequest2D, self.request_pipe)
         self.image_sub = sub8_ros_tools.Image_Subscriber('/down/left/image_raw', self.image_cb)
         self.image_pub = sub8_ros_tools.Image_Publisher("down/left/target_info")
 
-        # Occasional status publisher
-        self.timer = rospy.Timer(rospy.Duration(.5), self.publish_target_info)
+        self.occ_grid = MarkerOccGrid(self.image_sub, grid_res=.1, grid_width=100, grid_height=100, 
+                                      grid_starting_pose=Pose2D(x=50, y=50, theta=0))
+
+        self.pose_service = rospy.Service("vision/channel_marker/2D", VisionRequest2D, self.request_pipe)
 
         self.range = sub8_ros_tools.get_parameter_range('/color/channel_guide')
+
+        # Occasional status publisher
+        self.timer = rospy.Timer(rospy.Duration(.5), self.publish_target_info)
 
     def publish_target_info(self, *args):
         if self.last_image is None:
@@ -31,6 +32,7 @@ class PipeFinder:
 
         markers = self.find_pipe(np.copy(self.last_image))
         self.occ_grid.update_grid()
+        print markers
         self.occ_grid.add_marker(markers)
 
         if self.last_draw_image is not None:
@@ -38,7 +40,6 @@ class PipeFinder:
 
     def image_cb(self, image):
         '''Hang on to last image'''
-        self.occ_grid.reg_camera_info(self.image_sub.camera_info)
         self.last_image = image
 
     def ncc(self, image, mean_thresh, scale=15):
@@ -70,12 +71,13 @@ class PipeFinder:
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
         channel = 2
-        #norc = self.ncc(hsv[::2, ::2, channel], self.range[channel, 0])
+        norc = self.ncc(hsv[::2, ::2, channel], self.range[channel, 0])
 
         color_mask = cv2.inRange(hsv, self.range[:, 0], self.range[:, 1])
-        #ncc_mask = cv2.resize(np.uint8(norc >= 0), None, fx=2, fy=2)
+        
+        ncc_mask = cv2.resize(np.uint8(norc >= 0), None, fx=2, fy=2)
 
-        mask = color_mask  # & ncc_mask
+        mask = color_mask & ncc_mask
         # todo: use svm
         contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 

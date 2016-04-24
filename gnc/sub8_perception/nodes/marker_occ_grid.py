@@ -8,9 +8,11 @@ from geometry_msgs.msg import Pose, Point, Quaternion, Pose2D
 from nav_msgs.msg import OccupancyGrid, MapMetaData
 from sub8_msgs.srv import VisionRequest2D, VisionRequest2DResponse
 from image_geometry import PinholeCameraModel
+from sub8_ros_tools import threading_helpers
 
 import cv2
 import numpy as np
+import threading
 
 
 def unit_vector(vect):
@@ -104,29 +106,23 @@ class MarkerOccGrid(OccGridUtils):
     Handles updating occupancy grid when new data comes in.
     TODO: Upon call can return some path to go to in order to find them.
     '''
-    def __init__(self, res, width, height, starting_pose):
-        super(self.__class__, self).__init__(res=res, width=width, height=height, starting_pose=starting_pose)
+    def __init__(self, image_sub, grid_res, grid_width, grid_height, grid_starting_pose):
+        super(self.__class__, self).__init__(res=grid_res, width=grid_width, height=grid_height, starting_pose=grid_starting_pose)
 
         self.tf_listener = tf.TransformListener()
 
         self.cam = PinholeCameraModel()
-        self.camera_info = None
+        self.camera_info = image_sub.wait_for_camera_info()
+        if self.camera_info is None:
+            # Maybe raise an alarm here.
+            rospy.logerr("I don't know what to do without my camera info.")
 
-    def reg_camera_info(self, camera_info):
-        if camera_info is None:
-            return
-
-        self.camera_info = camera_info
-        self.cam.fromCameraInfo(camera_info)
+        self.cam.fromCameraInfo(self.camera_info)
 
     def update_grid(self):
         '''
         Takes marker information to update occupacy grid.
         '''
-        if self.camera_info is None:
-            # There is def a better way to do this. Is there an easy way to implement with a yeild?
-            return
-
         x_y_position, height = self.get_tf()
 
         self.add_circle(x_y_position, self.calculate_visual_radius(height))
@@ -147,10 +143,10 @@ class MarkerOccGrid(OccGridUtils):
         x_y_position, height = self.get_tf()
         dir_vector = unit_vector(np.array([self.cam.cx(), self.cam.cy()] - marker[0]))
         magnitude = self.calculate_visual_radius(height, second_point=marker[0])
-        local_position = dir_vector[::-1] * magnitude
+        local_position = dir_vector * magnitude
         position = local_position + x_y_position
 
-        print dir_vector[::-1]
+        print dir_vector
         
         # Pose on ground plane from center 
         pose = Pose2D(x=position[0], y=position[1], theta=marker[1])

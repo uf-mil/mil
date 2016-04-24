@@ -76,6 +76,25 @@ class Image_Subscriber(object):
         self.bridge = CvBridge()
         self.callback = callback
 
+    def wait_for_camera_info(self, timeout=10):
+        '''
+        Blocks until camera info has been received.
+        Note: 'timeout' is in seconds.
+        '''
+        rospy.logwarn("Blocking -- waiting at most %d seconds for camera info." % timeout)
+
+        timeout = rospy.Duration(timeout)
+        start_time = rospy.Time.now()
+        print rospy.is_shutdown()
+        while (start_time - rospy.Time.now() <= timeout) and (not rospy.is_shutdown()):
+            if self.camera_info is not None:
+                rospy.loginfo("Camera info found!")
+                return self.camera_info
+            rospy.sleep(.2)
+            
+        rospy.logerr("Camera info not found.")
+        return None
+
     def info_cb(self, msg):
         """The path trick here is a hack"""
         self.info_sub.unregister()
