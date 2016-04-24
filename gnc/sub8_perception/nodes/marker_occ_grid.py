@@ -7,6 +7,7 @@ from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, Point, Quaternion, Pose2D
 from nav_msgs.msg import OccupancyGrid, MapMetaData
 from sub8_msgs.srv import VisionRequest2D, VisionRequest2DResponse
+from image_geometry import PinholeCameraModel
 
 import cv2
 import numpy as np
@@ -49,8 +50,6 @@ class OccGridUtils(object):
 
         self.occ_grid_pub = rospy.Publisher(topic_name, OccupancyGrid, queue_size=1)
 
-        print self.occ_grid
-
     def add_circle(self, center, radius):
         '''
         Adds a circle to the grid.
@@ -60,7 +59,7 @@ class OccGridUtils(object):
 
         # Create blank canvas the size of the circle
         radius = int(radius / self.meta_data.resolution)
-
+        
         cv2.circle(self.searched, tuple(center_offset.astype(np.int8)), radius, 1, -1)
 
     def found_marker(self, pose_2d):
@@ -71,8 +70,8 @@ class OccGridUtils(object):
         TRENCH_LENGTH = 1.2 / self.meta_data.resolution  # cells (3 ft)
         TRENCH_WIDTH = .1524 / self.meta_data.resolution  # cells (6 inches)
 
-        center = np.array([pose_2d.x, -pose_2d.y])  # The negative all depends on how the center is returned
-        rotation = pose_2d.theta
+        center = np.array([pose_2d.x, pose_2d.y])  # The negative all depends on how the center is returned
+        rotation = -pose_2d.theta
 
         center_offset = center / self.meta_data.resolution - np.array([self.mid_x, self.mid_y])
 
@@ -110,50 +109,81 @@ class MarkerOccGrid(OccGridUtils):
 
         self.tf_listener = tf.TransformListener()
 
-        self.image = np.zeros((100, 100))
-    
-    def update_grid(self, marker):
+        self.cam = PinholeCameraModel()
+        self.camera_info = None
+
+    def reg_camera_info(self, camera_info):
+        if camera_info is None:
+            return
+
+        self.camera_info = camera_info
+        self.cam.fromCameraInfo(camera_info)
+
+    def update_grid(self):
         '''
         Takes marker information to update occupacy grid.
         '''
-        self.tf_listener.waitForTransform("/map", "/down_cam", rospy.Time(), rospy.Duration(1.0))
-        trans, rot = self.tf_listener.lookupTransform("/map", "/down_cam", rospy.Time())
-        
-        x_y_position = trans[:2]
-        depth = trans[2]
+        if self.camera_info is None:
+            # There is def a better way to do this. Is there an easy way to implement with a yeild?
+            return
 
-        self.add_circle(x_y_position, self.calculate_visual_radius(depth))
+        x_y_position, height = self.get_tf()
+
+        self.add_circle(x_y_position, self.calculate_visual_radius(height))
         self.publish_grid()
 
-    def calculate_visual_radius(self, depth):
+    def add_marker(self, marker):
+        '''
+        Find the actual 3d pose of the marker and fill in the occupancy grid for that pose.
+        This works by:
+            1. Calculate unit vector between marker point and the image center in the image frame.
+            2. Use height measurement to find real life distance (m) between center point and marker center. 
+            3. Use unit vec and magnitude to find dx and dy in meters.
+            3. Pass info to OccGridUtils.
+        '''
+        if marker is None:
+            return
+
+        x_y_position, height = self.get_tf()
+        dir_vector = unit_vector(np.array([self.cam.cx(), self.cam.cy()] - marker[0]))
+        magnitude = self.calculate_visual_radius(height, second_point=marker[0])
+        local_position = dir_vector[::-1] * magnitude
+        position = local_position + x_y_position
+
+        print dir_vector[::-1]
+        
+        # Pose on ground plane from center 
+        pose = Pose2D(x=position[0], y=position[1], theta=marker[1])
+        print pose
+        self.found_marker(pose)
+
+    def get_tf(self):
+        self.tf_listener.waitForTransform("/map", "/downward", rospy.Time(), rospy.Duration(1.0))
+        trans, rot = self.tf_listener.lookupTransform("/map", "/downward", rospy.Time())
+        x_y_position = trans[:2]
+        trans, rot = self.tf_listener.lookupTransform("/ground", "/downward", rospy.Time())
+        height = trans[2]
+
+        return x_y_position, height
+
+    def calculate_visual_radius(self, height, second_point=None):
         '''
         Draws rays to find the radius of the FOV of the camera in meters.
-        
-        TODO: Implement with actual ros images and image info.
+        It also works to find the distance between two planar points some distance from the camera.
         '''
-        edge_point = np.array([0, self.image.shape[0] / 2])
 
-        mid_ray = unit_vector(projectPixelTo3dRay(self.image / 2, 0, depth))
-        edge_ray = unit_vector(projectPixelTo3dRay(edge_point, 1, depth))
+        mid_ray = unit_vector(self.cam.projectPixelTo3dRay((self.cam.cx(), self.cam.cy())))
+
+        if second_point is None:
+            second_point = np.array([0, min(self.camera_info.height, self.camera_info.width) / 2])
+        edge_ray = unit_vector(self.cam.projectPixelTo3dRay(second_point))
 
         # Calculate angle between vectors and use that to find r
         theta = np.arccos(np.dot(mid_ray, edge_ray))
-        return np.tan(theta) * depth
+        return np.tan(theta) * height
 
-    def check_for_trench(self):
-        self.trench_service('trench')
-
-
-def projectPixelTo3dRay(uv, temp, depth):
-    '''
-    **TEMP FUNCTION** to emulate Image Geometry function.
-    '''
-    if temp == 0:
-        return np.array([0, 0, 1])
-    elif temp == 1:
-        return np.array([0, depth, 1])
 
 if __name__ == "__main__":
     rospy.init_node('searcher')
-    TempServiceProvider()
-    tr = TrenchFinder(res=.1, width=100, height=500, starting_pose=Pose2D(x=50, y=50, theta=0))
+    tr = MarkerOccGrid(res=.1, width=100, height=500, starting_pose=Pose2D(x=50, y=50, theta=0))
+    rospy.spin()
