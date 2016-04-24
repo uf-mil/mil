@@ -20,6 +20,7 @@ class GazeboInterface(object):
         # For now, let's skip the wrench
         # self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.wrench_cb)
         self.last_odom = None
+        self.pose_offset = None
         self.state_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self.state_cb)
         self.state_set_pub = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
 
@@ -55,7 +56,6 @@ class GazeboInterface(object):
 
     def publish_height(self, msg):
         '''Sim DVL uses laserscan message to relay height'''
-        print msg
         self.dvl_pub.publish(
             Float64Stamped(
                 header=sub8_utils.make_header(),
@@ -64,7 +64,7 @@ class GazeboInterface(object):
         )
 
     def publish_odom(self, *args):
-        if self.last_odom is None:
+        if self.last_odom is None or self.pose_offset is None:
             return
 
         msg = self.last_odom
@@ -72,8 +72,11 @@ class GazeboInterface(object):
             header = sub8_utils.make_header(frame='/map')
 
             target_index = msg.name.index(self.target)
-            pose = msg.pose[target_index]
             twist = msg.twist[target_index]
+
+            pose_np = sub8_utils.pose_to_numpy(msg.pose[target_index]) - self.pose_offset
+            pose = sub8_utils.numpy_quat_pair_to_pose(pose_np[1], pose_np[0])
+
             self.state_pub.publish(
                 header=header,
                 child_frame_id='/base_link',
@@ -84,13 +87,22 @@ class GazeboInterface(object):
                     twist=twist
                 )
             )
-
         else:
             # fail
             return
 
     def state_cb(self, msg):
-        '''TODO: add noise'''
+        '''
+        Position is offset so first message is taken as zero point. (More reflective of actual sub).
+        Z position is absolute and so is rotation?
+
+        TODO: Add noise
+        '''
+        if (self.last_odom is None or self.pose_offset is None) and self.target in msg.name:
+            self.pose_offset = np.array(sub8_utils.pose_to_numpy(msg.pose[msg.name.index(self.target)]))
+            self.pose_offset[0][2] = 0
+            self.pose_offset[1] = np.zeros(4)
+
         self.last_odom = msg
 
 
