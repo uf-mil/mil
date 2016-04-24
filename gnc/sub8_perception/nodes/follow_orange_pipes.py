@@ -3,8 +3,9 @@ import cv2
 import numpy as np
 import sys
 import rospy
-from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D
 import sub8_ros_tools
+import image_geometry
+from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D
 from geometry_msgs.msg import Pose2D
 from marker_occ_grid import MarkerOccGrid
 
@@ -16,12 +17,13 @@ class PipeFinder:
         self.image_sub = sub8_ros_tools.Image_Subscriber('/down/left/image_raw', self.image_cb)
         self.image_pub = sub8_ros_tools.Image_Publisher("down/left/target_info")
 
-        self.occ_grid = MarkerOccGrid(self.image_sub, grid_res=.1, grid_width=100, grid_height=100, 
+        self.occ_grid = MarkerOccGrid(self.image_sub, grid_res=.1, grid_width=100, grid_height=100,
                                       grid_starting_pose=Pose2D(x=50, y=50, theta=0))
 
         self.pose_service = rospy.Service("vision/channel_marker/2D", VisionRequest2D, self.request_pipe)
 
         self.range = sub8_ros_tools.get_parameter_range('/color/channel_guide')
+        self.channel_width = sub8_ros_tools.wait_for_param('/vision/channel_width')
 
         # Occasional status publisher
         self.timer = rospy.Timer(rospy.Duration(.5), self.publish_target_info)
@@ -32,7 +34,6 @@ class PipeFinder:
 
         markers = self.find_pipe(np.copy(self.last_image))
         self.occ_grid.update_grid()
-        print markers
         self.occ_grid.add_marker(markers)
 
         if self.last_draw_image is not None:
@@ -42,7 +43,15 @@ class PipeFinder:
         '''Hang on to last image'''
         self.last_image = image
 
-    def ncc(self, image, mean_thresh, scale=15):
+    def get_ncc_scale(self):
+        '''Comptue pixel width of the channel marker'''
+        _, height = self.occ_grid.get_tf()
+
+        a = np.array(self.occ_grid.cam.project3dToPixel([0.0, self.channel_width, height]))
+        b = self.occ_grid.cam.project3dToPixel([0.0, 0.0, height])
+        return int(np.linalg.norm(a - b) / 2.0)
+
+    def ncc(self, image, mean_thresh, scale=5):
         '''Compute normalized cross correlation w.r.t a shadowed pillbox fcn
 
         TODO:
@@ -71,10 +80,12 @@ class PipeFinder:
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
         channel = 2
-        norc = self.ncc(hsv[::2, ::2, channel], self.range[channel, 0])
+
+        marker_scale = self.get_ncc_scale()
+        norc = self.ncc(hsv[::2, ::2, channel], self.range[channel, 0], scale=marker_scale)
 
         color_mask = cv2.inRange(hsv, self.range[:, 0], self.range[:, 1])
-        
+
         ncc_mask = cv2.resize(np.uint8(norc >= 0), None, fx=2, fy=2)
 
         mask = color_mask & ncc_mask
@@ -89,11 +100,9 @@ class PipeFinder:
             # sort contours by area (greatest --> least)
             contours = sorted(contours, key=cv2.contourArea, reverse=True)[:1]
             cnt = contours[0]  # contour with greatest area
-            if cv2.contourArea(cnt) > 300:  # this value will change based on our depth/the depth of the pool
 
-                rect = cv2.minAreaRect(cnt)   # find bounding rectangle of min area (including rotation)
-                box = cv2.cv.BoxPoints(rect)  # get corner coordinates of that rectangle
-                box = np.int0(box)            # convert coordinates to ints
+            # This is not to filter incorrectly sized objects, but to ignore speckle noise
+            if cv2.contourArea(cnt) > 100:
 
                 cv2.drawContours(blank_img, [cnt], 0, (255, 255, 255), -1)
                 cv2.drawContours(draw_image, [cnt], 0, (255, 255, 255), -1)
@@ -131,8 +140,8 @@ class PipeFinder:
                 cv2.line(draw_image, tuple(np.int0(center)), tuple(np.int0(center + (2 * max_eigv))), (0, 255, 30), 2)
                 cv2.line(draw_image, tuple(np.int0(center)), tuple(np.int0(center + (2 * min_eigv))), (0, 30, 255), 2)
 
-                #norc_res = cv2.resize(norc, None, fx=2, fy=2)
-                #draw_image[:, :, 0] = norc_res
+                norc_res = cv2.resize(norc, None, fx=2, fy=2)
+                draw_image[:, :, 0] = norc_res
                 self.last_draw_image = np.copy(draw_image)
                 return center, angle_rad
 

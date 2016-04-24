@@ -1,2 +1,3 @@
 vision:
   buoy_radius: 0.1
+  channel_width: 0.2

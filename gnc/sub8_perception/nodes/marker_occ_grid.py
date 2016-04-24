@@ -37,12 +37,12 @@ class OccGridUtils(object):
         self.meta_data.resolution = res  # rospy.get_param("map_resolution")
         self.meta_data.width = width  # rospy.get_param("map_width")
         self.meta_data.height = height  # rospy.get_param("map_height")
-        
+
         # Starting Position
         self.mid_x = -starting_pose.x
         self.mid_y = -starting_pose.y
 
-        self.meta_data.origin = Pose(position=Point(x=-starting_pose.x * res, y=-starting_pose.y * res, z=0), 
+        self.meta_data.origin = Pose(position=Point(x=-starting_pose.x * res, y=-starting_pose.y * res, z=0),
                                      orientation=Quaternion(*tf.transformations.quaternion_from_euler(0, 0, starting_pose.theta)))
 
         # Create array of -1's of the correct size
@@ -61,7 +61,7 @@ class OccGridUtils(object):
 
         # Create blank canvas the size of the circle
         radius = int(radius / self.meta_data.resolution)
-        
+
         cv2.circle(self.searched, tuple(center_offset.astype(np.int8)), radius, 1, -1)
 
     def found_marker(self, pose_2d):
@@ -133,7 +133,7 @@ class MarkerOccGrid(OccGridUtils):
         Find the actual 3d pose of the marker and fill in the occupancy grid for that pose.
         This works by:
             1. Calculate unit vector between marker point and the image center in the image frame.
-            2. Use height measurement to find real life distance (m) between center point and marker center. 
+            2. Use height measurement to find real life distance (m) between center point and marker center.
             3. Use unit vec and magnitude to find dx and dy in meters.
             3. Pass info to OccGridUtils.
         '''
@@ -146,11 +146,11 @@ class MarkerOccGrid(OccGridUtils):
         local_position = dir_vector * magnitude
         position = local_position + x_y_position
 
-        print dir_vector
-        
-        # Pose on ground plane from center 
+        # print dir_vector[::-1]
+
+        # Pose on ground plane from center
         pose = Pose2D(x=position[0], y=position[1], theta=marker[1])
-        print pose
+        # print pose
         self.found_marker(pose)
 
     def get_tf(self):
