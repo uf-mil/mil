@@ -22,15 +22,18 @@
       <collision name="box_collision">
         <pose>0 0 0 0 0 1.5707</pose>
         <geometry>
-          <!-- Can use sub instead -->
-          <box><size>.5588 .5588 .381</size></box>
+          <mesh>
+            <uri>file://sub8/sub8.dae</uri>
+          </mesh>
         </geometry>
       </collision>
 
       <visual name="visual">
         <pose>0 0 0 0 0 1.5707</pose>
         <geometry>
-            <box><size>.5588 .5588 .381</size></box>
+          <mesh>
+            <uri>file://sub8/sub8.dae</uri>
+          </mesh>
         </geometry>
       </visual>
 
@@ -42,10 +45,6 @@
             <width>640</width>
             <height>480</height>
           </image>
-          <clip>
-            <near>0.1</near>
-            <far>20</far>
-          </clip>
           <distortion>
             <k1>0</k1>
             <k2>0</k2>
@@ -78,10 +77,6 @@
             <width>640</width>
             <height>480</height>
           </image>
-          <clip>
-            <near>0.1</near>
-            <far>20</far>
-          </clip>
           <distortion>
             <k1>0</k1>
             <k2>0</k2>
@@ -115,10 +110,6 @@
             <width>640</width>
             <height>480</height>
           </image>
-          <clip>
-            <near>0.1</near>
-            <far>20</far>
-          </clip>
           <distortion>
             <k1>0</k1>
             <k2>0</k2>
@@ -150,7 +141,7 @@
            Best solution would be to write custom plugin but fuck it.-->
       <sensor name="dvl_range" type="ray">
         <!-- Same place as down cam, not sure where the real dvl is. -->
-        <pose>0.0537 0.1048 -0.2565  0 1.57 3.1415</pose>
+        <pose>0.0908 0.0 -0.2459  0 1.57 3.1415</pose>
         <visualize>false</visualize>
         <update_rate>25</update_rate>
         <ray>

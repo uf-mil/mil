@@ -111,7 +111,6 @@ We haven't fully decided how vision data, etc will be shared with the mission ma
 
 
 # TODO
-    - Add rosrun sub8_missions list_missions
     - Chaining together multiple missions in the command line
     - Responding to sensor input
     - Intelligently using motion planning (instead of simply using moveto)
