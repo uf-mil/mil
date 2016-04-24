@@ -12,9 +12,6 @@ initial = True
 def set_kill(req):
     global initial
     if not req.clear:
-        if initial and req.kill.active:
-            initial = False
-            del kills['initial']
         kills[req.kill.id] = req.kill
     else:
         del kills[req.kill.id]
