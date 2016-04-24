@@ -23,7 +23,7 @@ class KeepAlive(object):
 if __name__ == '__main__':
     rospy.init_node('network_kill')
     kb = KillBroadcaster(id='network', description='Network timeout')
-    ka = KeepAlive(timeout=5.0)
+    ka = KeepAlive(timeout=0.3)
 
     while(not rospy.is_shutdown()):
         rospy.sleep(2.0)
