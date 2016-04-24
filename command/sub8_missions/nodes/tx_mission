@@ -25,8 +25,15 @@ def main():
         parser.add_argument('--test', dest='test', action='store_true',
                             help="Set this flag if you'd like to ignore motions")
 
+        parser.add_argument('--list', dest='list', action='store_true',
+                            help="Set this flag if you'd like to ignore motions")
+
         nh, args = nh_args
         args = parser.parse_args(args[1:])
+        if args.list:
+            mission_list = [mission_name for mission_name in dir(missions) if not mission_name.startswith('_')]
+            print '  %s' % '\n  '.join(map(str, mission_list))
+            exit(0)
         mission_name = args.mission_name
         assert mission_name in available_missions, "'{}' is not an available mission; we have: {}".format(
             mission_name, ', '.join(available_missions)
