@@ -20,7 +20,7 @@ class GazeboInterface(object):
         # For now, let's skip the wrench
         # self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.wrench_cb)
         self.last_odom = None
-        self.pose_offset = None
+        self.position_offset = None
         self.state_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self.state_cb)
         self.state_set_pub = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
 
@@ -44,7 +44,7 @@ class GazeboInterface(object):
         self.state_set_pub.publish(ModelState(
             model_name=model,
             pose=Pose(
-                position=Point(0, 0, -15),
+                position=Point(0, 0, -5),
                 orientation=Quaternion(*transformations.quaternion_from_euler(0, 0, 0.3))
             )
         ))
@@ -64,7 +64,7 @@ class GazeboInterface(object):
         )
 
     def publish_odom(self, *args):
-        if self.last_odom is None or self.pose_offset is None:
+        if self.last_odom is None or self.position_offset is None:
             return
 
         msg = self.last_odom
@@ -74,8 +74,9 @@ class GazeboInterface(object):
             target_index = msg.name.index(self.target)
             twist = msg.twist[target_index]
 
-            pose_np = sub8_utils.pose_to_numpy(msg.pose[target_index]) - self.pose_offset
-            pose = sub8_utils.numpy_quat_pair_to_pose(pose_np[1], pose_np[0])
+            # Add position offset to make the start position (0, 0, -depth)
+            position_np, orientation_np = sub8_utils.pose_to_numpy(msg.pose[target_index])
+            pose = sub8_utils.numpy_quat_pair_to_pose(orientation_np, position_np  - self.position_offset)
 
             self.state_pub.publish(
                 header=header,
@@ -98,10 +99,15 @@ class GazeboInterface(object):
 
         TODO: Add noise
         '''
-        if (self.last_odom is None or self.pose_offset is None) and self.target in msg.name:
-            self.pose_offset = np.array(sub8_utils.pose_to_numpy(msg.pose[msg.name.index(self.target)]))
-            self.pose_offset[0][2] = 0
-            self.pose_offset[1] = np.zeros(4)
+        if self.target not in msg.name:
+            return
+
+        if (self.last_odom is None or self.position_offset is None):
+            pose = msg.pose[msg.name.index(self.target)]
+            position, orientation = sub8_utils.pose_to_numpy(pose)
+
+            self.position_offset = position
+            self.position_offset[2] = 0
 
         self.last_odom = msg
 
