@@ -15,7 +15,6 @@
 * Create a networking script that will set up someone's computer completely to work with the boat - ZACH
 * Create a docking mode allowing for a front thruster only kill
 * Add state estimation on computer startup
-
 * Test Trajectory Generator (Forrest)
 
 ### Things tested at last testing day, April 1st
