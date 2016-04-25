@@ -152,12 +152,16 @@ class MarkerOccGrid(OccGridUtils):
         local_position = dir_vector[::-1] * magnitude
         position = local_position + x_y_position
 
-        print local_position
+        #print local_position
 
         # Pose on ground plane from center
         pose = Pose2D(x=position[0], y=position[1], theta=marker_rotation)
-        # print pose
         self.found_marker(pose)
+
+        # The image coordinate pose and real life pose are different.
+        pose = Pose2D(x=position[0], y=position[1], theta=marker_rotation)
+        # In meters with initial point at (0,0)
+        return pose
 
     def get_tf(self, timestamp=None):
         '''
@@ -173,32 +177,34 @@ class MarkerOccGrid(OccGridUtils):
         trans, _ = self.tf_listener.lookupTransform("/ground", "/downward", timestamp)
         height = trans[2]
 
-        self.correct_height(height)
+        self.correct_height(height, timestamp)
 
         return x_y_position, height
 
-    def correct_height(self, measured_height):
+    def correct_height(self, measured_height, timestamp):
         '''
         Adjust the measured height from the seafloor using our orientation relative to it.
         We assume the floor is flat (should be valid for transdec but maybe not for pool).
-
         All the math is just solving triangles.
-        '''
-        trans, rot = self.tf_listener.lookupTransform("/map", "/base_link", rospy.Time())
-        euler_rotation = tf.transformations.euler_from_quaternion(rot)
-        print euler_rotation
 
-        roll_offset = np.abs(np.cos(euler_rotation[0]) * measured_height)
-        pitch_offset = np.abs(np.cos(euler_rotation[1]) * measured_height)
+        Note: If the roll or pitch is too far off, the range could be to a point that is not
+            planar to the floor directly under us - in which case this will fail.
+
+        TODO: See if this actually can produce better results.
+        '''
+        trans, rot = self.tf_listener.lookupTransform("/map", "/base_link", timestamp)
+        euler_rotation = tf.transformations.euler_from_quaternion(rot)
+
+        roll_offset = np.abs(np.sin(euler_rotation[0]) * measured_height)
+        pitch_offset = np.abs(np.sin(euler_rotation[1]) * measured_height)
 
         height = np.sqrt(measured_height ** 2 - (roll_offset ** 2 + pitch_offset ** 2))
-
         return height
 
     def calculate_visual_radius(self, height, second_point=None):
         '''
         Draws rays to find the radius of the FOV of the camera in meters.
-        It also works to find the distance between two planar points some distance from the camera.
+        It also can work to find the distance between two planar points some distance from the camera.
         '''
 
         mid_ray = unit_vector(self.cam.projectPixelTo3dRay((self.cam.cx(), self.cam.cy())))

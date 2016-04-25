@@ -5,6 +5,7 @@ import sys
 import rospy
 import sub8_ros_tools
 import image_geometry
+from std_msgs.msg import Header
 from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D
 from geometry_msgs.msg import Pose2D
 from marker_occ_grid import MarkerOccGrid
@@ -28,14 +29,14 @@ class PipeFinder:
         self.channel_width = sub8_ros_tools.wait_for_param('/vision/channel_width')
 
         # Occasional status publisher
-        self.timer = rospy.Timer(rospy.Duration(.5), self.publish_target_info)
+        self.timer = rospy.Timer(rospy.Duration(.1), self.publish_target_info)
 
     def publish_target_info(self, *args):
         if self.last_image is None:
             return
 
         markers = self.find_pipe(np.copy(self.last_image))
-        print markers
+        #print markers
         self.occ_grid.update_grid(self.last_image_timestamp)
         self.occ_grid.add_marker(markers, self.last_image_timestamp)
 
@@ -148,6 +149,8 @@ class PipeFinder:
                 norc_res = cv2.resize(norc, None, fx=2, fy=2)
                 draw_image[:, :, 0] = norc_res
                 self.last_draw_image = np.copy(draw_image)
+
+                print center, angle_rad
                 return center, angle_rad
 
     def request_pipe(self, data):
@@ -159,11 +162,14 @@ class PipeFinder:
         found = (pose is not None)
         if not found:
             resp = VisionRequest2DResponse(
-                header=sub8_ros_tools.make_header(frame='/down_camera'),
+                header=Header(
+                    stamp=self.last_image_timestamp,
+                    frame_id='/down_camera'),
                 found=found
             )
         else:
             position, orientation = pose
+
             resp = VisionRequest2DResponse(
                 pose=Pose2D(
                     x=position[0],
@@ -172,7 +178,10 @@ class PipeFinder:
                 ),
                 max_x=self.last_image.shape[0],
                 max_y=self.last_image.shape[1],
-                header=sub8_ros_tools.make_header(frame='/down_camera'),
+                camera_info=self.image_sub.camera_info,
+                header=Header(
+                    stamp=self.last_image_timestamp,
+                    frame_id='/down_camera'),
                 found=found
             )
         return resp
