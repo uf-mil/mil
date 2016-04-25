@@ -58,6 +58,8 @@
   <include file="$(find sub8_videoray_m5_thruster)/launch/thruster_driver.launch" />
 
   <node pkg="kill_handling" type="kill_master" name="kill_master"/>
+  <node pkg="sub8_alarm" type="alarm_handler.py" name="alarm_handler"/>
+
 
   <include file="$(find sub8_launch)/launch/tf.launch" />
   <node pkg="nodelet" type="nodelet" args="standalone odometry_utils/odometry_to_tf" name="odometry_to_tf"/>

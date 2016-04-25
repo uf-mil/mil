@@ -2,9 +2,7 @@
 import rospy
 import json
 from sub8_msgs.msg import Alarm
-from std_msgs.msg import Header
 from sub8_alarm import alarms
-import string
 
 
 class AlarmHandler(object):
@@ -18,7 +16,10 @@ class AlarmHandler(object):
         '''
         rospy.init_node('alarm_handler')
         # Queue size is large because you bet your ass we are addressing every alarm
-        self.alarm_sub = rospy.Subscriber('/alarm', Alarm, self.alarm_callback, queue_size=100)
+        self.alarm_sub = rospy.Subscriber('/alarm_raise', Alarm, self.alarm_callback, queue_size=100)
+        self.alarm_pub = rospy.Publisher('/alarm', Alarm, queue_size=100)
+        self.alarms = {}
+        self.alarm_republish_timer = rospy.Timer(rospy.Duration(0.1), self.republish_alarms)
 
         self.scenarios = {}
 
@@ -31,8 +32,22 @@ class AlarmHandler(object):
                 if hasattr(CandidateAlarm, 'handle'):
                     self.scenarios[CandidateAlarm.alarm_name] = CandidateAlarm()
 
+    def republish_alarms(self, *args):
+        for alarm_name, alarm in self.alarms.items():
+            self.alarm_pub.publish(alarm)
 
     def alarm_callback(self, alarm):
+
+        # -- > We don't have to remove cleared alarms
+
+        # if alarm.clear:
+        #     rospy.logwarn("Clearing {}".format(alarm.alarm_name))
+        #     if alarm.alarm_name in self.alarms.keys():
+        #         self.alarms.pop(alarm.alarm_name)
+        #     return
+
+        self.alarms[alarm.alarm_name] = alarm
+
         time = alarm.header.stamp
         if alarm.action_required:
             rospy.logwarn(
@@ -50,8 +65,15 @@ class AlarmHandler(object):
         scenario = self.scenarios.get(alarm.alarm_name)
 
         # Decode JSON
-        parameters = json.loads(alarm.parameters)
-        scenario.handle(time, parameters)
+        if len(alarm.parameters) == 0:
+            parameters = {}
+        else:
+            parameters = json.loads(alarm.parameters)
+        if scenario is not None:
+            if alarm.clear:
+                scenario.cancel(time, parameters)
+            else:
+                scenario.handle(time, parameters)
 
 
 if __name__ == '__main__':

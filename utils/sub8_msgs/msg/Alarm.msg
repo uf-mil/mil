@@ -19,3 +19,6 @@ string alarm_name
 
 # Node of alarm origination
 string node_name
+
+# Is this just a notification to clear an alarm of this type?
+bool clear
