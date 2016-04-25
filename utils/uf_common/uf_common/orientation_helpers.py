@@ -159,11 +159,12 @@ class PoseEditor(object):
     def set_position(self, position):
         return type(self)(self.frame_id, position, self.orientation)
 
-    def height(self, height):
-        '''TODO:
-        Make this distance from bottom
-        '''
-        return self.set_position([self.position[0], self.position[1], height])
+    # Removed since the Sub can't go out of the water
+    # def height(self, height):
+    #     '''TODO:
+    #     Make this distance from bottom
+    #     '''
+    #     return self.set_position([self.position[0], self.position[1], height])
 
     def depth(self, depth):
         return self.set_position([self.position[0], self.position[1], -depth])

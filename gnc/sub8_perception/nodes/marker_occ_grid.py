@@ -20,9 +20,9 @@ def unit_vector(vect):
 
 
 def make_2D_rotation(angle):
-        c, s = np.cos(angle), np.sin(angle)
-        return np.array([[c, -s],
-                         [s, c]], dtype=np.float32)
+    c, s = np.cos(angle), np.sin(angle)
+    return np.array([[c, -s],
+                     [s, c]], dtype=np.float32)
 
 
 class OccGridUtils(object):
@@ -119,16 +119,16 @@ class MarkerOccGrid(OccGridUtils):
 
         self.cam.fromCameraInfo(self.camera_info)
 
-    def update_grid(self):
+    def update_grid(self, timestamp):
         '''
         Takes marker information to update occupacy grid.
         '''
-        x_y_position, height = self.get_tf()
+        x_y_position, height = self.get_tf(timestamp)
 
         self.add_circle(x_y_position, self.calculate_visual_radius(height))
         self.publish_grid()
 
-    def add_marker(self, marker):
+    def add_marker(self, marker, timestamp):
         '''
         Find the actual 3d pose of the marker and fill in the occupancy grid for that pose.
         This works by:
@@ -140,32 +140,71 @@ class MarkerOccGrid(OccGridUtils):
         if marker is None:
             return
 
-        x_y_position, height = self.get_tf()
+        x_y_position, height = self.get_tf(timestamp)
+        # Calculate position of marker accounting for camera rotation.
         dir_vector = unit_vector(np.array([self.cam.cx(), self.cam.cy()] - marker[0]))
+        trans, rot = self.tf_listener.lookupTransform("/map", "/downward", timestamp)
+        cam_rotation = tf.transformations.euler_from_quaternion(rot)[2] + np.pi / 2
+        dir_vector = np.dot(dir_vector, make_2D_rotation(cam_rotation))
+        marker_rotation = cam_rotation + marker[1]
+
         magnitude = self.calculate_visual_radius(height, second_point=marker[0])
-        local_position = dir_vector * magnitude
+        local_position = dir_vector[::-1] * magnitude
         position = local_position + x_y_position
 
-        # print dir_vector[::-1]
+        #print local_position
 
         # Pose on ground plane from center
-        pose = Pose2D(x=position[0], y=position[1], theta=marker[1])
-        # print pose
+        pose = Pose2D(x=position[0], y=position[1], theta=marker_rotation)
         self.found_marker(pose)
 
-    def get_tf(self):
-        self.tf_listener.waitForTransform("/map", "/downward", rospy.Time(), rospy.Duration(1.0))
-        trans, rot = self.tf_listener.lookupTransform("/map", "/downward", rospy.Time())
+        # The image coordinate pose and real life pose are different.
+        pose = Pose2D(x=position[0], y=position[1], theta=marker_rotation)
+        # In meters with initial point at (0,0)
+        return pose
+
+    def get_tf(self, timestamp=None):
+        '''
+        x_y position and height in meters
+        '''
+        if timestamp is None:
+            timestamp = rospy.Time()
+
+        self.tf_listener.waitForTransform("/map", "/downward", timestamp, rospy.Duration(1.0))
+        trans, rot = self.tf_listener.lookupTransform("/map", "/downward", timestamp)
         x_y_position = trans[:2]
-        trans, rot = self.tf_listener.lookupTransform("/ground", "/downward", rospy.Time())
+        self.tf_listener.waitForTransform("/ground", "/downward", timestamp, rospy.Duration(1.0))
+        trans, _ = self.tf_listener.lookupTransform("/ground", "/downward", timestamp)
         height = trans[2]
 
+        self.correct_height(height, timestamp)
+
         return x_y_position, height
+
+    def correct_height(self, measured_height, timestamp):
+        '''
+        Adjust the measured height from the seafloor using our orientation relative to it.
+        We assume the floor is flat (should be valid for transdec but maybe not for pool).
+        All the math is just solving triangles.
+
+        Note: If the roll or pitch is too far off, the range could be to a point that is not
+            planar to the floor directly under us - in which case this will fail.
+
+        TODO: See if this actually can produce better results.
+        '''
+        trans, rot = self.tf_listener.lookupTransform("/map", "/base_link", timestamp)
+        euler_rotation = tf.transformations.euler_from_quaternion(rot)
+
+        roll_offset = np.abs(np.sin(euler_rotation[0]) * measured_height)
+        pitch_offset = np.abs(np.sin(euler_rotation[1]) * measured_height)
+
+        height = np.sqrt(measured_height ** 2 - (roll_offset ** 2 + pitch_offset ** 2))
+        return height
 
     def calculate_visual_radius(self, height, second_point=None):
         '''
         Draws rays to find the radius of the FOV of the camera in meters.
-        It also works to find the distance between two planar points some distance from the camera.
+        It also can work to find the distance between two planar points some distance from the camera.
         '''
 
         mid_ray = unit_vector(self.cam.projectPixelTo3dRay((self.cam.cx(), self.cam.cy())))
