@@ -85,13 +85,12 @@ class Image_Subscriber(object):
 
         timeout = rospy.Duration(timeout)
         start_time = rospy.Time.now()
-        print rospy.is_shutdown()
         while (start_time - rospy.Time.now() <= timeout) and (not rospy.is_shutdown()):
             if self.camera_info is not None:
                 rospy.loginfo("Camera info found!")
                 return self.camera_info
             rospy.sleep(.2)
-            
+
         rospy.logerr("Camera info not found.")
         return None
 

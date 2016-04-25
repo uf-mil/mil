@@ -13,12 +13,14 @@ from marker_occ_grid import MarkerOccGrid
 class PipeFinder:
     def __init__(self):
         self.last_image = None
+        self.last_image_timestamp = None
         self.last_draw_image = None
+
         self.image_sub = sub8_ros_tools.Image_Subscriber('/down/left/image_raw', self.image_cb)
         self.image_pub = sub8_ros_tools.Image_Publisher("down/left/target_info")
 
-        self.occ_grid = MarkerOccGrid(self.image_sub, grid_res=.1, grid_width=100, grid_height=100,
-                                      grid_starting_pose=Pose2D(x=50, y=50, theta=0))
+        self.occ_grid = MarkerOccGrid(self.image_sub, grid_res=.05, grid_width=200, grid_height=200,
+                                      grid_starting_pose=Pose2D(x=100, y=100, theta=0))
 
         self.pose_service = rospy.Service("vision/channel_marker/2D", VisionRequest2D, self.request_pipe)
 
@@ -33,15 +35,17 @@ class PipeFinder:
             return
 
         markers = self.find_pipe(np.copy(self.last_image))
-        self.occ_grid.update_grid()
-        self.occ_grid.add_marker(markers)
+        print markers
+        self.occ_grid.update_grid(self.last_image_timestamp)
+        self.occ_grid.add_marker(markers, self.last_image_timestamp)
 
         if self.last_draw_image is not None:
             self.image_pub.publish(self.last_draw_image)
 
     def image_cb(self, image):
-        '''Hang on to last image'''
+        '''Hang on to last image and when it was taken.'''
         self.last_image = image
+        self.last_image_timestamp = rospy.Time.now()
 
     def get_ncc_scale(self):
         '''Comptue pixel width of the channel marker'''
@@ -102,7 +106,8 @@ class PipeFinder:
             cnt = contours[0]  # contour with greatest area
 
             # This is not to filter incorrectly sized objects, but to ignore speckle noise
-            if cv2.contourArea(cnt) > 100:
+            # Use height data to get a good number for this.
+            if cv2.contourArea(cnt) > 200:
 
                 cv2.drawContours(blank_img, [cnt], 0, (255, 255, 255), -1)
                 cv2.drawContours(draw_image, [cnt], 0, (255, 255, 255), -1)
