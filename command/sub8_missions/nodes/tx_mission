@@ -4,6 +4,7 @@ import signal
 import traceback
 import argparse
 from twisted.internet import defer, reactor
+import exceptions
 import txros
 from sub8 import tx_sub
 import missions
@@ -19,27 +20,29 @@ def main():
                      "\n\n\trosrun sub8_missions mission stop\n\trosrun sub8_missions mission forward_1_m")
         desc_msg = "-- Mr. Mission Manager --"
         parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
-        parser.add_argument(dest='mission_name',
+        parser.add_argument(dest='mission_names', nargs='+',
                             help="The name of the mission you'd like to run (ex: stop)")
 
         parser.add_argument('--test', dest='test', action='store_true',
                             help="Set this flag if you'd like to ignore motions")
 
-        parser.add_argument('--list', dest='list', action='store_true',
-                            help="Set this flag if you'd like to ignore motions")
-
         nh, args = nh_args
         args = parser.parse_args(args[1:])
-        if args.list:
+
+        # Kludge to print mission list
+        if args.mission_names[0] == 'list':
             mission_list = [mission_name for mission_name in dir(missions) if not mission_name.startswith('_')]
             print '  %s' % '\n  '.join(map(str, mission_list))
-            exit(0)
-        mission_name = args.mission_name
-        assert mission_name in available_missions, "'{}' is not an available mission; we have: {}".format(
-            mission_name, ', '.join(available_missions)
-        )
+            return
 
-        mission = getattr(missions, mission_name)
+        mission_names = args.mission_names
+        mission_list = []
+        for mission_name in mission_names:
+            assert mission_name in available_missions, "'{}' is not an available mission; we have: {}".format(
+                mission_name, ', '.join(available_missions)
+            )
+            mission = getattr(missions, mission_name)
+            mission_list.append(mission)
 
         sub = yield tx_sub.get_sub(nh)
         yield txros.util.wall_sleep(1.0)
@@ -51,8 +54,9 @@ def main():
             yield sub.last_pose()
 
         print 'Mission runner got pose'
-        yield mission.run(sub).addErrback(catch_error)
-        yield txros.util.wall_sleep(1.0)
+        for mission in mission_list:
+            yield mission.run(sub).addErrback(catch_error)
+            yield txros.util.wall_sleep(1.0)  # Seems to make things behave more nicely
 
     except Exception:
         traceback.print_exc()
@@ -67,12 +71,12 @@ def catch_error(error):
     print '>------------------------------<'
     print error.printTraceback()
     print '>------------------------------<'
-    # error.trap(defer.CancelledError)
 
 
 def _start():
     # Handle ctrl+C
     signal.signal(signal.SIGINT, lambda signum, frame: reactor.callFromThread(task.cancel))
+
     # Handle errors in main
     task = main().addErrback(lambda fail: fail.trap(defer.CancelledError))
 
