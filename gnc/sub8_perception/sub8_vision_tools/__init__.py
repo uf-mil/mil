@@ -1,2 +1,2 @@
 # flake8: noqa
-import threshold_tools
+import visual_threshold_tools

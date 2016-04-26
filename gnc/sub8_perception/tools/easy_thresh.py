@@ -21,7 +21,7 @@ argcomplete.autocomplete(parser)
 args = parser.parse_args(sys.argv[1:])
 
 # Importing these late so that argcomplete can run quickly
-from sub8_vision_tools import threshold_tools  # noqa
+from sub8_vision_tools import visual_threshold_tools  # noqa
 from sub8_ros_tools.image_helpers import Image_Subscriber  # noqa
 import cv2  # noqa
 import numpy as np  # noqa
@@ -97,7 +97,8 @@ if __name__ == '__main__':
     frame_unblurred = frame_initial[::2, ::2, :]
     frame = frame_unblurred
 
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    # hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    hsv = frame
 
     draw_image = np.copy(frame_unblurred)
     seg_image = np.zeros_like(frame_unblurred[:, :, 0])
@@ -127,7 +128,7 @@ if __name__ == '__main__':
         labels_dsamp,
         scale_factor=5.0,
     )
-    thresholder = threshold_tools.make_extent_dialog(ranges=threshold_tools.color_ranges['hsv'], image=hsv)
+    thresholder = threshold_tools.make_extent_dialog(ranges=threshold_tools.color_ranges['rgb'], image=hsv)
 
     while not rospy.is_shutdown():
         if cv2.waitKey(50) & 0xFF == ord('q'):
@@ -138,10 +139,10 @@ if __name__ == '__main__':
 
     # Print out thresholds that can be put in the configuration yaml
     low = ranges[:, 0]
-    print '  hsv_low: [{}, {}, {}]'.format(low[0], low[1], low[2])
+    print '  rgb_low: [{}, {}, {}]'.format(low[0], low[1], low[2])
 
     high = ranges[:, 1]
-    print '  hsv_high: [{}, {}, {}]'.format(high[0], high[1], high[2])
+    print '  rgb_high: [{}, {}, {}]'.format(high[0], high[1], high[2])
 
     print 'np.' + repr(ranges)
 
