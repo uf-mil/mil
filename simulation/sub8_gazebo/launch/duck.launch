@@ -6,6 +6,13 @@
     <!-- more default parameters can be changed here -->
   </include>
 
+  <!-- We need to spawn a torpedo that the launcher script can use to shoot -->
+  <node
+  name="spawn_torpedo" pkg="gazebo_ros" type="spawn_model"
+  args="-file $(find sub8_gazebo)/models/torpedo/torpedo.sdf -sdf
+    -x 0 -y 0 -z 0 -model torpedo"
+  output="screen" />
+
   <node
     name="spawn_sub" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find sub8_gazebo)/models/sub8/sub8.sdf -sdf

@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<sdf version="1.5">
+  <model name="torpedo">
+    <static>false</static>
+    <link name="body">
+      <!-- Change this to reflect real values -->
+      <inertial>
+        <mass>.032</mass>
+        <inertia>
+          <ixx>1.18</ixx>
+          <ixy>-0.003</ixy>
+          <ixz>0.04</ixz>
+          <iyy>1.431</iyy>
+          <iyz>-0.034</iyz>
+          <izz>1.262</izz>
+        </inertia>
+      </inertial>
+
+      <velocity_decay>
+        <linear>0.00001</linear>
+        <angular>0.00001</angular>
+      </velocity_decay>
+      <collision name='bodycol'>
+        <geometry>
+          <sphere><radius>.11</radius></sphere>
+        </geometry>
+      </collision>
+      <visual name="bodyvisual">
+        <geometry>
+          <sphere><radius>.11</radius></sphere>
+        </geometry>
+        <material>
+          <ambient>1 0.55 0 1</ambient>
+        </material>
+      </visual>
+
+      <sensor name="contact" type="contact">
+        <contact>
+          <collision>bodycol</collision>
+        </contact>
+        <update_rate>10</update_rate>
+        <plugin name='gazebo_ros_bumper_controller' filename="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <bumperTopicName>contact_bumper</bumperTopicName>
+        </plugin>
+      </sensor>
+    </link>
+  </model>
+</sdf>
+
