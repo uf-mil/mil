@@ -5,7 +5,7 @@
     <link name="body">
       <!-- Change this to reflect real values -->
       <inertial>
-        <mass>.032</mass>
+        <mass>.022</mass>
         <inertia>
           <ixx>1.18</ixx>
           <ixy>-0.003</ixy>
@@ -21,13 +21,21 @@
         <angular>0.00001</angular>
       </velocity_decay>
       <collision name='bodycol'>
+        <pose>0 0 0 0 1.57 0</pose>
         <geometry>
-          <sphere><radius>.11</radius></sphere>
+          <cylinder>
+            <radius>.01</radius>
+            <length>.125</length>
+          </cylinder>
         </geometry>
       </collision>
       <visual name="bodyvisual">
+        <pose>0 0 0 0 1.57 0</pose>
         <geometry>
-          <sphere><radius>.11</radius></sphere>
+          <cylinder>
+            <radius>.01</radius>
+            <length>.125</length>
+          </cylinder>
         </geometry>
         <material>
           <ambient>1 0.55 0 1</ambient>
@@ -45,6 +53,17 @@
         </plugin>
       </sensor>
     </link>
+
+    <plugin name="torpedo_boyancy" filename="libsub8_buoyancy.so">
+      <fluid_density>1000</fluid_density>
+      <drag_coefficient>100</drag_coefficient>
+      <link name="body">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.0000156</volume>
+      </link>
+    </plugin>
+
+
   </model>
 </sdf>
 

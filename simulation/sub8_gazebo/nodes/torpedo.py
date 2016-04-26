@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import rospkg
+import tf
 
 from gazebo_msgs.msg import ContactsState, ModelStates, ModelState
 from gazebo_msgs.srv import SetModelState, GetModelState
@@ -47,7 +48,7 @@ class TorpedoLauncher():
             if state.collision1_name == torpedo_name:
                 break
 
-        print state
+        #print state
 
         # Now our torpedo friend has impacted something, we gotta check what.
         rospy.loginfo('Impact detected!')
@@ -63,26 +64,29 @@ class TorpedoLauncher():
         Find position of sub and launch the torpedo from there.
 
         TODO:
-            - Offset sub position so that it launches from the torpedo location instead of
-              arbitrarily infront of the sub.
-            - Fix rotation problem.
+            - Test to make sure it always fires from the right spot.
         '''
         sub_state = self.get_model(model_name='sub8')
         sub_pose = msg_helpers.pose_to_numpy(sub_state.pose)
 
-        launch_twist_np = rotate_vect_by_quat(np.array([5, 0, 0]), sub_pose[1])
-        print launch_twist_np
+        muzzle_vel = np.array([10, 0, 0])
+        v = rotate_vect_by_quat(np.append(muzzle_vel, 0), sub_pose[1])
 
         launch_twist = Twist()
-        launch_twist.linear.x = launch_twist_np[0]
-        launch_twist.linear.y = -launch_twist_np[1]
-        launch_twist.linear.z = launch_twist_np[2]
+        launch_twist.linear.x = v[0]
+        launch_twist.linear.y = v[1]
+        launch_twist.linear.z = v[2]
+
+        #launch_pose = rotate_vect_by_quat(np.array([1, 0, 0, 0]), sub_pose[1])
+
+        launch_pos = rotate_vect_by_quat(np.array([.5, -.15, -.3, 0]), sub_pose[1])
+        print launch_pos
 
         model_state = ModelState()
         model_state.model_name = 'torpedo'
-        model_state.pose = msg_helpers.numpy_quat_pair_to_pose(sub_pose[1], sub_pose[0] + np.array([.5, 0, 0]))
+        model_state.pose = msg_helpers.numpy_quat_pair_to_pose(sub_pose[1], sub_pose[0] + launch_pos)
         model_state.twist = launch_twist
-        print model_state
+        #print model_state
         self.set_torpedo(model_state)
 
         # We have to wait until the torpedo actually gets fired to start listening for impacts.
@@ -91,31 +95,12 @@ class TorpedoLauncher():
 
 
 def rotate_vect_by_quat(v, q):
-    '''
-    I'm sure there's a library function to do this.
+    cq = np.array([-q[0], -q[1], -q[2], q[3]])
+    cq_v = tf.transformations.quaternion_multiply(cq, v)
+    v = tf.transformations.quaternion_multiply(cq_v, q)
+    v[1:] *= -1
+    return np.array(v)[:3]
 
-    v should be [x,y,z]
-    q should be [x,y,z,w]
-
-    [1] http://www.mathworks.com/help/aerotbx/ug/quatrotate.html
-        NOTE:
-        q0 = q[3]
-        q1 = q[0]
-        q2 = q[1]
-        q3 = q[2]
-    '''
-    # ew
-    r1 = v[0] * (1 - 2 * q[1] ** 2 - 2 * q[2] ** 2) + \
-        v[1] * 2 * (q[0] * q[1] + q[3] * q[2]) +  \
-        v[2] * 2 * (q[0] * q[2] - q[3] * q[1])
-    r2 = v[1] * (1 - 2 * q[0] ** 2 - 2 * q[2] ** 2) + \
-        v[0] * 2 * (q[0] * q[1] - q[3] * q[2]) +  \
-        v[2] * 2 * (q[1] * q[2] + q[3] * q[0])
-    r3 = v[2] * (1 - 2 * q[0] ** 2 - 2 * q[1] ** 2) + \
-        v[0] * 2 * (q[0] * q[2] + q[3] * q[1]) +  \
-        v[1] * 2 * (q[1] * q[2] - q[3] * q[0])
-
-    return np.array([r1, r2, r3])
 if __name__ == '__main__':
     rospy.init_node('torpedo_manager')
     t = TorpedoLauncher()
