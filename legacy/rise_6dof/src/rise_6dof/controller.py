@@ -3,7 +3,7 @@ from __future__ import division
 import numpy
 
 from tf import transformations
-from uf_common.orientation_helpers import quat_to_rotvec
+from sub8.pose_editor import quat_to_rotvec
 
 
 class Controller(object):

@@ -13,7 +13,6 @@ from nav_msgs.msg import Odometry
 from std_msgs.msg import Header
 
 from uf_common.msg import PoseTwist, PoseTwistStamped
-# from uf_common.orientation_helpers import xyz_array, xyzw_array
 from sub8_ros_tools import pose_to_numpy, twist_to_numpy
 
 
@@ -60,6 +59,7 @@ class Node(object):
 
         self.current = None
         rospy.Subscriber('/current', Odometry, lambda current: setattr(self, 'current', current))
+        # rospy.Subscriber('/odom', Odometry, lambda current: setattr(self, 'current', current))
 
         self.constant_wrench = None
         self.constant_wrench_time = None

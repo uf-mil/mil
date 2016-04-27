@@ -5,7 +5,7 @@ from twisted.internet import defer
 from tf import transformations
 from txros import action, util, tf, serviceclient
 from uf_common.msg import MoveToAction, PoseTwistStamped, Float64Stamped
-from uf_common import orientation_helpers
+from sub8 import pose_editor
 from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D
 from nav_msgs.msg import Odometry
 
@@ -107,7 +107,7 @@ class _Sub(object):
         last_odom_msg = self._odom_sub.get_last_message()
         if self.test_mode:
             last_odom_msg = Odometry()  # All 0's
-        pose = orientation_helpers.PoseEditor.from_Odometry(last_odom_msg)
+        pose = pose_editor.PoseEditor.from_Odometry(last_odom_msg)
         return pose
 
     @util.cancellableInlineCallbacks
