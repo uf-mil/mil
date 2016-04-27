@@ -17,8 +17,15 @@ parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
 parser.add_argument(dest='topic_name',
                     help="The topic name you'd like to listen to",
                     choices=topics)
+parser.add_argument('--hsv', action='store_true',
+                    help="Would you like to look at hsv instead of bgr?"
+                    )
+
 argcomplete.autocomplete(parser)
 args = parser.parse_args(sys.argv[1:])
+if args.hsv:
+    print 'Using HSV instead of bgr'
+prefix = 'hsv' if args.hsv else 'bgr'
 
 # Importing these late so that argcomplete can run quickly
 from sub8_vision_tools import visual_threshold_tools  # noqa
@@ -97,8 +104,10 @@ if __name__ == '__main__':
     frame_unblurred = frame_initial[::2, ::2, :]
     frame = frame_unblurred
 
-    # hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    hsv = frame
+    if args.hsv:
+        analysis_image = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    else:
+        analysis_image = frame
 
     draw_image = np.copy(frame_unblurred)
     seg_image = np.zeros_like(frame_unblurred[:, :, 0])
@@ -110,7 +119,7 @@ if __name__ == '__main__':
 
     cv2.drawContours(seg_image, [box], 0, 1, -2)
 
-    hsv_in_box = hsv[seg_image.astype(np.bool)]
+    hsv_in_box = analysis_image[seg_image.astype(np.bool)]
     hsv_list = np.reshape(hsv_in_box, (-1, 3))
 
     clust = cluster.KMeans(n_clusters=2)
@@ -121,28 +130,32 @@ if __name__ == '__main__':
     hsv_dsamp = hsv_list
     labels_dsamp = clust.labels_
 
-    threshold_tools.points_with_labels(
+    visual_threshold_tools.points_with_labels(
         hsv_dsamp[:, 0],
         hsv_dsamp[:, 1],
         hsv_dsamp[:, 2],
         labels_dsamp,
         scale_factor=5.0,
     )
-    thresholder = threshold_tools.make_extent_dialog(ranges=threshold_tools.color_ranges['rgb'], image=hsv)
+
+    thresholder = visual_threshold_tools.make_extent_dialog(
+        ranges=visual_threshold_tools.color_ranges[prefix],
+        image=analysis_image
+    )
 
     while not rospy.is_shutdown():
         if cv2.waitKey(50) & 0xFF == ord('q'):
             break
 
     ranges = thresholder.ranges
-    hsv_labels = threshold_tools.np_inrange(hsv_dsamp, ranges[:, 0], ranges[:, 1])
+    labels = visual_threshold_tools.np_inrange(hsv_dsamp, ranges[:, 0], ranges[:, 1])
 
     # Print out thresholds that can be put in the configuration yaml
     low = ranges[:, 0]
-    print '  rgb_low: [{}, {}, {}]'.format(low[0], low[1], low[2])
+    print '  {}_low: [{}, {}, {}]'.format(prefix, low[0], low[1], low[2])
 
     high = ranges[:, 1]
-    print '  rgb_high: [{}, {}, {}]'.format(high[0], high[1], high[2])
+    print '  {}_high: [{}, {}, {}]'.format(prefix, high[0], high[1], high[2])
 
     print 'np.' + repr(ranges)
 
