@@ -46,7 +46,7 @@
         <contact>
           <collision>bodycol</collision>
         </contact>
-        <update_rate>10</update_rate>
+        <update_rate>50</update_rate>
         <plugin name='gazebo_ros_bumper_controller' filename="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <bumperTopicName>contact_bumper</bumperTopicName>

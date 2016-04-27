@@ -31,26 +31,28 @@ class TorpedoLauncher():
         rospy.Subscriber('/contact_bumper/', ContactsState, self.check_contact, queue_size=1)
 
     def check_contact(self, msg):
-        #print "------------------------------------------------------------------------------------------------"
-
         if not self.launched:
             return
 
         if len(msg.states) == 0:
             # If there is no impact don't worry about it.
-            self.launched = True
             return
 
         torpedo_name = "torpedo::body::bodycol"
-        board_name = "ground_plane::link::collision"
+        board_name = "torpedo_board::hole_1::hole_1_col"
 
         for state in msg.states:
             if state.collision1_name == torpedo_name:
                 break
 
-        #print state
+        # Generally, if the torpedo is laying on the ground the collision force will be very small.
+        # So if the force is really small, we assume the impact collision has occured before the torpedo was launched.
+        print np.abs(np.linalg.norm(msg_helpers.rosmsg_to_numpy(state.total_wrench.force)))
+        if np.abs(np.linalg.norm(msg_helpers.rosmsg_to_numpy(state.total_wrench.force))) < 10:
+            rospy.loginfo("Torpedo probably still on the ground, still waiting.")
+            return
 
-        # Now our torpedo friend has impacted something, we gotta check what.
+        # Now the torpedo has impacted something, we gotta check what.
         rospy.loginfo('Impact detected!')
         self.launched = False
 
@@ -64,11 +66,13 @@ class TorpedoLauncher():
         Find position of sub and launch the torpedo from there.
 
         TODO:
-            - Test to make sure it always fires from the right spot.
+            - Test to make sure it always fires from the right spot in the right direction.
+                (It seems to but I haven't tested from all rotations.)
         '''
         sub_state = self.get_model(model_name='sub8')
         sub_pose = msg_helpers.pose_to_numpy(sub_state.pose)
 
+        # Translate torpedo init velocity so that it first out of the front of the sub.
         muzzle_vel = np.array([10, 0, 0])
         v = rotate_vect_by_quat(np.append(muzzle_vel, 0), sub_pose[1])
 
@@ -77,24 +81,22 @@ class TorpedoLauncher():
         launch_twist.linear.y = v[1]
         launch_twist.linear.z = v[2]
 
-        #launch_pose = rotate_vect_by_quat(np.array([1, 0, 0, 0]), sub_pose[1])
-
-        launch_pos = rotate_vect_by_quat(np.array([.5, -.15, -.3, 0]), sub_pose[1])
-        print launch_pos
+        # This is offset so it fires approx at the torpedo launcher location.
+        launch_pos = rotate_vect_by_quat(np.array([.4, -.15, -.3, 0]), sub_pose[1])
 
         model_state = ModelState()
         model_state.model_name = 'torpedo'
         model_state.pose = msg_helpers.numpy_quat_pair_to_pose(sub_pose[1], sub_pose[0] + launch_pos)
         model_state.twist = launch_twist
-        #print model_state
         self.set_torpedo(model_state)
-
-        # We have to wait until the torpedo actually gets fired to start listening for impacts.
-        rospy.sleep(.1)
         self.launched = True
 
 
 def rotate_vect_by_quat(v, q):
+    '''
+    Rotate a vector by a quaterion.
+    v' = q*vq
+    '''
     cq = np.array([-q[0], -q[1], -q[2], q[3]])
     cq_v = tf.transformations.quaternion_multiply(cq, v)
     v = tf.transformations.quaternion_multiply(cq_v, q)
