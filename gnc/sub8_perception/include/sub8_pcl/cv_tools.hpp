@@ -21,7 +21,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include "ros/ros.h"
 
-// #define SEGMENTATION_DEBUG
+#define SEGMENTATION_DEBUG
 
 namespace sub {
 

@@ -59,6 +59,9 @@ target/
 # Binaries
 *.npz
 
+# PyCharm
+.idea/
+
 # Other
 *.mtl
 *.obj

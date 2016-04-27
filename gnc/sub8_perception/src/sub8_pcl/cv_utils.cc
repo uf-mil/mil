@@ -58,6 +58,10 @@ std::vector<float> generate_gaussian_kernel_1D(size_t kernel_size, float sigma){
 
 
 std::vector<cv::Point> find_local_maxima(const cv::MatND &histogram, float thresh_multiplier){
+
+	std::stringstream ros_log;
+	ros_log << "\x1b[1;31m" << "find_local_maxima" << "\x1b[0m" << std::endl;
+
 	std::vector<cv::Point> local_maxima, threshed_local_maxima;
 	float global_maximum = -std::numeric_limits<double>::infinity();
 
@@ -69,32 +73,34 @@ std::vector<cv::Point> find_local_maxima(const cv::MatND &histogram, float thres
 	    	if(global_maximum < current_value) global_maximum = current_value;
 	    }
 	}
-#ifdef SEGMENTATION_DEBUG
-	std::cout << std::endl << "Maxima: ";
-#endif
-	BOOST_FOREACH(cv::Point pt, local_maxima){
-		if(pt.y > global_maximum * thresh_multiplier) threshed_local_maxima.push_back(pt);
-#ifdef SEGMENTATION_DEBUG
-		std::cout << boost::format("[%1%, %2%] ") % pt.x % pt.y;
-#endif
+	ros_log << "Maxima [x, y]:";
+	for(size_t i = 0; i < local_maxima.size(); i++){
+		if(local_maxima[i].y > global_maximum * thresh_multiplier) threshed_local_maxima.push_back(local_maxima[i]);
+		if(i % 4 == 0) ros_log << std::endl << "\t";
+		ros_log << "[" << std::setw(5) << local_maxima[i].x << "," << std::setw(5) << local_maxima[i].y << "] ";
 	}
-#ifdef SEGMENTATION_DEBUG
-	std::cout << std::endl << boost::format("thresh: > global_maximum(%1%) * thresh_multiplier(%2%) = %3%") 
-								% global_maximum % thresh_multiplier % (global_maximum * thresh_multiplier);
-	std::cout << std::endl << "Threshed Maxima (x): ";
+	ros_log << std::endl << "thresh: > global_maximum(" << global_maximum << ") * thresh_multiplier(" 
+			<< thresh_multiplier << ") = " << (global_maximum * thresh_multiplier);
+	ros_log << std::endl << "Threshed Maxima (x): ";
 	if (threshed_local_maxima.size() != local_maxima.size()){
 		BOOST_FOREACH(cv::Point pt, threshed_local_maxima){
-			std::cout << boost::format(" %1% ") % pt.x;
+			ros_log << " " << pt.x << " ";
 		}
 	}
-	else std::cout << "same as 'Maxima'";
-	std::cout << std::endl;
+	else ros_log << "same as 'Maxima'";
+	ros_log << std::endl;
+#ifdef SEGMENTATION_DEBUG
+	ROS_INFO(ros_log.str().c_str());
 #endif
 	return threshed_local_maxima;
 }
 
 
 std::vector<cv::Point> find_local_minima(const cv::MatND &histogram, float thresh_multiplier){
+
+	std::stringstream ros_log;
+	ros_log << "\x1b[1;31m" << "find_local_minima" << "\x1b[0m" << std::endl;
+
 	std::vector<cv::Point> local_minima, threshed_local_minima;
 	float global_minimum = std::numeric_limits<double>::infinity();;
 
@@ -106,41 +112,48 @@ std::vector<cv::Point> find_local_minima(const cv::MatND &histogram, float thres
 	    	if(global_minimum > current_value) global_minimum = current_value;
 	    }
 	}
-#ifdef SEGMENTATION_DEBUG
-	std::cout << std::endl << "Minima: ";
-#endif
-	BOOST_FOREACH(cv::Point pt, local_minima){
-		if(pt.y < global_minimum * thresh_multiplier) threshed_local_minima.push_back(pt);
-#ifdef SEGMENTATION_DEBUG
-		std::cout << boost::format("[%1%, %2%] ") % pt.x % pt.y;
-#endif
+	ros_log << "Minima [x, y]:";
+	for(size_t i = 0; i < local_minima.size(); i++){
+		if(local_minima[i].y < global_minimum * thresh_multiplier) threshed_local_minima.push_back(local_minima[i]);
+		if(i % 4 == 0) ros_log << std::endl << "\t";
+		ros_log << "[" << std::setw(5) << local_minima[i].x << "," << std::setw(5) << local_minima[i].y << "] ";
 	}
-#ifdef SEGMENTATION_DEBUG
-	std::cout << std::endl << boost::format("thresh: < global_minimum(%1%) * thresh_multiplier(%2%) = %3%") 
-								% global_minimum % thresh_multiplier % (global_minimum * thresh_multiplier);
-	std::cout << std::endl << "Threshed Minima (x): ";
+	ros_log << std::endl << "thresh: < global_minimum(" << global_minimum << ") * thresh_multiplier(" 
+			<< thresh_multiplier << ") = " << (global_minimum * thresh_multiplier);
+	ros_log << std::endl << "Threshed Minima (x): ";
 	if (threshed_local_minima.size() != local_minima.size()){
 		BOOST_FOREACH(cv::Point pt, threshed_local_minima){
-			std::cout << boost::format(" %1% ") % pt.x;
+			ros_log << " " << pt.x << " ";
 		}
 	}
-	else std::cout << "same as 'Minima'";
-	std::cout << std::endl;
+	else ros_log << "same as 'Minima'";
+	ros_log << std::endl;
+#ifdef SEGMENTATION_DEBUG
+	ROS_INFO(ros_log.str().c_str());
 #endif
 	return threshed_local_minima;
 }
 
 
 unsigned int select_hist_mode(std::vector<cv::Point> &histogram_modes, int target){
-  std::vector<int> distances;
-  BOOST_FOREACH(cv::Point mode, histogram_modes){
-    distances.push_back(mode.x - target);
-  }
-  int min_idx = 0;
-  for(size_t i = 0; i < distances.size(); i++){
-    if(std::abs(distances[i]) <= std::abs(distances[min_idx])) min_idx = i;
-  }
-  return histogram_modes[min_idx].x;
+
+	std::stringstream ros_log;
+	ros_log << "\x1b[1;31m" << "select_hist_mode" << "\x1b[0m" << std::endl;
+
+	std::vector<int> distances;
+	BOOST_FOREACH(cv::Point mode, histogram_modes){
+		distances.push_back(mode.x - target);
+	}
+	int min_idx = 0;
+	for(size_t i = 0; i < distances.size(); i++){
+		if(std::abs(distances[i]) <= std::abs(distances[min_idx])) min_idx = i;
+	}
+	if(histogram_modes.size() == 0){
+		ros_log << "No modes could be generated" << std::endl;
+		ROS_INFO(ros_log.str().c_str());
+		return 0;
+	}
+	else return histogram_modes[min_idx].x;
 }
 
 
@@ -148,6 +161,9 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, cv::Mat &
         							const float** ranges, const int target, std::string image_name, 
         							bool ret_dbg_img, const float sigma, const float low_thresh_gain, const float high_thresh_gain)
 {
+	std::stringstream ros_log;
+	ros_log << "\x1b[1;31m" << "statistical_image_segmentation" << "\x1b[0m" << std::endl;
+
 	// Calculate histogram
 	cv::MatND hist, hist_smooth, hist_derivative;
 	cv::calcHist( &src, 1, 0, cv::Mat(), hist, 1, &hist_size, ranges, true, false );
@@ -167,14 +183,10 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, cv::Mat &
 	hist_derivative = sub::smooth_histogram(hist_derivative, kernel_size, sigma);
 
 	// Find target mode
-#ifdef SEGMENTATION_DEBUG
-	std::cout << "Target: " << target << std::endl;
-#endif
 	std::vector<cv::Point> histogram_modes = sub::find_local_maxima(hist_smooth, 0.1);
 	int target_mode = sub::select_hist_mode(histogram_modes, target);
-#ifdef SEGMENTATION_DEBUG
-	std::cout << "Mode Selected: " << target_mode << std::endl;
-#endif
+	ros_log << "Target: " << target << std::endl;
+	ros_log << "Mode Selected: " << target_mode << std::endl;
 
 	// Calculate std dev of histogram slopes
 	cv::Scalar hist_deriv_mean, hist_deriv_stddev;
@@ -185,82 +197,76 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, cv::Mat &
 	int low_abs_derivative_thresh = std::abs(hist_deriv_stddev[0] * low_thresh_gain);
 	std::vector<cv::Point> derivative_maxima = sub::find_local_maxima(hist_derivative, 0.01);
 	std::vector<cv::Point> derivative_minima = sub::find_local_minima(hist_derivative, 0.01);
-	int high_thresh_search_start = target_mode; int low_thresh_search_start = target_mode;
-#ifdef SEGMENTATION_DEBUG
-	std::cout << "high_thresh_search_start: " << target_mode << std::endl;
-#endif
+	int high_thresh_search_start = target_mode;
+	int low_thresh_search_start = target_mode;
+	ros_log << "high_thresh_search_start: " << target_mode << std::endl;
+	ros_log << "Looking for the local minimum of the derivative of the histogram immediately to the right of the selected mode." << std::endl;
+
 	for(size_t i = 0; i < derivative_minima.size(); i++){
-#ifdef SEGMENTATION_DEBUG
-		std::cout << "derivative_minima[" << i << "].x = " << derivative_minima[i].x << "  target_mode = " << target_mode << std::endl;
-#endif
+		ros_log << "\tderivative_minima[" << i << "].x = " << derivative_minima[i].x << std::endl;
 		if(derivative_minima[i].x > target_mode){
 			high_thresh_search_start = derivative_minima[i].x;
-#ifdef SEGMENTATION_DEBUG
-			std::cout << high_thresh_search_start << " Accepted" << std::endl;
-#endif
+			ros_log << "Done: The upper threshold will be no less than " << high_thresh_search_start << std::endl;
 			break;
 		} 
 	}
-#ifdef SEGMENTATION_DEBUG
-	std::cout << "low_thresh_search_start: " << target_mode << std::endl;
-#endif
+	ros_log << "low_thresh_search_start: " << target_mode << std::endl;
+	ros_log << "Looking for the local maximum of the derivative of the histogram immediately to the left of the selected mode." << std::endl;
 	for(int i = derivative_maxima.size() - 1; i >= 0; i--){
-#ifdef SEGMENTATION_DEBUG
-		std::cout << "derivative_maxima[" << i << "].x = " << derivative_maxima[i].x << "  target_mode = " << target_mode << std::endl;
-#endif
+		ros_log << "\tderivative_maxima[" << i << "].x = " << derivative_maxima[i].x << std::endl;
 		if(derivative_maxima[i].x < target_mode){
 			low_thresh_search_start = derivative_maxima[i].x;
-#ifdef SEGMENTATION_DEBUG
-			std::cout << low_thresh_search_start << " Accepted" << std::endl;
-#endif
+			ros_log << "Done: The lower threshold will be no greater than " << low_thresh_search_start << std::endl;
 			break;
 		}
 	}
 	int high_thresh = high_thresh_search_start; int low_thresh = low_thresh_search_start;
-#ifdef SEGMENTATION_DEBUG
-	std::cout << std::endl << "high_deriv_thresh: " << hist_deriv_stddev[0] << " * " << high_thresh_gain << " = " << high_abs_derivative_thresh << std::endl;
-	std::cout << "abs(high_deriv_thresh) - abs(slope) = slope_error" << std::endl;
-#endif
+	ros_log << "high_deriv_thresh: " << hist_deriv_stddev[0] << " * " << high_thresh_gain << " = " << high_abs_derivative_thresh << std::endl;
+	ros_log << "abs(high_deriv_thresh) - abs(slope) = slope_error" << std::endl;
+	ros_log << "i: potential upper threshold" << std::endl;
+	ros_log << "Looking for first i such that slope_error >= 0" << std::endl;
 	for(int i = high_thresh_search_start; i < hist_size; i++){
 		int abs_slope = std::abs(hist_derivative.at<float>(i));
-#ifdef SEGMENTATION_DEBUG
-		std::cout << "i = " << i << "  :  " << high_abs_derivative_thresh << " - " << abs_slope << " = " << high_abs_derivative_thresh - abs_slope << std::endl;
-#endif
-		if(abs_slope < high_abs_derivative_thresh){
+		ros_log << "\ti = " << i << "  :  " << high_abs_derivative_thresh << " - " << abs_slope << " = " << high_abs_derivative_thresh - abs_slope << std::endl;
+		if(abs_slope <= high_abs_derivative_thresh){
 			high_thresh = i;
 			break;
 		}
 	}
-#ifdef SEGMENTATION_DEBUG
-	std::cout << "high_thresh = " << high_thresh << std::endl;
-	std::cout << std::endl << "low_deriv_thresh: " << hist_deriv_stddev[0] << " * " << low_thresh_gain << " = " << low_abs_derivative_thresh << std::endl;
-	std::cout << "abs(low_deriv_thresh) - abs(slope) = slope_error" << std::endl;
-#endif
+	ros_log << "high_thresh = " << high_thresh << std::endl;
+	ros_log << "low_deriv_thresh: " << hist_deriv_stddev[0] << " * " << low_thresh_gain << " = " << low_abs_derivative_thresh << std::endl;
+	ros_log << "abs(low_deriv_thresh) - abs(slope) = slope_error" << std::endl;
+	ros_log << "i: potential lower threshold" << std::endl;
+	ros_log << "Looking for first i such that slope_error <= 0" << std::endl;
 	for(int i = low_thresh_search_start; i > 0; i--){
 		int abs_slope = std::abs(hist_derivative.at<float>(i));
-#ifdef SEGMENTATION_DEBUG
-		std::cout << "i = " << i << "  :  " << low_abs_derivative_thresh << " - " << abs_slope << " = " << high_abs_derivative_thresh - abs_slope << std::endl;
-#endif
-		if(abs_slope < low_abs_derivative_thresh){ 
+		ros_log << "\ti = " << i << "  :  " << low_abs_derivative_thresh << " - " << abs_slope << " = " << high_abs_derivative_thresh - abs_slope << std::endl;
+
+		if(abs_slope <= low_abs_derivative_thresh){ 
 			low_thresh = i;
 			break; 
 		}
 	}
+
+	ros_log << "low_thresh = " << low_thresh << std::endl;
+	ros_log << "\x1b[1;37mTarget: " << target << "\nClosest distribution mode: " <<  target_mode << "\nThresholds selected:  low=" 
+			<< low_thresh << "  high=" << high_thresh << "\x1b[0m" << std::endl;
+
 #ifdef SEGMENTATION_DEBUG
-	std::cout << "low_thresh = " << low_thresh << std::endl;
-	std::cout << std::endl;
-	std::stringstream ros_log;
-	ros_log << "Target: " << target << "\nClosest distribution mode: " <<  target_mode << " Thresholds selected:  low=" 
-			<< low_thresh << "  high=" << high_thresh;
 	ROS_INFO(ros_log.str().c_str());
 #endif
+
+	cv::imshow("src" + image_name, src);
 
 	// Threshold image
 	cv::inRange(src, low_thresh, high_thresh, dest);
 
+	// cv::imshow("dest"+ image_name, dest);
+	cv::waitKey(1);
+
 	// Closing Morphology operation
 	int dilation_size = 2;
-	cv::Mat structuring_element = cv::getStructuringElement(cv::MORPH_RECT, 
+	cv::Mat structuring_element = cv::getStructuringElement(cv::MORPH_ELLIPSE, 
 															cv::Size(2 * dilation_size + 1, 2 * dilation_size + 1),
 															cv::Point(dilation_size, dilation_size) );
 	cv::dilate(dest, dest, structuring_element);
@@ -268,54 +274,60 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, cv::Mat &
 
 
 	if(ret_dbg_img){
-		// Prepare to draw graph of histogram and derivative
-		int hist_w = src.cols; int hist_h = src.rows;
-		int bin_w = cvRound( (double) hist_w/hist_size );
-		cv::Mat histImage( hist_h, hist_w, CV_8UC1, cv::Scalar( 0,0,0) );
-		cv::Mat histDerivImage( hist_h, hist_w, CV_8UC1, cv::Scalar( 0,0,0) );
-		cv::normalize(hist_smooth, hist_smooth, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat() );
-		cv::normalize(hist_derivative, hist_derivative, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat() );
 
-		// Draw Graphs
-		for( int i = 1; i < hist_size; i++ )
-		{
-		// Plot image histogram
-		cv::line( histImage, cv::Point( bin_w*(i-1), hist_h - cvRound(hist_smooth.at<float>(i-1)) ) ,
-		                 cv::Point( bin_w*(i), hist_h - cvRound(hist_smooth.at<float>(i)) ),
-		                 cv::Scalar( 255, 0, 0), 2, 8, 0  );
-		// Plot image histogram derivative
-		cv::line( histDerivImage, cv::Point( bin_w*(i-1), hist_h - cvRound(hist_derivative.at<float>(i-1)) ) ,
-		                 cv::Point( bin_w*(i), hist_h - cvRound(hist_derivative.at<float>(i)) ),
-		                 cv::Scalar( 122, 0, 0), 1, 8, 0  );
+		try{
+			// Prepare to draw graph of histogram and derivative
+			int hist_w = src.cols; int hist_h = src.rows;
+			int bin_w = hist_w/hist_size;
+			cv::Mat histImage( hist_h, hist_w, CV_8UC1, cv::Scalar( 0,0,0) );
+			cv::Mat histDerivImage( hist_h, hist_w, CV_8UC1, cv::Scalar( 0,0,0) );
+			cv::normalize(hist_smooth, hist_smooth, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat() );
+			cv::normalize(hist_derivative, hist_derivative, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat() );
+
+			// Draw Graphs
+			for( int i = 1; i < hist_size; i++ )
+			{
+			// Plot image histogram
+			cv::line( histImage, cv::Point( bin_w*(i-1), hist_h - cvRound(hist_smooth.at<float>(i-1)) ) ,
+			                 cv::Point( bin_w*(i), hist_h - cvRound(hist_smooth.at<float>(i)) ),
+			                 cv::Scalar( 255, 0, 0), 2, 8, 0  );
+			// Plot image histogram derivative
+			cv::line( histDerivImage, cv::Point( bin_w*(i-1), hist_h - cvRound(hist_derivative.at<float>(i-1)) ) ,
+			                 cv::Point( bin_w*(i), hist_h - cvRound(hist_derivative.at<float>(i)) ),
+			                 cv::Scalar( 122, 0, 0), 1, 8, 0  );
+			}
+
+			// Shade in area being segmented under histogram curve
+			cv::line( histImage, cv::Point( bin_w*low_thresh, hist_h - cvRound(hist_smooth.at<float>(low_thresh)) ) ,
+			                 cv::Point( bin_w*low_thresh, hist_h), cv::Scalar( 255, 255, 0),2);
+			cv::line( histImage, cv::Point( bin_w*high_thresh, hist_h - cvRound(hist_smooth.at<float>(high_thresh)) ) ,
+		                 cv::Point( bin_w*high_thresh, hist_h), cv::Scalar( 255, 255, 0),2);
+			cv::floodFill(histImage, cv::Point(bin_w * cvRound(float(low_thresh + high_thresh) / 2.0), hist_h - 1), cv::Scalar(155));
+
+			// Combine graphs into one image and display results
+			cv::Mat segmentation_channel = cv::Mat::zeros(histImage.size(), CV_8UC1);
+			std::vector<cv::Mat> debug_img_channels;
+			debug_img_channels.push_back(histImage); 
+			debug_img_channels.push_back(histDerivImage);
+			debug_img_channels.push_back(dest * 0.25);
+			cv::merge(debug_img_channels, debug_img);
+			cv::Point text_upper_left(debug_img.cols / 2.0, debug_img.rows / 10.0);
+			std::string text_ln1 = image_name;
+			std::stringstream text_ln2;
+			text_ln2 << "low = " << low_thresh;
+			std::stringstream text_ln3;
+			text_ln3 << "high = " << high_thresh;
+			int font = cv::FONT_HERSHEY_SIMPLEX;
+			double font_scale = 0.0015 * debug_img.rows;
+			cv::Point vert_offset = cv::Point(0, debug_img.rows / 15.0);
+			cv::Scalar text_color(255, 255, 0);
+			cv::putText(debug_img, text_ln1, text_upper_left, font, font_scale, text_color);
+			cv::putText(debug_img, text_ln2.str(), text_upper_left + vert_offset, font, font_scale, text_color);
+			cv::putText(debug_img, text_ln3.str(), text_upper_left + vert_offset + vert_offset, font, font_scale, text_color);
 		}
-
-		// Shade in area being segmented under histogram curve
-		cv::line( histImage, cv::Point( bin_w*low_thresh, hist_h - cvRound(hist_smooth.at<float>(low_thresh)) ) ,
-		                 cv::Point( bin_w*low_thresh, hist_h), cv::Scalar( 125, 0, 0),2);
-		cv::line( histImage, cv::Point( bin_w*high_thresh, hist_h - cvRound(hist_smooth.at<float>(high_thresh)) ) ,
-	                 cv::Point( bin_w*high_thresh, hist_h), cv::Scalar( 125, 0, 0),2);
-		cv::floodFill(histImage, cv::Point(bin_w * cvRound(float(low_thresh + high_thresh) / 2.0), hist_h - 1), cv::Scalar(155));
-
-		// Combine graphs into one image and display results
-		cv::Mat segmentation_channel = cv::Mat::zeros(histImage.size(), CV_8UC1);
-		std::vector<cv::Mat> debug_img_channels;
-		debug_img_channels.push_back(histImage); 
-		debug_img_channels.push_back(histDerivImage);
-		debug_img_channels.push_back(dest * 0.25);
-		cv::merge(debug_img_channels, debug_img);
-		cv::Point text_upper_left(debug_img.cols / 2.0, debug_img.rows / 10.0);
-		std::string text_ln1 = image_name;
-		std::stringstream text_ln2;
-		text_ln2 << "low = " << low_thresh;
-		std::stringstream text_ln3;
-		text_ln3 << "high = " << high_thresh;
-		int font = cv::FONT_HERSHEY_SIMPLEX;
-		double font_scale = 0.0015 * debug_img.rows;
-		cv::Point vert_offset = cv::Point(0, debug_img.rows / 15.0);
-		cv::Scalar text_color(255, 255, 0);
-		cv::putText(debug_img, text_ln1, text_upper_left, font, font_scale, text_color);
-		cv::putText(debug_img, text_ln2.str(), text_upper_left + vert_offset, font, font_scale, text_color);
-		cv::putText(debug_img, text_ln3.str(), text_upper_left + vert_offset + vert_offset, font, font_scale, text_color);
+		catch(std::exception& e){
+			ROS_INFO(e.what());
+		}
 	}
 }
 

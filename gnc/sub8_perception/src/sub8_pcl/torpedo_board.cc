@@ -123,6 +123,10 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
     return;
   }
 
+  // cv::imshow("input image left", current_image_left);
+  // cv::imshow("input image right", current_image_right);
+  // cv::waitKey(1);
+
   // Enforce approximate image synchronization
   double left_stamp, right_stamp;
   left_stamp = left_most_recent.image_msg_ptr->header.stamp.toSec();
@@ -159,10 +163,11 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
 
   // Segment Board and find image coordinates of board corners
   cv::Mat left_segment_dbg_img, right_segment_dbg_img;
-  // sub::Contour board_corners_left, board_corners_right;
   std::vector<cv::Point> board_corners_left, board_corners_right;
   segment_board(processing_size_image_left, segmented_board_left, left_segment_dbg_img);
   segment_board(processing_size_image_right, segmented_board_right, right_segment_dbg_img, true);
+  cv::imshow("segmented right", segmented_board_right);
+  cv::waitKey(1);
   bool found_left = find_board_corners(segmented_board_left, board_corners_left, true);
   bool found_right = find_board_corners(segmented_board_right, board_corners_right, false);
   if(!found_left || !found_right){
@@ -397,13 +402,14 @@ bool Sub8TorpedoBoardDetector::request_torpedo_board_position(sub8_msgs::VisionR
 
 void Sub8TorpedoBoardDetector::segment_board(const cv::Mat &src, cv::Mat &dest, cv::Mat &dbg_img, bool draw_dbg_img){
 
+  cv::imshow("segment board input", src);
+  cv::waitKey(1);
+
   // Preprocessing
-  cv::Mat hsv_image, hue_img, sat_img, hue_segment_dbg_img, sat_segment_dbg_img;
+  cv::Mat hsv_image, hue_segment_dbg_img, sat_segment_dbg_img;
   std::vector<cv::Mat> hsv_channels;
   cv::cvtColor(src, hsv_image, CV_BGR2HSV);
   cv::split(hsv_image, hsv_channels);
-  // cv::medianBlur(hsv_channels[0], hue_blurred, 5); // Magic num: 5 (might need tuning)
-  // cv::medianBlur(hsv_channels[1], sat_blurred, 5);
 
   // Histogram parameters
   int hist_size = 256;    // bin size
@@ -414,12 +420,16 @@ void Sub8TorpedoBoardDetector::segment_board(const cv::Mat &src, cv::Mat &dest, 
   cv::Mat threshed_hue, threshed_sat, segmented_board;
   int target_yellow = 20;
   int target_saturation = 180;
-  sub::statistical_image_segmentation(hue_img, threshed_hue, hue_segment_dbg_img, hist_size, ranges,
+  sub::statistical_image_segmentation(hsv_channels[0], threshed_hue, hue_segment_dbg_img, hist_size, ranges,
                                       target_yellow, "Hue", draw_dbg_img, 6, 0.5, 0.5);
-  sub::statistical_image_segmentation(sat_img, threshed_sat, sat_segment_dbg_img, hist_size, ranges,
+  sub::statistical_image_segmentation(hsv_channels[1], threshed_sat, sat_segment_dbg_img, hist_size, ranges,
                                       target_saturation, "Saturation", draw_dbg_img, 6, 0.1, 0.1);
+  cv::imshow("hue segment", threshed_hue);
+  cv::imshow("sat segment", threshed_sat);
+  cv::waitKey(1);
   segmented_board = threshed_hue / 2.0 + threshed_sat / 2.0;
-  cv::threshold(segmented_board, segmented_board, 255*0.75, 255, cv::THRESH_BINARY);
+  cv::medianBlur(segmented_board, segmented_board, 5);
+  cv::threshold(segmented_board, segmented_board, 255*0.9, 255, cv::THRESH_BINARY);
   dest = segmented_board;
   
   if(generate_dbg_img && draw_dbg_img){

@@ -15,15 +15,25 @@ find_package(catkin
     cv_bridge
     sub8_build_tools
     sub8_msgs
+    message_generation
+    std_msgs
+    geometry_msgs
 )
-
-find_package(Ceres REQUIRED)
-include_directories(${CERES_INCLUDE_DIRS})
-include_directories(${CERES_INCLUDE_DIRS})
 
 catkin_python_setup()
 
 find_package(PCL 1.7 REQUIRED)
+
+add_service_files( DIRECTORY srv
+  FILES
+  TorpBoardPoseRequest.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+    std_msgs
+    geometry_msgs
+)
 
 catkin_package(
   INCLUDE_DIRS
@@ -34,6 +44,9 @@ catkin_package(
     roscpp
     rospy
     sub8_msgs
+    message_runtime
+    std_msgs
+    geometry_msgs
   DEPENDS
     system_lib
     image_transport
@@ -48,7 +61,6 @@ include_directories(
   SYSTEM
     ${PCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIR}
-    ${CERES_INCLUDE_DIRS}
     ${catkin_INCLUDE_DIRS}
 )
 
@@ -73,7 +85,6 @@ target_link_libraries(
     ${PCL_IO_LIBRARIES}
     ${PCL_LIBRARIES}
     ${Boost_LIBRARIES}
-    ${CERES_LIBRARIES}
     bfd
     dl
 )

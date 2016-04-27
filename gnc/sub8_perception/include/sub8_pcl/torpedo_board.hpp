@@ -23,8 +23,6 @@
 #include <sub8_pcl/torpedo_board.hpp>
 #include <sub8_msgs/VisionRequest.h>
 
-// #include <ceres/ceres.h>
-// #include <glog/logging.h>
 
 class Sub8TorpedoBoardDetector {
 public:
