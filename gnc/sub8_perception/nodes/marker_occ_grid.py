@@ -6,9 +6,9 @@ import tf
 from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, Point, Quaternion, Pose2D
 from nav_msgs.msg import OccupancyGrid, MapMetaData
-from sub8_msgs.srv import VisionRequest2D, VisionRequest2DResponse
+from sub8_msgs.srv import VisionRequest2D, VisionRequest2DResponse, SearchPose
 from image_geometry import PinholeCameraModel
-from sub8_ros_tools import threading_helpers
+from sub8_ros_tools import threading_helpers, msg_helpers
 
 import cv2
 import numpy as np
@@ -48,28 +48,29 @@ class OccGridUtils(object):
         # Create array of -1's of the correct size
         self.occ_grid = np.zeros((self.meta_data.height, self.meta_data.width)) - 1
         self.searched = np.zeros((self.meta_data.height, self.meta_data.width))
-        self.trenches = np.zeros((self.meta_data.height, self.meta_data.width))
+        self.markers = np.zeros((self.meta_data.height, self.meta_data.width))
 
         self.occ_grid_pub = rospy.Publisher(topic_name, OccupancyGrid, queue_size=1)
+
+        self.searcher = Searcher(self.searched, res, [self.mid_x, self.mid_y])
 
     def add_circle(self, center, radius):
         '''
         Adds a circle to the grid.
-        Also used to project the camera's view onto the grid but is rotationally intolerant.
+        Also used to project the camera's view onto the grid becuase it is rotationally intolerant.
         '''
         center_offset = np.array(center) / self.meta_data.resolution - np.array([self.mid_x, self.mid_y])
 
-        # Create blank canvas the size of the circle
         radius = int(radius / self.meta_data.resolution)
 
-        cv2.circle(self.searched, tuple(center_offset.astype(np.int8)), radius, 1, -1)
+        cv2.circle(self.searched, tuple(center_offset.astype(np.int32)), radius, 1, -1)
 
     def found_marker(self, pose_2d):
         '''
-        Used to mark found trenches.
+        Used to mark found markers.
         It doesn't matter that this isn't perfect, we just need to know that something is there.
         '''
-        TRENCH_LENGTH = 1.2 / self.meta_data.resolution  # cells (3 ft)
+        TRENCH_LENGTH = 1.22 / self.meta_data.resolution  # cells (4 ft)
         TRENCH_WIDTH = .1524 / self.meta_data.resolution  # cells (6 inches)
 
         center = np.array([pose_2d.x, pose_2d.y])  # The negative all depends on how the center is returned
@@ -77,13 +78,13 @@ class OccGridUtils(object):
 
         center_offset = center / self.meta_data.resolution - np.array([self.mid_x, self.mid_y])
 
-        rot_top_point = np.dot(np.array([TRENCH_LENGTH, 0]) / 2, make_2D_rotation(rotation)).astype(np.int8)
-        rot_bottom_point = np.dot(-np.array([TRENCH_LENGTH, 0]) / 2, make_2D_rotation(rotation)).astype(np.int8)
+        rot_top_point = np.dot(np.array([TRENCH_LENGTH, 0]) / 2, make_2D_rotation(rotation)).astype(np.int32)
+        rot_bottom_point = np.dot(-np.array([TRENCH_LENGTH, 0]) / 2, make_2D_rotation(rotation)).astype(np.int32)
 
         pos_top_point = np.int0(rot_top_point + center_offset)
         pos_bottom_point = np.int0(rot_bottom_point + center_offset)
 
-        cv2.line(self.trenches, tuple(pos_top_point), tuple(pos_bottom_point), 101, int(TRENCH_WIDTH))
+        cv2.line(self.markers, tuple(pos_top_point), tuple(pos_bottom_point), 101, int(TRENCH_WIDTH))
 
     def publish_grid(self):
         '''
@@ -96,9 +97,78 @@ class OccGridUtils(object):
         occ_msg.header = header
         occ_msg.info = self.meta_data
         # Make sure values don't go out of range
-        occ_grid = self.occ_grid + self.searched + self.trenches
+        occ_grid = self.searched + self.markers - 1
         occ_msg.data = np.clip(occ_grid.flatten(), -1, 100)
         self.occ_grid_pub.publish(occ_msg)
+
+
+class Searcher():
+    '''
+    Intented to provide a service that will return a pose to go to in order to search for a missing marker.
+    Not sure how this will be implemented in its entirety.
+    '''
+    def __init__(self, searched_area, grid_res, position_offset):
+        self.searched_area = searched_area
+        self.grid_res = grid_res
+        self.position_offset = position_offset
+        self.poly_generator = self.polygon_generator()
+        self.max_searches = 6
+        self.current_search = 0
+
+        s = rospy.Service('/next_search_pose', SearchPose, self.return_pose)
+
+    def return_pose(self, srv):
+        '''
+        Returns the next pose to go to in order to try and find the marker.
+        Only searches in a circle around our current location (could be extended to searching farther if we need to).
+        This will skip points that have already been searched.
+        '''
+        if srv.reset_search:
+            self.current_search = 0
+            poly_generator = self.polygon_generator()
+
+        # We search at 1.75 * r so that there is some overlay in the search feilds.
+        coordinate = next(self.poly_generator) * srv.search_radius * 1.75 + msg_helpers.pose_to_numpy(srv.current_position)[0][:2]
+
+        while True:
+            if self.current_search > self.max_searches:
+                return [False, srv.current_position]
+
+            if self.check_searched(coordinate, srv.search_radius):
+                pose = msg_helpers.numpy_quat_pair_to_pose(np.append(coordinate, 0), np.array([0, 0, 0, 1]))
+                return [True, pose]
+
+            self.current_search += 1
+
+    def check_searched(self, search_center, search_radius):
+        '''
+        Mask out a circle of the searched area around the point, then average the value of the grid in that mask. If
+        the average is above some threshold assume we have searched this area and do not need to serach it again.
+        '''
+        circle_mask = np.zeros(self.searched_area.shape)
+
+        center_offset = np.array(search_center) / self.grid_res - self.position_offset
+
+        radius = int(search_radius / self.grid_res)
+        cv2.circle(circle_mask, tuple(center_offset.astype(np.int32)), radius, 1, -1)
+
+        masked_search = cv2.add(circle_mask, self.searched_area)
+        threshold = .8
+
+        return np.mean(masked_search) <= threshold
+
+    def polygon_generator(self, n=6):
+        '''
+        Using a generator here to allow for easy expansion in the future.
+        '''
+        theta = np.radians(360 / n)
+        rot_mat = make_2D_rotation(theta)
+
+        point = np.array([1, 0])
+
+        while True:
+            point = np.dot(rot_mat, point)
+            yield point
 
 
 class MarkerOccGrid(OccGridUtils):
@@ -210,13 +280,16 @@ class MarkerOccGrid(OccGridUtils):
         mid_ray = unit_vector(self.cam.projectPixelTo3dRay((self.cam.cx(), self.cam.cy())))
 
         if second_point is None:
-            second_point = np.array([0, min(self.camera_info.height, self.camera_info.width) / 2])
+            if self.camera_info.height < self.camera_info.width:
+                second_point = np.array([self.camera_info.height / 2, 0])
+            else:
+                second_point = np.array([0, self.camera_info.width / 2])
+
         edge_ray = unit_vector(self.cam.projectPixelTo3dRay(second_point))
 
         # Calculate angle between vectors and use that to find r
         theta = np.arccos(np.dot(mid_ray, edge_ray))
         return np.tan(theta) * height
-
 
 if __name__ == "__main__":
     rospy.init_node('searcher')
