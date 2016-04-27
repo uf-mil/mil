@@ -98,6 +98,12 @@ def numpy_to_quaternion(np_quaternion):
     return geometry_msgs.Quaternion(*np_quaternion)
 
 
+def numpy_to_twist(linear_vel, angular_vel):
+    '''TODO: Unit-test
+    '''
+    return geometry_msgs.Twist(linear=geometry_msgs.Vector3(*linear_vel), angular=geometry_msgs.Vector3(*angular_vel))
+
+
 def numpy_matrix_to_quaternion(np_matrix):
     '''Given a 3x3 rotation matrix, return its geometry_msgs Quaternion'''
     assert np_matrix.shape == (3, 3), "Must submit 3x3 rotation matrix"

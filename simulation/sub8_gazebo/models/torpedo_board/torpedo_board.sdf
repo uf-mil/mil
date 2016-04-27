@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<sdf version="1.5">
+  <model name="torpedo_board">
+    <static>true</static>
+    <link name="board">
+      <collision name='boardcol'>
+        <pose>0 0 0 1.57 1.57 1.57</pose>
+        <geometry>
+          <mesh>
+            <uri>file://torpedo_board/board.dae</uri>
+            <scale>.3 .3 .3</scale>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="boardvis">
+        <pose>0 0 0 1.57 1.57 1.57</pose>
+        <geometry>
+          <mesh>
+            <uri>file://torpedo_board/board.dae</uri>
+            <scale>.3 .3 .3</scale>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <link name="hole_1">
+      <collision name='hole_1_col'>
+        <pose>0 0 0 1.57 1.57 1.57</pose>
+        <geometry>
+          <mesh>
+            <uri>file://torpedo_board/hole.dae</uri>
+            <scale>.3 .3 .3</scale>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>
