@@ -149,15 +149,15 @@ class PipeFinder:
                 draw_image[:, :, 0] = norc_res
                 self.last_draw_image = np.copy(draw_image)
 
-                print center, angle_rad
-                return center, angle_rad
+                print center, angle_rad, cv2.contourArea(cnt)
+                return center, angle_rad, cv2.contourArea(cnt)
 
     def request_pipe(self, data):
         if self.last_image is None:
             return False  # Fail if we have no images cached
 
         timestamp = self.last_image_timestamp
-        pose = self.find_pipe(self.last_image, timestamp)
+        position, orientation, _ = self.find_pipe(self.last_image, timestamp)
 
         found = (pose is not None)
         if not found:

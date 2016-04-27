@@ -211,6 +211,11 @@ class MarkerOccGrid(OccGridUtils):
             return
 
         x_y_position, height = self.get_tf(timestamp)
+
+        if marker[2] < self.calculate_marker_area(height) * .6:
+            # If the detected region isn't big enough dont add it.
+            return
+
         # Calculate position of marker accounting for camera rotation.
         dir_vector = unit_vector(np.array([self.cam.cx(), self.cam.cy()] - marker[0]))
         trans, rot = self.tf_listener.lookupTransform("/map", "/downward", timestamp)
@@ -247,7 +252,7 @@ class MarkerOccGrid(OccGridUtils):
         trans, _ = self.tf_listener.lookupTransform("/ground", "/downward", timestamp)
         height = trans[2]
 
-        self.correct_height(height, timestamp)
+        #self.correct_height(height, timestamp)
 
         return x_y_position, height
 
@@ -271,19 +276,41 @@ class MarkerOccGrid(OccGridUtils):
         height = np.sqrt(measured_height ** 2 - (roll_offset ** 2 + pitch_offset ** 2))
         return height
 
+    def calculate_marker_area(self, height):
+        '''
+        Esitmate what the area of the marker should be so we don't add incorrect markers to the occupancy grid.
+        What we really don't want is to add markers to the grid that are on the edge since the direction and center of
+            the marker are off.
+        '''
+        MARKER_LENGTH = 1.22  # m
+        MARKER_WIDTH = .1524  # m
+
+        # Get m/px on the ground floor.
+        m = self.calculate_visual_radius(height)
+        if self.cam.cy() < self.cam.cx():
+            px = self.cam.cy()
+        else:
+            px = self.cam.cx()
+
+        m_px = m / px
+        marker_area_m = MARKER_WIDTH * MARKER_LENGTH
+        marker_area_px = marker_area_m / (m_px ** 2)
+        print marker_area_px
+        return marker_area_px
+
     def calculate_visual_radius(self, height, second_point=None):
         '''
         Draws rays to find the radius of the FOV of the camera in meters.
         It also can work to find the distance between two planar points some distance from the camera.
         '''
 
-        mid_ray = unit_vector(self.cam.projectPixelTo3dRay((self.cam.cx(), self.cam.cy())))
+        mid_ray = np.array([0, 0, 1])
 
         if second_point is None:
-            if self.camera_info.height < self.camera_info.width:
-                second_point = np.array([self.camera_info.height / 2, 0])
+            if self.cam.cy() < self.cam.cx():
+                second_point = np.array([self.cam.cx(), 0])
             else:
-                second_point = np.array([0, self.camera_info.width / 2])
+                second_point = np.array([0, self.cam.cy()])
 
         edge_ray = unit_vector(self.cam.projectPixelTo3dRay(second_point))
 
