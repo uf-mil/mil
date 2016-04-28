@@ -1,26 +1,26 @@
 #!/usr/bin/env python
-import matplotlib.pyplot as plt
-
-
 import cv2
 import numpy as np
 import sys
 import rospy
 from sub8_vision_tools import threshold_tools
 from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D
+from std_msgs.msg import Header
 import sub8_ros_tools
-# from geometry_msgs.msg import Pose2D
+from geometry_msgs.msg import Pose2D
 
 
 class BuoyFinder:
+    _min_size = 50
     def __init__(self):
         self.last_image = None
         self.last_draw_image = None
         self.last_poop_image = None
+        self.last_image_time = None
 
-        self.pose_service = rospy.Service("vision/buoy/2D", VisionRequest2D, self.request_buoy)
-        self.image_sub = sub8_ros_tools.Image_Subscriber('/stereo/left/image_raw', self.image_cb)
-        self.image_pub = sub8_ros_tools.Image_Publisher("/vision/buoy_2d/target_info")
+        self.pose_service = rospy.Service('vision/buoy/2D', VisionRequest2D, self.request_buoy)
+        self.image_sub = sub8_ros_tools.Image_Subscriber('/stereo/right/image_rect_color', self.image_cb)
+        self.image_pub = sub8_ros_tools.Image_Publisher('/vision/buoy_2d/target_info')
 
         # self.poop_pub = sub8_ros_tools.Image_Publisher("/vision/channel_marker/thresh")
 
@@ -34,10 +34,30 @@ class BuoyFinder:
         }
 
     def request_buoy(self, srv):
-        buoy_location = self.find_single_buoy(np.copy(self.last_image), srv.target_name)
+        print 'requesting', srv
+        response = self.find_single_buoy(np.copy(self.last_image), srv.target_name)
 
-        # Fill in
-        resp = VisionRequest2DResponse()
+        if response is False:
+            print 'did not find'
+            resp = VisionRequest2DResponse(
+                header=sub8_ros_tools.make_header(frame='/stereo_front/right'),
+                found=False
+            )
+
+        else:
+            # Fill in
+            center, radius = response
+            resp = VisionRequest2DResponse(
+                header=Header(stamp=self.last_image_time, frame_id='/stereo_front/right'),
+                pose=Pose2D(
+                    x=center[0],
+                    y=center[1],
+                ),
+                max_x=self.last_image.shape[0],
+                max_y=self.last_image.shape[1],
+                camera_info=self.image_sub.camera_info,
+                found=True
+            )
         return resp
 
     def publish_target_info(self, *args):
@@ -51,6 +71,7 @@ class BuoyFinder:
     def image_cb(self, image):
         '''Hang on to last image'''
         self.last_image = image
+        self.last_image_time = self.image_sub.last_image_time
 
     def ncc(self, image, mean_thresh, scale=15):
         '''Compute normalized cross correlation w.r.t a shadowed pillbox fcn
@@ -77,7 +98,7 @@ class BuoyFinder:
         if len(contours) > 0:
             cnt = max(contours, key=cv2.contourArea)
             area = cv2.contourArea(cnt)
-            if area > 150:
+            if area > self._min_size:
                 M = cv2.moments(cnt)
                 cx = int(M['m10'] / M['m00'])
                 cy = int(M['m01'] / M['m00'])
@@ -102,7 +123,7 @@ class BuoyFinder:
         for _try in tries:
             norc = self.ncc(hsv[::2, ::2, ncc_channel], hsv_vect[ncc_channel], scale=_try)
 
-            ncc_mask = cv2.resize(np.uint8(norc > 0.9), None, fx=2, fy=2)
+            ncc_mask = cv2.resize(np.uint8(norc > 0.1), None, fx=2, fy=2)
             mask = color_mask & ncc_mask
 
             contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
