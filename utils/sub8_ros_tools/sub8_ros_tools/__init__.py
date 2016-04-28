@@ -4,6 +4,7 @@ import init_helpers
 import msg_helpers
 import threading_helpers
 import geometry_helpers
+import func_helpers
 
 # TODO: Adjust all existing code to not require these to be top-level imports
 from init_helpers import wait_for_param, wait_for_subscriber

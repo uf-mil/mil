@@ -47,9 +47,9 @@ def get_image_msg(ros_image, encoding='bgr8'):
 class Image_Publisher(object):
     def __init__(self, topic, encoding="bgr8", queue_size=1):
         '''Create an essentially normal publisher, that will publish images without conversion hassle'''
-        self.im_pub = rospy.Publisher(topic, Image, queue_size=queue_size)
         self.bridge = CvBridge()
         self.encoding = encoding
+        self.im_pub = rospy.Publisher(topic, Image, queue_size=queue_size)
 
     def publish(self, cv_image):
         try:
