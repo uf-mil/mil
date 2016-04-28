@@ -15,7 +15,7 @@
   <node
     name="torpedo_board" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find sub8_gazebo)/models/torpedo_board/torpedo_board.sdf -sdf
-      -x 23 -y 11 -z -1 -model torpedo_board"
+      -x 23 -y 11 -z -4.72 -Z 1.5707 -model torpedo_board"
     output="screen" />
 
 
@@ -52,6 +52,7 @@
     output="screen" />
 
   <node pkg="sub8_gazebo" type="gazebo_controller.py" name="gazebo_interface" />
+  <node pkg="sub8_gazebo" type="torpedo.py" name="torpedo_controller" />
 
   <include file="$(find sub8_launch)/launch/subsystems/rise.launch" />
   <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper.launch" />
