@@ -44,8 +44,8 @@ class GazeboInterface(object):
         self.state_set_pub.publish(ModelState(
             model_name=model,
             pose=Pose(
-                position=Point(0, 0, -5),
-                orientation=Quaternion(*transformations.quaternion_from_euler(0, 0, 0.3))
+                position=Point(self.position_offset[0], self.position_offset[1], -1),
+                orientation=Quaternion(*transformations.quaternion_from_euler(0, 0, 0))
             )
         ))
         return ResetGazeboResponse()
@@ -95,7 +95,7 @@ class GazeboInterface(object):
     def state_cb(self, msg):
         '''
         Position is offset so first message is taken as zero point. (More reflective of actual sub).
-        Z position is absolute and so is rotation?
+        Z position is absolute and so is rotation.
 
         TODO: Add noise
         '''

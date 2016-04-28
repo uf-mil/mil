@@ -10,10 +10,11 @@ def got_range(msg):
         - Make parallel to surface
     '''
     translation = (0.0, 0.0, -msg.data)
+    if rospy.Time.now() < rospy.Time(0.5):
+        listener.clear()
     t = rospy.Time(0)
     trans, rot = listener.lookupTransform("/base_link", "/map", t)
 
-    # bc.sendTransform(translation, rot, msg.header.stamp, "/dvl", "/ground")
     bc.sendTransform(translation, rot, rospy.Time.now(), "/ground", "/dvl")
 
 

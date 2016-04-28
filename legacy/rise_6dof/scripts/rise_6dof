@@ -13,7 +13,6 @@ from nav_msgs.msg import Odometry
 from std_msgs.msg import Header
 
 from uf_common.msg import PoseTwist, PoseTwistStamped
-# from uf_common.orientation_helpers import xyz_array, xyzw_array
 from sub8_ros_tools import pose_to_numpy, twist_to_numpy
 
 
@@ -60,6 +59,7 @@ class Node(object):
 
         self.current = None
         rospy.Subscriber('/current', Odometry, lambda current: setattr(self, 'current', current))
+        # rospy.Subscriber('/odom', Odometry, lambda current: setattr(self, 'current', current))
 
         self.constant_wrench = None
         self.constant_wrench_time = None
@@ -73,16 +73,19 @@ class Node(object):
         while not rospy.is_shutdown():
             rospy.sleep(dt)
 
+            if rospy.Time.now() < rospy.Time(0.5):
+                self.kill()
+                continue
+
             if self.kill_listener.get_killed():
-                self.current = None
-                self.desired = None
-                self.controller.reset()
+                self.kill()
                 continue
 
             if self.current is None:
-                print 'no current'
+                rospy.logwarn('RISE has not gotten a current waypoint')
                 rospy.sleep(1 / 10)
                 continue
+
             if self.desired is None:
                 # default to original pose
                 self.desired = PoseTwistStamped(
@@ -99,11 +102,6 @@ class Node(object):
 
             if not self.is_constant_wrench_valid():
                 self.controller.config = self.processed_config
-                # pd_wrench, wrench = self.controller.update(dt,
-                #     (unpack_pose(self.desired.posetwist.pose), unpack_twist(self.desired.posetwist.twist),
-                #      unpack_twist(self.desired.posetwist.acceleration)),
-                #     (unpack_pose(self.current.pose.pose), unpack_twist(self.current.twist.twist)),
-                # )
                 pd_wrench, wrench = self.controller.update(
                     dt,
                     (
@@ -143,6 +141,12 @@ class Node(object):
         while self.is_constant_wrench_valid():
             rospy.sleep(.1)
         return ()
+
+    def kill(self):
+        self.current = None
+        self.desired = None
+        self.controller.reset()
+
 
 if __name__ == '__main__':
     rospy.init_node('rise_6dof')
