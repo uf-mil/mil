@@ -20,8 +20,8 @@ class PipeFinder:
         self.image_sub = sub8_ros_tools.Image_Subscriber('/down/left/image_raw', self.image_cb)
         self.image_pub = sub8_ros_tools.Image_Publisher("down/left/target_info")
 
-        self.occ_grid = MarkerOccGrid(self.image_sub, grid_res=.05, grid_width=500, grid_height=500,
-                                      grid_starting_pose=Pose2D(x=250, y=250, theta=0))
+        self.occ_grid = MarkerOccGrid(self.image_sub, grid_res=.05, grid_width=200, grid_height=200,
+                                      grid_starting_pose=Pose2D(x=100, y=100, theta=0))
 
         self.pose_service = rospy.Service("vision/channel_marker/2D", VisionRequest2D, self.request_pipe)
 
@@ -35,7 +35,7 @@ class PipeFinder:
         if self.last_image is None:
             return
 
-        markers = self.find_pipe(np.copy(self.last_image), self.last_image_timestamp)
+        markers = self.find_pipe(np.copy(self.last_image))
         #print markers
         self.occ_grid.update_grid(self.last_image_timestamp)
         self.occ_grid.add_marker(markers, self.last_image_timestamp)
@@ -77,7 +77,7 @@ class PipeFinder:
         renormalized = normalized_cross_correlation
         return renormalized
 
-    def find_pipe(self, img, timestamp):
+    def find_pipe(self, img):
         rows, cols = img.shape[:2]
 
         blur = cv2.GaussianBlur(img, (5, 5), 1000)
@@ -107,6 +107,7 @@ class PipeFinder:
             cnt = contours[0]  # contour with greatest area
 
             # This is not to filter incorrectly sized objects, but to ignore speckle noise
+            # Use height data to get a good number for this.
             if cv2.contourArea(cnt) > 200:
 
                 cv2.drawContours(blank_img, [cnt], 0, (255, 255, 255), -1)
@@ -149,28 +150,26 @@ class PipeFinder:
                 draw_image[:, :, 0] = norc_res
                 self.last_draw_image = np.copy(draw_image)
 
-                #print center, angle_rad, cv2.contourArea(cnt)
-                return center, angle_rad, cv2.contourArea(cnt)
-
-        return None, None, None
+                print center, angle_rad
+                return center, angle_rad
 
     def request_pipe(self, data):
         if self.last_image is None:
             return False  # Fail if we have no images cached
 
-        timestamp = self.last_image_timestamp
-        position, orientation, _ = self.find_pipe(self.last_image, timestamp)
+        pose = self.find_pipe(self.last_image)
 
-        found = (position is not None)
+        found = (pose is not None)
         if not found:
             resp = VisionRequest2DResponse(
                 header=Header(
-                    stamp=timestamp,
+                    stamp=self.last_image_timestamp,
                     frame_id='/down_camera'),
-                found=found,
-                camera_info=self.image_sub.camera_info,
+                found=found
             )
         else:
+            position, orientation = pose
+
             resp = VisionRequest2DResponse(
                 pose=Pose2D(
                     x=position[0],
@@ -181,7 +180,7 @@ class PipeFinder:
                 max_y=self.last_image.shape[1],
                 camera_info=self.image_sub.camera_info,
                 header=Header(
-                    stamp=timestamp,
+                    stamp=self.last_image_timestamp,
                     frame_id='/down_camera'),
                 found=found
             )

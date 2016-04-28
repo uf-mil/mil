@@ -59,6 +59,10 @@ target/
 # Binaries
 *.npz
 
+# PyCharm
+.idea/
+CMakeLists.txt
+
 # Other
 *.mtl
 *.obj

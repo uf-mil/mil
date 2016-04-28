@@ -76,7 +76,7 @@ class GazeboInterface(object):
 
             # Add position offset to make the start position (0, 0, -depth)
             position_np, orientation_np = sub8_utils.pose_to_numpy(msg.pose[target_index])
-            pose = sub8_utils.numpy_quat_pair_to_pose(position_np - self.position_offset, orientation_np)
+            pose = sub8_utils.numpy_quat_pair_to_pose(orientation_np, position_np  - self.position_offset)
 
             self.state_pub.publish(
                 header=header,

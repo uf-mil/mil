@@ -1,8 +1,0 @@
-# Used to request a position by the marker searcher.
-geometry_msgs/Pose intial_position
-float32 search_radius
-bool reset_search                   # True when you want to reset the search generator.
----
-float32 area
-bool found                          # False when the whole area has been searched. Bad if this is False.
-geometry_msgs/Pose target_pose

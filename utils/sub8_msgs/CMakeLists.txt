@@ -37,7 +37,6 @@ add_service_files(
   BMatrix.srv
   PathPlan.srv
   ResetGazebo.srv
-  SearchPose.srv
 )
 
 # add_action_files(

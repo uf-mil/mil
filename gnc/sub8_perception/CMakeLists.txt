@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(sub8_perception)
 
 SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -g -rdynamic -Wall")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -g -rdynamic -Wall -std=c++11")
 
 find_package(catkin
   REQUIRED COMPONENTS
@@ -15,11 +15,26 @@ find_package(catkin
     cv_bridge
     sub8_build_tools
     sub8_msgs
+    message_generation
+    std_msgs
+    geometry_msgs
 )
 
 catkin_python_setup()
 
 find_package(PCL 1.7 REQUIRED)
+
+add_service_files( DIRECTORY srv
+  FILES
+  TorpBoardPoseRequest.srv
+  TBDetectionSwitch.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+    std_msgs
+    geometry_msgs
+)
 
 catkin_package(
   INCLUDE_DIRS
@@ -30,6 +45,9 @@ catkin_package(
     roscpp
     rospy
     sub8_msgs
+    message_runtime
+    std_msgs
+    geometry_msgs
   DEPENDS
     system_lib
     image_transport
