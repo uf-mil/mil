@@ -12,6 +12,6 @@ class TBPoseEstimator:
 
 if __name__ == '__main__':
     print '\x1b[1;31mInitializing the Torpedo Board Pose Estimation node\x1b[0m'
-    pose_estimator = TBPoseEstimator()
     rospy.init_node('torpedo_board_pose_est')
+    pose_estimator = TBPoseEstimator()
 
