@@ -112,7 +112,7 @@ class Searcher():
         self.grid_res = grid_res
         self.position_offset = position_offset
         self.poly_generator = self.polygon_generator()
-        self.max_searches = 6
+        self.max_searches = 12
         self.current_search = 0
 
         s = rospy.Service('/next_search_pose', SearchPose, self.return_pose)
@@ -133,10 +133,11 @@ class Searcher():
 
         while True:
             if self.current_search > self.max_searches:
+                rospy.logwarn("Searched {} times. Marker not found.".format(self.max_searches))
                 return [0, False, srv.intial_position]
 
             self.current_search += 1
-
+            rospy.loginfo("Search number: {}".format(self.current_search))
             # Should be variable based on height maybe?
             if self.check_searched(coor[:2], srv.search_radius) < .5:
                 pose = msg_helpers.numpy_quat_pair_to_pose(coor, np.array([0, 0, 0, 1]))
@@ -158,11 +159,16 @@ class Searcher():
         cv2.circle(circle_mask, tuple(center_offset.astype(np.int32)), radius, 1, -1)
 
         masked_search = self.searched_area * circle_mask
+        if np.max(masked_search) > 5:
+            # If there has already been a marker found on the grid in our search area go there.
+            return 1
         return len(masked_search[masked_search > .5]) / len(circle_mask[circle_mask > .5])
 
     def polygon_generator(self, n=6):
         '''
         Using a generator here to allow for easy expansion in the future.
+
+        TODO: Add difference search patterns.
         '''
         theta = np.radians(360 / n)
         rot_mat = make_2D_rotation(theta)

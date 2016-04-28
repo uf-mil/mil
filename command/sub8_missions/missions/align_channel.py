@@ -27,7 +27,7 @@ def run(sub_singleton):
     resp = yield sub_singleton.channel_marker.get_2d()
     cam.fromCameraInfo(resp.camera_info)
 
-    look_for_marker(nh, sub_singleton, cam)
+    finder = look_for_marker(nh, sub_singleton, cam)
 
     intial_pose = sub_singleton.last_pose()
     intial_height = yield sub_singleton.get_dvl_range()
@@ -44,17 +44,7 @@ def run(sub_singleton):
         print pose_to_numpy(resp.target_pose)[0]
         yield sub_singleton.move.set_position(pose_to_numpy(resp.target_pose)[0]).go()
 
-        yield nh.sleep(.5)
-
-    # How many times should we attempt to reposition ourselves
-    iterations = 2
-    for i in range(iterations):
-        rospy.loginfo("Iteration {}.".format(i + 1))
-        response = yield sub_singleton.channel_marker.get_2d()
-
-        rel_position = yield transform_px_to_m(response, cam, sub_singleton._tf_listener)
-        print rel_position
-        yield sub_singleton.move.relative([rel_position[0], rel_position[1], 0]).yaw_left(response.pose.theta).go()
+    yield finder
 
 
 @util.cancellableInlineCallbacks
@@ -68,6 +58,18 @@ def look_for_marker(nh, sub_singleton, cam):
         print response.found
         marker_found = response.found
         yield nh.sleep(.5)
+
+    # How many times should we attempt to reposition ourselves
+    iterations = 4
+    for i in range(iterations):
+        rospy.loginfo("Iteration {}.".format(i + 1))
+        response = yield sub_singleton.channel_marker.get_2d()
+
+        rel_position = yield transform_px_to_m(response, cam, sub_singleton._tf_listener)
+        print rel_position
+        yield sub_singleton.move.relative([rel_position[0], rel_position[1], 0]).yaw_left(response.pose.theta).go()
+
+        yield nh.sleep(1)
 
 
 @util.cancellableInlineCallbacks

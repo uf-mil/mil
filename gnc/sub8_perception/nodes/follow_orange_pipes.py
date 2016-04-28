@@ -149,7 +149,7 @@ class PipeFinder:
                 draw_image[:, :, 0] = norc_res
                 self.last_draw_image = np.copy(draw_image)
 
-                print center, angle_rad, cv2.contourArea(cnt)
+                #print center, angle_rad, cv2.contourArea(cnt)
                 return center, angle_rad, cv2.contourArea(cnt)
 
         return None, None, None
