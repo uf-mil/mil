@@ -152,6 +152,8 @@ class PipeFinder:
                 print center, angle_rad, cv2.contourArea(cnt)
                 return center, angle_rad, cv2.contourArea(cnt)
 
+        return None, None, None
+
     def request_pipe(self, data):
         if self.last_image is None:
             return False  # Fail if we have no images cached
@@ -159,17 +161,16 @@ class PipeFinder:
         timestamp = self.last_image_timestamp
         position, orientation, _ = self.find_pipe(self.last_image, timestamp)
 
-        found = (pose is not None)
+        found = (position is not None)
         if not found:
             resp = VisionRequest2DResponse(
                 header=Header(
                     stamp=timestamp,
                     frame_id='/down_camera'),
-                found=found
+                found=found,
+                camera_info=self.image_sub.camera_info,
             )
         else:
-            position, orientation = pose
-
             resp = VisionRequest2DResponse(
                 pose=Pose2D(
                     x=position[0],

@@ -1,52 +1,80 @@
+import txros
 from txros import util
 import rospy
 import tf
 
 from twisted.internet import defer
-from sub8_msgs.srv import SearchPose
-from sub8_ros_tools import normalize, clip_norm
+from sub8_msgs.srv import SearchPose, SearchPoseRequest
+from sub8_ros_tools import normalize, clip_norm, pose_to_numpy
 from image_geometry import PinholeCameraModel
 
 import numpy as np
 
+marker_found = False
+
 
 @util.cancellableInlineCallbacks
 def run(sub_singleton):
-    rospy.init_node('test')
-    next_pose = rospy.ServiceProxy('/next_search_pose', SearchPose)
+    nh = yield txros.NodeHandle.from_argv('marker_alignment')
+    next_pose = nh.get_service_client('/next_search_pose', SearchPose)
     cam = PinholeCameraModel()
 
-    # Right now we assume the marker is in our field of view. (Will add searching later)
     # Go to max height to see as much as we can.
+    yield sub_singleton.move.depth(0.6).zero_roll_and_pitch().go()
     rospy.sleep(1)
 
+    # This is just to get camera info
+    resp = yield sub_singleton.channel_marker.get_2d()
+    cam.fromCameraInfo(resp.camera_info)
+
+    look_for_marker(nh, sub_singleton, cam)
+
+    intial_pose = sub_singleton.last_pose()
+    intial_height = yield sub_singleton.get_dvl_range()
+    raidus = calculate_visual_radius(cam, intial_height)
+
+    s = SearchPoseRequest()
+    s.intial_position = (yield intial_pose).pose.pose
+    s.search_radius = raidus
+
+    while not marker_found:
+        # Move in search pattern until we find the marker
+        resp = yield next_pose(s)
+        print resp
+        print pose_to_numpy(resp.target_pose)[0]
+        yield sub_singleton.move.set_position(pose_to_numpy(resp.target_pose)[0]).go()
+
+        yield nh.sleep(.5)
+
+    # How many times should we attempt to reposition ourselves
     iterations = 2
-    # yield sub_singleton.move.depth(.75).zero_roll_and_pitch().go()
     for i in range(iterations):
-        rospy.loginfo("%d iteration." % i)
-
+        rospy.loginfo("Iteration {}.".format(i + 1))
         response = yield sub_singleton.channel_marker.get_2d()
-        if not response.found:
-            # Handle issues
-            rospy.logerr("No response")
 
-        cam.fromCameraInfo(response.camera_info)
-        current_pose = (yield sub_singleton.last_pose()).pose.pose
-        current_height = yield sub_singleton.get_dvl_range()
+        rel_position = yield transform_px_to_m(response, cam, sub_singleton._tf_listener)
+        print rel_position
+        yield sub_singleton.move.relative([rel_position[0], rel_position[1], 0]).yaw_left(response.pose.theta).go()
 
-        print calculate_visual_radius(cam, current_height,
-                                      image_size=[response.camera_info.height, response.camera_info.width])
 
-        # rel_position = yield transform_px_to_m(response, sub_singleton._tf_listener)
-        # print rel_position
-        # yield sub_singleton.move.relative([rel_position[0], rel_position[1], 0]).yaw_left(response.pose.theta).go()
+@util.cancellableInlineCallbacks
+def look_for_marker(nh, sub_singleton, cam):
+    '''
+    Continuously look for a marker. If one is found stop looping everywhere and go to it.
+    '''
+    global marker_found
+    while not marker_found:
+        response = yield sub_singleton.channel_marker.get_2d()
+        print response.found
+        marker_found = response.found
+        yield nh.sleep(.5)
 
 
 @util.cancellableInlineCallbacks
 def transform_px_to_m(response, cam, tf_listener):
     '''
     Finds the position of the marker in meters relative to the current position.
-    Same process as the occupacy grid maker.
+    Same process as the occupancy grid maker.
     '''
 
     timestamp = response.header.stamp
@@ -68,21 +96,20 @@ def transform_px_to_m(response, cam, tf_listener):
     defer.returnValue(rel_position)
 
 
-def calculate_visual_radius(cam, height, image_size=None, second_point=None):
+def calculate_visual_radius(cam, height, second_point=None):
     '''
     Draws rays to find the radius of the FOV of the camera in meters.
     It also can work to find the distance between two planar points some distance from the camera.
-
-    NOTE: image_size OR second_point must be defined
     '''
 
     mid_ray = np.array([0, 0, 1])
 
     if second_point is None:
-        if image_size[0] < image_size[1]:
-            second_point = np.array([image_size[0] / 2, 0])
+        if cam.cy() < cam.cx():
+            second_point = np.array([cam.cx(), 0])
         else:
-            second_point = np.array([0, image_size[1] / 2])
+            second_point = np.array([0, cam.cy()])
+
     edge_ray = unit_vector(cam.projectPixelTo3dRay(second_point))
 
     # Calculate angle between vectors and use that to find r

@@ -125,37 +125,40 @@ class Searcher():
         '''
         if srv.reset_search:
             self.current_search = 0
-            poly_generator = self.polygon_generator()
+            self.poly_generator = self.polygon_generator()
 
-        # We search at 1.75 * r so that there is some overlay in the search feilds.
-        coordinate = next(self.poly_generator) * srv.search_radius * 1.75 + msg_helpers.pose_to_numpy(srv.current_position)[0][:2]
+        # We search at 1.5 * r so that there is some overlay in the search feilds.
+        coor = np.append(next(self.poly_generator) * srv.search_radius * 1.75, 0) \
+            + msg_helpers.pose_to_numpy(srv.intial_position)[0]
 
         while True:
             if self.current_search > self.max_searches:
-                return [False, srv.current_position]
-
-            if self.check_searched(coordinate, srv.search_radius):
-                pose = msg_helpers.numpy_quat_pair_to_pose(np.append(coordinate, 0), np.array([0, 0, 0, 1]))
-                return [True, pose]
+                return [0, False, srv.intial_position]
 
             self.current_search += 1
 
+            # Should be variable based on height maybe?
+            if self.check_searched(coor[:2], srv.search_radius) < .5:
+                pose = msg_helpers.numpy_quat_pair_to_pose(coor, np.array([0, 0, 0, 1]))
+                return [self.check_searched(coor[:2], srv.search_radius), True, pose]
+            else:
+                coor = np.append(next(self.poly_generator) * srv.search_radius * 1.75, 0) \
+                    + msg_helpers.pose_to_numpy(srv.intial_position)[0]
+
     def check_searched(self, search_center, search_radius):
         '''
-        Mask out a circle of the searched area around the point, then average the value of the grid in that mask. If
-        the average is above some threshold assume we have searched this area and do not need to serach it again.
+        Mask out a circle of the searched area around the point, then find the area of the grid in that mask. If
+        the area is above some threshold assume we have searched this area and do not need to serach it again.
         '''
-        circle_mask = np.zeros(self.searched_area.shape)
-
         center_offset = np.array(search_center) / self.grid_res - self.position_offset
 
+        # Create mask
+        circle_mask = np.zeros(self.searched_area.shape)
         radius = int(search_radius / self.grid_res)
         cv2.circle(circle_mask, tuple(center_offset.astype(np.int32)), radius, 1, -1)
 
-        masked_search = cv2.add(circle_mask, self.searched_area)
-        threshold = .8
-
-        return np.mean(masked_search) <= threshold
+        masked_search = self.searched_area * circle_mask
+        return len(masked_search[masked_search > .5]) / len(circle_mask[circle_mask > .5])
 
     def polygon_generator(self, n=6):
         '''
@@ -164,10 +167,21 @@ class Searcher():
         theta = np.radians(360 / n)
         rot_mat = make_2D_rotation(theta)
 
-        point = np.array([1, 0])
+        # Start by going directly right
+        point = np.array([0, -1])
 
+        yield point
+
+        count = 0
         while True:
             point = np.dot(rot_mat, point)
+
+            if count == n:
+                point *= 2
+                count = 0
+            else:
+                count += 1
+
             yield point
 
 
@@ -207,13 +221,14 @@ class MarkerOccGrid(OccGridUtils):
             3. Use unit vec and magnitude to find dx and dy in meters.
             3. Pass info to OccGridUtils.
         '''
-        if marker is None:
+        if marker[0] is None:
             return
 
         x_y_position, height = self.get_tf(timestamp)
 
         if marker[2] < self.calculate_marker_area(height) * .6:
             # If the detected region isn't big enough dont add it.
+            rospy.logwarn("Marker found but it is too small.")
             return
 
         # Calculate position of marker accounting for camera rotation.
@@ -295,7 +310,7 @@ class MarkerOccGrid(OccGridUtils):
         m_px = m / px
         marker_area_m = MARKER_WIDTH * MARKER_LENGTH
         marker_area_px = marker_area_m / (m_px ** 2)
-        print marker_area_px
+
         return marker_area_px
 
     def calculate_visual_radius(self, height, second_point=None):
