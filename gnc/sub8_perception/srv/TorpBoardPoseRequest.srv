@@ -1,5 +1,4 @@
-Header header
-geometry_msgs/PoseStamped pose
+geometry_msgs/PoseStamped pose_stamped
 int32[12] l_proj_mat
 int32[12] r_proj_mat
 geometry_msgs/Pose2D[4] l_obs_corners

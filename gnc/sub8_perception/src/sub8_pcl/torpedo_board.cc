@@ -34,6 +34,13 @@ try : image_transport(nh), rviz(viz_topic.empty()? "/visualization/torpedo_board
   log_msg << "Advertised Service:" << std::left  << std::endl << std::setw(7) << "" << service_name;
   ROS_INFO(log_msg.str().c_str());
 
+  // Register Service client
+  pose_client = nh.serviceClient<sub8_perception::TorpBoardPoseRequest>("/torpedo_board/pose_est_srv");
+  log_msg.str(""); 
+  log_msg.clear();
+  log_msg << "Registered as client of the '/torpedo_board/pose_est_srv' service";
+  ROS_INFO(log_msg.str().c_str());
+
   // Set image processing scale
   image_proc_scale =  im_proc_scale == 0? 0.5 : im_proc_scale;
   log_msg.str(""); 
@@ -42,11 +49,11 @@ try : image_transport(nh), rviz(viz_topic.empty()? "/visualization/torpedo_board
   ROS_INFO(log_msg.str().c_str());
 
   
-  // Advertize debug image topic
+  // Advertise debug image topic
   debug_image_pub = image_transport.advertise("/dbg_imgs/torpedo_board", 1 , true);
   log_msg.str(""); 
   log_msg.clear();
-  log_msg << "Advertisied debug image topic:" << std::left  << std::endl << std::setw(7) << "" << "/dbg_imgs/torpedo_board";
+  log_msg << "Advertised debug image topic:" << std::left  << std::endl << std::setw(7) << "" << "/dbg_imgs/torpedo_board";
   ROS_INFO(log_msg.str().c_str());
   
   // Setup debug image quadrants
@@ -122,10 +129,6 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
     ROS_ERROR("[torpedo_board] cv_bridge: Failed to convert images");
     return;
   }
-
-  // cv::imshow("input image left", current_image_left);
-  // cv::imshow("input image right", current_image_right);
-  // cv::waitKey(1);
 
   // Enforce approximate image synchronization
   double left_stamp, right_stamp;
@@ -309,6 +312,9 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
   double center_z = position(2);
   double yaw = 2 * acos( yaw_quat.w());
 
+  /*
+   * In case we ever get ceres support on the sub
+   * */
   // Define Problem and add residual block
   // ceres::Problem max_likelihood_pose_estimation;
   // TorpedoBoardReprojectionCost cost_functor(P_L_cv, P_R_cv, board_corners_left, board_corners_right);
@@ -320,6 +326,26 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
   // ceres::Solve(options, &max_likelihood_pose_estimation, &summary);
 
   // TODO: replace old estimate with result of optimization in the code below
+
+  // Fill in TorpBoardPoseRequest
+  sub8_perception::TorpBoardPoseRequest pose_req;
+  tf::pointEigenToMsg(position, pose_req.request.pose_stamped.pose.position);
+  tf::quaternionEigenToMsg(orientation, pose_req.request.pose_stamped.pose.orientation);
+  pose_req.request.pose_stamped.header.stamp.fromSec(0.5 * (left_stamp + right_stamp));
+  for(int i = 0; i < 12; i++){
+    pose_req.request.l_proj_mat[i] = P_L_cv(i % 3, i % 4);
+    pose_req.request.r_proj_mat[i] = P_R_cv(i % 3, i % 4);
+  }
+  geometry_msgs::Pose2D corner;
+  for(int i = 0; i < 4; i++){
+    corner.x = board_corners_left[i].x;
+    corner.y = board_corners_left[i].y;
+    pose_req.request.l_obs_corners[i] = corner;
+
+    corner.x = board_corners_right[i].x;
+    corner.y = board_corners_right[i].y;
+    pose_req.request.r_obs_corners[i] = corner;
+  }
 
   // Fill service response fields
   std::string tf_frame = left_cam_model.tfFrame();

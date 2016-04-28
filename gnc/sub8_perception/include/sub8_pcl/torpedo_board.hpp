@@ -22,6 +22,7 @@
 #include <sub8_pcl/cv_tools.hpp>
 #include <sub8_pcl/torpedo_board.hpp>
 #include <sub8_msgs/VisionRequest.h>
+#include <sub8_perception/TorpBoardPoseRequest.h>
 
 
 class Sub8TorpedoBoardDetector {
@@ -42,6 +43,7 @@ public:
 private:
   ros::NodeHandle nh;
   ros::ServiceServer service;
+  ros::ServiceClient pose_client;
 
   image_transport::CameraSubscriber left_image_sub, right_image_sub;
   image_transport::ImageTransport image_transport;
