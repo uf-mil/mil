@@ -39,7 +39,7 @@ else:
     rospy.Subscriber('/kill', KillsStamped, clear_all_cb)
 
     # Wait until we have a kill msg
-    while kills is None:
+    while (kills is None) and not rospy.is_shutdown():
         pass
 
     # Clear everything

@@ -109,8 +109,6 @@ file(GLOB BUOY_SOURCES
 add_executable(
   pcl_perception
     nodes/perception.cc
-    #src/sub8_pcl/buoy.cc
-    ${BUOY_SOURCES}
     src/sub8_pcl/torpedo_board.cc
 )
 
@@ -122,6 +120,31 @@ add_dependencies(
 
 target_link_libraries(
   pcl_perception
+    sub8_pcl
+    ${catkin_LIBRARIES}
+    ${PCL_COMMON_LIBRARIES}
+    ${PCL_IO_LIBRARIES}
+    ${PCL_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${OpenCV_INCLUDE_DIRS}
+    bfd
+    dl
+)
+
+add_executable(
+  pcl_buoy
+    nodes/buoy_node.cc
+    ${BUOY_SOURCES}
+)
+
+add_dependencies(
+  pcl_buoy
+   sub8_msgs_generate_messages_cpp
+   ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(
+  pcl_buoy
     sub8_pcl
     ${catkin_LIBRARIES}
     ${PCL_COMMON_LIBRARIES}

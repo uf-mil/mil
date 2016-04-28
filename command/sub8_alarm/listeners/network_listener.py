@@ -22,6 +22,7 @@ class KeepAlive(object):
 
 if __name__ == '__main__':
     rospy.init_node('network_kill')
+    # Interact with legacy kill stuff
     kb = KillBroadcaster(id='network', description='Network timeout')
     ka = KeepAlive(timeout=0.3)
 

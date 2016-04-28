@@ -1,6 +1,7 @@
 import rospy
 from sub8_msgs.msg import Alarm
-from std_msgs.msg import Header
+# from std_msgs.msg import Header
+import sub8_ros_tools
 import json
 
 
@@ -8,7 +9,7 @@ class AlarmBroadcaster(object):
     def __init__(self):
         '''Alarm Broadcaster'''
         # Notify the world when our alarm happens
-        self.alarm_pub = rospy.Publisher('/alarm', Alarm, latch=True, queue_size=10)
+        self.alarm_pub = rospy.Publisher('/alarm_raise', Alarm, latch=True, queue_size=10)
 
         # Notify the world that our alarm has spawned
         # For now, unused - future: Use for system reports
@@ -78,9 +79,7 @@ class AlarmRaiser(object):
             _parameters = self._parameters
 
         alarm_msg = Alarm(
-            header=Header(
-                stamp=rospy.Time.now()
-            ),
+            header=sub8_ros_tools.make_header(),
             action_required=self._action_required,
             problem_description=_problem_description,
             parameters=json.dumps(_parameters),
@@ -91,6 +90,17 @@ class AlarmRaiser(object):
 
         self._alarm_pub.publish(alarm_msg)
         return alarm_msg
+
+    def clear_alarm(self):
+        alarm_msg = Alarm(
+            header=sub8_ros_tools.make_header(),
+            alarm_name=self._alarm_name,
+            node_name=self._node_name,
+            severity=self._severity,
+            action_required=False,
+            clear=True,
+        )
+        self._alarm_pub.publish(alarm_msg)
 
 
 class AlarmListener(object):
@@ -119,7 +129,8 @@ class AlarmListener(object):
         '''
         self.callback_linker[alarm_name] = {
             'callback': callback_funct,
-            'args': args
+            'args': args,
+            'last_time': None
         }
 
     def check_alarm(self, alarm):
@@ -132,6 +143,17 @@ class AlarmListener(object):
         except KeyError:
             # These are not the alarms we are looking for.
             # print "Not Found."
+            return
+
+        if self.callback_linker['last_time'] is None:
+            self.callback_linker['last_time'] = alarm.header.stamp
+
+        # Check if the alarm is new
+        if alarm.header.stamp > self.callback_linker['last_time']:
+            self.callback_linker['last_time'] = alarm.header.stamp
+
+        # Otherwise do nothing
+        else:
             return
 
         callback = found_alarm['callback']

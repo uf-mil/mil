@@ -1,144 +1,92 @@
-#!/usr/bin/python
-
-from __future__ import division
-import traits
-import traitsui
-from mayavi import mlab
-import cv2
 import numpy as np
-import vtk
-
-output = vtk.vtkFileOutputWindow()
-# Throw the stupid vtk runtime errors into a burning pit
-output.SetFileName("/dev/null")
-vtk.vtkOutputWindow().SetInstance(output)
-
-color_ranges = {
-    'hsv': np.array([
-        [0, 179],  # Stupid OpenCV saving 1 bit...
-        [0, 255],
-        [0, 255]
-    ]),
-    'rgb': np.array([
-        [0, 255],
-        [0, 255],
-        [0, 255]
-    ])
-}
+import cv2
+import rospy
+from sub8_ros_tools.func_helpers import Cache
 
 
-def np_inrange(vector, lower_range, upper_range):
-    sat_lower = np.min(vector > lower_range, axis=1)
-    sat_upper = np.min(vector < upper_range, axis=1)
-    return np.logical_and(sat_upper, sat_lower)
+def bgr_vec_to_hsv(vector):
+    """hsv = bgr_vec_to_hsv(np.array([20, 20, 20]))"""
+    deep = np.reshape(vector, (1, 1, 3))
+    hsv = cv2.cvtColor(deep.astype(np.float32), cv2.COLOR_BGR2HSV)
+    return np.squeeze(hsv)
 
 
-def mlab_color_imshow(image, **kwargs):
-    '''Imshow with color in mlab
-    Adapted from [1]
-        [1] http://stackoverflow.com/a/24471211/5451259
-    '''
-    alpha = np.ones(image.shape[0] * image.shape[1]) * 255
+@Cache
+def get_threshold(parameter_basename, prefix='bgr'):
+    possible_params = rospy.get_param_names()
+    bounds = []
 
-    image_LUT_array = np.c_[image.reshape(-1, 3), alpha]
-    image_LUT_array[:, 0], image_LUT_array[:, 2] = np.copy(image_LUT_array[:, 2]), np.copy(image_LUT_array[:, 0])
-    LUT_lookup = np.arange(image.shape[0] * image.shape[1]).reshape(image.shape[0], image.shape[1])
+    for param in possible_params:
+        if param.startswith(parameter_basename) and (prefix in param):
+            param_value = rospy.get_param(param)
+            bounds.append(np.array(param_value))
 
-    mlab_imshow = mlab.imshow(LUT_lookup, colormap='binary', **kwargs)
-    mlab_imshow.module_manager.scalar_lut_manager.lut.table = image_LUT_array
-    return mlab_imshow
+    if len(bounds) < 2:
+        raise(KeyError("Could not find parameter starting with {} with prefix {}".format(parameter_basename, prefix)))
 
-
-def points_with_labels(x, y, z, labels, **kwargs):
-    label_range = np.unique(labels)
-    maxlabel = np.max(label_range)
-
-    for label_candidate in label_range:
-        color_hsv = ((label_candidate + 1) / (maxlabel + 1), 0.7, 0.8)
-        x_ = x[labels == label_candidate]
-        y_ = y[labels == label_candidate]
-        z_ = z[labels == label_candidate]
-        mlab.points3d(x_, y_, z_, color=color_hsv, colormap='hsv', **kwargs)
+    vals = np.vstack(bounds)
+    upper_bound = np.max(vals, axis=0)
+    lower_bound = np.min(vals, axis=0)
+    return np.vstack([lower_bound, upper_bound]).transpose()
 
 
-def denormalize(val, _min, _max):
-    return (val * _max) + _min
+def param_thresh(rgb_image, parameter_basename, prefer='bgr'):
+    """This assumes a bgr encoding"""
+    prefer = prefer.lower()
+
+    if prefer == 'bgr':
+        thresh_image = rgb_image
+    elif prefer == 'hsv':
+        thresh_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2HSV)
+    else:
+        raise(TypeError("You did not choose bgr or hsv, how am I supposed to handle that?"))
+
+    _range = get_threshold(parameter_basename)
+    color_mask = cv2.inRange(thresh_image, _range[:, 0], _range[:, 1])
+    return color_mask, _range
 
 
-class ExtentDialog(traits.api.HasTraits):
-    """A dialog to graphically adjust the extents of a threshold range
-    """
-
-    # Data extents
-    data_x_min = traits.api.Float
-    data_x_max = traits.api.Float
-    data_y_min = traits.api.Float
-    data_y_max = traits.api.Float
-    data_z_min = traits.api.Float
-    data_z_max = traits.api.Float
-
-    x_min = traits.api.Range(0.0, 1.0, 0.0)
-    x_max = traits.api.Range(0.0, 1.0, 1.0)
-    y_min = traits.api.Range(0.0, 1.0, 0.0)
-    y_max = traits.api.Range(0.0, 1.0, 1.0)
-    z_min = traits.api.Range(0.0, 1.0, 0.0)
-    z_max = traits.api.Range(0.0, 1.0, 1.0)
-
-    ranges = np.array([
-        [0.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0]
-    ]).transpose()
-    filter_box = traits.api.Instance(traits.api.HasTraits, allow_none=False)
-    image = None
-
-    @traits.api.on_trait_change('x_min, x_max, y_min, y_max, z_min, z_max')
-    def update_extent(self):
-        conditions = (self.x_min < self.x_max, self.y_min < self.y_max, self.z_min < self.z_max)
-        if (self.filter_box is not None and all(conditions)):
-
-            self.ranges = np.array([
-                [
-                    denormalize(self.x_min, self.data_x_min, self.data_x_max),
-                    denormalize(self.x_max, self.data_x_min, self.data_x_max)
-                ],
-                [
-                    denormalize(self.y_min, self.data_y_min, self.data_y_max),
-                    denormalize(self.y_max, self.data_y_min, self.data_y_max)
-                ],
-                [
-                    denormalize(self.z_min, self.data_z_min, self.data_z_max),
-                    denormalize(self.z_max, self.data_z_min, self.data_z_max)
-                ]
-            ])
-            self.filter_box.mlab_source.x = self.ranges[0, :]
-            self.filter_box.mlab_source.y = self.ranges[1, :]
-            self.filter_box.mlab_source.z = self.ranges[2, :]
-
-            if self.image is not None:
-                r = cv2.inRange(self.image, self.ranges[:, 0], self.ranges[:, 1])
-                cv2.imshow("segmented", r)
-
-    view = traitsui.api.View(
-        'x_min', 'x_max', 'y_min', 'y_max', 'z_min', 'z_max',
-        title='Edit extent', resizable=True)
+def grow_cluster(image, prior_range):
+    pass
 
 
-def make_extent_dialog(ranges, image=None):
-    pts = mlab.points3d(
-        ranges[0],
-        ranges[1],
-        ranges[2],
-        scale_factor=0.1
+if __name__ == '__main__':
+    from sklearn import cluster  # noqa
+    import visual_threshold_tools
+    from mayavi import mlab
+
+    img = cv2.imread('/home/sub8/Pictures/Selection_001.png')
+    cv2.imshow('ss', img)
+    thresh, _ = param_thresh(img, '/color/buoy/red')
+    _range = np.array([[0.0, 0.0, 49.572], [56.661, 46.053, 201.8835]])
+
+    seg_image = cv2.inRange(img, _range[0, :], _range[1, :])
+    nonseg_image = np.logical_not(seg_image)
+
+    seeds = (np.ravel(seg_image).astype(np.uint8) + 1)[::50]
+    top = np.average(_range, axis=0)
+    bot = np.array([255, 255, 255]) - top
+    # clust = cluster.KMeans(n_clusters=2, init=np.vstack([top, bot]))
+    # clust = cluster.AgglomerativeClustering(n_clusters=2)
+
+    in_box = img[seg_image.astype(np.bool)]
+    out_box = img[nonseg_image]
+
+    all_list = np.reshape(img, (-1, 3))[::50]
+    rgb_list = np.reshape(in_box, (-1, 3))
+    # clust = cluster.MeanShift(seeds=seeds)
+    clust = cluster.MeanShift()
+
+    print rgb_list.shape
+
+    clust.fit(all_list)
+
+    # print clust.cluster_centers_
+    visual_threshold_tools.points_with_labels(
+        all_list[:, 0],
+        all_list[:, 1],
+        all_list[:, 2],
+        clust.labels_,
+        scale_factor=5.0
     )
-
-    mlab.pipeline.outline(pts)
-    mlab.axes()
-    extent_dialog = ExtentDialog(
-        data_x_min=ranges[0][0], data_x_max=ranges[0][1],
-        data_y_min=ranges[1][0], data_y_max=ranges[1][1],
-        data_z_min=ranges[2][0], data_z_max=ranges[2][1],
-        filter_box=pts, image=image
-    )
-    extent_dialog.edit_traits()
-
-    return extent_dialog
+    mlab.show()
