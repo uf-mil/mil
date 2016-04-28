@@ -20,3 +20,7 @@ class ThrusterOut(object):
     def handle(self, time_sent, parameters):
         self.drop_thruster(parameters['thruster_name'])
         self.update_layout(self.dropped_thrusters)
+
+    def cancel(self, time_sent, parameters):
+        self.dropped_thrusters.pop(self.dropped_thrusters.index(parameters['thruster_name']))
+        self.update_layout(self.dropped_thrusters)

@@ -64,6 +64,7 @@ void ThrusterPlugin::ThrustCallback(const sub8_msgs::Thrust::ConstPtr& thrust) {
   this->cmdQueue = thrust->thruster_commands;
   mtx.unlock();
 }
+
 void ThrusterPlugin::OnUpdate() {
   if ((ros::Time::now() - this->lastTime) > ros::Duration(2.0)) {
     return;
@@ -74,6 +75,10 @@ void ThrusterPlugin::OnUpdate() {
   mtx.unlock();
 
   GZ_ASSERT(this->targetLink, "Could not find specified link");
+
+  math::Vector3 net_force(0.0, 0.0, 0.0);
+  math::Vector3 net_torque(0.0, 0.0, 0.0);
+
   for (auto thrustCmd : cmdBuffer) {
     const std::string name = thrustCmd.name;
     const double thrust = thrustCmd.thrust;
@@ -82,10 +87,15 @@ void ThrusterPlugin::OnUpdate() {
     // email me (jake) if you ever find this line
     math::Vector3 force = thrusterMap[name].direction *
                           std::max(thrusterMap[name].min, std::min(thrusterMap[name].max, thrust));
+    math::Vector3 torque = thrusterMap[name].position.Cross(force);
+    net_force += force;
+    net_torque += torque;
 
     // math::Vector3 force;
     // force = thrusterMap[name].direction * thrust;
-    this->targetLink->AddForceAtRelativePosition(force, thrusterMap[name].position);
   }
+  // this->targetLink->AddForceAtRelativePosition(force, thrusterMap[name].position);
+  this->targetLink->AddRelativeForce(net_force);
+  this->targetLink->AddRelativeTorque(net_torque);
 }
 }
