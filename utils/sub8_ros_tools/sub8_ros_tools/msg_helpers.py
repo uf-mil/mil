@@ -113,14 +113,14 @@ def numpy_matrix_to_quaternion(np_matrix):
     return geometry_msgs.Quaternion(*np_quaternion)
 
 
-def numpy_pair_to_pose(np_rotation_matrix, np_translation):
+def numpy_pair_to_pose(np_translation, np_rotation_matrix):
     '''Convert a R, t pair to a geometry_msgs Pose'''
     orientation = numpy_matrix_to_quaternion(np_rotation_matrix)
     position = numpy_to_point(np_translation)
     return geometry_msgs.Pose(position=position, orientation=orientation)
 
 
-def numpy_quat_pair_to_pose(np_quaternion, np_translation):
+def numpy_quat_pair_to_pose(np_translation, np_quaternion):
     orientation = numpy_to_quaternion(np_quaternion)
     position = numpy_to_point(np_translation)
     return geometry_msgs.Pose(position=position, orientation=orientation)
