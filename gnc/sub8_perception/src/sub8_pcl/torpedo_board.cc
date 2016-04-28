@@ -15,7 +15,7 @@ try : image_transport(nh), rviz(viz_topic.empty()? "/visualization/torpedo_board
   // Default topic and service names
   std::string img_topic_left = l_img_topic.empty()? "/stereo/left/image_rect_color" : l_img_topic;
   std::string img_topic_right = r_img_topic.empty()? "/stereo/right/image_rect_color" : r_img_topic;
-  std::string service_name = srv_name.empty()? "/vision/torpedo_board" : srv_name;
+  std::string service_name = srv_name.empty()? "/torpedo_board/detection_activation_switch" : srv_name;
   std::string visualization_topic = viz_topic.empty()? "/visualization/torpedo_board" : viz_topic;
   
   // Subscribe to Cameras (image + camera_info)
@@ -27,11 +27,12 @@ try : image_transport(nh), rviz(viz_topic.empty()? "/visualization/torpedo_board
           << std::setw(7) << "" << std::setw(8) << " right = " << img_topic_right;
   ROS_INFO(log_msg.str().c_str());
 
-  // Advertise Detector Service
-  service = nh.advertiseService(service_name, &Sub8TorpedoBoardDetector::request_torpedo_board_position, this);
+  // Advertise detection activation switch
+  active = false;
+  detection_switch = nh.advertiseService(service_name, &Sub8TorpedoBoardDetector::detection_activation_switch, this);
   log_msg.str(""); 
   log_msg.clear();
-  log_msg << "Advertised Service:" << std::left  << std::endl << std::setw(7) << "" << service_name;
+  log_msg << "Advertised torpedo board detection switch:" << std::left  << std::endl << std::setw(7) << "" << service_name;
   ROS_INFO(log_msg.str().c_str());
 
   // Register Service client
@@ -66,6 +67,10 @@ try : image_transport(nh), rviz(viz_topic.empty()? "/visualization/torpedo_board
   lower_left = cv::Rect(cv::Point(0, processing_size.height), processing_size);
   lower_right = cv::Rect(cv::Point(processing_size.width, processing_size.height), processing_size);
 
+  // Start main detector loop
+  std::thread main_loop_thread(&Sub8TorpedoBoardDetector::run, this);
+  main_loop_thread.detach();
+
   ROS_INFO("Sub8TorpedoBoardDetector Initialized");
 
  }
@@ -80,11 +85,34 @@ Sub8TorpedoBoardDetector::~Sub8TorpedoBoardDetector(){
 }
 
 
+void Sub8TorpedoBoardDetector::run(){
+  ros::Rate loop_rate(10);
+  while(ros::ok()){
+    if(active) determine_torpedo_board_position();
+    loop_rate.sleep();
+  }
+  return;
+}
+
+
+bool Sub8TorpedoBoardDetector::detection_activation_switch(sub8_perception::TBDetectionSwitch::Request &req, sub8_perception::TBDetectionSwitch::Response &resp){
+  resp.success = false;
+  std::stringstream ros_log;
+  ros_log << "\x1b[1;31mSetting torpedo board detection to: \x1b[1;37m" << (req.detection_switch? "on" : "off") << "\x1b[0m";
+  ROS_INFO(ros_log.str().c_str());
+  active = req.detection_switch;
+  if(active == req.detection_switch){
+    resp.success = true;
+    return true;
+  }
+  return false;
+}
+
 void Sub8TorpedoBoardDetector::left_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
                                const sensor_msgs::CameraInfoConstPtr &info_msg_ptr){
   left_most_recent.image_msg_ptr = image_msg_ptr;
   left_most_recent.info_msg_ptr = info_msg_ptr;
-  ROS_INFO("Got left image");
+  ROS_DEBUG("Got left image");
 }
 
 
@@ -92,13 +120,19 @@ void Sub8TorpedoBoardDetector::right_image_callback(const sensor_msgs::ImageCons
                                const sensor_msgs::CameraInfoConstPtr &info_msg_ptr){
   right_most_recent.image_msg_ptr = image_msg_ptr;
   right_most_recent.info_msg_ptr = info_msg_ptr;
-  ROS_INFO("Got right image");
+  ROS_DEBUG("Got right image");
 }
 
 
-void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::VisionRequest::Response &resp){
+void Sub8TorpedoBoardDetector::determine_torpedo_board_position(){
   
   std::stringstream dbg_str;
+
+  // Prevent segfault if service is called before we get valid img_msg_ptr's
+  if (left_most_recent.image_msg_ptr == NULL || right_most_recent.image_msg_ptr == NULL) {;
+    ROS_ERROR("Torpedo Board Detector: Image Pointers are NULL.");
+    return;
+  }
 
   // Get the most recent frames and camera info for both cameras
   cv_bridge::CvImagePtr input_bridge;
@@ -111,7 +145,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
     left_cam_model.fromCameraInfo(left_most_recent.info_msg_ptr);
     cv::resize(current_image_left, processing_size_image_left, cv::Size(0,0), image_proc_scale, image_proc_scale);
     if(current_image_left.channels() != 3){
-      ROS_WARN("The left image topic does not contain a color image. Terminating torpedo board detection.");
+      ROS_WARN("The left image topic does not contain a color image.");
       return;
     }
 
@@ -121,7 +155,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
     right_cam_model.fromCameraInfo(right_most_recent.info_msg_ptr);
     cv::resize(current_image_right, processing_size_image_right, cv::Size(0,0), image_proc_scale, image_proc_scale);
     if(current_image_right.channels() != 3){
-      ROS_WARN("The right image topic does not contain a color image. Terminating torpedo board detection.");
+      ROS_WARN("The right image topic does not contain a color image.");
       return;
     }
   } 
@@ -166,16 +200,15 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
 
   // Segment Board and find image coordinates of board corners
   cv::Mat left_segment_dbg_img, right_segment_dbg_img;
-  std::vector<cv::Point> board_corners_left, board_corners_right;
   segment_board(processing_size_image_left, segmented_board_left, left_segment_dbg_img);
   segment_board(processing_size_image_right, segmented_board_right, right_segment_dbg_img, true);
+#ifdef SEGMENTATION_DEBUG
   cv::imshow("segmented right", segmented_board_right);
   cv::waitKey(1);
-  bool found_left = find_board_corners(segmented_board_left, board_corners_left, true);
-  bool found_right = find_board_corners(segmented_board_right, board_corners_right, false);
+#endif
+  bool found_left = find_board_corners(segmented_board_left, left_corners, true);
+  bool found_right = find_board_corners(segmented_board_right, right_corners, false);
   if(!found_left || !found_right){
-    resp.found = false;
-    resp.pose.header.stamp = ros::Time::now();
     ROS_DEBUG("Unable to detect torpedo board");
     return;
   }
@@ -187,18 +220,18 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
   typedef std::pair<cv::Point, cv::Point> PointCorrespondence2i;
   std::vector<PointCorrespondence2i> corresponding_corners_std;
   dbg_str << "Matching Pair : " << std::endl;
-  BOOST_FOREACH(cv::Point left_corner, board_corners_left){
+  BOOST_FOREACH(cv::Point left_corner, left_corners){
     double min_distance = std::numeric_limits<double>::infinity();
     int matching_right_idx = 0;
-    for(size_t j = 0; j < board_corners_right.size(); j++){
-      cv::Point2d diff = left_corner - board_corners_right[j];
+    for(size_t j = 0; j < right_corners.size(); j++){
+      cv::Point2d diff = left_corner - right_corners[j];
       double distance = sqrt(pow(diff.x, 2.0) + pow(diff.y, 2.0));
       if(distance < min_distance){
         min_distance = distance;
         matching_right_idx = j;
       }
     }
-    corresponding_corners_std.push_back(PointCorrespondence2i(left_corner, board_corners_right[matching_right_idx]));
+    corresponding_corners_std.push_back(PointCorrespondence2i(left_corner, right_corners[matching_right_idx]));
     dbg_str <<  corresponding_corners_std[corresponding_corners_std.size() -1].first << " | " << corresponding_corners_std[corresponding_corners_std.size() -1].second << std::endl;
   }
   ROS_DEBUG(dbg_str.str().c_str());
@@ -239,8 +272,8 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
     }
 
   // Get camera projection matrices
-  cv::Matx34d P_L_cv = left_cam_model.fullProjectionMatrix();
-  cv::Matx34d P_R_cv = right_cam_model.fullProjectionMatrix();
+  cv::Matx34d left_cam_mat = left_cam_model.fullProjectionMatrix();
+  cv::Matx34d right_cam_mat = right_cam_model.fullProjectionMatrix();
 
   // Reconstruct 3d corners from corresponding image points
   std::vector<Eigen::Vector3d> corners_3d;
@@ -250,7 +283,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
     pt_R_ = corresponding_corners_std[i].second;
     cv::Matx31d pt_L(pt_L_.x, pt_L_.y, 1);
     cv::Matx31d pt_R(pt_R_.x, pt_R_.y, 1);
-    cv::Mat X_hom = sub::triangulate_Linear_LS(cv::Mat(P_L_cv), cv::Mat(P_R_cv), cv::Mat(pt_L), cv::Mat(pt_R));
+    cv::Mat X_hom = sub::triangulate_Linear_LS(cv::Mat(left_cam_mat), cv::Mat(right_cam_mat), cv::Mat(pt_L), cv::Mat(pt_R));
     Eigen::Vector3d current_corner;
     current_corner << X_hom.at<double>(0,0) / X_hom.at<double>(3,0),
                       X_hom.at<double>(1,0) / X_hom.at<double>(3,0),
@@ -266,7 +299,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
     position = position + (0.25 * corner);
   }
 
-  // Calculate normal vector to torpedo board
+  // Calculate normal vector to torpedo board (averags normal from two point triples)
   Eigen::Vector3d normal_vector, prelim_norm_vec1, prelim_norm_vec2, edge1, edge2, edge3, edge4;
   edge1 = corners_3d[0] - corners_3d[1];
   edge2 = corners_3d[2] - corners_3d[1];
@@ -296,6 +329,10 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
   Eigen::Quaterniond orientation;
   orientation.setFromTwoVectors(x_axis, normal_vector);
 
+
+/*  
+  // In case we ever get CERES support on the sub
+  
   // Calculate quaternion encoding only the component of rotation about the y-axis (yaw)
   double mag, x, y, z, w;
   x = z = 0;
@@ -305,67 +342,56 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
   y /= mag;
   w /= mag;
   Eigen::Quaterniond yaw_quat(w, x, y, z);
-  
   // Declare initial guess for optimization
   double center_x = position(0);
   double center_y = position(1);
   double center_z = position(2);
   double yaw = 2 * acos( yaw_quat.w());
-
-  /*
-   * In case we ever get ceres support on the sub
-   * */
   // Define Problem and add residual block
-  // ceres::Problem max_likelihood_pose_estimation;
-  // TorpedoBoardReprojectionCost cost_functor(P_L_cv, P_R_cv, board_corners_left, board_corners_right);
-  // ceres::CostFunction* reprojection_error_cost = new ceres::AutoDiffCostFunction<TorpedoBoardReprojectionCost ,1 ,1, 1, 1, 1>(&cost_functor);
-  // max_likelihood_pose_estimation.AddResidualBlock(reprojection_error_cost, NULL, &center_x, &center_y, &center_z, &yaw);
-  // ceres::Solver::Options options;
-  // options.max_num_iterations = 100;
-  // options.linear_solver_type = ceres::DENSE_QR;
-  // ceres::Solve(options, &max_likelihood_pose_estimation, &summary);
+  ceres::Problem max_likelihood_pose_estimation;
+  TorpedoBoardReprojectionCost cost_functor(left_cam_mat, right_cam_mat, left_corners, right_corners);
+  ceres::CostFunction* reprojection_error_cost = new ceres::AutoDiffCostFunction<TorpedoBoardReprojectionCost ,1 ,1, 1, 1, 1>(&cost_functor);
+  max_likelihood_pose_estimation.AddResidualBlock(reprojection_error_cost, NULL, &center_x, &center_y, &center_z, &yaw);
+  ceres::Solver::Options options;
+  options.max_num_iterations = 100;
+  options.linear_solver_type = ceres::DENSE_QR;
+  ceres::Solve(options, &max_likelihood_pose_estimation, &summary);
+*/
 
-  // TODO: replace old estimate with result of optimization in the code below
-
-  // Fill in TorpBoardPoseRequest
+  // Fill in TorpBoardPoseRequest (in order)
   sub8_perception::TorpBoardPoseRequest pose_req;
+  pose_req.request.pose_stamped.header.seq = run_id++;
+  pose_req.request.pose_stamped.header.stamp.fromSec(0.5 * (left_stamp + right_stamp));
+  std::string tf_frame = left_cam_model.tfFrame();
+  pose_req.request.pose_stamped.header.frame_id = tf_frame;
   tf::pointEigenToMsg(position, pose_req.request.pose_stamped.pose.position);
   tf::quaternionEigenToMsg(orientation, pose_req.request.pose_stamped.pose.orientation);
-  pose_req.request.pose_stamped.header.stamp.fromSec(0.5 * (left_stamp + right_stamp));
   for(int i = 0; i < 12; i++){
-    pose_req.request.l_proj_mat[i] = P_L_cv(i % 3, i % 4);
-    pose_req.request.r_proj_mat[i] = P_R_cv(i % 3, i % 4);
+    pose_req.request.l_proj_mat[i] = left_cam_mat(i % 3, i % 4);
+    pose_req.request.r_proj_mat[i] = right_cam_mat(i % 3, i % 4);
   }
   geometry_msgs::Pose2D corner;
   for(int i = 0; i < 4; i++){
-    corner.x = board_corners_left[i].x;
-    corner.y = board_corners_left[i].y;
+    corner.x = left_corners[i].x;
+    corner.y = left_corners[i].y;
     pose_req.request.l_obs_corners[i] = corner;
 
-    corner.x = board_corners_right[i].x;
-    corner.y = board_corners_right[i].y;
+    corner.x = right_corners[i].x;
+    corner.y = right_corners[i].y;
     pose_req.request.r_obs_corners[i] = corner;
   }
-
-  // Fill service response fields
-  std::string tf_frame = left_cam_model.tfFrame();
-  resp.pose.header.frame_id = tf_frame;
-  resp.pose.header.stamp = ros::Time::now();
-  tf::pointEigenToMsg(position, resp.pose.pose.position);
-  tf::quaternionEigenToMsg(orientation, resp.pose.pose.orientation);
-  resp.found = true;
 
   // Project 3d centroid and targets into both images and visualize
   if(generate_dbg_img){
     cv::Matx41d position_hom(position(0), position(1), position(2), 1);
     cv::Matx41d target1_hom(targets[0](0), targets[0](1), targets[0](2), 1);
     cv::Matx41d target2_hom(targets[1](0), targets[1](1), targets[1](2), 1);
-    cv::Matx31d centroid2d_hom_left = P_L_cv * position_hom;
-    cv::Matx31d centroid2d_hom_right = P_R_cv * position_hom;
-    cv::Matx31d target1_hom_left = P_L_cv * target1_hom;
-    cv::Matx31d target1_hom_right = P_R_cv * target1_hom;
-    cv::Matx31d target2_hom_left = P_L_cv * target2_hom;
-    cv::Matx31d target2_hom_right = P_R_cv * target2_hom;
+    cv::Matx31d centroid2d_hom_left = left_cam_mat * position_hom;
+    cv::Matx31d centroid2d_hom_right = right_cam_mat * position_hom;
+    cv::Matx31d target1_hom_left = left_cam_mat * target1_hom;
+    cv::Matx31d target1_hom_right = right_cam_mat * target1_hom;
+    cv::Matx31d target2_hom_left = left_cam_mat * target2_hom;
+    cv::Matx31d target2_hom_right = right_cam_mat * target2_hom;
     cv::Point2d centroid_img_coords_left(centroid2d_hom_left(0) / centroid2d_hom_left(2), centroid2d_hom_left(1) / centroid2d_hom_left(2));
     cv::Point2d centroid_img_coords_right(centroid2d_hom_right(0) / centroid2d_hom_right(2), centroid2d_hom_right(1) / centroid2d_hom_right(2));
     cv::Point2d target1_img_coords_left(target1_hom_left(0) / target1_hom_left(2), target1_hom_left(1) / target1_hom_left(2));
@@ -395,41 +421,23 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position(sub8_msgs::Visio
     cv::putText(dbg_ll_quadrant, left_text.str(), header_text_pt, font, font_scale, color);
     cv::putText(dbg_lr_quadrant, right_text.str(), header_text_pt, font, font_scale, color);
   }
+  
+  // logs all of the debug statements from the main processing loop
   ROS_DEBUG(dbg_str.str().c_str());
-  dbg_str.str("");
-  dbg_str.clear();
 
   // Rviz visualization
-  rviz.visualize_torpedo_board(resp.pose.pose, orientation, targets, corners_3d, tf_frame);
+  rviz.visualize_torpedo_board(pose_req.request.pose_stamped.pose, orientation, targets, corners_3d, tf_frame);
 
-}
-
-
-bool Sub8TorpedoBoardDetector::request_torpedo_board_position(sub8_msgs::VisionRequest::Request &req, 
-                                                              sub8_msgs::VisionRequest::Response &resp){
-
-  // Prevent segfault if service is called before we get valid img_msg_ptr's
-  if (left_most_recent.image_msg_ptr == NULL || right_most_recent.image_msg_ptr == NULL) {;
-    ROS_ERROR("Torpedo Board Detector: Image Pointers are NULL. Aborting Torpedo Board Detection.");
-    return false;
-  }
-  else{
-    determine_torpedo_board_position(resp);
-
-    // Visualization
-    sensor_msgs::ImagePtr dbg_img_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", debug_image).toImageMsg();
-    debug_image_pub.publish(dbg_img_msg);
-    ros::spinOnce();
-    return true;
-  }
+  // ROS dbg_img visualization
+  sensor_msgs::ImagePtr dbg_img_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", debug_image).toImageMsg();
+  debug_image_pub.publish(dbg_img_msg);
+  ros::spinOnce();
+  return;
 
 }
 
 
 void Sub8TorpedoBoardDetector::segment_board(const cv::Mat &src, cv::Mat &dest, cv::Mat &dbg_img, bool draw_dbg_img){
-
-  cv::imshow("segment board input", src);
-  cv::waitKey(1);
 
   // Preprocessing
   cv::Mat hsv_image, hue_segment_dbg_img, sat_segment_dbg_img;
@@ -450,9 +458,12 @@ void Sub8TorpedoBoardDetector::segment_board(const cv::Mat &src, cv::Mat &dest, 
                                       target_yellow, "Hue", draw_dbg_img, 6, 0.5, 0.5);
   sub::statistical_image_segmentation(hsv_channels[1], threshed_sat, sat_segment_dbg_img, hist_size, ranges,
                                       target_saturation, "Saturation", draw_dbg_img, 6, 0.1, 0.1);
+#ifdef SEGMENTATION_DEBUG
+  cv::imshow("segment board input", src);
   cv::imshow("hue segment", threshed_hue);
   cv::imshow("sat segment", threshed_sat);
   cv::waitKey(1);
+#endif
   segmented_board = threshed_hue / 2.0 + threshed_sat / 2.0;
   cv::medianBlur(segmented_board, segmented_board, 5);
   cv::threshold(segmented_board, segmented_board, 255*0.9, 255, cv::THRESH_BINARY);
@@ -558,7 +569,7 @@ bool Sub8TorpedoBoardDetector::find_board_corners(const cv::Mat &segmented_board
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Class: TorpedoBoardReprojectionCost ////////////////////////////////////////////////////////////////////////////
+// Class: TorpedoBoardReprojectionCost ////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 TorpedoBoardReprojectionCost::TorpedoBoardReprojectionCost(cv::Matx34d &proj_mat_L, cv::Matx34d &proj_mat_R, std::vector<cv::Point> &image_corners_L, std::vector<cv::Point> &image_corners_R) :

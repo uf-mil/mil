@@ -1,7 +1,9 @@
 #include <sub8_perception/buoy.hpp>
 #include <sub8_pcl/torpedo_board.hpp>
+#include <ros/ros.h>
 
-#include "ros/ros.h"
+// #define VISUALIZE
+// #define SEGMENTATION_DEBUG
 
 #ifdef VISUALIZE
   #warning(Compiling with visualization enabled)

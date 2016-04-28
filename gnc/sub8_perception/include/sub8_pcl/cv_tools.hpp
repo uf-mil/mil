@@ -19,9 +19,9 @@
 #include <image_geometry/pinhole_camera_model.h>
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/image_encodings.h>
-#include "ros/ros.h"
+#include <ros/ros.h>
 
-#define SEGMENTATION_DEBUG
+// #define SEGMENTATION_DEBUG
 
 namespace sub {
 
@@ -126,7 +126,7 @@ void range_from_param(std::string &param_root, Range &range);
 
 void inParamRange(cv::Mat &src, Range &range, cv::Mat &dest);
 
-/// Templated function implementation
+/// Templated pseudoinverse function implementation
 template<typename _Matrix_Type_>
 bool pseudoInverse(const _Matrix_Type_ &a, _Matrix_Type_ &result, 
 				   double epsilon = std::numeric_limits<typename _Matrix_Type_::Scalar>::epsilon()){
@@ -141,4 +141,4 @@ bool pseudoInverse(const _Matrix_Type_ &a, _Matrix_Type_ &result,
   result = svd.matrixV() * _Matrix_Type_(_Matrix_Type_( (svd.singularValues().array().abs() > tolerance).
   	select(svd.singularValues().array().inverse(), 0) ).diagonal()) * svd.matrixU().adjoint();
 }
-}  // namespace subprint 
+}  // namespace sub

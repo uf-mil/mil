@@ -251,18 +251,15 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest, cv::Mat &
 	ros_log << "low_thresh = " << low_thresh << std::endl;
 	ros_log << "\x1b[1;37mTarget: " << target << "\nClosest distribution mode: " <<  target_mode << "\nThresholds selected:  low=" 
 			<< low_thresh << "  high=" << high_thresh << "\x1b[0m" << std::endl;
-
-#ifdef SEGMENTATION_DEBUG
-	ROS_INFO(ros_log.str().c_str());
-#endif
-
-	cv::imshow("src" + image_name, src);
-
+	
 	// Threshold image
 	cv::inRange(src, low_thresh, high_thresh, dest);
 
-	// cv::imshow("dest"+ image_name, dest);
+#ifdef SEGMENTATION_DEBUG
+	ROS_INFO(ros_log.str().c_str());
+	cv::imshow("src" + image_name, src);
 	cv::waitKey(1);
+#endif
 
 	// Closing Morphology operation
 	int dilation_size = 2;
