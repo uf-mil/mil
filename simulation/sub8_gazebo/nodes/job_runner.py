@@ -4,7 +4,7 @@ from __future__ import division
 import rospy
 import rosbag
 import txros
-from sub8_msgs.srv import RunJob
+from sub8_msgs.srv import RunJob, RunJobRequest
 from geometry_msgs.msg import PoseStamped
 
 from twisted.internet import reactor
@@ -25,18 +25,18 @@ FUTURE:
 
 
 class BagManager(object):
-    def __init__(self, nh, time_step=.1, buffer_time=10):
-        print "bags"
+    def __init__(self, nh, bag_name, time_step=.1, buffer_time=10):
         self.nh = nh
-        self.bag = rosbag.Bag('test.bag', 'w')
 
         self.time_step = time_step
         self.buffer_time = buffer_time
         self.buffer_array_size = int(buffer_time / time_step)
+        self.bag_name = bag_name
 
         self.cache_dict = {}
         self.cache_index = 0
-        self.cache = np.empty(self.buffer_array_size, dtype=object)
+        self.cache = [None] * self.buffer_array_size
+        self.dumping = False
 
     @txros.util.cancellableInlineCallbacks
     def start_caching(self):
@@ -52,39 +52,55 @@ class BagManager(object):
 
         self.cache_dict = {'/test': self.test_sub}
 
-        for i in range(self.buffer_array_size):
+        while True:
             yield txros.util.wall_sleep(self.time_step)
 
+            if self.dumping:
+                yield txros.util.wall_sleep(1)
+
             # Add to cache
-            print "Caching most recent messages."
             msgs = []
             for key in self.cache_dict:
                 msg = self.test_sub.get_last_message()
                 msg_time = self.test_sub.get_last_message_time()
                 msgs.append([key, (yield msg), (yield msg_time)])
-
             self.write_to_cache(msgs)
 
         self.dump()
 
-    def dump(self, pose_record_time=0):
+    @txros.util.cancellableInlineCallbacks
+    def dump(self, post_record_time=2):
         '''
         Save cached bags and save the next 'buffer_time' seconds.
         '''
+        self.dumping = True
+        bag = rosbag.Bag(self.bag_name, 'w')
+
         gen = self.read_from_cache()
 
+        print "Saving post-fail data. Do not exit."
+        for i in range(int(post_record_time / self.time_step)):
+            for key in self.cache_dict:
+                msg = self.test_sub.get_last_message()
+                msg_time = self.test_sub.get_last_message_time()
+                bag.write(key, (yield msg), (yield msg_time))
+
+            yield txros.util.wall_sleep(self.time_step)
+
+        print "Saving pre-fail data. Do not exit."
+        # We've written the post crash stuff now let's write the pre-crash data.
         for i in range(self.buffer_array_size):
             msgs = next(gen)
             if msgs is not None:
                 for msg in msgs:
-                    self.bag.write(msg[0], msg[1], t=msg[2])
+                    bag.write(msg[0], msg[1], t=msg[2])
 
-        self.bag.close()
+        bag.close()
+        self.dumping = False
         print "Done!"
 
     def write_to_cache(self, data):
         self.cache[self.cache_index] = data
-        print self.cache
 
         self.cache_index += 1
         if self.cache_index >= self.buffer_array_size:
@@ -100,28 +116,48 @@ class BagManager(object):
 
 
 class JobManager(object):
-    @txros.util.cancellableInlineCallbacks
-    def __init__(self, loop_count=10, timeout=60):
-        self.nh = yield txros.NodeHandle.from_argv('gazebo_job_manager')
-        next_pose = self.nh.get_service_client('/gazebo/job_runner/mission_start', RunJob)
+    def __init__(self, nh, loop_count=10, timeout=60):
+        self.nh = nh
+        self.timeout = timeout
+        self.timedout = False
 
-        self.bagger = BagManager(self.nh)
+        self.bagger = BagManager(self.nh, 'test.bag')
         self.loop_count = loop_count
 
+        self.run_job = nh.get_service_client('/gazebo/job_runner/mission_start', RunJob)
+
     @txros.util.cancellableInlineCallbacks
-    def run_job(self):
+    def run_job_loop(self):
         current_loop = 0
+
+        self.bagger.start_caching()
 
         while current_loop < self.loop_count:
             yield txros.util.wall_sleep(2.0)
 
-            response = yield
+            try:
+                response = yield self.run_job(RunJobRequest())
+            except:
+                print "No service provider found."
+                continue
+
+            current_loop += 1
+            print response
+            if response.success:
+                print "Success"
+            else:
+                print "Fail"
+                yield self.bagger.dump()
+
+            print
+            self.reset_gazebo()
 
     def reset_gazebo(self):
         '''
         Reset sub position without breaking the simulator.
         This could send a signal to the mission node so that it can set the sub position wherever it wants.
         '''
+        print "Reseting Gazebo"
         return
 
 
@@ -130,9 +166,10 @@ def main():
         print "Starting"
         nh = yield txros.NodeHandle.from_argv('test')
         print "nh done"
-        b = BagManager(nh)
-        print "Bag init done"
-        yield b.start_caching()
+        j = JobManager(nh)
+
+        print "j created"
+        yield j.run_job_loop()
 
 if __name__ == '__main__':
     reactor.callWhenRunning(main)
