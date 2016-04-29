@@ -65,7 +65,7 @@ ros_git_get https://github.com/ros-simulation/gazebo_ros_pkgs.git
 cd "$DEPS_DIR"
 # TODO: Make this better (It might not be installed in /usr/local!)
 if ! ls /usr/local/share/ | grep --quiet -i ceres$; then
-    instlog "Looks like to don't have Google Ceres, we'll install it"
+    instlog "Looks like you don't have Google Ceres, we'll install it"
     sudo apt-get -qq install libgoogle-glog-dev
     # BLAS & LAPACK
     sudo apt-get -qq install libatlas-base-dev

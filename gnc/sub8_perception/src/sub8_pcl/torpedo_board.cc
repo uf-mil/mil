@@ -92,7 +92,8 @@ Sub8TorpedoBoardDetector::Sub8TorpedoBoardDetector(
                processing_size);
 
   // Start main detector loop
-  std::thread main_loop_thread(&Sub8TorpedoBoardDetector::run, this);
+  run_id = 0;
+  boost::thread main_loop_thread(boost::bind(&Sub8TorpedoBoardDetector::run, this));
   main_loop_thread.detach();
 
   ROS_INFO("Sub8TorpedoBoardDetector Initialized");

@@ -5,7 +5,9 @@
 #include <iostream>
 #include <algorithm>
 #include <stdexcept>
-#include <thread>
+// #include <thread> // use when we are able to compile with c++11
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
 
 #include <opencv2/opencv.hpp>
 #include <Eigen/Core>
@@ -26,7 +28,7 @@
 #include <sub8_perception/TorpBoardPoseRequest.h>
 #include <sub8_perception/TBDetectionSwitch.h>
 
-#pragma message "__cplusplus = " __cplusplus
+#pragma message "__cplusplus = " XSTR(__cplusplus)
 
 class Sub8TorpedoBoardDetector {
 
@@ -83,7 +85,7 @@ private:
 #endif
 
   // Goes into sequential id for pos_est srv request
-  long long int run_id = 0;
+  long long int run_id;
 
   // RVIZ
   sub::RvizVisualizer rviz;
