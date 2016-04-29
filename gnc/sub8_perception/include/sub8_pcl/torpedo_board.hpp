@@ -33,6 +33,8 @@
   Do this instead:
     Sub8TorpedoBoardDetector tb_detector();
 */
+#pragma message "__cplusplus = " XSTR(__cplusplus)
+
 class Sub8TorpedoBoardDetector {
 
 public:
