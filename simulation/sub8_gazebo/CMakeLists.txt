@@ -16,6 +16,8 @@ endif()
 
 find_package(catkin REQUIRED COMPONENTS gazebo_ros roscpp)
 
+catkin_python_setup()
+
 # find_package(Boost REQUIRED COMPONENTS system)
 
 find_package(gazebo REQUIRED)

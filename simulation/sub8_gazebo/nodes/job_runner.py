@@ -3,13 +3,25 @@ from __future__ import division
 
 import rospy
 import rosbag
+import rospkg
 import txros
 from sub8_msgs.srv import RunJob, RunJobRequest
-from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Twist, PoseStamped
+from gazebo_msgs.srv import SetModelState, SetModelStateRequest
+from gazebo_msgs.msg import ModelState
+from sub8 import tx_sub
+from kill_handling.srv import SetKill, SetKillRequest
+from kill_handling.msg import Kill
 
 from twisted.internet import reactor
 import signal
 import numpy as np
+import time
+import os
+
+rospack = rospkg.RosPack()
+DIAG_OUT_URI = os.path.join(rospack.get_path('sub8_gazebo'), 'diagnostics/')
 
 '''
 In its current implementation, to run a mission you should create a mission script that listens to
@@ -25,13 +37,13 @@ FUTURE:
 
 
 class BagManager(object):
-    def __init__(self, nh, bag_name, time_step=.1, buffer_time=10):
+    def __init__(self, nh, time_step=.5, buffer_time=30):
         self.nh = nh
 
         self.time_step = time_step
         self.buffer_time = buffer_time
         self.buffer_array_size = int(buffer_time / time_step)
-        self.bag_name = bag_name
+        #self.bag_name = DIAG_OUT_URI + bag_name
 
         self.cache_dict = {}
         self.cache_index = 0
@@ -48,9 +60,13 @@ class BagManager(object):
 
         TODO: Make sub list come from a YAML using eval() to define message types.
         '''
-        self.test_sub = yield self.nh.subscribe('/pose_sim', PoseStamped)
+        # Subscribers here
+        self.odom_sub = yield self.nh.subscribe('/odom', Odometry)
+        #self.alarms_sub = yield self.nh.subscribe('/odom', Odometry)
+        self.c3_goal = yield self.nh.subscribe('/c3_trajectory_generator/waypoint', PoseStamped)
 
-        self.cache_dict = {'/test': self.test_sub}
+        self.cache_dict = {'/odom': self.odom_sub,
+                           '/c3_trajectory_generator/waypoint': self.c3_goal}
 
         while True:
             yield txros.util.wall_sleep(self.time_step)
@@ -61,29 +77,33 @@ class BagManager(object):
             # Add to cache
             msgs = []
             for key in self.cache_dict:
-                msg = self.test_sub.get_last_message()
-                msg_time = self.test_sub.get_last_message_time()
-                msgs.append([key, (yield msg), (yield msg_time)])
+                msg = self.cache_dict[key].get_last_message()
+                msg_time = self.cache_dict[key].get_last_message_time()
+                if msg is not None:
+                    msgs.append([key, (yield msg), (yield msg_time)])
+                else:
+                    print "There's a problem recording {0}".format(key)
             self.write_to_cache(msgs)
 
         self.dump()
 
     @txros.util.cancellableInlineCallbacks
-    def dump(self, post_record_time=2):
+    def dump(self, post_record_time=1):
         '''
         Save cached bags and save the next 'buffer_time' seconds.
         '''
         self.dumping = True
-        bag = rosbag.Bag(self.bag_name, 'w')
+        bag = rosbag.Bag(DIAG_OUT_URI + str(int(time.time())) + '.bag', 'w')
 
         gen = self.read_from_cache()
 
         print "Saving post-fail data. Do not exit."
         for i in range(int(post_record_time / self.time_step)):
             for key in self.cache_dict:
-                msg = self.test_sub.get_last_message()
-                msg_time = self.test_sub.get_last_message_time()
-                bag.write(key, (yield msg), (yield msg_time))
+                msg = self.cache_dict[key].get_last_message()
+                msg_time = self.cache_dict[key].get_last_message_time()
+                if msg is not None:
+                    bag.write(key, (yield msg), (yield msg_time))
 
             yield txros.util.wall_sleep(self.time_step)
 
@@ -94,10 +114,8 @@ class BagManager(object):
             if msgs is not None:
                 for msg in msgs:
                     bag.write(msg[0], msg[1], t=msg[2])
-
         bag.close()
         self.dumping = False
-        print "Done!"
 
     def write_to_cache(self, data):
         self.cache[self.cache_index] = data
@@ -116,18 +134,21 @@ class BagManager(object):
 
 
 class JobManager(object):
-    def __init__(self, nh, loop_count=10, timeout=60):
+    def __init__(self, nh, loop_count=100, timeout=15):
         self.nh = nh
         self.timeout = timeout
         self.timedout = False
 
-        self.bagger = BagManager(self.nh, 'test.bag')
+        self.bagger = BagManager(self.nh)
         self.loop_count = loop_count
+        self.successes = 0
+        self.fails = 0
 
         self.run_job = nh.get_service_client('/gazebo/job_runner/mission_start', RunJob)
 
     @txros.util.cancellableInlineCallbacks
     def run_job_loop(self):
+        print "Looking for jobs..."
         current_loop = 0
 
         self.bagger.start_caching()
@@ -140,17 +161,53 @@ class JobManager(object):
             except:
                 print "No service provider found."
                 continue
+            print "Job Found!"
 
             current_loop += 1
             print response
             if response.success:
                 print "Success"
+                self.successes += 1
             else:
                 print "Fail"
+                print
+                self.fails += 1
                 yield self.bagger.dump()
 
+                print "Writing report to file. Do not exit."
+                try:
+                    with open(DIAG_OUT_URI + 'diag.txt', 'a') as f:
+                        f.write("Status: {0} occured at {1} .\n".format(response.success, int(time.time())))
+                        f.write(response.message + '\n')
+                        f.write("-----------------------------------------------------------")
+                        f.write("\n")
+                except IOError:
+                    print "Diagnostics file not found. Creating it now."
+                    with open(DIAG_OUT_URI + 'diag.txt', 'w') as f:
+                        f.write("Status: {0} occured at {1} .\n".format(response.success, int(time.time())))
+                        f.write(response.message + '\n')
+                        f.write("-----------------------------------------------------------")
+                        f.write("\n")
+                print
+                print "Done!"
+
+            print "------------------------------------------------------------------"
+            print "{0} Successes, {1} Fails, {2} Total".format(self.successes, self.fails, current_loop)
+            print "------------------------------------------------------------------"
             print
-            self.reset_gazebo()
+
+            if current_loop > 5 and self.fails / current_loop > .9:
+                print "Too many errors. Stopping as to not fill HDD with bags."
+                self.loop_count = 0
+            #self.reset_gazebo()
+        print
+        print "Job Finished!"
+        print "Writing report to file. Do not exit."
+        with open(DIAG_OUT_URI + 'diag.txt', 'a') as f:
+            f.write("{0} Successes, {1} Fails, {2} Total \n.".format(self.successes, self.fails, current_loop))
+            f.write("Time of completion: {0}. \n".format(int(time.time())))
+            f.write("-----------------------------------------------------------")
+            f.write("\n")
 
     def reset_gazebo(self):
         '''
@@ -160,15 +217,46 @@ class JobManager(object):
         print "Reseting Gazebo"
         return
 
+    @staticmethod
+    @txros.util.cancellableInlineCallbacks
+    def set_model_position(nh, pose, twist=None, model='sub8'):
+        '''
+        Set the position of 'model' to 'pose'.
+        It may be helpful to kill the sub before moving it.
+
+        TODO: Make this a service? Might as well just use the ros service gazebo provides? Maybe not.
+        '''
+        print "Setting position"
+        set_state = nh.get_service_client('/gazebo/set_model_state', SetModelState)
+
+        if twist is None:
+            twist = Twist()
+            twist.linear.x = 0
+            twist.linear.y = 0
+            twist.linear.z = 0
+
+        model_state = ModelState()
+        model_state.model_name = model
+        model_state.pose = pose
+        model_state.twist = twist
+
+        if model == 'sub8':
+            kill = nh.get_service_client('/set_kill', SetKill)
+            yield kill(SetKillRequest(kill=Kill(active=True)))
+            yield txros.util.wall_sleep(.1)
+            yield set_state(SetModelStateRequest(model_state))
+            yield txros.util.wall_sleep(.1)
+            yield kill(SetKillRequest(kill=Kill(active=False)))
+        else:
+            print "Set"
+            set_state(SetModelStateRequest(model_state))
+
 
 @txros.util.cancellableInlineCallbacks
 def main():
-        print "Starting"
-        nh = yield txros.NodeHandle.from_argv('test')
-        print "nh done"
+        print "Starting Job Runner."
+        nh = yield txros.NodeHandle.from_argv('job_runner_controller')
         j = JobManager(nh)
-
-        print "j created"
         yield j.run_job_loop()
 
 if __name__ == '__main__':
