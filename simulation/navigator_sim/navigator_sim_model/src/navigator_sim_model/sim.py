@@ -225,6 +225,10 @@ class Sim(object):
         pos = body.getPosition()
         q = V(body.getQuaternion())
 
+        # Avoid stupid [0, 0, 0, 0] quaternion initialization
+        if not numpy.any(q):
+            q = [1, 0, 0, 0]
+
         # Publish tf /enu
         self.enu_tf_br.sendTransform(
             translation = (pos[0], pos[1], pos[2]),
