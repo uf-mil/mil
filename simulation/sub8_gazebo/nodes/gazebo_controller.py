@@ -29,6 +29,8 @@ class GazeboInterface(object):
 
         self.reset_srv = rospy.Service('gazebo/reset_gazebo', ResetGazebo, self.reset)
         self.state_pub = rospy.Publisher('odom', Odometry, queue_size=1)
+        self.world_state_pub = rospy.Publisher('world_odom', Odometry, queue_size=1)
+
         rospy.Timer(rospy.Duration(0.03), self.publish_odom)
 
     def send_wrench(self, wrench):
@@ -76,7 +78,7 @@ class GazeboInterface(object):
 
             # Add position offset to make the start position (0, 0, -depth)
             position_np, orientation_np = sub8_utils.pose_to_numpy(msg.pose[target_index])
-            pose = sub8_utils.numpy_quat_pair_to_pose(orientation_np, position_np  - self.position_offset)
+            pose = sub8_utils.numpy_quat_pair_to_pose(position_np - self.position_offset, orientation_np)
 
             self.state_pub.publish(
                 header=header,
@@ -88,6 +90,21 @@ class GazeboInterface(object):
                     twist=twist
                 )
             )
+
+            header = sub8_utils.make_header(frame='/world')
+            twist = msg.twist[target_index]
+            pose = msg.pose[target_index]
+            self.world_state_pub.publish(
+                header=header,
+                child_frame_id='/base_link',
+                pose=PoseWithCovariance(
+                    pose=pose
+                ),
+                twist=TwistWithCovariance(
+                    twist=twist
+                )
+            )
+
         else:
             # fail
             return
