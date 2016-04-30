@@ -86,7 +86,7 @@ class TorpedoLauncher():
 
         model_state = ModelState()
         model_state.model_name = 'torpedo'
-        model_state.pose = msg_helpers.numpy_quat_pair_to_pose(sub_pose[1], sub_pose[0] + launch_pos)
+        model_state.pose = msg_helpers.numpy_quat_pair_to_pose(sub_pose[0] + launch_pos, sub_pose[1])
         model_state.twist = launch_twist
         self.set_torpedo(model_state)
         self.launched = True

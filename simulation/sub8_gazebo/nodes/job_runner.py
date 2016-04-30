@@ -134,7 +134,7 @@ class BagManager(object):
 
 
 class JobManager(object):
-    def __init__(self, nh, loop_count=100, timeout=15):
+    def __init__(self, nh, loop_count=10000, timeout=15):
         self.nh = nh
         self.timeout = timeout
         self.timedout = False

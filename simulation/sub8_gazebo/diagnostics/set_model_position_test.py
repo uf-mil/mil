@@ -23,7 +23,7 @@ def run_mission(srv, sub, nh):
 
     quat = tf.transformations.quaternion_from_euler(0, 0, np.random.uniform(-7, 7, size=1))
 
-    pose = msg_helpers.numpy_quat_pair_to_pose(quat, point)
+    pose = msg_helpers.numpy_quat_pair_to_pose(point, quat)
     print pose
 
     # Go to point
@@ -57,7 +57,8 @@ def run_mission(srv, sub, nh):
 def main():
     nh = yield txros.NodeHandle.from_argv('test')
     world_position_actual = yield nh.subscribe('/world_odom', Odometry)
-    nh.advertise_service('/gazebo/job_runner/mission_start', RunJob, lambda srv: run_mission(srv, world_position_actual, nh))
+    yield run_mission(None, world_position_actual, nh)
+    #nh.advertise_service('/gazebo/job_runner/mission_start', RunJob, lambda srv: run_mission(srv, world_position_actual, nh))
     print "Waiting for service call."
 
 if __name__ == '__main__':
