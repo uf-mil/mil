@@ -95,7 +95,10 @@ void ThrusterPlugin::OnUpdate() {
     // force = thrusterMap[name].direction * thrust;
   }
   // this->targetLink->AddForceAtRelativePosition(force, thrusterMap[name].position);
-  this->targetLink->AddRelativeForce(net_force);
-  this->targetLink->AddRelativeTorque(net_torque);
+  math::Pose subFrame = this->targetLink->GetWorldPose();
+  if (subFrame.pos.z < 0.0) {
+    this->targetLink->AddRelativeForce(net_force);
+    this->targetLink->AddRelativeTorque(net_torque);
+  }
 }
 }
