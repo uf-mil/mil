@@ -1,13 +1,11 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <utility>
+#include <utility>  // std::pair
 #include <iostream>
 #include <algorithm>
 #include <stdexcept>
-// #include <thread> // use when we are able to compile with c++11
 #include <boost/thread.hpp>
-#include <boost/thread/mutex.hpp>
 #include <boost/bind.hpp>
 
 #include <opencv2/opencv.hpp>
@@ -25,15 +23,15 @@
 #include <sub8_pcl/pcl_tools.hpp>
 #include <sub8_pcl/cv_tools.hpp>
 #include <sub8_pcl/torpedo_board.hpp>
-#include <sub8_msgs/VisionRequest.h>
 #include <sub8_perception/TorpBoardPoseRequest.h>
 #include <sub8_perception/TBDetectionSwitch.h>
 
 /*
   Warning:
-  This class cannot be copy constructed. Ex. the following will not compile
-  Ex. Sub8TorpedoBoardDetector tb_detector = Sub8TorpedoBoardDetector();
-  Do this instead: Sub8TorpedoBoardDetector tb_detector();
+  This class cannot be copy constructed. Ex. the following will not compile:
+    Sub8TorpedoBoardDetector tb_detector = Sub8TorpedoBoardDetector();
+  Do this instead:
+    Sub8TorpedoBoardDetector tb_detector();
 */
 class Sub8TorpedoBoardDetector {
 

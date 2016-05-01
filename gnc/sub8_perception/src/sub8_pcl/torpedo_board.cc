@@ -452,6 +452,12 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position() {
     pose_req.request.r_obs_corners[i] = corner;
   }
 
+  // Call the pose estimation service
+  if(pose_client.call(pose_req))
+    ROS_INFO_THROTTLE(5, "Successfully called pose estimation service");
+  else
+    ROS_INFO_THROTTLE(5, "Call to pose estimation service was unsuccessful");
+
   // Project 3d centroid and targets into both images and visualize
   if (generate_dbg_img) {
     cv::Matx41d position_hom(position(0), position(1), position(2), 1);
