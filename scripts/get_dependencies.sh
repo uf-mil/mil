@@ -61,35 +61,6 @@ ros_git_get https://github.com/txros/txros.git
 ros_git_get https://github.com/uf-mil/rawgps-tools.git
 ros_git_get https://github.com/ros-simulation/gazebo_ros_pkgs.git
 
-# Ceres
-cd "$DEPS_DIR"
-# TODO: Make this better (It might not be installed in /usr/local!)
-if ! ls /usr/local/share/ | grep --quiet -i ceres$; then
-    instlog "Looks like to don't have Google Ceres, we'll install it"
-    sudo apt-get -qq install libgoogle-glog-dev
-    # BLAS & LAPACK
-    sudo apt-get -qq install libatlas-base-dev
-    # Eigen3
-    sudo apt-get -qq install libeigen3-dev
-    # SuiteSparse and CXSparse (optional)
-    # - If you want to build Ceres as a *static* library (the default)
-    #   you can use the SuiteSparse package in the main Ubuntu package
-    #   repository:
-    sudo apt-get -qq install libsuitesparse-dev
-    wget http://ceres-solver.org/ceres-solver-1.11.0.tar.gz
-    # Unzip
-    tar zxf ceres-solver-1.11.0.tar.gz
-    # Delete the zip trash
-    rm ./ceres-solver-1.11.0.tar.gz
-    mkdir ceres-bin
-    cd ceres-bin
-    cmake ../ceres-solver-1.11.0
-    make -j3
-    sudo make install
-else
-    instlog "Looks like you already have ceres"
-fi
-
 instlog "Checking if we need to fix pyode"
 if ! python -c "import ode; w = ode.World(); w.setAngularDamping(0.2)"; then
     instlog "Fixing/installing Pyode"
