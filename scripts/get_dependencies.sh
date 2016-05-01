@@ -53,9 +53,6 @@ sudo pip install -q -U argcomplete
 instlog "Getting misc make tools"
 sudo apt-get install -qq binutils-dev
 
-instlog "Getting python packages we need to install from source"
-python_from_git https://github.com/vispy/vispy.git vispy vispy 0495d8face28571ad19c64cbc047327b084a7c03
-
 instlog "Getting ROS packages we need to install from source"
 ros_git_get https://github.com/txros/txros.git
 ros_git_get https://github.com/uf-mil/rawgps-tools.git
