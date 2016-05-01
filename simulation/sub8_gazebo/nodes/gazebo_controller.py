@@ -104,7 +104,6 @@ class GazeboInterface(object):
                     twist=twist
                 )
             )
-
         else:
             # fail
             return

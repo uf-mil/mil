@@ -38,7 +38,7 @@ class AdaptiveController(Controller):
         self.stopped = False
 
     def end(self):
-        ropsy.logwarn('Plotting results')
+        rospy.logwarn('Plotting results')
         # wrench_norms = np.array(map(np.linalg.norm, self.wrench_history))
         self.target_trajectory = None
 

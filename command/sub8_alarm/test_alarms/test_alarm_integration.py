@@ -74,7 +74,9 @@ class TestAlarmIntegration(unittest.TestCase):
             names.append(cmd.name)
 
         self.assertNotIn(thruster_to_fail, names,
-            msg="Thruster mapper continued to issue commands to {} after thruster loss alarm".format(thruster_to_fail))
+                         msg="Thruster mapper continued to issue commands to {} after thruster loss alarm".format(
+                             thruster_to_fail)
+                         )
 
     @unittest.skip("Not ready")
     def test_kill(self):
