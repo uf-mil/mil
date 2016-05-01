@@ -7,6 +7,7 @@
 #include <stdexcept>
 // #include <thread> // use when we are able to compile with c++11
 #include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
 #include <boost/bind.hpp>
 
 #include <opencv2/opencv.hpp>
@@ -28,8 +29,12 @@
 #include <sub8_perception/TorpBoardPoseRequest.h>
 #include <sub8_perception/TBDetectionSwitch.h>
 
-#pragma message "__cplusplus = " XSTR(__cplusplus)
-
+/*
+  Warning:
+  This class cannot be copy constructed. Ex. the following will not compile
+  Ex. Sub8TorpedoBoardDetector tb_detector = Sub8TorpedoBoardDetector();
+  Do this instead: Sub8TorpedoBoardDetector tb_detector();
+*/
 class Sub8TorpedoBoardDetector {
 
 public:
@@ -75,6 +80,9 @@ private:
 
   // Torpedo Board detection will be attempted when true
   bool active;
+
+  // To prevent invalid img pointers from being passed to toCvCopy (segfault)
+  boost::mutex left_mtx, right_mtx;
 
 // Frames will be considered synchronized if their stamp difference is less than
 // this (in seconds)

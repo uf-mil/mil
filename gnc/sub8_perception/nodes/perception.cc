@@ -19,7 +19,6 @@
 int main(int argc, char **argv) {
   ros::init(argc, argv, "pcl_perception");
   ROS_INFO("Initializing node /pcl_perception");
-  Sub8TorpedoBoardDetector torpedo_board_detector = Sub8TorpedoBoardDetector(0.5);
-  ROS_INFO("Now Accepting perception service calls");
+  Sub8TorpedoBoardDetector torpedo_board_detector(0.5);
   ros::spin();
 }

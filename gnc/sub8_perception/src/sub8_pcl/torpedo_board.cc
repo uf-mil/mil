@@ -10,7 +10,9 @@ Sub8TorpedoBoardDetector::Sub8TorpedoBoardDetector(
     : image_transport(nh),
       rviz(viz_topic.empty() ? "/visualization/torpedo_board" : viz_topic),
       generate_dbg_img(gen_dbg_img) {
-  ROS_INFO("Initializing Sub8TorpedoBoardDetector");
+  std::stringstream log_msg;
+  log_msg << "\nInitializing Sub8TorpedoBoardDetector:\n";
+  int tab_sz = 4;
 
   // Default topic and service names
   std::string img_topic_left =
@@ -23,6 +25,11 @@ Sub8TorpedoBoardDetector::Sub8TorpedoBoardDetector(
   std::string visualization_topic =
       viz_topic.empty() ? "/visualization/torpedo_board" : viz_topic;
 
+  // Set image processing scale
+  image_proc_scale = im_proc_scale == 0 ? 0.5 : im_proc_scale;
+  log_msg << std::setw(1 * tab_sz) << "" << "Image Processing Scale: \x1b[37m" 
+          << image_proc_scale << "\x1b[0m\n";
+
   // Subscribe to Cameras (image + camera_info)
   left_image_sub = image_transport.subscribeCamera(
       img_topic_left, 1000, &Sub8TorpedoBoardDetector::left_image_callback,
@@ -30,51 +37,22 @@ Sub8TorpedoBoardDetector::Sub8TorpedoBoardDetector(
   right_image_sub = image_transport.subscribeCamera(
       img_topic_right, 1000, &Sub8TorpedoBoardDetector::right_image_callback,
       this);
-  std::stringstream log_msg;
-  log_msg << "Torpedo Board Detector subscriptions:" << std::left << std::endl
-          << std::setw(7) << "" << std::setw(8) << " left  = " << img_topic_left
-          << std::endl
-          << std::setw(7) << "" << std::setw(8)
-          << " right = " << img_topic_right;
-  ROS_INFO(log_msg.str().c_str());
-
-  // Advertise detection activation switch
-  active = false;
-  detection_switch = nh.advertiseService(
-      service_name, &Sub8TorpedoBoardDetector::detection_activation_switch,
-      this);
-  log_msg.str("");
-  log_msg.clear();
-  log_msg << "Advertised torpedo board detection switch:" << std::left
-          << std::endl
-          << std::setw(7) << "" << service_name;
-  ROS_INFO(log_msg.str().c_str());
+  log_msg << std::setw(1 * tab_sz) << "" << "Camera Subscriptions:\x1b[37m\n"
+          << std::setw(2 * tab_sz) << "" << "left  = " << img_topic_left << std::endl
+          << std::setw(2 * tab_sz) << "" << "right = " << img_topic_right << "\x1b[0m\n";
 
   // Register Service client
   pose_client = nh.serviceClient<sub8_perception::TorpBoardPoseRequest>(
       "/torpedo_board/pose_est_srv");
-  log_msg.str("");
-  log_msg.clear();
   log_msg
-      << "Registered as client of the '/torpedo_board/pose_est_srv' service";
-  ROS_INFO(log_msg.str().c_str());
-
-  // Set image processing scale
-  image_proc_scale = im_proc_scale == 0 ? 0.5 : im_proc_scale;
-  log_msg.str("");
-  log_msg.clear();
-  log_msg << "Image Processing Scale: " << image_proc_scale;
-  ROS_INFO(log_msg.str().c_str());
+      << std::setw(1 * tab_sz) << "" << "Registered as client of the service:\n" 
+      << std::setw(2 * tab_sz) << "" << "\x1b[37m/torpedo_board/pose_est_srv\x1b[0m\n";
 
   // Advertise debug image topic
   debug_image_pub =
       image_transport.advertise("/dbg_imgs/torpedo_board", 1, true);
-  log_msg.str("");
-  log_msg.clear();
-  log_msg << "Advertised debug image topic:" << std::left << std::endl
-          << std::setw(7) << ""
-          << "/dbg_imgs/torpedo_board";
-  ROS_INFO(log_msg.str().c_str());
+  log_msg << std::setw(1 * tab_sz) << "" << "Advertised debug image topic:\n"
+          << std::setw(2 * tab_sz) << "" << "\x1b[37m/dbg_imgs/torpedo_board\x1b[0m\n";
 
   // Setup debug image quadrants
   cv::Size input_frame_size(644, 482); // This needs to be changed if we ever
@@ -91,12 +69,24 @@ Sub8TorpedoBoardDetector::Sub8TorpedoBoardDetector(
       cv::Rect(cv::Point(processing_size.width, processing_size.height),
                processing_size);
 
+  // Advertise detection activation switch
+  active = false;
+  detection_switch = nh.advertiseService(
+      service_name, &Sub8TorpedoBoardDetector::detection_activation_switch,
+      this);
+  log_msg 
+          << std::setw(1 * tab_sz) << "" << "Advertised torpedo board detection switch:\n"
+          << std::setw(2 * tab_sz) << "" << "\x1b[37m" << service_name << "\x1b[0m\n";
+
+
   // Start main detector loop
   run_id = 0;
   boost::thread main_loop_thread(boost::bind(&Sub8TorpedoBoardDetector::run, this));
   main_loop_thread.detach();
+  log_msg << std::setw(1 * tab_sz) << "" << "Running main detector loop in a background thread\n";
 
-  ROS_INFO("Sub8TorpedoBoardDetector Initialized");
+  log_msg << "Sub8TorpedoBoardDetector Initialized";
+  ROS_INFO(log_msg.str().c_str());
 
 } catch (const std::exception &e) {
   ROS_ERROR("Exception from within Sub8TorpedoBoardDetector constructor "
@@ -137,17 +127,19 @@ bool Sub8TorpedoBoardDetector::detection_activation_switch(
 void Sub8TorpedoBoardDetector::left_image_callback(
     const sensor_msgs::ImageConstPtr &image_msg_ptr,
     const sensor_msgs::CameraInfoConstPtr &info_msg_ptr) {
+  left_mtx.lock();
   left_most_recent.image_msg_ptr = image_msg_ptr;
   left_most_recent.info_msg_ptr = info_msg_ptr;
-  ROS_DEBUG("Got left image");
+  left_mtx.unlock();
 }
 
 void Sub8TorpedoBoardDetector::right_image_callback(
     const sensor_msgs::ImageConstPtr &image_msg_ptr,
     const sensor_msgs::CameraInfoConstPtr &info_msg_ptr) {
+  right_mtx.lock();
   right_most_recent.image_msg_ptr = image_msg_ptr;
   right_most_recent.info_msg_ptr = info_msg_ptr;
-  ROS_DEBUG("Got right image");
+  right_mtx.unlock();
 }
 
 void Sub8TorpedoBoardDetector::determine_torpedo_board_position() {
@@ -158,7 +150,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position() {
   if (left_most_recent.image_msg_ptr == NULL ||
       right_most_recent.image_msg_ptr == NULL) {
     ;
-    ROS_ERROR("Torpedo Board Detector: Image Pointers are NULL.");
+    ROS_WARN("Torpedo Board Detector: Image Pointers are NULL.");
     return;
   }
 
@@ -168,6 +160,9 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position() {
       processing_size_image_right, segmented_board_left, segmented_board_right;
   try {
 
+    left_mtx.lock();
+    right_mtx.lock();
+
     // Left Camera
     input_bridge = cv_bridge::toCvCopy(left_most_recent.image_msg_ptr,
                                        sensor_msgs::image_encodings::BGR8);
@@ -176,7 +171,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position() {
     cv::resize(current_image_left, processing_size_image_left, cv::Size(0, 0),
                image_proc_scale, image_proc_scale);
     if (current_image_left.channels() != 3) {
-      ROS_WARN("The left image topic does not contain a color image.");
+      ROS_ERROR("The left image topic does not contain a color image.");
       return;
     }
 
@@ -188,11 +183,17 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position() {
     cv::resize(current_image_right, processing_size_image_right, cv::Size(0, 0),
                image_proc_scale, image_proc_scale);
     if (current_image_right.channels() != 3) {
-      ROS_WARN("The right image topic does not contain a color image.");
+      ROS_ERROR("The right image topic does not contain a color image.");
       return;
     }
-  } catch (cv_bridge::Exception &ex) {
+
+    left_mtx.unlock();
+    right_mtx.unlock();
+
+  } catch (const std::exception &ex) {
     ROS_ERROR("[torpedo_board] cv_bridge: Failed to convert images");
+    left_mtx.unlock();
+    right_mtx.unlock();
     return;
   }
 
@@ -201,8 +202,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position() {
   left_stamp = left_most_recent.image_msg_ptr->header.stamp.toSec();
   right_stamp = right_most_recent.image_msg_ptr->header.stamp.toSec();
   if (std::abs(left_stamp - right_stamp) > sync_thresh) {
-    ROS_ERROR("Did not get images that were approximately synchronized. "
-              "Aborting Torpedo Board detection.");
+    ROS_WARN("Left and right images were not sufficiently synchronized");
     debug_image += cv::Scalar(0, 0, 50);
     return;
   }
