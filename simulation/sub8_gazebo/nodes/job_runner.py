@@ -5,12 +5,14 @@ import rospy
 import rosbag
 import rospkg
 import txros
+from sub8 import tx_sub
+
 from sub8_msgs.srv import RunJob, RunJobRequest
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist, PoseStamped
+from sensor_msgs.msg import Image
 from gazebo_msgs.srv import SetModelState, SetModelStateRequest
 from gazebo_msgs.msg import ModelState
-from sub8 import tx_sub
 from kill_handling.srv import SetKill, SetKillRequest
 from kill_handling.msg import Kill
 
@@ -64,22 +66,39 @@ class BagManager(object):
         self.odom_sub = yield self.nh.subscribe('/odom', Odometry)
         #self.alarms_sub = yield self.nh.subscribe('/odom', Odometry)
         self.c3_goal = yield self.nh.subscribe('/c3_trajectory_generator/waypoint', PoseStamped)
+        self.target_info = yield self.nh.subscribe('/down/left/target_info', Image)
 
         self.cache_dict = {'/odom': self.odom_sub,
-                           '/c3_trajectory_generator/waypoint': self.c3_goal}
+                           '/c3_trajectory_generator/waypoint': self.c3_goal,
+                           '/down/left/target_info': self.target_info}
 
+        # Used to avoid adding copies of the same message.
+        last_timestamps = dict(self.cache_dict)
         while True:
-            yield txros.util.wall_sleep(self.time_step)
+            yield self.nh.sleep(self.time_step)
 
             if self.dumping:
-                yield txros.util.wall_sleep(1)
+                yield self.nh.sleep(1)
 
             # Add to cache
             msgs = []
             for key in self.cache_dict:
                 msg = self.cache_dict[key].get_last_message()
-                msg_time = self.cache_dict[key].get_last_message_time()
+                msg_time = yield self.cache_dict[key].get_last_message_time()
+
+                if msg_time == last_timestamps[key]:
+                    # print "Matching {}".format(key)
+                    # print
+                    # print
+                    continue
+                last_timestamps[key] = msg_time
+
                 if msg is not None:
+                    # print "Adding {}".format(key)
+                    # print msg_time
+                    # print last_timestamps[key]
+                    # print
+                    # print
                     msgs.append([key, (yield msg), (yield msg_time)])
                 else:
                     print "There's a problem recording {0}".format(key)
@@ -105,7 +124,7 @@ class BagManager(object):
                 if msg is not None:
                     bag.write(key, (yield msg), (yield msg_time))
 
-            yield txros.util.wall_sleep(self.time_step)
+            yield self.nh.sleep(self.time_step)
 
         print "Saving pre-fail data. Do not exit."
         # We've written the post crash stuff now let's write the pre-crash data.
@@ -134,9 +153,8 @@ class BagManager(object):
 
 
 class JobManager(object):
-    def __init__(self, nh, loop_count=10000, timeout=15):
+    def __init__(self, nh, loop_count=10000):
         self.nh = nh
-        self.timeout = timeout
         self.timedout = False
 
         self.bagger = BagManager(self.nh)
@@ -154,14 +172,14 @@ class JobManager(object):
         self.bagger.start_caching()
 
         while current_loop < self.loop_count:
-            yield txros.util.wall_sleep(2.0)
+            yield self.nh.sleep(2.0)
+            start_time = self.nh.get_time()
 
             try:
                 response = yield self.run_job(RunJobRequest())
             except:
                 print "No service provider found."
                 continue
-            print "Job Found!"
 
             current_loop += 1
             print response
@@ -174,22 +192,23 @@ class JobManager(object):
                 self.fails += 1
                 yield self.bagger.dump()
 
-                print "Writing report to file. Do not exit."
-                try:
-                    with open(DIAG_OUT_URI + 'diag.txt', 'a') as f:
-                        f.write("Status: {0} occured at {1} .\n".format(response.success, int(time.time())))
-                        f.write(response.message + '\n')
-                        f.write("-----------------------------------------------------------")
-                        f.write("\n")
-                except IOError:
-                    print "Diagnostics file not found. Creating it now."
-                    with open(DIAG_OUT_URI + 'diag.txt', 'w') as f:
-                        f.write("Status: {0} occured at {1} .\n".format(response.success, int(time.time())))
-                        f.write(response.message + '\n')
-                        f.write("-----------------------------------------------------------")
-                        f.write("\n")
-                print
-                print "Done!"
+            print "Writing report to file. Do not exit."
+            elapsed = self.nh.get_time() - start_time
+            try:
+                with open(DIAG_OUT_URI + 'diag.txt', 'a') as f:
+                    f.write("Response: {0} occured at {1} (Duration: {2}).\n".format(response.success, int(time.time()), elapsed))
+                    f.write(response.message + '\n')
+                    f.write("-----------------------------------------------------------")
+                    f.write('\n')
+            except IOError:
+                print "Diagnostics file not found. Creating it now."
+                with open(DIAG_OUT_URI + 'diag.txt', 'w') as f:
+                    f.write("Response: {0} occured at {1} (Duration: {2}).\n".format(response.success, int(time.time()), elapsed))
+                    f.write(response.message + '\n')
+                    f.write("-----------------------------------------------------------")
+                    f.write('\n')
+            print
+            print "Done!"
 
             print "------------------------------------------------------------------"
             print "{0} Successes, {1} Fails, {2} Total".format(self.successes, self.fails, current_loop)
@@ -207,7 +226,7 @@ class JobManager(object):
             f.write("{0} Successes, {1} Fails, {2} Total \n.".format(self.successes, self.fails, current_loop))
             f.write("Time of completion: {0}. \n".format(int(time.time())))
             f.write("-----------------------------------------------------------")
-            f.write("\n")
+            f.write('\n')
 
     def reset_gazebo(self):
         '''
@@ -226,7 +245,6 @@ class JobManager(object):
 
         TODO: Make this a service? Might as well just use the ros service gazebo provides? Maybe not.
         '''
-        print "Setting position"
         set_state = nh.get_service_client('/gazebo/set_model_state', SetModelState)
 
         if twist is None:
@@ -242,13 +260,13 @@ class JobManager(object):
 
         if model == 'sub8':
             kill = nh.get_service_client('/set_kill', SetKill)
+            yield kill(SetKillRequest(kill=Kill(id='initial', active=False)))
             yield kill(SetKillRequest(kill=Kill(active=True)))
-            yield txros.util.wall_sleep(.1)
+            yield nh.sleep(.1)
             yield set_state(SetModelStateRequest(model_state))
-            yield txros.util.wall_sleep(.1)
+            yield nh.sleep(.1)
             yield kill(SetKillRequest(kill=Kill(active=False)))
         else:
-            print "Set"
             set_state(SetModelStateRequest(model_state))
 
 

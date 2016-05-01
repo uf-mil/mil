@@ -40,7 +40,7 @@ class PipeFinder:
         self.occ_grid.update_grid(self.last_image_timestamp)
         self.occ_grid.add_marker(markers, self.last_image_timestamp)
 
-        if self.last_draw_image is not None:
+        if self.last_draw_image is not None and (markers[0] is not None):
             self.image_pub.publish(self.last_draw_image)
 
     def image_cb(self, image):
@@ -54,6 +54,11 @@ class PipeFinder:
 
         a = np.array(self.occ_grid.cam.project3dToPixel([0.0, self.channel_width, height]))
         b = self.occ_grid.cam.project3dToPixel([0.0, 0.0, height])
+        try:
+            int(np.linalg.norm(a - b) / 2.0)
+        except:
+            return 0
+
         return int(np.linalg.norm(a - b) / 2.0)
 
     def ncc(self, image, mean_thresh, scale=5):
@@ -160,8 +165,8 @@ class PipeFinder:
 
         timestamp = self.last_image_timestamp
         position, orientation, _ = self.find_pipe(self.last_image, timestamp)
-
         found = (position is not None)
+
         if not found:
             resp = VisionRequest2DResponse(
                 header=Header(
