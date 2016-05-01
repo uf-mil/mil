@@ -58,24 +58,6 @@ ros_git_get https://github.com/txros/txros.git
 ros_git_get https://github.com/uf-mil/rawgps-tools.git
 ros_git_get https://github.com/ros-simulation/gazebo_ros_pkgs.git
 
-instlog "Checking if we need to fix pyode"
-if ! python -c "import ode; w = ode.World(); w.setAngularDamping(0.2)"; then
-    instlog "Fixing/installing Pyode"
-    sudo apt-get install -qq python-pyode
-    sudo rm -fr /tmp/pyode-build
-    sudo mkdir -p /tmp/pyode-build
-    cd /tmp/pyode-build
-    sudo apt-get build-dep -qq -y python-pyode
-    sudo apt-get remove -qq -y python-pyode
-    sudo apt-get source -qq --compile python-pyode
-    sudo dpkg -i python-pyode_*.deb 2>&1 >/dev/null
-    sudo apt-mark hold pyode
-
-else
-    instlog "We don't need to fix pyode! How lucky!"
-fi
-
-
 # Normal things
 instlog "Installing misc dependencies"
 
