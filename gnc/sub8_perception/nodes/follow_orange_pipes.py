@@ -36,7 +36,6 @@ class PipeFinder:
             return
 
         markers = self.find_pipe(np.copy(self.last_image), self.last_image_timestamp)
-        #print markers
         self.occ_grid.update_grid(self.last_image_timestamp)
         self.occ_grid.add_marker(markers, self.last_image_timestamp)
 
@@ -46,7 +45,7 @@ class PipeFinder:
     def image_cb(self, image):
         '''Hang on to last image and when it was taken.'''
         self.last_image = image
-        self.last_image_timestamp = rospy.Time.now()
+        self.last_image_timestamp = self.image_sub.last_image_time
 
     def get_ncc_scale(self):
         '''Comptue pixel width of the channel marker'''
