@@ -8,7 +8,7 @@ from gazebo_msgs.srv import SetModelState, GetModelState
 from geometry_msgs.msg import Pose, Twist
 from sub8_actuator_driver.srv import SetValve
 
-from sub8_ros_tools import msg_helpers
+from sub8_ros_tools import msg_helpers, geometry_helpers
 
 import numpy as np
 
@@ -74,7 +74,7 @@ class TorpedoLauncher():
 
         # Translate torpedo init velocity so that it first out of the front of the sub.
         muzzle_vel = np.array([10, 0, 0])
-        v = rotate_vect_by_quat(np.append(muzzle_vel, 0), sub_pose[1])
+        v = geometry_helpers.rotate_vect_by_quat(np.append(muzzle_vel, 0), sub_pose[1])
 
         launch_twist = Twist()
         launch_twist.linear.x = v[0]
@@ -82,7 +82,7 @@ class TorpedoLauncher():
         launch_twist.linear.z = v[2]
 
         # This is offset so it fires approx at the torpedo launcher location.
-        launch_pos = rotate_vect_by_quat(np.array([.4, -.15, -.3, 0]), sub_pose[1])
+        launch_pos = geometry_helpers.rotate_vect_by_quat(np.array([.4, -.15, -.3, 0]), sub_pose[1])
 
         model_state = ModelState()
         model_state.model_name = 'torpedo'
@@ -92,18 +92,6 @@ class TorpedoLauncher():
         self.launched = True
 
         return True
-
-
-def rotate_vect_by_quat(v, q):
-    '''
-    Rotate a vector by a quaterion.
-    v' = q*vq
-    '''
-    cq = np.array([-q[0], -q[1], -q[2], q[3]])
-    cq_v = tf.transformations.quaternion_multiply(cq, v)
-    v = tf.transformations.quaternion_multiply(cq_v, q)
-    v[1:] *= -1
-    return np.array(v)[:3]
 
 if __name__ == '__main__':
     rospy.init_node('torpedo_manager')

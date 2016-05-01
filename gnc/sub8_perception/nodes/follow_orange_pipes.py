@@ -84,6 +84,8 @@ class PipeFinder:
 
     def find_pipe(self, img, timestamp):
         rows, cols = img.shape[:2]
+        if rows == 0:
+            return None, None, None
 
         blur = cv2.GaussianBlur(img, (5, 5), 1000)
 

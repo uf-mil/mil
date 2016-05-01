@@ -9,6 +9,7 @@ from nav_msgs.msg import OccupancyGrid, MapMetaData
 from sub8_msgs.srv import VisionRequest2D, VisionRequest2DResponse, SearchPose
 from image_geometry import PinholeCameraModel
 from sub8_ros_tools import threading_helpers, msg_helpers
+from std_srvs.srv import Empty
 
 import cv2
 import numpy as np
@@ -44,6 +45,8 @@ class OccGridUtils(object):
 
         self.meta_data.origin = Pose(position=Point(x=-starting_pose.x * res, y=-starting_pose.y * res, z=0),
                                      orientation=Quaternion(*tf.transformations.quaternion_from_euler(0, 0, starting_pose.theta)))
+
+        s = rospy.Service('/reset_occ_grid', Empty, self.reset_grid)
 
         # Create array of -1's of the correct size
         self.occ_grid = np.zeros((self.meta_data.height, self.meta_data.width)) - 1
@@ -113,7 +116,7 @@ class OccGridUtils(object):
         self.occ_grid = np.zeros((self.meta_data.height, self.meta_data.width)) - 1
         self.searched = np.zeros((self.meta_data.height, self.meta_data.width))
         self.markers = np.zeros((self.meta_data.height, self.meta_data.width))
-        return [.5, True, Pose()]
+        return
 
 
 class Searcher():
@@ -225,7 +228,6 @@ class MarkerOccGrid(OccGridUtils):
             rospy.logerr("I don't know what to do without my camera info.")
 
         self.cam.fromCameraInfo(self.camera_info)
-        s = rospy.Service('/reset_occ_grid', SearchPose, self.reset_grid)
 
     def update_grid(self, timestamp):
         '''
