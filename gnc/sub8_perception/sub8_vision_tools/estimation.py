@@ -6,7 +6,8 @@ from mayavi import mlab
 
 
 class ProjectionParticleFilter(object):
-    def __init__(self, camera_model, num_particles=10000, max_Z=25, aggressive=True):
+    def __init__(self, camera_model, num_particles=10000, max_Z=25, observation_noise=5.0, jitter_prob=0.2, salting=0.1,
+                 aggressive=True):
         """A particle filter for estimating pose from multiple camera views
 
         ppf = ProjectionParticleFitler(image_geometry.PinholeCameraModel(msg.cameraInfo))
@@ -14,14 +15,21 @@ class ProjectionParticleFilter(object):
             centroid = my_object_finder.find(images[k])
             ppf.observe(centroid)
 
-        Calling ppf.observe returns
+        Calling ppf.observe returns the current best estimate and the particle covariance
         Note: Covariance is not a complete measure of certainty
 
         :param camera_model: ros image_geometry PinholeCameraModel, must be initialized
         :param num_particles: How many particles to use, we can operate comfortably with 100,000
         :param max_Z: The maximum depth to search in
+        :param observation_noise: The standard-deviation of the noise (in units of pixels)
+        :param jitter_prob: Probability of a completely random measurement
+        :param salting: std-def of how much we'll spice up the estimates!
         :param aggressive: Use a gaussian error distributions instead of error**2, much more aggressive
             may sometimes throw probability did not sum to one errors (because it is too aggressive!)
+
+        Implementation Notes:
+            - The measurement pdf I am using is not z ~ N(K * x | sig**2, mu)
+                - It is instead the p(z | x) + p(z | total randomness)
 
         TODO:
             - If probabilities fall below something reasonable, more frequently do reset_to_ray
@@ -31,18 +39,25 @@ class ProjectionParticleFilter(object):
         self.aggressive = aggressive
         self.min_Z = 0.0
         self.max_Z = max_Z
-
+        self.salt = salting
+        self.observation_noise = observation_noise
+        self.jitter = jitter_prob
         self.camera_model = camera_model
+
+        self.image_size = (self.camera_model.cx() * 2, self.camera_model.cy() * 2)
         self.K = np.array(camera_model.fullIntrinsicMatrix(), dtype=np.float32)
         self.K_inv = np.linalg.inv(self.K)
 
         self.num_particles = num_particles
+        self.jitter_pdf = stats.uniform(loc=0.0, scale=max(self.image_size))
+
+        # This line doesn't *necessarily* do something
         self.particles = np.random.uniform((-25, -25, self.min_Z), (25, 25, self.max_Z), size=(self.num_particles, 3)).transpose()
         self.weights = np.ones(self.num_particles)
         self.weights = self.weights / np.sum(self.weights)
         self.t = np.zeros(3)
         self.R = np.diag([1.0, 1.0, 1.0])
-        self.first_observation = True
+        self.on_first_observation = True
 
     def get_best(self):
         """Return the best point and the diagonal of the covariance matrix of our particles
@@ -51,7 +66,10 @@ class ProjectionParticleFilter(object):
                 being smaller than the radius of your target
         """
         ind = np.argmax(self.weights)
-        return self.particles[:, ind], np.diag(np.cov(self.particles))
+        weighted_avg = np.average(self.particles, axis=1, weights=self.weights)
+        # return self.particles[:, ind], np.diag(np.cov(self.particles))
+        # This allows us to handle a fair bit of random noise
+        return weighted_avg, np.diag(np.cov(self.particles))
 
     def column_vectorize(self, v):
         """Converts a row vector to a column vector, does nothing to a column vector"""
@@ -67,7 +85,7 @@ class ProjectionParticleFilter(object):
         # but PinholeCameraModel doesn't contain resolution information :/
         in_image = np.logical_and(
             np.all(projected > self.column_vectorize((0.0, 0.0)), axis=0),
-            np.all(projected < self.column_vectorize((self.camera_model.cx() * 2, self.camera_model.cy() * 2)), axis=0)
+            np.all(projected < self.column_vectorize(self.image_size), axis=0)
         )
         in_front = pts[2, :] > 0
         in_fov = np.logical_and(np.logical_and(
@@ -110,8 +128,9 @@ class ProjectionParticleFilter(object):
         unit_ray = self.R.dot(self.get_ray(observation))
 
         if weights is None:
+            # This favors distant particles, which is not what we want
             self.particles = self.t + (np.random.uniform(self.min_Z, self.max_Z, size=self.num_particles) * unit_ray)
-            self.particles += np.random.normal(scale=(0.1, 0.1, 0.1), size=(self.num_particles, 3)).transpose()
+            self.particles += np.random.normal(scale=(self.salt, self.salt, self.salt), size=(self.num_particles, 3)).transpose()
 
         else:
             average_p = 0.2 * np.average(weights)
@@ -121,7 +140,9 @@ class ProjectionParticleFilter(object):
                 size=self.particles[:, weights < average_p]
             ) * unit_ray
 
-        self.first_observation = False
+            self.particles[:, weights < average_p] += np.random.normal(
+                scale=(self.salt, self.salt, self.salt), size=(self.num_particles, 3)
+            ).transpose()
 
     def observe(self, observation):
         """Measurement-update, take a single-pixel observation
@@ -134,13 +155,14 @@ class ProjectionParticleFilter(object):
         TODO
             - Must shuffle instead of relying on state transition distribution
         """
-        if self.first_observation:
+        if self.on_first_observation:
             self._reset_to_ray(observation)
-            self.first_observation = False
+            self.on_first_observation = False
 
-        # compute p(z | x)
+        # Compute expected z
         particles = self._transform_pts(self.t, self.R)
         expected_obs_h = self.K.dot(particles)
+        expected_obs = expected_obs_h[:2, :] / expected_obs_h[2, :]
 
         # Check how many particles are in the field of view, if we have a problem, don't try
         infront = np.sum(self.in_fov(particles))
@@ -148,17 +170,23 @@ class ProjectionParticleFilter(object):
             # TODO: Do a partial ray-reset
             return
 
-        expected_obs = expected_obs_h[:2, :] / expected_obs_h[2, :]
-
+        # Compute p(z | x)
         error = np.linalg.norm(expected_obs - observation, axis=0)
-
         if self.aggressive:
-            prob = stats.norm.pdf(error, scale=5.0) * stats.uniform.pdf(particles[2, :], loc=0.0, scale=self.max_Z)
-        else:
-            prob = np.power(error ** 2, -1)
+            # TODO: logpdf instead
+            z_prob = stats.uniform.pdf(particles[2, :], loc=0.0, scale=self.max_Z)
+            reprojection_prob = stats.norm.pdf(error, scale=self.observation_noise)
 
+            # p(z | x) = (1 - p_outlier ) * p(err | sigma) + (p_outlier * p(err | random))
+            prob = ((1 - self.jitter) * (z_prob * reprojection_prob)) + (self.jitter * self.jitter_pdf.pdf(error))
+
+        else:
+            prob = ((1 - self.jitter) * np.power(error ** 2, -1)) + (self.jitter * self.jitter_pdf.pdf(error))
+
+        # Normalize because we suck
         normalized_prob = prob / np.sum(prob)
 
+        # Importance sampling
         to_sample = int(self.num_particles)
         choice_indices = np.random.choice(
             a=np.arange(particles.shape[1]),
@@ -166,14 +194,19 @@ class ProjectionParticleFilter(object):
             size=to_sample,
             replace=True,
         )
-
         choices = self.particles[:, choice_indices]
 
-        self.particles = choices + np.random.normal(scale=(0.01, 0.01, 0.01), size=(self.num_particles, 3)).transpose()
+        # Update our particles
+        self.particles = choices + np.random.normal(
+            scale=(self.salt, self.salt, self.salt),
+            size=(self.num_particles, 3)
+        ).transpose()
 
+        # Update our weights
         new_weights = normalized_prob[choice_indices]
         weights = new_weights
         self.weights = weights / np.sum(weights)
+        return self.get_best()
 
 
 def draw_particles(ppf, color_hsv=(1.0, 0.2, 1.0), scale=0.05):
@@ -228,6 +261,8 @@ def draw_line(pt_1, pt_2, color=(1.0, 0.0, 0.0)):
 
 
 def main():
+    """Here's some stupid demo code
+    """
     import sub8_ros_tools
     import time
     import rospy
@@ -241,6 +276,8 @@ def main():
 
     ppf = ProjectionParticleFilter(camera_model, 100000)
     real = np.array([1.0, 3.0, 7.0])
+    p_wrong = 0.4
+
     projected_h = ppf.K.dot(real)
     projected = projected_h[:2] / projected_h[2]
 
@@ -250,9 +287,9 @@ def main():
     cameras = []
     observations = []
 
-    max_k = 3
+    cov = np.array([100, 100, 100])
+    max_k = 15
     for k in range(max_k):
-
         if k < 1:
             camera_t = np.array([0.0, -8.0, 7.0])
             R = np.array([
@@ -262,28 +299,34 @@ def main():
             ])
 
         else:
+            R = np.diag([1.0, 1.0, 1.0])
             camera_t = np.hstack([(np.random.random(2) - 0.5) * 5, 0.0])
 
-        projected_h = ppf.K.dot(np.dot(R.transpose(), real) - R.transpose().dot(camera_t))
-        projected = projected_h[:2] / projected_h[2]
+        if (np.random.random() < p_wrong) and (k > 1):
+            print "Doing a random observation"
+            projected = np.random.random(2) * np.array([640., 480.])
+        else:
+            projected_h = ppf.K.dot(np.dot(R.transpose(), real) - R.transpose().dot(camera_t))
+            projected = projected_h[:2] / projected_h[2]
 
-        obs_final = projected + np.random.normal(scale=3.0, size=2)
+        obs_final = projected + np.random.normal(scale=5.0, size=2)
 
         cameras.append((camera_t, R))
         observations.append(ppf.get_ray(obs_final))
-        draw_cameras(observations, cameras)
-        mlab.show()
-        draw_particles(ppf, color_hsv=((k + 1) / (max_k + 1), 0.7, 0.8), scale=0.1 * ((k + 1) / max_k))
+        # draw_cameras(observations, cameras)
+        # draw_particles(ppf, color_hsv=((k + 1) / (max_k + 1), 0.7, 0.8), scale=0.1 * ((k + 1) / max_k))
+        # mlab.show()
+
+        # Interpolate along hsv to get a cool heatmap effect
 
         ppf.set_pose(camera_t, R)
         ppf.observe(np.reshape(obs_final, (2, 1)))
 
-    print 'cov:', np.diag(np.cov(ppf.particles))
-    best = ppf.get_best()
+        best_v, cov = ppf.get_best()
 
-    print 'best'
-    print best, best / np.linalg.norm(best)
-    print real, real / np.linalg.norm(real)
+        print 'best', best_v
+        print 'cov', cov
+
     draw_cameras(observations, cameras)
     draw_particles(ppf, color_hsv=((k + 1) / (max_k + 1), 0.7, 0.8), scale=0.1 * ((k + 1) / max_k))
 

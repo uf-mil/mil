@@ -91,9 +91,7 @@ class BuoyFinder:
     def ncc(self, image, mean_thresh, scale=15):
         '''Compute normalized cross correlation w.r.t a shadowed pillbox fcn
 
-        TODO:
-            Compute the kernel only once
-                (Too cheap to need)
+        The expected scale will vary, so we don't cache it
         '''
         kernel = np.ones((scale, scale)) * -1
         midpoint = (scale // 2, scale // 2)
