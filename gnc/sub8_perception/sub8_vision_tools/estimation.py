@@ -7,16 +7,25 @@ from mayavi import mlab
 
 class ProjectionParticleFilter(object):
     def __init__(self, camera_model, num_particles=10000, max_Z=25, aggressive=True):
-        """
+        """A particle filter for estimating pose from multiple camera views
+
+        ppf = ProjectionParticleFitler(image_geometry.PinholeCameraModel(msg.cameraInfo))
+        for k in range(5):
+            centroid = my_object_finder.find(images[k])
+            ppf.observe(centroid)
+
+        Calling ppf.observe returns
+        Note: Covariance is not a complete measure of certainty
+
         :param camera_model: ros image_geometry PinholeCameraModel, must be initialized
         :param num_particles: How many particles to use, we can operate comfortably with 100,000
         :param max_Z: The maximum depth to search in
         :param aggressive: Use a gaussian error distributions instead of error**2, much more aggressive
             may sometimes throw probability did not sum to one errors (because it is too aggressive!)
 
-        Functions:
-        :function column_vectorize: Make a row vector into a column vector, and do nothing to a column vector
-
+        TODO:
+            - If probabilities fall below something reasonable, more frequently do reset_to_ray
+                - In some cases, reset the worst 25% of particles to ray
         """
         assert isinstance(camera_model, image_geometry.PinholeCameraModel), "Must be pinhole camera"
         self.aggressive = aggressive
@@ -36,18 +45,26 @@ class ProjectionParticleFilter(object):
         self.first_observation = True
 
     def get_best(self):
+        """Return the best point and the diagonal of the covariance matrix of our particles
+
+            Only the diagonal has interesting stuff, you should mostly be concerned with the Z covariance
+                being smaller than the radius of your target
+        """
         ind = np.argmax(self.weights)
-        return self.particles[:, ind]
+        return self.particles[:, ind], np.diag(np.cov(self.particles))
 
     def column_vectorize(self, v):
+        """Converts a row vector to a column vector, does nothing to a column vector"""
         return np.reshape(v, (len(v), 1))
 
     def in_fov(self, pts):
+        """Return a mask of points that are in the field-of-view of the camera"""
         projected_h = self.K.dot(pts)
         not_infinite = projected_h[2, :] > 1e-5
         projected = projected_h[:2, :] / projected_h[2, :]
 
         # I acknowledge that the image edges are NOT guaranteed to be at (2cx, 2cy)
+        # but PinholeCameraModel doesn't contain resolution information :/
         in_image = np.logical_and(
             np.all(projected > self.column_vectorize((0.0, 0.0)), axis=0),
             np.all(projected < self.column_vectorize((self.camera_model.cx() * 2, self.camera_model.cy() * 2)), axis=0)
@@ -56,10 +73,12 @@ class ProjectionParticleFilter(object):
         in_fov = np.logical_and(np.logical_and(
             in_image, in_front
         ), not_infinite)
-        print np.sum(not_infinite)
+
         return in_fov
 
     def set_pose(self, t, R):
+        """Set the pose of the camera for which our observation is valid
+        """
         assert R.shape == (3, 3), "Rotation must be 3x3 rotation matrix"
         assert len(t) == 3, "Translation vector must be of length 3"
         self.t = self.column_vectorize(t)
@@ -82,6 +101,12 @@ class ProjectionParticleFilter(object):
         return unit_ray
 
     def _reset_to_ray(self, observation, weights=None):
+        """Rest all of the particles to lie along the observation ray
+        :param observation: A column vector representing the pixel coordinates
+        :param weights: dims=[num_particles], particle weight, higher is better
+        We *know* that the true point lies along a ray from the camera center through the focal plane at the observation point
+         So, if we reset all of our particles to lie along that ray, we save convergence time substantially
+        """
         unit_ray = self.R.dot(self.get_ray(observation))
 
         if weights is None:
@@ -99,8 +124,12 @@ class ProjectionParticleFilter(object):
         self.first_observation = False
 
     def observe(self, observation):
-        """
-        observation should be a column vector
+        """Measurement-update, take a single-pixel observation
+
+        :param observation: observation should be a column vector, should be pixel coordinate
+
+        - Consume an observation and use it to estimate the target pose!
+        - Does nothing if the observation is shitty (or if it doesn't help)
 
         TODO
             - Must shuffle instead of relying on state transition distribution
@@ -112,11 +141,13 @@ class ProjectionParticleFilter(object):
         # compute p(z | x)
         particles = self._transform_pts(self.t, self.R)
         expected_obs_h = self.K.dot(particles)
+
+        # Check how many particles are in the field of view, if we have a problem, don't try
         infront = np.sum(self.in_fov(particles))
-        print 'In front:', infront
-        if infront < 100:
-            print "Not enough in front"
+        if infront < 5:
+            # TODO: Do a partial ray-reset
             return
+
         expected_obs = expected_obs_h[:2, :] / expected_obs_h[2, :]
 
         error = np.linalg.norm(expected_obs - observation, axis=0)
@@ -146,6 +177,8 @@ class ProjectionParticleFilter(object):
 
 
 def draw_particles(ppf, color_hsv=(1.0, 0.2, 1.0), scale=0.05):
+    """Draw the particles we are tracking! Whoa!
+    """
     mlab.points3d(
         ppf.particles[0, :][::20],
         ppf.particles[1, :][::20],
@@ -158,6 +191,7 @@ def draw_particles(ppf, color_hsv=(1.0, 0.2, 1.0), scale=0.05):
 
 
 def draw_cameras(observations, cameras):
+    """Draw the cameras!"""
     for observation, camera in zip(observations, cameras):
         t, R = camera
         draw_camera(t, R)
@@ -165,6 +199,7 @@ def draw_cameras(observations, cameras):
 
 
 def draw_camera(t, R):
+    """Draw a single camera"""
     colors = (
         (1.0, 0.0, 0.0),
         (0.0, 1.0, 0.0),
@@ -183,6 +218,7 @@ def draw_camera(t, R):
 
 
 def draw_line(pt_1, pt_2, color=(1.0, 0.0, 0.0)):
+    """Draw a line between two points"""
     mlab.plot3d(
         np.hstack([pt_1[0], pt_2[0]]),
         np.hstack([pt_1[1], pt_2[1]]),
@@ -218,7 +254,6 @@ def main():
     for k in range(max_k):
 
         if k < 1:
-            print 'doop'
             camera_t = np.array([0.0, -8.0, 7.0])
             R = np.array([
                 [1.0, 0.0, 0.0],
@@ -230,7 +265,6 @@ def main():
             camera_t = np.hstack([(np.random.random(2) - 0.5) * 5, 0.0])
 
         projected_h = ppf.K.dot(np.dot(R.transpose(), real) - R.transpose().dot(camera_t))
-        print projected_h
         projected = projected_h[:2] / projected_h[2]
 
         obs_final = projected + np.random.normal(scale=3.0, size=2)
