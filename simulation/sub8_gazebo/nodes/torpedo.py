@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import rospy
-import rospkg
 import tf
 
+from std_msgs.msg import String
 from gazebo_msgs.msg import ContactsState, ModelStates, ModelState
 from gazebo_msgs.srv import SetModelState, GetModelState
 from geometry_msgs.msg import Pose, Twist
@@ -10,25 +10,18 @@ from sub8_actuator_driver.srv import SetValve
 
 from sub8_ros_tools import msg_helpers
 
-import os
 import numpy as np
-
-# Replace this with launch file parameter.
-rospack = rospkg.RosPack()
-torpedo_path = os.path.join(rospack.get_path('sub8_gazebo'), 'models/torpedo/torpedo.sdf')
 
 
 class TorpedoLauncher():
     def __init__(self):
-        f = open(torpedo_path, 'r')
-        self.sdf_f = f.read()
-
         self.launched = False
 
         rospy.Service('/actuator_driver/actuate', SetValve, self.launch_torpedo)
         self.set_torpedo = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
         self.get_model = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
         rospy.Subscriber('/contact_bumper/', ContactsState, self.check_contact, queue_size=1)
+        self.contact_pub = rospy.Publisher('/gazebo/torpedo_contact', String, queue_size=1)
 
     def check_contact(self, msg):
         if not self.launched:
@@ -41,25 +34,32 @@ class TorpedoLauncher():
         torpedo_name = "torpedo::body::bodycol"
         board_name = "torpedo_board::hole_1::hole_1_col"
 
+        real_state = None
         for state in msg.states:
             if state.collision1_name == torpedo_name:
+                real_state = state
+                other_collison_name = state.collision2_name
                 break
+            if state.collision2_name == torpedo_name:
+                real_state = state
+                other_collison_name = state.collision1_name
+                break
+
+        if real_state is None:
+            return
 
         # Generally, if the torpedo is laying on the ground the collision force will be very small.
         # So if the force is really small, we assume the impact collision has occured before the torpedo was launched.
-        print np.abs(np.linalg.norm(msg_helpers.rosmsg_to_numpy(state.total_wrench.force)))
-        if np.abs(np.linalg.norm(msg_helpers.rosmsg_to_numpy(state.total_wrench.force))) < 10:
+        print np.abs(np.linalg.norm(msg_helpers.rosmsg_to_numpy(real_state.total_wrench.force)))
+        if np.abs(np.linalg.norm(msg_helpers.rosmsg_to_numpy(real_state.total_wrench.force))) < 10:
             rospy.loginfo("Torpedo probably still on the ground, still waiting.")
             return
 
-        # Now the torpedo has impacted something, we gotta check what.
+        # Now the torpedo has impacted something, publishe what it hit.
         rospy.loginfo('Impact detected!')
         self.launched = False
-
-        if state.collision2_name == board_name:
-            rospy.loginfo('Correct!')
-        else:
-            rospy.logwarn('Wrong!')
+        rospy.loginfo(other_collison_name)
+        self.contact_pub.publish(other_collison_name)
 
     def launch_torpedo(self, srv):
         '''
@@ -90,6 +90,8 @@ class TorpedoLauncher():
         model_state.twist = launch_twist
         self.set_torpedo(model_state)
         self.launched = True
+
+        return True
 
 
 def rotate_vect_by_quat(v, q):

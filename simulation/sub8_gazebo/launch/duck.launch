@@ -53,6 +53,7 @@
 
   <node pkg="sub8_gazebo" type="gazebo_controller.py" name="gazebo_interface" />
   <node pkg="sub8_gazebo" type="torpedo.py" name="torpedo_controller" />
+  <node pkg="sub8_gazebo" type="buoys.py" name="buoy_contact_reporter" />
 
   <include file="$(find sub8_launch)/launch/subsystems/rise.launch" />
   <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper.launch" />

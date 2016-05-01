@@ -33,7 +33,7 @@ def run_mission(srv, world_position_actual, sub, nh):
 
     yield nh.sleep(.2)
     yield reset_grid(SearchPoseRequest())
-    yield nh.sleep(.2)
+    yield nh.sleep(1)
 
     # Set marker position
     marker_point = np.random.uniform(-8, 8, size=2)
