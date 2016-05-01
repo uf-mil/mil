@@ -3,7 +3,8 @@ import cv2
 import numpy as np
 import sys
 import rospy
-from sub8_vision_tools import threshold_tools
+import image_geometry
+from sub8_vision_tools import threshold_tools, rviz
 from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D
 from std_msgs.msg import Header
 import sub8_ros_tools
@@ -12,11 +13,15 @@ from geometry_msgs.msg import Pose2D
 
 class BuoyFinder:
     _min_size = 50
+
     def __init__(self):
         self.last_image = None
         self.last_draw_image = None
         self.last_poop_image = None
         self.last_image_time = None
+        self.camera_model = None
+
+        self.rviz = rviz.RvizVisualizer()
 
         self.pose_service = rospy.Service('vision/buoy/2D', VisionRequest2D, self.request_buoy)
         self.image_sub = sub8_ros_tools.Image_Subscriber('/stereo/right/image_rect_color', self.image_cb)
@@ -32,6 +37,11 @@ class BuoyFinder:
             'red': '/color/buoy/red',
             'yellow': '/color/buoy/yellow',
         }
+        self.draw_colors = {
+            'green': (0.0, 1.0, 0.0, 1.0),
+            'red': (1.0, 0.0, 0.0, 1.0),
+            'yellow': (1.0, 1.0, 0.0, 1.0),
+        }
 
     def request_buoy(self, srv):
         print 'requesting', srv
@@ -40,7 +50,7 @@ class BuoyFinder:
         if response is False:
             print 'did not find'
             resp = VisionRequest2DResponse(
-                header=sub8_ros_tools.make_header(frame='/stereo_front/right'),
+                header=sub8_ros_tools.make_header(frame='/stereo_front'),
                 found=False
             )
 
@@ -48,7 +58,7 @@ class BuoyFinder:
             # Fill in
             center, radius = response
             resp = VisionRequest2DResponse(
-                header=Header(stamp=self.last_image_time, frame_id='/stereo_front/right'),
+                header=Header(stamp=self.last_image_time, frame_id='/stereo_front'),
                 pose=Pose2D(
                     x=center[0],
                     y=center[1],
@@ -72,6 +82,11 @@ class BuoyFinder:
         '''Hang on to last image'''
         self.last_image = image
         self.last_image_time = self.image_sub.last_image_time
+        if self.camera_model is None:
+            if self.image_sub.camera_info is None:
+                return
+            self.camera_model = image_geometry.PinholeCameraModel()
+            self.camera_model.fromCameraInfo(self.image_sub.camera_info)
 
     def ncc(self, image, mean_thresh, scale=15):
         '''Compute normalized cross correlation w.r.t a shadowed pillbox fcn
@@ -142,6 +157,9 @@ class BuoyFinder:
 
         contour, tuple_center, area = best_ret
         true_center, rad = cv2.minEnclosingCircle(contour)
+
+        if self.camera_model is not None:
+            self.rviz.draw_ray_3d(tuple_center, self.camera_model, self.draw_colors[buoy_type])
 
         return tuple_center, rad
 
