@@ -66,8 +66,13 @@ class Image_Subscriber(object):
         Assumes topic of type "sensor_msgs/Image"
         This behaves like a conventional subscriber, except handling the additional image conversion
         '''
+        if callback is None:
+            callback = lambda im: setattr(self, 'last_image', im)
+
         self.encoding = encoding
         self.camera_info = None
+        self.last_image_time = None
+        self.last_image = None
         self.im_sub = rospy.Subscriber(topic, Image, self.convert, queue_size=queue_size)
 
         root_topic, image_subtopic = path.split(topic)
@@ -100,6 +105,7 @@ class Image_Subscriber(object):
         self.camera_info = msg
 
     def convert(self, data):
+        self.last_image_time = data.header.stamp
         try:
             image = self.bridge.imgmsg_to_cv2(data, desired_encoding=self.encoding)
             self.callback(image)
