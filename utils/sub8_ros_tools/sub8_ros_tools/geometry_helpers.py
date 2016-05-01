@@ -52,9 +52,9 @@ def skew_symmetric_cross(a):
     '''
     assert len(a) == 3, "a must be in R3"
     skew_symm = np.array([
-        [0.,     -a[2], +a[1]], # noqa
-        [+a[2],     0., -a[0]], # noqa
-        [-a[1],  +a[0],    0.], # noqa
+        [+0.00, -a[2], +a[1]],
+        [+a[2], +0.00, -a[0]],
+        [-a[1], +a[0], +0.00],
     ], dtype=np.float32)
     return skew_symm
 

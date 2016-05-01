@@ -48,8 +48,10 @@ class TestROSTools(unittest.TestCase):
             torque = np.random.random(3) * 10
         wrench_msg = make_wrench_stamped(force, torque, frame='/enu')
 
-        msg_force = rosmsg_to_numpy(wrench_msg.wrench.force)
-        msg_torque = rosmsg_to_numpy(wrench_msg.wrench.torque)
+        msg_force = rosmsg_to_numpy(wrench_msg.wrench.force)  # noqa
+        msg_torque = rosmsg_to_numpy(wrench_msg.wrench.torque)  # noqa
+        self.assertIsNotNone(msg_force)
+        self.assertIsnotNone(msg_torque)
 
     def test_make_image_msg(self):
         '''Test that make ros image message doesn't fail'''
@@ -67,8 +69,6 @@ class TestROSTools(unittest.TestCase):
 
     def test_thread_lock(self):
         '''Test that the thread lock decorator correctly locks, in the correct order'''
-        ran = False
-
         class FakeLock(object):
             def __init__(self):
                 self.entry = False
@@ -81,6 +81,7 @@ class TestROSTools(unittest.TestCase):
                 self.exit = True
 
         fake_lock = FakeLock()
+
         @thread_lock(fake_lock)
         def lock_test(a):
             return (fake_lock.entry is True) and (fake_lock.exit is False)
@@ -114,10 +115,12 @@ class TestROSTools(unittest.TestCase):
             p_rotated = R.dot(p)
 
             # Test that the matrix actually aligns p with q
-            np.testing.assert_allclose([0.0, 0.0, 0.0], np.cross(p_rotated, q), atol=1e-5,
-                                       err_msg="The generated rotation matrix did not align the input vectors, {} to {}".format(
-                                       p, q)
-                                      )
+            np.testing.assert_allclose(
+                [0.0, 0.0, 0.0], np.cross(p_rotated, q), atol=1e-5,
+                err_msg="The generated rotation matrix did not align the input vectors, {} to {}".format(
+                    p, q
+                )
+            )
             self.assertGreater(np.dot(p_rotated, q), 0.0, msg="The rotation did wacky inversion")
 
     def test_normalize_vector(self):
