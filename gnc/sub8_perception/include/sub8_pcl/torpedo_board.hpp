@@ -1,11 +1,12 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <utility>
+#include <utility>  // std::pair
 #include <iostream>
 #include <algorithm>
 #include <stdexcept>
-#include <thread>
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
 
 #include <opencv2/opencv.hpp>
 #include <Eigen/Core>
@@ -22,12 +23,16 @@
 #include <sub8_pcl/pcl_tools.hpp>
 #include <sub8_pcl/cv_tools.hpp>
 #include <sub8_pcl/torpedo_board.hpp>
-#include <sub8_msgs/VisionRequest.h>
 #include <sub8_perception/TorpBoardPoseRequest.h>
 #include <sub8_perception/TBDetectionSwitch.h>
 
-#pragma message "__cplusplus = " __cplusplus
-
+/*
+  Warning:
+  This class cannot be copy constructed. Ex. the following will not compile:
+    Sub8TorpedoBoardDetector tb_detector = Sub8TorpedoBoardDetector();
+  Do this instead:
+    Sub8TorpedoBoardDetector tb_detector();
+*/
 class Sub8TorpedoBoardDetector {
 
 public:
@@ -35,7 +40,8 @@ public:
                            std::string l_img_topic = "",
                            std::string r_img_topic = "",
                            std::string srv_name = "",
-                           std::string viz_topic = "");
+                           std::string viz_topic = "",
+                           std::string dbg_img_topic = "");
   ~Sub8TorpedoBoardDetector();
 
   // Public Variables
@@ -59,7 +65,7 @@ private:
   void determine_torpedo_board_position();
   void segment_board(const cv::Mat &src, cv::Mat &dest, cv::Mat &dbg_img,
                      bool draw_dbg_img = false);
-  bool find_board_corners(const cv::Mat &segmented_board, sub::Contour &corners,
+  bool find_board_corners(const cv::Mat &segmented_board, std::vector<cv::Point> &corners,
                           bool draw_dbg_left = true);
 
   // ROS
@@ -74,6 +80,9 @@ private:
   // Torpedo Board detection will be attempted when true
   bool active;
 
+  // To prevent invalid img pointers from being passed to toCvCopy (segfault)
+  boost::mutex left_mtx, right_mtx;
+
 // Frames will be considered synchronized if their stamp difference is less than
 // this (in seconds)
 #if __cplusplus > 199711L
@@ -83,7 +92,7 @@ private:
 #endif
 
   // Goes into sequential id for pos_est srv request
-  long long int run_id = 0;
+  long long int run_id;
 
   // RVIZ
   sub::RvizVisualizer rviz;
