@@ -23,13 +23,13 @@ class PipeFinder:
         self.occ_grid = MarkerOccGrid(self.image_sub, grid_res=.05, grid_width=500, grid_height=500,
                                       grid_starting_pose=Pose2D(x=250, y=250, theta=0))
 
-        self.pose_service = rospy.Service("vision/channel_marker/2D", VisionRequest2D, self.request_pipe)
-
         self.range = sub8_ros_tools.get_parameter_range('/color/channel_guide')
         self.channel_width = sub8_ros_tools.wait_for_param('/vision/channel_width')
 
+        self.pose_service = rospy.Service("vision/channel_marker/2D", VisionRequest2D, self.request_pipe)
+
         # Occasional status publisher
-        self.timer = rospy.Timer(rospy.Duration(.1), self.publish_target_info)
+        self.timer = rospy.Timer(rospy.Duration(.5), self.publish_target_info)
 
     def publish_target_info(self, *args):
         if self.last_image is None:
@@ -54,10 +54,6 @@ class PipeFinder:
 
         a = np.array(self.occ_grid.cam.project3dToPixel([0.0, self.channel_width, height]))
         b = self.occ_grid.cam.project3dToPixel([0.0, 0.0, height])
-        try:
-            int(np.linalg.norm(a - b) / 2.0)
-        except:
-            return 0
 
         return int(np.linalg.norm(a - b) / 2.0)
 

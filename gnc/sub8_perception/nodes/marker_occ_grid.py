@@ -9,7 +9,7 @@ from nav_msgs.msg import OccupancyGrid, MapMetaData
 from sub8_msgs.srv import VisionRequest2D, VisionRequest2DResponse, SearchPose
 from image_geometry import PinholeCameraModel
 from sub8_ros_tools import threading_helpers, msg_helpers
-from std_srvs.srv import Empty
+from std_srvs.srv import Empty, EmptyResponse
 
 import cv2
 import numpy as np
@@ -116,7 +116,7 @@ class OccGridUtils(object):
         self.occ_grid = np.zeros((self.meta_data.height, self.meta_data.width)) - 1
         self.searched = np.zeros((self.meta_data.height, self.meta_data.width))
         self.markers = np.zeros((self.meta_data.height, self.meta_data.width))
-        return
+        return EmptyResponse()
 
 
 class Searcher():
@@ -295,9 +295,7 @@ class MarkerOccGrid(OccGridUtils):
         x_y_position = trans[:2]
         self.tf_listener.waitForTransform("/ground", "/downward", timestamp, rospy.Duration(1.0))
         trans, _ = self.tf_listener.lookupTransform("/ground", "/downward", timestamp)
-        height = trans[2]
-
-        #self.correct_height(height, timestamp)
+        height = np.nan_to_num(trans[2])
 
         return x_y_position, height
 
