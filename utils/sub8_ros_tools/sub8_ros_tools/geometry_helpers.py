@@ -1,5 +1,20 @@
 from __future__ import division
 import numpy as np
+import tf
+
+
+def rotate_vect_by_quat(v, q):
+    '''
+    Rotate a vector by a quaterion.
+    v' = q*vq
+
+    q should be [x,y,z,w] (standard ros convention)
+    '''
+    cq = np.array([-q[0], -q[1], -q[2], q[3]])
+    cq_v = tf.transformations.quaternion_multiply(cq, v)
+    v = tf.transformations.quaternion_multiply(cq_v, q)
+    v[1:] *= -1  # Only seemed to work when I flipped this around, is there a problem with the math here?
+    return np.array(v)[:3]
 
 
 def make_rotation(vector_a, vector_b):
