@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+
 project(sub8_alarm)
 
 find_package(catkin REQUIRED
@@ -39,6 +39,8 @@ add_dependencies(
   sub8_msgs_generate_messages_cpp
   ${catkin_EXPORTED_TARGETS}
 )
+
+set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11")
 
 # Add folders to be run by python nosetests
 if(CATKIN_ENABLE_TESTING)

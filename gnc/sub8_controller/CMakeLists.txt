@@ -3,17 +3,6 @@ project(sub8_controller)
 
 # Require C++11
 # [1] http://answers.ros.org/question/152276/is-there-a-way-to-enable-c11-support-for-catkin-packages/
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-if(COMPILER_SUPPORTS_CXX11)
-    set(CMAKE_CXX_FLAGS "-std=c++11")
-elseif(COMPILER_SUPPORTS_CXX0X)
-    set(CMAKE_CXX_FLAGS "-std=c++0x")
-else()
-    message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
-endif()
-add_definitions ("-Wall")
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -44,6 +33,9 @@ include_directories(
 
 add_executable(pd_controller nodes/pd_controller.cc)
 target_link_libraries(pd_controller ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+set_target_properties(pd_controller PROPERTIES COMPILE_FLAGS "-std=c++11")
+
 
 add_dependencies(pd_controller
     sub8_msgs_generate_messages_cpp
