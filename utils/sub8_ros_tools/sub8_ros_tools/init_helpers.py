@@ -34,9 +34,6 @@ def wait_for_subscriber(node_name, topic, timeout=5.0):
     '''
     end_time = time.time() + timeout
 
-    resolved_topic = rospy.resolve_name(topic)
-    resolved_node = rospy.resolve_name(node_name)
-
     # Wait for time-out or ros-shutdown
     while (time.time() < end_time) and (not rospy.is_shutdown()):
         subscribed = rostest.is_subscriber(

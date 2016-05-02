@@ -30,6 +30,7 @@ class ProjectionParticleFilter(object):
         Implementation Notes:
             - The measurement pdf I am using is not z ~ N(K * x | sig**2, mu)
                 - It is instead the p(z | x) + p(z | total randomness)
+                - This makes us much much more resilient to random error
 
         TODO:
             - If probabilities fall below something reasonable, more frequently do reset_to_ray

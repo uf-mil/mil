@@ -26,6 +26,7 @@ class TestThrusterComm(unittest.TestCase):
         '''Test that the thruster factory returns a proper simulated FakeThrusterPort'''
         # This should succeed
         thrust_comm = thruster_comm_factory(self.port_info, fake=True)
+        self.assertIsNotNone(thrust_comm)
 
     def test_fake_thruster_status(self):
         '''Test that the fake thruster status published is what we expect'''
@@ -38,6 +39,7 @@ class TestThrusterComm(unittest.TestCase):
         # This should fail
         with self.assertRaises(IOError):
             thrust_comm = thruster_comm_factory(self.port_info, fake=False)
+            self.assertIsNotNone(thrust_comm)
 
 
 if __name__ == '__main__':

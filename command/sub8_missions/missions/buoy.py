@@ -17,7 +17,7 @@ def align(sub):
 
 @util.cancellableInlineCallbacks
 def approach(sub):
-    response = yield sub.buoy.get_2d()
+    response = sub.buoy.get_2d()
     if response.found:
         align(sub)
         yield sub.move.forward(0.4).go(speed=0.1)
@@ -54,6 +54,7 @@ def run(sub):
     if not response.found:
         print 'failed to discover buoy location'
         return
+
     back = sub.move.forward(0.1)
     transform = yield sub._tf_listener.get_transform(
         '/map',
@@ -63,7 +64,7 @@ def run(sub):
     tft = tf.Transform.from_Pose_message(response.pose.pose)
     full_transform = transform * tft
     print full_transform._p
-    #yield sub.move.set_position(full_transform._p).go()
+    # yield sub.move.set_position(full_transform._p).go()
     print 'setting height'
     if full_transform._p[2] > -0.2:
         print 'Detected buoy above the water'
@@ -75,17 +76,16 @@ def run(sub):
     yield sub.move.look_at(full_transform._p).go(speed=0.1)
     print 'position'
     yield util.wall_sleep(0.2)
-    #go = clip_norm(transform._p, 0.01, )
+    # go = clip_norm(transform._p, 0.01, )
     dist = response.pose.pose.position.z
     print 'd', dist
     if dist > 1.0:
         print 'moving forward'
         yield sub.move.forward(dist - 1.0).go(speed=0.2)
 
-    #yield sub.move.forward(0.2).go(speed=0.1)
-    #yield util.wall_sleep(0.1)
+    # yield sub.move.forward(0.2).go(speed=0.1)
+    # yield util.wall_sleep(0.1)
     yield back.go(speed=0.1)
-    #yield sub.move.forward(
-
+    # yield sub.move.forward(
 
     print "Bumped the buoy"
