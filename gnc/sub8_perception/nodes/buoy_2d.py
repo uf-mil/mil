@@ -4,10 +4,11 @@ import numpy as np
 import sys
 import rospy
 import image_geometry
-from sub8_vision_tools import threshold_tools, rviz
+import sub8_ros_tools
+import tf
+from sub8_vision_tools import threshold_tools, rviz, ProjectionParticleFilter
 from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D
 from std_msgs.msg import Header
-import sub8_ros_tools
 from geometry_msgs.msg import Pose2D
 
 
@@ -15,11 +16,16 @@ class BuoyFinder:
     _min_size = 50
 
     def __init__(self):
+        self.transformer = tf.TransformListener()
+        rospy.sleep(1.0)
+        self.done_once = False
+
         self.last_image = None
         self.last_draw_image = None
         self.last_poop_image = None
         self.last_image_time = None
         self.camera_model = None
+        self.last_t = None
 
         self.rviz = rviz.RvizVisualizer()
 
@@ -30,13 +36,16 @@ class BuoyFinder:
         # self.poop_pub = sub8_ros_tools.Image_Publisher("/vision/channel_marker/thresh")
 
         # Occasional status publisher
-        self.timer = rospy.Timer(rospy.Duration(0.1), self.publish_target_info)
+        self.timer = rospy.Timer(rospy.Duration(1.0), self.publish_target_info)
 
         self.buoys = {
             'green': '/color/buoy/green',
             'red': '/color/buoy/red',
             'yellow': '/color/buoy/yellow',
         }
+
+        self.ppf = None
+
         self.draw_colors = {
             'green': (0.0, 1.0, 0.0, 1.0),
             'red': (1.0, 0.0, 0.0, 1.0),
@@ -85,8 +94,10 @@ class BuoyFinder:
         if self.camera_model is None:
             if self.image_sub.camera_info is None:
                 return
+
             self.camera_model = image_geometry.PinholeCameraModel()
             self.camera_model.fromCameraInfo(self.image_sub.camera_info)
+            self.ppf = ProjectionParticleFilter(self.camera_model, max_Z=15, salting=0.05, jitter_prob=0)
 
     def ncc(self, image, mean_thresh, scale=15):
         '''Compute normalized cross correlation w.r.t a shadowed pillbox fcn
@@ -158,6 +169,28 @@ class BuoyFinder:
 
         if self.camera_model is not None:
             self.rviz.draw_ray_3d(tuple_center, self.camera_model, self.draw_colors[buoy_type])
+
+            if buoy_type == 'red' and not self.done_once:
+                # self.done_once = True
+
+                (t, rot_q) = self.transformer.lookupTransform('/map', '/stereo_front/right', self.last_image_time)
+                trans = np.array(t)
+
+                if (self.last_t is None) or (np.linalg.norm(trans - self.last_t) > 0.3):
+                    self.last_t = trans
+                    self.ppf.set_pose(trans, sub8_ros_tools.geometry_helpers.quaternion_matrix(rot_q))
+                    est, cov = self.ppf.observe(true_center)
+                    self.rviz.draw_sphere(est, color=(0.9, 0.1, 0.0, 1.0), scaling=tuple(cov), frame='/map')
+                    k = 6
+                    for particle in self.ppf.particles[:, ::50].transpose():
+                        k += 1
+                        self.rviz.draw_sphere(
+                            particle,
+                            color=(0.8, 0.2, 0.0, 0.7),
+                            scaling=(0.05, 0.05, 0.05),
+                            _id=k,
+                            frame='/map'
+                        )
 
         return tuple_center, rad
 
