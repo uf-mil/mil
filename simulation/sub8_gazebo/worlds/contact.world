@@ -1,6 +1,13 @@
 <?xml version="1.0"?>
 <sdf version="1.5">
+
   <world name="default">
+<!--
+    <physics type="ode">
+      <real_time_factor>5</real_time_factor>
+      <real_time_update_rate>0</real_time_update_rate>
+    </physics> -->
+
 
     <light name="illum" type="directional">
       <pose>-4 18 9 0 -.75 0</pose>
@@ -18,7 +25,7 @@
     </include>
 
     <!-- Never delete this -->
-    <model name="physics_engine">
+    <!-- <model name="physics_engine">
       <static>false</static>
       <link name="physics_engine">
         <pose>0 10 1 0 0 0</pose>
@@ -37,7 +44,7 @@
           </geometry>
         </collision>
       </link>
-    </model>
+    </model> -->
 
     <model name="water">
       <static>true</static>
@@ -63,12 +70,12 @@
 
     <!-- Not sure how to get correct scaling here with Blender. Things are pretty much correct though.
          Best option would be to remake transdec model in Solidworks with proper measurements. -->
-    <model name="transdec">
+<!--     <model name="transdec">
       <pose>0 0 .5  0 0 0</pose>
       <static>true</static>
       <link name="ground">
         <visual name="visual">
-          <geometry> 
+          <geometry>
             <mesh>
               <uri>file://transdec/transdec.dae</uri>
               <scale>0.5 0.5 0.5</scale>
@@ -84,14 +91,18 @@
           </geometry>
         </collision>
       </link>
-    </model>
+    </model> -->
+    <include>
+      <pose>0 0 -5  0 0 0</pose>
+      <uri>model://ground_plane</uri>
+    </include>
 
     <model name="sky_box">
       <pose>0 0 0  0 0 0</pose>
       <static>true</static>
       <link name="sky">
         <visual name="visual">
-          <geometry> 
+          <geometry>
               <mesh>
                 <uri>file://sky_box/sky.dae</uri>
               </mesh>
