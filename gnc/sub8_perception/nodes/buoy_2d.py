@@ -33,8 +33,6 @@ class BuoyFinder:
         self.image_sub = sub8_ros_tools.Image_Subscriber('/stereo/right/image_rect_color', self.image_cb)
         self.image_pub = sub8_ros_tools.Image_Publisher('/vision/buoy_2d/target_info')
 
-        # self.poop_pub = sub8_ros_tools.Image_Publisher("/vision/channel_marker/thresh")
-
         # Occasional status publisher
         self.timer = rospy.Timer(rospy.Duration(1.0), self.publish_target_info)
 
