@@ -164,6 +164,16 @@
           <frameName>dvl</frameName>
         </plugin>
       </sensor>
+      <sensor name="contact" type="contact">
+        <contact>
+          <collision>box_collision</collision>
+        </contact>
+        <update_rate>50</update_rate>
+        <plugin name='gazebo_ros_bumper_controller' filename="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <bumperTopicName>contact_bumper</bumperTopicName>
+        </plugin>
+      </sensor>
     </link>
 
     <plugin name="sub8_buoyancy" filename="libsub8_buoyancy.so">

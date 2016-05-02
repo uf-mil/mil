@@ -9,6 +9,7 @@ from nav_msgs.msg import OccupancyGrid, MapMetaData
 from sub8_msgs.srv import VisionRequest2D, VisionRequest2DResponse, SearchPose
 from image_geometry import PinholeCameraModel
 from sub8_ros_tools import threading_helpers, msg_helpers
+from std_srvs.srv import Empty, EmptyResponse
 
 import cv2
 import numpy as np
@@ -45,6 +46,8 @@ class OccGridUtils(object):
         self.meta_data.origin = Pose(position=Point(x=-starting_pose.x * res, y=-starting_pose.y * res, z=0),
                                      orientation=Quaternion(*tf.transformations.quaternion_from_euler(0, 0, starting_pose.theta)))
 
+        s = rospy.Service('/reset_occ_grid', Empty, self.reset_grid)
+
         # Create array of -1's of the correct size
         self.occ_grid = np.zeros((self.meta_data.height, self.meta_data.width)) - 1
         self.searched = np.zeros((self.meta_data.height, self.meta_data.width))
@@ -61,7 +64,10 @@ class OccGridUtils(object):
         '''
         center_offset = np.array(center) / self.meta_data.resolution - np.array([self.mid_x, self.mid_y])
 
-        radius = int(radius / self.meta_data.resolution)
+        try:
+            radius = int(radius / self.meta_data.resolution)
+        except:
+            radius = 0
 
         cv2.circle(self.searched, tuple(center_offset.astype(np.int32)), radius, 1, -1)
 
@@ -101,6 +107,17 @@ class OccGridUtils(object):
         occ_msg.data = np.clip(occ_grid.flatten(), -1, 100)
         self.occ_grid_pub.publish(occ_msg)
 
+    def reset_grid(self, srv):
+        '''
+        Resets occupancy grid. I'm using a random service since I don't really care about getting or returning information here.
+        '''
+        # Create array of -1's of the correct size
+        print "Resetting Grid."
+        self.occ_grid = np.zeros((self.meta_data.height, self.meta_data.width)) - 1
+        self.searched = np.zeros((self.meta_data.height, self.meta_data.width))
+        self.markers = np.zeros((self.meta_data.height, self.meta_data.width))
+        return EmptyResponse()
+
 
 class Searcher():
     '''
@@ -126,25 +143,23 @@ class Searcher():
         if srv.reset_search:
             self.current_search = 0
             self.poly_generator = self.polygon_generator()
+            return [0, False, srv.intial_position]
 
         # We search at 1.5 * r so that there is some overlay in the search feilds.
-        coor = np.append(next(self.poly_generator) * srv.search_radius * 1.75, 0) \
-            + msg_helpers.pose_to_numpy(srv.intial_position)[0]
+        np_pose = msg_helpers.pose_to_numpy(srv.intial_position)
+        rot_mat = make_2D_rotation(tf.transformations.euler_from_quaternion(np_pose[1])[2])
+        coor = np.append(np.dot(rot_mat, next(self.poly_generator)) * srv.search_radius * 1.75, 0) \
+            + np_pose[0]
 
-        while True:
-            if self.current_search > self.max_searches:
-                rospy.logwarn("Searched {} times. Marker not found.".format(self.max_searches))
-                return [0, False, srv.intial_position]
+        # if self.current_search > self.max_searches:
+        #     rospy.logwarn("Searched {} times. Marker not found.".format(self.max_searches))
+        #     return [0, False, srv.intial_position]
 
-            self.current_search += 1
-            rospy.loginfo("Search number: {}".format(self.current_search))
-            # Should be variable based on height maybe?
-            if self.check_searched(coor[:2], srv.search_radius) < .5:
-                pose = msg_helpers.numpy_quat_pair_to_pose(coor, np.array([0, 0, 0, 1]))
-                return [self.check_searched(coor[:2], srv.search_radius), True, pose]
-            else:
-                coor = np.append(next(self.poly_generator) * srv.search_radius * 1.75, 0) \
-                    + msg_helpers.pose_to_numpy(srv.intial_position)[0]
+        self.current_search += 1
+        rospy.loginfo("Search number: {}".format(self.current_search))
+        # Should be variable based on height maybe?
+        pose = msg_helpers.numpy_quat_pair_to_pose(coor, np.array([0, 0, 0, 1]))
+        return [self.check_searched(coor[:2], srv.search_radius), True, pose]
 
     def check_searched(self, search_center, search_radius):
         '''
@@ -157,14 +172,19 @@ class Searcher():
         circle_mask = np.zeros(self.searched_area.shape)
         radius = int(search_radius / self.grid_res)
         cv2.circle(circle_mask, tuple(center_offset.astype(np.int32)), radius, 1, -1)
-
         masked_search = self.searched_area * circle_mask
+
+        # If there has already been a marker found on the grid in our search area go there.
         if np.max(masked_search) > 5:
-            # If there has already been a marker found on the grid in our search area go there.
+            return 0
+
+        # If the center is off of the grid, skip that spot.
+        if len(circle_mask[circle_mask > .5]) / (np.pi * radius ** 2) < .3:
             return 1
+
         return len(masked_search[masked_search > .5]) / len(circle_mask[circle_mask > .5])
 
-    def polygon_generator(self, n=6):
+    def polygon_generator(self, n=12):
         '''
         Using a generator here to allow for easy expansion in the future.
 
@@ -182,8 +202,8 @@ class Searcher():
         while True:
             point = np.dot(rot_mat, point)
 
-            if count == n:
-                point *= 2
+            if count == n - 1:
+                point[1] -= 1
                 count = 0
             else:
                 count += 1
@@ -234,7 +254,7 @@ class MarkerOccGrid(OccGridUtils):
 
         if marker[2] < self.calculate_marker_area(height) * .6:
             # If the detected region isn't big enough dont add it.
-            rospy.logwarn("Marker found but it is too small.")
+            rospy.logwarn("Marker found but it is too small, not adding marker.")
             return
 
         # Calculate position of marker accounting for camera rotation.
@@ -243,6 +263,10 @@ class MarkerOccGrid(OccGridUtils):
         cam_rotation = tf.transformations.euler_from_quaternion(rot)[2] + np.pi / 2
         dir_vector = np.dot(dir_vector, make_2D_rotation(cam_rotation))
         marker_rotation = cam_rotation + marker[1]
+
+        trans, rot = self.tf_listener.lookupTransform("/map", "/base_link", timestamp)
+        if (np.abs(np.array(rot)[:2]) > .005).any():
+            rospy.logwarn("We're at a weird angle, not adding marker.")
 
         magnitude = self.calculate_visual_radius(height, second_point=marker[0])
         local_position = dir_vector[::-1] * magnitude
@@ -271,9 +295,7 @@ class MarkerOccGrid(OccGridUtils):
         x_y_position = trans[:2]
         self.tf_listener.waitForTransform("/ground", "/downward", timestamp, rospy.Duration(1.0))
         trans, _ = self.tf_listener.lookupTransform("/ground", "/downward", timestamp)
-        height = trans[2]
-
-        #self.correct_height(height, timestamp)
+        height = np.nan_to_num(trans[2])
 
         return x_y_position, height
 

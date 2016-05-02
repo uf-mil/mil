@@ -23,13 +23,13 @@ class PipeFinder:
         self.occ_grid = MarkerOccGrid(self.image_sub, grid_res=.05, grid_width=500, grid_height=500,
                                       grid_starting_pose=Pose2D(x=250, y=250, theta=0))
 
-        self.pose_service = rospy.Service("vision/channel_marker/2D", VisionRequest2D, self.request_pipe)
-
         self.range = sub8_ros_tools.get_parameter_range('/color/channel_guide')
         self.channel_width = sub8_ros_tools.wait_for_param('/vision/channel_width')
 
+        self.pose_service = rospy.Service("vision/channel_marker/2D", VisionRequest2D, self.request_pipe)
+
         # Occasional status publisher
-        self.timer = rospy.Timer(rospy.Duration(.1), self.publish_target_info)
+        self.timer = rospy.Timer(rospy.Duration(.5), self.publish_target_info)
 
     def publish_target_info(self, *args):
         if self.last_image is None:
@@ -40,7 +40,7 @@ class PipeFinder:
         self.occ_grid.update_grid(self.last_image_timestamp)
         self.occ_grid.add_marker(markers, self.last_image_timestamp)
 
-        if self.last_draw_image is not None:
+        if self.last_draw_image is not None and (markers[0] is not None):
             self.image_pub.publish(self.last_draw_image)
 
     def image_cb(self, image):
@@ -54,6 +54,7 @@ class PipeFinder:
 
         a = np.array(self.occ_grid.cam.project3dToPixel([0.0, self.channel_width, height]))
         b = self.occ_grid.cam.project3dToPixel([0.0, 0.0, height])
+
         return int(np.linalg.norm(a - b) / 2.0)
 
     def ncc(self, image, mean_thresh, scale=5):
@@ -79,6 +80,8 @@ class PipeFinder:
 
     def find_pipe(self, img, timestamp):
         rows, cols = img.shape[:2]
+        if rows == 0:
+            return None, None, None
 
         blur = cv2.GaussianBlur(img, (5, 5), 1000)
 
@@ -160,8 +163,8 @@ class PipeFinder:
 
         timestamp = self.last_image_timestamp
         position, orientation, _ = self.find_pipe(self.last_image, timestamp)
-
         found = (position is not None)
+
         if not found:
             resp = VisionRequest2DResponse(
                 header=Header(
