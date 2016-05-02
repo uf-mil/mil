@@ -8,7 +8,7 @@ import txros
 from sub8 import tx_sub
 
 from sub8_msgs.srv import RunJob, RunJobRequest
-from nav_msgs.msg import Odometry
+from nav_msgs.msg import Odometry, OccupancyGrid
 from geometry_msgs.msg import Twist, PoseStamped
 from sensor_msgs.msg import Image
 from gazebo_msgs.srv import SetModelState, SetModelStateRequest
@@ -67,10 +67,12 @@ class BagManager(object):
         #self.alarms_sub = yield self.nh.subscribe('/odom', Odometry)
         self.c3_goal = yield self.nh.subscribe('/c3_trajectory_generator/waypoint', PoseStamped)
         self.target_info = yield self.nh.subscribe('/down/left/target_info', Image)
+        self.grid = yield self.nh.subscribe('/search_grid', OccupancyGrid)
 
         self.cache_dict = {'/odom': self.odom_sub,
                            '/c3_trajectory_generator/waypoint': self.c3_goal,
-                           '/down/left/target_info': self.target_info}
+                           '/down/left/target_info': self.target_info,
+                           '/search_grid': self.grid}
 
         # Used to avoid adding copies of the same message.
         last_timestamps = dict(self.cache_dict)
@@ -86,14 +88,18 @@ class BagManager(object):
                 msg = self.cache_dict[key].get_last_message()
                 msg_time = yield self.cache_dict[key].get_last_message_time()
 
-                if msg_time == last_timestamps[key]:
-                    # print "Matching {}".format(key)
-                    # print
-                    # print
-                    continue
-                last_timestamps[key] = msg_time
-
                 if msg is not None:
+                    if msg_time < self.nh.get_time() - rospy.Duration(.5):
+                        # If the message is too old, forget about it.
+                        continue
+
+                    if msg_time == last_timestamps[key]:
+                        # print "Matching {}".format(key)
+                        # print
+                        # print
+                        continue
+                    last_timestamps[key] = msg_time
+
                     # print "Adding {}".format(key)
                     # print msg_time
                     # print last_timestamps[key]
@@ -112,7 +118,7 @@ class BagManager(object):
         Save cached bags and save the next 'buffer_time' seconds.
         '''
         self.dumping = True
-        bag = rosbag.Bag(DIAG_OUT_URI + str(int(time.time())) + '.bag', 'w')
+        bag = rosbag.Bag(DIAG_OUT_URI + 'bags/' + str(int(time.time())) + '.bag', 'w')
 
         gen = self.read_from_cache()
 
@@ -205,6 +211,7 @@ class JobManager(object):
                 with open(DIAG_OUT_URI + 'diag.txt', 'w') as f:
                     f.write("Response: {0} occured at {1} (Duration: {2}).\n".format(response.success, int(time.time()), elapsed))
                     f.write(response.message + '\n')
+                    f.write("{0} Successes, {1} Fails, {2} Total \n.".format(self.successes, self.fails, current_loop))
                     f.write("-----------------------------------------------------------")
                     f.write('\n')
             print

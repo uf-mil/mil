@@ -3,6 +3,7 @@ from __future__ import division
 
 import rospy
 import txros
+from std_srvs.srv import Empty, EmptyRequest
 from geometry_msgs.msg import Pose, Point, Quaternion
 from nav_msgs.msg import Odometry
 from sub8_msgs.srv import RunJob, RunJobResponse, SearchPose, SearchPoseRequest
@@ -21,7 +22,7 @@ import time
 def run_mission(srv, world_position_actual, sub, nh):
     print "Running Mission"
 
-    reset_grid = yield nh.get_service_client('/reset_occ_grid', SearchPose)
+    reset_grid = yield nh.get_service_client('/reset_occ_grid', Empty)
 
     # Set sub position
     sub_point = np.random.uniform(-10, 10, size=3)
@@ -32,7 +33,7 @@ def run_mission(srv, world_position_actual, sub, nh):
     yield job_runner.JobManager.set_model_position(nh, sub_pose)
 
     yield nh.sleep(.2)
-    yield reset_grid(SearchPoseRequest())
+    yield reset_grid(EmptyRequest())
     yield nh.sleep(1)
 
     # Set marker position

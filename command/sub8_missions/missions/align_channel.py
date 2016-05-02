@@ -16,7 +16,7 @@ def run(sub_singleton):
     global marker_found
 
     print "Searching"
-    nh = yield txros.NodeHandle.from_argv('marker_alignment')
+    nh = sub_singleton._node_handle
     next_pose = yield nh.get_service_client('/next_search_pose', SearchPose)
     cam = PinholeCameraModel()
 
@@ -55,7 +55,6 @@ def run(sub_singleton):
         print "Searcher arrived"
 
     yield goer
-    nh.shutdown()
 
 
 @util.cancellableInlineCallbacks
