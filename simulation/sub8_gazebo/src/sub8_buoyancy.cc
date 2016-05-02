@@ -158,8 +158,8 @@ void BuoyancyPlugin::OnUpdate() {
     // link->AddTorque(angularResistance, volumeProperties.cov);
 
     if (linkFrame.pos.z < 0.0) {
-      // link->AddLinkForce(buoyancyLinkFrame, volumeProperties.cov);
-      link->AddForceAtRelativePosition(buoyancyLinkFrame, volumeProperties.cov);
+      link->AddLinkForce(buoyancyLinkFrame, volumeProperties.cov);
+      // link->AddForceAtRelativePosition(buoyancyLinkFrame, volumeProperties.cov);
 
     }
   }

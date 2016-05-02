@@ -12,7 +12,7 @@ while True:
     if option == 1:
         valveNumber = input("Enter valve number to open and close (1-12): ")
         valveDelay = input("Enter delay between valve open and close (seconds): ")
-        if valveNumber >= 1 and valveNumber <=12:
+        if valveNumber >= 1 and valveNumber <= 12:
             valveCommand = int('20', 16) + valveNumber
             valveChecksum = valveCommand ^ int('ff', 16)
             ser.write(bytearray([valveCommand, valveChecksum]))
@@ -32,7 +32,7 @@ while True:
                 print "Unknown reply"
     elif option == 2:
         valveNumber = input("Enter valve number to open (1-12): ")
-        if valveNumber >= 1 and valveNumber <=12:
+        if valveNumber >= 1 and valveNumber <= 12:
             valveCommand = int('20', 16) + valveNumber
             valveChecksum = valveCommand ^ int('ff', 16)
             ser.write(bytearray([valveCommand, valveChecksum]))
@@ -45,7 +45,7 @@ while True:
             print "Valve number must be between 1 and 12)"
     elif option == 3:
         valveNumber = input("Enter valve number to close (1-12): ")
-        if valveNumber >= 1 and valveNumber <=12:
+        if valveNumber >= 1 and valveNumber <= 12:
             valveCommand = int('30', 16) + valveNumber
             valveChecksum = valveCommand ^ int('ff', 16)
             ser.write(bytearray([valveCommand, valveChecksum]))

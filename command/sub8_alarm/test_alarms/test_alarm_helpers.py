@@ -9,6 +9,7 @@ class TestAlarmSystem(unittest.TestCase):
     def test_instantiate_alarm_broadcaster(self):
         '''Ensure that the alarm broadcaster instantiates without errors'''
         broadcaster = AlarmBroadcaster()
+        self.assertIsNotNone(broadcaster)
 
     def test_add_alarm(self):
         '''Ensure that adding an alarm succeeds without errors'''
@@ -20,6 +21,7 @@ class TestAlarmSystem(unittest.TestCase):
             problem_description='This is a problem',
             parameters={"concern": ["a", "b", "c"]}
         )
+        self.assertIsNotNone(alarm)
 
 
 if __name__ == '__main__':

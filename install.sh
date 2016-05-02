@@ -53,7 +53,7 @@ sudo apt-get update -qq
 
 ####### Install ROS
 instlog "Looks like ROS is not installed, let's take care of that"
-sudo apt-get install -qq ros-indigo-desktop-full python-catkin-pkg python-rosdep
+sudo apt-get install -qq ros-indigo-desktop python-catkin-pkg python-rosdep
 sudo apt-get remove -qq ros-indigo-gazebo*
 
 source /opt/ros/indigo/setup.bash

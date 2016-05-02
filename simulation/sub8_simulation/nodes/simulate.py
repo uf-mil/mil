@@ -35,10 +35,10 @@ class SimWorld(rendering.Canvas):
             self.time_acceleration, show_window=self.draw, physics_dt=self.physics_dt)
 
         self.view = np.array([
-            [1.,     0.,      0., 0.],  # noqa
-            [0.,    0.5,  -0.866, 0.],  # noqa
-            [0.,  0.866,     0.5, 0.],  # noqa
-            [0., -1.685, -36.931, 1.],  # noqa
+            [1., +0.000, +0.0000, +0.0],
+            [0., +0.500, -0.8660, +0.0],
+            [0., +0.866, +0.5000, +0.0],
+            [0., -1.685, -36.931, +1.0],
         ])
 
     def add_sphere(self, position, density, radius, color):
