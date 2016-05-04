@@ -9,7 +9,7 @@ from nav_msgs.msg import Odometry
 from sub8_msgs.srv import RunJob, RunJobResponse, SearchPose, SearchPoseRequest
 import tf
 from sub8_ros_tools import msg_helpers, geometry_helpers
-from nodes import job_runner
+import job_runner
 import missions
 from sub8 import tx_sub
 

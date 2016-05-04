@@ -21,6 +21,7 @@ import signal
 import numpy as np
 import time
 import os
+import yaml
 
 rospack = rospkg.RosPack()
 DIAG_OUT_URI = os.path.join(rospack.get_path('sub8_gazebo'), 'diagnostics/')
@@ -39,15 +40,12 @@ FUTURE:
 
 
 class BagManager(object):
-    def __init__(self, nh, time_step=.5, buffer_time=30):
+    def __init__(self, nh):
         self.nh = nh
 
-        self.time_step = time_step
-        self.buffer_time = buffer_time
-        self.buffer_array_size = int(buffer_time / time_step)
-        #self.bag_name = DIAG_OUT_URI + bag_name
+        self.make_dict()
+        self.buffer_array_size = int(self.pre_cache_time / self.time_step)
 
-        self.cache_dict = {}
         self.cache_index = 0
         self.cache = [None] * self.buffer_array_size
         self.dumping = False
@@ -58,21 +56,8 @@ class BagManager(object):
         Caches bags using big dicts.
         {topic_name_1: subscriber_1, topic_name_2: subscriber_2, ...}
         Every 'time_step' seconds it will save all of the subscribers' most recent message. This will continue and will fill
-            a cache array that will store 'buffer_time' seconds worth of messages before erasing the oldest messages.
-
-        TODO: Make sub list come from a YAML using eval() to define message types.
+            a cache array that will store 'pre_cache_time' seconds worth of messages before erasing the oldest messages.
         '''
-        # Subscribers here
-        self.odom_sub = yield self.nh.subscribe('/odom', Odometry)
-        #self.alarms_sub = yield self.nh.subscribe('/odom', Odometry)
-        self.c3_goal = yield self.nh.subscribe('/c3_trajectory_generator/waypoint', PoseStamped)
-        self.target_info = yield self.nh.subscribe('/down/left/target_info', Image)
-        self.grid = yield self.nh.subscribe('/search_grid', OccupancyGrid)
-
-        self.cache_dict = {'/odom': self.odom_sub,
-                           '/c3_trajectory_generator/waypoint': self.c3_goal,
-                           '/down/left/target_info': self.target_info,
-                           '/search_grid': self.grid}
 
         # Used to avoid adding copies of the same message.
         last_timestamps = dict(self.cache_dict)
@@ -89,22 +74,13 @@ class BagManager(object):
                 msg_time = yield self.cache_dict[key].get_last_message_time()
 
                 if msg is not None:
-                    if msg_time < self.nh.get_time() - rospy.Duration(.5):
-                        # If the message is too old, forget about it.
+                    if msg_time < self.nh.get_time() - rospy.Duration(30):
                         continue
 
                     if msg_time == last_timestamps[key]:
-                        # print "Matching {}".format(key)
-                        # print
-                        # print
                         continue
                     last_timestamps[key] = msg_time
 
-                    # print "Adding {}".format(key)
-                    # print msg_time
-                    # print last_timestamps[key]
-                    # print
-                    # print
                     msgs.append([key, (yield msg), (yield msg_time)])
                 else:
                     print "There's a problem recording {0}".format(key)
@@ -113,9 +89,36 @@ class BagManager(object):
         self.dump()
 
     @txros.util.cancellableInlineCallbacks
-    def dump(self, post_record_time=1):
+    def make_dict(self):
         '''
-        Save cached bags and save the next 'buffer_time' seconds.
+        Generate caching dictionary from a yaml file.
+        '''
+        with open(DIAG_OUT_URI + 'messages_to_bag.yaml', 'r') as f:
+            messages_to_bag = yaml.load(f)
+
+        # Set bagging parameters
+        self.time_step = messages_to_bag['PARAMS']['time_step']
+        self.pre_cache_time = messages_to_bag['PARAMS']['pre_cache_time']
+        self.post_cache_time = messages_to_bag['PARAMS']['post_cache_time']
+
+        self.cache_dict = {}
+        msgs = messages_to_bag['MESSAGES']
+        for _, msg in msgs.items():
+            # Get message information
+            msg_topic = msg['message_topic']
+            msg_type = msg['message_type']
+            msg_name = msg['message_name']
+
+            # Import the message
+            exec("from {0}.msg import {1}".format(msg_type, msg_name))
+
+            # Create subscriber and add to dictionary
+            self.cache_dict[msg_topic] = yield self.nh.subscribe(msg_topic, eval(msg_name))
+
+    @txros.util.cancellableInlineCallbacks
+    def dump(self):
+        '''
+        Save cached bags and save the next 'post_cache_time' seconds.
         '''
         self.dumping = True
         bag = rosbag.Bag(DIAG_OUT_URI + 'bags/' + str(int(time.time())) + '.bag', 'w')
@@ -123,12 +126,22 @@ class BagManager(object):
         gen = self.read_from_cache()
 
         print "Saving post-fail data. Do not exit."
-        for i in range(int(post_record_time / self.time_step)):
+        for i in range(int(self.post_cache_time / self.time_step)):
             for key in self.cache_dict:
                 msg = self.cache_dict[key].get_last_message()
                 msg_time = self.cache_dict[key].get_last_message_time()
                 if msg is not None:
-                    bag.write(key, (yield msg), (yield msg_time))
+                    if msg_time < self.nh.get_time() - rospy.Duration(.5):
+                        # If the message is too old, forget about it.
+                        continue
+
+                    if msg_time == last_timestamps[key]:
+                        continue
+                    last_timestamps[key] = msg_time
+
+                    msgs.append([key, (yield msg), (yield msg_time)])
+                else:
+                    print "There's a problem recording {0}".format(key)
 
             yield self.nh.sleep(self.time_step)
 
@@ -204,6 +217,7 @@ class JobManager(object):
                 with open(DIAG_OUT_URI + 'diag.txt', 'a') as f:
                     f.write("Response: {0} occured at {1} (Duration: {2}).\n".format(response.success, int(time.time()), elapsed))
                     f.write(response.message + '\n')
+                    f.write("{0} Successes, {1} Fails, {2} Total \n.".format(self.successes, self.fails, current_loop))
                     f.write("-----------------------------------------------------------")
                     f.write('\n')
             except IOError:
@@ -281,8 +295,9 @@ class JobManager(object):
 def main():
         print "Starting Job Runner."
         nh = yield txros.NodeHandle.from_argv('job_runner_controller')
-        j = JobManager(nh)
-        yield j.run_job_loop()
+        b = BagManager(nh)
+        # j = JobManager(nh)
+        # yield j.run_job_loop()
 
 if __name__ == '__main__':
     reactor.callWhenRunning(main)
