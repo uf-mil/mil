@@ -55,7 +55,7 @@ class PipeFinder:
         a = np.array(self.occ_grid.cam.project3dToPixel([0.0, self.channel_width, height]))
         b = self.occ_grid.cam.project3dToPixel([0.0, 0.0, height])
 
-        return int(np.linalg.norm(a - b) / 2.0)
+        return int(np.nan_to_num(np.linalg.norm(a - b)) / 2.0)
 
     def ncc(self, image, mean_thresh, scale=5):
         '''Compute normalized cross correlation w.r.t a shadowed pillbox fcn
