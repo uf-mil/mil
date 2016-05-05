@@ -8,7 +8,7 @@ from nav_msgs.msg import Odometry
 from sub8_msgs.srv import RunJob, RunJobResponse
 import tf
 from sub8_ros_tools import msg_helpers
-from nodes import job_runner
+import job_runner
 
 from twisted.internet import reactor, defer
 import numpy as np

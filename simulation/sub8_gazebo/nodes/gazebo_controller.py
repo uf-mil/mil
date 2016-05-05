@@ -10,6 +10,7 @@ from gazebo_msgs.msg import LinkStates, ModelState
 from sub8_msgs.srv import ResetGazebo, ResetGazeboResponse
 from uf_common.msg import Float64Stamped
 import numpy as np
+import os
 
 
 class GazeboInterface(object):
@@ -19,6 +20,8 @@ class GazeboInterface(object):
         # self.wrench_srv = rospy.ServiceProxy('/gazebo/apply_body_wrench', ApplyBodyWrench)
         # For now, let's skip the wrench
         # self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.wrench_cb)
+        self.load_pedometry()
+
         self.last_odom = None
         self.position_offset = None
         self.state_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self.state_cb)
@@ -31,7 +34,30 @@ class GazeboInterface(object):
         self.state_pub = rospy.Publisher('odom', Odometry, queue_size=1)
         self.world_state_pub = rospy.Publisher('world_odom', Odometry, queue_size=1)
 
-        rospy.Timer(rospy.Duration(0.03), self.publish_odom)
+        self.odom_freq = 0.03
+        rospy.Timer(rospy.Duration(self.odom_freq), self.publish_odom)
+        rospy.Timer(rospy.Duration(1), self.save_pedometry)
+
+    def load_pedometry(self):
+        '''
+        Pedometry store the meters that the sub has traveled.
+        '''
+        self.pedo_filename = os.path.join(os.path.dirname(__file__), 'pedometry.txt')
+        try:
+            with open(self.pedo_filename, 'r') as f:
+                self.pedometry = float(f.readlines()[0])
+        except IOError:
+            print "Pedometry file not found, creating it now."
+            with open(self.pedo_filename, 'w') as f:
+                f.write('0')
+                self.pedometry = 0
+        except IndexError:
+            self.pedometry = 0
+
+    def save_pedometry(self, *args):
+        print self.pedometry
+        with open(self.pedo_filename, 'w') as f:
+            f.write(str(self.pedometry))
 
     def send_wrench(self, wrench):
         self.wrench_srv(
@@ -104,6 +130,10 @@ class GazeboInterface(object):
                     twist=twist
                 )
             )
+
+            dist = np.linalg.norm(sub8_utils.twist_to_numpy(twist)) * self.odom_freq
+            self.pedometry += dist
+
         else:
             # fail
             return
