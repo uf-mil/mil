@@ -2,7 +2,7 @@ ROS Conventions
 ================
 
 # Timers
-Timers of any kind should **ALWAYS** use rospy or roscpp time. Any robot-facing code that uses time time make decisions should use time from Rospy or Roscpp. 
+Timers of any kind should **ALWAYS** use rospy or roscpp time. Any robot-facing code that uses time to make decisions should use time from Rospy or Roscpp. 
 
 This is so that we can use simulated time, and run the simulation *faster* than real-time. ROS-timers will automatically handle the weird time stuff, but Python's time.time(), and other language-native timing stuff will just use the System time. This will cause severely undesired behavior.
 
