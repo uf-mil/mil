@@ -34,7 +34,8 @@ class GazeboInterface(object):
         self.state_pub = rospy.Publisher('odom', Odometry, queue_size=1)
         self.world_state_pub = rospy.Publisher('world_odom', Odometry, queue_size=1)
 
-        rospy.Timer(rospy.Duration(0.03), self.publish_odom)
+        self.odom_freq = 0.03
+        rospy.Timer(rospy.Duration(self.odom_freq), self.publish_odom)
         rospy.Timer(rospy.Duration(1), self.save_pedometry)
 
     def load_pedometry(self):
@@ -130,7 +131,7 @@ class GazeboInterface(object):
                 )
             )
 
-            dist = np.linalg.norm(sub8_utils.twist_to_numpy(twist))
+            dist = np.linalg.norm(sub8_utils.twist_to_numpy(twist)) * self.odom_freq
             self.pedometry += dist
 
         else:

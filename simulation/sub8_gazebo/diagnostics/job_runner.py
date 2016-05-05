@@ -24,7 +24,7 @@ import os
 import yaml
 
 rospack = rospkg.RosPack()
-DIAG_OUT_URI = os.path.join(rospack.get_path('sub8_gazebo'), 'diagnostics/')
+DIAG_OUT_DIR = os.path.join(rospack.get_path('sub8_gazebo'), 'diagnostics/')
 
 '''
 In its current implementation, to run a mission you should create a mission script that listens to
@@ -74,7 +74,8 @@ class BagManager(object):
                 msg_time = yield self.cache_dict[key].get_last_message_time()
 
                 if msg is not None:
-                    if msg_time < self.nh.get_time() - rospy.Duration(30):
+                    if (self.nh.get_time() > rospy.Time.from_sec(30)) and (msg_time < self.nh.get_time() - rospy.Duration(30)):
+                        # This fixes a negative time exception if we are within the first 30 seconds of time.
                         continue
 
                     if msg_time == last_timestamps[key]:
@@ -93,7 +94,7 @@ class BagManager(object):
         '''
         Generate caching dictionary from a yaml file.
         '''
-        with open(DIAG_OUT_URI + 'messages_to_bag.yaml', 'r') as f:
+        with open(DIAG_OUT_DIR + 'messages_to_bag.yaml', 'r') as f:
             messages_to_bag = yaml.load(f)
 
         # Set bagging parameters
@@ -103,7 +104,7 @@ class BagManager(object):
 
         self.cache_dict = {}
         msgs = messages_to_bag['MESSAGES']
-        for _, msg in msgs.items():
+        for msg in msgs.values():
             # Get message information
             msg_topic = msg['message_topic']
             msg_type = msg['message_type']
@@ -121,7 +122,7 @@ class BagManager(object):
         Save cached bags and save the next 'post_cache_time' seconds.
         '''
         self.dumping = True
-        bag = rosbag.Bag(DIAG_OUT_URI + 'bags/' + str(int(time.time())) + '.bag', 'w')
+        bag = rosbag.Bag(DIAG_OUT_DIR + 'bags/' + str(int(time.time())) + '.bag', 'w')
 
         gen = self.read_from_cache()
 
@@ -214,7 +215,7 @@ class JobManager(object):
             print "Writing report to file. Do not exit."
             elapsed = self.nh.get_time() - start_time
             try:
-                with open(DIAG_OUT_URI + 'diag.txt', 'a') as f:
+                with open(DIAG_OUT_DIR + 'diag.txt', 'a') as f:
                     f.write("Response: {0} occured at {1} (Duration: {2}).\n".format(response.success, int(time.time()), elapsed))
                     f.write(response.message + '\n')
                     f.write("{0} Successes, {1} Fails, {2} Total \n.".format(self.successes, self.fails, current_loop))
@@ -222,7 +223,7 @@ class JobManager(object):
                     f.write('\n')
             except IOError:
                 print "Diagnostics file not found. Creating it now."
-                with open(DIAG_OUT_URI + 'diag.txt', 'w') as f:
+                with open(DIAG_OUT_DIR + 'diag.txt', 'w') as f:
                     f.write("Response: {0} occured at {1} (Duration: {2}).\n".format(response.success, int(time.time()), elapsed))
                     f.write(response.message + '\n')
                     f.write("{0} Successes, {1} Fails, {2} Total \n.".format(self.successes, self.fails, current_loop))
@@ -243,7 +244,7 @@ class JobManager(object):
         print
         print "Job Finished!"
         print "Writing report to file. Do not exit."
-        with open(DIAG_OUT_URI + 'diag.txt', 'a') as f:
+        with open(DIAG_OUT_DIR + 'diag.txt', 'a') as f:
             f.write("{0} Successes, {1} Fails, {2} Total \n.".format(self.successes, self.fails, current_loop))
             f.write("Time of completion: {0}. \n".format(int(time.time())))
             f.write("-----------------------------------------------------------")
@@ -295,9 +296,8 @@ class JobManager(object):
 def main():
         print "Starting Job Runner."
         nh = yield txros.NodeHandle.from_argv('job_runner_controller')
-        b = BagManager(nh)
-        # j = JobManager(nh)
-        # yield j.run_job_loop()
+        j = JobManager(nh)
+        yield j.run_job_loop()
 
 if __name__ == '__main__':
     reactor.callWhenRunning(main)
