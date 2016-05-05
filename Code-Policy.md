@@ -62,7 +62,7 @@ Before submitting changes, read the rest of this page. Any code that is pull-req
 * If you must merge, you should always merge --no-ff to preserve history
 
 ## Documentation
-* Your code must be attributed, if you borrow it from other proejects, or use code from stackoverflow, etc
+* Your code must be attributed, if you borrow it from other projects, or use code from stackoverflow, etc
 * Include a readme in *every* new package, that describes what it is, what it does, and how to use it (in the form of example console commands/switches)
 * Add a *wiki* page for every new logical component, that describes in some depth (including citations, dependencies, and alarms) the behavior and uses of that component (i.e. how it works, what knowledge is necessary to make improvements).
     * Feel free to edit the wiki at any time. Adding a page will require you to edit the sidebar manually.
