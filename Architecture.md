@@ -24,6 +24,3 @@ The sub should be able to...
     - (Move while pointing; Point and open gripper; etc)
 - Navigate without landmarks safely for some distance
 - Generate and operate on a traversability map
-
-# Open Questions
-- Can we ever make all three cameras work? Is it a bus bandwidth problem?
