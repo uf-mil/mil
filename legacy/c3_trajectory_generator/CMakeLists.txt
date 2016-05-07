@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(c3_trajectory_generator)
+
 find_package(
   catkin
   REQUIRED COMPONENTS
@@ -51,4 +52,4 @@ add_dependencies(
   uf_common_generate_messages_cpp
   ${catkin_EXPORTED_TARGETS}
 )
-set_target_properties(c3_trajectory_generator PROPERTIES COMPILE_FLAGS -std=c++11)
+set_target_properties(c3_trajectory_generator PROPERTIES COMPILE_FLAGS "-std=c++11 -O2")

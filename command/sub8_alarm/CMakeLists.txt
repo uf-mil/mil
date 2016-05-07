@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+
 project(sub8_alarm)
 
 find_package(catkin REQUIRED
@@ -40,6 +40,8 @@ add_dependencies(
   ${catkin_EXPORTED_TARGETS}
 )
 
+set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11")
+
 # Add folders to be run by python nosetests
 if(CATKIN_ENABLE_TESTING)
   catkin_add_nosetests(test_alarms/test_alarm_helpers.py)
@@ -53,6 +55,8 @@ if(CATKIN_ENABLE_TESTING)
     test_alarms/cpp/test_alarm_helpers.cc
     sub8_alarm/alarm_helpers.cc
   )
+
+  set_target_properties(alarm_integration_cpp_tests PROPERTIES COMPILE_FLAGS "-std=c++11")
 
   target_link_libraries(
   	alarm_integration_cpp_tests

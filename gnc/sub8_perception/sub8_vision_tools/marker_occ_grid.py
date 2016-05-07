@@ -10,7 +10,6 @@ from sub8_msgs.srv import VisionRequest2D, VisionRequest2DResponse, SearchPose
 from image_geometry import PinholeCameraModel
 from sub8_ros_tools import threading_helpers, msg_helpers
 from std_srvs.srv import Empty, EmptyResponse
-
 import cv2
 import numpy as np
 import threading
