@@ -1,0 +1,5 @@
+<launch>
+  <group ns='stereo'>
+    <node pkg="stereo_image_proc" type="stereo_image_proc" respawn="false" name="stereo_image_proc" args="_approximate_sync:=True"/>
+  </group>
+</launch>
