@@ -1,9 +1,0 @@
-<library path="lib/libcamera1394_nodelet">
-  <class name="camera1394/driver"
-         type="Camera1394Nodelet"
-         base_class_type="nodelet::Nodelet">
-    <description> 
-      IEEE 1394 camera driver nodelet.
-    </description>
-  </class>
-</library>

@@ -1,8 +1,0 @@
-# Example camera parameters (for Jack O'Quin's Unibrain Fire-i BCL 1.2)
-
-guid: 10008144361026320a0           # too many digits
-video_mode: 640x480_yuv411
-frame_id: unibrain
-iso_speed: 400
-camera_info_url: package://camera1394/tests/unibrain_calibration.yaml
-

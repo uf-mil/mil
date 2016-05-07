@@ -74,6 +74,7 @@ sudo apt-get install -qq ros-indigo-sophus
 sudo apt-get install -qq ros-indigo-driver-base
 sudo apt-get install -qq ros-indigo-camera-info-manager
 sudo apt-get install -qq ros-indigo-spacenav-node
+sudo apt-get install -qq ros-indigo-camera1394
 sudo apt-get install -qq libusb-1.0-0-dev
 
 # catkin_make -C $INSTALL_FOLDER/..
