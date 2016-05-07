@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(sub8_controller)
 
-# Require C++11
-# [1] http://answers.ros.org/question/152276/is-there-a-way-to-enable-c11-support-for-catkin-packages/
-
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy

@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(c3_trajectory_generator)
 
-# message(xxxxx${CMAKE_BUILD_TYPE})
-
 find_package(
   catkin
   REQUIRED COMPONENTS

@@ -56,6 +56,8 @@ if(CATKIN_ENABLE_TESTING)
     sub8_alarm/alarm_helpers.cc
   )
 
+  set_target_properties(alarm_integration_cpp_tests PROPERTIES COMPILE_FLAGS "-std=c++11")
+
   target_link_libraries(
   	alarm_integration_cpp_tests
   	${catkin_LIBRARIES}

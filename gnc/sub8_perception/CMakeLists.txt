@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(sub8_perception)
 
 SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
-# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -g -rdynamic -Wall -std=c++11")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -g -rdynamic -Wall")
 
 find_package(catkin
   REQUIRED COMPONENTS
@@ -79,13 +79,6 @@ add_library(sub8_pcl SHARED
     src/sub8_pcl/visualization.cc
 )
 
-set_target_properties(
-  sub8_pcl
-  PROPERTIES
-    COMPILE_FLAGS "-std=c++11 -fopenmp -g -rdynamic -Wall -std=c++11 -O2"
-)
-
-
 target_link_libraries(
   sub8_pcl
     ${catkin_LIBRARIES}
@@ -125,13 +118,6 @@ add_dependencies(
    ${catkin_EXPORTED_TARGETS}
 )
 
-set_target_properties(
-  pcl_perception
-  PROPERTIES
-    COMPILE_FLAGS "-std=c++11 -fopenmp -g -rdynamic -Wall -std=c++11 -O2"
-)
-
-
 target_link_libraries(
   pcl_perception
     sub8_pcl
@@ -149,11 +135,6 @@ add_executable(
   pcl_buoy
     nodes/buoy_node.cc
     ${BUOY_SOURCES}
-)
-set_target_properties(
-  pcl_buoy
-  PROPERTIES
-    COMPILE_FLAGS "-std=c++11 -fopenmp -g -rdynamic -Wall -std=c++11 -O2"
 )
 
 add_dependencies(

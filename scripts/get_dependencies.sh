@@ -44,10 +44,12 @@ instlog "Updating apt-get"
 sudo apt-get update -qq
 
 instlog "Getting build stuff"
+sudo apt-get install -qq python-scipy python-pygame python-numpy python-serial
 sudo apt-get install -qq cmake python-pip
 sudo pip install -q -U setuptools
 sudo pip install -q -U mayavi
 sudo pip install -q -U argcomplete
+sudo pip install -q -U scikit-learn
 
 ####### Make tools
 instlog "Getting misc make tools"
@@ -61,13 +63,12 @@ ros_git_get https://github.com/ros-simulation/gazebo_ros_pkgs.git
 # Normal things
 instlog "Installing misc dependencies"
 
-sudo pip install -q -U scikit-learn
 
-sudo apt-get install -qq ros-indigo-gazebo7-msgs ros-indigo-gazebo7-ros ros-indigo-gazebo7-ros-pkgs ros-indigo-gazebo7-plugins ros-indigo-gazebo7-ros-control
+# sudo apt-get install -qq ros-indigo-gazebo7-ros-pkgs
+sudo apt-get install -qq ros-indigo-gazebo7-msgs ros-indigo-gazebo7-ros ros-indigo-gazebo7-plugins ros-indigo-gazebo7-ros-control
 sudo apt-get install -qq ros-indigo-control-toolbox ros-indigo-controller-manager ros-indigo-transmission-interface ros-indigo-joint-limits-interface ros-indigo-hardware-interface
 
 sudo apt-get install -qq libboost-all-dev python-dev python-qt4-dev python-qt4-gl python-opengl freeglut3-dev libassimp-dev
-sudo apt-get install -qq python-scipy python-pygame python-numpy python-serial
 sudo apt-get install -qq libpcl-1.7-all libpcl-1.7-all-dev ros-indigo-pcl-conversions
 sudo apt-get install -qq libompl-dev
 sudo apt-get install -qq ros-indigo-sophus
