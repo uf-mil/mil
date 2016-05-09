@@ -1,5 +1,6 @@
 from __future__ import division
 import numpy as np
+from tf import transformations
 import tf
 
 
@@ -112,3 +113,8 @@ def clip_norm(vector, lower_bound, upper_bound):
     else:
         v_new = (vector * upper_bound) / norm
     return v_new
+
+
+def quaternion_matrix(q):
+    mat_h = transformations.quaternion_matrix(q)
+    return mat_h[:3, :3] / mat_h[3, 3]
