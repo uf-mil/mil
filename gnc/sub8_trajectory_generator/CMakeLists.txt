@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 set(PROJECT_NAME sub8_trajectory_generator)
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+# set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 project(${PROJECT_NAME})
 
 find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs sub8_msgs cmake_modules)
@@ -13,14 +13,14 @@ set(catkin_LIBRARIES
 	${catkin_LIBRARIES}
 )
 
-set(SRCS 
+set(SRCS
 	src/space_information_generator.cc
 	src/sub8_state_validity_checker.cc
 	src/tgen_manager.cc
 )
 
 catkin_package(
-   	CATKIN_DEPENDS roscpp 
+   	CATKIN_DEPENDS roscpp
    	DEPENDS system_lib sub8_msgs sub8_alarm
 )
 
@@ -34,12 +34,14 @@ include_directories(
 )
 
 
-add_executable(${PROJECT_NAME} 
-	src/trajectory_generator.cc 
+add_executable(${PROJECT_NAME}
+	src/trajectory_generator.cc
 	${SRCS}
 )
 
-target_link_libraries(${PROJECT_NAME} 
+set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11")
+
+target_link_libraries(${PROJECT_NAME}
 	${catkin_LIBRARIES}
 	${OMPL_LIBRARIES}
 	${Eigen_LIBRARIES}
@@ -52,11 +54,13 @@ add_dependencies(${PROJECT_NAME}
 )
 
 if(CATKIN_ENABLE_TESTING)
-	catkin_add_gtest(${PROJECT_NAME}_unit_tests 
+	catkin_add_gtest(${PROJECT_NAME}_unit_tests
 		test/sub8_state_validity_checker_test.cc
 		test/test_driver.cc
 		${SRCS}
 	)
+
+    set_target_properties(${PROJECT_NAME}_unit_tests PROPERTIES COMPILE_FLAGS "-std=c++11")
 
 	target_link_libraries(${PROJECT_NAME}_unit_tests
 		${catkin_LIBRARIES}
@@ -64,16 +68,19 @@ if(CATKIN_ENABLE_TESTING)
 		${Eigen_LIBRARIES}
 		${sub8_alarm_LIBRARIES}
 	)
-  	
+
   	# The test driver with your main function
   	# must be listed last (before the source files)
-  	add_rostest_gtest(${PROJECT_NAME}_integration_tests 
+  	add_rostest_gtest(${PROJECT_NAME}_integration_tests
   		test/tgen_integration.test
 		test/tgen_manager_test.cc
 		test/space_information_test.cc
-		test/integration_test_driver.cc		
+		test/integration_test_driver.cc
 		${SRCS}
   	)
+
+    set_target_properties(${PROJECT_NAME}_integration_tests PROPERTIES COMPILE_FLAGS "-std=c++11")
+
 
   	target_link_libraries(${PROJECT_NAME}_integration_tests
   		${catkin_LIBRARIES}

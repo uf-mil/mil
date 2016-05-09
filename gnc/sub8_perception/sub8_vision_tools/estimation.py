@@ -6,6 +6,8 @@ from mayavi import mlab
 
 
 class ProjectionParticleFilter(object):
+    _debug = True
+
     def __init__(self, camera_model, num_particles=10000, max_Z=25, observation_noise=5.0, jitter_prob=0.2, salting=0.1,
                  aggressive=True):
         """A particle filter for estimating pose from multiple camera views
@@ -44,6 +46,9 @@ class ProjectionParticleFilter(object):
         self.observation_noise = observation_noise
         self.jitter = jitter_prob
         self.camera_model = camera_model
+
+        self.cameras = []
+        self.observations = []
 
         self.image_size = (self.camera_model.cx() * 2, self.camera_model.cy() * 2)
         self.K = np.array(camera_model.fullIntrinsicMatrix(), dtype=np.float32)
@@ -102,6 +107,8 @@ class ProjectionParticleFilter(object):
         assert len(t) == 3, "Translation vector must be of length 3"
         self.t = self.column_vectorize(t)
         self.R = R
+        if self._debug:
+            self.cameras.append((t, R))
 
     def _transform_pts(self, t, R):
         """Supply a transform to the camera frame"""
@@ -127,13 +134,20 @@ class ProjectionParticleFilter(object):
          So, if we reset all of our particles to lie along that ray, we save convergence time substantially
         """
         unit_ray = self.R.dot(self.get_ray(observation))
+        if self._debug:
+            self.observations.append(unit_ray)
 
         if weights is None:
             # This favors distant particles, which is not what we want
-            self.particles = self.t + (np.random.uniform(self.min_Z, self.max_Z, size=self.num_particles) * unit_ray)
+            # range_distribution = np.random.uniform(self.min_Z, self.max_Z, size=self.num_particles)
+
+            range_distribution = np.random.normal(loc=self.max_Z / 2, scale=self.max_Z / 6, size=self.num_particles)
+
+            self.particles = self.t + (range_distribution * unit_ray)
             self.particles += np.random.normal(scale=(self.salt, self.salt, self.salt), size=(self.num_particles, 3)).transpose()
 
         else:
+            # Doesn't yet work
             average_p = 0.2 * np.average(weights)
             self.particles[:, weights < average_p] = np.reshape(-self.t, (3, 1)) + np.random.uniform(
                 self.min_Z,
@@ -156,6 +170,7 @@ class ProjectionParticleFilter(object):
         TODO
             - Must shuffle instead of relying on state transition distribution
         """
+        observation = self.column_vectorize(observation)
         if self.on_first_observation:
             self._reset_to_ray(observation)
             self.on_first_observation = False
@@ -208,6 +223,11 @@ class ProjectionParticleFilter(object):
         weights = new_weights
         self.weights = weights / np.sum(weights)
         return self.get_best()
+
+    def visualize(self):
+        draw_particles(self)
+        draw_cameras(self.observations, self.cameras)
+        mlab.show()
 
 
 def draw_particles(ppf, color_hsv=(1.0, 0.2, 1.0), scale=0.05):
