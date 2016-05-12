@@ -156,6 +156,7 @@ class AlarmListener(object):
         # This dictionary will allow the user to listen to an arbitrary number of alarms
         # and have sepreate callbacks and args for each alarm.
         self.callback_linker = {}
+        self.known_alarms = []
 
         if alarm_name is not None and callback_funct is not None:
             self.callback_linker[alarm_name] = {
@@ -189,6 +190,9 @@ class AlarmListener(object):
         We've gotten an alarm, but don't panic! If it's one of the alarms we are listening for,
         pass the alarm to the function callback with any specified args.
         '''
+        if alarm.alarm_name not in self.known_alarms:
+            self.known_alarms.append(alarm.alarm_name)
+
         found_alarm = self.callback_linker.get(alarm.alarm_name, None)
         if found_alarm is None:
             return
