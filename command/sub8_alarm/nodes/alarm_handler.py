@@ -94,9 +94,9 @@ class AlarmHandler(object):
             scenario = self.scenarios.get(meta_alarm, None)
             if scenario is not None:
                 if alarm.clear:
-                    scenario.cancel(time, parameters)
+                    scenario.cancel(time, parameters, alarm.alarm_name)
                 else:
-                    scenario.handle(time, parameters)
+                    scenario.handle(time, parameters, alarm.alarm_name)
 
 
 
