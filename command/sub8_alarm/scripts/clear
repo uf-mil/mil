@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+import rospy
+import sys
+import argparse
+from sub8_alarm import single_alarm
+from sub8_ros_tools.init_helpers import wait_for_subscriber
+
+
+if __name__ == '__main__':
+    # TODO: Clear all alarms
+    usage_msg = ("Pass the name of an active alarm, and this script will clear it")
+    desc_msg = "Clear an alarm"
+
+    parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
+    parser.add_argument(dest='alarm_name',
+                        help="The alarm name you'd like to clear")
+
+    args = parser.parse_args(sys.argv[1:])
+    rospy.init_node('alarm_clear')
+    broadcaster, alarm = single_alarm(args.alarm_name, action_required=True)
+
+    rospy.logwarn("Creating alarm publisher....")
+    # Wait until subscription lands
+    rospy.sleep(0.5)
+    alarm.clear_alarm()
