@@ -1,8 +1,15 @@
 import rospy
 from sub8_msgs.msg import Alarm
-# from std_msgs.msg import Header
 import sub8_ros_tools
 import json
+
+
+def single_alarm(name, action_required=False, severity=3, problem_description=None, parameters=None):
+    '''Use this only if your node has a single alarm'''
+
+    ab = AlarmBroadcaster()
+    alarm = ab.add_alarm(name, action_required, severity, problem_description, parameters)
+    return ab, alarm
 
 
 class AlarmBroadcaster(object):
@@ -54,7 +61,25 @@ class AlarmRaiser(object):
         self._problem_description = problem_description
         self._parameters = parameters
 
+        self._previous_stuff = {
+            'alarm_name': self._alarm_name,
+            'node_name': self._node_name,
+            'action_required': self._action_required,
+            'severity': self._severity,
+            'problem_description': self._problem_description,
+            'parameters': self._parameters,
+            'clear': False,
+        }
+
         self._alarm_pub = alarm_publisher
+
+    def different(self, **kwargs):
+        new_stuff = kwargs
+        if new_stuff == self._previous_stuff:
+            return False
+        else:
+            return True
+
 
     def raise_alarm(self, problem_description=None, parameters=None, severity=None):
         '''Arguments are override parameters'''
@@ -71,34 +96,51 @@ class AlarmRaiser(object):
         if problem_description is not None:
             _problem_description = problem_description
         else:
-            _problem_description = self.problem_description
+            _problem_description = self._problem_description
 
         if parameters is not None:
             _parameters = parameters
         else:
             _parameters = self._parameters
 
+        alarm_contents = {
+            'action_required': self._action_required,
+            'problem_description': _problem_description,
+            'parameters': json.dumps(_parameters),
+            'severity': self._severity,
+            'alarm_name': self._alarm_name,
+            'node_name': self._node_name,
+            'clear': False,
+        }
+        if not self.different(**alarm_contents):
+            return
+        else:
+            self._previous_stuff = alarm_contents
+
         alarm_msg = Alarm(
             header=sub8_ros_tools.make_header(),
-            action_required=self._action_required,
-            problem_description=_problem_description,
-            parameters=json.dumps(_parameters),
-            severity=self._severity,
-            alarm_name=self._alarm_name,
-            node_name=self._node_name,
+            **alarm_contents
         )
 
         self._alarm_pub.publish(alarm_msg)
         return alarm_msg
 
     def clear_alarm(self):
+        alarm_contents = {
+            'alarm_name': self._alarm_name,
+            'node_name': self._node_name,
+            'severity': self._severity,
+            'action_required': False,
+            'clear': True,
+        }
+        if not self.different(**alarm_contents):
+            return
+        else:
+            self._previous_stuff = alarm_contents
+
         alarm_msg = Alarm(
             header=sub8_ros_tools.make_header(),
-            alarm_name=self._alarm_name,
-            node_name=self._node_name,
-            severity=self._severity,
-            action_required=False,
-            clear=True,
+            **alarm_contents
         )
         self._alarm_pub.publish(alarm_msg)
 
@@ -114,14 +156,23 @@ class AlarmListener(object):
         # This dictionary will allow the user to listen to an arbitrary number of alarms
         # and have sepreate callbacks and args for each alarm.
         self.callback_linker = {}
+        self.known_alarms = []
 
         if alarm_name is not None and callback_funct is not None:
             self.callback_linker[alarm_name] = {
                 'callback': callback_funct,
-                'args': args
+                'args': args,
+                'active': False,
             }
 
         rospy.Subscriber('/alarm', Alarm, self.check_alarm, queue_size=100)
+
+    def __getitem__(self, alarm_name):
+        '''Return true if the alarm is active, false if not'''
+        if key in self.callback_linker.keys():
+            return self.callback_linker[alarm_name]['active']
+        else:
+            raise KeyError("{} is not a known alarm to this listener".format(alarm_name))
 
     def add_listener(self, alarm_name, callback_funct, args=None):
         '''
@@ -130,7 +181,8 @@ class AlarmListener(object):
         self.callback_linker[alarm_name] = {
             'callback': callback_funct,
             'args': args,
-            'last_time': None
+            'last_time': None,
+            'active': False,
         }
 
     def check_alarm(self, alarm):
@@ -138,19 +190,20 @@ class AlarmListener(object):
         We've gotten an alarm, but don't panic! If it's one of the alarms we are listening for,
         pass the alarm to the function callback with any specified args.
         '''
-        try:
-            found_alarm = self.callback_linker[alarm.alarm_name]
-        except KeyError:
-            # These are not the alarms we are looking for.
-            # print "Not Found."
+        if alarm.alarm_name not in self.known_alarms:
+            self.known_alarms.append(alarm.alarm_name)
+
+        found_alarm = self.callback_linker.get(alarm.alarm_name, None)
+        if found_alarm is None:
             return
 
-        if self.callback_linker['last_time'] is None:
-            self.callback_linker['last_time'] = alarm.header.stamp
+        if found_alarm['last_time'] is None:
+            found_alarm['last_time'] = alarm.header.stamp
 
         # Check if the alarm is new
-        if alarm.header.stamp > self.callback_linker['last_time']:
-            self.callback_linker['last_time'] = alarm.header.stamp
+        if alarm.header.stamp > found_alarm['last_time']:
+            found_alarm['last_time'] = alarm.header.stamp
+            found_alarm['active'] = not alarm.clear
 
         # Otherwise do nothing
         else:

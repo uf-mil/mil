@@ -2,7 +2,7 @@ import rospy
 from sub8_msgs.srv import UpdateThrusterLayout
 
 
-class ThrusterOut(object):
+class Handler(object):
     alarm_name = 'thruster_out'
 
     def __init__(self):

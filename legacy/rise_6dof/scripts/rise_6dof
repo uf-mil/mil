@@ -22,9 +22,6 @@ from rise_6dof import controller
 from rise_6dof.cfg import controllerConfig
 from rise_6dof.srv import SendConstantWrench
 
-# def unpack_pose(pose): return xyz_array(pose.position), xyzw_array(pose.orientation)
-# def unpack_twist(twist): return xyz_array(twist.linear), xyz_array(twist.angular)
-
 
 class Node(object):
     def reconfigure(self, config, level):
