@@ -39,6 +39,7 @@ add_service_files(
   ResetGazebo.srv
   SearchPose.srv
   RunJob.srv
+  SetValve.srv
 )
 
 # add_action_files(

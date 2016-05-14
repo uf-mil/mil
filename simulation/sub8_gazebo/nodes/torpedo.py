@@ -6,7 +6,7 @@ from std_msgs.msg import String
 from gazebo_msgs.msg import ContactsState, ModelStates, ModelState
 from gazebo_msgs.srv import SetModelState, GetModelState
 from geometry_msgs.msg import Pose, Twist
-from sub8_actuator_driver.srv import SetValve
+from sub8_msgs.srv import SetValve
 
 from sub8_ros_tools import msg_helpers, geometry_helpers
 
