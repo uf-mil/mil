@@ -50,6 +50,7 @@ sudo pip install -q -U setuptools
 sudo pip install -q -U mayavi
 sudo pip install -q -U argcomplete
 sudo pip install -q -U scikit-learn
+sudo pip install -q -U tqdm
 
 ####### Make tools
 instlog "Getting misc make tools"
