@@ -2,5 +2,5 @@
 
 Ken:
 
-- [ ] Organize Hardware
+- [X] Organize Hardware
 
