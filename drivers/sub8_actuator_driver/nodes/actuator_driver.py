@@ -3,7 +3,7 @@ import rospy
 import rosparam
 import rospkg
 
-from sub8_actuator_driver.srv import SetValve
+from sub8_msgs.srv import SetValve
 from sub8_ros_tools import thread_lock
 from sub8_alarm import AlarmBroadcaster
 
