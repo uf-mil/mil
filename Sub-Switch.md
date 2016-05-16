@@ -48,6 +48,14 @@ username sub secret sub
 
 --
 
+Add / change management IP:
+
+interface Vlan1
+
+&nbsp;ip address 192.168.1.254 255.255.255.0
+
+--
+
 Enabling SSH (set hostname, domain, add user, and generate RSA keys first):
 
 line vty 0 4
