@@ -10,17 +10,9 @@ Enter exec (privileged mode, signified by # after hostname):
 
 enable
 
-OR
-
-en
-
 --
 
 Enter configuration mode:
-
-configure terminal
-
-OR
 
 conf t
 
@@ -29,6 +21,7 @@ conf t
 Set enable secret:
 
 enable secret sub
+
 --
 
 Set hostname:
