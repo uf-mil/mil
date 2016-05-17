@@ -1,20 +1,5 @@
 INSTALL_FOLDER=$PWD;
-DEPS_DIR=$PWD
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-while [ "$#" -gt 0 ]; do
-  case $1 in
-    -h) printf "usage: $0 \n
-    [-d] dependencies_directory  (Recommend ~/repos/catkin_ws)\n
-    example: ./install.sh -d ~/repos/sub_dependencies
-    ..."; exit ;;
-    # TODO: Use this to check if catkin ws already set up
-    -d) DEPS_DIR="$2"
-        shift 2;;
-    -?) echo "error: option -$OPTARG is not implemented"; exit ;;
-  esac
-done
-
 
 source $DIR/bash_tools.sh
 instlog "Making sure we're in the catkin directory"
@@ -28,8 +13,6 @@ if ! [ $(basename $PWD) == "src" ]; then
     instwarn "Need to be in catkin_ws/src, install failed"
     exit
 fi
-
-mkdir -p $DEPS_DIR
 
 instlog "Fixing that stupid chrome thing"
 sudo sed -i -e 's/deb http/deb [arch=amd64] http/' "/etc/apt/sources.list.d/google-chrome.list"

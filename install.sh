@@ -7,7 +7,6 @@ WARNPREFIX="${WARNCOLOR}INSTALLER:"
 
 # Sane installation defaults for no argument cases
 CATKIN_DIR=~/repos/catkin_ws
-DEPS_DIR=~/repos/sub_dependencies
 SEMAPHORE=false
 
 instlog() {
@@ -26,14 +25,11 @@ instwarn() {
 while [ "$#" -gt 0 ]; do
   case $1 in
     -h) printf "\nUsage: $0 \n
-    [-c] catkin_directory (Recommend: ~/repos/sub_dependencies)\n
-    [-d] dependencies_directory  (Recommend: ~/repos/catkin_ws)\n
-    example: ./install.sh -c ~/repos/catkin_ws -d ~/repos/sub_dependencies
+    [-c] catkin_workspace (Recommend: ~/repos/catkin_ws)\n
+    example: ./install.sh -c ~/repos/catkin_ws
     \n"; exit ;;
     # TODO: Use this to check if catkin ws already set up
     -c) CATKIN_DIR="$2"
-        shift 2;;
-    -d) DEPS_DIR="$2"
         shift 2;;
     -?) echo "error: option -$OPTARG is not implemented"; exit ;;
   esac
@@ -43,17 +39,13 @@ done
 if ls ~/ | grep --quiet Sub8$; then
     instlog "Found Sub8 in HOME, Assuming we're in Semaphore"
     SEMAPHORE=true
-    DEPS_DIR=~/repos/sub_dependencies;
-    CATKIN_DIR=~/repos/catkin_ws;
+    CATKIN_DIR=~/repos/catkin_ws
 fi
 
 
 #==================================#
 # Repository and Dependancy Set Up #
 #==================================#
-
-instlog "Installing dependencies in $DEPS_DIR"
-instlog "Generating catkin workspace (If needed) at $CATKIN_DIR"
 
 # Make sure script dependancies are installed
 sudo apt-get update -qq
@@ -91,7 +83,7 @@ rosdep update
 #=====================================#
 
 # Set up catkin workspace directory
-instlog "Creating a catkin workspace for the project"
+instlog "Generating catkin workspace (If needed) at $CATKIN_DIR"
 mkdir -p "$CATKIN_DIR/src"
 cd "$CATKIN_DIR/src"
 catkin_init_workspace
@@ -118,6 +110,6 @@ if ! ls "$CATKIN_DIR/src" | grep Sub8; then
     instlog "Make sure you change your git to point to your own fork! (git remote add origin your_forks_url)"
 fi
 
-# Install dependencies with another script
+# Install external dependencies with another script
 cd $CATKIN_DIR/src
-$CATKIN_DIR/src/Sub8/scripts/get_dependencies.sh -d $DEPS_DIR
+$CATKIN_DIR/src/Sub8/scripts/get_dependencies.sh
