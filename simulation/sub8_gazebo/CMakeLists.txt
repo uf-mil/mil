@@ -4,7 +4,14 @@ project(sub8_gazebo)
 # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -Wall")
 # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-find_package(catkin REQUIRED COMPONENTS gazebo_ros roscpp)
+find_package(catkin
+    REQUIRED COMPONENTS
+    std_msgs
+    rospy
+    gazebo_ros
+    roscpp
+    message_generation
+)
 
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -45,8 +52,19 @@ target_link_libraries(
         ${GAZEBO_LIBRARIES}
 )
 
+add_service_files(
+  DIRECTORY srv
+  FILES
+  ResetGazebo.srv
+  RunJob.srv
+  SetTurbulance.srv
+)
+
+generate_messages(DEPENDENCIES std_msgs)
+
 add_dependencies(sub8_thrusters
     sub8_msgs_generate_messages_cpp
+    sub8_msgs_generate_messages_py
     ${catkin_EXPORTED_TARGETS}
 )
 
@@ -68,6 +86,6 @@ target_link_libraries(
 catkin_package(
     INCLUDE_DIRS include
     LIBRARIES duck_gazebo
-    CATKIN_DEPENDS gazebo_ros roscpp
+    CATKIN_DEPENDS gazebo_ros roscpp rospy std_msgs message_runtime
     DEPENDS system_lib
 )

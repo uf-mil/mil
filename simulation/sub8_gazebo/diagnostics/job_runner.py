@@ -7,7 +7,7 @@ import rospkg
 import txros
 from sub8 import tx_sub
 
-from sub8_msgs.srv import RunJob, RunJobRequest
+from sub8_gazebo.srv import RunJob, RunJobRequest
 from nav_msgs.msg import Odometry, OccupancyGrid
 from geometry_msgs.msg import Twist, PoseStamped
 from sensor_msgs.msg import Image
