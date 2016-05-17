@@ -39,6 +39,10 @@ fi
 instlog "Installing dependencies in $DEPS_DIR"
 instlog "Generating catkin workspace (If needed) at $CATKIN_DIR"
 
+# Make sure script dependancies are installed
+sudo apt-get update -qq
+sudo apt-get install -qq git aptitude python-software-properties wget
+
 sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe"
 sudo sh -c 'echo "deb-src http://archive.ubuntu.com/ubuntu trusty main universe" >> /etc/apt/sources.list'
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -54,11 +58,6 @@ sudo apt-get update -qq
 # Install ROS and other project dependancies
 instlog "Looks like ROS is not installed, let's take care of that"
 sudo apt-get install -qq ros-indigo-desktop python-catkin-pkg python-rosdep
-sudo apt-get install -qq git aptitude
-
-# Break the ROS Indigo metapackage and install an updated version of Gazebo
-sudo aptitude unmarkauto -q '?reverse-depends(ros-indigo-desktop) | ?reverse-recommends(ros-indigo-desktop)'
-sudo apt-get purge -qq ros-indigo-gazebo*
 sudo apt-get install -qq gazebo7
 
 source /opt/ros/indigo/setup.bash
