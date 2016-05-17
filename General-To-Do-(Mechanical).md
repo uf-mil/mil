@@ -10,3 +10,4 @@ Ken:
 - [ ] Fix prop slip
 - [ ] Change front handle
 - [ ] Make Sub7 Great Again!
+- [ ] Replace studs for battery lid
