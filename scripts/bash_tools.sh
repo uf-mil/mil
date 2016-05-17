@@ -1,15 +1,21 @@
+#!/bin/bash
 GOODCOLOR='\033[1;36m'
-WARNCOLOR='\e[31m'
-NC='\033[0m' # No Color
+WARNCOLOR='\033[1;31m'
+NOCOLOR='\033[0m'
 GOODPREFIX="${GOODCOLOR}INSTALLER:"
-WARNPREFIX="${WARNCOLOR}INSTALLER:"
+WARNPREFIX="${WARNCOLOR}ERROR:"
+
+# Sane installation defaults for no argument cases
+CATKIN_DIR=~/repos/catkin_ws
+REQUIRED_OS="trusty"
+SEMAPHORE=false
 
 instlog() {
-    printf "$GOODPREFIX $@ $NC\n"
+    printf "$GOODPREFIX $@ $NOCOLOR\n"
 }
 
 instwarn() {
-    printf "$WARNPREFIX $@ $NC\n"
+    printf "$WARNPREFIX $@ $NOCOLOR\n"
 }
 
 ros_git_get() {
