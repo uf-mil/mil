@@ -19,7 +19,6 @@ instwarn() {
 }
 
 DTETCTED_OS="`lsb_release -sc`"
-
 if [ $DTETCTED_OS != $REQUIRED_OS ]; then
     instwarn "The Sub requires Ubuntu 14.04 (trusty)"
     instwarn "Terminating installation due to incorrect OS (detected $DTETCTED_OS)"
@@ -55,7 +54,8 @@ fi
 # Repository and Dependancy Set Up #
 #==================================#
 
-# Make sure script dependancies are installed on bare bones installations
+# Make sure script dependencies are installed on bare bones installations
+instlog "Installing install script dependencies"
 sudo apt-get update -qq
 sudo apt-get install -qq wget aptitude git
 
@@ -67,7 +67,7 @@ sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu trusty mai
 wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xB01FA116
 
-# Install ROS and other project dependancies
+# Install ROS and other project dependencies
 instlog "Installing ROS and Gazebo"
 sudo apt-get update -qq
 sudo apt-get install -qq ros-indigo-desktop python-catkin-pkg python-rosdep
@@ -75,11 +75,12 @@ sudo apt-get install -qq gazebo7
 
 # Sources ROS configurations for bash on this user account
 source /opt/ros/indigo/setup.bash
-if ! cat ~/.bashrc | grep "source /opt/ros"; then
+if ! cat ~/.bashrc | grep --quiet "source /opt/ros"; then
     echo "source /opt/ros/indigo/setup.bash" >> ~/.bashrc
 fi
 
 # Get information about ROS versions
+instlog "Initializing ROS"
 sudo rosdep init
 rosdep update
 
@@ -89,11 +90,15 @@ rosdep update
 #=====================================#
 
 # Set up catkin workspace directory
-instlog "Generating catkin workspace (If needed) at $CATKIN_DIR"
-mkdir -p "$CATKIN_DIR/src"
-cd "$CATKIN_DIR/src"
-catkin_init_workspace
-catkin_make -C "$CATKIN_DIR"
+if !([ -f $CATKIN_DIR/src/CMakeLists.txt ]); then
+    instlog "Generating catkin workspace at $CATKIN_DIR"
+    mkdir -p "$CATKIN_DIR/src"
+    cd "$CATKIN_DIR/src"
+    catkin_init_workspace
+    catkin_make -C "$CATKIN_DIR"
+else
+    instlog "Using existing catkin workspace at $CATKIN_DIR"
+fi
 
 # If we're in the Semaphore-ci, we should run catkin_make in the actual build thread
 if  $SEMAPHORE; then
@@ -102,13 +107,13 @@ fi
 
 # Sources the workspace's configurations for bash on this user account
 source "$CATKIN_DIR/devel/setup.bash"
-if ! cat ~/.bashrc | grep "grep source.*$CATKIN_DIR/devel/setup.bash"; then
-    echo "source $CATKIN_DIR/devel/setup.bash" >> ~/.bashrc
+if ! cat ~/.bashrc | grep --quiet "grep source.*$CATKIN_DIR/devel/setup.bash"; then
+    echo $'\nsource $CATKIN_DIR/devel/setup.bash' >> ~/.bashrc
 fi
 
 # Check if the sub is set up; if it isn't, set it up
-instlog "Looks like you don't have the sub set up, let's do that"
-if ! ls "$CATKIN_DIR/src" | grep Sub8; then
+if ! ls "$CATKIN_DIR/src" | grep --quiet Sub8; then
+    instlog "Looks like you don't have the sub set up, let's do that"
     cd "$CATKIN_DIR/src"
     git clone -q https://github.com/uf-mil/Sub8.git
     cd Sub8
@@ -117,5 +122,8 @@ if ! ls "$CATKIN_DIR/src" | grep Sub8; then
 fi
 
 # Install external dependencies with another script
+instlog "Running the get_dependencies.sh script to update external dependencies"
 cd $CATKIN_DIR/src
 $CATKIN_DIR/src/Sub8/scripts/get_dependencies.sh
+instlog "Building the sub's software stack with catkin_make"
+catkin_make -C "$CATKIN_DIR" -j8
