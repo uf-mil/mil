@@ -43,5 +43,6 @@
     * [[To Do (Electrical)]]
 * Mechanical
     * [[General To Do (Mechanical)]]
+    * [[Sonar Box To Do]]
 * Old Notes
     * [[Simulation]]
