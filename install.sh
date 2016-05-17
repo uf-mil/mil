@@ -51,11 +51,15 @@ wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xB01FA116
 sudo apt-get update -qq
 
-####### Install ROS
+# Install ROS and other project dependancies
 instlog "Looks like ROS is not installed, let's take care of that"
 sudo apt-get install -qq ros-indigo-desktop python-catkin-pkg python-rosdep
-sudo apt-get install -qq git
-sudo apt-get remove -qq ros-indigo-gazebo*
+sudo apt-get install -qq git aptitude
+
+# Break the ROS Indigo metapackage and install an updated version of Gazebo
+sudo aptitude unmarkauto -q '?reverse-depends(ros-indigo-desktop) | ?reverse-recommends(ros-indigo-desktop)'
+sudo apt-get purge -qq ros-indigo-gazebo*
+sudo apt-get install -qq gazebo7
 
 source /opt/ros/indigo/setup.bash
 if ! cat ~/.bashrc | grep "source /opt/ros"; then
