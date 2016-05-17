@@ -68,7 +68,7 @@
       <static>true</static>
       <link name="ground">
         <visual name="visual">
-          <geometry> 
+          <geometry>
             <mesh>
               <uri>file://transdec/transdec.dae</uri>
               <scale>0.5 0.5 0.5</scale>
@@ -91,7 +91,7 @@
       <static>true</static>
       <link name="sky">
         <visual name="visual">
-          <geometry> 
+          <geometry>
               <mesh>
                 <uri>file://sky_box/sky.dae</uri>
               </mesh>

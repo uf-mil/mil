@@ -3,12 +3,10 @@
   <arg name="gui" default="true" />
   <arg name="cameras" default="true" />
 
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find sub8_gazebo)/worlds/contact.world" />
-    <arg name="gui" value="$(arg gui)"/>
-    <arg name="paused" value="false"/>
-    <!-- more default parameters can be changed here -->
-  </include>
+  <!-- start gazebo server-->
+  <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false"
+    args="$(find sub8_gazebo)/worlds/a_whole_new.world" />
+  <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" if="$(arg gui)" />
 
   <!-- We need to spawn a torpedo that the launcher script can use to shoot -->
   <node
@@ -22,6 +20,7 @@
       -x 23 -y 11 -z -4.72 -Z 1.5707 -model torpedo_board"
     output="screen" />
 
+  <!-- Start the sub model with cameras if desired -->
   <node if="$(arg cameras)"
     name="spawn_sub" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find sub8_gazebo)/models/sub8/sub8.sdf -sdf
