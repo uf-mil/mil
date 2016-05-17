@@ -1,3 +1,5 @@
+Creating case for hydrophone board and mounting for hydrophones.
+
 - [ ] Pick out place for sonar box of sub
 - [ ] Pick out Oring
 - [ ] Tweak design
