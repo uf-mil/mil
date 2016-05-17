@@ -1,22 +1,30 @@
 #!/bin/bash
 GOODCOLOR='\033[1;36m'
-WARNCOLOR='\e[31m'
-NC='\033[0m' # No Color
+WARNCOLOR='\033[1;31m'
+NOCOLOR='\033[0m'
 GOODPREFIX="${GOODCOLOR}INSTALLER:"
-WARNPREFIX="${WARNCOLOR}INSTALLER:"
+WARNPREFIX="${WARNCOLOR}ERROR:"
 
 # Sane installation defaults for no argument cases
 CATKIN_DIR=~/repos/catkin_ws
+REQUIRED_OS="trusty"
 SEMAPHORE=false
 
 instlog() {
-    printf "$GOODPREFIX $@ $NC\n"
+    printf "$GOODPREFIX $@ $NOCOLOR\n"
 }
 
 instwarn() {
-    printf "$WARNPREFIX $@ $NC\n"
+    printf "$WARNPREFIX $@ $NOCOLOR\n"
 }
 
+DTETCTED_OS="`lsb_release -sc`"
+
+if [ $DTETCTED_OS != $REQUIRED_OS ]; then
+    instwarn "The Sub requires Ubuntu 14.04 (trusty)"
+    instwarn "Terminating installation due to incorrect OS (detected $DTETCTED_OS)"
+    exit 1
+fi
 
 #======================#
 # Script Configuration #
@@ -31,7 +39,7 @@ while [ "$#" -gt 0 ]; do
     # TODO: Use this to check if catkin ws already set up
     -c) CATKIN_DIR="$2"
         shift 2;;
-    -?) echo "error: option -$OPTARG is not implemented"; exit ;;
+    -?) instwarn "Option $1 is not implemented"; exit ;;
   esac
 done
 
@@ -47,14 +55,12 @@ fi
 # Repository and Dependancy Set Up #
 #==================================#
 
-# Make sure script dependancies are installed
+# Make sure script dependancies are installed on bare bones installations
 sudo apt-get update -qq
-sudo apt-get install -qq git aptitude python-software-properties wget
+sudo apt-get install -qq wget aptitude git
 
-# Add software repositories for the packages that need to be installed
-sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe"
-sudo sh -c 'echo "deb-src http://archive.ubuntu.com/ubuntu trusty main universe" >> /etc/apt/sources.list'
-sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+# Add software repositories for ROS and Gazebo
+sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu trusty main" > /etc/apt/sources.list.d/ros-latest.list'
 sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu trusty main" > /etc/apt/sources.list.d/gazebo-latest.list'
 
 # Get the GPG signing keys for the above repositories
@@ -62,7 +68,7 @@ wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xB01FA116
 
 # Install ROS and other project dependancies
-instlog "Looks like ROS is not installed, let's take care of that"
+instlog "Installing ROS and Gazebo"
 sudo apt-get update -qq
 sudo apt-get install -qq ros-indigo-desktop python-catkin-pkg python-rosdep
 sudo apt-get install -qq gazebo7
