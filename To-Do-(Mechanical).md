@@ -4,15 +4,8 @@ Ken:
 
 - [ ] Organize Hardware
 - [ ] Attached Dongsberg extension to Emily
-- [ ] Pick out place for sonar box of sub
-- [ ] Pick out Oring
-- [ ] Tweak design
-- [ ] Check Oring Selection
-- [ ] Write up Oring selection process for future generations
-- [ ] Pick out hull penetrators
-- [ ] Hydrophone mounting
-- [ ] Run CAM toolpath
-- [ ] Send sonar box prototype to printer
+- [ ] Sonar Box
+- [ ] Something with Pelican case and networking (this sounds familiar....) #roboboat2015 #triggered
 - [ ] Machine Props
 - [ ] Fix prop slip
 - [ ] Change front handle
