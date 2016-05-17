@@ -1,11 +1,13 @@
 # Images
-*.png
-*.jpeg
-*.jpg
-*.tif
-*.obj
-*.mtl
-*.bin
-*.hex
+*.png binary
+*.jpeg binary
+*.jpg binary
+*.tif binary
+*.obj binary
+*.mtl binary
+*.bin binary
+*.hex binary
 
-*.dae
+# CVXGEN
+gnc/sub8_controller/include/sub8_cvx/* binary
+*.dae binary
