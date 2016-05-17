@@ -42,6 +42,6 @@
     * [[Spares (Electrical)]]
     * [[To Do (Electrical)]]
 * Mechanical
-    * [[To Do (Mechanical)]]
+    * [[General To Do List (Mechanical)]]
 * Old Notes
     * [[Simulation]]
