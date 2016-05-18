@@ -10,10 +10,10 @@ In Progress:
 Queue:
 
 * Replace Sub8 motherboard - Assigned to DD
-
 * Power merge board - Assigned to MG
 * Clean up inside of sub - Assigned to DD
 * Replace spliced down camera spliced USB cable to computer (order parts for USB2 headers) - Assigned to DD
+
 * Battery tray backplane system
 * Navigation merge board to replace current nav merge board (DVL and new IMU)
 * RobotX motor controller for reel in sub
