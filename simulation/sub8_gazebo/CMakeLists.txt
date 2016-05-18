@@ -57,7 +57,7 @@ add_service_files(
   FILES
   ResetGazebo.srv
   RunJob.srv
-  SetTurbulance.srv
+  SetTurbulence.srv
 )
 
 generate_messages(DEPENDENCIES std_msgs)

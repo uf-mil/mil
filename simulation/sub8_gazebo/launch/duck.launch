@@ -2,11 +2,14 @@
   <param name="simulate" value="true" />
   <arg name="gui" default="true" />
   <arg name="cameras" default="true" />
+  <arg name="turbulence" default="true" />
+
 
   <!-- start gazebo server-->
   <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false"
     args="$(find sub8_gazebo)/worlds/a_whole_new.world" />
   <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" if="$(arg gui)" />
+
 
   <!-- We need to spawn a torpedo that the launcher script can use to shoot -->
   <node
@@ -14,11 +17,13 @@
     args="-file $(find sub8_gazebo)/models/torpedo/torpedo.sdf -sdf
       -x 0 -y 0 -z 0 -model torpedo"
     output="screen" />
+
   <node
     name="torpedo_board" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find sub8_gazebo)/models/torpedo_board/torpedo_board.sdf -sdf
       -x 23 -y 11 -z -4.72 -Z 1.5707 -model torpedo_board"
     output="screen" />
+
 
   <!-- Start the sub model with cameras if desired -->
   <node if="$(arg cameras)"
@@ -26,11 +31,13 @@
     args="-file $(find sub8_gazebo)/models/sub8/sub8.sdf -sdf
       -x 13.0 -y 24.0 -z -1.0 -model sub8"
     output="screen" />
+
   <node unless="$(arg cameras)"
     name="spawn_sub" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find sub8_gazebo)/models/sub8/sub8_no_cams.sdf -sdf
       -x 13.0 -y 24.0 -z -1.0 -model sub8"
     output="screen" />
+
 
   <!-- Buoys -->
   <node
@@ -57,15 +64,20 @@
       -x 12.0 -y 24.0 -z -4.0 -Y -0.5 -model channel_marker_1"
     output="screen" />
 
+
   <node pkg="sub8_gazebo" type="gazebo_controller.py" name="gazebo_interface" />
   <node pkg="sub8_gazebo" type="torpedo.py" name="torpedo_controller" />
   <node pkg="sub8_gazebo" type="buoys.py" name="buoy_contact_reporter" />
+  <node pkg="sub8_gazebo" type="turbulator.py" name="turbulator" output="screen" if="$(arg turbulence)" />
+
 
   <include file="$(find sub8_launch)/launch/subsystems/rise.launch" />
   <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper.launch" />
   <include file="$(find sub8_videoray_m5_thruster)/launch/thruster_driver.launch" />
 
+
   <node pkg="kill_handling" type="kill_master" name="kill_master"/>
+
 
   <include file="$(find sub8_launch)/launch/tf.launch" />
   <node pkg="nodelet" type="nodelet" args="standalone odometry_utils/odometry_to_tf" name="odometry_to_tf"/>
