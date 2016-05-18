@@ -60,6 +60,7 @@ sudo apt-get update -qq
 sudo apt-get install -qq wget aptitude git
 
 # Add software repositories for ROS and Gazebo
+instlog "Adding ROS and Gazebo PPAs to software sources"
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu trusty main" > /etc/apt/sources.list.d/ros-latest.list'
 sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu trusty main" > /etc/apt/sources.list.d/gazebo-latest.list'
 
@@ -81,7 +82,9 @@ fi
 
 # Get information about ROS versions
 instlog "Initializing ROS"
-sudo rosdep init
+if !([ -f /etc/ros/rosdep/sources.list.d/20-default.list ]); then
+    sudo rosdep init
+fi
 rosdep update
 
 
@@ -125,5 +128,9 @@ fi
 instlog "Running the get_dependencies.sh script to update external dependencies"
 cd $CATKIN_DIR/src
 $CATKIN_DIR/src/Sub8/scripts/get_dependencies.sh
-instlog "Building the sub's software stack with catkin_make"
-catkin_make -C "$CATKIN_DIR" -j8
+
+# Attempt to build the sub from scratch on client machines
+if !($SEMAPHORE); then
+    instlog "Building the sub's software stack with catkin_make"
+    catkin_make -C "$CATKIN_DIR" -j8
+fi

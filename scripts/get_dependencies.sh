@@ -1,7 +1,7 @@
-source $DIR/bash_tools.sh
-
 INSTALL_FOLDER=$PWD;
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/bash_tools.sh
 
 
 #======================#
@@ -11,7 +11,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 instlog "Making sure we're in the catkin directory"
 
 # Check if a file called CMakeLists.txt is present
-if ! ls | grep CMakeLists.txt; then
+if ! ls | grep --quiet CMakeLists.txt; then
     instwarn "Could not find a file called CMakeLists.txt"
     instwarn "Need to be in catkin_ws/src, install failed"
     exit 1
