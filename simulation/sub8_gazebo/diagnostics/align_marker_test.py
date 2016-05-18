@@ -6,7 +6,8 @@ import txros
 from std_srvs.srv import Empty, EmptyRequest
 from geometry_msgs.msg import Pose, Point, Quaternion
 from nav_msgs.msg import Odometry
-from sub8_msgs.srv import RunJob, RunJobResponse, SearchPose, SearchPoseRequest
+from sub8_msgs.srv import SearchPose, SearchPoseRequest
+from sub8_gazebo.srv import RunJob, RunJobResponse
 import tf
 from sub8_ros_tools import msg_helpers, geometry_helpers
 import job_runner
