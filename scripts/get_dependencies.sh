@@ -31,18 +31,11 @@ instlog "Installing dependencies from the Ubuntu repositories"
 sudo apt-get update -qq
 sudo apt-get install -qq python-scipy python-pygame python-numpy python-serial
 sudo apt-get install -qq cmake binutils-dev python-pip
-
-instlog "Installing dependencies from Python PIP"
-sudo pip install -q -U setuptools
-sudo pip install -q -U mayavi
-sudo pip install -q -U argcomplete
-sudo pip install -q -U scikit-learn
-sudo pip install -q -U tqdm
-
-instlog "Getting ROS packages we need to install from source"
-ros_git_get https://github.com/txros/txros.git
-ros_git_get https://github.com/uf-mil/rawgps-tools.git
-ros_git_get https://github.com/ros-simulation/gazebo_ros_pkgs.git
+sudo apt-get install -qq libvtk5-dev python-vtk
+sudo apt-get install -qq libboost-all-dev python-dev python-qt4-dev python-qt4-gl python-opengl freeglut3-dev libassimp-dev
+sudo apt-get install -qq libpcl-1.7-all libpcl-1.7-all-dev ros-indigo-pcl-conversions
+sudo apt-get install -qq libompl-dev
+sudo apt-get install -qq libusb-1.0-0-dev
 
 instlog "Installing ROS dependencies"
 sudo apt-get install -qq ros-indigo-gazebo7-msgs ros-indigo-gazebo7-ros ros-indigo-gazebo7-plugins ros-indigo-gazebo7-ros-control
@@ -54,10 +47,16 @@ sudo apt-get install -qq ros-indigo-spacenav-node
 sudo apt-get install -qq ros-indigo-camera1394
 sudo apt-get install -qq ros-indigo-stereo-image-proc
 
-instlog "Installing miscellaneous dependencies"
-sudo apt-get install -qq libboost-all-dev python-dev python-qt4-dev python-qt4-gl python-opengl freeglut3-dev libassimp-dev
-sudo apt-get install -qq libpcl-1.7-all libpcl-1.7-all-dev ros-indigo-pcl-conversions
-sudo apt-get install -qq libompl-dev
-sudo apt-get install -qq libusb-1.0-0-dev
+instlog "Installing dependencies from Python PIP"
+sudo pip install -q -U setuptools
+sudo pip install -q -U mayavi > /dev/null 2>&1
+sudo pip install -q -U argcomplete
+sudo pip install -q -U scikit-learn > /dev/null 2>&1
+sudo pip install -q -U tqdm
+
+instlog "Getting ROS packages we need to install from source"
+ros_git_get https://github.com/txros/txros.git
+ros_git_get https://github.com/uf-mil/rawgps-tools.git
+ros_git_get https://github.com/ros-simulation/gazebo_ros_pkgs.git
 
 # catkin_make -C $INSTALL_FOLDER/..

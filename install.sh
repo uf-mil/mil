@@ -83,7 +83,7 @@ fi
 # Get information about ROS versions
 instlog "Initializing ROS"
 if !([ -f /etc/ros/rosdep/sources.list.d/20-default.list ]); then
-    sudo rosdep init
+    sudo rosdep init > /dev/null 2>&1
 fi
 rosdep update
 
