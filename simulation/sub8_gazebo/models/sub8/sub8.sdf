@@ -8,7 +8,7 @@
       </velocity_decay>
 
       <inertial>
-        <mass>36.29</mass>
+        <mass>26.29</mass>
         <inertia>
           <ixx>1.18</ixx>
           <ixy>-0.003</ixy>
@@ -178,7 +178,7 @@
 
     <plugin name="sub8_buoyancy" filename="libsub8_buoyancy.so">
       <fluid_density>1000</fluid_density>
-      <drag_coefficient>20</drag_coefficient>
+      <drag_coefficient>5</drag_coefficient>
       <link name="base_link">
         <center_of_volume>0 0 0</center_of_volume>
         <volume>0.037</volume>
@@ -187,6 +187,7 @@
 
     <plugin name="sub8_thrusters" filename="libsub8_thrusters.so">
       <layout_param>thrusters</layout_param>
+      <min_abs_thrust>2.2</min_abs_thrust>
       <link>base_link</link>
     </plugin>
 
