@@ -18,6 +18,7 @@
         * [[Imaging Sonar]]
     * [[Mission Scheduler]]
     * [[Open Questions]]
+    * [[Model Learning]]
 * Implementation
     * [[Simul8]]
     * [[Trajectory Generator]]
