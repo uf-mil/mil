@@ -36,9 +36,7 @@ add_service_files(
   VisionRequest2D.srv
   BMatrix.srv
   PathPlan.srv
-  ResetGazebo.srv
   SearchPose.srv
-  RunJob.srv
   SetValve.srv
 )
 
