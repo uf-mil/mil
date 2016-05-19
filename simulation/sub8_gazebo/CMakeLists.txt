@@ -13,7 +13,8 @@ find_package(catkin
     message_generation
 )
 
-# find_package(Boost REQUIRED COMPONENTS system)
+catkin_python_setup()
+
 
 find_package(gazebo REQUIRED)
 link_directories(${GAZEBO_LIBRARY_DIRS})
