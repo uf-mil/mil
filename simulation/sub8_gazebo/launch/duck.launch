@@ -2,7 +2,7 @@
   <param name="simulate" value="true" />
   <arg name="gui" default="true" />
   <arg name="cameras" default="true" />
-  <arg name="turbulence" default="true" />
+  <arg name="turbulence" default="false" />
 
 
   <!-- start gazebo server-->
