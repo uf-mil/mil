@@ -49,7 +49,7 @@ sudo apt-get install -qq ros-indigo-stereo-image-proc
 
 instlog "Installing dependencies from Python PIP"
 sudo pip install -q -U setuptools
-sudo pip install -q -U mayavi
+sudo pip install -q -U mayavi  > /dev/null 2>&1
 sudo pip install -q -U argcomplete
 sudo pip install -q -U scikit-learn
 sudo pip install -q -U tqdm
