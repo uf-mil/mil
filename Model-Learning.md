@@ -7,6 +7,12 @@
 
 /wrench (but that is unclamped)
 /thrusters/thrust
+
+
+roslaunch sub8_launch duck.launch
+
+rostopic pub wrench geometry_msgs/WrenchStamped (then press tab twice and put random stuff)
+# I would suggest writing a ros node that publishes random wrenches
 ```
 
 Links:
