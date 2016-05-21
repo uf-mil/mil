@@ -34,9 +34,7 @@ class Job(common.Job):
 
         success = (small_posthoc_motion and reached_target)
         reason = ""
-        if not small_posthoc_motion:
-            reason += "\nMoved {}m after reporting completion".format(motion_posthoc)
-        if not reached_target:
-            reason += "\nEnded {}m away from target".format(distance_to_target)
+        reason += "\nMoved {}m after reporting completion".format(motion_posthoc)
+        reason += "\nEnded {}m away from target".format(distance_to_target)
 
         yield defer.returnValue((success, reason))
