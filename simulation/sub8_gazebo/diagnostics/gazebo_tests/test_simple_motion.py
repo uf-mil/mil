@@ -25,7 +25,18 @@ class Job(common.Job):
         yield self.nh.sleep(3.0)
         position_after_waiting = sub.pose.position
 
-        small_posthoc_motion = (np.linalg.norm(position_after_waiting - position_after_action)) < 0.3
-        reached_target = (np.linalg.norm(position_after_waiting - initial_position) - distance) < 0.1
+        motion_posthoc = (np.linalg.norm(position_after_waiting - position_after_action))
+        distance_to_target = (np.linalg.norm(position_after_waiting - initial_position) - distance)
 
-        yield defer.returnValue(small_posthoc_motion and reached_target)
+        # Pretty generous
+        small_posthoc_motion = motion_posthoc < 0.3
+        reached_target = distance_to_target < 0.1
+
+        success = (small_posthoc_motion and reached_target)
+        reason = ""
+        if not small_posthoc_motion:
+            reason += "\nMoved {}m after reporting completion".format(motion_posthoc)
+        if not reached_target:
+            reason += "\nEnded {}m away from target".format(distance_to_target)
+
+        yield defer.returnValue((success, reason))
