@@ -88,5 +88,10 @@
     </rosparam>
     <remap from="orig_odom" to="imu_odom"/>
   </node>
+
   <include file="$(find sub8_launch)/launch/subsystems/cameras/launch/stereo.launch" if="$(arg cameras)"/>
+
+  <group ns="/down/left">
+    <node pkg="image_proc" type="image_proc" name="down_image_proc" />
+  </group>
 </launch>
