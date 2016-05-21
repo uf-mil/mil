@@ -2,7 +2,13 @@
 <sdf version="1.5">
   <model name="channel_marker">
     <static>false</static>
+
     <link name="shape">
+      <inertial>
+        <!-- Obscenely heavy -->
+        <mass>200</mass>
+      </inertial>
+
       <collision name="box_collision">
         <geometry>
           <box><size>1.2 .15 .05</size></box>

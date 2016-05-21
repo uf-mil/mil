@@ -3,7 +3,7 @@
   <model name="sub8">
     <link name="base_link">
       <velocity_decay>
-        <linear>0.01</linear>
+        <linear>0.005</linear>
         <angular>0.06</angular>
       </velocity_decay>
 
