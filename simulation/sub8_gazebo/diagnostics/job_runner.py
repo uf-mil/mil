@@ -8,6 +8,8 @@ from sub8_gazebo_tools import BagManager
 from diagnostics import gazebo_tests
 import argparse
 import traceback
+import datetime
+import time
 
 from collections import deque
 from twisted.internet import reactor
@@ -30,9 +32,10 @@ FUTURE:
 
 
 class JobManager(object):
-    def __init__(self, nh, sub, log=True):
+    def __init__(self, nh, sub, log=True, verbose=False):
         self.nh = nh
         self.sub = sub
+        self.verbose = verbose
         self.timedout = False
         self.job_queue = deque()
         self.record_log = log
@@ -55,6 +58,7 @@ class JobManager(object):
         job_constructor, loop_count = self.job_queue.popleft()
 
         current_job = job_constructor(self.nh)
+        yield current_job.initial_setup()
 
         current_loop = 0
 
@@ -66,11 +70,12 @@ class JobManager(object):
             try:
                 yield current_job.setup()
             except Exception, error:
-                print "On test #{}, a {} raised an error on test setup".format(
+                response = "On test #{}, a {} raised an error on test setup, error:\n{}".format(
                     current_loop,
-                    current_job._job_name
+                    current_job._job_name,
+                    error.message
                 )
-                print error.message
+                self.log(response)
                 continue
 
             start_time = self.nh.get_time()
@@ -79,13 +84,14 @@ class JobManager(object):
             # Run the job
             try:
                 # Return True or False
-                success = yield current_job.run(self.sub)
+                success, description = yield current_job.run(self.sub)
             except Exception, error:
-                print "On test #{}, a {} raised an error on run".format(
+                response = "On test #{}, a {} raised an error on run, error:\n{}".format(
                     current_loop,
-                    current_job._job_name
+                    current_job._job_name,
+                    error.message
                 )
-                print error.message
+                self.log(response)
                 continue
 
             if success:
@@ -101,23 +107,17 @@ class JobManager(object):
 
             print "Writing report to file. Do not exit."
             elapsed = self.nh.get_time() - start_time
-            try:
-                with open(DIAG_OUT_DIR + 'diag.txt', 'a') as f:
-                    f.write("Response: {0} occured at {1} (Duration: {2}).\n".format(success, int(time.time()), elapsed))
-                    # f.write(message + '\n')
-                    f.write("{0} Successes, {1} Fails, {2} Total \n.".format(self.successes, self.fails, current_loop))
-                    f.write("-----------------------------------------------------------")
-                    f.write('\n')
-            except IOError:
-                print "Diagnostics file not found. Creating it now."
-                with open(DIAG_OUT_DIR + 'diag.txt', 'w') as f:
-                    f.write("Response: {0} occured at {1} (Duration: {2}).\n".format(success, int(time.time()), elapsed))
-                    # f.write(message + '\n')
-                    f.write("{0} Successes, {1} Fails, {2} Total \n.".format(self.successes, self.fails, current_loop))
-                    f.write("-----------------------------------------------------------")
-                    f.write('\n')
-            print
-            print "Done!"
+
+            actual_time = datetime.datetime.now().strftime('%I:%M:%S.%f')
+            success_str = "succeeded" if success else "failed"
+            report = (
+                "Test #{}: {} at {} (Duration: {}).\n".format(loop_count, success_str, actual_time, elapsed) +
+                "Test reported: {}\n".format(description) +
+                "{0} Successes, {1} Fails, {2} Total \n".format(self.successes, self.fails, current_loop)
+            )
+            self.log(report)
+
+            print "\nDone!"
 
             print "------------------------------------------------------------------"
             print "{0} Successes, {1} Fails, {2} Total".format(self.successes, self.fails, current_loop)
@@ -127,14 +127,21 @@ class JobManager(object):
             if current_loop > 5 and self.fails / current_loop > .9:
                 print "Too many errors. Stopping as to not fill HDD with bags."
                 break
+
         print
         print "Job Finished!"
         print "Writing report to file. Do not exit."
-        with open(DIAG_OUT_DIR + 'diag.txt', 'a') as f:
-            f.write("{0} Successes, {1} Fails, {2} Total \n.".format(self.successes, self.fails, current_loop))
-            f.write("Time of completion: {0}. \n".format(int(time.time())))
-            f.write("-----------------------------------------------------------")
-            f.write('\n')
+        self.log("Time of completion: {0}. \n".format(int(time.time())))
+
+    def log(self, text):
+        # a+ creates the file if it doesn't exist
+        with open(DIAG_OUT_DIR + 'diag.txt', 'a+') as f:
+            f.write(text)
+            f.write("\n-----------------------------------------------------------\n")
+
+        if self.verbose:
+            print text
+            print "\n-----------------------------------------------------------\n"
 
     def queue_job(self, name, runs):
         available_tests = [test_name for test_name in dir(gazebo_tests) if not test_name.startswith('_')]
@@ -156,7 +163,7 @@ def main(args):
         yield sub.last_pose()
 
         print "Queueing Jobs...."
-        job_manager = JobManager(nh, sub, args.log)
+        job_manager = JobManager(nh, sub, args.log, args.verbose)
 
         try:
             for test_name in args.test_names:
@@ -188,6 +195,10 @@ if __name__ == '__main__':
     parser.add_argument(
         '--log', action='store_true',
         help="Log the data"
+    )
+    parser.add_argument(
+        '--verbose', '-v', action='store_true',
+        help="act verbosely"
     )
 
     args = parser.parse_args(sys.argv[1:])

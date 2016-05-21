@@ -23,7 +23,7 @@ class Job(object):
     @txros.util.cancellableInlineCallbacks
     def initial_setup(self):
         """Run this setup once, to prepare"""
-        raise(NotImplementedError())
+        yield NotImplemented
 
     @txros.util.cancellableInlineCallbacks
     def setup(self):

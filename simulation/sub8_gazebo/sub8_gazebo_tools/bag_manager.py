@@ -52,7 +52,7 @@ class BagManager(object):
 
                     msgs.append([key, (yield msg), (yield msg_time)])
                 else:
-                    print "There's a problem recording {0}".format(key)
+                    print "There's a problem cacheing {0}".format(key)
             self.write_to_cache(msgs)
 
         self.dump()
@@ -114,9 +114,9 @@ class BagManager(object):
                     # Lang -- this doesn't work
                     if msg_time == last_timestamps[key]:
                         continue
-                    last_timestamps[key] = msg_time
-
-                    msgs.append([key, (yield msg), (yield msg_time)])
+                    # last_timestamps[key] = msg_time
+                    bag.write(key, (yield msg), t=(yield msg_time))
+                    # msgs.append([key, (yield msg), (yield msg_time)])
                 else:
                     print "There's a problem recording {0}".format(key)
 
