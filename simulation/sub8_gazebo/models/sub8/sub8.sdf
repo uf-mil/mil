@@ -82,7 +82,7 @@
             <k2>0</k2>
             <k3>0</k3>
             <p1>0</p1>
-            <p2>0</p2>>
+            <p2>0</p2>
           </distortion>
         </camera>
 
@@ -93,7 +93,7 @@
           <imageTopicName>image_raw</imageTopicName>
           <cameraInfoTopicName>camera_info</cameraInfoTopicName>
           <frameName>stereo_front</frameName>
-          <hackBaseline>0.089</hackBaseline>\
+          <hackBaseline>0.089</hackBaseline>
           <distortionK1>0</distortionK1>
           <distortionK2>0</distortionK2>
           <distortionK3>0</distortionK3>
@@ -115,7 +115,7 @@
             <k2>0</k2>
             <k3>0</k3>
             <p1>0</p1>
-            <p2>0</p2>>
+            <p2>0</p2>
             <center>320 240</center>
           </distortion>
         </camera>
@@ -126,7 +126,7 @@
           <imageTopicName>image_raw</imageTopicName>
           <cameraInfoTopicName>camera_info</cameraInfoTopicName>
           <frameName>down_camera</frameName>
-          <hackBaseline>0.89</hackBaseline>\
+          <hackBaseline>0.89</hackBaseline>
           <distortionK1>0</distortionK1>
           <distortionK2>0</distortionK2>
           <distortionK3>0</distortionK3>
