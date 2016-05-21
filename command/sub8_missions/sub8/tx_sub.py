@@ -126,7 +126,6 @@ class _Sub(object):
 
     @util.cancellableInlineCallbacks
     def to_height(self, height):
-        print 'getting;'
         trans = yield self._tf_listener.get_transform(
             '/base_link',
             '/ground',
