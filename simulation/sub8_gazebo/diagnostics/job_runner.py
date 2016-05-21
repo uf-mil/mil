@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 from __future__ import division
 
+from sub8 import tx_sub
 import rospkg
 import txros
 from sub8_gazebo_tools import BagManager
 from diagnostics import gazebo_tests
-from sub8 import tx_sub
 import argparse
 import traceback
 
@@ -19,42 +19,38 @@ rospack = rospkg.RosPack()
 DIAG_OUT_DIR = os.path.join(rospack.get_path('sub8_gazebo'), 'diagnostics/')
 
 '''
-In its current implementation, to run a mission you should create a mission script that listens to
-'/gazebo/job_runner/mission_start' for a start service. Right now the service doesn't provide anything but could
-easily provide something to the mission file if we want to. The mission script should return with the status of that run
-(pass or fail) and perhapse a short message that will be logged. When this script gets that signal, it will reset the gazebo
-world and run the same mission again. The plan is to dynamically bag data by keeping a cache and if something goes wrong keep
+The plan is to dynamically bag data by keeping a cache and if something goes wrong keep
 the bag. Mission files should be able to catch errors and report them back to this script for logging.
 
 FUTURE:
- - Job Queue
+- Easy tools for plotting odom post-hoc (use sub8_montecarlo)
+- Stopping/starting nodes with different params on each run would be "the bee's knees"
+    - (Really, any node we are monte-carloing should have dynamic reconfig instead of startup parameters)
 '''
 
 
 class JobManager(object):
-    def __init__(self, nh):
+    def __init__(self, nh, sub, log=True):
         self.nh = nh
+        self.sub = sub
         self.timedout = False
         self.job_queue = deque()
+        self.record_log = log
 
         self.bagger = BagManager(self.nh, DIAG_OUT_DIR)
         self.successes = 0
         self.fails = 0
         # TODO: append-to-queue service
-        # self.run_job = nh.get_service_client('/gazebo/job_runner/mission_start', RunJob)
 
     @txros.util.cancellableInlineCallbacks
     def run(self):
-        self.sub = yield tx_sub.get_sub(self.nh)
+        """Let the JobManager free-run"""
         while(len(self.job_queue) > 0):
             yield self.run_next_job()
 
     @txros.util.cancellableInlineCallbacks
     def run_next_job(self):
-        """TODO:
-        Job queue
-        manage current job
-        """
+        """Run the next job in the job queue"""
 
         job_constructor, loop_count = self.job_queue.popleft()
 
@@ -62,7 +58,8 @@ class JobManager(object):
 
         current_loop = 0
 
-        self.bagger.start_caching()
+        if self.record_log:
+            self.bagger.start_caching()
 
         while current_loop < loop_count:
             current_loop += 1
@@ -76,8 +73,8 @@ class JobManager(object):
                 print error.message
                 continue
 
-            yield self.nh.sleep(2.0)
             start_time = self.nh.get_time()
+            self.nh.sleep(0.2)
 
             # Run the job
             try:
@@ -98,7 +95,9 @@ class JobManager(object):
                 print "Fail"
                 print
                 self.fails += 1
-                yield self.bagger.dump()
+
+                if self.record_log:
+                    yield self.bagger.dump()
 
             print "Writing report to file. Do not exit."
             elapsed = self.nh.get_time() - start_time
@@ -152,8 +151,12 @@ class JobManager(object):
 def main(args):
         nh = yield txros.NodeHandle.from_argv('job_runner_controller')
 
+        print 'getting sub'
+        sub = yield tx_sub.get_sub(nh)
+        yield sub.last_pose()
+
         print "Queueing Jobs...."
-        job_manager = JobManager(nh)
+        job_manager = JobManager(nh, sub, args.log)
 
         try:
             for test_name in args.test_names:
@@ -181,6 +184,10 @@ if __name__ == '__main__':
     parser.add_argument(
         '--iterations', type=int, default=2,
         help="The number of iterations (For now, it's universal)"
+    )
+    parser.add_argument(
+        '--log', action='store_true',
+        help="Log the data"
     )
 
     args = parser.parse_args(sys.argv[1:])

@@ -90,9 +90,16 @@ class BagManager(object):
         Save cached bags and save the next 'post_cache_time' seconds.
         '''
         self.dumping = True
-        bag = rosbag.Bag(self.diag_dir + 'bags/' + str(int(time.time())) + '.bag', 'w')
+        # Make bag directory if it doesn't exist
+        directory = os.path.join(self.diag_dir, 'bags')
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        bag = rosbag.Bag(os.path.join(directory, str(int(time.time())) + '.bag'), 'w')
 
         gen = self.read_from_cache()
+
+        last_timestamps = dict(self.cache_dict)
 
         print "Saving post-fail data. Do not exit."
         for i in range(int(self.post_cache_time / self.time_step)):
