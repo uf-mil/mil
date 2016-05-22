@@ -2,7 +2,7 @@
   <param name="simulate" value="true" />
   <arg name="gui" default="true" />
   <arg name="cameras" default="true" />
-  <arg name="turbulence" default="true" />
+  <arg name="turbulence" default="false" />
 
 
   <!-- start gazebo server-->
@@ -88,5 +88,10 @@
     </rosparam>
     <remap from="orig_odom" to="imu_odom"/>
   </node>
+
   <include file="$(find sub8_launch)/launch/subsystems/cameras/launch/stereo.launch" if="$(arg cameras)"/>
+
+  <group ns="/down/left" if="$(arg cameras)">
+    <node pkg="image_proc" type="image_proc" name="down_image_proc" />
+  </group>
 </launch>
