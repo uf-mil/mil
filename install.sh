@@ -57,7 +57,7 @@ fi
 # Make sure script dependencies are installed on bare bones installations
 instlog "Installing install script dependencies"
 sudo apt-get update -qq
-sudo apt-get install -qq wget aptitude git
+sudo apt-get install -qq wget git
 
 # Add software repositories for ROS and Gazebo
 instlog "Adding ROS and Gazebo PPAs to software sources"
@@ -110,8 +110,9 @@ fi
 
 # Sources the workspace's configurations for bash on this user account
 source "$CATKIN_DIR/devel/setup.bash"
-if ! cat ~/.bashrc | grep --quiet "grep source.*$CATKIN_DIR/devel/setup.bash"; then
-    echo $'\nsource $CATKIN_DIR/devel/setup.bash' >> ~/.bashrc
+if ! cat ~/.bashrc | grep --quiet "source $CATKIN_DIR/devel/setup.bash"; then
+    echo $'\n' >> ~/.bashrc
+    echo "source $CATKIN_DIR/devel/setup.bash" >> ~/.bashrc
 fi
 
 # Check if the sub is set up; if it isn't, set it up
