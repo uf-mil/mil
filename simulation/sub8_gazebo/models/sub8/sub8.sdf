@@ -4,7 +4,7 @@
     <link name="base_link">
       <velocity_decay>
         <linear>0.005</linear>
-        <angular>0.06</angular>
+        <angular>0.001</angular>
       </velocity_decay>
 
       <inertial>

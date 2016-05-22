@@ -1,4 +1,5 @@
 <launch>
+  <param name="use_sim_time" value="true" />
   <param name="simulate" value="true" />
   <arg name="gui" default="true" />
   <arg name="cameras" default="true" />
