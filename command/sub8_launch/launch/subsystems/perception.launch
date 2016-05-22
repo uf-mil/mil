@@ -1,12 +1,14 @@
 <launch>
   <!-- Try this! -->
   <!-- roslaunch sub8_launch perception.launch color_calibration:=`rospack find sub8_launch`/config/gazebo_color_calibration.yaml -->
-  <arg name="color_calibration" default="$(find sub8_launch)/config/default_color_calibration.yaml" />
+  <arg name="color_calibration" default="default_color_calibration.yaml" />
 
   <rosparam file="$(find sub8_launch)/config/course_geometry.yaml" />
   <!-- <rosparam file="$(find sub8_launch)/config/default_color_calibration.yaml" /> -->
-  <rosparam file="$(arg color_calibration)" />
+  <rosparam file="$(find sub8_launch)/config/$(arg color_calibration)" />
 
   <node pkg="sub8_perception" type="pcl_perception" name="sub_perception" output="screen" />
-  <!-- <node pkg="sub8_perception" type="follow_orange_pipes.py" name="sub_orange_pipes" output="screen" /> -->
+  <node pkg="sub8_perception" type="follow_orange_pipes.py" name="sub_orange_pipes" output="screen" />
+  <node pkg="sub8_perception" type="buoy_2d.py" name="buoy_2d" output="screen" />
+
 </launch>
