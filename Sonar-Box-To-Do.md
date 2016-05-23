@@ -8,4 +8,4 @@ Creating case for hydrophone board and mounting for hydrophones.
 - [ ] Manufacture hull penetrators
 - [ ] Drawings for hull penetrators
 - [ ] Run CAM toolpath
-- [ ] Send sonar box prototype to printer
+- [X] Send sonar box prototype to printer
