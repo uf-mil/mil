@@ -1,5 +1,7 @@
 from txros import util, tf
 import numpy as np
+import rospy
+from sub8_perception.srv import TBDetectionSwitch
 
 
 @util.cancellableInlineCallbacks
@@ -8,7 +10,12 @@ def run(sub):
     # dive to mission start depth
     print "descending to set course mission depth"
     mission_start_depth = 2.15        # meters
-    sub.to_height(mission_start_depth)
+    sub.to_height(mission_start_depth, 0.5)
+
+    # Turn on board detection
+    detection_switch = rospy.ServiceProxy('sub8_perception/TBDetectionSwitch', TBDetectionSwitch)
+    detection_switch(true)
+    print "Torpedo Board detection activated"
 
     # TODO: Rotate in place until torpedo board is detected for several consecutive frames
     print "Executing search pattern"
