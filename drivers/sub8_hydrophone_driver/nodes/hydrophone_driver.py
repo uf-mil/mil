@@ -17,7 +17,7 @@ lock = threading.Lock()
 HEADER = 0xAA
 
 
-class ActuatorDriver():
+class HydrophoneDriver():
     '''
     Allows high level ros code to interface with Jake's Hydrophone board.
     * Adapted from the actuator driver.
@@ -98,7 +98,9 @@ class ActuatorDriver():
         return self.listener
 
     def CRC(self, message):
-        crc = crc16.crc16xmodem(message)
+        # You may have to change the checksum type.
+        # Check the crc16 module online to see how to do that.
+        crc = crc16.crc16xmodem(message, 0xFFFF)
         return struct.pack('H', crc)
 
     def check_CRC(self, message):
@@ -108,7 +110,7 @@ class ActuatorDriver():
         '''
         msg_checksum = message[-2:]
         raw_message = message[:-2]
-        crc = crc16.crc16xmodem(raw_message)
+        crc = crc16.crc16xmodem(raw_message, 0xFFFF)
 
         # If the two match the message was correct
         if crc == struct.unpack('H', msg_checksum)[0]:
@@ -117,4 +119,4 @@ class ActuatorDriver():
             return False
 
 if __name__ == "__main__":
-    a = ActuatorDriver(rospy.get_param('~/actuator_driver/port'), 9600)
+    d = HydrophoneDriver(rospy.get_param('~/hydrophone_driver/port'), rospy.get_param('~/hydrophone_driver/baud'))

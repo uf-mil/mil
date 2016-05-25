@@ -38,6 +38,7 @@ add_service_files(
   PathPlan.srv
   SearchPose.srv
   SetValve.srv
+  HydroListen.srv
 )
 
 # add_action_files(
