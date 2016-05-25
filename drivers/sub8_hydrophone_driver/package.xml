@@ -6,7 +6,7 @@
 
   <maintainer email="Matthew.langford95@gmail.com">Matthew Langford</maintainer>
 
-  <license>MIL</license>
+  <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rospy</build_depend>

@@ -24,7 +24,7 @@ def run(sub_singleton):
     cam = PinholeCameraModel()
 
     # Go to max height to see as much as we can.
-    #yield sub_singleton.move.depth(SEARCH_DEPTH).zero_roll_and_pitch().go()
+    yield sub_singleton.move.depth(SEARCH_DEPTH).zero_roll_and_pitch().go()
     yield nh.sleep(1.0)
 
     # ---------------------------------------
@@ -36,11 +36,11 @@ def run(sub_singleton):
 
     # intial_pose = sub_singleton.last_pose()
     # intial_height = yield sub_singleton.get_dvl_range()
-    # raidus = calculate_visual_radius(cam, intial_height)
+    # radius = calculate_visual_radius(cam, intial_height)
 
     # s = SearchPoseRequest()
     # s.intial_position = (yield intial_pose).pose.pose
-    # s.search_radius = raidus
+    # s.search_radius = radius
     # s.reset_search = True
     # yield next_pose(s)
     # s.reset_search = False

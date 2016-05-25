@@ -50,9 +50,13 @@ class HydrophoneDriver():
         '''
         Parse the response of the board.
         '''
+        print "Listening..."
+
         # We've found a packet now disect it.
         response = self.ser.read(19)
+        rospy.loginfo("Received: %s" % response)
         if self.check_CRC(response):
+            print "Found!"
             # The checksum matches the data so split the response into each piece of data.
             # For info on what these letters mean: https://docs.python.org/2/library/struct.html#format-characters
             data = struct.unpack('<BffffH', response)
@@ -78,24 +82,25 @@ class HydrophoneDriver():
         '''
         A polling packet consists of only a header and checksum (CRC-16):
           HEADER     CHECKSUM
-        [  0x77  | 0x40 | 0x26 ]
+        [  0xAA  | 0x50 | 0xF5 ]
         '''
         self.ser.flushInput()
 
-        message = HEADER
-        message += CRC(message)
+        message = struct.pack('B', HEADER)
+        message += self.CRC(message)
 
-        rospy.loginfo("Writing: %s" % hex(message))
+        rospy.loginfo("Writing: %s" % binascii.hexlify(message))
 
         try:
             self.ser.write(message)
+            print "Sent!"
         except:  # Except only serial errors in the future.
             self.disconnection_alarm.raise_alarm(
                 problem_description="Hydrophone board serial connection has been terminated."
             )
             return False
 
-        return self.listener
+        return self.listener()
 
     def CRC(self, message):
         # You may have to change the checksum type.
