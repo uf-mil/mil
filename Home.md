@@ -14,8 +14,6 @@ Ralph Leyva
 
 David Soto
 
-Annie Luc
-
 Jacob Panikulam
 
 Tess Bianchi
