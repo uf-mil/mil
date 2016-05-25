@@ -102,6 +102,8 @@ def main():
     plt.figure(4)
     plt.imshow(prediction_image2[:, :, np.newaxis] * image[:, :])
     plt.show()
+    # pickle.dump(clf, open("boost.p", "wb"))
+    clf.save("boost.cv2", 's')
 
 
 if __name__ == "__main__":
