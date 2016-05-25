@@ -44,9 +44,11 @@ def observe(image):
     return all_observations
 
 
-def train_on_pkl(pkl_data, images_to_use):
+def train_on_pkl(pkl_data, images_to_use=None):
     observation_list = []
     label_list = []
+    if images_to_use is None:
+        images_to_use = len(pkl_data)
 
     print 'Generating training data...'
     for image, targets in pkl_data[:images_to_use]:
@@ -82,7 +84,7 @@ def train_classifier(x, y):
 
 def main():
     data = pickle.load(open("../labelling/segments.p", "rb"))
-    clf = train_on_pkl(data, 5)
+    clf = train_on_pkl(data)
     image, targets = data[6]
 
     some_observations = observe(image)
@@ -103,7 +105,7 @@ def main():
     plt.imshow(prediction_image2[:, :, np.newaxis] * image[:, :])
     plt.show()
     # pickle.dump(clf, open("boost.p", "wb"))
-    clf.save("boost.cv2", 's')
+    clf.save("boost_huge.cv2", 's')
 
 
 if __name__ == "__main__":
