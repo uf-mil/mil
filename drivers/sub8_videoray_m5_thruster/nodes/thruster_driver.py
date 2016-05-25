@@ -5,7 +5,7 @@ import rospy
 import scipy.interpolate
 import threading
 import argparse
-from std_msgs.msg import Header
+from std_msgs.msg import Header, Float64
 from sub8_msgs.msg import Thrust, ThrusterStatus
 from sub8_ros_tools import wait_for_param, thread_lock
 from sub8_msgs.srv import ThrusterInfo, ThrusterInfoResponse, FailThruster, FailThrusterResponse
@@ -35,6 +35,7 @@ class ThrusterDriver(object):
             severity=2
         )
 
+
         self.failed_thrusters = []
 
         self.make_fake = rospy.get_param('simulate', False)
@@ -51,9 +52,32 @@ class ThrusterDriver(object):
         self.thrust_service = rospy.Service('thrusters/thruster_range', ThrusterInfo, self.get_thruster_info)
         self.thrust_sub = rospy.Subscriber('thrusters/thrust', Thrust, self.thrust_cb, queue_size=1)
         self.status_pub = rospy.Publisher('thrusters/thruster_status', ThrusterStatus, queue_size=8)
+        self.bus_voltage_pub = rospy.Publisher('bus_voltage', Float64, queue_size=1)
+        self.bus_voltage = None
+        self.last_bus_voltage_time = rospy.Time.now()
+        self.bus_timer = rospy.Timer(rospy.Duration(0.1), self.publish_bus_voltage)
 
         # This is essentially only for testing
         self.fail_thruster_server = rospy.Service('fail_thruster', FailThruster, self.fail_thruster)
+
+    def publish_bus_voltage(self, *args):
+        if (rospy.Time.now() - self.last_bus_voltage_time) > rospy.Duration(0.5):
+            self.stop()
+        
+        if self.bus_voltage is not None:
+            msg = Float64(self.bus_voltage)
+            self.bus_voltage_pub.publish(msg)
+            if self.bus_voltage < 44.0:
+                self.alert_bus_voltage(self.bus_voltage)
+
+    def update_bus_voltage(self, voltage):
+        if self.bus_voltage is None:
+            self.bus_voltage = voltage
+            return
+
+        if 40.0 < voltage < 50.0:
+            self.last_bus_voltage_time = rospy.Time.now()
+            self.bus_voltage = (0.6 * voltage) + (0.4 * self.bus_voltage)
 
     def load_config(self, path):
         '''Load the configuration data:
@@ -97,6 +121,10 @@ class ThrusterDriver(object):
                 port_dict[thruster_name] = thruster_port
 
         return port_dict
+
+    def stop(self):
+        for name in self.port_dict.keys():
+            self.command_thruster(name, 0.0)
 
     @thread_lock(lock)
     def command_thruster(self, name, force):
@@ -144,9 +172,10 @@ class ThrusterDriver(object):
                 **message_keyword_args
             )
         )
+
+        # TODO: TEST
+        self.update_bus_voltage(message_keyword_args['bus_voltage'])
         return
-        if message_keyword_args['bus_voltage'] < 44.0:
-            self.alert_bus_voltage(message_keyword_args['bus_voltage'])
 
         # Undervolt/overvolt faults are unreliable
         if message_keyword_args['fault'] > 2:
