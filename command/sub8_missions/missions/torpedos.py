@@ -2,7 +2,11 @@ from txros import util, tf
 import numpy as np
 import rospy
 from sub8_perception.srv import TBDetectionSwitch
+from geometry_msgs.msg import Point, Vector3, Pose, Quaternion
 
+@util.cancellableInlineCallbacks
+def align_to_board(msg, sub):
+    yield sub.move.set_position(target_position).zero_roll_and_pitch().go()
 
 @util.cancellableInlineCallbacks
 def run(sub):
@@ -17,11 +21,15 @@ def run(sub):
     detection_switch(true)
     print "Torpedo Board detection activated"
 
-    # TODO: Rotate in place until torpedo board is detected for several consecutive frames
+    # TODO: Rotate in place so board gets in view
     print "Executing search pattern"
+    yield sub_singleton.move.yaw_left(6.2).zero_roll_and_pitch().go()
 
     # TODO: once the board moves out of our field of view, stop rotating
     print "Found torpedo board"
+    torp_pose_sub = rospy.Subscriber("/torpedo_board/pose", Pose, callback=align_to_board, callback_args=sub)
+    rospy.sleep(10.)
+    torp_pose_sub.unregister()
 
     # TODO: move sub to closest point on the ray eminating from the board centroid normal to the board
 

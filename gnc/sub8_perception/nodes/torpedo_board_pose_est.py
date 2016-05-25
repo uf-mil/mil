@@ -11,6 +11,47 @@ from geometry_msgs.msg import Point, Vector3, Pose, Quaternion
 from std_msgs.msg import ColorRGBA
 import sub8_ros_tools as sub8_utils
 
+class PoseObserver(object):
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+        self.z = 0
+        self.yaw = 0
+        self.max_hist_size = 40
+        self.xList = []
+        self.yList = []
+        self.zList = []
+        self.yawList = []
+
+    def push_back(self, pose):
+        self.xList.append(pose[0])
+        self.yList.append(pose[1])
+        self.zList.append(pose[2])
+        self.yawList.append(pose[3])
+        if(len(self.xList) == self.max_hist_size + 1):
+            self.xList.pop()
+            self.yList.pop()
+            self.zList.pop()
+            self.yawList.pop()
+
+    def get_pose_est_msg(self):
+        ignore_num = int(len(self.xList) * 0.1)
+        xInliers = sorted(self.xList)[ignore_num : -ignore_num]
+        yInliers = sorted(self.yList)[ignore_num : -ignore_num]
+        zInliers = sorted(self.zList)[ignore_num : -ignore_num]
+        yawInliers = sorted(self.yawList)[ignore_num : -ignore_num]
+        pose = Pose()
+        if(len(xInliers) == 0): 
+            return pose
+        pose.position.x = sum(xInliers) / float(len(xInliers))
+        pose.position.y = sum(yInliers) / float(len(yInliers))
+        pose.position.z = sum(zInliers) / float(len(zInliers))
+        yaw = sum(yawInliers) / float(len(yawInliers))
+        quat = tf.transformations.quaternion_from_euler(0, 0, yaw)
+        pose.orientation = Quaternion(*quat)
+        print "\x1b[37m", pose, "\x1b[0m"
+        return pose
+
 
 class TBPoseEstimator(object):
     def __init__(self):
@@ -22,6 +63,7 @@ class TBPoseEstimator(object):
             [ self.W/2.0,  self.H/2.0, 0.0, 1.0],  # BR
             [-self.W/2.0,  self.H/2.0, 0.0, 1.0]], # BL
             dtype=np.float32).T
+        self.pose_obs = PoseObserver()
         self.pose_est_service = rospy.Service('/torpedo_board/pose_est_srv', TorpBoardPoseRequest, self.handle_pose_est_requests)
         self.tf_listener = tf.TransformListener()
         self.tf_broadcaster = tf.TransformBroadcaster()
@@ -32,14 +74,7 @@ class TBPoseEstimator(object):
         self.current_req = ParsedPoseEstRequest(req)
         # print self.current_req
         self.minimize_reprojection_error()
-        print self.minimization_result.success
-        print type(self.minimization_result.success)
-        if not rospy.is_shutdown():
-            try:
-                self.tf_listener.waitForTransform('/map', 'stereo_front', self.current_req.stamp, rospy.Duration(0.1))
-                (trans, rot) = self.tf_listener.lookupTransform('/map', 'stereo_front', self.current_req.stamp)
-            except tf.Exception, e:
-                print "Exception! " + str(e)
+        print "Optimization success: ", self.minimization_result.success
         return self.minimization_result.success
 
     def minimize_reprojection_error(self):
@@ -47,18 +82,18 @@ class TBPoseEstimator(object):
         # Nelder-Mead and Powell seem to be the best methods for this problem
         self.minimization_result = optimize.minimize(self.calc_reprojection_error, self.current_req.pose, method='Nelder-Mead', options=opt)
         if self.minimization_result.success:
-            # print self.minimization_result.x
-            # print "cost: " + str(result.fun)
-            output_pose = Pose()
-            output_pose.position.x = self.minimization_result.x[0]
-            output_pose.position.y = self.minimization_result.x[1]
-            output_pose.position.z = self.minimization_result.x[2]
-            yaw = self.minimization_result.x[3]
-            quat = tf.transformations.quaternion_from_euler(0, 0, yaw)
-            output_pose.orientation = Quaternion(*quat)
-            # print output_pose 
-            self.pose_pub.publish(output_pose)
-            self.visualize_pose_est()
+            if not rospy.is_shutdown():
+                try:
+                    self.tf_listener.waitForTransform('/map', 'stereo_front', self.current_req.stamp, rospy.Duration(0.1))
+                    (trans, rot) = self.tf_listener.lookupTransform('/map', 'stereo_front', self.current_req.stamp)
+                    yaw = tf.transformations.euler_from_quaternion(rot, 'syxz')[0]
+                    pose = np.array([trans.x, trans.y, trans.z, yaw])
+                    self.pose_obs.push_back(pose)
+                except tf.Exception, e:
+                    print "Exception! " + str(e)
+                finally:
+                    self.pose_pub.publish(self.pose_obs.get_pose_est_msg())
+                    self.visualize_pose_est()
         else:
             print "\x1b[31mcost: " + str(self.minimization_result.fun) + "\x1b[0m"
 
