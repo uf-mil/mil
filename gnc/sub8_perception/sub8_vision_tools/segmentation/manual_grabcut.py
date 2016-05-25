@@ -12,6 +12,7 @@ class Picker(object):
 
     def __init__(self, image, brush_size=10, initial_mask=None):
         self.brush_size = brush_size
+        self.done = False
 
         cv2.namedWindow("segment")
         self.image = image
@@ -28,13 +29,15 @@ class Picker(object):
             self.visualize[self.mask == int(cv2.GC_FGD)] = (0, 200, 0)
             self.visualize[self.mask == int(cv2.GC_BGD)] = (0, 0, 200)
 
+        self.mouse_state = [0, 0]
         cv2.setMouseCallback("segment", self.mouse_cb)
         cv2.imshow("segment", self.visualize)
         cv2.waitKey(1)
 
-        self.mouse_state = [0, 0]
-
     def mouse_cb(self, event, x, y, flags, param):
+        if self.done:
+            return
+
         if event == cv2.EVENT_LBUTTONDOWN:
             self.mouse_state[0] = 1
             cv2.circle(self.visualize, (x, y), self.brush_size, (0, 200, 0), -1)
@@ -65,19 +68,25 @@ class Picker(object):
 
         cv2.imshow("segment", self.visualize)
 
-    def segment(self):
+    def wait_for_key(self, keys):
+        print 'press one of:', keys
         while(not rospy.is_shutdown()):
             key = chr(cv2.waitKey(50) & 0xFF)
-            if key in [' ', 'q']:
-                    return None, key
-            elif key in ('z', 'n', 'w'):
-                break
+            if key in keys:
+                return key
+
+    def segment(self):
+        key = self.wait_for_key(' qznw')
+        if key in [' ', 'q']:
+                return None, key
+        self.done = True
 
         bgdModel = np.zeros((1, 65), np.float64)
         fgdModel = np.zeros((1, 65), np.float64)
 
         out_mask = np.copy(self.mask)
 
+        print 'segmenting'
         cv2.grabCut(
             self.image,
             out_mask,
@@ -93,7 +102,11 @@ class Picker(object):
 
         display = display_mask[:, :, np.newaxis] * self.image.astype(np.float64)
         cv2.imshow('segment', display / np.max(display))
-        key = chr(cv2.waitKey(1000) & 0xFF)
+
+        # key = chr(cv2.waitKey(1000) & 0xFF)
+        key = self.wait_for_key('qnzw ')
+        if key in [' ', 'q']:
+                return None, key
 
         display_int = (255 * display) / np.max(display).astype(np.uint8)
         return out_mask, key
@@ -116,8 +129,11 @@ if __name__ == '__main__':
         last_mask, key = p.segment()
         if key == 'q':
             break
-        else:
-            print 'moving on'
+        elif key == ' ':
+            print 'ignoring image'
+            continue
+
+        print 'recording'
         data.append((image, last_mask))
 
     pickle.dump(data, open('segments.p', 'wb'))

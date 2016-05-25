@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
 import pickle
-import pickle
 # from sklearn.neural_network import MLPClassifier
 from sklearn.datasets import make_classification
+from sub8_vision_tools.machine_learning import balanced_resample, desample_binary
 """
 TODO
 MUST:
@@ -15,6 +15,10 @@ SHOULD:
     - Cleaner kernel definition
     - Cleaner kernel exploration
     - Easier tool for generating data
+
+CONSIDER:
+    - Use sklearn preprocessing standar scaler
+        - Whiten data, yo
 """
 
 
@@ -63,8 +67,11 @@ def run_kernels(image, kernels):
 
     for kernel in kernels:
         flt = cv2.filter2D(image.astype(np.float32), -1, kernel)
-        flt = cv2.filter2D(flt, -1, avg)
-
+        flt = cv2.filter2D(flt, -1, avg) / np.max(flt)
+        # print np.min(flt)
+        # print np.max(flt)
+        # cv2.imshow('s', (flt - np.min(flt)) / (np.max(flt) - np.min(flt)))
+        # cv2.waitKey(0)
         rs.append(flt)
 
     rs2 = np.dstack(rs)
@@ -104,7 +111,6 @@ good_kernels = [
     ncc_kernel(15, mag=-1),
     ncc_kernel(30, mag=-1),
     ncc_kernel(100, mag=-1),
-
 ]
 
 ksize = 25
@@ -141,8 +147,8 @@ def observe(image):
     im_gs = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     observations = np.reshape(image, (-1, 3)).astype(np.float32)
 
-    # kernels_run = run_kernels(image[:, :, 1], good_kernels)
-    kernels_run = run_kernels(im_gs, good_kernels)
+    kernels_run = run_kernels(image[:, :, 2], good_kernels)
+    # kernels_run = run_kernels(im_gs, good_kernels)
 
     kernel_observations = np.reshape(
         kernels_run, (-1, len(good_kernels))
@@ -174,6 +180,9 @@ def main():
         # mask = u_mask[::3, ::3]
         image = u_image[0:250, 0:250, :]
         mask = u_mask[0:250, 0:250]
+        # cv2.imshow('i', image)
+        # cv2.waitKey(0)
+
         im_gs = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         # Make labels
         targets = np.zeros(mask.shape)
@@ -187,11 +196,23 @@ def main():
         observation_list.append(observations)
         label_list.append(target_labels)
 
+    print 'exiting'
+    # exit(0)
+
     all_observations = np.vstack(observation_list)
     all_labels = np.hstack(label_list)
 
-    n_trees = 8
-    max_depth = 6
+    print all_observations.shape, all_observations.dtype
+    print all_labels.shape, all_labels.dtype
+
+    # all_observations, all_labels = balanced_resample(all_observations, all_labels)
+    all_observations, all_labels = desample_binary(all_observations, all_labels)
+
+    print all_observations.shape, all_observations.dtype
+    print all_labels.shape, all_labels.dtype
+
+    n_trees = 16
+    max_depth = 2
     parameters = {
         # "boost_type": cv2.BOOST_REAL,
         "boost_type": cv2.BOOST_GENTLE,
@@ -208,8 +229,8 @@ def main():
     boost.train(all_observations, cv2.CV_ROW_SAMPLE, all_labels, params=parameters)
     print 'predicting'
 
-    image = u_image[:, :, :]
-    mask = u_mask[:, :]
+    image = u_image[:500, :500, :]
+    mask = u_mask[:500, :500]
 
     some_observations = observe(image)
     prediction = [int(x) for x in [boost.predict(obs, returnSum=True) for obs in some_observations]]
@@ -220,8 +241,15 @@ def main():
     prediction_image2 = np.reshape(prediction2, mask.shape)
 
     import matplotlib.pyplot as plt
+
+    plt.figure(1)
     plt.imshow(prediction_image)
-    # plt.imshow(prediction_image2)
+    plt.figure(2)
+    plt.imshow(image)
+    plt.figure(3)
+    plt.imshow(mask)
+    plt.figure(4)
+    plt.imshow(prediction_image2[:, :, np.newaxis] * image[:, :])
     plt.show()
 
 
