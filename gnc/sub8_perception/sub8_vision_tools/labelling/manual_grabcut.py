@@ -1,11 +1,16 @@
+import argparse
 import cv2
 import pickle
 import numpy as np
 import rospy
-# from sub8_vision_tools.segmentation import bag_crawler
 import bag_crawler
+import sys
+import os
 from matplotlib import pyplot as plt
-
+"""
+TODO:
+    - Expand existing pickle feature
+"""
 
 class Picker(object):
     # Adaboost http://robertour.com/2012/01/24/adaboost-on-opencv-2-3/
@@ -75,6 +80,19 @@ class Picker(object):
             if key in keys:
                 return key
 
+    def get_biggest_ctr(self, image):
+        contours, _ = cv2.findContours(np.copy(image), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        if len(contours) > 0:
+            cnt = max(contours, key=cv2.contourArea)
+            area = cv2.contourArea(cnt)
+            M = cv2.moments(cnt)
+            cx = int(M['m10'] / M['m00'])
+            cy = int(M['m01'] / M['m00'])
+            tpl_center = (int(cx), int(cy))
+            return cnt
+        else:
+            return None
+
     def segment(self):
         key = self.wait_for_key(' qznw')
         if key in [' ', 'q']:
@@ -97,19 +115,26 @@ class Picker(object):
             cv2.GC_INIT_WITH_MASK
         )
 
-        display_mask = np.ones(out_mask.shape).astype(np.float64)
-        display_mask[(out_mask == cv2.GC_PR_BGD) | (out_mask == cv2.GC_BGD)] = 0.2
+        return_mask = np.zeros(out_mask.shape).astype(np.float64)
+        display_mask = np.ones(out_mask.shape).astype(np.float64) * 0.1
+        bgnd = (out_mask == cv2.GC_PR_BGD) | (out_mask == cv2.GC_BGD)
+        # display_mask[bgnd] = 0.1
+
+        ctr = self.get_biggest_ctr(np.logical_not(bgnd).astype(np.uint8))
+
+        if ctr is not None:
+            cv2.drawContours(display_mask, [ctr], -1, 1, -1)
+            cv2.drawContours(return_mask, [ctr], -1, 1, -1)
 
         display = display_mask[:, :, np.newaxis] * self.image.astype(np.float64)
         cv2.imshow('segment', display / np.max(display))
 
-        # key = chr(cv2.waitKey(1000) & 0xFF)
         key = self.wait_for_key('qnzw ')
         if key in [' ', 'q']:
                 return None, key
 
         display_int = (255 * display) / np.max(display).astype(np.uint8)
-        return out_mask, key
+        return return_mask, key
 
     def save(self, mask):
         data = {"image": self.image, 'classes': mask}
@@ -117,14 +142,35 @@ class Picker(object):
 
 
 if __name__ == '__main__':
-    # img = cv2.imread('/home/jacob/Downloads/buoy.jpg')[::10, ::10, :]
-    bag = '/home/jacob/catkin_ws/src/Sub8/gnc/sub8_perception/data/bag_test.bag'
+    usage_msg = ("Pass the path to a bag, and we'll crawl through the images in it")
+    desc_msg = "A tool for making manual segmentation fun!"
+
+    parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
+    parser.add_argument(dest='bag',
+                        help="The topic name you'd like to listen to")
+    parser.add_argument('--append', type=str, help="Path to a file to append to")
+    parser.add_argument('--output', type=str, help="Path to a file to output to (and overwrite)",
+                        default='segements.p')
+
+    args = parser.parse_args(sys.argv[1:])
+
+    # bag = '/media/mil-plumbusi/ros-bags/Sub8/2016-04-08-17-04-26.bag'
+    bag = args.bag
     bc = bag_crawler.BagCrawler(bag)
 
-    data = []
+    if args.append is None:
+        print 'Creating new pickle'
+        data = []
+    else:
+        data = pickle.load(open(args.append, "rb"))
 
+    print bc.image_topics[0]
+    print bc.image_topics[0]
     last_mask = None
+    num_imgs = len(data)
     for image in bc.crawl(topic=bc.image_topics[0]):
+        num_imgs += 1
+        print 'On image #{}'.format(num_imgs)
         p = Picker(image, brush_size=3, initial_mask=last_mask)
         last_mask, key = p.segment()
         if key == 'q':
@@ -134,8 +180,14 @@ if __name__ == '__main__':
             continue
 
         print 'recording'
-        data.append((image, last_mask))
+        targets = np.zeros(last_mask.shape)
+        background = (last_mask == cv2.GC_PR_BGD) | (last_mask == cv2.GC_BGD)
+        targets[background] = 0
+        targets[np.logical_not(background)] = 1
 
-    pickle.dump(data, open('segments.p', 'wb'))
+        data.append((image, targets))
+
+    print 'saving output'
+    pickle.dump(data, open(args.output, 'wb'))
 
     # p.save(mask)
