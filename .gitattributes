@@ -11,3 +11,7 @@
 # CVXGEN
 gnc/sub8_controller/include/sub8_cvx/* binary
 *.dae binary
+
+# ML Data
+*.p binary
+*.pkl binary
