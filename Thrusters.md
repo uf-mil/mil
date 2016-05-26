@@ -4,7 +4,7 @@ Thrusters
 We have 8 VideoRay M5 Thrusters on Subjugator 8. These are the primary mode of actuation for vehicle motion, other than throwing.
 
 # Thrust Allocation
-We use a simple sequential least squares solver, provided by Numpy, to compute a solution. We will eventually move to a faster QP solver.
+We use a simple sequential least squares solver, provided by Scipy, to compute a solution. We will eventually move to a faster QP solver.
 
 ## Terms
 
