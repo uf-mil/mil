@@ -4,6 +4,7 @@ Ken:
 
 - [ ] Organize Hardware
 - [ ] Sonar Box
+- [X] Imaging Sonar Mount
 - [ ] Something with Pelican case and networking (this sounds familiar....) #roboboat2015 #triggered
 - [ ] Machine Props
 - [ ] Fix prop slip
