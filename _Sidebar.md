@@ -43,6 +43,7 @@
     * [[Imaging Sonar (Electrical)]]
     * [[Spares (Electrical)]]
     * [[To Do (Electrical)]]
+    * [[Testing SW Stuff (Electrical)]]
 * Mechanical
     * [[General To Do (Mechanical)]]
     * [[Sonar Box To Do]]
