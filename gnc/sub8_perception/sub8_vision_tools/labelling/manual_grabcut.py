@@ -12,6 +12,7 @@ TODO:
     - Expand existing pickle feature
 """
 
+
 class Picker(object):
     # Adaboost http://robertour.com/2012/01/24/adaboost-on-opencv-2-3/
 
@@ -96,7 +97,7 @@ class Picker(object):
     def segment(self):
         key = self.wait_for_key(' qznw')
         if key in [' ', 'q']:
-                return None, key
+                return None, None, key
         self.done = True
 
         bgdModel = np.zeros((1, 65), np.float64)
@@ -131,10 +132,11 @@ class Picker(object):
 
         key = self.wait_for_key('qnzw ')
         if key in [' ', 'q']:
-                return None, key
+                return None, None, key
 
-        display_int = (255 * display) / np.max(display).astype(np.uint8)
-        return return_mask, key
+        # cv2.imshow('r', return_mask)
+        # cv2.waitKey(0)
+        return out_mask, return_mask, key
 
     def save(self, mask):
         data = {"image": self.image, 'classes': mask}
@@ -172,7 +174,7 @@ if __name__ == '__main__':
         num_imgs += 1
         print 'On image #{}'.format(num_imgs)
         p = Picker(image, brush_size=3, initial_mask=last_mask)
-        last_mask, key = p.segment()
+        last_mask, last_targets, key = p.segment()
         if key == 'q':
             break
         elif key == ' ':
@@ -180,12 +182,7 @@ if __name__ == '__main__':
             continue
 
         print 'recording'
-        targets = np.zeros(last_mask.shape)
-        background = (last_mask == cv2.GC_PR_BGD) | (last_mask == cv2.GC_BGD)
-        targets[background] = 0
-        targets[np.logical_not(background)] = 1
-
-        data.append((image, targets))
+        data.append((image, last_targets))
 
     print 'saving output'
     pickle.dump(data, open(args.output, 'wb'))

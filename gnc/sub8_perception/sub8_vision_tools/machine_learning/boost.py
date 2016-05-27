@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import pickle
 import features
-from sklearn.neural_network import MLPClassifier
-from sklearn.datasets import make_classification
+import argparse
+import sys
 from sklearn.preprocessing import scale
 from sub8_vision_tools.machine_learning import balanced_resample, desample_binary
 """
@@ -83,7 +83,16 @@ def train_classifier(x, y):
 
 
 def main():
-    data = pickle.load(open("../labelling/segments.p", "rb"))
+    usage_msg = ("Pass the path to a bag, and we'll crawl through the images in it")
+    desc_msg = "A tool for making manual segmentation fun!"
+
+    parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
+    parser.add_argument(dest='pkl',
+                        help="The pickle data file to train on")
+
+    args = parser.parse_args(sys.argv[1:])
+
+    data = pickle.load(open(args.pkl, "rb"))
     clf = train_on_pkl(data)
     image, targets = data[6]
 
@@ -91,12 +100,14 @@ def main():
     prediction = [int(x) for x in [clf.predict(obs, returnSum=True) for obs in some_observations]]
     prediction2 = [int(x) for x in [clf.predict(obs) for obs in some_observations]]
 
-    print 'displaying'
+    print 'Saving...'
+    clf.save("boost_huge.cv2", 's')
+
+    print 'Displaying...'
     prediction_image = np.reshape(prediction, targets.shape)
     prediction_image2 = np.reshape(prediction2, targets.shape)
 
     import matplotlib.pyplot as plt
-
     plt.figure(1)
     plt.imshow(prediction_image)
     plt.figure(2)
@@ -105,7 +116,6 @@ def main():
     plt.imshow(prediction_image2[:, :, np.newaxis] * image[:, :])
     plt.show()
     # pickle.dump(clf, open("boost.p", "wb"))
-    clf.save("boost_huge.cv2", 's')
 
 
 if __name__ == "__main__":
