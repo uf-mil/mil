@@ -213,8 +213,8 @@ class ThrusterDriver(object):
         )
         self.failed_thrusters.append(thruster_name)
 
-    def alert_bus_voltage(self, thruster_name, voltage):
-        self.thruster_out_alarm.raise_alarm(
+    def alert_bus_voltage(self, voltage):
+        self.bus_voltage_alarm.raise_alarm(
             problem_description='Bus voltage has fallen to {}'.format(voltage),
             parameters={
                 'bus_voltage': voltage,
