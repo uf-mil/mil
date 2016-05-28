@@ -5,7 +5,8 @@ Ken:
 - [ ] Organize Hardware
 - [ ] Sonar Box
 - [ ] Imaging Sonar Mount
-- [ ] Machine Props
+- [ ] New cage for IS
+- [ ] Machine Prop
 - [ ] Fix prop slip
 - [ ] Put together order list for manufacturing
 - [ ] Order Helicoils
