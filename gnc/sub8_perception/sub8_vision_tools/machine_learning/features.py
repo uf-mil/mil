@@ -65,15 +65,15 @@ useful_kernels = [
     circle_kernel(5),
     circle_kernel(15),
     circle_kernel(30),
-    circle_kernel(100),
+    # circle_kernel(100),
     circle_kernel(5, mag=-1),
     circle_kernel(15, mag=-1),
     circle_kernel(30, mag=-1),
-    circle_kernel(100, mag=-1),
+    # circle_kernel(100, mag=-1),
 ]
 
 # I know this looks ugly.
-ksize = 25
+ksize = 10
 box = np.ones((ksize, ksize))
 box[ksize // 2:, :] = -1
 useful_kernels.append(np.copy(box))
@@ -90,18 +90,18 @@ box = np.ones((ksize, ksize))
 box[:, :ksize // 2] = -1
 useful_kernels.append(np.copy(box))
 
-box = np.ones((ksize * 2, ksize * 2))
-box[ksize:, :] = -1
-useful_kernels.append(np.copy(box))
+# box = np.ones((ksize * 2, ksize * 2))
+# box[ksize:, :] = -1
+# useful_kernels.append(np.copy(box))
 
-box = np.ones((ksize * 2, ksize * 2))
-box[:ksize, :] = -1
-useful_kernels.append(np.copy(box))
+# box = np.ones((ksize * 2, ksize * 2))
+# box[:ksize, :] = -1
+# useful_kernels.append(np.copy(box))
 
-box = np.ones((ksize * 2, ksize * 2))
-box[:, ksize:] = -1
-useful_kernels.append(np.copy(box))
+# box = np.ones((ksize * 2, ksize * 2))
+# box[:, ksize:] = -1
+# useful_kernels.append(np.copy(box))
 
-useful_kernels.append(mexh(20, 5))
-useful_kernels.append(mexh(20, 10))
-useful_kernels.append(mexh(20, 25))
+# useful_kernels.append(mexh(20, 5))
+# useful_kernels.append(mexh(20, 10))
+# useful_kernels.append(mexh(20, 25))

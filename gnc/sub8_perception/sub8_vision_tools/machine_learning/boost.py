@@ -21,6 +21,8 @@ SHOULD:
 CONSIDER:
     - Use sklearn preprocessing standar scaler
         - Whiten data, yo
+
+- Package kernels alongside Boost
 """
 
 
@@ -51,7 +53,9 @@ def train_on_pkl(pkl_data, images_to_use=None):
         images_to_use = len(pkl_data)
 
     print 'Generating training data...'
-    for image, targets in pkl_data[:images_to_use]:
+    for u_image, u_targets in pkl_data[:images_to_use]:
+        image = u_image[::2, ::2, :]
+        targets = u_targets[::2, ::2]
         target_labels = np.reshape(targets, (-1, 1)).astype(np.int32)
         observations = observe(image)
         observation_list.append(observations)
@@ -89,9 +93,12 @@ def main():
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
     parser.add_argument(dest='pkl',
                         help="The pickle data file to train on")
+    parser.add_argument('--output', type=str, help="Path to a file to output to (and overwrite)",
+                        default='boost.cv2')
 
     args = parser.parse_args(sys.argv[1:])
 
+    print 'Loading pickle...'
     data = pickle.load(open(args.pkl, "rb"))
     clf = train_on_pkl(data)
     image, targets = data[6]
@@ -100,8 +107,8 @@ def main():
     prediction = [int(x) for x in [clf.predict(obs, returnSum=True) for obs in some_observations]]
     prediction2 = [int(x) for x in [clf.predict(obs) for obs in some_observations]]
 
-    print 'Saving...'
-    clf.save("boost_huge.cv2", 's')
+    print 'Saving as {}...'.format(args.output)
+    clf.save(args.output, 's')
 
     print 'Displaying...'
     prediction_image = np.reshape(prediction, targets.shape)
