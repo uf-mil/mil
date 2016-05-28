@@ -90,14 +90,14 @@ class Image_Subscriber(object):
 
         timeout = rospy.Duration(timeout)
         start_time = rospy.Time.now()
-        while (start_time - rospy.Time.now() <= timeout) and (not rospy.is_shutdown()):
+        while (rospy.Time.now() - start_time < timeout) and (not rospy.is_shutdown()):
             if self.camera_info is not None:
                 rospy.loginfo("Camera info found!")
                 return self.camera_info
             rospy.sleep(.2)
 
         rospy.logerr("Camera info not found.")
-        return None
+        raise Exception("Camera info not found.")
 
     def info_cb(self, msg):
         """The path trick here is a hack"""
