@@ -4,7 +4,7 @@ Ken:
 
 - [ ] Organize Hardware
 - [ ] Sonar Box
-- [X] Imaging Sonar Mount
+- [ ] Imaging Sonar Mount
 - [ ] Machine Props
 - [ ] Fix prop slip
 - [ ] Put together order list for manufacturing
