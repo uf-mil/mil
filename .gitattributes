@@ -15,3 +15,4 @@ gnc/sub8_controller/include/sub8_cvx/* binary
 # ML Data
 *.p binary
 *.pkl binary
+*.cv2 binary
