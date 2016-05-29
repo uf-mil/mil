@@ -7,7 +7,8 @@ import image_geometry
 import sub8_ros_tools
 import tf
 from sub8_vision_tools import machine_learning
-
+import rospkg
+import os
 from collections import deque
 from sub8_vision_tools import threshold_tools, rviz, ProjectionParticleFilter, MultiObservation
 from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D, VisionRequest, VisionRequestResponse
@@ -44,9 +45,17 @@ class BuoyFinder:
         # Occasional status publisher
         self.timer = rospy.Timer(rospy.Duration(1.0), self.publish_target_info)
 
+        rospack = rospkg.RosPack()
+        boost_path = os.path.join(
+            rospack.get_path('sub8_perception'),
+            'sub8_vision_tools',
+            'classifiers',
+            'boost.cv2'
+        )
+
         self.boost = cv2.Boost()
         rospy.loginfo("Loading boost")
-        self.boost.load('/home/jacob/catkin_ws/src/Sub8/gnc/sub8_perception/sub8_vision_tools/machine_learning/boost_huge.cv2')
+        self.boost.load(boost_path)
         rospy.loginfo("Boost loaded")
 
         self.buoys = {
