@@ -4,7 +4,8 @@ import tf
 
 from std_msgs.msg import String
 from gazebo_msgs.msg import ContactsState, ModelStates, ModelState
-from gazebo_msgs.srv import SetModelState, GetModelState
+from gazebo_msgs.srv import SetModelState, GetModelState, ApplyJointEffort, ApplyJointEffortRequest, \
+    JointRequest, JointRequestRequest
 from geometry_msgs.msg import Pose, Twist
 from sub8_msgs.srv import SetValve
 
@@ -13,11 +14,30 @@ from sub8_ros_tools import msg_helpers, geometry_helpers
 import numpy as np
 
 
+class ActuatorBoard():
+    def __init__(self):
+        self.torpedo_launcher = TorpedoLauncher()
+        self.gripper_controller = GripperController()
+
+        self.actuator_lookup = {'shooter_l': self.torpedo_launcher.launch_torpedo,
+                                'shooter_r': self.torpedo_launcher.launch_torpedo,
+                                'gripper': self.gripper_controller.set_gripper}
+
+        rospy.Service('/actuator_driver/actuate', SetValve, self.actuate)
+
+    def actuate(self, srv):
+        for port in self.actuator_lookup:
+            if port == srv.actuator:
+                self.actuator_lookup[port](srv)
+                return True
+
+        return False
+
+
 class TorpedoLauncher():
     def __init__(self):
         self.launched = False
 
-        rospy.Service('/actuator_driver/actuate', SetValve, self.launch_torpedo)
         self.set_torpedo = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
         self.get_model = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
         rospy.Subscriber('/contact_bumper/', ContactsState, self.check_contact, queue_size=1)
@@ -55,7 +75,7 @@ class TorpedoLauncher():
             rospy.loginfo("Torpedo probably still on the ground, still waiting.")
             return
 
-        # Now the torpedo has impacted something, publishe what it hit.
+        # Now the torpedo has impacted something, publish what it hit.
         rospy.loginfo('Impact detected!')
         self.launched = False
         rospy.loginfo(other_collison_name)
@@ -93,7 +113,34 @@ class TorpedoLauncher():
 
         return True
 
+
+class GripperController():
+    def __init__(self):
+        self.apply_force = rospy.ServiceProxy('/gazebo/apply_joint_effort', ApplyJointEffort)
+        self.clear_force = rospy.ServiceProxy('/gazebo/clear_joint_forces', JointRequest)
+
+        self.force_to_apply = 5  # Gazebo says these are Newton Meters
+        self.joint_name = 'grip'
+
+    def set_gripper(self, srv):
+        '''
+        First clear the existing forces on the gripper then apply a new one in the direction
+            specified by the service call.
+        '''
+        self.clear_force(JointRequestRequest(joint_name=self.joint_name))
+
+        effort_mod = 1
+        if not srv.opened:
+            effort_mod = -1
+
+        joint_effort = ApplyJointEffortRequest()
+        joint_effort.joint_name = self.joint_name
+        joint_effort.effort = self.force_to_apply * effort_mod
+        joint_effort.duration = rospy.Duration(-1)
+
+        self.apply_force(joint_effort)
+
 if __name__ == '__main__':
-    rospy.init_node('torpedo_manager')
-    t = TorpedoLauncher()
+    rospy.init_node('actuator_board_simulator')
+    a = ActuatorBoard()
     rospy.spin()
