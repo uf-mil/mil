@@ -5,7 +5,6 @@ import numpy as np
 import rospy
 import bag_crawler
 import sys
-import os
 from matplotlib import pyplot as plt
 """
 TODO:
@@ -95,6 +94,10 @@ class Picker(object):
             return None
 
     def segment(self):
+        print 'Keys:'
+        print '\tPress "space" to skip the current image'
+        print '\tPress "q" to quit and save your previous segmentations'
+        print '\tPress w to run segmentation on the image'
         key = self.wait_for_key(' qznw')
         if key in [' ', 'q']:
                 return None, None, key
@@ -105,21 +108,20 @@ class Picker(object):
 
         out_mask = np.copy(self.mask)
 
-        print 'segmenting'
+        print 'Segmenting...'
         cv2.grabCut(
             self.image,
             out_mask,
             None,
             bgdModel,
             fgdModel,
-            5,
+            1,
             cv2.GC_INIT_WITH_MASK
         )
 
         return_mask = np.zeros(out_mask.shape).astype(np.float64)
         display_mask = np.ones(out_mask.shape).astype(np.float64) * 0.1
         bgnd = (out_mask == cv2.GC_PR_BGD) | (out_mask == cv2.GC_BGD)
-        # display_mask[bgnd] = 0.1
 
         ctr = self.get_biggest_ctr(np.logical_not(bgnd).astype(np.uint8))
 
@@ -130,12 +132,15 @@ class Picker(object):
         display = display_mask[:, :, np.newaxis] * self.image.astype(np.float64)
         cv2.imshow('segment', display / np.max(display))
 
+        cv2.imshow('all', np.logical_not(bgnd).astype(np.uint8) * 255)
+        print 'Keys:'
+        print '\tPress "space" to skip the current segmentation'
+        print '\tPress "q" to quit and save all segmentations including this'
+        print '\tPress w record this segmentation and move on to the next image'
         key = self.wait_for_key('qnzw ')
         if key in [' ', 'q']:
                 return None, None, key
 
-        # cv2.imshow('r', return_mask)
-        # cv2.waitKey(0)
         return out_mask, return_mask, key
 
     def save(self, mask):
@@ -150,13 +155,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
     parser.add_argument(dest='bag',
                         help="The topic name you'd like to listen to")
+    parser.add_argument('--topic', type=str, help="Name of the topic to use")
     parser.add_argument('--append', type=str, help="Path to a file to append to")
     parser.add_argument('--output', type=str, help="Path to a file to output to (and overwrite)",
-                        default='segements.p')
+                        default='segments.p')
+    parser.add_argument('--brush_size', type=int, help="Brush size",
+                        default=3)
 
     args = parser.parse_args(sys.argv[1:])
 
-    # bag = '/media/mil-plumbusi/ros-bags/Sub8/2016-04-08-17-04-26.bag'
     bag = args.bag
     bc = bag_crawler.BagCrawler(bag)
 
@@ -170,10 +177,18 @@ if __name__ == '__main__':
     print bc.image_topics[0]
     last_mask = None
     num_imgs = len(data)
-    for image in bc.crawl(topic=bc.image_topics[0]):
+
+    if args.topic is not None:
+        assert args.topic in bc.image_topics, "{} not in the bag".format(args.topic)
+        print 'Crawling topic {}'.format(args.topic)
+        crawl = bc.crawl(topic=args.topic)
+    else:
+        crawl = bc.crawl(topic=bc.image_topics[0])
+
+    for image in crawl:
         num_imgs += 1
         print 'On image #{}'.format(num_imgs)
-        p = Picker(image, brush_size=3, initial_mask=last_mask)
+        p = Picker(image, brush_size=args.brush_size, initial_mask=last_mask)
         last_mask, last_targets, key = p.segment()
         if key == 'q':
             break
@@ -186,5 +201,3 @@ if __name__ == '__main__':
 
     print 'saving output'
     pickle.dump(data, open(args.output, 'wb'))
-
-    # p.save(mask)
