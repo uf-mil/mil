@@ -150,7 +150,7 @@ class Picker(object):
 
 if __name__ == '__main__':
     usage_msg = ("Pass the path to a bag, and we'll crawl through the images in it")
-    desc_msg = "A tool for making manual segmentation fun!"
+    desc_msg = "A tool for making manual segmentation fun! I am sorry the keyboard shortcuts are nonsense"
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
     parser.add_argument(dest='bag',
@@ -195,6 +195,9 @@ if __name__ == '__main__':
         elif key == ' ':
             print 'ignoring image'
             continue
+        elif key == 'z':
+            print 'saving output'
+            pickle.dump(data, open(args.output, 'wb'))
 
         print 'recording'
         data.append((image, last_targets))
