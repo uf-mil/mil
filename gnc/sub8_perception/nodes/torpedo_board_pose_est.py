@@ -197,7 +197,7 @@ class ParsedPoseEstRequest(object):
 
 if __name__ == '__main__':
     print '\x1b[1;31mInitializing the Torpedo Board Pose Estimation node\x1b[0m'
-    print "Awaiting pose estimation requests through:\n\t/torpedo_board_pose_est_srv"
+    print "Awaiting pose estimation requests through:\n\t/torpedo_board_pose_est_srv\n"
     rospy.init_node('torpedo_board_pose_est')
     pose_estimator = TBPoseEstimator()
     rospy.spin()
