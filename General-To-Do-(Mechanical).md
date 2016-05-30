@@ -15,5 +15,6 @@ Ken:
 - [X] Change front handle
 - [ ] Make Sub7 Great Again!
 - [ ] Replace studs for battery lid
-- [ ] Downward camera case
+- [X] Downward camera case
+- [ ] Final Tuning for downward camera case
 - [ ] Fix valve box 
