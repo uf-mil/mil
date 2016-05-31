@@ -125,13 +125,14 @@ class _Sub(object):
         defer.returnValue(msg.data)
 
     @util.cancellableInlineCallbacks
-    def to_height(self, height):
+
+    def to_height(self, height, speed=0.1):
         trans = yield self._tf_listener.get_transform(
             '/base_link',
             '/ground',
         )
         delta_height = -(-trans._p[2] - height)
-        yield self.move.up(delta_height).go(speed=0.1)
+        yield self.move.up(delta_height).go(speed=speed)
 
     @util.cancellableInlineCallbacks
     def get_in_frame(self, pose_stamped, frame='/map'):

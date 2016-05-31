@@ -39,6 +39,8 @@ add_service_files(
   SearchPose.srv
   SetValve.srv
   HydroListen.srv
+  TorpBoardPoseRequest.srv
+  TBDetectionSwitch.srv
 )
 
 # add_action_files(

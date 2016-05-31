@@ -1,4 +1,4 @@
-#include <sub8_pcl/torpedo_board.hpp>
+#include <sub8_vision_lib/torpedo_board.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Class: Sub8TorpedoBoardDetector ////////////////////////////////////////////////////////////////
@@ -12,14 +12,14 @@ Sub8TorpedoBoardDetector::Sub8TorpedoBoardDetector(
       rviz(viz_topic.empty() ? "/torpedo_board/visualization/detection" : viz_topic),
       generate_dbg_img(gen_dbg_img) {
   std::stringstream log_msg;
-  log_msg << "\nInitializing Sub8TorpedoBoardDetector:\n";
+ log_msg << "\nInitializing Sub8TorpedoBoardDetector:\n";
   int tab_sz = 4;
 
   // Default topic and service names
   std::string img_topic_left =
-      l_img_topic.empty() ? "/stereo/left/image_rect_color" : l_img_topic;
+      l_img_topic.empty() ? "/stereo/left/image_rect_color/" : l_img_topic;
   std::string img_topic_right =
-      r_img_topic.empty() ? "/stereo/right/image_rect_color" : r_img_topic;
+      r_img_topic.empty() ? "/stereo/right/image_rect_color/" : r_img_topic;
   std::string service_name = srv_name.empty()
                                  ? "/torpedo_board/detection_activation_switch"
                                  : srv_name;
@@ -45,7 +45,7 @@ Sub8TorpedoBoardDetector::Sub8TorpedoBoardDetector(
           << std::setw(2 * tab_sz) << "" << "right = " << img_topic_right << "\x1b[0m\n";
 
   // Register Service client
-  pose_client = nh.serviceClient<sub8_perception::TorpBoardPoseRequest>(
+  pose_client = nh.serviceClient<sub8_msgs::TorpBoardPoseRequest>(
       "/torpedo_board/pose_est_srv");
   log_msg
       << std::setw(1 * tab_sz) << "" << "Registered as client of the service:\n" 
@@ -88,7 +88,7 @@ Sub8TorpedoBoardDetector::Sub8TorpedoBoardDetector(
   main_loop_thread.detach();
   log_msg << std::setw(1 * tab_sz) << "" << "Running main detector loop in a background thread\n";
 
-  log_msg << "Sub8TorpedoBoardDetector Initialized";
+  log_msg << "Sub8TorpedoBoardDetector Initialized\n";
   ROS_INFO(log_msg.str().c_str());
 
 } catch (const std::exception &e) {
@@ -112,8 +112,8 @@ void Sub8TorpedoBoardDetector::run() {
 }
 
 bool Sub8TorpedoBoardDetector::detection_activation_switch(
-    sub8_perception::TBDetectionSwitch::Request &req,
-    sub8_perception::TBDetectionSwitch::Response &resp) {
+    sub8_msgs::TBDetectionSwitch::Request &req,
+    sub8_msgs::TBDetectionSwitch::Response &resp) {
   resp.success = false;
   std::stringstream ros_log;
   ros_log << "\x1b[1;31mSetting torpedo board detection to: \x1b[1;37m"
@@ -393,7 +393,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position() {
   */
 
   // Fill in TorpBoardPoseRequest (in order)
-  sub8_perception::TorpBoardPoseRequest pose_req;
+  sub8_msgs::TorpBoardPoseRequest pose_req;
   pose_req.request.pose_stamped.header.seq = run_id++;
   pose_req.request.pose_stamped.header.stamp.fromSec(
       0.5 * (left_stamp + right_stamp));
@@ -521,7 +521,7 @@ void Sub8TorpedoBoardDetector::segment_board(const cv::Mat &src, cv::Mat &dest,
   int target_saturation = 180;
   sub::statistical_image_segmentation(
       hsv_channels[0], threshed_hue, hue_segment_dbg_img, hist_size, ranges,
-      target_yellow, "Hue", draw_dbg_img, 6, 0.5, 0.5);
+      target_yellow, "Hue", draw_dbg_img, 6, 3.0, 3.0);
   sub::statistical_image_segmentation(
       hsv_channels[1], threshed_sat, sat_segment_dbg_img, hist_size, ranges,
       target_saturation, "Saturation", draw_dbg_img, 6, 0.1, 0.1);
@@ -680,7 +680,7 @@ bool Sub8TorpedoBoardDetector::find_board_corners(
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Class: TorpedoBoardReprojectionCost ///////////////////////////////////////////////////////////
+// Class: TorpedoBoardReprojectionCost ////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 TorpedoBoardReprojectionCost::TorpedoBoardReprojectionCost(
@@ -788,4 +788,15 @@ operator()(const T *const x, const T *const y, const T *const z,
   }
 
   return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Main ///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+int main(int argc, char **argv) {
+  ros::init(argc, argv, "pcl_perception");
+  ROS_INFO("Initializing node /pcl_perception");
+  Sub8TorpedoBoardDetector torpedo_board_detector(0.5);
+  ros::spin();
 }

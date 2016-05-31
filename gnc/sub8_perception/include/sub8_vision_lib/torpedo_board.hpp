@@ -20,20 +20,28 @@
 #include <tf/transform_listener.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include <sub8_pcl/pcl_tools.hpp>
-#include <sub8_pcl/cv_tools.hpp>
-#include <sub8_pcl/torpedo_board.hpp>
-#include <sub8_perception/TorpBoardPoseRequest.h>
-#include <sub8_perception/TBDetectionSwitch.h>
+#include <sub8_vision_lib/pcl_tools.hpp>
+#include <sub8_vision_lib/cv_tools.hpp>
+#include <sub8_vision_lib/torpedo_board.hpp>
+#include <sub8_msgs/TorpBoardPoseRequest.h>
+#include <sub8_msgs/TBDetectionSwitch.h>
+
+// #define SEGMENTATION_DEBUG
+
+#ifdef SEGMENTATION_DEBUG
+#warning(Compiling with segmentation debugging info enabled)
+#else
+#warning(Compiling with NO segmentation debugging info)
+#endif
 
 /*
   Warning:
-  This class cannot be copy constructed. Ex. the following will not compile:
+  This class cannot be copy constructed. 
+  For examlple, the following will not compile:
     Sub8TorpedoBoardDetector tb_detector = Sub8TorpedoBoardDetector();
   Do this instead:
     Sub8TorpedoBoardDetector tb_detector();
 */
-#pragma message "__cplusplus = " XSTR(__cplusplus)
 
 class Sub8TorpedoBoardDetector {
 
@@ -54,8 +62,8 @@ public:
 private:
   // Callbacks
   bool detection_activation_switch(
-      sub8_perception::TBDetectionSwitch::Request &req,
-      sub8_perception::TBDetectionSwitch::Response &resp);
+      sub8_msgs::TBDetectionSwitch::Request &req,
+      sub8_msgs::TBDetectionSwitch::Response &resp);
   void left_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
                            const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
   void
