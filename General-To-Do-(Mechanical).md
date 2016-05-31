@@ -6,6 +6,7 @@ Ken:
 - [ ] Sonar Box
 - [ ] Imaging Sonar Mount
 - [ ] New cage for IS
+- [ ] Make list of mech. constraints
 - [ ] Machine Prop
 - [ ] Fix prop slip
 - [ ] Put together order list for manufacturing
