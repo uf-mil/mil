@@ -8,7 +8,7 @@
     <arg name="depth" value="true" />
   </include>
 
-  <include file="$(find sub8_launch)/launch/subsystems/perception.launch" >
+  <include file="$(find sub8_launch)/launch/subsystems/perception.launch"/>
 
   <include file="$(find sub8_launch)/launch/subsystems/odometry.launch"/>
 

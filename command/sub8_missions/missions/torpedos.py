@@ -1,7 +1,8 @@
 from txros import util, tf
 import numpy as np
 import rospy
-from sub8_perception.srv import TBDetectionSwitch
+from sub8_msgs.srv import TBDetectionSwitch
+# from sub8_perception.srv import TBDetectionSwitch
 from geometry_msgs.msg import Point, Vector3, Pose, Quaternion
 
 @util.cancellableInlineCallbacks
@@ -12,23 +13,24 @@ def align_to_board(msg, sub):
 def run(sub):
 
     # dive to mission start depth
+    mission_start_depth = float(input("Entered the desired depth for the 'set course' mission: ")) # For pool testing
+    # mission_start_depth = 2.15        # meters
     print "descending to set course mission depth"
-    mission_start_depth = 2.15        # meters
     sub.to_height(mission_start_depth, 0.5)
 
     # Turn on board detection
-    detection_switch = rospy.ServiceProxy('sub8_perception/TBDetectionSwitch', TBDetectionSwitch)
-    detection_switch(true)
+    detection_switch = rospy.ServiceProxy('/torpedo_board/detection_activation_switch', TBDetectionSwitch)
+    detection_switch(True)
     print "Torpedo Board detection activated"
 
     # TODO: Rotate in place so board gets in view
     print "Executing search pattern"
-    yield sub_singleton.move.yaw_left(6.2).zero_roll_and_pitch().go()
+    yield sub.move.yaw_left(3.0).zero_roll_and_pitch().go()
 
     # TODO: once the board moves out of our field of view, stop rotating
     print "Found torpedo board"
     torp_pose_sub = rospy.Subscriber("/torpedo_board/pose", Pose, callback=align_to_board, callback_args=sub)
-    rospy.sleep(10.)
+    rospy.sleep(10)
     torp_pose_sub.unregister()
 
     # TODO: move sub to closest point on the ray eminating from the board centroid normal to the board
