@@ -14,7 +14,9 @@ class BagCrawler(object):
 
     def crawl(self, topic, max_msgs=float('inf')):
         num_seen = 0
-        for topic, msg, t in self.bag.read_messages():
+        for msg_topic, msg, t in self.bag.read_messages():
+            if msg_topic != topic:
+                continue
             if num_seen > max_msgs:
                 break
 

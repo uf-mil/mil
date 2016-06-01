@@ -37,10 +37,10 @@ class Spacenav(object):
         self.client = actionlib.SimpleActionClient('/moveto', uf_common_msgs.MoveToAction)
         # self.client.wait_for_server()
 
+        self.target_pose_pub = rospy.Publisher('/posegoal', PoseStamped, queue_size=1)
         self.odom_sub = rospy.Subscriber('/odom', nav_msgs.Odometry, self.odom_cb, queue_size=1)
         self.twist_sub = rospy.Subscriber('/spacenav/twist', Twist, self.twist_cb, queue_size=1)
         self.joy_sub = rospy.Subscriber('/spacenav/joy', Joy, self.joy_cb, queue_size=1)
-        self.target_pose_pub = rospy.Publisher('/posegoal', PoseStamped, queue_size=1)
 
     def odom_cb(self, msg):
         '''HACK: Intermediate hack until we have tf set up'''

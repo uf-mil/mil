@@ -6,6 +6,9 @@ import rospy
 import image_geometry
 import sub8_ros_tools
 import tf
+from sub8_vision_tools import machine_learning
+import rospkg
+import os
 from collections import deque
 from sub8_vision_tools import threshold_tools, rviz, ProjectionParticleFilter, MultiObservation
 from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D, VisionRequest, VisionRequestResponse
@@ -41,6 +44,19 @@ class BuoyFinder:
 
         # Occasional status publisher
         self.timer = rospy.Timer(rospy.Duration(1.0), self.publish_target_info)
+
+        rospack = rospkg.RosPack()
+        boost_path = os.path.join(
+            rospack.get_path('sub8_perception'),
+            'sub8_vision_tools',
+            'classifiers',
+            'boost.cv2'
+        )
+
+        self.boost = cv2.Boost()
+        rospy.loginfo("Loading boost")
+        self.boost.load(boost_path)
+        rospy.loginfo("Boost loaded")
 
         self.buoys = {
             'green': '/color/buoy/green',
@@ -166,34 +182,26 @@ class BuoyFinder:
             return None
 
     def find_single_buoy(self, img, buoy_type):
+        if buoy_type != 'yellow':
+            return
+
         assert buoy_type in self.buoys[buoy_type], "Buoys_2d does not know buoy color: {}".format(buoy_type)
-        ncc_channel = 2
-        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
-        color_mask, _range = threshold_tools.param_thresh(img, self.buoys[buoy_type])
-        bgr_range = np.average(_range, axis=1)
-
-        hsv_vect = threshold_tools.bgr_vec_to_hsv(bgr_range)
-
-        tries = [5, 7, 11, 15, 18, 25]
         max_area = 0
         best_ret = None
-        for _try in tries:
-            norc = self.ncc(hsv[::2, ::2, ncc_channel], hsv_vect[ncc_channel], scale=_try)
 
-            ncc_mask = cv2.resize(np.uint8(norc > 0.1), None, fx=2, fy=2)
-            mask = color_mask & ncc_mask
+        some_observations = machine_learning.boost.observe(img)
+        prediction2 = [int(x) for x in [self.boost.predict(obs) for obs in some_observations]]
+        mask = np.reshape(prediction2, img[:, :, 2].shape).astype(np.uint8)
+        contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-            contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        ret = self.get_biggest(contours)
+        if ret is None:
+            return
 
-            ret = self.get_biggest(contours)
-            if ret is None:
-                continue
-
-            contour, tuple_center, area = ret
-            if area > max_area:
-                max_area = area
-                best_ret = ret
+        contour, tuple_center, area = ret
+        if area > max_area:
+            max_area = area
+            best_ret = ret
 
         if best_ret is None:
             return False
@@ -201,9 +209,9 @@ class BuoyFinder:
         contour, tuple_center, area = best_ret
         true_center, rad = cv2.minEnclosingCircle(contour)
 
-        if self.camera_model is not None and (buoy_type == 'red'):
+        if self.camera_model is not None and (buoy_type == 'yellow'):
             self.rviz.draw_ray_3d(tuple_center, self.camera_model, self.draw_colors[buoy_type])
-            (t, rot_q) = self.transformer.lookupTransform('/map', '/stereo_front/right', self.last_image_time - rospy.Duration(0.04))
+            (t, rot_q) = self.transformer.lookupTransform('/map', '/stereo_front/right', self.last_image_time - rospy.Duration(0.14))
             trans = np.array(t)
             R = sub8_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
 
