@@ -1,10 +1,15 @@
+import argparse
 import cv2
 import pickle
 import numpy as np
 import rospy
-# from sub8_vision_tools.segmentation import bag_crawler
 import bag_crawler
+import sys
 from matplotlib import pyplot as plt
+"""
+TODO:
+    - Expand existing pickle feature
+"""
 
 
 class Picker(object):
@@ -75,10 +80,27 @@ class Picker(object):
             if key in keys:
                 return key
 
+    def get_biggest_ctr(self, image):
+        contours, _ = cv2.findContours(np.copy(image), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        if len(contours) > 0:
+            cnt = max(contours, key=cv2.contourArea)
+            area = cv2.contourArea(cnt)
+            M = cv2.moments(cnt)
+            cx = int(M['m10'] / M['m00'])
+            cy = int(M['m01'] / M['m00'])
+            tpl_center = (int(cx), int(cy))
+            return cnt
+        else:
+            return None
+
     def segment(self):
+        print 'Keys:'
+        print '\tPress "space" to skip the current image'
+        print '\tPress "q" to quit and save your previous segmentations'
+        print '\tPress w to run segmentation on the image'
         key = self.wait_for_key(' qznw')
         if key in [' ', 'q']:
-                return None, key
+                return None, None, key
         self.done = True
 
         bgdModel = np.zeros((1, 65), np.float64)
@@ -86,30 +108,40 @@ class Picker(object):
 
         out_mask = np.copy(self.mask)
 
-        print 'segmenting'
+        print 'Segmenting...'
         cv2.grabCut(
             self.image,
             out_mask,
             None,
             bgdModel,
             fgdModel,
-            5,
+            1,
             cv2.GC_INIT_WITH_MASK
         )
 
-        display_mask = np.ones(out_mask.shape).astype(np.float64)
-        display_mask[(out_mask == cv2.GC_PR_BGD) | (out_mask == cv2.GC_BGD)] = 0.2
+        return_mask = np.zeros(out_mask.shape).astype(np.float64)
+        display_mask = np.ones(out_mask.shape).astype(np.float64) * 0.1
+        bgnd = (out_mask == cv2.GC_PR_BGD) | (out_mask == cv2.GC_BGD)
+
+        ctr = self.get_biggest_ctr(np.logical_not(bgnd).astype(np.uint8))
+
+        if ctr is not None:
+            cv2.drawContours(display_mask, [ctr], -1, 1, -1)
+            cv2.drawContours(return_mask, [ctr], -1, 1, -1)
 
         display = display_mask[:, :, np.newaxis] * self.image.astype(np.float64)
         cv2.imshow('segment', display / np.max(display))
 
-        # key = chr(cv2.waitKey(1000) & 0xFF)
+        cv2.imshow('all', np.logical_not(bgnd).astype(np.uint8) * 255)
+        print 'Keys:'
+        print '\tPress "space" to skip the current segmentation'
+        print '\tPress "q" to quit and save all segmentations including this'
+        print '\tPress w record this segmentation and move on to the next image'
         key = self.wait_for_key('qnzw ')
         if key in [' ', 'q']:
-                return None, key
+                return None, None, key
 
-        display_int = (255 * display) / np.max(display).astype(np.uint8)
-        return out_mask, key
+        return out_mask, return_mask, key
 
     def save(self, mask):
         data = {"image": self.image, 'classes': mask}
@@ -117,25 +149,58 @@ class Picker(object):
 
 
 if __name__ == '__main__':
-    # img = cv2.imread('/home/jacob/Downloads/buoy.jpg')[::10, ::10, :]
-    bag = '/home/jacob/catkin_ws/src/Sub8/gnc/sub8_perception/data/bag_test.bag'
+    usage_msg = ("Pass the path to a bag, and we'll crawl through the images in it")
+    desc_msg = "A tool for making manual segmentation fun! I am sorry the keyboard shortcuts are nonsense"
+
+    parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
+    parser.add_argument(dest='bag',
+                        help="The topic name you'd like to listen to")
+    parser.add_argument('--topic', type=str, help="Name of the topic to use")
+    parser.add_argument('--append', type=str, help="Path to a file to append to")
+    parser.add_argument('--output', type=str, help="Path to a file to output to (and overwrite)",
+                        default='segments.p')
+    parser.add_argument('--brush_size', type=int, help="Brush size",
+                        default=3)
+
+    args = parser.parse_args(sys.argv[1:])
+
+    bag = args.bag
     bc = bag_crawler.BagCrawler(bag)
 
-    data = []
+    if args.append is None:
+        print 'Creating new pickle'
+        data = []
+    else:
+        data = pickle.load(open(args.append, "rb"))
 
+    print bc.image_topics[0]
+    print bc.image_topics[0]
     last_mask = None
-    for image in bc.crawl(topic=bc.image_topics[0]):
-        p = Picker(image, brush_size=3, initial_mask=last_mask)
-        last_mask, key = p.segment()
+    num_imgs = len(data)
+
+    if args.topic is not None:
+        assert args.topic in bc.image_topics, "{} not in the bag".format(args.topic)
+        print 'Crawling topic {}'.format(args.topic)
+        crawl = bc.crawl(topic=args.topic)
+    else:
+        crawl = bc.crawl(topic=bc.image_topics[0])
+
+    for image in crawl:
+        num_imgs += 1
+        print 'On image #{}'.format(num_imgs)
+        p = Picker(image, brush_size=args.brush_size, initial_mask=last_mask)
+        last_mask, last_targets, key = p.segment()
         if key == 'q':
             break
         elif key == ' ':
             print 'ignoring image'
             continue
+        elif key == 'z':
+            print 'saving output'
+            pickle.dump(data, open(args.output, 'wb'))
 
         print 'recording'
-        data.append((image, last_mask))
+        data.append((image, last_targets))
 
-    pickle.dump(data, open('segments.p', 'wb'))
-
-    # p.save(mask)
+    print 'saving output'
+    pickle.dump(data, open(args.output, 'wb'))
