@@ -7,7 +7,7 @@ from geometry_msgs.msg import WrenchStamped, PoseWithCovariance, TwistWithCovari
 from sensor_msgs.msg import LaserScan
 from gazebo_msgs.srv import ApplyBodyWrench
 from gazebo_msgs.msg import LinkStates, ModelState
-from sub8_msgs.srv import ResetGazebo, ResetGazeboResponse
+from sub8_gazebo.srv import ResetGazebo, ResetGazeboResponse
 from uf_common.msg import Float64Stamped
 import numpy as np
 import os
@@ -156,7 +156,6 @@ class GazeboInterface(object):
             self.position_offset[2] = 0
 
         self.last_odom = msg
-
 
 if __name__ == '__main__':
     rospy.init_node('gazebo_interface')

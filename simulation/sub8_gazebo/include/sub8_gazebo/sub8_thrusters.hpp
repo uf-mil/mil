@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <vector>
 #include <map>
+#include <cmath>
 #include "gazebo/common/Assert.hh"
 #include "gazebo/common/Events.hh"
 #include "gazebo/common/Event.hh"
@@ -57,6 +58,7 @@ class ThrusterPlugin : public ModelPlugin {
   physics::PhysicsEnginePtr physicsEngine;
   sdf::ElementPtr sdf;
   std::string layoutParam;
+  double minAbsThrust;
   std::map<std::string, Thruster> thrusterMap;
   physics::LinkPtr targetLink;
   ros::Time lastTime;

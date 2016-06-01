@@ -5,10 +5,10 @@ import rospy
 import txros
 from geometry_msgs.msg import Pose, Point, Quaternion
 from nav_msgs.msg import Odometry
-from sub8_msgs.srv import RunJob, RunJobResponse
-import tf
+from sub8_gazebo.srv import RunJob, RunJobResponse
 from sub8_ros_tools import msg_helpers
 import job_runner
+import tf
 
 from twisted.internet import reactor, defer
 import numpy as np

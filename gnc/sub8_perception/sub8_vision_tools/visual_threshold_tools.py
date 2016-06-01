@@ -49,15 +49,15 @@ def mlab_color_imshow(image, **kwargs):
     return mlab_imshow
 
 
-def points_with_labels(x, y, z, labels, **kwargs):
+def points_with_labels(x, y, z, labels, downsample=1, **kwargs):
     label_range = np.unique(labels)
     maxlabel = np.max(label_range)
 
     for label_candidate in label_range:
         color_hsv = ((label_candidate + 1) / (maxlabel + 1), 0.7, 0.8)
-        x_ = x[labels == label_candidate]
-        y_ = y[labels == label_candidate]
-        z_ = z[labels == label_candidate]
+        x_ = x[labels == label_candidate][::downsample]
+        y_ = y[labels == label_candidate][::downsample]
+        z_ = z[labels == label_candidate][::downsample]
         mlab.points3d(x_, y_, z_, color=color_hsv, colormap='hsv', **kwargs)
 
 

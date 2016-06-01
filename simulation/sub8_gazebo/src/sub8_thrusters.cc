@@ -31,6 +31,13 @@ void ThrusterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
     GZ_ASSERT(false, "Requires layout_param to be set!");
   }
 
+  if (this->sdf->HasElement("min_abs_thrust")) {
+    this->minAbsThrust = this->sdf->Get<double>("min_abs_thrust");
+  } else {
+    GZ_ASSERT(false, "Requires layout_param to be set!");
+  }
+
+
   // Apply to multiple links
   GZ_ASSERT(this->sdf->HasElement("link"), "Must have a link specified!");
 
@@ -82,6 +89,11 @@ void ThrusterPlugin::OnUpdate() {
   for (auto thrustCmd : cmdBuffer) {
     const std::string name = thrustCmd.name;
     const double thrust = thrustCmd.thrust;
+
+    if (std::abs(thrust) < this->minAbsThrust) {
+      // Apply no force
+      continue;
+    }
 
     // clamp idea from: https://www.c-plusplus.net/forum/323030-full
     // email me (jake) if you ever find this line
