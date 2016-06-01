@@ -1,15 +1,21 @@
+#!/bin/bash
 GOODCOLOR='\033[1;36m'
-WARNCOLOR='\e[31m'
-NC='\033[0m' # No Color
+WARNCOLOR='\033[1;31m'
+NOCOLOR='\033[0m'
 GOODPREFIX="${GOODCOLOR}INSTALLER:"
-WARNPREFIX="${WARNCOLOR}INSTALLER:"
+WARNPREFIX="${WARNCOLOR}ERROR:"
+
+# Sane installation defaults for no argument cases
+CATKIN_DIR=~/repos/catkin_ws
+REQUIRED_OS="trusty"
+SEMAPHORE=false
 
 instlog() {
-    printf "$GOODPREFIX $@ $NC\n"
+    printf "$GOODPREFIX $@ $NOCOLOR\n"
 }
 
 instwarn() {
-    printf "$WARNPREFIX $@ $NC\n"
+    printf "$WARNPREFIX $@ $NOCOLOR\n"
 }
 
 ros_git_get() {
@@ -45,32 +51,4 @@ ros_git_get() {
         instlog "Installing $INSTALL_URL in $INSTALL_FOLDER"
         git clone -q $INSTALL_URL --depth=1
     fi
-}
-
-python_from_git() {
-    # ex: python_from_git https://github.com/noamraph/tqdm.git tqdm
-    # 3rd argument is path to setup.py
-    # ex: python_from_git https://github.com/txros/txros.git txros txros/txros
-    PKG_URL=$1
-    PKG_NAME=$2
-    if [ $# -lt 3 ]; then
-        SETUP_PATH="$PKG_NAME"
-    else
-        SETUP_PATH=$3
-    fi
-    if pip freeze | grep -i $PKG_NAME; then
-        instlog "Already have python package $PKG_NAME"
-        return
-    else
-        instlog "Installing package $PKG_NAME"
-    fi
-
-    cd $DEPS_DIR
-    git clone -q $PKG_URL
-    cd $SETUP_PATH
-    if [ $# -eq 4 ]; then
-        COMMIT=$4
-        git checkout $COMMIT
-    fi
-    sudo python setup.py install
 }

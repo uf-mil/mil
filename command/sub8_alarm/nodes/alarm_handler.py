@@ -29,10 +29,10 @@ class AlarmHandler(object):
             # Discard __* nonsense
             if not candidate_alarm_name.startswith('_'):
                 # Verify that it is actually an alarm handler
-                CandidateAlarmModule = getattr(alarms, candidate_alarm_name)
-                if hasattr(CandidateAlarmModule, 'Handler'):
-                    rospy.logerr(CandidateAlarmModule.Handler.alarm_name)
-                    self.scenarios[CandidateAlarmModule.Handler.alarm_name] = CandidateAlarmModule.Handler()
+                CandidateScenarioModule = getattr(alarms, candidate_alarm_name)
+                if hasattr(CandidateScenarioModule, 'Handler'):
+                    rospy.loginfo("Registered scenario with name {}".format(CandidateScenarioModule.Handler.alarm_name))
+                    self.scenarios[CandidateScenarioModule.Handler.alarm_name] = CandidateScenarioModule.Handler()
 
     def republish_alarms(self, *args):
         for alarm_name, alarm in self.alarms.items():

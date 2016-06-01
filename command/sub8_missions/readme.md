@@ -4,20 +4,22 @@ Sub Mission Manager
 # Running the sub
 
 ```shell
-    # Only works if you're the sub!
-    roslaunch sub8_launch sub8.launch
+
     # If you're not the sub
     rosparam set /draw false  # Set to true if you want visualization
-    roslaunch sub8_simulation sim_full.launch
+    roslaunch sub8_gazebo duck.launch
 ```
 
-# Running the 3d mouse waypoint tool
+# Running shore control (3d mouse)
 
 ```shell
-    roslaunch sub8_launch waypoint_tool.launch
+    roslaunch sub8_launch shore_control.launch
 ```
 
 To get results that are useful, you'll want to set up rviz to visualize tf, /wrench, /posegoal, and /odom (Set odom and posegoal to use axes instead of arrow). I use /odom, keeping a bunch of arrows, for some indication that movement has actually happened.
+
+Orintation of axis markers with respect to sub:
+	Red is forward, Green is left, Blue is up
 
 With the wire facing away from you, right-button will snap the posegoal to the sub's current pose, and left-button will make the sub go to the current posegoal
 

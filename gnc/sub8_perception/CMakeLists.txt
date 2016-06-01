@@ -24,23 +24,11 @@ catkin_python_setup()
 
 find_package(PCL 1.7 REQUIRED)
 
-add_service_files( DIRECTORY srv
-  FILES
-  TorpBoardPoseRequest.srv
-  TBDetectionSwitch.srv
-)
-
-generate_messages(
-  DEPENDENCIES
-    std_msgs
-    geometry_msgs
-)
-
 catkin_package(
   INCLUDE_DIRS
     include
   LIBRARIES
-    sub8_pcl
+    sub8_vision_lib
   CATKIN_DEPENDS
     roscpp
     rospy
@@ -65,22 +53,18 @@ include_directories(
     ${catkin_INCLUDE_DIRS}
 )
 
-if(${VISUALIZE})
-  add_definitions(-DVISUALIZE)
-endif(${VISUALIZE})
-
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-add_library(sub8_pcl SHARED
-    src/sub8_pcl/align.cc
-    src/sub8_pcl/cv_utils.cc
-    src/sub8_pcl/cv_param_helpers.cc
-    src/sub8_pcl/visualization.cc
+add_library(sub8_vision_lib SHARED
+    src/sub8_vision_lib/align.cc
+    src/sub8_vision_lib/cv_utils.cc
+    src/sub8_vision_lib/cv_param_helpers.cc
+    src/sub8_vision_lib/visualization.cc
 )
 
 target_link_libraries(
-  sub8_pcl
+  sub8_vision_lib
     ${catkin_LIBRARIES}
     ${PCL_COMMON_LIBRARIES}
     ${PCL_IO_LIBRARIES}
@@ -90,7 +74,7 @@ target_link_libraries(
     dl
 )
 
-install(TARGETS sub8_pcl
+install(TARGETS sub8_vision_lib
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -107,28 +91,22 @@ file(GLOB BUOY_SOURCES
 )
 
 add_executable(
-  pcl_perception
-    nodes/perception.cc
-    src/sub8_pcl/torpedo_board.cc
+  torpedos_cpp
+    nodes/torpedo_board.cc
 )
 
 add_dependencies(
-  pcl_perception
+  torpedos_cpp
    sub8_msgs_generate_messages_cpp
    ${catkin_EXPORTED_TARGETS}
 )
 
 target_link_libraries(
-  pcl_perception
-    sub8_pcl
+  torpedos_cpp
+    sub8_vision_lib
     ${catkin_LIBRARIES}
-    ${PCL_COMMON_LIBRARIES}
-    ${PCL_IO_LIBRARIES}
-    ${PCL_LIBRARIES}
     ${Boost_LIBRARIES}
     ${OpenCV_INCLUDE_DIRS}
-    bfd
-    dl
 )
 
 add_executable(
@@ -145,7 +123,7 @@ add_dependencies(
 
 target_link_libraries(
   pcl_buoy
-    sub8_pcl
+    sub8_vision_lib
     ${catkin_LIBRARIES}
     ${PCL_COMMON_LIBRARIES}
     ${PCL_IO_LIBRARIES}

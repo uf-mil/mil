@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="sub8_alarm" type="network_listener.py" name="network_listener" />
+  <node pkg="sub8_alarm" type="alarm_handler.py" name="alarm_handler" />
+  <node pkg="kill_handling" type="kill_master" name="kill_master" />
+</launch>

@@ -23,8 +23,8 @@
 
 #include <eigen_conversions/eigen_msg.h>
 #include <Eigen/StdVector>
-#include <sub8_pcl/pcl_tools.hpp>
-#include <sub8_pcl/cv_tools.hpp>
+#include <sub8_vision_lib/pcl_tools.hpp>
+#include <sub8_vision_lib/cv_tools.hpp>
 
 #include "ros/ros.h"
 

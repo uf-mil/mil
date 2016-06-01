@@ -2,14 +2,21 @@
 <package format="2">
 
   <name>sub8_gazebo</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>The sub8_gazebo package</description>
 
+  <maintainer email="matthew.langford95@gmail.com">Matthew</maintainer>
   <maintainer email="guojiyao@todo.todo">Jiyao</maintainer>
   <maintainer email="jpanikulam@ufl.edu">Jake</maintainer>
+
   <depend>sub8_msgs</depend>
+  <depend>std_msgs</depend>
   <depend>roscpp</depend>
+  <depend>rospy</depend>
   <depend>gazebo_ros</depend>
+  <depend>message_generation</depend>
+  <build_export_depend>message_runtime</build_export_depend>
+  <exec_depend>message_runtime</exec_depend>
 
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
