@@ -13,13 +13,13 @@ instlog "Making sure we're in the catkin directory"
 # Check if a file called CMakeLists.txt is present
 if ! ls | grep --quiet CMakeLists.txt; then
     instwarn "Could not find a file called CMakeLists.txt"
-    instwarn "Need to be in catkin_ws/src, install failed"
+    instwarn "Need to be in sub_ws/src, install failed"
     exit 1
 fi
 
 # Check if the working directory is src
 if ! [ $(basename $PWD) == "src" ]; then
-    instwarn "Need to be in catkin_ws/src, install failed"
+    instwarn "Need to be in sub_ws/src, install failed"
     exit 1
 fi
 
@@ -30,6 +30,7 @@ fi
 instlog "Installing dependencies from the Ubuntu repositories"
 sudo apt-get update -qq
 sudo apt-get install -qq python-scipy python-pygame python-numpy python-serial
+sudo apt-get install -qq python-twisted socat
 sudo apt-get install -qq cmake binutils-dev python-pip
 sudo apt-get install -qq libvtk5-dev python-vtk
 sudo apt-get install -qq libboost-all-dev python-dev python-qt4-dev python-qt4-gl python-opengl freeglut3-dev libassimp-dev
