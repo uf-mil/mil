@@ -6,7 +6,7 @@ GOODPREFIX="${GOODCOLOR}INSTALLER:"
 WARNPREFIX="${WARNCOLOR}ERROR:"
 
 # Sane installation defaults for no argument cases
-CATKIN_DIR=~/repos/catkin_ws
+CATKIN_DIR=~/repos/sub_ws
 REQUIRED_OS="trusty"
 SEMAPHORE=false
 
@@ -32,8 +32,8 @@ fi
 while [ "$#" -gt 0 ]; do
   case $1 in
     -h) printf "\nUsage: $0 \n
-    [-c] catkin_workspace (Recommend: ~/repos/catkin_ws)\n
-    example: ./install.sh -c ~/repos/catkin_ws
+    [-c] catkin_workspace (Recommend: ~/repos/sub_ws)\n
+    example: ./install.sh -c ~/repos/sub_ws
     \n"; exit ;;
     # TODO: Use this to check if catkin ws already set up
     -c) CATKIN_DIR="$2"
@@ -46,7 +46,7 @@ done
 if ls ~/ | grep --quiet Sub8$; then
     instlog "Found Sub8 in HOME, Assuming we're in Semaphore"
     SEMAPHORE=true
-    CATKIN_DIR=~/repos/catkin_ws
+    CATKIN_DIR=~/repos/sub_ws
 fi
 
 
