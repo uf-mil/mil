@@ -122,6 +122,11 @@ if !(ls "$CATKIN_DIR/src" | grep --quiet "Sub8"); then
     instlog "Make sure you change your git to point to your own fork! (git remote add origin your_forks_url)"
 fi
 
+# Update the hosts file if necessary
+if (env | grep --quiet "SUB=true"); then
+    $CATKIN_DIR/src/Sub8/scripts/update-hosts.bash
+fi
+
 # Install external dependencies with another script
 instlog "Running the get_dependencies.sh script to update external dependencies"
 cd $CATKIN_DIR/src
