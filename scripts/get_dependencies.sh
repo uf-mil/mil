@@ -30,6 +30,7 @@ fi
 instlog "Installing dependencies from the Ubuntu repositories"
 sudo apt-get update -qq
 sudo apt-get install -qq python-scipy python-pygame python-numpy python-serial
+sudo apt-get install -qq python-twisted socat
 sudo apt-get install -qq cmake binutils-dev python-pip
 sudo apt-get install -qq libvtk5-dev python-vtk
 sudo apt-get install -qq libboost-all-dev python-dev python-qt4-dev python-qt4-gl python-opengl freeglut3-dev libassimp-dev
