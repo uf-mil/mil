@@ -4,6 +4,7 @@ Ken:
 
 - [ ] Organize Hardware
 - [ ] Sonar Box
+- [ ] Make end effectors for mission components
 - [ ] Imaging Sonar Mount
 - [ ] New cage for IS
 - [ ] Make list of mech. constraints
