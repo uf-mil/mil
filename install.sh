@@ -6,7 +6,7 @@ GOODPREFIX="${GOODCOLOR}INSTALLER:"
 WARNPREFIX="${WARNCOLOR}ERROR:"
 
 # Sane installation defaults for no argument cases
-CATKIN_DIR=~/repos/sub_ws
+CATKIN_DIR=~/sub_ws
 REQUIRED_OS="trusty"
 
 instlog() {
@@ -32,8 +32,8 @@ fi
 while [ "$#" -gt 0 ]; do
   case $1 in
     -h) printf "\nUsage: $0 \n
-    [-c] catkin_workspace (Recommend: ~/repos/sub_ws)\n
-    example: ./install.sh -c ~/repos/sub_ws
+    [-c] catkin_workspace (Recommend: ~/sub_ws)\n
+    example: ./install.sh -c ~/sub_ws
     \n"; exit ;;
     # TODO: Use this to check if catkin ws already set up
     -c) CATKIN_DIR="$2"
@@ -74,6 +74,7 @@ sudo apt-get install -qq python-catkin-pkg python-rosdep gazebo7
 # Sources ROS configurations for bash on this user account
 source /opt/ros/indigo/setup.bash
 if !(cat ~/.bashrc | grep --quiet "source /opt/ros"); then
+    echo $'\n' >> ~/.bashrc
     echo "source /opt/ros/indigo/setup.bash" >> ~/.bashrc
 fi
 
@@ -108,7 +109,6 @@ fi
 # Sources the workspace's configurations for bash on this user account
 source "$CATKIN_DIR/devel/setup.bash"
 if !(cat ~/.bashrc | grep --quiet "source $CATKIN_DIR/devel/setup.bash"); then
-    echo $'\n' >> ~/.bashrc
     echo "source $CATKIN_DIR/devel/setup.bash" >> ~/.bashrc
 fi
 
