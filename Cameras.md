@@ -82,9 +82,14 @@ IIDC cameras are __EXTREMELY__ finicky. Changing certain settings will cause the
 
 After all of this you might be wondering why we're not using the [ros_pointgrey_driver](https://github.com/ros-drivers/pointgrey_camera_driver) instead of doing all of this stuff. As of Dec. 2015, the driver is not usable for our purposes. Running more than one flycapture instance was __INCREDIBLY__ inconsistent and finicky. 
 
+Additionally, killing specific cameras via software has not been implemented. The utility provided kills a random camera, and when run multiple times it will always kill that camera. A reset utility still has to be made.
+
+# Notes on the downward camera
+
+The downward-facing camera is using a 1.55mm lens. This gives us a FOV of approximately 140°, which means that we should be treating this as an omnidirectional camera. Calibration will have to carried out using OCamCalib (???) or some other yet-to-be-determined package. Updates will be posted shortly.  
+
 # TODO
-- [ ] Add section on image_proc/debayer/rect
-- [ ] Take another look at ros_pointgrey_driver
-- [ ] Automate this process
+- [ ] Add camera reset utility (HIGH PRIORITY)
+- [ ] Add lens selection & calibration parameters 
+- [ ] Automate camera installation process
 - [ ] Set frame rate without the use of coriander
-- [ ] Host Point Grey SDK elsewhere
