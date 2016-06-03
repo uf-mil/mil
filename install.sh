@@ -74,7 +74,7 @@ sudo apt-get install -qq python-catkin-pkg python-rosdep gazebo7
 # Sources ROS configurations for bash on this user account
 source /opt/ros/indigo/setup.bash
 if !(cat ~/.bashrc | grep --quiet "source /opt/ros"); then
-    echo $'\n' >> ~/.bashrc
+    echo "" >> ~/.bashrc
     echo "source /opt/ros/indigo/setup.bash" >> ~/.bashrc
 fi
 
