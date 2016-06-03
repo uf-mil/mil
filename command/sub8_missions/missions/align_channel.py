@@ -1,3 +1,5 @@
+from __future__ import division
+
 import txros
 from txros import util
 import rospy
@@ -10,49 +12,53 @@ from image_geometry import PinholeCameraModel
 
 import numpy as np
 
+SEARCH_DEPTH = .65
+
 
 @util.cancellableInlineCallbacks
 def run(sub_singleton):
     global marker_found
 
-    print "Searching"
     nh = sub_singleton._node_handle
-    next_pose = yield nh.get_service_client('/next_search_pose', SearchPose)
+    #next_pose = yield nh.get_service_client('/next_search_pose', SearchPose)
     cam = PinholeCameraModel()
 
     # Go to max height to see as much as we can.
-    yield sub_singleton.move.depth(0.6).zero_roll_and_pitch().go()
+    yield sub_singleton.move.depth(SEARCH_DEPTH).zero_roll_and_pitch().go()
     yield nh.sleep(1.0)
 
+    # ---------------------------------------
+    # MOST OF THIS IS FOR THE SEARCH PATTERN.
+    # ---------------------------------------
     # This is just to get camera info
     resp = yield sub_singleton.channel_marker.get_2d()
     cam.fromCameraInfo(resp.camera_info)
 
-    intial_pose = sub_singleton.last_pose()
-    intial_height = yield sub_singleton.get_dvl_range()
-    raidus = calculate_visual_radius(cam, intial_height)
+    # intial_pose = sub_singleton.last_pose()
+    # intial_height = yield sub_singleton.get_dvl_range()
+    # radius = calculate_visual_radius(cam, intial_height)
 
-    s = SearchPoseRequest()
-    s.intial_position = (yield intial_pose).pose.pose
-    s.search_radius = raidus
-    s.reset_search = True
-    yield next_pose(s)
-    s.reset_search = False
+    # s = SearchPoseRequest()
+    # s.intial_position = (yield intial_pose).pose.pose
+    # s.search_radius = radius
+    # s.reset_search = True
+    # yield next_pose(s)
+    # s.reset_search = False
 
     marker_found = False
     goer = go_to_marker(nh, sub_singleton, cam)
 
-    while not marker_found:
-        # Move in search pattern until we find the marker
-        resp = yield next_pose(s)
-        print resp
+    # while not marker_found:
+    #     # Move in search pattern until we find the marker
+    #     resp = yield next_pose(s)
+    #     print resp
 
-        if resp.area > .8:
-            continue
+    #     if resp.area > .8:
+    #         continue
 
-        print pose_to_numpy(resp.target_pose)[0]
-        yield sub_singleton.move.set_position(pose_to_numpy(resp.target_pose)[0]).zero_roll_and_pitch().go()
-        print "Searcher arrived"
+    #     print pose_to_numpy(resp.target_pose)[0]
+    #     yield sub_singleton.move.set_position(pose_to_numpy(resp.target_pose)[0]).zero_roll_and_pitch().go()
+    #     print "Searcher arrived"
 
     yield goer
 
@@ -63,37 +69,38 @@ def go_to_marker(nh, sub_singleton, cam):
     Continuously look for a marker. If one is found stop looping everywhere and go to it.
     '''
     global marker_found
+    print "Searching"
     while not marker_found:
         response = yield sub_singleton.channel_marker.get_2d()
         print response.found
         marker_found = response.found
+
+        # If we find it, go to the marker.
+        if marker_found:
+            target_position = yield transform_px_to_m(response, cam, sub_singleton._tf_listener)
+            print target_position, response.pose.theta
+            yield sub_singleton.move.set_position(target_position).yaw_left(response.pose.theta).zero_roll_and_pitch().go()
+
         yield nh.sleep(.5)
 
     # How many times should we attempt to reposition ourselves
     iterations = 4
-    # Used to stop
-    last_target_position = np.array([np.inf, np.inf, np.inf])
+    # To make sure we don't go too far off.
+    est_target_rotations = []
     for i in range(iterations):
         print "Iteration {}.".format(i + 1)
         response = yield sub_singleton.channel_marker.get_2d()
 
-        if not response.found:
-            # We had a problem before when we though we saw something.
-            marker_found = False
-            break
-
+        # Convert pixel coordinate to real world coordintates
         target_position = yield transform_px_to_m(response, cam, sub_singleton._tf_listener)
-        print target_position
 
-        yield sub_singleton.move.set_position(target_position).yaw_left(response.pose.theta).zero_roll_and_pitch().go()
+        est_target_rotations.append(response.pose.theta)
+        avg_rotation = sum(est_target_rotations) / len(est_target_rotations)
 
-        # Check if the past two targets were found in the same place - if so, stop.
-        if np.isclose(target_position[:2], last_target_position[:2], atol=.05).all():
-            print "Close enough!"
-            break
+        print "Target position: {}, Rotation: {}, Avg rotation: {}.".format(target_position, response.pose.theta, avg_rotation)
+        yield sub_singleton.move.set_position(target_position).yaw_left(avg_rotation).zero_roll_and_pitch().go()
 
-        last_target_position = target_position
-        yield nh.sleep(5.0)
+        yield nh.sleep(3.0)
 
 
 @util.cancellableInlineCallbacks
@@ -117,7 +124,7 @@ def transform_px_to_m(response, cam, tf_listener):
 
     # Calculate distance from middle of frame to marker in meters.
     magnitude = calculate_visual_radius(cam, height, second_point=[response.pose.x, response.pose.y])
-    abs_position = np.append(transform._p[:2] + dir_vector[::-1] * magnitude, transform._p[2])
+    abs_position = np.append(transform._p[:2] + dir_vector[::-1] * magnitude, -SEARCH_DEPTH)
     defer.returnValue(abs_position)
 
 

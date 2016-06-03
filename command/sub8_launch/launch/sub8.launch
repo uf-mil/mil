@@ -8,6 +8,8 @@
     <arg name="depth" value="true" />
   </include>
 
+  <include file="$(find sub8_launch)/launch/subsystems/perception.launch"/>
+
   <include file="$(find sub8_launch)/launch/subsystems/odometry.launch"/>
 
   <node pkg="kill_handling" type="kill_master" name="kill_master"/>

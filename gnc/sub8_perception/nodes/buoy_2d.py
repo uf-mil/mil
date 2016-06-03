@@ -6,10 +6,14 @@ import rospy
 import image_geometry
 import sub8_ros_tools
 import tf
-from sub8_vision_tools import threshold_tools, rviz, ProjectionParticleFilter
-from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D
+from sub8_vision_tools import machine_learning
+import rospkg
+import os
+from collections import deque
+from sub8_vision_tools import threshold_tools, rviz, ProjectionParticleFilter, MultiObservation
+from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D, VisionRequest, VisionRequestResponse
 from std_msgs.msg import Header
-from geometry_msgs.msg import Pose2D
+from geometry_msgs.msg import Pose2D, PoseStamped, Pose, Point
 
 
 class BuoyFinder:
@@ -27,14 +31,32 @@ class BuoyFinder:
         self.camera_model = None
         self.last_t = None
 
+        self.observations = deque()
+        self.pose_pairs = deque()
+
         self.rviz = rviz.RvizVisualizer()
 
-        self.pose_service = rospy.Service('vision/buoy/2D', VisionRequest2D, self.request_buoy)
+        self.pose2d_service = rospy.Service('vision/buoys/2D', VisionRequest2D, self.request_buoy)
+        self.pose_service = rospy.Service('vision/buoys/pose', VisionRequest, self.request_buoy3d)
+
         self.image_sub = sub8_ros_tools.Image_Subscriber('/stereo/right/image_rect_color', self.image_cb)
         self.image_pub = sub8_ros_tools.Image_Publisher('/vision/buoy_2d/target_info')
 
         # Occasional status publisher
         self.timer = rospy.Timer(rospy.Duration(1.0), self.publish_target_info)
+
+        rospack = rospkg.RosPack()
+        boost_path = os.path.join(
+            rospack.get_path('sub8_perception'),
+            'sub8_vision_tools',
+            'classifiers',
+            'boost.cv2'
+        )
+
+        self.boost = cv2.Boost()
+        rospy.loginfo("Loading boost")
+        self.boost.load(boost_path)
+        rospy.loginfo("Boost loaded")
 
         self.buoys = {
             'green': '/color/buoy/green',
@@ -43,6 +65,7 @@ class BuoyFinder:
         }
 
         self.ppf = None
+        self.multi_obs = None
 
         self.draw_colors = {
             'green': (0.0, 1.0, 0.0, 1.0),
@@ -57,7 +80,7 @@ class BuoyFinder:
         if response is False:
             print 'did not find'
             resp = VisionRequest2DResponse(
-                header=sub8_ros_tools.make_header(frame='/stereo_front'),
+                header=sub8_ros_tools.make_header(frame='/stereo_front/right'),
                 found=False
             )
 
@@ -65,7 +88,7 @@ class BuoyFinder:
             # Fill in
             center, radius = response
             resp = VisionRequest2DResponse(
-                header=Header(stamp=self.last_image_time, frame_id='/stereo_front'),
+                header=Header(stamp=self.last_image_time, frame_id='/stereo_front/right'),
                 pose=Pose2D(
                     x=center[0],
                     y=center[1],
@@ -74,6 +97,35 @@ class BuoyFinder:
                 max_y=self.last_image.shape[1],
                 camera_info=self.image_sub.camera_info,
                 found=True
+            )
+        return resp
+
+    def request_buoy3d(self, srv):
+        print "Requesting 3d pose"
+
+        if (len(self.observations) > 5) and self.multi_obs is not None:
+            estimated_pose = self.multi_obs.multilaterate(self.observations, self.pose_pairs)
+            self.rviz.draw_sphere(estimated_pose, color=(0.2, 0.8, 0.0, 1.0), scaling=(0.5, 0.5, 0.5), frame='/map')
+            resp = VisionRequestResponse(
+                pose=PoseStamped(
+                    header=Header(stamp=self.last_image_time, frame_id='/map'),
+                    pose=Pose(
+                        position=Point(*estimated_pose)
+                    )
+                ),
+                found=True
+            )
+        else:
+            if len(self.observations) <= 5:
+                rospy.logerr("Did not attempt search because we did not have enough observations")
+            else:
+                rospy.logerr("Did not attempt search because buoys_2d was not fully initialized")
+
+            resp = VisionRequestResponse(
+                pose=PoseStamped(
+                    header=Header(stamp=self.last_image_time, frame_id='/map'),
+                ),
+                found=False
             )
         return resp
 
@@ -95,7 +147,7 @@ class BuoyFinder:
 
             self.camera_model = image_geometry.PinholeCameraModel()
             self.camera_model.fromCameraInfo(self.image_sub.camera_info)
-            self.ppf = ProjectionParticleFilter(self.camera_model, max_Z=15, salting=0.05, jitter_prob=0)
+            self.multi_obs = MultiObservation(self.camera_model)
 
     def ncc(self, image, mean_thresh, scale=15):
         '''Compute normalized cross correlation w.r.t a shadowed pillbox fcn
@@ -130,34 +182,26 @@ class BuoyFinder:
             return None
 
     def find_single_buoy(self, img, buoy_type):
+        if buoy_type != 'yellow':
+            return
+
         assert buoy_type in self.buoys[buoy_type], "Buoys_2d does not know buoy color: {}".format(buoy_type)
-        ncc_channel = 2
-        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
-        color_mask, _range = threshold_tools.param_thresh(img, self.buoys[buoy_type])
-        bgr_range = np.average(_range, axis=1)
-
-        hsv_vect = threshold_tools.bgr_vec_to_hsv(bgr_range)
-
-        tries = [5, 7, 11, 15, 18, 25]
         max_area = 0
         best_ret = None
-        for _try in tries:
-            norc = self.ncc(hsv[::2, ::2, ncc_channel], hsv_vect[ncc_channel], scale=_try)
 
-            ncc_mask = cv2.resize(np.uint8(norc > 0.1), None, fx=2, fy=2)
-            mask = color_mask & ncc_mask
+        some_observations = machine_learning.boost.observe(img)
+        prediction2 = [int(x) for x in [self.boost.predict(obs) for obs in some_observations]]
+        mask = np.reshape(prediction2, img[:, :, 2].shape).astype(np.uint8)
+        contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-            contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        ret = self.get_biggest(contours)
+        if ret is None:
+            return
 
-            ret = self.get_biggest(contours)
-            if ret is None:
-                continue
-
-            contour, tuple_center, area = ret
-            if area > max_area:
-                max_area = area
-                best_ret = ret
+        contour, tuple_center, area = ret
+        if area > max_area:
+            max_area = area
+            best_ret = ret
 
         if best_ret is None:
             return False
@@ -165,30 +209,24 @@ class BuoyFinder:
         contour, tuple_center, area = best_ret
         true_center, rad = cv2.minEnclosingCircle(contour)
 
-        if self.camera_model is not None:
+        if self.camera_model is not None and (buoy_type == 'yellow'):
             self.rviz.draw_ray_3d(tuple_center, self.camera_model, self.draw_colors[buoy_type])
+            (t, rot_q) = self.transformer.lookupTransform('/map', '/stereo_front/right', self.last_image_time - rospy.Duration(0.14))
+            trans = np.array(t)
+            R = sub8_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
 
-            if buoy_type == 'red' and not self.done_once:
-                # self.done_once = True
+            if (self.last_t is None) or (np.linalg.norm(trans - self.last_t) > 0.3):
+                self.last_t = trans
+                self.observations.append(true_center)
+                self.pose_pairs.append((t, R))
 
-                (t, rot_q) = self.transformer.lookupTransform('/map', '/stereo_front/right', self.last_image_time)
-                trans = np.array(t)
+            if len(self.observations) > 5:
+                est = self.multi_obs.multilaterate(self.observations, self.pose_pairs)
+                self.rviz.draw_sphere(est, color=(0.9, 0.1, 0.0, 1.0), scaling=(0.3, 0.3, 0.3), frame='/map')
 
-                if (self.last_t is None) or (np.linalg.norm(trans - self.last_t) > 0.3):
-                    self.last_t = trans
-                    self.ppf.set_pose(trans, sub8_ros_tools.geometry_helpers.quaternion_matrix(rot_q))
-                    est, cov = self.ppf.observe(true_center)
-                    self.rviz.draw_sphere(est, color=(0.9, 0.1, 0.0, 1.0), scaling=tuple(cov), frame='/map')
-                    k = 6
-                    for particle in self.ppf.particles[:, ::50].transpose():
-                        k += 1
-                        self.rviz.draw_sphere(
-                            particle,
-                            color=(0.8, 0.2, 0.0, 0.7),
-                            scaling=(0.05, 0.05, 0.05),
-                            _id=k,
-                            frame='/map'
-                        )
+            if len(self.observations) > 10:
+                self.observations.popleft()
+                self.pose_pairs.popleft()
 
         return tuple_center, rad
 

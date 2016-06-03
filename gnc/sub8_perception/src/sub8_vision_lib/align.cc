@@ -7,7 +7,7 @@
 #include <pcl/registration/sample_consensus_prerejective.h>
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/features/fpfh_omp.h>
-#include <sub8_pcl/pcl_tools.hpp>
+#include <sub8_vision_lib/pcl_tools.hpp>
 
 #define _USE_MATH_DEFINES
 #include <cmath>
