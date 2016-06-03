@@ -8,7 +8,6 @@ WARNPREFIX="${WARNCOLOR}ERROR:"
 # Sane installation defaults for no argument cases
 CATKIN_DIR=~/repos/sub_ws
 REQUIRED_OS="trusty"
-SEMAPHORE=false
 
 instlog() {
     printf "$GOODPREFIX $@ $NOCOLOR\n"
@@ -19,11 +18,12 @@ instwarn() {
 }
 
 DTETCTED_OS="`lsb_release -sc`"
-if [ $DTETCTED_OS != $REQUIRED_OS ]; then
+if ([ $DTETCTED_OS != $REQUIRED_OS ]); then
     instwarn "The Sub requires Ubuntu 14.04 (trusty)"
     instwarn "Terminating installation due to incorrect OS (detected $DTETCTED_OS)"
     exit 1
 fi
+
 
 #======================#
 # Script Configuration #
@@ -41,13 +41,6 @@ while [ "$#" -gt 0 ]; do
     -?) instwarn "Option $1 is not implemented"; exit ;;
   esac
 done
-
-# Spooky activity to check if we are in semaphore
-if ls ~/ | grep --quiet Sub8$; then
-    instlog "Found Sub8 in HOME, Assuming we're in Semaphore"
-    SEMAPHORE=true
-    CATKIN_DIR=~/repos/sub_ws
-fi
 
 
 #==================================#
@@ -71,12 +64,16 @@ sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xB01FA116
 # Install ROS and other project dependencies
 instlog "Installing ROS and Gazebo"
 sudo apt-get update -qq
-sudo apt-get install -qq ros-indigo-desktop python-catkin-pkg python-rosdep
-sudo apt-get install -qq gazebo7
+if (env | grep --quiet "SUB=true"); then
+    sudo apt-get install -qq ros-indigo-desktop-full
+else
+    sudo apt-get install -qq ros-indigo-desktop
+fi
+sudo apt-get install -qq python-catkin-pkg python-rosdep gazebo7
 
 # Sources ROS configurations for bash on this user account
 source /opt/ros/indigo/setup.bash
-if ! cat ~/.bashrc | grep --quiet "source /opt/ros"; then
+if !(cat ~/.bashrc | grep --quiet "source /opt/ros"); then
     echo "source /opt/ros/indigo/setup.bash" >> ~/.bashrc
 fi
 
@@ -104,19 +101,19 @@ else
 fi
 
 # If we're in the Semaphore-ci, we should run catkin_make in the actual build thread
-if  $SEMAPHORE; then
+if (env | grep --quiet "SEMAPHORE=true"); then
     mv ~/Sub8 "$CATKIN_DIR/src"
 fi
 
 # Sources the workspace's configurations for bash on this user account
 source "$CATKIN_DIR/devel/setup.bash"
-if ! cat ~/.bashrc | grep --quiet "source $CATKIN_DIR/devel/setup.bash"; then
+if !(cat ~/.bashrc | grep --quiet "source $CATKIN_DIR/devel/setup.bash"); then
     echo $'\n' >> ~/.bashrc
     echo "source $CATKIN_DIR/devel/setup.bash" >> ~/.bashrc
 fi
 
 # Check if the sub is set up; if it isn't, set it up
-if ! ls "$CATKIN_DIR/src" | grep --quiet Sub8; then
+if !(ls "$CATKIN_DIR/src" | grep --quiet "Sub8"); then
     instlog "Looks like you don't have the sub set up, let's do that"
     cd "$CATKIN_DIR/src"
     git clone -q https://github.com/uf-mil/Sub8.git
@@ -131,7 +128,7 @@ cd $CATKIN_DIR/src
 $CATKIN_DIR/src/Sub8/scripts/get_dependencies.sh
 
 # Attempt to build the sub from scratch on client machines
-if !($SEMAPHORE); then
+if !(env | grep --quiet "SEMAPHORE=true"); then
     instlog "Building the sub's software stack with catkin_make"
     catkin_make -C "$CATKIN_DIR" -j8
 fi
