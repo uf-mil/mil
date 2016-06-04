@@ -1,10 +1,11 @@
 <?xml version="1.0"?>
 <package>
-  <name>sub8_hydrophone_driver</name>
+  <name>sub8_sonar</name>
   <version>1.0.0</version>
-  <description>The sub8_hydrophone_driver package</description>
+  <description>The sub8_sonar package</description>
 
   <maintainer email="Matthew.langford95@gmail.com">Matthew Langford</maintainer>
+  <maintainer email="dsoto@ufl.edu">David Soto</maintainer>
 
   <license>MIT</license>
 
