@@ -8,7 +8,7 @@ OR
 
 On the VideoRay tool (http://download.videoray.com/documentation/m5_thruster/html/thruster_py.html)
 
-python thruster.py -c **SERIAL PORT** -i **NODE ID** -m 0 0.1
+python test_thruster.py -c **SERIAL PORT** -i **NODE ID** -m 0 0.1
 
 **safe value is -0.1 or 0.1, full scale is -1 to 1**
 
