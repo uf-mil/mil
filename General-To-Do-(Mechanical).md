@@ -2,12 +2,12 @@
 
 Ken:
 
-- [ ] Organize Hardware
+- [X] Organize Hardware
 - [ ] Sonar Box
 - [ ] Move torpedo 
 - [ ] Make end effectors for mission components
-- [ ] Imaging Sonar Mount
-- [ ] New cage for IS
+- [X] Imaging Sonar Mount
+- [X] New cage for IS
 - [ ] Make list of mech. constraints
 - [ ] Machine Prop
 - [ ] Fix prop slip
