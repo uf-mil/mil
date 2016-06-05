@@ -5,7 +5,10 @@ Ken:
 - [X] Organize Hardware
 - [ ] Sonar Box
 - [ ] Move torpedo 
-- [ ] Make end effectors for mission components
+- [ ] Make end effectors for torpedo
+- [ ] Make end effectors for treasure challenge
+- [ ] Make end effectors for bins
+- [ ] Make end effectors for buoy
 - [X] Imaging Sonar Mount
 - [X] New cage for IS
 - [ ] Make list of mech. constraints
