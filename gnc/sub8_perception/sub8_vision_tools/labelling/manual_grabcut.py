@@ -17,12 +17,16 @@ class Picker(object):
 
     def __init__(self, image, brush_size=10, initial_mask=None):
         self.brush_size = brush_size
+        self.draw_opacity = .5
+
         self.done = False
 
         cv2.namedWindow("segment")
         self.image = image
 
         self.visualize = np.copy(image)
+        self.visualize_draw = np.copy(image) * 0
+        self.visual_brush_size = np.copy(image) * 0
         if initial_mask is None:
             self.mask = np.zeros(image.shape[:2], dtype=np.uint8)
             self.mask[:, :] = int(cv2.GC_PR_BGD)
@@ -31,21 +35,36 @@ class Picker(object):
             self.mask[initial_mask == int(cv2.GC_FGD)] = int(cv2.GC_FGD)
             self.mask[initial_mask == int(cv2.GC_BGD)] = int(cv2.GC_BGD)
             # self.mask = initial_mask
-            self.visualize[self.mask == int(cv2.GC_FGD)] = (0, 200, 0)
-            self.visualize[self.mask == int(cv2.GC_BGD)] = (0, 0, 200)
+            self.visualize_draw[self.mask == int(cv2.GC_FGD)] = (0, 200, 0)
+            self.visualize_draw[self.mask == int(cv2.GC_BGD)] = (0, 0, 200)
 
+
+        display = np.array(np.clip(self.visualize + self.visualize_draw * self.draw_opacity, 0, 255), np.uint8)
+        cv2.imshow("segment", display)
+	
         self.mouse_state = [0, 0]
+        self.opacity_change = None
+        self.brush_size_change = None
+        self.brush_size_opacity = .4
         cv2.setMouseCallback("segment", self.mouse_cb)
-        cv2.imshow("segment", self.visualize)
         cv2.waitKey(1)
 
     def mouse_cb(self, event, x, y, flags, param):
+        '''
+        Controls:
+            L_MSB click to paint green.
+            R_MSB click to paint red.
+            MIDDLE_MSB to clear paint.
+            CTRL then move up and down to change paint opacity.
+            SHIFT then move up and down to change brush size. 
+        '''
         if self.done:
             return
-
+       
+        cv2.circle(self.visual_brush_size, (x,y), self.brush_size, (255, 255, 255), 1) 
         if event == cv2.EVENT_LBUTTONDOWN:
             self.mouse_state[0] = 1
-            cv2.circle(self.visualize, (x, y), self.brush_size, (0, 200, 0), -1)
+            cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 200, 0), -1)
             cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_FGD), -1)
 
         elif event == cv2.EVENT_LBUTTONUP:
@@ -53,25 +72,45 @@ class Picker(object):
 
         elif event == cv2.EVENT_RBUTTONDOWN:
             self.mouse_state[1] = 1
-            cv2.circle(self.visualize, (x, y), self.brush_size, (0, 0, 200), -1)
+            cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 0, 200), -1)
             cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_BGD), -1)
 
         elif event == cv2.EVENT_RBUTTONUP:
             self.mouse_state[1] = 0
 
         elif event == cv2.EVENT_MBUTTONDOWN:
-            print 'mbutton'
+            self.visualize_draw *= 0
+            self.mask *= 0
 
         elif event == cv2.EVENT_MOUSEMOVE:
-            if self.mouse_state[0]:
-                cv2.circle(self.visualize, (x, y), self.brush_size, (0, 200, 0), -1)
-                cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_FGD), -1)
+            if flags == cv2.EVENT_FLAG_CTRLKEY:
+                if self.opacity_change is None:
+                    self.opacity_change = y
+                self.draw_opacity = np.clip((self.draw_opacity + (self.opacity_change - y) * .005), 0, 1)
+                self.opacity_change = y
 
-            elif self.mouse_state[1]:
-                cv2.circle(self.visualize, (x, y), self.brush_size, (0, 0, 200), -1)
-                cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_BGD), -1)
+            elif flags == cv2.EVENT_FLAG_SHIFTKEY:
+                if self.brush_size_change is None:
+                    self.brush_size_change = y
+                self.brush_size = np.clip((self.brush_size + (self.brush_size_change - y)), 0, 99)
+                self.brush_size_change = y
+                self.brush_size_opacity = .9
 
-        cv2.imshow("segment", self.visualize)
+            else:
+                self.opacity_change = None
+                if self.mouse_state[0]:
+                    cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 200, 0), -1)
+                    cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_FGD), -1)
+
+                elif self.mouse_state[1]:
+                    cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 0, 200), -1)
+                    cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_BGD), -1)
+
+        display = np.array(np.clip(self.visualize + self.visualize_draw * self.draw_opacity + 
+                                   self.visual_brush_size * self.brush_size_opacity, 0, 255), np.uint8)
+        cv2.imshow("segment", display)
+        self.visual_brush_size *= 0
+        self.brush_size_opacity = .4
 
     def wait_for_key(self, keys):
         print 'press one of:', keys

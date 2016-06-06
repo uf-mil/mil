@@ -31,7 +31,7 @@ if __name__ == '__main__':
         print '-------------------------'
         print 'Observing took {} seconds'.format(time() - tic_observation)
         tic_prediction = time()
-        segmentation = [x for x in [clf.predict(obs.reshape(1,-1)) for obs in some_observations]]
+        segmentation = clf.predict(some_observations.reshape(-1, some_observations.shape[1]))
         print 'Predicting took {} seconds'.format(time() - tic_prediction)
         total_time = time() - tic_observation
 
