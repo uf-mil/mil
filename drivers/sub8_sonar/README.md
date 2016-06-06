@@ -11,7 +11,6 @@ To start the driver, run:
 
 In order to ask for hydrophone information:
 
-    rosservice call /sonar/get_pinger_pulse
+    rosservice call /sonar/get_pinger_pulse *double_tab*
 
-*Note: You may have to press tab twice at the end to get a response, since I haven't been able to test it.*
 The service should respond with the x, y, z, and t of the emission of the last heard pinger pulse.
