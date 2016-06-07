@@ -142,6 +142,12 @@ class Picker(object):
         fgdModel = np.zeros((1, 65), np.float64)
 
         out_mask = np.copy(self.mask)
+        
+        print 'Segmenting...'
+        if out_mask[out_mask == 1].size == 0:
+            # Nothing was selected
+            print "Nothing was selected, continuing."
+            return None, None, key
 
         cv2.grabCut(
             self.image,
@@ -188,7 +194,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
     parser.add_argument(dest='file_name',
-                        help="The topic name you'd like to listen to")
+                        help="Either the name of the bag or first image in a sequence you'd like to segment.")
     parser.add_argument('--topic', type=str, help="Name of the topic to use")
     parser.add_argument('--append', type=str, help="Path to a file to append to")
     parser.add_argument('--output', type=str, help="Path to a file to output to (and overwrite)",
