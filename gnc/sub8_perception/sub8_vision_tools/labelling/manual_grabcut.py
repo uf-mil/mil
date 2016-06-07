@@ -2,16 +2,12 @@ import argparse
 import cv2
 import pickle
 import numpy as np
-import rospy
-import bag_crawler
 import sys
 from matplotlib import pyplot as plt
 """
 TODO:
     - Expand existing pickle feature
 """
-
-
 class Picker(object):
     # Adaboost http://robertour.com/2012/01/24/adaboost-on-opencv-2-3/
 
@@ -80,7 +76,7 @@ class Picker(object):
 
         elif event == cv2.EVENT_MBUTTONDOWN:
             self.visualize_draw *= 0
-            self.mask *= 0
+            self.mask = np.ones(self.visualize_draw.shape[:2], dtype=np.uint8) * int(cv2.GC_PR_BGD)
 
         elif event == cv2.EVENT_MOUSEMOVE:
             if flags == cv2.EVENT_FLAG_CTRLKEY:
@@ -147,7 +143,6 @@ class Picker(object):
 
         out_mask = np.copy(self.mask)
 
-        print 'Segmenting...'
         cv2.grabCut(
             self.image,
             out_mask,
@@ -188,11 +183,11 @@ class Picker(object):
 
 
 if __name__ == '__main__':
-    usage_msg = ("Pass the path to a bag, and we'll crawl through the images in it")
+    usage_msg = ("Pass the path to a bag or the start of an image sequence, and we'll crawl through the images in it")
     desc_msg = "A tool for making manual segmentation fun! I am sorry the keyboard shortcuts are nonsense"
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
-    parser.add_argument(dest='bag',
+    parser.add_argument(dest='file_name',
                         help="The topic name you'd like to listen to")
     parser.add_argument('--topic', type=str, help="Name of the topic to use")
     parser.add_argument('--append', type=str, help="Path to a file to append to")
@@ -203,17 +198,27 @@ if __name__ == '__main__':
 
     args = parser.parse_args(sys.argv[1:])
 
-    bag = args.bag
-    bc = bag_crawler.BagCrawler(bag)
-
     if args.append is None:
         print 'Creating new pickle'
         data = []
     else:
         data = pickle.load(open(args.append, "rb"))
 
-    print bc.image_topics[0]
-    print bc.image_topics[0]
+    file_name = args.file_name
+    if file_name.split('.')[-1] == 'bag':
+        import rospy
+        import bag_crawler
+        bc = bag_crawler.BagCrawler(file_name)
+        print bc.image_topics[0]
+    else:
+        class rospy():
+            @classmethod
+            def is_shutdown(self):
+                return False
+
+        import image_crawler
+        bc = image_crawler.ImageCrawler(file_name)
+
     last_mask = None
     num_imgs = len(data)
 
