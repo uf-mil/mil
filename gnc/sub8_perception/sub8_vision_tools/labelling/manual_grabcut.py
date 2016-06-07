@@ -37,7 +37,7 @@ class Picker(object):
 
         display = np.array(np.clip(self.visualize + self.visualize_draw * self.draw_opacity, 0, 255), np.uint8)
         cv2.imshow("segment", display)
-	
+
         self.mouse_state = [0, 0]
         self.opacity_change = None
         self.brush_size_change = None
@@ -195,8 +195,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
     parser.add_argument(dest='file_name',
                         help="Either the name of the bag or first image in a sequence you'd like to segment.")
-    parser.add_argument('--topic', type=str, help="Name of the topic to use")
-    parser.add_argument('--append', type=str, help="Path to a file to append to")
+    parser.add_argument('--topic', type=str, help="Name of the topic to use or the usb camera number.")
+    parser.add_argument('--append', type=str, help="Path to a file to append to.")
     parser.add_argument('--output', type=str, help="Path to a file to output to (and overwrite)",
                         default='segments.p')
     parser.add_argument('--brush_size', type=int, help="Brush size",
@@ -217,13 +217,17 @@ if __name__ == '__main__':
         bc = bag_crawler.BagCrawler(file_name)
         print bc.image_topics[0]
     else:
+        # Assuming we don't have ros installed, so make our own ros for rospy.is_shutdown()
         class rospy():
             @classmethod
             def is_shutdown(self):
                 return False
 
-        import image_crawler
-        bc = image_crawler.ImageCrawler(file_name)
+        import image_crawler        
+        if file_name == 'video':
+            bc = image_crawler.VideoCrawler(file_name, args.topic)
+        else:
+            bc = image_crawler.ImageCrawler(file_name)
 
     last_mask = None
     num_imgs = len(data)

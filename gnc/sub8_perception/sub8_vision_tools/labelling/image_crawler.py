@@ -1,7 +1,5 @@
 import cv2
 
-rospy = False
-
 class ImageCrawler(object):
     def __init__(self, starting_image):
         '''
@@ -22,6 +20,23 @@ class ImageCrawler(object):
 
             num_seen += 1
             yield image
+
+    @property
+    def image_topics(self):
+        return [None]
+
+class VideoCrawler(object):
+    def __init__(self, source):
+        if source is None:
+            source = 0
+        self.cap = cv2.VideoCapture(source)
+        self.cap.read()
+
+    def crawl(self, topic, max_msgs=float('inf')):
+        num_seen = 0
+        while num_seen < max_msgs:
+            num_seen += 1
+            yield self.cap.read()[1]
 
     @property
     def image_topics(self):
