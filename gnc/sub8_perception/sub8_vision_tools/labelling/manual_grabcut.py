@@ -133,7 +133,7 @@ class Picker(object):
         print '\tPress "space" to skip the current image'
         print '\tPress "q" to quit and save your previous segmentations'
         print '\tPress w to run segmentation on the image'
-        key = self.wait_for_key(' qznw')
+        key = self.wait_for_key(' qnw')
         if key in [' ', 'q']:
                 return None, None, key
         self.done = True
@@ -179,7 +179,7 @@ class Picker(object):
         print '\tPress w record this segmentation and move on to the next image'
         key = self.wait_for_key('qnzw ')
         if key in [' ', 'q']:
-                return None, None, key
+            return None, None, key
 
         return out_mask, return_mask, key
 
@@ -208,6 +208,7 @@ if __name__ == '__main__':
         print 'Creating new pickle'
         data = []
     else:
+        args.output = args.append
         data = pickle.load(open(args.append, "rb"))
 
     file_name = args.file_name
