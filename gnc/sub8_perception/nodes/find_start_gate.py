@@ -2,15 +2,14 @@
 import sys
 import cv2
 import rospy
-import itertools
 import numpy as np
 
 import image_geometry
 import message_filters
-
 from std_msgs.msg import Header
 from std_msgs.msg import String
-from geometry_msgs.msg import Pose2D
+from geometry_msgs.msg import PointStamped, Point
+
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import CameraInfo, Image
 
@@ -26,6 +25,8 @@ class Gate:
         self.yellow_max = np.array([29,250,250], np.uint8)
 
         # Orientation information
+        self.point_publisher = rospy.Publisher("gate_points", PointStamped, queue_size = 4)
+
         self.gate_pose = None
         self.gate_distance = None
 
@@ -77,38 +78,6 @@ class GateFinder:
             self.rcam_info = cam_msg
         else:
             pass
-
-    def image_cb(self, limage, rimage):
-        try:
-            x_sol = []
-            limg = self.bridge.imgmsg_to_cv2(limage, "bgr8")
-            rimg = self.bridge.imgmsg_to_cv2(rimage, "bgr8")
-
-            l_pts = self.find_contours(limg, 'l')
-            r_pts = self.find_contours(rimg, 'r')
-
-            if l_pts is not None and r_pts is not None:
-                assert len(l_pts) == len(r_pts), 'Lists have different dimensions'
-
-                self.fig = plt.figure()
-                ax = self.fig.add_subplot(111, projection='3d')
-
-                for i, pt in enumerate(l_pts):
-                    print 'Attempting to triangulate points:'
-                    x_sol.append(self.triangulate_Linear_LS(l_pts[i], r_pts[i], self.lP, self.rP))
-
-                for i in enumerate(x_sol):
-                    if i[2][0] < 0:
-                        pass    # Invalid points
-                    else:
-                        for pts in x_sol:
-                            print 'Plotting: ', pts[0], pts[1], pts[2]
-                            ax.scatter(pts[0], pts[1], pts[2], c = 'r', marker='o')
-                            plt.show()  # Blocks until window is closed
-            else:
-                pass
-        except CvBridgeError as e:
-            print e
 
     def ncc(self, image, scale=15):
         kernel = np.ones((scale, scale)) * -1
@@ -183,13 +152,13 @@ class GateFinder:
         else:
             return None
 
-    def gen_plane(self, p_points):
+    def visualize_pts(self, p_points):
         # Accepts a list of four points in order to generate a plane
         # Returns dims, and angles
+        pass
 
     def filter_kp(self, points):
         pass
-
 
     def triangulate_Linear_LS(self, lpoint, rpoint, lP, rP):
         # From "Triangulation", Hartley, R.I. and Sturm, P., Computer vision and image understanding, 1997
@@ -238,6 +207,41 @@ class GateFinder:
         cv2.solve(A, B, X, cv2.DECOMP_SVD)
         print 'Solution: \n', X, '\n'
         return X
+
+    def image_cb(self, limage, rimage):
+        try:
+            x_sol = []
+            l_img = self.bridge.imgmsg_to_cv2(limage, "bgr8")
+            r_img = self.bridge.imgmsg_to_cv2(rimage, "bgr8")
+
+            l_pts = self.find_contours(l_img, 'l')
+            r_pts = self.find_contours(r_img, 'r')
+
+            if l_pts is not None and r_pts is not None:
+                assert len(l_pts) == len(r_pts), 'Lists have different dimensions'
+
+                self.fig = plt.figure()
+                ax = self.fig.add_subplot(111, projection='3d')
+
+                for i, pt in enumerate(l_pts):
+                    print 'Attempting to triangulate points:'
+                    x_sol.append(self.triangulate_Linear_LS(l_pts[i], r_pts[i], self.lP, self.rP))
+
+                for i in enumerate(x_sol):
+                    if i[2][0] < 0:
+                        break    # Invalid points
+                    else:
+                        for pts in x_sol:
+                            print 'Plotting: ', pts[0], pts[1], pts[2]
+                            ax.scatter(pts[0], pts[1], pts[2], c = 'r', marker='o')
+                            #plt.show()  # Blocks until window is closed
+                            point = PointStamped(header = Header(stamp = rospy.Time.now(),
+                                                 frame_id = '/stereo/left'), point = Point(pts[0],pts[1],pts[2]))
+                            self.point_publisher(point)
+            else:
+                pass
+        except CvBridgeError as e:
+            print e
 
 if __name__ =='__main__':
     rospy.init_node('gate_finder', anonymous=False)
