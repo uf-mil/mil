@@ -14,11 +14,10 @@ from geometry_msgs.msg import Pose2D
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import CameraInfo, Image
 
-from visualization_msgs.msg import *
-from interactive_markers.interactive_marker_server import *
-
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+
+from pykalman import KalmanFilter
 
 class Gate:
     def __init__(self):
@@ -26,26 +25,24 @@ class Gate:
         self.yellow_min = np.array([0, 50,50], np.uint8)
         self.yellow_max = np.array([29,250,250], np.uint8)
 
-        # Detected gate info & RViz visualization
-        self.marker = Marker()
-        self.marker.type = Marker.CUBE
-
-        self.marker.color.r = 0.5
-        self.marker.color.g = 0.5
-        self.marker.color.b = 0.5
-        self.marker.color.a = 1.0
-
         # Orientation information
         self.gate_pose = None
         self.gate_distance = None
 
+        '''
+        self.kalman_trackers = []
+
+        for i in range(1,4):
+            KalmanFilter(transition_matrices = [[1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]],
+                         observation_matrices = [[0.1, 0.5], [-0.3, 0.0]])
+        '''
 
 class GateFinder:
     def __init__(self, gate):
-        self.last_image = None
-        self.last_image_timestamp = None
-        self.last_draw_image = None
         self.gate = gate
+        self.last_image = None
+        self.last_time_stamp = None
+        self.last_draw_image = None
 
         self.lcam_info, self.rcam_info = None, None
         self.lP, self.rP = None, None
@@ -62,7 +59,6 @@ class GateFinder:
         print 'Left Camera Info: ', self.lcam_info
         print 'Right Camera Info: ', self.rcam_info, '\n'
 
-        # Unsubscribe from camera message topics
         self.lcam_info_sub.unregister()
         self.rcam_info_sub.unregister()
 
@@ -74,7 +70,6 @@ class GateFinder:
         self.ts = message_filters.ApproximateTimeSynchronizer([self.lcam_image_sub, self.rcam_image_sub], 5, 1)
         self.ts.registerCallback(self.image_cb)
 
-    # Callback functions
     def cinfo_cb(self, cam_msg, cam):
         if cam == 'l':
             self.lcam_info = cam_msg
@@ -102,27 +97,99 @@ class GateFinder:
                     print 'Attempting to triangulate points:'
                     x_sol.append(self.triangulate_Linear_LS(l_pts[i], r_pts[i], self.lP, self.rP))
 
-                # Plot results
-                for pts in x_sol:
-                    print 'Ploting: ', pts[0], pts[1], pts[2]
-                    ax.scatter(pts[0], pts[1], pts[2], c = 'r', marker='o')
-                plt.show()  # Blocks until window is closed
+                for i in enumerate(x_sol):
+                    if i[2][0] < 0:
+                        pass    # Invalid points
+                    else:
+                        for pts in x_sol:
+                            print 'Plotting: ', pts[0], pts[1], pts[2]
+                            ax.scatter(pts[0], pts[1], pts[2], c = 'r', marker='o')
+                            plt.show()  # Blocks until window is closed
             else:
                 pass
         except CvBridgeError as e:
             print e
 
-    # Image processing
     def ncc(self, image, scale=15):
-        # Using template matching to emulate NCC
-        # Using circle kernel
         kernel = np.ones((scale, scale)) * -1
         midpoint = (scale // 2, scale // 2)
         cv2.circle(kernel, midpoint, midpoint[0], 1, -1)
 
-        res = cv2.matchTemplate(image, kernel, cv2.TM_CCOEFF_NORMED)
-        cv2.imshow('kernel test', kernel)
-        return res
+        mean, std_dev = cv2.meanStdDev(image)
+
+        return cv2.filter2D((image - mean) / std_dev, -1, kernel)
+
+    def find_contours(self, image, cam):
+        # TODO: Resize image to process faster
+        # TODO: Limit this to the largest three contours
+        # TODO: Kalman filter centroid locations (Or time-filter the contours themselves)
+        # TODO: PCA for orientation (Differentiating b/w long and tall tubes)
+        # TODO: Work on discriminating reflections (Should not be a problem at the transdec)
+
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        ghsv = cv2.GaussianBlur(hsv,(9,9),0)
+        mask = cv2.inRange(ghsv, self.gate.yellow_min, self.gate.yellow_max)
+
+        h, s, v = cv2.split(ghsv)
+        v = cv2.bitwise_and(v, v, mask = mask)
+        v = self.ncc(v)
+
+        contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        gate_moments, largest_contours, edge_pts = [], [], []
+
+        if contours is None:
+            print 'No contours found'
+        else:
+            for cnt in contours:
+                if cv2.contourArea(cnt) > 600 and cv2.contourArea(cnt) < 1400:
+                    largest_contours.append(cnt)
+                    moment = cv2.moments(cnt)
+                    gate_moments.append((int(moment['m10']/moment['m00']), int(moment['m01']/moment['m00'])))   # Pixel location
+
+        # Using bounding box to approximate the shape of the start gate tubes
+        plane_pts = []
+        for cnt in largest_contours:
+            rect = cv2.minAreaRect(cnt)
+            box_points = cv2.cv.BoxPoints(rect)
+
+            box = [np.int0(cv2.cv.BoxPoints(rect))]
+            cv2.drawContours(image, box, 0, (0,0,255), 2)
+
+            # Let's get some box midpoints
+            pts = [list(point) for point in box_points]
+
+            # Here we would need to check the orientation of the contour
+            plane_pts.extend([tuple((np.add(pts[0][:], pts[3][:]) // 2).astype(int)),
+                              tuple((np.add(pts[2][:], pts[1][:]) // 2).astype(int))])
+
+        for i, point in enumerate(plane_pts):
+            cv2.circle(image, point, 4, (255,0,0), -1)
+            cv2.putText(image, str(i), point, cv2.cv.CV_FONT_HERSHEY_SIMPLEX, 4, (255,255,255), 2, cv2.CV_AA)
+
+        if len(plane_pts) == 4:
+            # If we have enough points for reconstruction
+            dplane_pts = np.asarray([list(pt) for pt in plane_pts])
+
+            # Camera Shenanigans
+            if cam == 'l':
+                self.lP = np.asarray(self.lcam_info.P).reshape((3, 4))
+                P = self.lP
+            elif cam == 'r':
+                self.rP = np.asarray(self.rcam_info.P).reshape((3, 4))
+                P = self.rP
+            else:
+                print 'NAN Argument'
+            return plane_pts
+        else:
+            return None
+
+    def gen_plane(self, p_points):
+        # Accepts a list of four points in order to generate a plane
+        # Returns dims, and angles
+
+    def filter_kp(self, points):
+        pass
+
 
     def triangulate_Linear_LS(self, lpoint, rpoint, lP, rP):
         # From "Triangulation", Hartley, R.I. and Sturm, P., Computer vision and image understanding, 1997
@@ -172,79 +239,11 @@ class GateFinder:
         print 'Solution: \n', X, '\n'
         return X
 
-    # All hail the mighty bepis!
-    def find_contours(self, image, cam):
-        # TODO: Resize image to process faster
-        # TODO: Limit this to the largest three contours
-        # TODO: Add some critera to throw away results (throw away contours)
-        # TODO: Add Normal-Cross-Correlation for filtering
-        # TODO: Kalman filter centroid locations (Or time-filter the contours themselves)
-        # TODO: PCA for orientation (Differentiating b/w long and tall tubes)
-        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        #cv2.erode(hsv, np.ones((15, 15)), iterations=2)
-        #cv2.dilate(hsv, np.ones((15, 15)), iterations=2)
-        ghsv = cv2.GaussianBlur(hsv,(7,7),0)    # Seems to work as well as expand/shrink operations
-
-        mask = cv2.inRange(ghsv, self.gate.yellow_min, self.gate.yellow_max)
-        contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-        gate_moments, largest_contours, edge_pts = [], [], []
-
-        # Testing image slicing
-        h, s, v = cv2.split(ghsv)
-        v = cv2.bitwise_and(v, v, mask = mask)
-
-        if contours is None:
-            print 'No contours found'
-        else:
-            for cnt in contours:
-                if cv2.contourArea(cnt) > 600 and cv2.contourArea(cnt) < 1400:
-                    largest_contours.append(cnt)
-                    moment = cv2.moments(cnt)
-                    gate_moments.append((int(moment['m10']/moment['m00']), int(moment['m01']/moment['m00'])))   # Pixel location
-
-        # Using bounding box to approximate the shape of the start gate tubes
-        plane_pts = []
-        for cnt in largest_contours:
-            # Point of no return, really hacky stuff bringing things in and out of the correct format
-            rect = cv2.minAreaRect(cnt)
-            box_points = cv2.cv.BoxPoints(rect)
-
-            # Drawing functions
-            box = [np.int0(cv2.cv.BoxPoints(rect))]
-            cv2.drawContours(image, box, 0, (0,0,255), 2)
-
-            # Let's get some box midpoints
-            pts = [list(point) for point in box_points]
-
-            # Here we would need to check the orientation of the contour
-            plane_pts.extend([tuple((np.add(pts[0][:], pts[3][:]) // 2).astype(int)),
-                              tuple((np.add(pts[2][:], pts[1][:]) // 2).astype(int))])
-
-        for point in plane_pts:
-            cv2.circle(image, point, 4, (255,0,0), -1)
-
-        if len(plane_pts) == 4:
-            # If we have enough points for reconstruction
-            dplane_pts = np.asarray([list(pt) for pt in plane_pts])
-
-            # Camera Shenanigans
-            if cam == 'l':
-                self.lP = np.asarray(self.lcam_info.P).reshape((3, 4))
-                P = self.lP
-            elif cam == 'r':
-                self.rP = np.asarray(self.rcam_info.P).reshape((3, 4))
-                P = self.rP
-            else:
-                print 'NAN Argument'
-            return plane_pts
-        else:
-            return None
-
-
 if __name__ =='__main__':
     rospy.init_node('gate_finder', anonymous=False)
     sg = Gate()
     gf = GateFinder(sg)
+
     try:
         rospy.spin()
     except KeyboardInterrupt:
