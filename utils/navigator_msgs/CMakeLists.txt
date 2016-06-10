@@ -14,6 +14,8 @@ add_message_files(
   PoseTwist.msg
   Coordinates.msg
   PoseTwistStamped.msg
+  Point.msg
+  Points.msg
   Waypoint.msg
 )
 
