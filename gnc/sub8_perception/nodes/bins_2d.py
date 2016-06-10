@@ -156,9 +156,9 @@ class BinFinder:
                 cv2.circle(debug_image, point, 5, (0, 0, 255), -1)
                 point = [cx - (img_w / 2), cy - (img_h / 2)]
                 tuple_center = (point[0], point[1], 0)
-            self.last_draw_image = debug_image
-            rad = ((rad - 180) * np.pi) / 180.0
-            return tuple_center, rad
+                self.last_draw_image = debug_image
+                rad = ((rad - 180) * np.pi) / 180.0
+                return tuple_center, rad
 
     def find_bins(self, img, srv):
         draw_image = np.copy(img)
