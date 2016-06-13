@@ -1,8 +1,28 @@
 Sub switch is a Cisco WS-2960G-8TC-L, running IOS 12.2(50)SE5
 
-SSH into 192.168.1.254, port 22. Login is sub/sub
+SSH into 192.168.1.5, port 22. Login is sub/sub. Enable secret is sub.
 
-Enable secret: sub
+--
+
+Adding a host to DHCP:
+
+SSH into the switch at 192.168.1.5, username sub, password sub. Type en and press enter to enter enable mode - enable secret is sub.
+
+Type "conf t" to get into configuration mode.
+
+Enter "ip dhcp pool **hostname**"
+
+Enter "host 192.168.1.XXX 255.255.255.0"
+
+Enter "hardware-address xxxx.xxxx.xxxx" **for non-Windows hosts** OR "client-identifier xxxx.xxxx.xxxx" **for Windows hosts**
+
+Type "exit" to exit DHCP host config.
+
+Type "exit" to exit configuration mode.
+
+Type "write" to write config to memory.
+
+Type "exit" to exit the CLI.
 
 --
 
