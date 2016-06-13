@@ -14,7 +14,7 @@ Enter "ip dhcp pool **hostname**"
 
 Enter "host 192.168.1.XXX 255.255.255.0"
 
-Enter "hardware-address xxxx.xxxx.xxxx" **for non-Windows hosts** OR "client-identifier xxxx.xxxx.xxxx" **for Windows hosts**
+Enter "hardware-address xxxx.xxxx.xxxx" **for non-Windows hosts** OR "client-identifier 01xx.xxxx.xxxx.xx" **for Windows hosts** - xxxx.xxxx.xxxx is the MAC address.
 
 Type "exit" to exit DHCP host config.
 
