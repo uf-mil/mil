@@ -15,13 +15,13 @@ Ken:
 - [ ] Fix prop slip
 - [X] Put together order list for manufacturing
 - [X] Order Helicoils
-- [ ] Drill holes into endcaps
+- [X] Drill holes into endcaps
 - [X] Order/locate installation tool for Helicoils
 - [X] Change front handle
 - [ ] Make Sub7 Great Again!
-- [ ] Replace studs for battery lid
+- [X] Replace studs for battery lid
 - [X] Downward camera case
-- [ ] Final Tuning for downward camera case
+- [X] Final Tuning for downward camera case
 - [ ] Send info to Anodized Inc.
 - [ ] Make Props for testing
 - [ ] Propeller jig
