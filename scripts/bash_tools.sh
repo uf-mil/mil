@@ -5,11 +5,6 @@ NOCOLOR='\033[0m'
 GOODPREFIX="${GOODCOLOR}INSTALLER:"
 WARNPREFIX="${WARNCOLOR}ERROR:"
 
-# Sane installation defaults for no argument cases
-CATKIN_DIR=~/repos/catkin_ws
-REQUIRED_OS="trusty"
-SEMAPHORE=false
-
 instlog() {
     printf "$GOODPREFIX $@ $NOCOLOR\n"
 }
