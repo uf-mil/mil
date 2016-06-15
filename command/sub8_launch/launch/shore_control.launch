@@ -1,6 +1,6 @@
 <launch>
   <node pkg="spacenav_node" type="spacenav_node" name="spacenav_node" />
-  <node pkg="sub8_missions" type="waypoint_utility.py" name="waypoint_utility" />
+  <node pkg="sub8_missions" type="waypoint_utility.py" name="waypoint_utility" args="2d"/>
   <node pkg="sub8_alarm" type="network_keepalive.py" name="network_keepalive" />
   <node pkg="sub8_missions" type="rviz_visualizer.py" name="rviz_visualizer" />
 </launch>
