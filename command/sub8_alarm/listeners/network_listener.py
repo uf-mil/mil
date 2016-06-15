@@ -8,10 +8,10 @@ from twisted.internet import reactor
 
 
 class NetworkCheck(object):
-    def __init__(self, timeout=5.0, autonomous_msgs_req=20):
+    def __init__(self, timeout=5.0, autonomous_msgs_req=50):
         self.timeout = rospy.Duration(timeout)
         self.last_time = rospy.Time.now()
-        self.last_msg = ''
+        self.last_msg = 'keep_alive'
         
         # Make sure we don't accidentally let the sub loose.
         # We need auto_msgs_req messages before we go autonomous mode.
@@ -50,7 +50,7 @@ class NetworkCheck(object):
             self.auto_msg_count += 1
         else:
             self.auto_msg_count = 0
-
+    
     def need_kill(self):
         return ((rospy.Time.now() - self.last_time) > self.timeout)
 
