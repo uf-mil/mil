@@ -157,5 +157,4 @@ class Spacenav(object):
 if __name__ == '__main__':
     s = Spacenav()
     rospy.sleep(1.0)
-    # s.moveto_action(np.array([0.0, 0.0, -3.0]), np.array([0.0, 0.0, 0.0, 1.0]))
     rospy.spin()
