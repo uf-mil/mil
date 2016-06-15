@@ -40,7 +40,7 @@ class TorpedoLauncher():
 
         self.set_torpedo = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
         self.get_model = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
-        rospy.Subscriber('/contact_bumper/', ContactsState, self.check_contact, queue_size=1)
+        rospy.Subscriber('/contact_bumper', ContactsState, self.check_contact, queue_size=1)
         self.contact_pub = rospy.Publisher('/gazebo/torpedo_contact', String, queue_size=1)
 
     def check_contact(self, msg):
