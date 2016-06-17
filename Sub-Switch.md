@@ -2,7 +2,11 @@ Sub switch is a Cisco WS-2960G-8TC-L, running IOS 12.2(50)SE5
 
 Sub switch is **not to be plugged into the MIL network, IP conflicts will occur as well as competing DHCP servers**
 
-SSH into 192.168.1.1, port 22. Login is sub/sub. Enable secret is sub.
+SSH into 192.168.1.1, port 22. Login is sub/subjugator. Enable secret is subjugator.
+
+The switch assigns IPs to added hosts via DHCP. Only a IP address and netmask is assigned, not a default gateway or DNS server. At the pool name resolution should be handled by your local hosts file.
+
+At the pool, do not connect to WiFi networks that have the 192.168.1.x network. This **will** conflict with the wired connection, and odd behavior **will** occur.
 
 --
 
