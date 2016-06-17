@@ -8,7 +8,7 @@ Port 1 is reserved for the tether. This is because all traffic from port 8 is mi
 
 The switch assigns IPs to added hosts via DHCP. Only a IP address and netmask is assigned, not a default gateway or DNS server. At the pool name resolution should be handled by your local hosts file.
 
-At the pool, do not connect to WiFi networks that have the 192.168.1.x network. This **will** conflict with the wired connection, and odd behavior **will** occur. If the WiFi network has a network other than 192.168.1.x it is fine to use the WiFi for internet access (such as using your phone to WiFi tether).
+At the pool, do not connect to WiFi networks that have the 192.168.1.x network. This **will** conflict with the wired connection, and odd behavior **will** occur. If the WiFi network has a network other than 192.168.1.x it is fine to use the WiFi for internet access (such as using your phone to WiFi tether - still check the network though!).
 
 If you have problems with the wired network at the pool, first **restart your computer and/or VM**.
 
