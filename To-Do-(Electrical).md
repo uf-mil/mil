@@ -11,7 +11,7 @@ Queue:
 
 * Power merge board - Assigned to MG
 * New ARM navigation merge board (DVL, STIM300, Depth, Temperature) - Assigned to MG
-* Battery tray backplane system - Assigned to DD
+* Battery tray backplane system (4 batteries?) - Assigned to DD
 * Quadro M2000 Graphics Card - Assigned to DD
 * Clean up inside of sub - Assigned to DD
 * Imaging sonar bulkhead wiring - Assigned to DD
