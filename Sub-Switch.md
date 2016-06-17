@@ -1,4 +1,4 @@
-Sub switch is a Cisco WS-2960G-8TC-L, running IOS 12.2(50)SE5. It is a 8 port layer 2 managed gigabit switch.
+Sub switch is a Cisco WS-2960G-8TC-L, running IOS 12.2(50)SE5. It is a 8 port layer 2 managed gigabit switch. This switch is meant for poolside/dockside use, not for use inside the lab.
 
 CLI is available through SSH on 192.168.1.1, port 22. Login is sub/subjugator. Enable secret is subjugator.
 
