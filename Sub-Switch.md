@@ -1,10 +1,10 @@
 Sub switch is a Cisco WS-2960G-8TC-L, running IOS 12.2(50)SE5. It is a 8 port layer 2 managed gigabit switch.
 
+CLI is available by SSH into 192.168.1.1, port 22. Login is sub/subjugator. Enable secret is subjugator.
+
 Port 1 is reserved for the tether. This is because all traffic from port 8 is mirrored on port 8 (SPAN). Do not connect your computer to port 8, unless you know what you are doing. There is a cap on port 8 to further prevent accidental use of that port.
 
 Sub switch is **not to be plugged into the MIL network, IP conflicts will occur as well as competing DHCP servers**.
-
-SSH into 192.168.1.1, port 22. Login is sub/subjugator. Enable secret is subjugator.
 
 The switch assigns IPs to added hosts via DHCP. Only a IP address and netmask is assigned, not a default gateway or DNS server. At the pool name resolution should be handled by your local hosts file.
 
@@ -18,7 +18,7 @@ If you have a stale DHCP lease (for example, after coming back into the lab from
 
 Adding a host to DHCP:
 
-SSH into the switch at 192.168.1.5, username sub, password sub. Type en and press enter to enter enable mode - enable secret is sub.
+SSH into the switch at 192.168.1.1, username sub, password subjugator. Type en and press enter to enter enable mode - enable secret is subjuagtor.
 
 Type "conf t" to get into configuration mode.
 
