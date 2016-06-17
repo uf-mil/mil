@@ -1,6 +1,6 @@
 Sub switch is a Cisco WS-2960G-8TC-L, running IOS 12.2(50)SE5
 
-Sub switch is *not to be plugged into the MIL network, IP conflicts will occur as well as competing DHCP servers*
+Sub switch is **not to be plugged into the MIL network, IP conflicts will occur as well as competing DHCP servers**
 
 SSH into 192.168.1.1, port 22. Login is sub/sub. Enable secret is sub.
 
