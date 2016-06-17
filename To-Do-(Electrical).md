@@ -16,6 +16,7 @@ Queue:
 * Replace thruster bulkheads - Assigned to DD
 * New tether
 * Kill / mission switches
+* Downward light for down camera, front lights also?
 
 Other:
 
