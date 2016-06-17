@@ -1,4 +1,4 @@
-Sub switch is a Cisco WS-2960G-8TC-L, running IOS 12.2(50)SE5
+Sub switch is a Cisco WS-2960G-8TC-L, running IOS 12.2(50)SE5. It is a 8 port Layer 2 managed gigabit switch.
 
 Sub switch is **not to be plugged into the MIL network, IP conflicts will occur as well as competing DHCP servers**
 
