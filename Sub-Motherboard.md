@@ -4,4 +4,4 @@ Sub8's motherboard is a Supermicro X10SDV-TLN4F. It runs a Intel Xeon D-1541 CPU
 
 IPMI is available to manage the system out of band. A remote console (Java console) and detailed sensor data is available to manage/monitor the system. The ability to hard reset/shutdown the motherboard is also available.
 
-To access the IPMI, connect to 192.168.1.20 with a web browser (Chrome is tested that this time). The username is sub and the password is subjugator.
+To access the IPMI, connect to 192.168.1.20 with a web browser (Chrome is tested that this time). Login is sub/subjugator.
