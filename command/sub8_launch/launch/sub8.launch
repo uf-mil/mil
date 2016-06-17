@@ -1,6 +1,6 @@
 <launch>
 
-  <!--include file="$(find sub8_launch)/launch/tf.launch" />
+  <include file="$(find sub8_launch)/launch/tf.launch" />
 
   <include file="$(find sub8_launch)/launch/subsystems/nav_box.launch" >
     <arg name="imu" value="true" />
@@ -18,7 +18,7 @@
   <node pkg="kill_handling" type="kill_on_cond" name="height_over_bottom_kill">
     <remap from="topic" to="dvl/range"/>
     <param name="cond" value="data &lt; .2"/>
-  </node-->
+  </node>
 
   <node pkg="sub8_alarm" type="network_listener.py" name="network_listener" output="screen"/>
   <node pkg="sub8_missions" type="auto_mission" name="auto_mission_runner" output="screen"/>

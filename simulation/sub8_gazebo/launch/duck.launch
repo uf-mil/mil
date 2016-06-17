@@ -96,5 +96,5 @@
     <node pkg="image_proc" type="image_proc" name="down_image_proc" />
   </group>
   
-  <include file="$(find sub8_launch)/launch/subsystems/perception.launch" />
+  <include file="$(find sub8_launch)/launch/subsystems/perception.launch" if="$(arg cameras)" />
 </launch>
