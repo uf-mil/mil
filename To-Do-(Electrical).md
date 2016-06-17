@@ -3,6 +3,7 @@
 In Progress:
 
 * Temporary CUDA graphics card - Assigned to DD
+* Temporary mission start mechanism - Assigned to DD
 
 Queue:
 
@@ -13,6 +14,8 @@ Queue:
 * Clean up inside of sub - Assigned to DD
 * Imaging sonar bulkhead wiring - Assigned to DD
 * Replace thruster bulkheads - Assigned to DD
+* New tether
+* Kill / mission switches
 
 Other:
 
