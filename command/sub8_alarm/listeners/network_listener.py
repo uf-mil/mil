@@ -1,14 +1,18 @@
 #!/usr/bin/env python
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import String 
+from std_srvs.srv import Empty, EmptyRequest
 from sub8_alarm import single_alarm
+from twisted.internet import reactor
+from missions import auto_mission
 
 
 class NetworkCheck(object):
-    def __init__(self, timeout=5.0, autonomous_msgs_req=50):
+    def __init__(self, timeout=5.0, autonomous_msgs_req=100):
+        reactor.callWhenRunning(auto_mission.main)
         self.timeout = rospy.Duration(timeout)
         self.last_time = rospy.Time.now()
-        self.last_msg = 'keep_alive'
+        self.last_msg = ''
         
         # Make sure we don't accidentally let the sub loose.
         # We need auto_msgs_req messages before we go autonomous mode.
@@ -16,14 +20,20 @@ class NetworkCheck(object):
         self.auto_msg_count = 0
 
         self.sub = rospy.Subscriber('/keep_alive', String, self.got_network_msg, queue_size=1)
+        self.auto_service = rospy.ServiceProxy('/go_auto', Empty)
         self.alarm_broadcaster, self.alarm = single_alarm('network-timeout', severity=1)
         rospy.Timer(rospy.Duration(0.01), self.check)
 
     def check(self, *args):
-        if self.need_kill():
+        if self.need_kill() and self.last_msg != '':
             if self.auto_msg_count >= self.auto_msgs_req:
                 rospy.loginfo("AUTONOMOUS MODE STARTED")
-                # yield start_missions
+                self.auto_service()
+
+                # Kill the sub after the mission
+                rospy.logerr("KILLING SUB")
+                self.alarm.raise_alarm()
+                self.last_msg = ''
             else:
                 rospy.logerr("KILLING SUB")
                 self.alarm.raise_alarm()
