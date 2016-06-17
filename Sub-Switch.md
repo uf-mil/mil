@@ -1,8 +1,8 @@
-Sub switch is a Cisco WS-2960G-8TC-L, running IOS 12.2(50)SE5. It is a 8 port Layer 2 managed gigabit switch.
+Sub switch is a Cisco WS-2960G-8TC-L, running IOS 12.2(50)SE5. It is a 8 port layer 2 managed gigabit switch.
 
-Port 1 is reserved for the tether. This is because all data from port 8 is mirrored on port 8 (SPAN). Do not connect your computer to port 8, unless you know what you are doing. There is a cap on port 8 to further prevent accidental use of that port.
+Port 1 is reserved for the tether. This is because all traffic from port 8 is mirrored on port 8 (SPAN). Do not connect your computer to port 8, unless you know what you are doing. There is a cap on port 8 to further prevent accidental use of that port.
 
-Sub switch is **not to be plugged into the MIL network, IP conflicts will occur as well as competing DHCP servers**
+Sub switch is **not to be plugged into the MIL network, IP conflicts will occur as well as competing DHCP servers**.
 
 SSH into 192.168.1.1, port 22. Login is sub/subjugator. Enable secret is subjugator.
 
