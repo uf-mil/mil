@@ -6,7 +6,11 @@ SSH into 192.168.1.1, port 22. Login is sub/subjugator. Enable secret is subjuga
 
 The switch assigns IPs to added hosts via DHCP. Only a IP address and netmask is assigned, not a default gateway or DNS server. At the pool name resolution should be handled by your local hosts file.
 
-At the pool, do not connect to WiFi networks that have the 192.168.1.x network. This **will** conflict with the wired connection, and odd behavior **will** occur.
+At the pool, do not connect to WiFi networks that have the 192.168.1.x network. This **will** conflict with the wired connection, and odd behavior **will** occur. If the WiFi network has a network other than 192.168.1.x it is fine to use the WiFi for internet access (such as using your phone to WiFi tether).
+
+If you have problems with the wired network at the pool, first **restart your computer and/or VM**.
+
+If you have a stale DHCP lease (for example, after coming back into the lab from the pool, or going from the lab to the pool), in Ubuntu run "sudo dhclient -r" to release the lease, and then "sudo dhclient" to renew the lease.
 
 --
 
