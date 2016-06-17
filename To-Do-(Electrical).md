@@ -2,6 +2,8 @@
 
 In Progress:
 
+* Make sub switch able to be powered from battery - Assigned to DD
+* Make portable AC to sub power supply box - Assigned to DD
 * Temporary CUDA graphics card - Assigned to DD
 * Temporary mission start mechanism - Assigned to DD
 
