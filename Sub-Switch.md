@@ -14,7 +14,7 @@ Type "conf t" to get into configuration mode.
 
 Enter "ip dhcp pool **hostname**"
 
-Enter "host 192.168.1.XXX 255.255.255.0"
+Enter "host 192.168.1.xxx 255.255.255.0"
 
 Enter "hardware-address xxxx.xxxx.xxxx" **for Ubuntu hosts** OR "client-identifier 01xx.xxxx.xxxx.xx" **for Windows or Mac hosts** - xx.xxxx.xxxx.xx is the MAC address.
 
