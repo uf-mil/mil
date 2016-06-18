@@ -2,7 +2,8 @@
 import rospy
 from std_msgs.msg import String 
 from std_srvs.srv import Empty, EmptyRequest
-from sub8_alarm import single_alarm
+#from sub8_alarm import single_alarm
+from kill_handling.broadcaster import KillBroadcaster
 from twisted.internet import reactor
 
 
@@ -19,7 +20,8 @@ class NetworkCheck(object):
 
         self.sub = rospy.Subscriber('/keep_alive', String, self.got_network_msg, queue_size=1)
         self.auto_service = rospy.ServiceProxy('/go_auto', Empty)
-        self.alarm_broadcaster, self.alarm = single_alarm('network-timeout', severity=1)
+        self.kb = KillBroadcaster(id='network', description='Network timeout')
+        #self.alarm_broadcaster, self.alarm = single_alarm('network-timeout', severity=1)
         rospy.Timer(rospy.Duration(0.1), self.check)
 
     def check(self, *args):
@@ -29,14 +31,13 @@ class NetworkCheck(object):
                 self.auto_service()
 
                 # Kill the sub after the mission
-                rospy.logerr("KILLING SUB")
-                self.alarm.raise_alarm()
                 self.last_msg = ''
-            else:
-                rospy.logerr("KILLING SUB")
-                self.alarm.raise_alarm()
+            #self.alarm.raise_alarm()
+            rospy.logerr("KILLING SUB")
+            self.kb.send(active=True)
         else:
-            self.alarm.clear_alarm()
+            self.kb.send(active=False)
+            #self.alarm.clear_alarm()
 
     def got_network_msg(self, msg):
         self.last_msg = msg.data
