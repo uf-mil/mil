@@ -45,7 +45,7 @@ class Sub8Sonar():
         )
 
         try:
-            self.ser = serial.Serial(port=port, baudrate=baud, timeout=None)
+            self.ser = serial.Serial(port=port, baudrate=baud, timeout=.5)
             self.ser.flushInput()        
         except Exception, e:
             print "\x1b[31mSonar serial  connection error:\n\t", e, "\x1b[0m"
@@ -55,7 +55,9 @@ class Sub8Sonar():
         self.sonar_sensor = EchoLocator(hydrophone_locations, wave_propagation_speed=1484) # speed in m/s
 
         rospy.Service('~/sonar/get_pinger_pulse', Sonar, self.request_data)
-
+        while not rospy.is_shutdown():
+            self.request_data(None)
+            time.sleep(.5)
         rospy.spin()
 
     def listener(self):
@@ -67,6 +69,9 @@ class Sub8Sonar():
         # We've found a packet now disect it.
         response = self.ser.read(19)
         rospy.loginfo("Received: %s" % response)
+
+        if response == "":
+            return
         if self.check_CRC(response):
             print "Found!"
             # The checksum matches the data so split the response into each piece of data.
@@ -83,7 +88,7 @@ class Sub8Sonar():
             )
             return None
 
-    @thread_lock(lock)
+    #@thread_lock(lock)
     def request_data(self, srv):
         '''
         A polling packet consists of only a header and checksum (CRC-16):
@@ -91,11 +96,7 @@ class Sub8Sonar():
         [  0x41  |  ]
         '''
         self.ser.flushInput()
-
-        message = struct.pack('B', 0x41)
-        message += self.CRC(message)
-
-        rospy.loginfo("Writing: %s" % binascii.hexlify(message))
+        self.ser.flushOutput()
 
         try:
             self.ser.write('A')
@@ -106,7 +107,8 @@ class Sub8Sonar():
             )
             return False
 
-        return self.sonar_sensor.getPulseLocation(self.listener())
+
+        return self.listener()#self.sonar_sensor.getPulseLocation(self.listener())
 
     def CRC(self, message):
         # You may have to change the checksum type.
@@ -222,7 +224,7 @@ def testFile(filename):
 
 
 if __name__ == "__main__":
-    # d = Sub8Sonar(rospy.get_param('~/sonar_driver/hydrophones'),
-    #               rospy.get_param('~/sonar_driver/port'),
-    #               rospy.get_param('~/sonar_driver/baud'))
-    testFile("/home/santiago/bags/SonarTestData.txt")
+    d = Sub8Sonar(rospy.get_param('~/sonar_driver/hydrophones'),
+                  rospy.get_param('~/sonar_driver/port'),
+                  rospy.get_param('~/sonar_driver/baud'))
+    # testFile("/home/santiago/bags/SonarTestData.txt")
