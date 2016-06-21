@@ -27,10 +27,12 @@ class Spacenav(object):
         When determining left and right, the wire faces away from you'''
         rospy.init_node('spacenav_positioning')
 
-        if sys.argv[1] == '2d' or sys.argv[1] == '3d':
+        if len(sys.argv) == 0:
+            self.mode = '2d'
+        elif sys.argv[1] == '2d' or sys.argv[1] == '3d':
             self.mode = sys.argv[1]
         else:
-            rospy.logwarn('Invalid mode - Defaulting to 2D')
+            rospy.loginfo('Invalid mode - Defaulting to 2D')
             self.mode = '2d'
 
         self.distance_marker = Marker()
@@ -94,9 +96,11 @@ class Spacenav(object):
         # TODO: Better
         # self.target_orientation = self.cur_orientation
         # self.target_orientation = rotation.dot(self.target_orientation)
+
         self.target_orientation = self.target_orientation.dot(rotation)
         self.target_distance = round(np.linalg.norm(np.array([self.diff_position[0], self.diff_position[1]])), 3)
         self.target_depth = round(self.diff_position[2], 3)
+        self.target_orientation = self.target_orientation.dot(rotation) 
 
         blank = np.eye(4)
         blank[:3, :3] = self.target_orientation
