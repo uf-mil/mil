@@ -5,7 +5,7 @@ import nav_msgs.msg as nav_msgs
 import sub8_ros_tools as sub8_utils
 import tf
 import numpy as np
-from std_msgs.msg import Int16
+
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Twist, Pose, PoseStamped
 from sensor_msgs.msg import Joy
@@ -30,7 +30,7 @@ class Spacenav(object):
         if sys.argv[1] == '2d' or sys.argv[1] == '3d':
             self.mode = sys.argv[1]
         else:
-            print '\nInvalid mode - Defaulting to 2D'
+            rospy.logwarn('Invalid mode - Defaulting to 2D')
             self.mode = '2d'
 
         self.distance_marker = Marker()
@@ -47,6 +47,7 @@ class Spacenav(object):
         self.cur_position = None
         self.cur_orientation = None
 
+        self.diff_position = 0
         self.target_depth = 0
         self.target_distance = 0
 
@@ -79,6 +80,7 @@ class Spacenav(object):
         linear = sub8_utils.rosmsg_to_numpy(msg.linear)
         angular = sub8_utils.rosmsg_to_numpy(msg.angular)
         self.target_position += self.target_orientation.dot(self._position_gain * linear)
+        self.diff_position = np.subtract(self.cur_position, self.target_position)
 
         if self.mode == '2d':
             # Ignore 6-dof shenanigans
@@ -93,8 +95,8 @@ class Spacenav(object):
         # self.target_orientation = self.cur_orientation
         # self.target_orientation = rotation.dot(self.target_orientation)
         self.target_orientation = self.target_orientation.dot(rotation)
-        self.target_distance = round(np.linalg.norm(np.array([self.target_position[0], self.target_position[1]])), 3)
-        self.target_depth = round(self.target_position[2], 3)
+        self.target_distance = round(np.linalg.norm(np.array([self.diff_position[0], self.diff_position[1]])), 3)
+        self.target_depth = round(self.diff_position[2], 3)
 
         blank = np.eye(4)
         blank[:3, :3] = self.target_orientation
