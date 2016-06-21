@@ -6,29 +6,29 @@ If you have any questions, don't hesitate to email Jake.
 
 # Software Team
 
-Patrick Emami
+* Patrick Emami
 
-Zach Goins
+* Zach Goins
 
-Ralph Leyva
+* Ralph Leyva
 
-David Soto
+* David Soto
 
-Jacob Panikulam
+* Jacob Panikulam
 
-Tess Bianchi
+* Tess Bianchi
 
-Matthew Langford
+* Matthew Langford
 
-Brandon Peterson
+* Brandon Peterson
 
-Jiyao Guo
+* Jiyao Guo
 
-Jason Nezvadovitz
+* Jason Nezvadovitz
 
-Little Man and Darla
+* Little Man and Darla
 
-![Darla (left) & Little Man (right)](http://s31.postimg.org/s370klg23/IMG_20160423_014247.jpg)
+    ![Darla (left) & Little Man (right)](http://s31.postimg.org/s370klg23/IMG_20160423_014247.jpg)
 
 ## Helpful Hints
 * [When should I use a ROS topic vs service vs action?](http://answers.ros.org/question/11834/when-should-i-use-topics-vs-services-vs-actionlib-actions-vs-dynamic_reconfigure/)
