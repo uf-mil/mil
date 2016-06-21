@@ -38,7 +38,7 @@ add_service_files(
   PathPlan.srv
   SearchPose.srv
   SetValve.srv
-  HydroListen.srv
+  Sonar.srv
   TorpBoardPoseRequest.srv
   TBDetectionSwitch.srv
 )
