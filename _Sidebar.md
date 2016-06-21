@@ -5,17 +5,14 @@
     * [[Tech Talks]]
     * [[Reading List]]
     * [[Manifesto]]
-
 * [[Code Policy]]
     * [[ROS Conventions]]
     * [[Logging]]
     * [[Other Conventions]]
     * [[Exception Handling]]
-
 * Using the Sub
     * [[Operator Guide]]
     * [[Machine Learning Tools]]
-
 * Plans
     * [[Architecture]]
     * [[Implementation Plans]]
@@ -25,7 +22,6 @@
     * [[Mission Scheduler]]
     * [[Open Questions]]
     * [[Model Learning]]
-
 * Implementation
     * [[Gazebo Job Runner]]
     * [[Simul8]]
@@ -35,7 +31,6 @@
     * [[Monte Carlo Engine]]
     * [[Goal Manager]]
     * [[Cameras]]
-
 * Tribal Knowledge
     * [[SSH into the sub]]
     * [[ROS things]]
@@ -53,14 +48,11 @@
     * [[Spares (Electrical)]]
     * [[To Do (Electrical)]]
     * [[Testing SW Stuff (Electrical)]]
-
 * Mechanical
     * [[General To Do (Mechanical)]]
     * [[Sonar Box To Do]]
-
 * Networking
     * [[Sub Motherboard]]
     * [[Sub Switch]]
-
 * Old Notes
     * [[Simulation]]
