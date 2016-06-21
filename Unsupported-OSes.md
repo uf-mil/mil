@@ -4,7 +4,7 @@ This writeup is for those of you who wish to work with ROS on an unsupported OS 
 __WARNING: RUNNING SUB8 SOFTWARE ON ANYTHING OTHER THAN UBUNTU 14.04 IS COMPLETELY UNSUPPORTED__
 
 
-__Notes:__
+__Mac OS X:__
 * On OS X, GCC is symlinked to CLANG which has its own set of problems, most notably that it doe __NOT__ support OpenMP as of version 7.0. Simply running 'gcc --version' will show the following:
 
      >Apple LLVM version 7.0.2 (clang-700.1.81)
@@ -18,3 +18,6 @@ __Notes:__
      `catkin_make -DCMAKE_C_COMPILER=/usr/local/bin/gcc-5 -DCMAKE_CXX_COMPILER=/usr/local/bin/g++-5 ...`
 
 This is assuming that GCC is placed in /usr/local (Homebrew default)
+
+__Debian:__
+* Should be supported once ROS Kinetic Kame rolls around, and we move over to it. (Post-competition)
