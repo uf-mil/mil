@@ -1,0 +1,10 @@
+<launch>
+    <node pkg="sub8_sonar" type="sonar_test.py" name="sonar_test" output="screen">
+        <rosparam param="hydrophones">
+            {   hydro0: {x: 0, y: 0, z: 0},
+                hydro1: {x: -0.0254, y: 0, z: 0.0254},
+                hydro2: {x: 0.0254, y: 0, z: 0},
+                hydro3: {x: 0, y: -0.0254, z: 0} }
+        </rosparam>
+    </node>
+</launch>
