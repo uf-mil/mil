@@ -25,3 +25,4 @@ Ken:
 - [ ] Send info to Anodized Inc.
 - [ ] Make Props for testing
 - [ ] Propeller jig
+- [ ] Downward Light Mount
