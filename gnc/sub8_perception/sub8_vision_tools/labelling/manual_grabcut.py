@@ -2,27 +2,27 @@ import argparse
 import cv2
 import pickle
 import numpy as np
-import rospy
-import bag_crawler
 import sys
 from matplotlib import pyplot as plt
 """
 TODO:
     - Expand existing pickle feature
 """
-
-
 class Picker(object):
     # Adaboost http://robertour.com/2012/01/24/adaboost-on-opencv-2-3/
 
     def __init__(self, image, brush_size=10, initial_mask=None):
         self.brush_size = brush_size
+        self.draw_opacity = .5
+
         self.done = False
 
         cv2.namedWindow("segment")
         self.image = image
 
         self.visualize = np.copy(image)
+        self.visualize_draw = np.copy(image) * 0
+        self.visual_brush_size = np.copy(image) * 0
         if initial_mask is None:
             self.mask = np.zeros(image.shape[:2], dtype=np.uint8)
             self.mask[:, :] = int(cv2.GC_PR_BGD)
@@ -31,21 +31,36 @@ class Picker(object):
             self.mask[initial_mask == int(cv2.GC_FGD)] = int(cv2.GC_FGD)
             self.mask[initial_mask == int(cv2.GC_BGD)] = int(cv2.GC_BGD)
             # self.mask = initial_mask
-            self.visualize[self.mask == int(cv2.GC_FGD)] = (0, 200, 0)
-            self.visualize[self.mask == int(cv2.GC_BGD)] = (0, 0, 200)
+            self.visualize_draw[self.mask == int(cv2.GC_FGD)] = (0, 200, 0)
+            self.visualize_draw[self.mask == int(cv2.GC_BGD)] = (0, 0, 200)
+
+
+        display = np.array(np.clip(self.visualize + self.visualize_draw * self.draw_opacity, 0, 255), np.uint8)
+        cv2.imshow("segment", display)
 
         self.mouse_state = [0, 0]
+        self.opacity_change = None
+        self.brush_size_change = None
+        self.brush_size_opacity = .4
         cv2.setMouseCallback("segment", self.mouse_cb)
-        cv2.imshow("segment", self.visualize)
         cv2.waitKey(1)
 
     def mouse_cb(self, event, x, y, flags, param):
+        '''
+        Controls:
+            L_MSB click to paint green.
+            R_MSB click to paint red.
+            MIDDLE_MSB to clear paint.
+            CTRL then move up and down to change paint opacity.
+            SHIFT then move up and down to change brush size. 
+        '''
         if self.done:
             return
-
+       
+        cv2.circle(self.visual_brush_size, (x,y), self.brush_size, (255, 255, 255), 1) 
         if event == cv2.EVENT_LBUTTONDOWN:
             self.mouse_state[0] = 1
-            cv2.circle(self.visualize, (x, y), self.brush_size, (0, 200, 0), -1)
+            cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 200, 0), -1)
             cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_FGD), -1)
 
         elif event == cv2.EVENT_LBUTTONUP:
@@ -53,25 +68,45 @@ class Picker(object):
 
         elif event == cv2.EVENT_RBUTTONDOWN:
             self.mouse_state[1] = 1
-            cv2.circle(self.visualize, (x, y), self.brush_size, (0, 0, 200), -1)
+            cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 0, 200), -1)
             cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_BGD), -1)
 
         elif event == cv2.EVENT_RBUTTONUP:
             self.mouse_state[1] = 0
 
         elif event == cv2.EVENT_MBUTTONDOWN:
-            print 'mbutton'
+            self.visualize_draw *= 0
+            self.mask = np.ones(self.visualize_draw.shape[:2], dtype=np.uint8) * int(cv2.GC_PR_BGD)
 
         elif event == cv2.EVENT_MOUSEMOVE:
-            if self.mouse_state[0]:
-                cv2.circle(self.visualize, (x, y), self.brush_size, (0, 200, 0), -1)
-                cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_FGD), -1)
+            if flags == cv2.EVENT_FLAG_CTRLKEY:
+                if self.opacity_change is None:
+                    self.opacity_change = y
+                self.draw_opacity = np.clip((self.draw_opacity + (self.opacity_change - y) * .005), 0, 1)
+                self.opacity_change = y
 
-            elif self.mouse_state[1]:
-                cv2.circle(self.visualize, (x, y), self.brush_size, (0, 0, 200), -1)
-                cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_BGD), -1)
+            elif flags == cv2.EVENT_FLAG_SHIFTKEY:
+                if self.brush_size_change is None:
+                    self.brush_size_change = y
+                self.brush_size = np.clip((self.brush_size + (self.brush_size_change - y)), 0, 99)
+                self.brush_size_change = y
+                self.brush_size_opacity = .9
 
-        cv2.imshow("segment", self.visualize)
+            else:
+                self.opacity_change = None
+                if self.mouse_state[0]:
+                    cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 200, 0), -1)
+                    cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_FGD), -1)
+
+                elif self.mouse_state[1]:
+                    cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 0, 200), -1)
+                    cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_BGD), -1)
+
+        display = np.array(np.clip(self.visualize + self.visualize_draw * self.draw_opacity + 
+                                   self.visual_brush_size * self.brush_size_opacity, 0, 255), np.uint8)
+        cv2.imshow("segment", display)
+        self.visual_brush_size *= 0
+        self.brush_size_opacity = .4
 
     def wait_for_key(self, keys):
         print 'press one of:', keys
@@ -98,7 +133,7 @@ class Picker(object):
         print '\tPress "space" to skip the current image'
         print '\tPress "q" to quit and save your previous segmentations'
         print '\tPress w to run segmentation on the image'
-        key = self.wait_for_key(' qznw')
+        key = self.wait_for_key(' qnw')
         if key in [' ', 'q']:
                 return None, None, key
         self.done = True
@@ -107,8 +142,13 @@ class Picker(object):
         fgdModel = np.zeros((1, 65), np.float64)
 
         out_mask = np.copy(self.mask)
-
+        
         print 'Segmenting...'
+        if out_mask[out_mask == 1].size == 0:
+            # Nothing was selected
+            print "Nothing was selected, continuing."
+            return None, None, key
+
         cv2.grabCut(
             self.image,
             out_mask,
@@ -139,7 +179,7 @@ class Picker(object):
         print '\tPress w record this segmentation and move on to the next image'
         key = self.wait_for_key('qnzw ')
         if key in [' ', 'q']:
-                return None, None, key
+            return None, None, key
 
         return out_mask, return_mask, key
 
@@ -149,14 +189,14 @@ class Picker(object):
 
 
 if __name__ == '__main__':
-    usage_msg = ("Pass the path to a bag, and we'll crawl through the images in it")
+    usage_msg = ("Pass the path to a bag or the start of an image sequence, and we'll crawl through the images in it")
     desc_msg = "A tool for making manual segmentation fun! I am sorry the keyboard shortcuts are nonsense"
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
-    parser.add_argument(dest='bag',
-                        help="The topic name you'd like to listen to")
-    parser.add_argument('--topic', type=str, help="Name of the topic to use")
-    parser.add_argument('--append', type=str, help="Path to a file to append to")
+    parser.add_argument(dest='file_name',
+                        help="Either the name of the bag or first image in a sequence you'd like to segment.")
+    parser.add_argument('--topic', type=str, help="Name of the topic to use or the usb camera number.")
+    parser.add_argument('--append', type=str, help="Path to a file to append to.")
     parser.add_argument('--output', type=str, help="Path to a file to output to (and overwrite)",
                         default='segments.p')
     parser.add_argument('--brush_size', type=int, help="Brush size",
@@ -164,17 +204,32 @@ if __name__ == '__main__':
 
     args = parser.parse_args(sys.argv[1:])
 
-    bag = args.bag
-    bc = bag_crawler.BagCrawler(bag)
-
     if args.append is None:
         print 'Creating new pickle'
         data = []
     else:
+        args.output = args.append
         data = pickle.load(open(args.append, "rb"))
 
-    print bc.image_topics[0]
-    print bc.image_topics[0]
+    file_name = args.file_name
+    if file_name.split('.')[-1] == 'bag':
+        import rospy
+        import bag_crawler
+        bc = bag_crawler.BagCrawler(file_name)
+        print bc.image_topics[0]
+    else:
+        # Assuming we don't have ros installed, so make our own ros for rospy.is_shutdown()
+        class rospy():
+            @classmethod
+            def is_shutdown(self):
+                return False
+
+        import image_crawler        
+        if file_name == 'video':
+            bc = image_crawler.VideoCrawler(file_name, args.topic)
+        else:
+            bc = image_crawler.ImageCrawler(file_name)
+
     last_mask = None
     num_imgs = len(data)
 

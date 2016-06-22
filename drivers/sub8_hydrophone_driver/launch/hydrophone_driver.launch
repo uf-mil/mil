@@ -1,6 +1,0 @@
-<launch>
-    <node pkg="sub8_hydrophone_driver" type="hydrophone_driver.py" name="hydrophone_driver" output="screen">
-        <param name="port" value="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A603H7W6-if00-port0"/>
-        <param name="baud" value="9600"/>
-    </node>
-</launch>

@@ -90,6 +90,12 @@ def odometry_to_numpy(odom):
     return pose, twist, pose_covariance, twist_covariance
 
 
+def wrench_to_numpy(wrench):
+    force = rosmsg_to_numpy(wrench.force)
+    torque = rosmsg_to_numpy(wrench.torque)
+    return force, torque
+
+
 def numpy_to_point(np_vector):
     return geometry_msgs.Point(*np_vector)
 
@@ -102,6 +108,13 @@ def numpy_to_twist(linear_vel, angular_vel):
     '''TODO: Unit-test
     '''
     return geometry_msgs.Twist(linear=geometry_msgs.Vector3(*linear_vel), angular=geometry_msgs.Vector3(*angular_vel))
+
+
+def numpy_to_wrench(forcetorque):
+    return geometry_msgs.Wrench(
+        force=geometry_msgs.Vector3(*forcetorque[:3]),
+        torque=geometry_msgs.Vector3(*forcetorque[3:])
+    )
 
 
 def numpy_matrix_to_quaternion(np_matrix):
@@ -143,7 +156,6 @@ def make_wrench_stamped(force, torque, frame='/body'):
     '''Make a WrenchStamped message without all the fuss
         Frame defaults to body
     '''
-
     wrench = geometry_msgs.WrenchStamped(
         header=make_header(frame),
         wrench=geometry_msgs.Wrench(
