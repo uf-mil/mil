@@ -4,6 +4,7 @@ from __future__ import division
 import numpy as np
 import rospy
 import visualization_msgs.msg as visualization_msgs
+
 from geometry_msgs.msg import Pose, Vector3
 from std_msgs.msg import ColorRGBA
 from uf_common.msg import Float64Stamped  # This needs to be deprecated
@@ -18,6 +19,19 @@ class RvizVisualizer(object):
     def __init__(self):
         rospy.init_node('revisualizer')
         self.rviz_pub = rospy.Publisher("visualization/state", visualization_msgs.Marker, queue_size=2)
+        self.rviz_pub_t = rospy.Publisher("visualization/state_t", visualization_msgs.Marker, queue_size=2)
+
+        # text marker
+        # TODO: Clean this up, there should be a way to set all of this inline
+        self.surface_marker = visualization_msgs.Marker()
+        self.surface_marker.type = self.surface_marker.TEXT_VIEW_FACING
+        self.surface_marker.color = ColorRGBA(1, 1, 1, 1) 
+        self.surface_marker.scale.z = 0.1
+
+        self.depth_marker = visualization_msgs.Marker()
+        self.depth_marker.type = self.depth_marker.TEXT_VIEW_FACING
+        self.depth_marker.color = ColorRGBA(1.0, 1.0, 1.0, 1.0)
+        self.depth_marker.scale.z = 0.1
 
         # distance to bottom
         self.range_sub = rospy.Subscriber("dvl/range", Float64Stamped, self.range_callback)
@@ -35,7 +49,14 @@ class RvizVisualizer(object):
             frame=frame,
             id=0  # Keep these guys from overwriting eachother
         )
+        self.surface_marker.ns='sub'
+        self.surface_marker.header = sub8_utils.make_header(frame='/depth')
+        self.surface_marker.pose = marker.pose
+        self.surface_marker.text = str(round(distance, 3)) + 'm'
+        self.surface_marker.id = 0
+
         self.rviz_pub.publish(marker)
+        self.depth_marker.publish(self.depth_marker)
 
     def range_callback(self, msg):
         '''Handle range data grabbed from dvl'''
@@ -57,6 +78,13 @@ class RvizVisualizer(object):
             up_vector=np.array([0.0, 0.0, -1.0]),  # up is down in range world
             id=1  # Keep these guys from overwriting eachother
         )
+        self.depth_marker.ns='sub'
+        self.depth_marker.header = sub8_utils.make_header(frame='/dvl')
+        self.depth_marker.pose = marker.pose
+        self.depth_marker.text = str(round(distance, 3)) + 'm'
+        self.depth_marker.id = 1
+
+        self.rviz_pub_t.publish(self.depth_marker)
         self.rviz_pub.publish(marker)
 
     def make_cylinder_marker(self, base, length, color, frame='/base_link', up_vector=np.array([0.0, 0.0, 1.0]), **kwargs):
