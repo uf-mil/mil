@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-
-from sub8_perception.srv import TorpBoardPoseRequest
+from sub8_msgs.srv import TorpBoardPoseRequest
 import rospy
 import numpy as np
 import numpy.linalg as lin
@@ -10,6 +9,7 @@ import visualization_msgs.msg as visualization_msgs
 from geometry_msgs.msg import Point, Vector3, Pose, Quaternion
 from std_msgs.msg import ColorRGBA
 import sub8_ros_tools as sub8_utils
+
 
 class PoseObserver(object):
     def __init__(self):
