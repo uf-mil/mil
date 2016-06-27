@@ -4,7 +4,7 @@ Ken:
 
 - [X] Organize Hardware
 - [X] Sonar Box
-- [X] Make end effectors for torpedo
+- [ ] Make end effectors for torpedo
 - [ ] Make end effectors for treasure challenge
 - [X] Make end effectors for bins
 - [X] Make end effectors for buoy
@@ -12,7 +12,7 @@ Ken:
 - [X] New cage for IS
 - [ ] Make list of mech. constraints
 - [ ] Machine Prop
-- [ ] Fix prop slip
+- [X] Fix prop slip
 - [X] Put together order list for manufacturing
 - [X] Order Helicoils
 - [X] Drill holes into endcaps
