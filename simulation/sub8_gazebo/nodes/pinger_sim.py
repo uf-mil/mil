@@ -27,6 +27,8 @@ class Pinger():
 
         # Wait for all the models and such to spawn.
         rospy.Service('/sonar/get_pinger_pulse', Sonar, self.request_data)
+
+        rospy.sleep(3)
         print self.request_data(None)
 
     def request_data(self, srv):
@@ -44,7 +46,7 @@ class Pinger():
         pinger_pose = msg_helpers.pose_to_numpy(pinger_state.pose)[0]
 
         print sub_pose[1]
-        # Calculate distances to each hydrophone from the pinger accounting for sub rotation.
+        # Calculate distances to each hydrophone from the pinger (need to be accounting for sub rotation).
         hydro_poses = np.array([[self.hydro_loc['hydro0']['x'], self.hydro_loc['hydro0']['y'], self.hydro_loc['hydro0']['z']],
                                 [self.hydro_loc['hydro1']['x'], self.hydro_loc['hydro1']['y'], self.hydro_loc['hydro1']['z']],
                                 [self.hydro_loc['hydro2']['x'], self.hydro_loc['hydro2']['y'], self.hydro_loc['hydro2']['z']],
