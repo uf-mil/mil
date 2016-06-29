@@ -16,8 +16,6 @@ print "Waiting for sonar service"
 rospy.wait_for_service('~/sonar/get_pinger_pulse')
 sonar =  rospy.ServiceProxy('~/sonar/get_pinger_pulse', Sonar)
 print "sonar serv proxy created"
-#plt.xlim(-1.0, 1.0)
-#plt.ylim(-1.0, 1.0)
 
 try:
     while(True):
