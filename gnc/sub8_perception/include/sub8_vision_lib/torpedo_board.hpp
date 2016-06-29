@@ -46,12 +46,7 @@
 class Sub8TorpedoBoardDetector {
 
 public:
-  Sub8TorpedoBoardDetector(double im_proc_scale = 0, bool gen_dbg_img = true,
-                           std::string l_img_topic = "",
-                           std::string r_img_topic = "",
-                           std::string srv_name = "",
-                           std::string viz_topic = "",
-                           std::string dbg_img_topic = "");
+  Sub8TorpedoBoardDetector();
   ~Sub8TorpedoBoardDetector();
 
   // Public Variables
@@ -108,7 +103,7 @@ private:
   sub::RvizVisualizer rviz;
 
   // DBG images will be generated and published when true
-  const bool generate_dbg_img;
+  bool generate_dbg_img;
   cv::Mat debug_image;
   cv::Rect upper_left, upper_right, lower_left, lower_right;
 };
