@@ -10,6 +10,20 @@
   <node pkg="sub8_perception" type="follow_orange_pipes.py" name="sub_orange_pipes" output="screen" />
   <node pkg="sub8_perception" type="buoy_2d.py" name="buoy_2d" output="screen" />
   <node pkg="sub8_perception" type="torpedo_board_pose_est.py" name="torpedo_pose_est" output="screen" />
-  <node pkg="sub8_perception" type="torpedos_cpp" name="torpedos_cc" output="screen" />
 
+  <!-- torpedo vision -->
+  <node pkg="sub8_perception" type="torpedos_cpp" name="torpedo_vision" output="screen"> 
+    <!-- default parameters set in gnc/nodes/torpedo_board.cc will be overwritten by these -->
+    <!-- input -->
+    <rosparam param="input_left">        "/stereo/left/image_rect_color/"             </rosparam>
+    <rosparam param="input_right">       "/stereo/right/image_rect_color/"            </rosparam>
+    <rosparam param="activation">        "/torpedo_board/detection_activation_switch" </rosparam>
+    <!-- output -->
+    <rosparam param="rviz">              "/torpedo_board/visualization/detection"     </rosparam>
+    <rosparam param="dbg_imgs">          "/torpedo_board/dbg_imgs"                    </rosparam>
+    <rosparam param="pose_est_srv">      "/torpedo_board/pose_est_srv"                </rosparam>
+    <!-- options -->
+    <rosparam param="img_proc_scale">    0.5                                          </rosparam>
+    <rosparam param="generate_dbg_imgs"> true                                         </rosparam>
+  </node>
 </launch>
