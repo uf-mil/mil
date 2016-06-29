@@ -24,7 +24,7 @@
             direction: [0, 0, -1]
           }
           FRL: {
-            node_id: 13,
+            node_id: 69,
             frame_id: /base_link,
             position: [0.2678, -0.2795, 0],
             direction: [-0.866, -0.5, 0]
