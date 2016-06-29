@@ -17,7 +17,6 @@ import time
 import crc16
 
 lock = threading.Lock()
-HEADER = 0xAA
 
 import sys
 CURSOR_UP_ONE = '\x1b[1A'

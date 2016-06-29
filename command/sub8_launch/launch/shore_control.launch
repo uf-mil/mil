@@ -10,4 +10,9 @@
   </node>
 
   <node pkg="sub8_missions" type="rviz_visualizer.py" name="rviz_visualizer" />
+
+
+  <!-- Load model into rviz -->
+  <param name="robot_description" command="cat $(find sub8_missions)/tools/sub8/sub8.xml" />
+
 </launch>
