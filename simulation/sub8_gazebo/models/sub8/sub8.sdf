@@ -42,8 +42,8 @@
           <pose>0.2559 0.0445 0.01707 0 0 0</pose>
           <horizontal_fov>1.047</horizontal_fov>
           <image>
-            <width>640</width>
-            <height>480</height>
+            <width>644</width>
+            <height>482</height>
           </image>
           <distortion>
             <k1>0</k1>
@@ -74,8 +74,8 @@
           <pose>0.2559 -0.0445 0.01707 0 0 0</pose>
           <horizontal_fov>1.047</horizontal_fov>
           <image>
-            <width>640</width>
-            <height>480</height>
+            <width>644</width>
+            <height>482</height>
           </image>
           <distortion>
             <k1>0</k1>
