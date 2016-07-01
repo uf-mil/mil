@@ -1,1 +1,2 @@
 from sonar_driver import EchoLocator
+from sonar_driver_least_squares import EchoLocatorLS

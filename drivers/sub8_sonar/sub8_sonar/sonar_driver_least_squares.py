@@ -54,7 +54,7 @@ class Sub8Sonar():
             return None
 
         self.hydrophone_locations = hydrophone_locations
-        self.sonar_sensor = EchoLocator(hydrophone_locations, c=1484) # speed of sound in m/s
+        self.sonar_sensor = EchoLocatorLS(hydrophone_locations, c=1484) # speed of sound in m/s
 
         rospy.Service('~/sonar/get_pinger_pulse', Sonar, self.request_data)
         rospy.spin()
@@ -130,7 +130,7 @@ class Sub8Sonar():
         else:
             return False
 
-class EchoLocator(object):
+class EchoLocatorLS(object):
     '''
     Identifies the origin of a pulse in time and space given stamps of the time of detection of
     the pulse by individual sensors.
@@ -151,6 +151,7 @@ class EchoLocator(object):
             action_required=False,
             severity=2
         )
+        print "David: least-squares"
 
     def getPulseLocation(self, timestamps):
         '''
@@ -217,7 +218,7 @@ def testFile(filename):
     lines that do not begin with '[' are ignored
     '''
     hydrophone_locations = rospy.get_param('~/sonar_driver/hydrophones') #DBG
-    locator = EchoLocator(hydrophone_locations, 1484)
+    locator = EchoLocatorLS(hydrophone_locations, 1484)
     with open(filename, "r") as data_file:
         for line in data_file:
             if line[0] == '[':
