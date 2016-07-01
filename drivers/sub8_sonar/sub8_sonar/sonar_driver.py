@@ -59,6 +59,7 @@ class Sub8Sonar():
         self.sonar_sensor = EchoLocator(hydrophone_locations, c=1484) # speed of sound in m/s
 
         rospy.Service('~/sonar/get_pinger_pulse', Sonar, self.request_data)
+        print "Sub8 sonar driver initialized\nMultilateration algorithm: bancroft"
         rospy.spin()
 
     def listener(self):
@@ -140,12 +141,11 @@ class EchoLocator(object):
     '''
     # hydrophone locations should be the dict returned by rospy.get_param('~/<node name>/hydrophones
     def __init__(self, hydrophone_locations, c):  # speed in m/s
-        self.hydrophone_locations = np.array([1, 1, 1])  # just for apending, will not be included
         self.c = c
-        self.hydrophone_location = []
+        self.hydrophone_locations = []
         for key in hydrophone_locations:
             sensor_location = np.array([hydrophone_locations[key]['x'], hydrophone_locations[key]['y'], hydrophone_locations[key]['z']])
-            self.hydrophone_locations += sensor_location
+            self.hydrophone_locations += [sensor_location]
 
         alarm_broadcaster = AlarmBroadcaster()
         self.locate_pulse_error_alarm = alarm_broadcaster.add_alarm(
@@ -158,9 +158,15 @@ class EchoLocator(object):
         '''
         Returns a ros message with the location and time of emission of a pinger pulse.
         '''
-        res = estimate_pos(reception_times, positions)
-        source = [x for x in res if x[2] < 0]   # Assume that the source is below us
-        source = source[0]
+        res = estimate_pos(timestamps, self.hydrophone_locations)
+        print res
+        if len(res) == 1:
+            source = res[0]
+        elif len(res) == 2:
+            source = [x for x in res if x[2] < 0]   # Assume that the source is below us
+        else:
+            source = [None, None, None]
+        print source
         response = SonarResponse()
         response.x = source[0]
         response.y = source[1]
@@ -209,12 +215,15 @@ def estimate_pos(reception_times, positions):
         u = Bpa + Lambda * Bpe
         position = u[:3] - delta[:3]
         time = u[3] + delta[3]
-        
         if any(reception_times[i] < time for i in xrange(N)): continue
-        
         res.append(position)
     
     return res
+
+def delete_last_lines(n=1):
+    for _ in range(n):
+        sys.stdout.write(CURSOR_UP_ONE)
+        sys.stdout.write(ERASE_LINE)
 
 if __name__ == "__main__":
     d = Sub8Sonar(rospy.get_param('~/sonar_driver/hydrophones'),
