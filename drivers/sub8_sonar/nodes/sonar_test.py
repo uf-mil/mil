@@ -3,7 +3,9 @@ import numpy as np
 import rospy
 import rosparam
 import random
-from sonar_driver import EchoLocator
+from sub8_sonar import EchoLocator
+
+c = 1484
 
 class SonarSim(object):
     def __init__(self, hydrophone_locations, wave_propagation_speed_mps):
@@ -40,10 +42,10 @@ if __name__ == '__main__':
         print '\x1b[31m' +  obj.__repr__() + '\x1b[0m'
 
     hydrophone_locations = rospy.get_param('~/sonar_test/hydrophones')
-    sonar = SonarSim(hydrophone_locations, 1484)
-    locator = EchoLocator(hydrophone_locations, 1484)
+    sonar = SonarSim(hydrophone_locations, c)
+    locator = EchoLocator(hydrophone_locations, c)
     # pulses will be generated with x, y, z in range [-pulse_range, pulse_range + 1]
-    pulse_range = 10 
+    pulse_range = 1000000
     rand_args = [-pulse_range, pulse_range + 1]
     for i in range(10):
         pulse = Pulse(random.randrange(*rand_args),
@@ -54,4 +56,3 @@ if __name__ == '__main__':
         print_red(pulse)
         print "Simulated timestamps:\n\t", tstamps
         response = locator.getPulseLocation(np.array(tstamps))
-        print "Reconstructed Pulse:\n\t" + "x: " + str(response.x) + " y: " + str(response.y) + " z: " + str(response.z)
