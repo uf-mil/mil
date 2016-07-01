@@ -24,6 +24,7 @@ import sys
 CURSOR_UP_ONE = '\x1b[1A'
 ERASE_LINE = '\x1b[2K'
 
+
 class Sub8Sonar():
     '''
     Smart sensor that provides high level ROS code with the location of pinger pulses detected with
@@ -33,7 +34,7 @@ class Sub8Sonar():
     TODO: Add a function to try and reconnect to the serial port if we lose connection.
     TODO: Express pulse location in map frame
     '''
-    def __init__(self, hydrophone_locations, port, baud=9600):
+    def __init__(self, c, hydrophone_locations, port, baud=9600):
         rospy.init_node("sonar")
 
         alarm_broadcaster = AlarmBroadcaster()
@@ -55,11 +56,12 @@ class Sub8Sonar():
             print "\x1b[31mSonar serial  connection error:\n\t", e, "\x1b[0m"
             return None
 
+        self.c = c
         self.hydrophone_locations = hydrophone_locations
-        self.sonar_sensor = EchoLocator(hydrophone_locations, c=1484) # speed of sound in m/s
+        self.sonar_sensor = EchoLocator(hydrophone_locations, self.c) # speed of sound in m/s
 
         rospy.Service('~/sonar/get_pinger_pulse', Sonar, self.request_data)
-        print "Sub8 sonar driver initialized\nMultilateration algorithm: bancroft"
+        print "\x1b[32mSub8 sonar driver initialized\x1b[0m"
         rospy.spin()
 
     def listener(self):
@@ -77,7 +79,7 @@ class Sub8Sonar():
             # For info on what these letters mean: https://docs.python.org/2/library/struct.html#format-characters
             data = struct.unpack('>BffffH', response)
             timestamps = [data[4], data[1], data[2], data[3] ]
-            print timestamps
+            print "timestamps:", timestamps
             return timestamps
         else:
             self.packet_error_alarm.raise_alarm(
@@ -135,9 +137,9 @@ class Sub8Sonar():
 
 class EchoLocator(object):
     '''
-    Identifies the origin of a pulse in time and space given stamps of the time of detection of
-    the pulse by individual sensors.
-    c is the wave propagation speed in the medium of operation
+    Identifies the origin location of a pulse given differential times of arrival to the individual 
+    sensors. c is the wave speed in the medium of operation.
+    Hydrohone coordinates are expected in millimeters, result will be given in millimeters.
     '''
     # hydrophone locations should be the dict returned by rospy.get_param('~/<node name>/hydrophones
     def __init__(self, hydrophone_locations, c):  # speed in m/s
@@ -153,25 +155,71 @@ class EchoLocator(object):
             action_required=False,
             severity=2
         )
+        print "\x1b[32mMultilateration algorithm: bancroft"
+        print "Speed of Sound (c):", self.c, "m/s\x1b[0m"
 
     def getPulseLocation(self, timestamps):
         '''
         Returns a ros message with the location and time of emission of a pinger pulse.
         '''
-        res = estimate_pos(timestamps, self.hydrophone_locations)
-        print res
+        res = self.estimate_pos(timestamps, self.hydrophone_locations)
+        # print "bancroft output:", res
         if len(res) == 1:
             source = res[0]
         elif len(res) == 2:
             source = [x for x in res if x[2] < 0]   # Assume that the source is below us
+            if not source: 
+                source = res[0]
+            else:
+                source = source[0]
         else:
-            source = [None, None, None]
-        print source
+            source = [0, 0, 0]
+
         response = SonarResponse()
         response.x = source[0]
         response.y = source[1]
         response.z = source[2]
+        print "Reconstructed Pulse:\n\t" + "x: " + str(response.x) + " y: " + str(response.y) + " z: " + str(response.z)
         return response
+
+    def estimate_pos(self, reception_times, positions):
+        assert len(positions) == len(reception_times)
+        
+        N = len(reception_times)
+        assert N >= 4
+        
+        L = lambda a, b: a[0]*b[0] + a[1]*b[1] + a[2]*b[2] - a[3]*b[3]
+        
+        def get_B(delta):
+            B = np.zeros((N, 4))
+            for i in xrange(N):
+                B[i] = np.concatenate([positions[i]/(self.c), [-reception_times[i]]]) + delta
+            return B
+        
+        delta = min([.1*np.random.randn(4) for i in xrange(10)], key=lambda delta: np.linalg.cond(get_B(delta)))
+
+        B = get_B(delta)
+        a = np.array([0.5 * L(B[i], B[i]) for i in xrange(N)])
+        e = np.ones(N)
+        
+        Bpe = np.linalg.lstsq(B, e)[0]
+        Bpa = np.linalg.lstsq(B, a)[0]
+        
+        Lambdas = quadratic(
+            L(Bpe, Bpe),
+            2*(L(Bpa, Bpe) - 1),
+            L(Bpa, Bpa))
+        if not Lambdas: return []
+        
+        res = []
+        for Lambda in Lambdas:
+            u = Bpa + Lambda * Bpe
+            position = u[:3] - delta[:3]
+            time = u[3] + delta[3]
+            if any(reception_times[i] < time for i in xrange(N)): continue
+            res.append(position*self.c)
+        
+        return res
 
 def quadratic(a, b, c):
     discriminant = b*b - 4*a*c
@@ -181,44 +229,7 @@ def quadratic(a, b, c):
     else:
         return []
 
-def estimate_pos(reception_times, positions):
-    assert len(positions) == len(reception_times)
-    
-    N = len(reception_times)
-    assert N >= 4
-    
-    L = lambda a, b: a[0]*b[0] + a[1]*b[1] + a[2]*b[2] - a[3]*b[3]
-    
-    def get_B(delta):
-        B = np.zeros((N, 4))
-        for i in xrange(N):
-            B[i] = np.concatenate([positions[i], [-reception_times[i]]]) + delta
-        return B
-    
-    delta = min([.1*np.random.randn(4) for i in xrange(10)], key=lambda delta: np.linalg.cond(get_B(delta)))
-    
-    B = get_B(delta)
-    a = np.array([0.5 * L(B[i], B[i]) for i in xrange(N)])
-    e = np.ones(N)
-    
-    Bpe = np.linalg.lstsq(B, e)[0]
-    Bpa = np.linalg.lstsq(B, a)[0]
-    
-    Lambdas = quadratic(
-        L(Bpe, Bpe),
-        2*(L(Bpa, Bpe) - 1),
-        L(Bpa, Bpa))
-    if not Lambdas: return []
-    
-    res = []
-    for Lambda in Lambdas:
-        u = Bpa + Lambda * Bpe
-        position = u[:3] - delta[:3]
-        time = u[3] + delta[3]
-        if any(reception_times[i] < time for i in xrange(N)): continue
-        res.append(position)
-    
-    return res
+
 
 def delete_last_lines(n=1):
     for _ in range(n):
@@ -226,30 +237,6 @@ def delete_last_lines(n=1):
         sys.stdout.write(ERASE_LINE)
 
 if __name__ == "__main__":
-    d = Sub8Sonar(rospy.get_param('~/sonar_driver/hydrophones'),
+    d = Sub8Sonar(1484, rospy.get_param('~/sonar_driver/hydrophones'),
                   "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AH02X4IE-if00-port0",
                   19200)
-
-
-# @apply
-# def main():
-#     np.random.seed(1)
-    
-#     r = 0.0254
-#     positions = map(np.array, [(0, +r, 0), (-r, 0, 0), (r, 0, 0), (0, -r, 0)])
-    
-#     def valid(correct, solution):
-#         return np.linalg.norm(correct - solution) < 1e-2
-    
-#     while True:
-#         test_pos = 10*np.random.randn(3)
-#         test_time = 10*np.random.randn()
-        
-#         reception_times = [test_time + np.linalg.norm(p - test_pos) for p in positions]
-#         print 'problem:', test_pos, test_time
-#         res = estimate_pos(reception_times, positions)
-#         assert res
-#         good = any(valid(test_pos, x) for x in res)
-#         print 'result:', res
-#         assert good
-#         print
