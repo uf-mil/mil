@@ -9,7 +9,7 @@
   </include>
 
   <include file="$(find sub8_launch)/launch/subsystems/perception.launch"/>
-  <include file="$(find sub8_launch)/launch/subsystems/sonar.launch"/>
+  <!-- <include file="$(find sub8_launch)/launch/subsystems/sonar.launch"/> -->
   <include file="$(find sub8_launch)/launch/subsystems/odometry.launch"/>
   <include file="$(find sub8_launch)/launch/subsystems/thrusters.launch"/>
   <include file="$(find sub8_launch)/launch/subsystems/rise.launch"/>
