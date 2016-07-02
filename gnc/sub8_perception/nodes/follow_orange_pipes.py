@@ -8,7 +8,7 @@ import image_geometry
 from std_msgs.msg import Header
 from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D
 from geometry_msgs.msg import Pose2D
-from marker_occ_grid import MarkerOccGrid
+from sub8_vision_tools import MarkerOccGrid
 
 
 class PipeFinder:

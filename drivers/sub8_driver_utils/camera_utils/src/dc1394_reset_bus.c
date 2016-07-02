@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
         }
     }
     //printf("Using camera with GUID %"PRIx64"\n", camera->guid);
-    dc1394("No cameras found");
+    dc1394_log_error("No cameras found");
     return 1;
 }
 

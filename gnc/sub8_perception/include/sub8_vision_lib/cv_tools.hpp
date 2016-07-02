@@ -59,7 +59,7 @@ std::vector<cv::Point> find_local_maxima(const cv::MatND &histogram,
                                          float thresh_multiplier);
 
 // Finds negative local minima less than (global minimum * thresh_multiplier)
-std::vector<cv::Point> find_local_maxima(const cv::MatND &histogram,
+std::vector<cv::Point> find_local_minima(const cv::MatND &histogram,
                                          float thresh_multiplier);
 
 // Selects the mode of a multi-modal distribution closest to a given target
