@@ -4,6 +4,9 @@ project(sub8_sonar)
 find_package(catkin REQUIRED COMPONENTS
   rospy
 )
+
+catkin_python_setup()
+
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES sub8_sonar
