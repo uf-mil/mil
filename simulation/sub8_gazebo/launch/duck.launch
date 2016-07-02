@@ -65,9 +65,15 @@
       -x 12.0 -y 24.0 -z -4.0 -Y -0.5 -model channel_marker_1"
     output="screen" />
 
+  <node
+    name="pinger" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find sub8_gazebo)/models/pinger/pinger.sdf -sdf
+      -x 0 -y 0 -z 0 -model pinger"
+    output="screen" />
 
   <node pkg="sub8_gazebo" type="gazebo_controller.py" name="gazebo_interface" />
-  <node pkg="sub8_gazebo" type="torpedo.py" name="torpedo_controller" />
+  <node pkg="sub8_gazebo" type="pinger_sim.py" name="pinger_sim" />
+  <node pkg="sub8_gazebo" type="actuator_sim.py" name="actuator_sim" />
   <node pkg="sub8_gazebo" type="buoys.py" name="buoy_contact_reporter" />
   <node pkg="sub8_gazebo" type="turbulator.py" name="turbulator" output="screen" if="$(arg turbulence)" />
 
@@ -96,5 +102,5 @@
     <node pkg="image_proc" type="image_proc" name="down_image_proc" />
   </group>
   
-  <include file="$(find sub8_launch)/launch/subsystems/perception.launch" />
+  <include file="$(find sub8_launch)/launch/subsystems/perception.launch" if="$(arg cameras)" />
 </launch>

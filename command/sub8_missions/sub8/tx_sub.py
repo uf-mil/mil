@@ -95,7 +95,7 @@ class _Sub(object):
         self._tf_listener = yield tf.TransformListener(self._node_handle)
         self.channel_marker = VisionProxy('vision/channel_marker', self._node_handle)
         self.buoy = VisionProxy('vision/buoys', self._node_handle)
-        self.bin = VisionProxy('vision/bins', self.node_handle)
+        self.bin = VisionProxy('vision/bins', self._node_handle)
         defer.returnValue(self)
 
     def set_test_mode(self):

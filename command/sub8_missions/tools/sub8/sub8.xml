@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<robot name="sub8">
+  <link name="base_link">
+    <visual name="visual">
+      <geometry>
+        <mesh filename="package://sub8_missions/tools/sub8/sub_redux.dae"/>
+      </geometry>
+    </visual>
+  </link>
+</robot>
