@@ -1,5 +1,5 @@
 //
-//  Program for handling camera bus resets using libdc1394
+//  Utility for triggering camera resets using libdc1394
 //
 
 #include <stdio.h>
@@ -64,3 +64,4 @@ int main(int argc, char *argv[])
     printf("Camera not found\n");
     return 1;
 }
+
