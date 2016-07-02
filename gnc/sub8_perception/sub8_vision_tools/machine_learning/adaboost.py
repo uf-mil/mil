@@ -4,9 +4,10 @@ import pickle
 import argparse
 import sys
 import features
-from sklearn.preprocessing import scale
+from sklearn.preprocessing import scale, normalize
 from sklearn.ensemble import AdaBoostClassifier, GradientBoostingClassifier
 from sub8_vision_tools.machine_learning import balanced_resample, desample_binary
+from tqdm import tqdm
 """
 TODO
 MUST:
@@ -54,13 +55,18 @@ def train_on_pkl(pkl_data, images_to_use=None):
         images_to_use = len(pkl_data)
 
     print 'Generating training data...'
-    for u_image, u_targets in pkl_data[:images_to_use]:
-        image = u_image[::2, ::2, :]
-        targets = u_targets[::2, ::2]
-        target_labels = np.reshape(targets, (-1, 1)).astype(np.int32)
-        observations = observe(image)
-        observation_list.append(observations)
-        label_list.append(target_labels)
+    with tqdm(total=images_to_use, unit=' images') as bar:
+        for u_image, u_targets in pkl_data[:images_to_use]:
+            bar.update(1)
+            if u_image is None or u_targets is None:
+                continue
+
+            image = u_image[::2, ::2, :]
+            targets = u_targets[::2, ::2]
+            target_labels = np.reshape(targets, (-1, 1)).astype(np.int32)
+            observations = observe(image)
+            observation_list.append(observations)
+            label_list.append(target_labels)
 
     all_observations = np.vstack(observation_list)
     all_labels = np.vstack(label_list)
@@ -70,26 +76,25 @@ def train_on_pkl(pkl_data, images_to_use=None):
 
 
 def train_classifier(x, y, n_trees=5, max_depth=3):
-    parameters = {
-        # "boost_type": cv2.BOOST_REAL,
-        "boost_type": cv2.BOOST_GENTLE,
-        # "boost_type": cv2.BOOST_DISCRETE,
-        "weak_count": n_trees,
-        "weight_trim_rate": 0,
-        "max_depth": max_depth
-    }
+    global bar
 
-    # boost = cv2.Boost()
-    # boost = AdaBoostClassifier(n_estimators=50)
+    iterations = 25
+    print 'Training...'
+    bar = tqdm(total=iterations,unit=" estimators")
     boost = GradientBoostingClassifier(
-        n_estimators=6, learning_rate=1.0, max_depth=3,
+        n_estimators=iterations, learning_rate=1.0, max_depth=3,
         loss='exponential'
     )
-    print 'Training...'
-    boost.fit(x, y.ravel())
-    # boost.train(x, cv2.CV_ROW_SAMPLE, y, params=parameters)
+
+    boost.fit(normalize(x), y.ravel(), monitor=monitor)
+    bar.close()
+
     return boost
 
+def monitor(i, self, local_vars):
+    global bar
+    bar.update(1)
+    bar.write("Train Loss: {}".format(self.train_score_[i]))
 
 def main():
     usage_msg = ("Pass the path to a bag, and we'll crawl through the images in it")

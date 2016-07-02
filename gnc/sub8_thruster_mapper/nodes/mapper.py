@@ -2,7 +2,7 @@
 import rospy
 from scipy.optimize import minimize
 import numpy as np
-from sub8_ros_tools import wait_for_param, thread_lock, rosmsg_to_numpy
+from sub8_ros_tools import wait_for_param, thread_lock, rosmsg_to_numpy, msg_helpers
 import threading
 from sub8_msgs.msg import Thrust, ThrusterCmd
 from sub8_msgs.srv import (ThrusterInfo, UpdateThrusterLayout, UpdateThrusterLayoutResponse,
@@ -53,6 +53,7 @@ class ThrusterMapper(object):
         self.b_matrix_server = rospy.Service('b_matrix', BMatrix, self.get_b_matrix)
 
         self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.request_wrench_cb, queue_size=1)
+        self.actual_wrench_pub = rospy.Publisher('wrench_actual', WrenchStamped, queue_size=1)
         self.thruster_pub = rospy.Publisher('thrusters/thrust', Thrust, queue_size=1)
 
     @thread_lock(lock)
@@ -201,6 +202,12 @@ class ThrusterMapper(object):
                     thrust = 0
                 thrust_cmds.append(ThrusterCmd(name=name, thrust=thrust))
 
+        # TODO: Make this account for dropped thrusters
+
+        actual_wrench = self.B.dot(u)
+        self.actual_wrench_pub.publish(
+            msg_helpers.make_wrench_stamped(actual_wrench[:3], actual_wrench[3:])
+        )
         self.thruster_pub.publish(thrust_cmds)
 
 
