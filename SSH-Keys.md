@@ -14,7 +14,7 @@ To generate a brand new, shiny SSH key:
 
 When you are asked where to save the file, just use the default location (~/.ssh/id_rsa) or you may have problems later on. I highly recommend setting a password for the key! It only needs to be entered once on your machine to unlock the key, not for each SSH session like a user password. If you are **really** lazy, you can leave it blank and never be prompted for a password.
 
-# Copying the Certificate to a Server
+# Copying the Cert to a Server
 
 Each server that you want to use the key to authenticate with needs to have a copy of the accompanying certificate. This simple command will do all the heavy lifting for you:
 
