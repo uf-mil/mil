@@ -1,6 +1,5 @@
 * [[Home]]
     * [[Getting Started]]
-    * [[Installing Dependencies]]
     * [[Editing the Wiki]]
     * [[Tech Talks]]
     * [[Reading List]]
