@@ -19,7 +19,7 @@ Before submitting changes, read the rest of this page. Any code that is pull-req
 ## Review
 * Very minor changes (single line or less) require no serious review if you have push access
 * Somewhat minor changes should remain in review for no more then 24 hours (After which, pull so long as build is passing)
-    * This is to prevent blocking progress on innoccous changes
+    * This is to prevent blocking progress on innocuous changes
 * When your code is reviewed and approved, it will be pulled into the main sub8 repository
 * If your code is not approved, the following must happen
     * If your pull-request is multiple commits, add a new commit that makes the suggested changes
@@ -75,13 +75,13 @@ Before submitting changes, read the rest of this page. Any code that is pull-req
 * C++ code: Add docstrings in the same manner as Python, using multi-line comments
 
 ## Adding Dependencies
-* If you add a new library that your code depends on, that is not installed with ROS-desktop-full or Ubuntu by default, you MUST note it in the [wiki](https://github.com/uf-mil/Sub8/wiki/Installing-Dependencies), your readme, and finally, add it to the SemaphoreCI build script.
-    * Once you are a collaborator on Semaphore (Ask someone to add you), there are some easy tutorials there for editing the setup script. Unlike travis-ci, the build script only exists on SemaphoreCI, not in our repository.
-* If you submit a PR that requires some new library without updating the SemaphoreCI setup-build script, the Semaphore build will fail and yell at you.
+* If you add a new library that your code depends on, that is not installed with ros-desktop-full or Ubuntu 14.04 by default, you MUST note it in your readme and somewhere on the wiki if applicable.
+    * New dependencies also need to be added to the automated install process. Add a line in the scripts/get_dependencies.sh file for them under in the correct block of commands. If you are unsure about how to do this, open an issue and request for a senior team member to add it.
+* If you submit a PR that requires some new library without updating the install script, the Semaphore build will fail and yell at you.
 
 ## Testing
 * We use SemaphoreCI to automatically test pull-requests and new commits to the uf-mil/Sub8 repo. You still need to test your code locally, but know that everyone can view make and unit-test results on Semaphore before considering your pull-request.
-* Operation critical code shall have unit-tests. Unit tests should fail if you code no longer works
+* Operation critical code shall have unit-tests. Unit tests should fail if your code no longer works
 * General code should have unit-tests
 * Automated test-by-Simulation (Automatic Hardware-out-of-the-loop testing), e.g. Monte-Carlo testing is highly recommended for all software
 * [C++ unit testing w/ gtest](https://code.google.com/p/googletest/)
