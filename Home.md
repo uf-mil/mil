@@ -2,7 +2,7 @@
 
 Welcome to the Sub8 Wiki! Check out the "getting started" on this wiki, to get started with Sub8, and look at uf-mil/Getting-Started repository for guides to installing ROS and all of the MIL vehicle dependencies.
 
-If you have any questions, don't hesitate to email Jake.
+If you have any questions, don't hesitate to email Ralph.
 
 # Software Team
 
