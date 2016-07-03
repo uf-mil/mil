@@ -3,9 +3,9 @@ Getting Started Guide for the Subjugator Software Team
 
 # How to join
 
-1. Email or contact Jake in person. You can find his contact information scattered in the repository, and you can find his body in MAE-C 126.
+1. Email or contact Ralph in person. You can find his contact information scattered in the repository, and you can find his body in MAE-C 126.
 
-2. You and Jake will walk through the next steps
+2. You and Ralph will walk through the next steps
 
 3. If you don't feel that you meet our requirements, but would still like to get started working on robots, there are other projects in the lab with less stringent requirements
     * If you are sharp, funny and hard-working, we have a place for you, no matter what
