@@ -2,7 +2,7 @@ Setting up AWS for gazebo
 =========================
 
 
-* You want gazebo5, for
+* You want gazebo5
 * Sometimes, you have to add the google nameserver (8.8.8.8) to /etc/resolv.conf
 * You might have to manually set up /etc/apt/sources.list
 * Make sure opengl is installed
