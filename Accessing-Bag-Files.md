@@ -1,6 +1,6 @@
 # Accessing Bags on the Sub
 
-Since bag files are automatically synchronized with the mil-plumbusi server, they are not all on the sub and are likely to be removed and replaced with newer bags when storage space runs low. The most recent bags will still be kept on the sub and can be accessed either inside a linked directory inside the user's home folder or in their actual location, /opt/bags.
+Since bag files are automatically synchronized with the mil-plumbusi server, they are not all on the sub and are likely to be removed and replaced with newer bags when storage space runs low. The most recent bags will still be kept on the sub and can be accessed either in a linked directory inside the user's home folder or in their actual location, /opt/bags.
 
 If you want to mount the bag files from the sub on your machine, the SSHFS commands below can be modified to suit this goal. Just change user to your username on the sub, host to sub.mil.lan, and the remote_dir to the directory your bags are in.
 
