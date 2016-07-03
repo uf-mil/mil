@@ -44,6 +44,16 @@ SSHFS can become a little... unstable if the network connection is lost. While t
 
 The arguments l and f stand for lazy and force, so this should indicate to you that the command should only be run when things go south.
 
+# Copying Files Between Hosts
+
+If you just want move bags (or any type of file) from one machine to another, you can just use SCP as opposed to SSHFS. SCP does not mount anything, so it creates a copy of the file on your machine instead of just letting you access the files on the remote machine. The command is very similar in structure, but here is a basic example:
+
+    scp [-P port] user@host:remote_file local_dir
+
+That command can be used to copy a remote file to a local directory. Reversing the command enables one to push a local file to a remote directory:
+
+    scp [-P port] local_file user@host:remote_dir
+
 # Mounting the Bags With Samba
 
 Samba is a primarily Windows based fileserver protocol, but there are clients for Linux and Mac OSX. While it is a bit easier to use, it is a verbose networking protocol and options for securing the channel are limited as far as I can tell. Some people **ahem** prefer it, so I have implemented it for use on the local MIL network. There is a good guide for setting Ubuntu up to use Samba [here](https://help.ubuntu.com/community/Samba/SambaClientGuide). There is a Samba share for each SSHFS share, see below:
