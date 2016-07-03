@@ -10,6 +10,7 @@
     * [[Other Conventions]]
     * [[Exception Handling]]
 * Using the Sub
+    * [[SSH into the sub]]
     * [[Operator Guide]]
     * [[Machine Learning Tools]]
 * Plans
@@ -31,7 +32,6 @@
     * [[Goal Manager]]
     * [[Cameras]]
 * Tribal Knowledge
-    * [[SSH into the sub]]
     * [[ROS things]]
     * [[Continuous Integration]]
     * [[Git]]
