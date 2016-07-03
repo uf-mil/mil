@@ -26,6 +26,8 @@ If you have any questions, don't hesitate to email Jake.
 
 * Jason Nezvadovitz
 
+* Anthony Olive
+
 * Little Man and Darla
 
     ![Darla (left) & Little Man (right)](http://s31.postimg.org/s370klg23/IMG_20160423_014247.jpg)
@@ -36,4 +38,4 @@ If you have any questions, don't hesitate to email Jake.
 
 # Getting Involved
 
-Interested in working on the Sub? Schedule a one-on-one meeting with Jake (Jacob Panikulam). Find his contact information floating around in the repository.
+Interested in working on the Sub? Schedule a one-on-one meeting with Ralph (Ralph Leyva). Find his contact information floating around in the repository.
