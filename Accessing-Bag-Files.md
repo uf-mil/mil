@@ -20,7 +20,7 @@ Once that is done, mounting any directory on a remote machine is as simple as:
 * local_dir - The directory on your local machine that the bags are mounted to (this must be an empty folder that you have permissions to access)
 * port - The port that the SSH server is running on (this defaults to 22, so it is optional in most cases)
 
-This will simply mount the remote directory to the local directory you specified, making it seem to the OS that the bags are in that directory on your system. Simply put, you can interact with them like regular files on your system.
+This will mount the remote directory to the local directory you specified, making it seem to the OS that the bags are in that directory on your system. Simply put, you can interact with them like regular files on your system.
 
 To mount the bags on the mil-plumbusi server while connected to the lab's local network, the command takes the following form:
 
