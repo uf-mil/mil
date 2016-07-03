@@ -30,7 +30,7 @@ You will need to get the password from a senior lab member to access this user.
 
 If you are a guest or new to the team, we recommend that you mount the bags in read-only mode so that nothing important is accidentally deleted:
 
-    sshfs **milguest**@**mil-plumbusi.mil.lan**: **/your/local/bags/directory** -o reconnect
+    sshfs __milguest__@**mil-plumbusi.mil.lan**: **/your/local/bags/directory** -o reconnect
 
 The password for this user is available to anyone and can clearly be seen taped to a wall above the desk of our in-house Boxometrist, Ken Tran. You will be able to recognize Ken's desk by the fact that it appears to be a living organism, growing and changing over time.
 
@@ -40,7 +40,7 @@ Once you are done copying or streaming files over the tunnel, it is recommended 
 
 SSHFS can become a little... unstable if the network connection is lost. While the reconnect option fixes some of the issues, a few still remain. Anthony is working on a script to solve this, but no delivery date can be guaranteed at the moment. For now, you should be able to unmount even the most frozen of sessions with this command:
 
-    sudo umount **/your/local/bags/directory** -lf
+    sudo umount __/your/local/bags/directory__ -lf
 
 The arguments l and f stand for lazy and force, so this should indicate to you that the command should only be run when things go south.
 
@@ -48,12 +48,12 @@ The arguments l and f stand for lazy and force, so this should indicate to you t
 
 Samba is a primarily Windows based fileserver protocol, but there are clients for Linux and Mac OSX. While it is a bit easier to use, it is a verbose networking protocol and options for securing the channel are limited as far as I can tell. Some people *ahem* prefer it, so I have implemented it for use on the local MIL network. There is a good guide for setting Ubuntu up to use Samba [here](https://help.ubuntu.com/community/Samba/SambaClientGuide). There is a Samba share for each SSHFS share, see below:
 
-    * ros-bags
-        * username = ros-bags
-        * workgroup = MIL
-        * password = same as user's password for SSHFS
+* ros-bags
+    * username = ros-bags
+    * workgroup = MIL
+    * password = same as user's password for SSHFS
 
-    * ros-bags-ro
-        * username = milguest
-        * workgroup = MIL
-        * password = same as user's password for SSHFS
+* ros-bags-ro
+    * username = milguest
+    * workgroup = MIL
+    * password = same as user's password for SSHFS
