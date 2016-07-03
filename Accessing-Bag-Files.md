@@ -46,7 +46,7 @@ The arguments l and f stand for lazy and force, so this should indicate to you t
 
 # Mounting the Bags With Samba
 
-Samba is a primarily Windows based fileserver protocol, but there are clients for Linux and Mac OSX. While it is a bit easier to use, it is a verbose networking protocol and options for securing the channel are limited as far as I can tell. Some people *ahem* prefer it, so I have implemented it for use on the local MIL network. There is a good guide for setting Ubuntu up to use Samba [here](https://help.ubuntu.com/community/Samba/SambaClientGuide). There is a Samba share for each SSHFS share, see below:
+Samba is a primarily Windows based fileserver protocol, but there are clients for Linux and Mac OSX. While it is a bit easier to use, it is a verbose networking protocol and options for securing the channel are limited as far as I can tell. Some people **ahem** prefer it, so I have implemented it for use on the local MIL network. There is a good guide for setting Ubuntu up to use Samba [here](https://help.ubuntu.com/community/Samba/SambaClientGuide). There is a Samba share for each SSHFS share, see below:
 
 * ros-bags
     * username = ros-bags
