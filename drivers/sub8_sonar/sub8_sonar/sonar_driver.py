@@ -2,7 +2,9 @@
 from __future__ import division
 import math
 import numpy as np
-from scipy import optimize
+
+import rospy
+import rosparam
 
 import rospy
 import rosparam
@@ -21,6 +23,7 @@ import crc16
 import sys
 
 lock = threading.Lock()
+
 
 class Sub8Sonar():
     '''
@@ -272,7 +275,6 @@ def delete_last_lines(n=1):
     for _ in range(n):
         sys.stdout.write(CURSOR_UP_ONE)
         sys.stdout.write(ERASE_LINE)
-
 
 if __name__ == "__main__":
     d = Sub8Sonar('bancroft', 1.484, rospy.get_param('~/sonar_driver/hydrophones'),
