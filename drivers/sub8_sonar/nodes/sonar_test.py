@@ -6,12 +6,12 @@ from scipy import optimize
 import rospy
 import rosparam
 import random
-from sub8_sonar import EchoLocator, EchoLocatorLS
+from sub8_sonar import Multilaterator
 import sys
 
 c = 1.484 # millimeters/microsecond
 
-class SonarSim(object):
+class ReceiverArraySim(object):
     def __init__(self, hydrophone_locations, wave_propagation_speed_mps):
         self.c = wave_propagation_speed_mps
         self.hydrophone_locations = np.array([0, 0, 0])
@@ -54,7 +54,7 @@ if __name__ == '__main__':
         return ('\x1b[31m' if (mag_error == -100) else "") + ("Errors:  directional=" + str(alpha) + "deg").ljust(42) \
             + ("magnitude=" + str(mag_error) + "%").ljust(20)
 
-    def delete_last_lines(n=1):
+    def delete_last_lines(n=0):
         CURSOR_UP_ONE = '\x1b[1A'
         ERASE_LINE = '\x1b[2K'
         for _ in range(n):
@@ -62,16 +62,16 @@ if __name__ == '__main__':
             sys.stdout.write(ERASE_LINE)
 
     hydrophone_locations = rospy.get_param('~/sonar_test/hydrophones')
-    sonar = SonarSim(hydrophone_locations, c)
-    locator = EchoLocator(hydrophone_locations, c)
+    hydrophone_array = ReceiverArraySim(hydrophone_locations, c)
+    sonar = Multilaterator(hydrophone_locations, c, 'bancroft')
 
     # # Simulate individual pulses (Debugging Jakes Board)
     # pulse = Pulse(-5251, -7620, 1470, 0)
-    # tstamps = sonar.listen(pulse)
+    # tstamps = hydrophone_array.listen(pulse)
     # tstamps = tstamps - tstamps[0]
     # print_green(pulse.__repr__())
     # print "Perfect timestamps: (microseconds)\n\t", tstamps
-    # res_msg = locator.getPulseLocation(np.array(tstamps))
+    # res_msg = sonar.getPulseLocation(np.array(tstamps))
     # res = np.array([res_msg.x, res_msg.y, res_msg.z])
     # print "\t\x1b[33m".ljust(22) + error(res, pulse.position()) + "\x1b[0m"
 
@@ -88,12 +88,12 @@ if __name__ == '__main__':
             pulse = Pulse(random.randrange(*rand_args),
                           random.randrange(*rand_args),
                           random.randrange(*rand_args), 0)
-            tstamps = sonar.listen(pulse)
+            tstamps = hydrophone_array.listen(pulse)
             tstamps = tstamps - tstamps[0]
             print_green(str(i).ljust(2) + str(pulse))
             print "Perfect timestamps: (microseconds)\n\t", tstamps
-            res_msg = locator.getPulseLocation(np.array(tstamps))
-            delete_last_lines(0)
+            res_msg = sonar.getPulseLocation(np.array(tstamps))
+            delete_last_lines(4)  # more concise output
             res = np.array([res_msg.x, res_msg.y, res_msg.z])
             print "\t\x1b[33m".ljust(22) + error(res, pulse.position()) + "\x1b[0m"
             print "Progressively adding noise to timestamps..."
@@ -103,8 +103,8 @@ if __name__ == '__main__':
                 noisy_tstamps = [x + np.random.normal(0, sigma) for x in tstamps]
                 noisy_tstamps[0] = 0
                 print "Noisy timestamps:\n\t", noisy_tstamps
-                res_msg = locator.getPulseLocation(np.array(noisy_tstamps))
+                res_msg = sonar.getPulseLocation(np.array(noisy_tstamps))
                 res = np.array([res_msg.x, res_msg.y, res_msg.z])
-                delete_last_lines(4)
+                delete_last_lines(4)  # more concise output
                 print "\t\x1b[33m" + ("sigma: " +  str(sigma)).ljust(16) \
                     + error(res, pulse.position()) + "\x1b[0m"

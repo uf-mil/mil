@@ -1,8 +1,8 @@
 #!/usr/bin/python
-
 from __future__ import division
 import math
 import numpy as np
+from scipy import optimize
 
 import rospy
 import rosparam
@@ -18,12 +18,9 @@ import struct
 import time
 import crc16
 
-lock = threading.Lock()
-
 import sys
-CURSOR_UP_ONE = '\x1b[1A'
-ERASE_LINE = '\x1b[2K'
 
+lock = threading.Lock()
 
 class Sub8Sonar():
     '''
@@ -34,7 +31,7 @@ class Sub8Sonar():
     TODO: Add a function to try and reconnect to the serial port if we lose connection.
     TODO: Express pulse location in map frame
     '''
-    def __init__(self, c, hydrophone_locations, port, baud=9600):
+    def __init__(self, method, c, hydrophone_locations, port, baud=19200):
         rospy.init_node("sonar")
 
         alarm_broadcaster = AlarmBroadcaster()
@@ -58,7 +55,7 @@ class Sub8Sonar():
 
         self.c = c
         self.hydrophone_locations = hydrophone_locations
-        self.sonar_sensor = EchoLocator(hydrophone_locations, self.c) # speed of sound in m/s
+        self.sonar_sensor = Multilaterator(hydrophone_locations, self.c, method) # speed of sound in m/s
 
         rospy.Service('~/sonar/get_pinger_pulse', Sonar, self.request_data)
         print "\x1b[32mSub8 sonar driver initialized\x1b[0m"
@@ -92,17 +89,7 @@ class Sub8Sonar():
 
     @thread_lock(lock)
     def request_data(self, srv):
-        '''
-        A polling packet consists of only a header and checksum (CRC-16):
-          HEADER     CHECKSUM
-        [  0x41  |  ]
-        '''
         self.ser.flushInput()
-
-        message = struct.pack('B', 0x41)
-        message += self.CRC(message)
-
-        # rospy.loginfo("Writing: %s" % binascii.hexlify(message)) # uncomment for debugging
 
         try:
             self.ser.write('A')
@@ -135,56 +122,50 @@ class Sub8Sonar():
         else:
             return False
 
-class EchoLocator(object):
+class Multilaterator(object):
     '''
-    Identifies the origin location of a pulse given differential times of arrival to the individual 
-    sensors. c is the wave speed in the medium of operation.
-    Hydrohone coordinates are expected in millimeters, result will be given in millimeters.
+    Finds the origin location of a pulse given differential times of 
+    arrival to the individual sensors. c is the wave speed in the medium of operation.
+    Units:
+        Hydrohone coordinates are expected in millimeters, pulse location will be given in millimeters.
+        Timestamps are expected in microseconds. c is expected in millimeters per microsecond
+    Note:
+        hydrophone locations should be the dict returned by rospy.get_param('~/<node name>/hydrophones
     '''
-    # hydrophone locations should be the dict returned by rospy.get_param('~/<node name>/hydrophones
-    def __init__(self, hydrophone_locations, c):  # speed in m/s
-        self.c = c
+    def __init__(self, hydrophone_locations, c, method):  # speed in millimeters/microsecond
         self.hydrophone_locations = []
         for key in hydrophone_locations:
             sensor_location = np.array([hydrophone_locations[key]['x'], hydrophone_locations[key]['y'], hydrophone_locations[key]['z']])
             self.hydrophone_locations += [sensor_location]
+        self.c = c
+        self.method = method
+        print "\x1b[32mSpeed of Sound (c):", self.c, "millimeter/microsecond\x1b[0m"
 
-        alarm_broadcaster = AlarmBroadcaster()
-        self.locate_pulse_error_alarm = alarm_broadcaster.add_alarm(
-            name='sonar_pulse_locating_error',
-            action_required=False,
-            severity=2
-        )
-        print "\x1b[32mMultilateration algorithm: bancroft"
-        print "Speed of Sound (c):", self.c, "m/s\x1b[0m"
-
-    def getPulseLocation(self, timestamps):
+    def getPulseLocation(self, timestamps, method=None):
         '''
         Returns a ros message with the location and time of emission of a pinger pulse.
         '''
-        res = self.estimate_pos(timestamps, self.hydrophone_locations)
-        # print "bancroft output:", res
-        if len(res) == 1:
-            source = res[0]
-        elif len(res) == 2:
-            source = [x for x in res if x[2] < 0]   # Assume that the source is below us
-            if not source: 
-                source = res[0]
-            else:
-                source = source[0]
+        if method == None:
+            method = self.method
+        # print "\x1b[32mMultilateration algorithm:", method, "\x1b[0m"
+        assert len(self.hydrophone_locations) == len(timestamps)
+        source = None
+        if method == 'bancroft':
+            source = self.estimate_pos_bancroft(timestamps)
+        elif method == 'LS':
+            source = self.estimate_pos_LS(timestamps)
         else:
-            source = [0, 0, 0]
-
+            print method, "is not an available multilateration algorithm"
+            return
         response = SonarResponse()
         response.x = source[0]
         response.y = source[1]
         response.z = source[2]
-        print "Reconstructed Pulse:\n\t" + "x: " + str(response.x) + " y: " + str(response.y) + " z: " + str(response.z)
+        print "Reconstructed Pulse:\n\t" + "x: " + str(response.x) + " y: " + str(response.y) \
+            + " z: " + str(response.z) + " (mm)"
         return response
 
-    def estimate_pos(self, reception_times, positions):
-        assert len(positions) == len(reception_times)
-        
+    def estimate_pos_bancroft(self, reception_times):
         N = len(reception_times)
         assert N >= 4
         
@@ -193,7 +174,7 @@ class EchoLocator(object):
         def get_B(delta):
             B = np.zeros((N, 4))
             for i in xrange(N):
-                B[i] = np.concatenate([positions[i]/(self.c), [-reception_times[i]]]) + delta
+                B[i] = np.concatenate([self.hydrophone_locations[i]/(self.c), [-reception_times[i]]]) + delta
             return B
         
         delta = min([.1*np.random.randn(4) for i in xrange(10)], key=lambda delta: np.linalg.cond(get_B(delta)))
@@ -209,7 +190,8 @@ class EchoLocator(object):
             L(Bpe, Bpe),
             2*(L(Bpa, Bpe) - 1),
             L(Bpa, Bpa))
-        if not Lambdas: return []
+        if not Lambdas: 
+            return [0, 0, 0]
         
         res = []
         for Lambda in Lambdas:
@@ -218,8 +200,62 @@ class EchoLocator(object):
             time = u[3] + delta[3]
             if any(reception_times[i] < time for i in xrange(N)): continue
             res.append(position*self.c)
-        
-        return res
+        if len(res) == 1:
+            source = res[0]
+        elif len(res) == 2:
+            source = [x for x in res if x[2] < 0]   # Assume that the source is below us
+            if not source: 
+                source = res[0]
+            else:
+                source = source[0]
+        else:
+            source = [0, 0, 0]
+        return source
+
+    def estimate_pos_LS(self, timestamps):
+        '''
+        Returns a ros message with the location and time of emission of a pinger pulse.
+        '''
+        self.timestamps = timestamps
+        init_guess = np.array([1, 1, 1])
+        opt = {'disp': 0}
+        opt_method = 'Powell'
+        result = optimize.minimize(self.cost_LS, init_guess, method=opt_method, options=opt, tol=1e-15)
+        if(result.success):
+            source = [result.x[0], result.x[1], result.x[2]]
+        else:
+            source = [0, 0, 0]
+        return source
+
+    def cost_LS(self, potential_pulse):
+        '''
+        Compares the difference in observed and theoretical difference in time of arrival
+        between the hydrophones and the reference hydrophone for potential source origins.
+
+        Note: when there are 4 timestamps (not including reference), this cost is convex: 
+            SciPy Optimize will converge on the correct source origin.
+            With only 3 time stamps, minimization methods will not convrge to the correct
+            result, however, repeating the process for the source in the same location,
+            all of the results from minimizing this cost lie on a single 3D line
+        '''
+        cost = 0
+        t = self.timestamps
+        x0 = self.hydrophone_locations[0][0]
+        y0 = self.hydrophone_locations[0][1]
+        z0 = self.hydrophone_locations[0][2]
+        x = potential_pulse[0]
+        y = potential_pulse[1]
+        z = potential_pulse[2]
+        d0 = np.sqrt((x0 - x)**2 + (y0 - x)**2 + (z0 - x)**2)
+        for i in xrange(1, len(self.hydrophone_locations)):
+            xi = self.hydrophone_locations[i][0]
+            yi = self.hydrophone_locations[i][1]
+            zi = self.hydrophone_locations[i][2]
+            di = np.sqrt((xi - x)**2 + (yi - x)**2 + (zi - x)**2)
+            hydro_i_cost = (di - d0 - self.c * t[i])**2
+            cost = cost + hydro_i_cost
+        return cost
+
 
 def quadratic(a, b, c):
     discriminant = b*b - 4*a*c
@@ -230,13 +266,15 @@ def quadratic(a, b, c):
         return []
 
 
-
 def delete_last_lines(n=1):
+    CURSOR_UP_ONE = '\x1b[1A'
+    ERASE_LINE = '\x1b[2K'
     for _ in range(n):
         sys.stdout.write(CURSOR_UP_ONE)
         sys.stdout.write(ERASE_LINE)
 
+
 if __name__ == "__main__":
-    d = Sub8Sonar(1484, rospy.get_param('~/sonar_driver/hydrophones'),
+    d = Sub8Sonar('bancroft', 1.484, rospy.get_param('~/sonar_driver/hydrophones'),
                   "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AH02X4IE-if00-port0",
                   19200)
