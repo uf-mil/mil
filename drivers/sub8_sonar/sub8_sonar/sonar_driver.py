@@ -2,6 +2,9 @@
 from __future__ import division
 import math
 import numpy as np
+import numpy.linalg as la
+from scipy import optimize
+from itertools import combinations
 
 import rospy
 import rosparam
@@ -140,6 +143,7 @@ class Multilaterator(object):
         for key in hydrophone_locations:
             sensor_location = np.array([hydrophone_locations[key]['x'], hydrophone_locations[key]['y'], hydrophone_locations[key]['z']])
             self.hydrophone_locations += [sensor_location]
+        self.pairs = list(combinations(range(len(hydrophone_locations)),2))
         self.c = c
         self.method = method
         print "\x1b[32mSpeed of Sound (c):", self.c, "millimeter/microsecond\x1b[0m"
@@ -181,6 +185,7 @@ class Multilaterator(object):
             return B
         
         delta = min([.1*np.random.randn(4) for i in xrange(10)], key=lambda delta: np.linalg.cond(get_B(delta)))
+        # delta = np.zeros(4) # gives very good heading for noisy timestamps, although range is completely unreliable
 
         B = get_B(delta)
         a = np.array([0.5 * L(B[i], B[i]) for i in xrange(N)])
@@ -220,7 +225,7 @@ class Multilaterator(object):
         Returns a ros message with the location and time of emission of a pinger pulse.
         '''
         self.timestamps = timestamps
-        init_guess = np.array([1, 1, 1])
+        init_guess = np.random.normal(0,100,3)
         opt = {'disp': 0}
         opt_method = 'Powell'
         result = optimize.minimize(self.cost_LS, init_guess, method=opt_method, options=opt, tol=1e-15)
@@ -233,14 +238,25 @@ class Multilaterator(object):
     def cost_LS(self, potential_pulse):
         '''
         Compares the difference in observed and theoretical difference in time of arrival
-        between the hydrophones and the reference hydrophone for potential source origins.
+        between tevery unique pair of hydrophones.
 
-        Note: when there are 4 timestamps (not including reference), this cost is convex: 
-            SciPy Optimize will converge on the correct source origin.
-            With only 3 time stamps, minimization methods will not convrge to the correct
-            result, however, repeating the process for the source in the same location,
-            all of the results from minimizing this cost lie on a single 3D line
+        Note: the result will be along the direction of the heading but not at the right distance.
         '''
+        cost = 0
+        t = self.timestamps
+        c = self.c
+        x = np.array(potential_pulse)
+        for pair in self.pairs:
+            h0 = self.hydrophone_locations[pair[0]]
+            h1 = self.hydrophone_locations[pair[1]]
+            residual = la.norm(x-h0) - la.norm(x-h1) - c*(t[pair[0]] - t[pair[1]])
+            cost += residual**2
+        return cost
+
+    def cost_LS2(self, potential_pulse):
+        """
+        Slightly less accurate than the one above in terms of heading but much faster.
+        """
         cost = 0
         t = self.timestamps
         x0 = self.hydrophone_locations[0][0]

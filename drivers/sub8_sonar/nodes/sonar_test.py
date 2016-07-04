@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
     hydrophone_locations = rospy.get_param('~/sonar_test/hydrophones')
     hydrophone_array = ReceiverArraySim(hydrophone_locations, c)
-    sonar = Multilaterator(hydrophone_locations, c, 'bancroft')
+    sonar = Multilaterator(hydrophone_locations, c, 'LS')
 
     # # Simulate individual pulses (Debugging Jakes Board)
     # pulse = Pulse(-5251, -7620, 1470, 0)
