@@ -12,7 +12,7 @@ To generate a brand new, shiny SSH key:
 
     ssh-keygen -b 4096
 
-When you are asked where to save the file, just use the default location (~/.ssh/id_rsa) or you may have problems later on. I highly recommend setting a password for the key! It only needs to be entered once on your machine to unlock the key, not for each SSH session like a user password. If you are **really** lazy, you can leave it blank and never be prompted for a password.
+When you are asked where to save the file, just use the default location (~/.ssh/id_rsa) or you may have problems later on. I highly recommend setting a password for the key! It only needs to be entered once on your machine to unlock the key, not for each SSH session like a user password. If you are **really** lazy, you can leave it blank and will never be prompted for a password.
 
 # Copying the Cert to a Server
 
@@ -20,7 +20,7 @@ Each server that you want to use the key to authenticate with needs to have a co
 
     ssh-copy-id user@host
 
-* **user** - the username you want to log in with (this must be run for each separate usermane even if they are on the same machine)
-* **host** - the IP address or hostname of the machine on the network
+* user - the username you want to log in with (this must be run for each separate usermane even if they are on the same machine)
+* host - the IP address or hostname of the machine on the network
 
 This will ask you to enter the password for that user. Once this is done, you should be able to log in without typing any kind of password.
