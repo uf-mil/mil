@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import urllib2
 import re
 import numpy as np

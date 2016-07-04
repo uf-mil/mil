@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import argparse
 import cv2
 import pickle
