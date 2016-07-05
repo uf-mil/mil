@@ -9,9 +9,6 @@ from itertools import combinations
 import rospy
 import rosparam
 
-import rospy
-import rosparam
-
 from sub8_msgs.srv import Sonar, SonarResponse
 from sub8_ros_tools import thread_lock, make_header
 from sub8_alarm import AlarmBroadcaster
