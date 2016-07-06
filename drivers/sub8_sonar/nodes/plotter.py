@@ -19,7 +19,12 @@ print "sonar serv proxy created"
 
 try:
     while(True):
-        pinger_pose = sonar()
+        try:
+            pinger_pose = sonar()
+        except Exception:
+            plt.close('all')
+            print "\nSonar driver is down, shutting down plotter"
+            break
         print "x:", str(pinger_pose.x).rjust(15), "y:", str(pinger_pose.y).rjust(15), "z:", str(pinger_pose.z).rjust(15)
         ax.scatter(pinger_pose.x, pinger_pose.y, pinger_pose.z)
         plt.draw()

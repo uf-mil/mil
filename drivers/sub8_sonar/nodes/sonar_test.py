@@ -6,40 +6,8 @@ from scipy import optimize
 import rospy
 import rosparam
 import random
-from sub8_sonar import Multilaterator
+from multilateration import Multilaterator, ReceiverArraySim, Pulse
 import sys
-
-c = 1.484 # millimeters/microsecond
-
-class ReceiverArraySim(object):
-    def __init__(self, hydrophone_locations, wave_propagation_speed_mps):
-        self.c = wave_propagation_speed_mps
-        self.hydrophone_locations = np.array([0, 0, 0])
-        for key in hydrophone_locations:
-            sensor_location = np.array([hydrophone_locations[key]['x'], hydrophone_locations[key]['y'], hydrophone_locations[key]['z']])
-            self.hydrophone_locations = np.vstack((self.hydrophone_locations, sensor_location))
-        self.hydrophone_locations = self.hydrophone_locations[1:]
-
-    def listen(self, pulse):
-        timestamps = []
-        for idx in range(4):
-            src_range = np.sqrt(sum(np.square(pulse.position() - self.hydrophone_locations[idx])))
-            timestamps += [pulse.t + src_range / self.c]
-        return np.array(timestamps)
-
-class Pulse(object):
-    def __init__(self, x, y, z, t):
-        self.x = x
-        self.y = y
-        self.z = z
-        self.t = t
-
-    def position(self):
-        return np.array([self.x, self.y, self.z])
-
-    def __repr__(self):
-        return "Pulse:\t" + "x: " + str(self.x) + " y: " + str(self.y) + " z: " \
-            + str(self.z) + " (mm)"
 
 
 if __name__ == '__main__':
@@ -61,6 +29,7 @@ if __name__ == '__main__':
             sys.stdout.write(CURSOR_UP_ONE)
             sys.stdout.write(ERASE_LINE)
 
+    c = 1.484  # millimeters/microsecond
     hydrophone_locations = rospy.get_param('~/sonar_test/hydrophones')
     hydrophone_array = ReceiverArraySim(hydrophone_locations, c)
     sonar = Multilaterator(hydrophone_locations, c, 'LS')
