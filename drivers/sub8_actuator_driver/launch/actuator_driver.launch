@@ -1,5 +1,5 @@
 <launch>
     <node pkg="sub8_actuator_driver" type="actuator_driver.py" name="actuator_driver" output="screen">
-        <param name="port" value="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A603H7W6-if00-port0"/>
+        <param name="port" value="/dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_5_to_8_DMBP58-if00-port0"/>
     </node>
 </launch>
