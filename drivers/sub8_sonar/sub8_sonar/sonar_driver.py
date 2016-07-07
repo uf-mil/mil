@@ -2,6 +2,9 @@
 import rospy
 import rosparam
 
+import numpy as np
+from scipy.signal import resample
+
 from sub8_msgs.srv import Sonar, SonarResponse
 from sub8_ros_tools import thread_lock, make_header
 from sub8_alarm import AlarmBroadcaster
@@ -14,6 +17,10 @@ import struct
 import time
 import crc16
 import sys
+
+# temp
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 
 lock = threading.Lock()
 
@@ -50,9 +57,9 @@ class Sub8Sonar():
 
         self.c = c
         self.hydrophone_locations = hydrophone_locations
-        self.sonar_sensor = Multilaterator(hydrophone_locations, self.c, method) # speed of sound in m/s
+        self.multilaterator = Multilaterator(hydrophone_locations, self.c, method) # speed of sound in m/s
 
-        rospy.Service('~/sonar/get_pinger_pulse', Sonar, self.get_pulse_from_timestamps)
+        rospy.Service('~/sonar/get_pinger_pulse', Sonar, self.get_pulse_from_raw_data)
         print "\x1b[32mSub8 sonar driver initialized\x1b[0m"
         rospy.spin()
 
@@ -62,13 +69,13 @@ class Sub8Sonar():
 
         try:
             self.ser.write('A')
-            print "Sent request..."
+            print "Sent timestamp request..."
         except:  # Except only serial errors in the future.
             self.disconnection_alarm.raise_alarm(
                 problem_description="Sonar board serial connection has been terminated."
             )
             return False
-        return self.sonar_sensor.getPulseLocation(self.timestamp_listener())
+        return self.multilaterator.getPulseLocation(self.timestamp_listener())
 
     def timestamp_listener(self):
         '''
@@ -98,17 +105,17 @@ class Sub8Sonar():
 
     @thread_lock(lock)
     def get_pulse_from_raw_data(self, srv):
+        # request signals from hydrophone board
         self.ser.flushInput()
-
         try:
-            self.ser.write('A')
-            print "Sent request..."
+            self.ser.write('B')
+            print "Sent raw data request..."
         except:  # Except only serial errors in the future.
             self.disconnection_alarm.raise_alarm(
                 problem_description="Sonar board serial connection has been terminated."
             )
             return False
-        return self.sonar_sensor.getPulseLocation(self.listener())
+        return self.multilaterator.getPulseLocation(self.raw_data_listener())
 
     def raw_data_listener(self):
         '''
@@ -116,25 +123,59 @@ class Sub8Sonar():
         '''
         print "Listening..."
 
-        # We've found a packet now disect it.
-        response = self.ser.read(19)
-        # rospy.loginfo("Received: %s" % response) #uncomment for debugging
-        if self.check_CRC(response):
-            delete_last_lines(2) # Heard response!
-            # The checksum matches the data so split the response into each piece of data.
-            # For info on what these letters mean: https://docs.python.org/2/library/struct.html#format-characters
-            data = struct.unpack('>BffffH', response)
-            timestamps = [data[4], data[1], data[2], data[3] ]
-            print "timestamps:", timestamps
-            return timestamps
-        else:
-            self.packet_error_alarm.raise_alarm(
-                problem_description="Sonar board checksum error.",
-                parameters={
-                    'fault_info': {'data': response}
-                }
-            )
-            return None
+        # prepare arrays for storing signals
+        signal_bias = 32767
+        waves_recorded = 3
+        samples_per_wave = 17.24
+        upsample_scale = 3
+        exp_recording_size = np.floor(samples_per_wave) * waves_recorded * upsample_scale - 1
+        raw_signals = np.zeros([4, exp_recording_size], dtype=float)
+
+        try:
+            # read in start bit of packet
+            timeout = 0
+            start_bit = self.ser.read(1)
+            # If start bit not read, keep trying
+            while start_bit != '\xBB':
+                start_bit = self.ser.read(1)
+                timeout += 1
+                if timeout > 600:
+                    raise BufferError("Timeout: failed to read a start bit from sonar board")
+            for elem in np.nditer(raw_signals, op_flags=['readwrite']):
+                elem[...] = float(self.ser.read(5)) - signal_bias
+        except BufferError as e:
+            print e
+
+        # Set how much of each signal to actually use for processing
+        non_zero_end_idx = 57
+        raw_signals = raw_signals[:, 0:non_zero_end_idx]
+
+        # upsample the signals for successful cross-correlation
+        upsampled_signals = [resample(x, 8*len(x)) for x in raw_signals]
+
+        # scale waves so they all have the same variance
+        equalized_signals = [x / np.std(x) for x in upsampled_signals]
+        raw_signals = [x / np.std(x) for x in raw_signals]
+        wave0_upsampled, wave1_upsampled, wave2_upsampled, wave3_upsampled = equalized_signals
+        wave0, wave1, wave2, wave3 = raw_signals
+
+        tup = np.arange(0, non_zero_end_idx, 0.125)
+        tref = np.arange(0, non_zero_end_idx, 1)
+        # t = np.arange(0, non_zero_end_idx, 1)
+        # H1 = mpatches.Patch(color='blue', label='H1')
+        # H2 = mpatches.Patch(color='green', label='H2')
+        # H3 = mpatches.Patch(color='red', label='H3')
+        # H0 = mpatches.Patch(color='cyan', label='H0')
+        # plt.legend(handles=[H0,H1,H2,H3])
+        plt.plot(tref,wave1,tref,wave2,tref,wave3,tref,wave0)
+        plt.plot(tup,wave1_upsampled,tup,wave2_upsampled,tup,wave3_upsampled,tup,wave0_upsampled)
+        plt.show()
+        
+        print "done!"
+        return [0,0,0,0]
+
+
+
 
     def CRC(self, message):
         # You may have to change the checksum type.

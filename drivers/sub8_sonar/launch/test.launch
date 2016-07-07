@@ -2,18 +2,18 @@
     <node pkg="sub8_sonar" type="sonar_test.py" name="sonar_test" output="screen">
         <!-- units in millimeters for greater accuracy -->
         <!-- current configuration -->
-        <rosparam param="hydrophones">
+<!--         <rosparam param="hydrophones">
             {   hydro0: {x:       0, y:       0, z:      0},
                 hydro1: {x:   -25.4, y:       0, z:   25.4},
                 hydro2: {x:    25.4, y:       0, z:      0},
                 hydro3: {x:       0, y:   -25.4, z:      0} }
-        </rosparam>
+        </rosparam> -->
         <!-- Forrest's sugested configuration -->
-<!--         <rosparam param="hydrophones">
+        <rosparam param="hydrophones">
             {   hydro0: {x:       0, y:       0, z: 0},
                 hydro1: {x:       0, y:    25.4, z: 0},
                 hydro2: {x:     -22, y:   -12.7, z: 0},
                 hydro3: {x:      22, y:   -12.7, z: 0}}
-        </rosparam> -->
+        </rosparam>
     </node>
 </launch>
