@@ -86,8 +86,8 @@ Unit testing generally saves time for the developer. Despite the initial time sp
 * We will follow PEP8 with one exception: the line length may be up to 100 characters
 
 ## C++ 
-* [Google Styleguide](https://google-styleguide.googlecode.com/svn/trunk/cppguide.html)
-* [Google styleguide linter](https://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py) or find a Sublime plugin/linter that enforces the google styleguide
+* [Google Styleguide](https://google.github.io/styleguide/cppguide.html)
+* [Google styleguide linter](https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py) or find a Sublime plugin/linter that enforces the google styleguide
 
 
 # Questions?
