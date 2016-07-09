@@ -32,25 +32,31 @@ class Multilaterator(object):
         '''
         Returns a ros message with the location and time of emission of a pinger pulse.
         '''
-        if method == None:
-            method = self.method
-        # print "\x1b[32mMultilateration algorithm:", method, "\x1b[0m"
-        assert len(self.hydrophone_locations) == len(timestamps)
-        source = None
-        if method == 'bancroft':
-            source = self.estimate_pos_bancroft(timestamps)
-        elif method == 'LS':
-            source = self.estimate_pos_LS(timestamps)
-        else:
-            print method, "is not an available multilateration algorithm"
-            return
-        response = SonarResponse()
-        response.x = source[0]
-        response.y = source[1]
-        response.z = source[2]
-        print "Reconstructed Pulse:\n\t" + "x: " + str(response.x) + " y: " + str(response.y) \
-            + " z: " + str(response.z) + " (mm)"
-        return response
+        try:
+            if method == None:
+                method = self.method
+            # print "\x1b[32mMultilateration algorithm:", method, "\x1b[0m"
+            assert len(self.hydrophone_locations) == len(timestamps)
+            source = None
+            if method == 'bancroft':
+                source = self.estimate_pos_bancroft(timestamps)
+            elif method == 'LS':
+                source = self.estimate_pos_LS(timestamps)
+            else:
+                print method, "is not an available multilateration algorithm"
+                return
+            response = SonarResponse()
+            response.x = source[0]
+            response.y = source[1]
+            response.z = source[2]
+            print "Reconstructed Pulse:\n\t" + "x: " + str(response.x) + " y: " + str(response.y) \
+                + " z: " + str(response.z) + " (mm)"
+            return response
+        except KeyboardInterrupt:
+            print "Source localization interupted, returning all zeroes."
+            response = SonarResponse()
+            response.x, response.y, response.z = (0, 0, 0)
+
 
     def estimate_pos_bancroft(self, reception_times):
         N = len(reception_times)
