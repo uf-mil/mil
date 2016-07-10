@@ -35,7 +35,7 @@ class RvizVisualizer(object):
         )
         self.rviz_pub.publish(marker)
 
-    def draw_ray_3d(self, pix_coords, camera_model, color, frame='/stereo_front'):
+    def draw_ray_3d(self, pix_coords, camera_model, color, frame='/stereo_front', _id=100):
         '''Handle range data grabbed from dvl'''
         # future: should be /base_link/dvl, no?
         marker = self.make_ray(
@@ -43,16 +43,17 @@ class RvizVisualizer(object):
             direction=np.array(camera_model.projectPixelTo3dRay(pix_coords)),
             length=35.0,
             color=color,
-            frame=frame
+            frame=frame,
+            _id=_id
         )
 
         self.rviz_pub.publish(marker)
 
-    def make_ray(self, base, direction, length, color, frame='/base_link', **kwargs):
+    def make_ray(self, base, direction, length, color, frame='/base_link', _id=100, **kwargs):
         '''Handle the frustration that Rviz cylinders are designated by their center, not base'''
         marker = visualization_msgs.Marker(
             ns='sub',
-            id=color.index(0) + 1,
+            id=_id,
             header=sub8_utils.make_header(frame=frame),
             type=visualization_msgs.Marker.LINE_STRIP,
             action=visualization_msgs.Marker.ADD,
