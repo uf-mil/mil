@@ -6,6 +6,7 @@ import rospy
 import sub8_ros_tools
 import image_geometry
 from std_msgs.msg import Header
+from std_srvs.srv import SetBool, SetBoolResponse
 from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D
 from geometry_msgs.msg import Pose2D
 from sub8_vision_tools import MarkerOccGrid
@@ -13,13 +14,14 @@ from sub8_vision_tools import MarkerOccGrid
 
 class PipeFinder:
     def __init__(self):
+        self.search = False
         self.last_image = None
         self.last_image_timestamp = None
         self.last_draw_image = None
 
         # This may need to be changed if you want to use a different image feed.
         self.image_sub = sub8_ros_tools.Image_Subscriber('/down/left/image_raw', self.image_cb)
-        self.image_pub = sub8_ros_tools.Image_Publisher("down/left/target_info")
+        self.image_pub = sub8_ros_tools.Image_Publisher("vision/channel_marker/target_info")
 
         self.occ_grid = MarkerOccGrid(self.image_sub, grid_res=.05, grid_width=500, grid_height=500,
                                       grid_starting_pose=Pose2D(x=250, y=250, theta=0))
@@ -28,14 +30,25 @@ class PipeFinder:
         self.channel_width = 0.2  # sub8_ros_tools.wait_for_param('/vision/channel_width')
 
         self.pose_service = rospy.Service("vision/channel_marker/2D", VisionRequest2D, self.request_pipe)
+        self.toggle = rospy.Service('vision/channel_marker/search', SetBool, self.toggle_search)
 
         self.kernel = np.ones((15, 15), np.uint8)
 
         # Occasional status publisher
-        self.timer = rospy.Timer(rospy.Duration(.5), self.publish_target_info)
+        self.timer = rospy.Timer(rospy.Duration(1), self.publish_target_info)
+
+    def toggle_search(self, srv):
+        if srv.data:
+            rospy.loginfo("BUOY - Looking for buoys now.")
+            self.search = True
+        else:
+            rospy.loginfo("BUOY - Done looking for buoys.")
+            self.search = False
+
+        return SetBoolResponse(success=srv.data)
 
     def publish_target_info(self, *args):
-        if self.last_image is None:
+        if not self.search or self.last_image is None:
             return
 
         markers = self.find_pipe_new(np.copy(self.last_image))
@@ -99,8 +112,8 @@ class PipeFinder:
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, self.kernel)
         contours, _ = cv2.findContours(np.copy(mask), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         if len(contours) < 1:
-            print "None found"
-            return
+            rospy.loginfo("MARKER - No marker found.")
+            return None, None, None
 
         # Find biggest area contour
         self.last_draw_image = np.copy(hsv)
@@ -129,13 +142,10 @@ class PipeFinder:
             min_eigv = np.array([-20, 0])
             #cv2.drawContours(self.last_draw_image, [box], 0, (255, 0, 30), -1)
             print "Size out of bounds!"
+            return None, None, None
 
         cv2.line(self.last_draw_image, tuple(np.int0(center)), tuple(np.int0(center + (2 * max_eigv))), (0, 255, 30), 2)
         cv2.line(self.last_draw_image, tuple(np.int0(center)), tuple(np.int0(center + (2 * min_eigv))), (0, 30, 255), 2)
-
-        print center, angle_rad
-        print rect_area, expected_area
-        print
 
         return center, angle_rad, rect_area
 
