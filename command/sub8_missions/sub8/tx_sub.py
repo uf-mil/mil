@@ -8,6 +8,106 @@ from uf_common.msg import MoveToAction, PoseTwistStamped, Float64Stamped
 from sub8 import pose_editor
 from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D
 from nav_msgs.msg import Odometry
+import genpy
+
+
+class Searcher(object):
+    def __init__(self, sub, vision_proxy, search_pattern):
+        '''
+        Give a sub_singleton, the a function to call for the object you're looking for, and a list poses to execute in 
+            order to find it (can be a list of relative positions or pose_editor poses).
+        '''
+        print "Searching!"
+        self.sub = sub
+        self.vision_proxy = vision_proxy
+        self.search_pattern = search_pattern
+
+        self.object_found = False
+        self.response = None
+
+    def catch_error(self, failure):
+        if failure.check(defer.CancelledError):
+            print "SEARCHER - Cancelling defer"
+        else:
+            print "SEARCHER - There was an error"
+            # Handle error
+
+    @util.cancellableInlineCallbacks
+    def start_search(self, timeout=50, loop=True, spotings_req=2):
+        looker = self._run_look(spotings_req).addErrback(self.catch_error)
+        searcher = self._run_search_pattern(loop).addErrback(self.catch_error)
+
+        start_pose = self.sub.move.forward(0)
+        start_time = self.sub._node_handle.get_time()
+        while self.sub._node_handle.get_time() - start_time < genpy.Duration(timeout):
+            print "==========", self.sub._node_handle.get_time() - start_time
+
+            # If we find the object
+            if self.object_found:
+                looker.cancel()
+                print "Object found."
+                defer.returnValue(self.response)
+
+            yield self.sub._node_handle.sleep(0.1)
+
+        looker.cancel()
+        searcher.cancel()
+
+        print "Moving back to starting position."
+        yield start_pose.go()
+
+    @util.cancellableInlineCallbacks
+    def _run_search_pattern(self, loop):
+        '''
+        Look around using the search pattern.
+        If `loop` is true, then keep iterating over the list until timeout is reached or we find it.
+        '''
+        if loop:
+            while True:
+                print "Searching!"
+                for pose in self.search_pattern:
+                    print "Starting move."
+                    if type(pose) == list or type(pose) == np.ndarray:
+                        yield self.sub.move.relative(pose).go()
+                    else:
+                        yield pose.go()
+
+                    print "Target reached."
+                    yield self.sub._node_handle.sleep(2)
+                    print "Move finished."
+            
+        else:
+            for pose in self.search_pattern:
+                print "Starting move."
+                if type(pose) == list or type(pose) == np.ndarray:
+                    yield self.sub.move.relative(pose).go()
+                else:
+                    yield pose.go()
+
+                print "Target reached."
+                yield self.sub._node_handle.sleep(2)
+                print "Move finished."
+
+    @util.cancellableInlineCallbacks
+    def _run_look(self, spotings_req):
+        '''
+        Look for the object using the vision proxy.
+        Only return true when we spotted the objects `spotings_req` many times (for false positives).
+        '''
+        spotings = 0
+        while True:
+            resp = yield self.vision_proxy()
+            if resp.found:
+                print "Object found! {}/{}".format(spotings + 1, spotings_req)
+                spotings += 1
+                if spotings >= spotings_req:
+                    self.object_found = True
+                    self.response = resp
+                    break
+            else:
+                spotings = 0
+
+            yield self.sub._node_handle.sleep(.5)
 
 
 class VisionProxy(object):
