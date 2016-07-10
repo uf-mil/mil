@@ -72,14 +72,14 @@
     output="screen" />
 
   <node pkg="sub8_gazebo" type="gazebo_controller.py" name="gazebo_interface" />
-  <node pkg="sub8_gazebo" type="pinger_sim.py" name="pinger_sim" />
-  <node pkg="sub8_gazebo" type="actuator_sim.py" name="actuator_sim" />
+<!--   <node pkg="sub8_gazebo" type="pinger_sim.py" name="pinger_sim" />
+  <node pkg="sub8_gazebo" type="actuator_sim.py" name="actuator_sim" /> -->
   <node pkg="sub8_gazebo" type="buoys.py" name="buoy_contact_reporter" />
   <node pkg="sub8_gazebo" type="turbulator.py" name="turbulator" output="screen" if="$(arg turbulence)" />
 
 
   <include file="$(find sub8_launch)/launch/subsystems/rise.launch" />
-  <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper.launch" />
+  <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper_sim.launch" />
   <include file="$(find sub8_videoray_m5_thruster)/launch/thruster_driver.launch" />
 
 
@@ -88,13 +88,13 @@
 
   <include file="$(find sub8_launch)/launch/tf.launch" />
   <node pkg="nodelet" type="nodelet" args="standalone odometry_utils/odometry_to_tf" name="odometry_to_tf"/>
-  <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry">
+ <!--  <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry">
     <rosparam>
       frame_id: /map
       child_frame_id: /base_link
     </rosparam>
     <remap from="orig_odom" to="imu_odom"/>
-  </node>
+  </node> -->
 
   <include file="$(find sub8_launch)/launch/subsystems/cameras/launch/stereo.launch" if="$(arg cameras)"/>
 

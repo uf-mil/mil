@@ -1,0 +1,110 @@
+<launch>
+  <rosparam>
+    busses:
+      - port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A403IMC9-if00-port0
+        thrusters:
+          FLV: {
+            node_id: 10,
+            frame_id: /base_link,
+            position: [0.1583, 0.169, 0.0142],
+            direction: [0, 0, -1]
+          }
+          FLL: {
+            node_id: 11,
+            frame_id: /base_link,
+            position: [0.2678, 0.2795, 0],
+            direction: [-0.866, 0.5, 0]
+          }
+      - port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AI02L380-if00-port0
+        thrusters:
+          FRL: {
+            node_id: 69,
+            frame_id: /base_link,
+            position: [0.2678, -0.2795, 0],
+            direction: [-0.866, -0.5, 0]
+          } 
+          FRV: {
+            node_id: 12,
+            frame_id: /base_link,
+            position: [0.1583, -0.169, 0.0142],
+            direction: [0, 0, -1]
+          }
+      - port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A403IN02-if00-port0
+        thrusters:
+          BLV: {
+            node_id: 14,
+            frame_id: /base_link,
+            position: [-0.1583, 0.169, 0.0142],
+            direction: [0, 0, 1]
+          }
+          BLL: {
+            node_id: 15,
+            frame_id: /base_link,
+            position: [-0.2678, 0.2795, 0],
+            direction: [0.866, 0.5, 0]
+          }
+      - port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A403IN03-if00-port0
+        thrusters:
+          BRV: {
+            node_id: 16,
+            frame_id: /base_link,
+            position: [-0.1583, -0.169, 0.0142],
+            direction: [0, 0, 1]
+          }
+          BRL: {
+            node_id: 17,
+            frame_id: /base_link,
+            position: [-0.2678, -0.2795, 0],
+            direction: [0.866, -0.5, 0]
+          }
+  </rosparam>
+
+  <!-- For now, this is only used by Gazebo -->
+  <!-- TODO: unify! -->
+  <!-- NOTE: BOUNDS ARE FOR SIMULATION ONLY -->
+  <rosparam>
+    thrusters:
+      thruster_names: [FLV, FLL, FRV, FRL, BLV, BLL, BRV, BRL]
+      FLV:
+        position: [0.1583, 0.169, 0.0142]
+        direction: [0, 0, -1]
+        bounds: [-90, 90]
+
+      FLL:
+        position: [0.2678, 0.2795, 0]
+        direction: [-0.866, 0.5, 0]
+        bounds: [-90, 90]
+
+      FRV:
+        position: [0.1583, -0.169, 0.0142]
+        direction: [0, 0, -1]
+        bounds: [-90, 90]
+
+      FRL:
+        position: [0.2678, -0.2795, 0]
+        direction: [-0.866, -0.5, 0]
+        bounds: [-90, 90]
+
+      BLV:
+        position: [-0.1583, 0.169, 0.0142]
+        direction: [0, 0, 1]
+        bounds: [-90, 90]
+
+      BLL:
+        position: [-0.2678, 0.2795, 0]
+        direction: [0.866, 0.5, 0]
+        bounds: [-90, 90]
+
+      BRV:
+        position: [-0.1583, -0.169, 0.0142]
+        direction: [0, 0, 1]
+        bounds: [-90, 90]
+
+      BRL:
+        position: [-0.2678, -0.2795, 0]
+        direction: [0.866, -0.5, 0]
+        bounds: [-90, 90]
+  </rosparam>
+
+  <node pkg="sub8_thruster_mapper" type="mapper.py" name="thruster_mapper" />
+</launch>

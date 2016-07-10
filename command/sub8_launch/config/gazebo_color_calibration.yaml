@@ -2,13 +2,13 @@
 color:
   buoy:
     red:
-      bgr_low: [0.0, 0.0, 49.572]
-      bgr_high: [56.661, 46.053, 201.8835]
-
-    yellow:
-      bgr_low: [0.0, 70.839, 70.839]
-      bgr_high: [24.786, 201.8835, 208.947]
+      hsv_low: [170, 0, 0]
+      hsv_high: [180, 255, 255]
 
     green:
-      bgr_low: [0.0, 81.447, 3.5445]
-      bgr_high: [38.964, 198.339, 46.053]
+      hsv_low: [50, 0, 0]
+      hsv_high: [70, 255, 255]
+
+    yellow:
+      hsv_low: [20, 0, 0]
+      hsv_high: [40, 255, 255]
