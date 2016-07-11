@@ -6,7 +6,7 @@ Networking with the sub
 Add the following aliases to your ~/.bashrc file
 
     alias setrosip='export ROS_IP=`hostname -I | cut -f1 -d" "`'
-    alias rsub='setrosip;export ROS_MASTER_URI=http://subjugator:11311'
+    alias rsub='setrosip;export ROS_MASTER_URI=http://sub8:11311'
     alias unsub='unset ROS_IP; export ROS_MASTER_URI=http://localhost:11311'
 
 
@@ -35,7 +35,7 @@ Now you're in business.
 
 When connected to the sub network, (Ask someone for the password)
 
-    ssh forrest@subjugator
+    ssh sub@sub8
 
 You are now in the sub. Don't hurt anything!
 
