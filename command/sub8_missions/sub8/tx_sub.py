@@ -17,7 +17,6 @@ class Searcher(object):
         Give a sub_singleton, the a function to call for the object you're looking for, and a list poses to execute in 
             order to find it (can be a list of relative positions or pose_editor poses).
         '''
-        print "Searching!"
         self.sub = sub
         self.vision_proxy = vision_proxy
         self.search_pattern = search_pattern
@@ -40,20 +39,19 @@ class Searcher(object):
         start_pose = self.sub.move.forward(0)
         start_time = self.sub._node_handle.get_time()
         while self.sub._node_handle.get_time() - start_time < genpy.Duration(timeout):
-            print "==========", self.sub._node_handle.get_time() - start_time
 
             # If we find the object
             if self.object_found:
                 looker.cancel()
-                print "Object found."
+                print "SEARCHER - Object found."
                 defer.returnValue(self.response)
 
             yield self.sub._node_handle.sleep(0.1)
 
+        print "SEARCHER - Object NOT found. Returning to start position."
         looker.cancel()
         searcher.cancel()
 
-        print "Moving back to starting position."
         yield start_pose.go()
 
     @util.cancellableInlineCallbacks
@@ -62,31 +60,25 @@ class Searcher(object):
         Look around using the search pattern.
         If `loop` is true, then keep iterating over the list until timeout is reached or we find it.
         '''
+        print "SERACHER - Executing search pattern."
         if loop:
             while True:
-                print "Searching!"
                 for pose in self.search_pattern:
-                    print "Starting move."
                     if type(pose) == list or type(pose) == np.ndarray:
                         yield self.sub.move.relative(pose).go()
                     else:
                         yield pose.go()
 
-                    print "Target reached."
                     yield self.sub._node_handle.sleep(2)
-                    print "Move finished."
             
         else:
             for pose in self.search_pattern:
-                print "Starting move."
                 if type(pose) == list or type(pose) == np.ndarray:
                     yield self.sub.move.relative(pose).go()
                 else:
                     yield pose.go()
 
-                print "Target reached."
                 yield self.sub._node_handle.sleep(2)
-                print "Move finished."
 
     @util.cancellableInlineCallbacks
     def _run_look(self, spotings_req):
@@ -95,10 +87,11 @@ class Searcher(object):
         Only return true when we spotted the objects `spotings_req` many times (for false positives).
         '''
         spotings = 0
+        print "SERACHER - Looking for object."
         while True:
             resp = yield self.vision_proxy()
             if resp.found:
-                print "Object found! {}/{}".format(spotings + 1, spotings_req)
+                print "SEARCHER - Object found! {}/{}".format(spotings + 1, spotings_req)
                 spotings += 1
                 if spotings >= spotings_req:
                     self.object_found = True
