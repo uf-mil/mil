@@ -14,7 +14,7 @@ import genpy
 class Searcher(object):
     def __init__(self, sub, vision_proxy, search_pattern):
         '''
-        Give a sub_singleton, the a function to call for the object you're looking for, and a list poses to execute in 
+        Give a sub_singleton, the a function to call for the object you're looking for, and a list poses to execute in
             order to find it (can be a list of relative positions or pose_editor poses).
         '''
         self.sub = sub
@@ -60,7 +60,7 @@ class Searcher(object):
         Look around using the search pattern.
         If `loop` is true, then keep iterating over the list until timeout is reached or we find it.
         '''
-        print "SERACHER - Executing search pattern."
+        print "SEARCHER - Executing search pattern."
         if loop:
             while True:
                 for pose in self.search_pattern:
@@ -70,7 +70,7 @@ class Searcher(object):
                         yield pose.go()
 
                     yield self.sub._node_handle.sleep(2)
-            
+
         else:
             for pose in self.search_pattern:
                 if type(pose) == list or type(pose) == np.ndarray:

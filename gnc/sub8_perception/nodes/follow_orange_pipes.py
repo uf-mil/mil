@@ -30,7 +30,7 @@ class MarkerFinder():
         self.image_pub = sub8_ros_tools.Image_Publisher("vision/channel_marker/target_info")
 
         self.toggle = rospy.Service('vision/channel_marker/search', SetBool, self.toggle_search)
-    
+
         self.cam = PinholeCameraModel()
         self.cam.fromCameraInfo(self.image_sub.wait_for_camera_info())
 
@@ -271,9 +271,8 @@ def make_2D_rotation(angle):
                      [s, c]], dtype=np.float32)
 
 
-
 def main(args):
-    fuck_da_police = MarkerFinder()
+    redniFrekraM = MarkerFinder()
     try:
         rospy.spin()
     except KeyboardInterrupt:

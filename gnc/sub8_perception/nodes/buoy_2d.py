@@ -29,7 +29,6 @@ class BuoyFinder:
         self.last_draw_image = None
         self.last_image_time = None
         self.camera_model = None
-        self.ppf = None
         self.multi_obs = None
         self.max_observations = 50
         self._id = 0  # Only for display
@@ -51,13 +50,13 @@ class BuoyFinder:
         rospy.loginfo("Boost loaded")
 
         self.observations = {
-            'red':deque(), 
-            'yellow':deque(), 
+            'red':deque(),
+            'yellow':deque(),
             'green':deque()
         }
         self.pose_pairs = {
-            'red':deque(), 
-            'yellow':deque(), 
+            'red':deque(),
+            'yellow':deque(),
             'green':deque()
         }
         self.buoys = {
@@ -96,10 +95,10 @@ class BuoyFinder:
 
     def toggle_search(self, srv):
         if srv.data:
-            rospy.loginfo("MARKER - Looking for markers now.")
+            rospy.loginfo("BUOY - Looking for buoys now.")
             self.search = True
         else:
-            rospy.loginfo("MARKER - Done looking for markers.")
+            rospy.loginfo("BUOY - Done looking for buoys.")
             self.search = False
 
         return SetBoolResponse(success=srv.data)
@@ -136,9 +135,9 @@ class BuoyFinder:
         print "Requesting 3d pose"
 
         if (len(self.observations[srv.target_name]) > 5) and self.multi_obs is not None:
-            estimated_pose = self.multi_obs.multilaterate(self.observations[srv.target_name], self.pose_pairs[srv.target_name])
+            estimated_pose = self.multi_obs.lst_sqr_intersection(self.observations[srv.target_name], self.pose_pairs[srv.target_name])
 
-            self.rviz.draw_sphere(estimated_pose, color=self.draw_colors[srv.target_name], 
+            self.rviz.draw_sphere(estimated_pose, color=self.draw_colors[srv.target_name],
                 scaling=(0.5, 0.5, 0.5), frame='/map', _id=self.visual_id[srv.target_name])
 
             resp = VisionRequestResponse(
@@ -276,9 +275,9 @@ class BuoyFinder:
                 self.pose_pairs[buoy_type].append((t, R))
 
             if len(self.observations[buoy_type]) > 5:
-                est = self.multi_obs.multilaterate(self.observations[buoy_type], self.pose_pairs[buoy_type])
-                
-                self.rviz.draw_sphere(est, color=self.draw_colors[buoy_type], 
+                est = self.multi_obs.lst_sqr_intersection(self.observations[buoy_type], self.pose_pairs[buoy_type])
+
+                self.rviz.draw_sphere(est, color=self.draw_colors[buoy_type],
                     scaling=(0.5, 0.5, 0.5), frame='/map', _id=self.visual_id[buoy_type])
 
             if len(self.observations[buoy_type]) > self.max_observations:
