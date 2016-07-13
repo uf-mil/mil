@@ -3,12 +3,12 @@
   <model name="sub8">
     <link name="base_link">
       <velocity_decay>
-        <linear>0.005</linear>
+        <linear>0.0005</linear>
         <angular>0.001</angular>
       </velocity_decay>
 
       <inertial>
-        <mass>35.29</mass>
+        <mass>36.75</mass>
         <inertia>
           <ixx>1.18</ixx>
           <ixy>-0.003</ixy>

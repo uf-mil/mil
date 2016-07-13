@@ -21,7 +21,7 @@ class MultiObservation(object):
         """Converts a row vector to a column vector, does nothing to a column vector"""
         return np.reshape(v, (len(v), 1))
 
-    def multilaterate(self, image_points, cameras):
+    def lst_sqr_intersection(self, image_points, cameras):
         """Compute the least squares solution to the intersection of N rays
         Rays are parameterized as d = b - a
             Where b and a are points on the line
@@ -35,11 +35,9 @@ class MultiObservation(object):
 
         def cost(c):
             t_cost = 0
-            for observation, camera in zip(observations, cameras):
-                d = observation
-                t, R = camera
+            for observation, (t, R) in zip(observations, cameras):
                 # TODO: Adjust for rotation
-                d = R.dot(d)
+                d = R.dot(observation)
                 term_1 = norm(c - t)**2
                 term_2 = (norm((c - t).dot(d))**2) / (norm(d)**2)
                 t_cost += term_1 - term_2
@@ -80,7 +78,7 @@ def test():
     from mayavi import mlab
 
     rospy.init_node('test_estimation')
-    q = sub8_ros_tools.Image_Subscriber('/stereo/left/image_rect_color')
+    q = sub8_ros_tools.Image_Subscriber('/stereo/left/image_raw')
     while(q.camera_info is None):
         time.sleep(0.1)
 
@@ -129,7 +127,7 @@ def test():
         rays.append(MO.get_ray(obs_final))
         observations.append(obs_final)
 
-    best_p = MO.multilaterate(observations, cameras)
+    best_p = MO.lst_sqr_intersection(observations, cameras)
     mlab.points3d(*map(np.array, best_p), scale_factor=0.3)
     estimation.draw_cameras(rays, cameras)
 

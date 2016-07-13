@@ -289,10 +289,10 @@ class MarkerOccGrid(OccGridUtils):
         if timestamp is None:
             timestamp = rospy.Time()
 
-        self.tf_listener.waitForTransform("/map", "/downward", timestamp, rospy.Duration(1.0))
+        self.tf_listener.waitForTransform("/map", "/downward", timestamp, rospy.Duration(5.0))
         trans, rot = self.tf_listener.lookupTransform("/map", "/downward", timestamp)
         x_y_position = trans[:2]
-        self.tf_listener.waitForTransform("/ground", "/downward", timestamp, rospy.Duration(1.0))
+        self.tf_listener.waitForTransform("/ground", "/downward", timestamp, rospy.Duration(5.0))
         trans, _ = self.tf_listener.lookupTransform("/ground", "/downward", timestamp)
         height = np.nan_to_num(trans[2])
 

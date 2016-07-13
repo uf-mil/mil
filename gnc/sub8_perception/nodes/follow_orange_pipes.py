@@ -4,41 +4,63 @@ import numpy as np
 import sys
 import rospy
 import sub8_ros_tools
-import image_geometry
+import tf
 from std_msgs.msg import Header
-from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D
-from geometry_msgs.msg import Pose2D
+from std_srvs.srv import SetBool, SetBoolResponse
+from sub8_msgs.srv import VisionRequestResponse, VisionRequest
+from geometry_msgs.msg import PoseStamped
 from sub8_vision_tools import MarkerOccGrid
+from sub8_ros_tools import numpy_quat_pair_to_pose
+from image_geometry import PinholeCameraModel
 
 
-class PipeFinder:
+SEARCH_DEPTH = .65  # m
+
+class MarkerFinder():
     def __init__(self):
+        self.tf_listener = tf.TransformListener()
+
+        self.search = True
         self.last_image = None
         self.last_image_timestamp = None
         self.last_draw_image = None
 
         # This may need to be changed if you want to use a different image feed.
         self.image_sub = sub8_ros_tools.Image_Subscriber('/down/left/image_raw', self.image_cb)
-        self.image_pub = sub8_ros_tools.Image_Publisher("down/left/target_info")
+        self.image_pub = sub8_ros_tools.Image_Publisher("vision/channel_marker/target_info")
 
-        self.occ_grid = MarkerOccGrid(self.image_sub, grid_res=.05, grid_width=500, grid_height=500,
-                                      grid_starting_pose=Pose2D(x=250, y=250, theta=0))
+        self.toggle = rospy.Service('vision/channel_marker/search', SetBool, self.toggle_search)
+
+        self.cam = PinholeCameraModel()
+        self.cam.fromCameraInfo(self.image_sub.wait_for_camera_info())
+
+        # self.occ_grid = MarkerOccGrid(self.image_sub, grid_res=.05, grid_width=500, grid_height=500,
+        #                               grid_starting_pose=Pose2D(x=250, y=250, theta=0))
 
         #self.range = sub8_ros_tools.get_parameter_range('/color/channel_guide')
-        self.channel_width = 0.2  # sub8_ros_tools.wait_for_param('/vision/channel_width')
 
-        self.pose_service = rospy.Service("vision/channel_marker/2D", VisionRequest2D, self.request_pipe)
+        self.pose_service = rospy.Service("vision/channel_marker/pose", VisionRequest, self.request_marker)
 
         self.kernel = np.ones((15, 15), np.uint8)
 
         # Occasional status publisher
-        self.timer = rospy.Timer(rospy.Duration(.5), self.publish_target_info)
+        self.timer = rospy.Timer(rospy.Duration(1), self.publish_target_info)
+
+    def toggle_search(self, srv):
+        if srv.data:
+            rospy.loginfo("MARKER - Looking for markers now.")
+            self.search = True
+        else:
+            rospy.loginfo("MARKER - Done looking for markers.")
+            self.search = False
+
+        return SetBoolResponse(success=srv.data)
 
     def publish_target_info(self, *args):
-        if self.last_image is None:
+        if not self.search or self.last_image is None:
             return
 
-        markers = self.find_pipe_new(np.copy(self.last_image))
+        markers = self.find_marker(np.copy(self.last_image))
         #self.occ_grid.update_grid(self.last_image_timestamp)
         #self.occ_grid.add_marker(markers, self.last_image_timestamp)
 
@@ -50,12 +72,12 @@ class PipeFinder:
         self.last_image = image
         self.last_image_timestamp = self.image_sub.last_image_time
 
-    def calculate_threshold(self, img, agression=.5):
+    def calculate_threshold(self, img, agression=.9):
         histr = cv2.calcHist([img], [0], None, [179], [0, 179])
         threshold = np.uint8((179 - np.argmax(histr)) * agression)
         return threshold
 
-    def get_pose(self, mask):
+    def get_2d_pose(self, mask):
         # estimate covariance matrix and get corresponding eigenvectors
         wh = np.where(mask)[::-1]
         cov = np.cov(wh)
@@ -84,14 +106,14 @@ class PipeFinder:
 
         return center, angle_rad, [max_eigv, min_eigv]
 
-    def find_pipe_new(self, img):
+    def find_marker(self, img):
         #img[:, -100:] = 0
         #img = cv2.GaussianBlur(img, (7, 7), 15)
         last_image_timestamp = self.last_image_timestamp
-        hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-        lower = np.array([self.calculate_threshold(hsv), 0, 0])
-        upper = np.array([179, 255, 255])
+        lower = np.array([20, 50, 0])
+        upper = np.array([50, 255, 255])
 
         # Take the threholded mask, remove noise, find the biggest contour, then draw a the best fit rectangle
         #   around that box, finally use same algorithm on the best fit rectangle.
@@ -99,11 +121,11 @@ class PipeFinder:
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, self.kernel)
         contours, _ = cv2.findContours(np.copy(mask), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         if len(contours) < 1:
-            print "None found"
-            return
+            rospy.logwarn("MARKER - No marker found.")
+            return None
 
         # Find biggest area contour
-        self.last_draw_image = np.copy(hsv)
+        self.last_draw_image = np.dstack([mask] * 3)
         areas = [cv2.contourArea(c) for c in contours]
         max_index = np.argmax(areas)
         cnt = contours[max_index]
@@ -116,11 +138,13 @@ class PipeFinder:
         cv2.drawContours(mask, [box], 0, 255, -1)
         rect_area = cv2.contourArea(box)
 
-        center, angle_rad, [max_eigv, min_eigv] = self.get_pose(mask)
+        center, angle_rad, [max_eigv, min_eigv] = self.get_2d_pose(mask)
+        cv2.line(self.last_draw_image, tuple(np.int0(center)), tuple(np.int0(center + (2 * max_eigv))), (0, 255, 30), 2)
+        cv2.line(self.last_draw_image, tuple(np.int0(center)), tuple(np.int0(center + (2 * min_eigv))), (0, 30, 255), 2)
 
         # Check if the box is too big or small.
-        xy_position, height = self.occ_grid.get_tf(timestamp=last_image_timestamp)
-        expected_area = self.occ_grid.calculate_marker_area(height)
+        xy_position, height = self.get_tf(timestamp=last_image_timestamp)
+        expected_area = self.calculate_marker_area(height)
         if expected_area * .3 < rect_area < expected_area * 2:
             cv2.drawContours(self.last_draw_image, [box], 0, (255, 255, 255), -1)
         else:
@@ -128,163 +152,127 @@ class PipeFinder:
             max_eigv = np.array([0, -20])
             min_eigv = np.array([-20, 0])
             #cv2.drawContours(self.last_draw_image, [box], 0, (255, 0, 30), -1)
-            print "Size out of bounds!"
+            rospy.logwarn("MARKER - Size out of bounds!")
 
-        cv2.line(self.last_draw_image, tuple(np.int0(center)), tuple(np.int0(center + (2 * max_eigv))), (0, 255, 30), 2)
-        cv2.line(self.last_draw_image, tuple(np.int0(center)), tuple(np.int0(center + (2 * min_eigv))), (0, 30, 255), 2)
+        # Convert to a 3d pose to move the sub to.
+        abs_position = self.transform_px_to_m(center, last_image_timestamp)
+        q_rot = tf.transformations.quaternion_from_euler(0, 0, angle_rad)
 
-        print center, angle_rad
-        print rect_area, expected_area
-        print
+        return numpy_quat_pair_to_pose(abs_position, q_rot)
 
-        return center, angle_rad, rect_area
-
-    def request_pipe(self, data):
+    def request_marker(self, data):
         if self.last_image is None:
             return False  # Fail if we have no images cached
 
         timestamp = self.last_image_timestamp
-        position, orientation, _ = self.find_pipe_new(self.last_image)
-        found = (position is not None)
+        goal_pose = self.find_marker(self.last_image)
+        found = (goal_pose is not None)
 
         if not found:
-            resp = VisionRequest2DResponse(
-                header=Header(
-                    stamp=timestamp,
-                    frame_id='/down_camera'),
-                found=found,
-                camera_info=self.image_sub.camera_info,
+            resp = VisionRequestResponse(
+                found=found
             )
         else:
-            resp = VisionRequest2DResponse(
-                pose=Pose2D(
-                    x=position[0],
-                    y=position[1],
-                    theta=orientation
+            resp = VisionRequestResponse(
+                pose=PoseStamped(
+                    header=Header(
+                        stamp=timestamp,
+                        frame_id='/down_camera'),
+                    pose=goal_pose
                 ),
-                max_x=self.last_image.shape[0],
-                max_y=self.last_image.shape[1],
-                camera_info=self.image_sub.camera_info,
-                header=Header(
-                    stamp=timestamp,
-                    frame_id='/down_camera'),
                 found=found
             )
         return resp
 
-    # Not currently using these
-    def find_pipe(self, img, timestamp):
-        rows, cols = img.shape[:2]
-        if rows == 0:
-            return None, None, None
-
-        blur = cv2.GaussianBlur(img, (5, 5), 1000)
-
-        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
-        channel = 2
-
-        marker_scale = self.get_ncc_scale()
-        norc = self.ncc(hsv[::2, ::2, channel], self.range[channel, 0], scale=marker_scale)
-
-        color_mask = cv2.inRange(hsv, self.range[:, 0], self.range[:, 1])
-
-        ncc_mask = cv2.resize(np.uint8(norc >= 0), None, fx=2, fy=2)
-
-        mask = color_mask & ncc_mask
-        # todo: use svm
-        contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-        blank_img = np.zeros((rows, cols), np.uint8)
-        draw_image = np.copy(img)
-
-        if len(contours) > 0:
-
-            # sort contours by area (greatest --> least)
-            contours = sorted(contours, key=cv2.contourArea, reverse=True)[:1]
-            cnt = contours[0]  # contour with greatest area
-
-            # This is not to filter incorrectly sized objects, but to ignore speckle noise
-            if cv2.contourArea(cnt) > 200:
-
-                cv2.drawContours(blank_img, [cnt], 0, (255, 255, 255), -1)
-                cv2.drawContours(draw_image, [cnt], 0, (255, 255, 255), -1)
-
-                # get all coordinates (y,x) of pipe
-                why, whx = np.where(blank_img)
-                # align coordinates --> (x,y)
-                wh = np.array([whx, why])
-
-                # estimate covariance matrix and get corresponding eigenvectors
-                cov = np.cov(wh)
-                eig_vals, eig_vects = np.linalg.eig(cov)
-
-                # use index of max eigenvalue to find max eigenvector
-                i = np.argmax(eig_vals)
-                max_eigv = eig_vects[:, i] * np.sqrt(eig_vals[i])
-
-                # flip indices to find min eigenvector
-                min_eigv = eig_vects[:, 1 - i] * np.sqrt(eig_vals[1 - i])
-
-                # define center of pipe
-                center = np.average(wh, axis=1)
-
-                # define vertical vector (sub's current direction)
-                vert_vect = np.array([0.0, -1.0])
-
-                if max_eigv[1] > 0:
-                    max_eigv = -max_eigv
-                    min_eigv = -min_eigv
-
-                num = np.cross(max_eigv, vert_vect)
-                denom = np.linalg.norm(max_eigv) * np.linalg.norm(vert_vect)
-                angle_rad = np.arcsin(num / denom)
-
-                cv2.line(draw_image, tuple(np.int0(center)), tuple(np.int0(center + (2 * max_eigv))), (0, 255, 30), 2)
-                cv2.line(draw_image, tuple(np.int0(center)), tuple(np.int0(center + (2 * min_eigv))), (0, 30, 255), 2)
-
-                norc_res = cv2.resize(norc, None, fx=2, fy=2)
-                draw_image[:, :, 0] = norc_res
-                self.last_draw_image = np.copy(draw_image)
-
-                #print center, angle_rad, cv2.contourArea(cnt)
-                return center, angle_rad, cv2.contourArea(cnt)
-
-        return None, None, None
-
-    def get_ncc_scale(self):
-        '''Comptue pixel width of the channel marker'''
-        _, height = self.occ_grid.get_tf()
-
-        a = np.array(self.occ_grid.cam.project3dToPixel([0.0, self.channel_width, height]))
-        b = self.occ_grid.cam.project3dToPixel([0.0, 0.0, height])
-
-        return int(np.nan_to_num(np.linalg.norm(a - b)) / 2.0)
-
-    def ncc(self, image, mean_thresh, scale=5):
-        '''Compute normalized cross correlation w.r.t a shadowed pillbox fcn
-
-        TODO:
-            Compute the kernel only once
-                (Too cheap to need)
+    def get_tf(self, timestamp=None, get_rotation=False):
         '''
-        kernel = np.ones((scale, scale)) * -1
-        midpoint = (scale // 2, scale // 2)
-        cv2.circle(kernel, midpoint, midpoint[0], 1, -1)
+        x_y position, height in meters and quat rotation of the sub if requested
+        '''
+        if timestamp is None:
+            timestamp = rospy.Time()
 
-        mean, std_dev = cv2.meanStdDev(image)
+        self.tf_listener.waitForTransform("/map", "/downward", timestamp, rospy.Duration(5.0))
+        trans, rot = self.tf_listener.lookupTransform("/map", "/downward", timestamp)
+        x_y_position = trans[:2]
+        self.tf_listener.waitForTransform("/ground", "/downward", timestamp, rospy.Duration(5.0))
+        trans, rot = self.tf_listener.lookupTransform("/ground", "/downward", timestamp)
+        height = np.nan_to_num(trans[2])
+        x_y_position = np.nan_to_num(x_y_position)
 
-        # Check if the scene is brighter than our a priori target
-        if mean > mean_thresh:
-            kernel = -kernel
+        if get_rotation:
+            return x_y_position, rot, height
 
-        normalized_cross_correlation = cv2.filter2D((image - mean) / std_dev, -1, kernel)
-        renormalized = normalized_cross_correlation
-        return renormalized
+        return x_y_position, height
+
+    def transform_px_to_m(self, m_position, timestamp):
+        '''
+        Finds the absolute position of the marker in meters.
+        '''
+        xy_position, q, height = self.get_tf(timestamp, get_rotation=True)
+
+        dir_vector = unit_vector(np.array([self.cam.cx(), self.cam.cy()]) - m_position)
+        cam_rotation = tf.transformations.euler_from_quaternion(q)[2] + np.pi / 2
+        dir_vector = np.dot(dir_vector, make_2D_rotation(cam_rotation))
+
+        # Calculate distance from middle of frame to marker in meters.
+        magnitude = self.calculate_visual_radius(height, second_point=m_position)
+        abs_position = np.append(xy_position + dir_vector[::-1] * magnitude, -SEARCH_DEPTH)
+
+        return abs_position
+
+    def calculate_visual_radius(self, height, second_point=None):
+        '''
+        Draws rays to find the radius of the FOV of the camera in meters.
+        It also can work to find the distance between two planar points some distance from the camera.
+        '''
+
+        mid_ray = np.array([0, 0, 1])
+
+        if second_point is None:
+            if self.cam.cy() < self.cam.cx():
+                second_point = np.array([self.cam.cx(), 0])
+            else:
+                second_point = np.array([0, self.cam.cy()])
+
+        edge_ray = unit_vector(self.cam.projectPixelTo3dRay(second_point))
+
+        # Calculate angle between vectors and use that to find r
+        theta = np.arccos(np.dot(mid_ray, edge_ray))
+        return np.tan(theta) * height
+
+    def calculate_marker_area(self, height):
+        '''
+        What we really don't want is to find markers that are on the edge since the direction and center of
+            the marker are off.
+        '''
+        MARKER_LENGTH = 1.22  # m
+        MARKER_WIDTH = .1524  # m
+
+        # Get m/px on the ground floor.
+        m = self.calculate_visual_radius(height)
+        if self.cam.cy() < self.cam.cx():
+            px = self.cam.cy()
+        else:
+            px = self.cam.cx()
+
+        m_px = m / px
+        marker_area_m = MARKER_WIDTH * MARKER_LENGTH
+        marker_area_px = marker_area_m / (m_px ** 2)
+
+        return marker_area_px
+
+def unit_vector(vect):
+    return vect / np.linalg.norm(vect)
+
+
+def make_2D_rotation(angle):
+    c, s = np.cos(angle), np.sin(angle)
+    return np.array([[c, -s],
+                     [s, c]], dtype=np.float32)
 
 
 def main(args):
-    pf = PipeFinder()
+    redniFrekraM = MarkerFinder()
     try:
         rospy.spin()
     except KeyboardInterrupt:
@@ -292,5 +280,5 @@ def main(args):
 
 
 if __name__ == '__main__':
-    rospy.init_node('orange_pipe_vision')
+    rospy.init_node('channel_marker')
     main(sys.argv)

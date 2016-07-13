@@ -12,18 +12,10 @@ def run(sub):
     yield sub.move.right(2.0).go()
     yield sub.move.down(0.3).go()
 
-    print "Now trying to pose it"
-    response = yield sub.buoy.get_pose('red')
-    if not response.found:
-        print 'failed to discover buoy location'
-        return
-    else:
-        print "Got buoy pose"
-        print response.pose
-
     back = sub.move.forward(0.1)
 
-    full_transform = tf.Transform.from_Pose_message(response.pose.pose)
+    full_transform = yield get_buoy_tf(sub)
+
     print 'setting height'
     if full_transform._p[2] > -0.2:
         print 'Detected buoy above the water'
@@ -31,13 +23,8 @@ def run(sub):
 
     yield sub.move.depth(-full_transform._p[2]).go(speed=0.2)
     yield util.wall_sleep(0.2)
+
     print 'looking at'
-    yield sub.move.look_at_without_pitching(full_transform._p).go()
-    yield util.wall_sleep(0.2)
-
-    yield sub.move.look_at_without_pitching(full_transform._p).go()
-    yield util.wall_sleep(0.2)
-
     yield sub.move.look_at_without_pitching(full_transform._p).go()
     yield util.wall_sleep(0.2)
 
@@ -55,3 +42,17 @@ def run(sub):
     # yield sub.move.forward(
 
     print "Bumped the buoy"
+
+@util.cancellableInlineCallbacks
+def get_buoy_tf(sub):
+    print "Getting buoy pose"
+    response = yield sub.buoy.get_pose('red')
+    if not response.found:
+        print 'failed to discover buoy location'
+        return
+    else:
+        print "Got buoy pose"
+        print response.pose
+    full_transform = tf.Transform.from_Pose_message(response.pose.pose)
+
+    defer.returnValue(full_transform)
