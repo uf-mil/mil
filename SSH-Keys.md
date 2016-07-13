@@ -20,7 +20,7 @@ Each server that you want to use the key to authenticate with needs to have a co
 
     ssh-copy-id user@host
 
-* user - the username you want to log in with (this must be run for each separate usermane even if they are on the same machine)
-* host - the IP address or hostname of the machine on the network
+* user - The username you want to log in with (this must be run for each separate usermane even if they are on the same machine)
+* host - The IP address or hostname of the machine on the network
 
 This will ask you to enter the password for that user. Once this is done, you should be able to log in without typing any kind of password.
