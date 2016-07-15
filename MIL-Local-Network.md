@@ -1,4 +1,4 @@
-MIL uses a server with the hostname mil-plumbusi [(in honor of the plumbus, plumbusi is the plural or plumbus)](https://www.youtube.com/watch?v=_Y-_13eYwBQ) to manage the Local Area Network (LAN) in the lab. This network provides an easy way for devices to communicate with each other and connect to the internet. The server should rarely need to be accessed as it was designed to maintain it's self. If problems arise or changes need to be made, the information in this article will be helpful.
+MIL uses a server with the hostname mil-plumbusi [(in honor of the plumbus, plumbusi is the plural of plumbus)](https://www.youtube.com/watch?v=_Y-_13eYwBQ) to manage the Local Area Network (LAN) in the lab. This network provides an easy way for devices to communicate with each other and connect to the internet. The server should rarely need to be accessed as it was designed to maintain it's self. If problems arise or changes need to be made, the information in this article will be helpful.
 
 # Accessing the network
 
