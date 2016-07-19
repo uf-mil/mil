@@ -27,7 +27,7 @@ This is a security measure built in to the SSH protocol to prevent man in the mi
 * RSA - 1c:8d:7d:83:71:e4:eb:89:4e:78:a6:be:81:ae:77:42
 If the fingerprint does not match one of these, it is **strongly** advised to disconnect (i.e. type **no**)
 
-# Connecting to mil-johnny-five Over SSH
+# SSH into mil-johnny-five
 
 This workstation may be better recognized as the 'Gazebo' or 'Cuda' machine. It can be used for tasks that require high performance simulations or processing large amounts of data. The process to access it remotely is as simple as any other SSH connection.
 
