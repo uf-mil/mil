@@ -59,7 +59,7 @@ If something needs to be changed on the server, the best way to access it is via
 
     ssh plumbusiadmin@mil-plumbusi.mil.lan
 
-If you are wearing your tinfoil hat, you can have a look at this article for the server's key fingerprint. This should not be required on the LAN unless some nefarious business is going on. See Anthony for the password for this account or to have one made for you.
+If you are wearing your tinfoil hat, you can have a look at [this article](https://github.com/uf-mil/Sub8/wiki/Remote-Access) for the server's key fingerprint. This should not be required on the LAN unless some nefarious business is going on. See Anthony for the password for this account or to have one made for you.
 
 # DHCP Server
 
@@ -165,7 +165,7 @@ The iptables configuration currently handles the following:
 * Blocking all kinds of nefarious traffic
 * Making sure network clients can access important services on mil-plumbusi
 * Enabling internet access through IP masquerading (Network Address Traversal, or NAT)
-* Forwarding certain remote connections from the VPN tunnel to local services (see this article for more information)
+* Forwarding certain remote connections from the VPN tunnel to local services (see [this article](https://github.com/uf-mil/Sub8/wiki/Remote-Access) for more information)
 
 # Unattended Upgrades
 
@@ -285,4 +285,4 @@ It is recommended to set the samba password to the same thing as the system pass
 
     service samba restart
 
-The share should now be accessible over both SSHFS and Samba. This should also work remotely over SSHFS as detailed here. Enjoy your free large file storage!
+The share should now be accessible over both SSHFS and Samba. This should also work remotely over SSHFS as detailed [here](https://github.com/uf-mil/Sub8/wiki/Remote-Access). Enjoy your free large file storage!
