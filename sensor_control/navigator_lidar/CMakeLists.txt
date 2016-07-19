@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
 	pcl_ros
 	roscpp
 	sensor_msgs
+	navigator_msgs
 	)
 
 catkin_package(
