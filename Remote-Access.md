@@ -49,7 +49,3 @@ This is a security measure built in to the SSH protocol to prevent man in the mi
 * ED25519 - 7d:e5:19:0f:27:b0:b4:e5:cf:59:8b:17:8b:04:da:73
 * RSA - 69:20:65:f9:7a:e8:66:0b:98:33:db:01:b7:a0:9c:fc
 If the fingerprint does not match one of these, it is **strongly** advised to disconnect (i.e. type **no**)
-
-# Connecting Over a VPN Tunnel
-
-It has been determined that ROS's lack of consistency in selecting ports to send data over, a VPN is necessary to develop with a connection to any remote ROS core. This could be necessary if the user needs to access the sub or mil-johnny-five computer remotely. The only way to deal with this traffic in a secure and controlled manner is to encapsulate it in a VPN tunnel. The system is being set up to work off of the forwarding VPN infrastructure that is already set up and should be available sometime this week.
