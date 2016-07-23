@@ -3,8 +3,8 @@
   <model name="sub8">
     <link name="base_link">
       <velocity_decay>
-        <linear>0.0005</linear>
-        <angular>0.001</angular>
+        <linear>0.005</linear>
+        <angular>0.01</angular>
       </velocity_decay>
 
       <inertial>
@@ -104,11 +104,11 @@
 
       <sensor name="down_camera" type="camera">
         <camera>
-          <pose>0.0537 0.1048 -0.2565  0 1.57 3.1415</pose>
+          <pose>0.0537 0.1048 -0.2565  0 1.57 0</pose>
           <horizontal_fov>1.047</horizontal_fov>
           <image>
-            <width>640</width>
-            <height>480</height>
+            <width>644</width>
+            <height>482</height>
           </image>
           <distortion>
             <k1>0</k1>
@@ -116,7 +116,6 @@
             <k3>0</k3>
             <p1>0</p1>
             <p2>0</p2>
-            <center>320 240</center>
           </distortion>
         </camera>
         <plugin name="down_camera_controller" filename="libgazebo_ros_camera.so">
@@ -132,8 +131,6 @@
           <distortionK3>0</distortionK3>
           <distortionT1>0</distortionT1>
           <distortionT2>0</distortionT2>
-          <Cx>320</Cx>
-          <Cy>240</Cy>
         </plugin>
       </sensor>
 
@@ -154,7 +151,7 @@
             </horizontal>
           </scan>
           <range>
-            <min>0.10</min>
+            <min>0.01</min>
             <max>4000.0</max>
             <resolution>0.01</resolution>
           </range>

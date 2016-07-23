@@ -3,24 +3,31 @@ import cv2
 import numpy as np
 import sys
 import rospy
+import rospkg
 import sub8_ros_tools
 import tf
+import os
 from std_msgs.msg import Header
 from std_srvs.srv import SetBool, SetBoolResponse
 from sub8_msgs.srv import VisionRequestResponse, VisionRequest
 from geometry_msgs.msg import PoseStamped
-from sub8_vision_tools import MarkerOccGrid
+from sub8_vision_tools import MarkerOccGrid, rviz, machine_learning
 from sub8_ros_tools import numpy_quat_pair_to_pose
 from image_geometry import PinholeCameraModel
 
-
 SEARCH_DEPTH = .65  # m
+
+# Boost files (maybe move to launch?) - I put these here so they're easy to change
+boost_to_the_moon = True
+MARKER = 'red_gentle_3tree_5depth.dic'
+
+rospack = rospkg.RosPack()
 
 class MarkerFinder():
     def __init__(self):
         self.tf_listener = tf.TransformListener()
 
-        self.search = True
+        self.search = False
         self.last_image = None
         self.last_image_timestamp = None
         self.last_draw_image = None
@@ -33,11 +40,18 @@ class MarkerFinder():
 
         self.cam = PinholeCameraModel()
         self.cam.fromCameraInfo(self.image_sub.wait_for_camera_info())
+        self.rviz = rviz.RvizVisualizer()
 
         # self.occ_grid = MarkerOccGrid(self.image_sub, grid_res=.05, grid_width=500, grid_height=500,
         #                               grid_starting_pose=Pose2D(x=250, y=250, theta=0))
-
-        #self.range = sub8_ros_tools.get_parameter_range('/color/channel_guide')
+        if boost_to_the_moon:
+            self.boost = cv2.Boost()
+            rospy.loginfo("MARKER - Loading boost...")
+            self.boost.load(os.path.join(rospack.get_path('sub8_perception'), 'ml_classifiers/marker/' + MARKER))
+            rospy.loginfo("MARKER - Classifier for marker loaded.")
+        else:
+            self.lower = np.array(rospy.get_param('channel_guide/hsv_low'))
+            self.upper = np.array(rospy.get_param('channel_guide/hsv_high'))
 
         self.pose_service = rospy.Service("vision/channel_marker/pose", VisionRequest, self.request_marker)
 
@@ -45,6 +59,9 @@ class MarkerFinder():
 
         # Occasional status publisher
         self.timer = rospy.Timer(rospy.Duration(1), self.publish_target_info)
+
+        print "MARKER - Got no patience for sittin' around!"
+
 
     def toggle_search(self, srv):
         if srv.data:
@@ -64,7 +81,7 @@ class MarkerFinder():
         #self.occ_grid.update_grid(self.last_image_timestamp)
         #self.occ_grid.add_marker(markers, self.last_image_timestamp)
 
-        if self.last_draw_image is not None and (markers is not None):
+        if self.last_draw_image is not None: #and (markers is not None):
             self.image_pub.publish(np.uint8(self.last_draw_image))
 
     def image_cb(self, image):
@@ -72,7 +89,7 @@ class MarkerFinder():
         self.last_image = image
         self.last_image_timestamp = self.image_sub.last_image_time
 
-    def calculate_threshold(self, img, agression=.9):
+    def calculate_threshold(self, img, agression=.5):
         histr = cv2.calcHist([img], [0], None, [179], [0, 179])
         threshold = np.uint8((179 - np.argmax(histr)) * agression)
         return threshold
@@ -110,15 +127,21 @@ class MarkerFinder():
         #img[:, -100:] = 0
         #img = cv2.GaussianBlur(img, (7, 7), 15)
         last_image_timestamp = self.last_image_timestamp
-        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-        lower = np.array([20, 50, 0])
-        upper = np.array([50, 255, 255])
+        if boost_to_the_moon:
+            some_observations = machine_learning.boost.observe(img)
+            prediction = [int(x) for x in [self.boost.predict(obs) for obs in some_observations]]
+            mask = np.reshape(prediction, img[:, :, 2].shape).astype(np.uint8) * 255
+        else:
+            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            mask = cv2.inRange(hsv, self.lower, self.upper)
 
-        # Take the threholded mask, remove noise, find the biggest contour, then draw a the best fit rectangle
-        #   around that box, finally use same algorithm on the best fit rectangle.
-        mask = cv2.inRange(hsv, lower, upper)
-        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, self.kernel)
+
+        kernel = np.ones((5,5),np.uint8)
+        mask = cv2.dilate(mask, kernel, iterations = 1)
+        mask = cv2.erode(mask, kernel, iterations = 2)
+
+        #mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, self.kernel)
         contours, _ = cv2.findContours(np.copy(mask), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         if len(contours) < 1:
             rospy.logwarn("MARKER - No marker found.")
@@ -139,20 +162,28 @@ class MarkerFinder():
         rect_area = cv2.contourArea(box)
 
         center, angle_rad, [max_eigv, min_eigv] = self.get_2d_pose(mask)
+
         cv2.line(self.last_draw_image, tuple(np.int0(center)), tuple(np.int0(center + (2 * max_eigv))), (0, 255, 30), 2)
         cv2.line(self.last_draw_image, tuple(np.int0(center)), tuple(np.int0(center + (2 * min_eigv))), (0, 30, 255), 2)
 
         # Check if the box is too big or small.
         xy_position, height = self.get_tf(timestamp=last_image_timestamp)
         expected_area = self.calculate_marker_area(height)
-        if expected_area * .3 < rect_area < expected_area * 2:
-            cv2.drawContours(self.last_draw_image, [box], 0, (255, 255, 255), -1)
-        else:
-            angle_rad = 0
-            max_eigv = np.array([0, -20])
-            min_eigv = np.array([-20, 0])
-            #cv2.drawContours(self.last_draw_image, [box], 0, (255, 0, 30), -1)
-            rospy.logwarn("MARKER - Size out of bounds!")
+        # print expected_area
+        # print rect_area
+        # if expected_area * .1 < rect_area < expected_area * 2:
+        #     #cv2.drawContours(self.last_draw_image, [box], 0, (255, 255, 255), -1)
+        #     self.rviz.draw_ray_3d(center, self.cam, np.array([1, .5, 0, 1]), frame='/downward',
+        #         _id=5, length=height, timestamp=last_image_timestamp)
+        # else:
+        #     angle_rad = 0
+        #     max_eigv = np.array([0, -20])
+        #     min_eigv = np.array([-20, 0])
+        #     #cv2.drawContours(self.last_draw_image, [box], 0, (255, 0, 30), -1)
+        #     rospy.logwarn("MARKER - Size out of bounds!")
+
+        self.rviz.draw_ray_3d(center, self.cam, np.array([1, .5, 0, 1]), frame='/downward',
+            _id=5, length=height, timestamp=last_image_timestamp)
 
         # Convert to a 3d pose to move the sub to.
         abs_position = self.transform_px_to_m(center, last_image_timestamp)
@@ -195,7 +226,8 @@ class MarkerFinder():
         trans, rot = self.tf_listener.lookupTransform("/map", "/downward", timestamp)
         x_y_position = trans[:2]
         self.tf_listener.waitForTransform("/ground", "/downward", timestamp, rospy.Duration(5.0))
-        trans, rot = self.tf_listener.lookupTransform("/ground", "/downward", timestamp)
+        trans, _ = self.tf_listener.lookupTransform("/ground", "/downward", timestamp)
+
         height = np.nan_to_num(trans[2])
         x_y_position = np.nan_to_num(x_y_position)
 
@@ -212,6 +244,8 @@ class MarkerFinder():
 
         dir_vector = unit_vector(np.array([self.cam.cx(), self.cam.cy()]) - m_position)
         cam_rotation = tf.transformations.euler_from_quaternion(q)[2] + np.pi / 2
+        print "MARKER - dir_vector:", dir_vector
+        print "MARKER - cam_rotation:", cam_rotation
         dir_vector = np.dot(dir_vector, make_2D_rotation(cam_rotation))
 
         # Calculate distance from middle of frame to marker in meters.

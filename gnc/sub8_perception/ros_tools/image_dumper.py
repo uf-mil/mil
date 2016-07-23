@@ -30,7 +30,9 @@ class ImageHandler:
 
         if savepath is not None:
             # Alternative save path (i.e. want to save to ext. drive)
-            self.working_dir = savepath + '/' + self.bagname.split('.')[0]\
+            if savepath[-1] != '/':
+                savepath += '/'
+            self.working_dir = savepath + self.bagname.split('.')[0]\
                                         + '_images'
         else:
             # Save path defaults to launch path
@@ -126,21 +128,28 @@ if __name__ == '__main__':
     matches = []
     bag_count = 0
 
-    # Generate list of file paths containing bag files
-    for root, dirnames, filenames in os.walk(filepath):
-        for filename in fnmatch.filter(filenames, '*.bag'):
-            if not filename.startswith('.'):
-                matches.append(os.path.join(root, filename))
+    if filepath[-4:] == '.bag':
+        bag = rosbag.Bag(filepath)
+        ImageHandler(filepath, savepath, bag)
+    else:
 
-    print '\033[1m' + str(len(matches)) + ' bags found\033[0m\n'
+        # Generate list of file paths containing bag files
+        for root, dirnames, filenames in os.walk(filepath):
+            for filename in fnmatch.filter(filenames, '*.bag'):
+                if not filename.startswith('.'):
+                    matches.append(os.path.join(root, filename))
 
-    # Iterate through found bags
-    for bag_dir in matches:
-        bag = rosbag.Bag(bag_dir)
-        try:
-            ImageHandler(bag_dir, savepath, bag)
-            bag_count = bag_count + 1
-        except rospy.ROSInterruptException:
-            pass
+        print '\033[1m' + str(len(matches)) + ' bags found\033[0m\n'
 
-    print 'Finished. Processed', bag_count, 'bags.\n'
+        # Iterate through found bags
+        for bag_dir in matches:
+            bag = rosbag.Bag(bag_dir)
+            try:
+                ImageHandler(bag_dir, savepath, bag)
+                bag_count = bag_count + 1
+            except rospy.ROSInterruptException:
+                pass
+
+        print 'Processed', bag_count, 'bags.\n'
+
+    print "Done!"

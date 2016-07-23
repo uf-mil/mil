@@ -13,7 +13,7 @@
     </node>
 
     <node pkg="tf" type="static_transform_publisher" name="camera_down_broadcaster"
-      args="0.0537  0.1048 -0.2565   7.07106781e-01 7.07106781e-01 0.0 0.0 base_link downward 100">
+      args="0.0537  0.1048 -0.2565   7.07106781e-01 -7.07106781e-01 0.0 0.0 base_link downward 100">
     </node>
 
     <node pkg="tf" type="static_transform_publisher" name="dvl_broadcaster"

@@ -8,6 +8,7 @@ from uf_common.msg import MoveToAction, PoseTwistStamped, Float64Stamped
 from sub8 import pose_editor
 from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D
 from nav_msgs.msg import Odometry
+import rospy
 import genpy
 
 
@@ -26,15 +27,17 @@ class Searcher(object):
 
     def catch_error(self, failure):
         if failure.check(defer.CancelledError):
-            print "SEARCHER - Cancelling defer"
+            print "SEARCHER - Cancelling defer."
         else:
-            print "SEARCHER - There was an error"
+            print "SEARCHER - There was an error."
+            print failure.printTraceback()
             # Handle error
 
     @util.cancellableInlineCallbacks
-    def start_search(self, timeout=50, loop=True, spotings_req=2):
+    def start_search(self, timeout=60, loop=True, spotings_req=2, speed=.1):
+        print "SERACHER - Starting."
         looker = self._run_look(spotings_req).addErrback(self.catch_error)
-        searcher = self._run_search_pattern(loop).addErrback(self.catch_error)
+        searcher = self._run_search_pattern(loop, speed).addErrback(self.catch_error)
 
         start_pose = self.sub.move.forward(0)
         start_time = self.sub._node_handle.get_time()
@@ -42,7 +45,7 @@ class Searcher(object):
 
             # If we find the object
             if self.object_found:
-                looker.cancel()
+                searcher.cancel()
                 print "SEARCHER - Object found."
                 defer.returnValue(self.response)
 
@@ -55,7 +58,7 @@ class Searcher(object):
         yield start_pose.go()
 
     @util.cancellableInlineCallbacks
-    def _run_search_pattern(self, loop):
+    def _run_search_pattern(self, loop, speed):
         '''
         Look around using the search pattern.
         If `loop` is true, then keep iterating over the list until timeout is reached or we find it.
@@ -64,8 +67,9 @@ class Searcher(object):
         if loop:
             while True:
                 for pose in self.search_pattern:
+                    print "SEARCHER - going to next position."
                     if type(pose) == list or type(pose) == np.ndarray:
-                        yield self.sub.move.relative(pose).go()
+                        yield self.sub.move.relative(pose).go(speed=speed)
                     else:
                         yield pose.go()
 
@@ -74,7 +78,7 @@ class Searcher(object):
         else:
             for pose in self.search_pattern:
                 if type(pose) == list or type(pose) == np.ndarray:
-                    yield self.sub.move.relative(pose).go()
+                    yield self.sub.move.relative(np.array(pose)).go(speed=speed)
                 else:
                     yield pose.go()
 
@@ -159,6 +163,10 @@ class _PoseProxy(object):
         return sub_attr_proxy
 
     def go(self, *args, **kwargs):
+        # Set speed limit, default to 100 m/s
+        speed_limit = rospy.get_param("mission_speed_limit", 100)
+        kwargs['speed'] = np.clip(kwargs['speed'], 0, speed_limit) if 'speed' in kwargs else speed_limit
+
         if self.print_only:
             print 'P: {}, Angles: {}'.format(self._pose.position, transformations.euler_from_quaternion(self._pose.orientation))
             return self._sub._node_handle.sleep(0.1)

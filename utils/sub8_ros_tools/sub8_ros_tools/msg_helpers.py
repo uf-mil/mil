@@ -139,14 +139,15 @@ def numpy_quat_pair_to_pose(np_translation, np_quaternion):
     return geometry_msgs.Pose(position=position, orientation=orientation)
 
 
-def make_header(frame='/body'):
-    try:
-        cur_time = rospy.Time.now()
-    except rospy.ROSInitException:
-        cur_time = rospy.Time(0)
+def make_header(frame='/body', stamp=None):
+    if stamp is None:
+        try:
+            stamp = rospy.Time.now()
+        except rospy.ROSInitException:
+            stamp = rospy.Time(0)
 
     header = std_msgs.Header(
-        stamp=cur_time,
+        stamp=stamp,
         frame_id=frame
     )
     return header

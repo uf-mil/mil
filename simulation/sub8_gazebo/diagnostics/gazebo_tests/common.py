@@ -1,9 +1,11 @@
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist, Pose, Vector3
-from gazebo_msgs.srv import SetModelState, SetModelStateRequest
-from gazebo_msgs.msg import ModelState
+from gazebo_msgs.srv import SetModelState, SetModelStateRequest, DeleteModel, DeleteModelRequest, \
+    SpawnModel, SpawnModelRequest
+from gazebo_msgs.msg import ModelState, ModelStates
 from kill_handling.srv import SetKill, SetKillRequest
 from kill_handling.msg import Kill
+from sub8_ros_tools import numpy_to_twist
 import txros
 
 
@@ -14,6 +16,9 @@ class Job(object):
     def __init__(self, nh):
         self.nh = nh
         self.true_pose_sub = nh.subscribe('/world_odom', Odometry)
+        self.delete_model = nh.get_service_client('/gazebo/delete_model', DeleteModel)
+        self.spawn_model = nh.get_service_client('/gazebo/spawn_sdf_model', SpawnModel)
+        self.model_states = nh.subscribe('/gazebo/model_states', ModelStates)
 
     @property
     def true_pose(self):
@@ -52,16 +57,11 @@ class Job(object):
 
         TODO:
             - Deprecate kill stuff
-
-        Original Author: Matt Langford
         '''
         set_state = yield self.nh.get_service_client('/gazebo/set_model_state', SetModelState)
 
         if twist is None:
-            twist = Twist()
-            twist.linear.x = 0
-            twist.linear.y = 0
-            twist.linear.z = 0
+            twist = numpy_to_twist([0, 0, 0], [0, 0, 0])
 
         model_state = ModelState()
         model_state.model_name = model

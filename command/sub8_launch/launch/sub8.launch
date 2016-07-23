@@ -1,4 +1,5 @@
 <launch>
+  <rosparam param="mission_speed_limit">0.5</rosparam>
 
   <include file="$(find sub8_launch)/launch/tf.launch" />
 

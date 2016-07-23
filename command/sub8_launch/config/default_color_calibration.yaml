@@ -14,7 +14,5 @@ color:
 
 
   channel_guide:
-    # hsv_low: [0, 0, 0]
-    # hsv_high: [180, 110, 260]
     hsv_low: [0.0, 166.464, 131.0445]
     hsv_high: [24.8631, 255.0, 233.7585]

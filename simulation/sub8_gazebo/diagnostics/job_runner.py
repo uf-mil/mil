@@ -32,15 +32,15 @@ FUTURE:
 
 
 class JobManager(object):
-    def __init__(self, nh, sub, log=True, verbose=False):
+    def __init__(self, nh, sub, bag=True, verbose=False):
         self.nh = nh
         self.sub = sub
         self.verbose = verbose
         self.timedout = False
         self.job_queue = deque()
-        self.record_log = log
-
-        self.bagger = BagManager(self.nh, DIAG_OUT_DIR)
+        self.record_bags = bag
+        if bag:
+            self.bagger = BagManager(self.nh, DIAG_OUT_DIR)
         self.successes = 0
         self.fails = 0
         # TODO: append-to-queue service
@@ -62,7 +62,7 @@ class JobManager(object):
 
         current_loop = 0
 
-        if self.record_log:
+        if self.record_bags:
             self.bagger.start_caching()
 
         while current_loop < loop_count:
@@ -95,29 +95,29 @@ class JobManager(object):
                 continue
 
             if success:
-                print "Success"
+                print "JOB - Success"
                 self.successes += 1
             else:
-                print "Fail"
+                print "JOB - Fail"
                 print
                 self.fails += 1
 
-                if self.record_log:
+                if self.record_bags:
                     yield self.bagger.dump()
 
-            print "Writing report to file. Do not exit."
+            print "JOB - Writing report to file. Do not exit."
             elapsed = self.nh.get_time() - start_time
 
             actual_time = datetime.datetime.now().strftime('%I:%M:%S.%f')
             success_str = "succeeded" if success else "failed"
             report = (
-                "Test #{}: {} at {} (Duration: {}).\n".format(loop_count, success_str, actual_time, elapsed) +
+                "Test #{}/{}: {} at {} (Duration: {}).\n".format(current_loop, loop_count, success_str, actual_time, elapsed) +
                 "Test reported: {}\n".format(description) +
                 "{0} Successes, {1} Fails, {2} Total \n".format(self.successes, self.fails, current_loop)
             )
             self.log(report)
 
-            print "\nDone!"
+            print "JOB - Done!"
 
             print "------------------------------------------------------------------"
             print "{0} Successes, {1} Fails, {2} Total".format(self.successes, self.fails, current_loop)
@@ -129,13 +129,14 @@ class JobManager(object):
                 break
 
         print
-        print "Job Finished!"
-        print "Writing report to file. Do not exit."
+        print "JOB - Test Finished!"
+        print "JOB - Writing report to file. Do not exit."
         self.log("Time of completion: {0}. \n".format(int(time.time())))
 
     def log(self, text):
+        print "JOB - Logging {}".format(text)
         # a+ creates the file if it doesn't exist
-        with open(DIAG_OUT_DIR + 'diag.txt', 'a+') as f:
+        with open(DIAG_OUT_DIR + 'log.txt', 'a+') as f:
             f.write(text)
             f.write("\n-----------------------------------------------------------\n")
 
@@ -158,18 +159,18 @@ class JobManager(object):
 def main(args):
         nh = yield txros.NodeHandle.from_argv('job_runner_controller')
 
-        print 'getting sub'
+        print 'JOB - getting sub'
         sub = yield tx_sub.get_sub(nh)
         yield sub.last_pose()
 
-        print "Queueing Jobs...."
-        job_manager = JobManager(nh, sub, args.log, args.verbose)
+        print "JOB - Queueing Jobs...."
+        job_manager = JobManager(nh, sub, args.bag, args.verbose)
 
         try:
             for test_name in args.test_names:
                 job_manager.queue_job(test_name, args.iterations)
 
-            print "Running jobs..."
+            print "JOB - Running jobs..."
             yield job_manager.run()
 
         except Exception:
@@ -193,7 +194,7 @@ if __name__ == '__main__':
         help="The number of iterations (For now, it's universal)"
     )
     parser.add_argument(
-        '--log', action='store_true',
+        '--bag', action='store_true',
         help="Log the data"
     )
     parser.add_argument(

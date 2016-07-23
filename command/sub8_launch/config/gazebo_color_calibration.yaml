@@ -2,13 +2,13 @@
 color:
   buoy:
     red:
-      hsv_low: [170, 0, 0]
+      hsv_low: [170, 0, 20]
       hsv_high: [180, 255, 255]
 
     green:
-      hsv_low: [50, 0, 0]
+      hsv_low: [50, 0, 20]
       hsv_high: [70, 255, 255]
 
     yellow:
-      hsv_low: [20, 0, 0]
+      hsv_low: [20, 0, 20]
       hsv_high: [40, 255, 255]

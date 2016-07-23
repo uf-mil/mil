@@ -35,30 +35,31 @@ class RvizVisualizer(object):
         )
         self.rviz_pub.publish(marker)
 
-    def draw_ray_3d(self, pix_coords, camera_model, color, frame='/stereo_front', _id=100):
+    def draw_ray_3d(self, pix_coords, camera_model, color, frame='/stereo_front', _id=100, length=35, timestamp=None):
         '''Handle range data grabbed from dvl'''
         # future: should be /base_link/dvl, no?
         marker = self.make_ray(
             base=np.array([0.0, 0.0, 0.0]),
             direction=np.array(camera_model.projectPixelTo3dRay(pix_coords)),
-            length=35.0,
+            length=length,
             color=color,
             frame=frame,
+            timestamp=timestamp,
             _id=_id
         )
 
         self.rviz_pub.publish(marker)
 
-    def make_ray(self, base, direction, length, color, frame='/base_link', _id=100, **kwargs):
+    def make_ray(self, base, direction, length, color, frame='/base_link', _id=100, timestamp=None,**kwargs):
         '''Handle the frustration that Rviz cylinders are designated by their center, not base'''
         marker = visualization_msgs.Marker(
             ns='sub',
             id=_id,
-            header=sub8_utils.make_header(frame=frame),
+            header=sub8_utils.make_header(frame=frame, stamp=timestamp),
             type=visualization_msgs.Marker.LINE_STRIP,
             action=visualization_msgs.Marker.ADD,
             color=ColorRGBA(*color),
-            scale=Vector3(0.05, 0.0, 0.0),
+            scale=Vector3(0.05, 0.05, 0.05),
             points=map(lambda o: Point(*o), [base, direction * length]),
             lifetime=rospy.Duration(),
             **kwargs

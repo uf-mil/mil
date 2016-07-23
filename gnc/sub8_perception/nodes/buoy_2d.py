@@ -16,10 +16,20 @@ from std_msgs.msg import Header
 from std_srvs.srv import SetBool, SetBoolResponse
 from geometry_msgs.msg import Pose2D, PoseStamped, Pose, Point
 
+# Boost files (maybe move to launch?) - I put these here so they're easy to change
+boost_to_the_moon = True
+YELLOW = 'gentle_3tree_5depth.dic'
+RED = 'gentle_3tree_5depth.dic'
+GREEN = 'gentle_3tree_5depth.dic'
+
+rospack = rospkg.RosPack()
 
 class BuoyFinder:
-    _min_size = 50
-
+    _min_size = 100
+    '''
+    TODO:
+        Check for outliers in observations
+    '''
     def __init__(self):
         self.transformer = tf.TransformListener()
         rospy.sleep(2.0)
@@ -30,25 +40,14 @@ class BuoyFinder:
         self.last_image_time = None
         self.camera_model = None
         self.multi_obs = None
-        self.max_observations = 50
+        self.max_observations = 20
         self._id = 0  # Only for display
 
         self.rviz = rviz.RvizVisualizer()
 
         rospack = rospkg.RosPack()
-        boost_path = os.path.join(
-            rospack.get_path('sub8_perception'),
-            'sub8_vision_tools',
-            'machine_learning',
-            'classifiers',
-            'red_gentle_20tree_9depth.dic'
-        )
 
-        self.boost = cv2.Boost()
-        rospy.loginfo("Loading boost")
-        self.boost.load(boost_path)
-        rospy.loginfo("Boost loaded")
-
+        # TODO: consolidate all these dictionaries into one big one.
         self.observations = {
             'red':deque(),
             'yellow':deque(),
@@ -59,11 +58,22 @@ class BuoyFinder:
             'yellow':deque(),
             'green':deque()
         }
-        self.buoys = {
-            'green': '/color/buoy/green',
-            'red': '/color/buoy/red',
-            'yellow': '/color/buoy/yellow',
-        }
+
+        if boost_to_the_moon:
+            self.buoys = {
+                # Boost classifier paths
+                'yellow': os.path.join(rospack.get_path('sub8_perception'), 'ml_classifiers/buoys/yellow/' + YELLOW),
+                'red': os.path.join(rospack.get_path('sub8_perception'), 'ml_classifiers/buoys/red/' + RED),
+                'green': os.path.join(rospack.get_path('sub8_perception'), 'ml_classifiers/buoys/green/' + GREEN)
+            }
+        else:
+            self.buoys = {
+                #Threshold paths
+                'green': '/color/buoy/green',
+                'red': '/color/buoy/red',
+                'yellow': '/color/buoy/yellow',
+            }
+
         self.last_t = {
             'green': None,
             'red': None,
@@ -82,7 +92,19 @@ class BuoyFinder:
             'yellow': 2,
         }
 
-        self.image_sub = sub8_ros_tools.Image_Subscriber('/stereo/right/image_raw', self.image_cb)
+        if boost_to_the_moon:
+            for color in self.buoys.keys():
+                if self.buoys[color] is None:
+                    rospy.logwarn('Classifier path for {} not found!'.format(color))
+                    continue
+
+                path = self.buoys[color]
+                self.buoys[color] = cv2.Boost()
+                rospy.loginfo("BUOY - Loading {} boost...".format(color))
+                self.buoys[color].load(path)
+                rospy.loginfo("BUOY - Classifier for {} buoy loaded.".format(color))
+
+        self.image_sub = sub8_ros_tools.Image_Subscriber('/stereo/left/image_raw', self.image_cb)
         self.image_pub = sub8_ros_tools.Image_Publisher('/vision/buoy_2d/target_info')
         self.mask_pub = sub8_ros_tools.Image_Publisher('/vision/buoy_2d/mask')
 
@@ -92,6 +114,8 @@ class BuoyFinder:
         self.toggle = rospy.Service('vision/buoys/search', SetBool, self.toggle_search)
         self.pose2d_service = rospy.Service('vision/buoys/2D', VisionRequest2D, self.request_buoy)
         self.pose_service = rospy.Service('vision/buoys/pose', VisionRequest, self.request_buoy3d)
+
+        print "BUOY - Fueled up, ready to go!"
 
     def toggle_search(self, srv):
         if srv.data:
@@ -111,7 +135,7 @@ class BuoyFinder:
         if response is False:
             print 'did not find'
             resp = VisionRequest2DResponse(
-                header=sub8_ros_tools.make_header(frame='/stereo_front/right'),
+                header=sub8_ros_tools.make_header(frame='/stereo_front/left'),
                 found=False
             )
 
@@ -119,7 +143,7 @@ class BuoyFinder:
             # Fill in
             center, radius = response
             resp = VisionRequest2DResponse(
-                header=Header(stamp=timestamp, frame_id='/stereo_front/right'),
+                header=Header(stamp=timestamp, frame_id='/stereo_front/left'),
                 pose=Pose2D(
                     x=center[0],
                     y=center[1],
@@ -212,36 +236,46 @@ class BuoyFinder:
                 cy = int(M['m01'] / M['m00'])
                 tpl_center = (int(cx), int(cy))
                 return cnt, tpl_center, area
+            return None
         else:
             return None
 
     def find_single_buoy(self, img, timestamp, buoy_type):
-        assert buoy_type in self.buoys[buoy_type], "Buoys_2d does not know buoy color: {}".format(buoy_type)
+        assert buoy_type in self.buoys.keys(), "Buoys_2d does not know buoy color: {}".format(buoy_type)
         max_area = 0
         best_ret = None
-        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-        # Segmentation here (machine learning right now)
-        # some_observations = machine_learning.boost.observe(img)
-        # prediction2 = [int(x) for x in [self.boost.predict(obs) for obs in some_observations]]
-        # mask = np.reshape(prediction2, img[:, :, 2].shape).astype(np.uint8) * 255
-
-        low = np.array(rospy.get_param(self.buoys[buoy_type] + '/hsv_low')).astype(np.int32)
-        high = np.array(rospy.get_param(self.buoys[buoy_type] + '/hsv_high')).astype(np.int32)
-        mask = cv2.inRange(hsv, low, high)
+        if boost_to_the_moon:
+            # Segmentation here (machine learning right now)
+            some_observations = machine_learning.boost.observe(img)
+            prediction2 = [int(x) for x in [self.buoys[buoy_type].predict(obs) for obs in some_observations]]
+            mask = np.reshape(prediction2, img[:, :, 2].shape).astype(np.uint8) * 255
+        else:
+            #Thresholding here
+            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            low = np.array(rospy.get_param(self.buoys[buoy_type] + '/hsv_low')).astype(np.int32)
+            high = np.array(rospy.get_param(self.buoys[buoy_type] + '/hsv_high')).astype(np.int32)
+            mask = cv2.inRange(hsv, low, high)
 
         rospy.sleep(.5)
 
         kernel = np.ones((13,13),np.uint8)
-        mask = cv2.dilate(mask, kernel, iterations = 1)
-        mask = cv2.erode(mask, kernel, iterations = 1)
+        mask = cv2.dilate(mask, kernel, iterations = 2)
+        mask = cv2.erode(mask, kernel, iterations = 2)
 
-        self.mask_pub.publish(np.dstack([mask] * 3))
+        draw_mask = np.dstack([mask] * 3)
+        draw_mask[:,:,0] *= 0
+        if buoy_type == 'red':
+            draw_mask[:,:,1] *= 0
+        if buoy_type == 'green':
+            draw_mask[:,:,2] *= 0
+        self.mask_pub.publish(draw_mask)
 
         contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
         ret = self.get_biggest(contours)
         if ret is None:
+            print "BUOY {} - No contours found".format(buoy_type)
             return
 
         contour, tuple_center, area = ret
@@ -250,6 +284,7 @@ class BuoyFinder:
             best_ret = ret
 
         if best_ret is None:
+            print "BUOY {} - best_ret is None".format(buoy_type)
             return False
 
         contour, tuple_center, area = best_ret
@@ -260,20 +295,22 @@ class BuoyFinder:
             if not self.sanity_check(tuple_center, timestamp):
                 return False
 
-            (t, rot_q) = self.transformer.lookupTransform('/map', '/stereo_front/right', timestamp)
+            (t, rot_q) = self.transformer.lookupTransform('/map', '/stereo_front/left', timestamp)
             trans = np.array(t)
             R = sub8_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
 
-            # self.rviz.draw_ray_3d(tuple_center, self.camera_model, self.draw_colors[buoy_type], frame='/stereo_front/right', _id=self._id + 100)
-            # self._id += 1
-            # if self._id >= self.max_observations * 3:
-            #     self._id = 0
+            self.rviz.draw_ray_3d(tuple_center, self.camera_model, self.draw_colors[buoy_type], frame='/stereo_front/left',
+                _id=self._id + 100, timestamp=timestamp)
+            self._id += 1
+            if self._id >= self.max_observations * 3:
+                self._id = 0
 
             if (self.last_t[buoy_type] is None) or (np.linalg.norm(trans - self.last_t[buoy_type]) > 0.3):
                 self.last_t[buoy_type] = trans
                 self.observations[buoy_type].append(true_center)
                 self.pose_pairs[buoy_type].append((t, R))
 
+            print "BUOY {} - {} observations".format(buoy_type, len(self.observations[buoy_type]))
             if len(self.observations[buoy_type]) > 5:
                 est = self.multi_obs.lst_sqr_intersection(self.observations[buoy_type], self.pose_pairs[buoy_type])
 
@@ -283,6 +320,8 @@ class BuoyFinder:
             if len(self.observations[buoy_type]) > self.max_observations:
                 self.observations[buoy_type].popleft()
                 self.pose_pairs[buoy_type].popleft()
+        else:
+            print "BUOY {} - camera_model is None".format(buoy_type)
 
         return tuple_center, rad
 
@@ -291,6 +330,9 @@ class BuoyFinder:
 
         # This is only run if buoy_type is not None
         for buoy_name in self.buoys.keys():
+            if self.buoys[buoy_name] is None:
+                continue
+
             #rospy.loginfo("BUOY - Looking for {}".format(buoy_name))
             result = self.find_single_buoy(img, timestamp, buoy_name)
             if not result:
@@ -308,7 +350,7 @@ class BuoyFinder:
         Check if the observation is unreasonable. More can go here if we want.
         '''
         sane = True
-        if np.linalg.norm(self.transformer.lookupTwist('/map', '/stereo_front/right', timestamp, rospy.Duration(.5))) > 1:
+        if np.linalg.norm(self.transformer.lookupTwist('/map', '/stereo_front/left', timestamp, rospy.Duration(.5))) > 1:
             rospy.logerr("BUOY - Moving too fast. Not observing buoy.")
             sane = False
 
