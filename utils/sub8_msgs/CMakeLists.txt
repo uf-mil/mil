@@ -41,6 +41,7 @@ add_service_files(
   Sonar.srv
   TorpBoardPoseRequest.srv
   TBDetectionSwitch.srv
+  OcrRequest.srv
 )
 
 # add_action_files(
