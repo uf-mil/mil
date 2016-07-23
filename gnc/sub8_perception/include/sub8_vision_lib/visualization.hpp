@@ -1,8 +1,10 @@
 #pragma once
 
-#include "geometry.hpp"
-#include "segmentation.hpp"
-#include "typedefs.hpp"
+// #include "geometry.hpp"
+// #include "segmentation.hpp"
+// #include "typedefs.hpp"
+#include <Eigen/Core>
+#include <Eigen/Geometry> 
 #include "ros/ros.h"
 #include "geometry_msgs/Pose.h"
 

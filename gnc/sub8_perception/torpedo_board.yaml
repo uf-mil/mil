@@ -1,0 +1,22 @@
+# Torpedo Board
+# if these parameters aren't set, the defaults in torpedo_board.cc will be used
+
+# input
+input_left            :  "/stereo/left/image_rect_color"
+input_right           :  "/stereo/right/image_rect_color"
+activation            :  "/torpedo_board/detection_activation_switch"
+frame_height          :  644
+frame_width           :  482
+
+# output
+rviz                  :  "/torpedo_board/visualization/detection"
+dbg_imgs              :  "/torpedo_board/dbg_imgs"
+pose_est_srv          :  "/torpedo_board/pose_est_srv"
+
+# options
+img_proc_scale        :  0.5
+diffusion_time        :  20
+max_features          :  20
+feature_block_size    :  11
+feature_min_distance  :  20.0
+generate_dbg_imgs     :  false

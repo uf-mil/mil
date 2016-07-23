@@ -20,9 +20,8 @@
 #include <tf/transform_listener.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include <sub8_vision_lib/pcl_tools.hpp>
 #include <sub8_vision_lib/cv_tools.hpp>
-#include <sub8_vision_lib/torpedo_board.hpp>
+#include <sub8_vision_lib/visualization.hpp>
 #include <sub8_msgs/TorpBoardPoseRequest.h>
 #include <sub8_msgs/TBDetectionSwitch.h>
 
@@ -101,36 +100,4 @@ private:
   bool generate_dbg_img;
   cv::Mat debug_image;
   cv::Rect upper_left, upper_right, lower_left, lower_right;
-};
-
-class TorpedoBoardReprojectionCost {
-public:
-  TorpedoBoardReprojectionCost(cv::Matx34d &proj_L, cv::Matx34d &proj_R,
-                               std::vector<cv::Point> &corners_L,
-                               std::vector<cv::Point> &corners_R);
-  ~TorpedoBoardReprojectionCost();
-
-  template <typename T>
-  bool operator()(const T *const x, const T *const y, const T *const z,
-                  const T *const yaw, T *residual) const;
-
-private:
-  static std::vector<cv::Point> getProjectedCorners(double center_x,
-                                                    double center_y,
-                                                    double center_z, double yaw,
-                                                    cv::Matx34d &proj_matrix);
-
-#if __cplusplus > 199711L
-  static constexpr double height_m = 1.24; // in meters, aka(49 in.)
-  static constexpr double width_m = 0.61;  // in meters, aka(24 in.)
-#else
-  static const double height_m = 1.24; // in meters, aka(49 in.)
-  static const double width_m = 0.61;  // in meters, aka(24 in.)
-#endif
-
-  const cv::Matx34d proj_L;
-  const cv::Matx34d proj_R;
-
-  const std::vector<cv::Point> img_corners_L;
-  const std::vector<cv::Point> img_corners_R;
 };
