@@ -1,5 +1,4 @@
-* [[Competition]]
-    * [[ROBOSUB 2016]]
+* [[ROBOSUB 2016]]
 * [[Home]]
     * [[Getting Started]]
     * [[Editing the Wiki]]
