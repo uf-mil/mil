@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="sub8_hydrophones" type="paulboard_driver" name="paulboard_driver" output="screen">
+  <node pkg="paulboard_driver" type="paulboard_driver" name="paulboard_driver" output="screen">
     <param name="port" type="string" value="/dev/ttyUSB0"/>
     <param name="sample_rate" type="double" value="300000"/>
     <param name="frame" type="string" value="/hydrophones"/>
