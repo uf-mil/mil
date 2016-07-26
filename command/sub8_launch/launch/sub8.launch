@@ -14,6 +14,7 @@
   <include file="$(find sub8_launch)/launch/subsystems/odometry.launch"/>
   <include file="$(find sub8_launch)/launch/subsystems/thrusters.launch"/>
   <include file="$(find sub8_launch)/launch/subsystems/rise.launch"/>
+  <include file="$(find sub8_launch)/launch/subsystems/legacy_sonar.launch"/>
 
   <node pkg="kill_handling" type="kill_master" name="kill_master"/>
   <node pkg="kill_handling" type="kill_on_cond" name="height_over_bottom_kill">

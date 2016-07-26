@@ -29,4 +29,8 @@
 
     <node pkg="sub8_launch" type="tf_republisher.py" name="tf_replublisher" />
 
+    <-- TODO: make sure this TF is correct -->
+    <node pkg="tf" type="static_transform_publisher" name="hyd_broadcaster"
+    args="-0.4 0 0 1.571 0 0 base_link hydrophones 100" />
+
 </launch>

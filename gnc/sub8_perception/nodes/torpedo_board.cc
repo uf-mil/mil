@@ -267,8 +267,8 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position() {
     circle(r_diffused_draw, pt, 2, Scalar(0), 2);
   }
   cout << "left features: " << features_l.size() << " right features: " << features_r.size() << endl;
-  imshow("left features", l_diffused_draw); waitKey(10);
-  imshow("right features", l_diffused_draw); waitKey(10);
+  // imshow("left features", l_diffused_draw); waitKey(10);
+  // imshow("right features", l_diffused_draw); waitKey(10);
   for (size_t i = 0; i < features_l.size(); i++){
     cout << "\x1b[32m" << i << " \x1b[0m" << features_l[i] << '\t' << features_r[i] << endl;
   }
@@ -693,7 +693,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position() {
   line(current_image_left, pt_BR_2d, pt_BL_2d, color, 2);
   line(current_image_left, pt_BL_2d, pt_TL_2d, color, 2);
 
-  imshow("Detection", current_image_left); waitKey(1);
+  // imshow("Detection", current_image_left); waitKey(1);
 
 
 
