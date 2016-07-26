@@ -27,7 +27,7 @@ catkin_python_setup()
 catkin_package(
   INCLUDE_DIRS
     include
-    exFAST_SparseStereo/src/sparsestereo
+    # exFAST_SparseStereo/src/sparsestereo
   LIBRARIES
     sub8_vision_lib
     sparsestereo
