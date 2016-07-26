@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+import os
+import numpy
+import threading
+import matplotlib
+import matplotlib.pyplot as plt
+
+import roslib
+roslib.load_manifest('hydrophones')
+import rospy
+
+from hydrophones import algorithms, util
+from hydrophones.msg import Ping
+
+class Node(object):
+    def __init__(self):
+        self.fig = plt.figure()
+        self.ax = self.fig.add_subplot(111)
+        self.fig.show()
+        self.cond = threading.Condition()
+        self.samples = None
+        self.sub = rospy.Subscriber('hydrophones/ping', Ping, self.ping_callback)
+
+    def ping_callback(self, ping):
+        with self.cond:
+            self.samples = util.ping_to_samples(ping)
+            self.cond.notify_all()
+
+    def run(self):
+        while not rospy.is_shutdown():
+            with self.cond:
+                self.cond.wait(.5)
+                if self.samples is not None:
+                    self.ax.clear()
+                    self.ax.plot(self.samples.transpose())
+                    self.ax.autoscale()
+                    self.fig.canvas.draw()
+                    self.fig.show()
+                    self.samples = None
+
+rospy.init_node('ping_plotter')
+Node().run()
+
