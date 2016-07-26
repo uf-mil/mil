@@ -17,10 +17,6 @@ from image_geometry import PinholeCameraModel
 
 SEARCH_DEPTH = .65  # m
 
-# Boost files (maybe move to launch?) - I put these here so they're easy to change
-boost_to_the_moon = True
-MARKER = 'red_gentle_3tree_5depth.dic'
-
 rospack = rospkg.RosPack()
 
 class MarkerFinder():
@@ -44,14 +40,17 @@ class MarkerFinder():
 
         # self.occ_grid = MarkerOccGrid(self.image_sub, grid_res=.05, grid_width=500, grid_height=500,
         #                               grid_starting_pose=Pose2D(x=250, y=250, theta=0))
-        if boost_to_the_moon:
+        if rospy.get_param("/orange_markers/use_boost"):
+            path = os.path.join(rospack.get_path('sub8_perception'),
+                'ml_classifiers/marker/' + rospy.get_param("/orange_markers/marker_classifier"))
+
             self.boost = cv2.Boost()
-            rospy.loginfo("MARKER - Loading boost...")
-            self.boost.load(os.path.join(rospack.get_path('sub8_perception'), 'ml_classifiers/marker/' + MARKER))
+            rospy.loginfo("MARKER - Loading classifier from {}".format(path))
+            self.boost.load(path)
             rospy.loginfo("MARKER - Classifier for marker loaded.")
         else:
-            self.lower = np.array(rospy.get_param('channel_guide/hsv_low'))
-            self.upper = np.array(rospy.get_param('channel_guide/hsv_high'))
+            self.lower = np.array(rospy.get_param('/color/channel_marker/hsv_low'))
+            self.upper = np.array(rospy.get_param('/color/channel_marker/hsv_high'))
 
         self.pose_service = rospy.Service("vision/channel_marker/pose", VisionRequest, self.request_marker)
 
@@ -128,7 +127,7 @@ class MarkerFinder():
         #img = cv2.GaussianBlur(img, (7, 7), 15)
         last_image_timestamp = self.last_image_timestamp
 
-        if boost_to_the_moon:
+        if rospy.get_param("/orange_markers/use_boost"):
             some_observations = machine_learning.boost.observe(img)
             prediction = [int(x) for x in [self.boost.predict(obs) for obs in some_observations]]
             mask = np.reshape(prediction, img[:, :, 2].shape).astype(np.uint8) * 255

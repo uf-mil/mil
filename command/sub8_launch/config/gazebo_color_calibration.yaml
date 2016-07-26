@@ -6,8 +6,8 @@ color:
       hsv_high: [180, 255, 255]
 
     green:
-      hsv_low: [50, 0, 20]
-      hsv_high: [70, 255, 255]
+      hsv_low: [59.6607, 187.7055, 0.0]
+      hsv_high: [99.4524, 255.0, 255.0]
 
     yellow:
       hsv_low: [20, 0, 20]

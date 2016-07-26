@@ -1,18 +1,26 @@
 <launch>
-  <!-- Try this! -->
-  <!-- roslaunch sub8_launch perception.launch color_calibration:=`rospack find sub8_launch`/config/gazebo_color_calibration.yaml -->
+  <!-- roslaunch sub8_launch perception.launch color_calibration:=gazebo_color_calibration.yaml -->
   <arg name="color_calibration" default="default_color_calibration.yaml" />
 
   <rosparam file="$(find sub8_launch)/config/course_geometry.yaml" />
-  <!-- <rosparam file="$(find sub8_launch)/config/default_color_calibration.yaml" /> -->
   <rosparam file="$(find sub8_launch)/config/$(arg color_calibration)" />
 
-  <node pkg="sub8_perception" type="follow_orange_pipes.py" name="sub_orange_pipes" output="screen" />
-  <node pkg="sub8_perception" type="buoy_2d.py" name="buoy_2d" output="screen" />
+  <node pkg="sub8_perception" type="buoy_2d.py" name="buoys" output="screen">
+    <rosparam param="use_boost">True</rosparam>
+    <rosparam param="red_classifier">red_gentle_5tree_15depth.dic</rosparam>
+    <rosparam param="green_classifier">gentle_7tree_11depth.dic</rosparam>
+    <rosparam param="yellow_classifier">gentle_5tree_5depth.dic</rosparam>
+  </node>
+
+  <node pkg="sub8_perception" type="follow_orange_pipes.py" name="orange_markers" output="screen">
+    <rosparam param="use_boost">True</rosparam>
+    <rosparam param="marker_classifier">gentle_9tree_11depth.dic</rosparam>
+  </node>
+
   <node pkg="sub8_perception" type="torpedo_board_pose_est.py" name="torpedo_pose_est" output="screen" />
 
   <!-- torpedo vision -->
-  <node pkg="sub8_perception" type="torpedos_cpp" name="torpedo_vision" output="screen"> 
+  <node pkg="sub8_perception" type="torpedos_cpp" name="torpedo_vision" output="screen">
     <!-- default parameters set in gnc/nodes/torpedo_board.cc will be overwritten by these -->
     <!-- input -->
     <rosparam param="input_left">        "/stereo/left/image_rect_color/"             </rosparam>

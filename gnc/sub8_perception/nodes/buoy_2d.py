@@ -16,12 +16,6 @@ from std_msgs.msg import Header
 from std_srvs.srv import SetBool, SetBoolResponse
 from geometry_msgs.msg import Pose2D, PoseStamped, Pose, Point
 
-# Boost files (maybe move to launch?) - I put these here so they're easy to change
-boost_to_the_moon = True
-YELLOW = 'gentle_3tree_5depth.dic'
-RED = 'gentle_3tree_5depth.dic'
-GREEN = 'gentle_3tree_5depth.dic'
-
 rospack = rospkg.RosPack()
 
 class BuoyFinder:
@@ -40,7 +34,7 @@ class BuoyFinder:
         self.last_image_time = None
         self.camera_model = None
         self.multi_obs = None
-        self.max_observations = 20
+        self.max_observations = 200
         self._id = 0  # Only for display
 
         self.rviz = rviz.RvizVisualizer()
@@ -59,20 +53,33 @@ class BuoyFinder:
             'green':deque()
         }
 
-        if boost_to_the_moon:
-            self.buoys = {
-                # Boost classifier paths
-                'yellow': os.path.join(rospack.get_path('sub8_perception'), 'ml_classifiers/buoys/yellow/' + YELLOW),
-                'red': os.path.join(rospack.get_path('sub8_perception'), 'ml_classifiers/buoys/red/' + RED),
-                'green': os.path.join(rospack.get_path('sub8_perception'), 'ml_classifiers/buoys/green/' + GREEN)
-            }
-        else:
-            self.buoys = {
-                #Threshold paths
-                'green': '/color/buoy/green',
-                'red': '/color/buoy/red',
-                'yellow': '/color/buoy/yellow',
-            }
+        self.buoys = {}
+        self.boosting = rospy.get_param("/buoys/use_boost")
+        for color in ['yellow', 'green', 'red']:
+            if self.boosting:
+                # Classifiers should be located in the ml_classifiers folder.
+                # The rosparam should be `COLOR_classifier`
+                path = os.path.join(rospack.get_path('sub8_perception'),
+                    'ml_classifiers/buoys/{}/{}'.format(color, rospy.get_param("/buoys/{}_classifier".format(color))))
+
+                self.buoys[color] = cv2.Boost()
+                rospy.loginfo("BUOY - Loading {} boost...".format(color))
+                self.buoys[color].load(path)
+                rospy.loginfo("BUOY - Classifier for {} buoy loaded.".format(color))
+            else:
+                # Give either an HSV or BGR threshold with param name /COLOR/COLOR_SPACE_low and /COLOR/COLOR_SPACE_high
+                for color_space in ['hsv', 'bgr']:
+                    low = '/color/buoy/{}/{}_low'.format(color, color_space)
+                    high = '/color/buoy/{}/{}_high'.format(color, color_space)
+
+                    if not rospy.has_param(low):
+                        # Using a different colorspace
+                        continue
+                    rospy.loginfo("BUOY - Loading {} thresholds for {} buoy...".format(color_space, color))
+                    self.buoys[color] = [np.array(rospy.get_param(low)),
+                                         np.array(rospy.get_param(high)), color_space]
+                    rospy.loginfo("BUOY - Thresholds for {} buoy loaded.".format(color))
+
 
         self.last_t = {
             'green': None,
@@ -92,24 +99,12 @@ class BuoyFinder:
             'yellow': 2,
         }
 
-        if boost_to_the_moon:
-            for color in self.buoys.keys():
-                if self.buoys[color] is None:
-                    rospy.logwarn('Classifier path for {} not found!'.format(color))
-                    continue
-
-                path = self.buoys[color]
-                self.buoys[color] = cv2.Boost()
-                rospy.loginfo("BUOY - Loading {} boost...".format(color))
-                self.buoys[color].load(path)
-                rospy.loginfo("BUOY - Classifier for {} buoy loaded.".format(color))
-
         self.image_sub = sub8_ros_tools.Image_Subscriber('/stereo/left/image_raw', self.image_cb)
         self.image_pub = sub8_ros_tools.Image_Publisher('/vision/buoy_2d/target_info')
         self.mask_pub = sub8_ros_tools.Image_Publisher('/vision/buoy_2d/mask')
 
         # Occasional status publisher
-        self.timer = rospy.Timer(rospy.Duration(1), self.publish_target_info)
+        self.timer = rospy.Timer(rospy.Duration(.1), self.publish_target_info)
 
         self.toggle = rospy.Service('vision/buoys/search', SetBool, self.toggle_search)
         self.pose2d_service = rospy.Service('vision/buoys/2D', VisionRequest2D, self.request_buoy)
@@ -245,19 +240,17 @@ class BuoyFinder:
         max_area = 0
         best_ret = None
 
-        if boost_to_the_moon:
+        if self.boosting:
             # Segmentation here (machine learning right now)
             some_observations = machine_learning.boost.observe(img)
             prediction2 = [int(x) for x in [self.buoys[buoy_type].predict(obs) for obs in some_observations]]
             mask = np.reshape(prediction2, img[:, :, 2].shape).astype(np.uint8) * 255
         else:
-            #Thresholding here
-            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            low = np.array(rospy.get_param(self.buoys[buoy_type] + '/hsv_low')).astype(np.int32)
-            high = np.array(rospy.get_param(self.buoys[buoy_type] + '/hsv_high')).astype(np.int32)
-            mask = cv2.inRange(hsv, low, high)
+            # Thresholding here
+            if self.buoys[buoy_type][2] == 'hsv':
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-        rospy.sleep(.5)
+            mask = cv2.inRange(img, *self.buoys[buoy_type][:2])
 
         kernel = np.ones((13,13),np.uint8)
         mask = cv2.dilate(mask, kernel, iterations = 2)

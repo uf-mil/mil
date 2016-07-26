@@ -30,13 +30,11 @@ class MultiObservation(object):
             H**2 = ||c - a||**2 - (||(c - a).dot(d)||**2 / ||d||**2)
         """
         observations = map(self.get_ray, image_points)
-
         norm = np.linalg.norm
 
         def cost(c):
             t_cost = 0
             for observation, (t, R) in zip(observations, cameras):
-                # TODO: Adjust for rotation
                 d = R.dot(observation)
                 term_1 = norm(c - t)**2
                 term_2 = (norm((c - t).dot(d))**2) / (norm(d)**2)
@@ -52,6 +50,32 @@ class MultiObservation(object):
             bounds=zip([-15.0, -15.0, -15.0], [15.0, 15.0, 15.0]),
             tol=1e-3
         )
+
+        dists = []
+        for observation, (t, R) in zip(observations, cameras):
+            ray = R.dot(observation)
+            dists.append(norm(np.cross(ray.T, minimization.x - t)))
+        dists = np.array(dists)
+        threshold = dists.std()
+
+        if threshold < .01:  # May need to be tuned
+            return minimization.x  # No outliers
+
+        outliers = np.where(dists > threshold)[0][::-1]
+        for index in outliers:
+            del observations[index]
+            del cameras[index]
+
+        minimization = minimize(
+            method='slsqp',
+            fun=cost,
+            # jac=obj_jacobian,
+            x0=(5.0, 5.0, 5.0),
+            # x0=(self.min_thrusts + self.max_thrusts) / 2,
+            bounds=zip([-15.0, -15.0, -15.0], [15.0, 15.0, 15.0]),
+            tol=1e-3
+        )
+
         return minimization.x
 
     def get_ray(self, observation):
@@ -88,7 +112,7 @@ def test():
     # K = np.array(camera_model.fullIntrinsicMatrix(), dtype=np.float32)
 
     real = np.array([1.0, 3.0, 7.0])
-    p_wrong = 0.0
+    p_wrong = .2
 
     projected_h = MO.K.dot(real)
     projected = projected_h[:2] / projected_h[2]
@@ -100,7 +124,7 @@ def test():
     rays = []
     observations = []
 
-    max_k = 4
+    max_k = 9
     for k in range(max_k):
         if k < 1:
             camera_t = np.array([0.0, -8.0, 7.0])
@@ -128,6 +152,8 @@ def test():
         observations.append(obs_final)
 
     best_p = MO.lst_sqr_intersection(observations, cameras)
+    print best_p
+
     mlab.points3d(*map(np.array, best_p), scale_factor=0.3)
     estimation.draw_cameras(rays, cameras)
 
