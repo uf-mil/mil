@@ -1,6 +1,14 @@
 # _**ROBOSUB 2016**_
 
 ![Transdec pool](http://matchbin-assets.s3.amazonaws.com/public/sites/351/assets/New_Image_2_copy.JPG)
+
+## General
+
+- [ ] __Fix git issues on sub__
+- [ ] Fix account permissions on sub
+- [ ] Fix Shuttle computer gazebo issues
+- [ ] Fix ssh issues (Sub -> Laptop, Laptop -> Shuttle)
+
 ## June 26th
 
 - [x] Write mission for qualifying run
