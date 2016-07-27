@@ -4,14 +4,25 @@
 ## June 26th
 
 - [x] Write mission for qualifying run
-- [ ] Make sure front stereo and downward camera exposures are consistent at depth
-- [ ] Bag green/red cup prop approach w/ pings
-- [ ] Bag downward guide strips
-- [ ] Bag torpedo board
+- [x] Bag downward guide strips
 - [ ] Test opening and closing of grabber in water
 - [ ] Test Ball Dropping
 - [ ] Test torpedo launching
+- [ ] Add TF for hydrophones and pneumatics
+- [ ] Write Bins mission
+
+## June 27th
+- [ ] Bag torpedo board
+- [ ] Bag green/red cup prop approach w/ pings
+- [ ] Bag bins
+- [ ] Make sure front stereo and downward camera exposures are consistent at depth
 - [ ] Get accurate front and down camera calibrations in water
 - [ ] Time travel time from one end of the transdec to another
 - [ ] Measure how close to the floor we can get while keeping good state estimation / odom
-- [ ] Add TF for hydrophones and pneumatics
+- [ ] Attempt buoy mission
+- [ ] Attempt bins mission
+- [ ] Confirm sonar is working properly
+
+
+## June 28h
+- [ ] Attempt surfacing inside octagon guided by sonar
