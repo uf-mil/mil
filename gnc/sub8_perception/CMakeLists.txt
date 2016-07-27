@@ -64,7 +64,7 @@ add_library(sub8_vision_lib
     src/sub8_vision_lib/cv_utils.cc
     # src/sub8_vision_lib/cv_param_helpers.cc
     src/sub8_vision_lib/visualization.cc
-    src/sub8_vision_lib/object_finder.cc
+    # src/sub8_vision_lib/object_finder.cc
 )
 
 target_link_libraries(
@@ -158,24 +158,24 @@ target_link_libraries(
     ${OpenCV_INCLUDE_DIRS}
 )
 
-add_executable(
-  perception_server
-    nodes/perception_server.cc
-)
+#add_executable(
+#  perception_server
+#    nodes/perception_server.cc
+#)
 
-add_dependencies(
-  perception_server
-   sub8_msgs_generate_messages_cpp
-   ${catkin_EXPORTED_TARGETS}
-)
+#add_dependencies(
+# perception_server
+#   sub8_msgs_generate_messages_cpp
+#   ${catkin_EXPORTED_TARGETS}
+#)
 
-target_link_libraries(
-  perception_server
-    sub8_vision_lib
-    ${catkin_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${OpenCV_INCLUDE_DIRS}
-)
+#target_link_libraries(
+#  perception_server
+#    sub8_vision_lib
+#    ${catkin_LIBRARIES}
+#    ${Boost_LIBRARIES}
+#    ${OpenCV_INCLUDE_DIRS}
+#)
 
 # add_executable(
 #   pcl_buoy

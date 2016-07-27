@@ -124,7 +124,7 @@ class MarkerFinder():
 
     def find_marker(self, img):
         #img[:, -100:] = 0
-        #img = cv2.GaussianBlur(img, (7, 7), 15)
+        img = cv2.GaussianBlur(img, (7, 7), 15)
         last_image_timestamp = self.last_image_timestamp
 
         if rospy.get_param("/orange_markers/use_boost"):
@@ -157,6 +157,7 @@ class MarkerFinder():
         box = cv2.cv.BoxPoints(rect)
         box = np.int0(box)
         mask = np.zeros(shape=mask.shape)
+        cv2.drawContours(self.last_draw_image, [box], 0, (0, 128, 255), 2)
         cv2.drawContours(mask, [box], 0, 255, -1)
         rect_area = cv2.contourArea(box)
 
@@ -168,18 +169,18 @@ class MarkerFinder():
         # Check if the box is too big or small.
         xy_position, height = self.get_tf(timestamp=last_image_timestamp)
         expected_area = self.calculate_marker_area(height)
-        # print expected_area
-        # print rect_area
-        # if expected_area * .1 < rect_area < expected_area * 2:
-        #     #cv2.drawContours(self.last_draw_image, [box], 0, (255, 255, 255), -1)
-        #     self.rviz.draw_ray_3d(center, self.cam, np.array([1, .5, 0, 1]), frame='/downward',
-        #         _id=5, length=height, timestamp=last_image_timestamp)
-        # else:
-        #     angle_rad = 0
-        #     max_eigv = np.array([0, -20])
-        #     min_eigv = np.array([-20, 0])
-        #     #cv2.drawContours(self.last_draw_image, [box], 0, (255, 0, 30), -1)
-        #     rospy.logwarn("MARKER - Size out of bounds!")
+
+        print "{} < {} < {} ({})".format(expected_area * .2, rect_area, expected_area * 2, expected_area)
+        if expected_area * .5 < rect_area < expected_area * 2:
+            #cv2.drawContours(self.last_draw_image, [box], 0, (255, 255, 255), -1)
+            self.rviz.draw_ray_3d(center, self.cam, np.array([1, .5, 0, 1]), frame='/downward',
+                _id=5, length=height, timestamp=last_image_timestamp)
+        else:
+            angle_rad = 0
+            max_eigv = np.array([0, -20])
+            min_eigv = np.array([-20, 0])
+            #cv2.drawContours(self.last_draw_image, [box], 0, (255, 0, 30), -1)
+            rospy.logwarn("MARKER - Size out of bounds!")
 
         self.rviz.draw_ray_3d(center, self.cam, np.array([1, .5, 0, 1]), frame='/downward',
             _id=5, length=height, timestamp=last_image_timestamp)

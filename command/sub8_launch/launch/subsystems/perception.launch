@@ -6,32 +6,17 @@
   <rosparam file="$(find sub8_launch)/config/$(arg color_calibration)" />
 
   <node pkg="sub8_perception" type="buoy_2d.py" name="buoys" output="screen">
-    <rosparam param="use_boost">True</rosparam>
-    <rosparam param="red_classifier">red_gentle_5tree_15depth.dic</rosparam>
-    <rosparam param="green_classifier">gentle_7tree_11depth.dic</rosparam>
-    <rosparam param="yellow_classifier">gentle_5tree_5depth.dic</rosparam>
+    <rosparam file="$(find sub8_launch)/config/buoy_2d.yaml" command="load" />
   </node>
 
   <node pkg="sub8_perception" type="follow_orange_pipes.py" name="orange_markers" output="screen">
-    <rosparam param="use_boost">True</rosparam>
-    <rosparam param="marker_classifier">gentle_9tree_11depth.dic</rosparam>
+    <rosparam file="$(find sub8_launch)/config/follow_orange_pipes.yaml" command="load"/>
   </node>
 
   <node pkg="sub8_perception" type="torpedo_board_pose_est.py" name="torpedo_pose_est" output="screen" />
 
   <!-- torpedo vision -->
   <node pkg="sub8_perception" type="torpedos_cpp" name="torpedo_vision" output="screen">
-    <!-- default parameters set in gnc/nodes/torpedo_board.cc will be overwritten by these -->
-    <!-- input -->
-    <rosparam param="input_left">        "/stereo/left/image_rect_color/"             </rosparam>
-    <rosparam param="input_right">       "/stereo/right/image_rect_color/"            </rosparam>
-    <rosparam param="activation">        "/torpedo_board/detection_activation_switch" </rosparam>
-    <!-- output -->
-    <rosparam param="rviz">              "/torpedo_board/visualization/detection"     </rosparam>
-    <rosparam param="dbg_imgs">          "/torpedo_board/dbg_imgs"                    </rosparam>
-    <rosparam param="pose_est_srv">      "/torpedo_board/pose_est_srv"                </rosparam>
-    <!-- options -->
-    <rosparam param="img_proc_scale">    0.5                                          </rosparam>
-    <rosparam param="generate_dbg_imgs"> true                                         </rosparam>
+    <rosparam file="$(find sub8_launch)/config/torpedo_board.yaml" command="load"/>
   </node>
 </launch>

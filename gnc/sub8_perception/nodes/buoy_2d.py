@@ -18,6 +18,72 @@ from geometry_msgs.msg import Pose2D, PoseStamped, Pose, Point
 
 rospack = rospkg.RosPack()
 
+class Buoy(object):
+    def __init__(self, color, boosting):
+        self.observations = deque()
+        self.pose_pairs = deque()
+        self.last_t = None
+
+        self.color = color
+        self.boosting = boosting
+
+        # Only for visualization
+        if color == 'red':
+            self.draw_colors = (1.0, 0.0, 0.0, 1.0)
+            self.visual_id = 0
+        elif color == 'green':
+            self.draw_colors = (0.0, 1.0, 0.0, 1.0)
+            self.visual_id = 1
+        elif color == 'yellow':
+            self.draw_colors = (1.0, 1.0, 0.0, 1.0)
+            self.visual_id = 2
+        else:
+            rospy.logerr('Unknown buoy color {}'.format(color))
+            self.draw_colors = (0.0, 0.0, 0.0, 1.0)
+            self.visual_id = 3
+
+    def load_segmentation(self):
+        if self.boosting:
+            # Classifiers should be located in the ml_classifiers folder.
+            # The rosparam should be `COLOR_classifier`
+            path = os.path.join(rospack.get_path('sub8_perception'),
+                'ml_classifiers/buoys/{}/{}'.format(self.color, rospy.get_param("/buoys/{}_classifier".format(self.color))))
+
+            self.boost = cv2.Boost()
+            rospy.loginfo("BUOY - Loading {} boost...".format(self.color))
+            self.boost.load(path)
+            rospy.loginfo("BUOY - Classifier for {} buoy loaded.".format(self.color))
+        else:
+            # Give either an HSV or BGR threshold with param name /COLOR/COLOR_SPACE_low and /COLOR/COLOR_SPACE_high
+            for color_space in ['hsv', 'bgr']:
+                self.color_space = color_space
+                low = '/color/buoy/{}/{}_low'.format(self.color, color_space)
+                high = '/color/buoy/{}/{}_high'.format(self.color, color_space)
+
+                if not rospy.has_param(low):
+                    # Using a different colorspace
+                    continue
+
+                rospy.loginfo("BUOY - Loading {} thresholds for {} buoy...".format(color_space, self.color))
+                self.thresholds = [np.array(rospy.get_param(low)),
+                                   np.array(rospy.get_param(high))]
+                rospy.loginfo("BUOY - Thresholds for {} buoy loaded.".format(self.color))
+
+    def segment(self, img):
+        if self.boosting:
+            # Segmentation here (machine learning right now)
+            some_observations = machine_learning.boost.observe(img)
+            prediction = [int(x) for x in [self.boost.predict(obs) for obs in some_observations]]
+            mask = np.reshape(prediction, img[:, :, 2].shape).astype(np.uint8) * 255
+        else:
+            # Thresholding here
+            if self.color_space == 'hsv':
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+            mask = cv2.inRange(img, *self.thresholds)
+
+        return mask
+
 class BuoyFinder:
     _min_size = 100
     '''
@@ -39,72 +105,18 @@ class BuoyFinder:
 
         self.rviz = rviz.RvizVisualizer()
 
-        rospack = rospkg.RosPack()
-
-        # TODO: consolidate all these dictionaries into one big one.
-        self.observations = {
-            'red':deque(),
-            'yellow':deque(),
-            'green':deque()
-        }
-        self.pose_pairs = {
-            'red':deque(),
-            'yellow':deque(),
-            'green':deque()
-        }
-
+        boosting = rospy.get_param("/buoys/use_boost")
         self.buoys = {}
-        self.boosting = rospy.get_param("/buoys/use_boost")
-        for color in ['yellow', 'green', 'red']:
-            if self.boosting:
-                # Classifiers should be located in the ml_classifiers folder.
-                # The rosparam should be `COLOR_classifier`
-                path = os.path.join(rospack.get_path('sub8_perception'),
-                    'ml_classifiers/buoys/{}/{}'.format(color, rospy.get_param("/buoys/{}_classifier".format(color))))
-
-                self.buoys[color] = cv2.Boost()
-                rospy.loginfo("BUOY - Loading {} boost...".format(color))
-                self.buoys[color].load(path)
-                rospy.loginfo("BUOY - Classifier for {} buoy loaded.".format(color))
-            else:
-                # Give either an HSV or BGR threshold with param name /COLOR/COLOR_SPACE_low and /COLOR/COLOR_SPACE_high
-                for color_space in ['hsv', 'bgr']:
-                    low = '/color/buoy/{}/{}_low'.format(color, color_space)
-                    high = '/color/buoy/{}/{}_high'.format(color, color_space)
-
-                    if not rospy.has_param(low):
-                        # Using a different colorspace
-                        continue
-                    rospy.loginfo("BUOY - Loading {} thresholds for {} buoy...".format(color_space, color))
-                    self.buoys[color] = [np.array(rospy.get_param(low)),
-                                         np.array(rospy.get_param(high)), color_space]
-                    rospy.loginfo("BUOY - Thresholds for {} buoy loaded.".format(color))
-
-
-        self.last_t = {
-            'green': None,
-            'red': None,
-            'yellow': None
-        }
-
-        # For displaying each buoy in rviz
-        self.draw_colors = {
-            'green': (0.0, 1.0, 0.0, 1.0),
-            'red': (1.0, 0.0, 0.0, 1.0),
-            'yellow': (1.0, 1.0, 0.0, 1.0),
-        }
-        self.visual_id = {
-            'green': 0,
-            'red': 1,
-            'yellow': 2,
-        }
+        for color in ['red', 'yellow', 'green']:
+            self.buoys[color] = Buoy(color, boosting)
+            self.buoys[color].load_segmentation()
 
         self.image_sub = sub8_ros_tools.Image_Subscriber('/stereo/left/image_raw', self.image_cb)
         self.image_pub = sub8_ros_tools.Image_Publisher('/vision/buoy_2d/target_info')
         self.mask_pub = sub8_ros_tools.Image_Publisher('/vision/buoy_2d/mask')
 
         # Occasional status publisher
-        self.timer = rospy.Timer(rospy.Duration(.1), self.publish_target_info)
+        self.timer = rospy.Timer(rospy.Duration(.25), self.publish_target_info)
 
         self.toggle = rospy.Service('vision/buoys/search', SetBool, self.toggle_search)
         self.pose2d_service = rospy.Service('vision/buoys/2D', VisionRequest2D, self.request_buoy)
@@ -240,18 +252,9 @@ class BuoyFinder:
         max_area = 0
         best_ret = None
 
-        if self.boosting:
-            # Segmentation here (machine learning right now)
-            some_observations = machine_learning.boost.observe(img)
-            prediction2 = [int(x) for x in [self.buoys[buoy_type].predict(obs) for obs in some_observations]]
-            mask = np.reshape(prediction2, img[:, :, 2].shape).astype(np.uint8) * 255
-        else:
-            # Thresholding here
-            if self.buoys[buoy_type][2] == 'hsv':
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
-            mask = cv2.inRange(img, *self.buoys[buoy_type][:2])
-
+        buoy = self.buoys[buoy_type]
+        rospy.sleep(.1)
+        mask = buoy.segment(img)
         kernel = np.ones((13,13),np.uint8)
         mask = cv2.dilate(mask, kernel, iterations = 2)
         mask = cv2.erode(mask, kernel, iterations = 2)
@@ -292,27 +295,27 @@ class BuoyFinder:
             trans = np.array(t)
             R = sub8_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
 
-            self.rviz.draw_ray_3d(tuple_center, self.camera_model, self.draw_colors[buoy_type], frame='/stereo_front/left',
+            self.rviz.draw_ray_3d(tuple_center, self.camera_model, buoy.draw_colors, frame='/stereo_front/left',
                 _id=self._id + 100, timestamp=timestamp)
             self._id += 1
             if self._id >= self.max_observations * 3:
                 self._id = 0
 
-            if (self.last_t[buoy_type] is None) or (np.linalg.norm(trans - self.last_t[buoy_type]) > 0.3):
-                self.last_t[buoy_type] = trans
-                self.observations[buoy_type].append(true_center)
-                self.pose_pairs[buoy_type].append((t, R))
+            if (buoy.last_t is None) or (np.linalg.norm(trans - buoy.last_t) > 0.1):
+                buoy.last_t = trans
+                buoy.observations.append(true_center)
+                buoy.pose_pairs.append((t, R))
 
-            print "BUOY {} - {} observations".format(buoy_type, len(self.observations[buoy_type]))
-            if len(self.observations[buoy_type]) > 5:
+            print "BUOY {} - {} observations".format(buoy_type, len(buoy.observations))
+            if len(buoy.observations) > 5:
                 est = self.multi_obs.lst_sqr_intersection(self.observations[buoy_type], self.pose_pairs[buoy_type])
 
-                self.rviz.draw_sphere(est, color=self.draw_colors[buoy_type],
-                    scaling=(0.5, 0.5, 0.5), frame='/map', _id=self.visual_id[buoy_type])
+                self.rviz.draw_sphere(est, color=buoy.draw_colors,
+                    scaling=(0.5, 0.5, 0.5), frame='/map', _id=buoy.visual_id)
 
-            if len(self.observations[buoy_type]) > self.max_observations:
-                self.observations[buoy_type].popleft()
-                self.pose_pairs[buoy_type].popleft()
+            if len(buoy.observations) > self.max_observations:
+                buoy.observations.popleft()
+                buoy.pose_pairs.popleft()
         else:
             print "BUOY {} - camera_model is None".format(buoy_type)
 
@@ -321,12 +324,11 @@ class BuoyFinder:
     def find_buoys(self, img, timestamp):
         draw_image = np.copy(img)
 
-        # This is only run if buoy_type is not None
         for buoy_name in self.buoys.keys():
             if self.buoys[buoy_name] is None:
                 continue
 
-            #rospy.loginfo("BUOY - Looking for {}".format(buoy_name))
+            rospy.loginfo("BUOY - Looking for {}".format(buoy_name))
             result = self.find_single_buoy(img, timestamp, buoy_name)
             if not result:
                 continue

@@ -59,5 +59,5 @@ class NetworkCheck(object):
 
 if __name__ == '__main__':
     rospy.init_node('network_kill')
-    all_hail_satan = NetworkCheck(timeout=0.1)
+    all_hail_satan = NetworkCheck(timeout=1)
     rospy.spin()

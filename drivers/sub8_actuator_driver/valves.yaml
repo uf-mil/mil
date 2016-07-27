@@ -2,7 +2,7 @@
 # Times in seconds. Open_port should be the valve that needs to be turned on to open the device.
 # Default parameter is set per port - true opens the valve.
 
-shooter_l:
+torpedo1:
   type: 'pulse'
   ports:
     open_port:
@@ -13,7 +13,7 @@ shooter_l:
       default: 0
   pulse_time: 1
 
-shooter_r:
+torpedo2:
   type: 'pulse'
   ports:
     open_port:
@@ -25,7 +25,6 @@ shooter_r:
   pulse_time: 1
 
 # 3 high drop 4 high reload
-
 dropper:
   type: 'pulse'
   ports:
@@ -39,13 +38,13 @@ dropper:
       default: 1
   pulse_time: 1
 
-test:
-  type: 'pulse'
+gripper:
+  type: 'set'
   ports:
     open_port:
+      id: 6
+      default: 1
+    close_port:
       id: 5
       default: 0
-    closed_port:
-      id: -1
-      default: 0
-  pulse_time: .2
+  pulse_time: 1
