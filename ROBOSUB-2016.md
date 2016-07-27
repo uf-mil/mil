@@ -11,6 +11,8 @@
 - [ ] Add TF for hydrophones and pneumatics
 - [ ] Write Bins mission
 
+<img src="https://scontent.xx.fbcdn.net/v/t34.0-12/13652622_1384156704944116_2098820343_n.jpg?oh=dee7c8290cc69adf803cc3c54433d704&oe=579A5915" width="300">
+
 ## June 27th
 - [ ] Bag torpedo board
 - [ ] Bag green/red cup prop approach w/ pings
