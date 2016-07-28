@@ -28,9 +28,9 @@ If you have any questions, don't hesitate to email Ralph.
 
 * Anthony Olive
 
-* Little Man and Darla
-
 * Lucas Bassett-Audain
+
+* Little Man and Darla
 
     ![Darla (left) & Little Man (right)](http://s31.postimg.org/s370klg23/IMG_20160423_014247.jpg)
 
