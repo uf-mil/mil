@@ -43,3 +43,4 @@
 - [ ] Get accurate front and down camera calibrations in water
 - [ ] Time travel time from one end of the transdec to another
 - [ ] Get 3d postition of red & green cups for grabbing challenge **@jacobpanikulam**
+- [ ] Add actuators to mission system
