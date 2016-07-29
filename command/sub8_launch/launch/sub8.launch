@@ -1,6 +1,6 @@
 <launch>
   <rosparam param="/autonomous">False</rosparam>
-  <rosparam param="mission_speed_limit">0.3</rosparam>
+  <rosparam param="mission_speed_limit">0.5</rosparam>
 
   <include file="$(find sub8_launch)/launch/tf.launch" />
 

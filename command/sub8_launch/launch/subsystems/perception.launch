@@ -6,17 +6,17 @@
   <rosparam file="$(find sub8_launch)/config/$(arg color_calibration)" />
 
   <node pkg="sub8_perception" type="buoy_2d.py" name="buoys" output="screen">
-    <rosparam file="$(find sub8_launch)/config/buoy_2d.yaml" command="load" />
+    <rosparam file="$(find sub8_launch)/config/buoy_2d.yaml" command="load" ns="buoys" />
   </node>
 
   <node pkg="sub8_perception" type="follow_orange_pipes.py" name="orange_markers" output="screen">
-    <rosparam file="$(find sub8_launch)/config/follow_orange_pipes.yaml" command="load"/>
+    <rosparam file="$(find sub8_launch)/config/follow_orange_pipes.yaml" command="load" ns="orange_markers" />
   </node>
 
   <node pkg="sub8_perception" type="torpedo_board_pose_est.py" name="torpedo_pose_est" output="screen" />
 
   <!-- torpedo vision -->
   <node pkg="sub8_perception" type="torpedos_cpp" name="torpedo_vision" output="screen">
-    <rosparam file="$(find sub8_launch)/config/torpedo_board.yaml" command="load"/>
+    <rosparam file="$(find sub8_launch)/config/torpedo_board.yaml" command="load" ns="torpedo_vision" />
   </node>
 </launch>

@@ -1,14 +1,8 @@
 <launch>
-  <node pkg="paulboard_driver" type="paulboard_driver" name="paulboard_driver" output="screen">
-    <param name="port" type="string" value="/dev/ttyUSB0"/>
-    <param name="sample_rate" type="double" value="300000"/>
-    <param name="frame" type="string" value="/hydrophones"/>
-    <param name="permute" type="string" value="1 2 3 4"/>
-  </node>
-  <node pkg="hydrophones" type="hydrophones" name="hydrophones" output="screen">
-    <param name="dist_h" type="double" value="2.286000e-02"/>
-    <param name="dist_h4" type="double" value="2.286000e-02"/>
-    <param name="v_sound" type="double" value="1482"/>
-  </node>
+  <rosparam file="$(find sub8_launch)/config/legacy_sonar.yaml" command="load" />
+  <node pkg="paulboard_driver" type="paulboard_driver" name="paulboard_driver" output="screen" />
+  <node pkg="tf" type="static_transform_publisher" name="hyd_broadcaster"
+    args="-0.0875 0.0 -0.265 1.571 0 0 base_link hydrophones 100" />
+  <node pkg="hydrophones" type="hydrophones" name="hydrophones" output="screen" />
   <node pkg="hydrophones" type="ping_plotter" name="ping_plotter"/>
 </launch>
