@@ -43,3 +43,10 @@ PyODE seems to be broken, so we must compile from source. Thanks to Forrest for 
 Verify that your computer allows source code (system settings >> Software and updates >> Ubuntu software).
 
     rm -fr /tmp/pyode-build && mkdir -p /tmp/pyode-build && cd /tmp/pyode-build && sudo apt-get build-dep -y python-pyode && sudo apt-get remove -y python-pyode && apt-get source --compile python-pyode && sudo dpkg -i python-pyode_*.deb
+
+##**ROS Serial**
+
+**This allows us to send ROS messages to a USB Atmel based Microcontroller. Right now it is used to talk to the Arduino used in the shooter task.**
+
+    sudo apt-get install ros-indigo-rosserial ros-indigo-rosserial-python ros-indigo-rosserial-arduino
+
