@@ -24,6 +24,8 @@ include_directories(
 
 add_executable(cluster_extraction src/cluster_extraction.cpp)
 
+add_dependencies(cluster_extraction navigator_msgs_generate_messages)
+
 target_link_libraries(
 	cluster_extraction
  	${catkin_LIBRARIES}
