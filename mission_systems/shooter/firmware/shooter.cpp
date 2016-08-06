@@ -118,7 +118,7 @@ class Pololu : public SpeedController
         digitalWrite(inA_pin,LOW);
         digitalWrite(inB_pin,LOW);
         analogWrite(pwm_pin,0);
-        controller.writeMicroseconds(1500);
+        //controller.writeMicroseconds(1500);
       } else if(s < 0) {
         digitalWrite(inA_pin,HIGH);
         digitalWrite(inB_pin,LOW);
@@ -128,7 +128,7 @@ class Pololu : public SpeedController
         digitalWrite(inB_pin,HIGH);
         analogWrite(pwm_pin,map(s,0,100,0,255));
         //controller.writeMicroseconds(map(s,0,100,1000,2000));
-      }     
+      }
     }
     int _get()
     {
@@ -147,7 +147,7 @@ class Pololu : public SpeedController
     {
       pinMode(inA_pin,OUTPUT);
       pinMode(inB_pin,OUTPUT);
-      pinMOde(pwm_pin,OUTPUT);
+      pinMode(pwm_pin,OUTPUT);
       //controller.attach(pwm_pin);
     }
 };
@@ -189,7 +189,7 @@ class AutoController
 				else if (time_since_start > SPIN_UP_TIME && time_since_start < TOTAL_TIME) feeder.on(); //feeder.motor.set(FEED_SPEED);
 				else if (time_since_start > TOTAL_TIME) cancel();
 			}
-		}	
+		}
 };
 AutoController autoController;
 
@@ -236,7 +236,7 @@ class Comms
     {
       nh.initNode();
       nh.subscribe(sub);
-      //nh.advertise(chatter);   
+      //nh.advertise(chatter);
     }
     void run()
     {
