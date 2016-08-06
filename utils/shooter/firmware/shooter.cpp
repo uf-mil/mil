@@ -1,6 +1,8 @@
 #include <ros.h>
 #include <std_msgs/Int8.h>
 #include <std_msgs/String.h>
+#include <std_srvs/Trigger.h>
+#include <navigator_msgs/ShooterManual.h>
 
 #include <Arduino.h>
 
@@ -110,7 +112,6 @@ class Pololu : public SpeedController
     int inB_pin;
     int pwm_pin;
     int speed;
-    //Servo controller;
     void _set(int s)
     {
       speed = s;
@@ -118,7 +119,6 @@ class Pololu : public SpeedController
         digitalWrite(inA_pin,LOW);
         digitalWrite(inB_pin,LOW);
         analogWrite(pwm_pin,0);
-        controller.writeMicroseconds(1500);
       } else if(s < 0) {
         digitalWrite(inA_pin,HIGH);
         digitalWrite(inB_pin,LOW);
@@ -127,7 +127,6 @@ class Pololu : public SpeedController
         digitalWrite(inA_pin,LOW);
         digitalWrite(inB_pin,HIGH);
         analogWrite(pwm_pin,map(s,0,100,0,255));
-        //controller.writeMicroseconds(map(s,0,100,1000,2000));
       }     
     }
     int _get()
@@ -141,14 +140,12 @@ class Pololu : public SpeedController
       inB_pin = b;
       pwm_pin = pwm;
       speed = 0;
-      //controller = Servo();
     }
     void init()
     {
       pinMode(inA_pin,OUTPUT);
       pinMode(inB_pin,OUTPUT);
-      pinMOde(pwm_pin,OUTPUT);
-      //controller.attach(pwm_pin);
+      pinMode(pwm_pin,OUTPUT);
     }
 };
 Pololu feeder(FEEDER_A_PIN,FEEDER_B_PIN,FEEDER_PWM_PIN);
@@ -169,17 +166,23 @@ class AutoController
 			start_shoot_time = 0;
 			auto_shoot = false;
 		}
-		void shoot()
-		{
+    void shoot()
+    {
+      feeder.off();
+			shooter.off();
 			auto_shoot = true;
 			start_shoot_time = millis();
-		}
+    }
 		void cancel()
-		{
+    {
 			feeder.off();
 			shooter.off();
 			auto_shoot = false;
 		}
+    bool shooting()
+    {
+      return auto_shoot;
+    }
 		void run()
 		{
 			if (auto_shoot)
@@ -200,34 +203,55 @@ class Comms
     ros::NodeHandle nh;
     std_msgs::String str_msg;
     //ros::Publisher chatter;
-    ros::Subscriber<std_msgs::String> sub;
-
-    static void messageCallback(const std_msgs::String& str_msg)
+    //~ ros::Subscriber<std_msgs::String> sub;
+    ros::ServiceServer<std_srvs::Trigger::Request,std_srvs::Trigger::Response> fireService;
+    ros::ServiceServer<std_srvs::Trigger::Request,std_srvs::Trigger::Response> cancelService;
+    ros::ServiceServer<navigator_msgs::ShooterManual::Request,navigator_msgs::ShooterManual::Response> manualService;
+    static void fireCallback(const std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
     {
-      String s = str_msg.data;
-      if (s == "flyon")
-        shooter.on();
-      else if (s == "flyoff")
-        shooter.off();
-      else if (s == "feedon")
-        feeder.on();
-      else if (s == "feedoff")
-        feeder.off();
-      else if (s == "feedreverse")
-        feeder.reverse();
-      else if (s == "shoot")
-        autoController.shoot();
-      else if (s == "cancel")
-        autoController.cancel();
-      else if (s == "ledon")
-        digitalWrite(13,HIGH);
-      else if (s == "ledoff")
-        digitalWrite(13,LOW);
+      autoController.shoot();
+      res.success = true;
     }
+    static void cancelCallback(const std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+    {
+      autoController.cancel();
+      res.success = true;
+    }
+    static void manualCallback(const navigator_msgs::ShooterManual::Request &req, navigator_msgs::ShooterManual::Response &res)
+    {
+      autoController.cancel();
+      feeder.set(req.feeder);
+      shooter.set(req.shooter);
+    }
+    //~ static void messageCallback(const std_msgs::String& str_msg)
+    //~ {
+      //~ String s = str_msg.data;
+      //~ if (s == "flyon")
+        //~ shooter.on();
+      //~ else if (s == "flyoff")
+        //~ shooter.off();
+      //~ else if (s == "feedon")
+        //~ feeder.on();
+      //~ else if (s == "feedoff")
+        //~ feeder.off();
+      //~ else if (s == "feedreverse")
+        //~ feeder.reverse();
+      //~ else if (s == "shoot")
+        //~ autoController.shoot();
+      //~ else if (s == "cancel")
+        //~ autoController.cancel();
+      //~ else if (s == "ledon")
+        //~ digitalWrite(13,HIGH);
+      //~ else if (s == "ledoff")
+        //~ digitalWrite(13,LOW);
+    //~ }
   public:
     Comms() :
       str_msg(),
-      sub("/shooter/control",&messageCallback)
+      //~ sub("/shooter/control",&messageCallback),
+      fireService("/shooter/fire", &fireCallback),
+      cancelService("/shooter/cancel", &cancelCallback),
+      manualService("/shooter/manual",&manualCallback)
       //chatter("chatter", &str_msg)
     {
       pinMode(13,OUTPUT);
@@ -235,13 +259,16 @@ class Comms
     void init()
     {
       nh.initNode();
-      nh.subscribe(sub);
-      //nh.advertise(chatter);   
+      //~ nh.subscribe(sub);
+      nh.advertiseService(fireService);
+      nh.advertiseService(cancelService);
+      nh.advertiseService(manualService);
     }
     void run()
     {
       nh.spinOnce();
     }
+
 };
 
 Comms com;

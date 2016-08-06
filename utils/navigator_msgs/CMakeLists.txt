@@ -19,6 +19,11 @@ add_message_files(
   Waypoint.msg
 )
 
+add_service_files(
+FILES
+  ShooterManual.srv
+)
+
 generate_messages(
 	DEPENDENCIES 
 	std_msgs 
