@@ -20,12 +20,16 @@ Forrest Voight
 
 ##Getting Involved
 
+[**JOIN THE GOOGLE GROUP!**] (https://groups.google.com/forum/#!forum/uf-navigator-asv)
+
+Click the link above and find where it says to subscribe. All communication goes through Git and the group. 
+
 To get started working with the software on NaviGator please contact Zach Goins at:
 
     zach.a.goins@gmail.com
     918.801.8242
 
-**Let's get coffee and talk about how cool robots are.**
+**Let's go eat food and talk about how cool robots are.**
 
 Peruse the repository, check out some code. This wiki is your master guide for both those things
 
