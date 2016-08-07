@@ -21,52 +21,82 @@
 #include "visualization_msgs/MarkerArray.h"
 #include "geometry_msgs/Point.h"
 
-ros::Publisher results;
-ros::Publisher visualization;
 
-void scanCallback(const sensor_msgs::PointCloud2::ConstPtr& msg)
+
+class ClusterExtraction {
+
+public:
+    ClusterExtraction();
+    void lidar_cb(const sensor_msgs::PointCloud2::ConstPtr& msg);
+
+private:
+    ros::NodeHandle n;
+    ros::Subscriber sub;;
+    ros::Publisher results;
+    ros::Publisher visualization;
+};
+
+
+ClusterExtraction::ClusterExtraction()
+    :
+    n("~"),
+    sub(n.subscribe("/velodyne_points", 1000, &ClusterExtraction::lidar_cb, this)),
+    results(n.advertise<navigator_msgs::Points>("/obstacles", 1000)),
+    visualization(n.advertise<visualization_msgs::MarkerArray>("/obstacle_visualization", 1000))
+    {
+        ros::spin();
+}
+
+void ClusterExtraction::lidar_cb(const sensor_msgs::PointCloud2::ConstPtr& msg)
 {
 
+    // Convert from sensor_msgs::PointCloud2 -> pcl::PointCloud2 -> pcl::PointCLoud<PointXYZ>
+    // The final version is needed for the extraction
     pcl::PCLPointCloud2::Ptr pcl_cloud (new pcl::PCLPointCloud2 ());
-
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr converted_cloud (new pcl::PointCloud<pcl::PointXYZ>);
     pcl_conversions::toPCL(*msg, *pcl_cloud);
-    pcl::fromPCLPointCloud2(*pcl_cloud, *cloud);
+    pcl::fromPCLPointCloud2(*pcl_cloud, *converted_cloud);
 
+    // Create Voxel Grid and pass the cloud to it to be filtered according to the grid size
     pcl::VoxelGrid<pcl::PointXYZ> vg;
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
-    vg.setInputCloud (cloud);
+    vg.setInputCloud (converted_cloud);
     vg.setLeafSize (0.1f, 0.1f, 0.1f);
     vg.filter (*cloud_filtered);
 
+    // Create search tree and pass the filtered cloud to it.
     pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
     tree->setInputCloud (cloud_filtered);
 
+    // Given the search tree of the cloud and the cloud, extract the clusters from the cloud
     std::vector<pcl::PointIndices> cluster_indices;
     pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-    ec.setClusterTolerance (.5); // 10cm
+    ec.setClusterTolerance (.5);
     ec.setMinClusterSize (2);
     ec.setMaxClusterSize (20);
     ec.setSearchMethod (tree);
     ec.setInputCloud (cloud_filtered);
     ec.extract (cluster_indices);
 
+    // Create variables to hold clusters for publishing and visualizing
     navigator_msgs::Points points;
     visualization_msgs::MarkerArray marker_array;
     points.count = 0;
 
-
+    // For each cluster in the cloud...
     for (std::vector<pcl::PointIndices>::const_iterator i = cluster_indices.begin (); i != cluster_indices.end (); ++i)
     {
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZ>);
 
+        // Push all the points in the cloud into an array
+        // This is data that is needed and used below for visualization
         for (std::vector<int>::const_iterator j = i->indices.begin (); j != i->indices.end (); ++j)
         {
             cloud_cluster->points.push_back (cloud_filtered->points[*j]);
         }
 
-
+        // Refactor cloud now that it has points
         cloud_cluster->width = cloud_cluster->points.size ();
         cloud_cluster->height = 1;
         cloud_cluster->is_dense = false;
@@ -75,14 +105,17 @@ void scanCallback(const sensor_msgs::PointCloud2::ConstPtr& msg)
         pcl::PointXYZ min_pt;
         pcl::PointXYZ max_pt;
 
+        // Find the Min and Max points of the cluster in the X,Y frame
         pcl::getMinMax3D(*cloud_cluster, min_pt, max_pt);
-        point.x = (min_pt.x + max_pt.x)/2; 
-        point.y = (min_pt.y + max_pt.y)/2; 
-        point.radius = 3 * (((max_pt.x - min_pt.x) + (max_pt.y - min_pt.y))/2); 
+        point.x = (min_pt.x + max_pt.x)/2;
+        point.y = (min_pt.y + max_pt.y)/2;
+        point.radius = 3 * (((max_pt.x - min_pt.x) + (max_pt.y - min_pt.y))/2);
 
+        // If the point is large enough, add it to the points variable and the vis variable
         if (abs(point.x) < 20 && abs(point.y) < 20)
         {
             points.count++;
+            // Add to points to points array
             points.points.push_back(point);
 
             visualization_msgs::Marker marker;
@@ -107,11 +140,13 @@ void scanCallback(const sensor_msgs::PointCloud2::ConstPtr& msg)
             marker.color.g = 1.0;
             marker.color.b = 0.0;
 
-        marker_array.markers.push_back(marker);
+            // Add marker to marker array
+            marker_array.markers.push_back(marker);
         }
-        
+
     }
 
+    // Fire away
     results.publish(points);
     visualization.publish(marker_array);
 
@@ -121,13 +156,8 @@ int main(int argc, char **argv)
 {
 
   ros::init(argc, argv, "navigator_lidar");
-
-  ros::NodeHandle n;
-  ros::Subscriber sub = n.subscribe("/velodyne_points", 1000, scanCallback);
-  results = n.advertise<navigator_msgs::Points>("/obstacles", 1000);
-  visualization = n.advertise<visualization_msgs::MarkerArray>("/obstacle_visualization", 1000);
-  ros::spin();
-
   return 0;
 
 }
+
+
