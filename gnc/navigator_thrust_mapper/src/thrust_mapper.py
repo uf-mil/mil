@@ -41,6 +41,8 @@ Bibliography:
 
 '''
 
+
+
 import rospy
 import roslib
 import numpy as np
@@ -60,15 +62,18 @@ class Thruster(object):
 
 class Mapper(object):
 
-    def __init__(self, positions, angles, effort_ratio, effort_limit):
+    def __init__(self, thrusters, effort_ratio, effort_limit):
 
         self.boat_cog = np.zeros(2)
         self.des_force = np.zeros(3)
 
-        # list of thruster positions (x,y,theta) in the body frame
-        self.positions = positions
-        # list of thruster angles in body frame
-        self.angles = angles
+        self.positions = []
+        self.angles = []
+
+        for thruster in thrusters:
+            self.positions.append(np.array(([thruster.cog[0], thruster.cog[1]])))
+            self.angles.append(thruster.angle)
+
         # conversion from newtons to firmware units, measured during thruster testing
         self.effort_ratio = effort_ratio
         # limit for the value sent to motor driver firmware
@@ -192,9 +197,11 @@ if __name__ == "__main__":
     FL = Thruster(thruster_FL_cog, thruster_FL_theta)
     FR = Thruster(thruster_FR_cog, thruster_FR_theta)
 
-    # Pass current thruster data and thrust limit to mapper
-    mapper = Mapper([BL.cog, BR.cog, FL.cog, FR.cog], [BL.angle, BR.angle, FL.angle, FR.angle], effort_ratio, effort_limit)
+    # Put the thrusters in a list and give them to the mapper
+    thrusters = [BL, BR, FL, FR]
+    mapper = Mapper(thrusters, effort_ratio, effort_limit)
 
+    # Allocate for the given wrench and thruster locations
     while not rospy.is_shutdown():
         # map thruster at 50hz
         mapper.allocate()
