@@ -1,0 +1,16 @@
+<launch>
+  <param name="use_sim_time" value="true" />
+  <arg name="gui" default="true" />
+
+  <!-- start gazebo server-->
+  <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false"
+    args="$(find navigator_gazebo)/worlds/a_whole_new.world" output="screen"/>
+  <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" if="$(arg gui)" output="screen" />
+
+  <node name="spawn_wamv" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/wamv/wamv.sdf -sdf
+      -x 5 -y 3 -z 1.5 -model wamv"
+    output="screen" />
+
+  <node pkg="navigator_gazebo" type="gazebo_controller.py" name="gazebo_interface"/>
+</launch>

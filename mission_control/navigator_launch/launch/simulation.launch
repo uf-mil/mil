@@ -1,29 +1,38 @@
 <!--
-	This file launches both the simulator as well as the gnc.launch file
-	It contains everything needed to simulate moving the boat
+    This file launches both the simulator as well as the gnc.launch file
+    It contains everything needed to simulate moving the boat
 -->
 
 <launch>
-	<node pkg="navigator_sim_model" type="sim.py" name="navigator_sim_model" output="screen">
-		<rosparam param="initial_position">[10, -5, 0]</rosparam>
-		<param name="boat_mass" value="300" type="double"/>
-		<param name="boat_length" value="4.85" type="double"/>
-		<param name="boat_width" value="1.2" type="double"/>
-		<param name="boat_height" value="0.8" type="double"/>
-    	<rosparam param="BL_offset">[-1.9304, 1.016]</rosparam>
-		<rosparam param="BR_offset">[-1.9304, -1.016]</rosparam>
-    	<rosparam param="FL_offset">[1.5748, 0.6096]</rosparam>
-    	<rosparam param="FR_offset">[1.5748, -0.6096]</rosparam>
-		<rosparam param="effort_ratio">2.7</rosparam>
-		<param name="friction_coefficient_forward" value="200" type="double"/>
-		<param name="friction_coefficient_forward_reduction" value="0.76462" type="double"/>
-		<param name="friction_coefficient_lateral" value="300" type="double"/>
-		<param name="friction_coefficient_lateral_reduction" value="0.0" type="double"/>
-		<param name="friction_coefficient_rotational" value="300" type="double"/>
-		<param name="friction_coefficient_rotational_reduction" value="0.0" type="double"/>
-	</node>
+    <arg name="gazebo" default="true"/>
+    <arg name="gui" default="true"/>
 
-	<include file="$(find navigator_launch)/launch/gnc.launch"/>
-	<include file="$(find navigator_launch)/launch/perception.launch"/>
-	<node name="rqt_gui" pkg="rqt_gui" type="rqt_gui"/>
+    <include file="$(find navigator_launch)/launch/gnc.launch"/>
+    <include file="$(find navigator_launch)/launch/perception.launch"/>
+
+    <include file="$(find navigator_gazebo)/launch/goose.launch" if="$(arg gazebo)">
+    	<arg name="gui" value="$(arg gui)"/>
+    </include>
+    
+    <group unless="$(arg gazebo)">
+        <node pkg="navigator_sim_model" type="sim.py" name="navigator_sim_model" output="screen">
+            <rosparam param="initial_position">[10, -5, 0]</rosparam>
+            <param name="boat_mass" value="300" type="double"/>
+            <param name="boat_length" value="4.85" type="double"/>
+            <param name="boat_width" value="1.2" type="double"/>
+            <param name="boat_height" value="0.8" type="double"/>
+            <rosparam param="BL_offset">[-1.9304, 1.016]</rosparam>
+            <rosparam param="BR_offset">[-1.9304, -1.016]</rosparam>
+            <rosparam param="FL_offset">[1.5748, 0.6096]</rosparam>
+            <rosparam param="FR_offset">[1.5748, -0.6096]</rosparam>
+            <rosparam param="effort_ratio">2.7</rosparam>
+            <param name="friction_coefficient_forward" value="200" type="double"/>
+            <param name="friction_coefficient_forward_reduction" value="0.76462" type="double"/>
+            <param name="friction_coefficient_lateral" value="300" type="double"/>
+            <param name="friction_coefficient_lateral_reduction" value="0.0" type="double"/>
+            <param name="friction_coefficient_rotational" value="300" type="double"/>
+            <param name="friction_coefficient_rotational_reduction" value="0.0" type="double"/>
+        </node>
+        <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui"/>
+    </group>
 </launch>
