@@ -1,11 +1,19 @@
 <?xml version="1.0"?>
 <sdf version="1.5">
   <model name="green">
-    <static>true</static>
+    <static>false</static>
     <link name="body">
       <collision name='bodycol'>
         <geometry>
           <sphere><radius>.11</radius></sphere>
+        </geometry>
+      </collision>
+      <collision name='bodycol2'>
+        <geometry>
+                    <cylinder>
+            <radius>.02</radius>
+            <length>10</length>
+          </cylinder>
         </geometry>
       </collision>
       <visual name="bodyvisual">

@@ -2,5 +2,5 @@ from txros import util
 
 
 @util.cancellableInlineCallbacks
-def run(sub_singleton):
-    yield sub_singleton.move.right(5).go()
+def run(sub):
+    yield sub.move.left(3).go()

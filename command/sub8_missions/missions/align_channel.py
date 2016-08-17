@@ -9,7 +9,7 @@ import numpy as np
 
 
 SEARCH_DEPTH = .65
-SPEED = .1
+SPEED = .3
 
 def catch_error(failure):
     print failure.printTraceback()
@@ -26,7 +26,7 @@ def run(sub):
     s = Searcher(sub, sub.channel_marker.get_pose, pattern)
     resp = None
     try:
-        resp = yield s.start_search(loop=True, timeout=600)
+        resp = yield s.start_search(loop=False, timeout=600)
     except:
         print "MARKER_MISSION - Timed out probably."
         defer.returnValue(None)
@@ -38,7 +38,7 @@ def run(sub):
     yield sub.move.set_position(pose_to_numpy(resp.pose.pose)[0]).go(speed=SPEED)
 
     # How many times should we attempt to reposition ourselves
-    iterations = 3
+    iterations = 2
     # To make sure we don't go too far off.
     est_target_rotations = []
     for i in range(iterations):

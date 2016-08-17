@@ -25,8 +25,7 @@ class AlarmBroadcaster(object):
         # Get ROS name
         self.node_name = rospy.get_name()
 
-        # Alarms associated with this broadcaster
-        # In the future, there will be some background bookkeeping
+        # Alarms associated with this broadcaster\
         self.alarms = []
 
     def add_alarm(self, name, action_required=False, severity=3, problem_description=None, parameters=None):
@@ -79,7 +78,6 @@ class AlarmRaiser(object):
             return False
         else:
             return True
-
 
     def raise_alarm(self, problem_description=None, parameters=None, severity=None):
         '''Arguments are override parameters'''
@@ -146,23 +144,17 @@ class AlarmRaiser(object):
 
 
 class AlarmListener(object):
-    '''
-    Listens for alarms (similar to a TF listener) but can have a callback function (like a ros subscriber).
-
-    If an alarm with the 'alarm_name' is triggered, it (as well as an optional 'args') will be passed
-    to the 'callback_funct'.
-    '''
-    def __init__(self, alarm_name=None, callback_funct=None, args=None):
+    def __init__(self, alarm_name=None, callback_funct=None):
         # This dictionary will allow the user to listen to an arbitrary number of alarms
-        # and have sepreate callbacks and args for each alarm.
+        # and have sepreate callbacks for each alarm.
         self.callback_linker = {}
         self.known_alarms = []
 
         if alarm_name is not None and callback_funct is not None:
             self.callback_linker[alarm_name] = {
                 'callback': callback_funct,
-                'args': args,
-                'active': False,
+                'last_time': None,
+                'cleared': True
             }
 
         rospy.Subscriber('/alarm', Alarm, self.check_alarm, queue_size=100)
@@ -174,15 +166,14 @@ class AlarmListener(object):
         else:
             raise KeyError("{} is not a known alarm to this listener".format(alarm_name))
 
-    def add_listener(self, alarm_name, callback_funct, args=None):
+    def add_listener(self, alarm_name, callback_funct):
         '''
         Creates a new alarm listener and links it to a callback function.
         '''
         self.callback_linker[alarm_name] = {
             'callback': callback_funct,
-            'args': args,
             'last_time': None,
-            'active': False,
+            'cleared': True
         }
 
     def check_alarm(self, alarm):
@@ -199,21 +190,12 @@ class AlarmListener(object):
 
         if found_alarm['last_time'] is None:
             found_alarm['last_time'] = alarm.header.stamp
-
-        # Check if the alarm is new
-        if alarm.header.stamp > found_alarm['last_time']:
+        elif alarm.header.stamp > found_alarm['last_time']:
+            # Check if the alarm is new
             found_alarm['last_time'] = alarm.header.stamp
-            found_alarm['active'] = not alarm.clear
-
-        # Otherwise do nothing
+            found_alarm['cleared'] = alarm.clear
         else:
             return
 
         callback = found_alarm['callback']
-        args = found_alarm['args']
-
-        # Actaully call the callback function and pass args if nessicary.
-        if args is None:
-            callback(alarm)
-        else:
-            callback(alarm, args)
+        callback(alarm)

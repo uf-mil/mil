@@ -102,8 +102,6 @@
     <node pkg="image_proc" type="image_proc" name="down_image_proc" />
   </group>
 
-  <include file="$(find sub8_launch)/launch/subsystems/perception.launch" if="$(arg cameras)" />
-
   <!-- Load model into rviz -->
   <param name="robot_description" command="cat $(find sub8_missions)/tools/sub8/sub8.xml" />
 </launch>

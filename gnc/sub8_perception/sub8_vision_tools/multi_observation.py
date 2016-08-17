@@ -42,12 +42,12 @@ class MultiObservation(object):
             return t_cost
 
         minimization = minimize(
-            method='slsqp',
+            method='bfgs',
             fun=cost,
             # jac=obj_jacobian,
             x0=(5.0, 5.0, 5.0),
             # x0=(self.min_thrusts + self.max_thrusts) / 2,
-            bounds=zip([-15.0, -15.0, -15.0], [15.0, 15.0, 15.0]),
+            # bounds=zip([-15.0, -15.0, -15.0], [15.0, 15.0, 15.0]),
             tol=1e-3
         )
 
@@ -57,11 +57,13 @@ class MultiObservation(object):
             dists.append(norm(np.cross(ray.T, minimization.x - t)))
         dists = np.array(dists)
         threshold = dists.std()
-
-        if threshold < .01:  # May need to be tuned
+        print threshold
+        if threshold < .1:  # May need to be tuned
+            print "MULTI_OBS: No outliers."
             return minimization.x  # No outliers
 
         outliers = np.where(dists > threshold)[0][::-1]
+        print "MULTI_OBS: Removing ({}) outliers.".format(len(outliers))
         for index in outliers:
             del observations[index]
             del cameras[index]

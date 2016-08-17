@@ -20,11 +20,19 @@ def run_mission(req, nh):
         print 'Mission runner got pose'
 
         # == MISSION CODE HERE ===================
-        yield missions.tx_test.run(sub)
+        ret = yield missions.align_channel.run(sub)
+        if ret is None:
+            print "Fuck"
 
+        # Buoys are around 2m from the ground
+        yield sub.to_height(2)
+
+        yield missions.buoy.run(sub)
+        yield sub.move.backward(.5).go()
+        yield sub.move.up(.5).go()
 
         print "DONE"
-        
+
     except Exception:
         traceback.print_exc()
 

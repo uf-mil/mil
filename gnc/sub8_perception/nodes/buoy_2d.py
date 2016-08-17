@@ -85,7 +85,7 @@ class Buoy(object):
         return mask
 
 class BuoyFinder:
-    _min_size = 100
+    _min_size = 50
     '''
     TODO:
         Check for outliers in observations
@@ -164,12 +164,16 @@ class BuoyFinder:
 
     def request_buoy3d(self, srv):
         print "Requesting 3d pose"
+        buoy = self.buoys[srv.target_name]
+        if (len(buoy.observations) > 5) and self.multi_obs is not None:
+            estimated_pose = self.multi_obs.lst_sqr_intersection(buoy.observations, buoy.pose_pairs)
 
-        if (len(self.observations[srv.target_name]) > 5) and self.multi_obs is not None:
-            estimated_pose = self.multi_obs.lst_sqr_intersection(self.observations[srv.target_name], self.pose_pairs[srv.target_name])
+            rospy.loginfo("===================================")
+            rospy.loginfo("BUOY: est pose: {}".format(estimated_pose))
+            rospy.loginfo("===================================")
 
-            self.rviz.draw_sphere(estimated_pose, color=self.draw_colors[srv.target_name],
-                scaling=(0.5, 0.5, 0.5), frame='/map', _id=self.visual_id[srv.target_name])
+            self.rviz.draw_sphere(estimated_pose, color=buoy.draw_colors,
+                scaling=(0.5, 0.5, 0.5), frame='/map', _id=buoy.visual_id)
 
             resp = VisionRequestResponse(
                 pose=PoseStamped(
@@ -181,8 +185,8 @@ class BuoyFinder:
                 found=True
             )
         else:
-            if len(self.observations[srv.target_name]) <= 5:
-                rospy.logerr("Did not attempt search because we did not have enough observations ({})".format(self.observations[srv.target_name]))
+            if len(buoy.observations) <= 5:
+                rospy.logerr("Did not attempt search because we did not have enough observations ({})".format(len(buoy.observations)))
             else:
                 rospy.logerr("Did not attempt search because buoys_2d was not fully initialized")
 
@@ -255,9 +259,9 @@ class BuoyFinder:
         buoy = self.buoys[buoy_type]
         rospy.sleep(.1)
         mask = buoy.segment(img)
-        kernel = np.ones((13,13),np.uint8)
-        mask = cv2.dilate(mask, kernel, iterations = 2)
+        kernel = np.ones((5,5),np.uint8)
         mask = cv2.erode(mask, kernel, iterations = 2)
+        mask = cv2.dilate(mask, kernel, iterations = 2)
 
         draw_mask = np.dstack([mask] * 3)
         draw_mask[:,:,0] *= 0
@@ -308,7 +312,11 @@ class BuoyFinder:
 
             print "BUOY {} - {} observations".format(buoy_type, len(buoy.observations))
             if len(buoy.observations) > 5:
-                est = self.multi_obs.lst_sqr_intersection(self.observations[buoy_type], self.pose_pairs[buoy_type])
+                est = self.multi_obs.lst_sqr_intersection(buoy.observations, buoy.pose_pairs)
+
+                rospy.loginfo("===================================")
+                rospy.loginfo("BUOY: est pose: {}".format(est))
+                rospy.loginfo("===================================")
 
                 self.rviz.draw_sphere(est, color=buoy.draw_colors,
                     scaling=(0.5, 0.5, 0.5), frame='/map', _id=buoy.visual_id)

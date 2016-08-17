@@ -68,6 +68,8 @@ CMakeLists.txt
 *.obj
 !transdec.obj
 
+*.dic
+pedometry.txt
 .DS_STORE
 # Autosave files from QtCreator
 *.autosave

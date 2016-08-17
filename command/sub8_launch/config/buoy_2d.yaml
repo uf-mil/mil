@@ -1,4 +1,4 @@
-use_boost          :  True
+use_boost          :  False
 red_classifier     :  red_gentle_5tree_15depth.dic
 green_classifier   :  gentle_7tree_11depth.dic
 yellow_classifier  :  gentle_5tree_5depth.dic
