@@ -5,3 +5,5 @@
 #####This is the repository for UF's NaviGator ASV. It contains all software packages specific to NaviGator
 
 ###To familiarize yourself with the repository view the [Getting Started](https://github.com/uf-mil/RobotX/wiki/Getting-started) page in the Navigator [wiki](https://github.com/uf-mil/RobotX/wiki).
+
+[![Build Status](https://semaphoreci.com/api/v1/uf-mil/navigator-2/branches/pull-request-30/badge.svg)](https://semaphoreci.com/uf-mil/navigator-2)
