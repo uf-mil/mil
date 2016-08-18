@@ -16,7 +16,11 @@ Ralph Leyva
 
 Jason Nez
 
+David Soto
+
 Forrest Voight
+
+Matthew Langford
 
 ##Getting Involved
 
