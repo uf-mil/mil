@@ -1,6 +1,6 @@
 ##General Software TODO list
 
-If you want to get involved this is a great place to start! If you're serious about a mission, put your name there so we know who is working on what.
+If you want to get involved this is a great place to start! If you're serious about a mission, put your name there so we know who is working on what. _Please note_ this list is far from comprehensive, so if you think of something that needs to be done add it!
 
 ### Command
 * Mission runner __[MATT]__
