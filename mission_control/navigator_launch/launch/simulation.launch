@@ -8,13 +8,13 @@
     <arg name="gui" default="true"/>
 
     <include file="$(find navigator_launch)/launch/gnc.launch"/>
-    <include file="$(find navigator_launch)/launch/perception.launch"/>
 
     <include file="$(find navigator_gazebo)/launch/goose.launch" if="$(arg gazebo)">
     	<arg name="gui" value="$(arg gui)"/>
     </include>
     
     <group unless="$(arg gazebo)">
+        <include file="$(find navigator_launch)/launch/perception.launch"/>
         <node pkg="navigator_sim_model" type="sim.py" name="navigator_sim_model" output="screen">
             <rosparam param="initial_position">[10, -5, 0]</rosparam>
             <param name="boat_mass" value="300" type="double"/>

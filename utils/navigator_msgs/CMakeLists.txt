@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
 	)
 
 add_message_files(
+  DIRECTORY msg
   FILES
   Acceleration.msg
   PoseTwist.msg
@@ -17,6 +18,12 @@ add_message_files(
   Point.msg
   Points.msg
   Waypoint.msg
+)
+
+add_service_files(
+  DIRECTORY srv
+  FILES
+  VisionRequest.srv
 )
 
 generate_messages(

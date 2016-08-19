@@ -32,7 +32,6 @@ struct Thruster {
 
     // Direction is give as rotation about the z axis.
     // This assumes that it's ONLY a 2d rotation about the z-axis.
-    double PI = 3.14159265358979323;
     direction = math::Vector3(cos(v_rotation), sin(v_rotation), 0);
 
     ROS_INFO("%s position: %f, %f, %f", param_name.c_str(), position[0], position[1], position[2]);

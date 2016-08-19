@@ -40,9 +40,6 @@ Bibliography:
         see: http://repository.tudelft.nl/assets/uuid:4c9685ac-3f76-41c0-bae5-a2a96f4d757e/DP_Report_FINAL.pdf
 
 '''
-
-
-
 import rospy
 import roslib
 import numpy as np
@@ -79,35 +76,29 @@ class Mapper(object):
         # limit for the value sent to motor driver firmware
         self.effort_limit = effort_limit
 
-        self.full_kill = False
-        self.half_kill = False
+        self.kill = False
+        self.docking_alarm = False
 
-        self.full_kill_listener = AlarmListener('full_kill', self.full_kill_cb)
-        self.half_kill_listener = AlarmListener('half_kill', self.half_kill_cb)
-        self.revive_listener = AlarmListener('revive', self.revive_cb)
+        self.kill_listener = AlarmListener('kill', self.kill_cb)
+        self.docking_alarm_listener = AlarmListener('docking', self.docking_alarm_cb)
 
         # ROS data
-        self.BL_pub = rospy.Publisher("/BL_motor/cmd" , Command, queue_size = 1)
-        self.BR_pub = rospy.Publisher("/BR_motor/cmd" , Command, queue_size = 1)
-        self.FL_pub = rospy.Publisher("/FL_motor/cmd" , Command, queue_size = 1)
-        self.FR_pub = rospy.Publisher("/FR_motor/cmd" , Command, queue_size = 1)
+        self.BL_pub = rospy.Publisher("/BL_motor/cmd" , Command, queue_size=1)
+        self.BR_pub = rospy.Publisher("/BR_motor/cmd" , Command, queue_size=1)
+        self.FL_pub = rospy.Publisher("/FL_motor/cmd" , Command, queue_size=1)
+        self.FR_pub = rospy.Publisher("/FR_motor/cmd" , Command, queue_size=1)
         rospy.Subscriber("/wrench/cmd", WrenchStamped, self.wrench_cb)
 
-    def full_kill_cb(self, msg):
-        self.full_kill = True
+    def kill_cb(self, alarm):
+        self.kill = not alarm.clear
 
-    def half_kill_cb(self, msg):
-        self.half_kill = True
-
-    def revive_cb(self, msg):
-        self.half_kill = False
-        self.full_kill = False
+    def docking_alarm_cb(self, alarm):
+        self.docking_alarm = not alarm.clear
 
     def wrench_cb(self, msg):
         ''' Grab new wrench
             This is the 'b' in Ax = b
         '''
-
         force = msg.wrench.force
         torque = msg.wrench.torque
         # Set desired force and torque as numpy array
@@ -115,7 +106,6 @@ class Mapper(object):
 
     def thrust_matrix(self):
         ''' Iterate through thruster positions and create thruster trans matrix'''
-
         thruster_matrix = []
         # loop through all sub positions and compute collumns of A
         for thruster_number, position in enumerate(self.positions):
@@ -155,12 +145,12 @@ class Mapper(object):
         FR_msg.setpoint = np.clip(fr * self.effort_ratio, -self.effort_limit, self.effort_limit)
 
         # publish ROS messages
-        if self.full_kill is True:
+        if self.kill is True:
             self.BL_pub.publish(Command(setpoint=0))
             self.BR_pub.publish(Command(setpoint=0))
             self.FL_pub.publish(Command(setpoint=0))
             self.FR_pub.publish(Command(setpoint=0))
-        elif self.half_kill is True:
+        elif self.docking_alarm is True:
             self.BL_pub.publish(BL_msg)
             self.BR_pub.publish(BR_msg)
             self.FL_pub.publish(Command(setpoint=0))
@@ -170,7 +160,6 @@ class Mapper(object):
             self.BR_pub.publish(BR_msg)
             self.FL_pub.publish(FL_msg)
             self.FR_pub.publish(FR_msg)
-
 
 
 if __name__ == "__main__":
