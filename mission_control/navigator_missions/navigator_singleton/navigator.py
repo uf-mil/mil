@@ -2,12 +2,13 @@
 from __future__ import division
 import os
 import numpy as np
+import importlib
 from twisted.internet import defer
-from txros import action, util, tf, serviceclient, NodeHandle
+from txros import action, util, tf, NodeHandle
 from uf_common.msg import MoveToAction, PoseTwistStamped
 from nav_msgs.msg import Odometry
 from navigator_tools import rosmsg_to_numpy, odometry_to_numpy
-from navigator_msgs.srv import *
+import navigator_msgs.srv as navigator_svrs
 # from navigator import pose_editor
 from pose_editor import PoseEditor2
 import rospkg
@@ -25,7 +26,8 @@ class Navigator(object):
     def _init(self):
         self._moveto_action_client = yield action.ActionClient(self.nh, 'moveto', MoveToAction)
         self._odom_sub = yield self.nh.subscribe('odom', Odometry)
-
+        
+        self._change_wrench = yield self.nh.get_service_client('/change_wrench', navigator_svrs.WrenchSelect)
         #self._enu_odom_sub = yield self.nh.subscribe('world_odom', Odometry)
         self.tf_listener = yield tf.TransformListener(self.nh)
 
@@ -54,6 +56,10 @@ class Navigator(object):
         #return PoseEditor2(self.pose)
 
     @util.cancellableInlineCallbacks
+    def change_wrench(self, source):
+        yield self._change_wrench(navigator_svrs.WrenchSelectRequest(source))
+
+    @util.cancellableInlineCallbacks
     def vision_request(self, request_name, **kwargs):
         assert request_name in self._vision_proxies.keys(), "Unknown request: {}".format(request_name)
 
@@ -70,9 +76,8 @@ class Navigator(object):
         config_file = os.path.join(rospack.get_path('navigator_missions'), 'navigator_singleton', fname)
         f = yaml.load(open(config_file, 'r'))
         for name in f:
-            # Maybe get getattr here
-            s_type = eval(f[name]["type"])
-            s_req = eval("{}Request".format(f[name]["type"]))
+            s_type = getattr(navigator_svrs, f[name]["type"])
+            s_req = getattr(navigator_svrs, "{}Request".format(f[name]["type"]))
             s_client = self.nh.get_service_client(f[name]["topic"], s_type)
             self._vision_proxies[name] = {'client': s_client, 'request': s_req, 'args': f[name]['args']}
 
