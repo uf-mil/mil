@@ -30,6 +30,7 @@ If you want to get involved this is a great place to start! If you're serious ab
 * Battery Monitor
 * Keyboard driving from camera view
 * Incorporate error/alarm display
+* Graphs for topics that change with time (rpm, acceleration, etc)
 
 ### Refactoring
 * Navigation stack purge __[JASON]__
