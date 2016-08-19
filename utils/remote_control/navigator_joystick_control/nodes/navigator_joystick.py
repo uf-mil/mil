@@ -10,7 +10,7 @@ from navigator_tools import make_header
 from geometry_msgs.msg import WrenchStamped, Twist, PoseStamped
 from sensor_msgs.msg import Joy
 from nav_msgs.msg import Odometry
-from navigator_msg_multiplexer.srv import wrench_arbiter
+from navigator_msgs.srv import WrenchSelect
 from kill_handling.broadcaster import KillBroadcaster
 from sub8_alarm import AlarmBroadcaster
 
@@ -53,7 +53,7 @@ class Joystick(object):
         self.wrench_pub = rospy.Publisher("/wrench/rc", WrenchStamped, queue_size=1)
         self.kb = KillBroadcaster(id='station_hold', description='Reset Pose')
         #rospy.wait_for_service('/change_wrench')
-        self.wrench_changer = rospy.ServiceProxy('/change_wrench', wrench_arbiter)
+        self.wrench_changer = rospy.ServiceProxy('/change_wrench', WrenchSelect)
 
         rospy.Subscriber("joy", Joy, self.joy_cb)
         rospy.Subscriber("odom", Odometry, self.odom_cb)

@@ -44,7 +44,8 @@ import rospy
 import roslib
 import numpy as np
 import numpy.linalg
-import math,tf,threading
+import math
+import tf
 from geometry_msgs.msg import WrenchStamped
 from std_msgs.msg import Float32MultiArray, Bool
 from roboteq_msgs.msg import *
@@ -164,7 +165,7 @@ class Mapper(object):
 
 if __name__ == "__main__":
 
-    rospy.init_node('primitive_driver')
+    rospy.init_node('thruster_mapper')
 
     # Grab params from launch file
     thruster_BL_cog = rospy.get_param('~thruster_BL_cog')
