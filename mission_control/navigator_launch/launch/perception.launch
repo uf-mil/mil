@@ -1,0 +1,10 @@
+<launch>
+	<node name="navigator_lidar_oa_cluster_extraction" pkg="navigator_lidar_oa" type="cluster_extraction"/>
+
+	<!-- TODO:
+		* Add cameras to this launch
+		* Add lidar driver to boat. This involves downloading and building from source to get the VLP16 driver
+		* Add lidar to this launch
+		* Remap Lidar frame from "velodyne" to "lidar"
+	-->
+</launch>

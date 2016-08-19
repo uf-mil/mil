@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<sdf version="1.5">
+  <model name="wamv">
+    <link name="base_link">
+      <!-- TODO: Tune these -->
+      <velocity_decay>
+        <linear>0.005</linear>
+        <angular>0.001</angular>
+      </velocity_decay>
+      <inertial>
+        <mass>250</mass>
+        <inertia>
+          <ixx>900.0</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>900.0</iyy>
+          <iyz>0</iyz>
+          <izz>900.0</izz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <geometry>
+           <mesh>
+            <uri>file://wamv/wamv.dae</uri>
+            <scale>.0254 .0254 .0254</scale> <!-- inches to meters -->
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <geometry>
+           <mesh>
+            <uri>file://wamv/wamv.dae</uri>
+            <scale>.0254 .0254 .0254</scale> <!-- inches to meters -->
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+
+    <plugin name="navigator_buoyancy" filename="libnavigator_buoyancy.so">
+      <fluid_density>1000</fluid_density>
+      <drag_coefficient>1</drag_coefficient>
+      <link name="base_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>2</volume>
+      </link>
+    </plugin>
+    <plugin name="navigator_thurster" filename="libnavigator_thrusters.so">
+      <link>base_link</link>
+    </plugin>
+
+  </model>
+</sdf>

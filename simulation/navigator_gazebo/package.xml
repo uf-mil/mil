@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package format="2">
+
+  <name>navigator_gazebo</name>
+  <version>1.1.0</version>
+  <description>The navigator_gazebo package</description>
+
+  <maintainer email="matthew.langford95@gmail.com">Matthew</maintainer>
+
+  <depend>std_msgs</depend>
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>gazebo_ros</depend>
+  <depend>message_generation</depend>
+  <build_export_depend>message_runtime</build_export_depend>
+  <exec_depend>message_runtime</exec_depend>
+
+  <license>MIT</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export>
+    <!-- The secret sauce -->
+    <gazebo_ros
+      gazebo_media_path="${prefix}"
+      gazebo_plugin_path="${prefix}/lib"
+      gazebo_model_path="${prefix}/models"
+      gazebo_resource_path="${prefix}:/" />
+  </export>
+</package>

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>navigator_lidar</name>
+  <name>navigator_lidar_oa</name>
   <version>1.0.0</version>
   <description>The paracosm raw testing package</description>
 
