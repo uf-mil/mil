@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 from __future__ import division
+
 import os
 import numpy as np
-import importlib
+import yaml
+
+import rospkg
 from twisted.internet import defer
 from txros import action, util, tf, NodeHandle
+from pose_editor import PoseEditor2
+
 from uf_common.msg import MoveToAction, PoseTwistStamped
 from nav_msgs.msg import Odometry
 from navigator_tools import rosmsg_to_numpy, odometry_to_numpy
 import navigator_msgs.srv as navigator_svrs
-# from navigator import pose_editor
-from pose_editor import PoseEditor2
-import rospkg
-import yaml
 
 
 class Navigator(object):
@@ -42,18 +43,19 @@ class Navigator(object):
 
     @property
     def move_rel(self):
-        return PoseEditor2(self._moveto_action_client, 'base_link', [0, 0, 0], [0, 0, 0 ,1], self.tf_listener)
+        # Move realtive to the boat location when .go() is called.
+        # Not implemented due to C3 not converting between frames
+        raise NotImplementedError
+        #return PoseEditor2(self._moveto_action_client, 'base_link', [0, 0, 0], [0, 0, 0 ,1], self.tf_listener)
 
     @property
     def move(self):
         return PoseEditor2(self._moveto_action_client, 'enu', *self.pose)
 
     def move_to(self, frame_id, position, orientation=[0, 0, 0, 1]):
-        # TOOD
-        # ps = PoseStamped()
-        # self.tf_listenerf
+        # Move to point in arbitrary frame.
+        # See move_rel note
         raise NotImplementedError
-        #return PoseEditor2(self.pose)
 
     @util.cancellableInlineCallbacks
     def change_wrench(self, source):
@@ -80,11 +82,6 @@ class Navigator(object):
             s_req = getattr(navigator_svrs, "{}Request".format(f[name]["type"]))
             s_client = self.nh.get_service_client(f[name]["topic"], s_type)
             self._vision_proxies[name] = {'client': s_client, 'request': s_req, 'args': f[name]['args']}
-
-    # @util.cancellableInlineCallbacks
-    # def last_pose(self):
-    #     last_pose = yield self._odom_sub.get_next_message()
-    #     defer.returnValue(last_pose)
 
 @util.cancellableInlineCallbacks
 def main():
