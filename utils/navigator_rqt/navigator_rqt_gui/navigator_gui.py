@@ -8,7 +8,7 @@ from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
 from python_qt_binding.QtGui import QWidget
 import python_qt_binding.QtGui as qtg
-from navigator_msg_multiplexer.srv import wrench_arbiter
+from navigator_msgs.srv import WrenchSelect
 import time
 from geometry_msgs.msg import Point
 

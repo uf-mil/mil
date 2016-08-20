@@ -161,7 +161,7 @@ class MRAC_Controller:
         # Total distance that will be traversed for this waypoint
         self.traversal = 0
         # Reference states
-        self.p_ref = np.array([0, 0])
+        self.p_ref = None #np.array([0, 0])
         self.v_ref = np.array([0, 0])
         self.q_ref = np.array([0, 0, 0, 0])
         self.w_ref = 0
@@ -191,14 +191,13 @@ class MRAC_Controller:
         self.wrench_pub = rospy.Publisher("/wrench/autonomous", WrenchStamped, queue_size=0)
         self.pose_ref_pub = rospy.Publisher("pose_ref", PoseStamped, queue_size=0)
         self.adaptation_pub = rospy.Publisher("adaptation", WrenchStamped, queue_size=0)
-        rospy.spin()
 
+        rospy.spin()
 
     def set_traj(self, msg):
         '''
         Sets instantaneous reference state.
         Convert twist to world frame for controller math.
-
         '''
         self.p_ref = np.array([msg.posetwist.pose.position.x, msg.posetwist.pose.position.y])
         self.q_ref = np.array([msg.posetwist.pose.orientation.x, msg.posetwist.pose.orientation.y, msg.posetwist.pose.orientation.z, msg.posetwist.pose.orientation.w])
@@ -211,12 +210,10 @@ class MRAC_Controller:
         self.a_ref = R.dot(np.array([msg.posetwist.acceleration.linear.x, msg.posetwist.acceleration.linear.y, msg.posetwist.acceleration.linear.z]))[:2]
         self.aa_ref = R.dot(np.array([msg.posetwist.acceleration.angular.x, msg.posetwist.acceleration.angular.y, msg.posetwist.acceleration.angular.z]))[2]
 
-
     def set_waypoint(self, msg):
         '''
         Sets desired waypoint ("GO HERE AND STAY").
         Resets reference model to current state (i.e. resets trajectory generation).
-
         '''
         self.p_des = np.array([msg.pose.position.x, msg.pose.position.y])
         self.q_des = np.array([msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w])
@@ -228,7 +225,6 @@ class MRAC_Controller:
         self.a_ref = np.array([0, 0])
         self.aa_ref = 0
 
-
     def get_command(self, msg):
         '''
         Publishes the wrench for this instant.
@@ -237,6 +233,9 @@ class MRAC_Controller:
         used for getting the wrench which is then later mapped elsewhere).
 
         '''
+        if self.p_ref is None:
+            return  # C3 is killed
+
         # Compute timestep from interval between this message's stamp and last's
         if self.last_odom is None:
             self.last_odom = msg
@@ -339,7 +338,6 @@ class MRAC_Controller:
         adaptation_msg.wrench.torque.z = (self.dist_est + self.drag_effort)[2]
         self.adaptation_pub.publish(adaptation_msg)
 
-
     def increment_reference(self):
         '''
         Steps the model reference (trajectory to track) by one self.timestep.
@@ -393,7 +391,6 @@ class MRAC_Controller:
         self.v_ref = self.v_ref + (self.a_ref * self.timestep)
         self.w_ref = self.w_ref + (self.aa_ref * self.timestep)
 
-
     def toggle_learning(self, bool_msg):
         '''
         Callback for the /mrac_learn topic. Sets
@@ -406,7 +403,6 @@ class MRAC_Controller:
             print("MRAC controller is learning.")
         else:
             print("MRAC controller haulted learning.")
-
 
     def thruster_mapper(self, wrench, B):
         '''

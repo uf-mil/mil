@@ -4,20 +4,21 @@
         Nodes launched:
             * thruster mapper
             * pose_controller
-            * sdgps_solution_ros_bridge
             * wrench_arbiter
             * joystick_wrench
             * joy_node
-            * ins_tf
-            * lidar_tf
-            * forward_camera_tf
+            * alarm_handler
+            * tf
+              - ins_tf
+              - lidar_tf
+              - forward_camera_tf
+              - right_camera_tf
+              - down_camera_tf
+              - shooter_tf
 
         It takes in twp parameters
         * 'sim' to launch only certain nodes.
         * 'rc' to decide whether to launch the xbox remote control nodes
-
-        Nodes affected by the 'sim' arg:
-            * sdgps_solution_ros_bridge
 
         Nodes affected by the 'rc' arg:
             * joystick_wrench
@@ -43,14 +44,18 @@
         <rosparam param="effort_ratio">1.35</rosparam><!-- map 220 newtons to 300 effort units -->
         <rosparam param="effort_limit">400</rosparam>
     </node>
+    
+    <include file="$(find navigator_launch)/launch/tf.launch"/>
 
+    <node pkg="sub8_alarm" type="alarm_handler.py" name="alarm_handler"/>
+    
     <node name="wrench_arbiter" pkg="navigator_msg_multiplexer" type="wrench_arbiter.py"/>
 
     <node name="pose_controller" pkg="navigator_controller" type="mrac_controller.py"/>
     <!-- can be type="mrac_controller.py" OR type="run_nn_controller" if you have that dependency
     <https://github.com/jnez71/neural_control>-->
 
-    <node if="$(arg rc)" pkg="navigator_joystick_control" type="navigator_joystick.py" name="joystick_wrench">
+    <node if="$(arg rc)" pkg="navigator_joystick_control" type="navigator_joystick.py" name="joystick_wrench" output="screen">
         <param name="force_scale" value="600" type="double"/>
         <param name="torque_scale" value="500" type="double"/>
     </node>
@@ -60,10 +65,6 @@
         <param name="deadzone" value="0.12" />
         <param name="autorepeat_rate" value="5"/>
     </node>
-
-<!--     <node pkg="tf" type="static_transform_publisher" name="ins_tf" args=".37084 .0.05715 .7493  0 0 0 1  /base_link /ins 100"/>
-    <node pkg="tf" type="static_transform_publisher" name="lidar_tf" args=".5334 0.0127 .7493  0 0 0 1  /base_link /lidar 100" />
-    <node pkg="tf" type="static_transform_publisher" name="forward_camera_tf" args=".6096 -.254 .762  0 0 0 1  /base_link /camera 100" /> -->
 
     <node name="move_helper" pkg="navigator_tools" type="move_helper.py"/>
 

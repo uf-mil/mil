@@ -13,8 +13,6 @@ find_package(catkin
     message_generation
 )
 
-catkin_python_setup()
-
 
 find_package(gazebo REQUIRED)
 link_directories(${GAZEBO_LIBRARY_DIRS})
@@ -52,8 +50,6 @@ target_link_libraries(
         ${catkin_LIBRARIES}
         ${GAZEBO_LIBRARIES}
 )
-
-generate_messages(DEPENDENCIES std_msgs)
 
 add_dependencies(navigator_thrusters
     navigator_msgs_generate_messages_cpp

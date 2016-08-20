@@ -19,8 +19,7 @@ class GazeboInterface(object):
         self.state_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self.state_cb)
         self.state_pub = rospy.Publisher('odom', Odometry, queue_size=1)
 
-        self.odom_freq = 0.03
-        rospy.Timer(rospy.Duration(self.odom_freq), self.publish_odom)
+        rospy.Timer(rospy.Duration(0.03), self.publish_odom)
 
     def publish_odom(self, *args):
         if self.last_odom is None:

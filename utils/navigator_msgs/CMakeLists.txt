@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
 	)
 
 add_message_files(
+  DIRECTORY msg
   FILES
   Acceleration.msg
   PoseTwist.msg
@@ -20,8 +21,11 @@ add_message_files(
 )
 
 add_service_files(
-FILES
+  DIRECTORY srv
+  FILES
   ShooterManual.srv
+  VisionRequest.srv
+  WrenchSelect.srv
 )
 
 generate_messages(
