@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+from txros import util, NodeHandle
+from twisted.internet import defer, reactor
+
+from navigator_singleton.navigator import Navigator
+import nav_missions
+
+import argparse
+
+
+@util.cancellableInlineCallbacks
+def main():
+    nh, args = yield NodeHandle.from_argv_with_remaining("navigator_mission_runner")
+    available_missions = [mission_name for mission_name in dir(nav_missions) if not mission_name.startswith('_')]
+
+    parser = argparse.ArgumentParser(description='Command Line Mission Runner',
+        usage='Pass any pose editor command with an argument. \n\t forward 1 (moves forward 1 meter) \n\t backward 2ft (moves backward 2 feet)')
+    parser.add_argument('command', type=str,
+        help='Pose editor command to run')
+    parser.add_argument('argument', type=str,
+        help='An argument to pass to the command (distance or angle usally). Optionally a unit can be added if a non-standard unit is desired.')
+    parser.add_argument('-s', '--speed', type=float, default=-1,
+        help='Optional speed in m/s')
+
+    args = parser.parse_args(args[1:])
+
+    n = yield Navigator(nh)._init()
+    movement = getattr(n.move, args.command)
+
+    unit = 'm'
+    amount = args.argument
+    # See if there's a non standard unit at the end of the argument
+    if not args.argument[-1].isdigit():
+        last_digit_index = [i for i,c in enumerate(args.argument) if c.isdigit()][-1] + 1
+        amount = float(args.argument[:last_digit_index])
+        unit = args.argument[last_digit_index:]
+
+    # Actually run the command
+    print "Moving {}{}".format(amount, unit)
+    yield movement(float(amount), unit).go(speed=args.speed)
+    print "Done!"
+    defer.returnValue(reactor.stop())
+
+if __name__ == '__main__':
+    reactor.callWhenRunning(main)
+    reactor.run()

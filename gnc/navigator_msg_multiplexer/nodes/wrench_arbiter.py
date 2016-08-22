@@ -32,7 +32,7 @@ import rospy
 import roslib
 import numpy,math,tf,threading
 from geometry_msgs.msg import WrenchStamped
-from navigator_msg_multiplexer.srv import wrench_arbiter
+from navigator_msgs.srv import WrenchSelect
 from std_msgs.msg import Bool
 
 rospy.init_node('wrench_arbiter')
@@ -52,7 +52,7 @@ class control_arb(object):
         self.control = None
 
         # ROS stuff - Wrench changing service, final output wrench, and the three input sources
-        rospy.Service('change_wrench', wrench_arbiter, self.change_wrench)
+        rospy.Service('change_wrench', WrenchSelect, self.change_wrench)
         self.wrench_pub = rospy.Publisher("/wrench/cmd", WrenchStamped, queue_size = 1)
         rospy.Subscriber("/wrench/rc", WrenchStamped, self.rc_cb)
         rospy.Subscriber("/wrench/autonomous", WrenchStamped, self.autonomous_cb)

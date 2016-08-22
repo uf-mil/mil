@@ -45,6 +45,8 @@
         <rosparam param="effort_limit">400</rosparam>
     </node>
     
+    <include file="$(find navigator_launch)/launch/tf.launch"/>
+
     <node pkg="sub8_alarm" type="alarm_handler.py" name="alarm_handler"/>
     
     <node name="wrench_arbiter" pkg="navigator_msg_multiplexer" type="wrench_arbiter.py"/>
@@ -63,7 +65,6 @@
         <param name="deadzone" value="0.12" />
         <param name="autorepeat_rate" value="5"/>
     </node>
-
 
     <node name="move_helper" pkg="navigator_tools" type="move_helper.py"/>
 

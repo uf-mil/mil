@@ -24,6 +24,7 @@ add_service_files(
   DIRECTORY srv
   FILES
   VisionRequest.srv
+  WrenchSelect.srv
 )
 
 generate_messages(

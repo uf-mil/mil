@@ -1,0 +1,13 @@
+# Example vision service
+#
+# NAME:
+#   service: SERVICE_NAME
+#   type: SRV_TYPE
+#   args: {}  # Dictionary to pass to service request
+#
+# Services need to be in navigator_msgs/srv/
+
+circle:
+  topic: /shape_finder
+  type: VisionRequest
+  args: {'target_name': "testing"}

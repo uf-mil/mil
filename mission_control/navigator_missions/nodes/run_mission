@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+from txros import util, NodeHandle
+from twisted.internet import defer, reactor
+
+from navigator_singleton.navigator import Navigator
+import nav_missions
+
+import argparse
+
+
+@util.cancellableInlineCallbacks
+def main():
+    nh, args = yield NodeHandle.from_argv_with_remaining("navigator_mission_runner")
+    available_missions = [mission_name for mission_name in dir(nav_missions)]
+
+    parser = argparse.ArgumentParser(description='Mission Runner')
+    parser.add_argument('missions', type=str, nargs='+',
+                        help='Misison(s) from the navigator_missions folder to run.')
+
+    args = parser.parse_args(args[1:])
+
+    if "list" in args.missions:
+        print "\nAvailable missions:\n   *",
+        print '\n   * '.join(available_missions)
+        print
+        defer.returnValue(reactor.stop())
+
+    n = Navigator(nh)._init()
+
+    for mission in args.missions:
+        # Make sure all missions exist before we run
+        assert mission in available_missions, "'{}' mission not found".format(mission)
+    
+    for mission in args.missions:
+        to_run = getattr(nav_missions, mission)
+        yield to_run.main((yield n))
+
+    defer.returnValue(reactor.stop())
+
+if __name__ == '__main__':
+    reactor.callWhenRunning(main)
+    reactor.run()
