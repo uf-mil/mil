@@ -8,6 +8,6 @@
 # Services need to be in navigator_msgs/srv/
 
 circle:
-  topic: /circle_finder
+  topic: /shape_finder
   type: VisionRequest
   args: {'target_name': "testing"}
