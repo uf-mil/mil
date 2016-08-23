@@ -37,8 +37,6 @@ If you want to get involved this is a great place to start! If you're serious ab
 * Modify package structure
 
 ### Install Script
-* Build and install txros
-* Source bashrc after completition
 * Rename navigator_ws to mil_ws
 * Install git-lfs, tmux
 * Download/build velodyne drivers from source
