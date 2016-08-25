@@ -25,25 +25,25 @@ If you want to get involved this is a great place to start! If you're serious ab
 
 ### GUI Improvements
 * RVIZ model spawing __[MATT]__
-* Update for new alarms
-* Speedometer
-* Battery Monitor
-* Keyboard driving from camera view
-* Incorporate error/alarm display
-* Graphs for topics that change with time (rpm, acceleration, etc)
+* Update for new alarms __[ANTHONY]__
+* Speedometer __[ANTHONY]__
+* Battery Monitor __[ANTHONY]__
+* Keyboard driving from camera view __[ANTHONY]__
+* Incorporate error/alarm display __[ANTHONY]__
+* Graphs for topics that change with time (rpm, acceleration, etc) __[ANTHONY]__
 
 ### Refactoring
 * Navigation stack purge __[JASON]__
 * Modify package structure
 
 ### Install Script
-* Rename navigator_ws to mil_ws
-* Install git-lfs, tmux
-* Download/build velodyne drivers from source
-* Figure out dependency caching (mainly ROS) for semaphore
+* Rename navigator_ws to mil_ws __[ANTHONY]__
+* Install git-lfs, tmux __[ANTHONY]__
+* Download/build velodyne drivers from source __[ANTHONY]__
+* Figure out dependency caching (mainly ROS) for semaphore __[ANTHONY]__
 
 ### Networking
-* Global control for lab (ip addresses etc)
+* Global control for lab (ip addresses etc) __[ANTHONY]__
 
 ### Documentation
 _Documentation on the wiki is needed for the following key system components_
