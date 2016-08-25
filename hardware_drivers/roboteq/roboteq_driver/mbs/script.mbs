@@ -17,7 +17,7 @@ setcommand(_VAR, 1, -1)
 ' www.roboteq.com/index.php/docman/motor-controllers-documents-and-files/documentation/user-manual/7-nextgen-controllers-user-manual/file
 
 setconfig(_ECHOF, 1) ' Serial echo off (p195)
-setconfig(_RWD, 1000) ' Watchdog timeout, milliseconds (p195)
+setconfig(_RWD, 0) ' Watchdog timeout, milliseconds (p195)
 setconfig(_AMOD, 1, 1) ' Analog input 1 absolute mode
 setconfig(_AMOD, 2, 1) ' Analog input 2 absolute mode
 
@@ -29,18 +29,18 @@ for ch = 1 andwhile ch <= MAX_CHANNELS evaluate ch++
 	' Encoder, speed config (p208, p221)
 	setconfig(_EMOD, ch, 0)
 	setconfig(_EPPR, ch, 1024)
-	setconfig(_MXRPM, ch, 100)
+	setconfig(_MXRPM, ch, 500)
 	setconfig(_CLERD, ch, 0)
 
 	' Current limit (p216)
-	setconfig(_ALIM, ch, 600)
+	setconfig(_ALIM, ch, 650)
 	'setconfig(_ATGA, ch, 0)
 	setconfig(_ATGD, ch, 1000)
-	setconfig(_ATRIG, ch, 550)
+	setconfig(_ATRIG, ch, 750)
 
 	' Max acceleration/deceleration (p219)
-	setconfig(_MAC, ch, 400)
-	setconfig(_MDEC, ch, 400)
+	setconfig(_MAC, ch, 250)
+	setconfig(_MDEC, ch, 250)
 next
 
 top:
