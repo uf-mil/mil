@@ -12,13 +12,15 @@ class NetworkCheck(object):
     '''
     def __init__(self, timeout=2.0):
         self.timeout = rospy.Duration(timeout)
+        self.last_time = rospy.Time.now()
+        self.last_msg = ''
         self.sub = rospy.Subscriber('/keep_alive', String, self.got_network_msg, queue_size=1)
 
         self.alarm_broadcaster, self.alarm = single_alarm('kill', severity=3, problem_description="Network loss")
         rospy.Timer(rospy.Duration(0.1), self.check)
 
     def check(self, *args):
-        if self.need_kill() and self.last_msg != '':\
+        if self.need_kill() and self.last_msg != '':
             self.alarm.raise_alarm()
             rospy.logerr("NETWORK LOSS: KILLING BOAT")
         else:
