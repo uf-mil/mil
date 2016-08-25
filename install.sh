@@ -70,7 +70,7 @@ ros_git_get() {
 
 # Sane installation defaults for no argument cases
 REQUIRED_OS="trusty"
-CATKIN_DIR=~/navigator_ws
+CATKIN_DIR=~/mil_ws
 
 # Retrievs information about the location of the script
 SCRIPT_PATH="`readlink -f ${BASH_SOURCE[0]}`"
@@ -80,8 +80,8 @@ SCRIPT_DIR="`dirname $SCRIPT_PATH`"
 while [ "$#" -gt 0 ]; do
 	case $1 in
 		-h) printf "\nUsage: $0\n"
-			printf "\n    [-c] catkin_workspace (Recommend: ~/navigator_ws)\n"
-			printf "\n    example: ./install.sh -c ~/navigator_ws\n"
+			printf "\n    [-c] catkin_workspace (Recommend: ~/mil_ws)\n"
+			printf "\n    example: ./install.sh -c ~/mil_ws\n"
 			printf "\n"
 			exit 0
 			;;
