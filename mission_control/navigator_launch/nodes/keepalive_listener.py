@@ -6,7 +6,7 @@ from twisted.internet import reactor
 import time
 
 
-class NetworkCheck(object):
+class KeepAliveListener(object):
     '''
     Meant to only run on the boat. When the network is dropped, it triggers a kill.
     '''
@@ -33,7 +33,8 @@ class NetworkCheck(object):
     def need_kill(self):
         return ((rospy.Time.now() - self.last_time) > self.timeout)
 
+
 if __name__ == '__main__':
     rospy.init_node('network_kill')
-    NetworkCheck()
+    KeepAliveListener()
     rospy.spin()

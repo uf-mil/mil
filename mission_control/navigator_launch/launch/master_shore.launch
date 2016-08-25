@@ -5,5 +5,5 @@
         <param name="autorepeat_rate" value="5"/>
     </node>
 
-    <node pkg="navigator_launch" type="network_keepalive.py" name="network_keepalive"/>
+    <node pkg="navigator_launch" type="keepalive_broadcaster.py" name="keepalive_broadcaster"/>
 </launch>
