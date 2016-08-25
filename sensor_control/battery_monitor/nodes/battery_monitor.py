@@ -21,15 +21,15 @@ __license__ = "MIT"
 
 # Voltage threshold for the initial low voltage alarm
 # 22.1V (approximately 30%) is the recommended value
-battery_low = 28
+battery_low = 22.1
 
 # Voltage threshold for the critically low voltage alarm
 # 20.6V (approximately 15%) is the recommended value
-battery_critical = 26
+battery_critical = 20.6
 
 # Voltage threshold for the total system kill alarm
 # 19.5V (approximately 5%) is the recommended value
-battery_kill = 25
+battery_kill = 19.5
 
 rospy.init_node('battery_monitor')
 
