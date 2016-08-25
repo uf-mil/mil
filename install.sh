@@ -180,6 +180,13 @@ else
 	instlog "Using existing catkin workspace at $CATKIN_DIR"
 fi
 
+
+# Move the Navigator repository to the catkin workspace in semaphore
+if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
+    mv ~/Navigator "$CATKIN_DIR/src"
+fi
+
+
 # Source the workspace's configurations for bash on this user account
 source "$CATKIN_DIR/devel/setup.bash"
 if !(cat ~/.bashrc | grep --quiet "source $CATKIN_DIR/devel/setup.bash"); then
@@ -270,9 +277,11 @@ ros_git_get https://github.com/ros-simulation/gazebo_ros_pkgs.git
 # Finalization an Clean Up #
 #==========================#
 
-# Attempt to build the Navigator stack
-instlog "Building Navigator's software stack with catkin_make"
-catkin_make -C "$CATKIN_DIR" -j8
+# Attempt to build the Navigator stack on client machines
+if !(env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
+    instlog "Building Navigator's software stack with catkin_make"
+    catkin_make -C "$CATKIN_DIR" -j8
+fi
 
 # Remove the initial install script if it was not in the Navigator repository
 if !(echo "$SCRIPT_DIR" | grep --quiet "src/Navigator"); then
