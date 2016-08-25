@@ -46,5 +46,5 @@ If you want to get involved this is a great place to start! If you're serious ab
 * Global control for lab (ip addresses etc)
 
 ### Documentation
-_Documentation on the wiki is needed for the following system components_
+_Documentation on the wiki is needed for the following key system components_
 * Brief overview of how the keep_alive system works
