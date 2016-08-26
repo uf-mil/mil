@@ -4,7 +4,7 @@ If you want to get involved this is a great place to start! If you're serious ab
 
 ### Command
 * Mission runner __[MATT]__
-* Network loss kill __[MATT]__
+* Mission unit test
 
 ### Perception
 * Calibrate Cameras
@@ -27,7 +27,6 @@ If you want to get involved this is a great place to start! If you're serious ab
 * RVIZ model spawing __[MATT]__
 * Update for new alarms __[ANTHONY]__
 * Speedometer __[ANTHONY]__
-* Battery Monitor __[ANTHONY]__
 * Keyboard driving from camera view __[ANTHONY]__
 * Incorporate error/alarm display __[ANTHONY]__
 * Graphs for topics that change with time (rpm, acceleration, etc) __[ANTHONY]__
@@ -37,7 +36,6 @@ If you want to get involved this is a great place to start! If you're serious ab
 * Modify package structure
 
 ### Install Script
-* Rename navigator_ws to mil_ws __[ANTHONY]__
 * Install git-lfs, tmux __[ANTHONY]__
 * Download/build velodyne drivers from source __[ANTHONY]__
 * Figure out dependency caching (mainly ROS) for semaphore __[ANTHONY]__
