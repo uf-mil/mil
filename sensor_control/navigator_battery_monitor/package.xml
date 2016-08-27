@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>battery_monitor</name>
+  <name>navigator_battery_monitor</name>
   <version>1.0.0</version>
-  <description>The battery_monitor package</description>
+  <description>The navigator_battery_monitor package</description>
 
   <maintainer email="anthony@iris-systems.net">Anthony Olive</maintainer>
 

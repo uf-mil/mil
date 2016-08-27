@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(battery_monitor)
+project(navigator_battery_monitor)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy

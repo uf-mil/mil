@@ -6,6 +6,8 @@ averaging the supply voltage to each of the four thrusters.
 '''
 
 
+from __future__ import division
+
 from roboteq_msgs.msg import Feedback
 import rospy
 from std_msgs.msg import Float32
@@ -38,24 +40,21 @@ class BatteryMonitor():
 
     def __init__(self):
 
-        # Initialize the four receiving variables to max voltage
-        self.supply_voltage = [29.4, 29.4, 29.4, 29.4]
-
         # Initialize the average voltage to max
         self.voltage = 29.4
 
-        # Initialize the variables for handling averaging (in an attempt to eliminate outliers)
-        self.avg_count = [0, 0, 0, 0]
-        self.avg_value = [0, 0, 0, 0]
+        # Initialize a list to hold the 1000 most recent supply voltage readings
+        # Holding 1000 values ensures that changes in the average are gradual rather than sharp
+        self.supply_voltages = []
 
         # The publisher for the averaged voltage
         self.pub_voltage = rospy.Publisher("/battery_monitor", Float32, queue_size=1)
 
         # Subscrives to the feedback from each of the four thrusters
-        rospy.Subscriber("/FL_motor/feedback", Feedback, self.add_to_fl)
-        rospy.Subscriber("/FR_motor/feedback", Feedback, self.add_to_fr)
-        rospy.Subscriber("/BL_motor/feedback", Feedback, self.add_to_bl)
-        rospy.Subscriber("/BR_motor/feedback", Feedback, self.add_to_br)
+        rospy.Subscriber("/FL_motor/feedback", Feedback, self.add_voltage)
+        rospy.Subscriber("/FR_motor/feedback", Feedback, self.add_voltage)
+        rospy.Subscriber("/BL_motor/feedback", Feedback, self.add_voltage)
+        rospy.Subscriber("/BR_motor/feedback", Feedback, self.add_voltage)
 
         # Sets up the battery voltage alarms
         alarm_broadcaster = AlarmBroadcaster()
@@ -75,48 +74,25 @@ class BatteryMonitor():
             severity=0
         )
 
-    def add_to_fl(self, msg):
+    def add_voltage(self, msg):
         '''
-        Simple method to connect the FL thruster feedback subscriber to the add_voltage method
+        This is the callback function for feedback from all four motors. It appends the new readings to the end of the list and
+        ensures that the list stays under 1000 entries.
         '''
-        self.add_voltage(msg, 0)
+        self.supply_voltages.append(msg.supply_voltage)
 
-    def add_to_fr(self, msg):
-        '''
-        Simple method to connect the FR thruster feedback subscriber to the add_voltage method
-        '''
-        self.add_voltage(msg, 1)
+        # Limits the list by removing the oldest readings when it contains more then 1000 readings
+        while (len(self.supply_voltages) > 1000):
+            del self.supply_voltages[0]
 
-    def add_to_bl(self, msg):
-        '''
-        Simple method to connect the BL thruster feedback subscriber to the add_voltage method
-        '''
-        self.add_voltage(msg, 2)
-
-    def add_to_br(self, msg):
-        '''
-        Simple method to connect the BR thruster feedback subscriber to the add_voltage method
-        '''
-        self.add_voltage(msg, 3)
-
-    def add_voltage(self, msg, thruster_id):
-        '''
-        Averages 42 values from each thruster's feedback (42 is a calculated answer to life, the universe, and everything)
-        '''
-        if (self.avg_count[thruster_id] != 42):
-            self.avg_value[thruster_id] += msg.supply_voltage
-            self.avg_count[thruster_id] += 1
-        else:
-            self.supply_voltage[thruster_id] = self.avg_value[thruster_id] / 42
-            self.avg_count[thruster_id] = 0
-            self.avg_value[thruster_id] = 0
-
-    def publish_voltage(self):
+    def publish_voltage(self, event):
         '''
         Publishes the average voltage across all four thrustersto the battery_voltage node as a standard Float32 message and runs
         the voltage_check
         '''
-        self.voltage = sum(self.supply_voltage) / len(self.supply_voltage)
+        if (len(self.supply_voltages) > 0):
+            self.voltage = sum(self.supply_voltages) / len(self.supply_voltages)
+
         self.pub_voltage.publish(self.voltage)
         self.voltage_check()
 
@@ -130,7 +106,7 @@ class BatteryMonitor():
             self.battery_kill_alarm.raise_alarm(
                 problem_description='Bus voltage is at the safety limit; killing the system',
                 parameters={
-                    'bus_voltage': '%f' % (self.voltage),
+                    'bus_voltage': '{}'.format(self.voltage),
                 }
             )
 
@@ -139,7 +115,7 @@ class BatteryMonitor():
             self.battery_critical_alarm.raise_alarm(
                 problem_description='Bus voltage is critical; abort testing',
                 parameters={
-                    'bus_voltage': '%f' % (self.voltage),
+                    'bus_voltage': '{}'.format(self.voltage),
                 }
             )
 
@@ -148,15 +124,11 @@ class BatteryMonitor():
             self.battery_low_alarm.raise_alarm(
                 problem_description='Bus voltage is approaching safety limit',
                 parameters={
-                    'bus_voltage': '%f' % (self.voltage),
+                    'bus_voltage': '{}'.format(self.voltage),
                 }
             )
 
-
 if __name__ == "__main__":
     monitor = BatteryMonitor()
-    rate = rospy.Rate(1)
-    while not rospy.is_shutdown():
-        monitor.publish_voltage()
-        rate.sleep()
+    rospy.Timer(rospy.Duration(1), monitor.publish_voltage, oneshot=False)
     rospy.spin()

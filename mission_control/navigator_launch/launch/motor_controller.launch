@@ -15,7 +15,7 @@
     <param name="port" value="/dev/serial/by-id/usb-FTDI_Roboteq_MDC1460_stbd-bow-if00-port0"/>
     <param name="value" value="115200" />
   </node>
-  <node name="battery_monitor" pkg="battery_monitor" type="battery_monitor.py"/>
+  <node name="navigator_battery_monitor" pkg="navigator_battery_monitor" type="navigator_battery_monitor.py"/>
 </launch>
 
 
