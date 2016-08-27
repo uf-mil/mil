@@ -8,6 +8,8 @@
 
 #include <Servo.h>
 
+#define USE_LINEAR_FEEDER
+
 const int SHOOTER_PIN = 3;
 const int FEEDER_A_PIN = 8;
 const int FEEDER_B_PIN = 9;
@@ -150,6 +152,101 @@ class Pololu : public SpeedController
 };
 Pololu feeder(FEEDER_A_PIN,FEEDER_B_PIN,FEEDER_PWM_PIN);
 
+#ifdef USE_LINEAR_FEEDER
+class AutoController
+{
+  private:
+    //All times in milliseconds
+    static const unsigned long SPIN_UP_TIME = 1000; //Time to spin up flywheels before feeding balls in
+    static const unsigned long RETRACT_TIME = 2000; //Time to retract actuator to allow ball to fall into feeding tube
+    static const unsigned long LOAD_TIME = 1000; //Time to extend actuator to preload ball for quick firing
+    static const unsigned long QUICKFIRE_TIME = 500; //Time to extend actuator with preloaded ball for quick firing
+    /* Represents what the controller is currently doing
+     * 0 = finished fireing/loading or stopped
+     * 1 = preloading for quick fireing
+     * 2 = fireing from preloaded state
+     */
+    int state;
+    unsigned long start_load_time;
+    unsigned long start_fire_time;
+    bool loaded;
+    void reset()
+    {
+      state = 0;
+      start_load_time = 0;
+      start_fire_time = 0;
+      loaded = false;
+    }
+    void runLoad()
+    {
+      unsigned long cur_time = millis() - start_load_time;
+      if (cur_time < RETRACT_TIME)
+      {
+        feeder.reverse();
+      } else if (cur_time < (RETRACT_TIME + LOAD_TIME) )
+      {
+        feeder.on();
+      } else {
+        shooter.on();
+        state = 0;
+        loaded = true;
+        start_load_time = 0;
+      }
+    }
+    void runFire()
+    {
+      unsigned long cur_time = millis() - start_fire_time;
+      if (cur_time < QUICKFIRE_TIME)
+      {
+        shooter.on();
+        feeder.on();
+      } else {
+        start_fire_time = 0;
+        feeder.off();
+        shooter.off();
+        loaded = false;
+        state = 0;
+      }
+    }
+  public:
+    AutoController()
+    {
+      reset();
+    }
+    void load()
+    {
+      start_load_time = 0;
+      loaded = false;
+      state = 1;
+    }
+    void fire()
+    {
+      start_fire_time = 0;
+      state = 2;
+    }
+    void cancel()
+    {
+      feeder.off();
+			shooter.off();
+      reset();
+    }
+    void run()
+    {
+      switch (state) 
+      {
+        case 0:
+          break;
+        case 1:
+          runLoad();
+          break;
+        case 2:
+          runFire();
+          break;
+      }
+    }
+
+};
+#else
 class AutoController
 {
   private:
@@ -194,6 +291,7 @@ class AutoController
 			}
 		}	
 };
+#endif
 AutoController autoController;
 
 class Comms
@@ -201,12 +299,41 @@ class Comms
   private:
     //ROS
     ros::NodeHandle nh;
-    std_msgs::String str_msg;
-    //ros::Publisher chatter;
-    //~ ros::Subscriber<std_msgs::String> sub;
+    
+    #ifdef USE_LINEAR_FEEDER
     ros::ServiceServer<std_srvs::Trigger::Request,std_srvs::Trigger::Response> fireService;
+    ros::ServiceServer<std_srvs::Trigger::Request,std_srvs::Trigger::Response> loadService;
     ros::ServiceServer<std_srvs::Trigger::Request,std_srvs::Trigger::Response> cancelService;
     ros::ServiceServer<navigator_msgs::ShooterManual::Request,navigator_msgs::ShooterManual::Response> manualService;
+    #else
+    ros::ServiceServer<std_srvs::Trigger::Request,std_srvs::Trigger::Response> fireService;
+    ros::ServiceServer<std_srvs::Trigger::Request,std_srvs::Trigger::Response> cancelService;
+    ros::ServiceServer<navigator_msgs::ShooterManual::Request,navigator_msgs::ShooterManual::Response> manualService;    
+    #endif
+
+    #ifdef USE_LINEAR_FEEDER
+    static void fireCallback(const std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+    {
+      autoController.fire();
+      res.success = true;
+    }
+    static void loadCallback(const std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+    {
+      autoController.load();
+      res.success = true;
+    }
+    static void cancelCallback(const std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+    {
+      autoController.cancel();
+      res.success = true;
+    }
+    static void manualCallback(const navigator_msgs::ShooterManual::Request &req, navigator_msgs::ShooterManual::Response &res)
+    {
+      autoController.cancel();
+      feeder.set(req.feeder);
+      shooter.set(req.shooter);
+    }
+    #else
     static void fireCallback(const std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
     {
       autoController.shoot();
@@ -222,47 +349,38 @@ class Comms
       autoController.cancel();
       feeder.set(req.feeder);
       shooter.set(req.shooter);
-    }
-    //~ static void messageCallback(const std_msgs::String& str_msg)
-    //~ {
-      //~ String s = str_msg.data;
-      //~ if (s == "flyon")
-        //~ shooter.on();
-      //~ else if (s == "flyoff")
-        //~ shooter.off();
-      //~ else if (s == "feedon")
-        //~ feeder.on();
-      //~ else if (s == "feedoff")
-        //~ feeder.off();
-      //~ else if (s == "feedreverse")
-        //~ feeder.reverse();
-      //~ else if (s == "shoot")
-        //~ autoController.shoot();
-      //~ else if (s == "cancel")
-        //~ autoController.cancel();
-      //~ else if (s == "ledon")
-        //~ digitalWrite(13,HIGH);
-      //~ else if (s == "ledoff")
-        //~ digitalWrite(13,LOW);
-    //~ }
+    }    
+    #endif
+
   public:
     Comms() :
-      str_msg(),
-      //~ sub("/shooter/control",&messageCallback),
+      #ifdef USE_LINEAR_FEEDER
+      fireService("/shooter/fire", &fireCallback),
+      loadService("/shooter/load", &fireCallback),
+      cancelService("/shooter/cancel", &cancelCallback),
+      manualService("/shooter/manual",&manualCallback)     
+      #else
       fireService("/shooter/fire", &fireCallback),
       cancelService("/shooter/cancel", &cancelCallback),
       manualService("/shooter/manual",&manualCallback)
-      //chatter("chatter", &str_msg)
+      #endif
     {
       pinMode(13,OUTPUT);
     }
     void init()
     {
       nh.initNode();
-      //~ nh.subscribe(sub);
+
+      #ifdef USE_LINEAR_FEEDER
+      nh.advertiseService(fireService);
+      nh.advertiseService(loadService);
+      nh.advertiseService(cancelService);
+      nh.advertiseService(manualService);     
+      #else
       nh.advertiseService(fireService);
       nh.advertiseService(cancelService);
       nh.advertiseService(manualService);
+      #endif
     }
     void run()
     {
