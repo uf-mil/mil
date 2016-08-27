@@ -27,9 +27,6 @@
 #include <sensor_msgs/image_encodings.h>
 
 #include <navigator_vision_lib/cv_tools.hpp>
-#include <navigator_vision_lib/visualization.hpp>
-#include <sub8_msgs/TorpBoardPoseRequest.h>
-#include <sub8_msgs/TBDetectionSwitch.h>
 
 #include "model.h"
 

@@ -1,4 +1,4 @@
-#include "include/scan_the_code_detector.hpp"
+#include <navigator_vision_lib/scan_the_code_detector.hpp>
 
 using namespace std;
 using namespace cv;

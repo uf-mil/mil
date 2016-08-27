@@ -47,16 +47,16 @@
   Warning:
   Because of its multithreadedness, this class cannot be copy constructed. 
   For examlple, the following will not compile:
-    Sub8TorpedoBoardDetector tb_detector = Sub8TorpedoBoardDetector();
+    ScanTheCodeDetector tb_detector = ScanTheCodeDetector();
   Do this instead:
-    Sub8TorpedoBoardDetector tb_detector();
+    ScanTheCodeDetector tb_detector();
 */
 
-class Sub8TorpedoBoardDetector {
+class ScanTheCodeDetector {
 
 public:
-  Sub8TorpedoBoardDetector();
-  ~Sub8TorpedoBoardDetector();
+  ScanTheCodeDetector();
+  ~ScanTheCodeDetector();
 
   // Public Variables
   double image_proc_scale, feature_min_distance;
@@ -80,7 +80,7 @@ private:
   image_transport::Publisher debug_image_pub;
   image_geometry::PinholeCameraModel left_cam_model, right_cam_model;
 
-  // Torpedo Board detection will be attempted when true
+  // Scan The Code Board detection will be attempted when true
   bool active;
 
   // Goes into sequential id for pos_est srv request
