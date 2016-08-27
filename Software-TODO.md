@@ -37,7 +37,7 @@ If you want to get involved this is a great place to start! If you're serious ab
 
 ### Install Script
 * Install git-lfs, tmux __[ANTHONY]__
-* Download/build velodyne drivers from source __[ANTHONY]__
+* Download/build velodyne drivers from source __[Ralph]__
 * Figure out dependency caching (mainly ROS) for semaphore __[ANTHONY]__
 
 ### Networking
