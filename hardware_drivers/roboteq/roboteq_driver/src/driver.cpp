@@ -38,9 +38,9 @@ int main(int argc, char **argv) {
   int32_t baud = 115200;
   nh.param<std::string>("port", port, port);
   nh.param<int32_t>("baud", baud, baud);
-
   // Interface to motor controller.
   roboteq::Controller controller(port.c_str(), baud);
+
 
   // Setup channels.
   if (nh.hasParam("channels")) {
@@ -56,12 +56,14 @@ int main(int argc, char **argv) {
     // Default configuration is a single channel in the node's namespace.
     controller.addChannel(new roboteq::Channel(1, "~", &controller));
   } 
-
+  
   // Attempt to connect and run.
   while (ros::ok()) {
     ROS_DEBUG("Attempting connection to %s at %i baud.", port.c_str(), baud);
+
     controller.connect();
     if (controller.connected()) {
+      controller.downloadScript();
       ros::AsyncSpinner spinner(1);
       spinner.start();
       while (ros::ok()) {
