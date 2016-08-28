@@ -19,8 +19,8 @@ rospy.init_node("joystick")
 class Joystick(object):
     def __init__(self):
 
-        self.force_scale = rospy.get_param("~force_scale")
-        self.torque_scale = rospy.get_param("~torque_scale")
+        self.force_scale = rospy.get_param("~force_scale", 600)
+        self.torque_scale = rospy.get_param("~torque_scale", 500)
 
         self.wrench_choices = itertools.cycle(['rc', 'autonomous'])
         self.current_pose = Odometry()
