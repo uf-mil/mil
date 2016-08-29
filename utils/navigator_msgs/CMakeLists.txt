@@ -18,6 +18,8 @@ add_message_files(
   Point.msg
   Points.msg
   Waypoint.msg
+  DockShape.msg
+  DockShapes.msg
 )
 
 add_service_files(
@@ -26,6 +28,7 @@ add_service_files(
   ShooterManual.srv
   VisionRequest.srv
   WrenchSelect.srv
+  GetDockShape.srv
 )
 
 generate_messages(
