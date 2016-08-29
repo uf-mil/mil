@@ -27,4 +27,7 @@
     <arg name="min_range" value="$(arg min_range)"/>
     <arg name="max_range" value="$(arg max_range)"/>
   </include>
+  
+  <!-- start dock symbols vision services -->
+  <include file="$find navigator_shoot_vision)/launch/dock_shapes.launch" />
 </launch>
