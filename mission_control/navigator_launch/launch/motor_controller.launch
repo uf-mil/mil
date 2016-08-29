@@ -16,5 +16,8 @@
     <param name="value" value="115200" />
   </node>
   <include file="$(find navigator_shooter)/shooter_arduino.launch"/>
+  <node name="navigator_battery_monitor" pkg="navigator_battery_monitor" type="navigator_battery_monitor.py"/>
 </launch>
+
+
 

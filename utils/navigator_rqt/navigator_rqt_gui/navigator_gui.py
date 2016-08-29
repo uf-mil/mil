@@ -1,16 +1,17 @@
 import os
-import rospy
-import rospkg
-from sensor_msgs.msg import Joy
-from tf2_msgs.msg import TFMessage
+import time
+
+from geometry_msgs.msg import Point
 from geometry_msgs.msg import WrenchStamped
-from qt_gui.plugin import Plugin
+from navigator_msgs.srv import WrenchSelect
 from python_qt_binding import loadUi
 from python_qt_binding.QtGui import QWidget
 import python_qt_binding.QtGui as qtg
-from navigator_msgs.srv import WrenchSelect
-import time
-from geometry_msgs.msg import Point
+from qt_gui.plugin import Plugin
+import rospkg
+import rospy
+from sensor_msgs.msg import Joy
+from tf2_msgs.msg import TFMessage
 
 
 class Navigator_gui(Plugin):
@@ -25,13 +26,13 @@ class Navigator_gui(Plugin):
         parser = ArgumentParser()
         # Add argument(s) to the parser.
         parser.add_argument("-q", "--quiet", action="store_true",
-                      dest="quiet",
-                      help="Put plugin in silent mode")
+                            dest="quiet",
+                            help="Put plugin in silent mode")
         args, unknowns = parser.parse_known_args(context.argv())
         if not args.quiet:
             pass
-            #print 'arguments: ', args
-            #print 'unknowns: ', unknowns
+            # print 'arguments: ', args
+            # print 'unknowns: ', unknowns
 
         self.wrench_out = WrenchStamped()
 
@@ -80,7 +81,7 @@ class Navigator_gui(Plugin):
         # plugins at once. Also if you open multiple instances of your
         # plugin at once, these lines add number to make it easy to
 
-        self.joy_pub = rospy.Publisher("/joy", Joy, queue_size = 1)
+        self.joy_pub = rospy.Publisher("/joy", Joy, queue_size=1)
         # tell from pane to pane.
         if context.serial_number() > 1:
             self._widget.setWindowTitle(self._widget.windowTitle() + (' (%d)' % context.serial_number()))
@@ -89,9 +90,8 @@ class Navigator_gui(Plugin):
 
         self.wrench_pub = rospy.Publisher("/wrench/gui", WrenchStamped, queue_size=1)
         self.move_pub = rospy.Publisher('/move_helper', Point, queue_size=1)
-        self.wrench_changer = rospy.ServiceProxy('/change_wrench', wrench_arbiter)
+        self.wrench_changer = rospy.ServiceProxy('/change_wrench', WrenchSelect)
         rospy.Subscriber("/tf", TFMessage, self.wrench_pub_cb)
-
 
     def wrench_pub_cb(self, msg):
         self.wrench_pub.publish(self.wrench_out)
@@ -105,13 +105,12 @@ class Navigator_gui(Plugin):
     def gui_mode(self):
         self.wrench_changer("gui")
 
-
     def station_hold(self):
         msg = Joy()
         msg.buttons.append(1)
-        for x in xrange(0,8):
+        for x in xrange(0, 8):
             msg.buttons.append(0)
-        for x in xrange(0,4):
+        for x in xrange(0, 4):
             msg.axes.append(0)
         self.joy_pub.publish(msg)
         time.sleep(.1)
@@ -119,28 +118,28 @@ class Navigator_gui(Plugin):
         clr_msg = Joy()
 
         clr_msg.buttons.append(0)
-        for x in xrange(0,8):
+        for x in xrange(0, 8):
             clr_msg.buttons.append(0)
-        for x in xrange(0,4):
+        for x in xrange(0, 4):
             clr_msg.axes.append(0)
         self.joy_pub.publish(clr_msg)
 
     def toggle_kill(self):
         msg = Joy()
-        for x in xrange(0,8):
+        for x in xrange(0, 8):
             msg.buttons.append(0)
         msg.buttons.append(1)
-        for x in xrange(0,4):
+        for x in xrange(0, 4):
             msg.axes.append(0)
         self.joy_pub.publish(msg)
         time.sleep(.1)
 
         clr_msg = Joy()
 
-        for x in xrange(0,8):
+        for x in xrange(0, 8):
             clr_msg.buttons.append(0)
         clr_msg.buttons.append(0)
-        for x in xrange(0,4):
+        for x in xrange(0, 4):
             clr_msg.axes.append(0)
         self.joy_pub.publish(clr_msg)
 
@@ -149,42 +148,42 @@ class Navigator_gui(Plugin):
 
         msg.buttons.append(0)
         msg.buttons.append(1)
-        for x in xrange(0,7):
+        for x in xrange(0, 7):
             msg.buttons.append(0)
-        for x in xrange(0,4):
+        for x in xrange(0, 4):
             msg.axes.append(0)
         self.joy_pub.publish(msg)
         time.sleep(.1)
 
         clr_msg = Joy()
 
-        for x in xrange(0,8):
+        for x in xrange(0, 8):
             clr_msg.buttons.append(0)
         clr_msg.buttons.append(0)
-        for x in xrange(0,4):
+        for x in xrange(0, 4):
             clr_msg.axes.append(0)
         self.joy_pub.publish(clr_msg)
 
     def toggle_docking(self):
         msg = Joy()
-        for x in xrange(0,6):
+        for x in xrange(0, 6):
             msg.buttons.append(0)
         msg.buttons.append(1)
         msg.buttons.append(0)
         msg.buttons.append(0)
-        for x in xrange(0,4):
+        for x in xrange(0, 4):
             msg.axes.append(0)
         self.joy_pub.publish(msg)
         time.sleep(.1)
 
         clr_msg = Joy()
 
-        for x in xrange(0,6):
+        for x in xrange(0, 6):
             clr_msg.buttons.append(0)
         clr_msg.buttons.append(0)
         clr_msg.buttons.append(0)
         clr_msg.buttons.append(0)
-        for x in xrange(0,4):
+        for x in xrange(0, 4):
             clr_msg.axes.append(0)
         self.joy_pub.publish(clr_msg)
 
@@ -192,11 +191,9 @@ class Navigator_gui(Plugin):
         x = self._widget.findChild(qtg.QPlainTextEdit, 'x_send').toPlainText()
         y = self._widget.findChild(qtg.QPlainTextEdit, 'y_send').toPlainText()
         z = self._widget.findChild(qtg.QPlainTextEdit, 'z_send').toPlainText()
-        x,y,z = float(x), float(y), float(z)
-        to_send = Point(x,y,z)
+        x, y, z = float(x), float(y), float(z)
+        to_send = Point(x, y, z)
         self.move_pub.publish(to_send)
-
-
 
     def forward_slider(self, value):
         if self.wrench_out.wrench.force.x >= 0:
