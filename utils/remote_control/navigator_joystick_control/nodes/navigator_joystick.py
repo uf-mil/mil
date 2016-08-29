@@ -151,6 +151,7 @@ class Joystick(object):
 
         wrench = WrenchStamped()
         wrench.header.frame_id = "/base_link"
+        wrench.header.stamp = joy.header.stamp
         wrench.wrench.force.x = self.force_scale * left_stick_x
         wrench.wrench.force.y = self.force_scale * left_stick_y
         wrench.wrench.torque.z = self.torque_scale * right_stick_y
