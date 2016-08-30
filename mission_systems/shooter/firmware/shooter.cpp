@@ -14,7 +14,7 @@ const int SHOOTER_PIN = 3;
 const int FEEDER_A_PIN = 8;
 const int FEEDER_B_PIN = 9;
 const int FEEDER_PWM_PIN = 5;
-
+ros::NodeHandle nh;
 class SpeedController
 {
   protected:
@@ -66,6 +66,7 @@ class Victor : public SpeedController
     void _set(int s)
     {
       goal = map(s,-100,100, 1000,2000);
+      nh.logdebug("Victor Goal = " + goal);
     }
     int _get()
     {
@@ -124,7 +125,7 @@ class Pololu : public SpeedController
       } else if(s < 0) {
         digitalWrite(inA_pin,HIGH);
         digitalWrite(inB_pin,LOW);
-        analogWrite(pwm_pin,map(s,-100,0,0,255));
+        analogWrite(pwm_pin,map(s,0,-100,0,255));
       } else if (s > 0) {
         digitalWrite(inA_pin,LOW);
         digitalWrite(inB_pin,HIGH);
@@ -159,7 +160,7 @@ class AutoController
     //All times in milliseconds
     static const unsigned long SPIN_UP_TIME = 1000; //Time to spin up flywheels before feeding balls in
     static const unsigned long RETRACT_TIME = 2000; //Time to retract actuator to allow ball to fall into feeding tube
-    static const unsigned long LOAD_TIME = 1000; //Time to extend actuator to preload ball for quick firing
+    static const unsigned long LOAD_TIME = 700; //Time to extend actuator to preload ball for quick firing
     static const unsigned long QUICKFIRE_TIME = 500; //Time to extend actuator with preloaded ball for quick firing
     /* Represents what the controller is currently doing
      * 0 = finished fireing/loading or stopped
@@ -187,6 +188,7 @@ class AutoController
       {
         feeder.on();
       } else {
+				feeder.off();
         shooter.on();
         state = 0;
         loaded = true;
@@ -293,12 +295,10 @@ class AutoController
 };
 #endif
 AutoController autoController;
-
 class Comms
 {
   private:
     //ROS
-    ros::NodeHandle nh;
     
     #ifdef USE_LINEAR_FEEDER
     ros::ServiceServer<std_srvs::Trigger::Request,std_srvs::Trigger::Response> fireService;
@@ -346,9 +346,11 @@ class Comms
     }
     static void manualCallback(const navigator_msgs::ShooterManual::Request &req, navigator_msgs::ShooterManual::Response &res)
     {
+      nh.logdebug("Manual: Feeder="+req.feeder + " Shooter="+req.shooter);
       autoController.cancel();
       feeder.set(req.feeder);
       shooter.set(req.shooter);
+      res.success = true;
     }    
     #endif
 
@@ -356,7 +358,7 @@ class Comms
     Comms() :
       #ifdef USE_LINEAR_FEEDER
       fireService("/shooter/fire", &fireCallback),
-      loadService("/shooter/load", &fireCallback),
+      loadService("/shooter/load", &loadCallback),
       cancelService("/shooter/cancel", &cancelCallback),
       manualService("/shooter/manual",&manualCallback)     
       #else
