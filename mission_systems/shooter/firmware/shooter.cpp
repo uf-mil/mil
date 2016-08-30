@@ -215,13 +215,13 @@ class AutoController
     }
     void load()
     {
-      start_load_time = 0;
+      start_load_time = millis();
       loaded = false;
       state = 1;
     }
     void fire()
     {
-      start_fire_time = 0;
+      start_fire_time = millis();
       state = 2;
     }
     void cancel()
