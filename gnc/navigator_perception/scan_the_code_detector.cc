@@ -47,10 +47,14 @@ void ScanTheCodeDetector::validate_frame(Mat& current_image_left, Mat& current_i
         Mat& processing_size_image_left, Mat& processing_size_image_right
                                            )
 {
+
     // Prevent segfault if service is called before we get valid img_msg_ptr's
-    if (left_most_recent.image_msg_ptr == NULL || right_most_recent.image_msg_ptr == NULL)
+    if (model_fitter->left_most_recent.image_msg_ptr == NULL || model_fitter->right_most_recent.image_msg_ptr == NULL)
         {
-            throw "Torpedo Board Detector: Image Pointers are NULL.";
+            ROS_WARN("Torpedo Board Detector: Image Pointers are NULL.");
+            throw "ROS ERROR";
+        }
+    double sync_thresh = 0.5;
 
         }
     double sync_thresh = 0.5;
@@ -62,29 +66,34 @@ void ScanTheCodeDetector::validate_frame(Mat& current_image_left, Mat& current_i
             left_mtx.lock();
             right_mtx.lock();
 
+            Matx34d left_cam_mat = left_cam_model.fullProjectionMatrix();
+
+            cout << "A = "<< endl << " "  << left_cam_mat << endl << endl;
+
             // Left Camera
-            input_bridge = cv_bridge::toCvCopy(left_most_recent.image_msg_ptr,
+            input_bridge = cv_bridge::toCvCopy(model_fitter->left_most_recent.image_msg_ptr,
                                                sensor_msgs::image_encodings::BGR8);
             current_image_left = input_bridge->image;
-            left_cam_model.fromCameraInfo(left_most_recent.info_msg_ptr);
-
+            left_cam_model.fromCameraInfo(model_fitter->left_most_recent.info_msg_ptr);
             resize(current_image_left, processing_size_image_left, Size(0, 0),
                    image_proc_scale, image_proc_scale);
             if (current_image_left.channels() != 3)
                 {
-                    throw "The left image topic does not contain a color image.";
+                    ROS_ERROR("The left image topic does not contain a color image.");
+                    throw "ROS ERROR";
                 }
 
             // Right Camera
-            input_bridge = cv_bridge::toCvCopy(right_most_recent.image_msg_ptr,
+            input_bridge = cv_bridge::toCvCopy(model_fitter->right_most_recent.image_msg_ptr,
                                                sensor_msgs::image_encodings::BGR8);
             current_image_right = input_bridge->image;
-            right_cam_model.fromCameraInfo(right_most_recent.info_msg_ptr);
+            right_cam_model.fromCameraInfo(model_fitter->right_most_recent.info_msg_ptr);
             resize(current_image_right, processing_size_image_right, Size(0, 0),
                    image_proc_scale, image_proc_scale);
             if (current_image_right.channels() != 3)
                 {
-                    throw "The right image topic does not contain a color image.";
+                    ROS_ERROR("The right image topic does not contain a color image.");
+                    throw "ROS ERROR";
                 }
 
             left_mtx.unlock();
@@ -216,45 +225,39 @@ void ScanTheCodeDetector::run()
         {
             if (true)
                 {
-                    process_current_images();
+                    process_current_image();
 
                 }
             loop_rate.sleep();
         }
-
     return;
 }
 
-void ScanTheCodeDetector::process_current_images()
+void ScanTheCodeDetector::process_current_image()
 {
+    Eigen::Vector3d position;
     Mat current_image_left, current_image_right, processing_size_image_left,
         processing_size_image_right;
+
     try
-    {
-        validate_frame(current_image_left,
-                          current_image_right,
-                          processing_size_image_left,
-                          processing_size_image_right);
-    }
+        {
+            validate_frame(current_image_left, current_image_right,
+                              processing_size_image_left, processing_size_image_right);
+        }
     catch(const char* msg)
-    {
-        ROS_ERROR(msg);
-        return;
-    }
+        {
+            return;
+        }
 
     Matx34d left_cam_mat = left_cam_model.fullProjectionMatrix();
     Matx34d  right_cam_mat = right_cam_model.fullProjectionMatrix();
-    vector<Eigen::Vector3d> position;
-    model_fitter->determine_model_position(position,
-                                           max_features,
-                                           feature_block_size,
-                                           feature_min_distance,
-                                           image_proc_scale,
-                                           diffusion_time,
-                                           current_image_left,
-                                           current_image_right,
-                                           left_cam_mat,
-                                           right_cam_mat);
+
+    bool ret = model_fitter->determine_model_position(position,
+               max_features, feature_block_size,
+               feature_min_distance,
+               image_proc_scale, diffusion_time,
+               current_image_left, current_image_right,
+               left_cam_mat, right_cam_mat);
 }
 
 bool ScanTheCodeDetector::detection_activation_switch(
@@ -280,8 +283,8 @@ void ScanTheCodeDetector::left_image_callback(
     const sensor_msgs::CameraInfoConstPtr &info_msg_ptr)
 {
     left_mtx.lock();
-    left_most_recent.image_msg_ptr = image_msg_ptr;
-    left_most_recent.info_msg_ptr = info_msg_ptr;
+    model_fitter->left_most_recent.image_msg_ptr = image_msg_ptr;
+    model_fitter->left_most_recent.info_msg_ptr = info_msg_ptr;
     left_mtx.unlock();
 }
 
@@ -290,16 +293,16 @@ void ScanTheCodeDetector::right_image_callback(
     const sensor_msgs::CameraInfoConstPtr &info_msg_ptr)
 {
     right_mtx.lock();
-    right_most_recent.image_msg_ptr = image_msg_ptr;
-    right_most_recent.info_msg_ptr = info_msg_ptr;
+    model_fitter->right_most_recent.image_msg_ptr = image_msg_ptr;
+    model_fitter->right_most_recent.info_msg_ptr = info_msg_ptr;
     right_mtx.unlock();
 }
 
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "scan_the_code_perception");
-    ROS_INFO("Initializing node /scan_the_code_perception");
+    ros::init(argc, argv, "scan_the_code_board_perception");
+    ROS_INFO("Initializing node /scan_the_code_board_perception");
     ScanTheCodeDetector scan_the_code_detector;
     ros::spin();
 }

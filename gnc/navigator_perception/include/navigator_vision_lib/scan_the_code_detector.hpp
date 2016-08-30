@@ -49,7 +49,7 @@
 /*
   Warning:
   Because of its multithreadedness, this class cannot be copy constructed.
-  For example, the following will not compile:
+  For examlple, the following will not compile:
     ScanTheCodeDetector tb_detector = ScanTheCodeDetector();
   Do this instead:
     ScanTheCodeDetector tb_detector();
@@ -68,7 +68,7 @@ public:
 
 
 private:
-    StereoModelFitter* model_fitter = NULL;
+    StereoModelFitter* model_fitter;
 
     //ATTRIBUTES:
 
@@ -80,8 +80,6 @@ private:
     image_transport::ImageTransport image_transport;
     image_transport::Publisher debug_image_pub;
     image_geometry::PinholeCameraModel left_cam_model, right_cam_model;
-    nav::ImageWithCameraInfo left_most_recent;
-    nav::ImageWithCameraInfo right_most_recent;
 
     // Scan The Code Board detection will be attempted when true
     bool active;
@@ -93,8 +91,10 @@ private:
     boost::mutex left_mtx, right_mtx;
 
     // RVIZ
-    nav::RvizVisualizer rviz;
+    sub::RvizVisualizer rviz;
 
+  // RVIZ
+  nav::RvizVisualizer rviz;
     // DBG images will be generated and published when true
     bool generate_dbg_img;
     cv::Mat debug_image;
@@ -116,7 +116,7 @@ private:
 
     // Detection / Processing
     void run();
-    void process_current_images();
+    void process_current_image();
     void init_ros(std::stringstream& log_msg);
     void validate_frame(cv::Mat& current_image_left, cv::Mat& current_image_right, cv::Mat& processing_size_image_left, cv::Mat& processing_size_image_right);
 
