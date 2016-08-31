@@ -42,19 +42,16 @@ void ShapeFind::GetSymbols(Mat frame, navigator_msgs::DockShapes *symbols) {
 
   for (int i = 0; i < shapes.size(); i++) {
     if (ShapeDetector::isCross(shapes[i])) {
-      navigator_msgs::DockShape hold = fillHold(shapes[i], navigator_msgs::DockShape::CROSS);
-      symbols->list.push_back(hold);
+      symbols->list.push_back(fillSymbolMsg(shapes[i], navigator_msgs::DockShape::CROSS));
     } else if (ShapeDetector::isTriangle(shapes[i])) {
-      navigator_msgs::DockShape hold = fillHold(shapes[i], navigator_msgs::DockShape::TRIANGLE);
-      symbols->list.push_back(hold);
+      symbols->list.push_back(fillSymbolMsg(shapes[i], navigator_msgs::DockShape::TRIANGLE));
     } else if (ShapeDetector::isCircle(shapes[i])) {
-      navigator_msgs::DockShape hold = fillHold(shapes[i], navigator_msgs::DockShape::CIRCLE);
-      symbols->list.push_back(hold);
+      symbols->list.push_back(fillSymbolMsg(shapes[i], navigator_msgs::DockShape::CIRCLE));
     }
   }
 }
 
-navigator_msgs::DockShape ShapeFind::fillHold(std::vector<cv::Point> shape, std::string symbol) {
+navigator_msgs::DockShape ShapeFind::fillSymbolMsg(std::vector<cv::Point> shape, std::string symbol) {
   navigator_msgs::DockShape hold;
   Point center = findCenter(shape);
   hold.CenterX = center.x;
