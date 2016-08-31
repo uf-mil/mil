@@ -22,7 +22,7 @@ class ShapeFind {
     std::vector<Vec4i> hierarchyfindMat;
     std::vector<std::vector<cv::Point> > shapes;
     Point findCenter(std::vector<Point> points);
-    navigator_msgs::DockShape fillHold(std::vector<cv::Point> points, std::string symbol);
+    navigator_msgs::DockShape fillSymbolMsg(std::vector<cv::Point> points, std::string symbol);
     void FindContours();
     void FindShapes();
 };
