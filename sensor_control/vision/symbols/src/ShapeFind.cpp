@@ -2,16 +2,11 @@
 
 ShapeFind::ShapeFind(std::string color) {
   parseColor = color;
-  binary_frame = Mat();
-  contoursfindMat = std::vector<std::vector<Point> >();
-  hierarchyfindMat = std::vector<Vec4i>();
-  shapes = std::vector<std::vector<cv::Point> >();
-  Point findCenter(std::vector<Point> points);
 }
 void ShapeFind::FindContours() {
   contoursfindMat.clear();
   hierarchyfindMat.clear();
-  findContours(binary_frame, contoursfindMat, hierarchyfindMat, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));  /// currently produces error
+  findContours(binary_frame, contoursfindMat, hierarchyfindMat, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 }
 void ShapeFind::FindShapes() {
   shapes.clear();
