@@ -45,10 +45,7 @@ public:
 
     StereoModelFitter(PerceptionModel model, image_transport::Publisher debug_publisher);
     PerceptionModel model;
-    nav::Contour left_corners, right_corners;
-    nav::ImageWithCameraInfo left_most_recent, right_most_recent;
-    image_geometry::PinholeCameraModel left_cam_model, right_cam_model;
-    cv::Matx34d left_cam_mat, right_cam_mat;
+
     bool determine_model_position(Eigen::Vector3d& position, int max_corners, int block_size, double min_distance, double image_proc_scale, int diffusion_time,
                                   Mat current_image_left, Mat current_image_right,
                                   Matx34d left_cam_mat, Matx34d right_cam_mat);
@@ -63,7 +60,12 @@ protected:
     void extract_features(std::vector<Point> & features, Mat& image, int max_corners, int block_size, double quality_level, double min_distance);
     void denoise_images(Mat& l_diffused, Mat& r_diffused, int diffusion_time, Mat current_image_left,
                         Mat current_image_right);
-    void decision_tree(vector<Eigen::Vector3d>  feature_pts_3d, int curr, int left);
+    void decision_tree(vector<Eigen::Vector3d>  feature_pts_3d, int curr, int left, bool check);
+
+    cv::Mat* current_image_left = NULL;
+    cv::Mat* current_image_right = NULL;
+    cv::Matx34d* left_cam_mat = NULL;
+    cv::Matx34d* right_cam_mat = NULL;
 
     void decision_tree(vector<Eigen::Vector3d> feature_pts_3d,
                        int curr,

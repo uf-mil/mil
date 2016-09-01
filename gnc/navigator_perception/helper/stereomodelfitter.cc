@@ -1,8 +1,7 @@
 #include <navigator_vision_lib/stereomodelfitter.h>
 
 StereoModelFitter::StereoModelFitter(PerceptionModel model, image_transport::Publisher debug_publisher):
-    model(model),
-    debug_publisher(debug_publisher)
+    model(model), debug_publisher(debug_publisher)
 {
 
 //    ros::NodeHandle nh;
@@ -34,12 +33,14 @@ void StereoModelFitter::denoise_images(Mat& l_diffused, Mat& r_diffused,
 
 void StereoModelFitter::extract_features(vector<Point> & features, Mat& image, int max_corners, int block_size, double quality_level, double min_distance)
 {
-    goodFeaturesToTrack(image, features, max_corners, quality_level, min_distance, Mat(), block_size);
+    goodFeaturesToTrack(image, features, max_corners, quality_level, min_distance, Mat(), block_size, true, .001);
     for(size_t i = 0; i < features.size(); i++)
         {
             Point pt = features[i];
             circle(image, pt, 2, Scalar(0), 2);
         }
+   cv::imshow("windowww", image);
+   cv::waitKey(0);
 
 }
 
@@ -95,8 +96,6 @@ void StereoModelFitter::calculate_3D_reconstruction(vector<Eigen::Vector3d>& fea
 
     Eigen::Vector3d pt_3D;
     double reset_scaling = 1 / image_proc_scale;
-    cout << "feature reconstructions(3D):\n";
-    cout << "M = "<< endl << " "  << this->left_cam_mat << endl << endl;
     for (size_t i = 0; i < correspondence_pair_idxs.size(); i++)
         {
             if(correspondence_pair_idxs[i] == -1)  continue;
@@ -112,13 +111,13 @@ void StereoModelFitter::calculate_3D_reconstruction(vector<Eigen::Vector3d>& fea
 
             Matx31d pt_L_hom(pt_L.x, pt_L.y, 1);
             Matx31d pt_R_hom(pt_R.x, pt_R.y, 1);
-            Mat X_hom = nav::triangulate_Linear_LS(Mat(left_cam_mat),
-                                                   Mat(right_cam_mat),
+            Mat X_hom = nav::triangulate_Linear_LS(Mat(*left_cam_mat),
+                                                   Mat(*right_cam_mat),
                                                    Mat(pt_L_hom), Mat(pt_R_hom));
             X_hom = X_hom / X_hom.at<double>(3, 0);
             pt_3D <<
                   X_hom.at<double>(0, 0), X_hom.at<double>(1, 0), X_hom.at<double>(2, 0);
-            cout << "[ " << pt_3D(0) << ", "  << pt_3D(1) << ", " << pt_3D(2) << "]" << endl;
+            // cout << "[ " << pt_3D(0) << ", "  << pt_3D(1) << ", " << pt_3D(2) << "]" << endl;
             feature_pts_3d.push_back(pt_3D);
         }
     //cout << "num 3D features: " << feature_pts_3d.size() << endl;
@@ -127,13 +126,19 @@ void StereoModelFitter::calculate_3D_reconstruction(vector<Eigen::Vector3d>& fea
 
 bool StereoModelFitter::check_for_model(vector<Eigen::Vector3d>  feature_pts_3d, vector<Eigen::Vector3d>& correct_model, vector<Point> correct_image_points)
 {
-    decision_tree(feature_pts_3d, 0, model.min_points);
+//    std::string input = "";
+//    cin >> input;
+//    if(input != "skip"){
+//        decision_tree(feature_pts_3d, 0, model.min_points, true);
+//    }else{
+       decision_tree(feature_pts_3d, 0, model.min_points, false);
+    //}
+    model.get_model(correct_model, correct_image_points, *current_image_left, *left_cam_mat);
+    model.clear();
     return true;
-
-
 }
 
-void StereoModelFitter::decision_tree(vector<Eigen::Vector3d>  feature_pts_3d, int curr, int left)
+void StereoModelFitter::decision_tree(vector<Eigen::Vector3d>  feature_pts_3d, int curr, int left, bool check)
 {
     int total = feature_pts_3d.size();
     // If the current model has the right amount of points or we have no more combinations left to check (the second is condition is unecessary, but for safety)
@@ -142,11 +147,11 @@ void StereoModelFitter::decision_tree(vector<Eigen::Vector3d>  feature_pts_3d, i
             for(int i = curr + 1; i <= total - left; ++i)
                 {
                     Eigen::Vector3d point = feature_pts_3d[i];
-                    bool val = model.check_point(point);
+                    bool val = model.check_point(point, *current_image_left, *left_cam_mat, check);
                     // If that point was correct, keep checking the rest of the points
                     if(val)
                         {
-                            decision_tree(feature_pts_3d, i, left - 1);
+                            decision_tree(feature_pts_3d, i, left - 1, check);
                         }
                     // Remove that point from the model so that other points can be checked
                     model.remove_point(point);
@@ -154,55 +159,79 @@ void StereoModelFitter::decision_tree(vector<Eigen::Vector3d>  feature_pts_3d, i
         }
 }
 
-
 void StereoModelFitter::visualize_points(vector<Eigen::Vector3d>  feature_pts_3d,
-        Mat& current_image_left)
+        Mat& img)
 {
     // visualize reconstructions
-    cout<<feature_pts_3d.size()<<endl;
+    //cout<<feature_pts_3d.size()<<endl;
+    cv::Mat current_image_left = img.clone();
     for(size_t i = 0; i < feature_pts_3d.size(); i++)
-        {
-            Eigen::Vector3d pt = feature_pts_3d[i];
-            //cout<<pt[0]<<","<<pt[1]<<","<<pt[2]<<endl;
-            Matx41d position_hom(pt(0), pt(1), pt(2), 1);
-            Matx31d pt_L_2d_hom = this->left_cam_mat * position_hom;
-            Point2d L_center2d(pt_L_2d_hom(0) / pt_L_2d_hom(2), pt_L_2d_hom(1) / pt_L_2d_hom(2));
-            Scalar color(255, 0, 255);
-            stringstream label;
-            label << i;
-            circle(current_image_left, L_center2d, 5, color, -1);
-            putText(current_image_left, label.str(), L_center2d, FONT_HERSHEY_SIMPLEX,
-                    0.0015 * current_image_left.rows, Scalar(0, 0, 0), 2);
-        }
+    {
+        Eigen::Vector3d pt = feature_pts_3d[i];
+        //cout<<pt[0]<<","<<pt[1]<<","<<pt[2]<<endl;
+        Matx41d position_hom(pt(0), pt(1), pt(2), 1);
+        Matx31d pt_L_2d_hom = *left_cam_mat * position_hom;
+        Point2d L_center2d(pt_L_2d_hom(0) / pt_L_2d_hom(2), pt_L_2d_hom(1) / pt_L_2d_hom(2));
+        Scalar color(255, 0, 255);
+        stringstream label;
+        label << i;
+        std::cout<<i<<": " <<pt(0)<<","<<pt(1)<<","<<pt(2)<<std::endl;
+        circle(current_image_left, L_center2d, 5, color, -1);
+        putText(current_image_left, label.str(), L_center2d, FONT_HERSHEY_SIMPLEX,
+                0.0015 * current_image_left.rows, Scalar(0, 0, 0), 2);
+    }
     sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", current_image_left).toImageMsg();
     debug_publisher.publish(msg);
     ros::spinOnce();
+
+//    string input;
+//     >> input;
+//    while(input != "done"){
+//      int a, b;
+//      std::size_t pos = input.find(",");
+//      string t = input.substr(0, pos);
+//      string s = input.substr(pos+1);
+//      istringstream (t ) >> a;
+//      istringstream (s) >> b;
+//      std::cout<<std::endl;
+
+//      Eigen::Vector3d diff = feature_pts_3d[a] - feature_pts_3d[b];
+//      float dist_from_starting = sqrt(pow(diff[0], 2) + pow(diff[1], 2) + pow(diff[2], 2));
+//      std::cout<<dist_from_starting<<std::endl;
+//      cin >> input;
+
+//    }
+
 }
 
 bool StereoModelFitter::determine_model_position(Eigen::Vector3d& position,
-        int max_corners, int block_size,
-        double min_distance, double image_proc_scale,
-        int diffusion_time, Mat current_image_left,
-        Mat current_image_right,
+        int max_corners, int block_size, double min_distance, double image_proc_scale,int diffusion_time,
+        Mat current_image_left, Mat current_image_right,
         Matx34d left_cam_mat, Matx34d right_cam_mat)
 {
     this->image_proc_scale = image_proc_scale;
 
-    this->left_cam_mat = left_cam_mat;
-    this->right_cam_mat = right_cam_mat;
+    this->left_cam_mat = &left_cam_mat;
+    this->right_cam_mat = &right_cam_mat;
+    this->current_image_left = &current_image_left;
+    this->current_image_right = &current_image_right;
 
     Mat l_diffused, r_diffused;
     denoise_images(l_diffused, r_diffused, diffusion_time, current_image_right, current_image_left);
 
     // Extract Features
+    //l_diffused = current_image_left;
+    //r_diffused = current_image_right;
     vector< Point > features_l, features_r;
     Mat l_diffused_draw = l_diffused.clone();
     Mat r_diffused_draw = r_diffused.clone();
     double quality_level = 0.05;
-    extract_features(features_l, l_diffused_draw, max_corners, block_size,
-                     quality_level, min_distance);
     extract_features(features_r, r_diffused_draw, max_corners, block_size,
                      quality_level, min_distance);
+    extract_features(features_l, l_diffused_draw, max_corners, block_size,
+                     quality_level, min_distance);
+
+
 
     // Stereo Matching
     vector<int> correspondence_pair_idxs;
@@ -213,92 +242,17 @@ bool StereoModelFitter::determine_model_position(Eigen::Vector3d& position,
     calculate_3D_reconstruction(feature_pts_3d, correspondence_pair_idxs, features_l, features_r);
 
 
-    int curr_min_cost_idx = -1;
-    double curr_min_cost = 1E9;
-
-    vector< vector<uint8_t> > four_pt_combo_idxs;
     vector<Eigen::Vector3d> correct_model;
     vector<Point> correct_image_points;
+
+    //visualize_points(feature_pts_3d, current_image_left);
     check_for_model(feature_pts_3d, correct_model, correct_image_points);
 
-    //cout << "min_cost_idx: " << curr_min_cost_idx << " min_cost: " << curr_min_cost << endl;
-    if(curr_min_cost < 0.05 || curr_min_cost_idx != -1)
-        {
-            position = feature_pts_3d[curr_min_cost_idx];
-            vector<uint8_t> found_points = four_pt_combo_idxs[curr_min_cost_idx];
-            vector<Eigen::Vector3d> points;
-            for(uint8_t idx : found_points)
-                {
-                    points.push_back(feature_pts_3d[idx]);
-                }
-            cout<<"You did it"<<endl;
-            visualize_points(points, current_image_left);
-            return true;
-        }
-    else
-        {
-            visualize_points(feature_pts_3d, current_image_left);
-            return false;
-        }
+
+
+    return true;
 }
 
-void combinations(uint8_t n, uint8_t k, vector< vector<uint8_t> > &idx_array)
-{
-
-    idx_array = vector< vector<uint8_t> >();
-
-    vector<uint8_t> first_comb;
-
-    // set first combination indices
-    for(uint8_t i = 0; i < k; i++)
-        {
-            first_comb.push_back(i);
-        }
-
-    uint8_t level = 0;
-
-    _increase_elements_after_level(first_comb, idx_array, n, k, level);
-}
-
-void _increase_elements_after_level(vector<uint8_t> comb, vector< vector<uint8_t> > &comb_array,
-                                    uint8_t n, uint8_t k, uint8_t level)
-{
-
-    vector<uint8_t> parent = comb;
-    vector< vector<uint8_t> > children;
-
-    while(true)
-        {
-
-            for(uint8_t idx = level; idx < k; idx++)
-                {
-                    comb[idx] = comb[idx] + 1;
-                }
-            if(comb[level] > n - (k - level)) break;
-            children.push_back(comb);
-        }
-
-    if(level == k - 1)
-        {
-
-            comb_array.push_back(parent);
-            for(vector<uint8_t> child : children)
-                {
-                    comb_array.push_back(child);
-                }
-
-        }
-    else
-        {
-
-            _increase_elements_after_level(parent, comb_array, n, k, level + 1);
-            for(vector<uint8_t> child : children)
-                {
-                    _increase_elements_after_level(child, comb_array, n, k, level + 1);
-                }
-
-        }
-}
 
 void anisotropic_diffusion(const Mat &src, Mat &dest, int t_max)
 {

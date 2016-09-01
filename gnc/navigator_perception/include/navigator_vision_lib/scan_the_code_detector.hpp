@@ -11,6 +11,8 @@
 
 #include <stdlib.h>     //for using the function sleep
 
+#include <stdlib.h>     //for using the function sleep
+
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -68,7 +70,7 @@ public:
 
 
 private:
-    StereoModelFitter* model_fitter;
+    StereoModelFitter* model_fitter = NULL;
 
     //ATTRIBUTES:
 
@@ -80,6 +82,8 @@ private:
     image_transport::ImageTransport image_transport;
     image_transport::Publisher debug_image_pub;
     image_geometry::PinholeCameraModel left_cam_model, right_cam_model;
+    sub::ImageWithCameraInfo left_most_recent;
+    sub::ImageWithCameraInfo right_most_recent;
 
     // Scan The Code Board detection will be attempted when true
     bool active;
