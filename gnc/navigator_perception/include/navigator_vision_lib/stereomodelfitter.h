@@ -60,7 +60,8 @@ protected:
     void extract_features(std::vector<Point> & features, Mat& image, int max_corners, int block_size, double quality_level, double min_distance);
     void denoise_images(Mat& l_diffused, Mat& r_diffused, int diffusion_time, Mat current_image_left,
                         Mat current_image_right);
-    void decision_tree(vector<Eigen::Vector3d>  feature_pts_3d, int curr, int left, bool check);
+    void decision_tree(vector<Eigen::Vector3d>  feature_pts_3d, int curr, int left, vector<int> check);
+    std::vector<int> split(string str);
 
     cv::Mat* current_image_left = NULL;
     cv::Mat* current_image_right = NULL;
