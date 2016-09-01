@@ -3,6 +3,7 @@ project(navigator_perception)
 
 SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -g -rdynamic -Wall -std=c++11 ")
+set(CMAKE_BUILD_TYPE Debug)
 
 find_package(catkin
   REQUIRED COMPONENTS
