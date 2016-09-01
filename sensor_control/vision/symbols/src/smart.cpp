@@ -19,23 +19,20 @@
 class ImageSearcher {
  private:
   ros::NodeHandle n;
-  ros::Subscriber sub;
-  ros::ServiceServer service;
+  ros::Subscriber foundShapesSubscriber;
+  ros::ServiceServer getShapeService;
+  ros::ServiceServer runService;
   navigator_msgs::DockShapes syms;                            // latest frame
   std::vector<navigator_msgs::DockShapes> frameSymbolHolder;  // Previous frames
   std::vector<navigator_msgs::DockShape> possibleSymbols;
   std::string possibleShapes[3] = {navigator_msgs::DockShape::CROSS, navigator_msgs::DockShape::TRIANGLE,
                                   navigator_msgs::DockShape::CIRCLE};
   std::string possibleColors[3] = {navigator_msgs::DockShape::RED, navigator_msgs::DockShape::BLUE, navigator_msgs::DockShape::GREEN};
-  ros::ServiceServer serviceCommand;
   int counter[3 * 3];
   int frames;
   bool active;
-  int lastCallFrame;
  public:
   ImageSearcher() {
-    frames = 0;
-    lastCallFrame = 0;
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
         navigator_msgs::DockShape holdSym;
@@ -47,11 +44,9 @@ class ImageSearcher {
         counter[i * j] = 0;
       }
     }
-    syms = navigator_msgs::DockShapes();
-    sub = n.subscribe("/dock_shapes/found_shapes", 1000, &ImageSearcher::chatterCallback, this);
-    serviceCommand = n.advertiseService("/dock_shapes/runsmart", &ImageSearcher::getShapeController, this);
-    service = n.advertiseService("/dock_shapes/GetShape", &ImageSearcher::getShape, this);
-    active = false;
+    foundShapesSubscriber = n.subscribe("/dock_shapes/found_shapes", 1000, &ImageSearcher::foundShapesCallback, this);
+    runService = n.advertiseService("/dock_shapes/run", &ImageSearcher::runCallback, this);
+    getShapeService = n.advertiseService("/dock_shapes/GetShape", &ImageSearcher::getShapeCallback, this);
   }
 
   float mean(int val, int size) { return val / size; }
@@ -75,7 +70,7 @@ class ImageSearcher {
     }
   }
 
-  void chatterCallback(const navigator_msgs::DockShapes &symbols) {
+  void foundShapesCallback(const navigator_msgs::DockShapes &symbols) {
     if (!active) return;
     frames++;
     syms = symbols;
@@ -83,7 +78,7 @@ class ImageSearcher {
     shapeChecker(symbols);
   }
 
-  bool getShape(navigator_msgs::GetDockShape::Request &req, navigator_msgs::GetDockShape::Response &res) {
+  bool getShapeCallback(navigator_msgs::GetDockShape::Request &req, navigator_msgs::GetDockShape::Response &res) {
     if (!active) {
         res.success=true;
         return false;
@@ -100,7 +95,6 @@ class ImageSearcher {
           if (std::abs(syms.list[j].CenterX - mean(possibleSymbols[i].CenterX, counter[i])) < 100 &&
               std::abs(syms.list[j].CenterY - mean(possibleSymbols[i].CenterY, counter[i])) < 100) {
             res.symbol = syms.list[j];
-            lastCallFrame = frames;
             res.success=true;
             return true;
           }
@@ -111,13 +105,11 @@ class ImageSearcher {
     return false;
   }
 
-  bool getShapeController(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res) {
+  bool runCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res) {
     std_srvs::SetBool msg;
     msg.request.data = req.data;
     active = req.data;
-
-    ros::service::call("/dock_shapes/runvision", msg);
-    std::cout << "Setting active to " << active << std::endl;
+    ros::service::call("/dock_shape_processor/run", msg);
     res.success = true;
     return true;
   }

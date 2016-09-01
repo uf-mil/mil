@@ -30,39 +30,37 @@ class ShooterVision {
     ros::NodeHandle nh_;
     image_transport::ImageTransport it_;
     image_transport::Subscriber image_sub_;
-    image_transport::Publisher image_pub_;
-    ros::Publisher chatter_pub;
+    ros::Publisher foundShapesPublisher;
 
-    ros::ServiceServer serviceCommand;
+    ros::ServiceServer runService;
     std::string camera_topic;
     bool active;
 
   public:
     ShooterVision() :
       nh_("dock_shape_processor"),
-      it_(nh_), fp(), 
+      it_(nh_),
       blueFinder(navigator_msgs::DockShape::BLUE), 
       redFinder(navigator_msgs::DockShape::RED),
       greenFinder(navigator_msgs::DockShape::GREEN)
     {
-      active = false;
       fp.init(&nh_);
       nh_.param<std::string>("symbol_camera", camera_topic, "/right_camera/image_color");
-      serviceCommand = nh_.advertiseService("/dock_shapes/runvision", &ShooterVision::getShapeController, this);
+      runService = nh_.advertiseService("run", &ShooterVision::runCallback, this);
       #ifdef DO_DEBUG
       DebugWindow::init();
       #endif
 
-      chatter_pub = nh_.advertise<navigator_msgs::DockShapes>("/dock_shapes/found_shapes", 1000);
+      foundShapesPublisher = nh_.advertise<navigator_msgs::DockShapes>("/dock_shapes/found_shapes", 1000);
       image_sub_ = it_.subscribe(camera_topic, 1, &ShooterVision::run, this);
     }
 
-    bool getShapeController(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res) {
+    bool runCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res) {
       active = req.data;
-      std::cout<<"Setting active to "<<active<<std::endl;
       return true;
     }
     void run(const sensor_msgs::ImageConstPtr &msg) {
+      if (!active) return;
       // Grab ros frame
       cv_bridge::CvImagePtr cv_ptr;
       try {
@@ -73,23 +71,21 @@ class ShooterVision {
       }
       // Convert Ros frame to opencv
       cv::waitKey(3);
-      if(active) {
-        // Process frame
-        fp.Prepare(cv_ptr->image);
-        symbols.list.clear();
+      // Process frame
+      fp.Prepare(cv_ptr->image);
+      symbols.list.clear();
 
-        // Find shapes in each color
-        blueFinder.GetSymbols(fp.GetBlue(), &symbols);
-        redFinder.GetSymbols(fp.GetRed(), &symbols);
-        greenFinder.GetSymbols(fp.GetGreen(), &symbols);
+      // Find shapes in each color
+      blueFinder.GetSymbols(fp.GetBlue(), &symbols);
+      redFinder.GetSymbols(fp.GetRed(), &symbols);
+      greenFinder.GetSymbols(fp.GetGreen(), &symbols);
 
-        // Publish to ros
-        #ifdef DO_DEBUG
-        DebugWindow::UpdateResults(symbols);
-        #endif
+      // Publish to ros
+      #ifdef DO_DEBUG
+      DebugWindow::UpdateResults(symbols);
+      #endif
 
-        chatter_pub.publish(symbols);
-      }
+      foundShapesPublisher.publish(symbols);
     }
 };
 
