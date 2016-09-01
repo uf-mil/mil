@@ -36,9 +36,7 @@ bool PerceptionModel::check_point(Eigen::Vector3d point, cv:: Mat img, cv::Matx3
     {
         return true;
     }
-    if(check){
-      visualize_points(current_points, img, left_cam_mat, "poo");
-    }
+
 
 
     Eigen::Vector3d starting_point = current_points[0];
@@ -46,6 +44,9 @@ bool PerceptionModel::check_point(Eigen::Vector3d point, cv:: Mat img, cv::Matx3
     float dist_from_starting = sqrt(pow(diff[0], 2) + pow(diff[1], 2) + pow(diff[2], 2));
     std::cout<<"dist_from_starting"<<std::endl;
     std::cout<<dist_from_starting<<std::endl;
+    if(check){
+      visualize_points(current_points, img, left_cam_mat, "poo");
+    }
     bool ans = false;
     double mindist = 100;
     double minel = -1;
@@ -83,6 +84,9 @@ bool PerceptionModel::check_point(Eigen::Vector3d point, cv:: Mat img, cv::Matx3
         }
     }
     std::cout<<"-------"<<std::endl;
+    std::cout<<" "<<std::endl;
+    std::cout<<" "<<std::endl;
+    std::cout<<" "<<std::endl;
     if(ans){
        unused_distances.erase(std::remove(unused_distances.begin(), unused_distances.end(), minel), unused_distances.end());
     }

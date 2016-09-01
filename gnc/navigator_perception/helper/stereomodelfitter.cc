@@ -128,14 +128,24 @@ bool StereoModelFitter::check_for_model(vector<Eigen::Vector3d>  feature_pts_3d,
 //    if(input != "skip"){
 //        decision_tree(feature_pts_3d, 0, model.min_points, true);
 //    }else{
-       decision_tree(feature_pts_3d, 0, model.min_points, false);
+
+
+  string bin;
+  cin >> bin;
+  vector<int> boop;
+  if(bin != "done"){
+    boop  = split(bin);
+
+  }
+
+        decision_tree(feature_pts_3d, 0, model.min_points, boop);
     //}
     model.get_model(correct_model, correct_image_points, *current_image_left, *left_cam_mat);
     model.clear();
     return true;
 }
 
-void StereoModelFitter::decision_tree(vector<Eigen::Vector3d>  feature_pts_3d, int curr, int left, bool check)
+void StereoModelFitter::decision_tree(vector<Eigen::Vector3d>  feature_pts_3d, int curr, int left, vector<int> check)
 {
     int total = feature_pts_3d.size();
     // If the current model has the right amount of points or we have no more combinations left to check (the second is condition is unecessary, but for safety)
@@ -144,7 +154,14 @@ void StereoModelFitter::decision_tree(vector<Eigen::Vector3d>  feature_pts_3d, i
             for(int i = curr + 1; i <= total - left; ++i)
                 {
                     Eigen::Vector3d point = feature_pts_3d[i];
-                    bool val = model.check_point(point, *current_image_left, *left_cam_mat, check);
+                    bool val = false;
+                    int a = model.current_points.size();
+                    if(std::find(check.begin(), check.end(), i) != check.end()){
+                      val = model.check_point(point, *current_image_left, *left_cam_mat, true);
+                    }else{
+                      val = model.check_point(point, *current_image_left, *left_cam_mat, false);
+                    }
+
                     // If that point was correct, keep checking the rest of the points
                     if(val)
                         {
@@ -154,6 +171,25 @@ void StereoModelFitter::decision_tree(vector<Eigen::Vector3d>  feature_pts_3d, i
                     model.remove_point(point);
                 }
         }
+}
+
+std::vector<int> StereoModelFitter::split(string str){
+      std::vector<int> vect;
+
+      std::stringstream ss(str);
+
+      int i;
+
+      while (ss >> i)
+      {
+          vect.push_back(i);
+
+          if (ss.peek() == ',')
+              ss.ignore();
+      }
+
+      return vect;
+
 }
 
 void StereoModelFitter::visualize_points(vector<Eigen::Vector3d>  feature_pts_3d,
@@ -182,7 +218,7 @@ void StereoModelFitter::visualize_points(vector<Eigen::Vector3d>  feature_pts_3d
     ros::spinOnce();
 
 //    string input;
-//     >> input;
+//    cin >> input;
 //    while(input != "done"){
 //      int a, b;
 //      std::size_t pos = input.find(",");
@@ -242,7 +278,7 @@ bool StereoModelFitter::determine_model_position(Eigen::Vector3d& position,
     vector<Eigen::Vector3d> correct_model;
     vector<Point> correct_image_points;
 
-    //visualize_points(feature_pts_3d, current_image_left);
+    visualize_points(feature_pts_3d, current_image_left);
     check_for_model(feature_pts_3d, correct_model, correct_image_points);
 
 
