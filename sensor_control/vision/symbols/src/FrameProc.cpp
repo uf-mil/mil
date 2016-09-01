@@ -1,16 +1,11 @@
 #include "FrameProc.h"
 
-
-const int FrameProc::blur_kernel_size = 3;
-const int FrameProc::erode_kernel_size = 3;
-const int FrameProc::dilate_kernel_size = 3;
+int FrameProc::erode_kernel_size = 3;
+int FrameProc::dilate_kernel_size = 3;
 
 FrameProc::FrameProc()
 {
-
-	erode_element = getStructuringElement(MORPH_RECT,Size(2*erode_kernel_size + 1,2*erode_kernel_size+1), Point(erode_kernel_size,erode_kernel_size)) ;
-
-	dilate_element = getStructuringElement(MORPH_RECT,Size( 2* dilate_kernel_size + 1, 2* dilate_kernel_size+1 ), Point(dilate_kernel_size, dilate_kernel_size));
+  rebuildElements();
 	
   red = ColorThresh{Scalar(0,10, 100), Scalar(30, 255, 255)};
 	red2 = ColorThresh{Scalar(155, 10, 100), Scalar(180, 255, 255)};
@@ -25,8 +20,14 @@ FrameProc::FrameProc()
   //namedWindow("red",CV_WINDOW_AUTOSIZE);
   #endif
 }
+void FrameProc::rebuildElements()
+{
+  erode_element = getStructuringElement(MORPH_RECT,Size(2*erode_kernel_size + 1,2*erode_kernel_size+1), Point(erode_kernel_size,erode_kernel_size)) ;
+  dilate_element = getStructuringElement(MORPH_RECT,Size( 2* dilate_kernel_size + 1, 2* dilate_kernel_size+1 ), Point(dilate_kernel_size, dilate_kernel_size));
+}
 void FrameProc::init(ros::NodeHandle* nh)
 {
+  //Set HSV values
   nh->getParam("hsv/red1/low/H",red.low[0]);
   nh->getParam("hsv/red1/low/S",red.low[1]);
   nh->getParam("hsv/red1/low/V",red.low[2]);
@@ -54,6 +55,11 @@ void FrameProc::init(ros::NodeHandle* nh)
   nh->getParam("hsv/green/high/H",green.high[0]);
   nh->getParam("hsv/green/high/S",green.high[1]);
   nh->getParam("hsv/green/high/V",green.high[2]);
+  
+  //Set blue/dilate size
+  nh->getParam("erode_size",erode_kernel_size);
+  nh->getParam("dilate_size",dilate_kernel_size);
+  rebuildElements();
 }
 void FrameProc::ErodeDilate()
 {

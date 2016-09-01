@@ -14,13 +14,11 @@ using namespace cv;
 class FrameProc
 {
 	private:
-    //const int height = 480;
-		//const int width = 640;
-		static const int blur_kernel_size;
-		static const int erode_kernel_size;
-		static const int dilate_kernel_size;
+		static int erode_kernel_size;
+		static int dilate_kernel_size;
 		Mat erode_element;
 		Mat dilate_element;
+    void rebuildElements();
 		struct ColorThresh
 		{
 			Scalar low;

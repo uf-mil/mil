@@ -1,3 +1,5 @@
+erode_size: 3
+dilate_size: 3
 hsv:
   red1:
     low:
