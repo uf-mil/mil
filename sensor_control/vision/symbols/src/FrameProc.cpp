@@ -12,26 +12,48 @@ FrameProc::FrameProc()
 
 	dilate_element = getStructuringElement(MORPH_RECT,Size( 2* dilate_kernel_size + 1, 2* dilate_kernel_size+1 ), Point(dilate_kernel_size, dilate_kernel_size));
 	
-	//OpenCV does 0-180 instead of 0-360, so just divide by 2
-	red = ColorThresh{Scalar(0, 10, 100), Scalar(30, 255, 255)}; //0 to 30/2 (includes orange)
-	red2 = ColorThresh{Scalar(155, 10, 100), Scalar(180, 255, 255)}; // 330/2 to 180
-	blue = ColorThresh{Scalar(90,100,100),Scalar(150,255,255)}; // 210/2 to 270/2
-	green = ColorThresh{Scalar(30, 85, 25),Scalar(85,255,255)}; // 70/2 to 170/2
-	//Green now works... But the crests in the shapes are the same shades as the grass...
-	
-	//http://graphicdesign.stackexchange.com/questions/16166/what-is-the-relationship-between-hue-saturation-and-value
-	
-	rgb_frame = Mat();
-	hsv_frame = Mat();
-	binary_blue_frame = Mat();
-	binary_red_frame = Mat();
-	binary_green_frame = Mat();
-	
+  red = ColorThresh{Scalar(0,10, 100), Scalar(30, 255, 255)};
+	red2 = ColorThresh{Scalar(155, 10, 100), Scalar(180, 255, 255)};
+	blue = ColorThresh{Scalar(90,100,100),Scalar(150,255,255)};
+	green = ColorThresh{Scalar(30, 85, 25),Scalar(85,255,255)};
+
+  #ifdef DO_DEBUG
 	//namedWindow("blured",CV_WINDOW_AUTOSIZE);
 	//namedWindow("hsv",CV_WINDOW_AUTOSIZE);
   //namedWindow("blue",CV_WINDOW_AUTOSIZE);
   //namedWindow("green",CV_WINDOW_AUTOSIZE);
   //namedWindow("red",CV_WINDOW_AUTOSIZE);
+  #endif
+}
+void FrameProc::init(ros::NodeHandle* nh)
+{
+  nh->getParam("hsv/red1/low/H",red.low[0]);
+  nh->getParam("hsv/red1/low/S",red.low[1]);
+  nh->getParam("hsv/red1/low/V",red.low[2]);
+  nh->getParam("hsv/red1/high/H",red.high[0]);
+  nh->getParam("hsv/red1/high/S",red.high[1]);
+  nh->getParam("hsv/red1/high/V",red.high[2]);
+  
+  nh->getParam("hsv/red2/low/H",red2.low[0]);
+  nh->getParam("hsv/red2/low/S",red2.low[1]);
+  nh->getParam("hsv/red2/low/V",red2.low[2]);
+  nh->getParam("hsv/red2/high/H",red2.high[0]);
+  nh->getParam("hsv/red2/high/S",red2.high[1]);
+  nh->getParam("hsv/red2/high/V",red2.high[2]);
+  
+  nh->getParam("hsv/blue/low/H",blue.low[0]);
+  nh->getParam("hsv/blue/low/S",blue.low[1]);
+  nh->getParam("hsv/blue/low/V",blue.low[2]);
+  nh->getParam("hsv/blue/high/H",blue.high[0]);
+  nh->getParam("hsv/blue/high/S",blue.high[1]);
+  nh->getParam("hsv/blue/high/V",blue.high[2]);
+
+  nh->getParam("hsv/green/low/H",green.low[0]);
+  nh->getParam("hsv/green/low/S",green.low[1]);
+  nh->getParam("hsv/green/low/V",green.low[2]);
+  nh->getParam("hsv/green/high/H",green.high[0]);
+  nh->getParam("hsv/green/high/S",green.high[1]);
+  nh->getParam("hsv/green/high/V",green.high[2]);
 }
 void FrameProc::ErodeDilate()
 {
@@ -52,9 +74,11 @@ void FrameProc::ThresholdColors()
 	inRange(hsv_frame,blue.low,blue.high,binary_blue_frame);
 	inRange(hsv_frame,green.low,green.high,binary_green_frame);
   
+  #ifdef DO_DEBUG
   //imshow("blue",binary_blue_frame);
   //imshow("green",binary_green_frame);
   //imshow("red",binary_red_frame);
+  #endif
 }
 void FrameProc::Prepare(Mat &frame)
 {

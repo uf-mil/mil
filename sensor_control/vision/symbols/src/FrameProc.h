@@ -6,7 +6,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/opencv.hpp"
-
+#include <ros/ros.h>
 #include "DebugWindow.h"
 
 using namespace cv;
@@ -42,6 +42,7 @@ class FrameProc
 		void ThresholdColors();
 	public:
 		FrameProc();
+    void init(ros::NodeHandle* nh);
 		void Prepare(Mat &frame);
 		Mat GetRed();
 		Mat GetBlue();
