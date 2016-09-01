@@ -46,7 +46,7 @@ class ShooterVision {
       greenFinder(navigator_msgs::DockShape::GREEN)
     {
       active = false;
-
+      fp.init(&nh_);
       nh_.param<std::string>("symbol_camera", camera_topic, "/right_camera/image_color");
       serviceCommand = nh_.advertiseService("/dock_shapes/runvision", &ShooterVision::getShapeController, this);
       #ifdef DO_DEBUG

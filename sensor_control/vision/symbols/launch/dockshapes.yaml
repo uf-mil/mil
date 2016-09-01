@@ -1,0 +1,39 @@
+erode_size: 3
+dilate_size: 3
+hsv:
+  red1:
+    low:
+      H: 0
+      S: 10
+      V: 100
+    high:
+      H: 30
+      S: 255
+      V: 255
+  red2:
+    low:
+      H: 155
+      S: 10
+      V: 100
+    high:
+      H: 180
+      S: 255
+      V: 255
+  blue:
+    low:
+      H: 90
+      S: 100
+      V: 100
+    high:
+      H: 150
+      S: 255
+      V: 255
+  green:
+    low:
+      H: 30
+      S: 85
+      V: 25
+    high:
+      H: 85
+      S: 255
+      V: 255

@@ -6,7 +6,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/opencv.hpp"
-
+#include <ros/ros.h>
 #include "DebugWindow.h"
 
 using namespace cv;
@@ -14,13 +14,11 @@ using namespace cv;
 class FrameProc
 {
 	private:
-    //const int height = 480;
-		//const int width = 640;
-		static const int blur_kernel_size;
-		static const int erode_kernel_size;
-		static const int dilate_kernel_size;
+		static int erode_kernel_size;
+		static int dilate_kernel_size;
 		Mat erode_element;
 		Mat dilate_element;
+    void rebuildElements();
 		struct ColorThresh
 		{
 			Scalar low;
@@ -42,6 +40,7 @@ class FrameProc
 		void ThresholdColors();
 	public:
 		FrameProc();
+    void init(ros::NodeHandle* nh);
 		void Prepare(Mat &frame);
 		Mat GetRed();
 		Mat GetBlue();
