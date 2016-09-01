@@ -48,7 +48,11 @@ class ImageSearcher {
     runService = n.advertiseService("/dock_shapes/run", &ImageSearcher::runCallback, this);
     getShapeService = n.advertiseService("/dock_shapes/GetShape", &ImageSearcher::getShapeCallback, this);
   }
-
+  bool validRequest(navigator_msgs::GetDockShape::Request &req)
+  {
+    return (req.Color == navigator_msgs::GetDockShape::Request::BLUE || req.Color == navigator_msgs::GetDockShape::Request::GREEN || req.Color == navigator_msgs::GetDockShape::Request::RED) 
+      &&   (req.Shape == navigator_msgs::GetDockShape::Request::CIRCLE || req.Shape == navigator_msgs::GetDockShape::Request::CROSS || req.Shape == navigator_msgs::GetDockShape::Request::TRIANGLE);
+  }
   float mean(int val, int size) { return val / size; }
   void shapeChecker(const navigator_msgs::DockShapes &symbols) {
     if (!active) return;
@@ -80,13 +84,20 @@ class ImageSearcher {
 
   bool getShapeCallback(navigator_msgs::GetDockShape::Request &req, navigator_msgs::GetDockShape::Response &res) {
     if (!active) {
-        res.success=true;
-        return false;
+        res.found = false;
+        res.error = navigator_msgs::GetDockShape::Response::NODE_DISABLED;
+        return true;
+    }
+    if (!validRequest(req))
+    {
+      res.found = false;
+      res.error = navigator_msgs::GetDockShape::Response::INVALID_REQUEST;
+      return true;
     }
     if (frames < 10) {
-      std::cout << "Too small of sample frames" << frames << std::endl;
-      res.success=true;
-      return false;
+      res.found=false;
+      res.error = navigator_msgs::GetDockShape::Response::TOO_SMALL_SAMPLE;
+      return true;
     }
     for (int j = 0; j < syms.list.size(); j++) {
       for (int i = 0; i < possibleSymbols.size(); i++) {
@@ -95,14 +106,15 @@ class ImageSearcher {
           if (std::abs(syms.list[j].CenterX - mean(possibleSymbols[i].CenterX, counter[i])) < 100 &&
               std::abs(syms.list[j].CenterY - mean(possibleSymbols[i].CenterY, counter[i])) < 100) {
             res.symbol = syms.list[j];
-            res.success=true;
+            res.found = true;
             return true;
           }
         }
       }
     }
-    res.success=true;
-    return false;
+    res.found = false;
+    res.error = navigator_msgs::GetDockShape::Response::SHAPE_NOT_FOUND;
+    return true;
   }
 
   bool runCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res) {

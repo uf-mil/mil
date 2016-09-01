@@ -1,12 +1,17 @@
 string Shape
-#char CROSS=112 #p
-#char TRIANGLE = 116 #t
-#char CIRCLE = 99 #c
+string CROSS=CROSS
+string TRIANGLE=TRIANGLE
+string CIRCLE =CIRCLE
 
 string Color
-#char RED = 114 #r
-#char BLUE = 98 #b
-#char GREEN = 103 #g
+string RED=RED
+string BLUE=BLUE
+string GREEN=GREEN
 ---
 navigator_msgs/DockShape symbol
-bool success
+bool found
+string error
+string INVALID_REQUEST=INVALID_REQUEST
+string NODE_DISABLED=NODE_DISABLED
+string TOO_SMALL_SAMPLE=TOO_SMALL_SAMPLE
+string SHAPE_NOT_FOUND=SHAPE_NOT_FOUND
