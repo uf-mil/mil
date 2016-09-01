@@ -18,30 +18,41 @@
 
 class ImageSearcher {
  private:
+  static const int SHAPE_BUFFER_SIZE = 30;
+  static const int POSSIBLE_SYMBOLS_SIZE = 9;
+  static const int MAX_SEEN_GAP_SEC = 5;
+  static const int MAX_SEEN_GAP_NSEC = 0;
+  ros::Duration max_seen_gap_dur;
   ros::NodeHandle n;
   ros::Subscriber foundShapesSubscriber;
   ros::ServiceServer getShapeService;
   ros::ServiceServer runService;
-  navigator_msgs::DockShapes syms;                            // latest frame
-  std::vector<navigator_msgs::DockShapes> frameSymbolHolder;  // Previous frames
-  std::vector<navigator_msgs::DockShape> possibleSymbols;
+  struct ShapesBuffer
+  {
+    std::vector<navigator_msgs::DockShape> buffer;
+    std::string Shape;
+    std::string Color;
+    ros::Time lastSeen;
+  };
+  navigator_msgs::DockShapes syms;                          // latest frame
+  ShapesBuffer foundShapes[POSSIBLE_SYMBOLS_SIZE];
   std::string possibleShapes[3] = {navigator_msgs::DockShape::CROSS, navigator_msgs::DockShape::TRIANGLE,
                                   navigator_msgs::DockShape::CIRCLE};
   std::string possibleColors[3] = {navigator_msgs::DockShape::RED, navigator_msgs::DockShape::BLUE, navigator_msgs::DockShape::GREEN};
-  int counter[3 * 3];
   int frames;
   bool active;
  public:
-  ImageSearcher() {
+  ImageSearcher() : 
+    max_seen_gap_dur(MAX_SEEN_GAP_SEC,MAX_SEEN_GAP_NSEC)
+  {
+    int u = 0;
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
-        navigator_msgs::DockShape holdSym;
-        holdSym.Shape = possibleShapes[i];
-        holdSym.Color = possibleColors[j];
-        holdSym.CenterX = 0;
-        holdSym.CenterY = 0;
-        possibleSymbols.push_back(holdSym);
-        counter[i * j] = 0;
+        ShapesBuffer sb;
+        sb.Shape = possibleShapes[i];
+        sb.Color = possibleColors[j];
+        foundShapes[u] = sb;
+        u++;
       }
     }
     foundShapesSubscriber = n.subscribe("/dock_shapes/found_shapes", 1000, &ImageSearcher::foundShapesCallback, this);
@@ -57,28 +68,31 @@ class ImageSearcher {
   void shapeChecker(const navigator_msgs::DockShapes &symbols) {
     if (!active) return;
     for (int i = 0; i < symbols.list.size(); i++) {
-      for (int k = 0; k < possibleSymbols.size(); k++) {
-        if (symbols.list[i].Shape == possibleSymbols[k].Shape && symbols.list[i].Color == possibleSymbols[k].Color) {
-          if (frames < 10) {
-            possibleSymbols[k].CenterX += symbols.list[i].CenterX;
-            possibleSymbols[k].CenterY += symbols.list[i].CenterY;
-            counter[k]++;
-          } else if (counter[k] > 0 && std::abs(symbols.list[i].CenterX - mean(possibleSymbols[k].CenterX, counter[k])) < 100 &&
-                     std::abs(symbols.list[i].CenterY - mean(possibleSymbols[k].CenterY, counter[k])) < 100) {
-            possibleSymbols[k].CenterX += symbols.list[i].CenterX;
-            possibleSymbols[k].CenterY += symbols.list[i].CenterY;
-            counter[k]++;
+      for (int k = 0; k < POSSIBLE_SYMBOLS_SIZE; k++) {
+        if (symbols.list[i].Shape == foundShapes[k].Shape && symbols.list[i].Color == foundShapes[k].Color) {
+          ros::Time now = ros::Time::now();
+          if ( (now - foundShapes[k].lastSeen) > max_seen_gap_dur)
+          {
+            foundShapes[k].buffer.clear();
           }
+          if (foundShapes[k].buffer.size() == SHAPE_BUFFER_SIZE)
+            foundShapes[k].buffer.pop_back();
+          foundShapes[k].buffer.insert(foundShapes[k].buffer.begin(),symbols.list[i]);
+          foundShapes[k].lastSeen = now;
+          std::cout << "Color=" << foundShapes[k].Color << " Shapes=" << foundShapes[k].Shape << " Buf=" << foundShapes[k].buffer.size() << std::endl;
         }
       }
     }
   }
-
+  navigator_msgs::DockShape getAverageShape(ShapesBuffer* sb)
+  {
+    //Do cool stats stuff to get rid of outliers, calculte mean center
+    return sb->buffer[0];
+  }
   void foundShapesCallback(const navigator_msgs::DockShapes &symbols) {
     if (!active) return;
     frames++;
     syms = symbols;
-    frameSymbolHolder.push_back(symbols);
     shapeChecker(symbols);
   }
 
@@ -99,17 +113,17 @@ class ImageSearcher {
       res.error = navigator_msgs::GetDockShape::Response::TOO_SMALL_SAMPLE;
       return true;
     }
-    for (int j = 0; j < syms.list.size(); j++) {
-      for (int i = 0; i < possibleSymbols.size(); i++) {
-        if (req.Shape == possibleSymbols[i].Shape && req.Color == possibleSymbols[i].Color && syms.list[j].Shape == req.Shape &&
-            syms.list[j].Color == req.Color && counter[i] > 10) {
-          if (std::abs(syms.list[j].CenterX - mean(possibleSymbols[i].CenterX, counter[i])) < 100 &&
-              std::abs(syms.list[j].CenterY - mean(possibleSymbols[i].CenterY, counter[i])) < 100) {
-            res.symbol = syms.list[j];
-            res.found = true;
-            return true;
-          }
+    for (int i = 0; i < POSSIBLE_SYMBOLS_SIZE; i++) {
+      if (req.Shape == foundShapes[i].Shape && req.Color == foundShapes[i].Color) {
+        if (foundShapes[i].buffer.size() < SHAPE_BUFFER_SIZE)
+        {
+          res.found = false;
+          res.error = navigator_msgs::GetDockShape::Response::SHAPE_NOT_FOUND;
+          return true;         
         }
+        res.found = true;
+        res.symbol = getAverageShape(&foundShapes[i]);
+        return true;
       }
     }
     res.found = false;
