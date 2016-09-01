@@ -5,6 +5,8 @@ import std_msgs.msg as std_msgs
 import nav_msgs.msg as nav_msgs
 import rospy
 
+point_to_numpy = rosmsg_to_numpy
+quaternion_to_numpy = rosmsg_to_numpy
 
 def rosmsg_to_numpy(rosmsg, keys=None):
     '''Convert an arbitrary ROS msg to a numpy array
