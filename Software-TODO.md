@@ -7,7 +7,6 @@ If you want to get involved this is a great place to start! If you're serious ab
 * Mission unit test
 
 ### Perception
-* Calibrate Cameras
 * Hydrophones __[DAVID]__
 * Generate masks of mission component shapes __[DANIEL++]__
 * Service to get pose from 2d mask __[DAVID]__
@@ -46,3 +45,6 @@ If you want to get involved this is a great place to start! If you're serious ab
 ### Documentation
 _Documentation on the wiki is needed for the following key system components_
 * Brief overview of how the keep_alive system works
+
+### Other
+* Travel back in time to August 31st, 2016 and give Matt his resume __[DAVID]__
