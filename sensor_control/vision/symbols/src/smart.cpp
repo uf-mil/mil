@@ -16,17 +16,6 @@
 #include "navigator_msgs/DockShapes.h"
 #include "std_srvs/SetBool.h"
 
-
-
-
-//Uncomment to view a slider bar for faking the camera center
-//#define USE_FAKE_SYMBOL 
-
-#ifdef USE_FAKE_SYMBOL
-#include <cv.h>
-#include <highgui.h>
-#endif
-
 class ImageSearcher {
  private:
   ros::NodeHandle n;
@@ -43,11 +32,6 @@ class ImageSearcher {
   int frames;
   bool active;
   int lastCallFrame;
-
-  //For debug
-  #ifdef USE_FAKE_SYMBOL
-  navigator_msgs::DockShape fakeSymbol;
-  #endif
  public:
   ImageSearcher() {
     frames = 0;
@@ -68,17 +52,6 @@ class ImageSearcher {
     serviceCommand = n.advertiseService("/dock_shapes/runsmart", &ImageSearcher::getShapeController, this);
     service = n.advertiseService("/dock_shapes/GetShape", &ImageSearcher::getShape, this);
     active = false;
-    
-    #ifdef USE_FAKE_SYMBOL
-    //For fake testing
-    fakeSymbol.CenterX = 100;
-    fakeSymbol.CenterY = 300;
-    fakeSymbol.Color = "BLUE";
-    fakeSymbol.Shape = "CROSS";
-    fakeSymbol.img_width = 1290;
-    cv::namedWindow("Testing", 1);  
-    cv::createTrackbar("SetCenterX", "Testing", (int *) &fakeSymbol.CenterX,fakeSymbol.img_width);
-    #endif
   }
 
   float mean(int val, int size) { return val / size; }
@@ -111,15 +84,6 @@ class ImageSearcher {
   }
 
   bool getShape(navigator_msgs::GetDockShape::Request &req, navigator_msgs::GetDockShape::Response &res) {
-
-    #ifdef USE_FAKE_SYMBOL
-    std::cout << "GetShape" << std::endl;
-    //Fake response for testing 
-    res.symbol = fakeSymbol;
-    std::cout << "Center = " << fakeSymbol.CenterX << std::endl;
-    return true;
-    #endif
-
     if (!active) {
         res.success=true;
         return false;
