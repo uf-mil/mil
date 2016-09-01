@@ -90,7 +90,7 @@ private:
   boost::mutex left_mtx, right_mtx;
 
   // RVIZ
-  sub::RvizVisualizer rviz;
+  nav::RvizVisualizer rviz;
 
   // DBG images will be generated and published when true
   bool generate_dbg_img;
@@ -115,7 +115,7 @@ private:
   void run();
   void process_current_image();
   void init_ros(std::stringstream& log_msg);
-  void validate_pictures(cv::Mat& current_image_left, cv::Mat& current_image_right, cv::Mat& processing_size_image_left, cv::Mat& processing_size_image_right);
+  void validate_frame(cv::Mat& current_image_left, cv::Mat& current_image_right, cv::Mat& processing_size_image_left, cv::Mat& processing_size_image_right);
 
 
 

@@ -1,6 +1,6 @@
 #include <navigator_vision_lib/stereomodelfitter.h>
 
-StereoModelFitter::StereoModelFitter(Model model, image_transport::Publisher debug_publisher):
+StereoModelFitter::StereoModelFitter(PerceptionModel model, image_transport::Publisher debug_publisher):
                                      model(model), debug_publisher(debug_publisher)
 {
 
@@ -78,8 +78,6 @@ void StereoModelFitter::calculate_3D_reconstruction(vector<Eigen::Vector3d>& fea
 
     Eigen::Vector3d pt_3D;
     double reset_scaling = 1 / image_proc_scale;
-    cout << "feature reconstructions(3D):\n";
-    cout << "M = "<< endl << " "  << this->left_cam_mat << endl << endl;
     for (size_t i = 0; i < correspondence_pair_idxs.size(); i++) {
       if(correspondence_pair_idxs[i] == -1)  continue;
       Point2d pt_L = features_l[ i ];
@@ -94,13 +92,12 @@ void StereoModelFitter::calculate_3D_reconstruction(vector<Eigen::Vector3d>& fea
 
       Matx31d pt_L_hom(pt_L.x, pt_L.y, 1);
       Matx31d pt_R_hom(pt_R.x, pt_R.y, 1);
-      Mat X_hom = sub::triangulate_Linear_LS(Mat(left_cam_mat),
+      Mat X_hom = nav::triangulate_Linear_LS(Mat(left_cam_mat),
                                              Mat(right_cam_mat),
                                              Mat(pt_L_hom), Mat(pt_R_hom));
       X_hom = X_hom / X_hom.at<double>(3, 0);
       pt_3D <<
         X_hom.at<double>(0, 0), X_hom.at<double>(1, 0), X_hom.at<double>(2, 0);
-      cout << "[ " << pt_3D(0) << ", "  << pt_3D(1) << ", " << pt_3D(2) << "]" << endl;
       feature_pts_3d.push_back(pt_3D);
     }
     //cout << "num 3D features: " << feature_pts_3d.size() << endl;
@@ -224,7 +221,6 @@ void StereoModelFitter::visualize_points(vector<Eigen::Vector3d>  feature_pts_3d
                                          Mat& current_image_left)
 {
     // visualize reconstructions
-    cout<<feature_pts_3d.size()<<endl;
     for(size_t i = 0; i < feature_pts_3d.size(); i++){
       Eigen::Vector3d pt = feature_pts_3d[i];
       //cout<<pt[0]<<","<<pt[1]<<","<<pt[2]<<endl;
@@ -292,7 +288,6 @@ bool StereoModelFitter::determine_model_position(Eigen::Vector3d& position,
     for(uint8_t idx : found_points){
       points.push_back(feature_pts_3d[idx]);
     }
-    cout<<"You did it"<<endl;
     visualize_points(points, current_image_left);
     return true;
   }

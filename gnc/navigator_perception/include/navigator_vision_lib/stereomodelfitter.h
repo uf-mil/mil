@@ -27,21 +27,17 @@
 #include <sensor_msgs/image_encodings.h>
 
 #include <navigator_vision_lib/cv_tools.hpp>
-
-#include "model.h"
-
-#ifndef STEREOMODELFITTER_H
-#define STEREOMODELFITTER_H
+#include <navigator_vision_lib/model.h>
 
 using namespace cv;
 
 class StereoModelFitter
 {
 public:
-    StereoModelFitter(Model model, image_transport::Publisher debug_publisher);
-    Model model;
-    sub::Contour left_corners, right_corners;
-    sub::ImageWithCameraInfo left_most_recent, right_most_recent;
+    StereoModelFitter(PerceptionModel model, image_transport::Publisher debug_publisher);
+    PerceptionModel model;
+    nav::Contour left_corners, right_corners;
+    nav::ImageWithCameraInfo left_most_recent, right_most_recent;
     image_geometry::PinholeCameraModel left_cam_model, right_cam_model;
     cv::Matx34d left_cam_mat, right_cam_mat;
     bool determine_model_position(Eigen::Vector3d& position, int max_corners, int block_size, double min_distance, double image_proc_scale, int diffusion_time,
@@ -65,7 +61,6 @@ private:
     image_transport::Publisher debug_publisher;
 };
 
-#endif // STEREOMODELFITTER_H
 
 // Combinations of k elements from a set of size n (indexes)
 void combinations(uint8_t n, uint8_t k, std::vector< std::vector<uint8_t> > &idx_array);

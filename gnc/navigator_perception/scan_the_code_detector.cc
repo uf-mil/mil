@@ -16,7 +16,7 @@ ScanTheCodeDetector::ScanTheCodeDetector()
     log_msg << "\nInitializing ScanTheCodeDetector:\n";
     int tab_sz = 4;
 
-    Model model = Model(model_width, model_height);
+    PerceptionModel model = PerceptionModel(model_width, model_height);
     model_fitter = new StereoModelFitter(model, debug_image_pub);
 
     // Start main detector loop
@@ -38,7 +38,7 @@ ScanTheCodeDetector::~ScanTheCodeDetector() {
   ROS_INFO("Killed Torpedo Board Detector");
 }
 
-void ScanTheCodeDetector::validate_pictures(Mat& current_image_left, Mat& current_image_right,
+void ScanTheCodeDetector::validate_frame(Mat& current_image_left, Mat& current_image_right,
                                           Mat& processing_size_image_left, Mat& processing_size_image_right
                                           ){
 
@@ -57,8 +57,6 @@ void ScanTheCodeDetector::validate_pictures(Mat& current_image_left, Mat& curren
       right_mtx.lock();
 
       Matx34d left_cam_mat = left_cam_model.fullProjectionMatrix();
-
-      cout << "A = "<< endl << " "  << left_cam_mat << endl << endl;
 
       // Left Camera
       input_bridge = cv_bridge::toCvCopy(model_fitter->left_most_recent.image_msg_ptr,
@@ -220,7 +218,7 @@ void ScanTheCodeDetector::process_current_image(){
         processing_size_image_right;
 
     try{
-        validate_pictures(current_image_left, current_image_right,
+        validate_frame(current_image_left, current_image_right,
                           processing_size_image_left, processing_size_image_right);
     }catch(const char* msg){
         return;

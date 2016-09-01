@@ -1,16 +1,14 @@
-#ifndef MODEL_H
-#define MODEL_H
+#pragma once
 #include <string>
 #include <vector>
 
-class Model
+class PerceptionModel
 {
 public:
-    Model(float width, float height);
-    ~Model();
+    PerceptionModel(float width, float height);
+    ~PerceptionModel();
      float width, height;
 
 private:
 
 };
-#endif // MODEL_H
