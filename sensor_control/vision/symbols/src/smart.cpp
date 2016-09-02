@@ -7,7 +7,8 @@
 #include "FrameProc.h"
 #include "ShapeFind.h"
 #include <boost/circular_buffer.hpp>
-
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics.hpp>
 #include <vector>
 
 #include "DebugWindow.h"
@@ -23,6 +24,7 @@ class ImageSearcher {
   static const int POSSIBLE_SYMBOLS_SIZE = 9;
   static const int MAX_SEEN_GAP_SEC = 0;
   static const int MAX_SEEN_GAP_NSEC = 500000000;
+  double STD_DEV_THRESHOLD;
   ros::Duration max_seen_gap_dur;
   ros::NodeHandle n;
   ros::Subscriber foundShapesSubscriber;
@@ -47,6 +49,7 @@ class ImageSearcher {
   ImageSearcher() : 
     max_seen_gap_dur(MAX_SEEN_GAP_SEC,MAX_SEEN_GAP_NSEC)
   {
+    STD_DEV_THRESHOLD = 1.5;
     int u = 0;
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
@@ -62,12 +65,19 @@ class ImageSearcher {
     runService = n.advertiseService("/dock_shapes/run", &ImageSearcher::runCallback, this);
     getShapeService = n.advertiseService("/dock_shapes/GetShape", &ImageSearcher::getShapeCallback, this);
   }
+  void reset()
+  {
+    frames = 0;
+    for (auto foundShape = foundShapes.begin(); foundShape  != foundShapes.end(); foundShape++)
+    {
+      foundShape->buffer.clear();
+    }
+  }
   bool validRequest(navigator_msgs::GetDockShape::Request &req)
   {
     return (req.Color == navigator_msgs::GetDockShape::Request::BLUE || req.Color == navigator_msgs::GetDockShape::Request::GREEN || req.Color == navigator_msgs::GetDockShape::Request::RED) 
       &&   (req.Shape == navigator_msgs::GetDockShape::Request::CIRCLE || req.Shape == navigator_msgs::GetDockShape::Request::CROSS || req.Shape == navigator_msgs::GetDockShape::Request::TRIANGLE);
   }
-  float mean(int val, int size) { return val / size; }
   void shapeChecker(const navigator_msgs::DockShapes &symbols) {
     if (!active) return;
     for (auto newShape = symbols.list.begin(); newShape != symbols.list.end(); newShape++) {
@@ -80,7 +90,7 @@ class ImageSearcher {
           }
           foundShape->buffer.push_back(*newShape);
           foundShape->lastSeen = now;
-          std::cout << "Color=" << foundShape->Color << " Shapes=" << foundShape->Shape << " Buf=" << foundShape->buffer.size() << std::endl;
+          //std::cout << "Color=" << foundShape->Color << " Shapes=" << foundShape->Shape << " Buf=" << foundShape->buffer.size() << std::endl;
         }
       }
     }
@@ -90,47 +100,26 @@ class ImageSearcher {
   navigator_msgs::DockShape getAverageShape(ShapesBuffer &sb)
   {
     //Do cool stats stuff to get rid of outliers, calculte mean center
-    std::vector<int> x_centers;
-    std::vector<int> y_centers;
-    
-    for (int i =0; i < SHAPE_BUFFER_SIZE; i++) {
-        x_centers.push_back(sb.buffer[i].CenterX);
-        y_centers.push_back(sb.buffer[i].CenterY);
+    using namespace boost::accumulators;
+    accumulator_set<int, features<tag::mean, tag::variance>> xAcc;
+    accumulator_set<int, features<tag::mean, tag::variance>> yAcc;
+    for (auto shape: sb.buffer)
+    {
+      xAcc(shape.CenterX);
+      yAcc(shape.CenterY);
     }
-    std::sort(x_centers.begin(), x_centers.end());
-    std::sort(y_centers.begin(), y_centers.end());
-    
-    int q1 = .25 * SHAPE_BUFFER_SIZE;
-    int q3 = .75 * SHAPE_BUFFER_SIZE;
-    
-    int offX = 1.5 * (x_centers[q3] - x_centers[q1]);
-    int offY = 1.5 * (y_centers[q3] - y_centers[q1]);
-    
-    int offXMin = x_centers[q1]-offX;
-    int offXMax = x_centers[q3]+offX;
-    int offYMin = y_centers[q1]-offY;
-    int offYMax = y_centers[q3]+offX;
-    
-    std::vector<navigator_msgs::DockShape> fittedShapes;
-    
-    for (int i =0; i < SHAPE_BUFFER_SIZE; i++) {
-        if(!(sb.buffer[i].CenterX > offXMax && sb.buffer[i].CenterX < offXMin && sb.buffer[i].CenterY > offYMax && sb.buffer[i].CenterY < offYMin))
-            fittedShapes.push_back(sb.buffer[i]);
+    auto xMean = boost::accumulators::mean(xAcc); 
+    auto xSD = sqrt(boost::accumulators::variance(xAcc));
+    for (auto shape = sb.buffer.begin(); shape  != sb.buffer.end(); )
+    {
+      double stds = std::abs(shape->CenterX - xMean) / xSD;
+      if (stds > STD_DEV_THRESHOLD) {
+        shape = sb.buffer.erase(shape);
+      }
+      else shape++;
     }
-    int meanX =0, meanY =0;
-    for (int i =0; i < fittedShapes.size(); i++) {
-        meanX+=fittedShapes[i].CenterX;
-        meanY+=fittedShapes[i].CenterY;
-    }
-    meanX/=fittedShapes.size();
-    meanY/=fittedShapes.size();
-    
-    //navigator_msgs::DockShape shape = *fittedShapes.end();
-    //shape.CenterX = meanX;
-    //shape.CenterY = meanY;
-    std::cout<<meanX<<" "<<meanY<<std::endl;
-    //return shape;
-    return *sb.buffer.end();
+    //std::cout << sb.buffer.size() << std::endl;
+    return sb.buffer.back();
   }
   void foundShapesCallback(const navigator_msgs::DockShapes &symbols) {
     if (!active) return;
@@ -174,6 +163,7 @@ class ImageSearcher {
   }
 
   bool runCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res) {
+    if (!req.data && active) reset(); //If turning off while currently on, reset all the buffers
     std_srvs::SetBool msg;
     msg.request.data = req.data;
     active = req.data;
