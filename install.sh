@@ -167,6 +167,9 @@ sudo sh -c "echo \"deb http://packages.osrfoundation.org/gazebo/ubuntu trusty ma
 wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xB01FA116
 
+# Add software repository for Git-LFS
+curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
+
 # Install ROS and other project dependencies
 instlog "Installing ROS and Gazebo"
 sudo apt-get update -qq
@@ -217,6 +220,11 @@ sudo apt-get install -qq libompl-dev
 sudo apt-get install -qq libvtk5-dev python-vtk
 sudo apt-get install -qq python-qt4-dev python-qt4-gl
 sudo apt-get install -qq python-opengl freeglut3-dev libassimp-dev
+
+# Tools
+sudo apt-get install -qq git-lfs
+git lfs install
+sudo apt-get install -qq tmux
 
 # Libraries needed by txros
 sudo apt-get install -qq python-twisted socat
