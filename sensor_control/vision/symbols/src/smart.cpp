@@ -20,7 +20,7 @@
 
 class ImageSearcher {
  private:
-  static const int SHAPE_BUFFER_SIZE = 30;
+  static const int SHAPE_BUFFER_SIZE = 10;
   static const int POSSIBLE_SYMBOLS_SIZE = 9;
   static const int MAX_SEEN_GAP_SEC = 0;
   static const int MAX_SEEN_GAP_NSEC = 500000000;
@@ -110,15 +110,18 @@ class ImageSearcher {
     }
     auto xMean = boost::accumulators::mean(xAcc); 
     auto xSD = sqrt(boost::accumulators::variance(xAcc));
+    //std::cout << "Mean = " << xMean << " STDV= " << xSD << std::endl;
     for (auto shape = sb.buffer.begin(); shape  != sb.buffer.end(); )
     {
       double stds = std::abs(shape->CenterX - xMean) / xSD;
+      //std::cout << stds << ",";
       if (stds > STD_DEV_THRESHOLD) {
         shape = sb.buffer.erase(shape);
       }
       else shape++;
     }
-    //std::cout << sb.buffer.size() << std::endl;
+    //std::cout << std::endl;
+    //std::cout << "Fixed Buffer= " << sb.buffer.size() << std::endl;
     return sb.buffer.back();
   }
   void foundShapesCallback(const navigator_msgs::DockShapes &symbols) {
@@ -146,7 +149,8 @@ class ImageSearcher {
     }
     for (auto shape = foundShapes.begin(); shape  != foundShapes.end(); shape++) {
       if (req.Shape == shape->Shape && req.Color == shape->Color) {
-        if (!shape->buffer.full())
+        ros::Time now = ros::Time::now();
+        if (!shape->buffer.full() || (now - shape->lastSeen) > max_seen_gap_dur )
         {
           res.found = false;
           res.error = navigator_msgs::GetDockShape::Response::SHAPE_NOT_FOUND;
