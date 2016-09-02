@@ -6,6 +6,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include "FrameProc.h"
 #include "ShapeFind.h"
+#include <boost/circular_buffer.hpp>
 
 #include <vector>
 
@@ -20,8 +21,8 @@ class ImageSearcher {
  private:
   static const int SHAPE_BUFFER_SIZE = 30;
   static const int POSSIBLE_SYMBOLS_SIZE = 9;
-  static const int MAX_SEEN_GAP_SEC = 5;
-  static const int MAX_SEEN_GAP_NSEC = 0;
+  static const int MAX_SEEN_GAP_SEC = 0;
+  static const int MAX_SEEN_GAP_NSEC = 500000000;
   ros::Duration max_seen_gap_dur;
   ros::NodeHandle n;
   ros::Subscriber foundShapesSubscriber;
@@ -29,14 +30,14 @@ class ImageSearcher {
   ros::ServiceServer runService;
   struct ShapesBuffer
   {
-    std::vector<navigator_msgs::DockShape> buffer;
+    boost::circular_buffer<navigator_msgs::DockShape> buffer;
     std::string Shape;
     std::string Color;
     ros::Time lastSeen;
   };
 
   navigator_msgs::DockShapes syms;                          // latest frame
-  ShapesBuffer foundShapes[POSSIBLE_SYMBOLS_SIZE];
+  std::array<ShapesBuffer, POSSIBLE_SYMBOLS_SIZE> foundShapes;
   std::string possibleShapes[3] = {navigator_msgs::DockShape::CROSS, navigator_msgs::DockShape::TRIANGLE,
                                   navigator_msgs::DockShape::CIRCLE};
   std::string possibleColors[3] = {navigator_msgs::DockShape::RED, navigator_msgs::DockShape::BLUE, navigator_msgs::DockShape::GREEN};
@@ -50,6 +51,7 @@ class ImageSearcher {
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
         ShapesBuffer sb;
+        sb.buffer = boost::circular_buffer<navigator_msgs::DockShape>(SHAPE_BUFFER_SIZE);
         sb.Shape = possibleShapes[i];
         sb.Color = possibleColors[j];
         foundShapes[u] = sb;
@@ -68,19 +70,17 @@ class ImageSearcher {
   float mean(int val, int size) { return val / size; }
   void shapeChecker(const navigator_msgs::DockShapes &symbols) {
     if (!active) return;
-    for (int i = 0; i < symbols.list.size(); i++) {
-      for (int k = 0; k < POSSIBLE_SYMBOLS_SIZE; k++) {
-        if (symbols.list[i].Shape == foundShapes[k].Shape && symbols.list[i].Color == foundShapes[k].Color) {
+    for (auto newShape = symbols.list.begin(); newShape != symbols.list.end(); newShape++) {
+      for (auto foundShape = foundShapes.begin(); foundShape  != foundShapes.end(); foundShape++) {
+        if (newShape->Shape == foundShape->Shape && newShape->Color == foundShape->Color) {
           ros::Time now = ros::Time::now();
-          if ( (now - foundShapes[k].lastSeen) > max_seen_gap_dur)
+          if ( (now - foundShape->lastSeen) > max_seen_gap_dur)
           {
-            foundShapes[k].buffer.clear();
+            foundShape->buffer.clear();
           }
-          if (foundShapes[k].buffer.size() == SHAPE_BUFFER_SIZE)
-            foundShapes[k].buffer.pop_back();
-          foundShapes[k].buffer.insert(foundShapes[k].buffer.begin(),symbols.list[i]);
-          foundShapes[k].lastSeen = now;
-          std::cout << "Color=" << foundShapes[k].Color << " Shapes=" << foundShapes[k].Shape << " Buf=" << foundShapes[k].buffer.size() << std::endl;
+          foundShape->buffer.push_back(*newShape);
+          foundShape->lastSeen = now;
+          std::cout << "Color=" << foundShape->Color << " Shapes=" << foundShape->Shape << " Buf=" << foundShape->buffer.size() << std::endl;
         }
       }
     }
@@ -125,13 +125,16 @@ class ImageSearcher {
     meanX/=fittedShapes.size();
     meanY/=fittedShapes.size();
     
+    //navigator_msgs::DockShape shape = *fittedShapes.end();
+    //shape.CenterX = meanX;
+    //shape.CenterY = meanY;
     std::cout<<meanX<<" "<<meanY<<std::endl;
-    return sb.buffer[0];
+    //return shape;
+    return *sb.buffer.end();
   }
   void foundShapesCallback(const navigator_msgs::DockShapes &symbols) {
     if (!active) return;
     frames++;
-    syms = symbols;
     shapeChecker(symbols);
   }
 
@@ -152,18 +155,17 @@ class ImageSearcher {
       res.error = navigator_msgs::GetDockShape::Response::TOO_SMALL_SAMPLE;
       return true;
     }
-    for (int i = 0; i < POSSIBLE_SYMBOLS_SIZE; i++) {
-      if (req.Shape == foundShapes[i].Shape && req.Color == foundShapes[i].Color) {
-        if (foundShapes[i].buffer.size() < SHAPE_BUFFER_SIZE)
+    for (auto shape = foundShapes.begin(); shape  != foundShapes.end(); shape++) {
+      if (req.Shape == shape->Shape && req.Color == shape->Color) {
+        if (!shape->buffer.full())
         {
           res.found = false;
           res.error = navigator_msgs::GetDockShape::Response::SHAPE_NOT_FOUND;
           return true;         
         }
         res.found = true;
-        res.symbol = getAverageShape(foundShapes[i]);
-    
-	return true;
+        res.symbol = getAverageShape(*shape);
+        return true;
       }
     }
     res.found = false;
