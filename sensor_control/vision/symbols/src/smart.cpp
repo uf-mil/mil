@@ -34,6 +34,7 @@ class ImageSearcher {
     std::string Color;
     ros::Time lastSeen;
   };
+
   navigator_msgs::DockShapes syms;                          // latest frame
   ShapesBuffer foundShapes[POSSIBLE_SYMBOLS_SIZE];
   std::string possibleShapes[3] = {navigator_msgs::DockShape::CROSS, navigator_msgs::DockShape::TRIANGLE,
@@ -84,10 +85,48 @@ class ImageSearcher {
       }
     }
   }
-  navigator_msgs::DockShape getAverageShape(ShapesBuffer* sb)
+  
+  
+  navigator_msgs::DockShape getAverageShape(ShapesBuffer &sb)
   {
     //Do cool stats stuff to get rid of outliers, calculte mean center
-    return sb->buffer[0];
+    std::vector<int> x_centers;
+    std::vector<int> y_centers;
+    
+    for (int i =0; i < SHAPE_BUFFER_SIZE; i++) {
+        x_centers.push_back(sb.buffer[i].CenterX);
+        y_centers.push_back(sb.buffer[i].CenterY);
+    }
+    std::sort(x_centers.begin(), x_centers.end());
+    std::sort(y_centers.begin(), y_centers.end());
+    
+    int q1 = .25 * SHAPE_BUFFER_SIZE;
+    int q3 = .75 * SHAPE_BUFFER_SIZE;
+    
+    int offX = 1.5 * (x_centers[q3] - x_centers[q1]);
+    int offY = 1.5 * (y_centers[q3] - y_centers[q1]);
+    
+    int offXMin = x_centers[q1]-offX;
+    int offXMax = x_centers[q3]+offX;
+    int offYMin = y_centers[q1]-offY;
+    int offYMax = y_centers[q3]+offX;
+    
+    std::vector<navigator_msgs::DockShape> fittedShapes;
+    
+    for (int i =0; i < SHAPE_BUFFER_SIZE; i++) {
+        if(!(sb.buffer[i].CenterX > offXMax && sb.buffer[i].CenterX < offXMin && sb.buffer[i].CenterY > offYMax && sb.buffer[i].CenterY < offYMin))
+            fittedShapes.push_back(sb.buffer[i]);
+    }
+    int meanX =0, meanY =0;
+    for (int i =0; i < fittedShapes.size(); i++) {
+        meanX+=fittedShapes[i].CenterX;
+        meanY+=fittedShapes[i].CenterY;
+    }
+    meanX/=fittedShapes.size();
+    meanY/=fittedShapes.size();
+    
+    std::cout<<meanX<<" "<<meanY<<std::endl;
+    return sb.buffer[0];
   }
   void foundShapesCallback(const navigator_msgs::DockShapes &symbols) {
     if (!active) return;
@@ -122,8 +161,9 @@ class ImageSearcher {
           return true;         
         }
         res.found = true;
-        res.symbol = getAverageShape(&foundShapes[i]);
-        return true;
+        res.symbol = getAverageShape(foundShapes[i]);
+    
+	return true;
       }
     }
     res.found = false;
