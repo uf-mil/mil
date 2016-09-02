@@ -1,6 +1,6 @@
 #**NaviGator Wiki**
 
-Welcome to the NaviGator Wiki! Check out the [Getting Started](https://github.com/uf-mil/RobotX/wiki/Getting-started) page on this wiki to get all the necessary software and information for the operating the boat.
+Welcome to the NaviGator Wiki! Check out the [readme](https://github.com/uf-mil/Navigator/blob/master/readme.md) to get all the necessary software and information for the operating the boat.
 
 ##**What's NaviGator?**
 
@@ -22,6 +22,12 @@ Forrest Voight
 
 Matthew Langford
 
+Anthony Olive
+
+Tess Bianchi
+
+Lucas Bassett-Audain
+
 ##Getting Involved
 
 [**JOIN THE GOOGLE GROUP!**] (https://groups.google.com/forum/#!forum/uf-navigator-asv)
@@ -35,6 +41,6 @@ To get started working with the software on NaviGator please contact Zach Goins 
 
 **Let's go eat food and talk about how cool robots are.**
 
-Peruse the repository, check out some code. This wiki is your master guide for both those things
+Peruse the repository, check out some code. This [wiki](https://github.com/uf-mil/Navigator/wiki) is your master guide for both those things.
 
 ###If you have any questions about anything don't hesitate to contact Zach!
