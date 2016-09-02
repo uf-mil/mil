@@ -1,8 +1,8 @@
-#**Software Dependencies**
+**The information on this page is considered to be deprecated. While it contains information necessary to install some dependencies for navigator (as of 09/02/2016), the install script in the [readme](https://github.com/uf-mil/Navigator/blob/master/readme.md) is much simpler to use and will be kept updated.**
 
-**Please install all the dependencies below if you want to use the software on NaviGator. This page relies on you having done steps 1-4 in the [Getting Started](https://github.com/uf-mil/Navigator/wiki/Getting-started).**
+####Please add any outside dependencies for programs you create to the [install script](https://github.com/uf-mil/Navigator/blob/master/install.sh)! Please please please!
 
-####Please add any outside dependencies for programs you create to this page! Please please!
+Please install all the dependencies below if you want to use the software on NaviGator. This page relies on you having done steps 1-4 in the [Getting Started](https://github.com/uf-mil/Navigator/wiki/Getting-started).
 
 ##**Open Motion Planning Library**
 
