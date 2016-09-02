@@ -159,8 +159,8 @@ class AutoController
   private:
     //All times in milliseconds
     static const unsigned long SPIN_UP_TIME = 1000; //Time to spin up flywheels before feeding balls in
-    static const unsigned long RETRACT_TIME = 2000; //Time to retract actuator to allow ball to fall into feeding tube
-    static const unsigned long LOAD_TIME = 700; //Time to extend actuator to preload ball for quick firing
+    static const unsigned long RETRACT_TIME = 1500; //Time to retract actuator to allow ball to fall into feeding tube
+    static const unsigned long LOAD_TIME = 650; //Time to extend actuator to preload ball for quick firing
     static const unsigned long QUICKFIRE_TIME = 500; //Time to extend actuator with preloaded ball for quick firing
     /* Represents what the controller is currently doing
      * 0 = finished fireing/loading or stopped
