@@ -27,7 +27,8 @@ class Navigator(object):
     def _init(self):
         self._moveto_action_client = yield action.ActionClient(self.nh, 'moveto', MoveToAction)
         self._odom_sub = yield self.nh.subscribe('odom', Odometry)
-        
+        self._ecef_odom_sub = yield self.nh.subscribe('absodom', Odometry)
+
         self._change_wrench = yield self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
         #self._enu_odom_sub = yield self.nh.subscribe('world_odom', Odometry)
         self.tf_listener = yield tf.TransformListener(self.nh)
@@ -38,23 +39,15 @@ class Navigator(object):
     @property
     def pose(self):
         last_odom_msg = self._odom_sub.get_last_message()
+        while last_odom_msg is None:
+            # Sometimes odom doesn't come through so wait for it
+            last_odom_msg = self._odom_sub.get_last_message()
+            self.nh.sleep(.1)
         return odometry_to_numpy(last_odom_msg)[0]
 
     @property
-    def move_rel(self):
-        # Move realtive to the boat location when .go() is called.
-        # Not implemented due to C3 not converting between frames
-        raise NotImplementedError
-        #return PoseEditor2(self._moveto_action_client, 'base_link', [0, 0, 0], [0, 0, 0 ,1], self.tf_listener)
-
-    @property
     def move(self):
-        return PoseEditor2(self._moveto_action_client, 'enu', *self.pose)
-
-    def move_to(self, frame_id, position, orientation=[0, 0, 0, 1]):
-        # Move to point in arbitrary frame.
-        # See move_rel note
-        raise NotImplementedError
+        return PoseEditor2(self, 'enu')
 
     @util.cancellableInlineCallbacks
     def change_wrench(self, source):

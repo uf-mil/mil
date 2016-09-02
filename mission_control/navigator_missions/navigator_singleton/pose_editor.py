@@ -7,7 +7,7 @@ from nav_msgs.msg import Odometry
 from uf_common.msg import PoseTwistStamped, PoseTwist, MoveToGoal
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Point, Vector3, Twist
 from sub8_ros_tools import rosmsg_to_numpy, make_header
-
+from rawgps_common import ecef_from_latlongheight, enu_from_ecef
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
 EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)]
@@ -90,12 +90,11 @@ class PoseEditor2(object):
         yield movement.go(speed=1)
         Will yaw right .707 radians from the original orientation regardless of the current orientation
     '''
-    def __init__(self, ac, frame_id, position, orientation):
-        self.action_client = ac
+    def __init__(self, nav, frame_id):
+        self.nav = nav
         self.frame_id = frame_id
 
-        self.position = np.array(position)
-        self.orientation = np.array(orientation)
+        self.position, self.orientation = nav.pose
 
     def __repr__(self):
         return "{} - p: {}, q: {}".format(self.frame_id, self.position, self.orientation)
@@ -105,13 +104,14 @@ class PoseEditor2(object):
         return transformations.quaternion_matrix(self.orientation)[:3, :3]
 
     def go(self, *args, **kwargs):
-        # NOTE: C3 doesn't seems to handel different frames, so make sure all movements are in C3's
-        #       fixed frame. 
-        goal = self.action_client.send_goal(self.as_MoveToGoal(*args, **kwargs))
+        # NOTE: C3 doesn't seems to handle different frames, so make sure all movements are in C3's
+        #       fixed frame.
+        goal = self.nav._moveto_action_client.send_goal(self.as_MoveToGoal(*args, **kwargs))
         return goal.get_result()
 
     def set_position(self, position, unit='m'):
         self.position = np.array(position) * UNITS[unit]
+        return self
 
     def rel_position(self, rel_pos, unit='m'):
         position = self.position + self._rot.dot(np.array(rel_pos))
@@ -138,6 +138,9 @@ class PoseEditor2(object):
 
     # Orientation
     def set_orientation(self, orientation):
+        if orientation.shape == (4, 4):
+            # We're getting a homogeneous rotation matrix - not a quaternion
+            orientation = transformations.quaternion_from_matrix(orientation)
         self.orientation = orientation
         return self
 
@@ -176,7 +179,19 @@ class PoseEditor2(object):
 
     def zero_roll_and_pitch(self):
         return self.set_orientation(look_at_without_pitching(self.forward_vector))
-    
+
+    def latlon(self, lat, lon):
+        '''
+        Go to a lat lon position and keep the same orientation
+        '''
+        # Vector in ECEF frame
+        v = ecef_from_latlongheight(lat, lon, alt) - self.nav.ecef_pose
+        # Convert the vector to ENU
+        enu_vector = enu_from_ecef(v, self.nav.ecef_pose)
+        enu_vector[2] = 0
+
+        return self.rel_position(enu_vector)
+
     # When C3 gets replaced, these may go away
     def as_MoveToGoal(self, linear=[0, 0, 0], angular=[0, 0, 0], **kwargs):
         return MoveToGoal(
