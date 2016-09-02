@@ -1,6 +1,6 @@
-#**Getting Started**
+**The information on this page is considered deprecated. While it contains all of the information necessary to install all dependencies necessary to develop for navigator (as of 09/02/2016), the install script in the [readme](https://github.com/uf-mil/Navigator/blob/master/readme.md) is much simpler to use and will be kept updated.**
 
-**Below are the instructions for how to get started working on NaviGator. This page includes instructions and a link to some very helpful readings to start exploring once everything is installed.** 
+Below are the instructions for how to get started working on NaviGator. This page includes instructions and a link to some very helpful readings to start exploring once everything is installed.
 
 ##Installation
 
