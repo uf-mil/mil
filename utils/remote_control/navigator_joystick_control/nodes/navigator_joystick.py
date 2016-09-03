@@ -25,6 +25,8 @@ class Joystick(object):
         self.wrench_choices = itertools.cycle(['rc', 'autonomous'])
         self.current_pose = Odometry()
 
+        self.active = False
+
         self.alarm_broadcaster = AlarmBroadcaster()
         self.kill_alarm = self.alarm_broadcaster.add_alarm(
             name='kill',
@@ -52,12 +54,15 @@ class Joystick(object):
         Sometimes when it disconnects then comes back online, the settings are all
             out of wack.
         '''
-        self.last_start = False
         self.last_change_mode = False
         self.last_station_hold_state = False
         self.last_kill = False
         self.last_rc = False
         self.last_auto = False
+
+        self.start_count = 0
+        self.last_joy = None
+        self.active = False
 
         self.killed = False
         # self.docking = False
@@ -69,10 +74,28 @@ class Joystick(object):
         wrench.wrench.torque.z = 0
         self.wrench_pub.publish(wrench)
 
+    def check_for_timeout(self, joy):
+        if self.last_joy is None:
+            self.last_joy = joy
+            return
+
+        if joy.axes == self.last_joy.axes and \
+           joy.buttons == self.last_joy.buttons:
+            # No change in state
+            if rospy.Time.now() - self.last_joy.header.stamp > rospy.Duration(15 * 60):
+                # The controller times out after 15 minutes
+                if self.active:
+                    rospy.logwarn("Controller Timed out. Hold start to resume.")
+                    self.reset()
+        else:
+            joy.header.stamp = rospy.Time.now()  # In the sim, stamps weren't working right
+            self.last_joy = joy
+
     def joy_cb(self, joy):
+        self.check_for_timeout(joy)
 
         # Handle Button presses
-        start = bool(joy.buttons[7])
+        start = joy.buttons[7]
         change_mode = bool(joy.buttons[3])  # Y
         kill = bool(joy.buttons[2])  # X
         station_hold = bool(joy.buttons[0])  # A
@@ -80,12 +103,18 @@ class Joystick(object):
         rc_control = bool(joy.buttons[11])  # d-pad left
         auto_control = bool(joy.buttons[12])  # d-pad right
 
-        # Reset controller state
-        if start == 1 and start != self.last_start:
+        # Reset controller state if only start is pressed down for awhile
+        self.start_count += start
+        if self.start_count > 10:  # About 3 seconds
             rospy.loginfo("Resetting controller state.")
             self.reset()
+            self.active = True
+
             self.kill_alarm.clear_alarm()
             self.wrench_changer("rc")
+
+        if not self.active:
+            return
 
         # Change vehicle mode
         if change_mode == 1 and change_mode != self.last_change_mode:
@@ -159,6 +188,5 @@ class Joystick(object):
 
 
 if __name__ == "__main__":
-
     joystick = Joystick()
     rospy.spin()
