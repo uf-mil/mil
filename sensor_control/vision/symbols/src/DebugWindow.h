@@ -23,12 +23,11 @@ class DebugWindow
 	private:
 		static Mat color_frame;
 		static navigator_msgs::DockShapes symbols;
-
 	public:
     static std::vector<navigator_msgs::DockShapes> allFoundSymbols;
 		static void init();
 		static void UpdateColor(Mat &frame);
-		static void UpdateResults(navigator_msgs::DockShapes s);
+		static void UpdateResults(navigator_msgs::DockShapes& s);
 		static void DrawAll();
 };
 
