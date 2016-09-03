@@ -38,13 +38,14 @@ class ShooterVision {
 
   public:
     ShooterVision() :
-      nh_("dock_shape_processor"),
+      nh_("dock_shape_finder"),
       it_(nh_),
       blueFinder(navigator_msgs::DockShape::BLUE), 
       redFinder(navigator_msgs::DockShape::RED),
       greenFinder(navigator_msgs::DockShape::GREEN)
     {
-      fp.init(&nh_);
+      fp.init(nh_);
+      ShapeDetector::init(nh_);
       nh_.param<std::string>("symbol_camera", camera_topic, "/right_camera/image_color");
       runService = nh_.advertiseService("run", &ShooterVision::runCallback, this);
       #ifdef DO_DEBUG
@@ -90,7 +91,7 @@ class ShooterVision {
 };
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "dock_shape_processor");
+  ros::init(argc, argv, "dock_shape_finder");
   ShooterVision sv = ShooterVision();
   while (waitKey(50) == -1 && ros::ok()) {
     ros::spin();

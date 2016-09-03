@@ -1,5 +1,20 @@
 erode_size: 3
 dilate_size: 3
+cross:
+  bounding_area:
+    low: 0.43
+    high: 0.57
+  min_area: 300
+triangle:
+  bounding_area:
+    low: 0.41
+    high: 0.50
+  min_area: 300
+circle:
+  bounding_area:
+    low: 0.7
+    high: 0.8
+  min_area: 300
 hsv:
   red1:
     low:
@@ -23,7 +38,7 @@ hsv:
     low:
       H: 90
       S: 100
-      V: 100
+      V: 10
     high:
       H: 150
       S: 255

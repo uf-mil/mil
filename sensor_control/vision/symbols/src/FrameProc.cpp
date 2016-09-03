@@ -25,40 +25,40 @@ void FrameProc::rebuildElements()
   erode_element = getStructuringElement(MORPH_RECT,Size(2*erode_kernel_size + 1,2*erode_kernel_size+1), Point(erode_kernel_size,erode_kernel_size)) ;
   dilate_element = getStructuringElement(MORPH_RECT,Size( 2* dilate_kernel_size + 1, 2* dilate_kernel_size+1 ), Point(dilate_kernel_size, dilate_kernel_size));
 }
-void FrameProc::init(ros::NodeHandle* nh)
+void FrameProc::init(ros::NodeHandle& nh)
 {
   //Set HSV values
-  nh->getParam("hsv/red1/low/H",red.low[0]);
-  nh->getParam("hsv/red1/low/S",red.low[1]);
-  nh->getParam("hsv/red1/low/V",red.low[2]);
-  nh->getParam("hsv/red1/high/H",red.high[0]);
-  nh->getParam("hsv/red1/high/S",red.high[1]);
-  nh->getParam("hsv/red1/high/V",red.high[2]);
+  nh.getParam("hsv/red1/low/H",red.low[0]);
+  nh.getParam("hsv/red1/low/S",red.low[1]);
+  nh.getParam("hsv/red1/low/V",red.low[2]);
+  nh.getParam("hsv/red1/high/H",red.high[0]);
+  nh.getParam("hsv/red1/high/S",red.high[1]);
+  nh.getParam("hsv/red1/high/V",red.high[2]);
   
-  nh->getParam("hsv/red2/low/H",red2.low[0]);
-  nh->getParam("hsv/red2/low/S",red2.low[1]);
-  nh->getParam("hsv/red2/low/V",red2.low[2]);
-  nh->getParam("hsv/red2/high/H",red2.high[0]);
-  nh->getParam("hsv/red2/high/S",red2.high[1]);
-  nh->getParam("hsv/red2/high/V",red2.high[2]);
+  nh.getParam("hsv/red2/low/H",red2.low[0]);
+  nh.getParam("hsv/red2/low/S",red2.low[1]);
+  nh.getParam("hsv/red2/low/V",red2.low[2]);
+  nh.getParam("hsv/red2/high/H",red2.high[0]);
+  nh.getParam("hsv/red2/high/S",red2.high[1]);
+  nh.getParam("hsv/red2/high/V",red2.high[2]);
   
-  nh->getParam("hsv/blue/low/H",blue.low[0]);
-  nh->getParam("hsv/blue/low/S",blue.low[1]);
-  nh->getParam("hsv/blue/low/V",blue.low[2]);
-  nh->getParam("hsv/blue/high/H",blue.high[0]);
-  nh->getParam("hsv/blue/high/S",blue.high[1]);
-  nh->getParam("hsv/blue/high/V",blue.high[2]);
+  nh.getParam("hsv/blue/low/H",blue.low[0]);
+  nh.getParam("hsv/blue/low/S",blue.low[1]);
+  nh.getParam("hsv/blue/low/V",blue.low[2]);
+  nh.getParam("hsv/blue/high/H",blue.high[0]);
+  nh.getParam("hsv/blue/high/S",blue.high[1]);
+  nh.getParam("hsv/blue/high/V",blue.high[2]);
 
-  nh->getParam("hsv/green/low/H",green.low[0]);
-  nh->getParam("hsv/green/low/S",green.low[1]);
-  nh->getParam("hsv/green/low/V",green.low[2]);
-  nh->getParam("hsv/green/high/H",green.high[0]);
-  nh->getParam("hsv/green/high/S",green.high[1]);
-  nh->getParam("hsv/green/high/V",green.high[2]);
+  nh.getParam("hsv/green/low/H",green.low[0]);
+  nh.getParam("hsv/green/low/S",green.low[1]);
+  nh.getParam("hsv/green/low/V",green.low[2]);
+  nh.getParam("hsv/green/high/H",green.high[0]);
+  nh.getParam("hsv/green/high/S",green.high[1]);
+  nh.getParam("hsv/green/high/V",green.high[2]);
   
   //Set blue/dilate size
-  nh->getParam("erode_size",erode_kernel_size);
-  nh->getParam("dilate_size",dilate_kernel_size);
+  nh.getParam("erode_size",erode_kernel_size);
+  nh.getParam("dilate_size",dilate_kernel_size);
   rebuildElements();
 }
 void FrameProc::ErodeDilate()

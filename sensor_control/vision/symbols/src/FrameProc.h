@@ -40,7 +40,7 @@ class FrameProc
 		void ThresholdColors();
 	public:
 		FrameProc();
-    void init(ros::NodeHandle* nh);
+    void init(ros::NodeHandle& nh);
 		void Prepare(Mat &frame);
 		Mat GetRed();
 		Mat GetBlue();

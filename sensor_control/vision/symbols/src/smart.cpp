@@ -171,7 +171,7 @@ class ImageSearcher {
     std_srvs::SetBool msg;
     msg.request.data = req.data;
     active = req.data;
-    ros::service::call("/dock_shape_processor/run", msg);
+    ros::service::call("/dock_shape_finder/run", msg);
     res.success = true;
     return true;
   }
