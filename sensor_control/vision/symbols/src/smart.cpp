@@ -14,8 +14,8 @@
 #include "DebugWindow.h"
 #include "opencv2/opencv.hpp"
 
-#include "navigator_msgs/GetDockShape.h"
-#include "navigator_msgs/DockShapes.h"
+#include <navigator_msgs/GetDockShape.h>
+#include <navigator_msgs/DockShapes.h>
 #include "std_srvs/SetBool.h"
 
 class ImageSearcher {
