@@ -7,7 +7,7 @@ from nav_msgs.msg import Odometry
 from uf_common.msg import PoseTwistStamped, PoseTwist, MoveToGoal
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Point, Vector3, Twist
 from sub8_ros_tools import rosmsg_to_numpy, make_header
-from rawgps_common import ecef_from_latlongheight, enu_from_ecef
+from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
 EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)]
