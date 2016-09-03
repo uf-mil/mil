@@ -110,12 +110,17 @@ while [ "$#" -gt 0 ]; do
 done
 
 if !($INSTALL_ALL || $INSTALL_SUB || $INSTALL_NAV); then
-    echo "A MIL project must be selected for install"
-    echo "Run ./install.sh -h for more information"
-    exit 1
+	echo "A MIL project must be selected for install"
+	echo "Run ./install.sh -h for more information"
+	exit 1
 elif ($INSTALL_ALL); then
-    INSTALL_SUB=true
-    INSTALL_NAV=true
+	INSTALL_SUB=true
+	INSTALL_NAV=true
+elif ($INSTALL_NAV); then
+
+	# Navigator currently depends on the Sub8 repository
+	# This may change soon, but this will install Sub8 for now
+	INSTALL_SUB=true
 fi
 
 
@@ -150,13 +155,13 @@ if !($OS_CHECK); then
 fi
 
 
-#=========================================#
-# Repository and Common Dependancy Set Up #
-#=========================================#
+#===================================================#
+# Repository and Set Up and Main Stack Installation #
+#===================================================#
 
 # Make sure script dependencies are installed on bare bones installations
 instlog "Installing install script dependencies"
-sudo apt-get install -qq wget aptitude fakeroot ssh git
+sudo apt-get install -qq wget curl aptitude fakeroot ssh git
 
 # Add software repositories for ROS and Gazebo
 instlog "Adding ROS and Gazebo PPAs to software sources"
@@ -175,9 +180,9 @@ instlog "Installing ROS and Gazebo"
 sudo apt-get update -qq
 sudo apt-get install -qq python-catkin-pkg python-rosdep
 if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
-    sudo apt-get install -qq ros-indigo-desktop
+	sudo apt-get install -qq ros-indigo-desktop
 else
-    sudo apt-get install -qq ros-indigo-desktop-full
+	sudo apt-get install -qq ros-indigo-desktop-full
 fi
 
 # Break the ROS Indigo metapackage and install an updated version of Gazebo
@@ -200,6 +205,62 @@ if !([ -f /etc/ros/rosdep/sources.list.d/20-default.list ]); then
 	sudo rosdep init > /dev/null 2>&1
 fi
 rosdep update
+
+
+#=================================#
+# Workspace and Repository Set Up #
+#=================================#
+
+# Set up catkin workspace directory
+if !([ -f $CATKIN_DIR/src/CMakeLists.txt ]); then
+    instlog "Generating catkin workspace at $CATKIN_DIR"
+    mkdir -p "$CATKIN_DIR/src"
+    cd "$CATKIN_DIR/src"
+    catkin_init_workspace
+    catkin_make -C "$CATKIN_DIR"
+else
+    instlog "Using existing catkin workspace at $CATKIN_DIR"
+fi
+
+# Move the cloned git repository to the catkin workspace in semaphore
+if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
+	if [ -d ~/Navigator ]; then
+		mv ~/Navigator "$CATKIN_DIR/src"
+	elif [ -d ~/Sub8 ]; then
+		mv ~/Navigator "$CATKIN_DIR/src"
+	fi
+fi
+
+# Source the workspace's configurations for bash on this user account
+source "$CATKIN_DIR/devel/setup.bash"
+if !(cat ~/.bashrc | grep --quiet "source $CATKIN_DIR/devel/setup.bash"); then
+	echo "source $CATKIN_DIR/devel/setup.bash" >> ~/.bashrc
+fi
+
+# Check if the Navigator repository is present; if it isn't, download it
+if ($INSTALL_NAV) && !(ls "$CATKIN_DIR/src" | grep --quiet "Navigator"); then
+	instlog "Downloading up the Navigator repository"
+	cd $CATKIN_DIR/src
+	git clone -q https://github.com/uf-mil/Navigator.git
+	cd $CATKIN_DIR/src/Navigator
+	git remote rename origin upstream
+	instlog "Make sure you change your git to point to your own fork! (git remote add origin your_forks_url)"
+fi
+
+# Check if the Sub8 repository is present; if it isn't, download it
+if ($INSTALL_SUB) && !(ls "$CATKIN_DIR/src" | grep --quiet "Sub8"); then
+	instlog "Downloading up the Sub8 repository"
+	cd $CATKIN_DIR/src
+	git clone -q https://github.com/uf-mil/Sub8.git
+	cd $CATKIN_DIR/src/Sub8
+	git remote rename origin upstream
+	instlog "Make sure you change your git to point to your own fork! (git remote add origin your_forks_url)"
+fi
+
+
+#================================#
+# Common Dependency Installation #
+#================================#
 
 instlog "Installing common dependencies from the Ubuntu repositories"
 
@@ -275,7 +336,7 @@ sudo pip install -q -U scikit-learn > /dev/null 2>&1
 # Visualization
 sudo pip install -q -U mayavi > /dev/null 2>&1
 
-instlog "Cloning common Git repositories we need to build"
+instlog "Cloning common Git repositories that need to be built"
 ros_git_get https://github.com/txros/txros.git
 ros_git_get https://github.com/uf-mil/rawgps-tools.git
 ros_git_get https://github.com/ros-simulation/gazebo_ros_pkgs.git
@@ -286,28 +347,24 @@ ros_git_get https://github.com/ros-simulation/gazebo_ros_pkgs.git
 #===================================#
 
 if ($INSTALL_NAV); then
-    instlog "Installing Navigator ROS dependencies"
+	instlog "Installing Navigator ROS dependencies"
 
-    # Serial communications
-    sudo apt-get install -qq ros-indigo-rosserial ros-indigo-rosserial-python ros-indigo-rosserial-arduino
+	# Serial communications
+	sudo apt-get install -qq ros-indigo-rosserial ros-indigo-rosserial-python ros-indigo-rosserial-arduino
 
-    # Thruster driver
-    sudo apt-get install -qq ros-indigo-roboteq-driver
+	# Thruster driver
+	sudo apt-get install -qq ros-indigo-roboteq-driver
 
-    instlog "Installing Navigator dependencies from source"
+	instlog "Installing Navigator dependencies from source"
 
-    # Open Dynamics Engine
-    rm -rf /tmp/pyode-build
-    mkdir -p /tmp/pyode-build
-    cd /tmp/pyode-build
-    sudo apt-get build-dep -qq python-pyode
-    sudo apt-get remove -qq python-pyode
-    apt-get source --compile -qq python-pyode
-    sudo dpkg -i python-pyode_*.deb
-
-    # Navigator currently depends on the Sub8 repository
-    # This may change soon, but this will install Sub8 for now
-    INSTALL_SUB=true
+	# Open Dynamics Engine
+	rm -rf /tmp/pyode-build
+	mkdir -p /tmp/pyode-build
+	cd /tmp/pyode-build
+	sudo apt-get build-dep -qq python-pyode
+	sudo apt-get remove -qq python-pyode
+	apt-get source --compile -qq python-pyode
+	sudo dpkg -i python-pyode_*.deb
 fi
 
 
@@ -316,82 +373,23 @@ fi
 #==============================#
 
 if ($INSTALL_SUB); then
-    instlog "Installing Sub8 dependencies from the Ubuntu repositories"
+	instlog "Installing Sub8 dependencies from the Ubuntu repositories"
 
-    # Optical character recognition
-    sudo apt-get install -qq tesseract-ocr
+	# Optical character recognition
+	sudo apt-get install -qq tesseract-ocr
 
-    # Hardware drivers
-    sudo apt-get install -qq libusb-1.0-0-dev
+	# Hardware drivers
+	sudo apt-get install -qq libusb-1.0-0-dev
 
-    instlog "Installing Sub8 ROS dependencies"
+	instlog "Installing Sub8 ROS dependencies"
 
-    # 3D Mouse
-    sudo apt-get install -qq ros-indigo-spacenav-node
+	# 3D Mouse
+	sudo apt-get install -qq ros-indigo-spacenav-node
 
-    instlog "Installing Sub8 dependencies from Python PIP"
+	instlog "Installing Sub8 dependencies from Python PIP"
 
-    # Libraries needed by the hydrophone board
-    sudo pip install -q -U crc16
-fi
-
-
-#=================================#
-# Workspace and Repository Set Up #
-#=================================#
-
-# Set up catkin workspace directory
-if !([ -f $CATKIN_DIR/src/CMakeLists.txt ]); then
-    instlog "Generating catkin workspace at $CATKIN_DIR"
-    mkdir -p "$CATKIN_DIR/src"
-    cd "$CATKIN_DIR/src"
-    catkin_init_workspace
-    catkin_make -C "$CATKIN_DIR"
-else
-    instlog "Using existing catkin workspace at $CATKIN_DIR"
-fi
-
-
-
-
-ros_git_get https://github.com/uf-mil/Sub8.git
-
-
-
-
-# Move the cloned git repository to the catkin workspace in semaphore
-if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
-    if [ -d ~/Navigator ]; then
-        mv ~/Navigator "$CATKIN_DIR/src"
-    elif [ -d ~/Sub8 ]; then
-        mv ~/Navigator "$CATKIN_DIR/src"
-    fi
-fi
-
-# Source the workspace's configurations for bash on this user account
-source "$CATKIN_DIR/devel/setup.bash"
-if !(cat ~/.bashrc | grep --quiet "source $CATKIN_DIR/devel/setup.bash"); then
-	echo "source $CATKIN_DIR/devel/setup.bash" >> ~/.bashrc
-fi
-
-# Check if the Navigator repository is present; if it isn't, download it
-if ($INSTALL_NAV) && !(ls "$CATKIN_DIR/src" | grep --quiet "Navigator"); then
-    instlog "Downloading up the Navigator repository"
-    cd $CATKIN_DIR/src
-    git clone -q https://github.com/uf-mil/Navigator.git
-    cd $CATKIN_DIR/src/Navigator
-    git remote rename origin upstream
-    instlog "Make sure you change your git to point to your own fork! (git remote add origin your_forks_url)"
-fi
-
-# Check if the Sub8 repository is present; if it isn't, download it
-if ($INSTALL_SUB) && !(ls "$CATKIN_DIR/src" | grep --quiet "Sub8"); then
-    instlog "Downloading up the Sub8 repository"
-    cd $CATKIN_DIR/src
-    git clone -q https://github.com/uf-mil/Sub8.git
-    cd $CATKIN_DIR/src/Sub8
-    git remote rename origin upstream
-    instlog "Make sure you change your git to point to your own fork! (git remote add origin your_forks_url)"
+	# Libraries needed by the hydrophone board
+	sudo pip install -q -U crc16
 fi
 
 
@@ -401,8 +399,8 @@ fi
 
 # Attempt to build the Navigator stack on client machines
 if !(env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
-    instlog "Building Navigator's software stack with catkin_make"
-    catkin_make -C "$CATKIN_DIR" -j8
+	instlog "Building Navigator's software stack with catkin_make"
+	catkin_make -C "$CATKIN_DIR" -j8
 fi
 
 # Remove the initial install script if it was not in the Navigator repository
