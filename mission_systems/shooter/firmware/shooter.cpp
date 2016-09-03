@@ -159,9 +159,11 @@ class AutoController
   private:
     //All times in milliseconds
     static const unsigned long SPIN_UP_TIME = 1000; //Time to spin up flywheels before feeding balls in
-    static const unsigned long RETRACT_TIME = 1000; //Time to retract actuator to allow ball to fall into feeding tube
-    static const unsigned long LOAD_TIME = 650; //Time to extend actuator to preload ball for quick firing
-    static const unsigned long QUICKFIRE_TIME = 300; //Time to extend actuator with preloaded ball for quick firing
+    static const unsigned long RETRACT_TIME = 950; //Time to retract actuator to allow ball to fall into feeding tube
+    static const unsigned long LOAD_TIME = 500; //Time to extend actuator to preload ball for quick firing
+    static const unsigned long QUICKFIRE_TIME = 400; //Time to extend actuator with preloaded ball for quick firing
+    static const unsigned long MID_LOAD_PAUSE = 100;
+    static const unsigned long SHOOT_TIME = 1000;
     /* Represents what the controller is currently doing
      * 0 = finished fireing/loading or stopped
      * 1 = preloading for quick fireing
@@ -184,10 +186,12 @@ class AutoController
       if (cur_time < RETRACT_TIME)
       {
         feeder.reverse();
-      } else if (cur_time < (RETRACT_TIME + LOAD_TIME) )
+      } else if (cur_time < (RETRACT_TIME + MID_LOAD_PAUSE ) )
       {
+        feeder.off();
+      } else if (cur_time < (RETRACT_TIME + MID_LOAD_PAUSE + LOAD_TIME) ) {
         feeder.on();
-      } else {
+      }else {
 				feeder.off();
         shooter.on();
         state = 0;
@@ -202,6 +206,8 @@ class AutoController
       {
         shooter.on();
         feeder.on();
+      } else if (cur_time < (QUICKFIRE_TIME + SHOOT_TIME)) {
+        feeder.off();
       } else {
         start_fire_time = 0;
         feeder.off();
