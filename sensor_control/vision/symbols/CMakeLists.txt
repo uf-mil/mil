@@ -29,14 +29,14 @@ catkin_package(
 
 
 include_directories(include ${catkin_INCLUDE_DIRS})
-add_executable(smart_shape_finder_server src/smart.cpp)
-target_link_libraries(smart_shape_finder_server ${catkin_LIBRARIES})
-add_dependencies(smart_shape_finder_server navigator_msgs_generate_messages)
+add_executable(shape_filter src/smart.cpp)
+target_link_libraries(shape_filter ${catkin_LIBRARIES})
+add_dependencies(shape_filter navigator_msgs_generate_messages)
 
 
-add_executable(vision src/main.cpp src/FrameProc.cpp src/ShapeFind.cpp src/DebugWindow.cpp src/ShapeDetector.cpp)
-add_dependencies(vision navigator_msgs_generate_messages)
-target_link_libraries(vision ${catkin_LIBRARIES})
+add_executable(shape_finder src/main.cpp src/FrameProc.cpp src/ShapeFind.cpp src/DebugWindow src/ShapeDetector.cpp)
+add_dependencies(shape_finder navigator_msgs_generate_messages)
+target_link_libraries(shape_finder ${catkin_LIBRARIES})
 find_package( OpenCV REQUIRED )
-target_link_libraries(vision ${OpenCV_LIBS} )
+target_link_libraries(shape_finder ${OpenCV_LIBS} )
 
