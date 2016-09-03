@@ -2,4 +2,6 @@
   <node pkg="rosserial_python" type="serial_node.py" name="arduino_serial">
     <rosparam param="port">/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A603UWY5-if00-port0</rosparam>
   </node>
+  <include file="$(find navigator_launch)/launch/subsystems/hydrophones.launch" />
+  <include file="$(find navigator_launch)/launch/subsystems/motor_controller.launch"/>
 </launch>
