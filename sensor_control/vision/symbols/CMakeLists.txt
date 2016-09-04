@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   geometry_msgs
 )
+find_package( OpenCV REQUIRED )
 
 generate_messages(
 	DEPENDENCIES 
@@ -37,6 +38,10 @@ add_dependencies(shape_filter navigator_msgs_generate_messages)
 add_executable(shape_finder src/main.cpp src/FrameProc.cpp src/ShapeFind.cpp src/DebugWindow src/ShapeDetector.cpp)
 add_dependencies(shape_finder navigator_msgs_generate_messages)
 target_link_libraries(shape_finder ${catkin_LIBRARIES})
-find_package( OpenCV REQUIRED )
+
 target_link_libraries(shape_finder ${OpenCV_LIBS} )
 
+add_executable(shore_debug src/ShoreDebug.cpp)
+add_dependencies(shore_debug navigator_msgs_generate_messages)
+target_link_libraries(shore_debug ${catkin_LIBRARIES})
+target_link_libraries(shore_debug ${OpenCV_LIBS} )
