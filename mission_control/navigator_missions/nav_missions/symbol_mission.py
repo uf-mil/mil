@@ -11,9 +11,9 @@ from navigator_tools import rosmsg_to_numpy
 import cv2
 
 from twisted.internet import defer
-error_threshold = 0.1
-width_proportion = 0.30;
-width_error_threshold = 0.2
+error_threshold = 0.1 #how small center error can be to be considered centered
+width_proportion = 0.30 #what proportion of the image width should be taken by the symbol
+width_error_threshold = 0.2 #how small width error can be to be considered correct distance
 
 def boundingRect(points):
     maxX = 0
@@ -37,6 +37,7 @@ def area_of_rect(rect):
 def main(navigator):
   #shooterLoad = rospy.ServiceProxy("/shooter/load", std_srvs.srv.Trigger)
   #shooterFire = rospy.ServiceProxy("/shooter/fire", std_srvs.srv.Trigger)
+  
   resp = yield navigator.vision_request("get_shape")
   while not (resp.found and resp.symbol.img_width != 0):
     yield navigator.move.yaw_left(0.15).go();
@@ -44,11 +45,14 @@ def main(navigator):
 
   print "Found"
   print "Loading"
+  #shoooterLoad()
+  
   error = float(resp.symbol.CenterX)/resp.symbol.img_width - 0.5
   while abs(error) > error_threshold:
     resp = yield navigator.vision_request("get_shape")
-    error = float(resp.symbol.CenterX)/resp.symbol.img_width - 0.5
-    print error
+    center = float(resp.symbol.CenterX)/resp.symbol.img_width
+    error = center - 0.5
+    print "Center Proportion: ", center
     if error < 0:
         print "Turning Left"
         yield navigator.move.yaw_left(0.1).go()
@@ -57,14 +61,14 @@ def main(navigator):
         yield navigator.move.yaw_right(0.1).go()
   print "Centerted"
 
-  #shoooterLoad()
   
   resp = yield navigator.vision_request("get_shape")
   rect = boundingRect(resp.symbol.points)
   width = (rect[0] - rect[2]) / resp.symbol.img_width
   width_error = width - width_proportion
-  print "Width", width
+
   while abs(width_error) > width_error_threshold:
+    print "Width Proportion", width
     resp = yield navigator.vision_request("get_shape")
     if width_error < 0:
       print "Moving Towards"
