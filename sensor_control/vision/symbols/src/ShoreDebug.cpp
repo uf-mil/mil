@@ -15,7 +15,6 @@ class ShoreDebug {
   image_transport::ImageTransport it_;
   image_transport::Subscriber image_sub_;
   ros::Subscriber foundShapesSubscriber;
-  ros::ServiceClient getShapeClient;
   std::string camera_topic;
   std::string req_shape,req_color;
   Mat image,filtered_image;
@@ -48,9 +47,6 @@ class ShoreDebug {
     nh_("dock_shape_shore_debug"),
     it_(nh_)
   {
-    ros::ServiceClient getShapeClient = nh_.serviceClient<navigator_msgs::GetDockShape>("/dock_shapes/GetShape");
-    getShapeClient.waitForExistence();
-    std::cout << "valid " << getShapeClient.isValid() << std::endl;
     nh_.param<std::string>("symbol_camera", camera_topic, "/right_camera/image_color");
     nh_.param<std::string>("color", req_color, navigator_msgs::DockShape::BLUE);
     nh_.param<std::string>("shape", req_shape, navigator_msgs::DockShape::CROSS);
