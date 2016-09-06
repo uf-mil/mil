@@ -11,6 +11,6 @@ meta_alarms_inv = {
 }
 
 meta_alarms = {}
-for meta_alarm, sub_alarms in meta_alarms_inv.items():
-    for sub_alarm in sub_alarms:
-        meta_alarms[sub_alarm] = meta_alarm
+for meta_alarm, nav_alarms in meta_alarms_inv.items():
+    for nav_alarm in nav_alarms:
+        meta_alarms[nav_alarm] = meta_alarm
