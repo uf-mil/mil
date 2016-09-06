@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>sub8_alarm</name>
+  <name>navigator_alarm</name>
   <version>1.0.0</version>
-  <description>The sub8_alarm package</description>
+  <description>The navigator_alarm package</description>
   <maintainer email="jpanikulam@ufl.edu">jacob</maintainer>
-  <maintainer email="pemami@ufl.edu">patrick</maintainer>
+  <maintainer email="d.soto@ufl.edu">david</maintainer>
 
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
@@ -12,6 +12,6 @@
   <depend>rospy</depend>
   <depend>roscpp</depend>
   <depend>roslib</depend>
-  <depend>sub8_msgs</depend>
+  <depend>navigator_msgs</depend>
 
 </package>
