@@ -17,6 +17,9 @@ class FrameProc
 		static int erode_kernel_size;
 		static int dilate_kernel_size;
     static int blur_size;
+    static int bilat_d;
+    static double bilat_color;
+    static double bilat_space;
 		Mat erode_element;
 		Mat dilate_element;
     void rebuildElements();
