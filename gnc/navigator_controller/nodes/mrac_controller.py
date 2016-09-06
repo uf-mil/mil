@@ -1,89 +1,4 @@
 #!/usr/bin/python
-'''
-Model-Reference Adaptive Controller
-
-################################################# BLACK BOX DESCRIPTION
-
-Inputs:
-    - desired pose waypoint [x, y, yaw] in world frame,
-      i.e. an end goal of "GO HERE AND STAY"
-    - current state (odometry) in world frame
-
-Outputs:
-    - the body frame wrench that should then be mapped to the thrusters
-
-################################################# DETAILED DESCRIPTION
-
-This controller implements typical PD feedback, but also adds on
-a feedforward term to improve tracking.
-
-The feedforward term makes use of an estimate of the boat's physical
-parameters; specifically the effects of drag.
-
-Instead of doing a bunch of experiments to find the true values of
-these parameters ahead of time, this controller performs realtime
-adaptation to determine them. The method it uses is tracking-error
-gradient descent. To learn more, see <https://en.wikipedia.org/wiki/Adaptive_control>.
-
-Additionally, this controller uses the "model-reference architecture."
-<https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/MRAC.svg/585px-MRAC.svg.png>
-This essentially means that the trajectory generator is built into it.
-
-The model reference used here is a boat with the same inertia and thrusters
-as our actual boat, but drag that is such that the terminal velocities
-achieved are those specified by self.vel_max_body. This vitual boat
-moves with ease (no disturbances) directly to the desired waypoint goal. The
-controller then tries to make the real boat track this "prescribed ideal" motion.
-
-The way it was implemented here, you may only set a positional waypoint that
-the controller will then plan out how to get to completely on its own. It always
-intends to come to rest / station-hold at the waypoint you give it.
-
-Until the distance to the x-y waypoint is less than self.heading_threshold,
-the boat will try to point towards the x-y waypoint instead of pointing
-in the direction specified by the desired yaw. "Smartyaw." It's, alright...
-Set self.heading_threshold really high if you don't want it to smartyaw.
-
-################################################# HOW TO USE
-
-All tunable quantities are hard-coded in the __init__.
-In addition to typical gains, you also have the ability to set a
-"v_max_body", which is the maximum velocity in the body frame (i.e.
-forwards, strafing, yawing) that the reference model will move with.
-
-Use set_waypoint to give the controller A NEW desired waypoint. It
-will overwrite the current desired pose with it, and reset the reference
-model (the trajectory generator) to the boat's current state.
-
-Use get_command to receive the necessary wrench for this instant.
-That is, get_command publishes a ROS wrench message, and is fed
-the current odometry and timestamp.
-
-The controller subscribes to the topic /mrac_learn (ROS std bool
-message) to either start/continue learning (True) or hault
-learning (False). It initializes to False.
-
-################################################# INTERNAL SEMANTICS
-
-*_des: "desired", refers to the end goal, the "waypoint" we are trying to hold at.
-
-*_ref: "reference", it is basically the generated trajectory, the "bread crumb",
-       the instantaneous desired state on the way to the end goal waypoint.
-
-*_body: "body frame", unless it is labelled with _body, it is in world-frame.
-
-p: position
-v: velocity
-q: quaternion orientation
-w: angular velocity
-a: acceleration
-aa: angular acceleration
-
-################################################# OTHER
-
-Author: Jason Nezvadovitz
-
-'''
 from __future__ import division
 import numpy as np
 import numpy.linalg as npl
@@ -128,13 +43,14 @@ class MRAC_Controller:
         self.heading_threshold = 500  # m
         # Only use PD controller
         self.only_PD = False
+        self.learning_radius = 10  # m
         # Use external trajectory generator instead of internal reference generator
         # Subscribes to /trajectory if using external, else just takes /waypoint for the end goal
         self.use_external_tgen = True
 
         #### REFERENCE MODEL (note that this is not the adaptively estimated TRUE model; rather,
         #                     these parameters will govern the trajectory we want to achieve).
-        self.mass_ref = 400  # kg, determined to be larger than boat in practice due to water mass
+        self.mass_ref = 500  # kg, determined to be larger than boat in practice due to water mass
         self.inertia_ref = 400  # kg*m^2, determined to be larger than boat in practice due to water mass
         self.thrust_max = 220  # N
         self.thruster_positions = np.array([[-1.9000,  1.0000, -0.0123],
@@ -186,7 +102,7 @@ class MRAC_Controller:
         else:
             rospy.Subscriber("/waypoint", PoseStamped, self.set_waypoint)
         rospy.Subscriber("/odom", Odometry, self.get_command)
-        rospy.Subscriber('/mrac_learn', Bool, self.toggle_learning)
+        rospy.Subscriber('/learn', Bool, self.toggle_learning)
         # Publishers
         self.wrench_pub = rospy.Publisher("/wrench/autonomous", WrenchStamped, queue_size=0)
         self.pose_ref_pub = rospy.Publisher("pose_ref", PoseStamped, queue_size=0)
@@ -201,12 +117,12 @@ class MRAC_Controller:
         '''
         self.p_ref = np.array([msg.posetwist.pose.position.x, msg.posetwist.pose.position.y])
         self.q_ref = np.array([msg.posetwist.pose.orientation.x, msg.posetwist.pose.orientation.y, msg.posetwist.pose.orientation.z, msg.posetwist.pose.orientation.w])
-        
+
         R = trns.quaternion_matrix(self.q_ref)[:3, :3]
 
         self.v_ref = R.dot(np.array([msg.posetwist.twist.linear.x, msg.posetwist.twist.linear.y, msg.posetwist.twist.linear.z]))[:2]
         self.w_ref = R.dot(np.array([msg.posetwist.twist.angular.x, msg.posetwist.twist.angular.y, msg.posetwist.twist.angular.z]))[2]
-        
+
         self.a_ref = R.dot(np.array([msg.posetwist.acceleration.linear.x, msg.posetwist.acceleration.linear.y, msg.posetwist.acceleration.linear.z]))[:2]
         self.aa_ref = R.dot(np.array([msg.posetwist.acceleration.angular.x, msg.posetwist.acceleration.angular.y, msg.posetwist.acceleration.angular.z]))[2]
 
@@ -293,7 +209,7 @@ class MRAC_Controller:
             self.drag_effort = np.clip(drag_regressor.dot(self.drag_est), -self.drag_limit, self.drag_limit)
             wrench = (kp.dot(err)) + (kd.dot(errdot)) + inertial_feedforward + self.dist_est + self.drag_effort
             # Update disturbance estimate, drag estimates
-            if self.learn:
+            if self.learn and (npl.norm(p_err) < self.learning_radius):
                 self.dist_est = np.clip(self.dist_est + (self.ki * err * self.timestep), -self.dist_limit, self.dist_limit)
                 self.drag_est = self.drag_est + (self.kg * (drag_regressor.T.dot(err + errdot)) * self.timestep)
 
@@ -402,7 +318,9 @@ class MRAC_Controller:
         if self.learn:
             print("MRAC controller is learning.")
         else:
-            print("MRAC controller haulted learning.")
+            print("MRAC controller reset and stopped learning.")
+            self.dist_est = np.zeros(3)
+            self.drag_est = np.zeros(5)
 
     def thruster_mapper(self, wrench, B):
         '''

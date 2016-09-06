@@ -7,7 +7,7 @@
 #
 # Services need to be in navigator_msgs/srv/
 
-circle:
-  topic: /shape_finder
-  type: VisionRequest
-  args: {'target_name': "testing"}
+start_gate:
+  topic: /vision/start_gate_buoys
+  type: StartGate
+  args: {}

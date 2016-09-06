@@ -1,121 +1,61 @@
 #!/usr/bin/env python
-'''
-
-Title: Control Arbiter
-Start Date: 10-22-15
-
-Author: Zach Goins
-Author email: zach.a.goins@gmail.com
-
-CODE DETAILS --------------------------------------------------------------------
-
-inputs: /wrench/rc, /wrench/autonomous /wrench/gui
-serivces: change_wrench
-output: /wrench/cmd
-
-This code will be used as an arbiter for any systems outputting a wrench during operation of the boat.
-No movement commands go to the motors except through the thurster mapper. Because of this all command sources
-that move the vessel should output a wrench. Right now the controller, remote control, and the gui all are able to
-send commands to the boat meaning they all output a wrench. However, only one wrench can be sent to the mapper.
-
-This program is used to control from which command source the boat is taking commands.
-
-All the functions in this class are ROS callbacks except for one: The one that publishes the correct wrench
-That way wrenches are always publishing and the settings change on the fly.
-
-Don't forget about edge cases in case a service returns false and
-the control variable you tried to change does not actually change
-
-'''
-
 import rospy
-import roslib
-import numpy,math,tf,threading
 from geometry_msgs.msg import WrenchStamped
 from navigator_msgs.srv import WrenchSelect
 from std_msgs.msg import Bool
 
 rospy.init_node('wrench_arbiter')
 
-class control_arb(object):
-
+class WrenchArbiter(object):
     def __init__(self):
+        # Set the three receiving variables
+        self.rc_wrench = None
+        self.autonomous_wrench = None
 
-        # Set the three recieving variables
-        self.rc_wrench = WrenchStamped()
-        self.autonomous_wrench = WrenchStamped()
-        self.gui_wrench = WrenchStamped()
-
-        # Variable that is set when the control source is changed
-        # It is what is used to determine what should be output
-        # SET TO NONE ON DEFAULT MEANING THE BOAT IS STARTED KILLED
+        # This is what is used to determine which input should be output
         self.control = None
+        self.control_inputs = ['rc', 'autonomous']
 
         # ROS stuff - Wrench changing service, final output wrench, and the three input sources
         rospy.Service('change_wrench', WrenchSelect, self.change_wrench)
-        self.wrench_pub = rospy.Publisher("/wrench/cmd", WrenchStamped, queue_size = 1)
-        rospy.Subscriber("/wrench/rc", WrenchStamped, self.rc_cb)
-        rospy.Subscriber("/wrench/autonomous", WrenchStamped, self.autonomous_cb)
-        rospy.Subscriber("/wrench/gui", WrenchStamped, self.gui_cb)
+        self.wrench_pub = rospy.Publisher("/wrench/cmd", WrenchStamped, queue_size=1)
+        self.learn = rospy.Publisher("learn", Bool, queue_size=1)
 
-    # These functions sit here and spin and collect the new messages
+        # Subscribers to listen for wrenches
+        rospy.Subscriber("/wrench/rc", WrenchStamped,
+                         lambda msg: self.republish(msg, control_t="rc", learn=False))
+        rospy.Subscriber("/wrench/autonomous", WrenchStamped,
+                         lambda msg: self.republish(msg, control_t="autonomous", learn=True))
 
-    def rc_cb(self, msg):
-        self.rc_wrench = msg
-        self.rc_wrench.header.frame_id = "/base_link"
+    def republish(self, msg, control_t, learn):
+        '''
+        Republishes message if it's the correct control type. `learn` will publish to the learn topic
+        to start or stop concurrent learning.
+        '''
+        # If there's no control selected, send zeros
+        if self.control is None:
+            msg.wrench.force.x = 0
+            msg.wrench.force.y = 0
+            msg.wrench.torque.z = 0
+            learn = False
 
-    def autonomous_cb(self, msg):
-        self.autonomous_wrench = msg
-        self.autonomous_wrench.header.frame_id = "/base_link"
+        elif control_t != self.control:
+            return
 
-    def gui_cb(self, msg):
-        self.gui_wrench = msg
-        self.gui_wrench.header.frame_id = "/base_link"
+        self.learn.publish(learn)
+        msg.header.frame_id = "/base_link"
+        self.wrench_pub.publish(msg)
 
-    # When the change wrench service is called...
     def change_wrench(self, req):
         '''
-            When the service is called the calling program either sends 'rc', 'autonomous', or 'gui'.
-            This sets the wrench output to the correct source by setting the 'control' variable
-            to the right source.
-
+        This sets the wrench output to the correct source by setting the 'control' variable
+        to the right source.
         '''
-
-        rospy.loginfo("Server recieved request for wrench control change - " + req.str)
-
-        if req.str == "rc":
-            self.control = "rc"
-            return True
-        if req.str == "autonomous":
-            self.control = "autonomous"
-            return True
-        if req.str == "gui":
-            self.control = "gui"
-            return True
-        else:
-            return False
-
-    def publish_wrench(self):
-        '''
-            Publishes whichever wrench the control variable is set to
-        '''
-
-        if self.control == "rc":
-            self.wrench_pub.publish(self.rc_wrench)
-
-        if self.control == "autonomous":
-            self.autonomous_wrench.header.frame_id = "/base_link"
-            self.wrench_pub.publish(self.autonomous_wrench)
-
-        if self.control == "gui":
-            self.wrench_pub.publish(self.gui_wrench)
+        rospy.loginfo("Server received request for wrench control change - " + req.str)
+        self.control = req.str if req.str in self.control_inputs else None
+        return self.control is not None
 
 
 if __name__ == "__main__":
-
-    arb = control_arb()
-    rate = rospy.Rate(50)
-    while not rospy.is_shutdown():
-        arb.publish_wrench()
-        rate.sleep()
+    arb = WrenchArbiter()
     rospy.spin()

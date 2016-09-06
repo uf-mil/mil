@@ -1,30 +1,3 @@
 <launch>
-  <node name="navigator_lidar_oa_cluster_extraction" pkg="navigator_lidar_oa" type="cluster_extraction"/>
-
-  <!-- TODO:
-	* Remap 
-    Lidar frame from "velodyne" to "lidar"
-  -->
-    <!-- Cameras -->
-  <include file="$(find navigator_launch)/launch/cameras.launch"/>
-
-  <!-- Velodyne LIDAR (from VLP16 Launch, requires velodyne package to be built from source)-->
-  <!-- declare arguments with default values -->
-  <arg name="pcap" default="" />
-  <arg name="calibration" default="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
-  <arg name="min_range" default="0.4" />
-  <arg name="max_range" default="130.0" />
-
-  <!-- start nodelet manager and driver nodelets -->
-  <include file="$(find velodyne_driver)/launch/nodelet_manager.launch">
-    <arg name="model" value="VLP16"/>
-    <arg name="pcap" value="$(arg pcap)"/>
-  </include>
-
-  <!-- start cloud nodelet -->
-  <include file="$(find velodyne_pointcloud)/launch/cloud_nodelet.launch">
-    <arg name="calibration" value="$(arg calibration)"/>
-    <arg name="min_range" value="$(arg min_range)"/>
-    <arg name="max_range" value="$(arg max_range)"/>
-  </include>
+  <!--node name="start_gate_vision" pkg="navigator_controller" type="start_gate_manual.py" respawn="True"/-->
 </launch>

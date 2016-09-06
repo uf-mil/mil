@@ -1,31 +1,3 @@
-
-<!--
-        This file launches all nodes necessary for navigation.
-        Nodes launched:
-            * thruster mapper
-            * pose_controller
-            * wrench_arbiter
-            * joystick_wrench
-            * joy_node
-            * alarm_handler
-            * tf
-              - ins_tf
-              - lidar_tf
-              - forward_camera_tf
-              - right_camera_tf
-              - down_camera_tf
-              - shooter_tf
-
-        It takes in twp parameters
-        * 'sim' to launch only certain nodes.
-        * 'rc' to decide whether to launch the xbox remote control nodes
-
-        Nodes affected by the 'rc' arg:
-            * joystick_wrench
-            * joy_node
-
--->
-
 <launch>
     <node pkg="navigator_thrust_mapper" type="thrust_mapper.py" name="thrust_mapper">
     <!-- Parameters used to set the thruster locations and angles relative to the center of gravity of the boat -->
@@ -41,7 +13,7 @@
         <rosparam param="effort_limit">400</rosparam>
     </node>
 
-    <include file="$(find navigator_launch)/launch/tf.launch"/>
+    <include file="$(find navigator_launch)/launch/subsystems/tf.launch"/>
 
     <!-- Alarms handlers -->
     <node pkg="sub8_alarm" type="alarm_handler.py" name="alarm_handler"/>  <!-- TODO: Remove this dependacy, without destroying history -->
@@ -49,9 +21,7 @@
 
     <node name="wrench_arbiter" pkg="navigator_msg_multiplexer" type="wrench_arbiter.py"/>
 
-    <node name="pose_controller" pkg="navigator_controller" type="mrac_controller.py"/>
-    <!-- can be type="mrac_controller.py" OR type="run_nn_controller" if you have that dependency
-    <https://github.com/jnez71/neural_control>-->
+    <node name="mrac" pkg="navigator_controller" type="mrac_controller.py"/>
 
     <node pkg="navigator_joystick_control" type="navigator_joystick.py" name="joystick_wrench" output="screen">
         <param name="force_scale" value="600" type="double"/>
