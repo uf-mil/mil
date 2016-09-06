@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<robot name="wamv">
+  <link name="base_link">
+    <visual name="visual">
+      <geometry>
+        <!-- Using a low res (unrealistic) model of the boat for CPU's sake -->
+        <mesh filename="package://navigator_gazebo/models/wamv/wamv_low.dae"/>
+      </geometry>
+    </visual>
+  </link>
+</robot>

@@ -6,4 +6,8 @@
     </node>
 
     <node pkg="navigator_launch" type="keepalive_broadcaster.py" name="keepalive_broadcaster"/>
+
+
+    <!-- Load model into rviz -->
+    <param name="robot_description" command="cat $(find navigator_gazebo)/models/wamv/wamv.xml" />
 </launch>
