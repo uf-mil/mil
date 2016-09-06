@@ -121,7 +121,7 @@ bool ShapeDetector::angleTestTriangle(std::vector<cv::Point> &points) {
   chiangs += (angles[inds2] - v) * (angles[inds2] - v) / v;
   chiangs += (angles[ind] - v2) * (angles[ind] - v2) / v2;
   
-  //std::cout << "TRIANGLE: Chiangs=" << chiangs << std::endl;
+  //std::cout << "TRIANGLE: Angles= [" << angles[ind] << "," << angles[inds1] << ","  << angles[inds2] << "] Chiangs=" << chiangs << std::endl;
   if (chiangs < 1) return true;
   return false;
 }
@@ -145,6 +145,7 @@ bool ShapeDetector::testRatioAreaPerimeterCross(std::vector<cv::Point> &points) 
 }
 
 bool ShapeDetector::testPointAlignmentTriangle(std::vector<cv::Point> &points) {
+  /*
   //std::cout << " --- " << std::endl;
 	for(int i =0; i < points.size(); i++) {
 		for(int j = 0; j < points.size(); j++) {
@@ -157,6 +158,8 @@ bool ShapeDetector::testPointAlignmentTriangle(std::vector<cv::Point> &points) {
 		}
 	}
 	return true;
+  */
+  return true;
 }
 
 bool ShapeDetector::isCross(std::vector<cv::Point> &points) {
