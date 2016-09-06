@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>sub8_alarm</name>
+  <version>1.0.0</version>
+  <description>The sub8_alarm package</description>
+  <maintainer email="jpanikulam@ufl.edu">jacob</maintainer>
+  <maintainer email="pemami@ufl.edu">patrick</maintainer>
+
+  <license>MIT</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rostest</build_depend>
+  <depend>rospy</depend>
+  <depend>roscpp</depend>
+  <depend>roslib</depend>
+  <depend>sub8_msgs</depend>
+
+</package>
