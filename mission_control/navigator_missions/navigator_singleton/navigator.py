@@ -15,7 +15,6 @@ from nav_msgs.msg import Odometry
 from navigator_tools import rosmsg_to_numpy, odometry_to_numpy
 import navigator_msgs.srv as navigator_srvs
 
-
 class Navigator(object):
     def __init__(self, nh):
         self.nh = nh
@@ -30,30 +29,30 @@ class Navigator(object):
         self._ecef_odom_sub = yield self.nh.subscribe('absodom', Odometry)
 
         self._change_wrench = yield self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
-        #self._enu_odom_sub = yield self.nh.subscribe('world_odom', Odometry)
         self.tf_listener = yield tf.TransformListener(self.nh)
 
-        yield self.nh.sleep(.3)  # Build tf and odom buffers
+        print "Waiting for odom..."
+        yield self._odom_sub.get_next_message()  # We want to make sure odom is working before we continue
+
         defer.returnValue(self)
 
     @property
     def pose(self):
         last_odom_msg = self._odom_sub.get_last_message()
-        while last_odom_msg is None:
-            # Sometimes odom doesn't come through so wait for it
-            last_odom_msg = self._odom_sub.get_last_message()
-            self.nh.sleep(.1)
+        return odometry_to_numpy(last_odom_msg)[0]
+
+    @property
+    def ecef_pose(self):
+        last_odom_msg = self._ecef_odom_sub.get_last_message()
         return odometry_to_numpy(last_odom_msg)[0]
 
     @property
     def move(self):
         return PoseEditor2(self, 'enu')
 
-    @util.cancellableInlineCallbacks
     def change_wrench(self, source):
-        yield self._change_wrench(navigator_srvs.WrenchSelectRequest(source))
+        return self._change_wrench(navigator_srvs.WrenchSelectRequest(source))
 
-    @util.cancellableInlineCallbacks
     def vision_request(self, request_name, **kwargs):
         assert request_name in self._vision_proxies.keys(), "Unknown request: {}".format(request_name)
 
@@ -62,8 +61,8 @@ class Navigator(object):
         s_args = dict(vision_proxy['args'].items() + kwargs.items())
         s_req = vision_proxy['request'](**s_args)
 
-        resp = yield s_client(s_req)
-        defer.returnValue(resp)
+        # Returns deferred object, make sure to yield on this
+        return s_client(s_req)
 
     def _load_vision_serivces(self, fname="vision_services.yaml"):
         rospack = rospkg.RosPack()

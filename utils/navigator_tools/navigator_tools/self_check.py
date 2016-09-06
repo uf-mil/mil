@@ -19,11 +19,20 @@ class FancyPrint(object):
     def error(self, text):
         print self.BAD + text + self.NORMAL
 
+from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage
+def add_camera_feeds(nh, cam_name, image_type="image_raw"):
+    ''' Returns subscribers to the raw and compressed `image_type` '''
+
+    raw = '/{}/{}'.format(cam_name, image_type)
+    compressed = '/{}/{}/compressed'.format(cam_name, image_type)
+    return nh.subscribe(raw, Image).get_next_message(), \
+           nh.subscribe(compressed, CompressedImage).get_next_message()
 
 @txros.util.cancellableInlineCallbacks
 def main():
     nh = yield txros.NodeHandle.from_argv("self_checker")
-    # Add deffereds to list to be yieleded on and checked later
+    # Add deferreds to this dict to be yieleded on and checked later
     topics = {}
 
     # General Subs
@@ -34,20 +43,12 @@ def main():
     topics['joy'] = nh.subscribe('joy', Joy).get_next_message()
 
     # Perception Subs
-    from sensor_msgs.msg import Image
-    topics['right_camera'] = nh.subscribe('/right_camera/image_raw', Image).get_next_message()
-    topics['left_camera'] = nh.subscribe('/left_camera/image_raw', Image).get_next_message()
-    topics['side_camera'] = nh.subscribe('/side_camera/image_raw', Image).get_next_message()
-    topics['down_camera'] = nh.subscribe('/down_camera/image_raw', Image).get_next_message()
-
-    from sensor_msgs.msg import CompressedImage
-    topics['right_camera_compressed'] = nh.subscribe('/right_camera/image_raw/compressed', CompressedImage).get_next_message()
-    topics['left_camera_compressed'] = nh.subscribe('/left_camera/image_raw/compressed', CompressedImage).get_next_message()
-    topics['side_camera_compressed'] = nh.subscribe('/side_camera/image_raw/compressed', CompressedImage).get_next_message()
-    topics['down_camera_compressed'] = nh.subscribe('/down_camera/image_raw/compressed', CompressedImage).get_next_message()
+    topics['right_images'], topics['right_compressed'] = add_camera_feeds(nh, "right")
+    topics['stereo_right_images'], topics['stereo_right_compressed'] = add_camera_feeds(nh, "stereo/right")
+    topics['stereo_left_images'], topics['stereo_left_compressed'] = add_camera_feeds(nh, "stereo/left")
 
     from sensor_msgs.msg import PointCloud2
-    topics['velodyne'] = nh.subscribe('/velodyne/points', PointCloud2).get_next_message()
+    topics['velodyne'] = nh.subscribe('/velodyne_points', PointCloud2).get_next_message()
 
     # Thrusters
     from roboteq_msgs.msg import Feedback

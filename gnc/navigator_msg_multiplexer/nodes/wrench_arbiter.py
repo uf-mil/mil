@@ -34,17 +34,17 @@ class WrenchArbiter(object):
         '''
         # If there's no control selected, send zeros
         if self.control is None:
-            msg.force.x = 0
-            msg.force.y = 0
-            msg.torque.z = 0
+            msg.wrench.force.x = 0
+            msg.wrench.force.y = 0
+            msg.wrench.torque.z = 0
             learn = False
 
-        elif control_t is not self.control:
+        elif control_t != self.control:
             return
 
         self.learn.publish(learn)
-        msg.header = "/base_link"
-        self.wrench_pub(msg)
+        msg.header.frame_id = "/base_link"
+        self.wrench_pub.publish(msg)
 
     def change_wrench(self, req):
         '''

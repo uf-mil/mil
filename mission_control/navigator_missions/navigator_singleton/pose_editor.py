@@ -67,16 +67,6 @@ def look_at_camera(forward, upish=UP):
     return triad((forward, upish), (UP, [0, -1, 0]))
 
 
-def safe_wait_for_message(topic, topic_type):
-    while True:
-        try:
-            return rospy.wait_for_message(topic, topic_type, .5)
-        except rospy.exceptions.ROSException, e:
-            if 'timeout' not in e.message:
-                raise
-            print topic, 'wait_for_message timed out!'
-
-
 class PoseEditor2(object):
     '''
     Used to chain movements together
@@ -180,15 +170,17 @@ class PoseEditor2(object):
     def zero_roll_and_pitch(self):
         return self.set_orientation(look_at_without_pitching(self.forward_vector))
 
-    def latlon(self, lat, lon):
+    def latlon(self, lat, lon, alt=0):
         '''
         Go to a lat lon position and keep the same orientation
         '''
+        # These fuctions want radians
+        lat, lon = np.radians([lat, lon])
         # Vector in ECEF frame
-        v = ecef_from_latlongheight(lat, lon, alt) - self.nav.ecef_pose
+        v = ecef_from_latlongheight(lat, lon, alt) - self.nav.ecef_pose[0]
         # Convert the vector to ENU
-        enu_vector = enu_from_ecef(v, self.nav.ecef_pose)
-        enu_vector[2] = 0
+        enu_vector = enu_from_ecef(v, self.nav.ecef_pose[0])
+        enu_vector[2] = 0  # We don't want to move in the z at all.
 
         return self.rel_position(enu_vector)
 

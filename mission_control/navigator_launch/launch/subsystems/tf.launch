@@ -14,6 +14,15 @@
     <!--node pkg="tf" type="static_transform_publisher" name="right_camera_tf" args=".6096 -.254 .762  0 0 0 1  /base_link /camera 100" /-->
     <!--node pkg="tf" type="static_transform_publisher" name="down_camera_tf" args=".6096 -.254 .762  0 0 0 1  /base_link /camera 100" /-->
     <!--node pkg="tf" type="static_transform_publisher" name="shooter_tf" args=".6096 -.254 .762  0 0 0 1  /base_link /camera 100" /-->
+
+
+    <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry">
+        <rosparam>
+            frame_id: /enu
+            child_frame_id: /base_link
+        </rosparam>
+        <remap from="orig_odom" to="ins_odom"/>
+   </node>
    
     <node pkg="nodelet" type="nodelet" args="standalone odometry_utils/odometry_to_tf" name="odometry_to_tf"/>
 </launch>
