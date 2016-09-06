@@ -7,9 +7,31 @@
     args="$(find navigator_gazebo)/worlds/a_whole_new.world" output="screen"/>
   <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" if="$(arg gui)" output="screen" />
 
+  <!-- El Boatatoe -->
   <node name="spawn_wamv" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/wamv/wamv.sdf -sdf
-      -x 5 -y 3 -z 1.5 -model wamv"
+      -x 0 -y 0 -z 1.5 -model wamv"
+    output="screen" />
+
+  <!-- Shapes -->
+  <node name="spawn_blue_cross" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/shapes/blue_cross.sdf -sdf
+      -x 3 -y 17 -z 1.5 -Y -1.5708 -model blue_cross"
+    output="screen" />
+
+  <node name="spawn_red_circle" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/shapes/red_circle.sdf -sdf
+      -x 3 -y -17 -z 1.5 -Y -1.5708 -model red_circle"
+    output="screen" />
+
+  <!-- Buoy -->
+  <node name="spawn_red_buoy" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/buoys/red.sdf -sdf
+      -x 15 -y 3 -z .08 -model red_buoy"
+    output="screen" />
+  <node name="spawn_green_buoy" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/buoys/green.sdf -sdf
+      -x 15 -y -2 -z .08 -model green_buoy"
     output="screen" />
 
   <node pkg="navigator_gazebo" type="gazebo_controller.py" name="gazebo_interface"/>

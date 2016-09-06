@@ -12,6 +12,12 @@
     <include file="$(find navigator_gazebo)/launch/goose.launch" if="$(arg gazebo)">
         <arg name="gui" value="$(arg gui)"/>
     </include>
+
+    <node pkg="xbox_joy_node" type="joy_node" name="joy_node">
+        <param name="dev" type="string" value="/dev/input/by-id/usb-045e_0291-joystick" />
+        <param name="deadzone" value="0.12" />
+        <param name="autorepeat_rate" value="5"/>
+    </node>
     
     <group unless="$(arg gazebo)">
         <include file="$(find navigator_launch)/launch/perception.launch"/>
