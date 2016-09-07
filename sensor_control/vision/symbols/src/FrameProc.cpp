@@ -1,32 +1,21 @@
 #include "FrameProc.h"
 
-int FrameProc::erode_kernel_size = 3;
-int FrameProc::dilate_kernel_size = 3;
-int FrameProc::blur_size = 3;
-int FrameProc::bilat_d = 5;
-double FrameProc::bilat_color = 20;
-double FrameProc::bilat_space = 20;
+int FrameProc::blur_size = 7;
 FrameProc::FrameProc()
 {
-  rebuildElements();
-
   red = ColorThresh{Scalar(0,10, 100), Scalar(30, 255, 255)};
 	red2 = ColorThresh{Scalar(155, 10, 100), Scalar(180, 255, 255)};
 	blue = ColorThresh{Scalar(90,100,100),Scalar(150,255,255)};
 	green = ColorThresh{Scalar(30, 85, 25),Scalar(85,255,255)};
 
   #ifdef DO_DEBUG
-  //namedWindow("blured",CV_WINDOW_AUTOSIZE);
+  namedWindow("blured",CV_WINDOW_AUTOSIZE);
   //namedWindow("hsv",CV_WINDOW_AUTOSIZE);
   namedWindow("blue",CV_WINDOW_AUTOSIZE);
   namedWindow("green",CV_WINDOW_AUTOSIZE);
   namedWindow("red",CV_WINDOW_AUTOSIZE);
+  createTrackbar("Blur Size","blured",&blur_size,100);
   #endif
-}
-void FrameProc::rebuildElements()
-{
-  erode_element = getStructuringElement(MORPH_RECT,Size(2*erode_kernel_size + 1,2*erode_kernel_size+1), Point(erode_kernel_size,erode_kernel_size)) ;
-  dilate_element = getStructuringElement(MORPH_RECT,Size( 2* dilate_kernel_size + 1, 2* dilate_kernel_size+1 ), Point(dilate_kernel_size, dilate_kernel_size));
 }
 void FrameProc::init(ros::NodeHandle& nh)
 {
@@ -60,18 +49,12 @@ void FrameProc::init(ros::NodeHandle& nh)
   nh.getParam("hsv/green/high/V",green.high[2]);
 
   //Set blue/dilate size
-  nh.getParam("erode_size",erode_kernel_size);
-  nh.getParam("dilate_size",dilate_kernel_size);
   nh.getParam("blur_size",blur_size);
-  nh.getParam("bilateral_filter/diameter",bilat_d);
-  nh.getParam("bilateral_filter/sigma_color",bilat_color);
-  nh.getParam("bilateral_filter/sigma_space",bilat_space);
-  rebuildElements();
 }
 void FrameProc::ErodeDilate()
 {
   Mat new_frame;
-  bilateralFilter(rgb_frame, new_frame,bilat_d,bilat_color,bilat_space);
+  bilateralFilter(rgb_frame, new_frame,blur_size,blur_size*2,blur_size/2);
   rgb_frame = new_frame;
   //medianBlur ( rgb_frame, rgb_frame,blur_size );;
   //erode(rgb_frame,rgb_frame,erode_element);

@@ -35,7 +35,9 @@ void ShapeFind::GetSymbols(Mat frame, navigator_msgs::DockShapes *symbols) {
   FindContours();
   FindShapes();
   
-  //std::cout << "===== FRAME " << parseColor <<"=====" << std::endl;
+  #ifdef DO_SHAPE_DEBUG
+  std::cout << "===== FRAME " << parseColor <<"=====" << std::endl;
+  #endif
   for (int i = 0; i < shapes.size(); i++) {
     if (ShapeDetector::isCross(shapes[i])) {
       symbols->list.push_back(fillSymbolMsg(shapes[i], navigator_msgs::DockShape::CROSS));

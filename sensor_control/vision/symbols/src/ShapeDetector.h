@@ -3,6 +3,7 @@
 #include "opencv2/opencv.hpp"
 #include <ros/ros.h>
 #include <numeric>
+//#define DO_SHAPE_DEBUG
 class ShapeDetector {
 	private:
     static float findAngle(cv::Point p1, cv::Point p2, cv::Point p3);
@@ -18,6 +19,8 @@ class ShapeDetector {
     static float CROSS_MIN_AREA;
     static float TRI_MIN_AREA;
     static float CIRCLE_MIN_AREA;
+    static float CROSS_ANGLE_VARIANCE;
+    static float CROSS_ANGLE_CHI;
 
     static bool checkBoundingAreaCross(std::vector<cv::Point> &points);
     static bool checkBoundingAreaTriangle(std::vector<cv::Point> &points);
