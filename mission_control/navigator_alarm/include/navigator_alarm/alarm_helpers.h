@@ -10,7 +10,7 @@
 #include <string>
 #include <boost/filesystem.hpp>  // directory iterators, etc
 #include <map>
-#include "sub8_msgs/Alarm.h"
+#include "navigator_msgs/Alarm.h"
 
 namespace fs = ::boost::filesystem;
 
