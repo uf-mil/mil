@@ -11,8 +11,6 @@
 
 #include <stdlib.h>     //for using the function sleep
 
-#include <stdlib.h>     //for using the function sleep
-
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -67,6 +65,8 @@ public:
     // Public Variables
     double image_proc_scale, feature_min_distance;
     int diffusion_time, max_features, feature_block_size;
+    int count =0;
+    double avg = 0;
 
 
 private:
