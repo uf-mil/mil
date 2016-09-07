@@ -1,6 +1,10 @@
 blur_size: 3
 erode_size: 3
 dilate_size: 3
+bilateral_filter:
+  diameter: 5
+  sigma_color: 20
+  sigma_space: 20
 cross:
   bounding_area:
     low: 0.43
@@ -19,37 +23,37 @@ circle:
 hsv:
   red1:
     low:
-      H: 0
-      S: 10
-      V: 100
+      H: 154.1369
+      S: 74.3835
+      V: 0
     high:
-      H: 30
-      S: 255
+      H: 255
+      S: 166.464
       V: 255
   red2:
     low:
-      H: 155
-      S: 10
-      V: 100
+      H: 0
+      S: 74.3835
+      V: 0
     high:
-      H: 180
-      S: 255
+      H: 30.6631
+      S: 166.464
       V: 255
   blue:
     low:
-      H: 90
-      S: 100
-      V: 10
+      H: 79.0357
+      S: 60.2055
+      V: 0
     high:
-      H: 150
-      S: 255
+      H: 139.2024
+      S: 173.553
       V: 255
   green:
     low:
-      H: 30
-      S: 85
-      V: 25
+      H: 34.7976
+      S: 0
+      V: 0
     high:
-      H: 85
-      S: 255
+      H: 124.2976
+      S: 54.1165
       V: 255

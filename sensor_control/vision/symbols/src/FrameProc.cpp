@@ -3,6 +3,9 @@
 int FrameProc::erode_kernel_size = 3;
 int FrameProc::dilate_kernel_size = 3;
 int FrameProc::blur_size = 3;
+int FrameProc::bilat_d = 5;
+double FrameProc::bilat_color = 20;
+double FrameProc::bilat_space = 20;
 FrameProc::FrameProc()
 {
   rebuildElements();
@@ -15,9 +18,9 @@ FrameProc::FrameProc()
   #ifdef DO_DEBUG
   //namedWindow("blured",CV_WINDOW_AUTOSIZE);
   //namedWindow("hsv",CV_WINDOW_AUTOSIZE);
-  //namedWindow("blue",CV_WINDOW_AUTOSIZE);
-  //namedWindow("green",CV_WINDOW_AUTOSIZE);
-  //namedWindow("red",CV_WINDOW_AUTOSIZE);
+  namedWindow("blue",CV_WINDOW_AUTOSIZE);
+  namedWindow("green",CV_WINDOW_AUTOSIZE);
+  namedWindow("red",CV_WINDOW_AUTOSIZE);
   #endif
 }
 void FrameProc::rebuildElements()
@@ -60,11 +63,17 @@ void FrameProc::init(ros::NodeHandle& nh)
   nh.getParam("erode_size",erode_kernel_size);
   nh.getParam("dilate_size",dilate_kernel_size);
   nh.getParam("blur_size",blur_size);
+  nh.getParam("bilateral_filter/diameter",bilat_d);
+  nh.getParam("bilateral_filter/sigma_color",bilat_color);
+  nh.getParam("bilateral_filter/sigma_space",bilat_space);
   rebuildElements();
 }
 void FrameProc::ErodeDilate()
 {
-  medianBlur ( rgb_frame, rgb_frame,blur_size );
+  Mat new_frame;
+  bilateralFilter(rgb_frame, new_frame,bilat_d,bilat_color,bilat_space);
+  rgb_frame = new_frame;
+  //medianBlur ( rgb_frame, rgb_frame,blur_size );;
   //erode(rgb_frame,rgb_frame,erode_element);
   //dilate(rgb_frame,rgb_frame,dilate_element);
 }
@@ -83,9 +92,9 @@ void FrameProc::ThresholdColors()
 	inRange(hsv_frame,green.low,green.high,binary_green_frame);
 
   #ifdef DO_DEBUG
-  //imshow("blue",binary_blue_frame);
-  //imshow("green",binary_green_frame);
-  //imshow("red",binary_red_frame);
+  imshow("blue",binary_blue_frame);
+  imshow("green",binary_green_frame);
+  imshow("red",binary_red_frame);
   #endif
 }
 void FrameProc::Prepare(Mat &frame)
