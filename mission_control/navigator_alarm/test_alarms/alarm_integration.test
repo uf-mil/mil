@@ -1,7 +1,5 @@
 <launch>
   <param name="simulate" value="true" />
-  <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper.launch" />
-  <include file="$(find sub8_videoray_m5_thruster)/launch/thruster_driver.launch" />
-  <node pkg="sub8_alarm" type="alarm_handler.py" name="alarm_handler" />
-  <test test-name="sub8_alarm_integration" pkg="sub8_alarm" type="test_alarm_integration.py" />
+  <node pkg="navigator_alarm" type="alarm_handler.py" name="alarm_handler" />
+  <test test-name="navigator_alarm_integration" pkg="navigator_alarm" type="test_alarm_integration.py" />
 </launch>

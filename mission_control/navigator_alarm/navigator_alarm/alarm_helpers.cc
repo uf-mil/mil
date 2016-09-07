@@ -3,7 +3,7 @@
  * Date: 11/9/2015
  */
 
-#include "sub8_alarm/alarm_helpers.h"
+#include "navigator_alarm/alarm_helpers.h"
 #include "std_msgs/Header.h"
 #include <ros/ros.h>
 #include <ros/package.h>
@@ -11,18 +11,18 @@
 #include <boost/property_tree/ptree.hpp>        // ptree
 #include <boost/property_tree/json_parser.hpp>  // read_json
 
-using sub8::AlarmBroadcaster;
-using sub8::AlarmRaiserPtr;
-using sub8::AlarmRaiser;
-using sub8::PublisherPtr;
+using navigator::AlarmBroadcaster;
+using navigator::AlarmRaiserPtr;
+using navigator::AlarmRaiser;
+using navigator::PublisherPtr;
 
 AlarmBroadcaster::AlarmBroadcaster(boost::shared_ptr<ros::NodeHandle> n) {
   // create Publisher
   _alarm_publisher = boost::make_shared<ros::Publisher>(
-      n->advertise<sub8_msgs::Alarm>("/alarm", 10));
+      n->advertise<navigator_msgs::Alarm>("/alarm", 10));
   // Use this default 
   std::string alarms_dir = "cpp_alarms";
-  std::string pkg_path = ros::package::getPath("sub8_alarm");
+  std::string pkg_path = ros::package::getPath("navigator_alarm");
   char file_sep = '/';
   _dirname = std::move(fs::path(pkg_path + file_sep + alarms_dir));
 }
@@ -111,7 +111,7 @@ AlarmRaiser::AlarmRaiser(const std::string& alarm_name,
   // for us
 }
 
-boost::shared_ptr<sub8_msgs::Alarm> AlarmRaiser::raiseAlarm(
+boost::shared_ptr<navigator_msgs::Alarm> AlarmRaiser::raiseAlarm(
     const std::string& problem_description,
     const std::string& parameters) const {
   std::string pd =
@@ -121,7 +121,7 @@ boost::shared_ptr<sub8_msgs::Alarm> AlarmRaiser::raiseAlarm(
 
   std_msgs::Header alarm_header;
   alarm_header.stamp = ros::Time::now();
-  boost::shared_ptr<sub8_msgs::Alarm> alarm_msg(new sub8_msgs::Alarm());
+  boost::shared_ptr<navigator_msgs::Alarm> alarm_msg(new navigator_msgs::Alarm());
   alarm_msg->header = alarm_header;
   alarm_msg->action_required = _action_required;
   alarm_msg->problem_description = problem_description;

@@ -2,7 +2,7 @@
 import rospy
 import sys
 import argparse
-from sub8_alarm import single_alarm
+from navigator_alarm import single_alarm
 from sub8_ros_tools.init_helpers import wait_for_subscriber
 
 

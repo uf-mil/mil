@@ -1,12 +1,13 @@
 import rospy
-from sub8_msgs.msg import Alarm
+from navigator_msgs.msg import Alarm
 import sub8_ros_tools
 import json
 
 
 def single_alarm(name, action_required=False, severity=3, problem_description=None, parameters=None):
-    '''Use this only if your node has a single alarm'''
-
+    '''
+        Use this only if your node has a single alarm
+    '''
     ab = AlarmBroadcaster()
     alarm = ab.add_alarm(name, action_required, severity, problem_description, parameters)
     return ab, alarm
@@ -14,7 +15,9 @@ def single_alarm(name, action_required=False, severity=3, problem_description=No
 
 class AlarmBroadcaster(object):
     def __init__(self):
-        '''Alarm Broadcaster'''
+        '''
+            Alarm Broadcaster
+        '''
         # Notify the world when our alarm happens
         self.alarm_pub = rospy.Publisher('/alarm_raise', Alarm, latch=True, queue_size=10)
 
@@ -30,7 +33,9 @@ class AlarmBroadcaster(object):
         self.alarms = []
 
     def add_alarm(self, name, action_required=False, severity=3, problem_description=None, parameters=None):
-        '''Factory method for creating a new alarm'''
+        '''
+            Factory method for creating a new alarm
+        '''
         new_alarm = AlarmRaiser(
             alarm_name=name,
             node_name=self.node_name,
@@ -48,8 +53,9 @@ class AlarmBroadcaster(object):
 class AlarmRaiser(object):
     def __init__(self, alarm_name, node_name, alarm_publisher, action_required=False, severity=3, problem_description=None,
                  parameters=None):
-        '''Alarm object, does alarms
-        Generates alarm messages
+        '''
+            Alarm object, does alarms
+            Generates alarm messages
         '''
         assert severity in range(0, 3 + 1), "Severity must be an integer between 0 and 3"
         if parameters is not None:
@@ -82,7 +88,9 @@ class AlarmRaiser(object):
 
 
     def raise_alarm(self, problem_description=None, parameters=None, severity=None):
-        '''Arguments are override parameters'''
+        '''
+            Arguments are override parameters
+        '''
         got_problem_description = (problem_description != "") or (self._problem_description is not None)
         assert got_problem_description, "No problem description has been set for this alarm"
 
@@ -147,10 +155,10 @@ class AlarmRaiser(object):
 
 class AlarmListener(object):
     '''
-    Listens for alarms (similar to a TF listener) but can have a callback function (like a ros subscriber).
+        Listens for alarms (similar to a TF listener) but can have a callback function (like a ros subscriber).
 
-    If an alarm with the 'alarm_name' is triggered, it (as well as an optional 'args') will be passed
-    to the 'callback_funct'.
+        If an alarm with the 'alarm_name' is triggered, it (as well as an optional 'args') will be passed
+        to the 'callback_funct'.
     '''
     def __init__(self, alarm_name=None, callback_funct=None, args=None):
         # This dictionary will allow the user to listen to an arbitrary number of alarms
@@ -168,7 +176,9 @@ class AlarmListener(object):
         rospy.Subscriber('/alarm', Alarm, self.check_alarm, queue_size=100)
 
     def __getitem__(self, alarm_name):
-        '''Return true if the alarm is active, false if not'''
+        '''
+            Return true if the alarm is active, false if not
+        '''
         if key in self.callback_linker.keys():
             return self.callback_linker[alarm_name]['active']
         else:
@@ -176,7 +186,7 @@ class AlarmListener(object):
 
     def add_listener(self, alarm_name, callback_funct, args=None):
         '''
-        Creates a new alarm listener and links it to a callback function.
+            Creates a new alarm listener and links it to a callback function.
         '''
         self.callback_linker[alarm_name] = {
             'callback': callback_funct,
@@ -187,8 +197,8 @@ class AlarmListener(object):
 
     def check_alarm(self, alarm):
         '''
-        We've gotten an alarm, but don't panic! If it's one of the alarms we are listening for,
-        pass the alarm to the function callback with any specified args.
+            We've gotten an alarm, but don't panic! If it's one of the alarms we are listening for,
+            pass the alarm to the function callback with any specified args.
         '''
         if alarm.alarm_name not in self.known_alarms:
             self.known_alarms.append(alarm.alarm_name)

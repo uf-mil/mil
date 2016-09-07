@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-PKG = 'sub8_alarm'
+PKG = 'navigator_alarm'
 NAME = 'test_alarm'
 
 import sys
@@ -8,8 +8,8 @@ import rospy
 import rostest
 import unittest
 import numpy as np
-from sub8_msgs.msg import Thrust, ThrusterCmd
-from sub8_msgs.srv import FailThruster
+from navigator_msgs.msg import Thrust, ThrusterCmd
+from navigator_msgs.srv import FailThruster
 from geometry_msgs.msg import WrenchStamped, Wrench, Vector3
 from sub8_ros_tools import wait_for_subscriber
 import time
@@ -31,7 +31,7 @@ class TestAlarmIntegration(unittest.TestCase):
         Behavior:
             1. Trigger the thruster failure alarm (By manually failing a simulated thruster)
             2. Issue a wrench command
-            3. Verify that the sub8_msgs/Thrust command does not contain a command to that thruster
+            3. Verify that the navigator_msgs/Thrust command does not contain a command to that thruster
         '''
         rospy.Subscriber("/thrusters/thrust", Thrust, self.thrust_callback)
         wrench_pub = rospy.Publisher('/wrench', WrenchStamped, queue_size=1, latch=True)
