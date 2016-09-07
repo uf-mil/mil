@@ -10,7 +10,7 @@ import nav_msgs.msg
 from navigator_tools import rosmsg_to_numpy
 import cv2
 
-square = np.array([[-1,-1,0],[-1,1,0],[1,1,0],[1,-1,0]]).astype(np.float32)
+square = np.array([[0,0,0],[0,1,0],[1,0,0],[1,1,0]]).astype(np.float32)
 #~ K = np.array([[400,0,200],[0,400,200],[0,0,1]]).astype(np.float32)
 K = np.array([[1412.201315555317, 0.0, 958.1808049309507],[ 0.0, 1407.186287430534, 595.3024122623201], [0.0, 0.0, 1.0]]).astype(np.float32)
 
@@ -182,7 +182,7 @@ def main(navigator):
         
     rectp = getPlanarBoundingRect(points)
 
-    inliers, rvecs, tvecs = cv2.solvePnP(square, np.array(rectp).astype(np.float32), K, dist)
+    rvecs, tvecs, inliers = cv2.solvePnPRansac(square, np.array(rectp).astype(np.float32), K, dist)
     print "Rotation vec: ", rvecs
     print "Traslation vec: ", tvecs
     print "Inliers", inliers
