@@ -22,16 +22,15 @@ public:
     bool complete();
     void clear();
     std::vector<Eigen::Vector3d> current_points;
+    std::vector<Eigen::Vector3d> debug_3dpoints;
 
 private:
     std::vector<std::vector<Eigen::Vector3d>> potential_models;
+    int get_furthest_point(std::vector<Eigen::Vector3d> my_model, int point);
 
     std::vector<float> unused_distances;
     std::map<std::string, float> point_to_distance;
 
     int which_point( Eigen::Vector3d a,  Eigen::Vector3d b);
-
-
-
     void visualize_points(std::vector<Eigen::Vector3d>  feature_pts_3d, cv:: Mat img, cv::Matx34d left_cam_mat, std::string name);
 };

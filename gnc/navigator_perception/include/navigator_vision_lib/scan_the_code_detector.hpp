@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <cstdint>
 #include <iterator>
+#include <ctime>
 
 #include <stdlib.h>     //for using the function sleep
 
@@ -64,6 +65,8 @@ public:
     // Public Variables
     double image_proc_scale, feature_min_distance;
     int diffusion_time, max_features, feature_block_size;
+    int count =0;
+    double avg = 0;
 
 
 private:

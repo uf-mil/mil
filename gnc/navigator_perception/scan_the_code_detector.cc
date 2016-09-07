@@ -71,6 +71,7 @@ void ScanTheCodeDetector::validate_frame(Mat& current_image_left, Mat& current_i
                                                sensor_msgs::image_encodings::BGR8);
             current_image_left = input_bridge->image;
             left_cam_model.fromCameraInfo(left_most_recent.info_msg_ptr);
+
             resize(current_image_left, processing_size_image_left, Size(0, 0),
                    image_proc_scale, image_proc_scale);
             if (current_image_left.channels() != 3)
@@ -249,7 +250,8 @@ void ScanTheCodeDetector::process_current_image()
     Matx34d left_cam_mat = left_cam_model.fullProjectionMatrix();
     Matx34d  right_cam_mat = right_cam_model.fullProjectionMatrix();
 
-
+    ++count;
+    clock_t begin = clock();
 
     bool ret = model_fitter->determine_model_position(position,
                max_features, feature_block_size,
@@ -257,6 +259,16 @@ void ScanTheCodeDetector::process_current_image()
                image_proc_scale, diffusion_time,
                current_image_left, current_image_right,
                left_cam_mat, right_cam_mat);
+    clock_t end = clock();
+    double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+    avg = (avg * (count-1) + elapsed_secs)/count;
+
+    if(count == 300){
+      std::cout<<avg<<std::endl;
+      exit(0);
+    }
+
+
 }
 
 bool ScanTheCodeDetector::detection_activation_switch(
