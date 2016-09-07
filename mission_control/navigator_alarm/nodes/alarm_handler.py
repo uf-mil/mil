@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import rospy
 import json
-from sub8_msgs.msg import Alarm
-from sub8_alarm import alarms, meta_alarms
+from navigator_msgs.msg import Alarm
+from navigator_alarm import alarms, meta_alarms
 import datetime
 
 
@@ -24,7 +24,7 @@ class AlarmHandler(object):
 
         self.scenarios = {}
 
-        # Go through everything in the sub8_alarm.alarms package
+        # Go through everything in the navigator_alarm.alarms package
         for candidate_alarm_name in dir(alarms):
             # Discard __* nonsense
             if not candidate_alarm_name.startswith('_'):

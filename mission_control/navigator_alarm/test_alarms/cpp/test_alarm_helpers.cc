@@ -4,7 +4,7 @@
  */
 
 #include "gtest/gtest.h"
-#include "sub8_alarm/alarm_helpers.h"
+#include "navigator_alarm/alarm_helpers.h"
 #include <string>
 #include <map>
 #include <boost/filesystem.hpp>
@@ -12,11 +12,11 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <ros/package.h>
 
-using sub8::AlarmBroadcaster;
-using sub8::AlarmBroadcasterPtr;
-using sub8::AlarmRaiser;
-using sub8::AlarmRaiserPtr;
-using sub8::PublisherPtr;
+using navigator::AlarmBroadcaster;
+using navigator::AlarmBroadcasterPtr;
+using navigator::AlarmRaiser;
+using navigator::AlarmRaiserPtr;
+using navigator::PublisherPtr;
 
 class AlarmHelpersTest : public ::testing::Test {
  public:
@@ -74,7 +74,7 @@ TEST_F(AlarmHelpersTest, testRaisingAlarm) {
   const std::string problem_description = "Entering black hole";
   const std::string parameters = "";
 
-  boost::shared_ptr<sub8_msgs::Alarm> alarm_msg =
+  boost::shared_ptr<navigator_msgs::Alarm> alarm_msg =
       new_alarm->raiseAlarm(problem_description, parameters);
 
   EXPECT_EQ(problem_description, alarm_msg->problem_description);
@@ -98,7 +98,7 @@ TEST_F(AlarmHelpersTest, testJSONBlob) {
   const std::string problem_description = "Entering black hole";
 
   // The AlarmHandler node will decode the JSON
-  boost::shared_ptr<sub8_msgs::Alarm> alarm_msg =
+  boost::shared_ptr<navigator_msgs::Alarm> alarm_msg =
       new_alarm->raiseAlarm(problem_description, json_string);
 
   EXPECT_EQ(problem_description, alarm_msg->problem_description);
@@ -116,7 +116,7 @@ TEST_F(AlarmHelpersTest, testBoostFilesystem) {
   file_sep = "\\";
 #endif
   std::vector<std::string> test_alarms;
-  std::string pkg_path = ros::package::getPath("sub8_alarm");
+  std::string pkg_path = ros::package::getPath("navigator_alarm");
   // Will break if our file structure changes :/
   fs::path dirname(pkg_path + file_sep + "test_alarms" + file_sep + "cpp" +
                    file_sep + "cfg");
@@ -148,7 +148,7 @@ TEST_F(AlarmHelpersTest, testBoostJSONParser) {
 #ifdef _WIN32
   file_sep = "\\";
 #endif
-  std::string pkg_path = ros::package::getPath("sub8_alarm");
+  std::string pkg_path = ros::package::getPath("navigator_alarm");
   // Will break if our file structure changes :/
   fs::path dirname(pkg_path + file_sep + "test_alarms" + file_sep + "cpp" +
                    file_sep + "cfg");
@@ -195,7 +195,7 @@ TEST_F(AlarmHelpersTest, testAddAlarms) {
   AlarmBroadcasterPtr alarm_ptr(new AlarmBroadcaster(getNodeHandle()));
   AlarmRaiserPtr alarm;
 
-  std::string alarm_name = "sub8_trajectory_generator_planning_failure";
+  std::string alarm_name = "navigator_trajectory_generator_planning_failure";
 
   alarm = alarm_ptr->addJSONAlarm(alarm_name);
 

@@ -2,7 +2,7 @@
 import rospy
 from std_msgs.msg import String 
 from std_srvs.srv import Empty, EmptyRequest
-#from sub8_alarm import single_alarm
+#from navigator_alarm import single_alarm
 from kill_handling.broadcaster import KillBroadcaster
 from twisted.internet import reactor
 import time
@@ -36,7 +36,7 @@ class NetworkCheck(object):
                 self.auto_msg_count = 0
 
             #self.alarm.raise_alarm()
-            rospy.logerr("KILLING SUB")
+            rospy.logerr("KILLING BOAT")
             self.kb.send(active=True)
         else:
             self.kb.send(active=False)
@@ -59,5 +59,5 @@ class NetworkCheck(object):
 
 if __name__ == '__main__':
     rospy.init_node('network_kill')
-    all_hail_satan = NetworkCheck(timeout=1)
+    all_hail_satan = NetworkCheck(timeout=1)  # Praise thee
     rospy.spin()

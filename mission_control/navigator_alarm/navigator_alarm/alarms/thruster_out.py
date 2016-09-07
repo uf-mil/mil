@@ -1,5 +1,5 @@
 import rospy
-from sub8_msgs.srv import UpdateThrusterLayout
+from navigator_msgs.srv import UpdateThrusterLayout
 
 
 class Handler(object):

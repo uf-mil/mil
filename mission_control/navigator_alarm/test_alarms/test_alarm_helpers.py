@@ -2,7 +2,7 @@
 import unittest
 import numpy as np
 from sub8_ros_tools import rosmsg_to_numpy
-from sub8_alarm import AlarmBroadcaster
+from navigator_alarm import AlarmBroadcaster
 
 
 class TestAlarmSystem(unittest.TestCase):
