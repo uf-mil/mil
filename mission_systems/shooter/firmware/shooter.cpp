@@ -1,3 +1,24 @@
+/**
+ * This file contains the firmware to be uploaded to do arduino used
+ * to control the Navigator's shooter.
+ *
+ * Once uploaded, an instance of rosserial must be run to send/receive
+ * ros data to/from the arduino.
+ *
+ * launch/config.yaml contains settings for the timing based control. 
+ *
+ * The arduino provides four services for controlling the shooter:
+ * /shooter/cancel - std_srvs/Trigger
+ *                 - immediately turns off both the flywheels and feeder actuator
+ * /shooter/manual - navigator_msgs/ShooterManual
+ *                 - given an integer between -100 and 100, manually sets the speed of the two motor controllers
+ *                 - -100 = full speed reverse, 0 = off, 100 = full speed forward
+ * /shooter/load   - std_srvs/Trigger
+ *                 - timing based control which retracts the feeder to allow a ball in, pushes the fall towards the fly wheels, then turns on the flywheels for quickfiring
+ * /shooter/fire   - std_srvs/Trigger
+ *                 - timing based control which extends the linear actuator to launch the ball, then turns off the flywheels
+ */
+
 #include <ros.h>
 #include <std_msgs/Int8.h>
 #include <std_msgs/String.h>
@@ -189,8 +210,8 @@ class AutoController
         feeder.off();
       } else if (cur_time < (RETRACT_TIME + MID_LOAD_PAUSE + LOAD_TIME) ) {
         feeder.on();
-      }else {
-				feeder.off();
+      } else {
+        feeder.off();
         shooter.on();
         state = 0;
         loaded = true;
