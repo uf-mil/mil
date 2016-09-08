@@ -14,7 +14,7 @@
 
 namespace fs = ::boost::filesystem;
 
-namespace sub8 {
+namespace navigator {
 
 class AlarmRaiser;
 typedef boost::shared_ptr<AlarmRaiser> AlarmRaiserPtr;
@@ -55,7 +55,7 @@ class AlarmRaiser {
               int severity = 2, const std::string& problem_description = "",
               const std::string& parameters = "");
 
-  boost::shared_ptr<sub8_msgs::Alarm> raiseAlarm(
+  boost::shared_ptr<navigator_msgs::Alarm> raiseAlarm(
       const std::string& problem_description = "",
       const std::string& parameters = "") const;
 

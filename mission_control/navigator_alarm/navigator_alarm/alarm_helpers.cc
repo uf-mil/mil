@@ -99,7 +99,6 @@ AlarmRaiser::AlarmRaiser(const std::string& alarm_name,
     : _alarm_name(alarm_name),
       _node_name(node_name),
       _alarm_publisher(alarm_publisher),
-
       _action_required(action_required),
       _severity(severity),
       _problem_description(problem_description),
