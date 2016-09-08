@@ -20,7 +20,7 @@ if __name__ == '__main__':
         listener = AlarmListener()
         broadcaster = AlarmBroadcaster()
         alarms = []
-        rospy.logwarn("Waiting for alarms...")
+        rospy.loginfo("Waiting for alarms...")
         rospy.sleep(1.0)
 
         rospy.logwarn(listener.known_alarms)

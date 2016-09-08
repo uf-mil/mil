@@ -3,7 +3,7 @@
 from alarm_helpers import AlarmBroadcaster
 from alarm_helpers import AlarmListener
 from alarm_helpers import single_alarm
-from . import alarms
+from . import alarm_handlers
 
 meta_alarms_inv = {
     'kill': ('network-timeout', 'power-failure', 'battery-voltage', 'covariance-scale'),

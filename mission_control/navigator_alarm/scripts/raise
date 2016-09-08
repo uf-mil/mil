@@ -3,7 +3,7 @@ import rospy
 import sys
 import argparse
 from navigator_alarm import single_alarm
-from sub8_ros_tools.init_helpers import wait_for_subscriber
+from navigator_tools import wait_for_subscriber
 
 
 if __name__ == '__main__':
@@ -18,7 +18,7 @@ if __name__ == '__main__':
     rospy.init_node('alarm_raise')
     broadcaster, alarm = single_alarm(args.alarm_name, action_required=True)
 
-    rospy.logwarn("Creating alarm publisher....")
+    rospy.loginfo("Creating alarm publisher....")
     # Wait until subscription lands
     rospy.sleep(0.5)
     alarm.raise_alarm()
