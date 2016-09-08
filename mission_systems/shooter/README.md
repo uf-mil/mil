@@ -7,7 +7,7 @@
 
 #Running / Testing
 * Start a ros master node `roscore`
-* Launch the rosserial node for the arduino `
+* Launch the rosserial node for the arduino `roslaunch navigator_launch hardware_drivers.launch'
 
 #Config
 The timing values (in milliseconds) for the load and fire commands are configurable from launch/config.yaml
