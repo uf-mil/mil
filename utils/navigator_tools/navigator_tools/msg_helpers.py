@@ -5,7 +5,6 @@ import std_msgs.msg as std_msgs
 import nav_msgs.msg as nav_msgs
 import rospy
 
-
 def rosmsg_to_numpy(rosmsg, keys=None):
     '''Convert an arbitrary ROS msg to a numpy array
     With no additional arguments, it will by default handle:
@@ -49,6 +48,8 @@ def rosmsg_to_numpy(rosmsg, keys=None):
 
         return output_array
 
+point_to_numpy = rosmsg_to_numpy
+quaternion_to_numpy = rosmsg_to_numpy
 
 def pose_to_numpy(pose):
     '''TODO: Unit-test
