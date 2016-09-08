@@ -80,8 +80,8 @@ private:
     image_transport::ImageTransport image_transport;
     image_transport::Publisher debug_image_pub;
     image_geometry::PinholeCameraModel left_cam_model, right_cam_model;
-    sub::ImageWithCameraInfo left_most_recent;
-    sub::ImageWithCameraInfo right_most_recent;
+    nav::ImageWithCameraInfo left_most_recent;
+    nav::ImageWithCameraInfo right_most_recent;
 
     // Scan The Code Board detection will be attempted when true
     bool active;
@@ -93,10 +93,8 @@ private:
     boost::mutex left_mtx, right_mtx;
 
     // RVIZ
-    sub::RvizVisualizer rviz;
+    nav::RvizVisualizer rviz;
 
-  // RVIZ
-  nav::RvizVisualizer rviz;
     // DBG images will be generated and published when true
     bool generate_dbg_img;
     cv::Mat debug_image;
