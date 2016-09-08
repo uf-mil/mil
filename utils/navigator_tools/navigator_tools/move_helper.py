@@ -6,7 +6,7 @@ import numpy,math,tf,threading
 from tf import transformations as trns
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped, Point
-from navigator_tools import geometry_helper as gh
+from navigator_tools import geometry_helpers as gh
 
 rospy.init_node('move_helper')
 

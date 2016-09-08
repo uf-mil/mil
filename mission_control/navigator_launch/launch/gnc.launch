@@ -27,10 +27,6 @@
 -->
 
 <launch>
-
-    <arg name="sim" default="true" />
-    <arg name="rc" default="true" />
-
     <node pkg="navigator_thrust_mapper" type="thrust_mapper.py" name="thrust_mapper">
     <!-- Parameters used to set the thruster locations and angles relative to the center of gravity of the boat -->
         <rosparam param="thruster_BL_cog">[-1.9304, 1.016]</rosparam>
@@ -44,30 +40,25 @@
         <rosparam param="effort_ratio">1.35</rosparam><!-- map 220 newtons to 300 effort units -->
         <rosparam param="effort_limit">400</rosparam>
     </node>
-    
+
     <include file="$(find navigator_launch)/launch/tf.launch"/>
 
-    <node pkg="sub8_alarm" type="alarm_handler.py" name="alarm_handler"/>
-    
+    <!-- Alarms handlers -->
+    <node pkg="sub8_alarm" type="alarm_handler.py" name="alarm_handler"/>  <!-- TODO: Remove this dependacy, without destroying history -->
+    <node pkg="navigator_launch" type="keepalive_listener.py" name="keepalive_listener"/>
+
     <node name="wrench_arbiter" pkg="navigator_msg_multiplexer" type="wrench_arbiter.py"/>
 
     <node name="pose_controller" pkg="navigator_controller" type="mrac_controller.py"/>
     <!-- can be type="mrac_controller.py" OR type="run_nn_controller" if you have that dependency
     <https://github.com/jnez71/neural_control>-->
 
-    <node if="$(arg rc)" pkg="navigator_joystick_control" type="navigator_joystick.py" name="joystick_wrench" output="screen">
+    <node pkg="navigator_joystick_control" type="navigator_joystick.py" name="joystick_wrench" output="screen">
         <param name="force_scale" value="600" type="double"/>
         <param name="torque_scale" value="500" type="double"/>
     </node>
 
-    <node if="$(arg rc)" respawn="true" pkg="xbox_joy_node" type="joy_node" name="joy_node">
-        <param name="dev" type="string" value="/dev/input/by-id/usb-045e_0291-joystick" />
-        <param name="deadzone" value="0.12" />
-        <param name="autorepeat_rate" value="5"/>
-    </node>
-
-    <node name="move_helper" pkg="navigator_tools" type="move_helper.py"/>
-
+    <!-- Legacy - should be phased out -->
     <node pkg="kill_handling" type="kill_master" name="kill_master"/>
     <node pkg="c3_trajectory_generator" type="c3_trajectory_generator" name="c3_trajectory_generator" output="screen">
         <rosparam>
