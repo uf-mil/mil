@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(navigator_alarm)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -std=c++11 ")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wno-reorder -std=c++11 ")
 
 find_package(catkin REQUIRED
   COMPONENTS
@@ -49,14 +49,14 @@ endif()
 
 # Add gtest for C++ alarms
 if(CATKIN_ENABLE_TESTING)
-  add_rostest_gtest(alarm_integration_cpp_tests
+  add_rostest_gtest(navigator_alarm_integration_cpp_tests
   	test_alarms/cpp/alarm_integration_cpp.test
     test_alarms/cpp/test_alarm_helpers.cc
     navigator_alarm/alarm_helpers.cc
   )
 
 target_link_libraries(
-  	alarm_integration_cpp_tests
+  	navigator_alarm_integration_cpp_tests
   	${catkin_LIBRARIES}
   	${PROJECT_NAME}
   )
