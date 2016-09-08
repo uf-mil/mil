@@ -139,7 +139,7 @@ bool PerceptionModel::get_model(std::vector<Eigen::Vector3d>& model3d, cv::Mat p
     }
     model3d = min_model;
     if(potential_models.size() != 0 && min_cost < 4){
-      visualize_points(min_model, picture, left_cam_mat, "WINNER");
+      //visualize_points(min_model, picture, left_cam_mat, "WINNER");
     }
     return true;
 }

@@ -37,6 +37,7 @@
 #include <navigator_vision_lib/model.h>
 
 using namespace cv;
+using namespace std;
 
 class StereoModelFitter
 {
