@@ -28,7 +28,7 @@ The following commands should be run (Don't run as root!):
 
     wget -O mil_install.sh https://raw.githubusercontent.com/uf-mil/Navigator/master/install.sh
     chmod +x ./mil_install.sh
-    ./mil_install.sh
+    ./mil_install.sh -n
 
 
 #### If you have already cloned this repository or done work in MIL
