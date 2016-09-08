@@ -173,10 +173,11 @@ wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xB01FA116
 
 # Add software repository for Git-LFS
+instlog "Adding the Git-LFS packagecloud repository to software sources"
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
 
 # Install ROS and other project dependencies
-instlog "Installing ROS and Gazebo"
+instlog "Installing ROS Indigo base packages"
 sudo apt-get update -qq
 sudo apt-get install -qq python-catkin-pkg python-rosdep
 if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
@@ -186,6 +187,7 @@ else
 fi
 
 # Break the ROS Indigo metapackage and install an updated version of Gazebo
+instlog "Installing the latest version of Gazebo"
 sudo aptitude unmarkauto -q '?reverse-depends(ros-indigo-desktop-full) | ?reverse-recommends(ros-indigo-desktop-full)'
 sudo apt-get purge -qq ros-indigo-gazebo*
 sudo apt-get install -qq gazebo7
@@ -213,13 +215,13 @@ rosdep update
 
 # Set up catkin workspace directory
 if !([ -f $CATKIN_DIR/src/CMakeLists.txt ]); then
-    instlog "Generating catkin workspace at $CATKIN_DIR"
-    mkdir -p "$CATKIN_DIR/src"
-    cd "$CATKIN_DIR/src"
-    catkin_init_workspace
-    catkin_make -C "$CATKIN_DIR"
+	instlog "Generating catkin workspace at $CATKIN_DIR"
+	mkdir -p "$CATKIN_DIR/src"
+	cd "$CATKIN_DIR/src"
+	catkin_init_workspace
+	catkin_make -C "$CATKIN_DIR"
 else
-    instlog "Using existing catkin workspace at $CATKIN_DIR"
+	instlog "Using existing catkin workspace at $CATKIN_DIR"
 fi
 
 # Move the cloned git repository to the catkin workspace in semaphore
@@ -227,7 +229,7 @@ if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
 	if [ -d ~/Navigator ]; then
 		mv ~/Navigator "$CATKIN_DIR/src"
 	elif [ -d ~/Sub8 ]; then
-		mv ~/Navigator "$CATKIN_DIR/src"
+		mv ~/Sub8 "$CATKIN_DIR/src"
 	fi
 fi
 
@@ -239,22 +241,22 @@ fi
 
 # Check if the Navigator repository is present; if it isn't, download it
 if ($INSTALL_NAV) && !(ls "$CATKIN_DIR/src" | grep --quiet "Navigator"); then
-	instlog "Downloading up the Navigator repository"
+	instlog "Downloading the Navigator repository"
 	cd $CATKIN_DIR/src
 	git clone -q https://github.com/uf-mil/Navigator.git
 	cd $CATKIN_DIR/src/Navigator
 	git remote rename origin upstream
-	instlog "Make sure you change your git to point to your own fork! (git remote add origin your_forks_url)"
+	instlog "Make sure you change your git origin to point to your own fork! (git remote add origin your_forks_url)"
 fi
 
 # Check if the Sub8 repository is present; if it isn't, download it
 if ($INSTALL_SUB) && !(ls "$CATKIN_DIR/src" | grep --quiet "Sub8"); then
-	instlog "Downloading up the Sub8 repository"
+	instlog "Downloading the Sub8 repository"
 	cd $CATKIN_DIR/src
 	git clone -q https://github.com/uf-mil/Sub8.git
 	cd $CATKIN_DIR/src/Sub8
 	git remote rename origin upstream
-	instlog "Make sure you change your git to point to your own fork! (git remote add origin your_forks_url)"
+	instlog "Make sure you change your git origin to point to your own fork! (git remote add origin your_forks_url)"
 fi
 
 
@@ -283,7 +285,7 @@ sudo apt-get install -qq python-qt4-dev python-qt4-gl
 sudo apt-get install -qq python-opengl freeglut3-dev libassimp-dev
 
 # Tools
-sudo apt-get install -qq git-lfs
+sudo apt-get install -qq git-lfs gitk
 git lfs install
 sudo apt-get install -qq tmux
 
@@ -365,6 +367,11 @@ if ($INSTALL_NAV); then
 	sudo apt-get remove -qq python-pyode
 	apt-get source --compile -qq python-pyode
 	sudo dpkg -i python-pyode_*.deb
+
+	# Pulling large project files from Git-LFS
+	instlog "Pulling large files for Navigator"
+	cd $CATKIN_DIR/src/Navigator
+	git lfs pull
 fi
 
 
