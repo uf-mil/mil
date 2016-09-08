@@ -1,6 +1,5 @@
 <launch>
-    <include file="$(find navigator_launch)/launch/motor_controller.launch"/>
-    <include file="$(find navigator_launch)/launch/hw_drivers.launch"/>
+    <include file="$(find navigator_launch)/launch/subsystems/hardware_drivers.launch"/>
     <include file="$(find navigator_launch)/launch/gnc.launch"/>
-    <include file="$(find navigator_launch)/launch/perception.launch"/>
+    <include file="$(find navigator_launch)/launch/subsystems/sensors.launch"/>
 </launch>

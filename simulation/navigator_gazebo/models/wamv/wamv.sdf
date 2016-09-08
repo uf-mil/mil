@@ -4,7 +4,7 @@
     <link name="base_link">
       <!-- TODO: Tune these -->
       <velocity_decay>
-        <linear>0.005</linear>
+        <linear>0.0035</linear>
         <angular>0.001</angular>
       </velocity_decay>
       <inertial>
@@ -34,8 +34,104 @@
           </mesh>
         </geometry>
       </collision>
-    </link>
 
+      <sensor name="stereo_left_camera" type="camera">
+        <camera>
+          <pose>.6096 .2 1.5 0 0 0</pose>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>960</width>
+            <height>540</height>
+          </image>
+          <distortion>
+            <k1>0</k1>
+            <k2>0</k2>
+            <k3>0</k3>
+            <p1>0</p1>
+            <p2>0</p2>
+          </distortion>
+        </camera>
+        <plugin name="stereo_left_camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>30</updateRate>
+          <cameraName>stereo/left</cameraName>
+          <imageTopicName>image_raw</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>stereo_front</frameName>
+          <hackBaseline>0.089</hackBaseline>
+          <distortionK1>0</distortionK1>
+          <distortionK2>0</distortionK2>
+          <distortionK3>0</distortionK3>
+          <distortionT1>0</distortionT1>
+          <distortionT2>0</distortionT2>
+        </plugin>
+      </sensor>
+
+      <sensor name="stereo_right_camera" type="camera">
+        <camera>
+          <pose>.6096 0 1.5 0 0 0</pose>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>960</width>
+            <height>540</height>
+          </image>
+          <distortion>
+            <k1>0</k1>
+            <k2>0</k2>
+            <k3>0</k3>
+            <p1>0</p1>
+            <p2>0</p2>
+          </distortion>
+        </camera>
+
+        <plugin name="stereo_right_camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>30</updateRate>
+          <cameraName>stereo/right</cameraName>
+          <imageTopicName>image_raw</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>stereo_front</frameName>
+          <hackBaseline>0.089</hackBaseline>
+          <distortionK1>0</distortionK1>
+          <distortionK2>0</distortionK2>
+          <distortionK3>0</distortionK3>
+          <distortionT1>0</distortionT1>
+          <distortionT2>0</distortionT2>
+        </plugin>
+      </sensor>
+
+      <sensor name="right_camera" type="camera">
+        <camera>
+          <pose>.6096 0 1.5 0 0 1.5709</pose>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>644</width>
+            <height>482</height>
+          </image>
+          <distortion>
+            <k1>0</k1>
+            <k2>0</k2>
+            <k3>0</k3>
+            <p1>0</p1>
+            <p2>0</p2>
+          </distortion>
+        </camera>
+        <plugin name="right_camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>30</updateRate>
+          <cameraName>right</cameraName>
+          <imageTopicName>image_raw</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>right_camera</frameName>
+          <hackBaseline>0.89</hackBaseline>
+          <distortionK1>0</distortionK1>
+          <distortionK2>0</distortionK2>
+          <distortionK3>0</distortionK3>
+          <distortionT1>0</distortionT1>
+          <distortionT2>0</distortionT2>
+        </plugin>
+      </sensor>
+    </link>
     <plugin name="navigator_buoyancy" filename="libnavigator_buoyancy.so">
       <fluid_density>1000</fluid_density>
       <drag_coefficient>1</drag_coefficient>

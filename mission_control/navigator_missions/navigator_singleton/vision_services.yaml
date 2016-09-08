@@ -6,8 +6,11 @@
 #   args: {}  # Dictionary to pass to service request
 #
 # Services need to be in navigator_msgs/srv/
-
 get_shape:
   topic: /dock_shapes/GetShape
   type: GetDockShape
   args: {'Shape': "CROSS", 'Color':"BLUE"}
+start_gate:
+  topic: /vision/start_gate_buoys
+  type: StartGate
+  args: {}

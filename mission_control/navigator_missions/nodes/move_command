@@ -36,7 +36,7 @@ def main():
         unit = args.argument[last_digit_index:]
 
     # Actually run the command
-    print "Moving {}{}".format(amount, unit)
+    print "{}ing {} non-arbitrary unit(s)".format(args.command, amount)
     yield movement(float(amount), unit).go(speed=args.speed)
     print "Done!"
     defer.returnValue(reactor.stop())
