@@ -50,8 +50,8 @@ void ScanTheCodeDetector::validate_frame(Mat& current_image_left, Mat& current_i
     // Prevent segfault if service is called before we get valid img_msg_ptr's
     if (left_most_recent.image_msg_ptr == NULL || right_most_recent.image_msg_ptr == NULL)
         {
-            ROS_WARN("Torpedo Board Detector: Image Pointers are NULL.");
-            throw "ROS ERROR";
+            throw "Torpedo Board Detector: Image Pointers are NULL.";
+
         }
     double sync_thresh = 0.5;
     // Get the most recent frames and camera info for both cameras
@@ -61,10 +61,6 @@ void ScanTheCodeDetector::validate_frame(Mat& current_image_left, Mat& current_i
 
             left_mtx.lock();
             right_mtx.lock();
-
-            Matx34d left_cam_mat = left_cam_model.fullProjectionMatrix();
-
-            //cout << "A = "<< endl << " "  << left_cam_mat << endl << endl;
 
             // Left Camera
             input_bridge = cv_bridge::toCvCopy(left_most_recent.image_msg_ptr,
@@ -76,8 +72,7 @@ void ScanTheCodeDetector::validate_frame(Mat& current_image_left, Mat& current_i
                    image_proc_scale, image_proc_scale);
             if (current_image_left.channels() != 3)
                 {
-                    ROS_ERROR("The left image topic does not contain a color image.");
-                    throw "ROS ERROR";
+                    throw "The left image topic does not contain a color image.";
                 }
 
             // Right Camera
@@ -89,8 +84,7 @@ void ScanTheCodeDetector::validate_frame(Mat& current_image_left, Mat& current_i
                    image_proc_scale, image_proc_scale);
             if (current_image_right.channels() != 3)
                 {
-                    ROS_ERROR("The right image topic does not contain a color image.");
-                    throw "ROS ERROR";
+                    throw "The right image topic does not contain a color image.";
                 }
 
             left_mtx.unlock();
@@ -227,48 +221,40 @@ void ScanTheCodeDetector::run()
                 }
             loop_rate.sleep();
         }
+
     return;
 }
 
 void ScanTheCodeDetector::process_current_image()
 {
-    Eigen::Vector3d position;
     Mat current_image_left, current_image_right, processing_size_image_left,
         processing_size_image_right;
-
-
     try
-        {
-            validate_frame(current_image_left, current_image_right,
-                              processing_size_image_left, processing_size_image_right);
-        }
+    {
+        validate_frame(current_image_left,
+                          current_image_right,
+                          processing_size_image_left,
+                          processing_size_image_right);
+    }
     catch(const char* msg)
-        {
-            return;
-        }
+    {
+        ROS_ERROR(msg);
+        return;
+    }
 
     Matx34d left_cam_mat = left_cam_model.fullProjectionMatrix();
     Matx34d  right_cam_mat = right_cam_model.fullProjectionMatrix();
-
-    ++count;
-    clock_t begin = clock();
-
-    bool ret = model_fitter->determine_model_position(position,
-               max_features, feature_block_size,
-               feature_min_distance,
-               image_proc_scale, diffusion_time,
-               current_image_left, current_image_right,
-               left_cam_mat, right_cam_mat);
-    clock_t end = clock();
-    double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-    avg = (avg * (count-1) + elapsed_secs)/count;
-
-    if(count == 300){
-      std::cout<<avg<<std::endl;
-      exit(0);
-    }
-
-
+    vector<Eigen::Vector3d> position;
+    model_fitter->determine_model_position(position,
+                                           max_features,
+                                           feature_block_size,
+                                           feature_min_distance,
+                                           image_proc_scale,
+                                           diffusion_time,
+                                           current_image_left,
+                                           current_image_right,
+                                           left_cam_mat,
+                                           right_cam_mat);
 }
 
 bool ScanTheCodeDetector::detection_activation_switch(
