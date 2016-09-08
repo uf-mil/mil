@@ -2,7 +2,7 @@
 import rospy
 import json
 from navigator_msgs.msg import Alarm
-from navigator_alarm import alarms, meta_alarms
+from navigator_alarm import alarm_handlers, meta_alarms
 import datetime
 
 
@@ -24,15 +24,15 @@ class AlarmHandler(object):
 
         self.scenarios = {}
 
-        # Go through everything in the navigator_alarm.alarms package
-        for candidate_alarm_name in dir(alarms):
+        # Go through everything in the navigator_alarm.alarm_handlers package
+        for candidate_alarm_name in dir(alarm_handlers):
             # Discard __* nonsense
             if not candidate_alarm_name.startswith('_'):
                 # Verify that it is actually an alarm handler
-                CandidateScenarioModule = getattr(alarms, candidate_alarm_name)
-                if hasattr(CandidateScenarioModule, 'Handler'):
-                    rospy.loginfo("Registered scenario with name {}".format(CandidateScenarioModule.Handler.alarm_name))
-                    self.scenarios[CandidateScenarioModule.Handler.alarm_name] = CandidateScenarioModule.Handler()
+                alarm_handler = getattr(alarm_handlers, candidate_alarm_name)
+                if hasattr(alarm_handler, 'Handler'):
+                    rospy.loginfo("Registered scenario with name {}".format(alarm_handler.Handler.alarm_name))
+                    self.scenarios[alarm_handler.Handler.alarm_name] = alarm_handler.Handler()
 
     def republish_alarms(self, *args):
         for alarm_name, alarm in self.alarms.items():
@@ -47,7 +47,6 @@ class AlarmHandler(object):
         #     if alarm.alarm_name in self.alarms.keys():
         #         self.alarms.pop(alarm.alarm_name)
         #     return
-
         self.alarms[alarm.alarm_name] = alarm
 
         time = alarm.header.stamp
@@ -80,14 +79,14 @@ class AlarmHandler(object):
             parameters = {}
         else:
             parameters = json.loads(alarm.parameters)
+
         if scenario is not None:
             if alarm.clear:
-                scenario.cancel(time, parameters)
+                scenario.cancel(alarm, time, parameters)
             else:
-                scenario.handle(time, parameters)
+                scenario.handle(alarm, time, parameters)
 
-
-        # Handle meta-alarms (See wiki)
+        # Handle meta-alarms (See Sub8 wiki)
         meta_alarm = meta_alarms.get(alarm.alarm_name, None)
         if meta_alarm is not None:
             self.alarms[meta_alarm] = alarm
