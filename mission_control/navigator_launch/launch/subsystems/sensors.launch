@@ -1,0 +1,12 @@
+<launch>
+  <node name="navigator_lidar_oa_cluster_extraction" pkg="navigator_lidar_oa" type="cluster_extraction"/>
+
+  <!-- Cameras -->
+  <include file="$(find navigator_launch)/launch/subsystems/cameras/front_stereo.launch"/>
+  <include file="$(find navigator_launch)/launch/subsystems/cameras/downward.launch"/>
+  <include file="$(find navigator_launch)/launch/subsystems/cameras/right.launch"/>
+
+  <!-- Velodyne LIDAR (from VLP16 Launch, requires velodyne package to be built from source)-->
+  <include file="$(find navigator_launch)/launch/subsystems/velodyne.launch"/>
+
+</launch>
