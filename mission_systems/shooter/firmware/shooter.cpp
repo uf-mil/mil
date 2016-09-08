@@ -14,7 +14,6 @@ const int SHOOTER_PIN = 3;
 const int FEEDER_A_PIN = 8;
 const int FEEDER_B_PIN = 9;
 const int FEEDER_PWM_PIN = 5;
-ros::NodeHandle nh;
 class SpeedController
 {
   protected:
@@ -66,7 +65,6 @@ class Victor : public SpeedController
     void _set(int s)
     {
       goal = map(s,-100,100, 1000,2000);
-      nh.logdebug("Victor Goal = " + goal);
     }
     int _get()
     {
@@ -158,12 +156,12 @@ class AutoController
 {
   private:
     //All times in milliseconds
-    static const unsigned long SPIN_UP_TIME = 1000; //Time to spin up flywheels before feeding balls in
-    static const unsigned long RETRACT_TIME = 950; //Time to retract actuator to allow ball to fall into feeding tube
-    static const unsigned long LOAD_TIME = 500; //Time to extend actuator to preload ball for quick firing
-    static const unsigned long QUICKFIRE_TIME = 400; //Time to extend actuator with preloaded ball for quick firing
-    static const unsigned long MID_LOAD_PAUSE = 100;
-    static const unsigned long SHOOT_TIME = 1000;
+    static unsigned long SPIN_UP_TIME; //Time to spin up flywheels before feeding balls in
+    static unsigned long RETRACT_TIME; //Time to retract actuator to allow ball to fall into feeding tube
+    static unsigned long LOAD_TIME; //Time to extend actuator to preload ball for quick firing
+    static unsigned long QUICKFIRE_TIME; //Time to extend actuator with preloaded ball for quick firing
+    static unsigned long MID_LOAD_PAUSE;
+    static unsigned long SHOOT_TIME;
     /* Represents what the controller is currently doing
      * 0 = finished fireing/loading or stopped
      * 1 = preloading for quick fireing
@@ -221,6 +219,14 @@ class AutoController
     {
       reset();
     }
+    void init(ros::NodeHandle& nh)
+    {
+      nh.getParam("~controller/load/retract_time_millis", (int* ) &RETRACT_TIME);
+      nh.getParam("~controller/load/pause_time_millis", (int* ) &MID_LOAD_PAUSE);
+      nh.getParam("~controller/load/extend_time_millis", (int *) &LOAD_TIME);
+      nh.getParam("~controller/fire/extend_time_millis", (int *) &QUICKFIRE_TIME);
+      nh.getParam("~controller/fire/shoot_time_millis", (int *) &SHOOT_TIME);
+    }
     void load()
     {
       start_load_time = millis();
@@ -254,6 +260,12 @@ class AutoController
     }
 
 };
+unsigned long AutoController::SPIN_UP_TIME = 1000; //Time to spin up flywheels before feeding balls in
+unsigned long AutoController::RETRACT_TIME = 950; //Time to retract actuator to allow ball to fall into feeding tube
+unsigned long AutoController::LOAD_TIME = 500; //Time to extend actuator to preload ball for quick firing
+unsigned long AutoController::QUICKFIRE_TIME = 400; //Time to extend actuator with preloaded ball for quick firing
+unsigned long AutoController::MID_LOAD_PAUSE = 100;
+unsigned long AutoController::SHOOT_TIME = 1000;
 #else
 class AutoController
 {
@@ -305,7 +317,7 @@ class Comms
 {
   private:
     //ROS
-    
+    ros::NodeHandle nh;
     #ifdef USE_LINEAR_FEEDER
     ros::ServiceServer<std_srvs::Trigger::Request,std_srvs::Trigger::Response> fireService;
     ros::ServiceServer<std_srvs::Trigger::Request,std_srvs::Trigger::Response> loadService;
@@ -352,7 +364,6 @@ class Comms
     }
     static void manualCallback(const navigator_msgs::ShooterManual::Request &req, navigator_msgs::ShooterManual::Response &res)
     {
-      nh.logdebug("Manual: Feeder="+req.feeder + " Shooter="+req.shooter);
       autoController.cancel();
       feeder.set(req.feeder);
       shooter.set(req.shooter);
@@ -383,7 +394,8 @@ class Comms
       nh.advertiseService(fireService);
       nh.advertiseService(loadService);
       nh.advertiseService(cancelService);
-      nh.advertiseService(manualService);     
+      nh.advertiseService(manualService);
+      autoController.init(nh);
       #else
       nh.advertiseService(fireService);
       nh.advertiseService(cancelService);

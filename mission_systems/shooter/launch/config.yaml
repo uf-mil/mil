@@ -1,0 +1,8 @@
+controller:
+  load:
+    retract_time_millis: 1000
+    pause_time_millis:   100
+    extend_time_millis:  500
+  fire:
+    extend_time_millis:  400
+    shoot_time_millis:   1000
