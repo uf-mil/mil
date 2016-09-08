@@ -49,7 +49,7 @@
 /*
   Warning:
   Because of its multithreadedness, this class cannot be copy constructed.
-  For examlple, the following will not compile:
+  For example, the following will not compile:
     ScanTheCodeDetector tb_detector = ScanTheCodeDetector();
   Do this instead:
     ScanTheCodeDetector tb_detector();
@@ -65,8 +65,6 @@ public:
     // Public Variables
     double image_proc_scale, feature_min_distance;
     int diffusion_time, max_features, feature_block_size;
-    int count =0;
-    double avg = 0;
 
 
 private:
