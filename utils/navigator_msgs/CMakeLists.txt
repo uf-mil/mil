@@ -24,6 +24,7 @@ add_message_files(
 add_service_files(
   DIRECTORY srv
   FILES
+  ActivationSwitch.srv
   ShooterManual.srv
   VisionRequest.srv
   WrenchSelect.srv

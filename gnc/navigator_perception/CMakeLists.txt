@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(navigator_perception)
 
-SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
+# SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 # set c++11 as default, overide with set_target_properties()
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -g -rdynamic -Wall -std=c++11 ")
+# if needed for specific nodes (cough..cough... PCL)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -g -Wall -std=c++11 ")
 
 find_package(catkin
   REQUIRED COMPONENTS
@@ -21,6 +22,8 @@ find_package(catkin
     geometry_msgs
 )
 
+find_package(PCL 1.7 REQUIRED)
+
 catkin_python_setup()
 
 catkin_package(
@@ -28,6 +31,7 @@ catkin_package(
     include
     exFAST_SparseStereo/src/sparsestereo
   LIBRARIES
+    navigator_vision_lib
     sparsestereo
   CATKIN_DEPENDS
     roscpp
@@ -41,6 +45,8 @@ catkin_package(
     image_transport
     image_geometry
     cv_bridge
+    sub8_build_tools # do we still need these sub8 dependencies?
+    sub8_msgs
     navigator_msgs
 )
 
@@ -48,51 +54,125 @@ include_directories(
     include
     exFAST_SparseStereo/src
   SYSTEM
+    ${PCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIR}
     ${catkin_INCLUDE_DIRS}
 )
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 
-
-add_library( sparsestereo SHARED
-  exFAST_SparseStereo/src/sparsestereo/calibrationresult.h
-  exFAST_SparseStereo/src/sparsestereo/calibrationresult.cpp
-  exFAST_SparseStereo/src/sparsestereo/censuswindow.h
-  exFAST_SparseStereo/src/sparsestereo/exception.h
-  exFAST_SparseStereo/src/sparsestereo/extendedfast.cpp
-  exFAST_SparseStereo/src/sparsestereo/extendedfast.h
-  exFAST_SparseStereo/src/sparsestereo/fast9.h
-  exFAST_SparseStereo/src/sparsestereo/fast9-inl.h
-  exFAST_SparseStereo/src/sparsestereo/hammingdistance.cpp
-  exFAST_SparseStereo/src/sparsestereo/hammingdistance.h
-  exFAST_SparseStereo/src/sparsestereo/simd.h
-  exFAST_SparseStereo/src/sparsestereo/simd.cpp
-  exFAST_SparseStereo/src/sparsestereo/sparsematch.h
-  exFAST_SparseStereo/src/sparsestereo/sparserectification.cpp
-  exFAST_SparseStereo/src/sparsestereo/sparserectification.h
-  exFAST_SparseStereo/src/sparsestereo/sparsestereo.h
-  exFAST_SparseStereo/src/sparsestereo/sparsestereo-inl.h
-  exFAST_SparseStereo/src/sparsestereo/stereorectification.cpp
-  exFAST_SparseStereo/src/sparsestereo/stereorectification.h
-  exFAST_SparseStereo/src/sparsestereo/imageconversion.h
-  exFAST_SparseStereo/src/sparsestereo/imageconversion.cpp
-  exFAST_SparseStereo/src/sparsestereo/census.h
-  exFAST_SparseStereo/src/sparsestereo/census-inl.h
-  exFAST_SparseStereo/src/sparsestereo/census.cpp
+SET(EXFAST_SRC_DIR "exFAST_SparseStereo/src/sparsestereo")
+add_library( navigator_sparsestereo SHARED
+  ${EXFAST_SRC_DIR}/calibrationresult.h
+  ${EXFAST_SRC_DIR}/calibrationresult.cpp
+  ${EXFAST_SRC_DIR}/censuswindow.h
+  ${EXFAST_SRC_DIR}/exception.h
+  ${EXFAST_SRC_DIR}/extendedfast.cpp
+  ${EXFAST_SRC_DIR}/extendedfast.h
+  ${EXFAST_SRC_DIR}/fast9.h
+  ${EXFAST_SRC_DIR}/fast9-inl.h
+  ${EXFAST_SRC_DIR}/hammingdistance.cpp
+  ${EXFAST_SRC_DIR}/hammingdistance.h
+  ${EXFAST_SRC_DIR}/simd.h
+  ${EXFAST_SRC_DIR}/simd.cpp
+  ${EXFAST_SRC_DIR}/sparsematch.h
+  ${EXFAST_SRC_DIR}/sparserectification.cpp
+  ${EXFAST_SRC_DIR}/sparserectification.h
+  ${EXFAST_SRC_DIR}/sparsestereo.h
+  ${EXFAST_SRC_DIR}/sparsestereo-inl.h
+  ${EXFAST_SRC_DIR}/stereorectification.cpp
+  ${EXFAST_SRC_DIR}/stereorectification.h
+  ${EXFAST_SRC_DIR}/imageconversion.h
+  ${EXFAST_SRC_DIR}/imageconversion.cpp
+  ${EXFAST_SRC_DIR}/census.h
+  ${EXFAST_SRC_DIR}/census-inl.h
+  ${EXFAST_SRC_DIR}/census.cpp
 )
 
 target_link_libraries(
-  sparsestereo
+  navigator_sparsestereo
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
     ${OpenCV_INCLUDE_DIRS}
 )
 
-set_target_properties(sparsestereo PROPERTIES COMPILE_FLAGS "-O3 -DNDEBUG -fopenmp -g -Wall -march=native -msse -msse2 -msse3 -mssse3 -msse4 -ffast-math -mfpmath=sse")
+set_target_properties(navigator_sparsestereo PROPERTIES COMPILE_FLAGS "-O3 -DNDEBUG -fopenmp -g -Wall -march=native -msse -msse2 -msse3 -mssse3 -msse4 -ffast-math -mfpmath=sse")
 
-install(TARGETS sparsestereo
+install(TARGETS navigator_sparsestereo
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+add_library(
+  navigator_vision_lib
+    helper/model.cc 
+    src/navigator_vision_lib/visualization.cc
+    src/navigator_vision_lib/cv_utils.cc
+    helper/stereomodelfitter.cc
+)
+
+target_link_libraries(
+  navigator_vision_lib
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
+)
+
+install(TARGETS navigator_vision_lib
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.hpp"
+  PATTERN ".svn" EXCLUDE
+)
+
+
+add_executable(
+  stereo_point_cloud_driver
+    nodes/stereo_point_cloud_driver.cpp
+)
+
+add_dependencies(
+  stereo_point_cloud_driver
+   navigator_msgs_generate_messages_cpp
+   ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(
+  stereo_point_cloud_driver
+    navigator_sparsestereo
+    navigator_vision_lib
+    ${PCL_COMMON_LIBRARIES}
+    ${PCL_IO_LIBRARIES}
+    ${PCL_LIBRARIES}
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${OpenCV_INCLUDE_DIRS}
+)
+
+set_target_properties(stereo_point_cloud_driver PROPERTIES COMPILE_FLAGS "-O3 -DNDEBUG -fopenmp -g -Wall -march=native -msse -msse2 -msse3 -mssse3 -msse4 -ffast-math -mfpmath=sse")
+
+add_executable(
+  scan_the_code
+    scan_the_code_detector.cc
+)
+
+add_dependencies(
+  scan_the_code
+   sub8_msgs_generate_messages_cpp
+   ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(
+  scan_the_code
+    navigator_vision_lib
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${OpenCV_INCLUDE_DIRS}
 )
 
 install(
