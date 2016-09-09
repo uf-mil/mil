@@ -15,6 +15,7 @@
 #include "opencv2/opencv.hpp"
 
 #include <navigator_msgs/GetDockShape.h>
+#include <navigator_msgs/GetDockShapes.h>
 #include <navigator_msgs/DockShapes.h>
 #include "std_srvs/SetBool.h"
 
@@ -29,6 +30,7 @@ class ImageSearcher {
   ros::NodeHandle n;
   ros::Subscriber foundShapesSubscriber;
   ros::ServiceServer getShapeService;
+  ros::ServiceServer getShapesService;
   ros::ServiceServer runService;
   struct ShapesBuffer
   {
@@ -64,6 +66,7 @@ class ImageSearcher {
     foundShapesSubscriber = n.subscribe("/dock_shapes/found_shapes", 1000, &ImageSearcher::foundShapesCallback, this);
     runService = n.advertiseService("/dock_shapes/run", &ImageSearcher::runCallback, this);
     getShapeService = n.advertiseService("/dock_shapes/GetShape", &ImageSearcher::getShapeCallback, this);
+    getShapesService = n.advertiseService("/dock_shapes/GetShapes", &ImageSearcher::getShapesCallback, this);
   }
   void reset()
   {
@@ -130,6 +133,20 @@ class ImageSearcher {
     shapeChecker(symbols);
   }
 
+  bool getShapesCallback(navigator_msgs::GetDockShapes::Request &req, navigator_msgs::GetDockShapes::Response &res)
+  {
+    for (auto shape = foundShapes.begin(); shape  != foundShapes.end(); shape++)
+    {
+      ros::Time now = ros::Time::now();
+      if (shape->buffer.full() && (now - shape->lastSeen) < max_seen_gap_dur)
+      {
+        navigator_msgs::DockShape dockShape = getAverageShape(*shape);
+        res.shapes.list.push_back(dockShape);
+      }
+
+    }
+    return true;
+  }
   bool getShapeCallback(navigator_msgs::GetDockShape::Request &req, navigator_msgs::GetDockShape::Response &res) {
     if (!active) {
         res.found = false;

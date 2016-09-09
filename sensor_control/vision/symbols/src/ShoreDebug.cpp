@@ -5,6 +5,7 @@
 #include <vector>
 #include "opencv2/opencv.hpp"
 #include <navigator_msgs/GetDockShape.h>
+#include <navigator_msgs/GetDockShapes.h>
 #include <navigator_msgs/DockShapes.h>
 #include <navigator_msgs/DockShape.h>
 
@@ -57,20 +58,16 @@ class ShoreDebug {
     namedWindow("GetShape",CV_WINDOW_AUTOSIZE);
   }
 
-  void getShape()
+  void getShapes()
   {
-    navigator_msgs::GetDockShape x;
-    x.request.Color = req_color;
-    x.request.Shape = req_shape;
-    if (ros::service::call("/dock_shapes/GetShape", x))
+    navigator_msgs::GetDockShapes x;
+    if (ros::service::call("/dock_shapes/GetShapes", x))
     {
-      if (x.response.found) {
-        filtered_image = image;
-        drawShape(filtered_image,x.response.symbol);
-        imshow("GetShape",filtered_image);
-      } else std::cout << "Not found. Error: " << x.response.error << std::endl;
-    } else std::cout << "GetShape failed" << std::endl;
-
+      filtered_image = image;
+      for (auto shape = x.response.shapes.list.begin(); shape !=  x.response.shapes.list.end(); shape++)
+        drawShape(filtered_image,*shape);
+      imshow("GetShapes",filtered_image);
+    }
   }
 };
 
@@ -82,7 +79,7 @@ int main(int argc, char **argv) {
     if (x != -1)
     {
       if (x == 27) break;
-      else if (x == 32) sd.getShape();
+      else if (x == 32) sd.getShapes();
       //std::cout << "Key" << x << std::endl;
     }
     ros::spinOnce();
