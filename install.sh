@@ -144,13 +144,30 @@ else
 	OS_CHECK=false
 	echo -n "[ " && instfail && echo -n "] "
 fi
-	echo "OS distribution and version check"
+echo "OS distribution and version check"
+
+if [ $USERNAME != "root" ]; then
+	ROOT_CHECK=true
+	echo -n "[ " && instpass && echo -n "] "
+else
+	OS_CHECK=false
+	echo -n "[ " && instfail && echo -n "] "
+fi
+echo "Running user check"
 
 if !($OS_CHECK); then
 
 	# The script will not allow the user to install on an unsupported OS
 	instwarn "Terminating installation due to incorrect OS (detected $DTETCTED_OS)"
-	instwarn "Navigator requires Ubuntu 14.04 (trusty)"
+	instwarn "MIL projects require Ubuntu 14.04 (trusty)"
+	exit 1
+fi
+
+if !($ROOT_CHECK); then
+
+	# The script will not allow the user to install as root
+	instwarn "Terminating installation due to forbidden user"
+	instwarn "The install script should not be run as root"
 	exit 1
 fi
 
@@ -406,7 +423,7 @@ fi
 
 # Attempt to build the Navigator stack on client machines
 if !(env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
-	instlog "Building Navigator's software stack with catkin_make"
+	instlog "Building MIL's software stack with catkin_make"
 	catkin_make -C "$CATKIN_DIR" -j8
 fi
 
