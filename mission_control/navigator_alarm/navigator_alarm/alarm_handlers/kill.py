@@ -3,7 +3,7 @@ import rospy
 from kill_handling.broadcaster import KillBroadcaster
 from _template import HandlerBase
 
-class Handler(HandlerBase):
+class KillHandler(HandlerBase):
     alarm_name = 'kill'
 
     def __init__(self):
