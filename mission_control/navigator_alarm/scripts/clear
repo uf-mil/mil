@@ -36,7 +36,7 @@ if __name__ == '__main__':
     else:
         broadcaster, alarm = single_alarm(args.alarm_name, action_required=True)
 
-        rospy.logwarn("Creating alarm publisher....")
+        rospy.loginfo("Creating alarm publisher....")
         # Wait until subscription lands
         rospy.sleep(0.5)
         alarm.clear_alarm()

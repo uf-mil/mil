@@ -2,8 +2,10 @@
 import rospy
 import json
 from navigator_msgs.msg import Alarm
-from navigator_alarm import alarm_handlers, meta_alarms
+from navigator_alarm import alarm_handlers, meta_alarms, HandlerBase
 import datetime
+import inspect
+import sys
 
 
 class AlarmHandler(object):
@@ -28,11 +30,13 @@ class AlarmHandler(object):
         for candidate_alarm_name in dir(alarm_handlers):
             # Discard __* nonsense
             if not candidate_alarm_name.startswith('_'):
-                # Verify that it is actually an alarm handler
-                alarm_handler = getattr(alarm_handlers, candidate_alarm_name)
-                if hasattr(alarm_handler, 'Handler'):
-                    rospy.loginfo("Registered scenario with name {}".format(alarm_handler.Handler.alarm_name))
-                    self.scenarios[alarm_handler.Handler.alarm_name] = alarm_handler.Handler()
+                # Verify that it is actually an alarm handler by checking if the class inherits from `HandlerBase`
+                handlers = inspect.getmembers(getattr(alarm_handlers, candidate_alarm_name), inspect.isclass)
+                handlers = [handler for handler in handlers if handler[0] != "HandlerBase" and \
+                                                               issubclass(handler[1], HandlerBase)]
+                for handler_name, handler_class in handlers:
+                    rospy.loginfo("Registered scenario with name '{}'".format(handler_class.alarm_name))
+                    self.scenarios[handler_class.alarm_name] = handler_class()
 
     def republish_alarms(self, *args):
         for alarm_name, alarm in self.alarms.items():
