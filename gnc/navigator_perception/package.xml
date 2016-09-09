@@ -4,7 +4,8 @@
   <version>1.0.0</version>
   <description>The navigator_perception package</description>
 
-  <maintainer email="d.soto@ufl.edu">jacob</maintainer>
+  <maintainer email="tessbianchi@ufl.edu">tess</maintainer>
+  <maintainer email="d.soto@ufl.edu">david</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
@@ -17,6 +18,8 @@
   <run_depend>image_geometry</run_depend>
   <build_depend>cv_bridge</build_depend>
   <run_depend>cv_bridge</run_depend>
+  <build_depend>sub8_build_tools</build_depend>
+  <run_depend>sub8_build_tools</run_depend>
   <build_depend>sub8_msgs</build_depend>
   <run_depend>sub8_msgs</run_depend>
   <build_depend>message_generation</build_depend>
