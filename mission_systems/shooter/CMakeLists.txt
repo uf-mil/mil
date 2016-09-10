@@ -16,13 +16,12 @@ rosserial_generate_ros_lib(
   PACKAGE rosserial_arduino
   SCRIPT make_libraries.py
 )
-add_dependencies(${PROJECT_NAME}_ros_lib navigator_msgs_gencpp)
-
 rosserial_configure_client(
   DIRECTORY firmware
   TOOLCHAIN_FILE ${ROSSERIAL_ARDUINO_TOOLCHAIN}
 )
-
-rosserial_add_client_target(firmware arduino ALL)
-rosserial_add_client_target(firmware arduino-upload)
-add_dependencies(${PROJECT_NAME}_firmware_arduino ${PROJECT_NAME}_ros_lib)
+add_dependencies(${PROJECT_NAME}_ros_lib navigator_msgs_generate_messages)
+add_dependencies(${PROJECT_NAME}_ros_lib ${catkin_EXPORTED_TARGETS})
+#rosserial_add_client_target(firmware arduino ALL)
+#rosserial_add_client_target(firmware arduino-upload)
+add_dependencies(${PROJECT_NAME}_firmware ${PROJECT_NAME}_ros_lib)
