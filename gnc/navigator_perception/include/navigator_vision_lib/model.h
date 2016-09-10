@@ -31,5 +31,5 @@ private:
     std::map<std::string, float> point_to_distance;
 
     int get_furthest_point(std::vector<Eigen::Vector3d> my_model, int point);
-    void visualize_points(std::vector<Eigen::Vector3d>  feature_pts_3d, cv:: Mat img, cv::Matx34d left_cam_mat, std::string name);
+    void visualize_points(std::vector<Eigen::Vector3d>  feature_pts_3d, cv:: Mat left_image, cv::Matx34d left_cam_mat, std::string name);
 };

@@ -116,7 +116,7 @@ private:
 
     // Detection / Processing
     void run();
-    void process_current_image();
+    void process_current_images();
     void init_ros(std::stringstream& log_msg);
     void validate_frame(cv::Mat& current_image_left, cv::Mat& current_image_right, cv::Mat& processing_size_image_left, cv::Mat& processing_size_image_right);
 
