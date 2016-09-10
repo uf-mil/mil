@@ -5,7 +5,7 @@ include_directories(${catkin_INCLUDE_DIRS})
 include_directories(include)
 # Remove this if using an Arduino without native USB (eg, other than Leonardo)
 add_definitions(-DUSB_CON)
-message( ${ROS_LIB_DIR} )
+#message( ${ROS_LIB_DIR} )
 #print_board_list()
 #print_programmer_list()
 
