@@ -216,7 +216,7 @@ void ScanTheCodeDetector::run()
         {
             if (true)
                 {
-                    process_current_image();
+                    process_current_images();
 
                 }
             loop_rate.sleep();
@@ -225,7 +225,7 @@ void ScanTheCodeDetector::run()
     return;
 }
 
-void ScanTheCodeDetector::process_current_image()
+void ScanTheCodeDetector::process_current_images()
 {
     Mat current_image_left, current_image_right, processing_size_image_left,
         processing_size_image_right;
@@ -298,8 +298,8 @@ void ScanTheCodeDetector::right_image_callback(
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "scan_the_code_board_perception");
-    ROS_INFO("Initializing node /scan_the_code_board_perception");
+    ros::init(argc, argv, "scan_the_code_perception");
+    ROS_INFO("Initializing node /scan_the_code_perception");
     ScanTheCodeDetector scan_the_code_detector;
     ros::spin();
 }

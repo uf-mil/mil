@@ -1,7 +1,8 @@
 #include <navigator_vision_lib/stereomodelfitter.h>
 
 StereoModelFitter::StereoModelFitter(PerceptionModel model, image_transport::Publisher debug_publisher):
-    model(model), debug_publisher(debug_publisher)
+    model(model),
+    debug_publisher(debug_publisher)
 {
 
 //    ros::NodeHandle nh;
@@ -131,7 +132,7 @@ bool StereoModelFitter::check_for_model(vector<Eigen::Vector3d>  feature_pts_3d,
 //    }
 
     decision_tree(feature_pts_3d, 0, model.min_points, debug_vec, false);
-    model.get_model(correct_model, *current_image_right, *left_cam_mat);
+    model.get_model(correct_model, *current_image_left, *left_cam_mat);
     model.clear();
     return true;
 }
@@ -183,7 +184,7 @@ bool StereoModelFitter::determine_model_position(vector<Eigen::Vector3d>& model_
     this->current_image_right = &current_image_right;
 
     Mat l_diffused, r_diffused;
-    denoise_images(l_diffused, r_diffused, diffusion_time, current_image_right, current_image_left);
+    denoise_images(l_diffused, r_diffused, diffusion_time, current_image_left, current_image_right);
     vector< Point > features_l, features_r;
     Mat l_diffused_draw = l_diffused.clone();
     Mat r_diffused_draw = r_diffused.clone();
@@ -201,7 +202,7 @@ bool StereoModelFitter::determine_model_position(vector<Eigen::Vector3d>& model_
 
     vector<Eigen::Vector3d> correct_model;
 
-    visualize_points(feature_pts_3d, current_image_right);
+    visualize_points(feature_pts_3d, current_image_left);
     check_for_model(feature_pts_3d, correct_model);
     model_position = correct_model;
     return true;
@@ -209,14 +210,14 @@ bool StereoModelFitter::determine_model_position(vector<Eigen::Vector3d>& model_
 
 void StereoModelFitter::visualize_points(
         vector<Eigen::Vector3d>  feature_pts_3d,
-        Mat& img)
+        Mat& img_left)
 {
-    cv::Mat current_image_left = img.clone();
+    cv::Mat current_image_left = img_left.clone();
     for(size_t i = 0; i < feature_pts_3d.size(); i++)
     {
         Eigen::Vector3d pt = feature_pts_3d[i];
         Matx41d position_hom(pt(0), pt(1), pt(2), 1);
-        Matx31d pt_L_2d_hom = *left_cam_mat * position_hom;
+        Matx31d pt_L_2d_hom = * left_cam_mat * position_hom;
         Point2d L_center2d(pt_L_2d_hom(0) / pt_L_2d_hom(2), pt_L_2d_hom(1) / pt_L_2d_hom(2));
         Scalar color(255, 0, 255);
         stringstream label;
