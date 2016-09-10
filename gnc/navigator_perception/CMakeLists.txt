@@ -20,6 +20,7 @@ find_package(catkin
     message_generation
     std_msgs
     geometry_msgs
+    sensor_msgs
 )
 
 find_package(PCL 1.7 REQUIRED)
@@ -40,6 +41,7 @@ catkin_package(
     message_runtime
     std_msgs
     geometry_msgs
+    sensor_msgs
   DEPENDS
     system_lib
     image_transport
