@@ -7,6 +7,9 @@
 #include <stdexcept>
 #include <cstdint>
 #include <iterator>
+#include <ctime>
+
+#include <stdlib.h>     //for using the function sleep
 
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
@@ -45,77 +48,77 @@
 
 /*
   Warning:
-  Because of its multithreadedness, this class cannot be copy constructed. 
-  For examlple, the following will not compile:
+  Because of its multithreadedness, this class cannot be copy constructed.
+  For example, the following will not compile:
     ScanTheCodeDetector tb_detector = ScanTheCodeDetector();
   Do this instead:
     ScanTheCodeDetector tb_detector();
 */
 
-class ScanTheCodeDetector {
+class ScanTheCodeDetector
+{
 
 public:
-  ScanTheCodeDetector();
-  ~ScanTheCodeDetector();
+    ScanTheCodeDetector();
+    ~ScanTheCodeDetector();
 
-  // Public Variables
-  double image_proc_scale, feature_min_distance;
-  int diffusion_time, max_features, feature_block_size;
+    // Public Variables
+    double image_proc_scale, feature_min_distance;
+    int diffusion_time, max_features, feature_block_size;
 
 
 private:
+    StereoModelFitter* model_fitter = NULL;
 
-  double model_height = .381;
-  double model_width = .1905;
-  StereoModelFitter* model_fitter;
+    //ATTRIBUTES:
 
-  //ATTRIBUTES:
+    // ROS
+    ros::NodeHandle nh;
+    ros::ServiceServer detection_switch;
+    ros::ServiceClient pose_client;
+    image_transport::CameraSubscriber left_image_sub, right_image_sub;
+    image_transport::ImageTransport image_transport;
+    image_transport::Publisher debug_image_pub;
+    image_geometry::PinholeCameraModel left_cam_model, right_cam_model;
+    nav::ImageWithCameraInfo left_most_recent;
+    nav::ImageWithCameraInfo right_most_recent;
 
-  // ROS
-  ros::NodeHandle nh;
-  ros::ServiceServer detection_switch;
-  ros::ServiceClient pose_client;
-  image_transport::CameraSubscriber left_image_sub, right_image_sub;
-  image_transport::ImageTransport image_transport;
-  image_transport::Publisher debug_image_pub;
-  image_geometry::PinholeCameraModel left_cam_model, right_cam_model;
+    // Scan The Code Board detection will be attempted when true
+    bool active;
 
-  // Scan The Code Board detection will be attempted when true
-  bool active;
+    // Goes into sequential id for pos_est srv request
+    long long int run_id;
 
-  // Goes into sequential id for pos_est srv request
-  long long int run_id;
+    // To prevent invalid img pointers from being passed to toCvCopy (segfault)
+    boost::mutex left_mtx, right_mtx;
 
-  // To prevent invalid img pointers from being passed to toCvCopy (segfault)
-  boost::mutex left_mtx, right_mtx;
+    // RVIZ
+    nav::RvizVisualizer rviz;
 
-  // RVIZ
-  nav::RvizVisualizer rviz;
-
-  // DBG images will be generated and published when true
-  bool generate_dbg_img;
-  cv::Mat debug_image;
-  cv::Rect upper_left, upper_right, lower_left, lower_right;
+    // DBG images will be generated and published when true
+    bool generate_dbg_img;
+    cv::Mat debug_image;
+    cv::Rect upper_left, upper_right, lower_left, lower_right;
 
 
-  //METHODS:
+    //METHODS:
 
-  // Callbacks
-  bool detection_activation_switch(
-      sub8_msgs::TBDetectionSwitch::Request &req,
-      sub8_msgs::TBDetectionSwitch::Response &resp);
+    // Callbacks
+    bool detection_activation_switch(
+        sub8_msgs::TBDetectionSwitch::Request &req,
+        sub8_msgs::TBDetectionSwitch::Response &resp);
 
-  void left_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
-                           const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
-  void
-  right_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
-                       const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
+    void left_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
+                             const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
+    void
+    right_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
+                         const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
 
-  // Detection / Processing
-  void run();
-  void process_current_image();
-  void init_ros(std::stringstream& log_msg);
-  void validate_frame(cv::Mat& current_image_left, cv::Mat& current_image_right, cv::Mat& processing_size_image_left, cv::Mat& processing_size_image_right);
+    // Detection / Processing
+    void run();
+    void process_current_images();
+    void init_ros(std::stringstream& log_msg);
+    void validate_frame(cv::Mat& current_image_left, cv::Mat& current_image_right, cv::Mat& processing_size_image_left, cv::Mat& processing_size_image_right);
 
 
 

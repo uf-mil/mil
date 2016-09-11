@@ -8,105 +8,114 @@ using namespace cv;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 ScanTheCodeDetector::ScanTheCodeDetector()
-  try : image_transport(nh),   rviz("/scan_the_code/visualization/detection") {
+try :
+    image_transport(nh),   rviz("/scan_the_code/visualization/detection")
+    {
 
-    stringstream log_msg;
-    init_ros(log_msg);
+        stringstream log_msg;
+        init_ros(log_msg);
 
-    log_msg << "\nInitializing ScanTheCodeDetector:\n";
-    int tab_sz = 4;
+        log_msg << "\nInitializing ScanTheCodeDetector:\n";
+        int tab_sz = 4;
 
-    PerceptionModel model = PerceptionModel(model_width, model_height);
-    model_fitter = new StereoModelFitter(model, debug_image_pub);
+        PerceptionModel model = PerceptionModel(.1905,.381,4);
+        model_fitter = new StereoModelFitter(model, debug_image_pub);
+        // Start main detector loop
+        run_id = 0;
 
-    // Start main detector loop
-    run_id = 0;
-    boost::thread main_loop_thread(boost::bind(&ScanTheCodeDetector::run, this));
-    main_loop_thread.detach();
-    log_msg << setw(1 * tab_sz) << "" << "Running main detector loop in a background thread\n";
+        boost::thread main_loop_thread(boost::bind(&ScanTheCodeDetector::run, this));
+        main_loop_thread.detach();
+        log_msg << setw(1 * tab_sz) << "" << "Running main detector loop in a background thread\n";
 
-    log_msg << "ScanTheCodeDetector Initialized\n";
-    ROS_INFO(log_msg.str().c_str());
+        log_msg << "ScanTheCodeDetector Initialized\n";
+        ROS_INFO(log_msg.str().c_str());
 
-    } catch (const exception &e) {
+    }
+catch (const exception &e)
+    {
         ROS_ERROR("Exception from within ScanTheCodeDetector constructor "
-            "initializer list: ");
+                  "initializer list: ");
         ROS_ERROR(e.what());
     }
 
-ScanTheCodeDetector::~ScanTheCodeDetector() {
-  ROS_INFO("Killed Torpedo Board Detector");
+ScanTheCodeDetector::~ScanTheCodeDetector()
+{
+    ROS_INFO("Killed Torpedo Board Detector");
 }
 
 void ScanTheCodeDetector::validate_frame(Mat& current_image_left, Mat& current_image_right,
-                                          Mat& processing_size_image_left, Mat& processing_size_image_right
-                                          ){
-
+        Mat& processing_size_image_left, Mat& processing_size_image_right
+                                           )
+{
     // Prevent segfault if service is called before we get valid img_msg_ptr's
-    if (model_fitter->left_most_recent.image_msg_ptr == NULL || model_fitter->right_most_recent.image_msg_ptr == NULL) {
-      ROS_WARN("Torpedo Board Detector: Image Pointers are NULL.");
-      throw "ROS ERROR";
-    }
-    double sync_thresh = 0.5;
+    if (left_most_recent.image_msg_ptr == NULL || right_most_recent.image_msg_ptr == NULL)
+        {
+            throw "Torpedo Board Detector: Image Pointers are NULL.";
 
+        }
+    double sync_thresh = 0.5;
     // Get the most recent frames and camera info for both cameras
     cv_bridge::CvImagePtr input_bridge;
-    try {
+    try
+        {
 
-      left_mtx.lock();
-      right_mtx.lock();
+            left_mtx.lock();
+            right_mtx.lock();
 
-      Matx34d left_cam_mat = left_cam_model.fullProjectionMatrix();
+            // Left Camera
+            input_bridge = cv_bridge::toCvCopy(left_most_recent.image_msg_ptr,
+                                               sensor_msgs::image_encodings::BGR8);
+            current_image_left = input_bridge->image;
+            left_cam_model.fromCameraInfo(left_most_recent.info_msg_ptr);
 
-      // Left Camera
-      input_bridge = cv_bridge::toCvCopy(model_fitter->left_most_recent.image_msg_ptr,
-                                         sensor_msgs::image_encodings::BGR8);
-      current_image_left = input_bridge->image;
-      left_cam_model.fromCameraInfo(model_fitter->left_most_recent.info_msg_ptr);
-      resize(current_image_left, processing_size_image_left, Size(0, 0),
-                 image_proc_scale, image_proc_scale);
-      if (current_image_left.channels() != 3) {
-        ROS_ERROR("The left image topic does not contain a color image.");
-        throw "ROS ERROR";
-      }
+            resize(current_image_left, processing_size_image_left, Size(0, 0),
+                   image_proc_scale, image_proc_scale);
+            if (current_image_left.channels() != 3)
+                {
+                    throw "The left image topic does not contain a color image.";
+                }
 
-      // Right Camera
-      input_bridge = cv_bridge::toCvCopy(model_fitter->right_most_recent.image_msg_ptr,
-                                         sensor_msgs::image_encodings::BGR8);
-      current_image_right = input_bridge->image;
-      right_cam_model.fromCameraInfo(model_fitter->right_most_recent.info_msg_ptr);
-      resize(current_image_right, processing_size_image_right, Size(0, 0),
-                 image_proc_scale, image_proc_scale);
-      if (current_image_right.channels() != 3) {
-        ROS_ERROR("The right image topic does not contain a color image.");
-        throw "ROS ERROR";
-      }
+            // Right Camera
+            input_bridge = cv_bridge::toCvCopy(right_most_recent.image_msg_ptr,
+                                               sensor_msgs::image_encodings::BGR8);
+            current_image_right = input_bridge->image;
+            right_cam_model.fromCameraInfo(right_most_recent.info_msg_ptr);
+            resize(current_image_right, processing_size_image_right, Size(0, 0),
+                   image_proc_scale, image_proc_scale);
+            if (current_image_right.channels() != 3)
+                {
+                    throw "The right image topic does not contain a color image.";
+                }
 
-      left_mtx.unlock();
-      right_mtx.unlock();
+            left_mtx.unlock();
+            right_mtx.unlock();
 
-    } catch (const exception &ex) {
-      ROS_ERROR("[scan_the_code] cv_bridge: Failed to convert images");
-      left_mtx.unlock();
-      right_mtx.unlock();
-      throw "ROS ERROR";
-    }
+        }
+    catch (const exception &ex)
+        {
+            ROS_ERROR("[scan_the_code] cv_bridge: Failed to convert images");
+            left_mtx.unlock();
+            right_mtx.unlock();
+            throw "ROS ERROR";
+        }
 
     // Enforce approximate image synchronization
     double left_stamp, right_stamp;
-    left_stamp = model_fitter->left_most_recent.image_msg_ptr->header.stamp.toSec();
-    right_stamp = model_fitter->right_most_recent.image_msg_ptr->header.stamp.toSec();
+    left_stamp = left_most_recent.image_msg_ptr->header.stamp.toSec();
+    right_stamp = right_most_recent.image_msg_ptr->header.stamp.toSec();
     double sync_error = fabs(left_stamp - right_stamp);
     stringstream sync_msg;
     sync_msg << "Left and right images were not sufficiently synchronized"
              << "\nsync error: " << sync_error << "s";
-    if (sync_error > sync_thresh) {
-      ROS_WARN(sync_msg.str().c_str());
-      throw "Sync Error";
-    }
+    if (sync_error > sync_thresh)
+        {
+            ROS_WARN(sync_msg.str().c_str());
+            throw "Sync Error";
+        }
 }
 
-void ScanTheCodeDetector::init_ros(stringstream& log_msg){
+void ScanTheCodeDetector::init_ros(stringstream& log_msg)
+{
     using ros::param::param;
     int tab_sz = 4;
     // Default parameters
@@ -116,8 +125,8 @@ void ScanTheCodeDetector::init_ros(stringstream& log_msg){
     string dbg_topic_default = "/scan_the_code/dbg_imgs";
     string pose_est_srv_default = "/scan_the_code/pose_est_srv";
     float image_proc_scale_default = 0.5;
-    int diffusion_time_default = 20;
-    int max_features_default = 20;
+    int diffusion_time_default = 5;
+    int max_features_default = 35;
     int feature_block_size_default = 11;
     float feature_min_distance_default = 15.0;
     bool generate_dbg_img_default = true;
@@ -145,7 +154,7 @@ void ScanTheCodeDetector::init_ros(stringstream& log_msg){
     log_msg << setw(1 * tab_sz) << "" << "Feature Block Size: \x1b[37m"
             << feature_block_size << "\x1b[0m\n";
     feature_min_distance = param<float>("/scan_the_code_vision/feature_min_distance",
-                                      feature_min_distance_default);
+                                        feature_min_distance_default);
     log_msg << setw(1 * tab_sz) << "" << "Feature Minimum Distance: \x1b[37m"
             << feature_min_distance << "\x1b[0m\n";
 
@@ -156,9 +165,9 @@ void ScanTheCodeDetector::init_ros(stringstream& log_msg){
     string left = param<string>("/scan_the_code_vision/input_left", img_topic_left_default);
     string right = param<string>("/scan_the_code_vision/input_right", img_topic_right_default);
     left_image_sub = image_transport.subscribeCamera(
-      left, 10, &ScanTheCodeDetector::left_image_callback, this);
+                         left, 10, &ScanTheCodeDetector::left_image_callback, this);
     right_image_sub = image_transport.subscribeCamera(
-      right, 10, &ScanTheCodeDetector::right_image_callback, this);
+                          right, 10, &ScanTheCodeDetector::right_image_callback, this);
     log_msg << setw(1 * tab_sz) << "" << "Camera Subscriptions:\x1b[37m\n"
             << setw(2 * tab_sz) << "" << "left  = " << left << endl
             << setw(2 * tab_sz) << "" << "right = " << right << "\x1b[0m\n";
@@ -167,8 +176,8 @@ void ScanTheCodeDetector::init_ros(stringstream& log_msg){
     string pose_est_srv = param<string>("/scan_the_code_vision/pose_est_srv", pose_est_srv_default);
     pose_client = nh.serviceClient<sub8_msgs::TorpBoardPoseRequest>( pose_est_srv);
     log_msg
-        << setw(1 * tab_sz) << "" << "Registered as client of the service:\n"
-        << setw(2 * tab_sz) << "" << "\x1b[37m" << pose_est_srv << "\x1b[0m\n";
+            << setw(1 * tab_sz) << "" << "Registered as client of the service:\n"
+            << setw(2 * tab_sz) << "" << "\x1b[37m" << pose_est_srv << "\x1b[0m\n";
 
     // Advertise debug image topic
     string dbg_topic = param<string>("/scan_the_code_vision/dbg_imgs", dbg_topic_default);
@@ -180,9 +189,9 @@ void ScanTheCodeDetector::init_ros(stringstream& log_msg){
     int frame_height = param<int>("/scan_the_code_vision/frame_height", frame_height_default);
     int frame_width = param<int>("/scan_the_code_vision/frame_width", frame_width_default);
     Size input_frame_size(frame_height, frame_width);  // This needs to be changed if we ever change
-                                                           // the camera settings for frame size
+    // the camera settings for frame size
     Size proc_size(cvRound(image_proc_scale * input_frame_size.width),
-                             cvRound(image_proc_scale * input_frame_size.height));
+                   cvRound(image_proc_scale * input_frame_size.height));
     Size dbg_img_size(proc_size.width * 2, proc_size.height * 2);
     debug_image = Mat(dbg_img_size, CV_8UC3, Scalar(0, 0, 0));
     upper_left = Rect(Point(0, 0), proc_size);
@@ -193,87 +202,104 @@ void ScanTheCodeDetector::init_ros(stringstream& log_msg){
     active = false;
     string activation = param<string>("/scan_the_code_vision/activation", activation_default);
     detection_switch = nh.advertiseService(
-        activation, &ScanTheCodeDetector::detection_activation_switch, this);
+                           activation, &ScanTheCodeDetector::detection_activation_switch, this);
     log_msg
             << setw(1 * tab_sz) << "" << "Advertised scan_the_code board detection switch:\n"
             << setw(2 * tab_sz) << "" << "\x1b[37m" << activation << "\x1b[0m\n";
 }
 
 
-void ScanTheCodeDetector::run() {
-  ros::Rate loop_rate(10);  // process images 10 times per second
-  while (ros::ok()) {
-    if (true){
-          process_current_image();
+void ScanTheCodeDetector::run()
+{
+    ros::Rate loop_rate(10);  // process images 10 times per second
+    while (ros::ok())
+        {
+            if (true)
+                {
+                    process_current_images();
 
-    }
-    loop_rate.sleep();
-  }
-  return;
+                }
+            loop_rate.sleep();
+        }
+
+    return;
 }
 
-void ScanTheCodeDetector::process_current_image(){
-    Eigen::Vector3d position;
+void ScanTheCodeDetector::process_current_images()
+{
     Mat current_image_left, current_image_right, processing_size_image_left,
         processing_size_image_right;
-
-    try{
-        validate_frame(current_image_left, current_image_right,
-                          processing_size_image_left, processing_size_image_right);
-    }catch(const char* msg){
+    try
+    {
+        validate_frame(current_image_left,
+                          current_image_right,
+                          processing_size_image_left,
+                          processing_size_image_right);
+    }
+    catch(const char* msg)
+    {
+        ROS_ERROR(msg);
         return;
     }
 
-    Matx34d left_cam_mat = this->left_cam_model.fullProjectionMatrix();
+    Matx34d left_cam_mat = left_cam_model.fullProjectionMatrix();
     Matx34d  right_cam_mat = right_cam_model.fullProjectionMatrix();
-
-    bool ret = model_fitter->determine_model_position(position,
-                                                      max_features, feature_block_size,
-                                                      feature_min_distance,
-                                                      image_proc_scale, diffusion_time,
-                                                      current_image_left, current_image_right,
-                                                      processing_size_image_left, processing_size_image_right,
-                                                      left_cam_mat, right_cam_mat);
+    vector<Eigen::Vector3d> position;
+    model_fitter->determine_model_position(position,
+                                           max_features,
+                                           feature_block_size,
+                                           feature_min_distance,
+                                           image_proc_scale,
+                                           diffusion_time,
+                                           current_image_left,
+                                           current_image_right,
+                                           left_cam_mat,
+                                           right_cam_mat);
 }
 
 bool ScanTheCodeDetector::detection_activation_switch(
     sub8_msgs::TBDetectionSwitch::Request &req,
-    sub8_msgs::TBDetectionSwitch::Response &resp) {
+    sub8_msgs::TBDetectionSwitch::Response &resp)
+{
     resp.success = false;
     stringstream ros_log;
     ros_log << "\x1b[1;31mSetting torpedo board detection to: \x1b[1;37m"
-          << (req.detection_switch ? "on" : "off") << "\x1b[0m";
+            << (req.detection_switch ? "on" : "off") << "\x1b[0m";
     ROS_INFO(ros_log.str().c_str());
     active = req.detection_switch;
-    if (active == req.detection_switch) {
-        resp.success = true;
-        return true;
-    }
+    if (active == req.detection_switch)
+        {
+            resp.success = true;
+            return true;
+        }
     return false;
 }
 
 void ScanTheCodeDetector::left_image_callback(
     const sensor_msgs::ImageConstPtr &image_msg_ptr,
-    const sensor_msgs::CameraInfoConstPtr &info_msg_ptr) {
-  left_mtx.lock();
-  model_fitter->left_most_recent.image_msg_ptr = image_msg_ptr;
-  model_fitter->left_most_recent.info_msg_ptr = info_msg_ptr;
-  left_mtx.unlock();
+    const sensor_msgs::CameraInfoConstPtr &info_msg_ptr)
+{
+    left_mtx.lock();
+    left_most_recent.image_msg_ptr = image_msg_ptr;
+    left_most_recent.info_msg_ptr = info_msg_ptr;
+    left_mtx.unlock();
 }
 
 void ScanTheCodeDetector::right_image_callback(
     const sensor_msgs::ImageConstPtr &image_msg_ptr,
-    const sensor_msgs::CameraInfoConstPtr &info_msg_ptr) {
-  right_mtx.lock();
-  model_fitter->right_most_recent.image_msg_ptr = image_msg_ptr;
-  model_fitter->right_most_recent.info_msg_ptr = info_msg_ptr;
-  right_mtx.unlock();
+    const sensor_msgs::CameraInfoConstPtr &info_msg_ptr)
+{
+    right_mtx.lock();
+    right_most_recent.image_msg_ptr = image_msg_ptr;
+    right_most_recent.info_msg_ptr = info_msg_ptr;
+    right_mtx.unlock();
 }
 
 
-int main(int argc, char **argv) {
-  ros::init(argc, argv, "scan_the_code_board_perception");
-  ROS_INFO("Initializing node /scan_the_code_board_perception");
-  ScanTheCodeDetector scan_the_code_detector;
-  ros::spin();
+int main(int argc, char **argv)
+{
+    ros::init(argc, argv, "scan_the_code_perception");
+    ROS_INFO("Initializing node /scan_the_code_perception");
+    ScanTheCodeDetector scan_the_code_detector;
+    ros::spin();
 }
