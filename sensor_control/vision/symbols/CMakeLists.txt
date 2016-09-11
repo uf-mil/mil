@@ -15,12 +15,6 @@ find_package(catkin REQUIRED COMPONENTS
 )
 find_package( OpenCV REQUIRED )
 
-generate_messages(
-	DEPENDENCIES 
-	  std_msgs 
-    geometry_msgs
-)
-
 catkin_package(
   CATKIN_DEPENDS 
 	std_msgs 
