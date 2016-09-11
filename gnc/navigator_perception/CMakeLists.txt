@@ -160,7 +160,7 @@ set_target_properties(stereo_point_cloud_driver PROPERTIES COMPILE_FLAGS "-O3 -D
 
 add_executable(
   scan_the_code
-    scan_the_code_detector.cc
+    nodes/scan_the_code_detector.cc
 )
 
 add_dependencies(
