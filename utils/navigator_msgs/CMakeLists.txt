@@ -29,6 +29,7 @@ add_service_files(
   VisionRequest.srv
   WrenchSelect.srv
   GetDockShape.srv
+  GetDockShapes.srv
   StartGate.srv
 )
 

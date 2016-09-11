@@ -1,7 +1,7 @@
 <launch>
   <node pkg="navigator_shoot_vision" type="shore_debug" name="dock_shape_shore_debug">
-    <param name="symbol_camera" value="/side_camera/image_raw"/>
-    <param name="image_transport" value="raw" />
+    <param name="symbol_camera" value="/camera/image_color"/>
+    <param name="image_transport" value="compressed" />
     <param name="color" value="BLUE" />
     <param name="shape" value="CROSS" />
   </node>
