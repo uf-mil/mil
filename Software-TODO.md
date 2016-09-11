@@ -20,7 +20,7 @@ If you want to get involved this is a great place to start! If you're serious ab
 ### Simulation
 * LIDAR
 * Imaging Sonar
-* Field components
+* Field components __[ANTHONY]__
 
 ### GUI Improvements
 * RVIZ model spawing __[MATT]__
@@ -35,7 +35,6 @@ If you want to get involved this is a great place to start! If you're serious ab
 * Modify package structure
 
 ### Install Script
-* Install git-lfs, tmux __[ANTHONY]__
 * Download/build velodyne drivers from source __[Ralph]__
 * Figure out dependency caching (mainly ROS) for semaphore __[ANTHONY]__
 
