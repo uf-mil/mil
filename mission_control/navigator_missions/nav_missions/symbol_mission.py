@@ -12,8 +12,8 @@ import cv2
 
 from twisted.internet import defer
 error_threshold = 0.1 #how small center error can be to be considered centered
-width_proportion = 0.30 #what proportion of the image width should be taken by the symbol
-width_error_threshold = 0.2 #how small width error can be to be considered correct distance
+width_proportion = 0.25 #what proportion of the image width should be taken by the symbol
+width_error_threshold = 0.02 #how small width error can be to be considered correct distance
 
 def boundingRect(points):
     maxX = 0
