@@ -1,6 +1,7 @@
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
 #include <boost/thread.hpp>
+#include <boost/utility/in_place_factory.hpp>
 
 #include <nodelet/nodelet.h>
 #include <pluginlib/class_list_macros.h>
