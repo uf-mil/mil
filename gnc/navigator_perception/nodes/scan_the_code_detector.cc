@@ -8,8 +8,9 @@ using namespace cv;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 ScanTheCodeDetector::ScanTheCodeDetector()
-try :
-    image_transport(nh),   rviz("/scan_the_code/visualization/detection")
+try:
+    image_transport(nh),
+    rviz("/scan_the_code/visualization/detection")
     {
 
         stringstream log_msg;
@@ -40,7 +41,7 @@ catch (const exception &e)
 
 ScanTheCodeDetector::~ScanTheCodeDetector()
 {
-    ROS_INFO("Killed Torpedo Board Detector");
+    ROS_INFO("Killed ScanTheCodeDetector");
 }
 
 void ScanTheCodeDetector::validate_frame(Mat& current_image_left, Mat& current_image_right,
@@ -50,7 +51,7 @@ void ScanTheCodeDetector::validate_frame(Mat& current_image_left, Mat& current_i
     // Prevent segfault if service is called before we get valid img_msg_ptr's
     if (left_most_recent.image_msg_ptr == NULL || right_most_recent.image_msg_ptr == NULL)
         {
-            throw "Torpedo Board Detector: Image Pointers are NULL.";
+            throw "ScanTheCodeDetector: Image Pointers are NULL.";
 
         }
     double sync_thresh = 0.5;
@@ -258,21 +259,16 @@ void ScanTheCodeDetector::process_current_images()
 }
 
 bool ScanTheCodeDetector::detection_activation_switch(
-    sub8_msgs::TBDetectionSwitch::Request &req,
-    sub8_msgs::TBDetectionSwitch::Response &resp)
+    navigator_msgs::ActivationSwitch::Request &req,
+    navigator_msgs::ActivationSwitch::Response &resp)
 {
     resp.success = false;
     stringstream ros_log;
-    ros_log << "\x1b[1;31mSetting torpedo board detection to: \x1b[1;37m"
-            << (req.detection_switch ? "on" : "off") << "\x1b[0m";
+    ros_log << "\x1b[1;31mSetting scan the code detection to: \x1b[1;37m"
+            << (req.activation_switch ? "on" : "off") << "\x1b[0m";
     ROS_INFO(ros_log.str().c_str());
-    active = req.detection_switch;
-    if (active == req.detection_switch)
-        {
-            resp.success = true;
-            return true;
-        }
-    return false;
+    active = req.activation_switch;
+    return true;
 }
 
 void ScanTheCodeDetector::left_image_callback(
