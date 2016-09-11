@@ -9,7 +9,7 @@
 #include <navigator_msgs/DockShapes.h>
 #include <navigator_msgs/DockShape.h>
 
-#include "PoseEstimator.h"
+//#include "PoseEstimator.h"
 
 using namespace cv;
 class ShoreDebug {
@@ -23,7 +23,7 @@ class ShoreDebug {
   Mat image,filtered_image;
   navigator_msgs::DockShapes shapes;
   
-  PoseEstimator poseEstimator;
+  //PoseEstimator poseEstimator;
   
   void drawShape(Mat& frame, navigator_msgs::DockShape& shape)
   {
@@ -42,7 +42,7 @@ class ShoreDebug {
     image = cv_ptr->image;
     for (navigator_msgs::DockShape symbol : shapes.list) {
         drawShape(image,symbol);
-        poseEstimator.process(image, symbol);
+        //poseEstimator.process(image, symbol);
     }
     imshow("Result",image);    
   }
