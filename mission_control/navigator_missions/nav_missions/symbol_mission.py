@@ -35,8 +35,8 @@ def area_of_rect(rect):
   
 @txros.util.cancellableInlineCallbacks
 def main(navigator):
-  #shooterLoad = rospy.ServiceProxy("/shooter/load", std_srvs.srv.Trigger)
-  #shooterFire = rospy.ServiceProxy("/shooter/fire", std_srvs.srv.Trigger)
+  shooterLoad = rospy.ServiceProxy("/shooter/load", std_srvs.srv.Trigger)
+  shooterFire = rospy.ServiceProxy("/shooter/fire", std_srvs.srv.Trigger)
   
   resp = yield navigator.vision_request("get_shape")
   while not (resp.found and resp.symbol.img_width != 0):
@@ -45,7 +45,7 @@ def main(navigator):
 
   print "Found"
   print "Loading"
-  #shoooterLoad()
+  shoooterLoad()
   
   error = float(resp.symbol.CenterX)/resp.symbol.img_width - 0.5
   while abs(error) > error_threshold:
@@ -87,4 +87,4 @@ def main(navigator):
   yield navigator.move.go()
   
   print "Shooting"
-  #shooterFire()
+  shooterFire()
