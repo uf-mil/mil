@@ -55,7 +55,7 @@ class Thresholder(object):
     def to_dict(self):
         lower = map(float, self.lower)
         upper = map(float, self.upper)
-        return {self.thresh_type: {'lower': lower, 'upper': upper}, 'invert':False}
+        return {'color_space':self.thresh_type, 'ranges': {'lower': lower, 'upper': upper}, 'invert': False}
 
 
 @util.cancellableInlineCallbacks
@@ -65,19 +65,16 @@ def main(param_prefix, args):
     image_sub = yield nh.subscribe(args.topic_name, Image)
     img = yield util.wrap_timeout(image_sub.get_next_message(), 5).addErrback(errback)
 
-    if img is None:
-        reactor.stop()
-
     np_img = image_helpers.get_image_msg(img, "bgr8")
     cv2.imshow(args.topic_name, np_img)
     t = Thresholder(np_img, 'hsv' if args.hsv else 'bgr')
 
     k = 0
-    while k != ord('q'):
+    while k != ord('q'):  # q to quit without saving
         t.update_mask()
         k = cv2.waitKey(50) & 0xFF
 
-        if k == ord('s'):
+        if k == ord('s'):  # s to save parameters
             print "Saving params:"
             temp = t.to_dict()
             print temp
@@ -92,6 +89,7 @@ def errback(e):
     '''Just for catching errors'''
     print "Error when looking for image."
     print " - You probably entered the wrong image topic."
+    reactor.stop()
 
 
 def do_parsing():
