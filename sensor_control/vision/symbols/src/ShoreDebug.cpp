@@ -9,6 +9,8 @@
 #include <navigator_msgs/DockShapes.h>
 #include <navigator_msgs/DockShape.h>
 
+#include "PoseEstimator.h"
+
 using namespace cv;
 class ShoreDebug {
  private:
@@ -20,6 +22,9 @@ class ShoreDebug {
   std::string req_shape,req_color;
   Mat image,filtered_image;
   navigator_msgs::DockShapes shapes;
+  
+  PoseEstimator poseEstimator;
+  
   void drawShape(Mat& frame, navigator_msgs::DockShape& shape)
   {
     cv::circle(frame,Point(shape.CenterX,shape.CenterY),4,Scalar(255,255,255),5);
@@ -35,8 +40,10 @@ class ShoreDebug {
       return;
     }
     image = cv_ptr->image;
-    for (navigator_msgs::DockShape symbol : shapes.list)
-      drawShape(image,symbol);
+    for (navigator_msgs::DockShape symbol : shapes.list) {
+        drawShape(image,symbol);
+        poseEstimator.process(image, symbol);
+    }
     imshow("Result",image);    
   }
   void foundShapesCallback(const navigator_msgs::DockShapes &ds)
