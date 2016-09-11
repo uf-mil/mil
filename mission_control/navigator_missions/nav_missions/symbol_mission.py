@@ -45,7 +45,7 @@ def main(navigator):
 
   print "Found"
   print "Loading"
-  shoooterLoad()
+  shooterLoad()
   
   error = float(resp.symbol.CenterX)/resp.symbol.img_width - 0.5
   while abs(error) > error_threshold:
@@ -72,12 +72,12 @@ def main(navigator):
     resp = yield navigator.vision_request("get_shape")
     if width_error < 0:
       print "Moving Towards"
-      #yield navigator.move.right(1).go()
-      yield navigator.move.forward(1).go()
+      yield navigator.move.right(1).go()
+      #yield navigator.move.forward(1).go()
     elif width_error > 0:
       print "Moving Away"
-      #yield navigator.move.left(1).go()
-      yield navigator.move.backward(1).go()
+      yield navigator.move.left(1).go()
+      #yield navigator.move.backward(1).go()
     resp = yield navigator.vision_request("get_shape")
     rect = boundingRect(resp.symbol.points)
     width = (rect[0] - rect[2]) / resp.symbol.img_width
