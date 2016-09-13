@@ -9,7 +9,7 @@ import sensor_msgs.msg
 import nav_msgs.msg
 from navigator_tools import rosmsg_to_numpy
 import cv2
-
+import time
 from twisted.internet import defer
 
 error_threshold = 0.1  # how small center error can be to be considered centered
@@ -45,9 +45,11 @@ def main(navigator):
   shooterFire = rospy.ServiceProxy("/shooter/fire", std_srvs.srv.Trigger)
   
   resp = yield navigator.vision_request("get_shape")
-  while not (resp.found and resp.symbol.img_width != 0):
-    yield navigator.move.yaw_left(0.15).go();
-    resp = yield navigator.vision_request("get_shape")
+  if not resp.found and resp.symbol.img_width != 0:
+    navigator.move.yaw_left(360, "deg").go();
+    while not (resp.found and resp.symbol.img_width != 0):
+      resp = yield navigator.vision_request("get_shape")
+    yield navigator.move.go() #Stop moving once shape seen
 
   print "Found"
   print "Loading"
@@ -56,41 +58,48 @@ def main(navigator):
   resp = yield navigator.vision_request("get_shape")
   center = float(resp.symbol.CenterX) / resp.symbol.img_width
   error = center - 0.5
-  while abs(error) > error_threshold:
-    if error < 0:
+  if abs(error) > error_threshold:
+     if error < 0:
         print "Turning Left"
-        yield navigator.move.yaw_left(0.1).go()
+        navigator.move.yaw_left(180,"deg").go()
     elif error > 0:
         print "Turning Right"
-        yield navigator.move.yaw_right(0.1).go()
-    resp = yield navigator.vision_request("get_shape")
-    center = float(resp.symbol.CenterX) / resp.symbol.img_width
-    error = center - 0.5
-    print "Center Proportion: ", center
+        navigator.move.yaw_right(180,"deg").go()   
+    while abs(error) > error_threshold:
+      resp = yield navigator.vision_request("get_shape")
+      center = float(resp.symbol.CenterX) / resp.symbol.img_width
+      error = center - 0.5
+    yield navigator.move.go() #Stop moving once centered
+  print "Center Proportion: ", center
   print "Centerted"
   
   resp = yield navigator.vision_request("get_shape")
   rect = bounding_rect(resp.symbol.points)
   width = (rect[0] - rect[2]) / resp.symbol.img_width
   width_error = width - width_proportion
-  while abs(width_error) > width_error_threshold:
+  if abs(width_error) > width_error_threshold:
     if width_error < 0:
       print "Moving Towards"
-      yield navigator.move.right(1).go()
-      #yield navigator.move.forward(1).go()
+      navigator.move.right(50).go()
     elif width_error > 0:
       print "Moving Away"
-      yield navigator.move.left(1).go()
-      #yield navigator.move.backward(1).go()
-    resp = yield navigator.vision_request("get_shape")
-    rect = bounding_rect(resp.symbol.points)
-    width = (rect[0] - rect[2]) / resp.symbol.img_width
-    width_error = width - width_proportion
-    print "Width Proportion", width
+      navigator.move.left(50).go()
+    while abs(width_error) > width_error_threshold:
+      resp = yield navigator.vision_request("get_shape")
+      rect = bounding_rect(resp.symbol.points)
+      width = (rect[0] - rect[2]) / resp.symbol.img_width
+      width_error = width - width_proportion
+    yield navigator.move.go() #Stop moving once centered
 
-    
   print "Correct Distance"
   yield navigator.move.go()
   
   print "Shooting"
   shooterFire()
+
+  #shoots another 3 times
+  for i in range(0,3):
+    time.sleep(3)
+    shooterLoad()
+    time.sleep(5)
+    shooterFire()
