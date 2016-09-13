@@ -28,6 +28,28 @@ instfail() {
 	printf "$FAILTEXT $NOCOLOR"
 }
 
+check_host() {
+
+	# Attempts to ping a host to make sure it is reachable
+	HOST="$1"
+
+	HOST_PING=$(ping -c 2 $HOST 2>&1| grep "% packet" | cut -d" " -f 6 | tr -d "%")
+	if ! [ -z "${HOST_PING}" ]; then
+
+		# Uses packet loss percentage to determine if the connection is strong
+		if [ $HOST_PING -lt 25 ]; then
+
+			# Will return true if ping was successful and packet loss was below 25%
+			return `true`
+		else
+			echo "There is a weak connection to the host"
+		fi
+	else
+		echo "The server was unreachable"
+	fi
+	return `false`
+}
+
 ros_git_get() {
 	# Uasge example: ros_git_get git@github.com:jpanikulam/ROS-Boat.git
 	NEEDS_INSTALL=true;
@@ -135,7 +157,7 @@ instlog "Starting the pre-flight system check to ensure installation was done pr
 sudo apt-get update -qq
 sudo apt-get install -qq lsb-release
 
-# Ensure correct OS is installed
+# Ensure that the correct OS is installed
 DTETCTED_OS="`lsb_release -sc`"
 if [ $DTETCTED_OS = $REQUIRED_OS ]; then
 	OS_CHECK=true
@@ -146,6 +168,7 @@ else
 fi
 echo "OS distribution and version check"
 
+# Prevent the script from being run as root
 if [ $USERNAME != "root" ]; then
 	ROOT_CHECK=true
 	echo -n "[ " && instpass && echo -n "] "
@@ -154,6 +177,17 @@ else
 	echo -n "[ " && instfail && echo -n "] "
 fi
 echo "Running user check"
+
+# Check whether or not github.com is reachable
+# This also makes sure that the user is connected to the internet
+if (check_host "github.com"); then
+	NET_CHECK=true
+	echo -n "[ " && instpass && echo -n "] "
+else
+	NET_CHECK=false
+	echo -n "[ " && instfail && echo -n "] "
+fi
+echo "Internet connectivity check"
 
 if !($OS_CHECK); then
 
@@ -168,6 +202,14 @@ if !($ROOT_CHECK); then
 	# The script will not allow the user to install as root
 	instwarn "Terminating installation due to forbidden user"
 	instwarn "The install script should not be run as root"
+	exit 1
+fi
+
+if !($NET_CHECK); then
+
+	# The script will not allow the user to install without internet
+	instwarn "Terminating installation due to the lack of an internet connection"
+	instwarn "The install script needs to be able to connect to GitHub and other sites"
 	exit 1
 fi
 
