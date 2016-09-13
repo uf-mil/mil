@@ -46,6 +46,7 @@ public:
     StereoModelFitter(PerceptionModel model, image_transport::Publisher debug_publisher);
     PerceptionModel model;
     bool determine_model_position(vector<Eigen::Vector3d>& model_position,
+                                  vector<cv::Point>& model_position_2d,
                                   int max_corners,
                                   int block_size,
                                   double min_distance,
@@ -56,9 +57,18 @@ public:
                                   Matx34d left_cam_mat,
                                   Matx34d right_cam_mat);
 
+
+    void denoise_images(Mat& l_diffused,
+                        Mat& r_diffused,
+                        int diffusion_time,
+                        Mat current_image_left,
+                        Mat current_image_right);
+
 protected:
     bool check_for_model(vector<Eigen::Vector3d>  feature_pts_3d,
-                         vector<Eigen::Vector3d>& correct_model);
+                         vector<cv::Point> left_points_2d,
+                         vector<Eigen::Vector3d>& correct_model,
+                         vector<cv::Point>& model_position_2d);
 
     void calculate_3D_reconstruction(std::vector<Eigen::Vector3d>& feature_pts_3d,
                                      vector<Point> features_l,
@@ -77,13 +87,9 @@ protected:
                           double quality_level,
                           double min_distance);
 
-    void denoise_images(Mat& l_diffused,
-                        Mat& r_diffused,
-                        int diffusion_time,
-                        Mat current_image_left,
-                        Mat current_image_right);
 
     void decision_tree(vector<Eigen::Vector3d> feature_pts_3d,
+                       vector<cv::Point> left_points_2d,
                        int curr,
                        int remaining,
                        vector<int> debug_points,

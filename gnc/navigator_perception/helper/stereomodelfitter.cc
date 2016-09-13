@@ -122,7 +122,10 @@ void StereoModelFitter::calculate_3D_reconstruction(vector<Eigen::Vector3d>& fea
 
 }
 
-bool StereoModelFitter::check_for_model(vector<Eigen::Vector3d>  feature_pts_3d, vector<Eigen::Vector3d>& correct_model)
+bool StereoModelFitter::check_for_model(vector<Eigen::Vector3d>  feature_pts_3d,
+                                        vector<cv::Point> left_points_2d,
+                                        vector<Eigen::Vector3d>& correct_model,
+                                        std::vector<cv::Point>& model_position_2d)
 {
     vector<int> debug_vec;
 //    string bin;
@@ -131,13 +134,14 @@ bool StereoModelFitter::check_for_model(vector<Eigen::Vector3d>  feature_pts_3d,
 //      debug_vec  = split(bin);
 //    }
 
-    decision_tree(feature_pts_3d, 0, model.min_points, debug_vec, false);
-    model.get_model(correct_model, *current_image_left, *left_cam_mat);
+    decision_tree(feature_pts_3d,left_points_2d, 0, model.min_points, debug_vec, false);
+    bool got_model = model.get_model(correct_model, model_position_2d, *current_image_left, *left_cam_mat);
     model.clear();
-    return true;
+    return got_model;
+
 }
 
-void StereoModelFitter::decision_tree(vector<Eigen::Vector3d>  feature_pts_3d, int curr, int remaining, vector<int> debug_points, bool debug)
+void StereoModelFitter::decision_tree(vector<Eigen::Vector3d>  feature_pts_3d, vector<cv::Point> left_points_2d, int curr, int remaining, vector<int> debug_points, bool debug)
 {
     int total = feature_pts_3d.size();
 
@@ -145,28 +149,30 @@ void StereoModelFitter::decision_tree(vector<Eigen::Vector3d>  feature_pts_3d, i
     if(!model.complete() || remaining > 0){
         for(int i = curr + 1; i <= total - remaining; ++i){
             Eigen::Vector3d point = feature_pts_3d[i];
+            cv::Point point2d = left_points_2d[i];
             bool val = false;
             int a = model.current_points.size();
             if(((std::find(debug_points.begin(), debug_points.end(), i) != debug_points.end()) && a == 0) || debug){
               debug = true;
-              val = model.check_point(point, *current_image_left, *left_cam_mat, true);
+              val = model.check_point(point, point2d,  *current_image_left, *left_cam_mat, true);
             }else{
-              val = model.check_point(point, *current_image_left, *left_cam_mat, false);
+              val = model.check_point(point, point2d, *current_image_left, *left_cam_mat, false);
               debug = false;
             }
 
             // If that point was correct, keep checking the rest of the points
             if(val)
                 {
-                    decision_tree(feature_pts_3d, i, remaining - 1, debug_points, debug);
+                    decision_tree(feature_pts_3d, left_points_2d, i, remaining - 1, debug_points, debug);
                 }
             // Remove that point from the model so that other points can be checked
-            model.remove_point(point);
+            model.remove_point(point, point2d);
         }
     }
 }
 
 bool StereoModelFitter::determine_model_position(vector<Eigen::Vector3d>& model_position,
+                                                 vector<cv::Point>& model_position_2d,
                                                  int max_corners,
                                                  int block_size,
                                                  double min_distance,
@@ -203,9 +209,19 @@ bool StereoModelFitter::determine_model_position(vector<Eigen::Vector3d>& model_
     vector<Eigen::Vector3d> correct_model;
 
     visualize_points(feature_pts_3d, current_image_left);
-    check_for_model(feature_pts_3d, correct_model);
+
+//    vector<cv::Point> left_points;
+//    double reset_scaling = 1 / image_proc_scale;
+//    for(cv::Point point: points_l){
+//      Point2d pt_L = point;
+//      pt_L = pt_L * reset_scaling;
+//      left_points.push_back(pt_L);
+//    }
+
+    bool got_model = check_for_model(feature_pts_3d, points_l, correct_model, model_position_2d);
     model_position = correct_model;
-    return true;
+    return got_model;
+
 }
 
 void StereoModelFitter::visualize_points(

@@ -18,12 +18,14 @@ PerceptionModel::~PerceptionModel()
 
 void PerceptionModel::clear(){
   potential_models.clear();
+  potential_models_2d.clear();
 }
 
-bool PerceptionModel::check_point(Eigen::Vector3d point, cv:: Mat img, cv::Matx34d left_cam_mat, bool check)
+bool PerceptionModel::check_point(Eigen::Vector3d point, cv::Point point2d, cv:: Mat img, cv::Matx34d left_cam_mat, bool check)
 
 {
     current_points.push_back(point);
+    current_points_2d.push_back(point2d);
     // If this is the first point of the 4 it automatically passes
     if(current_points.size()  == 1)
     {
@@ -60,6 +62,7 @@ bool PerceptionModel::check_point(Eigen::Vector3d point, cv:: Mat img, cv::Matx3
             if(current_points.size()  == min_points)
             {
                 potential_models.push_back(current_points);
+                potential_models_2d.push_back(current_points_2d);
             }
             point_fits_model = true;
         }
@@ -74,9 +77,11 @@ bool PerceptionModel::check_point(Eigen::Vector3d point, cv:: Mat img, cv::Matx3
     return point_fits_model;
 }
 
-void PerceptionModel::remove_point(Eigen::Vector3d point)
+void PerceptionModel::remove_point(Eigen::Vector3d point, cv::Point point2d)
 {
     current_points.erase(std::remove(current_points.begin(), current_points.end(), point), current_points.end());
+    current_points_2d.erase(std::remove(current_points_2d.begin(), current_points_2d.end(), point2d), current_points_2d.end());
+
     std::stringstream ss;
     ss << point(0) << point(1) << point(2);
     if(point_to_distance.find( ss.str()) != point_to_distance.end()){
@@ -86,7 +91,7 @@ void PerceptionModel::remove_point(Eigen::Vector3d point)
     }
 }
 
-void PerceptionModel::visualize_points(std::vector<Eigen::Vector3d>  feature_pts_3d, cv:: Mat img, cv::Matx34d left_cam_mat, std::string name)
+void PerceptionModel::visualize_points(std::vector<Eigen::Vector3d>  feature_pts_3d, cv:: Mat img, cv::Matx34d left_cam_mat, std::string name, double min_cost)
 {
     cv::Mat current_image_left = img.clone();
     // visualize reconstructions
@@ -104,18 +109,25 @@ void PerceptionModel::visualize_points(std::vector<Eigen::Vector3d>  feature_pts
                     0.0015 * current_image_left.rows, cv::Scalar(0, 0, 0), 2);
         }
 
+    std::stringstream label;
+    label << min_cost;
+    cv::putText(current_image_left, label.str(), cv::Point2d(10,10), cv::FONT_HERSHEY_SIMPLEX,
+            0.0015 * current_image_left.rows, cv::Scalar(0, 0, 0), 2);
     cv::imshow(name, current_image_left);
     cv::waitKey(33);
 }
 
 
-bool PerceptionModel::get_model(std::vector<Eigen::Vector3d>& model3d, cv::Mat left_image, cv::Matx34d left_cam_mat)
+bool PerceptionModel::get_model(std::vector<Eigen::Vector3d>& model3d, std::vector<cv::Point>& model_position_2d, cv::Mat left_image, cv::Matx34d left_cam_mat)
 {
     double min_cost = 100000;
     std::vector<Eigen::Vector3d> min_model;
+    std::vector<cv::Point> min_model_2d;
 
     // Go through every potential model
-    for(std::vector<Eigen::Vector3d> mymodel: potential_models){
+    for(int i = 0; i != potential_models.size(); ++i){
+        std::vector<Eigen::Vector3d> mymodel = potential_models[i];
+        std::vector<cv::Point> mymodel_2d = potential_models_2d[i];
         double cost = 0;
         // Go through every point in this model
         for(int i = 0; i != min_points; ++i){
@@ -151,13 +163,26 @@ bool PerceptionModel::get_model(std::vector<Eigen::Vector3d>& model3d, cv::Mat l
         if(cost < min_cost){
           min_cost = cost;
           min_model = mymodel;
+          min_model_2d = mymodel_2d;
         }
     }
     model3d = min_model;
-    if(potential_models.size() != 0 && min_cost < 4){
-      //visualize_points(min_model, left_image, left_cam_mat, "WINNER");
+    model_position_2d = min_model_2d;
+    if(potential_models.size() != 0 && min_cost < 2){
+      //visualize_points(min_model, left_image, left_cam_mat, "WINNER", min_cost);
+      cost_avg = (cost_avg * count + min_cost)/++count;
+//      std::cout<<"GOTMODEL"<<std::endl;
+//      std::cout<<cost_avg<<std::endl;
+//      std::cout<<min_cost<<std::endl;
+      if(count > 5 && min_cost < cost_avg || min_cost < 1){
+
+//        std::cout<<"FOUND"<<std::endl;
+        return true;
+      }
+
     }
-    return true;
+    return false;
+
 }
 
 bool PerceptionModel::complete()

@@ -21,6 +21,8 @@ try:
 
         PerceptionModel model = PerceptionModel(.1905,.381,4);
         model_fitter = new StereoModelFitter(model, debug_image_pub);
+        object_tracker = new ObjectTracker();
+        color_tracker = new ColorTracker();
         // Start main detector loop
         run_id = 0;
 
@@ -242,20 +244,83 @@ void ScanTheCodeDetector::process_current_images()
         ROS_ERROR(msg);
         return;
     }
+    if(looking_for_model)
+    {
+      Matx34d left_cam_mat = left_cam_model.fullProjectionMatrix();
+      Matx34d  right_cam_mat = right_cam_model.fullProjectionMatrix();
+      vector<Eigen::Vector3d> position;
+      vector<cv::Point> position2d;
+      cv::Mat temp;
 
-    Matx34d left_cam_mat = left_cam_model.fullProjectionMatrix();
-    Matx34d  right_cam_mat = right_cam_model.fullProjectionMatrix();
-    vector<Eigen::Vector3d> position;
-    model_fitter->determine_model_position(position,
-                                           max_features,
-                                           feature_block_size,
-                                           feature_min_distance,
-                                           image_proc_scale,
-                                           diffusion_time,
-                                           current_image_left,
-                                           current_image_right,
-                                           left_cam_mat,
-                                           right_cam_mat);
+      bool got_model = model_fitter->determine_model_position(position,
+                                             position2d,
+                                             max_features,
+                                             feature_block_size,
+                                             feature_min_distance,
+                                             image_proc_scale,
+                                             diffusion_time,
+                                             current_image_left,
+                                             current_image_right,
+                                             left_cam_mat,
+                                             right_cam_mat
+                                             );
+
+
+      if(got_model){
+        cv::Mat l_diffused,r_diffused;
+        model_fitter->denoise_images(l_diffused, r_diffused,
+                                               diffusion_time, current_image_left,
+                                               current_image_right);
+//        cv::Mat draw = l_diffused.clone();
+//        for(cv::Point p: position2d)
+//             cv::circle(draw, p, 5, cv::Scalar(0,0,0), -1);
+
+
+//        cv::imshow("CORRECTPOITNS", draw);
+//        cv::waitKey(33);
+        object_tracker->begin_tracking_object(position2d, l_diffused);
+        looking_for_model = false;
+        tracking_model = true;
+      }
+
+    }else if(tracking_model){
+      std::vector<cv::Point2f> corners;
+      cv::Mat l_diffused,r_diffused;
+      model_fitter->denoise_images(l_diffused, r_diffused,
+                                             diffusion_time, current_image_left,
+                                             current_image_right);
+
+
+      bool found_object = object_tracker->track_object(l_diffused, corners);
+
+      cv::Mat draw = l_diffused.clone();
+      for(cv::Point p: corners)
+           cv::circle(draw, p, 5, cv::Scalar(0,0,0), -1);
+
+
+//      cv::imshow("CORRECTPOITNS", draw);
+//      cv::waitKey(33);
+      if(found_object){
+        std::vector<char> colors;
+         bool found_all_colors = color_tracker->track(current_image_left, corners, image_proc_scale, colors);
+         if(found_all_colors){
+           //PUBLISH TO A ROSTOPIC
+         }
+      }else{
+        looking_for_model = true;
+        tracking_model = false;
+        object_tracker->clear();
+        color_tracker->clear();
+
+      }
+    }
+
+
+    // JUSTDOIT: If the model fitter returns a decent model, stop doing the model fitter, do motion tracker
+    // JUSTDOIT: create motion tracker
+    // JUSTDOIT: look for moooofucking cullas
+    // IMBN: make state machiney type thing
+
 }
 
 bool ScanTheCodeDetector::detection_activation_switch(

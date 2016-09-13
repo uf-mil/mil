@@ -36,7 +36,8 @@
 
 #include "model.h"
 #include "stereomodelfitter.h"
-
+#include "object_tracker.hpp"
+#include "color_tracker.hpp"
 
 // #define SEGMENTATION_DEBUG
 
@@ -69,6 +70,11 @@ public:
 
 private:
     StereoModelFitter* model_fitter = NULL;
+    ObjectTracker* object_tracker = NULL;
+    ColorTracker* color_tracker = NULL;
+
+    bool looking_for_model = true;
+    bool tracking_model = false;
 
     //ATTRIBUTES:
 
