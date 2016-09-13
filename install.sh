@@ -513,13 +513,16 @@ set-ros-env()
   set-ros-master-uri
 }
 alias rosenv='echo ROS_MASTER_URI=\$ROS_MASTER_URI   ROS_IP=\$ROS_IP   ROS_HOSTNAME=\$ROS_HOSTNAME' #for debugging
-set-ros-env
-#export ROS_HOSTNAME=localhost
+
+#Checks if you're connected to wamv, and sets correct ROS_MASTER_URI if you are, sets to local otherwise
+#set-ros-env # #Uncomment this line for the functionality described above to be run in each new terminal window
+#end created-by-navigator-network-script
 "
 if grep --quiet created-by-navigator-network-script $HOME/.bashrc; then
   echo "Previously configured .bashrc, skipping..."
 else
   echo "$BASHRC_STR" >> $HOME/.bashrc
+  echo instlog "Network aliases added to .bashrc, run set-ros-env to set the correct ros enviroment variables"
 fi
 
 #==========================#
