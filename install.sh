@@ -458,6 +458,69 @@ if ($INSTALL_SUB); then
 	sudo pip install -q -U crc16
 fi
 
+#==========================#
+# Networking               #
+#==========================#
+   BASHRC_STR="
+#begin created-by-navigator-network-script
+REMOTE_ROSCORE_HOST=wamv #Change this if connecting to a different roscore
+REMOTE_ROSCORE_URL=http://\$REMOTE_ROSCORE_HOST:11311
+check_host() {
+  # Attempts to ping a host to make sure it is reachable
+  HOST=\"\$1\"
+
+  HOST_PING=\$(ping -w 1 -c 2 \$HOST 2>&1| grep \"% packet\" | cut -d\" \" -f 6 | tr -d \"%\")
+  if ! [ -z "\${HOST_PING}" ]; then
+    # Uses packet loss percentage to determine if the connection is strong
+    if [ \$HOST_PING -lt 25 ]; then
+
+      # Will return true if ping was successful and packet loss was below 25%
+      echo \"true\"
+    else
+      echo \"There is a weak connection to the host\"
+    fi
+  else
+    echo \"The server was unreachable\"
+  fi
+}
+is-remote-roscore-up()
+{
+  echo \"\$(check_host \"\$REMOTE_ROSCORE_HOST\")\"
+}
+set-ros-ip()
+{
+  local_ip=\$(hostname -I)
+  if [[ "\$local_ip"  == \"\" ]]; then #if network not connected, set ROS_HOSTNAME to localhost for local roscore
+    unset ROS_IP
+    export ROS_HOSTNAME=localhost
+  else #if connected to a network, set ROS_IP to local ip address
+    unset ROS_HOSTNAME
+    export ROS_IP=\$local_ip
+
+  fi
+}
+set-ros-master-uri()
+{
+  if [[ \$(is-remote-roscore-up) == true ]]; then #If navigator network is connected, set correct ROS env
+    export ROS_MASTER_URI=http://\$REMOTE_ROSCORE_URL
+  else
+    export ROS_MASTER_URI=http://localhost:11311
+  fi
+}
+set-ros-env()
+{
+  set-ros-ip
+  set-ros-master-uri
+}
+alias rosenv='echo ROS_MASTER_URI=\$ROS_MASTER_URI   ROS_IP=\$ROS_IP   ROS_HOSTNAME=\$ROS_HOSTNAME' #for debugging
+set-ros-env
+#export ROS_HOSTNAME=localhost
+"
+if grep --quiet created-by-navigator-network-script $HOME/.bashrc; then
+  echo "Previously configured .bashrc, skipping..."
+else
+  echo "$BASHRC_STR" >> $HOME/.bashrc
+fi
 
 #==========================#
 # Finalization an Clean Up #
