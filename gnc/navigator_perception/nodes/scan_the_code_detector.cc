@@ -259,15 +259,15 @@ void ScanTheCodeDetector::process_current_images()
 }
 
 bool ScanTheCodeDetector::detection_activation_switch(
-    navigator_msgs::ActivationSwitch::Request &req,
-    navigator_msgs::ActivationSwitch::Response &resp)
+    std_srvs::SetBool::Request &req,
+    std_srvs::SetBool::Response &resp)
 {
     resp.success = false;
     stringstream ros_log;
     ros_log << "\x1b[1;31mSetting scan the code detection to: \x1b[1;37m"
-            << (req.activation_switch ? "on" : "off") << "\x1b[0m";
+            << (req.data ? "on" : "off") << "\x1b[0m";
     ROS_INFO(ros_log.str().c_str());
-    active = req.activation_switch;
+    active = req.data;
     return true;
 }
 
