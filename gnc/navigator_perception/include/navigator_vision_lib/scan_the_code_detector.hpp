@@ -28,11 +28,11 @@
 #include <image_geometry/pinhole_camera_model.h>
 #include <tf/transform_listener.h>
 #include <sensor_msgs/image_encodings.h>
+#include <std_srvs/SetBool.h>
 
 #include <navigator_vision_lib/cv_tools.hpp>
 #include <navigator_vision_lib/visualization.hpp>
 #include <sub8_msgs/TorpBoardPoseRequest.h>
-#include <navigator_msgs/ActivationSwitch.h>
 
 #include "model.h"
 #include "stereomodelfitter.h"
@@ -105,8 +105,8 @@ private:
 
     // Callbacks
     bool detection_activation_switch(
-        navigator_msgs::ActivationSwitch::Request &req,
-        navigator_msgs::ActivationSwitch::Response &resp);
+        std_srvs::SetBool::Request &req,
+        std_srvs::SetBool::Response &resp);
 
     void left_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
                              const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);

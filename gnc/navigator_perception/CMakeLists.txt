@@ -19,6 +19,7 @@ find_package(catkin
     sub8_msgs
     message_generation
     std_msgs
+    std_srvs
     geometry_msgs
     sensor_msgs
 )

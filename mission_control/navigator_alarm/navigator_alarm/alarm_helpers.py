@@ -160,7 +160,7 @@ class AlarmListener(object):
         If an alarm with the 'alarm_name' is triggered, it (as well as an optional 'args') will be passed
         to the 'callback_funct'.
     '''
-    def __init__(self, alarm_name=None, callback_funct=None, args=None):
+    def __init__(self, alarm_name=None, callback_funct=None):
         # This dictionary will allow the user to listen to an arbitrary number of alarms
         # and have sepreate callbacks and args for each alarm.
         self.callback_linker = {}
@@ -168,8 +168,8 @@ class AlarmListener(object):
 
         if alarm_name is not None and callback_funct is not None:
             self.callback_linker[alarm_name] = {
+                'last_time': None,
                 'callback': callback_funct,
-                'args': args,
                 'active': False,
             }
 
@@ -184,13 +184,12 @@ class AlarmListener(object):
         else:
             raise KeyError("{} is not a known alarm to this listener".format(alarm_name))
 
-    def add_listener(self, alarm_name, callback_funct, args=None):
+    def add_listener(self, alarm_name, callback_funct):
         '''
             Creates a new alarm listener and links it to a callback function.
         '''
         self.callback_linker[alarm_name] = {
             'callback': callback_funct,
-            'args': args,
             'last_time': None,
             'active': False,
         }
@@ -210,20 +209,14 @@ class AlarmListener(object):
         if found_alarm['last_time'] is None:
             found_alarm['last_time'] = alarm.header.stamp
 
-        # Check if the alarm is new
-        if alarm.header.stamp > found_alarm['last_time']:
+        elif alarm.header.stamp > found_alarm['last_time']:
+            # Check if the alarm is new
             found_alarm['last_time'] = alarm.header.stamp
             found_alarm['active'] = not alarm.clear
 
-        # Otherwise do nothing
         else:
+            # Otherwise do nothing
             return
 
         callback = found_alarm['callback']
-        args = found_alarm['args']
-
-        # Actaully call the callback function and pass args if nessicary.
-        if args is None:
-            callback(alarm)
-        else:
-            callback(alarm, args)
+        callback(alarm)
