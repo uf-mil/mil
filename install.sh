@@ -169,7 +169,7 @@ fi
 echo "OS distribution and version check"
 
 # Prevent the script from being run as root
-if [ $USERNAME != "root" ]; then
+if [ $USER != "root" ]; then
 	ROOT_CHECK=true
 	echo -n "[ " && instpass && echo -n "] "
 else
@@ -344,8 +344,9 @@ sudo apt-get install -qq python-qt4-dev python-qt4-gl
 sudo apt-get install -qq python-opengl freeglut3-dev libassimp-dev
 
 # Tools
+sudo apt-get install -qq sshfs
 sudo apt-get install -qq git-lfs gitk
-git lfs install
+git lfs install --skip-smudge
 sudo apt-get install -qq tmux
 
 # Libraries needed by txros
