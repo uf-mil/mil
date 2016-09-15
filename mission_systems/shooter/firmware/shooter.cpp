@@ -1,3 +1,24 @@
+/**
+ * This file contains the firmware to be uploaded to do arduino used
+ * to control the Navigator's shooter.
+ *
+ * Once uploaded, an instance of rosserial must be run to send/receive
+ * ros data to/from the arduino.
+ *
+ * launch/config.yaml contains settings for the timing based control. 
+ *
+ * The arduino provides four services for controlling the shooter:
+ * /shooter/cancel - std_srvs/Trigger
+ *                 - immediately turns off both the flywheels and feeder actuator
+ * /shooter/manual - navigator_msgs/ShooterManual
+ *                 - given an integer between -100 and 100, manually sets the speed of the two motor controllers
+ *                 - -100 = full speed reverse, 0 = off, 100 = full speed forward
+ * /shooter/load   - std_srvs/Trigger
+ *                 - timing based control which retracts the feeder to allow a ball in, pushes the fall towards the fly wheels, then turns on the flywheels for quickfiring
+ * /shooter/fire   - std_srvs/Trigger
+ *                 - timing based control which extends the linear actuator to launch the ball, then turns off the flywheels
+ */
+
 #include <ros.h>
 #include <std_msgs/Int8.h>
 #include <std_msgs/String.h>
@@ -8,11 +29,12 @@
 
 #include <Servo.h>
 
+#define USE_LINEAR_FEEDER
+
 const int SHOOTER_PIN = 3;
 const int FEEDER_A_PIN = 8;
 const int FEEDER_B_PIN = 9;
 const int FEEDER_PWM_PIN = 5;
-
 class SpeedController
 {
   protected:
@@ -122,7 +144,7 @@ class Pololu : public SpeedController
       } else if(s < 0) {
         digitalWrite(inA_pin,HIGH);
         digitalWrite(inB_pin,LOW);
-        analogWrite(pwm_pin,map(s,-100,0,0,255));
+        analogWrite(pwm_pin,map(s,0,-100,0,255));
       } else if (s > 0) {
         digitalWrite(inA_pin,LOW);
         digitalWrite(inB_pin,HIGH);
@@ -150,6 +172,122 @@ class Pololu : public SpeedController
 };
 Pololu feeder(FEEDER_A_PIN,FEEDER_B_PIN,FEEDER_PWM_PIN);
 
+#ifdef USE_LINEAR_FEEDER
+class AutoController
+{
+  private:
+    //All times in milliseconds
+    static unsigned long SPIN_UP_TIME; //Time to spin up flywheels before feeding balls in
+    static unsigned long RETRACT_TIME; //Time to retract actuator to allow ball to fall into feeding tube
+    static unsigned long LOAD_TIME; //Time to extend actuator to preload ball for quick firing
+    static unsigned long QUICKFIRE_TIME; //Time to extend actuator with preloaded ball for quick firing
+    static unsigned long MID_LOAD_PAUSE;
+    static unsigned long SHOOT_TIME;
+    /* Represents what the controller is currently doing
+     * 0 = finished fireing/loading or stopped
+     * 1 = preloading for quick fireing
+     * 2 = fireing from preloaded state
+     */
+    int state;
+    unsigned long start_load_time;
+    unsigned long start_fire_time;
+    bool loaded;
+    void reset()
+    {
+      state = 0;
+      start_load_time = 0;
+      start_fire_time = 0;
+      loaded = false;
+    }
+    void runLoad()
+    {
+      unsigned long cur_time = millis() - start_load_time;
+      if (cur_time < RETRACT_TIME)
+      {
+        feeder.reverse();
+      } else if (cur_time < (RETRACT_TIME + MID_LOAD_PAUSE ) )
+      {
+        feeder.off();
+      } else if (cur_time < (RETRACT_TIME + MID_LOAD_PAUSE + LOAD_TIME) ) {
+        feeder.on();
+      } else {
+        feeder.off();
+        shooter.on();
+        state = 0;
+        loaded = true;
+        start_load_time = 0;
+      }
+    }
+    void runFire()
+    {
+      unsigned long cur_time = millis() - start_fire_time;
+      if (cur_time < QUICKFIRE_TIME)
+      {
+        shooter.on();
+        feeder.on();
+      } else if (cur_time < (QUICKFIRE_TIME + SHOOT_TIME)) {
+        feeder.off();
+      } else {
+        start_fire_time = 0;
+        feeder.off();
+        shooter.off();
+        loaded = false;
+        state = 0;
+      }
+    }
+  public:
+    AutoController()
+    {
+      reset();
+    }
+    void init(ros::NodeHandle& nh)
+    {
+      nh.getParam("~controller/load/retract_time_millis", (int* ) &RETRACT_TIME);
+      nh.getParam("~controller/load/pause_time_millis", (int* ) &MID_LOAD_PAUSE);
+      nh.getParam("~controller/load/extend_time_millis", (int *) &LOAD_TIME);
+      nh.getParam("~controller/fire/extend_time_millis", (int *) &QUICKFIRE_TIME);
+      nh.getParam("~controller/fire/shoot_time_millis", (int *) &SHOOT_TIME);
+    }
+    void load()
+    {
+      start_load_time = millis();
+      loaded = false;
+      state = 1;
+    }
+    void fire()
+    {
+      start_fire_time = millis();
+      state = 2;
+    }
+    void cancel()
+    {
+      feeder.off();
+			shooter.off();
+      reset();
+    }
+    void run()
+    {
+      switch (state) 
+      {
+        case 0:
+          break;
+        case 1:
+          runLoad();
+          break;
+        case 2:
+          runFire();
+          break;
+      }
+    }
+
+};
+unsigned long AutoController::SPIN_UP_TIME = 1000; //Time to spin up flywheels before feeding balls in
+unsigned long AutoController::RETRACT_TIME = 950; //Time to retract actuator to allow ball to fall into feeding tube
+unsigned long AutoController::LOAD_TIME = 500; //Time to extend actuator to preload ball for quick firing
+unsigned long AutoController::QUICKFIRE_TIME = 400; //Time to extend actuator with preloaded ball for quick firing
+unsigned long AutoController::MID_LOAD_PAUSE = 100;
+unsigned long AutoController::SHOOT_TIME = 1000;
+#else
 class AutoController
 {
   private:
@@ -194,19 +332,47 @@ class AutoController
 			}
 		}	
 };
+#endif
 AutoController autoController;
-
 class Comms
 {
   private:
     //ROS
     ros::NodeHandle nh;
-    std_msgs::String str_msg;
-    //ros::Publisher chatter;
-    //~ ros::Subscriber<std_msgs::String> sub;
+    #ifdef USE_LINEAR_FEEDER
     ros::ServiceServer<std_srvs::Trigger::Request,std_srvs::Trigger::Response> fireService;
+    ros::ServiceServer<std_srvs::Trigger::Request,std_srvs::Trigger::Response> loadService;
     ros::ServiceServer<std_srvs::Trigger::Request,std_srvs::Trigger::Response> cancelService;
     ros::ServiceServer<navigator_msgs::ShooterManual::Request,navigator_msgs::ShooterManual::Response> manualService;
+    #else
+    ros::ServiceServer<std_srvs::Trigger::Request,std_srvs::Trigger::Response> fireService;
+    ros::ServiceServer<std_srvs::Trigger::Request,std_srvs::Trigger::Response> cancelService;
+    ros::ServiceServer<navigator_msgs::ShooterManual::Request,navigator_msgs::ShooterManual::Response> manualService;    
+    #endif
+
+    #ifdef USE_LINEAR_FEEDER
+    static void fireCallback(const std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+    {
+      autoController.fire();
+      res.success = true;
+    }
+    static void loadCallback(const std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+    {
+      autoController.load();
+      res.success = true;
+    }
+    static void cancelCallback(const std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+    {
+      autoController.cancel();
+      res.success = true;
+    }
+    static void manualCallback(const navigator_msgs::ShooterManual::Request &req, navigator_msgs::ShooterManual::Response &res)
+    {
+      autoController.cancel();
+      feeder.set(req.feeder);
+      shooter.set(req.shooter);
+    }
+    #else
     static void fireCallback(const std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
     {
       autoController.shoot();
@@ -222,47 +388,40 @@ class Comms
       autoController.cancel();
       feeder.set(req.feeder);
       shooter.set(req.shooter);
-    }
-    //~ static void messageCallback(const std_msgs::String& str_msg)
-    //~ {
-      //~ String s = str_msg.data;
-      //~ if (s == "flyon")
-        //~ shooter.on();
-      //~ else if (s == "flyoff")
-        //~ shooter.off();
-      //~ else if (s == "feedon")
-        //~ feeder.on();
-      //~ else if (s == "feedoff")
-        //~ feeder.off();
-      //~ else if (s == "feedreverse")
-        //~ feeder.reverse();
-      //~ else if (s == "shoot")
-        //~ autoController.shoot();
-      //~ else if (s == "cancel")
-        //~ autoController.cancel();
-      //~ else if (s == "ledon")
-        //~ digitalWrite(13,HIGH);
-      //~ else if (s == "ledoff")
-        //~ digitalWrite(13,LOW);
-    //~ }
+      res.success = true;
+    }    
+    #endif
+
   public:
     Comms() :
-      str_msg(),
-      //~ sub("/shooter/control",&messageCallback),
+      #ifdef USE_LINEAR_FEEDER
+      fireService("/shooter/fire", &fireCallback),
+      loadService("/shooter/load", &loadCallback),
+      cancelService("/shooter/cancel", &cancelCallback),
+      manualService("/shooter/manual",&manualCallback)     
+      #else
       fireService("/shooter/fire", &fireCallback),
       cancelService("/shooter/cancel", &cancelCallback),
       manualService("/shooter/manual",&manualCallback)
-      //chatter("chatter", &str_msg)
+      #endif
     {
       pinMode(13,OUTPUT);
     }
     void init()
     {
       nh.initNode();
-      //~ nh.subscribe(sub);
+
+      #ifdef USE_LINEAR_FEEDER
+      nh.advertiseService(fireService);
+      nh.advertiseService(loadService);
+      nh.advertiseService(cancelService);
+      nh.advertiseService(manualService);
+      autoController.init(nh);
+      #else
       nh.advertiseService(fireService);
       nh.advertiseService(cancelService);
       nh.advertiseService(manualService);
+      #endif
     }
     void run()
     {
