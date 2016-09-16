@@ -131,10 +131,37 @@
           <distortionT2>0</distortionT2>
         </plugin>
       </sensor>
+
+      <sensor name="sick_lidar" type="ray">
+        <pose>.54 0 -.6  0 0 0</pose>
+        <visualize>true</visualize>
+        <update_rate>25</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>1080</samples>
+              <resolution>1</resolution>
+              <min_angle>-2.356194</min_angle>
+              <max_angle>2.356194</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.5</min>
+            <max>30.0</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+        <plugin name="hokuyo_node" filename="libgazebo_ros_laser.so">
+          <topicName>scan</topicName>
+          <frameName>sick</frameName>
+        </plugin>
+      </sensor>
     </link>
+
     <plugin name="navigator_buoyancy" filename="libnavigator_buoyancy.so">
       <fluid_density>1000</fluid_density>
       <drag_coefficient>1</drag_coefficient>
+      <model_z_offset>-1.2</model_z_offset>
       <link name="base_link">
         <center_of_volume>0 0 0</center_of_volume>
         <volume>2</volume>
