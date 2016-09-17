@@ -37,13 +37,15 @@ class Navigator(object):
         defer.returnValue(self)
 
     @property
+    @util.cancellableInlineCallbacks
     def pose(self):
-        last_odom_msg = self._odom_sub.get_last_message()
-        return odometry_to_numpy(last_odom_msg)[0]
+        last_odom_msg = yield self._odom_sub.get_next_message()
+        defer.returnValue(odometry_to_numpy(last_odom_msg)[0])
 
     @property
+    @util.cancellableInlineCallbacks
     def ecef_pose(self):
-        last_odom_msg = self._ecef_odom_sub.get_last_message()
+        last_odom_msg = yield self._ecef_odom_sub.get_next_message()
         return odometry_to_numpy(last_odom_msg)[0]
 
     @property

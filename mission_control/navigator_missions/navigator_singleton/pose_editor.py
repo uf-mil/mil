@@ -80,21 +80,20 @@ class PoseEditor2(object):
         yield movement.go(speed=1)
         Will yaw right .707 radians from the original orientation regardless of the current orientation
     '''
-    def __init__(self, nav, frame_id):
+    def __init__(self, nav, _pose=None):
         self.nav = nav
-        self.frame_id = frame_id
-
-        self.position, self.orientation = nav.pose
-
-    def __str__(self):
-        return "{} - p: {}, q: {}".format(self.frame_id, self.position, self.orientation)
+        self.position, self.orientation = [nav.pose if _pose is None else _pose]
 
     def __repr__(self):
-        return np.array(self.position, self.orientation)
+        return "{} - p: {}, q: {}".format(self.frame_id, self.position, self.orientation)
 
     @property
     def _rot(self):
         return transformations.quaternion_matrix(self.orientation)[:3, :3]
+
+    @property
+    def pose(self):
+        return [self.position, self.orientation]
 
     @property
     def distance(self):
@@ -109,12 +108,11 @@ class PoseEditor2(object):
 
     def set_position(self, position, unit='m'):
         self.position = np.array(position) * UNITS[unit]
-        return self
+        return PoseEditor2(self.nav, self.pose)
 
     def rel_position(self, rel_pos, unit='m'):
         position = self.position + self._rot.dot(np.array(rel_pos))
-        self.set_position(position, unit)
-        return self
+        return self.set_position(position, unit)
 
     def forward(self, dist, unit='m'):
         return self.rel_position([dist, 0, 0], unit)
@@ -165,10 +163,21 @@ class PoseEditor2(object):
         enu_vector[2] = 0  # We don't want to move in the z at all
         return self.set_position(enu_pos + enu_vector)
 
+    def circle_point(self, point, radius, granulartiy=6):
+        '''
+        Circle a point whilst looking at it
+        This returns a generator, so for use:
+            circle = navigator.move.circle_point(point, 5)
+            for p in circle:
+                yield p.go()
+        '''
+        for p in range(granulartiy):
+
+
     # When C3 gets replaced, these may go away
     def as_MoveToGoal(self, linear=[0, 0, 0], angular=[0, 0, 0], **kwargs):
         return MoveToGoal(
-            header=make_header(self.frame_id),
+            header=make_header(),
             posetwist=self.as_PoseTwist(linear, angular),
             **kwargs
         )
