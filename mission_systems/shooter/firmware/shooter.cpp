@@ -248,21 +248,25 @@ class AutoController
       nh.getParam("~controller/fire/extend_time_millis", (int *) &QUICKFIRE_TIME);
       nh.getParam("~controller/fire/shoot_time_millis", (int *) &SHOOT_TIME);
     }
-    void load()
+    bool load()
     {
+      if (state != 0 || loaded) return false;
       start_load_time = millis();
       loaded = false;
       state = 1;
+      return true;
     }
-    void fire()
+    bool fire()
     {
+      if (state != 0 || !loaded) return false;
       start_fire_time = millis();
       state = 2;
+      return true;
     }
     void cancel()
     {
       feeder.off();
-			shooter.off();
+      shooter.off();
       reset();
     }
     void run()
@@ -299,38 +303,38 @@ class AutoController
     unsigned long start_shoot_time;
     bool auto_shoot;
   public:
-		AutoController()
-		{
-			start_shoot_time = 0;
-			auto_shoot = false;
-		}
+    AutoController()
+    {
+      start_shoot_time = 0;
+      auto_shoot = false;
+    }
     void shoot()
     {
       feeder.off();
-			shooter.off();
-			auto_shoot = true;
-			start_shoot_time = millis();
+      shooter.off();
+      auto_shoot = true;
+      start_shoot_time = millis();
     }
-		void cancel()
+    void cancel()
     {
-			feeder.off();
-			shooter.off();
-			auto_shoot = false;
-		}
+      feeder.off();
+      shooter.off();
+      auto_shoot = false;
+    }
     bool shooting()
     {
       return auto_shoot;
     }
-		void run()
-		{
-			if (auto_shoot)
-			{
-				unsigned long time_since_start = millis() - start_shoot_time;
-				if (time_since_start < SPIN_UP_TIME) shooter.on();
-				else if (time_since_start > SPIN_UP_TIME && time_since_start < TOTAL_TIME) feeder.on(); //feeder.motor.set(FEED_SPEED);
-				else if (time_since_start > TOTAL_TIME) cancel();
-			}
-		}	
+    void run()
+    {
+      if (auto_shoot)
+      {
+        unsigned long time_since_start = millis() - start_shoot_time;
+        if (time_since_start < SPIN_UP_TIME) shooter.on();
+        else if (time_since_start > SPIN_UP_TIME && time_since_start < TOTAL_TIME) feeder.on(); //feeder.motor.set(FEED_SPEED);
+        else if (time_since_start > TOTAL_TIME) cancel();
+      }
+    }	
 };
 #endif
 AutoController autoController;
@@ -353,13 +357,11 @@ class Comms
     #ifdef USE_LINEAR_FEEDER
     static void fireCallback(const std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
     {
-      autoController.fire();
-      res.success = true;
+      res.success = autoController.fire();
     }
     static void loadCallback(const std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
     {
-      autoController.load();
-      res.success = true;
+      res.success = autoController.load();;
     }
     static void cancelCallback(const std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
     {
