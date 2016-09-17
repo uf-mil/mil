@@ -6,7 +6,7 @@ from tf import transformations
 from nav_msgs.msg import Odometry
 from uf_common.msg import PoseTwistStamped, PoseTwist, MoveToGoal
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Point, Vector3, Twist
-from navigator_tools import rosmsg_to_numpy, make_header
+from navigator_tools import rosmsg_to_numpy, make_header, normalize
 from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
@@ -80,12 +80,14 @@ class PoseEditor2(object):
         yield movement.go(speed=1)
         Will yaw right .707 radians from the original orientation regardless of the current orientation
     '''
-    def __init__(self, nav, _pose=None):
+    def __init__(self, nav, pose):
         self.nav = nav
-        self.position, self.orientation = [nav.pose if _pose is None else _pose]
+
+        # Right now position is stored as a 3d vector - should this be changed?
+        self.position, self.orientation = pose
 
     def __repr__(self):
-        return "{} - p: {}, q: {}".format(self.frame_id, self.position, self.orientation)
+        return "p: {}, q: {}".format(self.position, self.orientation)
 
     @property
     def _rot(self):
@@ -97,7 +99,7 @@ class PoseEditor2(object):
 
     @property
     def distance(self):
-        diff = self.position - self.nav.enu_pose[0]
+        diff = self.position - self.nav.pose[0]
         return np.linalg.norm(diff)
 
     def go(self, *args, **kwargs):
@@ -106,39 +108,32 @@ class PoseEditor2(object):
         goal = self.nav._moveto_action_client.send_goal(self.as_MoveToGoal(*args, **kwargs))
         return goal.get_result()
 
-    def set_position(self, position, unit='m'):
-        self.position = np.array(position) * UNITS[unit]
-        return PoseEditor2(self.nav, self.pose)
+    def set_position(self, position):
+        return PoseEditor2(self.nav, [np.array(position), np.array(self.orientation)])
 
-    def rel_position(self, rel_pos, unit='m'):
+    def rel_position(self, rel_pos):
         position = self.position + self._rot.dot(np.array(rel_pos))
-        return self.set_position(position, unit)
+        return self.set_position(position)
 
     def forward(self, dist, unit='m'):
-        return self.rel_position([dist, 0, 0], unit)
+        return self.rel_position([dist * UNITS[unit], 0, 0])
 
     def backward(self, dist, unit='m'):
-        return self.rel_position([-dist, 0, 0], unit)
+        return self.rel_position([-dist * UNITS[unit], 0, 0])
 
     def left(self, dist, unit='m'):
-        return self.rel_position([0, dist, 0], unit)
+        return self.rel_position([0, dist * UNITS[unit], 0])
 
     def right(self, dist, unit='m'):
-        return self.rel_position([0, -dist, 0], unit)
+        return self.rel_position([0, -dist  * UNITS[unit], 0])
 
     # Orientation
     def set_orientation(self, orientation):
         if orientation.shape == (4, 4):
             # We're getting a homogeneous rotation matrix - not a quaternion
             orientation = transformations.quaternion_from_matrix(orientation)
-        self.orientation = orientation
-        return self
 
-    def look_at_rel(self, rel_point):
-        return self.set_orientation(look_at_without_pitching(rel_point))  # Using no pitch here since we are 2D
-
-    def look_at(self, point):
-        return self.look_at_rel(point - self.position)
+        return PoseEditor2(self.nav, [self.position, orientation])
 
     def yaw_left(self, angle, unit='rad'):
         return self.set_orientation(transformations.quaternion_multiply(
@@ -149,12 +144,22 @@ class PoseEditor2(object):
     def yaw_right(self, angle, unit='rad'):
         return self.yaw_left(-angle, unit)
 
+    # ====== Some more advanced movements =========================
+
+    def look_at_rel(self, rel_point):
+        return self.set_orientation(look_at_without_pitching(rel_point))  # Using no pitch here since we are 2D
+
+    def look_at(self, point):
+        return self.look_at_rel(point - self.position)
+
     def to_lat_long(self, lat, lon, alt=0):
         '''
         Go to a lat long position and keep the same orientation
         Note: lat and long need to be degrees
+
+        ****TO TEST****
         '''
-        ecef_pos, enu_pos = self.nav.ecef_pose[0], self.nav.enu_pose[0]
+        ecef_pos, enu_pos = self.nav.ecef_pose[0], self.nav.pose[0]
 
         # These functions want radians
         lat, lon = np.radians([lat, lon], dtype=np.float64)
@@ -163,16 +168,29 @@ class PoseEditor2(object):
         enu_vector[2] = 0  # We don't want to move in the z at all
         return self.set_position(enu_pos + enu_vector)
 
-    def circle_point(self, point, radius, granulartiy=6):
+    def circle_point(self, point, radius, granularity=8):
         '''
         Circle a point whilst looking at it
         This returns a generator, so for use:
-            circle = navigator.move.circle_point(point, 5)
+
+            circle = navigator.move.circle_point([1,2,0], 5)
             for p in circle:
                 yield p.go()
-        '''
-        for p in range(granulartiy):
 
+        '''
+        point = np.array(point)
+        angle_incrment = 2 * np.pi / granularity
+        sprinkles = transformations.euler_matrix(0, 0, angle_incrment)[:3, :3]
+
+        # Find first point to go to using boat rotation
+        next_point = np.append(normalize(self.nav.pose[0][:2] - point[:2]), 0)  # Doing this in 2d
+
+        for i in range(granularity + 1):
+            new = point + radius * next_point
+            yield self.set_position(new).look_at(point)  # Remember this is a generator - not a twisted yield
+            next_point = sprinkles.dot(next_point)
+
+        yield self.set_position(new).look_at(point)
 
     # When C3 gets replaced, these may go away
     def as_MoveToGoal(self, linear=[0, 0, 0], angular=[0, 0, 0], **kwargs):
@@ -184,7 +202,7 @@ class PoseEditor2(object):
 
     def as_Pose(self):
         return Pose(
-            position=Point(*self.position),
+            position=Point(*np.append(self.position[:2], 0)),  # Don't set waypoints out of the water plane
             orientation=Quaternion(*self.orientation),
         )
 
