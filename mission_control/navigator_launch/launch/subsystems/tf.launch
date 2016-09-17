@@ -5,7 +5,7 @@
     <!-- LIDAR -->
     <node pkg="tf" type="static_transform_publisher" name="lidar_tf" args="-.075 0 .44 0 0 0 1  /measurement /velodyne 100" />
     <node pkg="tf" type="static_transform_publisher" name="sick_tf" args=".54 0 -.6  0 0 0 1  /measurement /sick 100" />
-    
+
     <!-- Cameras -->
     <node pkg="tf" type="static_transform_publisher" name="stereo_tf" args="-.12 .1025 .17  0.5 -0.5  0.5  -0.5  /measurement /stereo_front 100" />
     <node pkg="tf" type="static_transform_publisher" name="right_camera_tf" args="0 0 0  0 0 0 1  /stereo_front /stereo_right_cam 100" />
@@ -21,6 +21,6 @@
         </rosparam>
         <remap from="orig_odom" to="ins_odom"/>
    </node>
-   
+
     <node pkg="nodelet" type="nodelet" args="standalone odometry_utils/odometry_to_tf" name="odometry_to_tf"/>
 </launch>
