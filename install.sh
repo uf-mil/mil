@@ -33,7 +33,7 @@ check_host() {
 	# Attempts to ping a host to make sure it is reachable
 	HOST="$1"
 
-	HOST_PING=$(ping -c 2 $HOST 2>&1| grep "% packet" | cut -d" " -f 6 | tr -d "%")
+	HOST_PING=$(ping -c 2 $HOST 2>&1 | grep "% packet" | cut -d" " -f 6 | tr -d "%")
 	if ! [ -z "${HOST_PING}" ]; then
 
 		# Uses packet loss percentage to determine if the connection is strong
@@ -41,11 +41,7 @@ check_host() {
 
 			# Will return true if ping was successful and packet loss was below 25%
 			return `true`
-		else
-			echo "There is a weak connection to the host"
 		fi
-	else
-		echo "The server was unreachable"
 	fi
 	return `false`
 }
@@ -145,6 +141,32 @@ elif ($INSTALL_NAV); then
 	INSTALL_SUB=true
 fi
 
+# The path to the user's bash configuration file
+BASHRC_FILE=~/.bashrc
+
+# Creates a temporary file for building the new bashrc file
+TMP_BASHRC=$(mktemp /tmp/update-bashrc.XXXXXX)
+
+# Finds the line number of the block header if it exists in the file
+MIL_LINE=`cat $BASHRC_FILE | grep "# Bash configurations for MIL" -n | cut -d ':' -f 1`
+
+# Preserves all of the users other bash configurations (ones above the MIL header)
+if [ -s $BASHRC_FILE ]; then
+
+	# If there is no MIL block, copies the old bashrc file to the new bashrc file
+	if [ -z "$MIL_LINE" ]; then
+		USERS_BASHRC="`cat $BASHRC_FILE`"
+		echo "$USERS_BASHRC" >> $TMP_BASHRC
+		echo "" >> $TMP_BASHRC
+
+	# If there is a MIL block, only copies the configurations above it
+	elif [ $(($MIL_LINE - 2)) -gt 0 ]; then
+		USERS_BASHRC="`head -$(($MIL_LINE - 2)) $BASHRC_FILE`"
+		echo "$USERS_BASHRC" >> $TMP_BASHRC
+		echo "" >> $TMP_BASHRC
+	fi
+fi
+
 
 #==================#
 # Pre-Flight Check #
@@ -173,7 +195,7 @@ if [ $USER != "root" ]; then
 	ROOT_CHECK=true
 	echo -n "[ " && instpass && echo -n "] "
 else
-	OS_CHECK=false
+	ROOT_CHECK=false
 	echo -n "[ " && instfail && echo -n "] "
 fi
 echo "Running user check"
@@ -254,10 +276,10 @@ sudo apt-get install -qq ros-indigo-gazebo7-msgs ros-indigo-gazebo7-ros ros-indi
 
 # Source ROS configurations for bash on this user account
 source /opt/ros/indigo/setup.bash
-if !(cat ~/.bashrc | grep --quiet "source /opt/ros"); then
-	echo "" >> ~/.bashrc
-	echo "# Sets up the shell environment for ROS" >> ~/.bashrc
-	echo "source /opt/ros/indigo/setup.bash" >> ~/.bashrc
+if !(cat $TMP_BASHRC | grep --quiet "source /opt/ros"); then
+	echo "" >> $TMP_BASHRC
+	echo "# Sets up the shell environment for ROS" >> $TMP_BASHRC
+	echo "source /opt/ros/indigo/setup.bash" >> $TMP_BASHRC
 fi
 
 # Get information about ROS versions
@@ -294,8 +316,8 @@ fi
 
 # Source the workspace's configurations for bash on this user account
 source "$CATKIN_DIR/devel/setup.bash"
-if !(cat ~/.bashrc | grep --quiet "source $CATKIN_DIR/devel/setup.bash"); then
-	echo "source $CATKIN_DIR/devel/setup.bash" >> ~/.bashrc
+if !(cat $TMP_BASHRC | grep --quiet "source $CATKIN_DIR/devel/setup.bash"); then
+	echo "source $CATKIN_DIR/devel/setup.bash" >> $TMP_BASHRC
 fi
 
 # Check if the Navigator repository is present; if it isn't, download it
@@ -459,72 +481,202 @@ if ($INSTALL_SUB); then
 	sudo pip install -q -U crc16
 fi
 
-#==========================#
-# Networking               #
-#==========================#
-   BASHRC_STR="
-#begin created-by-navigator-network-script
-REMOTE_ROSCORE_HOST=wamv #Change this if connecting to a different roscore
-REMOTE_ROSCORE_URL=http://\$REMOTE_ROSCORE_HOST:11311
+#=========================#
+# Bashrc Alias Management #
+#=========================#
+
+BASHRC_STR="# The hostnames for all devices that run a remote roscore
+SUB_HOST=mil-sub-sub8.ad.mil.ufl.edu
+NAV_HOST=mil-nav-wamv.ad.mil.ufl.edu
+SHT_HOST=mil-shuttle.ad.mil.ufl.edu
+JN5_HOST=mil-johnny-five.ad.mil.ufl.edu
+
 check_host() {
-  # Attempts to ping a host to make sure it is reachable
-  HOST=\"\$1\"
 
-  HOST_PING=\$(ping -w 1 -c 2 \$HOST 2>&1| grep \"% packet\" | cut -d\" \" -f 6 | tr -d \"%\")
-  if ! [ -z "\${HOST_PING}" ]; then
-    # Uses packet loss percentage to determine if the connection is strong
-    if [ \$HOST_PING -lt 25 ]; then
+	# Attempts to ping a host to make sure it is reachable
+	HOST=\"\$1\"
 
-      # Will return true if ping was successful and packet loss was below 25%
-      echo \"true\"
-    else
-      echo \"There is a weak connection to the host\"
-    fi
-  else
-    echo \"The server was unreachable\"
-  fi
-}
-is-remote-roscore-up()
-{
-  echo \"\$(check_host \"\$REMOTE_ROSCORE_HOST\")\"
-}
-set-ros-ip()
-{
-  local_ip=\$(hostname -I)
-  if [[ "\$local_ip"  == \"\" ]]; then #if network not connected, set ROS_HOSTNAME to localhost for local roscore
-    unset ROS_IP
-    export ROS_HOSTNAME=localhost
-  else #if connected to a network, set ROS_IP to local ip address
-    unset ROS_HOSTNAME
-    export ROS_IP=\$local_ip
+	HOST_PING=\$(ping -w 1 -c 2 \$HOST 2>&1 | grep \"% packet\" | cut -d\" \" -f 6 | tr -d \"%\")
+	if ! [ -z \"\${HOST_PING}\" ]; then
 
-  fi
-}
-set-ros-master-uri()
-{
-  if [[ \$(is-remote-roscore-up) == true ]]; then #If navigator network is connected, set correct ROS env
-    export ROS_MASTER_URI=http://\$REMOTE_ROSCORE_URL
-  else
-    export ROS_MASTER_URI=http://localhost:11311
-  fi
-}
-set-ros-env()
-{
-  set-ros-ip
-  set-ros-master-uri
-}
-alias rosenv='echo ROS_MASTER_URI=\$ROS_MASTER_URI   ROS_IP=\$ROS_IP   ROS_HOSTNAME=\$ROS_HOSTNAME' #for debugging
+		# Uses packet loss percentage to determine if the connection is strong
+		if [ \$HOST_PING -lt 25 ]; then
 
-#Checks if you're connected to wamv, and sets correct ROS_MASTER_URI if you are, sets to local otherwise
-#set-ros-env # #Uncomment this line for the functionality described above to be run in each new terminal window
-#end created-by-navigator-network-script
-"
-if grep --quiet created-by-navigator-network-script $HOME/.bashrc; then
-  echo "Previously configured .bashrc, skipping..."
-else
-  echo "$BASHRC_STR" >> $HOME/.bashrc
-  echo instlog "Network aliases added to .bashrc, run set-ros-env to set the correct ros enviroment variables"
-fi
+			# Will return true if ping was successful and packet loss was below 25%
+			return \`true\`
+		fi
+	fi
+	return \`false\`
+}
+
+check_connection() {
+	if (check_host \"\$SUB_HOST\"); then
+		SUB_CHECK=true
+	else
+		SUB_CHECK=false
+	fi
+	if (check_host \"\$NAV_HOST\"); then
+		NAV_CHECK=true
+	else
+		NAV_CHECK=false
+	fi
+	if (check_host \"\$SHT_HOST\"); then
+		SHT_CHECK=true
+	else
+		SHT_CHECK=false
+	fi
+	if (check_host \"\$JN5_HOST\"); then
+		JN5_CHECK=true
+	else
+		JN5_CHECK=false
+	fi
+
+	if ([ \"\$SUB_CHECK\" = \"false\" ] && [ \"\$NAV_CHECK\" == \"false\" ]&&\\
+	    [ \"\$SHT_CHECK\" = \"false\" ] && [ \"\$JN5_CHECK\" == \"false\" ]); then
+		echo \"None of the MIL roscores are available on this network\"
+	else
+		if [ \"\$SUB_CHECK\" = \"true\" ]; then
+			echo \"SubjuGator is accessible on this network\"
+		fi
+		if [ \"\$NAV_CHECK\" = \"true\" ]; then
+			echo \"Navigator is accessible on this network\"
+		fi
+		if [ \"\$SHT_CHECK\" = \"true\" ]; then
+			echo \"Shuttle is accessible on this network\"
+		fi
+		if [ \"\$JN5_CHECK\" = \"true\" ]; then
+			echo \"Johnny Five is accessible on this network\"
+		fi
+	fi
+}
+
+set_ros_ip() {
+	LOCAL_IP=\"\`ip route get 1 | awk '{print \$NF; exit}'\`\"
+
+	# Unsets ROS_HOSTNAME and sets ROS_IP to the IP on this machine's main NIC
+	unset ROS_HOSTNAME
+	export ROS_IP=\$LOCAL_IP
+}
+
+unset_ros_ip() {
+
+	# Unsets ROS_IP and sets ROS_HOSTNAME to localhost
+	unset ROS_IP
+	export ROS_HOSTNAME=localhost
+}
+
+set_ros_master() {
+
+	# Sets ROS_MASTER_URI to the hostname of the correct MIL roscore
+	export ROS_MASTER_URI=\$REMOTE_ROSCORE_URI
+	echo \"The master roscore is set to \$REMOTE_ROSCORE_URI\"
+}
+
+unset_ros_master() {
+
+	# Sets ROS_MASTER_URI to point back to localhost
+	export ROS_MASTER_URI=http://localhost:11311
+	echo \"The master roscore is set to this machine\"
+}
+
+ros_connect() {
+	check_connection
+
+	# If none of the MIL roscores are accessible, use localhost as the default roscore
+	if ([ \"\$SUB_CHECK\" = \"false\" ] && [ \"\$NAV_CHECK\" == \"false\" ] &&\\
+	    [ \"\$SHT_CHECK\" = \"false\" ] && [ \"\$JN5_CHECK\" == \"false\" ]); then
+		ros_disconnect
+
+	# If just one MIL roscore was accessible, connect directly to that roscore
+	elif ([ \"\$SUB_CHECK\" = \"true\" ] && [ \"\$NAV_CHECK\" == \"false\" ] &&\\
+	      [ \"\$SHT_CHECK\" = \"false\" ] && [ \"\$JN5_CHECK\" == \"false\" ]); then
+		REMOTE_ROSCORE_URI=http://\$SUB_HOST:11311
+		set_ros_ip
+		set_ros_master
+	elif ([ \"\$SUB_CHECK\" = \"false\" ] && [ \"\$NAV_CHECK\" == \"true\" ] &&\\
+	      [ \"\$SHT_CHECK\" = \"false\" ] && [ \"\$JN5_CHECK\" == \"false\" ]); then
+		REMOTE_ROSCORE_URI=http://\$NAV_HOST:11311
+		set_ros_ip
+		set_ros_master
+	elif ([ \"\$SUB_CHECK\" = \"false\" ] && [ \"\$NAV_CHECK\" == \"false\" ] &&\\
+	      [ \"\$SHT_CHECK\" = \"true\" ] && [ \"\$JN5_CHECK\" == \"false\" ]); then
+		REMOTE_ROSCORE_URI=http://\$SHT_HOST:11311
+		set_ros_ip
+		set_ros_master
+	elif ([ \"\$SUB_CHECK\" = \"false\" ] && [ \"\$NAV_CHECK\" == \"false\" ] &&\\
+	      [ \"\$SHT_CHECK\" = \"false\" ] && [ \"\$JN5_CHECK\" == \"true\" ]); then
+		REMOTE_ROSCORE_URI=http://\$JN5_HOST:11311
+		set_ros_ip
+		set_ros_master
+
+	# If multiple roscores were reachable, allow the user to select one
+	else
+		echo \"\"
+		echo \"Multiple MIL roscores were detected!\"
+		if ([ \"\$SUB_CHECK\" = \"true\" ]); then
+			echo \"	1. SubjuGator\"
+		fi
+		if ([ \"\$NAV_CHECK\" = \"true\" ]); then
+			echo \"	2. Navigator\"
+		fi
+		if ([ \"\$SHT_CHECK\" = \"true\" ]); then
+			echo \"	3. Shuttle\"
+		fi
+		if ([ \"\$JN5_CHECK\" = \"true\" ]); then
+			echo \"	4. Johnny Five\"
+		fi
+		echo \"\"
+		echo -n \"Select a roscore to connect to: \"
+		read SELECTION
+
+		if [ \"\$SELECTION\" = \"1\" ]; then
+			REMOTE_ROSCORE_URI=http://\$SUB_HOST:11311
+			set_ros_ip
+			set_ros_master
+		elif [ \"\$SELECTION\" = \"2\" ]; then
+			REMOTE_ROSCORE_URI=http://\$NAV_HOST:11311
+			set_ros_ip
+			set_ros_master
+		elif [ \"\$SELECTION\" = \"3\" ]; then
+			REMOTE_ROSCORE_URI=http://\$SHT_HOST:11311
+			set_ros_ip
+			set_ros_master
+		elif [ \"\$SELECTION\" = \"4\" ]; then
+			REMOTE_ROSCORE_URI=http://\$JN5_HOST:11311
+			set_ros_ip
+			set_ros_master
+		else
+			echo \"Invalid selection value, no roscore selected\"
+		fi
+	fi
+}
+
+ros_disconnect() {
+
+	# Disconnects from any remote roscore and connects to the local one
+	unset_ros_ip
+	unset_ros_master
+}
+
+# Prints debugging output for the master roscore that is currently selected
+alias rosenv='echo \"ROS_IP=\$ROS_IP
+ROS_HOSTNAME=\$ROS_HOSTNAME
+ROS_MASTER_URI=\$ROS_MASTER_URI\"'"
+
+# Writes the block header to the new bashrc file
+echo "# Bash configurations for MIL (any additions below this block will be deleted)" >> $TMP_BASHRC
+
+# Writes the bashrc alias string to the new bashrc file
+echo "$BASHRC_STR" >> $TMP_BASHRC
+
+# Copies all entries in the new bashrc file to the machine's bashrc file
+cat $TMP_BASHRC > $BASHRC_FILE
+
+# Removes the temporary file used for building the new bashrc file
+rm -rf $TMP_BASHRC
+
+instlog "The bashrc file has been updated with the current aliases"
+
 
 #==========================#
 # Finalization an Clean Up #
