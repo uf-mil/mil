@@ -177,12 +177,12 @@ class AutoController
 {
   private:
     //All times in milliseconds
-    static unsigned long SPIN_UP_TIME; //Time to spin up flywheels before feeding balls in
-    static unsigned long RETRACT_TIME; //Time to retract actuator to allow ball to fall into feeding tube
-    static unsigned long LOAD_TIME; //Time to extend actuator to preload ball for quick firing
-    static unsigned long QUICKFIRE_TIME; //Time to extend actuator with preloaded ball for quick firing
-    static unsigned long MID_LOAD_PAUSE;
-    static unsigned long SHOOT_TIME;
+    static int SPIN_UP_TIME; //Time to spin up flywheels before feeding balls in
+    static int RETRACT_TIME; //Time to retract actuator to allow ball to fall into feeding tube
+    static int LOAD_TIME; //Time to extend actuator to preload ball for quick firing
+    static int QUICKFIRE_TIME; //Time to extend actuator with preloaded ball for quick firing
+    static int MID_LOAD_PAUSE;
+    static int SHOOT_TIME;
     /* Represents what the controller is currently doing
      * 0 = finished fireing/loading or stopped
      * 1 = preloading for quick fireing
@@ -242,11 +242,11 @@ class AutoController
     }
     void init(ros::NodeHandle& nh)
     {
-      nh.getParam("~controller/load/retract_time_millis", (int* ) &RETRACT_TIME);
-      nh.getParam("~controller/load/pause_time_millis", (int* ) &MID_LOAD_PAUSE);
-      nh.getParam("~controller/load/extend_time_millis", (int *) &LOAD_TIME);
-      nh.getParam("~controller/fire/extend_time_millis", (int *) &QUICKFIRE_TIME);
-      nh.getParam("~controller/fire/shoot_time_millis", (int *) &SHOOT_TIME);
+      nh.getParam("~controller/load/retract_time_millis", &RETRACT_TIME);
+      nh.getParam("~controller/load/pause_time_millis", &MID_LOAD_PAUSE);
+      nh.getParam("~controller/load/extend_time_millis", &LOAD_TIME);
+      nh.getParam("~controller/fire/extend_time_millis", &QUICKFIRE_TIME);
+      nh.getParam("~controller/fire/shoot_time_millis", &SHOOT_TIME);
     }
     bool load()
     {
@@ -285,12 +285,12 @@ class AutoController
     }
 
 };
-unsigned long AutoController::SPIN_UP_TIME = 1000; //Time to spin up flywheels before feeding balls in
-unsigned long AutoController::RETRACT_TIME = 950; //Time to retract actuator to allow ball to fall into feeding tube
-unsigned long AutoController::LOAD_TIME = 500; //Time to extend actuator to preload ball for quick firing
-unsigned long AutoController::QUICKFIRE_TIME = 400; //Time to extend actuator with preloaded ball for quick firing
-unsigned long AutoController::MID_LOAD_PAUSE = 100;
-unsigned long AutoController::SHOOT_TIME = 1000;
+int AutoController::SPIN_UP_TIME = 1000; //Time to spin up flywheels before feeding balls in
+int AutoController::RETRACT_TIME = 950; //Time to retract actuator to allow ball to fall into feeding tube
+int AutoController::LOAD_TIME = 500; //Time to extend actuator to preload ball for quick firing
+int AutoController::QUICKFIRE_TIME = 400; //Time to extend actuator with preloaded ball for quick firing
+int AutoController::MID_LOAD_PAUSE = 100;
+int AutoController::SHOOT_TIME = 1000;
 #else
 class AutoController
 {
