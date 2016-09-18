@@ -68,7 +68,8 @@ class DetectDeliverMission:
   def findAndShoot():
     if not yield self.isFound():
       self.navigator.move.yaw_left(360, "deg").go()
-      while not yield self.isFound()
+      while not yield self.isFound():
+        print ".",
     print "Found"
     yield self.navigator.move.go() #Stop moving once shape seen
     if not yield self.isCentered()
@@ -78,7 +79,8 @@ class DetectDeliverMission:
       elif self.center_error > 0:
           print "Turning Right"
           self.navigator.move.yaw_right(180,"deg").go()
-      while not yield self.isCentered()
+      while not yield self.isCentered():
+        print ".",
     print "Centered"
     yield self.navigator.move.go() #Stop moving once shape seen
     if not yield self.isCorrectDistance()
@@ -88,7 +90,8 @@ class DetectDeliverMission:
       elif self.width_error > 0:
         print "Moving Away"
         self.navigator.move.left(50).go()
-      while not yield self.isCorrectDistance()
+      while not yield self.isCorrectDistance():
+        print ".",
     yield self.navigator.move.go() #Stop moving once centered
     print "Correct Distance"
     yield self.navigator.move.go()
