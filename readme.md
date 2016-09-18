@@ -18,6 +18,8 @@ To get started working with the software on NaviGator please contact Zach Goins 
 
 Peruse the repository, check out some code. This [wiki](https://github.com/uf-mil/Navigator/wiki) is your master guide for both those things.
 
+The testing calendar, weekly recaps, and a list of upcomming events can be found [here](https://groups.google.com/forum/#!forum/uf-navigator-asv).
+
 # Setting Up the Development Environment
 
 NaviGator has many dependencies, but there is a convenient install script to fetch and install them. If the default install location of the catkin workspace (~/mil_ws) is not ideal, then a different path can be passed to the script with the -c option.
