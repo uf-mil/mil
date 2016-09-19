@@ -168,7 +168,7 @@ class PoseEditor2(object):
         enu_vector[2] = 0  # We don't want to move in the z at all
         return self.set_position(enu_pos + enu_vector)
 
-    def circle_point(self, point, radius, granularity=8):
+    def circle_point(self, point, radius, granularity=8, theta_offset=0):
         '''
         Circle a point whilst looking at it
         This returns a generator, so for use:
@@ -187,10 +187,10 @@ class PoseEditor2(object):
 
         for i in range(granularity + 1):
             new = point + radius * next_point
-            yield self.set_position(new).look_at(point)  # Remember this is a generator - not a twisted yield
+            yield self.set_position(new).look_at(point).yaw_left(theta_offset)  # Remember this is a generator - not a twisted yield
             next_point = sprinkles.dot(next_point)
 
-        yield self.set_position(new).look_at(point)
+        yield self.set_position(new).look_at(point).yaw_left(theta_offset)
 
     # When C3 gets replaced, these may go away
     def as_MoveToGoal(self, linear=[0, 0, 0], angular=[0, 0, 0], **kwargs):
