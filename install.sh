@@ -485,7 +485,9 @@ fi
 # Bashrc Alias Management #
 #=========================#
 
-BASHRC_STR="# The hostnames for all devices that run a remote roscore
+BASHRC_STR="
+# Bash configurations for MIL (any additions below this block will be deleted)
+# These are the hostnames for all devices that run a remote roscore
 SUB_HOST=mil-sub-sub8.ad.mil.ufl.edu
 NAV_HOST=mil-nav-wamv.ad.mil.ufl.edu
 SHT_HOST=mil-shuttle.ad.mil.ufl.edu
@@ -662,9 +664,6 @@ ros_disconnect() {
 alias rosenv='echo \"ROS_IP=\$ROS_IP
 ROS_HOSTNAME=\$ROS_HOSTNAME
 ROS_MASTER_URI=\$ROS_MASTER_URI\"'"
-
-# Writes the block header to the new bashrc file
-echo "# Bash configurations for MIL (any additions below this block will be deleted)" >> $TMP_BASHRC
 
 # Writes the bashrc alias string to the new bashrc file
 echo "$BASHRC_STR" >> $TMP_BASHRC
