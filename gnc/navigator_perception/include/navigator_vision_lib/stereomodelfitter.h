@@ -98,6 +98,21 @@ protected:
     cv::Matx34d* left_cam_mat = NULL;
     cv::Matx34d* right_cam_mat = NULL;
 
+    void decision_tree(vector<Eigen::Vector3d> feature_pts_3d,
+                       int curr,
+                       int remaining,
+                       vector<int> debug_points,
+                       bool debug);
+
+    void visualize_points(std::vector<Eigen::Vector3d> feature_pts_3d,
+                          Mat& current_image_left);
+
+
+    cv::Mat* current_image_left = NULL;
+    cv::Mat* current_image_right = NULL;
+    cv::Matx34d* left_cam_mat = NULL;
+    cv::Matx34d* right_cam_mat = NULL;
+
 
 private:
     double image_proc_scale;
