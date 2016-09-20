@@ -1,8 +1,0 @@
-# Set to true to request activation of an idling process
-# or to false to make an active process switch to idle mode
-bool activation_switch 
-
----
-
-# Will return true if request was successful
-bool success
