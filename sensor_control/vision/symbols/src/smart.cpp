@@ -4,8 +4,8 @@
 #include <image_transport/image_transport.h>
 #include <ros/ros.h>
 #include <sensor_msgs/image_encodings.h>
-#include "FrameProc.h"
-#include "ShapeFind.h"
+#include "ContourMethod/FrameProc.h"
+#include "ContourMethod/ShapeFind.h"
 #include <boost/circular_buffer.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
