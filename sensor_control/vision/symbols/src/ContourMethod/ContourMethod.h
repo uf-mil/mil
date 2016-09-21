@@ -1,5 +1,5 @@
 #pragma once
-#include "DockShapeVision.h"
+#include "../DockShapeVision.h"
 #include "FrameProc.h"
 #include "ShapeFind.h"
 #include <navigator_msgs/DockShapes.h>

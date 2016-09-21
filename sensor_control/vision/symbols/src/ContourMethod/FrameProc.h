@@ -7,7 +7,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/opencv.hpp"
 #include <ros/ros.h>
-#include "DebugWindow.h"
+#include "../DebugWindow.h"
 
 using namespace cv;
 

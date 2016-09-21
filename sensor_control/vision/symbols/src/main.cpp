@@ -14,7 +14,7 @@
 #include <navigator_msgs/DockShapes.h>
 
 #include "std_srvs/SetBool.h"
-#include "ContourMethod.h"
+#include "ContourMethod/ContourMethod.h"
 #include "DockShapeVision.h"
 
 

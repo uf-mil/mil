@@ -29,7 +29,7 @@ target_link_libraries(shape_filter ${catkin_LIBRARIES})
 add_dependencies(shape_filter navigator_msgs_generate_messages)
 
 
-add_executable(shape_finder src/DockShapeVision.cpp src/ContourMethod.cpp src/main.cpp src/FrameProc.cpp src/ShapeFind.cpp src/DebugWindow src/ShapeDetector.cpp )
+add_executable(shape_finder src/DebugWindow.cpp src/DockShapeVision.cpp src/main.cpp src/ContourMethod/ContourMethod.cpp src/ContourMethod/FrameProc.cpp src/ContourMethod/ContourMethod.cpp src/ContourMethod/ShapeFind.cpp  src/ContourMethod/ShapeDetector.cpp )
 add_dependencies(shape_finder navigator_msgs_generate_messages)
 target_link_libraries(shape_finder ${catkin_LIBRARIES})
 
