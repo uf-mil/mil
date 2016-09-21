@@ -38,20 +38,20 @@ class Navigator(object):
 
         print "Waiting for odom..."
         yield self._odom_sub.get_next_message()  # We want to make sure odom is working before we continue
-        #yield self._ecef_odom_sub.get_next_message()  # Uncomment this on the real boat
+        yield self._ecef_odom_sub.get_next_message()
 
         defer.returnValue(self)
 
     @property
     @util.cancellableInlineCallbacks
     def tx_pose(self):
-        last_odom_msg = self._odom_sub.get_next_message()
+        last_odom_msg = yield self._odom_sub.get_next_message()
         defer.returnValue(odometry_to_numpy(last_odom_msg)[0])
 
     @property
     @util.cancellableInlineCallbacks
     def tx_ecef_pose(self):
-        last_odom_msg = self._ecef_odom_sub.get_next_message()
+        last_odom_msg = yield self._ecef_odom_sub.get_next_message()
         defer.returnValue(odometry_to_numpy(last_odom_msg)[0])
 
     @property
