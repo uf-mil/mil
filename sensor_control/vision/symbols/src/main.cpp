@@ -1,7 +1,5 @@
 #include "std_msgs/String.h"
 
-#include "FrameProc.h"
-#include "ShapeFind.h"
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 #include <ros/ros.h>
@@ -16,17 +14,17 @@
 #include <navigator_msgs/DockShapes.h>
 
 #include "std_srvs/SetBool.h"
+#include "ContourMethod.h"
+#include "DockShapeVision.h"
+
 
 using namespace cv;
 
 class ShooterVision {
   private:
+    DockShapeVision vision;
     // ros frame thing
     navigator_msgs::DockShapes symbols;
-    FrameProc fp;
-    ShapeFind blueFinder;
-    ShapeFind redFinder;
-    ShapeFind greenFinder;
     ros::NodeHandle nh_;
     image_transport::ImageTransport it_;
     image_transport::Subscriber image_sub_;
@@ -40,18 +38,13 @@ class ShooterVision {
     ShooterVision() :
       nh_("dock_shape_finder"),
       it_(nh_),
-      blueFinder(navigator_msgs::DockShape::BLUE), 
-      redFinder(navigator_msgs::DockShape::RED),
-      greenFinder(navigator_msgs::DockShape::GREEN)
+      vision(ContourMethod(nh_))
     {
-      fp.init(nh_);
-      ShapeDetector::init(nh_);
       nh_.param<std::string>("symbol_camera", camera_topic, "/right_camera/image_color");
       runService = nh_.advertiseService("run", &ShooterVision::runCallback, this);
       #ifdef DO_DEBUG
       DebugWindow::init();
       #endif
-
       foundShapesPublisher = nh_.advertise<navigator_msgs::DockShapes>("/dock_shapes/found_shapes", 1000);
       image_sub_ = it_.subscribe(camera_topic, 1, &ShooterVision::run, this);
     }
@@ -70,17 +63,9 @@ class ShooterVision {
         ROS_ERROR("cv_bridge exception: %s", e.what());
         return;
       }
-      // Convert Ros frame to opencv
       cv::waitKey(3);
-      // Process frame
-      fp.Prepare(cv_ptr->image);
       symbols.list.clear();
-
-      // Find shapes in each color
-      blueFinder.GetSymbols(fp.GetBlue(), &symbols);
-      redFinder.GetSymbols(fp.GetRed(), &symbols);
-      greenFinder.GetSymbols(fp.GetGreen(), &symbols);
-
+      vision.GetShapes(cv_ptr->image,symbols);
       // Publish to ros
       #ifdef DO_DEBUG
       DebugWindow::UpdateResults(symbols);
