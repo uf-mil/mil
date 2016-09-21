@@ -54,10 +54,10 @@
         <plugin name="stereo_left_camera_controller" filename="libgazebo_ros_camera.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>30</updateRate>
-          <cameraName>stereo/left</cameraName>
+          <cameraName>left</cameraName>
           <imageTopicName>image_raw</imageTopicName>
           <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-          <frameName>stereo_front</frameName>
+          <frameName>stereo_left_cam</frameName>
           <hackBaseline>0.089</hackBaseline>
           <distortionK1>0</distortionK1>
           <distortionK2>0</distortionK2>
@@ -87,10 +87,10 @@
         <plugin name="stereo_right_camera_controller" filename="libgazebo_ros_camera.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>30</updateRate>
-          <cameraName>stereo/right</cameraName>
+          <cameraName>right</cameraName>
           <imageTopicName>image_raw</imageTopicName>
           <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-          <frameName>stereo_front</frameName>
+          <frameName>stereo_right_cam</frameName>
           <hackBaseline>0.089</hackBaseline>
           <distortionK1>0</distortionK1>
           <distortionK2>0</distortionK2>
@@ -151,9 +151,39 @@
             <resolution>0.01</resolution>
           </range>
         </ray>
-        <plugin name="hokuyo_node" filename="libgazebo_ros_laser.so">
+        <plugin name="_sick_lidar" filename="libgazebo_ros_laser.so">
           <topicName>scan</topicName>
           <frameName>sick</frameName>
+        </plugin>
+      </sensor>
+
+      <sensor name="velodyne_lidar" type="ray">
+        <visualize>false</visualize>
+        <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>500</samples>
+              <min_angle>0</min_angle>
+              <max_angle>6.24</max_angle>
+            </horizontal>
+            <vertical>
+                <samples>16</samples>
+                <min_angle>-0.2617993878</min_angle>
+                <max_angle>0.2617993878</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.05</min>
+            <max>50.0</max>
+          </range>
+        </ray>
+        <plugin name="_velodyne_lidar" filename="libgazebo_ros_velodyne_laser.so">
+          <topicName>velodyne_points</topicName>
+          <frameName>velodyne</frameName>
+          <min_range>0.9</min_range>
+          <max_range>130.0</max_range>
+          <gaussianNoise>0.008</gaussianNoise>
         </plugin>
       </sensor>
     </link>

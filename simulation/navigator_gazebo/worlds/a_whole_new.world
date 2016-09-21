@@ -10,7 +10,7 @@
       <pose>0 0 0 0 3.1415 0</pose>
       <link name="link">
         <visual name="visual">
-          <transparency>0.6</transparency>
+          <transparency>0.1</transparency>
           <cast_shadows>false</cast_shadows>
           <geometry>
             <box>
@@ -44,13 +44,6 @@
             <emissive>0 0 0 1</emissive>
           </material>
         </visual>
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>300 300 .02</size>
-            </box>
-          </geometry>
-        </collision>
       </link>
     </model>
   </world>
