@@ -2,13 +2,8 @@
 import txros
 import rospy
 import std_srvs.srv
-from navigator_msgs.msg import DockShape
 import numpy as np
-from geometry_msgs.msg import Point
-import sensor_msgs.msg
-import nav_msgs.msg
-from navigator_tools import rosmsg_to_numpy
-import cv2
+from __future__ import division
 import time
 from twisted.internet import defer
 
@@ -46,7 +41,7 @@ class DetectDeliverMission:
   def isCentered(self):
     if not (yield self.isFound()):
       yield False
-    center = float(self.resp.symbol.CenterX) / self.resp.symbol.img_width
+    center = self.resp.symbol.CenterX / self.resp.symbol.img_width
     self.center_error = center - 0.5
     print "Center ", center
     yield abs(self.center_error) < self.error_threshold
@@ -61,7 +56,7 @@ class DetectDeliverMission:
     yield abs(self.width_error) < self.width_error_threshold
   @txros.util.cancellableInlineCallbacks
   def shootAllBalls(self):
-    for i in range(0,3):
+    for i in range(3):
       time.sleep(3)
       self.shooterLoad()
       time.sleep(5)
