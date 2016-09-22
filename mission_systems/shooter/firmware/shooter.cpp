@@ -418,7 +418,7 @@ class Comms
       nh.advertiseService(loadService);
       nh.advertiseService(cancelService);
       nh.advertiseService(manualService);
-      autoController.init(nh);
+      //autoController.init(nh);
       #else
       nh.advertiseService(fireService);
       nh.advertiseService(cancelService);
