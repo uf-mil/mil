@@ -87,6 +87,7 @@ namespace gazebo
     /// kg/m^3. Defaults to 1000, the fluid density of water.
     protected: double fluidDensity;
     protected: double dragCoeff;
+    protected: double modelZOffset;
 
     /// \brief Map of <link ID, point> pairs mapping link IDs to the CoV (center
     /// of volume) and volume of the link.

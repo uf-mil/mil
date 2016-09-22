@@ -27,11 +27,11 @@
   <!-- Buoy -->
   <node name="spawn_red_buoy" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/buoys/red.sdf -sdf
-      -x 15 -y 3 -z .08 -model red_buoy"
+      -x 15 -y 3 -z .3 -model red_buoy"
     output="screen" />
   <node name="spawn_green_buoy" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/buoys/green.sdf -sdf
-      -x 15 -y -2 -z .08 -model green_buoy"
+      -x 15 -y -7 -z .3 -model green_buoy"
     output="screen" />
 
   <node pkg="navigator_gazebo" type="gazebo_controller.py" name="gazebo_interface"/>

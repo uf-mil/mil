@@ -41,7 +41,7 @@ class BatteryMonitor():
     def __init__(self):
 
         # Initialize the average voltage to max
-        self.voltage = 29.4
+        self.voltage = None
 
         # Initialize a list to hold the 1000 most recent supply voltage readings
         # Holding 1000 values ensures that changes in the average are gradual rather than sharp
@@ -90,11 +90,12 @@ class BatteryMonitor():
         Publishes the average voltage across all four thrustersto the battery_voltage node as a standard Float32 message and runs
         the voltage_check
         '''
-        if (len(self.supply_voltages) > 0):
-            self.voltage = sum(self.supply_voltages) / len(self.supply_voltages)
+        if (self.voltage != None):
+            if (len(self.supply_voltages) > 0):
+                self.voltage = sum(self.supply_voltages) / len(self.supply_voltages)
 
-        self.pub_voltage.publish(self.voltage)
-        self.voltage_check()
+            self.pub_voltage.publish(self.voltage)
+            self.voltage_check()
 
     def voltage_check(self):
         '''

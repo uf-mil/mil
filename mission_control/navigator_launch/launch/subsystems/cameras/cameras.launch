@@ -1,0 +1,5 @@
+<launch>
+    <include file="$(find camera_setup)/launch/front_stereo.launch"/>
+    <!-- <include file="$(find camera_setup)/launch/downward.launch"/> -->
+    <include file="$(find camera_setup)/launch/right.launch"/>
+</launch>
