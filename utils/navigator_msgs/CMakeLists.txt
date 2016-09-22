@@ -32,6 +32,8 @@ add_service_files(
   StartGate.srv
   Bounds.srv
   CoordinateConversion.srv
+  StereoShapeDetector.srv
+  ScanTheCodeMission.srv
 )
 
 generate_messages(

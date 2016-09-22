@@ -32,7 +32,7 @@
 
 #include <navigator_vision_lib/cv_tools.hpp>
 #include <navigator_vision_lib/visualization.hpp>
-#include <sub8_msgs/TorpBoardPoseRequest.h>
+#include <navigator_msgs/StereoShapeDetector.h>
 
 #include "model.h"
 #include "stereomodelfitter.h"
@@ -51,17 +51,17 @@
   Warning:
   Because of its multithreadedness, this class cannot be copy constructed.
   For example, the following will not compile:
-    ScanTheCodeDetector tb_detector = ScanTheCodeDetector();
+    StereoShapeDetector tb_detector = ScanTheCodeDetector();
   Do this instead:
-    ScanTheCodeDetector tb_detector();
+    StereoShapeDetector tb_detector();
 */
 
-class ScanTheCodeDetector
+class StereoShapeDetector
 {
 
 public:
-    ScanTheCodeDetector();
-    ~ScanTheCodeDetector();
+    StereoShapeDetector();
+    ~StereoShapeDetector();
 
     // Public Variables
     double image_proc_scale, feature_min_distance;
@@ -76,43 +76,28 @@ private:
     bool looking_for_model = true;
     bool tracking_model = false;
 
-    //ATTRIBUTES:
 
-    // ROS
     ros::NodeHandle nh;
     ros::ServiceServer detection_switch;
-    ros::ServiceClient pose_client;
     image_transport::CameraSubscriber left_image_sub, right_image_sub;
-    image_transport::ImageTransport image_transport;
+    image_transport::ImageTransport image_transport = image_transport::ImageTransport(nh);
     image_transport::Publisher debug_image_pub;
     image_geometry::PinholeCameraModel left_cam_model, right_cam_model;
     nav::ImageWithCameraInfo left_most_recent;
     nav::ImageWithCameraInfo right_most_recent;
 
-    // Scan The Code Board detection will be attempted when true
     bool active;
-
-    // Goes into sequential id for pos_est srv request
     long long int run_id;
-
-    // To prevent invalid img pointers from being passed to toCvCopy (segfault)
     boost::mutex left_mtx, right_mtx;
+
+    bool mission_complete = false;
 
     // RVIZ
     nav::RvizVisualizer rviz;
 
-    // DBG images will be generated and published when true
-    bool generate_dbg_img;
-    cv::Mat debug_image;
-    cv::Rect upper_left, upper_right, lower_left, lower_right;
-
-
-    //METHODS:
-
-    // Callbacks
     bool detection_activation_switch(
-        std_srvs::SetBool::Request &req,
-        std_srvs::SetBool::Response &resp);
+        navigator_msgs::StereoShapeDetector::Request &req,
+        navigator_msgs::StereoShapeDetector::Response &resp);
 
     void left_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
                              const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);

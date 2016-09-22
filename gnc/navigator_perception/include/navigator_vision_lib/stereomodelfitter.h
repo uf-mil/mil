@@ -43,8 +43,9 @@ class StereoModelFitter
 {
 public:
 
-    StereoModelFitter(PerceptionModel model, image_transport::Publisher debug_publisher);
+    StereoModelFitter(PerceptionModel model);
     PerceptionModel model;
+
     bool determine_model_position(vector<Eigen::Vector3d>& model_position,
                                   vector<cv::Point>& model_position_2d,
                                   int max_corners,
@@ -74,7 +75,9 @@ protected:
                                      vector<Point> features_l,
                                      vector<Point> features_r);
 
-    void get_corresponding_pairs(vector<Point> features_l,
+    void get_corresponding_pairs(cv::Mat frame_l,
+                                 cv::Mat frame_r,
+                                 vector<Point> features_l,
                                  vector<Point> features_r,
                                  vector<Point>& features_l_out,
                                  vector<Point>& features_r_out,
@@ -107,7 +110,12 @@ protected:
 
 private:
     double image_proc_scale;
-    image_transport::Publisher debug_publisher;
+    ros::NodeHandle nh;
+    image_transport::ImageTransport image_transport = image_transport::ImageTransport(nh);
+    image_transport::Publisher debug_image_3dpoints = image_transport.advertise("stereo_model_fitter/debug_img/3dpoints", 1, true);
+    image_transport::Publisher debug_image_2dpoints = image_transport.advertise("stereo_model_fitter/debug_img/2dpoints", 1, true);
+
+
 };
 
 

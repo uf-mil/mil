@@ -1,0 +1,4 @@
+---
+bool tracking_model
+bool mission_complete
+string[] colors

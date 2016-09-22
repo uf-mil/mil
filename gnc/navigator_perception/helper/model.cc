@@ -1,9 +1,9 @@
 #include <navigator_vision_lib/model.h>
 
 
-PerceptionModel::PerceptionModel(float width, float height, int min_points)
-                                : width(width),
-                                  height(height),
+PerceptionModel::PerceptionModel(std::vector<float> model_params, int min_points)
+                                : width(model_params[0]),
+                                  height(model_params[1]),
                                   min_points(min_points)
 {
     unused_distances.push_back(width);
@@ -31,15 +31,38 @@ bool PerceptionModel::check_point(Eigen::Vector3d point, cv::Point point2d, cv::
     {
         return true;
     }
+
     Eigen::Vector3d starting_point = current_points[0];
     float dist_from_starting = (starting_point - point).norm();
+
+    if(check){
+      cv::Mat current_image_left = img.clone();
+      for(size_t i = 0; i < current_points.size(); i++)
+      {
+          Eigen::Vector3d pt = current_points[i];
+          cv::Matx41d position_hom(pt(0), pt(1), pt(2), 1);
+          cv::Matx31d pt_L_2d_hom = left_cam_mat * position_hom;
+          cv::Point2d L_center2d(pt_L_2d_hom(0) / pt_L_2d_hom(2), pt_L_2d_hom(1) / pt_L_2d_hom(2));
+          cv::Scalar color(255, 0, 255);
+          std::stringstream label;
+          label << i;
+          cv::circle(current_image_left, L_center2d, 5, color, -1);
+          cv::putText(current_image_left, label.str(), L_center2d, cv::FONT_HERSHEY_SIMPLEX,
+                  0.0015 * current_image_left.rows, cv::Scalar(0, 0, 0), 2);
+      }
+
+//      cv::imshow("hry", current_image_left);
+//      cv::waitKey(0);
+    }
+
+
     bool point_fits_model = false;
     double mindist = 100;
     double minel = -1;
     // Go through all the distances that haven't been used yet for this model
     for(float dist : unused_distances)
     {
-        float err = dist * .4;
+        float err = dist * .8;
         float upper = dist + err;
         float lower = dist - err;
 
@@ -70,7 +93,7 @@ bool PerceptionModel::check_point(Eigen::Vector3d point, cv::Point point2d, cv::
 
     // If the point fit the model, remove its corresponding distance from list of unused distances
     if(point_fits_model){
-       unused_distances.erase(std::remove(unused_distances.begin(), unused_distances.end(), minel), unused_distances.end());
+       //unused_distances.erase(std::remove(unused_distances.begin(), unused_distances.end(), minel), unused_distances.end());
     }
 
 
@@ -86,7 +109,7 @@ void PerceptionModel::remove_point(Eigen::Vector3d point, cv::Point point2d)
     ss << point(0) << point(1) << point(2);
     if(point_to_distance.find( ss.str()) != point_to_distance.end()){
       float dist = point_to_distance[ss.str()];
-      unused_distances.push_back(dist);
+      //unused_distances.push_back(dist);
       point_to_distance.erase(ss.str());
     }
 }
@@ -109,12 +132,12 @@ void PerceptionModel::visualize_points(std::vector<Eigen::Vector3d>  feature_pts
                     0.0015 * current_image_left.rows, cv::Scalar(0, 0, 0), 2);
         }
 
-    std::stringstream label;
-    label << min_cost;
-    cv::putText(current_image_left, label.str(), cv::Point2d(10,10), cv::FONT_HERSHEY_SIMPLEX,
-            0.0015 * current_image_left.rows, cv::Scalar(0, 0, 0), 2);
+//    std::stringstream label;
+//    label << min_cost;
+//    cv::putText(current_image_left, label.str(), cv::Point2d(10,10), cv::FONT_HERSHEY_SIMPLEX,
+//            0.0015 * current_image_left.rows, cv::Scalar(0, 0, 0), 2);
     cv::imshow(name, current_image_left);
-    cv::waitKey(33);
+    cv::waitKey(0);
 }
 
 
@@ -126,8 +149,10 @@ bool PerceptionModel::get_model(std::vector<Eigen::Vector3d>& model3d, std::vect
 
     // Go through every potential model
     for(int i = 0; i != potential_models.size(); ++i){
+
         std::vector<Eigen::Vector3d> mymodel = potential_models[i];
         std::vector<cv::Point> mymodel_2d = potential_models_2d[i];
+        //visualize_points(mymodel, left_image, left_cam_mat, "sup", 0);
         double cost = 0;
         // Go through every point in this model
         for(int i = 0; i != min_points; ++i){
@@ -158,6 +183,8 @@ bool PerceptionModel::get_model(std::vector<Eigen::Vector3d>& model3d, std::vect
           double x = (10 * fabs(t1 - M_PI/2));
           cost += x;
 
+          cost += a[2] * 10;
+
         }
 
         if(cost < min_cost){
@@ -171,12 +198,7 @@ bool PerceptionModel::get_model(std::vector<Eigen::Vector3d>& model3d, std::vect
     if(potential_models.size() != 0 && min_cost < 2){
       //visualize_points(min_model, left_image, left_cam_mat, "WINNER", min_cost);
       cost_avg = (cost_avg * count + min_cost)/++count;
-//      std::cout<<"GOTMODEL"<<std::endl;
-//      std::cout<<cost_avg<<std::endl;
-//      std::cout<<min_cost<<std::endl;
       if(count > 5 && min_cost < cost_avg || min_cost < 1){
-
-//        std::cout<<"FOUND"<<std::endl;
         return true;
       }
 

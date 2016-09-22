@@ -1,5 +1,6 @@
 #include <navigator_vision_lib/object_tracker.hpp>
 
+
 void ObjectTracker::begin_tracking_object(std::vector<cv::Point> points, cv::Mat left_frame){
       orig_frame = left_frame;
       for(cv::Point p: points)
@@ -52,8 +53,6 @@ bool ObjectTracker::track_object(cv::Mat left_frame, std::vector<cv::Point2f>& p
         double t1 = acos(h);
         double diff = t1 - M_PI/2;
         if(fabs(diff) > M_PI/5) return false;
-
-
       }
 
       cv::Mat img_display;
@@ -63,6 +62,8 @@ bool ObjectTracker::track_object(cv::Mat left_frame, std::vector<cv::Point2f>& p
         cv::circle(img_display, p, 5, cv::Scalar(0,0,0), -1);
 
       }
+      debug_image_tracking_points.publish(nav::convert_to_ros_msg("mono8", img_display));
+      ros::spinOnce();
 
       prev_points = points_next;
       orig_frame = left_frame;

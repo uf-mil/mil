@@ -19,6 +19,8 @@
 #include <image_geometry/pinhole_camera_model.h>
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/image_encodings.h>
+#include <cv_bridge/cv_bridge.h>
+
 #include <ros/ros.h>
 
 // #define SEGMENTATION_DEBUG
@@ -92,6 +94,11 @@ Eigen::Vector3d lindstrom_triangulation(const cv::Point2d &pt1,
                                         const cv::Point2d &pt2,
                                         const Eigen::Matrix3d &essential,
                                         const Eigen::Matrix3d &R);
+
+
+sensor_msgs::ImagePtr convert_to_ros_msg(std::string type, cv::Mat image);
+
+void anisotropic_diffusion(const cv::Mat &src, cv::Mat &dest, int t_max);
 
 struct ImageWithCameraInfo {
   /**

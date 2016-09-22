@@ -4,6 +4,8 @@
 #include <opencv2/opencv.hpp>
 #include <Eigen/Core>
 #include <navigator_vision_lib/cv_tools.hpp>
+#include <ros/ros.h>
+#include <image_transport/image_transport.h>
 
 class ObjectTracker{
 public:
@@ -13,8 +15,12 @@ public:
 
 private:
   std::vector<cv::Point2f> prev_points;
-  int template_size = 20;
-  int search_size = 40;
+  cv::Mat orig_frame;
+
+  ros::NodeHandle nh;
+  image_transport::ImageTransport image_transport = image_transport::ImageTransport(nh);
+  image_transport::Publisher debug_image_tracking_points = image_transport.advertise("stereo_model_fitter/debug_img/tracking_points", 1, true);
+
 
   cv::Mat getROI(cv::Mat image, int point_x, int point_y, int size, cv::Rect& roi);
 
@@ -22,7 +28,6 @@ private:
 
   //DEBUG
 
-  cv::Mat orig_frame;
   int count = 0;
 };
 

@@ -12,7 +12,7 @@ class PerceptionModel
 {
 public:
 
-    PerceptionModel(float width, float height, int min_points);
+    PerceptionModel(std::vector<float> model_params, int min_points);
     ~PerceptionModel();
     float width, height;
     int min_points;

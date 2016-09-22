@@ -1,0 +1,7 @@
+<launch>
+  
+  <node pkg="navigator_perception" type="scan_the_code" name="stereo_shape_detector" output="screen">
+    <rosparam file="$(find navigator_launch)/config/stereo_shape_detector.yaml" command="load" ns="stereo_shape_detector" />
+  </node>
+
+</launch>
