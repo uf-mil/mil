@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import rospy
 from std_msgs.msg import String
-from navigator_alarm import single_alarm
+from sub8_alarm import single_alarm
+from twisted.internet import reactor
 import time
 
 
@@ -21,7 +22,7 @@ class KeepAliveListener(object):
     def check(self, *args):
         if self.need_kill() and self.last_msg != '':
             self.alarm.raise_alarm()
-            rospy.logwarn("NETWORK LOSS: KILLING BOAT")
+            rospy.logerr("NETWORK LOSS: KILLING BOAT")
         else:
             self.alarm.clear_alarm()
 

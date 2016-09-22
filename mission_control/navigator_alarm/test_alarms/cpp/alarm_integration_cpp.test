@@ -1,4 +1,0 @@
-<launch>
-  <node pkg="navigator_alarm" type="alarm_handler.py" name="alarm_handler" />
-  <test test-name="navigator_alarm_integration_cpp" name="alarm_helpers_test" pkg="navigator_alarm" type="alarm_integration_cpp_tests" />
-</launch>
