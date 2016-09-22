@@ -27,7 +27,7 @@
 
   <node name="spawn_scan_the_code" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/shapes/scan_the_code.sdf
-    -x 5 -y 5 -z 1.5 -sdf -model scan_the_code"
+    -x -5 -y 10 -z 1.5 -sdf -model scan_the_code"
     output="screen" />
 
 
