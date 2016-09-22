@@ -9,7 +9,7 @@ import numpy as np
 from os import path
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, CameraInfo
-from sub8_ros_tools.init_helpers import wait_for_param
+from navigator_tools.init_helpers import wait_for_param
 
 
 def get_parameter_range(parameter_root):
