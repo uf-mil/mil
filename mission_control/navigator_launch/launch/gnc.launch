@@ -15,10 +15,6 @@
 
     <include file="$(find navigator_launch)/launch/subsystems/tf.launch"/>
 
-    <!-- Alarms handlers -->
-    <node pkg="sub8_alarm" type="alarm_handler.py" name="alarm_handler"/>  <!-- TODO: Remove this dependacy, without destroying history -->
-    <node pkg="navigator_launch" type="keepalive_listener.py" name="keepalive_listener"/>
-
     <node name="wrench_arbiter" pkg="navigator_msg_multiplexer" type="wrench_arbiter.py"/>
 
     <node name="mrac" pkg="navigator_controller" type="mrac_controller.py"/>
