@@ -5,6 +5,10 @@ ContourMethod::ContourMethod(ros::NodeHandle& nh) :
   redFinder(navigator_msgs::DockShape::RED),
   greenFinder(navigator_msgs::DockShape::GREEN)
 {
+
+}
+void ContourMethod::init()
+{
   fp.init(nh);
   ShapeDetector::init(nh);
 }

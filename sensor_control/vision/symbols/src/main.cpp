@@ -22,7 +22,7 @@ using namespace cv;
 
 class ShooterVision {
   private:
-    DockShapeVision vision;
+    std::unique_ptr<DockShapeVision> vision;
     // ros frame thing
     navigator_msgs::DockShapes symbols;
     ros::NodeHandle nh_;
@@ -37,9 +37,10 @@ class ShooterVision {
   public:
     ShooterVision() :
       nh_("dock_shape_finder"),
-      it_(nh_),
-      vision(ContourMethod(nh_))
+      it_(nh_)
     {
+      vision.reset(new ContourMethod(nh_));
+      vision->init();
       nh_.param<std::string>("symbol_camera", camera_topic, "/right_camera/image_color");
       runService = nh_.advertiseService("run", &ShooterVision::runCallback, this);
       #ifdef DO_DEBUG
@@ -65,7 +66,7 @@ class ShooterVision {
       }
       cv::waitKey(3);
       symbols.list.clear();
-      vision.GetShapes(cv_ptr->image,symbols);
+      vision->GetShapes(cv_ptr->image,symbols);
       // Publish to ros
       #ifdef DO_DEBUG
       DebugWindow::UpdateResults(symbols);

@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
   geometry_msgs
+  navigator_msgs
 )
 find_package( OpenCV REQUIRED )
 

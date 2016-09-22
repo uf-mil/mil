@@ -12,4 +12,5 @@ class ContourMethod : public DockShapeVision
   public:
     ContourMethod(ros::NodeHandle& nh);
     void GetShapes(cv::Mat &frame,navigator_msgs::DockShapes& symbols);
+    void init();
 };
