@@ -66,6 +66,15 @@ def look_at_camera(forward, upish=UP):
     # assumes camera right-down-forward coordinate system
     return triad((forward, upish), (UP, [0, -1, 0]))
 
+def is_valid_point(nav, point):
+    # Check if an ENU point is in our range of operation (defined by rosparam /lla_bounds)
+    if len(nav.enu_bounds) == 2:
+        # Check if the points are in the specified range, disregarding Z data
+        return np.all(bounds[0][:2] < point[:2]) and np.all(cpoint[:2] < bounds[1][:2])
+    else:
+        # No bounds set therefore free roam
+        return True
+
 
 class PoseEditor2(object):
     '''
@@ -105,6 +114,7 @@ class PoseEditor2(object):
     def go(self, *args, **kwargs):
         # NOTE: C3 doesn't seems to handle different frames, so make sure all movements are in C3's
         #       fixed frame.
+
         goal = self.nav._moveto_action_client.send_goal(self.as_MoveToGoal(*args, **kwargs))
         return goal.get_result()
 
@@ -156,8 +166,6 @@ class PoseEditor2(object):
         '''
         Go to a lat long position and keep the same orientation
         Note: lat and long need to be degrees
-
-        ****TO TEST****
         '''
         ecef_pos, enu_pos = self.nav.ecef_pose[0], self.nav.pose[0]
 

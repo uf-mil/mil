@@ -17,6 +17,7 @@ from std_srvs.srv import SetBool, SetBoolRequest
 from navigator_tools import rosmsg_to_numpy, odometry_to_numpy
 import navigator_msgs.srv as navigator_srvs
 
+
 class Navigator(object):
     def __init__(self, nh):
         self.nh = nh
@@ -28,6 +29,8 @@ class Navigator(object):
         self.pose = None
         self.ecef_pose = None
 
+        self.enu_bounds = []
+
     @util.cancellableInlineCallbacks
     def _init(self):
         self._moveto_action_client = yield action.ActionClient(self.nh, 'moveto', MoveToAction)
@@ -36,6 +39,9 @@ class Navigator(object):
 
         self._change_wrench = yield self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
         self.tf_listener = yield tf.TransformListener(self.nh)
+
+        # Set bounds
+        yield self._make_bounds()
 
         print "Waiting for odom..."
         yield self._odom_sub.get_next_message()  # We want to make sure odom is working before we continue
@@ -58,6 +64,32 @@ class Navigator(object):
     @property
     def move(self):
         return PoseEditor2(self, self.pose)
+
+    @util.cancellableInlineCallbacks
+    def _make_bounds(self):
+        '''
+        Needs a box of lla bounds set in a rosparam: /lla_bounds
+        '''
+        if self.nh.has_param('lla_bounds'):
+            lla_bounds = self.nh.get_param('lla_bounds')
+            assert len(lla_bounds) == 4, 'Please define box: rosparam set /lla_bounds "[[lla1],[lla2],[lla3],[lla4]]"'
+            enu_bounds = []
+
+            enu_pos = yield self.tx_pose
+            ecef_pos = yield self.tx_ecef_pose
+            for (lat, lon, alt) in lla_bounds:
+                lat, lon = np.radians([lat, lon], dtype=np.float64)
+                ecef_vector = ecef_from_latlongheight(lat, lon, alt) - ecef_pos
+                enu_vector = enu_from_ecef(ecef_vector, ecef_pos)
+                enu_vector[2] = 0  # We don't want to move in the z at all
+
+                enu_bounds.append(enu_vector + enu_pos)
+
+            # Find two points that are the farthest from each other and use them as bounds for the region
+            arg_max_distance = np.argmax(np.linalg.norm(a - a[0], axis=1))
+            self.enu_bounds = [enu_bounds[0], enu_bounds[arg_max_distance]]
+        else:
+            print 'No bounds being used.'
 
     def vision_request(self, request_name, **kwargs):
         print "DEPREICATED: Please use new dictionary based system."
