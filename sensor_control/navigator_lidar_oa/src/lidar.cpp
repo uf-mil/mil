@@ -103,6 +103,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	}
 
 	//Run Astar
+	/*
 	astar.setMap(ogrid.ogridBinary);
 	astar.setFinish(waypoint[0], waypoint[1]);	
 	auto solution = astar.run();
@@ -132,7 +133,8 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		}
 	}
 	ROS_INFO_STREAM("Carrot enu: " << carrot.position.x << "," << carrot.position.y << "," << carrot.position.z);
-	
+	*/
+
 	//Publish rosgrid
 	rosGrid.header.seq = 0;
 	rosGrid.info.resolution = VOXEL_SIZE_METERS;
