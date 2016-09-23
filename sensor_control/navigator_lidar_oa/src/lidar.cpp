@@ -200,7 +200,7 @@ int main(int argc, char* argv[])
 	ROS_INFO("Checking ROS master is alive...");
 	ros::Time timer = ros::Time::now();
 	while (!ros::master::check()) {
-		if ( (ros::Time::now()-timer).toSec() < 600) { return -1; }
+		if ( (ros::Time::now()-timer).toSec() > 600) { return -1; }
 		ros::Duration(0.1).sleep();
 	}
 	ROS_INFO_STREAM("ROS Master: " << ros::master::getHost());
