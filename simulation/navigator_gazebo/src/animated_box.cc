@@ -27,13 +27,13 @@ void ModelPush::OnUpdate() {
 
   if (count != 0 && secs > .9) {
     if (count == 1) {
-      c = gazebo::common::Color(0.0, 1.0, 0.0);
+      c = green;
     }
     if (count == 2) {
-      c = gazebo::common::Color(0.0, 0.0, 1.0);
+      c = blue;
     }
     if (count == 3) {
-      c = gazebo::common::Color(0.0, 0.0, 0.0);
+      c = red;
     }
     begin_time = clock();
     count = (count + 1) % 4;
