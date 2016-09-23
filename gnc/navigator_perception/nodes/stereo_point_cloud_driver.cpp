@@ -33,7 +33,7 @@
 #include <image_transport/image_transport.h>
 #include <image_geometry/pinhole_camera_model.h>
 // #include <tf/transform_listener.h>
-#include <navigator_msgs/ActivationSwitch.h>
+#include <std_srvs/SetBool.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/PointCloud2.h>
  #include <sensor_msgs/point_cloud2_iterator.h>
@@ -45,8 +45,8 @@ void right_image_callback(
     const sensor_msgs::ImageConstPtr &image_msg_ptr,
     const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
 bool detection_activation_switch(
-    navigator_msgs::ActivationSwitch::Request &req,
-    navigator_msgs::ActivationSwitch::Response &resp);
+    std_srvs::SetBool::Request &req,
+    std_srvs::SetBool::Response &resp);
 
 using namespace std;
 using namespace cv;
@@ -522,13 +522,13 @@ namespace fs = boost::filesystem;
 }
 
 bool detection_activation_switch(
-    navigator_msgs::ActivationSwitch::Request &req,
-    navigator_msgs::ActivationSwitch::Response &resp) {
+    std_srvs::SetBool::Request &req,
+    std_srvs::SetBool::Response &resp) {
   stringstream ros_log;
   ros_log << "\x1b[1;31mSetting sereo point cloud generation to: \x1b[1;37m"
-          << (req.activation_switch ? "on" : "off") << "\x1b[0m";
+          << (req.data ? "on" : "off") << "\x1b[0m";
   ROS_INFO(ros_log.str().c_str());
-  active = req.activation_switch;
+  active = req.data;
   resp.success = true;
   return true;
 }
