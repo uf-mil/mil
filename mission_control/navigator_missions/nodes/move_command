@@ -25,6 +25,13 @@ def main():
     args = parser.parse_args(args[1:])
 
     n = yield Navigator(nh)._init()
+
+    if args.command == 'custom':
+        # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
+        print "Moving with the command: {}".format(args.argument)
+        yield eval("n.move.{}.go()".format(args.argument))
+        defer.returnValue(reactor.stop())
+
     movement = getattr(n.move, args.command)
 
     unit = 'm'
@@ -37,7 +44,8 @@ def main():
 
     # Actually run the command
     print "{}ing {} non-arbitrary unit(s)".format(args.command, amount)
-    yield movement(float(amount), unit).go(speed=args.speed)
+    d = yield movement(float(amount), unit).go(speed=args.speed)
+
     print "Done!"
     defer.returnValue(reactor.stop())
 

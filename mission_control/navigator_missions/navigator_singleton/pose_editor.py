@@ -6,7 +6,7 @@ from tf import transformations
 from nav_msgs.msg import Odometry
 from uf_common.msg import PoseTwistStamped, PoseTwist, MoveToGoal
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Point, Vector3, Twist
-from sub8_ros_tools import rosmsg_to_numpy, make_header
+from navigator_tools import rosmsg_to_numpy, make_header, normalize
 from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
@@ -80,18 +80,27 @@ class PoseEditor2(object):
         yield movement.go(speed=1)
         Will yaw right .707 radians from the original orientation regardless of the current orientation
     '''
-    def __init__(self, nav, frame_id):
+    def __init__(self, nav, pose):
         self.nav = nav
-        self.frame_id = frame_id
 
-        self.position, self.orientation = nav.pose
+        # Right now position is stored as a 3d vector - should this be changed?
+        self.position, self.orientation = pose
 
     def __repr__(self):
-        return "{} - p: {}, q: {}".format(self.frame_id, self.position, self.orientation)
+        return "p: {}, q: {}".format(self.position, self.orientation)
 
     @property
     def _rot(self):
         return transformations.quaternion_matrix(self.orientation)[:3, :3]
+
+    @property
+    def pose(self):
+        return [self.position, self.orientation]
+
+    @property
+    def distance(self):
+        diff = self.position - self.nav.pose[0]
+        return np.linalg.norm(diff)
 
     def go(self, *args, **kwargs):
         # NOTE: C3 doesn't seems to handle different frames, so make sure all movements are in C3's
@@ -99,40 +108,32 @@ class PoseEditor2(object):
         goal = self.nav._moveto_action_client.send_goal(self.as_MoveToGoal(*args, **kwargs))
         return goal.get_result()
 
-    def set_position(self, position, unit='m'):
-        self.position = np.array(position) * UNITS[unit]
-        return self
+    def set_position(self, position):
+        return PoseEditor2(self.nav, [np.array(position), np.array(self.orientation)])
 
-    def rel_position(self, rel_pos, unit='m'):
+    def rel_position(self, rel_pos):
         position = self.position + self._rot.dot(np.array(rel_pos))
-        self.set_position(position, unit)
-        return self
+        return self.set_position(position)
 
     def forward(self, dist, unit='m'):
-        return self.rel_position([dist, 0, 0], unit)
+        return self.rel_position([dist * UNITS[unit], 0, 0])
 
     def backward(self, dist, unit='m'):
-        return self.rel_position([-dist, 0, 0], unit)
+        return self.rel_position([-dist * UNITS[unit], 0, 0])
 
     def left(self, dist, unit='m'):
-        return self.rel_position([0, dist, 0], unit)
+        return self.rel_position([0, dist * UNITS[unit], 0])
 
     def right(self, dist, unit='m'):
-        return self.rel_position([0, -dist, 0], unit)
-
-    def up(self, dist, unit='m'):
-        return self.rel_position([0, 0, dist], unit)
-
-    def down(self, dist, unit='m'):
-        return self.rel_position([0, 0, -dist], unit)
+        return self.rel_position([0, -dist  * UNITS[unit], 0])
 
     # Orientation
     def set_orientation(self, orientation):
         if orientation.shape == (4, 4):
             # We're getting a homogeneous rotation matrix - not a quaternion
             orientation = transformations.quaternion_from_matrix(orientation)
-        self.orientation = orientation
-        return self
+
+        return PoseEditor2(self.nav, [self.position, orientation])
 
     def yaw_left(self, angle, unit='rad'):
         return self.set_orientation(transformations.quaternion_multiply(
@@ -143,58 +144,65 @@ class PoseEditor2(object):
     def yaw_right(self, angle, unit='rad'):
         return self.yaw_left(-angle, unit)
 
-    def depth(self, depth, unit='m'):
-        return self.set_position([self.position[0], self.position[1], -depth], unit)
+    # ====== Some more advanced movements =========================
 
-    def roll_right(self, angle, unit='rad'):
-        return self.set_orientation(transformations.quaternion_multiply(
-            self.orientation,
-            transformations.quaternion_about_axis(angle * UNITS[unit], [1, 0, 0]),
-        ))
+    def look_at_rel(self, rel_point):
+        return self.set_orientation(look_at_without_pitching(rel_point))  # Using no pitch here since we are 2D
 
-    def roll_left(self, angle, unit='rad'):
-        return self.roll_right(-angle, unit)
+    def look_at(self, point):
+        return self.look_at_rel(point - self.position)
 
-    def zero_roll(self):
-        return self.set_orientation(look_at(self.forward_vector))
-
-    def pitch_down(self, angle, unit='rad'):
-        return self.set_orientation(transformations.quaternion_multiply(
-            transformations.quaternion_about_axis(angle * UNITS[unit], [0, 1, 0]),
-            self.orientation,
-        ))
-
-    def pitch_up(self, angle, unit='rad'):
-        return self.pitch_down(-angle, unit)
-
-    def zero_roll_and_pitch(self):
-        return self.set_orientation(look_at_without_pitching(self.forward_vector))
-
-    def latlon(self, lat, lon, alt=0):
+    def to_lat_long(self, lat, lon, alt=0):
         '''
-        Go to a lat lon position and keep the same orientation
-        '''
-        # These fuctions want radians
-        lat, lon = np.radians([lat, lon])
-        # Vector in ECEF frame
-        v = ecef_from_latlongheight(lat, lon, alt) - self.nav.ecef_pose[0]
-        # Convert the vector to ENU
-        enu_vector = enu_from_ecef(v, self.nav.ecef_pose[0])
-        enu_vector[2] = 0  # We don't want to move in the z at all.
+        Go to a lat long position and keep the same orientation
+        Note: lat and long need to be degrees
 
-        return self.rel_position(enu_vector)
+        ****TO TEST****
+        '''
+        ecef_pos, enu_pos = self.nav.ecef_pose[0], self.nav.pose[0]
+
+        # These functions want radians
+        lat, lon = np.radians([lat, lon], dtype=np.float64)
+        ecef_vector = ecef_from_latlongheight(lat, lon, alt) - ecef_pos
+        enu_vector = enu_from_ecef(ecef_vector, ecef_pos)
+        enu_vector[2] = 0  # We don't want to move in the z at all
+        return self.set_position(enu_pos + enu_vector)
+
+    def circle_point(self, point, radius, granularity=8, theta_offset=0):
+        '''
+        Circle a point whilst looking at it
+        This returns a generator, so for use:
+
+            circle = navigator.move.circle_point([1,2,0], 5)
+            for p in circle:
+                yield p.go()
+
+        '''
+        point = np.array(point)
+        angle_incrment = 2 * np.pi / granularity
+        sprinkles = transformations.euler_matrix(0, 0, angle_incrment)[:3, :3]
+
+        # Find first point to go to using boat rotation
+        next_point = np.append(normalize(self.nav.pose[0][:2] - point[:2]), 0)  # Doing this in 2d
+
+        for i in range(granularity + 1):
+            new = point + radius * next_point
+            yield self.set_position(new).look_at(point).yaw_left(theta_offset)  # Remember this is a generator - not a twisted yield
+            next_point = sprinkles.dot(next_point)
+
+        yield self.set_position(new).look_at(point).yaw_left(theta_offset)
 
     # When C3 gets replaced, these may go away
     def as_MoveToGoal(self, linear=[0, 0, 0], angular=[0, 0, 0], **kwargs):
         return MoveToGoal(
-            header=make_header(self.frame_id),
+            header=make_header(),
             posetwist=self.as_PoseTwist(linear, angular),
             **kwargs
         )
 
     def as_Pose(self):
         return Pose(
-            position=Point(*self.position),
+            position=Point(*np.append(self.position[:2], 0)),  # Don't set waypoints out of the water plane
             orientation=Quaternion(*self.orientation),
         )
 
