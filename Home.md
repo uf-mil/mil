@@ -8,7 +8,7 @@ If you have any questions, don't hesitate to email Ralph.
 
 * Patrick Emami
 
-* Zach Goins
+* Zach Goins (LOL who?)
 
 * Ralph Leyva
 
