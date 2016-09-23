@@ -9,12 +9,13 @@ void ModelPush::Load(gazebo::rendering::VisualPtr _parent,
                      sdf::ElementPtr _sdf) {
   // Store the pointer to the model
   GZ_ASSERT(_parent != nullptr, "Received NULL model pointer");
+  ros::Time::init();
 
   this->model = _parent;
   // Listen to the update event. This event is broadcast pre-render update???
   this->updateConnection = gazebo::event::Events::ConnectPreRender(
       boost::bind(&ModelPush::OnUpdate, this));
-  begin_time = clock();
+  begin_time = ros::Time::now();
 }
 
 // Called by the world update start event
@@ -22,10 +23,10 @@ void ModelPush::OnUpdate() {
   if (this->model == nullptr) {
     return;
   }
-  float secs = float(clock() - begin_time) / CLOCKS_PER_SEC;
+  ros::Duration secs = ros::Time::now() - begin_time;
   gazebo::common::Color c = prev_color;
 
-  if (count != 0 && secs > .9) {
+  if (count != 0 && secs.toSec() > .9) {
     if (count == 1) {
       c = green;
     }
@@ -35,14 +36,14 @@ void ModelPush::OnUpdate() {
     if (count == 3) {
       c = red;
     }
-    begin_time = clock();
+    begin_time = ros::Time::now();
     count = (count + 1) % 4;
 
   }
 
-  else if (secs > 1.9) {
-    c = gazebo::common::Color(1.0, 0.0, 0.0);
-    begin_time = clock();
+  else if (secs.toSec() > 1.9) {
+    c = red;
+    begin_time = ros::Time::now();
     count = (count + 1) % 4;
   }
 

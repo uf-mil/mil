@@ -18,12 +18,13 @@ private:
   gazebo::rendering::VisualPtr model = nullptr;
   // Pointer to the update event connection
   gazebo::event::ConnectionPtr updateConnection = nullptr;
-  clock_t begin_time;
+  ros::Time begin_time;
   int count = 0;
   gazebo::common::Color prev_color;
   gazebo::common::Color red =  gazebo::common::Color(1.0, 0.0, 0.0);
   gazebo::common::Color green =  gazebo::common::Color(0.0, 1.0, 0.0);
   gazebo::common::Color blue =  gazebo::common::Color(0.0, 0.0, 1.0);
+  gazebo::common::Color black =  gazebo::common::Color(0.0, 0.0, 0.0);
 };
 
 #endif // ANIMATED_BOX_H
