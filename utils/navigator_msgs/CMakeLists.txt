@@ -18,6 +18,7 @@ add_message_files(
   Point.msg
   Points.msg
   Waypoint.msg
+  Buoy.msg
 )
 
 add_service_files(
