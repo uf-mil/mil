@@ -29,8 +29,8 @@ add_executable(shape_filter src/smart.cpp)
 target_link_libraries(shape_filter ${catkin_LIBRARIES})
 add_dependencies(shape_filter navigator_msgs_generate_messages)
 
-
-add_executable(shape_finder src/DebugWindow.cpp src/DockShapeVision.cpp src/main.cpp src/ContourMethod/ContourMethod.cpp src/ContourMethod/FrameProc.cpp src/ContourMethod/ContourMethod.cpp src/ContourMethod/ShapeFind.cpp  src/ContourMethod/ShapeDetector.cpp )
+set(GRAYSCALE_CONTOUR_FILES src/GrayscaleContour/GrayscaleContour.cpp)
+add_executable(shape_finder src/DebugWindow.cpp src/DockShapeVision.cpp src/main.cpp  ${GRAYSCALE_CONTOUR_FILES} src/ContourMethod/ContourMethod.cpp src/ContourMethod/FrameProc.cpp src/ContourMethod/ContourMethod.cpp src/ContourMethod/ShapeFind.cpp  src/ContourMethod/ShapeDetector.cpp )
 add_dependencies(shape_finder navigator_msgs_generate_messages)
 target_link_libraries(shape_finder ${catkin_LIBRARIES})
 

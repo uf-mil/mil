@@ -15,6 +15,8 @@
 
 #include "std_srvs/SetBool.h"
 #include "ContourMethod/ContourMethod.h"
+#include "GrayscaleContour/GrayscaleContour.h"
+//#include "FeatureDetectorMethod/FeatureDetectorMethod.h"
 #include "DockShapeVision.h"
 
 
@@ -41,17 +43,18 @@ class ShooterVision {
     {
       vision.reset(new ContourMethod(nh_));
       vision->init();
-      nh_.param<std::string>("symbol_camera", camera_topic, "/right_camera/image_color");
+      nh_.param<std::string>("symbol_camera", camera_topic, "/right/right/image_raw");
       runService = nh_.advertiseService("run", &ShooterVision::runCallback, this);
-      #ifdef DO_DEBUG
-      DebugWindow::init();
-      #endif
+      //#ifdef DO_DEBUG
+      //DebugWindow::init();
+      //#endif
       foundShapesPublisher = nh_.advertise<navigator_msgs::DockShapes>("/dock_shapes/found_shapes", 1000);
       image_sub_ = it_.subscribe(camera_topic, 1, &ShooterVision::run, this);
     }
 
     bool runCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res) {
       active = req.data;
+      res.success = true;
       return true;
     }
     void run(const sensor_msgs::ImageConstPtr &msg) {
@@ -68,9 +71,9 @@ class ShooterVision {
       symbols.list.clear();
       vision->GetShapes(cv_ptr->image,symbols);
       // Publish to ros
-      #ifdef DO_DEBUG
-      DebugWindow::UpdateResults(symbols);
-      #endif
+      //#ifdef DO_DEBUG
+      //DebugWindow::UpdateResults(symbols);
+      //#endif
 
       foundShapesPublisher.publish(symbols);
     }
