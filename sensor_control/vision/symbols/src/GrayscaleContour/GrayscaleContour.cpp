@@ -79,16 +79,20 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,navigator_msgs::DockShapes& symb
     if (!GetColor(i,dockShape.Color)) continue;
     
     Point center = findCenter(shape);
-    dockShape.CenterX = center.x;
-    dockShape.CenterY = center.y;
+    dockShape.CenterX = center.x + roiParams.left;
+    dockShape.CenterY = center.y + roiParams.top;
     
     dockShape.img_width = colorFrame.cols;
 
-    //TransformPointsToUncropped(shape);
+     //for (int i = 0; i < shape.size(); i++)
+     //{
+      //points[i].x += roiParams.left;
+      //points[i].y += roiParams.top;
+     //} 
     for (int j = 0; j < shape.size(); j++) {
       geometry_msgs::Point p;
-      p.x = shape[j].x;
-      p.y = shape[j].y;
+      p.x = shape[j].x + roiParams.left;
+      p.y = shape[j].y + roiParams.top;
       p.z = 0;
       dockShape.points.push_back(p);
     }
@@ -232,10 +236,10 @@ double GrayscaleContour::sideLengthVariance(std::vector<cv::Point> &points)
 }
 void GrayscaleContour::TransformPointsToUncropped(std::vector<Point>& points)
 {
- for (auto p : points)
+ for (int i = 0; i < points.size(); i++)
  {
-   p.x += roiParams.left;
-   p.y += roiParams.top;
+  points[i].x += roiParams.left;
+  points[i].y += roiParams.top;
  } 
 }
 Point  GrayscaleContour::findCenter(std::vector<Point>& points) {
