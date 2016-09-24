@@ -27,19 +27,38 @@ class GrayscaleContour : public DockShapeVision
       int thresh1;
       int thresh2;    
     };
+    int epsilonFactor;
     CannyParams cannyParams;
     
     void CropFrame();
     void ConvertToGrayscale();
     void DetectEdges();
     void FindContours();
-    void FindShapes();
-    std::string GetColor(std::vector<cv::Point>& shape);
+    void FindPolygons();
+    bool GetColor(int shapeIndex,std::string& color);
+    Point findCenter(std::vector<Point>& points);
+
+    int CROSS_BOUNDING_AREA_LOW;
+    int CROSS_BOUNDING_AREA_HIGH;
+    int TRI_BOUNDING_AREA_LOW;
+    int TRI_BOUNDING_AREA_HIGH;
+    int CIRCLE_BOUNDING_AREA_LOW;
+    int CIRCLE_BOUNDING_AREA_HIGH;
+    
     static const int WIDTH = 644;
     static const int HEIGHT = 482;
     
     static bool filterArea(std::vector<Point> contour);
     static int minArea;
+
+    void TransformPointsToUncropped(std::vector<Point>& contour);
+    
+    static double contourAreaToBoundingRectAreaRatio(std::vector<cv::Point> &points);
+    static double contourAreaToPerimeterRatio(std::vector<cv::Point> &points);
+    static double sideLengthVariance(std::vector<cv::Point> &points);
+    bool isTriangle(std::vector<Point>& points);
+    bool isCross(std::vector<Point>& points);
+    bool isCircle(std::vector<Point>& points);
   public:
     GrayscaleContour(ros::NodeHandle& nh);
     void GetShapes(cv::Mat &frame,navigator_msgs::DockShapes& symbols);
