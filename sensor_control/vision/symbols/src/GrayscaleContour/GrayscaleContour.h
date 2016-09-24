@@ -34,7 +34,7 @@ class GrayscaleContour : public DockShapeVision
     void DetectEdges();
     void FindContours();
     void FindShapes();
-
+    std::string GetColor(std::vector<cv::Point>& shape);
     static const int WIDTH = 644;
     static const int HEIGHT = 482;
     
