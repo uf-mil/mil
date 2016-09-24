@@ -63,11 +63,12 @@ class DetectDeliverMission:
       self.shooterFire()
   @txros.util.cancellableInlineCallbacks
   def findAndShoot(self):
-    if not (yield self.isFound()):
-      self.navigator.move.yaw_left(360, "deg").go()
-      while not (yield self.isFound()):
-        print "...Searching for target"
-    print "Found"
+    #Remove, should have already found when mission run
+    #if not (yield self.isFound()):
+      #self.navigator.move.yaw_left(360, "deg").go()
+      #while not (yield self.isFound()):
+        #print "...Searching for target"
+    #print "Found"
     yield self.navigator.move.go() #Stop moving once shape seen
     if not (yield self.isCentered()):
       if self.center_error < 0:
