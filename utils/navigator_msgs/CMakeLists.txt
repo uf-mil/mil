@@ -21,6 +21,7 @@ add_message_files(
   Waypoint.msg
   Buoy.msg
   BuoyArray.msg
+  PerceptionObject.msg
 )
 
 add_service_files(
@@ -34,6 +35,7 @@ add_service_files(
   CoordinateConversion.srv
   StereoShapeDetector.srv
   ScanTheCodeMission.srv
+  PerceptionObjectService.srv
 )
 
 generate_messages(

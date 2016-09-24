@@ -115,8 +115,8 @@ void ColorTracker::clear() {
 bool ColorTracker::check_status(
     navigator_msgs::ScanTheCodeMission::Request &req,
     navigator_msgs::ScanTheCodeMission::Response &resp) {
-  resp.tracking_model = status;
-  resp.mission_complete = mission_complete;
+  resp.observing = status;
+  resp.found = mission_complete;
 
   if (!mission_complete) {
     return true;

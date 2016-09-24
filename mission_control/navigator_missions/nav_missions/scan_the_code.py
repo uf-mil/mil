@@ -12,6 +12,8 @@ import navigator_msgs.srv as navigator_srvs
 @txros.util.cancellableInlineCallbacks
 def main(navigator):
     navigator.change_wrench("autonomous")
+    serv = navigator.nh.get_service_client("/vision/object_classifier_service", s_type)
+    resp = yield serv("scan_the_code")
 
     # Go to first point
     radius = 5
