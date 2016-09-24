@@ -166,6 +166,7 @@ add_executable(
 add_dependencies(
   scan_the_code
    navigator_msgs_gencpp
+   navigator_msgs_generate_messages_cpp
    ${catkin_EXPORTED_TARGETS}
 )
 

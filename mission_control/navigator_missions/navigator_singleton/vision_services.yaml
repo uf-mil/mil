@@ -13,11 +13,11 @@ start_gate:
   args: {}
 
 scan_the_code_activate:
-  topic: /stereo_shape_detector/activation_switch
-  type: StereoShapeDetector
-  args: {detection_switch: true, shape: "RectangleModel",  processing_type: "ColorTracker", num_points: 4, model_params: [.19,.381]}
+  topic: /vision/scan_the_code_activate
+  type: ScanTheCodeMission
+  args: {}
 
 scan_the_code_status:
-    topic: /scan_the_code/mission_status
+    topic: /vision/scan_the_code_status
     type: ScanTheCodeMission
     args: {}
