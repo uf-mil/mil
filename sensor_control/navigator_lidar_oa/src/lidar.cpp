@@ -15,6 +15,7 @@
 #include <tf2/convert.h>
 #include <tf2_ros/transform_listener.h>
 #include <navigator_msgs/Buoy.h>
+#include <navigator_msgs/BuoyArray.h>
 
 #include <iostream>
 #include <Eigen/Dense>
@@ -33,9 +34,8 @@ const double MAP_SIZE_METERS = 1500;
 const double ROI_SIZE_METERS = 120;
 const double VOXEL_SIZE_METERS = 0.30;
 const int MIN_HITS_FOR_OCCUPANCY = 20;
-const int MAX_HITS_IN_CELL = 250;
+const int MAX_HITS_IN_CELL = 500;
 const double MAXIMUM_Z_HEIGHT = 12;
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -43,9 +43,7 @@ const double MAXIMUM_Z_HEIGHT = 12;
 OccupancyGrid ogrid(MAP_SIZE_METERS,ROI_SIZE_METERS,VOXEL_SIZE_METERS);
 AStar astar(ROI_SIZE_METERS/VOXEL_SIZE_METERS);
 nav_msgs::OccupancyGrid rosGrid;
-visualization_msgs::MarkerArray markers;	
-visualization_msgs::Marker m;
-ros::Publisher pubGrid,pubMarkers;
+ros::Publisher pubGrid,pubMarkers,pubBuoys;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -91,6 +89,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	ogrid.inflateBinary(3);
 
 	//Fake waypoint - this needs to be replaced!
+	/*
 	Eigen::Vector3d v = T_enu_velodyne*Eigen::Vector3d(30,0,0);;
 	int waypoint[3];
 	waypoint[0] = (v(0)-lidarpos.x)/VOXEL_SIZE_METERS + ogrid.ROI_SIZE/2;
@@ -100,7 +99,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		for (int jj = -2; jj <= 2; ++jj) {
 			ogrid.ogridMap[ (waypoint[1]+ii)*ogrid.ROI_SIZE + waypoint[0]+jj] = 25;
 		}
-	}
+	}*/
 
 	//Run Astar
 	/*
@@ -150,26 +149,69 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	pubGrid.publish(rosGrid);
 
 	//Publish markers
-	markers.markers.clear();
+	geometry_msgs::Point p;
+	visualization_msgs::MarkerArray markers;	
+	visualization_msgs::Marker m;
+	m.header.stamp = ros::Time::now();
 	m.header.seq = 0;
 	m.header.frame_id = "enu";
-	m.action = 3;
+	
+	//Erase old markers
 	m.id = 0;
+	m.type = 0;
+	m.action = 3;
 	markers.markers.push_back(m);
-	int id = 1;
+
+	//Course Outline
+	m.id = 1;
+	m.type = visualization_msgs::Marker::LINE_STRIP;
+	m.action = visualization_msgs::Marker::ADD;
+	m.scale.x = 0.5;
+	p.x = -35; p.y = 50; p.z = lidarpos.z; m.points.push_back(p);
+	p.x = -35; p.y = -35; p.z = lidarpos.z; m.points.push_back(p);
+	p.x = 65; p.y = -35; p.z = lidarpos.z; m.points.push_back(p);
+	p.x = 65; p.y = 50; p.z = lidarpos.z; m.points.push_back(p);
+	p.x = -35; p.y = 50; p.z = lidarpos.z; m.points.push_back(p);
+	m.color.a = 0.6; m.color.r = 1; m.color.g = 1; m.color.b = 1;
+	markers.markers.push_back(m);
+	
+	//Publish buoys
+	navigator_msgs::BuoyArray allBuoys;
+	navigator_msgs::Buoy buoy;
+	geometry_msgs::Point32 p32;
+	buoy.header.seq = 0;
+	buoy.header.frame_id = "enu";
+	buoy.header.stamp = ros::Time::now();	
+	int id = 0;
 	for (auto obj : objects) {
-		if (obj.scale.x > 10 || obj.scale.y > 10 || obj.scale.z > 10) { continue; }
-		m.header.stamp = ros::Time::now();
-		m.id = id;
-		m.type = visualization_msgs::Marker::CUBE;
-		m.action = visualization_msgs::Marker::ADD;
-		m.pose.position = obj.position;
-		m.scale = obj.scale;
-		m.color.a = 0.6; m.color.r = 1; m.color.g = 1; m.color.b = 1;
-		markers.markers.push_back(m);
+		if (obj.position.x < -35 || obj.position.x > 65 || obj.position.y < -35 || obj.position.y > 50 ) { continue; }
+		ROS_INFO_STREAM("Adding buoy " << id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z);
+		//Buoys
+		buoy.header.stamp = ros::Time::now();
+		buoy.id = id;
+		buoy.confidence = 0;
+		buoy.position = obj.position;
+		buoy.height = obj.scale.z; 
+		buoy.width = obj.scale.x; //x or y for width?
+		allBuoys.buoys.push_back(buoy);
+
+		//Buoys as markers
+		visualization_msgs::Marker m2;
+		m2.header.stamp = ros::Time::now();
+		m2.header.seq = 0;
+		m2.header.frame_id = "enu";		
+		m2.header.stamp = ros::Time::now();
+		m2.id = id+2;
+		m2.type = visualization_msgs::Marker::CUBE;
+		m2.action = visualization_msgs::Marker::ADD;		
+		m2.pose.position = obj.position;
+		m2.scale = obj.scale;
+		m2.color.a = 0.6; m2.color.r = 1; m2.color.g = 1; m2.color.b = 1;
+		markers.markers.push_back(m2);
 		++id;
 	}
 	pubMarkers.publish(markers);
+	pubBuoys.publish(allBuoys);
 
 	//Elapsed time
 	ROS_INFO_STREAM("Elapsed time: " << (ros::Time::now()-timer).toSec());
@@ -218,7 +260,8 @@ int main(int argc, char* argv[])
 	//Publish occupancy grid and visualization markers
 	pubGrid = nh.advertise<nav_msgs::OccupancyGrid>("ogrid_batcave",10);
 	pubMarkers = nh.advertise<visualization_msgs::MarkerArray>("markers_batcave",10);
-	
+	pubBuoys = nh.advertise<navigator_msgs::BuoyArray>("buoys_batcave",10);
+
 	//Give control to ROS
 	ros::spin();
 	//ros::spinOnce();
