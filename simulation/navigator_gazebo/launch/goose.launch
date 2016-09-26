@@ -2,16 +2,53 @@
   <param name="use_sim_time" value="true" />
   <arg name="gui" default="true" />
 
-  <!-- start gazebo server-->
+
+  <!-- Gazebo server -->
   <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false"
     args="$(find navigator_gazebo)/worlds/a_whole_new.world" output="screen"/>
   <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" if="$(arg gui)" output="screen" />
+
 
   <!-- El Boatatoe -->
   <node name="spawn_wamv" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/wamv/wamv.sdf -sdf
       -x 0 -y 0 -z 1.5 -model wamv"
     output="screen" />
+
+
+  <!-- Buoys -->
+  <node name="spawn_red_buoy" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/buoys/red.sdf -sdf
+      -x 15 -y 3 -z .3 -model red_buoy"
+    output="screen" />
+
+  <node name="spawn_green_buoy" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/buoys/green.sdf -sdf
+      -x 15 -y -7 -z .3 -model green_buoy"
+    output="screen" />
+
+
+  <!-- Markers -->
+  <node name="spawn_speed_start_green" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/markers/green_marker_can.sdf -sdf
+      -x 15 -y 5 -z 0 -model speed_start_green"
+    output="screen" />
+
+  <node name="spawn_speed_start_red" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/markers/red_marker_nun.sdf -sdf
+      -x 15 -y -5 -z 0 -model speed_start_red"
+    output="screen" />
+
+  <node name="spawn_speed_end_green" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/markers/green_marker_can.sdf -sdf
+      -x 35 -y 5 -z 0 -model speed_end_green"
+    output="screen" />
+
+  <node name="spawn_speed_end_red" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/markers/red_marker_nun.sdf -sdf
+      -x 35 -y -5 -z 0 -model speed_end_red"
+    output="screen" />
+
 
   <!-- Shapes -->
   <node name="spawn_blue_cross" pkg="gazebo_ros" type="spawn_model"
@@ -25,24 +62,11 @@
     output="screen" />
 
 
+  <!-- Scan the Code -->
   <node name="spawn_scan_the_code" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/shapes/scan_the_code.sdf
     -x -5 -y 10 -z 1.5 -sdf -model scan_the_code"
     output="screen" />
-
-
-  <!-- Buoy -->
-  <node name="spawn_red_buoy" pkg="gazebo_ros" type="spawn_model"
-    args="-file $(find navigator_gazebo)/models/buoys/red.sdf -sdf
-      -x 15 -y 3 -z .3 -model red_buoy"
-    output="screen" />
-
-  <node name="spawn_green_buoy" pkg="gazebo_ros" type="spawn_model"
-    args="-file $(find navigator_gazebo)/models/buoys/green.sdf -sdf
-      -x 15 -y -7 -z .3 -model green_buoy"
-    output="screen" />
-
-
 
 
   <node pkg="navigator_gazebo" type="gazebo_controller.py" name="gazebo_interface"/>
