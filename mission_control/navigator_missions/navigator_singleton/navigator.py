@@ -11,11 +11,14 @@ from twisted.internet import defer
 from txros import action, util, tf, NodeHandle
 from pose_editor import PoseEditor2
 
+import navigator_tools
 from uf_common.msg import MoveToAction, PoseTwistStamped
 from nav_msgs.msg import Odometry
 from std_srvs.srv import SetBool, SetBoolRequest
-from navigator_tools import rosmsg_to_numpy, odometry_to_numpy
+from geometry_msgs.msg import PoseStamped
+from sensor_msgs.msg import PointCloud
 import navigator_msgs.srv as navigator_srvs
+from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
 
 
 class Navigator(object):
@@ -31,21 +34,29 @@ class Navigator(object):
 
         self.enu_bounds = []
 
+        self.alarms = []
+
     @util.cancellableInlineCallbacks
     def _init(self):
-        self._moveto_action_client = yield action.ActionClient(self.nh, 'moveto', MoveToAction)
-        self._odom_sub = yield self.nh.subscribe('odom', Odometry, lambda odom: setattr(self, 'pose', odometry_to_numpy(odom)[0]))
-        self._ecef_odom_sub = yield self.nh.subscribe('absodom', Odometry, lambda odom: setattr(self, 'ecef_pose', odometry_to_numpy(odom)[0]))
+        # Just some pre-created publishers for missions to use for debugging
+        self._point_cloud_pub = self.nh.advertise("navigator_points", PointCloud)
+        self._pose_pub = self.nh.advertise("navigator_pose", PoseStamped)
 
-        self._change_wrench = yield self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
-        self.tf_listener = yield tf.TransformListener(self.nh)
+        self._moveto_action_client = action.ActionClient(self.nh, 'moveto', MoveToAction)
+        self._odom_sub = self.nh.subscribe('odom', Odometry,
+                                                 lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0]))
+        self._ecef_odom_sub = self.nh.subscribe('absodom', Odometry,
+                                                      lambda odom: setattr(self, 'ecef_pose', navigator_tools.odometry_to_numpy(odom)[0]))
 
-        # Set bounds
-        yield self._make_bounds()
+        self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
+        self.tf_listener = tf.TransformListener(self.nh)
 
         print "Waiting for odom..."
         yield self._odom_sub.get_next_message()  # We want to make sure odom is working before we continue
         yield self._ecef_odom_sub.get_next_message()
+
+        yield self._make_bounds()
+        self._make_alarms()
 
         defer.returnValue(self)
 
@@ -53,13 +64,13 @@ class Navigator(object):
     @util.cancellableInlineCallbacks
     def tx_pose(self):
         last_odom_msg = yield self._odom_sub.get_next_message()
-        defer.returnValue(odometry_to_numpy(last_odom_msg)[0])
+        defer.returnValue(navigator_tools.odometry_to_numpy(last_odom_msg)[0])
 
     @property
     @util.cancellableInlineCallbacks
     def tx_ecef_pose(self):
         last_odom_msg = yield self._ecef_odom_sub.get_next_message()
-        defer.returnValue(odometry_to_numpy(last_odom_msg)[0])
+        defer.returnValue(navigator_tools.odometry_to_numpy(last_odom_msg)[0])
 
     @property
     def move(self):
@@ -71,23 +82,23 @@ class Navigator(object):
         Needs a box of lla bounds set in a rosparam: /lla_bounds
         '''
         if self.nh.has_param('lla_bounds'):
-            lla_bounds = self.nh.get_param('lla_bounds')
+            lla_bounds = yield self.nh.get_param('lla_bounds')
+            print lla_bounds
             assert len(lla_bounds) == 4, 'Please define box: rosparam set /lla_bounds "[[lla1],[lla2],[lla3],[lla4]]"'
-            enu_bounds = []
 
-            enu_pos = yield self.tx_pose
-            ecef_pos = yield self.tx_ecef_pose
-            for (lat, lon, alt) in lla_bounds:
+            enu_pos = (yield self.tx_pose)[0]
+            ecef_pos = (yield self.tx_ecef_pose)[0]
+            for (lat, lon) in lla_bounds:
                 lat, lon = np.radians([lat, lon], dtype=np.float64)
-                ecef_vector = ecef_from_latlongheight(lat, lon, alt) - ecef_pos
+                ecef_vector = ecef_from_latlongheight(lat, lon, 0) - ecef_pos
                 enu_vector = enu_from_ecef(ecef_vector, ecef_pos)
-                enu_vector[2] = 0  # We don't want to move in the z at all
 
-                enu_bounds.append(enu_vector + enu_pos)
+                self.enu_bounds.append((enu_vector + enu_pos)[:2])
+            #self.enu_bounds = np.array(lla_bounds)[:, :2]  # Assume that the bounds we get are enu - for testing
 
-            # Find two points that are the farthest from each other and use them as bounds for the region
-            arg_max_distance = np.argmax(np.linalg.norm(a - a[0], axis=1))
-            self.enu_bounds = [enu_bounds[0], enu_bounds[arg_max_distance]]
+            pc = PointCloud(header=navigator_tools.make_header(frame='/enu'),
+                            points=np.array([navigator_tools.numpy_to_point(np.append(point, 0)) for point in self.enu_bounds]))
+            yield self._point_cloud_pub.publish(pc)
         else:
             print 'No bounds being used.'
 
@@ -113,6 +124,9 @@ class Navigator(object):
             s_client = self.nh.get_service_client(f[name]["topic"], s_type)
             s_switch = self.nh.get_service_client(f[name]["topic"] + '/switch', SetBool)
             self.vision_proxies[name] = VisionProxy(s_client, s_req, s_args, s_switch)
+
+    def _make_alarms(self):
+        pass
 
 class VisionProxy(object):
     def __init__(self, client, request, args, switch):
@@ -215,7 +229,7 @@ class Searcher(object):
         spotings = 0
         print "SEARCHER - Looking for object."
         while spotings < spotings_req:
-            resp = yield self.nav.vision_request(self.vision_proxy, **self.vision_kwargs)
+            resp = yield self.nav.vision_proxies[self.vision_proxy].get_response(**self.vision_kwargs)
             if resp.found:
                 print "SEARCHER - Object found! {}/{}".format(spotings + 1, spotings_req)
                 spotings += 1
@@ -231,9 +245,9 @@ class Searcher(object):
 
 @util.cancellableInlineCallbacks
 def main():
-    nh = yield NodeHandle.from_argv("testing")
+    nh = yield NodeHandle.from_argv("navigator_singleton")
     n = yield Navigator(nh)._init()
-    yield n.vision_proxies['tester'].get_response()
+    print (yield n.vision_proxies['start_gate'].get_response())
 
 
 if __name__ == '__main__':

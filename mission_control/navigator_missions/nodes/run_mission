@@ -10,7 +10,7 @@ import argparse
 
 @util.cancellableInlineCallbacks
 def main():
-    nh, args = yield NodeHandle.from_argv_with_remaining("navigator_mission_runner")
+    nh, args = yield NodeHandle.from_argv_with_remaining("navigator_mission_runner", anonymous=True)
     available_missions = [mission_name for mission_name in dir(nav_missions) if mission_name[0] != '_']
 
     parser = argparse.ArgumentParser(description='Mission Runner')
