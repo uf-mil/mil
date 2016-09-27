@@ -1,0 +1,8 @@
+
+---
+# Define the result
+bool success
+string error
+---
+# Define a feedback message
+duration time_remaining

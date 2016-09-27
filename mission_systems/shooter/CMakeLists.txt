@@ -3,14 +3,19 @@ project(navigator_shooter)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  rospy
   rosserial_arduino
   rosserial_client
   std_msgs
   message_generation
   navigator_msgs
+  actionlib
 )
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS
+  actionlib
+)
 
 rosserial_generate_ros_lib(
   PACKAGE rosserial_arduino
