@@ -28,29 +28,29 @@
     output="screen" />
 
 
-  <!-- Markers -->
+  <!-- Demonstrate Navigation and Control -->
   <node name="spawn_speed_start_green" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/markers/green_marker_can.sdf -sdf
-      -x 15 -y 5 -z 0 -model speed_start_green"
+      -x 15 -y -5 -z 0 -model speed_start_green"
     output="screen" />
 
   <node name="spawn_speed_start_red" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/markers/red_marker_nun.sdf -sdf
-      -x 15 -y -5 -z 0 -model speed_start_red"
+      -x 15 -y 5 -z 0 -model speed_start_red"
     output="screen" />
 
   <node name="spawn_speed_end_green" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/markers/green_marker_can.sdf -sdf
-      -x 35 -y 5 -z 0 -model speed_end_green"
+      -x 35 -y -5 -z 0 -model speed_end_green"
     output="screen" />
 
   <node name="spawn_speed_end_red" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/markers/red_marker_nun.sdf -sdf
-      -x 35 -y -5 -z 0 -model speed_end_red"
+      -x 35 -y 5 -z 0 -model speed_end_red"
     output="screen" />
 
 
-  <!-- Shapes -->
+  <!-- Identify Symbols and Dock -->
   <node name="spawn_blue_cross" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/shapes/blue_cross.sdf -sdf
       -x 4 -y -18 -z 1.5 -model blue_cross"
@@ -66,6 +66,75 @@
   <node name="spawn_scan_the_code" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/shapes/scan_the_code.sdf
     -x -5 -y 10 -z 1.5 -sdf -model scan_the_code"
+    output="screen" />
+
+
+  <!-- Acoustic Pinger‐Based Transit - Entry Gate -->
+  <node name="spawn_ping_entry_red" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/markers/red_marker_nun.sdf -sdf
+      -x -25 -y 35 -z 0 -model ping_entry_green"
+    output="screen" />
+
+  <node name="spawn_ping_entry_white1" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+      -x -25 -y 25 -z 0 -model ping_entry_white1"
+    output="screen" />
+
+  <node name="spawn_ping_entry_white2" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+      -x -25 -y 15 -z 0 -model ping_entry_white2"
+    output="screen" />
+
+  <node name="spawn_ping_entry_green" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/markers/green_marker_nun.sdf -sdf
+      -x -25 -y 5 -z 0 -model ping_entry_green"
+    output="screen" />
+
+  <!-- Acoustic Pinger‐Based Transit - Exit Gate -->
+  <node name="spawn_ping_exit_red" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/markers/red_marker_nun.sdf -sdf
+      -x -25 -y -5 -z 0 -model ping_exit_green"
+    output="screen" />
+
+  <node name="spawn_ping_exit_white1" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+      -x -25 -y -15 -z 0 -model ping_exit_white1"
+    output="screen" />
+
+  <node name="spawn_ping_exit_white2" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+      -x -25 -y -25 -z 0 -model ping_exit_white2"
+    output="screen" />
+
+  <node name="spawn_ping_exit_green" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/markers/green_marker_nun.sdf -sdf
+      -x -25 -y -35 -z 0 -model ping_exit_green"
+    output="screen" />
+
+  <!-- Acoustic Pinger‐Based Transit - Test Gate -->
+  <node name="spawn_ping_test_red" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/markers/red_marker_nun.sdf -sdf
+      -x 15 -y -15 -z 0 -model ping_test_green"
+    output="screen" />
+
+  <node name="spawn_ping_test_white1" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+      -x 5 -y -15 -z 0 -model ping_test_white1"
+    output="screen" />
+
+  <node name="spawn_ping_test_white2" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+      -x -5 -y -15 -z 0 -model ping_test_white2"
+    output="screen" />
+
+  <node name="spawn_ping_test_green" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/markers/green_marker_nun.sdf -sdf
+      -x -15 -y -15 -z 0 -model ping_test_green"
+    output="screen" />
+
+  <node name="spawn_ping_test_black" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/markers/black_marker_can.sdf -sdf
+      -x 0 -y -45 -z 0 -model ping_test_black"
     output="screen" />
 
 
