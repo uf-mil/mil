@@ -15,10 +15,10 @@ class GrayscaleContour : public DockShapeVision
 
     struct ROIparams
     {
-      int top;
-      int bottom;
-      int left;
-      int right;
+      double top;
+      double bottom;
+      double left;
+      double right;
     };
     ROIparams roiParams;
 

@@ -6,10 +6,10 @@ GrayscaleContour::GrayscaleContour(ros::NodeHandle& nh) :
 {
   Mat colorFrame,croppedFrame,grayscaleFrame,edgesFrame;
   
-  roiParams.top = 103;
-  roiParams.bottom = 346;
-  roiParams.left = 73;
-  roiParams.right = 572;
+  roiParams.top = 103.0/482;
+  roiParams.bottom = 346.0/482;
+  roiParams.left = 73.0/644;
+  roiParams.right = 572.0/644;
   cannyParams.thresh1 = 75;
   cannyParams.thresh2 = 100;
 
@@ -37,10 +37,10 @@ void GrayscaleContour::init()
   #ifdef DO_DEBUG
   createTrackbar("thresh1", "Menu", &cannyParams.thresh1, 500);
   createTrackbar("thresh2", "Menu", &cannyParams.thresh2, 255);
-  createTrackbar("top", "Menu", &roiParams.top, 482);
-  createTrackbar("bottom", "Menu", &roiParams.bottom,  482);
-  createTrackbar("left", "Menu", &roiParams.left, 644);
-  createTrackbar("right", "Menu", &roiParams.right, 644);
+  //createTrackbar("top", "Menu", &roiParams.top, 482);
+  //createTrackbar("bottom", "Menu", &roiParams.bottom,  482);
+  //createTrackbar("left", "Menu", &roiParams.left, 644);
+  //createTrackbar("right", "Menu", &roiParams.right, 644);
   createTrackbar("minArea", "Menu", &minArea, 2000);
   createTrackbar("Epsilon  factor (x1000)", "Menu", &epsilonFactor, 2000);
   
@@ -112,7 +112,13 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,navigator_msgs::DockShapes& symb
 }
 void GrayscaleContour::CropFrame()
 {
-  cv::Rect roi(roiParams.left,roiParams.top,WIDTH-roiParams.left-(WIDTH-roiParams.right),HEIGHT-roiParams.top-(HEIGHT-roiParams.bottom));
+  std::cout << colorFrame.cols << " " << colorFrame.rows << std::endl;
+  int left = roiParams.left*colorFrame.cols;
+  int right = roiParams.right*colorFrame.cols;
+  int top = roiParams.top*colorFrame.rows;
+  int bottom =  roiParams.bottom*colorFrame.rows;
+  std::cout << left << " " << right << " " << top << " " << bottom <<std::endl;
+  cv::Rect roi(left,top,WIDTH-left-(WIDTH-right),HEIGHT-top-(HEIGHT-bottom));
   croppedFrame = colorFrame(roi);
 }
 void GrayscaleContour::ConvertToGrayscale()
@@ -198,12 +204,15 @@ bool GrayscaleContour::isTriangle(std::vector<Point>& points)
 }
 bool GrayscaleContour::isCross(std::vector<Point>& points)
 {
-  //For now just if it has 12 sides
-  return points.size() == 12;
-  //cv::Rect boundingRect = cv::boundingRect(points);
-  //float area = contourArea(points) / (boundingRect.width * boundingRect.height);
-  //if (area >= (float(CROSS_BOUNDING_AREA_LOW)/1000) && area <= (float(CROSS_BOUNDING_AREA_HIGH)/1000)) return true;
-  //else return false;
+  //Check area/size length
+  float a = contourArea(points);
+  float p = arcLength(points, true);
+  float r = (144 / 5 * a) / (p * p);
+  #ifdef DO_SHAPE_DEBUG
+  std::cout << "CROSS: Area/Perimeter=" << r << std::endl;
+  #endif
+  if (r > 0.9 && r < 1.1) return true;
+  return false;
 }
 bool GrayscaleContour::isCircle(std::vector<Point>& points)
 {
