@@ -38,6 +38,9 @@ class GrayscaleContour : public DockShapeVision
     bool GetColor(int shapeIndex,std::string& color);
     Point findCenter(std::vector<Point>& points);
 
+    int frame_height;
+    int frame_width;
+
     int CROSS_BOUNDING_AREA_LOW;
     int CROSS_BOUNDING_AREA_HIGH;
     int TRI_BOUNDING_AREA_LOW;
@@ -45,11 +48,8 @@ class GrayscaleContour : public DockShapeVision
     int CIRCLE_BOUNDING_AREA_LOW;
     int CIRCLE_BOUNDING_AREA_HIGH;
     
-    static const int WIDTH = 644;
-    static const int HEIGHT = 482;
-    
-    static bool filterArea(std::vector<Point> contour);
-    static int minArea;
+    bool filterArea(std::vector<Point> contour);
+    static double minArea;
 
     void TransformPointsToUncropped(std::vector<Point>& contour);
     

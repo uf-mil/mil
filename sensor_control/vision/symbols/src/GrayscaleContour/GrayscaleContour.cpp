@@ -1,6 +1,6 @@
 #include "GrayscaleContour.h"
 #include <sstream>
-int GrayscaleContour::minArea = 100;
+double GrayscaleContour::minArea = 100.0/(644.0*482.0);
 GrayscaleContour::GrayscaleContour(ros::NodeHandle& nh) :
   DockShapeVision(nh)
 {
@@ -10,10 +10,14 @@ GrayscaleContour::GrayscaleContour(ros::NodeHandle& nh) :
   roiParams.bottom = 346.0/482;
   roiParams.left = 73.0/644;
   roiParams.right = 572.0/644;
+  //roiParams.top = 0.0;
+  //roiParams.bottom = 1.0;
+  //roiParams.left = 0.0;
+  //roiParams.right = 1.0;
   cannyParams.thresh1 = 75;
   cannyParams.thresh2 = 100;
 
-  epsilonFactor = 40;
+  epsilonFactor =  3;
 
   CROSS_BOUNDING_AREA_LOW = 430;
   CROSS_BOUNDING_AREA_HIGH = 470;
@@ -41,7 +45,7 @@ void GrayscaleContour::init()
   //createTrackbar("bottom", "Menu", &roiParams.bottom,  482);
   //createTrackbar("left", "Menu", &roiParams.left, 644);
   //createTrackbar("right", "Menu", &roiParams.right, 644);
-  createTrackbar("minArea", "Menu", &minArea, 2000);
+  //createTrackbar("minArea", "Menu", &minArea, 2000);
   createTrackbar("Epsilon  factor (x1000)", "Menu", &epsilonFactor, 2000);
   
   createTrackbar("CROSS_BOUNDING_AREA_LOW ", "ShapeParams", &CROSS_BOUNDING_AREA_LOW , 1000);
@@ -54,17 +58,26 @@ void GrayscaleContour::init()
 }
 void GrayscaleContour::GetShapes(cv::Mat &frame,navigator_msgs::DockShapes& symbols)
 {
+  if (frame.empty()) return;
+
+  frame_width = frame.cols;
+  frame_height = frame.rows;
+  
+  //std::cout << "=== NEW FRAME ===" << std::endl;
   colorFrame = frame;
   CropFrame();
   ConvertToGrayscale();
   DetectEdges();
   FindContours();
   FindPolygons();
-
+  
+  Mat result = croppedFrame.clone();
   for (int i = 0; i < shapes.size(); i++)
   {
     auto shape = shapes.at(i);
     navigator_msgs::DockShape dockShape;
+    //Scalar color( rand()&255, rand()&255, rand()&255 );
+    
     if (isTriangle(shape))
     {
       dockShape.Shape = navigator_msgs::DockShape::TRIANGLE;
@@ -77,7 +90,7 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,navigator_msgs::DockShapes& symb
     } else continue;
 
     if (!GetColor(i,dockShape.Color)) continue;
-    
+    drawContours(result, shapes, i, Scalar(0,0,255) );
     Point center = findCenter(shape);
     dockShape.CenterX = center.x + roiParams.left;
     dockShape.CenterY = center.y + roiParams.top;
@@ -99,9 +112,8 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,navigator_msgs::DockShapes& symb
     symbols.list.push_back(dockShape); 
   }
   #ifdef DO_DEBUG
-  Mat result = croppedFrame.clone();
   for (auto symbol : symbols.list) {
-    cv::circle(result,Point(symbol.CenterX,symbol.CenterY),4,Scalar(255,255,255),5);
+    //cv::circle(result,Point(symbol.CenterX,symbol.CenterY),4,Scalar(255,255,255),5);
     putText(result, symbol.Shape + "\n(" + symbol.Color + ")", Point(symbol.CenterX-100, symbol.CenterY-25),1 , 1, Scalar(0,0,0),  3);
   }
   imshow("Result",result);
@@ -112,13 +124,11 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,navigator_msgs::DockShapes& symb
 }
 void GrayscaleContour::CropFrame()
 {
-  std::cout << colorFrame.cols << " " << colorFrame.rows << std::endl;
   int left = roiParams.left*colorFrame.cols;
   int right = roiParams.right*colorFrame.cols;
   int top = roiParams.top*colorFrame.rows;
   int bottom =  roiParams.bottom*colorFrame.rows;
-  std::cout << left << " " << right << " " << top << " " << bottom <<std::endl;
-  cv::Rect roi(left,top,WIDTH-left-(WIDTH-right),HEIGHT-top-(HEIGHT-bottom));
+  cv::Rect roi(left,top,frame_width-left-(frame_width-right),frame_height-top-(frame_height-bottom));
   croppedFrame = colorFrame(roi);
 }
 void GrayscaleContour::ConvertToGrayscale()
@@ -134,7 +144,8 @@ void GrayscaleContour::FindContours()
   contours.clear();
   hierarchy.clear();
   findContours(edgesFrame, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
-  
+
+  //Filter out very small contours
   auto cit = contours.begin();
   auto hit = hierarchy.begin(); 
   while (cit != contours.end())
@@ -192,6 +203,9 @@ void GrayscaleContour::FindPolygons()
     approxPolyDP(Mat(contours[i]), approx, arcLength(Mat(contours[i]), true) * (float(epsilonFactor)/1000) , true);
     shapes.push_back(approx);
   }
+  #ifdef DO_DEBUG
+
+  #endif
 }
 bool GrayscaleContour::isTriangle(std::vector<Point>& points)
 {
@@ -205,26 +219,34 @@ bool GrayscaleContour::isTriangle(std::vector<Point>& points)
 bool GrayscaleContour::isCross(std::vector<Point>& points)
 {
   //Check area/size length
-  float a = contourArea(points);
-  float p = arcLength(points, true);
-  float r = (144 / 5 * a) / (p * p);
-  #ifdef DO_SHAPE_DEBUG
-  std::cout << "CROSS: Area/Perimeter=" << r << std::endl;
-  #endif
-  if (r > 0.9 && r < 1.1) return true;
+  if (points.size() < 10) return false;
+  double perimeter = arcLength(points, true);
+  double side_length = perimeter / 12.0;
+  double area = contourArea(points);
+  double expected_area = 5.0*pow(side_length,2);
+  double error = fabs(area/expected_area-1.0);
+  //std::cout << "CROSS error: " << error << std::endl;
+  if (error < 0.1) return true;
   return false;
 }
+
+const double pi = 3.1415926;
 bool GrayscaleContour::isCircle(std::vector<Point>& points)
 {
   if (points.size() < 5) return false;
-  RotatedRect ellipse = fitEllipse(points);
-  float area = contourArea(points) / (ellipse.size.height * ellipse.size.width);
-  if (area >= (float(CIRCLE_BOUNDING_AREA_LOW)/1000) && area <= (float(CIRCLE_BOUNDING_AREA_HIGH)/1000)) return true;
+
+  //bounding rect area test
+  
+  Rect rect = boundingRect(points);
+  double contour_area = contourArea(points); //Actual area of the contour
+  double expected_area = pi*pow(rect.width/2,2); //What area should be if contour is a circle
+  double error  = fabs(contour_area/expected_area-1);
+  if (error < 0.1) return true;
   return false;
 }
 bool GrayscaleContour::filterArea(std::vector<Point> contour)
 {
-  return contourArea(contour) < minArea;
+  return contourArea(contour) < (minArea * (frame_width*frame_height) ) ;
 }
 double GrayscaleContour::contourAreaToBoundingRectAreaRatio(std::vector<cv::Point> &points)
 {
