@@ -62,12 +62,12 @@
   <!-- Find Totems and Avoid Obstacles - Totems -->
   <node name="spawn_red_totem" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/markers/red_marker_can.sdf -sdf
-      -x -72 -y -1 -z 0 -model red_totem"
+      -x -55 -y 8 -z 0 -model red_totem"
     output="screen" />
 
   <node name="spawn_green_totem" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/markers/green_marker_can.sdf -sdf
-      -x -71 -y 10 -z 0 -model green_totem"
+      -x -47 -y -12 -z 0 -model green_totem"
     output="screen" />
 
   <node name="spawn_blue_totem" pkg="gazebo_ros" type="spawn_model"
@@ -77,7 +77,7 @@
 
   <node name="spawn_yellow_totem" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/markers/yellow_marker_can.sdf -sdf
-      -x -80 -y 1 -z 0 -model yellow_totem"
+      -x -92 -y 16 -z 0 -model yellow_totem"
     output="screen" />
 
   <!-- Find Totems and Avoid Obstacles - A7 Buoys -->
@@ -103,7 +103,7 @@
 
   <node name="spawn_a7_buoy_5" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/buoys/black_a7.sdf -sdf
-      -x -71 -y -29 -z 0 -model a7_buoy_5"
+      -x -72 -y -25 -z 0 -model a7_buoy_5"
     output="screen" />
 
   <node name="spawn_a7_buoy_6" pkg="gazebo_ros" type="spawn_model"
@@ -123,7 +123,7 @@
 
   <node name="spawn_a7_buoy_9" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/buoys/black_a7.sdf -sdf
-      -x -100 -y 14 -z 0 -model a7_buoy_9"
+      -x -83 -y 22 -z 0 -model a7_buoy_9"
     output="screen" />
 
   <node name="spawn_a7_buoy_10" pkg="gazebo_ros" type="spawn_model"
@@ -144,7 +144,7 @@
   <!-- Find Totems and Avoid Obstacles - A5 Buoys -->
   <node name="spawn_a5_buoy_1" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/buoys/black_a5.sdf -sdf
-      -x -71 -y 29 -z 0 -model a5_buoy_1"
+      -x -66 -y 21 -z 0 -model a5_buoy_1"
     output="screen" />
 
   <node name="spawn_a5_buoy_2" pkg="gazebo_ros" type="spawn_model"
@@ -154,7 +154,7 @@
 
   <node name="spawn_a5_buoy_3" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/buoys/black_a5.sdf -sdf
-      -x -55 -y 8 -z 0 -model a5_buoy_3"
+      -x -72 -y -1 -z 0 -model a5_buoy_3"
     output="screen" />
 
   <node name="spawn_a5_buoy_4" pkg="gazebo_ros" type="spawn_model"
@@ -169,7 +169,7 @@
 
   <node name="spawn_a5_buoy_6" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/buoys/black_a5.sdf -sdf
-      -x -41 -y -9 -z 0 -model a5_buoy_6"
+      -x -77 -y -7 -z 0 -model a5_buoy_6"
     output="screen" />
 
   <node name="spawn_a5_buoy_7" pkg="gazebo_ros" type="spawn_model"
@@ -189,7 +189,7 @@
 
   <node name="spawn_a5_buoy_10" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/buoys/black_a5.sdf -sdf
-      -x -40 -y 15 -z 0 -model a5_buoy_10"
+      -x -65 -y 4 -z 0 -model a5_buoy_10"
     output="screen" />
 
   <!-- Find Totems and Avoid Obstacles - A3 Buoys -->
@@ -240,7 +240,7 @@
 
   <node name="spawn_a3_buoy_10" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/buoys/black_a3.sdf -sdf
-      -x -47 -y -12 -z 0 -model a3_buoy_10"
+      -x -71 -y 10 -z 0 -model a3_buoy_10"
     output="screen" />
 
   <node name="spawn_a3_buoy_11" pkg="gazebo_ros" type="spawn_model"
@@ -250,7 +250,7 @@
 
   <node name="spawn_a3_buoy_12" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/buoys/black_a3.sdf -sdf
-      -x -92 -y 16 -z 0 -model a3_buoy_12"
+      -x -80 -y 1 -z 0 -model a3_buoy_12"
     output="screen" />
 
   <node name="spawn_a3_buoy_13" pkg="gazebo_ros" type="spawn_model"
@@ -286,7 +286,7 @@
   <!-- Acoustic Pinger‐Based Transit - Entry Gate -->
   <node name="spawn_ping_entry_red" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/markers/red_marker_nun.sdf -sdf
-      -x -25 -y 35 -z 0 -model ping_entry_green"
+      -x -25 -y 35 -z 0 -model ping_entry_red"
     output="screen" />
 
   <node name="spawn_ping_entry_white_1" pkg="gazebo_ros" type="spawn_model"
@@ -307,7 +307,7 @@
   <!-- Acoustic Pinger‐Based Transit - Exit Gate -->
   <node name="spawn_ping_exit_red" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/markers/red_marker_nun.sdf -sdf
-      -x -25 -y -5 -z 0 -model ping_exit_green"
+      -x -25 -y -5 -z 0 -model ping_exit_red"
     output="screen" />
 
   <node name="spawn_ping_exit_white_1" pkg="gazebo_ros" type="spawn_model"
@@ -328,27 +328,27 @@
   <!-- Acoustic Pinger‐Based Transit - Test Gate -->
   <node name="spawn_ping_test_red" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/markers/red_marker_nun.sdf -sdf
-      -x 15 -y -15 -z 0 -model ping_test_green"
+      -x 40 -y -30 -z 0 -model ping_test_red"
     output="screen" />
 
   <node name="spawn_ping_test_white_1" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
-      -x 5 -y -15 -z 0 -model ping_test_white_1"
+      -x 30 -y -30 -z 0 -model ping_test_white_1"
     output="screen" />
 
   <node name="spawn_ping_test_white_2" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
-      -x -5 -y -15 -z 0 -model ping_test_white_2"
+      -x 20 -y -30 -z 0 -model ping_test_white_2"
     output="screen" />
 
   <node name="spawn_ping_test_green" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/markers/green_marker_nun.sdf -sdf
-      -x -15 -y -15 -z 0 -model ping_test_green"
+      -x 10 -y -30 -z 0 -model ping_test_green"
     output="screen" />
 
   <node name="spawn_ping_test_black" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/markers/black_marker_can.sdf -sdf
-      -x 0 -y -45 -z 0 -model ping_test_black"
+      -x 25 -y -60 -z 0 -model ping_test_black"
     output="screen" />
 
 

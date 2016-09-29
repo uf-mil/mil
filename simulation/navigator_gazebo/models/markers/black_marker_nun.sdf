@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
 <sdf version="1.5">
-  <model name="black_marker_can">
+  <model name="black_marker_nun">
     <static>true</static>
     <pose>0 0 -0.1223 0 0 0</pose>
     <link name="base_link">
       <visual name="visual">
         <geometry>
            <mesh>
-            <uri>file://markers/black_marker_can.dae</uri>
+            <uri>file://markers/black_marker_nun.dae</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="collision">
         <geometry>
            <mesh>
-            <uri>file://markers/black_marker_can.dae</uri>
+            <uri>file://markers/black_marker_nun.dae</uri>
           </mesh>
         </geometry>
       </collision>
