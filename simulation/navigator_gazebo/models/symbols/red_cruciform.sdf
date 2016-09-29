@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
 <sdf version="1.5">
-  <model name="red_circle">
+  <model name="red_cruciform">
     <static>true</static>
-    <pose>0 0 0 0 -1.5707 0</pose>
+    <pose>0 0 1 -1.5707 0 0</pose>
     <link name="base_link">
       <visual name="visual">
         <geometry>
            <mesh>
-            <uri>file://shapes/red_circle.dae</uri>
+            <uri>file://symbols/red_cruciform.dae</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="collision">
         <geometry>
            <mesh>
-            <uri>file://shapes/red_circle.dae</uri>
+            <uri>file://symbols/red_cruciform.dae</uri>
           </mesh>
         </geometry>
       </collision>
