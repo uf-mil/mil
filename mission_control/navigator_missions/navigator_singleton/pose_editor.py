@@ -70,6 +70,9 @@ def look_at_camera(forward, upish=UP):
 
 def is_valid_point(nav, point):
     # Check if an ENU point is in our range of operation (defined by the rosparam /lla_bounds)
+    if nav.enu_bounds is None:
+        return True
+
     r = _RayTracer()
     return r.point_in_polygon(point[:2], nav.enu_bounds)
 

@@ -32,7 +32,7 @@ class Navigator(object):
         self.pose = None
         self.ecef_pose = None
 
-        self.enu_bounds = []
+        self.enu_bounds = None
 
         self.alarms = []
 
@@ -49,6 +49,7 @@ class Navigator(object):
                                                       lambda odom: setattr(self, 'ecef_pose', navigator_tools.odometry_to_numpy(odom)[0]))
 
         self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
+        self._converter = self.nh.get_service_client('/convert', navigator_srvs.CoordinateConversion)
         self.tf_listener = tf.TransformListener(self.nh)
 
         print "Waiting for odom..."
@@ -83,24 +84,21 @@ class Navigator(object):
         '''
         if self.nh.has_param('lla_bounds'):
             lla_bounds = yield self.nh.get_param('lla_bounds')
-            print lla_bounds
             assert len(lla_bounds) == 4, 'Please define box: rosparam set /lla_bounds "[[lla1],[lla2],[lla3],[lla4]]"'
 
-            enu_pos = (yield self.tx_pose)[0]
-            ecef_pos = (yield self.tx_ecef_pose)[0]
-            for (lat, lon) in lla_bounds:
-                lat, lon = np.radians([lat, lon], dtype=np.float64)
-                ecef_vector = ecef_from_latlongheight(lat, lon, 0) - ecef_pos
-                enu_vector = enu_from_ecef(ecef_vector, ecef_pos)
+            try:
+                self.enu_bounds = [(yield self.coordinate_convert([lat, lon, 0], 'lla')).enu for (lat, lon) in lla_bounds]
+            except:
+                print "NAVIGATOR: No converter service."
+                defer.returnValue(False)
 
-                self.enu_bounds.append((enu_vector + enu_pos)[:2])
-            #self.enu_bounds = np.array(lla_bounds)[:, :2]  # Assume that the bounds we get are enu - for testing
-
+            # Just for display
             pc = PointCloud(header=navigator_tools.make_header(frame='/enu'),
-                            points=np.array([navigator_tools.numpy_to_point(np.append(point, 0)) for point in self.enu_bounds]))
+                            points=np.array([navigator_tools.numpy_to_point(point) for point in self.enu_bounds]))
             yield self._point_cloud_pub.publish(pc)
+
         else:
-            print 'No bounds being used.'
+            print 'NAVIGATOR: No bounds being used.'
 
     def vision_request(self, request_name, **kwargs):
         print "DEPREICATED: Please use new dictionary based system."
@@ -124,6 +122,10 @@ class Navigator(object):
             s_client = self.nh.get_service_client(f[name]["topic"], s_type)
             s_switch = self.nh.get_service_client(f[name]["topic"] + '/switch', SetBool)
             self.vision_proxies[name] = VisionProxy(s_client, s_req, s_args, s_switch)
+
+
+    def coordinate_convert(self, point, frame):
+        return self._converter(navigator_srvs.CoordinateConversionRequest(point=point, frame=frame))
 
     def _make_alarms(self):
         pass
