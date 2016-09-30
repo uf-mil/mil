@@ -51,12 +51,33 @@ ros::Publisher pubGrid,pubMarkers,pubBuoys,pubTrajectory,pubWaypoint;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-geometry_msgs::Point waypoint_enu, waypoint_ogrid;
+geometry_msgs::Point waypoint_ogrid;
 geometry_msgs::Pose boatPose_enu;
 geometry_msgs::Twist boatTwist_enu;
-uf_common::PoseTwistStamped carrot_enu;
-actionlib::SimpleActionServer<uf_common::MoveToAction> *actionServerPtr;
+uf_common::PoseTwistStamped waypoint_enu,carrot_enu;
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+float LLA_BOUNDARY_X1 = -30, LLA_BOUNDARY_Y1 = 50;
+float LLA_BOUNDARY_X2 = -30, LLA_BOUNDARY_Y2 = -20;
+float LLA_BOUNDARY_X3 = 35, LLA_BOUNDARY_Y3 = -20;
+float LLA_BOUNDARY_X4 = 35, LLA_BOUNDARY_Y4 = 50;
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef actionlib::SimpleActionServer<uf_common::MoveToAction> MOVE_TO_SERVER;
+MOVE_TO_SERVER *actionServerPtr;
+
+void actionExecute(const uf_common::MoveToGoalConstPtr& goal)
+{
+	//Grab new goal from actionserver
+	ROS_INFO("LIDAR: Following new goal from action server!");
+	waypoint_enu.posetwist = goal->posetwist; 
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -68,12 +89,6 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 
 	//Measure elapsed time for function
 	ros::Time timer = ros::Time::now();
-
-	//Get new action
-	if (actionServerPtr->isNewGoalAvailable()) {
-      	boost::shared_ptr<const uf_common::MoveToGoal> goal = actionServerPtr->acceptNewGoal();
-      	//goal->posetwist.pose, goal->posetwist.twist), goal->speed,!goal->uncoordinated
-    }
 
 	//Use ROS transform listener to grad up-to-date transforms between reference frames
 	static tf2_ros::Buffer tfBuffer;
@@ -100,49 +115,14 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	ogrid.createBinaryROI(MIN_HITS_FOR_OCCUPANCY,MAXIMUM_Z_HEIGHT);
 
 	//Inflate ogrid before detecting objects and calling AStar
-	ogrid.inflateBinary(6);
+	ogrid.inflateBinary(5);
 
 	//Detect objects
 	std::vector<objectMessage> objects;
 	std::vector< std::vector<int> > cc = ConnectedComponents(ogrid,objects);
 
-
-
-	//Fake waypoint - this needs to be replaced! //Eigen::Vector3d v = T_enu_velodyne*Eigen::Vector3d(30,0,0);
-	waypoint_enu.x = 25;
-	waypoint_enu.y = -25;
-	waypoint_enu.z = 5;
-			
-	//Convert waypoint from enu frame to ROI around lidar
-	waypoint_ogrid.x = (int)( (waypoint_enu.x-lidarpos.x)/VOXEL_SIZE_METERS + ogrid.ROI_SIZE/2 );
-	waypoint_ogrid.y = (int)( (waypoint_enu.y-lidarpos.y)/VOXEL_SIZE_METERS + ogrid.ROI_SIZE/2 );
-	waypoint_ogrid.z = waypoint_enu.z;
-
-	//Force waypoint to fit on ROI
-	if (waypoint_ogrid.x >= ogrid.ROI_SIZE) { waypoint_ogrid.x = ogrid.ROI_SIZE-1; }
-	if (waypoint_ogrid.x < 0) { waypoint_ogrid.x = 0; }	
-	if (waypoint_ogrid.y >= ogrid.ROI_SIZE) { waypoint_ogrid.y = ogrid.ROI_SIZE-1; }	
-	if (waypoint_ogrid.y < 0) { waypoint_ogrid.y = 0; }	
-
-	//Inflate waypoint on grid for easier visuals
-	for (int ii = -2; ii <= 2; ++ii) {
-		for (int jj = -2; jj <= 2; ++jj) {
-			ogrid.ogridMap[ (waypoint_ogrid.y+ii)*ogrid.ROI_SIZE + waypoint_ogrid.x+jj] = 25;
-		}
-	}
-
-	//Setup Astar
-	astar.setMap(ogrid.ogridBinary);
-	astar.setFinish(waypoint_ogrid.x, waypoint_ogrid.y);	
-
-	//Mark starting square on map
-	ogrid.ogridMap[ (astar.startNode.y)*ogrid.ROI_SIZE + astar.startNode.x] = 25;
-
-	//Run Astar
-	auto solution = astar.run();
-	
 	//Set the carrot as the boat's current position and orientation - this is the backup for the boat not to move if Astar fails
-	carrot_enu.posetwist.pose.position = boatPose_enu.position; //waypoint_enu;
+	carrot_enu.posetwist.pose.position = boatPose_enu.position; 
 	carrot_enu.posetwist.pose.orientation = boatPose_enu.orientation;
 	carrot_enu.posetwist.twist.linear.x = 0;
 	carrot_enu.posetwist.twist.linear.y = 0;
@@ -151,67 +131,105 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	carrot_enu.posetwist.twist.angular.y = 0;
 	carrot_enu.posetwist.twist.angular.z = 0;
 
-	//If the Astar path still has steps to go, pick a spot a few iterations ahead of the boat
-	Eigen::Vector3d desHeading(0,0,0);
-	double desBoatRotAngle = 0;
+	//If the action server is active, run Astar
+	if (actionServerPtr->isActive()) {
+		ROS_INFO("LIDAR: Action server has an active goal to follow!");
+
+		//Fake waypoint instead of using action server request
+		//waypoint_enu.posetwist.pose.position.x = 25;
+		//waypoint_enu.posetwist.pose.position.y = -25;
+		//waypoint_enu.posetwist.pose.position.z = 5;		
 	
-	//If we are close to the goal, make that the waypoing
-	if (solution.size() <= 10) {
-		carrot_enu.posetwist.pose.position = waypoint_enu;
-		//carrot_enu.posetwist.pose.orientation = WAYPOINT ORIENTATION 
-	}
+		//Convert waypoint from enu frame to ROI around lidar
+		waypoint_ogrid.x = (int)( (waypoint_enu.posetwist.pose.position.x-lidarpos.x)/VOXEL_SIZE_METERS + ogrid.ROI_SIZE/2 );
+		waypoint_ogrid.y = (int)( (waypoint_enu.posetwist.pose.position.y-lidarpos.y)/VOXEL_SIZE_METERS + ogrid.ROI_SIZE/2 );
+		waypoint_ogrid.z = waypoint_enu.posetwist.pose.position.z;
 
-	//Determine the boats current rotation in the plane of the water
-	double boatRotAngle = atan2(Eigen::Vector3d(boatPose_enu.orientation.y,boatPose_enu.orientation.x,boatPose_enu.orientation.z).norm(),boatPose_enu.orientation.w)*2*180/3.14159;
-	ROS_INFO_STREAM("LIDAR | Boat Rotation angle: " << boatRotAngle);
+		//Force waypoint to fit on ROI
+		if (waypoint_ogrid.x >= ogrid.ROI_SIZE) { waypoint_ogrid.x = ogrid.ROI_SIZE-1; }
+		if (waypoint_ogrid.x < 0) { waypoint_ogrid.x = 0; }	
+		if (waypoint_ogrid.y >= ogrid.ROI_SIZE) { waypoint_ogrid.y = ogrid.ROI_SIZE-1; }	
+		if (waypoint_ogrid.y < 0) { waypoint_ogrid.y = 0; }	
 
-	int index = 0;
-	for (auto square : solution) {
-		//Place path on map
-		ogrid.ogridMap[square.second*ogrid.ROI_SIZE+square.first] = 0;
-
-		//At some arbitrary distance away, make this the desired waypoint
-		if (index == 20) {
-			//Determine heading and corresponding angle
-			desHeading(0) = square.first-ogrid.ROI_SIZE/2; 
-			desHeading(1) = square.second-ogrid.ROI_SIZE/2;
-			desHeading(2) = 0; 
-			desHeading.normalize();
-			desBoatRotAngle = atan2( desHeading(1), desHeading(0) ) ;
-			ROS_INFO_STREAM("Desired Heading: " << desHeading(0) << "," << desHeading(1) << " -> " << desBoatRotAngle*180/3.14159);
-
-			//Update carrot in the enu
-			//We only let the boat move if we are pointing close to the right direction
-			if (fabs(desBoatRotAngle - boatRotAngle) < 15) {
-				carrot_enu.posetwist.pose.position.x = (square.first-ogrid.ROI_SIZE/2)*ogrid.VOXEL_SIZE_METERS + ogrid.lidarPos.x - ogrid.VOXEL_SIZE_METERS;
-				carrot_enu.posetwist.pose.position.y = (square.second-ogrid.ROI_SIZE/2)*ogrid.VOXEL_SIZE_METERS + ogrid.lidarPos.y - ogrid.VOXEL_SIZE_METERS;
-				carrot_enu.posetwist.twist.linear.x = desHeading(0)*1;
-				carrot_enu.posetwist.twist.linear.y = desHeading(1)*1;
-				carrot_enu.posetwist.twist.linear.z = 0;
-			}
-			carrot_enu.posetwist.pose.orientation.w = cos(desBoatRotAngle/2);
-			carrot_enu.posetwist.pose.orientation.x = 0;
-			carrot_enu.posetwist.pose.orientation.y = 0;
-			carrot_enu.posetwist.pose.orientation.z = 1*sin(desBoatRotAngle/2);
-
-
-			//Make the carrot look bigger than it is
-			int ii = 0, jj = 0;
-			for (int ii = -2; ii <= 2; ++ii) {
-				for (int jj = -2; jj <= 2; ++jj) {
-					ogrid.ogridMap[ (square.second+ii)*ogrid.ROI_SIZE+square.first+jj] = 75;
-				}
+		//Inflate waypoint on grid for easier visuals
+		for (int ii = -2; ii <= 2; ++ii) {
+			for (int jj = -2; jj <= 2; ++jj) {
+				ogrid.ogridMap[ (waypoint_ogrid.y+ii)*ogrid.ROI_SIZE + waypoint_ogrid.x+jj] = 25;
 			}
 		}
-		++index;
+
+		//Setup Astar
+		astar.setMap(ogrid.ogridBinary);
+		astar.setFinish(waypoint_ogrid.x, waypoint_ogrid.y);	
+
+		//Mark starting square on map
+		ogrid.ogridMap[ (astar.startNode.y)*ogrid.ROI_SIZE + astar.startNode.x] = 25;
+
+		//Run Astar
+		auto solution = astar.run();
+
+		//Determine the boats current rotation in the plane of the water
+		double boatRotAngle = atan2(Eigen::Vector3d(boatPose_enu.orientation.y,boatPose_enu.orientation.x,boatPose_enu.orientation.z).norm(),boatPose_enu.orientation.w)*2*180/3.14159;
+		ROS_INFO_STREAM("LIDAR | Boat Rotation angle: " << boatRotAngle);
+
+		//If we are close to the goal, make that the waypoint
+		if (solution.size() > 1 && solution.size() <= 5) {
+			carrot_enu.posetwist = waypoint_enu.posetwist;
+			//actionServerPtr->setSucceeded(); 
+		}
+
+		//If the Astar found a path with several steps to the goal, pick a spot a few iterations ahead of the boat
+		const int STEPS_ALONG_ASTAR = 20;
+		Eigen::Vector3d desHeading(0,0,0);
+		double desBoatRotAngle = 0;
+		int index = 0;
+		for (auto square : solution) {
+			//Place path on map
+			ogrid.ogridMap[square.second*ogrid.ROI_SIZE+square.first] = 0;
+
+			//At some arbitrary distance away, make this the desired waypoint
+			if (index == STEPS_ALONG_ASTAR) {
+				//Determine heading and corresponding angle
+				desHeading(0) = square.first-ogrid.ROI_SIZE/2; 
+				desHeading(1) = square.second-ogrid.ROI_SIZE/2;
+				desHeading(2) = 0; 
+				desHeading.normalize();
+				desBoatRotAngle = atan2( desHeading(1), desHeading(0) ) ;
+				ROS_INFO_STREAM("LIDAR | Desired Heading: " << desHeading(0) << "," << desHeading(1) << " -> " << desBoatRotAngle*180/3.14159);
+
+				//Update carrot in the enu
+				//We only let the boat translate if we are pointing close to the right direction, otherwise just rotate
+				if (fabs(desBoatRotAngle - boatRotAngle) < 15) {
+					carrot_enu.posetwist.pose.position.x = (square.first-ogrid.ROI_SIZE/2)*ogrid.VOXEL_SIZE_METERS + ogrid.lidarPos.x - ogrid.VOXEL_SIZE_METERS;
+					carrot_enu.posetwist.pose.position.y = (square.second-ogrid.ROI_SIZE/2)*ogrid.VOXEL_SIZE_METERS + ogrid.lidarPos.y - ogrid.VOXEL_SIZE_METERS;
+					carrot_enu.posetwist.twist.linear.x = desHeading(0)*1; //speed of 1 m/s
+					carrot_enu.posetwist.twist.linear.y = desHeading(1)*1; //speed of 1 m/s
+					carrot_enu.posetwist.twist.linear.z = 0;
+				}
+
+				//Create quaternion facing in the direction of the carrot
+				carrot_enu.posetwist.pose.orientation.w = cos(desBoatRotAngle/2);
+				carrot_enu.posetwist.pose.orientation.x = 0;
+				carrot_enu.posetwist.pose.orientation.y = 0;
+				carrot_enu.posetwist.pose.orientation.z = 1*sin(desBoatRotAngle/2);
+
+
+				//Make the carrot look bigger than it is in the ogrid
+				int ii = 0, jj = 0;
+				for (int ii = -2; ii <= 2; ++ii) {
+					for (int jj = -2; jj <= 2; ++jj) {
+						ogrid.ogridMap[ (square.second+ii)*ogrid.ROI_SIZE+square.first+jj] = 75;
+					}
+				}
+			}
+			++index;
+		}
+		ROS_INFO_STREAM("LIDAR | Carrot orientation: " << carrot_enu.posetwist.pose.orientation.w << "," << carrot_enu.posetwist.pose.orientation.x << "," << carrot_enu.posetwist.pose.orientation.y << "," << carrot_enu.posetwist.pose.orientation.z);
+		ROS_INFO_STREAM("LIDAR | Boat orientation: " << boatPose_enu.orientation.w << "," << boatPose_enu.orientation.x << "," << boatPose_enu.orientation.y << "," << boatPose_enu.orientation.z);
 	}
-	pubTrajectory.publish(carrot_enu);
 	ROS_INFO_STREAM("LIDAR | Carrot enu: " << carrot_enu.posetwist.pose.position.x << "," << carrot_enu.posetwist.pose.position.y << "," << carrot_enu.posetwist.pose.position.z);
 	ROS_INFO_STREAM("LIDAR | Boat enu: " << boatPose_enu.position.x << "," << boatPose_enu.position.y << "," << boatPose_enu.position.z);
-	ROS_INFO_STREAM("LIDAR | Carrot orientation: " << carrot_enu.posetwist.pose.orientation.w << "," << carrot_enu.posetwist.pose.orientation.x << "," << carrot_enu.posetwist.pose.orientation.y << "," << carrot_enu.posetwist.pose.orientation.z);
-	ROS_INFO_STREAM("LIDAR | Boat orientation: " << boatPose_enu.orientation.w << "," << boatPose_enu.orientation.x << "," << boatPose_enu.orientation.y << "," << boatPose_enu.orientation.z);
-
-
+	pubTrajectory.publish(carrot_enu);
 
 
 	//Publish rosgrid
@@ -247,11 +265,17 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	m.type = visualization_msgs::Marker::LINE_STRIP;
 	m.action = visualization_msgs::Marker::ADD;
 	m.scale.x = 0.5;
-	p.x = -25; p.y = 50; p.z = lidarpos.z; m.points.push_back(p);
-	p.x = -25; p.y = 0; p.z = lidarpos.z; m.points.push_back(p);
-	p.x = 35; p.y = 0; p.z = lidarpos.z; m.points.push_back(p);
-	p.x = 35; p.y = 50; p.z = lidarpos.z; m.points.push_back(p);
-	p.x = -25; p.y = 50; p.z = lidarpos.z; m.points.push_back(p);
+
+	p.x = LLA_BOUNDARY_X1; p.y = LLA_BOUNDARY_Y1; p.z = lidarpos.z; 
+	m.points.push_back(p);
+	p.x = LLA_BOUNDARY_X2; p.y = LLA_BOUNDARY_Y2; p.z = lidarpos.z; 
+	m.points.push_back(p);
+	p.x = LLA_BOUNDARY_X3; p.y = LLA_BOUNDARY_Y3; p.z = lidarpos.z; 
+	m.points.push_back(p);
+	p.x = LLA_BOUNDARY_X4; p.y = LLA_BOUNDARY_Y4; p.z = lidarpos.z; 
+	m.points.push_back(p);
+	p.x = LLA_BOUNDARY_X1; p.y = LLA_BOUNDARY_Y1; p.z = lidarpos.z; 
+	m.points.push_back(p);
 	m.color.a = 0.6; m.color.r = 1; m.color.g = 1; m.color.b = 1;
 	markers.markers.push_back(m);
 	
@@ -264,21 +288,18 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	buoy.header.stamp = ros::Time::now();	
 	int id = 0;
 	for (auto obj : objects) {
-		//Verify object is in the enu frame - this should come from LLA transforms later
-		//if (obj.position.x < -35 || obj.position.x > 65 || obj.position.y < -35 || obj.position.y > 50 ) { continue; }
-		if (obj.position.x < -25 || obj.position.x > 35 || obj.position.y < 0 || obj.position.y > 50 ) { continue; }
+		//Verify object is in the enu frame - THIS IS POOR CODE - NEED TO UPDATE WHEN LLA STUFF IS AVAILABLE
+		if (obj.position.x < LLA_BOUNDARY_X1 || obj.position.x > LLA_BOUNDARY_X4 || obj.position.y < LLA_BOUNDARY_Y2 || obj.position.y > LLA_BOUNDARY_Y1 ) { continue; }
 		ROS_INFO_STREAM("LIDAR | Adding buoy " << id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.beams.size() << " lidar points ");
-		//for (auto jj : obj.beams) {
-		//1	std::cout << jj.x << "," << jj.y << "," << jj.z << "," << jj.i << std::endl;
-		//}
-
+		
 		//Buoys
 		buoy.header.stamp = ros::Time::now();
 		buoy.id = id;
 		buoy.confidence = 0;
 		buoy.position = obj.position;
 		buoy.height = obj.scale.z; 
-		buoy.width = obj.scale.x; //x or y for width?
+		buoy.width = obj.scale.x; 
+		buoy.depth = obj.scale.y; 
 		buoy.points = obj.beams;
 		allBuoys.buoys.push_back(buoy);
 
@@ -301,7 +322,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	pubBuoys.publish(allBuoys);
 
 	//Elapsed time
-	ROS_INFO_STREAM("Elapsed time: " << (ros::Time::now()-timer).toSec());
+	ROS_INFO_STREAM("LIDAR | Elapsed time: " << (ros::Time::now()-timer).toSec());
 	ROS_INFO("**********************************************************");
 }
 
@@ -341,6 +362,12 @@ int main(int argc, char* argv[])
 	//Node handler
 	ros::NodeHandle nh;
 
+	//Setup action server
+	//MOVE_TO_SERVER actionServer(nh, "moveto", boost::bind(&actionExecute, _1, &actionServer) ,false);
+	MOVE_TO_SERVER actionServer(nh, "moveto",actionExecute,false);
+	actionServerPtr = &actionServer;
+	actionServer.start();
+
 	//Subscribe to odom and the velodyne
 	ros::Subscriber sub1 = nh.subscribe("/velodyne_points", 1, cb_velodyne);
 	ros::Subscriber sub2 = nh.subscribe("/odom", 1, cb_odom);
@@ -353,10 +380,6 @@ int main(int argc, char* argv[])
 	//Publish waypoints to controller
 	pubTrajectory = nh.advertise<uf_common::PoseTwistStamped>("trajectory", 1);
     //pubWaypoint = nh.advertise<PoseStamped>("waypoint", 1); //Do we need this?
-
-	//Setup action server
-	actionlib::SimpleActionServer<uf_common::MoveToAction> actionServer(nh, "moveto", false);
-	actionServerPtr = &actionServer;
 
 	//Give control to ROS
 	ros::spin();
@@ -411,6 +434,13 @@ int main(int argc, char* argv[])
 //									Graveyard
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/*
+
+	//Check rosparam
+	//rosparam /lla_bounds
+	//lla enforce
+	//rosservice conversion - LLA to ENU
+
+
 	//Get nodes and topics
 	ros::V_string nodes;
 	ros::master::getNodes(nodes);
