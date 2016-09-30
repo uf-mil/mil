@@ -31,6 +31,3 @@
 
         Mission System:
 	[] Add to launch file
-
-
-[] Make a huge launch file 
