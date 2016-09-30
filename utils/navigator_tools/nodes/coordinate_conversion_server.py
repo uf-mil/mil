@@ -30,12 +30,8 @@ class Converter(object):
     def got_request(self, srv):
         self.point = np.array(srv.point)
 
-        # self.enu_pos = navigator_tools.odometry_to_numpy((yield self.odom_sub.get_next_message()))[0][0]
-        # self.ecef_pos = navigator_tools.odometry_to_numpy((yield self.abs_odom_sub.get_next_message()))[0][0]
-
-        yield
-        self.enu_pos = np.array([0, 0, 0])
-        self.ecef_pos = np.array([743864, -5503829, 3125589])
+        self.enu_pos = navigator_tools.odometry_to_numpy((yield self.odom_sub.get_next_message()))[0][0]
+        self.ecef_pos = navigator_tools.odometry_to_numpy((yield self.abs_odom_sub.get_next_message()))[0][0]
 
         enu, ecef, lla = getattr(self, srv.frame)()
 
