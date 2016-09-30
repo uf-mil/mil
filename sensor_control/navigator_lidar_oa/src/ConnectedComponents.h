@@ -37,17 +37,31 @@ struct objectStats
 		}
 		++count;
 	}
+	void insert(const std::deque<LidarBeam> &newBeams) {
+		//beams.insert(beams.end(),newBeams.begin(),newBeams.end());
+		geometry_msgs::Point32 p32;
+		for (auto beam : newBeams) {
+			p32.x = beam.x;
+			p32.y = beam.y;
+			p32.z = beam.z;
+			beams.push_back(p32);
+		}
+	}
 	int count = 0;
 	float minRow, maxRow, minCol, maxCol, minHeight, maxHeight;
+	//std::vector<LidarBeam> beams;
+	std::vector<geometry_msgs::Point32> beams;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct objectXYZ
+struct objectMessage
 {
 	geometry_msgs::Point position;
 	geometry_msgs::Vector3 scale;
+	//std::vector<LidarBeam> beams;
+	std::vector<geometry_msgs::Point32> beams;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -62,7 +76,7 @@ struct RCLabel
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::vector< std::vector<int> > ConnectedComponents(const OccupancyGrid &ogrid, std::vector<objectXYZ> &objects)
+std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::vector<objectMessage> &objects)
 {
 	//std::cout << "STARTING CONNECTED COMPONENTS" << std::endl;
 
@@ -137,6 +151,8 @@ std::vector< std::vector<int> > ConnectedComponents(const OccupancyGrid &ogrid, 
 			if (cc[row][col]) { 
 				cc[row][col] = labelMap[cc[row][col]]; 
 				mapObjects[cc[row][col]].update(row,col,ogrid.ogrid[row + ogrid.boatRow - ogrid.ROI_SIZE/2][col + ogrid.boatCol - ogrid.ROI_SIZE/2]);
+				int r = row + ogrid.boatRow - ogrid.ROI_SIZE/2, c = col + ogrid.boatCol - ogrid.ROI_SIZE/2;
+				mapObjects[cc[row][col]].insert(ogrid.pointCloudTable[r*ogrid.GRID_SIZE+c].q);
 			}
 			//std::cout << cc[ii][jj] << " ";
 		}
@@ -147,14 +163,15 @@ std::vector< std::vector<int> > ConnectedComponents(const OccupancyGrid &ogrid, 
 	int newId = 0;
 	objects.clear();
 	for (auto ii : mapObjects)  {
-		if (ii.second.count >= 1) {
-			objectXYZ ob;
+		if (ii.second.count > 1 && ii.second.beams.size() > 1) {
+			objectMessage ob;
 			float dx = (ii.second.maxCol-ii.second.minCol)+0.015; ob.scale.x = dx*ogrid.VOXEL_SIZE_METERS;
 			float dy = (ii.second.maxRow-ii.second.minRow)+0.015; ob.scale.y = dy*ogrid.VOXEL_SIZE_METERS;
 			float dz = (ii.second.maxHeight - ii.second.minHeight)+0.015; ob.scale.z = dz;
 			ob.position.x = (dx/2+ii.second.minCol - ogrid.ROI_SIZE/2)*ogrid.VOXEL_SIZE_METERS + ogrid.lidarPos.x;
 			ob.position.y = (dy/2+ii.second.minRow - ogrid.ROI_SIZE/2)*ogrid.VOXEL_SIZE_METERS + ogrid.lidarPos.y;
 			ob.position.z =  dz/2 + ii.second.minHeight;
+			ob.beams = ii.second.beams;
 			objects.push_back(ob);
 			//ROS_INFO_STREAM(newId << " -> " << ob.position.x << "," << ob.position.y << "," << ob.position.z << "|" << ob.scale.x << "," << ob.scale.y << "," << ob.scale.z);
 			++newId;

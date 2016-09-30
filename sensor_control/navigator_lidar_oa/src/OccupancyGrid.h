@@ -9,8 +9,9 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <unordered_map>
 #include <cstring>
-#include <map>
+#include <deque>
 #include <set>
 #include <algorithm>
 #include <fstream>
@@ -20,10 +21,10 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct Point
+struct LidarBeam
 {
-	Point() = default;
-	Point(double x_, double y_, double z_, double i_) : x(x_),y(y_),z(z_),i(i_) {}
+	LidarBeam() = default;
+	LidarBeam(double x_, double y_, double z_, double i_) : x(x_),y(y_),z(z_),i(i_) {}
 	double x,y,z,i;
 };
 
@@ -37,6 +38,17 @@ struct cell
 	float min = 1e5,max = -1e5;
 };
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct beamEntry
+{
+	void update(const LidarBeam &beam) {
+		if (q.size() >= 10) { q.pop_front(); }
+		q.push_back(beam);
+	}
+	std::deque<LidarBeam> q;
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -81,10 +93,10 @@ class OccupancyGrid
 	    /// \param ?
 	    /// \param ?
 	    ////////////////////////////////////////////////////////////
-		void updatePoints(const std::vector<Point> &xyz, int max_hits)
+		void updatePoints(const std::vector<LidarBeam> &xyz, int max_hits)
 		{
 			for (auto p : xyz)
-				updateGrid(p.x, p.y, p.z,max_hits);
+				updateGrid(p,max_hits);
 		}
 
 		////////////////////////////////////////////////////////////
@@ -96,13 +108,16 @@ class OccupancyGrid
 		#ifndef OPENCV_IRA
 		void updatePointsAsCloud(const sensor_msgs::PointCloud2ConstPtr &cloud, Eigen::Affine3d T, int max_hits) 
 		{
-			//Decrement grid for negative persistance...
-			for (int row = boatRow - ROI_SIZE/2; row < boatRow + ROI_SIZE/2; ++row) {
+			//Decrement grid for negative persistance but only in front of the boat! This still isn't technially true since the boat 
+			//can see somwhat behind itself..
+			for (int row = boatRow - 0; row < boatRow + ROI_SIZE/2; ++row) {
 				for (int col = boatCol - ROI_SIZE/2; col < boatCol + ROI_SIZE/2; ++col) {
 					if (ogrid[row][col].hits > 0) { 
 						ogrid[row][col].hits -= 1;
 						if (ogrid[row][col].hits == 0) {
 							ogrid[row][col] = cell();
+							//Erase 
+							pointCloudTable.erase(row*GRID_SIZE+col);
 						}	
 					} 
 				}
@@ -121,7 +136,7 @@ class OccupancyGrid
 				Eigen::Vector3d xyz_in_velodyne(x.f,y.f,z.f);
 				Eigen::Vector3d xyz_in_enu = T*xyz_in_velodyne;
 				if (xyz_in_velodyne.norm() > 5 && xyz_in_velodyne.norm() <= 100) {
-					updateGrid(xyz_in_enu(0), xyz_in_enu(1), xyz_in_enu(2),max_hits);
+					updateGrid(LidarBeam(xyz_in_enu(0), xyz_in_enu(1), xyz_in_enu(2),i.f),max_hits);
 				}			
 			}
 			++updateCounter;
@@ -158,15 +173,16 @@ class OccupancyGrid
 	    /// \param ?
 	    /// \param ?
 	    ////////////////////////////////////////////////////////////
-		void updateGrid(float px, float py, float pz, int max_hits)
+		void updateGrid(LidarBeam p, int max_hits)
 		{
-				int x = floor(px/VOXEL_SIZE_METERS + GRID_SIZE/2);
-				int y = floor(py/VOXEL_SIZE_METERS + GRID_SIZE/2);
-				float z = pz;
+				int x = floor(p.x/VOXEL_SIZE_METERS + GRID_SIZE/2);
+				int y = floor(p.y/VOXEL_SIZE_METERS + GRID_SIZE/2);
+				float z = p.z;
 				if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE) {
 					if (z < ogrid[y][x].min) { ogrid[y][x].min = z; }
 					if (z > ogrid[y][x].max) { ogrid[y][x].max = z; }
 					ogrid[y][x].hits += 5;
+					pointCloudTable[y*GRID_SIZE+x].update(p);
 					if (ogrid[y][x].hits > max_hits) { 
 						//std::cout << "Ogrid at y,x " << y << "," << x << " has hits of " << (int)ogrid[y][x].hits << std::endl;	
 						ogrid[y][x].hits = max_hits; 
@@ -240,6 +256,7 @@ class OccupancyGrid
 		uint32_t boatRow = 0, boatCol = 0;						///< ???				
 		geometry_msgs::Vector3 lidarPos;						///< ???
 		int updateCounter = 0;									///< ???
+		std::unordered_map<unsigned,beamEntry> pointCloudTable; ///< ???
 };	
 
 #endif
