@@ -24,15 +24,26 @@
       -x 3 -y -17 -z 1.5 -Y -1.5708 -model red_circle"
     output="screen" />
 
+
+  <node name="spawn_scan_the_code" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find navigator_gazebo)/models/shapes/scan_the_code.sdf
+    -x -5 -y 10 -z 1.5 -sdf -model scan_the_code"
+    output="screen" />
+
+
   <!-- Buoy -->
   <node name="spawn_red_buoy" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/buoys/red.sdf -sdf
       -x 15 -y 3 -z .3 -model red_buoy"
     output="screen" />
+
   <node name="spawn_green_buoy" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/buoys/green.sdf -sdf
       -x 15 -y -7 -z .3 -model green_buoy"
     output="screen" />
+
+
+
 
   <node pkg="navigator_gazebo" type="gazebo_controller.py" name="gazebo_interface"/>
 </launch>

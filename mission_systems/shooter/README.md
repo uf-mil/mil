@@ -15,11 +15,11 @@ The timing values (in milliseconds) for the load and fire commands are configura
 #Control
 The arduino firmware provides the following services for controlling the shooter:
 
-| Service | Type | Behavior | Arguments |
+| Service | Type | Behavior | Arguments/Returns |
 | ------- | ---- | -------- | --------- |
 | /shooter/cancel | std_srvs/Trigger | Immediately turns off everything on the shooter | None |
-| /shooter/load | std_srvs/Trigger | timing based control which retracts the feeder to allow a ball in, pushes the fall towards the fly wheels, then turns on the flywheels for quickfiring | None |
-| /shooter/fire | std_srvs/Trigger | timing based control which extends the linear actuator to launch the ball, then turns off the flywheels | None |
+| /shooter/load | std_srvs/Trigger | retracts the feeder to allow a ball in, pushes the fall towards the fly wheels, then turns on the flywheels for quickfiring | returns success == false if ball already loaded or shooter is currently doing something |
+| /shooter/fire | std_srvs/Trigger | extends the linear actuator to launch the ball, then turns off the flywheels | None | returns success == false if ball is NOT loaded or shooter is currently doing something |
 | /shooter/manual | navigator_msgs/ShooterManual | Manually control the motor controllers on the shooter| feeder: int32 (-100 to 100 speed to set feeder), shooter: int32  (-100 to 100 speed to set flywheels) |
 
 #Switching USB/Board type
