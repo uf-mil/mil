@@ -1,4 +1,5 @@
 controller:
+  controller_serial: /dev/ttyUSB0
   load:
     retract_time_millis: 1000
     pause_time_millis:   100

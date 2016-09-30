@@ -63,15 +63,15 @@ class ShooterControl:
     self.fire_server.set_succeeded(result)
     rospy.loginfo("Finished fire")
   def __init__(self):
-    self.controller_file = rospy.get_param('controller/controller_serial', '/dev/ttyUSB0')
-    self.load_retract_time = rospy.Duration(0,rospy.get_param('controller/load/retract_time_millis',950)*1000000)
-    self.load_extend_time = rospy.Duration(0,rospy.get_param('controller/load/extend_time_millis',500)*1000000)
+    self.controller_file = rospy.get_param('~controller/controller_serial', '/dev/ttyUSB0')
+    rospy.loginfo("Shooter connecting to motor controller at: %s",self.controller_file)
+    self.load_retract_time = rospy.Duration(0,rospy.get_param('~controller/load/retract_time_millis',950)*1000000)
+    self.load_extend_time = rospy.Duration(0,rospy.get_param('~controller/load/extend_time_millis',500)*1000000)
     self.load_total_time = self.load_retract_time + self.load_extend_time
-    self.fire_extend_time = rospy.Duration(0,rospy.get_param('controller/fire/extend_time_millis',400)*1000000)
-    self.fire_shoot_time = rospy.Duration(0,rospy.get_param('controller/fire/shoot_time_millis',1000)*1000000)
+    self.fire_extend_time = rospy.Duration(0,rospy.get_param('~controller/fire/extend_time_millis',400)*1000000)
+    self.fire_shoot_time = rospy.Duration(0,rospy.get_param('~controller/fire/shoot_time_millis',1000)*1000000)
     self.total_fire_time = self.fire_shoot_time
     self.loaded = False #Assume linear actuator starts forward
-
     self.motor_controller = Sabertooth2x12(self.controller_file)
     self.load_server = actionlib.SimpleActionServer('/shooter/load', ShooterDoAction, self.loadExecuteCallback, False)
     self.fire_server = actionlib.SimpleActionServer('/shooter/fire', ShooterDoAction, self.fireExecuteCallback, False)
