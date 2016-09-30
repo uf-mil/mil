@@ -109,8 +109,8 @@ class OccupancyGrid
 		void updatePointsAsCloud(const sensor_msgs::PointCloud2ConstPtr &cloud, Eigen::Affine3d T, int max_hits) 
 		{
 			//Decrement grid for negative persistance but only in front of the boat! This still isn't technially true since the boat 
-			//can see somwhat behind itself..
-			for (int row = boatRow - 0; row < boatRow + ROI_SIZE/2; ++row) {
+			//can see somwhat behind itself.. THIS NEEDS TO BE FIXED!!!!
+			for (int row = boatRow - ROI_SIZE/2; row < boatRow + ROI_SIZE/2; ++row) {
 				for (int col = boatCol - ROI_SIZE/2; col < boatCol + ROI_SIZE/2; ++col) {
 					if (ogrid[row][col].hits > 0) { 
 						ogrid[row][col].hits -= 1;
