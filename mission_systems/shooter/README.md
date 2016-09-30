@@ -7,28 +7,20 @@
 
 #Running / Testing
 * Start a ros master node `roscore`
-* Start a node to communicate with arduino and turn it into ros stuff `rosrun rosserial_python serial_node.py /dev/USBPATH` ex: `rosrun rosserial_python serial_node.py /dev/ttyACM0`
-* Use `rostopic list` to see if the subscribers and publishers you created show up
-* Run the command line testing script `rosrun navigator_shooter shooter_control.py`
-* Type in one of the valid commands and press enter to test it 
+* Launch the rosserial node for the arduino `roslaunch navigator_launch hardware_drivers.launch`
 
-#Messages
-* The arduino listens on the topic `/shooter/control` for `std_msgs/String` messages
-* The following strings will result in behavior on the shooter:
+#Config
+The timing values (in milliseconds) for the load and fire commands are configurable from launch/config.yaml
 
-Command | Behavior 
---- | --- |
-shoot | Shoots all 4 balls using timing
-cancel | cancels any command, turning off all motors
-flyon | manually turns on the fly wheel motors
-flyoff | manually turns off the fly wheel motors
-feedon | manually turns on the feeder motor
-feedoff | manually turns off the feeder motor
-ledon | turns on the built in LED on pin 13 of the arduino for testing
-ledon | turns off the built in LED on pin 13 of the arduino for testing
+#Control
+The arduino firmware provides the following services for controlling the shooter:
 
-
-
+| Service | Type | Behavior | Arguments/Returns |
+| ------- | ---- | -------- | --------- |
+| /shooter/cancel | std_srvs/Trigger | Immediately turns off everything on the shooter | None |
+| /shooter/load | std_srvs/Trigger | retracts the feeder to allow a ball in, pushes the fall towards the fly wheels, then turns on the flywheels for quickfiring | returns success == false if ball already loaded or shooter is currently doing something |
+| /shooter/fire | std_srvs/Trigger | extends the linear actuator to launch the ball, then turns off the flywheels | None | returns success == false if ball is NOT loaded or shooter is currently doing something |
+| /shooter/manual | navigator_msgs/ShooterManual | Manually control the motor controllers on the shooter| feeder: int32 (-100 to 100 speed to set feeder), shooter: int32  (-100 to 100 speed to set flywheels) |
 
 #Switching USB/Board type
 * open firmware/CMakeLists.txt

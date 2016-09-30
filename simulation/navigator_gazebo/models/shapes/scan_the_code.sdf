@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version="1.5">
+  <model name="scan_the_code">
+    <static>true</static>
+    <link name="base_link">
+      <visual name="visual_base">
+        <pose>0 0.01 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>.39 .01 .401</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/White</name>
+          </script>
+        </material>
+      </visual>
+      <visual name="visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>.19 .01 .381</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/Black</name>
+          </script>
+        </material>
+        <plugin name="model_push" filename="libanimated_box.so" />
+      </visual>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>.39 .02 .401</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>

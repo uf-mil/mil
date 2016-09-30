@@ -26,7 +26,7 @@ using namespace gazebo;
 GZ_REGISTER_MODEL_PLUGIN(BuoyancyPlugin)
 
 /////////////////////////////////////////////////
-BuoyancyPlugin::BuoyancyPlugin() : fluidDensity(1000.0), dragCoeff(1.0) {}
+BuoyancyPlugin::BuoyancyPlugin() : fluidDensity(1000.0), dragCoeff(1.0), modelZOffset(0.0) {}
 
 /////////////////////////////////////////////////
 void BuoyancyPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
@@ -46,6 +46,10 @@ void BuoyancyPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
 
   if (this->sdf->HasElement("drag_coefficient")) {
     this->dragCoeff = this->sdf->Get<double>("drag_coefficient");
+  }
+
+  if (this->sdf->HasElement("model_z_offset")){
+    this->modelZOffset = this->sdf->Get<double>("model_z_offset");
   }
 
   // Get "center of volume" and "volume" that were inputted in SDF
@@ -158,8 +162,7 @@ void BuoyancyPlugin::OnUpdate() {
 
     // link->AddForce(linearResistance, volumeProperties.cov);
     // link->AddTorque(angularResistance, volumeProperties.cov);
-
-    if (linkFrame.pos.z < 0.0) {
+    if (linkFrame.pos.z + this->modelZOffset < 0.0) {
       link->AddLinkForce(buoyancyLinkFrame, volumeProperties.cov);
       // link->AddForceAtRelativePosition(buoyancyLinkFrame, volumeProperties.cov);
 

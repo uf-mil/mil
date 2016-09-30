@@ -7,6 +7,7 @@
     <arg name="gazebo" default="true"/>
     <arg name="gui" default="true"/>
 
+    <include file="$(find navigator_alarm)/launch/alarm.launch"/>
     <include file="$(find navigator_launch)/launch/gnc.launch"/>
 
     <include file="$(find navigator_gazebo)/launch/goose.launch" if="$(arg gazebo)">
@@ -18,7 +19,7 @@
         <param name="deadzone" value="0.12" />
         <param name="autorepeat_rate" value="5"/>
     </node>
-    
+
     <group unless="$(arg gazebo)">
         <include file="$(find navigator_launch)/launch/perception.launch"/>
         <node pkg="navigator_sim_model" type="sim.py" name="navigator_sim_model" output="screen">

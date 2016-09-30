@@ -51,6 +51,21 @@ target_link_libraries(
         ${GAZEBO_LIBRARIES}
 )
 
+add_library(gazebo_ros_velodyne_laser src/GazeboRosVelodyneLaser.cpp)
+
+set_target_properties(gazebo_ros_velodyne_laser PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
+
+target_link_libraries(gazebo_ros_velodyne_laser
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+  RayPlugin
+)
+
+add_library(animated_box SHARED src/animated_box.cc)
+target_link_libraries(animated_box ${GAZEBO_LIBRARIES})
+
+set_target_properties(animated_box PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
+
 add_dependencies(navigator_thrusters
     navigator_msgs_generate_messages_cpp
     navigator_msgs_generate_messages_py
@@ -59,6 +74,6 @@ add_dependencies(navigator_thrusters
 
 catkin_package(
     INCLUDE_DIRS include
-    CATKIN_DEPENDS gazebo_ros roscpp rospy std_msgs message_runtime
-    DEPENDS system_lib
+    CATKIN_DEPENDS gazebo_ros roscpp rospy std_msgs message_runtime tf gazebo_plugins sensor_msgs
+    DEPENDS system_lib gazebo
 )
