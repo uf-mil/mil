@@ -5,12 +5,12 @@
 
 	ROS SERVICE:
 		[] Turn off turn 
-OD:
+        OD:
 	[X] Put GPS BB points as rosparams
 	[] OD only gives you objects that are far from the objects that you have already seen, and updates the positions of the old objects
 
 	[X] ROS Topics: List of objects, Marker 
-OC:
+        OC:
 
 	[] Buoy Field, Tower Buoys, Dock, STC, Shooter, Unknown
 
@@ -25,7 +25,7 @@ OC:
 	RULES:
 		- take human input, lol this will work
 
-Mission System:
+        Mission System:
 	[] Add to launch file
 
 
