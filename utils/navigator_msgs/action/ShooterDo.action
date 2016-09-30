@@ -3,6 +3,9 @@
 # Define the result
 bool success
 string error
+string ALREADY_RUNNING=ALREADY_RUNNING
+string NOT_LOADED=NOT_LOADED
+string ALREADY_LOADED=ALREADY_LOADED
 ---
 # Define a feedback message
 duration time_remaining

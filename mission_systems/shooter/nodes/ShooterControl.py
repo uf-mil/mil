@@ -3,21 +3,95 @@ from Sabertooth2x12 import Sabertooth2x12
 import roslib
 import rospy
 import actionlib
+from navigator_msgs.msg import ShooterDoAction, ShooterDoActionFeedback, ShooterDoActionResult
 
-#import navigator_msgs.msg
-from navigator_msgs.msg import ShooterDoAction
+class ShooterControl:
+  def loadExecuteCallback(self,goal):
+    result = ShooterDoActionResult()
+    if self.loaded:
+      rospy.loginfo("Already loaded, aborting")
+      result.result.success = False
+      result.result.error = result.result.ALREADY_LOADED
+      self.load_server.set_aborted(result)
+      return
+    start_time = rospy.get_rostime()
+    dur_from_start = rospy.Duration(0,0)
+    rospy.loginfo("starting load")
+    rate = rospy.Rate(50) # 10hz
+    feedback = ShooterDoActionFeedback()
+    while dur_from_start < self.load_total_time:
+      dur_from_start = rospy.get_rostime() - start_time
+      feedback.feedback.time_remaining = self.load_total_time - dur_from_start
+      self.load_server.publish_feedback(feedback)
+      if (dur_from_start < self.load_retract_time):
+        self.motor_controller.setMotor1(-1.0)
+      elif (dur_from_start < self.load_total_time):
+        self.motor_controller.setMotor1(1.0)
+      rate.sleep()
+    self.motor_controller.setMotor1(0)
+    self.motor_controller.setMotor2(1)
+    result.result.success = True
+    self.loaded = True
+    self.load_server.set_succeeded(result)
+    rospy.loginfo("Finished loaded")
+  def fireExecuteCallback(self,goal):
+    result = ShooterDoActionResult()
+    if not self.loaded:
+      rospy.loginfo("Not loaded, aborting fire")
+      result.result.success = False
+      result.result.error = result.result.NOT_LOADED
+      self.fire_server.set_aborted(result)
+      return
+    start_time = rospy.get_rostime()
+    dur_from_start = rospy.Duration(0,0)
+    rospy.loginfo("starting fire")
+    rate = rospy.Rate(50) # 10hz
+    feedback = ShooterDoActionFeedback()
+    while dur_from_start < self.total_fire_time:
+      dur_from_start = rospy.get_rostime() - start_time
+      feedback.feedback.time_remaining = self.total_fire_time - dur_from_start
+      self.fire_server.publish_feedback(feedback)
+      if (dur_from_start < self.fire_extend_time):
+        self.motor_controller.setMotor1(1)
+      else:
+        self.motor_controller.setMotor1(0)
+      rate.sleep()
+    self.motor_controller.setMotor1(0)
+    self.motor_controller.setMotor2(0)
+    result.result.success = True
+    self.loaded = False
+    self.fire_server.set_succeeded(result)
+    rospy.loginfo("Finished fire")
+  def __init__(self):
+    self.controller_file = rospy.get_param('controller/controller_serial', '/dev/ttyUSB0')
+    self.load_retract_time = rospy.Duration(0,rospy.get_param('controller/load/retract_time_millis',950)*1000000)
+    self.load_extend_time = rospy.Duration(0,rospy.get_param('controller/load/extend_time_millis',500)*1000000)
+    self.load_total_time = self.load_retract_time + self.load_extend_time
+    self.fire_extend_time = rospy.Duration(0,rospy.get_param('controller/fire/extend_time_millis',400)*1000000)
+    self.fire_shoot_time = rospy.Duration(0,rospy.get_param('controller/fire/shoot_time_millis',1000)*1000000)
+    self.total_fire_time = self.fire_shoot_time
+    self.loaded = False #Assume linear actuator starts forward
+
+    self.motor_controller = Sabertooth2x12(self.controller_file)
+    self.load_server = actionlib.SimpleActionServer('/shooter/load', ShooterDoAction, self.loadExecuteCallback, False)
+    self.fire_server = actionlib.SimpleActionServer('/shooter/fire', ShooterDoAction, self.fireExecuteCallback, False)
+    self.load_server.start()
+    self.fire_server.start()
+
+
 
 class ShooterFireServer():
   def __init__(self,filename):
     #self.motor_controller = Sabertooth2x12(filename)
-    self.server = actionlib.SimpleActionServer('/shooter/fire', ShooterDoAction, self.execute, False)
+    self.server = actionlib.SimpleActionServer('/shooter/fire', ShooterDoAction, self.execute, T)
     self.server.start()
   def execute(self, goal):
     # Do lots of awesome groundbreaking robot stuff here
     self.server.set_succeeded()
-
+  
 
 if __name__ == '__main__':
-  rospy.init_node('do_dishes_server')
-  fireServer = ShooterFireServer("/dev/ttyUSB0")
+  rospy.init_node('shooter_control')
+  control = ShooterControl()
+  #rate = rospy.Rate(10) # 10hz
   rospy.spin()
