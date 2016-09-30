@@ -1,6 +1,6 @@
 
 Exploring: 
-	[] If we see no objects, move in some way
+	[] If we see no objects, move in some way\n
 	[] If we see multiple objects, pick the closest object, LOOK AT IT, tell the OC to begin classification, move towards it.
 
 	ROS SERVICE:
