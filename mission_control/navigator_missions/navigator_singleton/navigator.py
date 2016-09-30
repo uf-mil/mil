@@ -137,7 +137,6 @@ class VisionProxy(object):
 
         return self.client(s_req)
 
-
 class Searcher(object):
     def __init__(self, nav, vision_proxy, search_pattern, **kwargs):
         self.nav = nav
@@ -195,9 +194,11 @@ class Searcher(object):
         def pattern():
             for pose in self.search_pattern:
                 print "SEARCHER - going to next position."
+                print pose
                 if type(pose) == list or type(pose) == np.ndarray:
                     yield self.nav.move.relative(pose).go(speed=speed)
                 else:
+                    print "sup"
                     yield pose.go(speed=speed)
 
                 yield self.nav.nh.sleep(2)
@@ -209,6 +210,8 @@ class Searcher(object):
                 yield util.cancellableInlineCallbacks(pattern)()
         else:
             yield util.cancellableInlineCallbacks(pattern)()
+
+
 
     @util.cancellableInlineCallbacks
     def _run_look(self, spotings_req):

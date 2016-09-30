@@ -291,6 +291,7 @@ class image_converter:
 def main(args):
   ic = image_converter()
   rospy.init_node('model_detector', anonymous=True)
+  print "sup"
   status = rospy.Service('/vision/scan_the_code_status', ScanTheCodeMission, ic.mission_status)
   activate = rospy.Service('/vision/scan_the_code_activate', ScanTheCodeMission, ic.activate)
 

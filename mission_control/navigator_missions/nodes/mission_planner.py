@@ -16,9 +16,10 @@ def go(mission):
     nh, args = yield NodeHandle.from_argv_with_remaining(mission.name)
     n = yield Navigator(nh)._init()
     to_run = getattr(nav_missions, mission.name)
+    print mission.name
     print to_run
     yield to_run.main(n)
-    "done"
+    
     defer.returnValue(reactor.stop())
 
 class Mission(object):
@@ -44,21 +45,31 @@ class MissionPlanner:
         self.queue = []
         self.found = []
         # Put in YAML file
-        stc = Mission("scan_the_code", ["scan_the_code"], [])
-        bf = Mission("back_and_forth", [], [stc])
-        self.tree.append(bf)
-        self._odom_sub = rospy.Subscriber('/vision/object_classifier', PerceptionObject, self.new_item)
+        stc = Mission("scan_the_code", ["stc"], [])
+        #bf = Mission("back_and_forth", [], [stc])
+        self.tree.append(stc)
+        self.vision_sub = rospy.Subscriber('/vision/object_classifier', PerceptionObject, self.new_item)
+        # serv = navigator.nh.get_service_client("/vision/object_classifier_service", s_type)
+        self.init()
         self.refresh()
+
+    def init(self):
+        # resp = serv("stc")
+        # if(resp.found):
+        self.found.append('stc')
+
 
     def new_item(self, obj):
         self.found.append(obj.name)
         self.refresh()
+        print "new item"
 
     def refresh(self):
         for mission in self.tree:
             if(self.can_complete(mission)):
                 self.queue.append(mission)
         self.empty_queue()
+        print "refresh"
 
     def can_complete(self, mission):
         for item in mission.item_dep:
@@ -88,8 +99,7 @@ class MissionPlanner:
 @util.cancellableInlineCallbacks
 def main():
     mp = MissionPlanner()
-    rospy.init_node('navigator_mission_planner', anonymous=True)
-    print "hgy"
+    rospy.init_node('navigator_mission_planner_', anonymous=True)
     try:
         rospy.spin()
     except KeyboardInterrupt:

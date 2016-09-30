@@ -2,99 +2,190 @@ from navigator_msgs.msg import PerceptionObject
 from navigator_msgs.srv import PerceptionObjectService, PerceptionObjectServiceResponse
 import rospy
 import numpy as np
+from nav_msgs.msg import Odometry
 from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
 from visualization_msgs.msg import MarkerArray, Marker
+from geometry_msgs.msg import Vector3, Pose
+from navigator_tools import rosmsg_to_numpy, odometry_to_numpy
+from txros import NodeHandle, util
+from twisted.internet import defer
+
+nh = None
+
+class VisualObject:
+    def __init__(self, name, size):
+        self.name = name
+        self.size = size
+        self.last_viewed = nh.get_time()
+        self.position = [100000,100000,100000]
+        self.found_before = False
+        self.odom = None
+
+    def check_object(self, new_pos, odom):
+        # print self.name, "found"
+        self.found_before = True
+        self.last_viewed = nh.get_time()
+        self.position = new_pos
+        self.odom = odom
+        return True
+
+class VisualObjectCollection:
+    def __init__(self, name, size):
+        self.name = name
+        self.size = size
+        self.objects  = []
+        self.found_before = False
+        self.odom = None
+
+    def add_object(self, pos, odom):
+        o = VisualObject(self.name, self.size)
+        o.position = pos
+        o.found_before = True
+        o.odom = odom
+        self.odom = odom
+        self.objects.append(o)
+
+    def check_object(self, new_pos, odom):
+        # print self.name, "found"
+        self.found_before = True
+        for i, obj in enumerate(self.objects):
+            if(np.linalg.norm(np.subtract(obj.position, new_pos)) < obj.last_viewed.to_sec() * .25):
+                self.objects[i].last_view = nh.get_time()
+                self.objects[i].position = new_pos
+                self.objects[i].odom = odom
+                self.odom = odom
+                return True
+        return False 
 
 
 
 class ObjectClassifier:
+
     def __init__(self):
-        
+        print "init OC"
         self.pose = None
-        self.ecef_pose = None
-        self.items = {}
-        self.pub = rospy.Publisher('/vision/object_classifier', PerceptionObject, queue_size=10)
-        self.serv = s = rospy.Service('/vision/object_classifier_service', PerceptionObjectService, query)
-        self.pub_vis = rospy.Publisher('/rviz/objs', Marker, queue_size=10)
-        self.count = 0
-        self.used_positions = []
-        self.objs = {}
-
-
-    def query(self, name):
-        if(name in self.objs.keys()):
-            return PerceptionObjectServiceResponse(True, self.objs[name][0], self.objs[name][1])
-        return PerceptionObjectServiceResponse(False, None, None)
+        # TODO: USE A YAML
         
-    def set_pose(self, enu, ecef):
-        self.pose = enu
-        self.ecef_pose = ecef
-        buoys = [29.534553,-82.303941]
-        stc = [0,0]
-        start_gate = [0,0]
-        shooter = [0,0]
-        self.items = {"buoys": self.to_lat_long(buoys), "stc": self.to_lat_long(stc),
-                      "start_gate": self.to_lat_long(start_gate), "shooter": self.to_lat_long(shooter)}
 
-                      
+    @util.cancellableInlineCallbacks
+    def _init(self, _nh):
+        print "init node"
+        self.nh = _nh
+        global nh
+        nh = self.nh
+        self.pub = yield self.nh.advertise('object_classifier', PerceptionObject)
+        self.serv = yield self.nh.advertise_service('/vision/object_classifier_service', PerceptionObjectService, self.query)
+        self.odom_sub = yield self.nh.subscribe('/odom', Odometry, self.get_odom)
+        self.pub_vis = yield self.nh.advertise('/rviz/objs', Marker)
+        
+        print "published"
+        self.items = {}
+        self.items["buoy_field"] = VisualObjectCollection("buoy_field", [1,1,1])
+        self.items["shooter"] = VisualObject("shooter", [1.8,0,1.2])
+        self.items["scan_the_code"] = VisualObject("scan_the_code", [.3,0,.4])
+        self.count = 0
+        defer.returnValue(self)
+
+    def get_odom(self, odom):
+        self.pose = odometry_to_numpy(odom)[0]
 
 
-    def to_lat_long(self, ll, alt=0):
-        lat = ll[0]
-        lon = ll[1]
-        ecef_pos, enu_pos = self.ecef_pose[0], self.pose[0]
+    def query(self, req):
+        name = req.name
+        print self.items
+        print type(name)
+        print self.items[name]
+        if(name not in self.items.keys() or not self.items[name].found_before):
+            return PerceptionObjectServiceResponse(False, False, None, None, None)
 
-        # These functions want radians
-        lat, lon = np.radians([lat, lon], dtype=np.float64)
-        ecef_vector = ecef_from_latlongheight(lat, lon, alt) - ecef_pos
-        enu_vector = enu_from_ecef(ecef_vector, ecef_pos)
-        enu_vector[2] = 0  # We don't want to move in the z at all
-        return np.array(enu_pos + enu_vector)
+        myobj = self.items[name]
 
+        xyz_arr = self.pose[0]
+
+        if(name is 'buoy_field'):
+            myobj = min(myobj.objects, key=lambda y : np.linalg.norm(np.subtract(xyz_arr,y.position)))
+
+        pos = Vector3()
+        pos.x = myobj.position[0]
+        pos.y = myobj.position[1]
+        pos.z = 0
+
+        size = Vector3()
+        size.x = myobj.size[0]
+        size.y = myobj.size[1]
+        size.z = myobj.size[2]
+
+        #uncertainty = myobj.last_view.to_sec()
+
+        mypose = myobj.odom
+        pose = Pose()
+        pose.position.x = mypose[0][0]
+        pose.position.y = mypose[0][1]
+        pose.position.z = mypose[0][2]
+        pose.orientation.x = mypose[1][0]
+        pose.orientation.y = mypose[1][1]
+        pose.orientation.z = mypose[1][2]
+        pose.orientation.w = mypose[1][3]
+        print pose
+
+        found = False
+        if(nh.get_time() - myobj.last_viewed > rospy.Duration(.5)):
+            found = True
+
+        return PerceptionObjectServiceResponse(found, True, pos, size, pose)
+       
     def classify(self, xyz, lwh):
         pos = [xyz.x,xyz.y,xyz.z]
         size = [lwh.x,lwh.y,lwh.z]
-        for p in self.used_positions:
-            if(np.linalg.norm(np.subtract(pos, p)) < 1):
-                return
-        for key,bb in self.items.items():
-            if(self.in_bounding_box(pos, bb) and lwh.x*lwh.y*lwh.z > 1):
-                p = PerceptionObject()
-                p.name = key
-                print "GOTTEM", key, pos
-                if(key == 'buoys'):
+        for name, obj in self.items.iteritems():
+            size_item = obj.size
+            errx = .5
+            erry = .5
+            errz = .5
+            if(size[0] > size_item[0] - errx and size[0] < size_item[0] + errx and
+               size[1] > size_item[1] - erry and size[1] < size_item[1] + erry and 
+               size[2] > size_item[2] - errz and size[2] < size_item[2] + errz):
+                myodom = self.pose
+                # if(not obj.found):
+                    
+                if(name == 'buoy_field'):
                     self.add_marker_vis(pos,[0,0,1])
-                if(key == 'stc'):
+                if(name == 'scan_the_code'):
                     self.add_marker_vis(pos,[1,1,0])
-                if(key == 'start_gate'):
-                    self.add_marker_vis(pos,[0,1,1])
-                if(key == 'shooter'):
+                if(name == 'shooter'):
                     self.add_marker_vis(pos,[1,0,1])
+                    print size
+                    print "GOTTEM", name, obj
+                    print self.count
+                if(not obj.check_object(pos, myodom)):
+                    obj.add_object(pos, myodom)
+                p = PerceptionObject()
+                p.name = name
+                #p.odom = myodom
                 p.pos = xyz
                 p.size = lwh
-                self.used_positions.append(pos)
                 self.pub.publish(p)
-                self.objs[key] = [pos,size]
 
-
+            
     def add_marker_vis(self, pos, colors):
         marker = Marker()
         marker.header.frame_id = "enu";
-        marker.header.stamp = rospy.Time.now()
-        marker.ns = "my_namespace";
-        marker.id = self.count
+        marker.header.stamp = nh.get_time()
+        marker.ns = "perception_objects";
+        import random
+        marker.id = random.randint(500,10000000)
         marker.type = Marker.SPHERE
         marker.action = Marker.ADD
         marker.pose.position.x = pos[0]
         marker.pose.position.y = pos[1]
-        marker.pose.position.z = 0
+        marker.pose.position.z = 0.0
         marker.pose.orientation.x = 0.0
         marker.pose.orientation.y = 0.0
         marker.pose.orientation.z = 0.0
         marker.pose.orientation.w = 1.0
-        marker.scale.x = 3
-        marker.scale.y = 3
-        marker.scale.z = 3
+        marker.scale.x = 1.5
+        marker.scale.y = 1.5
+        marker.scale.z = 1.5
         marker.color.a = 1.0
         marker.color.r = colors[0]
         marker.color.g = colors[1]
@@ -102,28 +193,3 @@ class ObjectClassifier:
         self.pub_vis.publish(marker);
         self.count+=1
 
-
-
-
-    def in_bounding_box(self, pos, bounding_box_center, radius=60):
-        bbc = bounding_box_center
-        r = radius/2
-        bounding_box = [[bbc[0]+r, bbc[1]+r],
-                        [bbc[0]+r, bbc[1]-r],
-                        [bbc[0]-r, bbc[1]+r],
-                        [bbc[0]-r, bbc[1]-r]]
-        # self.add_marker_vis(bounding_box[0], [0,1,0])
-        # self.add_marker_vis(bounding_box[1], [0,1,0])
-        # self.add_marker_vis(bounding_box[2], [0,1,0])
-        # self.add_marker_vis(bounding_box[3], [0,1,0])
-
-        ab = np.subtract(bounding_box[0], bounding_box[1])
-        ac = np.subtract(bounding_box[0], bounding_box[2])
-        am = np.subtract(bounding_box[0], pos[:2])
-        if(np.dot(ab,ac) > .1):
-            ac = np.subtract(bounding_box[0], bounding_box[3])
-        
-        if(0 <= np.dot(ab,am) <= np.dot(ab,ab) and 0 <= np.dot(am,ac) <= np.dot(ac,ac)):
-            return True
-
-        return False
