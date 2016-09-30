@@ -21,7 +21,8 @@ class GrayscaleContour : public DockShapeVision
       double right;
     };
     ROIparams roiParams;
-
+    Rect roi;
+    
     struct CannyParams
     {
       int thresh1;
@@ -50,8 +51,6 @@ class GrayscaleContour : public DockShapeVision
     
     bool filterArea(std::vector<Point> contour);
     static double minArea;
-
-    void TransformPointsToUncropped(std::vector<Point>& contour);
     
     static double contourAreaToBoundingRectAreaRatio(std::vector<cv::Point> &points);
     static double contourAreaToPerimeterRatio(std::vector<cv::Point> &points);
@@ -61,6 +60,6 @@ class GrayscaleContour : public DockShapeVision
     bool isCircle(std::vector<Point>& points);
   public:
     GrayscaleContour(ros::NodeHandle& nh);
-    void GetShapes(cv::Mat &frame,navigator_msgs::DockShapes& symbols);
+    void GetShapes(cv::Mat &frame,cv::Rect roi,navigator_msgs::DockShapes& symbols);
     void init();
 };

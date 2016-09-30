@@ -56,10 +56,11 @@ void GrayscaleContour::init()
   createTrackbar("CIRCLE_BOUNDING_AREA_HIGH ", "ShapeParams", &CIRCLE_BOUNDING_AREA_HIGH , 1000);
   #endif
 }
-void GrayscaleContour::GetShapes(cv::Mat &frame,navigator_msgs::DockShapes& symbols)
+void GrayscaleContour::GetShapes(cv::Mat &frame,cv::Rect roi,navigator_msgs::DockShapes& symbols)
 {
   if (frame.empty()) return;
 
+  this->roi = roi;
   frame_width = frame.cols;
   frame_height = frame.rows;
   
@@ -92,8 +93,8 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,navigator_msgs::DockShapes& symb
     if (!GetColor(i,dockShape.Color)) continue;
     drawContours(result, shapes, i, Scalar(0,0,255) );
     Point center = findCenter(shape);
-    dockShape.CenterX = center.x + roiParams.left;
-    dockShape.CenterY = center.y + roiParams.top;
+    dockShape.CenterX = center.x + roi.x;
+    dockShape.CenterY = center.y + roi.y;
     
     dockShape.img_width = colorFrame.cols;
 
@@ -104,8 +105,8 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,navigator_msgs::DockShapes& symb
      //} 
     for (int j = 0; j < shape.size(); j++) {
       geometry_msgs::Point p;
-      p.x = shape[j].x + roiParams.left;
-      p.y = shape[j].y + roiParams.top;
+      p.x = shape[j].x + roi.x;
+      p.y = shape[j].y + roi.y;
       p.z = 0;
       dockShape.points.push_back(p);
     }
@@ -124,11 +125,11 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,navigator_msgs::DockShapes& symb
 }
 void GrayscaleContour::CropFrame()
 {
-  int left = roiParams.left*colorFrame.cols;
-  int right = roiParams.right*colorFrame.cols;
-  int top = roiParams.top*colorFrame.rows;
-  int bottom =  roiParams.bottom*colorFrame.rows;
-  cv::Rect roi(left,top,frame_width-left-(frame_width-right),frame_height-top-(frame_height-bottom));
+  // ~int left = roiParams.left*colorFrame.cols;
+  // ~int right = roiParams.right*colorFrame.cols;
+  // ~int top = roiParams.top*colorFrame.rows;
+  // ~int bottom =  roiParams.bottom*colorFrame.rows;
+  // ~cv::Rect roi(left,top,frame_width-left-(frame_width-right),frame_height-top-(frame_height-bottom));
   croppedFrame = colorFrame(roi);
 }
 void GrayscaleContour::ConvertToGrayscale()
@@ -264,14 +265,6 @@ double GrayscaleContour::contourAreaToPerimeterRatio(std::vector<cv::Point> &poi
 double GrayscaleContour::sideLengthVariance(std::vector<cv::Point> &points)
 {
   
-}
-void GrayscaleContour::TransformPointsToUncropped(std::vector<Point>& points)
-{
- for (int i = 0; i < points.size(); i++)
- {
-  points[i].x += roiParams.left;
-  points[i].y += roiParams.top;
- } 
 }
 Point  GrayscaleContour::findCenter(std::vector<Point>& points) {
   int x = 0, y = 0;

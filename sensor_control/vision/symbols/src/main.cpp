@@ -18,7 +18,8 @@
 #include "GrayscaleContour/GrayscaleContour.h"
 //#include "FeatureDetectorMethod/FeatureDetectorMethod.h"
 #include "DockShapeVision.h"
-
+#include "sensor_msgs/RegionOfInterest.h"
+#include <navigator_msgs/SetROI.h>
 
 using namespace cv;
 
@@ -33,27 +34,46 @@ class ShooterVision {
     ros::Publisher foundShapesPublisher;
 
     ros::ServiceServer runService;
+    ros::ServiceServer roiService;
     std::string camera_topic;
     bool active;
-
+    cv::Rect roi;
+    int width;
+    int height;
   public:
     ShooterVision() :
       nh_("dock_shape_finder"),
       it_(nh_)
     {
-      vision.reset(new ContourMethod(nh_));
+      vision.reset(new GrayscaleContour(nh_));
       vision->init();
       nh_.param<std::string>("symbol_camera", camera_topic, "/right/right/image_raw");
       runService = nh_.advertiseService("run", &ShooterVision::runCallback, this);
+      roiService = nh_.advertiseService("setROI", &ShooterVision::roiServiceCallback, this);
       //#ifdef DO_DEBUG
       //DebugWindow::init();
       //#endif
       foundShapesPublisher = nh_.advertise<navigator_msgs::DockShapes>("/dock_shapes/found_shapes", 1000);
       image_sub_ = it_.subscribe(camera_topic, 1, &ShooterVision::run, this);
+
+      roi = Rect(73,103,499,243);
     }
 
     bool runCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res) {
       active = req.data;
+      res.success = true;
+      return true;
+    }
+    bool roiServiceCallback(navigator_msgs::SetROI::Request &req, navigator_msgs::SetROI::Response &res) {
+      if (req.roi.x_offset < 0 ||
+          req.roi.y_offset < 0 ||
+          req.roi.x_offset + req.roi.width > width ||
+          req.roi.y_offset + req.roi.height > height) {
+        res.error = "OUTSIDE_OF_FRAME";
+        res.success = false;
+        return true;
+      }
+      roi = Rect(req.roi.x_offset,req.roi.y_offset,req.roi.width,req.roi.height);
       res.success = true;
       return true;
     }
@@ -67,9 +87,13 @@ class ShooterVision {
         ROS_ERROR("cv_bridge exception: %s", e.what());
         return;
       }
+      cv::Mat frame = cv_ptr->image;
+      width = frame.cols;
+      height = frame.rows;
       cv::waitKey(3);
       symbols.list.clear();
-      vision->GetShapes(cv_ptr->image,symbols);
+
+      vision->GetShapes(frame,roi,symbols);
       // Publish to ros
       //#ifdef DO_DEBUG
       //DebugWindow::UpdateResults(symbols);

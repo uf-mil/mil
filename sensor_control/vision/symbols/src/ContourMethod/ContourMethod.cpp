@@ -12,7 +12,7 @@ void ContourMethod::init()
   fp.init(nh);
   ShapeDetector::init(nh);
 }
-void ContourMethod::GetShapes(cv::Mat &frame,navigator_msgs::DockShapes& symbols)
+void ContourMethod::GetShapes(cv::Mat &frame,cv::Rect roi,navigator_msgs::DockShapes& symbols)
 {
   fp.Prepare(frame);
   blueFinder.GetSymbols(fp.GetBlue(), &symbols);
