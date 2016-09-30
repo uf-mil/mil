@@ -202,5 +202,5 @@ add_definitions(${PCL_DEFINITIONS})
 
 add_executable(lidar src/lidar.cpp src/AStar.cpp)
 target_link_libraries(lidar ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(lidar lidar_generate_messages_cpp navigator_msgs_generate_messages_cpp)
+add_dependencies(lidar lidar_generate_messages_cpp navigator_msgs_generate_messages_cpp uf_common_generate_messages_cpp)
 
