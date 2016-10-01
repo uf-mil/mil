@@ -38,10 +38,5 @@ class Sabertooth2x12:
 
 if __name__ == '__main__':
   st = Sabertooth2x12("/dev/ttyUSB0")
-  while True:
-    st.setMotor1(1)
-    print "on"
-    time.sleep(5)
-    st.setMotor1(0)
-    print "off"
-    time.sleep(5)
+  st.setMotor1(-1)
+    
