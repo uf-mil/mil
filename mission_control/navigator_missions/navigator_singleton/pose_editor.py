@@ -68,14 +68,24 @@ def look_at_camera(forward, upish=UP):
     # assumes camera right-down-forward coordinate system
     return triad((forward, upish), (UP, [0, -1, 0]))
 
-def is_valid_point(nav, point):
-    # Check if an ENU point is in our range of operation (defined by the rosparam /lla_bounds)
+def get_valid_point(nav, point):
     if nav.enu_bounds is None:
-        return True
+        return point
 
-    r = _RayTracer()
-    return r.point_in_polygon(point[:2], nav.enu_bounds)
+    # Magic that finds if a point is in a polygon
+    ab = np.subtract(nav.enu_bounds[0], nav.enu_bounds[1])[:2]
+    ac = np.subtract(nav.enu_bounds[0], nav.enu_bounds[2])[:2]
+    am = np.subtract(nav.enu_bounds[0], point)[:2]
+    if np.dot(ab, ac) > .1:
+        ac = np.subtract(nav.enu_bounds[0], nav.enu_bounds[3])[:2]
 
+    if 0 <= np.dot(ab, am) <= np.dot(ab, ab) and 0 <= np.dot(am, ac) <= np.dot(ac, ac):
+        # The point was okay - in bounds
+        return point
+    else:
+        print "INVAILD TARGET POINT DETECTED"
+        # TODO: Make boat go to edge
+        return nav.pose[0]
 
 class PoseEditor2(object):
     '''
@@ -115,15 +125,12 @@ class PoseEditor2(object):
     def go(self, *args, **kwargs):
         # NOTE: C3 doesn't seems to handle different frames, so make sure all movements are in C3's
         #       fixed frame.
+        self.position = get_valid_point(self.nav, self.position)
         self.nav._pose_pub.publish(PoseStamped(header=navigator_tools.make_header(frame='enu'),
                                                pose=navigator_tools.numpy_quat_pair_to_pose(*self.pose)))
 
-        if is_valid_point(self.nav, self.pose[0]):
-            goal = self.nav._moveto_action_client.send_goal(self.as_MoveToGoal(*args, **kwargs))
-            return goal.get_result()
-        else:
-            # Alarm or something?
-            print "INVALID POINT REQUESTED!"
+        goal = self.nav._moveto_action_client.send_goal(self.as_MoveToGoal(*args, **kwargs))
+        return goal.get_result()
 
     def set_position(self, position):
         return PoseEditor2(self.nav, [np.array(position), np.array(self.orientation)])
@@ -229,42 +236,3 @@ class PoseEditor2(object):
                 angular=Vector3(*angular),
             ),
         )
-
-
-class _RayTracer(object):
-    def ccw(self, A, B, C):
-        return (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0])
-
-    def intersect(self, A, B, C, D):
-        # Return true if line segments AB and CD intersect
-        return self.ccw(A, C, D) != self.ccw(B, C, D) and self.ccw(A, B, C) != self.ccw(A, B, D)
-
-    def _point_in_polygon(self, pt, poly, inf=1E99):
-        result = False
-        for i in range(len(poly.corners)-1):
-            if self.intersect((poly.corners[i].x, poly.corners[i].y), ( poly.corners[i+1].x, poly.corners[i+1].y), (pt.x, pt.y), (inf, pt.y)):
-                result = not result
-        if self.intersect((poly.corners[-1].x, poly.corners[-1].y), (poly.corners[0].x, poly.corners[0].y), (pt.x, pt.y), (inf, pt.y)):
-            result = not result
-        return result
-
-    def point_in_polygon(self, pt, poly):
-        '''
-        Raytraces from a point to infinity and checks for intersections
-        An odd number of intersections means the point is in the polygon - an even number means not.
-
-        Based on http://stackoverflow.com/questions/16625507/python-checking-if-point-is-inside-a-polygon
-        '''
-        result = False
-        pt = tuple(pt)
-
-        for i in range(len(poly)-1):
-            this_point = tuple(poly[i])
-            next_point = tuple(poly[i + 1])
-            if self.intersect(this_point, next_point, pt, (1E99, pt[1])):
-                result = not result
-
-        if self.intersect(this_point, next_point, pt, (1E99, pt[1])):
-            result = not result
-
-        return result

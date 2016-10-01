@@ -12,13 +12,12 @@ from txros import action, util, tf, NodeHandle
 from pose_editor import PoseEditor2
 
 import navigator_tools
-from uf_common.msg import MoveToAction, PoseTwistStamped
+from uf_common.msg import MoveToAction
 from nav_msgs.msg import Odometry
 from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import PointCloud
 import navigator_msgs.srv as navigator_srvs
-from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
 
 
 class Navigator(object):
@@ -32,8 +31,6 @@ class Navigator(object):
         self.pose = None
         self.ecef_pose = None
 
-        self.enu_bounds = None
-
         self.alarms = []
 
     @util.cancellableInlineCallbacks
@@ -44,15 +41,14 @@ class Navigator(object):
 
         self._moveto_action_client = action.ActionClient(self.nh, 'moveto', MoveToAction)
         self._odom_sub = self.nh.subscribe('odom', Odometry,
-                                                 lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0]))
+                                           lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0]))
         self._ecef_odom_sub = self.nh.subscribe('absodom', Odometry,
-                                                      lambda odom: setattr(self, 'ecef_pose', navigator_tools.odometry_to_numpy(odom)[0]))
+                                                lambda odom: setattr(self, 'ecef_pose', navigator_tools.odometry_to_numpy(odom)[0]))
 
         self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
-        self._converter = self.nh.get_service_client('/convert', navigator_srvs.CoordinateConversion)
         self.tf_listener = tf.TransformListener(self.nh)
 
-        print "Waiting for odom..."
+        print "NAVIGATOR: Waiting for odom..."
         yield self._odom_sub.get_next_message()  # We want to make sure odom is working before we continue
         yield self._ecef_odom_sub.get_next_message()
 
@@ -79,26 +75,20 @@ class Navigator(object):
 
     @util.cancellableInlineCallbacks
     def _make_bounds(self):
-        '''
-        Needs a box of lla bounds set in a rosparam: /lla_bounds
-        '''
-        if self.nh.has_param('lla_bounds'):
-            lla_bounds = yield self.nh.get_param('lla_bounds')
-            assert len(lla_bounds) == 4, 'Please define box: rosparam set /lla_bounds "[[lla1],[lla2],[lla3],[lla4]]"'
+        print "NAVIGATOR: Constructing bounds."
 
-            try:
-                self.enu_bounds = [(yield self.coordinate_convert([lat, lon, 0], 'lla')).enu for (lat, lon) in lla_bounds]
-            except:
-                print "NAVIGATOR: No converter service."
-                defer.returnValue(False)
+        _bounds = self.nh.get_service_client('/get_bounds', navigator_srvs.Bounds)
+        yield _bounds.wait_for_service()
+        resp = yield _bounds(navigator_srvs.BoundsRequest())
+        if resp.enforce:
+            self.enu_bounds = [navigator_tools.point_to_numpy(bound) for bound in resp.bounds]
 
             # Just for display
             pc = PointCloud(header=navigator_tools.make_header(frame='/enu'),
                             points=np.array([navigator_tools.numpy_to_point(point) for point in self.enu_bounds]))
             yield self._point_cloud_pub.publish(pc)
-
         else:
-            print 'NAVIGATOR: No bounds being used.'
+            self.enu_bounds = None
 
     def vision_request(self, request_name, **kwargs):
         print "DEPREICATED: Please use new dictionary based system."
@@ -123,12 +113,9 @@ class Navigator(object):
             s_switch = self.nh.get_service_client(f[name]["topic"] + '/switch', SetBool)
             self.vision_proxies[name] = VisionProxy(s_client, s_req, s_args, s_switch)
 
-
-    def coordinate_convert(self, point, frame):
-        return self._converter(navigator_srvs.CoordinateConversionRequest(point=point, frame=frame))
-
     def _make_alarms(self):
         pass
+
 
 class VisionProxy(object):
     def __init__(self, client, request, args, switch):
@@ -149,6 +136,7 @@ class VisionProxy(object):
         s_req = self.request(**s_args)
 
         return self.client(s_req)
+
 
 class Searcher(object):
     def __init__(self, nav, vision_proxy, search_pattern, **kwargs):
@@ -193,7 +181,7 @@ class Searcher(object):
 
         print "SEARCHER - Object NOT found. Returning to start position."
         finder.cancel()
-        searcher.cancel()
+        looker.cancel()
 
         yield start_pose.go()
 
@@ -253,8 +241,6 @@ def main():
 
 
 if __name__ == '__main__':
-    from twisted.internet import defer, reactor
-    import signal
-    import traceback
+    from twisted.internet import reactor
     reactor.callWhenRunning(main)
     reactor.run()
