@@ -1,0 +1,11 @@
+# Given the coordinates in one of these frames, return the same coordinate
+#    in all three
+
+string        frame               # lla, enu, or ecef
+float64[3]    point
+---
+float64[3]    enu
+float64[3]    ecef
+float64[3]    lla
+
+float64       distance

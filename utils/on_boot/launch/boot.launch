@@ -1,4 +1,17 @@
 <launch>
   <param name="use_sim_time" value="true"/>
   <node name="clock_publisher" pkg="on_boot" type="clock_publisher"/>
+
+  <node name="coordinate_converter" pkg="navigator_tools" type="coordinate_conversion_server.py"/>
+  <node name="bounds_server" pkg="navigator_tools" type="bounds.py"/>
+
+  <rosparam param="bounds">
+      <!-- This is for Lake Wauberg -->
+      enforce: False
+      lla: [[29.535011, -82.303323],
+            [29.534647, -82.304280],
+            [29.533440, -82.303577],
+            [29.533803, -82.302639]]
+  </rosparam>
+
 </launch>
