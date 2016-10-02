@@ -47,6 +47,7 @@ class GrayscaleContour : public DockShapeVision
     bool isCross(std::vector<Point>& points);
     bool isCircle(std::vector<Point>& points);
 
+    void setShapePoints(navigator_msgs::DockShape& dockShape,std::vector<Point>& points);
     #ifdef DO_ROS_DEBUG
     std::unique_ptr<image_transport::ImageTransport> image_transport;
     image_transport::Publisher color_debug_publisher;

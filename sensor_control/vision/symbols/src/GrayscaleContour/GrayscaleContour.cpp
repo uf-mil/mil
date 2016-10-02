@@ -1,5 +1,6 @@
 #include "GrayscaleContour.h"
 #include <sstream>
+//Todo: for circle test dont approx polygon
 double GrayscaleContour::minArea = 100.0/(644.0*482.0);
 GrayscaleContour::GrayscaleContour(ros::NodeHandle& nh) :
   DockShapeVision(nh)
@@ -44,7 +45,6 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,cv::Rect roi,navigator_msgs::Doc
   ConvertToGrayscale();
   DetectEdges();
   FindContours();
-  FindPolygons();
 
   #ifdef DO_DEBUG
   Mat result = croppedFrame.clone();
@@ -55,42 +55,36 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,cv::Rect roi,navigator_msgs::Doc
   ros_color_debug.image = croppedFrame.clone();
   #endif
   
-  for (int i = 0; i < shapes.size(); i++)
+  for (int i = 0;i < contours.size();i++)
   {
-    auto shape = shapes.at(i);
     navigator_msgs::DockShape dockShape;
-    
-    if (isTriangle(shape))
+    std::vector<cv::Point> approx_tri;
+    std::vector<cv::Point> approx_cross;
+    approxPolyDP(Mat(contours[i]), approx_tri, arcLength(contours[i], true) * 0.1 , true);
+    approxPolyDP(Mat(contours[i]), approx_cross, arcLength(contours[i], true) * 0.01 , true);
+    if (isTriangle(approx_tri))
     {
       dockShape.Shape = navigator_msgs::DockShape::TRIANGLE;
-    } else if (isCross(shape))
+      setShapePoints(dockShape,approx_tri);
+    } else if (isCross(approx_cross))
     {
       dockShape.Shape = navigator_msgs::DockShape::CROSS;
-    } else if (isCircle(shape))
+      setShapePoints(dockShape,approx_cross);
+    } else if (isCircle(contours[i]))
     {
       dockShape.Shape = navigator_msgs::DockShape::CIRCLE;
+      setShapePoints(dockShape,contours[i]);
     } else continue;
 
     if (!GetColor(i,dockShape.Color)) continue;
-    
+
     #ifdef DO_DEBUG
-    drawContours(result, shapes, i, Scalar(0,0,255) );
+    drawContours(result,contours, i, Scalar(0,0,255) );
     #endif
     #ifdef DO_ROS_DEBUG
-    drawContours(ros_color_debug.image, shapes, i, Scalar(0,0,255) );
+    drawContours(ros_color_debug.image,contours, i, Scalar(0,0,255) );
     #endif
-    
-    Point center = findCenter(shape);
-    dockShape.CenterX = center.x + roi.x;
-    dockShape.CenterY = center.y + roi.y;
-    dockShape.img_width = colorFrame.cols;
-    for (int j = 0; j < shape.size(); j++) {
-      geometry_msgs::Point p;
-      p.x = shape[j].x + roi.x;
-      p.y = shape[j].y + roi.y;
-      p.z = 0;
-      dockShape.points.push_back(p);
-    }
+
     symbols.list.push_back(dockShape); 
   }
 
@@ -156,10 +150,10 @@ void GrayscaleContour::FindContours()
   }
   #endif
 }
-bool GrayscaleContour::GetColor(int shapeIndex,std::string& color)
+bool GrayscaleContour::GetColor(int Index,std::string& color)
 {
   Mat mask = Mat::zeros(croppedFrame.rows, croppedFrame.cols, CV_8UC1);
-  drawContours(mask,shapes,shapeIndex, Scalar(255), CV_FILLED);
+  drawContours(mask,contours,Index, Scalar(255), CV_FILLED);
   Scalar meanColor = mean(croppedFrame,mask);
   //std::cout << meanColor << std::endl;
   std::ostringstream unknown;
@@ -186,13 +180,22 @@ void GrayscaleContour::FindPolygons()
   shapes.clear();
   for (int i = 0; i < contours.size(); i++) {
     std::vector<cv::Point> approx;
-    approxPolyDP(Mat(contours[i]), approx, arcLength(Mat(contours[i]), true) * (float(epsilonFactor)/1000) , true);
+    approxPolyDP(Mat(contours[i]), approx, arcLength(Mat(contours[i]), true) * 0.01 , true);
     shapes.push_back(approx);
   }
 }
+double findAngle(cv::Point p1, cv::Point p2, cv::Point p3) {
+  cv::Point v1 = p2 - p1;
+  cv::Point v2 = p3 - p1;
+  float m1 = sqrt(v1.x * v1.x + v1.y * v1.y);
+  float m2 = sqrt(v2.x * v2.x + v2.y * v2.y);
+  float thecos = v1.dot(v2) / (m1 * m2);
+
+  return acos(thecos) * 180 / 3.1415;
+}
 bool GrayscaleContour::isTriangle(std::vector<Point>& points)
 {
-  if (points.size() < 3) return false;
+  if (points.size() != 3) return false;
 
   double contour_area = contourArea(points);
   double perimeter = arcLength(points, true);
@@ -206,6 +209,13 @@ bool GrayscaleContour::isTriangle(std::vector<Point>& points)
   expected_perimeter = boundingRect.width*3;
   error = fabs(perimeter/expected_perimeter-1.0);
   if (error > 0.1) return false;
+
+  // ~printf("Triangle Angles (%u): ",points.size());
+  // ~for (int i = 0; i < points.size() - 2; i ++) printf(" %f",findAngle(points[i],points[i+1],points[i+2]));
+  // ~printf(" %f",findAngle(points[points.size()-2],points[points.size()-1],points[0]));
+  // ~printf(" %f",findAngle(points[points.size()-1],points[0],points[1]));
+  // ~std::cout << std::endl;
+  
   //float area = contourArea(points) / (boundingRect.width * boundingRect.height);
   //if (area >=  (float(TRI_BOUNDING_AREA_LOW)/1000) && area <= (float(TRI_BOUNDING_AREA_LOW)/1000) ) return true;
   //else return false;
@@ -237,7 +247,6 @@ const double pi = 3.1415926;
 bool GrayscaleContour::isCircle(std::vector<Point>& points)
 {
   if (points.size() < 5) return false;
-
   double contour_area = contourArea(points);
   double perimeter = arcLength(points, true);  
   double expected_area,error;
@@ -271,7 +280,7 @@ bool GrayscaleContour::filterArea(std::vector<Point> contour)
 {
   return contourArea(contour) < (minArea * (frame_width*frame_height) ) ;
 }
-Point  GrayscaleContour::findCenter(std::vector<Point>& points) {
+Point GrayscaleContour::findCenter(std::vector<Point>& points) {
   int x = 0, y = 0;
   for (int i = 0; i < points.size(); i++) {
     x += points[i].x;
@@ -280,4 +289,18 @@ Point  GrayscaleContour::findCenter(std::vector<Point>& points) {
   x /= points.size();
   y /= points.size();
   return Point(x, y);
+}
+void GrayscaleContour::setShapePoints(navigator_msgs::DockShape& dockShape,std::vector<Point>& points)
+{
+  Point center = findCenter(points);
+  dockShape.CenterX = center.x + roi.x;
+  dockShape.CenterY = center.y + roi.y;
+  dockShape.img_width = colorFrame.cols;
+  for (int j = 0; j < points.size(); j++) {
+    geometry_msgs::Point p;
+    p.x = points[j].x + roi.x;
+    p.y = points[j].y + roi.y;
+    p.z = 0;
+    dockShape.points.push_back(p);
+  }
 }
