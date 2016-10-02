@@ -17,6 +17,12 @@
 #include <fstream>
 #include <sstream>
 
+Eigen::Vector2d b1 (-30, 50);
+Eigen::Vector2d b2 (-30, -20);
+Eigen::Vector2d b3 (35, -20);
+Eigen::Vector2d b4 (35, 50);
+
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -68,6 +74,10 @@ union floatConverter
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 class OccupancyGrid
 {
+	float LLA_BOUNDARY_X1 = -30, LLA_BOUNDARY_Y1 = 50;
+float LLA_BOUNDARY_X2 = -30, LLA_BOUNDARY_Y2 = -20;
+float LLA_BOUNDARY_X3 = 35, LLA_BOUNDARY_Y3 = -20;
+float LLA_BOUNDARY_X4 = 35, LLA_BOUNDARY_Y4 = 50;
 	public:
 		////////////////////////////////////////////////////////////
 	    /// \brief ?
@@ -135,9 +145,24 @@ class OccupancyGrid
 				}
 				Eigen::Vector3d xyz_in_velodyne(x.f,y.f,z.f);
 				Eigen::Vector3d xyz_in_enu = T*xyz_in_velodyne;
+			    Eigen::Vector2d ab = b1-b2;
+			    Eigen::Vector2d ac = b1-b3;
+			    Eigen::Vector2d point(xyz_in_enu(0), xyz_in_enu(1));
+			    Eigen::Vector2d am = b1 - point;
+			     if(ab.dot(ac) > .1){
+
+			         ac = b1-b4;
+			     }
+
+	 
+		     if(0 <= ab.dot(am) && ab.dot(am) <= ab.dot(ab) && 0 <= am.dot(ac) && am.dot(ac) <= ac.dot(ac)){
+		     	//std::cout<<"TRUE"<<std::endl;
 				if (xyz_in_velodyne.norm() > 5 && xyz_in_velodyne.norm() <= 100) {
 					updateGrid(LidarBeam(xyz_in_enu(0), xyz_in_enu(1), xyz_in_enu(2),i.f),max_hits);
-				}			
+				}
+
+		     }
+			       		
 			}
 			++updateCounter;
 		}

@@ -14,8 +14,8 @@
 #include <tf2_msgs/TFMessage.h>
 #include <tf2/convert.h>
 #include <tf2_ros/transform_listener.h>
-#include <navigator_msgs/Buoy.h>
 #include <navigator_msgs/BuoyArray.h>
+#include <navigator_msgs/Buoy.h>
 #include <uf_common/PoseTwistStamped.h>
 #include <uf_common/MoveToAction.h>
 #include <actionlib/server/simple_action_server.h>
@@ -27,6 +27,8 @@
 #include "OccupancyGrid.h"
 #include "ConnectedComponents.h"
 #include "AStar.h"
+#include "objects.h"
+#include "bounding_boxes.h"
 
 using namespace std;
 
@@ -46,14 +48,11 @@ const double MAXIMUM_Z_HEIGHT = 8;
 OccupancyGrid ogrid(MAP_SIZE_METERS,ROI_SIZE_METERS,VOXEL_SIZE_METERS);
 AStar astar(ROI_SIZE_METERS/VOXEL_SIZE_METERS);
 nav_msgs::OccupancyGrid rosGrid;
-<<<<<<< HEAD
 ros::Publisher pubGrid,pubMarkers,pubBuoys,pubTrajectory,pubWaypoint;
-=======
+
 visualization_msgs::MarkerArray markers;	
-visualization_msgs::MarkerArray small_markers;
 visualization_msgs::Marker m;
-ros::Publisher pubGrid,pubMarkers,pubMarkersSmall;
->>>>>>> MISSION SYSTEM: changes from lake day
+ObjectTracker object_tracker;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -120,7 +119,6 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	ogrid.setLidarPosition(lidarpos);
 	ogrid.updatePointsAsCloud(pcloud,T_enu_velodyne,MAX_HITS_IN_CELL);
 	ogrid.createBinaryROI(MIN_HITS_FOR_OCCUPANCY,MAXIMUM_Z_HEIGHT);
-<<<<<<< HEAD
 
 	//Inflate ogrid before detecting objects and calling AStar
 	ogrid.inflateBinary(5);
@@ -164,98 +162,6 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 			for (int jj = -2; jj <= 2; ++jj) {
 				ogrid.ogridMap[ (waypoint_ogrid.y+ii)*ogrid.ROI_SIZE + waypoint_ogrid.x+jj] = 25;
 			}
-=======
-	std::vector<objectXYZ> objects;
-	std::vector<objectXYZ> small_objects;
-	std::vector< std::vector<int> > cc = ConnectedComponents(ogrid,objects);
-	ogrid.inflateBinary(3);
-
-	std::cout<<objects.size()<<" o size"<<std::endl;
-
-
-
-	for(auto obj : objects){
-		float xmin = obj.position.x - (obj.scale.x/2 + .8);
-		float xmax = obj.position.x + (obj.scale.x/2 + .8);
-		float ymin = obj.position.y - (obj.scale.y/2 + .8);
-		float ymax = obj.position.y + (obj.scale.y/2 + .8);
-		float zmin = obj.position.z - (obj.scale.z/2 + .8);
-		float zmax = obj.position.z + (obj.scale.z/2 + .8);
-		float newxmin = 100000;
-		float newymin = 100000;
-		float newzmin = 100000;
-		float newzmax = -100000;
-		float newymax = -100000;
-		float newxmax = -100000;
-
-		std::cout<< newxmin<< ","<< newxmax <<","<<newymin<<","<<newymax<<","<<newzmin<<","<<newzmax<<std::endl;
-
-		std::cout<< xmin<< ","<< xmax <<","<<ymin<<","<<ymax<<","<<zmin<<","<<zmax<<std::endl;
-		cout<<"------"<<endl;
-		for (auto ii = 0, jj = 0; ii < pcloud->width; ++ii,jj+=pcloud->point_step) {
-			floatConverter x,y,z,i;
-			for (int kk = 0; kk < 4; ++kk)
-			{
-				x.data[kk] = pcloud->data[jj+kk];
-				y.data[kk] = pcloud->data[jj+4+kk];
-				z.data[kk] = pcloud->data[jj+8+kk];
-				i.data[kk] = pcloud->data[jj+16+kk];
-			}
-			Eigen::Vector3d xyz_in_velodyne(x.f,y.f,z.f);
-			Eigen::Vector3d xyz_in_enu = T_enu_velodyne*xyz_in_velodyne;
-			float x_ = xyz_in_enu(0);
-			float y_ = xyz_in_enu(1);
-			float z_ = xyz_in_enu(2);
-			std::cout<< x_ << ","<< y_ <<","<<z_ <<std::endl; 
-
-			if(x_ > xmin && x_ < xmax && y_ > ymin && y_ < ymax && z_ > zmin && z_ < zmax){
-				newxmin = x_ < newxmin ? x_ : newxmin;
-				newymin = y_ < newymin ? y_ : newymin;
-				newzmin = z_ < newzmin ? z_ : newzmin;
-				newxmax = x_ > newxmax ? x_ : newxmax;
-				newymax = y_ > newymax ? y_ : newymax;
-				newzmax = z_ > newzmax ? z_ : newzmax;
-				std::cout<< newxmin<< ","<< newxmax <<","<<newymin<<","<<newymax<<","<<newzmin<<","<<newzmax<<std::endl;
-				cout<<"point_added"<<std::endl;
-			}			
-		}
-
-		newxmin = newxmin < newxmax ? newxmin : newxmax;
-		newymin = newymin < newymax ? newymin : newymax;
-		newzmin = newzmin < newzmax ? newzmin : newzmax;
-		newxmax = newxmin < newxmax ? newxmax : newxmin;
-		newymax = newymin < newymax ? newymax : newymin;
-		newzmax = newzmin < newzmax ? newzmax : newzmin;
-
-		std::cout<<"SUPPPPP"<<std::endl;
-		std::cout<< newxmin<< ","<< newxmax <<","<<newymin<<","<<newymax<<","<<newzmin<<","<<newzmax<<std::endl;
-
-		if(newxmin != 100000 && newymin != 100000 && newzmin !=100000
-			&& newxmax != -100000 && newymax != -100000 && newzmax != -100000){
-			auto sm_ob = objectXYZ();
-			sm_ob.position.x = (newxmax + newxmin)/2;
-			sm_ob.scale.x = fabs(newxmax - newxmin);
-			sm_ob.position.y = (newymax + newymin)/2;
-			sm_ob.scale.y = fabs(newymax - newymin);	
-			sm_ob.position.z = (newzmax + newzmin)/2;
-			sm_ob.scale.z = fabs(newzmax - newzmin);
-			small_objects.push_back(sm_ob);	
-
-		}		
-	}
-
-	std::cout<<small_objects.size()<<" size"<<std::endl;
-
-	//Fake waypoint - this needs to be replaced!
-	Eigen::Vector3d v = T_enu_velodyne*Eigen::Vector3d(30,0,0);;
-	int waypoint[3];
-	waypoint[0] = (v(0)-lidarpos.x)/VOXEL_SIZE_METERS + ogrid.ROI_SIZE/2;
-	waypoint[1] = (v(1)-lidarpos.y)/VOXEL_SIZE_METERS + ogrid.ROI_SIZE/2;
-	waypoint[2] = v(2);
-	for (int ii = -2; ii <= 2; ++ii) {
-		for (int jj = -2; jj <= 2; ++jj) {
-			ogrid.ogridMap[ (waypoint[1]+ii)*ogrid.ROI_SIZE + waypoint[0]+jj] = 25;
->>>>>>> MISSION SYSTEM: changes from lake day
 		}
 
 		//Setup Astar
@@ -353,16 +259,15 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	m.header.stamp = ros::Time::now();
 	m.header.seq = 0;
 	m.header.frame_id = "enu";
-<<<<<<< HEAD
 	
 	//Erase old markers
-	m.id = 0;
+	m.id = 1000;
 	m.type = 0;
 	m.action = 3;
 	markers.markers.push_back(m);
 
 	//Course Outline - change to real values or pull from service/topic
-	m.id = 1;
+	m.id = 1001;
 	m.type = visualization_msgs::Marker::LINE_STRIP;
 	m.action = visualization_msgs::Marker::ADD;
 	m.scale.x = 0.5;
@@ -387,18 +292,19 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	buoy.header.seq = 0;
 	buoy.header.frame_id = "enu";
 	buoy.header.stamp = ros::Time::now();	
-=======
-	m.action = 3;
->>>>>>> MISSION SYSTEM: changes from lake day
-	int id = 0;
-	for (auto obj : objects) {
+
+	auto object_permanence = object_tracker.add_objects(objects);
+	std::vector<objectMessage> small_objects = BoundingBox::get_accurate_objects(pcloud, object_permanence, T_enu_velodyne);
+	int max_id = 0;
+
+	for (auto obj : object_permanence) {
 		//Verify object is in the enu frame - THIS IS POOR CODE - NEED TO UPDATE WHEN LLA STUFF IS AVAILABLE
 		if (obj.position.x < LLA_BOUNDARY_X1 || obj.position.x > LLA_BOUNDARY_X4 || obj.position.y < LLA_BOUNDARY_Y2 || obj.position.y > LLA_BOUNDARY_Y1 ) { continue; }
-		ROS_INFO_STREAM("LIDAR | Adding buoy " << id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.beams.size() << " lidar points ");
+		// ROS_INFO_STREAM("LIDAR | Adding buoy " << obj.id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.beams.size() << " lidar points ");
 		
-		//Buoys
+		// 
 		buoy.header.stamp = ros::Time::now();
-		buoy.id = id;
+		buoy.id = obj.id;
 		buoy.confidence = 0;
 		buoy.position = obj.position;
 		buoy.height = obj.scale.z; 
@@ -413,37 +319,37 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		m2.header.seq = 0;
 		m2.header.frame_id = "enu";		
 		m2.header.stamp = ros::Time::now();
-		m2.id = id+2;
+		m2.id = obj.id;
 		m2.type = visualization_msgs::Marker::CUBE;
 		m2.action = visualization_msgs::Marker::ADD;		
 		m2.pose.position = obj.position;
 		m2.scale = obj.scale;
 		m2.color.a = 0.6; m2.color.r = 1; m2.color.g = 1; m2.color.b = 1;
 		markers.markers.push_back(m2);
-		++id;
+		if(m2.id > max_id) max_id = m2.id;
 	}
+	std::cout<<"MAX: "<<max_id<<std::endl;
 	pubMarkers.publish(markers);
 	pubBuoys.publish(allBuoys);
 
 
-	small_markers.markers.clear();
-	m.header.seq = 0;
-	m.header.frame_id = "enu";
-	m.action = 3;
-	id = 100;
-	for (auto obj : small_objects) {
-		if (obj.scale.x > 10 || obj.scale.y > 10 || obj.scale.z > 10) { continue; }
-		m.header.stamp = ros::Time::now();
-		m.id = id;
-		m.type = visualization_msgs::Marker::CUBE;
-		m.action = visualization_msgs::Marker::ADD;
-		m.pose.position = obj.position;
-		m.scale = obj.scale;
-		m.color.a = 0.6; m.color.r = 1; m.color.g = 1; m.color.b = 1;
-		small_markers.markers.push_back(m);
-		++id;
-	}
-	pubMarkersSmall.publish(small_markers);
+	// small_markers.markers.clear();
+	// m.header.seq = 0;
+	// m.header.frame_id = "enu";
+	// m.action = 3;
+	// for (auto obj : small_objects) {
+	// 	if (obj.scale.x > 10 || obj.scale.y > 10 || obj.scale.z > 10) { continue; }
+	// 	m.header.stamp = ros::Time::now();
+	// 	m.id = obj.id;
+	// 	m.type = visualization_msgs::Marker::CUBE;
+	// 	m.action = visualization_msgs::Marker::ADD;
+	// 	m.pose.position = obj.position;
+	// 	m.scale = obj.scale;
+	// 	m.color.a = 0.6; m.color.r = 1; m.color.g = 1; m.color.b = 1;
+	// 	small_markers.markers.push_back(m);
+	// 	++id;
+	// }
+	// pubMarkersSmall.publish(small_markers);
 
 	//Elapsed time
 	ROS_INFO_STREAM("LIDAR | Elapsed time: " << (ros::Time::now()-timer).toSec());
@@ -469,6 +375,7 @@ int main(int argc, char* argv[])
 	//Ros init
 	ros::init(argc, argv, "lidar");
 	ros::Time::init();
+
 	//ros::init(argc, argv, "lidar", ros::init_options::AnonymousName);
 
 	//Check that ROS is alive before continuing... After 10 minutes quit!
@@ -498,18 +405,14 @@ int main(int argc, char* argv[])
 
 	//Publish occupancy grid and visualization markers
 	pubGrid = nh.advertise<nav_msgs::OccupancyGrid>("ogrid_batcave",10);
-	pubMarkers = nh.advertise<visualization_msgs::MarkerArray>("markers_batcave",10);
-<<<<<<< HEAD
-	pubBuoys = nh.advertise<navigator_msgs::BuoyArray>("buoys_batcave",10);
+	pubMarkers = nh.advertise<visualization_msgs::MarkerArray>("/unclassified/objects/markers",10);
+	pubBuoys = nh.advertise<navigator_msgs::BuoyArray>("/unclassified/objects",10);
 
 	//Publish waypoints to controller
 	pubTrajectory = nh.advertise<uf_common::PoseTwistStamped>("trajectory", 1);
     //pubWaypoint = nh.advertise<PoseStamped>("waypoint", 1); //Do we need this?
 
-=======
-	pubMarkersSmall = nh.advertise<visualization_msgs::MarkerArray>("markers_small_batcave",10);
-	
->>>>>>> MISSION SYSTEM: changes from lake day
+	// pubMarkersSmall = nh.advertise<visualization_msgs::MarkerArray>("/vision/objects_unclassified",10);
 	//Give control to ROS
 	ros::spin();
 	//ros::spinOnce();

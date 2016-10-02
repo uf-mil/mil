@@ -60,8 +60,8 @@ struct objectMessage
 {
 	geometry_msgs::Point position;
 	geometry_msgs::Vector3 scale;
-	//std::vector<LidarBeam> beams;
 	std::vector<geometry_msgs::Point32> beams;
+	int id;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

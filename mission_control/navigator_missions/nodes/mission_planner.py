@@ -3,40 +3,28 @@ from txros import util, NodeHandle
 from twisted.internet import defer, reactor
 import sys
 import rospy
-
 from navigator_singleton.navigator import Navigator
 from navigator_msgs.msg import PerceptionObject
-
 import nav_missions
-
 import argparse
+import std_msgs
 
-@util.cancellableInlineCallbacks
-def go(mission):
-    nh, args = yield NodeHandle.from_argv_with_remaining(mission.name)
-    n = yield Navigator(nh)._init()
-    to_run = getattr(nav_missions, mission.name)
-    print mission.name
-    print to_run
-    yield to_run.main(n)
-    
-    defer.returnValue(reactor.stop())
+nh = None
 
 class Mission(object):
-    def __init__(self,name,item_dep,children):
+
+    def __init__(self, name, item_dep, children):
         self.name = name
         self.item_dep = item_dep
         self.children = children
 
-    # def poop(self):
-    #   yield print "hi"
     @util.cancellableInlineCallbacks
-    def hi(self):
-        yield go(self)
-
     def do_mission(self):
-        reactor.callWhenRunning(self.hi)
-        reactor.run()
+        print self.name
+        n = yield Navigator(nh)._init()
+        to_run = getattr(nav_missions, self.name)
+        yield to_run.main(n)
+
 
 class MissionPlanner:
 
@@ -44,32 +32,31 @@ class MissionPlanner:
         self.tree = []
         self.queue = []
         self.found = []
-        # Put in YAML file
-        stc = Mission("scan_the_code", ["stc"], [])
-        #bf = Mission("back_and_forth", [], [stc])
+        # TODO Put in YAML file
+        stc = Mission("scan_the_code", ["scan_the_code"], [])
+        bf = Mission("back_and_forth", [], [stc])
         self.tree.append(stc)
-        self.vision_sub = rospy.Subscriber('/vision/object_classifier', PerceptionObject, self.new_item)
-        # serv = navigator.nh.get_service_client("/vision/object_classifier_service", s_type)
-        self.init()
+
+    @util.cancellableInlineCallbacks
+    def _init(self):
+        self.nh = yield NodeHandle.from_argv("mission_planner")
+        global nh
+        nh = self.nh
+
+        self.sub_database = yield nh.subscribe('/database/object_found', PerceptionObject, self.new_item)
+        #self.servcl_exploration_yield = yield nh.get_service_client("/exploration/yield_control", std_msgs.msg.Bool)
         self.refresh()
-
-    def init(self):
-        # resp = serv("stc")
-        # if(resp.found):
-        self.found.append('stc')
-
+        defer.returnValue(self)
 
     def new_item(self, obj):
         self.found.append(obj.name)
         self.refresh()
-        print "new item"
 
     def refresh(self):
         for mission in self.tree:
             if(self.can_complete(mission)):
                 self.queue.append(mission)
         self.empty_queue()
-        print "refresh"
 
     def can_complete(self, mission):
         for item in mission.item_dep:
@@ -77,13 +64,14 @@ class MissionPlanner:
                 return False
         return True
 
+    @util.cancellableInlineCallbacks
     def empty_queue(self):
         if(len(self.queue) == 0):
             return
         for mission in self.queue:
-            # add a timeout here 
-            mission.do_mission()
-            print "sup"
+            # add a timeout here
+            yield mission.do_mission()
+            print "completed mission"
             for child in mission.children:
                 self.tree.append(child)
             self.queue.remove(mission)
@@ -98,13 +86,8 @@ class MissionPlanner:
 
 @util.cancellableInlineCallbacks
 def main():
-    mp = MissionPlanner()
-    rospy.init_node('navigator_mission_planner_', anonymous=True)
-    try:
-        rospy.spin()
-    except KeyboardInterrupt:
-        print("Shutting down")
+    om = MissionPlanner()
+    od = yield om._init() 
 
-if __name__ == '__main__':
-    main()
-
+reactor.callWhenRunning(main)
+reactor.run()

@@ -6,6 +6,9 @@ find_package(catkin REQUIRED COMPONENTS
 	std_msgs
 	message_generation
 	geometry_msgs
+  genmsg 
+  actionlib_msgs 
+  actionlib
 	)
 
 add_message_files(
@@ -22,6 +25,7 @@ add_message_files(
   Buoy.msg
   BuoyArray.msg
   PerceptionObject.msg
+  PerceptionObjects.msg
 )
 
 add_service_files(
@@ -36,12 +40,22 @@ add_service_files(
   StereoShapeDetector.srv
   ScanTheCodeMission.srv
   PerceptionObjectService.srv
+  ObjectDBFullQuery.srv
+  ObjectDBSingleQuery.srv
+
 )
+
+add_action_files(
+  DIRECTORY action 
+  FILES 
+  ClassifyUnknown.action
+  )
 
 generate_messages(
 	DEPENDENCIES
 	std_msgs
 	geometry_msgs
+  actionlib_msgs
 )
 
 catkin_package(

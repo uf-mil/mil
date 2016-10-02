@@ -295,6 +295,7 @@ def main(args):
   status = rospy.Service('/vision/scan_the_code_status', ScanTheCodeMission, ic.mission_status)
   activate = rospy.Service('/vision/scan_the_code_activate', ScanTheCodeMission, ic.activate)
 
+  print "stuff"
   try:
     rospy.spin()
   except KeyboardInterrupt:
