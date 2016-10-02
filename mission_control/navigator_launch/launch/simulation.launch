@@ -10,6 +10,12 @@
     <include file="$(find navigator_alarm)/launch/alarm.launch"/>
     <include file="$(find navigator_launch)/launch/gnc.launch"/>
 
+    <!-- Needed for missioning -->
+    <node name="bounds_server" pkg="navigator_tools" type="bounds.py"/>
+    <rosparam param="bounds">
+      enforce: False
+    </rosparam>
+
     <include file="$(find navigator_gazebo)/launch/goose.launch" if="$(arg gazebo)">
         <arg name="gui" value="$(arg gui)"/>
     </include>

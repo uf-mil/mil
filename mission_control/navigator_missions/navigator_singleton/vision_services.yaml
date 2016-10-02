@@ -10,7 +10,7 @@ get_shape:
   topic: /dock_shapes/GetShape
   type: GetDockShape
   args: {'Shape': "CIRCLE", 'Color':"RED"}
-tester:
+start_gate:
   topic: /vision/start_gate_buoys
   type: StartGate
   args: {}

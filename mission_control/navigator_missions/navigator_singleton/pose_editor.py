@@ -9,6 +9,8 @@ from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Point, Vector3, Twi
 from navigator_tools import rosmsg_to_numpy, make_header, normalize
 from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
 
+import navigator_tools
+
 UP = np.array([0.0, 0.0, 1.0], np.float64)
 EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)]
 UNITS = {'m': 1, 'ft': 0.3048, 'yard': 0.9144, 'rad': 1, 'deg': 0.0174533}
@@ -66,6 +68,24 @@ def look_at_camera(forward, upish=UP):
     # assumes camera right-down-forward coordinate system
     return triad((forward, upish), (UP, [0, -1, 0]))
 
+def get_valid_point(nav, point):
+    if nav.enu_bounds is None:
+        return point
+
+    # Magic that finds if a point is in a polygon
+    ab = np.subtract(nav.enu_bounds[0], nav.enu_bounds[1])[:2]
+    ac = np.subtract(nav.enu_bounds[0], nav.enu_bounds[2])[:2]
+    am = np.subtract(nav.enu_bounds[0], point)[:2]
+    if np.dot(ab, ac) > .1:
+        ac = np.subtract(nav.enu_bounds[0], nav.enu_bounds[3])[:2]
+
+    if 0 <= np.dot(ab, am) <= np.dot(ab, ab) and 0 <= np.dot(am, ac) <= np.dot(ac, ac):
+        # The point was okay - in bounds
+        return point
+    else:
+        print "INVAILD TARGET POINT DETECTED"
+        # TODO: Make boat go to edge
+        return nav.pose[0]
 
 class PoseEditor2(object):
     '''
@@ -105,6 +125,10 @@ class PoseEditor2(object):
     def go(self, *args, **kwargs):
         # NOTE: C3 doesn't seems to handle different frames, so make sure all movements are in C3's
         #       fixed frame.
+        self.position = get_valid_point(self.nav, self.position)
+        self.nav._pose_pub.publish(PoseStamped(header=navigator_tools.make_header(frame='enu'),
+                                               pose=navigator_tools.numpy_quat_pair_to_pose(*self.pose)))
+
         goal = self.nav._moveto_action_client.send_goal(self.as_MoveToGoal(*args, **kwargs))
         return goal.get_result()
 
@@ -156,8 +180,6 @@ class PoseEditor2(object):
         '''
         Go to a lat long position and keep the same orientation
         Note: lat and long need to be degrees
-
-        ****TO TEST****
         '''
         ecef_pos, enu_pos = self.nav.ecef_pose[0], self.nav.pose[0]
 
