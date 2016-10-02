@@ -44,8 +44,10 @@ def main():
 
     # Actually run the command
     print "{}ing {} non-arbitrary unit(s)".format(args.command, amount)
-    d = yield movement(float(amount), unit).go(speed=args.speed)
-
+    d = movement(float(amount), unit).go(speed=args.speed)
+    print d
+    yield d
+    print d
     print "Done!"
     defer.returnValue(reactor.stop())
 

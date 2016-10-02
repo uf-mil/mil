@@ -12,12 +12,6 @@ start_gate:
   type: StartGate
   args: {}
 
-
-shooter_lidar:
-  topic: /vision/object_classifier_service
-  type: PerceptionObjectService
-  args: {name: "shooter"}
-
 scan_the_code_activate:
   topic: /vision/scan_the_code_activate
   type: ScanTheCodeMission
@@ -27,3 +21,8 @@ scan_the_code_status:
     topic: /vision/scan_the_code_status
     type: ScanTheCodeMission
     args: {}
+
+shooter_lidar:
+  topic: /vision/object_classifier_service
+  type: PerceptionObjectService
+  args: {name: "shooter"}

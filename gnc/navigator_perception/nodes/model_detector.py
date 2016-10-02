@@ -32,21 +32,21 @@ class image_converter:
 
       return fgmask
 
-  def get_contours_and_moments(self,mask):
+  def get_contours(self,mask):
       contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-      moments = []
-      for i, val in enumerate(contours):
-        M = cv2.moments(val)
-        if M["m00"] != 0:
-          cX = int(M["m10"] / M["m00"])
-          cY = int(M["m01"] / M["m00"])
-        else:
-          cX, cY = 0, 0
-        moments.append([cX,cY])
+      # moments = []
+      # for i, val in enumerate(contours):
+      #   M = cv2.moments(val)
+      #   if M["m00"] != 0:
+      #     cX = int(M["m10"] / M["m00"])
+      #     cY = int(M["m01"] / M["m00"])
+      #   else:
+      #     cX, cY = 0, 0
+      #   moments.append([cX,cY])
 
-      return contours, hierarchy, moments
+      return contours, hierarchy
 
-  def get_best_contours(self, contours, moments):
+  def get_best_contours(self, contours):
       # Calculate the area of each contour
       areas = []
       for i, val in enumerate(contours):
@@ -226,13 +226,13 @@ class image_converter:
     # Get the background mask
     mask = self.get_foreground_mask(cv_image)
 
-    # Get the contours of the image, and the moments of those contours
-    contours, hierarchy, moments = self.get_contours_and_moments(mask);
+    # Get the contours of the image
+    contours, hierarchy = self.get_contours(mask);
 
     if(len(contours) == 0):
       return
 
-    # Pick the good contours from this list (biggest area, moment closest to the average)
+    # Pick the good contours from this list (biggest area)
     best_contours = self.get_best_contours(contours, moments)
 
     # Get the bounding box to those contours

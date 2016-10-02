@@ -46,10 +46,15 @@ public:
 					min_obj = s_obj;
 				}
 			}
+
 			std::cout<<min_obj.id<<std::endl;
 			if(min_dist < diff_thresh){
-
-				new_objects.push_back(min_obj);
+				auto a = objectMessage();
+				a.scale = obj.scale;
+				a.position = obj.position;
+				a.id = min_obj.id;
+				a.beams = obj.beams;
+				new_objects.push_back(a);
 
 			}else{
 				obj.id = curr_id;

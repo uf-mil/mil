@@ -22,6 +22,7 @@ def main(navigator):
         return
 
     obj = ans.object
+    print obj
 
 
     stc_position = np.array([obj.position.x,obj.position.y, obj.position.z])
@@ -30,16 +31,22 @@ def main(navigator):
     diff = np.array([diff[0], diff[1], 0])
     length = np.linalg.norm(diff)
     print length
-    radius = 5
+    radius = 4
     print diff * (length-radius)/(length)
     if(length - radius >= 0):
-        d = yield navigator.move.rel_position(diff * (length-radius)/(length)).look_at(stc_position).go()
-        print "Got there"
-    # yield navigator.vision_request("scan_the_code_activate")
+        d = navigator.move.rel_position(diff * (length-radius)/(length)).look_at(stc_position).go()
+        print d
+        print "syf"
+        yield navigator.nh.sleep(1)
+        print "ok"
+        yield d
 
-    # pattern = navigator.move.circle_point(stc_position, 5)
-    # searcher = navigator.search(vision_proxy='/vision/scan_the_code_status', search_pattern=pattern)
-    # yield searcher.start_search(spotings_req=1, speed=.9)
+    print "Got there"
+    yield navigator.vision_request("scan_the_code_activate")
+    pattern = navigator.move.circle_point(stc_position, radius)
+    searcher = navigator.search(vision_proxy='/vision/scan_the_code_status', search_pattern=pattern)
+    yield searcher.start_search(spotings_req=1, speed=.9)
+    print "done"
 
 
 

@@ -62,9 +62,9 @@ class ModelTracker:
             print "didn't pass geom"
             #cv2.waitKey(0)
             continue
-        if(time.time() - m.time_started > 8):
+        if(time.time() - m.time_started > 15):
             pass
-            #print "timed out"
+            print "timed out"
             continue
         mission_status, colors = m.check_for_colors()
         if(mission_status):

@@ -58,8 +58,10 @@ class ObjectDatabase:
                 del self.unknowns[i]
                 break
 
+        if(p.name not in self.items.keys()):
+            self.pub_object_found.publish(p)
+
         self.items[p.name] = p
-        self.pub_object_found.publish(p)
         self.add_markers()
 
     def add_markers(self):

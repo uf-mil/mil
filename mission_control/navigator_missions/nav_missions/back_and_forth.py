@@ -14,7 +14,11 @@ def main(navigator):
         The statment `navigator.move` is equivalent to `navigator.move.forward(0)`,
             so it creates a waypoint at the position of the boat at the current time.
         '''
-        yield home.left(10).go(speed=1.5)
+        yield home.backward(3).go(speed=1.5)
+        print "backward"
+
+        yield home.forward(3).go(speed=1.5)
+        print "foward"
         # while True:
         #     # forward, left, yaw_left
         #     amts = np.random.random(3) * np.array([60, 60, 6.28]) - np.array([30, 30, 3.14])

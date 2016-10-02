@@ -198,7 +198,6 @@ class Searcher(object):
                 if type(pose) == list or type(pose) == np.ndarray:
                     yield self.nav.move.relative(pose).go(speed=speed)
                 else:
-                    print "sup"
                     yield pose.go(speed=speed)
 
                 yield self.nav.nh.sleep(2)

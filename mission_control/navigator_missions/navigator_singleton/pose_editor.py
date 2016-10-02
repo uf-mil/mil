@@ -128,7 +128,8 @@ class PoseEditor2(object):
         self.position = get_valid_point(self.nav, self.position)
         self.nav._pose_pub.publish(PoseStamped(header=navigator_tools.make_header(frame='enu'),
                                                pose=navigator_tools.numpy_quat_pair_to_pose(*self.pose)))
-
+        print self.position
+        print self.nav.pose[0]
         goal = self.nav._moveto_action_client.send_goal(self.as_MoveToGoal(*args, **kwargs))
         return goal.get_result()
 
