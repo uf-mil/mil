@@ -19,6 +19,93 @@
 #include <navigator_msgs/DockShapes.h>
 #include "std_srvs/SetBool.h"
 
+class ShapesBuffer
+{
+  static double STD_DEV_THRESHOLD;
+  static const int MAX_SEEN_GAP_SEC = 0;
+  static const int MAX_SEEN_GAP_NSEC = 500000000;
+  static ros::Duration max_seen_gap_dur;
+  boost::circular_buffer<navigator_msgs::DockShape> buffer;
+  std::string Shape;
+  std::string Color;
+  ros::Time lastSeen;
+  bool isOld()
+  {
+    ros::Time now = ros::Time::now();
+    return (now - lastSeen) > max_seen_gap_dur;
+  }
+  void clearIfOld()
+  {
+    if (isOld())
+    {
+      clear();
+    }
+  }
+  void removeOutlierShapes()
+  {
+    //Do cool stats stuff to get rid of outliers
+    using namespace boost::accumulators;
+    accumulator_set<int, features<tag::mean, tag::variance>> xAcc;
+    accumulator_set<int, features<tag::mean, tag::variance>> yAcc;
+    for (auto shape: buffer)
+    {
+      xAcc(shape.CenterX);
+      yAcc(shape.CenterY);
+    }
+    auto xMean = boost::accumulators::mean(xAcc); 
+    auto xSD = sqrt(boost::accumulators::variance(xAcc));
+    auto new_end = std::remove_if(buffer.begin(), buffer.end(),[=](navigator_msgs::DockShape& shape) {
+      double stds = std::abs(shape.CenterX - xMean) / xSD;
+      if (stds > STD_DEV_THRESHOLD)
+      {
+        return true;
+      }
+      return false;
+     });
+    buffer.erase(new_end,buffer.end());
+  }
+  public:
+  ShapesBuffer()
+  {
+    
+  }
+  ShapesBuffer(std::string shape,std::string color,const int size) :
+    Shape(shape),
+    Color(color),
+    buffer(size)
+  {
+
+  }
+  void insert(navigator_msgs::DockShape ds)
+  {
+    clearIfOld();
+    lastSeen = ros::Time::now();
+    buffer.push_back(ds);
+    if (buffer.full() ) removeOutlierShapes();   
+  }
+  bool getAverageShape(navigator_msgs::DockShape& shape)
+  {
+    if (isOld()) return false;
+    if (!buffer.full() ) return false;
+    shape = buffer.back();
+    return true;
+  }
+  bool sameType(navigator_msgs::DockShape shape)
+  {
+    return shape.Color == Color && shape.Shape == Shape;
+  }
+  bool sameType(std::string& shape, std::string& color)
+  {
+    return shape == Shape && color == Color;
+  }
+  void clear()
+  {
+    buffer.clear();
+  }
+};
+double ShapesBuffer::STD_DEV_THRESHOLD = 3;
+ros::Duration ShapesBuffer::max_seen_gap_dur = ros::Duration(MAX_SEEN_GAP_SEC,MAX_SEEN_GAP_NSEC);
+
 class ImageSearcher {
  private:
   static const int SHAPE_BUFFER_SIZE = 10;
@@ -32,13 +119,6 @@ class ImageSearcher {
   ros::ServiceServer getShapeService;
   ros::ServiceServer getShapesService;
   ros::ServiceServer runService;
-  struct ShapesBuffer
-  {
-    boost::circular_buffer<navigator_msgs::DockShape> buffer;
-    std::string Shape;
-    std::string Color;
-    ros::Time lastSeen;
-  };
 
   navigator_msgs::DockShapes syms;                          // latest frame
   std::array<ShapesBuffer, POSSIBLE_SYMBOLS_SIZE> foundShapes;
@@ -48,17 +128,13 @@ class ImageSearcher {
   int frames;
   bool active;
  public:
-  ImageSearcher() : 
-    max_seen_gap_dur(MAX_SEEN_GAP_SEC,MAX_SEEN_GAP_NSEC)
+  ImageSearcher() 
   {
     STD_DEV_THRESHOLD = 1.5;
     int u = 0;
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
-        ShapesBuffer sb;
-        sb.buffer = boost::circular_buffer<navigator_msgs::DockShape>(SHAPE_BUFFER_SIZE);
-        sb.Shape = possibleShapes[i];
-        sb.Color = possibleColors[j];
+        ShapesBuffer sb(possibleShapes[i],possibleColors[j],SHAPE_BUFFER_SIZE);
         foundShapes[u] = sb;
         u++;
       }
@@ -73,7 +149,7 @@ class ImageSearcher {
     frames = 0;
     for (auto foundShape = foundShapes.begin(); foundShape  != foundShapes.end(); foundShape++)
     {
-      foundShape->buffer.clear();
+      foundShape->clear();
     }
   }
   bool validRequest(navigator_msgs::GetDockShape::Request &req)
@@ -85,47 +161,11 @@ class ImageSearcher {
     if (!active) return;
     for (auto newShape = symbols.list.begin(); newShape != symbols.list.end(); newShape++) {
       for (auto foundShape = foundShapes.begin(); foundShape  != foundShapes.end(); foundShape++) {
-        if (newShape->Shape == foundShape->Shape && newShape->Color == foundShape->Color) {
-          ros::Time now = ros::Time::now();
-          if ( (now - foundShape->lastSeen) > max_seen_gap_dur)
-          {
-            foundShape->buffer.clear();
-          }
-          foundShape->buffer.push_back(*newShape);
-          foundShape->lastSeen = now;
-          //std::cout << "Color=" << foundShape->Color << " Shapes=" << foundShape->Shape << " Buf=" << foundShape->buffer.size() << std::endl;
+        if (foundShape->sameType(*newShape)) {
+          foundShape->insert(*newShape);
         }
       }
     }
-  }
-  
-  
-  navigator_msgs::DockShape getAverageShape(ShapesBuffer &sb)
-  {
-    //Do cool stats stuff to get rid of outliers, calculte mean center
-    using namespace boost::accumulators;
-    accumulator_set<int, features<tag::mean, tag::variance>> xAcc;
-    accumulator_set<int, features<tag::mean, tag::variance>> yAcc;
-    for (auto shape: sb.buffer)
-    {
-      xAcc(shape.CenterX);
-      yAcc(shape.CenterY);
-    }
-    auto xMean = boost::accumulators::mean(xAcc); 
-    auto xSD = sqrt(boost::accumulators::variance(xAcc));
-    //std::cout << "Mean = " << xMean << " STDV= " << xSD << std::endl;
-    for (auto shape = sb.buffer.begin(); shape  != sb.buffer.end(); )
-    {
-      double stds = std::abs(shape->CenterX - xMean) / xSD;
-      //std::cout << stds << ",";
-      if (stds > STD_DEV_THRESHOLD) {
-        shape = sb.buffer.erase(shape);
-      }
-      else shape++;
-    }
-    //std::cout << std::endl;
-    //std::cout << "Fixed Buffer= " << sb.buffer.size() << std::endl;
-    return sb.buffer.back();
   }
   void foundShapesCallback(const navigator_msgs::DockShapes &symbols) {
     if (!active) return;
@@ -137,13 +177,8 @@ class ImageSearcher {
   {
     for (auto shape = foundShapes.begin(); shape  != foundShapes.end(); shape++)
     {
-      ros::Time now = ros::Time::now();
-      if (shape->buffer.full() && (now - shape->lastSeen) < max_seen_gap_dur)
-      {
-        navigator_msgs::DockShape dockShape = getAverageShape(*shape);
-        res.shapes.list.push_back(dockShape);
-      }
-
+      navigator_msgs::DockShape dockShape;
+      if (shape->getAverageShape(dockShape)) res.shapes.list.push_back(dockShape);
     }
     return true;
   }
@@ -165,16 +200,14 @@ class ImageSearcher {
       return true;
     }
     for (auto shape = foundShapes.begin(); shape  != foundShapes.end(); shape++) {
-      if (req.Shape == shape->Shape && req.Color == shape->Color) {
-        ros::Time now = ros::Time::now();
-        if (!shape->buffer.full() || (now - shape->lastSeen) > max_seen_gap_dur )
+      if (shape->sameType(req.Shape,req.Color)) {
+        if (shape->getAverageShape(res.symbol))
         {
+          res.found = true;
+        } else {
           res.found = false;
           res.error = navigator_msgs::GetDockShape::Response::SHAPE_NOT_FOUND;
-          return true;         
         }
-        res.found = true;
-        res.symbol = getAverageShape(*shape);
         return true;
       }
     }
