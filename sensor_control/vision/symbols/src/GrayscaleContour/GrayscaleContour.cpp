@@ -4,36 +4,23 @@ double GrayscaleContour::minArea = 100.0/(644.0*482.0);
 GrayscaleContour::GrayscaleContour(ros::NodeHandle& nh) :
   DockShapeVision(nh)
 {
-  Mat colorFrame,croppedFrame,grayscaleFrame,edgesFrame;
-  
-  roiParams.top = 103.0/482;
-  roiParams.bottom = 346.0/482;
-  roiParams.left = 73.0/644;
-  roiParams.right = 572.0/644;
-  //roiParams.top = 0.0;
-  //roiParams.bottom = 1.0;
-  //roiParams.left = 0.0;
-  //roiParams.right = 1.0;
-  cannyParams.thresh1 = 75;
+
+  cannyParams.thresh1 = 60;
   cannyParams.thresh2 = 100;
 
   epsilonFactor =  3;
 
-  CROSS_BOUNDING_AREA_LOW = 430;
-  CROSS_BOUNDING_AREA_HIGH = 470;
-  TRI_BOUNDING_AREA_LOW = 410;
-  TRI_BOUNDING_AREA_HIGH = 500;
-  CIRCLE_BOUNDING_AREA_LOW = 550;
-  CIRCLE_BOUNDING_AREA_HIGH = 650;
   #ifdef DO_DEBUG
-  namedWindow("Result",CV_WINDOW_AUTOSIZE);
   namedWindow("Menu",CV_WINDOW_AUTOSIZE);
-  namedWindow("ShapeParams",CV_WINDOW_AUTOSIZE);
   namedWindow("Result",CV_WINDOW_AUTOSIZE);
-  namedWindow("Color Cropped",CV_WINDOW_AUTOSIZE);
   namedWindow("Grayscale",CV_WINDOW_AUTOSIZE);
   namedWindow("Contours",CV_WINDOW_AUTOSIZE);
   namedWindow("Edges",CV_WINDOW_AUTOSIZE);
+  #endif
+  #ifdef DO_ROS_DEBUG
+  image_transport.reset(new image_transport::ImageTransport(nh));
+  color_debug_publisher = image_transport->advertise("/dock_shapes/finder/debug_color", 1);
+  contour_debug_publisher = image_transport->advertise("/dock_shapes/finder/debug_contours", 1);
   #endif
 }
 void GrayscaleContour::init()
@@ -41,19 +28,7 @@ void GrayscaleContour::init()
   #ifdef DO_DEBUG
   createTrackbar("thresh1", "Menu", &cannyParams.thresh1, 500);
   createTrackbar("thresh2", "Menu", &cannyParams.thresh2, 255);
-  //createTrackbar("top", "Menu", &roiParams.top, 482);
-  //createTrackbar("bottom", "Menu", &roiParams.bottom,  482);
-  //createTrackbar("left", "Menu", &roiParams.left, 644);
-  //createTrackbar("right", "Menu", &roiParams.right, 644);
-  //createTrackbar("minArea", "Menu", &minArea, 2000);
   createTrackbar("Epsilon  factor (x1000)", "Menu", &epsilonFactor, 2000);
-  
-  createTrackbar("CROSS_BOUNDING_AREA_LOW ", "ShapeParams", &CROSS_BOUNDING_AREA_LOW , 1000);
-  createTrackbar("CROSS_BOUNDING_AREA_HIGH ", "ShapeParams", &CROSS_BOUNDING_AREA_HIGH , 1000);
-  createTrackbar("TRI_BOUNDING_AREA_LOW ", "ShapeParams", &TRI_BOUNDING_AREA_LOW , 1000);
-  createTrackbar("TRI_BOUNDING_AREA_HIGH ", "ShapeParams", &TRI_BOUNDING_AREA_HIGH , 1000);
-  createTrackbar("CIRCLE_BOUNDING_AREA_LOW", "ShapeParams", &CIRCLE_BOUNDING_AREA_LOW , 1000);
-  createTrackbar("CIRCLE_BOUNDING_AREA_HIGH ", "ShapeParams", &CIRCLE_BOUNDING_AREA_HIGH , 1000);
   #endif
 }
 void GrayscaleContour::GetShapes(cv::Mat &frame,cv::Rect roi,navigator_msgs::DockShapes& symbols)
@@ -64,20 +39,26 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,cv::Rect roi,navigator_msgs::Doc
   frame_width = frame.cols;
   frame_height = frame.rows;
   
-  //std::cout << "=== NEW FRAME ===" << std::endl;
   colorFrame = frame;
   CropFrame();
   ConvertToGrayscale();
   DetectEdges();
   FindContours();
   FindPolygons();
-  
+
+  #ifdef DO_DEBUG
   Mat result = croppedFrame.clone();
+  #endif
+  #ifdef DO_ROS_DEBUG
+  cv_bridge::CvImage ros_color_debug;
+  ros_color_debug.encoding = "bgr8";
+  ros_color_debug.image = croppedFrame.clone();
+  #endif
+  
   for (int i = 0; i < shapes.size(); i++)
   {
     auto shape = shapes.at(i);
     navigator_msgs::DockShape dockShape;
-    //Scalar color( rand()&255, rand()&255, rand()&255 );
     
     if (isTriangle(shape))
     {
@@ -91,18 +72,18 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,cv::Rect roi,navigator_msgs::Doc
     } else continue;
 
     if (!GetColor(i,dockShape.Color)) continue;
+    
+    #ifdef DO_DEBUG
     drawContours(result, shapes, i, Scalar(0,0,255) );
+    #endif
+    #ifdef DO_ROS_DEBUG
+    drawContours(ros_color_debug.image, shapes, i, Scalar(0,0,255) );
+    #endif
+    
     Point center = findCenter(shape);
     dockShape.CenterX = center.x + roi.x;
     dockShape.CenterY = center.y + roi.y;
-    
     dockShape.img_width = colorFrame.cols;
-
-     //for (int i = 0; i < shape.size(); i++)
-     //{
-      //points[i].x += roiParams.left;
-      //points[i].y += roiParams.top;
-     //} 
     for (int j = 0; j < shape.size(); j++) {
       geometry_msgs::Point p;
       p.x = shape[j].x + roi.x;
@@ -112,24 +93,29 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,cv::Rect roi,navigator_msgs::Doc
     }
     symbols.list.push_back(dockShape); 
   }
+
   #ifdef DO_DEBUG
   for (auto symbol : symbols.list) {
-    //cv::circle(result,Point(symbol.CenterX,symbol.CenterY),4,Scalar(255,255,255),5);
-    putText(result, symbol.Shape + "\n(" + symbol.Color + ")", Point(symbol.CenterX-100, symbol.CenterY-25),1 , 1, Scalar(0,0,0),  3);
+    putText(result, symbol.Shape + "\n(" + symbol.Color + ")", Point(symbol.CenterX+10-roi.x, symbol.CenterY-roi.y),1 , 1, Scalar(0,0,0),  3);
   }
   imshow("Result",result);
-  imshow("Color Cropped",croppedFrame);
   imshow("Grayscale",grayscaleFrame);
   imshow("Edges",edgesFrame);
+  imshow("Contours",contoursFrame);
+  #endif
+  #ifdef DO_ROS_DEBUG
+  for (auto symbol : symbols.list) {
+    putText(ros_color_debug.image, symbol.Shape + "\n(" + symbol.Color + ")", Point(symbol.CenterX+10-roi.x, symbol.CenterY-roi.y),1 , 1, Scalar(0,0,0),  3);
+  }
+  color_debug_publisher.publish(ros_color_debug.toImageMsg());
+  cv_bridge::CvImage ros_contours_debug;
+  ros_color_debug.encoding = "mono8";
+  ros_color_debug.image = contoursFrame.clone();
+  contour_debug_publisher.publish(ros_color_debug.toImageMsg());
   #endif
 }
 void GrayscaleContour::CropFrame()
 {
-  // ~int left = roiParams.left*colorFrame.cols;
-  // ~int right = roiParams.right*colorFrame.cols;
-  // ~int top = roiParams.top*colorFrame.rows;
-  // ~int bottom =  roiParams.bottom*colorFrame.rows;
-  // ~cv::Rect roi(left,top,frame_width-left-(frame_width-right),frame_height-top-(frame_height-bottom));
   croppedFrame = colorFrame(roi);
 }
 void GrayscaleContour::ConvertToGrayscale()
@@ -161,15 +147,13 @@ void GrayscaleContour::FindContours()
       hit++;
     }
   }
-  
-  #ifdef DO_DEBUG
-  Mat contoursFrame = Mat(edgesFrame.size(), edgesFrame.type(),Scalar(0,0,0));
+
+  #if defined(DO_DEBUG) || defined(DO_ROS_DEBUG)
+  contoursFrame = Mat(edgesFrame.size(), edgesFrame.type(),Scalar(0,0,0));
   for (int i = 0; i < contours.size(); i++)
   {
-    //Scalar color( rand()&255, rand()&255, rand()&255 );
     drawContours(contoursFrame, contours, i, Scalar(255,255,255));
   }
-  imshow("Contours",contoursFrame);
   #endif
 }
 bool GrayscaleContour::GetColor(int shapeIndex,std::string& color)
@@ -180,7 +164,8 @@ bool GrayscaleContour::GetColor(int shapeIndex,std::string& color)
   //std::cout << meanColor << std::endl;
   std::ostringstream unknown;
   unknown << "UKNOWN: " << meanColor.val[0] << " " << meanColor.val[1] << " " << meanColor.val[2] << std::endl;
-
+  double sum = meanColor.val[0] + meanColor.val[1] + meanColor.val[2];
+  if (sum > 500) return false;
   double max = 0;
   if (meanColor.val[0] > max) {
     max = meanColor.val[0];
@@ -204,31 +189,48 @@ void GrayscaleContour::FindPolygons()
     approxPolyDP(Mat(contours[i]), approx, arcLength(Mat(contours[i]), true) * (float(epsilonFactor)/1000) , true);
     shapes.push_back(approx);
   }
-  #ifdef DO_DEBUG
-
-  #endif
 }
 bool GrayscaleContour::isTriangle(std::vector<Point>& points)
 {
-    //For now just if it has 3 sides
-  return points.size() == 3;
-  //cv::Rect boundingRect = cv::boundingRect(points);
+  if (points.size() < 3) return false;
+
+  double contour_area = contourArea(points);
+  double perimeter = arcLength(points, true);
+  double expected_area,expected_perimeter,error;
+  
+  cv::Rect boundingRect = cv::boundingRect(points);
+  expected_area = 0.5 * boundingRect.width * boundingRect.height;
+  error = fabs(contour_area/expected_area-1.0);
+  if (error > 0.1) return false;
+  
+  expected_perimeter = boundingRect.width*3;
+  error = fabs(perimeter/expected_perimeter-1.0);
+  if (error > 0.1) return false;
   //float area = contourArea(points) / (boundingRect.width * boundingRect.height);
   //if (area >=  (float(TRI_BOUNDING_AREA_LOW)/1000) && area <= (float(TRI_BOUNDING_AREA_LOW)/1000) ) return true;
   //else return false;
+  return true;
 }
 bool GrayscaleContour::isCross(std::vector<Point>& points)
 {
   //Check area/size length
   if (points.size() < 10) return false;
-  double perimeter = arcLength(points, true);
+
+  double contour_area = contourArea(points);
+  double perimeter = arcLength(points, true);  
+  double expected_area,error;
+
   double side_length = perimeter / 12.0;
-  double area = contourArea(points);
-  double expected_area = 5.0*pow(side_length,2);
-  double error = fabs(area/expected_area-1.0);
-  //std::cout << "CROSS error: " << error << std::endl;
-  if (error < 0.1) return true;
-  return false;
+  expected_area = 5.0*pow(side_length,2);
+  error = fabs(contour_area/expected_area-1.0);
+  if (error > 0.1) return false;
+
+  Rect rect = boundingRect(points);
+  expected_area = 5*pow( rect.width/3.0,2);
+  error  = fabs(contour_area/expected_area-1);
+  if (error > 0.1) return false;
+  
+  return true;
 }
 
 const double pi = 3.1415926;
@@ -236,35 +238,38 @@ bool GrayscaleContour::isCircle(std::vector<Point>& points)
 {
   if (points.size() < 5) return false;
 
+  double contour_area = contourArea(points);
+  double perimeter = arcLength(points, true);  
+  double expected_area,error;
   //bounding rect area test
+  Point2f center;
+  float radius;
+  minEnclosingCircle(points,center,radius);
+  expected_area = pi*pow(radius,2);
+  error  = fabs(contour_area/expected_area-1);
+  if (error > 0.1) return false; 
   
-  Rect rect = boundingRect(points);
-  double contour_area = contourArea(points); //Actual area of the contour
-  double expected_area = pi*pow(rect.width/2,2); //What area should be if contour is a circle
-  double error  = fabs(contour_area/expected_area-1);
-  if (error < 0.1) return true;
-  return false;
+  // ~doub
+  // ~Rect rect = boundingRect(points);
+  // ~double contour_area = contourArea(points); //Actual area of the contour
+  // ~double expected_area = pi*pow(rect.width/2.0,2); //What area should be if contour is a circle
+  // ~double error  = fabs(contour_area/expected_area-1);
+  // ~if (error > 0.2) return false;
+// ~
+  // ~double perimeter = arcLength(points, true);
+  // ~double radius = perimeter/(2.0*pi);
+  // ~expected_area = pi*pow(radius,2);
+  // ~error = fabs(contour_area/expected_area-1.0);
+  // ~if (error > 0.2) return false;
+  
+  //double center,radius;
+  //minEnclosingCircle( points, center,radius);
+
+  return true;
 }
 bool GrayscaleContour::filterArea(std::vector<Point> contour)
 {
   return contourArea(contour) < (minArea * (frame_width*frame_height) ) ;
-}
-double GrayscaleContour::contourAreaToBoundingRectAreaRatio(std::vector<cv::Point> &points)
-{
-  cv::Rect boundingRect = cv::boundingRect(points);
-  double rect_area = boundingRect.width * boundingRect.height;
-  double contour_area = contourArea(points);
-  return contour_area / rect_area;
-}
-double GrayscaleContour::contourAreaToPerimeterRatio(std::vector<cv::Point> &points)
-{
-  double area = contourArea(points);
-  double perimeter = arcLength(points, true);
-  return area / perimeter;
-}
-double GrayscaleContour::sideLengthVariance(std::vector<cv::Point> &points)
-{
-  
 }
 Point  GrayscaleContour::findCenter(std::vector<Point>& points) {
   int x = 0, y = 0;
