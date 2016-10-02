@@ -103,6 +103,8 @@ class ShooterControl:
             self.load_server.set_aborted(result)
         if self.fire_server.is_active():
             self.fire_server.set_aborted(result)
+        d = rospy.Duration(0, 100000000)
+        rospy.sleep(d)
         time.sleep(0.1)
         self.motor_controller.setMotor1(0)
         self.motor_controller.setMotor2(0)
