@@ -10,7 +10,7 @@ from twisted.internet import defer
 class DetectDeliverMission:
   #Note, this will be changed when the shooter switches to actionlib
   shooterLoad = nh.get_service_client("/shooter/load", std_srvs.srv.Trigger)
-  shooterFire = nh.get_service_client("/shooter/fire", std_srvs.srv.Trigger
+  shooterFire = nh.get_service_client("/shooter/fire", std_srvs.srv.Trigger)
   center_error_threshold = 0.1
   width_proportion = 0.15 #Desired proportion of frame width symbol is present in
   width_error_threshold = 0.03
@@ -59,9 +59,9 @@ class DetectDeliverMission:
   def shootAllBalls(self):
     for i in range(3):
       time.sleep(3)
-      shooterLoad(std_srvs.srv.TriggerRequest())
+      self.shooterLoad(std_srvs.srv.TriggerRequest())
       time.sleep(5)
-      shooterFire(std_srvs.srv.TriggerRequest())
+      self.shooterFire(std_srvs.srv.TriggerRequest())
   @txros.util.cancellableInlineCallbacks
   def findAndShoot(self):
     #Remove, should have already found when mission run
