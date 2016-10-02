@@ -4,9 +4,9 @@ double GrayscaleContour::minArea = 100.0/(644.0*482.0);
 GrayscaleContour::GrayscaleContour(ros::NodeHandle& nh) :
   DockShapeVision(nh)
 {
-
-  cannyParams.thresh1 = 60;
-  cannyParams.thresh2 = 100;
+  //Set ros params
+  nh.param<int>("grayscale/canny/thresh1", cannyParams.thresh1,60);
+  nh.param<int>("grayscale/canny/thresh2", cannyParams.thresh2,100);
 
   epsilonFactor =  3;
 
@@ -247,7 +247,7 @@ bool GrayscaleContour::isCircle(std::vector<Point>& points)
   minEnclosingCircle(points,center,radius);
   expected_area = pi*pow(radius,2);
   error  = fabs(contour_area/expected_area-1);
-  if (error > 0.1) return false; 
+  if (error > 0.2) return false; 
   
   // ~doub
   // ~Rect rect = boundingRect(points);

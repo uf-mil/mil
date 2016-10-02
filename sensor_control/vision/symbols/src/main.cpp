@@ -56,7 +56,13 @@ class ShooterVision {
       foundShapesPublisher = nh_.advertise<navigator_msgs::DockShapes>("/dock_shapes/found_shapes", 1000);
       image_sub_ = it_.subscribe(camera_topic, 1, &ShooterVision::run, this);
 
-      roi = Rect(73,103,499,243);
+      int x_offset,y_offset,width,height;
+      nh_.param<int>("roi/x_offset",x_offset,73);
+      nh_.param<int>("roi/y_offset",y_offset,103);
+      nh_.param<int>("roi/width",width,499);
+      nh_.param<int>("roi/height",height,243);
+      // ~roi = Rect(73,103,499,243);
+      roi = Rect(x_offset,y_offset,width,height);
     }
 
     bool runCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res) {
@@ -90,15 +96,9 @@ class ShooterVision {
       cv::Mat frame = cv_ptr->image;
       width = frame.cols;
       height = frame.rows;
-      cv::waitKey(3);
       symbols.list.clear();
 
       vision->GetShapes(frame,roi,symbols);
-      // Publish to ros
-      //#ifdef DO_DEBUG
-      //DebugWindow::UpdateResults(symbols);
-      //#endif
-
       foundShapesPublisher.publish(symbols);
     }
 };
@@ -106,9 +106,6 @@ class ShooterVision {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "dock_shape_finder");
   ShooterVision sv = ShooterVision();
-  while (waitKey(50) == -1 && ros::ok()) {
-    ros::spin();
-  }
-  std::cout << "Key detected, exiting" << std::endl;
+  ros::spin();
   return 0;
 }
