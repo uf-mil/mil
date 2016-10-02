@@ -12,7 +12,8 @@ class ShooterControl:
         rospy.loginfo("Shooter connecting to motor controller at: %s", self.controller_file)
         self.load_retract_time = rospy.Duration(0, rospy.get_param('~controller/load/retract_time_millis', 950)*1000000)
         self.load_extend_time = rospy.Duration(0, rospy.get_param('~controller/load/extend_time_millis', 500)*1000000)
-        self.load_total_time = self.load_retract_time + self.load_extend_time
+        self.load_pause_time = rospy.Duration(0, rospy.get_param('~controller/load/pause_time_millis', 100)*1000000)
+        self.load_total_time = self.load_retract_time + self.load_pause_time + self.load_extend_time
         self.fire_extend_time = rospy.Duration(0, rospy.get_param('~controller/fire/extend_time_millis', 400)*1000000)
         self.fire_shoot_time = rospy.Duration(0, rospy.get_param('~controller/fire/shoot_time_millis', 1000)*1000000)
         self.total_fire_time = self.fire_shoot_time
@@ -23,6 +24,8 @@ class ShooterControl:
         self.cancel_service = rospy.Service('/shooter/cancel', Trigger, self.cancel_callback)
         self.load_server.start()
         self.fire_server.start()
+
+
     def load_execute_callback(self, goal):
         result = ShooterDoActionResult()
         if self.fire_server.is_active():
@@ -48,6 +51,8 @@ class ShooterControl:
             self.load_server.publish_feedback(feedback)
             if dur_from_start < self.load_retract_time:
                 self.motor_controller.setMotor1(1.0)
+            elif dur_from_start < self.load_retract_time + self.load_pause_time:
+                self.motor_controller.setMotor1(0)
             elif dur_from_start < self.load_total_time:
                 self.motor_controller.setMotor1(-1.0)
             rate.sleep()
@@ -59,6 +64,8 @@ class ShooterControl:
         self.loaded = True
         self.load_server.set_succeeded(result)
         rospy.loginfo("Finished loaded")
+
+
     def fire_execute_callback(self, goal):
         result = ShooterDoActionResult()
         if self.load_server.is_active():
@@ -95,6 +102,8 @@ class ShooterControl:
         self.loaded = False
         self.fire_server.set_succeeded(result)
         rospy.loginfo("Finished fire")
+
+
     def cancel_callback(self, req):
         result = ShooterDoActionResult()
         result.result.success = False
