@@ -143,7 +143,6 @@ class image_converter:
 
   def get_rectangle(self, img, img_area, xmin_a, ymin_a):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    print gray.shape
     bf = cv2.bilateralFilter(gray, 11, 13, 13)
     edged = cv2.Canny(gray, 30, 200)
     contours,hierarchy = cv2.findContours(edged,1,2)
@@ -233,7 +232,7 @@ class image_converter:
       return
 
     # Pick the good contours from this list (biggest area)
-    best_contours = self.get_best_contours(contours, moments)
+    best_contours = self.get_best_contours(contours)
 
     # Get the bounding box to those contours
     xmin, ymin, xmax, ymax = self.get_bounding_rect(best_contours)

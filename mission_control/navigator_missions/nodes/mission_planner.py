@@ -10,6 +10,7 @@ import argparse
 import std_msgs
 
 nh = None
+n = None
 
 class Mission(object):
 
@@ -20,8 +21,7 @@ class Mission(object):
 
     @util.cancellableInlineCallbacks
     def do_mission(self):
-        print self.name
-        n = yield Navigator(nh)._init()
+        print "starting mission ", self.name
         to_run = getattr(nav_missions, self.name)
         yield to_run.main(n)
 
@@ -32,16 +32,19 @@ class MissionPlanner:
         self.tree = []
         self.queue = []
         self.found = []
+        self.completeing_mission = False
         # TODO Put in YAML file
         stc = Mission("scan_the_code", ["scan_the_code"], [])
-        bf = Mission("back_and_forth", [], [stc])
-        self.tree.append(stc)
+        bf = Mission("back_and_forth", ["buoy"], [stc])
+        self.tree.append(bf)
 
     @util.cancellableInlineCallbacks
     def _init(self):
         self.nh = yield NodeHandle.from_argv("mission_planner")
         global nh
         nh = self.nh
+        global n
+        n = yield Navigator(nh)._init()
 
         self.sub_database = yield nh.subscribe('/database/object_found', PerceptionObject, self.new_item)
         #self.servcl_exploration_yield = yield nh.get_service_client("/exploration/yield_control", std_msgs.msg.Bool)
@@ -54,9 +57,11 @@ class MissionPlanner:
 
     def refresh(self):
         for mission in self.tree:
-            if(self.can_complete(mission)):
+            if(self.can_complete(mission) and mission not in self.queue):
                 self.queue.append(mission)
-        self.empty_queue()
+        print self.queue, "queue"
+        if not self.completeing_mission:
+            self.empty_queue()
 
     def can_complete(self, mission):
         for item in mission.item_dep:
@@ -66,7 +71,9 @@ class MissionPlanner:
 
     @util.cancellableInlineCallbacks
     def empty_queue(self):
+        self.completeing_mission = True
         if(len(self.queue) == 0):
+            self.completeing_mission = False
             return
         for mission in self.queue:
             # add a timeout here
@@ -78,6 +85,7 @@ class MissionPlanner:
             self.tree.remove(mission)
 
         for mission in self.tree:
+            print "Add", mission.name
             if(self.can_complete(mission)):
                 self.queue.append(mission)
 

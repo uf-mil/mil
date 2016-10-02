@@ -43,42 +43,58 @@ class ObjectClassifier:
         self.currently_classifying = True
         buoys = buoyArray.buoys
         unclassified_buoy = None
-        for b in buoys:
-            if b.id not in self.classified_ids.keys():
-                unclassified_buoy = b
-                marker = Marker()
-                marker.header.stamp = nh.get_time()
-                marker.header.seq = 1;
-                marker.header.frame_id = "enu";     
-                marker.id = 0
-                marker.pose.position = unclassified_buoy.position
-                marker.type = marker.SPHERE
-                marker.action = marker.ADD
-                marker.scale.x = 1.0
-                marker.scale.y = 1.0
-                marker.scale.z = 1.0
-                marker.color.r = 1.0
-                marker.color.g = 0.0
-                marker.color.b = 0.0
-                marker.color.a = 1.0
 
-                y = yield self.pub_object_searching.publish(marker)
+        if(len(self.classified_ids) < 5):
+            for b in buoys:
+                if b.id not in self.classified_ids.keys():
+                    unclassified_buoy = b
+                    marker = Marker()
+                    marker.header.stamp = nh.get_time()
+                    marker.header.seq = 1;
+                    marker.header.frame_id = "enu"
+                    marker.id = 0
+                    marker.pose.position = unclassified_buoy.position
+                    marker.type = marker.SPHERE
+                    marker.action = marker.ADD
+                    marker.scale.x = 1.0
+                    marker.scale.y = 1.0
+                    marker.scale.z = 1.0
+                    marker.color.r = 1.0
+                    marker.color.g = 0.0
+                    marker.color.b = 0.0
+                    marker.color.a = 1.0
 
-                x = yield util.nonblocking_raw_input("What object is this? ")
-                if(x == 'skip'):
+                    self.pub_object_searching.publish(marker)
+                    nh.sleep(2)
+                    x = yield util.nonblocking_raw_input("What object is this? ")
+
+                    if(x == 'skip'):
+                        self.currently_classifying = False
+                        return
+                    self.classified_ids[b.id] = x
+
+                    obj = PerceptionObject()
+                    obj.name = self.classified_ids[b.id]
+                    obj.position = b.position
+                    obj.size.x = b.height
+                    obj.size.y = b.width
+                    obj.size.z = b.depth
+                    obj.id = b.id
+                    self.pub_obj_found.publish(obj)
                     self.currently_classifying = False
                     return
-                self.classified_ids[b.id] = x
 
-
-            obj = PerceptionObject()
-            obj.name = self.classified_ids[b.id]
-            obj.position = b.position
-            obj.size.x = b.height
-            obj.size.y = b.width
-            obj.size.z = b.depth
-            obj.id = b.id
-            self.pub_obj_found.publish(obj)
+        for b in buoys:
+            if b.id in self.classified_ids.keys():
+                obj = PerceptionObject()
+                print self.classified_ids[b.id]
+                obj.name = self.classified_ids[b.id]
+                obj.position = b.position
+                obj.size.x = b.height
+                obj.size.y = b.width
+                obj.size.z = b.depth
+                obj.id = b.id
+                self.pub_obj_found.publish(obj)
         
         self.currently_classifying = False
         print "done"

@@ -58,7 +58,16 @@ class ObjectDatabase:
                 del self.unknowns[i]
                 break
 
-        if(p.name not in self.items.keys()):
+        # print p
+        # print self.items
+        # print "------"
+
+        for i in self.items.values():
+            if i.id == p.id and i.name != p.name:
+                del self.items[i.name]
+                break
+
+        if p.name not in self.items:
             self.pub_object_found.publish(p)
 
         self.items[p.name] = p

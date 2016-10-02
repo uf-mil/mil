@@ -6,21 +6,24 @@ import numpy as np
 @txros.util.cancellableInlineCallbacks
 def main(navigator):
     navigator.change_wrench("autonomous")
-    while True:
-        print "made it"
-        home = navigator.move
-        '''
-        p2 now contains a pose editor object.
-        The statment `navigator.move` is equivalent to `navigator.move.forward(0)`,
-            so it creates a waypoint at the position of the boat at the current time.
-        '''
-        yield home.backward(3).go(speed=1.5)
-        print "backward"
+    home = navigator.move
+    yield home.backward(1).go(speed=1.5)
+    print "smade it"
+    # while True:
+    #     print "made it"
+    #     home = navigator.move
+    #     '''
+    #     p2 now contains a pose editor object.
+    #     The statment `navigator.move` is equivalent to `navigator.move.forward(0)`,
+    #         so it creates a waypoint at the position of the boat at the current time.
+    #     '''
+    #     yield home.backward(3).go(speed=1.5)
+    #     print "backward"
 
-        yield home.forward(3).go(speed=1.5)
-        print "foward"
-        # while True:
-        #     # forward, left, yaw_left
-        #     amts = np.random.random(3) * np.array([60, 60, 6.28]) - np.array([30, 30, 3.14])
-        #     rand = home.forward(amts[0]).left(amts[1]).yaw_left(amts[2])
-        #     yield rand.go()
+    #     yield home.forward(3).go(speed=1.5)
+    #     print "foward"
+    #     # while True:
+    #     #     # forward, left, yaw_left
+    #     #     amts = np.random.random(3) * np.array([60, 60, 6.28]) - np.array([30, 30, 3.14])
+    #     #     rand = home.forward(amts[0]).left(amts[1]).yaw_left(amts[2])
+    #     #     yield rand.go()

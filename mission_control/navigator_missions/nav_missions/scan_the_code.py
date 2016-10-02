@@ -43,7 +43,7 @@ def main(navigator):
 
     print "Got there"
     yield navigator.vision_request("scan_the_code_activate")
-    pattern = navigator.move.circle_point(stc_position, radius)
+    pattern = navigator.move.circle_point(stc_position, radius+2)
     searcher = navigator.search(vision_proxy='/vision/scan_the_code_status', search_pattern=pattern)
     yield searcher.start_search(spotings_req=1, speed=.9)
     print "done"
