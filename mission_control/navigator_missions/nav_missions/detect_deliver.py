@@ -3,6 +3,7 @@ import txros
 import rospy
 import std_srvs.srv
 import numpy as np
+from navigator_msgs.msg import ShooterDoAction, ShooterDoActionGoal
 from __future__ import division
 import time
 from twisted.internet import defer
@@ -15,10 +16,16 @@ class DetectDeliverMission:
   width_proportion = 0.15 #Desired proportion of frame width symbol is present in
   width_error_threshold = 0.03
   resp = None
+
+
   def __init__(self,navigator):
     self.center_error = 1
     self.width_error = 1
     self.navigator = navigator
+    # ~self.shooterLoad = txros.action.ActionClient(self.navigator.nh, '/shooter/load', ShooterDoAction)
+    # ~self.shooterFire = txros.action.ActionClient(self.navigator.nh, '/shooter/fire', ShooterDoAction)
+
+
   def bounding_rect(points):
       maxX = 0
       minX = 2000
@@ -34,10 +41,14 @@ class DetectDeliverMission:
           if(points[i].y < minY):
               minY = points[i].y
       return np.array([maxX, maxY, minX, minY])
+
+
   @txros.util.cancellableInlineCallbacks
   def isFound(self):
     self.resp = yield self.navigator.vision_request("get_shape")
     yield self.resp.found and self.resp.symbol.img_width != 0
+
+
   @txros.util.cancellableInlineCallbacks
   def isCentered(self):
     if not (yield self.isFound()):
@@ -46,6 +57,8 @@ class DetectDeliverMission:
     self.center_error = center - 0.5
     print "Center ", center
     yield abs(self.center_error) < self.error_threshold
+
+
   @txros.util.cancellableInlineCallbacks
   def isCorrectDistance(self):
     if not (yield self.isFound()):
@@ -55,6 +68,8 @@ class DetectDeliverMission:
     self.width_error = width - self.width_proportion
     print "Width ", width
     yield abs(self.width_error) < self.width_error_threshold
+
+
   @txros.util.cancellableInlineCallbacks
   def shootAllBalls(self):
     for i in range(3):
@@ -62,6 +77,11 @@ class DetectDeliverMission:
       self.shooterLoad(std_srvs.srv.TriggerRequest())
       time.sleep(5)
       self.shooterFire(std_srvs.srv.TriggerRequest())
+      # ~self.shooterLoad.send_goal(ShooterDoAction())
+      # ~res = yield goal.get_result()
+      # ~self.shooterFire.send_goal(ShooterDoAction())
+      # ~res = yield goal.get_result()
+
   @txros.util.cancellableInlineCallbacks
   def findAndShoot(self):
     #Remove, should have already found when mission run
