@@ -8,6 +8,7 @@
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>
 
+namespace nav{
 
 class PcdSubPubAlgorithm{
   /*
@@ -44,7 +45,7 @@ class PcdColorizer : public PcdSubPubAlgorithm{
   typedef sensor_msgs::PointCloud2 PCD;
 
 public:
-  PcdColorizer(std::string input_pcd_topic, std::string output_pcd_topic, std::string rgb_cam_topic, std::string rgb_cam_frame);
+  PcdColorizer(ros::NodeHandle nh, std::string input_pcd_topic, std::string output_pcd_topic, std::string rgb_cam_topic, std::string rgb_cam_frame);
   ~PcdColorizer(){}
   void _transform_to_cam();
   void _color_pcd();  
@@ -58,10 +59,12 @@ private:
   image_transport::ImageTransport img_transport {nh};
   image_transport::CameraSubscriber rgb_cam_sub;
 
-
-
+ int seq = 0;
 
   Eigen::Matrix3f cam_intrinsics;
+  bool _intrinsics_set = false;
   sensor_msgs::ImageConstPtr latest_frame_img_msg;
   sensor_msgs::CameraInfoConstPtr latest_frame_info_msg;
 };
+
+} // namwspace nav

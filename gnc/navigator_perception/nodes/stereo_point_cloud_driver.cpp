@@ -41,6 +41,7 @@
 #include <sensor_msgs/point_cloud2_iterator.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>
+#include <navigator_vision_lib/point_cloud_algorithms.hpp>
 
 void left_image_callback(
     const sensor_msgs::ImageConstPtr &image_msg_ptr,
@@ -116,11 +117,12 @@ boost::mutex left_mtx, right_mtx;
 // Control
 bool active = false;
 ros::ServiceServer detection_switch;
-string activation_srv_name {"stereo/activation_srv"};
+
 
 int main(int argc, char** argv) {
   cout << "In main() !!" << endl;
   namespace fs = boost::filesystem;
+  
   try {
 
     stringstream log_msg;
@@ -134,6 +136,8 @@ int main(int argc, char** argv) {
     image_transport::ImageTransport img_trans {nh};
     image_geometry::PinholeCameraModel left_cam_model, right_cam_model;
     cv_bridge::CvImagePtr input_bridge;
+    string activation_srv_name {"stereo/activation_srv"};
+    nav::PcdColorizer vel_colorizer{nh, "/velodyne_points", "/colored_velodyne_cloud", "/stereo/left/image_rect_color", "/stereo_left_cam"};
 
     // Default parameters
     string img_topic_left_default = "/stereo/left/image_raw/";
