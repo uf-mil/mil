@@ -112,7 +112,7 @@ void PcdColorizer::_color_pcd(){
     if(in_view(hom_img_coordinates)){
       // cout << "hom_coords: " << hom_img_coordinates << " cols: " << latest_frame_mat.cols << " rows: " 
         // << latest_frame_mat.rows << endl;
-      rgb = latest_frame_mat.at<Vec3b>(hom_img_coordinates[0], hom_img_coordinates[1]);
+      rgb = latest_frame_mat.at<Vec3b>(hom_img_coordinates[1], hom_img_coordinates[0]);
     }
     else
     {
