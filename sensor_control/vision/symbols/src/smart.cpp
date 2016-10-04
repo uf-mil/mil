@@ -28,19 +28,6 @@ class ShapesBuffer
   boost::circular_buffer<navigator_msgs::DockShape> buffer;
   std::string Shape;
   std::string Color;
-  ros::Time lastSeen;
-  bool isOld()
-  {
-    ros::Time now = ros::Time::now();
-    return (now - lastSeen) > max_seen_gap_dur;
-  }
-  void clearIfOld()
-  {
-    if (isOld())
-    {
-      clear();
-    }
-  }
   void removeOutlierShapes()
   {
     //Do cool stats stuff to get rid of outliers
@@ -76,17 +63,26 @@ class ShapesBuffer
   {
 
   }
+  bool isStale()
+  {
+    if (buffer.empty()) return false;
+    ros::Time now = ros::Time::now();
+    return (now - buffer.back().header.stamp) > max_seen_gap_dur;
+  }
   void insert(navigator_msgs::DockShape ds)
   {
-    clearIfOld();
-    lastSeen = ros::Time::now();
+    if (!buffer.empty())
+    {
+      if (ds.header.stamp - buffer.back().header.stamp> max_seen_gap_dur) clear();
+    }
     buffer.push_back(ds);
     if (buffer.full() ) removeOutlierShapes();   
   }
   bool getAverageShape(navigator_msgs::DockShape& shape)
   {
-    if (isOld()) return false;
     if (!buffer.full() ) return false;
+    if (isStale()) return false;
+
     shape = buffer.back();
     return true;
   }

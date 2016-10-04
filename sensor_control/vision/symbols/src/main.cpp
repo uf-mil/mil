@@ -99,6 +99,7 @@ class ShooterVision {
       symbols.list.clear();
 
       vision->GetShapes(frame,roi,symbols);
+      for (int i = 0; i < symbols.list.size(); i++) symbols.list[i].header.stamp  = msg->header.stamp;
       foundShapesPublisher.publish(symbols);
     }
 };
