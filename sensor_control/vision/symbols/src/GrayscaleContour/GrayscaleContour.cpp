@@ -42,6 +42,9 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,cv::Rect roi,navigator_msgs::Doc
   
   colorFrame = frame;
   CropFrame();
+  Mat temp = croppedFrame.clone();
+  int blur = 7;
+  bilateralFilter(temp,croppedFrame,blur,blur*2,blur/2);
   ConvertToGrayscale();
   DetectEdges();
   FindContours();
@@ -61,7 +64,7 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,cv::Rect roi,navigator_msgs::Doc
     std::vector<cv::Point> approx_tri;
     std::vector<cv::Point> approx_cross;
     approxPolyDP(Mat(contours[i]), approx_tri, arcLength(contours[i], true) * 0.1 , true);
-    approxPolyDP(Mat(contours[i]), approx_cross, arcLength(contours[i], true) * 0.01 , true);
+    approxPolyDP(Mat(contours[i]), approx_cross, arcLength(contours[i], true) * 0.03 , true);
     if (isTriangle(approx_tri))
     {
       dockShape.Shape = navigator_msgs::DockShape::TRIANGLE;
@@ -96,6 +99,7 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,cv::Rect roi,navigator_msgs::Doc
   imshow("Grayscale",grayscaleFrame);
   imshow("Edges",edgesFrame);
   imshow("Contours",contoursFrame);
+  waitKey(5);
   #endif
   #ifdef DO_ROS_DEBUG
   for (auto symbol : symbols.list) {
@@ -159,7 +163,7 @@ bool GrayscaleContour::GetColor(int Index,std::string& color)
   std::ostringstream unknown;
   unknown << "UKNOWN: " << meanColor.val[0] << " " << meanColor.val[1] << " " << meanColor.val[2] << std::endl;
   double sum = meanColor.val[0] + meanColor.val[1] + meanColor.val[2];
-  if (sum > 500) return false;
+  // ~if (sum > 500) return false;
   double max = 0;
   if (meanColor.val[0] > max) {
     max = meanColor.val[0];
@@ -184,61 +188,73 @@ void GrayscaleContour::FindPolygons()
     shapes.push_back(approx);
   }
 }
-double findAngle(cv::Point p1, cv::Point p2, cv::Point p3) {
-  cv::Point v1 = p2 - p1;
-  cv::Point v2 = p3 - p1;
-  float m1 = sqrt(v1.x * v1.x + v1.y * v1.y);
-  float m2 = sqrt(v2.x * v2.x + v2.y * v2.y);
-  float thecos = v1.dot(v2) / (m1 * m2);
-
-  return acos(thecos) * 180 / 3.1415;
-}
 bool GrayscaleContour::isTriangle(std::vector<Point>& points)
 {
+  // If contour is not 3 sided, is not a triangle
   if (points.size() != 3) return false;
 
   double contour_area = contourArea(points);
   double perimeter = arcLength(points, true);
   double expected_area,expected_perimeter,error;
-  
+
+  // Draw bounding rect, find area of triangle with this height/width, compare to real area
   cv::Rect boundingRect = cv::boundingRect(points);
   expected_area = 0.5 * boundingRect.width * boundingRect.height;
   error = fabs(contour_area/expected_area-1.0);
   if (error > 0.1) return false;
-  
+
+  // Find side length based on bounding rect width, compare to real perimeter of contour
   expected_perimeter = boundingRect.width*3;
   error = fabs(perimeter/expected_perimeter-1.0);
   if (error > 0.1) return false;
 
-  // ~printf("Triangle Angles (%u): ",points.size());
-  // ~for (int i = 0; i < points.size() - 2; i ++) printf(" %f",findAngle(points[i],points[i+1],points[i+2]));
-  // ~printf(" %f",findAngle(points[points.size()-2],points[points.size()-1],points[0]));
-  // ~printf(" %f",findAngle(points[points.size()-1],points[0],points[1]));
-  // ~std::cout << std::endl;
-  
-  //float area = contourArea(points) / (boundingRect.width * boundingRect.height);
-  //if (area >=  (float(TRI_BOUNDING_AREA_LOW)/1000) && area <= (float(TRI_BOUNDING_AREA_LOW)/1000) ) return true;
-  //else return false;
+
+  // Find angles (in degrees) of contour, compare to expected of 60 degrees with low variance
+  std::vector<double> angles;
+  findAngles(points,angles);
+  using namespace boost::accumulators;
+  accumulator_set<int, features<tag::mean, tag::variance>> acc;
+  for (double angle: angles) acc(angle);
+  auto mean = boost::accumulators::mean(acc); 
+  auto variance = sqrt(boost::accumulators::variance(acc));
+  if ( fabs(mean-60.0) > 5) return false;
+  if ( variance > 10) return false;
+
   return true;
 }
 bool GrayscaleContour::isCross(std::vector<Point>& points)
 {
-  //Check area/size length
-  if (points.size() < 10) return false;
+  //If polygon is not 12 sided, is not a cross
+  if (points.size() != 12) return false;
 
   double contour_area = contourArea(points);
   double perimeter = arcLength(points, true);  
   double expected_area,error;
 
+  // Find length of 1 side using perimter/12, then compare area of contour with this side length to real area
   double side_length = perimeter / 12.0;
   expected_area = 5.0*pow(side_length,2);
   error = fabs(contour_area/expected_area-1.0);
-  if (error > 0.1) return false;
+  if (error > 0.2) return false;
 
+  // Draw bounding rect around contour, determine what area should be of cross with this width, compare to real area
   Rect rect = boundingRect(points);
   expected_area = 5*pow( rect.width/3.0,2);
   error  = fabs(contour_area/expected_area-1);
-  if (error > 0.1) return false;
+  if (error > 0.2) return false;
+
+
+  // Find all angles in contour, then check that the mean angle is around 40 degrees and variance is low
+  std::vector<double> angles;
+  findAngles(points,angles);
+  using namespace boost::accumulators;
+  accumulator_set<int, features<tag::mean, tag::variance>> acc;
+  for (double angle: angles) acc(angle);
+  auto mean = boost::accumulators::mean(acc); 
+  auto variance = sqrt(boost::accumulators::variance(acc));
+  // ~printf("CROSS SIDES=%d MEAN=%f VAR=%f\n",points.size(),mean,variance);
+  if ( fabs(mean-40.0) > 5) return false;
+  if ( variance > 5) return false;
   
   return true;
 }
@@ -250,7 +266,9 @@ bool GrayscaleContour::isCircle(std::vector<Point>& points)
   double contour_area = contourArea(points);
   double perimeter = arcLength(points, true);  
   double expected_area,error;
-  //bounding rect area test
+
+
+  //Find a min enclosing circle for contour, then compare enclosing cirlcle area to real area
   Point2f center;
   float radius;
   minEnclosingCircle(points,center,radius);
@@ -289,6 +307,21 @@ Point GrayscaleContour::findCenter(std::vector<Point>& points) {
   x /= points.size();
   y /= points.size();
   return Point(x, y);
+}
+double GrayscaleContour::findAngle(cv::Point& p1, cv::Point& p2, cv::Point& p3) {
+  cv::Point v1 = p2 - p1;
+  cv::Point v2 = p3 - p1;
+  float m1 = sqrt(v1.x * v1.x + v1.y * v1.y);
+  float m2 = sqrt(v2.x * v2.x + v2.y * v2.y);
+  float thecos = v1.dot(v2) / (m1 * m2);
+
+  return acos(thecos) * 180 / 3.1415;
+}
+void GrayscaleContour::findAngles(std::vector<Point>& points, std::vector<double>& angles)
+{
+  for (int i = 0; i < points.size() - 2; i ++) angles.push_back(findAngle(points[i],points[i+1],points[i+2]));
+  angles.push_back(findAngle(points[points.size()-2],points[points.size()-1],points[0]));
+  angles.push_back(findAngle(points[points.size()-1],points[0],points[1]));
 }
 void GrayscaleContour::setShapePoints(navigator_msgs::DockShape& dockShape,std::vector<Point>& points)
 {

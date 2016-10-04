@@ -3,6 +3,8 @@
 #include <navigator_msgs/DockShapes.h>
 #include "opencv2/opencv.hpp"
 #include <memory>
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics.hpp>
 using namespace cv;
 
 //#define DO_DEBUG
@@ -48,6 +50,9 @@ class GrayscaleContour : public DockShapeVision
     bool isCircle(std::vector<Point>& points);
 
     void setShapePoints(navigator_msgs::DockShape& dockShape,std::vector<Point>& points);
+
+    static double findAngle(cv::Point& p1, cv::Point& p2, cv::Point& p3);
+    static void findAngles(std::vector<Point>& points, std::vector<double>& angles);
     #ifdef DO_ROS_DEBUG
     std::unique_ptr<image_transport::ImageTransport> image_transport;
     image_transport::Publisher color_debug_publisher;
