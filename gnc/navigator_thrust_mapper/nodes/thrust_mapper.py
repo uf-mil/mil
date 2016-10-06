@@ -190,7 +190,10 @@ if __name__ == "__main__":
     # Put the thrusters in a list and give them to the mapper
     thrusters = [BL, BR, FL, FR]
     mapper = Mapper(thrusters, effort_ratio, effort_limit)
-
+    
+    # Required in order to get feedback from motors
+    rospy.sleep(5)
+    
     # Allocate for the given wrench and thruster locations
     while not rospy.is_shutdown():
         # map thruster at 50hz
