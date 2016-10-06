@@ -1,16 +1,11 @@
 #!/usr/bin/env python
 from navigator_msgs.msg import PerceptionObject, BuoyArray
-import rospy
-import numpy as np
-from nav_msgs.msg import Odometry
-from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
-from visualization_msgs.msg import MarkerArray, Marker
-from geometry_msgs.msg import Vector3, Pose
-from navigator_tools import rosmsg_to_numpy, odometry_to_numpy
+from visualization_msgs.msg import Marker
 from txros import NodeHandle, util
 from twisted.internet import defer, reactor
 
 nh = None
+
 
 class ObjectClassifier:
 
@@ -32,16 +27,12 @@ class ObjectClassifier:
 
         defer.returnValue(self)
 
-    def get_input(self):
-        pass
-
-
     @util.cancellableInlineCallbacks
-    def new_objects(self, buoyArray):
+    def new_objects(self, buoy_array):
         if self.currently_classifying:
             return
         self.currently_classifying = True
-        buoys = buoyArray.buoys
+        buoys = buoy_array.buoys
         unclassified_buoy = None
 
         if(len(self.classified_ids) < 5):
@@ -50,7 +41,7 @@ class ObjectClassifier:
                     unclassified_buoy = b
                     marker = Marker()
                     marker.header.stamp = nh.get_time()
-                    marker.header.seq = 1;
+                    marker.header.seq = 1
                     marker.header.frame_id = "enu"
                     marker.id = 0
                     marker.pose.position = unclassified_buoy.position
@@ -87,7 +78,6 @@ class ObjectClassifier:
         for b in buoys:
             if b.id in self.classified_ids.keys():
                 obj = PerceptionObject()
-                print self.classified_ids[b.id]
                 obj.name = self.classified_ids[b.id]
                 obj.position = b.position
                 obj.size.x = b.height
@@ -95,16 +85,13 @@ class ObjectClassifier:
                 obj.size.z = b.depth
                 obj.id = b.id
                 self.pub_obj_found.publish(obj)
-        
+
         self.currently_classifying = False
-        print "done"
-
-
 
 @util.cancellableInlineCallbacks
 def main():
 
-    od = yield ObjectClassifier()._init() 
+    od = yield ObjectClassifier()._init()
 
 reactor.callWhenRunning(main)
 reactor.run()

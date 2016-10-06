@@ -1,20 +1,13 @@
 #!/usr/bin/env python
 from navigator_msgs.msg import PerceptionObject
-from navigator_msgs.srv import PerceptionObjectService, PerceptionObjectServiceResponse
-from navigator_msgs.msg import ClassifyUnknownAction, ClassifyUnknownGoal, ClassifyUnknownResult, ClassifyUnknownFeedback
 from navigator_msgs.srv import ObjectDBSingleQueryResponse, ObjectDBFullQueryResponse, ObjectDBSingleQuery, ObjectDBFullQuery
-import actionlib
-import rospy
-import numpy as np
-from nav_msgs.msg import Odometry
-from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
 from visualization_msgs.msg import MarkerArray, Marker
-from geometry_msgs.msg import Vector3, Pose
-from navigator_tools import rosmsg_to_numpy, odometry_to_numpy
 from txros import NodeHandle, util
 from twisted.internet import defer, reactor
 
 nh = None
+
+
 class ObjectDatabase:
 
     def __init__(self):
@@ -27,42 +20,27 @@ class ObjectDatabase:
         self.nh = yield NodeHandle.from_argv("my_object_database")
         global nh
         nh = self.nh
-    
+
         self.pub_object_found = yield self.nh.advertise('/database/object_found', PerceptionObject)
         self.pub_object_markers = yield self.nh.advertise('/database/objects_classified', MarkerArray)
         self.pub_object_curr = yield self.nh.advertise('/database/objects_curr', Marker)
-
 
         self.serv_single_query = yield self.nh.advertise_service('/database/single', ObjectDBSingleQuery, self.query_single)
         self.serv_full_query = yield self.nh.advertise_service('/database/full', ObjectDBFullQuery, self.query_full)
 
         self.sub_object_classification = yield self.nh.subscribe('/classifier/object', PerceptionObject, self.new_object)
 
-        # rospy.init_node('find_unknown', anonymous=True)
-        # self.act_classify_unknown = actionlib.SimpleActionServer('/database/find_unknown',
-        #                                                          ClassifyUnknownAction,
-        #                                                         execute_cb=self.classify_unknown,
-        #                                                         auto_start=False)
-        # self.act_classify_unknown.start()
-
         defer.returnValue(self)
 
-    def classify_unknown(self):
-        print "classifying unknown"
-
-    def new_object(self, perceptionObject):
-        p = perceptionObject
+    def new_object(self, perception_object):
+        p = perception_object
         if(p.name == 'unknown'):
-            self.unknowns.append(perceptionObject)
-            return 
+            self.unknowns.append(perception_object)
+            return
         for i, unknown in enumerate(self.unknowns):
             if(p.id == unknown.id):
                 del self.unknowns[i]
                 break
-
-        # print p
-        # print self.items
-        # print "------"
 
         for i in self.items.values():
             if i.id == p.id and i.name != p.name:
@@ -77,14 +55,14 @@ class ObjectDatabase:
 
     def add_markers(self):
         marker_del = Marker()
-        marker_del.action = 3 # This is DELETEALL
+        marker_del.action = 3  # This is DELETEALL
         marker_array = MarkerArray()
         marker_array.markers.append(marker_del)
         for item in self.items.values():
             marker = Marker()
             marker.header.stamp = nh.get_time()
-            marker.header.seq = 1;
-            marker.header.frame_id = "enu";     
+            marker.header.seq = 1
+            marker.header.frame_id = "enu"
             marker.id = item.id
             marker.pose.position = item.position
             marker.type = marker.TEXT_VIEW_FACING
@@ -100,7 +78,6 @@ class ObjectDatabase:
             marker_array.markers.append(marker)
         self.pub_object_markers.publish(marker_array)
 
-        
     def query_single(self, req):
         a = req.name
         per = ObjectDBSingleQueryResponse()
@@ -108,10 +85,6 @@ class ObjectDatabase:
         if(a in self.items.keys()):
             per.object = self.items[a]
             per.found = True
-            # a = Marker()
-            
-            # pub_object_curr.publish(marker)
-
         return per
 
     def query_full(self, req):
@@ -121,10 +94,10 @@ class ObjectDatabase:
 
         return per
 
-       
+
 @util.cancellableInlineCallbacks
 def main():
-    od = yield ObjectDatabase()._init() 
+    od = yield ObjectDatabase()._init()
 
 reactor.callWhenRunning(main)
 reactor.run()

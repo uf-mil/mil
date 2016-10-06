@@ -15,6 +15,7 @@ UP = np.array([0.0, 0.0, 1.0], np.float64)
 EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)]
 UNITS = {'m': 1, 'ft': 0.3048, 'yard': 0.9144, 'rad': 1, 'deg': 0.0174533}
 
+
 def normalized(x):
     x = np.array(x)
     if max(map(abs, x)) == 0:
@@ -68,6 +69,7 @@ def look_at_camera(forward, upish=UP):
     # assumes camera right-down-forward coordinate system
     return triad((forward, upish), (UP, [0, -1, 0]))
 
+
 def get_valid_point(nav, point):
     if nav.enu_bounds is None:
         return point
@@ -87,6 +89,7 @@ def get_valid_point(nav, point):
         # TODO: Make boat go to edge
         return nav.pose[0]
 
+
 class PoseEditor2(object):
     '''
     Used to chain movements together
@@ -100,6 +103,7 @@ class PoseEditor2(object):
         yield movement.go(speed=1)
         Will yaw right .707 radians from the original orientation regardless of the current orientation
     '''
+
     def __init__(self, nav, pose):
         self.nav = nav
 
@@ -128,8 +132,6 @@ class PoseEditor2(object):
         self.position = get_valid_point(self.nav, self.position)
         self.nav._pose_pub.publish(PoseStamped(header=navigator_tools.make_header(frame='enu'),
                                                pose=navigator_tools.numpy_quat_pair_to_pose(*self.pose)))
-        print self.position
-        print self.nav.pose[0]
         goal = self.nav._moveto_action_client.send_goal(self.as_MoveToGoal(*args, **kwargs))
         return goal.get_result()
 
@@ -150,7 +152,7 @@ class PoseEditor2(object):
         return self.rel_position([0, dist * UNITS[unit], 0])
 
     def right(self, dist, unit='m'):
-        return self.rel_position([0, -dist  * UNITS[unit], 0])
+        return self.rel_position([0, -dist * UNITS[unit], 0])
 
     # Orientation
     def set_orientation(self, orientation):
@@ -216,7 +218,8 @@ class PoseEditor2(object):
 
         for i in range(granularity + 1):
             new = point + radius * next_point
-            yield self.set_position(new).look_at(point).yaw_left(theta_offset)  # Remember this is a generator - not a twisted yield
+            # Remember this is a generator - not a twisted yield
+            yield self.set_position(new).look_at(point).yaw_left(theta_offset)
             next_point = sprinkles.dot(next_point)
 
         yield self.set_position(new).look_at(point).yaw_left(theta_offset)

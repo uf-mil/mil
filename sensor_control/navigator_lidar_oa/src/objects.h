@@ -23,12 +23,11 @@ public:
 	}
 
 	std::vector<objectMessage> add_objects(std::vector<objectMessage> objects){
+		std::vector<objectMessage> new_objects;
 		for(auto obj : objects){
 			float min_dist = 100;
 			objectMessage min_obj;
 			for(auto s_obj : saved_objects){
-				std::cout<<s_obj.id<<std::endl;
-				std::cout<<s_obj.position.x<<", "<<s_obj.position.y<<", "<<s_obj.position.z<<std::endl;
 				float xdiff = pow(obj.position.x - s_obj.position.x, 2);
 				float ydiff = pow(obj.position.y - s_obj.position.y, 2);
 				float zdiff = pow(obj.position.z - s_obj.position.z, 2);

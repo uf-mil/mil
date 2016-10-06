@@ -18,7 +18,7 @@ class Mission(object):
 
     @util.cancellableInlineCallbacks
     def do_mission(self):
-        print "starting mission ", self.name
+        print "starting mission:", self.name
         to_run = getattr(nav_missions, self.name)
         yield to_run.main(n)
 
@@ -32,7 +32,7 @@ class MissionPlanner:
         self.completeing_mission = False
         # TODO Put in YAML file
         stc = Mission("scan_the_code", ["scan_the_code"], [])
-        bf = Mission("back_and_forth", ["buoy"], [stc])
+        bf = Mission("back_and_forth", [], [stc])
         self.tree.append(bf)
 
     @util.cancellableInlineCallbacks
@@ -55,8 +55,8 @@ class MissionPlanner:
     def refresh(self):
         for mission in self.tree:
             if(self.can_complete(mission) and mission not in self.queue):
+                print "adding mission:", mission.name
                 self.queue.append(mission)
-        print self.queue, "queue"
         if not self.completeing_mission:
             self.empty_queue()
 
@@ -75,7 +75,7 @@ class MissionPlanner:
         for mission in self.queue:
             # add a timeout here
             yield mission.do_mission()
-            print "completed mission"
+            print "completed mission:", mission.name
             for child in mission.children:
                 self.tree.append(child)
             self.queue.remove(mission)
@@ -83,7 +83,7 @@ class MissionPlanner:
 
         for mission in self.tree:
             if(self.can_complete(mission)):
-                print "Add", mission.name
+                print "adding mission:", mission.name
                 self.queue.append(mission)
 
         self.empty_queue()
