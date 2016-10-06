@@ -1,15 +1,14 @@
 #!/usr/bin/env python
-import rospy
-import time
 import Queue
-import mutex
-
-from std_msgs.msg import Int8
 
 
 class ThreadQueue(object):
-    def __init__(self, max_size=0):
+    def __init__(self, time, max_size=0):
+        '''
+        Pass in a method that can be queried for the time
+        '''
         self.max_size = max_size
+        self.time = time
         self.run_queue = Queue.PriorityQueue(maxsize=self.max_size)
         self.is_running = False
 
@@ -21,25 +20,22 @@ class ThreadQueue(object):
         If `time_to_exec` is not defined, it will put `funct` at the beginning of the queue.
         '''
         item_to_add = (time_to_exec, funct)
-        #print "Adding {} to run in {}s".format(funct.__name__, time_to_exec - rospy.Time.now().to_sec())
+        #print item_to_add
         self.run_queue.put(item_to_add, block=True, timeout=.5)
 
-    def next_if_possible(self, curr_time):
+    def next_if_possible(self):
         '''
         Check if there is an item that needs to be run (based on time). If there
             is, the function will be run.
         '''
-        if self.is_running:
-            return False
+        if self.is_running: return False
 
         self.is_running = True
 
         run_queue = self.run_queue
-        if not run_queue.empty() and curr_time >= run_queue.queue[0][0]:
-            #print "Difference in run time and expected run time for {}: {}".format(run_queue.queue[0][1].__name__, curr_time - run_queue.queue[0][0])
-            start = rospy.Time.now()
+        if not run_queue.empty() and self.time() >= run_queue.queue[0][0]:
+            print run_queue.queue[0]
             run_queue.get(block=True, timeout=.5)[1]()
-            print (rospy.Time.now() - start).to_sec()
 
         self.is_running = False
 
@@ -51,6 +47,9 @@ class ThreadQueue(object):
 
 
 if __name__ == "__main__":
+    import rospy
+    from std_msgs.msg import Int8
+
     def funct(times, d):
         print "Running", d
         t = time.time()

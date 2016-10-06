@@ -1,0 +1,15 @@
+# Define a gaol message
+PoseTwist target
+float32 goal_bias
+bool append
+bool station_hold
+---
+# Define the result
+---
+# Define a feedback message
+float32 time_to_completion
+float32 time_to_replan
+float32 time_for_replan
+bool replanning
+bool refeasing
+bool traj_reached_goal
