@@ -106,15 +106,12 @@ install(TARGETS navigator_sparsestereo
 
 add_library(
   navigator_vision_lib
-    helper/model.cc 
-    helper/object_tracker.cc
-    helper/color_tracker.cc
     src/navigator_vision_lib/visualization.cc
     src/navigator_vision_lib/cv_utils.cc
-    helper/stereomodelfitter.cc
 )
 
 target_link_libraries(
+
   navigator_vision_lib
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
@@ -158,25 +155,6 @@ target_link_libraries(
 
 set_target_properties(stereo_point_cloud_driver PROPERTIES COMPILE_FLAGS "-O3 -DNDEBUG -fopenmp -g -Wall -march=native -msse -msse2 -msse3 -mssse3 -msse4 -ffast-math -mfpmath=sse")
 
-add_executable(
-  scan_the_code
-    nodes/scan_the_code_detector.cc
-)
-
-add_dependencies(
-  scan_the_code
-   navigator_msgs_gencpp
-   navigator_msgs_generate_messages_cpp
-   ${catkin_EXPORTED_TARGETS}
-)
-
-target_link_libraries(
-  scan_the_code
-    navigator_vision_lib
-    ${catkin_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${OpenCV_INCLUDE_DIRS}
-)
 
 install(
   TARGETS
