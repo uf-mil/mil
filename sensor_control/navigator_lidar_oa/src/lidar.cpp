@@ -6,7 +6,9 @@
 #include <ros/ros.h>
 #include <ros/console.h>
 #include <std_msgs/String.h>
+#include <sensor_msgs/PointCloud.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/ChannelFloat32.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Odometry.h>
 #include <shape_msgs/SolidPrimitive.h>
@@ -27,6 +29,7 @@
 #include "OccupancyGrid.h"
 #include "ConnectedComponents.h"
 #include "AStar.h"
+#include "FitPlanesToCloud.h"
 
 using namespace std;
 
@@ -46,7 +49,7 @@ const double MAXIMUM_Z_HEIGHT = 8;
 OccupancyGrid ogrid(MAP_SIZE_METERS,ROI_SIZE_METERS,VOXEL_SIZE_METERS);
 AStar astar(ROI_SIZE_METERS/VOXEL_SIZE_METERS);
 nav_msgs::OccupancyGrid rosGrid;
-ros::Publisher pubGrid,pubMarkers,pubBuoys,pubTrajectory,pubWaypoint;
+ros::Publisher pubGrid,pubMarkers,pubBuoys,pubTrajectory,pubWaypoint,pubCloud;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -60,10 +63,10 @@ uf_common::PoseTwistStamped waypoint_enu,carrot_enu;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-float LLA_BOUNDARY_X1 = -30, LLA_BOUNDARY_Y1 = 50;
-float LLA_BOUNDARY_X2 = -30, LLA_BOUNDARY_Y2 = -20;
+float LLA_BOUNDARY_X1 = -65, LLA_BOUNDARY_Y1 = 70; //-30, 50
+float LLA_BOUNDARY_X2 = -65, LLA_BOUNDARY_Y2 = -20;
 float LLA_BOUNDARY_X3 = 35, LLA_BOUNDARY_Y3 = -20;
-float LLA_BOUNDARY_X4 = 35, LLA_BOUNDARY_Y4 = 50;
+float LLA_BOUNDARY_X4 = 35, LLA_BOUNDARY_Y4 = 70;
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -132,13 +135,14 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	carrot_enu.posetwist.twist.angular.z = 0;
 
 	//If the action server is active, run Astar
-	if (actionServerPtr->isActive()) {
-		ROS_INFO("LIDAR: Action server has an active goal to follow!");
+	if (true) {
+	//if (actionServerPtr->isActive()) {
+		ROS_INFO("LIDAR | Action server has an active goal to follow!");
 
 		//Fake waypoint instead of using action server request
-		//waypoint_enu.posetwist.pose.position.x = 25;
-		//waypoint_enu.posetwist.pose.position.y = -25;
-		//waypoint_enu.posetwist.pose.position.z = 5;		
+		waypoint_enu.posetwist.pose.position.x = 25;
+		waypoint_enu.posetwist.pose.position.y = -25;
+		waypoint_enu.posetwist.pose.position.z = 5;		
 	
 		//Convert waypoint from enu frame to ROI around lidar
 		waypoint_ogrid.x = (int)( (waypoint_enu.posetwist.pose.position.x-lidarpos.x)/VOXEL_SIZE_METERS + ogrid.ROI_SIZE/2 );
@@ -231,6 +235,11 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	ROS_INFO_STREAM("LIDAR | Boat enu: " << boatPose_enu.position.x << "," << boatPose_enu.position.y << "," << boatPose_enu.position.z);
 	pubTrajectory.publish(carrot_enu);
 
+	//Publish second point cloud
+	sensor_msgs::PointCloud buoyCloud;
+	buoyCloud.header.seq = 0;
+	buoyCloud.header.frame_id = "enu";
+	buoyCloud.header.stamp = ros::Time::now();
 
 	//Publish rosgrid
 	rosGrid.header.seq = 0;
@@ -283,14 +292,17 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	navigator_msgs::BuoyArray allBuoys;
 	navigator_msgs::Buoy buoy;
 	geometry_msgs::Point32 p32;
+	sensor_msgs::ChannelFloat32 channel;
+	channel.name = "intensity";
+	buoyCloud.channels.push_back(channel);
 	buoy.header.seq = 0;
 	buoy.header.frame_id = "enu";
 	buoy.header.stamp = ros::Time::now();	
-	int id = 0;
+	int id = 0,id2 = 0;
 	for (auto obj : objects) {
 		//Verify object is in the enu frame - THIS IS POOR CODE - NEED TO UPDATE WHEN LLA STUFF IS AVAILABLE
 		if (obj.position.x < LLA_BOUNDARY_X1 || obj.position.x > LLA_BOUNDARY_X4 || obj.position.y < LLA_BOUNDARY_Y2 || obj.position.y > LLA_BOUNDARY_Y1 ) { continue; }
-		ROS_INFO_STREAM("LIDAR | Adding buoy " << id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.beams.size() << " lidar points ");
+		ROS_INFO_STREAM("LIDAR | Adding buoy " << id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.beams.size() << " lidar points and size of " << obj.scale.x << "," << obj.scale.y << "," << obj.scale.z);
 		
 		//Buoys
 		buoy.header.stamp = ros::Time::now();
@@ -301,6 +313,32 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		buoy.width = obj.scale.x; 
 		buoy.depth = obj.scale.y; 
 		buoy.points = obj.beams;
+		buoyCloud.points.insert(buoyCloud.points.end(),buoy.points.begin(),buoy.points.end());
+		for (auto ii : obj.intensity) {	
+			buoyCloud.channels[0].values.push_back(ii);
+		}
+		
+
+
+		std::vector<geometry_msgs::Point> n = FitPlanesToCloud(buoy.points,buoy.height,buoy.position.z);
+		for (auto ii : n) {
+			visualization_msgs::Marker m3;
+			m3.header.stamp = ros::Time::now();
+			m3.header.seq = 0;
+			m3.header.frame_id = "enu";		
+			m3.header.stamp = ros::Time::now();
+			m3.id = id2+2000;
+			m3.type = visualization_msgs::Marker::ARROW;
+			m3.action = visualization_msgs::Marker::ADD;
+			m3.points.push_back(buoy.position);
+			geometry_msgs::Point pp;
+			pp.x = buoy.position.x+ii.x*5; pp.y = buoy.position.y+ii.y*5; pp.z = buoy.position.z+ii.z*5;		
+			m3.points.push_back(pp);
+			m3.scale.x = 1; m3.scale.y = 1; m3.scale.z = 1;
+			m3.color.a = 0.6; m3.color.r = 1; m3.color.g = 1; m3.color.b = 1;
+			markers.markers.push_back(m3);
+			++id2;
+		}
 		allBuoys.buoys.push_back(buoy);
 
 		//Buoys as markers
@@ -315,11 +353,12 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		m2.pose.position = obj.position;
 		m2.scale = obj.scale;
 		m2.color.a = 0.6; m2.color.r = 1; m2.color.g = 1; m2.color.b = 1;
-		markers.markers.push_back(m2);
+		//markers.markers.push_back(m2);
 		++id;
 	}
 	pubMarkers.publish(markers);
 	pubBuoys.publish(allBuoys);
+	pubCloud.publish(buoyCloud);
 
 	//Elapsed time
 	ROS_INFO_STREAM("LIDAR | Elapsed time: " << (ros::Time::now()-timer).toSec());
@@ -376,6 +415,7 @@ int main(int argc, char* argv[])
 	pubGrid = nh.advertise<nav_msgs::OccupancyGrid>("ogrid_batcave",10);
 	pubMarkers = nh.advertise<visualization_msgs::MarkerArray>("markers_batcave",10);
 	pubBuoys = nh.advertise<navigator_msgs::BuoyArray>("buoys_batcave",10);
+	pubCloud = nh.advertise<sensor_msgs::PointCloud>("cloud_batcave",1);
 
 	//Publish waypoints to controller
 	pubTrajectory = nh.advertise<uf_common::PoseTwistStamped>("trajectory", 1);
@@ -383,7 +423,11 @@ int main(int argc, char* argv[])
 
 	//Give control to ROS
 	ros::spin();
-	//ros::spinOnce();
+
+	//Limited run for testing with valgrind
+	//while ( ros::Time::now().toSec() < 11713 ) {
+	//	ros::spinOnce();
+	//}
 
 	return 0;
 }

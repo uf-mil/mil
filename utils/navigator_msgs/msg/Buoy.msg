@@ -10,4 +10,5 @@ float64 width                     # Can be used for detecting different objects
 float64 depth					  # Third dimension in x,y,z...
 
 geometry_msgs/Point32[] points    # Points (in ENU frame) that belong to the buoy
+uint32[] intensity
 #std_msgs/ColorRGBA color         # Average (?) color of the buoy

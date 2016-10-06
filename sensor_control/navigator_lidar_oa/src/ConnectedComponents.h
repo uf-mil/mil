@@ -45,12 +45,14 @@ struct objectStats
 			p32.y = beam.y;
 			p32.z = beam.z;
 			beams.push_back(p32);
+			intensity.push_back(beam.i);
 		}
 	}
 	int count = 0;
 	float minRow, maxRow, minCol, maxCol, minHeight, maxHeight;
 	//std::vector<LidarBeam> beams;
 	std::vector<geometry_msgs::Point32> beams;
+	std::vector<float> intensity;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -62,6 +64,7 @@ struct objectMessage
 	geometry_msgs::Vector3 scale;
 	//std::vector<LidarBeam> beams;
 	std::vector<geometry_msgs::Point32> beams;
+	std::vector<float> intensity;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -172,6 +175,7 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 			ob.position.y = (dy/2+ii.second.minRow - ogrid.ROI_SIZE/2)*ogrid.VOXEL_SIZE_METERS + ogrid.lidarPos.y;
 			ob.position.z =  dz/2 + ii.second.minHeight;
 			ob.beams = ii.second.beams;
+			ob.intensity = ii.second.intensity;
 			objects.push_back(ob);
 			//ROS_INFO_STREAM(newId << " -> " << ob.position.x << "," << ob.position.y << "," << ob.position.z << "|" << ob.scale.x << "," << ob.scale.y << "," << ob.scale.z);
 			++newId;

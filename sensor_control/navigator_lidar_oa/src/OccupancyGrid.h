@@ -44,7 +44,7 @@ struct cell
 struct beamEntry
 {
 	void update(const LidarBeam &beam) {
-		if (q.size() >= 10) { q.pop_front(); }
+		if (q.size() >= 100) { q.pop_front(); }
 		q.push_back(beam);
 	}
 	std::deque<LidarBeam> q;
@@ -113,7 +113,7 @@ class OccupancyGrid
 			for (int row = boatRow - ROI_SIZE/2; row < boatRow + ROI_SIZE/2; ++row) {
 				for (int col = boatCol - ROI_SIZE/2; col < boatCol + ROI_SIZE/2; ++col) {
 					if (ogrid[row][col].hits > 0) { 
-						ogrid[row][col].hits -= 1;
+						//ogrid[row][col].hits -= 1;
 						if (ogrid[row][col].hits == 0) {
 							ogrid[row][col] = cell();
 							//Erase 
