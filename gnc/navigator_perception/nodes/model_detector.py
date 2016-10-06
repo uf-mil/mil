@@ -55,7 +55,7 @@ class image_converter:
 
       # Choose the six biggest
       areas = sorted(areas, key=lambda x: x[1], reverse=True)
-      areas = areas[:4]
+      areas = areas[:10]
 
       # Get the moments that correspond to the biggest areas
       # my_moments = [[x[0], moments[x[0]]] for x in areas] 
@@ -145,9 +145,11 @@ class image_converter:
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     bf = cv2.bilateralFilter(gray, 11, 13, 13)
     edged = cv2.Canny(gray, 30, 200)
-    contours,hierarchy = cv2.findContours(edged,1,2)
     drawimg = edged.copy()
     largest = edged.copy()
+    blah = edged.copy()
+    contours,hierarchy = cv2.findContours(blah,1,2)
+    
 
     drawimg_p = gray.copy()
 
@@ -157,13 +159,14 @@ class image_converter:
     max_ar = 0
     for i, cnt in enumerate(contours):
       approx = cv2.approxPolyDP(cnt, 0.01*cv2.arcLength(cnt,True),True)
-      if(len(approx) >= 3 and len(approx) <= 5 or len(approx) == 9 or len(approx) == 15):
-        cv2.drawContours(drawimg,[cnt],0,255,-1)
+      if(cv2.contourArea(cnt, 0) > 1):
+      # if(len(approx) >= 3 and len(approx) <= 5 or len(approx) == 9 or len(approx) == 15):
+        cv2.drawContours(blah,[cnt],0,255,-1)
         ar = cv2.contourArea(cnt, 0)
         # print len(approx), "len"
         # print ar, img_area
-        # cv2.imshow("rectangles", drawimg)
-        # cv2.waitKey(0);
+        cv2.imshow("rectangles", blah)
+        cv2.waitKey(0);
        
         if(ar > max_ar): max_ar = ar; max_i = i
 
@@ -215,7 +218,7 @@ class image_converter:
     if(self.mission_complete):
       return
 
-    print cv_image.shape
+    # print cv_image.shape
 
     img_clone = cv_image.copy()
     img_clone1 = cv_image.copy()
@@ -236,7 +239,7 @@ class image_converter:
 
     # Get the bounding box to those contours
     xmin, ymin, xmax, ymax = self.get_bounding_rect(best_contours)
-    print xmin, ymin, xmax, ymax 
+    # print xmin, ymin, xmax, ymax 
 
     # DEBUG
     cv2.rectangle(img_clone,(xmin,ymin),(xmax,ymax),(0,255,0),3)

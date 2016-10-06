@@ -7,8 +7,8 @@ import numpy as np
 def main(navigator):
     navigator.change_wrench("autonomous")
     home = navigator.move
-    yield home.backward(1).go(speed=1.5)
-    print "smade it"
+    yield home.backward(3).go(speed=1.5)
+    print "made it"
     # while True:
     #     print "made it"
     #     home = navigator.move

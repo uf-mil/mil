@@ -30,6 +30,8 @@ class ObjectDatabase:
     
         self.pub_object_found = yield self.nh.advertise('/database/object_found', PerceptionObject)
         self.pub_object_markers = yield self.nh.advertise('/database/objects_classified', MarkerArray)
+        self.pub_object_curr = yield self.nh.advertise('/database/objects_curr', Marker)
+
 
         self.serv_single_query = yield self.nh.advertise_service('/database/single', ObjectDBSingleQuery, self.query_single)
         self.serv_full_query = yield self.nh.advertise_service('/database/full', ObjectDBFullQuery, self.query_full)
@@ -106,6 +108,9 @@ class ObjectDatabase:
         if(a in self.items.keys()):
             per.object = self.items[a]
             per.found = True
+            # a = Marker()
+            
+            # pub_object_curr.publish(marker)
 
         return per
 

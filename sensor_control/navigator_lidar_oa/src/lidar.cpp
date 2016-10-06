@@ -299,7 +299,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 
 	for (auto obj : object_permanence) {
 		//Verify object is in the enu frame - THIS IS POOR CODE - NEED TO UPDATE WHEN LLA STUFF IS AVAILABLE
-		if (obj.position.x < LLA_BOUNDARY_X1 || obj.position.x > LLA_BOUNDARY_X4 || obj.position.y < LLA_BOUNDARY_Y2 || obj.position.y > LLA_BOUNDARY_Y1 ) { continue; }
+		//if (obj.position.x < LLA_BOUNDARY_X1 || obj.position.x > LLA_BOUNDARY_X4 || obj.position.y < LLA_BOUNDARY_Y2 || obj.position.y > LLA_BOUNDARY_Y1 ) { continue; }
 		// ROS_INFO_STREAM("LIDAR | Adding buoy " << obj.id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.beams.size() << " lidar points ");
 		
 		// 

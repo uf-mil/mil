@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 from txros import util, NodeHandle
 from twisted.internet import defer, reactor
-import sys
-import rospy
 from navigator_singleton.navigator import Navigator
 from navigator_msgs.msg import PerceptionObject
 import nav_missions
-import argparse
-import std_msgs
 
 nh = None
 n = None
+
 
 class Mission(object):
 
@@ -30,7 +27,7 @@ class MissionPlanner:
 
     def __init__(self):
         self.tree = []
-        self.queue = []
+        self.queue = []  # Make this asynchronous
         self.found = []
         self.completeing_mission = False
         # TODO Put in YAML file
@@ -47,7 +44,7 @@ class MissionPlanner:
         n = yield Navigator(nh)._init()
 
         self.sub_database = yield nh.subscribe('/database/object_found', PerceptionObject, self.new_item)
-        #self.servcl_exploration_yield = yield nh.get_service_client("/exploration/yield_control", std_msgs.msg.Bool)
+        # self.servcl_exploration_yield = yield nh.get_service_client("/exploration/yield_control", std_msgs.msg.Bool)
         self.refresh()
         defer.returnValue(self)
 
@@ -85,8 +82,8 @@ class MissionPlanner:
             self.tree.remove(mission)
 
         for mission in self.tree:
-            print "Add", mission.name
             if(self.can_complete(mission)):
+                print "Add", mission.name
                 self.queue.append(mission)
 
         self.empty_queue()
@@ -95,7 +92,7 @@ class MissionPlanner:
 @util.cancellableInlineCallbacks
 def main():
     om = MissionPlanner()
-    od = yield om._init() 
+    od = yield om._init()
 
 reactor.callWhenRunning(main)
 reactor.run()
