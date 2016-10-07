@@ -1,16 +1,25 @@
 #include "GrayscaleContour.h"
 #include <sstream>
-//Todo: for circle test dont approx polygon
-double GrayscaleContour::minArea = 100.0/(644.0*482.0);
 GrayscaleContour::GrayscaleContour(ros::NodeHandle& nh) :
   DockShapeVision(nh)
 {
   //Set ros params
   nh.param<int>("grayscale/canny/thresh1", cannyParams.thresh1,60);
   nh.param<int>("grayscale/canny/thresh2", cannyParams.thresh2,100);
-
-  epsilonFactor =  3;
-
+  nh.param<int>("grayscale/blur_size", blur_size,7);
+  nh.param<double>("grayscale/min_contour_area",minArea,100.0/(644.0*482.0));
+  nh.param<double>("grayscale/triangle/epsilon",triangleEpsilon,0.1);
+  nh.param<double>("grayscale/cross/epsilon",crossEpsilon,0.03);
+  nh.param<double>("grayscale/triangle/rect_error_threshold",triRectErrorThreshold,0.1);
+  nh.param<double>("grayscale/triangle/side_error_threshold",triSideErrorThreshold,0.1);
+  nh.param<double>("grayscale/triangle/angle_mean_error_threshold",triAngleMeanErrorThreshold,5);
+  nh.param<double>("grayscale/triangle/angle_var_error_threshold",triAngleVarErrorThreshold,10);
+  nh.param<double>("grayscale/cross/rect_error_threshold",crossRectErrorThreshold,0.2);
+  nh.param<double>("grayscale/cross/side_error_threshold",crossSideErrorThreshold,0.2);
+  nh.param<double>("grayscale/cross/angle_mean_error_threshold",crossAngleMeanErrorThreshold,5);
+  nh.param<double>("grayscale/cross/angle_var_error_threshold",crossAngleVarErrorThreshold,5);
+  nh.param<double>("grayscale/circle/enclosing_circle_error_threshold",circleEnclosingErrorThreshold,0.2);
+  
   #ifdef DO_DEBUG
   namedWindow("Menu",CV_WINDOW_AUTOSIZE);
   namedWindow("Result",CV_WINDOW_AUTOSIZE);
@@ -29,7 +38,6 @@ void GrayscaleContour::init()
   #ifdef DO_DEBUG
   createTrackbar("thresh1", "Menu", &cannyParams.thresh1, 500);
   createTrackbar("thresh2", "Menu", &cannyParams.thresh2, 255);
-  createTrackbar("Epsilon  factor (x1000)", "Menu", &epsilonFactor, 2000);
   #endif
 }
 void GrayscaleContour::GetShapes(cv::Mat &frame,cv::Rect roi,navigator_msgs::DockShapes& symbols)
@@ -43,8 +51,7 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,cv::Rect roi,navigator_msgs::Doc
   colorFrame = frame;
   CropFrame();
   Mat temp = croppedFrame.clone();
-  int blur = 7;
-  bilateralFilter(temp,croppedFrame,blur,blur*2,blur/2);
+  bilateralFilter(temp,croppedFrame,blur_size,blur_size*2,blur_size/2);
   ConvertToGrayscale();
   DetectEdges();
   FindContours();
@@ -63,8 +70,8 @@ void GrayscaleContour::GetShapes(cv::Mat &frame,cv::Rect roi,navigator_msgs::Doc
     navigator_msgs::DockShape dockShape;
     std::vector<cv::Point> approx_tri;
     std::vector<cv::Point> approx_cross;
-    approxPolyDP(Mat(contours[i]), approx_tri, arcLength(contours[i], true) * 0.1 , true);
-    approxPolyDP(Mat(contours[i]), approx_cross, arcLength(contours[i], true) * 0.03 , true);
+    approxPolyDP(Mat(contours[i]), approx_tri, arcLength(contours[i], true) * triangleEpsilon , true);
+    approxPolyDP(Mat(contours[i]), approx_cross, arcLength(contours[i], true) * crossEpsilon , true);
     if (isTriangle(approx_tri))
     {
       dockShape.Shape = navigator_msgs::DockShape::TRIANGLE;
@@ -160,8 +167,6 @@ bool GrayscaleContour::GetColor(int Index,std::string& color)
   drawContours(mask,contours,Index, Scalar(255), CV_FILLED);
   Scalar meanColor = mean(croppedFrame,mask);
   //std::cout << meanColor << std::endl;
-  std::ostringstream unknown;
-  unknown << "UKNOWN: " << meanColor.val[0] << " " << meanColor.val[1] << " " << meanColor.val[2] << std::endl;
   double sum = meanColor.val[0] + meanColor.val[1] + meanColor.val[2];
   // ~if (sum > 500) return false;
   double max = 0;
@@ -179,15 +184,6 @@ bool GrayscaleContour::GetColor(int Index,std::string& color)
   }
   return true;
 }
-void GrayscaleContour::FindPolygons()
-{
-  shapes.clear();
-  for (int i = 0; i < contours.size(); i++) {
-    std::vector<cv::Point> approx;
-    approxPolyDP(Mat(contours[i]), approx, arcLength(Mat(contours[i]), true) * 0.01 , true);
-    shapes.push_back(approx);
-  }
-}
 bool GrayscaleContour::isTriangle(std::vector<Point>& points)
 {
   // If contour is not 3 sided, is not a triangle
@@ -201,12 +197,12 @@ bool GrayscaleContour::isTriangle(std::vector<Point>& points)
   cv::Rect boundingRect = cv::boundingRect(points);
   expected_area = 0.5 * boundingRect.width * boundingRect.height;
   error = fabs(contour_area/expected_area-1.0);
-  if (error > 0.1) return false;
+  if (error > triRectErrorThreshold) return false;
 
   // Find side length based on bounding rect width, compare to real perimeter of contour
   expected_perimeter = boundingRect.width*3;
   error = fabs(perimeter/expected_perimeter-1.0);
-  if (error > 0.1) return false;
+  if (error > triSideErrorThreshold) return false;
 
 
   // Find angles (in degrees) of contour, compare to expected of 60 degrees with low variance
@@ -217,8 +213,8 @@ bool GrayscaleContour::isTriangle(std::vector<Point>& points)
   for (double angle: angles) acc(angle);
   auto mean = boost::accumulators::mean(acc); 
   auto variance = sqrt(boost::accumulators::variance(acc));
-  if ( fabs(mean-60.0) > 5) return false;
-  if ( variance > 10) return false;
+  if ( fabs(mean-60.0) > triAngleMeanErrorThreshold) return false;
+  if ( variance > triAngleVarErrorThreshold) return false;
 
   return true;
 }
@@ -235,13 +231,13 @@ bool GrayscaleContour::isCross(std::vector<Point>& points)
   double side_length = perimeter / 12.0;
   expected_area = 5.0*pow(side_length,2);
   error = fabs(contour_area/expected_area-1.0);
-  if (error > 0.2) return false;
+  if (error > crossRectErrorThreshold) return false;
 
   // Draw bounding rect around contour, determine what area should be of cross with this width, compare to real area
   Rect rect = boundingRect(points);
   expected_area = 5*pow( rect.width/3.0,2);
   error  = fabs(contour_area/expected_area-1);
-  if (error > 0.2) return false;
+  if (error > crossSideErrorThreshold) return false;
 
 
   // Find all angles in contour, then check that the mean angle is around 40 degrees and variance is low
@@ -253,8 +249,8 @@ bool GrayscaleContour::isCross(std::vector<Point>& points)
   auto mean = boost::accumulators::mean(acc); 
   auto variance = sqrt(boost::accumulators::variance(acc));
   // ~printf("CROSS SIDES=%d MEAN=%f VAR=%f\n",points.size(),mean,variance);
-  if ( fabs(mean-40.0) > 5) return false;
-  if ( variance > 5) return false;
+  if ( fabs(mean-40.0) > crossAngleMeanErrorThreshold) return false;
+  if ( variance > crossAngleVarErrorThreshold) return false;
   
   return true;
 }
@@ -274,7 +270,7 @@ bool GrayscaleContour::isCircle(std::vector<Point>& points)
   minEnclosingCircle(points,center,radius);
   expected_area = pi*pow(radius,2);
   error  = fabs(contour_area/expected_area-1);
-  if (error > 0.2) return false; 
+  if (error > circleEnclosingErrorThreshold) return false; 
   
   // ~doub
   // ~Rect rect = boundingRect(points);
@@ -299,7 +295,7 @@ bool GrayscaleContour::filterArea(std::vector<Point> contour)
   return contourArea(contour) < (minArea * (frame_width*frame_height) ) ;
 }
 Point GrayscaleContour::findCenter(std::vector<Point>& points) {
-  int x = 0, y = 0;
+  double x = 0, y = 0;
   for (int i = 0; i < points.size(); i++) {
     x += points[i].x;
     y += points[i].y;

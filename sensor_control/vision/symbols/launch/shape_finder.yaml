@@ -4,9 +4,23 @@ roi:
   height: 243
   width: 499
 grayscale:
+  blur_size: 7
   canny:
     thresh1: 60
     thresh2: 100
+  min_contour_area: .0001
+  circle:
+    enclosing_circle_error_threshold: 0.2
+  triangle:
+    rect_error_threshold: 0.1
+    side_error_threshold: 0.1
+    angle_mean_error_threshold: 5
+    angle_var_error_threshold: 10
+  cross:
+    rect_error_threshold: 0.2
+    side_error_threshold: 0.2
+    angle_mean_error_threshold: 5
+    angle_var_error_threshold: 5
 blur_size: 3
 erode_size: 3
 dilate_size: 3

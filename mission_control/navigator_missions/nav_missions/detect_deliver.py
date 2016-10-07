@@ -56,6 +56,7 @@ class DetectDeliverMission:
         #Allign perpendicular to the face of the target
         print "Aligning perpendicular"
 
+
     @txros.util.cancellableInlineCallbacks
     def align_distance(self):
         #Allign the correct distance from the target plane

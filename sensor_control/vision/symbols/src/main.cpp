@@ -45,6 +45,7 @@ class ShooterVision {
       nh_("dock_shape_finder"),
       it_(nh_)
     {
+      nh_.param<bool>("auto_start", active,false);
       vision.reset(new GrayscaleContour(nh_));
       vision->init();
       nh_.param<std::string>("symbol_camera", camera_topic, "/right/right/image_raw");

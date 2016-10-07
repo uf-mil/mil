@@ -23,19 +23,10 @@ class GrayscaleContour : public DockShapeVision
     std::vector<std::vector<cv::Point> > shapes;
     Rect roi;
     
-    struct CannyParams
-    {
-      int thresh1;
-      int thresh2;    
-    };
-    int epsilonFactor;
-    CannyParams cannyParams;
-    
     void CropFrame();
     void ConvertToGrayscale();
     void DetectEdges();
     void FindContours();
-    void FindPolygons();
     bool GetColor(int shapeIndex,std::string& color);
     Point findCenter(std::vector<Point>& points);
     Mat contoursFrame;
@@ -43,7 +34,6 @@ class GrayscaleContour : public DockShapeVision
     int frame_width;
     
     bool filterArea(std::vector<Point> contour);
-    static double minArea;
     
     bool isTriangle(std::vector<Point>& points);
     bool isCross(std::vector<Point>& points);
@@ -58,6 +48,27 @@ class GrayscaleContour : public DockShapeVision
     image_transport::Publisher color_debug_publisher;
     image_transport::Publisher contour_debug_publisher;
     #endif
+
+    //Constants to use ros params for
+    struct CannyParams
+    {
+      int thresh1;
+      int thresh2;    
+    };
+    CannyParams cannyParams;
+    double minArea;
+    int blur_size;
+    double triangleEpsilon;
+    double crossEpsilon;
+    double triRectErrorThreshold;
+    double triSideErrorThreshold;
+    double triAngleMeanErrorThreshold;
+    double triAngleVarErrorThreshold;
+    double crossRectErrorThreshold;
+    double crossSideErrorThreshold;
+    double crossAngleMeanErrorThreshold;
+    double crossAngleVarErrorThreshold;
+    double circleEnclosingErrorThreshold;
   public:
     GrayscaleContour(ros::NodeHandle& nh);
     void GetShapes(cv::Mat &frame,cv::Rect roi,navigator_msgs::DockShapes& symbols);

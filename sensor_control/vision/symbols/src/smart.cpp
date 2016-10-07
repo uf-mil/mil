@@ -21,9 +21,9 @@
 
 class ShapesBuffer
 {
+  static double MAX_X_VAR;
+  static double MAX_Y_VAR;
   static double STD_DEV_THRESHOLD;
-  static const int MAX_SEEN_GAP_SEC = 0;
-  static const int MAX_SEEN_GAP_NSEC = 500000000;
   static ros::Duration max_seen_gap_dur;
   boost::circular_buffer<navigator_msgs::DockShape> buffer;
   std::string Shape;
@@ -41,10 +41,25 @@ class ShapesBuffer
     }
     auto xMean = boost::accumulators::mean(xAcc); 
     auto xSD = sqrt(boost::accumulators::variance(xAcc));
+    auto yMean = boost::accumulators::mean(yAcc); 
+    auto ySD = sqrt(boost::accumulators::variance(yAcc));
+    // ~printf("%s %s Xmean=%f Xvar=%f Ymean=%f Yvar=%f\n",Color.c_str(),Shape.c_str(),xMean,xSD,yMean,ySD);
+    // ~if (xSD > MAX_X_VAR || ySD > MAX_Y_VAR)
+    // ~{
+      // ~printf("%s %s CLEARING B/C TOO HIGH VAR",Color.c_str(),Shape.c_str());
+      // ~clear();
+      // ~return;
+    // ~}
     auto new_end = std::remove_if(buffer.begin(), buffer.end(),[=](navigator_msgs::DockShape& shape) {
-      double stds = std::abs(shape.CenterX - xMean) / xSD;
-      if (stds > STD_DEV_THRESHOLD)
+      double xstds = std::abs(shape.CenterX - xMean) / xSD;
+      double ystds = std::abs(shape.CenterY - yMean) / ySD;
+      if (xstds > STD_DEV_THRESHOLD && std::abs(shape.CenterX - xMean) > 25)
       {
+        // ~printf("%s %s REMOVING X OVER STD.DEV\n",Color.c_str(),Shape.c_str());
+        return true;
+      } else if (ystds > STD_DEV_THRESHOLD && std::abs(shape.CenterY - yMean) > 25)
+      {
+        // ~printf("%s %s REMOVING Y OVER STD.DEV %f %d\n",Color.c_str(),Shape.c_str(),yMean,shape.CenterY);
         return true;
       }
       return false;
@@ -62,6 +77,15 @@ class ShapesBuffer
     buffer(size)
   {
 
+  }
+  static void init(ros::NodeHandle& nh)
+  {
+    nh.param<double>("max_x_var", MAX_X_VAR,50);
+    nh.param<double>("max_y_var", MAX_Y_VAR,50);
+    nh.param<double>("std_dev_threshold", STD_DEV_THRESHOLD,1.5);
+    double seconds;
+    nh.param<double>("max_seen_gap_seconds",seconds,0.5);
+    max_seen_gap_dur = ros::Duration(0,seconds * 1000000000);
   }
   bool isStale()
   {
@@ -109,12 +133,14 @@ class ShapesBuffer
     return Shape;
   }
 };
-double ShapesBuffer::STD_DEV_THRESHOLD = 3;
-ros::Duration ShapesBuffer::max_seen_gap_dur = ros::Duration(MAX_SEEN_GAP_SEC,MAX_SEEN_GAP_NSEC);
+double ShapesBuffer::MAX_X_VAR = 50;
+double ShapesBuffer::MAX_Y_VAR = 50;
+double ShapesBuffer::STD_DEV_THRESHOLD = 1.5;
+ros::Duration ShapesBuffer::max_seen_gap_dur = ros::Duration(0,500000000);
 
 class ImageSearcher {
  private:
-  static const int SHAPE_BUFFER_SIZE = 10;
+  static int SHAPE_BUFFER_SIZE;
   static const int POSSIBLE_SYMBOLS_SIZE = 9;
   ros::Duration max_seen_gap_dur;
   ros::NodeHandle n;
@@ -132,8 +158,12 @@ class ImageSearcher {
   int frames;
   bool active;
  public:
-  ImageSearcher() 
+  ImageSearcher() :
+    n("dock_shape_filter")
   {
+    n.param<bool>("auto_start", active,false);
+    n.param<int>("buffer_size",SHAPE_BUFFER_SIZE,10);
+    ShapesBuffer::init(n);
     int u = 0;
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
@@ -169,8 +199,8 @@ class ImageSearcher {
           foundShapes[i].insert(*newShape);
           //Notice when found state changed for logging
           bool found = foundShapes[i].isFound();
-          if (found && ! previousFound[i]) ROS_INFO("%s %s FOUND",foundShapes[i].getColor().c_str(),foundShapes[i].getShape().c_str());
-          if (!found && previousFound[i]) ROS_INFO("%s %s LOST",foundShapes[i].getColor().c_str(),foundShapes[i].getShape().c_str());
+          if (found && ! previousFound[i]) printf("%s %s FOUND\n",foundShapes[i].getColor().c_str(),foundShapes[i].getShape().c_str());
+          if (!found && previousFound[i]) printf("%s %s LOST\n",foundShapes[i].getColor().c_str(),foundShapes[i].getShape().c_str());
           previousFound[i] = found;
           
         }
@@ -236,6 +266,7 @@ class ImageSearcher {
     return true;
   }
 };
+int ImageSearcher::SHAPE_BUFFER_SIZE = 10;
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "dock_shape_filter");
