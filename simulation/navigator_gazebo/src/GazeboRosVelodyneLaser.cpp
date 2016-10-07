@@ -147,7 +147,8 @@ void GazeboRosVelodyneLaser::Load(sensors::SensorPtr _parent, sdf::ElementPtr _s
     ROS_INFO("Velodyne laser plugin missing <gaussianNoise>, defaults to 0.0");
     gaussian_noise_ = 0;
   } else {
-    gaussian_noise_ = _sdf->GetElement("gaussianNoise")->Get<double>();
+    //gaussian_noise_ = _sdf->GetElement("gaussianNoise")->Get<double>();
+    gaussian_noise_ = 0;
   }
 
   // Make sure the ROS node for Gazebo has already been initialized

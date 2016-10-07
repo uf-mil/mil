@@ -1,0 +1,1 @@
+navigator_msgs/PerceptionObject objects

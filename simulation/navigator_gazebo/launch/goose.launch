@@ -16,7 +16,7 @@
   <!-- Shapes -->
   <node name="spawn_blue_cross" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find navigator_gazebo)/models/shapes/blue_cross.sdf -sdf
-      -x 3 -y 17 -z 1.5 -Y -1.5708 -model blue_cross"
+      -x 4 -y -18 -z 1.5 -model blue_cross"
     output="screen" />
 
   <node name="spawn_red_circle" pkg="gazebo_ros" type="spawn_model"
