@@ -20,7 +20,6 @@ PcdColorizer::PcdColorizer(ros::NodeHandle nh, string input_pcd_topic, string ou
   rgb_cam_sub = img_transport.subscribeCamera(rgb_cam_topic, 10, 
     [this](const sensor_msgs::ImageConstPtr &image_msg_ptr, const sensor_msgs::CameraInfoConstPtr &info_msg_ptr)
     {
-      cout << "LAMBDA" << endl;
       this->latest_frame_img_msg = image_msg_ptr;
       this->latest_frame_info_msg = info_msg_ptr;
       if(!_intrinsics_set){

@@ -120,7 +120,6 @@ ros::ServiceServer detection_switch;
 
 
 int main(int argc, char** argv) {
-  cout << "In main() !!" << endl;
   namespace fs = boost::filesystem;
   
   try {
@@ -130,7 +129,6 @@ int main(int argc, char** argv) {
     int tab_sz = 4;
 
     // globals
-    cout << "Initializing." << endl;
     ros::init(argc, argv, "stereo_point_cloud_driver");
     ros::NodeHandle nh;
     image_transport::ImageTransport img_trans {nh};
