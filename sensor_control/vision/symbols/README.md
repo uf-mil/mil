@@ -5,8 +5,9 @@ This package contains executables for finding and identifying the symbols used i
 shape_finder uses OpenCV to look for pottential shapes in a ros image. When a pottential shape is found, it is published to /dock_shapes/found_shapes
 The area of the frame shape_finder looks in can be set through /dock_shapes_finder/setROI
 
-## Technical
+### Technical
 The shapes are found with the following method:
+
 1. Frame is cropped to the region of interest
 2. Frame is converted to grayscale
 3. Edges are discovered with Canny Edge Detector
@@ -16,10 +17,11 @@ The shapes are found with the following method:
 7. For each valid shape found, the average color of the contour is taken to determine if it is closest to red, green, or blue
 
 ## shape_filter
-shape_filter subscribes to /dock_shapes/found_shapes and tries to filter out incorrectly identified shapes or outliers.
-shape_filter provides the /dock_shapes/GetShape and /dock_shapes/GetShapes services for other nodes to receive data of likely shapes found
+shape_filter subscribes to ```/dock_shapes/found_shapes``` and tries to filter out incorrectly identified shapes or outliers.
 
-## Technical
+shape_filter provides the ```/dock_shapes/GetShape``` and ```/dock_shapes/GetShapes``` services for other nodes to receive data of likely shapes found
+
+### Technical
 * For each type of symbol (Ex: GREEN CIRCLE), shape_filter keeps a buffer of 10 recently found shapes
 * When a new shape is found, it is added to the buffer
 * If it has been greater than a certain duration since that shape was last found, the buffer is cleared before adding the new one
@@ -54,9 +56,11 @@ Topic | Type | Behavior
 /dock_shapes/found_shapes | navigator_msgs/DockShapes | Returns the center and points of the specified shape if found
 
 ## Config
-Many of the constants used in the package can be changed at runtime using the ros paramaters found in dock_shapes.yaml and dock_shapes.launch
+Many of the constants used in the package can be changed at runtime using the ros paramaters found in shape_finder.yaml, shape_filter.yaml and dock_shapes.launch
 Below are some of the most important parameters:
+
 Param | Type | Usage
 --- | --- | --- 
 symbol_camera | string | The image topic for shape_finder to subscribe to and look for shapes in
 image_tranport | string | To set type of image transport (raw,compressed,color)
+auto_start | bool | Sets the vision nodes to start looking for shapes at launch or wait for call to run service
