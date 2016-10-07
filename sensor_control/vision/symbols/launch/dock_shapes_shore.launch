@@ -1,0 +1,9 @@
+<launch>
+  <node pkg="navigator_shoot_vision" type="shore_debug" name="dock_shape_shore_debug">
+    <param name="symbol_camera" value="/right/right/image_raw"/>
+    <param name="image_transport" value="compressed" />
+    <param name="hsv_windows" value="false" />
+    <rosparam file="$(find navigator_shoot_vision)/launch/dockshapes.yaml" />
+  </node>
+</launch>
+
