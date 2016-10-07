@@ -1,0 +1,5 @@
+max_x_var: 50
+max_y_var: 50
+std_dev_threshold: 1.5
+max_seen_gap_seconds: 0.5
+buffer_size: 10

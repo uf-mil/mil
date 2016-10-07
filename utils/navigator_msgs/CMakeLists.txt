@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   geometry_msgs
   actionlib_msgs
+  sensor_msgs
 )
 add_action_files(
   DIRECTORY
@@ -26,6 +27,8 @@ add_message_files(
   Point.msg
   Points.msg
   Waypoint.msg
+  DockShape.msg
+  DockShapes.msg
 )
 
 add_service_files(
@@ -34,7 +37,10 @@ add_service_files(
   ShooterManual.srv
   VisionRequest.srv
   WrenchSelect.srv
+  GetDockShape.srv
+  GetDockShapes.srv
   StartGate.srv
+  SetROI.srv
   Bounds.srv
   CoordinateConversion.srv
 )
@@ -44,12 +50,14 @@ generate_messages(
   std_msgs
   geometry_msgs
   actionlib_msgs
+  sensor_msgs
 )
 
 catkin_package(
-  CATKIN_DEPENDS
-  std_msgs
-  geometry_msgs
+	CATKIN_DEPENDS
+	std_msgs
+	geometry_msgs
+  sensor_msgs
   message_runtime
   actionlib_msgs
 )
