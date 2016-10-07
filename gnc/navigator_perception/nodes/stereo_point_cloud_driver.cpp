@@ -10,6 +10,7 @@
 #include <navigator_vision_lib/cv_tools.hpp>
 #include <opencv2/opencv.hpp>
 #include <Eigen/Core>
+#include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include <pcl_ros/point_cloud.h>
 #include <pcl/point_types.h>
@@ -20,6 +21,7 @@
 #include <vector>
 #include <iostream>
 #include <iomanip>
+#include <exception>
 #include <sparsestereo/exception.h>
 #include <sparsestereo/extendedfast.h>
 #include <sparsestereo/stereorectification.h>
@@ -32,11 +34,14 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 #include <image_geometry/pinhole_camera_model.h>
-// #include <tf/transform_listener.h>
+#include <tf/transform_listener.h>
 #include <std_srvs/SetBool.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/PointCloud2.h>
- #include <sensor_msgs/point_cloud2_iterator.h>
+#include <sensor_msgs/point_cloud2_iterator.h>
+#include <pcl_ros/point_cloud.h>
+#include <pcl_ros/transforms.h>
+#include <navigator_vision_lib/point_cloud_algorithms.hpp>
 
 void left_image_callback(
     const sensor_msgs::ImageConstPtr &image_msg_ptr,
@@ -44,6 +49,7 @@ void left_image_callback(
 void right_image_callback(
     const sensor_msgs::ImageConstPtr &image_msg_ptr,
     const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
+void cloud_callback (const sensor_msgs::PointCloud2ConstPtr& cloud_msg);
 bool detection_activation_switch(
     std_srvs::SetBool::Request &req,
     std_srvs::SetBool::Response &resp);
@@ -75,26 +81,47 @@ struct XYZRGB{
   }
 };
 
-sensor_msgs::ImageConstPtr left_most_recent {nullptr},  right_most_recent {nullptr};
+// Image storage
+sensor_msgs::ImageConstPtr left_most_recent,  right_most_recent;
 sensor_msgs::CameraInfoConstPtr left_most_recent_info, right_most_recent_info;
+
+// Stereo subscribing
 image_transport::CameraSubscriber left_image_sub, right_image_sub;
 image_geometry::PinholeCameraModel left_cam_model, right_cam_model;
-Matx34d left_P, right_P;  // camera projection matrices
-string tf_frame_l, tf_frame_r; // tf frames
+
+// Velodyne subscribing
+ros::Subscriber pcd_sub;
+
+// Camera projection matrices
+Matx34d left_P, right_P;
+
+// TF
+// tf::TransformListener tf_listener;
+string tf_frame_stereo_l {"/stereo_left_cam"};
+string tf_frame_stereo_r {"/stereo_right_cam"};
+string tf_frame_velodyne {"/velodyne"};
+tf::StampedTransform stereoL_tf_velodyne;
+
+// Point clouds
 vector<XYZRGB> stereo_point_cloud;
-ros::Publisher pcl_pub;
-boost::mutex left_mtx, right_mtx;
-bool active = false;
-ros::ServiceServer detection_switch;
-string activation_srv_name {"stereo/activation_srv"};
-sensor_msgs::PointCloud2 pt_cloud_msg;
+// sensor_msgs::PointCloud2 pt_cloud_msg;
 std_msgs::Header header;
 int pt_cloud_seq {0};
 
+// Point cloud publisher
+ros::Publisher pcl_pub;
+
+// Thread safety
+boost::mutex left_mtx, right_mtx;
+
+// Control
+bool active = false;
+ros::ServiceServer detection_switch;
 
 
 int main(int argc, char** argv) {
-namespace fs = boost::filesystem;
+  namespace fs = boost::filesystem;
+  
   try {
 
     stringstream log_msg;
@@ -107,10 +134,12 @@ namespace fs = boost::filesystem;
     image_transport::ImageTransport img_trans {nh};
     image_geometry::PinholeCameraModel left_cam_model, right_cam_model;
     cv_bridge::CvImagePtr input_bridge;
+    string activation_srv_name {"stereo/activation_srv"};
+    nav::PcdColorizer vel_colorizer{nh, "/velodyne_points", "/colored_velodyne_cloud", "/stereo/left/image_rect_color", "/stereo_left_cam"};
 
     // Default parameters
-    string img_topic_left_default = "/stereo/left/image_rect_color/";
-    string img_topic_right_default = "/stereo/right/image_rect_color/";
+    string img_topic_left_default = "/stereo/left/image_raw/";
+    string img_topic_right_default = "/stereo/right/image_raw/";
     string activation_default = "/stereo/activation_switch";
     string dbg_topic_default = "/stereo/dbg_imgs";
 
@@ -134,6 +163,30 @@ namespace fs = boost::filesystem;
     cout << left << ' ' << right << endl;
     ROS_INFO(log_msg.str().c_str());
 
+    // Subscribe to Velodyne scan
+    pcd_sub = nh.subscribe ("/velodyne_points", 1, cloud_callback);
+
+    // Wait for transform between velodyne and stereo frames
+    tf::TransformListener tf_listener;
+    ROS_INFO("Waiting 10 seconds for tf between velodyne and stereo frames to become available...");
+    // try{
+    //   ros::Time now = ros::Time(0);
+    //   if (tf_listener.waitForTransform(tf_frame_velodyne, tf_frame_stereo_l,
+    //                  now, ros::Duration(10.0))){
+    //     cout << "TF is available." << endl;
+    //   }
+    //   else cout << "Timed out waiting for TF." << endl;
+
+    //   tf_listener.lookupTransform(tf_frame_velodyne, tf_frame_stereo_l, now, stereoL_tf_velodyne);
+    //   // cout << "TF:" << stereoL_tf_velodyne << endl;
+    // }
+    // catch (const std::exception& e) {
+    //   cerr << "Fatal exception while acquiring TF's: " << e.what();
+    //   return -1;
+    // }
+
+
+
     // Size adjustment ROI
     /*
       exFAST is currently heavily optimized for VGA size images, extracting a 
@@ -141,7 +194,7 @@ namespace fs = boost::filesystem;
     */
 
     // Stereo matching parameters
-    double uniqueness = 0.7;
+    double uniqueness = 0.8;
     int maxDisp = 70;
     int leftRightStep = 2;
     
@@ -165,13 +218,11 @@ namespace fs = boost::filesystem;
                                                 false, false, leftRightStep);
 
     // Feature detectors for left and right image
-    FeatureDetector* leftFeatureDetector = new ExtendedFAST(true, minThreshold, adaptivity, false, 2);
-    FeatureDetector* rightFeatureDetector = new ExtendedFAST(false, minThreshold, adaptivity, false, 2);
+    FeatureDetector* leftFeatureDetector = new ExtendedFAST(true, minThreshold, adaptivity, true, 10);
+    FeatureDetector* rightFeatureDetector = new ExtendedFAST(false, minThreshold, adaptivity, true, 10);
 
     // Sparse Correspondences
-    vector<SparseMatch> correspondencesB;
-    vector<SparseMatch> correspondencesG;
-    vector<SparseMatch> correspondencesR;
+    vector<SparseMatch> correspondences;
 
     // Main stereo processing loop
     ros::Rate loop_rate(10);  // process images 10 times per second
@@ -184,17 +235,18 @@ namespace fs = boost::filesystem;
       cout  << "left_most_recent=" << left_most_recent << " right_most_recent=" << right_most_recent << endl;
       // Idle if active is not set or valid image pointer pairs have not been retrieved
       if (!active || (left_most_recent == nullptr) || (right_most_recent == nullptr)){
-        ros::spinOnce();
+        ros::spinOnce();  // still handle ROS callbacks if skipping an iteration
         loop_rate.sleep();
-        cout << "skipping" << endl;
+        cout << "Skipping this stereo pair for processing." << endl;
         continue;
       }
       try {
         // Containers
-        // cv::Mat_<unsigned char> raw_left, raw_right, leftImg, rightImg;
-        Mat raw_left, raw_right, leftImg, rightImg;
+        Mat raw_left, raw_right, draw_left, draw_right;
+        Mat_<unsigned char> leftImg, rightImg;
 
         // Thread Safety
+        cout << "Getting frame data" << endl;
         left_mtx.lock();
         right_mtx.lock();
         {
@@ -204,19 +256,22 @@ namespace fs = boost::filesystem;
           cout << "right_most_recent: " << right_most_recent << endl;
           input_bridge = cvb::toCvCopy(left_most_recent, sensor_msgs::image_encodings::BGR8);
           raw_left = input_bridge->image;
+          draw_left = raw_left.clone();
           // imshow("raw_left", raw_left); waitKey(0);
           cout << "raw_left_size:"  << raw_left.size() << endl;
           input_bridge = cvb::toCvCopy(right_most_recent, sensor_msgs::image_encodings::BGR8);
-          raw_right = input_bridge->image; 
+          raw_right = input_bridge->image;
+          draw_right = raw_right.clone();
         }
+        cout << "Got frame data" << endl;
         left_mtx.unlock();
         right_mtx.unlock();
 
         // Check images for data and adjust size
         if(raw_left.data == NULL || raw_right.data == NULL)
           throw sparsestereo::Exception("Unable to open input images!");
-        leftImg = raw_left;
-        rightImg = raw_right;
+        cvtColor(raw_left, leftImg, CV_BGR2GRAY);
+        cvtColor(raw_right, rightImg, CV_BGR2GRAY);
 
         // Enforce approximate image synchronization
         double left_stamp = left_most_recent_info->header.stamp.toSec();
@@ -232,216 +287,102 @@ namespace fs = boost::filesystem;
         }
 
         // Objects for storing final and intermediate results
-        vector<Mat_<unsigned char>> left_channels;
-        vector<Mat_<unsigned char>> right_channels;
-        split(leftImg, left_channels);
-        split(rightImg, right_channels);
-        Mat_<unsigned char> left_B, left_G, left_R;
-        Mat_<unsigned char> right_B, right_G, right_R;
-        left_B = left_channels[0];
-        left_G = left_channels[1];
-        left_R = left_channels[2];
-        right_B = right_channels[0];
-        right_G = right_channels[1];
-        right_R = right_channels[2];
         int rows = leftImg.rows;
-        int cols =leftImg.cols;
-        Mat_<char> charLeftB(rows, cols); 
-        Mat_<char> charLeftG(rows, cols);
-        Mat_<char> charLeftR(rows, cols);
-        Mat_<char> charRightB(rows, cols);
-        Mat_<char> charRightG(rows, cols);
-        Mat_<char> charRightR(rows, cols);
-        Mat_<unsigned int> censusLeftB(rows, cols);
-        Mat_<unsigned int> censusLeftG(rows, cols);
-        Mat_<unsigned int> censusLeftR(rows, cols);
-        Mat_<unsigned int> censusRightB(rows, cols);
-        Mat_<unsigned int> censusRightG(rows, cols);
-        Mat_<unsigned int> censusRightR(rows, cols);
-        vector<KeyPoint> keypointsLeftB, keypointsRightB;
-        vector<KeyPoint> keypointsLeftG, keypointsRightG;
-        vector<KeyPoint> keypointsLeftR, keypointsRightR;
+        int cols = leftImg.cols;
+        Mat_<char> charLeft(rows, cols);
+        Mat_<char> charRight(rows, cols);
+        Mat_<unsigned int> censusLeft(rows, cols);
+        Mat_<unsigned int> censusRight(rows, cols);
+        vector<KeyPoint> keypointsLeft, keypointsRight;
+
+        ptime lastTime = microsec_clock::local_time(); // Time algorithm start time
         
-        
-        // Featuredetection. TODO: parallelize with OMP
-        // TODO: split color image channels and get correspondences in each
-        ptime lastTime = microsec_clock::local_time();
-        ImageConversion::unsignedToSigned(left_B, &charLeftB);
-        Census::transform5x5(charLeftB, &censusLeftB);
-        keypointsLeftB.clear();
-        leftFeatureDetector->detect(left_B, keypointsLeftB);
-
-        ImageConversion::unsignedToSigned(left_G, &charLeftG);
-        Census::transform5x5(charLeftG, &censusLeftG);
-        keypointsLeftG.clear();
-        leftFeatureDetector->detect(left_G, keypointsLeftG);
-
-        ImageConversion::unsignedToSigned(left_R, &charLeftR);
-        Census::transform5x5(charLeftR, &censusLeftR);
-        keypointsLeftR.clear();
-        leftFeatureDetector->detect(left_R, keypointsLeftR);
-
-        ImageConversion::unsignedToSigned(right_B, &charRightB);
-        Census::transform5x5(charRightB, &censusRightB);
-        keypointsRightB.clear();
-        rightFeatureDetector->detect(right_B, keypointsRightB);
-
-        ImageConversion::unsignedToSigned(right_G, &charRightG);
-        Census::transform5x5(charRightG, &censusRightG);
-        keypointsRightG.clear();
-        rightFeatureDetector->detect(right_G, keypointsRightG);
-
-        ImageConversion::unsignedToSigned(right_R, &charRightR);
-        Census::transform5x5(charRightR, &censusRightR);
-        keypointsRightR.clear();
-        rightFeatureDetector->detect(right_R, keypointsRightR);
-
+        // Calculate census transforms for both images and detet features 
+        // for both images in parallel
+        #pragma omp parallel sections default(shared) num_threads(2)
+        {
+          #pragma omp section
+          { 
+            ImageConversion::unsignedToSigned(leftImg, &charLeft);
+            Census::transform5x5(charLeft, &censusLeft);
+            keypointsLeft.clear();
+            leftFeatureDetector->detect(leftImg, keypointsLeft);
+          }
+          #pragma omp section
+          {
+            ImageConversion::unsignedToSigned(rightImg, &charRight);
+            Census::transform5x5(charRight, &censusRight);
+            keypointsRight.clear();
+            rightFeatureDetector->detect(rightImg, keypointsRight);
+          }
+        }
                 
         // Stereo matching and reconstruction
         Point2f pt_L;
         Point2f pt_R;
         Matx31d pt_L_hom;
         Matx31d pt_R_hom;
-        Mat X_hom;
+        Mat X, X_hom;
         Vec3b color;
-        // #pragma omp parallel sections default(shared) num_threads(3)
-        {
-          // #pragma omp section
-          {
-            // Calculate correspondences in Blue channel
-            correspondencesB.clear();
-            stereo.match(censusLeftB, censusRightB, keypointsLeftB, keypointsRightB, &correspondencesB);
 
-            for(int i=0; i<(int)correspondencesB.size(); i++) {
+        // Calculate correspondences in Blue channel
+        correspondences.clear();
+        stereo.match(censusLeft, censusRight, keypointsLeft, keypointsRight, &correspondences);
 
-              // Visualize feature points
-              rectangle(left_channels[0], pt_L - Point2f(2,2), pt_L + Point2f(2, 2), 
-                    rand() % 256, CV_FILLED);
-              rectangle(right_channels[0], pt_R - Point2f(2,2), pt_R + Point2f(2, 2), 
-                    rand() % 256, CV_FILLED);
+        for(int i=0; i<(int)correspondences.size(); i++) {
 
-              // Triangulate matches to reconstruct 3D point
-              pt_L = correspondencesB[i].imgLeft->pt;
-              pt_R = correspondencesB[i].imgRight->pt;
-              pt_L_hom = Matx31d(pt_L.x, pt_L.y, 1);
-              pt_R_hom = Matx31d(pt_R.x, pt_R.y, 1);
-              cout << "ptL: " << pt_L << " ptR: " << pt_R << endl;
-              X_hom = nav::triangulate_Linear_LS(Mat(left_P), Mat(right_P), Mat(pt_L_hom), Mat(pt_R_hom));
-              X_hom = X_hom / X_hom.at<double>(3, 0);
+          // Visualize feature points
+          Scalar rand_color = Scalar(rand() % 256, rand() % 256, rand() % 256);
+          rectangle(raw_left, pt_L - Point2f(2,2), pt_L + Point2f(2, 2), rand_color, CV_FILLED);
+          rectangle(raw_right, pt_R - Point2f(2,2), pt_R + Point2f(2, 2), rand_color, CV_FILLED);
 
-              // Get Color and fill point_cloud element precursor
-              XYZRGB point;
-              point.x = X_hom.at<double>(0, 0);
-              point.y = X_hom.at<double>(1, 0);
-              point.z = X_hom.at<double>(2, 0);
-              color = leftImg.at<Vec3b>(pt_L);
-              point.b = color[0];
-              point.g = color[1];
-              point.r = color[2];
-              stereo_point_cloud.push_back(point);
-            }
-          }
-          // #pragma omp section
-          {
-            // Calculate correspondences in Green channel
-            correspondencesG.clear();
-            stereo.match(censusLeftG, censusRightG, keypointsLeftG, keypointsRightG, &correspondencesG);
+          // Triangulate matches to reconstruct 3D point
+          pt_L = correspondences[i].imgLeft->pt;
+          pt_R = correspondences[i].imgRight->pt;
+          pt_L_hom = Matx31d(pt_L.x, pt_L.y, 1);
+          pt_R_hom = Matx31d(pt_R.x, pt_R.y, 1);
+          X_hom = nav::triangulate_Linear_LS(Mat(left_P), Mat(right_P), Mat(pt_L_hom), Mat(pt_R_hom));
+          X_hom = X_hom / X_hom.at<double>(3, 0);
 
-            for(int i=0; i<(int)correspondencesG.size(); i++) {
-
-              // Visualize feature points
-              rectangle(left_channels[1], pt_L - Point2f(2,2), pt_L + Point2f(2, 2), 
-                    rand() % 256, CV_FILLED);
-              rectangle(right_channels[1], pt_R - Point2f(2,2), pt_R + Point2f(2, 2), 
-                    rand() % 256, CV_FILLED);
-
-              // Triangulate matches to reconstruct 3D point
-              pt_L = correspondencesG[i].imgLeft->pt;
-              pt_R = correspondencesG[i].imgRight->pt;
-              pt_L_hom = Matx31d(pt_L.x, pt_L.y, 1);
-              pt_R_hom = Matx31d(pt_R.x, pt_R.y, 1);
-              cout << "ptL: " << pt_L << " ptR: " << pt_R << endl;
-              X_hom = nav::triangulate_Linear_LS(Mat(left_P), Mat(right_P), Mat(pt_L_hom), Mat(pt_R_hom));
-              X_hom = X_hom / X_hom.at<double>(3, 0);
-
-              // Get Color and fill point_cloud element precursor
-              XYZRGB point;
-              point.x = X_hom.at<double>(0, 0);
-              point.y = X_hom.at<double>(1, 0);
-              point.z = X_hom.at<double>(2, 0);
-              color = leftImg.at<Vec3b>(pt_L);
-              point.b = color[0];
-              point.g = color[1];
-              point.r = color[2];
-              stereo_point_cloud.push_back(point);
-            }
-          }
-          // #pragma omp section
-          {
-            // Calculate correspondences in Red channel
-            correspondencesR.clear();
-            stereo.match(censusLeftR, censusRightR, keypointsLeftR, keypointsRightR, &correspondencesR);
-
-            for(int i=0; i<(int)correspondencesR.size(); i++) {
-
-              // Visualize feature points
-              rectangle(left_channels[2], pt_L - Point2f(2,2), pt_L + Point2f(2, 2), 
-                    rand() % 256, CV_FILLED);
-              rectangle(right_channels[2], pt_R - Point2f(2,2), pt_R + Point2f(2, 2), 
-                    rand() % 256, CV_FILLED);
-
-              // Triangulate matches to reconstruct 3D point
-              pt_L = correspondencesR[i].imgLeft->pt;
-              pt_R = correspondencesR[i].imgRight->pt;
-              pt_L_hom = Matx31d(pt_L.x, pt_L.y, 1);
-              pt_R_hom = Matx31d(pt_R.x, pt_R.y, 1);
-              cout << "ptL: " << pt_L << " ptR: " << pt_R << endl;
-              X_hom = nav::triangulate_Linear_LS(Mat(left_P), Mat(right_P), Mat(pt_L_hom), Mat(pt_R_hom));
-              X_hom = X_hom / X_hom.at<double>(3, 0);
-
-              // Get Color and fill point_cloud element precursor
-              XYZRGB point;
-              point.x = X_hom.at<double>(0, 0);
-              point.y = X_hom.at<double>(1, 0);
-              point.z = X_hom.at<double>(2, 0);
-              color = leftImg.at<Vec3b>(pt_L);
-              point.b = color[0];
-              point.g = color[1];
-              point.r = color[2];
-              stereo_point_cloud.push_back(point);
-            }
-          }
+          // Get Color and fill point_cloud element precursor
+          XYZRGB point;
+          point.x = X_hom.at<double>(0, 0);
+          point.y = X_hom.at<double>(1, 0);
+          point.z = X_hom.at<double>(2, 0);
+          Vec3b pix_color = raw_left.at<Vec3b>(pt_L);
+          cout << i << "ptL: " << pt_L << " ptR: " << pt_R << " Color: " << pix_color 
+            << " " << X_hom.t() << endl;
+          point.b = pix_color[0];
+          point.g = pix_color[1];
+          point.r = pix_color[2];
+          stereo_point_cloud.push_back(point);
         }
 
-        // Delete repeated reconstructions from list
-        // set<XYZRGB> s {stereo_point_cloud.begin(), stereo_point_cloud.end()};
-        // stereo_point_cloud.assign( s.begin(), s.end() );
-
-        // // Display image 
-        // Mat screen = Mat::zeros(Size(leftImg.rows, leftImg.cols*2), CV_8U);
-        // Rect left_roi {Point(0,0), leftImg.size()};
-        // Rect right_roi {Point(leftImg.cols,0), leftImg.size()};
-        // Mat left_screen = screen(left_roi);
-        // Mat right_screen = screen(right_roi);
-        // merge(left_channels, left_screen);
-        // merge(right_channels, right_screen);
-        // namedWindow("Stereo");
-        // imshow("Stereo", screen);
-        // waitKey(30);
+        // Display image 
+        Mat screen = Mat::zeros(Size(leftImg.cols*2, leftImg.rows), CV_8UC3);
+        raw_left.copyTo(screen(Rect(Point(0,0), leftImg.size())));
+        raw_right.copyTo(screen(Rect(Point(leftImg.cols,0), leftImg.size())));
+        namedWindow("Stereo");
+        imshow("Stereo", screen);
+        waitKey(0);
 
         // Print statistics
         time_duration elapsed = (microsec_clock::local_time() - lastTime);
         cout << "Time for stereo matching: " << elapsed.total_microseconds()/1.0e6 << "s" << endl
-          << "Features detected in leftB image: " << keypointsLeftB.size() << endl
-          << "Features detected in rightB image: " << keypointsRightB.size() << endl
-          << "Percentage of matched features: " << (100.0 * correspondencesB.size() / keypointsLeftB.size()) << "%" << endl;
-        
+          << "Features detected in left image: " << keypointsLeft.size() << endl
+          << "Features detected in right image: " << keypointsRight.size() << endl
+          << "Percentage of matched features: " << (100.0 * correspondences.size() / keypointsLeft.size()) << "%" << endl;
 
         // Populate point cloud message header
+        sensor_msgs::PointCloud2 pt_cloud_msg;
         header.seq = pt_cloud_seq++;
-        header.stamp = ros::Time::now();
-        header.frame_id = tf_frame_l;
+        ros::Time frame_time_l = left_most_recent_info->header.stamp;
+        ros::Time frame_time_r = right_most_recent_info->header.stamp;
+        ros::Duration offset((frame_time_r - frame_time_l).toSec() / 2);
+        header.stamp = left_most_recent_info->header.stamp + offset;
+        header.frame_id = tf_frame_stereo_l;
         pt_cloud_msg.header = header;
+        cout << "pcd header: " <<pt_cloud_msg.header << endl;
 
         // Specify point cloud msg meta-data
         pt_cloud_msg.height = 1;
@@ -458,53 +399,29 @@ namespace fs = boost::filesystem;
         sensor_msgs::PointCloud2Iterator<uint8_t> iter_b(pt_cloud_msg, "b");
         sensor_msgs::PointCloud2Iterator<uint8_t> iter_g(pt_cloud_msg, "g");
         sensor_msgs::PointCloud2Iterator<uint8_t> iter_r(pt_cloud_msg, "r");
-        // #pragma omp parallel sections default(shared) num_threads(6)
-        {
-          // #pragma omp section
-          {
-            for(size_t i = 0; i < stereo_point_cloud.size(); ++i, ++iter_x)
-            {
-              *iter_x = stereo_point_cloud[i].x;
-            } 
-          }
-          // #pragma omp section
-          {
-            for(size_t i = 0; i < stereo_point_cloud.size(); ++i, ++iter_y)
-            {
-              *iter_y = stereo_point_cloud[i].y;
-            } 
-          }
-          // #pragma omp section
-          {
-            for(size_t i = 0; i < stereo_point_cloud.size(); ++i, ++iter_z)
-            {
-              *iter_z = stereo_point_cloud[i].z;
-            } 
-          }
-          // #pragma omp section
-          {
-            for(size_t i = 0; i < stereo_point_cloud.size(); ++i, ++iter_b)
-            {
-              *iter_b = stereo_point_cloud[i].b;
-            } 
-          }
-          // #pragma omp section
-          {
-            for(size_t i = 0; i < stereo_point_cloud.size(); ++i, ++iter_g)
-            {
-              *iter_g = stereo_point_cloud[i].g;
-            } 
-          }
-          // #pragma omp section
-          {
-            for(size_t i = 0; i < stereo_point_cloud.size(); ++i, ++iter_r)
-            {
-              *iter_r = stereo_point_cloud[i].r;
-            } 
-          }
-        }
 
+        cout << "filling pcd2 msg " << endl;
+        for(size_t i = 0; i < stereo_point_cloud.size(); ++i, ++iter_x, ++iter_y, ++iter_z, ++iter_b, ++iter_g, ++iter_r)
+        {
+          *iter_x = stereo_point_cloud[i].x;
+          *iter_y = stereo_point_cloud[i].y;
+          *iter_z = stereo_point_cloud[i].z;
+          *iter_b = stereo_point_cloud[i].b;
+          *iter_g = stereo_point_cloud[i].g;
+          *iter_r = stereo_point_cloud[i].r;
+          cout << i << "XYZBGR: " << *iter_x << " " << *iter_y << " " << *iter_z << " " << int(*iter_b) << " " << int(*iter_g) << " " <<
+           int(*iter_r) << endl;
+         }
+
+        // Publish point cloud
         pcl_pub.publish(pt_cloud_msg);
+
+        // Empty point cloud container for upcoming iteration
+        cout << "PCD size: " << pt_cloud_msg.height * pt_cloud_msg.row_step
+          << ", " << stereo_point_cloud.size() << endl;
+        stereo_point_cloud.clear();
+
+        // Handle ROS callbacks
         ros::spinOnce();
       }
       catch (const std::exception& e) {
@@ -549,7 +466,7 @@ void left_image_callback(
   if(first_call){
     left_cam_model.fromCameraInfo(left_most_recent_info);
     left_P = left_cam_model.fullProjectionMatrix();
-    tf_frame_l = left_cam_model.tfFrame();
+    tf_frame_stereo_l = left_cam_model.tfFrame();
     first_call = false;
   }
 }
@@ -570,7 +487,16 @@ void right_image_callback(
   if(first_call){   
     right_cam_model.fromCameraInfo(right_most_recent_info);
     right_P = right_cam_model.fullProjectionMatrix();
-    tf_frame_r = right_cam_model.tfFrame();
+    right_P(0, 3) = -140;
+    cout << "right projection_matrix: " << right_P << endl;
+    tf_frame_stereo_r = right_cam_model.tfFrame();
     first_call = false;
   }
 }
+
+void cloud_callback (const sensor_msgs::PointCloud2ConstPtr& cloud_msg){
+     ROS_INFO("velodyne_points callback");
+     sensor_msgs::PointCloud2 colored_velodyne_pcd;
+     
+}
+
