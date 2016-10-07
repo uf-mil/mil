@@ -43,7 +43,7 @@ class ShooterControl:
         start_time = rospy.get_rostime()
         dur_from_start = rospy.Duration(0, 0)
         rospy.loginfo("starting load")
-        rate = rospy.Rate(50) # 10hz
+        rate = rospy.Rate(50) # 50hz
         feedback = ShooterDoActionFeedback()
         while dur_from_start < self.load_total_time and self.load_server.is_active():
             dur_from_start = rospy.get_rostime() - start_time
@@ -83,7 +83,7 @@ class ShooterControl:
         start_time = rospy.get_rostime()
         dur_from_start = rospy.Duration(0, 0)
         rospy.loginfo("starting fire")
-        rate = rospy.Rate(50) # 10hz
+        rate = rospy.Rate(50) # 50hz
         feedback = ShooterDoActionFeedback()
         while dur_from_start < self.total_fire_time and self.fire_server.is_active():
             dur_from_start = rospy.get_rostime() - start_time
