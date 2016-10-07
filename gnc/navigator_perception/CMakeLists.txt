@@ -21,6 +21,8 @@ find_package(catkin
     std_srvs
     geometry_msgs
     sensor_msgs
+    tf
+    pcl_ros
 )
 
 find_package(PCL 1.7 REQUIRED)
@@ -108,6 +110,7 @@ add_library(
   navigator_vision_lib
     src/navigator_vision_lib/visualization.cc
     src/navigator_vision_lib/cv_utils.cc
+    src/navigator_vision_lib/point_cloud_algorithms.cc
 )
 
 target_link_libraries(
