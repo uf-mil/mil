@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 import txros
 import std_srvs.srv
+import tf
 import numpy as np
 from navigator_msgs.msg import ShooterDoAction, ShooterDoActionGoal
 from __future__ import division
 import time
 from twisted.internet import defer
+from image_geometry import PinholeCameraModel
+import navigator_tools
+
 
 class DetectDeliverMission:
     #Note, this will be changed when the shooter switches to actionlib
@@ -16,13 +20,37 @@ class DetectDeliverMission:
     width_error_threshold = 0.03
     resp = None
 
-
     def __init__(self, navigator):
         self.center_error = 1
         self.width_error = 1
         self.navigator = navigator
+        image_sub = navigator_tools.Image_Subscriber("/right/ight/image_raw")
+        camera_info = image_sub.wait_for_camera_info()
+        self.camera = PinholeCameraModel()
+        self.camera.fromCameraInfo(camera_info)
+
         # ~self.shooterLoad = txros.action.ActionClient(self.navigator.nh, '/shooter/load', ShooterDoAction)
         # ~self.shooterFire = txros.action.ActionClient(self.navigator.nh, '/shooter/fire', ShooterDoAction)
+
+    def lidar_to_camera(self, enu_points, t=None): #This may not be needed
+        #find angle to yaw to
+        self.navigator.tf_listener.waitForTransform('/right/right', '/enu', t, rospy.Duration(2))
+        trans, rot = self.navigator.tf_listener.lookupTransform('/right/right', '/enu', t)
+
+        t_mat = np.hstack((tf.transformations.quaternion_matrix(rot)[:3, :3], np.array(trans).reshape(3, 1)))
+        cam_points = [t_mat.dot(np.append(point, 1)) for point in enu_points]
+        for point in cam_points:
+            if point[2] < 0:
+                # If the point is behind us, ignore
+                #print "Behind us"
+                continue
+
+            uv_point = np.array(self.camera.project3dToPixel(point), dtype=np.uint32)
+        return "ha"
+
+    def move_infront(self):
+        #Get normal transform relative to Camera
+        #Multiply normal by a constant of like 10 meters and add it to the (center/plane) point
 
 
     def bounding_rect(self,points):
