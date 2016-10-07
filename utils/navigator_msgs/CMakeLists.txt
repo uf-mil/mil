@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   genmsg 
   actionlib_msgs 
   actionlib
+  sensor_msgs
 	)
 
 add_message_files(
@@ -26,6 +27,8 @@ add_message_files(
   BuoyArray.msg
   PerceptionObject.msg
   PerceptionObjects.msg
+  DockShape.msg
+  DockShapes.msg
 )
 
 add_service_files(
@@ -34,7 +37,10 @@ add_service_files(
   ShooterManual.srv
   VisionRequest.srv
   WrenchSelect.srv
+  GetDockShape.srv
+  GetDockShapes.srv
   StartGate.srv
+  SetROI.srv
   Bounds.srv
   CoordinateConversion.srv
   StereoShapeDetector.srv
@@ -56,13 +62,15 @@ generate_messages(
 	std_msgs
 	geometry_msgs
   actionlib_msgs
+  sensor_msgs
 )
 
 catkin_package(
 	CATKIN_DEPENDS
 	std_msgs
 	geometry_msgs
-    message_runtime
+  sensor_msgs
+  message_runtime
 )
 
 
