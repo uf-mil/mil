@@ -4,6 +4,7 @@ import rospy
 import actionlib
 import time
 from navigator_msgs.msg import ShooterDoAction, ShooterDoActionFeedback, ShooterDoActionResult
+from navigator_msgs.srv import ShooterManual
 from std_srvs.srv import Trigger
 
 class ShooterControl:
@@ -22,6 +23,7 @@ class ShooterControl:
         self.load_server = actionlib.SimpleActionServer('/shooter/load', ShooterDoAction, self.load_execute_callback, False)
         self.fire_server = actionlib.SimpleActionServer('/shooter/fire', ShooterDoAction, self.fire_execute_callback, False)
         self.cancel_service = rospy.Service('/shooter/cancel', Trigger, self.cancel_callback)
+        self.manual_service = rospy.Service('/shooter/manual', ShooterManual, self.manual_callback)
         self.load_server.start()
         self.fire_server.start()
 
@@ -103,8 +105,7 @@ class ShooterControl:
         self.fire_server.set_succeeded(result)
         rospy.loginfo("Finished fire")
 
-
-    def cancel_callback(self, req):
+    def stop_actions(self):
         result = ShooterDoActionResult()
         result.result.success = False
         result.result.error = result.result.MANUAL_CONTROL_USED
@@ -114,10 +115,21 @@ class ShooterControl:
             self.fire_server.set_aborted(result)
         d = rospy.Duration(0, 100000000)
         rospy.sleep(d)
-        time.sleep(0.1)
+        time.sleep(0.1)      
+
+
+    def cancel_callback(self, req):
+        self.stop_actions()
         self.motor_controller.setMotor1(0)
         self.motor_controller.setMotor2(0)
         rospy.loginfo("canceled")
+
+    def manual_callback(self, req):
+        self.stop_actions()
+        self.motor_controller.setMotor1(-req.feeder)
+        self.motor_controller.setMotor2(req.shooter)
+        rospy.loginfo("manual set")
+        
 
 if __name__ == '__main__':
     rospy.init_node('shooter_control')
