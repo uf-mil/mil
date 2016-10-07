@@ -45,6 +45,7 @@ add_service_files(
   PerceptionObjectService.srv
   ObjectDBFullQuery.srv
   ObjectDBSingleQuery.srv
+  CameraToLidarTransform.srv
 )
 
 add_action_files(
