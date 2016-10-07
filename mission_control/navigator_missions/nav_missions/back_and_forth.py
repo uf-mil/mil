@@ -5,6 +5,7 @@ import numpy as np
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator):
+    navigator.change_wrench("autonomous")
     while True:
         home = navigator.move
         '''

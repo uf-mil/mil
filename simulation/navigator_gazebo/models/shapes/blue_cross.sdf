@@ -2,7 +2,7 @@
 <sdf version="1.5">
   <model name="blue_cross">
     <static>true</static>
-    <pose>0 0 0 0 -1.5707 3.14</pose>
+    <pose>0 0 0 -.649 -1.5707 .607</pose>
     <link name="base_link">
       <visual name="visual">
         <geometry>

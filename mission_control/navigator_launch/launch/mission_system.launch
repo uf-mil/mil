@@ -1,0 +1,5 @@
+<launch>
+  <!--node name="mission_planner" pkg="navigator_missions" type="mission_planner.py" respawn="True" output="screen"/-->
+  <node name="object_database" pkg="navigator_object_recognition" type="object_database.py" output="screen"/>
+  <node name="object_detector" pkg="navigator_lidar_oa" type="lidar" respawn="True"/>
+</launch>

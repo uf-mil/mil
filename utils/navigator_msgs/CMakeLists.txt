@@ -6,14 +6,10 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   geometry_msgs
-  actionlib_msgs
+  genmsg 
+  actionlib_msgs 
+  actionlib
   sensor_msgs
-)
-add_action_files(
-  DIRECTORY
-    action
-  FILES
-    ShooterDo.action
 )
 
 add_message_files(
@@ -27,6 +23,10 @@ add_message_files(
   Point.msg
   Points.msg
   Waypoint.msg
+  Buoy.msg
+  BuoyArray.msg
+  PerceptionObject.msg
+  PerceptionObjects.msg
   DockShape.msg
   DockShapes.msg
 )
@@ -43,7 +43,20 @@ add_service_files(
   SetROI.srv
   Bounds.srv
   CoordinateConversion.srv
+  StereoShapeDetector.srv
+  ScanTheCodeMission.srv
+  PerceptionObjectService.srv
+  ObjectDBFullQuery.srv
+  ObjectDBSingleQuery.srv
+
 )
+
+add_action_files(
+  DIRECTORY action 
+  FILES 
+  ClassifyUnknown.action
+  ShooterDo.action
+  )
 
 generate_messages(
   DEPENDENCIES
@@ -54,9 +67,9 @@ generate_messages(
 )
 
 catkin_package(
-	CATKIN_DEPENDS
-	std_msgs
-	geometry_msgs
+  CATKIN_DEPENDS
+  std_msgs
+  geometry_msgs
   sensor_msgs
   message_runtime
   actionlib_msgs

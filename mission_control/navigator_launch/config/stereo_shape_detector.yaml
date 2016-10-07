@@ -1,0 +1,13 @@
+
+# input
+input_left            :  "/stereo/left/image_rect_color"
+input_right           :  "/stereo/right/image_rect_color"
+activation            :  "/stereo_shape_finder/activation_switch"
+
+# options
+img_proc_scale        :  0.5
+diffusion_time        :  5
+max_features          :  35
+feature_block_size    :  11
+feature_min_distance  :  20.0
+
