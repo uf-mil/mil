@@ -8,10 +8,10 @@ averaging the supply voltage to each of the four thrusters.
 
 from __future__ import division
 
+from navigator_alarm import AlarmBroadcaster
 from roboteq_msgs.msg import Feedback
 import rospy
 from std_msgs.msg import Float32
-from sub8_alarm import AlarmBroadcaster
 
 
 __author__ = "Anthony Olive"
@@ -40,7 +40,7 @@ class BatteryMonitor():
 
     def __init__(self):
 
-        # Initialize the average voltage to max
+        # Initialize the average voltage to none for the case of no feedback
         self.voltage = None
 
         # Initialize a list to hold the 1000 most recent supply voltage readings
@@ -50,7 +50,7 @@ class BatteryMonitor():
         # The publisher for the averaged voltage
         self.pub_voltage = rospy.Publisher("/battery_monitor", Float32, queue_size=1)
 
-        # Subscrives to the feedback from each of the four thrusters
+        # Subscribes to the feedback from each of the four thrusters
         rospy.Subscriber("/FL_motor/feedback", Feedback, self.add_voltage)
         rospy.Subscriber("/FR_motor/feedback", Feedback, self.add_voltage)
         rospy.Subscriber("/BL_motor/feedback", Feedback, self.add_voltage)
@@ -58,6 +58,11 @@ class BatteryMonitor():
 
         # Sets up the battery voltage alarms
         alarm_broadcaster = AlarmBroadcaster()
+        self.battery_status_unknown_alarm = alarm_broadcaster.add_alarm(
+            name='battery_status_unknown',
+            action_required=True,
+            severity=2
+        )
         self.battery_low_alarm = alarm_broadcaster.add_alarm(
             name='battery_low',
             action_required=False,
@@ -79,6 +84,7 @@ class BatteryMonitor():
         This is the callback function for feedback from all four motors. It appends the new readings to the end of the list and
         ensures that the list stays under 1000 entries.
         '''
+
         self.supply_voltages.append(msg.supply_voltage)
 
         # Limits the list by removing the oldest readings when it contains more then 1000 readings
@@ -90,20 +96,30 @@ class BatteryMonitor():
         Publishes the average voltage across all four thrustersto the battery_voltage node as a standard Float32 message and runs
         the voltage_check
         '''
-        if (self.voltage != None):
-            if (len(self.supply_voltages) > 0):
-                self.voltage = sum(self.supply_voltages) / len(self.supply_voltages)
 
-            self.pub_voltage.publish(self.voltage)
-            self.voltage_check()
+        if (len(self.supply_voltages) > 0):
+            self.voltage = sum(self.supply_voltages) / len(self.supply_voltages)
+
+        self.pub_voltage.publish(self.voltage)
+        self.voltage_check()
 
     def voltage_check(self):
         '''
         Checks the battery voltage and raises alarms when it's level drops below the set thresholds. This is intended to protect
         and extend the life of the batteries.
         '''
+
+        # An unknown battery status warning to inform users that thruster feedback is not being published
+        if (self.voltage is None):
+            self.battery_status_unknown_alarm.raise_alarm(
+                problem_description='Bus voltage is not available because thruster feedback is not being published',
+                parameters={
+                    'bus_voltage': '{}'.format(self.voltage),
+                }
+            )
+
         # A fatal battery warning to kill the boat and protect the batteries
-        if (self.voltage < battery_kill):
+        elif (self.voltage < battery_kill):
             self.battery_kill_alarm.raise_alarm(
                 problem_description='Bus voltage is at the safety limit; killing the system',
                 parameters={
@@ -114,7 +130,7 @@ class BatteryMonitor():
         # A high priority battery warning to abort testing
         elif (self.voltage < battery_critical):
             self.battery_critical_alarm.raise_alarm(
-                problem_description='Bus voltage is critical; abort testing',
+                problem_description='Bus voltage is critical; abort this run soon',
                 parameters={
                     'bus_voltage': '{}'.format(self.voltage),
                 }
@@ -128,6 +144,7 @@ class BatteryMonitor():
                     'bus_voltage': '{}'.format(self.voltage),
                 }
             )
+
 
 if __name__ == "__main__":
     monitor = BatteryMonitor()

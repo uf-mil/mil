@@ -18,6 +18,7 @@
   <run_depend>message_runtime</run_depend>
   <run_depend>navigator_msg_multiplexer</run_depend>
   <run_depend>nav_msgs</run_depend>
+  <run_depend>navigator_alarm</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

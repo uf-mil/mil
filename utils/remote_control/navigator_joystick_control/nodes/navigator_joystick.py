@@ -1,23 +1,23 @@
 #!/usr/bin/env python
 
-import rospy
-import roslib
-import numpy as np
-import math
-import tf
+
 import itertools
-from navigator_tools import make_header
-from geometry_msgs.msg import WrenchStamped, Twist, PoseStamped
-from sensor_msgs.msg import Joy
-from nav_msgs.msg import Odometry
-from navigator_msgs.srv import WrenchSelect
+
+from geometry_msgs.msg import WrenchStamped
 from kill_handling.broadcaster import KillBroadcaster
-from sub8_alarm import AlarmBroadcaster
+from nav_msgs.msg import Odometry
+from navigator_alarm import AlarmBroadcaster
+from navigator_msgs.srv import WrenchSelect
+import rospy
+from sensor_msgs.msg import Joy
 from std_srvs.srv import SetBool, SetBoolRequest
+
 
 rospy.init_node("joystick")
 
+
 class Joystick(object):
+
     def __init__(self):
 
         self.force_scale = rospy.get_param("~force_scale", 600)
@@ -137,7 +137,7 @@ class Joystick(object):
             rospy.loginfo("Station Holding")
             self.kb.send(active=True)  # For C3
             self.station_holder(SetBoolRequest(data=True))  # For lqrrt
-            self.kb.send(active=False) # For C3
+            self.kb.send(active=False)  # For C3
             self.wrench_changer("autonomous")
 
         # Turn on full system kill
