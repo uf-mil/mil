@@ -38,17 +38,13 @@ def main():
     amount = args.argument
     # See if there's a non standard unit at the end of the argument
     if not args.argument[-1].isdigit():
-        last_digit_index = [i for i,c in enumerate(args.argument) if c.isdigit()][-1] + 1
+        last_digit_index = [i for i, c in enumerate(args.argument) if c.isdigit()][-1] + 1
         amount = float(args.argument[:last_digit_index])
         unit = args.argument[last_digit_index:]
 
     # Actually run the command
     print "{}ing {} non-arbitrary unit(s)".format(args.command, amount)
-    d = movement(float(amount), unit).go(speed=args.speed)
-    print d
-    yield d
-    print d
-    print "Done!"
+    yield movement(float(amount), unit).go(speed=args.speed)
     defer.returnValue(reactor.stop())
 
 if __name__ == '__main__':

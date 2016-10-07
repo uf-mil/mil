@@ -56,7 +56,7 @@ class ObjectClassifier:
                     marker.color.a = 1.0
 
                     self.pub_object_searching.publish(marker)
-                    nh.sleep(2)
+                    yield nh.sleep(2)
                     x = yield util.nonblocking_raw_input("What object is this? ")
 
                     if(x == 'skip'):
@@ -87,6 +87,7 @@ class ObjectClassifier:
                 self.pub_obj_found.publish(obj)
 
         self.currently_classifying = False
+
 
 @util.cancellableInlineCallbacks
 def main():

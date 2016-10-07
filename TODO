@@ -32,6 +32,14 @@
 
 [] Make a huge launch file 
 
+V2
+[] YAML file for the missions
+[] Constants in the Perception object
+[] Using new service in Navigator singleton
+[] Async Queue
+[] Addings get element to the navigator object
+
+
 
 
 
@@ -78,9 +86,3 @@ Publish:
 Advertise: 
 Subscribe:
 Service Client:
-
-
-
-
-
-rosrun kill_handling clear

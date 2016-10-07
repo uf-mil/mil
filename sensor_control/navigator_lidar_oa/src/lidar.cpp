@@ -121,7 +121,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	ogrid.createBinaryROI(MIN_HITS_FOR_OCCUPANCY,MAXIMUM_Z_HEIGHT);
 
 	//Inflate ogrid before detecting objects and calling AStar
-	ogrid.inflateBinary(5);
+	ogrid.inflateBinary(1);
 
 	//Detect objects
 	std::vector<objectMessage> objects;
