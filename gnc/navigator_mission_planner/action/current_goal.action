@@ -1,8 +1,0 @@
-#goal definition
-navigator_msgs/Waypoint waypoint
----
-#result definition
-bool flag
----
-#feedback
-navigator_msgs/PoseTwist current_pose
