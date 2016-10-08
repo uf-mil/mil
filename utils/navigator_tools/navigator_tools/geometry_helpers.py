@@ -1,6 +1,7 @@
 from __future__ import division
 import numpy as np
-from tf.transformations import quaternion_from_euler, euler_from_quaternion
+from tf.transformations import quaternion_from_euler, euler_from_quaternion, random_quaternion
+from msg_helpers import numpy_quat_pair_to_pose
 from geometry_msgs.msg import Quaternion
 
 '''
@@ -19,10 +20,9 @@ def normalize(vector):
 
 def compose_transformation(R, t):
     '''Compose a transformation from a rotation matrix and a translation matrix'''
-    transformation = np.zeros((4, 4))
+    transformation = np.eye(4)
     transformation[:3, :3] = R
     transformation[3, :3] = t
-    transformation[3, 3] = 1.0
     return transformation
 
 def quat_to_euler(q):
@@ -39,4 +39,10 @@ def euler_to_quat(rotvec):
     quat = quaternion_from_euler(rotvec[0], rotvec[1], rotvec[2])
     return Quaternion(quat[0], quat[1], quat[2], quat[3])
 
- 
+def random_pose(_min, _max):
+    ''' Gives a random pose in the xyz range `_min` to `_max` '''
+    pos = np.random.uniform(low=_min, high=_max, size=3)
+    quat = random_quaternion()
+    return numpy_quat_pair_to_pose(pos, quat)
+
+
