@@ -6,8 +6,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   geometry_msgs
-  genmsg 
-  actionlib_msgs 
+  genmsg
+  actionlib_msgs
   actionlib
   sensor_msgs
 )
@@ -20,9 +20,6 @@ add_message_files(
   PoseTwist.msg
   Coordinates.msg
   PoseTwistStamped.msg
-  Point.msg
-  Points.msg
-  Waypoint.msg
   Buoy.msg
   BuoyArray.msg
   PerceptionObject.msg
@@ -48,14 +45,14 @@ add_service_files(
   PerceptionObjectService.srv
   ObjectDBFullQuery.srv
   ObjectDBSingleQuery.srv
-
 )
 
 add_action_files(
-  DIRECTORY action 
-  FILES 
+  DIRECTORY action
+  FILES
   ClassifyUnknown.action
   ShooterDo.action
+  MoveToWaypoint.action
   )
 
 generate_messages(
@@ -71,8 +68,14 @@ catkin_package(
   std_msgs
   geometry_msgs
   sensor_msgs
-  message_runtime
-  actionlib_msgs
 )
+
+#catkin_package(
+	#CATKIN_DEPENDS
+	#std_msgs
+	#geometry_msgs
+  #message_runtime
+  #actionlib_msgs
+#)
 
 
