@@ -16,9 +16,7 @@ import lqrrt
 import setup_lqrrt as sl
 from thread_queue import ThreadQueue
 
-
-def print_t(_str):
-    print "\033[1m{}:\033[0m {}".format(rospy.Time.now().to_sec(), _str)
+print_t = navigator_tools.print_t
 
 class NavPlanner(object):
     def __init__(self, plan_time):
@@ -81,7 +79,7 @@ class NavPlanner(object):
 
         # Set things
         self.goal = np.copy(self.state)
-    
+
         # Set up first plan
         sample_space = self.sample_space(self.state)
         self.planner.set_goal(self.goal)
@@ -105,8 +103,10 @@ class NavPlanner(object):
 
         return [x, y, heading, vx, vy, w]
 
-    def update_plan(self, do_immediate=False,  planner=None, *args):
-        if self.done and not do_immediate: return
+    def update_plan(self, do_immediate=False, planner=None, *args):
+        if self.done and not do_immediate:
+            return
+
         print_t("UPDATING PLAN")
 
         if planner is None:
@@ -149,7 +149,7 @@ class NavPlanner(object):
 
     def diag_pub(self, *args):
         # Run on a timer
-        #print "pubbing debug"
+        # print "pubbing debug"
         self.publish_trajectory_array()
         self.publish_tree_array()
 
@@ -159,16 +159,16 @@ class NavPlanner(object):
 
         traj = self.goal if self.done else self.planner.get_state(T)
         self.state = traj
-        #pose_twist = PoseTwistStamped()
-        #pose_twist.header = navigator_tools.make_header(frame='enu')
-        #q = tf.transformations.quaternion_from_euler(0, 0, traj[2])
-        #pose_twist.posetwist.pose = navigator_tools.numpy_quat_pair_to_pose(np.array([traj[0], traj[1], 0]), q)
-        #pose_twist.posetwist.twist = navigator_tools.numpy_to_twist([traj[3], traj[4], 0], [0, 0, traj[5]])
+        # pose_twist = PoseTwistStamped()
+        # pose_twist.header = navigator_tools.make_header(frame='enu')
+        # q = tf.transformations.quaternion_from_euler(0, 0, traj[2])
+        # pose_twist.posetwist.pose = navigator_tools.numpy_quat_pair_to_pose(np.array([traj[0], traj[1], 0]), q)
+        # pose_twist.posetwist.twist = navigator_tools.numpy_to_twist([traj[3], traj[4], 0], [0, 0, traj[5]])
         pose = PoseStamped()
         pose.header = navigator_tools.make_header(frame='enu')
         q = tf.transformations.quaternion_from_euler(0, 0, traj[2])
         pose.pose = navigator_tools.numpy_quat_pair_to_pose(np.array([traj[0], traj[1], 0]), q)
-        
+
         self.traj_pub.publish(pose)
 
     def publish_trajectory_array(self):
@@ -179,7 +179,6 @@ class NavPlanner(object):
         x_seq = np.copy(self.planner.x_seq)
         for x in x_seq:
             traj = x[:3]  # x, y, theta
-            pose = PoseTwistStamped()
             q = tf.transformations.quaternion_from_euler(0, 0, traj[2])
             pose_array_list.append(navigator_tools.numpy_quat_pair_to_pose(np.array([traj[0], traj[1], 0]), q))
 
@@ -194,7 +193,6 @@ class NavPlanner(object):
         states = np.copy(self.planner.tree.state)
         for ID in xrange(self.planner.tree.size):
             traj = states[ID]
-            pose = PoseTwistStamped()
             q = tf.transformations.quaternion_from_euler(0, 0, traj[2])
             pose_array_list.append(navigator_tools.numpy_quat_pair_to_pose(np.array([traj[0], traj[1], 0]), q))
 
@@ -250,16 +248,16 @@ class NavPlanner(object):
 
         c, s = np.cos(x[2]), np.sin(x[2])
         R = np.array([[c, -s],
-                      [s,  c]])
+                      [s, c]])
 
         # Boat verts in world frame
         points = x[:2] + R.dot(sl.vps).T
 
         # Check for collision
         indicies = (self.ogrid_cpm * (points - self.ogrid_origin)).astype(np.int64)
-        
+
         try:
-            grid_values = self.ogrid[indicies[:,1], indicies[:,0]]
+            grid_values = self.ogrid[indicies[:, 1], indicies[:, 0]]
         except IndexError:
             print "WOAH NELLY! Search exceeded ogrid size."
             return False
@@ -296,7 +294,9 @@ class ActionLink(NavPlanner):
     def __init__(self, plan_time):
         self._time = lambda: rospy.Time.now().to_sec()
         self.wp_server = actionlib.SimpleActionServer("/move_to",
-                MoveToWaypointAction, execute_cb=self.got_wp, auto_start=False)
+                                                      MoveToWaypointAction,
+                                                      execute_cb=self.got_wp,
+                                                      auto_start=False)
         self.wp_server.start()
 
         # Contains most of the class variables used here and the interface to lqrrt
@@ -312,18 +312,18 @@ class ActionLink(NavPlanner):
         goal_bias = [bias, bias, 0, 0, 0, 0]
         self.planner.set_goal(goal)
 
+        if not self.is_feasible(goal[:3], goal[3:]):
+            print_t("Target in obstacle!")
+            self._result.made_it = False
+            self._result.reason = "Target in obstacle!"
+            self.wp_server.set_succeeded(self._result)
+            return
+
         def do_planning():
             # A function to call to do the planning
-            # sample_space = self.sample_space(self.state)
-            # self.planner.update_plan(self.state, sample_space, goal_bias=goal_bias)
-            # self.last_update_time = rospy.Time.now()
-            # next_time_to_run = self._time() + self.planner.T - self.plan_time - .1
-            # self.thread_queue.put(self.update_plan, next_time_to_run)
-            # print_t("Updating in {}s at {}".format(np.round(next_time_to_run - rospy.Time.now().to_sec(), 2),
-            #                                        next_time_to_run))
             print_t("planning...")
             self.goal = goal
-            self.goal_bias = goal_bias            
+            self.goal_bias = goal_bias
 
             print_t("state: {}".format(self.state))
             print_t("goal: {}".format(self.goal))
@@ -350,6 +350,7 @@ class ActionLink(NavPlanner):
         self.thread_queue.clear()
         self.done = True
 
+        self._result.made_it = True
         self.wp_server.set_succeeded(self._result)
 
     def safe_cancel(self):
@@ -374,7 +375,6 @@ class ActionLink(NavPlanner):
         # bool refeasing
         # bool traj_reached_goal
 
-
     def goal_from_ac_goal(self, goal):
         # x, y, heading, vx, vy, w
         position, orientation = navigator_tools.pose_to_numpy(goal.target.pose)
@@ -391,6 +391,6 @@ class ActionLink(NavPlanner):
 if __name__ == "__main__":
     rospy.init_node("navigation_planner")
     ac = ActionLink(rospy.get_param("plan_time", 3))
-    #n = NavPlanner()
+    # n = NavPlanner()
 
     rospy.spin()
