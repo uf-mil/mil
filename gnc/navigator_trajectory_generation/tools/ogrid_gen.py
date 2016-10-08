@@ -63,6 +63,7 @@ while True:
     cv2.imshow("image", o.grid_drawer.img)
     k = cv2.waitKey(100) & 0xFF
 
+    # q to clear screen, esc to cancel out
     if k == 27:
         break
     elif k == 113:

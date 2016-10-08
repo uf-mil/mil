@@ -33,6 +33,7 @@ class NavPlanner(object):
         self.state = None
         self.ogrid = None
         self.done = True
+        self.cant_complete = False
 
         rospy.Subscriber("/odom", Odometry, lambda msg: setattr(self, "state", self.state_from_odom(msg)))
         rospy.Subscriber("/ogrid", OccupancyGrid, self.ogrid_cb)
@@ -128,15 +129,17 @@ class NavPlanner(object):
         next_updater = self.update_plan
 
         # Check for issues change the next updater appropriately
-        if self.planner.tree.size == 1:
-            # Most likely stuck
-            print_t("Fuck a duck, we're stuck")
-            next_updater = lambda: self.update_plan(planner=None)
-
         if np.all(np.abs(self.goal - self.planner.x_seq[-1])[:2] < self.drive_to_goal):
             # Is our last state is close enough to the goal
             print_t("Final position in range of goal - will plan in boat mode.")
             next_updater = lambda: self.update_plan(planner=None)
+
+        elif self.planner.tree.size == 1:
+            # Most likely stuck
+            print_t("Fuck a duck, we're stuck")
+            next_updater = lambda: self.update_plan(planner=None)
+            self.cant_complete = True  #<<<
+            return  #<<<
 
         self.last_update_time = rospy.Time.now()
 
@@ -158,7 +161,7 @@ class NavPlanner(object):
         T = (rospy.Time.now() - self.last_update_time).to_sec()
 
         traj = self.goal if self.done else self.planner.get_state(T)
-        self.state = traj
+        self.state = traj  #<<<
         # pose_twist = PoseTwistStamped()
         # pose_twist.header = navigator_tools.make_header(frame='enu')
         # q = tf.transformations.quaternion_from_euler(0, 0, traj[2])
@@ -345,6 +348,15 @@ class ActionLink(NavPlanner):
                 self.wp_server.set_preempted()
                 return
 
+            if self.cant_complete:
+                print_t("Unable to finish :(")
+                self.state = np.zeros(6)  # Temp
+                self.thread_queue.put(self.safe_cancel)
+                self._result.made_it = False
+                self._result.reason = "Probably got stuck"
+                self.wp_server.set_succeeded(self._result)
+                return
+
             rospy.sleep(.1)
 
         self.thread_queue.clear()
@@ -360,6 +372,7 @@ class ActionLink(NavPlanner):
         sample_space = self.sample_space(self.state)
         bias = [1.0, 1.0, 0, 0, 0, 0]
         self.planner.update_plan(self.state, sample_space, goal_bias=bias)
+        self.cant_complete = False
 
     def publish_feedback(self):
         time_into_plan = self._time() - self.last_update_time.to_sec()
