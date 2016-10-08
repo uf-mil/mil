@@ -39,8 +39,8 @@ using namespace std;
 const double MAP_SIZE_METERS = 1500.3;
 const double ROI_SIZE_METERS = 201.3;
 const double VOXEL_SIZE_METERS = 0.30;
-const int MIN_HITS_FOR_OCCUPANCY = 50; //20
-const int MAX_HITS_IN_CELL = 500; //500
+const int MIN_HITS_FOR_OCCUPANCY = 25; //20
+const int MAX_HITS_IN_CELL = 350; //500
 const double MAXIMUM_Z_HEIGHT = 8;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ const double MAXIMUM_Z_HEIGHT = 8;
 OccupancyGrid ogrid(MAP_SIZE_METERS,ROI_SIZE_METERS,VOXEL_SIZE_METERS);
 AStar astar(ROI_SIZE_METERS/VOXEL_SIZE_METERS);
 nav_msgs::OccupancyGrid rosGrid;
-ros::Publisher pubGrid,pubMarkers,pubBuoys,pubTrajectory,pubWaypoint,pubCloud;
+ros::Publisher pubGrid,pubMarkers,pubBuoys,pubTrajectory,pubWaypoint,pubCloud,pubCloudPCL;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -63,10 +63,10 @@ uf_common::PoseTwistStamped waypoint_enu,carrot_enu;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-float LLA_BOUNDARY_X1 = -65, LLA_BOUNDARY_Y1 = 70; //-30, 50
-float LLA_BOUNDARY_X2 = -65, LLA_BOUNDARY_Y2 = -20;
-float LLA_BOUNDARY_X3 = 35, LLA_BOUNDARY_Y3 = -20;
-float LLA_BOUNDARY_X4 = 35, LLA_BOUNDARY_Y4 = 70;
+float LLA_BOUNDARY_X1 = -30-35, LLA_BOUNDARY_Y1 = 47+20; 
+float LLA_BOUNDARY_X2 = -30-35, LLA_BOUNDARY_Y2 = -30+20;
+float LLA_BOUNDARY_X3 = 40-35, LLA_BOUNDARY_Y3 = -30+20;
+float LLA_BOUNDARY_X4 = 40-35, LLA_BOUNDARY_Y4 = 47+20;
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -75,11 +75,14 @@ float LLA_BOUNDARY_X4 = 35, LLA_BOUNDARY_Y4 = 70;
 typedef actionlib::SimpleActionServer<uf_common::MoveToAction> MOVE_TO_SERVER;
 MOVE_TO_SERVER *actionServerPtr;
 
-void actionExecute(const uf_common::MoveToGoalConstPtr& goal)
+//void actionExecute(const uf_common::MoveToGoalConstPtr& goal)
+void actionExecute()
 {
 	//Grab new goal from actionserver
 	ROS_INFO("LIDAR: Following new goal from action server!");
-	waypoint_enu.posetwist = goal->posetwist; 
+	uf_common::MoveToGoal goal = *(actionServerPtr->acceptNewGoal());
+	waypoint_enu.posetwist = goal.posetwist; 
+	//goal->
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -118,7 +121,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	ogrid.createBinaryROI(MIN_HITS_FOR_OCCUPANCY,MAXIMUM_Z_HEIGHT);
 
 	//Inflate ogrid before detecting objects and calling AStar
-	ogrid.inflateBinary(5);
+	ogrid.inflateBinary(2);
 
 	//Detect objects
 	std::vector<objectMessage> objects;
@@ -135,14 +138,14 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	carrot_enu.posetwist.twist.angular.z = 0;
 
 	//If the action server is active, run Astar
-	if (true) {
-	//if (actionServerPtr->isActive()) {
+	//if (false) {
+	if (actionServerPtr->isActive()) {
 		ROS_INFO("LIDAR | Action server has an active goal to follow!");
 
 		//Fake waypoint instead of using action server request
-		waypoint_enu.posetwist.pose.position.x = 25;
-		waypoint_enu.posetwist.pose.position.y = -25;
-		waypoint_enu.posetwist.pose.position.z = 5;		
+		//waypoint_enu.posetwist.pose.position.x = 25;
+		//waypoint_enu.posetwist.pose.position.y = -25;
+		//waypoint_enu.posetwist.pose.position.z = 5;		
 	
 		//Convert waypoint from enu frame to ROI around lidar
 		waypoint_ogrid.x = (int)( (waypoint_enu.posetwist.pose.position.x-lidarpos.x)/VOXEL_SIZE_METERS + ogrid.ROI_SIZE/2 );
@@ -179,7 +182,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		//If we are close to the goal, make that the waypoint
 		if (solution.size() > 1 && solution.size() <= 5) {
 			carrot_enu.posetwist = waypoint_enu.posetwist;
-			//actionServerPtr->setSucceeded(); 
+			actionServerPtr->setSucceeded(); 
 		}
 
 		//If the Astar found a path with several steps to the goal, pick a spot a few iterations ahead of the boat
@@ -236,10 +239,13 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	pubTrajectory.publish(carrot_enu);
 
 	//Publish second point cloud
-	sensor_msgs::PointCloud buoyCloud;
+	sensor_msgs::PointCloud buoyCloud,pclCloud;
 	buoyCloud.header.seq = 0;
 	buoyCloud.header.frame_id = "enu";
 	buoyCloud.header.stamp = ros::Time::now();
+	pclCloud.header.seq = 0;
+	pclCloud.header.frame_id = "enu";
+	pclCloud.header.stamp = ros::Time::now();
 
 	//Publish rosgrid
 	rosGrid.header.seq = 0;
@@ -292,9 +298,12 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	navigator_msgs::BuoyArray allBuoys;
 	navigator_msgs::Buoy buoy;
 	geometry_msgs::Point32 p32;
+
 	sensor_msgs::ChannelFloat32 channel;
 	channel.name = "intensity";
 	buoyCloud.channels.push_back(channel);
+	pclCloud.channels.push_back(channel);
+
 	buoy.header.seq = 0;
 	buoy.header.frame_id = "enu";
 	buoy.header.stamp = ros::Time::now();	
@@ -302,7 +311,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	for (auto obj : objects) {
 		//Verify object is in the enu frame - THIS IS POOR CODE - NEED TO UPDATE WHEN LLA STUFF IS AVAILABLE
 		if (obj.position.x < LLA_BOUNDARY_X1 || obj.position.x > LLA_BOUNDARY_X4 || obj.position.y < LLA_BOUNDARY_Y2 || obj.position.y > LLA_BOUNDARY_Y1 ) { continue; }
-		ROS_INFO_STREAM("LIDAR | Adding buoy " << id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.beams.size() << " lidar points and size of " << obj.scale.x << "," << obj.scale.y << "," << obj.scale.z);
+		ROS_INFO_STREAM("LIDAR | Buoy " << id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.beams.size() << " points and size " << obj.scale.x << "," << obj.scale.y << "," << obj.scale.z);
 		
 		//Buoys
 		buoy.header.stamp = ros::Time::now();
@@ -317,11 +326,8 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		for (auto ii : obj.intensity) {	
 			buoyCloud.channels[0].values.push_back(ii);
 		}
-		
-
-
-		std::vector<geometry_msgs::Point> n = FitPlanesToCloud(buoy.points,buoy.height,buoy.position.z);
-		for (auto ii : n) {
+		std::vector<geometry_msgs::Point> normals = FitPlanesToCloud(buoy,pclCloud);
+		for (auto ii : normals) {
 			visualization_msgs::Marker m3;
 			m3.header.stamp = ros::Time::now();
 			m3.header.seq = 0;
@@ -353,12 +359,13 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		m2.pose.position = obj.position;
 		m2.scale = obj.scale;
 		m2.color.a = 0.6; m2.color.r = 1; m2.color.g = 1; m2.color.b = 1;
-		//markers.markers.push_back(m2);
+		markers.markers.push_back(m2);
 		++id;
 	}
 	pubMarkers.publish(markers);
 	pubBuoys.publish(allBuoys);
 	pubCloud.publish(buoyCloud);
+	pubCloudPCL.publish(pclCloud);
 
 	//Elapsed time
 	ROS_INFO_STREAM("LIDAR | Elapsed time: " << (ros::Time::now()-timer).toSec());
@@ -403,8 +410,11 @@ int main(int argc, char* argv[])
 
 	//Setup action server
 	//MOVE_TO_SERVER actionServer(nh, "moveto", boost::bind(&actionExecute, _1, &actionServer) ,false);
-	MOVE_TO_SERVER actionServer(nh, "moveto",actionExecute,false);
+	//MOVE_TO_SERVER actionServer(nh, "moveto",actionExecute,false);
+	MOVE_TO_SERVER actionServer(nh, "moveto",false);
 	actionServerPtr = &actionServer;
+	actionServer.registerGoalCallback(actionExecute);
+	//actionServer.registerPreemptCallback(??);
 	actionServer.start();
 
 	//Subscribe to odom and the velodyne
@@ -416,6 +426,8 @@ int main(int argc, char* argv[])
 	pubMarkers = nh.advertise<visualization_msgs::MarkerArray>("markers_batcave",10);
 	pubBuoys = nh.advertise<navigator_msgs::BuoyArray>("buoys_batcave",10);
 	pubCloud = nh.advertise<sensor_msgs::PointCloud>("cloud_batcave",1);
+	pubCloudPCL = nh.advertise<sensor_msgs::PointCloud>("pclcloud_batcave",1);
+
 
 	//Publish waypoints to controller
 	pubTrajectory = nh.advertise<uf_common::PoseTwistStamped>("trajectory", 1);

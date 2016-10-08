@@ -113,10 +113,9 @@ class OccupancyGrid
 			for (int row = boatRow - ROI_SIZE/2; row < boatRow + ROI_SIZE/2; ++row) {
 				for (int col = boatCol - ROI_SIZE/2; col < boatCol + ROI_SIZE/2; ++col) {
 					if (ogrid[row][col].hits > 0) { 
-						//ogrid[row][col].hits -= 1;
+						ogrid[row][col].hits -= 1;
 						if (ogrid[row][col].hits == 0) {
 							ogrid[row][col] = cell();
-							//Erase 
 							pointCloudTable.erase(row*GRID_SIZE+col);
 						}	
 					} 
@@ -135,7 +134,7 @@ class OccupancyGrid
 				}
 				Eigen::Vector3d xyz_in_velodyne(x.f,y.f,z.f);
 				Eigen::Vector3d xyz_in_enu = T*xyz_in_velodyne;
-				if (xyz_in_velodyne.norm() > 5 && xyz_in_velodyne.norm() <= 100) {
+				if (xyz_in_velodyne.norm() > 1 && xyz_in_velodyne.norm() <= 100 && z.f > -2) {
 					updateGrid(LidarBeam(xyz_in_enu(0), xyz_in_enu(1), xyz_in_enu(2),i.f),max_hits);
 				}			
 			}

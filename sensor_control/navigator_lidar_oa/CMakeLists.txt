@@ -204,3 +204,6 @@ add_executable(lidar src/lidar.cpp src/AStar.cpp)
 target_link_libraries(lidar ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(lidar lidar_generate_messages_cpp navigator_msgs_generate_messages_cpp uf_common_generate_messages_cpp)
 
+#add_executable(actionClient src/actionClient.cpp)
+#target_link_libraries(actionClient ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+#add_dependencies(actionClient lidar_generate_messages_cpp navigator_msgs_generate_messages_cpp uf_common_generate_messages_cpp)
