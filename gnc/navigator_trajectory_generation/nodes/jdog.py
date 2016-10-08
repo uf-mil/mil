@@ -17,15 +17,17 @@ import setup_lqrrt as sl
 from thread_queue import ThreadQueue
 
 
+def print_t(_str):
+    print "\033[1m{}:\033[0m {}".format(rospy.Time.now().to_sec(), _str)
+
 class NavPlanner(object):
     def __init__(self, plan_time):
         _time = lambda: rospy.Time.now().to_sec()
 
-        self.traj_pub = rospy.Publisher("/trajectory", PoseTwistStamped, queue_size=1)
+        self.traj_pub = rospy.Publisher("/trajectory", PoseStamped, queue_size=1)
         self.traj_vis_pub = rospy.Publisher("/lqrrt/trajectory/visualize", PoseArray, queue_size=1)
+        self.point_vis_pub = rospy.Publisher("/lqrrt/point", PointStamped, queue_size=1)
         self.tree_vis_pub = rospy.Publisher("/lqrrt/tree", PoseArray, queue_size=1)
-        self.impact_vis_pub = rospy.Publisher("/lqrrt/impact", PointStamped, queue_size=1)
-
 
         self.thread_queue = ThreadQueue(time=_time, max_size=20)
 
@@ -35,10 +37,11 @@ class NavPlanner(object):
         self.done = True
 
         rospy.Subscriber("/odom", Odometry, lambda msg: setattr(self, "state", self.state_from_odom(msg)))
-        rospy.Subscriber("/ogrid_batcave_throttle", OccupancyGrid, self.ogrid_cb)
+        rospy.Subscriber("/ogrid", OccupancyGrid, self.ogrid_cb)
 
         # Self crew
         self.goal_buffer = [2, 2, np.inf, np.inf, np.inf, np.inf]
+        self.drive_to_goal = [5, 5]
         self.error_tol = np.copy(self.goal_buffer) / 8
         self.velmax_pos_plan = np.array([1, 0.4, 0.2])  # (m/s, m/s, rad/s), body-frame forward
         self.velmax_neg_plan = np.array([-0.65, -0.4, -0.2])  # (m/s, m/s, rad/s), body-frame backward
@@ -57,9 +60,9 @@ class NavPlanner(object):
                                      max_nodes=1E5, system_time=_time)
 
         self.start_planner()
-        self.keep_alive()
+        self.stay_alive()
 
-    def keep_alive(self):
+    def stay_alive(self):
         # Main loop used to clear the queue
         while not rospy.is_shutdown():
             self.thread_queue.next_if_possible()
@@ -71,14 +74,14 @@ class NavPlanner(object):
         Assumes station holding at start
         '''
         while self.state is None and not rospy.is_shutdown():
-            print "Planner waiting for odom"
+            print_t("Planner waiting for odom")
             rospy.sleep(.1)
 
-        print "Found Odom!"
+        print_t("Found Odom!")
 
         # Set things
-        self.goal = self.state
-
+        self.goal = np.copy(self.state)
+    
         # Set up first plan
         sample_space = self.sample_space(self.state)
         self.planner.set_goal(self.goal)
@@ -102,25 +105,47 @@ class NavPlanner(object):
 
         return [x, y, heading, vx, vy, w]
 
-    def update_plan(self, *args):
-        if self.done: return
-        print "UPDATING PLAN"
+    def update_plan(self, do_immediate=False,  planner=None, *args):
+        if self.done and not do_immediate: return
+        print_t("UPDATING PLAN")
+
+        if planner is None:
+            planner = self.planner
 
         # Plan for where we will be when we're done planning
         T = (rospy.Time.now() - self.last_update_time).to_sec()
         future_state = self.planner.get_state(T + self.plan_time)
-        print "Planned start state", future_state
+
+        if do_immediate:
+            # If we don't want to plan from the future
+            future_state = self.state
+
+        print_t("Planned start state {}".format(future_state))
 
         # Generate a sample space for that future state and then plan from there
         sample_space = self.sample_space(future_state)
         self.planner.update_plan(future_state, sample_space, goal_bias=self.goal_bias)
+        next_updater = self.update_plan
+
+        # Check for issues change the next updater appropriately
+        if self.planner.tree.size == 1:
+            # Most likely stuck
+            print_t("Fuck a duck, we're stuck")
+            next_updater = lambda: self.update_plan(planner=None)
+
+        if np.all(np.abs(self.goal - self.planner.x_seq[-1])[:2] < self.drive_to_goal):
+            # Is our last state is close enough to the goal
+            print_t("Final position in range of goal - will plan in boat mode.")
+            next_updater = lambda: self.update_plan(planner=None)
+
         self.last_update_time = rospy.Time.now()
 
         # We want to re-plan when we are `self.plan_time` seconds away from the end of the current plan
-        next_time_to_run = rospy.Time.now().to_sec() + self.planner.T - self.plan_time
-        self.thread_queue.put(self.update_plan, next_time_to_run)
-        print "Updating again in {}s".format(next_time_to_run - rospy.Time.now().to_sec())
-        print "DONE UPDATING"
+        next_time_to_run = rospy.Time.now().to_sec() + self.planner.T - self.plan_time - .1
+        self.thread_queue.put(next_updater, next_time_to_run)
+        print_t("Updating again in {}s at {}".format(np.round(next_time_to_run - rospy.Time.now().to_sec(), 2),
+                                                     next_time_to_run))
+        print_t("DONE UPDATING")
 
     def diag_pub(self, *args):
         # Run on a timer
@@ -133,21 +158,26 @@ class NavPlanner(object):
         T = (rospy.Time.now() - self.last_update_time).to_sec()
 
         traj = self.goal if self.done else self.planner.get_state(T)
-
-        pose_twist = PoseTwistStamped()
-        pose_twist.header = navigator_tools.make_header(frame='enu')
+        self.state = traj
+        #pose_twist = PoseTwistStamped()
+        #pose_twist.header = navigator_tools.make_header(frame='enu')
+        #q = tf.transformations.quaternion_from_euler(0, 0, traj[2])
+        #pose_twist.posetwist.pose = navigator_tools.numpy_quat_pair_to_pose(np.array([traj[0], traj[1], 0]), q)
+        #pose_twist.posetwist.twist = navigator_tools.numpy_to_twist([traj[3], traj[4], 0], [0, 0, traj[5]])
+        pose = PoseStamped()
+        pose.header = navigator_tools.make_header(frame='enu')
         q = tf.transformations.quaternion_from_euler(0, 0, traj[2])
-        pose_twist.posetwist.pose = navigator_tools.numpy_quat_pair_to_pose(np.array([traj[0], traj[1], 0]), q)
-        pose_twist.posetwist.twist = navigator_tools.numpy_to_twist([traj[3], traj[4], 0], [0, 0, traj[5]])
-
-        self.traj_pub.publish(pose_twist)
+        pose.pose = navigator_tools.numpy_quat_pair_to_pose(np.array([traj[0], traj[1], 0]), q)
+        
+        self.traj_pub.publish(pose)
 
     def publish_trajectory_array(self):
         pose_array = PoseArray()
         pose_array.header = navigator_tools.make_header(frame='enu')
         pose_array_list = []
 
-        for x in self.planner.x_seq:
+        x_seq = np.copy(self.planner.x_seq)
+        for x in x_seq:
             traj = x[:3]  # x, y, theta
             pose = PoseTwistStamped()
             q = tf.transformations.quaternion_from_euler(0, 0, traj[2])
@@ -161,8 +191,9 @@ class NavPlanner(object):
         pose_array.header = navigator_tools.make_header(frame='enu')
         pose_array_list = []
 
+        states = np.copy(self.planner.tree.state)
         for ID in xrange(self.planner.tree.size):
-            traj = self.planner.tree.state[ID]
+            traj = states[ID]
             pose = PoseTwistStamped()
             q = tf.transformations.quaternion_from_euler(0, 0, traj[2])
             pose_array_list.append(navigator_tools.numpy_quat_pair_to_pose(np.array([traj[0], traj[1], 0]), q))
@@ -172,24 +203,40 @@ class NavPlanner(object):
 
     def path_still_feasible(self):
         for i, (x, u) in enumerate(zip(self.planner.x_seq, self.planner.u_seq)):
-            if not self.is_feasible(x, u):
-                # Need to re-plan ASAP!
-                time_to_hit = i * self.planner.dt
-                if time_to_hit <= self.plan_time + .5:
-                    # STOP AND REPLAN
-                    pass
-                else:
-                    ps = PointStamped()
-                    ps.header = navigator_tools.make_header(frame='enu')
-                    ps.point = navigator_tools.numpy_to_point(x[:3])
-                    self.impact_vis_pub.publish(ps)
-                    print ps
+            if self.is_feasible(x, u):
+                continue
 
-                    # Queue up a clear then a re-plan
-                    self.thread_queue.put(self.update_plan, rospy.Time.now().to_sec() - 1)
-                    self.thread_queue.put(self.thread_queue.clear, rospy.Time.now().to_sec())
+            time_to_hit = i * self.planner.dt - (rospy.Time.now() - self.last_update_time).to_sec()
+            if time_to_hit <= 0:
+                continue
 
-                return
+            def replan():
+                print_t("Replanning for impact")
+                self.thread_queue.clear()
+                self.update_plan(do_immediate=True)
+
+                # These two are needed if there is an eminent impact detected
+                self.done = False
+                self.goal = real_goal
+
+            real_goal = np.copy(self.goal)
+            if time_to_hit <= 2 * self.plan_time:
+                # A hit is two close for comfort
+                print_t("IMPACT EMINENT ({}s)".format(time_to_hit))
+                self.goal = np.copy(self.state)
+                self.done = True
+
+            else:
+                print_t("IMPACT DETECTED ({}s)".format(time_to_hit))
+
+            self.thread_queue.put(replan)
+
+            # Publish the impact point
+            ps = PointStamped()
+            ps.header = navigator_tools.make_header(frame="enu")
+            ps.point = navigator_tools.numpy_to_point(x[:3])
+            self.point_vis_pub.publish(ps)
+            return
 
     def is_feasible(self, x, u):
         # Reject going too fast
@@ -201,7 +248,6 @@ class NavPlanner(object):
             # If there's no ogrid yet, anywhere is valid
             return True
 
-        # Body to world
         c, s = np.cos(x[2]), np.sin(x[2])
         R = np.array([[c, -s],
                       [s,  c]])
@@ -211,6 +257,7 @@ class NavPlanner(object):
 
         # Check for collision
         indicies = (self.ogrid_cpm * (points - self.ogrid_origin)).astype(np.int64)
+        
         try:
             grid_values = self.ogrid[indicies[:,1], indicies[:,0]]
         except IndexError:
@@ -230,9 +277,8 @@ class NavPlanner(object):
 
         self.thread_queue.put(self.path_still_feasible, rospy.Time.now().to_sec())
 
-
     def sample_space(self, start):
-        buff = 40
+        buff = 20
         xs = (min([start[0], self.goal[0]]) - buff, max([start[0], self.goal[0]]) + buff)
         ys = (min([start[1], self.goal[1]]) - buff, max([start[1], self.goal[1]]) + buff)
         return [xs,
@@ -257,8 +303,8 @@ class ActionLink(NavPlanner):
         super(ActionLink, self).__init__(plan_time)
 
     def got_wp(self, a_goal):
-        print "Goal received"
-        print "Station Hold:", a_goal.station_hold
+        print_t("Goal received")
+        print_t("Station Hold: {}".format(a_goal.station_hold))
 
         des_state = self.goal_from_ac_goal(a_goal)
         goal = self.goal if a_goal.station_hold else des_state
@@ -266,33 +312,36 @@ class ActionLink(NavPlanner):
         goal_bias = [bias, bias, 0, 0, 0, 0]
         self.planner.set_goal(goal)
 
-        sample_space = self.sample_space(self.state)
-        plan = lambda: self.planner.update_plan(self.state, sample_space, goal_bias=goal_bias)
+        def do_planning():
+            # A function to call to do the planning
+            # sample_space = self.sample_space(self.state)
+            # self.planner.update_plan(self.state, sample_space, goal_bias=goal_bias)
+            # self.last_update_time = rospy.Time.now()
+            # next_time_to_run = self._time() + self.planner.T - self.plan_time - .1
+            # self.thread_queue.put(self.update_plan, next_time_to_run)
+            # print_t("Updating in {}s at {}".format(np.round(next_time_to_run - rospy.Time.now().to_sec(), 2),
+            #                                        next_time_to_run))
+            print_t("planning...")
+            self.goal = goal
+            self.goal_bias = goal_bias            
+
+            print_t("state: {}".format(self.state))
+            print_t("goal: {}".format(self.goal))
+            print_t("bias: {}".format(self.goal_bias))
+
+            self.done = False
+            self.update_plan(do_immediate=True)
+
         self.thread_queue.clear()
-        self.thread_queue.put(plan)
-
-        print "planning..."
-        rospy.sleep(self.plan_time + .5)
-        print "done planning!"
-        self.last_update_time = rospy.Time.now()
-        next_time_to_run = self._time() + self.planner.T - self.plan_time
-        self.thread_queue.put(self.update_plan, next_time_to_run)
-        print "Updating in {}s".format(next_time_to_run - self._time())
-
-        self.goal = goal
-        self.goal_bias = goal_bias
-
-        self.done = False
-        print self.state
-        print "goal:", self.goal
-        print "bias:", self.goal_bias
+        self.thread_queue.put(do_planning)
 
         while not rospy.is_shutdown() and not self.planner._in_goal(self.state):
             self.publish_feedback()
-            
+
             if self.wp_server.is_preempt_requested():
-                print "PREEMPT REQUEST"
-                self.safe_cancel()
+                print_t("PREEMPT REQUEST")
+                self.thread_queue.clear()
+                self.thread_queue.put(self.safe_cancel)
                 self.wp_server.set_preempted()
                 return
 
@@ -304,9 +353,12 @@ class ActionLink(NavPlanner):
         self.wp_server.set_succeeded(self._result)
 
     def safe_cancel(self):
-        self.goal = self.state
         self.done = True
-        self.thread_queue.clear()
+        self.goal = np.copy(self.state)
+        self.planner.set_goal(self.state)
+        sample_space = self.sample_space(self.state)
+        bias = [1.0, 1.0, 0, 0, 0, 0]
+        self.planner.update_plan(self.state, sample_space, goal_bias=bias)
 
     def publish_feedback(self):
         time_into_plan = self._time() - self.last_update_time.to_sec()
@@ -336,10 +388,9 @@ class ActionLink(NavPlanner):
         return [x, y, heading, vx, vy, w]
 
 
-
 if __name__ == "__main__":
     rospy.init_node("navigation_planner")
-    ac = ActionLink(rospy.get_param("plan_time", 2))
+    ac = ActionLink(rospy.get_param("plan_time", 3))
     #n = NavPlanner()
 
     rospy.spin()

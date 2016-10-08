@@ -20,7 +20,6 @@ class ThreadQueue(object):
         If `time_to_exec` is not defined, it will put `funct` at the beginning of the queue.
         '''
         item_to_add = (time_to_exec, funct)
-        #print item_to_add
         self.run_queue.put(item_to_add, block=True, timeout=.5)
 
     def next_if_possible(self):
@@ -34,7 +33,7 @@ class ThreadQueue(object):
 
         run_queue = self.run_queue
         if not run_queue.empty() and self.time() >= run_queue.queue[0][0]:
-            print run_queue.queue[0]
+            print run_queue.queue[0][0], run_queue.queue[0][1].__name__
             run_queue.get(block=True, timeout=.5)[1]()
 
         self.is_running = False

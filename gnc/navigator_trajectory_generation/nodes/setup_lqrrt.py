@@ -62,7 +62,7 @@ vps = vps.T
 
 nstates = 6
 ncontrols = 3
-magic_rudder = 4000
+magic_rudder = 1000
 
 def dynamics(x, u, dt):
 	"""
@@ -87,14 +87,14 @@ def dynamics(x, u, dt):
 			D[i] = D_neg[i]
 
 	# Heading controller trying to keep us car-like
-	if x[3] > 0:
-		vw = R[:2, :2].dot(x[3:5])
-		ang = np.arctan2(vw[1], vw[0])
-		c = np.cos(x[2])
-		s = np.sin(x[2])
-		cg = np.cos(ang)
-		sg = np.sin(ang)
-		u[2] = u[2] + magic_rudder*np.arctan2(sg*c - cg*s, cg*c + sg*s)
+	# if x[3] > 0:
+	# 	vw = R[:2, :2].dot(x[3:5])
+	# 	ang = np.arctan2(vw[1], vw[0])
+	# 	c = np.cos(x[2])
+	# 	s = np.sin(x[2])
+	# 	cg = np.cos(ang)
+	# 	sg = np.sin(ang)
+	# 	u[2] = u[2] + magic_rudder*np.arctan2(sg*c - cg*s, cg*c + sg*s)
 
 	# Actuator saturation
 	u = B.dot(np.clip(invB.dot(u), -thrust_max, thrust_max))
