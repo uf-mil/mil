@@ -30,6 +30,8 @@ add_service_files(
   VisionRequest.srv
   WrenchSelect.srv
   StartGate.srv
+  Bounds.srv
+  CoordinateConversion.srv
 )
 
 generate_messages(
