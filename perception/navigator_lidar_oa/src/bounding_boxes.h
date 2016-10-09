@@ -58,7 +58,9 @@ public:
 
 			if(newxmin != 100000 && newymin != 100000 && newzmin !=100000
 				&& newxmax != -100000 && newymax != -100000 && newzmax != -100000){
+				// std::cout<<"Madeit"<<std::endl;
 				auto sm_ob = objectMessage();
+				sm_ob.id = obj.id;
 				sm_ob.position.x = (newxmax + newxmin)/2;
 				sm_ob.scale.x = fabs(newxmax - newxmin);
 				sm_ob.position.y = (newymax + newymin)/2;
