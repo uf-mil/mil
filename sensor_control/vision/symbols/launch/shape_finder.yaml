@@ -1,0 +1,82 @@
+roi:
+  x_offset: 73
+  y_offset: 103
+  height: 243
+  width: 499
+grayscale:
+  blur_size: 7
+  canny:
+    thresh1: 60
+    thresh2: 100
+  min_contour_area: .0001
+  circle:
+    enclosing_circle_error_threshold: 0.2
+  triangle:
+    rect_error_threshold: 0.1
+    side_error_threshold: 0.1
+    angle_mean_error_threshold: 5
+    angle_var_error_threshold: 10
+  cross:
+    rect_error_threshold: 0.2
+    side_error_threshold: 0.2
+    angle_mean_error_threshold: 5
+    angle_var_error_threshold: 5
+blur_size: 3
+erode_size: 3
+dilate_size: 3
+bilateral_filter:
+  diameter: 5
+  sigma_color: 20
+  sigma_space: 20
+cross:
+  bounding_area:
+    low: 0.43
+    high: 0.57
+  min_area: 300
+triangle:
+  bounding_area:
+    low: 0.41
+    high: 0.50
+  min_area: 300
+circle:
+  bounding_area:
+    low: 0.7
+    high: 0.8
+  min_area: 300
+hsv:
+  red1:
+    low:
+      H: 154.1369
+      S: 63.75
+      V: 0
+    high:
+      H: 180
+      S: 166.464
+      V: 255
+  red2:
+    low:
+      H: 0
+      S: 63.75
+      V: 0
+    high:
+      H: 70.6631
+      S: 166.464
+      V: 255
+  blue:
+    low:
+      H: 79.0357
+      S: 60.2055
+      V: 0
+    high:
+      H: 139.2024
+      S: 173.553
+      V: 255
+  green:
+    low:
+      H: 39.7738
+      S: 7.089
+      V: 0.0
+    high:
+      H: 131.7619
+      S: 63.75
+      V: 53.1165

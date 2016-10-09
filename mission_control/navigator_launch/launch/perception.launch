@@ -1,3 +1,7 @@
 <launch>
+  <!-- start dock symbols vision services -->
+  <include file="$find navigator_shoot_vision)/launch/dock_shapes.launch" />
   <!--node name="start_gate_vision" pkg="navigator_controller" type="start_gate_manual.py" respawn="True"/-->
+
+  <node name="scan_the_code" pkg="navigator_perception" type="model_detector.py" respawn="True"/>
 </launch>

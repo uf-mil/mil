@@ -34,71 +34,61 @@
           </mesh>
         </geometry>
       </collision>
-
-      <sensor name="stereo_left_camera" type="camera">
-        <camera>
-          <pose>.6096 .2 1.5 0 0 0</pose>
-          <horizontal_fov>1.047</horizontal_fov>
-          <image>
-            <width>960</width>
-            <height>540</height>
-          </image>
-          <distortion>
-            <k1>0</k1>
-            <k2>0</k2>
-            <k3>0</k3>
-            <p1>0</p1>
-            <p2>0</p2>
-          </distortion>
-        </camera>
-        <plugin name="stereo_left_camera_controller" filename="libgazebo_ros_camera.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>30</updateRate>
-          <cameraName>left</cameraName>
-          <imageTopicName>image_raw</imageTopicName>
-          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-          <frameName>stereo_left_cam</frameName>
-          <hackBaseline>0.089</hackBaseline>
-          <distortionK1>0</distortionK1>
-          <distortionK2>0</distortionK2>
-          <distortionK3>0</distortionK3>
-          <distortionT1>0</distortionT1>
-          <distortionT2>0</distortionT2>
-        </plugin>
-      </sensor>
-
-      <sensor name="stereo_right_camera" type="camera">
-        <camera>
-          <pose>.6096 0 1.5 0 0 0</pose>
-          <horizontal_fov>1.047</horizontal_fov>
-          <image>
-            <width>960</width>
-            <height>540</height>
-          </image>
-          <distortion>
-            <k1>0</k1>
-            <k2>0</k2>
-            <k3>0</k3>
-            <p1>0</p1>
-            <p2>0</p2>
-          </distortion>
-        </camera>
-
-        <plugin name="stereo_right_camera_controller" filename="libgazebo_ros_camera.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>30</updateRate>
-          <cameraName>right</cameraName>
-          <imageTopicName>image_raw</imageTopicName>
-          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-          <frameName>stereo_right_cam</frameName>
-          <hackBaseline>0.089</hackBaseline>
-          <distortionK1>0</distortionK1>
-          <distortionK2>0</distortionK2>
-          <distortionK3>0</distortionK3>
-          <distortionT1>0</distortionT1>
-          <distortionT2>0</distortionT2>
-        </plugin>
-      </sensor>
+     
+       <sensor type="multicamera" name="stereo_camera">
+      <update_rate>30.0</update_rate>
+      <camera name="left">
+        <pose>.6096 0 1.5 0 0 0</pose>
+        <horizontal_fov>2.30</horizontal_fov>
+        <image>
+          <width>960</width>
+          <height>540</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <camera name="right">
+        <pose>.6096 .2 1.5 0 0 0</pose>
+        <horizontal_fov>2.30</horizontal_fov>
+        <image>
+          <width>960</width>
+          <height>540</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="stereo_camera_controller" filename="libgazebo_ros_multicamera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>stereo</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>left_camera_optical_frame</frameName>
+        <!--<rightFrameName>right_camera_optical_frame</rightFrameName>-->
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
 
       <sensor name="right_camera" type="camera">
         <camera>

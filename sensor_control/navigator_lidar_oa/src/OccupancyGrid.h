@@ -44,7 +44,7 @@ struct cell
 struct beamEntry
 {
 	void update(const LidarBeam &beam) {
-		if (q.size() >= 100) { q.pop_front(); }
+		if (q.size() >= 50) { q.pop_front(); }
 		q.push_back(beam);
 	}
 	std::deque<LidarBeam> q;
@@ -105,6 +105,23 @@ class OccupancyGrid
 	    /// \param ?
 	    /// \param ?
 	    ////////////////////////////////////////////////////////////
+		void setBoundingBox(Eigen::Vector2d b1, Eigen::Vector2d b2, Eigen::Vector2d b3, Eigen::Vector2d b4)
+		{
+			this->b1 = b1;
+			ab = b1-b2;
+			ac = b1-b3;		
+			//Why .1 for the dot product result?
+			if(ab.dot(ac) > .1) {
+		         ac = b1-b4;
+		     }	
+		}
+
+		////////////////////////////////////////////////////////////
+	    /// \brief ?
+	    ///
+	    /// \param ?
+	    /// \param ?
+	    ////////////////////////////////////////////////////////////
 		#ifndef OPENCV_IRA
 		void updatePointsAsCloud(const sensor_msgs::PointCloud2ConstPtr &cloud, Eigen::Affine3d T, int max_hits) 
 		{
@@ -134,9 +151,14 @@ class OccupancyGrid
 				}
 				Eigen::Vector3d xyz_in_velodyne(x.f,y.f,z.f);
 				Eigen::Vector3d xyz_in_enu = T*xyz_in_velodyne;
-				if (xyz_in_velodyne.norm() > 1 && xyz_in_velodyne.norm() <= 100 && z.f > -2) {
-					updateGrid(LidarBeam(xyz_in_enu(0), xyz_in_enu(1), xyz_in_enu(2),i.f),max_hits);
-				}			
+			    Eigen::Vector2d point(xyz_in_enu(0), xyz_in_enu(1));
+			    Eigen::Vector2d am = b1 - point;
+		     	if(0 <= ab.dot(am) && ab.dot(am) <= ab.dot(ab) && 0 <= am.dot(ac) && am.dot(ac) <= ac.dot(ac)){
+		     		//std::cout<<"TRUE"<<std::endl;
+					if (xyz_in_velodyne.norm() > 1 && xyz_in_velodyne.norm() <= 100 && z.f > -2) {
+						updateGrid(LidarBeam(xyz_in_enu(0), xyz_in_enu(1), xyz_in_enu(2),i.f),max_hits);
+					}
+		     	}
 			}
 			++updateCounter;
 		}
@@ -256,68 +278,7 @@ class OccupancyGrid
 		geometry_msgs::Vector3 lidarPos;						///< ???
 		int updateCounter = 0;									///< ???
 		std::unordered_map<unsigned,beamEntry> pointCloudTable; ///< ???
+		Eigen::Vector2d b1,ab,ac;									///< ???
 };	
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//									Graveyard
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-		//int metersToVoxel(float d) const
-		//{
-		//	return floor(d/VOXEL_SIZE_METERS + GRID_SIZE/2);
-		//}
-					int expand = 0; 
-					for (int jj = 0; jj < 9; ++jj) {
-						int r = row+rOffset[jj], c = col+cOffset[jj];
-						if (ogridBinary[r][c]) { ++expand; }
-					}
-					if (expand >= 5) {
-						++expansions;
-						ogridBinary[row][col] = true;
-						ogridMap[row*ROI_SIZE+col] = 100;
-					}
-
-			//File saving to OpenGL
-			//std::stringstream ss;
-			//ss << "/home/darkknight/Code/lidarscanner/opengl/data/" << fileName << "_" << updateCounter << ".txt";
-			//std::cout << "Wrinting file " << ss.str() << std::endl;
-			//std::ofstream fid(ss.str());
-*/

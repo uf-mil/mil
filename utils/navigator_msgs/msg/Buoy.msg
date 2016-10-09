@@ -10,5 +10,7 @@ float64 width                     # Can be used for detecting different objects
 float64 depth					  # Third dimension in x,y,z...
 
 geometry_msgs/Point32[] points    # Points (in ENU frame) that belong to the buoy
-uint32[] intensity
+uint32[] intensity				  # Track intesnity values for each lidar point
+uint32 pclInliers				  # Track inliers found for pcl plane fitting algorithm
+geometry_msgs/Vector3 normal	  # Unit vector for normal to one of the vertical planes of the object
 #std_msgs/ColorRGBA color         # Average (?) color of the buoy

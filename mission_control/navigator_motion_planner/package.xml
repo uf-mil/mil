@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package>
+  <name>navigator_object_recognition</name>
+  <version>0.5.0</version>
+  <description>The navigator_object_recognition package</description>
+
+  <maintainer email="tessbianchi@ufl.edu"></maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+
+  <export>
+  </export>
+
+</package>

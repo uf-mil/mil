@@ -1,0 +1,12 @@
+<launch>
+  <node pkg="navigator_shoot_vision" type="shape_finder" name="dock_shape_finder">
+    <rosparam file="$(find navigator_shoot_vision)/launch/shape_finder.yaml" />
+    <param name="symbol_camera" value="/right/right/image_raw"/>
+    <param name="image_transport" value="raw" />
+    <param name="auto_start" value="false" />
+  </node>
+  <node pkg="navigator_shoot_vision" type="shape_filter" name="dock_shape_filter">
+    <rosparam file="$(find navigator_shoot_vision)/launch/shape_filter.yaml" />
+    <param name="auto_start" value="false" />
+  </node>
+</launch>

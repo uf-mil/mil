@@ -1,0 +1,7 @@
+string name
+---
+bool found
+bool seen_before
+geometry_msgs/Vector3 pos
+geometry_msgs/Vector3 size
+geometry_msgs/Pose prev_pose

@@ -52,7 +52,7 @@ struct objectStats
 	float minRow, maxRow, minCol, maxCol, minHeight, maxHeight;
 	//std::vector<LidarBeam> beams;
 	std::vector<geometry_msgs::Point32> beams;
-	std::vector<float> intensity;
+	std::vector<uint32_t> intensity;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -64,7 +64,10 @@ struct objectMessage
 	geometry_msgs::Vector3 scale;
 	//std::vector<LidarBeam> beams;
 	std::vector<geometry_msgs::Point32> beams;
-	std::vector<float> intensity;
+	std::vector<uint32_t> intensity;
+	int id;
+	uint32_t pclInliers;
+	geometry_msgs::Vector3 normal;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
