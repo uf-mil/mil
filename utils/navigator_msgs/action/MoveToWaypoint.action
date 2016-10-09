@@ -13,5 +13,6 @@ float32 time_to_completion
 float32 time_to_replan
 float32 time_for_replan
 bool replanning
-bool refeasing
+bool checking_path_feasibility
+bool replanning_for_obstacle
 bool traj_reached_goal
