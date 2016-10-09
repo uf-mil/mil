@@ -21,18 +21,6 @@ __copyright__ = "Copyright 2016, MIL"
 __license__ = "MIT"
 
 
-# Voltage threshold for the initial low voltage alarm
-# 22.1V (approximately 30%) is the recommended value
-battery_low = 22.1
-
-# Voltage threshold for the critically low voltage alarm
-# 20.6V (approximately 15%) is the recommended value
-battery_critical = 20.6
-
-# Voltage threshold for the total system kill alarm
-# 19.5V (approximately 5%) is the recommended value
-battery_kill = 19.5
-
 rospy.init_node('battery_monitor')
 
 
@@ -55,6 +43,11 @@ class BatteryMonitor():
         rospy.Subscriber("/FR_motor/feedback", Feedback, self.add_voltage)
         rospy.Subscriber("/BL_motor/feedback", Feedback, self.add_voltage)
         rospy.Subscriber("/BR_motor/feedback", Feedback, self.add_voltage)
+
+        # Parameters used to set the alarm trigger values for the batteries
+        self.battery_low_voltage = rospy.get_param('/navigator_battery_monitor/battery_low_voltage')
+        self.battery_critical_voltage = rospy.get_param('/navigator_battery_monitor/battery_critical_voltage')
+        self.battery_kill_voltage = rospy.get_param('/navigator_battery_monitor/battery_kill_voltage')
 
         # Sets up the battery voltage alarms
         alarm_broadcaster = AlarmBroadcaster()
@@ -119,7 +112,7 @@ class BatteryMonitor():
             )
 
         # A fatal battery warning to kill the boat and protect the batteries
-        elif (self.voltage < battery_kill):
+        elif (self.voltage < self.battery_kill_voltage):
             self.battery_kill_alarm.raise_alarm(
                 problem_description='Bus voltage is at the safety limit; killing the system',
                 parameters={
@@ -128,7 +121,7 @@ class BatteryMonitor():
             )
 
         # A high priority battery warning to abort testing
-        elif (self.voltage < battery_critical):
+        elif (self.voltage < self.battery_critical_voltage):
             self.battery_critical_alarm.raise_alarm(
                 problem_description='Bus voltage is critical; abort this run soon',
                 parameters={
@@ -137,7 +130,7 @@ class BatteryMonitor():
             )
 
         # A low priority battery warning to inform user's of the status
-        elif (self.voltage < battery_low):
+        elif (self.voltage < self.battery_low_voltage):
             self.battery_low_alarm.raise_alarm(
                 problem_description='Bus voltage is approaching safety limit',
                 parameters={

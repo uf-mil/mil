@@ -10,6 +10,7 @@ import os
 
 from kill_handling.broadcaster import KillBroadcaster
 from navigator_alarm import AlarmBroadcaster
+from navigator_alarm import AlarmListener
 from navigator_msgs.srv import WrenchSelect
 from python_qt_binding import QtGui
 from python_qt_binding import loadUi
@@ -32,34 +33,34 @@ class Dashboard(Plugin):
     def __init__(self, context):
         super(Dashboard, self).__init__(context)
 
-        # Create the widget
+        # Create the widget and name it
         self._widget = QtGui.QWidget()
+        self._widget.setObjectName('Dashboard')
         self.setObjectName('Dashboard')
 
-        # Get path to UI file which should be in the "resource" folder of this package
+        # Extend the widget with all attributes and children in the UI file
         ui_file = os.path.join(rospkg.RosPack().get_path('navigator_gui'), 'resource', 'dashboard.ui')
-
-        # Extend the widget with all attributes and children from UI file
         loadUi(ui_file, self._widget)
+        self.connect_ui()
 
-        # Give QObjects reasonable names
-        self._widget.setObjectName('Navigator_gui')
+        # Dashboard state parameters
+        self.is_battery_voltage_available = False
+        self.battery_voltage_frame_color = None
+        self.is_killed = False
 
-        # Link objects in the GUI to their handler functions
-        self.battery_voltage_status = self._widget.findChild(QtGui.QLabel, 'battery_voltage_status')
-        self.system_time_status = self._widget.findChild(QtGui.QLabel, 'system_time_status')
-        toggle_kill_button = self._widget.findChild(QtGui.QPushButton, 'toggle_kill_button')
-        toggle_kill_button.clicked.connect(self.toggle_kill)
-        station_hold_button = self._widget.findChild(QtGui.QPushButton, 'station_hold_button')
-        station_hold_button.clicked.connect(self.station_hold)
-        autonomous_control_button = self._widget.findChild(QtGui.QPushButton, 'autonomous_control_button')
-        autonomous_control_button.clicked.connect(self.select_autonomous_control)
-        rc_control_button = self._widget.findChild(QtGui.QPushButton, 'rc_control_button')
-        rc_control_button.clicked.connect(self.select_rc_control)
+        # Attempts to read the battery voltage parameters (requires the motor controller to have been launched)
+        try:
+            self.battery_low_voltage = rospy.get_param('/navigator_battery_monitor/battery_low_voltage')
+            self.battery_critical_voltage = rospy.get_param('/navigator_battery_monitor/battery_critical_voltage')
+            rospy.Subscriber("/battery_monitor", Float32, self.update_battery_voltage_status)
+            self.is_battery_voltage_available = True
+        except:
+            print "Failed to connect to the thrusters - has the motor controller been launched?"
 
         # Subscribes to topics that are monitored on the GUI
-        rospy.Subscriber("/battery_monitor", Float32, self.update_battery_voltage)
-        rospy.Subscriber("/clock", Clock, self.update_system_time)
+        rospy.Subscriber("/clock", Clock, self.update_system_time_status)
+        self.system_time_frame.setStyleSheet("QWidget {background-color:#B1EB00;}")
+        self.kill_listener = AlarmListener('kill', self.update_kill_status)
 
         # Connect to services that can be controlled from the GUI
         self.wrench_changer = rospy.ServiceProxy('/change_wrench', WrenchSelect)
@@ -73,9 +74,6 @@ class Dashboard(Plugin):
             severity=0
         )
 
-        # Dashboard state parameters
-        self.is_killed = False
-
         # Show _widget.windowTitle on left-top of each plugin (when it's set in _widget). This is useful when you open multiple
         # plugins at once. Also if you open multiple instances of your plugin at once, these lines add number to make it easy to
         # tell from pane to pane.
@@ -85,20 +83,79 @@ class Dashboard(Plugin):
         # Add widget to the user interface
         context.add_widget(self._widget)
 
-    def update_battery_voltage(self, msg):
+    def connect_ui(self):
+        '''
+        Connects objects in the GUI to the backend dashboard handler
+        functions.
+        '''
+
+        # Battery voltage
+        self.battery_voltage_frame = self._widget.findChild(QtGui.QFrame, 'battery_voltage_frame')
+        self.battery_voltage_status = self._widget.findChild(QtGui.QLabel, 'battery_voltage_status')
+
+        # System time
+        self.system_time_frame = self._widget.findChild(QtGui.QFrame, 'system_time_frame')
+        self.system_time_status = self._widget.findChild(QtGui.QLabel, 'system_time_status')
+
+        # Kill status
+        self.kill_status_frame = self._widget.findChild(QtGui.QFrame, 'kill_status_frame')
+        self.kill_status_status = self._widget.findChild(QtGui.QLabel, 'kill_status_status')
+
+        # Control panel buttons
+        toggle_kill_button = self._widget.findChild(QtGui.QPushButton, 'toggle_kill_button')
+        toggle_kill_button.clicked.connect(self.toggle_kill)
+        station_hold_button = self._widget.findChild(QtGui.QPushButton, 'station_hold_button')
+        station_hold_button.clicked.connect(self.station_hold)
+        autonomous_control_button = self._widget.findChild(QtGui.QPushButton, 'autonomous_control_button')
+        autonomous_control_button.clicked.connect(self.select_autonomous_control)
+        rc_control_button = self._widget.findChild(QtGui.QPushButton, 'rc_control_button')
+        rc_control_button.clicked.connect(self.select_rc_control)
+
+    def update_battery_voltage_status(self, msg):
         '''
         Updates the battery voltage display when there is an update on the
         /battery_monitor node.
         '''
-        self.battery_voltage_status.setText(str(msg.data))
+        if (msg.data > 0):
+            self.battery_voltage_status.setText(str(msg.data)[:5])
 
-    def update_system_time(self, msg):
+            # Set the frame background color to red if the battery is at or below the critical voltage
+            if (msg.data <= self.battery_critical_voltage) and (self.battery_voltage_frame_color != "red"):
+                self.battery_voltage_frame.setStyleSheet("QWidget {background-color:#FF432E;}")
+                self.battery_voltage_frame_color = "red"
+
+            # Set the frame background color to yellow if the battery is at or below the low voltage
+            elif (msg.data <= self.battery_low_voltage) and (self.battery_voltage_frame_color != "yellow"):
+                self.battery_voltage_frame.setStyleSheet("QWidget {background-color:#FDEF14;}")
+                self.battery_voltage_frame_color = "yellow"
+
+            # Set the frame background color to green if the battery is above the warning voltages
+            elif (self.battery_voltage_frame_color != "green"):
+                self.battery_voltage_frame.setStyleSheet("QWidget {background-color:#B1EB00;}")
+                self.battery_voltage_frame_color = "green"
+
+    def update_system_time_status(self, msg):
         '''
         Updates the system time display when there is an update on the /clock
         node.
         '''
-        if ((msg.clock is not None) and (len(str(msg.clock)) > 9)):
-            self.system_time_status.setText(str(msg.clock)[:-9] + "." + str(msg.clock)[-9:-7] + " s")
+        msg_string = str(msg.clock)
+        if ((msg.clock is not None) and (len(msg_string) > 9)):
+            self.system_time_status.setText(msg_string[:-9] + "." + msg_string[-9:-7] + " s")
+
+    def update_kill_status(self, alarm):
+        '''
+        Updates the kill status display when there is an update on the kill
+        alarm.
+        '''
+        if (not alarm.clear):
+            self.is_killed = True
+            self.kill_status_status.setText("Killed")
+            self.kill_status_frame.setStyleSheet("QWidget {background-color:#FF432E;}")
+        else:
+            self.is_killed = False
+            self.kill_status_status.setText("Alive")
+            self.kill_status_frame.setStyleSheet("QWidget {background-color:#B1EB00;}")
 
     def toggle_kill(self):
         '''
