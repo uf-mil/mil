@@ -44,7 +44,7 @@ struct cell
 struct beamEntry
 {
 	void update(const LidarBeam &beam) {
-		if (q.size() >= 50) { q.pop_front(); }
+		if (q.size() >= 25) { q.pop_front(); }
 		q.push_back(beam);
 	}
 	std::deque<LidarBeam> q;
@@ -155,7 +155,7 @@ class OccupancyGrid
 			    Eigen::Vector2d am = b1 - point;
 		     	if(0 <= ab.dot(am) && ab.dot(am) <= ab.dot(ab) && 0 <= am.dot(ac) && am.dot(ac) <= ac.dot(ac)){
 		     		//std::cout<<"TRUE"<<std::endl;
-					if (xyz_in_velodyne.norm() > 1 && xyz_in_velodyne.norm() <= 100 && z.f > -2) {
+					if (xyz_in_velodyne.norm() > 1 && xyz_in_velodyne.norm() <= 100 && z.f >= -3) {
 						updateGrid(LidarBeam(xyz_in_enu(0), xyz_in_enu(1), xyz_in_enu(2),i.f),max_hits);
 					}
 		     	}

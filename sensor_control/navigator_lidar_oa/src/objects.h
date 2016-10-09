@@ -50,9 +50,7 @@ public:
 		}
 
 		for(auto &s_obj : saved_objects) {
-			ROS_INFO_STREAM("all inliers before: " << s_obj.pclInliers);
 			FitPlanesToCloud(s_obj,rosCloud);
-			ROS_INFO_STREAM("all inliers after: " << s_obj.pclInliers);
 		}
 
 		return saved_objects;
