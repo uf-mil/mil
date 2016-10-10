@@ -21,7 +21,7 @@ from geometry_msgs.msg import Pose, PoseArray, PoseStamped
 from nav_msgs.msg import Odometry, OccupancyGrid
 from std_srvs.srv import SetBool, SetBoolResponse
 from navigator_msgs.msg import PoseTwistStamped, MoveToWaypointAction, \
-                               MoveToWaypointActionFeedback, MoveToWaypointActionResult
+                               MoveToWaypointFeedback, MoveToWaypointResult
 
 ################################################# INITIALIZATION
 
@@ -73,6 +73,7 @@ class LQRRTNode(object):
         self.get_planstate = lambda t: np.copy(self.state)
         self.behaviors_list = [behaviors.direct, behaviors.boat, behaviors.fcar, behaviors.escape]
         for behavior in self.behaviors_list:
+            print "Loaded behavior: {}".format(behavior.__name__)
             behavior.planner.set_system_time(self.get_rostime)
             behavior.planner.constraints.set_feasibility_function(self.is_feasible)
 
@@ -398,15 +399,12 @@ class LQRRTNode(object):
 
 
 class ActionLink():
-    _feedback = MoveToWaypointActionFeedback().feedback
-    _result = MoveToWaypointActionResult().result
+    _feedback = MoveToWaypointFeedback()
+    _result = MoveToWaypointResult()
 
     def __init__(self):
-        self._time = lambda: rospy.Time.now().to_sec()
-        self.wp_server = actionlib.SimpleActionServer("/move_to",
-                                                      MoveToWaypointAction,
-                                                      execute_cb=self.got_wp,
-                                                      auto_start=False)
+        self.wp_server = actionlib.SimpleActionServer("/move_to", MoveToWaypointAction,
+                                                      execute_cb=self.got_wp, auto_start=False)
         self.wp_server.start()
 
         self.node = LQRRTNode()
@@ -466,6 +464,11 @@ class ActionLink():
         w = angular[2]
 
         return [x, y, heading, vx, vy, w]
+
+    def publish_feedback(self):
+        self._feedback.time_remaining = self.node.time_remaining
+
+        return self.wp_server.publish_feedback(self._feedback)
 
     def _got_wp(self, a_goal):
         print_t("Goal received")
@@ -535,13 +538,6 @@ class ActionLink():
         bias = [1.0, 1.0, 0, 0, 0, 0]
         self.planner.update_plan(self.state, sample_space, goal_bias=bias)
         self.cant_complete = False
-
-    def _publish_feedback(self):
-        time_into_plan = self._time() - self.last_update_time.to_sec()
-        self._feedback.time_to_completion = self.planner.T - time_into_plan
-        self._feedback.time_to_replan = self.planner.T - time_into_plan - self.plan_time
-        self._feedback.time_for_replan = self.plan_time
-        return self.wp_server.publish_feedback(self._feedback)
 
         # float32 time_to_completion
         # float32 time_to_replan

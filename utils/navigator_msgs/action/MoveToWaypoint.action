@@ -10,10 +10,4 @@ bool made_it
 string reason  # if we didn't make it, why not?
 ---
 # Define a feedback message
-float32 time_to_completion
-float32 time_to_replan
-float32 time_for_replan
-bool replanning
-bool checking_path_feasibility
-bool replanning_for_obstacle
-bool traj_reached_goal
+float32 time_remaining
