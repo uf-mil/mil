@@ -3,6 +3,7 @@ from txros import util, NodeHandle
 from twisted.internet import defer, reactor
 
 from navigator_singleton.navigator import Navigator
+from geometry_msgs.msg import PoseStamped
 import nav_missions
 
 import argparse
@@ -17,7 +18,7 @@ def main():
         usage='Pass any pose editor command with an argument. \n\t forward 1 (moves forward 1 meter) \n\t backward 2ft (moves backward 2 feet)')
     parser.add_argument('command', type=str,
         help='Pose editor command to run')
-    parser.add_argument('argument', type=str,
+    parser.add_argument('argument', type=str, default=0,
         help='An argument to pass to the command (distance or angle usally). Optionally a unit can be added if a non-standard unit is desired.')
     parser.add_argument('-s', '--speed', type=float, default=-1,
         help='Optional speed in m/s')
@@ -30,22 +31,29 @@ def main():
         # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
         print "Moving with the command: {}".format(args.argument)
         yield eval("n.move.{}.go()".format(args.argument))
-        defer.returnValue(reactor.stop())
 
-    movement = getattr(n.move, args.command)
+    elif args.command == 'rviz':
+        sub = nh.subscribe("/rviz_goal", PoseStamped)
+        target_pose = yield sub.get_next_message()
+        print target_pose
+        yield n.move.to_pose(target_pose).go()
 
-    unit = 'm'
-    amount = args.argument
-    # See if there's a non standard unit at the end of the argument
-    if not args.argument[-1].isdigit():
-        last_digit_index = [i for i, c in enumerate(args.argument) if c.isdigit()][-1] + 1
-        amount = float(args.argument[:last_digit_index])
-        unit = args.argument[last_digit_index:]
+    else:
+        movement = getattr(n.move, args.command)
 
-    # Actually run the commands
-    station_hold = amount == '0'
-    print "{}ing {} non-arbitrary unit(s)".format(args.command, amount)
-    yield movement(float(amount), unit).go(speed=args.speed, station_hold=station_hold)
+        unit = 'm'
+        amount = args.argument
+        # See if there's a non standard unit at the end of the argument
+        if not args.argument[-1].isdigit():
+            last_digit_index = [i for i, c in enumerate(args.argument) if c.isdigit()][-1] + 1
+            amount = float(args.argument[:last_digit_index])
+            unit = args.argument[last_digit_index:]
+
+        # Actually run the commands
+        station_hold = amount == '0'
+        print "{}ing {} non-arbitrary unit(s)".format(args.command, amount)
+        yield movement(float(amount), unit).go(speed=args.speed, station_hold=station_hold)
+
     defer.returnValue(reactor.stop())
 
 if __name__ == '__main__':

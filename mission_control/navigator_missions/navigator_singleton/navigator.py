@@ -44,6 +44,10 @@ class Navigator(object):
 
         self._moveto_action_client = action.ActionClient(self.nh, 'moveto', MoveToAction)
         self._moveto_action_client2 = action.ActionClient(self.nh, 'move_to', MoveToWaypointAction)
+
+        print "NAVIGATOR: Waiting for move_to action client..."
+        yield self._moveto_action_client2.wait_for_server()
+
         self._odom_sub = self.nh.subscribe('odom', Odometry,
                                            lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0]))
         self._ecef_odom_sub = self.nh.subscribe('absodom', Odometry,
