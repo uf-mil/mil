@@ -5,6 +5,7 @@ import numpy as np
 from tf import transformations
 from nav_msgs.msg import Odometry
 from uf_common.msg import PoseTwistStamped, PoseTwist, MoveToGoal
+from navigator_msgs.msg import MoveToWaypointGoal
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Point, Vector3, Twist
 from navigator_tools import rosmsg_to_numpy, make_header, normalize
 from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
@@ -130,6 +131,7 @@ class PoseEditor2(object):
                                                pose=navigator_tools.numpy_quat_pair_to_pose(*self.pose)))
 
         goal = self.nav._moveto_action_client.send_goal(self.as_MoveToGoal(*args, **kwargs))
+        #goal = self.nav._moveto_action_client2.send_goal(self.as_MoveToGoalWaypoint(*args, **kwargs))
         return goal.get_result()
 
     def set_position(self, position):
@@ -219,6 +221,12 @@ class PoseEditor2(object):
         return MoveToGoal(
             header=make_header(),
             posetwist=self.as_PoseTwist(linear, angular),
+            **kwargs
+        )
+
+    def as_MoveToGoalWaypoint(self, linear=[0, 0, 0], angular=[0, 0, 0], **kwargs):
+        return MoveToWaypointGoal(
+            target=self.as_PoseTwist(linear, angular),
             **kwargs
         )
 

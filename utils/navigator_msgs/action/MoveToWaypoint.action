@@ -1,6 +1,7 @@
 # Define a gaol message
 PoseTwist target
 float32 goal_bias
+float32 speed
 bool append
 bool station_hold
 ---

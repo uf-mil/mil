@@ -42,9 +42,10 @@ def main():
         amount = float(args.argument[:last_digit_index])
         unit = args.argument[last_digit_index:]
 
-    # Actually run the command
+    # Actually run the commands
+    station_hold = amount == '0'
     print "{}ing {} non-arbitrary unit(s)".format(args.command, amount)
-    yield movement(float(amount), unit).go(speed=args.speed)
+    yield movement(float(amount), unit).go(speed=args.speed, station_hold=station_hold)
     defer.returnValue(reactor.stop())
 
 if __name__ == '__main__':
