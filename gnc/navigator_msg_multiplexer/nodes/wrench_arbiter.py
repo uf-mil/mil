@@ -1,12 +1,15 @@
 #!/usr/bin/env python
-import rospy
 from geometry_msgs.msg import WrenchStamped
 from navigator_msgs.srv import WrenchSelect
+import rospy
 from std_msgs.msg import Bool
+
 
 rospy.init_node('wrench_arbiter')
 
+
 class WrenchArbiter(object):
+
     def __init__(self):
         # Set the three receiving variables
         self.rc_wrench = None
@@ -52,8 +55,10 @@ class WrenchArbiter(object):
         to the right source.
         '''
         rospy.loginfo("Server received request for wrench control change - " + req.str)
-        self.control = req.str if req.str in self.control_inputs else None
-        return self.control is not None
+        self.control = req.str if req.str in self.control_inputs else self.control
+
+        # Returns the selected control input
+        return self.control
 
 
 if __name__ == "__main__":

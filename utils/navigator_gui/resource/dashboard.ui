@@ -49,7 +49,7 @@
         </item>
         <item row="0" column="1">
          <layout class="QGridLayout" name="grid_layout_1">
-          <item row="2" column="1">
+          <item row="3" column="1">
            <widget class="QLabel" name="operating_mode_label">
             <property name="text">
              <string>Operating Mode:</string>
@@ -59,17 +59,7 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QLabel" name="battery_voltage_label">
-            <property name="text">
-             <string>Battery Voltage:</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2">
+          <item row="3" column="2">
            <widget class="QFrame" name="operating_mode_frame">
             <property name="minimumSize">
              <size>
@@ -106,7 +96,54 @@
             </layout>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="5" column="1">
+           <widget class="QLabel" name="system_time_label">
+            <property name="text">
+             <string>System Time:</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QFrame" name="system_time_frame">
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>32</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>32</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QWidget {background-color:#FF432E;}</string>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_2">
+             <item row="0" column="0">
+              <widget class="QLabel" name="system_time_status">
+               <property name="text">
+                <string>Unknown</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="2" column="1">
            <widget class="QLabel" name="kill_status_label">
             <property name="text">
              <string>Kill Status:</string>
@@ -116,7 +153,7 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="2">
+          <item row="2" column="2">
            <widget class="QFrame" name="kill_status_frame">
             <property name="minimumSize">
              <size>
@@ -154,16 +191,16 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QLabel" name="system_time_label">
+           <widget class="QLabel" name="battery_voltage_label">
             <property name="text">
-             <string>System Time:</string>
+             <string>Battery Voltage:</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
-          <item row="1" column="2">
+          <item row="4" column="2">
            <widget class="QFrame" name="battery_voltage_frame">
             <property name="minimumSize">
              <size>
@@ -189,43 +226,6 @@
             <layout class="QGridLayout" name="gridLayout_5">
              <item row="0" column="0">
               <widget class="QLabel" name="battery_voltage_status">
-               <property name="text">
-                <string>Unknown</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item row="4" column="2">
-           <widget class="QFrame" name="system_time_frame">
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>32</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>32</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QWidget {background-color:#FF432E;}</string>
-            </property>
-            <property name="frameShape">
-             <enum>QFrame::StyledPanel</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_2">
-             <item row="0" column="0">
-              <widget class="QLabel" name="system_time_status">
                <property name="text">
                 <string>Unknown</string>
                </property>
