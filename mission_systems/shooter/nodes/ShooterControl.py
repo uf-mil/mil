@@ -34,13 +34,13 @@ class ShooterControl:
             rospy.loginfo("Something already running, aborting")
             result.result.success = False
             result.result.error = result.result.ALREADY_RUNNING
-            self.load_server.set_aborted(result)
+            self.load_server.set_aborted(result.result)
             return
         if self.loaded:
             rospy.loginfo("Already loaded, aborting")
             result.result.success = False
             result.result.error = result.result.ALREADY_LOADED
-            self.load_server.set_aborted(result)
+            self.load_server.set_aborted(result.result)
             return
         start_time = rospy.get_rostime()
         dur_from_start = rospy.Duration(0, 0)
@@ -50,7 +50,7 @@ class ShooterControl:
         while dur_from_start < self.load_total_time and self.load_server.is_active():
             dur_from_start = rospy.get_rostime() - start_time
             feedback.feedback.time_remaining = self.load_total_time - dur_from_start
-            self.load_server.publish_feedback(feedback)
+            self.load_server.publish_feedback(feedback.feedback)
             if dur_from_start < self.load_retract_time:
                 self.motor_controller.setMotor1(1.0)
             elif dur_from_start < self.load_retract_time + self.load_pause_time:
@@ -64,7 +64,7 @@ class ShooterControl:
         self.motor_controller.setMotor2(1)
         result.result.success = True
         self.loaded = True
-        self.load_server.set_succeeded(result)
+        self.load_server.set_succeeded(result.result)
         rospy.loginfo("Finished loaded")
 
 
@@ -74,13 +74,13 @@ class ShooterControl:
             rospy.loginfo("Something already running, aborting fire")
             result.result.success = False
             result.result.error = result.result.ALREADY_RUNNING
-            self.fire_server.set_aborted(result)
+            self.fire_server.set_aborted(result.result)
             return
         if not self.loaded:
             rospy.loginfo("Not loaded, aborting fire")
             result.result.success = False
             result.result.error = result.result.NOT_LOADED
-            self.fire_server.set_aborted(result)
+            self.fire_server.set_aborted(result.result)
             return
         start_time = rospy.get_rostime()
         dur_from_start = rospy.Duration(0, 0)
@@ -92,7 +92,7 @@ class ShooterControl:
         while dur_from_start < self.total_fire_time and self.fire_server.is_active():
             dur_from_start = rospy.get_rostime() - start_time
             feedback.feedback.time_remaining = self.total_fire_time - dur_from_start
-            self.fire_server.publish_feedback(feedback)
+            self.fire_server.publish_feedback(feedback.feedback)
             if dur_from_start > self.fire_extend_time:
                 self.motor_controller.setMotor1(0)
             if dur_from_start > self.fire_shoot_time:
@@ -103,7 +103,7 @@ class ShooterControl:
         self.motor_controller.setMotor2(0)
         result.result.success = True
         self.loaded = False
-        self.fire_server.set_succeeded(result)
+        self.fire_server.set_succeeded(result.result)
         rospy.loginfo("Finished fire")
 
 
@@ -112,9 +112,9 @@ class ShooterControl:
         result.result.success = False
         result.result.error = result.result.MANUAL_CONTROL_USED
         if self.load_server.is_active():
-            self.load_server.set_aborted(result)
+            self.load_server.set_aborted(result.result)
         if self.fire_server.is_active():
-            self.fire_server.set_aborted(result)
+            self.fire_server.set_aborted(result.result)
         d = rospy.Duration(0, 100000000)
         rospy.sleep(d)
         time.sleep(0.1)      
