@@ -45,9 +45,9 @@ class BatteryMonitor():
         rospy.Subscriber("/BR_motor/feedback", Feedback, self.add_voltage)
 
         # Parameters used to set the alarm trigger values for the batteries
-        self.battery_low_voltage = rospy.get_param('/navigator_battery_monitor/battery_low_voltage')
-        self.battery_critical_voltage = rospy.get_param('/navigator_battery_monitor/battery_critical_voltage')
-        self.battery_kill_voltage = rospy.get_param('/navigator_battery_monitor/battery_kill_voltage')
+        self.battery_low_voltage = rospy.get_param('/battery_monitor/battery_low_voltage')
+        self.battery_critical_voltage = rospy.get_param('/battery_monitor/battery_critical_voltage')
+        self.battery_kill_voltage = rospy.get_param('/battery_monitor/battery_kill_voltage')
 
         # Sets up the battery voltage alarms
         alarm_broadcaster = AlarmBroadcaster()

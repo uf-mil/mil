@@ -15,7 +15,6 @@ from navigator_msgs.srv import WrenchSelect
 from python_qt_binding import QtGui
 from python_qt_binding import loadUi
 from qt_gui.plugin import Plugin
-from rosgraph_msgs.msg import Clock
 import rospkg
 import rospy
 from std_msgs.msg import Float32
@@ -45,29 +44,25 @@ class Dashboard(Plugin):
 
         # Dashboard state parameters
         self.is_killed = False
-        self.cached_operating_mode = None
         self.is_battery_voltage_available = False
-        self.battery_voltage_frame_color = None
-
-        # Subscribes to topics that are monitored on the GUI
-        self.kill_listener = AlarmListener('kill', self.update_kill_status)
-        rospy.Subscriber("/clock", Clock, self.update_system_time_status)
-        self.system_time_frame.setStyleSheet("QWidget {background-color:#B1EB00;}")
+        self.cached_operating_mode = None
+        self.cached_battery_alarm_level = None
 
         # Attempts to read the battery voltage parameters (requires the motor controller to have been launched)
         try:
-            self.battery_low_voltage = rospy.get_param('/navigator_battery_monitor/battery_low_voltage')
-            self.battery_critical_voltage = rospy.get_param('/navigator_battery_monitor/battery_critical_voltage')
+            self.battery_low_voltage = rospy.get_param('/battery_monitor/battery_low_voltage')
+            self.battery_critical_voltage = rospy.get_param('/battery_monitor/battery_critical_voltage')
             rospy.Subscriber("/battery_monitor", Float32, self.update_battery_voltage_status)
             self.is_battery_voltage_available = True
         except:
             print "Failed to connect to the thrusters - has the motor controller been launched?"
 
-        # Connect to services that can be controlled from the GUI
+        # Connect to services that the GUI interacts with
         self.kb = KillBroadcaster(id='station_hold', description='Resets Pose')
+        self.kill_listener = AlarmListener('kill', self.update_kill_status)
         self.wrench_changer = rospy.ServiceProxy('/change_wrench', WrenchSelect)
 
-        # Sets up the dashboard controlled alarms
+        # Sets up the dashboard controlled kill alarm
         alarm_broadcaster = AlarmBroadcaster()
         self.kill_alarm = alarm_broadcaster.add_alarm(
             name='kill',
@@ -102,10 +97,6 @@ class Dashboard(Plugin):
         self.battery_voltage_frame = self._widget.findChild(QtGui.QFrame, 'battery_voltage_frame')
         self.battery_voltage_status = self._widget.findChild(QtGui.QLabel, 'battery_voltage_status')
 
-        # System time
-        self.system_time_frame = self._widget.findChild(QtGui.QFrame, 'system_time_frame')
-        self.system_time_status = self._widget.findChild(QtGui.QLabel, 'system_time_status')
-
         # Control panel buttons
         toggle_kill_button = self._widget.findChild(QtGui.QPushButton, 'toggle_kill_button')
         toggle_kill_button.clicked.connect(self.toggle_kill)
@@ -136,14 +127,16 @@ class Dashboard(Plugin):
         wrench arbiter. Caches the current battery warning level to reduce
         system resource consumption.
         '''
-        current_operating_mode = self.wrench_changer("").str
-        if (current_operating_mode != self.cached_operating_mode):
 
+        # Attempting to set the wrench to an empty string will return the current selected input
+        current_operating_mode = self.wrench_changer("").str
+
+        # Only changes the display if the selected input has changed
+        if (current_operating_mode != self.cached_operating_mode):
             if (current_operating_mode == "rc"):
                 self.operating_mode_status.setText("Remote")
                 self.operating_mode_frame.setStyleSheet("QWidget {background-color:#4AA8DB;}")
                 self.cached_operating_mode = "rc"
-
             elif (current_operating_mode == "autonomous"):
                 self.operating_mode_status.setText("Autonomous")
                 self.operating_mode_frame.setStyleSheet("QWidget {background-color:#B1EB00;}")
@@ -159,33 +152,24 @@ class Dashboard(Plugin):
             self.battery_voltage_status.setText(str(msg.data)[:5])
 
             # Set the frame background color to red if the battery is at or below the critical voltage
-            if (msg.data <= self.battery_critical_voltage + 3):
-                if (self.battery_voltage_frame_color != "red"):
+            if (msg.data <= self.battery_critical_voltage):
+                if (self.cached_battery_alarm_level != "red"):
                     self.battery_voltage_frame.setStyleSheet("QWidget {background-color:#FF432E;}")
-                    self.battery_voltage_frame_color = "red"
+                    self.cached_battery_alarm_level = "red"
 
             # Set the frame background color to yellow if the battery is at or below the low voltage
-            elif (msg.data <= self.battery_low_voltage + 3):
-                if (self.battery_voltage_frame_color != "yellow"):
+            elif (msg.data <= self.battery_low_voltage):
+                if (self.cached_battery_alarm_level != "yellow"):
                     self.battery_voltage_frame.setStyleSheet("QWidget {background-color:#FDEF14;}")
-                    self.battery_voltage_frame_color = "yellow"
+                    self.cached_battery_alarm_level = "yellow"
 
             # Set the frame background color to green if the battery is above the warning voltages
-            elif (self.battery_voltage_frame_color != "green"):
+            elif (self.cached_battery_alarm_level != "green"):
                 self.battery_voltage_frame.setStyleSheet("QWidget {background-color:#B1EB00;}")
-                self.battery_voltage_frame_color = "green"
+                self.cached_battery_alarm_level = "green"
 
             # Takes advantage of the periodic nature of the /battery_monitor node
             self.update_operating_mode_status()
-
-    def update_system_time_status(self, msg):
-        '''
-        Updates the system time display when there is an update on the /clock
-        node.
-        '''
-        msg_string = str(msg.clock)
-        if ((msg.clock is not None) and (len(msg_string) > 9)):
-            self.system_time_status.setText(msg_string[:-9] + "." + msg_string[-9:-7] + " s")
 
     def toggle_kill(self):
         '''
@@ -193,6 +177,7 @@ class Dashboard(Plugin):
         '''
         rospy.loginfo("Toggling Kill")
 
+        # Responds to the kill broadcaster and checks the status of the kill alarm
         if self.is_killed:
             self.kill_alarm.clear_alarm()
         else:
