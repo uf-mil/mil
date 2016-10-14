@@ -33,7 +33,9 @@ def main():
 
     for mission in args.missions:
         to_run = getattr(nav_missions, mission)
-        yield to_run.main(n)
+        result = yield to_run.main(n)
+
+    print result
 
     defer.returnValue(reactor.stop())
 

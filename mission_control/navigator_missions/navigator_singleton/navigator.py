@@ -21,6 +21,29 @@ from sensor_msgs.msg import PointCloud
 import navigator_msgs.srv as navigator_srvs
 
 
+class Result(object):
+    def __init__(self, success=True, response="Mission completed sucessfully.", need_rerun=False,
+                 post_function=None):
+        self.success = success
+        self.response = response
+        self.need_rerun = need_rerun
+        self.post_function = lambda: None if post_function is None else post_function
+        self.ralphs_gayness_level = 10.3
+
+    def __repr__(self):
+        cool_bars = "=" * 75
+        _pass = (cool_bars,
+                 "    Mission Success!",
+                 "    Response: {}".format(self.response),
+                 cool_bars)
+        _fail = (cool_bars,
+                 "    Mission Failure!",
+                 "    Response: {}".format(self.response),
+                 "    Post function: {}".format(self.response),
+                 cool_bars)
+
+        return '\n'.join(_pass if self.success else _fail)
+
 class Navigator(object):
     def __init__(self, nh):
         self.nh = nh
@@ -46,7 +69,7 @@ class Navigator(object):
         self._moveto_action_client2 = action.ActionClient(self.nh, 'move_to', MoveToWaypointAction)
 
         print "NAVIGATOR: Waiting for move_to action client..."
-        yield self._moveto_action_client2.wait_for_server()
+        #yield self._moveto_action_client2.wait_for_server()
 
         self._odom_sub = self.nh.subscribe('odom', Odometry,
                                            lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0]))
@@ -58,9 +81,9 @@ class Navigator(object):
 
         print "NAVIGATOR: Waiting for odom..."
         yield self._odom_sub.get_next_message()  # We want to make sure odom is working before we continue
-        yield self._ecef_odom_sub.get_next_message()
+        #yield self._ecef_odom_sub.get_next_message()
 
-        yield self._make_bounds()
+        #yield self._make_bounds()
         self._make_alarms()
 
         defer.returnValue(self)
@@ -80,6 +103,10 @@ class Navigator(object):
     @property
     def move(self):
         return PoseEditor2(self, self.pose)
+
+    def fetch_result(self, *args, **kwargs):
+        # For a unified result class
+        return Result(*args, **kwargs)#.defer_return
 
     @util.cancellableInlineCallbacks
     def _make_bounds(self):
