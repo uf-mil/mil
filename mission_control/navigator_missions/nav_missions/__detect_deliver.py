@@ -4,6 +4,7 @@ import txros
 import std_srvs.srv
 import numpy as np
 import tf
+import tf.transformations as trns
 from navigator_msgs.msg import ShooterDoAction, ShooterDoActionGoal
 from navigator_msgs.srv import ObjectDBSingleQuery, ObjectDBSingleQueryRequest, CameraToLidarTransform,CameraToLidarTransformRequest
 from geometry_msgs.msg import Point
@@ -80,7 +81,7 @@ class DetectDeliverMission:
 
 
     @txros.util.cancellableInlineCallbacks
-    def align_distance(self):
+    def align_to_target(self):
        while True:
          found = yield self.is_found()
          if (found):
@@ -94,7 +95,23 @@ class DetectDeliverMission:
            res = yield self.cameraLidarTransformer(req)
            if res.success:
             transformObj = yield self.navigator.tf_listener.get_transform('/enu', '/right_right_cam', self.found_shape.header.stamp)
-            print "NORMAL = ", transformObj.transform_vector(navigator_tools.rosmsg_to_numpy(res.normal));
+            enunormal = transformObj.transform_vector(navigator_tools.rosmsg_to_numpy(res.normal));
+            enupoint = transformObj.transform_point(navigator_tools.rosmsg_to_numpy(res.transformed[0]));
+            print "POINT = ", enupoint
+            print "VECTOR = ", enunormal
+            enumove = enupoint+10*enunormal #moves 10 meters away
+            print "MOVING TO= ", enumove
+            position, rot = yield self.navigator.tx_pose
+
+            print "POSITION= ",position
+            print "ROT= ",rot
+           
+
+            gotohead = trns.quaternion_from_euler(0,0,np.arccos(enunormal[1])) #Align perpindicular
+            print "GOTOHEAD= ", gotohead
+
+
+            yield self.navigator.move.set_position(enumove).set_orientation(gotohead).go()
             return
             # yield navigator.set_position(n)
             # trans, rot = self.navigator.tf_listener.lookupTransform('/enu', '/right_right_cam', self.resp.symbol.header.stamp)
@@ -185,13 +202,11 @@ class DetectDeliverMission:
     @txros.util.cancellableInlineCallbacks
     def findAndShoot(self):
         yield self.set_shape_and_color() #Get correct goal shape/color from params
-        # ~yield self.get_waypoint() #Get waypoint of shooter target
-        # ~yield self.circle_search() #Go to waypoint and circle until arget found
-        # yield self.align_perpendicular()
-        # yield self.align_distance()
-        # yield self.center_to_target()
-        yield self.align_distance()
+        yield self.get_waypoint() #Get waypoint of shooter target
+        yield self.circle_search() #Go to waypoint and circle until target found
+        yield self.align_to_target()
         yield self.offset_for_target() #Move a little bit forward to be centered to target
+        print "Starting"
         yield self.shootAllBalls()
 
 @txros.util.cancellableInlineCallbacks
