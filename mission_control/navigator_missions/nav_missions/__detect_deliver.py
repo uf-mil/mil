@@ -85,15 +85,15 @@ class DetectDeliverMission:
          found = yield self.is_found()
          if (found):
            req = CameraToLidarTransformRequest()
-           req.header.stamp = self.resp.symbol.header.stamp
+           req.header.stamp = self.found_shape.header.stamp
            req.point = Point()
-           req.point.x = self.resp.symbol.CenterX
-           req.point.y = self.resp.symbol.CenterY
+           req.point.x = self.found_shape.CenterX
+           req.point.y = self.found_shape.CenterY
            req.tolerance = 10
            #print req
            res = yield self.cameraLidarTransformer(req)
            if res.success:
-            transformObj = yield self.navigator.tf_listener.get_transform('/enu', '/right_right_cam', self.resp.symbol.header.stamp)
+            transformObj = yield self.navigator.tf_listener.get_transform('/enu', '/right_right_cam', self.found_shape.header.stamp)
             print "NORMAL = ", transformObj.transform_vector(navigator_tools.rosmsg_to_numpy(res.normal));
             return
             # yield navigator.set_position(n)
@@ -149,7 +149,9 @@ class DetectDeliverMission:
     @txros.util.cancellableInlineCallbacks
     def is_found(self):
         self.resp = yield self.navigator.vision_proxies["get_shape"].get_response(Shape=self.Shape, Color=self.Color)
-        defer.returnValue(self.resp.found and self.resp.symbol.img_width != 0)
+        if self.resp.found:
+          self.found_shape = self.resp.shapes.list[0]
+        defer.returnValue(self.resp.found)
 
 
     @txros.util.cancellableInlineCallbacks
@@ -158,7 +160,7 @@ class DetectDeliverMission:
             print "Shape not found"
             # raise Exception('Shape not found')
             defer.returnValue(False)
-        center = self.resp.symbol.CenterX / self.resp.symbol.img_width
+        center = self.found_shape.CenterX / self.found_shape.img_width
         self.center_error = center - 0.5
         print "Center ", center
         defer.returnValue(abs(self.center_error) < self.center_error_threshold)

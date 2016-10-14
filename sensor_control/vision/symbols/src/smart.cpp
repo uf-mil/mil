@@ -99,10 +99,10 @@ class ShapesBuffer {
     return true;
   }
   bool sameType(navigator_msgs::DockShape shape) {
-    return shape.Color == Color && shape.Shape == Shape;
+    return sameType(shape.Shape,shape.Color);
   }
   bool sameType(std::string &shape, std::string &color) {
-    return shape == Shape && color == Color;
+    return (shape == Shape || shape == navigator_msgs::GetDockShape::Request::ANY) && (color == Color || color == navigator_msgs::GetDockShape::Request::ANY);
   }
   bool isFound() { return buffer.full() && !isStale(); }
   void clear() { buffer.clear(); }
@@ -172,10 +172,22 @@ class ImageSearcher {
   bool validRequest(navigator_msgs::GetDockShape::Request &req) {
     return (req.Color == navigator_msgs::GetDockShape::Request::BLUE ||
             req.Color == navigator_msgs::GetDockShape::Request::GREEN ||
-            req.Color == navigator_msgs::GetDockShape::Request::RED) &&
+            req.Color == navigator_msgs::GetDockShape::Request::RED ||
+            req.Color == navigator_msgs::GetDockShape::Request::ANY) &&
            (req.Shape == navigator_msgs::GetDockShape::Request::CIRCLE ||
             req.Shape == navigator_msgs::GetDockShape::Request::CROSS ||
-            req.Shape == navigator_msgs::GetDockShape::Request::TRIANGLE);
+            req.Shape == navigator_msgs::GetDockShape::Request::TRIANGLE ||
+            req.Shape == navigator_msgs::GetDockShape::Request::ANY);
+  }
+  bool validRequest(navigator_msgs::GetDockShapes::Request &req) {
+    return (req.Color == navigator_msgs::GetDockShape::Request::BLUE ||
+            req.Color == navigator_msgs::GetDockShape::Request::GREEN ||
+            req.Color == navigator_msgs::GetDockShape::Request::RED ||
+            req.Color == navigator_msgs::GetDockShape::Request::ANY) &&
+           (req.Shape == navigator_msgs::GetDockShape::Request::CIRCLE ||
+            req.Shape == navigator_msgs::GetDockShape::Request::CROSS ||
+            req.Shape == navigator_msgs::GetDockShape::Request::TRIANGLE ||
+            req.Shape == navigator_msgs::GetDockShape::Request::ANY);
   }
   void shapeChecker(const navigator_msgs::DockShapes &symbols) {
     if (!active) return;
@@ -205,12 +217,30 @@ class ImageSearcher {
 
   bool getShapesCallback(navigator_msgs::GetDockShapes::Request &req,
                          navigator_msgs::GetDockShapes::Response &res) {
+    if (!active) {
+      res.found = false;
+      res.error = navigator_msgs::GetDockShapes::Response::NODE_DISABLED;
+      return true;
+    }
+    if (!validRequest(req)) {
+      res.found = false;
+      res.error = navigator_msgs::GetDockShapes::Response::INVALID_REQUEST;
+      return true;
+    }
+    if (frames < 10) {
+      res.found = false;
+      res.error = navigator_msgs::GetDockShapes::Response::TOO_SMALL_SAMPLE;
+      return true;
+    }
     for (auto shape = foundShapes.begin(); shape != foundShapes.end();
          shape++) {
+      if (!shape->sameType(req.Shape,req.Color)) continue;
       navigator_msgs::DockShape dockShape;
       if (shape->getAverageShape(dockShape))
         res.shapes.list.push_back(dockShape);
     }
+    if (res.shapes.list.size() > 0) res.found = true;
+    else res.error =  navigator_msgs::GetDockShapes::Response::SHAPE_NOT_FOUND;
     return true;
   }
   bool getShapeCallback(navigator_msgs::GetDockShape::Request &req,
