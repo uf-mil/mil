@@ -10,12 +10,13 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
-void FitPlanesToCloud(objectMessage &object, sensor_msgs::PointCloud &rosCloud) 
+void FitPlanesToCloud(objectMessage &object, sensor_msgs::PointCloud &rosCloud, const geometry_msgs::Pose &boatPose_enu) 
 {
 	//Check that we have enough points to run model
-	if (object.scale.z < 2.5) {
+	if (object.scale.z < 2 || object.beams.size() <= 300) {
 		return;
 	}
+	ROS_INFO_STREAM("PLANE FIT | Running plane fit on object id " << object.id << " with height of " << object.scale.z);
 
 	//Create pcl data types
 	pcl::PointCloud<pcl::PointXYZ>::Ptr pclCloud(new pcl::PointCloud<pcl::PointXYZ>), pclCloud_seg(new pcl::PointCloud<pcl::PointXYZ>);
@@ -73,29 +74,54 @@ void FitPlanesToCloud(objectMessage &object, sensor_msgs::PointCloud &rosCloud)
 		}
 		ROS_INFO_STREAM("PLANE FIT | " << inliers->indices.size() << " out of " << pclCloud->points.size() << " : " << rosCloud.points.size());
     	ROS_INFO_STREAM("PLANE FIT | Coeffs found: " << coeffs.values[0] << "," << coeffs.values[1] << "," << coeffs.values[2] << " - " << inliers->indices.size());
-
-    	geometry_msgs::Vector3 normal;
-    	object.normal.x = coeffs.values[0];
+   		//Set object normal to best normal found
+   		object.normal.x = coeffs.values[0];
     	object.normal.y = coeffs.values[1];
-    	object.normal.z = coeffs.values[2];
+		object.normal.z = coeffs.values[2];			
+	}
 
+	if (object.normal.x != 0 && object.normal.y != 0 && object.normal.z != 0) {
+		//Update the current object normal to face the boat
+		Eigen::Vector3d bestNormal,normal,v_object_boat;
+		normal(0) = object.normal.x;
+		normal(1) = object.normal.y;
+		normal(2) = object.normal.z;
+		normal.normalize();
+		bestNormal = normal;
+		v_object_boat(0) = boatPose_enu.position.x - object.position.x;
+		v_object_boat(1) = boatPose_enu.position.y - object.position.y;
+		v_object_boat(2) = boatPose_enu.position.z - object.position.z;
+		v_object_boat.normalize();
+
+		//std::cout << v_object_boat(0) << "," << v_object_boat(1) << "," << v_object_boat(2) << std::endl;
+		//std::cout << normal(0) << "," << normal(1)  << "," << normal(2) << std::endl;
+
+		double angle = fabs( acos(normal.dot(v_object_boat))*180.0/M_PI );
 		//Rotate the normal 3 times to get the other directions at 90 degree seperation
-    	/*normals.push_back(p);
-    	for (int ii = 1; ii <= 3; ++ii) {
+		for (int ii = 1; ii <= 3; ++ii) {
 	    	Eigen::Affine3d RotateZ(Eigen::Affine3d::Identity());
 	    	RotateZ.rotate(Eigen::AngleAxisd(M_PI/2.0*ii, Eigen::Vector3d::UnitZ()));
-	    	Eigen::Vector3d pRot = RotateZ*Eigen::Vector3d(p.x,p.y,p.z);
-	    	geometry_msgs::Point p2;
-	    	p2.x = pRot(0); p2.y = pRot(1); p2.z = pRot(2);
-	    	ROS_INFO_STREAM("PLANE FIT | Rotated Coeffs found: " << p2.x << "," << p2.y << "," << p2.z);
-	    	normals.push_back(p2);
-	    }*/
+	    	Eigen::Vector3d rotNormal = RotateZ*normal;
+	    	//std::cout << rotNormal(0) << "," << rotNormal(1) << "," << rotNormal(2) << std::endl;
+	    	double rotAngle = fabs( acos(rotNormal.dot(v_object_boat))*180.0/M_PI );
+	    	if ( rotAngle < angle ) {
+	    		angle = rotAngle;
+	    		bestNormal = rotNormal;
+	    	}
+	    }
 	    
+	    //Set object normal to best normal found
+	    object.normal.x = bestNormal(0);
+	    object.normal.y = bestNormal(1);
+		object.normal.z = bestNormal(2);	
+	}
+}
+
+
+
     	// Extract the inliers
     	/*extract.setInputCloud(pclCloud);
     	extract.setIndices(inliers);
     	extract.setNegative(true);
     	extract.filter(*pclCloud_seg);
     	pclCloud.swap(pclCloud_seg);*/
-	}
-}

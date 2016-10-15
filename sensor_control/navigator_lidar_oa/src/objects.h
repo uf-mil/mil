@@ -21,7 +21,7 @@ public:
 		this->diff_thresh = diff_thresh;
 	}
 
-	std::vector<objectMessage> add_objects(std::vector<objectMessage> objects, sensor_msgs::PointCloud &rosCloud)
+	std::vector<objectMessage> add_objects(std::vector<objectMessage> objects, sensor_msgs::PointCloud &rosCloud, const geometry_msgs::Pose &boatPose_enu)
 	{
 		for(auto obj : objects) {
 			float min_dist = 100;
@@ -50,7 +50,7 @@ public:
 		}
 
 		for(auto &s_obj : saved_objects) {
-			FitPlanesToCloud(s_obj,rosCloud);
+			FitPlanesToCloud(s_obj,rosCloud,boatPose_enu);
 		}
 
 		return saved_objects;

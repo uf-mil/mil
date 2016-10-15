@@ -44,7 +44,7 @@ struct cell
 struct beamEntry
 {
 	void update(const LidarBeam &beam) {
-		if (q.size() >= 25) { q.pop_front(); }
+		if (q.size() >= 20) { q.pop_front(); }
 		q.push_back(beam);
 	}
 	std::deque<LidarBeam> q;
@@ -123,7 +123,7 @@ class OccupancyGrid
 	    /// \param ?
 	    ////////////////////////////////////////////////////////////
 		#ifndef OPENCV_IRA
-		void updatePointsAsCloud(const sensor_msgs::PointCloud2ConstPtr &cloud, Eigen::Affine3d T, int max_hits) 
+		void updatePointsAsCloud(const sensor_msgs::PointCloud2ConstPtr &cloud, Eigen::Affine3d T, int max_hits, double MAXIMUM_Z_BELOW_LIDAR, double MAXIMUM_Z_ABOVE_LIDAR) 
 		{
 			//Decrement grid for negative persistance but only in front of the boat! This still isn't technially true since the boat 
 			//can see somwhat behind itself.. THIS NEEDS TO BE FIXED!!!!
@@ -155,7 +155,7 @@ class OccupancyGrid
 			    Eigen::Vector2d am = b1 - point;
 		     	if(0 <= ab.dot(am) && ab.dot(am) <= ab.dot(ab) && 0 <= am.dot(ac) && am.dot(ac) <= ac.dot(ac)){
 		     		//std::cout<<"TRUE"<<std::endl;
-					if (xyz_in_velodyne.norm() > 1 && xyz_in_velodyne.norm() <= 100 && z.f >= -3) {
+					if (xyz_in_velodyne.norm() > 1 && xyz_in_velodyne.norm() <= 100 && z.f >= -MAXIMUM_Z_BELOW_LIDAR && z.f <= MAXIMUM_Z_ABOVE_LIDAR) {
 						updateGrid(LidarBeam(xyz_in_enu(0), xyz_in_enu(1), xyz_in_enu(2),i.f),max_hits);
 					}
 		     	}
@@ -217,7 +217,7 @@ class OccupancyGrid
 	    /// \param ?
 	    /// \param ?
 	    ////////////////////////////////////////////////////////////
-		void createBinaryROI(int minHits = 10, double maxHeight = 0)
+		void createBinaryROI(int minHits = 10)
 		{
 			std::fill(ogridBinary.begin(),ogridBinary.end(),std::vector<bool>(ROI_SIZE,false));
 			std::fill(ogridMap.begin(),ogridMap.end(),50);
@@ -228,7 +228,7 @@ class OccupancyGrid
 				int binaryCol = 0;
 				for (int col = boatCol - ROI_SIZE/2; col < boatCol + ROI_SIZE/2; ++col,++binaryCol) {
 					//if ( std::abs(ogrid[row][col].max-ogrid[row][col].min) >= heightDiff && ogrid[row][col].hits >= minHit && ogrid[row][col].max <= maxHeight) { 
-					if ( ogrid[row][col].hits >= minHits && ogrid[row][col].max <= maxHeight) { 
+					if ( ogrid[row][col].hits >= minHits) { 
 						//std::cout << "Binary hit at " << row << "," << col << "," << (int)ogrid[row][col].hits << std::endl;
 						ogridBinary[binaryRow][binaryCol] = true; 
 						ogridMap[cnt] = 100;
