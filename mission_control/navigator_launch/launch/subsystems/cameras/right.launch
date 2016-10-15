@@ -11,7 +11,7 @@
           <param name="frame_id" value="right_cam"/>
           <param name="num_dma_buffers" value="10"/>
           <param name="video_mode" value="format7_mode1"/>
-          <param name="format7_packet_size" value="6640"/>
+          <param name="format7_packet_size" value="1200"/>
           <param name="format7_color_coding" value="raw8"/>
           <param name="binning_x" value="1"/>
           <param name="binning_y" value="1"/>
@@ -23,23 +23,23 @@
     <!-- Bayer color decoding -->
     <node pkg="nodelet" type="nodelet" name="right_image_proc_debayer"
         args="load image_proc/debayer camera_nodelet_manager">
-      <remap from="image_color" to="image_color" />
-      <remap from="image_mono" to="image_mono" />
-      <remap from="image_raw" to="image_raw" />
+      <remap from="image_color" to="right/image_color" />
+      <remap from="image_mono" to="right/image_mono" />
+      <remap from="image_raw" to="right/image_raw" />
     </node>
 
     <!-- mono rectification -->
     <node pkg="nodelet" type="nodelet" name="right_image_proc_rect"
           args="load image_proc/rectify camera_nodelet_manager">
-      <remap from="image_mono" to="image_mono" />
-      <remap from="image_rect" to="image_rect" />
+      <remap from="image_mono" to="right/image_mono" />
+      <remap from="image_rect" to="right/image_rect" />
     </node>
 
     <!-- color rectification -->
     <node pkg="nodelet" type="nodelet" name="right_image_proc_rect_color"
           args="load image_proc/rectify camera_nodelet_manager">
-      <remap from="image_mono" to="image_color" />
-      <remap from="image_rect" to="image_rect_color" />
+      <remap from="image_mono" to="right/image_color" />
+      <remap from="image_rect" to="right/image_rect_color" />
     </node>
 
   </group>
