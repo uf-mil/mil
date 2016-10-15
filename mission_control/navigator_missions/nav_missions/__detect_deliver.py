@@ -96,7 +96,7 @@ class DetectDeliverMission:
            if res.success:
             transformObj = yield self.navigator.tf_listener.get_transform('/enu', '/right_right_cam', self.found_shape.header.stamp)
             enunormal = transformObj.transform_vector(navigator_tools.rosmsg_to_numpy(res.normal));
-            enupoint = transformObj.transform_point(navigator_tools.rosmsg_to_numpy(res.transformed[0]));
+            enupoint = transformObj.transform_point(navigator_tools.rosmsg_to_numpy(res.closest));
             print "POINT = ", enupoint
             print "VECTOR = ", enunormal
             enumove = enupoint+10*enunormal #moves 10 meters away

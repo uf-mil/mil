@@ -75,6 +75,7 @@ bool CameraLidarTransformer::transformServiceCallback(
 
   cv::circle(debug_image, cv::Point(req.point.x, req.point.y), 3,
              cv::Scalar(255, 0, 0), 5);
+  double minDistance = 100000;
   for (auto ii = 0, jj = 0; ii < cloud_transformed.width;
        ++ii, jj += cloud_transformed.point_step) {
     floatConverter x, y, z, i;
@@ -136,6 +137,7 @@ bool CameraLidarTransformer::transformServiceCallback(
       }
 #endif
       geometry_msgs::Point geo_point;
+      double distance = sqrt(pow(point.x - req.point.x ,2) + pow(point.y - req.point.y,2) );
       if (abs(int(point.x) - req.point.x) < req.tolerance &&
           abs(int(point.y) - req.point.y) < req.tolerance) {
 #ifdef DO_ROS_DEBUG
@@ -160,6 +162,11 @@ bool CameraLidarTransformer::transformServiceCallback(
         geo_point.x = x.f;
         geo_point.y = y.f;
         geo_point.z = z.f;
+        if (distance < minDistance)
+        {
+          res.closest = geo_point;
+          minDistance = distance;
+        }
         res.transformed.push_back(geo_point);
       }
     }
