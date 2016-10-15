@@ -107,7 +107,7 @@ class DetectDeliverMission:
             print "ROT= ",rot
            
 
-            gotohead = trns.quaternion_from_euler(0,0,np.arccos(enunormal[1])) #Align perpindicular
+            gotohead = trns.quaternion_from_euler(0,0,np.arccos(-1*enunormal[1])) #Align perpindicular
             print "GOTOHEAD= ", gotohead
 
 
