@@ -30,27 +30,6 @@ class DetectDeliverMission:
         self.shooterLoad = txros.action.ActionClient(self.navigator.nh, '/shooter/load', ShooterDoAction)
         self.shooterFire = txros.action.ActionClient(self.navigator.nh, '/shooter/fire', ShooterDoAction)
 
-        # image_sub = navigator_tools.Image_Subscriber("/right/right/image_raw")
-        # camera_info = image_sub.wait_for_camera_info()
-        # self.camera = PinholeCameraModel()
-        # self.camera.fromCameraInfo(camera_info)
-
-    # def lidar_to_camera(self, lidar_points, t=None): #This may not be needed
-    #     #find angle to yaw to
-    #     self.navigator.tf_listener.waitForTransform('/right_right_cam', '/velodyne', t, rospy.Duration(2))
-    #     trans, rot = self.navigator.tf_listener.lookupTransform('/right_right_cam', '/velodyne', t)
-
-    #     t_mat = np.hstack((tf.transformations.quaternion_matrix(rot)[:3, :3], np.array(trans).reshape(3, 1)))
-    #     cam_points = [t_mat.dot(np.append(point, 1)) for point in enu_points]
-    #     for point in cam_points:
-    #         if point[2] < 0:
-    #             # If the point is behind us, ignore
-    #             #print "Behind us"
-    #             continue
-
-    #         uv_point = np.array(self.camera.project3dToPixel(point), dtype=np.uint32)
-    #     return "ha"
-
     @txros.util.cancellableInlineCallbacks
     def set_shape_and_color(self):
         #Use params to get shape and color to look for
@@ -69,15 +48,11 @@ class DetectDeliverMission:
 
     @txros.util.cancellableInlineCallbacks
     def circle_search(self):
+        print "Starting circle search"
         pattern = self.navigator.move.circle_point(navigator_tools.rosmsg_to_numpy(self.waypoint_res.object.position), radius=10,theta_offset=1.57)
         searcher = self.navigator.search(vision_proxy='get_shape', search_pattern=pattern, Shape=self.Shape, Color=self.Color)
-        yield searcher.start_search(spotings_req=1, speed=1)
-
-
-    @txros.util.cancellableInlineCallbacks
-    def align_perpendicular(self):
-        #Allign perpendicular to the face of the target
-        print "Aligning perpendicular"
+        yield searcher.start_search(timeout=300,spotings_req=1, speed=1)
+        print "Ended Circle Search"
 
 
     @txros.util.cancellableInlineCallbacks
@@ -103,28 +78,20 @@ class DetectDeliverMission:
             print "MOVING TO= ", enumove
             position, rot = yield self.navigator.tx_pose
 
-            print "POSITION= ",position
             print "ROT= ",rot
-           
 
-            gotohead = trns.quaternion_from_euler(0,0,np.arccos(-1*enunormal[1])) #Align perpindicular
-            print "GOTOHEAD= ", gotohead
+            enuyaw = trns.quaternion_from_euler(0,0,np.arccos(-1*enunormal[1])) #Align perpindicular
+            print "ROTATING TO= ", enuyaw
 
-
-            yield self.navigator.move.set_position(enumove).set_orientation(gotohead).go()
+            print "MOVING!"
+            yield self.navigator.move.set_position(enumove).set_orientation(enuyaw).go()
             return
-            # yield navigator.set_position(n)
-            # trans, rot = self.navigator.tf_listener.lookupTransform('/enu', '/right_right_cam', self.resp.symbol.header.stamp)
-            # t_mat = np.hstack((tf.transformations.quaternion_matrix(rot)[:3, :3], np.array(trans).reshape(3, 1)))
-            # enu_points = [t_mat.dot(res.normal)]
-            # print "NORMAL = ", enu_points
             print "DISTANCE = ",res.distance
            else:
             print "Error: ",res.error
          else:
            print "Not found"
          
-
 
     @txros.util.cancellableInlineCallbacks
     def center_to_target(self):
@@ -145,22 +112,6 @@ class DetectDeliverMission:
         yield self.navigator.move.forward(0.33) #Move off of center of shape to be centered with large target
         # ~self.navigator.move.backward(0.5) #Move off of center of shape to be centered with small target
 
-
-    def bounding_rect(self, points):
-        maxX = 0
-        minX = 2000
-        maxY = 0
-        minY = 2000
-        for i in range(len(points)):
-            if points[i].x > maxX:
-                maxX = points[i].x
-            if points[i].y > maxY:
-                maxY = points[i].y
-            if points[i].x < minX:
-                minX = points[i].x
-            if points[i].y < minY:
-                minY = points[i].y
-        return np.array([maxX, maxY, minX, minY])
 
 
     @txros.util.cancellableInlineCallbacks
@@ -206,10 +157,12 @@ class DetectDeliverMission:
         yield self.circle_search() #Go to waypoint and circle until target found
         yield self.align_to_target()
         yield self.offset_for_target() #Move a little bit forward to be centered to target
-        print "Starting"
+        print "Starting to fire"
         yield self.shootAllBalls()
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator):
+    print "Starting Detect Deliver Mission"
     mission = DetectDeliverMission(navigator)
     yield mission.findAndShoot()
+    print "End of Detect Deliver Mission"
