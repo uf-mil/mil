@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>628</width>
-    <height>389</height>
+    <width>635</width>
+    <height>390</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -18,7 +18,7 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>628</width>
+    <width>16777215</width>
     <height>16777215</height>
    </size>
   </property>
@@ -221,13 +221,13 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>380</width>
-            <height>0</height>
+            <width>375</width>
+            <height>177</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>380</width>
+            <width>375</width>
             <height>16777215</height>
            </size>
           </property>
@@ -236,6 +236,9 @@
           </property>
           <property name="horizontalScrollBarPolicy">
            <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
           </property>
           <property name="dragDropOverwriteMode">
            <bool>false</bool>
@@ -290,40 +293,66 @@
         <string>Control Panel</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_8">
-        <item row="0" column="0">
+        <item row="0" column="1">
          <widget class="QPushButton" name="toggle_kill_button">
           <property name="text">
            <string>Toggle Kill</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
+        <item row="2" column="1">
          <widget class="QPushButton" name="station_hold_button">
           <property name="text">
            <string>Station Hold</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
+        <item row="4" column="1">
          <widget class="QPushButton" name="rc_control_button">
           <property name="text">
            <string>RC Control</string>
           </property>
          </widget>
         </item>
-        <item row="6" column="0">
+        <item row="6" column="1">
          <widget class="QPushButton" name="lock_keyboard_control_button">
           <property name="text">
            <string>Lock Keyboard Control</string>
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
+        <item row="3" column="1">
          <widget class="QPushButton" name="autonomous_control_button">
           <property name="text">
            <string>Autonomous Control</string>
           </property>
          </widget>
+        </item>
+        <item row="3" column="2">
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="3" column="0">
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </widget>
