@@ -6,7 +6,11 @@ import rospkg
 for module in os.listdir(os.path.join(rospkg.RosPack().get_path("navigator_missions"), 'nav_missions/')):
     if module[0] == '_' or module[-3:] != '.py':
         continue
-    __import__(module[:-3], locals(), globals())
+    try:
+        __import__(module[:-3], locals(), globals())
+    except Exception as e:
+        print "ERROR in module: {}".format(module)
+        print e, '\n'
 
 del rospkg
 del module

@@ -155,6 +155,7 @@ class PoseEditor2(object):
 
     # Orientation
     def set_orientation(self, orientation):
+        orientation = np.array(orientation)
         if orientation.shape == (4, 4):
             # We're getting a homogeneous rotation matrix - not a quaternion
             orientation = transformations.quaternion_from_matrix(orientation)

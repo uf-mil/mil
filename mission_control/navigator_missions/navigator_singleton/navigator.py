@@ -22,13 +22,12 @@ import navigator_msgs.srv as navigator_srvs
 
 
 class Result(object):
-    def __init__(self, success=True, response="Mission completed sucessfully.", need_rerun=False,
+    def __init__(self, success=True, response="", need_rerun=False,
                  post_function=None):
         self.success = success
         self.response = response
         self.need_rerun = need_rerun
         self.post_function = lambda: None if post_function is None else post_function
-        self.ralphs_gayness_level = 10.3
 
     def __repr__(self):
         cool_bars = "=" * 75
@@ -39,7 +38,7 @@ class Result(object):
         _fail = (cool_bars,
                  "    Mission Failure!",
                  "    Response: {}".format(self.response),
-                 "    Post function: {}".format(self.response),
+                 "    Post function: {}".format(self.post_function.__name__),
                  cool_bars)
 
         return '\n'.join(_pass if self.success else _fail)
@@ -106,7 +105,7 @@ class Navigator(object):
 
     def fetch_result(self, *args, **kwargs):
         # For a unified result class
-        return Result(*args, **kwargs)#.defer_return
+        return Result(*args, **kwargs)
 
     @util.cancellableInlineCallbacks
     def _make_bounds(self):
@@ -127,13 +126,33 @@ class Navigator(object):
 
     def vision_request(self, request_name, **kwargs):
         print "DEPREICATED: Please use new dictionary based system."
-        return self.vision_proxies[request_name].get_response()
+        return self.vision_proxies[request_name].get_response(**kwargs)
 
     def change_wrench(self, source):
         return self._change_wrench(navigator_srvs.WrenchSelectRequest(source))
 
     def search(self, *args, **kwargs):
         return Searcher(self, *args, **kwargs)
+
+    @util.cancellableInlineCallbacks
+    def latching_publisher(self, topic, msg_type, msg, freq=2, update_header=True):
+        '''
+        Creates a publisher that publishes a message at a set frequency.
+        Usage:
+            latched = navigator.latching_publisher("/ogrid", OccupancyGrid, my_ogrid)
+            # Now the ogrid is publishing twice a second...
+            # If you want to cancel the publisher:
+            latched.cancel()
+        '''
+        pub = yield self.nh.advertise(topic, msg_type)
+
+        while True:
+            # Update timestamps if the msg has a header
+            if update_header and hasattr(msg, "header"):
+                msg.header = navigator_tools.make_header(frame=msg.header.frame_id)
+
+            pub.publish(msg)
+            yield self.nh.sleep(1 / freq)
 
     def _load_vision_serivces(self, fname="vision_services.yaml"):
         rospack = rospkg.RosPack()
