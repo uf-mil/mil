@@ -38,6 +38,7 @@
 class CameraLidarTransformer
 {
   private:
+    std::string camera_info_topic;
     ros::NodeHandle nh;
     ros::ServiceServer transformServiceServer;
     tf2_ros::Buffer tfBuffer;

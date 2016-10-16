@@ -38,7 +38,6 @@ CameraLidarTransformer::CameraLidarTransformer()
 }
 void CameraLidarTransformer::cameraInfoCallback(sensor_msgs::CameraInfo info)
 {
-  // ~printf("Camera Info: Width=%d height=%d\n",info.width,info.height);
   camera_info = info;
 }
 bool CameraLidarTransformer::transformServiceCallback(
@@ -48,7 +47,6 @@ bool CameraLidarTransformer::transformServiceCallback(
   sensor_msgs::PointCloud2ConstPtr scloud =
       lidarCache.getElemAfterTime(req.header.stamp);
   if (!scloud) {
-    std::cout << "Cloud not found" << std::endl;
     res.success = false;
     res.error = "CLOUD NOT FOUND";
     return true;
@@ -57,9 +55,6 @@ bool CameraLidarTransformer::transformServiceCallback(
       tfBuffer.lookupTransform("right_right_cam", "velodyne", req.header.stamp);
   sensor_msgs::PointCloud2 cloud_transformed;
   tf2::doTransform(*scloud, cloud_transformed, transform);
-// ~geometry_msgs::Vector3Stamped x;
-// ~geometry_msgs::Vector3Stamped y;
-// ~tf2::doTransform (x,y,transform);
 #ifdef DO_ROS_DEBUG
   debugCloudPub.publish(cloud_transformed);
   cv::Mat debug_image(camera_info.height, camera_info.width, CV_8UC3,
@@ -75,7 +70,7 @@ bool CameraLidarTransformer::transformServiceCallback(
 
   cv::circle(debug_image, cv::Point(req.point.x, req.point.y), 3,
              cv::Scalar(255, 0, 0), 5);
-  double minDistance = 100000;
+  double minDistance = std::numeric_limits<double>::max();
   for (auto ii = 0, jj = 0; ii < cloud_transformed.width;
        ++ii, jj += cloud_transformed.point_step) {
     floatConverter x, y, z, i;
@@ -85,30 +80,12 @@ bool CameraLidarTransformer::transformServiceCallback(
       z.data[kk] = cloud_transformed.data[jj + 8 + kk];
       i.data[kk] = cloud_transformed.data[jj + 16 + kk];
     }
-    //camera_info.K[0] = 314.074175;
-    //camera_info.K[2] = 324.843873;
-    //camera_info.K[4] = 314.074175;
-    //camera_info.K[5] = 233.077192;
-    //camera_info.K[8] = 1;
-    //camera_info.D[0] = -0.23943105096248707;
-    //camera_info.D[1] = 0.047913831179275175;
-    //camera_info.D[2] = -0.0010221177506805387;
-    //camera_info.D[3] = 0.0007312338670705555;
-    //camera_info.R[0] = 1.0;
-    //camera_info.R[4] = 1.0;
-    //camera_info.R[8] = 1.0;
-    //camera_info.P[0] = 226.95376586914062;
-    //camera_info.P[2] = 324.88712003802357;
-    //camera_info.P[5] = 259.2882690429687;
-    //camera_info.P[6] = 227.53713928460274;
     cam_model.fromCameraInfo(camera_info);
     if (int(z.f) < 0 || int(z.f) > 30) continue;
     cv::Point2d point = cam_model.project3dToPixel(cv::Point3d(x.f, y.f, z.f));
 
     if (int(point.x) > 0 && int(point.x) < camera_info.width &&
         int(point.y) > 0 && int(point.y) < camera_info.height) {
-// ~printf("Point: x=%i y=%i WIDTH=%i
-// HEIGHT=%i\n",int(point.x),int(point.y),camera_info.width,camera_info.height);
 #ifdef DO_ROS_DEBUG
       visualization_msgs::Marker marker_point;
       marker_point.header = req.header;
@@ -126,7 +103,7 @@ bool CameraLidarTransformer::transformServiceCallback(
       marker_point.color.r = 0.0;
       marker_point.color.g = 1.0;
       marker_point.color.b = 0.0;
-      marker_point.lifetime = ros::Duration(0.5);
+      //marker_point.lifetime = ros::Duration(0.5);
       markers.markers.push_back(marker_point);
 
       // Draw
@@ -137,9 +114,8 @@ bool CameraLidarTransformer::transformServiceCallback(
       }
 #endif
       geometry_msgs::Point geo_point;
-      double distance = sqrt(pow(point.x - req.point.x ,2) + pow(point.y - req.point.y,2) );
-      if (abs(int(point.x) - req.point.x) < req.tolerance &&
-          abs(int(point.y) - req.point.y) < req.tolerance) {
+      double distance = sqrt(pow(point.x - req.point.x ,2) + pow(point.y - req.point.y,2) ); //Distance (2D) from request point to projected lidar point
+      if (distance < req.tolerance) {
 #ifdef DO_ROS_DEBUG
         if (int(point.x - 20) > 0 && int(point.x + 20) < camera_info.width &&
             int(point.y - 20) > 0 && int(point.y + 20) < camera_info.height) {
@@ -171,6 +147,20 @@ bool CameraLidarTransformer::transformServiceCallback(
       }
     }
   }
+  if (res.transformed.size() < 1) {
+    res.success = false;
+    res.error = "NO POINTS FOUND";
+    return true;
+  }
+  
+  //Filter out lidar points behind the plane
+  double min_z = (*std::min_element(res.transformed.begin(),res.transformed.end(), [=] (const geometry_msgs::Point& a,const geometry_msgs::Point& b) {
+    return a.z < b.z && a.z > 1;
+  })).z;
+  res.transformed.erase(std::remove_if(res.transformed.begin(),res.transformed.end(),[min_z] (const geometry_msgs::Point& p) {
+    return (p.z - min_z) < 0.2; 
+  }),res.transformed.end());
+  
   if (res.transformed.size() < 1) {
     res.success = false;
     res.error = "NO POINTS FOUND";
