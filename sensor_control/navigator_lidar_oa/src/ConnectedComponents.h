@@ -22,7 +22,7 @@ struct objectStats
 	void update(int row, int col, cell z)
 	{
 		//std::cout << "Stats: " << z.min << "," << z.max << std::endl;
-		if (!count) {
+		if (first) {
 			minRow = maxRow = row;
 			minCol = maxCol = col;
 			minHeight = z.min;
@@ -35,7 +35,7 @@ struct objectStats
 			if (z.min < minHeight) { minHeight = z.min; }
 			if (z.max > maxHeight) { maxHeight = z.max; }
 		}
-		++count;
+		first = false;
 	}
 	void insert(const std::deque<LidarBeam> &newBeams) {
 		//beams.insert(beams.end(),newBeams.begin(),newBeams.end());
@@ -48,7 +48,7 @@ struct objectStats
 			intensity.push_back(beam.i);
 		}
 	}
-	int count = 0;
+	bool first = true;
 	float minRow, maxRow, minCol, maxCol, minHeight, maxHeight;
 	//std::vector<LidarBeam> beams;
 	std::vector<geometry_msgs::Point32> beams;
@@ -169,7 +169,7 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 	int newId = 0;
 	objects.clear();
 	for (auto ii : mapObjects)  {
-		if (ii.second.count > 1 && ii.second.beams.size() > 1) {
+		if (ii.second.beams.size() > 1) {
 			objectMessage ob;
 			float dx = (ii.second.maxCol-ii.second.minCol)+0.015; ob.scale.x = dx*ogrid.VOXEL_SIZE_METERS;
 			float dy = (ii.second.maxRow-ii.second.minRow)+0.015; ob.scale.y = dy*ogrid.VOXEL_SIZE_METERS;
