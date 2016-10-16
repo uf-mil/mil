@@ -41,9 +41,9 @@ const double MAP_SIZE_METERS = 1500.3;
 const double ROI_SIZE_METERS = 201.3;
 const double VOXEL_SIZE_METERS = 0.30;
 const int MIN_HITS_FOR_OCCUPANCY = 25; //20
-const int MAX_HITS_IN_CELL = 350; //500
-const double MAXIMUM_Z_BELOW_LIDAR = 4; //2
-const double MAXIMUM_Z_ABOVE_LIDAR = 0.5;
+const int MAX_HITS_IN_CELL = 100; //500
+const double MAXIMUM_Z_BELOW_LIDAR = 2; //2
+const double MAXIMUM_Z_ABOVE_LIDAR = 2;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -52,14 +52,7 @@ OccupancyGrid ogrid(MAP_SIZE_METERS,ROI_SIZE_METERS,VOXEL_SIZE_METERS);
 AStar astar(ROI_SIZE_METERS/VOXEL_SIZE_METERS);
 nav_msgs::OccupancyGrid rosGrid;
 ros::Publisher pubGrid,pubMarkers,pubBuoys,pubTrajectory,pubWaypoint,pubCloud,pubCloudPCL;
-
-visualization_msgs::MarkerArray markers;	
-visualization_msgs::Marker m;
 ObjectTracker object_tracker;
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 geometry_msgs::Point waypoint_ogrid;
 geometry_msgs::Pose boatPose_enu;
 geometry_msgs::Twist boatTwist_enu;
@@ -69,10 +62,10 @@ uf_common::PoseTwistStamped waypoint_enu,carrot_enu;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Eigen::Vector2d BOUNDARY_CORNER_1 (-30-25, 50-50);
-Eigen::Vector2d BOUNDARY_CORNER_2 (-30-25, -20-50);
-Eigen::Vector2d BOUNDARY_CORNER_3 (35-25, -20-50);
-Eigen::Vector2d BOUNDARY_CORNER_4 (35-25, 50-50);
+Eigen::Vector2d BOUNDARY_CORNER_1 (30, 10);
+Eigen::Vector2d BOUNDARY_CORNER_2 (30, 120);
+Eigen::Vector2d BOUNDARY_CORNER_3 (140, 120);
+Eigen::Vector2d BOUNDARY_CORNER_4 (140, 10);
 
 //Eigen::Vector2d BOUNDARY_CORNER_1 (-30-35, 50+20);
 //Eigen::Vector2d BOUNDARY_CORNER_2 (-30-35, -20+20);
@@ -173,7 +166,6 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	m.type = visualization_msgs::Marker::LINE_STRIP;
 	m.action = visualization_msgs::Marker::ADD;
 	m.scale.x = 0.5;
-
 	p.x = BOUNDARY_CORNER_1(0); p.y = BOUNDARY_CORNER_1(1); p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
 	m.points.push_back(p);
 	p.x = BOUNDARY_CORNER_2(0); p.y = BOUNDARY_CORNER_2(1); p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
@@ -186,18 +178,43 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	m.points.push_back(p);
 	m.color.a = 0.6; m.color.r = 1; m.color.g = 1; m.color.b = 1;
 	markers.markers.push_back(m);
+
+	//Lidar area
+	m.id = 1002;
+	m.points.clear();
+	Eigen::Vector3d lidarLeft = T_enu_velodyne*Eigen::Vector3d(0,100,0);
+	p.x = lidarLeft(0); p.y = lidarLeft(1); p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	m.points.push_back(p);
+	Eigen::Vector3d lidarUpLeft = T_enu_velodyne*Eigen::Vector3d(100,100,0);
+	p.x = lidarUpLeft(0); p.y = lidarUpLeft(1); p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	m.points.push_back(p);
+	Eigen::Vector3d lidarUpRight = T_enu_velodyne*Eigen::Vector3d(100,-100,0);
+	p.x = lidarUpRight(0); p.y = lidarUpRight(1); p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	m.points.push_back(p);
+	Eigen::Vector3d lidarRight = T_enu_velodyne*Eigen::Vector3d(0,-100,0);
+	p.x = lidarRight(0); p.y = lidarRight(1); p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	m.points.push_back(p);
+	p.x = lidarpos.x; p.y = lidarpos.y; p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	m.points.push_back(p);
+	p.x = lidarLeft(0); p.y = lidarLeft(1); p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	m.points.push_back(p);
+	m.color.a = 0.6; m.color.r = 1; m.color.g = 0; m.color.b = 0;
+	markers.markers.push_back(m);
 	
 	//Publish buoys
-	navigator_msgs::BuoyArray allBuoys;
-	navigator_msgs::Buoy buoy;
+	//navigator_msgs::BuoyArray allBuoys;
+	//navigator_msgs::Buoy buoy;
 	geometry_msgs::Point32 p32;
+	
 	sensor_msgs::ChannelFloat32 channel;
 	channel.name = "intensity";
 	buoyCloud.channels.push_back(channel);
 	pclCloud.channels.push_back(channel);
-	buoy.header.seq = 0;
-	buoy.header.frame_id = "enu";
-	buoy.header.stamp = ros::Time::now();	
+	//buoy.header.seq = 0;
+	//buoy.header.frame_id = "enu";
+	//buoy.header.stamp = ros::Time::now();	
+	
+
 	auto object_permanence = object_tracker.add_objects(objects,pclCloud,boatPose_enu);
 
 	//Doesn't seem like small_objects being used, so commented...
@@ -208,7 +225,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		ROS_INFO_STREAM("LIDAR | Buoy " << obj.id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.beams.size() << " points and size " << obj.scale.x << "," << obj.scale.y << "," << obj.scale.z);
 		
 		//Convert obj to buoy ros message
-		buoy.header.stamp = ros::Time::now();
+		/*buoy.header.stamp = ros::Time::now();
 		buoy.id = obj.id;
 		buoy.confidence = 0;
 		buoy.position = obj.position;
@@ -218,10 +235,10 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		buoy.points = obj.beams;
 		buoy.intensity = obj.intensity;
 		buoy.pclInliers = obj.pclInliers;
-		buoy.normal = obj.normal;
+		buoy.normal = obj.normal;*/
 
 		//Show point cloud of just buoy objects
-		buoyCloud.points.insert(buoyCloud.points.end(),buoy.points.begin(),buoy.points.end());
+		buoyCloud.points.insert(buoyCloud.points.end(),obj.beams.begin(),obj.beams.end());
 		for (auto ii : obj.intensity) {	
 			buoyCloud.channels[0].values.push_back(ii);
 		}
@@ -262,7 +279,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		}
 
 		//Push buoy into collection
-		allBuoys.buoys.push_back(buoy);
+		//allBuoys.buoys.push_back(buoy);
 
 		//Turn obj into a marker for rviz
 		visualization_msgs::Marker m2;
@@ -280,7 +297,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		if(m2.id > max_id) max_id = m2.id;
 	}	
 	pubMarkers.publish(markers);
-	pubBuoys.publish(allBuoys);
+	//pubBuoys.publish(allBuoys);
 	pubCloud.publish(buoyCloud);
 	pubCloudPCL.publish(pclCloud);
 
@@ -350,142 +367,16 @@ int main(int argc, char* argv[])
 	ros::Subscriber sub2 = nh.subscribe("/odom", 1, cb_odom);
 
 	//Publish occupancy grid and visualization markers
-	pubGrid = nh.advertise<nav_msgs::OccupancyGrid>("ogrid_batcave",10);
-	pubMarkers = nh.advertise<visualization_msgs::MarkerArray>("markers_batcave",10);
-	pubBuoys = nh.advertise<navigator_msgs::BuoyArray>("buoys_batcave",10);
+	pubGrid = nh.advertise<nav_msgs::OccupancyGrid>("ira_ogrid",10);
+	pubMarkers = nh.advertise<visualization_msgs::MarkerArray>("ira_markers",10);
+	//pubBuoys = nh.advertise<navigator_msgs::BuoyArray>("buoys_batcave",10);
 	//pubMarkers = nh.advertise<visualization_msgs::MarkerArray>("/unclassified/objects/markers",10);
 	//pubBuoys = nh.advertise<navigator_msgs::BuoyArray>("/unclassified/objects",10);	
-	pubCloud = nh.advertise<sensor_msgs::PointCloud>("cloud_batcave",1);
-	pubCloudPCL = nh.advertise<sensor_msgs::PointCloud>("pclcloud_batcave",1);
+	pubCloud = nh.advertise<sensor_msgs::PointCloud>("ira_cloud",1);
+	pubCloudPCL = nh.advertise<sensor_msgs::PointCloud>("ira_pclcloud",1);
 
 	//Give control to ROS
 	ros::spin();
 
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//									Graveyard
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/*
-
-	//Check rosparam
-	//rosparam /lla_bounds
-	//lla enforce
-	//rosservice conversion - LLA to ENU
-
-
-	//Get nodes and topics
-	ros::V_string nodes;
-	ros::master::getNodes(nodes);
-	cout << "*** Nodes ***" << endl;
-	for (auto ii : nodes) { cout << ii << endl; }
-
-	ros::master::V_TopicInfo topics;
-	ros::master::getTopics(topics);
-	cout << "*** Topics ***" << endl;
-	for (auto ii : topics) { cout << ii.name << " (" << ii.datatype << ")" << endl; }
-	*/
-
-/*
-
-		//ROS_INFO_STREAM("T " << T.matrix());
-		//pcl_ros::transformPointCloud2(*pcloud, pcloudWorld,T_fixedToVelodyne);
-    	//tfListen.lookupTransform("/base_link", "/enu",ros::Time(0), T_fixedToVelodyne);
-    	//tfListen.transformPointCloud("enu",*pcloud,pcloudWorld);
-    	//tf2::doTransform (*pcloud, pcloudWorld, T_fixedToVelodyne);
-
-//#include <pcl/io/pcd_io.h>
-//#include <pcl/point_types.h>
-//#include "pcl_ros/point_cloud.h"
-
-//ROS message filter needed?
-void cb_transform(const tf2_msgs::TFMessageConstPtr &transform ) 
-{
-	ROS_INFO("cb_transform...");
-	Eigen::Affine3d T_F_B(Eigen::Affine3d::Identity());
-	for (int ii = 0; ii < transform->transforms.size(); ++ii) {
-		geometry_msgs::TransformStamped tStamped = transform->transforms[ii];
-		ROS_INFO_STREAM(tStamped.header.frame_id << " to " << tStamped.child_frame_id);
-	}
-		//T_F_B = tf2::transformToEigen (tStamped);
-}
-
-	//Get one message
-	boost::shared_ptr<const sensor_msgs::PointCloud2> cloud = ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/velodyne_points",ros::Duration(10));
-	ROS_INFO_STREAM("Cloud height/width: " << cloud->height << "," << cloud->width << "," << cloud->header.frame_id);
-	ROS_INFO_STREAM("Cloud point-step/row-step: " << cloud->point_step << "," << cloud->row_step<< "," << (int)cloud->is_bigendian);
-	for (auto ii = 0; ii < 4; ++ii) {
-		ROS_INFO_STREAM("Cloud field " << ii << ": " << cloud->fields[ii].name << "," << cloud->fields[ii].offset << "," << (int)cloud->fields[ii].datatype << "," << cloud->fields[ii].count);
-	}
-	
-	
-	//Raw Step through data
-	for (auto ii = 0, jj = 0; ii < cloud->width; ++ii,jj+=cloud->point_step) {
-		floatConverter x,y,z,i;
-		for (int kk = 0; kk < 4; ++kk)
-		{
-			x.data[kk] = cloud->data[jj+kk];
-			y.data[kk] = cloud->data[jj+4+kk];
-			z.data[kk] = cloud->data[jj+8+kk];
-			i.data[kk] = cloud->data[jj+16+kk];
-		}
-		std::cout << -y.f << "\t" << z.f << "\t" << -x.f << "\t" << i.f << std::endl;
-	}
-	
-	
-	//Use PCL to convert data to XYZI
-	pcl::PointCloud<pcl::PointXYZI> pclCloud;
-	pcl::fromROSMsg(*cloud,pclCloud);
-	//Save point cloud to file - Switch order for OpenGL
-	for (size_t i = 0; i < pclCloud.points.size(); ++i) {
-    	std::cout << -pclCloud.points[i].y << "\t" << pclCloud.points[i].z << "\t" << -pclCloud.points[i].x << "\t" << pclCloud.points[i].intensity << std::endl;
-    }
-
-    */
-//********************************************************************************************************************************
-//********************************************************************************************************************************
-//********************************************************************************************************************************
-//********************************************************************************************************************************
