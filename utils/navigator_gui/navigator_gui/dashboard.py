@@ -18,6 +18,7 @@ from python_qt_binding import QtCore
 from python_qt_binding import QtGui
 from python_qt_binding import loadUi
 from qt_gui.plugin import Plugin
+from rosgraph_msgs.msg import Clock
 import rospkg
 import rospy
 from std_msgs.msg import Float32
@@ -62,14 +63,11 @@ class Dashboard(Plugin):
             "mil-com-sick-lms111": ["Unknown", "Unknown"]
         }
 
-        # Temporary checking of the hosts on initialization
-        self.resolve_hosts()
-        self.check_hosts()
-
         # Dashboard state parameters
         self.is_killed = False
         self.cached_operating_mode = None
         self.cached_battery_alarm_level = None
+        self.system_time = None
 
         # Attempts to read the battery voltage parameters (sets them to defaults if they have not been set)
         self.battery_low_voltage = rospy.get_param("/battery_monitor/battery_low_voltage", 22.1)
@@ -78,8 +76,8 @@ class Dashboard(Plugin):
 
         self.kb = KillBroadcaster(id='station_hold', description='Resets Pose')
         self.kill_listener = AlarmListener('kill', self.update_kill_status)
-        # rospy.wait_for_service('/change_wrench')
         self.wrench_changer = rospy.ServiceProxy('/change_wrench', WrenchSelect)
+        rospy.Subscriber("/clock", Clock, self.cache_system_time)
 
         alarm_broadcaster = AlarmBroadcaster()
         self.kill_alarm = alarm_broadcaster.add_alarm(
@@ -96,6 +94,16 @@ class Dashboard(Plugin):
 
         # Add widget to the user interface
         context.add_widget(self._widget)
+
+        # Creates a heartbeat timer that updates data on the GUI
+        rospy.Timer(rospy.Duration(0.1), self.heartbeat, oneshot=False)
+
+    def heartbeat(self, event):
+        '''
+        Used by the heartbeat timer to update items on the GUI on time
+        intervals that work for each data type.
+        '''
+        self.update_system_time_status()
 
     def connect_ui(self):
         '''
@@ -115,6 +123,10 @@ class Dashboard(Plugin):
         self.battery_voltage_frame = self._widget.findChild(QtGui.QFrame, 'battery_voltage_frame')
         self.battery_voltage_status = self._widget.findChild(QtGui.QLabel, 'battery_voltage_status')
 
+        # System time
+        self.system_time_frame = self._widget.findChild(QtGui.QFrame, 'system_time_frame')
+        self.system_time_status = self._widget.findChild(QtGui.QLabel, 'system_time_status')
+
         # Devices table
         self.device_table = self._widget.findChild(QtGui.QFrame, 'device_table')
 
@@ -127,65 +139,6 @@ class Dashboard(Plugin):
         autonomous_control_button.clicked.connect(self.select_autonomous_control)
         rc_control_button = self._widget.findChild(QtGui.QPushButton, 'rc_control_button')
         rc_control_button.clicked.connect(self.select_rc_control)
-
-    def resolve_hosts(self):
-        '''
-        Resolves the hosts of the devices on NaviGator to IP addresses.
-        '''
-        row = 0
-
-        for host in self.hosts.keys():
-
-            # Resolves the IP address of the hostname
-            try:
-                ip = socket.gethostbyname(host)
-                ip_color = self.colors["green"]
-
-            # If hostname resolution fails, the IP address is set the unknown
-            except:
-                ip = "Unknown"
-                ip_color = self.colors["red"]
-
-            self.hosts[host][0] = ip
-
-            # Updates the host's IP address in the devices table
-            ip_item = QtGui.QLabel(ip)
-            ip_item.setAlignment(QtCore.Qt.AlignCenter)
-            ip_item.setStyleSheet(ip_color)
-            self.device_table.setCellWidget(row, 0, ip_item)
-            row += 1
-
-    def check_hosts(self):
-        '''
-        Pings the resolved hosts to check whether or not they are online.
-        '''
-        row = 0
-
-        for host in self.hosts.keys():
-            if (self.hosts[host][0] != "Unknown"):
-
-                # If the host is pingable, mark it as online
-                try:
-                    subprocess.check_output(['ping', '-c1', host])
-                    status = "Online"
-                    status_color = self.colors["green"]
-
-                # If pinging the host is unsuccessful, mark it as offline
-                except:
-                    status = "Offline"
-                    status_color = self.colors["red"]
-
-            # If hostname resolution failed, the status is set the unknown
-            else:
-                status = "Unknown"
-                status_color = self.colors["red"]
-
-            # Updates the status of the host in the devices table
-            status_item = QtGui.QLabel(status)
-            status_item.setAlignment(QtCore.Qt.AlignCenter)
-            status_item.setStyleSheet(status_color)
-            self.device_table.setCellWidget(row, 1, status_item)
-            row += 1
 
     def update_kill_status(self, alarm):
         '''
@@ -250,6 +203,80 @@ class Dashboard(Plugin):
 
             # Takes advantage of the periodic nature of the /battery_monitor node
             self.update_operating_mode_status()
+
+    def cache_system_time(self, msg):
+        '''
+        Stores the system time whenever it is published.
+        '''
+        self.system_time = msg.clock
+
+    def update_system_time_status(self):
+        '''
+        Updates the system time display when there is an update on the /clock
+        node.
+        '''
+        time_string = str(self.system_time)
+        if ((time_string is not None) and (len(time_string) > 9)):
+            self.system_time_status.setText(time_string[:-9] + "." + time_string[-9:-8] + "s")
+
+    def resolve_hosts(self):
+        '''
+        Resolves the hosts of the devices on NaviGator to IP addresses.
+        '''
+        row = 0
+
+        for host in self.hosts.keys():
+
+            # Resolves the IP address of the hostname
+            try:
+                ip = socket.gethostbyname(host)
+                ip_color = self.colors["green"]
+
+            # If hostname resolution fails, the IP address is set the unknown
+            except:
+                ip = "Unknown"
+                ip_color = self.colors["red"]
+
+            self.hosts[host][0] = ip
+
+            # Updates the host's IP address in the devices table
+            ip_item = QtGui.QLabel(ip)
+            ip_item.setAlignment(QtCore.Qt.AlignCenter)
+            ip_item.setStyleSheet(ip_color)
+            self.device_table.setCellWidget(row, 0, ip_item)
+            row += 1
+
+    def check_hosts(self):
+        '''
+        Pings the resolved hosts to check whether or not they are online.
+        '''
+        row = 0
+
+        for host in self.hosts.keys():
+            if (self.hosts[host][0] != "Unknown"):
+
+                # If the host is pingable, mark it as online
+                try:
+                    subprocess.check_output(['ping', '-c1', host])
+                    status = "Online"
+                    status_color = self.colors["green"]
+
+                # If pinging the host is unsuccessful, mark it as offline
+                except:
+                    status = "Offline"
+                    status_color = self.colors["red"]
+
+            # If hostname resolution failed, the status is set the unknown
+            else:
+                status = "Unknown"
+                status_color = self.colors["red"]
+
+            # Updates the status of the host in the devices table
+            status_item = QtGui.QLabel(status)
+            status_item.setAlignment(QtCore.Qt.AlignCenter)
+            status_item.setStyleSheet(status_color)
+            self.device_table.setCellWidget(row, 1, status_item)
+            row += 1
 
     def toggle_kill(self):
         '''

@@ -11,6 +11,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rospy</build_depend>
   <build_depend>std_msgs</build_depend>
+  <build_depend>rosgraph_msgs</build_depend>
   <build_depend>navigator_msgs</build_depend>
   <run_depend>os</run_depend>
   <run_depend>socket</run_depend>
@@ -18,6 +19,7 @@
   <run_depend>rospy</run_depend>
   <run_depend>rospkg</run_depend>
   <run_depend>std_msgs</run_depend>
+  <run_depend>rosgraph_msgs</run_depend>
   <run_depend>navigator_msgs</run_depend>
   <run_depend>qt_gui.plugin</run_depend>
   <run_depend>navigator_alarm</run_depend>
