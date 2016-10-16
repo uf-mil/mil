@@ -127,8 +127,13 @@ class OccupancyGrid
 		{
 			//Decrement grid for negative persistance but only in front of the boat! This still isn't technially true since the boat 
 			//can see somwhat behind itself.. THIS NEEDS TO BE FIXED!!!!
+			double colMin = ((boatCol-ROI_SIZE/2) - GRID_SIZE/2)*VOXEL_SIZE_METERS, colMax = ((boatCol+ROI_SIZE/2) - GRID_SIZE/2)*VOXEL_SIZE_METERS;
+			double rowMin = ((boatRow-ROI_SIZE/2) - GRID_SIZE/2)*VOXEL_SIZE_METERS, rowMax = ((boatRow+ROI_SIZE/2) - GRID_SIZE/2)*VOXEL_SIZE_METERS;
+			std::cout << "Scanning around boat x,y " << colMin << "," << colMax << " and " << rowMin << "," << rowMax << std::endl;
 			for (int row = boatRow - ROI_SIZE/2; row < boatRow + ROI_SIZE/2; ++row) {
 				for (int col = boatCol - ROI_SIZE/2; col < boatCol + ROI_SIZE/2; ++col) {
+					Eigen::Vector3d dir(col-boatCol,row-boatRow,0); dir.normalize();
+					double lidarAngle = fabs(acos(lidarHeading.dot(dir))*180./M_PI);
 					if (ogrid[row][col].hits > 0) { 
 						ogrid[row][col].hits -= 1;
 						if (ogrid[row][col].hits == 0) {
@@ -155,7 +160,7 @@ class OccupancyGrid
 			    Eigen::Vector2d am = b1 - point;
 		     	if(0 <= ab.dot(am) && ab.dot(am) <= ab.dot(ab) && 0 <= am.dot(ac) && am.dot(ac) <= ac.dot(ac)){
 		     		//std::cout<<"TRUE"<<std::endl;
-					if (xyz_in_velodyne.norm() > 1 && xyz_in_velodyne.norm() <= 100 && z.f >= -MAXIMUM_Z_BELOW_LIDAR && z.f <= MAXIMUM_Z_ABOVE_LIDAR) {
+					if (xyz_in_velodyne.norm() >= 1 && xyz_in_velodyne.norm() <= 75 && z.f >= -MAXIMUM_Z_BELOW_LIDAR && z.f <= MAXIMUM_Z_ABOVE_LIDAR) {
 						updateGrid(LidarBeam(xyz_in_enu(0), xyz_in_enu(1), xyz_in_enu(2),i.f),max_hits);
 					}
 		     	}
@@ -170,9 +175,10 @@ class OccupancyGrid
 	    /// \param ?
 	    /// \param ?
 	    ////////////////////////////////////////////////////////////
-		void setLidarPosition(geometry_msgs::Vector3 lidarPos_)
+		void setLidarPosition(geometry_msgs::Vector3 lidarPos_, Eigen::Vector3d lidarHeading_)
 		{
 			lidarPos = lidarPos_;
+			lidarHeading = lidarHeading_;
 			boatRow = floor(lidarPos.y/VOXEL_SIZE_METERS + GRID_SIZE/2);
 			boatCol = floor(lidarPos.x/VOXEL_SIZE_METERS + GRID_SIZE/2);
 		}
@@ -221,19 +227,21 @@ class OccupancyGrid
 		{
 			std::fill(ogridBinary.begin(),ogridBinary.end(),std::vector<bool>(ROI_SIZE,false));
 			std::fill(ogridMap.begin(),ogridMap.end(),50);
-			//std::cout << "Checking row: " << boatRow - ROI_SIZE/2 << "," << boatRow + ROI_SIZE/2 << std::endl;
-			//std::cout << "Checking col: " << boatCol - ROI_SIZE/2 << "," << boatCol + ROI_SIZE/2 << std::endl;
-			int cnt = 0,binaryRow = 0;
+			double colMin = ((boatCol-ROI_SIZE/2) - GRID_SIZE/2)*VOXEL_SIZE_METERS, colMax = ((boatCol+ROI_SIZE/2) - GRID_SIZE/2)*VOXEL_SIZE_METERS;
+			double rowMin = ((boatRow-ROI_SIZE/2) - GRID_SIZE/2)*VOXEL_SIZE_METERS, rowMax = ((boatRow+ROI_SIZE/2) - GRID_SIZE/2)*VOXEL_SIZE_METERS;
+			std::cout << "ROI around boat x,y " << colMin << "," << colMax << " and " << rowMin << "," << rowMax << std::endl;
+			int binaryRow = 0;
 			for (int row = boatRow - ROI_SIZE/2; row < boatRow + ROI_SIZE/2; ++row,++binaryRow) {
 				int binaryCol = 0;
 				for (int col = boatCol - ROI_SIZE/2; col < boatCol + ROI_SIZE/2; ++col,++binaryCol) {
 					//if ( std::abs(ogrid[row][col].max-ogrid[row][col].min) >= heightDiff && ogrid[row][col].hits >= minHit && ogrid[row][col].max <= maxHeight) { 
 					if ( ogrid[row][col].hits >= minHits) { 
-						//std::cout << "Binary hit at " << row << "," << col << "," << (int)ogrid[row][col].hits << std::endl;
+						double r_enu = (row - GRID_SIZE/2)*VOXEL_SIZE_METERS,c_enu = (col - GRID_SIZE/2)*VOXEL_SIZE_METERS;
+						std::cout << "Binary hit at x,y " << c_enu << "," << r_enu << "," << ogrid[row][col].hits << std::endl;
+						std::cout << "which is " << binaryRow*ROI_SIZE+binaryCol << std::endl;
 						ogridBinary[binaryRow][binaryCol] = true; 
-						ogridMap[cnt] = 100;
+						ogridMap[binaryRow*ROI_SIZE+binaryCol] = 100;
 					}
-					++cnt;
 				}
 			}
 		}
@@ -252,9 +260,11 @@ class OccupancyGrid
 			for (int row = inflateSize; row < ROI_SIZE-inflateSize-1; ++row) {
 				for (int col = inflateSize; col < ROI_SIZE-inflateSize-1; ++col) {
 					if (ogridBinaryCopy[row][col]) {
+						double r_enu = (row + boatRow-ROI_SIZE/2 - GRID_SIZE/2)*VOXEL_SIZE_METERS,c_enu = (col + boatCol-ROI_SIZE/2 - GRID_SIZE/2)*VOXEL_SIZE_METERS;
+						std::cout << "Inflation hit at x,y (" << col << "," << row << ") " << c_enu << "," << r_enu << "," << ogrid[row][col].hits << std::endl;	
 						for (int kk = 1; kk <= inflateSize; ++kk) {
 							for (int jj = 0; jj < 9; ++jj) {
-								int r = row+rOffset[jj]*kk, c = col+cOffset[jj]*kk;
+								int r = row+rOffset[jj]*kk, c = col+cOffset[jj]*kk;							
 								ogridBinary[r][c] = true;
 								ogridMap[r*ROI_SIZE+c] = 100;
 							}
@@ -274,8 +284,9 @@ class OccupancyGrid
 		std::vector< std::vector<bool> >  ogridBinary;			///< ???
 		std::vector< std::vector<bool> >  ogridBinaryCopy;		///< ???
 		std::vector< int8_t > ogridMap;							///< ???
-		uint32_t boatRow = 0, boatCol = 0;						///< ???				
+		int boatRow = 0, boatCol = 0;						///< ???				
 		geometry_msgs::Vector3 lidarPos;						///< ???
+		Eigen::Vector3d lidarHeading;
 		int updateCounter = 0;									///< ???
 		std::unordered_map<unsigned,beamEntry> pointCloudTable; ///< ???
 		Eigen::Vector2d b1,ab,ac;									///< ???

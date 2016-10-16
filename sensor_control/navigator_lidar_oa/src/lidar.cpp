@@ -37,8 +37,8 @@ using namespace std;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const double MAP_SIZE_METERS = 1500.3;
-const double ROI_SIZE_METERS = 201.3;
+const double MAP_SIZE_METERS = 1500;
+const double ROI_SIZE_METERS = 201;
 const double VOXEL_SIZE_METERS = 0.30;
 const int MIN_HITS_FOR_OCCUPANCY = 25; //20
 const int MAX_HITS_IN_CELL = 100; //500
@@ -102,17 +102,20 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 
     //Convert ROS transform to eigen transform
     Eigen::Affine3d T_enu_velodyne(Eigen::Affine3d::Identity());
-    geometry_msgs::Vector3  lidarpos =  T_enu_velodyne_ros.transform.translation;
+    Eigen::Affine3d R_enu_velodyne(Eigen::Affine3d::Identity());
+    geometry_msgs::Vector3  lidarPos =  T_enu_velodyne_ros.transform.translation;
     geometry_msgs::Quaternion quat = T_enu_velodyne_ros.transform.rotation;
-	T_enu_velodyne.translate(Eigen::Vector3d(lidarpos.x,lidarpos.y,lidarpos.z));
+	T_enu_velodyne.translate(Eigen::Vector3d(lidarPos.x,lidarPos.y,lidarPos.z));
 	T_enu_velodyne.rotate(Eigen::Quaterniond(quat.w,quat.x,quat.y,quat.z));
-	ROS_INFO_STREAM("LIDAR | Velodyne enu: " << lidarpos.x << "," << lidarpos.y << "," << lidarpos.z);
+	R_enu_velodyne.rotate(Eigen::Quaterniond(quat.w,quat.x,quat.y,quat.z));
+	Eigen::Vector3d lidarHeading = R_enu_velodyne*Eigen::Vector3d(1,0,0);
+	ROS_INFO_STREAM("LIDAR | Velodyne enu: " << lidarPos.x << "," << lidarPos.y << "," << lidarPos.z);
 
 	//Set bounding box
 	ogrid.setBoundingBox(BOUNDARY_CORNER_1,BOUNDARY_CORNER_2,BOUNDARY_CORNER_3,BOUNDARY_CORNER_4);
 
 	//Update occupancy grid
-	ogrid.setLidarPosition(lidarpos);
+	ogrid.setLidarPosition(lidarPos,lidarHeading);
 	ogrid.updatePointsAsCloud(pcloud,T_enu_velodyne,MAX_HITS_IN_CELL,MAXIMUM_Z_BELOW_LIDAR,MAXIMUM_Z_ABOVE_LIDAR);
 	ogrid.createBinaryROI(MIN_HITS_FOR_OCCUPANCY);
 
@@ -166,15 +169,15 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	m.type = visualization_msgs::Marker::LINE_STRIP;
 	m.action = visualization_msgs::Marker::ADD;
 	m.scale.x = 0.5;
-	p.x = BOUNDARY_CORNER_1(0); p.y = BOUNDARY_CORNER_1(1); p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	p.x = BOUNDARY_CORNER_1(0); p.y = BOUNDARY_CORNER_1(1); p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
 	m.points.push_back(p);
-	p.x = BOUNDARY_CORNER_2(0); p.y = BOUNDARY_CORNER_2(1); p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	p.x = BOUNDARY_CORNER_2(0); p.y = BOUNDARY_CORNER_2(1); p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
 	m.points.push_back(p);
-	p.x = BOUNDARY_CORNER_3(0); p.y = BOUNDARY_CORNER_3(1); p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	p.x = BOUNDARY_CORNER_3(0); p.y = BOUNDARY_CORNER_3(1); p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
 	m.points.push_back(p);
-	p.x = BOUNDARY_CORNER_4(0); p.y = BOUNDARY_CORNER_4(1); p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	p.x = BOUNDARY_CORNER_4(0); p.y = BOUNDARY_CORNER_4(1); p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
 	m.points.push_back(p);
-	p.x = BOUNDARY_CORNER_1(0); p.y = BOUNDARY_CORNER_1(1); p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	p.x = BOUNDARY_CORNER_1(0); p.y = BOUNDARY_CORNER_1(1); p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
 	m.points.push_back(p);
 	m.color.a = 0.6; m.color.r = 1; m.color.g = 1; m.color.b = 1;
 	markers.markers.push_back(m);
@@ -183,20 +186,20 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	m.id = 1002;
 	m.points.clear();
 	Eigen::Vector3d lidarLeft = T_enu_velodyne*Eigen::Vector3d(0,100,0);
-	p.x = lidarLeft(0); p.y = lidarLeft(1); p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	p.x = lidarLeft(0); p.y = lidarLeft(1); p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
 	m.points.push_back(p);
 	Eigen::Vector3d lidarUpLeft = T_enu_velodyne*Eigen::Vector3d(100,100,0);
-	p.x = lidarUpLeft(0); p.y = lidarUpLeft(1); p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	p.x = lidarUpLeft(0); p.y = lidarUpLeft(1); p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
 	m.points.push_back(p);
 	Eigen::Vector3d lidarUpRight = T_enu_velodyne*Eigen::Vector3d(100,-100,0);
-	p.x = lidarUpRight(0); p.y = lidarUpRight(1); p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	p.x = lidarUpRight(0); p.y = lidarUpRight(1); p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
 	m.points.push_back(p);
 	Eigen::Vector3d lidarRight = T_enu_velodyne*Eigen::Vector3d(0,-100,0);
-	p.x = lidarRight(0); p.y = lidarRight(1); p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	p.x = lidarRight(0); p.y = lidarRight(1); p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
 	m.points.push_back(p);
-	p.x = lidarpos.x; p.y = lidarpos.y; p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	p.x = lidarPos.x; p.y = lidarPos.y; p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
 	m.points.push_back(p);
-	p.x = lidarLeft(0); p.y = lidarLeft(1); p.z = lidarpos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	p.x = lidarLeft(0); p.y = lidarLeft(1); p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
 	m.points.push_back(p);
 	m.color.a = 0.6; m.color.r = 1; m.color.g = 0; m.color.b = 0;
 	markers.markers.push_back(m);
