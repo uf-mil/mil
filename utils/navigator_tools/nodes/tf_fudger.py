@@ -69,4 +69,6 @@ while not rospy.is_shutdown():
     if k == ord('q'):
         q_mode = not q_mode
 
+    br.sendTransform(p, q, rospy.Time.now(), args.tf_child, args.tf_parent)
+
 print  "\nFinal TF:", p, q
