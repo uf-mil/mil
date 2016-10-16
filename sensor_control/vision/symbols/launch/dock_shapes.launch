@@ -9,4 +9,8 @@
     <rosparam file="$(find navigator_shoot_vision)/launch/shape_filter.yaml" />
     <param name="auto_start" value="false" />
   </node>
+  <node pkg="navigator_shoot_vision" type="ray_lidar" name="camera_lidar_transformer">
+    <rosparam file="$(find navigator_shoot_vision)/launch/lidar_transformer.yaml" />
+    <param name="auto_start" value="false" />
+  </node>
 </launch>

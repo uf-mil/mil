@@ -28,9 +28,12 @@ CameraLidarTransformer::CameraLidarTransformer()
   pubMarkers = nh.advertise<visualization_msgs::MarkerArray>(
       "/dock_shapes/raylider/markers", 10);
 #endif
+  nh.param<std::string>("camera_info_topic",camera_info_topic,"/right/right/camera_info");
+  // ~nh.param<double>("MIN_Z",MIN_Z,1);
+  // ~nh.param<double>("MAX_Z_ERROR",MAX_Z_ERROR,0.2);
   std::cout << "Constructed" << std::endl;
   cameraInfoSub =
-      nh.subscribe("/right/right/camera_info", 1,
+      nh.subscribe(camera_info_topic, 1,
                    &CameraLidarTransformer::cameraInfoCallback, this);
   transformServiceServer = nh.advertiseService(
       "transform_camera", &CameraLidarTransformer::transformServiceCallback,
@@ -60,16 +63,13 @@ bool CameraLidarTransformer::transformServiceCallback(
   cv::Mat debug_image(camera_info.height, camera_info.width, CV_8UC3,
                       cv::Scalar(0));
 #endif
-  int found = 0;
-  using namespace boost::accumulators;
-  accumulator_set<double, features<tag::mean, tag::variance>> zAcc;
-
   Eigen::Matrix3d matrixFindPlaneA;
   matrixFindPlaneA << 0, 0, 0, 0, 0, 0, 0, 0, 0;
   Eigen::Vector3d matrixFindPlaneB(0, 0, 0);
 
   cv::circle(debug_image, cv::Point(req.point.x, req.point.y), 3,
              cv::Scalar(255, 0, 0), 5);
+  //Tracks the closest lidar point to the requested camera point
   double minDistance = std::numeric_limits<double>::max();
   for (auto ii = 0, jj = 0; ii < cloud_transformed.width;
        ++ii, jj += cloud_transformed.point_step) {
@@ -113,7 +113,6 @@ bool CameraLidarTransformer::transformServiceCallback(
                    cv::Scalar(0, 0, 255 * std::min(1.0, z.f / 20.0)), -1);
       }
 #endif
-      geometry_msgs::Point geo_point;
       double distance = sqrt(pow(point.x - req.point.x ,2) + pow(point.y - req.point.y,2) ); //Distance (2D) from request point to projected lidar point
       if (distance < req.tolerance) {
 #ifdef DO_ROS_DEBUG
@@ -134,7 +133,8 @@ bool CameraLidarTransformer::transformServiceCallback(
         matrixFindPlaneB(0, 0) -= x.f * z.f;
         matrixFindPlaneB(1, 0) -= y.f * z.f;
         matrixFindPlaneB(2, 0) -= z.f;
-        zAcc(z.f);
+        
+        geometry_msgs::Point geo_point;
         geo_point.x = x.f;
         geo_point.y = y.f;
         geo_point.z = z.f;
@@ -153,21 +153,15 @@ bool CameraLidarTransformer::transformServiceCallback(
     return true;
   }
   
-  //Filter out lidar points behind the plane
-  double min_z = (*std::min_element(res.transformed.begin(),res.transformed.end(), [=] (const geometry_msgs::Point& a,const geometry_msgs::Point& b) {
-    return a.z < b.z && a.z > 1;
-  })).z;
-  res.transformed.erase(std::remove_if(res.transformed.begin(),res.transformed.end(),[min_z] (const geometry_msgs::Point& p) {
-    return (p.z - min_z) < 0.2; 
-  }),res.transformed.end());
-  
-  if (res.transformed.size() < 1) {
-    res.success = false;
-    res.error = "NO POINTS FOUND";
-    return true;
-  }
+  //Filter out lidar points behind the plane (I don't think this will work, no good way to do this)
+  // ~double min_z = (*std::min_element(res.transformed.begin(),res.transformed.end(), [=] (const geometry_msgs::Point& a,const geometry_msgs::Point& b) {
+    // ~return a.z < b.z && a.z > MIN_Z;
+  // ~})).z;
+  // ~res.transformed.erase(std::remove_if(res.transformed.begin(),res.transformed.end(),[min_z] (const geometry_msgs::Point& p) {
+    // ~return (p.z - min_z) < MAX_Z_ERROR; 
+  // ~}),res.transformed.end());
 
-  res.distance = boost::accumulators::mean(zAcc);
+  res.distance = res.closest.z;
   Eigen::Vector3d normalvec = matrixFindPlaneA.colPivHouseholderQr()
                                   .solve(matrixFindPlaneB)
                                   .normalized();
@@ -179,7 +173,7 @@ bool CameraLidarTransformer::transformServiceCallback(
   std::cout << "Plane solution: " << normalvec << std::endl;
 
 #ifdef DO_ROS_DEBUG
-  //////////////////VISUALIZATION FOR NORMAL////////////////////////
+  //Create marker for normal
   visualization_msgs::Marker marker_normal;
   marker_normal.header = req.header;
   marker_normal.header.seq = 0;
@@ -201,14 +195,16 @@ bool CameraLidarTransformer::transformServiceCallback(
   marker_normal.color.r = 1.0;
   marker_normal.color.g = 0.0;
   marker_normal.color.b = 0.0;
-
   markers.markers.push_back(marker_normal);
+  
+  //Publish 3D debug market
+  pubMarkers.publish(markers);
+  
+  //Publish debug image
   cv_bridge::CvImage ros_debug_image;
   ros_debug_image.encoding = "bgr8";
-  ;
   ros_debug_image.image = debug_image.clone();
   points_debug_publisher.publish(ros_debug_image.toImageMsg());
-  pubMarkers.publish(markers);
 #endif
   res.success = true;
   return true;
