@@ -49,9 +49,9 @@ class DetectDeliverMission:
     @txros.util.cancellableInlineCallbacks
     def circle_search(self):
         print "Starting circle search"
-        pattern = self.navigator.move.circle_point(navigator_tools.rosmsg_to_numpy(self.waypoint_res.object.position), radius=10,theta_offset=1.57)
+        pattern = self.navigator.move.circle_point(navigator_tools.rosmsg_to_numpy(self.waypoint_res.object.position), radius=8,theta_offset=1.57)
         searcher = self.navigator.search(vision_proxy='get_shape', search_pattern=pattern, Shape=self.Shape, Color=self.Color)
-        yield searcher.start_search(timeout=300,spotings_req=1, speed=1)
+        yield searcher.start_search(timeout=300,spotings_req=5, speed=1)
         print "Ended Circle Search"
 
 
@@ -65,7 +65,7 @@ class DetectDeliverMission:
            req.point = Point()
            req.point.x = self.found_shape.CenterX
            req.point.y = self.found_shape.CenterY
-           req.tolerance = 10
+           req.tolerance = 15
            #print req
            res = yield self.cameraLidarTransformer(req)
            if res.success:
@@ -74,18 +74,19 @@ class DetectDeliverMission:
             enupoint = transformObj.transform_point(navigator_tools.rosmsg_to_numpy(res.closest));
             print "POINT = ", enupoint
             print "VECTOR = ", enunormal
-            enumove = enupoint+10*enunormal #moves 10 meters away
+            enumove = enupoint+5*enunormal #moves x meters away
             print "MOVING TO= ", enumove
             position, rot = yield self.navigator.tx_pose
 
             print "ROT= ",rot
 
-            enuyaw = trns.quaternion_from_euler(0,0,np.arccos(-1*enunormal[1])) #Align perpindicular
+            enuyaw = trns.quaternion_from_euler(0,0,np.arccos(enunormal[0])) #Align perpindicular
             print "ROTATING TO= ", enuyaw
 
             print "MOVING!"
-            yield self.navigator.move.set_position(enumove).set_orientation(enuyaw).go()
-            return
+            yield self.navigator.move.set_position(enumove).set_orientation(enuyaw).yaw_left(3.1415).go()
+            #return
+            defer.returnValue(None)
             print "DISTANCE = ",res.distance
            else:
             print "Error: ",res.error
@@ -136,7 +137,7 @@ class DetectDeliverMission:
 
     @txros.util.cancellableInlineCallbacks
     def shootAllBalls(self):
-        for i in range(3):
+        for i in range(4):
             # ~time.sleep(3)
             # ~self.shooterLoad(std_srvs.srv.TriggerRequest())
             # ~time.sleep(5)
