@@ -8,7 +8,7 @@
         <icon type="file">resource/mil_logo.png</icon>
         <label>MIL</label>
       </group>
-      <icon type="file">resource/boat.png</icon>
+      <icon type="file">resource/dashboard.png</icon>
       <label>Dashboard</label>
       <statustip>Mike Seese, you just googled your name.</statustip>
     </qtgui>
