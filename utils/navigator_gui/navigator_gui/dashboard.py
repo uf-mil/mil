@@ -22,6 +22,7 @@ from rosgraph_msgs.msg import Clock
 import rospkg
 import rospy
 from std_msgs.msg import Float32
+from std_srvs.srv import SetBool, SetBoolRequest
 
 
 __author__ = "Anthony Olive"
@@ -156,6 +157,7 @@ class Dashboard(Plugin):
         rospy.Subscriber("/clock", Clock, self.cache_system_time)
 
         self.wrench_changer = rospy.ServiceProxy('/change_wrench', WrenchSelect)
+        self.station_holder = rospy.ServiceProxy('/lqrrt/station_hold', SetBool)
 
         self.kb = KillBroadcaster(id='station_hold', description='Resets Pose')
         self.kill_listener = AlarmListener('kill', self.update_kill_status)
@@ -453,8 +455,9 @@ class Dashboard(Plugin):
         if (not self.system_time["is_timed_out"]):
             rospy.loginfo("Station Holding")
 
-            # Resets c3, this will change when c3 is replaced
+            # Station holding activation for lqrrt and C3
             self.kb.send(active=True)
+            self.station_holder(SetBoolRequest(data=True))
             self.kb.send(active=False)
             self.wrench_changer("autonomous")
 
