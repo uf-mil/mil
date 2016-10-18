@@ -368,9 +368,9 @@
          </widget>
         </item>
         <item row="6" column="1">
-         <widget class="QPushButton" name="lock_keyboard_control_button">
+         <widget class="QPushButton" name="keyboard_control_button">
           <property name="text">
-           <string>Lock Keyboard Control</string>
+           <string>Keyboard Control</string>
           </property>
          </widget>
         </item>

@@ -132,6 +132,8 @@ class Dashboard(Plugin):
         autonomous_control_button.clicked.connect(self.select_autonomous_control)
         rc_control_button = self._widget.findChild(QtGui.QPushButton, 'rc_control_button')
         rc_control_button.clicked.connect(self.select_rc_control)
+        keyboard_control_button = self._widget.findChild(QtGui.QPushButton, 'keyboard_control_button')
+        keyboard_control_button.clicked.connect(self.select_keyboard_control)
 
         # Defines the color scheme as QT style sheets
         self.colors = {
@@ -218,6 +220,10 @@ class Dashboard(Plugin):
         elif (self.operating_mode["received"] == "rc"):
             self.operating_mode_status.setText("Joystick")
             self.operating_mode_frame.setStyleSheet(self.colors["blue"])
+
+        elif (self.operating_mode["received"] == "keyboard"):
+            self.operating_mode_status.setText("Keyboard")
+            self.operating_mode_frame.setStyleSheet(self.colors["yellow"])
 
         elif (self.operating_mode["received"] == "Unknown"):
             self.operating_mode_status.setText("Unknown")
@@ -467,3 +473,11 @@ class Dashboard(Plugin):
         if (not self.system_time["is_timed_out"]):
             rospy.loginfo("Changing Control to RC")
             self.wrench_changer("rc")
+
+    def select_keyboard_control(self):
+        '''
+        Selects the keyboard teleoperation service as the active controller.
+        '''
+        if (not self.system_time["is_timed_out"]):
+            rospy.loginfo("Changing Control to Keyboard")
+            self.wrench_changer("keyboard")
