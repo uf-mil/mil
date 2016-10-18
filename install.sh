@@ -450,6 +450,9 @@ if ($INSTALL_NAV); then
 	apt-get source --compile -qq python-pyode
 	sudo dpkg -i python-pyode_*.deb
 
+	# Message types
+	sudo apt-get install -qq ros-indigo-tf2-sensor-msgs ros-indigo-tf2-geometry-msgs
+
 	# Pulling large project files from Git-LFS
 	instlog "Pulling large files for Navigator"
 	cd $CATKIN_DIR/src/Navigator
