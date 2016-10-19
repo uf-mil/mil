@@ -23,7 +23,7 @@ class Buoy(object):
         self.odom = np.array([0, 0, 0])
 
     def __repr__(self):
-        return "BUOY at: {} with color {}. ".format(self.position, self.color)
+        return "BUOY at: {} with color {}".format(self.position, self.color)
 
     def distance(self, odom):
         dist = np.linalg.norm(self.position - odom)
@@ -32,13 +32,13 @@ class Buoy(object):
 
 
 def get_buoys():
-    right = Buoy([5, 20, 0], "green")
-    left = Buoy([-2, 27, 0], "red")
+    right = Buoy([0, 7, 0], "green")
+    left = Buoy([20, 7, 0], "red")
 
-    rand_1 = Buoy([-23, 48, 0], "green")
-    rand_2 = Buoy([33, -8, 0], "green")
+    #rand_1 = Buoy([-23, 48, 0], "green")
+    #rand_2 = Buoy([33, -8, 0], "green")
 
-    buoys = [rand_1, right, rand_2, left]
+    buoys = [right, left] #[rand_1, right, rand_2, left]
 
     return buoys
 
@@ -65,19 +65,17 @@ def main(navigator):
     result = navigator.fetch_result()
 
     #navigator.change_wrench("autonomous")
-    #buoys = get_buoys()
-    serv = navigator.nh.get_service_client("/database/single", ObjectDBSingleQuery)
-    req = ObjectDBSingleQueryRequest()
-    req.name = 'l_gate'
-    left = yield serv(req)
-    req.name = 'r_gate'
-    right = yield serv(req)
-    buoys = [Buoy.from_srv(left), Buoy.from_srv(right)]
-
-    # Display points of the buoys
-    pc = PointCloud(header=navigator_tools.make_header(frame='/enu'),
-                    points=np.array([navigator_tools.numpy_to_point(b.position) for b in buoys]))
-    yield navigator._point_cloud_pub.publish(pc)
+    buoys = get_buoys()
+    #serv = navigator.nh.get_service_client("/database/single", ObjectDBSingleQuery)
+    #req = ObjectDBSingleQueryRequest()
+    #req.name = 'l_gate'
+    #left = yield serv(req)
+    #req.name = 'r_gate'
+    #right = yield serv(req)
+    #buoys = [Buoy.from_srv(left), Buoy.from_srv(right)]
+    print buoys
+    # Display points of the buoys]
+    points = [navigator_tools.numpy_to_point(b.position) for b in buoys]
 
     pose = yield navigator.tx_pose
     buoys = sorted(buoys, key=lambda buoy: buoy.distance(pose[0]))
@@ -91,7 +89,7 @@ def main(navigator):
     if not (buoys[0].color in ['green', 'red'] and buoys[1].color in ['green', 'red']):
         print "START_GATE: Error 1 - Not the right colors. ({},{})".format(buoy[0].color,
                                                                            buoy[1].color)
-        #result.success = False
+        result.success = False
         #return_with(result)
 
     # Okay, now we need to see if the buoys are approx 10m apart ===================================
@@ -104,7 +102,12 @@ def main(navigator):
         #return_with(result)
 
     # Made it this far, make sure the red one is on the left and green on the right ================
-    t = yield navigator.tf_listener.get_transform("/base_link", "/enu", navigator.nh.get_time())
+    #t = yield navigator.tf_listener.get_transform("/base_link", "/enu", navigator.nh.get_time())
+    class t(object):
+        # Temp
+        @classmethod
+        def transform_point(self, point):
+            return point
     bl_buoys = [t.transform_point(buoy.position) for buoy in buoys[:2]]
 
     # Angles are w.r.t positive x-axis. Positive is CCW around the z-axis.
@@ -122,10 +125,18 @@ def main(navigator):
 
     #print mid_point
     setup = mid_point - direction_vector * 20
-    target = setup + direction_vector * 60
+    target = setup + direction_vector * 90
 
     ogrid = OgridFactory(left.position, right.position, pose[0], target)
     msg = ogrid.get_message()
+
+    # Put the target into the point cloud as well
+    points.append(navigator_tools.numpy_to_point(target))
+    pc = PointCloud(header=navigator_tools.make_header(frame='/enu'),
+                    points=np.array(points))
+    for i in range(50):
+        yield navigator._point_cloud_pub.publish(pc)
+
     print "publishing"
     latched = navigator.latching_publisher("/mission_ogrid", OccupancyGrid, msg)
     print latched
@@ -133,14 +144,14 @@ def main(navigator):
     yield navigator.nh.sleep(5)
 
     print "START_GATE: Moving!"
-    #yield navigator.move.set_position(setup).look_at(mid_point).go()
-    #yield navigator.move.set_position(target).go()
+
+    yield navigator.move.set_position(target).go()
 
     return_with(result)
 
 
 # This really shouldn't be here - it should be somewhere behind the scenes
-from nav_msgs.msg import OccupancyGrid
+from nav_msgs.msg import OccupancyGridBut
 import cv2
 
 class OgridFactory():
@@ -156,7 +167,7 @@ class OgridFactory():
         self.target = target
 
         # Some parameters
-        self.buffer = 50  # length of the "walls" extending outwards from each buoy (m)
+        self.buffer = 20  # length of the "walls" extending outwards from each buoy (m)
         self.resolution = 10  # cells/meter for ogrid
         self.channel_length = 30  # Not sure what this acutally is for the course (m)
 
@@ -167,8 +178,8 @@ class OgridFactory():
                                                               [0, 0, 0, 1])
         dx = self.x_upper - self.x_lower
         dy = self.y_upper - self.y_lower
-        self.grid = np.zeros((dx * self.resolution, dy * self.resolution))
-        #print self.grid.shape
+        # The grid needs to have it's axes swaped since its row major
+        self.grid = np.zeros((dy * self.resolution, dx * self.resolution))
 
         # Transforms points from ENU to ogrid frame coordinates
         self.t = np.array([[self.resolution, 0, -self.x_lower * self.resolution],
@@ -196,11 +207,10 @@ class OgridFactory():
         endpoint_right_f = self.right_f - rot_buffer
 
         # Define bounds for the grid
-        self.x_lower = min(self.target[0], endpoint_left_f[0], endpoint_right_f[0], self.target[0])
-        self.x_upper = max(self.target[0], endpoint_left_f[0], endpoint_right_f[0], self.target[0])
-        self.y_lower = min(self.target[1], endpoint_left_f[1], endpoint_right_f[1], self.target[1])
-        self.y_upper = max(self.target[1], endpoint_left_f[1], endpoint_right_f[1], self.target[1])
-        #print self.x_lower, self.x_upper, self.y_lower, self.y_upper
+        self.x_lower = min(self.boat_pos[0], endpoint_left_f[0], endpoint_right_f[0], self.target[0])
+        self.x_upper = max(self.boat_pos[0], endpoint_left_f[0], endpoint_right_f[0], self.target[0])
+        self.y_lower = min(self.boat_pos[1], endpoint_left_f[1], endpoint_right_f[1], self.target[1])
+        self.y_upper = max(self.boat_pos[1], endpoint_left_f[1], endpoint_right_f[1], self.target[1])
 
         # Now lets build some wall points ======================================
 
@@ -234,6 +244,11 @@ class OgridFactory():
         box = np.int0(box)
         cv2.drawContours(self.grid, [box], 0, 128, -1)
 
+        # So I dont have to comment abunch of stuff out for debugging
+        dont_display = True
+        if dont_display:
+            return
+
         # Bob Ross it up (just for display)
         left_f, right_f = self.transform(self.left_f), self.transform(self.right_f)
         left_b, right_b = self.transform(self.left_b), self.transform(self.right_b)
@@ -241,25 +256,23 @@ class OgridFactory():
         boat = self.transform(self.boat_pos)
         target = self.transform(self.target)
 
-        #cv2.circle(self.grid, tuple(boat[:2].astype(np.int32)), 8, 255)
-        #cv2.circle(self.grid, tuple(target[:2].astype(np.int32)), 15, 255)
-        #cv2.circle(self.grid, tuple(self.transform(self.mid_point)[:2].astype(np.int32)), 5, 255)
-
-        #cv2.circle(self.grid, tuple(left_f[:2].astype(np.int32)), 10, 255)
-        #cv2.circle(self.grid, tuple(right_f[:2].astype(np.int32)), 10, 255)
-        #cv2.circle(self.grid, tuple(left_b[:2].astype(np.int32)), 3, 125)
-        #cv2.circle(self.grid, tuple(right_b[:2].astype(np.int32)), 3, 128)
-
-        #cv2.imshow("test", np.flipud(self.grid))
-        #cv2.waitKey(0)
+        cv2.circle(self.grid, tuple(boat[:2].astype(np.int32)), 8, 255)
+        cv2.circle(self.grid, tuple(target[:2].astype(np.int32)), 15, 255)
+        cv2.circle(self.grid, tuple(self.transform(self.mid_point)[:2].astype(np.int32)), 5, 255)
+        cv2.circle(self.grid, tuple(left_f[:2].astype(np.int32)), 10, 255)
+        cv2.circle(self.grid, tuple(right_f[:2].astype(np.int32)), 10, 255)
+        cv2.circle(self.grid, tuple(left_b[:2].astype(np.int32)), 3, 125)
+        cv2.circle(self.grid, tuple(right_b[:2].astype(np.int32)), 3, 128)
+        cv2.imshow("test", self.grid)
+        cv2.waitKey(0)
 
     def get_message(self):
         ogrid = OccupancyGrid()
         ogrid.header = navigator_tools.make_header(frame="enu")
         ogrid.info.resolution = 1 / self.resolution
-        ogrid.info.width, ogrid.info.height = self.grid.shape
+        ogrid.info.height, ogrid.info.width = self.grid.shape
         ogrid.info.origin = self.origin
         grid = np.copy(self.grid)
         ogrid.data = np.clip(grid.flatten() - 1, -100, 100).astype(np.int8)
 
-        return ogri
+        return ogrid
