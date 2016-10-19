@@ -37,22 +37,33 @@ struct objectStats
 		}
 		first = false;
 	}
-	void insert(const std::deque<LidarBeam> &newBeams) {
-		//beams.insert(beams.end(),newBeams.begin(),newBeams.end());
+	void insertPersist(const std::deque<LidarBeam> &strikes) {
 		geometry_msgs::Point32 p32;
-		for (auto beam : newBeams) {
-			p32.x = beam.x;
-			p32.y = beam.y;
-			p32.z = beam.z;
-			beams.push_back(p32);
-			intensity.push_back(beam.i);
+		for (auto strike : strikes) {
+			p32.x = strike.x;
+			p32.y = strike.y;
+			p32.z = strike.z;
+			strikesPersist.push_back(p32);
+			intensityPersist.push_back(strike.i);
 		}
+	}
+	void insertFrame(const std::vector<LidarBeam> &strikes) {
+		geometry_msgs::Point32 p32;
+		for (auto strike : strikes) {
+			p32.x = strike.x;
+			p32.y = strike.y;
+			p32.z = strike.z;
+			strikesFrame.push_back(p32);
+			intensityFrame.push_back(strike.i);
+		}		
 	}
 	bool first = true;
 	float minRow, maxRow, minCol, maxCol, minHeight, maxHeight;
 	//std::vector<LidarBeam> beams;
-	std::vector<geometry_msgs::Point32> beams;
-	std::vector<uint32_t> intensity;
+	std::vector<geometry_msgs::Point32> strikesPersist;
+	std::vector<geometry_msgs::Point32> strikesFrame;
+	std::vector<uint32_t> intensityPersist;
+	std::vector<uint32_t> intensityFrame;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -62,10 +73,12 @@ struct objectMessage
 {
 	geometry_msgs::Point position;
 	geometry_msgs::Vector3 scale;
-	//std::vector<LidarBeam> beams;
-	std::vector<geometry_msgs::Point32> beams;
-	std::vector<uint32_t> intensity;
+	std::vector<geometry_msgs::Point32> strikesPersist;
+	std::vector<geometry_msgs::Point32> strikesFrame;
+	std::vector<uint32_t> intensityPersist;
+	std::vector<uint32_t> intensityFrame;
 	int id;
+	std::string name = "unknown";
 	uint32_t pclInliers;
 	geometry_msgs::Vector3 normal;
 };
@@ -158,7 +171,8 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 				cc[row][col] = labelMap[cc[row][col]]; 
 				mapObjects[cc[row][col]].update(row,col,ogrid.ogrid[row + ogrid.boatRow - ogrid.ROI_SIZE/2][col + ogrid.boatCol - ogrid.ROI_SIZE/2]);
 				int r = row + ogrid.boatRow - ogrid.ROI_SIZE/2, c = col + ogrid.boatCol - ogrid.ROI_SIZE/2;
-				mapObjects[cc[row][col]].insert(ogrid.pointCloudTable[r*ogrid.GRID_SIZE+c].q);
+				mapObjects[cc[row][col]].insertPersist(ogrid.pointCloudTable[r*ogrid.GRID_SIZE+c].q);
+				mapObjects[cc[row][col]].insertFrame(ogrid.pointCloudTable_Uno[r*ogrid.GRID_SIZE+c]);
 			}
 			//std::cout << cc[ii][jj] << " ";
 		}
@@ -169,7 +183,7 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 	int newId = 0;
 	objects.clear();
 	for (auto ii : mapObjects)  {
-		if (ii.second.beams.size() > 1) {
+		if (ii.second.strikesPersist.size() >= 10) {
 			objectMessage ob;
 			float dx = (ii.second.maxCol-ii.second.minCol)+0.015; ob.scale.x = dx*ogrid.VOXEL_SIZE_METERS;
 			float dy = (ii.second.maxRow-ii.second.minRow)+0.015; ob.scale.y = dy*ogrid.VOXEL_SIZE_METERS;
@@ -177,8 +191,10 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 			ob.position.x = (dx/2+ii.second.minCol - ogrid.ROI_SIZE/2)*ogrid.VOXEL_SIZE_METERS + ogrid.lidarPos.x;
 			ob.position.y = (dy/2+ii.second.minRow - ogrid.ROI_SIZE/2)*ogrid.VOXEL_SIZE_METERS + ogrid.lidarPos.y;
 			ob.position.z =  dz/2 + ii.second.minHeight;
-			ob.beams = ii.second.beams;
-			ob.intensity = ii.second.intensity;
+			ob.strikesPersist = ii.second.strikesPersist;
+			ob.strikesFrame = ii.second.strikesFrame;
+			ob.intensityFrame = ii.second.intensityFrame;
+			ob.intensityPersist = ii.second.intensityPersist;
 			objects.push_back(ob);
 			//ROS_INFO_STREAM(newId << " -> " << ob.position.x << "," << ob.position.y << "," << ob.position.z << "|" << ob.scale.x << "," << ob.scale.y << "," << ob.scale.z);
 			++newId;

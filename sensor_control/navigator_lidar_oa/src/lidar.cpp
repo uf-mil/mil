@@ -41,9 +41,12 @@ const double MAP_SIZE_METERS = 1500;
 const double ROI_SIZE_METERS = 201;
 const double VOXEL_SIZE_METERS = 0.30;
 const int MIN_HITS_FOR_OCCUPANCY = 25; //20
-const int MAX_HITS_IN_CELL = 100; //500
+const int MAX_HITS_IN_CELL = 125; //500
 const double MAXIMUM_Z_BELOW_LIDAR = 2; //2
-const double MAXIMUM_Z_ABOVE_LIDAR = 2;
+const double MAXIMUM_Z_ABOVE_LIDAR = 2.5;
+const double MAX_ROLL_PITCH_ANGLE_DEG = 5.3;
+const double LIDAR_VIEW_ANGLE_DEG = 70;
+const double LIDAR_VIEW_DISTANCE_METERS = 35;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -51,7 +54,7 @@ const double MAXIMUM_Z_ABOVE_LIDAR = 2;
 OccupancyGrid ogrid(MAP_SIZE_METERS,ROI_SIZE_METERS,VOXEL_SIZE_METERS);
 AStar astar(ROI_SIZE_METERS/VOXEL_SIZE_METERS);
 nav_msgs::OccupancyGrid rosGrid;
-ros::Publisher pubGrid,pubMarkers,pubBuoys,pubTrajectory,pubWaypoint,pubCloud,pubCloudPCL;
+ros::Publisher pubGrid,pubMarkers,pubBuoys,pubTrajectory,pubWaypoint,pubCloudPersist,pubCloudFrame,pubCloudPCL;
 ObjectTracker object_tracker;
 geometry_msgs::Point waypoint_ogrid;
 geometry_msgs::Pose boatPose_enu;
@@ -109,13 +112,26 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	T_enu_velodyne.rotate(Eigen::Quaterniond(quat.w,quat.x,quat.y,quat.z));
 	R_enu_velodyne.rotate(Eigen::Quaterniond(quat.w,quat.x,quat.y,quat.z));
 	Eigen::Vector3d lidarHeading = R_enu_velodyne*Eigen::Vector3d(1,0,0);
+	Eigen::Matrix3d mat = R_enu_velodyne.rotation();
+	double ang[3];
+	ang[0] = atan2(-mat(1,2), mat(2,2) );    
+   	double sr = sin( ang[0] ), cr = cos( ang[0] );
+   	ang[1] = atan2( mat(0,2),  cr*mat(2,2) - sr*mat(1,2) );
+   	ang[2] = atan2( -mat(0,1), mat(0,0) ); 
 	ROS_INFO_STREAM("LIDAR | Velodyne enu: " << lidarPos.x << "," << lidarPos.y << "," << lidarPos.z);
+	ROS_INFO_STREAM("LIDAR | XYZ Rotation: " << ang[0]*180/M_PI << "," << ang[1]*180/M_PI << "," << ang[2]*180/M_PI );
+	
+	//Skip lidar updates if roll or pitch is too high
+	if (fabs(ang[0]*180/M_PI) > MAX_ROLL_PITCH_ANGLE_DEG || fabs(ang[1]*180/M_PI) > MAX_ROLL_PITCH_ANGLE_DEG) {
+		return;
+	}
 
 	//Set bounding box
 	ogrid.setBoundingBox(BOUNDARY_CORNER_1,BOUNDARY_CORNER_2,BOUNDARY_CORNER_3,BOUNDARY_CORNER_4);
 
 	//Update occupancy grid
 	ogrid.setLidarPosition(lidarPos,lidarHeading);
+	ogrid.setLidarParams(LIDAR_VIEW_ANGLE_DEG,LIDAR_VIEW_DISTANCE_METERS);
 	ogrid.updatePointsAsCloud(pcloud,T_enu_velodyne,MAX_HITS_IN_CELL,MAXIMUM_Z_BELOW_LIDAR,MAXIMUM_Z_ABOVE_LIDAR);
 	ogrid.createBinaryROI(MIN_HITS_FOR_OCCUPANCY);
 
@@ -128,10 +144,13 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 
 
 	//Publish second point cloud
-	sensor_msgs::PointCloud buoyCloud,pclCloud;
-	buoyCloud.header.seq = 0;
-	buoyCloud.header.frame_id = "enu";
-	buoyCloud.header.stamp = ros::Time::now();
+	sensor_msgs::PointCloud objectCloudPersist,objectCloudFrame,pclCloud;
+	objectCloudPersist.header.seq = 0;
+	objectCloudPersist.header.frame_id = "enu";
+	objectCloudPersist.header.stamp = ros::Time::now();
+	objectCloudFrame.header.seq = 0;
+	objectCloudFrame.header.frame_id = "enu";
+	objectCloudFrame.header.stamp = ros::Time::now();	
 	pclCloud.header.seq = 0;
 	pclCloud.header.frame_id = "enu";
 	pclCloud.header.stamp = ros::Time::now();
@@ -144,8 +163,9 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	rosGrid.info.map_load_time = ros::Time::now();
 	rosGrid.info.width = ogrid.ROI_SIZE;
 	rosGrid.info.height = ogrid.ROI_SIZE;
-	rosGrid.info.origin.position.x = ogrid.lidarPos.x + ogrid.ROItoMeters(0);
-	rosGrid.info.origin.position.y = ogrid.lidarPos.y + ogrid.ROItoMeters(0);
+	//std::cout << ogrid.lidarPos.x << " vs " << (ogrid.boatCol-ogrid.GRID_SIZE/2)*VOXEL_SIZE_METERS  << endl;
+	rosGrid.info.origin.position.x = (ogrid.boatCol-ogrid.GRID_SIZE/2)*VOXEL_SIZE_METERS + ogrid.ROItoMeters(0);//ogrid.lidarPos.x + ogrid.ROItoMeters(0);
+	rosGrid.info.origin.position.y = (ogrid.boatRow-ogrid.GRID_SIZE/2)*VOXEL_SIZE_METERS + ogrid.ROItoMeters(0);//ogrid.lidarPos.y + ogrid.ROItoMeters(0);
 	rosGrid.info.origin.position.z = ogrid.lidarPos.z - MAXIMUM_Z_BELOW_LIDAR;
 	rosGrid.data = ogrid.ogridMap;
 	pubGrid.publish(rosGrid);
@@ -185,65 +205,43 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	//Lidar area
 	m.id = 1002;
 	m.points.clear();
-	Eigen::Vector3d lidarLeft = T_enu_velodyne*Eigen::Vector3d(0,100,0);
-	p.x = lidarLeft(0); p.y = lidarLeft(1); p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
-	m.points.push_back(p);
-	Eigen::Vector3d lidarUpLeft = T_enu_velodyne*Eigen::Vector3d(100,100,0);
-	p.x = lidarUpLeft(0); p.y = lidarUpLeft(1); p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
-	m.points.push_back(p);
-	Eigen::Vector3d lidarUpRight = T_enu_velodyne*Eigen::Vector3d(100,-100,0);
-	p.x = lidarUpRight(0); p.y = lidarUpRight(1); p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
-	m.points.push_back(p);
-	Eigen::Vector3d lidarRight = T_enu_velodyne*Eigen::Vector3d(0,-100,0);
-	p.x = lidarRight(0); p.y = lidarRight(1); p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
-	m.points.push_back(p);
 	p.x = lidarPos.x; p.y = lidarPos.y; p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
+	m.points.push_back(p);	
+	for (double theta = -LIDAR_VIEW_ANGLE_DEG*M_PI/180.0; theta <= LIDAR_VIEW_ANGLE_DEG*M_PI/180.0; theta += 0.1) {
+		Eigen::Affine3d RotateZ(Eigen::Affine3d::Identity());
+	    RotateZ.rotate(Eigen::AngleAxisd(theta, Eigen::Vector3d::UnitZ())); 
+	    Eigen::Vector3d heading = RotateZ*lidarHeading;
+	    p.x = heading(0)*LIDAR_VIEW_DISTANCE_METERS+lidarPos.x; p.y = heading(1)*LIDAR_VIEW_DISTANCE_METERS+lidarPos.y; p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
+		m.points.push_back(p);
+	}
+	p.x = lidarPos.x; p.y = lidarPos.y; p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR;  
 	m.points.push_back(p);
-	p.x = lidarLeft(0); p.y = lidarLeft(1); p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR; 
-	m.points.push_back(p);
-	m.color.a = 0.6; m.color.r = 1; m.color.g = 0; m.color.b = 0;
 	markers.markers.push_back(m);
 	
-	//Publish buoys
-	//navigator_msgs::BuoyArray allBuoys;
-	//navigator_msgs::Buoy buoy;
-	geometry_msgs::Point32 p32;
-	
+
+	geometry_msgs::Point32 p32;	
 	sensor_msgs::ChannelFloat32 channel;
 	channel.name = "intensity";
-	buoyCloud.channels.push_back(channel);
+	objectCloudPersist.channels.push_back(channel);
+	objectCloudFrame.channels.push_back(channel);
 	pclCloud.channels.push_back(channel);
-	//buoy.header.seq = 0;
-	//buoy.header.frame_id = "enu";
-	//buoy.header.stamp = ros::Time::now();	
 	
-
 	auto object_permanence = object_tracker.add_objects(objects,pclCloud,boatPose_enu);
-
-	//Doesn't seem like small_objects being used, so commented...
-	//std::vector<objectMessage> small_objects = BoundingBox::get_accurate_objects(pcloud, object_permanence, T_enu_velodyne);
 
 	int max_id = 0;	
 	for (auto obj : object_permanence) {
-		ROS_INFO_STREAM("LIDAR | Buoy " << obj.id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.beams.size() << " points and size " << obj.scale.x << "," << obj.scale.y << "," << obj.scale.z);
-		
-		//Convert obj to buoy ros message
-		/*buoy.header.stamp = ros::Time::now();
-		buoy.id = obj.id;
-		buoy.confidence = 0;
-		buoy.position = obj.position;
-		buoy.height = obj.scale.z; 
-		buoy.width = obj.scale.x; 
-		buoy.depth = obj.scale.y; 
-		buoy.points = obj.beams;
-		buoy.intensity = obj.intensity;
-		buoy.pclInliers = obj.pclInliers;
-		buoy.normal = obj.normal;*/
+		ROS_INFO_STREAM("LIDAR | " << obj.name << " " << obj.id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.strikesPersist.size() << "(" << obj.strikesFrame.size() << ") points and size " << obj.scale.x << "," << obj.scale.y << "," << obj.scale.z);
 
-		//Show point cloud of just buoy objects
-		buoyCloud.points.insert(buoyCloud.points.end(),obj.beams.begin(),obj.beams.end());
-		for (auto ii : obj.intensity) {	
-			buoyCloud.channels[0].values.push_back(ii);
+		//Show point cloud of just objects
+		objectCloudPersist.points.insert(objectCloudPersist.points.end(),obj.strikesPersist.begin(),obj.strikesPersist.end());
+		for (auto ii : obj.intensityPersist) {	
+			objectCloudPersist.channels[0].values.push_back(ii);
+		}
+
+		//Show point cloud of just objects
+		objectCloudFrame.points.insert(objectCloudFrame.points.end(),obj.strikesFrame.begin(),obj.strikesFrame.end());
+		for (auto ii : obj.intensityFrame) {	
+			objectCloudFrame.channels[0].values.push_back(ii);
 		}
 
 		//Display number next to object
@@ -256,13 +254,14 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		m4.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
 		m4.action = visualization_msgs::Marker::ADD;
 		m4.pose.position = obj.position;
-		m4.pose.position.x += 1.5;
-		m4.scale.z = 2.5;
-		m4.text = to_string(obj.id);
+		m4.pose.position.z += 3.5;
+		m4.scale.z = 2;
+		m4.text = to_string(obj.id) + ":" + obj.name.substr(0,2);
 		m4.color.a = 0.6; m4.color.r = 0; m4.color.g = 1; m4.color.b = 0;		
 		markers.markers.push_back(m4);
 
 		//Display normal as an arrow
+		/*
 		if (obj.pclInliers > 10) {
 			visualization_msgs::Marker m3;
 			m3.header.stamp = ros::Time::now();
@@ -279,10 +278,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 			m3.scale.x = 1; m3.scale.y = 1; m3.scale.z = 1;
 			m3.color.a = 0.6; m3.color.r = 1; m3.color.g = 1; m3.color.b = 1;
 			markers.markers.push_back(m3);
-		}
-
-		//Push buoy into collection
-		//allBuoys.buoys.push_back(buoy);
+		}*/
 
 		//Turn obj into a marker for rviz
 		visualization_msgs::Marker m2;
@@ -300,29 +296,9 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		if(m2.id > max_id) max_id = m2.id;
 	}	
 	pubMarkers.publish(markers);
-	//pubBuoys.publish(allBuoys);
-	pubCloud.publish(buoyCloud);
+	pubCloudPersist.publish(objectCloudPersist);
+	pubCloudFrame.publish(objectCloudFrame);
 	pubCloudPCL.publish(pclCloud);
-
-
-	//std::cout<<"MAX: "<<max_id<<std::endl;
-	// small_markers.markers.clear();
-	// m.header.seq = 0;
-	// m.header.frame_id = "enu";
-	// m.action = 3;
-	// for (auto obj : small_objects) {
-	// 	if (obj.scale.x > 10 || obj.scale.y > 10 || obj.scale.z > 10) { continue; }
-	// 	m.header.stamp = ros::Time::now();
-	// 	m.id = obj.id;
-	// 	m.type = visualization_msgs::Marker::CUBE;
-	// 	m.action = visualization_msgs::Marker::ADD;
-	// 	m.pose.position = obj.position;
-	// 	m.scale = obj.scale;
-	// 	m.color.a = 0.6; m.color.r = 1; m.color.g = 1; m.color.b = 1;
-	// 	small_markers.markers.push_back(m);
-	// 	++id;
-	// }
-	// pubMarkersSmall.publish(small_markers);
 
 	//Elapsed time
 	ROS_INFO_STREAM("LIDAR | Elapsed time: " << (ros::Time::now()-timer).toSec());
@@ -372,10 +348,8 @@ int main(int argc, char* argv[])
 	//Publish occupancy grid and visualization markers
 	pubGrid = nh.advertise<nav_msgs::OccupancyGrid>("ira_ogrid",10);
 	pubMarkers = nh.advertise<visualization_msgs::MarkerArray>("ira_markers",10);
-	//pubBuoys = nh.advertise<navigator_msgs::BuoyArray>("buoys_batcave",10);
-	//pubMarkers = nh.advertise<visualization_msgs::MarkerArray>("/unclassified/objects/markers",10);
-	//pubBuoys = nh.advertise<navigator_msgs::BuoyArray>("/unclassified/objects",10);	
-	pubCloud = nh.advertise<sensor_msgs::PointCloud>("ira_cloud",1);
+	pubCloudPersist = nh.advertise<sensor_msgs::PointCloud>("ira_persist",1);
+	pubCloudFrame = nh.advertise<sensor_msgs::PointCloud>("ira_frame",1);
 	pubCloudPCL = nh.advertise<sensor_msgs::PointCloud>("ira_pclcloud",1);
 
 	//Give control to ROS

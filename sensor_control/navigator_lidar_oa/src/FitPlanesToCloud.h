@@ -13,7 +13,7 @@
 void FitPlanesToCloud(objectMessage &object, sensor_msgs::PointCloud &rosCloud, const geometry_msgs::Pose &boatPose_enu) 
 {
 	//Check that we have enough points to run model
-	if (object.scale.z < 2 || object.beams.size() <= 300) {
+	if (object.scale.x < 4 || object.scale.y < 4 || object.scale.z < 2 || object.strikesFrame.size() <= 100) {
 		return;
 	}
 	ROS_INFO_STREAM("PLANE FIT | Running plane fit on object id " << object.id << " with height of " << object.scale.z);
@@ -24,7 +24,7 @@ void FitPlanesToCloud(objectMessage &object, sensor_msgs::PointCloud &rosCloud, 
 
 	//Downsample while adding to pcl pointcloud
 	double voxel = 0.15;
-	for (const auto &nextPoint : object.beams) {
+	for (const auto &nextPoint : object.strikesFrame) {
 		//if ( fabs(p.z-zo) < height*0.40 ) {
 		if ( nextPoint.z > object.position.z - object.scale.z*0.05 ) {
 			pcl::PointXYZ pp;

@@ -3,6 +3,7 @@
 #include <iostream>
 #include "ConnectedComponents.h"
 #include "FitPlanesToCloud.h"
+#include "VolumeClassifier.h"
 /*
 	This gives you a list of objects, where every objects that is classified as 'the same' is given a persistant id.
 	This list does not persist past what is seen in immediate view
@@ -17,7 +18,7 @@ private:
 
 public:
 
-	ObjectTracker(float diff_thresh=4){
+	ObjectTracker(float diff_thresh=1.5){
 		this->diff_thresh = diff_thresh;
 	}
 
@@ -40,8 +41,10 @@ public:
 			if(min_dist < diff_thresh) {
 				min_obj->position = obj.position;
 				min_obj->scale = obj.scale;
-				min_obj->beams = obj.beams;
-				min_obj->intensity = obj.intensity;
+				min_obj->strikesPersist = obj.strikesPersist;
+				min_obj->strikesFrame = obj.strikesFrame;
+				min_obj->intensityPersist = obj.intensityPersist;
+				min_obj->intensityFrame = obj.intensityFrame;
 			}else{
 				obj.id = curr_id;
 				++curr_id;
@@ -51,6 +54,7 @@ public:
 
 		for(auto &s_obj : saved_objects) {
 			FitPlanesToCloud(s_obj,rosCloud,boatPose_enu);
+			VolumeClassifier(s_obj);
 		}
 
 		return saved_objects;
