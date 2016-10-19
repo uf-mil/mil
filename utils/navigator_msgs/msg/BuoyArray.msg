@@ -1,1 +1,0 @@
-navigator_msgs/Buoy[] buoys    # Collection of buoys

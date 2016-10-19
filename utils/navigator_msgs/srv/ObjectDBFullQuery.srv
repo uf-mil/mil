@@ -1,2 +1,2 @@
 ---
-navigator_msgs/PerceptionObject[] objects
+navigator_msgs/IdentifiedPerceptionObjects all_objects

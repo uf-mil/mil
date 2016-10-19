@@ -20,10 +20,10 @@ add_message_files(
   PoseTwist.msg
   Coordinates.msg
   PoseTwistStamped.msg
-  Buoy.msg
-  BuoyArray.msg
   PerceptionObject.msg
   PerceptionObjects.msg
+  IdentifiedPerceptionObject.msg
+  IdentifiedPerceptionObjects.msg
   DockShape.msg
   DockShapes.msg
 )
