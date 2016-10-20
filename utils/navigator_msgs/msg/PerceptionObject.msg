@@ -1,5 +1,15 @@
 std_msgs/Header header            # Stamped with the time of the last sighting of the buoy
 
+string type
+
+#Constant Standard names to use
+string DETECT_DELIVER_PLATFORM=shooter
+string IDENTIFY_AND_DOCK=dock
+string SCAN_THE_CODE=scan_the_code
+string TOTEM=totem
+string START_GATE_BUOY=start_gate
+string UNKNOWN=unknown
+
 geometry_msgs/Point position      # Estimated position of the buoy stamped (in the frame of the header)
 
 uint32 id                         # If we want to label each buoy and keep track of it

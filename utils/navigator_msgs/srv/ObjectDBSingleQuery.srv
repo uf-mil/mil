@@ -1,4 +1,4 @@
 string name
 ---
 bool found
-navigator_msgs/IdentifiedPerceptionObject object
+navigator_msgs/PerceptionObject object

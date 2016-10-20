@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from navigator_msgs.msg import IdentifiedPerceptionObject
+from navigator_msgs.msg import PerceptionObject
 from navigator_msgs.srv import ObjectDBSingleQueryResponse, ObjectDBFullQueryResponse, ObjectDBSingleQuery, ObjectDBFullQuery
 from visualization_msgs.msg import MarkerArray, Marker
 from txros import NodeHandle, util
@@ -21,36 +21,36 @@ class ObjectDatabase:
         global nh
         nh = self.nh
 
-        self.pub_object_found = yield self.nh.advertise('/database/object_found', IdentifiedPerceptionObject)
+        self.pub_object_found = yield self.nh.advertise('/database/object_found', PerceptionObject)
         self.pub_object_markers = yield self.nh.advertise('/database/objects_classified', MarkerArray)
         self.pub_object_curr = yield self.nh.advertise('/database/objects_curr', Marker)
 
         self.serv_single_query = yield self.nh.advertise_service('/database/single', ObjectDBSingleQuery, self.query_single)
         self.serv_full_query = yield self.nh.advertise_service('/database/full', ObjectDBFullQuery, self.query_full)
 
-        self.sub_object_classification = yield self.nh.subscribe('/classifier/object', IdentifiedPerceptionObject, self.new_object)
+        self.sub_object_classification = yield self.nh.subscribe('/classifier/object', PerceptionObject, self.new_object)
 
         defer.returnValue(self)
 
     def new_object(self, perception_object):
         p = perception_object
-        if(p.name == 'unknown'):
+        if(p.type == PerceptionObject.UNKNOWN):
             self.unknowns.append(perception_object)
             return
         for i, unknown in enumerate(self.unknowns):
-            if(p.object.id == unknown.object.id):
+            if(p.id == unknown.id):
                 del self.unknowns[i]
                 break
 
         for i in self.items.values():
-            if i.object.id == p.object.id and i.name != p.name:
-                del self.items[i.name]
+            if i.id == p.id and i.type != p.type:
+                del self.items[i.type]
                 break
 
-        if p.name not in self.items:
+        if p.type not in self.items:
             self.pub_object_found.publish(p)
 
-        self.items[p.name] = p
+        self.items[p.type] = p
         self.add_markers()
 
     def add_markers(self):
@@ -63,8 +63,8 @@ class ObjectDatabase:
             marker.header.stamp = nh.get_time()
             marker.header.seq = 1
             marker.header.frame_id = "enu"
-            marker.id = item.object.id
-            marker.pose.position = item.object.position
+            marker.id = item.id
+            marker.pose.position = item.position
             marker.type = marker.TEXT_VIEW_FACING
             marker.action = marker.ADD
             marker.scale.x = 3.0
@@ -74,7 +74,7 @@ class ObjectDatabase:
             marker.color.g = 0.0
             marker.color.b = 0.0
             marker.color.a = 1.0
-            marker.text = item.name
+            marker.text = item.type
             marker_array.markers.append(marker)
         self.pub_object_markers.publish(marker_array)
 

@@ -1,1 +1,0 @@
-navigator_msgs/IdentifiedPerceptionObject list

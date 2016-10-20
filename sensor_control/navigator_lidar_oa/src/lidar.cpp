@@ -304,6 +304,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		
 		// 
 		buoy.header.stamp = ros::Time::now();
+		buoy.type = navigator_msgs::PerceptionObject::UNKNOWN;
 		buoy.id = obj.id;
 		buoy.confidence = 0;
 		buoy.position = obj.position;

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from navigator_msgs.msg import PerceptionObject, PerceptionObjects, IdentifiedPerceptionObject, IdentifiedPerceptionObjects
+from navigator_msgs.msg import PerceptionObject, PerceptionObjects
 from visualization_msgs.msg import Marker
 from txros import NodeHandle, util
 from twisted.internet import defer, reactor
@@ -20,7 +20,7 @@ class ObjectClassifier:
         global nh
         nh = self.nh
 
-        self.pub_obj_found = yield self.nh.advertise('/classifier/object', IdentifiedPerceptionObject)
+        self.pub_obj_found = yield self.nh.advertise('/classifier/object', PerceptionObject)
         self.pub_object_searching = yield self.nh.advertise('/classifier/looking_for', Marker)
 
         self.sub_unclassified = yield self.nh.subscribe('/unclassified/objects',PerceptionObjects, self.new_objects)
@@ -64,18 +64,16 @@ class ObjectClassifier:
                         return
                     self.classified_ids[b.id] = x
 
-                    obj = IdentifiedPerceptionObject()
-                    obj.name = self.classified_ids[b.id]
-                    obj.object = b
+                    obj = b
+                    obj.type = self.classified_ids[b.id]
                     self.pub_obj_found.publish(obj)
                     self.currently_classifying = False
                     return
 
         for b in buoys:
             if b.id in self.classified_ids.keys():
-                obj = IdentifiedPerceptionObject()
-                obj.name = self.classified_ids[b.id]
-                obj.object = b
+                obj = b
+                obj.type = self.classified_ids[b.id]
                 self.pub_obj_found.publish(obj)
 
         self.currently_classifying = False
