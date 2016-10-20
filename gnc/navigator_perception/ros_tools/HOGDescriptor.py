@@ -53,22 +53,17 @@ class HOG(object):
                         neg[i][j] = val
                     else:
                         val = neg[i][j]
-            print "1"
 
             print pos.shape
 
             myhog = hog.compute(pos)
             myinvhog = hog.compute(neg)
 
-            print "3"
-
             len_myhog = len(myhog)
             len_myinvhog = len(myinvhog)
 
             myhog = np.reshape(myhog, [len_myhog / 9, 9])
             myinvhog = np.reshape(myinvhog, [len_myinvhog / 9, 9])
-
-            print "2"
 
             # add hogs to an array
             if(count == 0):

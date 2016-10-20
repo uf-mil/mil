@@ -125,7 +125,7 @@ class ObjectClassifier(object):
                 nav_vec = [np.cos(yaw), np.sin(yaw), 0]
                 mydot = np.dot(dir_vec, nav_vec)
                 angle = np.arccos(mydot)
- 
+
                 print "id: ", b.id, yaw, mydot, angle
 
                 if angle > (3.14 / 6):
