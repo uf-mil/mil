@@ -95,7 +95,7 @@ class DetectDeliverMission:
                     print "ROTATING TO= ", trns.euler_from_quaternion(enuyaw)
 
                     print "MOVING!"
-                    yield self.navigator.move.set_position(enumove).set_orientation(enuyaw).yaw_left(3.1415).go()
+                    yield self.navigator.move.set_position(enumove).set_orientation(enuyaw).go()
                     # return
                     defer.returnValue(None)
                     print "DISTANCE = ", res.distance
