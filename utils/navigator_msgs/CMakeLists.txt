@@ -20,9 +20,6 @@ add_message_files(
   PoseTwist.msg
   Coordinates.msg
   PoseTwistStamped.msg
-  Point.msg
-  Points.msg
-  Waypoint.msg
   IraObject.msg
   PerceptionObject.msg
   PerceptionObjects.msg
@@ -45,7 +42,6 @@ add_service_files(
   StereoShapeDetector.srv
   ScanTheCodeMission.srv
   IraObjectService.srv
-  PerceptionObjectService.srv
   ObjectDBFullQuery.srv
   ObjectDBSingleQuery.srv
 )
