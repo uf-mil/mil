@@ -1,4 +1,4 @@
-int32 feeder
-int32 shooter
+float32 feeder
+float32 shooter
 ---
 bool success

@@ -1,6 +1,5 @@
 <launch>
-  <node pkg="rosserial_python" type="serial_node.py" name="shooter_serial">
-    <rosparam param="port">/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A603UWY5-if00-port0</rosparam>
+  <node pkg="navigator_shooter" type="ShooterControl.py" name="shooter_controller">
     <rosparam file="$(find navigator_shooter)/launch/config.yaml" />
   </node>
   <include file="$(find navigator_launch)/launch/subsystems/hydrophones.launch" />

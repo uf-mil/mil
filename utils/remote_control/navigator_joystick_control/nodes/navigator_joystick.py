@@ -13,6 +13,7 @@ from nav_msgs.msg import Odometry
 from navigator_msgs.srv import WrenchSelect
 from kill_handling.broadcaster import KillBroadcaster
 from sub8_alarm import AlarmBroadcaster
+from std_srvs.srv import SetBool, SetBoolRequest
 
 rospy.init_node("joystick")
 
@@ -42,6 +43,7 @@ class Joystick(object):
 
         self.wrench_pub = rospy.Publisher("/wrench/rc", WrenchStamped, queue_size=1)
         self.kb = KillBroadcaster(id='station_hold', description='Resets Pose')
+        self.station_holder = rospy.ServiceProxy('/lqrrt/station_hold', SetBool)
         # rospy.wait_for_service('/change_wrench')
         self.wrench_changer = rospy.ServiceProxy('/change_wrench', WrenchSelect)
 
@@ -133,8 +135,9 @@ class Joystick(object):
         # Station hold
         if station_hold == 1 and station_hold != self.last_station_hold_state:
             rospy.loginfo("Station Holding")
-            self.kb.send(active=True)
-            self.kb.send(active=False)  # Resets c3, this'll change when c3 is replaced
+            self.kb.send(active=True)  # For C3
+            self.station_holder(SetBoolRequest(data=True))  # For lqrrt
+            self.kb.send(active=False) # For C3
             self.wrench_changer("autonomous")
 
         # Turn on full system kill
@@ -162,7 +165,6 @@ class Joystick(object):
         #         )
 
         #     self.docking = not self.docking
-
 
         self.last_start = start
         self.last_change_mode = change_mode

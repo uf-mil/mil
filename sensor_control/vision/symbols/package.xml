@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>navigator_shoot_vision</name>
+  <version>0.0.0</version>
+  <description>The navigator_shooter package</description>
+   <maintainer email="dvolya@gmail.com">Kevin + Daniel V</maintainer>
+  <license>TODO</license>
+<author email="dvolya@gmail.com">Kevin + Daniel V</author> 
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>message_runtime</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>navigator_msgs</build_depend>
+  <build_depend>std_srvs</build_depend>
+  <run_depend>std_srvs</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>navigator_msgs</run_depend>
+</package>

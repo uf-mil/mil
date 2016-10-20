@@ -4,7 +4,7 @@ project(navigator_perception)
 # SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 # set c++11 as default, overide with set_target_properties()
 # if needed for specific nodes (cough..cough... PCL)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -g -Wall -std=c++11 ")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -g -pedantic -Wall -std=c++11 ")
 
 find_package(catkin
   REQUIRED COMPONENTS
@@ -15,9 +15,8 @@ find_package(catkin
     image_transport
     image_geometry
     cv_bridge
-    sub8_build_tools
-    sub8_msgs
     message_generation
+    navigator_msgs
     std_msgs
     std_srvs
     geometry_msgs
@@ -27,6 +26,7 @@ find_package(catkin
 )
 
 find_package(PCL 1.7 REQUIRED)
+find_package(Boost REQUIRED date_time)
 
 catkin_python_setup()
 
@@ -40,18 +40,16 @@ catkin_package(
   CATKIN_DEPENDS
     roscpp
     rospy
-    sub8_msgs
     message_runtime
     std_msgs
     geometry_msgs
     sensor_msgs
+    navigator_msgs
   DEPENDS
     system_lib
     image_transport
     image_geometry
     cv_bridge
-    sub8_build_tools # do we still need these sub8 dependencies?
-    sub8_msgs
     navigator_msgs
 )
 
@@ -111,14 +109,15 @@ install(TARGETS navigator_sparsestereo
 
 add_library(
   navigator_vision_lib
-    helper/model.cc 
     src/navigator_vision_lib/visualization.cc
     src/navigator_vision_lib/cv_utils.cc
-    helper/stereomodelfitter.cc
     src/navigator_vision_lib/point_cloud_algorithms.cc
-)
+ )
+
+target_include_directories(navigator_vision_lib PUBLIC include/navigator_vision_lib)
 
 target_link_libraries(
+
   navigator_vision_lib
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
@@ -162,19 +161,11 @@ target_link_libraries(
 
 set_target_properties(stereo_point_cloud_driver PROPERTIES COMPILE_FLAGS "-O3 -DNDEBUG -fopenmp -g -Wall -march=native -msse -msse2 -msse3 -mssse3 -msse4 -ffast-math -mfpmath=sse")
 
-add_executable(
-  scan_the_code
-    nodes/scan_the_code_detector.cc
-)
 
-add_dependencies(
-  scan_the_code
-   sub8_msgs_generate_messages_cpp
-   ${catkin_EXPORTED_TARGETS}
-)
+add_executable( camera_stream_demo nodes/camera_stream_demo.cpp)
 
 target_link_libraries(
-  scan_the_code
+  camera_stream_demo
     navigator_vision_lib
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
