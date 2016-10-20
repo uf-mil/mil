@@ -3,7 +3,7 @@
 void VolumeClassifier(objectMessage &object)
 {
 	//If we classify something as shooter/scanthecode, leave it alone
-	if (object.name == "shooter" || object.name == "scanthecode" || object.name == "tower") {
+	if (object.name == "shooter" || object.name == "scanthecode") {
 		return;
 	}
 

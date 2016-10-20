@@ -23,8 +23,7 @@ add_message_files(
   Point.msg
   Points.msg
   Waypoint.msg
-  Buoy.msg
-  BuoyArray.msg
+  IraObject.msg
   PerceptionObject.msg
   PerceptionObjects.msg
   DockShape.msg
@@ -45,6 +44,7 @@ add_service_files(
   CoordinateConversion.srv
   StereoShapeDetector.srv
   ScanTheCodeMission.srv
+  IraObjectService.srv
   PerceptionObjectService.srv
   ObjectDBFullQuery.srv
   ObjectDBSingleQuery.srv

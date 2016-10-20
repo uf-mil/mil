@@ -16,8 +16,8 @@
 #include <tf2_msgs/TFMessage.h>
 #include <tf2/convert.h>
 #include <tf2_ros/transform_listener.h>
-#include <navigator_msgs/Buoy.h>
-#include <navigator_msgs/BuoyArray.h>
+#include <navigator_msgs/IraObject.h>
+#include <navigator_msgs/IraObjectService.h>
 #include <uf_common/PoseTwistStamped.h>
 #include <uf_common/MoveToAction.h>
 #include <actionlib/server/simple_action_server.h>
@@ -315,6 +315,14 @@ void cb_odom(const nav_msgs::OdometryConstPtr &odom) {
 	boatTwist_enu = odom->twist.twist;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool objectRequest(navigator_msgs::IraObjectService::Request  &req, navigator_msgs::IraObjectService::Response &res) 
+{
+	ROS_INFO_STREAM("LIDAR | Received request " << req.name);
+	return true;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -351,6 +359,9 @@ int main(int argc, char* argv[])
 	pubCloudPersist = nh.advertise<sensor_msgs::PointCloud>("ira_persist",1);
 	pubCloudFrame = nh.advertise<sensor_msgs::PointCloud>("ira_frame",1);
 	pubCloudPCL = nh.advertise<sensor_msgs::PointCloud>("ira_pclcloud",1);
+
+	//Service for object request
+	ros::ServiceServer service = nh.advertiseService("ira_request", objectRequest);
 
 	//Give control to ROS
 	ros::spin();
