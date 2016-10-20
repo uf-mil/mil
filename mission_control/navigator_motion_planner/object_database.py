@@ -34,7 +34,7 @@ class ObjectDatabase:
 
     def new_object(self, perception_object):
         p = perception_object
-        if(p.name == 'unknown'):
+        if(p.type == PerceptionObject.UNKNOWN):
             self.unknowns.append(perception_object)
             return
         for i, unknown in enumerate(self.unknowns):
@@ -43,14 +43,14 @@ class ObjectDatabase:
                 break
 
         for i in self.items.values():
-            if i.id == p.id and i.name != p.name:
-                del self.items[i.name]
+            if i.id == p.id and i.type != p.type:
+                del self.items[i.type]
                 break
 
-        if p.name not in self.items:
+        if p.type not in self.items:
             self.pub_object_found.publish(p)
 
-        self.items[p.name] = p
+        self.items[p.type] = p
         self.add_markers()
 
     def add_markers(self):
@@ -74,7 +74,7 @@ class ObjectDatabase:
             marker.color.g = 0.0
             marker.color.b = 0.0
             marker.color.a = 1.0
-            marker.text = item.name
+            marker.text = item.type
             marker_array.markers.append(marker)
         self.pub_object_markers.publish(marker_array)
 
@@ -90,7 +90,7 @@ class ObjectDatabase:
     def query_full(self, req):
         per = ObjectDBFullQueryResponse()
         for item in self.items.values():
-            per.objects.append(item)
+            per.all_objects.append(item)
 
         return per
 

@@ -18,6 +18,8 @@
 #include <tf2_ros/transform_listener.h>
 #include <navigator_msgs/IraObject.h>
 #include <navigator_msgs/IraObjectService.h>
+#include <navigator_msgs/PerceptionObjects.h>
+#include <navigator_msgs/PerceptionObject.h>
 #include <uf_common/PoseTwistStamped.h>
 #include <uf_common/MoveToAction.h>
 #include <actionlib/server/simple_action_server.h>
@@ -216,9 +218,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	}
 	p.x = lidarPos.x; p.y = lidarPos.y; p.z = lidarPos.z - MAXIMUM_Z_BELOW_LIDAR;  
 	m.points.push_back(p);
-	markers.markers.push_back(m);
-	
-
+	markers.markers.push_back(m);	
 	geometry_msgs::Point32 p32;	
 	sensor_msgs::ChannelFloat32 channel;
 	channel.name = "intensity";

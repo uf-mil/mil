@@ -1,0 +1,12 @@
+
+---
+# Define the result
+bool success
+string error
+string ALREADY_RUNNING=ALREADY_RUNNING
+string NOT_LOADED=NOT_LOADED
+string ALREADY_LOADED=ALREADY_LOADED
+string MANUAL_CONTROL_USED=MANUAL_CONTROL_USED
+---
+# Define a feedback message
+duration time_remaining

@@ -13,6 +13,7 @@ from pose_editor import PoseEditor2
 
 import navigator_tools
 from uf_common.msg import MoveToAction
+from navigator_msgs.msg import MoveToWaypointAction
 from nav_msgs.msg import Odometry
 from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped
@@ -31,6 +32,8 @@ class Navigator(object):
         self.pose = None
         self.ecef_pose = None
 
+        self.enu_bounds = None
+
         self.alarms = []
 
     @util.cancellableInlineCallbacks
@@ -40,6 +43,11 @@ class Navigator(object):
         self._pose_pub = self.nh.advertise("navigator_pose", PoseStamped)
 
         self._moveto_action_client = action.ActionClient(self.nh, 'moveto', MoveToAction)
+        self._moveto_action_client2 = action.ActionClient(self.nh, 'move_to', MoveToWaypointAction)
+
+        print "NAVIGATOR: Waiting for move_to action client..."
+        yield self._moveto_action_client2.wait_for_server()
+
         self._odom_sub = self.nh.subscribe('odom', Odometry,
                                            lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0]))
         self._ecef_odom_sub = self.nh.subscribe('absodom', Odometry,

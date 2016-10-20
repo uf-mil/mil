@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from navigator_msgs.msg import PerceptionObject, BuoyArray
+from navigator_msgs.msg import PerceptionObject, PerceptionObjects
 from visualization_msgs.msg import Marker
 from txros import NodeHandle, util
 from twisted.internet import defer, reactor
@@ -23,7 +23,7 @@ class ObjectClassifier:
         self.pub_obj_found = yield self.nh.advertise('/classifier/object', PerceptionObject)
         self.pub_object_searching = yield self.nh.advertise('/classifier/looking_for', Marker)
 
-        self.sub_unclassified = yield self.nh.subscribe('/unclassified/objects', BuoyArray, self.new_objects)
+        self.sub_unclassified = yield self.nh.subscribe('/unclassified/objects',PerceptionObjects, self.new_objects)
 
         defer.returnValue(self)
 
@@ -32,7 +32,7 @@ class ObjectClassifier:
         if self.currently_classifying:
             return
         self.currently_classifying = True
-        buoys = buoy_array.buoys
+        buoys = buoy_array.objects
         unclassified_buoy = None
 
         if(len(self.classified_ids) < 5):
@@ -64,26 +64,16 @@ class ObjectClassifier:
                         return
                     self.classified_ids[b.id] = x
 
-                    obj = PerceptionObject()
-                    obj.name = self.classified_ids[b.id]
-                    obj.position = b.position
-                    obj.size.x = b.height
-                    obj.size.y = b.width
-                    obj.size.z = b.depth
-                    obj.id = b.id
+                    obj = b
+                    obj.type = self.classified_ids[b.id]
                     self.pub_obj_found.publish(obj)
                     self.currently_classifying = False
                     return
 
         for b in buoys:
             if b.id in self.classified_ids.keys():
-                obj = PerceptionObject()
-                obj.name = self.classified_ids[b.id]
-                obj.position = b.position
-                obj.size.x = b.height
-                obj.size.y = b.width
-                obj.size.z = b.depth
-                obj.id = b.id
+                obj = b
+                obj.type = self.classified_ids[b.id]
                 self.pub_obj_found.publish(obj)
 
         self.currently_classifying = False

@@ -4,7 +4,7 @@ project(navigator_perception)
 # SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 # set c++11 as default, overide with set_target_properties()
 # if needed for specific nodes (cough..cough... PCL)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -g -Wall -std=c++11 ")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -g -pedantic -Wall -std=c++11 ")
 
 find_package(catkin
   REQUIRED COMPONENTS
@@ -26,6 +26,7 @@ find_package(catkin
 )
 
 find_package(PCL 1.7 REQUIRED)
+find_package(Boost REQUIRED date_time)
 
 catkin_python_setup()
 
@@ -111,7 +112,9 @@ add_library(
     src/navigator_vision_lib/visualization.cc
     src/navigator_vision_lib/cv_utils.cc
     src/navigator_vision_lib/point_cloud_algorithms.cc
-)
+ )
+
+target_include_directories(navigator_vision_lib PUBLIC include/navigator_vision_lib)
 
 target_link_libraries(
 
@@ -158,6 +161,16 @@ target_link_libraries(
 
 set_target_properties(stereo_point_cloud_driver PROPERTIES COMPILE_FLAGS "-O3 -DNDEBUG -fopenmp -g -Wall -march=native -msse -msse2 -msse3 -mssse3 -msse4 -ffast-math -mfpmath=sse")
 
+
+add_executable( camera_stream_demo nodes/camera_stream_demo.cpp)
+
+target_link_libraries(
+  camera_stream_demo
+    navigator_vision_lib
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${OpenCV_INCLUDE_DIRS}
+)
 
 install(
   TARGETS
