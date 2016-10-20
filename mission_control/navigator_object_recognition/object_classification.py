@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from navigator_msgs.msg import PerceptionObject, PerceptionObjects
 from visualization_msgs.msg import Marker
+from geometry_msgs.msg import PointStamped
 from txros import NodeHandle, util
 from nav_msgs.msg import Odometry
 from twisted.internet import defer, reactor
@@ -21,6 +22,8 @@ class ObjectClassifier(object):
         self.classified_ids = {}
         self.ids_to_hits = {}
         self.currently_classifying = False
+        self.all_objects = []
+        self.human_mode = True
 
     @util.cancellableInlineCallbacks
     def _init(self):
@@ -33,15 +36,74 @@ class ObjectClassifier(object):
         self.pub_obj_found = yield self.nh.advertise('/classifier/object', PerceptionObject)
         self.pub_object_searching = yield self.nh.advertise('/classifier/looking_for', Marker)
 
+        self.sub_clicked_point = self.nh.subscribe('/clicked_point', PointStamped, self.cp_cb)
         self.sub_unclassified = yield self.nh.subscribe('/unclassified/objects', PerceptionObjects, self.new_objects)
-        self.sub_odom = self.nh.subscribe('odom', Odometry, self.odom_cb)
+        self.sub_odom = yield self.nh.subscribe('odom', Odometry, self.odom_cb)
 
         defer.returnValue(self)
 
     def odom_cb(self, odom):
         self.position, self.rot = nt.odometry_to_numpy(odom)[0]
 
+    @util.cancellableInlineCallbacks
+    def cp_cb(self, point_stamped):
+        print "sup"
+        self.currently_classifying = True
+        point = nt.rosmsg_to_numpy(point_stamped.point)
+        min_obj = None
+        min_dist = 10000
+        for b in self.all_objects:
+            obj_pose = nt.rosmsg_to_numpy(b.position)
+            dist = np.linalg.norm(obj_pose - point)
+            print dist
+            if dist < min_dist:
+                min_obj = b
+                min_dist = dist
+
+        marker = Marker()
+        marker.header.stamp = nh.get_time()
+        marker.header.seq = 1
+        marker.header.frame_id = "enu"
+        marker.id = min_obj.id
+        marker.pose.position = min_obj.position
+        marker.type = marker.SPHERE
+        marker.action = marker.ADD
+        marker.scale.x = 1.0
+        marker.scale.y = 1.0
+        marker.scale.z = 1.0
+        marker.color.r = 1.0
+        marker.color.g = 0.0
+        marker.color.b = 0.0
+        marker.color.a = 1.0
+        self.pub_object_searching.publish(marker)
+        yield nh.sleep(1)
+        x = yield util.nonblocking_raw_input("What object is this? " + str(marker.id))
+
+        if(x == 'skip'):
+            self.currently_classifying = False
+            return
+        self.classified_ids[min_obj.id] = x
+
+        obj = PerceptionObject()
+        obj.name = self.classified_ids[min_obj.id]
+        obj.position = min_obj.position
+        obj.size.x = min_obj.height
+        obj.size.y = min_obj.width
+        obj.size.z = min_obj.depth
+        obj.id = min_obj.id
+        self.pub_obj_found.publish(obj)
+
+        marker_del = Marker()
+        marker_del.action = 3  # This is DELETEALL
+        self.pub_object_searching.publish(marker_del)
+
+        self.currently_classifying = False
+
     def new_objects(self, buoy_array):
+        if self.human_mode and not self.currently_classifying:
+            self.all_objects = buoy_array.buoys
+            return
+
         if self.currently_classifying:
             return
 

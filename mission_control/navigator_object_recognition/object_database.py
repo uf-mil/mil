@@ -36,9 +36,9 @@ class ObjectDatabase(object):
 
     def new_object(self, perception_object):
         p = perception_object
-        print p.id
-        print "----"
-        print p
+        # print p.id
+        # print "----"
+        # print p
 
         # If it is unknown, add it to the list of unknowns and exit
         if(p.type == PerceptionObject.UNKNOWN):
@@ -59,11 +59,12 @@ class ObjectDatabase(object):
                 break
 
         # If this is a new classification, publish that a new object has been found
-        if p.type not in self.items:
+        if p.type not in self.items.keys():
             self.pub_object_found.publish(p)
 
         # Add it to the database
         self.items[p.name] = p
+        print self.items
 
     @util.cancellableInlineCallbacks
     def publish_items(self):
@@ -86,6 +87,7 @@ class ObjectDatabase(object):
         marker_array = MarkerArray()
         marker_array.markers.append(marker_del)
         for item in self.items.values():
+            print item
             marker = Marker()
             marker.header.stamp = nh.get_time()
             marker.header.seq = 1
@@ -101,7 +103,7 @@ class ObjectDatabase(object):
             marker.color.g = 0.0
             marker.color.b = 0.0
             marker.color.a = 1.0
-            marker.text = item.type
+            marker.text = item.type + "_" + str(item.id)
             marker_array.markers.append(marker)
 
         for item in self.unknowns.values():
@@ -120,7 +122,7 @@ class ObjectDatabase(object):
             marker.color.g = 0.0
             marker.color.b = 0.0
             marker.color.a = 1.0
-            marker.text = "unknown"
+            marker.text = PerceptionObject.UNKNOWN
             marker_array.markers.append(marker)
         self.pub_object_markers.publish(marker_array)
 
