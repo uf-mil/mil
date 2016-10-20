@@ -20,8 +20,6 @@ add_message_files(
   PoseTwist.msg
   Coordinates.msg
   PoseTwistStamped.msg
-  Buoy.msg
-  BuoyArray.msg
   PerceptionObject.msg
   PerceptionObjects.msg
   DockShape.msg
@@ -42,7 +40,6 @@ add_service_files(
   CoordinateConversion.srv
   StereoShapeDetector.srv
   ScanTheCodeMission.srv
-  PerceptionObjectService.srv
   ObjectDBFullQuery.srv
   ObjectDBSingleQuery.srv
 )

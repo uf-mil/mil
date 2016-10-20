@@ -14,8 +14,8 @@
 #include <tf2_msgs/TFMessage.h>
 #include <tf2/convert.h>
 #include <tf2_ros/transform_listener.h>
-#include <navigator_msgs/BuoyArray.h>
-#include <navigator_msgs/Buoy.h>
+#include <navigator_msgs/PerceptionObjects.h>
+#include <navigator_msgs/PerceptionObject.h>
 #include <uf_common/PoseTwistStamped.h>
 #include <uf_common/MoveToAction.h>
 #include <actionlib/server/simple_action_server.h>
@@ -286,8 +286,8 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	markers.markers.push_back(m);
 	
 	//Publish buoys
-	navigator_msgs::BuoyArray allBuoys;
-	navigator_msgs::Buoy buoy;
+	navigator_msgs::PerceptionObjects allBuoys;
+	navigator_msgs::PerceptionObject buoy;
 	geometry_msgs::Point32 p32;
 	buoy.header.seq = 0;
 	buoy.header.frame_id = "enu";
@@ -304,6 +304,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		
 		// 
 		buoy.header.stamp = ros::Time::now();
+		buoy.type = navigator_msgs::PerceptionObject::UNKNOWN;
 		buoy.id = obj.id;
 		buoy.confidence = 0;
 		buoy.position = obj.position;
@@ -311,7 +312,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		buoy.width = obj.scale.x; 
 		buoy.depth = obj.scale.y; 
 		buoy.points = obj.beams;
-		allBuoys.buoys.push_back(buoy);
+		allBuoys.objects.push_back(buoy);
 
 		//Buoys as markers
 		visualization_msgs::Marker m2;
@@ -406,7 +407,7 @@ int main(int argc, char* argv[])
 	//Publish occupancy grid and visualization markers
 	pubGrid = nh.advertise<nav_msgs::OccupancyGrid>("ogrid_batcave",10);
 	pubMarkers = nh.advertise<visualization_msgs::MarkerArray>("/unclassified/objects/markers",10);
-	pubBuoys = nh.advertise<navigator_msgs::BuoyArray>("/unclassified/objects",10);
+	pubBuoys = nh.advertise<navigator_msgs::PerceptionObjects>("/unclassified/objects",10);
 
 	//Publish waypoints to controller
 	//pubTrajectory = nh.advertise<uf_common::PoseTwistStamped>("trajectory", 1);
