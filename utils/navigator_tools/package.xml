@@ -2,12 +2,15 @@
 <package>
   <name>navigator_tools</name>
   <version>1.0.0</version>
-  <description>The math_helpers package</description>
-  <maintainer email="zgoins@ufl.edu">Zach Goins</maintainer>
+  <description>The navigator_tools package</description>
+  <maintainer email="dsoto@ufl.edu">David Soto</maintainer>
+  <maintainer email="Matthew.langford95@gmail.com">Matthew Langford</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rostest</build_depend>
+  <build_depend>roscpp</build_depend>
   <run_depend>rospy</run_depend>
+  <run_depend>roscpp</run_depend>
   <export>
   </export>
 </package>
