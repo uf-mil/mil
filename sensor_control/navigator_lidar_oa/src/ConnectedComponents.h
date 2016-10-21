@@ -77,9 +77,10 @@ struct objectMessage
 	std::vector<geometry_msgs::Point32> strikesFrame;
 	std::vector<uint32_t> intensityPersist;
 	std::vector<uint32_t> intensityFrame;
-	int id;
+	std_msgs::ColorRGBA color;
+	int id = -1;
 	std::string name = "unknown";
-	uint32_t pclInliers;
+	uint32_t pclInliers = 0;
 	geometry_msgs::Vector3 normal;
 	float minHeightFromLidar,maxHeightFromLidar;
 };
@@ -198,6 +199,7 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 			obj.intensityPersist = ii.second.intensityPersist;
 			obj.minHeightFromLidar = ii.second.minHeight;
 			obj.maxHeightFromLidar = ii.second.maxHeight;
+			//obj.color = ii.second.color; //Eventually work with color
 			objects.push_back(obj);
 			//ROS_INFO_STREAM(newId << " -> " << ob.position.x << "," << ob.position.y << "," << ob.position.z << "|" << ob.scale.x << "," << ob.scale.y << "," << ob.scale.z);
 			++newId;

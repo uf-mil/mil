@@ -65,21 +65,10 @@ uf_common::PoseTwistStamped waypoint_enu,carrot_enu;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Eigen::Vector2d BOUNDARY_CORNER_1 (30, 10);
-Eigen::Vector2d BOUNDARY_CORNER_2 (30, 120);
-Eigen::Vector2d BOUNDARY_CORNER_3 (140, 120);
-Eigen::Vector2d BOUNDARY_CORNER_4 (140, 10);
-
-//Eigen::Vector2d BOUNDARY_CORNER_1 (-30-35, 50+20);
-//Eigen::Vector2d BOUNDARY_CORNER_2 (-30-35, -20+20);
-//Eigen::Vector2d BOUNDARY_CORNER_3 (35-35, -20+20);
-//Eigen::Vector2d BOUNDARY_CORNER_4 (35-35, 50+20);
-
-//Eigen::Vector2d BOUNDARY_CORNER_1 (-30, 50);
-//Eigen::Vector2d BOUNDARY_CORNER_2 (-30, -20);
-//Eigen::Vector2d BOUNDARY_CORNER_3 (35, -20);
-//Eigen::Vector2d BOUNDARY_CORNER_4 (35, 50);
-
+Eigen::Vector2d BOUNDARY_CORNER_1 (30-90, 10);
+Eigen::Vector2d BOUNDARY_CORNER_2 (30-90, 120-40);
+Eigen::Vector2d BOUNDARY_CORNER_3 (140-90, 120-40);
+Eigen::Vector2d BOUNDARY_CORNER_4 (140-90, 10);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -230,6 +219,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	int max_id = 0;	
 	for (auto obj : object_permanence) {
 		ROS_INFO_STREAM("LIDAR | " << obj.name << " " << obj.id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.strikesPersist.size() << "(" << obj.strikesFrame.size() << ") points, size " << obj.scale.x << "," << obj.scale.y << "," << obj.scale.z << " maxHeight " << obj.maxHeightFromLidar);
+		std::cout << "inliers " << obj.pclInliers << ", normal " << obj.normal.x << "," << obj.normal.y << "," << obj.normal.z << endl;
 
 		//Show point cloud of just objects
 		objectCloudPersist.points.insert(objectCloudPersist.points.end(),obj.strikesPersist.begin(),obj.strikesPersist.end());
@@ -347,6 +337,7 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
 		return true;
 	}
 
+	//My original object message doesn't exactly match PerceptionObject, fix this in future!
 	for (const auto &obj : object_tracker.saved_objects) {
 		if (req.name == navigator_msgs::PerceptionObject::ALL || req.name == obj.name) {
 			res.found =true;
@@ -359,7 +350,8 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
 			thisOne.yDepth = obj.scale.y;
 			thisOne.points = obj.strikesPersist;
 			thisOne.intensity = obj.intensityPersist;
-			//thisOne.pclInliers =
+			thisOne.pclInliers = obj.pclInliers;
+			thisOne.normal = obj.normal;
 			res.objects.push_back(thisOne);
 		}
 	}

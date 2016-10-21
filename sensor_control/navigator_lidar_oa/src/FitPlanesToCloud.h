@@ -14,10 +14,10 @@ void FitPlanesToCloud(objectMessage &object, sensor_msgs::PointCloud &rosCloud, 
 {
 	//Check that we have enough points to run model
 	//if (object.scale.x < 4 || object.scale.y < 4 || object.scale.z < 2 || object.strikesFrame.size() <= 100) {
-	if (object.name != "shooter") {
+	if (object.name != "shooter" && object.name != "dock") {
 		return;
 	}
-	ROS_INFO_STREAM("PLANE FIT | Running plane fit on object id " << object.id << " with height of " << object.scale.z);
+	ROS_INFO_STREAM("PLANE FIT | Running plane fit on object " << object.id << ", height " << object.scale.z << ", inliers " << object.pclInliers << ", normal " << object.normal.x << "," << object.normal.y << "," << object.normal.z);
 
 	//Create pcl data types
 	pcl::PointCloud<pcl::PointXYZ>::Ptr pclCloud(new pcl::PointCloud<pcl::PointXYZ>), pclCloud_seg(new pcl::PointCloud<pcl::PointXYZ>);
