@@ -41,7 +41,7 @@
 #include <sensor_msgs/point_cloud2_iterator.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>
-#include <navigator_vision_lib/point_cloud_algorithms.hpp>
+#include <navigator_vision_lib/pcd_colorizer.hpp>
 
 void left_image_callback(
     const sensor_msgs::ImageConstPtr &image_msg_ptr,

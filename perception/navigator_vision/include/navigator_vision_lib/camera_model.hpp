@@ -37,7 +37,7 @@ private:
     int COLS = 0;
 
     // Distortion model (only the plum-bob model is currently supported)
-    T D[] = {0, 0, 0, 0, 0};
+    T D[5] = {0, 0, 0, 0, 0};
 
     // Camera Geometry
     Eigen::Matrix<T, 3, 3> K;  // Camera intrinsics
