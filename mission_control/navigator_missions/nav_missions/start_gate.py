@@ -30,8 +30,8 @@ class Buoy(object):
 
 
 def get_buoys():
-    right = Buoy([0, 7, 0], "green")
-    left = Buoy([20, 7, 0], "red")
+    right = Buoy([39, 25, 0], "green")
+    left = Buoy([64, 6, 0], "red")
 
     #rand_1 = Buoy([-23, 48, 0], "green")
     #rand_2 = Buoy([33, -8, 0], "green")
@@ -161,11 +161,15 @@ class OgridFactory():
         # Some parameters
         self.buffer = 50  # length of the "walls" extending outwards from each buoy (m)
         self.resolution = 10  # cells/meter for ogrid
-        self.channel_length = 30  # Not sure what this acutally is for the course (m)
+        self.channel_length = 60  # Not sure what this acutally is for the course (m)
+        self.edge_buffer = 10
 
         # Sets x,y upper and lower bounds and the left and right wall bounds
         self.get_size_and_build_walls()
+        self.make_ogrid_transform()
+        self.draw_lines(self.walls)
 
+    def make_ogrid_transform(self):
         self.origin = navigator_tools.numpy_quat_pair_to_pose([self.x_lower, self.y_lower, 0],
                                                               [0, 0, 0, 1])
         dx = self.x_upper - self.x_lower
@@ -177,9 +181,7 @@ class OgridFactory():
         self.t = np.array([[self.resolution, 0, -self.x_lower * self.resolution],
                            [0, self.resolution, -self.y_lower * self.resolution],
                            [0,               0,            1]])
-        self.transform = lambda point: self.t.dot(np.append(point[:2], 1))
-
-        self.draw_walls()
+        self.transform = lambda point: self.t.dot(np.append(point[:2], 1))[:2]
 
     def get_size_and_build_walls(self):
         # Get size of the ogrid ==============================================
@@ -199,10 +201,10 @@ class OgridFactory():
         endpoint_right_f = self.right_f - rot_buffer
 
         # Define bounds for the grid
-        self.x_lower = min(self.boat_pos[0], endpoint_left_f[0], endpoint_right_f[0], self.target[0])
-        self.x_upper = max(self.boat_pos[0], endpoint_left_f[0], endpoint_right_f[0], self.target[0])
-        self.y_lower = min(self.boat_pos[1], endpoint_left_f[1], endpoint_right_f[1], self.target[1])
-        self.y_upper = max(self.boat_pos[1], endpoint_left_f[1], endpoint_right_f[1], self.target[1])
+        self.x_lower = min(self.boat_pos[0], endpoint_left_f[0], endpoint_right_f[0], self.target[0]) - self.edge_buffer
+        self.x_upper = max(self.boat_pos[0], endpoint_left_f[0], endpoint_right_f[0], self.target[0]) + self.edge_buffer
+        self.y_lower = min(self.boat_pos[1], endpoint_left_f[1], endpoint_right_f[1], self.target[1]) - self.edge_buffer
+        self.y_upper = max(self.boat_pos[1], endpoint_left_f[1], endpoint_right_f[1], self.target[1]) + self.edge_buffer
 
         # Now lets build some wall points ======================================
 
@@ -215,12 +217,37 @@ class OgridFactory():
             self.left_b = self.left_f + rot_channel
             self.right_b = self.right_f + rot_channel
 
-        endpoint_left_b = self.left_b + rot_buffer
-        endpoint_right_b = self.right_b - rot_buffer
+        # Now draw contours from the boat to the start gate ====================
+        # Get vector from boat to mid_point
+        mid_point_vector = self.boat_pos - self.mid_point
 
-        # These are in ENU by the way
-        self.left_wall_points = [self.left_f, self.left_b, endpoint_left_b, endpoint_left_f]
-        self.right_wall_points = [self.right_f, self.right_b, endpoint_right_b, endpoint_right_f]
+        b_theta = np.arctan2(mid_point_vector[1], mid_point_vector[0])
+        b_rot_mat = trns.euler_matrix(0, 0, b_theta)[:3, :3]
+
+        rot_buffer = b_rot_mat.dot([np.linalg.norm(mid_point_vector) *  1.5, 0, 0])
+        left_cone_point = self.left_f + rot_buffer
+        right_cone_point = self.right_f + rot_buffer
+
+        self.walls = [self.left_b, self.left_f, left_cone_point, right_cone_point, self.right_f, self.right_b]
+
+
+        # endpoint_left_b = self.left_b + rot_buffer
+        # endpoint_right_b = self.right_b - rot_buffer
+
+        # # These are in ENU by the way
+        # self.left_wall_points = [endpoint_left_f, self.left_f, self.left_b, endpoint_left_b]
+        # self.right_wall_points = [endpoint_right_f, self.right_f, self.right_b, endpoint_right_b]
+
+    def draw_lines(self, points):
+        last_wall = None
+        for wall in points:
+            if last_wall is None:
+                last_wall = tuple(self.transform(wall).astype(np.int32))
+                continue
+
+            this_wall = tuple(self.transform(wall).astype(np.int32))
+            cv2.line(self.grid, this_wall, last_wall, 128, 3)
+            last_wall = this_wall
 
     def draw_walls(self):
         left_wall_points = np.array([self.transform(point) for point in self.left_wall_points])
@@ -257,6 +284,7 @@ class OgridFactory():
         cv2.circle(self.grid, tuple(right_b[:2].astype(np.int32)), 3, 128)
         cv2.imshow("test", self.grid)
         cv2.waitKey(0)
+
 
     def get_message(self):
         ogrid = OccupancyGrid()
