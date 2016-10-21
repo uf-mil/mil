@@ -59,7 +59,7 @@ class Navigator(object):
         self.alarms = []
 
     @util.cancellableInlineCallbacks
-    def _init(self):
+    def _init(self, sim):
         # Just some pre-created publishers for missions to use for debugging
         self._point_cloud_pub = self.nh.advertise("navigator_points", PointCloud)
         self._pose_pub = self.nh.advertise("navigator_pose", PoseStamped)
@@ -78,11 +78,17 @@ class Navigator(object):
         self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
         self.tf_listener = tf.TransformListener(self.nh)
 
-        print "NAVIGATOR: Waiting for odom..."
-        yield self._odom_sub.get_next_message()  # We want to make sure odom is working before we continue
-        #yield self._ecef_odom_sub.get_next_message()
+        if sim:
+            print "NAVIGATOR: Sim mode active!"
+            yield self.nh.sleep(0.5)
+        else:
+            # We want to make sure odom is working before we continue
+            print "NAVIGATOR: Waiting for odom..."
+            odom = util.wrap_time_notice(self._odom_sub.get_next_message(), 2, "NAVIGATOR: Odom listener")
+            enu_odom = util.wrap_time_notice(self._ecef_odom_sub.get_next_message(), 2, "NAVIGATOR: ENU Odom listener")
+            bounds = util.wrap_time_notice(self._make_bounds(), 2, "NAVIGATOR: Bounds creation")
+            yield defer.gatherResults([odom, enu_odom, bounds])  # Wait for all those to finish
 
-        #yield self._make_bounds()
         self._make_alarms()
 
         defer.returnValue(self)
@@ -111,17 +117,19 @@ class Navigator(object):
     def _make_bounds(self):
         print "NAVIGATOR: Constructing bounds."
 
-        _bounds = self.nh.get_service_client('/get_bounds', navigator_srvs.Bounds)
-        yield _bounds.wait_for_service()
-        resp = yield _bounds(navigator_srvs.BoundsRequest())
-        if resp.enforce:
-            self.enu_bounds = [navigator_tools.point_to_numpy(bound) for bound in resp.bounds]
+        if (yield self.nh.has_param("/bounds/enforce")):
+            _bounds = self.nh.get_service_client('/get_bounds', navigator_srvs.Bounds)
+            yield _bounds.wait_for_service()
+            resp = yield _bounds(navigator_srvs.BoundsRequest())
+            if resp.enforce:
+                self.enu_bounds = [navigator_tools.point_to_numpy(bound) for bound in resp.bounds]
 
-            # Just for display
-            pc = PointCloud(header=navigator_tools.make_header(frame='/enu'),
-                            points=np.array([navigator_tools.numpy_to_point(point) for point in self.enu_bounds]))
-            yield self._point_cloud_pub.publish(pc)
+                # Just for display
+                pc = PointCloud(header=navigator_tools.make_header(frame='/enu'),
+                                points=np.array([navigator_tools.numpy_to_point(point) for point in self.enu_bounds]))
+                yield self._point_cloud_pub.publish(pc)
         else:
+            print "NAVIGATOR: No bounds param found, defaulting to none."
             self.enu_bounds = None
 
     def vision_request(self, request_name, **kwargs):
@@ -152,7 +160,7 @@ class Navigator(object):
                 msg.header = navigator_tools.make_header(frame=msg.header.frame_id)
 
             pub.publish(msg)
-            yield self.nh.sleep(1 / freq)
+            yield self.nh.sleep(1.0 / freq)
 
     def _load_vision_services(self, fname="vision_services.yaml"):
         rospack = rospkg.RosPack()
@@ -210,7 +218,7 @@ class Searcher(object):
             # Handle error
 
     @util.cancellableInlineCallbacks
-    def start_search(self, timeout=60, loop=True, spotings_req=2, speed=.1):
+    def start_search(self, timeout=60, loop=True, spotings_req=2, speed=0.1):
         print "SEARCHER - Starting."
         looker = self._run_look(spotings_req).addErrback(self.catch_error)
         finder = self._run_search_pattern(loop, speed).addErrback(self.catch_error)
@@ -282,7 +290,7 @@ class Searcher(object):
             else:
                 spotings = 0
 
-            yield self.nav.nh.sleep(.5)
+            yield self.nav.nh.sleep(0.5)
 
         if spotings >= spotings_req:
             self.object_found = True
