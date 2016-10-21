@@ -21,7 +21,7 @@ from sensor_msgs.msg import PointCloud
 import navigator_msgs.srv as navigator_srvs
 
 
-class Result(object):
+class MissionResult(object):
     def __init__(self, success=True, response="", need_rerun=False,
                  post_function=None):
         self.success = success
@@ -48,7 +48,7 @@ class Navigator(object):
         self.nh = nh
 
         self.vision_proxies = {}
-        self._load_vision_serivces()
+        self._load_vision_services()
 
         # If you don't want to use txros
         self.pose = None
@@ -105,7 +105,7 @@ class Navigator(object):
 
     def fetch_result(self, *args, **kwargs):
         # For a unified result class
-        return Result(*args, **kwargs)
+        return MissionResult(*args, **kwargs)
 
     @util.cancellableInlineCallbacks
     def _make_bounds(self):
@@ -125,7 +125,7 @@ class Navigator(object):
             self.enu_bounds = None
 
     def vision_request(self, request_name, **kwargs):
-        print "DEPREICATED: Please use new dictionary based system."
+        print "DEPRECATED: Please use new dictionary based system."
         return self.vision_proxies[request_name].get_response(**kwargs)
 
     def change_wrench(self, source):
@@ -154,7 +154,7 @@ class Navigator(object):
             pub.publish(msg)
             yield self.nh.sleep(1 / freq)
 
-    def _load_vision_serivces(self, fname="vision_services.yaml"):
+    def _load_vision_services(self, fname="vision_services.yaml"):
         rospack = rospkg.RosPack()
         config_file = os.path.join(rospack.get_path('navigator_missions'), 'navigator_singleton', fname)
         f = yaml.load(open(config_file, 'r'))

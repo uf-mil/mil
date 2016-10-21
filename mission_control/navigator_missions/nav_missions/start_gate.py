@@ -26,9 +26,7 @@ class Buoy(object):
         return "BUOY at: {} with color {}".format(self.position, self.color)
 
     def distance(self, odom):
-        dist = np.linalg.norm(self.position - odom)
-        #print dist
-        return dist
+        return np.linalg.norm(self.position - odom)
 
 
 def get_buoys():
@@ -73,17 +71,14 @@ def main(navigator):
     #req.name = 'r_gate'
     #right = yield serv(req)
     #buoys = [Buoy.from_srv(left), Buoy.from_srv(right)]
-    print buoys
+
     # Display points of the buoys]
     points = [navigator_tools.numpy_to_point(b.position) for b in buoys]
 
     pose = yield navigator.tx_pose
     buoys = sorted(buoys, key=lambda buoy: buoy.distance(pose[0]))
 
-    # print pose
-    # print buoys
-
-    print "\nSTART_GATE: Be advised... Doing checks"
+    print "START_GATE: Be advised... Doing checks"
 
     # See if the closest two buoys are the right colors ============================================
     if not (buoys[0].color in ['green', 'red'] and buoys[1].color in ['green', 'red']):
@@ -102,44 +97,41 @@ def main(navigator):
         #return_with(result)
 
     # Made it this far, make sure the red one is on the left and green on the right ================
-    #t = yield navigator.tf_listener.get_transform("/base_link", "/enu", navigator.nh.get_time())
-    class t(object):
-        # Temp
-        @classmethod
-        def transform_point(self, point):
-            return point
+    pose = yield navigator.tx_pose
+    t = txros.tf.Transform.from_Pose_message(navigator_tools.numpy_quat_pair_to_pose(*pose))
     bl_buoys = [t.transform_point(buoy.position) for buoy in buoys[:2]]
 
     # Angles are w.r.t positive x-axis. Positive is CCW around the z-axis.
     angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in bl_buoys])
-    left, right = buoys[np.argmax(angle_buoys)], buoys[np.argmin(angle_buoys)]
-    if left.color == "green" and right.color == "red":
-        print "START_GATE: Error 3 - Not the right colors. (l-{}, r-{})".format(left.color,
-                                                                                right.color)
+    left_buoy, right_buoy = buoys[np.argmax(angle_buoys)], buoys[np.argmin(angle_buoys)]
+    if left_buoy.color == "green" and right_buoy.color == "red":
+        print "START_GATE: Error 3 - Not the right colors. (l-{}, r-{})".format(left_buoy.color,
+                                                                                right_buoy.color)
         #result.success = False
         #return_with(result)
 
     # Lets get a path to go to
-    between_vector, direction_vector = get_path(left, right)
-    mid_point = left.position + between_vector / 2
+    between_vector, direction_vector = get_path(left_buoy, right_buoy)
+    mid_point = left_buoy.position + between_vector / 2
 
     #print mid_point
-    setup = mid_point - direction_vector * 20
-    target = setup + direction_vector * 90
+    setup_dist = 20  # Line up with the start gate this many meters infront of the gate.
+    target_dist = 90  # Move this far though the start gate buoys (meters).
+    setup = mid_point - direction_vector * setup_dist
+    target = setup + direction_vector * target_dist
 
-    ogrid = OgridFactory(left.position, right.position, pose[0], target)
+    ogrid = OgridFactory(left_buoy.position, right_buoy.position, pose[0], target)
     msg = ogrid.get_message()
 
     # Put the target into the point cloud as well
     points.append(navigator_tools.numpy_to_point(target))
     pc = PointCloud(header=navigator_tools.make_header(frame='/enu'),
                     points=np.array(points))
-    for i in range(50):
-        yield navigator._point_cloud_pub.publish(pc)
+
+    yield navigator._point_cloud_pub.publish(pc)
 
     print "publishing"
     latched = navigator.latching_publisher("/mission_ogrid", OccupancyGrid, msg)
-    print latched
 
     yield navigator.nh.sleep(5)
 
@@ -151,7 +143,7 @@ def main(navigator):
 
 
 # This really shouldn't be here - it should be somewhere behind the scenes
-from nav_msgs.msg import OccupancyGridBut
+from nav_msgs.msg import OccupancyGrid
 import cv2
 
 class OgridFactory():
@@ -167,7 +159,7 @@ class OgridFactory():
         self.target = target
 
         # Some parameters
-        self.buffer = 20  # length of the "walls" extending outwards from each buoy (m)
+        self.buffer = 50  # length of the "walls" extending outwards from each buoy (m)
         self.resolution = 10  # cells/meter for ogrid
         self.channel_length = 30  # Not sure what this acutally is for the course (m)
 

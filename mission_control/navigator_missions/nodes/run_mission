@@ -33,6 +33,7 @@ def main():
 
     for mission in args.missions:
         to_run = getattr(nav_missions, mission)
+        print "MISSION: Running Mission!\n"
         result = yield to_run.main(n)
 
     print result
