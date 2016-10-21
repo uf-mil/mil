@@ -80,6 +80,14 @@ class DetectDeliverMission:
                         navigator_tools.rosmsg_to_numpy(res.normal))
                     enupoint = transformObj.transform_point(
                         navigator_tools.rosmsg_to_numpy(res.closest))
+                    while(enunormal[2] > .75):
+                        res = yield self.cameraLidarTransformer(req)
+                        transformObj = yield self.navigator.tf_listener.get_transform('/enu', '/right_right_cam', self.found_shape.header.stamp)
+                        enunormal = transformObj.transform_vector(
+                            navigator_tools.rosmsg_to_numpy(res.normal))
+                        enupoint = transformObj.transform_point(
+                            navigator_tools.rosmsg_to_numpy(res.closest))
+                    
                     print "POINT = ", enupoint
                     print "VECTOR = ", enunormal
                     enumove = enupoint + 5 * enunormal  # moves x meters away
