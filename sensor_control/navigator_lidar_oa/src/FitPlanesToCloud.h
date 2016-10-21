@@ -13,7 +13,8 @@
 void FitPlanesToCloud(objectMessage &object, sensor_msgs::PointCloud &rosCloud, const geometry_msgs::Pose &boatPose_enu) 
 {
 	//Check that we have enough points to run model
-	if (object.scale.x < 4 || object.scale.y < 4 || object.scale.z < 2 || object.strikesFrame.size() <= 100) {
+	//if (object.scale.x < 4 || object.scale.y < 4 || object.scale.z < 2 || object.strikesFrame.size() <= 100) {
+	if (object.name != "shooter") {
 		return;
 	}
 	ROS_INFO_STREAM("PLANE FIT | Running plane fit on object id " << object.id << " with height of " << object.scale.z);

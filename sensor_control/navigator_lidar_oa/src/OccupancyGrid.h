@@ -314,3 +314,18 @@ class OccupancyGrid
 };	
 
 #endif
+
+/*
+//Notes
+#include <sensor_msgs/point_cloud2_iterator.h>
+  sensor_msgs::PointCloud2Iterator<float> iter_x{output_pcd, "x"};
+  sensor_msgs::PointCloud2Iterator<float> iter_y{output_pcd, "y"};
+  sensor_msgs::PointCloud2Iterator<float> iter_z{output_pcd, "z"};
+  sensor_msgs::PointCloud2Iterator<uint8_t> iter_b(output_pcd, "b");
+  sensor_msgs::PointCloud2Iterator<uint8_t> iter_g(output_pcd, "g");
+  sensor_msgs::PointCloud2Iterator<uint8_t> iter_r(output_pcd, "r");
+
+rosrun navigator_perception stereo_point_cloud_driver
+	rosservice call /stereo/activation_srv "data: true" 
+
+*/
