@@ -169,24 +169,29 @@ class Dashboard(Plugin):
             severity=0
         )
 
+    def timeout_check(function):
+        def decorated_function(self):
+            if (not self.system_time["is_timed_out"]):
+                function(self)
+        return decorated_function
+
+    @timeout_check
     def update_kill_status(self, alarm):
         '''
         Updates the kill status display when there is an update on the kill
         alarm. Caches the last displayed kill status to avoid updating the
         display with the same information twice.
         '''
-        if (not self.system_time["is_timed_out"]):
+        if (alarm.clear):
+            if (self.is_killed):
+                self.is_killed = False
+                self.kill_status_status.setText("Alive")
+                self.kill_status_frame.setStyleSheet(self.colors["green"])
 
-            if (alarm.clear):
-                if (self.is_killed):
-                    self.is_killed = False
-                    self.kill_status_status.setText("Alive")
-                    self.kill_status_frame.setStyleSheet(self.colors["green"])
-
-            elif (not self.is_killed):
-                self.is_killed = True
-                self.kill_status_status.setText("Killed")
-                self.kill_status_frame.setStyleSheet(self.colors["red"])
+        elif (not self.is_killed):
+            self.is_killed = True
+            self.kill_status_status.setText("Killed")
+            self.kill_status_frame.setStyleSheet(self.colors["red"])
 
     def monitor_operating_mode(self):
         '''
@@ -431,56 +436,56 @@ class Dashboard(Plugin):
                 entry.setStyleSheet(column_color[column])
                 self.device_table.setCellWidget(row, column, entry)
 
+    @timeout_check
     def toggle_kill(self):
         '''
         Toggles the kill status when the toggle_kill_button is pressed.
         '''
-        if (not self.system_time["is_timed_out"]):
-            rospy.loginfo("Toggling Kill")
+        rospy.loginfo("Toggling Kill")
 
-            # Responds to the kill broadcaster and checks the status of the kill alarm
-            if self.is_killed:
-                self.kill_alarm.clear_alarm()
-            else:
-                self.wrench_changer("rc")
-                self.kill_alarm.raise_alarm(
-                    problem_description='System kill from location: dashboard'
-                )
+        # Responds to the kill broadcaster and checks the status of the kill alarm
+        if self.is_killed:
+            self.kill_alarm.clear_alarm()
+        else:
+            self.wrench_changer("rc")
+            self.kill_alarm.raise_alarm(
+                problem_description='System kill from location: dashboard'
+            )
 
+    @timeout_check
     def station_hold(self):
         '''
         Sets the goal point to the current location and switches to autonomous
         mode in order to stay at that point.
         '''
-        if (not self.system_time["is_timed_out"]):
-            rospy.loginfo("Station Holding")
+        rospy.loginfo("Station Holding")
 
-            # Station holding activation for lqrrt and C3
-            self.kb.send(active=True)
-            self.station_holder(SetBoolRequest(data=True))
-            self.kb.send(active=False)
-            self.wrench_changer("autonomous")
+        # Station holding activation for lqrrt and C3
+        self.kb.send(active=True)
+        self.station_holder(SetBoolRequest(data=True))
+        self.kb.send(active=False)
+        self.wrench_changer("autonomous")
 
+    @timeout_check
     def select_autonomous_control(self):
         '''
         Selects the autonomously generated trajectory as the active controller.
         '''
-        if (not self.system_time["is_timed_out"]):
-            rospy.loginfo("Changing Control to Autonomous")
-            self.wrench_changer("autonomous")
+        rospy.loginfo("Changing Control to Autonomous")
+        self.wrench_changer("autonomous")
 
+    @timeout_check
     def select_rc_control(self):
         '''
         Selects the XBox remote joystick as the active controller.
         '''
-        if (not self.system_time["is_timed_out"]):
-            rospy.loginfo("Changing Control to RC")
-            self.wrench_changer("rc")
+        rospy.loginfo("Changing Control to RC")
+        self.wrench_changer("rc")
 
+    @timeout_check
     def select_keyboard_control(self):
         '''
         Selects the keyboard teleoperation service as the active controller.
         '''
-        if (not self.system_time["is_timed_out"]):
-            rospy.loginfo("Changing Control to Keyboard")
-            self.wrench_changer("keyboard")
+        rospy.loginfo("Changing Control to Keyboard")
+        self.wrench_changer("keyboard")
