@@ -1,25 +1,26 @@
 #include <string>
 #include <ros/ros.h>
 #include <opencv2/highgui/highgui.hpp>
-#include <ros_camera_stream.hpp>
-#include <image_geometry/pinhole_camera_model.h>
-#include <boost/shared_ptr.hpp>
-#include <iostream>
+#include <ros_camera_stream.hpp>  // dont forget this include for camera stream functionality
 
 using namespace std;
-using namespace nav;
-
 
 int main(int argc, char **argv)
 {
-  std::string cam_topic {"stereo/left/image_rect_color"};
-  ros::init(argc, argv, "image_listener");
+  // Node setup
+  string cam_topic {"stereo/left/image_rect_color"};
+  size_t history_length{200};
+  ros::init(argc, argv, "camera_stream_demo");
   ros::NodeHandle nh;
 
-  nav::ROSCameraStream<cv::Vec3b, float> left_cam_stream(nh, 200);
-  left_cam_stream.init("stereo/left/image_rect_color");
+  // These two lines are all you need to create a self updating buffer
+  // of images published to an image topic. 
+  // Template argument should be cv::Vec3b for color images or uint8_t 
+  // For grayscale images
+  nav::ROSCameraStream<cv::Vec3b> left_cam_stream(nh, history_length);
+  left_cam_stream.init(cam_topic);
 
-
+  // Display most recent and oldest frame in the buffer
   while(cv::waitKey(100) == -1)
   {
     size_t size = left_cam_stream.length();
@@ -27,6 +28,11 @@ int main(int argc, char **argv)
     {
       cv::imshow("newest_frame", left_cam_stream[0]->image());
       cv::imshow("oldest_frame", left_cam_stream[-1]->image());
+
+      // It is also possible to request a frame taken at a specific time
+      /*
+      Mat frame_at_time_t = left_cam_stream.getFrameFromTime(desired_time)->image();
+      */
     }
   }
 
