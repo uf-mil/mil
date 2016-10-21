@@ -1,0 +1,16 @@
+<library path="src">
+  <class name="dashboard" type="navigator_gui.Dashboard" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      RQT Dashboard to monitor onboard systems and change the control device
+    </description>
+    <qtgui>
+      <group>
+        <icon type="file">resource/mil_logo.png</icon>
+        <label>MIL</label>
+      </group>
+      <icon type="file">resource/dashboard.png</icon>
+      <label>Dashboard</label>
+      <statustip>Mike Seese, you just googled your name.</statustip>
+    </qtgui>
+  </class>
+</library>

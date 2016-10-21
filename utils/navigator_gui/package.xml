@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package>
+  <name>navigator_gui</name>
+  <version>1.0.0</version>
+  <description>The navigator_gui package</description>
+
+  <maintainer email="anthony@iris-systems.net">Anthony Olive</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>rosgraph_msgs</build_depend>
+  <build_depend>navigator_msgs</build_depend>
+  <run_depend>os</run_depend>
+  <run_depend>socket</run_depend>
+  <run_depend>subprocess</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>rospkg</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>rosgraph_msgs</run_depend>
+  <run_depend>navigator_msgs</run_depend>
+  <run_depend>qt_gui.plugin</run_depend>
+  <run_depend>navigator_alarm</run_depend>
+  <run_depend>kill_handling</run_depend>
+
+  <export>
+    <rqt_gui plugin="${prefix}/plugin.xml"/>
+  </export>
+</package>

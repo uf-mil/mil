@@ -14,8 +14,7 @@
   <run_depend>rospy</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>roboteq_msgs</run_depend>
-  <run_depend>sub8_alarm</run_depend>
+  <run_depend>navigator_alarm</run_depend>
   <export>
   </export>
-
 </package>
