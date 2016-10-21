@@ -38,6 +38,14 @@
 class CameraLidarTransformer
 {
   private:
+    union floatConverter
+    {
+        float f;
+        struct
+        {
+            uint8_t data[4];
+        };
+    };
     std::string camera_info_topic;
     // ~double MIN_Z,MAX_Z_ERROR;
     ros::NodeHandle nh;
@@ -53,7 +61,6 @@ class CameraLidarTransformer
     void cameraInfoCallback(const sensor_msgs::CameraInfo info);
     bool transformServiceCallback(navigator_msgs::CameraToLidarTransform::Request &req,navigator_msgs::CameraToLidarTransform::Response &res);
 #ifdef DO_ROS_DEBUG
-    ros::Publisher debugCloudPub;
     image_transport::ImageTransport image_transport;
     image_transport::Publisher points_debug_publisher;
 #endif

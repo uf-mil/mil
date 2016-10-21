@@ -1,14 +1,5 @@
 #include "CameraLidarTransformer.hpp"
 
-union floatConverter
-{
-    float f; //This is... brilliant.
-    struct
-    {
-        uint8_t data[4];
-    };
-};
-
 CameraLidarTransformer::CameraLidarTransformer()
     : nh("camera_lidar_transformer"),
       tfBuffer(),
@@ -23,8 +14,6 @@ CameraLidarTransformer::CameraLidarTransformer()
 #ifdef DO_ROS_DEBUG
   points_debug_publisher =
       image_transport.advertise("/camera_lidar_transformer/points_debug", 1);
-  debugCloudPub = nh.advertise<sensor_msgs::PointCloud2>(
-      "/camera_lidar_transformer/cloud_debug", 20);
   pubMarkers = nh.advertise<visualization_msgs::MarkerArray>(
       "/dock_shapes/raylider/markers", 10);
 #endif
@@ -51,7 +40,7 @@ bool CameraLidarTransformer::transformServiceCallback(
       lidarCache.getElemAfterTime(req.header.stamp);
   if (!scloud) {
     res.success = false;
-    res.error = "CLOUD NOT FOUND";
+    res.error =  navigator_msgs::CameraToLidarTransform::Response::CLOUD_NOT_FOUND;
     return true;
   }
   geometry_msgs::TransformStamped transform =
@@ -59,7 +48,6 @@ bool CameraLidarTransformer::transformServiceCallback(
   sensor_msgs::PointCloud2 cloud_transformed;
   tf2::doTransform(*scloud, cloud_transformed, transform);
 #ifdef DO_ROS_DEBUG
-  debugCloudPub.publish(cloud_transformed);
   cv::Mat debug_image(camera_info.height, camera_info.width, CV_8UC3,
                       cv::Scalar(0));
 #endif
@@ -149,7 +137,7 @@ bool CameraLidarTransformer::transformServiceCallback(
   }
   if (res.transformed.size() < 1) {
     res.success = false;
-    res.error = "NO POINTS FOUND";
+    res.error = navigator_msgs::CameraToLidarTransform::Response::NO_POINTS_FOUND;
     return true;
   }
   
