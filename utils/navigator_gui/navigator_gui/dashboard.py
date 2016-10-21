@@ -10,7 +10,6 @@ import os
 import socket
 import subprocess
 
-from kill_handling.broadcaster import KillBroadcaster
 from navigator_alarm import AlarmBroadcaster
 from navigator_alarm import AlarmListener
 from navigator_msgs.srv import WrenchSelect
@@ -159,14 +158,17 @@ class Dashboard(Plugin):
         self.wrench_changer = rospy.ServiceProxy('/change_wrench', WrenchSelect)
         self.station_holder = rospy.ServiceProxy('/lqrrt/station_hold', SetBool)
 
-        self.kb = KillBroadcaster(id='station_hold', description='Resets Pose')
         self.kill_listener = AlarmListener('kill', self.update_kill_status)
-
         alarm_broadcaster = AlarmBroadcaster()
         self.kill_alarm = alarm_broadcaster.add_alarm(
             name='kill',
             action_required=True,
             severity=0
+        )
+        self.station_hold_alarm = alarm_broadcaster.add_alarm(
+            name='station_hold',
+            action_required=True,
+            severity=3
         )
 
     def timeout_check(function):
@@ -460,10 +462,11 @@ class Dashboard(Plugin):
         '''
         rospy.loginfo("Station Holding")
 
-        # Station holding activation for lqrrt and C3
-        self.kb.send(active=True)
-        self.station_holder(SetBoolRequest(data=True))
-        self.kb.send(active=False)
+        # Trigger station holding at the current pose
+        self.station_hold_alarm.raise_alarm(
+            problem_description='Request to station hold from: dashboard'
+        )
+
         self.wrench_changer("autonomous")
 
     @timeout_check
