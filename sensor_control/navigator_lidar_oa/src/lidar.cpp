@@ -16,15 +16,13 @@
 #include <tf2_msgs/TFMessage.h>
 #include <tf2/convert.h>
 #include <tf2_ros/transform_listener.h>
-#include <navigator_msgs/IraObject.h>
-#include <navigator_msgs/IraObjectService.h>
-#include <navigator_msgs/PerceptionObjects.h>
 #include <navigator_msgs/PerceptionObject.h>
+#include <navigator_msgs/ObjectDBQuery.h>
 #include <uf_common/PoseTwistStamped.h>
 #include <uf_common/MoveToAction.h>
-#include <actionlib/server/simple_action_server.h>
 
 #include <iostream>
+#include <string>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
@@ -114,6 +112,9 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	T_enu_velodyne.rotate(Eigen::Quaterniond(quat.w,quat.x,quat.y,quat.z));
 	R_enu_velodyne.rotate(Eigen::Quaterniond(quat.w,quat.x,quat.y,quat.z));
 	Eigen::Vector3d lidarHeading = R_enu_velodyne*Eigen::Vector3d(1,0,0);
+
+
+	//Skip lidar updates if roll or pitch is too high
 	Eigen::Matrix3d mat = R_enu_velodyne.rotation();
 	double ang[3];
 	ang[0] = atan2(-mat(1,2), mat(2,2) );    
@@ -121,9 +122,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
    	ang[1] = atan2( mat(0,2),  cr*mat(2,2) - sr*mat(1,2) );
    	ang[2] = atan2( -mat(0,1), mat(0,0) ); 
 	ROS_INFO_STREAM("LIDAR | Velodyne enu: " << lidarPos.x << "," << lidarPos.y << "," << lidarPos.z);
-	ROS_INFO_STREAM("LIDAR | XYZ Rotation: " << ang[0]*180/M_PI << "," << ang[1]*180/M_PI << "," << ang[2]*180/M_PI );
-	
-	//Skip lidar updates if roll or pitch is too high
+	ROS_INFO_STREAM("LIDAR | XYZ Rotation: " << ang[0]*180/M_PI << "," << ang[1]*180/M_PI << "," << ang[2]*180/M_PI );	
 	if (fabs(ang[0]*180/M_PI) > MAX_ROLL_PITCH_ANGLE_DEG || fabs(ang[1]*180/M_PI) > MAX_ROLL_PITCH_ANGLE_DEG) {
 		return;
 	}
@@ -230,7 +229,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 
 	int max_id = 0;	
 	for (auto obj : object_permanence) {
-		ROS_INFO_STREAM("LIDAR | " << obj.name << " " << obj.id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.strikesPersist.size() << "(" << obj.strikesFrame.size() << ") points and size " << obj.scale.x << "," << obj.scale.y << "," << obj.scale.z);
+		ROS_INFO_STREAM("LIDAR | " << obj.name << " " << obj.id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.strikesPersist.size() << "(" << obj.strikesFrame.size() << ") points, size " << obj.scale.x << "," << obj.scale.y << "," << obj.scale.z << " maxHeight " << obj.maxHeightFromLidar);
 
 		//Show point cloud of just objects
 		objectCloudPersist.points.insert(objectCloudPersist.points.end(),obj.strikesPersist.begin(),obj.strikesPersist.end());
@@ -261,7 +260,6 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		markers.markers.push_back(m4);
 
 		//Display normal as an arrow
-		/*
 		if (obj.pclInliers > 10) {
 			visualization_msgs::Marker m3;
 			m3.header.stamp = ros::Time::now();
@@ -278,7 +276,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 			m3.scale.x = 1; m3.scale.y = 1; m3.scale.z = 1;
 			m3.color.a = 0.6; m3.color.r = 1; m3.color.g = 1; m3.color.b = 1;
 			markers.markers.push_back(m3);
-		}*/
+		}
 
 		//Turn obj into a marker for rviz
 		visualization_msgs::Marker m2;
@@ -316,11 +314,55 @@ void cb_odom(const nav_msgs::OdometryConstPtr &odom) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+/*
+#Constant Standard names to use
+string DETECT_DELIVER_PLATFORM=shooter
+string IDENTIFY_AND_DOCK=dock
+string SCAN_THE_CODE=scan_the_code
+string TOTEM=totem
+string START_GATE_BUOY=start_gate
+string UNKNOWN=unknown
+string ALL=all*/
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool objectRequest(navigator_msgs::IraObjectService::Request  &req, navigator_msgs::IraObjectService::Response &res) 
+bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs::ObjectDBQuery::Response &res) 
 {
 	ROS_INFO_STREAM("LIDAR | Received request " << req.name);
+	res.found = false;
+	res.objects.clear();
+
+	if (req.name.substr(0,4) == "set ") {
+		std::string parse = req.name.substr(4);
+		auto index = parse.find('=');
+		if (index != std::string::npos) {
+			auto id = stoi(parse.substr(0,index));
+			auto name = parse.substr(index+1);
+			if (name == "shooter" || name == "dock" || name == "scan_the_code" || name == "totem" || name == "start_gate" || name == "unknown") {
+				ROS_INFO_STREAM("LIDAR | Changing id " << id << " to " << name);
+				for (auto &obj : object_tracker.saved_objects) {
+					if (obj.id == id) { obj.name = name; break; }
+				}
+			}
+			
+		}
+		return true;
+	}
+
+	for (const auto &obj : object_tracker.saved_objects) {
+		if (req.name == navigator_msgs::PerceptionObject::ALL || req.name == obj.name) {
+			res.found =true;
+			navigator_msgs::PerceptionObject thisOne;
+			thisOne.position = obj.position;
+			thisOne.id = obj.id;
+			thisOne.confidence = 0;
+			thisOne.zHeight = obj.scale.z;
+			thisOne.xWidth = obj.scale.x;
+			thisOne.yDepth = obj.scale.y;
+			thisOne.points = obj.strikesPersist;
+			thisOne.intensity = obj.intensityPersist;
+			//thisOne.pclInliers =
+			res.objects.push_back(thisOne);
+		}
+	}
 	return true;
 }
 
@@ -341,7 +383,7 @@ int main(int argc, char* argv[])
 		if ( (ros::Time::now()-timer).toSec() > 600) { return -1; }
 		ros::Duration(0.1).sleep();
 	}
-	ROS_INFO_STREAM("ROS Master: " << ros::master::getHost());
+	ROS_INFO_STREAM("LIDAR | ROS Master: " << ros::master::getHost());
 
 	//Initialize Astar to use 8 way search method
 	astar.setMode(AStar::ASTAR,AStar::EIGHT);

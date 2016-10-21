@@ -20,9 +20,7 @@ add_message_files(
   PoseTwist.msg
   Coordinates.msg
   PoseTwistStamped.msg
-  IraObject.msg
   PerceptionObject.msg
-  PerceptionObjects.msg
   DockShape.msg
   DockShapes.msg
 )
@@ -41,9 +39,7 @@ add_service_files(
   CoordinateConversion.srv
   StereoShapeDetector.srv
   ScanTheCodeMission.srv
-  IraObjectService.srv
-  ObjectDBFullQuery.srv
-  ObjectDBSingleQuery.srv
+  ObjectDBQuery.srv
 )
 
 add_action_files(

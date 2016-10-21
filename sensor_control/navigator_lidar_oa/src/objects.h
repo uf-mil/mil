@@ -12,7 +12,7 @@
 class ObjectTracker{
 
 private:
-	std::vector<objectMessage> saved_objects;
+	
 	float diff_thresh;
 	int curr_id = 0;
 
@@ -39,12 +39,11 @@ public:
 				}
 			}
 			if(min_dist < diff_thresh) {
-				min_obj->position = obj.position;
-				min_obj->scale = obj.scale;
-				min_obj->strikesPersist = obj.strikesPersist;
-				min_obj->strikesFrame = obj.strikesFrame;
-				min_obj->intensityPersist = obj.intensityPersist;
-				min_obj->intensityFrame = obj.intensityFrame;
+				obj.name = min_obj->name;
+				obj.id = min_obj->id;
+				obj.normal = min_obj->normal;
+				obj.pclInliers = min_obj->pclInliers;
+				*min_obj = obj;
 			}else{
 				obj.id = curr_id;
 				++curr_id;
@@ -59,4 +58,6 @@ public:
 
 		return saved_objects;
 	}
+
+	std::vector<objectMessage> saved_objects;
 };

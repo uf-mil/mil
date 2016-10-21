@@ -141,8 +141,7 @@ class OccupancyGrid
 			//Reset point cloud table uno
 			pointCloudTable_Uno.clear();
 
-			//Decrement grid for negative persistance but only in front of the boat! This still isn't technially true since the boat 
-			//can see somwhat behind itself.. THIS NEEDS TO BE FIXED!!!!
+			//Decrement area around boat we have lidar confidence in
 			int scanDistanceHalf = lidarViewDistance/VOXEL_SIZE_METERS;
 			double colMin = ((boatCol-ROI_SIZE/2) - GRID_SIZE/2)*VOXEL_SIZE_METERS, colMax = ((boatCol+ROI_SIZE/2) - GRID_SIZE/2)*VOXEL_SIZE_METERS;
 			double rowMin = ((boatRow-ROI_SIZE/2) - GRID_SIZE/2)*VOXEL_SIZE_METERS, rowMax = ((boatRow+ROI_SIZE/2) - GRID_SIZE/2)*VOXEL_SIZE_METERS;
@@ -253,7 +252,7 @@ class OccupancyGrid
 				int binaryCol = 0;
 				for (int col = boatCol - ROI_SIZE/2; col < boatCol + ROI_SIZE/2; ++col,++binaryCol) {
 					//if ( std::abs(ogrid[row][col].max-ogrid[row][col].min) >= heightDiff && ogrid[row][col].hits >= minHit && ogrid[row][col].max <= maxHeight) { 
-					if ( ogrid[row][col].hits >= minHits && pointCloudTable[row*GRID_SIZE+col].q.size() >= 10) { 
+					if ( ogrid[row][col].hits >= minHits && pointCloudTable[row*GRID_SIZE+col].q.size() >= 15) { 
 						//std::cout << "Found " << row << "," << col << " has " << pointCloudTable[row*GRID_SIZE+col].q.size() << " points" << std::endl;
 						//double r_enu = (row - GRID_SIZE/2)*VOXEL_SIZE_METERS,c_enu = (col - GRID_SIZE/2)*VOXEL_SIZE_METERS;
 						//std::cout << "Binary hit at x,y " << c_enu << "," << r_enu << "," << ogrid[row][col].hits << std::endl;

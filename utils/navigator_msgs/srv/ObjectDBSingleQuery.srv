@@ -1,4 +1,0 @@
-string name
----
-bool found
-navigator_msgs/PerceptionObject object

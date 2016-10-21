@@ -81,6 +81,7 @@ struct objectMessage
 	std::string name = "unknown";
 	uint32_t pclInliers;
 	geometry_msgs::Vector3 normal;
+	float minHeightFromLidar,maxHeightFromLidar;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -183,19 +184,21 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 	int newId = 0;
 	objects.clear();
 	for (auto ii : mapObjects)  {
-		if (ii.second.strikesPersist.size() >= 10) {
-			objectMessage ob;
-			float dx = (ii.second.maxCol-ii.second.minCol)+0.015; ob.scale.x = dx*ogrid.VOXEL_SIZE_METERS;
-			float dy = (ii.second.maxRow-ii.second.minRow)+0.015; ob.scale.y = dy*ogrid.VOXEL_SIZE_METERS;
-			float dz = (ii.second.maxHeight - ii.second.minHeight)+0.015; ob.scale.z = dz;
-			ob.position.x = (dx/2+ii.second.minCol - ogrid.ROI_SIZE/2)*ogrid.VOXEL_SIZE_METERS + ogrid.lidarPos.x;
-			ob.position.y = (dy/2+ii.second.minRow - ogrid.ROI_SIZE/2)*ogrid.VOXEL_SIZE_METERS + ogrid.lidarPos.y;
-			ob.position.z =  dz/2 + ii.second.minHeight;
-			ob.strikesPersist = ii.second.strikesPersist;
-			ob.strikesFrame = ii.second.strikesFrame;
-			ob.intensityFrame = ii.second.intensityFrame;
-			ob.intensityPersist = ii.second.intensityPersist;
-			objects.push_back(ob);
+		if (ii.second.strikesPersist.size() >= 15) {
+			objectMessage obj;
+			float dx = (ii.second.maxCol-ii.second.minCol)+0.001; obj.scale.x = dx*ogrid.VOXEL_SIZE_METERS;
+			float dy = (ii.second.maxRow-ii.second.minRow)+0.001; obj.scale.y = dy*ogrid.VOXEL_SIZE_METERS;
+			float dz = (ii.second.maxHeight - ii.second.minHeight)+0.001; obj.scale.z = dz;
+			obj.position.x = (dx/2+ii.second.minCol - ogrid.ROI_SIZE/2)*ogrid.VOXEL_SIZE_METERS + ogrid.lidarPos.x;
+			obj.position.y = (dy/2+ii.second.minRow - ogrid.ROI_SIZE/2)*ogrid.VOXEL_SIZE_METERS + ogrid.lidarPos.y;
+			obj.position.z =  dz/2 + ii.second.minHeight;
+			obj.strikesPersist = ii.second.strikesPersist;
+			obj.strikesFrame = ii.second.strikesFrame;
+			obj.intensityFrame = ii.second.intensityFrame;
+			obj.intensityPersist = ii.second.intensityPersist;
+			obj.minHeightFromLidar = ii.second.minHeight;
+			obj.maxHeightFromLidar = ii.second.maxHeight;
+			objects.push_back(obj);
 			//ROS_INFO_STREAM(newId << " -> " << ob.position.x << "," << ob.position.y << "," << ob.position.z << "|" << ob.scale.x << "," << ob.scale.y << "," << ob.scale.z);
 			++newId;
 		}
