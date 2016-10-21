@@ -67,7 +67,7 @@ class Navigator(object):
         self._moveto_action_client = action.ActionClient(self.nh, 'moveto', MoveToAction)
         self._moveto_action_client2 = action.ActionClient(self.nh, 'move_to', MoveToWaypointAction)
 
-        print "NAVIGATOR: Waiting for move_to action client..."
+        #print "NAVIGATOR: Waiting for move_to action client..."
         #yield self._moveto_action_client2.wait_for_server()
 
         self._odom_sub = self.nh.subscribe('odom', Odometry,
@@ -75,6 +75,7 @@ class Navigator(object):
         self._ecef_odom_sub = self.nh.subscribe('absodom', Odometry,
                                                 lambda odom: setattr(self, 'ecef_pose', navigator_tools.odometry_to_numpy(odom)[0]))
 
+        self._database_query = self.nh.get_service_client('/ira_database', navigator_srvs.ObjectDBQuery)
         self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
         self.tf_listener = tf.TransformListener(self.nh)
 
@@ -136,6 +137,9 @@ class Navigator(object):
         print "DEPRECATED: Please use new dictionary based system."
         return self.vision_proxies[request_name].get_response(**kwargs)
 
+    def database_query(self, object_name, **kwargs):
+        return self._database_query(navigator_srvs.ObjectDBQuery(name=object_name, **kwargs))
+
     def change_wrench(self, source):
         return self._change_wrench(navigator_srvs.WrenchSelectRequest(source))
 
@@ -157,7 +161,7 @@ class Navigator(object):
         while True:
             # Update timestamps if the msg has a header
             if update_header and hasattr(msg, "header"):
-                msg.header = navigator_tools.make_header(frame=msg.header.frame_id)
+                msg.header.stamp = self.nh.get_time()
 
             pub.publish(msg)
             yield self.nh.sleep(1.0 / freq)
