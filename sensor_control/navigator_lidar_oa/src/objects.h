@@ -43,6 +43,7 @@ public:
 				obj.id = min_obj->id;
 				obj.normal = min_obj->normal;
 				obj.pclInliers = min_obj->pclInliers;
+				obj.color = min_obj->color;
 				*min_obj = obj;
 			}else{
 				obj.id = curr_id;

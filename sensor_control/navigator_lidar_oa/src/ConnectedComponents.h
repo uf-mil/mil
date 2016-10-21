@@ -185,7 +185,7 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 	int newId = 0;
 	objects.clear();
 	for (auto ii : mapObjects)  {
-		if (ii.second.strikesPersist.size() >= 15) {
+		if (ii.second.strikesPersist.size() >= 5) {
 			objectMessage obj;
 			float dx = (ii.second.maxCol-ii.second.minCol)+0.001; obj.scale.x = dx*ogrid.VOXEL_SIZE_METERS;
 			float dy = (ii.second.maxRow-ii.second.minRow)+0.001; obj.scale.y = dy*ogrid.VOXEL_SIZE_METERS;

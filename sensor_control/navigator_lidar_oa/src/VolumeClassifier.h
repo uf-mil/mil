@@ -4,7 +4,7 @@
 void VolumeClassifier(objectMessage &object)
 {
 	//If we classify something as shooter/scanthecode, leave it alone
-	if (object.name == navigator_msgs::PerceptionObject::START_GATE_BUOY) {
+	if (object.name == navigator_msgs::PerceptionObject::START_GATE_BUOY || object.name == navigator_msgs::PerceptionObject::SCAN_THE_CODE) {
 		return;
 	}
 	//if (object.name == navigator_msgs::PerceptionObject::BUOY || object.name == navigator_msgs::PerceptionObject::UNKNOWN) {

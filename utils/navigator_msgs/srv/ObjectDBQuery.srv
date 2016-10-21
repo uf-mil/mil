@@ -1,4 +1,5 @@
 string name
+string cmd
 ---
 bool found
 navigator_msgs/PerceptionObject[] objects

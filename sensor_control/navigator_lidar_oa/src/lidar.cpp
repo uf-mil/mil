@@ -65,10 +65,11 @@ uf_common::PoseTwistStamped waypoint_enu,carrot_enu;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Eigen::Vector2d BOUNDARY_CORNER_1 (30-90, 10);
-Eigen::Vector2d BOUNDARY_CORNER_2 (30-90, 120-40);
-Eigen::Vector2d BOUNDARY_CORNER_3 (140-90, 120-40);
-Eigen::Vector2d BOUNDARY_CORNER_4 (140-90, 10);
+//Do these come from a rosparam or service call?
+Eigen::Vector2d BOUNDARY_CORNER_1 (30, 10);
+Eigen::Vector2d BOUNDARY_CORNER_2 (30, 120);
+Eigen::Vector2d BOUNDARY_CORNER_3 (140, 120);
+Eigen::Vector2d BOUNDARY_CORNER_4 (140, 10);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -103,7 +104,8 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	Eigen::Vector3d lidarHeading = R_enu_velodyne*Eigen::Vector3d(1,0,0);
 
 
-	//Skip lidar updates if roll or pitch is too high
+	//Skip lidar updates if roll or pitch is too high 
+	/*
 	Eigen::Matrix3d mat = R_enu_velodyne.rotation();
 	double ang[3];
 	ang[0] = atan2(-mat(1,2), mat(2,2) );    
@@ -115,6 +117,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	if (fabs(ang[0]*180/M_PI) > MAX_ROLL_PITCH_ANGLE_DEG || fabs(ang[1]*180/M_PI) > MAX_ROLL_PITCH_ANGLE_DEG) {
 		return;
 	}
+	*/
 
 	//Set bounding box
 	ogrid.setBoundingBox(BOUNDARY_CORNER_1,BOUNDARY_CORNER_2,BOUNDARY_CORNER_3,BOUNDARY_CORNER_4);
@@ -219,7 +222,6 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	int max_id = 0;	
 	for (auto obj : object_permanence) {
 		ROS_INFO_STREAM("LIDAR | " << obj.name << " " << obj.id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.strikesPersist.size() << "(" << obj.strikesFrame.size() << ") points, size " << obj.scale.x << "," << obj.scale.y << "," << obj.scale.z << " maxHeight " << obj.maxHeightFromLidar);
-		std::cout << "inliers " << obj.pclInliers << ", normal " << obj.normal.x << "," << obj.normal.y << "," << obj.normal.z << endl;
 
 		//Show point cloud of just objects
 		objectCloudPersist.points.insert(objectCloudPersist.points.end(),obj.strikesPersist.begin(),obj.strikesPersist.end());
@@ -304,35 +306,45 @@ void cb_odom(const nav_msgs::OdometryConstPtr &odom) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-#Constant Standard names to use
-string DETECT_DELIVER_PLATFORM=shooter
-string IDENTIFY_AND_DOCK=dock
-string SCAN_THE_CODE=scan_the_code
-string TOTEM=totem
-string START_GATE_BUOY=start_gate
-string UNKNOWN=unknown
-string ALL=all*/
+//Handle DB Requests
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs::ObjectDBQuery::Response &res) 
 {
-	ROS_INFO_STREAM("LIDAR | Received request " << req.name);
+	ROS_INFO_STREAM("LIDAR | DB request with name " << req.name << " and command " << req.cmd);
 	res.found = false;
 	res.objects.clear();
 
-	if (req.name.substr(0,4) == "set ") {
-		std::string parse = req.name.substr(4);
-		auto index = parse.find('=');
-		if (index != std::string::npos) {
-			auto id = stoi(parse.substr(0,index));
-			auto name = parse.substr(index+1);
+	//Did we get a command?
+	//Each command needs an id and value seperated by equals sign, this is ugly code...
+	auto index = req.cmd.find('=');
+	if (index != std::string::npos) {
+		auto id = stoi(req.cmd.substr(0,index));
+		//Is the second part a name or color values?
+		auto comma1 = req.cmd.find(',',index);
+		auto comma2 = req.cmd.find(',',comma1+1);
+		if (comma1 == string::npos || comma2 == string::npos) {
+			auto name = req.cmd.substr(index+1);
 			if (name == "shooter" || name == "dock" || name == "scan_the_code" || name == "totem" || name == "start_gate" || name == "unknown") {
-				ROS_INFO_STREAM("LIDAR | Changing id " << id << " to " << name);
 				for (auto &obj : object_tracker.saved_objects) {
-					if (obj.id == id) { obj.name = name; break; }
+					if (obj.id == id) { 
+						ROS_INFO_STREAM("LIDAR | Changing id of object " << id << " to " << name);
+						obj.name = name; break; 
+					}
 				}
 			}
+		} else {
+			auto r = stoi( req.cmd.substr(index+1,comma1-index-1) );
+			auto g = stoi( req.cmd.substr(comma1+1,comma2-comma1-1) );
+			auto b = stoi( req.cmd.substr(comma2+1) );
 			
+			for (auto &obj : object_tracker.saved_objects) {
+				if (obj.id == id) { 
+					obj.color.r = r; obj.color.g = g; obj.color.b = b; 
+					ROS_INFO_STREAM("LIDAR | Changing color of object " << id << " to " << r << "," << g << "," << b);
+					break; 
+				}
+			}			
+
 		}
 		return true;
 	}
@@ -352,6 +364,7 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
 			thisOne.intensity = obj.intensityPersist;
 			thisOne.pclInliers = obj.pclInliers;
 			thisOne.normal = obj.normal;
+			thisOne.color = obj.color;
 			res.objects.push_back(thisOne);
 		}
 	}
@@ -395,7 +408,7 @@ int main(int argc, char* argv[])
 	pubCloudPCL = nh.advertise<sensor_msgs::PointCloud>("ira_pclcloud",1);
 
 	//Service for object request
-	ros::ServiceServer service = nh.advertiseService("ira_request", objectRequest);
+	ros::ServiceServer service = nh.advertiseService("ira_database", objectRequest);
 
 	//Give control to ROS
 	ros::spin();
