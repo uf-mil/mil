@@ -23,6 +23,7 @@ class ShapesBuffer {
   static double MAX_X_VAR;
   static double MAX_Y_VAR;
   static double STD_DEV_THRESHOLD;
+  static double MIN_COLOR_CONFIDENCE;
   static ros::Duration max_seen_gap_dur;
   boost::circular_buffer<navigator_msgs::DockShape> buffer;
   std::string Shape;
@@ -80,6 +81,7 @@ public:
     nh.param<double>("std_dev_threshold", STD_DEV_THRESHOLD, 1.5);
     double seconds;
     nh.param<double>("max_seen_gap_seconds", seconds, 0.5);
+    nh.param<double>("min_color_confidence",MIN_COLOR_CONFIDENCE,0.1);
     max_seen_gap_dur = ros::Duration(0, seconds * 1000000000);
   }
 
@@ -94,6 +96,11 @@ public:
 
 
   void insert(navigator_msgs::DockShape ds) {
+    if (ds.color_confidence < MIN_COLOR_CONFIDENCE)
+    {
+      // ~printf("%s %s REMOVING B/C COLOR CONFIDENCE LOW %f\n",Color.c_str(),Shape.c_str(),ds.color_confidence);
+      return;
+    }
     if (!buffer.empty()) {
       if (ds.header.stamp - buffer.back().header.stamp > max_seen_gap_dur)
         clear();
@@ -132,6 +139,7 @@ public:
 double ShapesBuffer::MAX_X_VAR = 50;
 double ShapesBuffer::MAX_Y_VAR = 50;
 double ShapesBuffer::STD_DEV_THRESHOLD = 1.5;
+double ShapesBuffer::MIN_COLOR_CONFIDENCE = 0.1;
 ros::Duration ShapesBuffer::max_seen_gap_dur = ros::Duration(0, 500000000);
 
 class ImageSearcher {

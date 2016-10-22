@@ -27,6 +27,10 @@ GrayscaleContour::GrayscaleContour(ros::NodeHandle& nh) : DockShapeVision(nh) {
                    crossAngleVarErrorThreshold, 5);
   nh.param<double>("grayscale/circle/enclosing_circle_error_threshold",
                    circleEnclosingErrorThreshold, 0.2);
+  nh.param<double>("grayscale/red_hue_min",redHueMin,0);
+  nh.param<double>("grayscale/red_hue_max",redHueMax,255);
+  nh.param<double>("grayscale/blue_hue",blueHue,120);
+  nh.param<double>("grayscale/green_hue",greenHue,60);
 
 #ifdef DO_DEBUG
   namedWindow("Menu", CV_WINDOW_AUTOSIZE);
@@ -94,7 +98,7 @@ void GrayscaleContour::GetShapes(cv::Mat& frame, cv::Rect roi,
     } else
       continue;
 
-    if (!GetColor(i, dockShape.Color)) continue;
+    if (!GetColor(i, dockShape.Color,dockShape.color_confidence)) continue;
 
 #ifdef DO_DEBUG
     drawContours(result, contours, i, Scalar(0, 0, 255));
@@ -164,26 +168,36 @@ void GrayscaleContour::FindContours() {
   }
 #endif
 }
-bool GrayscaleContour::GetColor(int Index, std::string& color) {
+
+bool GrayscaleContour::GetColor(int Index, std::string& color, float& confidence) {
   Mat mask = Mat::zeros(croppedFrame.rows, croppedFrame.cols, CV_8UC1);
+  Mat hsv;
+  cvtColor(croppedFrame,hsv,CV_BGR2HSV);
   drawContours(mask, contours, Index, Scalar(255), CV_FILLED);
-  Scalar meanColor = mean(croppedFrame, mask);
-  // std::cout << meanColor << std::endl;
-  double sum = meanColor.val[0] + meanColor.val[1] + meanColor.val[2];
-  // ~if (sum > 500) return false;
+  Scalar meanColor = mean(hsv, mask);
+
+  double hue = meanColor[0];
+  double redness =  1.0 / ( fmin(redHueMax-hue,hue-redHueMin) + 1.0);
+  double blueness = 1.0 / ( fabs(blueHue-hue) + 1.0);
+  double greeness = 1.0 / ( fabs(greenHue-hue) + 1.0);
+
   double max = 0;
-  if (meanColor.val[0] > max) {
-    max = meanColor.val[0];
+  if (blueness > max) {
+    max = blueness;
     color = navigator_msgs::DockShape::BLUE;
+    confidence = blueness;
   }
-  if (meanColor.val[1] > max) {
-    max = meanColor.val[1];
+  if (greeness > max) {
+    max = greeness;
     color = navigator_msgs::DockShape::GREEN;
+    confidence = greeness;
   }
-  if (meanColor.val[2] > max) {
-    max = meanColor.val[2];
+  if (redness > max) {
+    max = redness;
     color = navigator_msgs::DockShape::RED;
+    confidence = redness;
   }
+  // ~printf("%s Confidence: %f Colors: %f %f %f \n",color.c_str(),confidence,meanColor.val[0],meanColor.val[1],meanColor.val[2]);
   return true;
 }
 bool GrayscaleContour::isTriangle(std::vector<Point>& points) {
