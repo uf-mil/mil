@@ -3,6 +3,8 @@ string CROSS=CROSS
 string TRIANGLE=TRIANGLE
 string CIRCLE =CIRCLE
 
+string ANY=ANY #Set color and or shape to ANY to return any shapes and/or colors
+
 string Color
 string RED=RED
 string BLUE=BLUE

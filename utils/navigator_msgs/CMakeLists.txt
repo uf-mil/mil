@@ -42,6 +42,7 @@ add_service_files(
   ScanTheCodeMission.srv
   ObjectDBFullQuery.srv
   ObjectDBSingleQuery.srv
+  CameraToLidarTransform.srv
 )
 
 add_action_files(

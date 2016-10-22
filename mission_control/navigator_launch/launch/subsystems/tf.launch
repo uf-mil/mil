@@ -10,7 +10,7 @@
     <node pkg="tf" type="static_transform_publisher" name="stereo_tf" args=".12 .01 .25 0.56679 -0.56679 0.42278 -0.42278 /measurement /stereo_front 100" />
     <node pkg="tf" type="static_transform_publisher" name="right_camera_tf" args="0 0 0  0 0 0 1  /stereo_front /stereo_right_cam 100" />
     <node pkg="tf" type="static_transform_publisher" name="left_camera_tf" args="-.2 0 0  0 0 0 1  /stereo_front /stereo_left_cam 100" />
-    <node pkg="tf" type="static_transform_publisher" name="right_right_camera_tf" args="-0.3048 -0.3556 0.1778  0.0 -0.707 0.707 0 /measurement /right_right_cam 100" />	
+    <node pkg="tf" type="static_transform_publisher" name="right_right_camera_tf" args="-0.3048 -0.3556 0.1778  0.0 -0.707 0.707 0 /measurement /right_right_cam 100" />
     <!-- TODO Hydrophones -->
     <node pkg="tf" type="static_transform_publisher" name="hydrophone_tf" args="-0.4 0 0 -1.571 0 0 base_link hydrophones 100" />
 

@@ -14,3 +14,6 @@ uint32 CenterY
 uint16 img_width
 Header header
 geometry_msgs/Point[] points
+
+float32 color_confidence
+float32 shape_confidence

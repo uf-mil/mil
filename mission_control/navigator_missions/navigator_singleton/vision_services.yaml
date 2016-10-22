@@ -7,8 +7,8 @@
 #
 # Services need to be in navigator_msgs/srv/
 get_shape:
-  topic: /dock_shapes/GetShape
-  type: GetDockShape
+  topic: /dock_shapes/GetShapes
+  type: GetDockShapes
   args: {'Shape': "CIRCLE", 'Color':"RED"}
   
 start_gate:
