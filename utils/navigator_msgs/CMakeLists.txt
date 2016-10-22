@@ -50,7 +50,6 @@ add_action_files(
   FILES
   ClassifyUnknown.action
   ShooterDo.action
-  MoveToWaypoint.action
   )
 
 generate_messages(

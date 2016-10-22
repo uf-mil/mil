@@ -46,7 +46,7 @@ class Navigator(object):
         self.nh = nh
 
         self.vision_proxies = {}
-        self._load_vision_services()
+        #self._load_vision_services()
 
         # If you don't want to use txros
         self.pose = None
