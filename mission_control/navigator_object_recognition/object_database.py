@@ -36,12 +36,14 @@ class ObjectDatabase(object):
 
     def new_object(self, perception_object):
         p = perception_object
+        print p.header
+        print p.type
         # print p.id
         # print "----"
         # print p
 
         # If it is unknown, add it to the list of unknowns and exit
-        if(p.type == PerceptionObject.UNKNOWN):
+        if(p.type == 'unknown'):
             if p.id not in self.unknowns:
                 self.unknowns[p.id] = p
             return
@@ -62,9 +64,10 @@ class ObjectDatabase(object):
         if p.type not in self.items.keys():
             self.pub_object_found.publish(p)
 
+        print p.header
+
         # Add it to the database
-        self.items[p.name] = p
-        print self.items
+        self.items[p.type] = p
 
     @util.cancellableInlineCallbacks
     def publish_items(self):
@@ -78,8 +81,11 @@ class ObjectDatabase(object):
 
             self.pub_object_all.publish(objects)
             self.add_markers()
+            # for i in self.items.values():
+            #     print i.type
+            #     print i.header
 
-            yield nh.sleep(.5)
+            yield nh.sleep(.25)
 
     def add_markers(self):
         marker_del = Marker()
@@ -87,7 +93,6 @@ class ObjectDatabase(object):
         marker_array = MarkerArray()
         marker_array.markers.append(marker_del)
         for item in self.items.values():
-            print item
             marker = Marker()
             marker.header.stamp = nh.get_time()
             marker.header.seq = 1
@@ -103,7 +108,7 @@ class ObjectDatabase(object):
             marker.color.g = 0.0
             marker.color.b = 0.0
             marker.color.a = 1.0
-            marker.text = item.type + "_" + str(item.id)
+            marker.text = item.type + str(item.id)
             marker_array.markers.append(marker)
 
         for item in self.unknowns.values():
@@ -122,12 +127,12 @@ class ObjectDatabase(object):
             marker.color.g = 0.0
             marker.color.b = 0.0
             marker.color.a = 1.0
-            marker.text = PerceptionObject.UNKNOWN
+            marker.text = "unknown"
             marker_array.markers.append(marker)
         self.pub_object_markers.publish(marker_array)
 
     def query_single(self, req):
-        a = req.name
+        a = req.type
         per = ObjectDBSingleQueryResponse()
         per.found = False
         if(a in self.items.keys()):
@@ -138,7 +143,7 @@ class ObjectDatabase(object):
     def query_full(self, req):
         per = ObjectDBFullQueryResponse()
         for item in self.items.values():
-            per.all_objects.append(item)
+            per.objects.append(item)
 
         return per
 

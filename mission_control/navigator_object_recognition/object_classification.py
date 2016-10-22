@@ -22,6 +22,7 @@ class ObjectClassifier(object):
         self.classified_ids = {}
         self.ids_to_hits = {}
         self.currently_classifying = False
+        self.found_objects = []
         self.all_objects = []
         self.human_mode = True
 
@@ -32,15 +33,26 @@ class ObjectClassifier(object):
         nh = self.nh
         self.position = None
         self.rot = None
-
         self.pub_obj_found = yield self.nh.advertise('/classifier/object', PerceptionObject)
         self.pub_object_searching = yield self.nh.advertise('/classifier/looking_for', Marker)
-
-        self.sub_clicked_point = self.nh.subscribe('/clicked_point', PointStamped, self.cp_cb)
+        self.sub_clicked_point = yield self.nh.subscribe('/clicked_point', PointStamped, self.cp_cb)
         self.sub_unclassified = yield self.nh.subscribe('/unclassified/objects', PerceptionObjects, self.new_objects)
         self.sub_odom = yield self.nh.subscribe('odom', Odometry, self.odom_cb)
 
+        self.publish_items()
         defer.returnValue(self)
+
+    @util.cancellableInlineCallbacks
+    def publish_items(self):
+        while True:
+            for i in self.found_objects:
+                for j in self.all_objects:
+                    if i.id == j.id:
+                        i.position = j.position
+                        i.header = j.header
+                        i.points = j.points
+                        self.pub_obj_found.publish(i)
+            yield nh.sleep(.25)
 
     def odom_cb(self, odom):
         self.position, self.rot = nt.odometry_to_numpy(odom)[0]
@@ -77,21 +89,17 @@ class ObjectClassifier(object):
         marker.color.a = 1.0
         self.pub_object_searching.publish(marker)
         yield nh.sleep(1)
-        x = yield util.nonblocking_raw_input("What object is this? " + str(marker.id))
+        # x = yield util.nonblocking_raw_input("What object is this? " + str(marker.id))
 
-        if(x == 'skip'):
-            self.currently_classifying = False
-            return
-        self.classified_ids[min_obj.id] = x
+        # if(x == 'skip'):
+        #     self.currently_classifying = False
+        #     return
+        self.classified_ids[min_obj.id] = 'scan_the_code'
 
-        obj = PerceptionObject()
-        obj.name = self.classified_ids[min_obj.id]
-        obj.position = min_obj.position
-        obj.size.x = min_obj.height
-        obj.size.y = min_obj.width
-        obj.size.z = min_obj.depth
-        obj.id = min_obj.id
-        self.pub_obj_found.publish(obj)
+        min_obj.type = self.classified_ids[min_obj.id]
+        self.pub_obj_found.publish(min_obj)
+
+        self.found_objects.append(min_obj)
 
         marker_del = Marker()
         marker_del.action = 3  # This is DELETEALL
@@ -101,7 +109,7 @@ class ObjectClassifier(object):
 
     def new_objects(self, buoy_array):
         if self.human_mode and not self.currently_classifying:
-            self.all_objects = buoy_array.buoys
+            self.all_objects = buoy_array.objects
             return
 
         if self.currently_classifying:

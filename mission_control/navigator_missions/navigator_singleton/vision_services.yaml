@@ -7,9 +7,14 @@
 #
 # Services need to be in navigator_msgs/srv/
 get_shape:
-  topic: /vision/get_shapes
-  type: GetDockShapes
+  topic: /dock_shapes/GetShape
+  type: GetDockShape
   args: {'Shape': "CIRCLE", 'Color':"RED"}
+  
+start_gate:
+  topic: /vision/start_gate_buoys
+  type: StartGate
+  args: {}
 
 scan_the_code_activate:
   topic: /vision/scan_the_code_activate
@@ -21,7 +26,8 @@ scan_the_code_status:
     type: ScanTheCodeMission
     args: {}
 
-coral_survey:
-  topic: /vision/coral_survey
-  type: GetDockShape
-  args: {'Shape': "CIRCLE", 'Color':"ANY"}
+shooter_lidar:
+  topic: /vision/object_classifier_service
+  type: PerceptionObjectService
+  args: {name: "shooter"}
+
