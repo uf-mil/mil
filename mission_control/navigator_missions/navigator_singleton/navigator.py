@@ -60,20 +60,21 @@ class Navigator(object):
 
     @util.cancellableInlineCallbacks
     def _init(self, sim):
+        self.sim = sim
+
         # Just some pre-created publishers for missions to use for debugging
         self._point_cloud_pub = self.nh.advertise("navigator_points", PointCloud)
         self._pose_pub = self.nh.advertise("navigator_pose", PoseStamped)
 
-        self._moveto_action_client = action.ActionClient(self.nh, 'moveto', MoveToAction)
-        self._moveto_action_client2 = action.ActionClient(self.nh, 'move_to', MoveToWaypointAction)
+        self._moveto_client = action.ActionClient(self.nh, 'moveto', MoveToAction)
 
         #print "NAVIGATOR: Waiting for move_to action client..."
         #yield self._moveto_action_client2.wait_for_server()
 
-        self._odom_sub = self.nh.subscribe('odom', Odometry,
-                                           lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0]))
-        self._ecef_odom_sub = self.nh.subscribe('absodom', Odometry,
-                                                lambda odom: setattr(self, 'ecef_pose', navigator_tools.odometry_to_numpy(odom)[0]))
+        odom_set = lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0])
+        self._odom_sub = self.nh.subscribe('odom', Odometry, odom_set)
+        enu_odom_set = lambda odom: setattr(self, 'ecef_pose', navigator_tools.odometry_to_numpy(odom)[0])
+        self._ecef_odom_sub = self.nh.subscribe('absodom', Odometry, enu_odom_set)
 
         try:
             self._database_query = self.nh.get_service_client('/ira_database', navigator_srvs.ObjectDBQuery)
@@ -82,7 +83,7 @@ class Navigator(object):
             print_t("Error getting service clients in nav singleton init: {}".format(err))
         self.tf_listener = tf.TransformListener(self.nh)
 
-        if sim:
+        if self.sim:
             print "NAVIGATOR: Sim mode active!"
             yield self.nh.sleep(0.5)
         else:
