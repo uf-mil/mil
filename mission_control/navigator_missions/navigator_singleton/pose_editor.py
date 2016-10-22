@@ -155,6 +155,7 @@ class PoseEditor2(object):
 
     # Orientation
     def set_orientation(self, orientation):
+        orientation = np.array(orientation)
         if orientation.shape == (4, 4):
             # We're getting a homogeneous rotation matrix - not a quaternion
             orientation = transformations.quaternion_from_matrix(orientation)
@@ -203,7 +204,7 @@ class PoseEditor2(object):
     def circle_point(self, point, radius, granularity=8, theta_offset=0):
         '''
         Circle a point whilst looking at it
-        This returns a generator, so for use:
+        This produces a generator, so for use:
 
             circle = navigator.move.circle_point([1,2,0], 5)
             for p in circle:
