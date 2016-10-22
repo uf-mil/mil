@@ -12,8 +12,7 @@ from txros import action, util, tf, NodeHandle
 from pose_editor import PoseEditor2
 
 import navigator_tools
-from uf_common.msg import MoveToAction
-from navigator_msgs.msg import MoveToWaypointAction
+from lqrrt_ros.msg import MoveAction
 from nav_msgs.msg import Odometry
 from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped
@@ -22,8 +21,7 @@ import navigator_msgs.srv as navigator_srvs
 from navigator_tools import print_t
 
 class MissionResult(object):
-    def __init__(self, success=True, response="", need_rerun=False,
-                 post_function=None):
+    def __init__(self, success=True, response="", need_rerun=False, post_function=None):
         self.success = success
         self.response = response
         self.need_rerun = need_rerun
@@ -66,10 +64,10 @@ class Navigator(object):
         self._point_cloud_pub = self.nh.advertise("navigator_points", PointCloud)
         self._pose_pub = self.nh.advertise("navigator_pose", PoseStamped)
 
-        self._moveto_client = action.ActionClient(self.nh, 'moveto', MoveToAction)
+        self._moveto_client = action.ActionClient(self.nh, 'move_to', MoveAction)
 
-        #print "NAVIGATOR: Waiting for move_to action client..."
-        #yield self._moveto_action_client2.wait_for_server()
+        print "NAVIGATOR: Waiting for move_to action client..."
+        yield self._moveto_client.wait_for_server()
 
         odom_set = lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0])
         self._odom_sub = self.nh.subscribe('odom', Odometry, odom_set)
@@ -80,7 +78,8 @@ class Navigator(object):
             self._database_query = self.nh.get_service_client('/ira_database', navigator_srvs.ObjectDBQuery)
             self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
         except AttributeError, err:
-            print_t("Error getting service clients in nav singleton init: {}".format(err))
+            print_t("NAVIGATOR: Error getting service clients in nav singleton init: {}".format(err))
+
         self.tf_listener = tf.TransformListener(self.nh)
 
         if self.sim:
@@ -185,8 +184,8 @@ class Navigator(object):
                 self.vision_proxies[name] = VisionProxy(s_client, s_req, s_args, s_switch)
             except Exception, e:
                 err = "Error loading vision sevices: {}".format(e)
-                print_t(err)
-	
+                print_t("NAVIGATOR: " + err)
+
 
     def _make_alarms(self):
         pass
@@ -231,10 +230,10 @@ class Searcher(object):
             # Handle error
 
     @util.cancellableInlineCallbacks
-    def start_search(self, timeout=60, loop=True, spotings_req=2, speed=0.1):
+    def start_search(self, timeout=60, loop=True, spotings_req=2, **kwargs):
         print "SEARCHER - Starting."
         looker = self._run_look(spotings_req).addErrback(self.catch_error)
-        finder = self._run_search_pattern(loop, speed).addErrback(self.catch_error)
+        finder = self._run_search_pattern(loop, **kwargs).addErrback(self.catch_error)
 
         start_pose = self.nav.move.forward(0)
         start_time = self.nav.nh.get_time()
@@ -260,7 +259,7 @@ class Searcher(object):
         yield start_pose.go()
 
     @util.cancellableInlineCallbacks
-    def _run_search_pattern(self, loop, speed):
+    def _run_search_pattern(self, loop, **kwargs):
         '''
         Look around using the search pattern.
         If `loop` is true, then keep iterating over the list until timeout is reached or we find it.
@@ -271,9 +270,9 @@ class Searcher(object):
                 print "SEARCHER - going to next position."
                 print pose
                 if type(pose) == list or type(pose) == np.ndarray:
-                    yield self.nav.move.relative(pose).go(speed=speed)
+                    yield self.nav.move.relative(pose).go(**kwargs)
                 else:
-                    yield pose.go(speed=speed)
+                    yield pose.go(**kwargs)
 
                 yield self.nav.nh.sleep(2)
 

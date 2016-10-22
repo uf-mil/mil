@@ -2,6 +2,8 @@
 from txros import util, NodeHandle
 from twisted.internet import defer, reactor
 
+import numpy as np
+import navigator_tools
 from navigator_singleton.navigator import Navigator
 from geometry_msgs.msg import PoseStamped
 import nav_missions
@@ -20,23 +22,34 @@ def main():
         help='Pose editor command to run')
     parser.add_argument('argument', type=str, default=0,
         help='An argument to pass to the command (distance or angle usally). Optionally a unit can be added if a non-standard unit is desired.')
-    parser.add_argument('-s', '--speed', type=float, default=-1,
-        help='Optional speed in m/s')
+    parser.add_argument('-m', '--movetype', type=str, default='drive',
+        help='Move type. See lqrrt documentation for info on how to use this.')
+    parser.add_argument('-f', '--focus', type=str,
+        help='Point to focus on. See lqrrt documentation for info on how to use this. ex. "[10, 2.3, 1]"')
+    parser.add_argument('-s', '--sim', action='store_true',
+        help='This will run navigator in sim mode (ie. not wait for odom or enu bounds). Don\'t do this on the boat.')
 
     args = parser.parse_args(args[1:])
 
-    n = yield Navigator(nh)._init()
+    n = yield Navigator(nh)._init(args.sim)
+
+    action_kwargs = {'move_type': args.movetype}
+
+    if args.focus is not None:
+        focus = np.array(map(float, args.focus[1:-1].split(',')))
+        point = navigator_tools.numpy_to_point(focus)
+        action_kwargs['focus'] = point
 
     if args.command == 'custom':
         # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
         print "Moving with the command: {}".format(args.argument)
-        yield eval("n.move.{}.go()".format(args.argument))
+        yield eval("n.move.{}.go(move_type='{move_type}')".format(args.argument, **action_kwargs))
 
     elif args.command == 'rviz':
+        print "Moving to last published rviz position"
         sub = nh.subscribe("/rviz_goal", PoseStamped)
         target_pose = yield sub.get_next_message()
-        print target_pose
-        yield n.move.to_pose(target_pose).go()
+        yield n.move.to_pose(target_pose).go(**action_kwargs)
 
     else:
         movement = getattr(n.move, args.command)
@@ -49,10 +62,13 @@ def main():
             amount = float(args.argument[:last_digit_index])
             unit = args.argument[last_digit_index:]
 
-        # Actually run the commands
+        # Get the kwargs to pass to the action server
         station_hold = amount == '0'
+        if station_hold:
+            action_kwargs['move_type'] = 'hold'
+
         print "{}ing {} non-arbitrary unit(s)".format(args.command, amount)
-        yield movement(float(amount), unit).go(speed=args.speed, station_hold=station_hold)
+        yield movement(float(amount), unit).go(**action_kwargs)
 
     defer.returnValue(reactor.stop())
 

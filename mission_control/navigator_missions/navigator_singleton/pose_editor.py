@@ -5,10 +5,10 @@ import numpy as np
 from tf import transformations
 from nav_msgs.msg import Odometry
 from uf_common.msg import PoseTwistStamped, PoseTwist, MoveToGoal
-from navigator_msgs.msg import MoveToWaypointGoal
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Point, Vector3, Twist
 from navigator_tools import rosmsg_to_numpy, make_header, normalize
 from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
+from lqrrt_ros.msg import MoveGoal
 
 import navigator_tools
 
@@ -126,9 +126,7 @@ class PoseEditor2(object):
         return np.linalg.norm(self.position - self.nav.pose[0])
 
     def go(self, *args, **kwargs):
-        # NOTE: C3 doesn't seems to handle different frames, so make sure all movements are in C3's
-        #       fixed frame.
-        self.goal = self.nav._moveto_action_client.send_goal(self.as_MoveToGoal(*args, **kwargs))
+        self.goal = self.nav._moveto_client.send_goal(self.as_MoveGoal(*args, **kwargs))
         return self.goal.get_result()
 
     def set_position(self, position):
@@ -230,9 +228,14 @@ class PoseEditor2(object):
             **kwargs
         )
 
-    def as_MoveToGoalWaypoint(self, linear=[0, 0, 0], angular=[0, 0, 0], **kwargs):
-        return MoveToWaypointGoal(
-            target=self.as_PoseTwist(linear, angular),
+    def as_MoveGoal(self, move_type='drive', **kwargs):
+        if 'focus' in kwargs:
+            if not isinstance(kwargs['focus'], Point):
+                kwargs['focus'] = navigator_tools.numpy_to_point(kwargs['focus'])
+
+        return MoveGoal(
+            goal=self.as_Pose(),
+            move_type=move_type,
             **kwargs
         )
 
