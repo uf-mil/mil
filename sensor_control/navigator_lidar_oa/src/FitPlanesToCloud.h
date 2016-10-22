@@ -26,15 +26,8 @@ void FitPlanesToCloud(objectMessage &object, sensor_msgs::PointCloud &rosCloud, 
 	//Downsample while adding to pcl pointcloud
 	double voxel = 0.15;
 	for (const auto &nextPoint : object.strikesFrame) {
-		//if ( fabs(p.z-zo) < height*0.40 ) {
 		if ( nextPoint.z > object.position.z - object.scale.z*0.05 ) {
-			pcl::PointXYZ pp;
-			pp.x = nextPoint.x; //floor(nextPoint.x/voxel)*voxel+voxel/2;
-			pp.y = nextPoint.y; //floor(nextPoint.y/voxel)*voxel+voxel/2;
-			pp.z = nextPoint.z; //floor(nextPoint.z/voxel)*voxel+voxel/2;
-			pclCloud->push_back(pp);
-			//rosCloud.points.push_back(nextPoint);
-			//rosCloud.channels[0].values.push_back(1);
+			pclCloud->push_back(pcl::PointXYZ(nextPoint.x,nextPoint.y,nextPoint.z));
 		}
 	}
 

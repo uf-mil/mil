@@ -21,6 +21,7 @@ add_message_files(
   Coordinates.msg
   PoseTwistStamped.msg
   PerceptionObject.msg
+  PerceptionObjectArray.msg
   DockShape.msg
   DockShapes.msg
 )

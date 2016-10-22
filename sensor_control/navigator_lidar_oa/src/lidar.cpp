@@ -17,9 +17,10 @@
 #include <tf2/convert.h>
 #include <tf2_ros/transform_listener.h>
 #include <navigator_msgs/PerceptionObject.h>
+#include <navigator_msgs/PerceptionObjectArray.h>
 #include <navigator_msgs/ObjectDBQuery.h>
+#include <navigator_msgs/Bounds.h>
 #include <uf_common/PoseTwistStamped.h>
-#include <uf_common/MoveToAction.h>
 
 #include <iostream>
 #include <string>
@@ -28,7 +29,6 @@
 
 #include "OccupancyGrid.h"
 #include "ConnectedComponents.h"
-#include "AStar.h"
 #include "objects.h"
 #include "bounding_boxes.h"
 
@@ -52,20 +52,18 @@ const double LIDAR_VIEW_DISTANCE_METERS = 35;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OccupancyGrid ogrid(MAP_SIZE_METERS,ROI_SIZE_METERS,VOXEL_SIZE_METERS);
-AStar astar(ROI_SIZE_METERS/VOXEL_SIZE_METERS);
 nav_msgs::OccupancyGrid rosGrid;
-ros::Publisher pubGrid,pubMarkers,pubBuoys,pubTrajectory,pubWaypoint,pubCloudPersist,pubCloudFrame,pubCloudPCL;
+ros::Publisher pubGrid,pubMarkers,pubObjects,pubCloudPersist,pubCloudFrame,pubCloudPCL;
 ObjectTracker object_tracker;
 geometry_msgs::Point waypoint_ogrid;
 geometry_msgs::Pose boatPose_enu;
 geometry_msgs::Twist boatTwist_enu;
 uf_common::PoseTwistStamped waypoint_enu,carrot_enu;
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ros::Time pubObjectsTimer;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Do these come from a rosparam or service call?
+//These are changed on startup if /get_bounds service is present
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Eigen::Vector2d BOUNDARY_CORNER_1 (30, 10);
 Eigen::Vector2d BOUNDARY_CORNER_2 (30, 120);
 Eigen::Vector2d BOUNDARY_CORNER_3 (140, 120);
@@ -290,6 +288,15 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	pubCloudFrame.publish(objectCloudFrame);
 	pubCloudPCL.publish(pclCloud);
 
+	//Publish PerceptionObjects at some slower rate
+	if ( (ros::Time::now() - pubObjectsTimer).toSec() > 2 ) {
+		navigator_msgs::PerceptionObjectArray objectArray;
+		object_tracker.lookUpByName("all",objectArray.objects);
+		pubObjects.publish(objectArray);
+		pubObjectsTimer = ros::Time::now();
+	}
+	
+
 	//Elapsed time
 	ROS_INFO_STREAM("LIDAR | Elapsed time: " << (ros::Time::now()-timer).toSec());
 	ROS_INFO("**********************************************************");
@@ -350,24 +357,8 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
 	}
 
 	//My original object message doesn't exactly match PerceptionObject, fix this in future!
-	for (const auto &obj : object_tracker.saved_objects) {
-		if (req.name == navigator_msgs::PerceptionObject::ALL || req.name == obj.name) {
-			res.found =true;
-			navigator_msgs::PerceptionObject thisOne;
-			thisOne.position = obj.position;
-			thisOne.id = obj.id;
-			thisOne.confidence = 0;
-			thisOne.zHeight = obj.scale.z;
-			thisOne.xWidth = obj.scale.x;
-			thisOne.yDepth = obj.scale.y;
-			thisOne.points = obj.strikesPersist;
-			thisOne.intensity = obj.intensityPersist;
-			thisOne.pclInliers = obj.pclInliers;
-			thisOne.normal = obj.normal;
-			thisOne.color = obj.color;
-			res.objects.push_back(thisOne);
-		}
-	}
+	res.found = object_tracker.lookUpByName(req.name,res.objects);
+
 	return true;
 }
 
@@ -390,9 +381,6 @@ int main(int argc, char* argv[])
 	}
 	ROS_INFO_STREAM("LIDAR | ROS Master: " << ros::master::getHost());
 
-	//Initialize Astar to use 8 way search method
-	astar.setMode(AStar::ASTAR,AStar::EIGHT);
-	
 	//Node handler
 	ros::NodeHandle nh;
 
@@ -401,14 +389,35 @@ int main(int argc, char* argv[])
 	ros::Subscriber sub2 = nh.subscribe("/odom", 1, cb_odom);
 
 	//Publish occupancy grid and visualization markers
-	pubGrid = nh.advertise<nav_msgs::OccupancyGrid>("ira_ogrid",10);
-	pubMarkers = nh.advertise<visualization_msgs::MarkerArray>("ira_markers",10);
+	pubGrid = nh.advertise<nav_msgs::OccupancyGrid>("/ogrid",10);
+	pubMarkers = nh.advertise<visualization_msgs::MarkerArray>("/unclassified_markers",10);
+
+	//Publish PerceptionObjects
+	pubObjects = nh.advertise<navigator_msgs::PerceptionObjectArray>("/database/objects",1);
+	pubObjectsTimer = ros::Time::now();
+
+	//Extra publishing for debugging...
 	pubCloudPersist = nh.advertise<sensor_msgs::PointCloud>("ira_persist",1);
 	pubCloudFrame = nh.advertise<sensor_msgs::PointCloud>("ira_frame",1);
 	pubCloudPCL = nh.advertise<sensor_msgs::PointCloud>("ira_pclcloud",1);
 
 	//Service for object request
-	ros::ServiceServer service = nh.advertiseService("ira_database", objectRequest);
+	ros::ServiceServer service = nh.advertiseService("/database/requests", objectRequest);
+
+	//Check for bounds from parameter server on startup
+	ros::ServiceClient boundsClient = nh.serviceClient<navigator_msgs::Bounds>("/get_bounds");
+	navigator_msgs::Bounds::Request boundsReq;
+	navigator_msgs::Bounds::Response boundsRes;
+	boundsReq.to_frame = "enu";
+	if (boundsClient.call(boundsReq,boundsRes) && boundsRes.bounds.size() == 4) {
+		BOUNDARY_CORNER_1(0) = boundsRes.bounds[0].x; BOUNDARY_CORNER_1(1) = boundsRes.bounds[0].y;
+		BOUNDARY_CORNER_2(0) = boundsRes.bounds[1].x; BOUNDARY_CORNER_2(1) = boundsRes.bounds[1].y;
+		BOUNDARY_CORNER_3(0) = boundsRes.bounds[2].x; BOUNDARY_CORNER_3(1) = boundsRes.bounds[2].y;
+		BOUNDARY_CORNER_4(0) = boundsRes.bounds[3].x; BOUNDARY_CORNER_4(1) = boundsRes.bounds[3].y;
+		ROS_INFO_STREAM("LIDAR | Bounds set to rosparam");
+	} else {
+		ROS_INFO_STREAM("LIDAR | Bounds not available from /get_bounds service....");
+	}
 
 	//Give control to ROS
 	ros::spin();

@@ -60,5 +60,26 @@ public:
 		return saved_objects;
 	}
 
+	bool lookUpByName(std::string name, std::vector< navigator_msgs::PerceptionObject > &objects) {
+		for (const auto &obj : saved_objects) {
+			if (name == "all" || name == obj.name) {
+				navigator_msgs::PerceptionObject thisOne;
+				thisOne.name = obj.name;
+				thisOne.position = obj.position;
+				thisOne.id = obj.id;
+				thisOne.confidence = 0;
+				thisOne.size.z = obj.scale.z;
+				thisOne.size.x = obj.scale.x;
+				thisOne.size.y = obj.scale.y;
+				thisOne.points = obj.strikesFrame;
+				thisOne.intensity = obj.intensityFrame;
+				thisOne.pclInliers = obj.pclInliers;
+				thisOne.normal = obj.normal;
+				thisOne.color = obj.color;
+				objects.push_back(thisOne);
+			}
+		}
+	}
+
 	std::vector<objectMessage> saved_objects;
 };
