@@ -25,20 +25,20 @@ class AlarmBroadcaster(object):
         # For now, unused - future: Use for system reports
         # self.alarm_spawn_pub = rospy.Publisher('/alarm_spawn', Alarm, latch=True, queue_size=1)
 
-        # Get ROS name
-        self.node_name = rospy.get_name()
-
         # Alarms associated with this broadcaster
         # In the future, there will be some background bookkeeping
         self.alarms = []
 
-    def add_alarm(self, name, action_required=False, severity=3, problem_description=None, parameters=None):
+    def add_alarm(self, name, action_required=False, severity=3, problem_description=None, parameters=None, node_name=None):
         '''
             Factory method for creating a new alarm
         '''
+        if node_name is None:
+            node_name = rospy.get_name()
+
         new_alarm = AlarmRaiser(
             alarm_name=name,
-            node_name=self.node_name,
+            node_name=node_name,
             alarm_publisher=self.alarm_pub,
             action_required=action_required,
             problem_description=problem_description,
