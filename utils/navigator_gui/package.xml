@@ -21,9 +21,9 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>rosgraph_msgs</run_depend>
   <run_depend>navigator_msgs</run_depend>
+  <run_depend>python_qt_binding</run_depend>
   <run_depend>qt_gui.plugin</run_depend>
   <run_depend>navigator_alarm</run_depend>
-  <run_depend>kill_handling</run_depend>
 
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml"/>

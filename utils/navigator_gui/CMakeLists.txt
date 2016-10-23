@@ -8,4 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
   navigator_msgs
 )
 
+catkin_python_setup()
+
 catkin_package()

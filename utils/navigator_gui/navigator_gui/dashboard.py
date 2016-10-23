@@ -21,7 +21,6 @@ from rosgraph_msgs.msg import Clock
 import rospkg
 import rospy
 from std_msgs.msg import Float32
-from std_srvs.srv import SetBool, SetBoolRequest
 
 
 __author__ = "Anthony Olive"
@@ -156,9 +155,8 @@ class Dashboard(Plugin):
         rospy.Subscriber("/clock", Clock, self.cache_system_time)
 
         self.wrench_changer = rospy.ServiceProxy('/change_wrench', WrenchSelect)
-        self.station_holder = rospy.ServiceProxy('/lqrrt/station_hold', SetBool)
-
         self.kill_listener = AlarmListener('kill', self.update_kill_status)
+
         alarm_broadcaster = AlarmBroadcaster()
         self.kill_alarm = alarm_broadcaster.add_alarm(
             name='kill',
