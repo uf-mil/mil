@@ -19,7 +19,7 @@ from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import PointCloud
 import navigator_msgs.srv as navigator_srvs
-
+from navigator_tools import print_t
 
 class MissionResult(object):
     def __init__(self, success=True, response="", need_rerun=False,
@@ -75,8 +75,11 @@ class Navigator(object):
         self._ecef_odom_sub = self.nh.subscribe('absodom', Odometry,
                                                 lambda odom: setattr(self, 'ecef_pose', navigator_tools.odometry_to_numpy(odom)[0]))
 
-        self._database_query = self.nh.get_service_client('/ira_database', navigator_srvs.ObjectDBQuery)
-        self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
+        try:
+            self._database_query = self.nh.get_service_client('/ira_database', navigator_srvs.ObjectDBQuery)
+            self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
+        except AttributeError, err:
+            print_t("Error getting service clients in nav singleton init: {}".format(err))
         self.tf_listener = tf.TransformListener(self.nh)
 
         if sim:
@@ -172,12 +175,17 @@ class Navigator(object):
         f = yaml.load(open(config_file, 'r'))
 
         for name in f:
-            s_type = getattr(navigator_srvs, f[name]["type"])
-            s_req = getattr(navigator_srvs, "{}Request".format(f[name]["type"]))
-            s_args = f[name]['args']
-            s_client = self.nh.get_service_client(f[name]["topic"], s_type)
-            s_switch = self.nh.get_service_client(f[name]["topic"] + '/switch', SetBool)
-            self.vision_proxies[name] = VisionProxy(s_client, s_req, s_args, s_switch)
+            try:
+                s_type = getattr(navigator_srvs, f[name]["type"])
+                s_req = getattr(navigator_srvs, "{}Request".format(f[name]["type"]))
+                s_args = f[name]['args']
+                s_client = self.nh.get_service_client(f[name]["topic"], s_type)
+                s_switch = self.nh.get_service_client(f[name]["topic"] + '/switch', SetBool)
+                self.vision_proxies[name] = VisionProxy(s_client, s_req, s_args, s_switch)
+            except Exception, e:
+                err = "Error loading vision sevices: {}".format(e)
+                print_t(err)
+	
 
     def _make_alarms(self):
         pass
