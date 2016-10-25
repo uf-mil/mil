@@ -37,7 +37,11 @@ def main():
         print "MISSION: Running Mission!\n"
         result = yield to_run.main(n)
 
-    print result
+        if result is None:
+            print "MISSION: {} finished with no result."
+        else:
+            print "MISSION: {} finished with:"
+            print result
 
     defer.returnValue(reactor.stop())
 

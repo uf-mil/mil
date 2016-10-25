@@ -6,17 +6,14 @@ from _template import HandlerBase
 class KillHandler(HandlerBase):
     alarm_name = 'kill'
 
+    # Multiple functions listen to the kill alarm so no need to do anything here.
+    # I'm keeping this here just incase we want to add some kill functionality.
+
     def __init__(self):
-        self.kb = KillBroadcaster(id='alarm-kill', description='Kill by alarm')
-        self.alarms = {}
+        pass
 
     def handle(self, alarm, time_sent, parameters):
-        self.alarms[alarm.alarm_name] = True
-        self.kb.send(active=True)
+        pass
 
     def cancel(self, alarm, time_sent, parameters):
-        self.alarms[alarm.alarm_name] = False
-
-        # Make sure that ALL alarms that caused a kill have been cleared
-        if not any(self.alarms.values()):
-            self.kb.send(active=False)
+        pass
