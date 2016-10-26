@@ -6,8 +6,9 @@ import numpy as np
 import tf
 import tf.transformations as trns
 from navigator_msgs.msg import ShooterDoAction, ShooterDoActionGoal
-from navigator_msgs.srv import ObjectDBSingleQuery, ObjectDBSingleQueryRequest, CameraToLidarTransform, CameraToLidarTransformRequest
+from navigator_msgs.srv import CameraToLidarTransform,CameraToLidarTransformRequest
 from geometry_msgs.msg import Point
+from std_srvs.srv import SetBool, SetBoolRequest
 from twisted.internet import defer
 from image_geometry import PinholeCameraModel
 import navigator_tools
@@ -15,26 +16,18 @@ import navigator_tools
 
 class DetectDeliverMission:
     # Note, this will be changed when the shooter switches to actionlib
-    center_error_threshold = 0.1
-    width_proportion = 0.15  # Desired proportion of frame width symbol is present in
-    width_error_threshold = 0.03
     resp = None
 
     def __init__(self, navigator):
-        # tf_listener = navigator.tf.TransformListener(navigator.nh,
-        # history_length=genpy.Duration(1)) # short history length so that we
-        # cover history being truncated
-        self.center_error = 1
-        self.width_error = 1
         self.navigator = navigator
-        self.getShooterWaypoint = navigator.nh.get_service_client(
-            "/database/single", ObjectDBSingleQuery)
         self.cameraLidarTransformer = navigator.nh.get_service_client(
             "/camera_lidar_transformer/transform_camera", CameraToLidarTransform)
         self.shooterLoad = txros.action.ActionClient(
             self.navigator.nh, '/shooter/load', ShooterDoAction)
         self.shooterFire = txros.action.ActionClient(
             self.navigator.nh, '/shooter/fire', ShooterDoAction)
+        self.visionActivation = navigator.nh.get_service_client('/dock_shapes/run',SetBool)
+
 
     @txros.util.cancellableInlineCallbacks
     def set_shape_and_color(self):
@@ -45,7 +38,7 @@ class DetectDeliverMission:
 
     @txros.util.cancellableInlineCallbacks
     def get_waypoint(self):
-        res = yield self.getShooterWaypoint(ObjectDBSingleQueryRequest(name="shooter"))
+        res = yield self.navigator.database_query(name="shooter")
         if not res.found:
             print "Waypoint not found in database, exiting"
             raise Exception('Waypoint not found')
@@ -54,11 +47,12 @@ class DetectDeliverMission:
     @txros.util.cancellableInlineCallbacks
     def circle_search(self):
         print "Starting circle search"
+        yield self.navigator.move.look_at(navigator_tools.rosmsg_to_numpy(self.waypoint_res.objects[0].position)).go()
         pattern = self.navigator.move.circle_point(navigator_tools.rosmsg_to_numpy(
-            self.waypoint_res.object.position), radius=8, theta_offset=1.57)
+            self.waypoint_res.objects[0].position), radius=10,  theta_offset=1.57)
         searcher = self.navigator.search(
             vision_proxy='get_shape', search_pattern=pattern, Shape=self.Shape, Color=self.Color)
-        yield searcher.start_search(timeout=300, spotings_req=5, speed=1)
+        yield searcher.start_search(timeout=300, spotings_req=5, move_type="skid")
         print "Ended Circle Search"
 
     @txros.util.cancellableInlineCallbacks
@@ -67,26 +61,34 @@ class DetectDeliverMission:
             found = yield self.is_found()
             if (found):
                 req = CameraToLidarTransformRequest()
-                req.header.stamp = self.found_shape.header.stamp
+                req.header = self.found_shape.header
                 req.point = Point()
                 req.point.x = self.found_shape.CenterX
                 req.point.y = self.found_shape.CenterY
                 req.tolerance = 15
-                # print req
-                res = yield self.cameraLidarTransformer(req)
+                print "Sending transform request: ", req
+                # ~res = yield self.cameraLidarTransformer(req)
+                print res
                 if res.success:
-                    transformObj = yield self.navigator.tf_listener.get_transform('/enu', '/right_right_cam', self.found_shape.header.stamp)
+                    # ~print "SUCCESS IN RAY LIDAR"
+                    # ~print "TIME: ", self.navigator.nh.get_time()
+                    # ~print "STAMP: ", self.found_shape.header.stamp
+                    # ~print "FRAME ", req.header.frame_id
+                    transformObj = yield self.navigator.tf_listener.get_transform('/enu', '/'+req.header.frame_id)
+                    # ~print "Did transform"
                     enunormal = transformObj.transform_vector(
                         navigator_tools.rosmsg_to_numpy(res.normal))
                     enupoint = transformObj.transform_point(
                         navigator_tools.rosmsg_to_numpy(res.closest))
-                    while(enunormal[2] > .75):
-                        res = yield self.cameraLidarTransformer(req)
-                        transformObj = yield self.navigator.tf_listener.get_transform('/enu', '/right_right_cam', self.found_shape.header.stamp)
-                        enunormal = transformObj.transform_vector(
-                            navigator_tools.rosmsg_to_numpy(res.normal))
-                        enupoint = transformObj.transform_point(
-                            navigator_tools.rosmsg_to_numpy(res.closest))
+                    #print "DID TRANSFORM ", transformObj
+                    #while(enunormal[2] > .75):
+                       # print "Loop"
+                       # res = yield self.cameraLidarTransformer(req)
+                        #transformObj = yield self.navigator.tf_listener.get_transform('/enu',req.header.frame_id, self.found_shape.header.stamp)
+                        #enunormal = transformObj.transform_vector(
+                         #   navigator_tools.rosmsg_to_numpy(res.normal))
+                        #enupoint = transformObj.transform_point(
+                         #   navigator_tools.rosmsg_to_numpy(res.closest))
                     
                     print "POINT = ", enupoint
                     print "VECTOR = ", enunormal
@@ -113,18 +115,6 @@ class DetectDeliverMission:
                 print "Not found"
 
     @txros.util.cancellableInlineCallbacks
-    def center_to_target(self):
-        if not (yield self.is_centered()):
-            if self.center_error < 0:
-                print "Turning Left"
-                self.navigator.move.yaw_left(180, "deg").go()
-            elif self.center_error > 0:
-                print "Turning Right"
-                self.navigator.move.yaw_right(180, "deg").go()
-            while not (yield self.is_centered()):
-                print "...Centering on target"
-
-    @txros.util.cancellableInlineCallbacks
     def offset_for_target(self):
         print "Moving forward to align with large target"
         # Move off of center of shape to be centered with large target
@@ -134,24 +124,14 @@ class DetectDeliverMission:
     @txros.util.cancellableInlineCallbacks
     def is_found(self):
         self.resp = yield self.navigator.vision_proxies["get_shape"].get_response(Shape=self.Shape, Color=self.Color)
+        print "Resp ",self.resp
         if self.resp.found:
             self.found_shape = self.resp.shapes.list[0]
         defer.returnValue(self.resp.found)
 
     @txros.util.cancellableInlineCallbacks
-    def is_centered(self):
-        if not (yield self.is_found()):
-            print "Shape not found"
-            # raise Exception('Shape not found')
-            defer.returnValue(False)
-        center = self.found_shape.CenterX / self.found_shape.img_width
-        self.center_error = center - 0.5
-        print "Center ", center
-        defer.returnValue(abs(self.center_error) < self.center_error_threshold)
-
-    @txros.util.cancellableInlineCallbacks
     def shootAllBalls(self):
-        for i in range(4):
+        for i in range(1):
             # ~time.sleep(3)
             # ~self.shooterLoad(std_srvs.srv.TriggerRequest())
             # ~time.sleep(5)
@@ -166,6 +146,7 @@ class DetectDeliverMission:
 
     @txros.util.cancellableInlineCallbacks
     def findAndShoot(self):
+        yield self.visionActivation(SetBoolRequest(data=True))
         yield self.set_shape_and_color()  # Get correct goal shape/color from params
         yield self.get_waypoint()  # Get waypoint of shooter target
         yield self.circle_search()  # Go to waypoint and circle until target found
@@ -173,7 +154,7 @@ class DetectDeliverMission:
         yield self.offset_for_target()  # Move a little bit forward to be centered to target
         print "Starting to fire"
         yield self.shootAllBalls()
-
+        yield self.visionActivation(data=False)
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator):

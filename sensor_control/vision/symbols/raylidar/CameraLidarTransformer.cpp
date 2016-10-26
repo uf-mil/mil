@@ -44,7 +44,7 @@ bool CameraLidarTransformer::transformServiceCallback(
     return true;
   }
   geometry_msgs::TransformStamped transform =
-      tfBuffer.lookupTransform("right_right_cam", "velodyne", req.header.stamp);
+      tfBuffer.lookupTransform(req.header.frame_id, "velodyne", req.header.stamp);
   sensor_msgs::PointCloud2 cloud_transformed;
   tf2::doTransform(*scloud, cloud_transformed, transform);
 #ifdef DO_ROS_DEBUG
@@ -78,7 +78,7 @@ bool CameraLidarTransformer::transformServiceCallback(
       visualization_msgs::Marker marker_point;
       marker_point.header = req.header;
       marker_point.header.seq = 0;
-      marker_point.header.frame_id = "right_right_cam";
+      marker_point.header.frame_id = req.header.frame_id;
       marker_point.id = (int)ii;
       marker_point.type = visualization_msgs::Marker::CUBE;
       marker_point.pose.position.x = x.f;

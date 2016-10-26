@@ -63,7 +63,6 @@ class ShooterVision {
     nh_.param<int>("roi/y_offset", y_offset, 103);
     nh_.param<int>("roi/width", width, 499);
     nh_.param<int>("roi/height", height, 243);
-    // ~roi = Rect(73,103,499,243);
     roi = Rect(x_offset, y_offset, width, height);
   }
 
@@ -104,7 +103,7 @@ class ShooterVision {
 
     vision->GetShapes(frame, roi, symbols);
     for (int i = 0; i < symbols.list.size(); i++)
-      symbols.list[i].header.stamp = msg->header.stamp;
+      symbols.list[i].header = msg->header;
     foundShapesPublisher.publish(symbols);
   }
 };
