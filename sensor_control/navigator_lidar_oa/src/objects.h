@@ -18,7 +18,7 @@ private:
 
 public:
 
-	ObjectTracker(float diff_thresh=5){
+	ObjectTracker(float diff_thresh=7.5){
 		this->diff_thresh = diff_thresh;
 	}
 
@@ -48,6 +48,7 @@ public:
 				obj.pclInliers = min_obj->pclInliers;
 				obj.color = min_obj->color;
 				obj.current = true;
+				obj.locked = min_obj->locked;
 				*min_obj = obj;
 			}else{
 				obj.id = curr_id;
