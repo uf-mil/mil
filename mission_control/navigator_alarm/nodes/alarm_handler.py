@@ -22,7 +22,7 @@ class AlarmHandler(object):
         self.alarm_sub = rospy.Subscriber('/alarm_raise', Alarm, self.alarm_callback, queue_size=100)
         self.alarm_pub = rospy.Publisher('/alarm', Alarm, queue_size=100)
         self.alarms = {}
-        self.alarm_republish_timer = rospy.Timer(rospy.Duration(0.5), self.republish_alarms)
+        self.alarm_republish_timer = rospy.Timer(rospy.Duration(0.05), self.republish_alarms)
 
         self.scenarios = {}
 
