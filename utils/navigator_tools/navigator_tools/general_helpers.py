@@ -1,20 +1,40 @@
 import rospy
 
-def print_t(_str, time=None, title=None):
-    time_header = None
+class Colors():
+    # Some cool stuff could happen here
+    red = '\033[91m'
+    blue = '\033[94m'
+    green = '\033[92m'
+    bold = '\033[1m'
+
+    reset = '\033[0m'
+
+    def __getattr__(self, arg):
+        # If we get a non existent color, return the reset color
+        if hasattr(self, arg.lower()):
+            return getattr(self, arg.lower())
+
+        return self.reset
+
+
+def fprint(msg, time=None, title=None, newline=True, msg_color=None):
+    time_header = False
     title_header = False
 
     if title is not None:
-        title_header = "\033[94m\033[1m{}\033[0m".format(title)
+        title_header = "{C.blue}{C.bold}{title}{C.reset}".format(C=Colors, title=title)
+
+    if msg_color is not None:
+        msg = "{color}{msg}{C.reset}".format(color=getattr(Colors(), msg_color), C=Colors, msg=msg)
 
     if time is None:
         try:
             time = rospy.Time.now().to_sec()
-            time_header = "\033[1m{}\033[0m".format(time)
+            time_header = "{C.bold}{time}{C.reset}".format(C=Colors, time=time)
         except rospy.exceptions.ROSInitException:
             pass
     else:
-        time_header = "\033[1m{}\033[0m".format(time)
+        time_header = "{C.bold}{time}{C.reset}".format(C=Colors, time=time)
 
     if title_header and time_header:
         # (TIME) HEADER: message
@@ -29,4 +49,10 @@ def print_t(_str, time=None, title=None):
         # message
         to_print = "{msg}"
 
-    print to_print.format(time=time_header, title=title_header, msg=_str)
+    if newline:
+        print to_print.format(time=time_header, title=title_header, msg=msg)
+    else:
+        # Note, this adds a space at the end.
+        print to_print.format(time=time_header, title=title_header, msg=msg),
+
+print_t = fprint  # For legacy

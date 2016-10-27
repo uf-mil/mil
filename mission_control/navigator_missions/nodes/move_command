@@ -10,6 +10,7 @@ import nav_missions
 
 import argparse
 
+fprint = navigator_tools.fprint
 
 @util.cancellableInlineCallbacks
 def main():
@@ -47,11 +48,11 @@ def main():
 
     if args.command == 'custom':
         # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
-        print "Moving with the command: {}".format(args.argument)
+        fprint("Moving with the command: {}".format(args.argument), title="MOVE_COMMAND")
         yield eval("n.move.{}.go(move_type='{move_type}')".format(args.argument, **action_kwargs))
 
     elif args.command == 'rviz':
-        print "Moving to last published rviz position"
+        fprint("Moving to last published rviz position", title="MOVE_COMMAND")
         sub = nh.subscribe("/rviz_goal", PoseStamped)
         target_pose = yield sub.get_next_message()
         yield n.move.to_pose(target_pose).go(**action_kwargs)
@@ -72,7 +73,7 @@ def main():
         if station_hold:
             action_kwargs['move_type'] = 'hold'
 
-        print "{}ing {} non-arbitrary unit(s)".format(args.command, amount)
+        fprint("{}ing {} non-arbitrary unit(s)".format(args.command, amount), title="MOVE_COMMAND")
         yield movement(float(amount), unit).go(**action_kwargs)
 
     defer.returnValue(reactor.stop())

@@ -11,6 +11,7 @@ from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
 from lqrrt_ros.msg import MoveGoal
 
 import navigator_tools
+from navigator_tools import fprint
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
 EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)]
@@ -126,6 +127,11 @@ class PoseEditor2(object):
         return np.linalg.norm(self.position - self.nav.pose[0])
 
     def go(self, *args, **kwargs):
+        if self.nav.killed:
+            # What do we want to do with missions when the boat is killed
+            fprint("Boat is killed, ignoring go command!", title="POSE_EDITOR", msg_color="red")
+            return
+
         self.goal = self.nav._moveto_client.send_goal(self.as_MoveGoal(*args, **kwargs))
         return self.goal.get_result()
 
