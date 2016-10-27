@@ -1,5 +1,5 @@
 <launch>
-    <node pkg="tf" type="static_transform_publisher" name="measure_point_tf" args="1.2319 0 1.2  0 0 0 1  /base_link /measurement 10" /> <!-- Very front center of top part -->
+    <node pkg="tf" type="static_transform_publisher" name="measure_point_tf" args="1.2319 0 0  0 0 0 1  /base_link /measurement 10" /> <!-- Very front center of top part -->
     <node pkg="tf" type="static_transform_publisher" name="ins_tf" args="-0.652272 0.136525 0.192278  0 0 0 1  /measurement /ins 10" />
     
     <!-- LIDAR -->
@@ -7,15 +7,12 @@
     <node pkg="tf" type="static_transform_publisher" name="sick_tf" args="0.5334 -0.0254 -0.6858  0 0 0 1  /measurement /sick 10" />
 
     <!-- Cameras -->
-    <node pkg="tf" type="static_transform_publisher" name="stereo_left_cam_tf" args="0.294 0.1 -0.45  -0.5665 0.55359 -0.42663 0.43658  /velodyne /stereo_left_cam 100" />
-    <node pkg="tf" type="static_transform_publisher" name="stereo_right_cam_tf" args="0.294 0.08 -0.45  -0.56213 0.55163 -0.4316 0.43981  /velodyne /stereo_right_cam 100" />
-    <node pkg="tf" type="static_transform_publisher" name="right_right_cam_tf" args="-0.27 -0.456 0.168  -0.01264 -0.70995 0.70403 0.01253  /measurement /right_right_cam 100" />
-
-    <!-- Shooter -->
-    <node pkg="tf" type="static_transform_publisher" name="shooter_tf" args="-0.6096 -0.635 0.2032  -1.571 -0.349066 0 /measurement /shooter 100" />
-
+    <node pkg="tf" type="static_transform_publisher" name="stereo_tf" args="0.017272 -0.100076 0.19812 0.56679 -0.56679 0.42278 -0.42278 /measurement /stereo_front 10" />
+    <node pkg="tf" type="static_transform_publisher" name="right_camera_tf" args="0 0 0  0 0 0 1  /stereo_front /stereo_right_cam 10" />
+    <node pkg="tf" type="static_transform_publisher" name="left_camera_tf" args="-0.200152 0 0  0 0 0 1  /stereo_front /stereo_left_cam 10" />
+    <node pkg="tf" type="static_transform_publisher" name="right_right_camera_tf" args="-0.237 -0.354 0.177  0.00913 -0.68678 0.72676 0.00863  /measurement /right_right_cam 10" />
     <!-- TODO Hydrophones -->
-    <node pkg="tf" type="static_transform_publisher" name="hydrophone_tf" args="-1.2192 .70104 -1.0922 -1.571 0 0 /measurement /hydrophones 10" />
+    <node pkg="tf" type="static_transform_publisher" name="hydrophone_tf" args="-0.4 0 0 -1.571 0 0 base_link hydrophones 10" />
 
     <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry">
         <rosparam>
