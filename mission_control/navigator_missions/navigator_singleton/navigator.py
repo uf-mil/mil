@@ -12,13 +12,16 @@ from txros import action, util, tf, NodeHandle
 from pose_editor import PoseEditor2
 
 import navigator_tools
+from navigator_alarm import AlarmListenerTx
+
 from lqrrt_ros.msg import MoveAction
 from nav_msgs.msg import Odometry
 from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import PointCloud
 import navigator_msgs.srv as navigator_srvs
-from navigator_tools import print_t
+from navigator_tools import fprint
+
 
 class MissionResult(object):
     def __init__(self, success=True, response="", need_rerun=False, post_function=None):
@@ -54,7 +57,7 @@ class Navigator(object):
 
         self.enu_bounds = None
 
-        self.alarms = []
+        self.killed = False
 
     @util.cancellableInlineCallbacks
     def _init(self, sim):
@@ -66,7 +69,7 @@ class Navigator(object):
 
         self._moveto_client = action.ActionClient(self.nh, 'move_to', MoveAction)
 
-        print_t("Waiting for move_to action client...", title="NAVIGATOR")
+        fprint("Waiting for move_to action client...", title="NAVIGATOR")
         yield self._moveto_client.wait_for_server()
 
         odom_set = lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0])
@@ -78,22 +81,22 @@ class Navigator(object):
             self._database_query = self.nh.get_service_client('/ira_database', navigator_srvs.ObjectDBQuery)
             self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
         except AttributeError, err:
-            print_t("Error getting service clients in nav singleton init: {}".format(err), title="NAVIGATOR")
+            fprint("Error getting service clients in nav singleton init: {}".format(err), title="NAVIGATOR")
 
         self.tf_listener = tf.TransformListener(self.nh)
 
+        yield self._make_alarms()
+
         if self.sim:
-            print_t("Sim mode active!", title="NAVIGATOR")
-            yield self.nh.sleep(0.5)
+            fprint("Sim mode active!", title="NAVIGATOR")
+            yield self.nh.sleep(.5)
         else:
             # We want to make sure odom is working before we continue
-            print_t("Waiting for odom...", title="NAVIGATOR")
+            fprint("Waiting for odom...", title="NAVIGATOR")
             odom = util.wrap_time_notice(self._odom_sub.get_next_message(), 2, "Odom listener", title="NAVIGATOR")
             enu_odom = util.wrap_time_notice(self._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener", title="NAVIGATOR")
             bounds = util.wrap_time_notice(self._make_bounds(), 2, "Bounds creation", title="NAVIGATOR")
             yield defer.gatherResults([odom, enu_odom, bounds])  # Wait for all those to finish
-
-        self._make_alarms()
 
         defer.returnValue(self)
 
@@ -119,7 +122,7 @@ class Navigator(object):
 
     @util.cancellableInlineCallbacks
     def _make_bounds(self):
-        print_t("Constructing bounds.", title="NAVIGATOR")
+        fprint("Constructing bounds.", title="NAVIGATOR")
 
         if (yield self.nh.has_param("/bounds/enforce")):
             _bounds = self.nh.get_service_client('/get_bounds', navigator_srvs.Bounds)
@@ -133,11 +136,11 @@ class Navigator(object):
                                 points=np.array([navigator_tools.numpy_to_point(point) for point in self.enu_bounds]))
                 yield self._point_cloud_pub.publish(pc)
         else:
-            print_t("No bounds param found, defaulting to none.", title="NAVIGATOR")
+            fprint("No bounds param found, defaulting to none.", title="NAVIGATOR")
             self.enu_bounds = None
 
     def vision_request(self, request_name, **kwargs):
-        print_t("DEPRECATED: Please use new dictionary based system.")
+        fprint("DEPRECATED: Please use new dictionary based system.")
         return self.vision_proxies[request_name].get_response(**kwargs)
 
     def database_query(self, object_name, **kwargs):
@@ -184,12 +187,19 @@ class Navigator(object):
                 self.vision_proxies[name] = VisionProxy(s_client, s_req, s_args, s_switch)
             except Exception, e:
                 err = "Error loading vision sevices: {}".format(e)
-                print_t("" + err, title="NAVIGATOR")
+                fprint("" + err, title="NAVIGATOR")
 
-
+    @util.cancellableInlineCallbacks
     def _make_alarms(self):
-        pass
+        self.alarm_listener = AlarmListenerTx()
+        yield self.alarm_listener.init(self.nh)
 
+        fprint("Alarm listener created, listening to alarms: ", title="NAVIGATOR")
+
+        self.alarm_listener.add_listener("kill", lambda alarm: setattr(self, 'killed', not alarm.clear))
+        yield self.alarm_listener.wait_for_alarm("kill", timeout=.5)
+        fprint("\tkill :", newline=False)
+        fprint(self.killed)
 
 class VisionProxy(object):
     def __init__(self, client, request, args, switch):
@@ -223,15 +233,15 @@ class Searcher(object):
 
     def catch_error(self, failure):
         if failure.check(defer.CancelledError):
-            print_t("SEARCHER - Cancelling defer.")
+            fprint("Cancelling defer.", title="SEARCHER")
         else:
-            print_t("SEARCHER - There was an error.")
-            print_t(failure.printTraceback())
+            fprint("There was an error.", title="SEARCHER")
+            fprint(failure.printTraceback())
             # Handle error
 
     @util.cancellableInlineCallbacks
     def start_search(self, timeout=60, loop=True, spotings_req=2, **kwargs):
-        print_t("SEARCHER - Starting.")
+        fprint("Starting.", title="SEARCHER")
         looker = self._run_look(spotings_req).addErrback(self.catch_error)
         finder = self._run_search_pattern(loop, **kwargs).addErrback(self.catch_error)
 
@@ -243,16 +253,16 @@ class Searcher(object):
                 # If we find the object
                 if self.object_found:
                     finder.cancel()
-                    print_t("SEARCHER - Object found.")
+                    fprint("Object found.", title="SEARCHER")
                     defer.returnValue(self.response)
 
                 yield self.nav.nh.sleep(0.1)
 
         except KeyboardInterrupt:
             # This doesn't work...
-            print_t("SEARCHER - Control C detected!")
+            fprint("Control C detected!", title="SEARCHER")
 
-        print_t("SEARCHER - Object NOT found. Returning to start position.")
+        fprint("Object NOT found. Returning to start position.", title="SEARCHER")
         finder.cancel()
         looker.cancel()
 
@@ -267,8 +277,7 @@ class Searcher(object):
 
         def pattern():
             for pose in self.search_pattern:
-                print_t("SEARCHER - going to next position.")
-                print_t(pose)
+                fprint("going to next position.", title="SEARCHER")
                 if type(pose) == list or type(pose) == np.ndarray:
                     yield self.nav.move.relative(pose).go(**kwargs)
                 else:
@@ -276,7 +285,7 @@ class Searcher(object):
 
                 yield self.nav.nh.sleep(2)
 
-        print_t("SEARCHER - Executing search pattern.")
+        fprint("Executing search pattern.", title="SEARCHER")
 
         if loop:
             while True:
@@ -293,11 +302,11 @@ class Searcher(object):
         Only return true when we spotted the objects `spotings_req` many times (for false positives).
         '''
         spotings = 0
-        print_t("SEARCHER - Looking for object.")
+        fprint("Looking for object.", title="SEARCHER")
         while spotings < spotings_req:
             resp = yield self.nav.vision_proxies[self.vision_proxy].get_response(**self.vision_kwargs)
             if resp.found:
-                print_t("SEARCHER - Object found! {}/{}".format(spotings + 1, spotings_req))
+                fprint("Object found! {}/{}".format(spotings + 1, spotings_req), title="SEARCHER")
                 spotings += 1
             else:
                 spotings = 0
@@ -313,7 +322,7 @@ class Searcher(object):
 def main():
     nh = yield NodeHandle.from_argv("navigator_singleton")
     n = yield Navigator(nh)._init()
-    print_t((yield n.vision_proxies['start_gate'].get_response()))
+    fprint((yield n.vision_proxies['start_gate'].get_response()))
 
 
 if __name__ == '__main__':
