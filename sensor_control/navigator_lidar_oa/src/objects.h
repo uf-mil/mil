@@ -18,12 +18,15 @@ private:
 
 public:
 
-	ObjectTracker(float diff_thresh=1.5){
+	ObjectTracker(float diff_thresh=5){
 		this->diff_thresh = diff_thresh;
 	}
 
 	std::vector<objectMessage> add_objects(std::vector<objectMessage> objects, sensor_msgs::PointCloud &rosCloud, const geometry_msgs::Pose &boatPose_enu)
 	{
+		for(auto &s_obj : saved_objects){
+			s_obj.current = false;
+		}
 		for(auto obj : objects) {
 			float min_dist = 100;
 			objectMessage *min_obj;
@@ -44,9 +47,11 @@ public:
 				obj.normal = min_obj->normal;
 				obj.pclInliers = min_obj->pclInliers;
 				obj.color = min_obj->color;
+				obj.current = true;
 				*min_obj = obj;
 			}else{
 				obj.id = curr_id;
+				obj.current = true;
 				++curr_id;
 				saved_objects.push_back(obj);
 			}
@@ -79,6 +84,7 @@ public:
 				objects.push_back(thisOne);
 			}
 		}
+                return objects.size() > 0;
 	}
 
 	std::vector<objectMessage> saved_objects;

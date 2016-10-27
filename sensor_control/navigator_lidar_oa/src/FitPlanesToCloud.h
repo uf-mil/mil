@@ -55,7 +55,7 @@ void FitPlanesToCloud(objectMessage &object, sensor_msgs::PointCloud &rosCloud, 
 	if (inliers->indices.size() < 4) {
   		ROS_INFO_STREAM("PLANE FIT | A suitable plane wasn't found...");
   		//break;
-  	} else if (inliers->indices.size() < object.pclInliers ) {
+  	} else if (inliers->indices.size() < object.pclInliers*0.75 ) {
   		ROS_INFO_STREAM("PLANE FIT | A plane was found but has less points than previous...");
 	} else {
 		ROS_INFO_STREAM("PLANE FIT | Changing pclInliears to " << inliers->indices.size() << " from " << object.pclInliers);

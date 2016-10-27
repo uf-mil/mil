@@ -45,8 +45,9 @@ const int MAX_HITS_IN_CELL = 125; //500
 const double MAXIMUM_Z_BELOW_LIDAR = 2; //2
 const double MAXIMUM_Z_ABOVE_LIDAR = 2.5;
 const double MAX_ROLL_PITCH_ANGLE_DEG = 5.3;
-const double LIDAR_VIEW_ANGLE_DEG = 70;
-const double LIDAR_VIEW_DISTANCE_METERS = 35;
+const double LIDAR_VIEW_ANGLE_DEG = 160;
+const double LIDAR_VIEW_DISTANCE_METERS = 75;
+const double LIDAR_MIN_VIEW_DISTANCE_METERS = 5.5;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -64,10 +65,10 @@ ros::Time pubObjectsTimer;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //These are changed on startup if /get_bounds service is present
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Eigen::Vector2d BOUNDARY_CORNER_1 (30, 10);
-Eigen::Vector2d BOUNDARY_CORNER_2 (30, 120);
-Eigen::Vector2d BOUNDARY_CORNER_3 (140, 120);
-Eigen::Vector2d BOUNDARY_CORNER_4 (140, 10);
+Eigen::Vector2d BOUNDARY_CORNER_1 (30-80, 10-150);
+Eigen::Vector2d BOUNDARY_CORNER_2 (30-80, 120-150);
+Eigen::Vector2d BOUNDARY_CORNER_3 (140-80, 120-150);
+Eigen::Vector2d BOUNDARY_CORNER_4 (140-80, 10-150);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -122,7 +123,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 
 	//Update occupancy grid
 	ogrid.setLidarPosition(lidarPos,lidarHeading);
-	ogrid.setLidarParams(LIDAR_VIEW_ANGLE_DEG,LIDAR_VIEW_DISTANCE_METERS);
+	ogrid.setLidarParams(LIDAR_VIEW_ANGLE_DEG,LIDAR_VIEW_DISTANCE_METERS,LIDAR_MIN_VIEW_DISTANCE_METERS);
 	ogrid.updatePointsAsCloud(pcloud,T_enu_velodyne,MAX_HITS_IN_CELL,MAXIMUM_Z_BELOW_LIDAR,MAXIMUM_Z_ABOVE_LIDAR);
 	ogrid.createBinaryROI(MIN_HITS_FOR_OCCUPANCY);
 
@@ -219,7 +220,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 
 	int max_id = 0;	
 	for (auto obj : object_permanence) {
-		ROS_INFO_STREAM("LIDAR | " << obj.name << " " << obj.id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.strikesPersist.size() << "(" << obj.strikesFrame.size() << ") points, size " << obj.scale.x << "," << obj.scale.y << "," << obj.scale.z << " maxHeight " << obj.maxHeightFromLidar);
+		ROS_INFO_STREAM("LIDAR | " << obj.name << " " << obj.id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.strikesPersist.size() << "(" << obj.strikesFrame.size() << ") points, size " << obj.scale.x << "," << obj.scale.y << "," << obj.scale.z << " maxHeight " << obj.maxHeightFromLidar << ", " << obj.current);
 
 		//Show point cloud of just objects
 		objectCloudPersist.points.insert(objectCloudPersist.points.end(),obj.strikesPersist.begin(),obj.strikesPersist.end());
@@ -234,20 +235,22 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		}
 
 		//Display number next to object
-		visualization_msgs::Marker m4;
-		m4.header.stamp = ros::Time::now();
-		m4.header.seq = 0;
-		m4.header.frame_id = "enu";		
-		m4.header.stamp = ros::Time::now();
-		m4.id = obj.id+3000;
-		m4.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-		m4.action = visualization_msgs::Marker::ADD;
-		m4.pose.position = obj.position;
-		m4.pose.position.z += 3.5;
-		m4.scale.z = 2;
-		m4.text = to_string(obj.id) + ":" + obj.name.substr(0,2);
-		m4.color.a = 0.6; m4.color.r = 0; m4.color.g = 1; m4.color.b = 0;		
-		markers.markers.push_back(m4);
+		if (obj.current) {
+			visualization_msgs::Marker m4;
+			m4.header.stamp = ros::Time::now();
+			m4.header.seq = 0;
+			m4.header.frame_id = "enu";		
+			m4.header.stamp = ros::Time::now();
+			m4.id = obj.id+3000;
+			m4.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+			m4.action = visualization_msgs::Marker::ADD;
+			m4.pose.position = obj.position;
+			m4.pose.position.z += 3.5;
+			m4.scale.z = 2;
+			m4.text = to_string(obj.id) + ":" + obj.name.substr(0,2);
+			m4.color.a = 0.6; m4.color.r = 0; m4.color.g = 1; m4.color.b = 0;		
+			markers.markers.push_back(m4);
+		
 
 		//Display normal as an arrow
 		if (obj.pclInliers > 10) {
@@ -281,7 +284,8 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		m2.scale = obj.scale;
 		m2.color.a = 0.6; m2.color.r = 1; m2.color.g = 1; m2.color.b = 1;
 		markers.markers.push_back(m2);
-		if(m2.id > max_id) max_id = m2.id;
+		//if(m2.id > max_id) max_id = m2.id;
+		}
 	}	
 	pubMarkers.publish(markers);
 	pubCloudPersist.publish(objectCloudPersist);
