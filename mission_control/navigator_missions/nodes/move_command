@@ -28,12 +28,17 @@ def main():
         help='Point to focus on. See lqrrt documentation for info on how to use this. ex. "[10, 2.3, 1]"')
     parser.add_argument('-s', '--sim', action='store_true',
         help='This will run navigator in sim mode (ie. not wait for odom or enu bounds). Don\'t do this on the boat.')
+    parser.add_argument('-p', '--plantime', type=float,
+        help='Time given to the planner for it\'s first plan.')
 
     args = parser.parse_args(args[1:])
 
     n = yield Navigator(nh)._init(args.sim)
 
     action_kwargs = {'move_type': args.movetype}
+
+    if args.plantime is not None:
+        action_kwargs['initial_plan_time'] = float(args.plantime)
 
     if args.focus is not None:
         focus = np.array(map(float, args.focus[1:-1].split(',')))
