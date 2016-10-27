@@ -66,7 +66,7 @@ class Navigator(object):
 
         self._moveto_client = action.ActionClient(self.nh, 'move_to', MoveAction)
 
-        print "NAVIGATOR: Waiting for move_to action client..."
+        print_t("Waiting for move_to action client...", title="NAVIGATOR")
         yield self._moveto_client.wait_for_server()
 
         odom_set = lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0])
@@ -78,19 +78,19 @@ class Navigator(object):
             self._database_query = self.nh.get_service_client('/ira_database', navigator_srvs.ObjectDBQuery)
             self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
         except AttributeError, err:
-            print_t("NAVIGATOR: Error getting service clients in nav singleton init: {}".format(err))
+            print_t("Error getting service clients in nav singleton init: {}".format(err), title="NAVIGATOR")
 
         self.tf_listener = tf.TransformListener(self.nh)
 
         if self.sim:
-            print "NAVIGATOR: Sim mode active!"
+            print_t("Sim mode active!", title="NAVIGATOR")
             yield self.nh.sleep(0.5)
         else:
             # We want to make sure odom is working before we continue
-            print "NAVIGATOR: Waiting for odom..."
-            odom = util.wrap_time_notice(self._odom_sub.get_next_message(), 2, "NAVIGATOR: Odom listener")
-            enu_odom = util.wrap_time_notice(self._ecef_odom_sub.get_next_message(), 2, "NAVIGATOR: ENU Odom listener")
-            bounds = util.wrap_time_notice(self._make_bounds(), 2, "NAVIGATOR: Bounds creation")
+            print_t("Waiting for odom...", title="NAVIGATOR")
+            odom = util.wrap_time_notice(self._odom_sub.get_next_message(), 2, "Odom listener", title="NAVIGATOR")
+            enu_odom = util.wrap_time_notice(self._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener", title="NAVIGATOR")
+            bounds = util.wrap_time_notice(self._make_bounds(), 2, "Bounds creation", title="NAVIGATOR")
             yield defer.gatherResults([odom, enu_odom, bounds])  # Wait for all those to finish
 
         self._make_alarms()
@@ -119,7 +119,7 @@ class Navigator(object):
 
     @util.cancellableInlineCallbacks
     def _make_bounds(self):
-        print "NAVIGATOR: Constructing bounds."
+        print_t("Constructing bounds.", title="NAVIGATOR")
 
         if (yield self.nh.has_param("/bounds/enforce")):
             _bounds = self.nh.get_service_client('/get_bounds', navigator_srvs.Bounds)
@@ -133,11 +133,11 @@ class Navigator(object):
                                 points=np.array([navigator_tools.numpy_to_point(point) for point in self.enu_bounds]))
                 yield self._point_cloud_pub.publish(pc)
         else:
-            print "NAVIGATOR: No bounds param found, defaulting to none."
+            print_t("No bounds param found, defaulting to none.", title="NAVIGATOR")
             self.enu_bounds = None
 
     def vision_request(self, request_name, **kwargs):
-        print "DEPRECATED: Please use new dictionary based system."
+        print_t("DEPRECATED: Please use new dictionary based system.")
         return self.vision_proxies[request_name].get_response(**kwargs)
 
     def database_query(self, object_name, **kwargs):
@@ -184,7 +184,7 @@ class Navigator(object):
                 self.vision_proxies[name] = VisionProxy(s_client, s_req, s_args, s_switch)
             except Exception, e:
                 err = "Error loading vision sevices: {}".format(e)
-                print_t("NAVIGATOR: " + err)
+                print_t("" + err, title="NAVIGATOR")
 
 
     def _make_alarms(self):
@@ -223,15 +223,15 @@ class Searcher(object):
 
     def catch_error(self, failure):
         if failure.check(defer.CancelledError):
-            print "SEARCHER - Cancelling defer."
+            print_t("SEARCHER - Cancelling defer.")
         else:
-            print "SEARCHER - There was an error."
-            print failure.printTraceback()
+            print_t("SEARCHER - There was an error.")
+            print_t(failure.printTraceback())
             # Handle error
 
     @util.cancellableInlineCallbacks
     def start_search(self, timeout=60, loop=True, spotings_req=2, **kwargs):
-        print "SEARCHER - Starting."
+        print_t("SEARCHER - Starting.")
         looker = self._run_look(spotings_req).addErrback(self.catch_error)
         finder = self._run_search_pattern(loop, **kwargs).addErrback(self.catch_error)
 
@@ -243,16 +243,16 @@ class Searcher(object):
                 # If we find the object
                 if self.object_found:
                     finder.cancel()
-                    print "SEARCHER - Object found."
+                    print_t("SEARCHER - Object found.")
                     defer.returnValue(self.response)
 
                 yield self.nav.nh.sleep(0.1)
 
         except KeyboardInterrupt:
             # This doesn't work...
-            print "SEARCHER - Control C detected!"
+            print_t("SEARCHER - Control C detected!")
 
-        print "SEARCHER - Object NOT found. Returning to start position."
+        print_t("SEARCHER - Object NOT found. Returning to start position.")
         finder.cancel()
         looker.cancel()
 
@@ -267,8 +267,8 @@ class Searcher(object):
 
         def pattern():
             for pose in self.search_pattern:
-                print "SEARCHER - going to next position."
-                print pose
+                print_t("SEARCHER - going to next position.")
+                print_t(pose)
                 if type(pose) == list or type(pose) == np.ndarray:
                     yield self.nav.move.relative(pose).go(**kwargs)
                 else:
@@ -276,7 +276,7 @@ class Searcher(object):
 
                 yield self.nav.nh.sleep(2)
 
-        print "SEARCHER - Executing search pattern."
+        print_t("SEARCHER - Executing search pattern.")
 
         if loop:
             while True:
@@ -293,11 +293,11 @@ class Searcher(object):
         Only return true when we spotted the objects `spotings_req` many times (for false positives).
         '''
         spotings = 0
-        print "SEARCHER - Looking for object."
+        print_t("SEARCHER - Looking for object.")
         while spotings < spotings_req:
             resp = yield self.nav.vision_proxies[self.vision_proxy].get_response(**self.vision_kwargs)
             if resp.found:
-                print "SEARCHER - Object found! {}/{}".format(spotings + 1, spotings_req)
+                print_t("SEARCHER - Object found! {}/{}".format(spotings + 1, spotings_req))
                 spotings += 1
             else:
                 spotings = 0
@@ -313,7 +313,7 @@ class Searcher(object):
 def main():
     nh = yield NodeHandle.from_argv("navigator_singleton")
     n = yield Navigator(nh)._init()
-    print (yield n.vision_proxies['start_gate'].get_response())
+    print_t((yield n.vision_proxies['start_gate'].get_response()))
 
 
 if __name__ == '__main__':
