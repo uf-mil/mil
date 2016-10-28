@@ -187,7 +187,7 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 	//Re-organize obstacles, how many connections to count as an obstacle?
 	objects.clear();
 	for (auto ii : mapObjects)  {
-		if (ii.second.strikesPersist.size() >= 13) {
+		//if (ii.second.strikesPersist.size() >= 13) {
 			objectMessage obj;
 			float dx = (ii.second.maxCol-ii.second.minCol)+0.001; obj.scale.x = dx*ogrid.VOXEL_SIZE_METERS;
 			float dy = (ii.second.maxRow-ii.second.minRow)+0.001; obj.scale.y = dy*ogrid.VOXEL_SIZE_METERS;
@@ -202,11 +202,11 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 			obj.minHeightFromLidar = ii.second.minHeight;
 			obj.maxHeightFromLidar = ii.second.maxHeight;
 			//obj.color = ii.second.color; //Eventually work with color
-			if (obj.scale.z > 0.25) {
+			if (obj.scale.z >= 0.2) {
 				objects.push_back(obj);
 			}
 			//ROS_INFO_STREAM(newId << " -> " << ob.position.x << "," << ob.position.y << "," << ob.position.z << "|" << ob.scale.x << "," << ob.scale.y << "," << ob.scale.z);
-		}
+		//}
 	}
 
 	//std::cout << "FINISHED CONNECTED COMPONENTS" << std::endl;

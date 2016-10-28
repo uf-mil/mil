@@ -42,7 +42,7 @@ using namespace std;
 const double MAP_SIZE_METERS = 1500;
 const double ROI_SIZE_METERS = 201;
 const double VOXEL_SIZE_METERS = 0.30;
-const int MIN_HITS_FOR_OCCUPANCY = 25; //20
+const int MIN_HITS_FOR_OCCUPANCY = 10; //20
 const int MAX_HITS_IN_CELL = 125; //500
 const double MAXIMUM_Z_BELOW_LIDAR = 2; //2
 const double MAXIMUM_Z_ABOVE_LIDAR = 2.5;
@@ -232,6 +232,15 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	//markerServer->clear();	
 
 	for (auto obj : object_permanence) {
+		//Skip objects that are not current
+		if (!obj.current) { 
+			markerServer->erase(to_string(obj.id));
+			continue; 
+		} else if (!obj.real) {
+			continue;
+		}
+
+		//Display Info
 		ROS_INFO_STREAM("LIDAR | " << obj.name << " " << obj.id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.strikesPersist.size() << "(" << obj.strikesFrame.size() << ") points, size " << obj.scale.x << "," << obj.scale.y << "," << obj.scale.z << " maxHeight " << obj.maxHeightFromLidar << ", " << obj.current);
 
 		//Show point cloud of just objects
@@ -245,15 +254,6 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		for (auto ii : obj.intensityFrame) {	
 			objectCloudFrame.channels[0].values.push_back(ii);
 		}
-
-		//Skip objects that are not current
-		if (!obj.current) { 
-			markerServer->erase(to_string(obj.id));
-			continue; 
-		} else if (!obj.real) {
-			continue;
-		}
-
 			
 		//Turn obj into an interactive marker for rviz
 	  	visualization_msgs::InteractiveMarker int_marker; 
@@ -399,7 +399,8 @@ void roiCallBack( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &f
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void createROIS(string name)
 {
-		//Add ROI estimates
+	static int xOffset = 0;
+	//Add ROI estimates
   	visualization_msgs::InteractiveMarker int_marker; 
   	visualization_msgs::InteractiveMarkerControl controlm,control;
   	int_marker.header.frame_id = "enu";
@@ -416,7 +417,7 @@ void createROIS(string name)
 	m4.id = -1;
 	m4.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
 	m4.action = visualization_msgs::Marker::ADD;
-	m4.pose.position.x = 0;
+	m4.pose.position.x = xOffset;
 	m4.pose.position.y = 0;
 	m4.pose.position.z = 2;
 	m4.scale.z = 2;
@@ -424,7 +425,7 @@ void createROIS(string name)
 	m4.color.a = 1; m4.color.r = 1; m4.color.g = 1; m4.color.b = 1;
   	controlm.markers.push_back(m4);
 	m4.type = visualization_msgs::Marker::SPHERE;
-	m4.pose.position.x = 0;
+	m4.pose.position.x = xOffset;
 	m4.pose.position.y = 0;
 	m4.pose.position.z = 0;
 	m4.scale.x = 2;
@@ -436,6 +437,7 @@ void createROIS(string name)
 	markerServer->setCallback(int_marker.name,&roiCallBack);
 	markerServer->applyChanges();
 	object_tracker.addROI(name);
+	xOffset += 10;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -473,9 +475,12 @@ void markerCallBack( const visualization_msgs::InteractiveMarkerFeedbackConstPtr
 				obj.color.r = 0.f; obj.color.g = 0.f; obj.color.b = 1.f;
 				ROS_INFO_STREAM("LIDAR | Changing color of object " << obj.id << " to blue");
 			} else if (feedback->menu_entry_id == 18) {
+				obj.color.r = 1.f; obj.color.g = 1.f; obj.color.b = 0.f;
+				ROS_INFO_STREAM("LIDAR | Changing color of object " << obj.id << " to yellow");
+			}	else if (feedback->menu_entry_id == 19) {
 				obj.color.r = 0.f; obj.color.g = 0.f; obj.color.b = 0.f;
 				ROS_INFO_STREAM("LIDAR | Changing color of object " << obj.id << " to unknown");
-			}										
+			}											
 			break; 
 		}
 	}	
@@ -558,11 +563,16 @@ int main(int argc, char* argv[])
 	menuEntry = menuHandler.insert( sub_menu_handle, "Black", &markerCallBack );
 	menuEntry = menuHandler.insert( sub_menu_handle, "Green", &markerCallBack );
 	menuEntry = menuHandler.insert( sub_menu_handle, "Blue", &markerCallBack );
+	menuEntry = menuHandler.insert( sub_menu_handle, "Yellow", &markerCallBack );
 	menuEntry = menuHandler.insert( sub_menu_handle, "Unknown", &markerCallBack );
 
 	//Create ROIs
 	createROIS("BuoyField");
 	createROIS("CoralSurvey");
+	createROIS("FindBreak");
+	createROIS("AcousticPinger");
+	createROIS("DetectDeliver");
+	createROIS("ScanCode");
 
 	//Give control to ROS
 	ros::spin();

@@ -31,12 +31,9 @@ public:
 			float min_dist = 100;
 			objectMessage *min_obj;
 			for(auto &s_obj : saved_objects){
-				float xdiff = pow(obj.position.x - s_obj.position.x, 2);
-				float ydiff = pow(obj.position.y - s_obj.position.y, 2);
-				float zdiff = pow(obj.position.z - s_obj.position.z, 2);
-				float diff = sqrt(xdiff+ydiff+zdiff);
-				// TODO MAKE THIS A ROS PARAM
-				if(diff < min_dist){
+				auto diff = sqrt( pow(obj.position.x - s_obj.position.x, 2) + pow(obj.position.y - s_obj.position.y, 2) + pow(obj.position.z - s_obj.position.z, 2) );
+				auto scaleDiff = sqrt( pow(obj.scale.x - s_obj.scale.x, 2) + pow(obj.scale.y - s_obj.scale.y, 2) + pow(obj.scale.z - s_obj.scale.z, 2) );
+				if(diff < min_dist && scaleDiff <= 1.5){
 					min_dist = diff;
 					min_obj = &s_obj;
 				}

@@ -44,7 +44,7 @@ struct cell
 struct beamEntry
 {
 	void update(const LidarBeam &beam) {
-		if (q.size() >= 50) { q.pop_front(); }
+		if (q.size() >= 30) { q.pop_front(); }
 		q.push_back(beam);
 	}
 	std::deque<LidarBeam> q;
@@ -152,6 +152,7 @@ class OccupancyGrid
 					Eigen::Vector3d dir(col-boatCol,row-boatRow,0); dir.normalize();
 					double lidarAngle = fabs(acos(lidarHeading.dot(dir))*180./M_PI);
 					double distance = sqrt(pow(boatRow - row, 2) + pow(boatCol - col, 2)) * VOXEL_SIZE_METERS;
+					//std::cout << row << " , " << col << " , " << lidarAngle << " , " << distance << std::endl;
 					if (lidarAngle <= lidarViewAngle && ogrid[row][col].hits > 0 && distance >= lidarMinViewDistance) { 
 						ogrid[row][col].hits -= 1;
 						if (ogrid[row][col].hits == 0) {
