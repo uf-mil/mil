@@ -9,7 +9,7 @@ roi:
   width: 499
 grayscale:
   red_hue_min: 0
-  red_hue_max: 255
+  red_hue_max: 180
   blue_hue: 120
   green_hue: 60
   blur_size: 7

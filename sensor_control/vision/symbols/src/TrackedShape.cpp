@@ -63,6 +63,7 @@ bool TrackedShape::tooOld(navigator_msgs::DockShape& s)
 bool TrackedShape::isStale()
 {
   ros::Time now = ros::Time::now();
+  // ~std::cout << "Time Diff: " << (now - latest.header.stamp).toSec() << std::endl;
   return (now - latest.header.stamp) > MAX_TIME_GAP;
 }
 bool TrackedShape::isReady()

@@ -67,6 +67,7 @@ class ShooterVision {
     nh_.param<int>("roi/width", width, 499);
     nh_.param<int>("roi/height", height, 243);
     roi = Rect(x_offset, y_offset, width, height);
+    TrackedShape::init(nh_);
     tracker.init(nh_);
   }
 
