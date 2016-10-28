@@ -48,7 +48,7 @@ const double MAXIMUM_Z_BELOW_LIDAR = 2; //2
 const double MAXIMUM_Z_ABOVE_LIDAR = 2.5;
 const double MAX_ROLL_PITCH_ANGLE_DEG = 5.3;
 const double LIDAR_VIEW_ANGLE_DEG = 160;
-const double LIDAR_VIEW_DISTANCE_METERS = 45;
+const double LIDAR_VIEW_DISTANCE_METERS = 80;
 const double LIDAR_MIN_VIEW_DISTANCE_METERS = 5.5;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -399,7 +399,7 @@ void roiCallBack( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &f
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void createROIS(string name)
 {
-	static int xOffset = 0;
+	static int xOffset = 10;
 	//Add ROI estimates
   	visualization_msgs::InteractiveMarker int_marker; 
   	visualization_msgs::InteractiveMarkerControl controlm,control;
@@ -437,7 +437,7 @@ void createROIS(string name)
 	markerServer->setCallback(int_marker.name,&roiCallBack);
 	markerServer->applyChanges();
 	object_tracker.addROI(name);
-	xOffset += 10;
+	xOffset += 12.5;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
