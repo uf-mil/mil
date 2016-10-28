@@ -1,7 +1,7 @@
 #include <string>
 #include <ros/ros.h>
 #include <opencv2/highgui/highgui.hpp>
-#include <ros_camera_stream.hpp>  // dont forget this include for camera stream functionality
+#include <image_acquisition/ros_camera_stream.hpp>  // dont forget this include for camera stream functionality
 
 using namespace std;
 
