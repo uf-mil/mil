@@ -1,0 +1,9042 @@
+... logging to /home/mike/.ros/log/5184fbb2-9c97-11e6-955d-69ab5c831d0e/roslaunch-mike-laptop-ubuntu-14316.log
+Checking log directory for disk usage. This may take awhile.
+Press Ctrl-C to interrupt
+]2;/home/mike/Navigator/src/Navigator/sensor_control/vision/symbols/launch/dock_shapes.launch
+[1mstarted roslaunch server http://localhost:45081/[0m
+
+SUMMARY
+========
+
+PARAMETERS
+ * /camera_lidar_transformer/auto_start: False
+ * /camera_lidar_transformer/camera_info_topic: /right/right/came...
+ * /dock_shape_finder/auto_start: False
+ * /dock_shape_finder/bilateral_filter/diameter: 5
+ * /dock_shape_finder/bilateral_filter/sigma_color: 20
+ * /dock_shape_finder/bilateral_filter/sigma_space: 20
+ * /dock_shape_finder/blur_size: 3
+ * /dock_shape_finder/circle/bounding_area/high: 0.8
+ * /dock_shape_finder/circle/bounding_area/low: 0.7
+ * /dock_shape_finder/circle/min_area: 300
+ * /dock_shape_finder/cross/bounding_area/high: 0.57
+ * /dock_shape_finder/cross/bounding_area/low: 0.43
+ * /dock_shape_finder/cross/min_area: 300
+ * /dock_shape_finder/dilate_size: 3
+ * /dock_shape_finder/erode_size: 3
+ * /dock_shape_finder/grayscale/blue_hue: 120
+ * /dock_shape_finder/grayscale/blur_size: 7
+ * /dock_shape_finder/grayscale/canny/thresh1: 60
+ * /dock_shape_finder/grayscale/canny/thresh2: 100
+ * /dock_shape_finder/grayscale/circle/enclosing_circle_error_threshold: 0.2
+ * /dock_shape_finder/grayscale/cross/angle_mean_error_threshold: 5
+ * /dock_shape_finder/grayscale/cross/angle_var_error_threshold: 5
+ * /dock_shape_finder/grayscale/cross/rect_error_threshold: 0.2
+ * /dock_shape_finder/grayscale/cross/side_error_threshold: 0.2
+ * /dock_shape_finder/grayscale/green_hue: 60
+ * /dock_shape_finder/grayscale/min_contour_area: 0.0001
+ * /dock_shape_finder/grayscale/red_hue_max: 255
+ * /dock_shape_finder/grayscale/red_hue_min: 0
+ * /dock_shape_finder/grayscale/triangle/angle_mean_error_threshold: 5
+ * /dock_shape_finder/grayscale/triangle/angle_var_error_threshold: 10
+ * /dock_shape_finder/grayscale/triangle/rect_error_threshold: 0.1
+ * /dock_shape_finder/grayscale/triangle/side_error_threshold: 0.1
+ * /dock_shape_finder/hsv/blue/high/H: 139.2024
+ * /dock_shape_finder/hsv/blue/high/S: 173.553
+ * /dock_shape_finder/hsv/blue/high/V: 255
+ * /dock_shape_finder/hsv/blue/low/H: 79.0357
+ * /dock_shape_finder/hsv/blue/low/S: 60.2055
+ * /dock_shape_finder/hsv/blue/low/V: 0
+ * /dock_shape_finder/hsv/green/high/H: 131.7619
+ * /dock_shape_finder/hsv/green/high/S: 63.75
+ * /dock_shape_finder/hsv/green/high/V: 53.1165
+ * /dock_shape_finder/hsv/green/low/H: 39.7738
+ * /dock_shape_finder/hsv/green/low/S: 7.089
+ * /dock_shape_finder/hsv/green/low/V: 0.0
+ * /dock_shape_finder/hsv/red1/high/H: 180
+ * /dock_shape_finder/hsv/red1/high/S: 166.464
+ * /dock_shape_finder/hsv/red1/high/V: 255
+ * /dock_shape_finder/hsv/red1/low/H: 154.1369
+ * /dock_shape_finder/hsv/red1/low/S: 63.75
+ * /dock_shape_finder/hsv/red1/low/V: 0
+ * /dock_shape_finder/hsv/red2/high/H: 70.6631
+ * /dock_shape_finder/hsv/red2/high/S: 166.464
+ * /dock_shape_finder/hsv/red2/high/V: 255
+ * /dock_shape_finder/hsv/red2/low/H: 0
+ * /dock_shape_finder/hsv/red2/low/S: 63.75
+ * /dock_shape_finder/hsv/red2/low/V: 0
+ * /dock_shape_finder/image_transport: raw
+ * /dock_shape_finder/roi/height: 243
+ * /dock_shape_finder/roi/width: 499
+ * /dock_shape_finder/roi/x_offset: 73
+ * /dock_shape_finder/roi/y_offset: 103
+ * /dock_shape_finder/symbol_camera: /right/right/imag...
+ * /dock_shape_finder/triangle/bounding_area/high: 0.5
+ * /dock_shape_finder/triangle/bounding_area/low: 0.41
+ * /dock_shape_finder/triangle/min_area: 300
+ * /rosdistro: indigo
+ * /rosversion: 1.11.20
+
+NODES
+  /
+    camera_lidar_transformer (navigator_shoot_vision/ray_lidar)
+    dock_shape_finder (navigator_shoot_vision/shape_finder)
+
+[1mROS_MASTER_URI=http://localhost:11311[0m
+]2;/home/mike/Navigator/src/Navigator/sensor_control/vision/symbols/launch/dock_shapes.launch http://localhost:11311
+core service [/rosout] found
+[1mprocess[dock_shape_finder-1]: started with pid [14334][0m
+[1mprocess[camera_lidar_transformer-2]: started with pid [14335]Constructed
+cock 
+cock243 
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 0
+Inserting Shape 
+A = (457,251) B= (457,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=2 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (457,251) B= (458,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=3 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (458,250) B= (458,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=4 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (458,250) B= (459,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=5 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (459,249) B= (460,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=6 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (460,250) B= (461,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=7 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (461,249) B= (462,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=8 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (462,250) B= (462,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=9 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (462,250) B= (462,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=10 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (462,250) B= (463,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=11 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (463,250) B= (463,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=12 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (463,250) B= (464,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=13 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (464,250) B= (465,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=14 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (465,250) B= (466,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=15 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (466,251) B= (466,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=16 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (466,250) B= (466,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=17 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (466,250) B= (466,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=18 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (466,250) B= (452,248)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 14.142136 
+Inserting Shape 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (466,250) B= (362,117)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 168.834244 
+A = (452,248) B= (362,117)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 158.937088 
+Inserting Shape 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (466,250) B= (468,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=19 Distance=2.236068 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (468,249) B= (468,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=20 Distance=0.000000 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (468,249) B= (468,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=21 Distance=0.000000 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (468,249) B= (468,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=22 Distance=0.000000 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (468,249) B= (468,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=23 Distance=0.000000 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (468,249) B= (468,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=24 Distance=0.000000 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (468,249) B= (468,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=25 Distance=0.000000 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (468,249) B= (467,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=26 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (467,250) B= (468,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=27 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (468,250) B= (467,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=28 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (467,250) B= (467,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=29 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (467,250) B= (466,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=30 Distance=2.236068 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (466,248) B= (466,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=31 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (466,248) B= (462,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=32 Distance=4.123106 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (462,249) B= (462,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=33 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (462,249) B= (462,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=34 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (462,249) B= (460,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=35 Distance=2.236068 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (460,248) B= (460,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=36 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (460,248) B= (460,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=37 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (460,248) B= (460,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=38 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 1
+A = (460,248) B= (459,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=39 Distance=1.000000 
+A = (459,248) B= (460,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=40 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 1
+A = (460,248) B= (459,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=41 Distance=1.000000 
+A = (459,248) B= (460,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=42 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 1
+A = (460,248) B= (459,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=43 Distance=1.000000 
+A = (459,248) B= (460,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=44 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (460,248) B= (459,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=45 Distance=3.162278 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (459,251) B= (459,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=46 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 3 shapes current size = 1
+A = (459,250) B= (459,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=47 Distance=1.000000 
+A = (459,251) B= (459,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=48 Distance=0.000000 
+A = (459,251) B= (545,236)
+ GREEN CROSS distance too big to RED CIRCLE DISTANCE = 87.298340 
+Inserting Shape 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 2
+A = (459,251) B= (459,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=49 Distance=0.000000 
+A = (459,251) B= (460,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=50 Distance=1.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (460,251) B= (460,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=51 Distance=0.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (460,251) B= (461,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=52 Distance=1.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (461,251) B= (461,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=53 Distance=0.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 2
+A = (461,251) B= (462,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=54 Distance=1.414214 
+A = (462,250) B= (462,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=55 Distance=0.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (462,250) B= (462,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=56 Distance=0.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (462,250) B= (462,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=57 Distance=0.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (462,250) B= (464,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=58 Distance=2.236068 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (464,249) B= (466,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=59 Distance=2.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (466,249) B= (466,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=60 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (466,249) B= (468,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=61 Distance=2.236068 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (468,250) B= (468,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=62 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (468,250) B= (469,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=63 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (469,251) B= (470,252)
+Updating GREEN CROSS with GREEN CROSS COUNT=64 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (470,252) B= (470,252)
+Updating GREEN CROSS with GREEN CROSS COUNT=65 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (470,252) B= (471,252)
+Updating GREEN CROSS with GREEN CROSS COUNT=66 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (471,252) B= (473,252)
+Updating GREEN CROSS with GREEN CROSS COUNT=67 Distance=2.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (473,252) B= (475,252)
+Updating GREEN CROSS with GREEN CROSS COUNT=68 Distance=2.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (475,252) B= (476,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=69 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 1
+A = (476,251) B= (478,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=70 Distance=2.236068 
+A = (478,250) B= (478,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=71 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (478,250) B= (480,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=72 Distance=2.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (480,250) B= (480,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=73 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (480,250) B= (481,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=74 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (481,250) B= (481,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=75 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (481,250) B= (482,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=76 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (482,250) B= (483,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=77 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (483,251) B= (484,252)
+Updating GREEN CROSS with GREEN CROSS COUNT=78 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (484,252) B= (485,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=79 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (485,251) B= (486,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=80 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,250) B= (486,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=81 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,250) B= (486,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=82 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,250) B= (486,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=83 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,250) B= (486,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=84 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,250) B= (486,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=85 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,250) B= (486,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=86 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,251) B= (486,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=87 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 0
+Inserting Shape 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (456,218) B= (482,250)
+ GREEN TRIANGLE distance too big to GREEN CROSS DISTANCE = 41.231056 
+Inserting Shape 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (456,218) B= (106,117)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 364.281494 
+A = (482,250) B= (106,117)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 398.829529 
+Inserting Shape 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (482,250) B= (105,117)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 399.772430 
+A = (106,117) B= (105,117)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=2 Distance=1.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (105,117) B= (106,116)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=3 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 0
+Inserting Shape 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 1
+A = (479,251) B= (482,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=2 Distance=3.000000 
+A = (482,251) B= (483,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=3 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (483,251) B= (486,252)
+Updating GREEN CROSS with GREEN CROSS COUNT=4 Distance=3.162278 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,252) B= (486,253)
+Updating GREEN CROSS with GREEN CROSS COUNT=5 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,253) B= (128,116)
+ GREEN CROSS distance too big to BLUE TRIANGLE DISTANCE = 383.318420 
+Inserting Shape 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 2
+A = (486,253) B= (488,253)
+Updating GREEN CROSS with GREEN CROSS COUNT=6 Distance=2.000000 
+A = (488,253) B= (130,116)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 383.318420 
+A = (128,116) B= (130,116)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=2 Distance=2.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (488,253) B= (136,116)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 377.720795 
+A = (130,116) B= (136,116)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 6.000000 
+Inserting Shape 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (488,253) B= (136,117)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 377.359253 
+A = (130,116) B= (136,117)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 6.082763 
+A = (136,116) B= (136,117)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=2 Distance=1.000000 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (488,253) B= (139,116)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 374.926666 
+A = (130,116) B= (139,116)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 9.000000 
+A = (136,117) B= (139,116)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=3 Distance=3.162278 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (488,253) B= (143,116)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 371.206146 
+A = (130,116) B= (143,116)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 13.000000 
+A = (139,116) B= (143,116)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=4 Distance=4.000000 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (488,253) B= (144,117)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 369.908112 
+A = (130,116) B= (144,117)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 14.035668 
+A = (143,116) B= (144,117)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=5 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (144,117) B= (145,117)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=6 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (145,117) B= (146,117)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=7 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (146,117) B= (149,117)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=8 Distance=3.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (149,117) B= (152,118)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=9 Distance=3.162278 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (152,118) B= (497,252)
+ GREEN TRIANGLE distance too big to GREEN CROSS DISTANCE = 370.109436 
+Inserting Shape 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (152,118) B= (164,118)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 12.000000 
+A = (497,252) B= (164,118)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 358.949860 
+Inserting Shape 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (164,118) B= (176,117)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 12.041595 
+Inserting Shape 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 0
+Inserting Shape 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 0
+Inserting Shape 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (475,221) B= (466,227)
+ GREEN TRIANGLE distance too big to BLUE TRIANGLE DISTANCE = 10.816654 
+Inserting Shape 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 0
+Inserting Shape 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 0
+Inserting Shape 
+A = (457,251) B= (457,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=2 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (457,251) B= (458,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=3 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (458,250) B= (458,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=4 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (458,250) B= (459,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=5 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (459,249) B= (460,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=6 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (460,250) B= (461,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=7 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (461,249) B= (462,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=8 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (462,250) B= (462,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=9 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (462,250) B= (462,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=10 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (462,250) B= (463,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=11 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (463,250) B= (463,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=12 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (463,250) B= (464,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=13 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (464,250) B= (465,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=14 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (465,250) B= (466,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=15 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (466,251) B= (466,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=16 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (466,250) B= (466,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=17 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (466,250) B= (466,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=18 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (466,250) B= (452,248)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 14.142136 
+Inserting Shape 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (466,250) B= (362,117)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 168.834244 
+A = (452,248) B= (362,117)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 158.937088 
+Inserting Shape 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (466,250) B= (468,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=19 Distance=2.236068 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (468,249) B= (468,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=20 Distance=0.000000 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (468,249) B= (468,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=21 Distance=0.000000 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (468,249) B= (468,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=22 Distance=0.000000 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (468,249) B= (468,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=23 Distance=0.000000 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (468,249) B= (468,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=24 Distance=0.000000 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (468,249) B= (468,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=25 Distance=0.000000 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (468,249) B= (467,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=26 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (467,250) B= (468,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=27 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (468,250) B= (467,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=28 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (467,250) B= (467,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=29 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (467,250) B= (466,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=30 Distance=2.236068 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (466,248) B= (466,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=31 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (466,248) B= (462,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=32 Distance=4.123106 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (462,249) B= (462,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=33 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (462,249) B= (462,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=34 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (462,249) B= (460,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=35 Distance=2.236068 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (460,248) B= (460,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=36 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (460,248) B= (460,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=37 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (460,248) B= (460,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=38 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 1
+A = (460,248) B= (459,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=39 Distance=1.000000 
+A = (459,248) B= (460,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=40 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 1
+A = (460,248) B= (459,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=41 Distance=1.000000 
+A = (459,248) B= (460,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=42 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 1
+A = (460,248) B= (459,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=43 Distance=1.000000 
+A = (459,248) B= (460,248)
+Updating GREEN CROSS with GREEN CROSS COUNT=44 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (460,248) B= (459,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=45 Distance=3.162278 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (459,251) B= (459,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=46 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 3 shapes current size = 1
+A = (459,250) B= (459,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=47 Distance=1.000000 
+A = (459,251) B= (459,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=48 Distance=0.000000 
+A = (459,251) B= (545,236)
+ GREEN CROSS distance too big to RED CIRCLE DISTANCE = 87.298340 
+Inserting Shape 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 2
+A = (459,251) B= (459,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=49 Distance=0.000000 
+A = (459,251) B= (460,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=50 Distance=1.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (460,251) B= (460,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=51 Distance=0.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (460,251) B= (461,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=52 Distance=1.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (461,251) B= (461,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=53 Distance=0.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 2
+A = (461,251) B= (462,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=54 Distance=1.414214 
+A = (462,250) B= (462,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=55 Distance=0.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (462,250) B= (462,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=56 Distance=0.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (462,250) B= (462,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=57 Distance=0.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (462,250) B= (464,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=58 Distance=2.236068 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (464,249) B= (466,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=59 Distance=2.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (466,249) B= (466,249)
+Updating GREEN CROSS with GREEN CROSS COUNT=60 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (466,249) B= (468,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=61 Distance=2.236068 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (468,250) B= (468,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=62 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (468,250) B= (469,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=63 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (469,251) B= (470,252)
+Updating GREEN CROSS with GREEN CROSS COUNT=64 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (470,252) B= (470,252)
+Updating GREEN CROSS with GREEN CROSS COUNT=65 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (470,252) B= (471,252)
+Updating GREEN CROSS with GREEN CROSS COUNT=66 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (471,252) B= (473,252)
+Updating GREEN CROSS with GREEN CROSS COUNT=67 Distance=2.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (473,252) B= (475,252)
+Updating GREEN CROSS with GREEN CROSS COUNT=68 Distance=2.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (475,252) B= (476,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=69 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 1
+A = (476,251) B= (478,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=70 Distance=2.236068 
+A = (478,250) B= (478,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=71 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (478,250) B= (480,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=72 Distance=2.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (480,250) B= (480,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=73 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (480,250) B= (481,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=74 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (481,250) B= (481,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=75 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (481,250) B= (482,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=76 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (482,250) B= (483,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=77 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (483,251) B= (484,252)
+Updating GREEN CROSS with GREEN CROSS COUNT=78 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (484,252) B= (485,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=79 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (485,251) B= (486,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=80 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,250) B= (486,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=81 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,250) B= (486,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=82 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,250) B= (486,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=83 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,250) B= (486,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=84 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,250) B= (486,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=85 Distance=0.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,250) B= (486,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=86 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,251) B= (486,250)
+Updating GREEN CROSS with GREEN CROSS COUNT=87 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 0
+Inserting Shape 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (456,218) B= (482,250)
+ GREEN TRIANGLE distance too big to GREEN CROSS DISTANCE = 41.231056 
+Inserting Shape 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (456,218) B= (106,117)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 364.281494 
+A = (482,250) B= (106,117)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 398.829529 
+Inserting Shape 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (482,250) B= (105,117)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 399.772430 
+A = (106,117) B= (105,117)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=2 Distance=1.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (105,117) B= (106,116)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=3 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 0
+Inserting Shape 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 1
+A = (479,251) B= (482,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=2 Distance=3.000000 
+A = (482,251) B= (483,251)
+Updating GREEN CROSS with GREEN CROSS COUNT=3 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (483,251) B= (486,252)
+Updating GREEN CROSS with GREEN CROSS COUNT=4 Distance=3.162278 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,252) B= (486,253)
+Updating GREEN CROSS with GREEN CROSS COUNT=5 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (486,253) B= (128,116)
+ GREEN CROSS distance too big to BLUE TRIANGLE DISTANCE = 383.318420 
+Inserting Shape 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 2
+A = (486,253) B= (488,253)
+Updating GREEN CROSS with GREEN CROSS COUNT=6 Distance=2.000000 
+A = (488,253) B= (130,116)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 383.318420 
+A = (128,116) B= (130,116)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=2 Distance=2.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (488,253) B= (136,116)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 377.720795 
+A = (130,116) B= (136,116)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 6.000000 
+Inserting Shape 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (488,253) B= (136,117)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 377.359253 
+A = (130,116) B= (136,117)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 6.082763 
+A = (136,116) B= (136,117)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=2 Distance=1.000000 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (488,253) B= (139,116)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 374.926666 
+A = (130,116) B= (139,116)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 9.000000 
+A = (136,117) B= (139,116)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=3 Distance=3.162278 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (488,253) B= (143,116)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 371.206146 
+A = (130,116) B= (143,116)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 13.000000 
+A = (139,116) B= (143,116)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=4 Distance=4.000000 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 3
+A = (488,253) B= (144,117)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 369.908112 
+A = (130,116) B= (144,117)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 14.035668 
+A = (143,116) B= (144,117)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=5 Distance=1.414214 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (144,117) B= (145,117)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=6 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (145,117) B= (146,117)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=7 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (146,117) B= (149,117)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=8 Distance=3.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (149,117) B= (152,118)
+Updating GREEN TRIANGLE with GREEN TRIANGLE COUNT=9 Distance=3.162278 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (152,118) B= (497,252)
+ GREEN TRIANGLE distance too big to GREEN CROSS DISTANCE = 370.109436 
+Inserting Shape 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (152,118) B= (164,118)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 12.000000 
+A = (497,252) B= (164,118)
+ GREEN CROSS distance too big to GREEN TRIANGLE DISTANCE = 358.949860 
+Inserting Shape 
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 3
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 3
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (164,118) B= (176,117)
+ GREEN TRIANGLE distance too big to GREEN TRIANGLE DISTANCE = 12.041595 
+Inserting Shape 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 0
+Inserting Shape 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 0
+Inserting Shape 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (475,221) B= (466,227)
+ GREEN TRIANGLE distance too big to BLUE TRIANGLE DISTANCE = 10.816654 
+Inserting Shape 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 0
+Inserting Shape 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 0
+Shapes size 0
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 0
+Inserting Shape 
+A = (536,261) B= (537,261)
+Updating GREEN CIRCLE with GREEN CIRCLE COUNT=2 Distance=1.000000 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 1
+A = (537,261) B= (534,261)
+Updating BLUE CIRCLE with BLUE CIRCLE COUNT=3 Distance=3.000000 
+A = (534,261) B= (536,263)
+Updating BLUE CIRCLE with BLUE CIRCLE COUNT=4 Distance=2.828427 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 1
+A = (536,263) B= (535,260)
+Updating GREEN CIRCLE with GREEN CIRCLE COUNT=5 Distance=3.162278 
+A = (535,260) B= (534,257)
+Updating GREEN CIRCLE with GREEN CIRCLE COUNT=6 Distance=3.162278 
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 1
+Shapes size 1
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 1
+A = (534,257) B= (469,297)
+ GREEN CIRCLE distance too big to BLUE TRIANGLE DISTANCE = 76.321686 
+Inserting Shape 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (534,257) B= (466,293)
+ GREEN CIRCLE distance too big to BLUE TRIANGLE DISTANCE = 76.941536 
+A = (469,297) B= (466,293)
+Updating BLUE TRIANGLE with BLUE TRIANGLE COUNT=2 Distance=5.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 2
+A = (534,257) B= (532,261)
+Updating BLUE CIRCLE with BLUE CIRCLE COUNT=7 Distance=4.472136 
+A = (532,261) B= (532,261)
+Updating BLUE CIRCLE with BLUE CIRCLE COUNT=8 Distance=0.000000 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (532,261) B= (531,263)
+Updating BLUE CIRCLE with BLUE CIRCLE COUNT=9 Distance=2.236068 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 2
+A = (531,263) B= (533,267)
+Updating BLUE CIRCLE with BLUE CIRCLE COUNT=10 Distance=4.472136 
+A = (533,267) B= (531,266)
+Updating BLUE CIRCLE with BLUE CIRCLE COUNT=11 Distance=2.236068 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 2 shapes current size = 2
+A = (531,266) B= (534,262)
+Updating BLUE CIRCLE with BLUE CIRCLE COUNT=12 Distance=5.000000 
+A = (534,262) B= (532,263)
+Updating BLUE CIRCLE with BLUE CIRCLE COUNT=13 Distance=2.236068 
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 0 shapes current size = 2
+Shapes size 2
+callback 4
+callback 1
+callback 2
+callback 3
+Adding 1 shapes current size = 2
+A = (532,263) B= (533,262)
+Updating BLUE CIRCLE with BLUE CIRCLE COUNT=14 Distance=1.414214 
+Shapes size 2
+callback 4
+[0m
+[dock_shape_finder-1] killing on exit
+[camera_lidar_transformer-2] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m

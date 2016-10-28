@@ -1,3 +1,7 @@
+tracker:
+  min_count: 15
+  max_distance_gap: 5
+  max_seen_gap_seconds: 0.5
 roi:
   x_offset: 73
   y_offset: 103

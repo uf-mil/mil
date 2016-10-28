@@ -20,11 +20,14 @@
 #include <navigator_msgs/SetROI.h>
 #include "DockShapeVision.h"
 #include "sensor_msgs/RegionOfInterest.h"
+#include "ShapeTracker.h"
+
 
 using namespace cv;
 
 class ShooterVision {
  private:
+  ShapeTracker tracker;
   std::unique_ptr<DockShapeVision> vision;
   // ros frame thing
   navigator_msgs::DockShapes symbols;
@@ -48,7 +51,7 @@ class ShooterVision {
     vision->init();
     nh_.param<std::string>("symbol_camera", camera_topic,
                            "/right/right/image_raw");
-    runService = nh_.advertiseService("run", &ShooterVision::runCallback, this);
+    runService = nh_.advertiseService("/dock_shapes/run", &ShooterVision::runCallback, this);
     roiService = nh_.advertiseService("setROI",
                                       &ShooterVision::roiServiceCallback, this);
     //#ifdef DO_DEBUG
@@ -64,12 +67,14 @@ class ShooterVision {
     nh_.param<int>("roi/width", width, 499);
     nh_.param<int>("roi/height", height, 243);
     roi = Rect(x_offset, y_offset, width, height);
+    tracker.init(nh_);
   }
 
   bool runCallback(std_srvs::SetBool::Request &req,
                    std_srvs::SetBool::Response &res) {
     active = req.data;
     res.success = true;
+    tracker.setActive(req.data);
     return true;
   }
   bool roiServiceCallback(navigator_msgs::SetROI::Request &req,
@@ -105,6 +110,7 @@ class ShooterVision {
     for (int i = 0; i < symbols.list.size(); i++)
       symbols.list[i].header = msg->header;
     foundShapesPublisher.publish(symbols);
+    tracker.addShapes(symbols);
   }
 };
 
