@@ -49,6 +49,7 @@ public:
 				obj.color = min_obj->color;
 				obj.current = true;
 				obj.locked = min_obj->locked;
+				obj.real = min_obj->real;
 				*min_obj = obj;
 			}else{
 				obj.id = curr_id;
@@ -64,6 +65,14 @@ public:
 		}
 
 		return saved_objects;
+	}
+
+	void addROI(std::string name) {
+		objectMessage obj;
+		obj.name = name;
+		obj.real = false;
+		obj.id = curr_id++;
+		saved_objects.push_back(obj);
 	}
 
 	bool lookUpByName(std::string name, std::vector< navigator_msgs::PerceptionObject > &objects) {
@@ -85,7 +94,7 @@ public:
 				objects.push_back(thisOne);
 			}
 		}
-                return objects.size() > 0;
+        return objects.size() > 0;
 	}
 
 	std::vector<objectMessage> saved_objects;
