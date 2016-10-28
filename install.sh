@@ -457,6 +457,10 @@ if ($INSTALL_NAV); then
 	instlog "Pulling large files for Navigator"
 	cd $CATKIN_DIR/src/Navigator
 	git lfs pull
+
+	instlog "Cloning Navigator Git repositories that need to be built"
+	ros_git_get https://github.com/jnez71/lqRRT.git
+	ros_git_get https://github.com/gareth-cross/rviz_satellite.git
 fi
 
 
