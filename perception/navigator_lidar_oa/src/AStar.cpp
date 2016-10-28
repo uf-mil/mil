@@ -183,4 +183,3 @@ void AStar::reset()
 		}
 	}
 }
-

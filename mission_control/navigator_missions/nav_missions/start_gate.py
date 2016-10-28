@@ -8,14 +8,12 @@ import numpy as np
 import navigator_tools
 from sensor_msgs.msg import PointCloud
 from twisted.internet import defer
-from navigator_msgs.srv import ObjectDBSingleQuery, ObjectDBSingleQueryRequest
 
 
 class Buoy(object):
     @classmethod
     def from_srv(cls, srv):
-        obj = srv.object
-        return cls(obj.position, "Black")
+        return cls(navigator_tools.point_to_numpy(srv.position), srv.color)
 
     def __init__(self, position, color):
         self.position = np.array(position)
@@ -57,44 +55,20 @@ return_with = defer.returnValue
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator):
-    '''
-    This assumes we have ALL FOUR buoys
-    '''
     result = navigator.fetch_result()
 
-    #navigator.change_wrench("autonomous")
-    buoys = get_buoys()
-    #serv = navigator.nh.get_service_client("/database/single", ObjectDBSingleQuery)
-    #req = ObjectDBSingleQueryRequest()
-    #req.name = 'l_gate'
-    #left = yield serv(req)
-    #req.name = 'r_gate'
-    #right = yield serv(req)
-    #buoys = [Buoy.from_srv(left), Buoy.from_srv(right)]
-
-    # Display points of the buoys]
-    points = [navigator_tools.numpy_to_point(b.position) for b in buoys]
-
-    pose = yield navigator.tx_pose
-    buoys = sorted(buoys, key=lambda buoy: buoy.distance(pose[0]))
-
-    print "START_GATE: Be advised... Doing checks"
-
-    # See if the closest two buoys are the right colors ============================================
-    if not (buoys[0].color in ['green', 'red'] and buoys[1].color in ['green', 'red']):
-        print "START_GATE: Error 1 - Not the right colors. ({},{})".format(buoy[0].color,
-                                                                           buoy[1].color)
+    front_buoys = yield navigator.database_query("start_gate")
+    #print front_buoys
+    if front_buoys.found:
+        buoys = map(Buoy.from_srv, front_buoys.objects)
+    else:
+        print "START_GATE: Error 4 - No db buoy response..."
         result.success = False
-        #return_with(result)
+        result.response = "No db buoy response..."
+        return_with(result)
+    # buoys = [Buoy.from_srv(left), Buoy.from_srv(right)]
 
-    # Okay, now we need to see if the buoys are approx 10m apart ===================================
-    nominal_dist = 10  # m
-    variance = 5  #m
-    dist_btwn_buoys = np.linalg.norm(buoys[0].position[:2] - buoys[1].position[:2])
-    if not (nominal_dist - variance < dist_btwn_buoys < nominal_dist + variance):
-        print "START_GATE: Error 2 - Not the right distance apart. {}".format(dist_btwn_buoys)
-        #result.success = False
-        #return_with(result)
+    points = [navigator_tools.numpy_to_point(b.position) for b in buoys]
 
     # Made it this far, make sure the red one is on the left and green on the right ================
     pose = yield navigator.tx_pose
@@ -104,19 +78,14 @@ def main(navigator):
     # Angles are w.r.t positive x-axis. Positive is CCW around the z-axis.
     angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in bl_buoys])
     left_buoy, right_buoy = buoys[np.argmax(angle_buoys)], buoys[np.argmin(angle_buoys)]
-    if left_buoy.color == "green" and right_buoy.color == "red":
-        print "START_GATE: Error 3 - Not the right colors. (l-{}, r-{})".format(left_buoy.color,
-                                                                                right_buoy.color)
-        #result.success = False
-        #return_with(result)
 
-    # Lets get a path to go to
+    # Lets plot a course, yarrr
     between_vector, direction_vector = get_path(left_buoy, right_buoy)
     mid_point = left_buoy.position + between_vector / 2
 
     #print mid_point
     setup_dist = 20  # Line up with the start gate this many meters infront of the gate.
-    target_dist = 90  # Move this far though the start gate buoys (meters).
+    target_dist = 50  # Move this far though the start gate buoys (meters).
     setup = mid_point - direction_vector * setup_dist
     target = setup + direction_vector * target_dist
 
@@ -138,6 +107,9 @@ def main(navigator):
     print "START_GATE: Moving!"
 
     yield navigator.move.set_position(target).go()
+
+    yield navigator.nh.set_param("/mission/detect_deliver/Shape", "CIRCLE")
+    yield navigator.nh.set_param("/mmission/detect_deliver/Color", "ANY")
 
     return_with(result)
 
@@ -161,7 +133,7 @@ class OgridFactory():
         # Some parameters
         self.buffer = 50  # length of the "walls" extending outwards from each buoy (m)
         self.resolution = 10  # cells/meter for ogrid
-        self.channel_length = 60  # Not sure what this acutally is for the course (m)
+        self.channel_length = 30  # Not sure what this acutally is for the course (m)
         self.edge_buffer = 10
 
         # Sets x,y upper and lower bounds and the left and right wall bounds
