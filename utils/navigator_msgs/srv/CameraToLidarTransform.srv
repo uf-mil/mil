@@ -1,0 +1,12 @@
+Header header #Stamp of time point was seen for tf
+geometry_msgs/Point point #X and Y of point in camera frame, Z is ignored
+uint16 tolerance #Number of pixels the projected 3D lidar point can be from the target point to be included in the response
+---
+bool success #True if at least one point found in lidar and transformed
+geometry_msgs/Point[] transformed #Points in  3-D in camera frame if success is true
+geometry_msgs/Point closest #3D point that is the closest to the target point when transformed and projected
+geometry_msgs/Vector3 normal #Normal unit vector in camera frame estimated from transformed points
+float64 distance #mean z of transformed points
+string error #Describes when went wrong if success if false
+string CLOUD_NOT_FOUND=pointcloud not found
+string NO_POINTS_FOUND=no points

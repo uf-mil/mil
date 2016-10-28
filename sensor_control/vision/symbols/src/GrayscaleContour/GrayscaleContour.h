@@ -26,7 +26,7 @@ class GrayscaleContour : public DockShapeVision {
   void ConvertToGrayscale();
   void DetectEdges();
   void FindContours();
-  bool GetColor(int shapeIndex, std::string& color);
+  bool GetColor(int shapeIndex, std::string& color, float& confidence);
   Point findCenter(std::vector<Point>& points);
   Mat contoursFrame;
   int frame_height;
@@ -70,6 +70,10 @@ class GrayscaleContour : public DockShapeVision {
   double crossAngleVarErrorThreshold;
   double circleEnclosingErrorThreshold;
 
+  double redHueMin;
+  double redHueMax;
+  double blueHue;
+  double greenHue;
  public:
   GrayscaleContour(ros::NodeHandle& nh);
   void GetShapes(cv::Mat& frame, cv::Rect roi,

@@ -30,6 +30,18 @@ shape_filter provides the ```/dock_shapes/GetShape``` and ```/dock_shapes/GetSha
 statistics)
 * If the buffer is not full (not many found in short time period or many outliers), that shape is not returned
 
+## ray_lidar
+ray_lidar provides services for finding where a camera pixel is in 3D space using Navigator's velodyne lidar.
+
+### Technical
+* ray_lidar subscribes to the lidar and caches recent messages and the camerainfo topic specified in the launch file
+* when a service arrives to transform a pixel to 3D, it selects a lidar message near the time specified in the header of the service request
+* It loops through every point in the lidar pointcloud, projecting it into the camera frame using the calibration from the camera info matrix
+* For projected points that are within the camera frame, the distance between the requested point and each point is calculated (in 2D)
+* Points whose distance is less than the tollerance specified in the request and appended to the response
+* A normal to these points is estimated and added to the response
+
+
 # Usage
 1. Built the project ```catkin_make navigator_shoot_vision shape_finder shape_filter```
 1. Launch the two executables ```roslaunch navigator_shoot_vision dock_shapes.launch```
@@ -37,9 +49,11 @@ statistics)
 4. View the data produced through the debug images, services, or topics listed below
 
 ## Debug
-The shape_finder executable provides ros image topics for debugging
+The shape_finder executable provides ros image topics for debugging, which can be disabled with the compiler flag DO_DEBUG
 /dock_shapes/finder/debug_color Shows the camera frame with the identified shapes drawn onto it
 /dock_shapes/finder/debug_contours Shows the contours detected in the frame
+/dock_shapes/raylider/markers Shows the transformed lidar pointcloud to camera frame with a normal pointing away from the plane
+/camera_lidar_transformer/points_debug Image topic showing the projected lidar points into the camera frame
 
 ## Services Provided
 
@@ -49,6 +63,7 @@ Service | Type | Behavior
 /dock_shapes/GetShapes | navigator_msgs/GetDockShapes | Returns all found shapes in the frame
 /dock_shapes/run | std_srvs/SetBool | Starts/stop the vision services
 /dock_shapes_finder/setROI | navigator_msgs/SetROI | Sets the region of interest in the camera frame to look for shapes
+/camera_lidar_transformer/transform_camera | navigator_msgs/CameraToLidarTransform | Uses lidar to find nearby 3D points and a normal from a pixel in a camera
 
 ## Topics provided
 Topic | Type | Behavior 

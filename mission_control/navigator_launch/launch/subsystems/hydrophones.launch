@@ -2,7 +2,7 @@
   <node pkg="paulboard_driver" type="paulboard_driver" name="paulboard_driver" output="screen">
     <param name="port" type="string" value="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A901AN8N-if00-port0"/>
     <param name="sample_rate" type="double" value="300000"/>
-    <param name="thresh" type="int" value="500"/>
+    <param name="thresh" type="int" value="300"/>
     <param name="frame" type="string" value="/hydrophones"/>
     <param name="permute" type="string" value="1 2 3 4"/>
   </node>

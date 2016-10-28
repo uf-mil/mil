@@ -1,66 +1,298 @@
 #!/usr/bin/env python
+from __future__ import division
+
 import txros
 import tf
+import tf.transformations as trns
 import numpy as np
 import navigator_tools
+from sensor_msgs.msg import PointCloud
 from twisted.internet import defer
+from navigator_msgs.srv import ObjectDBSingleQuery, ObjectDBSingleQueryRequest
+
+
+class Buoy(object):
+    @classmethod
+    def from_srv(cls, srv):
+        obj = srv.object
+        return cls(obj.position, "Black")
+
+    def __init__(self, position, color):
+        self.position = np.array(position)
+        self.color = color
+        self.odom = np.array([0, 0, 0])
+
+    def __repr__(self):
+        return "BUOY at: {} with color {}".format(self.position, self.color)
+
+    def distance(self, odom):
+        return np.linalg.norm(self.position - odom)
+
+
+def get_buoys():
+    right = Buoy([39, 25, 0], "green")
+    left = Buoy([64, 6, 0], "red")
+
+    #rand_1 = Buoy([-23, 48, 0], "green")
+    #rand_2 = Buoy([33, -8, 0], "green")
+
+    buoys = [right, left] #[rand_1, right, rand_2, left]
+
+    return buoys
+
+
+def get_path(buoy_l, buoy_r):
+    # Vector between the two buoys
+    between_vector = buoy_r.position - buoy_l.position
+
+    # Rotate that vector to point through the buoys
+    r = trns.euler_matrix(0, 0, np.radians(90))[:3, :3]
+    direction_vector = r.dot(between_vector)
+    direction_vector /= np.linalg.norm(direction_vector)
+
+    return between_vector, direction_vector
+
+
+return_with = defer.returnValue
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator):
     '''
-    Once we see the gate - move to a point 10m in front of the gate.
-    When we get there, make another observation of the gate to make
-        sure we are lined up and then go through.
-
+    This assumes we have ALL FOUR buoys
     '''
-    navigator.change_wrench("autonomous")
-    # Only try to get the point 5 times
-    for _try in range(5):
-        print "Waiting for points..."
-        m = yield navigator.vision_request("start_gate")
-        print m
+    result = navigator.fetch_result()
 
-        if not m.success:
-            continue
+    #navigator.change_wrench("autonomous")
+    buoys = get_buoys()
+    #serv = navigator.nh.get_service_client("/database/single", ObjectDBSingleQuery)
+    #req = ObjectDBSingleQueryRequest()
+    #req.name = 'l_gate'
+    #left = yield serv(req)
+    #req.name = 'r_gate'
+    #right = yield serv(req)
+    #buoys = [Buoy.from_srv(left), Buoy.from_srv(right)]
 
-        p, q = navigator_tools.pose_to_numpy(m.target.pose)
+    # Display points of the buoys]
+    points = [navigator_tools.numpy_to_point(b.position) for b in buoys]
 
-        # Move backwards a bit from the waypoint
-        target_r = tf.transformations.quaternion_matrix(q)
-        back_up = target_r.dot(np.array([-10, 0, 0,  1]))  # Homogeneous
-        target_p = p + back_up[:3]
+    pose = yield navigator.tx_pose
+    buoys = sorted(buoys, key=lambda buoy: buoy.distance(pose[0]))
 
-        yield navigator.move.set_orientation(target_r).go()
-        yield navigator.move.set_position(target_p).go()
+    print "START_GATE: Be advised... Doing checks"
 
-        break
+    # See if the closest two buoys are the right colors ============================================
+    if not (buoys[0].color in ['green', 'red'] and buoys[1].color in ['green', 'red']):
+        print "START_GATE: Error 1 - Not the right colors. ({},{})".format(buoy[0].color,
+                                                                           buoy[1].color)
+        result.success = False
+        #return_with(result)
 
-    if not m.success:
-        print "No objects found. Exiting."
-        # Raise an alarm
-        defer.returnValue(False)
+    # Okay, now we need to see if the buoys are approx 10m apart ===================================
+    nominal_dist = 10  # m
+    variance = 5  #m
+    dist_btwn_buoys = np.linalg.norm(buoys[0].position[:2] - buoys[1].position[:2])
+    if not (nominal_dist - variance < dist_btwn_buoys < nominal_dist + variance):
+        print "START_GATE: Error 2 - Not the right distance apart. {}".format(dist_btwn_buoys)
+        #result.success = False
+        #return_with(result)
 
-    for _try in range(5):
-        print "Waiting for points..."
-        m = yield navigator.vision_request("start_gate")
-        print m
+    # Made it this far, make sure the red one is on the left and green on the right ================
+    pose = yield navigator.tx_pose
+    t = txros.tf.Transform.from_Pose_message(navigator_tools.numpy_quat_pair_to_pose(*pose))
+    bl_buoys = [t.transform_point(buoy.position) for buoy in buoys[:2]]
 
-        if not m.success:
-            continue
+    # Angles are w.r.t positive x-axis. Positive is CCW around the z-axis.
+    angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in bl_buoys])
+    left_buoy, right_buoy = buoys[np.argmax(angle_buoys)], buoys[np.argmin(angle_buoys)]
+    if left_buoy.color == "green" and right_buoy.color == "red":
+        print "START_GATE: Error 3 - Not the right colors. (l-{}, r-{})".format(left_buoy.color,
+                                                                                right_buoy.color)
+        #result.success = False
+        #return_with(result)
 
-        p, q = navigator_tools.pose_to_numpy(m.target.pose)
+    # Lets get a path to go to
+    between_vector, direction_vector = get_path(left_buoy, right_buoy)
+    mid_point = left_buoy.position + between_vector / 2
 
-        # Average the two rotation and positions together to get a "better" guess
-        weight_factor = .8  # Weight for the newer data over the old stuff
-        target_r = weight_factor * tf.transformations.quaternion_matrix(q) + \
-                   (1 - weight_factor) * target_r
-        target_p = weight_factor * p + \
-                   (1 - weight_factor) * target_p
+    #print mid_point
+    setup_dist = 20  # Line up with the start gate this many meters infront of the gate.
+    target_dist = 90  # Move this far though the start gate buoys (meters).
+    setup = mid_point - direction_vector * setup_dist
+    target = setup + direction_vector * target_dist
 
-        move_through = target_r.dot([10, 0, 0,  1])
-        target_p += move_through[:3]
+    ogrid = OgridFactory(left_buoy.position, right_buoy.position, pose[0], target)
+    msg = ogrid.get_message()
 
-        yield navigator.move.set_orientation(target_r).go()
-        yield navigator.move.set_position(target_p).go()
+    # Put the target into the point cloud as well
+    points.append(navigator_tools.numpy_to_point(target))
+    pc = PointCloud(header=navigator_tools.make_header(frame='/enu'),
+                    points=np.array(points))
 
-        break
+    yield navigator._point_cloud_pub.publish(pc)
+
+    print "publishing"
+    latched = navigator.latching_publisher("/mission_ogrid", OccupancyGrid, msg)
+
+    yield navigator.nh.sleep(5)
+
+    print "START_GATE: Moving!"
+
+    yield navigator.move.set_position(target).go()
+
+    return_with(result)
+
+
+# This really shouldn't be here - it should be somewhere behind the scenes
+from nav_msgs.msg import OccupancyGrid
+import cv2
+
+class OgridFactory():
+    def __init__(self, left_f_pos, right_f_pos, boat_pos, target, left_b_pos=None, right_b_pos=None):
+        # Front buoys
+        self.left_f = left_f_pos
+        self.right_f = right_f_pos
+        # Back buoys
+        self.left_b = left_b_pos
+        self.right_b = right_b_pos
+        # Other info
+        self.boat_pos = boat_pos
+        self.target = target
+
+        # Some parameters
+        self.buffer = 50  # length of the "walls" extending outwards from each buoy (m)
+        self.resolution = 10  # cells/meter for ogrid
+        self.channel_length = 60  # Not sure what this acutally is for the course (m)
+        self.edge_buffer = 10
+
+        # Sets x,y upper and lower bounds and the left and right wall bounds
+        self.get_size_and_build_walls()
+        self.make_ogrid_transform()
+        self.draw_lines(self.walls)
+
+    def make_ogrid_transform(self):
+        self.origin = navigator_tools.numpy_quat_pair_to_pose([self.x_lower, self.y_lower, 0],
+                                                              [0, 0, 0, 1])
+        dx = self.x_upper - self.x_lower
+        dy = self.y_upper - self.y_lower
+        # The grid needs to have it's axes swaped since its row major
+        self.grid = np.zeros((dy * self.resolution, dx * self.resolution))
+
+        # Transforms points from ENU to ogrid frame coordinates
+        self.t = np.array([[self.resolution, 0, -self.x_lower * self.resolution],
+                           [0, self.resolution, -self.y_lower * self.resolution],
+                           [0,               0,            1]])
+        self.transform = lambda point: self.t.dot(np.append(point[:2], 1))[:2]
+
+    def get_size_and_build_walls(self):
+        # Get size of the ogrid ==============================================
+        # Get some useful vectors
+        between_vector = self.left_f - self.right_f
+        mid_point = self.right_f + between_vector / 2
+        target_vector = self.target - mid_point
+        self.mid_point = mid_point
+
+        # For rotations of the `between_vector` and the enu x-axis
+        b_theta = np.arctan2(between_vector[1], between_vector[0])
+        b_rot_mat = trns.euler_matrix(0, 0, b_theta)[:3, :3]
+
+        # Make the endpoints
+        rot_buffer = b_rot_mat.dot([self.buffer, 0, 0])
+        endpoint_left_f = self.left_f + rot_buffer
+        endpoint_right_f = self.right_f - rot_buffer
+
+        # Define bounds for the grid
+        self.x_lower = min(self.boat_pos[0], endpoint_left_f[0], endpoint_right_f[0], self.target[0]) - self.edge_buffer
+        self.x_upper = max(self.boat_pos[0], endpoint_left_f[0], endpoint_right_f[0], self.target[0]) + self.edge_buffer
+        self.y_lower = min(self.boat_pos[1], endpoint_left_f[1], endpoint_right_f[1], self.target[1]) - self.edge_buffer
+        self.y_upper = max(self.boat_pos[1], endpoint_left_f[1], endpoint_right_f[1], self.target[1]) + self.edge_buffer
+
+        # Now lets build some wall points ======================================
+
+        if self.left_b is None:
+            # For rotations of the `target_vector` and the enu x-axis
+            t_theta = np.arctan2(target_vector[1], target_vector[0])
+            t_rot_mat = trns.euler_matrix(0, 0, t_theta)[:3, :3]
+
+            rot_channel = t_rot_mat.dot([self.channel_length, 0, 0])
+            self.left_b = self.left_f + rot_channel
+            self.right_b = self.right_f + rot_channel
+
+        # Now draw contours from the boat to the start gate ====================
+        # Get vector from boat to mid_point
+        mid_point_vector = self.boat_pos - self.mid_point
+
+        b_theta = np.arctan2(mid_point_vector[1], mid_point_vector[0])
+        b_rot_mat = trns.euler_matrix(0, 0, b_theta)[:3, :3]
+
+        rot_buffer = b_rot_mat.dot([np.linalg.norm(mid_point_vector) *  1.5, 0, 0])
+        left_cone_point = self.left_f + rot_buffer
+        right_cone_point = self.right_f + rot_buffer
+
+        self.walls = [self.left_b, self.left_f, left_cone_point, right_cone_point, self.right_f, self.right_b]
+
+
+        # endpoint_left_b = self.left_b + rot_buffer
+        # endpoint_right_b = self.right_b - rot_buffer
+
+        # # These are in ENU by the way
+        # self.left_wall_points = [endpoint_left_f, self.left_f, self.left_b, endpoint_left_b]
+        # self.right_wall_points = [endpoint_right_f, self.right_f, self.right_b, endpoint_right_b]
+
+    def draw_lines(self, points):
+        last_wall = None
+        for wall in points:
+            if last_wall is None:
+                last_wall = tuple(self.transform(wall).astype(np.int32))
+                continue
+
+            this_wall = tuple(self.transform(wall).astype(np.int32))
+            cv2.line(self.grid, this_wall, last_wall, 128, 3)
+            last_wall = this_wall
+
+    def draw_walls(self):
+        left_wall_points = np.array([self.transform(point) for point in self.left_wall_points])
+        right_wall_points = np.array([self.transform(point) for point in self.right_wall_points])
+
+        rect = cv2.minAreaRect(left_wall_points[:,:2].astype(np.float32))
+        box = cv2.cv.BoxPoints(rect)
+        box = np.int0(box)
+        cv2.drawContours(self.grid, [box], 0, 128, -1)
+
+        rect = cv2.minAreaRect(right_wall_points[:,:2].astype(np.float32))
+        box = cv2.cv.BoxPoints(rect)
+        box = np.int0(box)
+        cv2.drawContours(self.grid, [box], 0, 128, -1)
+
+        # So I dont have to comment abunch of stuff out for debugging
+        dont_display = True
+        if dont_display:
+            return
+
+        # Bob Ross it up (just for display)
+        left_f, right_f = self.transform(self.left_f), self.transform(self.right_f)
+        left_b, right_b = self.transform(self.left_b), self.transform(self.right_b)
+
+        boat = self.transform(self.boat_pos)
+        target = self.transform(self.target)
+
+        cv2.circle(self.grid, tuple(boat[:2].astype(np.int32)), 8, 255)
+        cv2.circle(self.grid, tuple(target[:2].astype(np.int32)), 15, 255)
+        cv2.circle(self.grid, tuple(self.transform(self.mid_point)[:2].astype(np.int32)), 5, 255)
+        cv2.circle(self.grid, tuple(left_f[:2].astype(np.int32)), 10, 255)
+        cv2.circle(self.grid, tuple(right_f[:2].astype(np.int32)), 10, 255)
+        cv2.circle(self.grid, tuple(left_b[:2].astype(np.int32)), 3, 125)
+        cv2.circle(self.grid, tuple(right_b[:2].astype(np.int32)), 3, 128)
+        cv2.imshow("test", self.grid)
+        cv2.waitKey(0)
+
+
+    def get_message(self):
+        ogrid = OccupancyGrid()
+        ogrid.header = navigator_tools.make_header(frame="enu")
+        ogrid.info.resolution = 1 / self.resolution
+        ogrid.info.height, ogrid.info.width = self.grid.shape
+        ogrid.info.origin = self.origin
+        grid = np.copy(self.grid)
+        ogrid.data = np.clip(grid.flatten() - 1, -100, 100).astype(np.int8)
+
+        return ogrid

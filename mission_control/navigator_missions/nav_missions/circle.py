@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 import txros
+import numpy as np
 
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator):
-    pattern = navigator.move.circle_point([0,0,0], radius=5)
-    searcher = navigator.search(vision_proxy='tester', search_pattern=pattern)
+    focus = np.array([-10, -10, 0])
+    pattern = navigator.move.circle_point(focus, radius=5)
 
-    yield searcher.start_search(spotings_req=1, speed=.9)
+    for p in pattern:
+        yield p.go(move_type='skid', focus=focus)
+        print "Nexting"

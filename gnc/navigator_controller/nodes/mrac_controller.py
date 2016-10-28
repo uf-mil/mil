@@ -96,11 +96,15 @@ class MRAC_Controller:
         self.lin_vel = np.zeros(2)
         self.ang_vel = 0
         self.state = Odometry()
+
+        self.use_lqrrt = True
+
         # Subscribers
-        if self.use_external_tgen:
-            rospy.Subscriber("/trajectory", PoseTwistStamped, self.set_traj)
+        if self.use_lqrrt:
+            rospy.Subscriber("/lqrrt/ref", Odometry, self.set_traj_from_odom_msg)
         else:
-            rospy.Subscriber("/waypoint", PoseStamped, self.set_waypoint)
+            rospy.Subscriber("/trajectory", PoseTwistStamped, self.set_traj)
+
         rospy.Subscriber("/odom", Odometry, self.get_command)
         rospy.Subscriber('/learn', Bool, self.toggle_learning)
         # Publishers
@@ -125,6 +129,22 @@ class MRAC_Controller:
 
         self.a_ref = R.dot(np.array([msg.posetwist.acceleration.linear.x, msg.posetwist.acceleration.linear.y, msg.posetwist.acceleration.linear.z]))[:2]
         self.aa_ref = R.dot(np.array([msg.posetwist.acceleration.angular.x, msg.posetwist.acceleration.angular.y, msg.posetwist.acceleration.angular.z]))[2]
+
+    def set_traj_from_odom_msg(self, msg):
+        '''
+        Sets instantaneous reference state.
+        Convert twist to world frame for controller math.
+        '''
+        self.p_ref = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y])
+        self.q_ref = np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
+
+        R = trns.quaternion_matrix(self.q_ref)[:3, :3]
+
+        self.v_ref = R.dot(np.array([msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.linear.z]))[:2]
+        self.w_ref = R.dot(np.array([msg.twist.twist.angular.x, msg.twist.twist.angular.y, msg.twist.twist.angular.z]))[2]
+
+        self.a_ref = np.array([0, 0])
+        self.aa_ref = 0
 
     def set_waypoint(self, msg):
         '''

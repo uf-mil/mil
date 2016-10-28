@@ -16,7 +16,8 @@ def main():
     parser = argparse.ArgumentParser(description='Mission Runner')
     parser.add_argument('missions', type=str, nargs='+',
                         help='Misison(s) from the navigator_missions folder to run.')
-
+    parser.add_argument('-s', '--sim', action='store_true',
+                        help='This will run navigator in sim mode (ie. not wait for odom or enu bounds). Don\'t do this on the boat.')
     args = parser.parse_args(args[1:])
 
     if "list" in args.missions:
@@ -25,7 +26,7 @@ def main():
         print
         defer.returnValue(reactor.stop())
 
-    n = yield Navigator(nh)._init()
+    n = yield Navigator(nh)._init(args.sim)
 
     for mission in args.missions:
         # Make sure all missions exist before we run
@@ -33,7 +34,14 @@ def main():
 
     for mission in args.missions:
         to_run = getattr(nav_missions, mission)
-        yield to_run.main(n)
+        print "MISSION: Running Mission!\n"
+        result = yield to_run.main(n)
+
+        if result is None:
+            print "MISSION: {} finished with no result."
+        else:
+            print "MISSION: {} finished with:"
+            print result
 
     defer.returnValue(reactor.stop())
 

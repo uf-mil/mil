@@ -13,6 +13,10 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   geometry_msgs
   navigator_msgs
+  pcl_ros
+  image_geometry
+  tf2_sensor_msgs
+  tf2_geometry_msgs
 )
 find_package( OpenCV REQUIRED )
 
@@ -21,6 +25,7 @@ catkin_package(
 	std_msgs 
     std_srvs
     message_runtime
+    
 )
 
 
@@ -33,7 +38,6 @@ set(GRAYSCALE_CONTOUR_FILES src/GrayscaleContour/GrayscaleContour.cpp)
 add_executable(shape_finder src/DebugWindow.cpp src/DockShapeVision.cpp src/main.cpp  ${GRAYSCALE_CONTOUR_FILES} src/ContourMethod/ContourMethod.cpp src/ContourMethod/FrameProc.cpp src/ContourMethod/ContourMethod.cpp src/ContourMethod/ShapeFind.cpp  src/ContourMethod/ShapeDetector.cpp )
 add_dependencies(shape_finder navigator_msgs_generate_messages)
 target_link_libraries(shape_finder ${catkin_LIBRARIES})
-
 target_link_libraries(shape_finder ${OpenCV_LIBS} )
 
 #add_executable(shore_debug src/ShoreDebug.cpp src/PoseEstimator.cpp)
@@ -41,3 +45,8 @@ add_executable(shore_debug src/ShoreDebug.cpp)
 add_dependencies(shore_debug navigator_msgs_generate_messages)
 target_link_libraries(shore_debug ${catkin_LIBRARIES})
 target_link_libraries(shore_debug ${OpenCV_LIBS} )
+
+add_executable(ray_lidar raylidar/main.cpp raylidar/CameraLidarTransformer.cpp)
+add_dependencies(ray_lidar navigator_msgs_generate_messages)
+target_link_libraries(ray_lidar ${catkin_LIBRARIES})
+target_link_libraries(ray_lidar ${OpenCV_LIBS})

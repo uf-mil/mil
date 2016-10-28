@@ -12,21 +12,41 @@ from txros import action, util, tf, NodeHandle
 from pose_editor import PoseEditor2
 
 import navigator_tools
-from uf_common.msg import MoveToAction
-from navigator_msgs.msg import MoveToWaypointAction
+from lqrrt_ros.msg import MoveAction
 from nav_msgs.msg import Odometry
 from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import PointCloud
 import navigator_msgs.srv as navigator_srvs
+from navigator_tools import print_t
 
+class MissionResult(object):
+    def __init__(self, success=True, response="", need_rerun=False, post_function=None):
+        self.success = success
+        self.response = response
+        self.need_rerun = need_rerun
+        self.post_function = lambda: None if post_function is None else post_function
+
+    def __repr__(self):
+        cool_bars = "=" * 75
+        _pass = (cool_bars,
+                 "    Mission Success!",
+                 "    Response: {}".format(self.response),
+                 cool_bars)
+        _fail = (cool_bars,
+                 "    Mission Failure!",
+                 "    Response: {}".format(self.response),
+                 "    Post function: {}".format(self.post_function.__name__),
+                 cool_bars)
+
+        return '\n'.join(_pass if self.success else _fail)
 
 class Navigator(object):
     def __init__(self, nh):
         self.nh = nh
 
         self.vision_proxies = {}
-        self._load_vision_serivces()
+        #self._load_vision_services()
 
         # If you don't want to use txros
         self.pose = None
@@ -37,30 +57,42 @@ class Navigator(object):
         self.alarms = []
 
     @util.cancellableInlineCallbacks
-    def _init(self):
+    def _init(self, sim):
+        self.sim = sim
+
         # Just some pre-created publishers for missions to use for debugging
         self._point_cloud_pub = self.nh.advertise("navigator_points", PointCloud)
         self._pose_pub = self.nh.advertise("navigator_pose", PoseStamped)
 
-        self._moveto_action_client = action.ActionClient(self.nh, 'moveto', MoveToAction)
-        self._moveto_action_client2 = action.ActionClient(self.nh, 'move_to', MoveToWaypointAction)
+        self._moveto_client = action.ActionClient(self.nh, 'move_to', MoveAction)
 
         print "NAVIGATOR: Waiting for move_to action client..."
-        yield self._moveto_action_client2.wait_for_server()
+        yield self._moveto_client.wait_for_server()
 
-        self._odom_sub = self.nh.subscribe('odom', Odometry,
-                                           lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0]))
-        self._ecef_odom_sub = self.nh.subscribe('absodom', Odometry,
-                                                lambda odom: setattr(self, 'ecef_pose', navigator_tools.odometry_to_numpy(odom)[0]))
+        odom_set = lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0])
+        self._odom_sub = self.nh.subscribe('odom', Odometry, odom_set)
+        enu_odom_set = lambda odom: setattr(self, 'ecef_pose', navigator_tools.odometry_to_numpy(odom)[0])
+        self._ecef_odom_sub = self.nh.subscribe('absodom', Odometry, enu_odom_set)
 
-        self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
+        try:
+            self._database_query = self.nh.get_service_client('/ira_database', navigator_srvs.ObjectDBQuery)
+            self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
+        except AttributeError, err:
+            print_t("NAVIGATOR: Error getting service clients in nav singleton init: {}".format(err))
+
         self.tf_listener = tf.TransformListener(self.nh)
 
-        print "NAVIGATOR: Waiting for odom..."
-        yield self._odom_sub.get_next_message()  # We want to make sure odom is working before we continue
-        yield self._ecef_odom_sub.get_next_message()
+        if self.sim:
+            print "NAVIGATOR: Sim mode active!"
+            yield self.nh.sleep(0.5)
+        else:
+            # We want to make sure odom is working before we continue
+            print "NAVIGATOR: Waiting for odom..."
+            odom = util.wrap_time_notice(self._odom_sub.get_next_message(), 2, "NAVIGATOR: Odom listener")
+            enu_odom = util.wrap_time_notice(self._ecef_odom_sub.get_next_message(), 2, "NAVIGATOR: ENU Odom listener")
+            bounds = util.wrap_time_notice(self._make_bounds(), 2, "NAVIGATOR: Bounds creation")
+            yield defer.gatherResults([odom, enu_odom, bounds])  # Wait for all those to finish
 
-        yield self._make_bounds()
         self._make_alarms()
 
         defer.returnValue(self)
@@ -81,26 +113,35 @@ class Navigator(object):
     def move(self):
         return PoseEditor2(self, self.pose)
 
+    def fetch_result(self, *args, **kwargs):
+        # For a unified result class
+        return MissionResult(*args, **kwargs)
+
     @util.cancellableInlineCallbacks
     def _make_bounds(self):
         print "NAVIGATOR: Constructing bounds."
 
-        _bounds = self.nh.get_service_client('/get_bounds', navigator_srvs.Bounds)
-        yield _bounds.wait_for_service()
-        resp = yield _bounds(navigator_srvs.BoundsRequest())
-        if resp.enforce:
-            self.enu_bounds = [navigator_tools.point_to_numpy(bound) for bound in resp.bounds]
+        if (yield self.nh.has_param("/bounds/enforce")):
+            _bounds = self.nh.get_service_client('/get_bounds', navigator_srvs.Bounds)
+            yield _bounds.wait_for_service()
+            resp = yield _bounds(navigator_srvs.BoundsRequest())
+            if resp.enforce:
+                self.enu_bounds = [navigator_tools.point_to_numpy(bound) for bound in resp.bounds]
 
-            # Just for display
-            pc = PointCloud(header=navigator_tools.make_header(frame='/enu'),
-                            points=np.array([navigator_tools.numpy_to_point(point) for point in self.enu_bounds]))
-            yield self._point_cloud_pub.publish(pc)
+                # Just for display
+                pc = PointCloud(header=navigator_tools.make_header(frame='/enu'),
+                                points=np.array([navigator_tools.numpy_to_point(point) for point in self.enu_bounds]))
+                yield self._point_cloud_pub.publish(pc)
         else:
+            print "NAVIGATOR: No bounds param found, defaulting to none."
             self.enu_bounds = None
 
     def vision_request(self, request_name, **kwargs):
-        print "DEPREICATED: Please use new dictionary based system."
-        return self.vision_proxies[request_name].get_response()
+        print "DEPRECATED: Please use new dictionary based system."
+        return self.vision_proxies[request_name].get_response(**kwargs)
+
+    def database_query(self, object_name, **kwargs):
+        return self._database_query(navigator_srvs.ObjectDBQuery(name=object_name, **kwargs))
 
     def change_wrench(self, source):
         return self._change_wrench(navigator_srvs.WrenchSelectRequest(source))
@@ -108,18 +149,43 @@ class Navigator(object):
     def search(self, *args, **kwargs):
         return Searcher(self, *args, **kwargs)
 
-    def _load_vision_serivces(self, fname="vision_services.yaml"):
+    @util.cancellableInlineCallbacks
+    def latching_publisher(self, topic, msg_type, msg, freq=2, update_header=True):
+        '''
+        Creates a publisher that publishes a message at a set frequency.
+        Usage:
+            latched = navigator.latching_publisher("/ogrid", OccupancyGrid, my_ogrid)
+            # Now the ogrid is publishing twice a second...
+            # If you want to cancel the publisher:
+            latched.cancel()
+        '''
+        pub = yield self.nh.advertise(topic, msg_type)
+
+        while True:
+            # Update timestamps if the msg has a header
+            if update_header and hasattr(msg, "header"):
+                msg.header.stamp = self.nh.get_time()
+
+            pub.publish(msg)
+            yield self.nh.sleep(1.0 / freq)
+
+    def _load_vision_services(self, fname="vision_services.yaml"):
         rospack = rospkg.RosPack()
         config_file = os.path.join(rospack.get_path('navigator_missions'), 'navigator_singleton', fname)
         f = yaml.load(open(config_file, 'r'))
 
         for name in f:
-            s_type = getattr(navigator_srvs, f[name]["type"])
-            s_req = getattr(navigator_srvs, "{}Request".format(f[name]["type"]))
-            s_args = f[name]['args']
-            s_client = self.nh.get_service_client(f[name]["topic"], s_type)
-            s_switch = self.nh.get_service_client(f[name]["topic"] + '/switch', SetBool)
-            self.vision_proxies[name] = VisionProxy(s_client, s_req, s_args, s_switch)
+            try:
+                s_type = getattr(navigator_srvs, f[name]["type"])
+                s_req = getattr(navigator_srvs, "{}Request".format(f[name]["type"]))
+                s_args = f[name]['args']
+                s_client = self.nh.get_service_client(f[name]["topic"], s_type)
+                s_switch = self.nh.get_service_client(f[name]["topic"] + '/switch', SetBool)
+                self.vision_proxies[name] = VisionProxy(s_client, s_req, s_args, s_switch)
+            except Exception, e:
+                err = "Error loading vision sevices: {}".format(e)
+                print_t("NAVIGATOR: " + err)
+
 
     def _make_alarms(self):
         pass
@@ -164,10 +230,10 @@ class Searcher(object):
             # Handle error
 
     @util.cancellableInlineCallbacks
-    def start_search(self, timeout=60, loop=True, spotings_req=2, speed=.1):
+    def start_search(self, timeout=60, loop=True, spotings_req=2, **kwargs):
         print "SEARCHER - Starting."
         looker = self._run_look(spotings_req).addErrback(self.catch_error)
-        finder = self._run_search_pattern(loop, speed).addErrback(self.catch_error)
+        finder = self._run_search_pattern(loop, **kwargs).addErrback(self.catch_error)
 
         start_pose = self.nav.move.forward(0)
         start_time = self.nav.nh.get_time()
@@ -193,7 +259,7 @@ class Searcher(object):
         yield start_pose.go()
 
     @util.cancellableInlineCallbacks
-    def _run_search_pattern(self, loop, speed):
+    def _run_search_pattern(self, loop, **kwargs):
         '''
         Look around using the search pattern.
         If `loop` is true, then keep iterating over the list until timeout is reached or we find it.
@@ -204,9 +270,9 @@ class Searcher(object):
                 print "SEARCHER - going to next position."
                 print pose
                 if type(pose) == list or type(pose) == np.ndarray:
-                    yield self.nav.move.relative(pose).go(speed=speed)
+                    yield self.nav.move.relative(pose).go(**kwargs)
                 else:
-                    yield pose.go(speed=speed)
+                    yield pose.go(**kwargs)
 
                 yield self.nav.nh.sleep(2)
 
@@ -236,7 +302,7 @@ class Searcher(object):
             else:
                 spotings = 0
 
-            yield self.nav.nh.sleep(.5)
+            yield self.nav.nh.sleep(0.5)
 
         if spotings >= spotings_req:
             self.object_found = True
