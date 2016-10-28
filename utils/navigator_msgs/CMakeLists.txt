@@ -21,7 +21,6 @@ add_message_files(
   Coordinates.msg
   PoseTwistStamped.msg
   PerceptionObject.msg
-  PerceptionObjects.msg
   PerceptionObjectArray.msg
   DockShape.msg
   DockShapes.msg
@@ -42,8 +41,6 @@ add_service_files(
   StereoShapeDetector.srv
   ScanTheCodeMission.srv
   ObjectDBQuery.srv
-  ObjectDBFullQuery.srv
-  ObjectDBSingleQuery.srv
   CameraToLidarTransform.srv
 )
 
