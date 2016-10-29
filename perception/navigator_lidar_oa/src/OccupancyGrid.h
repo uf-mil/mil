@@ -44,7 +44,7 @@ struct cell
 struct beamEntry
 {
 	void update(const LidarBeam &beam) {
-		if (q.size() >= 20) { q.pop_front(); }
+		if (q.size() >= 30) { q.pop_front(); }
 		q.push_back(beam);
 	}
 	std::deque<LidarBeam> q;
@@ -152,6 +152,7 @@ class OccupancyGrid
 					Eigen::Vector3d dir(col-boatCol,row-boatRow,0); dir.normalize();
 					double lidarAngle = fabs(acos(lidarHeading.dot(dir))*180./M_PI);
 					double distance = sqrt(pow(boatRow - row, 2) + pow(boatCol - col, 2)) * VOXEL_SIZE_METERS;
+					//std::cout << row << " , " << col << " , " << lidarAngle << " , " << distance << std::endl;
 					if (lidarAngle <= lidarViewAngle && ogrid[row][col].hits > 0 && distance >= lidarMinViewDistance) { 
 						ogrid[row][col].hits -= 1;
 						if (ogrid[row][col].hits == 0) {
@@ -254,7 +255,7 @@ class OccupancyGrid
 				int binaryCol = 0;
 				for (int col = boatCol - ROI_SIZE/2; col < boatCol + ROI_SIZE/2; ++col,++binaryCol) {
 					//if ( std::abs(ogrid[row][col].max-ogrid[row][col].min) >= heightDiff && ogrid[row][col].hits >= minHit && ogrid[row][col].max <= maxHeight) { 
-					if ( ogrid[row][col].hits >= minHits && pointCloudTable[row*GRID_SIZE+col].q.size() >= 10) { 
+					if ( ogrid[row][col].hits >= minHits && pointCloudTable[row*GRID_SIZE+col].q.size() >= 13 && ogrid[row][col].max-ogrid[row][col].min > 0.075) { 
 						//std::cout << "Found " << row << "," << col << " has " << pointCloudTable[row*GRID_SIZE+col].q.size() << " points" << std::endl;
 						//double r_enu = (row - GRID_SIZE/2)*VOXEL_SIZE_METERS,c_enu = (col - GRID_SIZE/2)*VOXEL_SIZE_METERS;
 						//std::cout << "Binary hit at x,y " << c_enu << "," << r_enu << "," << ogrid[row][col].hits << std::endl;

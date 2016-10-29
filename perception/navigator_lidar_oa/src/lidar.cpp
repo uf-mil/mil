@@ -20,6 +20,8 @@
 #include <navigator_msgs/PerceptionObjectArray.h>
 #include <navigator_msgs/ObjectDBQuery.h>
 #include <navigator_msgs/Bounds.h>
+#include <interactive_markers/interactive_marker_server.h>
+#include <interactive_markers/menu_handler.h>
 #include <uf_common/PoseTwistStamped.h>
 
 #include <iostream>
@@ -45,8 +47,8 @@ const int MAX_HITS_IN_CELL = 125; //500
 const double MAXIMUM_Z_BELOW_LIDAR = 2; //2
 const double MAXIMUM_Z_ABOVE_LIDAR = 2.5;
 const double MAX_ROLL_PITCH_ANGLE_DEG = 5.3;
-const double LIDAR_VIEW_ANGLE_DEG = 120;
-const double LIDAR_VIEW_DISTANCE_METERS = 30;
+const double LIDAR_VIEW_ANGLE_DEG = 160;
+const double LIDAR_VIEW_DISTANCE_METERS = 80;
 const double LIDAR_MIN_VIEW_DISTANCE_METERS = 5.5;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -63,12 +65,19 @@ uf_common::PoseTwistStamped waypoint_enu,carrot_enu;
 ros::Time pubObjectsTimer;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+interactive_markers::InteractiveMarkerServer *markerServer;
+interactive_markers::MenuHandler menuHandler;
+interactive_markers::MenuHandler::EntryHandle menuEntry;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //These are changed on startup if /get_bounds service is present
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Eigen::Vector2d BOUNDARY_CORNER_1 (30, 10);
-Eigen::Vector2d BOUNDARY_CORNER_2 (30, 120);
-Eigen::Vector2d BOUNDARY_CORNER_3 (140, 120);
-Eigen::Vector2d BOUNDARY_CORNER_4 (140, 10);
+Eigen::Vector2d BOUNDARY_CORNER_1 (30-80, 10-150);
+Eigen::Vector2d BOUNDARY_CORNER_2 (30-80, 120-150);
+Eigen::Vector2d BOUNDARY_CORNER_3 (140-80, 120-150);
+Eigen::Vector2d BOUNDARY_CORNER_4 (140-80, 10-150);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -216,11 +225,23 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	objectCloudFrame.channels.push_back(channel);
 	pclCloud.channels.push_back(channel);
 	
+	//Track objects over frames
 	auto object_permanence = object_tracker.add_objects(objects,pclCloud,boatPose_enu);
 
-	int max_id = 0;	
+	//Clear all markers from interactive server
+	//markerServer->clear();	
+
 	for (auto obj : object_permanence) {
-		ROS_INFO_STREAM("LIDAR | " << obj.name << " " << obj.id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.strikesPersist.size() << "(" << obj.strikesFrame.size() << ") points, size " << obj.scale.x << "," << obj.scale.y << "," << obj.scale.z << " maxHeight " << obj.maxHeightFromLidar);
+		//Skip objects that are not current
+		if (!obj.current) { 
+			markerServer->erase(to_string(obj.id));
+			continue; 
+		} else if (!obj.real) {
+			continue;
+		}
+
+		//Display Info
+		ROS_INFO_STREAM("LIDAR | " << obj.name << " " << obj.id << " at " << obj.position.x << "," << obj.position.y << "," << obj.position.z << " with " << obj.strikesPersist.size() << "(" << obj.strikesFrame.size() << ") points, size " << obj.scale.x << "," << obj.scale.y << "," << obj.scale.z << " maxHeight " << obj.maxHeightFromLidar << ", " << obj.current);
 
 		//Show point cloud of just objects
 		objectCloudPersist.points.insert(objectCloudPersist.points.end(),obj.strikesPersist.begin(),obj.strikesPersist.end());
@@ -233,8 +254,19 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		for (auto ii : obj.intensityFrame) {	
 			objectCloudFrame.channels[0].values.push_back(ii);
 		}
+			
+		//Turn obj into an interactive marker for rviz
+	  	visualization_msgs::InteractiveMarker int_marker; 
+	  	visualization_msgs::InteractiveMarkerControl control;
+	  	int_marker.header.frame_id = "enu";
+	  	int_marker.scale = 1;
+	  	int_marker.name = to_string(obj.id);
+		control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
+	  	control.always_visible = true;
+	  	control.name = to_string(obj.id);
 
-		//Display number next to object
+
+		//Display number next to object	
 		visualization_msgs::Marker m4;
 		m4.header.stamp = ros::Time::now();
 		m4.header.seq = 0;
@@ -247,8 +279,14 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		m4.pose.position.z += 3.5;
 		m4.scale.z = 2;
 		m4.text = to_string(obj.id) + ":" + obj.name.substr(0,2);
-		m4.color.a = 0.6; m4.color.r = 0; m4.color.g = 1; m4.color.b = 0;		
-		markers.markers.push_back(m4);
+		if (obj.locked) {
+			m4.color.a = 0.6; m4.color.r = 0; m4.color.g = 0; m4.color.b = 1;
+		} else {
+			m4.color.a = 0.6; m4.color.r = 0; m4.color.g = 1; m4.color.b = 0;
+		}
+		control.markers.push_back( m4 );	
+		//markers.markers.push_back(m4);
+	
 
 		//Display normal as an arrow
 		if (obj.pclInliers > 10) {
@@ -266,28 +304,43 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 			m3.points.push_back(pp);
 			m3.scale.x = 1; m3.scale.y = 1; m3.scale.z = 1;
 			m3.color.a = 0.6; m3.color.r = 1; m3.color.g = 1; m3.color.b = 1;
-			markers.markers.push_back(m3);
+			//markers.markers.push_back(m3);
+			control.markers.push_back( m3 );
 		}
 
-		//Turn obj into a marker for rviz
-		visualization_msgs::Marker m2;
-		m2.header.stamp = ros::Time::now();
-		m2.header.seq = 0;
-		m2.header.frame_id = "enu";		
-		m2.header.stamp = ros::Time::now();
-		m2.id = obj.id;
-		m2.type = visualization_msgs::Marker::CUBE;
-		m2.action = visualization_msgs::Marker::ADD;		
-		m2.pose.position = obj.position;
-		m2.scale = obj.scale;
-		m2.color.a = 0.6; m2.color.r = 1; m2.color.g = 1; m2.color.b = 1;
-		markers.markers.push_back(m2);
-		if(m2.id > max_id) max_id = m2.id;
+		//Create marker as bounding box
+		if (obj.real) {
+			visualization_msgs::Marker m2;
+			m2.header.stamp = ros::Time::now();
+			m2.header.seq = 0;
+			m2.header.frame_id = "enu";		
+			m2.header.stamp = ros::Time::now();
+			m2.id = obj.id;
+			m2.type = visualization_msgs::Marker::CUBE;
+			m2.action = visualization_msgs::Marker::ADD;		
+			m2.pose.position = obj.position;
+			m2.scale = obj.scale;
+			if (obj.color.r == 0 && obj.color.g == 0 && obj.color.b == 0) {
+				m2.color.a = 0.6; m2.color.r = 0.3; m2.color.g = 0.3; m2.color.b = 0.3;
+			} else {
+				m2.color.a = 0.6; m2.color.r = obj.color.r; m2.color.g = obj.color.g; m2.color.b = obj.color.b;
+				std::cout << m2.color.r << "," << m2.color.g << "," << m2.color.b << std::endl;
+			}
+			//markers.markers.push_back(m2);
+			control.markers.push_back( m2 );
+		}
+
+		//Turn obj into an interactive marker for rviz
+	  	int_marker.controls.push_back(control);
+		markerServer->insert( int_marker );
+		menuHandler.apply( *markerServer, to_string(obj.id) );
 	}	
 	pubMarkers.publish(markers);
 	pubCloudPersist.publish(objectCloudPersist);
 	pubCloudFrame.publish(objectCloudFrame);
 	pubCloudPCL.publish(pclCloud);
+	markerServer->applyChanges();
+	
 
 	//Publish PerceptionObjects at some slower rate
 	if ( (ros::Time::now() - pubObjectsTimer).toSec() > 2 ) {
@@ -321,46 +374,117 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
 	ROS_INFO_STREAM("LIDAR | DB request with name " << req.name << " and command " << req.cmd);
 	res.found = false;
 	res.objects.clear();
-
-	//Did we get a command?
-	//Each command needs an id and value seperated by equals sign, this is ugly code...
-	auto index = req.cmd.find('=');
-	if (index != std::string::npos) {
-		auto id = stoi(req.cmd.substr(0,index));
-		//Is the second part a name or color values?
-		auto comma1 = req.cmd.find(',',index);
-		auto comma2 = req.cmd.find(',',comma1+1);
-		if (comma1 == string::npos || comma2 == string::npos) {
-			auto name = req.cmd.substr(index+1);
-			if (name == "shooter" || name == "dock" || name == "scan_the_code" || name == "totem" || name == "start_gate" || name == "unknown") {
-				for (auto &obj : object_tracker.saved_objects) {
-					if (obj.id == id) { 
-						ROS_INFO_STREAM("LIDAR | Changing id of object " << id << " to " << name);
-						obj.name = name; break; 
-					}
-				}
-			}
-		} else {
-			auto r = stoi( req.cmd.substr(index+1,comma1-index-1) );
-			auto g = stoi( req.cmd.substr(comma1+1,comma2-comma1-1) );
-			auto b = stoi( req.cmd.substr(comma2+1) );
-			
-			for (auto &obj : object_tracker.saved_objects) {
-				if (obj.id == id) { 
-					obj.color.r = r; obj.color.g = g; obj.color.b = b; 
-					ROS_INFO_STREAM("LIDAR | Changing color of object " << id << " to " << r << "," << g << "," << b);
-					break; 
-				}
-			}			
-
-		}
-		return true;
+	if (req.name.size() > 2) {
+		res.found = object_tracker.lookUpByName(req.name,res.objects);
 	}
-
-	//My original object message doesn't exactly match PerceptionObject, fix this in future!
-	res.found = object_tracker.lookUpByName(req.name,res.objects);
-
 	return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void roiCallBack( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
+{
+	  ROS_INFO_STREAM("LIDAR | " << feedback->marker_name << ": " << feedback->pose.position.x << ", " << feedback->pose.position.y << ", " << feedback->pose.position.z);
+	  for (auto &obj: object_tracker.saved_objects) {
+	  		if (obj.name == feedback->marker_name) {
+	  			obj.position = feedback->pose.position;
+	  			break;
+	  		}
+	  }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void createROIS(string name)
+{
+	static int xOffset = 10;
+	//Add ROI estimates
+  	visualization_msgs::InteractiveMarker int_marker; 
+  	visualization_msgs::InteractiveMarkerControl controlm,control;
+  	int_marker.header.frame_id = "enu";
+  	int_marker.scale = 1;
+  	int_marker.name = name;
+  	controlm.name = name;
+  	controlm.always_visible = true;
+  	controlm.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D;
+	visualization_msgs::Marker m4;
+	m4.header.stamp = ros::Time::now();
+	m4.header.seq = 0;
+	m4.header.frame_id = "enu";		
+	m4.header.stamp = ros::Time::now();
+	m4.id = -1;
+	m4.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+	m4.action = visualization_msgs::Marker::ADD;
+	m4.pose.position.x = xOffset;
+	m4.pose.position.y = 0;
+	m4.pose.position.z = 2;
+	m4.scale.z = 2;
+	m4.text = name;
+	m4.color.a = 1; m4.color.r = 1; m4.color.g = 1; m4.color.b = 1;
+  	controlm.markers.push_back(m4);
+	m4.type = visualization_msgs::Marker::SPHERE;
+	m4.pose.position.x = xOffset;
+	m4.pose.position.y = 0;
+	m4.pose.position.z = 0;
+	m4.scale.x = 2;
+	m4.scale.y = 2;
+	m4.scale.z = 2;
+	controlm.markers.push_back(m4);
+  	int_marker.controls.push_back(controlm);
+	markerServer->insert( int_marker );	
+	markerServer->setCallback(int_marker.name,&roiCallBack);
+	markerServer->applyChanges();
+	object_tracker.addROI(name);
+	xOffset += 12.5;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void markerCallBack( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
+{
+	ROS_INFO_STREAM("LIDAR MENU | Callback from " << feedback->menu_entry_id << "," << feedback->marker_name);
+	const vector<string> menu{"ObjectType", "shooter", "dock", "scan_the_code", "totem", "start_gate", "buoy", "unknown"};
+	
+	for (auto &obj : object_tracker.saved_objects) {
+		if (obj.id == stoi(feedback->marker_name)) { 
+			if (feedback->menu_entry_id < 9) {
+				obj.name = menu.at(feedback->menu_entry_id-1); 
+				ROS_INFO_STREAM("LIDAR | Changing id of object " << obj.id << " to " << obj.name);
+			} else if (feedback->menu_entry_id == 10 ) {
+				obj.locked = true;
+				ROS_INFO_STREAM("LIDAR | Changing status of object " << obj.id << " to locked");
+			} else if (feedback->menu_entry_id == 11) {
+				obj.locked = false;
+				ROS_INFO_STREAM("LIDAR | Changing status of object " << obj.id << " to unlocked");
+			} else if (feedback->menu_entry_id == 13) {
+				obj.color.r = 1.f; obj.color.g = 0.f; obj.color.b = 0.f;
+				ROS_INFO_STREAM("LIDAR | Changing color of object " << obj.id << " to red");
+			} else if (feedback->menu_entry_id == 14) {
+				obj.color.r = 1.f; obj.color.g = 1.f; obj.color.b = 1.f;
+				ROS_INFO_STREAM("LIDAR | Changing color of object " << obj.id << " to white");
+			} else if (feedback->menu_entry_id == 15) {
+				obj.color.r = 0.01f; obj.color.g = 0.01f; obj.color.b = 0.01f;
+				ROS_INFO_STREAM("LIDAR | Changing color of object " << obj.id << " to black");
+			}	else if (feedback->menu_entry_id == 16) {
+				obj.color.r = 0.f; obj.color.g = 1.f; obj.color.b = 0.f;
+				ROS_INFO_STREAM("LIDAR | Changing color of object " << obj.id << " to green");
+			} else if (feedback->menu_entry_id == 17) {
+				obj.color.r = 0.f; obj.color.g = 0.f; obj.color.b = 1.f;
+				ROS_INFO_STREAM("LIDAR | Changing color of object " << obj.id << " to blue");
+			} else if (feedback->menu_entry_id == 18) {
+				obj.color.r = 1.f; obj.color.g = 1.f; obj.color.b = 0.f;
+				ROS_INFO_STREAM("LIDAR | Changing color of object " << obj.id << " to yellow");
+			}	else if (feedback->menu_entry_id == 19) {
+				obj.color.r = 0.f; obj.color.g = 0.f; obj.color.b = 0.f;
+				ROS_INFO_STREAM("LIDAR | Changing color of object " << obj.id << " to unknown");
+			}											
+			break; 
+		}
+	}	
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -391,7 +515,7 @@ int main(int argc, char* argv[])
 
 	//Publish occupancy grid and visualization markers
 	pubGrid = nh.advertise<nav_msgs::OccupancyGrid>("/ogrid",10);
-	pubMarkers = nh.advertise<visualization_msgs::MarkerArray>("/unclassified_markers",10);
+	pubMarkers = nh.advertise<visualization_msgs::MarkerArray>("/info_markers",10);
 
 	//Publish PerceptionObjects
 	pubObjects = nh.advertise<navigator_msgs::PerceptionObjectArray>("/database/objects",1);
@@ -419,6 +543,36 @@ int main(int argc, char* argv[])
 	} else {
 		ROS_INFO_STREAM("LIDAR | Bounds not available from /get_bounds service....");
 	}
+
+	//Interactive Marker Menu Setup
+	markerServer = new interactive_markers::InteractiveMarkerServer("/unclassified_markers","",false);
+	interactive_markers::MenuHandler::EntryHandle sub_menu_handle = menuHandler.insert( "Type" );
+	menuEntry = menuHandler.insert( sub_menu_handle, "shooter", &markerCallBack );
+	menuEntry = menuHandler.insert( sub_menu_handle, "dock", &markerCallBack );
+	menuEntry = menuHandler.insert( sub_menu_handle, "scan_the_code", &markerCallBack );
+	menuEntry = menuHandler.insert( sub_menu_handle, "totem", &markerCallBack );
+	menuEntry = menuHandler.insert( sub_menu_handle, "start_gate", &markerCallBack );
+	menuEntry = menuHandler.insert( sub_menu_handle, "buoy", &markerCallBack );
+	menuEntry = menuHandler.insert( sub_menu_handle, "unknown", &markerCallBack );
+	sub_menu_handle = menuHandler.insert( "Lock" );
+	menuEntry = menuHandler.insert( sub_menu_handle, "True", &markerCallBack );
+	menuEntry = menuHandler.insert( sub_menu_handle, "False", &markerCallBack );
+	sub_menu_handle = menuHandler.insert( "Color" );
+	menuEntry = menuHandler.insert( sub_menu_handle, "Red", &markerCallBack );
+	menuEntry = menuHandler.insert( sub_menu_handle, "White", &markerCallBack );
+	menuEntry = menuHandler.insert( sub_menu_handle, "Black", &markerCallBack );
+	menuEntry = menuHandler.insert( sub_menu_handle, "Green", &markerCallBack );
+	menuEntry = menuHandler.insert( sub_menu_handle, "Blue", &markerCallBack );
+	menuEntry = menuHandler.insert( sub_menu_handle, "Yellow", &markerCallBack );
+	menuEntry = menuHandler.insert( sub_menu_handle, "Unknown", &markerCallBack );
+
+	//Create ROIs
+	createROIS("BuoyField");
+	createROIS("CoralSurvey");
+	createROIS("FindBreak");
+	createROIS("AcousticPinger");
+	createROIS("DetectDeliver");
+	createROIS("ScanCode");
 
 	//Give control to ROS
 	ros::spin();
