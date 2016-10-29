@@ -78,7 +78,7 @@ void GrayscaleContour::GetShapes(cv::Mat& frame, cv::Rect roi,
   ros_color_debug.image = croppedFrame.clone();
 #endif
 
-  for (int i = 0; i < contours.size(); i++) {
+  for (unsigned int i = 0; i < contours.size(); i++) {
     navigator_msgs::DockShape dockShape;
     std::vector<cv::Point> approx_tri;
     std::vector<cv::Point> approx_cross;
@@ -163,7 +163,7 @@ void GrayscaleContour::FindContours() {
 
 #if defined(DO_DEBUG) || defined(DO_ROS_DEBUG)
   contoursFrame = Mat(edgesFrame.size(), edgesFrame.type(), Scalar(0, 0, 0));
-  for (int i = 0; i < contours.size(); i++) {
+  for (unsigned int i = 0; i < contours.size(); i++) {
     drawContours(contoursFrame, contours, i, Scalar(255, 255, 255));
   }
 #endif
@@ -276,7 +276,7 @@ const double pi = 3.1415926;
 bool GrayscaleContour::isCircle(std::vector<Point>& points) {
   if (points.size() < 5) return false;
   double contour_area = contourArea(points);
-  double perimeter = arcLength(points, true);
+  // ~double perimeter = arcLength(points, true);
   double expected_area, error;
 
   // Find a min enclosing circle for contour, then compare enclosing cirlcle
@@ -312,7 +312,7 @@ bool GrayscaleContour::filterArea(std::vector<Point> contour) {
 }
 Point GrayscaleContour::findCenter(std::vector<Point>& points) {
   double x = 0, y = 0;
-  for (int i = 0; i < points.size(); i++) {
+  for (unsigned int i = 0; i < points.size(); i++) {
     x += points[i].x;
     y += points[i].y;
   }
@@ -332,7 +332,7 @@ double GrayscaleContour::findAngle(cv::Point& p1, cv::Point& p2,
 }
 void GrayscaleContour::findAngles(std::vector<Point>& points,
                                   std::vector<double>& angles) {
-  for (int i = 0; i < points.size() - 2; i++)
+  for (unsigned int i = 0; i < points.size() - 2; i++)
     angles.push_back(findAngle(points[i], points[i + 1], points[i + 2]));
   angles.push_back(findAngle(points[points.size() - 2],
                              points[points.size() - 1], points[0]));
@@ -344,7 +344,7 @@ void GrayscaleContour::setShapePoints(navigator_msgs::DockShape& dockShape,
   dockShape.CenterX = center.x + roi.x;
   dockShape.CenterY = center.y + roi.y;
   dockShape.img_width = colorFrame.cols;
-  for (int j = 0; j < points.size(); j++) {
+  for (unsigned int j = 0; j < points.size(); j++) {
     geometry_msgs::Point p;
     p.x = points[j].x + roi.x;
     p.y = points[j].y + roi.y;

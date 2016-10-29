@@ -5,7 +5,6 @@
 #include <ros/ros.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include "DebugWindow.h"
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -13,7 +12,6 @@
 
 #include <navigator_msgs/DockShapes.h>
 
-#include "ContourMethod/ContourMethod.h"
 #include "GrayscaleContour/GrayscaleContour.h"
 #include "std_srvs/SetBool.h"
 //#include "FeatureDetectorMethod/FeatureDetectorMethod.h"
@@ -51,7 +49,7 @@ class ShooterVision {
     vision->init();
     nh_.param<std::string>("symbol_camera", camera_topic,
                            "/right/right/image_raw");
-    runService = nh_.advertiseService("/dock_shapes/run", &ShooterVision::runCallback, this);
+    runService = nh_.advertiseService("/vision/get_shapes/switch", &ShooterVision::runCallback, this);
     roiService = nh_.advertiseService("setROI",
                                       &ShooterVision::roiServiceCallback, this);
     //#ifdef DO_DEBUG
@@ -108,7 +106,7 @@ class ShooterVision {
     symbols.list.clear();
 
     vision->GetShapes(frame, roi, symbols);
-    for (int i = 0; i < symbols.list.size(); i++)
+    for (unsigned int i = 0; i < symbols.list.size(); i++)
       symbols.list[i].header = msg->header;
     foundShapesPublisher.publish(symbols);
     tracker.addShapes(symbols);

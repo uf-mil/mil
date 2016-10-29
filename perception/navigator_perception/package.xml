@@ -28,5 +28,8 @@
   <run_depend>geometry_msgs</run_depend>
   <build_depend>sensor_msgs</build_depend>
   <run_depend>sensor_msgs</run_depend>
-
+  <run_depend>libpcl-all</run_depend>
+  <build_depend>tf2_sensor_msgs</build_depend>
+  <run_depend>tf2_sensor_msgs</run_depend>
+  <build_depend>tf2_geometry_msgs</build_depend>
 </package>

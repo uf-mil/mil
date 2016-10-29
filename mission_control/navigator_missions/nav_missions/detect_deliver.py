@@ -26,7 +26,6 @@ class DetectDeliverMission:
             self.navigator.nh, '/shooter/load', ShooterDoAction)
         self.shooterFire = txros.action.ActionClient(
             self.navigator.nh, '/shooter/fire', ShooterDoAction)
-        self.visionActivation = navigator.nh.get_service_client('/dock_shapes/run',SetBool)
 
 
     @txros.util.cancellableInlineCallbacks
@@ -66,9 +65,9 @@ class DetectDeliverMission:
                 req.point.x = self.found_shape.CenterX
                 req.point.y = self.found_shape.CenterY
                 req.tolerance = 15
-                print "Sending transform request: ", req
-                # ~res = yield self.cameraLidarTransformer(req)
-                print res
+                # ~print "Sending transform request: ", req
+                res = yield self.cameraLidarTransformer(req)
+                # ~print res
                 if res.success:
                     # ~print "SUCCESS IN RAY LIDAR"
                     # ~print "TIME: ", self.navigator.nh.get_time()
@@ -130,7 +129,7 @@ class DetectDeliverMission:
         defer.returnValue(self.resp.found)
 
     @txros.util.cancellableInlineCallbacks
-    def shootAllBalls(self):
+    def shoot_all_balls(self):
         for i in range(1):
             # ~time.sleep(3)
             # ~self.shooterLoad(std_srvs.srv.TriggerRequest())
@@ -145,20 +144,20 @@ class DetectDeliverMission:
             res = yield goal.get_result()
 
     @txros.util.cancellableInlineCallbacks
-    def findAndShoot(self):
-        yield self.visionActivation(SetBoolRequest(data=True))
+    def find_and_shoot(self):
+        yield self.navigator.vision_proxies["get_shape"].start()
         yield self.set_shape_and_color()  # Get correct goal shape/color from params
         yield self.get_waypoint()  # Get waypoint of shooter target
         yield self.circle_search()  # Go to waypoint and circle until target found
         yield self.align_to_target()
         yield self.offset_for_target()  # Move a little bit forward to be centered to target
         print "Starting to fire"
-        yield self.shootAllBalls()
-        yield self.visionActivation(data=False)
+        yield self.shoot_all_balls()
+        yield self.navigator.vision_proxies["get_shape"].stop()
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator):
     print "Starting Detect Deliver Mission"
     mission = DetectDeliverMission(navigator)
-    yield mission.findAndShoot()
+    yield mission.find_and_shoot()
     print "End of Detect Deliver Mission"

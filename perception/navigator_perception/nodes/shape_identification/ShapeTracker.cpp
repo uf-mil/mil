@@ -9,7 +9,7 @@ void ShapeTracker::setActive(bool a)
 }
 void ShapeTracker::init(ros::NodeHandle& nh)
 {
-  getShapesService = nh.advertiseService("/dock_shapes/GetShapes", &ShapeTracker::getShapesCallback, this);
+  getShapesService = nh.advertiseService("/vision/get_shapes", &ShapeTracker::getShapesCallback, this);
   allFoundShapesPublish = nh.advertise<navigator_msgs::DockShapes>("/dock_shapes/filtered_shapes", 10); 
 }
 void ShapeTracker::addShape(navigator_msgs::DockShape& s)

@@ -23,6 +23,8 @@ find_package(catkin
     sensor_msgs
     tf
     pcl_ros
+    tf2_sensor_msgs
+    tf2_geometry_msgs
 )
 
 find_package(PCL 1.7 REQUIRED)
@@ -170,6 +172,32 @@ target_link_libraries(
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
     ${OpenCV_INCLUDE_DIRS}
+)
+
+add_executable(shape_identification
+  nodes/shape_identification/main.cpp
+  nodes/shape_identification/DockShapeVision.cpp
+  nodes/shape_identification/GrayscaleContour/GrayscaleContour.cpp
+  nodes/shape_identification/TrackedShape.cpp
+  nodes/shape_identification/ShapeTracker.cpp
+)
+add_dependencies(shape_identification
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(shape_identification
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+)
+add_executable(camera_to_lidar
+  nodes/camera_to_lidar/main.cpp
+  nodes/camera_to_lidar/CameraLidarTransformer.cpp
+)
+add_dependencies(camera_to_lidar
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(camera_to_lidar
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
 )
 
 install(
