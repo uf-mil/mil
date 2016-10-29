@@ -16,6 +16,18 @@ class Colors():
 
         return self.reset
 
+class Seperator():
+    # TODO
+    def __getattr__(self, *args, **kwargs):
+        return
+
+    def equals(self, _len, blank_space=False):
+        text = "{}".format("=" * len)
+        if blank_space:
+            return "\n{}\n".format(text)
+
+        return text
+
 
 def fprint(msg, time=None, title=None, newline=True, msg_color=None):
     time_header = False
@@ -50,6 +62,8 @@ def fprint(msg, time=None, title=None, newline=True, msg_color=None):
         to_print = "{msg}"
 
     if newline:
+        if isinstance(newline, int):
+            msg += "\n" * (newline - 1)  # Since printing implicitly adds a new line
         print to_print.format(time=time_header, title=title_header, msg=msg)
     else:
         # Note, this adds a space at the end.
