@@ -14,9 +14,9 @@ void ShapeTracker::init(ros::NodeHandle& nh)
 }
 void ShapeTracker::addShape(navigator_msgs::DockShape& s)
 {
- for (auto tracked = shapes.begin(); tracked != shapes.end(); tracked++)
+ for (auto &tracked : shapes)
  {
-  if (tracked->update(s)) return;
+  if (tracked.update(s)) return;
  }
  // ~printf("Inserting Shape \n");
  shapes.push_back(TrackedShape(s));
@@ -24,18 +24,18 @@ void ShapeTracker::addShape(navigator_msgs::DockShape& s)
 void ShapeTracker::addShapes(navigator_msgs::DockShapes& newShapes)
 {
  // ~printf("Adding %d shapes current size = %d\n",newShapes.list.size(),shapes.size());
- for (auto shape = newShapes.list.begin(); shape != newShapes.list.end(); shape++)
+ for (auto &shape : newShapes.list)
  {
-   addShape(*shape);
+   addShape(shape);
  }
  shapes.erase(std::remove_if(shapes.begin(), shapes.end(), [] (TrackedShape& s) {return s.isStale();}),shapes.end());
  // ~printf("Shapes size %d\n",shapes.size());
  navigator_msgs::DockShapes found_shapes;
- for (auto tracked = shapes.begin(); tracked != shapes.end(); tracked++)
+ for (auto &tracked : shapes)
   {
-    if (tracked->isReady() )
+    if (tracked.isReady() )
     {
-      found_shapes.list.push_back(tracked->get());
+      found_shapes.list.push_back(tracked.get());
     }
   }
   allFoundShapesPublish.publish(found_shapes);
@@ -52,18 +52,18 @@ bool ShapeTracker::getShapesCallback(navigator_msgs::GetDockShapes::Request &req
     res.error = navigator_msgs::GetDockShapes::Response::INVALID_REQUEST;
     return true;
   }
-  for (auto tracked = shapes.begin(); tracked != shapes.end(); tracked++)
+  for (auto &tracked : shapes)
   {
-    if (tracked->sameType(req.Color,req.Shape) && tracked->isReady() )
+    if (tracked.sameType(req.Color,req.Shape) && tracked.isReady() )
     {
-      res.shapes.list.push_back(tracked->get());
+      res.shapes.list.push_back(tracked.get());
     }
   }
   if (res.shapes.list.size() > 0) res.found = true;
   else res.error =  navigator_msgs::GetDockShapes::Response::SHAPE_NOT_FOUND;
   return true;
 }
-bool ShapeTracker::validRequest(string& color, string& shape)
+bool ShapeTracker::validRequest(std::string& color, std::string& shape)
 {
 return (color == navigator_msgs::GetDockShape::Request::BLUE ||
         color == navigator_msgs::GetDockShape::Request::GREEN ||

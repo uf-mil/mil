@@ -4,7 +4,7 @@
 #include <navigator_msgs/GetDockShape.h>
 #include <navigator_msgs/GetDockShapes.h>
 #include <string>
-using namespace std;
+
 class TrackedShape
 {
   private:
@@ -18,7 +18,7 @@ class TrackedShape
   public:
     TrackedShape();
     TrackedShape(navigator_msgs::DockShape& s);
-    bool sameType(string& color, string & shape);
+    bool sameType(std::string& color, std::string & shape);
     bool update(navigator_msgs::DockShape& s);
     bool isReady();
     bool isStale();

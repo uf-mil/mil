@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>navigator_perception</name>
+  <name>navigator_vision</name>
   <version>1.0.0</version>
-  <description>The navigator_perception package</description>
+  <description>Nodes and libraries used for computer vision perception on Navigator</description>
 
   <maintainer email="tessbianchi@ufl.edu">tess</maintainer>
   <maintainer email="d.soto@ufl.edu">david</maintainer>

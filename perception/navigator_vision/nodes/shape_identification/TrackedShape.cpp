@@ -1,7 +1,8 @@
 #include "TrackedShape.h"
+using namespace std;
 int TrackedShape::MIN_COUNT = 20;
 double TrackedShape::MAX_DISTANCE = 5;
-ros::Duration TrackedShape::MAX_TIME_GAP = ros::Duration(0, 0.5 * 1000000000);
+ros::Duration TrackedShape::MAX_TIME_GAP = ros::Duration(0, 0.5 * 1E9);
 TrackedShape::TrackedShape() : count(0)
 {
   
@@ -18,7 +19,7 @@ void TrackedShape::init(ros::NodeHandle& nh)
   nh.param<double>("tracking/max_distance_gap",MAX_DISTANCE,15);
   double seconds;
   nh.param<double>("tracking/max_seen_gap_seconds", seconds, 0.5);
-  MAX_TIME_GAP = ros::Duration(0, seconds * 1000000000);
+  MAX_TIME_GAP = ros::Duration(0, seconds * 1E9);
 }
 double TrackedShape::centerDistance(navigator_msgs::DockShape& a, navigator_msgs::DockShape& b)
 {
@@ -74,7 +75,7 @@ navigator_msgs::DockShape TrackedShape::get()
 {
   return latest;
 }
-bool TrackedShape::sameType(string& color, string & shape)
+bool TrackedShape::sameType(std::string& color, std::string& shape)
 {
   return (color == navigator_msgs::GetDockShape::Request::ANY ||  color == latest.Color ) && (shape == navigator_msgs::GetDockShape::Request::ANY || shape == latest.Shape);
 }

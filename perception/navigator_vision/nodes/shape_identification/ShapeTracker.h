@@ -6,15 +6,14 @@
 #include <navigator_msgs/GetDockShapes.h>
 #include "TrackedShape.h"
 
-using namespace std;
 class ShapeTracker
 {
   private:
     ros::ServiceServer getShapesService;
     ros::Publisher allFoundShapesPublish;
-    vector<TrackedShape> shapes;
+    std::vector<TrackedShape> shapes;
     bool active;
-    static bool validRequest(string& color, string& shape);
+    static bool validRequest(std::string& color, std::string& shape);
   public:
     ShapeTracker();
     void setActive(bool a);
