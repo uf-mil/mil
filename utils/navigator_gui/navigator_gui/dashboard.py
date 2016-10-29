@@ -62,8 +62,8 @@ class Dashboard(Plugin):
 
         # Build an ordered list of host dictionaries that resolve to devices on navigator
         host_list = [
-            "mil-nav-ubnt-shore",
             "mil-nav-ubnt-wamv",
+            "mil-nav-ubnt-shore",
             "mil-nav-wamv",
             "mil-com-velodyne-vlp16",
             "mil-com-sick-lms111"
@@ -175,23 +175,24 @@ class Dashboard(Plugin):
                 function(self)
         return decorated_function
 
-    @timeout_check
     def update_kill_status(self, alarm):
         '''
         Updates the kill status display when there is an update on the kill
         alarm. Caches the last displayed kill status to avoid updating the
         display with the same information twice.
         '''
-        if (alarm.clear):
-            if (self.is_killed):
-                self.is_killed = False
-                self.kill_status_status.setText("Alive")
-                self.kill_status_frame.setStyleSheet(self.colors["green"])
+        if (not self.system_time["is_timed_out"]):
 
-        elif (not self.is_killed):
-            self.is_killed = True
-            self.kill_status_status.setText("Killed")
-            self.kill_status_frame.setStyleSheet(self.colors["red"])
+            if (alarm.clear):
+                if (self.is_killed):
+                    self.is_killed = False
+                    self.kill_status_status.setText("Alive")
+                    self.kill_status_frame.setStyleSheet(self.colors["green"])
+
+            elif (not self.is_killed):
+                self.is_killed = True
+                self.kill_status_status.setText("Killed")
+                self.kill_status_frame.setStyleSheet(self.colors["red"])
 
     def monitor_operating_mode(self):
         '''
