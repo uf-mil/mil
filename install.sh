@@ -300,7 +300,7 @@ if !([ -f $CATKIN_DIR/src/CMakeLists.txt ]); then
 	mkdir -p "$CATKIN_DIR/src"
 	cd "$CATKIN_DIR/src"
 	catkin_init_workspace
-	catkin_make -C "$CATKIN_DIR"
+	catkin_make -C "$CATKIN_DIR" -B
 else
 	instlog "Using existing catkin workspace at $CATKIN_DIR"
 fi
@@ -461,6 +461,10 @@ if ($INSTALL_NAV); then
 	instlog "Cloning Navigator Git repositories that need to be built"
 	ros_git_get https://github.com/jnez71/lqRRT.git
 	ros_git_get https://github.com/gareth-cross/rviz_satellite.git
+
+	# Required steps to build and install lqRRT
+	sudo python $CATKIN_DIR/src/lqRRT/setup.py build
+	sudo python $CATKIN_DIR/src/lqRRT/setup.py install
 fi
 
 
@@ -719,7 +723,7 @@ instlog "The bashrc file has been updated with the current aliases"
 # Attempt to build the Navigator stack on client machines
 if !(env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
 	instlog "Building MIL's software stack with catkin_make"
-	catkin_make -C "$CATKIN_DIR" -j8
+	catkin_make -C "$CATKIN_DIR" -B
 fi
 
 # Remove the initial install script if it was not in the Navigator repository
