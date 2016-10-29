@@ -79,6 +79,25 @@ Eigen::Vector2d BOUNDARY_CORNER_2 (30-80, 120-150);
 Eigen::Vector2d BOUNDARY_CORNER_3 (140-80, 120-150);
 Eigen::Vector2d BOUNDARY_CORNER_4 (140-80, 10-150);
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+visualization_msgs::InteractiveMarker CreateInteractiveMarker(string name)
+{
+		//Turn obj into an interactive marker for rviz
+	  	visualization_msgs::InteractiveMarker int_marker; 
+	  	visualization_msgs::InteractiveMarkerControl control;
+	  	int_marker.header.frame_id = "enu";
+	  	int_marker.scale = 1;
+	  	int_marker.name = name;
+		control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
+	  	control.always_visible = true;
+	  	control.name = name;
+	  	int_marker.controls.push_back(control);
+	  	return int_marker;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -255,16 +274,8 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 			objectCloudFrame.channels[0].values.push_back(ii);
 		}
 			
-		//Turn obj into an interactive marker for rviz
-	  	visualization_msgs::InteractiveMarker int_marker; 
-	  	visualization_msgs::InteractiveMarkerControl control;
-	  	int_marker.header.frame_id = "enu";
-	  	int_marker.scale = 1;
-	  	int_marker.name = to_string(obj.id);
-		control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
-	  	control.always_visible = true;
-	  	control.name = to_string(obj.id);
-
+		//Create Interactive marker
+		auto int_marker = CreateInteractiveMarker(to_string(obj.id));
 
 		//Display number next to object	
 		visualization_msgs::Marker m4;
@@ -284,7 +295,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		} else {
 			m4.color.a = 0.6; m4.color.r = 0; m4.color.g = 1; m4.color.b = 0;
 		}
-		control.markers.push_back( m4 );	
+		int_marker.controls[0].markers.push_back( m4 );	
 		//markers.markers.push_back(m4);
 	
 
@@ -305,7 +316,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 			m3.scale.x = 1; m3.scale.y = 1; m3.scale.z = 1;
 			m3.color.a = 0.6; m3.color.r = 1; m3.color.g = 1; m3.color.b = 1;
 			//markers.markers.push_back(m3);
-			control.markers.push_back( m3 );
+			int_marker.controls[0].markers.push_back( m3 );
 		}
 
 		//Create marker as bounding box
@@ -327,11 +338,10 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 				std::cout << m2.color.r << "," << m2.color.g << "," << m2.color.b << std::endl;
 			}
 			//markers.markers.push_back(m2);
-			control.markers.push_back( m2 );
+			int_marker.controls[0].markers.push_back( m2 );
 		}
 
 		//Turn obj into an interactive marker for rviz
-	  	int_marker.controls.push_back(control);
 		markerServer->insert( int_marker );
 		menuHandler.apply( *markerServer, to_string(obj.id) );
 	}	
@@ -377,6 +387,20 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
 	if (req.name.size() > 2) {
 		res.found = object_tracker.lookUpByName(req.name,res.objects);
 	}
+	auto split1 = req.cmd.find('=');
+	auto split2 = req.cmd.find(',');
+	if ( split1 != string::npos && split2 != string::npos) {
+		auto name = req.cmd.substr(0,split1);
+		auto x = stod(req.cmd.substr(split1+1,split2-split1));
+		auto y = stod(req.cmd.substr(split2+1));
+		cout << "LIDAR | Cmd is " << name << "," << x << "," << y << endl;
+		geometry_msgs::Pose newPose;
+		newPose.position.x = x;
+		newPose.position.y = y;
+		newPose.position.z = 0;
+		markerServer->setPose(name,newPose);
+	  	markerServer->applyChanges();
+	}
 	return true;
 }
 
@@ -386,12 +410,16 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
 void roiCallBack( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
 {
 	  ROS_INFO_STREAM("LIDAR | " << feedback->marker_name << ": " << feedback->pose.position.x << ", " << feedback->pose.position.y << ", " << feedback->pose.position.z);
+	  auto newPose = feedback->pose;
+	  newPose.position.z = 0;
 	  for (auto &obj: object_tracker.saved_objects) {
 	  		if (obj.name == feedback->marker_name) {
-	  			obj.position = feedback->pose.position;
+	  			obj.position = newPose.position;
 	  			break;
 	  		}
 	  }
+	  markerServer->setPose(feedback->marker_name,newPose);
+	  markerServer->applyChanges();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -399,7 +427,6 @@ void roiCallBack( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &f
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void createROIS(string name)
 {
-	static int xOffset = 10;
 	//Add ROI estimates
   	visualization_msgs::InteractiveMarker int_marker; 
   	visualization_msgs::InteractiveMarkerControl controlm,control;
@@ -413,11 +440,10 @@ void createROIS(string name)
 	m4.header.stamp = ros::Time::now();
 	m4.header.seq = 0;
 	m4.header.frame_id = "enu";		
-	m4.header.stamp = ros::Time::now();
 	m4.id = -1;
 	m4.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
 	m4.action = visualization_msgs::Marker::ADD;
-	m4.pose.position.x = xOffset;
+	m4.pose.position.x = 0;
 	m4.pose.position.y = 0;
 	m4.pose.position.z = 2;
 	m4.scale.z = 2;
@@ -425,7 +451,7 @@ void createROIS(string name)
 	m4.color.a = 1; m4.color.r = 1; m4.color.g = 1; m4.color.b = 1;
   	controlm.markers.push_back(m4);
 	m4.type = visualization_msgs::Marker::SPHERE;
-	m4.pose.position.x = xOffset;
+	m4.pose.position.x = 0;
 	m4.pose.position.y = 0;
 	m4.pose.position.z = 0;
 	m4.scale.x = 2;
@@ -437,7 +463,6 @@ void createROIS(string name)
 	markerServer->setCallback(int_marker.name,&roiCallBack);
 	markerServer->applyChanges();
 	object_tracker.addROI(name);
-	xOffset += 12.5;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -571,8 +596,8 @@ int main(int argc, char* argv[])
 	createROIS("CoralSurvey");
 	createROIS("FindBreak");
 	createROIS("AcousticPinger");
-	createROIS("DetectDeliver");
-	createROIS("ScanCode");
+	createROIS("Shooter");
+	createROIS("Scan_The_Code");
 
 	//Give control to ROS
 	ros::spin();
