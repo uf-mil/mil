@@ -93,9 +93,9 @@ class Navigator(object):
         else:
             # We want to make sure odom is working before we continue
             fprint("Waiting for odom...", title="NAVIGATOR")
-            odom = util.wrap_time_notice(self._odom_sub.get_next_message(), 2, "Odom listener", title="NAVIGATOR")
-            enu_odom = util.wrap_time_notice(self._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener", title="NAVIGATOR")
-            bounds = util.wrap_time_notice(self._make_bounds(), 2, "Bounds creation", title="NAVIGATOR")
+            odom = util.wrap_time_notice(self._odom_sub.get_next_message(), 2, "Odom listener")
+            enu_odom = util.wrap_time_notice(self._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener")
+            bounds = util.wrap_time_notice(self._make_bounds(), 2, "Bounds creation")
             yield defer.gatherResults([odom, enu_odom, bounds])  # Wait for all those to finish
 
         defer.returnValue(self)

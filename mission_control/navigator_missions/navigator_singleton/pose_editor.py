@@ -1,6 +1,7 @@
 from __future__ import division
 import warnings
 
+import txros
 import numpy as np
 from tf import transformations
 from nav_msgs.msg import Odometry
@@ -126,14 +127,26 @@ class PoseEditor2(object):
     def distance(self):
         return np.linalg.norm(self.position - self.nav.pose[0])
 
+    @txros.util.cancellableInlineCallbacks
     def go(self, *args, **kwargs):
         if self.nav.killed:
             # What do we want to do with missions when the boat is killed
             fprint("Boat is killed, ignoring go command!", title="POSE_EDITOR", msg_color="red")
-            return
+            yield self.nav.nh.sleep(1)
+            defer.returnValue()
 
         self.goal = self.nav._moveto_client.send_goal(self.as_MoveGoal(*args, **kwargs))
-        return self.goal.get_result()
+        res = yield self.goal.get_result()
+
+        if res.failure_reason == '':
+            fprint("Move completed successfully!", title="POSE_EDITOR", msg_color="green", newline=2)
+        elif res.failure_reason == 'occupied':
+            fprint("Goal was occupied - moved to close point instead.", title="POSE_EDITOR", newline=2)
+        elif res.failure_reason == 'collided':
+            fprint("Collided with object. Check perception then if this is the real boat and"\
+             "perception wasn't to blame, promptly kill jason", title="POSE_EDITOR", newline=2, msg_color="red")
+        else:
+            fprint("Unknown response from action client: {}".format(res), title="POSE_EDITOR", newline=2)
 
     def set_position(self, position):
         return PoseEditor2(self.nav, [np.array(position), np.array(self.orientation)])
