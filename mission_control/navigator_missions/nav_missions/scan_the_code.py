@@ -11,7 +11,7 @@ def main(navigator):
     req = ObjectDBSingleQueryRequest()
     req.type = 'scan_the_code'
     ans = yield serv(req)
-    print ans.object.header
+    print ans.object
     if not ans.found:
         return
 

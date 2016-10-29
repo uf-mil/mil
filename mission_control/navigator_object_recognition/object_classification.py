@@ -39,20 +39,30 @@ class ObjectClassifier(object):
         self.sub_unclassified = yield self.nh.subscribe('/unclassified/objects', PerceptionObjects, self.new_objects)
         self.sub_odom = yield self.nh.subscribe('odom', Odometry, self.odom_cb)
 
-        self.publish_items()
+        yield self.publish_items()
+        print "done"
         defer.returnValue(self)
 
     @util.cancellableInlineCallbacks
     def publish_items(self):
         while True:
+            print len(self.found_objects)
             for i in self.found_objects:
+                print i.type
                 for j in self.all_objects:
+                    print j.type
                     if i.id == j.id:
                         i.position = j.position
                         i.header = j.header
                         i.points = j.points
                         self.pub_obj_found.publish(i)
-            yield nh.sleep(.25)
+                    print "++++"
+
+            print "----"
+
+            hi = nh.sleep(.25)
+            print hi
+            yield hi
 
     def odom_cb(self, odom):
         self.position, self.rot = nt.odometry_to_numpy(odom)[0]
