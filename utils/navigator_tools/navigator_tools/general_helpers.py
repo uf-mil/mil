@@ -62,7 +62,7 @@ def fprint(msg, time=None, title=None, newline=True, msg_color=None):
         to_print = "{msg}"
 
     if newline:
-        if isinstance(newline, int):
+        if not isinstance(newline, bool):
             msg += "\n" * (newline - 1)  # Since printing implicitly adds a new line
         print to_print.format(time=time_header, title=title_header, msg=msg)
     else:
