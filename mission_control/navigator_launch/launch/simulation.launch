@@ -6,6 +6,7 @@
 <launch>
     <arg name="gazebo" default="true"/>
     <arg name="gui" default="true"/>
+    <arg name="sandbox" default="false"/>
 
     <include file="$(find navigator_alarm)/launch/alarm.launch"/>
     <include file="$(find navigator_launch)/launch/gnc.launch"/>
@@ -18,6 +19,7 @@
 
     <include file="$(find navigator_gazebo)/launch/goose.launch" if="$(arg gazebo)">
         <arg name="gui" value="$(arg gui)"/>
+        <arg name="sandbox" value="$(arg sandbox)"/>
     </include>
 
     <node pkg="xbox_joy_node" type="joy_node" name="joy_node">
