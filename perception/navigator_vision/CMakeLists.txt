@@ -76,8 +76,9 @@ add_library(
     src/navigator_vision_lib/visualization.cc
     src/navigator_vision_lib/cv_utils.cc
     src/navigator_vision_lib/colorizer/pcd_colorizer.cpp
+    src/navigator_vision_lib/colorizer/single_cloud_processor.cpp
+    src/navigator_vision_lib/colorizer/camera_observer.cpp
     src/navigator_vision_lib/colorizer/color_observation.cpp
-    src/navigator_vision_lib/pcd_sub_pub_algorithm.cpp
  )
 target_include_directories(navigator_vision_lib PUBLIC include/navigator_vision_lib)
 target_link_libraries(navigator_vision_lib navigator_tools_lib ${catkin_LIBRARIES} ${Boost_LIBRARIES})
