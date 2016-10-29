@@ -50,6 +50,8 @@ const double MAX_ROLL_PITCH_ANGLE_DEG = 5.3;
 const double LIDAR_VIEW_ANGLE_DEG = 160;
 const double LIDAR_VIEW_DISTANCE_METERS = 80;
 const double LIDAR_MIN_VIEW_DISTANCE_METERS = 5.5;
+const int MIN_LIDAR_POINTS_FOR_OCCUPANCY = 10;
+const double MIN_OBJECT_HEIGHT_METERS = 0.075;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -151,7 +153,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 
 	//Update occupancy grid
 	ogrid.setLidarPosition(lidarPos,lidarHeading);
-	ogrid.setLidarParams(LIDAR_VIEW_ANGLE_DEG,LIDAR_VIEW_DISTANCE_METERS,LIDAR_MIN_VIEW_DISTANCE_METERS);
+	ogrid.setLidarParams(LIDAR_VIEW_ANGLE_DEG,LIDAR_VIEW_DISTANCE_METERS,LIDAR_MIN_VIEW_DISTANCE_METERS,MIN_LIDAR_POINTS_FOR_OCCUPANCY,MIN_OBJECT_HEIGHT_METERS);
 	ogrid.updatePointsAsCloud(pcloud,T_enu_velodyne,MAX_HITS_IN_CELL,MAXIMUM_Z_BELOW_LIDAR,MAXIMUM_Z_ABOVE_LIDAR);
 	ogrid.createBinaryROI(MIN_HITS_FOR_OCCUPANCY);
 
@@ -335,7 +337,6 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 				m2.color.a = 0.6; m2.color.r = 0.3; m2.color.g = 0.3; m2.color.b = 0.3;
 			} else {
 				m2.color.a = 0.6; m2.color.r = obj.color.r; m2.color.g = obj.color.g; m2.color.b = obj.color.b;
-				std::cout << m2.color.r << "," << m2.color.g << "," << m2.color.b << std::endl;
 			}
 			//markers.markers.push_back(m2);
 			int_marker.controls[0].markers.push_back( m2 );
