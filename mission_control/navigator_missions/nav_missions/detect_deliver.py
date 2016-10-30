@@ -11,6 +11,7 @@ from geometry_msgs.msg import Point
 from std_srvs.srv import SetBool, SetBoolRequest
 from twisted.internet import defer
 from image_geometry import PinholeCameraModel
+from visualization_msgs.msg import Marker,MarkerArray
 import navigator_tools
 
 
@@ -25,7 +26,7 @@ class DetectDeliverMission:
             self.navigator.nh, '/shooter/load', ShooterDoAction)
         self.shooterFire = txros.action.ActionClient(
             self.navigator.nh, '/shooter/fire', ShooterDoAction)
-
+        self.markers_pub = self.navigator.nh.advertise("/detect_deliver/debug_marker",MarkerArray)
 
     @txros.util.cancellableInlineCallbacks
     def set_shape_and_color(self):
@@ -77,7 +78,18 @@ class DetectDeliverMission:
                     enunormal = transformObj.transform_vector(
                         navigator_tools.rosmsg_to_numpy(res.normal))
                     enupoint = transformObj.transform_point(
-                        navigator_tools.rosmsg_to_numpy(res.closest))
+                    navigator_tools.rosmsg_to_numpy(res.closest))
+
+                    markers = MarkerArray()
+                    target_marker = Marker()
+                    target_marker.pose.point = enupoint
+                    target_marker.pose.orientation = trns.quaternion_from_euler(enunormal)
+                    target_marker.type = Marker.ARROW
+                    target_marker.text = "Shooter Target Pose"
+                    target_marker.ns = "detect_deliver"
+                    target_marker.id = 1
+                    target_marker.color.r = 1
+                    markers.markers.insert(target_marker)
                     #print "DID TRANSFORM ", transformObj
                     #while(enunormal[2] > .75):
                        # print "Loop"
@@ -101,6 +113,17 @@ class DetectDeliverMission:
                     enuyaw = trns.quaternion_from_euler(
                         0, 0, angle)  # Align perpindicular
                     print "ROTATING TO= ", trns.euler_from_quaternion(enuyaw)
+
+                    move_marker = Marker()
+                    move_marker.pose.point = enumove
+                    move_marker.pose.orientation = enuyaw
+                    move_marker.type = Marker.ARROW
+                    move_marker.text = "Align goal"
+                    move_marker.ns = "detect_deliver"
+                    move_marker.id = 2
+                    target_marker.color.r = 1
+                    markers.markers.insert(move_marker)
+                    self.markers_pub.publish(markers)                    
 
                     print "MOVING!"
                     yield self.navigator.move.set_position(enumove).set_orientation(enuyaw).go()
