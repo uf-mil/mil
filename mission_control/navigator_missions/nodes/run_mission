@@ -39,9 +39,9 @@ def main():
         result = yield to_run.main(n)
 
         if result is None:
-            fprint("{} finished with no result.", title="MISSION")
+            fprint("{} finished with no result.".format(mission), title="MISSION")
         else:
-            fprint("{} finished with:", title="MISSION")
+            fprint("{} finished with:".format(mission), title="MISSION")
             print result
 
     defer.returnValue(reactor.stop())
@@ -49,3 +49,6 @@ def main():
 if __name__ == '__main__':
     reactor.callWhenRunning(main)
     reactor.run()
+
+    print "\n"
+    fprint("Done!", title="MISSION")

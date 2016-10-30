@@ -28,9 +28,11 @@ class Buoy(object):
 
 
 def get_buoys():
-    right = Buoy([39, 25, 0], "green")
-    left = Buoy([64, 6, 0], "red")
+    f_right = Buoy([0, 0, 0], "green")
+    f_left = Buoy([0, 10, 0], "red")
 
+    b_right = Buoy([30, 0, 0], "green")
+    b_left = Buoy([30, 10, 0], "red")
     #rand_1 = Buoy([-23, 48, 0], "green")
     #rand_2 = Buoy([33, -8, 0], "green")
 
@@ -57,30 +59,39 @@ return_with = defer.returnValue
 def main(navigator):
     result = navigator.fetch_result()
 
-    front_buoys = yield navigator.database_query("start_gate")
+    found_buoys = yield navigator.database_query("start_gate")
     #print front_buoys
-    if front_buoys.found:
-        buoys = map(Buoy.from_srv, front_buoys.objects)
+    if found_buoys.found:
+        buoys = map(Buoy.from_srv, found_buoys.objects)
     else:
         print "START_GATE: Error 4 - No db buoy response..."
         result.success = False
         result.response = "No db buoy response..."
         return_with(result)
-    # buoys = [Buoy.from_srv(left), Buoy.from_srv(right)]
 
+    # buoys = [Buoy.from_srv(left), Buoy.from_srv(right)]
+    buoys = get_buoys()
     points = [navigator_tools.numpy_to_point(b.position) for b in buoys]
 
+    # Get the ones closest to us and assume those are the front
+    distances = np.array([b.distance for b in buoys])
+    back = np.sort(distance)[-2:]
+    front = np.sort(distance)[:2]
+
     # Made it this far, make sure the red one is on the left and green on the right ================
-    pose = yield navigator.tx_pose
     t = txros.tf.Transform.from_Pose_message(navigator_tools.numpy_quat_pair_to_pose(*pose))
-    bl_buoys = [t.transform_point(buoy.position) for buoy in buoys[:2]]
+    f_bl_buoys = [t.transform_point(buoy.position) for buoy in front[:2]]
+    b_bl_buoys = [t.transform_point(buoy.position) for buoy in back[:2]]
 
     # Angles are w.r.t positive x-axis. Positive is CCW around the z-axis.
-    angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in bl_buoys])
-    left_buoy, right_buoy = buoys[np.argmax(angle_buoys)], buoys[np.argmin(angle_buoys)]
+    angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in f_bl_buoys])
+    f_left_buoy, f_right_buoy = buoys[np.argmax(angle_buoys)], buoys[np.argmin(angle_buoys)]
+
+    angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in b_bl_buoys])
+    b_left_buoy, b_right_buoy = buoys[np.argmax(angle_buoys)], buoys[np.argmin(angle_buoys)]
 
     # Lets plot a course, yarrr
-    between_vector, direction_vector = get_path(left_buoy, right_buoy)
+    between_vector, direction_vector = get_path(f_left_buoy, f_right_buoy)
     mid_point = left_buoy.position + between_vector / 2
 
     #print mid_point
@@ -89,7 +100,9 @@ def main(navigator):
     setup = mid_point - direction_vector * setup_dist
     target = setup + direction_vector * target_dist
 
-    ogrid = OgridFactory(left_buoy.position, right_buoy.position, pose[0], target)
+    ogrid = OgridFactory(f_right_buoy.position, f_right_buoy.position, pose[0],
+                         target, left_b_pos=b_left_buoy.position, right_b_pos=b_right_buoy.position)
+
     msg = ogrid.get_message()
 
     # Put the target into the point cloud as well
@@ -132,7 +145,7 @@ class OgridFactory():
 
         # Some parameters
         self.buffer = 50  # length of the "walls" extending outwards from each buoy (m)
-        self.resolution = 10  # cells/meter for ogrid
+        self.resolution = 3  # cells/meter for ogrid
         self.channel_length = 30  # Not sure what this acutally is for the course (m)
         self.edge_buffer = 10
 
