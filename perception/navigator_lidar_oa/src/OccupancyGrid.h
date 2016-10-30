@@ -122,11 +122,13 @@ class OccupancyGrid
 	    /// \param ?
 	    /// \param ?
 	    ////////////////////////////////////////////////////////////
-		void setLidarParams(const double LIDAR_VIEW_ANGLE_DEG, const double LIDAR_VIEW_DISTANCE_METERS, const double LIDAR_MIN_VIEW_DISTANCE)
+		void setLidarParams(const double LIDAR_VIEW_ANGLE_DEG, const double LIDAR_VIEW_DISTANCE_METERS, const double LIDAR_MIN_VIEW_DISTANCE, const int MIN_LIDAR_POINTS_FOR_OCCUPANCY, const double MIN_OBJECT_HEIGHT_METERS)
 		{
 			lidarViewAngle = LIDAR_VIEW_ANGLE_DEG;
 			lidarViewDistance = LIDAR_VIEW_DISTANCE_METERS;
-                        lidarMinViewDistance = LIDAR_MIN_VIEW_DISTANCE;
+            lidarMinViewDistance = LIDAR_MIN_VIEW_DISTANCE;
+            lidarMinPoints = MIN_LIDAR_POINTS_FOR_OCCUPANCY;
+            objectMinHeight = MIN_OBJECT_HEIGHT_METERS;
 		}
 
 
@@ -255,7 +257,7 @@ class OccupancyGrid
 				int binaryCol = 0;
 				for (int col = boatCol - ROI_SIZE/2; col < boatCol + ROI_SIZE/2; ++col,++binaryCol) {
 					//if ( std::abs(ogrid[row][col].max-ogrid[row][col].min) >= heightDiff && ogrid[row][col].hits >= minHit && ogrid[row][col].max <= maxHeight) { 
-					if ( ogrid[row][col].hits >= minHits && pointCloudTable[row*GRID_SIZE+col].q.size() >= 13 && ogrid[row][col].max-ogrid[row][col].min > 0.075) { 
+					if ( ogrid[row][col].hits >= minHits && pointCloudTable[row*GRID_SIZE+col].q.size() >= lidarMinPoints && ogrid[row][col].max-ogrid[row][col].min >= objectMinHeight) { 
 						//std::cout << "Found " << row << "," << col << " has " << pointCloudTable[row*GRID_SIZE+col].q.size() << " points" << std::endl;
 						//double r_enu = (row - GRID_SIZE/2)*VOXEL_SIZE_METERS,c_enu = (col - GRID_SIZE/2)*VOXEL_SIZE_METERS;
 						//std::cout << "Binary hit at x,y " << c_enu << "," << r_enu << "," << ogrid[row][col].hits << std::endl;
@@ -313,7 +315,8 @@ class OccupancyGrid
 		std::unordered_map<unsigned,beamEntry> pointCloudTable; ///< ???
 		std::unordered_map<unsigned,std::vector<LidarBeam>> pointCloudTable_Uno; ///< ???
 		Eigen::Vector2d b1,ab,ac;									///< ???
-		double lidarViewAngle,lidarViewDistance,lidarMinViewDistance;
+		double lidarViewAngle,lidarViewDistance,lidarMinViewDistance,objectMinHeight;
+		int lidarMinPoints;
 };	
 
 #endif

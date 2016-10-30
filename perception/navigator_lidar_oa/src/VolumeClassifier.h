@@ -12,9 +12,9 @@ void VolumeClassifier(objectMessage &object)
 		object.name = navigator_msgs::PerceptionObject::DETECT_DELIVER_PLATFORM;
 	} else if (object.maxHeightFromLidar >= 0.75 && object.scale.x > 2 && object.scale.y > 2 && object.scale.z > 1.25) {
 		object.name = navigator_msgs::PerceptionObject::SCAN_THE_CODE;
-	} else if (object.maxHeightFromLidar >= -0.25 && object.scale.x > 1.5 && object.scale.y > 1.5 && object.scale.z > 1.0) {
+	} else if (object.maxHeightFromLidar >= -0.25 && object.scale.x > 1.2 && object.scale.y > 1.2 && object.scale.z > 1.2) {
 		object.name = navigator_msgs::PerceptionObject::TOTEM;
-	} else if (object.maxHeightFromLidar < -0.25 && object.scale.x <= 1.5 && object.scale.y <= 1.5) {
+	} else if (object.maxHeightFromLidar < -0.25 && object.scale.x <= 1.2 && object.scale.y <= 1.2) {
 		object.name = navigator_msgs::PerceptionObject::BUOY;
 	} else {
 		object.name = navigator_msgs::PerceptionObject::UNKNOWN;

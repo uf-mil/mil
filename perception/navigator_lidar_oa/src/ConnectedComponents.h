@@ -202,7 +202,7 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 			obj.minHeightFromLidar = ii.second.minHeight;
 			obj.maxHeightFromLidar = ii.second.maxHeight;
 			//obj.color = ii.second.color; //Eventually work with color
-			if (obj.scale.z >= 0.2) {
+			if (obj.scale.z >= ogrid.objectMinHeight) {
 				objects.push_back(obj);
 			}
 			//ROS_INFO_STREAM(newId << " -> " << ob.position.x << "," << ob.position.y << "," << ob.position.z << "|" << ob.scale.x << "," << ob.scale.y << "," << ob.scale.z);
