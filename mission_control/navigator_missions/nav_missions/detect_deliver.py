@@ -37,7 +37,7 @@ class DetectDeliverMission:
 
     @txros.util.cancellableInlineCallbacks
     def get_waypoint(self):
-        res = yield self.navigator.database_query(name="shooter")
+        res = yield self.navigator.database_query("shooter")
         if not res.found:
             print "Waypoint not found in database, exiting"
             raise Exception('Waypoint not found')

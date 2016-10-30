@@ -112,7 +112,7 @@
           <cameraName>right/right</cameraName>
           <imageTopicName>image_raw</imageTopicName>
           <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-          <frameName>right_camera</frameName>
+          <frameName>right_right_cam</frameName>
           <hackBaseline>0.89</hackBaseline>
           <distortionK1>0</distortionK1>
           <distortionK2>0</distortionK2>
