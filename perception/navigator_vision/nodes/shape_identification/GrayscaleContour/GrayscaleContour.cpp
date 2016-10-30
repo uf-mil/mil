@@ -78,7 +78,7 @@ void GrayscaleContour::GetShapes(cv::Mat& frame, cv::Rect roi,
   ros_color_debug.image = croppedFrame.clone();
 #endif
 
-  for (int i = 0; i < contours.size(); i++) {
+  for (size_t i = 0; i < contours.size(); i++) {
     navigator_msgs::DockShape dockShape;
     std::vector<cv::Point> approx_tri;
     std::vector<cv::Point> approx_cross;
@@ -163,7 +163,7 @@ void GrayscaleContour::FindContours() {
 
 #if defined(DO_DEBUG) || defined(DO_ROS_DEBUG)
   contoursFrame = Mat(edgesFrame.size(), edgesFrame.type(), Scalar(0, 0, 0));
-  for (int i = 0; i < contours.size(); i++) {
+  for (size_t i = 0; i < contours.size(); i++) {
     drawContours(contoursFrame, contours, i, Scalar(255, 255, 255));
   }
 #endif
@@ -171,16 +171,15 @@ void GrayscaleContour::FindContours() {
 
 bool GrayscaleContour::GetColor(int Index, std::string& color, float& confidence) {
   Mat mask = Mat::zeros(croppedFrame.rows, croppedFrame.cols, CV_8UC1);
-  Mat hsv;
-  cvtColor(croppedFrame,hsv,CV_BGR2HSV);
   drawContours(mask, contours, Index, Scalar(255), CV_FILLED);
-  Scalar meanColor = mean(hsv, mask);
-
+  Mat meanBGR(1,1,croppedFrame.type(), mean(croppedFrame, mask));
+  Mat mean_hsv_mat(1,1,croppedFrame.type(), Scalar(0,0,0));
+  cvtColor(meanBGR,mean_hsv_mat,CV_BGR2HSV,3);
+  Vec3b meanColor = mean_hsv_mat.at<Vec3b>(0,0);
   double hue = meanColor[0];
   double redness =  1.0 / ( fmin(redHueMax-hue,hue-redHueMin) + 1.0);
   double blueness = 1.0 / ( fabs(blueHue-hue) + 1.0);
   double greeness = 1.0 / ( fabs(greenHue-hue) + 1.0);
-
   double max = 0;
   if (blueness > max) {
     max = blueness;
@@ -197,7 +196,7 @@ bool GrayscaleContour::GetColor(int Index, std::string& color, float& confidence
     color = navigator_msgs::DockShape::RED;
     confidence = redness;
   }
-  // ~printf("%s Confidence: %f Colors: %f %f %f \n",color.c_str(),confidence,meanColor.val[0],meanColor.val[1],meanColor.val[2]);
+  // ~printf("%s Confidence: %f Colors: H=%d S=%d V=%d \n",color.c_str(),confidence,meanColor.val[0],meanColor.val[1],meanColor.val[2]);
   return true;
 }
 bool GrayscaleContour::isTriangle(std::vector<Point>& points) {
@@ -277,7 +276,7 @@ const double pi = 3.1415926;
 bool GrayscaleContour::isCircle(std::vector<Point>& points) {
   if (points.size() < 5) return false;
   double contour_area = contourArea(points);
-  double perimeter = arcLength(points, true);
+  // ~double perimeter = arcLength(points, true);
   double expected_area, error;
 
   // Find a min enclosing circle for contour, then compare enclosing cirlcle
@@ -313,7 +312,7 @@ bool GrayscaleContour::filterArea(std::vector<Point> contour) {
 }
 Point GrayscaleContour::findCenter(std::vector<Point>& points) {
   double x = 0, y = 0;
-  for (int i = 0; i < points.size(); i++) {
+  for (size_t i = 0; i < points.size(); i++) {
     x += points[i].x;
     y += points[i].y;
   }
@@ -333,7 +332,7 @@ double GrayscaleContour::findAngle(cv::Point& p1, cv::Point& p2,
 }
 void GrayscaleContour::findAngles(std::vector<Point>& points,
                                   std::vector<double>& angles) {
-  for (int i = 0; i < points.size() - 2; i++)
+  for (size_t i = 0; i < points.size() - 2; i++)
     angles.push_back(findAngle(points[i], points[i + 1], points[i + 2]));
   angles.push_back(findAngle(points[points.size() - 2],
                              points[points.size() - 1], points[0]));
@@ -345,7 +344,7 @@ void GrayscaleContour::setShapePoints(navigator_msgs::DockShape& dockShape,
   dockShape.CenterX = center.x + roi.x;
   dockShape.CenterY = center.y + roi.y;
   dockShape.img_width = colorFrame.cols;
-  for (int j = 0; j < points.size(); j++) {
+  for (size_t j = 0; j < points.size(); j++) {
     geometry_msgs::Point p;
     p.x = points[j].x + roi.x;
     p.y = points[j].y + roi.y;
