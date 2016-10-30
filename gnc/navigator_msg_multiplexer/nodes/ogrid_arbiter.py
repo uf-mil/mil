@@ -115,6 +115,8 @@ class OGridServer:
         self.frame_id = frame_id            # Frame that we will be operating from (ENU)
         self.ogrids = {}                    # Dict of maps that have been added to the global map (In case we want to remove maps)
 
+        self.ogrid_min_value = -1
+
         self.global_ogrid = self.create_grid((map_size, map_size), resolution)
 
         self.publisher = rospy.Publisher('/ogrid_master', OccupancyGrid, queue_size=1)
@@ -139,6 +141,8 @@ class OGridServer:
 
         map_size = map(int, (config['height'], config['width']))
         self.global_ogrid = self.create_grid(map_size, float(config['resolution']))
+
+        self.ogrid_min_value = config['ogrid_min_value']
 
         # Change size or resolution of global ogrid
         return config
@@ -229,7 +233,7 @@ class OGridServer:
 
             print "{}>".format("=" * 25)
 
-        np_grid = np.clip(np_grid, -1, 100)         # Clip values for OccupancyGrid bounds
+        np_grid = np.clip(np_grid, self.ogrid_min_value, 100)         # Clip values for OccupancyGrid bounds
         global_ogrid.data = np_grid.flatten().astype(np.int8)
 
         print "\n{}>".format("=" * 50)
