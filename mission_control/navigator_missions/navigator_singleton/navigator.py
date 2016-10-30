@@ -81,7 +81,7 @@ class Navigator(object):
             self._database_query = self.nh.get_service_client('/ira_database', navigator_srvs.ObjectDBQuery)
             self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
         except AttributeError, err:
-            fprint("Error getting service clients in nav singleton init: {}".format(err), title="NAVIGATOR")
+            fprint("Error getting service clients in nav singleton init: {}".format(err), title="NAVIGATOR", msg_color='red')
 
         self.tf_listener = tf.TransformListener(self.nh)
 
@@ -187,7 +187,7 @@ class Navigator(object):
                 self.vision_proxies[name] = VisionProxy(s_client, s_req, s_args, s_switch)
             except Exception, e:
                 err = "Error loading vision sevices: {}".format(e)
-                fprint("" + err, title="NAVIGATOR")
+                fprint("" + err, title="NAVIGATOR", msg_color='red')
 
     @util.cancellableInlineCallbacks
     def _make_alarms(self):
@@ -235,12 +235,12 @@ class Searcher(object):
         if failure.check(defer.CancelledError):
             fprint("Cancelling defer.", title="SEARCHER")
         else:
-            fprint("There was an error.", title="SEARCHER")
+            fprint("There was an error.", title="SEARCHER", msg_color='red')
             fprint(failure.printTraceback())
             # Handle error
 
     @util.cancellableInlineCallbacks
-    def start_search(self, timeout=60, loop=True, spotings_req=2, **kwargs):
+    def start_search(self, timeout=120, loop=True, spotings_req=2, **kwargs):
         fprint("Starting.", title="SEARCHER")
         looker = self._run_look(spotings_req).addErrback(self.catch_error)
         finder = self._run_search_pattern(loop, **kwargs).addErrback(self.catch_error)
@@ -277,7 +277,7 @@ class Searcher(object):
 
         def pattern():
             for pose in self.search_pattern:
-                fprint("going to next position.", title="SEARCHER")
+                fprint("Going to next position.", title="SEARCHER")
                 if type(pose) == list or type(pose) == np.ndarray:
                     yield self.nav.move.relative(pose).go(**kwargs)
                 else:
