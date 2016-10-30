@@ -45,26 +45,42 @@ class ModelTracker:
         self.model_count += 1
 
     def track_models(self, frame):
-        draw = frame.copy()
+
         updated_models = []
         for i, m in enumerate(self.models):
 
             old_frame = m.prev_frame
             old_gray = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
+            old_gray = cv2.bilateralFilter(old_gray, 11, 13, 13)
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            gray = cv2.bilateralFilter(gray, 11, 13, 13)
             prev_points = m.prev_points
+            draw = gray.copy()
+            # gray = cv2.Sobel(gray, cv2.CV_8U, 0, 1, ksize=5)
+            # old_gray = cv2.Sobel(old_gray, cv2.CV_8U, 0, 1, ksize=5)
+            gray = cv2.Canny(gray, 50, 150, apertureSize=3)
+            old_gray = cv2.Canny(old_gray, 50, 150, apertureSize=3)
 
             p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, gray, prev_points, None, **self.lk_params)
+            # check = np.array(p1) - np.array(prev_points)
+            # if np.linalg.norm(check[0]) < 2:
+            #     p1[0] = prev_points[0]
+            # if np.linalg.norm(check[1]) < 2:
+            #     p1[1] = prev_points[1]
+            # if np.linalg.norm(check[2]) < 2:
+            #     p1[2] = prev_points[2]
+            # if np.linalg.norm(check[3]) < 2:
+            #     p1[3] = prev_points[3]
+
             for e in err:
                 if(e == 1):
                     continue
                     print "err"
             if(not self.geometry_test(p1, gray.copy())):
                 print "didn't pass geom"
-                continue
             if(time.time() - m.time_started > 15):
                 print "timed out"
-                continue
+                # continue
             mission_status, colors = m.check_for_colors()
             if(mission_status):
                 self.colors = colors
@@ -75,7 +91,7 @@ class ModelTracker:
             updated_models.append(m)
 
             for i, val in enumerate(m.prev_points):
-                cv2.circle(draw, tuple(val[0]), 3, (255, 255, 255), -1)
+                cv2.circle(draw, tuple(val), 3, (255, 255, 255), -1)
 
         del self.models[:]
         self.models = updated_models
@@ -102,8 +118,8 @@ class ModelTracker:
         for i, p in enumerate(fp):
             draw = draw1.copy()
             p1, p2 = self.get_non_furthest_points(i, fp)
-            cv2.circle(draw, tuple(p[0]), 3, (255, 255, 255), -1)
-            cv2.circle(draw, tuple(p1[0]), 3, (255, 255, 255), -1)
+            cv2.circle(draw, tuple(p), 3, (255, 255, 255), -1)
+            cv2.circle(draw, tuple(p1), 3, (255, 255, 255), -1)
             # cv2.circle(draw, tuple(p2[0]), 3, (255,255,255), -1)
             # cv2.imshow("geom", draw)
             # cv2.waitKey(0)

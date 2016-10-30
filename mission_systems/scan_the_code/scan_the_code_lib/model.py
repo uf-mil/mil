@@ -24,17 +24,15 @@ class Model:
         xmax = 0
         ymin = 1000
         ymax = 0
-        for i, cont in enumerate(self.prev_points):
-            for j, _val in enumerate(cont):
-                if(_val[0] < xmin):
-                    xmin = _val[0]
-                if(_val[0] > xmax):
-                    xmax = _val[0]
-                if(_val[1] < ymin):
-                    ymin = _val[1]
-                if(_val[1] > ymax):
-                    ymax = _val[1]
-                # print xmin, ymin, xmax, ymax
+        for i, _val in enumerate(self.prev_points):
+            if(_val[0] < xmin):
+                xmin = _val[0]
+            if(_val[0] > xmax):
+                xmax = _val[0]
+            if(_val[1] < ymin):
+                ymin = _val[1]
+            if(_val[1] > ymax):
+                ymax = _val[1]
 
         return xmin, ymin, xmax, ymax
 
@@ -45,7 +43,6 @@ class Model:
             o = [0, scalar[0] - scalar[1], scalar[0] - scalar[2], 0]
             self.num_offset += 1
             self.offset_sum = np.add(o, self.offset_sum)
-            self.offset = np.append(self.offset_sum / self.num_offset, 0)
             return 'k'
 
         if(self.offset is not None):
@@ -72,6 +69,7 @@ class Model:
         scalar = cv2.mean(self.prev_frame[ymin:ymax, xmin:xmax])
         cv2.imshow("colros", self.prev_frame[ymin:ymax, xmin:xmax])
         cv2.waitKey(33)
+        print "scalar:", scalar
         color = self.get_color(scalar)
         print "ID", self.my_id
         print "color", color
