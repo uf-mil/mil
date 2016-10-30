@@ -1,7 +1,7 @@
 #include "CameraLidarTransformer.hpp"
 
 CameraLidarTransformer::CameraLidarTransformer()
-    : nh("camera_lidar_transformer"),
+    : nh(ros::this_node::getName()),
       tfBuffer(),
       tfListener(tfBuffer, nh),
       lidarSub(nh, "/velodyne_points", 10),
@@ -13,9 +13,9 @@ CameraLidarTransformer::CameraLidarTransformer()
 {
 #ifdef DO_ROS_DEBUG
   points_debug_publisher =
-      image_transport.advertise("/camera_lidar_transformer/points_debug", 1);
+      image_transport.advertise("points_debug", 1);
   pubMarkers = nh.advertise<visualization_msgs::MarkerArray>(
-      "/dock_shapes/raylider/markers", 10);
+      "markers_debug", 10);
 #endif
   nh.param<std::string>("camera_info_topic",camera_info_topic,"/right/right/camera_info");
   // ~nh.param<double>("MIN_Z",MIN_Z,1);
@@ -24,8 +24,10 @@ CameraLidarTransformer::CameraLidarTransformer()
   cameraInfoSub =
       nh.subscribe(camera_info_topic, 1,
                    &CameraLidarTransformer::cameraInfoCallback, this);
+  std::string camera_to_lidar_transform_topic;
+  nh.param<std::string>("camera_to_lidar_transform_topic",camera_to_lidar_transform_topic,"transform_camera");
   transformServiceServer = nh.advertiseService(
-      "transform_camera", &CameraLidarTransformer::transformServiceCallback,
+      camera_to_lidar_transform_topic, &CameraLidarTransformer::transformServiceCallback,
       this);
 }
 void CameraLidarTransformer::cameraInfoCallback(sensor_msgs::CameraInfo info)
