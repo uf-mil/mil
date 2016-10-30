@@ -28,11 +28,11 @@ class Buoy(object):
 
 
 def get_buoys():
-    f_right = Buoy([10, 0, 0], "green")
+    f_right = Buoy([0, 10, 0], "green")
     f_left = Buoy([10, 10, 0], "red")
 
-    b_right = Buoy([40, 0, 0], "green")
-    b_left = Buoy([40, 10, 0], "red")
+    b_right = Buoy([0, 40, 0], "green")
+    b_left = Buoy([10, 40, 0], "red")
     #rand_1 = Buoy([-23, 48, 0], "green")
     #rand_2 = Buoy([33, -8, 0], "green")
 
@@ -71,7 +71,7 @@ def main(navigator):
 
     # buoys = [Buoy.from_srv(left), Buoy.from_srv(right)]
     #buoys = np.array(get_buoys())
-    # points = [navigator_tools.numpy_to_point(b.position) for b in buoys]
+    points = [navigator_tools.numpy_to_point(b.position) for b in buoys]
 
     pose = yield navigator.tx_pose
     print pose
@@ -85,7 +85,7 @@ def main(navigator):
 
     # Made it this far, make sure the red one is on the left and green on the right ================
     t = txros.tf.Transform.from_Pose_message(navigator_tools.numpy_quat_pair_to_pose(*pose))
-    t_mat = t.as_matrix()[:3, :3]
+    t_mat = t.as_matrix()[:3, :3]  # Probably wont work in general
     f_bl_buoys = [t_mat.dot(buoy.position) for buoy in front]
     b_bl_buoys = [t_mat.dot(buoy.position) for buoy in back]
 

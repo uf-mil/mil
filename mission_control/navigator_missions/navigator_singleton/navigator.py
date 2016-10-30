@@ -144,7 +144,7 @@ class Navigator(object):
         return self.vision_proxies[request_name].get_response(**kwargs)
 
     def database_query(self, object_name, **kwargs):
-        return self._database_query(navigator_srvs.ObjectDBQuery(name=object_name, **kwargs))
+        return self._database_query(navigator_srvs.ObjectDBQueryRequest(name=object_name, **kwargs))
 
     def change_wrench(self, source):
         return self._change_wrench(navigator_srvs.WrenchSelectRequest(source))
