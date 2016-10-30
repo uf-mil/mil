@@ -37,7 +37,7 @@ class ShooterVision {
   int height;
 
  public:
-  ShooterVision() : nh_("dock_shape_finder"), it_(nh_) {
+  ShooterVision() : nh_(ros::this_node::getName()), it_(nh_) {
     nh_.param<bool>("auto_start", active, false);
     vision.reset(new GrayscaleContour(nh_));
     vision->init();
@@ -50,7 +50,7 @@ class ShooterVision {
     // DebugWindow::init();
     //#endif
     foundShapesPublisher = nh_.advertise<navigator_msgs::DockShapes>(
-        "/dock_shapes/found_shapes", 1000);
+        "found_shapes", 1000);
     image_sub_ = it_.subscribe(camera_topic, 1, &ShooterVision::run, this);
 
     int x_offset, y_offset, width, height;
@@ -108,7 +108,7 @@ class ShooterVision {
 };
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "dock_shape_finder");
+  ros::init(argc, argv,"shape_identificaiton");
   ShooterVision sv = ShooterVision();
   ros::spin();
   return 0;

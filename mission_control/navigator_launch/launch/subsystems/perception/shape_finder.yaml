@@ -3,10 +3,10 @@ tracker:
   max_distance_gap: 5
   max_seen_gap_seconds: 0.5
 roi:
-  x_offset: 73
-  y_offset: 103
-  height: 243
-  width: 499
+  x_offset: 200
+  y_offset: 50
+  height: 475
+  width: 550
 grayscale:
   red_hue_min: 0
   red_hue_max: 180

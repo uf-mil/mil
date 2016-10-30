@@ -42,9 +42,9 @@ GrayscaleContour::GrayscaleContour(ros::NodeHandle& nh) : DockShapeVision(nh) {
 #ifdef DO_ROS_DEBUG
   image_transport.reset(new image_transport::ImageTransport(nh));
   color_debug_publisher =
-      image_transport->advertise("/dock_shapes/finder/debug_color", 1);
+      image_transport->advertise("debug_color", 1);
   contour_debug_publisher =
-      image_transport->advertise("/dock_shapes/finder/debug_contours", 1);
+      image_transport->advertise("debug_contours", 1);
 #endif
 }
 void GrayscaleContour::init() {

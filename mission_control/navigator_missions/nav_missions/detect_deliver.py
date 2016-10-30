@@ -20,8 +20,7 @@ class DetectDeliverMission:
 
     def __init__(self, navigator):
         self.navigator = navigator
-        self.cameraLidarTransformer = navigator.nh.get_service_client(
-            "/camera_lidar_transformer/transform_camera", CameraToLidarTransform)
+        self.cameraLidarTransformer = navigator.nh.get_service_client("/camera_to_lidar/right_right_cam", CameraToLidarTransform)
         self.shooterLoad = txros.action.ActionClient(
             self.navigator.nh, '/shooter/load', ShooterDoAction)
         self.shooterFire = txros.action.ActionClient(
