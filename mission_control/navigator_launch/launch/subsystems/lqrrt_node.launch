@@ -6,7 +6,7 @@
 
     <!-- Topics for odometry and an occupancy grid-->
     <param name="odom_topic" value="/odom"/>
-    <param name="ogrid_topic" value="/master_ogrid"/>
+    <param name="ogrid_topic" value="/ogrid_master"/>
 
     <!-- Pose reference topic - this will be the 'carrot' to follow -->
     <param name="ref_topic" value="/lqrrt/ref"/>

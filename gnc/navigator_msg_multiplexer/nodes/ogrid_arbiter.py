@@ -194,6 +194,8 @@ class OGridServer:
         for ogrid in self.ogrids.itervalues():
             # Hard coded 2 second timeout - probably no need to reconfig this.
             if ogrid.nav_ogrid is None or ogrid.callback_delta > 2:
+                fprint("Ogrid too old!")
+                print "{}>".format("=" * 25)
                 continue
 
             # Local Ogrid (get everything in global frame though)

@@ -21,22 +21,22 @@ class Buoy(object):
         self.odom = np.array([0, 0, 0])
 
     def __repr__(self):
-        return "BUOY at: {} with color {}".format(self.position, self.color)
+        return "BUOY at: {} with color {}.".format(self.position, self.color)
 
     def distance(self, odom):
         return np.linalg.norm(self.position - odom)
 
 
 def get_buoys():
-    f_right = Buoy([0, 0, 0], "green")
-    f_left = Buoy([0, 10, 0], "red")
+    f_right = Buoy([10, 0, 0], "green")
+    f_left = Buoy([10, 10, 0], "red")
 
-    b_right = Buoy([30, 0, 0], "green")
-    b_left = Buoy([30, 10, 0], "red")
+    b_right = Buoy([40, 0, 0], "green")
+    b_left = Buoy([40, 10, 0], "red")
     #rand_1 = Buoy([-23, 48, 0], "green")
     #rand_2 = Buoy([33, -8, 0], "green")
 
-    buoys = [right, left] #[rand_1, right, rand_2, left]
+    buoys = [f_right, f_left, b_right, b_left]
 
     return buoys
 
@@ -60,47 +60,54 @@ def main(navigator):
     result = navigator.fetch_result()
 
     found_buoys = yield navigator.database_query("start_gate")
-    #print front_buoys
+    print front_buoys
     if found_buoys.found:
-        buoys = map(Buoy.from_srv, found_buoys.objects)
+       buoys = map(Buoy.from_srv, found_buoys.objects)
     else:
-        print "START_GATE: Error 4 - No db buoy response..."
-        result.success = False
-        result.response = "No db buoy response..."
-        return_with(result)
+       print "START_GATE: Error 4 - No db buoy response..."
+       result.success = False
+       result.response = "No db buoy response..."
+       return_with(result)
 
     # buoys = [Buoy.from_srv(left), Buoy.from_srv(right)]
-    buoys = get_buoys()
-    points = [navigator_tools.numpy_to_point(b.position) for b in buoys]
+    #buoys = np.array(get_buoys())
+    # points = [navigator_tools.numpy_to_point(b.position) for b in buoys]
 
+    pose = yield navigator.tx_pose
+    print pose
     # Get the ones closest to us and assume those are the front
-    distances = np.array([b.distance for b in buoys])
-    back = np.sort(distance)[-2:]
-    front = np.sort(distance)[:2]
+    distances = np.array([b.distance(pose[0]) for b in buoys])
+    back = buoys[np.argsort(distances)[-2:]]
+    front = buoys[np.argsort(distances)[:2]]
+
+    points = [navigator_tools.numpy_to_point(b.position) for b in front]
+
 
     # Made it this far, make sure the red one is on the left and green on the right ================
     t = txros.tf.Transform.from_Pose_message(navigator_tools.numpy_quat_pair_to_pose(*pose))
-    f_bl_buoys = [t.transform_point(buoy.position) for buoy in front[:2]]
-    b_bl_buoys = [t.transform_point(buoy.position) for buoy in back[:2]]
+    t_mat = t.as_matrix()[:3, :3]
+    f_bl_buoys = [t_mat.dot(buoy.position) for buoy in front]
+    b_bl_buoys = [t_mat.dot(buoy.position) for buoy in back]
 
     # Angles are w.r.t positive x-axis. Positive is CCW around the z-axis.
     angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in f_bl_buoys])
-    f_left_buoy, f_right_buoy = buoys[np.argmax(angle_buoys)], buoys[np.argmin(angle_buoys)]
+    f_left_buoy, f_right_buoy = front[np.argmax(angle_buoys)], front[np.argmin(angle_buoys)]
 
     angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in b_bl_buoys])
-    b_left_buoy, b_right_buoy = buoys[np.argmax(angle_buoys)], buoys[np.argmin(angle_buoys)]
+    b_left_buoy, b_right_buoy = back[np.argmax(angle_buoys)], back[np.argmin(angle_buoys)]
 
     # Lets plot a course, yarrr
-    between_vector, direction_vector = get_path(f_left_buoy, f_right_buoy)
-    mid_point = left_buoy.position + between_vector / 2
+    f_between_vector, f_direction_vector = get_path(f_left_buoy, f_right_buoy)
+    f_mid_point = f_left_buoy.position + f_between_vector / 2
+    b_between_vector, b_direction_vector = get_path(b_left_buoy, b_right_buoy)
+    b_mid_point = b_left_buoy.position + b_between_vector / 2
 
     #print mid_point
     setup_dist = 20  # Line up with the start gate this many meters infront of the gate.
-    target_dist = 50  # Move this far though the start gate buoys (meters).
-    setup = mid_point - direction_vector * setup_dist
-    target = setup + direction_vector * target_dist
+    setup = f_mid_point - f_direction_vector * setup_dist
+    target = b_mid_point + b_direction_vector * setup_dist
 
-    ogrid = OgridFactory(f_right_buoy.position, f_right_buoy.position, pose[0],
+    ogrid = OgridFactory(f_left_buoy.position, f_right_buoy.position, pose[0],
                          target, left_b_pos=b_left_buoy.position, right_b_pos=b_right_buoy.position)
 
     msg = ogrid.get_message()
@@ -120,10 +127,6 @@ def main(navigator):
     print "START_GATE: Moving!"
 
     yield navigator.move.set_position(target).go()
-
-    yield navigator.nh.set_param("/mission/detect_deliver/Shape", "CIRCLE")
-    yield navigator.nh.set_param("/mmission/detect_deliver/Color", "ANY")
-
     return_with(result)
 
 
@@ -144,8 +147,7 @@ class OgridFactory():
         self.target = target
 
         # Some parameters
-        self.buffer = 50  # length of the "walls" extending outwards from each buoy (m)
-        self.resolution = 3  # cells/meter for ogrid
+        self.resolution = .3  # meters/cell for ogrid
         self.channel_length = 30  # Not sure what this acutally is for the course (m)
         self.edge_buffer = 10
 
@@ -160,11 +162,11 @@ class OgridFactory():
         dx = self.x_upper - self.x_lower
         dy = self.y_upper - self.y_lower
         # The grid needs to have it's axes swaped since its row major
-        self.grid = np.zeros((dy * self.resolution, dx * self.resolution))
+        self.grid = np.zeros((dy / self.resolution, dx / self.resolution))
 
         # Transforms points from ENU to ogrid frame coordinates
-        self.t = np.array([[self.resolution, 0, -self.x_lower * self.resolution],
-                           [0, self.resolution, -self.y_lower * self.resolution],
+        self.t = np.array([[1 / self.resolution, 0, -self.x_lower / self.resolution],
+                           [0, 1 / self.resolution, -self.y_lower / self.resolution],
                            [0,               0,            1]])
         self.transform = lambda point: self.t.dot(np.append(point[:2], 1))[:2]
 
@@ -181,15 +183,9 @@ class OgridFactory():
         b_rot_mat = trns.euler_matrix(0, 0, b_theta)[:3, :3]
 
         # Make the endpoints
-        rot_buffer = b_rot_mat.dot([self.buffer, 0, 0])
+        rot_buffer = b_rot_mat.dot([20, 0, 0])
         endpoint_left_f = self.left_f + rot_buffer
         endpoint_right_f = self.right_f - rot_buffer
-
-        # Define bounds for the grid
-        self.x_lower = min(self.boat_pos[0], endpoint_left_f[0], endpoint_right_f[0], self.target[0]) - self.edge_buffer
-        self.x_upper = max(self.boat_pos[0], endpoint_left_f[0], endpoint_right_f[0], self.target[0]) + self.edge_buffer
-        self.y_lower = min(self.boat_pos[1], endpoint_left_f[1], endpoint_right_f[1], self.target[1]) - self.edge_buffer
-        self.y_upper = max(self.boat_pos[1], endpoint_left_f[1], endpoint_right_f[1], self.target[1]) + self.edge_buffer
 
         # Now lets build some wall points ======================================
 
@@ -213,15 +209,18 @@ class OgridFactory():
         left_cone_point = self.left_f + rot_buffer
         right_cone_point = self.right_f + rot_buffer
 
+        # Define bounds for the grid
+        self.x_lower = min(left_cone_point[0], right_cone_point[0],
+                           endpoint_left_f[0], endpoint_right_f[0], self.target[0]) - self.edge_buffer
+        self.x_upper = max(left_cone_point[0], right_cone_point[0],
+                           endpoint_left_f[0], endpoint_right_f[0], self.target[0]) + self.edge_buffer
+        self.y_lower = min(left_cone_point[1], right_cone_point[1],
+                           endpoint_left_f[1], endpoint_right_f[1], self.target[1]) - self.edge_buffer
+        self.y_upper = max(left_cone_point[1], right_cone_point[1],
+                           endpoint_left_f[1], endpoint_right_f[1], self.target[1]) + self.edge_buffer
+
         self.walls = [self.left_b, self.left_f, left_cone_point, right_cone_point, self.right_f, self.right_b]
-
-
-        # endpoint_left_b = self.left_b + rot_buffer
-        # endpoint_right_b = self.right_b - rot_buffer
-
-        # # These are in ENU by the way
-        # self.left_wall_points = [endpoint_left_f, self.left_f, self.left_b, endpoint_left_b]
-        # self.right_wall_points = [endpoint_right_f, self.right_f, self.right_b, endpoint_right_b]
+        print self.walls
 
     def draw_lines(self, points):
         last_wall = None
@@ -231,7 +230,7 @@ class OgridFactory():
                 continue
 
             this_wall = tuple(self.transform(wall).astype(np.int32))
-            cv2.line(self.grid, this_wall, last_wall, 128, 3)
+            cv2.line(self.grid, this_wall, last_wall, 128, 7)
             last_wall = this_wall
 
     def draw_walls(self):
@@ -274,7 +273,7 @@ class OgridFactory():
     def get_message(self):
         ogrid = OccupancyGrid()
         ogrid.header = navigator_tools.make_header(frame="enu")
-        ogrid.info.resolution = 1 / self.resolution
+        ogrid.info.resolution = self.resolution
         ogrid.info.height, ogrid.info.width = self.grid.shape
         ogrid.info.origin = self.origin
         grid = np.copy(self.grid)
