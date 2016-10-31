@@ -1,49 +1,459 @@
 <launch>
-  <param name="use_sim_time" value="true" />
-  <arg name="gui" default="true" />
-
-  <!-- start gazebo server-->
-  <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false"
-    args="$(find navigator_gazebo)/worlds/a_whole_new.world" output="screen"/>
-  <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" if="$(arg gui)" output="screen" />
-
-  <!-- El Boatatoe -->
-  <node name="spawn_wamv" pkg="gazebo_ros" type="spawn_model"
-    args="-file $(find navigator_gazebo)/models/wamv/wamv.sdf -sdf
-      -x 0 -y 0 -z 1.5 -model wamv"
-    output="screen" />
-
-  <!-- Shapes -->
-  <node name="spawn_blue_cross" pkg="gazebo_ros" type="spawn_model"
-    args="-file $(find navigator_gazebo)/models/shapes/blue_cross.sdf -sdf
-      -x 4 -y -18 -z 1.5 -model blue_cross"
-    output="screen" />
-
-  <node name="spawn_red_circle" pkg="gazebo_ros" type="spawn_model"
-    args="-file $(find navigator_gazebo)/models/shapes/red_circle.sdf -sdf
-      -x 3 -y -17 -z 1.5 -Y -1.5708 -model red_circle"
-    output="screen" />
+    <param name="use_sim_time" value="true"/>
+    <arg name="gui" default="true"/>
+    <arg name="sandbox" default="false"/>
 
 
-  <node name="spawn_scan_the_code" pkg="gazebo_ros" type="spawn_model"
-    args="-file $(find navigator_gazebo)/models/shapes/scan_the_code.sdf
-    -x -5 -y 10 -z 1.5 -sdf -model scan_the_code"
-    output="screen" />
+    <!-- Gazebo Server -->
+    <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false"
+      args="$(find navigator_gazebo)/worlds/a_whole_new.world" output="screen"/>
+    <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" if="$(arg gui)" output="screen"/>
 
 
-  <!-- Buoy -->
-  <node name="spawn_red_buoy" pkg="gazebo_ros" type="spawn_model"
-    args="-file $(find navigator_gazebo)/models/buoys/red.sdf -sdf
-      -x 15 -y 3 -z .3 -model red_buoy"
-    output="screen" />
-
-  <node name="spawn_green_buoy" pkg="gazebo_ros" type="spawn_model"
-    args="-file $(find navigator_gazebo)/models/buoys/green.sdf -sdf
-      -x 15 -y -7 -z .3 -model green_buoy"
-    output="screen" />
+    <!-- El Boatatoe -->
+    <node name="spawn_wamv" pkg="gazebo_ros" type="spawn_model"
+      args="-file $(find navigator_gazebo)/models/wamv/wamv.sdf -sdf
+        -x 0 -y 0 -z 1.5 -model wamv"
+      output="screen"/>
 
 
+    <!-- The Flag to Launch the Sandbox -->
+    <group if="$(arg sandbox)">
+
+        <!-- Demonstrate Navigation and Control -->
+        <node name="spawn_speed_start_green" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/green_marker_can.sdf -sdf
+            -x 15 -y -5 -z 0 -model speed_start_green"
+          output="screen"/>
+
+        <node name="spawn_speed_start_red" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/red_marker_nun.sdf -sdf
+            -x 15 -y 5 -z 0 -model speed_start_red"
+          output="screen"/>
+
+        <node name="spawn_speed_end_green" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/green_marker_can.sdf -sdf
+            -x 35 -y -5 -z 0 -model speed_end_green"
+          output="screen"/>
+
+        <node name="spawn_speed_end_red" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/red_marker_nun.sdf -sdf
+            -x 35 -y 5 -z 0 -model speed_end_red"
+          output="screen"/>
 
 
-  <node pkg="navigator_gazebo" type="gazebo_controller.py" name="gazebo_interface"/>
+        <!-- Find Totems and Avoid Obstacles - Area Markers -->
+        <node name="spawn_area_marker_1" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+            -x -100 -y -30 -z 0 -model area_marker_1"
+          output="screen"/>
+
+        <node name="spawn_area_marker_2" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+            -x -100 -y 30 -z 0 -model area_marker_2"
+          output="screen"/>
+
+        <node name="spawn_area_marker_3" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+            -x -40 -y -30 -z 0 -model area_marker_3"
+          output="screen"/>
+
+        <node name="spawn_area_marker_4" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+            -x -40 -y 30 -z 0 -model area_marker_4"
+          output="screen"/>
+
+        <!-- Find Totems and Avoid Obstacles - Totems -->
+        <node name="spawn_red_totem" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/red_marker_can.sdf -sdf
+            -x -55 -y 8 -z 0 -model red_totem"
+          output="screen"/>
+
+        <node name="spawn_green_totem" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/green_marker_can.sdf -sdf
+            -x -47 -y -12 -z 0 -model green_totem"
+          output="screen"/>
+
+        <node name="spawn_blue_totem" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/blue_marker_can.sdf -sdf
+            -x -66 -y -10 -z 0 -model blue_totem"
+          output="screen"/>
+
+        <node name="spawn_yellow_totem" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/yellow_marker_can.sdf -sdf
+            -x -92 -y 16 -z 0 -model yellow_totem"
+          output="screen"/>
+
+        <!-- Find Totems and Avoid Obstacles - A7 Buoys -->
+        <node name="spawn_a7_buoy_1" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a7.sdf -sdf
+            -x -48 -y 1 -z 0 -model a7_buoy_1"
+          output="screen"/>
+
+        <node name="spawn_a7_buoy_2" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a7.sdf -sdf
+            -x -96 -y -2 -z 0 -model a7_buoy_2"
+          output="screen"/>
+
+        <node name="spawn_a7_buoy_3" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a7.sdf -sdf
+            -x -79 -y 14 -z 0 -model a7_buoy_3"
+          output="screen"/>
+
+        <node name="spawn_a7_buoy_4" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a7.sdf -sdf
+            -x -86 -y 1 -z 0 -model a7_buoy_4"
+          output="screen"/>
+
+        <node name="spawn_a7_buoy_5" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a7.sdf -sdf
+            -x -72 -y -25 -z 0 -model a7_buoy_5"
+          output="screen"/>
+
+        <node name="spawn_a7_buoy_6" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a7.sdf -sdf
+            -x -80 -y -24 -z 0 -model a7_buoy_6"
+          output="screen"/>
+
+        <node name="spawn_a7_buoy_7" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a7.sdf -sdf
+            -x -74 -y 24 -z 0 -model a7_buoy_7"
+          output="screen"/>
+
+        <node name="spawn_a7_buoy_8" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a7.sdf -sdf
+            -x -93 -y 7 -z 0 -model a7_buoy_8"
+          output="screen"/>
+
+        <node name="spawn_a7_buoy_9" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a7.sdf -sdf
+            -x -83 -y 22 -z 0 -model a7_buoy_9"
+          output="screen"/>
+
+        <node name="spawn_a7_buoy_10" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a7.sdf -sdf
+            -x -59 -y -13 -z 0 -model a7_buoy_10"
+          output="screen"/>
+
+        <node name="spawn_a7_buoy_11" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a7.sdf -sdf
+            -x -47 -y 15 -z 0 -model a7_buoy_11"
+          output="screen"/>
+
+        <node name="spawn_a7_buoy_12" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a7.sdf -sdf
+            -x -92 -y -28 -z 0 -model a7_buoy_12"
+          output="screen"/>
+
+        <!-- Find Totems and Avoid Obstacles - A5 Buoys -->
+        <node name="spawn_a5_buoy_1" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a5.sdf -sdf
+            -x -66 -y 21 -z 0 -model a5_buoy_1"
+          output="screen"/>
+
+        <node name="spawn_a5_buoy_2" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a5.sdf -sdf
+            -x -57 -y 1 -z 0 -model a5_buoy_2"
+          output="screen"/>
+
+        <node name="spawn_a5_buoy_3" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a5.sdf -sdf
+            -x -72 -y -1 -z 0 -model a5_buoy_3"
+          output="screen"/>
+
+        <node name="spawn_a5_buoy_4" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a5.sdf -sdf
+            -x -64 -y -28 -z 0 -model a5_buoy_4"
+          output="screen"/>
+
+        <node name="spawn_a5_buoy_5" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a5.sdf -sdf
+            -x -97 -y 24 -z 0 -model a5_buoy_5"
+          output="screen"/>
+
+        <node name="spawn_a5_buoy_6" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a5.sdf -sdf
+            -x -77 -y -7 -z 0 -model a5_buoy_6"
+          output="screen"/>
+
+        <node name="spawn_a5_buoy_7" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a5.sdf -sdf
+            -x -44 -y -26 -z 0 -model a5_buoy_7"
+          output="screen"/>
+
+        <node name="spawn_a5_buoy_8" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a5.sdf -sdf
+            -x -54 -y -5 -z 0 -model a5_buoy_8"
+          output="screen"/>
+
+        <node name="spawn_a5_buoy_9" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a5.sdf -sdf
+            -x -48 -y 21 -z 0 -model a5_buoy_9"
+          output="screen"/>
+
+        <node name="spawn_a5_buoy_10" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a5.sdf -sdf
+            -x -65 -y 4 -z 0 -model a5_buoy_10"
+          output="screen"/>
+
+        <!-- Find Totems and Avoid Obstacles - A3 Buoys -->
+        <node name="spawn_a3_buoy_1" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a3.sdf -sdf
+            -x -91 -y 24 -z 0 -model a3_buoy_1"
+          output="screen"/>
+
+        <node name="spawn_a3_buoy_2" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a3.sdf -sdf
+            -x -81 -y -13 -z 0 -model a3_buoy_2"
+          output="screen"/>
+
+        <node name="spawn_a3_buoy_3" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a3.sdf -sdf
+            -x -86 -y -6 -z 0 -model a3_buoy_3"
+          output="screen"/>
+
+        <node name="spawn_a3_buoy_4" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a3.sdf -sdf
+            -x -97 -y -13 -z 0 -model a3_buoy_4"
+          output="screen"/>
+
+        <node name="spawn_a3_buoy_5" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a3.sdf -sdf
+            -x -64 -y -19 -z 0 -model a3_buoy_5"
+          output="screen"/>
+
+        <node name="spawn_a3_buoy_6" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a3.sdf -sdf
+            -x -75 -y -16 -z 0 -model a3_buoy_6"
+          output="screen"/>
+
+        <node name="spawn_a3_buoy_7" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a3.sdf -sdf
+            -x -60 -y 21 -z 0 -model a3_buoy_7"
+          output="screen"/>
+
+        <node name="spawn_a3_buoy_8" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a3.sdf -sdf
+            -x -85 -y 11 -z 0 -model a3_buoy_8"
+          output="screen"/>
+
+        <node name="spawn_a3_buoy_9" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a3.sdf -sdf
+            -x -64 -y 15 -z 0 -model a3_buoy_9"
+          output="screen"/>
+
+        <node name="spawn_a3_buoy_10" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a3.sdf -sdf
+            -x -71 -y 10 -z 0 -model a3_buoy_10"
+          output="screen"/>
+
+        <node name="spawn_a3_buoy_11" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a3.sdf -sdf
+            -x -42 -y -19 -z 0 -model a3_buoy_11"
+          output="screen"/>
+
+        <node name="spawn_a3_buoy_12" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a3.sdf -sdf
+            -x -80 -y 1 -z 0 -model a3_buoy_12"
+          output="screen"/>
+
+        <node name="spawn_a3_buoy_13" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a3.sdf -sdf
+            -x -54 -y -24 -z 0 -model a3_buoy_13"
+          output="screen"/>
+
+        <node name="spawn_a3_buoy_14" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/buoys/black_a3.sdf -sdf
+            -x -58 -y -19 -z 0 -model a3_buoy_14"
+          output="screen"/>
+
+
+        <!-- Identify Symbols and Dock - EZ Dock Pieces -->
+        <node name="spawn_ez_dock_1" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
+            -x -6.096 -y 21.604 -z 0 -model ez_dock_1"
+          output="screen"/>
+
+        <node name="spawn_ez_dock_2" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
+            -x -3.048 -y 21.604 -z 0 -model ez_dock_2"
+          output="screen"/>
+
+        <node name="spawn_ez_dock_3" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
+            -x 0 -y 21.604 -z 0 -model ez_dock_3"
+          output="screen"/>
+
+        <node name="spawn_ez_dock_4" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
+            -x 3.048 -y 21.604 -z 0 -model ez_dock_4"
+          output="screen"/>
+
+        <node name="spawn_ez_dock_5" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
+            -x 6.096 -y 21.604 -z 0 -model ez_dock_5"
+          output="screen"/>
+
+        <node name="spawn_ez_dock_6" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
+            -x -7.112 -y 19.572 -z 0 -Y 1.57079 -model ez_dock_6"
+          output="screen"/>
+
+        <node name="spawn_ez_dock_7" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
+            -x -7.112 -y 16.524 -z 0 -Y 1.57079 -model ez_dock_7"
+          output="screen"/>
+
+        <node name="spawn_ez_dock_8" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
+            -x -2.37066 -y 19.572 -z 0 -Y 1.57079 -model ez_dock_8"
+          output="screen"/>
+
+        <node name="spawn_ez_dock_9" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
+            -x -2.37066 -y 16.524 -z 0 -Y 1.57079 -model ez_dock_9"
+          output="screen"/>
+
+        <node name="spawn_ez_dock_10" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
+            -x 2.37066 -y 19.572 -z 0 -Y 1.57079 -model ez_dock_10"
+          output="screen"/>
+
+        <node name="spawn_ez_dock_11" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
+            -x 2.37066 -y 16.524 -z 0 -Y 1.57079 -model ez_dock_11"
+          output="screen"/>
+
+        <node name="spawn_ez_dock_12" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
+            -x 7.112 -y 19.572 -z 0 -Y 1.57079 -model ez_dock_12"
+          output="screen"/>
+
+        <node name="spawn_ez_dock_13" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
+            -x 7.112 -y 16.524 -z 0 -Y 1.57079 -model ez_dock_13"
+          output="screen"/>
+
+        <!-- Identify Symbols and Dock - Symbols -->
+        <node name="spawn_dock_green_circle" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/symbols/green_circle.sdf -sdf
+            -x -4.74133 -y 22.10984 -z 0.3048 -model dock_green_circle"
+          output="screen"/>
+
+        <node name="spawn_dock_red_circle" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/symbols/red_circle.sdf -sdf
+            -x 0 -y 22.10984 -z 0.3048 -model dock_red_circle"
+          output="screen"/>
+
+        <node name="spawn_dock_blue_cruciform" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/symbols/blue_cruciform.sdf -sdf
+            -x 4.74133 -y 22.10984 -z 0.3048 -model dock_blue_cruciform"
+          output="screen"/>
+
+
+        <!-- Scan the Code -->
+        <node name="spawn_scan_the_code" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/symbols/scan_the_code.sdf
+            -x -5 -y 10 -z 1.5 -sdf -model scan_the_code"
+          output="screen"/>
+
+
+        <!-- Detect and Deliver -->
+        <node name="spawn_target_base" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/targets/target_base.sdf -sdf
+            -x -5 -y -18.05 -z 0 -model target_base"
+          output="screen"/>
+
+        <node name="spawn_red_triangle_target" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/targets/red_triangle_target.sdf -sdf
+            -x -5 -y -17.14778 -z 0.20342 -model red_triangle_target"
+          output="screen"/>
+
+        <node name="spawn_blue_triangle_target" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/targets/blue_triangle_target.sdf -sdf
+            -x -5.90222 -y -18.05 -z 0.20342 -Y 1.57079 -model blue_triangle_target"
+          output="screen"/>
+
+        <node name="spawn_red_cruciform_target" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/targets/red_cruciform_target.sdf -sdf
+            -x -5 -y -18.95222 -z 0.20342 -Y 3.14159 -model red_cruciform_target"
+          output="screen"/>
+
+        <node name="spawn_green_circle_target" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/targets/green_circle_target.sdf -sdf
+            -x -4.09778 -y -18.05 -z 0.20342 -Y -1.57079 -model green_circle_target"
+          output="screen"/>
+
+
+        <!-- Acoustic Pinger‐Based Transit - Entry Gate -->
+        <node name="spawn_ping_entry_red" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/red_marker_nun.sdf -sdf
+            -x -25 -y 35 -z 0 -model ping_entry_red"
+          output="screen"/>
+
+        <node name="spawn_ping_entry_white_1" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+            -x -25 -y 25 -z 0 -model ping_entry_white_1"
+          output="screen"/>
+
+        <node name="spawn_ping_entry_white_2" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+            -x -25 -y 15 -z 0 -model ping_entry_white_2"
+          output="screen"/>
+
+        <node name="spawn_ping_entry_green" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/green_marker_nun.sdf -sdf
+            -x -25 -y 5 -z 0 -model ping_entry_green"
+          output="screen"/>
+
+        <!-- Acoustic Pinger‐Based Transit - Exit Gate -->
+        <node name="spawn_ping_exit_red" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/red_marker_nun.sdf -sdf
+            -x -25 -y -5 -z 0 -model ping_exit_red"
+          output="screen"/>
+
+        <node name="spawn_ping_exit_white_1" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+            -x -25 -y -15 -z 0 -model ping_exit_white_1"
+          output="screen"/>
+
+        <node name="spawn_ping_exit_white_2" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+            -x -25 -y -25 -z 0 -model ping_exit_white_2"
+          output="screen"/>
+
+        <node name="spawn_ping_exit_green" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/green_marker_nun.sdf -sdf
+            -x -25 -y -35 -z 0 -model ping_exit_green"
+          output="screen"/>
+
+        <!-- Acoustic Pinger‐Based Transit - Test Gate -->
+        <node name="spawn_ping_test_red" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/red_marker_nun.sdf -sdf
+            -x 40 -y -30 -z 0 -model ping_test_red"
+          output="screen"/>
+
+        <node name="spawn_ping_test_white_1" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+            -x 30 -y -30 -z 0 -model ping_test_white_1"
+          output="screen"/>
+
+        <node name="spawn_ping_test_white_2" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+            -x 20 -y -30 -z 0 -model ping_test_white_2"
+          output="screen"/>
+
+        <node name="spawn_ping_test_green" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/green_marker_nun.sdf -sdf
+            -x 10 -y -30 -z 0 -model ping_test_green"
+          output="screen"/>
+
+        <node name="spawn_ping_test_black" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/black_marker_can.sdf -sdf
+            -x 25 -y -60 -z 0 -model ping_test_black"
+          output="screen"/>
+
+    </group>
+
+    <node pkg="navigator_gazebo" type="gazebo_controller.py" name="gazebo_interface"/>
 </launch>
