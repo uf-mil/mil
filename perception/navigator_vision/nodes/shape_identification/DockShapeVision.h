@@ -8,7 +8,6 @@ class DockShapeVision {
   DockShapeVision(ros::NodeHandle& nh);
 
  public:
-  virtual void GetShapes(cv::Mat& frame, cv::Rect roi,
-                         navigator_msgs::DockShapes& symbols) = 0;
+  virtual void GetShapes(cv::Mat& frame, navigator_msgs::DockShapes& symbols) = 0;
   virtual void init() = 0;
 };

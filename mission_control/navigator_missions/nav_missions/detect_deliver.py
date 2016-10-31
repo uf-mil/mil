@@ -48,10 +48,11 @@ class DetectDeliverMission:
         print "Starting circle search"
         yield self.navigator.move.look_at(navigator_tools.rosmsg_to_numpy(self.waypoint_res.objects[0].position)).go()
         pattern = self.navigator.move.circle_point(navigator_tools.rosmsg_to_numpy(
-            self.waypoint_res.objects[0].position), radius=10,  theta_offset=1.57)
+            self.waypoint_res.objects[0].position), radius=7,  theta_offset=1.57)
+        yield next(pattern).go()
         searcher = self.navigator.search(
             vision_proxy='get_shape', search_pattern=pattern, Shape=self.Shape, Color=self.Color)
-        yield searcher.start_search(timeout=300, spotings_req=5, move_type="skid")
+        yield searcher.start_search(timeout=300, spotings_req=1, move_type="skid")
         print "Ended Circle Search"
 
     @txros.util.cancellableInlineCallbacks
@@ -82,14 +83,18 @@ class DetectDeliverMission:
 
                     markers = MarkerArray()
                     target_marker = Marker()
-                    target_marker.pose.point = enupoint
-                    target_marker.pose.orientation = trns.quaternion_from_euler(enunormal)
+                    target_marker.scale.x = 1
+                    target_marker.scale.y = 1
+                    target_marker.scale.z = 1
+                    target_marker.header.frame_id = "enu"
+                    target_marker.points.append(navigator_tools.numpy_to_point(enupoint))
+                    target_marker.points.append(navigator_tools.numpy_to_point(enupoint+enunormal))
                     target_marker.type = Marker.ARROW
                     target_marker.text = "Shooter Target Pose"
                     target_marker.ns = "detect_deliver"
                     target_marker.id = 1
                     target_marker.color.r = 1
-                    markers.markers.insert(target_marker)
+                    markers.markers.append(target_marker)
                     #print "DID TRANSFORM ", transformObj
                     #while(enunormal[2] > .75):
                        # print "Loop"
@@ -108,22 +113,26 @@ class DetectDeliverMission:
 
                     print "ROT= ", trns.euler_from_quaternion(rot)
 
-                    angle = np.arctan2(enunormal[1], -enunormal[0])
+                    angle = np.arctan2(-enunormal[0], enunormal[1])
 
                     enuyaw = trns.quaternion_from_euler(
                         0, 0, angle)  # Align perpindicular
                     print "ROTATING TO= ", trns.euler_from_quaternion(enuyaw)
 
                     move_marker = Marker()
-                    move_marker.pose.point = enumove
-                    move_marker.pose.orientation = enuyaw
+                    move_marker.scale.x = 1
+                    move_marker.scale.y = 1
+                    move_marker.scale.z = 1
+                    move_marker.header.frame_id = "enu"
+                    move_marker.pose.position = navigator_tools.numpy_to_point(enumove)
+                    move_marker.pose.orientation = navigator_tools.numpy_to_quaternion( enuyaw)
                     move_marker.type = Marker.ARROW
                     move_marker.text = "Align goal"
                     move_marker.ns = "detect_deliver"
                     move_marker.id = 2
                     target_marker.color.r = 1
-                    markers.markers.insert(move_marker)
-                    self.markers_pub.publish(markers)                    
+                    markers.markers.append(move_marker)
+                    yield self.markers_pub.publish(markers)                 
 
                     print "MOVING!"
                     yield self.navigator.move.set_position(enumove).set_orientation(enuyaw).go()
@@ -169,12 +178,12 @@ class DetectDeliverMission:
     def find_and_shoot(self):
         yield self.navigator.vision_proxies["get_shape"].start()
         yield self.set_shape_and_color()  # Get correct goal shape/color from params
-        yield self.get_waypoint()  # Get waypoint of shooter target
-        yield self.circle_search()  # Go to waypoint and circle until target found
+        #yield self.get_waypoint()  # Get waypoint of shooter target
+        #yield self.circle_search()  # Go to waypoint and circle until target found
         yield self.align_to_target()
-        yield self.offset_for_target()  # Move a little bit forward to be centered to target
+        #yield self.offset_for_target()  # Move a little bit forward to be centered to target
         print "Starting to fire"
-        yield self.shoot_all_balls()
+        #yield self.shoot_all_balls()
         yield self.navigator.vision_proxies["get_shape"].stop()
 
 @txros.util.cancellableInlineCallbacks
