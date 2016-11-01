@@ -67,8 +67,8 @@ class Model:
             return True, self.colors
         xmin, ymin, xmax, ymax = self.get_bounding_rect()
         scalar = cv2.mean(self.prev_frame[ymin:ymax, xmin:xmax])
-        cv2.imshow("colros", self.prev_frame[ymin:ymax, xmin:xmax])
-        cv2.waitKey(33)
+        # cv2.imshow("colros", self.prev_frame[ymin:ymax, xmin:xmax])
+        # cv2.waitKey(33)
         print "scalar:", scalar
         color = self.get_color(scalar)
         print "ID", self.my_id
@@ -81,6 +81,8 @@ class Model:
                 changed = True
 
             if(color == 'k'):
+                if len(self.colors) > 1:
+                    return False, []
                 print "turned black"
                 self.turned_black = True
                 self.colors_found = 0

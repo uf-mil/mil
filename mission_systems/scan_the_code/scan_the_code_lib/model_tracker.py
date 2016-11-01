@@ -23,7 +23,7 @@ class ModelTracker:
         #     # calculate the point in the new image
         #     p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, gray, prev_points, None, **self.lk_params)
 
-        #     # get the total distance between the points
+        #     # get the total distance between the 
         #     total_dists = 0
         #     for i, p in enumerate(p1):
         #         min_dist = 1000
@@ -44,40 +44,40 @@ class ModelTracker:
         self.models.append(model)
         self.model_count += 1
 
-    def track_models(self, frame):
+    def track_models(self, frame, points):
 
         updated_models = []
         for i, m in enumerate(self.models):
 
-            old_frame = m.prev_frame
-            old_gray = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
-            old_gray = cv2.bilateralFilter(old_gray, 11, 13, 13)
+            # old_frame = m.prev_frame
+            # old_gray = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
+            # old_gray = cv2.bilateralFilter(old_gray, 11, 13, 13)
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            gray = cv2.bilateralFilter(gray, 11, 13, 13)
-            prev_points = m.prev_points
+            # gray = cv2.bilateralFilter(gray, 11, 13, 13)
+            # prev_points = m.prev_points
             draw = gray.copy()
-            # gray = cv2.Sobel(gray, cv2.CV_8U, 0, 1, ksize=5)
-            # old_gray = cv2.Sobel(old_gray, cv2.CV_8U, 0, 1, ksize=5)
-            gray = cv2.Canny(gray, 50, 150, apertureSize=3)
-            old_gray = cv2.Canny(old_gray, 50, 150, apertureSize=3)
+            # # gray = cv2.Sobel(gray, cv2.CV_8U, 0, 1, ksize=5)
+            # # old_gray = cv2.Sobel(old_gray, cv2.CV_8U, 0, 1, ksize=5)
+            # gray = cv2.Canny(gray, 50, 150, apertureSize=3)
+            # old_gray = cv2.Canny(old_gray, 50, 150, apertureSize=3)
 
-            p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, gray, prev_points, None, **self.lk_params)
-            # check = np.array(p1) - np.array(prev_points)
-            # if np.linalg.norm(check[0]) < 2:
-            #     p1[0] = prev_points[0]
-            # if np.linalg.norm(check[1]) < 2:
-            #     p1[1] = prev_points[1]
-            # if np.linalg.norm(check[2]) < 2:
-            #     p1[2] = prev_points[2]
-            # if np.linalg.norm(check[3]) < 2:
-            #     p1[3] = prev_points[3]
+            # p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, gray, prev_points, None, **self.lk_params)
+            # # check = np.array(p1) - np.array(prev_points)
+            # # if np.linalg.norm(check[0]) < 2:
+            # #     p1[0] = prev_points[0]
+            # # if np.linalg.norm(check[1]) < 2:
+            # #     p1[1] = prev_points[1]
+            # # if np.linalg.norm(check[2]) < 2:
+            # #     p1[2] = prev_points[2]
+            # # if np.linalg.norm(check[3]) < 2:
+            # #     p1[3] = prev_points[3]
 
-            for e in err:
-                if(e == 1):
-                    continue
-                    print "err"
-            if(not self.geometry_test(p1, gray.copy())):
-                print "didn't pass geom"
+            # for e in err:
+            #     if(e == 1):
+            #         continue
+            #         print "err"
+            # if(not self.geometry_test(p1, gray.copy())):
+            #     print "didn't pass geom"
             if(time.time() - m.time_started > 15):
                 print "timed out"
                 # continue
@@ -86,19 +86,19 @@ class ModelTracker:
                 self.colors = colors
                 return True
 
-            m.prev_points = p1
+            m.prev_points = points
             m.prev_frame = frame
             updated_models.append(m)
 
-            for i, val in enumerate(m.prev_points):
-                cv2.circle(draw, tuple(val), 3, (255, 255, 255), -1)
+            # for i, val in enumerate(m.prev_points):
+            #     cv2.circle(draw, tuple(val), 3, (255, 255, 255), -1)
 
         del self.models[:]
         self.models = updated_models
 
-        if(len(self.models) > 0):
-            cv2.imshow("all_models", draw)
-            cv2.waitKey(33)
+        # if(len(self.models) > 0):
+        #     # cv2.imshow("all_models", draw)
+        #     # cv2.waitKey(33)
 
         return False
 

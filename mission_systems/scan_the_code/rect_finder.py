@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import operator
+import sys
 
 
 class RectangleFinder(object):
@@ -24,108 +25,86 @@ class RectangleFinder(object):
             return False
         return True
 
-    def line_intersection(self, p1, vec1, p2, vec2):
-        x1, y1 = p1
-        x2, y2 = vec1[0] * 5 + x1, vec1[1] * 5 + y1
-        x11, y11 = p2
-        x22, y22 = vec2[0] * 5 + x11, vec2[1] * 5 + y11
-        m1 = (y2 - y1) / (x2 - x1 + 1E-100)
-        m2 = (y22 - y11) / (x22 - x11 + 1E-100)
-        if abs(m1) < 1E-50:
-            return x22, y2
-        if abs(m2) < 1E-50:
-            return x2, y22
-
-        x = (y1 - y11 + m2 * x11 - m1 * x1) / (m2 - m1)
-        y = m1 * (x - x1) + y1
-        return x, y
-
-    def get_vertical_lines(self, edges, img):
+    def get_lines(self, edges, img):
         # $$$$$$$$$$$$$$$$$$$$ DEBUG - REMOVE IMG PARAM $$$$$$$$$$$$$$$$$$$$$$
-        e = img.copy()
         img1 = img.copy()
         # $$$$$$$$$$$$$$$$$$$$ ENDDEBUG $$$$$$$$$$$$$$$$$$$$$$
+
         lines = cv2.HoughLinesP(edges, 1, np.pi / 360, threshold=30, minLineLength=10)
         if lines is None:
             print "No lines at all"
-            return False, None
+            return False, None, None, None
 
         vert_lines = []
+        horiz_line = sys.maxint
+        slopes = np.array([0, 0])
+        vert_count = 0
         for x1, y1, x2, y2 in lines[0]:
             slope = (y2 - y1) / (x2 - x1 + 1E-100)
+            # If this slope is vertical
             if abs(slope) > .8:
+                vert_count += 1
                 xoi, yoi = x1, y1
+                top_x, top_y = x1, y1
+                bottom_x, bottom_y = x1, y1
                 count = 0
+                slice_length = 3
                 # Cleaning up the line estimate
-                while self.in_range(edges, xoi, yoi) and count < 15:
-                    if not self.in_range(edges, xoi - 5, yoi - 1) or not self.in_range(edges, xoi + 5, yoi - 1):
-                        break
-                    r = 3
-                    check = edges[yoi - 1: yoi, xoi - r: xoi + r].flatten()
-                    check = map(lambda x: abs(x), check)
+                while self.in_range(edges, xoi - slice_length, yoi - 1)
+                        and self.in_range(edges, xoi + slice_length, yoi - 1)
+                        and count < 15:
+
+                    # Get a horizontal slice one pixel up, and find where the line is at that y value
+                    check = edges[yoi - 1: yoi, xoi - slice_length: xoi + slice_length].flatten()
                     index, value = max(enumerate(check), key=operator.itemgetter(1))
                     if value < 255:
                         break
-                    xoi = xoi - r + index
-                    yoi -= r
+                    xoi += - slice_length + index
+                    yoi += - slice_length
+                    top_x, top_y = xoi, yoi
                     count += 1
+
                     # $$$$$$$$$$$$$$$$$$$$ DEBUG $$$$$$$$$$$$$$$$$$$$$$
                     # cv2.circle(img1, (xoi, yoi), 1, (255, 0, 0), -1)
-                    # self.debug.add_image(img1, "sup", wait=33)
                     # $$$$$$$$$$$$$$$$$$$$ ENDDEBUG $$$$$$$$$$$$$$$$$$$$$$
 
-                top_y = min(y2, yoi)
-                if top_y == y2:
-                    vert_lines.append((y2, yoi - y2, xoi - x2))
-                if top_y == yoi:
-                    vert_lines.append((yoi, y2 - yoi, x2 - xoi))
-                # $$$$$$$$$$$$$$$$$$$$ DEBUG $$$$$$$$$$$$$$$$$$$$$$
-        #         cv2.line(e, (xoi, yoi), (x2, y2), (0, 0, 255), 2)
-        # self.debug.add_image(e, "linees")
+                    slopes += np.array([bottom_y - top_y, bottom_x - top_x])
+
+                vert_lines.append((top_x, bottom_x, top_y, bottom_y))
+
+            # $$$$$$$$$$$$$$$$$$$$ DEBUG $$$$$$$$$$$$$$$$$$$$$$
+            # self.debug.add_image(img1, "sup", wait=33)
+            # $$$$$$$$$$$$$$$$$$$$ ENDDEBUG $$$$$$$$$$$$$$$$$$$$$$
+
+            # If this slope is horizontal
+            if abs(slope) < .2:
+                if y1 < horiz_line:
+                    horiz_line = y1
+
+            # $$$$$$$$$$$$$$$$$$$$ DEBUG $$$$$$$$$$$$$$$$$$$$$$
+            cv2.line(img1, (x1, y1), (x2, y2), (0, 0, 255), 2)
+            # $$$$$$$$$$$$$$$$$$$$ ENDDEBUG $$$$$$$$$$$$$$$$$$$$$$
+
+        # $$$$$$$$$$$$$$$$$$$$ DEBUG $$$$$$$$$$$$$$$$$$$$$$
+        self.debug.add_image(img1, "linees")
         # $$$$$$$$$$$$$$$$$$$$ ENDDEBUG $$$$$$$$$$$$$$$$$$$$$$
-        if len(vert_lines) < 4:
-            return False, None
-        return True, vert_lines
 
-    def get_loi(self, starting_height, vec, w):
-        line_count = 0
-        loi_x = []
-        for i in range(0, w, 1):
-            if self.edges[starting_height, i] > 0:
-                # $$$$$$$$$$$$$$$$$$$$ DEBUG $$$$$$$$$$$$$$$$$$$$$$
-                # cv2.circle(self.edges_1, (i, starting_height), 1, (255, 0, 0), -1)
-                # self.debug.add_image(self.edges_1, "horiz", wait=33)
-                # $$$$$$$$$$$$$$$$$$$$ ENDDEBUG $$$$$$$$$$$$$$$$$$$$$$
+        h, w = edges.shape
+        if horiz_line == sys.maxint or vert_count < 2 or horiz_line > h / 3:
+            return False, None, None, None
 
-                # Check and see if there is a line there
-                hits = 0
-                for j in range(-6, 6, 3):
-                    a, b = map(lambda vec: self.toint(vec * j), vec)
-                    # $$$$$$$$$$$$$$$$$$$$ DEBUG $$$$$$$$$$$$$$$$$$$$$$
-                    cv2.circle(self.edges_2, (a + i, b + starting_height), 1, (255, 0, 0), -1)
-                    # self.debug.add_image(self.edges_2, "horiz_points")
-                    # $$$$$$$$$$$$$$$$$$$$ ENDDEBUG $$$$$$$$$$$$$$$$$$$$$$
-                    if self.in_range(self.edges, a + i - 1, b + starting_height) and self.in_range(self.edges,
-                                                                                                   a + i + 1, b + starting_height):
-                        buff = self.edges[b + starting_height, a + i - 1:a + i + 1]
-                    else:
-                        continue
-                    if sum(buff) > 0:
-                        hits += 1
-                        print "Yay! you got a line! Hits = {}".format(hits)
-                    else:
-                        print "No line :( Hits = {}".format(hits)
-                if hits >= 2:
-                    line_count += 1
-                    loi_x.append(i)
-        return line_count, loi_x
+        vert_left = min(vert_lines, key=lambda x: x[0])
+        vert_right = max(vert_lines, key=lambda x: x[0])
+        slope = slopes / vert_count
+
+        return True, [vert_left, vert_right], horiz_line + 2, slope
 
     def get_rectangle(self, edges, roi, debug):
         self.edges = edges
         self.debug = debug
         debug.add_image(edges, "myyedges")
-        self.edges_more = cv2.Canny(roi, 30, 50, apertureSize=3)
-        debug.add_image(self.edges_more, "myyedges1")
+        edges_more = cv2.Canny(roi, 30, 50, apertureSize=3)
+        debug.add_image(edges_more, "myyedges1")
         # $$$$$$$$$$$$$$$$$$$$ DEBUG $$$$$$$$$$$$$$$$$$$$$$
         self.edges_1 = edges.copy()
         self.edges_2 = edges.copy()
@@ -134,89 +113,67 @@ class RectangleFinder(object):
         self.edges_5 = edges.copy()
         # $$$$$$$$$$$$$$$$$$$$ ENDDEBUG $$$$$$$$$$$$$$$$$$$$$$
 
-        # get the verticle lines
-        succ, lines = self.get_vertical_lines(edges, roi)
+        # get the horizontal and vetical lines in the image
+        succ, v_lines, h_line, slope = self.get_lines(edges, roi)
         if not succ:
-            print "No Vertical lines found"
+            print "Proper lines not found"
             return False, None
 
-        line = max(lines, key=lambda x: np.linalg.norm([x[1], x[2]]))
-        min_y, vec_y, vec_x = line
-        height = (min_y + vec_y) / 2
-        dir_vec = self.make_vec((vec_x, vec_y))
+        xoi_left_top, xoi_left_bottom, left_ymin, left_ymax = v_lines[0]
+        xoi_right_top, xoi_right_bottom, right_ymin, right_ymax = v_lines[1]
+        yoi_top = h_line
 
-        # intersect a line through this average and see if you can get a line around that center point with the same slope.
-        # Once you reach 4 lines stop and pick the two middle lines (If you don't get four return false)
-        h, w = roi.shape
-        hoi = self.toint(height)
-        vec = dir_vec
-        perp_vec = (-vec[1], vec[0])
+        left_edge = max(xoi_left_top, xoi_left_bottom) + 4
+        right_edge = min(xoi_right_top, xoi_right_bottom) - 4
+        top_edge = yoi_top
 
-        line_count, loi_x = self.get_loi(hoi, vec, w)
-        if line_count == 4:
-            loi_x = loi_x[[0,3]]
-        # Do this twice to accound for random missing parts of the edges
-        if line_count < 4:
-            print "Four lines did not show up in this picture, but {} did".format(line_count)
-            line_count, loi_x = self.get_loi(hoi + 10, vec, w)
+        starting_y = (max(left_ymax, right_ymax) + min(left_ymin, right_ymin)) / 2
+        starting_x = (xoi_left_top + xoi_right_top) / 2
 
-        if line_count != 4:
-            print "Four lines did not show up in this picture, but {} did".format(line_count)
-            return False, None
-        # Then go to the middle of these two lines, intersect a verticle line, and find the first line that intersects
-        mid = (loi_x[0] + loi_x[1]) / 2
-        xoi, yoi = int(vec[0] + mid), int(vec[1] + hoi)
-        scale = 1
-        loi_y = []
-        while self.in_range(edges, xoi, yoi):
+        xoi = left_edge
+        yoi = starting_y
+
+        # edges_more_clone = edges_more.copy()
+
+        while self.in_range(edges_more, xoi, yoi - 3) and self.in_range(edges_more, xoi, yoi + 3):
             # $$$$$$$$$$$$$$$$$$$$ DEBUG $$$$$$$$$$$$$$$$$$$$$$
-            # cv2.circle(self.edges_3, (xoi, yoi), 1, (255, 0, 0), -1)
-            # debug.add_image(self.edges_3, "vert_points")
+            # cv2.circle(edges_more_clone, (xoi, yoi), 1, (255, 0, 0), -1)
+            # self.debug.add_image(edges_more_clone, "horiz_points", wait=33)
             # $$$$$$$$$$$$$$$$$$$$ ENDDEBUG $$$$$$$$$$$$$$$$$$$$$$
-            if edges[yoi, xoi] > 0:
-                scale = 1
-                loi_y.append(yoi)
-            if len(loi_y) == 2:
+            
+            if np.sum(edges_more[yoi - 3:yoi + 3, xoi]) >= 255:
+                left_edge = xoi
                 break
-            if len(loi_y) == 1:
-                scale -= 1
-            else:
-                scale += 1
-            xoi, yoi = self.toint((vec[0] * scale + mid, vec[1] + scale + hoi))
-        if len(loi_y) != 2:
-            print "Weird... We could not find any horizontal lines"
-            return False, None
+            xoi += 1
 
-        # Find where the four lines intersect, get your points.
-        pnts = []
-        for i in range(0, 2):
-            vert_p1 = (loi_x[i], height)
-            horiz_p1 = (mid, loi_y[0])
-            horiz_p2 = (mid, loi_y[1])
+        xoi = right_edge
 
+        while self.in_range(edges_more, xoi, yoi - 3) and self.in_range(edges_more, xoi, yoi + 3):
             # $$$$$$$$$$$$$$$$$$$$ DEBUG $$$$$$$$$$$$$$$$$$$$$$
-            # d_vert_p1 = self.toint((vec[0] * 100 + vert_p1[0], vec[1] * 100 + vert_p1[1]))
-            # d_vert_p2 = self.toint((vec[0] * -100 + vert_p1[0], vec[1] * -100 + vert_p1[1]))
-            # d_horiz_p1 = self.toint((perp_vec[0] * 100 + horiz_p1[0], perp_vec[1] * 100 + horiz_p1[1]))
-            # d_horiz_p2 = self.toint((perp_vec[0] * -100 + horiz_p1[0], perp_vec[1] * -100 + horiz_p1[1]))
-            # d_horiz1_p1 = self.toint((perp_vec[0] * 100 + horiz_p2[0], perp_vec[1] * 100 + horiz_p2[1]))
-            # d_horiz1_p2 = self.toint((perp_vec[0] * -100 + horiz_p2[0], perp_vec[1] * -100 + horiz_p2[1]))
-            # cv2.line(self.edges_4, tuple(d_vert_p1), tuple(d_vert_p2), (255, 255, 255))
-            # cv2.line(self.edges_4, tuple(d_horiz_p1), tuple(d_horiz_p2), (255, 255, 255))
-            # cv2.line(self.edges_4, tuple(d_horiz1_p1), tuple(d_horiz1_p2), (255, 255, 255))
-            # debug.add_image(self.edges_4, "lines")
+            # cv2.circle(edges_more_clone, (xoi, yoi), 1, (255, 0, 0), -1)
+            # self.debug.add_image(edges_more_clone, "horiz_points", wait=33)
             # $$$$$$$$$$$$$$$$$$$$ ENDDEBUG $$$$$$$$$$$$$$$$$$$$$$
+            if np.sum(edges_more[yoi - 3:yoi + 3, xoi]) >= 255:
+                right_edge = xoi
+                break
+            xoi -= 1
 
-            x1, y1 = self.line_intersection(vert_p1, vec, horiz_p1, perp_vec)
-            x2, y2 = self.line_intersection(vert_p1, vec, horiz_p2, perp_vec)
-            pnts.append((x1, y1))
-            pnts.append((x2, y2))
+        xoi = starting_x
+        yoi = top_edge
+        while self.in_range(edges_more, xoi, yoi):
+            # $$$$$$$$$$$$$$$$$$$$ DEBUG $$$$$$$$$$$$$$$$$$$$$$
+            # cv2.circle(edges_more_clone, (xoi, yoi), 1, (255, 0, 0), -1)
+            # self.debug.add_image(edges_more_clone, "horiz_points", wait=33)
+            # $$$$$$$$$$$$$$$$$$$$ ENDDEBUG $$$$$$$$$$$$$$$$$$$$$$
+            if edges_more[yoi, xoi] == 255:
+                top_edge = yoi
+                break
+            yoi += 1
 
-        # $$$$$$$$$$$$$$$$$$$$ DEBUG $$$$$$$$$$$$$$$$$$$$$$
-        for p in pnts:
-            cv2.circle(self.edges_5, (int(p[0]), int(p[1])), 3, (255, 0, 0), -1)
-        debug.add_image(self.edges_5, "points", wait=33)
-        # $$$$$$$$$$$$$$$$$$$$ END $$$$$$$$$$$$$$$$$$$$$$
+        cv2.circle(self.edges_5, (left_edge, top_edge), 3, (255, 0, 0), -1)
+        cv2.circle(self.edges_5, (right_edge, top_edge), 3, (255, 0, 0), -1)
+        cv2.circle(self.edges_5, (left_edge, top_edge + 20), 3, (255, 0, 0), -1)
+        cv2.circle(self.edges_5, (right_edge, top_edge + 20), 3, (255, 0, 0), -1)
 
-        # Return true and your points
-        return True, pnts
+        debug.add_image(self.edges_5, "pooop", wait=33)
+        return True, [(left_edge, top_edge), (right_edge, top_edge), (left_edge, top_edge + 20), (right_edge, top_edge + 20)]

@@ -1,10 +1,13 @@
 import cv2
 import numpy as np
+import rospy
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
 
 
 class Debug(object):
 
-    def __init__(self, w=1000, h=800, total=8, win_name="debug", wait=True):
+    def __init__(self, w=1000, h=800, total=6, win_name="debug", wait=True):
         self.width = w
         self.height = h
         self.img = np.zeros((h, w, 3), np.uint8)
@@ -20,6 +23,8 @@ class Debug(object):
         self.num_imgs = 0
         self.win_name = win_name
         self.name_to_starting = {}
+        self.bridge = CvBridge()
+        self.pub = rospy.Publisher("/debug/scan_the_code/image", Image, queue_size=10)
 
     def add_image(self, img, name, wait=33):
         if self.wait:
@@ -46,27 +51,4 @@ class Debug(object):
                 self.curr_h = self.max_height
         my_w, my_h = self.name_to_starting[name]
         self.img[my_h: my_h + h, my_w: my_w + w] = img
-        cv2.imshow(self.win_name, self.img)
-        cv2.waitKey(wait)
-
-    def show(self, name=None, wait=33):
-        if self.wait:
-            wait = 0
-        if name is None:
-            name = self.win_name
-        cv2.imshow(name, self.img)
-        cv2.waitKey(wait)
-
-
-
- # average the height of these lines, and the dir vec
-        avg_height = 0
-        average_dirvec = (0, 0)
-        for line in lines:
-            min_y, y, x = line
-            average_dirvec = [sum(a) for a in zip(make_vec((x, y)), average_dirvec)]
-            avg_height += min_y
-        avg_height /= len(line)
-        print average_dirvec
-        average_dirvec = map(lambda x: x / len(lines), average_dirvec)
-        print average_dirvec
+        self.pub.publish(self.bridge.cv2_to_imgmsg(self.img, "bgr8"))
