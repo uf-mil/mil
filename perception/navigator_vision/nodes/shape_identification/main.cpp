@@ -115,6 +115,7 @@ class ShooterVision {
     vision->GetShapes(resized_roied,symbols);
     for (navigator_msgs::DockShape& shape : symbols.list)
     {
+      shape.img_width = frame.cols;
       geometry_msgs::Point center;
       center.x = shape.CenterX;
       center.y = shape.CenterY;
