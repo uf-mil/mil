@@ -30,7 +30,7 @@ cv2.namedWindow('tf', cv2.WINDOW_NORMAL)
 
 # slider max values
 x_max = 1000
-ang_max = 1000
+ang_max = 3000
 
 # tf ranges (symmetric about zero)
 x_range = args.range   # meters
@@ -60,6 +60,9 @@ q_mode = False
 tf_line = '<node pkg="tf" type="static_transform_publisher" name="{child}_tf" args="{p[0]} {p[1]} {p[2]}  {q[0]} {q[1]} {q[2]} {q[3]}  /{parent} /{child} {prd}" />\n'
 prd = 100  # This will get replaced if it needs to
 
+args.tf_child = args.tf_child[1:] if args.tf_child[0] == '/' else args.tf_child
+args.tf_parent = args.tf_parent[1:] if args.tf_parent[0] == '/' else args.tf_parent
+
 while not rospy.is_shutdown():
     x, y, z = toTfLin(cv2.getTrackbarPos("x", "tf")), toTfLin(cv2.getTrackbarPos("y", "tf")), toTfLin(cv2.getTrackbarPos("z", "tf"))
     p = (x, y, z)
@@ -70,7 +73,7 @@ while not rospy.is_shutdown():
     q_feedback = "xyz: {},     q: {}".format([round(x, 5) for x in p], [round(x, 5) for x in q])
     print q_feedback if q_mode else rpy_feedback
 
-    k = cv2.waitKey(10) & 0xFF
+    k = cv2.waitKey(100) & 0xFF
     if k == ord('q'):
         q_mode = not q_mode
 
