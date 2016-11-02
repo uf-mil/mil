@@ -78,7 +78,7 @@ class Navigator(object):
         self._ecef_odom_sub = self.nh.subscribe('absodom', Odometry, enu_odom_set)
 
         try:
-            self._database_query = self.nh.get_service_client('/ira_database', navigator_srvs.ObjectDBQuery)
+            self._database_query = self.nh.get_service_client('/database/requests', navigator_srvs.ObjectDBQuery)
             self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
         except AttributeError, err:
             fprint("Error getting service clients in nav singleton init: {}".format(err), title="NAVIGATOR", msg_color='red')
