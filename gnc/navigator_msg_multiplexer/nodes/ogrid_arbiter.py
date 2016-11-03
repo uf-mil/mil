@@ -1,33 +1,18 @@
 #!/usr/bin/python
 from __future__ import division
 
-import tf
 import rospy
-import roslib
 import navigator_tools
 from navigator_tools import fprint as _fprint
 
-from scipy.misc import imresize
 import numpy as np
 from copy import deepcopy
 
 from dynamic_reconfigure.server import Server
 from navigator_msg_multiplexer.cfg import OgridConfig
 
-from rostopic import ROSTopicHz
 from nav_msgs.msg import OccupancyGrid, MapMetaData
 
-'''
-''  - NaviGator Occupancy Grid Server -
-''      Server that will handle merging multiple ROS Occupancy Maps into one map which
-''      will then be fed to the motion planner.
-''
-''      Requirements:
-''      1. At launch, all nodes specified in launch file will be merged onto the global map.
-''      2. New maps can be added to the server via. the Parameter Server. This is outlined below:
-''          - Added via paramter server
-''          - Service call to /_____/____ will trigger an update
-'''
 
 # Wow what a concept
 fprint = lambda *args, **kwargs: _fprint(title="OGRID_ARB", *args, **kwargs)
@@ -192,8 +177,8 @@ class OGridServer:
         g_y_max = index_limits[1][1]
 
         for ogrid in self.ogrids.itervalues():
-            # Hard coded 2 second timeout - probably no need to reconfig this.
-            if ogrid.nav_ogrid is None or ogrid.callback_delta > 2:
+            # Hard coded 5 second timeout - probably no need to reconfig this.
+            if ogrid.nav_ogrid is None or ogrid.callback_delta > 5:
                 fprint("Ogrid too old!")
                 print "{}>".format("=" * 25)
                 continue
@@ -211,23 +196,30 @@ class OGridServer:
 
             xs = np.sort([g_x_max, g_x_min, l_x_max, l_x_min])
             ys = np.sort([g_y_max, g_y_min, l_y_max, l_y_min])
-
-            start_x, end_x = xs[1:3]  # Grabbing indices 1 and 2
-            start_y, end_y = ys[1:3]
+            start_x, end_x = np.round(xs[1:3])  # Grabbing indices 1 and 2
+            start_y, end_y = np.round(ys[1:3])
 
             fprint("ROI {},{} {},{}".format(start_x, start_y, end_x, end_y))
 
             # Assuming resolution has been normalized.
             # Getting the indices to slice the local ogrid.
             l_ogrid_start = transform_between_ogrids([start_x, start_y, 1], global_ogrid, ogrid.nav_ogrid)
-            index_width = round(l_ogrid_start[0] + end_x - start_x)  # I suspect rounding will be a source of error
-            index_height = round(l_ogrid_start[1] + end_y - start_y)
+
+            index_width = l_ogrid_start[0] + end_x - start_x  # I suspect rounding will be a source of error
+            index_height = l_ogrid_start[1] + end_y - start_y
+            fprint("width: {}, height: {}".format(index_width, index_height))
+            fprint("Ogrid size: {}, {}".format(ogrid.nav_ogrid.info.height, ogrid.nav_ogrid.info.width))
 
             try:
                 to_add = ogrid.np_map[l_ogrid_start[0]:index_width, l_ogrid_start[1]:index_height]
                 fprint("to_add shape: {}".format(to_add.shape))
-                np_grid[start_x:end_x, start_y:end_y] += to_add
+
+                # Make sure the slicing doesn't produce an error
+                end_x = start_x + to_add.shape[0]
+                end_y = start_y + to_add.shape[1]
+
                 fprint("np_grid shape: {}".format(np_grid[start_x:end_x, start_y:end_y].shape))
+                np_grid[start_x:end_x, start_y:end_y] += to_add
             except Exception as e:
                 fprint("Exception caught, probably a dimension mismatch:", msg_color='red')
                 print e
