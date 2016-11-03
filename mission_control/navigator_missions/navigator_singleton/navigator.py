@@ -69,8 +69,9 @@ class Navigator(object):
 
         self._moveto_client = action.ActionClient(self.nh, 'move_to', MoveAction)
 
-        fprint("Waiting for move_to action client...", title="NAVIGATOR")
+        fprint("Action client do you yield?", title="NAVIGATOR")
         yield self._moveto_client.wait_for_server()
+        fprint("Yes he yields!", title="NAVIGATOR")
 
         odom_set = lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0])
         self._odom_sub = self.nh.subscribe('odom', Odometry, odom_set)
