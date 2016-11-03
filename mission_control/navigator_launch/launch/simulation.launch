@@ -4,6 +4,7 @@
 -->
 
 <launch>
+    <param name="/is_simulation" type="bool" value="True" />
     <arg name="gazebo" default="true"/>
     <arg name="gui" default="true"/>
     <arg name="sandbox" default="false"/>
