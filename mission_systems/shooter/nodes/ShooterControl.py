@@ -156,16 +156,16 @@ class ShooterControl:
         res.success = True
         return res
 
-    def isJoyShoot(self,data): #Shoot if right trigger is held down
+    def is_joy_shoot(self,data): #Shoot if right trigger is held down
       return data.axes[5] < -0.9
-    def isJoyLoad(self,data): #load if left bumper is pressed
+    def is_joy_load(self,data): #load if left bumper is pressed
       return data.buttons[4] == 1
-    def isJoyCancel(self,data): #cancel if right bumper is pressed
+    def is_joy_cancel(self,data): #cancel if right bumper is pressed
       return data.buttons[5] == 1
     def joy_callback(self,data):
-        joy_shoot = self.isJoyShoot(data)
-        joy_load = self.isJoyLoad(data)
-        joy_cancel = self.isJoyCancel(data)
+        joy_shoot = self.is_joy_shoot(data)
+        joy_load = self.is_joy_load(data)
+        joy_cancel = self.is_joy_cancel(data)
         if joy_shoot and not self.last_shoot_joy:
           rospy.loginfo("Joystick input : Shoot")
           self.fire_client.send_goal(goal=ShooterDoActionGoal())
