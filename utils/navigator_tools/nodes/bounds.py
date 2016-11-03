@@ -3,8 +3,28 @@ import numpy as np
 import txros
 import navigator_tools
 from twisted.internet import defer
+from coordinate_conversion_server import Converter
 from navigator_msgs.srv import Bounds, BoundsResponse, \
                                CoordinateConversion, CoordinateConversionRequest
+
+
+class Param():
+    @classmethod
+    @txros.util.cancellableInlineCallbacks
+    def get(cls, nh, param):
+        try:
+            p = yield nh.get_param(param)
+            print param, p
+            defer.returnValue(cls(p))
+
+        except txros.rosxmlrpc.Error:
+            # Param not found
+            defer.returnValue(cls(None))
+
+    def __init__(self, value):
+        self.value = value
+        self.found = value is not None
+        self.found_and_true = self.value and self.found
 
 
 @txros.util.cancellableInlineCallbacks
@@ -12,13 +32,24 @@ def got_request(nh, req, convert):
     to_frame = "enu" if req.to_frame == '' else req.to_frame
 
     resp = BoundsResponse(enforce=False)
-    if (yield nh.has_param("/bounds/enforce")) and (yield nh.get_param("/bounds/enforce")):
-        # We want to enforce the bounds that were set
-        lla_bounds = yield nh.get_param("/bounds/lla")
-        bounds = []
-        for lla_bound in lla_bounds:
-            bound = yield convert(CoordinateConversionRequest(frame="lla", point=np.append(lla_bound, 0)))
-            bounds.append(navigator_tools.numpy_to_point(getattr(bound, to_frame)))
+
+     # Lets get all these defers started up
+    enforce = yield Param.get(nh, "/bounds/enforce")
+    is_sim = yield Param.get(nh, "/is_simulation")
+    sim_bounds = yield Param.get(nh, "/bounds/sim")
+    lla_bounds = yield Param.get(nh, "/bounds/lla")
+
+    if enforce.found_and_true:
+        if is_sim.found_and_true:
+            default_bounds = [[100, 100], [-100, 100], [-100, -100], [100, -100]]  # default if param not found
+            bounds = sim_bounds.value if sim_bounds.found else default_bounds
+            bounds = map(navigator_tools.numpy_to_point, bounds)
+        else:
+            # We want to enforce the bounds that were set
+            bounds = []
+            for lla_bound in lla_bounds.value:
+                bound = yield convert.request(CoordinateConversionRequest(frame="lla", point=np.append(lla_bound, 0)))
+                bounds.append(navigator_tools.numpy_to_point(getattr(bound, to_frame)))
 
         resp = BoundsResponse(enforce=True, bounds=bounds)
 
@@ -29,10 +60,11 @@ def got_request(nh, req, convert):
 def main():
     nh = yield txros.NodeHandle.from_argv("bounds_server")
 
-    convert = nh.get_service_client("/convert", CoordinateConversion)
+    convert = Converter()
+    yield convert.init(nh)
     nh.advertise_service('/get_bounds', Bounds, lambda req: got_request(nh, req, convert))
 
     yield defer.Deferred() # never exit
 
-
-txros.util.launch_main(main)
+if __name__ == "__main__":
+    txros.util.launch_main(main)
