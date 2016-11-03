@@ -5,4 +5,10 @@ find_package(catkin REQUIRED COMPONENTS
 	rospy
 )
 
+#add dynamic reconfigure api
+find_package(catkin REQUIRED dynamic_reconfigure)
+generate_dynamic_reconfigure_options(
+  cfg/OgridConfig.cfg
+)
+
 catkin_package()

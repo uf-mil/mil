@@ -1,6 +1,9 @@
+import txros
+from twisted.internet import defer
+
 import rospy
 from navigator_msgs.msg import Alarm
-import sub8_ros_tools
+import navigator_tools
 import json
 
 
@@ -126,7 +129,7 @@ class AlarmRaiser(object):
             self._previous_stuff = alarm_contents
 
         alarm_msg = Alarm(
-            header=sub8_ros_tools.make_header(),
+            header=navigator_tools.make_header(),
             **alarm_contents
         )
 
@@ -147,7 +150,7 @@ class AlarmRaiser(object):
             self._previous_stuff = alarm_contents
 
         alarm_msg = Alarm(
-            header=sub8_ros_tools.make_header(),
+            header=navigator_tools.make_header(),
             **alarm_contents
         )
         self._alarm_pub.publish(alarm_msg)
@@ -161,6 +164,8 @@ class AlarmListener(object):
         to the 'callback_funct'.
     '''
     def __init__(self, alarm_name=None, callback_funct=None):
+        rospy.Subscriber('/alarm', Alarm, self._check_alarm, queue_size=100)
+
         # This dictionary will allow the user to listen to an arbitrary number of alarms
         # and have sepreate callbacks and args for each alarm.
         self.callback_linker = {}
@@ -173,13 +178,11 @@ class AlarmListener(object):
                 'active': False,
             }
 
-        rospy.Subscriber('/alarm', Alarm, self.check_alarm, queue_size=100)
-
     def __getitem__(self, alarm_name):
         '''
             Return true if the alarm is active, false if not
         '''
-        if key in self.callback_linker.keys():
+        if alarm_name in self.callback_linker.keys():
             return self.callback_linker[alarm_name]['active']
         else:
             raise KeyError("{} is not a known alarm to this listener".format(alarm_name))
@@ -194,7 +197,86 @@ class AlarmListener(object):
             'active': False,
         }
 
-    def check_alarm(self, alarm):
+    def _check_alarm(self, alarm):
+        '''
+            We've gotten an alarm, but don't panic! If it's one of the alarms we are listening for,
+            pass the alarm to the function callback with any specified args.
+        '''
+
+        if alarm.alarm_name not in self.known_alarms:
+            self.known_alarms.append(alarm.alarm_name)
+
+        found_alarm = self.callback_linker.get(alarm.alarm_name, None)
+
+        if found_alarm is None:
+            return
+
+        if found_alarm['last_time'] is None:
+            found_alarm['last_time'] = alarm.header.stamp
+
+        elif alarm.header.stamp > found_alarm['last_time']:
+            # Check if the alarm is new
+            found_alarm['last_time'] = alarm.header.stamp
+            found_alarm['active'] = not alarm.clear
+
+        else:
+            # Otherwise do nothing
+            return
+
+        callback = found_alarm['callback']
+        callback(alarm)
+
+
+class AlarmListenerTx():
+    @txros.util.cancellableInlineCallbacks
+    def init(self, nh):
+        self.callback_linker = {}
+        self.known_alarms = []
+
+        self.nh = nh
+        sub = yield self.nh.subscribe("/alarm", Alarm, self._check_alarm)
+        yield self.nh.sleep(.1)  # Sleep to build alarm buffer
+
+    def __getitem__(self, alarm_name):
+        '''
+            Return true if the alarm is active, false if not
+        '''
+        if alarm_name in self.callback_linker.keys():
+            return self.callback_linker[alarm_name]['active']
+        else:
+            raise KeyError("{} is not a known alarm to this listener".format(alarm_name))
+
+    def add_listener(self, alarm_name, callback_funct):
+        '''
+            Creates a new alarm listener and links it to a callback function.
+            The callback will be immediately called with the current alarm's state.
+        '''
+        self.callback_linker[alarm_name] = {
+            'callback': callback_funct,
+            'last_time': None,
+            'active': False,
+            'last_alarm': None,
+        }
+
+    @txros.util.cancellableInlineCallbacks
+    def wait_for_alarm(self, alarm_name, timeout=10):
+        '''
+            Assumes we have the alarm being listened to already (ie add_listener has been called already)
+        '''
+        found = False
+
+        if alarm_name in self.known_alarms:
+            found = self.callback_linker[alarm_name]['last_alarm']
+
+        start_time = self.nh.get_time()  # Poor man's timeout
+        while not found and self.nh.get_time() - start_time < txros.nodehandle.genpy.Duration(timeout):
+            yield self.nh.sleep(.07)  # This is a bit more than the alarm pub frequency
+            if alarm_name in self.known_alarms:
+                found = self.callback_linker[alarm_name]['last_alarm']
+
+        defer.returnValue(found)
+
+    def _check_alarm(self, alarm):
         '''
             We've gotten an alarm, but don't panic! If it's one of the alarms we are listening for,
             pass the alarm to the function callback with any specified args.
@@ -203,8 +285,11 @@ class AlarmListener(object):
             self.known_alarms.append(alarm.alarm_name)
 
         found_alarm = self.callback_linker.get(alarm.alarm_name, None)
+
         if found_alarm is None:
             return
+
+        self.callback_linker['last_alarm'] = alarm
 
         if found_alarm['last_time'] is None:
             found_alarm['last_time'] = alarm.header.stamp

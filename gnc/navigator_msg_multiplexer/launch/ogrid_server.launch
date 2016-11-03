@@ -1,0 +1,4 @@
+<launch>
+  <node name="ogrid_server" pkg="navigator_lidar_oa" type="ogrid_server.py" output="screen"
+  args="--topics /ogrid /ogrid_batcave" />
+</launch>

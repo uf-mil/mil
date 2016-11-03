@@ -1,7 +1,7 @@
 # flake8: noqa
 
 from alarm_helpers import AlarmBroadcaster
-from alarm_helpers import AlarmListener
+from alarm_helpers import AlarmListener, AlarmListenerTx
 from alarm_helpers import single_alarm
 from . import alarm_handlers
 from alarm_handlers._template import HandlerBase

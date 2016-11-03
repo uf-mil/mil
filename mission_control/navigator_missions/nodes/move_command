@@ -10,6 +10,7 @@ import nav_missions
 
 import argparse
 
+fprint = navigator_tools.fprint
 
 @util.cancellableInlineCallbacks
 def main():
@@ -28,12 +29,17 @@ def main():
         help='Point to focus on. See lqrrt documentation for info on how to use this. ex. "[10, 2.3, 1]"')
     parser.add_argument('-s', '--sim', action='store_true',
         help='This will run navigator in sim mode (ie. not wait for odom or enu bounds). Don\'t do this on the boat.')
+    parser.add_argument('-p', '--plantime', type=float,
+        help='Time given to the planner for it\'s first plan.')
 
     args = parser.parse_args(args[1:])
 
     n = yield Navigator(nh)._init(args.sim)
 
     action_kwargs = {'move_type': args.movetype}
+
+    if args.plantime is not None:
+        action_kwargs['initial_plan_time'] = float(args.plantime)
 
     if args.focus is not None:
         focus = np.array(map(float, args.focus[1:-1].split(',')))
@@ -42,11 +48,11 @@ def main():
 
     if args.command == 'custom':
         # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
-        print "Moving with the command: {}".format(args.argument)
+        fprint("Moving with the command: {}".format(args.argument), title="MOVE_COMMAND")
         yield eval("n.move.{}.go(move_type='{move_type}')".format(args.argument, **action_kwargs))
 
     elif args.command == 'rviz':
-        print "Moving to last published rviz position"
+        fprint("Moving to last published rviz position", title="MOVE_COMMAND")
         sub = nh.subscribe("/rviz_goal", PoseStamped)
         target_pose = yield sub.get_next_message()
         yield n.move.to_pose(target_pose).go(**action_kwargs)
@@ -67,7 +73,7 @@ def main():
         if station_hold:
             action_kwargs['move_type'] = 'hold'
 
-        print "{}ing {} non-arbitrary unit(s)".format(args.command, amount)
+        fprint("{}ing {} non-arbitrary unit(s)".format(args.command, amount), title="MOVE_COMMAND")
         yield movement(float(amount), unit).go(**action_kwargs)
 
     defer.returnValue(reactor.stop())
