@@ -16,13 +16,12 @@ using namespace cv;
 #endif
 class GrayscaleContour : public DockShapeVision {
  private:
-  Mat colorFrame, croppedFrame, grayscaleFrame, edgesFrame;
+  Mat colorFrame, grayscaleFrame, edgesFrame;
   std::vector<std::vector<Point> > contours;
   std::vector<Vec4i> hierarchy;
   std::vector<std::vector<cv::Point> > shapes;
   Rect roi;
 
-  void CropFrame();
   void ConvertToGrayscale();
   void DetectEdges();
   void FindContours();
@@ -76,7 +75,6 @@ class GrayscaleContour : public DockShapeVision {
   double greenHue;
  public:
   GrayscaleContour(ros::NodeHandle& nh);
-  void GetShapes(cv::Mat& frame, cv::Rect roi,
-                 navigator_msgs::DockShapes& symbols);
+  void GetShapes(cv::Mat& frame, navigator_msgs::DockShapes& symbols);
   void init();
 };

@@ -42,9 +42,9 @@ GrayscaleContour::GrayscaleContour(ros::NodeHandle& nh) : DockShapeVision(nh) {
 #ifdef DO_ROS_DEBUG
   image_transport.reset(new image_transport::ImageTransport(nh));
   color_debug_publisher =
-      image_transport->advertise("/dock_shapes/finder/debug_color", 1);
+      image_transport->advertise("debug_color", 1);
   contour_debug_publisher =
-      image_transport->advertise("/dock_shapes/finder/debug_contours", 1);
+      image_transport->advertise("debug_contours", 1);
 #endif
 }
 void GrayscaleContour::init() {
@@ -53,29 +53,26 @@ void GrayscaleContour::init() {
   createTrackbar("thresh2", "Menu", &cannyParams.thresh2, 255);
 #endif
 }
-void GrayscaleContour::GetShapes(cv::Mat& frame, cv::Rect roi,
-                                 navigator_msgs::DockShapes& symbols) {
+void GrayscaleContour::GetShapes(cv::Mat& frame, navigator_msgs::DockShapes& symbols) {
   if (frame.empty()) return;
 
-  this->roi = roi;
   frame_width = frame.cols;
   frame_height = frame.rows;
 
   colorFrame = frame;
-  CropFrame();
-  Mat temp = croppedFrame.clone();
-  bilateralFilter(temp, croppedFrame, blur_size, blur_size * 2, blur_size / 2);
+  Mat temp = colorFrame.clone();
+  bilateralFilter(temp, colorFrame, blur_size, blur_size * 2, blur_size / 2);
   ConvertToGrayscale();
   DetectEdges();
   FindContours();
 
 #ifdef DO_DEBUG
-  Mat result = croppedFrame.clone();
+  Mat result = colorFrame.clone();
 #endif
 #ifdef DO_ROS_DEBUG
   cv_bridge::CvImage ros_color_debug;
   ros_color_debug.encoding = "bgr8";
-  ros_color_debug.image = croppedFrame.clone();
+  ros_color_debug.image = colorFrame.clone();
 #endif
 
   for (size_t i = 0; i < contours.size(); i++) {
@@ -113,7 +110,7 @@ void GrayscaleContour::GetShapes(cv::Mat& frame, cv::Rect roi,
 #ifdef DO_DEBUG
   for (auto symbol : symbols.list) {
     putText(result, symbol.Shape + "\n(" + symbol.Color + ")",
-            Point(symbol.CenterX + 10 - roi.x, symbol.CenterY - roi.y), 1, 1,
+            Point(symbol.CenterX + 10, symbol.CenterY), 1, 1,
             Scalar(0, 0, 0), 3);
   }
   imshow("Result", result);
@@ -135,9 +132,8 @@ void GrayscaleContour::GetShapes(cv::Mat& frame, cv::Rect roi,
   contour_debug_publisher.publish(ros_color_debug.toImageMsg());
 #endif
 }
-void GrayscaleContour::CropFrame() { croppedFrame = colorFrame(roi); }
 void GrayscaleContour::ConvertToGrayscale() {
-  cvtColor(croppedFrame, grayscaleFrame, CV_BGR2GRAY);
+  cvtColor(colorFrame, grayscaleFrame, CV_BGR2GRAY);
 }
 void GrayscaleContour::DetectEdges() {
   Canny(grayscaleFrame, edgesFrame, cannyParams.thresh1, cannyParams.thresh2);
@@ -170,10 +166,10 @@ void GrayscaleContour::FindContours() {
 }
 
 bool GrayscaleContour::GetColor(int Index, std::string& color, float& confidence) {
-  Mat mask = Mat::zeros(croppedFrame.rows, croppedFrame.cols, CV_8UC1);
+  Mat mask = Mat::zeros(colorFrame.rows, colorFrame.cols, CV_8UC1);
   drawContours(mask, contours, Index, Scalar(255), CV_FILLED);
-  Mat meanBGR(1,1,croppedFrame.type(), mean(croppedFrame, mask));
-  Mat mean_hsv_mat(1,1,croppedFrame.type(), Scalar(0,0,0));
+  Mat meanBGR(1,1,colorFrame.type(), mean(colorFrame, mask));
+  Mat mean_hsv_mat(1,1,colorFrame.type(), Scalar(0,0,0));
   cvtColor(meanBGR,mean_hsv_mat,CV_BGR2HSV,3);
   Vec3b meanColor = mean_hsv_mat.at<Vec3b>(0,0);
   double hue = meanColor[0];
@@ -341,13 +337,13 @@ void GrayscaleContour::findAngles(std::vector<Point>& points,
 void GrayscaleContour::setShapePoints(navigator_msgs::DockShape& dockShape,
                                       std::vector<Point>& points) {
   Point center = findCenter(points);
-  dockShape.CenterX = center.x + roi.x;
-  dockShape.CenterY = center.y + roi.y;
+  dockShape.CenterX = center.x;
+  dockShape.CenterY = center.y;
   dockShape.img_width = colorFrame.cols;
   for (size_t j = 0; j < points.size(); j++) {
     geometry_msgs::Point p;
-    p.x = points[j].x + roi.x;
-    p.y = points[j].y + roi.y;
+    p.x = points[j].x;
+    p.y = points[j].y;
     p.z = 0;
     dockShape.points.push_back(p);
   }
