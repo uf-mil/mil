@@ -26,18 +26,6 @@
 
     <!-- Legacy - should be phased out -->
     <node pkg="kill_handling" type="kill_master" name="kill_master"/>
-    <node pkg="c3_trajectory_generator" type="c3_trajectory_generator" name="c3_trajectory_generator" output="screen">
-        <rosparam>
-            <!-- Degraded trajectory -->
-            fixed_frame: /enu
-            body_frame: /base_link
-            vmin_b: [-0.68, -0.45, -1, -1, -1, -0.19]
-            vmax_b: [  1.1,  0.45,  1,  1,  1,  0.19]
-            amin_b: [-0.34, -0.15, -1, -1, -1, -0.04]
-            amax_b: [ 0.53,  0.15,  1,  1,  1,  0.04]
-            arevoffset_b: [0.0, 0, 0]
-            umax_b: [1, 1, 1, 1, 1, 1]
-          </rosparam>
-    </node>
+    <node name="lidar_ogrid_database" pkg="navigator_lidar_oa" type="lidar" />
 
 </launch>

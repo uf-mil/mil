@@ -1,7 +1,7 @@
 #include "CameraLidarTransformer.hpp"
 
 CameraLidarTransformer::CameraLidarTransformer()
-    : nh("camera_lidar_transformer"),
+    : nh(ros::this_node::getName()),
       tfBuffer(),
       tfListener(tfBuffer, nh),
       lidarSub(nh, "/velodyne_points", 10),
@@ -13,19 +13,22 @@ CameraLidarTransformer::CameraLidarTransformer()
 {
 #ifdef DO_ROS_DEBUG
   points_debug_publisher =
-      image_transport.advertise("/camera_lidar_transformer/points_debug", 1);
+      image_transport.advertise("points_debug", 1);
   pubMarkers = nh.advertise<visualization_msgs::MarkerArray>(
-      "/dock_shapes/raylider/markers", 10);
+      "markers_debug", 10);
 #endif
   nh.param<std::string>("camera_info_topic",camera_info_topic,"/right/right/camera_info");
+  printf("Topic %s\n",camera_info_topic.c_str());
   // ~nh.param<double>("MIN_Z",MIN_Z,1);
   // ~nh.param<double>("MAX_Z_ERROR",MAX_Z_ERROR,0.2);
   std::cout << "Constructed" << std::endl;
   cameraInfoSub =
       nh.subscribe(camera_info_topic, 1,
                    &CameraLidarTransformer::cameraInfoCallback, this);
+  std::string camera_to_lidar_transform_topic;
+  nh.param<std::string>("camera_to_lidar_transform_topic",camera_to_lidar_transform_topic,"transform_camera");
   transformServiceServer = nh.advertiseService(
-      "transform_camera", &CameraLidarTransformer::transformServiceCallback,
+      camera_to_lidar_transform_topic, &CameraLidarTransformer::transformServiceCallback,
       this);
 }
 void CameraLidarTransformer::cameraInfoCallback(sensor_msgs::CameraInfo info)
@@ -55,8 +58,8 @@ bool CameraLidarTransformer::transformServiceCallback(
   matrixFindPlaneA << 0, 0, 0, 0, 0, 0, 0, 0, 0;
   Eigen::Vector3d matrixFindPlaneB(0, 0, 0);
 
-  cv::circle(debug_image, cv::Point(req.point.x, req.point.y), 3,
-             cv::Scalar(255, 0, 0), 5);
+  cv::circle(debug_image, cv::Point(req.point.x, req.point.y), 8,
+             cv::Scalar(255, 0, 0), -1);
   //Tracks the closest lidar point to the requested camera point
   double minDistance = std::numeric_limits<double>::max();
   for (auto ii = 0, jj = 0; ii < cloud_transformed.width;
@@ -165,7 +168,7 @@ bool CameraLidarTransformer::transformServiceCallback(
   visualization_msgs::Marker marker_normal;
   marker_normal.header = req.header;
   marker_normal.header.seq = 0;
-  marker_normal.header.frame_id = "right_right_cam";
+  marker_normal.header.frame_id =  req.header.frame_id;
   marker_normal.id = 3000;
   marker_normal.type = visualization_msgs::Marker::ARROW;
 
@@ -173,7 +176,7 @@ bool CameraLidarTransformer::transformServiceCallback(
   sdp_normalvec_ros.x = normalvec_ros.x + res.transformed[0].x;
   sdp_normalvec_ros.y = normalvec_ros.y + res.transformed[0].y;
   sdp_normalvec_ros.z = normalvec_ros.z + res.transformed[0].z;
-  marker_normal.points.push_back(res.transformed[0]);
+  marker_normal.points.push_back(res.closest);
   marker_normal.points.push_back(sdp_normalvec_ros);
 
   marker_normal.scale.x = 0.1;
