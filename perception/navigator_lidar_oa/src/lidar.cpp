@@ -32,7 +32,6 @@
 #include "OccupancyGrid.h"
 #include "ConnectedComponents.h"
 #include "objects.h"
-#include "bounding_boxes.h"
 
 using namespace std;
 
@@ -548,9 +547,9 @@ int main(int argc, char* argv[])
 	pubObjectsTimer = ros::Time::now();
 
 	//Extra publishing for debugging...
-	pubCloudPersist = nh.advertise<sensor_msgs::PointCloud>("ira_persist",1);
-	pubCloudFrame = nh.advertise<sensor_msgs::PointCloud>("ira_frame",1);
-	pubCloudPCL = nh.advertise<sensor_msgs::PointCloud>("ira_pclcloud",1);
+	pubCloudPersist = nh.advertise<sensor_msgs::PointCloud>("/ira_persist",1);
+	pubCloudFrame = nh.advertise<sensor_msgs::PointCloud>("/ira_frame",1);
+	pubCloudPCL = nh.advertise<sensor_msgs::PointCloud>("/ira_pclcloud",1);
 
 	//Service for object request
 	ros::ServiceServer service = nh.advertiseService("/database/requests", objectRequest);
