@@ -1,0 +1,7 @@
+detect_deliver_color:
+  param: /mission/detect_deliver/Color
+  options: [RED, GREEN, BLUE]
+
+detect_deliver_shape:
+  param: /mission/detect_deliver/Shape
+  options: [CIRCLE, TRIANGLE, CROSS]

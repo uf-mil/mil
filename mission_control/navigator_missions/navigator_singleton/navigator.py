@@ -58,6 +58,9 @@ class Navigator(object):
         self.vision_proxies = {}
         self._load_vision_services()
 
+        self.mission_params = {}
+        self._load_mission_params()
+
         # If you don't want to use txros
         self.pose = None
         self.ecef_pose = None
@@ -197,6 +200,20 @@ class Navigator(object):
                 err = "Error loading vision sevices: {}".format(e)
                 fprint("" + err, title="NAVIGATOR", msg_color='red')
 
+    def _load_mission_params(self, fname="mission_params.yaml"):
+        rospack = rospkg.RosPack()
+        config_file = os.path.join(rospack.get_path('navigator_missions'), 'navigator_singleton', fname)
+        f = yaml.load(open(config_file, 'r'))
+
+        for name in f:
+            try:
+                param = f[name]["param"]
+                options = f[name]["options"]
+                self.mission_params[name] = MissionParam(self.nh, param, options)
+            except Exception, e:
+                err = "Error loading mission params: {}".format(e)
+                fprint("" + err, title="NAVIGATOR", msg_color='red')
+
     @util.cancellableInlineCallbacks
     def _make_alarms(self):
         self.alarm_listener = AlarmListenerTx()
@@ -228,6 +245,55 @@ class VisionProxy(object):
         s_req = self.request(**s_args)
 
         return self.client(s_req)
+
+class MissionParam(object):
+    def __init__(self, nh, param, options):
+        self.nh = nh
+        self.param = param
+        self.options = options
+
+    @util.cancellableInlineCallbacks
+    def get(self):
+        # Returns deferred object, make sure to yield on this (same for below)
+        if not (yield self.exists()):
+            raise Exception("Mission Param {} not yet set".format(self.param))
+        value = yield self.nh.get_param(self.param)
+        if not self._valid(value):
+            raise Exception("Value {} is invalid for param {}. Valid values: {}".format(value, self.param, self.options))
+        else:
+            defer.returnValue(value)
+
+    def exists(self):
+        return self.nh.has_param(self.param)
+
+    @util.cancellableInlineCallbacks
+    def set(self,value):
+        if not self._valid(value):
+            raise Exception("Value {} is invalid for param {}. Valid values: {}".format(value, self.param, self.options))
+        yield self.nh.set_param(self.param, value)
+
+    @util.cancellableInlineCallbacks
+    def valid(self):
+        exists = yield self.exists()
+        if not exists:
+            defer.returnValue(False)
+        value = yield self.nh.get_param(self.param)
+        print "Value ",value
+        if not self._valid(value):
+            defer.returnValue(False)
+        defer.returnValue(True)
+
+    @util.cancellableInlineCallbacks
+    def reset(self):
+        if (yield self.exists()):
+            yield self.nh.delete_param(self.param)
+
+    def _valid(self,value):
+        for x in self.options:
+            if x == value:
+                return True
+        return False
+
 
 class Searcher(object):
     def __init__(self, nav, vision_proxy, search_pattern, **kwargs):
