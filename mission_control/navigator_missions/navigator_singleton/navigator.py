@@ -24,9 +24,23 @@ from navigator_tools import fprint
 
 
 class MissionResult(object):
-    def __init__(self, success=True, response="", need_rerun=False, post_function=None):
+    '''
+        The response can be used by the mission runner to determine why a missions failed (assuming it's not a normal
+            runtime issue). Add whatever response types you want.
+        Also with this class you can tell the mission runner whether you want to rerun the mission (if it failed), and
+            give an optional function to run after the mission completes (regardless of pass/fail).
+        Finally, this provides a good way to print out mission results.
+    '''
+    NoResponse = 0
+    ParamNotFound = 1
+    DbObjectNotFound = 1
+    # ...
+    OtherResponse = 100
+
+    def __init__(self, success=True, response=None, message="", need_rerun=False, post_function=None):
         self.success = success
-        self.response = response
+        self.response = self.NoResponse if response is None else response
+        self.message = message
         self.need_rerun = need_rerun
         self.post_function = lambda: None if post_function is None else post_function
 
@@ -34,11 +48,11 @@ class MissionResult(object):
         cool_bars = "=" * 75
         _pass = (cool_bars,
                  "    Mission Success!",
-                 "    Response: {}".format(self.response),
+                 "    Message: {}".format(self.message),
                  cool_bars)
         _fail = (cool_bars,
                  "    Mission Failure!",
-                 "    Response: {}".format(self.response),
+                 "    Message: {}".format(self.message),
                  "    Post function: {}".format(self.post_function.__name__),
                  cool_bars)
 

@@ -66,8 +66,16 @@ def main(navigator):
     else:
        print "START_GATE: Error 4 - No db buoy response..."
        result.success = False
-       result.response = "No db buoy response..."
+       result.response = result.DbObjectNotFound
+       result.message = "Start gates not found in the database."
        return_with(result)
+
+    if len(buoys) != 4:
+       print "START_GATE: Error 5 - Invaild number of buoys found: {} (expecting 4)".format(len(buoys))
+       result.success = False
+       result.message = "Invaild number of buoys found: {} (expecting 4)".format(len(buoys))
+       return_with(result)
+
 
     # buoys = [Buoy.from_srv(left), Buoy.from_srv(right)]
     #buoys = np.array(get_buoys())
@@ -103,7 +111,7 @@ def main(navigator):
     b_mid_point = b_left_buoy.position + b_between_vector / 2
     through_vector = b_mid_point - f_mid_point
     through_vector = through_vector / np.linalg.norm(through_vector)
-    
+
     #print mid_point
     setup_dist = 20  # Line up with the start gate this many meters infront of the gate.
     setup = f_mid_point - f_direction_vector * setup_dist
@@ -121,7 +129,7 @@ def main(navigator):
                     points=np.array(points))
 
     yield navigator._point_cloud_pub.publish(pc)
-    
+
     yield navigator.move.set_position(setup).look_at(f_mid_point).go(move_type="skid")
     print "publishing"
     latched = navigator.latching_publisher("/mission_ogrid", OccupancyGrid, msg)
