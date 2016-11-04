@@ -43,7 +43,7 @@ The service is name /database/requests with the input parameter name and will re
 
 **Setting ROI objects from the database**
 
-ROI (region of interest) allows us to set fake markers in the database as estimates about where structures are located in the ENU world frame. This can either be done through rosservice with the cmd input or manually in RVIZ. The fake markers include: **BuoyField**, **CoralSurvey**, **FindBreak**, **AcousticPinger**, **Shooter**, **Scan\_The_Code**. (These can be changed/standardized later...). The syntax requires the name of the fake marker and the **x,y location in the ENU** frame after the = sign. Example calls:
+ROI (region of interest) allows us to set fake markers in the database as estimates about where structures are located in the ENU world frame. This can either be done through rosservice with the cmd input or manually in RVIZ. The fake markers include: **BuoyField**, **CoralSurvey**, **FindBreak**, **AcousticPinger**, **Shooter**, **Scan\_The_Code**, **Gate\_1**, **Gate\_2**, **Gate\_3**. (These can be changed/standardized later...). The syntax requires the name of the fake marker and the **x,y location in the ENU** frame after the = sign. Example calls:
 
 
 	- rosservice call /database/requests "cmd: 'Shooter=-27,-69'"

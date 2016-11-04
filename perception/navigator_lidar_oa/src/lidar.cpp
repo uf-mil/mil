@@ -47,10 +47,11 @@ const double MAXIMUM_Z_BELOW_LIDAR = 2; //2
 const double MAXIMUM_Z_ABOVE_LIDAR = 2.5;
 const double MAX_ROLL_PITCH_ANGLE_DEG = 5.3;
 const double LIDAR_VIEW_ANGLE_DEG = 160;
-const double LIDAR_VIEW_DISTANCE_METERS = 80;
+const double LIDAR_VIEW_DISTANCE_METERS = 60;
 const double LIDAR_MIN_VIEW_DISTANCE_METERS = 5.5;
 const int MIN_LIDAR_POINTS_FOR_OCCUPANCY = 10;
 const double MIN_OBJECT_HEIGHT_METERS = 0.075;
+const double MIN_OBJECT_SEPERATION_DISTANCE = 1.5;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -58,7 +59,7 @@ const double MIN_OBJECT_HEIGHT_METERS = 0.075;
 OccupancyGrid ogrid(MAP_SIZE_METERS,ROI_SIZE_METERS,VOXEL_SIZE_METERS);
 nav_msgs::OccupancyGrid rosGrid;
 ros::Publisher pubGrid,pubMarkers,pubObjects,pubCloudPersist,pubCloudFrame,pubCloudPCL;
-ObjectTracker object_tracker;
+ObjectTracker object_tracker(MIN_OBJECT_SEPERATION_DISTANCE*3);
 geometry_msgs::Point waypoint_ogrid;
 geometry_msgs::Pose boatPose_enu;
 geometry_msgs::Twist boatTwist_enu;
@@ -161,7 +162,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 
 	//Detect objects
 	std::vector<objectMessage> objects;
-	std::vector< std::vector<int> > cc = ConnectedComponents(ogrid,objects);
+	std::vector< std::vector<int> > cc = ConnectedComponents(ogrid,objects,MIN_OBJECT_SEPERATION_DISTANCE);
 
 
 	//Publish second point cloud
@@ -248,14 +249,27 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	//Track objects over frames
 	auto object_permanence = object_tracker.add_objects(objects,pclCloud,boatPose_enu);
 
+	//Look for gates in between 4 buoys
+	auto gatePositions = object_tracker.FindThreeGates();
+
+	//Set GatePositions
+	std::vector<std::string> names{"Gate_2","Gate_1","Gate_3"};
+	for (auto ii = 0; ii < gatePositions.size(); ++ii) {
+		geometry_msgs::Pose newPose;
+		newPose.position = gatePositions[ii];
+		object_tracker.lock(names[ii]);
+		markerServer->setPose(names[ii],newPose);
+	  	markerServer->applyChanges();
+	}
+
 	//Clear all markers from interactive server
 	//markerServer->clear();	
 
 	for (auto obj : object_permanence) {
 		//Skip objects that are not current
 		if (!obj.current) { 
-			markerServer->erase(to_string(obj.id));
-			continue; 
+			//markerServer->erase(to_string(obj.id));
+			//continue; 
 		} else if (!obj.real) {
 			continue;
 		}
@@ -398,6 +412,7 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
 		newPose.position.x = x;
 		newPose.position.y = y;
 		newPose.position.z = 0;
+		object_tracker.lock(name);
 		markerServer->setPose(name,newPose);
 	  	markerServer->applyChanges();
 	}
@@ -414,6 +429,7 @@ void roiCallBack( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &f
 	  newPose.position.z = 0;
 	  for (auto &obj: object_tracker.saved_objects) {
 	  		if (obj.name == feedback->marker_name) {
+	  			obj.locked = true;
 	  			obj.position = newPose.position;
 	  			break;
 	  		}
@@ -598,6 +614,9 @@ int main(int argc, char* argv[])
 	createROIS("AcousticPinger");
 	createROIS("Shooter");
 	createROIS("Scan_The_Code");
+	createROIS("Gate_1");
+	createROIS("Gate_2");
+	createROIS("Gate_3");
 
 	//Give control to ROS
 	ros::spin();
