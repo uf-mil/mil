@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 import numpy as np
+
 import txros
 import navigator_tools
 from twisted.internet import defer
 from coordinate_conversion_server import Converter
 from navigator_msgs.srv import Bounds, BoundsResponse, \
-                               CoordinateConversion, CoordinateConversionRequest
+                               CoordinateConversionRequest
 
 
 class Param():
@@ -35,21 +36,13 @@ def got_request(nh, req, convert):
 
      # Lets get all these defers started up
     enforce = yield Param.get(nh, "/bounds/enforce")
-    is_sim = yield Param.get(nh, "/is_simulation")
-    sim_bounds = yield Param.get(nh, "/bounds/sim")
     lla_bounds = yield Param.get(nh, "/bounds/lla")
 
     if enforce.found_and_true:
-        if is_sim.found_and_true:
-            default_bounds = [[100, 100], [-100, 100], [-100, -100], [100, -100]]  # default if param not found
-            bounds = sim_bounds.value if sim_bounds.found else default_bounds
-            bounds = map(navigator_tools.numpy_to_point, bounds)
-        else:
-            # We want to enforce the bounds that were set
-            bounds = []
-            for lla_bound in lla_bounds.value:
-                bound = yield convert.request(CoordinateConversionRequest(frame="lla", point=np.append(lla_bound, 0)))
-                bounds.append(navigator_tools.numpy_to_point(getattr(bound, to_frame)))
+        bounds = []
+        for lla_bound in lla_bounds.value:
+            bound = yield convert.request(CoordinateConversionRequest(frame="lla", point=np.append(lla_bound, 0)))
+            bounds.append(navigator_tools.numpy_to_point(getattr(bound, to_frame)))
 
         resp = BoundsResponse(enforce=True, bounds=bounds)
 
