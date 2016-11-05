@@ -11,5 +11,11 @@ namespace tools{
 // if color is false then it looks for those that end in "image_rect"
 std::vector<std::string> getRectifiedImageTopics(bool color = true);
 
+// converts raw string literals to std:string's
+inline std::string operator "" _s(const char* str, size_t /*length*/) 
+{ 
+    return std::string(str); 
+}
+
 }  // namespace nav::tools
 }  // namespace nav
