@@ -615,6 +615,7 @@ int main(int argc, char* argv[])
 	createROIS("Gate_1");
 	createROIS("Gate_2");
 	createROIS("Gate_3");
+	createROIS("Dock");
 
 	//Give control to ROS
 	ros::spin();
