@@ -360,28 +360,28 @@
 
         <!-- Detect and Deliver -->
         <node name="spawn_target_base" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/targets/target_base.sdf -sdf
+          args="-file $(find navigator_gazebo)/models/detect_and_deliver/base.sdf -sdf
             -x -5 -y -18.05 -z 0 -model target_base"
           output="screen"/>
 
-        <node name="spawn_red_triangle_target" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/targets/red_triangle_target.sdf -sdf
-            -x -5 -y -17.14778 -z 0.20342 -model red_triangle_target"
+        <node name="spawn_target_1" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/detect_and_deliver/red_triangle.sdf -sdf
+            -x -5 -y -17.14778 -z 0.20342 -model target_1"
           output="screen"/>
 
-        <node name="spawn_blue_triangle_target" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/targets/blue_triangle_target.sdf -sdf
-            -x -5.90222 -y -18.05 -z 0.20342 -Y 1.57079 -model blue_triangle_target"
+        <node name="spawn_target_2" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/detect_and_deliver/blue_triangle.sdf -sdf
+            -x -5.90222 -y -18.05 -z 0.20342 -Y 1.57079 -model target_2"
           output="screen"/>
 
-        <node name="spawn_red_cruciform_target" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/targets/red_cruciform_target.sdf -sdf
-            -x -5 -y -18.95222 -z 0.20342 -Y 3.14159 -model red_cruciform_target"
+        <node name="spawn_target_3" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/detect_and_deliver/red_cruciform.sdf -sdf
+            -x -5 -y -18.95222 -z 0.20342 -Y 3.14159 -model target_3"
           output="screen"/>
 
-        <node name="spawn_green_circle_target" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/targets/green_circle_target.sdf -sdf
-            -x -4.09778 -y -18.05 -z 0.20342 -Y -1.57079 -model green_circle_target"
+        <node name="spawn_target_4" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/detect_and_deliver/green_circle.sdf -sdf
+            -x -4.09778 -y -18.05 -z 0.20342 -Y -1.57079 -model target_4"
           output="screen"/>
 
 
