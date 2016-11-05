@@ -23,9 +23,9 @@ class ShooterControl:
         self.load_extend_time = rospy.Duration(0, rospy.get_param('~controller/load/extend_time_millis', 500)*1000000)
         self.load_pause_time = rospy.Duration(0, rospy.get_param('~controller/load/pause_time_millis', 100)*1000000)
         self.load_total_time = self.load_retract_time + self.load_pause_time + self.load_extend_time
-        self.fire_extend_time = rospy.Duration(0, rospy.get_param('~controller/fire/extend_time_millis', 400)*1000000)
+        self.fire_retract_time = rospy.Duration(0, rospy.get_param('~controller/fire/retract_time_millis', 400)*1000000)
         self.fire_shoot_time = rospy.Duration(0, rospy.get_param('~controller/fire/shoot_time_millis', 1000)*1000000)
-        self.total_fire_time = max(self.fire_shoot_time,self.fire_extend_time)
+        self.total_fire_time = max(self.fire_shoot_time,self.fire_retract_time)
         self.loaded = False #Assume linear actuator starts forward
         self.stop = False
         self.motor1_stop = 0
@@ -36,16 +36,24 @@ class ShooterControl:
         self.load_server.start()
         self.cancel_service = rospy.Service('/shooter/cancel', Trigger, self.cancel_callback)
         self.manual_service = rospy.Service('/shooter/manual', ShooterManual, self.manual_callback)
+        self.reset_service = rospy.Service('/shooter/reset', Trigger, self.reset_callback)
         self.fire_client = actionlib.SimpleActionClient('/shooter/fire', ShooterDoAction)
         self.load_client = actionlib.SimpleActionClient('/shooter/load', ShooterDoAction)
         self.joy_sub = rospy.Subscriber("/joy", Joy,self.joy_callback)
         self.last_shoot_joy = False
         self.last_cancel_joy = False
         self.last_load_joy = False
+        self.manual_used = False
 
 
     def load_execute_callback(self, goal):
         result = ShooterDoActionResult()
+        if self.manual_used:
+            rospy.loginfo("Load action called after manual used, aborting")
+            result.result.success = False
+            result.result.error = result.result.MANUAL_CONTROL_USED
+            self.load_server.set_aborted(result.result)
+            return
         if self.fire_server.is_active():
             rospy.loginfo("Something already running, aborting")
             result.result.success = False
@@ -67,12 +75,16 @@ class ShooterControl:
             dur_from_start = rospy.get_rostime() - start_time
             feedback.feedback.time_remaining = self.load_total_time - dur_from_start
             self.load_server.publish_feedback(feedback.feedback)
-            if dur_from_start < self.load_retract_time:
-                self.motor_controller.setMotor1(1.0)
-            elif dur_from_start < self.load_retract_time + self.load_pause_time:
-                self.motor_controller.setMotor1(0)
-            elif dur_from_start < self.load_total_time:
+            self.load_extend_time
+            #Extend to allow ball to drop in
+            if dur_from_start < self.load_extend_time:
                 self.motor_controller.setMotor1(-1.0)
+            #Pause a bit for testing / let ball settle
+            elif dur_from_start < self.load_extend_time + self.load_pause_time:
+                self.motor_controller.setMotor1(0)
+            #Retract for remainder of time
+            elif dur_from_start < self.load_total_time:
+                self.motor_controller.setMotor1(1.0)
             rate.sleep()
         if self.stop:
             result = ShooterDoActionResult()
@@ -93,6 +105,12 @@ class ShooterControl:
 
     def fire_execute_callback(self, goal):
         result = ShooterDoActionResult()
+        if self.manual_used:
+            rospy.loginfo("Fire action called after manual used, aborting")
+            result.result.success = False
+            result.result.error = result.result.MANUAL_CONTROL_USED
+            self.fire_server.set_aborted(result.result)
+            return 
         if self.load_server.is_active():
             rospy.loginfo("Something already running, aborting fire")
             result.result.success = False
@@ -110,13 +128,13 @@ class ShooterControl:
         rospy.loginfo("starting fire")
         rate = rospy.Rate(50) # 50hz
         feedback = ShooterDoActionFeedback()
-        self.motor_controller.setMotor1(-1)
-        self.motor_controller.setMotor2(1)
+        self.motor_controller.setMotor1(1.0)
+        self.motor_controller.setMotor2(1.0)
         while dur_from_start < self.total_fire_time and not self.stop:
             dur_from_start = rospy.get_rostime() - start_time
             feedback.feedback.time_remaining = self.total_fire_time - dur_from_start
             self.fire_server.publish_feedback(feedback.feedback)
-            if dur_from_start > self.fire_extend_time:
+            if dur_from_start > self.fire_retract_time:
                 self.motor_controller.setMotor1(0)
             if dur_from_start > self.fire_shoot_time:
                 self.motor_controller.setMotor2(0)
@@ -140,15 +158,21 @@ class ShooterControl:
           self.stop = True
         else:
           self.stop = False
+          self.motor_controller.setMotor1(self.motor1_stop)
+          self.motor_controller.setMotor2( self.motor2_stop)       
           self.motor1_stop = 0
-          self.motor2_stop = 0       
+          self.motor2_stop = 0
+
     def cancel_callback(self, req):
+        self.manual_used = True
         self.motor1_stop = 0
         self.motor2_stop = 0
         self.stop_actions()
         rospy.loginfo("canceled")
         return TriggerResponse(success=True)
+
     def manual_callback(self, req):
+        self.manual_used = True
         self.motor1_stop = -req.feeder
         self.motor2_stop = req.shooter
         self.stop_actions()
@@ -156,12 +180,20 @@ class ShooterControl:
         res.success = True
         return res
 
+    def reset_callback(self,data):
+        self.stop_actions()
+        self.manual_used = False
+        return TriggerResponse(success=True)
+
     def is_joy_shoot(self,data): #Shoot if right trigger is held down
       return data.axes[5] < -0.9
+
     def is_joy_load(self,data): #load if left bumper is pressed
       return data.buttons[4] == 1
+
     def is_joy_cancel(self,data): #cancel if right bumper is pressed
       return data.buttons[5] == 1
+
     def joy_callback(self,data):
         joy_shoot = self.is_joy_shoot(data)
         joy_load = self.is_joy_load(data)
