@@ -51,7 +51,7 @@ def got_request(nh, req, convert):
 
 @txros.util.cancellableInlineCallbacks
 def main():
-    nh = yield txros.NodeHandle.from_argv("bounds_server")
+    nh = yield txros.NodeHandle.from_argv("bounds_server", anonymous=True)
 
     convert = Converter()
     yield convert.init(nh)
