@@ -19,8 +19,16 @@ SOUTH = trns.quaternion_matrix(pose_editor.SOUTH)
 def main(navigator):
     result = navigator.fetch_result()
 
-    middle_point = np.array([-10, -70, 0]) #yield navigator.database_query("coral_survey")
+    #middle_point = np.array([-10, -70, 0]) 
+    resp = yield navigator.database_query("coral_survey")
+    if not resp.found:
+        result.success = False
+        result.response = "coral_survey database entry not found!"
+        result.need_rerun = True
 
+        defer.returnValue(result)
+
+    middle_point = navigator_tools.point_to_numpy(resp.objects[0].position)
     quads_to_search = [1, 2, 3, 4]
     if (yield navigator.nh.has_param("/mission/coral_survey/quadrants")):
         quads_to_search = yield navigator.nh.get_param("/mission/coral_survey/quadrants")
@@ -52,7 +60,8 @@ def main(navigator):
     boat_position = (yield navigator.tx_pose)[0]
 
     # TODO: make this easier
-    quad = np.argmin(np.linalg.norm(boat_position - [[w.pose[0][0][0], w.pose[0][1][0],w.pose[0][2][0]] for w in waypoints], axis=1)) + 1
+    quad = np.argmin(np.linalg.norm(boat_position - [[w.pose[0][0][0], w.pose[0][1][0],w.pose[0][2][0]] for w in waypoints], axis=1))
+    quad = quads_to_search[quad]
     fprint("Estimated quadrant: {}".format(quad), title="CORAL_SURVEY", msg_color='green')
 
     yield navigator.nh.sleep(5)

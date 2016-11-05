@@ -19,7 +19,12 @@ def head_for_pinger(navigator):
             print "Got processed ping message:\n{}".format(processed_ping)
             if processed_ping.freq > 35000 and processed_ping.freq < 36000:
                 print "Trustworthy pinger heading"
-                pinger_move = navigator.move.set_position(navigator_tools.point_to_numpy(processed_ping.position)).go()
+                t = yield navigator.tf_listener.get_transform("/enu", "/hydrophones", processed_ping.header.stamp)
+                base_vect = t.transform_vector(navigator_tools.point_to_numpy(processed_ping.position))
+                base_vect = base_vect / np.linalg.norm(base_vect) * 10
+                odom_enu = (yield navigator.tx_pose)[0]
+                #pinger_move = navigator.move.set_position(navigator_tools.point_to_numpy(processed_ping.position)).go()
+                pinger_move = yield navigator.move.set_position(odom_enu + base_vect).go()
                 print "Heading towards pinger"
             else:
                 print "Untrustworthy pinger heading. Freq = {} kHZ".format(processed_ping.freq)
@@ -33,6 +38,6 @@ def main(navigator):
     df = defer.Deferred().addCallback(head_for_pinger)
     df.callback(navigator)
     try:
-        yield txros.util.wrap_timeout(df, 15, cancel_df_on_timeout=True)
+        yield txros.util.wrap_timeout(df, 55, cancel_df_on_timeout=True)
     except txros.util.TimeoutError:
         print "Done heading towards pinger"
