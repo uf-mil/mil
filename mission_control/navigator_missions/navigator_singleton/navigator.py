@@ -24,16 +24,9 @@ from navigator_tools import fprint
 
 
 class MissionResult(object):
-    '''
-        The response can be used by the mission runner to determine why a missions failed (assuming it's not a normal
-            runtime issue). Add whatever response types you want.
-        Also with this class you can tell the mission runner whether you want to rerun the mission (if it failed), and
-            give an optional function to run after the mission completes (regardless of pass/fail).
-        Finally, this provides a good way to print out mission results.
-    '''
     NoResponse = 0
     ParamNotFound = 1
-    DbObjectNotFound = 1
+    DbObjectNotFound = 2
     # ...
     OtherResponse = 100
 
