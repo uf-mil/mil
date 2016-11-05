@@ -29,7 +29,7 @@
 
 	- rosrun navigator_lidar_oa lidar
 
-**Requesting objects from the database**
+**Requesting real objects from the database**
 
 The service is name /database/requests with the input parameter name and will return the PerceptionObject message. Here are some example calls:
 
@@ -40,6 +40,19 @@ The service is name /database/requests with the input parameter name and will re
 	- rosservice call /database/requests "name: 'scan_the_code'"
 	- rosservice call /database/requests "name: 'start_gate'" 
 	- rosservice call /database/requests "name: 'buoy'"
+
+**Requesting fake objects from the database**
+
+
+	- rosservice call /database/requests "name: 'All'" 
+	- rosservice call /database/requests "name: 'Shooter'"
+	- rosservice call /database/requests "name: 'AcousticPinger'"	
+	- rosservice call /database/requests "name: 'Gate_1'"
+	- rosservice call /database/requests "name: 'Gate_2'"
+	- rosservice call /database/requests "name: 'Gate_3'"
+	- rosservice call /database/requests "name: 'Scan_The_Code'"
+	- rosservice call /database/requests "name: 'CoralSurvey'" 
+	- rosservice call /database/requests "name: 'BuoyField'"
 
 **Setting ROI objects from the database**
 
