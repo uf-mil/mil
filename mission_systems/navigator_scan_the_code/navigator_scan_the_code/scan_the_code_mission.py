@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+import txros
+import genpy
+from twisted.internet import defer
+import sys
+from sensor_msgs.msg import Image, CameraInfo
+from scan_the_code_lib import ScanTheCodeAction, ScanTheCodePerception, Debug
+from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
+
+
+class ScanTheCodeMission:
+
+    def __init__(self, nh):
+        self.nh = nh
+        self.action = ScanTheCodeAction()
+        self.mission_complete = False
+        self.colors = []
+        self.scan_the_code = None
+
+        self.stc_correct = False
+
+    @txros.util.cancellableInlineCallbacks
+    def init(self, tl):
+        my_tf = tl
+        self.debug = Debug(self.nh, wait=False)
+        self.perception = ScanTheCodePerception(my_tf, self.debug, self.nh)
+        self.database = yield self.nh.get_service_client("/database/requests", ObjectDBQuery)
+        self.image_sub = yield self.nh.subscribe("/stereo/left/image_rect_color", Image, self.image_cb)
+        self.cam_info_sub = yield self.nh.subscribe("/stereo/left/camera_info", CameraInfo, self.info_cb)
+
+    def image_cb(self, image):
+        self.perception.add_image(image)
+
+    def info_cb(self, info):
+        self.perception.update_info(info)
+
+    @txros.util.cancellableInlineCallbacks
+    def get_scan_the_code(self):
+        req = ObjectDBQueryRequest()
+        req.name = 'scan_the_code'
+        scan_the_code = yield self.database(req)
+        defer.returnValue(scan_the_code.objects[0])
+
+    @txros.util.cancellableInlineCallbacks
+    def find_colors(self, timeout=sys.maxint):
+        length = genpy.Duration(timeout)
+        start = self.nh.get_time()
+        while start - self.nh.get_time() < length:
+            try:
+                scan_the_code = yield self.get_scan_the_code()
+            except Exception:
+                print "Could not get scan the code..."
+                yield self.nh.sleep(.1)
+                continue
+
+            # try:
+            success, colors = yield self.perception.search(scan_the_code)
+            if success:
+                defer.returnValue(colors)
+            # except Exception as e:
+            #     print e
+            #     yield self.nh.sleep(.1)
+            #     continue
+
+            yield self.nh.sleep(.3)
+        defer.returnValue(None)
+
+    @txros.util.cancellableInlineCallbacks
+    def initial_position(self, timeout=sys.maxint):
+        length = genpy.Duration(timeout)
+        start = self.nh.get_time()
+        while start - self.nh.get_time() < length:
+            try:
+                scan_the_code = yield self.get_scan_the_code()
+            except Exception as exc:
+                print exc
+                print "Could not get scan the code..."
+                yield self.nh.sleep(.1)
+                continue
+
+            defer.returnValue(self.action.initial_position(scan_the_code))
+
+    @txros.util.cancellableInlineCallbacks
+    def correct_pose(self, pose, timeout=sys.maxint):
+        length = genpy.Duration(timeout)
+        start = self.nh.get_time()
+        while start - self.nh.get_time() < length:
+            try:
+                scan_the_code = yield self.get_scan_the_code()
+            except Exception as exc:
+                print exc
+                print "Could not get scan the code..."
+                yield self.nh.sleep(.1)
+                continue
+
+            correct_pose = yield self.perception.correct_pose(scan_the_code)
+            if correct_pose:
+                self.stc_correct = True
+                defer.returnValue(True)
+
+            yield self.nh.sleep(.1)

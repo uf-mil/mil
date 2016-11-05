@@ -1,30 +1,28 @@
-import sys
 import cv2
 import numpy as np
-import time
 
 
 class Model:
 
-    def __init__(self, prev_points, prev_frame, _id):
-        self.prev_points = prev_points
-        self.prev_frame = prev_frame
-        self.time_started = time.time()
+    def __init__(self, points, frame):
+        self.points = points
+        self.frame = frame
         self.turned_black = False
         self.colors = []
         self.prev_color = None
         self.colors_found = 0
-        self.my_id = _id
         self.offset = None
         self.offset_sum = [0, 0, 0, 0]
         self.num_offset = 0
+        self.count_same_colors = 0
+        self.prev_cached_color = None
 
     def get_bounding_rect(self):
         xmin = 1000
         xmax = 0
         ymin = 1000
         ymax = 0
-        for i, _val in enumerate(self.prev_points):
+        for i, _val in enumerate(self.points):
             if(_val[0] < xmin):
                 xmin = _val[0]
             if(_val[0] > xmax):
@@ -39,7 +37,7 @@ class Model:
     def get_color(self, scalar):
         blackness1 = scalar[0] - scalar[1]
         blackness2 = scalar[1] - scalar[2]
-        if(abs(blackness1) < 30 and abs(blackness2) < 30):
+        if(abs(blackness1) < 30 and abs(blackness2) < 30 and scalar[0] < 100):
             o = [0, scalar[0] - scalar[1], scalar[0] - scalar[2], 0]
             self.num_offset += 1
             self.offset_sum = np.add(o, self.offset_sum)
@@ -51,9 +49,9 @@ class Model:
         a = scalar[0]
         b = scalar[1]
         c = scalar[2]
-        if(abs(a - b) < 10 and (b - c) < 70 and b > c and a > c):
+        if(abs(a - 255) < 10 and abs(b - 255) < 10 and abs(c - 255) < 100):
             return 'y'
-        elif(a > b and a > c):
+        elif(a > b and a > c and abs(a - b) > 30):
             return 'b'
         elif(b > a and b > c):
             return 'g'
@@ -62,37 +60,37 @@ class Model:
         else:
             return 'g'
 
-    def check_for_colors(self):
+    def check_for_colors(self, debug):
         if(self.colors_found == 3):
             return True, self.colors
         xmin, ymin, xmax, ymax = self.get_bounding_rect()
-        scalar = cv2.mean(self.prev_frame[ymin:ymax, xmin:xmax])
-        # cv2.imshow("colros", self.prev_frame[ymin:ymax, xmin:xmax])
-        # cv2.waitKey(33)
-        print "scalar:", scalar
+        scalar = cv2.mean(self.frame[ymin:ymax, xmin:xmax])
         color = self.get_color(scalar)
-        print "ID", self.my_id
         print "color", color
-
+        print "scalar", scalar
+        fc = self.frame.copy()
+        cv2.putText(fc, color + str(scalar), (20, 20), 1, 2, (255, 0, 0))
+        debug.add_image(fc, "adlj", topic="colasr")
         if(self.prev_color is not None):
+
             changed = False
 
-            if(color != self.prev_color):
+            if(color != self.prev_cached_color):
                 changed = True
 
+            if color == self.prev_color and self.turned_black and color != 'k':
+                self.count_same_colors += 1
+
             if(color == 'k'):
-                if len(self.colors) > 1:
-                    return False, []
-                print "turned black"
                 self.turned_black = True
                 self.colors_found = 0
                 del self.colors[:]
 
-            elif (self.turned_black and changed):
+            elif self.turned_black and changed and self.count_same_colors == 2:
                 self.colors_found += 1
                 self.colors.append(color)
-                print "changed"
-                print color
+                self.prev_cached_color = color
+                self.count_same_colors = 0
 
         print "cols", self.colors
         self.prev_color = color

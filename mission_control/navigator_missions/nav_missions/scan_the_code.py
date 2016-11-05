@@ -1,37 +1,57 @@
 #!/usr/bin/env python
 import txros
 import numpy as np
-from navigator_msgs.srv import ObjectDBQuery, ObjectQueryRequest
-from navigator_scan_the_code import ModelDetector
+from navigator_scan_the_code import ScanTheCodeMission
+from geometry_msgs.msg import PoseStamped
+import navigator_tools as nt
+
+
+def publish_pose(pub, pose):
+    pose_stamped = PoseStamped()
+    pose_stamped.header.frame_id = "enu"
+    pose = nt.numpy_quat_pair_to_pose(pose.pose[0], pose.pose[1])
+    pose_stamped.pose = pose
+    pub.publish(pose_stamped)
 
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator):
+    pub = yield navigator.nh.advertise("/stc/pose", PoseStamped)
+    mission = ScanTheCodeMission(navigator.nh)
+    yield mission.init(navigator.tf_listener)
+    pose, look_at = yield mission.initial_position()
+    initial_pose = navigator.move.set_position(pose).look_at(look_at)
+    yield navigator.nh.sleep(1)
+    publish_pose(pub, initial_pose)
+
+    # UNCOMMENT
+    # yield mypose = navigator.move.set_position(pose).look_at(look_at).go()
+
+    mission.correct_pose(pose)
+    navigator.nh.sleep(.2)
+    if not mission.stc_correct:
+        circle = navigator.move.circle_point(look_at, 8, granularity=10)
+        for p in circle:
+            if mission.stc_correct:
+                break
+            # yield p.go()
+
+
+    colors = yield mission.find_colors()
+    # print colors
+    # if colors is None:
+    #     navigator.nh.set_param('mission/detect_deliver/Shape', 'CROSS')
+    #     navigator.nh.set_param('mission/detect_deliver/Color', 'RED')
+    # if np.equal(colors, np.array(['r', 'g', 'b'])):
+    #     navigator.nh.set_param('mission/detect_deliver/Shape', 'CIRCLE')
+    #     navigator.nh.set_param('mission/detect_deliver/Color', 'RED')
+    # else:
+    #     navigator.nh.set_param('mission/detect_deliver/Shape', 'TRIANGLE')
+    #     navigator.nh.set_param('mission/detect_deliver/Color', 'GREEN')
+
     # navigator.change_wrench("autonomous")
-    # serv = navigator.nh.get_service_client("/database/single", ObjectDBSQuery)
-    req = ObjectDBSingleQueryRequest()
-    req.type = 'scan_the_code'
-    ans = yield serv(req)
-    print ans.object
-    if not ans.found:
-        return
 
-    # obj = ans.object
 
-    # stc_position = np.array([obj.position.x, obj.position.y, obj.position.z])
-
-    # diff = np.subtract(stc_position, navigator.move.position)
-    # diff = np.array([diff[0], diff[1], 0])
-    # length = np.linalg.norm(diff)
-    # radius = 4
-    # if(length - radius >= 0):
-    #     d = navigator.move.rel_position(diff * (length - radius) / (length)).look_at(stc_position).go()
-    #     yield d
-    # myserv = navigator.nh.get_service_client("/vision/scan_the_code_activate", ScanTheCodeMission)
-    # r = ScanTheCodeMissionRequest()
-    # r.object = ans.object
-    # myserv(r)
-
-    # pattern = navigator.move.circle_point(stc_position, radius + 2, granularity=8)
-    # searcher = navigator.search(vision_proxy='/vision/scan_the_code_status', search_pattern=pattern)
-    # yield searcher.start_search(spotings_req=1, speed=.9)
+@txros.util.cancellableInlineCallbacks
+def safe_exit(navigator):
+    pass

@@ -17,6 +17,7 @@ private:
 	int curr_id = 0;
 
 public:
+	std::vector<objectMessage> saved_objects;
 
 	ObjectTracker(float diff_thresh=7.5){
 		this->diff_thresh = diff_thresh;
@@ -33,7 +34,7 @@ public:
 			for(auto &s_obj : saved_objects){
 				auto diff = sqrt( pow(obj.position.x - s_obj.position.x, 2) + pow(obj.position.y - s_obj.position.y, 2) + pow(obj.position.z - s_obj.position.z, 2) );
 				auto scaleDiff = sqrt( pow(obj.scale.x - s_obj.scale.x, 2) + pow(obj.scale.y - s_obj.scale.y, 2) + pow(obj.scale.z - s_obj.scale.z, 2) );
-				if(diff < min_dist && scaleDiff <= 1.5){
+				if(diff < min_dist){
 					min_dist = diff;
 					min_obj = &s_obj;
 				}
@@ -80,6 +81,7 @@ public:
 				thisOne.position = obj.position;
 				thisOne.id = obj.id;
 				thisOne.confidence = 0;
+				thisOne.header = obj.header;
 				thisOne.size.z = obj.scale.z;
 				thisOne.size.x = obj.scale.x;
 				thisOne.size.y = obj.scale.y;
@@ -94,5 +96,5 @@ public:
         return objects.size() > 0;
 	}
 
-	std::vector<objectMessage> saved_objects;
+	
 };
