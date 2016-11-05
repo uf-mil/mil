@@ -13,6 +13,7 @@
 #include <navigator_msgs/SetROI.h>
 #include "DockShapeVision.h"
 #include <sensor_msgs/RegionOfInterest.h>
+#include <geometry_msgs/Point.h>
 #include "ShapeTracker.h"
 
 
@@ -33,11 +34,12 @@ class ShooterVision {
   std::string camera_topic;
   bool active;
   cv::Rect roi;
-  int width;
-  int height;
+  cv::Size size;
+  unsigned int width;
+  unsigned int height;
 
  public:
-  ShooterVision() : nh_("dock_shape_finder"), it_(nh_) {
+  ShooterVision() : nh_(ros::this_node::getName()), it_(nh_) {
     nh_.param<bool>("auto_start", active, false);
     vision.reset(new GrayscaleContour(nh_));
     vision->init();
@@ -50,7 +52,7 @@ class ShooterVision {
     // DebugWindow::init();
     //#endif
     foundShapesPublisher = nh_.advertise<navigator_msgs::DockShapes>(
-        "/dock_shapes/found_shapes", 1000);
+        "found_shapes", 1000);
     image_sub_ = it_.subscribe(camera_topic, 1, &ShooterVision::run, this);
 
     int x_offset, y_offset, width, height;
@@ -58,11 +60,19 @@ class ShooterVision {
     nh_.param<int>("roi/y_offset", y_offset, 103);
     nh_.param<int>("roi/width", width, 499);
     nh_.param<int>("roi/height", height, 243);
+    nh_.param<int>("size/height", size.height, 243);
+    nh_.param<int>("size/width", size.width, 243);
     roi = Rect(x_offset, y_offset, width, height);
     TrackedShape::init(nh_);
     tracker.init(nh_);
   }
-
+  void fixPoint(geometry_msgs::Point& p)
+  {
+    p.x += roi.x;
+    p.y += roi.y;
+    p.x *= width/double(size.width);
+    p.y *= height/double(size.height);
+  }
   bool runCallback(std_srvs::SetBool::Request &req,
                    std_srvs::SetBool::Response &res) {
     active = req.data;
@@ -99,16 +109,30 @@ class ShooterVision {
     height = frame.rows;
     symbols.list.clear();
 
-    vision->GetShapes(frame, roi, symbols);
-    for (size_t i = 0; i < symbols.list.size(); i++)
-      symbols.list[i].header = msg->header;
+    cv::Mat resized;
+    cv::resize(frame,resized,size);
+    cv::Mat resized_roied = resized(roi);
+    vision->GetShapes(resized_roied,symbols);
+    for (navigator_msgs::DockShape& shape : symbols.list)
+    {
+      shape.img_width = frame.cols;
+      geometry_msgs::Point center;
+      center.x = shape.CenterX;
+      center.y = shape.CenterY;
+      fixPoint(center);
+      shape.CenterX = center.x;
+      shape.CenterY = center.y;
+      for (geometry_msgs::Point& p: shape.points)
+        fixPoint(p);
+      shape.header = msg->header;
+    }
     foundShapesPublisher.publish(symbols);
     tracker.addShapes(symbols);
   }
 };
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "dock_shape_finder");
+  ros::init(argc, argv,"shape_identificaiton");
   ShooterVision sv = ShooterVision();
   ros::spin();
   return 0;
