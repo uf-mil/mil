@@ -76,15 +76,15 @@ interactive_markers::MenuHandler::EntryHandle menuEntry;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //These are changed on startup if /get_bounds service is present
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Eigen::Vector2d BOUNDARY_CORNER_1 (30-80, 10-150);
-Eigen::Vector2d BOUNDARY_CORNER_2 (30-80, 120-150);
-Eigen::Vector2d BOUNDARY_CORNER_3 (140-80, 120-150);
-Eigen::Vector2d BOUNDARY_CORNER_4 (140-80, 10-150);
+//Eigen::Vector2d BOUNDARY_CORNER_1 (30-80, 10-150);
+//Eigen::Vector2d BOUNDARY_CORNER_2 (30-80, 120-150);
+//Eigen::Vector2d BOUNDARY_CORNER_3 (140-80, 120-150);
+//Eigen::Vector2d BOUNDARY_CORNER_4 (140-80, 10-150);
 
-//Eigen::Vector2d BOUNDARY_CORNER_1 (0, 0);
-//Eigen::Vector2d BOUNDARY_CORNER_2 (1, 0);
-//Eigen::Vector2d BOUNDARY_CORNER_3 (1, -1);
-//Eigen::Vector2d BOUNDARY_CORNER_4 (0, -1);
+Eigen::Vector2d BOUNDARY_CORNER_1 (0, 0);
+Eigen::Vector2d BOUNDARY_CORNER_2 (1, 0);
+Eigen::Vector2d BOUNDARY_CORNER_3 (1, -1);
+Eigen::Vector2d BOUNDARY_CORNER_4 (0, -1);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Helper function for making interactive markers
