@@ -1,16 +1,18 @@
 from __future__ import division
 import warnings
 
+import txros
 import numpy as np
 from tf import transformations
 from nav_msgs.msg import Odometry
 from uf_common.msg import PoseTwistStamped, PoseTwist, MoveToGoal
-from navigator_msgs.msg import MoveToWaypointGoal
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Point, Vector3, Twist
 from navigator_tools import rosmsg_to_numpy, make_header, normalize
 from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
+from lqrrt_ros.msg import MoveGoal
 
 import navigator_tools
+from navigator_tools import fprint
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
 EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)]
@@ -107,6 +109,9 @@ class PoseEditor2(object):
         # Right now position is stored as a 3d vector - should this be changed?
         self.position, self.orientation = pose
 
+        # Give user access to the most recent action request
+        self.goal = None
+
     def __repr__(self):
         return "p: {}, q: {}".format(self.position, self.orientation)
 
@@ -120,19 +125,28 @@ class PoseEditor2(object):
 
     @property
     def distance(self):
-        diff = self.position - self.nav.pose[0]
-        return np.linalg.norm(diff)
+        return np.linalg.norm(self.position - self.nav.pose[0])
 
+    @txros.util.cancellableInlineCallbacks
     def go(self, *args, **kwargs):
-        # NOTE: C3 doesn't seems to handle different frames, so make sure all movements are in C3's
-        #       fixed frame.
-        self.position = get_valid_point(self.nav, self.position)
-        self.nav._pose_pub.publish(PoseStamped(header=navigator_tools.make_header(frame='enu'),
-                                               pose=navigator_tools.numpy_quat_pair_to_pose(*self.pose)))
+        if self.nav.killed:
+            # What do we want to do with missions when the boat is killed
+            fprint("Boat is killed, ignoring go command!", title="POSE_EDITOR", msg_color="red")
+            yield self.nav.nh.sleep(1)
+            defer.returnValue()
 
-        #goal = self.nav._moveto_action_client.send_goal(self.as_MoveToGoal(*args, **kwargs))
-        goal = self.nav._moveto_action_client2.send_goal(self.as_MoveToGoalWaypoint(*args, **kwargs))
-        return goal.get_result()
+        self.goal = self.nav._moveto_client.send_goal(self.as_MoveGoal(*args, **kwargs))
+        res = yield self.goal.get_result()
+
+        if res.failure_reason == '':
+            fprint("Move completed successfully!", title="POSE_EDITOR", msg_color="green", newline=2)
+        elif res.failure_reason == 'occupied':
+            fprint("Goal was occupied - moved to close point instead.", title="POSE_EDITOR", newline=2)
+        elif res.failure_reason == 'collided':
+            fprint("Collided with object. Check perception then if this is the real boat and"\
+             "perception wasn't to blame, promptly kill jason", title="POSE_EDITOR", newline=2, msg_color="red")
+        else:
+            fprint("Unknown response from action client: {}".format(res), title="POSE_EDITOR", newline=2)
 
     def set_position(self, position):
         return PoseEditor2(self.nav, [np.array(position), np.array(self.orientation)])
@@ -155,6 +169,7 @@ class PoseEditor2(object):
 
     # Orientation
     def set_orientation(self, orientation):
+        orientation = np.array(orientation)
         if orientation.shape == (4, 4):
             # We're getting a homogeneous rotation matrix - not a quaternion
             orientation = transformations.quaternion_from_matrix(orientation)
@@ -203,7 +218,7 @@ class PoseEditor2(object):
     def circle_point(self, point, radius, granularity=8, theta_offset=0):
         '''
         Circle a point whilst looking at it
-        This returns a generator, so for use:
+        This produces a generator, so for use:
 
             circle = navigator.move.circle_point([1,2,0], 5)
             for p in circle:
@@ -232,9 +247,14 @@ class PoseEditor2(object):
             **kwargs
         )
 
-    def as_MoveToGoalWaypoint(self, linear=[0, 0, 0], angular=[0, 0, 0], **kwargs):
-        return MoveToWaypointGoal(
-            target=self.as_PoseTwist(linear, angular),
+    def as_MoveGoal(self, move_type='drive', **kwargs):
+        if 'focus' in kwargs:
+            if not isinstance(kwargs['focus'], Point):
+                kwargs['focus'] = navigator_tools.numpy_to_point(kwargs['focus'])
+
+        return MoveGoal(
+            goal=self.as_Pose(),
+            move_type=move_type,
             **kwargs
         )
 

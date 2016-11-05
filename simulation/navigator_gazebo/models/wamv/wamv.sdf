@@ -38,7 +38,7 @@
        <sensor type="multicamera" name="stereo_camera">
       <update_rate>30.0</update_rate>
       <camera name="left">
-        <pose>.6096 0 1.5 0 0 0</pose>
+        <pose>0.017272 0.100076 0.19812 0 0 0</pose>
         <horizontal_fov>2.30</horizontal_fov>
         <image>
           <width>960</width>
@@ -56,7 +56,7 @@
         </noise>
       </camera>
       <camera name="right">
-        <pose>.6096 .2 1.5 0 0 0</pose>
+        <pose>0.017272 -0.100076 0.19812 0 0 0</pose>
         <horizontal_fov>2.30</horizontal_fov>
         <image>
           <width>960</width>
@@ -92,7 +92,7 @@
 
       <sensor name="right_camera" type="camera">
         <camera>
-          <pose>.6096 0 1.5 0 0 1.5709</pose>
+          <pose>-0.2032 -0.4445 0.24765 0 0 -1.5709</pose>
           <horizontal_fov>1.047</horizontal_fov>
           <image>
             <width>644</width>
@@ -109,10 +109,10 @@
         <plugin name="right_camera_controller" filename="libgazebo_ros_camera.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>30</updateRate>
-          <cameraName>right</cameraName>
+          <cameraName>right/right</cameraName>
           <imageTopicName>image_raw</imageTopicName>
           <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-          <frameName>right_camera</frameName>
+          <frameName>right_right_cam</frameName>
           <hackBaseline>0.89</hackBaseline>
           <distortionK1>0</distortionK1>
           <distortionK2>0</distortionK2>
@@ -123,7 +123,7 @@
       </sensor>
 
       <sensor name="sick_lidar" type="ray">
-        <pose>.54 0 -.6  0 0 0</pose>
+        <pose>0.5334 -0.0254 -0.6858  0 0 0</pose>
         <visualize>true</visualize>
         <update_rate>25</update_rate>
         <ray>
@@ -149,7 +149,7 @@
 
       <sensor name="velodyne_lidar" type="ray">
         <visualize>false</visualize>
-        <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+        <pose>-0.277622 0 0.648208 0.0 0.0 0.0</pose>
         <ray>
           <scan>
             <horizontal>

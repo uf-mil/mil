@@ -300,7 +300,7 @@ if !([ -f $CATKIN_DIR/src/CMakeLists.txt ]); then
 	mkdir -p "$CATKIN_DIR/src"
 	cd "$CATKIN_DIR/src"
 	catkin_init_workspace
-	catkin_make -C "$CATKIN_DIR"
+	catkin_make -C "$CATKIN_DIR" -B
 else
 	instlog "Using existing catkin workspace at $CATKIN_DIR"
 fi
@@ -450,10 +450,21 @@ if ($INSTALL_NAV); then
 	apt-get source --compile -qq python-pyode
 	sudo dpkg -i python-pyode_*.deb
 
+	# Message types
+	sudo apt-get install -qq ros-indigo-tf2-sensor-msgs ros-indigo-tf2-geometry-msgs
+
 	# Pulling large project files from Git-LFS
 	instlog "Pulling large files for Navigator"
 	cd $CATKIN_DIR/src/Navigator
 	git lfs pull
+
+	instlog "Cloning Navigator Git repositories that need to be built"
+	ros_git_get https://github.com/jnez71/lqRRT.git
+	ros_git_get https://github.com/gareth-cross/rviz_satellite.git
+
+	# Required steps to build and install lqRRT
+	sudo python $CATKIN_DIR/src/lqRRT/setup.py build
+	sudo python $CATKIN_DIR/src/lqRRT/setup.py install
 fi
 
 
@@ -489,7 +500,8 @@ BASHRC_STR="
 # Bash configurations for MIL (any additions below this block will be deleted)
 # These are the hostnames for all devices that run a remote roscore
 SUB_HOST=mil-sub-sub8.ad.mil.ufl.edu
-NAV_HOST=mil-nav-wamv.ad.mil.ufl.edu
+WMV_HOST=mil-nav-wamv.ad.mil.ufl.edu
+PRC_HOST=mil-nav-perception.ad.mil.ufl.edu
 SHT_HOST=mil-shuttle.ad.mil.ufl.edu
 JN5_HOST=mil-johnny-five.ad.mil.ufl.edu
 
@@ -517,10 +529,15 @@ check_connection() {
 	else
 		SUB_CHECK=false
 	fi
-	if (check_host \"\$NAV_HOST\"); then
-		NAV_CHECK=true
+	if (check_host \"\$WMV_HOST\"); then
+		WMV_CHECK=true
 	else
-		NAV_CHECK=false
+		WMV_CHECK=false
+	fi
+	if (check_host \"\$PRC_HOST\"); then
+		PRC_CHECK=true
+	else
+		PRC_CHECK=false
 	fi
 	if (check_host \"\$SHT_HOST\"); then
 		SHT_CHECK=true
@@ -533,15 +550,19 @@ check_connection() {
 		JN5_CHECK=false
 	fi
 
-	if ([ \"\$SUB_CHECK\" = \"false\" ] && [ \"\$NAV_CHECK\" == \"false\" ]&&\\
-	    [ \"\$SHT_CHECK\" = \"false\" ] && [ \"\$JN5_CHECK\" == \"false\" ]); then
+	if ([ \"\$SUB_CHECK\" = \"false\" ] && [ \"\$WMV_CHECK\" = \"false\" ] &&\\
+	    [ \"\$PRC_CHECK\" = \"false\" ] && [ \"\$SHT_CHECK\" = \"false\" ] &&\\
+	    [ \"\$JN5_CHECK\" = \"false\" ]); then
 		echo \"None of the MIL roscores are available on this network\"
 	else
 		if [ \"\$SUB_CHECK\" = \"true\" ]; then
 			echo \"SubjuGator is accessible on this network\"
 		fi
-		if [ \"\$NAV_CHECK\" = \"true\" ]; then
-			echo \"Navigator is accessible on this network\"
+		if [ \"\$WMV_CHECK\" = \"true\" ]; then
+			echo \"Navigator WAMV is accessible on this network\"
+		fi
+		if [ \"\$PRC_CHECK\" = \"true\" ]; then
+			echo \"Navigator Perception is accessible on this network\"
 		fi
 		if [ \"\$SHT_CHECK\" = \"true\" ]; then
 			echo \"Shuttle is accessible on this network\"
@@ -585,28 +606,39 @@ ros_connect() {
 	check_connection
 
 	# If none of the MIL roscores are accessible, use localhost as the default roscore
-	if ([ \"\$SUB_CHECK\" = \"false\" ] && [ \"\$NAV_CHECK\" == \"false\" ] &&\\
-	    [ \"\$SHT_CHECK\" = \"false\" ] && [ \"\$JN5_CHECK\" == \"false\" ]); then
+	if ([ \"\$SUB_CHECK\" = \"false\" ] && [ \"\$WMV_CHECK\" = \"false\" ] &&\\
+	    [ \"\$PRC_CHECK\" = \"false\" ] && [ \"\$SHT_CHECK\" = \"false\" ] &&\\
+	    [ \"\$JN5_CHECK\" = \"false\" ]); then
 		ros_disconnect
 
 	# If just one MIL roscore was accessible, connect directly to that roscore
-	elif ([ \"\$SUB_CHECK\" = \"true\" ] && [ \"\$NAV_CHECK\" == \"false\" ] &&\\
-	      [ \"\$SHT_CHECK\" = \"false\" ] && [ \"\$JN5_CHECK\" == \"false\" ]); then
+	elif ([ \"\$SUB_CHECK\" = \"true\" ] && [ \"\$WMV_CHECK\" = \"false\" ] &&\\
+	      [ \"\$PRC_CHECK\" = \"false\" ] && [ \"\$SHT_CHECK\" = \"false\" ] &&\\
+	      [ \"\$JN5_CHECK\" = \"false\" ]); then
 		REMOTE_ROSCORE_URI=http://\$SUB_HOST:11311
 		set_ros_ip
 		set_ros_master
-	elif ([ \"\$SUB_CHECK\" = \"false\" ] && [ \"\$NAV_CHECK\" == \"true\" ] &&\\
-	      [ \"\$SHT_CHECK\" = \"false\" ] && [ \"\$JN5_CHECK\" == \"false\" ]); then
-		REMOTE_ROSCORE_URI=http://\$NAV_HOST:11311
+	elif ([ \"\$SUB_CHECK\" = \"false\" ] && [ \"\$WMV_CHECK\" = \"true\" ] &&\\
+	      [ \"\$PRC_CHECK\" = \"false\" ] && [ \"\$SHT_CHECK\" = \"false\" ] &&\\
+	      [ \"\$JN5_CHECK\" = \"false\" ]); then
+		REMOTE_ROSCORE_URI=http://\$WMV_HOST:11311
 		set_ros_ip
 		set_ros_master
-	elif ([ \"\$SUB_CHECK\" = \"false\" ] && [ \"\$NAV_CHECK\" == \"false\" ] &&\\
-	      [ \"\$SHT_CHECK\" = \"true\" ] && [ \"\$JN5_CHECK\" == \"false\" ]); then
+	elif ([ \"\$SUB_CHECK\" = \"false\" ] && [ \"\$WMV_CHECK\" = \"false\" ] &&\\
+	      [ \"\$PRC_CHECK\" = \"true\" ] && [ \"\$SHT_CHECK\" = \"false\" ] &&\\
+	      [ \"\$JN5_CHECK\" = \"false\" ]); then
+		REMOTE_ROSCORE_URI=http://\$PRC_HOST:11311
+		set_ros_ip
+		set_ros_master
+	elif ([ \"\$SUB_CHECK\" = \"false\" ] && [ \"\$WMV_CHECK\" = \"false\" ] &&\\
+	      [ \"\$PRC_CHECK\" = \"false\" ] && [ \"\$SHT_CHECK\" = \"true\" ] &&\\
+	      [ \"\$JN5_CHECK\" = \"false\" ]); then
 		REMOTE_ROSCORE_URI=http://\$SHT_HOST:11311
 		set_ros_ip
 		set_ros_master
-	elif ([ \"\$SUB_CHECK\" = \"false\" ] && [ \"\$NAV_CHECK\" == \"false\" ] &&\\
-	      [ \"\$SHT_CHECK\" = \"false\" ] && [ \"\$JN5_CHECK\" == \"true\" ]); then
+	elif ([ \"\$SUB_CHECK\" = \"false\" ] && [ \"\$WMV_CHECK\" = \"false\" ] &&\\
+	      [ \"\$PRC_CHECK\" = \"false\" ] && [ \"\$SHT_CHECK\" = \"false\" ] &&\\
+	      [ \"\$JN5_CHECK\" = \"true\" ]); then
 		REMOTE_ROSCORE_URI=http://\$JN5_HOST:11311
 		set_ros_ip
 		set_ros_master
@@ -618,14 +650,17 @@ ros_connect() {
 		if ([ \"\$SUB_CHECK\" = \"true\" ]); then
 			echo \"	1. SubjuGator\"
 		fi
-		if ([ \"\$NAV_CHECK\" = \"true\" ]); then
-			echo \"	2. Navigator\"
+		if ([ \"\$WMV_CHECK\" = \"true\" ]); then
+			echo \"	2. Navigator WAMV\"
+		fi
+		if ([ \"\$PRC_CHECK\" = \"true\" ]); then
+			echo \"	3. Navigator Perception\"
 		fi
 		if ([ \"\$SHT_CHECK\" = \"true\" ]); then
-			echo \"	3. Shuttle\"
+			echo \"	4. Shuttle\"
 		fi
 		if ([ \"\$JN5_CHECK\" = \"true\" ]); then
-			echo \"	4. Johnny Five\"
+			echo \"	5. Johnny Five\"
 		fi
 		echo \"\"
 		echo -n \"Select a roscore to connect to: \"
@@ -636,14 +671,18 @@ ros_connect() {
 			set_ros_ip
 			set_ros_master
 		elif [ \"\$SELECTION\" = \"2\" ]; then
-			REMOTE_ROSCORE_URI=http://\$NAV_HOST:11311
+			REMOTE_ROSCORE_URI=http://\$WMV_HOST:11311
 			set_ros_ip
 			set_ros_master
 		elif [ \"\$SELECTION\" = \"3\" ]; then
-			REMOTE_ROSCORE_URI=http://\$SHT_HOST:11311
+			REMOTE_ROSCORE_URI=http://\$PRC_HOST:11311
 			set_ros_ip
 			set_ros_master
 		elif [ \"\$SELECTION\" = \"4\" ]; then
+			REMOTE_ROSCORE_URI=http://\$SHT_HOST:11311
+			set_ros_ip
+			set_ros_master
+		elif [ \"\$SELECTION\" = \"5\" ]; then
 			REMOTE_ROSCORE_URI=http://\$JN5_HOST:11311
 			set_ros_ip
 			set_ros_master
@@ -684,7 +723,7 @@ instlog "The bashrc file has been updated with the current aliases"
 # Attempt to build the Navigator stack on client machines
 if !(env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
 	instlog "Building MIL's software stack with catkin_make"
-	catkin_make -C "$CATKIN_DIR" -j8
+	catkin_make -C "$CATKIN_DIR" -B
 fi
 
 # Remove the initial install script if it was not in the Navigator repository
