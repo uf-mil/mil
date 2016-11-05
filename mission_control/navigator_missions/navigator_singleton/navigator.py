@@ -24,9 +24,16 @@ from navigator_tools import fprint
 
 
 class MissionResult(object):
-    def __init__(self, success=True, response="", need_rerun=False, post_function=None):
+    NoResponse = 0
+    ParamNotFound = 1
+    DbObjectNotFound = 2
+    # ...
+    OtherResponse = 100
+
+    def __init__(self, success=True, response=None, message="", need_rerun=False, post_function=None):
         self.success = success
-        self.response = response
+        self.response = self.NoResponse if response is None else response
+        self.message = message
         self.need_rerun = need_rerun
         self.post_function = lambda: None if post_function is None else post_function
 
@@ -34,11 +41,11 @@ class MissionResult(object):
         cool_bars = "=" * 75
         _pass = (cool_bars,
                  "    Mission Success!",
-                 "    Response: {}".format(self.response),
+                 "    Message: {}".format(self.message),
                  cool_bars)
         _fail = (cool_bars,
                  "    Mission Failure!",
-                 "    Response: {}".format(self.response),
+                 "    Message: {}".format(self.message),
                  "    Post function: {}".format(self.post_function.__name__),
                  cool_bars)
 
@@ -69,8 +76,9 @@ class Navigator(object):
 
         self._moveto_client = action.ActionClient(self.nh, 'move_to', MoveAction)
 
-        fprint("Waiting for move_to action client...", title="NAVIGATOR")
+        fprint("Action client do you yield?", title="NAVIGATOR")
         yield self._moveto_client.wait_for_server()
+        fprint("Yes he yields!", title="NAVIGATOR")
 
         odom_set = lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0])
         self._odom_sub = self.nh.subscribe('odom', Odometry, odom_set)

@@ -1,21 +1,35 @@
 <!--
     This file launches both the simulator as well as the gnc.launch file
-    It contains everything needed to simulate moving the boat
+    It should contain everything needed to simulate moving the boat
 -->
 
 <launch>
     <param name="/is_simulation" type="bool" value="True" />
     <arg name="gazebo" default="true"/>
     <arg name="gui" default="true"/>
-    <arg name="sandbox" default="false"/>
+    <arg name="sandbox" default="true"/>
 
-    <include file="$(find navigator_alarm)/launch/alarm.launch"/>
-    <include file="$(find navigator_launch)/launch/gnc.launch"/>
+    <include file="$(find navigator_launch)/launch/subsystems/alarms.launch"/>
+    <include file="$(find navigator_launch)/launch/subsystems/lqrrt_node.launch"/>
+    <node name="gnc_delayed_start" pkg="navigator_gazebo" type="delayed_start.sh"/>
 
-    <!-- Needed for missioning -->
+    <!-- Sets up the world and loads models -->
+    <include file="$(find navigator_gazebo)/launch/goose.launch" if="$(arg gazebo)">
+        <arg name="gui" value="$(arg gui)"/>
+        <arg name="sandbox" value="$(arg sandbox)"/>
+    </include>
+
+    <!-- This all is launched on boot on the boat -->
+    <node name="coordinate_converter" pkg="navigator_tools" type="coordinate_conversion_server.py"/>
+    <node name="rviz_repub" pkg="navigator_tools" type="rviz_waypoint.py"/>
     <node name="bounds_server" pkg="navigator_tools" type="bounds.py"/>
     <rosparam param="bounds">
-      enforce: False
+        enforce: True
+        <!-- These bounds are +/- 100 meters of (0,0) -->
+        lla: [[29.5358153431059, -82.30261036235201],
+              [29.5358153387807, -82.30467366185054],
+              [29.5340110111349, -82.30467363859142],
+              [29.5340110154601, -82.30261037571948]]
     </rosparam>
 
     <node pkg="xbox_joy_node" type="joy_node" name="joy_node">
@@ -46,10 +60,4 @@
         </node>
         <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui"/>
     </group>
-
-    <!-- Sets up the world and loads models -->
-    <include file="$(find navigator_gazebo)/launch/goose.launch" if="$(arg gazebo)">
-        <arg name="gui" value="$(arg gui)"/>
-        <arg name="sandbox" value="$(arg sandbox)"/>
-    </include>
 </launch>

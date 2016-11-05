@@ -96,7 +96,11 @@ def wrench_to_numpy(wrench):
     return force, torque
 
 
-def numpy_to_point(np_vector):
+def numpy_to_point(vector):
+    np_vector = np.array(vector)
+    if np_vector.size == 2:
+        np_vector = np.append(np_vector, 0)  # Assume user is give 2d point
+
     return geometry_msgs.Point(*np_vector)
 
 
