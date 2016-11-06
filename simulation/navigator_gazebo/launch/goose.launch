@@ -353,8 +353,8 @@
 
         <!-- Scan the Code -->
         <node name="spawn_scan_the_code" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/symbols/scan_the_code.sdf
-            -x -5 -y 10 -z 1.5 -sdf -model scan_the_code"
+          args="-file $(find navigator_gazebo)/models/scan_the_code/scan_the_code.sdf
+            -x 5 -y -18.05 -z 0 -sdf -model scan_the_code"
           output="screen"/>
 
 
