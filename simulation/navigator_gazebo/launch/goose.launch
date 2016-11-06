@@ -358,6 +358,28 @@
           output="screen"/>
 
 
+        <!-- Coral Survey -->
+        <node name="spawn_survey_marker" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+            -x 30 -y 30 -z 0 -model survey_marker"
+          output="screen"/>
+
+        <node name="spawn_coral_circle" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/coral_survey/circle.sdf
+            -x 20 -y 35 -z -5 -sdf -model coral_circle"
+          output="screen"/>
+
+        <node name="spawn_coral_cruciform" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/coral_survey/cruciform.sdf
+            -x 45 -y 14 -z -5 -sdf -model coral_cruciform"
+          output="screen"/>
+
+        <node name="spawn_coral_triangle" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/coral_survey/triangle.sdf
+            -x 41 -y 39 -z -5 -sdf -model coral_triangle"
+          output="screen"/>
+
+
         <!-- Detect and Deliver -->
         <node name="spawn_target_base" pkg="gazebo_ros" type="spawn_model"
           args="-file $(find navigator_gazebo)/models/detect_and_deliver/base.sdf -sdf
