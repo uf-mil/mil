@@ -17,13 +17,13 @@ import navigator_tools
 
 class DetectDeliverMission:
     # Note, this will be changed when the shooter switches to actionlib
-    shoot_distance_meters = 5
+    shoot_distance_meters = 7
     theta_offset = np.pi / 2.0
     spotings_req = 1
     circle_radius = 7
     search_timeout_seconds = 300
-    target_offset_meters = 0.33
-    normal_approx_tolerance_proportion = 0.02
+    target_offset_meters = 0
+    normal_approx_tolerance_proportion = 0.035
 
     def __init__(self, navigator):
         self.navigator = navigator
@@ -51,7 +51,7 @@ class DetectDeliverMission:
     @txros.util.cancellableInlineCallbacks
     def circle_search(self):
         print "Starting circle search"
-        yield self.navigator.move.look_at(navigator_tools.rosmsg_to_numpy(self.waypoint_res.objects[0].position)).go()
+        #yield self.navigator.move.look_at(navigator_tools.rosmsg_to_numpy(self.waypoint_res.objects[0].position)).go()
         pattern = self.navigator.move.circle_point(navigator_tools.rosmsg_to_numpy(
             self.waypoint_res.objects[0].position), radius=self.circle_radius,  theta_offset=self.theta_offset)
         yield next(pattern).go()
@@ -71,7 +71,7 @@ class DetectDeliverMission:
         yield self.markers_pub.publish(self.markers)   
         print "Aligning to Position: ", self.aligned_position
         print "Aligning to Orientation: ", self.aligned_orientation
-        yield self.navigator.move.set_position(self.aligned_position).set_orientation(self.aligned_orientation).go()
+        yield self.navigator.move.set_position(self.aligned_position).set_orientation(self.aligned_orientation).go(move_type="skid")
 
     @txros.util.cancellableInlineCallbacks
     def offset_for_target(self):   
