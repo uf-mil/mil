@@ -1,12 +1,14 @@
 #!/usr/bin/env python
+"""Scan The Code Mission Script."""
 import txros
 import numpy as np
 from navigator_scan_the_code import ScanTheCodeMission
 from geometry_msgs.msg import PoseStamped
 import navigator_tools as nt
+___author___ = "Tess Bianchi"
 
 
-def publish_pose(pub, pose):
+def _publish_pose(pub, pose):
     pose_stamped = PoseStamped()
     pose_stamped.header.frame_id = "enu"
     pose = nt.numpy_quat_pair_to_pose(pose.pose[0], pose.pose[1])
@@ -16,16 +18,18 @@ def publish_pose(pub, pose):
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator):
+    """Main Script of Scan The Code."""
+    navigator.change_wrench("autonomous")
     pub = yield navigator.nh.advertise("/stc/pose", PoseStamped)
     mission = ScanTheCodeMission(navigator.nh)
-    yield mission.init(navigator.tf_listener)
+    yield mission.init_(navigator.tf_listener)
     pose, look_at = yield mission.initial_position()
     initial_pose = navigator.move.set_position(pose).look_at(look_at)
     yield navigator.nh.sleep(1)
-    publish_pose(pub, initial_pose)
+    _publish_pose(pub, initial_pose)
 
     # UNCOMMENT
-    # yield mypose = navigator.move.set_position(pose).look_at(look_at).go()
+    # yield navigator.move.set_position(pose).look_at(look_at).go()
 
     mission.correct_pose(pose)
     navigator.nh.sleep(.2)
@@ -36,22 +40,21 @@ def main(navigator):
                 break
             # yield p.go()
 
-
     colors = yield mission.find_colors()
-    # print colors
-    # if colors is None:
-    #     navigator.nh.set_param('mission/detect_deliver/Shape', 'CROSS')
-    #     navigator.nh.set_param('mission/detect_deliver/Color', 'RED')
-    # if np.equal(colors, np.array(['r', 'g', 'b'])):
-    #     navigator.nh.set_param('mission/detect_deliver/Shape', 'CIRCLE')
-    #     navigator.nh.set_param('mission/detect_deliver/Color', 'RED')
-    # else:
-    #     navigator.nh.set_param('mission/detect_deliver/Shape', 'TRIANGLE')
-    #     navigator.nh.set_param('mission/detect_deliver/Color', 'GREEN')
-
-    # navigator.change_wrench("autonomous")
+    print colors
+    if colors is None:
+        navigator.nh.set_param('mission/detect_deliver/Shape', 'CROSS')
+        navigator.nh.set_param('mission/detect_deliver/Color', 'RED')
+    if np.equal(colors, np.array(['r', 'g', 'b'])):
+        navigator.nh.set_param('mission/detect_deliver/Shape', 'CIRCLE')
+        navigator.nh.set_param('mission/detect_deliver/Color', 'RED')
+    else:
+        navigator.nh.set_param('mission/detect_deliver/Shape', 'TRIANGLE')
+        navigator.nh.set_param('mission/detect_deliver/Color', 'GREEN')
 
 
 @txros.util.cancellableInlineCallbacks
 def safe_exit(navigator):
-    pass
+    """Safe exit of the Scan The Code mission."""
+    navigator.nh.set_param('mission/detect_deliver/Shape', 'CROSS')
+    navigator.nh.set_param('mission/detect_deliver/Color', 'RED')

@@ -1,10 +1,14 @@
+"""Model for the ScanTheCode that tracks its own color."""
 import cv2
 import numpy as np
+___author___ = "Tess Bianchi"
 
 
-class Model:
+class ScanTheCodeModel:
+    """Class the represents Scan The Code Model."""
 
     def __init__(self, points, frame):
+        """Initialize ScanTheCodeModel."""
         self.points = points
         self.frame = frame
         self.turned_black = False
@@ -17,7 +21,7 @@ class Model:
         self.count_same_colors = 0
         self.prev_cached_color = None
 
-    def get_bounding_rect(self):
+    def _get_bounding_rect(self):
         xmin = 1000
         xmax = 0
         ymin = 1000
@@ -34,7 +38,7 @@ class Model:
 
         return xmin, ymin, xmax, ymax
 
-    def get_color(self, scalar):
+    def _get_color(self, scalar):
         blackness1 = scalar[0] - scalar[1]
         blackness2 = scalar[1] - scalar[2]
         if(abs(blackness1) < 30 and abs(blackness2) < 30 and scalar[0] < 100):
@@ -61,13 +65,16 @@ class Model:
             return 'g'
 
     def check_for_colors(self, debug):
+        """Tell the model to update its colors."""
         if(self.colors_found == 3):
             return True, self.colors
-        xmin, ymin, xmax, ymax = self.get_bounding_rect()
+        xmin, ymin, xmax, ymax = self._get_bounding_rect()
         scalar = cv2.mean(self.frame[ymin:ymax, xmin:xmax])
-        color = self.get_color(scalar)
+        color = self._get_color(scalar)
+        # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
         print "color", color
         print "scalar", scalar
+        # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
         fc = self.frame.copy()
         cv2.putText(fc, color + str(scalar), (20, 20), 1, 2, (255, 0, 0))
         debug.add_image(fc, "adlj", topic="colasr")
@@ -92,7 +99,9 @@ class Model:
                 self.prev_cached_color = color
                 self.count_same_colors = 0
 
+        # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
         print "cols", self.colors
-        self.prev_color = color
         print "---"
+        # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
+        self.prev_color = color
         return False, []

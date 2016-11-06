@@ -9,6 +9,7 @@ from Queue import Queue
 from sets import Set
 from navigator_tools import DBHelper
 import yaml
+import os
 __author__ = "Tess Bianchi"
 
 
@@ -57,6 +58,8 @@ class MissionPlanner:
         # TODO Put in YAML file
 
         yaml_text = None
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        yaml_file = dir_path + "/" + yaml_file
 
         with open(yaml_file, 'r') as stream:
             try:
@@ -151,7 +154,8 @@ class MissionPlanner:
                 mission = self.queue.get(block=False)
                 yield self.do_mission(mission)
             except que.Empty:
-                yield self.do_mission(self.base_mission)
+                if self.base_mission is not None:
+                    yield self.do_mission(self.base_mission)
             else:
                 # TODO: create a different exception for when the missions fails, and act appropriately
                 # TODO: constantly check for changing classified objects and abort mission if the object changes.

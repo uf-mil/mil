@@ -1,6 +1,7 @@
-"""Author: Tess Bianchi"""
+"""Handles the actions of the ScanTheCode Mission."""
 import numpy as np
 import datetime
+___author___ = "Tess Bianchi"
 
 
 class ScanTheCodeAction(object):

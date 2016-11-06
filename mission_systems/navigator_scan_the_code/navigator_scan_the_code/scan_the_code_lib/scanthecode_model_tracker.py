@@ -1,9 +1,12 @@
-from model import Model
+"""Tracks a ScanTheCodeModel."""
+from scanthecode_model import ScanTheCodeModel
 
 
 class ModelTracker:
+    """Class that contains the functionality to track a ScanTheCode."""
 
     def __init__(self):
+        """Initialize the ModelTracker Class."""
         self.model = None
         self.colors = []
 
@@ -14,7 +17,7 @@ class ModelTracker:
         Returns if the model has observed three different colors
         """
         if self.model is None:
-            self.model = Model(points, frame)
+            self.model = ScanTheCodeModel(points, frame)
 
         mission_status, colors = self.model.check_for_colors(debug)
         if(mission_status):

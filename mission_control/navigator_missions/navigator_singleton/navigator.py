@@ -51,7 +51,9 @@ class MissionResult(object):
 
         return '\n'.join(_pass if self.success else _fail)
 
+
 class Navigator(object):
+
     def __init__(self, nh):
         self.nh = nh
 
@@ -87,7 +89,6 @@ class Navigator(object):
 
         try:
             self._database_query = self.nh.get_service_client('/database/requests', navigator_srvs.ObjectDBQuery)
-            self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
         except AttributeError, err:
             fprint("Error getting service clients in nav singleton init: {}".format(err), title="NAVIGATOR", msg_color='red')
 
@@ -97,10 +98,12 @@ class Navigator(object):
 
         if self.sim:
             fprint("Sim mode active!", title="NAVIGATOR")
+            self.change_wrench = lambda x: None
             yield self.nh.sleep(.5)
         else:
             # We want to make sure odom is working before we continue
             fprint("Waiting for odom...", title="NAVIGATOR")
+            self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
             odom = util.wrap_time_notice(self._odom_sub.get_next_message(), 2, "Odom listener")
             enu_odom = util.wrap_time_notice(self._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener")
             bounds = util.wrap_time_notice(self._make_bounds(), 2, "Bounds creation")
@@ -209,7 +212,9 @@ class Navigator(object):
         fprint("\tkill :", newline=False)
         fprint(self.killed)
 
+
 class VisionProxy(object):
+
     def __init__(self, client, request, args, switch):
         self.client = client
         self.request = request
@@ -229,7 +234,9 @@ class VisionProxy(object):
 
         return self.client(s_req)
 
+
 class Searcher(object):
+
     def __init__(self, nav, vision_proxy, search_pattern, **kwargs):
         self.nav = nav
         self.vision_proxy = vision_proxy
@@ -300,8 +307,6 @@ class Searcher(object):
                 yield util.cancellableInlineCallbacks(pattern)()
         else:
             yield util.cancellableInlineCallbacks(pattern)()
-
-
 
     @util.cancellableInlineCallbacks
     def _run_look(self, spotings_req):

@@ -1,13 +1,24 @@
+"""Shows images for debugging purposes."""
 import cv2
 import numpy as np
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import sys
+___author___ = "Tess Bianchi"
 
 
 class Debug(object):
+    """Class that contains methods that assist with debugging with images."""
 
     def __init__(self, nh=None, w=1000, h=800, total=8, win_name="debug", wait=True):
+        """
+        Initialize the Debug class.
+
+        @param w = The width of the image that smaller images are added to
+        @param h = The height of the image that smaller images are added to
+        @param win_name = the name of the window that is shown in opencv
+        @param wait = whether or not to wait after showing the image
+        """
         self.width = w
         self.height = h
         self.img = np.zeros((h, w, 3), np.uint8)
@@ -31,6 +42,12 @@ class Debug(object):
             self.pub = nh.advertise("/debug/scan_the_code/image", Image)
 
     def add_image(self, img, name, wait=33, topic="image"):
+        """
+        Add an image to show to either with a topic or using cv2.imshow.
+
+        @param name = a unique key name for the image, use the same name if you want to switch out this image for another
+        @param wait = the amount of wait time for the imshow image
+        """
         if topic != "image":
             self._add_new_topic(img, name, wait, topic)
             return
