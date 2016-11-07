@@ -27,7 +27,6 @@ class MissionResult(object):
     NoResponse = 0
     ParamNotFound = 1
     DbObjectNotFound = 2
-    # ...
     OtherResponse = 100
 
     def __init__(self, success=True, response=None, message="", need_rerun=False, post_function=None):
@@ -52,6 +51,13 @@ class MissionResult(object):
         return '\n'.join(_pass if self.success else _fail)
 
 class Navigator(object):
+    circle = "CIRCLE"
+    cross = "CROSS"
+    triangle = "TRIANGLE"
+    red = "RED"
+    green = "GREEN"
+    blue = "BLUE"
+
     def __init__(self, nh):
         self.nh = nh
 
@@ -209,7 +215,8 @@ class Navigator(object):
             try:
                 param = f[name]["param"]
                 options = f[name]["options"]
-                self.mission_params[name] = MissionParam(self.nh, param, options)
+                desc = f[name]["description"]
+                self.mission_params[name] = MissionParam(self.nh, param, options, desc)
             except Exception, e:
                 err = "Error loading mission params: {}".format(e)
                 fprint("" + err, title="NAVIGATOR", msg_color='red')
@@ -247,10 +254,11 @@ class VisionProxy(object):
         return self.client(s_req)
 
 class MissionParam(object):
-    def __init__(self, nh, param, options):
+    def __init__(self, nh, param, options, desc):
         self.nh = nh
         self.param = param
         self.options = options
+        self.description = desc
 
     @util.cancellableInlineCallbacks
     def get(self):
@@ -259,7 +267,7 @@ class MissionParam(object):
             raise Exception("Mission Param {} not yet set".format(self.param))
         value = yield self.nh.get_param(self.param)
         if not self._valid(value):
-            raise Exception("Value {} is invalid for param {}. Valid values: {}".format(value, self.param, self.options))
+            raise Exception("Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(value, self.param, self.options,self.description))
         else:
             defer.returnValue(value)
 
@@ -269,7 +277,7 @@ class MissionParam(object):
     @util.cancellableInlineCallbacks
     def set(self,value):
         if not self._valid(value):
-            raise Exception("Value {} is invalid for param {}. Valid values: {}".format(value, self.param, self.options))
+            raise Exception("Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(value, self.param, self.options,self.description))
         yield self.nh.set_param(self.param, value)
 
     @util.cancellableInlineCallbacks
@@ -278,7 +286,6 @@ class MissionParam(object):
         if not exists:
             defer.returnValue(False)
         value = yield self.nh.get_param(self.param)
-        print "Value ",value
         if not self._valid(value):
             defer.returnValue(False)
         defer.returnValue(True)

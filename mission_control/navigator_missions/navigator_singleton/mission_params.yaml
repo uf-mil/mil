@@ -1,7 +1,81 @@
 detect_deliver_color:
   param: /mission/detect_deliver/Color
   options: [RED, GREEN, BLUE]
+  description: The color of the symbol to shoot at in detect deliver
 
 detect_deliver_shape:
   param: /mission/detect_deliver/Shape
   options: [CIRCLE, TRIANGLE, CROSS]
+  description: The shape of the symbol to shoot at in detect deliver
+
+scan_the_code_color1:
+  param: /mission/scan_the_code/color1
+  options: [RED,GREEN,YELLOW,BLUE]
+  description: The first color in the 3 color sequence of scan the code
+
+scan_the_code_color2:
+  param: /mission/scan_the_code/color2
+  options: [RED,GREEN,YELLOW,BLUE]
+  description: The second color in the 3 color sequence of scan the code
+
+scan_the_code_color3:
+  param: /mission/scan_the_code/color3
+  options: [RED,GREEN,YELLOW,BLUE]
+  description: The third color in the 3 color sequence of scan the code
+
+coral_surey_shape2:
+  param: /mission/coral_survey/shape1
+  options: [CIRCLE, TRIANGLE, CROSS]
+  description: The shape identified in quadrant I of the Underwater Shape Identification challenge
+
+coral_surey_shape2:
+  param: /mission/coral_survey/shape2
+  options: [CIRCLE, TRIANGLE, CROSS]
+  description: The shape identified in quadrant II of the Underwater Shape Identification challenge
+
+coral_surey_shape3:
+  param: /mission/coral_survey/shape3
+  options: [CIRCLE, TRIANGLE, CROSS]
+  description: The shape identified in quadrant III of the Underwater Shape Identification challenge
+
+coral_surey_shape4:
+  param: /mission/coral_survey/shape4
+  options: [CIRCLE, TRIANGLE, CROSS]
+  description: The shape identified in quadrant IV of the Underwater Shape Identification challenge
+
+find_the_break_markers:
+  param: /mission/find_the_break/markers
+  options: [1,2,3,4,5]
+  description: The number of orange wall segments between the yellow breaks in the find the break challenge
+
+acoustic_pinger_active:
+  param: /mission/acoustic_pinger/active
+  options: [RED-WHITE,WHITE-WHITE,WHITE-GREEN]
+  description: >
+    The two buoys the active pinger is between for the fist instance
+    of the acoustic pinger transit. The first instance will be the acoustic
+    pinger transit first classified  (with the lowest ID in the database)
+
+acoustic_pinger_active2:
+  param: /mission/acoustic_pinger/active2
+  options: [RED-WHITE,WHITE-WHITE,WHITE-GREEN]
+  description: >
+    The two buoys the active pinger is between for the second instance
+    of the acoustic pinger transit. The second instance will be the acoustic
+    pinger transit classified second (with the second lowest ID in the database)
+
+acoustic_pinger_active3:
+  param: /mission/acoustic_pinger/active3
+  options: [RED-WHITE,WHITE-WHITE,WHITE-GREEN]
+  description: >
+    The two buoys the active pinger is between for the third instance
+    of the acoustic pinger transit. The third instance will be the acoustic
+    pinger transit classified third (with the third lowest ID in the database)
+
+acoustic_pinger_active4:
+  param: /mission/acoustic_pinger/active4
+  options: [RED-WHITE,WHITE-WHITE,WHITE-GREEN]
+  description: >
+    The two buoys the active pinger is between for the fourth instance
+    of the acoustic pinger transit. The fourth instance will be the acoustic
+    pinger transit classified third (with the highest ID in the database)
