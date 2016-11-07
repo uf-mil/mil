@@ -7,6 +7,7 @@ from tf import transformations
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovariance, TwistWithCovariance, Pose, Point, Quaternion
 from gazebo_msgs.msg import LinkStates, ModelState
+from gazebo_msgs.srv import SetModelState
 from uf_common.msg import Float64Stamped
 import numpy as np
 import os
@@ -21,8 +22,13 @@ class GazeboInterface(object):
         self.last_ecef = gps.ecef_from_latlongheight(*np.radians(intial_lla))
         self.last_enu = None
 
-        self.state_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self.state_cb)
+        self.set_state = rospy.ServiceProxy("/gazebo/set_model_state", SetModelState)
+    	rospy.Subscriber("/lqrrt/ref", Odometry, self.set_boat_state)
 
+        self.last_odom = None
+        self.position_offset = None
+        
+        self.state_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self.state_cb)
         self.state_pub = rospy.Publisher('odom', Odometry, queue_size=1)  # This can be thought of as ENU
         self.absstate_pub = rospy.Publisher('absodom', Odometry, queue_size=1)  # TODO: Make this in ECEF frame instead of ENU
 
@@ -30,6 +36,25 @@ class GazeboInterface(object):
         self.last_absodom = None
 
         rospy.Timer(rospy.Duration(1/100), self.publish_odom)
+
+    def set_boat_state(self, msg):
+        model_name = self.target.split("::")[0]
+        pose = msg.pose.pose
+        twist = msg.twist.twist
+
+        # Offset to get the boat into the water
+        odom_surface_offset = 10  # m
+        np_pose = navigator_tools.pose_to_numpy(pose)
+        np_pose[0][2] += odom_surface_offset
+        pose = navigator_tools.numpy_quat_pair_to_pose(*np_pose)
+
+        req = SetModelState()
+        req.model_name = model_name
+        req.pose = pose
+        req.twist = twist
+        req.reference_frame = ''
+
+        self.set_state(req)
 
     def publish_odom(self, *args):
         if self.last_odom is not None:

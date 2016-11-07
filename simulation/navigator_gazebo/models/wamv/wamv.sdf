@@ -8,14 +8,14 @@
         <angular>0.001</angular>
       </velocity_decay>
       <inertial>
-        <mass>250</mass>
+        <mass>270.94</mass>
         <inertia>
-          <ixx>900.0</ixx>
-          <ixy>0</ixy>
-          <ixz>0</ixz>
-          <iyy>900.0</iyy>
-          <iyz>0</iyz>
-          <izz>900.0</izz>
+          <ixx>387.488</ixx>
+          <ixy>0.53111</ixy>
+          <ixz>165.005</ixz>
+          <iyy>585.109</iyy>
+          <iyz>0.11637</iyz>
+          <izz>657.620</izz>
         </inertia>
       </inertial>
       <visual name="visual">
