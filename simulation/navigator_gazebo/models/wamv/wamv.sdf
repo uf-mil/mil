@@ -179,9 +179,9 @@
         </plugin>
       </sensor>
     </link>
-    <!--plugin name="navigator_state_set" filename="libnavigator_state_set.so">
+    <plugin name="navigator_state_set" filename="libnavigator_state_set.so">
         <model_z_offset>1.2</model_z_offset>
-    </plugin-->
+    </plugin>
     <!--
     <plugin name="navigator_buoyancy" filename="libnavigator_buoyancy.so">
       <fluid_density>1000</fluid_density>

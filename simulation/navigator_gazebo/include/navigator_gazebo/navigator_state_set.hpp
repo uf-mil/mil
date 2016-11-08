@@ -29,6 +29,7 @@ namespace gazebo
       sdf::ElementPtr sdf;
 
       ros::NodeHandle nh;
+      ros::Subscriber refSub;
       double modelZOffset;
       math::Pose pose;
 

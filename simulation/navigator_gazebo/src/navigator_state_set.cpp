@@ -29,8 +29,7 @@ void StatePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
 
   // Make sure the ROS node for Gazebo has already been initialized
   GZ_ASSERT(ros::isInitialized(), "ROS not initialized");
-  nh.subscribe("lqrrt/ref", 1, &StatePlugin::PoseRefUpdate, this);
-  std::cout << "Testiung" << std::endl;
+  this->refSub = nh.subscribe("lqrrt/ref", 1, &StatePlugin::PoseRefUpdate, this);
 }
 /////////////////////////////////////////////////
 void StatePlugin::PoseRefUpdate(const nav_msgs::OdometryConstPtr& odom) {
