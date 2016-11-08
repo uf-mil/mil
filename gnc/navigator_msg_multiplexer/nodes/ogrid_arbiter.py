@@ -101,7 +101,8 @@ class OGridServer:
     def __init__(self, frame_id='enu', map_size=800, resolution=0.3, rate=2):
         self.frame_id = frame_id
         self.ogrids = {}
-    
+        self.odom = None 
+
         # Some default values
         self.plow = True
         self.plow_factor = 0
