@@ -21,10 +21,6 @@ class GazeboInterface(object):
         intial_lla = [29.534912, -82.303642, 0]  # In Walhburg
         self.last_ecef = gps.ecef_from_latlongheight(*np.radians(intial_lla))
         self.last_enu = None
-
-        self.set_state = rospy.ServiceProxy("/gazebo/set_model_state", SetModelState)
-    	rospy.Subscriber("/lqrrt/ref", Odometry, self.set_boat_state)
-
         self.last_odom = None
         self.position_offset = None
         
@@ -35,15 +31,19 @@ class GazeboInterface(object):
         self.last_odom = None
         self.last_absodom = None
 
+        self.need_state_set = True
+        self.set_state = rospy.ServiceProxy("/gazebo/set_model_state", SetModelState)
+    	rospy.Subscriber("/lqrrt/ref", Odometry, self.set_boat_state)
         rospy.Timer(rospy.Duration(1/100), self.publish_odom)
 
     def set_boat_state(self, msg):
+        self.need_state_set = False
         model_name = self.target.split("::")[0]
         pose = msg.pose.pose
         twist = msg.twist.twist
 
         # Offset to get the boat into the water
-        odom_surface_offset = 10  # m
+        odom_surface_offset = 1.2  # m
         np_pose = navigator_tools.pose_to_numpy(pose)
         np_pose[0][2] += odom_surface_offset
         pose = navigator_tools.numpy_quat_pair_to_pose(*np_pose)
@@ -54,7 +54,7 @@ class GazeboInterface(object):
         req.twist = twist
         req.reference_frame = ''
 
-        self.set_state(req)
+        #self.set_state(req)
 
     def publish_odom(self, *args):
         if self.last_odom is not None:
@@ -75,6 +75,9 @@ class GazeboInterface(object):
 
     def state_cb(self, msg):
         if self.target in msg.name:
+            if self.need_state_set:
+                self.set_boat_state(Odometry())
+
             target_index = msg.name.index(self.target)
 
             twist = msg.twist[target_index]

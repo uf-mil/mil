@@ -2,7 +2,8 @@
 <sdf version="1.5">
   <model name="wamv">
     <link name="base_link">
-      <!-- TODO: Tune these -->
+      <gravity>0</gravity>
+      <!-- 
       <velocity_decay>
         <linear>0.0035</linear>
         <angular>0.001</angular>
@@ -18,6 +19,7 @@
           <izz>657.620</izz>
         </inertia>
       </inertial>
+      -->
       <visual name="visual">
         <geometry>
            <mesh>
@@ -177,7 +179,10 @@
         </plugin>
       </sensor>
     </link>
-
+    <!--plugin name="navigator_state_set" filename="libnavigator_state_set.so">
+        <model_z_offset>1.2</model_z_offset>
+    </plugin-->
+    <!--
     <plugin name="navigator_buoyancy" filename="libnavigator_buoyancy.so">
       <fluid_density>1000</fluid_density>
       <drag_coefficient>1</drag_coefficient>
@@ -190,6 +195,6 @@
     <plugin name="navigator_thurster" filename="libnavigator_thrusters.so">
       <link>base_link</link>
     </plugin>
-
+    -->
   </model>
 </sdf>
