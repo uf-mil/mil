@@ -13,6 +13,7 @@ from lqrrt_ros.msg import MoveGoal
 
 import navigator_tools
 from navigator_tools import fprint
+from twisted.internet import defer
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
 EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)]
@@ -133,7 +134,7 @@ class PoseEditor2(object):
             # What do we want to do with missions when the boat is killed
             fprint("Boat is killed, ignoring go command!", title="POSE_EDITOR", msg_color="red")
             yield self.nav.nh.sleep(1)
-            defer.returnValue()
+            defer.returnValue(None)
 
         self.goal = self.nav._moveto_client.send_goal(self.as_MoveGoal(*args, **kwargs))
         res = yield self.goal.get_result()
