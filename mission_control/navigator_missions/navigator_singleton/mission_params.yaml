@@ -1,3 +1,10 @@
+explorer_next:
+  param: /mission/explorer/next
+  options: [ALL,BuoyField,CoralSurvey,FindBreak,
+    AcousticPinger,Shooter,Scan_The_Code,Gate_1,Gate_2,Gate_3,Dock]
+  description: The next unknown object to search for when no missions are running, defaults to furthest away (ALL)
+  default: ALL
+
 detect_deliver_color:
   param: /mission/detect_deliver/Color
   options: [RED, GREEN, BLUE]
@@ -23,7 +30,7 @@ scan_the_code_color3:
   options: [RED,GREEN,YELLOW,BLUE]
   description: The third color in the 3 color sequence of scan the code
 
-coral_surey_shape2:
+coral_surey_shape1:
   param: /mission/coral_survey/shape1
   options: [CIRCLE, TRIANGLE, CROSS]
   description: The shape identified in quadrant I of the Underwater Shape Identification challenge

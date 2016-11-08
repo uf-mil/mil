@@ -216,7 +216,8 @@ class Navigator(object):
                 param = f[name]["param"]
                 options = f[name]["options"]
                 desc = f[name]["description"]
-                self.mission_params[name] = MissionParam(self.nh, param, options, desc)
+                default = f[name].get("default")
+                self.mission_params[name] = MissionParam(self.nh, param, options, desc, default)
             except Exception, e:
                 err = "Error loading mission params: {}".format(e)
                 fprint("" + err, title="NAVIGATOR", msg_color='red')
@@ -254,11 +255,14 @@ class VisionProxy(object):
         return self.client(s_req)
 
 class MissionParam(object):
-    def __init__(self, nh, param, options, desc):
+    def __init__(self, nh, param, options, desc, default):
         self.nh = nh
         self.param = param
         self.options = options
         self.description = desc
+        self.default = default
+        if not self.default == None:
+          self.set(self.default)
 
     @util.cancellableInlineCallbacks
     def get(self):
@@ -293,7 +297,10 @@ class MissionParam(object):
     @util.cancellableInlineCallbacks
     def reset(self):
         if (yield self.exists()):
-            yield self.nh.delete_param(self.param)
+            if not self.default == None:
+              yield self.set(self.default)
+            else:
+              yield self.nh.delete_param(self.param)
 
     def _valid(self,value):
         for x in self.options:
