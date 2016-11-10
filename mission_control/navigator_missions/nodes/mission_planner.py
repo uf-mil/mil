@@ -21,6 +21,7 @@ class Mission(object):
         self.name = name
         self.item_dep = item_dep
         self.children = []
+        self.currently_running_mission = False
 
     def add_child(self, child):
         """Add child to a mission."""
@@ -48,7 +49,7 @@ class Mission(object):
 class MissionPlanner:
     """The class that plans which mission to do next."""
 
-    def __init__(self, yaml_file="missions.yaml"):
+    def __init__(self, yaml_text):
         """Initialize the MissionPlanner class."""
         self.tree = []
         self.queue = Queue()
@@ -56,16 +57,6 @@ class MissionPlanner:
         self.completeing_mission = False
         self.base_mission = None
         # TODO Put in YAML file
-
-        yaml_text = None
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        yaml_file = dir_path + "/" + yaml_file
-
-        with open(yaml_file, 'r') as stream:
-            try:
-                yaml_text = yaml.load(stream)
-            except yaml.YAMLError as exc:
-                print(exc)
 
         self.load_missions(yaml_text)
 
@@ -145,14 +136,20 @@ class MissionPlanner:
         result = yield m
         print result
 
+    def check_current_mission_fail(self):
+        pass
+
     @util.cancellableInlineCallbacks
     def empty_queue(self):
         """Constantly empties the queue if there is something in it, or run the base mission otherwise."""
-        self.completing_mission = True
         while True:
+            if self.currently_running_mission:
+                self.check_current_mission_fail()
+                yield self.nh.sleep(.3)
+                continue
             try:
                 mission = self.queue.get(block=False)
-                yield self.do_mission(mission)
+                self.current_mission = self.do_mission(mission)
             except que.Empty:
                 if self.base_mission is not None:
                     yield self.do_mission(self.base_mission)
@@ -164,13 +161,25 @@ class MissionPlanner:
                 for m in mission.children:
                     self.tree.append(m)
                     self.refresh()
+            yield self.nh.sleep(.3)
 
 
 @util.cancellableInlineCallbacks
 def main():
     """The main method."""
-    planner = yield MissionPlanner().init_()
-    planner.empty_queue()
+    yaml_text = None
+    yaml_file = "missions.yaml"
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    yaml_file = dir_path + "/" + yaml_file
+
+    with open(yaml_file, 'r') as stream:
+        try:
+            yaml_text = yaml.load(stream)
+            planner = yield MissionPlanner(yaml_text).init_()
+            planner.empty_queue()
+        except yaml.YAMLError as exc:
+            print(exc)
+
 
 reactor.callWhenRunning(main)
 reactor.run()
