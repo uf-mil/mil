@@ -268,70 +268,10 @@
           output="screen"/>
 
 
-        <!-- Identify Symbols and Dock - EZ Dock Pieces -->
-        <node name="spawn_ez_dock_1" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/ez_dock.sdf -sdf
-            -x -6.096 -y 21.604 -z 0 -model ez_dock_1"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_2" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/ez_dock.sdf -sdf
-            -x -3.048 -y 21.604 -z 0 -model ez_dock_2"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_3" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/ez_dock.sdf -sdf
-            -x 0 -y 21.604 -z 0 -model ez_dock_3"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_4" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/ez_dock.sdf -sdf
-            -x 3.048 -y 21.604 -z 0 -model ez_dock_4"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_5" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/ez_dock.sdf -sdf
-            -x 6.096 -y 21.604 -z 0 -model ez_dock_5"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_6" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/ez_dock.sdf -sdf
-            -x -7.112 -y 19.572 -z 0 -Y 1.57079 -model ez_dock_6"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_7" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/ez_dock.sdf -sdf
-            -x -7.112 -y 16.524 -z 0 -Y 1.57079 -model ez_dock_7"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_8" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/ez_dock.sdf -sdf
-            -x -2.37066 -y 19.572 -z 0 -Y 1.57079 -model ez_dock_8"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_9" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/ez_dock.sdf -sdf
-            -x -2.37066 -y 16.524 -z 0 -Y 1.57079 -model ez_dock_9"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_10" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/ez_dock.sdf -sdf
-            -x 2.37066 -y 19.572 -z 0 -Y 1.57079 -model ez_dock_10"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_11" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/ez_dock.sdf -sdf
-            -x 2.37066 -y 16.524 -z 0 -Y 1.57079 -model ez_dock_11"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_12" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/ez_dock.sdf -sdf
-            -x 7.112 -y 19.572 -z 0 -Y 1.57079 -model ez_dock_12"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_13" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/ez_dock.sdf -sdf
-            -x 7.112 -y 16.524 -z 0 -Y 1.57079 -model ez_dock_13"
+        <!-- Identify Symbols and Dock - Dock Assembly -->
+        <node name="spawn_dock" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/dock.sdf -sdf
+            -x 0 -y 18.556 -z 0 -model dock"
           output="screen"/>
 
         <!-- Identify Symbols and Dock - Symbol Panels -->
