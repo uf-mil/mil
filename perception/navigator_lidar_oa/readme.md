@@ -29,7 +29,7 @@
 
 	- rosrun navigator_lidar_oa lidar
 
-**Requesting objects from the database**
+**Requesting real objects from the database**
 
 The service is name /database/requests with the input parameter name and will return the PerceptionObject message. Here are some example calls:
 
@@ -40,10 +40,25 @@ The service is name /database/requests with the input parameter name and will re
 	- rosservice call /database/requests "name: 'scan_the_code'"
 	- rosservice call /database/requests "name: 'start_gate'" 
 	- rosservice call /database/requests "name: 'buoy'"
+	- rosservice call /database/requests "name: 'dock'"
+
+**Requesting fake objects from the database**
+
+
+	- rosservice call /database/requests "name: 'All'" 
+	- rosservice call /database/requests "name: 'Shooter'"
+	- rosservice call /database/requests "name: 'AcousticPinger'"	
+	- rosservice call /database/requests "name: 'Gate_1'"
+	- rosservice call /database/requests "name: 'Gate_2'"
+	- rosservice call /database/requests "name: 'Gate_3'"
+	- rosservice call /database/requests "name: 'Scan_The_Code'"
+	- rosservice call /database/requests "name: 'CoralSurvey'" 
+	- rosservice call /database/requests "name: 'BuoyField'"
+	- rosservice call /database/requests "name: 'Dock'"
 
 **Setting ROI objects from the database**
 
-ROI (region of interest) allows us to set fake markers in the database as estimates about where structures are located in the ENU world frame. This can either be done through rosservice with the cmd input or manually in RVIZ. The fake markers include: **BuoyField**, **CoralSurvey**, **FindBreak**, **AcousticPinger**, **Shooter**, **Scan\_The_Code**. (These can be changed/standardized later...). The syntax requires the name of the fake marker and the **x,y location in the ENU** frame after the = sign. Example calls:
+ROI (region of interest) allows us to set fake markers in the database as estimates about where structures are located in the ENU world frame. This can either be done through rosservice with the cmd input or manually in RVIZ. The fake markers include: **BuoyField**, **CoralSurvey**, **FindBreak**, **AcousticPinger**, **Shooter**, **Scan\_The_Code**, **Gate\_1**, **Gate\_2**, **Gate\_3**, and **Dock**. (These can be changed/standardized later...). The syntax requires the name of the fake marker and the **x,y location in the ENU** frame after the = sign. Example calls:
 
 
 	- rosservice call /database/requests "cmd: 'Shooter=-27,-69'"

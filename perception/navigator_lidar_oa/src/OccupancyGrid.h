@@ -179,9 +179,9 @@ class OccupancyGrid
 				Eigen::Vector3d xyz_in_enu = T*xyz_in_velodyne;
 			    Eigen::Vector2d point(xyz_in_enu(0), xyz_in_enu(1));
 			    Eigen::Vector2d am = b1 - point;
-		     	if(0 <= ab.dot(am) && ab.dot(am) <= ab.dot(ab) && 0 <= am.dot(ac) && am.dot(ac) <= ac.dot(ac)){
-		     		//std::cout<<"TRUE"<<std::endl;
-					if (xyz_in_velodyne.norm() >= 1 && xyz_in_velodyne.norm() <= 75 && xyz_in_enu(2) >= lidarPos.z-MAXIMUM_Z_BELOW_LIDAR && xyz_in_enu(2) <= lidarPos.z+MAXIMUM_Z_ABOVE_LIDAR) {
+			    //Valid lidar points are inside bounding box or within X meters of the boat
+		     	if( (0 <= ab.dot(am) && ab.dot(am) <= ab.dot(ab) && 0 <= am.dot(ac) && am.dot(ac) <= ac.dot(ac)) || (xyz_in_velodyne.norm() <= 15) ){
+					if (xyz_in_velodyne.norm() >= 1 && xyz_in_velodyne.norm() <= 100 && xyz_in_enu(2) >= lidarPos.z-MAXIMUM_Z_BELOW_LIDAR && xyz_in_enu(2) <= lidarPos.z+MAXIMUM_Z_ABOVE_LIDAR) {
 						updateGrid(LidarBeam(xyz_in_enu(0), xyz_in_enu(1), xyz_in_enu(2),i.f),max_hits);
 					}
 		     	}

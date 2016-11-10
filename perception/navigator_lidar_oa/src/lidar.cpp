@@ -32,12 +32,11 @@
 #include "OccupancyGrid.h"
 #include "ConnectedComponents.h"
 #include "objects.h"
-#include "bounding_boxes.h"
 
 using namespace std;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+//Critical global constants
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const double MAP_SIZE_METERS = 1500;
 const double ROI_SIZE_METERS = 201;
@@ -48,18 +47,19 @@ const double MAXIMUM_Z_BELOW_LIDAR = 2; //2
 const double MAXIMUM_Z_ABOVE_LIDAR = 2.5;
 const double MAX_ROLL_PITCH_ANGLE_DEG = 5.3;
 const double LIDAR_VIEW_ANGLE_DEG = 160;
-const double LIDAR_VIEW_DISTANCE_METERS = 80;
+const double LIDAR_VIEW_DISTANCE_METERS = 60;
 const double LIDAR_MIN_VIEW_DISTANCE_METERS = 5.5;
 const int MIN_LIDAR_POINTS_FOR_OCCUPANCY = 10;
 const double MIN_OBJECT_HEIGHT_METERS = 0.075;
+const double MIN_OBJECT_SEPERATION_DISTANCE = 1.5;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+//Random collection of globals
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OccupancyGrid ogrid(MAP_SIZE_METERS,ROI_SIZE_METERS,VOXEL_SIZE_METERS);
 nav_msgs::OccupancyGrid rosGrid;
 ros::Publisher pubGrid,pubMarkers,pubObjects,pubCloudPersist,pubCloudFrame,pubCloudPCL;
-ObjectTracker object_tracker;
+ObjectTracker object_tracker(MIN_OBJECT_SEPERATION_DISTANCE*3);
 geometry_msgs::Point waypoint_ogrid;
 geometry_msgs::Pose boatPose_enu;
 geometry_msgs::Twist boatTwist_enu;
@@ -67,7 +67,7 @@ uf_common::PoseTwistStamped waypoint_enu,carrot_enu;
 ros::Time pubObjectsTimer;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+//Interactive marker globals
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 interactive_markers::InteractiveMarkerServer *markerServer;
 interactive_markers::MenuHandler menuHandler;
@@ -76,14 +76,18 @@ interactive_markers::MenuHandler::EntryHandle menuEntry;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //These are changed on startup if /get_bounds service is present
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Eigen::Vector2d BOUNDARY_CORNER_1 (30-80, 10-150);
-Eigen::Vector2d BOUNDARY_CORNER_2 (30-80, 120-150);
-Eigen::Vector2d BOUNDARY_CORNER_3 (140-80, 120-150);
-Eigen::Vector2d BOUNDARY_CORNER_4 (140-80, 10-150);
+//Eigen::Vector2d BOUNDARY_CORNER_1 (30-80, 10-150);
+//Eigen::Vector2d BOUNDARY_CORNER_2 (30-80, 120-150);
+//Eigen::Vector2d BOUNDARY_CORNER_3 (140-80, 120-150);
+//Eigen::Vector2d BOUNDARY_CORNER_4 (140-80, 10-150);
 
+Eigen::Vector2d BOUNDARY_CORNER_1 (0, 0);
+Eigen::Vector2d BOUNDARY_CORNER_2 (1, 0);
+Eigen::Vector2d BOUNDARY_CORNER_3 (1, -1);
+Eigen::Vector2d BOUNDARY_CORNER_4 (0, -1);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+//Helper function for making interactive markers
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 visualization_msgs::InteractiveMarker CreateInteractiveMarker(string name)
 {
@@ -162,7 +166,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 
 	//Detect objects
 	std::vector<objectMessage> objects;
-	std::vector< std::vector<int> > cc = ConnectedComponents(ogrid,objects);
+	std::vector< std::vector<int> > cc = ConnectedComponents(ogrid,objects,MIN_OBJECT_SEPERATION_DISTANCE);
 
 
 	//Publish second point cloud
@@ -249,15 +253,24 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	//Track objects over frames
 	auto object_permanence = object_tracker.add_objects(objects,pclCloud,boatPose_enu);
 
+	//Look for gates in between 4 buoys
+	auto gatePosAndNormal = object_tracker.FindThreeGates();
+	auto gatePositions = std::get<0>(gatePosAndNormal);
+	auto gateNormal = std::get<1>(gatePosAndNormal);
+	std::vector<std::string> names{"Gate_2","Gate_1","Gate_3"};
+	for (auto ii = 0; ii < gatePositions.size(); ++ii) {
+		geometry_msgs::Pose newPose;
+		newPose.position = gatePositions[ii];
+		markerServer->setPose(names[ii],newPose);
+	  	markerServer->applyChanges();
+	}
+
 	//Clear all markers from interactive server
 	//markerServer->clear();	
 
 	for (auto obj : object_permanence) {
-		//Skip objects that are not current
-		if (!obj.current) { 
-			markerServer->erase(to_string(obj.id));
-			continue; 
-		} else if (!obj.real) {
+		//Skip objects that are not real
+ 		if (!obj.real) {
 			continue;
 		}
 
@@ -298,8 +311,6 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 			m4.color.a = 0.6; m4.color.r = 0; m4.color.g = 1; m4.color.b = 0;
 		}
 		int_marker.controls[0].markers.push_back( m4 );	
-		//markers.markers.push_back(m4);
-	
 
 		//Display normal as an arrow
 		if (obj.pclInliers > 10) {
@@ -317,42 +328,38 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 			m3.points.push_back(pp);
 			m3.scale.x = 1; m3.scale.y = 1; m3.scale.z = 1;
 			m3.color.a = 0.6; m3.color.r = 1; m3.color.g = 1; m3.color.b = 1;
-			//markers.markers.push_back(m3);
 			int_marker.controls[0].markers.push_back( m3 );
 		}
 
 		//Create marker as bounding box
-		if (obj.real) {
-			visualization_msgs::Marker m2;
-			m2.header.stamp = ros::Time::now();
-			m2.header.seq = 0;
-			m2.header.frame_id = "enu";		
-			m2.header.stamp = ros::Time::now();
-			m2.id = obj.id;
-			m2.type = visualization_msgs::Marker::CUBE;
-			m2.action = visualization_msgs::Marker::ADD;		
-			m2.pose.position = obj.position;
-			m2.scale = obj.scale;
-			if (obj.color.r == 0 && obj.color.g == 0 && obj.color.b == 0) {
-				m2.color.a = 0.6; m2.color.r = 0.3; m2.color.g = 0.3; m2.color.b = 0.3;
-			} else {
-				m2.color.a = 0.6; m2.color.r = obj.color.r; m2.color.g = obj.color.g; m2.color.b = obj.color.b;
-			}
-			//markers.markers.push_back(m2);
-			int_marker.controls[0].markers.push_back( m2 );
+		visualization_msgs::Marker m2;
+		m2.header.stamp = ros::Time::now();
+		m2.header.seq = 0;
+		m2.header.frame_id = "enu";		
+		m2.header.stamp = ros::Time::now();
+		m2.id = obj.id;
+		m2.type = visualization_msgs::Marker::CUBE;
+		m2.action = visualization_msgs::Marker::ADD;		
+		m2.pose.position = obj.position;
+		m2.scale = obj.scale;
+		if (obj.color.r == 0 && obj.color.g == 0 && obj.color.b == 0) {
+			m2.color.a = 0.6; m2.color.r = 0.3; m2.color.g = 0.3; m2.color.b = 0.3;
+		} else {
+			m2.color.a = 0.6; m2.color.r = obj.color.r; m2.color.g = obj.color.g; m2.color.b = obj.color.b;
 		}
-
+		int_marker.controls[0].markers.push_back( m2 );
+		
 		//Turn obj into an interactive marker for rviz
 		markerServer->insert( int_marker );
 		menuHandler.apply( *markerServer, to_string(obj.id) );
 	}	
+	//Publish all data to ROS
 	pubMarkers.publish(markers);
 	pubCloudPersist.publish(objectCloudPersist);
 	pubCloudFrame.publish(objectCloudFrame);
 	pubCloudPCL.publish(pclCloud);
 	markerServer->applyChanges();
 	
-
 	//Publish PerceptionObjects at some slower rate
 	if ( (ros::Time::now() - pubObjectsTimer).toSec() > 2 ) {
 		navigator_msgs::PerceptionObjectArray objectArray;
@@ -361,7 +368,6 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		pubObjectsTimer = ros::Time::now();
 	}
 	
-
 	//Elapsed time
 	ROS_INFO_STREAM("LIDAR | Elapsed time: " << (ros::Time::now()-timer).toSec());
 	ROS_INFO("**********************************************************");
@@ -383,11 +389,17 @@ void cb_odom(const nav_msgs::OdometryConstPtr &odom) {
 bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs::ObjectDBQuery::Response &res) 
 {
 	ROS_INFO_STREAM("LIDAR | DB request with name " << req.name << " and command " << req.cmd);
+	
+	//Assume match not found and clear old info
 	res.found = false;
 	res.objects.clear();
+
+	//Look for desired object by name in database
 	if (req.name.size() > 2) {
 		res.found = object_tracker.lookUpByName(req.name,res.objects);
 	}
+
+	//Process cmd portion after spliting request into 3 components
 	auto split1 = req.cmd.find('=');
 	auto split2 = req.cmd.find(',');
 	if ( split1 != string::npos && split2 != string::npos) {
@@ -395,10 +407,14 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
 		auto x = stod(req.cmd.substr(split1+1,split2-split1));
 		auto y = stod(req.cmd.substr(split2+1));
 		cout << "LIDAR | Cmd is " << name << "," << x << "," << y << endl;
+		//Set new position
 		geometry_msgs::Pose newPose;
 		newPose.position.x = x;
 		newPose.position.y = y;
 		newPose.position.z = 0;
+		//Update database
+		object_tracker.lock(name,newPose.position);
+		//Update interactive markers
 		markerServer->setPose(name,newPose);
 	  	markerServer->applyChanges();
 	}
@@ -406,21 +422,19 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+//Process mouse moves from Rviz for interactive markers
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void roiCallBack( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
 {
-	  ROS_INFO_STREAM("LIDAR | " << feedback->marker_name << ": " << feedback->pose.position.x << ", " << feedback->pose.position.y << ", " << feedback->pose.position.z);
-	  auto newPose = feedback->pose;
-	  newPose.position.z = 0;
-	  for (auto &obj: object_tracker.saved_objects) {
-	  		if (obj.name == feedback->marker_name) {
-	  			obj.position = newPose.position;
-	  			break;
-	  		}
-	  }
-	  markerServer->setPose(feedback->marker_name,newPose);
-	  markerServer->applyChanges();
+	ROS_INFO_STREAM("LIDAR | " << feedback->marker_name << ": " << feedback->pose.position.x << ", " << feedback->pose.position.y << ", " << feedback->pose.position.z);
+	//Zero out z poisition from Rviz
+	auto newPose = feedback->pose;
+	newPose.position.z = 0;
+	//Update database
+	object_tracker.lock(feedback->marker_name,newPose.position);
+	//Update interactive markers
+	markerServer->setPose(feedback->marker_name,newPose);
+	markerServer->applyChanges();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -467,7 +481,7 @@ void createROIS(string name)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+//Process Rviz menu option selections
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void markerCallBack( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
 {
@@ -510,11 +524,10 @@ void markerCallBack( const visualization_msgs::InteractiveMarkerFeedbackConstPtr
 			break; 
 		}
 	}	
-
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+//Entry point to code
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
@@ -548,9 +561,9 @@ int main(int argc, char* argv[])
 	pubObjectsTimer = ros::Time::now();
 
 	//Extra publishing for debugging...
-	pubCloudPersist = nh.advertise<sensor_msgs::PointCloud>("ira_persist",1);
-	pubCloudFrame = nh.advertise<sensor_msgs::PointCloud>("ira_frame",1);
-	pubCloudPCL = nh.advertise<sensor_msgs::PointCloud>("ira_pclcloud",1);
+	pubCloudPersist = nh.advertise<sensor_msgs::PointCloud>("/ira_persist",1);
+	pubCloudFrame = nh.advertise<sensor_msgs::PointCloud>("/ira_frame",1);
+	pubCloudPCL = nh.advertise<sensor_msgs::PointCloud>("/ira_pclcloud",1);
 
 	//Service for object request
 	ros::ServiceServer service = nh.advertiseService("/database/requests", objectRequest);
@@ -599,6 +612,10 @@ int main(int argc, char* argv[])
 	createROIS("AcousticPinger");
 	createROIS("Shooter");
 	createROIS("Scan_The_Code");
+	createROIS("Gate_1");
+	createROIS("Gate_2");
+	createROIS("Gate_3");
+	createROIS("Dock");
 
 	//Give control to ROS
 	ros::spin();

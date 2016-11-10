@@ -27,7 +27,6 @@ class MissionResult(object):
     NoResponse = 0
     ParamNotFound = 1
     DbObjectNotFound = 2
-    # ...
     OtherResponse = 100
 
     def __init__(self, success=True, response=None, message="", need_rerun=False, post_function=None):
@@ -51,14 +50,22 @@ class MissionResult(object):
 
         return '\n'.join(_pass if self.success else _fail)
 
-
 class Navigator(object):
+    circle = "CIRCLE"
+    cross = "CROSS"
+    triangle = "TRIANGLE"
+    red = "RED"
+    green = "GREEN"
+    blue = "BLUE"
 
     def __init__(self, nh):
         self.nh = nh
 
         self.vision_proxies = {}
         self._load_vision_services()
+
+        self.mission_params = {}
+        self._load_mission_params()
 
         # If you don't want to use txros
         self.pose = None
@@ -89,6 +96,7 @@ class Navigator(object):
 
         try:
             self._database_query = self.nh.get_service_client('/database/requests', navigator_srvs.ObjectDBQuery)
+            self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
         except AttributeError, err:
             fprint("Error getting service clients in nav singleton init: {}".format(err), title="NAVIGATOR", msg_color='red')
 
@@ -98,12 +106,10 @@ class Navigator(object):
 
         if self.sim:
             fprint("Sim mode active!", title="NAVIGATOR")
-            self.change_wrench = lambda x: None
             yield self.nh.sleep(.5)
         else:
             # We want to make sure odom is working before we continue
             fprint("Waiting for odom...", title="NAVIGATOR")
-            self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
             odom = util.wrap_time_notice(self._odom_sub.get_next_message(), 2, "Odom listener")
             enu_odom = util.wrap_time_notice(self._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener")
             bounds = util.wrap_time_notice(self._make_bounds(), 2, "Bounds creation")
@@ -200,6 +206,22 @@ class Navigator(object):
                 err = "Error loading vision sevices: {}".format(e)
                 fprint("" + err, title="NAVIGATOR", msg_color='red')
 
+    def _load_mission_params(self, fname="mission_params.yaml"):
+        rospack = rospkg.RosPack()
+        config_file = os.path.join(rospack.get_path('navigator_missions'), 'navigator_singleton', fname)
+        f = yaml.load(open(config_file, 'r'))
+
+        for name in f:
+            try:
+                param = f[name]["param"]
+                options = f[name]["options"]
+                desc = f[name]["description"]
+                default = f[name].get("default")
+                self.mission_params[name] = MissionParam(self.nh, param, options, desc, default)
+            except Exception, e:
+                err = "Error loading mission params: {}".format(e)
+                fprint("" + err, title="NAVIGATOR", msg_color='red')
+
     @util.cancellableInlineCallbacks
     def _make_alarms(self):
         self.alarm_listener = AlarmListenerTx()
@@ -212,9 +234,7 @@ class Navigator(object):
         fprint("\tkill :", newline=False)
         fprint(self.killed)
 
-
 class VisionProxy(object):
-
     def __init__(self, client, request, args, switch):
         self.client = client
         self.request = request
@@ -234,9 +254,62 @@ class VisionProxy(object):
 
         return self.client(s_req)
 
+class MissionParam(object):
+    def __init__(self, nh, param, options, desc, default):
+        self.nh = nh
+        self.param = param
+        self.options = options
+        self.description = desc
+        self.default = default
+        if not self.default == None:
+          self.set(self.default)
+
+    @util.cancellableInlineCallbacks
+    def get(self):
+        # Returns deferred object, make sure to yield on this (same for below)
+        if not (yield self.exists()):
+            raise Exception("Mission Param {} not yet set".format(self.param))
+        value = yield self.nh.get_param(self.param)
+        if not self._valid(value):
+            raise Exception("Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(value, self.param, self.options,self.description))
+        else:
+            defer.returnValue(value)
+
+    def exists(self):
+        return self.nh.has_param(self.param)
+
+    @util.cancellableInlineCallbacks
+    def set(self,value):
+        if not self._valid(value):
+            raise Exception("Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(value, self.param, self.options,self.description))
+        yield self.nh.set_param(self.param, value)
+
+    @util.cancellableInlineCallbacks
+    def valid(self):
+        exists = yield self.exists()
+        if not exists:
+            defer.returnValue(False)
+        value = yield self.nh.get_param(self.param)
+        if not self._valid(value):
+            defer.returnValue(False)
+        defer.returnValue(True)
+
+    @util.cancellableInlineCallbacks
+    def reset(self):
+        if (yield self.exists()):
+            if not self.default == None:
+              yield self.set(self.default)
+            else:
+              yield self.nh.delete_param(self.param)
+
+    def _valid(self,value):
+        for x in self.options:
+            if x == value:
+                return True
+        return False
+
 
 class Searcher(object):
-
     def __init__(self, nav, vision_proxy, search_pattern, **kwargs):
         self.nav = nav
         self.vision_proxy = vision_proxy
@@ -307,6 +380,8 @@ class Searcher(object):
                 yield util.cancellableInlineCallbacks(pattern)()
         else:
             yield util.cancellableInlineCallbacks(pattern)()
+
+
 
     @util.cancellableInlineCallbacks
     def _run_look(self, spotings_req):
