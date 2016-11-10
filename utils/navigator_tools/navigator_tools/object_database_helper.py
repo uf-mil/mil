@@ -1,5 +1,5 @@
 """Use the DBHelper class to interface with the Database without having to deal with ROS things."""
-from navigator_msgs.msg import PerceptionObjects
+from navigator_msgs.msg import PerceptionObjectArray
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from twisted.internet import defer
 from txros import util
@@ -19,7 +19,7 @@ class DBHelper(object):
     @util.cancellableInlineCallbacks
     def init_(self):
         """Initialize the txros parts of the DBHelper."""
-        self._sub_database = yield self.nh.subscribe('/database/objects', PerceptionObjects, self.object_cb)
+        self._sub_database = yield self.nh.subscribe('/database/objects', PerceptionObjectArray, self.object_cb)
         self._database = yield self.nh.get_service_client("/database/requests", ObjectDBQuery)
 
         defer.returnValue(self)
@@ -44,7 +44,7 @@ class DBHelper(object):
 
     def object_cb(self, perception_objects):
         """Callback for the object database."""
-        for o in perception_objects:
+        for o in perception_objects.objects:
             if o.name not in self.found and not o[0].isupper():
                 self.found.add(o.name)
                 if self.new_object_subscriber is not None:
