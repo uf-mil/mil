@@ -5,11 +5,12 @@ from twisted.internet import defer, reactor
 import numpy as np
 import navigator_tools
 from navigator_singleton.navigator import Navigator
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, PointStamped
 import nav_missions
 
 import argparse
 
+ros_t = lambda d: util.genpy.Duration(d)
 fprint = navigator_tools.fprint
 
 @util.cancellableInlineCallbacks
@@ -26,12 +27,12 @@ def main():
     parser.add_argument('-m', '--movetype', type=str, default='drive',
         help='Move type. See lqrrt documentation for info on how to use this.')
     parser.add_argument('-f', '--focus', type=str,
-        help='Point to focus on. See lqrrt documentation for info on how to use this. ex. "[10, 2.3, 1]"')
+        help='Point to focus on. See lqrrt documentation for info on how to use this. If not specified, default to focusing around clicked point. ex. "[10, 2.3, 1]"')
     parser.add_argument('-s', '--sim', action='store_true',
         help='This will run navigator in sim mode (ie. not wait for odom or enu bounds). Don\'t do this on the boat.')
     parser.add_argument('-p', '--plantime', type=float,
         help='Time given to the planner for it\'s first plan.')
-
+    
     args = parser.parse_args(args[1:])
 
     n = yield Navigator(nh)._init(args.sim)
@@ -43,6 +44,7 @@ def main():
 
     if args.focus is not None:
         focus = np.array(map(float, args.focus[1:-1].split(',')))
+        focus[2] = 1  # Tell lqrrt we want to look at the point
         point = navigator_tools.numpy_to_point(focus)
         action_kwargs['focus'] = point
 
@@ -54,8 +56,18 @@ def main():
     elif args.command == 'rviz':
         fprint("Moving to last published rviz position", title="MOVE_COMMAND")
         sub = nh.subscribe("/rviz_goal", PoseStamped)
-        target_pose = yield sub.get_next_message()
+        target_pose = yield util.wrap_time_notice(sub.get_next_message(), 2,  "Rviz goal")
         yield n.move.to_pose(target_pose).go(**action_kwargs)
+
+    elif args.command == 'circle':
+        fprint("Moving in a circle around last clicked_point with radius {} meters".format(args.argument), title="MOVE_COMMAND")
+        sub = nh.subscribe("/rviz_point", PointStamped)
+        target_point = yield util.wrap_time_notice(sub.get_next_message(), 2, "Rviz point")
+        
+        circle = n.move.circle(navigator_tools.point_to_numpy(target_point), args.argument)
+        for p in circle:
+            fprint("Moving to next point...")
+            yield p.go()
 
     else:
         movement = getattr(n.move, args.command)
