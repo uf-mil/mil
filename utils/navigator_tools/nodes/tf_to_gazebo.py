@@ -5,9 +5,12 @@ import math
 import tf
 import geometry_msgs.msg
 import numpy as np
+
+
 def main():
     rospy.init_node('tf_to_gazebo')
     do_cam_fix = rospy.get_param("~cam_fix",False)
+    tf_parent = rospy.get_param("~tf_parent","/measurement")
     listener = tf.TransformListener()
     rate = rospy.Rate(10.0)
     cam_fix_quat = (-0.5 , 0.5 ,-0.5 ,-0.5)
@@ -16,9 +19,9 @@ def main():
         try:
             print "============= TRANFORMS ================"
             for frame_id in listener.getFrameStrings():
-                (trans,rot) = listener.lookupTransform('/measurement',frame_id, rospy.Time(0))
+                (trans,rot) = listener.lookupTransform(tf_parent,frame_id, rospy.Time(0))
                 print "--"
-                print "Tranform {} {}".format('/measurement',frame_id)
+                print "Transform {} {}".format(tf_parent,frame_id)
                 if do_cam_fix:
                     rot = tf.transformations.quaternion_multiply(rot,cam_fix_quat)
                 print "(qx={}, qy={} , qz={}, qw={})".format(rot[0],rot[1],rot[2],rot[3])

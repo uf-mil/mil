@@ -35,20 +35,10 @@ class DetectDeliverMission:
         self.markers_pub = self.navigator.nh.advertise("/detect_deliver/debug_marker",MarkerArray)
 
     def _bounding_rect(self,points):
-        maxX = 0
-        minX = 100000
-        maxY = 0
-        minY = 100000
-        for i in range(len(points)):
-            if points[i].x > maxX:
-                maxX = points[i].x
-            if points[i].y > maxY:
-                maxY = points[i].y
-            if points[i].x < minX:
-                minX = points[i].x
-            if points[i].y < minY:
-                minY = points[i].y
-        return np.array([maxX, maxY, minX, minY])
+        np_points = map(navigator_tools.point_to_numpy, points)
+        xy_max = np.max(np_points, axis=0)
+        xy_min = np.min(np_points, axis=0)
+        return np.append(xy_max, xy_min)
 
     @txros.util.cancellableInlineCallbacks
     def set_shape_and_color(self):
@@ -150,7 +140,7 @@ class DetectDeliverMission:
         req.point.x = self.found_shape.CenterX
         req.point.y = self.found_shape.CenterY
         rect = self._bounding_rect(self.found_shape.points)
-        req.tolerance = min(rect[1]-rect[3],rect[0]-rect[2])/2.0
+        req.tolerance = int(min(rect[0]-rect[3],rect[1]-rect[4])/2.0)
         self.normal_res = yield self.cameraLidarTransformer(req)
         if self.normal_res.success:
             transformObj = yield self.navigator.tf_listener.get_transform('/enu', '/'+req.header.frame_id)

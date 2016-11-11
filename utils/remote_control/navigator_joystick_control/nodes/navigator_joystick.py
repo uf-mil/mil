@@ -7,11 +7,12 @@ from geometry_msgs.msg import WrenchStamped
 from kill_handling.broadcaster import KillBroadcaster
 from nav_msgs.msg import Odometry
 from navigator_alarm import AlarmBroadcaster
-from navigator_msgs.srv import WrenchSelect
+from navigator_msgs.srv import WrenchSelect, ShooterManual, ShooterManualRequest
+from navigator_msgs.msg import ShooterDoAction, ShooterDoActionGoal
 import rospy
+import actionlib
 from sensor_msgs.msg import Joy
-from std_srvs.srv import SetBool, SetBoolRequest
-
+from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
 
 rospy.init_node("joystick")
 
@@ -51,6 +52,10 @@ class Joystick(object):
         # rospy.wait_for_service('/change_wrench')
         self.wrench_changer = rospy.ServiceProxy('/change_wrench', WrenchSelect)
 
+        self.shooter_fire_client = actionlib.SimpleActionClient('/shooter/fire', ShooterDoAction)
+        self.shooter_load_client = actionlib.SimpleActionClient('/shooter/load', ShooterDoAction)
+        self.shooter_cancel_client = rospy.ServiceProxy('/shooter/cancel', Trigger)
+
         rospy.Subscriber("joy", Joy, self.joy_cb)
         self.reset()
 
@@ -65,6 +70,9 @@ class Joystick(object):
         self.last_kill = False
         self.last_rc = False
         self.last_auto = False
+        self.last_shooter_shoot = False
+        self.last_shooter_cancel = False
+        self.last_shooter_load = False
 
         self.start_count = 0
         self.last_joy = None
@@ -97,6 +105,12 @@ class Joystick(object):
             joy.header.stamp = rospy.Time.now()  # In the sim, stamps weren't working right
             self.last_joy = joy
 
+    def shooter_load_cb(self, status, result):
+        rospy.loginfo("Shooter Load Status={} Success={} Error={}".format(status, result.success, result.error))
+
+    def shooter_fire_cb(self, status, result):
+        rospy.loginfo("Shooter Fire Status={} Success={} Error={}".format(status, result.success, result.error))
+
     def joy_cb(self, joy):
         self.check_for_timeout(joy)
 
@@ -108,6 +122,9 @@ class Joystick(object):
         # docking = bool(joy.buttons[1])  # B
         rc_control = bool(joy.buttons[11])  # d-pad left
         auto_control = bool(joy.buttons[12])  # d-pad right
+        shooter_shoot = joy.axes[5] < -0.9
+        shooter_load = bool(joy.buttons[4])
+        shooter_cancel = bool(joy.buttons[5])
 
         # Reset controller state if only start is pressed down for awhile
         self.start_count += start
@@ -168,6 +185,16 @@ class Joystick(object):
 
         #     self.docking = not self.docking
 
+        if shooter_shoot and not self.last_shooter_shoot:
+            rospy.loginfo("Joystick input : Shoot")
+            self.shooter_fire_client.send_goal(goal=ShooterDoActionGoal(), done_cb=self.shooter_fire_cb)
+        if shooter_load and not self.last_shooter_load:
+            rospy.loginfo("Joystick input : Load")
+            self.shooter_load_client.send_goal(goal=ShooterDoActionGoal(), done_cb=self.shooter_load_cb)
+        if shooter_cancel and not self.last_shooter_cancel:
+            rospy.loginfo("Joystick input : Cancel")
+            self.shooter_cancel_client(TriggerRequest())
+
         self.last_start = start
         self.last_change_mode = change_mode
         self.last_kill = kill
@@ -176,6 +203,9 @@ class Joystick(object):
         self.last_auto_control = auto_control
         self.last_rc = rc_control
         self.last_auto = auto_control
+        self.last_shooter_shoot = shooter_shoot
+        self.last_shooter_cancel = shooter_cancel
+        self.last_shooter_load = shooter_load
 
         # Handle joystick commands
         left_stick_x = joy.axes[1]

@@ -37,12 +37,6 @@ class ShooterControl:
         self.cancel_service = rospy.Service('/shooter/cancel', Trigger, self.cancel_callback)
         self.manual_service = rospy.Service('/shooter/manual', ShooterManual, self.manual_callback)
         self.reset_service = rospy.Service('/shooter/reset', Trigger, self.reset_callback)
-        self.fire_client = actionlib.SimpleActionClient('/shooter/fire', ShooterDoAction)
-        self.load_client = actionlib.SimpleActionClient('/shooter/load', ShooterDoAction)
-        self.joy_sub = rospy.Subscriber("/joy", Joy,self.joy_callback)
-        self.last_shoot_joy = False
-        self.last_cancel_joy = False
-        self.last_load_joy = False
         self.manual_used = False
 
 
@@ -185,34 +179,6 @@ class ShooterControl:
         self.manual_used = False
         return TriggerResponse(success=True)
 
-    def is_joy_shoot(self,data): #Shoot if right trigger is held down
-      return data.axes[5] < -0.9
-
-    def is_joy_load(self,data): #load if left bumper is pressed
-      return data.buttons[4] == 1
-
-    def is_joy_cancel(self,data): #cancel if right bumper is pressed
-      return data.buttons[5] == 1
-
-    def joy_callback(self,data):
-        joy_shoot = self.is_joy_shoot(data)
-        joy_load = self.is_joy_load(data)
-        joy_cancel = self.is_joy_cancel(data)
-        if joy_shoot and not self.last_shoot_joy:
-          rospy.loginfo("Joystick input : Shoot")
-          self.fire_client.send_goal(goal=ShooterDoActionGoal())
-        if joy_load and not self.last_load_joy:
-          rospy.loginfo("Joystick input : Load")
-          self.load_client.send_goal(goal=ShooterDoActionGoal())
-        if joy_cancel and not self.last_cancel_joy:
-          rospy.loginfo("Joystick input : Cancel")
-          self.cancel_callback(None)
-        #print "Data: ", data
-        self.last_shoot_joy = joy_shoot
-        self.last_load_joy = joy_load
-        self.last_cancel_joy = joy_cancel
-      
-        
 
 if __name__ == '__main__':
     rospy.init_node('shooter_control')
