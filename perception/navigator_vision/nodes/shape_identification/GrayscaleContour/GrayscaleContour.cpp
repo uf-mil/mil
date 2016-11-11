@@ -108,11 +108,7 @@ void GrayscaleContour::GetShapes(cv::Mat& frame, navigator_msgs::DockShapes& sym
   }
 
 #ifdef DO_DEBUG
-  for (auto symbol : symbols.list) {
-    putText(result, symbol.Shape + "\n(" + symbol.Color + ")",
-            Point(symbol.CenterX + 10, symbol.CenterY), 1, 1,
-            Scalar(0, 0, 0), 3);
-  }
+  DrawShapes(result,symbols);
   imshow("Result", result);
   imshow("Grayscale", grayscaleFrame);
   imshow("Edges", edgesFrame);
@@ -120,11 +116,7 @@ void GrayscaleContour::GetShapes(cv::Mat& frame, navigator_msgs::DockShapes& sym
   waitKey(5);
 #endif
 #ifdef DO_ROS_DEBUG
-  for (auto symbol : symbols.list) {
-    putText(ros_color_debug.image, symbol.Shape + "\n(" + symbol.Color + ")",
-            Point(symbol.CenterX + 10 - roi.x, symbol.CenterY - roi.y), 1, 1,
-            Scalar(0, 0, 0), 3);
-  }
+  DrawShapes(ros_color_debug.image,symbols);
   color_debug_publisher.publish(ros_color_debug.toImageMsg());
   cv_bridge::CvImage ros_contours_debug;
   ros_color_debug.encoding = "mono8";
