@@ -32,15 +32,6 @@
 
 [] Make a huge launch file 
 
-Mission System V2
-[] YAML file for the missions
-[] Constants in the Perception object
-[] Using new service in Navigator singleton
-[] Async Queue
-[] Addings get element to the navigator object
-
-
-
 HOG Descriptors
 
 [X] Organize all the bags and look at them 
@@ -49,10 +40,27 @@ HOG Descriptors
 [] Use python bindings to search for the descriptor in a third video
 [] Segment 100 images 
 [] rotate the images and scale them
+---------------------------------------------------------------------
+
+Mission System V2
+[X] YAML file for the missions
+[X] Constants in the Perception object
+[X] Using new service in Navigator singleton
+[X] Async Queue
+[X] Adding get element to the navigator object
 
 
-Lake day 10/9
+Tests:
 
-[] Get accurately size markers 
-[] Get other bags from Matt
-[] Get objects by volume and height
+
+- Test safe_exit is called after mission fails
+- test that mission stops after no more object dep is found
+- test that base mission stops when a new object is found
+- test that all missions run if everything is found
+- 
+
+to do
+
+- move all the missions to the other file
+- create test package 
+- add mission planner exit

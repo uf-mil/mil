@@ -2,6 +2,7 @@
 import argparse
 
 import nav_missions
+import nav_missions_test
 from txros import util, NodeHandle
 from twisted.internet import defer, reactor
 from navigator_singleton.navigator import Navigator
@@ -12,14 +13,23 @@ from navigator_tools import fprint
 @util.cancellableInlineCallbacks
 def main():
     nh, args = yield NodeHandle.from_argv_with_remaining("navigator_mission_runner", anonymous=True)
-    available_missions = [mission_name for mission_name in dir(nav_missions) if mission_name[0] != '_']
 
     parser = argparse.ArgumentParser(description='Mission Runner')
     parser.add_argument('missions', type=str, nargs='+',
                         help='Misison(s) from the navigator_missions folder to run.')
     parser.add_argument('-s', '--sim', action='store_true',
                         help='This will run navigator in sim mode (ie. not wait for odom or enu bounds). Don\'t do this on the boat.')
+    parser.add_argument('-t', '--test', action='store_true',
+                        help='This allow you to run test missions, rather than real mission.')
     args = parser.parse_args(args[1:])
+
+    print args.test
+    if args.test:
+        mission_source = nav_missions_test
+    else:
+        mission_source = nav_missions
+
+    available_missions = [mission_name for mission_name in dir(mission_source) if mission_name[0] != '_']
 
     if "list" in args.missions:
         print "\nAvailable missions:\n   *",
@@ -34,7 +44,7 @@ def main():
         assert mission in available_missions, "'{}' mission not found".format(mission)
 
     for mission in args.missions:
-        to_run = getattr(nav_missions, mission)
+        to_run = getattr(mission_source, mission)
         fprint("Running Mission!\n", title="MISSION")
         result = yield to_run.main(n)
 

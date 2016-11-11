@@ -17,3 +17,10 @@ detect_deliver:
   mission_dep: "scan_the_code"
   is_base: False
 
+explore:
+  object_dep: []
+  mission_dep: "None"
+  is_base: True
+
+
+

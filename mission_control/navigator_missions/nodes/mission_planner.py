@@ -4,11 +4,13 @@ from txros import util, NodeHandle
 from twisted.internet import defer, reactor
 from navigator_singleton.navigator import Navigator
 import nav_missions
+import nav_missions_test
 import Queue as que
 from Queue import Queue
 from sets import Set
 from navigator_tools import DBHelper
 import yaml
+from navigator_tools import MissingPerceptionObject, fprint
 import os
 __author__ = "Tess Bianchi"
 
@@ -21,42 +23,48 @@ class Mission(object):
         self.name = name
         self.item_dep = item_dep
         self.children = []
-        self.currently_running_mission = False
 
     def add_child(self, child):
         """Add child to a mission."""
         self.children.append(child)
 
     @util.cancellableInlineCallbacks
-    def do_mission(self, navigator, planner):
+    def do_mission(self, navigator, planner, module):
         """Perform this mission."""
-        print "starting mission:", self.name
-        try:
-            to_run = getattr(nav_missions, self.name)
-            yield to_run.main(navigator)
-        except Exception:
-            print "This mission doesn't exist"
+        fprint("starting mission: {}".format(self.name), msg_color="blue")
+        to_run = getattr(module, self.name)
+        yield to_run.main(navigator)
 
-    def safe_exit(self, navigator, err, planner):
+    @util.cancellableInlineCallbacks
+    def safe_exit(self, navigator, err, planner, module):
         """Run a safe exit of a mission."""
         try:
-            to_run = getattr(nav_missions, self.name)
+            to_run = getattr(module, self.name)
             yield to_run.safe_exit(navigator, err)
-        except Exception:
-            print "This mission doesn't exist"
+        except Exception as exp:
+            print exp
+            fprint("Oh man this is pretty bad.....", msg_color="red")
 
 
 class MissionPlanner:
     """The class that plans which mission to do next."""
 
-    def __init__(self, yaml_text):
+    def __init__(self, yaml_text, mode='r'):
         """Initialize the MissionPlanner class."""
         self.tree = []
         self.queue = Queue()
         self.found = Set()
         self.completeing_mission = False
         self.base_mission = None
-        # TODO Put in YAML file
+        self.completed_mission = 0
+        self.total_mission_count = len(yaml_text.keys())
+        if mode == 'r':
+            self.module = nav_missions
+        else:
+            self.module = nav_missions_test
+
+        self.running_base_mission = False
+        self.current_defer = None
 
         self.load_missions(yaml_text)
 
@@ -66,8 +74,8 @@ class MissionPlanner:
         self.nh = yield NodeHandle.from_argv("mission_planner")
         self.navigator = yield Navigator(self.nh)._init(True)
 
-        helper = yield DBHelper(self.nh).init_()
-        yield helper.begin_observing(self.new_item)
+        self.helper = yield DBHelper(self.nh).init_()
+        yield self.helper.begin_observing(self.new_item)
 
         # This needs to be called in case begin_observing doesn't call refresh
         self.refresh()
@@ -108,7 +116,12 @@ class MissionPlanner:
 
     def new_item(self, obj):
         """Callback for a new object being found."""
-        print "new item, {}".format(obj.name)
+        fprint("NEW ITEM:, {}".format(obj.name), msg_color="blue")
+        try:
+            self.current_defer.cancel()
+            self.running_base_mission = False
+        except Exception:
+            print "Error Cancelling deferred"
         self.found.add(obj.name)
         self.refresh()
 
@@ -116,7 +129,7 @@ class MissionPlanner:
         """Called when the state of the DAG needs to be updated due to a mission completing or an object being found."""
         for mission in self.tree:
             if self.can_complete(mission) and not self._is_in_queue(mission):
-                print "adding mission:", mission.name
+                fprint("mission: {}".format(mission.name), msg_color="blue", title="ADDING")
                 self.queue.put(mission)
 
     def can_complete(self, mission):
@@ -130,56 +143,77 @@ class MissionPlanner:
     def do_mission(self, mission):
         """Perform a mission, and ensure that all of the post conditions are enforced."""
         # TODO: have a better way to make sure all post conditions are enforced
-        m = mission.do_mission(self.navigator, self)
-        if hasattr('mission', 'safe_exit'):
-            m.addErrback(lambda err: mission.safe_exit(self.navigator, err))
+        m = mission.do_mission(self.navigator, self, self.module)
         result = yield m
-        print result
 
-    def check_current_mission_fail(self):
-        pass
+    def _mission_complete(self, mission):
+        self.tree.remove(mission)
+        for m in mission.children:
+            self.tree.append(m)
+            self.refresh()
+        self.completed_mission += 1
+        if self.completed_mission == self.total_mission_count:
+            fprint("ALL MISSIONS COMPLETE", msg_color="green")
+            return True
+        return False
+
+    def set_done(self, err):
+        print "bitch please"
+        print err
+        self.running_base_mission = False
 
     @util.cancellableInlineCallbacks
     def empty_queue(self):
         """Constantly empties the queue if there is something in it, or run the base mission otherwise."""
         while True:
-            if self.currently_running_mission:
-                self.check_current_mission_fail()
-                yield self.nh.sleep(.3)
+            if self.running_base_mission:
+                yield self.nh.sleep(1)
                 continue
             try:
                 mission = self.queue.get(block=False)
-                self.current_mission = self.do_mission(mission)
+                self.current_mission = yield self.do_mission(mission)
             except que.Empty:
                 if self.base_mission is not None:
-                    yield self.do_mission(self.base_mission)
+                    self.running_base_mission = True
+                    self.current_defer = self.do_mission(self.base_mission)
+                    self.current_defer.addCallback(self.set_done)
+                    self.current_defer.addErrback(self.set_done)
+                    self.running_base_mission = True
+            except MissingPerceptionObject as exp:
+                print exp.missing_object
+                if exp.missing_object in self.found:
+                    self.helper.remove_found(exp.missing_object)
+                    self.found.remove(exp.missing_object)
+            except Exception as exp:
+                print exp
+                if hasattr(mission, 'safe_exit'):
+                    yield mission.safe_exit(self.navigator, exp, self, self.module)
+                if self._mission_complete(mission):
+                    break
             else:
-                # TODO: create a different exception for when the missions fails, and act appropriately
-                # TODO: constantly check for changing classified objects and abort mission if the object changes.
                 # The mission succeeded! Yay!
-                self.tree.remove(mission)
-                for m in mission.children:
-                    self.tree.append(m)
-                    self.refresh()
-            yield self.nh.sleep(.3)
+                if self._mission_complete(mission):
+                    break
+            self.refresh()
+            yield self.nh.sleep(1)
 
 
-@util.cancellableInlineCallbacks
-def main():
-    """The main method."""
-    yaml_text = None
-    yaml_file = "missions.yaml"
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    yaml_file = dir_path + "/" + yaml_file
+# @util.cancellableInlineCallbacks
+# def main():
+#     """The main method."""
+#     yaml_text = None
+#     yaml_file = "missions.yaml"
+#     dir_path = os.path.dirname(os.path.realpath(__file__))
+#     yaml_file = dir_path + "/" + yaml_file
 
-    with open(yaml_file, 'r') as stream:
-        try:
-            yaml_text = yaml.load(stream)
-            planner = yield MissionPlanner(yaml_text).init_()
-            planner.empty_queue()
-        except yaml.YAMLError as exc:
-            print(exc)
+#     with open(yaml_file, 'r') as stream:
+#         try:
+#             yaml_text = yaml.load(stream)
+#             planner = yield MissionPlanner(yaml_text).init_()
+#             planner.empty_queue()
+#         except yaml.YAMLError as exc:
+#             print(exc)
 
 
-reactor.callWhenRunning(main)
-reactor.run()
+# reactor.callWhenRunning(main)
+# reactor.run()

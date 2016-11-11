@@ -1,0 +1,4 @@
+test_missing_object:
+  object_dep: ["scan_the_code"]
+  mission_dep: "None"
+  is_base: False
