@@ -160,8 +160,10 @@ class Navigator(object):
         fprint("DEPRECATED: Please use new dictionary based system.")
         return self.vision_proxies[request_name].get_response(**kwargs)
 
-    def database_query(self, object_name, **kwargs):
-        return self._database_query(navigator_srvs.ObjectDBQueryRequest(name=object_name, **kwargs))
+    def database_query(self, object_name=None, **kwargs):
+        if object_name is not None:
+            kwargs['name'] = object_name
+        return self._database_query(navigator_srvs.ObjectDBQueryRequest(**kwargs))
 
     def change_wrench(self, source):
         return self._change_wrench(navigator_srvs.WrenchSelectRequest(source))

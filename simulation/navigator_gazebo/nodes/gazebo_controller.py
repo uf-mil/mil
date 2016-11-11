@@ -7,6 +7,7 @@ from tf import transformations
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovariance, TwistWithCovariance, Pose, Point, Quaternion
 from gazebo_msgs.msg import LinkStates, ModelState
+from gazebo_msgs.srv import SetModelState
 from uf_common.msg import Float64Stamped
 import numpy as np
 import os
@@ -20,9 +21,10 @@ class GazeboInterface(object):
         intial_lla = [29.534912, -82.303642, 0]  # In Walhburg
         self.last_ecef = gps.ecef_from_latlongheight(*np.radians(intial_lla))
         self.last_enu = None
-
+        self.last_odom = None
+        self.position_offset = None
+        
         self.state_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self.state_cb)
-
         self.state_pub = rospy.Publisher('odom', Odometry, queue_size=1)  # This can be thought of as ENU
         self.absstate_pub = rospy.Publisher('absodom', Odometry, queue_size=1)  # TODO: Make this in ECEF frame instead of ENU
 

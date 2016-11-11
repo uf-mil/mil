@@ -2,16 +2,20 @@
 from __future__ import division
 
 import rospy
+import tf.transformations as trns
 import navigator_tools
 from navigator_tools import fprint as _fprint
 
+import cv2
 import numpy as np
 from copy import deepcopy
 
 from dynamic_reconfigure.server import Server
+from dynamic_reconfigure.client import Client
 from navigator_msg_multiplexer.cfg import OgridConfig
+from nav_msgs.msg import OccupancyGrid, MapMetaData, Odometry
 
-from nav_msgs.msg import OccupancyGrid, MapMetaData
+from behaviors import params
 
 
 # Wow what a concept
@@ -19,18 +23,18 @@ fprint = lambda *args, **kwargs: _fprint(title="OGRID_ARB", *args, **kwargs)
 
 
 def make_ogrid_transform(ogrid):
-        '''
-            Returns a matrix that transforms a point in ENU to this ogrid.
-            Invert the result to get ogrid -> ENU.
-        '''
-        resolution = ogrid.info.resolution
-        origin = navigator_tools.pose_to_numpy(ogrid.info.origin)[0]
+    """
+    Returns a matrix that transforms a point in ENU to this ogrid.
+    Invert the result to get ogrid -> ENU.
+    """
+    resolution = ogrid.info.resolution
+    origin = navigator_tools.pose_to_numpy(ogrid.info.origin)[0]
 
-        # Transforms points from ENU to ogrid frame coordinates
-        t = np.array([[1 / resolution,  0, -origin[1] / resolution],
-                      [0,  1 / resolution, -origin[0] / resolution],
-                      [0,               0,                       1]])
-        return t
+    # Transforms points from ENU to ogrid frame coordinates
+    t = np.array([[1 / resolution,  0, -origin[1] / resolution],
+                  [0,  1 / resolution, -origin[0] / resolution],
+                  [0,               0,                       1]])
+    return t
 
 
 def numpyify(ogrid):
@@ -39,21 +43,21 @@ def numpyify(ogrid):
 
 
 def transform_enu_to_ogrid(enu_points, grid):
-    '''
-        Convert an enu point into the global ogrid's frame.
-        `enu_points` should be a list of points in the ENU frame that will be converted
-            into the grid frame
-    '''
+    """
+    Converts an enu point into the global ogrid's frame.
+    `enu_points` should be a list of points in the ENU frame that will be converted
+        into the grid frame
+    """
     t = make_ogrid_transform(grid)
     return t.dot(np.array(enu_points).T).T
 
 
 def transform_ogrid_to_enu(grid_points, grid):
-    '''
-        Convert an ogrid cell into the enu frame.
-        `grid_points` should be a list of points in the ogrid frame that will be converted
-            into the ENU frame
-    '''
+    """
+    Converts an ogrid cell into the enu frame.
+    `grid_points` should be a list of points in the ogrid frame that will be converted
+        into the ENU frame
+    """
     t = np.linalg.inv(make_ogrid_transform(grid))
     return t.dot(np.array(grid_points).T).T
 
@@ -64,9 +68,9 @@ def transform_between_ogrids(grid1_points, grid1, grid2):
 
 
 def get_enu_corners(grid):
-    '''
-        Given an ogrid, this returns the top left (?) and bottom right (?) points in the ENU frame
-    '''
+    """
+    Returns the top left (?) and bottom right (?) points in the ENU frame
+    """
     grid_to_enu = np.linalg.inv(make_ogrid_transform(grid))
     _min = grid_to_enu.dot([0, 0, 1])
     _max = grid_to_enu.dot([grid.info.height, grid.info.width, 1])
@@ -96,26 +100,35 @@ class OGrid:
         self.np_map = numpyify(ogrid)
 
 class OGridServer:
-    def __init__(self, frame_id='enu', map_size=800, resolution=0.3, rate=2):
-        self.frame_id = frame_id            # Frame that we will be operating from (ENU)
-        self.ogrids = {}                    # Dict of maps that have been added to the global map (In case we want to remove maps)
+    def __init__(self, frame_id='enu', map_size=500, resolution=0.3, rate=1):
+        self.frame_id = frame_id
+        self.ogrids = {}
+        self.odom = None 
 
+        # Some default values
+        self.plow = True
+        self.plow_factor = 0
         self.ogrid_min_value = -1
+        self.draw_bounds = True        
 
-        self.global_ogrid = self.create_grid((map_size, map_size), resolution)
+        # Default to centering the ogrid
+        position = np.array([-(map_size * resolution) / 2, -(map_size * resolution) / 2, 0])
+        quaternion = np.array([0, 0, 0, 1])
+        origin = navigator_tools.numpy_quat_pair_to_pose(position, quaternion)
 
+        self.global_ogrid = self.create_grid((map_size, map_size), resolution, origin)
+
+        set_odom = lambda msg: setattr(self, 'odom', navigator_tools.pose_to_numpy(msg.pose.pose))
+        rospy.Subscriber('/odom', Odometry, set_odom)
         self.publisher = rospy.Publisher('/ogrid_master', OccupancyGrid, queue_size=1)
 
         Server(OgridConfig, self.dynamic_cb)
+        dynam_client = Client("ogrid_server")
 
         rospy.Timer(rospy.Duration(1.0 / rate), self.publish)
-        rospy.spin()
 
     def dynamic_cb(self, config, level):
-        '''
-            Deal with a dynamic reconfigure update
-        '''
-        fprint("DYNAMIC CONFIG UPDATE!", newline=3, msg_color='blue')
+        fprint("DYNAMIC CONFIG UPDATE!", msg_color='blue')
         topics = config['topics'].replace(' ', '').split(',')
         new_grids = {}
 
@@ -125,46 +138,54 @@ class OGridServer:
         self.ogrids = new_grids
 
         map_size = map(int, (config['height'], config['width']))
-        self.global_ogrid = self.create_grid(map_size, float(config['resolution']))
 
+        self.plow = config['plow']
+        self.plow_factor = config['plow_factor']
         self.ogrid_min_value = config['ogrid_min_value']
-
-        # Change size or resolution of global ogrid
-        return config
-
-    def create_grid(self, map_size, resolution, origin=None):
-        '''
-            Creates blank ogrids for everyone for the low low price of $9.95!
-            `map_size` should be in the form of (h, w)
-            `resolution` should be in m/cell
-        '''
-        ogrid_ = OccupancyGrid()
-        ogrid_.header.stamp = rospy.Time.now()
-        ogrid_.header.frame_id = self.frame_id
-
-        ogrid_.info.resolution = resolution
-        ogrid_.info.width = map_size[1]
-        ogrid_.info.height = map_size[0]
-
-        if origin is None:
-            position = np.array([-(map_size[1] * resolution) / 2, -(map_size[0] * resolution) / 2, 0])
+        self.draw_bounds = config['draw_bounds']
+       
+        if config['set_origin']:
+            fprint("Setting origin!")
+            position = np.array([config['origin_x'], config['origin_y'], 0])
+            quaternion = np.array([0, 0, 0, 1])
+            fprint(position)
+            origin = navigator_tools.numpy_quat_pair_to_pose(position, quaternion)
+        else:
+            position = np.array([-(map_size[1] * config['resolution']) / 2, -(map_size[0] * config['resolution']) / 2, 0])
             quaternion = np.array([0, 0, 0, 1])
             origin = navigator_tools.numpy_quat_pair_to_pose(position, quaternion)
 
-        ogrid_.info.origin = origin
+        self.global_ogrid = self.create_grid(map_size, float(config['resolution']), origin)
+        return config
+
+    def create_grid(self, map_size, resolution, origin):
+        """
+        Creates blank ogrids for everyone for the low low price of $9.95!
+        
+        `map_size` should be in the form of (h, w)
+        `resolution` should be in m/cell
+        """
+
+        ogrid = OccupancyGrid()
+        ogrid.header.stamp = rospy.Time.now()
+        ogrid.header.frame_id = self.frame_id
+
+        ogrid.info.resolution = resolution
+        ogrid.info.width = map_size[1]
+        ogrid.info.height = map_size[0]
+
+        ogrid.info.origin = origin
 
         # TODO: Make sure this produces the correct sized ogrid
-        ogrid_.data = np.full((map_size[1], map_size[0]), -1).flatten()
+        ogrid.data = np.full((map_size[1], map_size[0]), -1).flatten()
 
-        fprint('Created Occupancy Map', msg_color='blue')
-        return ogrid_
+        # fprint('Created Occupancy Map', msg_color='blue')
+        return ogrid
 
-    def merge_grids(self):
-        fprint("Merging Maps", newline=2)
+    def publish(self, *args):
+        # fprint("Merging Maps", newline=2)
         global_ogrid = deepcopy(self.global_ogrid)
         np_grid = numpyify(global_ogrid)
-
-        print "{}>".format("=" * 25)
 
         # Global ogrid (only compute once)
         corners = get_enu_corners(global_ogrid)
@@ -179,8 +200,7 @@ class OGridServer:
         for ogrid in self.ogrids.itervalues():
             # Hard coded 5 second timeout - probably no need to reconfig this.
             if ogrid.nav_ogrid is None or ogrid.callback_delta > 5:
-                fprint("Ogrid too old!")
-                print "{}>".format("=" * 25)
+                #fprint("Ogrid too old!")
                 continue
 
             # Local Ogrid (get everything in global frame though)
@@ -199,44 +219,66 @@ class OGridServer:
             start_x, end_x = np.round(xs[1:3])  # Grabbing indices 1 and 2
             start_y, end_y = np.round(ys[1:3])
 
-            fprint("ROI {},{} {},{}".format(start_x, start_y, end_x, end_y))
-
-            # Assuming resolution has been normalized.
-            # Getting the indices to slice the local ogrid.
             l_ogrid_start = transform_between_ogrids([start_x, start_y, 1], global_ogrid, ogrid.nav_ogrid)
-
+            # fprint("ROI {},{} {},{}".format(start_x, start_y, end_x, end_y))
             index_width = l_ogrid_start[0] + end_x - start_x  # I suspect rounding will be a source of error
             index_height = l_ogrid_start[1] + end_y - start_y
-            fprint("width: {}, height: {}".format(index_width, index_height))
-            fprint("Ogrid size: {}, {}".format(ogrid.nav_ogrid.info.height, ogrid.nav_ogrid.info.width))
+            # fprint("width: {}, height: {}".format(index_width, index_height))
+            # fprint("Ogrid size: {}, {}".format(ogrid.nav_ogrid.info.height, ogrid.nav_ogrid.info.width))
+            
+            to_add = ogrid.np_map[l_ogrid_start[0]:index_width, l_ogrid_start[1]:index_height]
+
+            # fprint("to_add shape: {}".format(to_add.shape))
+
+            # Make sure the slicing doesn't produce an error
+            end_x = start_x + to_add.shape[0]
+            end_y = start_y + to_add.shape[1]
 
             try:
-                to_add = ogrid.np_map[l_ogrid_start[0]:index_width, l_ogrid_start[1]:index_height]
-                fprint("to_add shape: {}".format(to_add.shape))
-
-                # Make sure the slicing doesn't produce an error
-                end_x = start_x + to_add.shape[0]
-                end_y = start_y + to_add.shape[1]
-
-                fprint("np_grid shape: {}".format(np_grid[start_x:end_x, start_y:end_y].shape))
+                # fprint("np_grid shape: {}".format(np_grid[start_x:end_x, start_y:end_y].shape))
                 np_grid[start_x:end_x, start_y:end_y] += to_add
             except Exception as e:
                 fprint("Exception caught, probably a dimension mismatch:", msg_color='red')
                 print e
                 fprint("w: {}, h: {}".format(global_ogrid.info.width, global_ogrid.info.height), msg_color='red')
 
-            print "{}>".format("=" * 25)
-
-        np_grid = np.clip(np_grid, self.ogrid_min_value, 100)         # Clip values for OccupancyGrid bounds
+        if self.plow:
+            self.plow_snow(np_grid, global_ogrid)
+        # Clip and flatten grid
+        np_grid = np.clip(np_grid, self.ogrid_min_value, 100)
         global_ogrid.data = np_grid.flatten().astype(np.int8)
 
-        print "\n{}>".format("=" * 50)
-        return global_ogrid
+        self.publisher.publish(global_ogrid)
+    
+    def plow_snow(self, np_grid, ogrid):
+        """Remove region around the boat so we never touch an occupied cell (making lqrrt not break
+        if something touches us).
 
-    def publish(self, *args):
-        self.publisher.publish(self.merge_grids())
+        """
+        if self.odom is None:
+            return np_grid
+
+        p, q = self.odom
+ 
+        yaw_rot = trns.euler_from_quaternion(q)[2]  # rads
+        boat_width = params.boat_length + params.boat_buffer + self.plow_factor # m
+        boat_height = params.boat_width + params.boat_buffer + self.plow_factor # m
+        
+        x, y, _ = transform_enu_to_ogrid([p[0], p[1], 1], ogrid) 
+        theta = yaw_rot
+        w = boat_width / ogrid.info.resolution
+        h = boat_height / ogrid.info.resolution
+
+        box = cv2.cv.BoxPoints(((x,y), (w,h), np.degrees(theta)))
+        box = np.int0(box)
+        cv2.drawContours(np_grid, [box], 0, 0, -1)
+        
+        # fprint("Plowed snow!")
+        return np_grid
+
 
 
 if __name__ == '__main__':
     rospy.init_node('ogrid_server', anonymous=False)
     og_server = OGridServer()
+    rospy.spin()
