@@ -31,8 +31,8 @@ def make_ogrid_transform(ogrid):
     origin = navigator_tools.pose_to_numpy(ogrid.info.origin)[0]
 
     # Transforms points from ENU to ogrid frame coordinates
-    t = np.array([[1 / resolution,  0, -origin[1] / resolution],
-                  [0,  1 / resolution, -origin[0] / resolution],
+    t = np.array([[1 / resolution,  0, -origin[0] / resolution],
+                  [0,  1 / resolution, -origin[1] / resolution],
                   [0,               0,                       1]])
     return t
 
@@ -48,6 +48,11 @@ def transform_enu_to_ogrid(enu_points, grid):
     `enu_points` should be a list of points in the ENU frame that will be converted
         into the grid frame
     """
+    enu_points = np.array(enu_points)
+    
+    if enu_points.size > 3:
+        enu_points[:, 2] = 1
+
     t = make_ogrid_transform(grid)
     return t.dot(np.array(enu_points).T).T
 
@@ -58,6 +63,11 @@ def transform_ogrid_to_enu(grid_points, grid):
     `grid_points` should be a list of points in the ogrid frame that will be converted
         into the ENU frame
     """
+    grid_points = np.array(grid_points)
+ 
+    if grid_points.size > 3:
+        grid_points[:, 2] = 1
+
     t = np.linalg.inv(make_ogrid_transform(grid))
     return t.dot(np.array(grid_points).T).T
 
@@ -109,7 +119,9 @@ class OGridServer:
         self.plow = True
         self.plow_factor = 0
         self.ogrid_min_value = -1
-        self.draw_bounds = True        
+        self.draw_bounds = True  
+        self.enforce_bounds = False
+        self.enu_bounds = [[0, 0], [0, 0], [0, 0], [0, 0]]
 
         # Default to centering the ogrid
         position = np.array([-(map_size * resolution) / 2, -(map_size * resolution) / 2, 0])
@@ -123,12 +135,22 @@ class OGridServer:
         self.publisher = rospy.Publisher('/ogrid_master', OccupancyGrid, queue_size=1)
 
         Server(OgridConfig, self.dynamic_cb)
-        dynam_client = Client("ogrid_server")
+        dynam_client = Client("bounds_server", config_callback=self.bounds_cb)
 
         rospy.Timer(rospy.Duration(1.0 / rate), self.publish)
 
+    def bounds_cb(self, config):
+        fprint("BOUNDS DYNAMIC CONFIG UPDATE!", msg_color='blue')
+        if hasattr(config, "enu_1_lat"):
+            self.enu_bounds = [[config['enu_1_lat'], config['enu_1_long'], 0],
+                               [config['enu_2_lat'], config['enu_2_long'], 0],
+                               [config['enu_3_lat'], config['enu_3_long'], 0],
+                               [config['enu_4_lat'], config['enu_4_long'], 0],
+                               [config['enu_1_lat'], config['enu_1_long'], 0]]
+        self.enforce_bounds = config['enforce'] 
+        
     def dynamic_cb(self, config, level):
-        fprint("DYNAMIC CONFIG UPDATE!", msg_color='blue')
+        fprint("OGRID DYNAMIC CONFIG UPDATE!", msg_color='blue')
         topics = config['topics'].replace(' ', '').split(',')
         new_grids = {}
 
@@ -221,12 +243,12 @@ class OGridServer:
 
             l_ogrid_start = transform_between_ogrids([start_x, start_y, 1], global_ogrid, ogrid.nav_ogrid)
             # fprint("ROI {},{} {},{}".format(start_x, start_y, end_x, end_y))
-            index_width = l_ogrid_start[0] + end_x - start_x  # I suspect rounding will be a source of error
-            index_height = l_ogrid_start[1] + end_y - start_y
+            index_width = l_ogrid_start[1] + end_x - start_x  # I suspect rounding will be a source of error
+            index_height = l_ogrid_start[0] + end_y - start_y
             # fprint("width: {}, height: {}".format(index_width, index_height))
             # fprint("Ogrid size: {}, {}".format(ogrid.nav_ogrid.info.height, ogrid.nav_ogrid.info.width))
             
-            to_add = ogrid.np_map[l_ogrid_start[0]:index_width, l_ogrid_start[1]:index_height]
+            to_add = ogrid.np_map[l_ogrid_start[0]:index_width, l_ogrid_start[0]:index_height]
 
             # fprint("to_add shape: {}".format(to_add.shape))
 
@@ -244,6 +266,16 @@ class OGridServer:
 
         if self.plow:
             self.plow_snow(np_grid, global_ogrid)
+
+        if self.draw_bounds and self.enforce_bounds:
+            ogrid_bounds = transform_enu_to_ogrid(self.enu_bounds, global_ogrid).astype(np.int32)
+            for i, point in enumerate(ogrid_bounds[:,:2]):
+                if i == 0:
+                    last_point = point
+                    continue
+                cv2.line(np_grid, tuple(point), tuple(last_point), 100, 3)
+                last_point = point
+
         # Clip and flatten grid
         np_grid = np.clip(np_grid, self.ogrid_min_value, 100)
         global_ogrid.data = np_grid.flatten().astype(np.int8)
