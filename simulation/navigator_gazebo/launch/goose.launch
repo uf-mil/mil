@@ -320,7 +320,44 @@
           output="screen"/>
 
 
-        <!-- Detect and Deliver -->
+        <!-- Find the Break - Wall -->
+        <node name="spawn_wall_1" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/find_the_break/wall.sdf
+            -x 40 -y -3.5052 -z -5 -sdf -model wall_1"
+          output="screen"/>
+
+        <node name="spawn_wall_2" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/find_the_break/wall.sdf
+            -x 40 -y -1.524 -z -5 -sdf -model wall_2"
+          output="screen"/>
+
+        <node name="spawn_wall_3" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/find_the_break/wall.sdf
+            -x 40 -y 0 -z -5 -sdf -model wall_3"
+          output="screen"/>
+
+        <node name="spawn_wall_4" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/find_the_break/wall.sdf
+            -x 40 -y 1.524 -z -5 -sdf -model wall_4"
+          output="screen"/>
+
+        <node name="spawn_wall_5" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/find_the_break/wall.sdf
+            -x 40 -y 3.5052 -z -5 -sdf -model wall_5"
+          output="screen"/>
+
+        <!-- Find the Break - Break -->
+        <node name="spawn_break_1" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/find_the_break/break.sdf
+            -x 40 -y -2.5146 -z -5 -sdf -model break_1"
+          output="screen"/>
+
+        <node name="spawn_break_2" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/find_the_break/break.sdf
+            -x 40 -y 2.5146 -z -5 -sdf -model break_2"
+          output="screen"/>
+
+
         <node name="spawn_target_base" pkg="gazebo_ros" type="spawn_model"
           args="-file $(find navigator_gazebo)/models/detect_and_deliver/base.sdf -sdf
             -x -5 -y -18.05 -z 0 -model target_base"
