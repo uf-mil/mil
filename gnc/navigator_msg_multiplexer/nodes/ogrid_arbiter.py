@@ -79,7 +79,7 @@ def transform_between_ogrids(grid1_points, grid1, grid2):
 
 def get_enu_corners(grid):
     """
-    Returns the top left (?) and bottom right (?) points in the ENU frame
+    Returns the bottom left and top right (?) points in the ENU frame
     """
     grid_to_enu = np.linalg.inv(make_ogrid_transform(grid))
     _min = grid_to_enu.dot([0, 0, 1])
@@ -119,16 +119,17 @@ class OGridServer:
         self.plow = True
         self.plow_factor = 0
         self.ogrid_min_value = -1
-        self.draw_bounds = True  
+        self.draw_bounds = True 
+        self.resolution = resolution
         self.enforce_bounds = False
         self.enu_bounds = [[0, 0], [0, 0], [0, 0], [0, 0]]
 
         # Default to centering the ogrid
         position = np.array([-(map_size * resolution) / 2, -(map_size * resolution) / 2, 0])
         quaternion = np.array([0, 0, 0, 1])
-        origin = navigator_tools.numpy_quat_pair_to_pose(position, quaternion)
+        self.origin = navigator_tools.numpy_quat_pair_to_pose(position, quaternion)
 
-        self.global_ogrid = self.create_grid((map_size, map_size), resolution, origin)
+        self.global_ogrid = self.create_grid((map_size, map_size))
 
         set_odom = lambda msg: setattr(self, 'odom', navigator_tools.pose_to_numpy(msg.pose.pose))
         rospy.Subscriber('/odom', Odometry, set_odom)
@@ -165,38 +166,37 @@ class OGridServer:
         self.plow_factor = config['plow_factor']
         self.ogrid_min_value = config['ogrid_min_value']
         self.draw_bounds = config['draw_bounds']
-       
+        self.resolution = config['resolution']
+
         if config['set_origin']:
             fprint("Setting origin!")
             position = np.array([config['origin_x'], config['origin_y'], 0])
             quaternion = np.array([0, 0, 0, 1])
-            fprint(position)
-            origin = navigator_tools.numpy_quat_pair_to_pose(position, quaternion)
+            self.origin = navigator_tools.numpy_quat_pair_to_pose(position, quaternion)
         else:
-            position = np.array([-(map_size[1] * config['resolution']) / 2, -(map_size[0] * config['resolution']) / 2, 0])
+            position = np.array([-(map_size[1] * self.resolution) / 2, -(map_size[0] * self.resolution) / 2, 0])
             quaternion = np.array([0, 0, 0, 1])
-            origin = navigator_tools.numpy_quat_pair_to_pose(position, quaternion)
+            self.origin = navigator_tools.numpy_quat_pair_to_pose(position, quaternion)
 
-        self.global_ogrid = self.create_grid(map_size, float(config['resolution']), origin)
+        self.global_ogrid = self.create_grid(map_size)
         return config
 
-    def create_grid(self, map_size, resolution, origin):
+    def create_grid(self, map_size):
         """
         Creates blank ogrids for everyone for the low low price of $9.95!
         
         `map_size` should be in the form of (h, w)
-        `resolution` should be in m/cell
         """
 
         ogrid = OccupancyGrid()
         ogrid.header.stamp = rospy.Time.now()
         ogrid.header.frame_id = self.frame_id
 
-        ogrid.info.resolution = resolution
+        ogrid.info.resolution = self.resolution
         ogrid.info.width = map_size[1]
         ogrid.info.height = map_size[0]
 
-        ogrid.info.origin = origin
+        ogrid.info.origin = self.origin
 
         # TODO: Make sure this produces the correct sized ogrid
         ogrid.data = np.full((map_size[1], map_size[0]), -1).flatten()
@@ -215,7 +215,6 @@ class OGridServer:
 
         g_x_min = index_limits[0][0]
         g_x_max = index_limits[1][0]
-
         g_y_min = index_limits[0][1]
         g_y_max = index_limits[1][1]
 
@@ -224,41 +223,52 @@ class OGridServer:
             if ogrid.nav_ogrid is None or ogrid.callback_delta > 5:
                 #fprint("Ogrid too old!")
                 continue
+            
+            # Proactively checking for errors.
+            # This should be temporary but probably wont be.
+            l_h, l_w = ogrid.nav_ogrid.info.height, ogrid.nav_ogrid.info.width 
+            g_h, g_w = global_ogrid.info.height, global_ogrid.info.width 
+            if l_h > g_h or l_w > g_w:
+                fprint("Proactively preventing errors in ogrid size.", msg_color="red")
+                new_size = max(l_w, g_w, l_h, g_h)
+                self.global_ogrid = self.create_grid([new_size, new_size])
 
             # Local Ogrid (get everything in global frame though)
             corners = get_enu_corners(ogrid.nav_ogrid)
             index_limits = transform_enu_to_ogrid(corners, ogrid.nav_ogrid)
             index_limits = transform_between_ogrids(index_limits, ogrid.nav_ogrid, global_ogrid)[:,:2]
-
+           
             l_x_min = index_limits[0][0]
             l_x_max = index_limits[1][0]
-
             l_y_min = index_limits[0][1]
             l_y_max = index_limits[1][1]
 
             xs = np.sort([g_x_max, g_x_min, l_x_max, l_x_min])
             ys = np.sort([g_y_max, g_y_min, l_y_max, l_y_min])
+            # These are indicies in cell units
             start_x, end_x = np.round(xs[1:3])  # Grabbing indices 1 and 2
             start_y, end_y = np.round(ys[1:3])
 
+            # Should be indicies
             l_ogrid_start = transform_between_ogrids([start_x, start_y, 1], global_ogrid, ogrid.nav_ogrid)
+
             # fprint("ROI {},{} {},{}".format(start_x, start_y, end_x, end_y))
-            index_width = l_ogrid_start[1] + end_x - start_x  # I suspect rounding will be a source of error
-            index_height = l_ogrid_start[0] + end_y - start_y
+            index_width = l_ogrid_start[0] + end_x - start_x  # I suspect rounding will be a source of error
+            index_height = l_ogrid_start[1] + end_y - start_y
             # fprint("width: {}, height: {}".format(index_width, index_height))
             # fprint("Ogrid size: {}, {}".format(ogrid.nav_ogrid.info.height, ogrid.nav_ogrid.info.width))
             
-            to_add = ogrid.np_map[l_ogrid_start[0]:index_width, l_ogrid_start[0]:index_height]
-
+            to_add = ogrid.np_map[l_ogrid_start[1]:index_height, l_ogrid_start[0]:index_width]
+                
             # fprint("to_add shape: {}".format(to_add.shape))
 
             # Make sure the slicing doesn't produce an error
-            end_x = start_x + to_add.shape[0]
-            end_y = start_y + to_add.shape[1]
-
+            end_x = start_x + to_add.shape[1]
+            end_y = start_y + to_add.shape[0]
+            
             try:
-                # fprint("np_grid shape: {}".format(np_grid[start_x:end_x, start_y:end_y].shape))
-                np_grid[start_x:end_x, start_y:end_y] += to_add
+                # fprint("np_grid shape: {}".format(np_grid[start_y:end_y, start_x:end_x].shape))
+                np_grid[start_y:end_y, start_x:end_x] += to_add
             except Exception as e:
                 fprint("Exception caught, probably a dimension mismatch:", msg_color='red')
                 print e
@@ -304,6 +314,18 @@ class OGridServer:
         box = cv2.cv.BoxPoints(((x,y), (w,h), np.degrees(theta)))
         box = np.int0(box)
         cv2.drawContours(np_grid, [box], 0, 0, -1)
+        
+        # Draw a "boat" in the ogrid
+        boat_width = params.boat_length + params.boat_buffer
+        boat_height = params.boat_width + params.boat_buffer
+        
+        x, y, _ = transform_enu_to_ogrid([p[0], p[1], 1], ogrid) 
+        w = boat_width / ogrid.info.resolution
+        h = boat_height / ogrid.info.resolution
+
+        box = cv2.cv.BoxPoints(((x,y), (w,h), np.degrees(theta)))
+        box = np.int0(box)
+        cv2.drawContours(np_grid, [box], 0, 40, -1)
         
         # fprint("Plowed snow!")
         return np_grid
