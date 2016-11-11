@@ -32,7 +32,7 @@
 
 [] Make a huge launch file 
 
-V2
+Mission System V2
 [] YAML file for the missions
 [] Constants in the Perception object
 [] Using new service in Navigator singleton
@@ -41,48 +41,18 @@ V2
 
 
 
+HOG Descriptors
+
+[X] Organize all the bags and look at them 
+[X] Segment 10 images
+[X] Train a nonlinear svm on the segments hog descriptors
+[] Use python bindings to search for the descriptor in a third video
+[] Segment 100 images 
+[] rotate the images and scale them
 
 
-Missions
-Service Client:
-	/database/single		: string | PerceptionObject [][][]
+Lake day 10/9
 
-
-
-MissionPlanner
-Subscribe:
-	/database/object_found	: PerceptionObject [X][X][]
-Service Client:
-	/exploration/yield_control	 : Bool [X][][]
-
-
-
-Object DB:
-Publish:
-	/database/object_found	: PerceptionObject [X][X][][]
-	/database/objects_classified  : Marker [X][X][X][]
-Advertise: 
-	/database/single		: string | PerceptionObject [X][X][X][]
-	/database/full			:           | PerceptionObjects [X][X][X][]
-Subscribe:
-	/classifier/object		: PerceptionObject [X][X][X][]
-
-
-Action Server:
-/database/find_unknown [X][][][]
-	
-
-Object Classifier:
-Publish:
-	/classifier/object		: PerceptionObject [X][X][]
-Subscribe: 
-	/unclassified/objects : BuoyArray [X][X][]
-
-
-IRA
-Publish:
-	/unclassified/objects 		 : BuoyArray [X][X][X]
-	/unclassified/objects/markers : MarkerArray [X][X][X]
-Advertise: 
-Subscribe:
-Service Client:
+[] Get accurately size markers 
+[] Get other bags from Matt
+[] Get objects by volume and height

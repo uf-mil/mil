@@ -31,7 +31,6 @@ private:
 	geometry_msgs::Vector3 gateNormal;
 	enum {Gate_1 = 6, Gate_2, Gate_3};
 public:
-
 	//This breaks encapsulation, blah blah blah....
 	std::vector<objectMessage> saved_objects;
 
@@ -175,6 +174,9 @@ public:
 				thisOne.position = s_obj.position;
 				thisOne.id = s_obj.id;
 				thisOne.confidence = 0;
+				std_msgs::Header header = std_msgs::Header();
+				header.stamp = s_obj.age;
+				thisOne.header = header;
 				thisOne.size.z = s_obj.scale.z;
 				thisOne.size.x = s_obj.scale.x;
 				thisOne.size.y = s_obj.scale.y;
@@ -315,5 +317,6 @@ public:
 		} while (std::prev_permutation(bits.begin(),bits.end()));
 		return combos;
 	}	
+
 };
 #endif
