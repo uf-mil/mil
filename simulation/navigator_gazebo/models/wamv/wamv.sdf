@@ -22,7 +22,7 @@
       -->
       <visual name="visual">
         <geometry>
-           <mesh>
+          <mesh>
             <uri>file://wamv/wamv.dae</uri>
             <scale>.0254 .0254 .0254</scale> <!-- inches to meters -->
           </mesh>
@@ -30,14 +30,14 @@
       </visual>
       <collision name="collision">
         <geometry>
-           <mesh>
+          <mesh>
             <uri>file://wamv/wamv.dae</uri>
             <scale>.0254 .0254 .0254</scale> <!-- inches to meters -->
           </mesh>
         </geometry>
       </collision>
      
-       <sensor type="multicamera" name="stereo_camera">
+      <sensor type="multicamera" name="stereo_camera">
       <update_rate>30.0</update_rate>
       <camera name="left">
         <pose>0.017272 0.100076 0.19812 0 0 0</pose>
@@ -90,7 +90,7 @@
         <distortionT1>0.0</distortionT1>
         <distortionT2>0.0</distortionT2>
       </plugin>
-    </sensor>
+      </sensor>
 
       <sensor name="right_camera" type="camera">
         <camera>
@@ -124,8 +124,40 @@
         </plugin>
       </sensor>
 
+      <sensor name="down_camera" type="camera">
+        <camera>
+          <pose>0.4834 -0.0254 -0.7158 0 1.57079 0</pose>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>644</width>
+            <height>482</height>
+          </image>
+          <distortion>
+            <k1>0</k1>
+            <k2>0</k2>
+            <k3>0</k3>
+            <p1>0</p1>
+            <p2>0</p2>
+          </distortion>
+        </camera>
+        <plugin name="down_camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>30</updateRate>
+          <cameraName>down/down</cameraName>
+          <imageTopicName>image_raw</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>down_down_cam</frameName>
+          <hackBaseline>0.89</hackBaseline>
+          <distortionK1>0</distortionK1>
+          <distortionK2>0</distortionK2>
+          <distortionK3>0</distortionK3>
+          <distortionT1>0</distortionT1>
+          <distortionT2>0</distortionT2>
+        </plugin>
+      </sensor>
+
       <sensor name="sick_lidar" type="ray">
-        <pose>0.5334 -0.0254 -0.6858  0 0 0</pose>
+        <pose>0.5334 -0.0254 -0.6858 0 0 0</pose>
         <visualize>false</visualize>
         <update_rate>25</update_rate>
         <ray>
@@ -160,9 +192,9 @@
               <max_angle>6.24</max_angle>
             </horizontal>
             <vertical>
-                <samples>16</samples>
-                <min_angle>-0.2617993878</min_angle>
-                <max_angle>0.2617993878</max_angle>
+              <samples>16</samples>
+              <min_angle>-0.2617993878</min_angle>
+              <max_angle>0.2617993878</max_angle>
             </vertical>
           </scan>
           <range>
@@ -179,9 +211,11 @@
         </plugin>
       </sensor>
     </link>
+
     <plugin name="navigator_state_set" filename="libnavigator_state_set.so">
-        <model_z_offset>1.2</model_z_offset>
+      <model_z_offset>1.2</model_z_offset>
     </plugin>
+
     <!--
     <plugin name="navigator_buoyancy" filename="libnavigator_buoyancy.so">
       <fluid_density>1000</fluid_density>
@@ -192,9 +226,11 @@
         <volume>2</volume>
       </link>
     </plugin>
+
     <plugin name="navigator_thurster" filename="libnavigator_thrusters.so">
       <link>base_link</link>
     </plugin>
     -->
+
   </model>
 </sdf>
