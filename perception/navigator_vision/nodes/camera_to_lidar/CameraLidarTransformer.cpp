@@ -87,7 +87,7 @@ bool CameraLidarTransformer::transformServiceCallback(
       marker_point.pose.position.x = x.f;
       marker_point.pose.position.y = y.f;
       marker_point.pose.position.z = z.f;
-      marker_point.scale.x = 1;
+      marker_point.scale.x = 0.1;
       marker_point.scale.y = 0.1;
       marker_point.scale.z = 0.1;
       marker_point.color.a = 1.0;
@@ -95,7 +95,6 @@ bool CameraLidarTransformer::transformServiceCallback(
       marker_point.color.g = 1.0;
       marker_point.color.b = 0.0;
       //marker_point.lifetime = ros::Duration(0.5);
-      markers.markers.push_back(marker_point);
 
       // Draw
       if (int(point.x - 20) > 0 && int(point.x + 20) < camera_info.width &&
@@ -135,7 +134,11 @@ bool CameraLidarTransformer::transformServiceCallback(
           minDistance = distance;
         }
         res.transformed.push_back(geo_point);
+        marker_point.color.r = 1.0;
+        marker_point.color.g = 0.0;
+        marker_point.color.b = 0.0;
       }
+      markers.markers.push_back(marker_point);
     }
   }
   if (res.transformed.size() < 1) {
@@ -161,6 +164,7 @@ bool CameraLidarTransformer::transformServiceCallback(
   normalvec_ros.y = normalvec(1, 0);
   normalvec_ros.z = normalvec(2, 0);
   res.normal = normalvec_ros;
+  std::cout << "Points: " << res.transformed.size() << std::endl;
   std::cout << "Plane solution: " << normalvec << std::endl;
 
 #ifdef DO_ROS_DEBUG
@@ -173,9 +177,9 @@ bool CameraLidarTransformer::transformServiceCallback(
   marker_normal.type = visualization_msgs::Marker::ARROW;
 
   geometry_msgs::Point sdp_normalvec_ros;
-  sdp_normalvec_ros.x = normalvec_ros.x + res.transformed[0].x;
-  sdp_normalvec_ros.y = normalvec_ros.y + res.transformed[0].y;
-  sdp_normalvec_ros.z = normalvec_ros.z + res.transformed[0].z;
+  sdp_normalvec_ros.x = normalvec_ros.x + res.closest.x;
+  sdp_normalvec_ros.y = normalvec_ros.y + res.closest.y;
+  sdp_normalvec_ros.z = normalvec_ros.z + res.closest.z;
   marker_normal.points.push_back(res.closest);
   marker_normal.points.push_back(sdp_normalvec_ros);
 

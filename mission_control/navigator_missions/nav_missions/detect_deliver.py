@@ -23,7 +23,7 @@ class DetectDeliverMission:
     circle_radius = 7
     search_timeout_seconds = 300
     target_offset_meters = 0
-    normal_approx_tolerance_proportion = 0.035
+    #  normal_approx_tolerance_proportion = 0.035
 
     def __init__(self, navigator):
         self.navigator = navigator
@@ -33,6 +33,22 @@ class DetectDeliverMission:
         self.shooterFire = txros.action.ActionClient(
             self.navigator.nh, '/shooter/fire', ShooterDoAction)
         self.markers_pub = self.navigator.nh.advertise("/detect_deliver/debug_marker",MarkerArray)
+
+    def _bounding_rect(self,points):
+        maxX = 0
+        minX = 100000
+        maxY = 0
+        minY = 100000
+        for i in range(len(points)):
+            if points[i].x > maxX:
+                maxX = points[i].x
+            if points[i].y > maxY:
+                maxY = points[i].y
+            if points[i].x < minX:
+                minX = points[i].x
+            if points[i].y < minY:
+                minY = points[i].y
+        return np.array([maxX, maxY, minX, minY])
 
     @txros.util.cancellableInlineCallbacks
     def set_shape_and_color(self):
@@ -133,7 +149,8 @@ class DetectDeliverMission:
         req.point = Point()
         req.point.x = self.found_shape.CenterX
         req.point.y = self.found_shape.CenterY
-        req.tolerance = self.normal_approx_tolerance_proportion*self.found_shape.img_width
+        rect = self._bounding_rect(self.found_shape.points)
+        req.tolerance = min(rect[1]-rect[3],rect[0]-rect[2])/2.0
         self.normal_res = yield self.cameraLidarTransformer(req)
         if self.normal_res.success:
             transformObj = yield self.navigator.tf_listener.get_transform('/enu', '/'+req.header.frame_id)

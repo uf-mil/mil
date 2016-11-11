@@ -7,12 +7,12 @@ explorer_next:
 
 detect_deliver_color:
   param: /mission/detect_deliver/Color
-  options: [RED, GREEN, BLUE]
+  options: [RED, GREEN, BLUE, ANY]
   description: The color of the symbol to shoot at in detect deliver
 
 detect_deliver_shape:
   param: /mission/detect_deliver/Shape
-  options: [CIRCLE, TRIANGLE, CROSS]
+  options: [CIRCLE, TRIANGLE, CROSS, ANY]
   description: The shape of the symbol to shoot at in detect deliver
 
 scan_the_code_color1:
