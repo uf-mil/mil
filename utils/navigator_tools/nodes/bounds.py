@@ -17,11 +17,11 @@ class BoundsServer(object):
         self.convert = rospy.ServiceProxy('/convert', CoordinateConversion)
 
         self.enforce = False
-        self.lla_bounds = []
+        self.bounds = []
 
         rospy.set_param("/bounds/enu/", [[0,0],[0,0],[0,0],[0,0]])
-        rospy.set_param("/bounds/enforce", self.enforce)
         
+        rospy.set_param("/bounds/enforce", self.enforce)
         #self.convert = Converter()
         Server(BoundsConfig, self.update_config)
         rospy.Service('/get_bounds', Bounds, self.got_request)
@@ -45,34 +45,32 @@ class BoundsServer(object):
         
         # If any returned false, don't update
         if all(lla_bounds):
-            bounds = [self.convert(CoordinateConversionRequest(frame="lla", point=lla)) for lla in lla_bounds]
-            config['enu_1_lat'] = bounds[0].enu[0]
-            config['enu_1_long'] = bounds[0].enu[1]
+            self.bounds = [self.convert(CoordinateConversionRequest(frame="lla", point=lla)) for lla in lla_bounds]
+            config['enu_1_lat'] = self.bounds[0].enu[0]
+            config['enu_1_long'] = self.bounds[0].enu[1]
             
-            config['enu_2_lat'] = bounds[1].enu[0]
-            config['enu_2_long'] = bounds[1].enu[1]
+            config['enu_2_lat'] = self.bounds[1].enu[0]
+            config['enu_2_long'] = self.bounds[1].enu[1]
 
-            config['enu_3_lat'] = bounds[2].enu[0]
-            config['enu_3_long'] = bounds[2].enu[1]
+            config['enu_3_lat'] = self.bounds[2].enu[0]
+            config['enu_3_long'] = self.bounds[2].enu[1]
 
-            config['enu_4_lat'] = bounds[3].enu[0]
-            config['enu_4_long'] = bounds[3].enu[1]
+            config['enu_4_lat'] = self.bounds[3].enu[0]
+            config['enu_4_long'] = self.bounds[3].enu[1]
             
-            rospy.set_param("/bounds/enu/", map(lambda bound: bound.enu[:2], bounds))
+            rospy.set_param("/bounds/enu/", map(lambda bound: bound.enu[:2], self.bounds))
         else:
             rospy.set_param("/bounds/enu/", [[0,0],[0,0],[0,0],[0,0]])
-        
+
         rospy.set_param("/bounds/enforce", self.enforce)
         return config
 
     def got_request(self, req):
         to_frame = "enu" if req.to_frame == '' else req.to_frame
         
-        print self.lla_bounds
-
         resp = BoundsResponse(enforce=False)
 
-        bounds = [navigator_tools.numpy_to_point(getattr(response, to_frame)) for response in bounds]
+        bounds = [navigator_tools.numpy_to_point(getattr(response, to_frame)) for response in self.bounds]
 
         resp.enforce = self.enforce
         resp.bounds = bounds        
