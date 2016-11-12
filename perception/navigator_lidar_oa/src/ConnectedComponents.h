@@ -201,8 +201,8 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 			obj.strikesFrame = ii.second.strikesFrame;
 			obj.intensityFrame = ii.second.intensityFrame;
 			obj.intensityPersist = ii.second.intensityPersist;
-			obj.minHeightFromLidar = ii.second.minHeight;
-			obj.maxHeightFromLidar = ii.second.maxHeight;
+			obj.minHeightFromLidar = ii.second.minHeight-ogrid.lidarPos.z;
+			obj.maxHeightFromLidar = ii.second.maxHeight-ogrid.lidarPos.z;
 			obj.age = ros::Time::now();
 			//obj.color = ii.second.color; //Eventually work with color
 

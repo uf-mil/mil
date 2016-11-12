@@ -6,28 +6,36 @@
 #ifndef VOLUMECLASSIFIER_H
 #define VOLUMECLASSIFIER_H
 
+#include <vector>
+#include <string>
 #include "ConnectedComponents.h"
 #include "navigator_msgs/PerceptionObject.h"
 
 void VolumeClassifier(objectMessage &object)
 {
+	auto h = object.maxHeightFromLidar;
+	auto x = object.scale.x;
+	auto y = object.scale.y;
+	auto z = object.scale.z;
 	//If we classify something as shooter/scanthecode, leave it alone
 	if (object.locked || object.name == navigator_msgs::PerceptionObject::START_GATE_BUOY || !object.real) {
 		return;
 	}
-	//THESE VAlUES WILL ALL BE ADJUSTED ON NEXT LAKE DAY!
-	if ( (object.maxHeightFromLidar >= 1.25 && object.scale.x > 7 && object.scale.y > 7 && object.scale.z > 1.25) || object.name == navigator_msgs::PerceptionObject::IDENTIFY_AND_DOCK ) {
-		object.name = navigator_msgs::PerceptionObject::IDENTIFY_AND_DOCK;
-	} else if ( (object.maxHeightFromLidar >= 1.25 && object.scale.x > 3 && object.scale.y > 3 && object.scale.z > 1.25) || object.name == navigator_msgs::PerceptionObject::DETECT_DELIVER_PLATFORM ) {
-		object.name = navigator_msgs::PerceptionObject::DETECT_DELIVER_PLATFORM;
-	} else if ( (object.maxHeightFromLidar >= 0.75 && object.scale.x > 2 && object.scale.y > 2 && object.scale.z > 1.25) || object.name == navigator_msgs::PerceptionObject::SCAN_THE_CODE) {
-		object.name = navigator_msgs::PerceptionObject::SCAN_THE_CODE;
-	} else if ( (object.maxHeightFromLidar >= -0.25 && object.scale.x > 1.2 && object.scale.y > 1.2 && object.scale.z > 1.2) || object.name == navigator_msgs::PerceptionObject::TOTEM ) {
-		object.name = navigator_msgs::PerceptionObject::TOTEM;
-	} else if ( (object.maxHeightFromLidar < -0.25 && object.scale.x <= 1.2 && object.scale.y <= 1.2) ||  object.name == navigator_msgs::PerceptionObject::BUOY) {
-		object.name = navigator_msgs::PerceptionObject::BUOY;
-	} else {
-		object.name = navigator_msgs::PerceptionObject::UNKNOWN;
+
+	std::vector<std::string> names = {"dock","shooter","scan_the_code","totem","buoy"};
+	double volumes[5][8] = { 	{0.7,	1.0,	6.0,	7.0,	6.0,	7.0,	2.5,	3.0}, //dock
+								{0.7,	1.0,	2.75,	4.75,	2.75,	4.75,	2.5,	3.0}, //shooter
+								{0.75,	1.2,	1.75,	3.0,	1.75,	3.0,	1.5,	1.75}, //scan_the_code
+								{-0.6,	0.1,	1.4,	2.75,	1.4,	2.75,	1.2,	1.5}, //totems
+								{-1.0,-0.75,	0.5,	1.25,	0.5,	1.25,	0.0,	1.0} }; //buoy
+	auto match = false;
+	for (auto ii = 0; ii < names.size(); ++ii) {
+		if ( object.name == names[ii] || ( h >= volumes[ii][0] 	&& h <= volumes[ii][1]	&& x >= volumes[ii][2] && x <= volumes[ii][3] && y >= volumes[ii][4] && y <= volumes[ii][5] && z >= volumes[ii][6]	&& z <= volumes[ii][7]) ) {
+			object.name = names[ii];
+			match = true;
+			break;
+		}
 	}
+	if (!match) { object.name = "unknown"; }
 }
 #endif

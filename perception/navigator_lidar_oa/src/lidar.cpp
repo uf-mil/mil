@@ -59,7 +59,7 @@ const double MIN_OBJECT_SEPERATION_DISTANCE = 1.5;
 OccupancyGrid ogrid(MAP_SIZE_METERS,ROI_SIZE_METERS,VOXEL_SIZE_METERS);
 nav_msgs::OccupancyGrid rosGrid;
 ros::Publisher pubGrid,pubMarkers,pubObjects,pubCloudPersist,pubCloudFrame,pubCloudPCL;
-ObjectTracker object_tracker(MIN_OBJECT_SEPERATION_DISTANCE*3);
+ObjectTracker object_tracker(MIN_OBJECT_SEPERATION_DISTANCE*2);
 geometry_msgs::Point waypoint_ogrid;
 geometry_msgs::Pose boatPose_enu;
 geometry_msgs::Twist boatTwist_enu;
@@ -76,15 +76,20 @@ interactive_markers::MenuHandler::EntryHandle menuEntry;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //These are changed on startup if /get_bounds service is present
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Eigen::Vector2d BOUNDARY_CORNER_1 (30-80, 10-150);
-//Eigen::Vector2d BOUNDARY_CORNER_2 (30-80, 120-150);
-//Eigen::Vector2d BOUNDARY_CORNER_3 (140-80, 120-150);
-//Eigen::Vector2d BOUNDARY_CORNER_4 (140-80, 10-150);
+Eigen::Vector2d BOUNDARY_CORNER_1 (30-80, 10-150);
+Eigen::Vector2d BOUNDARY_CORNER_2 (30-80, 120-150);
+Eigen::Vector2d BOUNDARY_CORNER_3 (140-80, 120-150);
+Eigen::Vector2d BOUNDARY_CORNER_4 (140-80, 10-150);
 
-Eigen::Vector2d BOUNDARY_CORNER_1 (0, 0);
-Eigen::Vector2d BOUNDARY_CORNER_2 (1, 0);
-Eigen::Vector2d BOUNDARY_CORNER_3 (1, -1);
-Eigen::Vector2d BOUNDARY_CORNER_4 (0, -1);
+//Eigen::Vector2d BOUNDARY_CORNER_1 (0, 0);
+//Eigen::Vector2d BOUNDARY_CORNER_2 (1, 0);
+//Eigen::Vector2d BOUNDARY_CORNER_3 (1, -1);
+//Eigen::Vector2d BOUNDARY_CORNER_4 (0, -1);
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Forward declare
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void createROIS(string name);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Helper function for making interactive markers
@@ -267,6 +272,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 
 	//Clear all markers from interactive server
 	//markerServer->clear();	
+	ROS_INFO_STREAM("LIDAR |  Lidar position in enu " << lidarPos.x << "," << lidarPos.y << "," << lidarPos.z);
 
 	for (auto obj : object_permanence) {
 		//Skip objects that are not real
@@ -351,7 +357,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		
 		//Turn obj into an interactive marker for rviz
 		markerServer->insert( int_marker );
-		menuHandler.apply( *markerServer, to_string(obj.id) );
+		menuHandler.apply( *markerServer, std::to_string(obj.id) );
 	}	
 	//Publish all data to ROS
 	pubMarkers.publish(markers);
@@ -402,11 +408,20 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
 	//Process cmd portion after spliting request into 3 components
 	auto split1 = req.cmd.find('=');
 	auto split2 = req.cmd.find(',');
-	if ( split1 != string::npos && split2 != string::npos) {
+	if ( split1 == string::npos) {
+		auto name = req.cmd;
+		ROS_INFO_STREAM("LIDAR | Reset cmd is " << name);
+		if (name == "reset") {
+			object_tracker.reset();
+			createROIS("BuoyField"); createROIS("CoralSurvey"); createROIS("FindBreak"); createROIS("AcousticPinger"); createROIS("Shooter");
+			createROIS("Scan_The_Code"); createROIS("Gate_1"); createROIS("Gate_2"); createROIS("Gate_3"); createROIS("Dock");
+			ogrid.reset();
+		}
+	} else if (split2 != string::npos) {
 		auto name = req.cmd.substr(0,split1);
 		auto x = stod(req.cmd.substr(split1+1,split2-split1));
 		auto y = stod(req.cmd.substr(split2+1));
-		cout << "LIDAR | Cmd is " << name << "," << x << "," << y << endl;
+		ROS_INFO_STREAM("LIDAR | ROI cmd is " << name << "," << x << "," << y);
 		//Set new position
 		geometry_msgs::Pose newPose;
 		newPose.position.x = x;

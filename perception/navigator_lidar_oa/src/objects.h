@@ -51,10 +51,24 @@ public:
     /// \param ?
     /// \param ?
     ////////////////////////////////////////////////////////////
+	void reset()
+	{
+		curr_id = 0;
+		foundGates = false;
+		gatePositions.clear();
+		saved_objects.clear();		
+	}
+
+	////////////////////////////////////////////////////////////
+    /// \brief ?
+    ///
+    /// \param ?
+    /// \param ?
+    ////////////////////////////////////////////////////////////
 	std::vector<objectMessage> add_objects(std::vector<objectMessage> objects, sensor_msgs::PointCloud &rosCloud, const geometry_msgs::Pose &boatPose_enu)
 	{
 		//Verify that the raw objects list doesn't have objects really close together....
-		#ifdef DEBUG
+		//#ifdef DEBUG
 			auto cnt = 0;
 			for (auto &ii : objects) {
 				++cnt;
@@ -65,7 +79,7 @@ public:
 					BOOST_ASSERT_MSG(xyDistance > diff_thresh/3, ss.str().c_str());
 				}
 			}
-		#endif
+		//#endif
 
 		//Reset all saved objects to not seen
 		for(auto &s_obj : saved_objects) {
@@ -171,6 +185,7 @@ public:
 			if ( (name == "all" && s_obj.real) || (name == s_obj.name) || (name == "All" && !s_obj.real) ) {
 				if (!s_obj.real && !s_obj.locked) { continue; }
 				navigator_msgs::PerceptionObject thisOne;
+				thisOne.header.stamp - s_obj.age;
 				thisOne.name = s_obj.name;
 				thisOne.position = s_obj.position;
 				thisOne.id = s_obj.id;
