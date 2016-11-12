@@ -17,6 +17,7 @@ from python_qt_binding import QtCore
 from python_qt_binding import QtGui
 from python_qt_binding import loadUi
 from qt_gui.plugin import Plugin
+from remote_control_lib import RemoteControl
 from rosgraph_msgs.msg import Clock
 import rospkg
 import rospy
@@ -45,6 +46,7 @@ class Dashboard(Plugin):
         loadUi(ui_file, self._widget)
 
         self.is_killed = False
+        self.remote = RemoteControl('dashboard')
 
         # Creates dictionaries that are used by the monitor functions to keep track of their node or service
         service_monitor_template = {
@@ -124,15 +126,15 @@ class Dashboard(Plugin):
 
         # Control panel buttons
         toggle_kill_button = self._widget.findChild(QtGui.QPushButton, 'toggle_kill_button')
-        toggle_kill_button.clicked.connect(self.toggle_kill)
+        toggle_kill_button.clicked.connect(self.remote.toggle_kill)
         station_hold_button = self._widget.findChild(QtGui.QPushButton, 'station_hold_button')
-        station_hold_button.clicked.connect(self.station_hold)
+        station_hold_button.clicked.connect(self.remote.station_hold)
         autonomous_control_button = self._widget.findChild(QtGui.QPushButton, 'autonomous_control_button')
-        autonomous_control_button.clicked.connect(self.select_autonomous_control)
+        autonomous_control_button.clicked.connect(self.remote.select_autonomous_control)
         rc_control_button = self._widget.findChild(QtGui.QPushButton, 'rc_control_button')
-        rc_control_button.clicked.connect(self.select_rc_control)
+        rc_control_button.clicked.connect(self.remote.select_rc_control)
         keyboard_control_button = self._widget.findChild(QtGui.QPushButton, 'keyboard_control_button')
-        keyboard_control_button.clicked.connect(self.select_keyboard_control)
+        keyboard_control_button.clicked.connect(self.remote.select_keyboard_control)
 
         # Defines the color scheme as QT style sheets
         self.colors = {
@@ -157,18 +159,6 @@ class Dashboard(Plugin):
         self.wrench_changer = rospy.ServiceProxy('/change_wrench', WrenchSelect)
         self.kill_listener = AlarmListener('kill', self.update_kill_status)
 
-        alarm_broadcaster = AlarmBroadcaster()
-        self.kill_alarm = alarm_broadcaster.add_alarm(
-            name='kill',
-            action_required=True,
-            severity=0
-        )
-        self.station_hold_alarm = alarm_broadcaster.add_alarm(
-            name='station_hold',
-            action_required=True,
-            severity=3
-        )
-
     def timeout_check(function):
         def decorated_function(self):
             if (not self.system_time["is_timed_out"]):
@@ -181,18 +171,16 @@ class Dashboard(Plugin):
         alarm. Caches the last displayed kill status to avoid updating the
         display with the same information twice.
         '''
-        if (not self.system_time["is_timed_out"]):
+        if (alarm.clear):
+            if (self.is_killed):
+                self.is_killed = False
+                self.kill_status_status.setText("Alive")
+                self.kill_status_frame.setStyleSheet(self.colors["green"])
 
-            if (alarm.clear):
-                if (self.is_killed):
-                    self.is_killed = False
-                    self.kill_status_status.setText("Alive")
-                    self.kill_status_frame.setStyleSheet(self.colors["green"])
-
-            elif (not self.is_killed):
-                self.is_killed = True
-                self.kill_status_status.setText("Killed")
-                self.kill_status_frame.setStyleSheet(self.colors["red"])
+        elif (not self.is_killed):
+            self.is_killed = True
+            self.kill_status_status.setText("Killed")
+            self.kill_status_frame.setStyleSheet(self.colors["red"])
 
     def monitor_operating_mode(self):
         '''
@@ -436,58 +424,3 @@ class Dashboard(Plugin):
                 entry.setAlignment(QtCore.Qt.AlignCenter)
                 entry.setStyleSheet(column_color[column])
                 self.device_table.setCellWidget(row, column, entry)
-
-    @timeout_check
-    def toggle_kill(self):
-        '''
-        Toggles the kill status when the toggle_kill_button is pressed.
-        '''
-        rospy.loginfo("Toggling Kill")
-
-        # Responds to the kill broadcaster and checks the status of the kill alarm
-        if self.is_killed:
-            self.kill_alarm.clear_alarm()
-        else:
-            self.wrench_changer("rc")
-            self.kill_alarm.raise_alarm(
-                problem_description='System kill from location: dashboard'
-            )
-
-    @timeout_check
-    def station_hold(self):
-        '''
-        Sets the goal point to the current location and switches to autonomous
-        mode in order to stay at that point.
-        '''
-        rospy.loginfo("Station Holding")
-
-        # Trigger station holding at the current pose
-        self.station_hold_alarm.raise_alarm(
-            problem_description='Request to station hold from: dashboard'
-        )
-
-        self.wrench_changer("autonomous")
-
-    @timeout_check
-    def select_autonomous_control(self):
-        '''
-        Selects the autonomously generated trajectory as the active controller.
-        '''
-        rospy.loginfo("Changing Control to Autonomous")
-        self.wrench_changer("autonomous")
-
-    @timeout_check
-    def select_rc_control(self):
-        '''
-        Selects the XBox remote joystick as the active controller.
-        '''
-        rospy.loginfo("Changing Control to RC")
-        self.wrench_changer("rc")
-
-    @timeout_check
-    def select_keyboard_control(self):
-        '''
-        Selects the keyboard teleoperation service as the active controller.
-        '''
-        rospy.loginfo("Changing Control to Keyboard")
-        self.wrench_changer("keyboard")
