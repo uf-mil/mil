@@ -151,6 +151,9 @@ class RemoteControl(object):
         Publishes a wrench to the specified node based on force inputs from the
         controller.
         '''
+        if (stamp is None):
+            stamp = rospy.Time.now()
+
         if (self.wrench_pub is not None):
             wrench = WrenchStamped()
             wrench.header.frame_id = "/base_link"
@@ -169,6 +172,7 @@ class RemoteControl(object):
         if (self.wrench_pub is not None):
             wrench = WrenchStamped()
             wrench.header.frame_id = "/base_link"
+            wrench.header.stamp = rospy.Time.now()
             wrench.wrench.force.x = 0
             wrench.wrench.force.y = 0
             wrench.wrench.torque.z = 0

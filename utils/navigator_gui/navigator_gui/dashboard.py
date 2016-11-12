@@ -353,6 +353,8 @@ class Dashboard(Plugin):
                 self.update_system_time_status()
                 self.system_time_frame.setStyleSheet(self.colors["green"])
 
+        self.remote.is_timed_out = self.system_time["is_timed_out"]
+
         # Schedules the next instance of this method with a QT timer
         QtCore.QTimer.singleShot(100, self.monitor_system_time)
 
