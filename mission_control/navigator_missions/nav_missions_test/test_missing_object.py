@@ -9,7 +9,10 @@ def main(navigator):
     nh = navigator.nh
 
     fprint("{} running".format(__name__), msg_color='red')
-    yield nh.sleep(3)
-    fprint("{} stopped running, raising exception".format(__name__), msg_color='red')
 
-    raise MissingPerceptionObject("scan_the_code")
+    obj = yield navigator.database_query("scan_the_code")
+    fprint("{} stopped running, raising exception".format(__name__), msg_color='red')
+    if len(obj.objects) == 0:
+        raise MissingPerceptionObject("scan_the_code")
+
+    yield nh.sleep(3)

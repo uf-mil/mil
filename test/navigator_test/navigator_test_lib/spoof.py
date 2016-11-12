@@ -19,10 +19,10 @@ class SpoofPubilsher(object):
         while True:
             if len(self.times) == 0:
                 break
-            if nh.get_time() - started > genpy.Duration(self.times[i]):
+            if nh.get_time() - started > genpy.Duration(self.times[i % self.total]):
                 i += 1
                 started = nh.get_time()
-            self.my_pub.publish(self.responses[i])
+            self.my_pub.publish(self.responses[i % self.total])
             yield nh.sleep(.3)
 
     @util.cancellableInlineCallbacks

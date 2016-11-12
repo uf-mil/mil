@@ -3,3 +3,7 @@ test_base_mission:
   mission_dep: "None"
   is_base: True
 
+test_mission_1:
+  object_dep: ["scan_the_code"]
+  mission_dep: "None"
+  is_base: False

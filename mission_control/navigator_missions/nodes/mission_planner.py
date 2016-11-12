@@ -67,6 +67,8 @@ class MissionPlanner:
         self.current_defer = None
 
         self.load_missions(yaml_text)
+        if self.base_mission is not None:
+            self.total_mission_count -= 1
 
     @util.cancellableInlineCallbacks
     def init_(self):
@@ -116,12 +118,13 @@ class MissionPlanner:
 
     def new_item(self, obj):
         """Callback for a new object being found."""
-        fprint("NEW ITEM:, {}".format(obj.name), msg_color="blue")
-        try:
-            self.current_defer.cancel()
-            self.running_base_mission = False
-        except Exception:
-            print "Error Cancelling deferred"
+        fprint("NEW ITEM: {}".format(obj.name), msg_color="blue")
+        if self.current_defer is not None:
+            try:
+                self.current_defer.cancel()
+                self.running_base_mission = False
+            except Exception:
+                print "Error Cancelling deferred"
         self.found.add(obj.name)
         self.refresh()
 
@@ -158,8 +161,6 @@ class MissionPlanner:
         return False
 
     def set_done(self, err):
-        print "bitch please"
-        print err
         self.running_base_mission = False
 
     @util.cancellableInlineCallbacks
@@ -176,11 +177,9 @@ class MissionPlanner:
                 if self.base_mission is not None:
                     self.running_base_mission = True
                     self.current_defer = self.do_mission(self.base_mission)
-                    self.current_defer.addCallback(self.set_done)
-                    self.current_defer.addErrback(self.set_done)
+                    self.current_defer.addCallbacks(self.set_done, errback=self.set_done)
                     self.running_base_mission = True
             except MissingPerceptionObject as exp:
-                print exp.missing_object
                 if exp.missing_object in self.found:
                     self.helper.remove_found(exp.missing_object)
                     self.found.remove(exp.missing_object)
