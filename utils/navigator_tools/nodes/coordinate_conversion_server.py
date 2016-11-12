@@ -12,12 +12,13 @@ from navigator_msgs.srv import CoordinateConversion, CoordinateConversionRespons
 
 class Converter(object):
     @txros.util.cancellableInlineCallbacks
-    def init(self):
-        self.nh = yield txros.NodeHandle.from_argv("coordinate_conversion_server")
-        self.odom_sub = self.nh.subscribe('odom', Odometry)
-        self.abs_odom_sub = self.nh.subscribe('absodom', Odometry)
+    def init(self, nh, advertise_service=False):
+        self.nh = nh
+        self.odom_sub = yield self.nh.subscribe('odom', Odometry)
+        self.abs_odom_sub = yield self.nh.subscribe('absodom', Odometry)
 
-        self.nh.advertise_service('/convert', CoordinateConversion, self.got_request)
+        if advertise_service:
+            yield self.nh.advertise_service('/convert', CoordinateConversion, self.request)
 
     def __getattr__(self, attr):
         print "Frame '{}' not found!".format(attr)
@@ -27,11 +28,11 @@ class Converter(object):
         return [[np.nan, np.nan, np.nan]] * 3
 
     @txros.util.cancellableInlineCallbacks
-    def got_request(self, srv):
+    def request(self, srv):
         self.point = np.array(srv.point)
 
-        self.enu_pos = navigator_tools.odometry_to_numpy((yield self.odom_sub.get_last_message()))[0][0]
-        self.ecef_pos = navigator_tools.odometry_to_numpy((yield self.abs_odom_sub.get_last_message()))[0][0]
+        self.enu_pos = navigator_tools.odometry_to_numpy((yield self.odom_sub.get_next_message()))[0][0]
+        self.ecef_pos = navigator_tools.odometry_to_numpy((yield self.abs_odom_sub.get_next_message()))[0][0]
 
         enu, ecef, lla = getattr(self, srv.frame)()
 
@@ -80,9 +81,11 @@ class Converter(object):
 
 @txros.util.cancellableInlineCallbacks
 def main():
+    nh = yield txros.NodeHandle.from_argv("coordinate_conversion_server")
     c = Converter()
-    yield c.init()
+    yield c.init(nh, advertise_service=True)
 
     yield defer.Deferred() # never exit
 
-txros.util.launch_main(main)
+if __name__ == "__main__":
+    txros.util.launch_main(main)

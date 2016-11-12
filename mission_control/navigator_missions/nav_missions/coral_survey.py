@@ -23,9 +23,8 @@ def main(navigator):
     resp = yield navigator.database_query("coral_survey")
     if not resp.found:
         result.success = False
-        result.response = "coral_survey database entry not found!"
-        result.need_rerun = True
-
+        result.response = result.DbObjectNotFound
+        result.message = "Coral survey not found in the database."
         defer.returnValue(result)
 
     middle_point = navigator_tools.point_to_numpy(resp.objects[0].position)

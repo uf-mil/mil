@@ -36,9 +36,8 @@ class DetectDeliverMission:
 
     @txros.util.cancellableInlineCallbacks
     def set_shape_and_color(self):
-        # Use params to get shape and color to look for
-        self.Shape = yield self.navigator.nh.get_param("/mission/detect_deliver/Shape")
-        self.Color = yield self.navigator.nh.get_param("/mission/detect_deliver/Color")
+        self.Shape = yield self.navigator.mission_params["detect_deliver_shape"].get()
+        self.Color = yield self.navigator.mission_params["detect_deliver_color"].get()
         print "Looking for ", self.Color, " ", self.Shape
 
     @txros.util.cancellableInlineCallbacks

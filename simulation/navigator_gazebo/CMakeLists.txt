@@ -7,6 +7,7 @@ project(navigator_gazebo)
 find_package(catkin
     REQUIRED COMPONENTS
     std_msgs
+    nav_msgs
     rospy
     gazebo_ros
     roscpp
@@ -21,6 +22,20 @@ include_directories(
     ${catkin_INCLUDE_DIRS}
     ${GAZEBO_INCLUDE_DIRS}
     include
+)
+
+add_library(
+    navigator_state_set
+        src/navigator_state_set.cpp
+)
+
+set_target_properties(navigator_state_set PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
+
+
+target_link_libraries(
+    navigator_state_set
+        ${catkin_LIBRARIES}
+        ${GAZEBO_LIBRARIES}
 )
 
 add_library(
@@ -74,6 +89,6 @@ add_dependencies(navigator_thrusters
 
 catkin_package(
     INCLUDE_DIRS include
-    CATKIN_DEPENDS gazebo_ros roscpp rospy std_msgs message_runtime tf gazebo_plugins sensor_msgs
+    CATKIN_DEPENDS gazebo_ros roscpp rospy std_msgs nav_msgs message_runtime tf gazebo_plugins sensor_msgs
     DEPENDS system_lib gazebo
 )

@@ -2,6 +2,6 @@
     <include file="$(find navigator_launch)/launch/subsystems/hardware_drivers.launch"/>
     <include file="$(find navigator_launch)/launch/gnc.launch"/>
     <include file="$(find navigator_launch)/launch/subsystems/sensors.launch"/>
-    <include file="$(find navigator_alarm)/launch/alarm.launch"/>
     <include file="$(find navigator_launch)/launch/perception.launch" />
+    <include file="$(find navigator_launch)/launch/subsystems/alarms.launch"/>
 </launch>

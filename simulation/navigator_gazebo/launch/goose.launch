@@ -5,8 +5,8 @@
 
 
     <!-- Gazebo Server -->
-    <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false"
-      args="$(find navigator_gazebo)/worlds/a_whole_new.world" output="screen"/>
+    <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="true"
+      args="$(find navigator_gazebo)/worlds/a_whole_new.world" output="screen" />
     <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" if="$(arg gui)" output="screen"/>
 
 
@@ -268,120 +268,119 @@
           output="screen"/>
 
 
-        <!-- Identify Symbols and Dock - EZ Dock Pieces -->
-        <node name="spawn_ez_dock_1" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
-            -x -6.096 -y 21.604 -z 0 -model ez_dock_1"
+        <!-- Identify Symbols and Dock - Dock Assembly -->
+        <node name="spawn_dock" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/dock.sdf -sdf
+            -x 0 -y 18.556 -z 0 -model dock"
           output="screen"/>
 
-        <node name="spawn_ez_dock_2" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
-            -x -3.048 -y 21.604 -z 0 -model ez_dock_2"
+        <!-- Identify Symbols and Dock - Symbol Panels -->
+        <node name="spawn_dock_symbol_1" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/green_circle.sdf -sdf
+            -x -4.74133 -y 22.08506 -z 0 -model dock_symbol_1"
           output="screen"/>
 
-        <node name="spawn_ez_dock_3" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
-            -x 0 -y 21.604 -z 0 -model ez_dock_3"
+        <node name="spawn_dock_symbol_2" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/red_circle.sdf -sdf
+            -x 0 -y 22.08506 -z 0 -model dock_symbol_2"
           output="screen"/>
 
-        <node name="spawn_ez_dock_4" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
-            -x 3.048 -y 21.604 -z 0 -model ez_dock_4"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_5" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
-            -x 6.096 -y 21.604 -z 0 -model ez_dock_5"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_6" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
-            -x -7.112 -y 19.572 -z 0 -Y 1.57079 -model ez_dock_6"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_7" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
-            -x -7.112 -y 16.524 -z 0 -Y 1.57079 -model ez_dock_7"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_8" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
-            -x -2.37066 -y 19.572 -z 0 -Y 1.57079 -model ez_dock_8"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_9" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
-            -x -2.37066 -y 16.524 -z 0 -Y 1.57079 -model ez_dock_9"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_10" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
-            -x 2.37066 -y 19.572 -z 0 -Y 1.57079 -model ez_dock_10"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_11" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
-            -x 2.37066 -y 16.524 -z 0 -Y 1.57079 -model ez_dock_11"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_12" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
-            -x 7.112 -y 19.572 -z 0 -Y 1.57079 -model ez_dock_12"
-          output="screen"/>
-
-        <node name="spawn_ez_dock_13" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/dock/ez_dock.sdf -sdf
-            -x 7.112 -y 16.524 -z 0 -Y 1.57079 -model ez_dock_13"
-          output="screen"/>
-
-        <!-- Identify Symbols and Dock - Symbols -->
-        <node name="spawn_dock_green_circle" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/symbols/green_circle.sdf -sdf
-            -x -4.74133 -y 22.10984 -z 0.3048 -model dock_green_circle"
-          output="screen"/>
-
-        <node name="spawn_dock_red_circle" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/symbols/red_circle.sdf -sdf
-            -x 0 -y 22.10984 -z 0.3048 -model dock_red_circle"
-          output="screen"/>
-
-        <node name="spawn_dock_blue_cruciform" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/symbols/blue_cruciform.sdf -sdf
-            -x 4.74133 -y 22.10984 -z 0.3048 -model dock_blue_cruciform"
+        <node name="spawn_dock_symbol_3" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/identify_symbols_and_dock/blue_cruciform.sdf -sdf
+            -x 4.74133 -y 22.08506 -z 0 -model dock_symbol_3"
           output="screen"/>
 
 
         <!-- Scan the Code -->
         <node name="spawn_scan_the_code" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/symbols/scan_the_code.sdf
-            -x -5 -y 10 -z 1.5 -sdf -model scan_the_code"
+          args="-file $(find navigator_gazebo)/models/scan_the_code/scan_the_code.sdf
+            -x 5 -y -18.05 -z 0 -sdf -model scan_the_code"
           output="screen"/>
 
 
-        <!-- Detect and Deliver -->
+        <!-- Coral Survey -->
+        <node name="spawn_survey_marker" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/markers/white_marker_can.sdf -sdf
+            -x 30 -y 30 -z 0 -model survey_marker"
+          output="screen"/>
+
+        <node name="spawn_coral_circle" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/coral_survey/circle.sdf
+            -x 20 -y 35 -z -5 -sdf -model coral_circle"
+          output="screen"/>
+
+        <node name="spawn_coral_cruciform" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/coral_survey/cruciform.sdf
+            -x 45 -y 14 -z -5 -sdf -model coral_cruciform"
+          output="screen"/>
+
+        <node name="spawn_coral_triangle" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/coral_survey/triangle.sdf
+            -x 41 -y 39 -z -5 -sdf -model coral_triangle"
+          output="screen"/>
+
+
+        <!-- Find the Break - Wall -->
+        <node name="spawn_wall_1" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/find_the_break/wall.sdf
+            -x 40 -y -3.5052 -z -5 -sdf -model wall_1"
+          output="screen"/>
+
+        <node name="spawn_wall_2" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/find_the_break/wall.sdf
+            -x 40 -y -1.524 -z -5 -sdf -model wall_2"
+          output="screen"/>
+
+        <node name="spawn_wall_3" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/find_the_break/wall.sdf
+            -x 40 -y 0 -z -5 -sdf -model wall_3"
+          output="screen"/>
+
+        <node name="spawn_wall_4" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/find_the_break/wall.sdf
+            -x 40 -y 1.524 -z -5 -sdf -model wall_4"
+          output="screen"/>
+
+        <node name="spawn_wall_5" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/find_the_break/wall.sdf
+            -x 40 -y 3.5052 -z -5 -sdf -model wall_5"
+          output="screen"/>
+
+        <!-- Find the Break - Break -->
+        <node name="spawn_break_1" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/find_the_break/break.sdf
+            -x 40 -y -2.5146 -z -5 -sdf -model break_1"
+          output="screen"/>
+
+        <node name="spawn_break_2" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/find_the_break/break.sdf
+            -x 40 -y 2.5146 -z -5 -sdf -model break_2"
+          output="screen"/>
+
+
         <node name="spawn_target_base" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/targets/target_base.sdf -sdf
+          args="-file $(find navigator_gazebo)/models/detect_and_deliver/base.sdf -sdf
             -x -5 -y -18.05 -z 0 -model target_base"
           output="screen"/>
 
-        <node name="spawn_red_triangle_target" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/targets/red_triangle_target.sdf -sdf
-            -x -5 -y -17.14778 -z 0.20342 -model red_triangle_target"
+        <node name="spawn_target_1" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/detect_and_deliver/red_triangle.sdf -sdf
+            -x -5 -y -17.14778 -z 0.20342 -model target_1"
           output="screen"/>
 
-        <node name="spawn_blue_triangle_target" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/targets/blue_triangle_target.sdf -sdf
-            -x -5.90222 -y -18.05 -z 0.20342 -Y 1.57079 -model blue_triangle_target"
+        <node name="spawn_target_2" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/detect_and_deliver/blue_triangle.sdf -sdf
+            -x -5.90222 -y -18.05 -z 0.20342 -Y 1.57079 -model target_2"
           output="screen"/>
 
-        <node name="spawn_red_cruciform_target" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/targets/red_cruciform_target.sdf -sdf
-            -x -5 -y -18.95222 -z 0.20342 -Y 3.14159 -model red_cruciform_target"
+        <node name="spawn_target_3" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/detect_and_deliver/red_cruciform.sdf -sdf
+            -x -5 -y -18.95222 -z 0.20342 -Y 3.14159 -model target_3"
           output="screen"/>
 
-        <node name="spawn_green_circle_target" pkg="gazebo_ros" type="spawn_model"
-          args="-file $(find navigator_gazebo)/models/targets/green_circle_target.sdf -sdf
-            -x -4.09778 -y -18.05 -z 0.20342 -Y -1.57079 -model green_circle_target"
+        <node name="spawn_target_4" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find navigator_gazebo)/models/detect_and_deliver/green_circle.sdf -sdf
+            -x -4.09778 -y -18.05 -z 0.20342 -Y -1.57079 -model target_4"
           output="screen"/>
 
 
