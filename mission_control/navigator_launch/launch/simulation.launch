@@ -11,7 +11,9 @@
 
     <include file="$(find navigator_launch)/launch/subsystems/alarms.launch"/>
     <include file="$(find navigator_launch)/launch/subsystems/lqrrt_node.launch"/>
-    <node name="gnc_delayed_start" pkg="navigator_gazebo" type="delayed_start.sh"/>
+    <include file="$(find navigator_launch)/launch/gnc.launch"/>
+    <!--node name="gnc_delayed_start" pkg="navigator_gazebo" type="delayed_start.sh"/-->
+
 
     <!-- Sets up the world and loads models -->
     <include file="$(find navigator_gazebo)/launch/goose.launch" if="$(arg gazebo)">

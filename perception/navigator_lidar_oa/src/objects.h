@@ -165,6 +165,21 @@ public:
     /// \param ?
     /// \param ?
     ////////////////////////////////////////////////////////////
+	void colorize(std::string name, std_msgs::ColorRGBA c) {
+		for(auto &s_obj : saved_objects) {
+			if (s_obj.name == name) {
+				s_obj.locked = true;
+				s_obj.color = c;
+			}
+		}		
+	}
+
+	////////////////////////////////////////////////////////////
+    /// \brief ?
+    ///
+    /// \param ?
+    /// \param ?
+    ////////////////////////////////////////////////////////////
 	bool lookUpByName(std::string name, std::vector< navigator_msgs::PerceptionObject > &objects) {
 		for (const auto &s_obj : saved_objects) {
 			if ( (name == "all" && s_obj.real) || (name == s_obj.name) || (name == "All" && !s_obj.real) ) {
