@@ -32,12 +32,17 @@ def main():
         help='This will run navigator in sim mode (ie. not wait for odom or enu bounds). Don\'t do this on the boat.')
     parser.add_argument('-p', '--plantime', type=float,
         help='Time given to the planner for it\'s first plan.')
-    
+    parser.add_argument('-b', '--blind', action='store_true',
+        help='Move without looking at the ogrid. DANGEROUS.')
+
     args = parser.parse_args(args[1:])
 
     n = yield Navigator(nh)._init(args.sim)
 
     action_kwargs = {'move_type': args.movetype}
+
+    if args.blind is not None:
+        action_kwargs['blind'] = args.blind
 
     if args.plantime is not None:
         action_kwargs['initial_plan_time'] = float(args.plantime)

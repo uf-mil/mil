@@ -19,9 +19,9 @@ class BoundsServer(object):
         self.enforce = False
         self.bounds = []
 
-        rospy.set_param("/bounds/enu/", [[0,0],[0,0],[0,0],[0,0]])
-        
+        rospy.set_param("/bounds/enu/", [[0,0,0],[0,0,0],[0,0,0],[0,0,0]])        
         rospy.set_param("/bounds/enforce", self.enforce)
+
         #self.convert = Converter()
         Server(BoundsConfig, self.update_config)
         rospy.Service('/get_bounds', Bounds, self.got_request)
@@ -42,10 +42,16 @@ class BoundsServer(object):
         lla_bounds_str = [config['lla_1'] + ", 0", config['lla_2'] + ", 0", 
                           config['lla_3'] + ", 0", config['lla_4'] + ", 0"]
         lla_bounds = map(self.destringify, lla_bounds_str)
-        
+        self.lla_bounds = lla_bounds
+
         # If any returned false, don't update
         if all(lla_bounds):
-            self.bounds = [self.convert(CoordinateConversionRequest(frame="lla", point=lla)) for lla in lla_bounds]
+            try:
+	        self.bounds = [self.convert(CoordinateConversionRequest(frame="lla", point=lla)) for lla in lla_bounds]
+            except:
+                print "No service provider found"
+                return config
+
             config['enu_1_lat'] = self.bounds[0].enu[0]
             config['enu_1_long'] = self.bounds[0].enu[1]
             
@@ -60,7 +66,7 @@ class BoundsServer(object):
             
             rospy.set_param("/bounds/enu/", map(lambda bound: bound.enu[:2], self.bounds))
         else:
-            rospy.set_param("/bounds/enu/", [[0,0],[0,0],[0,0],[0,0]])
+            rospy.set_param("/bounds/enu/", [[0,0,00],[0,0,0],[0,0,0],[0,0,0]])
 
         rospy.set_param("/bounds/enforce", self.enforce)
         return config
@@ -70,6 +76,7 @@ class BoundsServer(object):
         
         resp = BoundsResponse(enforce=False)
 
+        self.bounds = [self.convert(CoordinateConversionRequest(frame="lla", point=lla)) for lla in self.lla_bounds]
         bounds = [navigator_tools.numpy_to_point(getattr(response, to_frame)) for response in self.bounds]
 
         resp.enforce = self.enforce

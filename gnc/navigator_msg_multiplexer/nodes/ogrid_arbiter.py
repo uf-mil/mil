@@ -122,7 +122,7 @@ class OGridServer:
         self.draw_bounds = True 
         self.resolution = resolution
         self.enforce_bounds = False
-        self.enu_bounds = [[0, 0], [0, 0], [0, 0], [0, 0]]
+        self.enu_bounds = [[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]]
 
         # Default to centering the ogrid
         position = np.array([-(map_size * resolution) / 2, -(map_size * resolution) / 2, 0])
@@ -143,11 +143,11 @@ class OGridServer:
     def bounds_cb(self, config):
         fprint("BOUNDS DYNAMIC CONFIG UPDATE!", msg_color='blue')
         if hasattr(config, "enu_1_lat"):
-            self.enu_bounds = [[config['enu_1_lat'], config['enu_1_long'], 0],
-                               [config['enu_2_lat'], config['enu_2_long'], 0],
-                               [config['enu_3_lat'], config['enu_3_long'], 0],
-                               [config['enu_4_lat'], config['enu_4_long'], 0],
-                               [config['enu_1_lat'], config['enu_1_long'], 0]]
+            self.enu_bounds = [[config['enu_1_lat'], config['enu_1_long'], 1],
+                               [config['enu_2_lat'], config['enu_2_long'], 1],
+                               [config['enu_3_lat'], config['enu_3_long'], 1],
+                               [config['enu_4_lat'], config['enu_4_long'], 1],
+                               [config['enu_1_lat'], config['enu_1_long'], 1]]
         self.enforce_bounds = config['enforce'] 
         
     def dynamic_cb(self, config, level):
@@ -274,9 +274,6 @@ class OGridServer:
                 print e
                 fprint("w: {}, h: {}".format(global_ogrid.info.width, global_ogrid.info.height), msg_color='red')
 
-        if self.plow:
-            self.plow_snow(np_grid, global_ogrid)
-
         if self.draw_bounds and self.enforce_bounds:
             ogrid_bounds = transform_enu_to_ogrid(self.enu_bounds, global_ogrid).astype(np.int32)
             for i, point in enumerate(ogrid_bounds[:,:2]):
@@ -284,9 +281,12 @@ class OGridServer:
                     last_point = point
                     continue
                 cv2.line(np_grid, tuple(point), tuple(last_point), 100, 3)
-                last_point = point
+                last_point = point 
 
-        # Clip and flatten grid
+        if self.plow:
+            self.plow_snow(np_grid, global_ogrid)
+
+       # Clip and flatten grid
         np_grid = np.clip(np_grid, self.ogrid_min_value, 100)
         global_ogrid.data = np_grid.flatten().astype(np.int8)
 
