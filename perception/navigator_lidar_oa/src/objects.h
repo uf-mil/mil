@@ -121,7 +121,7 @@ public:
 		}
 
 		//Verify that the none of the saved objects are too close together.
-		#ifdef DEBUG
+		/*#ifdef DEBUG
 			cnt = 0;
 			for (auto &s_obj : saved_objects) {
 				++cnt;
@@ -133,9 +133,9 @@ public:
 					BOOST_ASSERT_MSG(xyDistance > diff_thresh, ss.str().c_str());
 				}
 			}
-		#endif
+		#endif*/
 
-		//After updating database, try to find a normal and classify based on volume
+		//After updating database, process each object to updates its info
 		int duplicateShooter = 0, duplicateScan = 0;
 		cnt = -1;
 		std::tuple<int,double> shooterMin, scanMin;

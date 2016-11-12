@@ -112,6 +112,9 @@ void UI::slotTimer()
             } else if (colorCode == "YELLOW") {
                 w[ii-1]->setStyleSheet("background-color: yellow");
             }
+        } else {
+            l[ii-1]->setText(tr(""));
+            w[ii-1]->setStyleSheet("background-color: white");
         }
     }
 
@@ -125,6 +128,9 @@ void UI::slotTimer()
         } else if (colorCode == "CROSS") {
             widget.graphics_Left->setPixmap(imageCruciform.scaled(125,125));
         }
+    } else {
+        widget.label->setText(tr(""));
+        widget.graphics_Left->setPixmap(nullPixmap.scaled(125,125));
     }
 
     //Coral Survey 2
@@ -137,11 +143,16 @@ void UI::slotTimer()
         } else if (colorCode == "CROSS") {
             widget.graphics_Right->setPixmap(imageCruciform.scaled(125,125));
         }
+    } else {
+        widget.label_2->setText(tr(""));
+        widget.graphics_Right->setPixmap(nullPixmap.scaled(125,125));
     }
 
 	//Check find the break
     int breaks;
     if (nh->getParam("/mission/find_the_break/markers", breaks)){
         widget.label_break->setText(tr(std::to_string(breaks).c_str()));
+    } else {
+        widget.label_break->setText(tr(""));
     }
 }
