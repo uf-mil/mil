@@ -90,7 +90,7 @@ class ShooterControl:
             self.load_server.set_preempted (result=result.result)
             return
         self.motor_controller.setMotor1(0)
-        self.motor_controller.setMotor2(1)
+        self.motor_controller.setMotor2(-1)
         result.result.success = True
         self.loaded = True
         self.load_server.set_succeeded(result.result)
@@ -123,7 +123,7 @@ class ShooterControl:
         rate = rospy.Rate(50) # 50hz
         feedback = ShooterDoActionFeedback()
         self.motor_controller.setMotor1(1.0)
-        self.motor_controller.setMotor2(1.0)
+        self.motor_controller.setMotor2(-1.0)
         while dur_from_start < self.total_fire_time and not self.stop:
             dur_from_start = rospy.get_rostime() - start_time
             feedback.feedback.time_remaining = self.total_fire_time - dur_from_start
@@ -153,7 +153,7 @@ class ShooterControl:
         else:
           self.stop = False
           self.motor_controller.setMotor1(self.motor1_stop)
-          self.motor_controller.setMotor2( self.motor2_stop)       
+          self.motor_controller.setMotor2(self.motor2_stop)       
           self.motor1_stop = 0
           self.motor2_stop = 0
 
