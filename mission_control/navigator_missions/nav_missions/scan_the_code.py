@@ -21,7 +21,7 @@ def main(navigator):
     print "sanasd"
     """Main Script of Scan The Code."""
     # UNCOMMENT
-    # navigator.change_wrench("autonomous")
+    navigator.change_wrench("autonomous")
 
     pub = yield navigator.nh.advertise("/stc/pose", PoseStamped)
     mission = ScanTheCodeMission(navigator.nh)
@@ -32,7 +32,7 @@ def main(navigator):
     _publish_pose(pub, initial_pose)
 
     # UNCOMMENT
-    # yield navigator.move.set_position(pose).look_at(look_at).go()
+    yield navigator.move.set_position(pose).look_at(look_at).go()
     yield mission.correct_pose(pose)
     if not mission.stc_correct:
         circle = navigator.move.circle_point(look_at, 8, granularity=30)
@@ -40,7 +40,7 @@ def main(navigator):
             if mission.stc_correct:
                 break
             # UNCOMMENT
-            # yield p.go()
+            yield p.go()
 
     colors = yield mission.find_colors()
     print colors

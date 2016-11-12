@@ -41,7 +41,7 @@ class Mission(object):
             yield to_run.safe_exit(navigator, err)
         except Exception as exp:
             print exp
-            fprint("Oh man this is pretty bad.....", msg_color="red")
+            fprint("Oh man this is pretty bad, your mission failed without safe exit.....", msg_color="red")
 
 
 class MissionPlanner:
@@ -72,7 +72,7 @@ class MissionPlanner:
     def init_(self):
         """Initialize the txros aspects of the MissionPlanner b."""
         self.nh = yield NodeHandle.from_argv("mission_planner")
-        self.navigator = yield Navigator(self.nh)._init(True)
+        self.navigator = yield Navigator(self.nh)._init(False)
 
         self.helper = yield DBHelper(self.nh).init_()
         yield self.helper.begin_observing(self.new_item)
