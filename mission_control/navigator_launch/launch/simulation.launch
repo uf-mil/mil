@@ -25,14 +25,7 @@
     <node name="coordinate_converter" pkg="navigator_tools" type="coordinate_conversion_server.py"/>
     <node name="rviz_repub" pkg="navigator_tools" type="rviz_waypoint.py"/>
     <node name="bounds_server" pkg="navigator_tools" type="bounds.py"/>
-    <rosparam param="bounds">
-        enforce: True
-        <!-- These bounds are +/- 100 meters of (0,0) -->
-        lla: [[29.5358153431059, -82.30261036235201],
-              [29.5358153387807, -82.30467366185054],
-              [29.5340110111349, -82.30467363859142],
-              [29.5340110154601, -82.30261037571948]]
-    </rosparam>
+    <node name="set_bounds" pkg="dynamic_reconfigure" type="dynparam" args="load /bounds_server $(find navigator_tools)/cfg/sim.yaml -t 10" />
 
     <node pkg="xbox_joy_node" type="joy_node" name="joy_node">
         <param name="dev" type="string" value="/dev/input/by-id/usb-045e_0291-joystick" />
