@@ -18,8 +18,11 @@ def _publish_pose(pub, pose):
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator):
+    print "sanasd"
     """Main Script of Scan The Code."""
-    navigator.change_wrench("autonomous")
+    # UNCOMMENT
+    # navigator.change_wrench("autonomous")
+
     pub = yield navigator.nh.advertise("/stc/pose", PoseStamped)
     mission = ScanTheCodeMission(navigator.nh)
     yield mission.init_(navigator.tf_listener)
@@ -30,31 +33,30 @@ def main(navigator):
 
     # UNCOMMENT
     # yield navigator.move.set_position(pose).look_at(look_at).go()
-
-    mission.correct_pose(pose)
-    navigator.nh.sleep(.2)
+    yield mission.correct_pose(pose)
     if not mission.stc_correct:
-        circle = navigator.move.circle_point(look_at, 8, granularity=10)
+        circle = navigator.move.circle_point(look_at, 8, granularity=30)
         for p in circle:
             if mission.stc_correct:
                 break
+            # UNCOMMENT
             # yield p.go()
 
     colors = yield mission.find_colors()
     print colors
     if colors is None:
         navigator.nh.set_param('mission/detect_deliver/Shape', 'CROSS')
-        navigator.nh.set_param('mission/detect_deliver/Color', 'RED')
+        navigator.nh.set_param('mission/detect_deliver/Color', 'ANY')
     if np.equal(colors, np.array(['r', 'g', 'b'])):
         navigator.nh.set_param('mission/detect_deliver/Shape', 'CIRCLE')
-        navigator.nh.set_param('mission/detect_deliver/Color', 'RED')
+        navigator.nh.set_param('mission/detect_deliver/Color', 'ANY')
     else:
         navigator.nh.set_param('mission/detect_deliver/Shape', 'TRIANGLE')
-        navigator.nh.set_param('mission/detect_deliver/Color', 'GREEN')
+        navigator.nh.set_param('mission/detect_deliver/Color', 'ANY')
 
 
 @txros.util.cancellableInlineCallbacks
 def safe_exit(navigator):
     """Safe exit of the Scan The Code mission."""
     navigator.nh.set_param('mission/detect_deliver/Shape', 'CROSS')
-    navigator.nh.set_param('mission/detect_deliver/Color', 'RED')
+    navigator.nh.set_param('mission/detect_deliver/Color', 'ANY')

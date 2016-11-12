@@ -18,7 +18,7 @@ void VolumeClassifier(objectMessage &object)
 	//THESE VAlUES WILL ALL BE ADJUSTED ON NEXT LAKE DAY!
 	if ( (object.maxHeightFromLidar >= 1.25 && object.scale.x > 7 && object.scale.y > 7 && object.scale.z > 1.25) || object.name == navigator_msgs::PerceptionObject::IDENTIFY_AND_DOCK ) {
 		object.name = navigator_msgs::PerceptionObject::IDENTIFY_AND_DOCK;
-	} else if ( (object.maxHeightFromLidar >= 1.25 && object.scale.x > 3 && object.scale.y > 3 && object.scale.z > 1.25) || object.name == navigator_msgs::PerceptionObject::DETECT_DELIVER_PLATFORM ) {
+	} else if ( (object.maxHeightFromLidar >= 1.25 && object.scale.x > 4 && object.scale.y > 4 && object.scale.z > 1.25) || object.name == navigator_msgs::PerceptionObject::DETECT_DELIVER_PLATFORM ) {
 		object.name = navigator_msgs::PerceptionObject::DETECT_DELIVER_PLATFORM;
 	} else if ( (object.maxHeightFromLidar >= 0.75 && object.scale.x > 2 && object.scale.y > 2 && object.scale.z > 1.25) || object.name == navigator_msgs::PerceptionObject::SCAN_THE_CODE) {
 		object.name = navigator_msgs::PerceptionObject::SCAN_THE_CODE;
