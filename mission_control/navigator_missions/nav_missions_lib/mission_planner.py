@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Mission Planner Module that uses a DAG and YAML to find which mission to perform."""
 from txros import util, NodeHandle
-from twisted.internet import defer, reactor
+from twisted.internet import defer
 from navigator_singleton.navigator import Navigator
 import nav_missions
 import nav_missions_test
@@ -9,9 +9,7 @@ import Queue as que
 from Queue import Queue
 from sets import Set
 from navigator_tools import DBHelper
-import yaml
 from navigator_tools import MissingPerceptionObject, fprint
-import os
 __author__ = "Tess Bianchi"
 
 
@@ -145,9 +143,9 @@ class MissionPlanner:
     @util.cancellableInlineCallbacks
     def do_mission(self, mission):
         """Perform a mission, and ensure that all of the post conditions are enforced."""
-        # TODO: have a better way to make sure all post conditions are enforced
         m = mission.do_mission(self.navigator, self, self.module)
-        result = yield m
+        # TOD: do something with the result of the mission
+        yield m
 
     def _mission_complete(self, mission):
         self.tree.remove(mission)
@@ -160,7 +158,7 @@ class MissionPlanner:
             return True
         return False
 
-    def set_done(self, err):
+    def _set_done(self, err):
         self.running_base_mission = False
 
     @util.cancellableInlineCallbacks
@@ -177,7 +175,7 @@ class MissionPlanner:
                 if self.base_mission is not None:
                     self.running_base_mission = True
                     self.current_defer = self.do_mission(self.base_mission)
-                    self.current_defer.addCallbacks(self.set_done, errback=self.set_done)
+                    self.current_defer.addCallbacks(self._set_done, errback=self._set_done)
                     self.running_base_mission = True
             except MissingPerceptionObject as exp:
                 if exp.missing_object in self.found:
@@ -195,24 +193,3 @@ class MissionPlanner:
                     break
             self.refresh()
             yield self.nh.sleep(1)
-
-
-# @util.cancellableInlineCallbacks
-# def main():
-#     """The main method."""
-#     yaml_text = None
-#     yaml_file = "missions.yaml"
-#     dir_path = os.path.dirname(os.path.realpath(__file__))
-#     yaml_file = dir_path + "/" + yaml_file
-
-#     with open(yaml_file, 'r') as stream:
-#         try:
-#             yaml_text = yaml.load(stream)
-#             planner = yield MissionPlanner(yaml_text).init_()
-#             planner.empty_queue()
-#         except yaml.YAMLError as exc:
-#             print(exc)
-
-
-# reactor.callWhenRunning(main)
-# reactor.run()

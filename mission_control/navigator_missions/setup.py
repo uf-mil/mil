@@ -5,7 +5,7 @@ from catkin_pkg.python_setup import generate_distutils_setup
 
 # fetch values from package.xml
 setup_args = generate_distutils_setup(
-    packages=['nav_missions', 'navigator_singleton', 'nav_missions_test', 'nodes']
+    packages=['nav_missions', 'navigator_singleton', 'nav_missions_test', 'nav_missions_lib']
 )
 
 setup(**setup_args)

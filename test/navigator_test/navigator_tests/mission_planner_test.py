@@ -2,7 +2,7 @@ import abc
 from navigator_test_lib import TestUnit, SpoofGenerator
 from navigator_msgs.msg import PerceptionObjectArray, PerceptionObject
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryResponse
-from nodes import MissionPlanner
+from nav_missions_lib import MissionPlanner
 import yaml
 from txros import util
 
@@ -39,11 +39,12 @@ class MissionPlannerTest(TestUnit):
 
     @util.cancellableInlineCallbacks
     def run_tests(self):
-        yield self._run_mission("/home/tess/mil_ws/src/Navigator/test/navigator_test/navigator_tests/mission_yamls/mission_fails.yaml", self.pub_fail_mission)
-        yield self._run_mission("/home/tess/mil_ws/src/Navigator/test/navigator_test/navigator_tests/mission_yamls/missing_object.yaml", self.pub_missing_objects)
-        yield self._run_mission("/home/tess/mil_ws/src/Navigator/test/navigator_test/navigator_tests/mission_yamls/base_mission.yaml", self.pub_base_mission)
-        yield self._run_mission("/home/tess/mil_ws/src/Navigator/test/navigator_test/navigator_tests/mission_yamls/normal_behavior_1.yaml", self.pub_normal_1)
-        yield self._run_mission("/home/tess/mil_ws/src/Navigator/test/navigator_test/navigator_tests/mission_yamls/normal_behavior_2.yaml", self.pub_normal_2)
+        base_file = '/'.join(__file__.split('/')[0:-1]) + "/mission_yamls"
+        yield self._run_mission(base_file + "/mission_fails.yaml", self.pub_fail_mission)
+        yield self._run_mission(base_file + "/missing_object.yaml", self.pub_missing_objects)
+        yield self._run_mission(base_file + "/base_mission.yaml", self.pub_base_mission)
+        yield self._run_mission(base_file + "/normal_behavior_1.yaml", self.pub_normal_1)
+        yield self._run_mission(base_file + "/normal_behavior_2.yaml", self.pub_normal_2)
 
     @util.cancellableInlineCallbacks
     def _run_mission(self, yaml_file, spoof):
