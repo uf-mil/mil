@@ -136,11 +136,41 @@ public:
 		#endif
 
 		//After updating database, try to find a normal and classify based on volume
+		int duplicateShooter = 0, duplicateScan = 0;
+		cnt = -1;
+		std::tuple<int,double> shooterMin, scanMin;
 		for(auto &s_obj : saved_objects) {
+			++cnt;
+			if (!s_obj.real) {continue;}
+			//Try to fit a normal
 			FitPlanesToCloud(s_obj,rosCloud,boatPose_enu);
+			//Classify volume
 			VolumeClassifier(s_obj);
+			//Look for duplicates of the shooter or scan_the_code
+			if (s_obj.name == "shooter") {
+				++duplicateShooter;
+				auto xyDistance = sqrt( pow(s_obj.position.x - saved_objects[4].position.x, 2) + pow(s_obj.position.y - saved_objects[4].position.y, 2)  );
+				if (duplicateShooter == 1) {
+					shooterMin = std::make_tuple(cnt,xyDistance);
+				} else if ( xyDistance < std::get<1>(shooterMin) ) {
+					saved_objects.at( std::get<0>(shooterMin) ).name = "unknown";
+					shooterMin = std::make_tuple(cnt,xyDistance);
+				} else {
+					s_obj.name = "unknown";
+				}
+			} else if (s_obj.name == "scan_the_code") {
+				++duplicateScan;
+				auto xyDistance = sqrt( pow(s_obj.position.x - saved_objects[5].position.x, 2) + pow(s_obj.position.y - saved_objects[5].position.y, 2)  );
+				if (duplicateScan == 1) {
+					scanMin = std::make_tuple(cnt,xyDistance);
+				} else if ( xyDistance < std::get<1>(scanMin) ) {
+					saved_objects.at( std::get<0>(scanMin) ).name = "unknown";
+					shooterMin = std::make_tuple(cnt,xyDistance);
+				} else {
+					s_obj.name = "unknown";
+				}
+			}
 		}
-
 		return saved_objects;
 	}
 
@@ -264,7 +294,7 @@ public:
 			}
 
 			//Did we find the gates?
-			ROS_INFO_STREAM("LIDAR | FOUND 4 TOTEMS: " << totems[permute[0]] << "," << totems[permute[1]] << "," << totems[permute[2]] << "," << totems[permute[3]] << " with edge distance of " << distance << " between " << edge1 << " and " << edge2 << " and line error of " << error);
+			//ROS_INFO_STREAM("LIDAR | FOUND 4 TOTEMS: " << totems[permute[0]] << "," << totems[permute[1]] << "," << totems[permute[2]] << "," << totems[permute[3]] << " with edge distance of " << distance << " between " << edge1 << " and " << edge2 << " and line error of " << error);
 			if (distance >= 22 && distance <= 38 && error <= 2.5) {
 				//Save center gate
 				gatePositions.push_back(center);

@@ -27,7 +27,7 @@ void VolumeClassifier(objectMessage &object)
 								{0.7,	1.0,	2.75,	4.75,	2.75,	4.75,	2.5,	3.0}, //shooter
 								{0.75,	1.2,	1.75,	3.0,	1.75,	3.0,	1.5,	1.75}, //scan_the_code
 								{-0.6,	0.1,	1.4,	2.75,	1.4,	2.75,	1.2,	1.5}, //totems
-								{-1.0,-0.75,	0.5,	1.25,	0.5,	1.25,	0.0,	1.0} }; //buoy
+								{-1.5,-0.75,	0.5,	1.25,	0.5,	1.25,	0.0,	1.0} }; //buoy
 	auto match = false;
 	for (auto ii = 0; ii < names.size(); ++ii) {
 		if ( object.name == names[ii] || ( h >= volumes[ii][0] 	&& h <= volumes[ii][1]	&& x >= volumes[ii][2] && x <= volumes[ii][3] && y >= volumes[ii][4] && y <= volumes[ii][5] && z >= volumes[ii][6]	&& z <= volumes[ii][7]) ) {

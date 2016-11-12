@@ -412,10 +412,14 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
 		auto name = req.cmd;
 		ROS_INFO_STREAM("LIDAR | Reset cmd is " << name);
 		if (name == "reset") {
+			//Call reset for all major components
 			object_tracker.reset();
+			//Re-create ROIs
 			createROIS("BuoyField"); createROIS("CoralSurvey"); createROIS("FindBreak"); createROIS("AcousticPinger"); createROIS("Shooter");
 			createROIS("Scan_The_Code"); createROIS("Gate_1"); createROIS("Gate_2"); createROIS("Gate_3"); createROIS("Dock");
 			ogrid.reset();
+			markerServer->clear();
+			markerServer->applyChanges();	
 		}
 	} else if (split2 != string::npos) {
 		auto name = req.cmd.substr(0,split1);
