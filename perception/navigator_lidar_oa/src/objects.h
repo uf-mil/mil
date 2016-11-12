@@ -295,7 +295,7 @@ public:
 
 			//Did we find the gates?
 			//ROS_INFO_STREAM("LIDAR | FOUND 4 TOTEMS: " << totems[permute[0]] << "," << totems[permute[1]] << "," << totems[permute[2]] << "," << totems[permute[3]] << " with edge distance of " << distance << " between " << edge1 << " and " << edge2 << " and line error of " << error);
-			if (distance >= 22 && distance <= 38 && error <= 2.5) {
+			if (distance >= 22 && distance <= 40 && error <= 20) {
 				//Save center gate
 				gatePositions.push_back(center);
 

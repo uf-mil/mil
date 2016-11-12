@@ -44,7 +44,7 @@ struct cell
 struct beamEntry
 {
 	void update(const LidarBeam &beam) {
-		if (q.size() >= 30) { q.pop_front(); }
+		if (q.size() >= 20) { q.pop_front(); }
 		q.push_back(beam);
 	}
 	std::deque<LidarBeam> q;
