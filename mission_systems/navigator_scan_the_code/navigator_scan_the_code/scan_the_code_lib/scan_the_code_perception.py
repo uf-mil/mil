@@ -68,6 +68,7 @@ class ScanTheCodePerception(object):
 
         points_3d = []
         try:
+            print "waiting on tf"
             trans = yield self.my_tf.get_transform("/stereo_left_cam", "/enu", time)
         except Exception as exp:
             print exp
@@ -247,7 +248,7 @@ class ScanTheCodePerception(object):
         if self.count == 100:
             xs = np.arange(0, len(self.depths))
             ys = self.depths
-            plt.plot(xs, ys)
+            # plt.plot(xs, ys)
             # plt.show()
         # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
 
@@ -266,6 +267,7 @@ class ScanTheCodePerception(object):
         image_ros = self.bridge.imgmsg_to_cv2(image_ros, "bgr8").copy()
 
         depth = self._get_depth('z', points_oi)
+        print "DEPTH: ", depth
         self.depths.append(depth)
         if depth > .3:
             # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG

@@ -17,6 +17,11 @@ detect_deliver:
   mission_dep: "scan_the_code"
   is_base: False
 
+start_gate:
+  object_dep: ["start_gate"]
+  mission_dep: "detect_deliver"
+  is_base: False
+
 explore:
   object_dep: []
   mission_dep: "None"

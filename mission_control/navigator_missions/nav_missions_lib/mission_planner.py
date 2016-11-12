@@ -63,16 +63,17 @@ class MissionPlanner:
 
         self.running_base_mission = False
         self.current_defer = None
+        self.current_mission_name = None
 
         self.load_missions(yaml_text)
         if self.base_mission is not None:
             self.total_mission_count -= 1
 
     @util.cancellableInlineCallbacks
-    def init_(self):
+    def init_(self, sim_mode = False):
         """Initialize the txros aspects of the MissionPlanner b."""
         self.nh = yield NodeHandle.from_argv("mission_planner")
-        self.navigator = yield Navigator(self.nh)._init(False)
+        self.navigator = yield Navigator(self.nh)._init(sim_mode)
 
         self.helper = yield DBHelper(self.nh).init_()
         yield self.helper.begin_observing(self.new_item)
@@ -129,7 +130,7 @@ class MissionPlanner:
     def refresh(self):
         """Called when the state of the DAG needs to be updated due to a mission completing or an object being found."""
         for mission in self.tree:
-            if self.can_complete(mission) and not self._is_in_queue(mission):
+            if self.can_complete(mission) and not self._is_in_queue(mission) and mission.name != self.current_mission_name:
                 fprint("mission: {}".format(mission.name), msg_color="blue", title="ADDING")
                 self.queue.put(mission)
 
@@ -149,6 +150,7 @@ class MissionPlanner:
 
     def _mission_complete(self, mission):
         self.tree.remove(mission)
+        self.current_mission_name = None
         for m in mission.children:
             self.tree.append(m)
             self.refresh()
@@ -170,6 +172,7 @@ class MissionPlanner:
                 continue
             try:
                 mission = self.queue.get(block=False)
+                self.current_mission_name = mission.name
                 self.current_mission = yield self.do_mission(mission)
             except que.Empty:
                 if self.base_mission is not None:
@@ -178,9 +181,11 @@ class MissionPlanner:
                     self.current_defer.addCallbacks(self._set_done, errback=self._set_done)
                     self.running_base_mission = True
             except MissingPerceptionObject as exp:
+                fprint("This object {} was missclassified".format(exp.missing_object), msg_color="red")
                 if exp.missing_object in self.found:
                     self.helper.remove_found(exp.missing_object)
                     self.found.remove(exp.missing_object)
+                    self.current_mission_name = None
             except Exception as exp:
                 print exp
                 if hasattr(mission, 'safe_exit'):

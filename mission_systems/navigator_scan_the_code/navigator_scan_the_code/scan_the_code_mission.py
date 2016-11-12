@@ -7,6 +7,7 @@ import sys
 from sensor_msgs.msg import Image, CameraInfo
 from scan_the_code_lib import ScanTheCodeAction, ScanTheCodePerception, Debug
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
+from navigator_tools import MissingPerceptionObject
 ___author___ = "Tess Bianchi"
 
 
@@ -44,6 +45,9 @@ class ScanTheCodeMission:
         req = ObjectDBQueryRequest()
         req.name = 'scan_the_code'
         scan_the_code = yield self.database(req)
+        if len(scan_the_code.objects) == 0:
+            print "Missing scan the code"
+            raise MissingPerceptionObject('scan_the_code')
         defer.returnValue(scan_the_code.objects[0])
 
     @txros.util.cancellableInlineCallbacks
@@ -52,12 +56,7 @@ class ScanTheCodeMission:
         length = genpy.Duration(timeout)
         start = self.nh.get_time()
         while start - self.nh.get_time() < length:
-            try:
-                scan_the_code = yield self._get_scan_the_code()
-            except Exception:
-                print "Could not get scan the code..."
-                yield self.nh.sleep(.1)
-                continue
+            scan_the_code = yield self._get_scan_the_code()
 
             try:
                 success, colors = yield self.perception.search(scan_the_code)
@@ -77,14 +76,7 @@ class ScanTheCodeMission:
         length = genpy.Duration(timeout)
         start = self.nh.get_time()
         while start - self.nh.get_time() < length:
-            try:
-                scan_the_code = yield self._get_scan_the_code()
-            except Exception as exc:
-                print exc
-                print "Could not get scan the code..."
-                yield self.nh.sleep(.1)
-                continue
-
+            scan_the_code = yield self._get_scan_the_code()
             defer.returnValue(self.action.initial_position(scan_the_code))
 
     @txros.util.cancellableInlineCallbacks
@@ -93,14 +85,8 @@ class ScanTheCodeMission:
         length = genpy.Duration(timeout)
         start = self.nh.get_time()
         while start - self.nh.get_time() < length:
-            try:
-                scan_the_code = yield self._get_scan_the_code()
-            except Exception as exc:
-                print exc
-                print "Could not get scan the code..."
-                yield self.nh.sleep(.1)
-                continue
-
+            scan_the_code = yield self._get_scan_the_code()
+            print "gottittt"
             correct_pose = yield self.perception.correct_pose(scan_the_code)
             if correct_pose:
                 self.stc_correct = True

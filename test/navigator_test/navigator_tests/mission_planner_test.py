@@ -52,7 +52,7 @@ class MissionPlannerTest(TestUnit):
             try:
                 spoof.start(self.nh)
                 yaml_text = yaml.load(stream)
-                init = MissionPlanner(yaml_text, 't').init_()
+                init = MissionPlanner(yaml_text, 't').init_(sim_mode=True)
                 planner = yield init
                 yield planner.empty_queue()
                 yield spoof.stop()
