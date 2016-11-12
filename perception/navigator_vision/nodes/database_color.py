@@ -140,6 +140,7 @@ class Colorama(object):
                           'green': np.radians(120), 'blue': np.radians(240)}
 
         # Some tunable parameters
+        self.min_height = -.7  # m
         self.update_time = .5  # s
         self.saturation_reject = 50
         self.value_reject = 50
@@ -181,7 +182,8 @@ class Colorama(object):
 
                     points_np = np.array(map(navigator_tools.point_to_numpy, obj.points))
                     # We dont want points below a certain level
-                    points_np = points_np[points_np[:, 2] > -2.5]
+                    print points_np[:, 2]
+                    points_np = points_np[points_np[:, 2] > self.min_height]
                     # Shove ones in there to make homogenous points
                     points_np_homo = np.hstack((points_np, np.ones((points_np.shape[0], 1)))).T
                     points_cam = t_mat44.dot(points_np_homo).T
@@ -195,6 +197,10 @@ class Colorama(object):
                     hsv = np.array([[c]])[:, :3].astype(np.uint8)
                     bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)[0, 0] 
                     bgr = tuple(bgr.astype(np.uint8).tolist())
+                    
+                    if hue is not None:
+                        print bgr
+                        self.make_request(cmd='{name}={bgr[2]},{bgr[1]},{bgr[0]},{_id}'.format(name=obj.name,_id=obj.id, bgr=bgr)) 
 
                     [cv2.circle(self.debug.image, tuple(map(int, p)), 2, bgr, -1) for p in points_px]
                     cv2.circle(self.debug.image, tuple(object_px), 10, bgr, -1)
@@ -212,7 +218,7 @@ class Colorama(object):
         box = cv2.cv.BoxPoints(rect)
         box = np.int0(box)
         fprint("Drawing rectangle")
-        #cv2.drawContours(self.debug.image, [box], 0, (0, 0, 255), 2)
+        cv2.drawContours(self.debug.image, [box], 0, (0, 0, 255), 2)
         return box
 
     def _get_color_from_ROI(self, roi, img):
