@@ -54,14 +54,13 @@ bool CameraLidarTransformer::transformServiceCallback(
   cv::Mat debug_image(camera_info.height, camera_info.width, CV_8UC3,
                       cv::Scalar(0));
 #endif
-  Eigen::Matrix3d matrixFindPlaneA;
-  matrixFindPlaneA << 0, 0, 0, 0, 0, 0, 0, 0, 0;
-  Eigen::Vector3d matrixFindPlaneB(0, 0, 0);
-
   cv::circle(debug_image, cv::Point(req.point.x, req.point.y), 8,
              cv::Scalar(255, 0, 0), -1);
   //Tracks the closest lidar point to the requested camera point
   double minDistance = std::numeric_limits<double>::max();
+  pcl::PointCloud<pcl::PointXYZ> cloud2;
+  pcl::fromROSMsg(cloud_transformed, cloud2);
+  std::vector<int> indices;
   for (auto ii = 0, jj = 0; ii < cloud_transformed.width;
        ++ii, jj += cloud_transformed.point_step) {
     floatConverter x, y, z, i;
@@ -111,19 +110,7 @@ bool CameraLidarTransformer::transformServiceCallback(
           cv::circle(debug_image, point, 3, cv::Scalar(0, 255, 0), -1);
         }
 #endif
-        matrixFindPlaneA(0, 0) += x.f * x.f;
-        matrixFindPlaneA(1, 0) += y.f * x.f;
-        matrixFindPlaneA(2, 0) += x.f;
-        matrixFindPlaneA(0, 1) += x.f * y.f;
-        matrixFindPlaneA(1, 1) += y.f * y.f;
-        matrixFindPlaneA(2, 1) += y.f;
-        matrixFindPlaneA(0, 2) += x.f;
-        matrixFindPlaneA(1, 2) += y.f;
-        matrixFindPlaneA(2, 2) += 1;
-        matrixFindPlaneB(0, 0) -= x.f * z.f;
-        matrixFindPlaneB(1, 0) -= y.f * z.f;
-        matrixFindPlaneB(2, 0) -= z.f;
-        
+
         geometry_msgs::Point geo_point;
         geo_point.x = x.f;
         geo_point.y = y.f;
@@ -133,12 +120,14 @@ bool CameraLidarTransformer::transformServiceCallback(
           res.closest = geo_point;
           minDistance = distance;
         }
-        res.transformed.push_back(geo_point);
+        indices.push_back(ii);
         marker_point.color.r = 1.0;
         marker_point.color.g = 0.0;
         marker_point.color.b = 0.0;
+        res.transformed.push_back(geo_point);
       }
-      markers.markers.push_back(marker_point);
+      markers.markers.push_back(marker_point);  
+
     }
   }
   if (res.transformed.size() < 1) {
@@ -146,50 +135,38 @@ bool CameraLidarTransformer::transformServiceCallback(
     res.error = navigator_msgs::CameraToLidarTransform::Response::NO_POINTS_FOUND;
     return true;
   }
-  
-  //Filter out lidar points behind the plane (I don't think this will work, no good way to do this)
-  // ~double min_z = (*std::min_element(res.transformed.begin(),res.transformed.end(), [=] (const geometry_msgs::Point& a,const geometry_msgs::Point& b) {
-    // ~return a.z < b.z && a.z > MIN_Z;
-  // ~})).z;
-  // ~res.transformed.erase(std::remove_if(res.transformed.begin(),res.transformed.end(),[min_z] (const geometry_msgs::Point& p) {
-    // ~return (p.z - min_z) < MAX_Z_ERROR; 
-  // ~}),res.transformed.end());
+
+  float x,y,z,n;
+  pcl::NormalEstimation<pcl::PointXYZ,pcl::Normal > ne;
+  ne.computePointNormal (cloud2,indices,x,y,z,n);
+  Eigen::Vector3d normal_vector = Eigen::Vector3d(x,y,z).normalized();
+  res.normal.x = -normal_vector(0, 0);
+  res.normal.y = -normal_vector(1, 0);
+  res.normal.z = -normal_vector(2, 0);
 
   res.distance = res.closest.z;
-  Eigen::Vector3d normalvec = matrixFindPlaneA.colPivHouseholderQr()
-                                  .solve(matrixFindPlaneB)
-                                  .normalized();
-  geometry_msgs::Vector3 normalvec_ros;
-  normalvec_ros.x = normalvec(0, 0);
-  normalvec_ros.y = normalvec(1, 0);
-  normalvec_ros.z = normalvec(2, 0);
-  res.normal = normalvec_ros;
-  std::cout << "Points: " << res.transformed.size() << std::endl;
-  std::cout << "Plane solution: " << normalvec << std::endl;
 
 #ifdef DO_ROS_DEBUG
-  //Create marker for normal
+  //Add a marker for the normal to the plane
+  geometry_msgs::Point sdp_normalvec_ros;
+  sdp_normalvec_ros.x = res.closest.x + res.normal.x;
+  sdp_normalvec_ros.y = res.closest.y + res.normal.y;
+  sdp_normalvec_ros.z = res.closest.z + res.normal.z;
   visualization_msgs::Marker marker_normal;
   marker_normal.header = req.header;
   marker_normal.header.seq = 0;
   marker_normal.header.frame_id =  req.header.frame_id;
   marker_normal.id = 3000;
   marker_normal.type = visualization_msgs::Marker::ARROW;
-
-  geometry_msgs::Point sdp_normalvec_ros;
-  sdp_normalvec_ros.x = normalvec_ros.x + res.closest.x;
-  sdp_normalvec_ros.y = normalvec_ros.y + res.closest.y;
-  sdp_normalvec_ros.z = normalvec_ros.z + res.closest.z;
   marker_normal.points.push_back(res.closest);
   marker_normal.points.push_back(sdp_normalvec_ros);
-
   marker_normal.scale.x = 0.1;
   marker_normal.scale.y = 0.5;
   marker_normal.scale.z = 0.5;
   marker_normal.color.a = 1.0;
-  marker_normal.color.r = 1.0;
+  marker_normal.color.r = 0.0;
   marker_normal.color.g = 0.0;
-  marker_normal.color.b = 0.0;
+  marker_normal.color.b = 1.0;
   markers.markers.push_back(marker_normal);
   
   //Publish 3D debug market
