@@ -1,10 +1,13 @@
 <?xml version="1.0"?>
 <package>
   <name>navigator_joystick_control</name>
-  <version>0.0.0</version>
-  <description>The thrust_mapper package</description>
-  <maintainer email="zachgoins@todo.todo">zachgoins</maintainer>
-  <license>TODO</license>
+  <version>4.0.0</version>
+  <description>A server that controls navigator in response to the /Joy node</description>
+
+  <maintainer email="anthony@iris-systems.net">Anthony Olive</maintainer>
+
+  <license>MIT</license>
+
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>std_msgs</build_depend>
@@ -19,10 +22,4 @@
   <run_depend>navigator_msg_multiplexer</run_depend>
   <run_depend>nav_msgs</run_depend>
   <run_depend>navigator_alarm</run_depend>
-
-  <!-- The export tag contains other, unspecified, tags -->
-  <export>
-    <!-- Other tools can request additional information be placed here -->
-
-  </export>
 </package>
