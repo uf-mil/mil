@@ -21,7 +21,6 @@ from behaviors import params
 # Wow what a concept
 fprint = lambda *args, **kwargs: _fprint(title="OGRID_ARB", *args, **kwargs)
 
-
 def make_ogrid_transform(ogrid):
     """
     Returns a matrix that transforms a point in ENU to this ogrid.
@@ -119,7 +118,7 @@ class OGridServer:
         self.plow = True
         self.plow_factor = 0
         self.ogrid_min_value = -1
-        self.draw_bounds = True 
+        self.draw_bounds = False 
         self.resolution = resolution
         self.enforce_bounds = False
         self.enu_bounds = [[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]]
