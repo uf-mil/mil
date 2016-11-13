@@ -220,14 +220,13 @@ class MissionPlanner:
         self.current_mission = None
 
     def _end_mission(self, result):
-        fprint(result, msg_color="green", title="{} MISSION COMPLETE: ".format(self.current_mission_name))
+        fprint(str(result) + "TIME: " + str(self.nh.get_time() -  self.current_mission_timeout), msg_color="green", title="{} MISSION COMPLETE: ".format(self.current_mission_name))
         self.running_mission = False
         self.current_mission_name = None
         self.helper.stop_ensuring_object_permanence()
         self._mission_complete(self.current_mission)
         self.current_mission = None
         self.current_mission_timeout = None
-
     def _run_mission(self, mission):
         self.running_mission = True
         self.current_mission_name = mission.name

@@ -9,13 +9,13 @@
 
 scan_the_code:
   object_dep: ["scan_the_code"]
-  mission_dep: "None"
+  mission_dep: "pinger"
   is_base: False
   timeout: 'inf'
   
 detect_deliver:
   object_dep: ["shooter"]
-  mission_dep: "scan_the_code"
+  mission_dep: "circle_tower"
   is_base: False
   timeout: 'inf'
 
@@ -33,12 +33,12 @@ explore:
 
 circle_tower:
   object_dep: ["BuoyField"]
-  mission_dep: "start_gate"
+  mission_dep: "None"
   is_base: False
   timeout: 'inf'
 
 pinger:
   object_dep: ["Gate_1"]
-  mission_dep: "start_gate"
+  mission_dep: "circle_tower"
   is_base: False
   timeout: 'inf'

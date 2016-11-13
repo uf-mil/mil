@@ -260,8 +260,14 @@ class ScanTheCodePerception(object):
 
         # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
         image_ros = self._get_closest_image(scan_the_code.header.stamp)
+        count = 0
         while image_ros is None:
+            print "getting image"
             image_ros = self._get_closest_image(scan_the_code.header.stamp)
+            yield self.nh.sleep(.3)
+            count += 1
+            if count == 20:
+                defer.returnValue(False)
         # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
 
         image_ros = self.bridge.imgmsg_to_cv2(image_ros, "bgr8").copy()
