@@ -5,7 +5,7 @@ import numpy as np
 import rospy
 import tf
 import sensor_msgs.point_cloud2 as pc2
-from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
+from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest, VisionRequest, VisionRequestResponse
 from sensor_msgs.msg import CameraInfo, Image
 
 from cv_bridge import CvBridge, CvBridgeError
@@ -111,12 +111,17 @@ class DebugImage(object):
 class Colorama(object):
     def __init__(self):
         info_topic = camera_root + "/camera_info"
-        image_topic = camera_root + "/image_rect_color"  # Change this to rect on boat
+        image_topic = camera_root + "/image_raw"  # Change this to rect on boat
 
         self.tf_listener = tf.TransformListener()
 
+        # Map id => [{color, error}, ...] for determining when a color is good
+        self.colored = {}
+
         db_request = rospy.ServiceProxy("/database/requests", ObjectDBQuery)
         self.make_request = lambda **kwargs: db_request(ObjectDBQueryRequest(**kwargs))
+
+        rospy.Service("/vision/buoy_colorizer", VisionRequest, self.got_request)
 
         self.image_history = ImageHistory(image_topic)
 
@@ -140,13 +145,67 @@ class Colorama(object):
                           'green': np.radians(120), 'blue': np.radians(240)}
 
         # Some tunable parameters
-        self.min_height = -.7  # m
         self.update_time = .5  # s
         self.saturation_reject = 50
         self.value_reject = 50
         self.hue_error_reject = .4  # rads
 
+        # To decide when to accept color observations
+        self.error_tolerance = .4 # rads
+        self.spottings_req = 4
+        self.similarity_reject = .1 # If two colors are within this amount of error, reject
+
         rospy.Timer(ros_t(self.update_time), self.do_update)
+
+    def valid_color(self, _id):
+        """
+        Either returns valid color or None depending if the color is valid or not
+        """
+        if _id not in self.colored:
+            return None
+
+        object_data = self.colored[_id]
+        print "object_data", object_data
+
+        # Maps color => [err1, err2, ..]
+        potential_colors = {}
+        for data in object_data:
+            color, err = data['color'], data['err']
+            if color not in potential_colors:
+                potential_colors[color] = []
+
+            potential_colors[color].append(err)
+
+        potential_colors_avg = {}
+        for color, errs in potential_colors.iteritems():
+            if len(errs) > self.spottings_req:
+                potential_colors_avg[color] = np.average(errs)
+
+        print "potential_colors_avg", potential_colors_avg
+        if len(potential_colors_avg) == 1:
+            # No debate about the color
+            color = potential_colors_avg.keys()[0]
+            err = potential_colors_avg[color]
+            fprint("Only one color found, error: {} (/ {})".format(err, self.error_tolerance))
+            if len(potential_colors[color]) > self.spottings_req and err <= self.error_tolerance:
+                return color
+
+        elif len(potential_colors_avg) > 1:        
+            # More than one color, see if one of them is still valid
+            fprint("More than one color detected. Removing all.")
+            self.colored[_id] = []
+            return None
+
+
+    def got_request(self, req):
+        # Threading blah blah something unsafe
+
+        color = self.valid_color(req.target_id)
+        if color is None:
+            fprint("ID {} is NOT a valid color".format(req.target_id), msg_color='red')
+            return VisionRequestResponse(found=False)
+
+        return VisionRequestResponse(found=True, color=color)
 
     def do_update(self, *args):
         resp = self.make_request(name='all')
@@ -182,8 +241,7 @@ class Colorama(object):
 
                     points_np = np.array(map(navigator_tools.point_to_numpy, obj.points))
                     # We dont want points below a certain level
-                    print points_np[:, 2]
-                    points_np = points_np[points_np[:, 2] > self.min_height]
+                    points_np = points_np[points_np[:, 2] > -2.5]
                     # Shove ones in there to make homogenous points
                     points_np_homo = np.hstack((points_np, np.ones((points_np.shape[0], 1)))).T
                     points_cam = t_mat44.dot(points_np_homo).T
@@ -191,22 +249,30 @@ class Colorama(object):
                     #print points_px
 
                     roi = self._get_ROI_from_points(points_px)
-                    hue = self._get_color_from_ROI(roi, image)
-                    c = (0, 0, 0) if hue is None else (int(hue), 255, 255)
-                    
-                    hsv = np.array([[c]])[:, :3].astype(np.uint8)
-                    bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)[0, 0] 
-                    bgr = tuple(bgr.astype(np.uint8).tolist())
-                    
-                    if hue is not None:
-                        print bgr
-                        self.make_request(cmd='{name}={bgr[2]},{bgr[1]},{bgr[0]},{_id}'.format(name=obj.name,_id=obj.id, bgr=bgr)) 
+                    color_info = self._get_color_from_ROI(roi, image)  # hue, string_color, error
+                    bgr = (0, 0, 0)
+                                        
+                    if color_info is not None:
+                        hue, color, error = color_info
+                        c = (int(hue), 255, 255)
+                        hsv = np.array([[c]])[:, :3].astype(np.uint8)
+                        bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)[0, 0] 
+                        bgr = tuple(bgr.astype(np.uint8).tolist())
+
+                        if hue is not None:
+                            if obj.id not in self.colored:
+                                self.colored[obj.id] = []
+
+                            self.colored[obj.id].append({'color':color, 'err':error})
+
+                            if self.valid_color(obj.id):
+                                fprint("COLOR IS VALID", msg_color='green')
+                                self.make_request(cmd='{name}={bgr[2]},{bgr[1]},{bgr[0]},{_id}'.format(name=obj.name,_id=    obj.id, bgr=bgr))
 
                     [cv2.circle(self.debug.image, tuple(map(int, p)), 2, bgr, -1) for p in points_px]
                     cv2.circle(self.debug.image, tuple(object_px), 10, bgr, -1)
                     font = cv2.FONT_HERSHEY_SIMPLEX
                     cv2.putText(self.debug.image, str(obj.id), tuple(object_px), font, 1, bgr, 2)
-
 
                     print '\n' * 2
 
@@ -253,7 +319,7 @@ class Colorama(object):
             return None
 
         fprint("Likely color: {} with an hue error of {} rads.".format(likely_color, np.round(error, 3)))
-        return np.degrees(self.color_map[likely_color]) / 2.0
+        return [np.degrees(self.color_map[likely_color]) / 2.0, likely_color, error]
 
     def _object_in_frame(self, object_point):
         """
