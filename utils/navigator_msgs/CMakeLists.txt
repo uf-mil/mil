@@ -44,6 +44,7 @@ add_service_files(
   CameraToLidarTransform.srv
   KeyboardControl.srv
   ColorRequest.srv
+  FindPinger.srv
 )
 
 add_action_files(
@@ -75,5 +76,3 @@ catkin_package(
   #message_runtime
   #actionlib_msgs
 #)
-
-
