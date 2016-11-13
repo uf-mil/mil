@@ -159,12 +159,6 @@ class Dashboard(Plugin):
         self.wrench_changer = rospy.ServiceProxy('/change_wrench', WrenchSelect)
         self.kill_listener = AlarmListener('kill', self.update_kill_status)
 
-    def timeout_check(function):
-        def decorated_function(self):
-            if (not self.system_time["is_timed_out"]):
-                function(self)
-        return decorated_function
-
     def update_kill_status(self, alarm):
         '''
         Updates the kill status display when there is an update on the kill
