@@ -38,13 +38,19 @@ class DBHelper(object):
         req = ObjectDBQueryRequest()
         req.name = 'all'
         resp = yield self._database(req)
-
+        req.name = 'All'
+        resp1 = yield self._database(req)
         for o in resp.objects:
             # The is upper call is because the first case is upper case if it is a 'fake' object... WHYYYYY
             if o.name not in self.found:
                 self.found.add(o.name)
                 self.new_object_subscriber(o)
 
+        for o in resp1.objects:
+            # The is upper call is because the first case is upper case if it is a 'fake' object... WHYYYYY
+            if o.name not in self.found:
+                self.found.add(o.name)
+                self.new_object_subscriber(o)
     def object_cb(self, perception_objects):
         """Callback for the object database."""
         for o in perception_objects.objects:
