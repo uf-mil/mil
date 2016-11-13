@@ -15,6 +15,9 @@ class DBHelper(object):
         self.found = Set()
         self.nh = nh
         self.new_object_subscriber = None
+        self.ensuring_objects = False
+        self.ensuring_object_dep = None
+        self.ensuring_object_cb = None
 
     @util.cancellableInlineCallbacks
     def init_(self):
@@ -49,9 +52,29 @@ class DBHelper(object):
                 self.found.add(o.name)
                 if self.new_object_subscriber is not None:
                     self.new_object_subscriber(o)
+        if self.ensuring_objects:
+            missings_objs = []
+            names = (o.name for o in perception_objects.objects)
+            for o in self.ensuring_object_dep:
+                if o not in names:
+                    missings_objs.append(o)
+            if len(missings_objs) > 0:
+                self.ensuring_object_cb(missings_objs)
 
     def remove_found(self, name):
         self.found.remove(name)
+
+    def ensure_object_permanence(self, object_dep, cb):
+        """Ensure that all the objects in the object_dep list remain in the database. Call the callback if this isn't true."""
+        if object_dep is None or cb is None:
+            return
+        self.ensuring_objects = True
+        self.ensuring_object_cb = cb
+        self.ensuring_object_dep = object_dep
+
+    def stop_ensuring_object_permanence(self):
+        """Stop ensuring that objects remain in the database."""
+        self.ensuring_objects = False
 
     def set_color(self, color, name):
         """Set the color of an object in the database."""

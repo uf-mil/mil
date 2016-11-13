@@ -64,3 +64,14 @@ to do
 - move all the missions to the other file
 - create test package 
 - add mission planner exit
+
+
+
+LAKE DAY 11-12
+1. make sure a mission that is currently being executed isn't readded to the queue! (write test)
+	- write one test
+2. Add a timeout to the missions (write test)
+	-write one test
+	-write code
+3. get rid of the MissingPerceptionObject thing so that my code is what checks
+	-write code

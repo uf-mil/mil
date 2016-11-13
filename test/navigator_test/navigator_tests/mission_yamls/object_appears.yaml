@@ -1,4 +1,4 @@
-test_mission_fails:
+test_object_appears:
   object_dep: []
   mission_dep: "None"
   is_base: False

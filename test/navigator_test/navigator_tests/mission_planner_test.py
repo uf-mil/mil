@@ -15,27 +15,29 @@ class MissionPlannerTest(TestUnit):
     @util.cancellableInlineCallbacks
     def create_spoofs(self):
         sg = SpoofGenerator()
-        arr1 = PerceptionObjectArray()
-        arr2 = PerceptionObjectArray()
-        arr3 = PerceptionObjectArray()
-        obj1 = PerceptionObject()
-        obj1.name = "scan_the_code"
-        obj2 = PerceptionObject()
-        obj2.name = "shooter"
-        arr1.objects = []
-        arr2.objects = [obj1]
-        arr3.objects = [obj1, obj2]
-        response1 = ObjectDBQueryResponse()
-        response2 = ObjectDBQueryResponse()
-        response2.objects = [obj1]
-        service = sg.spoof_service("/database/requests", ObjectDBQuery, [response1, response1, response1, response2])
+        empty = PerceptionObjectArray()
+        stc = PerceptionObjectArray()
+        stc_shooter = PerceptionObjectArray()
+        stc_obj = PerceptionObject()
+        stc_obj.name = "scan_the_code"
+        shooter_obj = PerceptionObject()
+        shooter_obj.name = "shooter"
+        empty.objects = []
+        stc.objects = [stc_obj]
+        stc_shooter.objects = [stc_obj, shooter_obj]
+        empty_resp = ObjectDBQueryResponse()
+        stc_resp = ObjectDBQueryResponse()
+        stc_resp.objects = [stc_obj]
+        service = sg.spoof_service("/database/requests", ObjectDBQuery, [empty_resp])
         yield service.start(self.nh)
 
-        self.pub_base_mission = sg.spoof_publisher("/database/objects", PerceptionObjectArray, [arr1, arr2], [5, 1000])
-        self.pub_normal_1 = sg.spoof_publisher("/database/objects", PerceptionObjectArray, [arr1, arr2, arr3], [5, 5, 100])
-        self.pub_normal_2 = sg.spoof_publisher("/database/objects", PerceptionObjectArray, [arr1, arr2, arr3], [5, 5, 100])
+        self.pub_base_mission = sg.spoof_publisher("/database/objects", PerceptionObjectArray, [empty, stc], [5, 1000])
+        self.pub_normal_1 = sg.spoof_publisher("/database/objects", PerceptionObjectArray, [empty, stc, stc_shooter], [5, 5, 100])
+        self.pub_normal_2 = sg.spoof_publisher("/database/objects", PerceptionObjectArray, [empty, stc, stc_shooter], [5, 5, 100])
         self.pub_fail_mission = sg.spoof_publisher("/database/objects", PerceptionObjectArray, [], [])
-        self.pub_missing_objects = sg.spoof_publisher("/database/objects", PerceptionObjectArray, [arr1, arr2], [5, 10000])
+        self.pub_missing_objects = sg.spoof_publisher("/database/objects", PerceptionObjectArray, [stc, empty, stc], [4, 10, 100])
+        self.timeout = sg.spoof_publisher("/database/objects", PerceptionObjectArray, [], [])
+        self.obj_appear = sg.spoof_publisher("/database/objects", PerceptionObjectArray, [empty, stc], [3, 10000])
 
     @util.cancellableInlineCallbacks
     def run_tests(self):
@@ -45,6 +47,8 @@ class MissionPlannerTest(TestUnit):
         yield self._run_mission(base_file + "/base_mission.yaml", self.pub_base_mission)
         yield self._run_mission(base_file + "/normal_behavior_1.yaml", self.pub_normal_1)
         yield self._run_mission(base_file + "/normal_behavior_2.yaml", self.pub_normal_2)
+        yield self._run_mission(base_file + "/timeout.yaml", self.timeout)
+        yield self._run_mission(base_file + "/object_appears.yaml", self.obj_appear)
 
     @util.cancellableInlineCallbacks
     def _run_mission(self, yaml_file, spoof):

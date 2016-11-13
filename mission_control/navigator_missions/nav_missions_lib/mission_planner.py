@@ -6,21 +6,24 @@ from navigator_singleton.navigator import Navigator
 import nav_missions
 import nav_missions_test
 import Queue as que
+import sys
 from Queue import Queue
 from sets import Set
 from navigator_tools import DBHelper
-from navigator_tools import MissingPerceptionObject, fprint
+import genpy
+from navigator_tools import fprint
 __author__ = "Tess Bianchi"
 
 
 class Mission(object):
     """The class that represents a mission."""
 
-    def __init__(self, name, item_dep):
+    def __init__(self, name, item_dep, timeout):
         """Initialize a Mission object."""
         self.name = name
         self.item_dep = item_dep
         self.children = []
+        self.timeout = timeout
 
     def add_child(self, child):
         """Add child to a mission."""
@@ -38,10 +41,14 @@ class Mission(object):
         """Run a safe exit of a mission."""
         try:
             to_run = getattr(module, self.name)
-            yield to_run.safe_exit(navigator, err)
+            if hasattr(to_run, 'safe_exit'):
+                yield to_run.safe_exit(navigator, err)
+            else:
+                fprint("""Hmmmm. This isn't good. Your mission failed, and there was no safe exit.
+                       I hope this mission doesn't have any children.""", msg_color="red")
         except Exception as exp:
             print exp
-            fprint("Oh man this is pretty bad, your mission failed without safe exit.....", msg_color="red")
+            fprint("Oh man this is pretty bad, your mission's safe exit failed. SHAME!", msg_color="red")
 
 
 class MissionPlanner:
@@ -52,7 +59,7 @@ class MissionPlanner:
         self.tree = []
         self.queue = Queue()
         self.found = Set()
-        self.completeing_mission = False
+
         self.base_mission = None
         self.completed_mission = 0
         self.total_mission_count = len(yaml_text.keys())
@@ -61,16 +68,22 @@ class MissionPlanner:
         else:
             self.module = nav_missions_test
 
-        self.running_base_mission = False
-        self.current_defer = None
+        self.running_mission = False
+        self.mission_defer = None
+
         self.current_mission_name = None
+        self.current_mission = None
+        self.current_mission_timeout = None
+        self.current_mission_start_time = None
+
+        self.keep_running = True
 
         self.load_missions(yaml_text)
         if self.base_mission is not None:
             self.total_mission_count -= 1
 
     @util.cancellableInlineCallbacks
-    def init_(self, sim_mode = False):
+    def init_(self, sim_mode=False):
         """Initialize the txros aspects of the MissionPlanner b."""
         self.nh = yield NodeHandle.from_argv("mission_planner")
         self.navigator = yield Navigator(self.nh)._init(sim_mode)
@@ -94,7 +107,10 @@ class MissionPlanner:
             obj_dep = mission["object_dep"]
             mis_dep = mission["mission_dep"]
             is_base = mission["is_base"]
-            m = Mission(name, obj_dep)
+            timeout = mission["timeout"]
+            if timeout == 'inf':
+                timeout = sys.maxint
+            m = Mission(name, obj_dep, timeout)
             my_missions[name] = m
             if is_base:
                 self.base_mission = m
@@ -116,11 +132,15 @@ class MissionPlanner:
             return x in self.queue.queue
 
     def new_item(self, obj):
-        """Callback for a new object being found."""
+        """
+        Callback for a new object being found.
+
+        ASYNCHRONOUS
+        """
         fprint("NEW ITEM: {}".format(obj.name), msg_color="blue")
-        if self.current_defer is not None:
+        if self.base_mission is not None and self.current_mission_name is self.base_mission.name:
             try:
-                self.current_defer.cancel()
+                self.mission_defer.cancel()
                 self.running_base_mission = False
             except Exception:
                 print "Error Cancelling deferred"
@@ -128,14 +148,22 @@ class MissionPlanner:
         self.refresh()
 
     def refresh(self):
-        """Called when the state of the DAG needs to be updated due to a mission completing or an object being found."""
+        """
+        Called when the state of the DAG needs to be updated due to a mission completing or an object being found.
+
+        CALLED ASYNCHRONOUS
+        """
         for mission in self.tree:
             if self.can_complete(mission) and not self._is_in_queue(mission) and mission.name != self.current_mission_name:
-                fprint("mission: {}".format(mission.name), msg_color="blue", title="ADDING")
+                fprint("mission: {}".format(mission.name), msg_color="blue", title="ADDING:")
                 self.queue.put(mission)
 
     def can_complete(self, mission):
-        """Figure out if a mission can be completed."""
+        """
+        Figure out if a mission can be completed.
+
+        CALLED ASYNCHRONOUS
+        """
         for item in mission.item_dep:
             if item not in self.found:
                 return False
@@ -157,44 +185,84 @@ class MissionPlanner:
         self.completed_mission += 1
         if self.completed_mission == self.total_mission_count:
             fprint("ALL MISSIONS COMPLETE", msg_color="green")
-            return True
-        return False
+            self.keep_running = False
 
-    def _set_done(self, err):
-        self.running_base_mission = False
+    def _object_gone_missing(self, missing_objects):
+        fprint("This object {} is no longer in the list".format(missing_objects), msg_color="red")
+        self.helper.stop_ensuring_object_permanence()
+        for o in missing_objects:
+            if o in self.found:
+                self.helper.remove_found(o)
+                self.found.remove(o)
+        self.mission_defer.cancel()
+
+    def _err_base_mission(self, err):
+        self.running_mission = False
+        self.current_mission_name = None
+        fprint(err, msg_color="red", title="BASE MISSION ERROR:")
+
+    def _end_base_mission(self, result):
+        self.running_mission = False
+        self.current_mission_name = None
+        fprint(result, msg_color="green", title="BASE MISSION COMPLETE:")
+
+    @util.cancellableInlineCallbacks
+    def _err_mission(self, err):
+        fprint(err, msg_color="red", title="{} MISSION ERROR: ".format(self.current_mission_name))
+        self.running_mission = False
+        self.current_mission_name = None
+        self.helper.stop_ensuring_object_permanence()
+        self.current_mission_timeout = None
+        if err.type == defer.CancelledError:
+            return
+        yield self.current_mission.safe_exit(self.navigator, err, self, self.module)
+        self._mission_complete(self.current_mission)
+        self.current_mission = None
+
+    def _end_mission(self, result):
+        fprint(result, msg_color="green", title="{} MISSION COMPLETE: ".format(self.current_mission_name))
+        self.running_mission = False
+        self.current_mission_name = None
+        self.helper.stop_ensuring_object_permanence()
+        self._mission_complete(self.current_mission)
+        self.current_mission = None
+        self.current_mission_timeout = None
+
+    def _run_mission(self, mission):
+        self.running_mission = True
+        self.current_mission_name = mission.name
+        self.current_mission = mission
+        self.helper.ensure_object_permanence(mission.item_dep, self._object_gone_missing)
+        self.mission_defer = self.do_mission(mission)
+        self.current_mission_timeout = genpy.Duration(mission.timeout)
+        self.current_mission_start_time = self.nh.get_time()
+        self.mission_defer.addCallbacks(self._end_mission, errback=self._err_mission)
+
+    def _run_base_mission(self):
+        if self.base_mission is not None:
+            self.running_mission = True
+            self.current_mission_name = self.base_mission.name
+            self.mission_defer = self.do_mission(self.base_mission)
+            self.mission_defer.addCallbacks(self._end_base_mission, errback=self._err_base_mission)
 
     @util.cancellableInlineCallbacks
     def empty_queue(self):
         """Constantly empties the queue if there is something in it, or run the base mission otherwise."""
-        while True:
-            if self.running_base_mission:
+        while self.keep_running:
+            if self.current_mission_timeout is not None:
+                if (self.nh.get_time() - self.current_mission_start_time) > self.current_mission_timeout:
+                    fprint(self.current_mission_name, msg_color="red", title="MISSION TIMEOUT:")
+                    self.mission_defer.cancel()
+            if self.running_mission:
+                self.refresh()
                 yield self.nh.sleep(1)
                 continue
             try:
                 mission = self.queue.get(block=False)
-                self.current_mission_name = mission.name
-                self.current_mission = yield self.do_mission(mission)
+                self._run_mission(mission)
             except que.Empty:
-                if self.base_mission is not None:
-                    self.running_base_mission = True
-                    self.current_defer = self.do_mission(self.base_mission)
-                    self.current_defer.addCallbacks(self._set_done, errback=self._set_done)
-                    self.running_base_mission = True
-            except MissingPerceptionObject as exp:
-                fprint("This object {} was missclassified".format(exp.missing_object), msg_color="red")
-                if exp.missing_object in self.found:
-                    self.helper.remove_found(exp.missing_object)
-                    self.found.remove(exp.missing_object)
-                    self.current_mission_name = None
+                self._run_base_mission()
             except Exception as exp:
-                print exp
-                if hasattr(mission, 'safe_exit'):
-                    yield mission.safe_exit(self.navigator, exp, self, self.module)
-                if self._mission_complete(mission):
-                    break
-            else:
-                # The mission succeeded! Yay!
-                if self._mission_complete(mission):
-                    break
+                fprint(exp, msg_color="red", title="LOL WHAT THE FUCK HAPPENED? THIS IS ON YOU TESS!!!")
             self.refresh()
             yield self.nh.sleep(1)
