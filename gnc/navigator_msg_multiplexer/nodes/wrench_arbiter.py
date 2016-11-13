@@ -2,7 +2,7 @@
 from geometry_msgs.msg import WrenchStamped
 from navigator_msgs.srv import WrenchSelect
 import rospy
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, String
 
 
 rospy.init_node('wrench_arbiter')
@@ -24,6 +24,7 @@ class WrenchArbiter(object):
         # ROS stuff - Wrench changing service, final output wrench, and the three input sources
         rospy.Service('/change_wrench', WrenchSelect, self.change_wrench)
         self.wrench_pub = rospy.Publisher("/wrench/cmd", WrenchStamped, queue_size=1)
+        self.control_pub = rospy.Publisher("/wrench/current", String, queue_size=1)
         self.learn = rospy.Publisher("learn", Bool, queue_size=1)
 
         # Subscribers to listen for wrenches
@@ -53,6 +54,7 @@ class WrenchArbiter(object):
         self.learn.publish(learn)
         msg.header.frame_id = "/base_link"
         self.wrench_pub.publish(msg)
+        self.control_pub.publish(self.control)
 
     def change_wrench(self, req):
         '''

@@ -21,7 +21,7 @@ from remote_control_lib import RemoteControl
 from rosgraph_msgs.msg import Clock
 import rospkg
 import rospy
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, String
 
 
 __author__ = "Anthony Olive"
@@ -94,7 +94,6 @@ class Dashboard(Plugin):
         context.add_widget(self._widget)
 
         # Creates monitors that update data on the GUI periodically
-        self.monitor_operating_mode()
         self.monitor_battery_voltage()
         self.monitor_system_time()
         self.monitor_hosts()
@@ -153,6 +152,7 @@ class Dashboard(Plugin):
         self.battery_low_voltage = rospy.get_param("/battery_monitor/battery_low_voltage", 22.1)
         self.battery_critical_voltage = rospy.get_param("/battery_monitor/battery_critical_voltage", 20.6)
 
+        rospy.Subscriber("/wrench/current", String, self.update_operating_mode_status)
         rospy.Subscriber("/battery_monitor", Float32, self.cache_battery_voltage)
         rospy.Subscriber("/clock", Clock, self.cache_system_time)
 
@@ -176,51 +176,36 @@ class Dashboard(Plugin):
             self.kill_status_status.setText("Killed")
             self.kill_status_frame.setStyleSheet(self.colors["red"])
 
-    def monitor_operating_mode(self):
+    def update_operating_mode_status(self, msg):
         '''
-        Monitors the selected wrench input device on a 0.5s interval using the
-        wrench_changer service. Only updates the display when the selected
-        wrench input has changed.
+        Updates the operating mode status display when there is an update on
+        the current wrench node. Caches the last displayed operating mode
+        status to avoid updating the display with the same information twice.
         '''
         if (not self.system_time["is_timed_out"]):
 
-            # Attempting to set the wrench to an empty string fails and returns the selected input device.
-            try:
-                self.operating_mode["received"] = self.wrench_changer("").str
+            # Retrieves the operating mode from the published message
+            self.operating_mode["received"] = msg.data
 
-            # If calling the service fails, the operating mode is set to unknown
-            except:
-                self.operating_mode["received"] = "Unknown"
-
-            # If a new value was received, update the display
             if (self.operating_mode["received"] != self.operating_mode["cached"]):
-                self.update_operating_mode_status()
+                if (self.operating_mode["received"] == "autonomous"):
+                    self.operating_mode_status.setText("Autonomous")
+                    self.operating_mode_frame.setStyleSheet(self.colors["green"])
 
-        # Schedules the next instance of this method with a QT timer
-        QtCore.QTimer.singleShot(500, self.monitor_operating_mode)
+                elif (self.operating_mode["received"] == "rc"):
+                    self.operating_mode_status.setText("Joystick")
+                    self.operating_mode_frame.setStyleSheet(self.colors["blue"])
 
-    def update_operating_mode_status(self):
-        '''
-        Updates the displayed operating mode status text and color.
-        '''
-        if (self.operating_mode["received"] == "autonomous"):
-            self.operating_mode_status.setText("Autonomous")
-            self.operating_mode_frame.setStyleSheet(self.colors["green"])
+                elif (self.operating_mode["received"] == "keyboard"):
+                    self.operating_mode_status.setText("Keyboard")
+                    self.operating_mode_frame.setStyleSheet(self.colors["yellow"])
 
-        elif (self.operating_mode["received"] == "rc"):
-            self.operating_mode_status.setText("Joystick")
-            self.operating_mode_frame.setStyleSheet(self.colors["blue"])
+                elif (self.operating_mode["received"] == "Unknown"):
+                    self.operating_mode_status.setText("Unknown")
+                    self.operating_mode_frame.setStyleSheet(self.colors["red"])
 
-        elif (self.operating_mode["received"] == "keyboard"):
-            self.operating_mode_status.setText("Keyboard")
-            self.operating_mode_frame.setStyleSheet(self.colors["yellow"])
-
-        elif (self.operating_mode["received"] == "Unknown"):
-            self.operating_mode_status.setText("Unknown")
-            self.operating_mode_frame.setStyleSheet(self.colors["red"])
-
-        # Set the cached operating mode to the value that was just displayed
-        self.operating_mode["cached"] = self.operating_mode["received"]
+                # Set the cached operating mode to the value that was just displayed
+                self.operating_mode["cached"] = self.operating_mode["received"]
 
     def cache_battery_voltage(self, msg):
         '''

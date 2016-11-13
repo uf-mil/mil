@@ -72,7 +72,7 @@ class RemoteControl(object):
             self.is_killed = True
 
     @timeout_check
-    def kill(self):
+    def kill(self, *args, **kw):
         '''
         Kills the system regardless of what state it is in.
         '''
@@ -83,7 +83,7 @@ class RemoteControl(object):
         )
 
     @timeout_check
-    def toggle_kill(self):
+    def toggle_kill(self, *args, **kw):
         '''
         Toggles the kill status when the toggle_kill_button is pressed.
         '''
@@ -99,7 +99,7 @@ class RemoteControl(object):
             )
 
     @timeout_check
-    def station_hold(self):
+    def station_hold(self, *args, **kw):
         '''
         Sets the goal point to the current location and switches to autonomous
         mode in order to stay at that point.
@@ -114,7 +114,7 @@ class RemoteControl(object):
         self.station_hold_alarm.clear_alarm()
 
     @timeout_check
-    def select_autonomous_control(self):
+    def select_autonomous_control(self, *args, **kw):
         '''
         Selects the autonomously generated trajectory as the active controller.
         '''
@@ -122,7 +122,7 @@ class RemoteControl(object):
         self.wrench_changer("autonomous")
 
     @timeout_check
-    def select_rc_control(self):
+    def select_rc_control(self, *args, **kw):
         '''
         Selects the XBox remote joystick as the active controller.
         '''
@@ -130,7 +130,7 @@ class RemoteControl(object):
         self.wrench_changer("rc")
 
     @timeout_check
-    def select_keyboard_control(self):
+    def select_keyboard_control(self, *args, **kw):
         '''
         Selects the keyboard teleoperation service as the active controller.
         '''
@@ -138,7 +138,7 @@ class RemoteControl(object):
         self.wrench_changer("keyboard")
 
     @timeout_check
-    def select_next_control(self):
+    def select_next_control(self, *args, **kw):
         '''
         Selects the autonomously generated trajectory as the active controller.
         '''
@@ -147,7 +147,7 @@ class RemoteControl(object):
         self.wrench_changer(mode)
 
     @timeout_check
-    def publish_wrench(self, x, y, rotation, stamp=None):
+    def publish_wrench(self, x, y, rotation, stamp=None, *args, **kw):
         '''
         Publishes a wrench to the specified node based on force inputs from the
         controller.
@@ -165,7 +165,7 @@ class RemoteControl(object):
             self.wrench_pub.publish(wrench)
 
     @timeout_check
-    def clear_wrench(self):
+    def clear_wrench(self, *args, **kw):
         '''
         Publishes a wrench to the specified node based on force inputs from the
         controller.

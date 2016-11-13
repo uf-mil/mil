@@ -12,7 +12,6 @@ useful feedback and captures key presses to be sent to the server.
 from __future__ import division
 
 import curses
-import uuid
 
 from navigator_msgs.srv import KeyboardControl
 import rospy
