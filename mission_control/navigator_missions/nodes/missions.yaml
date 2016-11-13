@@ -31,5 +31,14 @@ explore:
   is_base: True
   timeout: 'inf'
 
+circle_tower:
+  object_dep: ["BuoyField"]
+  mission_dep: "start_gate"
+  is_base: False
+  timeout: 'inf'
 
-
+pinger:
+  object_dep: ["Gate_1"]
+  mission_dep: "start_gate"
+  is_base: False
+  timeout: 'inf'

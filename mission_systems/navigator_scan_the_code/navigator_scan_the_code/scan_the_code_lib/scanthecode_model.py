@@ -42,7 +42,9 @@ class ScanTheCodeModel:
     def _get_color(self, scalar):
         blackness1 = scalar[0] - scalar[1]
         blackness2 = scalar[1] - scalar[2]
-        if(abs(blackness1) < 30 and abs(blackness2) < 30 and scalar[0] < 100):
+        blackness3 = scalar[2] - scalar[0]
+        # used to have scalar[0] < 100
+        if(abs(blackness1) < 30 and abs(blackness2) < 30 and abs(blackness3) < 30):
             o = [0, scalar[0] - scalar[1], scalar[0] - scalar[2], 0]
             self.num_offset += 1
             self.offset_sum = np.add(o, self.offset_sum)

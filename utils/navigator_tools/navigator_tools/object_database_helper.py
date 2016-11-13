@@ -41,14 +41,14 @@ class DBHelper(object):
 
         for o in resp.objects:
             # The is upper call is because the first case is upper case if it is a 'fake' object... WHYYYYY
-            if o.name not in self.found and not o.name[0].isupper():
+            if o.name not in self.found:
                 self.found.add(o.name)
                 self.new_object_subscriber(o)
 
     def object_cb(self, perception_objects):
         """Callback for the object database."""
         for o in perception_objects.objects:
-            if o.name not in self.found and not o.name[0].isupper():
+            if o.name not in self.found:
                 self.found.add(o.name)
                 if self.new_object_subscriber is not None:
                     self.new_object_subscriber(o)

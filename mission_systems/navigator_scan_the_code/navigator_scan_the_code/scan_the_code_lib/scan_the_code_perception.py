@@ -269,7 +269,7 @@ class ScanTheCodePerception(object):
         depth = self._get_depth('z', points_oi)
         print "DEPTH: ", depth
         self.depths.append(depth)
-        if depth > .3:
+        if depth > .15:
             # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
             cv2.putText(image_ros, str(depth), (10, 30), 1, 2, (0, 0, 255))
             self.debug.add_image(image_ros, "in_range", topic="in_range")
