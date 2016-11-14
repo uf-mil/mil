@@ -14,7 +14,7 @@
 
 
     <!-- TODO Hydrophones -->
-    <node pkg="tf" type="static_transform_publisher" name="hydrophone_tf" args="-0.4 0 0 -1.571 0 0 base_link hydrophones 10" />
+    <node pkg="tf" type="static_transform_publisher" name="hydrophone_tf" args="-1.2192 .70104 -1.0922 -1.571 0 0 /measurement /hydrophones 10" />
 
     <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry">
         <rosparam>
