@@ -51,7 +51,9 @@ void FitPlanesToCloud(objectMessage &object, sensor_msgs::PointCloud &rosCloud, 
 
 	// Segment the largest planar component from the remaining cloud
 	segmenter.setInputCloud(pclCloud);
-	segmenter.segment(*inliers,coeffs);
+	try {
+		segmenter.segment(*inliers,coeffs);
+	} catch (...) {}
 	if (inliers->indices.size() < 4) {
   		ROS_INFO_STREAM("PLANE FIT | A suitable plane wasn't found...");
   		//break;

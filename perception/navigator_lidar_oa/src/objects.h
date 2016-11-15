@@ -50,6 +50,20 @@ public:
     /// \param ?
     /// \param ?
     ////////////////////////////////////////////////////////////
+	void reset()
+	{
+		curr_id = 10;
+		foundGates = false;
+		gatePositions.clear();
+		saved_objects.erase(saved_objects.begin()+10,saved_objects.end());		
+	}
+
+	////////////////////////////////////////////////////////////
+    /// \brief ?
+    ///
+    /// \param ?
+    /// \param ?
+    ////////////////////////////////////////////////////////////
 	std::vector<objectMessage> add_objects(std::vector<objectMessage> objects, sensor_msgs::PointCloud &rosCloud, const geometry_msgs::Pose &boatPose_enu)
 	{
 		//Verify that the raw objects list doesn't have objects really close together....
@@ -98,7 +112,8 @@ public:
 				obj.current = true;
 				obj.locked = min_obj->locked;
 				obj.real = min_obj->real;
-				*min_obj = obj;
+			    obj.confidence = min_obj->confidence;
+                *min_obj = obj;
 			} else {
 				obj.id = curr_id++;
 				obj.current = true;
@@ -107,7 +122,7 @@ public:
 		}
 
 		//Verify that the none of the saved objects are too close together.
-		#ifdef DEBUG
+		/*#ifdef DEBUG
 			cnt = 0;
 			for (auto &s_obj : saved_objects) {
 				++cnt;
@@ -119,14 +134,44 @@ public:
 					BOOST_ASSERT_MSG(xyDistance > diff_thresh, ss.str().c_str());
 				}
 			}
-		#endif
+		#endif*/
 
-		//After updating database, try to find a normal and classify based on volume
+		//After updating database, process each object to updates its info
+		int duplicateShooter = 0, duplicateScan = 0;
+		auto cnt = -1;
+		std::tuple<int,double> shooterMin, scanMin;
 		for(auto &s_obj : saved_objects) {
-			FitPlanesToCloud(s_obj,rosCloud,boatPose_enu);
+			++cnt;
+			if (!s_obj.real) {continue;}
+			//Try to fit a normal
+			//FitPlanesToCloud(s_obj,rosCloud,boatPose_enu);
+			//Classify volume
 			VolumeClassifier(s_obj);
+			//Look for duplicates of the shooter or scan_the_code
+			if (s_obj.name == "shooter") {
+				++duplicateShooter;
+				auto xyDistance = sqrt( pow(s_obj.position.x - saved_objects[4].position.x, 2) + pow(s_obj.position.y - saved_objects[4].position.y, 2)  );
+				if (duplicateShooter == 1) {
+					shooterMin = std::make_tuple(cnt,xyDistance);
+				} else if ( xyDistance < std::get<1>(shooterMin) ) {
+					saved_objects.at( std::get<0>(shooterMin) ).name = "unknown";
+					shooterMin = std::make_tuple(cnt,xyDistance);
+				} else {
+					s_obj.name = "unknown";
+				}
+			} else if (s_obj.name == "scan_the_code") {
+				++duplicateScan;
+				auto xyDistance = sqrt( pow(s_obj.position.x - saved_objects[5].position.x, 2) + pow(s_obj.position.y - saved_objects[5].position.y, 2)  );
+				if (duplicateScan == 1) {
+					scanMin = std::make_tuple(cnt,xyDistance);
+				} else if ( xyDistance < std::get<1>(scanMin) ) {
+					saved_objects.at( std::get<0>(scanMin) ).name = "unknown";
+					shooterMin = std::make_tuple(cnt,xyDistance);
+				} else {
+					s_obj.name = "unknown";
+				}
+			}
 		}
-
 		return saved_objects;
 	}
 
@@ -165,26 +210,19 @@ public:
     /// \param ?
     /// \param ?
     ////////////////////////////////////////////////////////////
-	void colorize(std::string name, std_msgs::ColorRGBA c) {
-		for(auto &s_obj : saved_objects) {
-			if (s_obj.name == name) {
-				s_obj.locked = true;
-				s_obj.color = c;
-			}
-		}		
-	}
-
-	////////////////////////////////////////////////////////////
-    /// \brief ?
-    ///
-    /// \param ?
-    /// \param ?
-    ////////////////////////////////////////////////////////////
 	bool lookUpByName(std::string name, std::vector< navigator_msgs::PerceptionObject > &objects) {
+		int id;
+		try {
+			id = stod(name);
+		} catch (...) {
+			id = -1;
+		}
+
 		for (const auto &s_obj : saved_objects) {
-			if ( (name == "all" && s_obj.real) || (name == s_obj.name) || (name == "All" && !s_obj.real) ) {
-				if (!s_obj.real && !s_obj.locked) { continue; }
+			if ( (name == "tess" ) || (name == "all" && s_obj.real) || (name == s_obj.name || id == s_obj.id) || (name == "All" && !s_obj.real) ) {
+				//if (!s_obj.real && !s_obj.locked) { continue; }
 				navigator_msgs::PerceptionObject thisOne;
+				thisOne.header.stamp - s_obj.age;
 				thisOne.name = s_obj.name;
 				thisOne.position = s_obj.position;
 				thisOne.id = s_obj.id;
@@ -220,7 +258,7 @@ public:
 		//Create a list of all the totems in the database
 		std::vector< int > totems;
 		for (auto &obj : saved_objects) {
-			if (obj.name == navigator_msgs::PerceptionObject::TOTEM) {
+			if (obj.name == navigator_msgs::PerceptionObject::TOTEM || obj.name == "start_gate") {
 				totems.push_back(obj.id);
 			}
 		}
@@ -264,8 +302,8 @@ public:
 			}
 
 			//Did we find the gates?
-			ROS_INFO_STREAM("LIDAR | FOUND 4 TOTEMS: " << totems[permute[0]] << "," << totems[permute[1]] << "," << totems[permute[2]] << "," << totems[permute[3]] << " with edge distance of " << distance << " between " << edge1 << " and " << edge2 << " and line error of " << error);
-			if (distance >= 22 && distance <= 38 && error <= 2.5) {
+			//ROS_INFO_STREAM("LIDAR | FOUND 4 TOTEMS: " << totems[permute[0]] << "," << totems[permute[1]] << "," << totems[permute[2]] << "," << totems[permute[3]] << " with edge distance of " << distance << " between " << edge1 << " and " << edge2 << " and line error of " << error);
+			if (distance >= 22 && distance <= 40 && error <= 10) {
 				//Save center gate
 				gatePositions.push_back(center);
 

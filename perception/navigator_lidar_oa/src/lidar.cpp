@@ -59,13 +59,13 @@ const double MIN_OBJECT_SEPERATION_DISTANCE = 1.5;
 OccupancyGrid ogrid(MAP_SIZE_METERS,ROI_SIZE_METERS,VOXEL_SIZE_METERS);
 nav_msgs::OccupancyGrid rosGrid;
 ros::Publisher pubGrid,pubMarkers,pubObjects,pubCloudPersist,pubCloudFrame,pubCloudPCL;
-ros::ServiceClient boundsClient;
-ObjectTracker object_tracker(MIN_OBJECT_SEPERATION_DISTANCE*3);
+ObjectTracker object_tracker(MIN_OBJECT_SEPERATION_DISTANCE*2);
 geometry_msgs::Point waypoint_ogrid;
 geometry_msgs::Pose boatPose_enu;
 geometry_msgs::Twist boatTwist_enu;
 uf_common::PoseTwistStamped waypoint_enu,carrot_enu;
 ros::Time pubObjectsTimer;
+ros::ServiceClient boundsClient;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Interactive marker globals
@@ -77,15 +77,20 @@ interactive_markers::MenuHandler::EntryHandle menuEntry;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //These are changed on startup if /get_bounds service is present
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Eigen::Vector2d BOUNDARY_CORNER_1 (30-80, 10-150);
-//Eigen::Vector2d BOUNDARY_CORNER_2 (30-80, 120-150);
-//Eigen::Vector2d BOUNDARY_CORNER_3 (140-80, 120-150);
-//Eigen::Vector2d BOUNDARY_CORNER_4 (140-80, 10-150);
+Eigen::Vector2d BOUNDARY_CORNER_1 (30-80, 10-150);
+Eigen::Vector2d BOUNDARY_CORNER_2 (30-80, 120-150);
+Eigen::Vector2d BOUNDARY_CORNER_3 (140-80, 120-150);
+Eigen::Vector2d BOUNDARY_CORNER_4 (140-80, 10-150);
 
-Eigen::Vector2d BOUNDARY_CORNER_1 (0, 0);
-Eigen::Vector2d BOUNDARY_CORNER_2 (1, 0);
-Eigen::Vector2d BOUNDARY_CORNER_3 (1, -1);
-Eigen::Vector2d BOUNDARY_CORNER_4 (0, -1);
+//Eigen::Vector2d BOUNDARY_CORNER_1 (0, 0);
+//Eigen::Vector2d BOUNDARY_CORNER_2 (1, 0);
+//Eigen::Vector2d BOUNDARY_CORNER_3 (1, -1);
+//Eigen::Vector2d BOUNDARY_CORNER_4 (0, -1);
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Forward declare
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void createROIS(string name, bool update = false);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Helper function for making interactive markers
@@ -121,32 +126,17 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	static tf2_ros::TransformListener tfListener(tfBuffer);
 	geometry_msgs::TransformStamped T_enu_velodyne_ros;
 	try {
-	    T_enu_velodyne_ros = tfBuffer.lookupTransform("enu", "velodyne",ros::Time(0)); //change time to pcloud header? pcloud->header.stamp 
-        } catch (tf2::TransformException &ex) {
-            ROS_ERROR("%s",ex.what());
-            return;
-        }
+		T_enu_velodyne_ros = tfBuffer.lookupTransform("enu", "velodyne",ros::Time(0)); //change time to pcloud header? pcloud->header.stamp 
+    } catch (tf2::TransformException &ex) {
+      ROS_ERROR("%s",ex.what());
+      return;
+    }
 
-	//Check for bounds from parameter server on startup
-	navigator_msgs::Bounds::Request boundsReq;
-	navigator_msgs::Bounds::Response boundsRes;
-	boundsReq.to_frame = "enu";
-	
-	if (boundsClient.call(boundsReq,boundsRes) && boundsRes.bounds.size() == 4) {
-		BOUNDARY_CORNER_1(0) = boundsRes.bounds[0].x; BOUNDARY_CORNER_1(1) = boundsRes.bounds[0].y;
-		BOUNDARY_CORNER_2(0) = boundsRes.bounds[1].x; BOUNDARY_CORNER_2(1) = boundsRes.bounds[1].y;
-		BOUNDARY_CORNER_3(0) = boundsRes.bounds[2].x; BOUNDARY_CORNER_3(1) = boundsRes.bounds[2].y;
-		BOUNDARY_CORNER_4(0) = boundsRes.bounds[3].x; BOUNDARY_CORNER_4(1) = boundsRes.bounds[3].y;
-		ROS_INFO_STREAM("LIDAR | Bounds set to rosparam");
-	} else {
-		ROS_INFO_STREAM("LIDAR | Bounds not available from /get_bounds service....");
-	}
-
-        //Convert ROS transform to eigen transform
-        Eigen::Affine3d T_enu_velodyne(Eigen::Affine3d::Identity());
-        Eigen::Affine3d R_enu_velodyne(Eigen::Affine3d::Identity());
-        geometry_msgs::Vector3  lidarPos =  T_enu_velodyne_ros.transform.translation;
-        geometry_msgs::Quaternion quat = T_enu_velodyne_ros.transform.rotation;
+    //Convert ROS transform to eigen transform
+    Eigen::Affine3d T_enu_velodyne(Eigen::Affine3d::Identity());
+    Eigen::Affine3d R_enu_velodyne(Eigen::Affine3d::Identity());
+    geometry_msgs::Vector3  lidarPos =  T_enu_velodyne_ros.transform.translation;
+    geometry_msgs::Quaternion quat = T_enu_velodyne_ros.transform.rotation;
 	T_enu_velodyne.translate(Eigen::Vector3d(lidarPos.x,lidarPos.y,lidarPos.z));
 	T_enu_velodyne.rotate(Eigen::Quaterniond(quat.w,quat.x,quat.y,quat.z));
 	R_enu_velodyne.rotate(Eigen::Quaterniond(quat.w,quat.x,quat.y,quat.z));
@@ -283,6 +273,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 
 	//Clear all markers from interactive server
 	//markerServer->clear();	
+	ROS_INFO_STREAM("LIDAR |  Lidar position in enu " << lidarPos.x << "," << lidarPos.y << "," << lidarPos.z);
 
 	for (auto obj : object_permanence) {
 		//Skip objects that are not real
@@ -367,7 +358,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		
 		//Turn obj into an interactive marker for rviz
 		markerServer->insert( int_marker );
-		menuHandler.apply( *markerServer, to_string(obj.id) );
+		menuHandler.apply( *markerServer, std::to_string(obj.id) );
 	}	
 	//Publish all data to ROS
 	pubMarkers.publish(markers);
@@ -379,7 +370,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	//Publish PerceptionObjects at some slower rate
 	if ( (ros::Time::now() - pubObjectsTimer).toSec() > 2 ) {
 		navigator_msgs::PerceptionObjectArray objectArray;
-		object_tracker.lookUpByName("all",objectArray.objects);
+		object_tracker.lookUpByName("tess",objectArray.objects);
 		pubObjects.publish(objectArray);
 		pubObjectsTimer = ros::Time::now();
 	}
@@ -407,50 +398,86 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
 	ROS_INFO_STREAM("LIDAR | DB request with name " << req.name << " and command " << req.cmd);
 	
 	//Assume match not found and clear old info
-        res.found = false;
+	res.found = false;
 	res.objects.clear();
 
 	//Look for desired object by name in database
-	if (req.name.size() > 2) {
+	if (req.name.size() >= 1) {
 		res.found = object_tracker.lookUpByName(req.name,res.objects);
 	}
 
 	//Process cmd portion after spliting request into 3 components
 	auto split1 = req.cmd.find('=');
-	auto split2 = req.cmd.find(',');
-	if ( split1 != string::npos and split2 != string::npos ) {
-		auto name = req.cmd.substr(0,split1);
-
-		//Check if argument is x,y or r,g,b
-		auto split3 = req.cmd.find(',', split2 + 1);
-		if ( split3 != string::npos ){
-			// It's r, g, b
-			auto r = stod(req.cmd.substr(split1+1,split2-split1));
-			auto g = stod(req.cmd.substr(split2+1,split3-split2));
-			auto b = stod(req.cmd.substr(split3+1));
-
-			std_msgs::ColorRGBA color;
-			color.r = r;
-			color.g = g;
-			color.b = b;
-			
-			object_tracker.colorize(name, color);
-		
+	vector<size_t> commas;
+	vector<double> values;
+	size_t splitBefore = split1+1, splitAfter = 0;
+	while (true) {
+		splitAfter = req.cmd.find(',',splitBefore);
+		if (splitAfter != string::npos) {
+			auto next = stod(req.cmd.substr(splitBefore,splitAfter-splitBefore));
+			splitBefore = splitAfter+1;
+			values.push_back(next);
 		} else {
-
-			auto x = stod(req.cmd.substr(split1+1,split2-split1));
-			auto y = stod(req.cmd.substr(split2+1));
-			cout << "LIDAR | Cmd is " << name << "," << x << "," << y << endl;
-			//Set new position
-			geometry_msgs::Pose newPose;
-			newPose.position.x = x;
-			newPose.position.y = y;
-			newPose.position.z = 0;
-			//Update database
-			object_tracker.lock(name,newPose.position);
-			//Update interactive markers
-			markerServer->setPose(name,newPose);
-			markerServer->applyChanges();
+			if (values.size() > 0) {
+				auto next = stod(req.cmd.substr(splitBefore));
+				values.push_back(next);
+			}
+			break;
+		}
+	}	
+	//String doesn't have = sign so just a reset command
+	if ( split1 == string::npos) {
+		auto name = req.cmd;
+		if (name == "reset") {
+			ROS_INFO_STREAM("LIDAR | reset cmd is " << name);
+			//Call reset for all major components
+			markerServer->clear();
+			markerServer->applyChanges();	
+			//Object database			
+			object_tracker.reset();
+			//Re-create ROIs
+			createROIS("BuoyField",true); createROIS("CoralSurvey",true); createROIS("FindBreak",true); createROIS("AcousticPinger",true); createROIS("Shooter",true);
+			createROIS("Scan_The_Code",true); createROIS("Gate_1",true); createROIS("Gate_2",true); createROIS("Gate_3",true); createROIS("Dock",true);
+			//Get a fresh ogrid
+			ogrid.reset();
+		} else if (name == "Reset") {
+			ROS_INFO_STREAM("LIDAR | Reset cmd is " << name);
+		    for (auto ii = 0; ii < 9; ++ii) {
+                auto name = object_tracker.saved_objects[ii].name;
+		        //Set new position
+		        geometry_msgs::Pose newPose;
+		        newPose.position.x = 0;
+		        newPose.position.y = 0;
+		        newPose.position.z = 0;
+		        //Update database
+		        object_tracker.lock(name,newPose.position);
+		        //Update interactive markers
+		        markerServer->setPose(name,newPose);
+	  	        markerServer->applyChanges();
+            }
+        }
+    } else if (values.size() == 2) {
+		auto name = req.cmd.substr(0,split1);
+		ROS_INFO_STREAM("LIDAR | ROI cmd is " << name << "," << values[0]  << "," << values[1]);
+		//Set new position
+		geometry_msgs::Pose newPose;
+		newPose.position.x = values[0];
+		newPose.position.y = values[1];
+		newPose.position.z = 0;
+		//Update database
+		object_tracker.lock(name,newPose.position);
+		//Update interactive markers
+		markerServer->setPose(name,newPose);
+	  	markerServer->applyChanges();
+	} else if (values.size() == 4) {
+		auto name = req.cmd.substr(0,split1);
+		ROS_INFO_STREAM("LIDAR | Color cmd is " << name << "," << values[0] << "," << values[1] << "," << values[2] << "," << values[3]);
+		for (auto &obj : object_tracker.saved_objects) {
+			if (obj.name == name && obj.id == values[3]) { 
+				obj.color.r = values[0]/225.;
+				obj.color.g = values[1]/255.;
+				obj.color.b = values[2]/255.;
+			}
 		}
 	}
 	return true;
@@ -475,7 +502,7 @@ void roiCallBack( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &f
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void createROIS(string name)
+void createROIS(string name, bool update)
 {
 	//Add ROI estimates
   	visualization_msgs::InteractiveMarker int_marker; 
@@ -512,7 +539,16 @@ void createROIS(string name)
 	markerServer->insert( int_marker );	
 	markerServer->setCallback(int_marker.name,&roiCallBack);
 	markerServer->applyChanges();
-	object_tracker.addROI(name);
+    if (update) {
+        geometry_msgs::Pose newPose;
+	    newPose.position.x = 0;
+	    newPose.position.y = 0;
+	    newPose.position.z = 0;
+	    markerServer->setPose(name,newPose);
+	    markerServer->applyChanges();
+    } else {
+	    object_tracker.addROI(name);
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -561,6 +597,26 @@ void markerCallBack( const visualization_msgs::InteractiveMarkerFeedbackConstPtr
 	}	
 }
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Entry point to code
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void resetBounds(const ros::TimerEvent& event)
+{
+	navigator_msgs::Bounds::Request boundsReq;
+	navigator_msgs::Bounds::Response boundsRes;
+	boundsReq.to_frame = "enu";
+	if (boundsClient.call(boundsReq,boundsRes) && boundsRes.bounds.size() == 4) {
+		BOUNDARY_CORNER_1(0) = boundsRes.bounds[0].x; BOUNDARY_CORNER_1(1) = boundsRes.bounds[0].y;
+		BOUNDARY_CORNER_2(0) = boundsRes.bounds[1].x; BOUNDARY_CORNER_2(1) = boundsRes.bounds[1].y;
+		BOUNDARY_CORNER_3(0) = boundsRes.bounds[2].x; BOUNDARY_CORNER_3(1) = boundsRes.bounds[2].y;
+		BOUNDARY_CORNER_4(0) = boundsRes.bounds[3].x; BOUNDARY_CORNER_4(1) = boundsRes.bounds[3].y;
+		ROS_INFO_STREAM("LIDAR | Bounds set to rosparam");
+	} else {
+		ROS_INFO_STREAM("LIDAR | Bounds not available from /get_bounds service....");
+	}
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Entry point to code
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -605,19 +661,7 @@ int main(int argc, char* argv[])
 
 	//Check for bounds from parameter server on startup
 	boundsClient = nh.serviceClient<navigator_msgs::Bounds>("/get_bounds");
-	navigator_msgs::Bounds::Request boundsReq;
-	navigator_msgs::Bounds::Response boundsRes;
-	boundsReq.to_frame = "enu";
-	
-	if (boundsClient.call(boundsReq,boundsRes) && boundsRes.bounds.size() == 4) {
-		BOUNDARY_CORNER_1(0) = boundsRes.bounds[0].x; BOUNDARY_CORNER_1(1) = boundsRes.bounds[0].y;
-		BOUNDARY_CORNER_2(0) = boundsRes.bounds[1].x; BOUNDARY_CORNER_2(1) = boundsRes.bounds[1].y;
-		BOUNDARY_CORNER_3(0) = boundsRes.bounds[2].x; BOUNDARY_CORNER_3(1) = boundsRes.bounds[2].y;
-		BOUNDARY_CORNER_4(0) = boundsRes.bounds[3].x; BOUNDARY_CORNER_4(1) = boundsRes.bounds[3].y;
-		ROS_INFO_STREAM("LIDAR | Bounds set to rosparam");
-	} else {
-		ROS_INFO_STREAM("LIDAR | Bounds not available from /get_bounds service....");
-	}
+	ros::Timer timerCallBack = nh.createTimer(ros::Duration(1.5), resetBounds);	
 
 	//Interactive Marker Menu Setup
 	markerServer = new interactive_markers::InteractiveMarkerServer("/unclassified_markers","",false);
