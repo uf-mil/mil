@@ -68,11 +68,15 @@ def main():
         fprint("Moving in a circle around last clicked_point with radius {} meters".format(args.argument), title="MOVE_COMMAND")
         sub = nh.subscribe("/rviz_point", PointStamped)
         target_point = yield util.wrap_time_notice(sub.get_next_message(), 2, "Rviz point")
+        target_point = navigator_tools.point_to_numpy(target_point.point)
+        circle = n.move.circle_point(target_point, float(args.argument))
+        focus = target_point
+        focus[2] = 1
         
         circle = n.move.circle(navigator_tools.point_to_numpy(target_point), args.argument)
         for p in circle:
             fprint("Moving to next point...")
-            yield p.go()
+            yield p.go(focus=focus, move_type='skid')
 
     else:
         movement = getattr(n.move, args.command)
