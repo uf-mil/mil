@@ -46,9 +46,13 @@ class KeyboardClient():
                           "Force Kill:           K          ",
                           "Station Hold:         h          ",
                           "Autonomous Control:   u          ",
-                          "RC Control:           r          ",
+                          "Joystick Control:     j          ",
                           "Keyboard Control:     b          ",
                           "Cycle Control Device: c          ",
+                          "Shooter Load:         r          ",
+                          "Shooter Fire:         f          ",
+                          "Shooter Cancel:       t          ",
+                          "The Big H:            H          ",
                           "Move Forward:         w          ",
                           "Move Backward:        s          ",
                           "Move Port:            a          ",
@@ -73,6 +77,8 @@ class KeyboardClient():
         # The 'q' key can be used to quit the program
         if (keycode == ord('q')):
             rospy.signal_shutdown("The user has closed the keyboard client")
+        elif (keycode == ord('H')):
+            raise NotImplementedError("Kevin, you just threw away your shot!")
 
         return keycode if keycode != -1 else None
 

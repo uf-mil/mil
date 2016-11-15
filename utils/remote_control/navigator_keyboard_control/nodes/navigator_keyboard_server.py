@@ -79,12 +79,18 @@ class KeyboardServer(object):
             self.remote.station_hold()
         elif (key == ord('u')):
             self.remote.select_autonomous_control()
-        elif (key == ord('r')):
+        elif (key == ord('j')):
             self.remote.select_rc_control()
         elif (key == ord('b')):
             self.remote.select_keyboard_control()
         elif (key == ord('c')):
             self.remote.select_next_control()
+        elif (key == ord('r')):
+            self.remote.shooter_load()
+        elif (key == ord('f')):
+            self.remote.shooter_fire()
+        elif (key == ord('t')):
+            self.remote.shooter_cancel()
 
         # This block handles the keys tied to motion
         if (key == ord('w')):
