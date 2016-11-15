@@ -5,11 +5,55 @@ explorer_next:
   description: The next unknown object to search for when no missions are running, defaults to furthest away (ALL)
   default: ALL
 
+totem_direction_1:
+  param: /mission/totems/direction_1
+  options: [CLOCKWISE, COUNTER-CLOCKWISE, False]
+  description: >
+    What direction the Find Totems and Avoid Obstacles mission should circle first
+    if False, no more totems should be circled
+totem_color_1:
+  param: /mission/totems/color_1
+  options: [RED,GREEN,YELLOW,BLUE]
+  description: What color totem the Find Totems and Avoid Obstacles mission should circle first
+
+totem_direction_2:
+  param: /mission/totems/direction_2
+  options: [CLOCKWISE, COUNTER-CLOCKWISE, False]
+  description: >
+    What direction the Find Totems and Avoid Obstacles mission should circle second
+    if False, no more totems should be circled
+totem_color_2:
+  param: /mission/totems/color_2
+  options: [RED,GREEN,YELLOW,BLUE]
+  description: What color totem the Find Totems and Avoid Obstacles mission should circle second
+
+totem_direction_3:
+  param: /mission/totems/direction_3
+  options: [CLOCKWISE, COUNTER-CLOCKWISE, False]
+  description: >
+    What direction the Find Totems and Avoid Obstacles mission should circle third
+    if False, no more totems should be circled
+totem_color_3:
+  param: /mission/totems/color_3
+  options: [RED,GREEN,YELLOW,BLUE]
+  description: What color totem the Find Totems and Avoid Obstacles mission should circle third
+
+totem_direction_4:
+  param: /mission/totems/direction_4
+  options: [CLOCKWISE, COUNTER-CLOCKWISE, False]
+  description: >
+    What direction the Find Totems and Avoid Obstacles mission should circle fourth
+    if False, no more totems should be circled
+totem_color_4:
+  param: /mission/totems/color_4
+  options: [RED,GREEN,YELLOW,BLUE]
+  description: What color totem the Find Totems and Avoid Obstacles mission should circle fourth
+
+
 detect_deliver_color:
   param: /mission/detect_deliver/Color
   options: [RED, GREEN, BLUE, ANY]
   description: The color of the symbol to shoot at in detect deliver
-
 detect_deliver_shape:
   param: /mission/detect_deliver/Shape
   options: [CIRCLE, TRIANGLE, CROSS, ANY]
@@ -19,12 +63,10 @@ scan_the_code_color1:
   param: /mission/scan_the_code/color1
   options: [RED,GREEN,YELLOW,BLUE]
   description: The first color in the 3 color sequence of scan the code
-
 scan_the_code_color2:
   param: /mission/scan_the_code/color2
   options: [RED,GREEN,YELLOW,BLUE]
   description: The second color in the 3 color sequence of scan the code
-
 scan_the_code_color3:
   param: /mission/scan_the_code/color3
   options: [RED,GREEN,YELLOW,BLUE]
@@ -34,21 +76,27 @@ coral_surey_shape1:
   param: /mission/coral_survey/shape1
   options: [CIRCLE, TRIANGLE, CROSS]
   description: The shape identified in quadrant I of the Underwater Shape Identification challenge
-
 coral_surey_shape2:
   param: /mission/coral_survey/shape2
   options: [CIRCLE, TRIANGLE, CROSS]
   description: The shape identified in quadrant II of the Underwater Shape Identification challenge
-
 coral_surey_shape3:
   param: /mission/coral_survey/shape3
   options: [CIRCLE, TRIANGLE, CROSS]
   description: The shape identified in quadrant III of the Underwater Shape Identification challenge
-
 coral_surey_shape4:
   param: /mission/coral_survey/shape4
   options: [CIRCLE, TRIANGLE, CROSS]
   description: The shape identified in quadrant IV of the Underwater Shape Identification challenge
+
+coral_survey_search_first:
+  param: /mission/coral_survey/search_first
+  options: [1, 2, 3, 4]
+  description: One of the quadrants to search for shapes in during the coral survey mission
+coral_survey_search_second:
+  param: /mission/coral_survey/search_second
+  options: [1, 2, 3, 4]
+  description: The other quadrant to search for shapes in during the coral survey mission
 
 find_the_break_markers:
   param: /mission/find_the_break/markers
@@ -62,7 +110,6 @@ acoustic_pinger_active:
     The two buoys the active pinger is between for the fist instance
     of the acoustic pinger transit. The first instance will be the acoustic
     pinger transit first classified  (with the lowest ID in the database)
-
 acoustic_pinger_active2:
   param: /mission/acoustic_pinger/active2
   options: [RED-WHITE,WHITE-WHITE,WHITE-GREEN]
@@ -70,7 +117,6 @@ acoustic_pinger_active2:
     The two buoys the active pinger is between for the second instance
     of the acoustic pinger transit. The second instance will be the acoustic
     pinger transit classified second (with the second lowest ID in the database)
-
 acoustic_pinger_active3:
   param: /mission/acoustic_pinger/active3
   options: [RED-WHITE,WHITE-WHITE,WHITE-GREEN]
@@ -78,7 +124,6 @@ acoustic_pinger_active3:
     The two buoys the active pinger is between for the third instance
     of the acoustic pinger transit. The third instance will be the acoustic
     pinger transit classified third (with the third lowest ID in the database)
-
 acoustic_pinger_active4:
   param: /mission/acoustic_pinger/active4
   options: [RED-WHITE,WHITE-WHITE,WHITE-GREEN]
@@ -86,3 +131,33 @@ acoustic_pinger_active4:
     The two buoys the active pinger is between for the fourth instance
     of the acoustic pinger transit. The fourth instance will be the acoustic
     pinger transit classified third (with the highest ID in the database)
+
+dock_shape_1:
+  param: /mission/identify_dock/shape_1
+  options: [CIRCLE, TRIANGLE, CROSS, ANY]
+  description: >
+    The shape of the first bay to dock in during the dentify Symbols and Dock mission.
+    If set to ANY, mission should dock based on the color paramter and set this
+    paramter during the mission
+dock_color_1:
+  param: /mission/identify_dock/color_1
+  options: [RED, GREEN, BLUE, ANY]
+  description: >
+    The color of the first bay to dock in during the dentify Symbols and Dock mission.
+    If set to ANY, mission should dock based on the shape paramter and set this
+    paramter during the mission
+
+dock_shape_2:
+  param: /mission/identify_dock/shape_2
+  options: [CIRCLE, TRIANGLE, CROSS, ANY]
+  description: >
+    The shape of the second bay to dock in during the dentify Symbols and Dock mission.
+    If set to ANY, mission should dock based on the color paramter and set this
+    paramter during the mission
+dock_color_2:
+  param: /mission/identify_dock/color_2
+  options: [RED, GREEN, BLUE, ANY]
+  description: >
+    The color of the second bay to dock in during the dentify Symbols and Dock mission.
+    If set to ANY, mission should dock based on the shape paramter and set this
+    paramter during the mission
