@@ -35,7 +35,7 @@ struct LidarBeam
 struct cell
 {
 	int16_t hits = 0;
-	float min = 1e5,max = -1e5;
+	//float min = 1e5,max = -1e5;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,7 +44,7 @@ struct cell
 struct beamEntry
 {
 	void update(const LidarBeam &beam) {
-		if (q.size() >= 20) { q.pop_front(); }
+		if (q.size() >= 30) { q.pop_front(); }
 		q.push_back(beam);
 	}
 	std::deque<LidarBeam> q;
@@ -242,8 +242,8 @@ class OccupancyGrid
 				int y = floor(p.y/VOXEL_SIZE_METERS + GRID_SIZE/2);
 				float z = p.z;
 				if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE) {
-					if (z < ogrid[y][x].min) { ogrid[y][x].min = z; }
-					if (z > ogrid[y][x].max) { ogrid[y][x].max = z; }
+					//if (z < ogrid[y][x].min) { ogrid[y][x].min = z; }
+					//if (z > ogrid[y][x].max) { ogrid[y][x].max = z; }
 					ogrid[y][x].hits += 5;
 					pointCloudTable[y*GRID_SIZE+x].update(p);
 					pointCloudTable_Uno[y*GRID_SIZE+x].push_back(p);
@@ -272,7 +272,7 @@ class OccupancyGrid
 				int binaryCol = 0;
 				for (int col = boatCol - ROI_SIZE/2; col < boatCol + ROI_SIZE/2; ++col,++binaryCol) {
 					//if ( std::abs(ogrid[row][col].max-ogrid[row][col].min) >= heightDiff && ogrid[row][col].hits >= minHit && ogrid[row][col].max <= maxHeight) { 
-					if ( ogrid[row][col].hits >= minHits && pointCloudTable[row*GRID_SIZE+col].q.size() >= lidarMinPoints && ogrid[row][col].max-ogrid[row][col].min >= objectMinHeight) { 
+					if ( ogrid[row][col].hits >= minHits && pointCloudTable[row*GRID_SIZE+col].q.size() >= lidarMinPoints) {  //&& ogrid[row][col].max-ogrid[row][col].min >= objectMinHeight) { 
 						//std::cout << "Found " << row << "," << col << " has " << pointCloudTable[row*GRID_SIZE+col].q.size() << " points" << std::endl;
 						//double r_enu = (row - GRID_SIZE/2)*VOXEL_SIZE_METERS,c_enu = (col - GRID_SIZE/2)*VOXEL_SIZE_METERS;
 						//std::cout << "Binary hit at x,y " << c_enu << "," << r_enu << "," << ogrid[row][col].hits << std::endl;

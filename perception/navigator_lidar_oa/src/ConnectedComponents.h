@@ -22,20 +22,26 @@ struct objectStats
 	void update(int row, int col, cell z)
 	{
 		//std::cout << "Stats: " << z.min << "," << z.max << std::endl;
-		if (first) {
+		/*if (first) {
 			minRow = maxRow = row;
 			minCol = maxCol = col;
 			minHeight = z.min;
 			maxHeight = z.max;
 		} else {
-			if (row < minRow) { minRow = row; }
-			if (row > maxRow) { maxRow = row; }
-			if (col < minCol) { minCol = col; }
-			if (col > maxCol) { maxCol = col; }
-			if (z.min < minHeight) { minHeight = z.min; }
-			if (z.max > maxHeight) { maxHeight = z.max; }
+			minRow = std::min(row,minRow);
+			minCol = std::min(col,minCol);
+			maxRow = std::max(row,maxRow);
+			maxCol = std::max(col,maxCol);
+			minHeight = std::min(z.min,minHeight);
+			maxHeight = std::max(z.max.maxHeight);
+			//if (row < minRow) { minRow = row; }
+			//if (row > maxRow) { maxRow = row; }
+			//if (col < minCol) { minCol = col; }
+			//if (col > maxCol) { maxCol = col; }
+			//if (z.min < minHeight) { minHeight = z.min; }
+			//if (z.max > maxHeight) { maxHeight = z.max; }
 		}
-		first = false;
+		first = false;*/
 	}
 	void insertPersist(const std::deque<LidarBeam> &strikes) {
 		geometry_msgs::Point32 p32;
@@ -87,6 +93,7 @@ struct objectMessage
 	bool locked = false;
 	bool real = true;
 	ros::Time age;
+    std::array<size_t,5> confidence{ {0,0,0,0,0} };
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

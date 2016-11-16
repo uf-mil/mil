@@ -52,10 +52,10 @@ public:
     ////////////////////////////////////////////////////////////
 	void reset()
 	{
-		curr_id = 0;
+		curr_id = 10;
 		foundGates = false;
 		gatePositions.clear();
-		saved_objects.clear();		
+		saved_objects.erase(saved_objects.begin()+10,saved_objects.end());		
 	}
 
 	////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ public:
 	std::vector<objectMessage> add_objects(std::vector<objectMessage> objects, sensor_msgs::PointCloud &rosCloud, const geometry_msgs::Pose &boatPose_enu)
 	{
 		//Verify that the raw objects list doesn't have objects really close together....
-		//#ifdef DEBUG
+		#ifdef DEBUG
 			auto cnt = 0;
 			for (auto &ii : objects) {
 				++cnt;
@@ -78,7 +78,7 @@ public:
 					BOOST_ASSERT_MSG(xyDistance > diff_thresh/3, ss.str().c_str());
 				}
 			}
-		//#endif
+		#endif
 
 		//Reset all saved objects to not seen
 		for(auto &s_obj : saved_objects) {
@@ -112,7 +112,8 @@ public:
 				obj.current = true;
 				obj.locked = min_obj->locked;
 				obj.real = min_obj->real;
-				*min_obj = obj;
+			    obj.confidence = min_obj->confidence;
+                *min_obj = obj;
 			} else {
 				obj.id = curr_id++;
 				obj.current = true;
@@ -137,13 +138,13 @@ public:
 
 		//After updating database, process each object to updates its info
 		int duplicateShooter = 0, duplicateScan = 0;
-		cnt = -1;
+		auto cnt = -1;
 		std::tuple<int,double> shooterMin, scanMin;
 		for(auto &s_obj : saved_objects) {
 			++cnt;
 			if (!s_obj.real) {continue;}
 			//Try to fit a normal
-			FitPlanesToCloud(s_obj,rosCloud,boatPose_enu);
+			//FitPlanesToCloud(s_obj,rosCloud,boatPose_enu);
 			//Classify volume
 			VolumeClassifier(s_obj);
 			//Look for duplicates of the shooter or scan_the_code
@@ -210,9 +211,16 @@ public:
     /// \param ?
     ////////////////////////////////////////////////////////////
 	bool lookUpByName(std::string name, std::vector< navigator_msgs::PerceptionObject > &objects) {
+		int id;
+		try {
+			id = stod(name);
+		} catch (...) {
+			id = -1;
+		}
+
 		for (const auto &s_obj : saved_objects) {
-			if ( (name == "all" && s_obj.real) || (name == s_obj.name) || (name == "All" && !s_obj.real) ) {
-				if (!s_obj.real && !s_obj.locked) { continue; }
+			if ( (name == "tess" ) || (name == "all" && s_obj.real) || (name == s_obj.name || id == s_obj.id) || (name == "All" && !s_obj.real) ) {
+				//if (!s_obj.real && !s_obj.locked) { continue; }
 				navigator_msgs::PerceptionObject thisOne;
 				thisOne.header.stamp - s_obj.age;
 				thisOne.name = s_obj.name;
@@ -250,7 +258,7 @@ public:
 		//Create a list of all the totems in the database
 		std::vector< int > totems;
 		for (auto &obj : saved_objects) {
-			if (obj.name == navigator_msgs::PerceptionObject::TOTEM) {
+			if (obj.name == navigator_msgs::PerceptionObject::TOTEM || obj.name == "start_gate") {
 				totems.push_back(obj.id);
 			}
 		}
@@ -295,7 +303,7 @@ public:
 
 			//Did we find the gates?
 			//ROS_INFO_STREAM("LIDAR | FOUND 4 TOTEMS: " << totems[permute[0]] << "," << totems[permute[1]] << "," << totems[permute[2]] << "," << totems[permute[3]] << " with edge distance of " << distance << " between " << edge1 << " and " << edge2 << " and line error of " << error);
-			if (distance >= 22 && distance <= 40 && error <= 20) {
+			if (distance >= 22 && distance <= 40 && error <= 10) {
 				//Save center gate
 				gatePositions.push_back(center);
 
