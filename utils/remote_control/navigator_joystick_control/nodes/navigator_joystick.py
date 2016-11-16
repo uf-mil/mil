@@ -6,7 +6,6 @@ import rospy
 from sensor_msgs.msg import Joy
 
 
-__author__ = "Anthony Olive"
 __maintainer__ = "Anthony Olive"
 __email__ = "anthony@iris-systems.net"
 __copyright__ = "Copyright 2016, MIL"
@@ -30,9 +29,8 @@ class Joystick(object):
 
     def reset(self):
         '''
-        Used to reset the state of the controller.
-        Sometimes when it disconnects then comes back online, the settings are all
-            out of wack.
+        Used to reset the state of the controller. Sometimes when it
+        disconnects then comes back online, the settings are all out of whack.
         '''
         self.last_kill = False
         self.last_station_hold_state = False

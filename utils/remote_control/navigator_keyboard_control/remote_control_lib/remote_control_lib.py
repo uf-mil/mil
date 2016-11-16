@@ -67,8 +67,8 @@ class RemoteControl(object):
         timed out before running the function that was called.
         '''
         @functools.wraps(function)
-        def wrapper(self, *args, **kw):
-            return function(self, *args, **kw)
+        def wrapper(self, *args, **kwargs):
+            return function(self, *args, **kwargs)
         return wrapper
 
     def update_kill_status(self, alarm):
@@ -77,13 +77,10 @@ class RemoteControl(object):
         alarm. Caches the last displayed kill status to avoid updating the
         display with the same information twice.
         '''
-        if (alarm.clear):
-            self.is_killed = False
-        else:
-            self.is_killed = True
+        self.is_killed = not alarm.clear
 
     @timeout_check
-    def kill(self, *args, **kw):
+    def kill(self, *args, **kwargs):
         '''
         Kills the system regardless of what state it is in.
         '''
@@ -94,7 +91,7 @@ class RemoteControl(object):
         )
 
     @timeout_check
-    def clear_kill(self, *args, **kw):
+    def clear_kill(self, *args, **kwargs):
         '''
         Clears the system kill regardless of what state it is in.
         '''
@@ -103,7 +100,7 @@ class RemoteControl(object):
         self.kill_alarm.clear_alarm()
 
     @timeout_check
-    def toggle_kill(self, *args, **kw):
+    def toggle_kill(self, *args, **kwargs):
         '''
         Toggles the kill status when the toggle_kill_button is pressed.
         '''
@@ -119,7 +116,7 @@ class RemoteControl(object):
             )
 
     @timeout_check
-    def station_hold(self, *args, **kw):
+    def station_hold(self, *args, **kwargs):
         '''
         Sets the goal point to the current location and switches to autonomous
         mode in order to stay at that point.
@@ -134,7 +131,7 @@ class RemoteControl(object):
         self.station_hold_alarm.clear_alarm()
 
     @timeout_check
-    def select_autonomous_control(self, *args, **kw):
+    def select_autonomous_control(self, *args, **kwargs):
         '''
         Selects the autonomously generated trajectory as the active controller.
         '''
@@ -142,7 +139,7 @@ class RemoteControl(object):
         self.wrench_changer("autonomous")
 
     @timeout_check
-    def select_rc_control(self, *args, **kw):
+    def select_rc_control(self, *args, **kwargs):
         '''
         Selects the XBox remote joystick as the active controller.
         '''
@@ -150,7 +147,7 @@ class RemoteControl(object):
         self.wrench_changer("rc")
 
     @timeout_check
-    def select_keyboard_control(self, *args, **kw):
+    def select_keyboard_control(self, *args, **kwargs):
         '''
         Selects the keyboard teleoperation service as the active controller.
         '''
@@ -158,7 +155,7 @@ class RemoteControl(object):
         self.wrench_changer("keyboard")
 
     @timeout_check
-    def select_next_control(self, *args, **kw):
+    def select_next_control(self, *args, **kwargs):
         '''
         Selects the autonomously generated trajectory as the active controller.
         '''
@@ -186,7 +183,7 @@ class RemoteControl(object):
         self.shooter_cancel_client(TriggerRequest())
 
     @timeout_check
-    def publish_wrench(self, x, y, rotation, stamp=None, *args, **kw):
+    def publish_wrench(self, x, y, rotation, stamp=None, *args, **kwargs):
         '''
         Publishes a wrench to the specified node based on force inputs from the
         controller.
@@ -204,7 +201,7 @@ class RemoteControl(object):
             self.wrench_pub.publish(wrench)
 
     @timeout_check
-    def clear_wrench(self, *args, **kw):
+    def clear_wrench(self, *args, **kwargs):
         '''
         Publishes a wrench to the specified node based on force inputs from the
         controller.

@@ -39,6 +39,26 @@ class KeyboardServer(object):
         # Initialize this to a random UUID so that a client without a UUID cannot authenticate
         self.locked_uuid = uuid.uuid4().hex
 
+        # This maps each key to a remote control function
+        self.key_mappings = {ord('k'): lambda: self.remote.toggle_kill(),
+                             ord('K'): lambda: self.remote.kill(),
+                             ord('h'): lambda: self.remote.station_hold(),
+                             ord('u'): lambda: self.remote.select_autonomous_control(),
+                             ord('j'): lambda: self.remote.select_rc_control(),
+                             ord('b'): lambda: self.remote.select_keyboard_control(),
+                             ord('c'): lambda: self.remote.select_next_control(),
+                             ord('r'): lambda: self.remote.shooter_load(),
+                             ord('f'): lambda: self.remote.shooter_fire(),
+                             ord('t'): lambda: self.remote.shooter_cancel(),
+                             ord('w'): lambda: self.remote.publish_wrench(self.force_scale, 0, 0),
+                             ord('s'): lambda: self.remote.publish_wrench(-self.force_scale, 0, 0),
+                             ord('a'): lambda: self.remote.publish_wrench(0, self.force_scale, 0),
+                             ord('d'): lambda: self.self.remote.publish_wrench(0, -self.force_scale, 0),
+                             curses.KEY_LEFT: lambda: self.remote.publish_wrench(0, 0, self.torque_scale),
+                             curses.KEY_RIGHT: lambda: self.remote.publish_wrench(0, 0, -self.torque_scale)
+                             }
+        self.movement_keys = [ord('w'), ord('s'), ord('a'), ord('d'), curses.KEY_LEFT, curses.KEY_RIGHT]
+
     def key_recieved(self, req):
         '''
         This function handles the process of locking control of the service to
@@ -69,45 +89,11 @@ class KeyboardServer(object):
         '''
         Executes a remote control action based on the key that was received.
         '''
+        if (key in self.key_mappings):
+            self.key_mappings[key]()
 
-        # This block handles the keys tied to control state management
-        if (key == ord('k')):
-            self.remote.toggle_kill()
-        if (key == ord('K')):
-            self.remote.kill()
-        elif (key == ord('h')):
-            self.remote.station_hold()
-        elif (key == ord('u')):
-            self.remote.select_autonomous_control()
-        elif (key == ord('j')):
-            self.remote.select_rc_control()
-        elif (key == ord('b')):
-            self.remote.select_keyboard_control()
-        elif (key == ord('c')):
-            self.remote.select_next_control()
-        elif (key == ord('r')):
-            self.remote.shooter_load()
-        elif (key == ord('f')):
-            self.remote.shooter_fire()
-        elif (key == ord('t')):
-            self.remote.shooter_cancel()
-
-        # This block handles the keys tied to motion
-        if (key == ord('w')):
-            self.remote.publish_wrench(self.force_scale, 0, 0)
-        elif (key == ord('s')):
-            self.remote.publish_wrench(-self.force_scale, 0, 0)
-        elif (key == ord('a')):
-            self.remote.publish_wrench(0, self.force_scale, 0)
-        elif (key == ord('d')):
-            self.remote.publish_wrench(0, -self.force_scale, 0)
-        elif (key == curses.KEY_LEFT):
-            self.remote.publish_wrench(0, 0, self.torque_scale)
-        elif (key == curses.KEY_RIGHT):
-            self.remote.publish_wrench(0, 0, -self.torque_scale)
-
-        # Generates a wrench with zero force or torque if no motion key was pressed
-        else:
+        # If no motion key was received, clear the wrench
+        if (key not in self.movement_keys):
             self.remote.clear_wrench()
 
 
