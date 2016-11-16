@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>navigator_joystick_control</name>
-  <version>4.0.0</version>
-  <description>A server that controls navigator in response to the /Joy node</description>
+  <name>navigator_keyboard_control</name>
+  <version>1.0.0</version>
+  <description>A keyboard control server and client</description>
 
   <maintainer email="anthony@iris-systems.net">Anthony Olive</maintainer>
 
