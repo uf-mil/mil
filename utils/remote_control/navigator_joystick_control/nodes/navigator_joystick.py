@@ -12,7 +12,7 @@ __copyright__ = "Copyright 2016, MIL"
 __license__ = "MIT"
 
 
-rospy.init_node('joystick')
+rospy.init_node("joystick")
 
 
 class Joystick(object):
@@ -21,7 +21,7 @@ class Joystick(object):
         self.force_scale = rospy.get_param("~force_scale", 600)
         self.torque_scale = rospy.get_param("~torque_scale", 500)
 
-        self.remote = RemoteControl('joystick', "/wrench/rc")
+        self.remote = RemoteControl("joystick", "/wrench/rc")
         rospy.Subscriber("joy", Joy, self.joy_recieved)
 
         self.active = False

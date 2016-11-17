@@ -30,32 +30,32 @@ class RemoteControl(object):
 
     def __init__(self, controller_name, wrench_pub=None):
         self.name = controller_name
-        self.wrench_choices = itertools.cycle(['rc', 'keyboard', 'autonomous'])
+        self.wrench_choices = itertools.cycle(["rc", "keyboard", "autonomous"])
 
         self.alarm_broadcaster = AlarmBroadcaster()
         self.kill_alarm = self.alarm_broadcaster.add_alarm(
-            name='kill',
+            name="kill",
             action_required=True,
             severity=0
         )
         self.station_hold_alarm = self.alarm_broadcaster.add_alarm(
-            name='station_hold',
+            name="station_hold",
             action_required=False,
             severity=3
         )
 
-        # rospy.wait_for_service('/change_wrench')
-        self.wrench_changer = rospy.ServiceProxy('/change_wrench', WrenchSelect)
-        self.kill_listener = AlarmListener('kill', self.update_kill_status)
+        # rospy.wait_for_service("/change_wrench")
+        self.wrench_changer = rospy.ServiceProxy("/change_wrench", WrenchSelect)
+        self.kill_listener = AlarmListener("kill", self.update_kill_status)
 
         if (wrench_pub is None):
             self.wrench_pub = wrench_pub
         else:
             self.wrench_pub = rospy.Publisher(wrench_pub, WrenchStamped, queue_size=1)
 
-        self.shooter_load_client = actionlib.SimpleActionClient('/shooter/load', ShooterDoAction)
-        self.shooter_fire_client = actionlib.SimpleActionClient('/shooter/fire', ShooterDoAction)
-        self.shooter_cancel_client = rospy.ServiceProxy('/shooter/cancel', Trigger)
+        self.shooter_load_client = actionlib.SimpleActionClient("/shooter/load", ShooterDoAction)
+        self.shooter_fire_client = actionlib.SimpleActionClient("/shooter/fire", ShooterDoAction)
+        self.shooter_cancel_client = rospy.ServiceProxy("/shooter/cancel", Trigger)
 
         self.is_killed = False
         self.is_timed_out = False
@@ -74,8 +74,7 @@ class RemoteControl(object):
     def update_kill_status(self, alarm):
         '''
         Updates the kill status display when there is an update on the kill
-        alarm. Caches the last displayed kill status to avoid updating the
-        display with the same information twice.
+        alarm.
         '''
         self.is_killed = not alarm.clear
 
@@ -87,7 +86,7 @@ class RemoteControl(object):
         rospy.loginfo("Killing")
         self.wrench_changer("rc")
         self.kill_alarm.raise_alarm(
-            problem_description='System kill from location: {}'.format(self.name)
+            problem_description="System kill from location: {}".format(self.name)
         )
 
     @timeout_check
@@ -112,7 +111,7 @@ class RemoteControl(object):
         else:
             self.wrench_changer("rc")
             self.kill_alarm.raise_alarm(
-                problem_description='System kill from location: {}'.format(self.name)
+                problem_description="System kill from location: {}".format(self.name)
             )
 
     @timeout_check
@@ -125,7 +124,7 @@ class RemoteControl(object):
 
         # Trigger station holding at the current pose
         self.station_hold_alarm.raise_alarm(
-            problem_description='Request to station hold from: {}'.format(self.name)
+            problem_description="Request to station hold from: {}".format(self.name)
         )
         rospy.sleep(0.2)
         self.station_hold_alarm.clear_alarm()

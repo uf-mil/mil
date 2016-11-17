@@ -24,7 +24,7 @@ __copyright__ = "Copyright 2016, MIL"
 __license__ = "MIT"
 
 
-rospy.init_node('keyboard_server')
+rospy.init_node("keyboard_server")
 
 
 class KeyboardServer(object):
@@ -33,8 +33,8 @@ class KeyboardServer(object):
         self.force_scale = rospy.get_param("/joystick_wrench/force_scale", 600)
         self.torque_scale = rospy.get_param("/joystick_wrench/torque_scale", 500)
 
-        self.remote = RemoteControl('keyboard', "/wrench/keyboard")
-        rospy.Service('/keyboard_control', KeyboardControl, self.key_recieved)
+        self.remote = RemoteControl("keyboard", "/wrench/keyboard")
+        rospy.Service("/keyboard_control", KeyboardControl, self.key_recieved)
 
         # Initialize this to a random UUID so that a client without a UUID cannot authenticate
         self.locked_uuid = uuid.uuid4().hex

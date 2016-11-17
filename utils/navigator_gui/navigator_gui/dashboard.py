@@ -10,9 +10,7 @@ import os
 import socket
 import subprocess
 
-from navigator_alarm import AlarmBroadcaster
 from navigator_alarm import AlarmListener
-from navigator_msgs.srv import WrenchSelect
 from python_qt_binding import QtCore
 from python_qt_binding import QtGui
 from python_qt_binding import loadUi
@@ -38,15 +36,15 @@ class Dashboard(Plugin):
 
         # Create the widget and name it
         self._widget = QtGui.QWidget()
-        self._widget.setObjectName('Dashboard')
-        self.setObjectName('Dashboard')
+        self._widget.setObjectName("Dashboard")
+        self.setObjectName("Dashboard")
 
         # Extend the widget with all attributes and children in the UI file
-        ui_file = os.path.join(rospkg.RosPack().get_path('navigator_gui'), 'resource', 'dashboard.ui')
+        ui_file = os.path.join(rospkg.RosPack().get_path("navigator_gui"), "resource", "dashboard.ui")
         loadUi(ui_file, self._widget)
 
         self.is_killed = False
-        self.remote = RemoteControl('dashboard')
+        self.remote = RemoteControl("dashboard")
 
         # Creates dictionaries that are used by the monitor functions to keep track of their node or service
         service_monitor_template = {
@@ -88,7 +86,7 @@ class Dashboard(Plugin):
         # plugins at once. Also if you open multiple instances of your plugin at once, these lines add number to make it easy to
         # tell from pane to pane.
         if context.serial_number() > 1:
-            self._widget.setWindowTitle(self._widget.windowTitle() + (' (%d)' % context.serial_number()))
+            self._widget.setWindowTitle(self._widget.windowTitle() + (" (%d)" % context.serial_number()))
 
         # Add widget to the user interface
         context.add_widget(self._widget)
@@ -105,34 +103,34 @@ class Dashboard(Plugin):
         '''
 
         # Kill status
-        self.kill_status_frame = self._widget.findChild(QtGui.QFrame, 'kill_status_frame')
-        self.kill_status_status = self._widget.findChild(QtGui.QLabel, 'kill_status_status')
+        self.kill_status_frame = self._widget.findChild(QtGui.QFrame, "kill_status_frame")
+        self.kill_status_status = self._widget.findChild(QtGui.QLabel, "kill_status_status")
 
         # Operating mode status
-        self.operating_mode_frame = self._widget.findChild(QtGui.QFrame, 'operating_mode_frame')
-        self.operating_mode_status = self._widget.findChild(QtGui.QLabel, 'operating_mode_status')
+        self.operating_mode_frame = self._widget.findChild(QtGui.QFrame, "operating_mode_frame")
+        self.operating_mode_status = self._widget.findChild(QtGui.QLabel, "operating_mode_status")
 
         # Battery voltage
-        self.battery_voltage_frame = self._widget.findChild(QtGui.QFrame, 'battery_voltage_frame')
-        self.battery_voltage_status = self._widget.findChild(QtGui.QLabel, 'battery_voltage_status')
+        self.battery_voltage_frame = self._widget.findChild(QtGui.QFrame, "battery_voltage_frame")
+        self.battery_voltage_status = self._widget.findChild(QtGui.QLabel, "battery_voltage_status")
 
         # System time
-        self.system_time_frame = self._widget.findChild(QtGui.QFrame, 'system_time_frame')
-        self.system_time_status = self._widget.findChild(QtGui.QLabel, 'system_time_status')
+        self.system_time_frame = self._widget.findChild(QtGui.QFrame, "system_time_frame")
+        self.system_time_status = self._widget.findChild(QtGui.QLabel, "system_time_status")
 
         # Devices table
-        self.device_table = self._widget.findChild(QtGui.QFrame, 'device_table')
+        self.device_table = self._widget.findChild(QtGui.QFrame, "device_table")
 
         # Control panel buttons
-        toggle_kill_button = self._widget.findChild(QtGui.QPushButton, 'toggle_kill_button')
+        toggle_kill_button = self._widget.findChild(QtGui.QPushButton, "toggle_kill_button")
         toggle_kill_button.clicked.connect(self.remote.toggle_kill)
-        station_hold_button = self._widget.findChild(QtGui.QPushButton, 'station_hold_button')
+        station_hold_button = self._widget.findChild(QtGui.QPushButton, "station_hold_button")
         station_hold_button.clicked.connect(self.remote.station_hold)
-        autonomous_control_button = self._widget.findChild(QtGui.QPushButton, 'autonomous_control_button')
+        autonomous_control_button = self._widget.findChild(QtGui.QPushButton, "autonomous_control_button")
         autonomous_control_button.clicked.connect(self.remote.select_autonomous_control)
-        rc_control_button = self._widget.findChild(QtGui.QPushButton, 'rc_control_button')
+        rc_control_button = self._widget.findChild(QtGui.QPushButton, "rc_control_button")
         rc_control_button.clicked.connect(self.remote.select_rc_control)
-        keyboard_control_button = self._widget.findChild(QtGui.QPushButton, 'keyboard_control_button')
+        keyboard_control_button = self._widget.findChild(QtGui.QPushButton, "keyboard_control_button")
         keyboard_control_button.clicked.connect(self.remote.select_keyboard_control)
 
         # Defines the color scheme as QT style sheets
@@ -156,8 +154,7 @@ class Dashboard(Plugin):
         rospy.Subscriber("/battery_monitor", Float32, self.cache_battery_voltage)
         rospy.Subscriber("/clock", Clock, self.cache_system_time)
 
-        self.wrench_changer = rospy.ServiceProxy('/change_wrench', WrenchSelect)
-        self.kill_listener = AlarmListener('kill', self.update_kill_status)
+        self.kill_listener = AlarmListener("kill", self.update_kill_status)
 
     def update_kill_status(self, alarm):
         '''
@@ -361,7 +358,7 @@ class Dashboard(Plugin):
 
                 # If the host is pingable, mark it as online
                 try:
-                    subprocess.check_output(['ping', '-c1', host["ip"]])
+                    subprocess.check_output(["ping", "-c1", host["ip"]])
                     host["status"] = "Online"
 
                 # If pinging the host is unsuccessful, mark it as offline

@@ -5,7 +5,7 @@ import rospy
 from std_msgs.msg import Bool, String
 
 
-rospy.init_node('wrench_arbiter')
+rospy.init_node("wrench_arbiter")
 
 
 class WrenchArbiter(object):
@@ -19,10 +19,10 @@ class WrenchArbiter(object):
 
         # This is what is used to determine which input should be output
         self.control = None
-        self.control_inputs = ['rc', 'keyboard', 'autonomous']
+        self.control_inputs = ["rc", "keyboard", "autonomous"]
 
         # ROS stuff - Wrench changing service, final output wrench, and the three input sources
-        rospy.Service('/change_wrench', WrenchSelect, self.change_wrench)
+        rospy.Service("/change_wrench", WrenchSelect, self.change_wrench)
         self.wrench_pub = rospy.Publisher("/wrench/cmd", WrenchStamped, queue_size=1)
         self.control_pub = rospy.Publisher("/wrench/current", String, queue_size=1)
         self.learn = rospy.Publisher("learn", Bool, queue_size=1)
@@ -58,7 +58,7 @@ class WrenchArbiter(object):
 
     def change_wrench(self, req):
         '''
-        This sets the wrench output to the correct source by setting the 'control' variable
+        This sets the wrench output to the correct source by setting the "control" variable
         to the right source.
         '''
         rospy.loginfo("Server received request for wrench control change - " + req.str)
