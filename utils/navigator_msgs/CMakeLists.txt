@@ -43,6 +43,7 @@ add_service_files(
   ObjectDBQuery.srv
   CameraToLidarTransform.srv
   KeyboardControl.srv
+  ColorRequest.srv
 )
 
 add_action_files(

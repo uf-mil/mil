@@ -20,7 +20,7 @@ def main(navigator):
         yield navigator.move.set_position(p_to_np(furthest.position)).go()
         
         # Set that fake marker to false or something to denote we went there
-        yield navigator.database_query(cmd="{}=0, 0".format(furthest.name))
+        #yield navigator.database_query(cmd="{}=0, 0".format(furthest.name))
 
         result.message = "Went to {}.".format(furthest.name)
 

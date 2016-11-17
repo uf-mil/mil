@@ -86,6 +86,21 @@ class OccupancyGrid
 		{
 			//std::cout << ogrid.size() << "," << ogrid[0].size() << std::endl;
 		}
+
+		////////////////////////////////////////////////////////////
+	    /// \brief ?
+	    ///
+	    /// \param ?
+	    /// \param ?
+	    ////////////////////////////////////////////////////////////
+	    void reset()
+	    {
+	    	std::fill(ogrid.begin(),ogrid.end(),std::vector<cell>(GRID_SIZE,cell()));
+	    	std::fill(ogridBinary.begin(),ogridBinary.end(),std::vector<bool>(ROI_SIZE,false));
+			std::fill(ogridMap.begin(),ogridMap.end(),50);
+			pointCloudTable_Uno.clear();
+			pointCloudTable.clear();
+	    }
 		
 		////////////////////////////////////////////////////////////
 	    /// \brief ?

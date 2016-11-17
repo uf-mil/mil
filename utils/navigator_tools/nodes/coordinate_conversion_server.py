@@ -31,8 +31,14 @@ class Converter(object):
     def request(self, srv):
         self.point = np.array(srv.point)
 
-        self.enu_pos = navigator_tools.odometry_to_numpy((yield self.odom_sub.get_next_message()))[0][0]
-        self.ecef_pos = navigator_tools.odometry_to_numpy((yield self.abs_odom_sub.get_next_message()))[0][0]
+        last_odom = yield self.odom_sub.get_last_message()
+        last_absodom = yield self.abs_odom_sub.get_last_message()
+
+        if last_odom is None or last_absodom is None:
+            defer.returnValue(CoordinateConversionResponse())
+
+        self.enu_pos = navigator_tools.odometry_to_numpy(last_odom)[0][0]
+        self.ecef_pos = navigator_tools.odometry_to_numpy(last_absodom)[0][0]
 
         enu, ecef, lla = getattr(self, srv.frame)()
 

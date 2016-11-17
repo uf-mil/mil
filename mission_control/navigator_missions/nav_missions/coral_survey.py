@@ -20,14 +20,17 @@ def main(navigator):
     result = navigator.fetch_result()
 
     #middle_point = np.array([-10, -70, 0]) 
-    resp = yield navigator.database_query("coral_survey")
-    if not resp.found:
-        result.success = False
-        result.response = result.DbObjectNotFound
-        result.message = "Coral survey not found in the database."
-        defer.returnValue(result)
+    est_coral_survey = yield navigator.database_query("Coral_Survey")
+    
+    yield navigator.move.set_position(est_coral_survey.objects[0]).go()
 
-    middle_point = navigator_tools.point_to_numpy(resp.objects[0].position)
+    totem = yield navigator.database_query("totem")
+    
+    # Get the closest totem object to the boat
+    totem_np = map(lambda obj: navigator_tools.point_to_numpy(obj), totem.objects)
+    dist = map(lambda totem_np: np.linalg.norm(totem_np - navigator_tools.point_to_numpy(est_coral_survey.objects[0])), totems_np)
+
+    middle_point = navigator_tools.point_to_numpy(totem.objects[0].position)
     quads_to_search = [1, 2, 3, 4]
     if (yield navigator.nh.has_param("/mission/coral_survey/quadrants")):
         quads_to_search = yield navigator.nh.get_param("/mission/coral_survey/quadrants")
