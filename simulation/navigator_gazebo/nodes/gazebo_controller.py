@@ -18,15 +18,15 @@ from rawgps_common import gps
 class GazeboInterface(object):
     def __init__(self, target='wamv::base_link'):
         self.target = target
-        intial_lla = [29.534912, -82.303642, 0]  # In Walhburg
+        intial_lla = [29.534912, -82.303642, 0]  # In Wauhburg
         self.last_ecef = gps.ecef_from_latlongheight(*np.radians(intial_lla))
         self.last_enu = None
         self.last_odom = None
         self.position_offset = None
         
         self.state_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self.state_cb)
-        self.state_pub = rospy.Publisher('odom', Odometry, queue_size=1)  # This can be thought of as ENU
-        self.absstate_pub = rospy.Publisher('absodom', Odometry, queue_size=1)  # TODO: Make this in ECEF frame instead of ENU
+        self.state_pub = rospy.Publisher('model_odom', Odometry, queue_size=1)
+        self.absstate_pub = rospy.Publisher('absodom', Odometry, queue_size=1)
 
         self.last_odom = None
         self.last_absodom = None
@@ -62,7 +62,7 @@ class GazeboInterface(object):
 
             self.last_odom = Odometry(
                 header=navigator_tools.make_header(frame='/enu'),
-                child_frame_id='/base_link',
+                child_frame_id='/measurement',
                 pose=PoseWithCovariance(
                     pose=navigator_tools.numpy_quat_pair_to_pose(*self.last_enu)
                 ),
@@ -74,7 +74,7 @@ class GazeboInterface(object):
 
             self.last_absodom = Odometry(
                 header=navigator_tools.make_header(frame='/ecef'),
-                child_frame_id='/base_link',
+                child_frame_id='/measurement',
                 pose=PoseWithCovariance(
                     pose=navigator_tools.numpy_quat_pair_to_pose(self.last_ecef, self.last_enu[1])
                 ),
