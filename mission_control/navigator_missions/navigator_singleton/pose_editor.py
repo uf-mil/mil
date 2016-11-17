@@ -92,16 +92,6 @@ def get_valid_point(nav, point):
         return nav.pose[0]
 
 
-class Spiraler(object):
-    def __init__(self, pe, point, *args, **kwargs):
-        self.pe = pe
-        self.point = point
-
-        self.mpr = kwargs.get("mpr", 0)
-        self.direction = kwargs.get("direction", "cw")
-        self.revolutions = kwargs.get("revolutions", 0)
-
-
 class PoseEditor2(object):
     """
     Used to chain movements together
