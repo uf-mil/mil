@@ -73,8 +73,9 @@ def main(args):
         fprint("{}ing {} non-arbitrary unit(s)".format(args.command, amount), title="MOVE_COMMAND")
         res = yield movement(float(amount), unit).go(**action_kwargs)
 
+    print
     if res.failure_reason is not '':
-        fprint("FAILURE! Reason: {}".format(res.failure_reason), msg_color='green', title="MOVE_COMMAND")
+        fprint("FAILURE! Reason: {}".format(res.failure_reason), msg_color='red', title="MOVE_COMMAND")
     else:
         fprint("Move completed!", msg_color="green", title="MOVE_COMMAND")
     defer.returnValue(reactor.stop())

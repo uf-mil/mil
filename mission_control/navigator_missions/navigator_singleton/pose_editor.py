@@ -160,7 +160,11 @@ class PoseEditor2(object):
         if self.nav.killed:
             # What do we want to do with missions when the boat is killed
             fprint("Boat is killed, ignoring go command!", title="POSE_EDITOR", msg_color="red")
-            return None
+
+            class Res():
+                failure_reason = 'boat_killed'
+
+            return Res()
         
         if len(self.kwargs) > 0:
             kwargs = dict(kwargs.items() + self.kwargs.items())
