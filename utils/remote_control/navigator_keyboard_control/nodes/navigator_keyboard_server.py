@@ -53,7 +53,7 @@ class KeyboardServer(object):
                              ord('w'): lambda: self.remote.publish_wrench(self.force_scale, 0, 0),
                              ord('s'): lambda: self.remote.publish_wrench(-self.force_scale, 0, 0),
                              ord('a'): lambda: self.remote.publish_wrench(0, self.force_scale, 0),
-                             ord('d'): lambda: self.self.remote.publish_wrench(0, -self.force_scale, 0),
+                             ord('d'): lambda: self.remote.publish_wrench(0, -self.force_scale, 0),
                              curses.KEY_LEFT: lambda: self.remote.publish_wrench(0, 0, self.torque_scale),
                              curses.KEY_RIGHT: lambda: self.remote.publish_wrench(0, 0, -self.torque_scale)
                              }

@@ -70,7 +70,7 @@ class KeyboardClient():
         new_keycode = self.screen.getch()
 
         # This eliminates building a buffer of keys that takes forever to process
-        while ((new_keycode != -1) and rospy.is_shutdown()):
+        while ((new_keycode != -1) and (not rospy.is_shutdown())):
             keycode = new_keycode
             new_keycode = self.screen.getch()
 
