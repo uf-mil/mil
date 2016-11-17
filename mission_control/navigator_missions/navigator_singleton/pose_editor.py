@@ -257,16 +257,11 @@ class PoseEditor2(object):
 
     def circle_point(self, point, *args, **kwargs):
         return self.spiral_point(point, *args, **kwargs)
-    
-    def d_circle_point(self, point, radius, granularity=8, theta_offset=0):
+   
+    def d_spiral_point(self, point, radius, granularity=8, revolutions=1, theat_offset=0, meters_per_rev=0):
         """
-        Circles a point whilst looking at it using discrete steps
-        This produces a generator, so for use:
-
-            circle = navigator.move.circle_point([1,2,0], 5)
-            for p in circle:
-                yield p.go()
-
+        Sprials a point using discrete moves
+        This produces a generator
         """
         point = np.array(point)
         angle_incrment = 2 * np.pi / granularity
@@ -274,14 +269,28 @@ class PoseEditor2(object):
 
         # Find first point to go to using boat rotation
         next_point = np.append(normalize(self.nav.pose[0][:2] - point[:2]), 0)  # Doing this in 2d
-        for i in range(granularity + 1):
+        radius_increment = meters_per_rev / granularity
+        for i in range(granularity * revolutions + 1):
             new = point + radius * next_point
-            yield self.set_position(new).look_at(point).yaw_left(theta_offset)  # Remember this is a generator - not a twisted yield
+            radius += radius_increment
+
+            yield self.set_position(new).look_at(point).yaw_left(theta_offset)
             next_point = sprinkles.dot(next_point)
 
         yield self.set_position(new).look_at(point).yaw_left(theta_offset)
 
-    # When C3 gets replaced, these may go away
+
+    def d_circle_point(self, *args, **kwargs):
+        """
+        Circles a point whilst looking at it using discrete steps
+        This produces a generator, so for use:
+
+            circle = navigator.move.circle_point([1,2,0], 5)
+            for p in circle:
+                yield p.go()
+        """
+        return d_spiral_point(*args, **kwargs)
+
     def as_MoveToGoal(self, linear=[0, 0, 0], angular=[0, 0, 0], **kwargs):
         return MoveToGoal(
             header=make_header(),
