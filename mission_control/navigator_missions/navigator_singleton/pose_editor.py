@@ -91,27 +91,55 @@ def get_valid_point(nav, point):
         # TODO: Make boat go to edge
         return nav.pose[0]
 
+
+class Spiraler(object):
+    def __init__(self, pe, point, *args, **kwargs):
+        self.pe = pe
+        self.point = point
+
+        self.mpr = kwargs.get("mpr", 0)
+        self.direction = kwargs.get("direction", "cw")
+        self.revolutions = kwargs.get("revolutions", 0)
+
+
 class PoseEditor2(object):
-    '''
+    """
     Used to chain movements together
+
     ex:
-        yield p.forward(2, 'm').down(1, 'ft').yaw_left(50, 'deg').go()
+        >>> res = yield p.forward(2, 'm').down(1, 'ft').yaw_left(50, 'deg').go()
+        
         Will move forward 2 meters, down 1 foot, all while yawing left 50 degrees.
 
     ex:
-        movement = p.yaw_right(.707)
-        -- -- -- -- --
-        yield movement.go(speed=1)
+        >>> movement = p.yaw_right(.707)
+        >>> ...
+        >>> res = yield movement.go(speed=1)
+
         Will yaw right .707 radians from the original orientation regardless of the current orientation
-    '''
-    def __init__(self, nav, pose):
+
+    Some special cases (these can't be chained):
+        >>> circle = p.circle_point([0, 1, 0])
+        >>> res = yield circle.go()
+    
+        Will circle the enu point [0, 1, 0] counter clockwise holding the current orientation and distance
+        from the point.
+
+        >>> res = yield p.spiral_point([10, 0], 'cw', meters_per_rev=2).go()
+
+        Will spiral the enu point [10, 0, 0] in a clockwise direction increase it's current 
+        radius by `meters_per_rev` meters per revolution.
+    """
+
+    def __init__(self, nav, pose, **kwargs):
         self.nav = nav
 
-        # Right now position is stored as a 3d vector - should this be changed?
+        # Position and kwargs ultimatly passed into the final function
         self.position, self.orientation = pose
+        self.kwargs = kwargs
 
-        # Give user access to the most recent action request
-        self.goal = None
+        # Move result (should be a defered)
+        self.result = None
 
     def __repr__(self):
         return "p: {}, q: {}".format(self.position, self.orientation)
@@ -128,26 +156,18 @@ class PoseEditor2(object):
     def distance(self):
         return np.linalg.norm(self.position - self.nav.pose[0])
 
-    @txros.util.cancellableInlineCallbacks
     def go(self, *args, **kwargs):
         if self.nav.killed:
             # What do we want to do with missions when the boat is killed
             fprint("Boat is killed, ignoring go command!", title="POSE_EDITOR", msg_color="red")
-            yield self.nav.nh.sleep(1)
-            defer.returnValue(None)
+            return None
+        
+        if len(self.kwargs) > 0:
+            kwargs = dict(kwargs.items() + self.kwargs.items())
 
-        self.goal = self.nav._moveto_client.send_goal(self.as_MoveGoal(*args, **kwargs))
-        res = yield self.goal.get_result()
-
-        if res.failure_reason == '':
-            fprint("Move completed successfully!", title="POSE_EDITOR", msg_color="green", newline=2)
-        elif res.failure_reason == 'occupied':
-            fprint("Goal was occupied - moved to close point instead.", title="POSE_EDITOR", newline=2)
-        elif res.failure_reason == 'collided':
-            fprint("Collided with object. Check perception then if this is the real boat and"\
-             "perception wasn't to blame, promptly kill jason", title="POSE_EDITOR", newline=2, msg_color="red")
-        else:
-            fprint("Unknown response from action client: {}".format(res), title="POSE_EDITOR", newline=2)
+        goal = self.nav._moveto_client.send_goal(self.as_MoveGoal(*args, **kwargs))
+        self.result = goal.get_result()
+        return self.result
 
     def set_position(self, position):
         return PoseEditor2(self.nav, [np.array(position), np.array(self.orientation)])
@@ -206,10 +226,10 @@ class PoseEditor2(object):
         return PoseEditor2(self.nav, [position, orientation])
 
     def to_lat_long(self, lat, lon, alt=0):
-        '''
-        Go to a lat long position and keep the same orientation
+        """
+        Goes to a lat long position and keep the same orientation
         Note: lat and long need to be degrees
-        '''
+        """
         ecef_pos, enu_pos = self.nav.ecef_pose[0], self.nav.pose[0]
 
         # These functions want radians
@@ -219,16 +239,41 @@ class PoseEditor2(object):
         enu_vector[2] = 0  # We don't want to move in the z at all
         return self.set_position(enu_pos + enu_vector)
 
-    def circle_point(self, point, radius, granularity=8, theta_offset=0):
-        '''
-        Circle a point whilst looking at it
+    def spiral_point(self, point, direction='ccw', revolutions=1, meters_per_rev=0):
+        """
+        Sprials an ENU point.
+
+        `point` is a 2d or 3d numpy point or geometery_msgs/PointStamped to spiral
+        `direction` can be 'cw' or 'ccw' for clockwise or counter clockwise
+        `meters_per_rev` is the number of meters per revolution to increase the radius of the spiral
+        `revolutions` is the number of revolutions to complete
+
+        NOTE: Don't use this function with other pose editor functions like you traditionally would
+        """
+        position = np.array([0, 0, meters_per_rev])
+        sign_direction = 1 if direction == 'ccw' else -1  # Follows the right hand rule
+        if hasattr(point, 'point'):
+            focus = [point.point.x, point.point.y]        
+        else:
+            focus = [point[0], point[1]]
+
+        focus.append(sign_direction * revolutions)
+
+        return PoseEditor2(self.nav, [position, [0, 0, 0, 1]], focus=np.array(focus), move_type='spiral')
+
+    def circle_point(self, point, *args, **kwargs):
+        return self.spiral_point(point, *args, **kwargs)
+    
+    def d_circle_point(self, point, radius, granularity=8, theta_offset=0):
+        """
+        Circles a point whilst looking at it using discrete steps
         This produces a generator, so for use:
 
             circle = navigator.move.circle_point([1,2,0], 5)
             for p in circle:
                 yield p.go()
 
-        '''
+        """
         point = np.array(point)
         angle_incrment = 2 * np.pi / granularity
         sprinkles = transformations.euler_matrix(0, 0, angle_incrment)[:3, :3]
@@ -263,7 +308,7 @@ class PoseEditor2(object):
 
     def as_Pose(self):
         return Pose(
-            position=Point(*np.append(self.position[:2], 0)),  # Don't set waypoints out of the water plane
+            position=Point(*np.array(self.position)),  # Don't set waypoints out of the water plane
             orientation=Quaternion(*self.orientation),
         )
 

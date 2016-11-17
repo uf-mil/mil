@@ -37,23 +37,23 @@ def main(args):
     if args.command == 'custom':
         # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
         fprint("Moving with the command: {}".format(args.argument), title="MOVE_COMMAND")
-        yield eval("n.move.{}.go(move_type='{move_type}')".format(args.argument, **action_kwargs))
+        res = yield eval("n.move.{}.go(move_type='{move_type}')".format(args.argument, **action_kwargs))
 
     elif args.command == 'rviz':
         fprint("Moving to last published rviz position", title="MOVE_COMMAND")
         sub = nh.subscribe("/rviz_goal", PoseStamped)
         target_pose = yield util.wrap_time_notice(sub.get_next_message(), 2,  "Rviz goal")
-        yield n.move.to_pose(target_pose).go(**action_kwargs)
+        res = yield n.move.to_pose(target_pose).go(**action_kwargs)
 
     elif args.command == 'circle':
-        fprint("Moving in a circle around last clicked_point with radius {} meters".format(args.argument), title="MOVE_COMMAND")
+        fprint("Moving in a circle around last clicked_point", title="MOVE_COMMAND")
         sub = nh.subscribe("/rviz_point", PointStamped)
         target_point = yield util.wrap_time_notice(sub.get_next_message(), 2, "Rviz point")
         target_point = navigator_tools.point_to_numpy(target_point.point)
         circle = n.move.circle_point(target_point, float(args.argument))
-        focus = target_point
-        focus[2] = 1
-        
+        direction = 'cw' if args.argument == '-1' else 'ccw'
+        res = yield n.move.circle_point(target_point, direction).go()
+
     else:
         movement = getattr(n.move, args.command)
 
@@ -71,8 +71,12 @@ def main(args):
             action_kwargs['move_type'] = 'hold'
 
         fprint("{}ing {} non-arbitrary unit(s)".format(args.command, amount), title="MOVE_COMMAND")
-        yield movement(float(amount), unit).go(**action_kwargs)
+        res = yield movement(float(amount), unit).go(**action_kwargs)
 
+    if res.failure_reason is not '':
+        fprint("FAILURE! Reason: {}".format(res.failure_reason), msg_color='green', title="MOVE_COMMAND")
+    else:
+        fprint("Move completed!", msg_color="green", title="MOVE_COMMAND")
     defer.returnValue(reactor.stop())
 
 if __name__ == '__main__':
