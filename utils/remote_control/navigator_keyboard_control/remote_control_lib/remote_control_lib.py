@@ -177,6 +177,7 @@ class RemoteControl(object):
         Loads the shooter by using the action client to retract the linear actuator
         '''
         self.shooter_load_client.send_goal(goal=ShooterDoActionGoal(), done_cb=self.__shooter_load_feedback)
+        rospy.loginfo("Kip, do not throw away your shot.")
 
     def __shooter_fire_feedback(self, status, result):
         '''
@@ -191,6 +192,7 @@ class RemoteControl(object):
         acceleration discs and extend the linear actuator.
         '''
         self.shooter_fire_client.send_goal(goal=ShooterDoActionGoal(), done_cb=self.__shooter_fire_feedback)
+        rospy.loginfo("One, two, three, four, five, six, seven, eight, nine. Number... TEN PACES! FIRE!")
 
     @__timeout_check
     def shooter_cancel(self, *args, **kwargs):
@@ -200,6 +202,8 @@ class RemoteControl(object):
         '''
         rospy.loginfo("Canceling shooter requests")
         self.shooter_cancel_client(TriggerRequest())
+        rospy.loginfo("I imaging death so much it feels more like a memory.")
+        rospy.loginfo("When's it gonna get me? While I'm blocked? Seven clocks ahead of me?")
 
     def __shooter_reset_helper(self, event):
         '''
@@ -207,6 +211,7 @@ class RemoteControl(object):
         '''
         rospy.loginfo("Reseting the shooter service")
         self.shooter_reset_client(TriggerRequest())
+        rospy.loginfo("In New York you can be a new man! In New York you can be a new man!")
 
     @__timeout_check
     def shooter_reset(self, *args, **kwargs):
