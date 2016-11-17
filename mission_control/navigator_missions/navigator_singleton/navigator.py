@@ -20,7 +20,7 @@ from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import PointCloud
 import navigator_msgs.srv as navigator_srvs
-from navigator_tools import fprint 
+from navigator_tools import fprint, MissingPerceptionObject
 
 
 class MissionResult(object):
@@ -49,6 +49,7 @@ class MissionResult(object):
                  cool_bars)
 
         return '\n'.join(_pass if self.success else _fail)
+
 
 class Navigator(object):
     circle = "CIRCLE"
@@ -155,17 +156,20 @@ class Navigator(object):
         else:
             fprint("No bounds param found, defaulting to none.", title="NAVIGATOR")
             self.enu_bounds = None
-
-    def database_query(self, object_name=None, require=False, **kwargs):
+ 
+    @util.cancellableInlineCallbacks
+    def database_query(self, object_name=None, raise_exception=True, **kwargs):
         if object_name is not None:
             kwargs['name'] = object_name
- 
-        return self._database_query(navigator_srvs.ObjectDBQueryRequest(**kwargs))
-        #if require and not (res.found):
-        #    print "not found and required database object"
-        #    return
-        #else: 
-        #    defer.returnValue(res)
+            res = yield self._database_query(navigator_srvs.ObjectDBQueryRequest(**kwargs))
+            
+            if not res.found and raise_exception:
+                raise MissingPerceptionObject(kwargs['name'])
+
+            defer.returnValue(res)
+        
+        res = yield self._database_query(navigator_srvs.ObjectDBQueryRequest(**kwargs))
+        defer.returnValue(res)
 
     def vision_request(self, request_name, **kwargs):
         fprint("DEPRECATED: Please use new dictionary based system.")

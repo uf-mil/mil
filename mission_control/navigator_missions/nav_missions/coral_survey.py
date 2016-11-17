@@ -21,20 +21,15 @@ def main(navigator):
 
     #middle_point = np.array([-10, -70, 0]) 
     est_coral_survey = yield navigator.database_query("Coral_Survey")
-    assert est_coral_survey.found, "Coral Survey ROI not found."
     
     yield navigator.move.set_position(est_coral_survey.objects[0]).go()
 
     totem = yield navigator.database_query("totem")
-    assert totem.found, "No totem objects"
     
     # Get the closest totem object to the boat
     totem_np = map(lambda obj: navigator_tools.point_to_numpy(obj), totem.objects)
     dist = map(lambda totem_np: np.linalg.norm(totem_np - navigator_tools.point_to_numpy(est_coral_survey.objects[0])), totems_np)
-    
-    # Complain if the buoy is too far away
-    assert min(dist) < 20, "Totems are too far away from Coral Survey"
-    
+
     middle_point = navigator_tools.point_to_numpy(totem.objects[0].position)
     quads_to_search = [1, 2, 3, 4]
     if (yield navigator.nh.has_param("/mission/coral_survey/quadrants")):
