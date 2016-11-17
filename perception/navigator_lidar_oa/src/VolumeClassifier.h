@@ -31,7 +31,7 @@ void VolumeClassifier(objectMessage &object)
 
 	//Volume boundaries - low h, high h, low x, high x, low y, high y, low z, high z
 	double volumes[5][8] = { 	{0.7,	1.25,	6.0,	7.0,	6.0,	7.0,	2.5,	3.25}, //dock (NOT TESTED!)
-					{1.5,	2.0,	2.5,	4.75,	2.5,	4.75,	2.5,	4.75}, //shooter
+					{1.25,	2.0,	2.5,	4.75,	2.5,	4.75,	2.5,	4.75}, //shooter
 					{0.5,	0.75,	1.9,	4.1,	1.9,	4.1,	1.9,	4.1}, //scan_the_code (needs testing!)
 					{-0.6,	0.1,	0.7,	1.5,	0.7,	1.5,	0.7,	1.5}, //totems
 					{-1.25,-0.8,	0.125,	1.0,	0.125,	1.0,	0.125,	1.0} }; //buoy

@@ -143,8 +143,6 @@ public:
 		for(auto &s_obj : saved_objects) {
 			++cnt;
 			if (!s_obj.real) {continue;}
-			//Try to fit a normal
-			//FitPlanesToCloud(s_obj,rosCloud,boatPose_enu);
 			//Classify volume
 			VolumeClassifier(s_obj);
 			//Look for duplicates of the shooter or scan_the_code
@@ -156,8 +154,10 @@ public:
 				} else if ( xyDistance < std::get<1>(shooterMin) ) {
 					saved_objects.at( std::get<0>(shooterMin) ).name = "unknown";
 					shooterMin = std::make_tuple(cnt,xyDistance);
+					BOOST_ASSERT_MSG(false," Duplicate shooter error 1 ");
 				} else {
 					s_obj.name = "unknown";
+					BOOST_ASSERT_MSG(false," Duplicate shooter error 2 ");
 				}
 			} else if (s_obj.name == "scan_the_code") {
 				++duplicateScan;
@@ -167,8 +167,10 @@ public:
 				} else if ( xyDistance < std::get<1>(scanMin) ) {
 					saved_objects.at( std::get<0>(scanMin) ).name = "unknown";
 					shooterMin = std::make_tuple(cnt,xyDistance);
+					BOOST_ASSERT_MSG(false," Duplicate scan_the_code error 1 ");
 				} else {
 					s_obj.name = "unknown";
+					BOOST_ASSERT_MSG(false," Duplicate scan_the_code error 2 ");
 				}
 			}
 		}
@@ -195,10 +197,10 @@ public:
     /// \param ?
     /// \param ?
     ////////////////////////////////////////////////////////////
-	void lock(std::string name, geometry_msgs::Point p) {
+	void lock(std::string name, geometry_msgs::Point p, bool status = true) {
 		for(auto &s_obj : saved_objects) {
 			if (s_obj.name == name) {
-				s_obj.locked = true;
+				s_obj.locked = status;
 				s_obj.position = p;
 			}
 		}		
@@ -219,8 +221,7 @@ public:
 		}
 
 		for (const auto &s_obj : saved_objects) {
-			if ( (name == "tess" ) || (name == "all" && s_obj.real) || (name == s_obj.name || id == s_obj.id) || (name == "All" && !s_obj.real) ) {
-				//if (!s_obj.real && !s_obj.locked) { continue; }
+			if ( (name == "allAll" ) || (name == "all" && s_obj.real) || (name == s_obj.name || id == s_obj.id) || (name == "All" && !s_obj.real) ) {
 				navigator_msgs::PerceptionObject thisOne;
 				thisOne.header.stamp - s_obj.age;
 				thisOne.name = s_obj.name;

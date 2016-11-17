@@ -50,7 +50,7 @@ const double LIDAR_VIEW_ANGLE_DEG = 160;
 const double LIDAR_VIEW_DISTANCE_METERS = 60;
 const double LIDAR_MIN_VIEW_DISTANCE_METERS = 5.5;
 const int MIN_LIDAR_POINTS_FOR_OCCUPANCY = 10;
-const double MIN_OBJECT_HEIGHT_METERS = 0.075;
+const double MIN_OBJECT_HEIGHT_METERS = 0.05;
 const double MIN_OBJECT_SEPERATION_DISTANCE = 1.5;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -370,7 +370,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	//Publish PerceptionObjects at some slower rate
 	if ( (ros::Time::now() - pubObjectsTimer).toSec() > 2 ) {
 		navigator_msgs::PerceptionObjectArray objectArray;
-		object_tracker.lookUpByName("tess",objectArray.objects);
+		object_tracker.lookUpByName("allAll",objectArray.objects);
 		pubObjects.publish(objectArray);
 		pubObjectsTimer = ros::Time::now();
 	}
@@ -435,7 +435,7 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
 			markerServer->applyChanges();	
 			//Object database			
 			object_tracker.reset();
-			//Re-create ROIs
+			//Re-create ROIs - need old positions!
 			createROIS("BuoyField",true); createROIS("CoralSurvey",true); createROIS("FindBreak",true); createROIS("AcousticPinger",true); createROIS("Shooter",true);
 			createROIS("Scan_The_Code",true); createROIS("Gate_1",true); createROIS("Gate_2",true); createROIS("Gate_3",true); createROIS("Dock",true);
 			//Get a fresh ogrid
@@ -450,7 +450,7 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
 		        newPose.position.y = 0;
 		        newPose.position.z = 0;
 		        //Update database
-		        object_tracker.lock(name,newPose.position);
+		        object_tracker.lock(name,newPose.position,false);
 		        //Update interactive markers
 		        markerServer->setPose(name,newPose);
 	  	        markerServer->applyChanges();
