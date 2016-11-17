@@ -273,7 +273,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 
 	//Clear all markers from interactive server
 	//markerServer->clear();	
-	ROS_INFO_STREAM("LIDAR |  Lidar position in enu " << lidarPos.x << "," << lidarPos.y << "," << lidarPos.z);
+	ROS_INFO_STREAM("LIDAR | Lidar position in enu " << lidarPos.x << "," << lidarPos.y << "," << lidarPos.z);
 
 	for (auto obj : object_permanence) {
 		//Skip objects that are not real
@@ -282,7 +282,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		}
 
 		//Display Info//obj.strikesPersist.size() << "(" << obj.strikesFrame.size() << ") points, size "
-		ROS_INFO_STREAM("LIDAR | "  << fixed  << setw(10) << obj.name.substr(0,4) << ": " << obj.id << "\t" << obj.position.x << "\t" << obj.position.y << "\t" << obj.position.z << "\t" << obj.maxHeightFromLidar << "\t" << obj.scale.x << "\t" << obj.scale.y << "\t" << obj.scale.z << "\t" << obj.confidence[0] << "\t" << obj.confidence[1] << "\t" << obj.confidence[2] << "\t" << obj.confidence[3] << "\t" << obj.confidence[4] << "\t ");
+		ROS_INFO_STREAM("LIDAR | "  << fixed  << setw(10) << obj.name.substr(0,4) << ": " << obj.id << "\t" << obj.position.x << "\t" << obj.position.y << "\t" << obj.position.z << "\t" << obj.maxHeightFromLidar << "\t" << obj.scale.x << "\t" << obj.scale.y << "\t" << obj.scale.z << "\t" << obj.confidence[0] << "\t" << obj.confidence[1] << "\t" << obj.confidence[2] << "\t" << obj.confidence[3] << "\t" << obj.confidence[4] << "\t " << obj.strikesPersist.size());
 
 		//Show point cloud of just objects
 		objectCloudPersist.points.insert(objectCloudPersist.points.end(),obj.strikesPersist.begin(),obj.strikesPersist.end());
@@ -661,7 +661,7 @@ int main(int argc, char* argv[])
 
 	//Check for bounds from parameter server on startup
 	boundsClient = nh.serviceClient<navigator_msgs::Bounds>("/get_bounds");
-	ros::Timer timerCallBack = nh.createTimer(ros::Duration(1.5), resetBounds);	
+	ros::Timer timerCallBack = nh.createTimer(ros::Duration(3.0), resetBounds);	
 
 	//Interactive Marker Menu Setup
 	markerServer = new interactive_markers::InteractiveMarkerServer("/unclassified_markers","",false);

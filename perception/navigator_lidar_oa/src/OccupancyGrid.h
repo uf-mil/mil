@@ -24,8 +24,9 @@
 struct LidarBeam
 {
 	LidarBeam() = default;
-	LidarBeam(double x_, double y_, double z_, double i_) : x(x_),y(y_),z(z_),i(i_) {}
+	LidarBeam(double x_, double y_, double z_, double i_, bool confident_) : x(x_),y(y_),z(z_),i(i_),confident(confident_) {}
 	double x,y,z,i;
+	bool confident;
 };
 
 
@@ -35,7 +36,6 @@ struct LidarBeam
 struct cell
 {
 	int16_t hits = 0;
-	//float min = 1e5,max = -1e5;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,8 +44,18 @@ struct cell
 struct beamEntry
 {
 	void update(const LidarBeam &beam) {
-		if (q.size() >= 30) { q.pop_front(); }
+		if (q.size() >= 10) { q.pop_front(); }
 		q.push_back(beam);
+	}
+
+	double height() {
+		if (!q.size()) { return 0; }
+		double highZ = q[0].z, lowZ = q[0].z;
+		for_each(q.begin(),q.end(),[&highZ,&lowZ](LidarBeam l) {
+			highZ = std::max(l.z,highZ);
+			lowZ = std::min(l.z,lowZ);
+		});
+		return highZ - lowZ;
 	}
 	std::deque<LidarBeam> q;
 };
@@ -56,10 +66,7 @@ struct beamEntry
 union floatConverter
 {
 	float f;
-	struct
-	{
-		uint8_t data[4];
-	};
+	struct { uint8_t data[4]; };
 };
 
 	
@@ -172,9 +179,9 @@ class OccupancyGrid
 					//std::cout << row << " , " << col << " , " << lidarAngle << " , " << distance << std::endl;
 					if (lidarAngle <= lidarViewAngle && ogrid[row][col].hits > 0 && distance >= lidarMinViewDistance) { 
 						ogrid[row][col].hits -= 1;
-						if (ogrid[row][col].hits == 0) {
+						if (ogrid[row][col].hits < 0) {
 							ogrid[row][col] = cell();
-							pointCloudTable[row*GRID_SIZE+col].q.clear();
+							//pointCloudTable[row*GRID_SIZE+col].q.clear();
 						}	
 					} 
 				}
@@ -197,7 +204,7 @@ class OccupancyGrid
 			    //Valid lidar points are inside bounding box or within X meters of the boat
 		     	if( (0 <= ab.dot(am) && ab.dot(am) <= ab.dot(ab) && 0 <= am.dot(ac) && am.dot(ac) <= ac.dot(ac)) || (xyz_in_velodyne.norm() <= 15) ){
 					if (xyz_in_velodyne.norm() >= 1 && xyz_in_velodyne.norm() <= 100 && xyz_in_enu(2) >= lidarPos.z-MAXIMUM_Z_BELOW_LIDAR && xyz_in_enu(2) <= lidarPos.z+MAXIMUM_Z_ABOVE_LIDAR) {
-						updateGrid(LidarBeam(xyz_in_enu(0), xyz_in_enu(1), xyz_in_enu(2),i.f),max_hits);
+						updateGrid(LidarBeam(xyz_in_enu(0), xyz_in_enu(1), xyz_in_enu(2),i.f,xyz_in_velodyne.norm() < 45),max_hits);
 					}
 		     	}
 			}
@@ -240,17 +247,11 @@ class OccupancyGrid
 		{
 				int x = floor(p.x/VOXEL_SIZE_METERS + GRID_SIZE/2);
 				int y = floor(p.y/VOXEL_SIZE_METERS + GRID_SIZE/2);
-				float z = p.z;
 				if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE) {
-					//if (z < ogrid[y][x].min) { ogrid[y][x].min = z; }
-					//if (z > ogrid[y][x].max) { ogrid[y][x].max = z; }
 					ogrid[y][x].hits += 5;
 					pointCloudTable[y*GRID_SIZE+x].update(p);
 					pointCloudTable_Uno[y*GRID_SIZE+x].push_back(p);
-					if (ogrid[y][x].hits > max_hits) { 
-						//std::cout << "Ogrid at y,x " << y << "," << x << " has hits of " << (int)ogrid[y][x].hits << std::endl;	
-						ogrid[y][x].hits = max_hits; 
-					}	
+					if (ogrid[y][x].hits > max_hits) { ogrid[y][x].hits = max_hits; }	
 				} 
 		}
 
@@ -272,7 +273,7 @@ class OccupancyGrid
 				int binaryCol = 0;
 				for (int col = boatCol - ROI_SIZE/2; col < boatCol + ROI_SIZE/2; ++col,++binaryCol) {
 					//if ( std::abs(ogrid[row][col].max-ogrid[row][col].min) >= heightDiff && ogrid[row][col].hits >= minHit && ogrid[row][col].max <= maxHeight) { 
-					if ( ogrid[row][col].hits >= minHits && pointCloudTable[row*GRID_SIZE+col].q.size() >= lidarMinPoints) {  //&& ogrid[row][col].max-ogrid[row][col].min >= objectMinHeight) { 
+					if ( ogrid[row][col].hits >= minHits && pointCloudTable[row*GRID_SIZE+col].q.size() >= lidarMinPoints && pointCloudTable[row*GRID_SIZE+col].height() >= objectMinHeight) {  //&& ogrid[row][col].max-ogrid[row][col].min >= objectMinHeight) { 
 						//std::cout << "Found " << row << "," << col << " has " << pointCloudTable[row*GRID_SIZE+col].q.size() << " points" << std::endl;
 						//double r_enu = (row - GRID_SIZE/2)*VOXEL_SIZE_METERS,c_enu = (col - GRID_SIZE/2)*VOXEL_SIZE_METERS;
 						//std::cout << "Binary hit at x,y " << c_enu << "," << r_enu << "," << ogrid[row][col].hits << std::endl;
