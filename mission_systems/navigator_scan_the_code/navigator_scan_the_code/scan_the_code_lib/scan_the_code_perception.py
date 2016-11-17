@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import sys
 import numpy as np
 import genpy
+from navigator_tools import fprint
 
 ___author___ = "Tess Bianchi"
 
@@ -68,7 +69,6 @@ class ScanTheCodePerception(object):
 
         points_3d = []
         try:
-            print "waiting on tf"
             trans = yield self.my_tf.get_transform("/stereo_left_cam", "/enu", time)
         except Exception as exp:
             print exp
@@ -213,7 +213,6 @@ class ScanTheCodePerception(object):
 
         h, w, r = image.shape
 
-        print ymin, ymax, xmin, xmax
         if ymin == ymax or xmin == xmax or ymin < 0 or ymax > h or xmin < 0 or xmax > w:
             defer.returnValue((False, None))
 
@@ -245,11 +244,11 @@ class ScanTheCodePerception(object):
         """Check to see if we are looking at the corner of scan the code."""
         self.count += 1
         # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
-        if self.count == 100:
-            xs = np.arange(0, len(self.depths))
-            ys = self.depths
-            # plt.plot(xs, ys)
-            # plt.show()
+        # if self.count == 100:
+        #     xs = np.arange(0, len(self.depths))
+        #     ys = self.depths
+        #     plt.plot(xs, ys)
+        #     plt.show()
         # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
 
         points_3d = yield self._get_3d_points_stereo(scan_the_code.points, self.nh.get_time())
@@ -262,7 +261,7 @@ class ScanTheCodePerception(object):
         image_ros = self._get_closest_image(scan_the_code.header.stamp)
         count = 0
         while image_ros is None:
-            print "getting image"
+            yield self.nh.sleep(.5)
             image_ros = self._get_closest_image(scan_the_code.header.stamp)
             yield self.nh.sleep(.3)
             count += 1
@@ -273,7 +272,7 @@ class ScanTheCodePerception(object):
         image_ros = self.bridge.imgmsg_to_cv2(image_ros, "bgr8").copy()
 
         depth = self._get_depth('z', points_oi)
-        print "DEPTH: ", depth
+        fprint("DEPTH: {}".format(depth), msg_color="green")
         self.depths.append(depth)
         if depth > .15:
             # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG

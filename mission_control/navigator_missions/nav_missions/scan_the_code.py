@@ -31,10 +31,9 @@ def _get_color(c):
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator):
-    print "sanasd"
     """Main Script of Scan The Code."""
     # UNCOMMENT
-    navigator.change_wrench("autonomous")
+    # navigator.change_wrench("autonomous")
     fprint("Moving to stc", msg_color='green')
     pub = yield navigator.nh.advertise("/stc/pose", PoseStamped)
     mission = ScanTheCodeMission(navigator.nh)
@@ -45,7 +44,7 @@ def main(navigator):
     _publish_pose(pub, initial_pose)
     fprint("Finished getting the initial position", msg_color='green')
     # UNCOMMENT
-    yield navigator.move.set_position(pose).look_at(look_at).go()
+    # yield navigator.move.set_position(pose).look_at(look_at).go()
     myerr = mission.correct_pose(pose)
     # yield navigator.nh.sleep(.3)
     if not mission.stc_correct:
@@ -55,7 +54,8 @@ def main(navigator):
             if mission.stc_correct:
                 break
             # UNCOMMENT
-            yield p.go(move_type='skid', focus=look_at)
+            yield navigator.nh.sleep(1)
+            # yield p.go(move_type='skid', focus=look_at)
 
     fprint("Finished getting the correct stc face", msg_color='green')
     # defer.returnValue(True)

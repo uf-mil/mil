@@ -39,7 +39,7 @@ def main():
     for test in args.tests:
         fprint("Running Test!\n", title="TEST")
         to_run = MissionPlannerTest(nh)
-        yield to_run.create_spoofs()
+        to_run.create_spoofs()
         result = yield to_run.run_tests()
 
         if result is None:

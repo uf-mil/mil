@@ -144,7 +144,6 @@ class RectangleFinder(object):
         if not succ:
             return False, None
 
-        print "length", len(new_lines)
         for i, line in enumerate(new_lines):
             length, top, bottom, x = line
             cv2.line(self.edges_3, (x, bottom), (x, top), (0, 0, 255))
