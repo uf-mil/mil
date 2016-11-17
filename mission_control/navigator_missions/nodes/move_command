@@ -14,32 +14,13 @@ ros_t = lambda d: util.genpy.Duration(d)
 fprint = navigator_tools.fprint
 
 @util.cancellableInlineCallbacks
-def main():
-    nh, args = yield NodeHandle.from_argv_with_remaining("navigator_mission_runner", anonymous=True)
+def main(args):
+    nh, _ = yield NodeHandle.from_argv_with_remaining("navigator_mission_runner", anonymous=True)
     available_missions = [mission_name for mission_name in dir(nav_missions) if not mission_name.startswith('_')]
-
-    parser = argparse.ArgumentParser(description='Command Line Mission Runner',
-        usage='Pass any pose editor command with an argument. \n\t forward 1 (moves forward 1 meter) \n\t backward 2ft (moves backward 2 feet)')
-    parser.add_argument('command', type=str,
-        help='Pose editor command to run')
-    parser.add_argument('argument', type=str, default=0,
-        help='An argument to pass to the command (distance or angle usally). Optionally a unit can be added if a non-standard unit is desired.')
-    parser.add_argument('-m', '--movetype', type=str, default='drive',
-        help='Move type. See lqrrt documentation for info on how to use this.')
-    parser.add_argument('-f', '--focus', type=str,
-        help='Point to focus on. See lqrrt documentation for info on how to use this. If not specified, default to focusing around clicked point. ex. "[10, 2.3, 1]"')
-    parser.add_argument('-s', '--sim', action='store_true',
-        help='This will run navigator in sim mode (ie. not wait for odom or enu bounds). Don\'t do this on the boat.')
-    parser.add_argument('-p', '--plantime', type=float,
-        help='Time given to the planner for it\'s first plan.')
-    parser.add_argument('-b', '--blind', action='store_true',
-        help='Move without looking at the ogrid. DANGEROUS.')
-
-    args = parser.parse_args(args[1:])
 
     n = yield Navigator(nh)._init(args.sim)
 
-    action_kwargs = {'move_type': args.movetype}
+    action_kwargs = {'move_type': args.movetype, 'speed_factor': args.speedfactor}
 
     if args.blind is not None:
         action_kwargs['blind'] = args.blind
@@ -73,11 +54,6 @@ def main():
         focus = target_point
         focus[2] = 1
         
-        circle = n.move.circle(navigator_tools.point_to_numpy(target_point), args.argument)
-        for p in circle:
-            fprint("Moving to next point...")
-            yield p.go(focus=focus, move_type='skid')
-
     else:
         movement = getattr(n.move, args.command)
 
@@ -100,5 +76,26 @@ def main():
     defer.returnValue(reactor.stop())
 
 if __name__ == '__main__':
-    reactor.callWhenRunning(main)
+    parser = argparse.ArgumentParser(description='Command Line Mission Runner',
+        usage='Pass any pose editor command with an argument. \n\t forward 1 (moves forward 1 meter) \n\t backward 2ft (moves backward 2 feet)')
+    parser.add_argument('command', type=str,
+        help='Pose editor command to run')
+    parser.add_argument('argument', type=str, default=0,
+        help='An argument to pass to the command (distance or angle usally). Optionally a unit can be added if a non-standard unit is desired.')
+    parser.add_argument('-m', '--movetype', type=str, default='drive',
+        help='Move type. See lqrrt documentation for info on how to use this.')
+    parser.add_argument('-f', '--focus', type=str,
+        help='Point to focus on. See lqrrt documentation for info on how to use this. If not specified, default to focusing around clicked point. ex. "[10, 2.3, 1]"')
+    parser.add_argument('-s', '--sim', action='store_true',
+        help='This will run navigator in sim mode (ie. not wait for odom or enu bounds). Don\'t do this on the boat.')
+    parser.add_argument('-p', '--plantime', type=float,
+        help='Time given to the planner for it\'s first plan.')
+    parser.add_argument('-b', '--blind', action='store_true',
+        help='Move without looking at the ogrid. DANGEROUS.')
+    parser.add_argument('-sf', '--speedfactor', type=float, default=1.0,
+        help='Speed to execute the command, don\'t go too much higher than 1 on the real boat.')
+
+    args = parser.parse_args()
+
+    reactor.callWhenRunning(lambda: main(args))
     reactor.run()
