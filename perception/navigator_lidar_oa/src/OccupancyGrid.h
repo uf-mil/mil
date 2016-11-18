@@ -253,8 +253,9 @@ class OccupancyGrid
    			double sr = sin( ang[0] ), cr = cos( ang[0] );
    			ang[1] = atan2( mat(0,2),  cr*mat(2,2) - sr*mat(1,2) );
    			ang[2] = atan2( -mat(0,1), mat(0,0) ); 	
+   			ROS_INFO_STREAM("LIDAR | BOAT XYZ Rotation: " << ang[0]*180/M_PI << "," << ang[1]*180/M_PI << "," << ang[2]*180/M_PI );
 			if (fabs(ang[0]*180/M_PI) > MAX_ROLL_PITCH_ANGLE_DEG || fabs(ang[1]*180/M_PI) > MAX_ROLL_PITCH_ANGLE_DEG) {
-				ROS_INFO_STREAM("LIDAR | BAD READING with XYZ Rotation: " << ang[0]*180/M_PI << "," << ang[1]*180/M_PI << "," << ang[2]*180/M_PI );
+				//BOOST_ASSERT_MSG(fabs(false, "BOAT IN POOR ROLL_PITCH");
 				goodLidarReading = false;
 			}			
 		}

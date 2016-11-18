@@ -664,6 +664,13 @@ int main(int argc, char* argv[])
 		createROIS(ROIS[ii]);
 	}	
 
+	//Check ROS Params
+	/*
+	double adjustParam;
+	if ( nh->getParam("/lidar/OBJECT_INFLATION_PARAMETER", adjustParam) ) {
+
+	}*/
+
 	//Give control to ROS
 	ros::spin();
 

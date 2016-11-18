@@ -65,20 +65,6 @@ public:
     ////////////////////////////////////////////////////////////
 	std::vector<objectMessage> add_objects(std::vector<objectMessage> objects, sensor_msgs::PointCloud &rosCloud, const geometry_msgs::Pose &boatPose_enu)
 	{
-		//Verify that the raw objects list doesn't have objects really close together....
-		#ifdef DEBUG
-			auto cnt = 0;
-			for (auto &ii : objects) {
-				++cnt;
-				for (auto jj = objects.begin()+cnt; jj != objects.end(); ++jj) {
-					auto xyDistance = sqrt( pow(ii.position.x - jj->position.x, 2) + pow(ii.position.y - jj->position.y, 2)  );
-					std::stringstream ss;
-					ss << "Raw object position failure: " << ii.position.x << "," << ii.position.y << " vs " << jj->position.x << "," << jj->position.y;
-					BOOST_ASSERT_MSG(xyDistance > diff_thresh/3, ss.str().c_str());
-				}
-			}
-		#endif
-
 		//Reset all saved objects to not seen
 		for(auto &s_obj : saved_objects) {
 			s_obj.current = false;
@@ -94,17 +80,15 @@ public:
 			objectMessage *min_obj;
 			for(auto &s_obj : saved_objects){
 				auto xyDistance = sqrt( pow(obj.position.x - s_obj.position.x, 2) + pow(obj.position.y - s_obj.position.y, 2) );
-				//auto scaleDiff = sqrt( pow(obj.scale.x - s_obj.scale.x, 2) + pow(obj.scale.y - s_obj.scale.y, 2) + pow(obj.scale.z - s_obj.scale.z, 2) );
 				auto persistMax = 1.0+std::max(obj.strikesPersist.size(),s_obj.strikesPersist.size());
 				auto persistMin = 1.0+std::min(obj.strikesPersist.size(),s_obj.strikesPersist.size());
-				if(xyDistance < min_dist && persistMin/persistMax >= 0.25){
+				if(xyDistance < min_dist && persistMin/persistMax >= 0.20){
 					min_dist = xyDistance;
 					min_obj = &s_obj;
 				}
 			}
 
 			//If the saved object was within in the minimum threshold, update the database. Otherwise, create a new object
-			//obj.strikesPersist.size() min_obj->strikesPersist.size()
 			if (min_dist < diff_thresh) {
 				ROS_INFO_STREAM("LIDAR : Updating " << min_obj->name << " with " << obj.strikesPersist.size() << " vs the old " << min_obj->strikesPersist.size());
 				obj.name = min_obj->name;
@@ -116,10 +100,6 @@ public:
 				obj.locked = min_obj->locked;
 				obj.real = min_obj->real;
 			    obj.confidence = min_obj->confidence;
-			    //Combine persistance!
-			    //if (obj.name == "shooter") {
-			    //	ROS_INFO_STREAM("Shooter check: " << obj.strikesPersist.size() << " vs the old " << min_obj->strikesPersist.size());
-			    //}
                 *min_obj = obj;
 			} else {
 				obj.id = curr_id++;
