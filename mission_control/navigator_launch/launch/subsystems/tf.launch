@@ -11,7 +11,8 @@
     <node pkg="tf" type="static_transform_publisher" name="stereo_right_cam_tf" args="0.294 0.08 -0.45  -0.56213 0.55163 -0.4316 0.43981  /velodyne /stereo_right_cam 100" />
     <node pkg="tf" type="static_transform_publisher" name="right_right_cam_tf" args="0.135 -0.516 -0.453  -0.02483 -0.67719 0.73489 0.02695  /velodyne /right_right_cam 100" />
 
-
+    <!-- Shooter -->
+    <node pkg="tf" type="static_transform_publisher" name="shooter_tf" args="-0.6096 -0.635 0.2032  -1.571 0 0 /measurement /shooter 100" /> 
 
     <!-- TODO Hydrophones -->
     <node pkg="tf" type="static_transform_publisher" name="hydrophone_tf" args="-1.2192 .70104 -1.0922 -1.571 0 0 /measurement /hydrophones 10" />

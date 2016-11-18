@@ -13,17 +13,17 @@ from twisted.internet import defer
 from image_geometry import PinholeCameraModel
 from visualization_msgs.msg import Marker,MarkerArray
 import navigator_tools
-
+from navigator_tools import fprint
 
 class DetectDeliverMission:
     # Note, this will be changed when the shooter switches to actionlib
-    shoot_distance_meters = 7
+    shoot_distance_meters = 3.3
     theta_offset = np.pi / 2.0
     spotings_req = 1
-    circle_radius = 7
+    circle_radius = 10
     search_timeout_seconds = 300
-    target_offset_meters = 0
-    #  normal_approx_tolerance_proportion = 0.035
+    SHAPE_CENTER_TO_BIG_TARGET = 0.42
+    SHAPE_CENTER_TO_SMALL_TARGET = -0.42
 
     def __init__(self, navigator):
         self.navigator = navigator
@@ -42,9 +42,14 @@ class DetectDeliverMission:
 
     @txros.util.cancellableInlineCallbacks
     def set_shape_and_color(self):
+        target = yield self.navigator.mission_params["detect_deliver_target"].get()
+        if target == "BIG":
+            self.target_offset_meters = self.SHAPE_CENTER_TO_BIG_TARGET
+        elif target == "SMALL":
+            self.target_offset_meters = self.SHAPE_CENTER_TO_SMALL_TARGET
         self.Shape = yield self.navigator.mission_params["detect_deliver_shape"].get()
         self.Color = yield self.navigator.mission_params["detect_deliver_color"].get()
-        print "Looking for ", self.Color, " ", self.Shape
+        fprint("Color={} Shape={} Target={}".format(self.Color, self.Shape, target), title="DETECT DELIVER",  msg_color='green')
 
     @txros.util.cancellableInlineCallbacks
     def get_waypoint(self):
@@ -56,7 +61,7 @@ class DetectDeliverMission:
 
     @txros.util.cancellableInlineCallbacks
     def circle_search(self):
-        print "Starting circle search"
+        fprint("Starting Circle Search", title="DETECT DELIVER",  msg_color='yellow')
         #yield self.navigator.move.look_at(navigator_tools.rosmsg_to_numpy(self.waypoint_res.objects[0].position)).go()
         pattern = self.navigator.move.circle_point(navigator_tools.rosmsg_to_numpy(
             self.waypoint_res.objects[0].position), radius=self.circle_radius,  theta_offset=self.theta_offset)
@@ -64,73 +69,50 @@ class DetectDeliverMission:
         searcher = self.navigator.search(
             vision_proxy='get_shape', search_pattern=pattern, Shape=self.Shape, Color=self.Color)
         yield searcher.start_search(timeout=self.search_timeout_seconds, spotings_req=self.spotings_req, move_type="skid")
-        print "Ended Circle Search"
+        fprint("Ended Circle Search", title="DETECT DELIVER",  msg_color='yellow')
 
     @txros.util.cancellableInlineCallbacks
     def align_to_target(self):
         self.markers = MarkerArray()
         while not (yield self.is_found()):
-          print "Shape Not Found, Error: ", self.resp.error
+          fprint("Shape not found Error={}".format(self.resp.error), title="DETECT DELIVER", msg_color='yellow')
         while not (yield self.get_normal()):
-          print "Normal Not Found, Error: ", self.normal_res.error
+          fprint("Normal found Error={}".format(self.normal_res.error), title="DETECT DELIVER", msg_color='yellow')
         yield self.get_aligned_pos()
-        yield self.markers_pub.publish(self.markers)   
-        print "Aligning to Position: ", self.aligned_position
-        print "Aligning to Orientation: ", self.aligned_orientation
-        yield self.navigator.move.set_position(self.aligned_position).set_orientation(self.aligned_orientation).go(move_type="skid")
 
-    @txros.util.cancellableInlineCallbacks
-    def offset_for_target(self):   
-        # Move off of center of shape to be centered with large target
-        move = self.navigator.move.forward(self.target_offset_meters)
-        marker = Marker()
-        marker.scale.x = 1;
-        marker.scale.y = .1;
-        marker.scale.z = .1;
-        marker.action = Marker.ADD;
-        marker.header.frame_id = "enu"
-        marker.header.stamp = self.navigator.nh.get_time()
-        marker.pose = self.navigator.move.goal.goal
-        marker.type = Marker.ARROW
-        marker.text = "Offset goal"
-        marker.ns = "detect_deliver"
-        marker.id = 3
-        marker.color.b = 1
-        marker.color.a = 1
-        self.markers.markers.append(marker)
-        yield move
+        move = self.navigator.move.set_position(self.aligned_position).set_orientation(self.aligned_orientation).forward(self.target_offset_meters)
+        move = move.left(-self.shooter_baselink_tf._p[1]).forward(-self.shooter_baselink_tf._p[0]) #Adjust for location of shooter
+        move_marker = Marker()
+        move_marker.scale.x = 1;
+        move_marker.scale.y = .1;
+        move_marker.scale.z = .1;
+        move_marker.action = Marker.ADD;
+        move_marker.header.frame_id = "enu"
+        move_marker.header.stamp = self.navigator.nh.get_time()
+        move_marker.pose.position = navigator_tools.numpy_to_point(move.position)
+        move_marker.pose.orientation = navigator_tools.numpy_to_quaternion(move.orientation)
+        move_marker.type = Marker.ARROW
+        move_marker.ns = "detect_deliver"
+        move_marker.id = 3
+        move_marker.color.r = 1
+        move_marker.color.a = 1
+        self.markers.markers.append(move_marker)
+        yield self.markers_pub.publish(self.markers)
+        fprint("Aligning to shoot at {}".format(move), title="DETECT DELIVER", msg_color='yellow')
+        yield move.go(move_type="skid")
+
 
     @txros.util.cancellableInlineCallbacks
     def is_found(self):
         self.resp = yield self.navigator.vision_proxies["get_shape"].get_response(Shape=self.Shape, Color=self.Color)
-        #  print "Resp ",self.resp
         if self.resp.found:
             self.found_shape = self.resp.shapes.list[0]
         defer.returnValue(self.resp.found)
 
     def get_aligned_pos(self):
-      # ~position, rot = yield self.navigator.tx_pose
-      
-      self.aligned_position = self.enupoint + self.shoot_distance_meters * self.enunormal  # moves x meters away
-      angle = np.arctan2(-self.enunormal[0], self.enunormal[1])
-      self.aligned_orientation = trns.quaternion_from_euler(0, 0, angle)  # Align perpindicular
-
-      move_marker = Marker()
-      move_marker.scale.x = 1;
-      move_marker.scale.y = .1;
-      move_marker.scale.z = .1;
-      move_marker.action = Marker.ADD;
-      move_marker.header.frame_id = "enu"
-      move_marker.header.stamp = self.navigator.nh.get_time()
-      move_marker.pose.position = navigator_tools.numpy_to_point(self.aligned_position)
-      move_marker.pose.orientation = navigator_tools.numpy_to_quaternion(self.aligned_orientation)
-      move_marker.type = Marker.ARROW
-      move_marker.text = "Align goal"
-      move_marker.ns = "detect_deliver"
-      move_marker.id = 2
-      move_marker.color.r = 1
-      move_marker.color.a = 1
-      self.markers.markers.append(move_marker)                
+        self.aligned_position = self.enupoint + self.shoot_distance_meters * self.enunormal  # moves x meters away
+        angle = np.arctan2(-self.enunormal[0], self.enunormal[1])
+        self.aligned_orientation = trns.quaternion_from_euler(0, 0, angle)  # Align perpindicular
 
     @txros.util.cancellableInlineCallbacks
     def get_normal(self):
@@ -143,9 +125,10 @@ class DetectDeliverMission:
         req.tolerance = int(min(rect[0]-rect[3],rect[1]-rect[4])/2.0)
         self.normal_res = yield self.cameraLidarTransformer(req)
         if self.normal_res.success:
-            transformObj = yield self.navigator.tf_listener.get_transform('/enu', '/'+req.header.frame_id)
-            self.enunormal = transformObj.transform_vector(navigator_tools.rosmsg_to_numpy(self.normal_res.normal))
-            self.enupoint = transformObj.transform_point(navigator_tools.rosmsg_to_numpy(self.normal_res.closest))
+            enu_cam_tf = yield self.navigator.tf_listener.get_transform('/enu', '/'+req.header.frame_id)
+            self.shooter_baselink_tf = yield self.navigator.tf_listener.get_transform('/base_link','/shooter')
+            self.enunormal = enu_cam_tf.transform_vector(navigator_tools.rosmsg_to_numpy(self.normal_res.normal))
+            self.enupoint = enu_cam_tf.transform_point(navigator_tools.rosmsg_to_numpy(self.normal_res.closest))
             target_marker = Marker()
             target_marker.scale.x = 0.1;
             target_marker.scale.y = 0.5;
@@ -156,7 +139,6 @@ class DetectDeliverMission:
             target_marker.points.append(navigator_tools.numpy_to_point(self.enupoint))
             target_marker.points.append(navigator_tools.numpy_to_point(self.enupoint+self.enunormal))
             target_marker.type = Marker.ARROW
-            #target_marker.text = "Shooter Target Pose"
             target_marker.ns = "detect_deliver"
             target_marker.id = 1
             target_marker.color.r = 1
@@ -166,12 +148,13 @@ class DetectDeliverMission:
 
     @txros.util.cancellableInlineCallbacks
     def shoot_all_balls(self):
-        for i in range(1):
+        for i in range(4):
             goal = yield self.shooterLoad.send_goal(ShooterDoAction())
-            print "LOAD", i
+            fprint("Loading Shooter {}".format(i), title="DETECT DELIVER",  msg_color='green')
             res = yield goal.get_result()
+            yield self.navigator.nh.sleep(2)
             goal = yield self.shooterFire.send_goal(ShooterDoAction())
-            print "FIRE", i
+            fprint("Firing Shooter {}".format(i), title="DETECT DELIVER",  msg_color='green')
             res = yield goal.get_result()
 
     @txros.util.cancellableInlineCallbacks
@@ -181,13 +164,12 @@ class DetectDeliverMission:
         yield self.get_waypoint()  # Get waypoint of shooter target
         yield self.circle_search()  # Go to waypoint and circle until target found
         yield self.align_to_target()
-        yield self.offset_for_target()  # Move a little bit forward to be centered to target
         yield self.shoot_all_balls()
         yield self.navigator.vision_proxies["get_shape"].stop()
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator):
-    print "Starting Detect Deliver Mission"
+    fprint("STARTING MISSION", title="DETECT DELIVER",  msg_color='green')
     mission = DetectDeliverMission(navigator)
     yield mission.find_and_shoot()
-    print "End of Detect Deliver Mission"
+    fprint("ENDING MISSION", title="DETECT DELIVER",  msg_color='green')

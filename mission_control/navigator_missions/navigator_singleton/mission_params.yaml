@@ -49,6 +49,11 @@ totem_color_4:
   options: [RED,GREEN,YELLOW,BLUE]
   description: What color totem the Find Totems and Avoid Obstacles mission should circle fourth
 
+detect_deliver_target:
+  param: /mission/detect_deliver/target
+  options: [BIG, SMALL]
+  description: Which target to shoot at in detect deliver
+  default: BIG
 
 detect_deliver_color:
   param: /mission/detect_deliver/Color
