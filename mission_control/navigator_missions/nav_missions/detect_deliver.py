@@ -55,13 +55,13 @@ class DetectDeliverMission:
     def get_waypoint(self):
         res = yield self.navigator.database_query("shooter")
         if not res.found:
-            print "Waypoint not found in database, exiting"
+            fprint("shooter waypoint not found", title="DETECT DELIVER",  msg_color='red')
             raise Exception('Waypoint not found')
         self.waypoint_res = res
 
     @txros.util.cancellableInlineCallbacks
     def circle_search(self):
-        fprint("Starting Circle Search", title="DETECT DELIVER",  msg_color='yellow')
+        fprint("Starting Circle Search", title="DETECT DELIVER",  msg_color='green')
         #yield self.navigator.move.look_at(navigator_tools.rosmsg_to_numpy(self.waypoint_res.objects[0].position)).go()
         pattern = self.navigator.move.circle_point(navigator_tools.rosmsg_to_numpy(
             self.waypoint_res.objects[0].position), radius=self.circle_radius,  theta_offset=self.theta_offset)
@@ -69,15 +69,16 @@ class DetectDeliverMission:
         searcher = self.navigator.search(
             vision_proxy='get_shape', search_pattern=pattern, Shape=self.Shape, Color=self.Color)
         yield searcher.start_search(timeout=self.search_timeout_seconds, spotings_req=self.spotings_req, move_type="skid")
-        fprint("Ended Circle Search", title="DETECT DELIVER",  msg_color='yellow')
+        fprint("Ended Circle Search", title="DETECT DELIVER",  msg_color='green')
 
     @txros.util.cancellableInlineCallbacks
     def align_to_target(self):
+        print "fff"
         self.markers = MarkerArray()
         while not (yield self.is_found()):
-          fprint("Shape not found Error={}".format(self.resp.error), title="DETECT DELIVER", msg_color='yellow')
+            fprint("Shape not found Error={}".format(self.resp.error), title="DETECT DELIVER", msg_color='red')
         while not (yield self.get_normal()):
-          fprint("Normal found Error={}".format(self.normal_res.error), title="DETECT DELIVER", msg_color='yellow')
+            fprint("Normal found Error={}".format(self.normal_res.error), title="DETECT DELIVER", msg_color='red')
         yield self.get_aligned_pos()
 
         move = self.navigator.move.set_position(self.aligned_position).set_orientation(self.aligned_orientation).forward(self.target_offset_meters)
@@ -98,7 +99,7 @@ class DetectDeliverMission:
         move_marker.color.a = 1
         self.markers.markers.append(move_marker)
         yield self.markers_pub.publish(self.markers)
-        fprint("Aligning to shoot at {}".format(move), title="DETECT DELIVER", msg_color='yellow')
+        fprint("Aligning to shoot at {}".format(move), title="DETECT DELIVER", msg_color='red')
         yield move.go(move_type="skid")
 
 

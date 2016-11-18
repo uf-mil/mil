@@ -1,6 +1,5 @@
 #pragma once
 #include <ros/ros.h>
-// PCL specific includes
 #include <geometry_msgs/TransformStamped.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <image_geometry/pinhole_camera_model.h>
@@ -8,9 +7,6 @@
 #include <message_filters/subscriber.h>
 #include <navigator_msgs/CameraToLidarTransform.h>
 #include <pcl/point_cloud.h>
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
-#include <pcl/point_types.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl_conversions/pcl_conversions.h>
@@ -32,6 +28,7 @@
 #include <iostream>
 
 #define DO_ROS_DEBUG
+
 #ifdef DO_ROS_DEBUG
 #include "opencv2/opencv.hpp"
 #include <cv_bridge/cv_bridge.h>
@@ -42,16 +39,7 @@
 class CameraLidarTransformer
 {
   private:
-    union floatConverter
-    {
-        float f;
-        struct
-        {
-            uint8_t data[4];
-        };
-    };
     std::string camera_info_topic;
-    // ~double MIN_Z,MAX_Z_ERROR;
     ros::NodeHandle nh;
     ros::ServiceServer transformServiceServer;
     tf2_ros::Buffer tfBuffer;
@@ -61,13 +49,15 @@ class CameraLidarTransformer
     ros::Subscriber cameraInfoSub;
     image_geometry::PinholeCameraModel cam_model;
     sensor_msgs::CameraInfo camera_info;
-    ros::Publisher pubMarkers;
+    bool inCameraFrame(pcl::PointXYZ& p);
     void cameraInfoCallback(const sensor_msgs::CameraInfo info);
+    void drawPoint(cv::Mat& mat, cv::Point2d& p, cv::Scalar color=cv::Scalar(0, 0, 255));
     bool transformServiceCallback(navigator_msgs::CameraToLidarTransform::Request &req,navigator_msgs::CameraToLidarTransform::Response &res);
-#ifdef DO_ROS_DEBUG
+    #ifdef DO_ROS_DEBUG
+    ros::Publisher pubMarkers;
     image_transport::ImageTransport image_transport;
     image_transport::Publisher points_debug_publisher;
-#endif
+    #endif
   public:
       CameraLidarTransformer();
 };
