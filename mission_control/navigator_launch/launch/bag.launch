@@ -1,4 +1,7 @@
 <launch>
+    <!-- For lidar stuff -->
+    <arg name="oa" default="true" />
+
     <!-- Stereo right, stereo left, right right cameras -->
     <arg name="im_proc_sr" default="false" />
     <arg name="im_proc_sl" default="false" />
@@ -25,4 +28,9 @@
     <node name="right_right_proc" pkg="image_proc" type="image_proc" ns="/right/right" if="$(arg im_proc_rr)"/>
 
     <node name="action_server" pkg="navigator_tools" type="fake_action_server.py" output="screen"/>
+
+    <group if="$(arg oa)">
+        <node name="lidar" pkg="navigator_lidar_oa" type="lidar"/>
+        <node name="ogrid_arbiter" pkg="navigator_msg_multiplexer" type="ogrid_arbiter.py" output="screen" respawn="true"/>
+    </group>
 </launch>
