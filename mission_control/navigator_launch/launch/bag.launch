@@ -1,10 +1,13 @@
 <launch>
-
+    <!-- Stereo right, stereo left, right right cameras -->
+    <arg name="im_proc_sr" default="false" />
+    <arg name="im_proc_sl" default="false" />
+    <arg name="im_proc_rr" default="false" />
+    
     <param name="use_sim_time" value="true"/>
 
     <include file="$(find navigator_launch)/launch/subsystems/tf.launch"/>
 
-    <!-- Some utilities (maybe move these to a different launch at some point) -->
     <node name="coordinate_converter" pkg="navigator_tools" type="coordinate_conversion_server.py"/>
     <node name="bounds_server" pkg="navigator_tools" type="bounds.py"/>
 
@@ -17,6 +20,9 @@
         [29.533803, -82.302639]]
     </rosparam>
 
-    <!-- Maybe add image proc? -->
+    <node name="stereo_right_proc" pkg="image_proc" type="image_proc" ns="/stereo/right" if="$(arg im_proc_sr)"/>
+    <node name="stereo_left_proc" pkg="image_proc" type="image_proc" ns="/stereo/left" if="$(arg im_proc_sl)"/>
+    <node name="right_right_proc" pkg="image_proc" type="image_proc" ns="/right/right" if="$(arg im_proc_rr)"/>
 
+    <node name="action_server" pkg="navigator_tools" type="fake_action_server.py" output="screen"/>
 </launch>
