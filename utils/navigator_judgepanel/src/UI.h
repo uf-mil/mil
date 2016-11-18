@@ -31,7 +31,7 @@ public slots:
 public:
     ros::NodeHandle *nh;
     ros::Subscriber sub;
-	void odomCallBack(const nav_msgs::OdometryConstPtr &odom);
+	//void odomCallBack(const nav_msgs::OdometryConstPtr &odom);
 private:
     Ui::UI widget;
     std::mt19937 engine;

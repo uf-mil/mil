@@ -27,7 +27,7 @@ UI::UI() : engine(time(0)), randomColor(1,3), imageCircle("/usr/local/images/cir
 
     //Start node
   	nh = new ros::NodeHandle;
-  	sub = nh->subscribe("/odom", 1, &UI::odomCallBack, this);
+  	//sub = nh->subscribe("/odom", 1, &UI::odomCallBack, this);
 
     //Setup QT
     widget.setupUi(this);
@@ -54,7 +54,7 @@ UI::UI() : engine(time(0)), randomColor(1,3), imageCircle("/usr/local/images/cir
     timer->start(1000);
 
     widget.statusbar->setStyleSheet("font: bold 18px");
-    widget.statusbar->showMessage(tr("Boat disconnected..."));
+    widget.statusbar->showMessage(tr("ROS is alive..."));
 
     widget.graphics_Left->setPixmap(nullPixmap.scaled(125,125));
     widget.graphics_Right->setPixmap(nullPixmap.scaled(125,125));    
@@ -75,6 +75,7 @@ UI::~UI() {}
 /// \param ?
 /// \param ?
 ////////////////////////////////////////////////////////////
+/*
 void UI::odomCallBack(const nav_msgs::OdometryConstPtr &odom) {
     //ROS_INFO("cb_odom...");   
     boatPose_enu = odom->pose.pose;
@@ -82,7 +83,7 @@ void UI::odomCallBack(const nav_msgs::OdometryConstPtr &odom) {
     std::stringstream ss;
     ss << "Boat connected: " << boatPose_enu.position.x << "," << boatPose_enu.position.y << "," << boatPose_enu.position.z;
     widget.statusbar->showMessage(ss.str().c_str());
-}
+}*/
 
 ////////////////////////////////////////////////////////////
 /// \brief ?

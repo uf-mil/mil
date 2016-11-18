@@ -62,10 +62,10 @@ interactive_markers::MenuHandler::EntryHandle menuEntry;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //These are changed on startup if /get_bounds service is present
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Eigen::Vector2d BOUNDARY_CORNER_1 (30-40, 10-90);
-Eigen::Vector2d BOUNDARY_CORNER_2 (30-40, 120-60);
+Eigen::Vector2d BOUNDARY_CORNER_1 (30-60, 10-140);
+Eigen::Vector2d BOUNDARY_CORNER_2 (30-60, 120-60);
 Eigen::Vector2d BOUNDARY_CORNER_3 (140-10, 120-60);
-Eigen::Vector2d BOUNDARY_CORNER_4 (140-10, 10-90);
+Eigen::Vector2d BOUNDARY_CORNER_4 (140-10, 10-140);
 
 //Eigen::Vector2d BOUNDARY_CORNER_1 (0, 0);
 //Eigen::Vector2d BOUNDARY_CORNER_2 (1, 0);
@@ -127,21 +127,8 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	R_enu_velodyne.rotate(Eigen::Quaterniond(quat.w,quat.x,quat.y,quat.z));
 	Eigen::Vector3d lidarHeading = R_enu_velodyne*Eigen::Vector3d(1,0,0);
 
-
-	//Skip lidar updates if roll or pitch is too high 
-	/*
-	Eigen::Matrix3d mat = R_enu_velodyne.rotation();
-	double ang[3];
-	ang[0] = atan2(-mat(1,2), mat(2,2) );    
-   	double sr = sin( ang[0] ), cr = cos( ang[0] );
-   	ang[1] = atan2( mat(0,2),  cr*mat(2,2) - sr*mat(1,2) );
-   	ang[2] = atan2( -mat(0,1), mat(0,0) ); 
-	ROS_INFO_STREAM("LIDAR | Velodyne enu: " << lidarPos.x << "," << lidarPos.y << "," << lidarPos.z);
-	ROS_INFO_STREAM("LIDAR | XYZ Rotation: " << ang[0]*180/M_PI << "," << ang[1]*180/M_PI << "," << ang[2]*180/M_PI );	
-	if (fabs(ang[0]*180/M_PI) > MAX_ROLL_PITCH_ANGLE_DEG || fabs(ang[1]*180/M_PI) > MAX_ROLL_PITCH_ANGLE_DEG) {
-		return;
-	}
-	*/
+	//Validate boat angles
+	ogrid.validateOrientation(R_enu_velodyne.rotation());
 
 	//Set bounding box
 	ogrid.setBoundingBox(BOUNDARY_CORNER_1,BOUNDARY_CORNER_2,BOUNDARY_CORNER_3,BOUNDARY_CORNER_4);
@@ -152,7 +139,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	ogrid.createBinaryROI(MIN_HITS_FOR_OCCUPANCY);
 
 	//Inflate ogrid before detecting objects and calling AStar
-	ogrid.inflateBinary(2);
+	ogrid.inflateBinary(OBJECT_INFLATION_PARAMETER);
 
 	//Detect objects
 	std::vector<objectMessage> objects;

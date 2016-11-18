@@ -59,16 +59,6 @@ struct objectStats
 		if (!x.size() || !y.size() || !z.size()) { return false; }
 
 		//REMOVE OUTLIERS		
-		/*auto midPoint = z.size()/2;
-		auto q1 = *(std::next(z.begin(),midPoint/2)), q3 = *(std::next(z.begin(),midPoint+midPoint/2));
-		double range = (q3-q1)*1.;
-		auto q1Fence = q1-range, q3Fence = q3+range;
-		
-		//z.erase(std::remove_if(z.begin(), z.end(), [](double v){return v > q3Fence || v < q1Fence}), z.end());
-		for (auto rev = z.begin(); rev != z.end(); ) {
-			if (*rev > q3Fence || *rev < q1Fence) { rev = z.erase(rev); ++removed; }
-			else { ++rev; }
-		}*/
 		auto removed = 0;
 		for (auto it = z.begin(); it != z.end(); ) {
 			if (map[floor(*it/0.25)] < 3) {
@@ -82,7 +72,7 @@ struct objectStats
 		dx = *(--x.end()) - *x.begin(); cx = *x.begin() + dx/2;
 		dy = *(--y.end()) - *y.begin(); cy = *y.begin() + dy/2;
 		dz = *(--z.end()) - *z.begin(); cz = *z.begin() + dz/2;
-		std::cout << "DIMENSIONS: " << x.size() << "\t" << dx << "\t" << dy << "\t" << dz << " with " << removed << std::endl;
+		ROS_INFO_STREAM("LIDAR | DIMENSIONS -> " << x.size() << "\t" << dx << "\t" << dy << "\t" << dz << " with " << removed);
 		return true;
 	}
 	float dx = 0,dy = 0,dz = 0,cx = 0,cy = 0,cz = 0;
@@ -221,10 +211,10 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 		bool isNewObject = true;
 		objectMessage obj;
 		obj.scale.x = ii.second.dx;
-		obj.scale.y = ii.second.dy;  //*ogrid.VOXEL_SIZE_METERS;
+		obj.scale.y = ii.second.dy;  
 		obj.scale.z = ii.second.dz;
-		obj.position.x = ii.second.cx;//(ii.second.cx - ogrid.ROI_SIZE/2)*ogrid.VOXEL_SIZE_METERS + ogrid.lidarPos.x;
-		obj.position.y = ii.second.cy;//(ii.second.cy - ogrid.ROI_SIZE/2)*ogrid.VOXEL_SIZE_METERS + ogrid.lidarPos.y;
+		obj.position.x = ii.second.cx;
+		obj.position.y = ii.second.cy;
 		obj.position.z =  ii.second.cz;
 		obj.strikesPersist = ii.second.strikesPersist;
 		obj.strikesFrame = ii.second.strikesFrame;
@@ -252,6 +242,7 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 				jj.minHeightFromLidar = std::min(jj.minHeightFromLidar,obj.minHeightFromLidar);
 				jj.maxHeightFromLidar = std::max(jj.maxHeightFromLidar,obj.maxHeightFromLidar);
 				isNewObject = false;
+				//BOOST_ASSERT_MSG(false, "yolo");
 				break;
 			}
 		}

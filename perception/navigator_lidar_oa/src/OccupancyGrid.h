@@ -187,7 +187,8 @@ class OccupancyGrid
 			    //Valid lidar points are inside bounding box or within X meters of the boat
 		     	if( (0 <= ab.dot(am) && ab.dot(am) <= ab.dot(ab) && 0 <= am.dot(ac) && am.dot(ac) <= ac.dot(ac)) || (xyz_in_velodyne.norm() <= 15) ){
 					if (xyz_in_velodyne.norm() >= 1 && xyz_in_velodyne.norm() <= 100 && xyz_in_enu(2) >= lidarPos.z-MAXIMUM_Z_BELOW_LIDAR && xyz_in_enu(2) <= lidarPos.z+MAXIMUM_Z_ABOVE_LIDAR) {
-						updateGrid(LidarBeam(xyz_in_enu(0), xyz_in_enu(1), xyz_in_enu(2),i.f,xyz_in_velodyne.norm() < LIDAR_CONFIDENCE_DISTANCE_METERS),max_hits);
+						auto valid = xyz_in_velodyne.norm() < LIDAR_CONFIDENCE_DISTANCE_METERS && goodLidarReading == true;
+						updateGrid(LidarBeam(xyz_in_enu(0), xyz_in_enu(1),xyz_in_enu(2),i.f,valid),max_hits);
 					}
 		     	}
 			}
@@ -236,6 +237,26 @@ class OccupancyGrid
 					pointCloudTable_Uno[y*GRID_SIZE+x].push_back(p);
 					if (ogrid[y][x].hits > max_hits) { ogrid[y][x].hits = max_hits; }	
 				} 
+		}
+
+	    ////////////////////////////////////////////////////////////
+	    /// \brief ?
+	    ///
+	    /// \param ?
+	    /// \param ?
+	    ////////////////////////////////////////////////////////////
+		void validateOrientation(Eigen::Matrix3d mat)
+		{
+			goodLidarReading = true;
+			double ang[3];
+			ang[0] = atan2(-mat(1,2), mat(2,2) );    
+   			double sr = sin( ang[0] ), cr = cos( ang[0] );
+   			ang[1] = atan2( mat(0,2),  cr*mat(2,2) - sr*mat(1,2) );
+   			ang[2] = atan2( -mat(0,1), mat(0,0) ); 	
+			if (fabs(ang[0]*180/M_PI) > MAX_ROLL_PITCH_ANGLE_DEG || fabs(ang[1]*180/M_PI) > MAX_ROLL_PITCH_ANGLE_DEG) {
+				ROS_INFO_STREAM("LIDAR | BAD READING with XYZ Rotation: " << ang[0]*180/M_PI << "," << ang[1]*180/M_PI << "," << ang[2]*180/M_PI );
+				goodLidarReading = false;
+			}			
 		}
 
 	    ////////////////////////////////////////////////////////////
@@ -305,21 +326,7 @@ class OccupancyGrid
 		std::unordered_map<unsigned,beamEntry> pointCloudTable; ///< ???
 		std::unordered_map<unsigned,std::vector<LidarBeam>> pointCloudTable_Uno; ///< ???
 		Eigen::Vector2d b1,ab,ac;									///< ???
+		bool goodLidarReading = true;
 };	
 
 #endif
-
-/*
-//Notes
-#include <sensor_msgs/point_cloud2_iterator.h>
-  sensor_msgs::PointCloud2Iterator<float> iter_x{output_pcd, "x"};
-  sensor_msgs::PointCloud2Iterator<float> iter_y{output_pcd, "y"};
-  sensor_msgs::PointCloud2Iterator<float> iter_z{output_pcd, "z"};
-  sensor_msgs::PointCloud2Iterator<uint8_t> iter_b(output_pcd, "b");
-  sensor_msgs::PointCloud2Iterator<uint8_t> iter_g(output_pcd, "g");
-  sensor_msgs::PointCloud2Iterator<uint8_t> iter_r(output_pcd, "r");
-
-rosrun navigator_perception stereo_point_cloud_driver
-	rosservice call /stereo/activation_srv "data: true" 
-
-*/

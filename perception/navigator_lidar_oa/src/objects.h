@@ -9,13 +9,12 @@
 #include <vector>
 #include <iostream>
 #include "ConnectedComponents.h"
-#include "FitPlanesToCloud.h"
 #include "VolumeClassifier.h"
 #include <boost/assert.hpp>
 #include <tuple>
 #include <Eigen/Dense>
 #include <ros/console.h>
-
+#include "lidarParams.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -96,14 +95,18 @@ public:
 			for(auto &s_obj : saved_objects){
 				auto xyDistance = sqrt( pow(obj.position.x - s_obj.position.x, 2) + pow(obj.position.y - s_obj.position.y, 2) );
 				//auto scaleDiff = sqrt( pow(obj.scale.x - s_obj.scale.x, 2) + pow(obj.scale.y - s_obj.scale.y, 2) + pow(obj.scale.z - s_obj.scale.z, 2) );
-				if(xyDistance < min_dist){
+				auto persistMax = 1.0+std::max(obj.strikesPersist.size(),s_obj.strikesPersist.size());
+				auto persistMin = 1.0+std::min(obj.strikesPersist.size(),s_obj.strikesPersist.size());
+				if(xyDistance < min_dist && persistMin/persistMax >= 0.25){
 					min_dist = xyDistance;
 					min_obj = &s_obj;
 				}
 			}
 
 			//If the saved object was within in the minimum threshold, update the database. Otherwise, create a new object
+			//obj.strikesPersist.size() min_obj->strikesPersist.size()
 			if (min_dist < diff_thresh) {
+				ROS_INFO_STREAM("LIDAR : Updating " << min_obj->name << " with " << obj.strikesPersist.size() << " vs the old " << min_obj->strikesPersist.size());
 				obj.name = min_obj->name;
 				obj.id = min_obj->id;
 				obj.normal = min_obj->normal;
@@ -113,6 +116,10 @@ public:
 				obj.locked = min_obj->locked;
 				obj.real = min_obj->real;
 			    obj.confidence = min_obj->confidence;
+			    //Combine persistance!
+			    //if (obj.name == "shooter") {
+			    //	ROS_INFO_STREAM("Shooter check: " << obj.strikesPersist.size() << " vs the old " << min_obj->strikesPersist.size());
+			    //}
                 *min_obj = obj;
 			} else {
 				obj.id = curr_id++;
@@ -137,42 +144,31 @@ public:
 		#endif*/
 
 		//After updating database, process each object to updates its info
-		int duplicateShooter = 0, duplicateScan = 0;
 		auto cnt = -1;
-		std::tuple<int,double> shooterMin, scanMin;
+		std::vector< std::tuple<std::string,int,int,double,unsigned> > duplicates = {std::make_tuple("shooter",0,-1,-1,4),std::make_tuple("scan_the_code",0,-1,-1,5)};
 		for(auto &s_obj : saved_objects) {
 			++cnt;
 			if (!s_obj.real) {continue;}
 			//Classify volume
 			VolumeClassifier(s_obj);
 			//Look for duplicates of the shooter or scan_the_code
-			if (s_obj.name == "shooter") {
-				++duplicateShooter;
-				auto xyDistance = sqrt( pow(s_obj.position.x - saved_objects[4].position.x, 2) + pow(s_obj.position.y - saved_objects[4].position.y, 2)  );
-				if (duplicateShooter == 1) {
-					shooterMin = std::make_tuple(cnt,xyDistance);
-				} else {
-					if ( xyDistance < std::get<1>(shooterMin) ) {
-						saved_objects.at( std::get<0>(shooterMin) ).name = "unknown";
-						shooterMin = std::make_tuple(cnt,xyDistance);
+			for (auto &dups : duplicates) {
+				if (s_obj.name == std::get<0>(dups)) {
+					++std::get<1>(dups);
+					auto xyDistance = sqrt( pow(s_obj.position.x - saved_objects[std::get<4>(dups)].position.x, 2) + pow(s_obj.position.y - saved_objects[std::get<3>(dups)].position.y, 2)  );
+					if (std::get<1>(dups) == 1) {
+						std::get<2>(dups) = cnt;
+						std::get<3>(dups) = xyDistance;
 					} else {
-						s_obj.name = "unknown";
+						if ( xyDistance < std::get<3>(dups) ) {
+							saved_objects.at( std::get<2>(dups) ).name = "unknown";
+							std::get<2>(dups) = cnt;
+							std::get<3>(dups) = xyDistance;
+						} else {
+							s_obj.name = "unknown";
+						}
+						//BOOST_ASSERT_MSG(false," Duplicate object error");
 					}
-					//BOOST_ASSERT_MSG(false," Duplicate shooter error");
-				} 
-			} else if (s_obj.name == "scan_the_code") {
-				++duplicateScan;
-				auto xyDistance = sqrt( pow(s_obj.position.x - saved_objects[5].position.x, 2) + pow(s_obj.position.y - saved_objects[5].position.y, 2)  );
-				if (duplicateScan == 1) {
-					scanMin = std::make_tuple(cnt,xyDistance);
-				} else { 
-					if ( xyDistance < std::get<1>(scanMin) ) {
-						saved_objects.at( std::get<0>(scanMin) ).name = "unknown";
-						scanMin = std::make_tuple(cnt,xyDistance);
-					} else {
-						s_obj.name = "unknown";
-					}
-					//BOOST_ASSERT_MSG(false," Duplicate scan_the_code error");
 				}
 			}
 		}
@@ -304,7 +300,7 @@ public:
 
 			//Did we find the gates?
 			//ROS_INFO_STREAM("LIDAR | FOUND 4 TOTEMS: " << totems[permute[0]] << "," << totems[permute[1]] << "," << totems[permute[2]] << "," << totems[permute[3]] << " with edge distance of " << distance << " between " << edge1 << " and " << edge2 << " and line error of " << error);
-			if (distance >= 22 && distance <= 40 && error <= 10) {
+			if (distance >= MIN_GATE_SEPERATION && distance <= MAX_GATE_SEPERATION && error <= MAX_GATE_ERROR_METRIC) {
 				//Save center gate
 				gatePositions.push_back(center);
 

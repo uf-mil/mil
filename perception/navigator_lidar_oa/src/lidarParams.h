@@ -23,5 +23,10 @@ extern const int MIN_LIDAR_POINTS_FOR_OCCUPANCY;
 extern const double MIN_OBJECT_HEIGHT_METERS;
 extern const double MIN_OBJECT_SEPERATION_DISTANCE;
 extern const std::vector<std::string> ROIS;
+extern const double MIN_GATE_SEPERATION;
+extern const double MAX_GATE_SEPERATION;
+extern const double MAX_GATE_ERROR_METRIC;
+extern const int MIN_HITS_FOR_VOLUME;
+extern const int OBJECT_INFLATION_PARAMETER;
 
 #endif

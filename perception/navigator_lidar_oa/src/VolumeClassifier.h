@@ -11,6 +11,7 @@
 #include "ConnectedComponents.h"
 #include "navigator_msgs/PerceptionObject.h"
 #include <algorithm>
+#include "lidarParams.h"
 
 void VolumeClassifier(objectMessage &object)
 {
@@ -44,25 +45,12 @@ void VolumeClassifier(objectMessage &object)
 	}
 
 	//????
-	auto match = false;
+	object.name = "unknown";
 	for (auto ii = 0; ii < names.size(); ++ii) {
-		if (object.confidence[ii] >= 31 ) { 
+		if (object.confidence[ii] >= MIN_HITS_FOR_VOLUME ) { 
 			object.name = names[ii];
-			match = true;
 			break;
 		} 
     }
-
-    //????
-	if (!match) { 
-        auto best = std::max_element(object.confidence.begin(),object.confidence.end());        
-        auto dis = std::distance(object.confidence.begin(),best);
-        if (*best == 0) {
-            object.name = "unknown"; 
-        } else {
-            object.name = names[dis]; 
-        }
-    }
-    
 }
 #endif
