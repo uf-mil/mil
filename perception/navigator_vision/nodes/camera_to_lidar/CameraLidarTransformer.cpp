@@ -6,129 +6,111 @@ CameraLidarTransformer::CameraLidarTransformer()
       tfListener(tfBuffer, nh),
       lidarSub(nh, "/velodyne_points", 10),
       lidarCache(lidarSub, 10)
-#ifdef DO_ROS_DEBUG
+      #ifdef DO_ROS_DEBUG
       ,
       image_transport(nh)
-#endif
+      #endif
 {
-#ifdef DO_ROS_DEBUG
-  points_debug_publisher =
-      image_transport.advertise("points_debug", 1);
-  pubMarkers = nh.advertise<visualization_msgs::MarkerArray>(
-      "markers_debug", 10);
-#endif
+  #ifdef DO_ROS_DEBUG
+  points_debug_publisher = image_transport.advertise("points_debug", 1);
+  pubMarkers = nh.advertise<visualization_msgs::MarkerArray>("markers_debug", 10);
+  #endif
   nh.param<std::string>("camera_info_topic",camera_info_topic,"/right/right/camera_info");
-  printf("Topic %s\n",camera_info_topic.c_str());
-  // ~nh.param<double>("MIN_Z",MIN_Z,1);
-  // ~nh.param<double>("MAX_Z_ERROR",MAX_Z_ERROR,0.2);
-  std::cout << "Constructed" << std::endl;
-  cameraInfoSub =
-      nh.subscribe(camera_info_topic, 1,
-                   &CameraLidarTransformer::cameraInfoCallback, this);
+  cameraInfoSub = nh.subscribe(camera_info_topic, 1, &CameraLidarTransformer::cameraInfoCallback, this);
   std::string camera_to_lidar_transform_topic;
   nh.param<std::string>("camera_to_lidar_transform_topic",camera_to_lidar_transform_topic,"transform_camera");
-  transformServiceServer = nh.advertiseService(
-      camera_to_lidar_transform_topic, &CameraLidarTransformer::transformServiceCallback,
-      this);
+  transformServiceServer = nh.advertiseService(camera_to_lidar_transform_topic, &CameraLidarTransformer::transformServiceCallback, this);
 }
 void CameraLidarTransformer::cameraInfoCallback(sensor_msgs::CameraInfo info)
 {
   camera_info = info;
 }
-bool CameraLidarTransformer::transformServiceCallback(
-    navigator_msgs::CameraToLidarTransform::Request &req,
-    navigator_msgs::CameraToLidarTransform::Response &res) {
+bool CameraLidarTransformer::inCameraFrame(pcl::PointXYZ& point)
+{
+  return point.x > 0 && point.x < camera_info.width &&
+         point.y > 0 && point.y < camera_info.height;
+}
+void CameraLidarTransformer::drawPoint(cv::Mat& mat, cv::Point2d& point, cv::Scalar color)
+{
+  if (point.x - 20 > 0 && point.x + 20 < mat.cols && point.y - 20 > 0 && point.y + 20 < mat.rows)
+    cv::circle(mat, point, 3, color, -1);
+}
+bool CameraLidarTransformer::transformServiceCallback(navigator_msgs::CameraToLidarTransform::Request &req, navigator_msgs::CameraToLidarTransform::Response &res)
+{
   visualization_msgs::MarkerArray markers;
   sensor_msgs::PointCloud2ConstPtr scloud =
-      lidarCache.getElemAfterTime(req.header.stamp);
+  lidarCache.getElemAfterTime(req.header.stamp);
   if (!scloud) {
     res.success = false;
     res.error =  navigator_msgs::CameraToLidarTransform::Response::CLOUD_NOT_FOUND;
     return true;
   }
-  geometry_msgs::TransformStamped transform =
-      tfBuffer.lookupTransform(req.header.frame_id, "velodyne", req.header.stamp);
+  geometry_msgs::TransformStamped transform = tfBuffer.lookupTransform(req.header.frame_id, "velodyne", req.header.stamp);
   sensor_msgs::PointCloud2 cloud_transformed;
   tf2::doTransform(*scloud, cloud_transformed, transform);
-#ifdef DO_ROS_DEBUG
-  cv::Mat debug_image(camera_info.height, camera_info.width, CV_8UC3,
-                      cv::Scalar(0));
-#endif
-  cv::circle(debug_image, cv::Point(req.point.x, req.point.y), 8,
-             cv::Scalar(255, 0, 0), -1);
-  //Tracks the closest lidar point to the requested camera point
+  #ifdef DO_ROS_DEBUG
+  cv::Mat debug_image(camera_info.height, camera_info.width, CV_8UC3, cv::Scalar(0));
+  cv::circle(debug_image, cv::Point(req.point.x, req.point.y), 8, cv::Scalar(255, 0, 0), -1);
+  #endif
   double minDistance = std::numeric_limits<double>::max();
-  pcl::PointCloud<pcl::PointXYZ> cloud2;
-  pcl::fromROSMsg(cloud_transformed, cloud2);
+  pcl::PointCloud<pcl::PointXYZ> cloud;
+  pcl::fromROSMsg(cloud_transformed, cloud);
   std::vector<int> indices;
-  for (auto ii = 0, jj = 0; ii < cloud_transformed.width;
-       ++ii, jj += cloud_transformed.point_step) {
-    floatConverter x, y, z, i;
-    for (int kk = 0; kk < 4; ++kk) {
-      x.data[kk] = cloud_transformed.data[jj + kk];
-      y.data[kk] = cloud_transformed.data[jj + 4 + kk];
-      z.data[kk] = cloud_transformed.data[jj + 8 + kk];
-      i.data[kk] = cloud_transformed.data[jj + 16 + kk];
-    }
-    cam_model.fromCameraInfo(camera_info);
-    if (int(z.f) < 0 || int(z.f) > 30) continue;
-    cv::Point2d point = cam_model.project3dToPixel(cv::Point3d(x.f, y.f, z.f));
+  cam_model.fromCameraInfo(camera_info);
+  for (unsigned index = 0; index < cloud.size(); index++)
+  {
+      pcl::PointXYZ& p = cloud[index];
+      if (p.z < 0 || p.z > 30) continue;
+      cv::Point2d point = cam_model.project3dToPixel(cv::Point3d(p.x, p.y, p.z));
+      if (inCameraFrame(p))
+      {
+          #ifdef DO_ROS_DEBUG
+          visualization_msgs::Marker marker_point;
+          marker_point.header = req.header;
+          marker_point.header.seq = 0;
+          marker_point.header.frame_id = req.header.frame_id;
+          marker_point.id = index;
+          marker_point.type = visualization_msgs::Marker::CUBE;
+          marker_point.pose.position.x = p.x;
+          marker_point.pose.position.y = p.y;
+          marker_point.pose.position.z = p.z;
+          marker_point.scale.x = 0.1;
+          marker_point.scale.y = 0.1;
+          marker_point.scale.z = 0.1;
+          marker_point.color.a = 1.0;
+          marker_point.color.r = 0.0;
+          marker_point.color.g = 1.0;
+          marker_point.color.b = 0.0;
+          drawPoint(debug_image, point);
+          #endif
+          double distance = sqrt(pow(point.x - req.point.x ,2) + pow(point.y - req.point.y,2) ); //Distance (2D) from request point to projected lidar point
+          if (distance < req.tolerance)
+          {
+              geometry_msgs::Point geo_point;
+              geo_point.x = p.x;
+              geo_point.y = p.y;
+              geo_point.z = p.z;
+              if (distance < minDistance)
+              {
+                res.closest = geo_point;
+                minDistance = distance;
+              }
+              indices.push_back(index);
 
-    if (int(point.x) > 0 && int(point.x) < camera_info.width &&
-        int(point.y) > 0 && int(point.y) < camera_info.height) {
-#ifdef DO_ROS_DEBUG
-      visualization_msgs::Marker marker_point;
-      marker_point.header = req.header;
-      marker_point.header.seq = 0;
-      marker_point.header.frame_id = req.header.frame_id;
-      marker_point.id = (int)ii;
-      marker_point.type = visualization_msgs::Marker::CUBE;
-      marker_point.pose.position.x = x.f;
-      marker_point.pose.position.y = y.f;
-      marker_point.pose.position.z = z.f;
-      marker_point.scale.x = 0.1;
-      marker_point.scale.y = 0.1;
-      marker_point.scale.z = 0.1;
-      marker_point.color.a = 1.0;
-      marker_point.color.r = 0.0;
-      marker_point.color.g = 1.0;
-      marker_point.color.b = 0.0;
-      //marker_point.lifetime = ros::Duration(0.5);
+              res.transformed.push_back(geo_point);
 
-      // Draw
-      if (int(point.x - 20) > 0 && int(point.x + 20) < camera_info.width &&
-          int(point.y - 20) > 0 && int(point.y + 20) < camera_info.height) {
-        cv::circle(debug_image, point, 3,
-                   cv::Scalar(0, 0, 255 * std::min(1.0, z.f / 20.0)), -1);
+              #ifdef DO_ROS_DEBUG
+              drawPoint(debug_image, point, cv::Scalar(0, 255, 0));
+              marker_point.color.r = 1.0;
+              marker_point.color.g = 0.0;
+              marker_point.color.b = 0.0;
+              #endif
+          }
+          #ifdef DO_ROS_DEBUG
+          markers.markers.push_back(marker_point);
+          #endif 
+
       }
-#endif
-      double distance = sqrt(pow(point.x - req.point.x ,2) + pow(point.y - req.point.y,2) ); //Distance (2D) from request point to projected lidar point
-      if (distance < req.tolerance) {
-#ifdef DO_ROS_DEBUG
-        if (int(point.x - 20) > 0 && int(point.x + 20) < camera_info.width &&
-            int(point.y - 20) > 0 && int(point.y + 20) < camera_info.height) {
-          cv::circle(debug_image, point, 3, cv::Scalar(0, 255, 0), -1);
-        }
-#endif
-
-        geometry_msgs::Point geo_point;
-        geo_point.x = x.f;
-        geo_point.y = y.f;
-        geo_point.z = z.f;
-        if (distance < minDistance)
-        {
-          res.closest = geo_point;
-          minDistance = distance;
-        }
-        indices.push_back(ii);
-        marker_point.color.r = 1.0;
-        marker_point.color.g = 0.0;
-        marker_point.color.b = 0.0;
-        res.transformed.push_back(geo_point);
-      }
-      markers.markers.push_back(marker_point);  
-
-    }
   }
   if (res.transformed.size() < 1) {
     res.success = false;
@@ -138,7 +120,7 @@ bool CameraLidarTransformer::transformServiceCallback(
 
   float x,y,z,n;
   pcl::NormalEstimation<pcl::PointXYZ,pcl::Normal > ne;
-  ne.computePointNormal (cloud2,indices,x,y,z,n);
+  ne.computePointNormal (cloud, indices, x, y, z, n);
   Eigen::Vector3d normal_vector = Eigen::Vector3d(x,y,z).normalized();
   res.normal.x = -normal_vector(0, 0);
   res.normal.y = -normal_vector(1, 0);
