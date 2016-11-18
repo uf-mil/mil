@@ -34,7 +34,7 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-add_executable(lidar src/lidar.cpp)
+add_executable(lidar src/lidar.cpp src/lidarParams.cpp)
 target_link_libraries(lidar ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(lidar lidar_generate_messages_cpp navigator_msgs_generate_messages_cpp uf_common_generate_messages_cpp  ${catkin_EXPORTED_TARGETS})
 

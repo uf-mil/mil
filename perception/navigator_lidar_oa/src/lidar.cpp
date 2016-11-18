@@ -33,25 +33,9 @@
 #include "ConnectedComponents.h"
 #include "objects.h"
 
-using namespace std;
+#include "lidarParams.h"
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Critical global constants
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const double MAP_SIZE_METERS = 1500;
-const double ROI_SIZE_METERS = 201;
-const double VOXEL_SIZE_METERS = 0.30;
-const int MIN_HITS_FOR_OCCUPANCY = 25; //20
-const int MAX_HITS_IN_CELL = 125; //500
-const double MAXIMUM_Z_BELOW_LIDAR = 2; //2
-const double MAXIMUM_Z_ABOVE_LIDAR = 2.5;
-const double MAX_ROLL_PITCH_ANGLE_DEG = 5.3;
-const double LIDAR_VIEW_ANGLE_DEG = 160;
-const double LIDAR_VIEW_DISTANCE_METERS = 60;
-const double LIDAR_MIN_VIEW_DISTANCE_METERS = 5.5;
-const int MIN_LIDAR_POINTS_FOR_OCCUPANCY = 10;
-const double MIN_OBJECT_HEIGHT_METERS = 0.05;
-const double MIN_OBJECT_SEPERATION_DISTANCE = 1.5;
+using namespace std;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Random collection of globals
@@ -67,6 +51,7 @@ uf_common::PoseTwistStamped waypoint_enu,carrot_enu;
 ros::Time pubObjectsTimer;
 ros::ServiceClient boundsClient;
 
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Interactive marker globals
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -77,10 +62,10 @@ interactive_markers::MenuHandler::EntryHandle menuEntry;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //These are changed on startup if /get_bounds service is present
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Eigen::Vector2d BOUNDARY_CORNER_1 (30-40, 10-60);
+Eigen::Vector2d BOUNDARY_CORNER_1 (30-40, 10-90);
 Eigen::Vector2d BOUNDARY_CORNER_2 (30-40, 120-60);
 Eigen::Vector2d BOUNDARY_CORNER_3 (140-10, 120-60);
-Eigen::Vector2d BOUNDARY_CORNER_4 (140-10, 10-60);
+Eigen::Vector2d BOUNDARY_CORNER_4 (140-10, 10-90);
 
 //Eigen::Vector2d BOUNDARY_CORNER_1 (0, 0);
 //Eigen::Vector2d BOUNDARY_CORNER_2 (1, 0);
@@ -90,7 +75,7 @@ Eigen::Vector2d BOUNDARY_CORNER_4 (140-10, 10-60);
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Forward declare
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void createROIS(string name, bool update = false);
+void createROIS(string name, bool update = false, geometry_msgs::Pose newPose = geometry_msgs::Pose());
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Helper function for making interactive markers
@@ -163,7 +148,6 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 
 	//Update occupancy grid
 	ogrid.setLidarPosition(lidarPos,lidarHeading);
-	ogrid.setLidarParams(LIDAR_VIEW_ANGLE_DEG,LIDAR_VIEW_DISTANCE_METERS,LIDAR_MIN_VIEW_DISTANCE_METERS,MIN_LIDAR_POINTS_FOR_OCCUPANCY,MIN_OBJECT_HEIGHT_METERS);
 	ogrid.updatePointsAsCloud(pcloud,T_enu_velodyne,MAX_HITS_IN_CELL,MAXIMUM_Z_BELOW_LIDAR,MAXIMUM_Z_ABOVE_LIDAR);
 	ogrid.createBinaryROI(MIN_HITS_FOR_OCCUPANCY);
 
@@ -173,7 +157,6 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	//Detect objects
 	std::vector<objectMessage> objects;
 	std::vector< std::vector<int> > cc = ConnectedComponents(ogrid,objects,MIN_OBJECT_SEPERATION_DISTANCE);
-
 
 	//Publish second point cloud
 	sensor_msgs::PointCloud objectCloudPersist,objectCloudFrame,pclCloud;
@@ -433,16 +416,24 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
 			//Call reset for all major components
 			markerServer->clear();
 			markerServer->applyChanges();	
+			//Save ROIS
+			vector<geometry_msgs::Pose> poses;
+			for (auto ii = 0; ii < ROIS.size(); ++ii) {
+		        geometry_msgs::Pose newPose;
+		        newPose.position = object_tracker.saved_objects[ii].position;
+				poses.push_back(newPose);
+			}
 			//Object database			
 			object_tracker.reset();
 			//Re-create ROIs - need old positions!
-			createROIS("BuoyField",true); createROIS("CoralSurvey",true); createROIS("FindBreak",true); createROIS("AcousticPinger",true); createROIS("Shooter",true);
-			createROIS("Scan_The_Code",true); createROIS("Gate_1",true); createROIS("Gate_2",true); createROIS("Gate_3",true); createROIS("Dock",true);
+			for (auto ii = 0; ii < ROIS.size(); ++ii) {
+				createROIS(ROIS[ii],true,poses[ii]);
+			}
 			//Get a fresh ogrid
 			ogrid.reset();
 		} else if (name == "Reset") {
 			ROS_INFO_STREAM("LIDAR | Reset cmd is " << name);
-		    for (auto ii = 0; ii < 9; ++ii) {
+		    for (auto ii = 0; ii < ROIS.size(); ++ii) {
                 auto name = object_tracker.saved_objects[ii].name;
 		        //Set new position
 		        geometry_msgs::Pose newPose;
@@ -502,7 +493,7 @@ void roiCallBack( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &f
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void createROIS(string name, bool update)
+void createROIS(string name, bool update, geometry_msgs::Pose newPose)
 {
 	//Add ROI estimates
   	visualization_msgs::InteractiveMarker int_marker; 
@@ -540,10 +531,6 @@ void createROIS(string name, bool update)
 	markerServer->setCallback(int_marker.name,&roiCallBack);
 	markerServer->applyChanges();
     if (update) {
-        geometry_msgs::Pose newPose;
-	    newPose.position.x = 0;
-	    newPose.position.y = 0;
-	    newPose.position.z = 0;
 	    markerServer->setPose(name,newPose);
 	    markerServer->applyChanges();
     } else {
@@ -686,16 +673,9 @@ int main(int argc, char* argv[])
 	menuEntry = menuHandler.insert( sub_menu_handle, "Unknown", &markerCallBack );
 
 	//Create ROIs
-	createROIS("BuoyField");
-	createROIS("CoralSurvey");
-	createROIS("FindBreak");
-	createROIS("AcousticPinger");
-	createROIS("Shooter");
-	createROIS("Scan_The_Code");
-	createROIS("Gate_1");
-	createROIS("Gate_2");
-	createROIS("Gate_3");
-	createROIS("Dock");
+	for (auto ii = 0; ii < ROIS.size(); ++ii) {
+		createROIS(ROIS[ii]);
+	}	
 
 	//Give control to ROS
 	ros::spin();

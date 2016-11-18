@@ -14,6 +14,7 @@
 #include <set>
 #include <unordered_map>
 #include "OccupancyGrid.h"
+#include "lidarParams.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -255,7 +256,7 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 			}
 		}
 
-		if (obj.scale.z >= ogrid.objectMinHeight && isNewObject) {
+		if (obj.scale.z >= MIN_OBJECT_HEIGHT_METERS && isNewObject) {
 			objects.push_back(obj);
 		}
 		//ROS_INFO_STREAM(newId << " -> " << ob.position.x << "," << ob.position.y << "," << ob.position.z << "|" << ob.scale.x << "," << ob.scale.y << "," << ob.scale.z);

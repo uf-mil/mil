@@ -151,26 +151,28 @@ public:
 				auto xyDistance = sqrt( pow(s_obj.position.x - saved_objects[4].position.x, 2) + pow(s_obj.position.y - saved_objects[4].position.y, 2)  );
 				if (duplicateShooter == 1) {
 					shooterMin = std::make_tuple(cnt,xyDistance);
-				} else if ( xyDistance < std::get<1>(shooterMin) ) {
-					saved_objects.at( std::get<0>(shooterMin) ).name = "unknown";
-					shooterMin = std::make_tuple(cnt,xyDistance);
-					BOOST_ASSERT_MSG(false," Duplicate shooter error 1 ");
 				} else {
-					s_obj.name = "unknown";
-					BOOST_ASSERT_MSG(false," Duplicate shooter error 2 ");
-				}
+					if ( xyDistance < std::get<1>(shooterMin) ) {
+						saved_objects.at( std::get<0>(shooterMin) ).name = "unknown";
+						shooterMin = std::make_tuple(cnt,xyDistance);
+					} else {
+						s_obj.name = "unknown";
+					}
+					//BOOST_ASSERT_MSG(false," Duplicate shooter error");
+				} 
 			} else if (s_obj.name == "scan_the_code") {
 				++duplicateScan;
 				auto xyDistance = sqrt( pow(s_obj.position.x - saved_objects[5].position.x, 2) + pow(s_obj.position.y - saved_objects[5].position.y, 2)  );
 				if (duplicateScan == 1) {
 					scanMin = std::make_tuple(cnt,xyDistance);
-				} else if ( xyDistance < std::get<1>(scanMin) ) {
-					saved_objects.at( std::get<0>(scanMin) ).name = "unknown";
-					shooterMin = std::make_tuple(cnt,xyDistance);
-					BOOST_ASSERT_MSG(false," Duplicate scan_the_code error 1 ");
-				} else {
-					s_obj.name = "unknown";
-					BOOST_ASSERT_MSG(false," Duplicate scan_the_code error 2 ");
+				} else { 
+					if ( xyDistance < std::get<1>(scanMin) ) {
+						saved_objects.at( std::get<0>(scanMin) ).name = "unknown";
+						scanMin = std::make_tuple(cnt,xyDistance);
+					} else {
+						s_obj.name = "unknown";
+					}
+					//BOOST_ASSERT_MSG(false," Duplicate scan_the_code error");
 				}
 			}
 		}
@@ -213,12 +215,10 @@ public:
     /// \param ?
     ////////////////////////////////////////////////////////////
 	bool lookUpByName(std::string name, std::vector< navigator_msgs::PerceptionObject > &objects) {
+		//Name may also be the numeric id of the object
 		int id;
-		try {
-			id = stod(name);
-		} catch (...) {
-			id = -1;
-		}
+		try { id = stod(name); } 
+		catch (...) { id = -1; }
 
 		for (const auto &s_obj : saved_objects) {
 			if ( (name == "allAll" ) || (name == "all" && s_obj.real) || (name == s_obj.name || id == s_obj.id) || (name == "All" && !s_obj.real) ) {
