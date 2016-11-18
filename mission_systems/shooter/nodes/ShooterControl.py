@@ -68,6 +68,7 @@ class ShooterControl:
         rate = rospy.Rate(50) # 50hz
         feedback = ShooterDoActionFeedback()
         self.status = "Loading"
+        self.motor_controller.setMotor2(-1)
         while dur_from_start < self.load_total_time and not self.stop:
             dur_from_start = rospy.get_rostime() - start_time
             feedback.feedback.time_remaining = self.load_total_time - dur_from_start
@@ -94,7 +95,6 @@ class ShooterControl:
             return
         self.status = "Loaded"
         self.motor_controller.setMotor1(0)
-        self.motor_controller.setMotor2(-1)
         result.result.success = True
         self.loaded = True
         self.load_server.set_succeeded(result.result)
