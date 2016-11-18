@@ -45,6 +45,7 @@ add_service_files(
   KeyboardControl.srv
   ColorRequest.srv
   FindPinger.srv
+  SetFrequency.srv
 )
 
 add_action_files(
