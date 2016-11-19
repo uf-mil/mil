@@ -10,7 +10,7 @@ from __future__ import division
 
 import os
 
-from navigator_alarm import AlarmListener
+from python_qt_binding import QtCore
 from python_qt_binding import QtGui
 from python_qt_binding import loadUi
 from qt_gui.plugin import Plugin
@@ -41,20 +41,20 @@ class Shooter(Plugin):
         ui_file = os.path.join(rospkg.RosPack().get_path("navigator_gui"), "resource", "shooter.ui")
         loadUi(ui_file, self._widget)
 
-        self.is_killed = False
         self.remote = RemoteControl("shooter gui")
         self.remote.is_timed_out = True
 
         self.shooter_status = {
             "received": "Unknown",
+            "stamp": rospy.Time.now(),
             "cached": "Unknown"
         }
+
         self.disc_speed_setting = 0
 
         self.connect_ui()
 
-        self.kill_listener = AlarmListener("kill", self.update_kill_status)
-        rospy.Subscriber("/shooter/status", String, self.update_shooter_status)
+        rospy.Subscriber("/shooter/status", String, self.cache_shooter_status)
 
         # Show _widget.windowTitle on left-top of each plugin (when it's set in _widget). This is useful when you open multiple
         # plugins at once. Also if you open multiple instances of your plugin at once, these lines add number to make it easy to
@@ -99,10 +99,13 @@ class Shooter(Plugin):
             "green": "QWidget {background-color:#B1EB00;}",
             "yellow": "QWidget {background-color:#FDEF14;}"
         }
-        self.status_colors = {"green": ["Standby", "Loaded", "Fired"],
-                              "yellow": ["Loading", "Firing", "Canceling"],
-                              "red": ["Unknown", "Error", "Canceled"]
+        self.status_colors = {"green": ["Standby", "Loaded"],
+                              "yellow": ["Loading", "Firing", "Canceled", "Manual"],
+                              "red": ["Unknown"]
                               }
+
+        # Creates a monitor that update the shooter status on the GUI periodically
+        self.monitor_shooter_status()
 
     def cache_disc_speed_setting(self, speed):
         '''
@@ -117,32 +120,45 @@ class Shooter(Plugin):
         '''
         self.remote.set_disc_speed(self.disc_speed_setting)
 
-    def update_kill_status(self, alarm):
+    def cache_shooter_status(self, msg):
         '''
-        Updates the kill status display when there is an update on the kill
-        alarm.
-        '''
-        self.is_killed = not alarm.clear
-
-    def update_shooter_status(self, msg):
-        '''
-        Updates the shooter status display when a message is published to the
-        shooter_status topic. Caches the last displayed status to avoid
-        updating the display with the same information twice.
+        Stores the shooter status when it is published.
         '''
         self.shooter_status["received"] = msg.data
+        self.shooter_status["stamp"] = rospy.Time.now()
+
+    def monitor_shooter_status(self):
+        '''
+        Monitors the shooter status on a 1s interval. Only updates the display
+        when the received shooter status has changed. The connection to the
+        status will time out if no message has been received in ~1s.
+        '''
+        if ((rospy.Time.now() - self.shooter_status["stamp"]) < rospy.Duration(1)):
+            self.remote.is_timed_out = False
+
+        # Sets the remote control to timed out and the shooter status to 'Unknown' if no message has been received in ~1s
+        else:
+            self.remote.is_timed_out = True
+            self.shooter_status["received"] = "Unknown"
 
         if (self.shooter_status["received"] != self.shooter_status["cached"]):
-            self.shooter_status_message.setText(self.shooter_status["received"])
+            self.update_shooter_status()
 
-            # Update the status display color based on the message received
-            for color, messages in self.status_colors.iteritems():
-                if (self.shooter_status["received"] in messages):
-                    self.shooter_status_frame.setStyleSheet(self.colors[color])
+        # Schedules the next instance of this method with a QT timer
+        QtCore.QTimer.singleShot(200, self.monitor_shooter_status)
 
-                    # Mark the remote control as timed out if an action is in progress or the status is unknown or error
-                    self.remote.is_timed_out = True if ((color == "yellow") or
-                                                        (self.shooter_status["received"] in ["Unknown", "Error"])) else False
+    def update_shooter_status(self):
+        '''
+        Updates the displayed shooter status text and color. Sets the color of
+        the status frame based on the text's relationship to it in the
+        status_colors dictionary.
+        '''
+        self.shooter_status_message.setText(self.shooter_status["received"])
 
-            # Set the cached shooter status to the value that was just displayed
-            self.shooter_status["cached"] = self.shooter_status["received"]
+        # Update the status display color based on the message received
+        for color, messages in self.status_colors.iteritems():
+            if (self.shooter_status["received"] in messages):
+                self.shooter_status_frame.setStyleSheet(self.colors[color])
+
+        # Set the cached shooter status to the value that was just displayed
+        self.shooter_status["cached"] = self.shooter_status["received"]

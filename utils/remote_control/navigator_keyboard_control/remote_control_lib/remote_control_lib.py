@@ -46,7 +46,7 @@ class RemoteControl(object):
 
         # rospy.wait_for_service("/change_wrench")
         self.wrench_changer = rospy.ServiceProxy("/change_wrench", WrenchSelect)
-        self.kill_listener = AlarmListener("kill", self.__update_kill_status)
+        self.kill_listener = AlarmListener("kill", self._update_kill_status)
 
         if (wrench_pub is None):
             self.wrench_pub = wrench_pub
@@ -63,7 +63,7 @@ class RemoteControl(object):
         self.is_timed_out = False
         self.clear_wrench()
 
-    def __timeout_check(function):
+    def _timeout_check(function):
         '''
         Simple decorator to check whether or not the remote control device is
         timed out before running the function that was called.
@@ -74,14 +74,14 @@ class RemoteControl(object):
                 return function(self, *args, **kwargs)
         return wrapper
 
-    def __update_kill_status(self, alarm):
+    def _update_kill_status(self, alarm):
         '''
         Updates the kill status display when there is an update on the kill
         alarm.
         '''
         self.is_killed = not alarm.clear
 
-    @__timeout_check
+    @_timeout_check
     def kill(self, *args, **kwargs):
         '''
         Kills the system regardless of what state it is in.
@@ -92,7 +92,7 @@ class RemoteControl(object):
             problem_description="System kill from location: {}".format(self.name)
         )
 
-    @__timeout_check
+    @_timeout_check
     def clear_kill(self, *args, **kwargs):
         '''
         Clears the system kill regardless of what state it is in.
@@ -101,7 +101,7 @@ class RemoteControl(object):
         self.wrench_changer("rc")
         self.kill_alarm.clear_alarm()
 
-    @__timeout_check
+    @_timeout_check
     def toggle_kill(self, *args, **kwargs):
         '''
         Toggles the kill status when the toggle_kill_button is pressed.
@@ -117,7 +117,7 @@ class RemoteControl(object):
                 problem_description="System kill from location: {}".format(self.name)
             )
 
-    @__timeout_check
+    @_timeout_check
     def station_hold(self, *args, **kwargs):
         '''
         Sets the goal point to the current location and switches to autonomous
@@ -132,7 +132,7 @@ class RemoteControl(object):
         rospy.sleep(0.2)
         self.station_hold_alarm.clear_alarm()
 
-    @__timeout_check
+    @_timeout_check
     def select_autonomous_control(self, *args, **kwargs):
         '''
         Selects the autonomously generated trajectory as the active controller.
@@ -140,7 +140,7 @@ class RemoteControl(object):
         rospy.loginfo("Changing Control to Autonomous")
         self.wrench_changer("autonomous")
 
-    @__timeout_check
+    @_timeout_check
     def select_rc_control(self, *args, **kwargs):
         '''
         Selects the XBox remote joystick as the active controller.
@@ -148,7 +148,7 @@ class RemoteControl(object):
         rospy.loginfo("Changing Control to RC")
         self.wrench_changer("rc")
 
-    @__timeout_check
+    @_timeout_check
     def select_keyboard_control(self, *args, **kwargs):
         '''
         Selects the keyboard teleoperation service as the active controller.
@@ -156,7 +156,7 @@ class RemoteControl(object):
         rospy.loginfo("Changing Control to Keyboard")
         self.wrench_changer("keyboard")
 
-    @__timeout_check
+    @_timeout_check
     def select_next_control(self, *args, **kwargs):
         '''
         Selects the autonomously generated trajectory as the active controller.
@@ -165,36 +165,36 @@ class RemoteControl(object):
         rospy.loginfo("Changing Control Mode: {}".format(mode))
         self.wrench_changer(mode)
 
-    def __shooter_load_feedback(self, status, result):
+    def _shooter_load_feedback(self, status, result):
         '''
         Prints the feedback that is returned by the shooter load action client
         '''
         rospy.loginfo("Shooter Load Status={} Success={} Error={}".format(status, result.success, result.error))
 
-    @__timeout_check
+    @_timeout_check
     def shooter_load(self, *args, **kwargs):
         '''
         Loads the shooter by using the action client to retract the linear actuator
         '''
-        self.shooter_load_client.send_goal(goal=ShooterDoActionGoal(), done_cb=self.__shooter_load_feedback)
+        self.shooter_load_client.send_goal(goal=ShooterDoActionGoal(), done_cb=self._shooter_load_feedback)
         rospy.loginfo("Kip, do not throw away your shot.")
 
-    def __shooter_fire_feedback(self, status, result):
+    def _shooter_fire_feedback(self, status, result):
         '''
         Prints the feedback that is returned by the shooter fire action client
         '''
         rospy.loginfo("Shooter Fire Status={} Success={} Error={}".format(status, result.success, result.error))
 
-    @__timeout_check
+    @_timeout_check
     def shooter_fire(self, *args, **kwargs):
         '''
         Fires the shooter by using the action client to spin up the
         acceleration discs and extend the linear actuator.
         '''
-        self.shooter_fire_client.send_goal(goal=ShooterDoActionGoal(), done_cb=self.__shooter_fire_feedback)
+        self.shooter_fire_client.send_goal(goal=ShooterDoActionGoal(), done_cb=self._shooter_fire_feedback)
         rospy.loginfo("One, two, three, four, five, six, seven, eight, nine. Number... TEN PACES! FIRE!")
 
-    @__timeout_check
+    @_timeout_check
     def shooter_cancel(self, *args, **kwargs):
         '''
         Cancels the process that the shooter action client is currently
@@ -205,7 +205,7 @@ class RemoteControl(object):
         rospy.loginfo("I imaging death so much it feels more like a memory.")
         rospy.loginfo("When's it gonna get me? While I'm blocked? Seven clocks ahead of me?")
 
-    def __shooter_reset_helper(self, event):
+    def _shooter_reset_helper(self, event):
         '''
         Used to actually call the shooter's reset service.
         '''
@@ -213,16 +213,16 @@ class RemoteControl(object):
         self.shooter_reset_client(TriggerRequest())
         rospy.loginfo("In New York you can be a new man! In New York you can be a new man!")
 
-    @__timeout_check
+    @_timeout_check
     def shooter_reset(self, *args, **kwargs):
         '''
         Ensures that the shooter is fully retracted by initiating a retract and
         using a ~6s delay before calling the actual reset service.
         '''
         self.shooter_linear_retract()
-        rospy.Timer(rospy.Duration(6), self.__shooter_reset_helper, oneshot=True)
+        rospy.Timer(rospy.Duration(6), self._shooter_reset_helper, oneshot=True)
 
-    @__timeout_check
+    @_timeout_check
     def shooter_linear_extend(self, *args, **kwargs):
         '''
         Extends the shooter's linear actuator by setting it's speed to full
@@ -231,7 +231,7 @@ class RemoteControl(object):
         rospy.loginfo("Extending the shooter's linear actuator")
         self.shooter_manual_client(1, 0)
 
-    @__timeout_check
+    @_timeout_check
     def shooter_linear_retract(self, *args, **kwargs):
         '''
         Retracts the shooter's linear actuator by setting it's speed to full
@@ -240,7 +240,7 @@ class RemoteControl(object):
         rospy.loginfo("Retracting the shooter's linear actuator")
         self.shooter_manual_client(-1, 0)
 
-    @__timeout_check
+    @_timeout_check
     def set_disc_speed(self, speed, *args, **kwargs):
         '''
         Sets the shooters disc speed to the speed value passed in. The value is
@@ -248,9 +248,9 @@ class RemoteControl(object):
         to 1.
         '''
         rospy.loginfo("Setting the shooter's accelerator disc speed to {}".format(speed))
-        self.shooter_manual_client(0, float(speed) / 100)
+        self.shooter_manual_client(0, float(speed) / -100)
 
-    @__timeout_check
+    @_timeout_check
     def publish_wrench(self, x, y, rotation, stamp=None, *args, **kwargs):
         '''
         Publishes a wrench to the specified node based on force inputs from the
@@ -268,7 +268,7 @@ class RemoteControl(object):
             wrench.wrench.torque.z = rotation
             self.wrench_pub.publish(wrench)
 
-    @__timeout_check
+    @_timeout_check
     def clear_wrench(self, *args, **kwargs):
         '''
         Publishes a wrench to the specified node based on force inputs from the
