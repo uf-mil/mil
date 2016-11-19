@@ -19,10 +19,10 @@
     <node name="battery_monitor" pkg="navigator_battery_monitor" type="navigator_battery_monitor.py">
         <rosparam>
             <!-- Parameters used to set the alarm trigger values for the batteries -->
-            <!-- The values below will trigger when 30%, 15%, and 5% respectively of the total battery capacity are reached -->
-            battery_low_voltage: 22.1
-            battery_critical_voltage: 20.6
-            battery_kill_voltage: 19.5
+            <!-- These will trigger when each successive level of battery voltage is reached -->
+            battery_low_voltage: 26
+            battery_critical_voltage: 24
+            battery_kill_voltage: 20
         </rosparam>
     </node>
 </launch>

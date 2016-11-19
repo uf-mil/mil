@@ -45,9 +45,9 @@ class BatteryMonitor():
         rospy.Subscriber("/BR_motor/feedback", Feedback, self.add_voltage)
 
         # Attempts to read the battery voltage parameters (sets them to defaults if they have not been set)
-        self.battery_low_voltage = rospy.get_param("~battery_low_voltage", 22.1)
-        self.battery_critical_voltage = rospy.get_param("~battery_critical_voltage", 20.6)
-        self.battery_kill_voltage = rospy.get_param("~battery_kill_voltage", 19.5)
+        self.battery_low_voltage = rospy.get_param("~battery_low_voltage", 26)
+        self.battery_critical_voltage = rospy.get_param("~battery_critical_voltage", 24)
+        self.battery_kill_voltage = rospy.get_param("~battery_kill_voltage", 20)
 
         # Sets up the battery voltage alarms
         alarm_broadcaster = AlarmBroadcaster()
@@ -86,7 +86,7 @@ class BatteryMonitor():
 
     def publish_voltage(self, event):
         '''
-        Publishes the average voltage across all four thrustersto the battery_voltage node as a standard Float32 message and runs
+        Publishes the average voltage across all four thrusters to the battery_voltage node as a standard Float32 message and runs
         the voltage_check
         '''
 
