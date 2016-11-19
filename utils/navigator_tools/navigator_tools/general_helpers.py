@@ -1,5 +1,10 @@
 import rospy
 
+
+class MissingPerceptionObject():
+    def __init__(self, name):
+        self.name = name
+
 class Colors():
     # Some cool stuff could happen here
     red = '\033[91m'
@@ -39,7 +44,10 @@ def fprint(msg, time=None, title=None, newline=True, msg_color=None):
     if msg_color is not None:
         msg = "{color}{msg}{C.reset}".format(color=getattr(Colors(), msg_color), C=Colors, msg=msg)
 
-    if time is None:
+    if time == "":
+        time_header = False
+
+    elif time is None:
         try:
             time = rospy.Time.now().to_sec()
             time_header = "{C.bold}{time}{C.reset}".format(C=Colors, time=time)
