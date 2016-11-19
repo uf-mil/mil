@@ -1,0 +1,217 @@
+<?xml version="1.0"?>
+<sdf version="1.5">
+  <model name="dock">
+    <static>true</static>
+    <pose>0 0 -0.0762 0 0 0</pose>
+    <link name="base_link">
+      <visual name="ez_dock_1">
+        <pose>-6.096 3.048 0 0 0 0</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="ez_dock_1">
+        <pose>-6.096 3.048 0 0 0 0</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="ez_dock_2">
+        <pose>-3.048 3.048 0 0 0 0</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="ez_dock_2">
+        <pose>-3.048 3.048 0 0 0 0</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="ez_dock_3">
+        <pose>0 3.048 0 0 0 0</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="ez_dock_3">
+        <pose>0 3.048 0 0 0 0</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="ez_dock_4">
+        <pose>3.048 3.048 0 0 0 0</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="ez_dock_4">
+        <pose>3.048 3.048 0 0 0 0</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="ez_dock_5">
+        <pose>6.096 3.048 0 0 0 0</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="ez_dock_5">
+        <pose>6.096 3.048 0 0 0 0</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="ez_dock_6">
+        <pose>-7.112 1.016 0 0 0 1.57079</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="ez_dock_6">
+        <pose>-7.112 1.016 0 0 0 1.57079</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="ez_dock_7">
+        <pose>-7.112 -2.032 0 0 0 1.57079</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="ez_dock_7">
+        <pose>-7.112 -2.032 0 0 0 1.57079</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="ez_dock_8">
+        <pose>-2.37066 1.016 0 0 0 1.57079</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="ez_dock_8">
+        <pose>-2.37066 1.016 0 0 0 1.57079</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="ez_dock_9">
+        <pose>-2.37066 -2.032 0 0 0 1.57079</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="ez_dock_9">
+        <pose>-2.37066 -2.032 0 0 0 1.57079</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="ez_dock_10">
+        <pose>2.37066 1.016 0 0 0 1.57079</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="ez_dock_10">
+        <pose>2.37066 1.016 0 0 0 1.57079</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="ez_dock_11">
+        <pose>2.37066 -2.032 0 0 0 1.57079</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="ez_dock_11">
+        <pose>2.37066 -2.032 0 0 0 1.57079</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="ez_dock_12">
+        <pose>7.112 1.016 0 0 0 1.57079</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="ez_dock_12">
+        <pose>7.112 1.016 0 0 0 1.57079</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="ez_dock_13">
+        <pose>7.112 -2.032 0 0 0 1.57079</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="ez_dock_13">
+        <pose>7.112 -2.032 0 0 0 1.57079</pose>
+        <geometry>
+           <mesh>
+            <uri>file://identify_symbols_and_dock/ez_dock.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>

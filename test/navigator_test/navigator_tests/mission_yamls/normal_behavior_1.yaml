@@ -1,0 +1,17 @@
+test_mission_1:
+  object_dep: []
+  mission_dep: "None"
+  is_base: False
+  timeout: 10
+
+test_mission_2:
+  object_dep: ["scan_the_code"]
+  mission_dep: "test_mission_1"
+  is_base: False
+  timeout: 10
+
+test_mission_3:
+  object_dep: ["scan_the_code", "shooter"]
+  mission_dep: "test_mission_1"
+  is_base: False
+  timeout: 10

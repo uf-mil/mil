@@ -10,17 +10,16 @@ import os
 import socket
 import subprocess
 
-from navigator_alarm import AlarmBroadcaster
 from navigator_alarm import AlarmListener
-from navigator_msgs.srv import WrenchSelect
 from python_qt_binding import QtCore
 from python_qt_binding import QtGui
 from python_qt_binding import loadUi
 from qt_gui.plugin import Plugin
+from remote_control_lib import RemoteControl
 from rosgraph_msgs.msg import Clock
 import rospkg
 import rospy
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, String
 
 
 __author__ = "Anthony Olive"
@@ -37,14 +36,15 @@ class Dashboard(Plugin):
 
         # Create the widget and name it
         self._widget = QtGui.QWidget()
-        self._widget.setObjectName('Dashboard')
-        self.setObjectName('Dashboard')
+        self._widget.setObjectName("Dashboard")
+        self.setObjectName("Dashboard")
 
         # Extend the widget with all attributes and children in the UI file
-        ui_file = os.path.join(rospkg.RosPack().get_path('navigator_gui'), 'resource', 'dashboard.ui')
+        ui_file = os.path.join(rospkg.RosPack().get_path("navigator_gui"), "resource", "dashboard.ui")
         loadUi(ui_file, self._widget)
 
         self.is_killed = False
+        self.remote = RemoteControl("dashboard")
 
         # Creates dictionaries that are used by the monitor functions to keep track of their node or service
         service_monitor_template = {
@@ -86,13 +86,12 @@ class Dashboard(Plugin):
         # plugins at once. Also if you open multiple instances of your plugin at once, these lines add number to make it easy to
         # tell from pane to pane.
         if context.serial_number() > 1:
-            self._widget.setWindowTitle(self._widget.windowTitle() + (' (%d)' % context.serial_number()))
+            self._widget.setWindowTitle(self._widget.windowTitle() + (" (%d)" % context.serial_number()))
 
         # Add widget to the user interface
         context.add_widget(self._widget)
 
         # Creates monitors that update data on the GUI periodically
-        self.monitor_operating_mode()
         self.monitor_battery_voltage()
         self.monitor_system_time()
         self.monitor_hosts()
@@ -104,35 +103,35 @@ class Dashboard(Plugin):
         '''
 
         # Kill status
-        self.kill_status_frame = self._widget.findChild(QtGui.QFrame, 'kill_status_frame')
-        self.kill_status_status = self._widget.findChild(QtGui.QLabel, 'kill_status_status')
+        self.kill_status_frame = self._widget.findChild(QtGui.QFrame, "kill_status_frame")
+        self.kill_status_status = self._widget.findChild(QtGui.QLabel, "kill_status_status")
 
         # Operating mode status
-        self.operating_mode_frame = self._widget.findChild(QtGui.QFrame, 'operating_mode_frame')
-        self.operating_mode_status = self._widget.findChild(QtGui.QLabel, 'operating_mode_status')
+        self.operating_mode_frame = self._widget.findChild(QtGui.QFrame, "operating_mode_frame")
+        self.operating_mode_status = self._widget.findChild(QtGui.QLabel, "operating_mode_status")
 
         # Battery voltage
-        self.battery_voltage_frame = self._widget.findChild(QtGui.QFrame, 'battery_voltage_frame')
-        self.battery_voltage_status = self._widget.findChild(QtGui.QLabel, 'battery_voltage_status')
+        self.battery_voltage_frame = self._widget.findChild(QtGui.QFrame, "battery_voltage_frame")
+        self.battery_voltage_status = self._widget.findChild(QtGui.QLabel, "battery_voltage_status")
 
         # System time
-        self.system_time_frame = self._widget.findChild(QtGui.QFrame, 'system_time_frame')
-        self.system_time_status = self._widget.findChild(QtGui.QLabel, 'system_time_status')
+        self.system_time_frame = self._widget.findChild(QtGui.QFrame, "system_time_frame")
+        self.system_time_status = self._widget.findChild(QtGui.QLabel, "system_time_status")
 
         # Devices table
-        self.device_table = self._widget.findChild(QtGui.QFrame, 'device_table')
+        self.device_table = self._widget.findChild(QtGui.QFrame, "device_table")
 
         # Control panel buttons
-        toggle_kill_button = self._widget.findChild(QtGui.QPushButton, 'toggle_kill_button')
-        toggle_kill_button.clicked.connect(self.toggle_kill)
-        station_hold_button = self._widget.findChild(QtGui.QPushButton, 'station_hold_button')
-        station_hold_button.clicked.connect(self.station_hold)
-        autonomous_control_button = self._widget.findChild(QtGui.QPushButton, 'autonomous_control_button')
-        autonomous_control_button.clicked.connect(self.select_autonomous_control)
-        rc_control_button = self._widget.findChild(QtGui.QPushButton, 'rc_control_button')
-        rc_control_button.clicked.connect(self.select_rc_control)
-        keyboard_control_button = self._widget.findChild(QtGui.QPushButton, 'keyboard_control_button')
-        keyboard_control_button.clicked.connect(self.select_keyboard_control)
+        toggle_kill_button = self._widget.findChild(QtGui.QPushButton, "toggle_kill_button")
+        toggle_kill_button.clicked.connect(self.remote.toggle_kill)
+        station_hold_button = self._widget.findChild(QtGui.QPushButton, "station_hold_button")
+        station_hold_button.clicked.connect(self.remote.station_hold)
+        autonomous_control_button = self._widget.findChild(QtGui.QPushButton, "autonomous_control_button")
+        autonomous_control_button.clicked.connect(self.remote.select_autonomous_control)
+        rc_control_button = self._widget.findChild(QtGui.QPushButton, "rc_control_button")
+        rc_control_button.clicked.connect(self.remote.select_rc_control)
+        keyboard_control_button = self._widget.findChild(QtGui.QPushButton, "keyboard_control_button")
+        keyboard_control_button.clicked.connect(self.remote.select_keyboard_control)
 
         # Defines the color scheme as QT style sheets
         self.colors = {
@@ -151,29 +150,11 @@ class Dashboard(Plugin):
         self.battery_low_voltage = rospy.get_param("/battery_monitor/battery_low_voltage", 22.1)
         self.battery_critical_voltage = rospy.get_param("/battery_monitor/battery_critical_voltage", 20.6)
 
+        rospy.Subscriber("/wrench/current", String, self.update_operating_mode_status)
         rospy.Subscriber("/battery_monitor", Float32, self.cache_battery_voltage)
         rospy.Subscriber("/clock", Clock, self.cache_system_time)
 
-        self.wrench_changer = rospy.ServiceProxy('/change_wrench', WrenchSelect)
-        self.kill_listener = AlarmListener('kill', self.update_kill_status)
-
-        alarm_broadcaster = AlarmBroadcaster()
-        self.kill_alarm = alarm_broadcaster.add_alarm(
-            name='kill',
-            action_required=True,
-            severity=0
-        )
-        self.station_hold_alarm = alarm_broadcaster.add_alarm(
-            name='station_hold',
-            action_required=True,
-            severity=3
-        )
-
-    def timeout_check(function):
-        def decorated_function(self):
-            if (not self.system_time["is_timed_out"]):
-                function(self)
-        return decorated_function
+        self.kill_listener = AlarmListener("kill", self.update_kill_status)
 
     def update_kill_status(self, alarm):
         '''
@@ -181,64 +162,47 @@ class Dashboard(Plugin):
         alarm. Caches the last displayed kill status to avoid updating the
         display with the same information twice.
         '''
-        if (not self.system_time["is_timed_out"]):
+        if (alarm.clear):
+            if (self.is_killed):
+                self.is_killed = False
+                self.kill_status_status.setText("Alive")
+                self.kill_status_frame.setStyleSheet(self.colors["green"])
 
-            if (alarm.clear):
-                if (self.is_killed):
-                    self.is_killed = False
-                    self.kill_status_status.setText("Alive")
-                    self.kill_status_frame.setStyleSheet(self.colors["green"])
+        elif (not self.is_killed):
+            self.is_killed = True
+            self.kill_status_status.setText("Killed")
+            self.kill_status_frame.setStyleSheet(self.colors["red"])
 
-            elif (not self.is_killed):
-                self.is_killed = True
-                self.kill_status_status.setText("Killed")
-                self.kill_status_frame.setStyleSheet(self.colors["red"])
-
-    def monitor_operating_mode(self):
+    def update_operating_mode_status(self, msg):
         '''
-        Monitors the selected wrench input device on a 0.5s interval using the
-        wrench_changer service. Only updates the display when the selected
-        wrench input has changed.
+        Updates the operating mode status display when there is an update on
+        the current wrench node. Caches the last displayed operating mode
+        status to avoid updating the display with the same information twice.
         '''
         if (not self.system_time["is_timed_out"]):
 
-            # Attempting to set the wrench to an empty string fails and returns the selected input device.
-            try:
-                self.operating_mode["received"] = self.wrench_changer("").str
+            # Retrieves the operating mode from the published message
+            self.operating_mode["received"] = msg.data
 
-            # If calling the service fails, the operating mode is set to unknown
-            except:
-                self.operating_mode["received"] = "Unknown"
-
-            # If a new value was received, update the display
             if (self.operating_mode["received"] != self.operating_mode["cached"]):
-                self.update_operating_mode_status()
+                if (self.operating_mode["received"] == "autonomous"):
+                    self.operating_mode_status.setText("Autonomous")
+                    self.operating_mode_frame.setStyleSheet(self.colors["green"])
 
-        # Schedules the next instance of this method with a QT timer
-        QtCore.QTimer.singleShot(500, self.monitor_operating_mode)
+                elif (self.operating_mode["received"] == "rc"):
+                    self.operating_mode_status.setText("Joystick")
+                    self.operating_mode_frame.setStyleSheet(self.colors["blue"])
 
-    def update_operating_mode_status(self):
-        '''
-        Updates the displayed operating mode status text and color.
-        '''
-        if (self.operating_mode["received"] == "autonomous"):
-            self.operating_mode_status.setText("Autonomous")
-            self.operating_mode_frame.setStyleSheet(self.colors["green"])
+                elif (self.operating_mode["received"] == "keyboard"):
+                    self.operating_mode_status.setText("Keyboard")
+                    self.operating_mode_frame.setStyleSheet(self.colors["yellow"])
 
-        elif (self.operating_mode["received"] == "rc"):
-            self.operating_mode_status.setText("Joystick")
-            self.operating_mode_frame.setStyleSheet(self.colors["blue"])
+                elif (self.operating_mode["received"] == "Unknown"):
+                    self.operating_mode_status.setText("Unknown")
+                    self.operating_mode_frame.setStyleSheet(self.colors["red"])
 
-        elif (self.operating_mode["received"] == "keyboard"):
-            self.operating_mode_status.setText("Keyboard")
-            self.operating_mode_frame.setStyleSheet(self.colors["yellow"])
-
-        elif (self.operating_mode["received"] == "Unknown"):
-            self.operating_mode_status.setText("Unknown")
-            self.operating_mode_frame.setStyleSheet(self.colors["red"])
-
-        # Set the cached operating mode to the value that was just displayed
-        self.operating_mode["cached"] = self.operating_mode["received"]
+                # Set the cached operating mode to the value that was just displayed
+                self.operating_mode["cached"] = self.operating_mode["received"]
 
     def cache_battery_voltage(self, msg):
         '''
@@ -365,6 +329,8 @@ class Dashboard(Plugin):
                 self.update_system_time_status()
                 self.system_time_frame.setStyleSheet(self.colors["green"])
 
+        self.remote.is_timed_out = self.system_time["is_timed_out"]
+
         # Schedules the next instance of this method with a QT timer
         QtCore.QTimer.singleShot(100, self.monitor_system_time)
 
@@ -392,7 +358,7 @@ class Dashboard(Plugin):
 
                 # If the host is pingable, mark it as online
                 try:
-                    subprocess.check_output(['ping', '-c1', host["ip"]])
+                    subprocess.check_output(["ping", "-c1", host["ip"]])
                     host["status"] = "Online"
 
                 # If pinging the host is unsuccessful, mark it as offline
@@ -436,58 +402,3 @@ class Dashboard(Plugin):
                 entry.setAlignment(QtCore.Qt.AlignCenter)
                 entry.setStyleSheet(column_color[column])
                 self.device_table.setCellWidget(row, column, entry)
-
-    @timeout_check
-    def toggle_kill(self):
-        '''
-        Toggles the kill status when the toggle_kill_button is pressed.
-        '''
-        rospy.loginfo("Toggling Kill")
-
-        # Responds to the kill broadcaster and checks the status of the kill alarm
-        if self.is_killed:
-            self.kill_alarm.clear_alarm()
-        else:
-            self.wrench_changer("rc")
-            self.kill_alarm.raise_alarm(
-                problem_description='System kill from location: dashboard'
-            )
-
-    @timeout_check
-    def station_hold(self):
-        '''
-        Sets the goal point to the current location and switches to autonomous
-        mode in order to stay at that point.
-        '''
-        rospy.loginfo("Station Holding")
-
-        # Trigger station holding at the current pose
-        self.station_hold_alarm.raise_alarm(
-            problem_description='Request to station hold from: dashboard'
-        )
-
-        self.wrench_changer("autonomous")
-
-    @timeout_check
-    def select_autonomous_control(self):
-        '''
-        Selects the autonomously generated trajectory as the active controller.
-        '''
-        rospy.loginfo("Changing Control to Autonomous")
-        self.wrench_changer("autonomous")
-
-    @timeout_check
-    def select_rc_control(self):
-        '''
-        Selects the XBox remote joystick as the active controller.
-        '''
-        rospy.loginfo("Changing Control to RC")
-        self.wrench_changer("rc")
-
-    @timeout_check
-    def select_keyboard_control(self):
-        '''
-        Selects the keyboard teleoperation service as the active controller.
-        '''
-        rospy.loginfo("Changing Control to Keyboard")
-        self.wrench_changer("keyboard")

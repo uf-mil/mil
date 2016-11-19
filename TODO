@@ -32,57 +32,46 @@
 
 [] Make a huge launch file 
 
-V2
-[] YAML file for the missions
-[] Constants in the Perception object
-[] Using new service in Navigator singleton
-[] Async Queue
-[] Addings get element to the navigator object
+HOG Descriptors
+
+[X] Organize all the bags and look at them 
+[X] Segment 10 images
+[X] Train a nonlinear svm on the segments hog descriptors
+[] Use python bindings to search for the descriptor in a third video
+[] Segment 100 images 
+[] rotate the images and scale them
+---------------------------------------------------------------------
+
+Mission System V2
+[X] YAML file for the missions
+[X] Constants in the Perception object
+[X] Using new service in Navigator singleton
+[X] Async Queue
+[X] Adding get element to the navigator object
+
+
+Tests:
+
+
+- Test safe_exit is called after mission fails
+- test that mission stops after no more object dep is found
+- test that base mission stops when a new object is found
+- test that all missions run if everything is found
+- 
+
+to do
+
+- move all the missions to the other file
+- create test package 
+- add mission planner exit
 
 
 
-
-
-Missions
-Service Client:
-	/database/single		: string | PerceptionObject [][][]
-
-
-
-MissionPlanner
-Subscribe:
-	/database/object_found	: PerceptionObject [X][X][]
-Service Client:
-	/exploration/yield_control	 : Bool [X][][]
-
-
-
-Object DB:
-Publish:
-	/database/object_found	: PerceptionObject [X][X][][]
-	/database/objects_classified  : Marker [X][X][X][]
-Advertise: 
-	/database/single		: string | PerceptionObject [X][X][X][]
-	/database/full			:           | PerceptionObjects [X][X][X][]
-Subscribe:
-	/classifier/object		: PerceptionObject [X][X][X][]
-
-
-Action Server:
-/database/find_unknown [X][][][]
-	
-
-Object Classifier:
-Publish:
-	/classifier/object		: PerceptionObject [X][X][]
-Subscribe: 
-	/unclassified/objects : BuoyArray [X][X][]
-
-
-IRA
-Publish:
-	/unclassified/objects 		 : BuoyArray [X][X][X]
-	/unclassified/objects/markers : MarkerArray [X][X][X]
-Advertise: 
-Subscribe:
-Service Client:
+LAKE DAY 11-12
+1. make sure a mission that is currently being executed isn't readded to the queue! (write test)
+	- write one test
+2. Add a timeout to the missions (write test)
+	-write one test
+	-write code
+3. get rid of the MissingPerceptionObject thing so that my code is what checks
+	-write code

@@ -86,6 +86,8 @@ struct objectMessage
 	bool current = false;
 	bool locked = false;
 	bool real = true;
+	ros::Time age;
+    std::array<int,5> confidence{ {0,0,0,0,0} };
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,7 +102,7 @@ struct RCLabel
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::vector<objectMessage> &objects)
+std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::vector<objectMessage> &objects, const double MIN_OBJECT_SEPERATION_DISTANCE)
 {
 	//std::cout << "STARTING CONNECTED COMPONENTS" << std::endl;
 
@@ -187,7 +189,8 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 	//Re-organize obstacles, how many connections to count as an obstacle?
 	objects.clear();
 	for (auto ii : mapObjects)  {
-		//if (ii.second.strikesPersist.size() >= 13) {
+		if (ii.second.strikesPersist.size() >= 3) {
+			bool isNewObject = true;
 			objectMessage obj;
 			float dx = (ii.second.maxCol-ii.second.minCol)+0.001; obj.scale.x = dx*ogrid.VOXEL_SIZE_METERS;
 			float dy = (ii.second.maxRow-ii.second.minRow)+0.001; obj.scale.y = dy*ogrid.VOXEL_SIZE_METERS;
@@ -199,14 +202,37 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 			obj.strikesFrame = ii.second.strikesFrame;
 			obj.intensityFrame = ii.second.intensityFrame;
 			obj.intensityPersist = ii.second.intensityPersist;
-			obj.minHeightFromLidar = ii.second.minHeight;
-			obj.maxHeightFromLidar = ii.second.maxHeight;
+			obj.minHeightFromLidar = ii.second.minHeight-ogrid.lidarPos.z;
+			obj.maxHeightFromLidar = ii.second.maxHeight-ogrid.lidarPos.z;
+			obj.age = ros::Time::now();
 			//obj.color = ii.second.color; //Eventually work with color
-			if (obj.scale.z >= ogrid.objectMinHeight) {
+
+			//Is this object really part of another one?
+			for (auto &jj : objects) {
+				auto distance = sqrt(pow(obj.position.x-jj.position.x,2) + pow(obj.position.y-jj.position.y,2)  );
+				if (distance <= MIN_OBJECT_SEPERATION_DISTANCE) {
+					ROS_INFO_STREAM("LIDAR | Merging object together: " << jj.position.x << "," << jj.position.y << "," << jj.position.z << " vs " << obj.position.x << "," << obj.position.y << "," << obj.position.z );
+					ROS_INFO_STREAM("LIDAR | Merging object together: " << jj.strikesPersist.size() << "," << jj.strikesFrame.size() << " vs " << obj.strikesPersist.size() << "," << obj.strikesFrame.size() );
+					//ros::Duration(5).sleep();
+					jj.position.x = (obj.position.x+jj.position.x)/2;
+					jj.position.y = (obj.position.y+jj.position.y)/2;
+					jj.position.z = (obj.position.z+jj.position.z)/2;
+					jj.strikesPersist.insert(jj.strikesPersist.end(),obj.strikesPersist.begin(),obj.strikesPersist.end() );
+					jj.strikesFrame.insert(jj.strikesFrame.end(),obj.strikesFrame.begin(),obj.strikesFrame.end() );
+					jj.intensityPersist.insert(jj.intensityPersist.end(),obj.intensityPersist.begin(),obj.intensityPersist.end() );
+					jj.intensityFrame.insert(jj.intensityFrame.end(),obj.intensityFrame.begin(),obj.intensityFrame.end() );
+					jj.minHeightFromLidar = std::min(jj.minHeightFromLidar,obj.minHeightFromLidar);
+					jj.maxHeightFromLidar = std::max(jj.maxHeightFromLidar,obj.maxHeightFromLidar);
+					isNewObject = false;
+					break;
+				}
+			}
+
+			if (obj.scale.z >= ogrid.objectMinHeight && isNewObject) {
 				objects.push_back(obj);
 			}
 			//ROS_INFO_STREAM(newId << " -> " << ob.position.x << "," << ob.position.y << "," << ob.position.z << "|" << ob.scale.x << "," << ob.scale.y << "," << ob.scale.z);
-		//}
+		}
 	}
 
 	//std::cout << "FINISHED CONNECTED COMPONENTS" << std::endl;

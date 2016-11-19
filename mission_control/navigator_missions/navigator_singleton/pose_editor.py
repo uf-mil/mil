@@ -13,6 +13,7 @@ from lqrrt_ros.msg import MoveGoal
 
 import navigator_tools
 from navigator_tools import fprint
+from twisted.internet import defer
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
 EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)]
@@ -133,7 +134,7 @@ class PoseEditor2(object):
             # What do we want to do with missions when the boat is killed
             fprint("Boat is killed, ignoring go command!", title="POSE_EDITOR", msg_color="red")
             yield self.nav.nh.sleep(1)
-            defer.returnValue()
+            defer.returnValue(None)
 
         self.goal = self.nav._moveto_client.send_goal(self.as_MoveGoal(*args, **kwargs))
         res = yield self.goal.get_result()
@@ -166,6 +167,9 @@ class PoseEditor2(object):
 
     def right(self, dist, unit='m'):
         return self.rel_position([0, -dist  * UNITS[unit], 0])
+
+    def stop(self):
+        return self.forward(0)
 
     # Orientation
     def set_orientation(self, orientation):
@@ -231,7 +235,6 @@ class PoseEditor2(object):
 
         # Find first point to go to using boat rotation
         next_point = np.append(normalize(self.nav.pose[0][:2] - point[:2]), 0)  # Doing this in 2d
-
         for i in range(granularity + 1):
             new = point + radius * next_point
             yield self.set_position(new).look_at(point).yaw_left(theta_offset)  # Remember this is a generator - not a twisted yield

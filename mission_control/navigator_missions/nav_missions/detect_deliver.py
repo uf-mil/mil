@@ -17,13 +17,13 @@ import navigator_tools
 
 class DetectDeliverMission:
     # Note, this will be changed when the shooter switches to actionlib
-    shoot_distance_meters = 5
+    shoot_distance_meters = 7
     theta_offset = np.pi / 2.0
     spotings_req = 1
     circle_radius = 7
     search_timeout_seconds = 300
-    target_offset_meters = 0.33
-    normal_approx_tolerance_proportion = 0.02
+    target_offset_meters = 0
+    #  normal_approx_tolerance_proportion = 0.035
 
     def __init__(self, navigator):
         self.navigator = navigator
@@ -34,11 +34,16 @@ class DetectDeliverMission:
             self.navigator.nh, '/shooter/fire', ShooterDoAction)
         self.markers_pub = self.navigator.nh.advertise("/detect_deliver/debug_marker",MarkerArray)
 
+    def _bounding_rect(self,points):
+        np_points = map(navigator_tools.point_to_numpy, points)
+        xy_max = np.max(np_points, axis=0)
+        xy_min = np.min(np_points, axis=0)
+        return np.append(xy_max, xy_min)
+
     @txros.util.cancellableInlineCallbacks
     def set_shape_and_color(self):
-        # Use params to get shape and color to look for
-        self.Shape = yield self.navigator.nh.get_param("/mission/detect_deliver/Shape")
-        self.Color = yield self.navigator.nh.get_param("/mission/detect_deliver/Color")
+        self.Shape = yield self.navigator.mission_params["detect_deliver_shape"].get()
+        self.Color = yield self.navigator.mission_params["detect_deliver_color"].get()
         print "Looking for ", self.Color, " ", self.Shape
 
     @txros.util.cancellableInlineCallbacks
@@ -52,7 +57,7 @@ class DetectDeliverMission:
     @txros.util.cancellableInlineCallbacks
     def circle_search(self):
         print "Starting circle search"
-        yield self.navigator.move.look_at(navigator_tools.rosmsg_to_numpy(self.waypoint_res.objects[0].position)).go()
+        #yield self.navigator.move.look_at(navigator_tools.rosmsg_to_numpy(self.waypoint_res.objects[0].position)).go()
         pattern = self.navigator.move.circle_point(navigator_tools.rosmsg_to_numpy(
             self.waypoint_res.objects[0].position), radius=self.circle_radius,  theta_offset=self.theta_offset)
         yield next(pattern).go()
@@ -72,7 +77,7 @@ class DetectDeliverMission:
         yield self.markers_pub.publish(self.markers)   
         print "Aligning to Position: ", self.aligned_position
         print "Aligning to Orientation: ", self.aligned_orientation
-        yield self.navigator.move.set_position(self.aligned_position).set_orientation(self.aligned_orientation).go()
+        yield self.navigator.move.set_position(self.aligned_position).set_orientation(self.aligned_orientation).go(move_type="skid")
 
     @txros.util.cancellableInlineCallbacks
     def offset_for_target(self):   
@@ -134,7 +139,8 @@ class DetectDeliverMission:
         req.point = Point()
         req.point.x = self.found_shape.CenterX
         req.point.y = self.found_shape.CenterY
-        req.tolerance = self.normal_approx_tolerance_proportion*self.found_shape.img_width
+        rect = self._bounding_rect(self.found_shape.points)
+        req.tolerance = int(min(rect[0]-rect[3],rect[1]-rect[4])/2.0)
         self.normal_res = yield self.cameraLidarTransformer(req)
         if self.normal_res.success:
             transformObj = yield self.navigator.tf_listener.get_transform('/enu', '/'+req.header.frame_id)

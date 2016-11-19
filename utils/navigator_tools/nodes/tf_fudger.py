@@ -3,6 +3,7 @@ from __future__ import division
 
 import rospy
 import tf
+import tf.transformations as trns
 import cv2
 import argparse
 import sys
@@ -53,6 +54,9 @@ cv2.createTrackbar("yaw", 'tf', 0, ang_max, lambda x: x)
 toTfLin = lambda x: x * x_res - 0.5 * x_range
 toTfAng = lambda x: x * ang_res - 0.5 * ang_range
 
+toCvLin = lambda x: (x+0.5*x_range)/x_res
+toCvAng = lambda x: (x+0.5*ang_range)/ang_res
+
 p = q = None
 q_mode = False
 
@@ -63,19 +67,60 @@ prd = 100  # This will get replaced if it needs to
 args.tf_child = args.tf_child[1:] if args.tf_child[0] == '/' else args.tf_child
 args.tf_parent = args.tf_parent[1:] if args.tf_parent[0] == '/' else args.tf_parent
 
+listener = tf.TransformListener()
+
+p_original = (0,0,0)
+rpy_original = (0,0,0)
+try:
+    listener.waitForTransform(args.tf_parent,args.tf_child, rospy.Time(0), rospy.Duration(1))
+    (trans,rot) = listener.lookupTransform(args.tf_parent,args.tf_child, rospy.Time(0))
+    euler = trns.euler_from_quaternion(rot)
+    p_original = trans
+    rpy_original = euler
+except tf.Exception:
+    print "TF not found, setting everything to zero"
+
+def set_bars(p, rpy):
+    cv2.setTrackbarPos("x", "tf",int( toCvLin(p[0]) ) )
+    cv2.setTrackbarPos("y", "tf",int( toCvLin(p[1]) ) )
+    cv2.setTrackbarPos("z", "tf",int( toCvLin(p[2]) ) )
+    cv2.setTrackbarPos("roll", "tf",int( toCvAng(rpy[0]) ))
+    cv2.setTrackbarPos("pitch", "tf",int( toCvAng(rpy[1]) ))
+    cv2.setTrackbarPos("yaw", "tf",int( toCvAng(rpy[2]) ))
+    k = cv2.waitKey(100) & 0xFF
+    if k == ord('q'):
+        q_mode = not q_mode
+
+def reset():
+    set_bars(p_original,rpy_original)
+
+reset()
+
+p_last = p_original
+rpy_last = rpy_original
+
 while not rospy.is_shutdown():
     x, y, z = toTfLin(cv2.getTrackbarPos("x", "tf")), toTfLin(cv2.getTrackbarPos("y", "tf")), toTfLin(cv2.getTrackbarPos("z", "tf"))
     p = (x, y, z)
     rpy = (toTfAng(cv2.getTrackbarPos("roll", "tf")), toTfAng(cv2.getTrackbarPos("pitch", "tf")), toTfAng(cv2.getTrackbarPos("yaw", "tf")))
     q = tf.transformations.quaternion_from_euler(*rpy)
 
-    rpy_feedback = "xyz: {}, euler: {}".format([round(x, 5) for x in p], [round(np.degrees(x), 5) for x in rpy])
-    q_feedback = "xyz: {},     q: {}".format([round(x, 5) for x in p], [round(x, 5) for x in q])
-    print q_feedback if q_mode else rpy_feedback
+    if (not p == p_last) or (not rpy == rpy_last):
+        rpy_feedback = "xyz: {}, euler: {}".format([round(x, 5) for x in p], [round(np.degrees(x), 5) for x in rpy])
+        q_feedback = "xyz: {},     q: {}".format([round(x, 5) for x in p], [round(x, 5) for x in q])
+        print q_feedback if q_mode else rpy_feedback
+    p_last = p
+    rpy_last = rpy
 
     k = cv2.waitKey(100) & 0xFF
     if k == ord('q'):
         q_mode = not q_mode
+
+    if k == ord('r'):
+        reset()
+
+    if k == ord('z'):
+        set_bars((0, 0, 0), (0, 0, 0))
 
     if k == ord('s'):
         # Save the transform in navigator_launch/launch/tf.launch replacing the line
