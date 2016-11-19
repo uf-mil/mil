@@ -7,13 +7,6 @@
   <node name="bounds_server" pkg="navigator_tools" type="bounds.py"/>
   <node name="rviz_repub" pkg="navigator_tools" type="rviz_waypoint.py"/>
 
-  <rosparam param="bounds">
-      <!-- This is for Lake Wauberg -->
-      enforce: False
-      lla: [[29.535011, -82.303323],
-            [29.534647, -82.304280],
-            [29.533440, -82.303577],
-            [29.533803, -82.302639]]
-  </rosparam>
+  <node name="set_bounds" pkg="dynamic_reconfigure" type="dynparam" args="load /bounds_server $(find navigator_tools)/cfg/wauberg.yaml -t 10" />
 
 </launch>

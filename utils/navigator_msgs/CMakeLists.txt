@@ -42,6 +42,8 @@ add_service_files(
   ScanTheCodeMission.srv
   ObjectDBQuery.srv
   CameraToLidarTransform.srv
+  KeyboardControl.srv
+  ColorRequest.srv
 )
 
 add_action_files(

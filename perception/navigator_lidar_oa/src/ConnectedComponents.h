@@ -207,7 +207,6 @@ std::vector< std::vector<int> > ConnectedComponents(OccupancyGrid &ogrid, std::v
 	objects.clear();
 	for (auto &ii : mapObjects)  {
 		if ( !ii.second.dimensions() ) { continue; }
-
 		bool isNewObject = true;
 		objectMessage obj;
 		obj.scale.x = ii.second.dx;

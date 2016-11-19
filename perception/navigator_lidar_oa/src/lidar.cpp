@@ -32,7 +32,6 @@
 #include "OccupancyGrid.h"
 #include "ConnectedComponents.h"
 #include "objects.h"
-
 #include "lidarParams.h"
 
 using namespace std;
@@ -50,7 +49,6 @@ geometry_msgs::Twist boatTwist_enu;
 uf_common::PoseTwistStamped waypoint_enu,carrot_enu;
 ros::Time pubObjectsTimer;
 ros::ServiceClient boundsClient;
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Interactive marker globals
@@ -241,10 +239,10 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	  	markerServer->applyChanges();
 	}
 
-	//Clear all markers from interactive server
-	//markerServer->clear();	
+	//Display lidar position
 	ROS_INFO_STREAM("LIDAR | Lidar position in enu " << lidarPos.x << "," << lidarPos.y << "," << lidarPos.z);
 
+	//Update all markers
 	for (auto obj : object_permanence) {
 		//Skip objects that are not real
  		if (!obj.real) {
@@ -664,8 +662,7 @@ int main(int argc, char* argv[])
 		createROIS(ROIS[ii]);
 	}	
 
-	//Check ROS Params
-	/*
+	/* //Check ROS Params
 	double adjustParam;
 	if ( nh->getParam("/lidar/OBJECT_INFLATION_PARAMETER", adjustParam) ) {
 

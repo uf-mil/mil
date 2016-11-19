@@ -20,7 +20,7 @@ from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import PointCloud
 import navigator_msgs.srv as navigator_srvs
-from navigator_tools import fprint
+from navigator_tools import fprint, MissingPerceptionObject
 
 
 class MissionResult(object):
@@ -49,6 +49,7 @@ class MissionResult(object):
                  cool_bars)
 
         return '\n'.join(_pass if self.success else _fail)
+
 
 class Navigator(object):
     circle = "CIRCLE"
@@ -85,10 +86,6 @@ class Navigator(object):
 
         self._moveto_client = action.ActionClient(self.nh, 'move_to', MoveAction)
 
-        fprint("Action client do you yield?", title="NAVIGATOR")
-        yield self._moveto_client.wait_for_server()
-        fprint("Yes he yields!", title="NAVIGATOR")
-
         odom_set = lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0])
         self._odom_sub = self.nh.subscribe('odom', Odometry, odom_set)
         enu_odom_set = lambda odom: setattr(self, 'ecef_pose', navigator_tools.odometry_to_numpy(odom)[0])
@@ -109,6 +106,10 @@ class Navigator(object):
             yield self.nh.sleep(.5)
         else:
             # We want to make sure odom is working before we continue
+            fprint("Action client do you yield?", title="NAVIGATOR")
+            yield util.wrap_time_notice(self._moveto_client.wait_for_server(), 2, "Lqrrt action server")
+            fprint("Yes he yields!", title="NAVIGATOR")
+
             fprint("Waiting for odom...", title="NAVIGATOR")
             odom = util.wrap_time_notice(self._odom_sub.get_next_message(), 2, "Odom listener")
             enu_odom = util.wrap_time_notice(self._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener")
@@ -155,16 +156,25 @@ class Navigator(object):
         else:
             fprint("No bounds param found, defaulting to none.", title="NAVIGATOR")
             self.enu_bounds = None
+ 
+    @util.cancellableInlineCallbacks
+    def database_query(self, object_name=None, raise_exception=True, **kwargs):
+        if object_name is not None:
+            kwargs['name'] = object_name
+            res = yield self._database_query(navigator_srvs.ObjectDBQueryRequest(**kwargs))
+            
+            if not res.found and raise_exception:
+                raise MissingPerceptionObject(kwargs['name'])
+
+            defer.returnValue(res)
+        
+        res = yield self._database_query(navigator_srvs.ObjectDBQueryRequest(**kwargs))
+        defer.returnValue(res)
 
     def vision_request(self, request_name, **kwargs):
         fprint("DEPRECATED: Please use new dictionary based system.")
         return self.vision_proxies[request_name].get_response(**kwargs)
-
-    def database_query(self, object_name=None, **kwargs):
-        if object_name is not None:
-            kwargs['name'] = object_name
-        return self._database_query(navigator_srvs.ObjectDBQueryRequest(**kwargs))
-
+    
     def change_wrench(self, source):
         return self._change_wrench(navigator_srvs.WrenchSelectRequest(source))
 

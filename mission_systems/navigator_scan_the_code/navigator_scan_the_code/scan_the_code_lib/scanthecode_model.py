@@ -1,6 +1,7 @@
 """Model for the ScanTheCode that tracks its own color."""
 import cv2
 import numpy as np
+from navigator_tools import fprint
 ___author___ = "Tess Bianchi"
 
 
@@ -55,6 +56,8 @@ class ScanTheCodeModel:
         c = scalar[2]
         if(abs(a - 255) < 10 and abs(b - 255) < 10 and abs(c - 255) < 100):
             return 'y'
+        elif a < b and a < c and abs(b - c) < 40:
+            return 'y'
         elif(a > b and a > c and abs(a - b) > 30):
             return 'b'
         elif(b > a and b > c):
@@ -72,35 +75,40 @@ class ScanTheCodeModel:
         scalar = cv2.mean(self.frame[ymin:ymax, xmin:xmax])
         color = self._get_color(scalar)
         # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
-        print "color", color
-        print "scalar", scalar
+        fprint("color:{}".format(color), msg_color='green')
+        fprint("scalar:{}".format(scalar), msg_color='green')
         # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
         fc = self.frame.copy()
         cv2.putText(fc, color + str(scalar), (20, 20), 1, 2, (255, 0, 0))
-        debug.add_image(fc, "adlj", topic="colasr")
+        debug.add_image(fc, "adlj", topic="colors")
         if(self.prev_color is not None):
 
             changed = False
-
             if(color != self.prev_cached_color):
                 changed = True
 
-            if color == self.prev_color and self.turned_black and color != 'k':
+            if color != self.prev_color:
+                self.count_same_colors = 0
+
+            if (color == self.prev_color or self.prev_color == 'k') and self.turned_black and color != 'k':
                 self.count_same_colors += 1
 
             if(color == 'k'):
                 self.turned_black = True
                 self.colors_found = 0
+                self.count_same_colors = 0
                 del self.colors[:]
 
-            elif self.turned_black and changed and self.count_same_colors == 2:
+            elif self.turned_black and changed and self.count_same_colors > 0:
                 self.colors_found += 1
                 self.colors.append(color)
                 self.prev_cached_color = color
                 self.count_same_colors = 0
 
+            fprint("count_same_colors:{}".format(self.count_same_colors), msg_color='green')
+
         # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
-        print "cols", self.colors
+        fprint("colors:{}".format(self.colors), msg_color='green')
         print "---"
         # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
         self.prev_color = color

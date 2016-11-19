@@ -1,12 +1,13 @@
 """Handles the perception of the ScanTheCode Mission."""
 from collections import deque
-from model_tracker import ModelTracker
+from scanthecode_model_tracker import ScanTheCodeModelTracker
 from image_geometry import PinholeCameraModel
 from rect_finder import RectangleFinder
 from twisted.internet import defer
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
 import txros
+import matplotlib.pyplot as plt
 import sys
 import numpy as np
 import genpy
@@ -25,7 +26,7 @@ class ScanTheCodePerception(object):
         self.last_cam_info = None
         self.debug = debug
         self.pers_points = []
-        self.model_tracker = ModelTracker()
+        self.model_tracker = ScanTheCodeModelTracker()
         self.pinhole_cam = PinholeCameraModel()
         self.my_tf = my_tf
 
@@ -67,6 +68,7 @@ class ScanTheCodePerception(object):
 
         points_3d = []
         try:
+            print "waiting on tf"
             trans = yield self.my_tf.get_transform("/stereo_left_cam", "/enu", time)
         except Exception as exp:
             print exp
@@ -122,11 +124,18 @@ class ScanTheCodePerception(object):
         if axis == 'z':
             idx = 2
         min_val, max_val = sys.maxint, -sys.maxint
-        for p in points_3d:
-            if p[idx] < min_val:
-                min_val = p[idx]
-            if p[idx] > max_val:
-                max_val = p[idx]
+        points_3d = np.array(points_3d)
+        my_points = points_3d[:, idx]
+        mean = np.mean(my_points)
+        std = 1.5 * np.std(my_points)
+        for p in my_points:
+            if abs(p - mean) > std:
+                # print p, mean
+                continue
+            if p < min_val:
+                min_val = p
+            if p > max_val:
+                max_val = p
 
         return max_val - min_val
 
@@ -202,7 +211,10 @@ class ScanTheCodePerception(object):
 
         cv2.rectangle(image_clone, (xmin, ymin), (xmax, ymax), (255, 0, 0), 2)
 
-        if ymin == ymax or xmin == xmax:
+        h, w, r = image.shape
+
+        print ymin, ymax, xmin, xmax
+        if ymin == ymax or xmin == xmax or ymin < 0 or ymax > h or xmin < 0 or xmax > w:
             defer.returnValue((False, None))
 
         cv2.rectangle(image_clone, (xmin, ymin), (xmax, ymax), (255, 0, 0), 2)
@@ -233,11 +245,11 @@ class ScanTheCodePerception(object):
         """Check to see if we are looking at the corner of scan the code."""
         self.count += 1
         # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
-        # if self.count == 100:
-        #     xs = np.arange(0, len(self.depths))
-        #     ys = self.depths
-        #     plt.plot(xs, ys)
-        #     plt.show()
+        if self.count == 100:
+            xs = np.arange(0, len(self.depths))
+            ys = self.depths
+            # plt.plot(xs, ys)
+            # plt.show()
         # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
 
         points_3d = yield self._get_3d_points_stereo(scan_the_code.points, self.nh.get_time())
@@ -255,6 +267,7 @@ class ScanTheCodePerception(object):
         image_ros = self.bridge.imgmsg_to_cv2(image_ros, "bgr8").copy()
 
         depth = self._get_depth('z', points_oi)
+        print "DEPTH: ", depth
         self.depths.append(depth)
         if depth > .3:
             # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG

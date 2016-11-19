@@ -11,6 +11,9 @@ class Sabertooth2x12:
         self.sim = sim
         if not self.sim:
             self.ser = serial.Serial(filename,baudrate=19200)
+        else:
+            global rospy
+            import rospy       
 
 
     def _map(self,x, in_min, in_max, out_min, out_max):
@@ -31,6 +34,8 @@ class Sabertooth2x12:
             byts = struct.pack("B",send_char)
             self.ser.write(byts)
             self.ser.flush()
+        else:
+            rospy.loginfo("SETTING MOTOR 1: {}".format(self.motor_1_speed))
 
 
     def getMotor1(self):
@@ -47,6 +52,8 @@ class Sabertooth2x12:
             byts = struct.pack("B",send_char)
             self.ser.write(byts)
             self.ser.flush()
+        else:
+            rospy.loginfo("SETTING MOTOR 2: {}".format(self.motor_2_speed))
 
 
     def getMotor2(self):

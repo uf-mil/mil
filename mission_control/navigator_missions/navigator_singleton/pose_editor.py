@@ -168,6 +168,9 @@ class PoseEditor2(object):
     def right(self, dist, unit='m'):
         return self.rel_position([0, -dist  * UNITS[unit], 0])
 
+    def stop(self):
+        return self.forward(0)
+
     # Orientation
     def set_orientation(self, orientation):
         orientation = np.array(orientation)
@@ -232,7 +235,6 @@ class PoseEditor2(object):
 
         # Find first point to go to using boat rotation
         next_point = np.append(normalize(self.nav.pose[0][:2] - point[:2]), 0)  # Doing this in 2d
-
         for i in range(granularity + 1):
             new = point + radius * next_point
             yield self.set_position(new).look_at(point).yaw_left(theta_offset)  # Remember this is a generator - not a twisted yield

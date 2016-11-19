@@ -79,30 +79,30 @@ def main(navigator):
 
     # buoys = [Buoy.from_srv(left), Buoy.from_srv(right)]
     #buoys = np.array(get_buoys())
-    points = [navigator_tools.numpy_to_point(b.position * 100) for b in buoys]
     pose = yield navigator.tx_pose
     # Get the ones closest to us and assume those are the front
     distances = np.array([b.distance(pose[0]) for b in buoys])
     back = buoys[np.argsort(distances)[-2:]]
     front = buoys[np.argsort(distances)[:2]]
 
-    print "front", front
-    print "back", back
-
-    points = [navigator_tools.numpy_to_point(b.position) for b in buoys]
+    #print "front", front
+    #print "back", back
 
     # Made it this far, make sure the red one is on the left and green on the right ================
     t = txros.tf.Transform.from_Pose_message(navigator_tools.numpy_quat_pair_to_pose(*pose))
-    t_mat = t.as_matrix()[:3, :3]  # Probably wont work in general
-    f_bl_buoys = [t_mat.dot(buoy.position) for buoy in front]
-    b_bl_buoys = [t_mat.dot(buoy.position) for buoy in back]
+    t_mat44 = t.as_matrix()
+    f_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1)) for buoy in front]
+    b_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1)) for buoy in back]
 
     # Angles are w.r.t positive x-axis. Positive is CCW around the z-axis.
     angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in f_bl_buoys])
+    #print angle_buoys, front
     f_left_buoy, f_right_buoy = front[np.argmax(angle_buoys)], front[np.argmin(angle_buoys)]
 
     angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in b_bl_buoys])
     b_left_buoy, b_right_buoy = back[np.argmax(angle_buoys)], back[np.argmin(angle_buoys)]
+ 
+    points = [navigator_tools.numpy_to_point(b.position) for b in [f_left_buoy]]
 
     # Lets plot a course, yarrr
     f_between_vector, f_direction_vector = get_path(f_left_buoy, f_right_buoy)
@@ -117,27 +117,29 @@ def main(navigator):
     setup = f_mid_point - f_direction_vector * setup_dist
     target = b_mid_point + through_vector * setup_dist
 
-    ogrid = OgridFactory(f_left_buoy.position, f_right_buoy.position, pose[0],
-                         target, left_b_pos=b_left_buoy.position, right_b_pos=b_right_buoy.position)
-
-    msg = ogrid.get_message()
-
     # Put the target into the point cloud as well
     #points.append(navigator_tools.numpy_to_point(b_left_buoy))
     points.append(navigator_tools.numpy_to_point(target))
     pc = PointCloud(header=navigator_tools.make_header(frame='/enu'),
                     points=np.array(points))
-
+   
     yield navigator._point_cloud_pub.publish(pc)
-
+    print "Waiting 3 seconds to move..."
+    yield navigator.nh.sleep(3)
     yield navigator.move.set_position(setup).look_at(f_mid_point).go(move_type="skid")
+
+    pose = yield navigator.tx_pose
+    ogrid = OgridFactory(f_left_buoy.position, f_right_buoy.position, pose[0],
+                         target, left_b_pos=b_left_buoy.position, right_b_pos=b_right_buoy.position)
+    msg = ogrid.get_message()
+
     print "publishing"
     latched = navigator.latching_publisher("/mission_ogrid", OccupancyGrid, msg)
 
     yield navigator.nh.sleep(5)
 
-    print "START_GATE: Moving!"
-    yield navigator.move.set_position(target).go()
+    print "START_GATE: Moving in 5 seconds!"
+    yield navigator.move.set_position(target).go(initial_plan_time=5)
     return_with(result)
 
 
@@ -172,6 +174,8 @@ class OgridFactory():
                                                               [0, 0, 0, 1])
         dx = self.x_upper - self.x_lower
         dy = self.y_upper - self.y_lower
+        _max = max(dx, dy)
+        dx = dy = _max
         # The grid needs to have it's axes swaped since its row major
         self.grid = np.zeros((dy / self.resolution, dx / self.resolution))
 
@@ -231,7 +235,6 @@ class OgridFactory():
                            endpoint_left_f[1], endpoint_right_f[1], self.target[1]) + self.edge_buffer
 
         self.walls = [self.left_b, self.left_f, left_cone_point, right_cone_point, self.right_f, self.right_b]
-        print self.walls
 
     def draw_lines(self, points):
         last_wall = None
@@ -241,7 +244,7 @@ class OgridFactory():
                 continue
 
             this_wall = tuple(self.transform(wall).astype(np.int32))
-            cv2.line(self.grid, this_wall, last_wall, 128, 7)
+            cv2.line(self.grid, this_wall, last_wall, 128, 3)
             last_wall = this_wall
 
     def draw_walls(self):

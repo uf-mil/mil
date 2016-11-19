@@ -123,6 +123,9 @@ class RectangleFinder(object):
         """
         self.debug = debug
 
+        if roi is None:
+            return False, None
+
         gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
         gray = cv2.bilateralFilter(gray, 11, 13, 13)
         edges = cv2.Canny(gray, 50, 150, apertureSize=3)

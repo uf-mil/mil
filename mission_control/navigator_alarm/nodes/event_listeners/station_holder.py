@@ -4,6 +4,7 @@ import actionlib
 
 from navigator_alarm import AlarmListener
 from lqrrt_ros.msg import MoveAction, MoveGoal
+from navigator_msgs.srv import WrenchSelect, WrenchSelectRequest
 
 from navigator_tools import fprint as _fprint
 
@@ -15,6 +16,9 @@ class StationHoldListener():
         self.client = actionlib.SimpleActionClient('/move_to', MoveAction)
         fprint("Waiting for action server...")
         self.client.wait_for_server()
+
+        self.change_wrench = rospy.ServiceProxy("/change_wrench", WrenchSelect)
+        self.change_wrench.wait_for_service()
 
         fprint("Creating alarm listener...")
         self.station_hold_alarm = AlarmListener(alarm_name='station_hold', callback_funct=self.handle)
@@ -30,7 +34,13 @@ class StationHoldListener():
         station_hold_goal.move_type = 'hold'
 
         self.client.send_goal(station_hold_goal)
-        self.client.wait_for_result(rospy.Duration.from_sec(5.0))
+        self.client.wait_for_result(rospy.Duration.from_sec(2.0))
+        res = self.client.get_result()
+        if res is None or res.failure_reason is not '':
+            fprint("ERROR STATION HOLDING", msg_color="red")
+            return
+
+        self.change_wrench("autonomous")
 
         fprint("Station holding", msg_color="green")
 

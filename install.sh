@@ -574,18 +574,21 @@ check_connection() {
 }
 
 set_ros_ip() {
-	LOCAL_IP=\"\`ip route get 1 | awk '{print \$NF; exit}'\`\"
+	LOCAL_IP=\"\`ip route get 192.168.37.0/24 | awk '{print \$NF; exit}'\`\"
+	LOCAL_HOSTNAME=\"\`hostname\`.ad.mil.ufl.edu\"
 
-	# Unsets ROS_HOSTNAME and sets ROS_IP to the IP on this machine's main NIC
-	unset ROS_HOSTNAME
+	# Sets ROS_HOSTNAME to the this machine's hostname
+	export ROS_HOSTNAME=\$LOCAL_HOSTNAME
+
+	# Sets ROS_IP to the IP on this machine's main NIC
 	export ROS_IP=\$LOCAL_IP
 }
 
 unset_ros_ip() {
 
-	# Unsets ROS_IP and sets ROS_HOSTNAME to localhost
+	# Unsets ROS_IP and ROS_HOSTNAME, which will default to localhost
 	unset ROS_IP
-	export ROS_HOSTNAME=localhost
+	unset ROS_HOSTNAME
 }
 
 set_ros_master() {

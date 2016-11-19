@@ -1,0 +1,4 @@
+string color
+---
+bool found
+int32[] ids

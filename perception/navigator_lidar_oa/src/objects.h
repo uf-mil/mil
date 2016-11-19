@@ -347,6 +347,5 @@ public:
 		} while (std::prev_permutation(bits.begin(),bits.end()));
 		return combos;
 	}	
-
 };
 #endif
