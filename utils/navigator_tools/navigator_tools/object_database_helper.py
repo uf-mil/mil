@@ -94,7 +94,7 @@ class DBHelper(object):
     def set_looking_for(self, name):
         self.looking_for = name
 
-    def found(self):
+    def is_found_func(self):
         if self.is_found:
             self.looking_for = None
             self.is_found = False
