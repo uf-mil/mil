@@ -8,17 +8,15 @@ class MissingPerceptionObject():
 class Colors():
     # Some cool stuff could happen here
     red = '\033[91m'
-    blue = '\033[94m'
     green = '\033[92m'
+    yellow = '\033[93m'
+    blue = '\033[94m'
     bold = '\033[1m'
 
     reset = '\033[0m'
 
     def __getattr__(self, arg):
         # If we get a non existent color, return the reset color
-        if hasattr(self, arg.lower()):
-            return getattr(self, arg.lower())
-
         return self.reset
 
 class Seperator():
