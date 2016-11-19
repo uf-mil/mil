@@ -108,21 +108,6 @@ public:
 			}
 		}
 
-		//Verify that the none of the saved objects are too close together.
-		/*#ifdef DEBUG
-			cnt = 0;
-			for (auto &s_obj : saved_objects) {
-				++cnt;
-				if (!s_obj.real) {continue;}
-				for (auto jj = saved_objects.begin()+cnt; jj != saved_objects.end(); ++jj) {
-					auto xyDistance = sqrt( pow(s_obj.position.x - jj->position.x, 2) + pow(s_obj.position.y - jj->position.y, 2)  );
-					std::stringstream ss;
-					ss << "Database object position failure: " << s_obj.position.x << "," << s_obj.position.y << " vs " << jj->position.x << "," << jj->position.y;
-					BOOST_ASSERT_MSG(xyDistance > diff_thresh, ss.str().c_str());
-				}
-			}
-		#endif*/
-
 		//After updating database, process each object to updates its info
 		auto cnt = -1;
 		std::vector< std::tuple<std::string,int,int,double,unsigned> > duplicates = {std::make_tuple("shooter",0,-1,-1,4),std::make_tuple("scan_the_code",0,-1,-1,5)};
@@ -349,3 +334,19 @@ public:
 	}	
 };
 #endif
+
+
+//Verify that the none of the saved objects are too close together.
+/*#ifdef DEBUG
+	cnt = 0;
+	for (auto &s_obj : saved_objects) {
+		++cnt;
+		if (!s_obj.real) {continue;}
+		for (auto jj = saved_objects.begin()+cnt; jj != saved_objects.end(); ++jj) {
+			auto xyDistance = sqrt( pow(s_obj.position.x - jj->position.x, 2) + pow(s_obj.position.y - jj->position.y, 2)  );
+			std::stringstream ss;
+			ss << "Database object position failure: " << s_obj.position.x << "," << s_obj.position.y << " vs " << jj->position.x << "," << jj->position.y;
+			BOOST_ASSERT_MSG(xyDistance > diff_thresh, ss.str().c_str());
+		}
+	}
+#endif*/
