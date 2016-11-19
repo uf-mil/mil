@@ -8,31 +8,31 @@
       # If it is a base mission, it cannot have any objects dependencies or mission dependencies
 
 scan_the_code:
-  marker_dep: "ScanTheCode"
+  object_dep: ["ScanTheCode"]
   mission_dep: "pinger"
   is_base: False
   timeout: 'inf'
   
 detect_deliver:
-  marker_dep: "Shooter"
+  object_dep: ["Shooter"]
   mission_dep: "circle_tower"
   is_base: False
   timeout: 'inf'
 
 explore:
-  marker_dep: []
+  object_dep: []
   mission_dep: "None"
   is_base: True
   timeout: 'inf'
 
 circle_tower:
-  marker_dep: "BuoyField"
+  object_dep: ["BuoyField"]
   mission_dep: "None"
   is_base: False
   timeout: 'inf'
 
 pinger:
-  marker_dep: "Gate_1"
+  object_dep: ["Gate_1"]
   mission_dep: "circle_tower"
   is_base: False
   timeout: 'inf'
@@ -51,4 +51,3 @@ pinger:
 #   mission_dep: "None"
 #   is_base: False
 #   timeout: 'inf'
-

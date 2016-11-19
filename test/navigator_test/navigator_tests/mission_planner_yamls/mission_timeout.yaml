@@ -1,0 +1,15 @@
+test_timeout_mission:
+  marker_dep: "None"
+  mission_dep: "None"
+  is_base: False
+  points: 100
+  min_time: 100
+  weight: 2
+
+test_mission:
+  marker_dep: "None"
+  mission_dep: "test_timeout_mission"
+  is_base: False
+  points: 100
+  min_time: 20000
+  weight: 2

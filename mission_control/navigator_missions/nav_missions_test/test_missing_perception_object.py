@@ -1,15 +1,18 @@
 #!/usr/bin/env python
 import txros
-from navigator_tools import fprint
+from navigator_tools import fprint, MissingPerceptionObject
 
 
 @txros.util.cancellableInlineCallbacks
-def main(navigator):
+def main(navigator, attempts):
     fprint("{} running".format(__name__), msg_color='red')
-    resp = navigator.database_query("scan_the_code")
-    
-    yield resp
-    if resp is None:
+    yield navigator.nh.sleep(1)
+    if attempts == 1:
         fprint("Raising Perception Object", msg_color='red')
+        raise MissingPerceptionObject("stc")
     else:
         fprint("{} stopped running".format(__name__), msg_color='red')
+
+
+def safe_exit(navigator, err):
+    print "SAFE EXIT"

@@ -54,7 +54,9 @@ class MissionYAMLValidation(object):
             hash2 = mission_to_id[mis_dep]
             self.dot.edge(hash2, hash1)
 
-        self.dot.render('Missions.gv')
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        gv_file = dir_path + "/graph_validations/Missions.gv"
+        self.dot.render(gv_file)
 
 if __name__ == "__main__":
     yaml_text = None

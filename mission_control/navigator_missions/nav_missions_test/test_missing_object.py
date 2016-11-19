@@ -4,7 +4,7 @@ from navigator_tools import fprint
 
 
 @txros.util.cancellableInlineCallbacks
-def main(navigator):
+def main(navigator, attempts):
     nh = navigator.nh
 
     fprint("{} running".format(__name__), msg_color='red')

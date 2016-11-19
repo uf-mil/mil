@@ -1,0 +1,16 @@
+test_missing_perception_object:
+  marker_dep: "None"
+  mission_dep: "None"
+  is_base: False
+  points: 100
+  min_time: 100
+  weight: 2
+
+
+test_base_mission_fail:
+  marker_dep: "None"
+  mission_dep: "None"
+  is_base: True
+  points: 100
+  min_time: 100
+  weight: 2

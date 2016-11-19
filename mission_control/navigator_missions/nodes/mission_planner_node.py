@@ -18,7 +18,8 @@ def main():
         try:
             yaml_text = yaml.load(stream)
             planner = yield MissionPlanner(yaml_text).init_()
-            planner.empty_queue()
+            yield planner.empty_queue()
+            reactor.stop()
         except yaml.YAMLError as exc:
             print(exc)
 

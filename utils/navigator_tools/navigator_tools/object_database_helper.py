@@ -1,9 +1,15 @@
 """Use the DBHelper class to interface with the Database without having to deal with ROS things."""
 from navigator_msgs.msg import PerceptionObjectArray
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
-from twisted.internet import defer
+from nav_msgs.msg import Odometry
+from twisted.internet import defer, threads
 from txros import util
+import time
+import sys
 from sets import Set
+from missing_perception_object import MissingPerceptionObject
+import navigator_tools as nt
+import numpy as np
 __author__ = "Tess Bianchi"
 
 
@@ -14,18 +20,27 @@ class DBHelper(object):
         """Initialize the DB helper class."""
         self.found = Set()
         self.nh = nh
+        self.position = None
+        self.rot = None
         self.new_object_subscriber = None
         self.ensuring_objects = False
         self.ensuring_object_dep = None
         self.ensuring_object_cb = None
 
     @util.cancellableInlineCallbacks
-    def init_(self):
+    def init_(self, navigator=None):
         """Initialize the txros parts of the DBHelper."""
         self._sub_database = yield self.nh.subscribe('/database/objects', PerceptionObjectArray, self.object_cb)
         self._database = yield self.nh.get_service_client("/database/requests", ObjectDBQuery)
-
+        self.navigator = navigator
+        if navigator is None:
+            self._odom_sub = yield self.nh.subscribe('/odom', Odometry, self._odom_cb)
+        else:
+            self.position = navigator.pose[0]
         defer.returnValue(self)
+
+    def _odom_cb(self, odom):
+        self.position, self.rot = nt.odometry_to_numpy(odom)[0]
 
     @util.cancellableInlineCallbacks
     def begin_observing(self, cb):
@@ -51,8 +66,10 @@ class DBHelper(object):
             if o.name not in self.found:
                 self.found.add(o.name)
                 self.new_object_subscriber(o)
+
     def object_cb(self, perception_objects):
         """Callback for the object database."""
+        self.total_num = len(perception_objects.objects)
         for o in perception_objects.objects:
             if o.name not in self.found:
                 self.found.add(o.name)
@@ -68,6 +85,7 @@ class DBHelper(object):
                 self.ensuring_object_cb(missings_objs)
 
     def remove_found(self, name):
+        """Remove an object that has been listed as found."""
         self.found.remove(name)
 
     def ensure_object_permanence(self, object_dep, cb):
@@ -82,12 +100,94 @@ class DBHelper(object):
         """Stop ensuring that objects remain in the database."""
         self.ensuring_objects = False
 
+    def _wait_for_position(self, timeout=10):
+        count = 0
+        while self.position is None:
+            if self.navigator is not None:
+                self.position = self.navigator.pose[0]
+            if count > timeout:
+                return False
+            count += 1
+            time.sleep(1)
+        return True
+
+    @util.cancellableInlineCallbacks
+    def get_closest_object(self, objects):
+        """Get the closest mission."""
+        pobjs = []
+        for obj in objects:
+            req = ObjectDBQueryRequest()
+            req.name = obj.name
+            resp = yield self._database(req)
+            if len(resp.objects) != 0:
+                pobjs.extend(resp.objects)
+
+        if len(pobjs) == 0:
+            raise MissingPerceptionObject("All")
+
+        min_dist = sys.maxint
+        min_obj = None
+        for o in pobjs:
+            dist = yield self._dist(o)
+            if dist < min_dist:
+                min_dist = dist
+                min_obj = o
+
+        defer.returnValue(min_obj)
+
+    @util.cancellableInlineCallbacks
+    def _dist(self, x):
+        if self.position is None:
+            success = yield threads.deferToThread(self._wait_for_position)
+            if not success:
+                raise Exception("There is a problem with odom.")
+        defer.returnValue(np.linalg.norm(nt.rosmsg_to_numpy(x.position) - self.position))
+
+    @util.cancellableInlineCallbacks
+    def get_object(self, object_name, volume_only=False, thresh=30, thresh_strict=10):
+        """Get an object from the database."""
+        if volume_only:
+            req = ObjectDBQueryRequest()
+            req.name = object_name
+            resp = yield self._database(req)
+            if not resp.found:
+                raise MissingPerceptionObject(object_name)
+            defer.returnValue(resp.objects)
+        else:
+            req = ObjectDBQueryRequest()
+            req.name = "full"
+            resp = yield self._database(req)
+            closest_potential_object = None
+            min_dist = sys.maxint
+            actual_objects = []
+            for o in resp.objects:
+                distance = self._dist(o)
+                if o.name == object_name and distance < thresh_strict:
+                    actual_objects.append(o)
+                if distance < thresh and distance < min_dist:
+                    min_dist = distance
+                    closest_potential_object = o
+            if len(actual_objects) == 0 and min_dist == sys.maxint:
+                raise MissingPerceptionObject(object_name)
+
+            if len(actual_objects) > 1:
+                defer.returnValue(min(self.actual_objects, key=lambda x: self._dist(x)))
+
+            if len(actual_objects) == 1:
+                defer.returnValue(self.actual_objects[0])
+
+            defer.returnValue(closest_potential_object)
+
+    def wait_for_additional_objects(self, timeout=60):
+        num_items = self.num_items
+        start = time()
+        while(timeout < time() - start):
+            if self.num_items > num_items:
+                return True
+        return False
+
     def set_color(self, color, name):
         """Set the color of an object in the database."""
-        raise NotImplementedError()
-
-    def get_object(self, name):
-        """Get an object from the database."""
         raise NotImplementedError()
 
     def set_fake_position(self, pos):
