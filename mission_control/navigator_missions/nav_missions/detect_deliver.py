@@ -169,7 +169,16 @@ class DetectDeliverMission:
         yield self.navigator.vision_proxies["get_shape"].stop()
 
 @txros.util.cancellableInlineCallbacks
+def setup_mission(navigator):
+    color = yield navigator.mission_params["scan_the_code_color3"].get()
+    fprint("Setting search color to scan the code color 3 = {}".format(color), title="DETECT DELIVER",  msg_color='green')
+    fprint("Setting search shape ANY", title="DETECT DELIVER",  msg_color='green')
+    yield navigator.mission_params["detect_deliver_shape"].set("ANY")
+    yield navigator.mission_params["detect_deliver_color"].set(color)
+
+@txros.util.cancellableInlineCallbacks
 def main(navigator):
+    yield setup_mission(navigator)
     fprint("STARTING MISSION", title="DETECT DELIVER",  msg_color='green')
     mission = DetectDeliverMission(navigator)
     yield mission.find_and_shoot()
