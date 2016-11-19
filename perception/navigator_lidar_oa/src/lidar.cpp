@@ -136,12 +136,15 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	ogrid.updatePointsAsCloud(pcloud,T_enu_velodyne,MAX_HITS_IN_CELL,MAXIMUM_Z_BELOW_LIDAR,MAXIMUM_Z_ABOVE_LIDAR);
 	ogrid.createBinaryROI(MIN_HITS_FOR_OCCUPANCY);
 
-	//Inflate ogrid before detecting objects and calling AStar
+	//Inflate ogrid before detecting objects
 	ogrid.inflateBinary(OBJECT_INFLATION_PARAMETER);
 
 	//Detect objects
 	std::vector<objectMessage> objects;
 	std::vector< std::vector<int> > cc = ConnectedComponents(ogrid,objects,MIN_OBJECT_SEPERATION_DISTANCE);
+
+	//Deflate(erode) ogrid before sending out to ROS
+	ogrid.deflateBinary();
 
 	//Publish second point cloud
 	sensor_msgs::PointCloud objectCloudPersist,objectCloudFrame,pclCloud;

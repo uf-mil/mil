@@ -290,7 +290,7 @@ class OccupancyGrid
 	    /// \param ?
 	    /// \param ?
 	    ////////////////////////////////////////////////////////////
-		void inflateBinary(int inflateSize = 3)
+		void inflateBinary(int inflateSize = 2)
 		{
 			ogridBinaryCopy = ogridBinary;
 			int rOffset[] = {-1,-1,-1,0,0,0,1,1,1};
@@ -307,6 +307,33 @@ class OccupancyGrid
 						}
 					}
 				}
+			}
+		}
+
+	    ////////////////////////////////////////////////////////////
+	    /// \brief ?
+	    ///
+	    /// \param ?
+	    /// \param ?
+	    ////////////////////////////////////////////////////////////
+		void deflateBinary(int deflateSize = 2)
+		{
+			for (int ii = 0; ii < deflateSize; ++ii) {
+			ogridBinaryCopy = ogridBinary;
+			int rOffset[] = {-1,0,0,1};
+			int cOffset[] = {0,-1,1,0};
+			for (int row = 1; row < ROI_SIZE-1; ++row) {
+				for (int col = 1; col < ROI_SIZE-1; ++col) {
+					if (ogridBinaryCopy[row][col]) {
+						for (int jj = 0; jj < 4; ++jj) {
+							int r = row+rOffset[jj], c = col+cOffset[jj];							
+							if ( ogridBinaryCopy[r][c] == false) {
+								ogridMap[row*ROI_SIZE+col] = 50;
+							}
+						}
+					}
+				}
+			}
 			}
 		}
 
