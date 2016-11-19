@@ -1,63 +1,90 @@
 #!/usr/bin/env python
 import numpy as np
 
-import txros
+import rospy
 import navigator_tools
 from twisted.internet import defer
-from coordinate_conversion_server import Converter
+
+from navigator_tools.cfg import BoundsConfig
+from dynamic_reconfigure.server import Server
+
 from navigator_msgs.srv import Bounds, BoundsResponse, \
-                               CoordinateConversionRequest
+                               CoordinateConversion, CoordinateConversionRequest
 
 
-class Param():
-    @classmethod
-    @txros.util.cancellableInlineCallbacks
-    def get(cls, nh, param):
-        try:
-            p = yield nh.get_param(param)
-            print param, p
-            defer.returnValue(cls(p))
+class BoundsServer(object):
+    def __init__(self):
+        self.convert = rospy.ServiceProxy('/convert', CoordinateConversion)
 
-        except txros.rosxmlrpc.Error:
-            # Param not found
-            defer.returnValue(cls(None))
+        self.enforce = False
+        self.bounds = []
 
-    def __init__(self, value):
-        self.value = value
-        self.found = value is not None
-        self.found_and_true = self.value and self.found
+        rospy.set_param("/bounds/enu/", [[0,0,0],[0,0,0],[0,0,0],[0,0,0]])        
+        rospy.set_param("/bounds/enforce", self.enforce)
 
+        #self.convert = Converter()
+        Server(BoundsConfig, self.update_config)
+        rospy.Service('/get_bounds', Bounds, self.got_request)
 
-@txros.util.cancellableInlineCallbacks
-def got_request(nh, req, convert):
-    to_frame = "enu" if req.to_frame == '' else req.to_frame
+    def destringify(self, lat_long_string):
+        if any(c.isalpha() for c in lat_long_string):
+            return False
 
-    resp = BoundsResponse(enforce=False)
+        floats = map(float, lat_long_string.replace('(', '').replace(')', '').split(',')) 
 
-     # Lets get all these defers started up
-    enforce = yield Param.get(nh, "/bounds/enforce")
-    lla_bounds = yield Param.get(nh, "/bounds/lla")
+        if len(floats) != 3:
+            return False
+        
+        return floats
 
-    if enforce.found_and_true:
-        bounds = []
-        for lla_bound in lla_bounds.value:
-            bound = yield convert.request(CoordinateConversionRequest(frame="lla", point=np.append(lla_bound, 0)))
-            bounds.append(navigator_tools.numpy_to_point(getattr(bound, to_frame)))
+    def update_config(self, config, level):
+        self.enforce = config['enforce']
+        lla_bounds_str = [config['lla_1'] + ", 0", config['lla_2'] + ", 0", 
+                          config['lla_3'] + ", 0", config['lla_4'] + ", 0"]
+        lla_bounds = map(self.destringify, lla_bounds_str)
+        self.lla_bounds = lla_bounds
 
-        resp = BoundsResponse(enforce=True, bounds=bounds)
+        # If any returned false, don't update
+        if all(lla_bounds):
+            try:
+	        self.bounds = [self.convert(CoordinateConversionRequest(frame="lla", point=lla)) for lla in lla_bounds]
+            except:
+                print "No service provider found"
+                return config
 
-    defer.returnValue(resp)
+            config['enu_1_lat'] = self.bounds[0].enu[0]
+            config['enu_1_long'] = self.bounds[0].enu[1]
+            
+            config['enu_2_lat'] = self.bounds[1].enu[0]
+            config['enu_2_long'] = self.bounds[1].enu[1]
 
+            config['enu_3_lat'] = self.bounds[2].enu[0]
+            config['enu_3_long'] = self.bounds[2].enu[1]
 
-@txros.util.cancellableInlineCallbacks
-def main():
-    nh = yield txros.NodeHandle.from_argv("bounds_server", anonymous=True)
+            config['enu_4_lat'] = self.bounds[3].enu[0]
+            config['enu_4_long'] = self.bounds[3].enu[1]
+            
+            rospy.set_param("/bounds/enu/", map(lambda bound: bound.enu[:2], self.bounds))
+        else:
+            rospy.set_param("/bounds/enu/", [[0,0,00],[0,0,0],[0,0,0],[0,0,0]])
 
-    convert = Converter()
-    yield convert.init(nh)
-    nh.advertise_service('/get_bounds', Bounds, lambda req: got_request(nh, req, convert))
+        rospy.set_param("/bounds/enforce", self.enforce)
+        return config
 
-    yield defer.Deferred() # never exit
+    def got_request(self, req):
+        to_frame = "enu" if req.to_frame == '' else req.to_frame
+        
+        resp = BoundsResponse(enforce=False)
+
+        self.bounds = [self.convert(CoordinateConversionRequest(frame="lla", point=lla)) for lla in self.lla_bounds]
+        bounds = [navigator_tools.numpy_to_point(getattr(response, to_frame)) for response in self.bounds]
+
+        resp.enforce = self.enforce
+        resp.bounds = bounds        
+
+        return resp
 
 if __name__ == "__main__":
-    txros.util.launch_main(main)
+    rospy.init_node("bounds_server")
+    bs = BoundsServer()
+    rospy.spin()

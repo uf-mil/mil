@@ -1,5 +1,10 @@
 import rospy
 
+
+class MissingPerceptionObject():
+    def __init__(self, name):
+        self.name = name
+
 class Colors():
     # Some cool stuff could happen here
     red = '\033[91m'
