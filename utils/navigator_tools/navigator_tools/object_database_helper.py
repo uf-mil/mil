@@ -36,7 +36,8 @@ class DBHelper(object):
         if navigator is None:
             self._odom_sub = yield self.nh.subscribe('/odom', Odometry, self._odom_cb)
         else:
-            self.position = navigator.pose[0]
+            self.position = yield navigator.tx_pose
+            self.position = self.position[0]
         defer.returnValue(self)
 
     def _odom_cb(self, odom):
