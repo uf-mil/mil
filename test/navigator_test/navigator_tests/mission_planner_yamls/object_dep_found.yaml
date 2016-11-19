@@ -5,6 +5,7 @@ test_base_mission_success:
   points: 100
   min_time: 100
   weight: 2
+  looking_for: "None"
 
 test_missing_perception_object:
   marker_dep: "None"
@@ -13,3 +14,4 @@ test_missing_perception_object:
   points: 100
   min_time: 100
   weight: 2
+  looking_for: "None"

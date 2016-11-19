@@ -5,6 +5,7 @@ test_timeout_mission:
   points: 100
   min_time: 100
   weight: 2
+  looking_for: "None"
 
 test_mission:
   marker_dep: "None"
@@ -13,3 +14,4 @@ test_mission:
   points: 100
   min_time: 20000
   weight: 2
+  looking_for: "None"

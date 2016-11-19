@@ -5,7 +5,7 @@ import numpy as np
 
 
 @txros.util.cancellableInlineCallbacks
-def main(navigator, attempts):
+def main(navigator, **kwargs):
     nh = navigator.nh
     fprint("{} running".format(__name__), msg_color='red')
     yield nh.sleep(15)

@@ -4,7 +4,8 @@ from navigator_tools import fprint, MissingPerceptionObject
 
 
 @txros.util.cancellableInlineCallbacks
-def main(navigator, attempts):
+def main(navigator, **kwargs):
+    attempts = kwargs["attempts"]
     fprint("{} running".format(__name__), msg_color='red')
     yield navigator.nh.sleep(1)
     if attempts == 1:

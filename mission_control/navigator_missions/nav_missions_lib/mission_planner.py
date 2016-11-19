@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Mission Planner Module that uses a DAG and YAML to find which mission to perform."""
 from txros import util, NodeHandle
-from twisted.internet import defer, threads, reactor
+from twisted.internet import defer
 from navigator_singleton.navigator import Navigator
 import nav_missions
 import nav_missions_test
@@ -16,7 +16,7 @@ __author__ = "Tess Bianchi"
 class Mission(object):
     """The class that represents a mission."""
 
-    def __init__(self, name, item_dep, min_time, weight, points, mission_script=None):
+    def __init__(self, name, item_dep, min_time, weight, points, looking_for, mission_script=None):
         """Initialize a Mission object."""
         self.name = name
         self.item_dep = item_dep
@@ -26,6 +26,7 @@ class Mission(object):
         self.points = points
         self.attempts = 0
         self.timeout = None
+        self.looking_for = looking_for
         self.start_time = None
         self.mission_script = mission_script
 
@@ -34,14 +35,14 @@ class Mission(object):
         self.children.append(child)
 
     @util.cancellableInlineCallbacks
-    def do_mission(self, navigator, planner, module, *args, **kwargs):
+    def do_mission(self, navigator, planner, module, **kwargs):
         """Perform this mission."""
         if self.mission_script:
             to_run = getattr(module, self.mission_script)
         else:
             to_run = getattr(module, self.name)
         fprint(self.name, msg_color="green", title="STARTING MISSION")
-        res = yield to_run.main(navigator, self.attempts, *args, **kwargs)
+        res = yield to_run.main(navigator, attempts=self.attempts, **kwargs)
         defer.returnValue(res)
 
     @util.cancellableInlineCallbacks
@@ -132,6 +133,7 @@ class MissionPlanner:
             is_base = mission["is_base"]
             min_time = mission["min_time"]
             points = mission["points"]
+            looking_for = mission["looking_for"]
             weight = mission["weight"]
             if marker_dep != "None":
                 marker = yield self.navigator.database_query(marker_dep, raise_exception=False)
@@ -145,9 +147,9 @@ class MissionPlanner:
             count += 1
             if "mission_script" in mission.keys():
                 mission_script = mission["mission_script"]
-                m = Mission(name, marker, min_time, weight, points, mission_script=mission_script)
+                m = Mission(name, marker, min_time, weight, points, looking_for, mission_script=mission_script)
             else:
-                m = Mission(name, marker, min_time, weight, points)
+                m = Mission(name, marker, min_time, weight, points, looking_for)
             my_missions[name] = m
             if is_base:
                 self.base_mission = m
@@ -172,7 +174,7 @@ class MissionPlanner:
         return self.total_time - (self.start_time - self.nh.get_time()).to_sec()
 
     @util.cancellableInlineCallbacks
-    def _do_mission(self, mission, *args, **kwargs):
+    def _do_mission(self, mission, **kwargs):
         """Perform a mission, and ensure that all of the post conditions are enforced."""
         if "redo" not in kwargs:
             redo = False
@@ -184,7 +186,7 @@ class MissionPlanner:
             yield self.navigator.move.set_position(nt.rosmsg_to_numpy(marker.position)).go()
         mission.start_time = self.nh.get_time()
         mission.attempts += 1
-        res = yield mission.do_mission(self.navigator, self, self.module, *args, **kwargs)
+        res = yield mission.do_mission(self.navigator, self, self.module, **kwargs)
         defer.returnValue(res)
 
     def _mission_complete(self, mission):
@@ -240,9 +242,10 @@ class MissionPlanner:
         defer.returnValue(res)
 
     @util.cancellableInlineCallbacks
-    def _run_base_mission(self, center_object):
+    def _run_base_mission(self, center_marker):
         if self.base_mission is not None:
-            base_mission = self._do_mission(self.base_mission, center_object)
+            base_mission = self._do_mission(self.base_mission, center_marker=center_marker,
+                                            looking_for=self.current_mission.looking_for)
             base_mission.addErrback(lambda err: fprint(err, msg_color="red", title="MISSION ERR | BASE MISSION"))
             res = yield base_mission
             defer.returnValue(res)

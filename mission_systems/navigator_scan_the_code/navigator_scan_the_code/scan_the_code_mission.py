@@ -7,15 +7,17 @@ import sys
 from sensor_msgs.msg import Image, CameraInfo
 from scan_the_code_lib import ScanTheCodeAction, ScanTheCodePerception, Debug
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
+from navigator_tools import DBHelper, fprint
 ___author___ = "Tess Bianchi"
 
 
 class ScanTheCodeMission:
     """Class that contains all the functionality for Scan The Code."""
 
-    def __init__(self, nh):
+    def __init__(self, navigator):
         """Initialize ScanTheCodeMission class."""
-        self.nh = nh
+        self.nh = navigator.nh
+        self.navigator = navigator
         self.action = ScanTheCodeAction()
         self.mission_complete = False
         self.colors = []
@@ -32,6 +34,7 @@ class ScanTheCodeMission:
         self.database = yield self.nh.get_service_client("/database/requests", ObjectDBQuery)
         self.image_sub = yield self.nh.subscribe("/stereo/left/image_rect_color", Image, self._image_cb)
         self.cam_info_sub = yield self.nh.subscribe("/stereo/left/camera_info", CameraInfo, self._info_cb)
+        self.helper = yield DBHelper(self.nh).init_(self.navigator)
 
     def _image_cb(self, image):
         self.perception.add_image(image)
@@ -41,10 +44,16 @@ class ScanTheCodeMission:
 
     @txros.util.cancellableInlineCallbacks
     def _get_scan_the_code(self):
-        req = ObjectDBQueryRequest()
-        req.name = 'scan_the_code'
-        scan_the_code = yield self.database(req)
-        defer.returnValue(scan_the_code.objects[0])
+        if self.scan_the_code is None:
+            ans = yield self.helper.get_object("scan_the_code")
+        else:
+            try:
+                ans = yield self.helper.get_object_by_id(self.scan_the_code.id)
+            except:
+                ans = yield self.helper.get_object("scan_the_code")
+
+        fprint("GOT SCAN THE CODE WITH ID {}".format(ans.id), msg_color="blue")
+        defer.returnValue(ans)
 
     @txros.util.cancellableInlineCallbacks
     def find_colors(self, timeout=sys.maxint):

@@ -30,13 +30,14 @@ def _get_color(c):
 
 
 @txros.util.cancellableInlineCallbacks
-def main(navigator):
+def main(navigator, **kwargs):
+    # attempts = kwargs["attempts"]
     """Main Script of Scan The Code."""
     # UNCOMMENT
     # navigator.change_wrench("autonomous")
     fprint("Moving to stc", msg_color='green')
     pub = yield navigator.nh.advertise("/stc/pose", PoseStamped)
-    mission = ScanTheCodeMission(navigator.nh)
+    mission = ScanTheCodeMission(navigator)
     yield mission.init_(navigator.tf_listener)
     pose, look_at = yield mission.initial_position()
     initial_pose = navigator.move.set_position(pose).look_at(look_at)
@@ -45,20 +46,15 @@ def main(navigator):
     fprint("Finished getting the initial position", msg_color='green')
     # UNCOMMENT
     # yield navigator.move.set_position(pose).look_at(look_at).go()
-    myerr = mission.correct_pose(pose)
-    # yield navigator.nh.sleep(.3)
-    if not mission.stc_correct:
-        circle = navigator.move.circle_point(look_at, 8, granularity=30)
+    # circle = navigator.move.circle_point(look_at, 8, granularity=30).go()
+    # circle.addErrback(lambda x: x)
 
-        for p in list(circle)[::-1]:
-            if mission.stc_correct:
-                break
-            # UNCOMMENT
-            yield navigator.nh.sleep(1)
-            # yield p.go(move_type='skid', focus=look_at)
+    yield mission.correct_pose(pose)
+
+    # UNCOMMENT
+    # circle.cancel()
 
     fprint("Finished getting the correct stc face", msg_color='green')
-    # defer.returnValue(True)
     colors = yield mission.find_colors()
     if colors is None:
         navigator.nh.set_param('mission/detect_deliver/Shape', 'CROSS')

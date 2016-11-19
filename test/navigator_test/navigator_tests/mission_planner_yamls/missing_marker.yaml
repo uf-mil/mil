@@ -6,6 +6,7 @@ test_mission_1:
   min_time: 100
   weight: 2
   mission_script: "test_mission"
+  looking_for: "None"
 
 test_mission_2:
   marker_dep: "ScanTheCode"
@@ -15,6 +16,7 @@ test_mission_2:
   min_time: 100
   weight: 2
   mission_script: "test_mission"
+  looking_for: "None"
 
 test_mission_3:
   marker_dep: "Shooter"
@@ -24,6 +26,7 @@ test_mission_3:
   min_time: 100
   weight: 2
   mission_script: "test_mission"
+  looking_for: "None"
 
 test_mission_4:
   marker_dep: "ScanTheCode"
@@ -33,3 +36,4 @@ test_mission_4:
   min_time: 100
   weight: 2
   mission_script: "test_mission"
+  looking_for: "None"

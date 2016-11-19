@@ -17,15 +17,22 @@ def errcb(err):
 
 def la():
     print "11"
-    time.sleep(10)
-    raise Exception()
+    time.sleep(2)
 
 
 @util.cancellableInlineCallbacks
 def do_something():
     print "madeoit"
+    poo = "1"
+
+    def ha(err):
+        poo = "2"
+        print "poo"
+
     d = threads.deferToThread(la)
-    d.addCallbacks(cb, errback=errcb)
+    d.addErrback(errcb)
+    util.wrap_timeout(d, 1)
+    print poo
     yield d
     print "done"
     reactor.stop()

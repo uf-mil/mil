@@ -26,6 +26,8 @@ class DBHelper(object):
         self.ensuring_objects = False
         self.ensuring_object_dep = None
         self.ensuring_object_cb = None
+        self.looking_for = None
+        self.is_found = False
 
     @util.cancellableInlineCallbacks
     def init_(self, navigator=None):
@@ -42,6 +44,14 @@ class DBHelper(object):
 
     def _odom_cb(self, odom):
         self.position, self.rot = nt.odometry_to_numpy(odom)[0]
+
+    @util.cancellableInlineCallbacks
+    def get_object_by_id(self, my_id):
+        req = ObjectDBQueryRequest()
+        req.name = 'all'
+        resp = yield self._database(req)
+        ans = [obj for obj in resp.objects if obj.id == my_id][0]
+        defer.returnValue(ans)
 
     @util.cancellableInlineCallbacks
     def begin_observing(self, cb):
@@ -68,10 +78,35 @@ class DBHelper(object):
                 self.found.add(o.name)
                 self.new_object_subscriber(o)
 
+    @util.cancellableInlineCallbacks
+    def get_unknown_and_low_conf(self):
+        req = ObjectDBQueryRequest()
+        req.name = 'all'
+        resp = yield self._database(req)
+        m = []
+        for o in resp.objects:
+            if o.name == 'unknown':
+                m.append(o)
+            elif o.confidence < 50:
+                m.append(o)
+        defer.returnValue(m)
+
+    def set_looking_for(self, name):
+        self.looking_for = name
+
+    def found(self):
+        if self.is_found:
+            self.looking_for = None
+            self.is_found = False
+            return True
+        return False
+
     def object_cb(self, perception_objects):
         """Callback for the object database."""
         self.total_num = len(perception_objects.objects)
         for o in perception_objects.objects:
+            if o.name == self.looking_for:
+                self.is_found = True
             if o.name not in self.found:
                 self.found.add(o.name)
                 if self.new_object_subscriber is not None:
@@ -156,7 +191,7 @@ class DBHelper(object):
             defer.returnValue(resp.objects)
         else:
             req = ObjectDBQueryRequest()
-            req.name = "full"
+            req.name = "all"
             resp = yield self._database(req)
             closest_potential_object = None
             min_dist = sys.maxint
@@ -168,14 +203,25 @@ class DBHelper(object):
                 if distance < thresh and distance < min_dist:
                     min_dist = distance
                     closest_potential_object = o
+            # print [x.name for x in actual_objects]
+            # print closest_potential_object.name
+            # sys.exit()
+
             if len(actual_objects) == 0 and min_dist == sys.maxint:
                 raise MissingPerceptionObject(object_name)
 
             if len(actual_objects) > 1:
-                defer.returnValue(min(self.actual_objects, key=lambda x: self._dist(x)))
+                min_dist = sys.maxint
+                min_obj = None
+                for o in actual_objects:
+                    dist = yield self._dist(o)
+                    if dist < min_dist:
+                        min_dist = dist
+                        min_obj = o
+                defer.returnValue(min_obj)
 
             if len(actual_objects) == 1:
-                defer.returnValue(self.actual_objects[0])
+                defer.returnValue(actual_objects[0])
 
             defer.returnValue(closest_potential_object)
 
