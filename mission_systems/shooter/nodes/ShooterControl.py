@@ -4,9 +4,10 @@ from sensor_msgs.msg import Joy
 import rospy
 import actionlib
 import time
+from navigator_alarm import AlarmListener
 from navigator_msgs.msg import ShooterDoAction, ShooterDoActionFeedback, ShooterDoActionResult, ShooterDoActionGoal
 from navigator_msgs.srv import ShooterManual, ShooterManualResponse
-from std_srvs.srv import Trigger,TriggerResponse
+from std_srvs.srv import Trigger,TriggerResponse, TriggerRequest
 from std_msgs.msg import String
 
 class ShooterControl:
@@ -41,9 +42,28 @@ class ShooterControl:
         self.status = "Standby"
         self.status_pub = rospy.Publisher('/shooter/status', String, queue_size=5)
         self.manual_used = False
+        self.killed = False
+        self.kill_listener = AlarmListener("kill", self.update_kill_status)
+
+    def update_kill_status(self, alarm):
+        '''
+        Updates the kill status display when there is an update on the kill
+        alarm.
+        '''
+        if (alarm.clear and self.killed):
+            self.killed = False
+        elif (not self.killed) and (not alarm.clear):
+            self.cancel_callback(TriggerRequest())
+            self.killed = True
 
     def load_execute_callback(self, goal):
         result = ShooterDoActionResult()
+        if self.killed:
+            rospy.loginfo("Load action called when killed, aborting")
+            result.result.success = False
+            result.result.error = result.result.KILLED
+            self.load_server.set_aborted(result.result)
+            return
         if self.manual_used:
             rospy.loginfo("Load action called after manual used, aborting")
             result.result.success = False
@@ -103,6 +123,12 @@ class ShooterControl:
 
     def fire_execute_callback(self, goal):
         result = ShooterDoActionResult()
+        if self.killed:
+            rospy.loginfo("Fire action called when killed, aborting")
+            result.result.success = False
+            result.result.error = result.result.KILLED
+            self.fire_server.set_aborted(result.result)
+            return
         if self.manual_used:
             rospy.loginfo("Fire action called after manual used, aborting")
             result.result.success = False
@@ -155,28 +181,35 @@ class ShooterControl:
 
     def stop_actions(self):
         if self.load_server.is_active() or self.fire_server.is_active():
-          self.stop = True
+            self.stop = True
+            return True
         else:
-          self.stop = False
-          self.motor_controller.setMotor1(self.motor1_stop)
-          self.motor_controller.setMotor2(self.motor2_stop)       
-          self.motor1_stop = 0
-          self.motor2_stop = 0
+            self.stop = False
+            self.motor_controller.setMotor1(self.motor1_stop)
+            self.motor_controller.setMotor2(self.motor2_stop)       
+            self.motor1_stop = 0
+            self.motor2_stop = 0
+            return False
 
     def cancel_callback(self, req):
-        self.status = "Canceled"
-        self.manual_used = True
         self.motor1_stop = 0
         self.motor2_stop = 0
-        self.stop_actions()
+        if self.stop_actions():
+            self.status = "Canceled"
+            self.manual_used = True  
         rospy.loginfo("canceled")
         return TriggerResponse(success=True)
 
     def manual_callback(self, req):
+        res = ShooterManualResponse()
+        if self.killed:
+            rospy.loginfo("Manual control called when killed, aborting")
+            res.success = False
+            return res
         self.status = "Manual"
-        self.manual_used = True
         self.motor1_stop = -req.feeder
         self.motor2_stop = req.shooter
+        self.manual_used = True
         self.stop_actions()
         res = ShooterManualResponse()
         res.success = True
@@ -190,7 +223,7 @@ class ShooterControl:
         return TriggerResponse(success=True)
 
     def run(self):
-        r = rospy.Rate(5) # 10hz
+        r = rospy.Rate(10)
         while not rospy.is_shutdown():
             self.status_pub.publish(self.status)
             r.sleep()
