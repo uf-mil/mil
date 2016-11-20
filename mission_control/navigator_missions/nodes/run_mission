@@ -23,7 +23,6 @@ def main():
                         help='This allow you to run test missions, rather than real mission.')
     args = parser.parse_args(args[1:])
 
-    print args.test
     if args.test:
         mission_source = nav_missions_test
     else:

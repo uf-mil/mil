@@ -21,7 +21,7 @@ __copyright__ = "Copyright 2016, MIL"
 __license__ = "MIT"
 
 
-rospy.init_node('battery_monitor')
+rospy.init_node("battery_monitor")
 
 
 class BatteryMonitor():
@@ -52,22 +52,22 @@ class BatteryMonitor():
         # Sets up the battery voltage alarms
         alarm_broadcaster = AlarmBroadcaster()
         self.battery_status_unknown_alarm = alarm_broadcaster.add_alarm(
-            name='battery_status_unknown',
+            name="battery_status_unknown",
             action_required=True,
             severity=2
         )
         self.battery_low_alarm = alarm_broadcaster.add_alarm(
-            name='battery_low',
+            name="battery_low",
             action_required=False,
             severity=2
         )
         self.battery_critical_alarm = alarm_broadcaster.add_alarm(
-            name='battery_critical',
+            name="battery_critical",
             action_required=True,
             severity=1
         )
         self.battery_kill_alarm = alarm_broadcaster.add_alarm(
-            name='kill',
+            name="kill",
             action_required=True,
             severity=0
         )
@@ -105,36 +105,36 @@ class BatteryMonitor():
         # An unknown battery status warning to inform users that thruster feedback is not being published
         if (self.voltage is None):
             self.battery_status_unknown_alarm.raise_alarm(
-                problem_description='Bus voltage is not available because thruster feedback is not being published',
+                problem_description="Bus voltage is not available because thruster feedback is not being published",
                 parameters={
-                    'bus_voltage': '{}'.format(self.voltage),
+                    "bus_voltage": "{}".format(self.voltage),
                 }
             )
 
         # A fatal battery warning to kill the boat and protect the batteries
         elif (self.voltage < self.battery_kill_voltage):
             self.battery_kill_alarm.raise_alarm(
-                problem_description='Bus voltage is at the safety limit; killing the system',
+                problem_description="Bus voltage is at the safety limit; killing the system",
                 parameters={
-                    'bus_voltage': '{}'.format(self.voltage),
+                    "bus_voltage": "{}".format(self.voltage),
                 }
             )
 
         # A high priority battery warning to abort testing
         elif (self.voltage < self.battery_critical_voltage):
             self.battery_critical_alarm.raise_alarm(
-                problem_description='Bus voltage is critical; abort this run soon',
+                problem_description="Bus voltage is critical; abort this run soon",
                 parameters={
-                    'bus_voltage': '{}'.format(self.voltage),
+                    "bus_voltage": "{}".format(self.voltage),
                 }
             )
 
         # A low priority battery warning to inform user's of the status
         elif (self.voltage < self.battery_low_voltage):
             self.battery_low_alarm.raise_alarm(
-                problem_description='Bus voltage is approaching safety limit',
+                problem_description="Bus voltage is approaching safety limit",
                 parameters={
-                    'bus_voltage': '{}'.format(self.voltage),
+                    "bus_voltage": "{}".format(self.voltage),
                 }
             )
 

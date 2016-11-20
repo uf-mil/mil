@@ -7,6 +7,7 @@ import time
 from navigator_msgs.msg import ShooterDoAction, ShooterDoActionFeedback, ShooterDoActionResult, ShooterDoActionGoal
 from navigator_msgs.srv import ShooterManual, ShooterManualResponse
 from std_srvs.srv import Trigger,TriggerResponse
+from std_msgs.msg import String
 
 class ShooterControl:
     def __init__(self):
@@ -37,8 +38,9 @@ class ShooterControl:
         self.cancel_service = rospy.Service('/shooter/cancel', Trigger, self.cancel_callback)
         self.manual_service = rospy.Service('/shooter/manual', ShooterManual, self.manual_callback)
         self.reset_service = rospy.Service('/shooter/reset', Trigger, self.reset_callback)
+        self.status = "Standby"
+        self.status_pub = rospy.Publisher('/shooter/status', String, queue_size=5)
         self.manual_used = False
-
 
     def load_execute_callback(self, goal):
         result = ShooterDoActionResult()
@@ -65,6 +67,7 @@ class ShooterControl:
         rospy.loginfo("starting load")
         rate = rospy.Rate(50) # 50hz
         feedback = ShooterDoActionFeedback()
+        self.status = "Loading"
         while dur_from_start < self.load_total_time and not self.stop:
             dur_from_start = rospy.get_rostime() - start_time
             feedback.feedback.time_remaining = self.load_total_time - dur_from_start
@@ -89,6 +92,7 @@ class ShooterControl:
             self.stop = False
             self.load_server.set_preempted (result=result.result)
             return
+        self.status = "Loaded"
         self.motor_controller.setMotor1(0)
         self.motor_controller.setMotor2(-1)
         result.result.success = True
@@ -124,6 +128,7 @@ class ShooterControl:
         feedback = ShooterDoActionFeedback()
         self.motor_controller.setMotor1(1.0)
         self.motor_controller.setMotor2(-1.0)
+        self.status = "Firing"
         while dur_from_start < self.total_fire_time and not self.stop:
             dur_from_start = rospy.get_rostime() - start_time
             feedback.feedback.time_remaining = self.total_fire_time - dur_from_start
@@ -140,6 +145,7 @@ class ShooterControl:
             self.stop = False
             self.fire_server.set_preempted (result=result.result)
             return
+        self.status = "Standby"
         self.motor_controller.setMotor1(0)
         self.motor_controller.setMotor2(0)
         result.result.success = True
@@ -158,6 +164,7 @@ class ShooterControl:
           self.motor2_stop = 0
 
     def cancel_callback(self, req):
+        self.status = "Canceled"
         self.manual_used = True
         self.motor1_stop = 0
         self.motor2_stop = 0
@@ -166,6 +173,7 @@ class ShooterControl:
         return TriggerResponse(success=True)
 
     def manual_callback(self, req):
+        self.status = "Manual"
         self.manual_used = True
         self.motor1_stop = -req.feeder
         self.motor2_stop = req.shooter
@@ -175,13 +183,20 @@ class ShooterControl:
         return res
 
     def reset_callback(self,data):
+        self.status = "Standby"
         self.stop_actions()
         self.manual_used = False
+        self.loaded = False
         return TriggerResponse(success=True)
+
+    def run(self):
+        r = rospy.Rate(5) # 10hz
+        while not rospy.is_shutdown():
+            self.status_pub.publish(self.status)
+            r.sleep()
 
 
 if __name__ == '__main__':
     rospy.init_node('shooter_control')
     control = ShooterControl()
-    #rate = rospy.Rate(10) # 10hz
-    rospy.spin()
+    control.run()

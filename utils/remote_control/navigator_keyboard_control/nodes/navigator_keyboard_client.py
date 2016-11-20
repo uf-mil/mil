@@ -24,7 +24,7 @@ __copyright__ = "Copyright 2016, MIL"
 __license__ = "MIT"
 
 
-rospy.init_node('keyboard_client', anonymous=True)
+rospy.init_node("keyboard_client", anonymous=True)
 
 
 class KeyboardClient():
@@ -38,7 +38,7 @@ class KeyboardClient():
         self.uuid = ''
         self.is_locked = False
 
-        self.keyboard_server = rospy.ServiceProxy('/keyboard_control', KeyboardControl)
+        self.keyboard_server = rospy.ServiceProxy("/keyboard_control", KeyboardControl)
 
         self.help_menu = ["Lock:                 L          ",
                           "Quit:                 q          ",
@@ -70,7 +70,7 @@ class KeyboardClient():
         new_keycode = self.screen.getch()
 
         # This eliminates building a buffer of keys that takes forever to process
-        while ((new_keycode != -1) and rospy.is_shutdown()):
+        while ((new_keycode != -1) and (not rospy.is_shutdown())):
             keycode = new_keycode
             new_keycode = self.screen.getch()
 
@@ -144,12 +144,12 @@ class KeyboardClient():
 
 
 def main(stdscr):
-    rospy.wait_for_service('/keyboard_control')
+    rospy.wait_for_service("/keyboard_control")
     tele = KeyboardClient(stdscr)
     rospy.Timer(rospy.Duration(0.05), tele.send_key, oneshot=False)
     rospy.spin()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         curses.wrapper(main)
     except rospy.ROSInterruptException:

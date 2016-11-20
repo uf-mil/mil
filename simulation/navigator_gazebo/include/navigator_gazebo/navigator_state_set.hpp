@@ -30,7 +30,7 @@ namespace gazebo
 
       ros::NodeHandle nh;
       ros::Subscriber refSub;
-      double modelZOffset;
+      math::Vector3 modelOffset;  // Offset from the (0,0,0) point in the model to base_link
       math::Pose pose;
 
   };
