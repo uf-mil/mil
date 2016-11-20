@@ -10,20 +10,21 @@ class MissionYAMLValidation(object):
 
     def __init__(self, yaml_text):
         self.mission_names = [mission_name for mission_name in dir(nav_missions) if mission_name[0] != '_']
-        self.object_names = [PerceptionObject.DETECT_DELIVER_PLATFORM,
-                             PerceptionObject.IDENTIFY_AND_DOCK,
-                             PerceptionObject.SCAN_THE_CODE,
-                             PerceptionObject.TOTEM,
-                             PerceptionObject.START_GATE_BUOY,
-                             PerceptionObject.BUOY,
-                             PerceptionObject.FAKE_SHOOTER,
-                             PerceptionObject.FAKE_IDENTIFY_AND_DOCK,
-                             PerceptionObject.FAKE_SCAN_THE_CODE,
-                             PerceptionObject.GATE1,
-                             PerceptionObject.GATE2,
-                             PerceptionObject.GATE3,
-                             PerceptionObject.FAKE_BUOY_FIELD
-                             ]
+        # self.object_names = [PerceptionObject.DETECT_DELIVER_PLATFORM,
+        #                      PerceptionObject.IDENTIFY_AND_DOCK,
+        #                      PerceptionObject.SCAN_THE_CODE,
+        #                      PerceptionObject.TOTEM,
+        #                      PerceptionObject.START_GATE_BUOY,
+        #                      PerceptionObject.BUOY,
+        #                      PerceptionObject.FAKE_SHOOTER,
+        #                      PerceptionObject.FAKE_IDENTIFY_AND_DOCK,
+        #                      PerceptionObject.FAKE_SCAN_THE_CODE,
+        #                      PerceptionObject.GATE1,
+        #                      PerceptionObject.GATE2,
+        #                      PerceptionObject.GATE3,
+        #                      PerceptionObject.FAKE_BUOY_FIELD,
+        #                      PerceptionObject.EMPTY_SPACE
+        #                      ]
         self.dot = Digraph(comment='The Round Table')
         self._load_missions(yaml_text)
 
@@ -32,19 +33,19 @@ class MissionYAMLValidation(object):
 
         for i, name in enumerate(yaml_text.keys()):
             mission = yaml_text[name]
-            obj_dep = mission["object_dep"]
+            obj_dep = mission["marker_dep"]
             mis_dep = mission["mission_dep"]
             is_base = mission["is_base"]
-            timeout = mission["timeout"]
+            # timeout = mission["timeout"]
             print name
-            assert set(obj_dep).issubset(self.object_names)
-            assert name in self.mission_names or name == "pinger"
+            # assert set(obj_dep).issubset(self.object_names)
+            assert name in self.mission_names
             assert mis_dep in yaml_text.keys() or mis_dep == "None"
             assert (is_base is True or is_base is False)
-            assert (timeout == "inf" or timeout is int)
+            # assert (timeout == "inf" or timeout is int)
             mission_to_id[name] = str(i)
-            self.dot.node(str(i), "{}\n{}\n{}\n{}".format(name, obj_dep, is_base, timeout))
-
+            print i
+            self.dot.node(str(i), "{}\n{}\n{}\n{}".format(name, obj_dep, is_base))
         for i, name in enumerate(yaml_text.keys()):
             mission = yaml_text[name]
             mis_dep = mission["mission_dep"]

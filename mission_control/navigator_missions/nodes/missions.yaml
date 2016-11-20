@@ -53,14 +53,23 @@ coral_survey_backup:
   looking_for: "tower"
 
 
-# empty_space:
-#   marker_dep: "EmptySpace"
-#   mission_dep: "None"
-#   is_base: False
-#   points: 100
-#   min_time: 1
-#   weight: 2
-#   looking_for: "None"
+empty_space:
+  marker_dep: "EmptySpace"
+  mission_dep: "None"
+  is_base: False
+  points: 100
+  min_time: 1
+  weight: 2
+  looking_for: "None"
+
+pinger:
+  marker_dep: "AcousticPinger"
+  mission_dep: "None"
+  is_base: False
+  points: 100
+  min_time: 1
+  weight: 2
+  looking_for: "tower"
 
 # circle_tower:
 #   marker_dep: "BuoyField"
@@ -71,14 +80,7 @@ coral_survey_backup:
 #   weight: 2
 #   looking_for: "tower"
 
-# pinger:
-#   marker_dep: "AcousticPinger"
-#   mission_dep: "None"
-#   is_base: False
-#   points: 100
-#   min_time: 1
-#   weight: 2
-#   looking_for: "tower"
+
 
 
  
