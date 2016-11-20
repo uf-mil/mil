@@ -9,7 +9,7 @@
 
 scan_the_code:
   marker_dep: "Scan_The_Code"
-  mission_dep: "pinger"
+  mission_dep: "find_the_break"
   is_base: False
   points: 100
   min_time: 1
@@ -34,6 +34,34 @@ explore:
   weight: 2
   looking_for: "None"
 
+find_the_break:
+  marker_dep: "FindBreak"
+  mission_dep: "None"
+  is_base: False
+  points: 100
+  min_time: 1
+  weight: 2
+  looking_for: "buoy"
+
+coral_survey_backup:
+  marker_dep: "CoralSurvey"
+  mission_dep: "None"
+  is_base: False
+  points: 100
+  min_time: 1
+  weight: 2
+  looking_for: "tower"
+
+
+# empty_space:
+#   marker_dep: "EmptySpace"
+#   mission_dep: "None"
+#   is_base: False
+#   points: 100
+#   min_time: 1
+#   weight: 2
+#   looking_for: "None"
+
 # circle_tower:
 #   marker_dep: "BuoyField"
 #   mission_dep: "None"
@@ -43,27 +71,15 @@ explore:
 #   weight: 2
 #   looking_for: "tower"
 
-pinger:
-  marker_dep: "AcousticPinger"
-  mission_dep: "None"
-  is_base: False
-  points: 100
-  min_time: 1
-  weight: 2
-  looking_for: "tower"
+# pinger:
+#   marker_dep: "AcousticPinger"
+#   mission_dep: "None"
+#   is_base: False
+#   points: 100
+#   min_time: 1
+#   weight: 2
+#   looking_for: "tower"
 
 
-# Not implemented yet.
  
-# find_the_break:
-#   object_dep: ["FindTheBreak"]
-#   mission_dep: "None"
-#   is_base: False
-#   timeout: 'inf'
-
-# coral_survey:
-#   object_dep: ["CoralSurvey"]
-#   mission_dep: "None"
-#   is_base: False
-#   timeout: 'inf'
 

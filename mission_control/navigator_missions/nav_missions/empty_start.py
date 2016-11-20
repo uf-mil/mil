@@ -5,6 +5,6 @@ from navigator_tools import fprint
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator, **kwargs):
-	fprint("STARTING EMPTY TEST", msg_color="green")
+    fprint("STARTING EMPTY TEST", msg_color="green")
     yield navigator.nh.sleep(5)
     fprint("COMPLETED EMPTY TEST", msg_color="green")
