@@ -112,13 +112,10 @@ def visualize_pinger(event):
     marker.color.g = 1.0
     marker.color.a = 1.0
     marker.pose.orientation.w = 1.0
-    marker.pose.position = pinger_position
-    print "POSE: ", pinger_position
+    marker.pose.position = pinger_position  
     if pinger_position != Point(0, 0, 0):
-        print "vis pinger"
+        print "POSE: ", pinger_position
         viz_pub.publish(marker)
-    else:
-        print "pinger position: {}".format(pinger_position)
 
 def visualize_line(p0, p1):
     global debug_arrow_id
