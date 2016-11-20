@@ -7,55 +7,112 @@ from navigator_tools import fprint, MissingPerceptionObject
 from sensor_msgs.msg import PointCloud
 import datetime
 
+
+BF_WIDTH = 10.0  # m
+BF_EST_COFIDENCE = 10.0  # How percisly can they place the waypoints? (m)
+TOTEM_SAFE_DIST = 7  # How close do we go to the totem
+ROT_SAFE_DIST = 4.5  # How close to rotate around it
+
 @txros.util.cancellableInlineCallbacks
-def main(navigator):
-    res = navigator.fetch_result()
-
-    buoy_field = yield navigator.database_query("BuoyField")
-    buoy_field_point = navigator_tools.point_to_numpy(buoy_field.objects[0])
-
-    #yield navigator.move.set_position(buoy_field_point).go()
-
-    circle_colors = ['blue', 'red']
-    color_map = {'blue': (255, 0, 0), 'red': (0, 0, 255)}
+def main(navigator, **kwargs):
+    # rgb color map to param vlues
+    color_map = {'BLUE': [0, 0, 1], 'RED': [1, 0, 0], 'YELLOW': [1, 1, 0], 'GREEN': [0, 1, 0]}
 
     explored_ids = []
     all_found = False
 
-    while not all_found:
-        target_totem, explored_ids = yield get_closest_buoy(navigator, explored_ids)
+    # Get colors of intrest and directions
+    c1 = navigator.mission_params['totem_color_1'].get()
+    d1 = navigator.mission_params['totem_direction_1'].get()
+    c2 = navigator.mission_params['totem_color_2'].get()
+    d2 = navigator.mission_params['totem_direction_2'].get()
+    
+    colors = [c1, c2]
+    directions = [d1, d2]
 
-        if target_totem is None:
+    buoy_field = yield navigator.database_query("BuoyField")
+    buoy_field_point = navigator_tools.point_to_numpy(buoy_field.objects[0].position)
+
+    _dist_from_bf = lambda pt: np.linalg.norm(buoy_field_point - pt)
+
+    # We want to go to an observation point based on solar position
+    # TODO: Check which side to go to based on relative distance
+    center = navigator.move.set_position(buoy_field_point).set_orientation(get_solar_q())
+    obs_point = center.backward(BF_WIDTH / 2 + BF_EST_COFIDENCE) 
+    yield obs_point.go()
+
+    # Next jig around to see buoys, first enforce that we're looking at the buoy field
+    buoy_field_point[2] = 1
+    yield navigator.move.look_at(buoy_field_point).go(move_type='skid', focus=buoy_field_point)
+    yield navigator.nh.sleep(3)
+    yield navigator.move.yaw_right(.5).go(move_type='skid')
+    yield navigator.nh.sleep(3)
+    yield navigator.move.yaw_left(1).go(move_type='skid')
+
+    
+    # TODO: What if we don't see the colors?
+    for color, direction in zip(colors, directions):
+        color = yield color
+        direction = yield direction
+
+        target = yield get_colored_buoy(navigator, color_map[color])
+        if target is None or _dist_from_bf(navigator_tools.point_to_numpy(target.position)) > (BF_WIDTH / 2 + BF_EST_COFIDENCE):
+            # Need to do something
             fprint("No suitable totems found.", msg_color='red', title="CIRCLE_TOTEM")
-            continue
+            defer.returnValue(None)
 
-        # Visualization
-        points = [target_totem.position]
-        pc = PointCloud(header=navigator_tools.make_header(frame='/enu'),
-                        points=points)
-        yield navigator._point_cloud_pub.publish(pc)
+        target_np = navigator_tools.point_to_numpy(target.position)
+        set_up = navigator.move.look_at(target_np).set_position(target_np).backward(TOTEM_SAFE_DIST)
+        
+        # Approach totem, making sure we actually get there.
+        res = yield set_up.go(initial_plan_time=2)
+        while res.failure_reason is not '':
+            set_up = set_up.backward(.1)
+            res = yield set_up.go(move_type='skid')
+        
+        fprint("Going {}".format(direction), title="CIRCLE_TOTEM")
 
-        # Let's go there
-        target_distance = 7  # m
-        target_totem_np = navigator_tools.point_to_numpy(target_totem.position)
-        q = get_sun_angle()
-        lookat = navigator.move.set_position(target_totem_np).set_orientation(q).backward(target_distance)
-        yield lookat.go()
+        print TOTEM_SAFE_DIST - ROT_SAFE_DIST
+        if direction == "COUNTER-CLOCKWISE":
+            rot_move = navigator.move.yaw_right(1.57).left(TOTEM_SAFE_DIST - ROT_SAFE_DIST)
+            while (yield rot_move.go(move_type='skid')).failure_reason is not '':
+               rot_move = rot_move.right(.25)
+               print rot_move
 
-        # Now that we're looking him in the eyes, aim no higher.
-        # Check the color and see if it's one we want.
-        fprint("Color request", title="CIRCLE_TOTEM")
+            res = yield navigator.move.circle_point(target_np, direction='ccw').go()
 
-        #if target_totem is not None:
-        #   all_found = True
-            
-    defer.returnValue(res)
+        elif direction == "CLOCKWISE":
+            rot_move = navigator.move.yaw_left(1.57).right(TOTEM_SAFE_DIST - ROT_SAFE_DIST)
+            while (yield rot_move.go(move_type='skid')).failure_reason is not '':
+               rot_move = rot_move.left(.25)
+               print rot_move
 
-    pattern = navigator.move.circle_point(focus, radius=5)
+            res = yield navigator.move.circle_point(target_np, direction='cw').go()
 
-    for p in pattern:
-        yield p.go(move_type='skid', focus=focus)
-        print "Nexting"
+        print "Mission result:", res
+
+        
+    
+    defer.returnValue(None)
+
+@txros.util.cancellableInlineCallbacks
+def get_colored_buoy(navigator, color):
+    """
+    Returns the closest colored buoy with the specified color
+    """
+    buoy_field = yield navigator.database_query("BuoyField")
+    buoy_field_point = navigator_tools.point_to_numpy(buoy_field.objects[0].position)
+
+    _dist_from_bf = lambda pt: np.linalg.norm(buoy_field_point - pt)
+
+    totems = yield navigator.database_query("totem")
+    correct_colored = [totem for totem in totems.objects if np.all(navigator_tools.rosmsg_to_numpy(totem.color, keys=['r', 'g', 'b']) == color)]
+    if len(correct_colored) == 0:
+        closest = None 
+    else:
+        closest = sorted(correct_colored, key=lambda totem: _dist_from_bf(navigator_tools.point_to_numpy(totem.position)))[0]
+
+    defer.returnValue(closest)
 
 @txros.util.cancellableInlineCallbacks
 def get_closest_buoy(navigator, explored_ids):
@@ -90,7 +147,7 @@ def get_closest_buoy(navigator, explored_ids):
 
     defer.returnValue([target_totem, explored_ids])
 
-def get_sun_angle():
+def get_solar_q():
     """Returns a quaternion to rotate to in order to keep the sun at our back"""
     now = datetime.datetime.now()
     now_time = now.time()
