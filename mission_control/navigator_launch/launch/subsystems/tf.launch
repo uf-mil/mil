@@ -9,8 +9,7 @@
     <!-- Cameras -->
     <node pkg="tf" type="static_transform_publisher" name="stereo_left_cam_tf" args="0.294 0.1 -0.45  -0.5665 0.55359 -0.42663 0.43658  /velodyne /stereo_left_cam 100" />
     <node pkg="tf" type="static_transform_publisher" name="stereo_right_cam_tf" args="0.294 0.08 -0.45  -0.56213 0.55163 -0.4316 0.43981  /velodyne /stereo_right_cam 100" />
-    <node pkg="tf" type="static_transform_publisher" name="right_right_cam_tf" args="-0.28575 -0.67945 0.161925  -0.00717 -0.68832 0.72532 0.00908  /measurement /right_right_cam 100" />
-    
+    <node pkg="tf" type="static_transform_publisher" name="right_right_cam_tf" args="-0.477 -0.681 0.18  -0.0 -0.71006 0.70414 0.0  /measurement /right_right_cam 100" />
 
     <!-- Shooter -->
     <node pkg="tf" type="static_transform_publisher" name="shooter_tf" args="-0.6096 -0.635 0.2032  -1.571 0 0 /measurement /shooter 100" /> 
