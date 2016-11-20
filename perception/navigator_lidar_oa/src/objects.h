@@ -9,13 +9,12 @@
 #include <vector>
 #include <iostream>
 #include "ConnectedComponents.h"
-#include "FitPlanesToCloud.h"
 #include "VolumeClassifier.h"
 #include <boost/assert.hpp>
 #include <tuple>
 #include <Eigen/Dense>
 #include <ros/console.h>
-
+#include "lidarParams.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -66,20 +65,6 @@ public:
     ////////////////////////////////////////////////////////////
 	std::vector<objectMessage> add_objects(std::vector<objectMessage> objects, sensor_msgs::PointCloud &rosCloud, const geometry_msgs::Pose &boatPose_enu)
 	{
-		//Verify that the raw objects list doesn't have objects really close together....
-		#ifdef DEBUG
-			auto cnt = 0;
-			for (auto &ii : objects) {
-				++cnt;
-				for (auto jj = objects.begin()+cnt; jj != objects.end(); ++jj) {
-					auto xyDistance = sqrt( pow(ii.position.x - jj->position.x, 2) + pow(ii.position.y - jj->position.y, 2)  );
-					std::stringstream ss;
-					ss << "Raw object position failure: " << ii.position.x << "," << ii.position.y << " vs " << jj->position.x << "," << jj->position.y;
-					BOOST_ASSERT_MSG(xyDistance > diff_thresh/3, ss.str().c_str());
-				}
-			}
-		#endif
-
 		//Reset all saved objects to not seen
 		for(auto &s_obj : saved_objects) {
 			s_obj.current = false;
@@ -93,17 +78,24 @@ public:
 			//What is the closest saved object to this one?
 			float min_dist = diff_thresh;
 			objectMessage *min_obj;
+            bool badPersist = false;
 			for(auto &s_obj : saved_objects){
 				auto xyDistance = sqrt( pow(obj.position.x - s_obj.position.x, 2) + pow(obj.position.y - s_obj.position.y, 2) );
-				//auto scaleDiff = sqrt( pow(obj.scale.x - s_obj.scale.x, 2) + pow(obj.scale.y - s_obj.scale.y, 2) + pow(obj.scale.z - s_obj.scale.z, 2) );
-				if(xyDistance < min_dist){
-					min_dist = xyDistance;
-					min_obj = &s_obj;
+				auto persistMax = 1.0+std::max(obj.strikesPersist.size(),s_obj.strikesPersist.size());
+				auto persistMin = 1.0+std::min(obj.strikesPersist.size(),s_obj.strikesPersist.size());
+				if(xyDistance < min_dist) {
+                    if (persistMin/persistMax >= 0.20) {
+					    min_dist = xyDistance;
+					    min_obj = &s_obj;
+                    } else {
+                        badPersist = true;
+                    }
 				}
 			}
 
 			//If the saved object was within in the minimum threshold, update the database. Otherwise, create a new object
 			if (min_dist < diff_thresh) {
+				ROS_INFO_STREAM("LIDAR : Updating " << min_obj->name << " with " << obj.strikesPersist.size() << " vs the old " << min_obj->strikesPersist.size());
 				obj.name = min_obj->name;
 				obj.id = min_obj->id;
 				obj.normal = min_obj->normal;
@@ -114,61 +106,39 @@ public:
 				obj.real = min_obj->real;
 			    obj.confidence = min_obj->confidence;
                 *min_obj = obj;
-			} else {
+			} else if (badPersist == false)  {
 				obj.id = curr_id++;
 				obj.current = true;
 				saved_objects.push_back(obj);
 			}
 		}
 
-		//Verify that the none of the saved objects are too close together.
-		/*#ifdef DEBUG
-			cnt = 0;
-			for (auto &s_obj : saved_objects) {
-				++cnt;
-				if (!s_obj.real) {continue;}
-				for (auto jj = saved_objects.begin()+cnt; jj != saved_objects.end(); ++jj) {
-					auto xyDistance = sqrt( pow(s_obj.position.x - jj->position.x, 2) + pow(s_obj.position.y - jj->position.y, 2)  );
-					std::stringstream ss;
-					ss << "Database object position failure: " << s_obj.position.x << "," << s_obj.position.y << " vs " << jj->position.x << "," << jj->position.y;
-					BOOST_ASSERT_MSG(xyDistance > diff_thresh, ss.str().c_str());
-				}
-			}
-		#endif*/
-
 		//After updating database, process each object to updates its info
-		int duplicateShooter = 0, duplicateScan = 0;
 		auto cnt = -1;
-		std::tuple<int,double> shooterMin, scanMin;
+		std::vector< std::tuple<std::string,int,int,double,unsigned> > duplicates = {std::make_tuple("shooter",0,-1,-1,4),std::make_tuple("scan_the_code",0,-1,-1,5)};
 		for(auto &s_obj : saved_objects) {
 			++cnt;
 			if (!s_obj.real) {continue;}
-			//Try to fit a normal
-			//FitPlanesToCloud(s_obj,rosCloud,boatPose_enu);
 			//Classify volume
 			VolumeClassifier(s_obj);
 			//Look for duplicates of the shooter or scan_the_code
-			if (s_obj.name == "shooter") {
-				++duplicateShooter;
-				auto xyDistance = sqrt( pow(s_obj.position.x - saved_objects[4].position.x, 2) + pow(s_obj.position.y - saved_objects[4].position.y, 2)  );
-				if (duplicateShooter == 1) {
-					shooterMin = std::make_tuple(cnt,xyDistance);
-				} else if ( xyDistance < std::get<1>(shooterMin) ) {
-					saved_objects.at( std::get<0>(shooterMin) ).name = "unknown";
-					shooterMin = std::make_tuple(cnt,xyDistance);
-				} else {
-					s_obj.name = "unknown";
-				}
-			} else if (s_obj.name == "scan_the_code") {
-				++duplicateScan;
-				auto xyDistance = sqrt( pow(s_obj.position.x - saved_objects[5].position.x, 2) + pow(s_obj.position.y - saved_objects[5].position.y, 2)  );
-				if (duplicateScan == 1) {
-					scanMin = std::make_tuple(cnt,xyDistance);
-				} else if ( xyDistance < std::get<1>(scanMin) ) {
-					saved_objects.at( std::get<0>(scanMin) ).name = "unknown";
-					shooterMin = std::make_tuple(cnt,xyDistance);
-				} else {
-					s_obj.name = "unknown";
+			for (auto &dups : duplicates) {
+				if (s_obj.name == std::get<0>(dups)) {
+					++std::get<1>(dups);
+					auto xyDistance = sqrt( pow(s_obj.position.x - saved_objects[std::get<4>(dups)].position.x, 2) + pow(s_obj.position.y - saved_objects[std::get<4>(dups)].position.y, 2)  );
+					if (std::get<1>(dups) == 1) {
+						std::get<2>(dups) = cnt;
+						std::get<3>(dups) = xyDistance;
+					} else {
+						if ( xyDistance < std::get<3>(dups) ) {
+							saved_objects.at( std::get<2>(dups) ).name = "unknown";
+							std::get<2>(dups) = cnt;
+							std::get<3>(dups) = xyDistance;
+						} else {
+							s_obj.name = "unknown";
+						}
+						//BOOST_ASSERT_MSG(false," Duplicate object error");
+					}
 				}
 			}
 		}
@@ -195,10 +165,10 @@ public:
     /// \param ?
     /// \param ?
     ////////////////////////////////////////////////////////////
-	void lock(std::string name, geometry_msgs::Point p) {
+	void lock(std::string name, geometry_msgs::Point p, bool status = true) {
 		for(auto &s_obj : saved_objects) {
 			if (s_obj.name == name) {
-				s_obj.locked = true;
+				s_obj.locked = status;
 				s_obj.position = p;
 			}
 		}		
@@ -211,16 +181,13 @@ public:
     /// \param ?
     ////////////////////////////////////////////////////////////
 	bool lookUpByName(std::string name, std::vector< navigator_msgs::PerceptionObject > &objects) {
+		//Name may also be the numeric id of the object
 		int id;
-		try {
-			id = stod(name);
-		} catch (...) {
-			id = -1;
-		}
+		try { id = stod(name); } 
+		catch (...) { id = -1; }
 
 		for (const auto &s_obj : saved_objects) {
-			if ( (name == "tess" ) || (name == "all" && s_obj.real) || (name == s_obj.name || id == s_obj.id) || (name == "All" && !s_obj.real) ) {
-				//if (!s_obj.real && !s_obj.locked) { continue; }
+			if ( (name == "allAll" ) || (name == "all" && s_obj.real) || (name == s_obj.name || id == s_obj.id) || (name == "All" && !s_obj.real) ) {
 				navigator_msgs::PerceptionObject thisOne;
 				thisOne.header.stamp - s_obj.age;
 				thisOne.name = s_obj.name;
@@ -303,7 +270,7 @@ public:
 
 			//Did we find the gates?
 			//ROS_INFO_STREAM("LIDAR | FOUND 4 TOTEMS: " << totems[permute[0]] << "," << totems[permute[1]] << "," << totems[permute[2]] << "," << totems[permute[3]] << " with edge distance of " << distance << " between " << edge1 << " and " << edge2 << " and line error of " << error);
-			if (distance >= 22 && distance <= 40 && error <= 10) {
+			if (distance >= MIN_GATE_SEPERATION && distance <= MAX_GATE_SEPERATION && error <= MAX_GATE_ERROR_METRIC) {
 				//Save center gate
 				gatePositions.push_back(center);
 
@@ -370,6 +337,21 @@ public:
 		} while (std::prev_permutation(bits.begin(),bits.end()));
 		return combos;
 	}	
-
 };
 #endif
+
+
+//Verify that the none of the saved objects are too close together.
+/*#ifdef DEBUG
+	cnt = 0;
+	for (auto &s_obj : saved_objects) {
+		++cnt;
+		if (!s_obj.real) {continue;}
+		for (auto jj = saved_objects.begin()+cnt; jj != saved_objects.end(); ++jj) {
+			auto xyDistance = sqrt( pow(s_obj.position.x - jj->position.x, 2) + pow(s_obj.position.y - jj->position.y, 2)  );
+			std::stringstream ss;
+			ss << "Database object position failure: " << s_obj.position.x << "," << s_obj.position.y << " vs " << jj->position.x << "," << jj->position.y;
+			BOOST_ASSERT_MSG(xyDistance > diff_thresh, ss.str().c_str());
+		}
+	}
+#endif*/

@@ -364,6 +364,8 @@ sudo apt-get install -qq libompl-dev
 sudo apt-get install -qq libvtk5-dev python-vtk
 sudo apt-get install -qq python-qt4-dev python-qt4-gl
 sudo apt-get install -qq python-opengl freeglut3-dev libassimp-dev
+sudo apt-get install -qq qt5-default
+sudo apt-get install -qq qt5-qmake
 
 # Tools
 sudo apt-get install -qq sshfs
