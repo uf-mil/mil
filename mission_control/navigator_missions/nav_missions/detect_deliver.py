@@ -60,13 +60,23 @@ class DetectDeliverMission:
 
     @txros.util.cancellableInlineCallbacks
     def circle_search(self):
-        fprint("Starting Circle Search", title="DETECT DELIVER",  msg_color='green')
-        yield self.navigator.move.look_at(navigator_tools.rosmsg_to_numpy(self.waypoint_res.objects[0].position)).yaw_left(90, unit='deg').go()
-        self.navigator.move.d_circle_point(navigator_tools.rosmsg_to_numpy(self.waypoint_res.objects[0].position), self.circle_radius).go()
-        while not (yield self.is_found()):
-            fprint("Shape not found Error={}".format(self.resp.error), title="DETECT DELIVER", msg_color='red')
-        yield self.navigator.move.stop()
-        fprint("Ended Circle Search", title="DETECT DELIVER",  msg_color='green')
+        print "Starting circle search"
+        #yield self.navigator.move.look_at(navigator_tools.rosmsg_to_numpy(self.waypoint_res.objects[0].position)).go()
+        pattern = self.navigator.move.d_circle_point(navigator_tools.rosmsg_to_numpy(
+            self.waypoint_res.objects[0].position), radius=self.circle_radius,  theta_offset=self.theta_offset)
+        yield next(pattern).go()
+        searcher = self.navigator.search(
+            vision_proxy='get_shape', search_pattern=pattern, Shape=self.Shape, Color=self.Color)
+        yield searcher.start_search(timeout=self.search_timeout_seconds, spotings_req=self.spotings_req, move_type="skid")
+        print "Ended Circle Search"
+
+        #  fprint("Starting Circle Search", title="DETECT DELIVER",  msg_color='green')
+        #  yield self.navigator.move.look_at(navigator_tools.rosmsg_to_numpy(self.waypoint_res.objects[0].position)).yaw_left(90, unit='deg').go()
+        #  self.navigator.move.d_circle_point(navigator_tools.rosmsg_to_numpy(self.waypoint_res.objects[0].position), self.circle_radius).go()
+        #  while not (yield self.is_found()):
+            #  fprint("Shape not found Error={}".format(self.resp.error), title="DETECT DELIVER", msg_color='red')
+        #  yield self.navigator.move.stop()
+        #  fprint("Ended Circle Search", title="DETECT DELIVER",  msg_color='green')
 
     @txros.util.cancellableInlineCallbacks
     def align_to_target(self):
@@ -109,7 +119,7 @@ class DetectDeliverMission:
             self.shooter_baselink_tf = yield self.navigator.tf_listener.get_transform('/base_link','/shooter')
             self.enunormal = enu_cam_tf.transform_vector(navigator_tools.rosmsg_to_numpy(self.normal_res.normal))
             self.enupoint = enu_cam_tf.transform_point(navigator_tools.rosmsg_to_numpy(self.normal_res.closest))
-        defer.returnValue(self.normal_res.success)
+        defer.returnValue(self.normal_res.success and abs(self.normal_res.normal[2]) < .5)
 
     @txros.util.cancellableInlineCallbacks
     def shoot_all_balls(self):
