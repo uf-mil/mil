@@ -21,7 +21,7 @@ class ScanTheCodeAction(object):
         position = [scan_the_code.position.x, scan_the_code.position.y, scan_the_code.position.z]
         now = datetime.datetime.now()
         now_time = now.time()
-        if now_time > datetime.time(12, 00):
+        if now_time < datetime.time(12, 00):
             return [position[0] + self.distance, position[1], position[2]], position
         else:
             return [position[0] - self.distance, position[1], position[2]], position

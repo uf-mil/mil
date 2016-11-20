@@ -69,7 +69,7 @@ class ScanTheCodePerception(object):
 
         points_3d = []
         try:
-            trans = yield self.my_tf.get_transform("/stereo_left_cam", "/enu", time)
+            trans = yield self.my_tf.get_transform("/stereo_right_cam", "/enu", time)
         except Exception as exp:
             print exp
             defer.returnValue(points_3d)

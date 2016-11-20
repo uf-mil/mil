@@ -41,7 +41,7 @@ def main(navigator, **kwargs):
     # circle.cancel()
 
     mission.correct_pose(pose)
-    circle = navigator.move.d_circle_point(look_at, radius=8, granularity=30)
+    circle = navigator.move.d_circle_point(look_at, radius=8, granularity=30, direction='cw')
     # print list(circle)
     for p in list(circle)[::-1]:
         if mission.stc_correct:
