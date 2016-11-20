@@ -7,6 +7,7 @@ from navigator_msgs.srv import FindPinger, FindPingerRequest, SetFrequency, SetF
 from geometry_msgs.msg import Point
 from std_srvs.srv import SetBool, SetBoolRequest
 import navigator_tools
+from navigator_tools import fprint
 
 ___author___ = "Kevin Allen"
 
@@ -49,10 +50,11 @@ class PingerMission:
 
         self.gate_poses = np.array([gate_1_pos, gate_2_pos, gate_3_pos])
 
+    @txros.util.cancellableInlineCallbacks
     def get_observation_poses(self):
         """Set 2 points to observe the pinger from, in front of gates 1 and 3"""
         self.get_gate_perp()
-        pose = yield self.navigator.tx_pose[:2]
+        pose = (yield self.navigator.tx_pose)[0][:2]
         distance_test = np.array([np.linalg.norm(pose - (self.gate_poses[0] + self.OBSERVE_DISTANCE_METERS * self.g_perp)),
                                   np.linalg.norm(pose - (self.gate_poses[0] - self.OBSERVE_DISTANCE_METERS * self.g_perp))])
         if np.argmin(distance_test) == 1:
@@ -68,9 +70,10 @@ class PingerMission:
     @txros.util.cancellableInlineCallbacks
     def search_samples(self):
         """Move to each observation point and listen to the pinger while sitting still"""
+        yield self.get_observation_poses()
         for i,p in enumerate(self.observation_points):
             yield self.stop_listen()
-            yield self.navigator.move.set_position(p).look_at(self.look_at_points[i]).go()
+            yield self.navigator.move.set_position(p).look_at(self.look_at_points[i]).go(move_type="skid")
             yield self.start_listen()
             fprint("PINGER: Listening To Pinger at point {}".format(p), msg_color='green')
             yield self.navigator.nh.sleep(self.LISTEN_TIME)
@@ -91,7 +94,7 @@ class PingerMission:
         """Move to the points needed to go through the correct gate"""
         self.gate_index = np.argmin(self.distances)
         self.get_gate_thru_points()
-        for p in self.gate_thru_poses:
+        for p in self.gate_thru_points:
             yield self.navigator.move.set_position(p).go(initial_plan_time=5)
 
     @txros.util.cancellableInlineCallbacks
@@ -142,7 +145,7 @@ class PingerMission:
         fprint("PINGER: Ended Pinger Mission", msg_color='green') 
 
 @txros.util.cancellableInlineCallbacks
-def main(navigator):
+def main(navigator, **kwargs):
     mission = PingerMission(navigator)
     yield mission.run()
 
