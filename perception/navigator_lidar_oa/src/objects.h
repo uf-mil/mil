@@ -78,13 +78,18 @@ public:
 			//What is the closest saved object to this one?
 			float min_dist = diff_thresh;
 			objectMessage *min_obj;
+            bool badPersist = false;
 			for(auto &s_obj : saved_objects){
 				auto xyDistance = sqrt( pow(obj.position.x - s_obj.position.x, 2) + pow(obj.position.y - s_obj.position.y, 2) );
 				auto persistMax = 1.0+std::max(obj.strikesPersist.size(),s_obj.strikesPersist.size());
 				auto persistMin = 1.0+std::min(obj.strikesPersist.size(),s_obj.strikesPersist.size());
-				if(xyDistance < min_dist && persistMin/persistMax >= 0.20){
-					min_dist = xyDistance;
-					min_obj = &s_obj;
+				if(xyDistance < min_dist) {
+                    if (persistMin/persistMax >= 0.20) {
+					    min_dist = xyDistance;
+					    min_obj = &s_obj;
+                    } else {
+                        badPersist = true;
+                    }
 				}
 			}
 
@@ -101,7 +106,7 @@ public:
 				obj.real = min_obj->real;
 			    obj.confidence = min_obj->confidence;
                 *min_obj = obj;
-			} else {
+			} else if (badPersist == false)  {
 				obj.id = curr_id++;
 				obj.current = true;
 				saved_objects.push_back(obj);
@@ -120,7 +125,7 @@ public:
 			for (auto &dups : duplicates) {
 				if (s_obj.name == std::get<0>(dups)) {
 					++std::get<1>(dups);
-					auto xyDistance = sqrt( pow(s_obj.position.x - saved_objects[std::get<4>(dups)].position.x, 2) + pow(s_obj.position.y - saved_objects[std::get<3>(dups)].position.y, 2)  );
+					auto xyDistance = sqrt( pow(s_obj.position.x - saved_objects[std::get<4>(dups)].position.x, 2) + pow(s_obj.position.y - saved_objects[std::get<4>(dups)].position.y, 2)  );
 					if (std::get<1>(dups) == 1) {
 						std::get<2>(dups) = cnt;
 						std::get<3>(dups) = xyDistance;

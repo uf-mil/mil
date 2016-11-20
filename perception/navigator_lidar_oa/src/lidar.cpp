@@ -144,7 +144,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 	std::vector< std::vector<int> > cc = ConnectedComponents(ogrid,objects,MIN_OBJECT_SEPERATION_DISTANCE);
 
 	//Deflate(erode) ogrid before sending out to ROS
-	ogrid.deflateBinary();
+	//ogrid.deflateBinary();
 
 	//Publish second point cloud
 	sensor_msgs::PointCloud objectCloudPersist,objectCloudFrame,pclCloud;
