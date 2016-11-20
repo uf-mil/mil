@@ -47,6 +47,7 @@ class DBHelper(object):
 
     @util.cancellableInlineCallbacks
     def get_object_by_id(self, my_id):
+        print my_id
         req = ObjectDBQueryRequest()
         req.name = 'all'
         resp = yield self._database(req)
@@ -88,7 +89,8 @@ class DBHelper(object):
             if o.name == 'unknown':
                 m.append(o)
             elif o.confidence < 50:
-                m.append(o)
+                pass
+                # m.append(o)
         defer.returnValue(m)
 
     def set_looking_for(self, name):
@@ -177,10 +179,14 @@ class DBHelper(object):
             success = yield threads.deferToThread(self._wait_for_position)
             if not success:
                 raise Exception("There is a problem with odom.")
+        if self.navigator is not None:
+            position = yield self.navigator.tx_pose
+            position = position[0]
+            self.position = position
         defer.returnValue(np.linalg.norm(nt.rosmsg_to_numpy(x.position) - self.position))
 
     @util.cancellableInlineCallbacks
-    def get_object(self, object_name, volume_only=False, thresh=30, thresh_strict=10):
+    def get_object(self, object_name, volume_only=False, thresh=50, thresh_strict=50):
         """Get an object from the database."""
         if volume_only:
             req = ObjectDBQueryRequest()
@@ -197,7 +203,7 @@ class DBHelper(object):
             min_dist = sys.maxint
             actual_objects = []
             for o in resp.objects:
-                distance = self._dist(o)
+                distance = yield self._dist(o)
                 if o.name == object_name and distance < thresh_strict:
                     actual_objects.append(o)
                 if distance < thresh and distance < min_dist:
@@ -219,6 +225,8 @@ class DBHelper(object):
                         min_dist = dist
                         min_obj = o
                 defer.returnValue(min_obj)
+
+            print "good"
 
             if len(actual_objects) == 1:
                 defer.returnValue(actual_objects[0])

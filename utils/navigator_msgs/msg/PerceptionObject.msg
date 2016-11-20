@@ -14,7 +14,7 @@ string ALL=all
 
 string FAKE_SHOOTER=Shooter
 string FAKE_IDENTIFY_AND_DOCK=Dock
-string FAKE_SCAN_THE_CODE=ScanTheCode
+string FAKE_SCAN_THE_CODE=Scan_The_Code
 string GATE1=Gate_1
 string GATE2=Gate_2
 string GATE3=Gate_3

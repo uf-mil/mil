@@ -44,13 +44,15 @@ class ScanTheCodeMission:
 
     @txros.util.cancellableInlineCallbacks
     def _get_scan_the_code(self):
+        v = False
         if self.scan_the_code is None:
-            ans = yield self.helper.get_object("scan_the_code")
+            ans = yield self.helper.get_object("scan_the_code", volume_only=v)
         else:
             try:
                 ans = yield self.helper.get_object_by_id(self.scan_the_code.id)
-            except:
-                ans = yield self.helper.get_object("scan_the_code")
+            except Exception:
+                print "PROBLEM"
+                ans = yield self.helper.get_object("scan_the_code", volume_only=v)
 
         fprint("GOT SCAN THE CODE WITH ID {}".format(ans.id), msg_color="blue")
         defer.returnValue(ans)
@@ -114,5 +116,6 @@ class ScanTheCodeMission:
             if correct_pose:
                 self.stc_correct = True
                 defer.returnValue(True)
+                break
 
             yield self.nh.sleep(.1)

@@ -99,8 +99,8 @@ class ScanTheCodeModel:
 
     def check_for_colors(self, debug):
         """Tell the model to update its colors."""
-        # if(self.colors_found == 3):
-        #     return True, self.colors
+        if(self.colors_found == 3):
+            return True, self.colors
         xmin, ymin, xmax, ymax = self._get_bounding_rect()
         color = self._get_color(self.frame[ymin:ymax, xmin:xmax])
         # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG

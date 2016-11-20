@@ -181,9 +181,15 @@ class MissionPlanner:
         else:
             redo = kwargs["redo"]
 
-        if not redo and not self.sim_mode:
-            marker = yield self.navigator.database_query(mission.item_dep)
-            yield self.navigator.move.set_position(nt.rosmsg_to_numpy(marker.position)).go()
+        if not redo and not self.sim_mode and mission.item_dep is not None:
+            print mission.item_dep.name
+
+            marker = yield self.navigator.database_query(mission.item_dep.name)
+            marker = marker.objects[0]
+            print nt.rosmsg_to_numpy(marker.position)
+            move = self.navigator.move.set_position(nt.rosmsg_to_numpy(marker.position))
+            print move
+            yield move.go()
         mission.start_time = self.nh.get_time()
         mission.attempts += 1
         res = yield mission.do_mission(self.navigator, self, self.module, **kwargs)
@@ -239,6 +245,7 @@ class MissionPlanner:
         self.current_mission_defer = self._do_mission(self.current_mission)
         self.current_mission_defer.addCallbacks(self._end_mission, errback=self._err_mission)
         res = yield self.current_mission_defer
+        print "hi"
         defer.returnValue(res)
 
     @util.cancellableInlineCallbacks
@@ -253,12 +260,13 @@ class MissionPlanner:
     @util.cancellableInlineCallbacks
     def _monitor_timeouts(self):
         while len(self.tree) != 0:
-            yield self.nh.sleep(.5)
-            if self.current_mission is None:
+            yield self.nh.sleep(1)
+            if self.current_mission is None or self.current_mission.start_time is None or self.current_mission.timeout is None:
                 continue
             # print (self.nh.get_time() - self.current_mission.start_time).to_sec()
             # print self.current_mission.name
             # print self.current_mission.timeout
+
             if ((self.nh.get_time() - self.current_mission.start_time).to_sec() > self.current_mission.timeout and
                     self.current_mission_defer is not None):
                 self.current_mission_defer.cancel()

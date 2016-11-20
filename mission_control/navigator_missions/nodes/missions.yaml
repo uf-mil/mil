@@ -9,7 +9,7 @@
 
 scan_the_code:
   marker_dep: "Scan_The_Code"
-  mission_dep: "None"
+  mission_dep: "pinger"
   is_base: False
   points: 100
   min_time: 1
@@ -18,7 +18,7 @@ scan_the_code:
   
 detect_deliver:
   marker_dep: "Shooter"
-  mission_dep: "None"
+  mission_dep: "scan_the_code"
   is_base: False
   points: 100
   min_time: 1
@@ -34,17 +34,17 @@ explore:
   weight: 2
   looking_for: "None"
 
-circle_tower:
-  marker_dep: "BuoyField"
-  mission_dep: "None"
-  is_base: False
-  points: 100
-  min_time: 1
-  weight: 2
-  looking_for: "tower"
+# circle_tower:
+#   marker_dep: "BuoyField"
+#   mission_dep: "None"
+#   is_base: False
+#   points: 100
+#   min_time: 1
+#   weight: 2
+#   looking_for: "tower"
 
 pinger:
-  marker_dep: "Gate_1"
+  marker_dep: "AcousticPinger"
   mission_dep: "None"
   is_base: False
   points: 100
