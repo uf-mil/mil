@@ -80,7 +80,7 @@ class PingerMission:
         yield self.get_observation_poses()
         for i,p in enumerate(self.observation_points):
             yield self.stop_listen()
-            yield self.navigator.move.set_position(p).look_at(self.look_at_points[i]).go(move_type="skid")
+            yield self.navigator.move.set_position(p).look_at(self.look_at_points[i]).go()
             yield self.start_listen()
             fprint("PINGER: Listening To Pinger at point {}".format(p), msg_color='green')
             yield self.navigator.nh.sleep(self.LISTEN_TIME)
@@ -105,7 +105,7 @@ class PingerMission:
             yield self.navigator.move.set_position(p).go(initial_plan_time=5)
 
     @txros.util.cancellableInlineCallbacks
-    def new_marker(self, ns="/debug", frame="/enu", type = Marker.CUBE , position=(0,0,0), orientation=(0,0,0,1), color=(1,0,0)):
+    def new_marker(self, ns="/debug", frame="enu", type = Marker.CUBE , position=(0,0,0), orientation=(0,0,0,1), color=(1,0,0)):
         marker = Marker()
         marker.ns = ns
         marker.header.stamp = yield self.navigator.nh.get_time()
@@ -139,9 +139,9 @@ class PingerMission:
         else:
             estimated_circle_buoy = self.gate_poses[1] - (self.g_perp * 30.0) #should check on correct side (negate bool)            
 
-        yield self.new_marker(position=np.append(estimated_3_endbuoy,0), color=(1,0,0))
+        yield self.new_marker(position=np.append(estimated_3_endbuoy,0), color=(1,1,1))
         yield self.new_marker(position=np.append(estimated_circle_buoy,0))
-        yield self.new_marker(position=np.append(estimated_1_endbuoy,0), color=(0,1,0))
+        yield self.new_marker(position=np.append(estimated_1_endbuoy,0), color=(1,1,1))
         yield self.marker_pub.publish(self.markers)
 
         totems = yield self.navigator.database_query("totem")
@@ -151,20 +151,61 @@ class PingerMission:
         else:
             sorted_1 = sorted(totems.objects, key=lambda t: abs(np.linalg.norm(estimated_1_endbuoy - navigator_tools.rosmsg_to_numpy( t.position)[:2])))
             sorted_3 = sorted(totems.objects, key=lambda t: abs(np.linalg.norm(estimated_3_endbuoy - navigator_tools.rosmsg_to_numpy(t.position)[:2])))
-            sorted_circle = sorted(totems.objects, key=lambda t: abs(np.linalg.norm(estimated_circle_buoy - navigator_tools.rosmsg_to_numpy(t.position)[:2])))
-            fprint("PINGER: gate 3 color {}".format(sorted_3[0].color), msg_color='blue')
-            fprint("PINGER: gate 1 color {}".format(sorted_1[0].color), msg_color='blue')
 
-            yield self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_circle[0].position), color=(0,0,1))
-            yield self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(0,0,1))
-            yield self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_3[0].position), color=(0,0,1))
+            sorted_circle = sorted(totems.objects, key=lambda t: abs(np.linalg.norm(estimated_circle_buoy - navigator_tools.rosmsg_to_numpy(t.position)[:2])))
+            yield self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_circle[0].position), color=(1,1,1))
+
+            if sorted_3[0].color.r > 0.9:
+                color_3 = "RED"
+                yield self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_3[0].position), color=(1,0,0))
+            elif sorted_3[0].color.g > 0.9:
+                color_3 = "GREEN"
+                yield self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_3[0].position), color=(0,1,0))
+            else:
+                color_3 = "UNKNOWN"
+                yield self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_3[0].position), color=(1,1,1))
+            if sorted_1[0].color.r > 0.9:
+                color_1 = "RED"
+                yield self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(1,0,0))
+            elif sorted_1[0].color.g > 0.9:
+                color_1 = "GREEN"
+                yield self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(0,1,0))
+            else:
+                color_1 = "UNKNOWN"
+                yield self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(1,1,1))
+
+            if int(self.gate_index) == 0:
+                if color_1 == "RED":
+                    active_colors = "RED-WHITE"
+                elif color_1 == "GREEN":
+                    active_colors = "WHITE-GREEN"
+                else:
+                    active_colors = "UNKNOWN"
+            elif int(self.gate_index) == 2:
+                if color_3 == "RED":
+                    active_colors = "RED-WHITE"
+                elif color_3 == "GREEN":
+                    active_colors = "WHITE-GREEN"
+                else:
+                    active_colors = "UNKNOWN"
+            else:
+                active_colors = "WHITE-WHITE"
+
+            if active_colors != "UNKNOWN":
+                fprint("PINGER: setting active pinger colors to {}".format(active_colors), msg_color='green')
+                yield self.navigator.mission_params["acoustic_pinger_active"].set(active_colors)
+            else:
+                fprint("PINGER: cannot determine gate colors".format(sorted_3[0].color), msg_color='red')
+            #  fprint("PINGER: gate 3 color {}".format(sorted_3[0].color), msg_color='blue')
+            #  fprint("PINGER: gate 1 color {}".format(sorted_1[0].color), msg_color='blue')
         yield self.marker_pub.publish(self.markers)
 
 
     @txros.util.cancellableInlineCallbacks
     def set_active_pinger(self):
         """Set the paramter for the active pinger identified for use in other mission"""
-        yield self.navigator.mission_params["acoustic_pinger_active_index"].set(self.gate_index+1)
+        fprint("PINGER: setting active pinger to Gate_{}".format(int(self.gate_index)+1), msg_color='green')
+        yield self.navigator.mission_params["acoustic_pinger_active_index"].set(int(self.gate_index)+1)
         yield self.get_colored_buoys()
 
     @txros.util.cancellableInlineCallbacks
@@ -205,7 +246,6 @@ class PingerMission:
         yield self.get_pinger_pose()
         fprint("PINGER: Going through gate", msg_color='green') 
         yield self.go_thru_gate()
-        fprint("PINGER: Setting active pinger parameter", msg_color='green') 
         yield self.set_active_pinger()
         #  yield self.circle_buoy()
         fprint("PINGER: Ended Pinger Mission", msg_color='green') 
