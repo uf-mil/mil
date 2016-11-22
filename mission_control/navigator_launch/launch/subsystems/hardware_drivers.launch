@@ -1,7 +1,5 @@
 <launch>
-  <node pkg="navigator_shooter" type="ShooterControl.py" name="shooter_controller">
-    <rosparam file="$(find navigator_shooter)/launch/config.yaml" />
-  </node>
+  <include file="$(find navigator_launch)/launch/subsystems/shooter.launch" />
   <include file="$(find navigator_launch)/launch/subsystems/hydrophones.launch" />
   <include file="$(find navigator_launch)/launch/subsystems/motor_controller.launch"/>
 </launch>
