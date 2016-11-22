@@ -48,8 +48,9 @@ class CameraLidarTransformer
     message_filters::Cache<sensor_msgs::PointCloud2> lidarCache;
     ros::Subscriber cameraInfoSub;
     image_geometry::PinholeCameraModel cam_model;
+    bool camera_info_received;
     sensor_msgs::CameraInfo camera_info;
-    bool inCameraFrame(pcl::PointXYZ& p);
+    bool inCameraFrame(cv::Point2d& p);
     void cameraInfoCallback(const sensor_msgs::CameraInfo info);
     void drawPoint(cv::Mat& mat, cv::Point2d& p, cv::Scalar color=cv::Scalar(0, 0, 255));
     bool transformServiceCallback(navigator_msgs::CameraToLidarTransform::Request &req,navigator_msgs::CameraToLidarTransform::Response &res);

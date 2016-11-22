@@ -5,7 +5,8 @@ CameraLidarTransformer::CameraLidarTransformer()
       tfBuffer(),
       tfListener(tfBuffer, nh),
       lidarSub(nh, "/velodyne_points", 10),
-      lidarCache(lidarSub, 10)
+      lidarCache(lidarSub, 10),
+      camera_info_received(false)
       #ifdef DO_ROS_DEBUG
       ,
       image_transport(nh)
@@ -24,8 +25,10 @@ CameraLidarTransformer::CameraLidarTransformer()
 void CameraLidarTransformer::cameraInfoCallback(sensor_msgs::CameraInfo info)
 {
   camera_info = info;
+  cam_model.fromCameraInfo(camera_info);
+  camera_info_received = true;
 }
-bool CameraLidarTransformer::inCameraFrame(pcl::PointXYZ& point)
+bool CameraLidarTransformer::inCameraFrame(cv::Point2d& point)
 {
   return point.x > 0 && point.x < camera_info.width &&
          point.y > 0 && point.y < camera_info.height;
@@ -37,32 +40,38 @@ void CameraLidarTransformer::drawPoint(cv::Mat& mat, cv::Point2d& point, cv::Sca
 }
 bool CameraLidarTransformer::transformServiceCallback(navigator_msgs::CameraToLidarTransform::Request &req, navigator_msgs::CameraToLidarTransform::Response &res)
 {
+  if (!camera_info_received)
+  {
+    res.success = false;
+    res.error = "NO CAMERA INFO";
+    return true;
+  }
   visualization_msgs::MarkerArray markers;
-  sensor_msgs::PointCloud2ConstPtr scloud =
-  lidarCache.getElemAfterTime(req.header.stamp);
+  sensor_msgs::PointCloud2ConstPtr scloud = lidarCache.getElemAfterTime(req.header.stamp);
   if (!scloud) {
     res.success = false;
     res.error =  navigator_msgs::CameraToLidarTransform::Response::CLOUD_NOT_FOUND;
     return true;
   }
-  geometry_msgs::TransformStamped transform = tfBuffer.lookupTransform(req.header.frame_id, "velodyne", req.header.stamp);
+  geometry_msgs::TransformStamped transform = tfBuffer.lookupTransform(req.header.frame_id, "velodyne", ros::Time(0));
   sensor_msgs::PointCloud2 cloud_transformed;
   tf2::doTransform(*scloud, cloud_transformed, transform);
+
   #ifdef DO_ROS_DEBUG
   cv::Mat debug_image(camera_info.height, camera_info.width, CV_8UC3, cv::Scalar(0));
   cv::circle(debug_image, cv::Point(req.point.x, req.point.y), 8, cv::Scalar(255, 0, 0), -1);
   #endif
+
   double minDistance = std::numeric_limits<double>::max();
   pcl::PointCloud<pcl::PointXYZ> cloud;
   pcl::fromROSMsg(cloud_transformed, cloud);
   std::vector<int> indices;
-  cam_model.fromCameraInfo(camera_info);
   for (unsigned index = 0; index < cloud.size(); index++)
   {
       pcl::PointXYZ& p = cloud[index];
       if (p.z < 0 || p.z > 30) continue;
       cv::Point2d point = cam_model.project3dToPixel(cv::Point3d(p.x, p.y, p.z));
-      if (inCameraFrame(p))
+      if (inCameraFrame(point))
       {
           #ifdef DO_ROS_DEBUG
           visualization_msgs::Marker marker_point;
@@ -112,54 +121,55 @@ bool CameraLidarTransformer::transformServiceCallback(navigator_msgs::CameraToLi
 
       }
   }
-  if (res.transformed.size() < 1) {
-    res.success = false;
+  if (res.transformed.size() > 0) {
+    float x,y,z,n;
+    pcl::NormalEstimation<pcl::PointXYZ,pcl::Normal > ne;
+    ne.computePointNormal (cloud, indices, x, y, z, n);
+    Eigen::Vector3d normal_vector = Eigen::Vector3d(x,y,z).normalized();
+    res.normal.x = -normal_vector(0, 0);
+    res.normal.y = -normal_vector(1, 0);
+    res.normal.z = -normal_vector(2, 0);
+
+    #ifdef DO_ROS_DEBUG
+    //Add a marker for the normal to the plane
+    geometry_msgs::Point sdp_normalvec_ros;
+    sdp_normalvec_ros.x = res.closest.x + res.normal.x;
+    sdp_normalvec_ros.y = res.closest.y + res.normal.y;
+    sdp_normalvec_ros.z = res.closest.z + res.normal.z;
+    visualization_msgs::Marker marker_normal;
+    marker_normal.header = req.header;
+    marker_normal.header.seq = 0;
+    marker_normal.header.frame_id =  req.header.frame_id;
+    marker_normal.id = 3000;
+    marker_normal.type = visualization_msgs::Marker::ARROW;
+    marker_normal.points.push_back(res.closest);
+    marker_normal.points.push_back(sdp_normalvec_ros);
+    marker_normal.scale.x = 0.1;
+    marker_normal.scale.y = 0.5;
+    marker_normal.scale.z = 0.5;
+    marker_normal.color.a = 1.0;
+    marker_normal.color.r = 0.0;
+    marker_normal.color.g = 0.0;
+    marker_normal.color.b = 1.0;
+    markers.markers.push_back(marker_normal);
+    #endif
+
+    res.distance = res.closest.z;
+    res.success = true;
+  } else {
     res.error = navigator_msgs::CameraToLidarTransform::Response::NO_POINTS_FOUND;
-    return true;
+    res.success = false;
   }
 
-  float x,y,z,n;
-  pcl::NormalEstimation<pcl::PointXYZ,pcl::Normal > ne;
-  ne.computePointNormal (cloud, indices, x, y, z, n);
-  Eigen::Vector3d normal_vector = Eigen::Vector3d(x,y,z).normalized();
-  res.normal.x = -normal_vector(0, 0);
-  res.normal.y = -normal_vector(1, 0);
-  res.normal.z = -normal_vector(2, 0);
-
-  res.distance = res.closest.z;
-
 #ifdef DO_ROS_DEBUG
-  //Add a marker for the normal to the plane
-  geometry_msgs::Point sdp_normalvec_ros;
-  sdp_normalvec_ros.x = res.closest.x + res.normal.x;
-  sdp_normalvec_ros.y = res.closest.y + res.normal.y;
-  sdp_normalvec_ros.z = res.closest.z + res.normal.z;
-  visualization_msgs::Marker marker_normal;
-  marker_normal.header = req.header;
-  marker_normal.header.seq = 0;
-  marker_normal.header.frame_id =  req.header.frame_id;
-  marker_normal.id = 3000;
-  marker_normal.type = visualization_msgs::Marker::ARROW;
-  marker_normal.points.push_back(res.closest);
-  marker_normal.points.push_back(sdp_normalvec_ros);
-  marker_normal.scale.x = 0.1;
-  marker_normal.scale.y = 0.5;
-  marker_normal.scale.z = 0.5;
-  marker_normal.color.a = 1.0;
-  marker_normal.color.r = 0.0;
-  marker_normal.color.g = 0.0;
-  marker_normal.color.b = 1.0;
-  markers.markers.push_back(marker_normal);
-  
   //Publish 3D debug market
   pubMarkers.publish(markers);
-  
   //Publish debug image
   cv_bridge::CvImage ros_debug_image;
   ros_debug_image.encoding = "bgr8";
   ros_debug_image.image = debug_image.clone();
   points_debug_publisher.publish(ros_debug_image.toImageMsg());
 #endif
-  res.success = true;
+
   return true;
 }
