@@ -17,7 +17,7 @@ from navigator_tools import fprint, MissingPerceptionObject
 
 class DetectDeliverMission:
     # Note, this will be changed when the shooter switches to actionlib
-    shoot_distance_meters = 3.3
+    shoot_distance_meters = 2.7
     theta_offset = np.pi / 2.0
     spotings_req = 1
     circle_radius = 10
@@ -90,6 +90,7 @@ class DetectDeliverMission:
                     fprint("Normal found Error={}".format(self.normal_res.error), title="DETECT DELIVER", msg_color='red')
             else:
                 fprint("Shape not found Error={}".format(self.resp.error), title="DETECT DELIVER", msg_color='red')
+
         yield self.get_aligned_pos()
         move = self.navigator.move.set_position(self.aligned_position).set_orientation(self.aligned_orientation).forward(self.target_offset_meters)
         move = move.left(-self.shooter_baselink_tf._p[1]).forward(-self.shooter_baselink_tf._p[0]) #Adjust for location of shooter
