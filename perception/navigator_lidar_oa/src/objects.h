@@ -77,7 +77,7 @@ public:
 
 			//What is the closest saved object to this one?
 			float min_dist = diff_thresh;
-			objectMessage *min_obj;
+			objectMessage *min_obj = nullptr;
             bool badPersist = false;
 			for(auto &s_obj : saved_objects){
 				auto xyDistance = sqrt( pow(obj.position.x - s_obj.position.x, 2) + pow(obj.position.y - s_obj.position.y, 2) );
@@ -94,7 +94,7 @@ public:
 			}
 
 			//If the saved object was within in the minimum threshold, update the database. Otherwise, create a new object
-			if (min_dist < diff_thresh) {
+			if (min_obj != nullptr && min_dist < diff_thresh) {
 				ROS_INFO_STREAM("LIDAR : Updating " << min_obj->name << " with " << obj.strikesPersist.size() << " vs the old " << min_obj->strikesPersist.size());
 				obj.name = min_obj->name;
 				obj.id = min_obj->id;
@@ -105,6 +105,7 @@ public:
 				obj.locked = min_obj->locked;
 				obj.real = min_obj->real;
 			    obj.confidence = min_obj->confidence;
+			    obj.bestConfidence = min_obj->bestConfidence;
                 *min_obj = obj;
 			} else if (badPersist == false)  {
 				obj.id = curr_id++;
@@ -205,6 +206,7 @@ public:
 				thisOne.pclInliers = s_obj.pclInliers;
 				thisOne.normal = s_obj.normal;
 				thisOne.color = s_obj.color;
+				thisOne.confidence = s_obj.bestConfidence;
 				objects.push_back(thisOne);
 			}
 		}

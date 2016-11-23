@@ -60,11 +60,19 @@ interactive_markers::MenuHandler::EntryHandle menuEntry;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //These are changed on startup if /get_bounds service is present
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Eigen::Vector2d BOUNDARY_CORNER_1 (30-60, 10-140);
-Eigen::Vector2d BOUNDARY_CORNER_2 (30-60, 120-60);
-Eigen::Vector2d BOUNDARY_CORNER_3 (140-10, 120-60);
-Eigen::Vector2d BOUNDARY_CORNER_4 (140-10, 10-140);
+//Lake Day 11-12
+//Eigen::Vector2d BOUNDARY_CORNER_1 (-20, -135);
+//Eigen::Vector2d BOUNDARY_CORNER_2 (-20, 65);
+//Eigen::Vector2d BOUNDARY_CORNER_3 (140, 65);
+//Eigen::Vector2d BOUNDARY_CORNER_4 (140, -135);
 
+//Lake Day 11-19
+Eigen::Vector2d BOUNDARY_CORNER_1 (-210, -175);
+Eigen::Vector2d BOUNDARY_CORNER_2 (-210, 15);
+Eigen::Vector2d BOUNDARY_CORNER_3 (-50, 15);
+Eigen::Vector2d BOUNDARY_CORNER_4 (-50, -175);
+
+//No bounds on start
 //Eigen::Vector2d BOUNDARY_CORNER_1 (0, 0);
 //Eigen::Vector2d BOUNDARY_CORNER_2 (1, 0);
 //Eigen::Vector2d BOUNDARY_CORNER_3 (1, -1);
@@ -253,7 +261,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 		}
 
 		//Display Info//obj.strikesPersist.size() << "(" << obj.strikesFrame.size() << ") points, size "
-		ROS_INFO_STREAM("LIDAR | "  << fixed  << setw(10) << obj.name.substr(0,4) << ": " << obj.id << "\t" << obj.position.x << "\t" << obj.position.y << "\t" << obj.position.z << "\t" << obj.maxHeightFromLidar << "\t" << obj.scale.x << "\t" << obj.scale.y << "\t" << obj.scale.z << "\t" << obj.confidence[0] << "\t" << obj.confidence[1] << "\t" << obj.confidence[2] << "\t" << obj.confidence[3] << "\t" << obj.confidence[4] << "\t " << obj.strikesPersist.size());
+		ROS_INFO_STREAM("LIDAR | "  << fixed  << setw(10) << obj.name.substr(0,4) << ": " << obj.id << "\t" << obj.position.x << "\t" << obj.position.y << "\t" << obj.position.z << "\t" << obj.maxHeightFromLidar << "\t" << obj.scale.x << "\t" << obj.scale.y << "\t" << obj.scale.z << "\t" << obj.confidence[0] << "\t" << obj.confidence[1] << "\t" << obj.confidence[2] << "\t" << obj.confidence[3] << "\t" << obj.confidence[4] << "\t " << obj.strikesPersist.size() << "\t" << (int)obj.bestConfidence);
 
 		//Show point cloud of just objects
 		objectCloudPersist.points.insert(objectCloudPersist.points.end(),obj.strikesPersist.begin(),obj.strikesPersist.end());
@@ -495,7 +503,7 @@ void createROIS(string name, bool update, geometry_msgs::Pose newPose)
 	visualization_msgs::Marker m4;
 	m4.header.stamp = ros::Time::now();
 	m4.header.seq = 0;
-	m4.header.frame_id = "enu";		
+	//m4.header.frame_id = "enu";		
 	m4.id = -1;
 	m4.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
 	m4.action = visualization_msgs::Marker::ADD;
