@@ -20,7 +20,7 @@ def main(args):
 
     n = yield Navigator(nh)._init(args.sim)
 
-    action_kwargs = {'move_type': args.movetype, 'speed_factor': args.speedfactor}
+    action_kwargs = {'move_type': args.movetype}#, 'speed_factor': args.speedfactor}
 
     action_kwargs['blind'] = args.blind
 

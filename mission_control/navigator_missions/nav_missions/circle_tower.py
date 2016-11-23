@@ -8,10 +8,10 @@ from sensor_msgs.msg import PointCloud
 import datetime
 
 
-BF_WIDTH = 10.0  # m
+BF_WIDTH = 60.0  # m
 BF_EST_COFIDENCE = 10.0  # How percisly can they place the waypoints? (m)
 TOTEM_SAFE_DIST = 7  # How close do we go to the totem
-ROT_SAFE_DIST = 4.5  # How close to rotate around it
+ROT_SAFE_DIST = 3.5  # How close to rotate around it
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator, **kwargs):
@@ -43,11 +43,11 @@ def main(navigator, **kwargs):
 
     # Next jig around to see buoys, first enforce that we're looking at the buoy field
     buoy_field_point[2] = 1
-    yield navigator.move.look_at(buoy_field_point).go(move_type='skid', focus=buoy_field_point)
+    #yield navigator.move.look_at(buoy_field_point).go(move_type='skid', focus=buoy_field_point)
     yield navigator.nh.sleep(3)
-    yield navigator.move.yaw_right(.5).go(move_type='skid')
-    yield navigator.nh.sleep(3)
-    yield navigator.move.yaw_left(1).go(move_type='skid')
+    #yield navigator.move.yaw_right(.5).go(move_type='skid')
+    #yield navigator.nh.sleep(3)
+    #yield navigator.move.yaw_left(1).go(move_type='skid')
 
     
     # TODO: What if we don't see the colors?
@@ -79,7 +79,9 @@ def main(navigator, **kwargs):
                rot_move = rot_move.right(.25)
                print rot_move
 
-            res = yield navigator.move.circle_point(target_np, direction='ccw').go()
+            circle = navigator.move.d_circle_point(target_np, radius=ROT_SAFE_DIST, direction='ccw', theta_offset=-1.57)
+            for c in circle:
+                yield c.go(move_type='skid')
 
         elif direction == "CLOCKWISE":
             rot_move = navigator.move.yaw_left(1.57).right(TOTEM_SAFE_DIST - ROT_SAFE_DIST)
@@ -106,7 +108,7 @@ def get_colored_buoy(navigator, color):
     _dist_from_bf = lambda pt: np.linalg.norm(buoy_field_point - pt)
 
     totems = yield navigator.database_query("totem")
-    correct_colored = [totem for totem in totems.objects if np.all(navigator_tools.rosmsg_to_numpy(totem.color, keys=['r', 'g', 'b']) == color)]
+    correct_colored = [totem for totem in totems.objects if np.all(np.round(navigator_tools.rosmsg_to_numpy(totem.color, keys=['r', 'g', 'b'])) == color)]
     if len(correct_colored) == 0:
         closest = None 
     else:
