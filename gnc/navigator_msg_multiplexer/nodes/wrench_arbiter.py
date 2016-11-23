@@ -64,6 +64,7 @@ class WrenchArbiter(object):
         rospy.loginfo("Server received request for wrench control change - " + req.str)
         self.control = req.str if req.str in self.control_inputs else self.control
 
+        self.control_pub.publish(self.control)
         # Returns the selected control input
         return self.control
 

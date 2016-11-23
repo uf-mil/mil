@@ -2,4 +2,6 @@
   <include file="$(find navigator_launch)/launch/subsystems/shooter.launch" />
   <include file="$(find navigator_launch)/launch/subsystems/hydrophones.launch" />
   <include file="$(find navigator_launch)/launch/subsystems/motor_controller.launch"/>
+  
+  <node pkg="navigator_kill_board" type="driver_node.py" name="killboard_interface"/>
 </launch>
