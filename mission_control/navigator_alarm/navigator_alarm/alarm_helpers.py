@@ -202,12 +202,10 @@ class AlarmListener(object):
             We've gotten an alarm, but don't panic! If it's one of the alarms we are listening for,
             pass the alarm to the function callback with any specified args.
         '''
-
         if alarm.alarm_name not in self.known_alarms:
             self.known_alarms.append(alarm.alarm_name)
-
-        found_alarm = self.callback_linker.get(alarm.alarm_name, None)
-
+        
+        found_alarm = self.callback_linker.get(alarm.alarm_name)
         if found_alarm is None:
             return
 
@@ -222,7 +220,7 @@ class AlarmListener(object):
         else:
             # Otherwise do nothing
             return
-
+        
         callback = found_alarm['callback']
         callback(alarm)
 
