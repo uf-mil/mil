@@ -147,7 +147,7 @@ class PoseEditor2(object):
         return np.linalg.norm(self.position - self.nav.pose[0])
 
     def go(self, *args, **kwargs):
-        if self.nav.killed:
+        if self.nav.killed == True and self.nav.odom_killed == True:
             # What do we want to do with missions when the boat is killed
             fprint("Boat is killed, ignoring go command!", title="POSE_EDITOR", msg_color="red")
 
