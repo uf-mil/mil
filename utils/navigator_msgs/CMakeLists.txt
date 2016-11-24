@@ -24,6 +24,7 @@ add_message_files(
   PerceptionObjectArray.msg
   DockShape.msg
   DockShapes.msg
+  KillStatus.msg
 )
 
 add_service_files(
