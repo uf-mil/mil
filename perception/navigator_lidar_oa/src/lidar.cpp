@@ -620,8 +620,8 @@ int main(int argc, char* argv[])
 	ROS_INFO_STREAM("LIDAR | ROS Master: " << ros::master::getHost());
 
 	//Node handler
-	ros::NodeHandle nh;
-
+	ros::NodeHandle nh(ros::this_node::getName());
+	set_params(nh);
 	//Subscribe to odom and the velodyne
 	ros::Subscriber sub1 = nh.subscribe("/velodyne_points", 1, cb_velodyne);
 	ros::Subscriber sub2 = nh.subscribe("/odom", 1, cb_odom);

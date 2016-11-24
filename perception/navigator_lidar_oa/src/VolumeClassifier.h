@@ -29,13 +29,6 @@ void VolumeClassifier(objectMessage &object)
 	//Possible classifications
 	std::vector<std::string> names = {"dock","shooter","scan_the_code","totem","buoy"};
 
-	//Volume boundaries - low h, high h, low x, high x, low y, high y, low z, high z
-	double volumes[5][8] = { 	{1.0,	1.5,	8.0,	10.0,	8.0,	10.0,	2.75,	3.25}, //dock (NOT TESTED!)
-					{0.75,	2.25,	3.0,	5.5,	3.0,	5.5,	2.5,	5.5}, //shooter
-					{0.1,	0.75,	1.3,	2.25,	1.3,	2.25,	1.7,	2.5}, //scan_the_code
-					{-0.6,	0.0,	0.8,	1.8,	0.8,	1.8,	0.8,	1.8}, //totems
-					{-1.25,-0.8,	0.125,	1.0,	0.125,	1.0,	0.125,	0.65} }; //buoy
-
 	//Update confidence for each type of object
     std::vector<std::tuple<int,int>> options;
     for (auto ii = 0; ii < names.size(); ++ii) {

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <ros/ros.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Critical global constants
@@ -31,5 +32,6 @@ extern int MIN_HITS_FOR_VOLUME;
 extern int OBJECT_INFLATION_PARAMETER;
 extern double VOXEL_SIZE_Z_METERS;
 extern double VOXEL_SIZE_Z_MIN_HITS;
-
+extern double volumes[5][8];
+extern void set_params(ros::NodeHandle& nh);
 #endif
