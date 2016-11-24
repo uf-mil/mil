@@ -22,10 +22,10 @@ class Joystick(object):
         self.torque_scale = rospy.get_param("~torque_scale", 500)
 
         self.remote = RemoteControl("joystick", "/wrench/rc")
+        self.reset()
         rospy.Subscriber("joy", Joy, self.joy_recieved)
 
         self.active = False
-        self.reset()
 
     def reset(self):
         '''
