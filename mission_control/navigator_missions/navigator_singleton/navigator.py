@@ -275,14 +275,16 @@ class MissionParam(object):
         self.default = default
 
     @util.cancellableInlineCallbacks
-    def get(self):
+    def get(self, raise_exception=True):
         # Returns deferred object, make sure to yield on this (same for below)
         if not (yield self.exists()):
             if not self.default == None:
-              yield self.set(self.default)
-              defer.returnValue(self.default)
+                yield self.set(self.default)
+                defer.returnValue(self.default)
+            if raise_exception:
+                raise Exception("Mission Param {} not yet set".format(self.param))
             else:
-              raise Exception("Mission Param {} not yet set".format(self.param))
+                defer.returnValue(False)
         value = yield self.nh.get_param(self.param)
         if not self._valid(value):
             raise Exception("Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(value, self.param, self.options,self.description))

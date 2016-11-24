@@ -9,6 +9,7 @@ from std_srvs.srv import SetBool, SetBoolRequest
 import navigator_tools
 from visualization_msgs.msg import Marker, MarkerArray
 from navigator_tools import fprint
+import rospy
 
 ___author___ = "Kevin Allen"
 
@@ -54,14 +55,13 @@ class PingerMission:
 
         self.gate_poses = np.array([gate_1_pos, gate_2_pos, gate_3_pos])
 
-    @txros.util.cancellableInlineCallbacks
     def get_observation_poses(self):
         """Set 2 points to observe the pinger from, in front of gates 1 and 3"""
         self.get_gate_perp()
         #Make sure they are actually in a line
         if np.isnan(self.g_perp[0]) or np.isnan(self.g_perp[1]):
             raise Exception("Gates are not in a line")
-        pose = (yield self.navigator.tx_pose)[0][:2]
+        pose = self.navigator.pose[0][:2]
         distance_test = np.array([np.linalg.norm(pose - (self.gate_poses[0] + self.OBSERVE_DISTANCE_METERS * self.g_perp)),
                                   np.linalg.norm(pose - (self.gate_poses[0] - self.OBSERVE_DISTANCE_METERS * self.g_perp))])
         if np.argmin(distance_test) == 1:
@@ -77,7 +77,7 @@ class PingerMission:
     @txros.util.cancellableInlineCallbacks
     def search_samples(self):
         """Move to each observation point and listen to the pinger while sitting still"""
-        yield self.get_observation_poses()
+        self.get_observation_poses()
         for i,p in enumerate(self.observation_points):
             yield self.stop_listen()
             yield self.navigator.move.set_position(p).look_at(self.look_at_points[i]).go()
@@ -104,11 +104,11 @@ class PingerMission:
         for p in self.gate_thru_points:
             yield self.navigator.move.set_position(p).go(initial_plan_time=5)
 
-    @txros.util.cancellableInlineCallbacks
-    def new_marker(self, ns="/debug", frame="enu", type = Marker.CUBE , position=(0,0,0), orientation=(0,0,0,1), color=(1,0,0)):
+    def new_marker(self, ns="/debug", frame="enu", time=None, type = Marker.CUBE , position=(0,0,0), orientation=(0,0,0,1), color=(1,0,0)):
         marker = Marker()
         marker.ns = ns
-        marker.header.stamp = yield self.navigator.nh.get_time()
+        if time != None:
+            marker.header.stamp = time
         marker.header.frame_id = frame
         marker.type = type
         marker.action = marker.ADD
@@ -139,40 +139,37 @@ class PingerMission:
         else:
             estimated_circle_buoy = self.gate_poses[1] - (self.g_perp * 30.0) #should check on correct side (negate bool)            
 
-        yield self.new_marker(position=np.append(estimated_3_endbuoy,0), color=(1,1,1))
-        yield self.new_marker(position=np.append(estimated_circle_buoy,0))
-        yield self.new_marker(position=np.append(estimated_1_endbuoy,0), color=(1,1,1))
-        yield self.marker_pub.publish(self.markers)
+        cur_time = yield self.navigator.nh.get_time()
+        self.new_marker(position=np.append(estimated_3_endbuoy,0), color=(1,1,1), time=cur_time)
+        self.new_marker(position=np.append(estimated_circle_buoy,0), time=cur_time)
+        self.new_marker(position=np.append(estimated_1_endbuoy,0), color=(1,1,1), time=cur_time)
 
-        totems = yield self.navigator.database_query("totem")
-        if not totems.found:
-            fprint("PINGER: not totems found", msg_color='red')
-            return
-        else:
-            sorted_1 = sorted(totems.objects, key=lambda t: abs(np.linalg.norm(estimated_1_endbuoy - navigator_tools.rosmsg_to_numpy( t.position)[:2])))
-            sorted_3 = sorted(totems.objects, key=lambda t: abs(np.linalg.norm(estimated_3_endbuoy - navigator_tools.rosmsg_to_numpy(t.position)[:2])))
+        totems = yield self.navigator.database_query("totem", raise_exception=False)
+        if totems.found:
+            sorted_1 = sorted(totems.objects, key=lambda t: np.linalg.norm(estimated_1_endbuoy - navigator_tools.rosmsg_to_numpy(t.position)[:2]))
+            sorted_3 = sorted(totems.objects, key=lambda t: np.linalg.norm(estimated_3_endbuoy - navigator_tools.rosmsg_to_numpy(t.position)[:2]))
 
             sorted_circle = sorted(totems.objects, key=lambda t: abs(np.linalg.norm(estimated_circle_buoy - navigator_tools.rosmsg_to_numpy(t.position)[:2])))
-            yield self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_circle[0].position), color=(1,1,1))
+            self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_circle[0].position), color=(1,1,1), time=cur_time)
 
             if sorted_3[0].color.r > 0.9:
                 color_3 = "RED"
-                yield self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_3[0].position), color=(1,0,0))
+                self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_3[0].position), color=(1,0,0), time=cur_time)
             elif sorted_3[0].color.g > 0.9:
                 color_3 = "GREEN"
-                yield self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_3[0].position), color=(0,1,0))
+                self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_3[0].position), color=(0,1,0), time=cur_time)
             else:
                 color_3 = "UNKNOWN"
-                yield self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_3[0].position), color=(1,1,1))
+                self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_3[0].position), color=(1,1,1), time=cur_time)
             if sorted_1[0].color.r > 0.9:
                 color_1 = "RED"
-                yield self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(1,0,0))
+                self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(1,0,0), time=cur_time)
             elif sorted_1[0].color.g > 0.9:
                 color_1 = "GREEN"
-                yield self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(0,1,0))
+                self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(0,1,0), time=cur_time)
             else:
                 color_1 = "UNKNOWN"
-                yield self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(1,1,1))
+                yself.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(1,1,1), time=cur_time)
 
             if int(self.gate_index) == 0:
                 if color_1 == "RED":
@@ -198,6 +195,8 @@ class PingerMission:
                 fprint("PINGER: cannot determine gate colors".format(sorted_3[0].color), msg_color='red')
             #  fprint("PINGER: gate 3 color {}".format(sorted_3[0].color), msg_color='blue')
             #  fprint("PINGER: gate 1 color {}".format(sorted_1[0].color), msg_color='blue')
+        else:
+            fprint("PINGER: no totems found", msg_color='red')
         yield self.marker_pub.publish(self.markers)
 
 

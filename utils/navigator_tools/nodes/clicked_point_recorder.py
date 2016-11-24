@@ -12,8 +12,8 @@ import csv
 from geometry_msgs.msg import PointStamped
 class ClickedPointRecorder:
   def __init__(self):
-      self.point_sub = rospy.Subscriber("/clicked_point", PointStamped, self.point_cb)
       self.points = []
+      self.point_sub = rospy.Subscriber("/clicked_point", PointStamped, self.point_cb)
 
   def point_to_dict(self, point):
       return { 'seq': point.header.seq,
@@ -44,6 +44,6 @@ if __name__ == '__main__':
     rospy.init_node('clicked_point_recorder')
     recorder = ClickedPointRecorder()
     def shutdown_cb():
-      recorder.write_file()
+        recorder.write_file()
     rospy.on_shutdown(shutdown_cb)
     rospy.spin()
