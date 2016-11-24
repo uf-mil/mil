@@ -96,6 +96,7 @@ class AlarmHandler(object):
         if meta_alarm is not None:
             # Meta alarms require one of each alarm raiser clears before the meta alarm clears
             self.alarms[meta_alarm].header = alarm.header
+            self.alarms[meta_alarm].node_name = alarm.node_name
             if not alarm.clear:
                 rospy.logwarn("Raising meta-alarm: {}".format(meta_alarm))
                 self.alarms[meta_alarm].clear = False
