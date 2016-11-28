@@ -9,6 +9,11 @@
     <arg name="gui" default="true"/>
     <arg name="sandbox" default="true"/>
 
+    <!-- Launch Fake Shooter Service Provider -->
+    <node pkg="navigator_shooter" type="ShooterControl.py" name="shooter_controller">
+      <rosparam file="$(find navigator_shooter)/launch/config.yaml" />
+    </node>
+
     <include file="$(find navigator_launch)/launch/subsystems/alarms.launch"/>
     <include file="$(find navigator_launch)/launch/subsystems/lqrrt_node.launch"/>
     <include file="$(find navigator_launch)/launch/gnc.launch"/>

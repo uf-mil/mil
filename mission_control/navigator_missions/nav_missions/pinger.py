@@ -7,6 +7,9 @@ from navigator_msgs.srv import FindPinger, FindPingerRequest, SetFrequency, SetF
 from geometry_msgs.msg import Point
 from std_srvs.srv import SetBool, SetBoolRequest
 import navigator_tools
+from visualization_msgs.msg import Marker, MarkerArray
+from navigator_tools import fprint
+import rospy
 
 ___author___ = "Kevin Allen"
 
@@ -22,6 +25,9 @@ class PingerMission:
         self.pinger_client = self.navigator.nh.get_service_client('/hydrophones/find_pinger', FindPinger)
         self.reset_client = self.navigator.nh.get_service_client('/hydrophones/set_freq', SetFrequency)
         self.negate = False
+        self.marker_pub = self.navigator.nh.advertise("/pinger/debug_marker",MarkerArray)
+        self.markers = MarkerArray()
+        self.last_id = 0;
 
     def reset_freq(self):
         return self.reset_client(SetFrequencyRequest(frequency=self.FREQ))
@@ -52,7 +58,10 @@ class PingerMission:
     def get_observation_poses(self):
         """Set 2 points to observe the pinger from, in front of gates 1 and 3"""
         self.get_gate_perp()
-        pose = yield self.navigator.tx_pose[:2]
+        #Make sure they are actually in a line
+        if np.isnan(self.g_perp[0]) or np.isnan(self.g_perp[1]):
+            raise Exception("Gates are not in a line")
+        pose = self.navigator.pose[0][:2]
         distance_test = np.array([np.linalg.norm(pose - (self.gate_poses[0] + self.OBSERVE_DISTANCE_METERS * self.g_perp)),
                                   np.linalg.norm(pose - (self.gate_poses[0] - self.OBSERVE_DISTANCE_METERS * self.g_perp))])
         if np.argmin(distance_test) == 1:
@@ -68,6 +77,7 @@ class PingerMission:
     @txros.util.cancellableInlineCallbacks
     def search_samples(self):
         """Move to each observation point and listen to the pinger while sitting still"""
+        self.get_observation_poses()
         for i,p in enumerate(self.observation_points):
             yield self.stop_listen()
             yield self.navigator.move.set_position(p).look_at(self.look_at_points[i]).go()
@@ -91,18 +101,115 @@ class PingerMission:
         """Move to the points needed to go through the correct gate"""
         self.gate_index = np.argmin(self.distances)
         self.get_gate_thru_points()
-        for p in self.gate_thru_poses:
+        for p in self.gate_thru_points:
             yield self.navigator.move.set_position(p).go(initial_plan_time=5)
+
+    def new_marker(self, ns="/debug", frame="enu", time=None, type = Marker.CUBE , position=(0,0,0), orientation=(0,0,0,1), color=(1,0,0)):
+        marker = Marker()
+        marker.ns = ns
+        if time != None:
+            marker.header.stamp = time
+        marker.header.frame_id = frame
+        marker.type = type
+        marker.action = marker.ADD
+        marker.scale.x = 1.0
+        marker.scale.y = 1.0
+        marker.scale.z = 1.0
+        marker.color.r = color[0]
+        marker.color.g = color[1]
+        marker.color.b = color[2]
+        marker.color.a = 1.0
+        marker.id = self.last_id
+        marker.pose.orientation.x = orientation[0]
+        marker.pose.orientation.y = orientation[1]
+        marker.pose.orientation.z = orientation[2]
+        marker.pose.orientation.w = orientation[3]
+        marker.pose.position.x = position[0]
+        marker.pose.position.y = position[1]
+        marker.pose.position.z = position[2]
+        self.last_id += 1
+        self.markers.markers.append(marker)
+
+    @txros.util.cancellableInlineCallbacks
+    def get_colored_buoys(self):
+        estimated_3_endbuoy = self.gate_poses[2] + (self.g_line * 5.0)
+        estimated_1_endbuoy = self.gate_poses[0] - (self.g_line * 5.0)
+        if self.negate:
+            estimated_circle_buoy = self.gate_poses[1] + (self.g_perp * 30.0) #should check on correct side (negate bool)
+        else:
+            estimated_circle_buoy = self.gate_poses[1] - (self.g_perp * 30.0) #should check on correct side (negate bool)            
+
+        cur_time = yield self.navigator.nh.get_time()
+        self.new_marker(position=np.append(estimated_3_endbuoy,0), color=(1,1,1), time=cur_time)
+        self.new_marker(position=np.append(estimated_circle_buoy,0), time=cur_time)
+        self.new_marker(position=np.append(estimated_1_endbuoy,0), color=(1,1,1), time=cur_time)
+
+        totems = yield self.navigator.database_query("totem", raise_exception=False)
+        if totems.found:
+            sorted_1 = sorted(totems.objects, key=lambda t: np.linalg.norm(estimated_1_endbuoy - navigator_tools.rosmsg_to_numpy(t.position)[:2]))
+            sorted_3 = sorted(totems.objects, key=lambda t: np.linalg.norm(estimated_3_endbuoy - navigator_tools.rosmsg_to_numpy(t.position)[:2]))
+
+            sorted_circle = sorted(totems.objects, key=lambda t: abs(np.linalg.norm(estimated_circle_buoy - navigator_tools.rosmsg_to_numpy(t.position)[:2])))
+            self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_circle[0].position), color=(1,1,1), time=cur_time)
+
+            if sorted_3[0].color.r > 0.9:
+                color_3 = "RED"
+                self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_3[0].position), color=(1,0,0), time=cur_time)
+            elif sorted_3[0].color.g > 0.9:
+                color_3 = "GREEN"
+                self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_3[0].position), color=(0,1,0), time=cur_time)
+            else:
+                color_3 = "UNKNOWN"
+                self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_3[0].position), color=(1,1,1), time=cur_time)
+            if sorted_1[0].color.r > 0.9:
+                color_1 = "RED"
+                self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(1,0,0), time=cur_time)
+            elif sorted_1[0].color.g > 0.9:
+                color_1 = "GREEN"
+                self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(0,1,0), time=cur_time)
+            else:
+                color_1 = "UNKNOWN"
+                yself.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(1,1,1), time=cur_time)
+
+            if int(self.gate_index) == 0:
+                if color_1 == "RED":
+                    active_colors = "RED-WHITE"
+                elif color_1 == "GREEN":
+                    active_colors = "WHITE-GREEN"
+                else:
+                    active_colors = "UNKNOWN"
+            elif int(self.gate_index) == 2:
+                if color_3 == "RED":
+                    active_colors = "RED-WHITE"
+                elif color_3 == "GREEN":
+                    active_colors = "WHITE-GREEN"
+                else:
+                    active_colors = "UNKNOWN"
+            else:
+                active_colors = "WHITE-WHITE"
+
+            if active_colors != "UNKNOWN":
+                fprint("PINGER: setting active pinger colors to {}".format(active_colors), msg_color='green')
+                yield self.navigator.mission_params["acoustic_pinger_active"].set(active_colors)
+            else:
+                fprint("PINGER: cannot determine gate colors".format(sorted_3[0].color), msg_color='red')
+            #  fprint("PINGER: gate 3 color {}".format(sorted_3[0].color), msg_color='blue')
+            #  fprint("PINGER: gate 1 color {}".format(sorted_1[0].color), msg_color='blue')
+        else:
+            fprint("PINGER: no totems found", msg_color='red')
+        yield self.marker_pub.publish(self.markers)
+
 
     @txros.util.cancellableInlineCallbacks
     def set_active_pinger(self):
         """Set the paramter for the active pinger identified for use in other mission"""
-        if self.gate_index == 0:
-            yield self.navigator.mission_params["acoustic_pinger_active"].set("RED-WHITE")
-        elif self.gate_index == 1:
-            yield self.navigator.mission_params["acoustic_pinger_active"].set("WHITE-WHITE")
-        elif self.gate_index == 2:
-            yield self.navigator.mission_params["acoustic_pinger_active"].set("WHITE-GREEN")
+        fprint("PINGER: setting active pinger to Gate_{}".format(int(self.gate_index)+1), msg_color='green')
+        yield self.navigator.mission_params["acoustic_pinger_active_index"].set(int(self.gate_index)+1)
+        yield self.get_colored_buoys()
+
+    @txros.util.cancellableInlineCallbacks
+    def circle_buoy(self):
+         pass
 
     def get_gate_perp(self):
         """Calculate a perpendicular to the line formed by the three gates"""
@@ -111,6 +218,7 @@ class PingerMission:
         g_perp = rot_right.dot(delta_g)
         g_perp = g_perp /  np.linalg.norm(g_perp)
         self.g_perp = g_perp
+        self.g_line = delta_g / np.linalg.norm(delta_g)
 
     def get_gate_thru_points(self):
         """Set points needed to cross through correct gate"""
@@ -137,12 +245,12 @@ class PingerMission:
         yield self.get_pinger_pose()
         fprint("PINGER: Going through gate", msg_color='green') 
         yield self.go_thru_gate()
-        fprint("PINGER: Setting active pinger parameter", msg_color='green') 
         yield self.set_active_pinger()
+        #  yield self.circle_buoy()
         fprint("PINGER: Ended Pinger Mission", msg_color='green') 
 
 @txros.util.cancellableInlineCallbacks
-def main(navigator):
+def main(navigator, **kwargs):
     mission = PingerMission(navigator)
     yield mission.run()
 

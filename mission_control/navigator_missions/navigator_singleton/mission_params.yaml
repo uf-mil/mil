@@ -49,6 +49,11 @@ totem_color_4:
   options: [RED,GREEN,YELLOW,BLUE]
   description: What color totem the Find Totems and Avoid Obstacles mission should circle fourth
 
+detect_deliver_target:
+  param: /mission/detect_deliver/target
+  options: [BIG, SMALL]
+  description: Which target to shoot at in detect deliver
+  default: BIG
 
 detect_deliver_color:
   param: /mission/detect_deliver/Color
@@ -107,30 +112,14 @@ acoustic_pinger_active:
   param: /mission/acoustic_pinger/active
   options: [RED-WHITE,WHITE-WHITE,WHITE-GREEN]
   description: >
-    The two buoys the active pinger is between for the fist instance
-    of the acoustic pinger transit. The first instance will be the acoustic
-    pinger transit first classified  (with the lowest ID in the database)
-acoustic_pinger_active2:
-  param: /mission/acoustic_pinger/active2
-  options: [RED-WHITE,WHITE-WHITE,WHITE-GREEN]
+    The two buoys the active pinger is between in the
+    acoustic pinger transit.
+acoustic_pinger_active_index:
+  param: /mission/acoustic_pinger/active_index
+  options: [1,2,3]
   description: >
-    The two buoys the active pinger is between for the second instance
-    of the acoustic pinger transit. The second instance will be the acoustic
-    pinger transit classified second (with the second lowest ID in the database)
-acoustic_pinger_active3:
-  param: /mission/acoustic_pinger/active3
-  options: [RED-WHITE,WHITE-WHITE,WHITE-GREEN]
-  description: >
-    The two buoys the active pinger is between for the third instance
-    of the acoustic pinger transit. The third instance will be the acoustic
-    pinger transit classified third (with the third lowest ID in the database)
-acoustic_pinger_active4:
-  param: /mission/acoustic_pinger/active4
-  options: [RED-WHITE,WHITE-WHITE,WHITE-GREEN]
-  description: >
-    The two buoys the active pinger is between for the fourth instance
-    of the acoustic pinger transit. The fourth instance will be the acoustic
-    pinger transit classified third (with the highest ID in the database)
+    Which gate (as identified in the database) the pinger was found in.
+    For example, 2 means Gate_2 is the location of the pinger
 
 dock_shape_1:
   param: /mission/identify_dock/shape_1
