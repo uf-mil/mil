@@ -47,6 +47,7 @@ catkin_package(
     sensor_msgs
     navigator_msgs
     navigator_tools
+    pcl_ros
   DEPENDS
     system_lib
     image_transport
@@ -81,7 +82,7 @@ add_library(
     src/navigator_vision_lib/colorizer/color_observation.cpp
  )
 target_include_directories(navigator_vision_lib PUBLIC include/navigator_vision_lib)
-target_link_libraries(navigator_vision_lib navigator_tools_lib ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(navigator_vision_lib navigator_tools_lib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_COMMON_LIBRARIES})
 
 add_executable(stereo_point_cloud_driver nodes/stereo_point_cloud_driver.cpp)
 add_dependencies(stereo_point_cloud_driver navigator_vision_lib ${catkin_EXPORTED_TARGETS})

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import division
 import rospy
 import rospkg
 import numpy as np
@@ -53,6 +52,7 @@ class PingerFinder(object):
         self.set_freq_srv = rospy.Service('hydrophones/set_freq', SetFrequency, self.set_freq)
 
     def ping_cb(self, ping):
+        print rospkg.get_ros_package_path()
         print "PINGERFINDER: freq={p.freq:.0f}  amp={p.amplitude:.0f}".format(p=ping)
         if abs(ping.freq - self.target_freq) < self.freq_tol and ping.amplitude > self.min_amp and self.listen:
             trans, rot = None, None

@@ -23,7 +23,6 @@ int main(int argc, char **argv)
   // Display most recent and oldest frame in the buffer
   while(cv::waitKey(100) == -1 && left_cam_stream.ok())
   {
-    static int i = 0;
     size_t size = left_cam_stream.size();
     if(size == 200)
     {
