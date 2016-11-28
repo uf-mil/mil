@@ -18,6 +18,9 @@ int main(int argc, char** argv)
   nav::PcdColorizer colorizer{nh, "/velodyne_points"};
 
   while(colorizer.ok())
+  {
+  	ROS_INFO("velodyne_pcd_colorizer: Spinning ROS callbacks");
   	ros::spin();
+  }
 
 }

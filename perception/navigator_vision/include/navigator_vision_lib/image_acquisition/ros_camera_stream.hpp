@@ -177,9 +177,9 @@ bool ROSCameraStream<img_scalar_t, float_t>::init(std::string &camera_topic)
   auto init_lambda = 
     [&](const sensor_msgs::ImageConstPtr &image_msg_ptr, const sensor_msgs::CameraInfoConstPtr &info_msg_ptr) mutable
     {
-      std::string init_msg {"Initializing with "};
+      std::string init_msg {"ROSCameraStream: Initializing with "};
       init_msg += _img_topic;
-      ROS_INFO_NAMED("ROSCameraStream", init_msg.c_str());
+      // ROS_INFO_NAMED("ROSCameraStream", init_msg.c_str());
       // Set ptr to camera model object
       std::shared_ptr<image_geometry::PinholeCameraModel> camera_model_ptr{new image_geometry::PinholeCameraModel()};
       camera_model_ptr->fromCameraInfo(info_msg_ptr);
