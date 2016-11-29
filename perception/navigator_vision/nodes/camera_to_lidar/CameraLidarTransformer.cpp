@@ -46,11 +46,23 @@ bool CameraLidarTransformer::transformServiceCallback(navigator_msgs::CameraToLi
     res.error = "NO CAMERA INFO";
     return true;
   }
+  if (camera_info.header.frame_id != req.header.frame_id)
+  {
+    res.success = false;
+    res.error = "DIFFERENT FRAME ID THAN SUBSCRIBED CAMERA";
+    return true;
+  }
   visualization_msgs::MarkerArray markers;
   sensor_msgs::PointCloud2ConstPtr scloud = lidarCache.getElemAfterTime(req.header.stamp);
   if (!scloud) {
     res.success = false;
     res.error =  navigator_msgs::CameraToLidarTransform::Response::CLOUD_NOT_FOUND;
+    return true;
+  }
+  if (!tfBuffer.canTransform(req.header.frame_id, "velodyne", ros::Time(0), ros::Duration(1)))
+  {
+    res.success = false;
+    res.error = "NO TRANSFORM";
     return true;
   }
   geometry_msgs::TransformStamped transform = tfBuffer.lookupTransform(req.header.frame_id, "velodyne", ros::Time(0));
