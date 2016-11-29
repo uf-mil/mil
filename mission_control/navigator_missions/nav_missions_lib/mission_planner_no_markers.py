@@ -283,7 +283,7 @@ class MissionPlanner:
             except que.Empty:
                 self._run_base_mission()
             except Exception as exp:
-                fprint(exp, msg_color="red", title="LOL WHAT THE FUCK HAPPENED? THIS IS ON YOU TESS!!!")
+                fprint(exp, msg_color="red", title="TESS SUBUKU")
             finally:
                 self.refresh()
                 yield self.nh.sleep(1)

@@ -73,7 +73,7 @@ def main(navigator, **kwargs):
     # looking_for = kwargs["looking_for"]
 
     center_marker = "ScanTheCode"
-    looking_for = "shit"
+    looking_for = "dne"
 
     navigator.change_wrench("autonomous")
     yield navigator.nh.sleep(.1)
