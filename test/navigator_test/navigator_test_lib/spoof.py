@@ -38,15 +38,20 @@ class SpoofService(object):
         self.message_type = message_type
         self.total = len(responses)
         self.count = 0
+        self.serv = None
 
     @util.cancellableInlineCallbacks
     def start(self, nh):
-        yield nh.advertise_service(self.service_name, self.message_type, self.service_cb)
+        self.serv = yield nh.advertise_service(self.service_name, self.message_type, self._service_cb)
 
-    def service_cb(self, req):
+    def _service_cb(self, req):
         ans = self.responses[self.count % self.total]
         self.count += 1
         return ans
+
+    @util.cancellableInlineCallbacks
+    def stop(self):
+        yield self.serv.shutdown()
 
 
 class SpoofGenerator(object):

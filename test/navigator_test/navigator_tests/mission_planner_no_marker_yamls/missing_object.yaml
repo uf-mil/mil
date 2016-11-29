@@ -9,3 +9,9 @@ test_base_mission:
   mission_dep: "None"
   is_base: True
   timeout: 'inf'
+
+test_missing_perception_object:
+  object_dep: [scan_the_code]
+  mission_dep: "test_missing_object"
+  is_base: False
+  timeout: 'inf'
