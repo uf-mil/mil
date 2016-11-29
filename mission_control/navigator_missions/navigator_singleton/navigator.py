@@ -332,13 +332,17 @@ class MissionParam(object):
 
 
 class Searcher(object):
-    def __init__(self, nav, vision_proxy, search_pattern, **kwargs):
+    def __init__(self, nav, search_pattern, looker=None, vision_proxy="test", **kwargs):
         self.nav = nav
-        self.vision_proxy = vision_proxy
-        self.vision_kwargs = kwargs
+        self.looker = looker
+        if looker == None:
+            self.looker = self._vision_proxy_look 
+            self.vision_proxy = vision_proxy
+        self.looker_kwargs = kwargs
         self.search_pattern = search_pattern
 
         self.object_found = False
+        self.pattern_done = False
         self.response = None
 
     def catch_error(self, failure):
@@ -359,13 +363,13 @@ class Searcher(object):
         start_time = self.nav.nh.get_time()
         try:
             while self.nav.nh.get_time() - start_time < genpy.Duration(timeout):
-
-                # If we find the object
                 if self.object_found:
                     finder.cancel()
                     fprint("Object found.", title="SEARCHER")
-                    defer.returnValue(self.response)
-
+                    defer.returnValue(True)
+                if self.pattern_done and not loop:
+                    finder.cancel()
+                    defer.returnValue(False)
                 yield self.nav.nh.sleep(0.1)
 
         except KeyboardInterrupt:
@@ -394,6 +398,9 @@ class Searcher(object):
                     yield pose.go(**kwargs)
 
                 yield self.nav.nh.sleep(2)
+            if not loop:
+                fprint("Search Pattern Over", title="SEARCHER")
+                self.pattern_done = True
 
         fprint("Executing search pattern.", title="SEARCHER")
 
@@ -403,7 +410,10 @@ class Searcher(object):
         else:
             yield util.cancellableInlineCallbacks(pattern)()
 
-
+    @util.cancellableInlineCallbacks
+    def _vision_proxy_look(self):
+        resp = yield self.nav.vision_proxies[self.vision_proxy].get_response(**self.looker_kwargs)
+        defer.returnValue(resp.found)
 
     @util.cancellableInlineCallbacks
     def _run_look(self, spotings_req):
@@ -414,8 +424,7 @@ class Searcher(object):
         spotings = 0
         fprint("Looking for object.", title="SEARCHER")
         while spotings < spotings_req:
-            resp = yield self.nav.vision_proxies[self.vision_proxy].get_response(**self.vision_kwargs)
-            if resp.found:
+            if (yield self.looker(**self.looker_kwargs)):
                 fprint("Object found! {}/{}".format(spotings + 1, spotings_req), title="SEARCHER")
                 spotings += 1
             else:
@@ -425,7 +434,6 @@ class Searcher(object):
 
         if spotings >= spotings_req:
             self.object_found = True
-            self.response = resp
 
 
 @util.cancellableInlineCallbacks

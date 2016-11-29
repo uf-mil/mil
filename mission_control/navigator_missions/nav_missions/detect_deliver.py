@@ -33,6 +33,11 @@ class DetectDeliverMission:
             self.navigator.nh, '/shooter/load', ShooterDoAction)
         self.shooterFire = txros.action.ActionClient(
             self.navigator.nh, '/shooter/fire', ShooterDoAction)
+        self.identified_shapes = []
+        self.last_shape_error = ""
+        self.last_lidar_error = ""
+        self.found_shape = None
+        self.normal_res = None
 
     def _bounding_rect(self,points):
         np_points = map(navigator_tools.point_to_numpy, points)
@@ -66,9 +71,8 @@ class DetectDeliverMission:
         pattern = self.navigator.move.d_circle_point(navigator_tools.rosmsg_to_numpy(
             self.waypoint_res.objects[0].position), radius=self.circle_radius, theta_offset=self.theta_offset, direction='cw')
         yield next(pattern).go()
-        searcher = self.navigator.search(
-            vision_proxy='get_shape', search_pattern=pattern, Shape=self.Shape, Color=self.Color)
-        yield searcher.start_search(timeout=self.search_timeout_seconds, spotings_req=self.spotings_req, move_type="skid")
+        searcher = self.navigator.search(search_pattern=pattern, looker=self.search_shape)
+        yield searcher.start_search(timeout=self.search_timeout_seconds, spotings_req=self.spotings_req, move_type="skid", loop=False)
         print "Ended Circle Search"
 
         #  fprint("Starting Circle Search", title="DETECT DELIVER",  msg_color='green')
@@ -79,58 +83,93 @@ class DetectDeliverMission:
         #  yield self.navigator.move.stop()
         #  fprint("Ended Circle Search", title="DETECT DELIVER",  msg_color='green')
 
+    def update_shape(self, shape_res, normal_res, tf):
+       for index, (shape, normal, enu_cam) in enumerate(self.identified_shapes):
+            if shape_res.Color == shape.Color and shape_res.Shape == shape.Shape:
+                self.identified_shapes[index] = (shape_res, normal_res, tf)
+                return
+       self.identified_shapes.append((shape_res, normal_res, tf))
+
+    def correct_shape(self, shape):
+        return (self.Color == "ANY" or self.Color == shape.Color) and (self.Shape == "ANY" or self.Shape == shape.Shape)
+
+    @txros.util.cancellableInlineCallbacks
+    def search_shape(self):
+        shapes = yield self.get_shape()
+        if shapes.found:
+            for shape in shapes.shapes.list:
+                normal_res = yield self.get_normal(shape)
+                if normal_res.success:
+                    enu_cam_tf = yield self.navigator.tf_listener.get_transform('/enu', '/'+shape.header.frame_id, shape.header.stamp)
+                    self.update_shape(shape, normal_res, enu_cam_tf)
+                    if self.correct_shape(shape):
+                        self.found_shape = shape
+                        self.normal_res = normal_res
+                        self.enu_cam_tf = enu_cam_tf
+                        defer.returnValue(True)
+                else:
+                    if not self.last_lidar_error == normal_res.error:
+                        fprint("Normal notfound Error={}".format(normal_res.error), title="DETECT DELIVER", msg_color='red')
+                    self.last_lidar_error = normal_res.error
+        else:
+            if not self.last_shape_error == shapes.error:
+                fprint("shape not found Error={}".format(shapes.error), title="DETECT DELIVER", msg_color="red")
+            self.last_shape_error = shapes.error
+        defer.returnValue(False)
+
+    def select_backup_shape(self):
+        if len(self.identified_shapes) == 0:
+            raise Exception("No Shapes seen")
+        for cur in self.identified_shapes:
+            if cur[0].Shape == self.Shape:
+                return cur
+            if cur[0].Color == self.Color:
+                return cur
+        return self.identified_shapes[0]
+
     @txros.util.cancellableInlineCallbacks
     def align_to_target(self):
-        self.markers = MarkerArray()
-        while True:
-            if (yield self.is_found()):
-                if (yield self.get_normal()):
-                    break
-                else:
-                    fprint("Normal found Error={}".format(self.normal_res.error), title="DETECT DELIVER", msg_color='red')
-            else:
-                fprint("Shape not found Error={}".format(self.resp.error), title="DETECT DELIVER", msg_color='red')
-
-        yield self.get_aligned_pos()
-        move = self.navigator.move.set_position(self.aligned_position).set_orientation(self.aligned_orientation).forward(self.target_offset_meters)
-        move = move.left(-self.shooter_baselink_tf._p[1]).forward(-self.shooter_baselink_tf._p[0]) #Adjust for location of shooter
+        if self.found_shape == None or self.normal_res == None:
+            shape, normal_res, tf = self.select_backup_shape()
+            self.normal_res = normal_res
+            self.found_shape = shape
+            self.enu_cam_tf = tf
+        shooter_baselink_tf = yield self.navigator.tf_listener.get_transform('/base_link','/shooter')
+        shape_point, shape_norm = yield self.get_shape_pos(self.normal_res, self.found_shape.header.frame_id)
+        goal_point, goal_orientation = self.get_aligned_pose(shape_point, shape_norm)
+        move = self.navigator.move.set_position(goal_point).set_orientation(goal_orientation).forward(self.target_offset_meters)
+        move = move.left(-shooter_baselink_tf._p[1]).forward(-shooter_baselink_tf._p[0]) #Adjust for location of shooter
         fprint("Aligning to shoot at {}".format(move), title="DETECT DELIVER", msg_color='green')
         yield move.go(move_type="skid")
 
+    def get_shape(self):
+        return self.navigator.vision_proxies["get_shape"].get_response(Shape="ANY", Color="ANY")
+
+    def get_aligned_pose(self, enupoint, enunormal):
+        aligned_position = enupoint + self.shoot_distance_meters * enunormal  # moves x meters away
+        angle = np.arctan2(-enunormal[0], enunormal[1])
+        aligned_orientation = trns.quaternion_from_euler(0, 0, angle)  # Align perpindicular
+        return (aligned_position, aligned_orientation)
+
+    def get_shape_pos(self, normal_res, frame):
+        enunormal = self.enu_cam_tf.transform_vector(navigator_tools.rosmsg_to_numpy(normal_res.normal))
+        enupoint = self.enu_cam_tf.transform_point(navigator_tools.rosmsg_to_numpy(normal_res.closest))
+        return (enupoint, enunormal)
 
     @txros.util.cancellableInlineCallbacks
-    def is_found(self):
-        self.resp = yield self.navigator.vision_proxies["get_shape"].get_response(Shape=self.Shape, Color=self.Color)
-        if self.resp.found:
-            self.found_shape = self.resp.shapes.list[0]
-        defer.returnValue(self.resp.found)
-
-    def get_aligned_pos(self):
-        self.aligned_position = self.enupoint + self.shoot_distance_meters * self.enunormal  # moves x meters away
-        angle = np.arctan2(-self.enunormal[0], self.enunormal[1])
-        self.aligned_orientation = trns.quaternion_from_euler(0, 0, angle)  # Align perpindicular
-
-    @txros.util.cancellableInlineCallbacks
-    def get_normal(self):
+    def get_normal(self, shape):
         req = CameraToLidarTransformRequest()
-        req.header = self.found_shape.header
+        req.header = shape.header
         req.point = Point()
-        req.point.x = self.found_shape.CenterX
-        req.point.y = self.found_shape.CenterY
-        rect = self._bounding_rect(self.found_shape.points)
+        req.point.x = shape.CenterX
+        req.point.y = shape.CenterY
+        rect = self._bounding_rect(shape.points)
         req.tolerance = int(min(rect[0]-rect[3],rect[1]-rect[4])/2.0)
-        self.normal_res = yield self.cameraLidarTransformer(req)
-        if not self.normal_res.success:
-            defer.returnValue(False)
-        if not self.normal_is_sane(self.normal_res.normal):
-            self.normal_res.success = False
-            self.normal_res.error = "UNREASONABLE NORMAL"
-            defer.returnValue(False)
-        enu_cam_tf = yield self.navigator.tf_listener.get_transform('/enu', '/'+req.header.frame_id)
-        self.shooter_baselink_tf = yield self.navigator.tf_listener.get_transform('/base_link','/shooter')
-        self.enunormal = enu_cam_tf.transform_vector(navigator_tools.rosmsg_to_numpy(self.normal_res.normal))
-        self.enupoint = enu_cam_tf.transform_point(navigator_tools.rosmsg_to_numpy(self.normal_res.closest))
-        defer.returnValue(True)
+        normal_res = yield self.cameraLidarTransformer(req)
+        if not self.normal_is_sane(normal_res.normal):
+            normal_res.success = False
+            normal_res.error = "UNREASONABLE NORMAL"
+        defer.returnValue(normal_res)
 
     def normal_is_sane(self, vector3):
          return abs(navigator_tools.rosmsg_to_numpy(vector3)[1]) < 0.2
