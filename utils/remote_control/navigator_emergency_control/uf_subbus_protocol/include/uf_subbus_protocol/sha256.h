@@ -14,7 +14,7 @@
 
 #include <assert.h>
 #include <stdint.h>
-#include <cstring>
+#include <string.h>
 
 namespace uf_subbus_protocol {
 
