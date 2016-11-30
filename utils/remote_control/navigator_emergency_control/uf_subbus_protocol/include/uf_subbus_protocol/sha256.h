@@ -12,7 +12,7 @@
 #ifndef _NTZVLIYKNNMYVSDR_
 #define _NTZVLIYKNNMYVSDR_
 
-#include <cassert>
+#include <assert.h>
 #include <cstdint>
 #include <cstring>
 
