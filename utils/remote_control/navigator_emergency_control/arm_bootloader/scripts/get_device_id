@@ -1,0 +1,23 @@
+#!/usr/bin/python
+
+import subprocess
+import os
+import hashlib
+import struct
+import tempfile
+
+tmpdir = tempfile.mkdtemp()
+output_filename = os.path.join(tmpdir, 'flash')
+
+subprocess.check_call(['rosrun', 'stlink', 'st-flash', 'read', output_filename, '1FFFF7AC', 'C'])
+
+with open(output_filename, 'rb') as f:
+    data = f.read()
+
+os.unlink(output_filename)
+os.rmdir(tmpdir)
+
+print data.encode('hex')
+print
+print 'Device id is:'
+print hex(struct.unpack('<I', hashlib.sha256(data).digest()[:4])[0])

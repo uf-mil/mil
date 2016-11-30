@@ -23,6 +23,9 @@
         <param name="force_scale" value="600" type="double"/>
         <param name="torque_scale" value="500" type="double"/>
     </node>
+
+    <node pkg="navigator_emergency_controller" type="navigator_emergency.py" name="emergency_wrench" output="screen"/>
+
     <node pkg="navigator_keyboard_control" type="navigator_keyboard_server.py" name="keyboard_server" output="screen"/>
 
     <node pkg="navigator_tools" type="boat_info.py" name="boat_info_markers" />

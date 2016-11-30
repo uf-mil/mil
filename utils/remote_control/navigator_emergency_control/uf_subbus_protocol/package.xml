@@ -1,0 +1,27 @@
+<package>
+  <name>uf_subbus_protocol</name>
+  <version>1.0.0</version>
+  <description>uf_subbus_protocol</description>
+  <maintainer email="forrest@forre.st">Forrest Voight</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/uf_subbus_protocol</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author>Forrest Voight</author>
+
+  <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Dependencies needed to compile this package. -->
+
+  <!-- Dependencies needed after this package is compiled. -->
+
+  <!-- Dependencies needed only for running tests. -->
+
+<export>
+    <cpp cflags="-I${prefix}/include"/>
+</export>
+
+</package>

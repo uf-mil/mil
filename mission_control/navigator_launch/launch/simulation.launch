@@ -38,6 +38,11 @@
         <param name="autorepeat_rate" value="5"/>
     </node>
 
+    <node pkg="navigator_emergency_control" type="navigator_emergency_control" name="navigator_emergency_xbee">
+        <param name="port" type="string" value="/dev/serial/by-id/usb-uf-mil_xbee_b267017f-if00" />
+        <param name="dest" type="string" value="0xb267017f" />
+    </node>
+
     <group unless="$(arg gazebo)">
         <include file="$(find navigator_launch)/launch/perception.launch"/>
         <node pkg="navigator_sim_model" type="sim.py" name="navigator_sim_model" output="screen">
