@@ -374,10 +374,8 @@ git lfs install --skip-smudge
 sudo apt-get install -qq tmux
 
 # Tools needed for libopencm3
-sudo apt-get install -qq gcc-arm-none-eabi
+sudo mkdir -p /etc/apt/preferences.d/ && sudo bash -c "echo -e 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm" && sudo rm -f /etc/apt/sources.list.d/terry_guo-gcc-arm-embedded-*.list && sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded && sudo apt-get update && sudo apt-get remove -y gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi libnewlib-dev && sudo apt-get install -qq -y gcc-arm-none-eabi
 sudo apt-get install -qq autoconf automake libtool
-sudo apt-get install -qq g++-multilib
-sudo apt-get install -qq libstdc++6
 
 # Libraries needed by txros
 sudo apt-get install -qq python-twisted socat

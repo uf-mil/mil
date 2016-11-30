@@ -12,9 +12,9 @@
 #ifndef _NTZVLIYKNNMYVSDR_
 #define _NTZVLIYKNNMYVSDR_
 
-#include <assert.h>
-#include <stdint.h>
-#include <string.h>
+#include <cassert>
+#include <cstdint>
+#include <cstring>
 
 namespace uf_subbus_protocol {
 

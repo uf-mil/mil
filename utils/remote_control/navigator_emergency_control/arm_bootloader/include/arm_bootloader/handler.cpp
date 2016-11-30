@@ -1,4 +1,4 @@
-#include <string.h>
+#include <cstring>
 
 #include <libopencm3/cm3/scb.h>
 #include <libopencm3/cm3/vector.h>
