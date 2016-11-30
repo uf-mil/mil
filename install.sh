@@ -373,6 +373,10 @@ sudo apt-get install -qq git-lfs gitk
 git lfs install --skip-smudge
 sudo apt-get install -qq tmux
 
+# Tools needed for libopencm3
+sudo apt-get install -qq gcc-arm-none-eabi
+sudo apt-get install -qq autoconf automake libtool
+
 # Libraries needed by txros
 sudo apt-get install -qq python-twisted socat
 
