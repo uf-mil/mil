@@ -47,7 +47,7 @@ ColorObservation::VecImg CameraObserver::get_color_observations(const PCD<pcl::P
   // Structre: Image pixels are lists of ColorObservations for the respective pixels in the image that have 
   // pcd points that would be imaged there
   auto obs_img = vector<vector<ColorObservation>>{size_t(_cam_stream.rows()), vector<ColorObservation>{size_t(_cam_stream.cols())}};
-  PCD<pcl::PointXYZRGB> pcd_cam{}; // _cam indicates the reference frame
+  PCD<pcl::PointXYZ> pcd_cam{}; // _cam indicates the reference frame
   auto cam_model = _cam_stream.getCameraModelPtr();
 
   // We will first transform the pcd from lidar frame into the frame of the camera so that we may project 

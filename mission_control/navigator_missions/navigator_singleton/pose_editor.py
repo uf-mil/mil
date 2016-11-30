@@ -306,6 +306,12 @@ class PoseEditor2(object):
             if not isinstance(kwargs['focus'], Point):
                 kwargs['focus'] = navigator_tools.numpy_to_point(kwargs['focus'])
 
+        for key in kwargs.keys():
+            if not hasattr(MoveGoal, key):
+                fprint("MoveGoal msg doesn't have a field called '{}' you tried to set via kwargs.".format(key), title="POSE_EDITOR", 
+                       msg_color="red")
+                del kwargs[key]
+
         return MoveGoal(
             goal=self.as_Pose(),
             move_type=move_type,

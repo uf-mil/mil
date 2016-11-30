@@ -22,8 +22,7 @@ def main(args):
 
     action_kwargs = {'move_type': args.movetype, 'speed_factor': args.speedfactor}
 
-    if args.blind is not None:
-        action_kwargs['blind'] = args.blind
+    action_kwargs['blind'] = args.blind
 
     if args.plantime is not None:
         action_kwargs['initial_plan_time'] = float(args.plantime)
@@ -55,9 +54,12 @@ def main(args):
         res = yield n.move.circle_point(target_point, direction).go()
 
     else:
-        movement = getattr(n.move, args.command)
+        shorthand = {"f":"forward", "b":"backward", "l":"left", "r":"right", "yl":"yaw_left", "yr":"yaw_right"}
+        command = args.command if args.command not in shorthand.keys() else shorthand[args.command]
+        movement = getattr(n.move, command)
 
-        unit = 'm'
+        trans_move = command[:3] != "yaw"
+        unit = "m" if trans_move else "rad"
         amount = args.argument
         # See if there's a non standard unit at the end of the argument
         if not args.argument[-1].isdigit():
@@ -70,7 +72,8 @@ def main(args):
         if station_hold:
             action_kwargs['move_type'] = 'hold'
 
-        fprint("{}ing {} non-arbitrary unit(s)".format(args.command, amount), title="MOVE_COMMAND")
+        msg = "Moving {} ".format(command) if trans_move else "Yawing {} ".format(command[4:])
+        fprint(msg + "{}{}".format(amount, unit), title="MOVE_COMMAND")
         res = yield movement(float(amount), unit).go(**action_kwargs)
 
     print
