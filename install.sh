@@ -376,6 +376,7 @@ sudo apt-get install -qq tmux
 # Tools needed for libopencm3
 sudo apt-get install -qq gcc-arm-none-eabi
 sudo apt-get install -qq autoconf automake libtool
+sudo apt-get install -qq g++-multilib
 
 # Libraries needed by txros
 sudo apt-get install -qq python-twisted socat
