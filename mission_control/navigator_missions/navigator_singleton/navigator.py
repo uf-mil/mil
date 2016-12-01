@@ -75,7 +75,7 @@ class Navigator(object):
         self.enu_bounds = None
 
         self.killed = '?'
-        self.odom_killed = '?'
+        self.odom_loss = '?'
 
     @util.cancellableInlineCallbacks
     def _init(self, sim):
@@ -242,7 +242,7 @@ class Navigator(object):
 
         fprint("Alarm listener created, listening to alarms: ", title="NAVIGATOR")
 
-        self.alarm_listener.add_listener("odom_kill", lambda alarm: setattr(self, 'odom_killed', not alarm.clear))
+        self.alarm_listener.add_listener("odom_loss", lambda alarm: setattr(self, 'odom_loss', not alarm.clear))
         self.alarm_listener.add_listener("kill", lambda alarm: setattr(self, 'killed', not alarm.clear))
         
         yield self.alarm_listener.wait_for_alarm("kill", timeout=.5)
@@ -250,7 +250,7 @@ class Navigator(object):
         fprint("\tkill :", newline=False)
         fprint(self.killed)
         fprint("\todom_loss :", newline=False)
-        fprint(self.odom_killed)
+        fprint(self.odom_loss)
 
 class VisionProxy(object):
     def __init__(self, client, request, args, switch):

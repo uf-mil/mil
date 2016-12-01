@@ -19,6 +19,7 @@ UP = np.array([0.0, 0.0, 1.0], np.float64)
 EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)]
 UNITS = {'m': 1, 'ft': 0.3048, 'yard': 0.9144, 'rad': 1, 'deg': 0.0174533}
 
+
 def normalized(x):
     x = np.array(x)
     if max(map(abs, x)) == 0:
@@ -147,7 +148,7 @@ class PoseEditor2(object):
         return np.linalg.norm(self.position - self.nav.pose[0])
 
     def go(self, *args, **kwargs):
-        if self.nav.killed == True and self.nav.odom_killed == True:
+        if self.nav.killed == True or self.nav.odom_loss == True:
             # What do we want to do with missions when the boat is killed
             fprint("Boat is killed, ignoring go command!", title="POSE_EDITOR", msg_color="red")
 
@@ -158,7 +159,7 @@ class PoseEditor2(object):
         
         if len(self.kwargs) > 0:
             kwargs = dict(kwargs.items() + self.kwargs.items())
-        kwargs['speed_factor'] = [.7, .7, .7]
+        
         goal = self.nav._moveto_client.send_goal(self.as_MoveGoal(*args, **kwargs))
         self.result = goal.get_result()
         return self.result
