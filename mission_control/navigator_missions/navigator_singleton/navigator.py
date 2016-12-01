@@ -246,10 +246,10 @@ class Navigator(object):
         self.alarm_listener.add_listener("kill", lambda alarm: setattr(self, 'killed', not alarm.clear))
         
         yield self.alarm_listener.wait_for_alarm("kill", timeout=.5)
-        yield self.alarm_listener.wait_for_alarm("odom_kill", timeout=.5)
+        yield self.alarm_listener.wait_for_alarm("odom_loss", timeout=.5)
         fprint("\tkill :", newline=False)
         fprint(self.killed)
-        fprint("\todom_kill :", newline=False)
+        fprint("\todom_loss :", newline=False)
         fprint(self.odom_killed)
 
 class VisionProxy(object):
