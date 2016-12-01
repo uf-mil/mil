@@ -77,7 +77,7 @@ ros_git_get() {
 	done
 	if $NEEDS_INSTALL; then
 		instlog "Installing $INSTALL_URL in $CATKIN_DIR/src"
-		git clone -q $INSTALL_URL --depth=1
+		git clone -q $INSTALL_URL --depth=1 --recursive
 	fi
 }
 
