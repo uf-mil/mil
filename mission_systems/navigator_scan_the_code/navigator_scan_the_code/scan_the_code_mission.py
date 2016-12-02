@@ -31,9 +31,14 @@ class ScanTheCodeMission:
         my_tf = tl
         self.debug = Debug(self.nh, wait=False)
         self.perception = ScanTheCodePerception(my_tf, self.debug, self.nh)
+        print "0"
         self.database = yield self.nh.get_service_client("/database/requests", ObjectDBQuery)
+        print "1"
         self.image_sub = yield self.nh.subscribe("/stereo/right/image_rect_color", Image, self._image_cb)
+        print "2"
         self.cam_info_sub = yield self.nh.subscribe("/stereo/right/camera_info", CameraInfo, self._info_cb)
+
+        print "3"
         self.helper = yield DBHelper(self.nh).init_(self.navigator)
 
     def _image_cb(self, image):

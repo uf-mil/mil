@@ -40,13 +40,14 @@ def main(navigator, **kwargs):
     # yield mission.correct_pose()
     # circle.cancel()
 
-    mission.correct_pose(pose)
-    circle = navigator.move.d_circle_point(look_at, radius=8, granularity=30, direction='cw')
-    # print list(circle)
-    for p in list(circle)[::-1]:
-        if mission.stc_correct:
-            break
-        yield p.go()
+    # mission.correct_pose(pose)
+    # circle = navigator.move.d_circle_point(look_at, radius=8, granularity=30, direction='cw')
+    # # print list(circle)
+    # for p in list(circle)[::-1]:
+    #     if mission.stc_correct:
+    #         break
+    #     yield p.go()
+    #     print "what"
 
     fprint("Finished getting the correct stc face", msg_color='green')
     colors = yield mission.find_colors()
