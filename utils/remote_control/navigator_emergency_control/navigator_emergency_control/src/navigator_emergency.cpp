@@ -312,10 +312,10 @@ void interface::run_()
 		joyXbee.axes[0] = resp->resp.SetPWM.joy[1]; //Received LR data from uP
 		joyXbee.axes[3] = resp->resp.SetPWM.joy[3]; //Torque data
 		joyXbee.buttons[7] = resp->resp.SetPWM.buttons[7];	//"Start"
-		joyXbee.buttons[3] = resp->resp.SetPWM.buttons[3];	//"Shooter Fire"
+		joyXbee.buttons[3] = resp->resp.SetPWM.buttons[3];	//"Change Mode"
 		joyXbee.buttons[2] = resp->resp.SetPWM.buttons[2];	//"Kill"
 		joyXbee.buttons[0] = resp->resp.SetPWM.buttons[0];	//"Station Hold"
-		joyXbee.buttons[1] = resp->resp.SetPWM.buttons[1];	//"Shooter Load"
+		joyXbee.buttons[1] = resp->resp.SetPWM.buttons[1];	//"Shooter Cancel"
 		joyXbee.buttons[11] = resp->resp.SetPWM.buttons[11];	//"RC Control"
 		joyXbee.buttons[12] = resp->resp.SetPWM.buttons[12];	//"Auto Control"
 

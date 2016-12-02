@@ -4,7 +4,7 @@
   <version>4.0.0</version>
   <description>A server that controls navigator in response to the /joy_emergency node</description>
 
-  <maintainer email="anthony@iris-systems.net">Anthony Olive</maintainer>
+  <maintainer email="zobeldavid@ufl.edu">David Zobel</maintainer>
 
   <license>MIT</license>
 

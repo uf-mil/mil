@@ -6,8 +6,8 @@ import rospy
 from sensor_msgs.msg import Joy
 
 
-__maintainer__ = "Anthony Olive"
-__email__ = "anthony@iris-systems.net"
+__maintainer__ = "David Zobel"
+__email__ = "zobeldavid@ufl.edu"
 __copyright__ = "Copyright 2016, MIL"
 __license__ = "MIT"
 
@@ -36,8 +36,8 @@ class Joystick(object):
         self.last_station_hold_state = False
         self.last_auto_control = False
         self.last_emergency_control = False
-        self.last_shooter_load = False
-        self.last_shooter_fire = False
+        self.last_shooter_cancel = False
+        self.last_change_mode = False
 
         self.start_count = 0
         self.last_joy = None
@@ -73,8 +73,8 @@ class Joystick(object):
         station_hold = bool(joy.buttons[0])
         emergency_control = bool(joy.buttons[11])
         auto_control = bool(joy.buttons[12])
-        shooter_load = bool(joy.buttons[1])
-        shooter_fire = bool(joy.buttons[3])
+        shooter_cancel = bool(joy.buttons[1])
+        change_mode = bool(joy.buttons[3])
 
         # Reset controller state if only start is pressed down about 3 seconds
         self.start_count += start
@@ -99,18 +99,18 @@ class Joystick(object):
         if emergency_control and not self.last_emergency_control:
             self.remote.select_emergency_control()
 
-        if shooter_load and not self.last_shooter_load:
-            self.remote.shooter_load()
+        if shooter_cancel and not self.last_shooter_cancel:
+            self.remote.shooter_cancel()
 
-        if shooter_fire and not self.last_shooter_fire:
-            self.remote.shooter_fire()
+        if change_mode and not self.last_change_mode:
+            self.remote.select_next_control()
 
         self.last_kill = kill
         self.last_station_hold_state = station_hold
         self.last_auto_control = auto_control
         self.last_emergency_control = emergency_control
-        self.last_shooter_load = shooter_load
-        self.last_shooter_fire = shooter_fire
+        self.last_shooter_cancel = shooter_cancel
+        self.last_change_mode = change_mode
 
         # Scale joystick input to force and publish a wrench
         x = joy.axes[1] * self.force_scale

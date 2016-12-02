@@ -2,14 +2,14 @@
   <name>navigator_emergency_control</name>
   <version>1.0.0</version>
   <description>navigator_emergency_control</description>
-  <maintainer email="forrest@forre.st">Forrest Voight</maintainer>
+  <maintainer email="zobeldavid@ufl.edu">David Zobel</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/stm32f3discovery_imu_driver</url>
   <!-- <url type="bugtracker"></url> -->
 
-  <author>Forrest Voight</author>
+  <author>David Zobel</author>
 
   <!-- Dependencies which this package needs to build itself. -->
   <buildtool_depend>catkin</buildtool_depend>
