@@ -374,7 +374,14 @@ git lfs install --skip-smudge
 sudo apt-get install -qq tmux
 
 # Tools needed for hardware-common
-sudo mkdir -p /etc/apt/preferences.d/ && sudo bash -c "echo -e 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm" && sudo rm -f /etc/apt/sources.list.d/terry_guo-gcc-arm-embedded-*.list && sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded && sudo apt-get update -qq && sudo apt-get remove -qq -y gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi libnewlib-dev && sudo apt-get install -qq -y --force-yes gcc-arm-none-eabi
+sudo mkdir -p /etc/apt/preferences.d/
+sudo bash -c "echo -e 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm"
+sudo rm -f /etc/apt/sources.list.d/terry_guo-gcc-arm-embedded-*.list
+sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
+sudo apt-get update -qq
+sudo apt-get remove -qq -y gcc-arm-none-eabi binutils-arm-none-eabi
+sudo apt-get remove -qq -y libnewlib-arm-none-eabi libnewlib-dev
+sudo apt-get install -qq -y --force-yes gcc-arm-none-eabi
 sudo apt-get install -qq autoconf automake libtool
 
 # Libraries needed by txros

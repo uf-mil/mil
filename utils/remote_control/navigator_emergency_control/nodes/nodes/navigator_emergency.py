@@ -18,8 +18,8 @@ rospy.init_node("emergency")
 class Joystick(object):
 
     def __init__(self):
-        self.force_scale = rospy.get_param("~force_scale", 600)
-        self.torque_scale = rospy.get_param("~torque_scale", 500)
+        self.force_scale = rospy.get_param("/joystick_wrench/force_scale", 600)
+        self.torque_scale = rospy.get_param("/joystick_wrench/torque_scale", 500)
 
         self.remote = RemoteControl("emergency", "/wrench/emergency")
         rospy.Subscriber("joy_emergency", Joy, self.joy_recieved)
@@ -65,6 +65,7 @@ class Joystick(object):
             self.last_joy = joy
 
     def joy_recieved(self, joy):
+	self.last_time = rospy.Time.now()
         self.check_for_timeout(joy)
 
         # Assigns readable names to the buttons that are used
@@ -118,20 +119,20 @@ class Joystick(object):
         rotation = joy.axes[3] * self.torque_scale
         self.remote.publish_wrench(x, y, rotation, joy.header.stamp)
 
-    def timeout(self, event):
+    def die_check(self, event):
         '''
         Publishes zeros after 2 seconds of no update 
 	in case node navigator_emergency_xbee dies
         '''
         if self.active:
 
-	    # No change in state
-	    if rospy.Time.now() - self.last_joy.header.stamp > rospy.Duration(2):
+	    # No new instructions after 2 seconds
+	    if rospy.Time.now() - self.last_time > rospy.Duration(2):
 
-	        # No new instructions after 2 seconds, zero the wrench
+	        # Zero the wrench, reset
                 self.reset()
 
 if __name__ == "__main__":
     emergency = Joystick()
-    rospy.Timer(rospy.Duration(1), emergency.timeout, oneshot=False)
+    rospy.Timer(rospy.Duration(1), emergency.die_check, oneshot=False)
     rospy.spin()
