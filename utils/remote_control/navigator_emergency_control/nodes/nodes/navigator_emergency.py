@@ -118,7 +118,20 @@ class Joystick(object):
         rotation = joy.axes[3] * self.torque_scale
         self.remote.publish_wrench(x, y, rotation, joy.header.stamp)
 
+    def timeout(self, event):
+        '''
+        Publishes zeros after 2 seconds of no update 
+	in case node navigator_emergency_xbee dies
+        '''
+        if self.active:
+
+	    # No change in state
+	    if rospy.Time.now() - self.last_joy.header.stamp > rospy.Duration(2):
+
+	        # No new instructions after 2 seconds, zero the wrench
+                self.reset()
 
 if __name__ == "__main__":
     emergency = Joystick()
+    rospy.Timer(rospy.Duration(1), emergency.timeout, oneshot=False)
     rospy.spin()
