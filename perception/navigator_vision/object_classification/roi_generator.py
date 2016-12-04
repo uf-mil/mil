@@ -8,6 +8,7 @@ import pickle
 import os
 import numpy as np
 from median_flow import MedianFlow
+___author___ = "Tess Bianchi"
 
 
 class ROI_Collection():
