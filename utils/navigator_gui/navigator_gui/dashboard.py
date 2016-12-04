@@ -136,19 +136,22 @@ class Dashboard(Plugin):
         toggle_kill_button.clicked.connect(self.remote.toggle_kill)
         station_hold_button = self._widget.findChild(QtGui.QPushButton, "station_hold_button")
         station_hold_button.clicked.connect(self.remote.station_hold)
-        autonomous_control_button = self._widget.findChild(QtGui.QPushButton, "autonomous_control_button")
-        autonomous_control_button.clicked.connect(self.remote.select_autonomous_control)
         rc_control_button = self._widget.findChild(QtGui.QPushButton, "rc_control_button")
         rc_control_button.clicked.connect(self.remote.select_rc_control)
+        emergency_control_button = self._widget.findChild(QtGui.QPushButton, "emergency_control_button")
+        emergency_control_button.clicked.connect(self.remote.select_emergency_control)
         keyboard_control_button = self._widget.findChild(QtGui.QPushButton, "keyboard_control_button")
         keyboard_control_button.clicked.connect(self.remote.select_keyboard_control)
+        autonomous_control_button = self._widget.findChild(QtGui.QPushButton, "autonomous_control_button")
+        autonomous_control_button.clicked.connect(self.remote.select_autonomous_control)
 
         # Defines the color scheme as QT style sheets
         self.colors = {
             "red": "QWidget {background-color:#FF432E;}",
             "green": "QWidget {background-color:#B1EB00;}",
             "blue": "QWidget {background-color:#4AA8DB;}",
-            "yellow": "QWidget {background-color:#FDEF14;}"
+            "yellow": "QWidget {background-color:#FDEF14;}",
+            "orange": "QWidget {background-color:#FFA500;}"
         }
 
     def connect_ros(self):
@@ -229,17 +232,21 @@ class Dashboard(Plugin):
             self.operating_mode_status.setText("Unknown")
             self.operating_mode_frame.setStyleSheet(self.colors["red"])
 
-        elif (self.operating_mode["received"] == "autonomous"):
-            self.operating_mode_status.setText("Autonomous")
-            self.operating_mode_frame.setStyleSheet(self.colors["green"])
-
         elif (self.operating_mode["received"] == "rc"):
             self.operating_mode_status.setText("Joystick")
             self.operating_mode_frame.setStyleSheet(self.colors["blue"])
 
+        elif (self.operating_mode["received"] == "emergency"):
+            self.operating_mode_status.setText("Emergency")
+            self.operating_mode_frame.setStyleSheet(self.colors["orange"])
+
         elif (self.operating_mode["received"] == "keyboard"):
             self.operating_mode_status.setText("Keyboard")
             self.operating_mode_frame.setStyleSheet(self.colors["yellow"])
+
+        elif (self.operating_mode["received"] == "autonomous"):
+            self.operating_mode_status.setText("Autonomous")
+            self.operating_mode_frame.setStyleSheet(self.colors["green"])
 
         # Set the cached operating mode to the value that was just displayed
         self.operating_mode["cached"] = self.operating_mode["received"]
