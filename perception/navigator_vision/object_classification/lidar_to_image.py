@@ -12,6 +12,7 @@ import genpy
 import cv2
 import navigator_tools as nt
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
+from image_geometry import PinholeCameraModel
 import numpy as np
 
 
@@ -23,6 +24,7 @@ class LidarToImage(object):
         self.max_dist = dist
         self.bridge = CvBridge()
         self.nh = nh
+        self.id_to_perist = {}
         self.image_cache = deque()
         self.pose = None
         self.training = training
@@ -71,7 +73,12 @@ class LidarToImage(object):
             defer.returnValue((None, None))
         img = self.bridge.imgmsg_to_cv2(ros_img, "mono8")
         for o in obj.objects:
-            print o.name, len(o.points)
+            if o.id not in self.id_to_perist:
+                self.id_to_perist[o.id] = []
+            ppoints = self.id_to_perist[o.id]
+            ppoints.extend(o.points)
+            if len(ppoints) > 500:
+                ppoints = ppoints[:500]
             if self.training and o.name not in self.classes:
                 continue
             position = yield self._get_position()
@@ -79,7 +86,7 @@ class LidarToImage(object):
             diff = np.linalg.norm(position - o_pos)
             if diff > self.max_dist:
                 continue
-            points, bbox = yield self._get_bounding_box_2d(o.points, obj.objects[0].header.stamp)
+            points, bbox = yield self._get_bounding_box_2d(ppoints, obj.objects[0].header.stamp)
             if bbox is None:
                 continue
 
@@ -121,6 +128,10 @@ class LidarToImage(object):
 
     @txros.util.cancellableInlineCallbacks
     def _get_bounding_box_2d(self, points_3d_enu, time):
+        if self.cam_info is None:
+            defer.returnValue((None, None))
+        self.camera_model = PinholeCameraModel()
+        self.camera_model.fromCameraInfo(self.cam_info)
         points_2d = []
         try:
             trans = yield self.tf_listener.get_transform(self.tf_frame, "/enu", time)
@@ -141,17 +152,7 @@ class LidarToImage(object):
             if t_p[2] < 0:
                 defer.returnValue((None, None))
 
-            K = self.cam_info.K
-            K = np.array(K).reshape(3, 3)
-            point_2d = K.dot(t_p)
-            if point_2d[2] == 0:
-                defer.returnValue((None, None))
-            point_2d[0] /= point_2d[2]
-            point_2d[1] /= point_2d[2]
-            if point_2d[0] < 0:
-                point_2d[0] = 0
-            if point_2d[1] < 0:
-                point_2d[1] = 0
+            point_2d = self.camera_model.project3dToPixel(t_p)
             points_2d.append((int(point_2d[0]), int(point_2d[1])))
 
         xmin, ymin = sys.maxint, sys.maxint
