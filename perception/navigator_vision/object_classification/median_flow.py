@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from collections import deque
 import itertools
+___author___ = "Tess Bianchi"
 
 class MedianFlow(object):
     TRACKING_LENGTH = 3

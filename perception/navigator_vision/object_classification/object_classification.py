@@ -6,6 +6,7 @@ from SVM_classifier import SVMClassifier
 import pickle
 import cv2
 from cv_bridge import CvBridge
+___author___ = "Tess Bianchi"
 
 
 class Config(object):
