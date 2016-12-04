@@ -67,4 +67,41 @@ cv::Mat makeRotInvariant(const cv::Mat &kernel, int rotations)
   return result;
 }
 
+float getRadialSymmetryAngle(const cv::Mat &kernel, float ang_res, bool deg)
+{
+  auto original = rotateKernel(kernel, 0.0f);
+  cv::Mat elem_wise_mult{original.size(), CV_32S};
+  cv::multiply(original, original, elem_wise_mult);
+  auto standard = cv::sum(elem_wise_mult)[0];
+  float max = deg? 360.0f : 2 * nav::PI;
+  float result = max;
+  float best_score = 0;
+
+  for(float theta = 0.0f; theta < max; theta += (deg? ang_res * 180.0f / nav::PI : ang_res))
+  {
+    cv::multiply(original, rotateKernel(original, theta, deg, true), elem_wise_mult);
+    double score = standard / cv::sum(elem_wise_mult)[0];
+    if(score >= 0.975)
+    {
+      if(result == max)  // First good candidate
+      {
+        result = theta;
+        best_score = score;
+      }
+      else if(score > best_score)  // Improved candidate
+      {
+        result = theta;
+        best_score = score;
+      }
+      else  // Decreased candidate above 0.975
+        break;
+    }
+    else  // Decreased candidate below 0.975
+      if(result != max)  // Viable candidate already found
+        break;
+  }
+
+  return result;
+}
+
 }  // namespace nav
