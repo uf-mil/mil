@@ -37,12 +37,12 @@ class Debug(object):
         self.win_name = win_name
         self.name_to_starting = {}
         self.bridge = CvBridge()
-        self.base_topic = "/debug/scan_the_code/"
+        self.base_topic = "/debug/"
         self.topic_to_pub = {}
         if nh is None:
-            self.pub = rospy.Publisher("/debug/scan_the_code/image", Image, queue_size=10)
+            self.pub = rospy.Publisher("/debug/image", Image, queue_size=10)
         else:
-            self.pub = nh.advertise("/debug/scan_the_code/image", Image)
+            self.pub = nh.advertise("/debug/image", Image)
 
     def add_image(self, img, name, wait=33, topic="image"):
         """
@@ -101,8 +101,8 @@ class Debug(object):
         if topic in self.topic_to_pub.keys():
             pub = self.topic_to_pub[topic]
         elif self.nh is None:
-            pub = rospy.Publisher("/debug/scan_the_code/" + topic, Image, queue_size=10)
+            pub = rospy.Publisher("/debug/" + topic, Image, queue_size=10)
         elif self.nh is not None:
-            pub = self.nh.advertise("/debug/scan_the_code/" + topic, Image)
+            pub = self.nh.advertise("/debug/" + topic, Image)
         self.topic_to_pub[topic] = pub
         pub.publish(self.bridge.cv2_to_imgmsg(img, color))
