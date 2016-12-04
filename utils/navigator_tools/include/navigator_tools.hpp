@@ -5,6 +5,9 @@
 #include <ros/ros.h>
 
 namespace nav{
+
+static const double PI = 3.1415926535897932;
+
 namespace tools{
 
 // Returns a vector of topic names (std::string) that end with "image_rect_color"
