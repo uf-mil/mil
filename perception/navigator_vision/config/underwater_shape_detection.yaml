@@ -1,0 +1,11 @@
+# Underwater Shape Identification Challenge Parameters
+
+template_directory         :  "templates/underwater_shape_identification/"
+depth                      :  5
+depth_uncertainty          :  1
+min_detections             :  10
+
+camera_topic               :  "/down/image_raw"
+buffer_size                :  5
+
+# calibration_images         :  "calib/underwater_shape_identification/" 
