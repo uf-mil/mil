@@ -30,4 +30,13 @@ cv::Mat rotateKernel(const cv::Mat &kernel, float theta, bool deg=false, bool no
 */
 cv::Mat makeRotInvariant(const cv::Mat &kernel, int rotations=8);
 
+/*
+  Returns the minimum theta for which a version of the kernel that has been rotated
+  by theta radians will be approximately identical to the original.
+  kernel - input kernel
+  ang_res - OPTIONAL. The result will be a multiple of this angle
+  deg - OPTIONAL. The output will be in degrees instead of radias if set to true
+*/
+float getRadialSymmetryAngle(const cv::Mat &kernel, float ang_res=0.1, bool deg=false);
+
 } // namespace nav
