@@ -6,19 +6,25 @@
 #include <navigator_vision_lib/image_acquisition/ros_camera_stream.hpp>
 #include <navigator_vision_lib/image_filtering.hpp>
 
+#include <missions/underwater_shape_identification.hpp>
+
 using namespace std;
 
 int main(int argc, char** argv) 
 { 
   cout << "\033[1;31mUnderwater Shape Identification Vision\033[0m" << endl;  
-  int rotations = stoi(argv[2]);
 
   // set up image acquisition
   string cam_topic {"down/image_raw"};
   size_t history_length{200};
-  ros::init(argc, argv, "underwater_shape_identification_vision");
+  string challenge_name = "underwater_shape_identification";
+  ros::init(argc, argv, challenge_name + "_vision");
   ros::NodeHandle nh;
 
+  int img_buffer_size = 0;
+  string name_space{challenge_name + "/"};
+  nh.param<int>(name_space + "buffer_size", img_buffer_size, 5);
+  nav::UnderwaterShapeDetector underwater_shape_detector(nh, img_buffer_size, name_space);
   // cv::Vec3b to get color imgs
   nav::ROSCameraStream<cv::Vec3b> left_cam_stream(nh, history_length);
   if(!left_cam_stream.init(cam_topic))
@@ -41,19 +47,6 @@ int main(int argc, char** argv)
       break;
   }
 
-  // Test kernel rotation and averaging
-  auto file_name = "/home/santiago/mil_ws/src/Navigator/perception/navigator_vision/templates/" + string(argv[1]) + ".png";
-  cv::Mat kernel = cv::imread(file_name, CV_LOAD_IMAGE_GRAYSCALE);
-  if(!kernel.data)
-  {
-    cout << "Could not load image from " << file_name << endl;
-    return -1;
-  }
-
-  cv::Mat rot_invar_kernel;
-  makeRotInvariant(kernel, rotations).convertTo(rot_invar_kernel, CV_8UC1);
-  cv::imshow("rot invariant kernel", rot_invar_kernel);
-  cv::waitKey(0);
   return 0;
 }
 
