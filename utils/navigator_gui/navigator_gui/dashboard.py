@@ -6,11 +6,11 @@ Navigator and a control panel to interact with the running system.
 '''
 
 
+import functools
 import os
-import socket
-import subprocess
 
 from navigator_alarm import AlarmListener
+from navigator_msgs.msg import Hosts
 from python_qt_binding import QtCore
 from python_qt_binding import QtGui
 from python_qt_binding import loadUi
@@ -45,39 +45,24 @@ class Dashboard(Plugin):
 
         self.is_killed = False
         self.remote = RemoteControl("dashboard")
+        self.remote.is_timed_out = True
 
         # Creates dictionaries that are used by the monitor functions to keep track of their node or service
-        service_monitor_template = {
+        node_monitor_template = {
             "received": "Unknown",
-            "cached": "Unknown"
+            "stamp": rospy.Time.now(),
+            "cached": "Unknown",
         }
-        node_monitor_template = service_monitor_template.copy()
-        node_monitor_template["timeout_count"] = 0
-        node_monitor_template["is_timed_out"] = False
-        self.operating_mode = service_monitor_template.copy()
+        self.operating_mode = node_monitor_template.copy()
         self.battery_voltage = node_monitor_template.copy()
         self.battery_voltage["cached_warning_color"] = "red"
         self.system_time = node_monitor_template.copy()
-        self.system_time["is_timed_out"] = True
+        del self.system_time["stamp"]
+        self.system_time["timeout_count"] = 0
+        self.hosts = node_monitor_template.copy()
 
-        # Build an ordered list of host dictionaries that resolve to devices on navigator
-        host_list = [
-            "mil-nav-ubnt-wamv",
-            "mil-nav-ubnt-shore",
-            "mil-nav-wamv",
-            "mil-com-velodyne-vlp16",
-            "mil-com-sick-lms111"
-        ]
-        host_template = {
-            "hostname": "",
-            "ip": "Unknown",
-            "status": "Unknown"
-        }
-        self.hosts = []
-        for host in host_list:
-            host_entry = host_template.copy()
-            host_entry["hostname"] = host
-            self.hosts.append(host_entry)
+        self.clear_hosts()
+        self.hosts["cached"] = self.hosts["received"]
 
         self.connect_ui()
         self.connect_ros()
@@ -92,9 +77,34 @@ class Dashboard(Plugin):
         context.add_widget(self._widget)
 
         # Creates monitors that update data on the GUI periodically
+        self.monitor_operating_mode()
         self.monitor_battery_voltage()
         self.monitor_system_time()
         self.monitor_hosts()
+
+    def clear_hosts(self):
+        '''
+        Builds a list of host dictionaries that contain the devices hostname,
+        an unknown IP address, and an unknown status in the hosts' receiving
+        variable.
+        '''
+        host_list = [
+            "mil-nav-ubnt-wamv",
+            "mil-nav-ubnt-shore",
+            "mil-nav-wamv",
+            "mil-com-velodyne-vlp16",
+            "mil-com-sick-lms111"
+        ]
+        host_template = {
+            "hostname": "",
+            "ip": "Unknown",
+            "status": "Unknown"
+        }
+        self.hosts["received"] = []
+        for host in host_list:
+            host_entry = host_template.copy()
+            host_entry["hostname"] = host
+            self.hosts["received"].append(host_entry)
 
     def connect_ui(self):
         '''
@@ -147,15 +157,28 @@ class Dashboard(Plugin):
         within this class.
         '''
         # Attempts to read the battery voltage parameters (sets them to defaults if they have not been set)
-        self.battery_low_voltage = rospy.get_param("/battery_monitor/battery_low_voltage", 22.1)
-        self.battery_critical_voltage = rospy.get_param("/battery_monitor/battery_critical_voltage", 20.6)
+        self.battery_low_voltage = rospy.get_param("/battery_monitor/battery_low_voltage", 24)
+        self.battery_critical_voltage = rospy.get_param("/battery_monitor/battery_critical_voltage", 20)
 
-        rospy.Subscriber("/wrench/current", String, self.update_operating_mode_status)
+        rospy.Subscriber("/wrench/current", String, self.cache_operating_mode)
         rospy.Subscriber("/battery_monitor", Float32, self.cache_battery_voltage)
         rospy.Subscriber("/clock", Clock, self.cache_system_time)
+        rospy.Subscriber("/host_monitor", Hosts, self.cache_hosts)
 
         self.kill_listener = AlarmListener("kill", self.update_kill_status)
 
+    def _timeout_check(function):
+        '''
+        Simple decorator to check whether or not the remote control device is
+        timed out before running the function that was called.
+        '''
+        @functools.wraps(function)
+        def wrapper(self, *args, **kwargs):
+            if (not self.remote.is_timed_out):
+                return function(self, *args, **kwargs)
+        return wrapper
+
+    @_timeout_check
     def update_kill_status(self, alarm):
         '''
         Updates the kill status display when there is an update on the kill
@@ -173,107 +196,112 @@ class Dashboard(Plugin):
             self.kill_status_status.setText("Killed")
             self.kill_status_frame.setStyleSheet(self.colors["red"])
 
-    def update_operating_mode_status(self, msg):
+    def cache_operating_mode(self, msg):
         '''
-        Updates the operating mode status display when there is an update on
-        the current wrench node. Caches the last displayed operating mode
-        status to avoid updating the display with the same information twice.
+        Stores the operating mode when it is published.
         '''
-        if (not self.system_time["is_timed_out"]):
+        self.operating_mode["received"] = msg.data
+        self.operating_mode["stamp"] = rospy.Time.now()
 
-            # Retrieves the operating mode from the published message
-            self.operating_mode["received"] = msg.data
+    def monitor_operating_mode(self):
+        '''
+        Monitors the operating mode on a 0.5s interval. Only updates the display
+        when the received operating mode has changed. Will time out and display
+        an unknown status if it has been 15s since the last message.
+        '''
+        # Sets the operating mode to 'Unknown' if no message has been received in 15s
+        if ((rospy.Time.now() - self.operating_mode["stamp"]) > rospy.Duration(15)):
+            self.operating_mode["received"] = "Unknown"
 
-            if (self.operating_mode["received"] != self.operating_mode["cached"]):
-                if (self.operating_mode["received"] == "autonomous"):
-                    self.operating_mode_status.setText("Autonomous")
-                    self.operating_mode_frame.setStyleSheet(self.colors["green"])
+        # Updates the displayed data if a new operating mode has been received since the last timer
+        if (self.operating_mode["received"] != self.operating_mode["cached"]):
+            self.update_operating_mode_status()
 
-                elif (self.operating_mode["received"] == "rc"):
-                    self.operating_mode_status.setText("Joystick")
-                    self.operating_mode_frame.setStyleSheet(self.colors["blue"])
+        # Schedules the next instance of this method with a QT timer
+        QtCore.QTimer.singleShot(500, self.monitor_operating_mode)
 
-                elif (self.operating_mode["received"] == "keyboard"):
-                    self.operating_mode_status.setText("Keyboard")
-                    self.operating_mode_frame.setStyleSheet(self.colors["yellow"])
+    @_timeout_check
+    def update_operating_mode_status(self):
+        '''
+        Updates the displayed operating mode status text and color.
+        '''
+        if (self.operating_mode["received"] == "Unknown"):
+            self.operating_mode_status.setText("Unknown")
+            self.operating_mode_frame.setStyleSheet(self.colors["red"])
 
-                elif (self.operating_mode["received"] == "Unknown"):
-                    self.operating_mode_status.setText("Unknown")
-                    self.operating_mode_frame.setStyleSheet(self.colors["red"])
+        elif (self.operating_mode["received"] == "autonomous"):
+            self.operating_mode_status.setText("Autonomous")
+            self.operating_mode_frame.setStyleSheet(self.colors["green"])
 
-                # Set the cached operating mode to the value that was just displayed
-                self.operating_mode["cached"] = self.operating_mode["received"]
+        elif (self.operating_mode["received"] == "rc"):
+            self.operating_mode_status.setText("Joystick")
+            self.operating_mode_frame.setStyleSheet(self.colors["blue"])
+
+        elif (self.operating_mode["received"] == "keyboard"):
+            self.operating_mode_status.setText("Keyboard")
+            self.operating_mode_frame.setStyleSheet(self.colors["yellow"])
+
+        # Set the cached operating mode to the value that was just displayed
+        self.operating_mode["cached"] = self.operating_mode["received"]
 
     def cache_battery_voltage(self, msg):
         '''
         Stores the battery voltage when it is published.
         '''
         self.battery_voltage["received"] = msg.data
+        self.battery_voltage["stamp"] = rospy.Time.now()
 
     def monitor_battery_voltage(self):
         '''
         Monitors the battery voltage on a 1s interval. Only updates the display
-        when the received battery voltage has changed.
+        when the received battery voltage has changed. Will time out and
+        display an unknown status if it has been 15s since the last message.
         '''
-        if (not self.system_time["is_timed_out"]):
-            if (not self.battery_voltage["is_timed_out"]):
 
-                # Counts bad values of the received battery voltage towards the timeout count
-                if ((self.battery_voltage["received"] == None) or (self.battery_voltage["received"] <= 0)):
-                    self.battery_voltage["timeout_count"] += 1
+        # Sets the battery voltage to 'Unknown' if no message has been received in 15s
+        if (((rospy.Time.now() - self.battery_voltage["stamp"]) > rospy.Duration(15)) or
+                (self.battery_voltage["received"] is None)):
+            self.battery_voltage["received"] = "Unknown"
 
-                # Updates the displayed data if a new battery voltage has been received since the last timer
-                elif (self.battery_voltage["received"] != self.battery_voltage["cached"]):
-                    self.battery_voltage["timeout_count"] = 0
-                    self.update_battery_voltage_status()
-
-                # Assumes that the battery voltage node is dead if the timeout counter reaches 15 (~15s)
-                elif (self.battery_voltage["timeout_count"] >= 15):
-                    self.battery_voltage["is_timed_out"] = True
-                    self.battery_voltage_status.setText("Unknown")
-                    self.battery_voltage_frame.setStyleSheet(self.colors["red"])
-                    self.battery_voltage["cached_warning_color"] = "red"
-
-                # Otherwise, increments the system timeout counter
-                else:
-                    self.battery_voltage["timeout_count"] += 1
-
-            else:
-
-                # If a new battery voltage has been received after a timeout, exit the timeout state
-                if (self.battery_voltage["received"] != self.battery_voltage["cached"]):
-                    self.battery_voltage["is_timed_out"] = False
-                    self.battery_voltage["timeout_count"] = 0
-                    self.update_battery_voltage_status()
+        # Updates the displayed data if a new battery voltage has been received since the last timer
+        if (self.battery_voltage["received"] != self.battery_voltage["cached"]):
+            self.update_battery_voltage_status()
 
         # Schedules the next instance of this method with a QT timer
         QtCore.QTimer.singleShot(1000, self.monitor_battery_voltage)
 
+    @_timeout_check
     def update_battery_voltage_status(self):
         '''
         Updates the displayed battery voltage status text and color. Uses a
         cached warning color to make sure the color is not changed on every
         update.
         '''
+        if (self.battery_voltage["received"] == "Unknown"):
+            self.battery_voltage_status.setText("Unknown")
+            self.battery_voltage_frame.setStyleSheet(self.colors["red"])
+            self.battery_voltage["cached_warning_color"] = "red"
 
-        # Set the frame background color to red if the battery is at or below the critical voltage
-        if (self.battery_voltage["received"] <= self.battery_critical_voltage):
-            if (self.battery_voltage["cached_warning_color"] != "red"):
-                self.battery_voltage_frame.setStyleSheet(self.colors["red"])
-                self.battery_voltage["cached_warning_color"] = "red"
+        else:
 
-        # Set the frame background color to yellow if the battery is at or below the low voltage
-        elif (self.battery_voltage["received"] <= self.battery_low_voltage):
-            if (self.battery_voltage["cached_warning_color"] != "yellow"):
-                self.battery_voltage_frame.setStyleSheet(self.colors["yellow"])
-                self.battery_voltage["cached_warning_color"] = "yellow"
+            # Set the frame background color to red if the battery is at or below the critical voltage
+            if (self.battery_voltage["received"] <= self.battery_critical_voltage):
+                if (self.battery_voltage["cached_warning_color"] != "red"):
+                    self.battery_voltage_frame.setStyleSheet(self.colors["red"])
+                    self.battery_voltage["cached_warning_color"] = "red"
 
-        # Set the frame background color to green if the battery is above the warning voltages
-        elif (self.battery_voltage["cached_warning_color"] != "green"):
-            self.battery_voltage_frame.setStyleSheet(self.colors["green"])
-            self.battery_voltage["cached_warning_color"] = "green"
+            # Set the frame background color to yellow if the battery is at or below the low voltage
+            elif (self.battery_voltage["received"] <= self.battery_low_voltage):
+                if (self.battery_voltage["cached_warning_color"] != "yellow"):
+                    self.battery_voltage_frame.setStyleSheet(self.colors["yellow"])
+                    self.battery_voltage["cached_warning_color"] = "yellow"
 
-        self.battery_voltage_status.setText(str(self.battery_voltage["received"])[:5])
+            # Set the frame background color to green if the battery is above the warning voltages
+            elif (self.battery_voltage["cached_warning_color"] != "green"):
+                self.battery_voltage_frame.setStyleSheet(self.colors["green"])
+                self.battery_voltage["cached_warning_color"] = "green"
+
+            self.battery_voltage_status.setText(str(self.battery_voltage["received"])[:5])
 
         # Set the cached battery voltage to the value that was just displayed
         self.battery_voltage["cached"] = self.battery_voltage["received"]
@@ -288,10 +316,10 @@ class Dashboard(Plugin):
         '''
         Updates data related to the system time on a 0.1s QT timer
         '''
-        if (not self.system_time["is_timed_out"]):
+        if (not self.remote.is_timed_out):
 
             # Counts bad values of the received system time towards the timeout count
-            if ((self.system_time["received"] == None) or (int(str(self.system_time["received"])) <= 0) or
+            if ((self.system_time["received"] is None) or (int(str(self.system_time["received"])) <= 0) or
                     len(str(self.system_time["received"])) < 9):
                 self.system_time["timeout_count"] += 1
 
@@ -300,14 +328,13 @@ class Dashboard(Plugin):
                 self.system_time["timeout_count"] = 0
                 self.update_system_time_status()
 
-            # Assumes that we have been disconnected if the system timeout counter reaches 50 (~5s)
+            # Assumes that we have been disconnected if the system timeout counter reaches 50 (5s)
             elif (self.system_time["timeout_count"] >= 50):
-                self.system_time["is_timed_out"] = True
+                self.remote.is_timed_out = True
                 self.kill_status_status.setText("Unknown")
                 self.kill_status_frame.setStyleSheet(self.colors["red"])
-                self.operating_mode["received"] = "Unknown"
-                self.update_operating_mode_status()
-                self.battery_voltage["is_timed_out"] = True
+                self.operating_mode_status.setText("Unknown")
+                self.operating_mode_frame.setStyleSheet(self.colors["red"])
                 self.battery_voltage_status.setText("Unknown")
                 self.battery_voltage_frame.setStyleSheet(self.colors["red"])
                 self.battery_voltage["cached_warning_color"] = "red"
@@ -324,12 +351,11 @@ class Dashboard(Plugin):
             if (self.system_time["received"] != self.system_time["cached"]):
                 self.kill_status_status.setText("Active")
                 self.kill_status_frame.setStyleSheet(self.colors["green"])
-                self.system_time["is_timed_out"] = False
+                self.is_killed = False
+                self.remote.is_timed_out = False
                 self.system_time["timeout_count"] = 0
                 self.update_system_time_status()
                 self.system_time_frame.setStyleSheet(self.colors["green"])
-
-        self.remote.is_timed_out = self.system_time["is_timed_out"]
 
         # Schedules the next instance of this method with a QT timer
         QtCore.QTimer.singleShot(100, self.monitor_system_time)
@@ -344,33 +370,35 @@ class Dashboard(Plugin):
         # Set the cached system time to the value that was just displayed
         self.system_time["cached"] = self.system_time["received"]
 
+    def cache_hosts(self, msg):
+        '''
+        Converts a published hosts string into a hosts dictionary and stores it
+        in the hosts receiving variable.
+        '''
+        self.hosts["received"] = []
+        for host in msg.hosts:
+            host_entry = {}
+            host_data = host.split()
+            host_entry["hostname"] = host_data[0]
+            host_entry["ip"] = host_data[1]
+            host_entry["status"] = host_data[2]
+            self.hosts["received"].append(host_entry)
+        self.hosts["stamp"] = rospy.Time.now()
+
     def monitor_hosts(self):
         '''
-        Resolves the hostnames of the devices on NaviGator to IP addresses on a
-        10s QT timer. If resolution is successful, pings the IP addresses to
-        check whether or not they are online.
+        Monitors the network hosts on a 10s interval. Only updates the display
+        when the received host data has changed. Will time out and display an
+        unknown ip and status if it has been 30s since the last message.
         '''
-        for host in self.hosts:
 
-            # Resolves the IP address of the hostname
-            try:
-                host["ip"] = socket.gethostbyname(host["hostname"])
+        # Sets the IP address and status of all hosts to 'Unknown' if no message has been received in 30s
+        if ((rospy.Time.now() - self.hosts["stamp"]) > rospy.Duration(30)):
+            self.clear_hosts()
 
-                # If the host is pingable, mark it as online
-                try:
-                    subprocess.check_output(["ping", "-c1", host["ip"]])
-                    host["status"] = "Online"
-
-                # If pinging the host is unsuccessful, mark it as offline
-                except:
-                    host["status"] = "Offline"
-
-            # If hostname resolution fails, the IP address is set the unknown
-            except:
-                host["ip"] = "Unknown"
-                host["status"] = "Unknown"
-
-        self.update_hosts_status()
+        # Updates the displayed data if new hosts data has been received since the last timer
+        if (self.hosts["received"] != self.hosts["cached"]):
+            self.update_hosts_status()
 
         # Schedules the next instance of this method with a QT timer
         QtCore.QTimer.singleShot(10000, self.monitor_hosts)
@@ -379,7 +407,7 @@ class Dashboard(Plugin):
         '''
         Updates the text and color of the displayed hosts table elements.
         '''
-        rows = self.hosts
+        rows = self.hosts["received"]
         columns = ["ip", "status"]
 
         for row in range(len(rows)):
@@ -402,3 +430,6 @@ class Dashboard(Plugin):
                 entry.setAlignment(QtCore.Qt.AlignCenter)
                 entry.setStyleSheet(column_color[column])
                 self.device_table.setCellWidget(row, column, entry)
+
+        # Set the cached host data to the host data that was just displayed
+        self.hosts["cached"] = self.hosts["received"]
