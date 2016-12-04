@@ -426,6 +426,7 @@ sudo pip install -q -U argcomplete
 sudo pip install -q -U tqdm
 sudo pip install -q -U pyasn1
 sudo pip install -q -U characteristic
+sudo pip install -q -U progressbar
 
 # Machine Learning
 sudo pip install -q -U scikit-learn > /dev/null 2>&1
