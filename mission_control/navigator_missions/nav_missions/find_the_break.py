@@ -1,10 +1,13 @@
 #!/usr/bin/env python
+from __future__ import division
 import txros
 from twisted.internet import defer
 from sensor_msgs.msg import Image
 import numpy as np
 from navigator_tools import fprint, Debug
 from cv_bridge import CvBridge, CvBridgeError
+from collections import Counter
+import numpy.ma as ma
 
 import cv2
 
@@ -19,7 +22,7 @@ class FindTheBreakMission():
 
     @txros.util.cancellableInlineCallbacks
     def init_(self):
-        yield self.nh.subscribe("/video_file/image_raw", Image, self.image_cb)
+        yield self.nh.subscribe("/video_player/croppedFile/image_raw", Image, self.image_cb)
         defer.returnValue(self)
 
     def image_cb(self, image):
@@ -33,18 +36,16 @@ class FindTheBreakMission():
         while(True):
             ret, frame = cap.read()
             cv2.imshow('res1', frame)
-            cv2.waitKey(1)
             img = frame
             h, w, r = img.shape
             if h == 0:
                 break
             nw = 300
-            nh = nw * h / w
+            nh = int(nw * h / w)
             img = cv2.resize(img, (nw, nh))
             gaussian_3 = cv2.GaussianBlur(img, (9, 9), 10.0)
             img = cv2.addWeighted(img, 1.5, gaussian_3, -0.5, 0, img)
             cv2.imshow('res3', img)
-            cv2.waitKey(0)
             Z = img.reshape((-1, 3))
             Z = np.float32(Z)
             criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
@@ -75,7 +76,6 @@ class FindTheBreakMission():
             max_ratio = -sys.maxint
             max_rect = None
 
-
             for r in rects:
                 box = cv2.cv.BoxPoints(r)
                 box = np.int0(box)
@@ -88,7 +88,6 @@ class FindTheBreakMission():
                 vec2 = vec2 / np.linalg.norm(vec2)
                 vec3 = np.array(box[3] - p0)
                 vec3 = vec3 / np.linalg.norm(vec3)
-                print "Stfuuf", (np.array([box[2] - p0]).dot(np.array(p1 - p0)))
                 ang1 = np.arccos((vec1).dot(vec2))
                 ang2 = np.arccos((vec3).dot(vec2))
                 dif1 = 1.5708 - ang1
@@ -117,9 +116,28 @@ class FindTheBreakMission():
 
             box = cv2.cv.BoxPoints(max_rect)
             box = np.int0(box)
+            mask = np.zeros((nh, nw))
+            cv2.drawContours(mask, [box], 0, 255, -1)
+            cv2.imshow('mask', mask)
+            myl = ma.array(labels, mask=mask)
+            myl = myl[myl.mask].data
+            print myl.shape
+            print myl
+            c = Counter(myl).items()
+            print c
+            print "------"
+            val = max(c, key=lambda x: x[1])
+            val = val[1]
+            frac = val / myl.size
+            print "frac", frac
+            if frac < .8:
+                continue
+
             cv2.drawContours(res2, [box], 0, (0, 0, 255), 2)
+
             cv2.imshow('res2', res2)
-            cv2.waitKey(0)
+            cv2.waitKey(33)
+            
             count += 1
             # if count == 20:
             #     import sys

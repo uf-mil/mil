@@ -196,7 +196,7 @@ public:
 				thisOne.id = s_obj.id;
 				thisOne.confidence = 0;
 				std_msgs::Header header = std_msgs::Header();
-				header.stamp = s_obj.age;
+				header.stamp = ros::Time::now();
 				thisOne.header = header;
 				thisOne.size.z = s_obj.scale.z;
 				thisOne.size.x = s_obj.scale.x;

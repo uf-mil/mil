@@ -68,7 +68,7 @@ class PickleMaker(object):
         while True:
             try:
                 d = _do()
-                yield util.wrap_timeout(d, 1)
+                yield util.wrap_timeout(d, 10)
             except Exception:
                 break
 

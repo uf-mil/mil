@@ -42,3 +42,6 @@ Thumbs.db
 .project
 .pydevproject
 .settings
+
+# Kosher Pickles
+*.p
