@@ -111,11 +111,15 @@ target_link_libraries(
     ${OpenCV_INCLUDE_DIRS}
 )
 
-add_executable(underwater_shape_identification_vision nodes/underwater_shape_identification_vision.cpp)
+add_executable(underwater_shape_identification_vision 
+  nodes/underwater_shape_identification_vision.cpp
+  src/missions/underwater_shape_identification.cpp
+)
 add_dependencies(underwater_shape_identification_vision navigator_vision_lib ${catkin_EXPORTED_TARGETS})
 target_link_libraries(
   underwater_shape_identification_vision
     navigator_vision_lib
+    navigator_tools_lib
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
     ${OpenCV_INCLUDE_DIRS}
