@@ -6,6 +6,8 @@ The 'navigator_emergency_control' folder contains the firmware and bootloader fo
 
 The uP firmware interprets serial messages from the xbee as Joy data. If the controller stops sending messages, the c++ node times out and zeros the joy data. If the nodes are run with the hardware not connected, the launcher simply fails to open the port and continues operation. If the hardware disconnects mid operation, or the c++ node crashes for whatever reason, the python node zeros the wrench data after 2 seconds.
 
-To run the simulator with input from the emergency controller, simply connect the receiver board by usb and run:
+To test the functionality of the emergency controller with the simulator, simply connect the receiver board by usb and run:
 
     roslaunch navigator_launch simulation.launch
+
+Hold the "start" button for a few seconds to set the controller to active. Then, check the output of topics /joy_emergency, /wrench/emergency, and /wrench/cmd.
