@@ -76,11 +76,16 @@ float getRadialSymmetryAngle(const cv::Mat &kernel, float ang_res, bool deg)
   float max = deg? 360.0f : 2 * nav::PI;
   float result = max;
   float best_score = 0;
+  bool left_starting_region = false;
 
   for(float theta = 0.0f; theta < max; theta += (deg? ang_res * 180.0f / nav::PI : ang_res))
   {
     cv::multiply(original, rotateKernel(original, theta, deg, true), elem_wise_mult);
     double score = standard / cv::sum(elem_wise_mult)[0];
+    if(score < 0.9)
+      left_starting_region = true;
+    if(!left_starting_region)
+      continue;
     if(score >= 0.975)
     {
       if(result == max)  // First good candidate
