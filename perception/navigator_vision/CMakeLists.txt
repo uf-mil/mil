@@ -28,7 +28,7 @@ find_package(catkin
 )
 
 find_package(PCL 1.7 REQUIRED)
-find_package(Boost REQUIRED date_time)
+find_package(Boost REQUIRED date_time filesystem)
 
 catkin_python_setup()
 

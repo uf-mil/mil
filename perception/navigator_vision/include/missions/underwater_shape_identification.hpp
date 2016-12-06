@@ -5,6 +5,7 @@
 #include <cmath>
 #include <string>
 #include <memory>
+#include <utility>
 
 #include <boost/filesystem.hpp>
 
@@ -33,7 +34,7 @@ class Shape
   cv::Mat _template;
   bool _ok = false;
 public:
-  static std::vector<Shape> loadShapes(std::string directory);
+  static std::vector<Shape> loadShapes(std::string directory, float shape_area);
   void load(std::string path, float shape_area);
   std::string name() const { return _name; }
   std::string path() const { return _template_path; }
