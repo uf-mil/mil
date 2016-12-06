@@ -232,7 +232,7 @@ class OccupancyGrid
 				int x = floor(p.x/VOXEL_SIZE_METERS + GRID_SIZE/2);
 				int y = floor(p.y/VOXEL_SIZE_METERS + GRID_SIZE/2);
 				if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE) {
-					ogrid[y][x].hits += 5;
+					ogrid[y][x].hits += LIDAR_HITS_INCREMENT;
 					pointCloudTable[y*GRID_SIZE+x].update(p);
 					pointCloudTable_Uno[y*GRID_SIZE+x].push_back(p);
 					if (ogrid[y][x].hits > max_hits) { ogrid[y][x].hits = max_hits; }	

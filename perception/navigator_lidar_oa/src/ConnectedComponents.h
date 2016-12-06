@@ -53,7 +53,7 @@ struct objectStats
 				x.insert(p->x);
 				y.insert(p->y);
 				z.insert(p->z);
-				++map[floor(p->z/0.25)];
+				++map[floor(p->z/VOXEL_SIZE_Z_METERS)];
 			}
 		}
 		if (!x.size() || !y.size() || !z.size()) { return false; }
@@ -61,7 +61,7 @@ struct objectStats
 		//REMOVE OUTLIERS		
 		auto removed = 0;
 		for (auto it = z.begin(); it != z.end(); ) {
-			if (map[floor(*it/0.25)] < 3) {
+			if (map[floor(*it/VOXEL_SIZE_Z_METERS)] < VOXEL_SIZE_Z_MIN_HITS) {
 				it = z.erase(it); ++removed;
 			} else {
 				++it;
@@ -105,6 +105,7 @@ struct objectMessage
 	bool real = true;
 	ros::Time age;
     std::array<size_t,5> confidence{ {0,0,0,0,0} };
+    uint8_t bestConfidence = 0;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

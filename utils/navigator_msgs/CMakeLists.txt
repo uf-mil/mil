@@ -24,6 +24,7 @@ add_message_files(
   PerceptionObjectArray.msg
   DockShape.msg
   DockShapes.msg
+  KillStatus.msg
 )
 
 add_service_files(
@@ -44,6 +45,8 @@ add_service_files(
   CameraToLidarTransform.srv
   KeyboardControl.srv
   ColorRequest.srv
+  FindPinger.srv
+  SetFrequency.srv
 )
 
 add_action_files(
@@ -75,5 +78,3 @@ catkin_package(
   #message_runtime
   #actionlib_msgs
 #)
-
-

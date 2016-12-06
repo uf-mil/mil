@@ -36,6 +36,7 @@ Thumbs.db
 *.pyc
 *.pyo
 *~
+*.swp
 
 # Eclipse and PyDev project files
 .project

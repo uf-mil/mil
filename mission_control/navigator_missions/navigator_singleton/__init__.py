@@ -2,9 +2,9 @@
 import os
 
 for module in os.listdir(os.path.dirname(__file__)):
-    if module == '__init__.py' or module[-3:] != '.py' or module[-1] == '~':
+   if module == '__init__.py' or module[-3:] != '.py' or module[-1] == '~':
         continue
-    __import__(module[:-3], locals(), globals())
+   __import__(module[:-3], locals(), globals())
 
 del module
 del os

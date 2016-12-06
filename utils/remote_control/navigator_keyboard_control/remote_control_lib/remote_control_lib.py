@@ -34,7 +34,7 @@ class RemoteControl(object):
 
         self.alarm_broadcaster = AlarmBroadcaster()
         self.kill_alarm = self.alarm_broadcaster.add_alarm(
-            name="kill",
+            name="rc_kill",
             action_required=True,
             severity=0
         )
@@ -46,7 +46,7 @@ class RemoteControl(object):
 
         # rospy.wait_for_service("/change_wrench")
         self.wrench_changer = rospy.ServiceProxy("/change_wrench", WrenchSelect)
-        self.kill_listener = AlarmListener("kill", self._update_kill_status)
+        self.kill_listener = AlarmListener("rc_kill", self._update_kill_status)
 
         if (wrench_pub is None):
             self.wrench_pub = wrench_pub

@@ -5,7 +5,7 @@
   <description>Nodes and libraries used for computer vision perception on Navigator</description>
 
   <maintainer email="tessbianchi@ufl.edu">tess</maintainer>
-  <maintainer email="d.soto@ufl.edu">david</maintainer>
+  <maintainer email="d.soto@ufl.edu">David Soto</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
@@ -32,4 +32,8 @@
   <build_depend>tf2_sensor_msgs</build_depend>
   <run_depend>tf2_sensor_msgs</run_depend>
   <build_depend>tf2_geometry_msgs</build_depend>
+  <build_depend>navigator_tools</build_depend>
+  <run_depend>navigator_tools</run_depend>
+  <build_depend>pcl_ros</build_depend>
+  <run_depend>pcl_ros</run_depend>
 </package>
