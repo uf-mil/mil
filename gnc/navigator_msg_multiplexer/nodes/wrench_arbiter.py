@@ -12,14 +12,15 @@ class WrenchArbiter(object):
 
     def __init__(self):
 
-        # Set the three receiving variables
+        # Set the four receiving variables
         self.rc_wrench = None
+	self.rc_emergency = None
         self.keyboard_wrench = None
         self.autonomous_wrench = None
 
         # This is what is used to determine which input should be output
         self.control = None
-        self.control_inputs = ["rc", "keyboard", "autonomous"]
+        self.control_inputs = ["rc", "emergency", "keyboard", "autonomous"]
 
         # ROS stuff - Wrench changing service, final output wrench, and the three input sources
         rospy.Service("/change_wrench", WrenchSelect, self.change_wrench)
@@ -30,6 +31,8 @@ class WrenchArbiter(object):
         # Subscribers to listen for wrenches
         rospy.Subscriber("/wrench/rc", WrenchStamped,
                          lambda msg: self.republish(msg, control_t="rc", learn=False))
+        rospy.Subscriber("/wrench/emergency", WrenchStamped,
+                         lambda msg: self.republish(msg, control_t="emergency", learn=False))
         rospy.Subscriber("/wrench/keyboard", WrenchStamped,
                          lambda msg: self.republish(msg, control_t="keyboard", learn=False))
         rospy.Subscriber("/wrench/autonomous", WrenchStamped,

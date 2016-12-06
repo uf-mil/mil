@@ -30,7 +30,7 @@ class RemoteControl(object):
 
     def __init__(self, controller_name, wrench_pub=None):
         self.name = controller_name
-        self.wrench_choices = itertools.cycle(["rc", "keyboard", "autonomous"])
+        self.wrench_choices = itertools.cycle(["rc", "emergency", "keyboard", "autonomous"])
 
         self.alarm_broadcaster = AlarmBroadcaster()
         self.kill_alarm = self.alarm_broadcaster.add_alarm(
@@ -147,6 +147,13 @@ class RemoteControl(object):
         '''
         rospy.loginfo("Changing Control to RC")
         self.wrench_changer("rc")
+
+    def select_emergency_control(self, *args, **kwargs):
+        '''
+        Selects the emergency controller as the active controller.
+        '''
+        rospy.loginfo("Changing Control to Emergency Controller")
+        self.wrench_changer("emergency")
 
     @_timeout_check
     def select_keyboard_control(self, *args, **kwargs):
