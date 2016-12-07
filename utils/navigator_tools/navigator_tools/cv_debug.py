@@ -8,7 +8,7 @@ import sys
 ___author___ = "Tess Bianchi"
 
 
-class Debug(object):
+class CvDebug(object):
     """Class that contains methods that assist with debugging with images."""
 
     def __init__(self, nh=None, w=1000, h=800, total=8, win_name="debug", wait=True):
