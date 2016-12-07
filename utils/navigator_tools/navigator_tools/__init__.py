@@ -19,5 +19,5 @@ from rviz_helpers import *
 from general_helpers import *
 from object_database_helper import *
 from missing_perception_object import *
-from debug import CvDebug
+from cv_debug import CvDebug
 from bag_crawler import BagCrawler
