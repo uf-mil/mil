@@ -14,6 +14,7 @@ import navigator_tools as nt
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from image_geometry import PinholeCameraModel
 import numpy as np
+___author___ = "Tess Bianchi"
 
 
 class LidarToImage(object):
@@ -37,14 +38,19 @@ class LidarToImage(object):
         self.debug = Debug(nh)
 
     @util.cancellableInlineCallbacks
-    def init_(self, right=True):
+    def init_(self, cam="r"):
         image_sub = "/stereo/right/image_rect_color"
         self.tf_frame = "/stereo_right_cam"
         cam_info = "/stereo/right/camera_info"
-        if not right:
+        if cam == 'l':
             image_sub = "/stereo/left/image_rect_color"
             self.tf_frame = "/stereo_left_cam"
             cam_info = "/stereo/left/camera_info"
+
+        if cam == 'rr':
+            image_sub = "/right/right/image_rect_color"
+            self.tf_frame = "/right_right_cam"
+            cam_info = "/right/right/camera_info"
 
         yield self.nh.subscribe(image_sub, Image, self._img_cb)
         self._database = yield self.nh.get_service_client('/database/requests', ObjectDBQuery)
@@ -56,9 +62,6 @@ class LidarToImage(object):
 
     def _info_cb(self, info):
         self.cam_info = info
-
-    def _odom_cb(self, odom):
-        self.position, self.rot = nt.odometry_to_numpy(odom)[0]
 
     @util.cancellableInlineCallbacks
     def get_all_object_rois(self):

@@ -1,5 +1,5 @@
 from roi_generator import ROI_Collection
-from navigator_tools import Debug, BagCrawler
+from navigator_tools import CvDebug, BagCrawler
 import numpy as np
 from HOG_descriptor import HOGDescriptor
 from SVM_classifier import SVMClassifier
@@ -120,12 +120,11 @@ class ClassiferTest(object):
         self.config = Config()
         self.roi_file = roi_file
         self.classifier = pickle.load(open(class_file, 'rb'))
-        self.debug = Debug()
+        self.debug = CvDebug()
 
     def classify(self):
         print self.roi_file
         imgs, roi_val, rois = self.config.get_imgs(self.roi_file)
-        print "dfd"
         for i, frames in enumerate(roi_val):
             img = imgs[i]
             draw = img.copy()
