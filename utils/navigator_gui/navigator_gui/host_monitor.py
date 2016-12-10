@@ -9,7 +9,7 @@ core hosts on the platform's network.
 import socket
 import subprocess
 
-from navigator_msgs.msg import Hosts
+from navigator_msgs.msg import Host, Hosts
 import rospy
 
 
@@ -27,25 +27,7 @@ class HostMonitor():
 
     def __init__(self):
         self.pub_hosts = rospy.Publisher("/host_monitor", Hosts, queue_size=1)
-
-        # Build an ordered list of host dictionaries that resolve to devices on navigator
-        host_list = [
-            "mil-nav-ubnt-wamv",
-            "mil-nav-ubnt-shore",
-            "mil-nav-wamv",
-            "mil-com-velodyne-vlp16",
-            "mil-com-sick-lms111"
-        ]
-        host_template = {
-            "hostname": "",
-            "ip": "Unknown",
-            "status": "Unknown"
-        }
-        self.hosts = []
-        for host in host_list:
-            host_entry = host_template.copy()
-            host_entry["hostname"] = host
-            self.hosts.append(host_entry)
+        self.hosts = Hosts()
 
     def check_hosts(self):
         '''
@@ -53,39 +35,37 @@ class HostMonitor():
         10s timer. If resolution is successful, pings the IP addresses to
         check whether or not they are online.
         '''
-        for host in self.hosts:
+        self.hosts = Hosts()
+        for hostname in self.hosts.hostnames.split():
+            host = Host()
+            host.hostname = hostname
 
             # Resolves the IP address of the hostname
             try:
-                host["ip"] = socket.gethostbyname(host["hostname"])
+                host.ip = socket.gethostbyname(host.hostname)
 
                 # If the host is pingable, mark it as online
                 try:
-                    subprocess.check_output(["ping", "-c1", host["ip"]])
-                    host["status"] = "Online"
+                    subprocess.check_output(["ping", "-c1", host.ip])
+                    host.status = "Online"
 
                 # If pinging the host is unsuccessful, mark it as offline
                 except:
-                    host["status"] = "Offline"
+                    host.status = "Offline"
 
             # If hostname resolution fails, the IP address is set the unknown
             except:
-                host["ip"] = "Unknown"
-                host["status"] = "Unknown"
+                host.ip = "Unknown"
+                host.status = "Unknown"
+
+            self.hosts.hosts.append(host)
 
     def publish(self, event):
         '''
-        Formats and publishes the list of hosts and the information gathered
-        about them.
+        Publishes the list of hosts and the information gathered about them.
         '''
         self.check_hosts()
-
-        # Formats the list of host dictionaries into a list of host strings
-        formated_hosts = []
-        for host in self.hosts:
-            formated_hosts.append("{} {} {}".format(host["hostname"], host["ip"], host["status"]))
-
-        self.pub_hosts.publish(formated_hosts)
+        self.pub_hosts.publish(self.hosts)
 
 
 if __name__ == "__main__":

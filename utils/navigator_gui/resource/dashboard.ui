@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>635</width>
-    <height>427</height>
+    <width>621</width>
+    <height>458</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -275,7 +275,7 @@
           <property name="minimumSize">
            <size>
             <width>375</width>
-            <height>177</height>
+            <height>212</height>
            </size>
           </property>
           <property name="maximumSize">
@@ -298,17 +298,22 @@
           </property>
           <row>
            <property name="text">
+            <string>mil-nav-wamv</string>
+           </property>
+          </row>
+          <row>
+           <property name="text">
+            <string>mil-nav-perception</string>
+           </property>
+          </row>
+          <row>
+           <property name="text">
             <string>mil-nav-ubnt-wamv</string>
            </property>
           </row>
           <row>
            <property name="text">
             <string>mil-nav-ubnt-shore</string>
-           </property>
-          </row>
-          <row>
-           <property name="text">
-            <string>mil-nav-wamv</string>
            </property>
           </row>
           <row>

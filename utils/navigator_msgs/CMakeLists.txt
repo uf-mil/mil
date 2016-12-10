@@ -25,6 +25,7 @@ add_message_files(
   DockShape.msg
   DockShapes.msg
   KillStatus.msg
+  Host.msg
   Hosts.msg
 )
 

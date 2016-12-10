@@ -10,7 +10,7 @@ import functools
 import os
 
 from navigator_alarm import AlarmListener
-from navigator_msgs.msg import Hosts
+from navigator_msgs.msg import Hosts, Host
 from python_qt_binding import QtCore
 from python_qt_binding import QtGui
 from python_qt_binding import loadUi
@@ -88,23 +88,13 @@ class Dashboard(Plugin):
         an unknown IP address, and an unknown status in the hosts' receiving
         variable.
         '''
-        host_list = [
-            "mil-nav-ubnt-wamv",
-            "mil-nav-ubnt-shore",
-            "mil-nav-wamv",
-            "mil-com-velodyne-vlp16",
-            "mil-com-sick-lms111"
-        ]
-        host_template = {
-            "hostname": "",
-            "ip": "Unknown",
-            "status": "Unknown"
-        }
-        self.hosts["received"] = []
-        for host in host_list:
-            host_entry = host_template.copy()
-            host_entry["hostname"] = host
-            self.hosts["received"].append(host_entry)
+        self.hosts["received"] = Hosts()
+        for hostname in self.hosts["received"].hostnames.split():
+            host = Host()
+            host.hostname = hostname
+            host.ip = "Unknown"
+            host.status = "Unknown"
+            self.hosts["received"].hosts.append(host)
 
     def connect_ui(self):
         '''
@@ -382,14 +372,7 @@ class Dashboard(Plugin):
         Converts a published hosts string into a hosts dictionary and stores it
         in the hosts receiving variable.
         '''
-        self.hosts["received"] = []
-        for host in msg.hosts:
-            host_entry = {}
-            host_data = host.split()
-            host_entry["hostname"] = host_data[0]
-            host_entry["ip"] = host_data[1]
-            host_entry["status"] = host_data[2]
-            self.hosts["received"].append(host_entry)
+        self.hosts["received"] = msg
         self.hosts["stamp"] = rospy.Time.now()
 
     def monitor_hosts(self):
@@ -414,26 +397,26 @@ class Dashboard(Plugin):
         '''
         Updates the text and color of the displayed hosts table elements.
         '''
-        rows = self.hosts["received"]
+        rows = self.hosts["received"].hosts
         columns = ["ip", "status"]
 
         for row in range(len(rows)):
             column_color = []
 
             # Assigns colors to each item in the row
-            if (rows[row]["ip"] == "Unknown"):
+            if (getattr(rows[row], "ip") == "Unknown"):
                 column_color.append(self.colors["red"])
                 column_color.append(self.colors["red"])
             else:
                 column_color.append(self.colors["green"])
-                if (rows[row]["status"] == "Online"):
+                if (getattr(rows[row], "status") == "Online"):
                     column_color.append(self.colors["green"])
                 else:
                     column_color.append(self.colors["red"])
 
             # Updates the host's IP address and status in the devices table
             for column in range(len(columns)):
-                entry = QtGui.QLabel(rows[row][columns[column]])
+                entry = QtGui.QLabel(getattr(rows[row], columns[column]))
                 entry.setAlignment(QtCore.Qt.AlignCenter)
                 entry.setStyleSheet(column_color[column])
                 self.device_table.setCellWidget(row, column, entry)

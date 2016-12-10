@@ -7,7 +7,4 @@
 
   <!-- Sick -->
   <include file="$(find navigator_launch)/launch/subsystems/sick_lidar.launch"/>
-  
-  <!-- Host Monitoring -->
-  <node name="host_monitor" pkg="navigator_gui" type="host_monitor.py">
 </launch>
