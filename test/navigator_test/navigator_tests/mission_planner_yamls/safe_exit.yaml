@@ -1,11 +1,11 @@
-test_mission_1:
+safe_exit_mission:
   marker_dep: "Shooter"
   mission_dep: "None"
   is_base: False
   points: 100
-  min_time: 20000
+  min_time: 100
   weight: 2
-  mission_script: "test_timeout_mission"
+  mission_script: "test_mission_fails"
   looking_for: "None"
 
 base_mission:

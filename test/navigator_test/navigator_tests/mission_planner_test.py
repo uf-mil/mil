@@ -49,16 +49,23 @@ class MissionPlannerTest(TestUnit):
         stc = PerceptionObjectArray()
         stc_shooter = PerceptionObjectArray()
 
+        stc_marker_obj = PerceptionObject()
+        stc_marker_obj.name = "Scan_The_Code"
+        stc_marker_obj.position = Point(1, 1, 1)
+        shooter_marker_obj = PerceptionObject()
+        shooter_marker_obj.name = "Shooter"
+        shooter_marker_obj.position = Point(2, 2, 2)
+
         stc_obj = PerceptionObject()
-        stc_obj.name = "ScanTheCode"
+        stc_obj.name = "scan_the_code"
         stc_obj.position = Point(1, 1, 1)
         shooter_obj = PerceptionObject()
-        shooter_obj.name = "Shooter"
+        shooter_obj.name = "shooter"
         shooter_obj.position = Point(2, 2, 2)
 
         empty.objects = []
-        stc.objects = [stc_obj]
-        stc_shooter.objects = [stc_obj, shooter_obj]
+        stc.objects = [stc_marker_obj]
+        stc_shooter.objects = [stc_marker_obj, shooter_marker_obj]
 
         empty_resp = ObjectDBQueryResponse()
         all_marker = ObjectDBQueryResponse()
@@ -67,13 +74,13 @@ class MissionPlannerTest(TestUnit):
 
         all_marker.found = True
 
-        all_marker.objects = [stc_obj, shooter_obj]
+        all_marker.objects = [stc_marker_obj, shooter_marker_obj]
         all_marker.found = True
 
-        stc_response.objects = [stc_obj]
+        stc_response.objects = [stc_marker_obj]
         stc_response.found = True
 
-        shooter_response.objects = [shooter_obj]
+        shooter_response.objects = [shooter_marker_obj]
         shooter_response.found = True
 
         odom = Odometry()
@@ -84,23 +91,28 @@ class MissionPlannerTest(TestUnit):
         self.serv_empty = sg.spoof_service("/database/requests", ObjectDBQuery, [empty_resp])
 
         self.serv_markers = sg.spoof_service("/database/requests", ObjectDBQuery, [all_marker])
+        self.serv_markers_empty = sg.spoof_service("/database/requests", ObjectDBQuery,
+                                                   [empty_resp, all_marker, all_marker, all_marker, all_marker,
+                                                    all_marker, all_marker, all_marker, all_marker,
+                                                    all_marker, all_marker, all_marker, all_marker,
+                                                    all_marker, all_marker, all_marker, all_marker])
 
-        self.serv_normal_mission = sg.spoof_service("/database/requests", ObjectDBQuery, [stc_response,
-                                                                                          shooter_response,
-                                                                                          stc_response,
-                                                                                          stc_response,
-                                                                                          shooter_response,
-                                                                                          shooter_response,
-                                                                                          stc_response])
+        # self.missing_marker = sg.spoof_service("/database/requests", ObjectDBQuery, [stc_response,
+        #                                                                                   shooter_response,
+        #                                                                                   stc_response,
+        #                                                                                   stc_response,
+        #                                                                                   shooter_response,
+        #                                                                                   shooter_response,
+        #                                                                                   stc_response])
 
-        self.serv_missing_marker = sg.spoof_service("/database/requests", ObjectDBQuery, [empty_resp,
-                                                                                          stc_response,
-                                                                                          shooter_response,
-                                                                                          stc_response,
-                                                                                          stc_response,
-                                                                                          shooter_response,
-                                                                                          shooter_response,
-                                                                                          stc_response])
+        # self.serv_missing_marker = sg.spoof_service("/database/requests", ObjectDBQuery, [empty_resp,
+        #                                                                                   stc_response,
+        #                                                                                   shooter_response,
+        #                                                                                   stc_response,
+        #                                                                                   stc_response,
+        #                                                                                   shooter_response,
+        #                                                                                   shooter_response,
+        #                                                                                   stc_response])
 
         self.markers = sg.spoof_publisher("/database/objects", PerceptionObjectArray, [stc_shooter], [1000])
 
@@ -111,39 +123,65 @@ class MissionPlannerTest(TestUnit):
         self.pub_base_mission.start(self.nh)
         yield self.nh.subscribe("/mission_planner/mission", String, self.mission_cb)
         base_file = '/'.join(__file__.split('/')[0:-1]) + "/mission_planner_yamls"
-        yield self._run_mission(base_file + "/object_dep_not_found.yaml", self.empty, self.serv_empty, 30,
-                                "Mission fails with missing perception object > base mission can't find it",
-                                [("Starting", "test_missing_perception_object"),
-                                 ("Failing", "test_missing_perception_object")])
 
-        yield self._run_mission(base_file + "/object_dep_found.yaml", self.empty, self.serv_empty, 30,
-                                "Mission fails with missing perception object > base mission finds it",
-                                [("Starting", "test_missing_perception_object"),
-                                 ("Retrying", "test_missing_perception_object"),
-                                 ("Ending", "test_missing_perception_object")])
+        yield self._run_mission(base_file + "/shooter_in_database.yaml", self.empty, self.serv_markers, 30,
+                                "shooter is in the database",
+                                [("Starting", "base_mission"),
+                                 ("Ending", "base_mission"),
+                                 ("Starting", "test_mission_1"),
+                                 ("Ending", "test_mission_1")])
 
-        yield self._run_mission(base_file + "/mission_timeout.yaml", self.empty, self.serv_empty, 2.25,
-                                "Mission timeouts > No time for repeat",
-                                [("Starting", "test_timeout_mission"),
-                                 ("Failing", "test_timeout_mission"),
-                                 ("Starting", "test_mission"),
-                                 ("Ending", "test_mission")])
+        yield self._run_mission(base_file + "/shooter_not_in_database.yaml", self.empty, self.serv_markers, 30,
+                                "shooter is not in the database",
+                                [("Starting", "base_mission"),
+                                 ("Ending", "base_mission"),
+                                 ("Failing", "test_mission_1")])
 
-        yield self._run_mission(base_file + "/normal_behavior.yaml", self.markers, self.serv_normal_mission, 30,
-                                "Normal Behavior",
-                                [("Starting", "test_mission_1"),
+        yield self._run_mission(base_file + "/safe_exit.yaml", self.empty, self.serv_markers, 30,
+                                "Mission fails with a safe exit",
+                                [("Starting", "base_mission"),
+                                 ("Ending", "base_mission"),
+                                 ("Starting", "safe_exit_mission"),
+                                 ("Failing", "safe_exit_mission"),
+                                 ("SafeExiting", "safe_exit_mission")])
+
+        yield self._run_mission(base_file + "/timeout_repeat.yaml", self.empty, self.serv_markers, 1.01,
+                                "Mission timeouts, can repeat",
+                                [("Starting", "base_mission"),
+                                 ("Ending", "base_mission"),
+                                 ("Starting", "test_mission_1"),
+                                 ("TimingOut", "test_mission_1"),
+                                 ("Retrying", "test_mission_1"),
+                                 ("Starting", "test_mission_1"),
+                                 ("Ending", "test_mission_1")])
+
+        yield self._run_mission(base_file + "/normal_behavior_s1.yaml", self.empty, self.serv_markers, 30,
+                                "Normal Behavior, two children have the same parent",
+                                [("Starting", "base_mission"),
+                                 ("Ending", "base_mission"),
+                                 ("Starting", "test_mission_1"),
                                  ("Ending", "test_mission_1"),
+                                 ("Starting", "base_mission"),
+                                 ("Ending", "base_mission"),
                                  ("Starting", "test_mission_2"),
                                  ("Ending", "test_mission_2"),
+                                 ("Starting", "base_mission"),
+                                 ("Ending", "base_mission"),
                                  ("Starting", "test_mission_3"),
                                  ("Ending", "test_mission_3")])
 
-        yield self._run_mission(base_file + "/missing_marker.yaml", self.markers, self.serv_missing_marker, 30,
-                                "Normal Behavior, Missing Marker",
-                                [("Starting", "test_mission_2"),
+        yield self._run_mission(base_file + "/missing_marker_s2.yaml", self.empty, self.serv_markers_empty, 30,
+                                "Normal Behavior, Missing Marker, one child has the two parents",
+                                [("Starting", "base_mission"),
+                                 ("Ending", "base_mission"),
+                                 ("Starting", "test_mission_2"),
                                  ("Ending", "test_mission_2"),
+                                 ("Starting", "base_mission"),
+                                 ("Ending", "base_mission"),
                                  ("Starting", "test_mission_3"),
                                  ("Ending", "test_mission_3"),
+                                 ("Starting", "base_mission"),
+                                 ("Ending", "base_mission"),
                                  ("Starting", "test_mission_4"),
                                  ("Ending", "test_mission_4")])
 
