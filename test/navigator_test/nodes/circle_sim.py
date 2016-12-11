@@ -3,6 +3,7 @@ from __future__ import division
 
 import rospy
 
+from random import shuffle
 import numpy as np
 import cv2
 
@@ -43,13 +44,14 @@ class DoOdom(object):
 
 class Sim(object):
     def __init__(self, bf_size=60, min_t_spacing=10, num_of_buoys=15):
-        self.ogrid_pub = rospy.Publisher('/ogrid', OccupancyGrid, queue_size=2)
+        self.ogrid_pub = rospy.Publisher('/master_ogrid', OccupancyGrid, queue_size=2)
         self.odom = DoOdom(bf_size)
         
         # Generate some buoys and totems
         buoy_positions = np.random.uniform(bf_size, size=(num_of_buoys, 2))
         self.totem_positions = np.array([[47, 41], [45, 15], [25, 40], [5, 12]])
-        
+        self.colors = [[0, 1, 0], [1, 1, 0], [0, 0, 1], [1, 0, 0]]
+
         self.bf_size = bf_size
         self.buoy_size = 1  # radius of buoy (m)
         self.totem_size = 1  # radius of totem (m)
@@ -67,9 +69,9 @@ class Sim(object):
         # Some ogrid defs
         self.grid = None
         self.resolution = 0.3
-        self.height = bf_size
-        self.width = bf_size
-        self.origin = navigator_tools.numpy_quat_pair_to_pose([0, 0, 0],
+        self.height = bf_size * 3 
+        self.width = bf_size * 3
+        self.origin = navigator_tools.numpy_quat_pair_to_pose([-bf_size, -bf_size, 0],
                                                               [0, 0, 0, 1])
         self.transform = self._make_ogrid_transform()
         self.publish_ogrid = lambda *args: self.ogrid_pub.publish(self.get_message())
@@ -79,7 +81,7 @@ class Sim(object):
         self.publish_ogrid()
 
         # Now set up the database request service
-        rospy.Service("/database/request", ObjectDBRequest, self.got_request)
+        rospy.Service("/database/requests", ObjectDBQuery, self.got_request)
 
         rospy.Timer(rospy.Duration(1), self.publish_ogrid)
 
@@ -97,11 +99,23 @@ class Sim(object):
         obj.header = navigator_tools.make_header(frame="enu")
         obj.name = name
         obj.position = navigator_tools.numpy_to_point(position)
-        
+        obj.color.r = color[0]
+        obj.color.g = color[1]
+        obj.color.b = color[2]
+        obj.color.a = 1
+
+        return obj
 
     def got_request(self, req):
+        fprint("Request recieved {}".format(req.name))
         if req.name == "totem":
-            
+            objects = [self.position_to_object(p, c) for p, c in zip(self.totem_positions, self.colors)]
+        elif req.name == "BuoyField":
+            objects = [self.position_to_object([self.bf_size / 2, self.bf_size / 2, 0 ], [0, 0, 0], "BuoyField")]
+        else:
+            return {'found': False}
+
+        return {'objects': objects, 'found':True}
 
     def get_message(self):
         if self.grid is None:
