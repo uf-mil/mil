@@ -245,13 +245,17 @@ instlog "Installing install script dependencies"
 sudo apt-get install -qq wget curl aptitude fakeroot ssh git
 
 # Add software repositories for ROS and Gazebo
-instlog "Adding ROS and Gazebo PPAs to software sources"
+instlog "Adding ROS, Gazebo, and ARM PPAs to software sources"
 sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu trusty main\" > /etc/apt/sources.list.d/ros-latest.list"
 sudo sh -c "echo \"deb http://packages.osrfoundation.org/gazebo/ubuntu trusty main\" > /etc/apt/sources.list.d/gazebo-latest.list"
+sudo mkdir -p /etc/apt/preferences.d/
+sudo sh -c "echo -e 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm"
+sudo sh -c "echo \"deb http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu trusty main\" > /etc/apt/sources.list.d/gcc-arm-embedded.list"
 
 # Get the GPG signing keys for the above repositories
 wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xB01FA116
+sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xA3421AFB
 
 # Add software repository for Git-LFS
 instlog "Adding the Git-LFS packagecloud repository to software sources"
@@ -361,11 +365,10 @@ sudo apt-get install -qq libpcl-1.7-all libpcl-1.7-all-dev
 sudo apt-get install -qq libompl-dev
 
 # Visualization and graphical interfaces
+sudo apt-get install -qq python-opengl freeglut3-dev libassimp-dev
 sudo apt-get install -qq libvtk5-dev python-vtk
 sudo apt-get install -qq python-qt4-dev python-qt4-gl
-sudo apt-get install -qq python-opengl freeglut3-dev libassimp-dev
 sudo apt-get install -qq qt5-default
-sudo apt-get install -qq qt5-qmake
 
 # Tools
 sudo apt-get install -qq sshfs
@@ -374,14 +377,7 @@ git lfs install --skip-smudge
 sudo apt-get install -qq tmux
 
 # Tools needed for hardware-common
-sudo mkdir -p /etc/apt/preferences.d/
-sudo bash -c "echo -e 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm"
-sudo rm -f /etc/apt/sources.list.d/terry_guo-gcc-arm-embedded-*.list
-sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
-sudo apt-get update -qq
-sudo apt-get remove -qq -y gcc-arm-none-eabi binutils-arm-none-eabi
-sudo apt-get remove -qq -y libnewlib-arm-none-eabi libnewlib-dev
-sudo apt-get install -qq -y --force-yes gcc-arm-none-eabi
+sudo apt-get install -qq gcc-arm-none-eabi
 sudo apt-get install -qq autoconf automake libtool
 
 # Libraries needed by txros
