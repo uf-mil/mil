@@ -23,8 +23,10 @@ void StatePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   GZ_ASSERT(_sdf != NULL, "Received NULL SDF pointer");
   this->sdf = _sdf;
 
-  if (this->sdf->HasElement("model_z_offset")){
-    this->modelZOffset = this->sdf->Get<double>("model_z_offset");
+  if (this->sdf->HasElement("model_offset")){
+    this->modelOffset = this->sdf->Get<math::Vector3>("model_offset");
+  }else{
+    this->modelOffset = math::Vector3(0.0, 0.0, 0.0);
   }
 
   // Make sure the ROS node for Gazebo has already been initialized
@@ -33,11 +35,11 @@ void StatePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
 }
 /////////////////////////////////////////////////
 void StatePlugin::PoseRefUpdate(const nav_msgs::OdometryConstPtr& odom) {
-  math::Vector3 pos(odom->pose.pose.position.x, odom->pose.pose.position.y, odom->pose.pose.position.z + this->modelZOffset);
+  math::Vector3 pos(odom->pose.pose.position.x, odom->pose.pose.position.y, odom->pose.pose.position.z);
   math::Quaternion rot(odom->pose.pose.orientation.w, odom->pose.pose.orientation.x,
                        odom->pose.pose.orientation.y, odom->pose.pose.orientation.z);
 
-  this->pose = math::Pose(pos, rot);
+  this->pose = math::Pose(pos + rot.RotateVector(this->modelOffset), rot);
 }
 
 /////////////////////////////////////////////////

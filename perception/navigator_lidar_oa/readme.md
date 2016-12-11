@@ -29,6 +29,10 @@
 
 	- rosrun navigator_lidar_oa lidar
 
+**Resetting the node while running**
+
+	- rosservice call /database/requests "cmd: 'reset'"
+
 **Requesting real objects from the database**
 
 The service is name /database/requests with the input parameter name and will return the PerceptionObject message. Here are some example calls:

@@ -25,23 +25,23 @@
     <!-- Bayer color decoding -->
     <node pkg="nodelet" type="nodelet" name="down_image_proc_debayer"
         args="load image_proc/debayer camera_nodelet_manager">
-      <remap from="image_color" to="image_color" />
-      <remap from="image_mono" to="image_mono" />
-      <remap from="image_raw" to="image_raw" />
+      <remap from="image_color" to="down/image_color" />
+      <remap from="image_mono" to="down/image_mono" />
+      <remap from="image_raw" to="down/image_raw" />
     </node>
 
     <!-- mono rectification -->
     <node pkg="nodelet" type="nodelet" name="down_image_proc_rect"
           args="load image_proc/rectify camera_nodelet_manager">
-      <remap from="image_mono" to="image_mono" />
-      <remap from="image_rect" to="image_rect" />
+      <remap from="image_mono" to="down/image_mono" />
+      <remap from="image_rect" to="down/image_rect" />
     </node>
 
     <!-- color rectification -->
     <node pkg="nodelet" type="nodelet" name="down_image_proc_rect_color"
           args="load image_proc/rectify camera_nodelet_manager">
-      <remap from="image_mono" to="image_color" />
-      <remap from="image_rect" to="image_rect_color" />
+      <remap from="image_mono" to="down/image_color" />
+      <remap from="image_rect" to="down/image_rect_color" />
     </node>
 
   </group>

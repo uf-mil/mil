@@ -14,10 +14,76 @@ ros_t = lambda d: util.genpy.Duration(d)
 fprint = navigator_tools.fprint
 
 @util.cancellableInlineCallbacks
-def main():
-    nh, args = yield NodeHandle.from_argv_with_remaining("navigator_mission_runner", anonymous=True)
+def main(args):
+    nh, _ = yield NodeHandle.from_argv_with_remaining("navigator_mission_runner", anonymous=True)
     available_missions = [mission_name for mission_name in dir(nav_missions) if not mission_name.startswith('_')]
 
+    n = yield Navigator(nh)._init(args.sim)
+
+    action_kwargs = {'move_type': args.movetype}#, 'speed_factor': args.speedfactor}
+
+    action_kwargs['blind'] = args.blind
+
+    if args.plantime is not None:
+        action_kwargs['initial_plan_time'] = float(args.plantime)
+
+    if args.focus is not None:
+        focus = np.array(map(float, args.focus[1:-1].split(',')))
+        focus[2] = 1  # Tell lqrrt we want to look at the point
+        point = navigator_tools.numpy_to_point(focus)
+        action_kwargs['focus'] = point
+
+    if args.command == 'custom':
+        # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
+        fprint("Moving with the command: {}".format(args.argument), title="MOVE_COMMAND")
+        res = yield eval("n.move.{}.go(move_type='{move_type}')".format(args.argument, **action_kwargs))
+
+    elif args.command == 'rviz':
+        fprint("Moving to last published rviz position", title="MOVE_COMMAND")
+        sub = nh.subscribe("/rviz_goal", PoseStamped)
+        target_pose = yield util.wrap_time_notice(sub.get_next_message(), 2,  "Rviz goal")
+        res = yield n.move.to_pose(target_pose).go(**action_kwargs)
+
+    elif args.command == 'circle':
+        fprint("Moving in a circle around last clicked_point", title="MOVE_COMMAND")
+        sub = nh.subscribe("/rviz_point", PointStamped)
+        target_point = yield util.wrap_time_notice(sub.get_next_message(), 2, "Rviz point")
+        target_point = navigator_tools.point_to_numpy(target_point.point)
+        circle = n.move.circle_point(target_point, float(args.argument))
+        direction = 'cw' if args.argument == '-1' else 'ccw'
+        res = yield n.move.circle_point(target_point, direction).go()
+
+    else:
+        shorthand = {"f":"forward", "b":"backward", "l":"left", "r":"right", "yl":"yaw_left", "yr":"yaw_right"}
+        command = args.command if args.command not in shorthand.keys() else shorthand[args.command]
+        movement = getattr(n.move, command)
+
+        trans_move = command[:3] != "yaw"
+        unit = "m" if trans_move else "rad"
+        amount = args.argument
+        # See if there's a non standard unit at the end of the argument
+        if not args.argument[-1].isdigit():
+            last_digit_index = [i for i, c in enumerate(args.argument) if c.isdigit()][-1] + 1
+            amount = float(args.argument[:last_digit_index])
+            unit = args.argument[last_digit_index:]
+
+        # Get the kwargs to pass to the action server
+        station_hold = amount == '0'
+        if station_hold:
+            action_kwargs['move_type'] = 'hold'
+
+        msg = "Moving {} ".format(command) if trans_move else "Yawing {} ".format(command[4:])
+        fprint(msg + "{}{}".format(amount, unit), title="MOVE_COMMAND")
+        res = yield movement(float(amount), unit).go(**action_kwargs)
+
+    print
+    if res.failure_reason is not '':
+        fprint("FAILURE! Reason: {}".format(res.failure_reason), msg_color='red', title="MOVE_COMMAND")
+    else:
+        fprint("Move completed!", msg_color="green", title="MOVE_COMMAND")
+    defer.returnValue(reactor.stop())
+
+if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Command Line Mission Runner',
         usage='Pass any pose editor command with an argument. \n\t forward 1 (moves forward 1 meter) \n\t backward 2ft (moves backward 2 feet)')
     parser.add_argument('command', type=str,
@@ -34,71 +100,10 @@ def main():
         help='Time given to the planner for it\'s first plan.')
     parser.add_argument('-b', '--blind', action='store_true',
         help='Move without looking at the ogrid. DANGEROUS.')
+    parser.add_argument('-sf', '--speedfactor', type=float, default=1.0,
+        help='Speed to execute the command, don\'t go too much higher than 1 on the real boat.')
 
-    args = parser.parse_args(args[1:])
+    args = parser.parse_args()
 
-    n = yield Navigator(nh)._init(args.sim)
-
-    action_kwargs = {'move_type': args.movetype}
-
-    if args.blind is not None:
-        action_kwargs['blind'] = args.blind
-
-    if args.plantime is not None:
-        action_kwargs['initial_plan_time'] = float(args.plantime)
-
-    if args.focus is not None:
-        focus = np.array(map(float, args.focus[1:-1].split(',')))
-        focus[2] = 1  # Tell lqrrt we want to look at the point
-        point = navigator_tools.numpy_to_point(focus)
-        action_kwargs['focus'] = point
-
-    if args.command == 'custom':
-        # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
-        fprint("Moving with the command: {}".format(args.argument), title="MOVE_COMMAND")
-        yield eval("n.move.{}.go(move_type='{move_type}')".format(args.argument, **action_kwargs))
-
-    elif args.command == 'rviz':
-        fprint("Moving to last published rviz position", title="MOVE_COMMAND")
-        sub = nh.subscribe("/rviz_goal", PoseStamped)
-        target_pose = yield util.wrap_time_notice(sub.get_next_message(), 2,  "Rviz goal")
-        yield n.move.to_pose(target_pose).go(**action_kwargs)
-
-    elif args.command == 'circle':
-        fprint("Moving in a circle around last clicked_point with radius {} meters".format(args.argument), title="MOVE_COMMAND")
-        sub = nh.subscribe("/rviz_point", PointStamped)
-        target_point = yield util.wrap_time_notice(sub.get_next_message(), 2, "Rviz point")
-        target_point = navigator_tools.point_to_numpy(target_point.point)
-        circle = n.move.circle_point(target_point, float(args.argument))
-        focus = target_point
-        focus[2] = 1
-        
-        circle = n.move.circle(navigator_tools.point_to_numpy(target_point), args.argument)
-        for p in circle:
-            fprint("Moving to next point...")
-            yield p.go(focus=focus, move_type='skid')
-
-    else:
-        movement = getattr(n.move, args.command)
-
-        unit = 'm'
-        amount = args.argument
-        # See if there's a non standard unit at the end of the argument
-        if not args.argument[-1].isdigit():
-            last_digit_index = [i for i, c in enumerate(args.argument) if c.isdigit()][-1] + 1
-            amount = float(args.argument[:last_digit_index])
-            unit = args.argument[last_digit_index:]
-
-        # Get the kwargs to pass to the action server
-        station_hold = amount == '0'
-        if station_hold:
-            action_kwargs['move_type'] = 'hold'
-
-        fprint("{}ing {} non-arbitrary unit(s)".format(args.command, amount), title="MOVE_COMMAND")
-        yield movement(float(amount), unit).go(**action_kwargs)
-
-    defer.returnValue(reactor.stop())
-
-if __name__ == '__main__':
-    reactor.callWhenRunning(main)
+    reactor.callWhenRunning(lambda: main(args))
     reactor.run()

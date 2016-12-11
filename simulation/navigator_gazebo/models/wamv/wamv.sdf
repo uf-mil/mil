@@ -222,7 +222,7 @@
     </link>
 
     <plugin name="navigator_state_set" filename="libnavigator_state_set.so">
-      <model_z_offset>1.2</model_z_offset>
+      <model_offset>1.2319 0 1.2</mode_offset>
     </plugin>
 
     <!--

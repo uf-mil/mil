@@ -12,6 +12,18 @@ string BUOY=buoy
 string UNKNOWN=unknown
 string ALL=all
 
+string FAKE_SHOOTER=Shooter
+string FAKE_IDENTIFY_AND_DOCK=Dock
+string FAKE_SCAN_THE_CODE=Scan_The_Code
+string GATE1=Gate_1
+string GATE2=Gate_2
+string GATE3=Gate_3
+string BUOY_FIELD=BuoyField
+string FIND_THE_BREAK=FindBreak
+string CORAL_SURVEY=CoralSurvey
+string ACOUSTIC_PINGER=AcousticPinger
+string EMPTY_SPACE=EmptySpace
+
 geometry_msgs/Point position      # Estimated position of the buoy stamped (in the frame of the header)
 
 uint32 id                         # If we want to label each buoy and keep track of it

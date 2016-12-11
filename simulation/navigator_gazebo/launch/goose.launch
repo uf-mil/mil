@@ -468,5 +468,14 @@
 
     </group>
 
+    <node pkg="nodelet" type="nodelet" name="transform_odometry_sim" args="standalone odometry_utils/transform_odometry">
+        <rosparam>
+            frame_id: /enu
+            child_frame_id: /base_link
+        </rosparam>
+        <remap from="orig_odom" to="model_odom"/>
+    </node>
+
+
     <node pkg="navigator_gazebo" type="gazebo_controller.py" name="gazebo_interface"/>
 </launch>

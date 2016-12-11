@@ -7,8 +7,7 @@ from . import alarm_handlers
 from alarm_handlers._template import HandlerBase
 
 meta_alarms_inv = {
-    'kill': ('network-timeout', 'power-failure', 'battery-voltage', 'covariance-scale'),
-    'notify': ('fail-log',)
+    'kill': ('rc_kill', 'hw_kill'),
 }
 
 meta_alarms = {}

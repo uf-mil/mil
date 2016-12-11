@@ -5,9 +5,8 @@ import numpy as np
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator):
-    focus = np.array([-10, -10, 0])
-    pattern = navigator.move.circle_point(focus, radius=5)
+    pos = yield navigator.tx_pose
+    circle = navigator.move.d_circle_point(pos[0] + 1, 5, direction='cw')
 
-    for p in pattern:
-        yield p.go(move_type='skid', focus=focus)
-        print "Nexting"
+    for c in circle:
+        yield c.go(move_type='skid')

@@ -6,13 +6,14 @@ from txros import util, NodeHandle
 from twisted.internet import defer, reactor
 from navigator_tools import fprint
 import inspect
-from navigator_tests.mission_planner_test import MissionPlannerTest
+from navigator_test_lib import TestUnit
 
 
 def _import(module):
     clsmembers = inspect.getmembers(module, inspect.isclass)
-    print clsmembers
-    return clsmembers[0][1]
+    for i in clsmembers:
+        if issubclass(i[1], TestUnit):
+            return i[1]
 
 
 @util.cancellableInlineCallbacks
@@ -38,8 +39,10 @@ def main():
 
     for test in args.tests:
         fprint("Running Test!\n", title="TEST")
-        to_run = MissionPlannerTest(nh)
-        yield to_run.create_spoofs()
+        to_run = getattr(navigator_tests, test)
+        to_run = _import(to_run)
+        to_run = to_run(nh)
+        to_run.create_spoofs()
         result = yield to_run.run_tests()
 
         if result is None:

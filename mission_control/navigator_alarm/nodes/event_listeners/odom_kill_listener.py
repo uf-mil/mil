@@ -21,8 +21,7 @@ class OdomKillListener(object):
         self.odom_discontinuity = False
         self.killed = False
         self.odom_listener = rospy.Subscriber('/odom', Odometry, self.got_odom_msg, queue_size=1)
-        self.clear_kill_listener = AlarmListener('kill', self.clear_kill)
-        self.alarm_broadcaster, self.alarm = single_alarm('kill', severity=3,
+        self.alarm_broadcaster, self.alarm = single_alarm('odom_loss', severity=3,
                                                           problem_description="Killing wamv due to unreliable state estimation")
         rospy.Timer(rospy.Duration(0.1), self.check)
 

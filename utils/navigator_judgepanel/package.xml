@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>navigator_judgespanel</name>
+  <version>0.0.0</version>
+  <description>Navigator Judge's Panel</description>
+  <maintainer email="darkknight@todo.todo">darkknight</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>navigator_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>navigator_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>>
+  <export>
+  </export>
+</package>

@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import rospy
 import json
+import navigator_tools
 from navigator_msgs.msg import Alarm
-from navigator_alarm import alarm_handlers, meta_alarms, HandlerBase
+from navigator_alarm import alarm_handlers, meta_alarms, meta_alarms_inv, HandlerBase
 import datetime
 import inspect
 import sys
@@ -17,15 +18,18 @@ class AlarmHandler(object):
             - Handle alarms in sequence (Don't get stuck in the callback)
             - bag (if set) EVERY single alarm received
         '''
-        rospy.init_node('alarm_handler')
         # Queue size is large because you bet your ass we are addressing every alarm
         self.alarm_sub = rospy.Subscriber('/alarm_raise', Alarm, self.alarm_callback, queue_size=100)
         self.alarm_pub = rospy.Publisher('/alarm', Alarm, queue_size=100)
+        
         self.alarms = {}
-        self.alarm_republish_timer = rospy.Timer(rospy.Duration(0.05), self.republish_alarms)
-
         self.scenarios = {}
 
+        for alarm in meta_alarms_inv:
+           self.alarms[alarm] = Alarm(alarm_name=alarm, clear=True, header=navigator_tools.make_header()) 
+
+        self.alarm_republish_timer = rospy.Timer(rospy.Duration(0.05), self.republish_alarms)
+        
         # Go through everything in the navigator_alarm.alarm_handlers package
         for candidate_alarm_name in dir(alarm_handlers):
             # Discard __* nonsense
@@ -42,19 +46,12 @@ class AlarmHandler(object):
         alarms = self.alarms
         for alarm_name, alarm in alarms.items():
             self.alarm_pub.publish(alarm)
-
-            if alarm.clear:
+            
+            if alarm.clear and alarm.alarm_name not in meta_alarms_inv:
+                rospy.logwarn("Deleting alarm: {}".format(alarm.alarm_name))
                 del self.alarms[alarm_name]
 
     def alarm_callback(self, alarm):
-
-        # -- > We don't have to remove cleared alarms
-
-        # if alarm.clear:
-        #     rospy.logwarn("Clearing {}".format(alarm.alarm_name))
-        #     if alarm.alarm_name in self.alarms.keys():
-        #         self.alarms.pop(alarm.alarm_name)
-        #     return
         self.alarms[alarm.alarm_name] = alarm
 
         time = alarm.header.stamp
@@ -97,7 +94,23 @@ class AlarmHandler(object):
         # Handle meta-alarms (See Sub8 wiki)
         meta_alarm = meta_alarms.get(alarm.alarm_name, None)
         if meta_alarm is not None:
-            self.alarms[meta_alarm] = alarm
+            # Meta alarms require one of each alarm raiser clears before the meta alarm clears
+            self.alarms[meta_alarm].header = alarm.header
+            self.alarms[meta_alarm].node_name = alarm.node_name
+            if not alarm.clear:
+                rospy.logwarn("Raising meta-alarm: {}".format(meta_alarm))
+                self.alarms[meta_alarm].clear = False
+            else:
+                alarms_needed = meta_alarms_inv[meta_alarm]
+                # Make sure all the required alarms are clear to clear the meta alarm
+                for req_alarm in alarms_needed:
+                    a = self.alarms.get(req_alarm, None)
+                    if a is not None and not a.clear:
+                        break
+                else:
+                    rospy.logwarn("Clearing meta-alarm: {}".format(meta_alarm))
+                    self.alarms[meta_alarm].clear = True
+
             scenario = self.scenarios.get(meta_alarm, None)
             if scenario is not None:
                 if alarm.clear:
@@ -106,7 +119,8 @@ class AlarmHandler(object):
                     scenario.handle(time, parameters, alarm.alarm_name)
 
 
-
 if __name__ == '__main__':
+    rospy.init_node('alarm_handler')
+    rospy.sleep(.01)  # For the clock to get registered (w/o this was causing issues)
     alarm_handler = AlarmHandler()
     rospy.spin()
