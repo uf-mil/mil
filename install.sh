@@ -249,7 +249,7 @@ instlog "Adding ROS, Gazebo, and ARM PPAs to software sources"
 sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu trusty main\" > /etc/apt/sources.list.d/ros-latest.list"
 sudo sh -c "echo \"deb http://packages.osrfoundation.org/gazebo/ubuntu trusty main\" > /etc/apt/sources.list.d/gazebo-latest.list"
 sudo mkdir -p /etc/apt/preferences.d/
-sudo sh -c "echo -e 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm"
+sudo sh -c "echo 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm"
 sudo sh -c "echo \"deb http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu trusty main\" > /etc/apt/sources.list.d/gcc-arm-embedded.list"
 
 # Get the GPG signing keys for the above repositories
@@ -433,7 +433,7 @@ sudo pip install -q -U mayavi > /dev/null 2>&1
 instlog "Cloning common Git repositories that need to be built"
 ros_git_get https://github.com/txros/txros.git
 ros_git_get https://github.com/uf-mil/rawgps-tools.git
-ros_git_get https://github.com/ros-simulation/gazebo_ros_pkgs.git
+ros_git_get "https://github.com/ros-simulation/gazebo_ros_pkgs.git --branch indigo-devel"
 ros_git_get https://github.com/uf-mil/hardware-common.git
 
 
