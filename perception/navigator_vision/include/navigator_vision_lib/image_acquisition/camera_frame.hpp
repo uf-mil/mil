@@ -1,21 +1,18 @@
 #pragma once
 
-#include <camera_model.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+// #include <navigator_vision_lib/image_acquisition/camera_model.hpp>
 #include <opencv2/core/core.hpp>
 #include <ros/ros.h>
 #include <image_geometry/pinhole_camera_model.h>
 #include <cv_bridge/cv_bridge.h>
-#include <boost/shared_ptr.hpp>
+
+#include <memory>
 #include <string>
 #include <exception>
 
 
 namespace nav
 {
-
-// Helper function prototype
-std::string __getROSImgEncoding(const sensor_msgs::ImageConstPtr &image_msg_ptr);
 
 enum class PixelType
 {
@@ -34,16 +31,16 @@ enum class PixelType
     _8UC4=24, _8SC4, _16UC4, _16SC4, _32SC4, _32FC4, _64FC4, _UNKNOWN = -1
 };
 
-template<typename cam_model_ptr_t = boost::shared_ptr<image_geometry::PinholeCameraModel>,
-         typename time_t_ = ros::Time,
+template<typename cam_model_ptr_t = std::shared_ptr<image_geometry::PinholeCameraModel>,
          typename img_scalar_t = uint8_t,
+         typename time_t_ = ros::Time,         
          typename float_t = float>
 class CameraFrame
 {
 /*
     This class is used to represent a single frame from a camera. It contains information about
     the time the image was taken, the id and camera parameters of the camera that took it and the
-    image itself. This cis a templated class whose first template parameter is the type of the
+    image itself. This is a templated class whose first template parameter is the type of the
     pixel elements (commonly uint8_t for grayscale images and cv::Vec3b for RGB images)
 */
 
@@ -62,21 +59,12 @@ public:
         this->_seq = other._seq;
         this->_stamp = other._stamp;
         this->_image = other._image.clone(); // Object will have unoque copy of image data
-        this->cam_model_ptr = other.cam_model_ptr;
+        this->_cam_model_ptr = other.cam_model_ptr;
     }
 
     // From ROS img msg
-    CameraFrame(const sensor_msgs::ImageConstPtr &image_msg_ptr, boost::shared_ptr<image_geometry::PinholeCameraModel> &cam_model_ptr,
+    CameraFrame(const sensor_msgs::ImageConstPtr &image_msg_ptr, cam_model_ptr_t &cam_model_ptr,
                 bool is_rectified = false, float_t store_at_scale = 1.0);
-
-    CameraFrame(const sensor_msgs::ImageConstPtr &image_msg_ptr,
-                const sensor_msgs::CameraInfoConstPtr &info_msg_ptr)
-    {
-    }
-
-    ~CameraFrame()
-    {
-    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Public Methods /////////////////////////////////////////////////////////////////////////////
@@ -84,7 +72,7 @@ public:
 
     cam_model_ptr_t getCameraModelPtr() const
     {
-        return cam_model_ptr;
+        return _cam_model_ptr;
     }
 
     unsigned int seq() const
@@ -119,7 +107,7 @@ public:
 
     bool isCameraGeometryKnown() const
     {
-        return cam_model_ptr == nullptr;
+        return _cam_model_ptr == nullptr;
     }
 
 
@@ -130,7 +118,7 @@ private:
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     // Frames from the same source will have sequentially increasing seq numbers
-    unsigned int _seq;
+    unsigned int _seq = 0;
 
     // Time that this image was taken
     time_t_ _stamp;
@@ -138,9 +126,9 @@ private:
     // Stores the image data (not a cv:Mat header pointing to shared image data)
     cv::Mat_<img_scalar_t> _image;
 
-    // Points to a camera model object that stores information about the intrinsic and extrinsic 
-    // geometry of the camera used to take this image
-    cam_model_ptr_t cam_model_ptr;
+    // Points to a camera model object (shared ownership) that stores information about the intrinsic
+    // and extrinsic geometry of the camera used to take this image
+    cam_model_ptr_t _cam_model_ptr = nullptr;
 
     // Identifies if this image has already been rectified with the distortion parameters in the
     // associated camera model object
@@ -158,7 +146,7 @@ private:
     // Private Methods ////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    void project3DPointToImagePlane(Eigen::Matrix<float_t, 3, 1> cam_frame_pt);
+    // void project3DPointToImagePlane(Eigen::Matrix<float_t, 3, 1> cam_frame_pt);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -168,13 +156,13 @@ private:
 // Constructor from ROS image message and ROS pinhole camera model
 template<typename cam_model_ptr_t, typename time_t_, typename img_scalar_t, typename float_t>
 CameraFrame<cam_model_ptr_t, time_t_, img_scalar_t, float_t>::CameraFrame(
-    const sensor_msgs::ImageConstPtr &image_msg_ptr, boost::shared_ptr<image_geometry::PinholeCameraModel> &cam_model_ptr,
+    const sensor_msgs::ImageConstPtr &image_msg_ptr, cam_model_ptr_t &cam_model_ptr,
     bool is_rectified, float_t store_at_scale)
 try
 {
     // ROS image message decoding
     cv_bridge::CvImageConstPtr _ros_img_bridge;
-    std::string encoding = __getROSImgEncoding(image_msg_ptr);
+    std::string encoding = image_msg_ptr->encoding;
     _ros_img_bridge = cv_bridge::toCvShare(image_msg_ptr, encoding); 
     _ros_img_bridge->image.copyTo(_image);
 
@@ -186,7 +174,7 @@ try
     }
 
     // Store ptr to cam model object
-    this->cam_model_ptr = cam_model_ptr;
+    this->_cam_model_ptr = cam_model_ptr;
 
     this->_rectified = is_rectified;
 
@@ -208,15 +196,6 @@ catch( cv::Exception &e )
 catch(const std::exception &e)
 {
     ROS_WARN(e.what());
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Helper Functions ///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-std::string __getROSImgEncoding(const sensor_msgs::ImageConstPtr &image_msg_ptr)
-{
-    return image_msg_ptr->encoding;
 }
 
 }  // namespace nav

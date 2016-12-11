@@ -9,11 +9,11 @@ import numpy as np
 
 def main():
     rospy.init_node('tf_to_gazebo')
-    do_cam_fix = rospy.get_param("~cam_fix",False)
-    tf_parent = rospy.get_param("~tf_parent","/measurement")
+    do_cam_fix = rospy.get_param("~cam_fix", False)
+    tf_parent = rospy.get_param("~tf_parent", "/measurement")
     listener = tf.TransformListener()
     rate = rospy.Rate(10.0)
-    cam_fix_quat = (-0.5 , 0.5 ,-0.5 ,-0.5)
+    cam_fix_quat = (-0.5, 0.5 , -0.5 , -0.5)
 
     while not rospy.is_shutdown():
         try:
@@ -34,4 +34,8 @@ def main():
         rate.sleep()  
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+	print
+
