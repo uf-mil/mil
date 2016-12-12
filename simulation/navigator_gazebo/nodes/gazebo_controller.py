@@ -23,7 +23,9 @@ class GazeboInterface(object):
         self.last_enu = None
         self.last_odom = None
         self.position_offset = None
-        
+
+        self.state_sub_max_prd = rospy.Duration(1/100)  # s
+        self.last_state_sub_time = rospy.Time.now()
         self.state_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self.state_cb)
         self.state_pub = rospy.Publisher('model_odom', Odometry, queue_size=1)
         self.absstate_pub = rospy.Publisher('absodom', Odometry, queue_size=1)
@@ -39,7 +41,6 @@ class GazeboInterface(object):
         if self.last_absodom is not None:
             self.absstate_pub.publish(self.last_absodom)
 
-
     def enu_to_ecef(self, enu):
         if self.last_enu is None:
             return self.last_ecef
@@ -51,6 +52,10 @@ class GazeboInterface(object):
         return ecef
 
     def state_cb(self, msg):
+        if rospy.Time.now() - self.last_state_sub_time < self.state_sub_max_prd:
+            return
+        self.last_state_sub_time = rospy.Time.now()
+
         if self.target in msg.name:
             target_index = msg.name.index(self.target)
 
@@ -70,7 +75,6 @@ class GazeboInterface(object):
                     twist=twist
                 )
             )
-
 
             self.last_absodom = Odometry(
                 header=navigator_tools.make_header(frame='/ecef'),
