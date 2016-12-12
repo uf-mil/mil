@@ -44,7 +44,7 @@ class DoOdom(object):
 
 class Sim(object):
     def __init__(self, bf_size=60, min_t_spacing=10, num_of_buoys=15):
-        self.ogrid_pub = rospy.Publisher('/master_ogrid', OccupancyGrid, queue_size=2)
+        self.ogrid_pub = rospy.Publisher('/ogrid', OccupancyGrid, queue_size=2)
         self.odom = DoOdom(bf_size)
         
         # Generate some buoys and totems
