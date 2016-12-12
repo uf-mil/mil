@@ -1,0 +1,4 @@
+string name
+int id		
+---
+bool found			#Did we actually find the requested object?

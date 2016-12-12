@@ -443,7 +443,21 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
 	  	        markerServer->applyChanges();
             }
         }
-    } else if (values.size() == 2) {
+    }
+    else if (values[0] == "lock"){
+    	if (values.size != 3) {
+    		return false;
+    	}
+    	for (auto &obj : object_tracker.saved_objects) {
+			if (obj.id == values[2]) { 
+				auto name = values[1];
+				obj.lock(name, obj.position);
+				
+			}
+		}
+
+    } 
+    else if (values.size() == 2) {
 		auto name = req.cmd.substr(0,split1);
 		ROS_INFO_STREAM("LIDAR | ROI cmd is " << name << "," << values[0]  << "," << values[1]);
 		//Set new position

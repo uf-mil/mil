@@ -188,6 +188,7 @@ class ScanTheCodePerception(object):
     def search(self, scan_the_code):
         """Search for the colors in the scan the code object."""
         if len(self.image_cache) == 0:
+            print "no images"
             defer.returnValue((False, None))
         image_ros = self._get_closest_image(scan_the_code.header.stamp)
         try:
@@ -233,7 +234,7 @@ class ScanTheCodePerception(object):
         self.mission_complete = self.model_tracker.update_model(image, pnts, self.debug)
         if(self.mission_complete):
             print "MISSION COMPLETE"
-            defer.returnValue((True, self.model_tracker.colors))
+            defer.returnValue((False, self.model_tracker.colors))
         else:
             defer.returnValue((False, None))
 
