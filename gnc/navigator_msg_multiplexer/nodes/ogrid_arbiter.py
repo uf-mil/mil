@@ -87,12 +87,14 @@ def get_enu_corners(grid):
 
 
 class OGrid:
-    def __init__(self, topic, frame_id='enu'):
+    def __init__(self, topic, replace=False, frame_id='enu'):
         # Assert that the topic is valid
         self.last_message_stamp = None
+        self.topic = topic
 
         self.nav_ogrid = None           # Last recieved OccupancyGrid message
         self.np_map = None              # Numpy version of last recieved OccupancyGrid message
+        self.replace = replace
 
         self.subscriber = rospy.Subscriber(topic, OccupancyGrid, self.cb, queue_size=1)
 
@@ -152,10 +154,14 @@ class OGridServer:
     def dynamic_cb(self, config, level):
         fprint("OGRID DYNAMIC CONFIG UPDATE!", msg_color='blue')
         topics = config['topics'].replace(' ', '').split(',')
+        replace_topics = config['replace_topics'].replace(' ', '').split(',')
         new_grids = {}
 
         for topic in topics:
            new_grids[topic] = OGrid(topic) if topic not in self.ogrids else self.ogrids[topic]
+
+        for topic in replace_topics:
+           new_grids[topic] = OGrid(topic, replace=True) if topic not in self.ogrids else self.ogrids[topic]
 
         self.ogrids = new_grids
 
@@ -217,61 +223,69 @@ class OGridServer:
         g_y_min = index_limits[0][1]
         g_y_max = index_limits[1][1]
 
-        for ogrid in self.ogrids.itervalues():
-            # Hard coded 5 second timeout - probably no need to reconfig this.
-            if ogrid.nav_ogrid is None or ogrid.callback_delta > 5:
-                #fprint("Ogrid too old!")
-                continue
-            
-            # Proactively checking for errors.
-            # This should be temporary but probably wont be.
-            l_h, l_w = ogrid.nav_ogrid.info.height, ogrid.nav_ogrid.info.width 
-            g_h, g_w = global_ogrid.info.height, global_ogrid.info.width 
-            if l_h > g_h or l_w > g_w:
-                fprint("Proactively preventing errors in ogrid size.", msg_color="red")
-                new_size = max(l_w, g_w, l_h, g_h)
-                self.global_ogrid = self.create_grid([new_size, new_size])
+        to_add = [o for o in self.ogrids.itervalues() if not o.replace]
+        to_replace = [o for o in self.ogrids.itervalues() if o.replace]
 
-            # Local Ogrid (get everything in global frame though)
-            corners = get_enu_corners(ogrid.nav_ogrid)
-            index_limits = transform_enu_to_ogrid(corners, ogrid.nav_ogrid)
-            index_limits = transform_between_ogrids(index_limits, ogrid.nav_ogrid, global_ogrid)[:,:2]
-           
-            l_x_min = index_limits[0][0]
-            l_x_max = index_limits[1][0]
-            l_y_min = index_limits[0][1]
-            l_y_max = index_limits[1][1]
-
-            xs = np.sort([g_x_max, g_x_min, l_x_max, l_x_min])
-            ys = np.sort([g_y_max, g_y_min, l_y_max, l_y_min])
-            # These are indicies in cell units
-            start_x, end_x = np.round(xs[1:3])  # Grabbing indices 1 and 2
-            start_y, end_y = np.round(ys[1:3])
-
-            # Should be indicies
-            l_ogrid_start = transform_between_ogrids([start_x, start_y, 1], global_ogrid, ogrid.nav_ogrid)
-
-            # fprint("ROI {},{} {},{}".format(start_x, start_y, end_x, end_y))
-            index_width = l_ogrid_start[0] + end_x - start_x  # I suspect rounding will be a source of error
-            index_height = l_ogrid_start[1] + end_y - start_y
-            # fprint("width: {}, height: {}".format(index_width, index_height))
-            # fprint("Ogrid size: {}, {}".format(ogrid.nav_ogrid.info.height, ogrid.nav_ogrid.info.width))
-            
-            to_add = ogrid.np_map[l_ogrid_start[1]:index_height, l_ogrid_start[0]:index_width]
+        for ogrids in [to_add, to_replace]:
+            for ogrid in ogrids:
+                # Hard coded 5 second timeout - probably no need to reconfig this.
+                if ogrid.nav_ogrid is None or ogrid.callback_delta > 5:
+                    #fprint("Ogrid too old!")
+                    continue
                 
-            # fprint("to_add shape: {}".format(to_add.shape))
+                # Proactively checking for errors.
+                # This should be temporary but probably wont be.
+                l_h, l_w = ogrid.nav_ogrid.info.height, ogrid.nav_ogrid.info.width 
+                g_h, g_w = global_ogrid.info.height, global_ogrid.info.width 
+                if l_h > g_h or l_w > g_w:
+                    fprint("Proactively preventing errors in ogrid size.", msg_color="red")
+                    new_size = max(l_w, g_w, l_h, g_h)
+                    self.global_ogrid = self.create_grid([new_size, new_size])
 
-            # Make sure the slicing doesn't produce an error
-            end_x = start_x + to_add.shape[1]
-            end_y = start_y + to_add.shape[0]
-            
-            try:
-                # fprint("np_grid shape: {}".format(np_grid[start_y:end_y, start_x:end_x].shape))
-                np_grid[start_y:end_y, start_x:end_x] += to_add
-            except Exception as e:
-                fprint("Exception caught, probably a dimension mismatch:", msg_color='red')
-                print e
-                fprint("w: {}, h: {}".format(global_ogrid.info.width, global_ogrid.info.height), msg_color='red')
+                # Local Ogrid (get everything in global frame though)
+                corners = get_enu_corners(ogrid.nav_ogrid)
+                index_limits = transform_enu_to_ogrid(corners, ogrid.nav_ogrid)
+                index_limits = transform_between_ogrids(index_limits, ogrid.nav_ogrid, global_ogrid)[:,:2]
+               
+                l_x_min = index_limits[0][0]
+                l_x_max = index_limits[1][0]
+                l_y_min = index_limits[0][1]
+                l_y_max = index_limits[1][1]
+
+                xs = np.sort([g_x_max, g_x_min, l_x_max, l_x_min])
+                ys = np.sort([g_y_max, g_y_min, l_y_max, l_y_min])
+                # These are indicies in cell units
+                start_x, end_x = np.round(xs[1:3])  # Grabbing indices 1 and 2
+                start_y, end_y = np.round(ys[1:3])
+
+                # Should be indicies
+                l_ogrid_start = transform_between_ogrids([start_x, start_y, 1], global_ogrid, ogrid.nav_ogrid)
+
+                # fprint("ROI {},{} {},{}".format(start_x, start_y, end_x, end_y))
+                index_width = l_ogrid_start[0] + end_x - start_x  # I suspect rounding will be a source of error
+                index_height = l_ogrid_start[1] + end_y - start_y
+                # fprint("width: {}, height: {}".format(index_width, index_height))
+                # fprint("Ogrid size: {}, {}".format(ogrid.nav_ogrid.info.height, ogrid.nav_ogrid.info.width))
+                
+                to_add = ogrid.np_map[l_ogrid_start[1]:index_height, l_ogrid_start[0]:index_width]
+                    
+                # fprint("to_add shape: {}".format(to_add.shape))
+
+                # Make sure the slicing doesn't produce an error
+                end_x = start_x + to_add.shape[1]
+                end_y = start_y + to_add.shape[0]
+                
+                try:
+                    # fprint("np_grid shape: {}".format(np_grid[start_y:end_y, start_x:end_x].shape))
+                    fprint("{}, {}".format(ogrid.topic, ogrid.replace))
+                    if ogrid.replace:
+                        np_grid[start_y:end_y, start_x:end_x] = to_add
+                    else:
+                        np_grid[start_y:end_y, start_x:end_x] += to_add
+                except Exception as e:
+                    fprint("Exception caught, probably a dimension mismatch:", msg_color='red')
+                    print e
+                    fprint("w: {}, h: {}".format(global_ogrid.info.width, global_ogrid.info.height), msg_color='red')
 
         if self.draw_bounds and self.enforce_bounds:
             ogrid_bounds = transform_enu_to_ogrid(self.enu_bounds, global_ogrid).astype(np.int32)
