@@ -39,6 +39,7 @@ class KillInterface(object):
         self.kill_alarm = ab.add_alarm("hw_kill", problem_description="Hardware kill from a kill switch.")
         self.disconnect = ab.add_alarm("kill_system_disconnect")
         
+        self.need_kill = False
         self.killed = False
         # Initial check of kill status
         self.get_status() 
@@ -159,7 +160,7 @@ class KillInterface(object):
         sa = self.request('\x25')
         remote = self.request('\x26')
         computer = self.request('\x27')
-        #remote_conn = self.request('\x28')
+        remote_conn = self.request('\x28')
         
         killstatus = KillStatus()
         killstatus.overall = ord(overall) == 1
@@ -169,7 +170,10 @@ class KillInterface(object):
         killstatus.sa = ord(sa) == 1
         killstatus.remote = ord(remote) == 1
         killstatus.computer = ord(computer) == 1
+        killstatus.remote_conn = ord(remote_conn) == 1
         self.killstatus_pub.publish(killstatus)
+
+        self.need_kill = ord(remote_conn) == 0 
 
         # If any of the kill options (except the computer) are true, raise the alarm.
         if 5 >= sum(map(ord, [pf, pa, sf, sa, remote])) >= 1:
