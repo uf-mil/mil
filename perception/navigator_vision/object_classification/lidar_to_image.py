@@ -71,18 +71,23 @@ class LidarToImage(object):
         else:
             req.name = name
         obj = yield self._database(req)
+
+        print name
+        print obj.found
         if obj is None or not obj.found:
             defer.returnValue((None, None))
         rois = []
         ros_img = yield self._get_closest_image(obj.objects[0].header.stamp)
         if ros_img is None:
+            print "gahh"
             defer.returnValue((None, None))
         img = self.bridge.imgmsg_to_cv2(ros_img, "mono8")
         objects = obj.objects
         if name is not None:
-            objects = obj.objects[0]
+            objects = [obj.objects[0]]
 
         for o in objects:
+            print o.name
             if o.id not in self.id_to_perist:
                 self.id_to_perist[o.id] = []
             ppoints = self.id_to_perist[o.id]
@@ -186,7 +191,6 @@ class LidarToImage(object):
                 if diff < min_diff:
                     min_diff = diff
                     min_img = img
-            print min_diff.to_sec()
             if min_img is not None:
                 defer.returnValue(min_img)
             yield self.nh.sleep(.3)

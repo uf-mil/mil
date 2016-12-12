@@ -14,10 +14,10 @@ def get_closest_objects(position, objects, max_len=3, max_dist=30):
         idx = num
     objects = sorted(objects, key=lambda x: np.linalg.norm(position - rosmsg_to_numpy(x.position)))
     objects = objects[:idx]
-    dists = map(objects, key=lambda x: np.linalg.norm(position - rosmsg_to_numpy(x.position)))
+    dists = map(lambda x: np.linalg.norm(position - rosmsg_to_numpy(x.position)), objects)
     final_objs = []
     for i, d in enumerate(dists):
-        if d > max_dist:
+        if d < max_dist:
             final_objs.append(objects[i])
         else:
             break
@@ -44,13 +44,23 @@ def go_to_objects(navigator, position, objs):
 @txros.util.cancellableInlineCallbacks
 def myfunc(navigator, looking_for, center_marker):
     high_prob_objs = ["shooter", "dock"]
-    pos = yield navigator.tx_pose[0]
+    pos = yield navigator.tx_pose
+    pos = pos[0]
+
+    try:
+        center_marker = yield navigator.database_query(object_name=center_marker)
+        center_marker = center_marker.objects[0]
+    except:
+        fprint("A marker has not been set", msg_color="red")
+        defer.returnValue(False)
+
     mark_pos = nt.rosmsg_to_numpy(center_marker.position)
     dist = np.linalg.norm(pos - mark_pos)
     if dist > 10:
         yield navigator.move.set_position(mark_pos).go()
 
-    pos = yield navigator.tx_pose[0]
+    pos = yield navigator.tx_pose
+    pos = pos[0]
 
     if looking_for in high_prob_objs:
         try:
@@ -60,14 +70,17 @@ def myfunc(navigator, looking_for, center_marker):
             defer.returnValue(True)
         except MissingPerceptionObject:
             fprint("The object {} is not in the database".format(looking_for), msg_color="red")
-
-    objs = yield navigator.database_query(object_name="all")
-    objs = get_closest_objects(pos, objs)
+    try:
+        objs = yield navigator.database_query(object_name="all")
+        objs = get_closest_objects(pos, objs.objects)
+    except Exception as e:
+        print e
+        defer.returnValue(False)
 
     for o in objs:
         obj_pos = nt.rosmsg_to_numpy(o.position)
         yield navigator.move.look_at(obj_pos).set_position(mark_pos).backward(7).go()
-        cam_obj = yield navigator.camera_database_query(object_name=o.name, id=o.id)
+        cam_obj = yield navigator.camera_database_query(object_name=looking_for, id=o.id)
         if cam_obj.found:
             yield navigator.database_query(cmd="lock {} {}".format(o.id, looking_for))
             fprint("EXPLORER FOUND OBJECT", msg_color="blue")
@@ -79,11 +92,12 @@ def myfunc(navigator, looking_for, center_marker):
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator, **kwargs):
-    # center_marker = kwargs["center_marker"]
-    # looking_for = kwargs["looking_for"]
+    center_marker = kwargs["center_marker"]
+    looking_for = kwargs["looking_for"]
 
-    center_marker = "ScanTheCode"
-    looking_for = "dne"
+    # FOR TESTING
+    # center_marker = "Shooter"
+    # looking_for = "scan_the_code"
 
     navigator.change_wrench("autonomous")
     yield navigator.nh.sleep(.1)

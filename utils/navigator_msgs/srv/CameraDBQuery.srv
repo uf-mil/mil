@@ -1,4 +1,4 @@
 string name
-int id		
+uint32 id		
 ---
 bool found			#Did we actually find the requested object?

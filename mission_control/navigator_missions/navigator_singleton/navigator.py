@@ -174,13 +174,10 @@ class Navigator(object):
         defer.returnValue(res)
 
     @util.cancellableInlineCallbacks
-    def camera_database_query(self, object_name=None, raise_exception=True, **kwargs):
+    def camera_database_query(self, object_name=None, **kwargs):
         if object_name is not None:
             kwargs['name'] = object_name
             res = yield self._camera_database_query(navigator_srvs.CameraDBQueryRequest(**kwargs))
-
-            if not res.found and raise_exception:
-                raise MissingPerceptionObject(kwargs['name'])
 
             defer.returnValue(res)
 
