@@ -404,8 +404,8 @@ bool objectRequest(navigator_msgs::ObjectDBQuery::Request  &req, navigator_msgs:
             for (auto &obj : object_tracker.saved_objects) {
                 if (std::to_string(obj.id) == string_split[2]) { 
                     auto name = string_split[1];
-                    object_tracker.lock(name, obj.position);
-                    
+                    obj.name = name;
+                    obj.locked = true;
                 }
             }
         }
