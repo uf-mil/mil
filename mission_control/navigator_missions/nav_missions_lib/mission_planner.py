@@ -95,7 +95,7 @@ class MissionPlanner:
         if not redo:
             res = yield self._run_base_mission()
             if not res:
-                yield self._err_mission(ValueError("You used an odd number!"))
+                yield self._err_mission(ValueError())
                 defer.returnValue(False)
 
         self.current_mission.start_time = self.nh.get_time()

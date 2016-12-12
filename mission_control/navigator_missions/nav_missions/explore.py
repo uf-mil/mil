@@ -59,6 +59,9 @@ def myfunc(navigator, looking_for, center_marker):
     if dist > 10:
         yield navigator.move.set_position(mark_pos).go()
 
+    if looking_for is None:
+        defer.returnValue(True)
+
     pos = yield navigator.tx_pose
     pos = pos[0]
 
