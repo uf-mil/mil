@@ -18,6 +18,8 @@ class PingerMission:
     GATE_CROSS_METERS = 10
     FREQ = 35000
     LISTEN_TIME = 15
+    MAX_CIRCLE_BUOY_ERROR = 30
+    CIRCLE_RADIUS = 5
 
     def __init__(self, navigator):
         self.navigator = navigator
@@ -27,7 +29,8 @@ class PingerMission:
         self.negate = False
         self.marker_pub = self.navigator.nh.advertise("/pinger/debug_marker",MarkerArray)
         self.markers = MarkerArray()
-        self.last_id = 0;
+        self.last_id = 0
+        self.circle_totem = None
 
     def reset_freq(self):
         return self.reset_client(SetFrequencyRequest(frequency=self.FREQ))
@@ -151,6 +154,11 @@ class PingerMission:
 
             sorted_circle = sorted(totems.objects, key=lambda t: abs(np.linalg.norm(estimated_circle_buoy - navigator_tools.rosmsg_to_numpy(t.position)[:2])))
             self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_circle[0].position), color=(1,1,1), time=cur_time)
+            if np.linalg.norm(navigator_tools.rosmsg_to_numpy(sorted_circle[0].position)[:2] - estimated_circle_buoy) < self.MAX_CIRCLE_BUOY_ERROR:
+                self.circle_totem = navigator_tools.rosmsg_to_numpy(sorted_circle[0].position)
+                fprint("PINGER: found buoy to circle at {}".format(self.circle_totem), msg_color='green')
+            else:
+                fprint("PINGER: circle buoy is too far from where it should be", msg_color='red')
 
             if sorted_3[0].color.r > 0.9:
                 color_3 = "RED"
@@ -169,7 +177,7 @@ class PingerMission:
                 self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(0,1,0), time=cur_time)
             else:
                 color_1 = "UNKNOWN"
-                yself.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(1,1,1), time=cur_time)
+                self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(1,1,1), time=cur_time)
 
             if int(self.gate_index) == 0:
                 if color_1 == "RED":
@@ -209,7 +217,10 @@ class PingerMission:
 
     @txros.util.cancellableInlineCallbacks
     def circle_buoy(self):
-         pass
+        if self.circle_totem != None:
+            pattern = self.navigator.move.d_circle_point(self.circle_totem, radius=self.CIRCLE_RADIUS, direction='cw')
+            for pose in pattern:
+                yield pose.go(move_type="skid")
 
     def get_gate_perp(self):
         """Calculate a perpendicular to the line formed by the three gates"""
@@ -246,6 +257,7 @@ class PingerMission:
         fprint("PINGER: Going through gate", msg_color='green') 
         yield self.go_thru_gate()
         yield self.set_active_pinger()
+        yield self.circle_buoy()
         #  yield self.circle_buoy()
         fprint("PINGER: Ended Pinger Mission", msg_color='green') 
 
