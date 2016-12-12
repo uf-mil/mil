@@ -6,6 +6,7 @@ import threading
 import serial
 
 from std_msgs.msg import String
+from std_msgs.msg import Header
 
 from navigator_tools import thread_lock
 from navigator_tools import fprint as _fprint
@@ -26,6 +27,11 @@ class KillInterface(object):
     def __init__(self, port="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A104OWRY-if00-port0", baud=9600):
         self.ser = serial.Serial(port=port, baudrate=baud, timeout=0.25)
         self.ser.flush()
+        
+        self.timeout = 5
+        network_msg = None
+        update_network = lambda msg: setattr(self, "network_msg", msg)
+        self.network_listener = rospy.Subscriber("/keep_alive", Header, update_network)
         
         self.killstatus_pub = rospy.Publisher("/killstatus", KillStatus, queue_size=1)
 
@@ -58,6 +64,14 @@ class KillInterface(object):
              
             self.control_check()
             self.get_status()
+            if not self.network_kill():
+                self.ping()
+
+    def network_kill(self):
+        if self.network_msg is None:
+            return False
+
+        return ((rospy.Time.now() - self.network_msg.stamp) > self.timeout)
 
     def to_hex(self, arg):
         ret = '\x99'

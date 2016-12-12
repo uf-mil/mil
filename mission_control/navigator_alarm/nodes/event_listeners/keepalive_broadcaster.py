@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
-from std_msgs.msg import String
+import navigator_tools
+from std_msgs.msg import Header
 
 
 class KeepAliveBroadcaster(object):
@@ -11,11 +12,12 @@ class KeepAliveBroadcaster(object):
     TLDR: don't run this on the boat.
     '''
     def __init__(self):
-        self.pub = rospy.Publisher('/keep_alive', String, queue_size=1)
+        self.pub = rospy.Publisher('/keep_alive', Header, queue_size=1)
         self.timer = rospy.Timer(rospy.Duration(0.5), self.keepalive_pub)
 
     def keepalive_pub(self, *args):
-        self.pub.publish(String('keep_alive'))
+        h = navigator_tools.make_header()
+        self.pub.publish(h)
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import Header
 from navigator_alarm import single_alarm
 import time
 
@@ -11,9 +11,8 @@ class KeepAliveListener(object):
     '''
     def __init__(self, timeout=2.0):
         self.timeout = rospy.Duration(timeout)
-        self.last_time = rospy.Time.now()
-        self.last_msg = ''
-        self.sub = rospy.Subscriber('/keep_alive', String, self.got_network_msg, queue_size=1)
+        self.last_msg = None 
+        self.sub = rospy.Subscriber('/keep_alive', Header, self.got_network_msg, queue_size=1)
 
         self.alarm_broadcaster, self.alarm = single_alarm('network_loss', severity=3, problem_description="Network loss")
         rospy.Timer(rospy.Duration(0.1), self.check)
@@ -26,11 +25,12 @@ class KeepAliveListener(object):
             self.alarm.clear_alarm()
 
     def got_network_msg(self, msg):
-        self.last_msg = msg.data
-        self.last_time = rospy.Time.now()
+        self.last_msg = msg
 
     def need_kill(self):
-        return ((rospy.Time.now() - self.last_time) > self.timeout)
+        if self.last_msg is None:
+            return False
+        return ((rospy.Time.now() - self.last_msg.stamp) > self.timeout)
 
 
 if __name__ == '__main__':
