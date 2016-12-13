@@ -2,7 +2,7 @@ import txros
 from twisted.internet import defer
 from txros import util, tf
 import navigator_tools as nt
-from navigator_tools import Debug
+from navigator_tools import CvDebug
 import sys
 from collections import deque
 from cv_bridge import CvBridge
@@ -35,7 +35,7 @@ class LidarToImage(object):
         self.busy = False
         self.c = 0
 
-        self.debug = Debug(nh)
+        self.debug = CvDebug(nh)
 
     @util.cancellableInlineCallbacks
     def init_(self, cam="r"):
@@ -64,10 +64,16 @@ class LidarToImage(object):
         self.cam_info = info
 
     @util.cancellableInlineCallbacks
-    def get_all_object_rois(self):
+    def get_object_rois(self, name=None):
         req = ObjectDBQueryRequest()
-        req.name = 'all'
+        if name is None:
+            req.name = 'all'
+        else:
+            req.name = name
         obj = yield self._database(req)
+
+        print name
+        print obj.found
         if obj is None or not obj.found:
             defer.returnValue((None, None))
         rois = []
@@ -75,7 +81,12 @@ class LidarToImage(object):
         if ros_img is None:
             defer.returnValue((None, None))
         img = self.bridge.imgmsg_to_cv2(ros_img, "mono8")
-        for o in obj.objects:
+        objects = obj.objects
+        if name is not None:
+            objects = [obj.objects[0]]
+
+        for o in objects:
+            print o.name
             if o.id not in self.id_to_perist:
                 self.id_to_perist[o.id] = []
             ppoints = self.id_to_perist[o.id]
@@ -100,11 +111,8 @@ class LidarToImage(object):
                 continue
             if ymin < 0:
                 ymin = 0
-            print "bbox", bbox
             roi = img[ymin:ymax, xmin:xmax]
-            print "preshape", roi.shape
             roi = self._resize_image(roi)
-            print "postshape", roi.shape
             ret_obj = {}
             ret_obj["id"] = o.id
             ret_obj["points"] = points
@@ -182,7 +190,6 @@ class LidarToImage(object):
                 if diff < min_diff:
                     min_diff = diff
                     min_img = img
-            print min_diff.to_sec()
             if min_img is not None:
                 defer.returnValue(min_img)
             yield self.nh.sleep(.3)
