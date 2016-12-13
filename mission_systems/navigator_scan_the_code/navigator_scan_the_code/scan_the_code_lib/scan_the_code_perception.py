@@ -234,7 +234,7 @@ class ScanTheCodePerception(object):
         self.mission_complete = self.model_tracker.update_model(image, pnts, self.debug)
         if(self.mission_complete):
             print "MISSION COMPLETE"
-            defer.returnValue((False, self.model_tracker.colors))
+            defer.returnValue((True, self.model_tracker.colors))
         else:
             defer.returnValue((False, None))
 

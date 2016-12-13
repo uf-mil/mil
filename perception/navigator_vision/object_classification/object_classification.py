@@ -95,7 +95,7 @@ class Training(object):
     def train(self):
         descs = []
         classify = []
-        img, roi_val, rois = self.config.get_imgs(self.roi_file)
+        imgs, roi_val, rois = self.config.get_imgs(self.roi_file)
         for r in rois:
             roi, clss = r
             desc = self.config.descriptor.get_descriptor(roi)
