@@ -21,6 +21,7 @@ ROT_SAFE_DIST = 6  # How close to rotate around it
 def main(navigator, **kwargs):
     # rgb color map to param vlues
     color_map = {'BLUE': [0, 0, 1], 'RED': [1, 0, 0], 'YELLOW': [1, 1, 0], 'GREEN': [0, 1, 0]}
+    directions = {'RED': 'CLOCKWISE', 'GREEN': 'COUNTER-CLOCKWISE', 'BLUE': 'CLOCKWISE', 'YELLOW': 'COUNTER-CLOCKWISE'}
     
     ogrid = OccupancyGridFactory(navigator)
 
@@ -28,13 +29,11 @@ def main(navigator, **kwargs):
     all_found = False
 
     # Get colors of intrest and directions
-    c1 = navigator.mission_params['totem_color_1'].get()
-    d1 = navigator.mission_params['totem_direction_1'].get()
-    c2 = navigator.mission_params['totem_color_2'].get()
-    d2 = navigator.mission_params['totem_direction_2'].get()
+    c1 = "GREEN" #navigator.mission_params['totem_color_1'].get()
+    c2 = "BLUE" #navigator.mission_params['totem_color_2'].get()
+    c2 = "RED" #navigator.mission_params['totem_color_3'].get()
     
-    colors = [c1, c2]
-    directions = [d1, d2]
+    colors = [c1, c2, c3]
 
     buoy_field = yield navigator.database_query("BuoyField")
     buoy_field_point = navigator_tools.point_to_numpy(buoy_field.objects[0].position)
@@ -56,9 +55,9 @@ def main(navigator, **kwargs):
     #yield navigator.move.yaw_left(1).go(move_type='skid')
 
     # TODO: What if we don't see the colors?
-    for color, direction in zip(colors, directions):
+    for color in colors:
         color = yield color
-        direction = yield direction
+        direction = directions[color]
         
         fprint("Going to totem colored {} in direction {}".format(color, direction), title="CIRCLE_TOTEM")
         target = yield get_colored_buoy(navigator, color_map[color])
