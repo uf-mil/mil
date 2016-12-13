@@ -221,6 +221,8 @@ class PingerMission:
             pattern = self.navigator.move.d_circle_point(self.circle_totem, radius=self.CIRCLE_RADIUS, direction='cw')
             for pose in pattern:
                 yield pose.go(move_type="skid")
+            for p in reversed(self.gate_thru_points):
+                yield self.navigator.move.set_position(p).go(initial_plan_time=5, move_type="skid")
 
     def get_gate_perp(self):
         """Calculate a perpendicular to the line formed by the three gates"""

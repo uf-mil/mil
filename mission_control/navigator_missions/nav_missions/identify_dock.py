@@ -13,6 +13,7 @@ import navigator_tools
 from navigator_tools import fprint, MissingPerceptionObject
 from navigator_msgs.srv import GetDockBays, GetDockBaysRequest
 from navigator_msgs.srv import CameraToLidarTransform,CameraToLidarTransformRequest
+from docking_ogrid_manager import OgridFactory
 
 print_good = lambda message: fprint(message, title="IDENTIFY DOCK",  msg_color='green')
 print_bad  = lambda message: fprint(message, title="IDENTIFY DOCK",  msg_color='yellow')
@@ -23,7 +24,7 @@ class IdentifyDockMission:
     LOOK_AT_DISTANCE   = 10  # Distance in front of bay to move to to look at shape
     LOOK_SHAPE_TIMEOUT = 10  # Time to look at bay with cam to see symbol
     DOCK_DISTANCE      = 3   # Distance in front of bay point to dock to
-    DOCK_SLEEP_TIME    = 5   # Time to wait after docking before undocking aka show off time
+    DOCK_SLEEP_TIME    = 5   # Time to wait after docking before undocking aka show off time 1.016+
     WAYPOINT_NAME      = "dock"
     TIMEOUT_CIRCLE_VISION_ONLY    = 75
 
@@ -38,10 +39,12 @@ class IdentifyDockMission:
         self.docked = (False, False)
 
     def start_ogrid(self):
-        return self.ogrid_activation_client(SetBoolRequest(data=True))
+        pass
+        #return self.ogrid_activation_client(SetBoolRequest(data=True))
 
     def stop_ogrid(self):
-        return self.ogrid_listen_client(SetBoolRequest(data=False))
+        pass
+        #return self.ogrid_activation_client(SetBoolRequest(data=False))
 
     @txros.util.cancellableInlineCallbacks
     def get_target_bays(self):
@@ -153,16 +156,20 @@ class IdentifyDockMission:
     '''
     Alternative method using vision only like detect deliver, no lidar analysis perception
     '''
+    @txros.util.cancellableInlineCallbacks
     def _init_vision_only(self):
         self.ogrid_activation_client = self.navigator.nh.get_service_client('/identify_dock/active', SetBool)
         self.cameraLidarTransformer = self.navigator.nh.get_service_client("/camera_to_lidar/stereo_right_cam", CameraToLidarTransform)
+        self.ogrid_clear = OgridFactory(self.navigator)
+        yield self.ogrid_clear.init_()
         self.identified_shapes = {}
 
     def update_shape(self, shape_res, normal_res, tf):
+       print_good("Found (Shape={}, Color={} in a bay".format(shape_res.Shape, shape_res.Color))
        self.identified_shapes[(shape_res.Shape, shape_res.Color)] = self.get_shape_pos(normal_res, tf)
 
     def done_circling(self):
-        print_good("CURRENT IDENTIFIED BAYS: {}".format(self.identifed_shapes))
+        print_good("CURRENT IDENTIFIED BAYS: {}".format(self.identified_shapes))
         for shape_color, point_normal in self.identified_shapes.iteritems():
             if self.correct_shape(self.bay_1, shape_color):
               for shape_color2, point_normal in self.identified_shapes.iteritems():
@@ -184,7 +191,7 @@ class IdentifyDockMission:
                 else:
                       print_bad("NORMAL ERROR: {}".format(normal_res.error))
         else:
-            print_bad("SHAPES ERROR: ".format(shapes.error))
+            print_bad("SHAPES ERROR: {}".format(shapes.error))
         defer.returnValue(False)
 
     def _bounding_rect(self,points):
@@ -202,7 +209,7 @@ class IdentifyDockMission:
         print_good("Ended circle search")
 
     def normal_is_sane(self, vector3):
-         return abs(navigator_tools.rosmsg_to_numpy(vector3)[1]) < 0.2
+         return abs(navigator_tools.rosmsg_to_numpy(vector3)[1]) < 0.4
 
     @txros.util.cancellableInlineCallbacks
     def get_normal(self, shape):
@@ -216,6 +223,7 @@ class IdentifyDockMission:
         normal_res = yield self.cameraLidarTransformer(req)
         if not self.normal_is_sane(normal_res.normal):
             normal_res.success = False
+            print_bad("UNREASONABLE NORMAL={}".format(normal_res.normal))
             normal_res.error = "UNREASONABLE NORMAL"
         defer.returnValue(normal_res)
 
@@ -263,15 +271,15 @@ class IdentifyDockMission:
         move_front = self.navigator.move.set_position(shapepoint + shapenormal * self.LOOK_AT_DISTANCE).look_at(shapepoint)
         move_in    = self.navigator.move.set_position(shapepoint + shapenormal *  self.DOCK_DISTANCE).look_at(shapepoint)
         yield move_front.go()
-        #  yield self.start_ogrid()
+        yield self.ogrid_clear.toggle()
         yield move_in.go()
         yield self.navigator.nh.sleep(self.DOCK_SLEEP_TIME)
         yield move_front.go()
-        #  yield self.stop_ogrid()
+        yield self.ogrid_clear.toggle()
 
     @txros.util.cancellableInlineCallbacks
     def find_and_dock_vision_only(self):
-        self._init_vision_only()
+        yield self._init_vision_only()
         yield self.navigator.vision_proxies["get_shape_front"].start()
         yield self.get_target_bays()
         yield self.get_waypoint()
@@ -281,8 +289,8 @@ class IdentifyDockMission:
 
 @txros.util.cancellableInlineCallbacks
 def setup_mission(navigator):
-    bay_1_color = "RED"
-    bay_1_shape = "CIRCLE"
+    bay_1_color = "GREEN"
+    bay_1_shape = "TRIANGLE"
     bay_2_color = "RED"
     bay_2_shape = "CIRCLE"
     yield navigator.mission_params["dock_shape_2"].set(bay_2_shape)
