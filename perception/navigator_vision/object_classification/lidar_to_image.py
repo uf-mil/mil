@@ -79,7 +79,6 @@ class LidarToImage(object):
         rois = []
         ros_img = yield self._get_closest_image(obj.objects[0].header.stamp)
         if ros_img is None:
-            print "gahh"
             defer.returnValue((None, None))
         img = self.bridge.imgmsg_to_cv2(ros_img, "mono8")
         objects = obj.objects
