@@ -122,6 +122,7 @@ class OGridServer:
         self.ogrid_min_value = -1
         self.draw_bounds = False 
         self.resolution = resolution
+        self.ogrid_timeout = 2
         self.enforce_bounds = False
         self.enu_bounds = [[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]]
 
@@ -172,6 +173,7 @@ class OGridServer:
         self.ogrid_min_value = config['ogrid_min_value']
         self.draw_bounds = config['draw_bounds']
         self.resolution = config['resolution']
+        self.ogrid_timeout = config['ogrid_timeout']
 
         if config['set_origin']:
             fprint("Setting origin!")
@@ -229,7 +231,7 @@ class OGridServer:
         for ogrids in [to_add, to_replace]:
             for ogrid in ogrids:
                 # Hard coded 5 second timeout - probably no need to reconfig this.
-                if ogrid.nav_ogrid is None or ogrid.callback_delta > 5:
+                if ogrid.nav_ogrid is None or ogrid.callback_delta > self.ogrid_timeout:
                     #fprint("Ogrid too old!")
                     continue
                 
