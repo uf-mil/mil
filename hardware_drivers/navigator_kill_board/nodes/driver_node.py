@@ -28,8 +28,8 @@ class KillInterface(object):
         self.ser = serial.Serial(port=port, baudrate=baud, timeout=0.25)
         self.ser.flush()
         
-        self.timeout = 5
-        network_msg = None
+        self.timeout = rospy.Duration(1)
+        self.network_msg = None
         update_network = lambda msg: setattr(self, "network_msg", msg)
         self.network_listener = rospy.Subscriber("/keep_alive", Header, update_network)
         
@@ -44,7 +44,7 @@ class KillInterface(object):
         # Initial check of kill status
         self.get_status() 
 
-        self.current_wrencher = ''
+        oelf.current_wrencher = ''
         _set_wrencher = lambda msg: setattr(self, 'current_wrencher', msg.data)
         rospy.Subscriber("/wrench/current", String, _set_wrencher)
 
@@ -59,18 +59,17 @@ class KillInterface(object):
                            '\x1E': self.disconnect.clear_alarm, '\x1F': self.disconnect.raise_alarm,}
         
         while not rospy.is_shutdown():
-            rospy.sleep(.1)
+            rospy.sleep(.5)
             while self.ser.inWaiting() > 0:
                 self.check_buffer()
-             
-            self.control_check()
             self.get_status()
+            self.control_check()
             if not self.network_kill():
                 self.ping()
 
     def network_kill(self):
         if self.network_msg is None:
-            return False
+           return False
 
         return ((rospy.Time.now() - self.network_msg.stamp) > self.timeout)
 
@@ -113,7 +112,8 @@ class KillInterface(object):
     
         fprint("Reading response...", title="REQUEST")
         resp = self.ser.read(1)
-
+        
+        rospy.sleep(.05)
         if recv_str is None:
             fprint("Response received: {}".format(self.to_hex(resp)), msg_color='blue')
             return resp
@@ -160,20 +160,25 @@ class KillInterface(object):
         sa = self.request('\x25')
         remote = self.request('\x26')
         computer = self.request('\x27')
-        remote_conn = self.request('\x28')
+        # remote_conn = self.request('\x28')
         
-        killstatus = KillStatus()
-        killstatus.overall = ord(overall) == 1
-        killstatus.pf = ord(pf) == 1
-        killstatus.pa = ord(pa) == 1
-        killstatus.sf = ord(sf) == 1
-        killstatus.sa = ord(sa) == 1
-        killstatus.remote = ord(remote) == 1
-        killstatus.computer = ord(computer) == 1
-        killstatus.remote_conn = ord(remote_conn) == 1
-        self.killstatus_pub.publish(killstatus)
+        try:
+            killstatus = KillStatus()
+            killstatus.overall = ord(overall) == 1
+            killstatus.pf = ord(pf) == 1
+            killstatus.pa = ord(pa) == 1
+            killstatus.sf = ord(sf) == 1
+            killstatus.sa = ord(sa) == 1
+            killstatus.remote = ord(remote) == 1
+            killstatus.computer = ord(computer) == 1
+            # killstatus.remote_conn = ord(remote_conn) == 1
+            self.killstatus_pub.publish(killstatus)
 
-        self.need_kill = ord(remote_conn) == 0 
+            # self.need_kill = ord(remote_conn) == 0 
+        except Exception as e:
+            rospy.logerr(e)
+            self.ser.flushInput()
+            self.ser.flushOutput()
 
         # If any of the kill options (except the computer) are true, raise the alarm.
         if 5 >= sum(map(ord, [pf, pa, sf, sa, remote])) >= 1:
