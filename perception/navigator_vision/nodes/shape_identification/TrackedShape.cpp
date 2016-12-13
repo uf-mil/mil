@@ -19,7 +19,9 @@ void TrackedShape::init(ros::NodeHandle& nh)
   nh.param<double>("tracking/max_distance_gap",MAX_DISTANCE,15);
   double seconds;
   nh.param<double>("tracking/max_seen_gap_seconds", seconds, 0.5);
-  MAX_TIME_GAP = ros::Duration(0, seconds * 1E9);
+  double partial_secs = fmod(seconds, 1);
+  seconds -= partial_secs;
+  MAX_TIME_GAP = ros::Duration(seconds, partial_secs * 1E9);
 }
 double TrackedShape::centerDistance(navigator_msgs::DockShape& a, navigator_msgs::DockShape& b)
 {
@@ -31,12 +33,12 @@ bool TrackedShape::update(navigator_msgs::DockShape& s)
   double distance = centerDistance(latest,s);
   if (distance > MAX_DISTANCE)
   {
-    // ~printf(" %s %s distance too big to %s %s DISTANCE = %f \n",latest.Color.c_str(),latest.Shape.c_str(),s.Color.c_str(),s.Shape.c_str(),distance);
+    //  printf(" %s %s distance too big to %s %s DISTANCE = %f \n",latest.Color.c_str(),latest.Shape.c_str(),s.Color.c_str(),s.Shape.c_str(),distance);
     return false;
   } 
   if (tooOld(s))
   {
-    // ~printf(" %s %s too old from %s %s\n",latest.Color.c_str(),latest.Shape.c_str(),s.Color.c_str(),s.Shape.c_str());
+    //  printf(" %s %s too old from %s %s\n",latest.Color.c_str(),latest.Shape.c_str(),s.Color.c_str(),s.Shape.c_str());
     return false;
   }
   if (latest.Color != s.Color)
@@ -69,6 +71,7 @@ bool TrackedShape::isStale()
 }
 bool TrackedShape::isReady()
 {
+  //  printf("Count=%d, TooOld=%d\n", count, isStale());
   return count >= MIN_COUNT && !isStale();
 }
 navigator_msgs::DockShape TrackedShape::get()
