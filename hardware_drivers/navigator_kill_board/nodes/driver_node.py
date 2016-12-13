@@ -44,7 +44,7 @@ class KillInterface(object):
         # Initial check of kill status
         self.get_status() 
 
-        oelf.current_wrencher = ''
+        self.current_wrencher = ''
         _set_wrencher = lambda msg: setattr(self, 'current_wrencher', msg.data)
         rospy.Subscriber("/wrench/current", String, _set_wrencher)
 
