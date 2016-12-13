@@ -13,7 +13,6 @@ def main():
     yaml_file = "missions.yaml"
     dir_path = os.path.dirname(os.path.realpath(__file__))
     yaml_file = dir_path + "/" + yaml_file
-    print "starting"
     with open(yaml_file, 'r') as stream:
         try:
             yaml_text = yaml.load(stream)

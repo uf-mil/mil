@@ -44,6 +44,7 @@ add_service_files(
   StereoShapeDetector.srv
   ScanTheCodeMission.srv
   ObjectDBQuery.srv
+  CameraDBQuery.srv
   CameraToLidarTransform.srv
   KeyboardControl.srv
   ColorRequest.srv
