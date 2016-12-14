@@ -27,6 +27,7 @@ add_message_files(
   KillStatus.msg
   Host.msg
   Hosts.msg
+  ColoramaDebug.msg
 )
 
 add_service_files(
