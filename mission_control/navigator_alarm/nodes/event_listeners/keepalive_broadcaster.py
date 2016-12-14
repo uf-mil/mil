@@ -13,7 +13,7 @@ class KeepAliveBroadcaster(object):
     '''
     def __init__(self):
         self.pub = rospy.Publisher('/keep_alive', Header, queue_size=1)
-        self.timer = rospy.Timer(rospy.Duration(0.5), self.keepalive_pub)
+        self.timer = rospy.Timer(rospy.Duration(0.1), self.keepalive_pub)
 
     def keepalive_pub(self, *args):
         h = navigator_tools.make_header()
