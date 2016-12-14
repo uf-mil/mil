@@ -12,6 +12,7 @@ import tf.transformations as trns
 
 import sensor_msgs.point_cloud2 as pc2
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest, ColorRequest, ColorRequestResponse
+from navigator_msgs.msg import ColoramaDebug
 from sensor_msgs.msg import CameraInfo, Image
 from nav_msgs.msg import Odometry
 
@@ -121,6 +122,14 @@ class DebugImage(object):
 
 class Observation(object):
     history_length = 100  # Default to 100
+    
+    @classmethod
+    def as_message(self):
+        msg = ColoramaDebug()
+        msg.num_observations = len(self.hues)
+
+        msg.mean_value = np.mean(self.values) 
+        msg.hues = self.hues
 
     def __init__(self):
         self.hues = deque([], maxlen=self.history_length)
@@ -154,7 +163,7 @@ class Observation(object):
         self.dists.extend(dists)
         self.q_errs.extend(q_diffs)
 
-    def compute_confidence(self, (value_w, dist_w, q_diff_w), **kwargs):
+    def compute_confidence(self, (value_w, dist_w, q_diff_w), get_conf=False, **kwargs):
         """Don't try to compute weights with bad data (too few samples)"""
 
         # Get some value information
@@ -164,9 +173,10 @@ class Observation(object):
         q_sig = kwargs.get('q_sig', 1.3)
 
         # Compute data required before applying weights
-        value_errs = self._guass(self.values, v_u, v_sig)
-        dists = self._guass(self.dists, 5, dist_sig)
-        q_diffs = self._guass(self.q_errs, 0, q_sig)
+        guass = self._guass
+        value_errs = guass(self.values, v_u, v_sig)
+        dists = guass(self.dists, 5, dist_sig)
+        q_diffs = guass(self.q_errs, 0, q_sig)
 
         # Normalize weights
         w_norm = value_w + dist_w + q_diff_w
@@ -181,6 +191,9 @@ class Observation(object):
 
         # Compute normalized confidence
         c = value_w * value_errs + dist_w * dists + q_diff_w * q_diffs
+        if get_conf:
+            return c, [value_errs, dists, q_diffs]
+
         return c
     
     def _guass(self, data, mean, sig):
@@ -193,11 +206,14 @@ class Colorama(object):
         image_topic = camera_root + "/image_rect_color"
 
         self.tf_listener = tf.TransformListener()
-        
+        self.status_pub = rospy.Publisher("/database_color_status", ColoramaDebug, queue_size=1)
+
+        self.odom = None 
         set_odom = lambda msg: setattr(self, "odom", navigator_tools.pose_to_numpy(msg.pose.pose))
         rospy.Subscriber("/odom", Odometry, set_odom)
         fprint("Waiting for odom...")
-        self.odom = rospy.wait_for_message("/odom", Odometry, timeout=3)
+        while self.odom is None and not rospy.is_shutdown():
+            rospy.sleep(1)
         fprint("Odom found!", msg_color='green')
 
         db_request = rospy.ServiceProxy("/database/requests", ObjectDBQuery)
@@ -206,13 +222,14 @@ class Colorama(object):
         self.image_history = ImageHistory(image_topic)
 
         # Wait for camera info, and exit if not found
-        try:
-            fprint("Waiting for camera info on: '{}'".format(info_topic))
-            camera_info_msg = rospy.wait_for_message(info_topic, CameraInfo, timeout=3)
-        except rospy.exceptions.ROSException:
-            fprint("Camera info not found! Terminating.", msg_color="red")
-            rospy.signal_shutdown("Camera not found!")
-            return
+        fprint("Waiting for camera info on: '{}'".format(info_topic))
+        while not rospy.is_shutdown():
+            try:
+                camera_info_msg = rospy.wait_for_message(info_topic, CameraInfo, timeout=3)
+            except rospy.exceptions.ROSException:
+                rospy.sleep(1)
+                continue
+            break
 
         fprint("Camera info found!", msg_color="green")
         self.camera_model = PinholeCameraModel()
@@ -246,7 +263,7 @@ class Colorama(object):
         self.v_sig = 60             # Sigma of norm for variance error
         self.dist_factor = 0.3      # Favor being closer to the totem
         self.dist_sig = 30          # Sigma of distance (m)
-        self.q_factor = 0.4         # Favor not looking into the sun
+        self.q_factor = 0           # Favor not looking into the sun
         self.q_sig = 1.2            # Sigma of norm for quaternion error (rads)
         
         # Maps id => observations
@@ -314,7 +331,7 @@ class Colorama(object):
         kwargs = {'v_u': self.v_u, 'v_sig': self.v_sig, 'dist_sig': self.dist_sig, 
                   'q_factor': self.q_factor, 'q_sig': self.q_sig}
 
-        w = t_color.compute_confidence([self.v_factor, self.dist_factor, self.q_factor], **kwargs)
+        w, weights = t_color.compute_confidence([self.v_factor, self.dist_factor, self.q_factor], True, **kwargs)
         fprint("CONF: {}".format(w))
         if np.mean(w) < self.conf_reject:
             return None
@@ -322,7 +339,17 @@ class Colorama(object):
         hue_angles = np.radians(np.array(t_color.hues) * 2) 
         angle = self._compute_average_angle(hue_angles, w)
         color = self._get_closest_color(angle)
-    
+        
+        msg = t_color.as_message 
+        msg.id = totem_id
+        msg.confidence = w
+        msg.labels = ["value_errs", "dists", "q_diffs"]
+        msg.weights = weights
+        msg.color = colors[0]
+        msg.est_hues = angle * 2
+        msg.hues = np.array(t_color.hues) * 2
+        self.status_pub.publish(msg)
+
         fprint("Color: {}".format(color[0]))
         return color
     
