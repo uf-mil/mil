@@ -14,12 +14,12 @@ import rospy
 ___author___ = "Kevin Allen"
 
 class PingerMission:
-    OBSERVE_DISTANCE_METERS = 12
-    GATE_CROSS_METERS = 10
+    OBSERVE_DISTANCE_METERS = 5
+    GATE_CROSS_METERS = 5
     FREQ = 35000
-    LISTEN_TIME = 15
+    LISTEN_TIME = 10
     MAX_CIRCLE_BUOY_ERROR = 30
-    CIRCLE_RADIUS = 5
+    CIRCLE_RADIUS = 8
 
     def __init__(self, navigator):
         self.navigator = navigator
@@ -218,11 +218,13 @@ class PingerMission:
     @txros.util.cancellableInlineCallbacks
     def circle_buoy(self):
         if self.circle_totem != None:
-            pattern = self.navigator.move.d_circle_point(self.circle_totem, radius=self.CIRCLE_RADIUS, direction='cw')
-            for pose in pattern:
-                yield pose.go(move_type="skid")
-            for p in reversed(self.gate_thru_points):
-                yield self.navigator.move.set_position(p).go(initial_plan_time=5, move_type="skid")
+            #Circle around totem
+            yield self.navigator.move.look_at(self.circle_totem).set_position(self.circle_totem).backward(8).yaw_left(90, unit='deg').go()
+            yield self.navigator.move.circle_point(self.circle_totem).go()
+
+            (first, last) = reversed(self.gate_thru_points)
+            yield self.navigator.move.set_position(first).look_at(last).go(initial_plan_time=5, move_type="drive")
+            yield self.navigator.move.set_position(last).go(initial_plan_time=5, move_type="drive")
 
     def get_gate_perp(self):
         """Calculate a perpendicular to the line formed by the three gates"""
