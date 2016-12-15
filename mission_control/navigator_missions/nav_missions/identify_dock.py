@@ -21,11 +21,11 @@ print_bad  = lambda message: fprint(message, title="IDENTIFY DOCK",  msg_color='
 class IdentifyDockMission:
     CIRCLE_RADIUS      = 16  # Radius of circle in dock circle pattern
     BAY_SEARCH_TIMEOUT = 80  # Seconds to circle dock looking for bays before giving up
-    LOOK_AT_DISTANCE   = 10  # Distance in front of bay to move to to look at shape
+    LOOK_AT_DISTANCE   = 15  # Distance in front of bay to move to to look at shape
     LOOK_SHAPE_TIMEOUT = 10  # Time to look at bay with cam to see symbol
-    DOCK_DISTANCE      = 3   # Distance in front of bay point to dock to
+    DOCK_DISTANCE      = 5   # Distance in front of bay point to dock to
     DOCK_SLEEP_TIME    = 5   # Time to wait after docking before undocking aka show off time 1.016+
-    WAYPOINT_NAME      = "dock"
+    WAYPOINT_NAME      = "Dock"
     TIMEOUT_CIRCLE_VISION_ONLY    = 75
 
     def __init__(self, navigator):
@@ -80,7 +80,7 @@ class IdentifyDockMission:
         Circle the dock until the bays are identified by the perception service
         '''
         print_good("Starting circle search")
-        pattern = self.navigator.move.d_circle_point(self.dock_pose, radius=self.CIRCLE_RADIUS)
+        pattern = self.navigator.move.d_circle_point(self.dock_pose, radius=self.CIRCLE_RADIUS, direction='ccw')
         yield next(pattern).go()
         searcher = self.navigator.search(search_pattern=pattern, looker=self.search_bays)
         yield searcher.start_search(timeout=self.BAY_SEARCH_TIMEOUT, move_type="skid", loop=True)
@@ -121,8 +121,6 @@ class IdentifyDockMission:
                     self.docked[1] = True
                 else:
                     print_bad("Bay {index} (Shape={res.Shape}, Color={res.Color}) does not match a search shape".format(index=i, res=shape_res))
-                  
-            
 
     def correct_shape(self, (desired_shape, desired_color), (test_shape, test_color) ):
         return (desired_color == "ANY" or desired_color == test_color) and (desired_shape == "ANY" or desired_shape == test_shape)
@@ -203,7 +201,7 @@ class IdentifyDockMission:
     @txros.util.cancellableInlineCallbacks
     def circle_dock_vision_only(self):
         print_good("Starting circle search (vision only)")
-        pattern = self.navigator.move.d_circle_point(self.dock_pose, radius=self.CIRCLE_RADIUS)
+        pattern = self.navigator.move.d_circle_point(self.dock_pose, radius=self.CIRCLE_RADIUS, direction='ccw')
         searcher = self.navigator.search(search_pattern=pattern, looker=self.search_shape_vision_only)
         yield searcher.start_search(timeout=self.TIMEOUT_CIRCLE_VISION_ONLY, spotings_req=1, move_type="skid")
         print_good("Ended circle search")
@@ -270,12 +268,10 @@ class IdentifyDockMission:
     def dock_in_bay_vision_only(self, (shapepoint, shapenormal)):
         move_front = self.navigator.move.set_position(shapepoint + shapenormal * self.LOOK_AT_DISTANCE).look_at(shapepoint)
         move_in    = self.navigator.move.set_position(shapepoint + shapenormal *  self.DOCK_DISTANCE).look_at(shapepoint)
-        yield move_front.go()
-        yield self.ogrid_clear.toggle()
-        yield move_in.go()
+        yield move_front.go(move_type='skid')
+        yield move_in.go(move_type='skid', speed_factor=[0.5,0.5,0.5])
         yield self.navigator.nh.sleep(self.DOCK_SLEEP_TIME)
-        yield move_front.go()
-        yield self.ogrid_clear.toggle()
+        yield move_front.go(move_type='skid', speed_factor=[0.5,0.5,0.5])
 
     @txros.util.cancellableInlineCallbacks
     def find_and_dock_vision_only(self):
@@ -289,9 +285,9 @@ class IdentifyDockMission:
 
 @txros.util.cancellableInlineCallbacks
 def setup_mission(navigator):
-    bay_1_color = "GREEN"
+    bay_1_color = "BLUE"
     bay_1_shape = "TRIANGLE"
-    bay_2_color = "RED"
+    bay_2_color = "GREEN"
     bay_2_shape = "CIRCLE"
     yield navigator.mission_params["dock_shape_2"].set(bay_2_shape)
     yield navigator.mission_params["dock_shape_1"].set(bay_1_shape)
