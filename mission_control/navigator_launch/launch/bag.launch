@@ -30,7 +30,7 @@
     <node name="action_server" pkg="navigator_tools" type="fake_action_server.py" output="screen"/>
 
     <group if="$(arg oa)">
-        <node name="lidar" pkg="navigator_lidar_oa" type="lidar"/>
+        <include file="$(find navigator_launch)/launch/subsystems/object_classification.launch" />
         <node name="ogrid_arbiter" pkg="navigator_msg_multiplexer" type="ogrid_arbiter.py" output="screen" respawn="true"/>
     </group>
 </launch>
