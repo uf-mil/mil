@@ -30,7 +30,10 @@ void ShapeTracker::addShapes(navigator_msgs::DockShapes& newShapes)
  {
    addShape(shape);
  }
- shapes.erase(std::remove_if(shapes.begin(), shapes.end(), [] (TrackedShape& s) {return s.isStale();}),shapes.end());
+ shapes.erase(std::remove_if(shapes.begin(), shapes.end(), [] (TrackedShape& s) {
+   //  if (s.isStale()) printf("Shape is stale, removing\n");
+   return s.isStale();
+ }),shapes.end());
  // ~printf("Shapes size %d\n",shapes.size());
  navigator_msgs::DockShapes found_shapes;
  for (auto &tracked : shapes)

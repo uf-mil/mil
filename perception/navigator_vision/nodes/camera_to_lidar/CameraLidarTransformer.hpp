@@ -54,6 +54,7 @@ class CameraLidarTransformer
     void cameraInfoCallback(const sensor_msgs::CameraInfo info);
     void drawPoint(cv::Mat& mat, cv::Point2d& p, cv::Scalar color=cv::Scalar(0, 0, 255));
     bool transformServiceCallback(navigator_msgs::CameraToLidarTransform::Request &req,navigator_msgs::CameraToLidarTransform::Response &res);
+    static ros::Duration MAX_TIME_ERR;
     #ifdef DO_ROS_DEBUG
     ros::Publisher pubMarkers;
     image_transport::ImageTransport image_transport;
