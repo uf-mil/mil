@@ -198,7 +198,8 @@ class DetectDeliverMission:
         move = self.navigator.move.set_position(goal_point).set_orientation(goal_orientation).forward(self.target_offset_meters)
         move = move.left(-shooter_baselink_tf._p[1]).forward(-shooter_baselink_tf._p[0]) #Adjust for location of shooter
         fprint("Aligning to shoot at {}".format(move), title="DETECT DELIVER", msg_color='green')
-        yield move.go(move_type="drive")
+        move_complete = yield move.go(move_type="drive")
+        defer.returnValue(move_complete)
 
     def get_shape(self):
         return self.navigator.vision_proxies["get_shape"].get_response(Shape="ANY", Color="ANY")
@@ -249,8 +250,11 @@ class DetectDeliverMission:
         yield self.set_shape_and_color()  # Get correct goal shape/color from params
         yield self.get_waypoint()  # Get waypoint of shooter target
         yield self.circle_search()  # Go to waypoint and circle until target found
-        yield self.align_to_target()
-        yield self.shoot_all_balls()
+        move = yield self.align_to_target()
+        if move.failure_reason == "":
+            yield self.shoot_all_balls()
+        else:
+            fprint("Error Aligning with target = {}. Ending mission :(".format(move.failure_reason), title="DETECT DELIVER", msg_color="red")
         yield self.navigator.vision_proxies["get_shape"].stop()
 
 @txros.util.cancellableInlineCallbacks
