@@ -68,6 +68,21 @@ Point2i getPointFromIdx(uint8_t idx)
   return std::move(Point2i(x, y));
 }
 
+vector<Point2i> getPointList(vector<uint8_t>& idx_list)
+{
+  vector<Point2i> point_list;
+  for(auto& idx : idx_list)
+    point_list.push_back(getPointFromIdx(idx));
+
+  for(auto& pt : point_list)
+  {
+    pt.x -= 2;
+    pt.y -= 2;
+  }
+
+  return point_list;
+}
+
 vector<uint8_t> getHoodIdxs(uint8_t idx, bool include_border)
 {
   vector<uint8_t> hood;
@@ -94,6 +109,11 @@ bool isNeighbor(uint8_t idx1, uint8_t idx2)
 {
   auto hood = getHoodIdxs(idx1, true);
   return find(hood.begin(), hood.end(), idx2) != hood.end();
+}
+
+bool isNeighborPoint(const Point2i &pt1, const Point2i &pt2)
+{
+ return abs(pt1.x - pt2.x) == 1 && abs(pt1.y - pt2.y) == 1; 
 }
 
 void growRoute(const vector<uint8_t>& partial, const vector<uint8_t>& occupied, uint8_t entry, uint8_t exit)
@@ -136,6 +156,98 @@ void growRoute(const vector<uint8_t>& partial, const vector<uint8_t>& occupied, 
   return;  // No viable growth candidates
 }
 
+vector<Point2i> perturb(const vector<Point2i>& src_curve, vector<uint8_t> perturbation,int idx)
+{
+  auto pt = src_curve[idx];
+  auto pt_list = getPointList(perturbation);
+  for(auto& pt_elem : pt_list)
+  {
+    pt_elem.x += pt.x;
+    pt_elem.y += pt.y;
+  }
+
+  vector<Point2i> dest(src_curve.begin(), src_curve.begin() + idx - 1);
+  for(auto& pert : pt_list)
+    dest.push_back(pert);
+  auto it = src_curve.begin() + idx + 2;
+  while(it != src_curve.end())
+  {
+    dest.push_back(*it);
+    it++;
+  }
+
+  return dest;
+}
+
 }  // namespace Perturbations
+
+ClosedCurve::ClosedCurve(vector<Point2i> points)
+{
+  _curve_points = points;
+}
+
+void ClosedCurve::applyPerturbation(const vector<uint8_t>& perturbation, int idx)
+{
+  _curve_points = Perturbations::perturb(_curve_points, perturbation, idx);
+}
+
+ClosedCurve ClosedCurve::perturb(const std::vector<uint8_t>& perturbation, int idx)
+{
+  return ClosedCurve(Perturbations::perturb(_curve_points, perturbation, idx));
+}
+
+bool ClosedCurve::validateCurve(std::vector<cv::Point2i>& curve)
+{
+  // Make sure that all consecutive points are 8-connected
+  auto eight_connected =  [](Point2i a, Point2i b){ return abs(a.x - b.x) <= 1 && abs(a.y - b.y) <= 1; };
+  if(!eight_connected(curve[0], curve.back()))
+    return false;
+  cout << "Checking for unconnected consecutive pts" << endl;
+  for(size_t i = 1; i < curve.size(); i++)
+    if(!eight_connected(curve[i - 1], curve[i]))
+    {
+      cout << "failure pts: " << curve[i - 1] << "\t" << curve[i] << endl;
+      return false;
+    }
+
+  // Make sure that points that are not adjacent are never 8-connected
+  vector<Point2i> forbidden_neighbors;
+  forbidden_neighbors.push_back(curve.back());
+  cout << "Checking for non-adjacent neighbors" << endl;
+  for(size_t i = 1; i < curve.size(); i++)
+  {
+    auto& pt = curve[i];
+    auto count = count_if(forbidden_neighbors.begin(), forbidden_neighbors.end(), [pt](const Point2i &test_pt)
+      { return Perturbations::isNeighborPoint(pt, test_pt); });
+    forbidden_neighbors.push_back(curve[i - 1]);
+    
+    if(i > curve.size() - 2) // Should be neighbor with first one added only
+    {
+      if(count > 1)
+      {
+        auto conflict_pt = find_if(forbidden_neighbors.begin(), forbidden_neighbors.end(),
+          [pt](Point2i test_pt){ return nav::Perturbations::isNeighborPoint(pt, test_pt); });
+        cout << "failure pts: " << curve[1] << "\t" << (conflict_pt != forbidden_neighbors.end()? Point2i(0,0) : *conflict_pt) << endl;
+        return false;
+      }
+    }
+    else
+    {
+      if(count > 0)
+      {
+        auto conflict_pt = find_if(forbidden_neighbors.begin(), forbidden_neighbors.end(),
+          [pt](Point2i test_pt){ return nav::Perturbations::isNeighborPoint(pt, test_pt); });
+        cout << "failure pts: " << curve[1] << "\t" << (conflict_pt != forbidden_neighbors.end()? Point2i(0,0) : *conflict_pt) << endl;
+        return false;
+      }
+    }
+  }
+  return true; // No failures! 
+}
+
+vector<float> calcCosts(const Mat& img, vector<ClosedCurve::Perturbation> candidate_perturbs, function<float(const Mat&, ClosedCurve::Perturbation)> cb)
+{
+
+}
 
 }  // namespace nav
