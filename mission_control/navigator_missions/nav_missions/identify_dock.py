@@ -269,9 +269,9 @@ class IdentifyDockMission:
         move_front = self.navigator.move.set_position(shapepoint + shapenormal * self.LOOK_AT_DISTANCE).look_at(shapepoint)
         move_in    = self.navigator.move.set_position(shapepoint + shapenormal *  self.DOCK_DISTANCE).look_at(shapepoint)
         yield move_front.go(move_type='skid')
-        yield move_in.go(move_type='skid', speed_factor=[0.5,0.5,0.5])
+        yield move_in.go(move_type='skid', speed_factor=[0.5,0.5,0.5], blind=True)
         yield self.navigator.nh.sleep(self.DOCK_SLEEP_TIME)
-        yield move_front.go(move_type='skid', speed_factor=[0.5,0.5,0.5])
+        yield move_front.go(move_type='skid', speed_factor=[0.5,0.5,0.5], blind=True)
 
     @txros.util.cancellableInlineCallbacks
     def find_and_dock_vision_only(self):
