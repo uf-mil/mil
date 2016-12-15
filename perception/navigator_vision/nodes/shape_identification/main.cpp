@@ -45,7 +45,9 @@ class ShooterVision {
     vision->init();
     nh_.param<std::string>("symbol_camera", camera_topic,
                            "/right/right/image_raw");
-    runService = nh_.advertiseService("/vision/get_shapes/switch", &ShooterVision::runCallback, this);
+    std::string get_shapes_topic;
+    nh_.param<std::string>("get_shapes_topic",get_shapes_topic,"get_shapes");
+    runService = nh_.advertiseService(get_shapes_topic+"/switch", &ShooterVision::runCallback, this);
     roiService = nh_.advertiseService("setROI",
                                       &ShooterVision::roiServiceCallback, this);
     //#ifdef DO_DEBUG

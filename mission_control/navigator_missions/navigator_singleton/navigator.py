@@ -350,8 +350,7 @@ class MissionParam(object):
 
 
 class Searcher(object):
-
-    def __init__(self, nav, search_pattern, looker=None, vision_proxy="test", **kwargs):
+    def __init__(self, nav, search_pattern=None, looker=None, vision_proxy="test", **kwargs):
         self.nav = nav
         self.looker = looker
         if looker == None:
@@ -363,6 +362,7 @@ class Searcher(object):
         self.object_found = False
         self.pattern_done = False
         self.response = None
+        print "dfdf"
 
     def catch_error(self, failure):
         if failure.check(defer.CancelledError):
@@ -376,7 +376,8 @@ class Searcher(object):
     def start_search(self, timeout=120, loop=True, spotings_req=2, **kwargs):
         fprint("Starting.", title="SEARCHER")
         looker = self._run_look(spotings_req).addErrback(self.catch_error)
-        finder = self._run_search_pattern(loop, **kwargs).addErrback(self.catch_error)
+        if self.search_pattern != None:
+            finder = self._run_search_pattern(loop, **kwargs).addErrback(self.catch_error)
 
         start_pose = self.nav.move.forward(0)
         start_time = self.nav.nh.get_time()

@@ -1,5 +1,6 @@
 #include "CameraLidarTransformer.hpp"
 
+ros::Duration CameraLidarTransformer::MAX_TIME_ERR = ros::Duration(0,6E7);
 CameraLidarTransformer::CameraLidarTransformer()
     : nh(ros::this_node::getName()),
       tfBuffer(),
@@ -53,7 +54,18 @@ bool CameraLidarTransformer::transformServiceCallback(navigator_msgs::CameraToLi
     return true;
   }
   visualization_msgs::MarkerArray markers;
-  sensor_msgs::PointCloud2ConstPtr scloud = lidarCache.getElemAfterTime(req.header.stamp);
+  std::vector<sensor_msgs::PointCloud2ConstPtr> nearbyLidar = lidarCache.getInterval(req.header.stamp-MAX_TIME_ERR, req.header.stamp+MAX_TIME_ERR);
+  sensor_msgs::PointCloud2ConstPtr scloud;
+  ros::Duration minErr = ros::Duration(5000,0);
+  for (auto& pc : nearbyLidar)
+  {
+    ros::Duration thisErr = pc->header.stamp - req.header.stamp;
+    if (thisErr < minErr)
+    {
+      scloud = pc;
+      minErr = thisErr;
+    }
+  }
   if (!scloud) {
     res.success = false;
     res.error =  navigator_msgs::CameraToLidarTransform::Response::CLOUD_NOT_FOUND;

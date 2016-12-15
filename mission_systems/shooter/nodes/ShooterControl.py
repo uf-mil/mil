@@ -43,7 +43,7 @@ class ShooterControl:
         self.status_pub = rospy.Publisher('/shooter/status', String, queue_size=5)
         self.manual_used = False
         self.killed = False
-        self.kill_listener = AlarmListener("kill", self.update_kill_status)
+        #self.kill_listener = AlarmListener("/kill", self.update_kill_status)
 
     def update_kill_status(self, alarm):
         '''
