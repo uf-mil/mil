@@ -13,6 +13,7 @@ from navigator_tools import fprint as _fprint
 from navigator_msgs.srv import ObjectDBQuery
 from navigator_msgs.msg import PerceptionObject
 from nav_msgs.msg import OccupancyGrid, Odometry
+from std_srvs.srv import Trigger
 
 
 fprint = lambda *args, **kwargs: _fprint(time='', title='SIM',*args, **kwargs)
@@ -43,29 +44,14 @@ class DoOdom(object):
 
 
 class Sim(object):
-    def __init__(self, bf_size=60, min_t_spacing=10, num_of_buoys=15):
+    def __init__(self, bf_size=60, min_t_spacing=9, num_of_buoys=20):
         self.ogrid_pub = rospy.Publisher('/ogrid', OccupancyGrid, queue_size=2)
         self.odom = DoOdom(bf_size)
         
-        # Generate some buoys and totems
-        buoy_positions = np.random.uniform(bf_size, size=(num_of_buoys, 2))
-        self.totem_positions = np.array([[47, 41], [45, 15], [25, 40], [5, 12]])
-        self.colors = [[0, 1, 0], [1, 1, 0], [0, 0, 1], [1, 0, 0]]
-
         self.bf_size = bf_size
-        self.buoy_size = 1  # radius of buoy (m)
-        self.totem_size = 1  # radius of totem (m)
-
-        # Let's make sure no buoys arae too close to the totems
-        _buoy_positions = []
-        for b in buoy_positions:
-            if np.all(np.linalg.norm(self.totem_positions - b, axis=1) > min_t_spacing):
-                _buoy_positions.append(b)
-        self.buoy_positions = np.array(_buoy_positions)
-        print len(self.buoy_positions)
-        fprint("Removed {} buoys that were too close to totems".format(len(buoy_positions) - len(_buoy_positions)))
-        assert len(self.buoy_positions) > .5 * num_of_buoys, "Not enough buoys remain, try rerunning."
-        
+        self.min_t_spacing = min_t_spacing
+        self.num_of_buoys = num_of_buoys
+       
         # Some ogrid defs
         self.grid = None
         self.resolution = 0.3
@@ -73,8 +59,12 @@ class Sim(object):
         self.width = bf_size * 3
         self.origin = navigator_tools.numpy_quat_pair_to_pose([-bf_size, -bf_size, 0],
                                                               [0, 0, 0, 1])
-        self.transform = self._make_ogrid_transform()
+        
         self.publish_ogrid = lambda *args: self.ogrid_pub.publish(self.get_message())
+
+        self.buoy_size = 1  # radius of buoy (m)
+        self.totem_size = 1  # radius of totem (m)
+        self.reseed(None)
 
         self.draw_buoys()
         self.draw_totems()
@@ -82,6 +72,7 @@ class Sim(object):
 
         # Now set up the database request service
         rospy.Service("/database/requests", ObjectDBQuery, self.got_request)
+        rospy.Service("/reseed", Trigger, self.reseed)
 
         rospy.Timer(rospy.Duration(1), self.publish_ogrid)
 
@@ -93,6 +84,31 @@ class Sim(object):
                            [0,               0,            1]])
         
         return lambda point: self.t.dot(np.append(point[:2], 1))[:2]
+
+    def reseed(self, req):
+        # Generate some buoys and totems
+        buoy_positions = np.random.uniform(self.bf_size, size=(self.num_of_buoys, 2))
+        self.totem_positions = np.array([[47, 41], [45, 15], [25, 40], [5, 12]])
+        self.colors = [[0, 1, 0], [1, 1, 0], [0, 0, 1], [1, 0, 0]]
+
+        # Let's make sure no buoys arae too close to the totems
+        _buoy_positions = []
+        for b in buoy_positions:
+            if np.all(np.linalg.norm(self.totem_positions - b, axis=1) > self.min_t_spacing):
+                _buoy_positions.append(b)
+        self.buoy_positions = np.array(_buoy_positions)
+        print len(self.buoy_positions)
+        fprint("Removed {} buoys that were too close to totems".format(len(self.buoy_positions) - len(_buoy_positions)))
+        #assert len(self.buoy_positions) > .5 * self.num_of_buoys, "Not enough buoys remain, try rerunning."
+        if len(self.buoy_positions) < .5 * self.num_of_buoys:
+            self.reseed(req)
+
+        self.transform = self._make_ogrid_transform()
+ 
+        self.draw_buoys()
+        self.draw_totems()
+        self.publish_ogrid()
+
 
     def position_to_object(self, position, color, name="totem"):
         obj = PerceptionObject()

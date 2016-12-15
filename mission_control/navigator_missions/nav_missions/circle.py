@@ -5,8 +5,9 @@ import numpy as np
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator):
-    pos = yield navigator.tx_pose
-    circle = navigator.move.d_circle_point(pos[0] + 1, 5, direction='cw')
+    p = navigator.pose[0]
+    while True:
+        p += [0, 1, 0]
 
-    for c in circle:
-        yield c.go(move_type='skid')
+        a = navigator.move.set_position(p).go(move_type='skid', initial_plan_time=0)
+        yield navigator.nh.sleep(.1)

@@ -16,6 +16,7 @@ BF_WIDTH = 60.0  # m
 BF_EST_COFIDENCE = 10.0  # How percisly can they place the waypoints? (m)
 TOTEM_SAFE_DIST = 6  # How close do we go to the totem
 ROT_SAFE_DIST = 6  # How close to rotate around it
+SPEED_FACTOR = .5
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator, **kwargs):
@@ -29,11 +30,9 @@ def main(navigator, **kwargs):
     all_found = False
 
     # Get colors of intrest and directions
-    c1 = "GREEN" #navigator.mission_params['totem_color_1'].get()
-    c2 = "BLUE" #navigator.mission_params['totem_color_2'].get()
-    c2 = "RED" #navigator.mission_params['totem_color_3'].get()
+    #c1 = navigator.mission_params['totem_color_1'].get()
     
-    colors = [c1, c2, c3]
+    colors = ["GREEN", "RED", "BLUE"]
 
     buoy_field = yield navigator.database_query("BuoyField")
     buoy_field_point = navigator_tools.point_to_numpy(buoy_field.objects[0].position)
@@ -49,7 +48,7 @@ def main(navigator, **kwargs):
     # Next jig around to see buoys, first enforce that we're looking at the buoy field
     buoy_field_point[2] = 1
     #yield navigator.move.look_at(buoy_field_point).go(move_type='skid', focus=buoy_field_point)
-    yield navigator.nh.sleep(3)
+    #yield navigator.nh.sleep(3)
     #yield navigator.move.yaw_right(.5).go(move_type='skid')
     #yield navigator.nh.sleep(3)
     #yield navigator.move.yaw_left(1).go(move_type='skid')
@@ -57,7 +56,7 @@ def main(navigator, **kwargs):
     # TODO: What if we don't see the colors?
     for color in colors:
         color = yield color
-        direction = directions[color]
+        direction = 'cw' if directions[color] == "CLOCKWISE" else 'ccw'
         
         fprint("Going to totem colored {} in direction {}".format(color, direction), title="CIRCLE_TOTEM")
         target = yield get_colored_buoy(navigator, color_map[color])
@@ -67,33 +66,33 @@ def main(navigator, **kwargs):
             defer.returnValue(None)
 
         target_np = navigator_tools.point_to_numpy(target.position)
-        set_up = navigator.move.look_at(target_np).set_position(target_np).backward(TOTEM_SAFE_DIST)
+        circler = navigator.move.d_circle_point(point=target_np, radius=TOTEM_SAFE_DIST, direction=direction)
         
-        # Approach totem, making sure we actually get there.
-        res = yield set_up.go(initial_plan_time=2)
-        while res.failure_reason is not '':
-            set_up = set_up.backward(.1)
-            res = yield set_up.go(move_type='skid')
-       
-        # Scootch up close to the buoy
-        if direction == "COUNTER-CLOCKWISE":
-            rot_move = navigator.move.yaw_right(1.57).left(TOTEM_SAFE_DIST - ROT_SAFE_DIST)
-            while (yield rot_move.go(move_type='skid')).failure_reason is not '':
-               rot_move = rot_move.right(.25)
-            left_offset = -2
+        # Give the totem a look at
+        for p in circler:
+            res = yield p.go(speed_factor=SPEED_FACTOR)
+            if res.failure_reason is '':
+                break
 
-        elif direction == "CLOCKWISE":
-            rot_move = navigator.move.yaw_left(1.57).right(TOTEM_SAFE_DIST - ROT_SAFE_DIST)
-            while (yield rot_move.go(move_type='skid')).failure_reason is not '':
-               rot_move = rot_move.left(.25)
-            left_offset = 2
-      
+        offset = 1.5
+        mult = 1 if direction == 'cw' else -1
+        left_offset = mult * offset
+        
+        tangent_circler = navigator.move.d_circle_point(point=target_np, radius=ROT_SAFE_DIST, theta_offset=mult * 1.57, direction=direction)
+
+        # Point tangent
+        for p in tangent_circler:
+            res = yield p.go(speed_factor=SPEED_FACTOR)
+            if res.failure_reason is '':
+                break
+        
+        # Do a circle with an ogrid
         msg, goal = ogrid.circle_around(target_np, direction=direction)
         latched_pub = ogrid.latching_publisher(msg)
 
         yield navigator.nh.sleep(2)
         goal = navigator.move.set_position(np.append(goal, 1)).look_at(navigator.pose[0]).left(left_offset).backward(2)
-        yield goal.go(move_type='drive!', initial_plan_time=10)
+        yield goal.go(move_type='drive!', initial_plan_time=10, speed_factor=SPEED_FACTOR)
          
         latched_pub.cancel()
 
@@ -179,13 +178,13 @@ class OccupancyGridFactory(object):
 
         self.pub = self.navigator.nh.advertise("/mission_ogrid", OccupancyGrid) 
 
-    def circle_around(self, point, radius=15, direction='CLOCKWISE'):
+    def circle_around(self, point, radius=15, direction='cw'):
         """ Returns an ogrid message and a waypoint to go to """
         point = np.array(point)
         fprint("Circling around {}".format(point))
         grid = np.zeros((2 * radius / self.resolution, 2 * radius / self.resolution)) 
         center = np.array([radius, radius]) / self.resolution
-        target = self.orient_division(grid, point, -1 if direction == 'CLOCKWISE' else 1)
+        target = self.orient_division(grid, point, -1 if direction == 'cw' else 1)
         
         # Outer circle
         cv2.circle(grid, tuple(center.astype(np.int32)), int(radius / self.resolution), 255, 3) 
