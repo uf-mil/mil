@@ -251,21 +251,19 @@ class DetectDeliverMission:
             shooter_pose = shooter_pose.pose
 
             cen = np.array([shooter_pose.position.x, shooter_pose.position.y])
-            ori = trns.euler_from_quaternion([shooter_pose.orientation.x,
+            yaw = trns.euler_from_quaternion([shooter_pose.orientation.x,
                                               shooter_pose.orientation.y,
                                               shooter_pose.orientation.z,
                                               shooter_pose.orientation.w])[2]
-            q = trns.quaternion_from_euler(0, 0, ori)
+            q = trns.quaternion_from_euler(0, 0, yaw)
 
+            #  v_downrange = np.array([np.cos(ori), np.sin(ori)])
+            #  v_crossrange = np.array([-np.sin(ori), np.cos(ori)])
 
-            v_downrange = np.array([np.cos(ori), np.sin(ori)])
-            v_crossrange = np.array([-np.sin(ori), np.cos(ori)])
-
-
-            p = cen + v_downrange + v_crossrange
-            p = np.concatenate([p, [0]])
-
-            print p
+            #  p = cen + v_downrange + v_crossrange
+            #  p = np.concatenate([p, [0]])
+            p = np.append(cen,0)
+            fprint("Aligning to p=[{}] q=[{}]".format(p, q), title="DETECT DELIVER",  msg_color='green')
 
             #Prepare move to follow shooter
             move = self.navigator.move.set_position(p).set_orientation(q).yaw_right(90, 'deg')
