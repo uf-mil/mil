@@ -1,3 +1,9 @@
+pinger_negate:
+  param: /mission/acoustic_pinger/negate
+  options: [True, False]
+  description: pinger negate
+  default: False
+
 explorer_next:
   param: /mission/explorer/next
   options: [ALL,BuoyField,CoralSurvey,FindBreak,

@@ -47,11 +47,8 @@ class PingerExitMission:
         #Make sure they are actually in a line
         if np.isnan(self.g_perp[0]) or np.isnan(self.g_perp[1]):
             raise Exception("Gates are not in a line")
-        pose = self.navigator.pose[0][:2]
-        distance_test = np.array([np.linalg.norm(pose - (self.gate_poses[self.gate_index] + self.OBSERVE_DISTANCE_METERS * self.g_perp)),
-                                  np.linalg.norm(pose - (self.gate_poses[self.gate_index] - self.OBSERVE_DISTANCE_METERS * self.g_perp))])
-        if np.argmin(distance_test) == 1:
-            self.negate = True
+        neg = yield self.navigator.mission_params["pinger_negate"].get()
+        self.negate = not neg
 
     @txros.util.cancellableInlineCallbacks
     def go_thru_gate(self):
