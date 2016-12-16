@@ -5,6 +5,7 @@ import rospy
 import tf.transformations as trns
 import navigator_tools
 from navigator_tools import fprint as _fprint
+from std_srvs.srv import Trigger
 
 import cv2
 import numpy as np
@@ -137,10 +138,25 @@ class OGridServer:
         rospy.Subscriber('/odom', Odometry, set_odom)
         self.publisher = rospy.Publisher('/ogrid_master', OccupancyGrid, queue_size=1)
 
-        Server(OgridConfig, self.dynamic_cb)
+        self.ogrid_server = Server(OgridConfig, self.dynamic_cb)
         dynam_client = Client("bounds_server", config_callback=self.bounds_cb)
+        self.ogrid_server.update_configuration({'width': 500})
 
+        rospy.Service("/center_ogrid", Trigger, self.center_ogrid)
         rospy.Timer(rospy.Duration(1.0 / rate), self.publish)
+
+    def center_ogrid(self, srv):
+        fprint("CENTERING OGRID AT POSITION", msg_color='blue')
+        if self.odom is None:
+            return
+
+        dim = -(self.map_size[0] * self.resolution) / 2
+        new_org = self.odom[0] + np.array([dim, dim, 0]) 
+        config = {}
+        config['origin_x'] = float(new_org[0])
+        config['origin_y'] = float(new_org[1])
+        config['set_origin'] = True
+        self.ogrid_server.update_configuration(config)
 
     def bounds_cb(self, config):
         fprint("BOUNDS DYNAMIC CONFIG UPDATE!", msg_color='blue')
@@ -167,6 +183,7 @@ class OGridServer:
         self.ogrids = new_grids
 
         map_size = map(int, (config['height'], config['width']))
+        self.map_size = map_size
 
         self.plow = config['plow']
         self.plow_factor = config['plow_factor']
