@@ -285,17 +285,35 @@ class DetectDeliverMission:
         raise
 
     @txros.util.cancellableInlineCallbacks
+    def shoot_and_align_forest(self):
+        move = yield self.align_to_target()
+        if move.failure_reason != "":
+            fprint("Error Aligning with target = {}. Ending mission :(".format(move.failure_reason), title="DETECT DELIVER", msg_color="red")
+            return
+        fprint("Aligned successs. Shooting while using forest realign", title="DETECT DELIVER", msg_color="green")
+        align_defer = self.continuously_align()
+        fprint("Sleeping for 2 seconds to allow for alignment", title="DETECT DELIVER", msg_color="green")
+        yield self.navigator.nh.sleep(2)
+        yield self.shoot_all_balls()
+        align_defer.cancel()
+
+    @txros.util.cancellableInlineCallbacks
+    def shoot_and_align(self):
+        move = yield self.align_to_target()
+        if move.failure_reason != "":
+            fprint("Error Aligning with target = {}. Ending mission :(".format(move.failure_reason), title="DETECT DELIVER", msg_color="red")
+            return
+        fprint("Aligned successs. Shooting without realignment", title="DETECT DELIVER", msg_color="green")
+        yield self.shoot_all_balls()
+
+    @txros.util.cancellableInlineCallbacks
     def find_and_shoot(self):
         self.shooter_baselink_tf = yield self.navigator.tf_listener.get_transform('/base_link','/shooter')
         yield self.navigator.vision_proxies["get_shape"].start()
         yield self.set_shape_and_color()  # Get correct goal shape/color from params
-        yield self.get_waypoint()  # Get waypoint of shooter target
-        yield self.circle_search()  # Go to waypoint and circle until target found
-        move = yield self.align_to_target()
-        if move.failure_reason == "":
-            yield self.shoot_all_balls()
-        else:
-            fprint("Error Aligning with target = {}. Ending mission :(".format(move.failure_reason), title="DETECT DELIVER", msg_color="red")
+        yield self.get_waypoint()         # Get waypoint of shooter target
+        yield self.circle_search()        # Go to waypoint and circle until target found
+        yield self.shoot_and_align()      # Align to target and shoot
         yield self.navigator.vision_proxies["get_shape"].stop()
 
 @txros.util.cancellableInlineCallbacks
