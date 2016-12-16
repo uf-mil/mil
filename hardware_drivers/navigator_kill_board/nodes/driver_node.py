@@ -66,6 +66,8 @@ class KillInterface(object):
             self.control_check()
             if not self.network_kill():
                 self.ping()
+            else:
+                rospy.logwarn("Network Kill!")
 
     def network_kill(self):
         if self.network_msg is None:
@@ -97,7 +99,7 @@ class KillInterface(object):
         # The board appears to not be return async data
         resp = self.ser.read(1)
         if resp in self.update_cbs:
-            fprint(self.to_hex(resp), title="CHECKBUFFER")
+            rospy.loginfo("Check Buffer response: {}".format(resp))
             self.update_cbs[resp]()
 
     @thread_lock(lock)
@@ -107,12 +109,12 @@ class KillInterface(object):
         Returns True or False depending on the response.
         With no `recv_str` passed in the raw result will be returned.
         """
-        fprint("Writing {}...".format(self.to_hex(write_str)), title="REQUEST")
         self.ser.write(write_str)
     
-        fprint("Reading response...", title="REQUEST")
-        resp = self.ser.read(1)
+        resp = self.ser.read(1)        
         
+        rospy.loginfo("Sent: {}, Rec: {}".format(write_str, resp))
+
         rospy.sleep(.05)
         if recv_str is None:
             fprint("Response received: {}".format(self.to_hex(resp)), msg_color='blue')
@@ -125,7 +127,7 @@ class KillInterface(object):
 
         self.ser.flushOutput()
         # Result didn't match
-        fprint("Response didn't match. Expected: {}, got: {}.".format(self.to_hex(recv_str), self.to_hex(resp)), msg_color='red')
+        rospy.logerr("Response didn't match. Expected: {}, got: {}.".format(self.to_hex(recv_str), self.to_hex(resp))
         return False
 
     def alarm_kill_cb(self, alarm):
@@ -134,8 +136,10 @@ class KillInterface(object):
             return
         
         if not alarm.clear:
+            rospy.loginfo("Computer kill raise received")
             self.request('\x45')
         else:
+            rospy.loginfo("Computer kill clear received")
             self.request('\x46')
     
     def control_check(self, *args):
@@ -187,13 +191,12 @@ class KillInterface(object):
             self.set_unkill()
 
     def ping(self):
-        fprint("Pinging...")
+        rospy.loginfo("Pinging")
         
         if self.request('\x20', '\x30'):
-            fprint("Ping response!", msg_color='green')
+            rospy.loginfo("Ponged")
         else:
-            fprint("No ping response found", msg_color='red')
-
+            rospy.logerr("Incorrect ping response")
 
 
 if __name__ == '__main__':
