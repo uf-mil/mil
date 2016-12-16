@@ -278,6 +278,7 @@ class DetectDeliverMission:
             move = move.left(self.shoot_distance_meters)
 
             yield move.go(move_type='bypass')
+            #  yield move.go()
       except Exception:
         traceback.print_exc()
         raise
@@ -291,7 +292,7 @@ class DetectDeliverMission:
         fprint("Aligned successs. Shooting while using forest realign", title="DETECT DELIVER", msg_color="green")
         align_defer = self.continuously_align()
         fprint("Sleeping for 2 seconds to allow for alignment", title="DETECT DELIVER", msg_color="green")
-        yield self.navigator.nh.sleep(2)
+        yield self.navigator.nh.sleep(10)
         yield self.shoot_all_balls()
         align_defer.cancel()
 
@@ -311,14 +312,18 @@ class DetectDeliverMission:
         yield self.set_shape_and_color()  # Get correct goal shape/color from params
         yield self.get_waypoint()         # Get waypoint of shooter target
         yield self.circle_search()        # Go to waypoint and circle until target found
-        yield self.shoot_and_align()      # Align to target and shoot
+        #  yield self.shoot_and_align()      # Align to target and shoot
+        yield self.shoot_and_align_forest()      # Align to target and shoot
         yield self.navigator.vision_proxies["get_shape"].stop()
 
 @txros.util.cancellableInlineCallbacks
 def setup_mission(navigator):
-    stc_color = yield navigator.mission_params["scan_the_code_color3"].get()
+    stc_color = yield navigator.mission_params["scan_the_code_color3"].get(raise_exception=False)
+    if stc_color == False:
+        color = "ANY"
+    else:
+        color = stc_color
     shape = "ANY"
-    color = stc_color
     fprint("Setting search shape={} color={}".format(shape, color), title="DETECT DELIVER",  msg_color='green')
     yield navigator.mission_params["detect_deliver_shape"].set(shape)
     yield navigator.mission_params["detect_deliver_color"].set(color)
