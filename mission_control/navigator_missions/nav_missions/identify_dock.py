@@ -257,10 +257,10 @@ class IdentifyDockMission:
 
 @txros.util.cancellableInlineCallbacks
 def setup_mission(navigator):
-    bay_1_color = "BLUE"
-    bay_1_shape = "TRIANGLE"
-    bay_2_color = "GREEN"
-    bay_2_shape = "CIRCLE"
+    bay_1_color = yield navigator.mission_params["scan_the_code_color1"].get()
+    bay_1_shape = "ANY"
+    bay_2_color = yield navigator.mission_params["scan_the_code_color2"].get()
+    bay_2_shape = "ANY"
     yield navigator.mission_params["dock_shape_2"].set(bay_2_shape)
     yield navigator.mission_params["dock_shape_1"].set(bay_1_shape)
     yield navigator.mission_params["dock_color_1"].set(bay_1_color)

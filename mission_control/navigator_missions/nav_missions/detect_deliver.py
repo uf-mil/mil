@@ -7,7 +7,7 @@ import tf
 import tf.transformations as trns
 from navigator_msgs.msg import ShooterDoAction, ShooterDoActionGoal
 from navigator_msgs.srv import CameraToLidarTransform,CameraToLidarTransformRequest
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import Point, PoseStamped
 from std_srvs.srv import SetBool, SetBoolRequest
 from twisted.internet import defer
 from image_geometry import PinholeCameraModel
@@ -17,7 +17,6 @@ from navigator_tools import fprint, MissingPerceptionObject
 import genpy
 
 class DetectDeliverMission:
-    # Note, this will be changed when the shooter switches to actionlib
     shoot_distance_meters = 3.1
     theta_offset = np.pi / 2.0
     spotings_req = 1
@@ -31,6 +30,7 @@ class DetectDeliverMission:
 
     def __init__(self, navigator):
         self.navigator = navigator
+        self.shooter_pose_sub = navigator.nh.subscribe("/shooter_pose", PoseStamped)
         self.cameraLidarTransformer = navigator.nh.get_service_client("/camera_to_lidar/right_right_cam", CameraToLidarTransform)
         self.shooterLoad = txros.action.ActionClient(
             self.navigator.nh, '/shooter/load', ShooterDoAction)
@@ -193,10 +193,9 @@ class DetectDeliverMission:
     def align_to_target(self):
         if self.shape_pose == None:
             self.select_backup_shape()
-        shooter_baselink_tf = yield self.navigator.tf_listener.get_transform('/base_link','/shooter')
         goal_point, goal_orientation = self.get_aligned_pose(self.shape_pose[0], self.shape_pose[1])
         move = self.navigator.move.set_position(goal_point).set_orientation(goal_orientation).forward(self.target_offset_meters)
-        move = move.left(-shooter_baselink_tf._p[1]).forward(-shooter_baselink_tf._p[0]) #Adjust for location of shooter
+        move = move.left(-self.shooter_baselink_tf._p[1]).forward(-self.shooter_baselink_tf._p[0]) #Adjust for location of shooter
         fprint("Aligning to shoot at {}".format(move), title="DETECT DELIVER", msg_color='green')
         move_complete = yield move.go(move_type="drive")
         defer.returnValue(move_complete)
@@ -245,7 +244,49 @@ class DetectDeliverMission:
             res = yield goal.get_result()
 
     @txros.util.cancellableInlineCallbacks
+    def continuously_align(self):
+      try:
+        while True:
+            shooter_pose = yield self.shooter_pose_sub.get_next_message()
+            shooter_pose = shooter_pose.pose
+
+            cen = np.array([shooter_pose.position.x, shooter_pose.position.y])
+            ori = trns.euler_from_quaternion([shooter_pose.orientation.x,
+                                              shooter_pose.orientation.y,
+                                              shooter_pose.orientation.z,
+                                              shooter_pose.orientation.w])[2]
+            q = trns.quaternion_from_euler(0, 0, ori)
+
+
+            v_downrange = np.array([np.cos(ori), np.sin(ori)])
+            v_crossrange = np.array([-np.sin(ori), np.cos(ori)])
+
+
+            p = cen + v_downrange + v_crossrange
+            p = np.concatenate([p, [0]])
+
+            print p
+
+            #Prepare move to follow shooter
+            move = self.navigator.move.set_position(p).set_orientation(q).yaw_right(90, 'deg')
+
+            #Adjust move for location of target
+            move = move.forward(self.target_offset_meters)
+
+            #Adjust move for location of launcher
+            move = move.left(-self.shooter_baselink_tf._p[1]).forward(-self.shooter_baselink_tf._p[0])
+
+            #Move away a fixed distance to make the shot
+            move = move.left(self.shoot_distance_meters)
+
+            yield move.go(move_type='bypass')
+      except Exception:
+        traceback.print_exc()
+        raise
+
+    @txros.util.cancellableInlineCallbacks
     def find_and_shoot(self):
+        self.shooter_baselink_tf = yield self.navigator.tf_listener.get_transform('/base_link','/shooter')
         yield self.navigator.vision_proxies["get_shape"].start()
         yield self.set_shape_and_color()  # Get correct goal shape/color from params
         yield self.get_waypoint()  # Get waypoint of shooter target
@@ -259,9 +300,9 @@ class DetectDeliverMission:
 
 @txros.util.cancellableInlineCallbacks
 def setup_mission(navigator):
-    color = "RED"
-    shape = "TRIANGLE"
-    #color = yield navigator.mission_params["scan_the_code_color3"].get()
+    stc_color = yield navigator.mission_params["scan_the_code_color3"].get()
+    shape = "ANY"
+    color = stc_color
     fprint("Setting search shape={} color={}".format(shape, color), title="DETECT DELIVER",  msg_color='green')
     yield navigator.mission_params["detect_deliver_shape"].set(shape)
     yield navigator.mission_params["detect_deliver_color"].set(color)

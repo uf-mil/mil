@@ -265,9 +265,12 @@ class PingerMission:
         fprint("PINGER: Going through gate", msg_color='green') 
         yield self.go_thru_gate()
         yield self.set_active_pinger()
-        yield self.circle_buoy()
         #  yield self.circle_buoy()
         fprint("PINGER: Ended Pinger Mission", msg_color='green') 
+
+@txros.util.cancellableInlineCallbacks
+def safe_exit(navigator, err):
+  yield self.navigator.mission_params["acoustic_pinger_active_index"].set(1)
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator, **kwargs):
