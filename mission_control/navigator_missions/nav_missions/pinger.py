@@ -66,23 +66,25 @@ class PingerMission:
         if np.isnan(self.g_perp[0]) or np.isnan(self.g_perp[1]):
             raise Exception("Gates are not in a line")
             return
+            
         pose = self.navigator.pose[0][:2]
         distance_test = np.array([np.linalg.norm(pose - (self.gate_poses[0] + self.OBSERVE_DISTANCE_METERS * self.g_perp)),
                                   np.linalg.norm(pose - (self.gate_poses[0] - self.OBSERVE_DISTANCE_METERS * self.g_perp))])
-
-        branch_pt0 = self.gate_poses[0] + self.gate_poses[1] / 2.0
-        branch_pt1 = self.gate_poses[1] + self.gate_poses[2] / 2.0
-
         if np.argmin(distance_test) == 1:
             self.negate = True
         yield self.navigator.mission_params["pinger_negate"].set(self.negate)
+        dis = (self.gate_poses[2]-self.gate_poses[0]) / 3.0
+        branch_pt0 = self.gate_poses[0] + dis
+        branch_pt1 = self.gate_poses[2] - dis
+        if np.argmin(distance_test) == 1:
+            self.negate = True
         if self.negate:
             self.observation_points = (np.append((branch_pt0 - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0),
                                        np.append((branch_pt1 - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0))
         else:
             self.observation_points = (np.append((branch_pt0 + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0),
                                        np.append((branch_pt1 + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0))
-        self.look_at_points = (np.append(self.gate_poses[0], 0), np.append(self.gate_poses[2], 0))
+        self.look_at_points = (np.append(branch_pt0, 0), np.append(branch_pt1, 0))
 
     @txros.util.cancellableInlineCallbacks
     def search_samples(self):
