@@ -7,7 +7,7 @@ import tf
 import tf.transformations as trns
 from navigator_msgs.msg import ShooterDoAction, ShooterDoActionGoal
 from navigator_msgs.srv import CameraToLidarTransform,CameraToLidarTransformRequest
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import Point, PoseStamped
 from std_srvs.srv import SetBool, SetBoolRequest
 from twisted.internet import defer
 from image_geometry import PinholeCameraModel
@@ -17,20 +17,23 @@ from navigator_tools import fprint, MissingPerceptionObject
 import genpy
 
 class DetectDeliverMission:
-    # Note, this will be changed when the shooter switches to actionlib
-    shoot_distance_meters = 3.1
+    shoot_distance_meters = 2.7
     theta_offset = np.pi / 2.0
     spotings_req = 1
     circle_radius = 10
+    circle_direction = "cw"
     platform_radius = 0.925
     search_timeout_seconds = 300
     SHAPE_CENTER_TO_BIG_TARGET = 0.42
     SHAPE_CENTER_TO_SMALL_TARGET = -0.42
+    WAIT_BETWEEN_SHOTS = 10 #Seconds to wait between shooting
     NUM_BALLS = 4
     LOOK_AT_TIME = 5
+    FOREST_SLEEP = 15
 
     def __init__(self, navigator):
         self.navigator = navigator
+        self.shooter_pose_sub = navigator.nh.subscribe("/shooter_pose", PoseStamped)
         self.cameraLidarTransformer = navigator.nh.get_service_client("/camera_to_lidar/right_right_cam", CameraToLidarTransform)
         self.shooterLoad = txros.action.ActionClient(
             self.navigator.nh, '/shooter/load', ShooterDoAction)
@@ -90,7 +93,7 @@ class DetectDeliverMission:
         done_circle = False
         @txros.util.cancellableInlineCallbacks
         def do_circle():
-            yield self.navigator.move.circle_point(platform_np).go()
+            yield self.navigator.move.circle_point(platform_np, direction=self.circle_direction).go()
             done_circle = True
 
         circle_defer = do_circle()
@@ -193,12 +196,12 @@ class DetectDeliverMission:
     def align_to_target(self):
         if self.shape_pose == None:
             self.select_backup_shape()
-        shooter_baselink_tf = yield self.navigator.tf_listener.get_transform('/base_link','/shooter')
         goal_point, goal_orientation = self.get_aligned_pose(self.shape_pose[0], self.shape_pose[1])
         move = self.navigator.move.set_position(goal_point).set_orientation(goal_orientation).forward(self.target_offset_meters)
-        move = move.left(-shooter_baselink_tf._p[1]).forward(-shooter_baselink_tf._p[0]) #Adjust for location of shooter
+        move = move.left(-self.shooter_baselink_tf._p[1]).forward(-self.shooter_baselink_tf._p[0]) #Adjust for location of shooter
         fprint("Aligning to shoot at {}".format(move), title="DETECT DELIVER", msg_color='green')
-        yield move.go(move_type="drive")
+        move_complete = yield move.go(move_type="skid", blind=True)
+        defer.returnValue(move_complete)
 
     def get_shape(self):
         return self.navigator.vision_proxies["get_shape"].get_response(Shape="ANY", Color="ANY")
@@ -242,22 +245,84 @@ class DetectDeliverMission:
             goal = yield self.shooterFire.send_goal(ShooterDoAction())
             fprint("Firing Shooter {}".format(i), title="DETECT DELIVER",  msg_color='green')
             res = yield goal.get_result()
+            fprint("Waiting {} seconds between shots".format(self.WAIT_BETWEEN_SHOTS), title="DETECT DELIVER",  msg_color='green')
+            yield self.navigator.nh.sleep(self.WAIT_BETWEEN_SHOTS)
+
+    @txros.util.cancellableInlineCallbacks
+    def continuously_align(self):
+      try:
+        while True:
+            shooter_pose = yield self.shooter_pose_sub.get_next_message()
+            shooter_pose = shooter_pose.pose
+
+            cen = np.array([shooter_pose.position.x, shooter_pose.position.y])
+            yaw = trns.euler_from_quaternion([shooter_pose.orientation.x,
+                                              shooter_pose.orientation.y,
+                                              shooter_pose.orientation.z,
+                                              shooter_pose.orientation.w])[2]
+            q = trns.quaternion_from_euler(0, 0, yaw)
+            p = np.append(cen,0)
+            fprint("Forest Aligning to p=[{}] q=[{}]".format(p, q), title="DETECT DELIVER",  msg_color='green')
+
+            #Prepare move to follow shooter
+            move = self.navigator.move.set_position(p).set_orientation(q).yaw_right(90, 'deg')
+
+            #Adjust move for location of target
+            move = move.forward(self.target_offset_meters)
+
+            #Adjust move for location of launcher
+            move = move.left(-self.shooter_baselink_tf._p[1]).forward(-self.shooter_baselink_tf._p[0])
+
+            #Move away a fixed distance to make the shot
+            move = move.left(self.shoot_distance_meters)
+
+            yield move.go(move_type='bypass')
+      except Exception:
+        traceback.print_exc()
+        raise
+
+    @txros.util.cancellableInlineCallbacks
+    def shoot_and_align_forest(self):
+        move = yield self.align_to_target()
+        if move.failure_reason != "":
+            fprint("Error Aligning with target = {}. Ending mission :(".format(move.failure_reason), title="DETECT DELIVER", msg_color="red")
+            return
+        fprint("Aligned successs. Shooting while using forest realign", title="DETECT DELIVER", msg_color="green")
+        align_defer = self.continuously_align()
+        fprint("Sleeping for {} seconds to allow for alignment", title="DETECT DELIVER".format(self.FOREST_SLEEP), msg_color="green")
+        yield self.navigator.nh.sleep(self.FOREST_SLEEP)
+        yield self.shoot_all_balls()
+        align_defer.cancel()
+
+    @txros.util.cancellableInlineCallbacks
+    def shoot_and_align(self):
+        move = yield self.align_to_target()
+        if move.failure_reason != "":
+            fprint("Error Aligning with target = {}. Ending mission :(".format(move.failure_reason), title="DETECT DELIVER", msg_color="red")
+            return
+        fprint("Aligned successs. Shooting without realignment", title="DETECT DELIVER", msg_color="green")
+        yield self.shoot_all_balls()
 
     @txros.util.cancellableInlineCallbacks
     def find_and_shoot(self):
+        self.shooter_baselink_tf = yield self.navigator.tf_listener.get_transform('/base_link','/shooter')
         yield self.navigator.vision_proxies["get_shape"].start()
         yield self.set_shape_and_color()  # Get correct goal shape/color from params
-        yield self.get_waypoint()  # Get waypoint of shooter target
-        yield self.circle_search()  # Go to waypoint and circle until target found
-        yield self.align_to_target()
-        yield self.shoot_all_balls()
+        yield self.get_waypoint()         # Get waypoint of shooter target
+        yield self.circle_search()        # Go to waypoint and circle until target found
+        #  yield self.shoot_and_align()      # Align to target and shoot
+        yield self.shoot_and_align_forest()      # Align to target and shoot
         yield self.navigator.vision_proxies["get_shape"].stop()
 
 @txros.util.cancellableInlineCallbacks
 def setup_mission(navigator):
-    color = "RED"
-    shape = "TRIANGLE"
-    #color = yield navigator.mission_params["scan_the_code_color3"].get()
+    #stc_color = yield navigator.mission_params["scan_the_code_color3"].get(raise_exception=False)
+    #if stc_color == False:
+    #    color = "ANY"
+    #else:
+    #    color = stc_color
+    color = "ANY"
+    shape = "CROSS"
     fprint("Setting search shape={} color={}".format(shape, color), title="DETECT DELIVER",  msg_color='green')
     yield navigator.mission_params["detect_deliver_shape"].set(shape)
     yield navigator.mission_params["detect_deliver_color"].set(color)
