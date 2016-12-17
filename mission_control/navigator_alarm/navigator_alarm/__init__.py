@@ -7,7 +7,7 @@ from . import alarm_handlers
 from alarm_handlers._template import HandlerBase
 
 meta_alarms_inv = {
-    'kill': ('rc_kill', 'hw_kill'),
+    'kill': ('rc_kill', 'hw_kill', 'network_loss'),
 }
 
 meta_alarms = {}
