@@ -39,5 +39,18 @@ vector<string> getRectifiedImageTopics(bool color)
     return image_rect_topics;
 }
 
+
+void sortContours(vector<vector<cv::Point2i>>& contour_vec, bool ascending)
+{
+  auto comp_length =  ascending?
+    [](vector<cv::Point2i> const &contour1, vector<cv::Point2i> const &contour2)
+      { return  fabs(arcLength(contour1, true)) < fabs(arcLength(contour2, true)); } :
+    [](vector<cv::Point2i> const &contour1, vector<cv::Point2i> const &contour2)
+      { return  fabs(arcLength(contour1, true)) > fabs(arcLength(contour2, true)); };
+
+  sort(contour_vec.begin(), contour_vec.end(), comp_length);
+}
+
+
 }  // namespace nav::tools  
 }  // namespace nav
