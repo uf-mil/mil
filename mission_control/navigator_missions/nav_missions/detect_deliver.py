@@ -26,8 +26,10 @@ class DetectDeliverMission:
     search_timeout_seconds = 300
     SHAPE_CENTER_TO_BIG_TARGET = 0.42
     SHAPE_CENTER_TO_SMALL_TARGET = -0.42
+    WAIT_BETWEEN_SHOTS = 10 #Seconds to wait between shooting
     NUM_BALLS = 4
     LOOK_AT_TIME = 5
+    FOREST_SLEEP = 15
 
     def __init__(self, navigator):
         self.navigator = navigator
@@ -243,6 +245,8 @@ class DetectDeliverMission:
             goal = yield self.shooterFire.send_goal(ShooterDoAction())
             fprint("Firing Shooter {}".format(i), title="DETECT DELIVER",  msg_color='green')
             res = yield goal.get_result()
+            fprint("Waiting {} seconds between shots".format(self.WAIT_BETWEEN_SHOTS), title="DETECT DELIVER",  msg_color='green')
+            yield self.navigator.nh.sleep(self.WAIT_BETWEEN_SHOTS)
 
     @txros.util.cancellableInlineCallbacks
     def continuously_align(self):
@@ -285,8 +289,8 @@ class DetectDeliverMission:
             return
         fprint("Aligned successs. Shooting while using forest realign", title="DETECT DELIVER", msg_color="green")
         align_defer = self.continuously_align()
-        fprint("Sleeping for 2 seconds to allow for alignment", title="DETECT DELIVER", msg_color="green")
-        yield self.navigator.nh.sleep(10)
+        fprint("Sleeping for {} seconds to allow for alignment", title="DETECT DELIVER".format(self.FOREST_SLEEP), msg_color="green")
+        yield self.navigator.nh.sleep(self.FOREST_SLEEP)
         yield self.shoot_all_balls()
         align_defer.cancel()
 
