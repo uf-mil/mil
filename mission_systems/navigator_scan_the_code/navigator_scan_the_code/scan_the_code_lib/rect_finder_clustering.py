@@ -22,7 +22,7 @@ class RectangleFinderClustering(object):
         self.ys = []
         self.count_incorrect = 0
         self.count = 0
-        self.K = 2
+        self.K = 7
 
     def _get_lw(self, box):
         p0 = box[0]
