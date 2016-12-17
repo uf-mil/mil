@@ -186,12 +186,12 @@ class ScanTheCodePerception(object):
         points_keep = sorted(points_keep, key=lambda x: x[1])
         keep_num = int(.1 * len(points_keep))
         points_keep = points_keep[:keep_num]
-        self.pers_points.extend(points_keep)
-        max_num = 200
-        if len(self.pers_points) > max_num:
-            self.pers_points = self.pers_points[len(self.pers_points) - max_num:len(self.pers_points)]
+        # self.pers_points.extend(points_keep)
+        # max_num = 200
+        # if len(self.pers_points) > max_num:
+        #     self.pers_points = self.pers_points[len(self.pers_points) - max_num:len(self.pers_points)]
 
-        defer.returnValue(self.pers_points)
+        defer.returnValue(points_keep)
 
     @txros.util.cancellableInlineCallbacks
     def search(self, scan_the_code):
