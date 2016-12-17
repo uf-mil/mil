@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import rospy
 
 import threading
@@ -39,8 +38,19 @@ class KillInterface(object):
         self.kill_alarm = ab.add_alarm("hw_kill", problem_description="Hardware kill from a kill switch.")
         self.disconnect = ab.add_alarm("kill_system_disconnect")
         
-        self.need_kill = False
         self.killed = False
+        
+        self.kill_status = {'overall': False, 'PF': False, 'PA': False, 'SF': False, 'SA': False, 'computer': False, 'remote': False}
+        # Dict of op-codes to functions that need to be run with each code for aysnc responses
+        self.update_cbs = {'\x10': lambda: self.update('overall', True), '\x11': lambda: self.update('overall', False), 
+                           '\x12': lambda: self.update('PF', True), '\x13': lambda: self.update('PF', False), 
+                           '\x14': lambda: self.update('PA', True), '\x15': lambda: self.update('PA', False),
+                           '\x16': lambda: self.update('SF', True), '\x17': lambda: self.update('SF', False), 
+                           '\x18': lambda: self.update('SA', True), '\x19': lambda: self.update('SA', False),
+                           '\x1A': lambda: self.update('remote', True), '\x1B': lambda: self.update('remote', False),
+                           '\x1C': lambda: self.update('computer', True), '\x1D': lambda: self.update('computer', False),
+                           '\x1E': self.disconnect.clear_alarm, '\x1F': self.disconnect.raise_alarm}
+
         # Initial check of kill status
         self.get_status() 
 
@@ -50,24 +60,22 @@ class KillInterface(object):
 
         al = AlarmListener("kill", self.alarm_kill_cb)
         
-        # Dict of op-codes to functions that need to be run with each code for aysnc responses.
-        self.update_cbs = {'\x10': self.set_kill, '\x11': self.set_unkill, 
-                           '\x12': lambda: True, '\x13': lambda: True, '\x14': lambda: True, '\x15': lambda: True,
-                           '\x16': lambda: True, '\x17': lambda: True, '\x18': lambda: True, '\x19': lambda: True,
-                           '\x1A': lambda: True, '\x1B': lambda: True,
-                           '\x1C': lambda: True, '\x1D': lambda: True,
-                           '\x1E': self.disconnect.clear_alarm, '\x1F': self.disconnect.raise_alarm,}
-        
         while not rospy.is_shutdown():
-            rospy.sleep(.25)
+            rospy.sleep(.1)
             self.get_status()
             self.control_check()
+
             while self.ser.inWaiting() > 0:
                 self.check_buffer()
+
             if not self.network_kill():
                 self.ping()
             else:
-                rospy.logwarn("Network Kill!")
+                rospy.logerr("KILLBOARD: Network Kill!")
+    
+    def update(self, src, status):
+        rospy.loginfo("Updating... from {}: {}".fornat(src, status))
+        self.kill_status[src] = status
 
     def network_kill(self):
         if self.network_msg is None:
@@ -99,7 +107,7 @@ class KillInterface(object):
         # The board appears to not be return async data
         resp = self.ser.read(1)
         if resp in self.update_cbs:
-            rospy.loginfo("Check Buffer response: {}".format(resp))
+            rospy.loginfo("Check Buffer response: {}".format(to_hex(resp)))
             self.update_cbs[resp]()
 
     @thread_lock(lock)
@@ -110,8 +118,8 @@ class KillInterface(object):
         With no `recv_str` passed in the raw result will be returned.
         """
         self.ser.write(write_str)
-    
-        resp = self.ser.read(1)        
+        return True 
+        resp = self.ser.read(1) 
         
         rospy.loginfo("Sent: {}, Rec: {}".format(self.to_hex(write_str), self.to_hex(resp)))
 
@@ -153,6 +161,24 @@ class KillInterface(object):
             self.request('\x40', '\x50')
 
     def get_status(self):
+        killstatus = KillStatus()
+        killstatus.overall = self.kill_status['overall']
+        killstatus.pf = self.kill_status['PF']
+        killstatus.pa = self.kill_status['PA'] 
+        killstatus.sf = self.kill_status['SF']
+        killstatus.sa = self.kill_status['SA']
+        killstatus.remote = self.kill_status['remote']
+        killstatus.computer = self.kill_status['computer']
+        # killstatus.remote_conn = ord(remote_conn) == 1
+        self.killstatus_pub.publish(killstatus)
+
+        # If any of the kill options (except the computer) are true, raise the alarm.
+        if any([killstatus.pf, killstatus.pa, killstatus.sf, killstatus.sa, killstatus.remote]):
+            self.set_kill()
+        else:
+            self.set_unkill()
+
+    def _get_status(self):
         """
         Request an updates all current status indicators
         """
