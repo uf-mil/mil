@@ -9,6 +9,7 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <exception>
 #include <unordered_map>
 #include <cstring>
 #include <deque>
@@ -161,12 +162,20 @@ class OccupancyGrid
 					double lidarAngle = fabs(acos(lidarHeading.dot(dir))*180./M_PI);
 					double distance = sqrt(pow(boatRow - row, 2) + pow(boatCol - col, 2)) * VOXEL_SIZE_METERS;
 					//std::cout << row << " , " << col << " , " << lidarAngle << " , " << distance << std::endl;
-					if (lidarAngle <= LIDAR_VIEW_ANGLE_DEG && ogrid[row][col].hits > 0 && distance >= LIDAR_MIN_VIEW_DISTANCE_METERS) { 
+					try{
+						auto val =  ogrid.at(row).at(col).hits;
+						if (lidarAngle <= LIDAR_VIEW_ANGLE_DEG && val > 0 && distance >= LIDAR_MIN_VIEW_DISTANCE_METERS) { 
 						ogrid[row][col].hits -= 1;
 						if (ogrid[row][col].hits < 0) {
 							ogrid[row][col] = cell();
-						}	
-					} 
+							}	
+						}	 
+					}
+					catch(std::exception &e){
+						std::cout << "OUT OF BOUNDS"<< row << col << std::endl;
+						std::cout << e.what() << std::endl;
+					}
+					
 				}
 			}
 			
@@ -186,10 +195,14 @@ class OccupancyGrid
 			    Eigen::Vector2d am = b1 - point;
 			    //Valid lidar points are inside bounding box or within X meters of the boat
 		     	if( (0 <= ab.dot(am) && ab.dot(am) <= ab.dot(ab) && 0 <= am.dot(ac) && am.dot(ac) <= ac.dot(ac)) || (xyz_in_velodyne.norm() <= 15) ){
+		     		// std::cout << "THIS POINT IS in boudds!" <<std::endl;
 					if (xyz_in_velodyne.norm() >= LIDAR_MIN_VIEW_DISTANCE_METERS && xyz_in_velodyne.norm() <= 100 && xyz_in_enu(2) >= lidarPos.z-MAXIMUM_Z_BELOW_LIDAR && xyz_in_enu(2) <= lidarPos.z+MAXIMUM_Z_ABOVE_LIDAR) {
+						// std::cout << "fuck!" <<std::endl;
 						auto valid = xyz_in_velodyne.norm() < LIDAR_CONFIDENCE_DISTANCE_METERS && goodLidarReading == true;
 						updateGrid(LidarBeam(xyz_in_enu(0), xyz_in_enu(1),xyz_in_enu(2),i.f,valid),max_hits);
 					}
+		     	}else{
+		     		std::cout << "THIS POINT IS OUT OF THE BOUNDS!" <<std::endl;
 		     	}
 			}
 			++updateCounter;
@@ -276,10 +289,15 @@ class OccupancyGrid
 			for (int row = boatRow - ROI_SIZE/2; row < boatRow + ROI_SIZE/2; ++row,++binaryRow) {
 				int binaryCol = 0;
 				for (int col = boatCol - ROI_SIZE/2; col < boatCol + ROI_SIZE/2; ++col,++binaryCol) {
-					if ( ogrid[row][col].hits >= minHits && pointCloudTable[row*GRID_SIZE+col].q.size() >= MIN_LIDAR_POINTS_FOR_OCCUPANCY && pointCloudTable[row*GRID_SIZE+col].height() >= MIN_OBJECT_HEIGHT_METERS) {  
+					try{
+						if ( ogrid.at(row).at(col).hits >= minHits && pointCloudTable.at(row*GRID_SIZE+col).q.size() >= MIN_LIDAR_POINTS_FOR_OCCUPANCY && pointCloudTable.at(row*GRID_SIZE+col).height() >= MIN_OBJECT_HEIGHT_METERS) {  
 						ogridBinary[binaryRow][binaryCol] = true; 
 						ogridMap[binaryRow*ROI_SIZE+binaryCol] = 100;
 					}
+				}catch(std::exception &e){
+					std::cout<<e.what()<<__PRETTY_FUNCTION__<<std::endl;
+					
+				}
 				}
 			}
 		}

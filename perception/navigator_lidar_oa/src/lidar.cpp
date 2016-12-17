@@ -621,6 +621,7 @@ void resetBounds(const ros::TimerEvent& event)
         BOUNDARY_CORNER_2(0) = boundsRes.bounds[1].x; BOUNDARY_CORNER_2(1) = boundsRes.bounds[1].y;
         BOUNDARY_CORNER_3(0) = boundsRes.bounds[2].x; BOUNDARY_CORNER_3(1) = boundsRes.bounds[2].y;
         BOUNDARY_CORNER_4(0) = boundsRes.bounds[3].x; BOUNDARY_CORNER_4(1) = boundsRes.bounds[3].y;
+        cout << BOUNDARY_CORNER_1(0) << endl;
         ROS_INFO_STREAM("LIDAR | Bounds set to rosparam");
     } else {
         ROS_INFO_STREAM("LIDAR | Bounds not available from /get_bounds service....");

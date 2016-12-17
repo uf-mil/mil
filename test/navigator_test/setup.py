@@ -6,7 +6,7 @@ from catkin_pkg.python_setup import generate_distutils_setup
 
 # fetch values from package.xml
 setup_args = generate_distutils_setup(
-    packages=['navigator_test_lib', 'navigator_test_spoofs', 'navigator_tests', 'navigator_test']
+    packages=['navigator_testing_suite']
 )
 
 setup(**setup_args)

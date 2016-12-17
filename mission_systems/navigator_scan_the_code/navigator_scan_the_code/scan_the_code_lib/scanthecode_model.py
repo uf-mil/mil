@@ -1,6 +1,7 @@
 """Model for the ScanTheCode that tracks its own color."""
 import cv2
 from navigator_tools import fprint
+import numpy as np
 ___author___ = "Tess Bianchi"
 
 
@@ -50,8 +51,9 @@ class ScanTheCodeModel:
 
         return xmin, ymin, xmax, ymax
 
-    def _get_color(self, roi):
-        hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+    def check_for_colors(self, image, colors, debug):
+        draw = image.copy()
+        hsv = cv2.cvtColor(colors, cv2.COLOR_BGR2HSV)
         red_vote = 0
         black_vote = 0
         yellow_vote = 0
@@ -61,83 +63,36 @@ class ScanTheCodeModel:
         h_sum = 0
         s_sum = 0
         tot = 0
-        for i in range(0, len(roi)):
-            for j in range(0, len(roi[0])):
-                hue = hsv[i][j][0]
-                sat = hsv[i][j][1]
-                val = hsv[i][j][2]
-                h_sum += hue
-                v_sum += val
-                s_sum += sat
-                tot += 1
-                if val < self.BLACK_THRESH_V or sat < self.BLACK_THRESH_S:
-                    black_vote += 1
-                elif hue < self.RED_THRESH_HIGH1 and hue > self.RED_THRESH_LOW1:
-                    red_vote += 1
-                elif hue < self.RED_THRESH_HIGH2 and hue > self.RED_THRESH_LOW2:
-                    red_vote += 1
-                elif hue < self.YELLOW_THRESH_HIGH and hue > self.YELLOW_THRESH_LOW:
-                    yellow_vote += 1
-                elif hue < self.GREEN_THRESH_HIGH and hue > self.GREEN_THRESH_LOW:
-                    green_vote += 1
-                elif hue < self.GREEN_THRESH_HIGH and hue > self.GREEN_THRESH_LOW:
-                    blue_vote += 1
+        for c in hsv:
+            hue, sat, val = c
+            if val < self.BLACK_THRESH_V or sat < self.BLACK_THRESH_S:
+                black_vote += 1
+            elif hue < self.RED_THRESH_HIGH1 and hue > self.RED_THRESH_LOW1:
+                red_vote += 1
+            elif hue < self.RED_THRESH_HIGH2 and hue > self.RED_THRESH_LOW2:
+                red_vote += 1
+            elif hue < self.YELLOW_THRESH_HIGH and hue > self.YELLOW_THRESH_LOW:
+                yellow_vote += 1
+            elif hue < self.GREEN_THRESH_HIGH and hue > self.GREEN_THRESH_LOW:
+                green_vote += 1
+            elif hue < self.GREEN_THRESH_HIGH and hue > self.GREEN_THRESH_LOW:
+                blue_vote += 1
         m = max(red_vote, black_vote, yellow_vote, green_vote, blue_vote)
-        fprint("Average H {}".format(h_sum / tot), msg_color="green")
-        fprint("Average S {}".format(s_sum / tot), msg_color="green")
-        fprint("Average V {}".format(v_sum / tot), msg_color="green")
+        avgh, avgs, avgv = np.round(h_sum / tot), np.round(s_sum / tot), np.round(v_sum / tot)
+        fprint("Average H {}".format(avgh), msg_color="green")
+        fprint("Average S {}".format(avgs), msg_color="green")
+        fprint("Average V {}".format(avgv), msg_color="green")
+        color = 'n'
         if blue_vote == m:
-            return 'b'
+            color = 'b'
         if red_vote == m:
-            return 'r'
+            color = 'r'
         if yellow_vote == m:
-            return 'y'
+            color = 'y'
         if green_vote == m:
-            return 'g'
+            color = 'g'
         if black_vote == m:
-            return 'k'
-
-    def check_for_colors(self, debug):
-        """Tell the model to update its colors."""
-        if(self.colors_found == 3):
-            return True, self.colors
-        xmin, ymin, xmax, ymax = self._get_bounding_rect()
-        color = self._get_color(self.frame[ymin:ymax, xmin:xmax])
-        # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
-        fprint("color:{}".format(color), msg_color='green')
-        # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
-        fc = self.frame.copy()
-        cv2.putText(fc, color, (20, 20), 1, 2, (255, 0, 0))
-        debug.add_image(fc, "adlj", topic="colors")
-        if(self.prev_color is not None):
-
-            changed = False
-            if(color != self.prev_cached_color):
-                changed = True
-
-            if color != self.prev_color:
-                self.count_same_colors = 0
-
-            if (color == self.prev_color or self.prev_color == 'k') and self.turned_black and color != 'k':
-                self.count_same_colors += 1
-
-            if(color == 'k'):
-                self.turned_black = True
-                self.colors_found = 0
-                self.count_same_colors = 0
-                del self.colors[:]
-
-            elif self.turned_black and changed and self.count_same_colors > 0:
-                self.colors_found += 1
-                self.colors.append(color)
-                self.prev_cached_color = color
-                self.count_same_colors = 0
-
-            fprint("count_same_colors:{}".format(self.count_same_colors), msg_color='green')
-
-        # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
-        fprint("colors:{}".format(self.colors), msg_color='green')
-        print "---"
-        # %%%%%%%%%%%%%%%%%%%%%%%%DEBUG
-        self.prev_color = color
-        return False, []
+            color = 'k'
+        cv2.putText(draw, color, (20, 20), 1, 2, (255, 0, 0))
+        debug.add_image(draw, "adlj", topic="colors")
+        return color

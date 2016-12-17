@@ -32,7 +32,7 @@ class DBHelper(object):
     @util.cancellableInlineCallbacks
     def init_(self, navigator=None):
         """Initialize the txros parts of the DBHelper."""
-        self._sub_database = yield self.nh.subscribe('/database/objects', PerceptionObjectArray, self.object_cb)
+        # self._sub_database = yield self.nh.subscribe('/database/objects', PerceptionObjectArray, self.object_cb)
         self._database = yield self.nh.get_service_client("/database/requests", ObjectDBQuery)
         self.navigator = navigator
         if navigator is None:
@@ -226,8 +226,6 @@ class DBHelper(object):
                         min_obj = o
                 defer.returnValue(min_obj)
 
-            print "good"
-
             if len(actual_objects) == 1:
                 defer.returnValue(actual_objects[0])
 
@@ -248,3 +246,20 @@ class DBHelper(object):
     def set_fake_position(self, pos):
         """Set the position of a fake perception object."""
         raise NotImplementedError()
+
+    @util.cancellableInlineCallbacks
+    def get_objects_in_radius(self, pos, radius, objects="all"):
+        req = ObjectDBQueryRequest()
+        req.name = 'all'
+        resp = yield self._database(req)
+        ans = []
+
+        if not resp.found:
+            defer.returnValue(ans)
+
+        for o in resp.objects:
+            if objects == "all" or o.name in objects:
+                dist = np.linalg.norm(pos - nt.rosmsg_to_numpy(o.position))
+                if dist < radius:
+                    ans.append(o)
+        defer.returnValue(ans)
