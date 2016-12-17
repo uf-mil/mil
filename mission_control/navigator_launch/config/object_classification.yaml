@@ -1,4 +1,4 @@
-ROIS: ["BuoyField","CoralSurvey","FindBreak","AcousticPinger","Shooter","Scan_The_Code","Gate_1","Gate_2","Gate_3","Dock", "DockEdgeLeft", "DockEdgeRight"]        
+ROIS: ["BuoyField","CoralSurvey","FindBreak","AcousticPinger","Shooter","Scan_The_Code","Gate_1","Gate_2","Gate_3","Dock", "DockEdgeLeft", "DockEdgeRight", "Exploring1", "Exploring2", "Exploring3", "Exploring4"]        
 VOLUMES:
   #               low h, high h, low x, high x, low y, high y, low z, high z
   DOCK:           [1.0, 1.5, 8.0, 10.0, 8.0, 10.0, 2.75, 3.25]

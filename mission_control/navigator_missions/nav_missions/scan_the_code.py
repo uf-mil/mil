@@ -47,9 +47,10 @@ def main(navigator, **kwargs):
         if mission.stc_correct:
             break
         yield p.go()
+        # yield navigator.nh.sleep(2)
 
     fprint("Finished getting the correct stc face", msg_color='green')
-    circle = navigator.move.d_circle_point(look_at, radius=8, granularity=30, direction='cw')
+    circle = navigator.move.d_circle_point(look_at, radius=8, granularity=6, direction='cw')
     colors = None
     for i in circle:
         defer = mission.find_colors()
@@ -58,6 +59,8 @@ def main(navigator, **kwargs):
             break
         except txros.util.TimeoutError:
             yield i.go()
+            fprint("go", msg_color="red")
+            # yield navigator.nh.sleep(2)
 
     if colors is None:
         colors = "r", "g", "b"
