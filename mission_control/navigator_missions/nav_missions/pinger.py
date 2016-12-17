@@ -14,9 +14,9 @@ import rospy
 ___author___ = "Kevin Allen"
 
 class PingerMission:
-    OBSERVE_DISTANCE_METERS = 5
-    GATE_CROSS_METERS = 5
-    FREQ = 35000
+    OBSERVE_DISTANCE_METERS = 6
+    GATE_CROSS_METERS = 8
+    FREQ = 27000
     LISTEN_TIME = 10
     MAX_CIRCLE_BUOY_ERROR = 30
     CIRCLE_RADIUS = 8
@@ -58,12 +58,14 @@ class PingerMission:
 
         self.gate_poses = np.array([gate_1_pos, gate_2_pos, gate_3_pos])
 
+    @txros.util.cancellableInlineCallbacks
     def get_observation_poses(self):
         """Set 2 points to observe the pinger from, in front of gates 1 and 3"""
         self.get_gate_perp()
         #Make sure they are actually in a line
         if np.isnan(self.g_perp[0]) or np.isnan(self.g_perp[1]):
             raise Exception("Gates are not in a line")
+            return
         pose = self.navigator.pose[0][:2]
         distance_test = np.array([np.linalg.norm(pose - (self.gate_poses[0] + self.OBSERVE_DISTANCE_METERS * self.g_perp)),
                                   np.linalg.norm(pose - (self.gate_poses[0] - self.OBSERVE_DISTANCE_METERS * self.g_perp))])
@@ -85,7 +87,7 @@ class PingerMission:
     @txros.util.cancellableInlineCallbacks
     def search_samples(self):
         """Move to each observation point and listen to the pinger while sitting still"""
-        self.get_observation_poses()
+        yield self.get_observation_poses()
         for i,p in enumerate(self.observation_points):
             yield self.stop_listen()
             yield self.navigator.move.set_position(p).look_at(self.look_at_points[i]).go()
@@ -98,6 +100,8 @@ class PingerMission:
     def get_pinger_pose(self):
         """Query pinger perception for the location of the pinger after observing"""
         res = yield self.pinger_client(FindPingerRequest())
+        if res.pinger_position.x == 0:
+           self.pinger_pose = self.gate_poses[1]
         pinger_pose = res.pinger_position
         self.pinger_pose = navigator_tools.rosmsg_to_numpy(pinger_pose)[:2]
         self.distances = np.array([np.linalg.norm(self.pinger_pose - self.gate_poses[0]),
@@ -258,7 +262,6 @@ class PingerMission:
         fprint("PINGER: Getting database objects", msg_color='green')
         yield self.get_objects()
         fprint("PINGER: Calculating observation points", msg_color='green') 
-        yield self.get_observation_poses()
         fprint("PINGER: Searching each sample", msg_color='green') 
         yield self.search_samples()
         fprint("PINGER: Getting pinger position", msg_color='green') 
@@ -271,7 +274,7 @@ class PingerMission:
 
 @txros.util.cancellableInlineCallbacks
 def safe_exit(navigator, err):
-  yield self.navigator.mission_params["acoustic_pinger_active_index"].set(1)
+  yield navigator.mission_params["acoustic_pinger_active_index"].set(1)
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator, **kwargs):

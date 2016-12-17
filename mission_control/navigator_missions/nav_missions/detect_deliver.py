@@ -17,10 +17,11 @@ from navigator_tools import fprint, MissingPerceptionObject
 import genpy
 
 class DetectDeliverMission:
-    shoot_distance_meters = 3.1
+    shoot_distance_meters = 2.7
     theta_offset = np.pi / 2.0
     spotings_req = 1
     circle_radius = 10
+    circle_direction = "cw"
     platform_radius = 0.925
     search_timeout_seconds = 300
     SHAPE_CENTER_TO_BIG_TARGET = 0.42
@@ -90,7 +91,7 @@ class DetectDeliverMission:
         done_circle = False
         @txros.util.cancellableInlineCallbacks
         def do_circle():
-            yield self.navigator.move.circle_point(platform_np).go()
+            yield self.navigator.move.circle_point(platform_np, direction=self.circle_direction).go()
             done_circle = True
 
         circle_defer = do_circle()
@@ -197,7 +198,7 @@ class DetectDeliverMission:
         move = self.navigator.move.set_position(goal_point).set_orientation(goal_orientation).forward(self.target_offset_meters)
         move = move.left(-self.shooter_baselink_tf._p[1]).forward(-self.shooter_baselink_tf._p[0]) #Adjust for location of shooter
         fprint("Aligning to shoot at {}".format(move), title="DETECT DELIVER", msg_color='green')
-        move_complete = yield move.go(move_type="drive")
+        move_complete = yield move.go(move_type="skid", blind=True)
         defer.returnValue(move_complete)
 
     def get_shape(self):
@@ -256,14 +257,8 @@ class DetectDeliverMission:
                                               shooter_pose.orientation.z,
                                               shooter_pose.orientation.w])[2]
             q = trns.quaternion_from_euler(0, 0, yaw)
-
-            #  v_downrange = np.array([np.cos(ori), np.sin(ori)])
-            #  v_crossrange = np.array([-np.sin(ori), np.cos(ori)])
-
-            #  p = cen + v_downrange + v_crossrange
-            #  p = np.concatenate([p, [0]])
             p = np.append(cen,0)
-            fprint("Aligning to p=[{}] q=[{}]".format(p, q), title="DETECT DELIVER",  msg_color='green')
+            fprint("Forest Aligning to p=[{}] q=[{}]".format(p, q), title="DETECT DELIVER",  msg_color='green')
 
             #Prepare move to follow shooter
             move = self.navigator.move.set_position(p).set_orientation(q).yaw_right(90, 'deg')
@@ -278,7 +273,6 @@ class DetectDeliverMission:
             move = move.left(self.shoot_distance_meters)
 
             yield move.go(move_type='bypass')
-            #  yield move.go()
       except Exception:
         traceback.print_exc()
         raise
@@ -318,12 +312,13 @@ class DetectDeliverMission:
 
 @txros.util.cancellableInlineCallbacks
 def setup_mission(navigator):
-    stc_color = yield navigator.mission_params["scan_the_code_color3"].get(raise_exception=False)
-    if stc_color == False:
-        color = "ANY"
-    else:
-        color = stc_color
-    shape = "ANY"
+    #stc_color = yield navigator.mission_params["scan_the_code_color3"].get(raise_exception=False)
+    #if stc_color == False:
+    #    color = "ANY"
+    #else:
+    #    color = stc_color
+    color = "ANY"
+    shape = "CROSS"
     fprint("Setting search shape={} color={}".format(shape, color), title="DETECT DELIVER",  msg_color='green')
     yield navigator.mission_params["detect_deliver_shape"].set(shape)
     yield navigator.mission_params["detect_deliver_color"].set(color)
