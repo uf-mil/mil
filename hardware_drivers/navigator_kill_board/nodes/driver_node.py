@@ -59,11 +59,11 @@ class KillInterface(object):
                            '\x1E': self.disconnect.clear_alarm, '\x1F': self.disconnect.raise_alarm,}
         
         while not rospy.is_shutdown():
-            rospy.sleep(.5)
-            while self.ser.inWaiting() > 0:
-                self.check_buffer()
+            rospy.sleep(.25)
             self.get_status()
             self.control_check()
+            while self.ser.inWaiting() > 0:
+                self.check_buffer()
             if not self.network_kill():
                 self.ping()
             else:
@@ -113,11 +113,11 @@ class KillInterface(object):
     
         resp = self.ser.read(1)        
         
-        rospy.loginfo("Sent: {}, Rec: {}".format(write_str, resp))
+        rospy.loginfo("Sent: {}, Rec: {}".format(self.to_hex(write_str), self.to_hex(resp)))
 
         rospy.sleep(.05)
         if recv_str is None:
-            fprint("Response received: {}".format(self.to_hex(resp)), msg_color='blue')
+            #fprint("Response received: {}".format(self.to_hex(resp)), msg_color='blue')
             return resp
         
         if resp in recv_str:
@@ -127,7 +127,7 @@ class KillInterface(object):
 
         self.ser.flushOutput()
         # Result didn't match
-        rospy.logerr("Response didn't match. Expected: {}, got: {}.".format(self.to_hex(recv_str), self.to_hex(resp))
+        rospy.logerr("Response didn't match. Expected: {}, got: {}.".format(self.to_hex(recv_str), self.to_hex(resp)))
         return False
 
     def alarm_kill_cb(self, alarm):

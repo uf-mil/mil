@@ -9,7 +9,7 @@ class KeepAliveListener(object):
     '''
     Meant to only run on the boat. When the network is dropped, it triggers a kill.
     '''
-    def __init__(self, timeout=5.0):
+    def __init__(self, timeout=8.0):
         self.timeout = rospy.Duration(timeout)
         self.last_msg = None 
         self.sub = rospy.Subscriber('/keep_alive', Header, self.got_network_msg, queue_size=1)
