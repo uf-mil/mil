@@ -11,7 +11,7 @@ from median_flow import MedianFlow
 ___author___ = "Tess Bianchi"
 
 
-class ROI_Collection():
+class ROI_Collection_Slow():
 
     def __init__(self):
         self.bag_to_rois = {}
@@ -20,7 +20,7 @@ class ROI_Collection():
         pickle.dump(self, open(name, "wb"))
 
 
-class ROI_Generator(object):
+class ROI_Generator_Slow(object):
 
     def __init__(self):
         self.folder = os.path.dirname(os.path.realpath(__file__))
@@ -55,7 +55,7 @@ class ROI_Generator(object):
         if load:
             self.collection = pickle.load(open(self.folder + '/' + output, "rb"))
         else:
-            self.collection = ROI_Collection()
+            self.collection = ROI_Collection_Slow()
 
         self.collection.bag_to_rois[bag] = []
         self.mycoll = self.collection.bag_to_rois[bag]
@@ -119,8 +119,18 @@ class ROI_Generator(object):
                 for name in remove:
                     self.rects.pop(name)
                     self.roi_to_tracker.pop(name)
-                r = dict(self.rects)
-                self.mycoll.append(r)
+                newrects = {}
+                for r in self.rects:
+                    coords = self.rects[r]
+                    name = raw_input('Enter name of {} object: '.format(r))
+                    if name == "skip":
+                        pause = True
+                        break
+                    elif name == ' ':
+                        break
+                    else:
+                        newrects[name] = coords
+                self.mycoll.append(newrects)
             clone = self.image.copy()
             for key in self.rects.keys():
                 r = self.rects[key]
@@ -188,6 +198,6 @@ if __name__ == '__main__':
     parser.add_argument('--load', action='store_true', help='The name of the output file')
     args = parser.parse_args(sys.argv[1:])
 
-    roi = ROI_Generator()
+    roi = ROI_Generator_Slow()
     roi.create(args.bag, args.name, args.load)
     roi.go()

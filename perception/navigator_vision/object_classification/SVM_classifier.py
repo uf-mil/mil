@@ -20,4 +20,5 @@ class SVMClassifier(object):
         self.clf.fit(desc, clss)
 
     def pickle(self, name):
-        pickle.dump(self, open(name, "wb"))
+        with open(name, 'wb') as f:
+            pickle.dump(self, f)
