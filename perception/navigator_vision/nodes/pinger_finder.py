@@ -112,7 +112,7 @@ class PingerFinder(object):
     def find_pinger(self, srv_request):
         if self.line_array.shape[0] < 2:
             print "PINGER_FINDER: Can't locate pinger. Less than two valid observations have been recorded."
-            return None
+            return {}
         res =  {'pinger_position' : self.LS_intersection(), 'num_samples' : self.line_array.shape[0]}
         self.visualize_pinger()
         return res
