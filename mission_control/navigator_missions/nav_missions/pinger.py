@@ -14,12 +14,13 @@ import rospy
 ___author___ = "Kevin Allen"
 
 class PingerMission:
-    OBSERVE_DISTANCE_METERS = 6
+    OBSERVE_DISTANCE_METERS = 7
     GATE_CROSS_METERS = 8
     FREQ = 27000
     LISTEN_TIME = 10
     MAX_CIRCLE_BUOY_ERROR = 30
     CIRCLE_RADIUS = 8
+    USE_CLOSE_POINTS = False
 
     def __init__(self, navigator):
         self.navigator = navigator
@@ -31,6 +32,7 @@ class PingerMission:
         self.markers = MarkerArray()
         self.last_id = 0
         self.circle_totem = None
+        self.color_wrong = False
 
     def reset_freq(self):
         return self.reset_client(SetFrequencyRequest(frequency=self.FREQ))
@@ -73,18 +75,25 @@ class PingerMission:
         if np.argmin(distance_test) == 1:
             self.negate = True
         yield self.navigator.mission_params["pinger_negate"].set(self.negate)
-        dis = (self.gate_poses[2]-self.gate_poses[0]) / 3.0
-        branch_pt0 = self.gate_poses[0] + dis
-        branch_pt1 = self.gate_poses[2] - dis
-        if np.argmin(distance_test) == 1:
-            self.negate = True
-        if self.negate:
-            self.observation_points = (np.append((branch_pt0 - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0),
-                                       np.append((branch_pt1 - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0))
+        if self.USE_CLOSE_POINTS:
+            dis = (self.gate_poses[2]-self.gate_poses[0]) / 3.0
+            branch_pt0 = self.gate_poses[0] + dis
+            branch_pt1 = self.gate_poses[2] - dis
+            if self.negate:
+                self.observation_points = (np.append((branch_pt0 - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0),
+                                           np.append((branch_pt1 - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0))
+            else:
+                self.observation_points = (np.append((branch_pt0 + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0),
+                                           np.append((branch_pt1 + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0))
+            self.look_at_points = (np.append(branch_pt0, 0), np.append(branch_pt1, 0))
         else:
-            self.observation_points = (np.append((branch_pt0 + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0),
-                                       np.append((branch_pt1 + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0))
-        self.look_at_points = (np.append(branch_pt0, 0), np.append(branch_pt1, 0))
+            if self.negate:
+                self.observation_points = (np.append((self.gate_poses[0] - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0),
+                                           np.append((self.gate_poses[2] - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0))
+            else:
+                self.observation_points = (np.append((self.gate_poses[0] + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0),
+                                           np.append((self.gate_poses[2] + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0))
+            self.look_at_points = (np.append(self.gate_poses[0], 0), np.append(self.gate_poses[2], 0))
 
     @txros.util.cancellableInlineCallbacks
     def search_samples(self):
@@ -172,6 +181,7 @@ class PingerMission:
                 fprint("PINGER: circle buoy is too far from where it should be", msg_color='red')
 
             if sorted_3[0].color.r > 0.9:
+                self.color_wrong = True
                 color_3 = "RED"
                 self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_3[0].position), color=(1,0,0), time=cur_time)
             elif sorted_3[0].color.g > 0.9:
@@ -184,6 +194,7 @@ class PingerMission:
                 color_1 = "RED"
                 self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(1,0,0), time=cur_time)
             elif sorted_1[0].color.g > 0.9:
+                self.color_wrong = True
                 color_1 = "GREEN"
                 self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(0,1,0), time=cur_time)
             else:
@@ -223,8 +234,16 @@ class PingerMission:
     def set_active_pinger(self):
         """Set the paramter for the active pinger identified for use in other mission"""
         fprint("PINGER: setting active pinger to Gate_{}".format(int(self.gate_index)+1), msg_color='green')
-        yield self.navigator.mission_params["acoustic_pinger_active_index"].set(int(self.gate_index)+1)
         yield self.get_colored_buoys()
+        if self.color_wrong and self.gate_index == 2:
+            yield self.navigator.mission_params["acoustic_pinger_active_index_correct"].set(1)
+        elif self.color_wrong and self.gate_index == 0:
+            yield self.navigator.mission_params["acoustic_pinger_active_index_correct"].set(3)
+        else:
+            yield self.navigator.mission_params["acoustic_pinger_active_index_correct"].set(int(self.gate_index)+1)
+
+        yield self.navigator.mission_params["acoustic_pinger_active_index"].set(int(self.gate_index)+1)
+        #yield self.get_colored_buoys()
 
     @txros.util.cancellableInlineCallbacks
     def circle_buoy(self):
@@ -277,6 +296,7 @@ class PingerMission:
 @txros.util.cancellableInlineCallbacks
 def safe_exit(navigator, err):
   yield navigator.mission_params["acoustic_pinger_active_index"].set(1)
+  yield navigator.mission_params["acoustic_pinger_active_index_correct"].set(1)
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator, **kwargs):
