@@ -307,13 +307,13 @@ class IdentifyDockMission:
 def setup_mission(navigator):
     stc_1 = yield navigator.mission_params["scan_the_code_color1"].get(raise_exception=False)
     if stc_1 == False:
-        bay_1_color = "GREEN"
+        bay_1_color = "ANY"
     else:
         bay_1_color = stc_1
 
-    stc_2 = yield navigator.mission_params["scan_the_code_color1"].get(raise_exception=False)
+    stc_2 = yield navigator.mission_params["scan_the_code_color2"].get(raise_exception=False)
     if stc_2 == False:
-        bay_2_color = "RED"
+        bay_2_color = "ANY"
     else:
         bay_2_color = stc_2
 
