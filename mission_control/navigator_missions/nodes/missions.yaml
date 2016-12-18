@@ -33,15 +33,17 @@ pinger:
   points: 100
   min_time: 1
   weight: 2
+  mission_script: "pinger"
   looking_for: None
 
-pinger_exit:
+pinger_2:
   marker_dep: None
   mission_dep: "detect_deliver"
   is_base: False
   points: 100
   min_time: 1
   weight: 2
+  mission_script: "pinger"
   looking_for: None
 
 coral_survey:
@@ -51,6 +53,7 @@ coral_survey:
   points: 100
   min_time: 1
   weight: 2
+  mission_script: "coral_survey"
   looking_for: None
 
 detect_deliver:
@@ -60,6 +63,7 @@ detect_deliver:
   points: 100
   min_time: 1
   weight: 2
+  mission_script: "detect_deliver"
   looking_for: None
 
 scan_the_code:
@@ -69,6 +73,7 @@ scan_the_code:
   points: 100
   min_time: 1
   weight: 2
+  mission_script: "scan_the_code"
   looking_for: None
 
 # empty_start:

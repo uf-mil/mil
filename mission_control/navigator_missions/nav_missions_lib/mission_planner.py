@@ -16,7 +16,7 @@ __author__ = "Tess Bianchi"
 class MissionPlanner:
     """The class that plans which mission to do next."""
 
-    def __init__(self, mode='r', total_minutes=30):
+    def __init__(self, mode='r', total_minutes=2):
         """Initialize the MissionPlanner class."""
         self.tree = []
         self.total_time_save = total_minutes * 60
