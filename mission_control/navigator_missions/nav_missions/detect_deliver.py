@@ -24,12 +24,13 @@ class DetectDeliverMission:
     circle_direction = "cw"
     platform_radius = 0.925
     search_timeout_seconds = 300
-    SHAPE_CENTER_TO_BIG_TARGET = 0.42
+    SHAPE_CENTER_TO_BIG_TARGET = 0.35
     SHAPE_CENTER_TO_SMALL_TARGET = -0.42
-    WAIT_BETWEEN_SHOTS = 10 #Seconds to wait between shooting
+    WAIT_BETWEEN_SHOTS = 5 #Seconds to wait between shooting
     NUM_BALLS = 4
     LOOK_AT_TIME = 5
     FOREST_SLEEP = 15
+    BACKUP_DISTANCE = 5
 
     def __init__(self, navigator):
         self.navigator = navigator
@@ -43,6 +44,7 @@ class DetectDeliverMission:
         self.last_shape_error = ""
         self.last_lidar_error = ""
         self.shape_pose = None
+        self.align_forest_pause = False
 
     def _bounding_rect(self,points):
         np_points = map(navigator_tools.point_to_numpy, points)
@@ -123,7 +125,7 @@ class DetectDeliverMission:
             right_or_whatever_point = center_point - rotated_norm * self.circle_radius
             move_right_or_whatever = self.navigator.move.set_position(right_or_whatever_point).look_at(center_point).yaw_left(90, unit='deg')
 
-            yield self.search_sides((move_left_or_whatever, move_opposite_side, move_right_or_whatever))
+            yield self.search_sides((move_right_or_whatever, move_opposite_side, move_left_or_whatever))
             return
         fprint("No shape found after complete circle",title="DETECT DELIVER", msg_color='red')
         raise Exception("No shape found on platform")
@@ -250,9 +252,13 @@ class DetectDeliverMission:
 
     @txros.util.cancellableInlineCallbacks
     def continuously_align(self):
+      fprint("Starting Forest Align", title="DETECT DELIVER",  msg_color='green')
       try:
         while True:
             shooter_pose = yield self.shooter_pose_sub.get_next_message()
+            if self.align_forest_pause:
+                yield self.navigator.nh.sleep(0.1)
+                continue
             shooter_pose = shooter_pose.pose
 
             cen = np.array([shooter_pose.position.x, shooter_pose.position.y])
@@ -262,7 +268,7 @@ class DetectDeliverMission:
                                               shooter_pose.orientation.w])[2]
             q = trns.quaternion_from_euler(0, 0, yaw)
             p = np.append(cen,0)
-            fprint("Forest Aligning to p=[{}] q=[{}]".format(p, q), title="DETECT DELIVER",  msg_color='green')
+            #fprint("Forest Aligning to p=[{}] q=[{}]".format(p, q), title="DETECT DELIVER",  msg_color='green')
 
             #Prepare move to follow shooter
             move = self.navigator.move.set_position(p).set_orientation(q).yaw_right(90, 'deg')
@@ -291,8 +297,24 @@ class DetectDeliverMission:
         align_defer = self.continuously_align()
         fprint("Sleeping for {} seconds to allow for alignment", title="DETECT DELIVER".format(self.FOREST_SLEEP), msg_color="green")
         yield self.navigator.nh.sleep(self.FOREST_SLEEP)
-        yield self.shoot_all_balls()
+        for i in range(self.NUM_BALLS):
+            goal = yield self.shooterLoad.send_goal(ShooterDoAction())
+            fprint("Loading Shooter {}".format(i), title="DETECT DELIVER",  msg_color='green')
+            res = yield goal.get_result()
+            yield self.navigator.nh.sleep(2)
+            self.align_forest_pause = True
+            goal = yield self.shooterFire.send_goal(ShooterDoAction())
+            fprint("Firing Shooter {}".format(i), title="DETECT DELIVER",  msg_color='green')
+            res = yield goal.get_result()
+            yield self.navigator.nh.sleep(1)
+            self.align_forest_pause = False
+            fprint("Waiting {} seconds between shots".format(self.WAIT_BETWEEN_SHOTS), title="DETECT DELIVER",  msg_color='green')
+            yield self.navigator.nh.sleep(self.WAIT_BETWEEN_SHOTS)
         align_defer.cancel()
+
+    @txros.util.cancellableInlineCallbacks
+    def backup_from_target(self):
+        yield self.navigator.move.left(self.BACKUP_DISTANCE).go()
 
     @txros.util.cancellableInlineCallbacks
     def shoot_and_align(self):
@@ -312,17 +334,18 @@ class DetectDeliverMission:
         yield self.circle_search()        # Go to waypoint and circle until target found
         #  yield self.shoot_and_align()      # Align to target and shoot
         yield self.shoot_and_align_forest()      # Align to target and shoot
+        yield self.backup_from_target()
         yield self.navigator.vision_proxies["get_shape"].stop()
 
 @txros.util.cancellableInlineCallbacks
 def setup_mission(navigator):
-    #stc_color = yield navigator.mission_params["scan_the_code_color3"].get(raise_exception=False)
-    #if stc_color == False:
-    #    color = "ANY"
-    #else:
-    #    color = stc_color
-    color = "ANY"
-    shape = "CROSS"
+    stc_color = yield navigator.mission_params["scan_the_code_color3"].get(raise_exception=False)
+    if stc_color == False:
+        color = "ANY"
+    else:
+        color = stc_color
+    #color = "ANY"
+    shape = "ANY"
     fprint("Setting search shape={} color={}".format(shape, color), title="DETECT DELIVER",  msg_color='green')
     yield navigator.mission_params["detect_deliver_shape"].set(shape)
     yield navigator.mission_params["detect_deliver_color"].set(color)

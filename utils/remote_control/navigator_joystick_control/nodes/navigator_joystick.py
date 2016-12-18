@@ -39,8 +39,8 @@ class Joystick(object):
         self.last_keyboard_control = False
         self.last_auto_control = False
         self.last_change_mode = False
-        self.last_shooter_load = False
-        self.last_shooter_fire = False
+#        self.last_shooter_load = False
+#        self.last_shooter_fire = False
         self.last_shooter_cancel = False
 
         self.start_count = 0
@@ -80,8 +80,8 @@ class Joystick(object):
         keyboard_control = bool(joy.buttons[14])  # d-pad down
         auto_control = bool(joy.buttons[12])  # d-pad right
         change_mode = bool(joy.buttons[3])  # Y
-        shooter_load = bool(joy.buttons[4])
-        shooter_fire = bool(joy.axes[5] < -0.9)
+#        shooter_load = bool(joy.buttons[4])
+#        shooter_fire = bool(joy.axes[5] < -0.9)
         shooter_cancel = bool(joy.buttons[5])
 
         # Reset controller state if only start is pressed down about 3 seconds
@@ -116,11 +116,11 @@ class Joystick(object):
         if change_mode and not self.last_change_mode:
             self.remote.select_next_control()
 
-        if shooter_load and not self.last_shooter_load:
-            self.remote.shooter_load()
+#        if shooter_load and not self.last_shooter_load:
+#            self.remote.shooter_load()
 
-        if shooter_fire and not self.last_shooter_fire:
-            self.remote.shooter_fire()
+#        if shooter_fire and not self.last_shooter_fire:
+#            self.remote.shooter_fire()
 
         if shooter_cancel and not self.last_shooter_cancel:
             self.remote.shooter_cancel()
@@ -132,8 +132,8 @@ class Joystick(object):
         self.last_keyboard_control = keyboard_control
         self.last_auto_control = auto_control
         self.last_change_mode = change_mode
-        self.last_shooter_load = shooter_load
-        self.last_shooter_fire = shooter_fire
+#        self.last_shooter_load = shooter_load
+#        self.last_shooter_fire = shooter_fire
         self.last_shooter_cancel = shooter_cancel
 
         # Scale joystick input to force and publish a wrench

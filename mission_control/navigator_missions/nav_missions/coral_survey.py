@@ -36,7 +36,7 @@ def main(navigator, **kwargs):
     print "Totem sorted:", totems_np
     print "Totem selected: ", totems_np[0]
     quads_to_search = [1, 2, 3, 4]
-    quad = yield navigator.mission_params["acoustic_pinger_active_index"].get() 
+    quad = yield navigator.mission_params["acoustic_pinger_active_index_correct"].get() 
 
     waypoint_from_center = np.array([10 * np.sqrt(2)])
 
