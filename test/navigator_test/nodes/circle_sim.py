@@ -88,8 +88,9 @@ class Sim(object):
     def reseed(self, req):
         # Generate some buoys and totems
         buoy_positions = np.random.uniform(self.bf_size, size=(self.num_of_buoys, 2))
+        self.ids = np.array([1, 45, 32, 55])
         self.totem_positions = np.array([[47, 41], [45, 15], [25, 40], [5, 12]])
-        self.colors = [[0, 1, 0], [1, 1, 0], [0, 0, 1], [1, 0, 0]]
+        self.colors = [[0, 1, 0], [0, 0, 1], [0, 0, 1], [0, 0, 0]]
 
         # Let's make sure no buoys arae too close to the totems
         _buoy_positions = []
@@ -109,9 +110,9 @@ class Sim(object):
         self.draw_totems()
         self.publish_ogrid()
 
-
-    def position_to_object(self, position, color, name="totem"):
+    def position_to_object(self, position, color, id,  name="totem"):
         obj = PerceptionObject()
+        obj.id = int(id)
         obj.header = navigator_tools.make_header(frame="enu")
         obj.name = name
         obj.position = navigator_tools.numpy_to_point(position)
@@ -124,10 +125,13 @@ class Sim(object):
 
     def got_request(self, req):
         fprint("Request recieved {}".format(req.name))
-        if req.name == "totem":
-            objects = [self.position_to_object(p, c) for p, c in zip(self.totem_positions, self.colors)]
+        if req.name in self.ids:
+            index = np.argwhere(self.ids == req.name)
+            objects = [self.position_to_object(self.totem_positions[index], self.colors[index], req.name)]
+        elif req.name == "totem":
+            objects = [self.position_to_object(p, c, i) for p, c, i in zip(self.totem_positions, self.colors, self.ids)]
         elif req.name == "BuoyField":
-            objects = [self.position_to_object([self.bf_size / 2, self.bf_size / 2, 0 ], [0, 0, 0], "BuoyField")]
+            objects = [self.position_to_object([self.bf_size / 2, self.bf_size / 2, 0 ], [0, 0, 0], 0, "BuoyField")]
         else:
             return {'found': False}
 
