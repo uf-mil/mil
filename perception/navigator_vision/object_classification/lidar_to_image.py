@@ -3,6 +3,8 @@ from twisted.internet import defer
 from txros import util, tf
 import navigator_tools as nt
 from navigator_tools import CvDebug
+from collections import Counter
+from image_geometry import PinholeCameraModel
 import sys
 from collections import deque
 from cv_bridge import CvBridge
@@ -19,16 +21,14 @@ ___author___ = "Tess Bianchi"
 
 class LidarToImage(object):
 
-    def __init__(self, nh, training=False, classes=None, dist=50):
+    def __init__(self, nh, classes=None, dist=50):
         self.MAX_SIZE = 74
         self.IMAGE_SIZE = 100
         self.max_dist = dist
         self.bridge = CvBridge()
         self.nh = nh
-        self.id_to_perist = {}
         self.image_cache = deque()
         self.pose = None
-        self.training = training
         self.image = None
         self.classes = classes
         self.cam_info = None
@@ -38,19 +38,9 @@ class LidarToImage(object):
         self.debug = CvDebug(nh)
 
     @util.cancellableInlineCallbacks
-    def init_(self, cam="r"):
+    def init_(self, cam):
         image_sub = "/stereo/right/image_rect_color"
-        self.tf_frame = "/stereo_right_cam"
         cam_info = "/stereo/right/camera_info"
-        if cam == 'l':
-            image_sub = "/stereo/left/image_rect_color"
-            self.tf_frame = "/stereo_left_cam"
-            cam_info = "/stereo/left/camera_info"
-
-        if cam == 'rr':
-            image_sub = "/right/right/image_rect_color"
-            self.tf_frame = "/right_right_cam"
-            cam_info = "/right/right/camera_info"
 
         yield self.nh.subscribe(image_sub, Image, self._img_cb)
         self._database = yield self.nh.get_service_client('/database/requests', ObjectDBQuery)
@@ -63,6 +53,36 @@ class LidarToImage(object):
     def _info_cb(self, info):
         self.cam_info = info
 
+    def _get_2d_points(self, points_3d):
+        # xmin, ymin, zmin = self._get_top_left_point(points_3d)
+        points_2d = map(lambda x: self.camera_model.project3dToPixel(x), points_3d)
+        return points_2d
+
+    def _get_bounding_rect(self, points_2d, img):
+        xmin = np.inf
+        xmax = -np.inf
+        ymin = np.inf
+        ymax = -np.inf
+        h, w, r = img.shape
+        for i, point in enumerate(points_2d):
+            if(point[0] < xmin):
+                xmin = point[0]
+            if(point[0] > xmax):
+                xmax = point[0]
+            if(point[1] > ymax):
+                ymax = point[1]
+            if(point[1] < ymin):
+                ymin = point[1]
+        if xmin < 0:
+            xmin = 1
+        if ymin < 0:
+            ymin = 1
+        if xmax > w:
+            xmax = w - 1
+        if ymax > h:
+            ymax = h - 1
+        return xmin, ymin, xmax, ymax
+
     @util.cancellableInlineCallbacks
     def get_object_rois(self, name=None):
         req = ObjectDBQueryRequest()
@@ -72,8 +92,6 @@ class LidarToImage(object):
             req.name = name
         obj = yield self._database(req)
 
-        print name
-        print obj.found
         if obj is None or not obj.found:
             defer.returnValue((None, None))
         rois = []
@@ -81,49 +99,31 @@ class LidarToImage(object):
         if ros_img is None:
             defer.returnValue((None, None))
         img = self.bridge.imgmsg_to_cv2(ros_img, "mono8")
-        objects = obj.objects
-        if name is not None:
-            objects = [obj.objects[0]]
+        o = obj.objects[0]
 
-        for o in objects:
-            print o.name
-            if o.id not in self.id_to_perist:
-                self.id_to_perist[o.id] = []
-            ppoints = self.id_to_perist[o.id]
-            ppoints.extend(o.points)
-            if len(ppoints) > 500:
-                ppoints = ppoints[:500]
-            if self.training and o.name not in self.classes:
-                continue
-            position = yield self._get_position()
-            o_pos = nt.rosmsg_to_numpy(o.position)
-            diff = np.linalg.norm(position - o_pos)
-            if diff > self.max_dist:
-                continue
-            points, bbox = yield self._get_bounding_box_2d(ppoints, obj.objects[0].header.stamp)
-            if bbox is None:
-                continue
-
-            xmin, ymin, xmax, ymax = bbox
-
-            h, w, r = img.shape
-            if xmin < 0 or xmax < 0 or xmin > w or xmax > w or xmax - xmin == 0 or ymax - ymin == 0:
-                continue
-            if ymin < 0:
-                ymin = 0
-            roi = img[ymin:ymax, xmin:xmax]
-            roi = self._resize_image(roi)
-            ret_obj = {}
-            ret_obj["id"] = o.id
-            ret_obj["points"] = points
-            ret_obj["img"] = roi
-            ret_obj["time"] = o.header.stamp
-            ret_obj["name"] = o.name
-            ret_obj["bbox"] = [xmin, ymin, xmax, ymax]
-            rois.append(ret_obj)
+        points_3d = yield self.get_3d_points(o)
+        points_2d_all = map(lambda x: self.camera_model.project3dToPixel(x), points_3d)
+        points_2d = self._get_2d_points(points_3d)
+        xmin, ymin, xmax, ymax = self._get_bounding_rect(points_2d, img)
+        xmin, ymin, xmax, ymax = int(xmin), int(ymin), int(xmax), int(ymax)
+        h, w, r = img.shape
+        if xmin < 0 or xmax < 0 or xmin > w or xmax > w or xmax - xmin == 0 or ymax - ymin == 0:
+            continue
+        if ymin < 0:
+            ymin = 0
+        roi = img[ymin:ymax, xmin:xmax]
+        roi = self._resize_image(roi)
+        ret_obj = {}
+        ret_obj["id"] = o.id
+        ret_obj["points"] = points_2d_all
+        ret_obj["img"] = roi
+        ret_obj["time"] = o.header.stamp
+        ret_obj["name"] = o.name
+        ret_obj["bbox"] = [xmin, ymin, xmax, ymax]
+        rois.append(ret_obj)
         defer.returnValue((img, rois))
 
-    def _img_cb(self, image_ros):
+    def img_cb(self, image_ros):
         """Add an image to the image cache."""
         self.image = image_ros
 
@@ -133,55 +133,7 @@ class LidarToImage(object):
         self.image_cache.append(image_ros)
 
     @util.cancellableInlineCallbacks
-    def _get_position(self):
-        last_odom_msg = yield self._odom_sub.get_next_message()
-        defer.returnValue(nt.odometry_to_numpy(last_odom_msg)[0][0])
-
-    @txros.util.cancellableInlineCallbacks
-    def _get_bounding_box_2d(self, points_3d_enu, time):
-        if self.cam_info is None:
-            defer.returnValue((None, None))
-        self.camera_model = PinholeCameraModel()
-        self.camera_model.fromCameraInfo(self.cam_info)
-        points_2d = []
-        try:
-            trans = yield self.tf_listener.get_transform(self.tf_frame, "/enu", time)
-        except Exception:
-            defer.returnValue((None, None))
-        transformation = trans.as_matrix()
-
-        for point in points_3d_enu:
-            point = nt.rosmsg_to_numpy(point)
-            point = np.append(point, 1.0)
-            t_p = transformation.dot(point)
-            if t_p[3] < 1E-15:
-                defer.returnValue((None, None))
-            t_p[0] /= t_p[3]
-            t_p[1] /= t_p[3]
-            t_p[2] /= t_p[3]
-            t_p = t_p[0:3]
-            if t_p[2] < 0:
-                defer.returnValue((None, None))
-
-            point_2d = self.camera_model.project3dToPixel(t_p)
-            points_2d.append((int(point_2d[0]), int(point_2d[1])))
-
-        xmin, ymin = sys.maxint, sys.maxint
-        xmax, ymax = -sys.maxint, -sys.maxint
-
-        for i, point in enumerate(points_2d):
-            if point[0] < xmin:
-                xmin = point[0]
-            if point[0] > xmax:
-                xmax = point[0]
-            if point[1] < ymin:
-                ymin = point[1]
-            if point[1] > ymax:
-                ymax = point[1]
-        defer.returnValue((points_2d, (xmin, ymin, xmax, ymax)))
-
-    @util.cancellableInlineCallbacks
-    def _get_closest_image(self, time):
+    def get_closest_image(self, time):
         min_img = None
         for i in range(0, 20):
             min_diff = genpy.Duration(sys.maxint)
@@ -222,3 +174,21 @@ class LidarToImage(object):
 
         img = np.repeat(img, reph, axis=0)
         return np.repeat(img, rep, axis=1)
+
+    @txros.util.cancellableInlineCallbacks
+    def get_3d_points(self, perc_obj):
+        trans = yield self.my_tf.get_transform("/stereo_right_cam", "/enu", perc_obj.header.stamp)
+
+        stereo_points = []
+        for point in perc_obj.points:
+            stereo_points.append(np.array([point.x, point.y, point.z, 1]))
+        stereo_points = map(lambda x: trans.as_matrix().dot(x), stereo_points)
+        points = []
+        for p in stereo_points:
+            if p[3] < 1E-15:
+                raise ZeroDivisionError
+            p[0] /= p[3]
+            p[1] /= p[3]
+            p[2] /= p[3]
+            points.append(p[:3])
+        defer.returnValue(points)
