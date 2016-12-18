@@ -22,9 +22,9 @@ class ScanTheCodeAction(object):
         now = datetime.datetime.now()
         now_time = now.time()
         if now_time < datetime.time(12, 00):
-            return [position[0] + self.distance, position[1], position[2]], position
-        else:
             return [position[0] - self.distance, position[1], position[2]], position
+        else:
+            return [position[0] + self.distance, position[1], position[2]], position
 
     def correct_pose(self, scan_the_code, pose):
         """

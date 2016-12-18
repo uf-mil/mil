@@ -56,13 +56,17 @@ class MissionPlanner:
 
     @util.cancellableInlineCallbacks
     def _get_closest_mission(self):
-        os = []
-        for m in self.tree:
-            os.append(m.marker)
-        closest = yield self.helper.get_closest_object(os)
-        for m in self.tree:
-            if m.marker.name == closest.name:
-                defer.returnValue(m)
+        yield self.nh.sleep(1)
+        defer.returnValue(self.tree[0])
+        # os = []
+        # for m in self.tree:
+        #     os.append(m.marker)
+        # if len(os) == 0:
+        #     defer.returnValue(self.tree[0])
+        # closest = yield self.helper.get_closest_object(os)
+        # for m in self.tree:
+        #     if m.marker.name == closest.name:
+        #         defer.returnValue(m)
 
     def _get_time_left(self):
         return self.total_time - (self.nh.get_time() - self.start_time).to_sec()
@@ -183,6 +187,7 @@ class MissionPlanner:
                 break
             TimeoutManager.generate_timeouts(time_left, real_time_left, self.missions_left)
             m = yield self._get_closest_mission()
+            print m.name
             yield self._run_mission(m)
 
         fprint("MISSIONS COMPLETE, TOTAL RUN TIME: {}".format((self.nh.get_time() - self.start_time).to_sec()), msg_color="green")

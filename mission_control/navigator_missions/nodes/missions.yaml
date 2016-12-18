@@ -8,24 +8,68 @@
       # If it is a base mission, it cannot have any objects dependencies or mission dependencies
 
     
+explore:
+  marker_dep: None
+  mission_dep: None
+  is_base: True
+  points: 100
+  min_time: 1
+  weight: 2
+  looking_for: None
 
-# scan_the_code:
-#   marker_dep: "Scan_The_Code"
-#   mission_dep: "None"
-#   is_base: False
-#   points: 100
-#   min_time: 1
-#   weight: 2
-#   looking_for: "scan_the_code"
-  
-detect_deliver:
-  marker_dep: "Shooter"
-  mission_dep: "None"
+identify_dock:
+  marker_dep: "Dock"
+  mission_dep: "scan_the_code"
   is_base: False
   points: 100
   min_time: 1
   weight: 2
-  looking_for: "shooter"
+  looking_for: None
+
+pinger:
+  marker_dep: None
+  mission_dep: None
+  is_base: False
+  points: 100
+  min_time: 1
+  weight: 2
+  looking_for: None
+
+pinger_exit:
+  marker_dep: None
+  mission_dep: "detect_deliver"
+  is_base: False
+  points: 100
+  min_time: 1
+  weight: 2
+  looking_for: None
+
+coral_survey:
+  marker_dep: "CoralSurvey"
+  mission_dep: "pinger"
+  is_base: False
+  points: 100
+  min_time: 1
+  weight: 2
+  looking_for: None
+
+detect_deliver:
+  marker_dep: "Shooter"
+  mission_dep: "identify_dock"
+  is_base: False
+  points: 100
+  min_time: 1
+  weight: 2
+  looking_for: None
+
+scan_the_code:
+  marker_dep: "Scan_The_Code"
+  mission_dep: "coral_survey"
+  is_base: False
+  points: 100
+  min_time: 1
+  weight: 2
+  looking_for: None
 
 # empty_start:
 #   marker_dep: "Dock"
@@ -45,14 +89,6 @@ detect_deliver:
 #   weight: 2
 #   looking_for: "tower"
 
-# pinger:
-#   marker_dep: "AcousticPinger"
-#   mission_dep: "empty_start"
-#   is_base: False
-#   points: 100
-#   min_time: 1
-#   weight: 2
-#   looking_for: "tower"
 
 # find_the_break:
 #   marker_dep: "FindBreak"
@@ -63,23 +99,9 @@ detect_deliver:
 #   weight: 2
 #   looking_for: "buoy"
 
-# coral_survey_backup:
-#   marker_dep: "CoralSurvey"
-#   mission_dep: "None"
-#   is_base: False
-#   points: 100
-#   min_time: 1
-#   weight: 2
-#   looking_for: "tower"
 
-explore:
-  marker_dep: "None"
-  mission_dep: "None"
-  is_base: True
-  points: 100
-  min_time: 1
-  weight: 2
-  looking_for: "None"
+
+
 
 
 

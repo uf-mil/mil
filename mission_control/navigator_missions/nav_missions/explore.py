@@ -43,13 +43,18 @@ def go_to_objects(navigator, position, objs):
 
 @txros.util.cancellableInlineCallbacks
 def myfunc(navigator, looking_for, center_marker):
+    # Updated
     high_prob_objs = ["shooter", "dock"]
     pos = yield navigator.tx_pose
     pos = pos[0]
 
+    if center_marker is None or center_marker == "None":
+        defer.returnValue(True)
+
     try:
-        center_marker = yield navigator.database_query(object_name=center_marker)
+        center_marker = yield navigator.database_query(object_name=center_marker.name)
         center_marker = center_marker.objects[0]
+        print center_marker.name
     except:
         fprint("A marker has not been set", msg_color="red")
         defer.returnValue(False)
@@ -57,9 +62,10 @@ def myfunc(navigator, looking_for, center_marker):
     mark_pos = nt.rosmsg_to_numpy(center_marker.position)
     dist = np.linalg.norm(pos - mark_pos)
     if dist > 10:
-        yield navigator.move.set_position(mark_pos).go()
+        yield navigator.move.look_at(mark_pos).set_position(mark_pos).go()
+    defer.returnValue(True)
 
-    if looking_for is None:
+    if looking_for is None or looking_for == "None":
         defer.returnValue(True)
 
     pos = yield navigator.tx_pose
@@ -80,14 +86,14 @@ def myfunc(navigator, looking_for, center_marker):
         print e
         defer.returnValue(False)
 
-    for o in objs:
-        obj_pos = nt.rosmsg_to_numpy(o.position)
-        yield navigator.move.look_at(obj_pos).set_position(mark_pos).backward(7).go()
-        cam_obj = yield navigator.camera_database_query(object_name=looking_for, id=o.id)
-        if cam_obj.found:
-            yield navigator.database_query(cmd="lock {} {}".format(o.id, looking_for))
-            fprint("EXPLORER FOUND OBJECT", msg_color="blue")
-            defer.returnValue(True)
+    # for o in objs:
+    #     obj_pos = nt.rosmsg_to_numpy(o.position)
+    #     yield navigator.move.look_at(obj_pos).set_position(mark_pos).backward(7).go()
+    #     cam_obj = yield navigator.camera_database_query(object_name=looking_for, id=o.id)
+    #     if cam_obj.found:
+    #         yield navigator.database_query(cmd="lock {} {}".format(o.id, looking_for))
+    #         fprint("EXPLORER FOUND OBJECT", msg_color="blue")
+    #         defer.returnValue(True)
 
     fprint("NO OBJECT FOUND", msg_color="blue")
     defer.returnValue(False)
