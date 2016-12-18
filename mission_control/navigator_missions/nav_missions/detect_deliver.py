@@ -44,6 +44,7 @@ class DetectDeliverMission:
         self.last_shape_error = ""
         self.last_lidar_error = ""
         self.shape_pose = None
+        self.align_forest_pause = False
 
     def _bounding_rect(self,points):
         np_points = map(navigator_tools.point_to_numpy, points)
@@ -255,6 +256,9 @@ class DetectDeliverMission:
       try:
         while True:
             shooter_pose = yield self.shooter_pose_sub.get_next_message()
+            if self.align_forest_pause:
+                yield self.navigator.nh.sleep(0.1)
+                continue
             shooter_pose = shooter_pose.pose
 
             cen = np.array([shooter_pose.position.x, shooter_pose.position.y])
@@ -293,7 +297,19 @@ class DetectDeliverMission:
         align_defer = self.continuously_align()
         fprint("Sleeping for {} seconds to allow for alignment", title="DETECT DELIVER".format(self.FOREST_SLEEP), msg_color="green")
         yield self.navigator.nh.sleep(self.FOREST_SLEEP)
-        yield self.shoot_all_balls()
+        for i in range(self.NUM_BALLS):
+            goal = yield self.shooterLoad.send_goal(ShooterDoAction())
+            fprint("Loading Shooter {}".format(i), title="DETECT DELIVER",  msg_color='green')
+            res = yield goal.get_result()
+            yield self.navigator.nh.sleep(2)
+            self.align_forest_pause = True
+            goal = yield self.shooterFire.send_goal(ShooterDoAction())
+            fprint("Firing Shooter {}".format(i), title="DETECT DELIVER",  msg_color='green')
+            res = yield goal.get_result()
+            yield self.navigator.nh.sleep(1)
+            self.align_forest_pause = False
+            fprint("Waiting {} seconds between shots".format(self.WAIT_BETWEEN_SHOTS), title="DETECT DELIVER",  msg_color='green')
+            yield self.navigator.nh.sleep(self.WAIT_BETWEEN_SHOTS)
         align_defer.cancel()
 
     @txros.util.cancellableInlineCallbacks
@@ -318,7 +334,7 @@ class DetectDeliverMission:
         yield self.circle_search()        # Go to waypoint and circle until target found
         #  yield self.shoot_and_align()      # Align to target and shoot
         yield self.shoot_and_align_forest()      # Align to target and shoot
-        yield self.backup_from_target():
+        yield self.backup_from_target()
         yield self.navigator.vision_proxies["get_shape"].stop()
 
 @txros.util.cancellableInlineCallbacks
