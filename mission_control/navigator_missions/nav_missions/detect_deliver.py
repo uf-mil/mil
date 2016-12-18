@@ -17,7 +17,7 @@ from navigator_tools import fprint, MissingPerceptionObject
 import genpy
 
 class DetectDeliverMission:
-    shoot_distance_meters = 3.0
+    shoot_distance_meters = 2.7
     theta_offset = np.pi / 2.0
     spotings_req = 1
     circle_radius = 10
