@@ -129,8 +129,6 @@ def get_colored_buoy(navigator, color):
     
     defer.returnValue(closest)
 
-<<<<<<< HEAD
-=======
 
 @txros.util.cancellableInlineCallbacks
 def get_closest_totem(navigator, explored_ids):

@@ -60,21 +60,21 @@ class KillInterface(object):
 
         al = AlarmListener("kill", self.alarm_kill_cb)
         
+        rospy.Timer(rospy.Duration(.5), self.get_status)
+
         while not rospy.is_shutdown():
-            rospy.sleep(.1)
-            self.get_status()
             self.control_check()
 
-            while self.ser.inWaiting() > 0:
+            while self.ser.inWaiting() > 0 and not rospy.is_shutdown():
                 self.check_buffer()
 
             if not self.network_kill():
                 self.ping()
             else:
-                rospy.logerr("KILLBOARD: Network Kill!")
-    
+                rospy.logerr("KILLBOARD: Network Kill!") 
+
     def update(self, src, status):
-        rospy.loginfo("Updating... from {}: {}".fornat(src, status))
+        rospy.loginfo("Updating... from {}: {}".format(src, status))
         self.kill_status[src] = status
 
     def network_kill(self):
@@ -106,8 +106,9 @@ class KillInterface(object):
     def check_buffer(self):
         # The board appears to not be return async data
         resp = self.ser.read(1)
+        print resp.encode('hex')
         if resp in self.update_cbs:
-            rospy.loginfo("Check Buffer response: {}".format(to_hex(resp)))
+            rospy.loginfo("Check Buffer response: {}".format(resp.encode('hex')))
             self.update_cbs[resp]()
 
     @thread_lock(lock)
@@ -117,11 +118,15 @@ class KillInterface(object):
         Returns True or False depending on the response.
         With no `recv_str` passed in the raw result will be returned.
         """
+        rospy.loginfo("Writing {}".format(write_str.encode('hex')))
         self.ser.write(write_str)
+        rospy.sleep(.1)
+
         return True 
+
         resp = self.ser.read(1) 
         
-        rospy.loginfo("Sent: {}, Rec: {}".format(self.to_hex(write_str), self.to_hex(resp)))
+        rospy.loginfo("Sent: {}, Rec: {}".format(write_str.encode('hex'), resp.encode('hex')))
 
         rospy.sleep(.05)
         if recv_str is None:
@@ -135,7 +140,7 @@ class KillInterface(object):
 
         self.ser.flushOutput()
         # Result didn't match
-        rospy.logerr("Response didn't match. Expected: {}, got: {}.".format(self.to_hex(recv_str), self.to_hex(resp)))
+        rospy.logerr("Response didn't match. Expected: {}, got: {}.".format(recv_str.encode('hex'), resp.encode('hex')))
         return False
 
     def alarm_kill_cb(self, alarm):
@@ -149,7 +154,7 @@ class KillInterface(object):
         else:
             rospy.loginfo("Computer kill clear received")
             self.request('\x46')
-    
+
     def control_check(self, *args):
         # Update status light with current control
         
@@ -160,7 +165,7 @@ class KillInterface(object):
         else:
             self.request('\x40', '\x50')
 
-    def get_status(self):
+    def get_status(self, *args):
         killstatus = KillStatus()
         killstatus.overall = self.kill_status['overall']
         killstatus.pf = self.kill_status['PF']
