@@ -1,3 +1,4 @@
+
 from roi_generator import ROI_Collection
 from navigator_tools import CvDebug, BagCrawler
 import numpy as np
@@ -102,6 +103,7 @@ class Training(object):
             desc = desc.flatten()
             descs.append(desc)
             classify.append(clss)
+            print clss
         descs = np.array(descs)
         classify = np.array(classify)
         counts = dict((x, list(classify).count(x)) for x in set(classify))
@@ -141,8 +143,8 @@ class ClassiferTest(object):
             cv2.waitKey(33)
 
 if __name__ == "__main__":
-    # t = Training("train_roi.p", "train.p")
-    # t.train()
-    # print "done"
-    c = ClassiferTest("val_roi.p", "train.p")
-    c.classify()
+    t = Training("roi_competition.p", "train_competition.p")
+    t.train()
+    print "done"
+    # c = ClassiferTest("val_roi.p", "train.p")
+    # c.classify()

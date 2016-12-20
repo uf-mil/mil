@@ -1,0 +1,25 @@
+!!python/object/new:dynamic_reconfigure.encoding.Config
+dictitems:
+  enforce: true
+  groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+    dictitems:
+      enforce: true
+      groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      id: 0
+      lla_1: (21.312393, -157.889992)
+      lla_2: (21.310304, -157.891569)
+      lla_3: (21.303058, -157.888007)
+      lla_4: (21.304017, -157.885561)
+      name: Default
+      parameters: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      parent: 0
+      state: true
+      type: ''
+    state: []
+  lla_1: (21.312393, -157.889992)
+  lla_2: (21.310304, -157.891569)
+  lla_3: (21.303058, -157.888007)
+  lla_4: (21.304017, -157.885561)
+state: []

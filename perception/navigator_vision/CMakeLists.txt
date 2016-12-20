@@ -77,6 +77,7 @@ add_library(
     src/navigator_vision_lib/visualization.cc
     src/navigator_vision_lib/cv_utils.cc
     src/navigator_vision_lib/image_filtering.cpp
+    src/navigator_vision_lib/active_contours.cpp
     src/navigator_vision_lib/colorizer/pcd_colorizer.cpp
     src/navigator_vision_lib/colorizer/single_cloud_processor.cpp
     src/navigator_vision_lib/colorizer/camera_observer.cpp
@@ -118,6 +119,19 @@ add_executable(underwater_shape_identification_vision
 add_dependencies(underwater_shape_identification_vision navigator_vision_lib ${catkin_EXPORTED_TARGETS})
 target_link_libraries(
   underwater_shape_identification_vision
+    navigator_vision_lib
+    navigator_tools_lib
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${OpenCV_INCLUDE_DIRS}
+)
+
+add_executable(A_C_test_vision 
+  nodes/A_C_test_vision.cpp
+)
+add_dependencies(A_C_test_vision navigator_vision_lib ${catkin_EXPORTED_TARGETS})
+target_link_libraries(
+  A_C_test_vision
     navigator_vision_lib
     navigator_tools_lib
     ${catkin_LIBRARIES}

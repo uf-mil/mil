@@ -92,6 +92,7 @@ class ROI_Generator(object):
         image = self.crawl.next()
         self.image = self.bridge.imgmsg_to_cv2(image, 'bgr8')
         doing = False
+        pause = True
         while True:
             if doing:
                 continue
@@ -99,7 +100,9 @@ class ROI_Generator(object):
             k = chr(cv2.waitKey(50) & 0xFF)
             if k == 'q':
                 break
-            elif k == ' ' and not self.rclk:
+            elif k == ' ':
+                pause = not pause
+            elif not pause and not self.rclk:
                 try:
                     image = self.crawl.next()
                     self.image = self.bridge.imgmsg_to_cv2(image, 'bgr8')
@@ -142,7 +145,7 @@ class ROI_Generator(object):
                 self.roi_to_tracker[name].init(self.image, r)
             return
         if self.rclk:
-            if event == cv2.EVENT_LBUTTONDOWN and flags == 48:  # pressing shift
+            if event == cv2.EVENT_LBUTTONDOWN and flags == 48:  # 16:  # pressing shift, remove box
                 if len(self.rects) > 0:
                     r = min(self.rects.items(), key=lambda rect: np.linalg.norm(
                         np.array([rect[1][0], rect[1][1]]) - np.array([x, y])))
@@ -150,7 +153,7 @@ class ROI_Generator(object):
                     self.rects.pop(r)
                     self.roi_to_tracker.pop(r)
                     self.sel_rect = None
-            elif event == cv2.EVENT_LBUTTONDOWN and flags == 40:  # pressing cntrl
+            elif event == cv2.EVENT_LBUTTONDOWN and flags == 40:  # 8:  # pressing cntrl, add box
                 name = raw_input('Enter name of object: ')
                 if name == "skip":
                     return
@@ -159,8 +162,9 @@ class ROI_Generator(object):
             elif event == cv2.EVENT_LBUTTONDOWN:
                 self.lclk = not self.lclk
                 if not self.lclk:
-                    r = self.rects[self.sel_rect]
-                    self.sel_rect = None
+                    if self.sel_rect is not None:
+                        r = self.rects[self.sel_rect]
+                        self.sel_rect = None
                 else:
                     if len(self.rects) > 0:
                         self.sel_rect = min(self.rects.items(), key=lambda rect: np.linalg.norm(
