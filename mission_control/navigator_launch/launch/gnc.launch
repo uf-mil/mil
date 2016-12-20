@@ -24,13 +24,6 @@
         <param name="torque_scale" value="500" type="double"/>
     </node>
 
-    <node pkg="navigator_emergency_controller" type="navigator_emergency.py" name="emergency_wrench" output="screen"/>
-
-    <node pkg="navigator_emergency_control" type="navigator_emergency_control" name="navigator_emergency_xbee">
-        <param name="port" type="string" value="/dev/serial/by-id/usb-uf-mil_xbee_b267017f-if00" />
-        <param name="dest" type="string" value="0xb267017f" />
-    </node>
-
     <node pkg="navigator_keyboard_control" type="navigator_keyboard_server.py" name="keyboard_server" output="screen"/>
 
     <node pkg="navigator_tools" type="boat_info.py" name="boat_info_markers" />

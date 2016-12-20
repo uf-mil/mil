@@ -94,6 +94,7 @@ class Navigator(object):
 
         try:
             self._database_query = self.nh.get_service_client('/database/requests', navigator_srvs.ObjectDBQuery)
+            self._camera_database_query = self.nh.get_service_client('/camera_database/requests', navigator_srvs.CameraDBQuery)
             self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
         except AttributeError, err:
             fprint("Error getting service clients in nav singleton init: {}".format(err), title="NAVIGATOR", msg_color='red')
@@ -157,25 +158,36 @@ class Navigator(object):
         else:
             fprint("No bounds param found, defaulting to none.", title="NAVIGATOR")
             self.enu_bounds = None
- 
+
     @util.cancellableInlineCallbacks
     def database_query(self, object_name=None, raise_exception=True, **kwargs):
         if object_name is not None:
             kwargs['name'] = object_name
             res = yield self._database_query(navigator_srvs.ObjectDBQueryRequest(**kwargs))
-            
+
             if not res.found and raise_exception:
                 raise MissingPerceptionObject(kwargs['name'])
 
             defer.returnValue(res)
-        
+
         res = yield self._database_query(navigator_srvs.ObjectDBQueryRequest(**kwargs))
+        defer.returnValue(res)
+
+    @util.cancellableInlineCallbacks
+    def camera_database_query(self, object_name=None, **kwargs):
+        if object_name is not None:
+            kwargs['name'] = object_name
+            res = yield self._camera_database_query(navigator_srvs.CameraDBQueryRequest(**kwargs))
+
+            defer.returnValue(res)
+
+        res = yield self._database_query(navigator_srvs.CameraDBQueryRequest(**kwargs))
         defer.returnValue(res)
 
     def vision_request(self, request_name, **kwargs):
         fprint("DEPRECATED: Please use new dictionary based system.")
         return self.vision_proxies[request_name].get_response(**kwargs)
-    
+
     def change_wrench(self, source):
         return self._change_wrench(navigator_srvs.WrenchSelectRequest(source))
 
@@ -244,7 +256,7 @@ class Navigator(object):
 
         self.alarm_listener.add_listener("odom_loss", lambda alarm: setattr(self, 'odom_loss', not alarm.clear))
         self.alarm_listener.add_listener("kill", lambda alarm: setattr(self, 'killed', not alarm.clear))
-        
+
         yield self.alarm_listener.wait_for_alarm("kill", timeout=.5)
         yield self.alarm_listener.wait_for_alarm("odom_loss", timeout=.5)
         fprint("\tkill :", newline=False)
@@ -252,7 +264,9 @@ class Navigator(object):
         fprint("\todom_loss :", newline=False)
         fprint(self.odom_loss)
 
+
 class VisionProxy(object):
+
     def __init__(self, client, request, args, switch):
         self.client = client
         self.request = request
@@ -272,7 +286,9 @@ class VisionProxy(object):
 
         return self.client(s_req)
 
+
 class MissionParam(object):
+
     def __init__(self, nh, param, options, desc, default):
         self.nh = nh
         self.param = param
@@ -293,7 +309,8 @@ class MissionParam(object):
                 defer.returnValue(False)
         value = yield self.nh.get_param(self.param)
         if not self._valid(value):
-            raise Exception("Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(value, self.param, self.options,self.description))
+            raise Exception("Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(
+                value, self.param, self.options, self.description))
         else:
             defer.returnValue(value)
 
@@ -301,9 +318,10 @@ class MissionParam(object):
         return self.nh.has_param(self.param)
 
     @util.cancellableInlineCallbacks
-    def set(self,value):
+    def set(self, value):
         if not self._valid(value):
-            raise Exception("Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(value, self.param, self.options,self.description))
+            raise Exception("Value {} is invalid for param {}\nValid values: {}\nDescription: {}".format(
+                value, self.param, self.options, self.description))
         yield self.nh.set_param(self.param, value)
 
     @util.cancellableInlineCallbacks
@@ -320,11 +338,11 @@ class MissionParam(object):
     def reset(self):
         if (yield self.exists()):
             if not self.default == None:
-              yield self.set(self.default)
+                yield self.set(self.default)
             else:
-              yield self.nh.delete_param(self.param)
+                yield self.nh.delete_param(self.param)
 
-    def _valid(self,value):
+    def _valid(self, value):
         for x in self.options:
             if x == value:
                 return True
@@ -332,14 +350,19 @@ class MissionParam(object):
 
 
 class Searcher(object):
-    def __init__(self, nav, vision_proxy, search_pattern, **kwargs):
+    def __init__(self, nav, search_pattern=None, looker=None, vision_proxy="test", **kwargs):
         self.nav = nav
-        self.vision_proxy = vision_proxy
-        self.vision_kwargs = kwargs
+        self.looker = looker
+        if looker == None:
+            self.looker = self._vision_proxy_look
+            self.vision_proxy = vision_proxy
+        self.looker_kwargs = kwargs
         self.search_pattern = search_pattern
 
         self.object_found = False
+        self.pattern_done = False
         self.response = None
+        print "dfdf"
 
     def catch_error(self, failure):
         if failure.check(defer.CancelledError):
@@ -359,13 +382,13 @@ class Searcher(object):
         start_time = self.nav.nh.get_time()
         try:
             while self.nav.nh.get_time() - start_time < genpy.Duration(timeout):
-
-                # If we find the object
                 if self.object_found:
                     finder.cancel()
                     fprint("Object found.", title="SEARCHER")
-                    defer.returnValue(self.response)
-
+                    defer.returnValue(True)
+                if self.pattern_done and not loop:
+                    finder.cancel()
+                    defer.returnValue(False)
                 yield self.nav.nh.sleep(0.1)
 
         except KeyboardInterrupt:
@@ -384,6 +407,8 @@ class Searcher(object):
         Look around using the search pattern.
         If `loop` is true, then keep iterating over the list until timeout is reached or we find it.
         '''
+        if self.search_pattern == None:
+            return
 
         def pattern():
             for pose in self.search_pattern:
@@ -394,6 +419,9 @@ class Searcher(object):
                     yield pose.go(**kwargs)
 
                 yield self.nav.nh.sleep(2)
+            if not loop:
+                fprint("Search Pattern Over", title="SEARCHER")
+                self.pattern_done = True
 
         fprint("Executing search pattern.", title="SEARCHER")
 
@@ -403,7 +431,10 @@ class Searcher(object):
         else:
             yield util.cancellableInlineCallbacks(pattern)()
 
-
+    @util.cancellableInlineCallbacks
+    def _vision_proxy_look(self):
+        resp = yield self.nav.vision_proxies[self.vision_proxy].get_response(**self.looker_kwargs)
+        defer.returnValue(resp.found)
 
     @util.cancellableInlineCallbacks
     def _run_look(self, spotings_req):
@@ -414,8 +445,7 @@ class Searcher(object):
         spotings = 0
         fprint("Looking for object.", title="SEARCHER")
         while spotings < spotings_req:
-            resp = yield self.nav.vision_proxies[self.vision_proxy].get_response(**self.vision_kwargs)
-            if resp.found:
+            if (yield self.looker(**self.looker_kwargs)):
                 fprint("Object found! {}/{}".format(spotings + 1, spotings_req), title="SEARCHER")
                 spotings += 1
             else:
@@ -425,7 +455,6 @@ class Searcher(object):
 
         if spotings >= spotings_req:
             self.object_found = True
-            self.response = resp
 
 
 @util.cancellableInlineCallbacks

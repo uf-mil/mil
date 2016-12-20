@@ -11,6 +11,11 @@ get_shape:
   type: GetDockShapes
   args: {'Shape': "CIRCLE", 'Color':"RED"}
 
+get_shape_front:
+  topic: /vision/get_shapes_front
+  type: GetDockShapes
+  args: {'Shape': "CIRCLE", 'Color':"RED"}
+
 scan_the_code_activate:
   topic: /vision/scan_the_code_activate
   type: ScanTheCodeMission

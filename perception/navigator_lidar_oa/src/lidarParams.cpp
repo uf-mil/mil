@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Critical global constants
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-double MAP_SIZE_METERS = 1500;
+double MAP_SIZE_METERS = 2100;
 double ROI_SIZE_METERS = 201;
 double VOXEL_SIZE_METERS = 0.30;
 int MIN_HITS_FOR_OCCUPANCY = 20; 
@@ -61,7 +61,7 @@ void set_params(ros::NodeHandle& nh)
   nh.getParam("MIN_OBJECT_HEIGHT_METERS", MIN_OBJECT_HEIGHT_METERS);
   nh.getParam("MIN_OBJECT_SEPERATION_DISTANCE", MIN_OBJECT_SEPERATION_DISTANCE);
   nh.getParam("MIN_GATE_SEPERATION", MIN_GATE_SEPERATION);
-  nh.getParam("MAX_GATE_SEPERATION", MIN_GATE_SEPERATION);
+  nh.getParam("MAX_GATE_SEPERATION", MAX_GATE_SEPERATION);
   nh.getParam("MAX_GATE_ERROR_METRIC", MAX_GATE_ERROR_METRIC);
   nh.getParam("MIN_HITS_FOR_VOLUME",MIN_HITS_FOR_VOLUME);
   nh.getParam("OBJECT_INFLATION_PARAMETER", OBJECT_INFLATION_PARAMETER);

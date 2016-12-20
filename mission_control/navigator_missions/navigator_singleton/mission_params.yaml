@@ -1,3 +1,9 @@
+pinger_negate:
+  param: /mission/acoustic_pinger/negate
+  options: [True, False]
+  description: pinger negate
+  default: False
+
 explorer_next:
   param: /mission/explorer/next
   options: [ALL,BuoyField,CoralSurvey,FindBreak,
@@ -77,19 +83,19 @@ scan_the_code_color3:
   options: [RED,GREEN,YELLOW,BLUE]
   description: The third color in the 3 color sequence of scan the code
 
-coral_surey_shape1:
+coral_survey_shape1:
   param: /mission/coral_survey/shape1
   options: [CIRCLE, TRIANGLE, CROSS]
   description: The shape identified in quadrant I of the Underwater Shape Identification challenge
-coral_surey_shape2:
+coral_survey_shape2:
   param: /mission/coral_survey/shape2
   options: [CIRCLE, TRIANGLE, CROSS]
   description: The shape identified in quadrant II of the Underwater Shape Identification challenge
-coral_surey_shape3:
+coral_survey_shape3:
   param: /mission/coral_survey/shape3
   options: [CIRCLE, TRIANGLE, CROSS]
   description: The shape identified in quadrant III of the Underwater Shape Identification challenge
-coral_surey_shape4:
+coral_survey_shape4:
   param: /mission/coral_survey/shape4
   options: [CIRCLE, TRIANGLE, CROSS]
   description: The shape identified in quadrant IV of the Underwater Shape Identification challenge
@@ -120,6 +126,11 @@ acoustic_pinger_active_index:
   description: >
     Which gate (as identified in the database) the pinger was found in.
     For example, 2 means Gate_2 is the location of the pinger
+acoustic_pinger_active_index_correct:
+  param: /mission/acoustic_pinger/active_index_correct
+  options: [1,2,3]
+  description: >
+    Which gate the pinger was found in. Adjusted for rules (RED=1)
 
 dock_shape_1:
   param: /mission/identify_dock/shape_1

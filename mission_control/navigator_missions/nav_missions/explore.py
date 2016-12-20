@@ -1,20 +1,27 @@
 #!/usr/bin/env python
 import txros
 import navigator_tools as nt
-from navigator_tools import DBHelper, fprint
-from twisted.internet import threads, defer
+from navigator_tools import fprint, MissingPerceptionObject
+from twisted.internet import defer
 from navigator_tools import rosmsg_to_numpy
 import numpy as np
-from txros import util
 
 
-def get_closest_objects(position, objects, max_len=3):
+def get_closest_objects(position, objects, max_len=3, max_dist=30):
     num = len(objects)
     idx = max_len
     if num < max_len:
         idx = num
     objects = sorted(objects, key=lambda x: np.linalg.norm(position - rosmsg_to_numpy(x.position)))
-    return objects[:idx]
+    objects = objects[:idx]
+    dists = map(lambda x: np.linalg.norm(position - rosmsg_to_numpy(x.position)), objects)
+    final_objs = []
+    for i, d in enumerate(dists):
+        if d < max_dist:
+            final_objs.append(objects[i])
+        else:
+            break
+    return final_objs
 
 
 @txros.util.cancellableInlineCallbacks
@@ -35,45 +42,71 @@ def go_to_objects(navigator, position, objs):
 
 
 @txros.util.cancellableInlineCallbacks
-def myfunc(navigator, looking_for, center_marker, timeout=60):
-    db = yield DBHelper(navigator.nh).init_(navigator=navigator)
-    objs = yield db.get_unknown_and_low_conf()
-    print[x.name for x in objs]
-    print[x.id for x in objs]
-    print[x.confidence for x in objs]
+def myfunc(navigator, looking_for, center_marker):
+    # Updated
+    high_prob_objs = ["shooter", "dock"]
+    pos = yield navigator.tx_pose
+    pos = pos[0]
 
-    if len(objs) == 0:
-        fprint("SPIRALING, NO OBJECTS FOUND", msg_color="green")
-        moving = navigator.move.spiral(nt.rosmsg_to_numpy(center_marker.position)).go()
-        navigator.nh.sleep(60)
-    else:
-        position = yield navigator.tx_pose
-        position = position[0]
-        objs = get_closest_objects(position, objs)
-        moving = go_to_objects(navigator, position, objs)
+    if center_marker is None or center_marker == "None":
+        defer.returnValue(True)
 
-    moving.addErrback(lambda x: x)
     try:
-        waiting = wait_for_object(looking_for, db, navigator.nh)
-        waiting.addErrback(lambda x: x)
-        yield util.wrap_timeout(waiting, timeout)
-    except util.TimeoutError:
-        moving.cancel()
-        fprint("NO OBJECT FOUND", msg_color="blue")
+        center_marker = yield navigator.database_query(object_name=center_marker.name)
+        center_marker = center_marker.objects[0]
+        print center_marker.name
+    except:
+        fprint("A marker has not been set", msg_color="red")
         defer.returnValue(False)
 
-    fprint("EXPLORER FOUND OBJECT", msg_color="blue")
-    moving.cancel()
+    mark_pos = nt.rosmsg_to_numpy(center_marker.position)
+    dist = np.linalg.norm(pos - mark_pos)
+    if dist > 10:
+        yield navigator.move.look_at(mark_pos).set_position(mark_pos).go()
     defer.returnValue(True)
+
+    if looking_for is None or looking_for == "None":
+        defer.returnValue(True)
+
+    pos = yield navigator.tx_pose
+    pos = pos[0]
+
+    if looking_for in high_prob_objs:
+        try:
+            obj = yield navigator.database_query(object_name=looking_for)
+            fprint("EXPLORER FOUND OBJECT", msg_color="blue")
+            yield navigator.database_query(cmd="lock {} {}".format(obj.id, looking_for))
+            defer.returnValue(True)
+        except MissingPerceptionObject:
+            fprint("The object {} is not in the database".format(looking_for), msg_color="red")
+    try:
+        objs = yield navigator.database_query(object_name="all")
+        objs = get_closest_objects(pos, objs.objects)
+    except Exception as e:
+        print e
+        defer.returnValue(False)
+
+    # for o in objs:
+    #     obj_pos = nt.rosmsg_to_numpy(o.position)
+    #     yield navigator.move.look_at(obj_pos).set_position(mark_pos).backward(7).go()
+    #     cam_obj = yield navigator.camera_database_query(object_name=looking_for, id=o.id)
+    #     if cam_obj.found:
+    #         yield navigator.database_query(cmd="lock {} {}".format(o.id, looking_for))
+    #         fprint("EXPLORER FOUND OBJECT", msg_color="blue")
+    #         defer.returnValue(True)
+
+    fprint("NO OBJECT FOUND", msg_color="blue")
+    defer.returnValue(False)
 
 
 @txros.util.cancellableInlineCallbacks
 def main(navigator, **kwargs):
-    # center_marker = kwargs["center_marker"]
-    # looking_for = kwargs["looking_for"]
+    center_marker = kwargs["center_marker"]
+    looking_for = kwargs["looking_for"]
 
-    center_marker = "ScanTheCode"
-    looking_for = "dne"
+    # FOR TESTING
+    # center_marker = "Shooter"
+    # looking_for = "scan_the_code"
 
     navigator.change_wrench("autonomous")
     yield navigator.nh.sleep(.1)

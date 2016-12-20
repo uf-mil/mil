@@ -4,6 +4,7 @@
   <version>1.0.0</version>
   <description>The navigator_battery_monitor package</description>
 
+  <author email="anthony@iris-systems.net">Anthony Olive</author>
   <maintainer email="anthony@iris-systems.net">Anthony Olive</maintainer>
 
   <license>MIT</license>

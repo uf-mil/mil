@@ -4,13 +4,15 @@ import numpy as np
 class TimeoutManager(object):
 
     @classmethod
-    def generate_timeouts(cls, time_left, missions_left):
+    def generate_timeouts(cls, time_left, real_time_left, missions_left):
+        if time_left < 0:
+            for i, m in enumerate(missions_left):
+                # Lets just give the next mission the rest of the time, for simplicity
+                m.timeout = real_time_left
+                return
         weights = np.array([x.weight for x in missions_left], dtype=np.float32)
         total = sum(weights)
         weights = np.divide(weights, total)
-        # print total
-        # print weights
-        # print time_left
         for i, m in enumerate(missions_left):
             m.timeout = weights[i] * time_left
 

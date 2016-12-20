@@ -3,13 +3,14 @@ from __future__ import division
 import numpy as np
 import numpy.linalg as npl
 import tf.transformations as trns
+import traceback
 
 import rospy
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, WrenchStamped, PoseStamped, Quaternion, Pose
 from std_msgs.msg import Header
 from uf_common.msg import PoseTwistStamped
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Float64MultiArray
 
 
 class MRAC_Controller:
@@ -111,6 +112,7 @@ class MRAC_Controller:
         self.wrench_pub = rospy.Publisher("/wrench/autonomous", WrenchStamped, queue_size=0)
         self.pose_ref_pub = rospy.Publisher("pose_ref", PoseStamped, queue_size=0)
         self.adaptation_pub = rospy.Publisher("adaptation", WrenchStamped, queue_size=0)
+        self.theta_pub = rospy.Publisher("~theta", Float64MultiArray, queue_size=0)
 
         rospy.spin()
 
@@ -273,6 +275,11 @@ class MRAC_Controller:
         adaptation_msg.wrench.force.y = (self.dist_est + self.drag_effort)[1]
         adaptation_msg.wrench.torque.z = (self.dist_est + self.drag_effort)[2]
         self.adaptation_pub.publish(adaptation_msg)
+        
+        try:
+            self.theta_pub.publish(Float64MultiArray(data=self.drag_est))
+        except:
+            traceback.print_exc()
 
     def increment_reference(self):
         '''

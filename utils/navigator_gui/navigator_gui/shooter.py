@@ -131,12 +131,12 @@ class Shooter(Plugin):
         '''
         Monitors the shooter status on a 1s interval. Only updates the display
         when the received shooter status has changed. The connection to the
-        status will time out if no message has been received in ~1s.
+        status will time out if no message has been received in 1s.
         '''
         if ((rospy.Time.now() - self.shooter_status["stamp"]) < rospy.Duration(1)):
             self.remote.is_timed_out = False
 
-        # Sets the remote control to timed out and the shooter status to 'Unknown' if no message has been received in ~1s
+        # Sets the remote control to timed out and the shooter status to 'Unknown' if no message has been received in 1s
         else:
             self.remote.is_timed_out = True
             self.shooter_status["received"] = "Unknown"

@@ -34,12 +34,13 @@ class Joystick(object):
         '''
         self.last_kill = False
         self.last_station_hold_state = False
-        self.last_change_mode = False
-        self.last_auto_control = False
         self.last_rc_control = False
+        self.last_emergency_control = False
         self.last_keyboard_control = False
-        self.last_shooter_load = False
-        self.last_shooter_fire = False
+        self.last_auto_control = False
+        self.last_change_mode = False
+#        self.last_shooter_load = False
+#        self.last_shooter_fire = False
         self.last_shooter_cancel = False
 
         self.start_count = 0
@@ -72,14 +73,15 @@ class Joystick(object):
 
         # Assigns readable names to the buttons that are used
         start = joy.buttons[7]
-        change_mode = bool(joy.buttons[3])  # Y
         kill = bool(joy.buttons[2])  # X
         station_hold = bool(joy.buttons[0])  # A
         rc_control = bool(joy.buttons[11])  # d-pad left
-        auto_control = bool(joy.buttons[12])  # d-pad right
+        emergency_control = bool(joy.buttons[13])  # d-pad up
         keyboard_control = bool(joy.buttons[14])  # d-pad down
-        shooter_load = bool(joy.buttons[4])
-        shooter_fire = bool(joy.axes[5] < -0.9)
+        auto_control = bool(joy.buttons[12])  # d-pad right
+        change_mode = bool(joy.buttons[3])  # Y
+#        shooter_load = bool(joy.buttons[4])
+#        shooter_fire = bool(joy.axes[5] < -0.9)
         shooter_cancel = bool(joy.buttons[5])
 
         # Reset controller state if only start is pressed down about 3 seconds
@@ -99,35 +101,39 @@ class Joystick(object):
         if station_hold and not self.last_station_hold_state:
             self.remote.station_hold()
 
-        if change_mode and not self.last_change_mode:
-            self.remote.select_next_control()
-
-        if auto_control and not self.last_auto_control:
-            self.remote.select_autonomous_control()
-
         if rc_control and not self.last_rc_control:
             self.remote.select_rc_control()
+
+        if emergency_control and not self.last_emergency_control:
+            self.remote.select_emergency_control()
 
         if keyboard_control and not self.last_keyboard_control:
             self.remote.select_keyboard_control()
 
-        if shooter_load and not self.last_shooter_load:
-            self.remote.shooter_load()
+        if auto_control and not self.last_auto_control:
+            self.remote.select_autonomous_control()
 
-        if shooter_fire and not self.last_shooter_fire:
-            self.remote.shooter_fire()
+        if change_mode and not self.last_change_mode:
+            self.remote.select_next_control()
+
+#        if shooter_load and not self.last_shooter_load:
+#            self.remote.shooter_load()
+
+#        if shooter_fire and not self.last_shooter_fire:
+#            self.remote.shooter_fire()
 
         if shooter_cancel and not self.last_shooter_cancel:
             self.remote.shooter_cancel()
 
         self.last_kill = kill
         self.last_station_hold_state = station_hold
-        self.last_change_mode = change_mode
-        self.last_auto_control = auto_control
         self.last_rc_control = rc_control
+        self.last_emergency_control = emergency_control
         self.last_keyboard_control = keyboard_control
-        self.last_shooter_load = shooter_load
-        self.last_shooter_fire = shooter_fire
+        self.last_auto_control = auto_control
+        self.last_change_mode = change_mode
+#        self.last_shooter_load = shooter_load
+#        self.last_shooter_fire = shooter_fire
         self.last_shooter_cancel = shooter_cancel
 
         # Scale joystick input to force and publish a wrench

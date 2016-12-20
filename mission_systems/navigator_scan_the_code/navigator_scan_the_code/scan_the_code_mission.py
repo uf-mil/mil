@@ -30,14 +30,11 @@ class ScanTheCodeMission:
         """Initialize the txros elements of ScanTheCodeMission class."""
         my_tf = tl
         self.debug = Debug(self.nh, wait=False)
-        self.perception = ScanTheCodePerception(my_tf, self.debug, self.nh)
+        self.perception = yield ScanTheCodePerception(my_tf, self.debug, self.nh)._init()
         self.database = yield self.nh.get_service_client("/database/requests", ObjectDBQuery)
-        self.image_sub = yield self.nh.subscribe("/stereo/right/image_rect_color", Image, self._image_cb)
+        # self.image_sub = yield self.nh.subscribe("/stereo/right/image_rect_color", Image, self._image_cb)
         self.cam_info_sub = yield self.nh.subscribe("/stereo/right/camera_info", CameraInfo, self._info_cb)
         self.helper = yield DBHelper(self.nh).init_(self.navigator)
-
-    def _image_cb(self, image):
-        self.perception.add_image(image)
 
     def _info_cb(self, info):
         self.perception.update_info(info)
@@ -67,19 +64,19 @@ class ScanTheCodeMission:
                 scan_the_code = yield self._get_scan_the_code()
             except Exception:
                 print "Could not get scan the code..."
+                yield self.nh.sleep(.01)
+                continue
+
+            try:
+                success, colors = yield self.perception.search(scan_the_code)
+                if success:
+                    defer.returnValue(colors)
+            except Exception as e:
+                print e
                 yield self.nh.sleep(.1)
                 continue
 
-            # try:
-            success, colors = yield self.perception.search(scan_the_code)
-            if success:
-                defer.returnValue(colors)
-            # except Exception as e:
-            #     print e
-            #     yield self.nh.sleep(.1)
-            #     continue
-
-            yield self.nh.sleep(.3)
+            # yield self.nh.sleep(.03)
         defer.returnValue(None)
 
     @txros.util.cancellableInlineCallbacks

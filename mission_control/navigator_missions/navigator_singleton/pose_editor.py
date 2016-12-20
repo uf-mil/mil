@@ -272,7 +272,7 @@ class PoseEditor2(object):
         sprinkles = transformations.euler_matrix(0, 0, angle_incrment)[:3, :3]
 
         # Find first point to go to using boat rotation
-        next_point = np.append(normalize(self.nav.pose[0][:2] - point[:2]), 0)  # Doing this in 2d
+        next_point = np.append(normalize(self.position[:2] - point[:2]), 0)  # Doing this in 2d
         radius_increment = meters_per_rev / granularity
         for i in range(granularity * revolutions + 1):
             new = point + radius * next_point
@@ -306,6 +306,11 @@ class PoseEditor2(object):
         if 'focus' in kwargs:
             if not isinstance(kwargs['focus'], Point):
                 kwargs['focus'] = navigator_tools.numpy_to_point(kwargs['focus'])
+        
+        if 'speed_factor' in kwargs and isinstance(kwargs['speed_factor'], float):
+            # User wants a uniform speed factor
+            sf = kwargs['speed_factor']
+            kwargs['speed_factor'] = [sf, sf, sf]
 
         for key in kwargs.keys():
             if not hasattr(MoveGoal, key):

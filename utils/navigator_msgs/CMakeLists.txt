@@ -25,6 +25,9 @@ add_message_files(
   DockShape.msg
   DockShapes.msg
   KillStatus.msg
+  Host.msg
+  Hosts.msg
+  ColoramaDebug.msg
 )
 
 add_service_files(
@@ -42,11 +45,13 @@ add_service_files(
   StereoShapeDetector.srv
   ScanTheCodeMission.srv
   ObjectDBQuery.srv
+  CameraDBQuery.srv
   CameraToLidarTransform.srv
   KeyboardControl.srv
   ColorRequest.srv
   FindPinger.srv
   SetFrequency.srv
+  GetDockBays.srv
 )
 
 add_action_files(
