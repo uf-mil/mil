@@ -134,7 +134,7 @@ public:
   template<typename T>
   T getPotential(Vec<3, T> pos_eci, double t) const {
     // would use ecef_from_inertial, but it's not templated to work here
-    Vec<3, T> pos_ecef = quat_from_rotvec(-w_E * t).cast<T>() * pos_eci;
+    Vec<3, T> pos_ecef = quat_from_rotvec(-w_E * t).toRotationMatrix().cast<T>() * pos_eci;
     double t_year = (t - 1262322000)/(365.25*86400) + 2010;
     
     T a = T(6371200);

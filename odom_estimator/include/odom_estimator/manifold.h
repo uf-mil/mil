@@ -2,7 +2,6 @@
 #define GUARD_UIBAPTOZSJJMTCMG
 
 #include <boost/preprocessor/seq/fold_right.hpp>
-#include <boost/fusion/adapted/struct/define_struct.hpp>
 #include <boost/preprocessor/seq/for_each_product.hpp>
 #include <boost/preprocessor/seq/push_front.hpp>
 #include <boost/preprocessor/seq/push_back.hpp>
@@ -33,6 +32,13 @@ struct IManifold {
 
 // Macro magic to define a new manifold type that just combines multiple
 // named manifold types
+
+#define MY_BOOST_FUSION_ADAPT_STRUCT_FILLER_0(X, Y)                                \
+    ((X, Y)) MY_BOOST_FUSION_ADAPT_STRUCT_FILLER_1
+#define MY_BOOST_FUSION_ADAPT_STRUCT_FILLER_1(X, Y)                                \
+    ((X, Y)) MY_BOOST_FUSION_ADAPT_STRUCT_FILLER_0
+#define MY_BOOST_FUSION_ADAPT_STRUCT_FILLER_0_END
+#define MY_BOOST_FUSION_ADAPT_STRUCT_FILLER_1_END
 
 #define FOLD_LEFT_SKIPPING_FIRST(op, state, seq) \
   BOOST_PP_IF( \
@@ -171,8 +177,8 @@ struct IManifold {
 #define ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(NAME, TYPE_ATTRIBUTES, ATTRIBUTES) \
     ODOM_ESTIMATOR_DEFINE_MANIFOLD_IMPL( \
         NAME, \
-        BOOST_PP_CAT(BOOST_FUSION_ADAPT_STRUCT_FILLER_0(0,0)TYPE_ATTRIBUTES,_END), \
-        APPEND_IF_SEQ_LENGTH_IS_1(BOOST_PP_CAT(BOOST_FUSION_ADAPT_STRUCT_FILLER_0(0,0)ATTRIBUTES,_END), (Vec<0>, _dummy)), \
+        BOOST_PP_CAT(MY_BOOST_FUSION_ADAPT_STRUCT_FILLER_0(0,0)TYPE_ATTRIBUTES,_END), \
+        APPEND_IF_SEQ_LENGTH_IS_1(BOOST_PP_CAT(MY_BOOST_FUSION_ADAPT_STRUCT_FILLER_0(0,0)ATTRIBUTES,_END), (Vec<0>, _dummy)), \
         2)
 
 #define ODOM_ESTIMATOR_DEFINE_MANIFOLD_END() };
