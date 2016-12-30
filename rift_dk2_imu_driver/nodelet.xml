@@ -1,5 +1,0 @@
-<library path="lib/librift_dk2_imu_driver_nodelet">
-  <class name="rift_dk2_imu_driver/rift_dk2_imu_driver_nodelet" type="rift_dk2_imu_driver::rift_dk2_imu_driver_nodelet" base_class_type="nodelet::Nodelet">
-    <description></description>
-  </class>
-</library>
