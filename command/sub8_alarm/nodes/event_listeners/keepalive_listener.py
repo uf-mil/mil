@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 import rospy
 from std_msgs.msg import Header
-from navigator_alarm import single_alarm
+from sub8_alarm import single_alarm
 import time
 
 
 class KeepAliveListener(object):
     '''
-    Meant to only run on the boat. When the network is dropped, it triggers a kill.
+    Meant to only run on the sub. When the network is dropped, it triggers a kill.
     '''
     def __init__(self, timeout=5.0):
         self.timeout = rospy.Duration(timeout)
