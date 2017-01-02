@@ -35,7 +35,6 @@ class ThrusterDriver(object):
             severity=2
         )
 
-
         self.failed_thrusters = []
 
         self.make_fake = rospy.get_param('simulate', False)
@@ -46,16 +45,18 @@ class ThrusterDriver(object):
         newtons, thruster_input = self.load_config(config_path)
         self.interpolate = scipy.interpolate.interp1d(newtons, thruster_input)
 
+        self.thrust_service = rospy.Service('thrusters/thruster_range', ThrusterInfo, self.get_thruster_info)
+        self.status_pub = rospy.Publisher('thrusters/thruster_status', ThrusterStatus, queue_size=8)
+
         # Bus configuration
         self.port_dict = self.load_bus_layout(bus_layout)
-
-        self.thrust_service = rospy.Service('thrusters/thruster_range', ThrusterInfo, self.get_thruster_info)
-        self.thrust_sub = rospy.Subscriber('thrusters/thrust', Thrust, self.thrust_cb, queue_size=1)
-        self.status_pub = rospy.Publisher('thrusters/thruster_status', ThrusterStatus, queue_size=8)
-        self.bus_voltage_pub = rospy.Publisher('bus_voltage', Float64, queue_size=1)
         self.bus_voltage = None
         self.last_bus_voltage_time = rospy.Time.now()
+        self.bus_voltage_pub = rospy.Publisher('bus_voltage', Float64, queue_size=1)
         self.bus_timer = rospy.Timer(rospy.Duration(0.1), self.publish_bus_voltage)
+    
+        # The bread and bones
+        self.thrust_sub = rospy.Subscriber('thrusters/thrust', Thrust, self.thrust_cb, queue_size=1)
 
         # This is essentially only for testing
         self.fail_thruster_server = rospy.Service('fail_thruster', FailThruster, self.fail_thruster)
@@ -113,18 +114,28 @@ class ThrusterDriver(object):
     def load_bus_layout(self, layout):
         '''Load and handle the thruster bus layout'''
         port_dict = {}
+
+        # These alarms require this service to be available before things will work
+        rospy.wait_for_service("update_thruster_layout")
+        self.thruster_out_alarm.clear_alarm(parameters={'clear_all': True})
+        
         for port in layout:
             thruster_port = thruster_comm_factory(port, fake=self.make_fake)
 
             # Add the thrusters to the thruster dict
             for thruster_name, thruster_info in port['thrusters'].items():
                 port_dict[thruster_name] = thruster_port
+            
+            for thruster_name in thruster_port.missing_thrusters:
+                rospy.logerr("{} IS MISSING!".format(thruster_name))
+                self.alert_thruster_loss(thruster_name, "Motor ID was not found on it's port.")
 
         return port_dict
 
     def stop(self):
         for name in self.port_dict.keys():
-            self.command_thruster(name, 0.0)
+            if name not in self.failed_thrusters:
+                self.command_thruster(name, 0.0)
 
     @thread_lock(lock)
     def command_thruster(self, name, force):

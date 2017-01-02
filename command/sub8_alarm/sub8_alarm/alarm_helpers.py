@@ -123,10 +123,16 @@ class AlarmRaiser(object):
         self._alarm_pub.publish(alarm_msg)
         return alarm_msg
 
-    def clear_alarm(self):
+    def clear_alarm(self, parameters=None):
+        if parameters is not None:
+            _parameters = parameters
+        else:
+            _parameters = self._parameters
+
         alarm_contents = {
             'alarm_name': self._alarm_name,
             'node_name': self._node_name,
+            'parameters': json.dumps(_parameters),
             'severity': self._severity,
             'action_required': False,
             'clear': True,
