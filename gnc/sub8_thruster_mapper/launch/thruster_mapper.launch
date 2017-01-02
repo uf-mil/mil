@@ -10,7 +10,7 @@
             direction: [0, 0, -1]
           }
           FLL: {
-            node_id: 11,
+            node_id: 69,
             frame_id: /base_link,
             position: [0.2678, 0.2795, 0],
             direction: [-0.866, 0.5, 0]
@@ -18,7 +18,7 @@
       - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if00-port0
         thrusters:
           FRL: {
-            node_id: 69,
+            node_id: -1,
             frame_id: /base_link,
             position: [0.2678, -0.2795, 0],
             direction: [0.866, 0.5, 0]
