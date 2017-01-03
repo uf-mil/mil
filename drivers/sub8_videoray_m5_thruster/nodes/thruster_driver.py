@@ -15,6 +15,8 @@ lock = threading.Lock()
 
 
 class ThrusterDriver(object):
+    _dropped_timeout = 2 # s
+
     def __init__(self, config_path, bus_layout):
         '''Thruster driver, an object for commanding all of the sub's thrusters
             - Gather configuration data and make it available to other nodes
@@ -34,7 +36,8 @@ class ThrusterDriver(object):
             action_required=False,
             severity=2
         )
-
+        
+        self.thruster_heartbeats = {}
         self.failed_thrusters = []
 
         self.make_fake = rospy.get_param('simulate', False)
@@ -54,6 +57,7 @@ class ThrusterDriver(object):
         self.last_bus_voltage_time = rospy.Time.now()
         self.bus_voltage_pub = rospy.Publisher('bus_voltage', Float64, queue_size=1)
         self.bus_timer = rospy.Timer(rospy.Duration(0.1), self.publish_bus_voltage)
+        self.drop_check = rospy.Timer(rospy.Duration(0.5), self.check_for_drops)
     
         # The bread and bones
         self.thrust_sub = rospy.Subscriber('thrusters/thrust', Thrust, self.thrust_cb, queue_size=1)
@@ -70,6 +74,24 @@ class ThrusterDriver(object):
             self.bus_voltage_pub.publish(msg)
             if self.bus_voltage < 44.0:
                 self.alert_bus_voltage(self.bus_voltage)
+
+    def check_for_drops(self, *args):
+        for name, time in self.thruster_heartbeats.items():
+            if time is None:
+                # Thruster wasn't registered on startup
+                continue
+
+            elif time < rospy.Time.now().to_sec() - self._dropped_timeout:
+                rospy.logwarn("TIMEOUT, No recent response from: {}.".format(name))
+                if name not in self.failed_thrusters:
+                    self.alert_thruster_loss(name, "Timed out")
+
+                # Check if the thruster is back up
+                self.command_thruster(name, 0)
+
+            elif name in self.failed_thrusters:
+                rospy.logwarn("Thruster {} has come back online".format(name))
+                self.alert_thruster_unloss(name)
 
     def update_bus_voltage(self, voltage):
         if self.bus_voltage is None:
@@ -124,12 +146,15 @@ class ThrusterDriver(object):
 
             # Add the thrusters to the thruster dict
             for thruster_name, thruster_info in port['thrusters'].items():
+                if thruster_name in thruster_port.missing_thrusters:
+                    rospy.logerr("{} IS MISSING!".format(thruster_name))
+                    self.alert_thruster_loss(thruster_name, "Motor ID was not found on it's port.")
+                else:
+                    rospy.loginfo("{} registered".format(thruster_name))
+
+                self.thruster_heartbeats[thruster_name] = None 
                 port_dict[thruster_name] = thruster_port
             
-            for thruster_name in thruster_port.missing_thrusters:
-                rospy.logerr("{} IS MISSING!".format(thruster_name))
-                self.alert_thruster_loss(thruster_name, "Motor ID was not found on it's port.")
-
         return port_dict
 
     def stop(self):
@@ -146,10 +171,6 @@ class ThrusterDriver(object):
                 Make this still get a thruster status when the thruster is failed
                 (We could figure out if it has stopped being failed!)
         '''
-        if name in self.failed_thrusters:
-            rospy.logwarn("Attempted to command failed thruster {}".format(name))
-            return
-
         target_port = self.port_dict[name]
         margin_factor = 0.8
         clipped_force = np.clip(
@@ -158,6 +179,9 @@ class ThrusterDriver(object):
             margin_factor * max(self.interpolate.x)
         )
         normalized_force = self.interpolate(clipped_force)
+
+        if name in self.failed_thrusters:
+            normalized_force = 0
 
         # We immediately get thruster_status back
         thruster_status = target_port.command_thruster(name, normalized_force)
@@ -176,6 +200,7 @@ class ThrusterDriver(object):
         ]
 
         message_keyword_args = {key: thruster_status[key] for key in message_contents}
+        self.thruster_heartbeats[name] = rospy.Time.now().to_sec() 
         self.status_pub.publish(
             ThrusterStatus(
                 header=Header(stamp=rospy.Time.now()),
@@ -213,6 +238,15 @@ class ThrusterDriver(object):
         '''
         for thrust_cmd in list(msg.thruster_commands):
             self.command_thruster(thrust_cmd.name, thrust_cmd.thrust)
+
+    def alert_thruster_unloss(self, thruster_name):
+        self.thruster_out_alarm.clear_alarm(
+            parameters={
+                'thruster_name': thruster_name,
+            }
+        )
+        rospy.logerr(self.failed_thrusters)
+        self.failed_thrusters.remove(thruster_name)
 
     def alert_thruster_loss(self, thruster_name, fault_info):
         self.thruster_out_alarm.raise_alarm(

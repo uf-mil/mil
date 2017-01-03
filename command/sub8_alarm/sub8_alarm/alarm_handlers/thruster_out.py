@@ -30,7 +30,7 @@ class ThrusterOut(HandlerBase):
         if parameters is None:
             return
 
-        if parameters['clear_all']:
+        if parameters.get('clear_all', False):
             # Used on startup of thruster mapper to clear all missing thrusters
             self.dropped_thrusters = []
             self.update_layout()
@@ -38,3 +38,6 @@ class ThrusterOut(HandlerBase):
         elif parameters['thruster_name'] in self.dropped_thrusters:
             self.dropped_thrusters.pop(self.dropped_thrusters.index(parameters['thruster_name']))
             self.update_layout(self.dropped_thrusters)
+
+            rospy.logwarn("Reviving thuster {}".format(parameters['thruster_name']))
+            rospy.logwarn("Dropped thrusters: " + ', '.join(self.dropped_thrusters))
