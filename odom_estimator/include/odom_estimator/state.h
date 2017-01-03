@@ -25,7 +25,6 @@ ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(State,
   (Vec<3>, vel)
   (Vec<3>, gyro_bias)
   (Vec<3>, accel_bias)
-  (WrappedScalar, ground_air_pressure)
 )
   Vec<3> getPosECI(Vec<3> body_point=Vec<3>::Zero()) const {
     return pos_eci + orient._transformVector(body_point);
@@ -62,7 +61,6 @@ ODOM_ESTIMATOR_DEFINE_MANIFOLD_END()
 ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(_PredictNoise, ,
   (Vec<3>, gyro)
   (Vec<3>, accel)
-  (WrappedScalar, ground_air_pressure_noise)
   (Vec<3>, gyro_bias_noise)
   (Vec<3>, accel_bias_noise)
 )
@@ -76,7 +74,6 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
       _PredictNoise(
         xyz2vec(imu.angular_velocity),
         xyz2vec(imu.linear_acceleration),
-        0,
         Vec<3>::Zero(),
         Vec<3>::Zero()),
       joinDiagonally(
@@ -84,10 +81,8 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
           Eigen::Map<const SqMat<3> >(imu.angular_velocity_covariance.data()),
           Eigen::Map<const SqMat<3> >(imu.linear_acceleration_covariance.data())),
         joinDiagonally(
-          scalar_matrix(5),
-          joinDiagonally(
-            (Vec<3>::Ones()*pow(1e-3, 2)).asDiagonal(),
-            (Vec<3>::Ones()*pow(1e-3, 2)).asDiagonal()))));
+          (Vec<3>::Ones()*pow(1e-3, 2)).asDiagonal(),
+          (Vec<3>::Ones()*pow(1e-3, 2)).asDiagonal())));
   }
   State apply(State const &state, _PredictNoise const &extra) const {
     double dt = (imu.header.stamp - state.t).toSec();
@@ -112,8 +107,7 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
       world_from_newbody,
       state.vel + dt * accel_world,
       state.gyro_bias + sqrt(dt) * extra.gyro_bias_noise,
-      state.accel_bias + sqrt(dt) * extra.accel_bias_noise,
-      state.ground_air_pressure + sqrt(dt) * extra.ground_air_pressure_noise);
+      state.accel_bias + sqrt(dt) * extra.accel_bias_noise);
   }
 
 public:

@@ -10,7 +10,6 @@
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/MagneticField.h>
-#include <sensor_msgs/FluidPressure.h>
 #include <eigen_conversions/eigen_msg.h>
 #include <tf_conversions/tf_eigen.h>
 
@@ -55,7 +54,7 @@ GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
   
   Vec<State::RowsAtCompileTime> stdev =
     (Vec<State::RowsAtCompileTime>(19) <<
-    100,100,100, 0,0,0, .05,.05,.05, 10,10,10, 1e-3,1e-3,1e-3, 1e-2,1e-2,1e-2, 1e3).finished();
+    100,100,100, 0,0,0, .05,.05,.05, 10,10,10, 1e-3,1e-3,1e-3, 1e-2,1e-2,1e-2).finished();
   SqMat<State::RowsAtCompileTime> tmp =
     stdev.asDiagonal();
   
@@ -67,8 +66,7 @@ GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
       orient_eci,
       vel_eci,
       Vec<3>::Zero(),
-      Vec<3>::Zero(),
-      101325),
+      Vec<3>::Zero()),
     tmp*tmp);
 }
 
@@ -79,7 +77,6 @@ class NodeImpl {
     ros::NodeHandle &nh;
     ros::NodeHandle &private_nh;
     double start_x_ecef, start_y_ecef, start_z_ecef;
-    constexpr static const double air_density = 1.225; // kg/m^3
     std::string local_frame;
     ros::ServiceServer set_ignore_magnetometer_srv;
     bool ignoreMagnetometer;
@@ -106,8 +103,6 @@ class NodeImpl {
         boost::bind(&NodeImpl::got_imu, this, _1));
       mag_sub = nh.subscribe<sensor_msgs::MagneticField>("imu/mag", 10,
         boost::bind(&NodeImpl::got_mag, this, _1));
-      press_sub = nh.subscribe<sensor_msgs::FluidPressure>("imu/pressure", 10,
-        boost::bind(&NodeImpl::got_press, this, _1));
       dvl_filter.registerCallback(boost::bind(&NodeImpl::got_dvl, this, _1));
       depth_filter.registerCallback(boost::bind(&NodeImpl::got_depth, this, _1));
       odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
@@ -174,7 +169,6 @@ class NodeImpl {
         << " stddev: " << accel_bias_dist.cov.diagonal().array().sqrt().transpose()
         << std::endl;
       //std::cout << "grav: " << state->mean.local_g << "  " << sqrt(state->cov(State::LOCAL_G, State::LOCAL_G)) << std::endl;
-      //std::cout << "ground air pressure: " << state->mean.ground_air_pressure << "  " << sqrt(state->cov(State::GROUND_AIR_PRESSURE, State::GROUND_AIR_PRESSURE)) << std::endl;
       std::cout << std::endl;
       
 
@@ -269,26 +263,6 @@ class NodeImpl {
           },
           GaussianDistribution<Vec<3> >(Vec<3>::Zero(), cov)),
         *state);
-    }
-    
-    
-    void got_press(const sensor_msgs::FluidPressureConstPtr &msgp) {
-      /*const sensor_msgs::FluidPressure &msg = *msgp;
-      
-      if(!state) return;
-      
-      state = kalman_update(
-        EasyDistributionFunction<State, Vec<1>, Vec<1> >(
-          [&msg](State const &state, Vec<1> const &measurement_noise) {
-            double predicted = state.ground_air_pressure +
-              air_density*Vec<3>(0, 0, -state.local_g).dot(state.pos) +
-              measurement_noise(0);
-            return scalar_matrix(msg.fluid_pressure - predicted);
-          },
-          GaussianDistribution<Vec<1> >(
-            Vec<1>::Zero(),
-            scalar_matrix(msg.variance ? msg.variance : pow(10, 2)))),
-        *state);*/
     }
     
     void got_dvl(const uf_common::VelocityMeasurementsConstPtr &msgp) {
@@ -396,7 +370,6 @@ class NodeImpl {
     tf::TransformListener tf_listener;
     ros::Subscriber imu_sub;
     ros::Subscriber mag_sub;
-    ros::Subscriber press_sub;
     message_filters::Subscriber<uf_common::VelocityMeasurements> dvl_sub;
     tf::MessageFilter<uf_common::VelocityMeasurements> dvl_filter;
     message_filters::Subscriber<uf_common::Float64Stamped> depth_sub;
