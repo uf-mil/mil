@@ -2,6 +2,7 @@
 #define GUARD_UIBAPTOZSJJMTCMG
 
 #include <boost/preprocessor/seq/fold_right.hpp>
+#include <boost/preprocessor/seq/for_each.hpp>
 #include <boost/preprocessor/seq/for_each_product.hpp>
 #include <boost/preprocessor/seq/push_front.hpp>
 #include <boost/preprocessor/seq/push_back.hpp>
