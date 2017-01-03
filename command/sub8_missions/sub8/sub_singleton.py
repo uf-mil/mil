@@ -121,7 +121,7 @@ class _PoseProxy(object):
     # Some special moves
     def to_height(self, height):
         dist_to_bot = self._sub._dvl_range_sub.get_last_message()
-        delta_height = dist_to_bot - height
+        delta_height = dist_to_bot.data - height
         return self.down(delta_height)
 
     def check_goal(self):

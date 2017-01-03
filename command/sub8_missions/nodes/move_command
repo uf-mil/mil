@@ -35,7 +35,7 @@ def main(args):
     if args.command == 'custom':
         # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
         fprint("Moving with the command: {}".format(args.argument), title="MOVE_COMMAND")
-        res = yield eval("n.move.{}.go(move_type='{move_type}')".format(args.argument, **action_kwargs))
+        res = yield eval("sub.move.{}.go()".format(args.argument, **action_kwargs))
 
     elif args.command in ['zrp', 'level_off']:
         fprint("Zeroing roll and pitch", title="MOVE_COMMAND")

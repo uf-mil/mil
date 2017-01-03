@@ -44,7 +44,7 @@ def main():
             mission = getattr(missions, mission_name)
             mission_list.append(mission)
 
-        sub = yield tx_sub.get_sub(nh)
+        sub = yield sub_singleton.get_sub(nh)
         yield txros.util.wall_sleep(1.0)
 
         if args.test:
