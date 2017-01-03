@@ -109,7 +109,6 @@ class GazeboInterface(object):
             )
 
             dist = np.linalg.norm(sub8_utils.twist_to_numpy(twist)) * self.odom_freq
-            self.pedometry += dist
 
         else:
             # fail

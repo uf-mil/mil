@@ -8,6 +8,7 @@ class FakeThrusterPort(object):
         self.port_name = port_info['port']
         self.thruster_dict = {}
         self.status_dict = {}
+        self.missing_thrusters = []
         for thruster_name, thruster_info in port_info['thrusters'].items():
             self.load_thruster_config(thruster_name, thruster_info)
 
