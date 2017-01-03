@@ -20,7 +20,6 @@ class GazeboInterface(object):
         # self.wrench_srv = rospy.ServiceProxy('/gazebo/apply_body_wrench', ApplyBodyWrench)
         # For now, let's skip the wrench
         # self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.wrench_cb)
-        self.load_pedometry()
 
         self.last_odom = None
         self.position_offset = None
@@ -36,28 +35,6 @@ class GazeboInterface(object):
 
         self.odom_freq = 0.03
         rospy.Timer(rospy.Duration(self.odom_freq), self.publish_odom)
-        rospy.Timer(rospy.Duration(1), self.save_pedometry)
-
-    def load_pedometry(self):
-        '''
-        Pedometry store the meters that the sub has traveled.
-        '''
-        self.pedo_filename = os.path.join(os.path.dirname(__file__), 'pedometry.txt')
-        try:
-            with open(self.pedo_filename, 'r') as f:
-                self.pedometry = float(f.readlines()[0])
-        except IOError:
-            print "Pedometry file not found, creating it now."
-            with open(self.pedo_filename, 'w') as f:
-                f.write('0')
-                self.pedometry = 0
-        except IndexError:
-            self.pedometry = 0
-
-    def save_pedometry(self, *args):
-        print self.pedometry
-        with open(self.pedo_filename, 'w') as f:
-            f.write(str(self.pedometry))
 
     def send_wrench(self, wrench):
         self.wrench_srv(
