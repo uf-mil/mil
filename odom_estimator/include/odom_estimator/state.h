@@ -67,7 +67,6 @@ ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(_PredictNoise, ,
 ODOM_ESTIMATOR_DEFINE_MANIFOLD_END()
 class StateUpdater : public UnscentedTransformDistributionFunction<State, State, _PredictNoise> {
   sensor_msgs::Imu const imu;
-  bool const rightSideAccelFrame;
   
   GaussianDistribution<_PredictNoise> get_extra_distribution() const {
     return GaussianDistribution<_PredictNoise>(
@@ -93,8 +92,7 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
     Quaternion world_from_newbody = state.orient * oldbody_from_newbody;
     
     Vec<3> accelnograv_accelbody = extra.accel - state.accel_bias;
-    Quaternion world_from_accelbody = rightSideAccelFrame ?
-      world_from_newbody : Quaternion(state.orient);
+    Quaternion world_from_accelbody = Quaternion(state.orient);
     Vec<3> accelnograv_world = world_from_accelbody._transformVector(
       accelnograv_accelbody);
     Vec<3> accel_world = accelnograv_world + gravity::gravity(state.pos_eci);
@@ -111,9 +109,7 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
   }
 
 public:
-  StateUpdater(sensor_msgs::Imu const &imu, bool rightSideAccelFrame=false) :
-    imu(imu), rightSideAccelFrame(rightSideAccelFrame) {
-  }
+  StateUpdater(sensor_msgs::Imu const &imu) : imu(imu) { }
 };
 
 

@@ -345,21 +345,6 @@ class NodeImpl {
         *state);
     }
     
-    
-    /*void fake_depth() {
-      state = kalman_update(
-        EasyDistributionFunction<State, Vec<1>, Vec<1> >(
-          [](State const &state, Vec<1> const &measurement_noise) {
-            double measured = 0;
-            double predicted = -state.pos(2) + measurement_noise(0);
-            return scalar_matrix(measured - predicted);
-          },
-          GaussianDistribution<Vec<1> >(
-            Vec<1>::Zero(),
-            scalar_matrix(pow(0.3, 2)))),
-        *state);
-    }*/
-    
     bool setIgnoreMagnetometer(SetIgnoreMagnetometer::Request &request,
                                SetIgnoreMagnetometer::Response &response) {
         ignoreMagnetometer = request.ignore;
