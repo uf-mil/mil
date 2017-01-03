@@ -14,7 +14,7 @@ class KeepAliveListener(object):
         self.last_msg = None 
         self.sub = rospy.Subscriber('/keep_alive', Header, self.got_network_msg, queue_size=1)
 
-        self.alarm_broadcaster, self.alarm = single_alarm('network_loss', severity=3, problem_description="Network loss")
+        self.alarm_broadcaster, self.alarm = single_alarm('network-loss', severity=3, problem_description="Network loss")
         rospy.Timer(rospy.Duration(0.1), self.check)
 
     def check(self, *args):
