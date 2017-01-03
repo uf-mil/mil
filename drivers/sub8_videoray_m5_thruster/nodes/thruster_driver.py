@@ -25,12 +25,12 @@ class ThrusterDriver(object):
         '''
         self.alarm_broadcaster = AlarmBroadcaster()
         self.thruster_out_alarm = self.alarm_broadcaster.add_alarm(
-            name='thruster_out',
+            name='thruster-out',
             action_required=True,
             severity=2
         )
         self.bus_voltage_alarm = self.alarm_broadcaster.add_alarm(
-            name='bus_voltage',
+            name='bus-voltage',
             action_required=False,
             severity=2
         )

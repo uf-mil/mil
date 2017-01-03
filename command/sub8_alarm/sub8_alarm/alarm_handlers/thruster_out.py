@@ -1,9 +1,10 @@
 import rospy
+from _template import HandlerBase
 from sub8_msgs.srv import UpdateThrusterLayout
 
 
-class Handler(object):
-    alarm_name = 'thruster_out'
+class ThrusterOut(HandlerBase):
+    alarm_name = 'thruster-out'
 
     def __init__(self):
         # Keep some knowledge of which thrusters we have working
@@ -18,11 +19,17 @@ class Handler(object):
         # a priori: Each thruster name is a string, do not need to map(str, remaining_thursters)
         rospy.logwarn("Dropped thrusters: " + ', '.join(self.dropped_thrusters))
 
-    def handle(self, time_sent, parameters, alarm_name):
+    def handle(self, alarm, time_sent, parameters):
+        if parameters is None:
+            return
+
         self.drop_thruster(parameters['thruster_name'])
         self.update_layout(self.dropped_thrusters)
 
-    def cancel(self, time_sent, parameters, alarm_name):
+    def cancel(self, alarm, time_sent, parameters):
+        if parameters is None:
+            return
+
         if parameters['clear_all']:
             # Used on startup of thruster mapper to clear all missing thrusters
             self.dropped_thrusters = []

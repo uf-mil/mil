@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 import rospy
 from _template import HandlerBase
-from navigator_msgs.srv import WrenchSelect
 
-import kill_handling
 
 class NetworkLossHandler(HandlerBase):
-    alarm_name = 'network_loss'
+    alarm_name = 'network-loss'
 
     def __init__(self):
         pass
