@@ -8,6 +8,9 @@
 *.bin binary
 *.hex binary
 
+# Rviz
+*.rviz binary
+
 # CVXGEN
 gnc/sub8_controller/include/sub8_cvx/* binary
 *.dae binary
