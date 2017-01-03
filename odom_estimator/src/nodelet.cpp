@@ -14,7 +14,6 @@
 #include <eigen_conversions/eigen_msg.h>
 #include <tf_conversions/tf_eigen.h>
 
-#include <rawgps_common/Measurements.h>
 #include <uf_common/VelocityMeasurements.h>
 #include <uf_common/Float64Stamped.h>
 
@@ -27,7 +26,6 @@
 #include "odom_estimator/earth.h"
 #include "odom_estimator/magnetic.h"
 #include "odom_estimator/kalman.h"
-#include "odom_estimator/gps.h"
 #include "odom_estimator/odometry.h"
 
 namespace odom_estimator {
@@ -64,25 +62,14 @@ GaussianDistribution<State> init_state(sensor_msgs::Imu const &msg,
   return GaussianDistribution<State>(
     State(msg.header.stamp,
       msg.header.stamp,
-      std::vector<int>{},
       pos_eci,
       inertial_from_ecef(msg.header.stamp.toSec(), rel_pos_ecef),
       orient_eci,
       vel_eci,
       Vec<3>::Zero(),
       Vec<3>::Zero(),
-      101325,
-      Vec<Dynamic>::Zero(0)),
+      101325),
     tmp*tmp);
-}
-
-GaussianDistribution<State>
-init_state(sensor_msgs::Imu const &msg,
-           Vec<3> last_mag,
-           rawgps_common::Measurements const &gps,
-           Vec<3> rel_pos_ecef) {
-  GaussianDistribution<Fix> fix = get_fix(gps);
-  return init_state(msg, last_mag, fix.mean.first, fix.mean.second, rel_pos_ecef);
 }
 
 
@@ -91,7 +78,6 @@ class NodeImpl {
     boost::function<const std::string&()> getName;
     ros::NodeHandle &nh;
     ros::NodeHandle &private_nh;
-    bool have_gps;
     double start_x_ecef, start_y_ecef, start_z_ecef;
     constexpr static const double air_density = 1.225; // kg/m^3
     std::string local_frame;
@@ -103,18 +89,14 @@ class NodeImpl {
         getName(getName),
         nh(*nh_),
         private_nh(*private_nh_),
-        have_gps(true),
         local_frame("/enu"),
         ignoreMagnetometer(false),
-        gps_sub(nh, "gps", 1),
-        gps_filter(gps_sub, tf_listener, "", 10),
         dvl_sub(nh, "dvl", 1),
         dvl_filter(dvl_sub, tf_listener, "", 10),
         depth_sub(nh, "depth", 1),
         depth_filter(depth_sub, tf_listener, "", 10),
-        last_mag(boost::none), last_good_gps(boost::none), last_good_dvl(boost::none), state(boost::none) {
+        last_mag(boost::none), last_good_dvl(boost::none), state(boost::none) {
       
-      private_nh.getParam("have_gps", have_gps);
       private_nh.getParam("start_x_ecef", start_x_ecef);
       private_nh.getParam("start_y_ecef", start_y_ecef);
       private_nh.getParam("start_z_ecef", start_z_ecef);
@@ -126,7 +108,6 @@ class NodeImpl {
         boost::bind(&NodeImpl::got_mag, this, _1));
       press_sub = nh.subscribe<sensor_msgs::FluidPressure>("imu/pressure", 10,
         boost::bind(&NodeImpl::got_press, this, _1));
-      gps_filter.registerCallback(boost::bind(&NodeImpl::got_gps, this, _1));
       dvl_filter.registerCallback(boost::bind(&NodeImpl::got_dvl, this, _1));
       depth_filter.registerCallback(boost::bind(&NodeImpl::got_depth, this, _1));
       odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
@@ -147,7 +128,6 @@ class NodeImpl {
       Eigen::Map<SqMat<3> >(msg.linear_acceleration_covariance.data()) =
         pow(0.06, 2)*SqMat<3>::Identity();
       
-      gps_filter.setTargetFrame(msg.header.frame_id);
       dvl_filter.setTargetFrame(msg.header.frame_id);
       depth_filter.setTargetFrame(msg.header.frame_id);
       last_gyro = xyz2vec(msg.angular_velocity);
@@ -158,31 +138,18 @@ class NodeImpl {
         last_mag = boost::none;
         state = boost::none;
       }
-      if(state && have_gps && (last_good_gps < msg.header.stamp - ros::Duration(5.))) {
-        NODELET_ERROR("reset due to no good gps data");
-      }
       
       if(!state) {
         if(!last_mag) {
           std::cout << "mag missing" << std::endl;
           return;
         }
-        if(have_gps) {
-          if(last_good_gps && *last_good_gps > msg.header.stamp - ros::Duration(1.5) &&
-                              *last_good_gps < msg.header.stamp + ros::Duration(1.5)) {
-            state = init_state(msg, *last_mag, *last_good_gps_msg, last_rel_pos_ecef_);
-          } else {
-            std::cout << "gps missing" << std::endl;
-            return;
-          }
+        if(last_good_dvl && *last_good_dvl > msg.header.stamp - ros::Duration(1.5) &&
+                            *last_good_dvl < msg.header.stamp + ros::Duration(1.5)) {
+          state = init_state(msg, *last_mag, Vec<3>(start_x_ecef, start_y_ecef, start_z_ecef), Vec<3>::Zero(), last_rel_pos_ecef_);
         } else {
-          if(last_good_dvl && *last_good_dvl > msg.header.stamp - ros::Duration(1.5) &&
-                              *last_good_dvl < msg.header.stamp + ros::Duration(1.5)) {
-            state = init_state(msg, *last_mag, Vec<3>(start_x_ecef, start_y_ecef, start_z_ecef), Vec<3>::Zero(), last_rel_pos_ecef_);
-          } else {
-            std::cout << "dvl missing" << std::endl;
-            return;
-          }
+          std::cout << "dvl missing" << std::endl;
+          return;
         }
       } else {
         state = StateUpdater(msg)(*state);
@@ -208,16 +175,6 @@ class NodeImpl {
         << std::endl;
       //std::cout << "grav: " << state->mean.local_g << "  " << sqrt(state->cov(State::LOCAL_G, State::LOCAL_G)) << std::endl;
       //std::cout << "ground air pressure: " << state->mean.ground_air_pressure << "  " << sqrt(state->cov(State::GROUND_AIR_PRESSURE, State::GROUND_AIR_PRESSURE)) << std::endl;
-      GaussianDistribution<Vec<Dynamic>> gps_bias_dist =
-        EasyDistributionFunction<State, Vec<Dynamic>>(
-          [](State const &state, Vec<0> const &) { return state.gps_bias; }
-        )(*state);
-      for(unsigned int i = 0; i < state->mean.gps_prn.size(); i++) {
-        std::cout << state->mean.gps_prn[i]
-          << " " << gps_bias_dist.mean(i)
-          << " " << sqrt(gps_bias_dist.cov(i, i))
-          << std::endl;
-      }
       std::cout << std::endl;
       
 
@@ -274,12 +231,6 @@ class NodeImpl {
         
         tf::vectorEigenToMsg(accel_bias_dist.mean, output.accel_bias);
         tf::vectorEigenToMsg(accel_bias_dist.cov.diagonal().array().sqrt().eval(), output.accel_bias_stddev);
-        
-        for(unsigned int i = 0; i < state->mean.gps_prn.size(); i++) {
-          output.gps_bias_prns.push_back(state->mean.gps_prn[i]);
-          output.gps_bias_biases.push_back(gps_bias_dist.mean(i));
-          output.gps_bias_stddevs.push_back(sqrt(gps_bias_dist.cov(i, i)));
-        }
         
         info_pub.publish(output);
       }
@@ -338,71 +289,6 @@ class NodeImpl {
             Vec<1>::Zero(),
             scalar_matrix(msg.variance ? msg.variance : pow(10, 2)))),
         *state);*/
-    }
-    
-    void got_gps(const rawgps_common::MeasurementsConstPtr &msgp) {
-      if(!have_gps) return;
-      rawgps_common::Measurements msg = *msgp;
-      
-      tf::StampedTransform transform;
-      try {
-        tf_listener.lookupTransform(local_frame_id,
-          msg.header.frame_id, msg.header.stamp, transform);
-      } catch (tf::TransformException ex) {
-        NODELET_ERROR("Error in got_gps: %s", ex.what());
-        return;
-      }
-      Vec<3> local_gps_pos; tf::vectorTFToEigen(transform.getOrigin(), local_gps_pos);
-      
-      if(msg.satellites.size() >= 4) {
-        last_good_gps = msg.header.stamp;
-        last_good_gps_msg = msg;
-        std::cout << "got gps" << std::endl;
-      } else {
-        std::cout << "bad gps" << std::endl;
-      }
-      
-      if(!state) return;
-      
-      std::vector<int> new_prns;
-      std::vector<rawgps_common::Satellite> const &sats = msg.satellites;
-      for(unsigned int i = 0; i < sats.size(); i++) {
-        rawgps_common::Satellite const &sat = sats[i];
-        if(std::find(state->mean.gps_prn.begin(), state->mean.gps_prn.end(), sat.prn) == state->mean.gps_prn.end()) {
-          new_prns.push_back(sat.prn);
-        }
-      }
-      
-      state = EasyDistributionFunction<State, State, Vec<Dynamic> >(
-        [&new_prns](State const &state, Vec<Dynamic> const &new_bias) {
-          State new_state = state;
-          for(unsigned int i = 0; i < new_prns.size(); i++) {
-            new_state.gps_prn.push_back(new_prns[i]);
-          }
-          new_state.gps_bias = 
-            (Vec<Dynamic>(state.gps_bias.rows()+new_bias.rows())
-              << state.gps_bias, new_bias).finished();
-          return new_state;
-        },
-        GaussianDistribution<Vec<Dynamic> >(
-          Vec<Dynamic>::Zero(new_prns.size()),
-          pow(.1, 2)*Vec<Dynamic>::Ones(new_prns.size()).asDiagonal())
-      )(*state);
-      
-      state = kalman_update(
-        GPSErrorObserver(msg, state->mean.gps_prn, local_gps_pos, *last_gyro),
-        *state);
-      
-      /*if(state->mean.gps_prn.size()) {
-        state = kalman_update(
-          EasyDistributionFunction<State, Vec<1>, Vec<1> >(
-            [](State const &state, Vec<1> const &measurement_noise) {
-              return scalar_matrix(state.gps_bias.sum() / state.gps_prn.size()
-                - measurement_noise(0));
-            },
-            GaussianDistribution<Vec<1> >(Vec<1>::Zero(), scalar_matrix(pow(.1, 2)))),
-          *state);
-      }*/
     }
     
     void got_dvl(const uf_common::VelocityMeasurementsConstPtr &msgp) {
@@ -511,8 +397,6 @@ class NodeImpl {
     ros::Subscriber imu_sub;
     ros::Subscriber mag_sub;
     ros::Subscriber press_sub;
-    message_filters::Subscriber<rawgps_common::Measurements> gps_sub;
-    tf::MessageFilter<rawgps_common::Measurements> gps_filter;
     message_filters::Subscriber<uf_common::VelocityMeasurements> dvl_sub;
     tf::MessageFilter<uf_common::VelocityMeasurements> dvl_filter;
     message_filters::Subscriber<uf_common::Float64Stamped> depth_sub;
@@ -522,8 +406,6 @@ class NodeImpl {
     ros::Publisher info_pub;
     
     boost::optional<Vec<3> > last_mag;
-    boost::optional<ros::Time> last_good_gps;
-    boost::optional<rawgps_common::Measurements> last_good_gps_msg;
     boost::optional<ros::Time> last_good_dvl;
     boost::optional<GaussianDistribution<State> > state;
     boost::optional<Vec<3> > last_gyro;

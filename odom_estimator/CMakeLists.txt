@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(odom_estimator)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS roscpp pluginlib rawgps_common sensor_msgs eigen_conversions geometry_msgs tf nodelet tf_conversions std_msgs message_generation cmake_modules uf_common)
+find_package(catkin REQUIRED COMPONENTS roscpp pluginlib sensor_msgs eigen_conversions geometry_msgs tf nodelet tf_conversions std_msgs message_generation cmake_modules uf_common)
 # CATKIN_MIGRATION: removed during catkin migration
 # cmake_minimum_required(VERSION 2.4.6)
 
@@ -55,7 +55,7 @@ generate_messages(
 # TODO: fill in what other packages will need to use this package
 catkin_package(
     DEPENDS Eigen # TODO
-    CATKIN_DEPENDS roscpp pluginlib rawgps_common sensor_msgs eigen_conversions geometry_msgs tf uf_common nodelet tf_conversions std_msgs message_runtime
+    CATKIN_DEPENDS roscpp pluginlib sensor_msgs eigen_conversions geometry_msgs tf uf_common nodelet tf_conversions std_msgs message_runtime
     INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS} include# TODO include
     LIBRARIES # TODO
 )
@@ -77,14 +77,6 @@ add_executable(test_unscented_transform src/test_unscented_transform.cpp)
 target_link_libraries(test_unscented_transform ${catkin_LIBRARIES})
 add_dependencies(test_unscented_transform ${catkin_EXPORTED_TARGETS})
 set_target_properties(test_unscented_transform PROPERTIES COMPILE_FLAGS -std=c++0x)
-add_executable(test_gps src/test_gps.cpp)
-target_link_libraries(test_gps ${catkin_LIBRARIES})
-add_dependencies(test_gps ${catkin_EXPORTED_TARGETS})
-set_target_properties(test_gps PROPERTIES COMPILE_FLAGS -std=c++0x)
-add_executable(test_dual_gps src/test_dual_gps.cpp)
-target_link_libraries(test_dual_gps ${catkin_LIBRARIES})
-add_dependencies(test_dual_gps ${catkin_EXPORTED_TARGETS})
-set_target_properties(test_dual_gps PROPERTIES COMPILE_FLAGS -std=c++0x)
 add_executable(test_mag src/test_mag.cpp)
 target_link_libraries(test_mag ${catkin_LIBRARIES})
 add_dependencies(test_mag ${catkin_EXPORTED_TARGETS})

@@ -17,7 +17,6 @@
   <!-- Dependencies needed to compile this package. -->
   <build_depend>roscpp</build_depend>
   <build_depend>pluginlib</build_depend>
-  <build_depend>rawgps_common</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>eigen_conversions</build_depend>
   <build_depend>geometry_msgs</build_depend>
@@ -32,7 +31,6 @@
   <!-- Dependencies needed after this package is compiled. -->
   <run_depend>roscpp</run_depend>
   <run_depend>pluginlib</run_depend>
-  <run_depend>rawgps_common</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>eigen_conversions</run_depend>
   <run_depend>geometry_msgs</run_depend>
@@ -46,7 +44,6 @@
   <!-- Dependencies needed only for running tests. -->
   <!-- <test_depend>roscpp</test_depend> -->
   <!-- <test_depend>pluginlib</test_depend> -->
-  <!-- <test_depend>rawgps_common</test_depend> -->
   <!-- <test_depend>sensor_msgs</test_depend> -->
   <!-- <test_depend>eigen_conversions</test_depend> -->
   <!-- <test_depend>geometry_msgs</test_depend> -->

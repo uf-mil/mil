@@ -18,8 +18,7 @@ namespace odom_estimator {
 ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(State,
   (ros::Time, t)
   (ros::Time, t_start)
-  (std::vector<int>, gps_prn), // XXX assert size == gps_bias.rows() somehow
-  
+,
   (Vec<3>, pos_eci)
   (Vec<3>, rel_pos_eci)
   (QuaternionManifold, orient)
@@ -27,7 +26,6 @@ ODOM_ESTIMATOR_DEFINE_MANIFOLD_BEGIN(State,
   (Vec<3>, gyro_bias)
   (Vec<3>, accel_bias)
   (WrappedScalar, ground_air_pressure)
-  (Vec<Dynamic>, gps_bias)
 )
   Vec<3> getPosECI(Vec<3> body_point=Vec<3>::Zero()) const {
     return pos_eci + orient._transformVector(body_point);
@@ -109,15 +107,13 @@ class StateUpdater : public UnscentedTransformDistributionFunction<State, State,
     return State(
       imu.header.stamp,
       state.t_start,
-      state.gps_prn,
       state.pos_eci + dt * state.vel + dt*dt/2 * accel_world,
       state.rel_pos_eci + dt * state.vel + dt*dt/2 * accel_world,
       world_from_newbody,
       state.vel + dt * accel_world,
       state.gyro_bias + sqrt(dt) * extra.gyro_bias_noise,
       state.accel_bias + sqrt(dt) * extra.accel_bias_noise,
-      state.ground_air_pressure + sqrt(dt) * extra.ground_air_pressure_noise,
-      state.gps_bias);
+      state.ground_air_pressure + sqrt(dt) * extra.ground_air_pressure_noise);
   }
 
 public:
