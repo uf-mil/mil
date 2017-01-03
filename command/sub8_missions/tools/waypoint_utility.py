@@ -18,7 +18,7 @@ import geometry_msgs.msg as geom_msgs
 
 class Spacenav(object):
     _position_gain = np.array([0.03, 0.03, 0.03])
-    _orientation_gain = np.array([0.03, 0.03, 0.03])
+    _orientation_gain = np.array([0.001, 0.001, 0.03])
 
     def __init__(self):
         '''
@@ -82,11 +82,6 @@ class Spacenav(object):
         self.target_position += self.target_orientation.dot(self._position_gain * linear)
         self.diff_position = np.subtract(self.cur_position, self.target_position)
 
-        if self.mode == '2d':
-            # Ignore 6-dof shenanigans
-            angular[0] = 0
-            angular[1] = 0
-
         gained_angular = self._orientation_gain * angular
         skewed = sub8_utils.skew_symmetric_cross(gained_angular)
         rotation = linalg.expm(skewed)
@@ -131,7 +126,6 @@ class Spacenav(object):
             self.target_position = self.cur_position
 
         if left:
-            print 'left'
             if self.target_orientation_quaternion is not None:
                 self.moveto_action(self.target_position, self.target_orientation_quaternion)
             rospy.sleep(1.0)
@@ -140,6 +134,10 @@ class Spacenav(object):
         self.client.cancel_goal()
         rospy.logwarn("Going to waypoint")
         rospy.logwarn("Found server")
+
+        # Stay under the water
+        if position[2] > 0:
+            position[2] = -0.5
 
         goal = uf_common_msgs.MoveToGoal(
             header=sub8_utils.make_header('/map'),
