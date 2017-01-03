@@ -10,7 +10,7 @@ MAX_TRIES = 3
 
 @util.cancellableInlineCallbacks
 def run(sub):
-    start_search = yield sub._node_handle.get_service_client('/vision/buoys/search', SetBool)
+    start_search = yield sub.nh.get_service_client('/vision/buoys/search', SetBool)
     yield start_search(SetBoolRequest(data=True))
 
     print "BUOY MISSION - Executing search pattern"
@@ -82,9 +82,9 @@ def bump_buoy(sub, color):
         dist = np.linalg.norm(full_transform._p - sub.pose.position) * 0.5
         print "BUOY MISSION - {}m away".format(dist)
         yield sub.move.look_at_without_pitching(full_transform._p).go(speed=SPEED)
-        yield sub._node_handle.sleep(0.5)
+        yield sub.nh.sleep(0.5)
         yield sub.move.forward(dist).go(speed=SPEED)
-        yield sub._node_handle.sleep(0.5)
+        yield sub.nh.sleep(0.5)
 
     # Now we are 1m away from the buoy
     print "BUOY MISSION - bumping!"
