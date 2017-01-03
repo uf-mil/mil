@@ -135,6 +135,9 @@ class PoseEditor(object):
         self.position = position
         self.orientation = orientation
 
+    def __str__(self):
+        return "p: {}, q: {}".format(self.position, self.orientation)
+
     @property
     def _rot(self):
         return transformations.quaternion_matrix(self.orientation)[:3, :3]

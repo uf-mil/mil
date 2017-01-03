@@ -1,4 +1,5 @@
 # flake8: noqa
-import tx_sub
+import sub_singleton as sub_singleton
 import pose_editor
-from tx_sub import Searcher
+
+from sub_singleton import Searcher

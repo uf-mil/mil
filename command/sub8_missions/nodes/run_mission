@@ -6,7 +6,7 @@ import argparse
 from twisted.internet import defer, reactor
 import exceptions
 import txros
-from sub8 import tx_sub
+from sub8 import sub_singleton
 import missions
 
 
@@ -51,7 +51,7 @@ def main():
             sub.set_test_mode()
         else:
             print 'Mission runner waiting for pose to be available'
-            yield sub.last_pose()
+            yield sub.tx_pose()
 
         print 'Mission runner got pose'
         for mission in mission_list:

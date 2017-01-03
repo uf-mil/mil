@@ -1,0 +1,103 @@
+#!/usr/bin/env python
+from txros import util, NodeHandle
+from twisted.internet import defer, reactor
+
+import numpy as np
+import sub8_tools
+from sub8 import sub_singleton
+from geometry_msgs.msg import PoseStamped, PointStamped
+import nav_missions
+
+import argparse
+
+UNITS = {'m': 1, 'ft': 0.3048, 'yard': 0.9144, 'rad': 1, 'deg': 0.0174533}
+SHORTHAND = {"f": "forward", "b": "backward", "l": "left", "r": "right", "yl": "yaw_left", "yr": "yaw_right"}
+
+ros_t = lambda d: util.genpy.Duration(d)
+fprint = sub8_tools.fprint
+
+@util.cancellableInlineCallbacks
+def main(args):
+    nh, _ = yield NodeHandle.from_argv_with_remaining("move_command", anonymous=True)
+    available_missions = [mission_name for mission_name in dir(nav_missions) if not mission_name.startswith('_')]
+
+    sub = yield sub_singleton._Sub(nh)._init()
+    if args.test:
+        fprint("Running in test mode", msg_color='yellow', title="MOVE_COMMAND")
+        sub.set_test_mode()
+
+    fprint("Waiting for odom...", title="MOVE_COMMAND")
+    yield sub.tx_pose()
+    fprint("Odom found!", msg_color='green', title="MOVE_COMMAND")
+
+    action_kwargs = {'speed': float(args.speed)}
+
+    if args.command == 'custom':
+        # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
+        fprint("Moving with the command: {}".format(args.argument), title="MOVE_COMMAND")
+        res = yield eval("n.move.{}.go(move_type='{move_type}')".format(args.argument, **action_kwargs))
+
+    elif args.command in ['zrp', 'level_off']:
+        fprint("Zeroing roll and pitch", title="MOVE_COMMAND")
+        res = yield sub.move.zero_roll_and_pitch().go(**action_kwargs)
+
+    elif args.command == "stop":
+        fprint("Stopping...", title="MOVE_COMMAND")
+        if args.zrp:
+            res = yield sub.move.forward(0).zero_roll_and_pitch().go(**action_kwargs)
+        else:
+            res = yield sub.move.forward(0).go(**action_kwargs)
+
+    elif args.command == 'rviz':
+        fprint("Moving to last published rviz position", title="MOVE_COMMAND")
+        sub = nh.subscribe("/rviz_goal", PoseStamped)
+        target_pose = yield util.wrap_time_notice(sub.get_next_message(), 2,  "Rviz goal")
+        if args.zrp:
+            res = yield sub.move.to_pose(target_pose).zero_roll_and_pitch().go(**action_kwargs)
+        else:
+            res = yield sub.move.to_pose(target_pose).go(**action_kwargs)
+    else:
+        # Get the command from shorthand if it's there
+        command = SHORTHAND.get(args.command, args.command)
+        movement = getattr(sub.move, command)
+
+        trans_move = command[:3] != "yaw" and command[:5] != "pitch" and command[:4] != "roll"
+        unit = "m" if trans_move else "rad"
+
+        amount = args.argument
+        # See if there's a non standard unit at the end of the argument
+        if not args.argument[-1].isdigit():
+            last_digit_index = [i for i, c in enumerate(args.argument) if c.isdigit()][-1] + 1
+            amount = args.argument[:last_digit_index]
+            unit = args.argument[last_digit_index:]
+        amout = float(amount)
+
+        extra = "and zeroing pitch and roll" if args.zrp else ""
+        fprint("{}ing {}{} {}".format(command, amount, unit, extra), title="MOVE_COMMAND")
+        goal = movement(float(amount) * UNITS.get(unit, 1))
+        if args.zrp:
+            res = yield goal.zero_roll_and_pitch().go(**action_kwargs)
+        else:
+            res = yield goal.go(**action_kwargs)
+
+    defer.returnValue(reactor.stop())
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Command Line Mission Runner',
+        usage='Pass any pose editor command with an argument. \n\t forward 1 (moves forward 1 meter) \n\t backward 2ft (moves backward 2 feet), ')
+    parser.add_argument('command', type=str,
+        help='Pose editor command to run')
+    parser.add_argument('argument', type=str, default=0,
+        help='An argument to pass to the command (distance or angle usally). Optionally a unit can be added if a non-standard unit is desired.')
+    parser.add_argument('-m', '--movetype', type=str, default='drive',
+        help='Move type. See lqrrt documentation for info on how to use this.')
+    parser.add_argument('-t', '--test', action='store_true',
+        help="Runs the mission in test mode and not move the sub.")
+    parser.add_argument('-s', '--speed', type=float, default=0.2,
+        help="How fast to execute the move.")
+    parser.add_argument('-z', '--zrp', action='store_true',
+        help="Make end goal have zero roll and pitch.")
+    args = parser.parse_args()
+
+    reactor.callWhenRunning(lambda: main(args))
+    reactor.run()
