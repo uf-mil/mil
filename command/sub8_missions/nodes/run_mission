@@ -6,9 +6,12 @@ import argparse
 from twisted.internet import defer, reactor
 import exceptions
 import txros
+import sub8_tools
 from sub8 import sub_singleton
 import missions
 
+
+fprint = sub8_tools.text_effects.FprintFactory(title="MISSION_RUNNER").fprint
 
 @txros.util.cancellableInlineCallbacks
 def main():
@@ -50,10 +53,10 @@ def main():
         if args.test:
             sub.set_test_mode()
         else:
-            print 'Mission runner waiting for pose to be available'
+            fprint('Waiting for odom...')
             yield sub.tx_pose()
 
-        print 'Mission runner got pose'
+        fprint('Odom found!', msg_color='green')
         for mission in mission_list:
             yield mission.run(sub).addErrback(catch_error)
             yield txros.util.wall_sleep(1.0)  # Seems to make things behave more nicely
@@ -62,11 +65,12 @@ def main():
         traceback.print_exc()
 
     finally:
-        print 'Finishing mission execution'
+        fprint('Finishing mission execution')
         reactor.stop()
 
 
 def catch_error(error):
+    fprint("Error caught!", msg_color='red')
     print 'tx traceback'
     print '>------------------------------<'
     print error.printTraceback()

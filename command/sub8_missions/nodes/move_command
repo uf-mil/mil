@@ -14,7 +14,7 @@ UNITS = {'m': 1, 'ft': 0.3048, 'yard': 0.9144, 'rad': 1, 'deg': 0.0174533}
 SHORTHAND = {"f": "forward", "b": "backward", "l": "left", "r": "right", "yl": "yaw_left", "yr": "yaw_right"}
 
 ros_t = lambda d: util.genpy.Duration(d)
-fprint = sub8_tools.fprint
+fprint = sub8_tools.text_effects.FprintFactory(title="MOVE_COMMAND").fprint
 
 @util.cancellableInlineCallbacks
 def main(args):
@@ -23,39 +23,31 @@ def main(args):
 
     sub = yield sub_singleton._Sub(nh)._init()
     if args.test:
-        fprint("Running in test mode", msg_color='yellow', title="MOVE_COMMAND")
+        fprint("Running in test mode", msg_color='yellow')
         sub.set_test_mode()
 
-    fprint("Waiting for odom...", title="MOVE_COMMAND")
+    fprint("Waiting for odom...")
     yield sub.tx_pose()
-    fprint("Odom found!", msg_color='green', title="MOVE_COMMAND")
+    fprint("Odom found!", msg_color='green')
 
     action_kwargs = {'speed': float(args.speed)}
 
     if args.command == 'custom':
         # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
-        fprint("Moving with the command: {}".format(args.argument), title="MOVE_COMMAND")
+        fprint("Moving with the command: {}".format(args.argument))
         res = yield eval("sub.move.{}.go()".format(args.argument, **action_kwargs))
 
     elif args.command in ['zrp', 'level_off']:
-        fprint("Zeroing roll and pitch", title="MOVE_COMMAND")
+        fprint("Zeroing roll and pitch")
         res = yield sub.move.zero_roll_and_pitch().go(**action_kwargs)
 
     elif args.command == "stop":
-        fprint("Stopping...", title="MOVE_COMMAND")
+        fprint("Stopping...")
         if args.zrp:
             res = yield sub.move.forward(0).zero_roll_and_pitch().go(**action_kwargs)
         else:
             res = yield sub.move.forward(0).go(**action_kwargs)
 
-    elif args.command == 'rviz':
-        fprint("Moving to last published rviz position", title="MOVE_COMMAND")
-        sub = nh.subscribe("/rviz_goal", PoseStamped)
-        target_pose = yield util.wrap_time_notice(sub.get_next_message(), 2,  "Rviz goal")
-        if args.zrp:
-            res = yield sub.move.to_pose(target_pose).zero_roll_and_pitch().go(**action_kwargs)
-        else:
-            res = yield sub.move.to_pose(target_pose).go(**action_kwargs)
     else:
         # Get the command from shorthand if it's there
         command = SHORTHAND.get(args.command, args.command)
@@ -73,7 +65,7 @@ def main(args):
         amout = float(amount)
 
         extra = "and zeroing pitch and roll" if args.zrp else ""
-        fprint("{}ing {}{} {}".format(command, amount, unit, extra), title="MOVE_COMMAND")
+        fprint("{}ing {}{} {}".format(command, amount, unit, extra))
         goal = movement(float(amount) * UNITS.get(unit, 1))
         if args.zrp:
             res = yield goal.zero_roll_and_pitch().go(**action_kwargs)
