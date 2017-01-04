@@ -3,59 +3,59 @@
     busses:
       - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if01-port0
         thrusters:
-          FLV: {
-            node_id: 10,
-            frame_id: /base_link,
-            position: [0.1583, 0.169, 0.0142],
-            direction: [0, 0, -1]
-          }
-          FLL: {
-            node_id: 11,
+          FLH: {
+            node_id: 0,
             frame_id: /base_link,
             position: [0.2678, 0.2795, 0],
             direction: [-0.866, 0.5, 0]
           }
+          FLV: {
+            node_id: 1,
+            frame_id: /base_link,
+            position: [0.1583, 0.169, 0.0142],
+            direction: [0, 0, -1]
+          }
       - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if00-port0
         thrusters:
-          FRL: {
-            node_id: 69,
+          FRH: {
+            node_id: 2,
             frame_id: /base_link,
             position: [0.2678, -0.2795, 0],
             direction: [0.866, 0.5, 0]
           }  
           FRV: {
-            node_id: 12,
+            node_id: 3,
             frame_id: /base_link,
             position: [0.1583, -0.169, 0.0142],
             direction: [0, 0, -1]
           }
       - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if02-port0
         thrusters:
-          BLV: {
-            node_id: 14,
-            frame_id: /base_link,
-            position: [-0.1583, 0.169, 0.0142],
-            direction: [0, 0, 1]
-          } 
-          BLL: {
-            node_id: 15,
+          BLH: {
+            node_id: 4,
             frame_id: /base_link,
             position: [-0.2678, 0.2795, 0],
             direction: [0.866, 0.5, 0]
           }
+          BLV: {
+            node_id: 5,
+            frame_id: /base_link,
+            position: [-0.1583, 0.169, 0.0142],
+            direction: [0, 0, 1]
+          } 
       - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if03-port0
         thrusters:
-          BRV: {
-            node_id: 16,
-            frame_id: /base_link,
-            position: [-0.1583, -0.169, 0.0142],
-            direction: [0, 0, 1]
-          }
-          BRL: {
-            node_id: 17,
+          BRH: {
+            node_id: 6,
             frame_id: /base_link,
             position: [-0.2678, -0.2795, 0],
             direction: [0.866, -0.5, 0]
+          } 
+          BRV: {
+            node_id: 7,
+            frame_id: /base_link,
+            position: [-0.1583, -0.169, 0.0142],
+            direction: [0, 0, 1]
           }
   </rosparam>
 
@@ -64,13 +64,13 @@
   <!-- NOTE: BOUNDS ARE FOR SIMULATION ONLY -->
   <rosparam>
     thrusters:
-      thruster_names: [FLV, FLL, FRV, FRL, BLV, BLL, BRV, BRL]
+      thruster_names: [FLV, FLH, FRV, FRH, BLV, BLH, BRV, BRH]
       FLV:
         position: [0.1583, 0.169, 0.0142]
         direction: [0, 0, -1]
         bounds: [-90, 90]
 
-      FLL:
+      FLH:
         position: [0.2678, 0.2795, 0]
         direction: [-0.866, 0.5, 0]
         bounds: [-90, 90]
@@ -80,7 +80,7 @@
         direction: [0, 0, -1]
         bounds: [-90, 90]
 
-      FRL:
+      FRH:
         position: [0.2678, -0.2795, 0]
         direction: [-0.866, -0.5, 0]
         bounds: [-90, 90]
@@ -90,7 +90,7 @@
         direction: [0, 0, 1]
         bounds: [-90, 90]
 
-      BLL:
+      BLH:
         position: [-0.2678, 0.2795, 0]
         direction: [0.866, 0.5, 0]
         bounds: [-90, 90]
@@ -100,7 +100,7 @@
         direction: [0, 0, 1]
         bounds: [-90, 90]
 
-      BRL:
+      BRH:
         position: [-0.2678, -0.2795, 0]
         direction: [0.866, -0.5, 0]
         bounds: [-90, 90]

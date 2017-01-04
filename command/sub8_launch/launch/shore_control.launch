@@ -4,10 +4,9 @@
   <node pkg="spacenav_node" type="spacenav_node" name="spacenav_node" />
   <node pkg="sub8_missions" type="waypoint_utility.py" name="waypoint_utility" args="$(arg mode)"/>
 
-  <node pkg="sub8_alarm" type="network_keepalive.py" name="network_keepalive" />
+  <node pkg="sub8_alarm" type="keepalive_broadcaster.py" name="keepalive_broadcaster" />
 
   <node pkg="sub8_missions" type="rviz_visualizer.py" name="rviz_visualizer" />
-
 
   <!-- Load model into rviz -->
   <param name="robot_description" command="cat $(find sub8_missions)/tools/sub8/sub8.xml" />

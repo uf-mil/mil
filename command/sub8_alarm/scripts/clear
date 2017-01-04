@@ -3,7 +3,7 @@ import rospy
 import sys
 import argparse
 from sub8_alarm import single_alarm, AlarmListener, AlarmBroadcaster
-from sub8_ros_tools.init_helpers import wait_for_subscriber
+from sub8_ros_tools import wait_for_subscriber
 
 
 if __name__ == '__main__':
@@ -20,7 +20,7 @@ if __name__ == '__main__':
         listener = AlarmListener()
         broadcaster = AlarmBroadcaster()
         alarms = []
-        rospy.logwarn("Waiting for alarms...")
+        rospy.loginfo("Waiting for alarms...")
         rospy.sleep(1.0)
 
         rospy.logwarn(listener.known_alarms)
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     else:
         broadcaster, alarm = single_alarm(args.alarm_name, action_required=True)
 
-        rospy.logwarn("Creating alarm publisher....")
+        rospy.loginfo("Creating alarm publisher....")
         # Wait until subscription lands
         rospy.sleep(0.5)
         alarm.clear_alarm()

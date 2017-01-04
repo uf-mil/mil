@@ -51,8 +51,13 @@ class ThrusterPort(object):
                 self.motor_ids_on_port.append(guess_id)
 
         # Load thruster configurations and check if the requested thruster exists on this port
+        self.missing_thrusters = []
         for thruster_name, thruster_info in port_info['thrusters'].items():
-            self.load_thruster_config(thruster_name, thruster_info)
+            try:
+                self.load_thruster_config(thruster_name, thruster_info)
+            except IOError:
+                self.missing_thrusters.append(thruster_name)
+                continue
 
     def connect_port(self, port_name):
         '''Connect to and return a serial port'''
