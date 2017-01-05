@@ -90,7 +90,7 @@ class _VisionProxies(object):
     Add vision proxy names and roots to the yaml config file and acccess them through here, ex:
 
         >>> yield sub.vision_proxies.buoy_finder.start()
-        >>> pose_2d = yield sub.vision_proxoes.buoy_finder.get_2D('red')
+        >>> pose_2d = yield sub.vision_proxies.buoy_finder.get_2D('red')
 
     '''
     def __init__(self, nh, file_name):

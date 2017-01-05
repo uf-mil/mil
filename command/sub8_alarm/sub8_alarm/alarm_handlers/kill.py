@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 import rospy
+from _template import HandlerBase
 from kill_handling.broadcaster import KillBroadcaster
 
 
-class Handler(object):
+class Handler(HandlerBase):
     alarm_name = 'kill'
 
     def __init__(self):

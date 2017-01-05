@@ -7,7 +7,7 @@ from . import alarm_handlers
 from alarm_handlers._template import HandlerBase
 
 meta_alarms_inv = {
-    'kill': ('network-loss', 'power-failure', 'battery-voltage', 'odom-loss'),
+    'kill': ('network-loss', 'power-failure', 'battery-voltage', 'odom-loss', 'height-over-bottom'),
 }
 
 meta_alarms = {}
