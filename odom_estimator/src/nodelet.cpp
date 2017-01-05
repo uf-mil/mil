@@ -277,9 +277,7 @@ class NodeImpl {
         return;
       }
       Vec<3> local_dvl_pos; tf::vectorTFToEigen(transform.getOrigin(), local_dvl_pos);
-      Quaternion local_dvl_orientation; tf::quaternionTFToEigen(transform.getRotation(), local_dvl_orientation); 
-      
-      if(!state) return;
+      Quaternion local_dvl_orientation; tf::quaternionTFToEigen(transform.getRotation(), local_dvl_orientation);
       
       std::vector<uf_common::VelocityMeasurement> good;
       for(unsigned int i = 0; i < msg.velocity_measurements.size(); i++) {
@@ -295,6 +293,8 @@ class NodeImpl {
       } else {
         std::cout << "bad dvl" << std::endl;
       }
+      
+      if(!state) return;
       
       state = kalman_update(
         EasyDistributionFunction<State, Vec<Dynamic>, Vec<Dynamic> >(
