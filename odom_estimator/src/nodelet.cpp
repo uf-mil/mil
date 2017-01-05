@@ -88,6 +88,8 @@ class NodeImpl {
         private_nh(*private_nh_),
         local_frame("/enu"),
         ignoreMagnetometer(false),
+        mag_sub(nh, "imu/mag", 1),
+        mag_filter(mag_sub, tf_listener, "", 10),
         dvl_sub(nh, "dvl", 1),
         dvl_filter(dvl_sub, tf_listener, "", 10),
         depth_sub(nh, "depth", 1),
@@ -101,8 +103,7 @@ class NodeImpl {
       
       imu_sub = nh.subscribe<sensor_msgs::Imu>("imu/data_raw", 10,
         boost::bind(&NodeImpl::got_imu, this, _1));
-      mag_sub = nh.subscribe<sensor_msgs::MagneticField>("imu/mag", 10,
-        boost::bind(&NodeImpl::got_mag, this, _1));
+      mag_filter.registerCallback(boost::bind(&NodeImpl::got_mag, this, _1));
       dvl_filter.registerCallback(boost::bind(&NodeImpl::got_dvl, this, _1));
       depth_filter.registerCallback(boost::bind(&NodeImpl::got_depth, this, _1));
       odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
@@ -123,6 +124,7 @@ class NodeImpl {
       Eigen::Map<SqMat<3> >(msg.linear_acceleration_covariance.data()) =
         pow(0.06, 2)*SqMat<3>::Identity();
       
+      mag_filter.setTargetFrame(msg.header.frame_id);
       dvl_filter.setTargetFrame(msg.header.frame_id);
       depth_filter.setTargetFrame(msg.header.frame_id);
       last_gyro = xyz2vec(msg.angular_velocity);
@@ -233,6 +235,16 @@ class NodeImpl {
     void got_mag(const sensor_msgs::MagneticFieldConstPtr &msgp) {
       const sensor_msgs::MagneticField &msg = *msgp;
       
+      tf::StampedTransform transform;
+      try {
+        tf_listener.lookupTransform(local_frame_id,
+          msg.header.frame_id, msg.header.stamp, transform);
+      } catch (tf::TransformException ex) {
+        NODELET_ERROR("Error in got_mag: %s", ex.what());
+        return;
+      }
+      Quaternion local_mag_orientation; tf::quaternionTFToEigen(transform.getRotation(), local_mag_orientation);
+      
       last_mag = xyz2vec(msg.magnetic_field);
       
       if(!state) return;
@@ -248,12 +260,12 @@ class NodeImpl {
       Vec<3> mag_eci = magnetic_model.getField(state->mean.pos_eci, state->mean.t.toSec());
       state = kalman_update(
         EasyDistributionFunction<State, Vec<1>, Vec<3> >(
-          [&msg, &mag_eci, this](State const &state, Vec<3> const &measurement_noise) {
+          [&msg, &mag_eci, &local_mag_orientation, this](State const &state, Vec<3> const &measurement_noise) {
             SqMat<3> enu_from_ecef = enu_from_ecef_mat(state.getPosECEF());
-            Vec<3> predicted = state.orient.conjugate()._transformVector(mag_eci) + measurement_noise;
+            Vec<3> predicted = state.orient.conjugate()._transformVector(mag_eci) + local_mag_orientation._transformVector(measurement_noise);
             Vec<3> predicted_enu = enu_from_ecef * state.getOrientECEF()._transformVector(predicted);
             double predicted_angle = atan2(predicted_enu(1), predicted_enu(0));
-            Vec<3> measured_enu = enu_from_ecef * state.getOrientECEF()._transformVector(xyz2vec(msg.magnetic_field));
+            Vec<3> measured_enu = enu_from_ecef * state.getOrientECEF()._transformVector(local_mag_orientation._transformVector(xyz2vec(msg.magnetic_field)));
             double measured_angle = atan2(measured_enu(1), measured_enu(0));
             double error_angle = measured_angle - predicted_angle;
             double pi = boost::math::constants::pi<double>();
@@ -354,7 +366,8 @@ class NodeImpl {
     
     tf::TransformListener tf_listener;
     ros::Subscriber imu_sub;
-    ros::Subscriber mag_sub;
+    message_filters::Subscriber<sensor_msgs::MagneticField> mag_sub;
+    tf::MessageFilter<sensor_msgs::MagneticField> mag_filter;
     message_filters::Subscriber<uf_common::VelocityMeasurements> dvl_sub;
     tf::MessageFilter<uf_common::VelocityMeasurements> dvl_filter;
     message_filters::Subscriber<uf_common::Float64Stamped> depth_sub;
