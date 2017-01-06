@@ -1,0 +1,9 @@
+lias sub="cd ~/mil_ws/src/Sub8"
+alias subm="rosrun sub8_missions run_mission"
+alias subc="rosrun sub8_missions move_command"
+alias araise='rosrun sub8_alarm raise'
+alias aclear='rosrun sub8_alarm clear'
+alias rsub="export ROS_MASTER_URI='http://192.168.37.60:11311';set_ros_ip"
+alias sshsub="ssh sub8@192.168.37.60 -Y"
+alias cm='catkin_make -C ~/mil_ws -j8'
+alias killgazebo="killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient"
