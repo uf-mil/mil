@@ -27,11 +27,11 @@ namespace sub {
 
 /// UTILS
 
-template <typename _Matrix_Type_>
-bool pseudoInverse(
-    const _Matrix_Type_ &a, _Matrix_Type_ &result,
-    double epsilon =
-        std::numeric_limits<typename _Matrix_Type_::Scalar>::epsilon());
+//template <typename _Matrix_Type_>
+//bool pseudoInverse(
+//    const _Matrix_Type_ &a, _Matrix_Type_ &result,
+//    double epsilon =
+//        std::numeric_limits<typename _Matrix_Type_::Scalar>::epsilon());
 
 typedef std::vector<cv::Point> Contour;
 
