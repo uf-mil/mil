@@ -85,6 +85,7 @@ struct Node {
   ros::Subscriber odom_sub;
   actionlib::SimpleActionServer<uf_common::MoveToAction> actionserver;
   ros::Publisher trajectory_pub;
+  ros::Publisher trajectory_vis_pub;
   ros::Publisher waypoint_pose_pub;
   ros::ServiceServer set_disabled_service;
 
@@ -131,6 +132,7 @@ struct Node {
     odom_sub = nh.subscribe<Odometry>("odom", 1, boost::bind(&Node::odom_callback, this, _1));
 
     trajectory_pub = nh.advertise<PoseTwistStamped>("trajectory", 1);
+    trajectory_vis_pub = private_nh.advertise<PoseStamped>("trajectory_v", 1);
     waypoint_pose_pub = private_nh.advertise<PoseStamped>("waypoint", 1);
 
     update_timer =
@@ -196,6 +198,11 @@ struct Node {
     msg.header.frame_id = fixed_frame;
     msg.posetwist = PoseTwist_from_PointWithAcceleration(c3trajectory->getCurrentPoint());
     trajectory_pub.publish(msg);
+
+    PoseStamped msgVis;
+    msgVis.header = msg.header;
+    msgVis.pose = msg.posetwist.pose;
+    trajectory_vis_pub.publish(msgVis);
 
     PoseStamped posemsg;
     posemsg.header.stamp = c3trajectory_t;
