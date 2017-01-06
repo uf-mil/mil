@@ -405,7 +405,6 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position() {
   double sum_network_distances_ideal = 2*sqrt(model_height*model_height + model_width*model_width) + 2*model_height + 2*model_width;
   double xdiff, ydiff, zdiff;
   double dist_to_centroid_relative_error_thresh = 0.05;
-  double sum_network_distances_relative_error_thresh = 0.05;
   int curr_min_cost_idx = -1;
   double curr_min_cost = 1E9;
   cout << "dist_to_centroid_ideal: " << dist_to_centroid_ideal << endl;
@@ -454,7 +453,6 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position() {
       cout << "\t\t\x1b[32mdist:" << dist << endl << "\x1b[0m";
     }
     cout << "\t\t\x1b[32msum_network_distances:" << sum_network_distances << endl << "\x1b[0m";
-    double sum_network_distances_relative_error = fabs(sum_network_distances - sum_network_distances_ideal) / sum_network_distances_ideal;
     // Disqualify if too far from model
     // if(sum_network_distances_relative_error > sum_network_distances_relative_error_thresh) continue;
     
