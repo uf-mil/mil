@@ -24,7 +24,7 @@ Don't feel that you have to use these silly names.
 
 Add the following line to your /etc/hosts file
 
-    192.168.1.21    subjugator
+    192.168.1.60    subjugator
 
 Right after `127.0.0.1 localhost`
 
