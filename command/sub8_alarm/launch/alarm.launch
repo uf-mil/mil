@@ -1,7 +1,10 @@
 <launch>
   <node pkg="sub8_alarm" type="alarm_handler.py" name="alarm_handler" />
-  <node pkg="kill_handling" type="kill_master" name="kill_master" />
 
   <!-- Alarm listeners -->
   <node pkg="sub8_alarm" type="keepalive_listener.py" name="keepalive_listener" />
+  <node pkg="sub8_alarm" type="height_over_bottom.py" name="height_over_bottom_alarm_kill" />
+
+  <!-- Kill handling stuff -->
+  <node pkg="kill_handling" type="kill_master" name="kill_master"/>
 </launch>
