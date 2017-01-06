@@ -6,7 +6,7 @@ import numpy as np
 import sub8_tools
 from sub8 import sub_singleton
 from geometry_msgs.msg import PoseStamped, PointStamped
-import nav_missions
+import missions
 
 import argparse
 
@@ -19,7 +19,7 @@ fprint = sub8_tools.text_effects.FprintFactory(title="MOVE_COMMAND").fprint
 @util.cancellableInlineCallbacks
 def main(args):
     nh, _ = yield NodeHandle.from_argv_with_remaining("move_command", anonymous=True)
-    available_missions = [mission_name for mission_name in dir(nav_missions) if not mission_name.startswith('_')]
+    available_missions = [mission_name for mission_name in dir(missions) if not mission_name.startswith('_')]
 
     sub = yield sub_singleton._Sub(nh)._init()
     if args.test:

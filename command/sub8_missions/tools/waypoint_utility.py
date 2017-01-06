@@ -18,7 +18,7 @@ import geometry_msgs.msg as geom_msgs
 
 class Spacenav(object):
     _position_gain = np.array([0.03, 0.03, 0.03])
-    _orientation_gain = np.array([0.001, 0.001, 0.03])
+    _orientation_gain = np.array([0, 0, 0.03])
 
     def __init__(self):
         '''

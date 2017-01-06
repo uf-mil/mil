@@ -15,7 +15,7 @@ pc = PointCloud()
 pc.header = sub8_ros_tools.make_header(frame="map")
 pc.points = []
 
-rate = rospy.Rate(10.0)
+rate = rospy.Rate(1.0)
 while not rospy.is_shutdown():
     try:
         t = listener.waitForTransform('/map', '/ground', rospy.Time.now(), rospy.Duration(1))
