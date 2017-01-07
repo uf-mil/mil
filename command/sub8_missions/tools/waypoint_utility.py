@@ -136,7 +136,8 @@ class Spacenav(object):
         rospy.logwarn("Found server")
 
         # Stay under the water
-        if position[2] > 0:
+        if position[2] > 0.3:
+            rospy.logwarn("Waypoint set too high!")
             position[2] = -0.5
 
         goal = uf_common_msgs.MoveToGoal(
@@ -153,7 +154,7 @@ class Spacenav(object):
         )
         self.client.send_goal(goal)
         # self.client.wait_for_result()
-        rospy.logwarn("Got to waypoint")
+        rospy.logwarn("Go to waypoint")
 
 
 if __name__ == '__main__':

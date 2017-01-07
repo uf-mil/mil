@@ -11,7 +11,8 @@ import missions
 import argparse
 
 UNITS = {'m': 1, 'ft': 0.3048, 'yard': 0.9144, 'rad': 1, 'deg': 0.0174533}
-SHORTHAND = {"f": "forward", "b": "backward", "l": "left", "r": "right", "yl": "yaw_left", "yr": "yaw_right"}
+SHORTHAND = {"f": "forward", "b": "backward", "l": "left", "r": "right", "yl": "yaw_left", "yr": "yaw_right",
+             "d": "down", "u": "up"}
 
 ros_t = lambda d: util.genpy.Duration(d)
 fprint = sub8_tools.text_effects.FprintFactory(title="MOVE_COMMAND").fprint
@@ -37,7 +38,7 @@ def main(args):
         fprint("Moving with the command: {}".format(args.argument))
         res = yield eval("sub.move.{}.go()".format(args.argument, **action_kwargs))
 
-    elif args.command in ['zrp', 'level_off']:
+    elif args.command in ['zrp', 'level_off', 'zpr']:
         fprint("Zeroing roll and pitch")
         res = yield sub.move.zero_roll_and_pitch().go(**action_kwargs)
 
@@ -81,12 +82,10 @@ if __name__ == '__main__':
         help='Pose editor command to run')
     parser.add_argument('argument', type=str, default=0,
         help='An argument to pass to the command (distance or angle usally). Optionally a unit can be added if a non-standard unit is desired.')
-    parser.add_argument('-m', '--movetype', type=str, default='drive',
-        help='Move type. See lqrrt documentation for info on how to use this.')
     parser.add_argument('-t', '--test', action='store_true',
         help="Runs the mission in test mode and not move the sub.")
     parser.add_argument('-s', '--speed', type=float, default=0.2,
-        help="How fast to execute the move.")
+        help="How fast to execute the move. (m/s)")
     parser.add_argument('-z', '--zrp', action='store_true',
         help="Make end goal have zero roll and pitch.")
     args = parser.parse_args()
