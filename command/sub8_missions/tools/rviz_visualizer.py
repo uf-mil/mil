@@ -38,7 +38,7 @@ class RvizVisualizer(object):
         self.depth_marker.scale.z = 0.1
 
         # create marker for displaying current battery voltage
-        self.low_battery_threshold = 43.0
+        self.low_battery_threshold = 44.5
         self.voltage_marker = visualization_msgs.Marker()
         self.voltage_marker.header.frame_id = "base_link"
         self.voltage_marker.lifetime = rospy.Duration(5)
