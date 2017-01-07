@@ -14,13 +14,13 @@ class Alarm(object):
     def from_srv(cls, srv):
         ''' Generate an alarm object from an AlarmSet request '''
         node_name = "unknown" if srv.node_name is "" else srv.node_name
-        parameters = json.loads(srv.parameters)
+        parameters = '' if srv.parameters is '' else json.loads(srv.parameters)
 
         return cls(srv.alarm_name, srv.raised, node_name, srv.action_required, 
                    srv.problem_description, parameters, srv.severity)
 
     def __init__(self, alarm_name, raised, node_name="unknown", action_required=False,
-                 problem_desription="", parameters={}, severity=1):
+                 problem_description="", parameters={}, severity=1):
         self.alarm_name = alarm_name
         self.raised = raised
         self.node_name = node_name
@@ -33,7 +33,7 @@ class Alarm(object):
 
         # Callbacks to run if the alarm is cleared or raised formatted as follows:
         #   [(severity_required, cb1), (severity_required, cb2), ...]
-        self.rasied_cbs = []
+        self.raised_cbs = []
         self.cleared_cbs = []
     
     def _severity_cb_check(self, severity):
@@ -64,7 +64,7 @@ class Alarm(object):
         self.stamp = rospy.Time.now()
 
         node_name = "unknown" if srv.node_name is "" else srv.node_name
-        parameters = json.loads(srv.parameters)
+        parameters = '' if srv.parameters is '' else json.loads(srv.parameters)
 
         # Update all possible parameters
         self.raised = srv.raised
@@ -87,7 +87,7 @@ class Alarm(object):
             except:
                 rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self.alarm_name))
 
-    def as_srv(self):
+    def as_srv_resp(self):
         ''' Get this alarm as an AlarmGet response '''
         resp = AlarmGetResponse()
         resp.header.stamp = self.stamp
@@ -95,9 +95,9 @@ class Alarm(object):
         resp.raised = self.raised
         resp.node_name = self.node_name
         resp.action_required = self.action_required
-        resp.problem_description = problem_description
+        resp.problem_description = self.problem_description
         resp.parameters = json.dumps(self.parameters)
-        resp.severity = severity
+        resp.severity = self.severity
         return resp
 
 
@@ -120,9 +120,11 @@ class AlarmServer(object):
         else:
             self.alarms[srv.alarm_name] = Alarm.from_srv(srv)
 
+        return True
+
     def get_alarm(self, srv):
         ''' Either returns the alarm request if it exists or a blank alarm '''
-        return self.alarms.get(srv.alarm_name, Alarm.clear(srv.alarm_name))
+        return self.alarms.get(srv.alarm_name, Alarm.blank(srv.alarm_name)).as_srv_resp()
 
 if __name__ == "__main__":
     rospy.init_node("alarm_server")
