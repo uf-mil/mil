@@ -127,13 +127,13 @@ class AlarmServer(object):
         ''' Sets or updates the alarm
         Updating the alarm triggers all of the alarms callbacks
         '''
-        srv = srv.alarm
-        if srv.alarm_name in self.alarms:
-            rospy.loginfo("Updating alarm: {}, {}".format(srv.alarm_name, srv.raised))
-            self.alarms[srv.alarm_name].update(srv)
+        alarm = srv.alarm
+        if alarm.alarm_name in self.alarms:
+            rospy.loginfo("Updating alarm: {}, {}".format(alarm.alarm_name, alarm.raised))
+            self.alarms[alarm.alarm_name].update(alarm)
         else:
-            rospy.loginfo("Adding alarm: {}, {}".format(srv.alarm_name, srv.raised))
-            self.alarms[srv.alarm_name] = Alarm.from_srv(srv)
+            rospy.loginfo("Adding alarm: {}, {}".format(alarm.alarm_name, alarm.raised))
+            self.alarms[alarm.alarm_name] = Alarm.from_msg(alarm)
 
         self.publish_alarms()
         return True
@@ -146,7 +146,7 @@ class AlarmServer(object):
     def publish_alarms(self):
         alarms = Alarms()
         alarms.header = Header(stamp=rospy.Time.now())
-        alarms.alarms = [a.to_msg for a in self.alarms.items()]
+        alarms.alarms = [a.as_msg() for a in self.alarms.values()]
         self.alarm_pub.publish(alarms)
 
 if __name__ == "__main__":
