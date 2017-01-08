@@ -81,7 +81,7 @@ class Alarm(object):
         cb_list = self.raised_cbs if srv.raised else self.cleared_cbs
         for severity, cb in cb_list:
             # If the cb severity is not valid for this alarm's severity, skip it
-            if not self._severity_cb_check(severity_required):
+            if not self._severity_cb_check(severity):
                 continue
 
             # Try to run the callback, absorbing any errors
@@ -151,6 +151,6 @@ class AlarmServer(object):
 
 if __name__ == "__main__":
     rospy.init_node("alarm_server")
-    handler_path = rospy.get_param("/alarms/handler_path", "~/mil_ws/src/ros_alarms/handlers/")
+    handler_path = ""
     a = AlarmServer(handler_path)
     rospy.spin()
