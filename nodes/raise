@@ -11,7 +11,7 @@ parser.add_argument("--parameters", nargs='+', default="",
                     help="parameters to pass to the alarm in the form of: \nparam1:=val1 param2:=val2")
 args = parser.parse_args()
 
-rospy.init_node("alarm_raiser", anonymous=True)
+rospy.init_node("alarm_raise", anonymous=True)
 ab = AlarmBroadcaster(args.alarm_name)
 
 # Parse parameters

@@ -5,8 +5,6 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Reports the status of an alarm')
 parser.add_argument("alarm_name", help='the name of the alarm to report on')
-# parser.add_argument("--parameters", nargs='+', default="",
-#                     help="parameters to pass to the alarm in the form of: \nparam1:=val1, param2:=val2")
 args = parser.parse_args()
 
 def print_alarm(alarm):
@@ -15,7 +13,7 @@ def print_alarm(alarm):
     for name, value in alarm.parameters.items():
         rospy.loginfo("\t{} = {}".formt(name, value))
 
-rospy.init_node("alarm_raiser", anonymous=True)
+rospy.init_node("alarm_report", anonymous=True)
 al = AlarmListener(args.alarm_name)
 alarm = al.get_alarm()
 print_alarm(alarm)
