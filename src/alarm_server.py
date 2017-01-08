@@ -2,7 +2,11 @@
 import rospy
 import json
 
+from std_msgs.msg import Header 
+from ros_alarms.msg import Alarms
+from ros_alarms.msg import Alarm as AlarmMsg
 from ros_alarms.srv import AlarmGet, AlarmGetResponse, AlarmSet, AlarmSetResponse
+
 
 class Alarm(object):
     @classmethod
@@ -11,13 +15,12 @@ class Alarm(object):
         return cls(name, False, severity=5)
 
     @classmethod
-    def from_srv(cls, srv):
-        ''' Generate an alarm object from an AlarmSet request '''
-        node_name = "unknown" if srv.node_name is "" else srv.node_name
-        parameters = '' if srv.parameters is '' else json.loads(srv.parameters)
-
-        return cls(srv.alarm_name, srv.raised, node_name, srv.action_required, 
-                   srv.problem_description, parameters, srv.severity)
+    def from_msg(cls, msg):
+        ''' Generate an alarm object from an Alarm message '''
+        node_name = "unknown" if msg.node_name is "" else msg.node_name
+        parameters = {} if msg.parameters is '' else json.loads(msg.parameters)
+        return cls(msg.alarm_name, msg.raised, node_name, msg.action_required, 
+                   msg.problem_description, parameters, msg.severity)
 
     def __init__(self, alarm_name, raised, node_name="unknown", action_required=False,
                  problem_description="", parameters={}, severity=1):
@@ -87,46 +90,67 @@ class Alarm(object):
             except:
                 rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self.alarm_name))
 
+    def as_msg(self):
+        ''' Get this alarm as an Alarm message '''
+        alarm = AlarmMsg()
+        alarm.alarm_name = self.alarm_name
+        alarm.raised = self.raised
+        alarm.node_name = self.node_name
+        alarm.action_required = self.action_required
+        alarm.problem_description = self.problem_description
+        alarm.parameters = json.dumps(self.parameters)
+        alarm.severity = self.severity
+        return alarm
+
     def as_srv_resp(self):
         ''' Get this alarm as an AlarmGet response '''
         resp = AlarmGetResponse()
         resp.header.stamp = self.stamp
-        resp.alarm_name = self.alarm_name
-        resp.raised = self.raised
-        resp.node_name = self.node_name
-        resp.action_required = self.action_required
-        resp.problem_description = self.problem_description
-        resp.parameters = json.dumps(self.parameters)
-        resp.severity = self.severity
+        resp.alarm = self.as_msg()
         return resp
 
 
 class AlarmServer(object):
-    def __init__(self):
+    def __init__(self, handler_path):
         # Maps alarm name to Alarm objects
         self.alarms = {}
 
         # Outside interface to the alarm system. Usually you don't want to 
         # interface with these directly.
+        self.alarm_pub = rospy.Publisher("/alarm/updates", Alarms, latch=True, queue_size=100)
         rospy.Service("/alarm/set", AlarmSet, self.set_alarm)
         rospy.Service("/alarm/get", AlarmGet, self.get_alarm)
+       
+        self.publish_alarms()
 
     def set_alarm(self, srv):
         ''' Sets or updates the alarm
         Updating the alarm triggers all of the alarms callbacks
         '''
+        srv = srv.alarm
         if srv.alarm_name in self.alarms:
+            rospy.loginfo("Updating alarm: {}, {}".format(srv.alarm_name, srv.raised))
             self.alarms[srv.alarm_name].update(srv)
         else:
+            rospy.loginfo("Adding alarm: {}, {}".format(srv.alarm_name, srv.raised))
             self.alarms[srv.alarm_name] = Alarm.from_srv(srv)
 
+        self.publish_alarms()
         return True
 
     def get_alarm(self, srv):
         ''' Either returns the alarm request if it exists or a blank alarm '''
+        rospy.loginfo("Got request for alarm: {}".format(srv.alarm_name))
         return self.alarms.get(srv.alarm_name, Alarm.blank(srv.alarm_name)).as_srv_resp()
+
+    def publish_alarms(self):
+        alarms = Alarms()
+        alarms.header = Header(stamp=rospy.Time.now())
+        alarms.alarms = [a.to_msg for a in self.alarms.items()]
+        self.alarm_pub.publish(alarms)
 
 if __name__ == "__main__":
     rospy.init_node("alarm_server")
-    AlarmServer()
+    handler_path = rospy.get_param("/alarms/handler_path", "~/mil_ws/src/ros_alarms/handlers/")
+    a = AlarmServer(handler_path)
     rospy.spin()
