@@ -12,14 +12,14 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
 )
 
-# catkin_python_setup()
+catkin_python_setup()
 
 # Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  Alarm.msg
+  Alarms.msg
+)
 
 ## Generate services in the 'srv' folder
 add_service_files(
@@ -31,7 +31,8 @@ add_service_files(
 # Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  std_msgs  # Or other packages containing msgs
+  std_msgs
+  ros_alarms
 )
 
 catkin_package(
