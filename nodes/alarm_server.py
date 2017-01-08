@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import json
+from copy import deepcopy
 
 from std_msgs.msg import Header 
 from ros_alarms.msg import Alarms
@@ -51,12 +52,12 @@ class Alarm(object):
             be triggered for different levels of severity.
         '''
         if call_when_raised:
-            self.raised_cbs.appened((severity_required, funct))
+            self.raised_cbs.append((severity_required, funct))
             if self.raised and self._severity_cb_check(severity_required):
                 funct(self)
 
         if call_when_cleared:
-            self.cleared_cbs.append((severity_required, funct))
+            self.cleared_cbs.append((-1, funct))
             if not self.raised and self._severity_cb_check(severity_required):
                 funct(self)
 
@@ -65,7 +66,7 @@ class Alarm(object):
         Also will call any required callbacks. 
         '''
         self.stamp = rospy.Time.now()
-
+        
         node_name = "unknown" if srv.node_name is "" else srv.node_name
         parameters = '' if srv.parameters is '' else json.loads(srv.parameters)
 
@@ -120,8 +121,10 @@ class AlarmServer(object):
         self.alarm_pub = rospy.Publisher("/alarm/updates", Alarms, latch=True, queue_size=100)
         rospy.Service("/alarm/set", AlarmSet, self.set_alarm)
         rospy.Service("/alarm/get", AlarmGet, self.get_alarm)
-       
-        self.publish_alarms()
+        
+        self._create_meta_alarms()
+
+        self._publish_alarms()
 
     def set_alarm(self, srv):
         ''' Sets or updates the alarm
@@ -135,7 +138,7 @@ class AlarmServer(object):
             rospy.loginfo("Adding alarm: {}, {}".format(alarm.alarm_name, alarm.raised))
             self.alarms[alarm.alarm_name] = Alarm.from_msg(alarm)
 
-        self.publish_alarms()
+        self._publish_alarms()
         return True
 
     def get_alarm(self, srv):
@@ -143,11 +146,39 @@ class AlarmServer(object):
         rospy.loginfo("Got request for alarm: {}".format(srv.alarm_name))
         return self.alarms.get(srv.alarm_name, Alarm.blank(srv.alarm_name)).as_srv_resp()
 
-    def publish_alarms(self):
+    def _publish_alarms(self):
         alarms = Alarms()
         alarms.header = Header(stamp=rospy.Time.now())
         alarms.alarms = [a.as_msg() for a in self.alarms.values()]
         self.alarm_pub.publish(alarms)
+
+    def _create_meta_alarms(self, namespace="/meta_alarms/"):
+        meta_alarms_dict = rospy.get_param(namespace)
+
+        def raise_meta(from_alarm, meta_name):
+            ''' Raises a meta alarm from one of it's sub alarms '''
+            meta_message = self.alarms[meta_name].as_msg()
+            meta_message.node_name = from_alarm.node_name
+
+            # Meta alarm should have the highest severity of all it's sub alarms
+            if from_alarm.severity < meta_message.severity:
+                meta_message.severity = from_alarm.severity 
+
+            meta_message.raised = True
+            self.alarms[meta_name].update(meta_message)
+
+        for meta, alarms in meta_alarms_dict.iteritems():
+            # Add the meta alarm
+            if meta not in alarms:
+                self.alarms[meta] = Alarm.blank(meta)
+            
+            # Add the raise meta alarm callback to each sub alarm
+            for alarm in alarms:
+                if alarm not in self.alarms:
+                    self.alarms[alarm] = Alarm.blank(alarm)
+
+                cb = lambda alarm, meta_name=meta: raise_meta(alarm, meta_name)
+                self.alarms[alarm].add_callback(cb, call_when_cleared=False)
 
 if __name__ == "__main__":
     rospy.init_node("alarm_server")

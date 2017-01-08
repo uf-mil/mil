@@ -1,0 +1,10 @@
+<launch>
+    <node name="alarm_sever" pkg="ros_alarms" type="alarm_server.py" output="screen"/>
+
+    <!-- Meta alarm definitions -->
+    <rosparam ns="meta_alarms">
+        kill: ["test1", "test2", "test3"]
+        another: ["testing1", "testing2", "testing3"]
+    </rosparam>
+
+</launch>
