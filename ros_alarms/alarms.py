@@ -2,6 +2,7 @@ import rospy
 from ros_alarms.srv import AlarmSet, AlarmGet, AlarmSetRequest, AlarmGetRequest
 import json
 
+
 class AlarmBroadcaster(object):
     def __init__(self, name, node_name=None):
         self._alarm_name = name
@@ -50,3 +51,12 @@ class AlarmListener(object):
         ''' Returns whether this alarm is cleared or not '''
         return not self.is_raised()
 
+    def get_alarm(self):
+        ''' Returns the alarm message 
+        Also worth noting, the alarm this returns has it's `parameter` field 
+            converted to a dictionary
+        '''
+        resp = self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
+        params = resp.alarm.parameters
+        resp.alarm.parameters = params if params == '' else json.loads(params)
+        return resp.alarm 
