@@ -8,7 +8,7 @@ class HandlerBase(object):
 
     All alarm handlers must inherit from this base class in order to be registered.
     '''
-    alarm_name = 'generic_name'
+    alarm_name = 'generic-name'
     severity_required = -1
 
     def raised(self, alarm):
