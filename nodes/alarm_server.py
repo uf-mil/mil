@@ -162,9 +162,7 @@ class AlarmServer(object):
 
     def _create_alarm_handlers(self):
         # If the param exists, load it here
-        handler_module = "alarm_handlers"
-        if rospy.has_param("handler_module"):
-            handler_module = rospy.get_param("handler_module")
+        handler_module = rospy.get_param("~handler_module", "alarm_handlers")
 
         # Import the module where the handlers are stored
         alarm_handlers = __import__(handler_module, fromlist=[""])

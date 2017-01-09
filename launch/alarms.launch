@@ -1,7 +1,7 @@
 <launch>
     <node name="alarm_sever" pkg="ros_alarms" type="alarm_server.py" output="screen">
         <!-- A folder that is in your system path containing all alarm handlers-->
-        <param name="handler_module" type="string" value="alarm_handlers"/>
+        <param name="handler_module" type="string" value="test_handlers"/>
     </node>
 
     <!-- Meta alarm definitions -->
