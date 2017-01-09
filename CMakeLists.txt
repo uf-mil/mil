@@ -53,8 +53,10 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-## Declare a C++ library
-# add_library(ros_alarms
-#   src/${PROJECT_NAME}/ros_alarms.cpp
-# )
+# Declare a C++ library
+add_library(ros_alarms
+   ${PROJECT_NAME}/src/broadcaster.cpp
+   ${PROJECT_NAME}/src/listener.cpp
+)
+target_include_directories(ros_alarms PUBLIC ros_alarms/include/)
 
