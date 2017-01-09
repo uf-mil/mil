@@ -1,0 +1,21 @@
+<package>
+  <name>sonar</name>
+  <version>1.0.0</version>
+  <description>sonar</description>
+  <maintainer email="tessbianchi@ufl.edu">Tess Bianchi</maintainer>
+
+  <license>MIT</license>
+
+  <author>Tess Bianchi</author>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>bvtsdkpkg</build_depend>
+  <run_depend>bvtsdkpkg</run_depend>
+  <build_depend>roslib</build_depend>
+  <run_depend>roslib</run_depend>
+  <build_depend>roscpp</build_depend>
+  <run_depend>roscpp</run_depend>
+  <build_depend>cv_bridge</build_depend>
+  <run_depend>cv_bridge</run_depend>
+  <build_depend>image_transport</build_depend>
+  <run_depend>image_transport</run_depend>
+</package>
