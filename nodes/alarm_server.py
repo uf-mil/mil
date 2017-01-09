@@ -139,11 +139,21 @@ class AlarmServer(object):
         Updating the alarm triggers all of the alarms callbacks
         '''
         alarm = srv.alarm
+
+        # If the alarm name is `all`, clear all alarms
+        if alarm.alarm_name == "all":
+            rospy.loginfo("Clearing all alarms.")
+            for alarm in self.alarms.values():
+                cleared_alarm = alarm.as_msg()
+                cleared_alarm.raised = False
+                alarm.update(cleared_alarm)
+            return True
+
         if alarm.alarm_name in self.alarms:
-            rospy.loginfo("Updating alarm: {}, {}".format(alarm.alarm_name, alarm.raised))
+            rospy.loginfo("Updating alarm: {}, {}.".format(alarm.alarm_name, "raised" if alarm.raised else "cleared"))
             self.alarms[alarm.alarm_name].update(alarm)
         else:
-            rospy.loginfo("Adding alarm: {}, {}".format(alarm.alarm_name, alarm.raised))
+            rospy.loginfo("Adding alarm: {}, {}.".format(alarm.alarm_name, alarm.raised))
             self.alarms[alarm.alarm_name] = Alarm.from_msg(alarm)
 
         self._publish_alarms()
@@ -151,7 +161,7 @@ class AlarmServer(object):
 
     def get_alarm(self, srv):
         ''' Either returns the alarm request if it exists or a blank alarm '''
-        rospy.loginfo("Got request for alarm: {}".format(srv.alarm_name))
+        rospy.logdebug("Got request for alarm: {}".format(srv.alarm_name))
         return self.alarms.get(srv.alarm_name, Alarm.blank(srv.alarm_name)).as_srv_resp()
 
     def _publish_alarms(self):
@@ -185,6 +195,8 @@ class AlarmServer(object):
 
             self.alarms[alarm_name].add_callback(h.cleared, call_when_raised=False, 
                                                  severity_required=severity)
+
+            rospy.loginfo("Loaded handler: {}".format(h.alarm_name))
 
     def _create_meta_alarms(self, namespace="/meta_alarms/"):
         meta_alarms_dict = rospy.get_param(namespace)
