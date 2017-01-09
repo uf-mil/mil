@@ -7,7 +7,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs sub8_msgs cmake_mod
 find_package(OMPL REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Eigen REQUIRED)
-find_package(sub8_alarm REQUIRED)
+# find_package(sub8_alarm REQUIRED)
 
 set(catkin_LIBRARIES
 	${catkin_LIBRARIES}
@@ -34,24 +34,24 @@ include_directories(
 )
 
 
-add_executable(${PROJECT_NAME}
-	src/trajectory_generator.cc
-	${SRCS}
-)
+#add_executable(${PROJECT_NAME}
+#	src/trajectory_generator.cc
+#	${SRCS}
+#)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11")
+#set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11")
 
-target_link_libraries(${PROJECT_NAME}
-	${catkin_LIBRARIES}
-	${OMPL_LIBRARIES}
-	${Eigen_LIBRARIES}
-	${sub8_alarm_LIBRARIES}
-)
+#target_link_libraries(${PROJECT_NAME}
+#	${catkin_LIBRARIES}
+#	${OMPL_LIBRARIES}
+#	${Eigen_LIBRARIES}
+#	${sub8_alarm_LIBRARIES}
+#)
 
-add_dependencies(${PROJECT_NAME}
-    sub8_msgs_generate_messages_cpp
-    ${catkin_EXPORTED_TARGETS}
-)
+#add_dependencies(${PROJECT_NAME}
+#    sub8_msgs_generate_messages_cpp
+#    ${catkin_EXPORTED_TARGETS}
+#)
 
 if(CATKIN_ENABLE_TESTING)
 	catkin_add_gtest(${PROJECT_NAME}_unit_tests
