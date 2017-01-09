@@ -152,26 +152,14 @@ class NodeImpl {
         state = StateUpdater(msg)(*state);
       }
       
-      //std::cout << "precov " << state->cov << std::endl << std::endl;
-      //std::cout << "precov " << state->cov << std::endl << std::endl;
-      //state = state->update(Vec<3>::Zero());
-      
       GaussianDistribution<Vec<3>> gyro_bias_dist =
         EasyDistributionFunction<State, Vec<3>>(
           [](State const &state, Vec<0> const &) { return state.gyro_bias; }
         )(*state);
-      std::cout << "gyro_bias " << gyro_bias_dist.mean.transpose()
-        << " stddev: " << gyro_bias_dist.cov.diagonal().array().sqrt().transpose()
-        << std::endl;
       GaussianDistribution<Vec<3>> accel_bias_dist =
         EasyDistributionFunction<State, Vec<3>>(
           [](State const &state, Vec<0> const &) { return state.accel_bias; }
         )(*state);
-      std::cout << "accel_bias " << accel_bias_dist.mean.transpose()
-        << " stddev: " << accel_bias_dist.cov.diagonal().array().sqrt().transpose()
-        << std::endl;
-      //std::cout << "grav: " << state->mean.local_g << "  " << sqrt(state->cov(State::LOCAL_G, State::LOCAL_G)) << std::endl;
-      std::cout << std::endl;
       
 
       if(state->mean.gyro_bias.norm() > .5) {
@@ -182,8 +170,6 @@ class NodeImpl {
       }
       
       last_rel_pos_ecef_ = state->mean.getRelPosECEF();
-
-      //std::cout << "cov " << state->cov << std::endl << std::endl;
       
       {
         EasyDistributionFunction<State, Odom> transformer(
