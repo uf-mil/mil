@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 import rospy
-import json
-from copy import deepcopy
+from ros_alarms import HandlerBase 
 
 from std_msgs.msg import Header 
 from ros_alarms.msg import Alarms
 from ros_alarms.msg import Alarm as AlarmMsg
 from ros_alarms.srv import AlarmGet, AlarmGetResponse, AlarmSet, AlarmSetResponse
+
+import json
+import inspect
 
 
 class Alarm(object):
@@ -117,7 +119,7 @@ class Alarm(object):
 
 
 class AlarmServer(object):
-    def __init__(self, handler_path):
+    def __init__(self):
         # Maps alarm name to Alarm objects
         self.alarms = {}
 
@@ -128,6 +130,7 @@ class AlarmServer(object):
         rospy.Service("/alarm/get", AlarmGet, self.get_alarm)
         
         self._create_meta_alarms()
+        self._create_alarm_handlers()
 
         self._publish_alarms()
 
@@ -156,6 +159,34 @@ class AlarmServer(object):
         alarms.header = Header(stamp=rospy.Time.now())
         alarms.alarms = [a.as_msg() for a in self.alarms.values()]
         self.alarm_pub.publish(alarms)
+
+    def _create_alarm_handlers(self):
+        # If the param exists, load it here
+        handler_module = "alarm_handlers"
+        if rospy.has_param("handler_module"):
+            handler_module = rospy.get_param("handler_module")
+
+        # Import the module where the handlers are stored
+        alarm_handlers = __import__(handler_module, fromlist=[""])
+        for handler in [cls for name, cls in inspect.getmembers(alarm_handlers) \
+                        if inspect.isclass(cls) and issubclass(cls, HandlerBase) and \
+                        hasattr(cls, "alarm_name") and name is not "HandlerBase"]:
+
+            # Have to instantiate so the class exists exists
+            h = handler() 
+
+            alarm_name = handler.alarm_name
+            severity = handler.severity_required
+
+            if alarm_name not in self.alarms:
+                self.alarms[alarm_name] = Alarm.blank(alarm_name)
+            
+            # Register the raised or cleared functions
+            self.alarms[alarm_name].add_callback(h.raised, call_when_cleared=False, 
+                                                 severity_required=severity)
+
+            self.alarms[alarm_name].add_callback(h.cleared, call_when_raised=False, 
+                                                 severity_required=severity)
 
     def _create_meta_alarms(self, namespace="/meta_alarms/"):
         meta_alarms_dict = rospy.get_param(namespace)
@@ -188,6 +219,5 @@ class AlarmServer(object):
 
 if __name__ == "__main__":
     rospy.init_node("alarm_server")
-    handler_path = ""
-    a = AlarmServer(handler_path)
+    a = AlarmServer()
     rospy.spin()
