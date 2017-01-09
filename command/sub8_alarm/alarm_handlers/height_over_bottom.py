@@ -29,7 +29,7 @@ class HeightOverBottom(HandlerBase):
                                 parameters={"height": self._last_height},
                                 severity=0
             )
-        elif self._last_height >= self._height_to_kill + 0.5 and self._killed:
+        elif self._last_height >= self._height_to_kill and self._killed:
             rospy.logwarn("REVIVING")
             self.ab.clear_alarm()
     
