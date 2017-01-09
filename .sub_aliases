@@ -1,4 +1,4 @@
-lias sub="cd ~/mil_ws/src/Sub8"
+alias sub="cd ~/mil_ws/src/Sub8"
 alias subm="rosrun sub8_missions run_mission"
 alias subc="rosrun sub8_missions move_command"
 alias araise='rosrun sub8_alarm raise'

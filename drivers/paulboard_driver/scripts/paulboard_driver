@@ -128,7 +128,7 @@ if __name__ == '__main__':
     port = rospy.get_param('~port')
     print 'Port: ', port
 
-    with serial.Serial(port, 1152000, timeout=.3) as ser:
+    with serial.Serial(port, 115200, timeout=.3) as ser:
         if check_board_bootloaded(ser):
             rospy.loginfo('PaulBoard already bootloaded')
         else:
