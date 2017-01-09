@@ -19,16 +19,22 @@ class Alarm(object):
     def from_msg(cls, msg):
         ''' Generate an alarm object from an Alarm message '''
         node_name = "unknown" if msg.node_name is "" else msg.node_name
-        parameters = {} if msg.parameters is '' else json.loads(msg.parameters)
-        return cls(msg.alarm_name, msg.raised, node_name, msg.action_required, 
+        parameters = {}
+        if msg.parameters is not '':
+            try:
+                parameters = json.loads(msg.parameters)
+            except ValueError:
+                # User passed in a non JSON string
+                parameters['data'] = msg.parameters
+
+        return cls(msg.alarm_name, msg.raised, node_name, 
                    msg.problem_description, parameters, msg.severity)
 
-    def __init__(self, alarm_name, raised, node_name="unknown", action_required=False,
+    def __init__(self, alarm_name, raised, node_name="unknown",
                  problem_description="", parameters={}, severity=1):
         self.alarm_name = alarm_name
         self.raised = raised
         self.node_name = node_name
-        self.action_required = action_required
         self.problem_description = problem_description
         self.parameters = parameters
         self.severity = severity
@@ -43,7 +49,8 @@ class Alarm(object):
     def _severity_cb_check(self, severity):
         return severity == -1 or self.severity == severity
 
-    def add_callback(self, funct, call_when_raised=True, call_when_cleared=True, severity_required=-1):
+    def add_callback(self, funct, call_when_raised=True, call_when_cleared=True, 
+                     severity_required=-1):
         ''' Deals with adding handler function callbacks
         The user can specify if the function should be run on a raise or clear
         This will call the function when added if that condition is met.
@@ -73,7 +80,6 @@ class Alarm(object):
         # Update all possible parameters
         self.raised = srv.raised
         self.node_name = node_name
-        self.action_required = srv.action_required
         self.problem_description = srv.problem_description
         self.parameters = parameters
         self.severity = srv.severity
@@ -97,7 +103,6 @@ class Alarm(object):
         alarm.alarm_name = self.alarm_name
         alarm.raised = self.raised
         alarm.node_name = self.node_name
-        alarm.action_required = self.action_required
         alarm.problem_description = self.problem_description
         alarm.parameters = json.dumps(self.parameters)
         alarm.severity = self.severity
@@ -179,6 +184,7 @@ class AlarmServer(object):
 
                 cb = lambda alarm, meta_name=meta: raise_meta(alarm, meta_name)
                 self.alarms[alarm].add_callback(cb, call_when_cleared=False)
+
 
 if __name__ == "__main__":
     rospy.init_node("alarm_server")
