@@ -2,9 +2,14 @@
   <node pkg="nodelet" type="nodelet" args="standalone odom_estimator/nodelet" name="odom_estimator" respawn="true"><rosparam>
       have_gps: false
       local_frame: /map
-      start_x_ecef:   -2459847 <!-- San Diego -->
+      <!-- Gainesville -->
+      start_x_ecef:   738543 
+      start_y_ecef: -5498316
+      start_z_ecef:  3136465
+      <!-- San Diego -->
+      <!-- start_x_ecef:   -2459847 
       start_y_ecef: -4776091
-      start_z_ecef:  3426313
+      start_z_ecef:  3426313 -->
     </rosparam>
     <remap from="odom" to="imu_odom"/>
   </node>
