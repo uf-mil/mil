@@ -4,6 +4,7 @@ from kill_handling.broadcaster import KillBroadcaster
 
 class Kill(HandlerBase):
     alarm_name = 'kill'
+    initally_raised = True
 
     def __init__(self):
         # Keep some knowledge of which thrusters we have working

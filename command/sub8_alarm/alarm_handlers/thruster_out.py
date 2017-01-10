@@ -1,5 +1,5 @@
 import rospy
-from ros_alarms import HandlerBase
+from ros_alarms import HandlerBase, AlarmBroadcaster
 from sub8_msgs.srv import UpdateThrusterLayout
 
 
@@ -10,6 +10,7 @@ class ThrusterOut(HandlerBase):
         # Keep some knowledge of which thrusters we have working
         self.dropped_thrusters = []
         self.update_layout = rospy.ServiceProxy('update_thruster_layout', UpdateThrusterLayout)
+        self.ab = AlarmBroadcaster("thruster-kill", node_name="thruster_out_kill")
 
     def drop_thruster(self, thruster_name):
         if thruster_name not in self.dropped_thrusters:
@@ -17,6 +18,12 @@ class ThrusterOut(HandlerBase):
 
         # a priori: Each thruster name is a string, do not need to map(str, remaining_thursters)
         rospy.logwarn("Dropped thrusters: " + ', '.join(self.dropped_thrusters))
+         
+        # Kill if we lose too many thrusters
+        if len(self.dropped_thrusters) > rospy.get_param("thruster_loss_limit", 2):
+            self.ab.raise_kill()
+        else:
+            self.ab.clear_kill()
 
     def raised(self, alarm):
         if alarm.parameters is None:
