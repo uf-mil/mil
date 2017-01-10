@@ -36,9 +36,14 @@ generate_messages(
 )
 
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES ros_alarms
-  CATKIN_DEPENDS roscpp rospy message_generation
+  INCLUDE_DIRS
+    include
+  LIBRARIES
+    ros_alarms
+  CATKIN_DEPENDS
+    roscpp
+    rospy
+    message_generation
 #  DEPENDS system_lib
 )
 
@@ -55,9 +60,8 @@ include_directories(
 
 # Declare a C++ library
 add_library(ros_alarms
-   ${PROJECT_NAME}/src/broadcaster.cpp
-   ${PROJECT_NAME}/src/listener.cpp
+   src/${PROJECT_NAME}/broadcaster.cpp
 )
-target_include_directories(${PROJECT_NAME} PUBLIC ros_alarms/include/)
+target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_compile_options(${PROJECT_NAME} PRIVATE -g -Wall -std=c++11)
 

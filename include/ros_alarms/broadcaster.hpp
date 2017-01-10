@@ -4,7 +4,7 @@
 #include <ros_alarms/AlarmSet.h>
 #include <ros_alarms/Alarm.h>
 
-#include <alarm_proxy.hpp>
+#include <ros_alarms/alarm_proxy.hpp>
 
 #include <string>
 
