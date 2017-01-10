@@ -106,8 +106,9 @@ class Alarm(object):
             # Try to run the callback, absorbing any errors
             try:
                 cb(self)
-            except:
+            except Exception as e:
                 rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self.alarm_name))
+                rospy.logwarn(e)
 
     def as_msg(self):
         ''' Get this alarm as an Alarm message '''
@@ -230,11 +231,17 @@ class AlarmServer(object):
             
             # Add the raise meta alarm callback to each sub alarm
             for alarm in alarms:
+                # Check for a listed severity with the sub alarm
+                severity = -1
+                if isinstance(alarm, tuple):
+                    severity = alarm[1]
+                    alarm = alarm[0]
+
                 if alarm not in self.alarms:
                     self.alarms[alarm] = Alarm.blank(alarm)
 
                 cb = lambda alarm, meta_name=meta: raise_meta(alarm, meta_name)
-                self.alarms[alarm].add_callback(cb, call_when_cleared=False)
+                self.alarms[alarm].add_callback(cb, call_when_cleared=False, severity_required=severity)
 
 
 if __name__ == "__main__":
