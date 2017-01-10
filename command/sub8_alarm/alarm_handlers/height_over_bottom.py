@@ -3,7 +3,7 @@ from ros_alarms import AlarmBroadcaster, HandlerBase
 from uf_common.msg import Float64Stamped
 
 class HeightOverBottom(HandlerBase):
-    alarm_name = "height_over_bottom"
+    alarm_name = "height-over-bottom"
     
     def __init__(self):
         self._killed = False

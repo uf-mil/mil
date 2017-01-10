@@ -6,8 +6,17 @@
 
     <!-- Meta alarm definitions -->
     <rosparam ns="meta_alarms">
-        kill: ["battery_voltage", "height_over_bottom"]
-        thruster_out: [""]
+        kill: [["bus-voltage", 0], "height-over-bottom"]
     </rosparam>
+
+    <!-- List known alarms here -->
+    <rosparam ns="known_alarms">
+        kill, thruster-out, bus-voltage, height-over-bottom, network-loss
+    </rosparam>
+
+    <!-- Alarm specific params -->
+    <param name="height_over_bottom" type="double" value="0.4" />
+    <param name="battery/warn_voltage" type="double" value="44.5" />
+    <param name="battery/kill_voltage" type="double" value="44.0" />
 
 </launch>

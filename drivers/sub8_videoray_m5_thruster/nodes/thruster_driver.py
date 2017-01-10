@@ -10,12 +10,12 @@ from sub8_msgs.msg import Thrust, ThrusterStatus
 from sub8_ros_tools import wait_for_param, thread_lock
 from sub8_msgs.srv import ThrusterInfo, ThrusterInfoResponse, FailThruster, FailThrusterResponse
 from sub8_thruster_comm import thruster_comm_factory
-from sub8_alarm import AlarmBroadcaster
+from ros_alarms import AlarmBroadcaster
 lock = threading.Lock()
 
 
 class ThrusterDriver(object):
-    _dropped_timeout = 2 # s
+    _dropped_timeout = 1 # s
 
     def __init__(self, config_path, bus_layout):
         '''Thruster driver, an object for commanding all of the sub's thrusters
@@ -25,17 +25,8 @@ class ThrusterDriver(object):
             - Given a command message, route that command to the appropriate port/thruster
             - Send a thruster status message describing the status of the particular thruster
         '''
-        self.alarm_broadcaster = AlarmBroadcaster()
-        self.thruster_out_alarm = self.alarm_broadcaster.add_alarm(
-            name='thruster-out',
-            action_required=True,
-            severity=2
-        )
-        self.bus_voltage_alarm = self.alarm_broadcaster.add_alarm(
-            name='bus-voltage',
-            action_required=False,
-            severity=2
-        )
+        self.thruster_out_alarm = AlarmBroadcaster("thruster-out")
+        self.bus_voltage_alarm = AlarmBroadcaster("bus-voltage")
         
         self.thruster_heartbeats = {}
         self.failed_thrusters = []
@@ -72,8 +63,10 @@ class ThrusterDriver(object):
         if self.bus_voltage is not None:
             msg = Float64(self.bus_voltage)
             self.bus_voltage_pub.publish(msg)
-            if self.bus_voltage < 44.0:
-                self.alert_bus_voltage(self.bus_voltage)
+            if self.bus_volage < rospy.get_param("/battery/warn_voltage", 44.5):
+                self.alert_bus_voltage(self.bus_voltage, 2)
+            if self.bus_voltage < rospy.get_param("/battery/kill_voltage", 44.0):
+                self.alert_bus_voltage(self.bus_voltage, 0)
 
     def check_for_drops(self, *args):
         for name, time in self.thruster_heartbeats.items():
@@ -165,11 +158,7 @@ class ThrusterDriver(object):
     @thread_lock(lock)
     def command_thruster(self, name, force):
         '''Issue a a force command (in Newtons) to a named thruster
-            Example names are BLR, FLL, etc
-
-            TODO:
-                Make this still get a thruster status when the thruster is failed
-                (We could figure out if it has stopped being failed!)
+            Example names are BLR, FLH, etc.
         '''
         target_port = self.port_dict[name]
         margin_factor = 0.8
@@ -254,16 +243,18 @@ class ThrusterDriver(object):
             parameters={
                 'thruster_name': thruster_name,
                 'fault_info': fault_info
-            }
+            },
+            severity=1
         )
         self.failed_thrusters.append(thruster_name)
 
-    def alert_bus_voltage(self, voltage):
+    def alert_bus_voltage(self, voltage, severity):
         self.bus_voltage_alarm.raise_alarm(
             problem_description='Bus voltage has fallen to {}'.format(voltage),
             parameters={
                 'bus_voltage': voltage,
-            }
+            },
+            severity=severity
         )
 
     def fail_thruster(self, srv):
