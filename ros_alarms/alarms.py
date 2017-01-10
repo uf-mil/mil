@@ -86,11 +86,11 @@ class AlarmListener(object):
         if isinstance(severity, tuple):
             # If the severity is a tuple, it should be interpreted as a range
             if severity[1] == -1:
-                # (X, -1)  Triggers for any alarms less severe then X
-                return severity[0] < self._last_alarm.severity 
+                # (X, -1)  Triggers for any alarms less or equally severe as X
+                return severity[0] <= self._last_alarm.severity 
 
-            # (-1 , X) or (Y, X)  Trigger for any alarms less or equally severe to Y but more severe then X
-            return severity[0] <= self._last_alarm.severity < severity[1] 
+            # (-1 , X) or (Y, X)  Trigger for any alarm in the double bounded range of Y and X
+            return severity[0] <= self._last_alarm.severity <= severity[1] 
         
         # Not a tuple, just an int. -1 for any severity, otherwise the severities much match
         return severity == -1 or self._last_alarm.severity == severity
