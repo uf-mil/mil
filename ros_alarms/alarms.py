@@ -122,9 +122,10 @@ class AlarmListener(object):
 
             # Try to run the callback, absorbing any errors
             try:
-                cb(alarm)
-            except:
+                cb(self)
+            except Exception as e:
                 rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self.alarm_name))
+                rospy.logwarn(e)
 
 class HeartbeatMonitor(AlarmBroadcaster):
     def __init__(self, alarm_name, topic_name, prd=0.2, predicate=None):
