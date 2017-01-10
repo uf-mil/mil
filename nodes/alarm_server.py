@@ -33,7 +33,7 @@ class Alarm(object):
                    msg.problem_description, parameters, msg.severity)
 
     def __init__(self, alarm_name, raised, node_name="unknown",
-                 problem_description="", parameters={}, severity=1):
+                 problem_description="", parameters={}, severity=0):
         self.alarm_name = alarm_name
         self.raised = raised
         self.node_name = node_name
@@ -49,17 +49,17 @@ class Alarm(object):
         self.cleared_cbs = []
     
     def _severity_cb_check(self, severity):
-        if isinstance(severity, tuple):
+        if isinstance(severity, tuple) or isinstance(severity, list):
             # If the severity is a tuple, it should be interpreted as a range
             if severity[1] == -1:
                 # (X, -1)  Triggers for any alarms less severe then X
-                return severity[0] < self._last_alarm.severity 
+                return severity[0] < self.severity 
 
             # (-1 , X) or (Y, X)  Trigger for any alarms less or equally severe to Y but more severe then X
-            return severity[0] <= self._last_alarm.severity < severity[1] 
-        
+            return severity[0] <= self.severity < severity[1] 
+        print self.severity, severity 
         # Not a tuple, just an int. -1 for any severity, otherwise the severities much match
-        return severity == -1 or self._last_alarm.severity == severity
+        return severity == -1 or self.severity == severity
 
     def add_callback(self, funct, call_when_raised=True, call_when_cleared=True, 
                      severity_required=-1):
@@ -100,7 +100,7 @@ class Alarm(object):
         cb_list = self.raised_cbs if srv.raised else self.cleared_cbs
         for severity, cb in cb_list:
             # If the cb severity is not valid for this alarm's severity, skip it
-            if not self._severity_cb_check(severity):
+            if srv.raised and not self._severity_cb_check(severity):
                 continue
 
             # Try to run the callback, absorbing any errors
@@ -228,12 +228,12 @@ class AlarmServer(object):
             # Add the meta alarm
             if meta not in alarms:
                 self.alarms[meta] = Alarm.blank(meta)
-            
+
             # Add the raise meta alarm callback to each sub alarm
             for alarm in alarms:
                 # Check for a listed severity with the sub alarm
                 severity = -1
-                if isinstance(alarm, tuple):
+                if isinstance(alarm, list):
                     severity = alarm[1]
                     alarm = alarm[0]
 

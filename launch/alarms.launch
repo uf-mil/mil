@@ -6,7 +6,7 @@
 
     <!-- Meta alarm definitions -->
     <rosparam ns="meta_alarms">
-        kill: [("test1", 2), "test2", "test3"]
+        kill: [["test1", 2], "test2", "test3"]
         another: ["testing1", "testing2", "testing3"]
     </rosparam>
 
