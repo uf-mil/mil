@@ -22,7 +22,11 @@ class AlarmBroadcaster(object):
         self._node_name = rospy.get_name() if node_name is None else node_name
 
         self._alarm_set = rospy.ServiceProxy("/alarm/set", AlarmSet)
-        rospy.wait_for_service("/alarm/set")
+        try:
+            rospy.wait_for_service("/alarm/set", timeout=1)
+        except rospy.exceptions.ROSException:
+            rospy.logerr("No alarm sever found! Alarm behaviours will be unpredictable.")
+
         rospy.logdebug("Created alarm broadcaster for alarm {}".format(name))
 
     def _generate_request(self, raised, problem_description="", parameters={}, severity=5):
@@ -39,11 +43,18 @@ class AlarmBroadcaster(object):
 
     def raise_alarm(self, **kwargs):
         ''' Raises this alarm '''
-        return self._alarm_set(self._generate_request(True, **kwargs))
+        try:
+            return self._alarm_set(self._generate_request(True, **kwargs))
+        except rospy.service.ServiceException:
+            rospy.logerr("No alarm sever found! Can't raise alarm.")
+            
 
     def clear_alarm(self, **kwargs):
         ''' Clears this alarm '''
-        return self._alarm_set(self._generate_request(False, **kwargs))
+        try:
+            return self._alarm_set(self._generate_request(False, **kwargs))
+        except rospy.service.ServiceException:
+            rospy.logerr("No alarm sever found! Can't clear alarm.")
 
 
 class AlarmListener(object):
@@ -52,7 +63,10 @@ class AlarmListener(object):
         _check_for_alarm(self._alarm_name, nowarn)
 
         self._alarm_get = rospy.ServiceProxy("/alarm/get", AlarmGet)
-        rospy.wait_for_service("/alarm/get")
+        try:
+            rospy.wait_for_service("/alarm/get", timeout=1)
+        except rospy.exceptions.ROSException:
+            rospy.logerr("No alarm sever found! Alarm behaviours will be unpredictable.")
         
         # Data used to trigger callbacks
         self._last_alarm = None
@@ -65,8 +79,12 @@ class AlarmListener(object):
         
     def is_raised(self):
         ''' Returns whether this alarm is raised or not '''
-        resp = self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
-        return resp.alarm.raised
+        try:
+            resp = self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
+            return resp.alarm.raised
+        except rospy.service.ServiceException:
+            rospy.logerr("No alarm sever found!")
+            return False
 
     def is_cleared(self):
         ''' Returns whether this alarm is cleared or not '''
@@ -77,7 +95,12 @@ class AlarmListener(object):
         Also worth noting, the alarm this returns has it's `parameter` field 
             converted to a dictionary
         '''
-        resp = self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
+        try:
+            resp = self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
+        except rospy.service.ServiceExection:
+            rospy.logerr("No alarm sever found!")
+            return None
+
         params = resp.alarm.parameters
         resp.alarm.parameters = params if params == '' else json.loads(params)
         return resp.alarm 
