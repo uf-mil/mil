@@ -12,7 +12,7 @@
 namespace ros_alarms
 {
 
-template <typename callable_t = std::function< void(ros_alarms::Alarm) >>
+template <typename callable_t = std::function< void(AlarmProxy) >>
 struct ListenerCb
 {
   callable_t  cb_func;  // object needs to have a call operator
@@ -39,7 +39,7 @@ struct ListenerCb
   }
 };
 
-template <typename callable_t = std::function< void(ros_alarms::Alarm) >>
+template <typename callable_t = std::function< void(AlarmProxy) >>
 class AlarmListener
 {
 
@@ -84,7 +84,7 @@ AlarmListener<callable_t>::AlarmListener(ros::NodeHandle &nh, std::string alarm_
   __get_alarm = __nh.serviceClient<ros_alarms::AlarmGet>("/alarm/get");
 
   // Subscribes to list of recently modified alarms from alarm server
-  __update_subscriber = __nh.subscribe("/alarm/updates", this, __alarm_update);
+  __update_subscriber = __nh.subscribe("/alarm/updates", 10, &AlarmListener<callable_t>::__alarm_update, this);
 }
 
 template <typename callable_t>
