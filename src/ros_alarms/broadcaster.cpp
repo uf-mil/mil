@@ -1,5 +1,8 @@
 #include <ros_alarms/broadcaster.hpp>
 
+namespace ros_alarms
+{
+
 using namespace std;
 
 AlarmBroadcaster::AlarmBroadcaster(ros::NodeHandle &nh, AlarmProxy* alarm)
@@ -19,3 +22,4 @@ bool AlarmBroadcaster::publish()
   return __set_alarm.call(srv);
 }
 
+}  // namespace ros_alarms

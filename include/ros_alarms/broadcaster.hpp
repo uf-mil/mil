@@ -8,6 +8,8 @@
 
 #include <string>
 
+namespace ros_alarms
+{
 
 class AlarmBroadcaster
 {
@@ -25,4 +27,4 @@ private:
   bool publish();
 };
 
-
+}  // namespace ros_alarms

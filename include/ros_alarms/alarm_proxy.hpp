@@ -5,6 +5,9 @@
 
 #include <string>
 
+namespace ros_alarms
+{
+
 struct AlarmProxy
 {
   AlarmProxy(std::string alarm_name,
@@ -61,3 +64,5 @@ struct AlarmProxy
   std::string json_parameters;
   uint8_t severity;
 };
+
+}  // namespace ros_alarms

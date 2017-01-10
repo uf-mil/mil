@@ -9,6 +9,9 @@
 #include <string>
 #include <functional>
 
+namespace ros_alarms
+{
+
 template <typename callable_t = std::function< void(ros_alarms::Alarm) >>
 struct ListenerCb
 {
@@ -143,3 +146,5 @@ void AlarmListener<callable_t>::__alarm_update(ros_alarms::Alarms alarms)
     }
   }
 }
+
+}  // namespace ros_alarms
