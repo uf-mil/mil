@@ -11,6 +11,9 @@ import json
 class AlarmBroadcaster(object):
     def __init__(self, name, node_name=None):
         self._alarm_name = name
+        if rospy.has_param("/known_alarms") and self._alarm_name not in rospy.get_param("/known_alarms"):
+            rospy.logwarn("'{}' is not in the list of known alarms (as defined in the /known_alarms rosparam)".format(self._alarm_name)) 
+
         self._node_name = rospy.get_name() if node_name is None else node_name
 
         self._alarm_set = rospy.ServiceProxy("/alarm/set", AlarmSet)
@@ -41,6 +44,8 @@ class AlarmBroadcaster(object):
 class AlarmListener(object):
     def __init__(self, name, callback_funct=None, **kwargs):
         self._alarm_name = name
+        if rospy.has_param("/known_alarms") and self._alarm_name not in rospy.get_param("/known_alarms"):
+            rospy.logwarn("'{}' is not in the list of known alarms (as defined in the /known_alarms rosparam)".format(self._alarm_name)) 
 
         self._alarm_get = rospy.ServiceProxy("/alarm/get", AlarmGet)
         rospy.wait_for_service("/alarm/get")

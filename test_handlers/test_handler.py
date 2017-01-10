@@ -4,12 +4,6 @@ from ros_alarms import HandlerBase
 class Tester(HandlerBase):
     alarm_name = "testing"
 
-    def __init__(self):
-        rospy.Timer(rospy.Duration(1), self.do_stuff)
-
-    def do_stuff(self, *args):
-        print "Alive"
-
     def raised(self, alarm):
         print "Tester raised"
 
