@@ -8,11 +8,16 @@ from ros_alarms.srv import AlarmSet, AlarmGet, AlarmSetRequest, AlarmGetRequest
 import json
 
 
+def _check_for_alarm(alarm_name, nowarn=False):
+    if not nowarn and rospy.has_param("/known_alarms") and \
+       alarm_name not in rospy.get_param("/known_alarms"):
+        msg = "'{}' is not in the list of known alarms (as defined in the /known_alarms rosparam)"
+        rospy.logwarn(msg.format(alarm_name)) 
+
 class AlarmBroadcaster(object):
-    def __init__(self, name, node_name=None):
+    def __init__(self, name, node_name=None, nowarn=False):
         self._alarm_name = name
-        if rospy.has_param("/known_alarms") and self._alarm_name not in rospy.get_param("/known_alarms"):
-            rospy.logwarn("'{}' is not in the list of known alarms (as defined in the /known_alarms rosparam)".format(self._alarm_name)) 
+        _check_for_alarm(self._alarm_name, nowarn)
 
         self._node_name = rospy.get_name() if node_name is None else node_name
 
@@ -42,10 +47,9 @@ class AlarmBroadcaster(object):
 
 
 class AlarmListener(object):
-    def __init__(self, name, callback_funct=None, **kwargs):
+    def __init__(self, name, callback_funct=None, nowarn=False, **kwargs):
         self._alarm_name = name
-        if rospy.has_param("/known_alarms") and self._alarm_name not in rospy.get_param("/known_alarms"):
-            rospy.logwarn("'{}' is not in the list of known alarms (as defined in the /known_alarms rosparam)".format(self._alarm_name)) 
+        _check_for_alarm(self._alarm_name, nowarn)
 
         self._alarm_get = rospy.ServiceProxy("/alarm/get", AlarmGet)
         rospy.wait_for_service("/alarm/get")
@@ -127,13 +131,13 @@ class AlarmListener(object):
 
             # Try to run the callback, absorbing any errors
             try:
-                cb(self)
+                cb(alarm)
             except Exception as e:
-                rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self.alarm_name))
+                rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self._alarm_name))
                 rospy.logwarn(e)
 
 class HeartbeatMonitor(AlarmBroadcaster):
-    def __init__(self, alarm_name, topic_name, prd=0.2, predicate=None):
+    def __init__(self, alarm_name, topic_name, prd=0.2, predicate=None, nowarn=False):
         ''' Used to trigger an alarm if a message on the topic `topic_name` isn't published
             atleast every `prd` seconds.
 
@@ -144,7 +148,7 @@ class HeartbeatMonitor(AlarmBroadcaster):
         self._prd = rospy.Duration(prd)
         self._killed = False
         
-        super(HeartbeatMonitor, self).__init__(alarm_name)
+        super(HeartbeatMonitor, self).__init__(alarm_name, nowarn)
         msg_class, _, _ = rostopic.get_topic_class(topic_name)
         rospy.Subscriber(topic_name, msg_class, self._got_msg)
 

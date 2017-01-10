@@ -20,7 +20,11 @@ for name, value in split:
     except:
         params[name] = value
 
-ab = AlarmBroadcaster(args.alarm_name)
+if args.alarm_name == "all":
+    ab = AlarmBroadcaster(args.alarm_name, nowarn=True)
+else:
+    ab = AlarmBroadcaster(args.alarm_name)
+
 ab.clear_alarm(parameters=params)
 rospy.loginfo("Alarm cleared!")
 
