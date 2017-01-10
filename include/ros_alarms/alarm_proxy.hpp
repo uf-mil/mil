@@ -10,6 +10,8 @@ namespace ros_alarms
 
 struct AlarmProxy
 {
+  AlarmProxy() {}
+
   AlarmProxy(std::string alarm_name,
         bool raised,
         std::string node_name,
@@ -58,11 +60,11 @@ struct AlarmProxy
   }
 
   std::string alarm_name;
-  bool raised;
+  bool raised = false;
   std::string node_name;
   std::string problem_description;
   std::string json_parameters;
-  uint8_t severity;
+  uint8_t severity = -1;
 };
 
 }  // namespace ros_alarms
