@@ -32,6 +32,16 @@ struct AlarmProxy
                   json_parameters, severity);
   }
 
+  AlarmProxy(ros_alarms::Alarm msg)
+  {
+    alarm_name = msg.alarm_name;
+    raised = msg.raised;
+    node_name = msg.node_name;
+    problem_description = msg.problem_description;
+    json_parameters = msg.parameters;
+    severity = msg.severity;
+  }
+
   ros_alarms::Alarm as_msg()
   {
     ros_alarms::Alarm a;

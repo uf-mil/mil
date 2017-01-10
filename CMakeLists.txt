@@ -58,5 +58,6 @@ add_library(ros_alarms
    ${PROJECT_NAME}/src/broadcaster.cpp
    ${PROJECT_NAME}/src/listener.cpp
 )
-target_include_directories(ros_alarms PUBLIC ros_alarms/include/)
+target_include_directories(${PROJECT_NAME} PUBLIC ros_alarms/include/)
+target_compile_options(${PROJECT_NAME} PRIVATE -g -Wall -std=c++11)
 
