@@ -29,7 +29,7 @@ class AlarmBroadcaster(object):
 
         rospy.logdebug("Created alarm broadcaster for alarm {}".format(name))
 
-    def _generate_request(self, raised, problem_description="", parameters={}, severity=5):
+    def _generate_request(self, raised, problem_description="", parameters={}, severity=0):
         request = AlarmSetRequest()
         request.alarm.alarm_name = self._alarm_name
         request.alarm.node_name = self._node_name
@@ -106,20 +106,14 @@ class AlarmListener(object):
         return resp.alarm 
 
     def _severity_cb_check(self, severity):
-        if isinstance(severity, tuple):
-            # If the severity is a tuple, it should be interpreted as a range
-            if severity[1] == -1:
-                # (X, -1)  Triggers for any alarms less or equally severe as X
-                return severity[0] <= self._last_alarm.severity 
+        if isinstance(severity, tuple) or isinstance(severity, list):
+            return severity[0] <= self._last_alarm.severity <= severity[1]
 
-            # (-1 , X) or (Y, X)  Trigger for any alarm in the double bounded range of Y and X
-            return severity[0] <= self._last_alarm.severity <= severity[1] 
-        
-        # Not a tuple, just an int. -1 for any severity, otherwise the severities much match
-        return severity == -1 or self._last_alarm.severity == severity
+        # Not a tuple, just an int. The severities should match
+        return self._last_alarm.severity == severity
 
     def add_callback(self, funct, call_when_raised=True, call_when_cleared=True,
-                     severity_required=-1):
+                     severity_required=(0, 5)):
         ''' Deals with adding function callbacks
         The user can specify if the function should be run on a raise or clear of this alarm.
 
@@ -130,7 +124,7 @@ class AlarmListener(object):
             self._raised_cbs.append((severity_required, funct))
 
         if call_when_cleared:
-            self._cleared_cbs.append((-1, funct))  # Clear callbacks always run
+            self._cleared_cbs.append(((0, 5), funct))  # Clear callbacks always run
 
     def clear_callbacks(self):
         ''' Clears all callbacks '''
@@ -160,7 +154,7 @@ class AlarmListener(object):
                 rospy.logwarn(e)
 
 class HeartbeatMonitor(AlarmBroadcaster):
-    def __init__(self, alarm_name, topic_name, prd=0.2, predicate=None, nowarn=False):
+    def __init__(self, alarm_name, topic_name, prd=0.2, predicate=None, nowarn=False, **kwargs):
         ''' Used to trigger an alarm if a message on the topic `topic_name` isn't published
             atleast every `prd` seconds.
 
@@ -169,9 +163,9 @@ class HeartbeatMonitor(AlarmBroadcaster):
         self._predicate = predicate if predicate is not None else lambda *args: True
         self._last_msg_time = None
         self._prd = rospy.Duration(prd)
-        self._killed = False
+        self._dropped = False
         
-        super(HeartbeatMonitor, self).__init__(alarm_name, nowarn)
+        super(HeartbeatMonitor, self).__init__(alarm_name, nowarn=nowarn, **kwargs)
         msg_class, _, _ = rostopic.get_topic_class(topic_name)
         rospy.Subscriber(topic_name, msg_class, self._got_msg)
 
@@ -182,16 +176,16 @@ class HeartbeatMonitor(AlarmBroadcaster):
         if self._predicate(msg):
             self._last_msg_time = rospy.Time.now()
             
-            # If it's killed, clear the kill
-            if self._killed:
+            # If it's dropped, clear the alarm and reset the dropped status
+            if self._dropped:
                 self.clear_alarm()
-                self._killed = False
+                self._dropped = False
 
     def _check_for_message(self, *args):
         if self._last_msg_time is None:
             return
 
-        if rospy.Time.now() - self._last_msg_time > self._prd and not self._killed:
+        if rospy.Time.now() - self._last_msg_time > self._prd and not self._dropped:
             self.raise_alarm()
-            self._killed = True
+            self._dropped = True
 

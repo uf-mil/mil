@@ -15,7 +15,7 @@ class Alarm(object):
     @classmethod
     def blank(cls, name):
         ''' Generate a general blank alarm that is cleared with a low severity '''
-        return cls(name, False, severity=5)
+        return cls(name, False, severity=0)
 
     @classmethod
     def from_msg(cls, msg):
@@ -50,25 +50,19 @@ class Alarm(object):
     
     def _severity_cb_check(self, severity):
         if isinstance(severity, tuple) or isinstance(severity, list):
-            # If the severity is a tuple, it should be interpreted as a range
-            if severity[1] == -1:
-                # (X, -1)  Triggers for any alarms less severe then X
-                return severity[0] < self.severity 
+            return severity[0] <= self.severity <= severity[1]
 
-            # (-1 , X) or (Y, X)  Trigger for any alarms less or equally severe to Y but more severe then X
-            return severity[0] <= self.severity < severity[1] 
-        print self.severity, severity 
-        # Not a tuple, just an int. -1 for any severity, otherwise the severities much match
-        return severity == -1 or self.severity == severity
+        # Not a tuple, just an int. The severities should match
+        return self.severity == severity
 
     def add_callback(self, funct, call_when_raised=True, call_when_cleared=True, 
-                     severity_required=-1):
+                     severity_required=(0, 5)):
         ''' Deals with adding handler function callbacks
         The user can specify if the function should be run on a raise or clear
         This will call the function when added if that condition is met.
 
         Each callback can have a severity level associated with it such that different callbacks can 
-            be triggered for different levels of severity.
+            be triggered for different levels or ranges of severity.
         '''
         if call_when_raised:
             self.raised_cbs.append((severity_required, funct))
@@ -76,7 +70,7 @@ class Alarm(object):
                 funct(self)
 
         if call_when_cleared:
-            self.cleared_cbs.append((-1, funct))
+            self.cleared_cbs.append(((0, 5), funct))
             if not self.raised and self._severity_cb_check(severity_required):
                 funct(self)
 
@@ -232,7 +226,7 @@ class AlarmServer(object):
             # Add the raise meta alarm callback to each sub alarm
             for alarm in alarms:
                 # Check for a listed severity with the sub alarm
-                severity = -1
+                severity = (0, 5)
                 if isinstance(alarm, list):
                     severity = alarm[1]
                     alarm = alarm[0]

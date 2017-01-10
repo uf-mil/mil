@@ -63,8 +63,8 @@ if __name__ == "__main__":
     
     al.clear_callbacks()
 
-    al.add_callback(cb1, severity_required=(-1, 3))
-    al.add_callback(cb2, severity_required=(2, -1))
+    al.add_callback(cb1, severity_required=(0, 3))
+    al.add_callback(cb2, severity_required=(2, 4))
     rospy.sleep(0.1)
     
     rospy.loginfo("Severity Range Test 1")

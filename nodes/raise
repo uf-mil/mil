@@ -23,8 +23,9 @@ for name, value in split:
     except:
         params[name] = value
 
-# Clip severity to be greater then 1
-severity = 0 if args.severity < 0 else args.severity
+# Clip severity between [0, 5]
+low, high = 0, 5
+severity = low if args.severity < low else high if args.severity > high else args.severity
 
 ab.raise_alarm(parameters=params, severity=severity)
 rospy.loginfo("Alarm raised!")
