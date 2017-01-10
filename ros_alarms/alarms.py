@@ -132,7 +132,10 @@ class AlarmListener(object):
         self._cleared_cbs = []
 
     def _alarm_update(self, msg):
-        alarm = [a for a in msg.alarms if a.alarm_name == self._alarm_name][0]
+        alarm = [a for a in msg.alarms if a.alarm_name == self._alarm_name]
+        if len(alarm) == 0:
+            return
+        alarm = alarm[0]
 
         # No change from the last update of this alarm
         if alarm == self._last_alarm:

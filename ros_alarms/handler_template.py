@@ -9,7 +9,7 @@ class HandlerBase(object):
     All alarm handlers must inherit from this base class in order to be registered.
     '''
     alarm_name = 'generic-name'
-    severity_required = -1
+    severity_required = (0, 5)
 
     def raised(self, alarm):
         rospy.logwarn("No raised function defined for '{}'.".format(alarm.alarm_name))
