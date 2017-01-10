@@ -75,8 +75,7 @@ struct Node {
   ros::NodeHandle nh;
   ros::NodeHandle private_nh;
   tf::TransformListener tf_listener;
-  kill_handling::KillListener kill_listener;
-  ros_alarms::AlarmListener<> alarm_listener;
+  ros_alarms::AlarmListener<> kill_listener;
 
   string body_frame;
   string fixed_frame;
@@ -112,11 +111,12 @@ struct Node {
 
   Node()
   : private_nh("~"),
-    kill_listener(boost::bind(&Node::killed_callback, this)),
     actionserver(nh, "moveto", false),
     disabled(false),
-    alarm_listener(private_nh, "kill")
+    kill_listener(nh, "kill")
   {
+    kill_listener.add_raise_cb([this](ros_alarms::AlarmProxy) { this->killed_callback(); });
+
     fixed_frame = uf_common::getParam<std::string>(private_nh, "fixed_frame");
     body_frame = uf_common::getParam<std::string>(private_nh, "body_frame");
 
@@ -144,7 +144,8 @@ struct Node {
 
   void odom_callback(const OdometryConstPtr &odom) {
     if (c3trajectory) return;                            // already initialized
-    if (kill_listener.get_killed() || disabled) return;  // only initialize when unkilled
+    if (kill_listener.is_raised() || disabled) return;  // only initialize when unkilled
+
 
     ros::Time now = ros::Time::now();
 
