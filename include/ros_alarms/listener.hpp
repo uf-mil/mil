@@ -15,21 +15,23 @@ namespace ros_alarms
 template <typename callable_t = std::function< void(AlarmProxy) >>
 struct ListenerCb
 {
+  enum class CallScenario { raise, clear, always };
+
   callable_t  cb_func;  // object needs to have a call operator
-  int severity_lo = 0;  // highest priority
-  int severity_hi = 0;  // lowest priority
-  bool call_on_raise = true;
+  int severity_hi = 5;  // highest priority
+  int severity_lo = 0;  // lowest priority
+  CallScenario call_on = CallScenario::always;
 
   // Compares alarm severity against the action_required range for this callback
   bool severity_check(int severity)
-    { return severity >= severity_lo && severity <= severity_hi; }
+    { return severity <= severity_hi && severity >= severity_lo; }
 
   // Checks msg to see if its raised status and severity require calling
   // the associated callbacks and calls them if necessary
   void operator()(ros_alarms::Alarm msg)
   {
     bool needs_call = call_on_raise == msg.raised &&
-      (call_on_raise? severity_check(msg.severity) : true);
+      (call_on == CallScenario::raise? severity_check(msg.severity) : true);
 
     if(needs_call)
     {
@@ -48,17 +50,20 @@ public:
   bool is_raised() const        { return __last_alarm.raised; }
   bool is_cleared() const       { return !is_raised(); }
 
-  // Queries server before and parses response into an AlarmProxy
+  // Queries server and parses response into an AlarmProxy
   AlarmProxy get_alarm();
 
   // Returns AlarmProxy for last alarm of this name published to '/alarm/updates'
   AlarmProxy get_cached_alarm() { return __last_alarm; }
 
-  // Registers a callback to be invoked at clearing or raising for a range of severities
-  void add_cb(callable_t cb, int severity_lo, int severity_hi, bool call_on_raise=true);
+  // Registers a callback to be invoked on both raise and clear
+  void add_cb(callable_t cb);
 
-  // Short form for registering a callback to be called for a single severity level
-  void add_cb(callable_t cb, int severity, bool call_on_raise=true);
+  // Registers a raise callback to be called for a single severity level
+  void add_raise_cb(callable_t cb, int severity);
+
+  // Registers a callback to be invoked at alarm raise for a range of severities
+  void add_raise_cb(callable_t cb, int severity_lo, int severity_hi);
 
   // Registers a callback to be invoked when alarm is cleared
   void add_clear_cb(callable_t cb);
@@ -73,6 +78,7 @@ private:
   std::vector<ListenerCb<callable_t>> __callbacks;
   AlarmProxy __last_alarm;
   ros::Time __last_update { 0, 0 };
+  void __add_alarm(callable_t cb, int severity_lo, int severity_hi, CallScenario call_scenario);
   void __alarm_update(ros_alarms::Alarms);
 };
 
@@ -85,6 +91,9 @@ AlarmListener<callable_t>::AlarmListener(ros::NodeHandle &nh, std::string alarm_
 
   // Subscribes to list of recently modified alarms from alarm server
   __update_subscriber = __nh.subscribe("/alarm/updates", 10, &AlarmListener<callable_t>::__alarm_update, this);
+
+  // Initial server query so stored AlarmProxy is initialized
+  get_alarm();
 }
 
 template <typename callable_t>
@@ -117,7 +126,13 @@ void AlarmListener<callable_t>::add_cb(callable_t cb, int s_lo, int s_hi, bool c
 }
 
 template <typename callable_t>
-void AlarmListener<callable_t>::add_cb(callable_t cb, int severity, bool call_on_raise)
+void alarmlistener<callable_t>::add_cb(callable_t cb)
+{
+  add_cb(cb, severity, severity, call_on_raise);
+}
+
+template <typename callable_t>
+void alarmlistener<callable_t>::add_cb(callable_t cb, int severity, bool call_on_raise)
 {
   add_cb(cb, severity, severity, call_on_raise);
 }
