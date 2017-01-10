@@ -13,15 +13,15 @@ class AlarmBroadcaster
 {
 public:
   AlarmBroadcaster(ros::NodeHandle &nh, AlarmProxy* alarm);
-  AlarmProxy& clear() { alarm->raised = false; publish(); }
-  AlarmProxy& raise() { alarm->raised = true;  publish(); }
-  AlarmProxy& updateSeverity(uint8_t sev) { alarm->severity = sev; publish();}
-  AlarmProxy* alarm_ptr() { return alarm; }
+  void clear() { __alarm_ptr->raised = false; publish(); }
+  void raise() { __alarm_ptr->raised = true;  publish(); }
+  void updateSeverity(uint8_t sev) { __alarm_ptr->severity = sev; publish();}
+  AlarmProxy& alarm() { return *__alarm_ptr; }
 
 private:
-  ros::NodeHandle nh;
+  ros::NodeHandle __nh;
   ros::ServiceClient __set_alarm;
-  AlarmProxy* alarm;
+  AlarmProxy* __alarm_ptr;
   bool publish();
 };
 
