@@ -10,7 +10,8 @@ from interactive_markers.interactive_marker_server import *
 from geometry_msgs.msg import Pose, Vector3
 from std_msgs.msg import ColorRGBA, Float64
 from uf_common.msg import Float64Stamped  # This needs to be deprecated
-from sub8_alarm import AlarmListener, AlarmBroadcaster
+#from sub8_alarm import AlarmListener, AlarmBroadcaster
+from ros_alarms import AlarmBroadcaster, AlarmListener
 import sub8_ros_tools as sub8_utils
 
 
@@ -71,8 +72,9 @@ class RvizVisualizer(object):
         self.killed = False
 
         # connect kill marker to kill alarm
-        self.kill_listener = AlarmListener(alarm_name="kill", callback_funct=self.kill_alarm_callback)
-        self.kill_alarm = AlarmBroadcaster().add_alarm("kill")
+        self.kill_listener = AlarmListener("kill")
+        self.kill_listener.add_callback(self.kill_alarm_callback)
+        self.kill_alarm = AlarmBroadcaster("kill")
 
         # distance to bottom
         self.range_sub = rospy.Subscriber("dvl/range", Float64Stamped, self.range_callback)

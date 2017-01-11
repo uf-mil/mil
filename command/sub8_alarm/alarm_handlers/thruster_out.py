@@ -21,9 +21,9 @@ class ThrusterOut(HandlerBase):
          
         # Kill if we lose too many thrusters
         if len(self.dropped_thrusters) > rospy.get_param("thruster_loss_limit", 2):
-            self.ab.raise_kill()
+            self.ab.raise_alarm()
         else:
-            self.ab.clear_kill()
+            self.ab.clear_alarm()
 
     def raised(self, alarm):
         if alarm.parameters is None:

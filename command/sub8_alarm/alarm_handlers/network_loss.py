@@ -6,12 +6,10 @@ class NetworkLoss(HandlerBase):
     alarm_name = 'network-loss'
 
     def __init__(self):
-        self.go_auto = rospy.ServiceProxy("/go_auto", Trigger)
         self.hm = HeartbeatMonitor(self.alarm_name, "/network", node_name="network_loss_kill")
          
     def raised(self, alarm):
-        if rospy.get_param("autonomous", False):
-            self.go_auto()
+        pass
 
     def cleared(self, alarm):
         pass
