@@ -70,7 +70,12 @@ def main():
 
 
 def catch_error(error):
-    fprint("Error caught!", msg_color='red')
+    # CancelledErrors occur from something bad happen with defers in the mission
+    error.trap(defer.CancelledError)
+    if error.check(defer.CancelledError):
+        return 
+
+    fprint("Error caught!!!", msg_color='red')
     print 'tx traceback'
     print '>------------------------------<'
     print error.printTraceback()
@@ -86,6 +91,5 @@ def _start():
 
 
 if __name__ == '__main__':
-
     reactor.callWhenRunning(_start)
     reactor.run()
