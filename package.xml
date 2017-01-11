@@ -5,6 +5,7 @@
   <description>The ros_alarms package</description>
 
   <maintainer email="matthew.langford95@gmail.com">Matt Langford</maintainer>
+  <maintainer email="d.soto@ufl.com">David Soto</maintainer>
 
   <license>MIT</license>
 
@@ -18,7 +19,7 @@
   <run_depend>rospy</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>message_generation</run_depend>
-  <run_depend>message_runtim</run_depend>
+  <run_depend>message_runtime</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
