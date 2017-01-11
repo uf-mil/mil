@@ -25,6 +25,6 @@ class HandlerBase(object):
         '''ONLY APPLICABLE FOR META ALARMS
         Returns `True` or `False` to raise or clear (respectively) this meta alarm given
             a dictionary of all of it's sub alarms:
-                {sub_alarm_name1: raised?, sub_alarm_name2: raised?, ...}
+                {sub_alarm_name1: alarm_msg, sub_alarm_name2: alarm_msg, ...}
         '''
         return any(sub_alarms.values())
