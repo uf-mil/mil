@@ -153,9 +153,20 @@ class AlarmServer(object):
         if alarm.alarm_name == "all":
             rospy.loginfo("Clearing all alarms.")
             for alarm in self.alarms.values():
+                # Don't want to clear meta alarms until the end
+                if alarm in self.meta_alarms:
+                    continue
                 cleared_alarm = alarm.as_msg()
                 cleared_alarm.raised = False
                 alarm.update(cleared_alarm)
+                self._alarm_pub.publish(alarm)
+
+            for alarm in self.meta_alarms.values():
+                cleared_alarm = alarm.as_msg()
+                cleared_alarm.raised = False
+                alarm.update(cleared_alarm)
+                self._alarm_pub.publish(alarm)
+                
             return True
 
         if alarm.alarm_name in self.alarms:
