@@ -6,12 +6,12 @@
 
     <!-- Meta alarm definitions -->
     <rosparam ns="meta_alarms">
-        kill: [["bus-voltage", 0], "height-over-bottom", "thruster-kill", "network-kill"]
+        kill: ["bus-voltage", "height-over-bottom", "thruster-kill", "network-loss"]
     </rosparam>
 
     <!-- List known alarms here -->
     <rosparam ns="known_alarms">
-        kill, thruster-out, bus-voltage, height-over-bottom, network-loss, thruster-kill, network-kill
+        kill, thruster-out, bus-voltage, height-over-bottom, network-loss, thruster-kill
     </rosparam>
 
     <!-- Alarm specific params -->
