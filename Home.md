@@ -1,14 +1,10 @@
-# Sub8 Wiki
+# SubjuGator 8 Wiki
 
-Welcome to the Sub8 Wiki! Check out the "getting started" on this wiki, to get started with Sub8, and look at uf-mil/Getting-Started repository for guides to installing ROS and all of the MIL vehicle dependencies.
+Welcome to the Sub8 Wiki! Check out the "getting started" on this wiki, to get started with Sub8, and look at the [uf-mil/installer](https://github.com/uf-mil/installer) repository for guides to installing ROS and all of the MIL vehicle dependencies.
 
-If you have any questions, don't hesitate to email Ralph.
+If you have any questions, don't hesitate to email David.
 
 # Software Team
-
-* Patrick Emami
-
-* Zach Goins (who?)
 
 * Ralph Leyva
 
@@ -20,15 +16,15 @@ If you have any questions, don't hesitate to email Ralph.
 
 * Matthew Langford
 
-* Brandon Peterson
-
-* Jiyao Guo
-
 * Jason Nezvadovitz
 
 * Anthony Olive
 
-* Lucas Bassett-Audain
+* Kevin Allen
+
+* Daniel Voyla
+
+* Israelle Peroszcki
 
 * Little Man and Darla
 
@@ -40,4 +36,4 @@ If you have any questions, don't hesitate to email Ralph.
 
 # Getting Involved
 
-Interested in working on the Sub? Schedule a one-on-one meeting with Ralph (Ralph Leyva). Find his contact information floating around in the repository.
+Interested in working on the Sub? Schedule a one-on-one meeting with David (David Soto). Find his contact information floating around in the repository.
