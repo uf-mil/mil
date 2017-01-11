@@ -94,6 +94,9 @@ AlarmListener<callable_t>
 {
   // Service to query alarm server
   __get_alarm = __nh.serviceClient<ros_alarms::AlarmGet>("/alarm/get");
+  ROS_INFO("Waiting for alarm server...");
+  __get_alarm.waitForExistence();
+
 
   // Subscribes to list of recently modified alarms from alarm server
   __update_subscriber = __nh.subscribe("/alarm/updates", 10, &AlarmListener<callable_t>::__alarm_update, this);
@@ -160,6 +163,7 @@ void AlarmListener<callable_t>
   l_cb.call_scenario = call_scenario;
 
   __callbacks.push_back(l_cb);
+  cb(__last_alarm);
 }
 
 template <typename callable_t>
