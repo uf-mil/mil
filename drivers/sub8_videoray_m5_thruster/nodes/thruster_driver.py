@@ -63,7 +63,7 @@ class ThrusterDriver(object):
         if self.bus_voltage is not None:
             msg = Float64(self.bus_voltage)
             self.bus_voltage_pub.publish(msg)
-            if self.bus_volage < rospy.get_param("/battery/warn_voltage", 44.5):
+            if self.bus_voltage < rospy.get_param("/battery/warn_voltage", 44.5):
                 self.alert_bus_voltage(self.bus_voltage, 2)
             if self.bus_voltage < rospy.get_param("/battery/kill_voltage", 44.0):
                 self.alert_bus_voltage(self.bus_voltage, 0)

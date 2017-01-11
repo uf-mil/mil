@@ -77,7 +77,7 @@
   <node pkg="sub8_gazebo" type="buoys.py" name="buoy_contact_reporter" />
   <node pkg="sub8_gazebo" type="turbulator.py" name="turbulator" output="screen" if="$(arg turbulence)" />
 
-  <include file="$(find sub8_alarm)/launch/alarm.launch" />
+  <include file="$(find sub8_alarm)/launch/alarms.launch" />
   <include file="$(find sub8_launch)/launch/subsystems/rise.launch" />
   <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper_sim.launch" />
   <include file="$(find sub8_videoray_m5_thruster)/launch/thruster_driver.launch" />
