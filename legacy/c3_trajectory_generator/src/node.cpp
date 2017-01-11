@@ -116,7 +116,7 @@ struct Node {
     disabled(false),
     kill_listener(nh, "kill")
   {
-    kill_listener.add_raise_cb([this](ros_alarms::AlarmProxy) { this->killed_callback(); });
+    kill_listener.add_clear_cb([this](ros_alarms::AlarmProxy) { this->killed_callback(); });
 
     fixed_frame = uf_common::getParam<std::string>(private_nh, "fixed_frame");
     body_frame = uf_common::getParam<std::string>(private_nh, "body_frame");
