@@ -5,6 +5,7 @@ class HandlerBase(object):
     Listens for an alarm with this `alarm_name`.
     When that alarm is raised, self.raised will be called.
     When that alarm is cleared, self.cleared will be called.
+    See the comments below for self.meta_predicate.
 
     All alarm handlers must inherit from this base class in order to be registered.
     '''
@@ -20,3 +21,10 @@ class HandlerBase(object):
         rospy.logwarn("No cleared function defined for '{}'.".format(alarm.alarm_name))
         return
 
+    def meta_predicate(self, meta_alarm, sub_alarms):
+        '''ONLY APPLICABLE FOR META ALARMS
+        Returns `True` or `False` to raise or clear (respectively) this meta alarm given
+            a dictionary of all of it's sub alarms:
+                {sub_alarm_name1: raised?, sub_alarm_name2: raised?, ...}
+        '''
+        return any(sub_alarms.values())

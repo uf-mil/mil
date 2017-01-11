@@ -1,6 +1,12 @@
 import rospy
 from ros_alarms import HandlerBase
 
+class Kill(HandlerBase):
+    alarm_name = "kill"
+
+    def meta_predicate(self, meta, alarms):
+        return alarms.get('test2').raised
+
 class Tester(HandlerBase):
     alarm_name = "testing"
 

@@ -128,11 +128,12 @@ class AlarmServer(object):
     def __init__(self):
         # Maps alarm name to Alarm objects
         self.alarms = {}
+        # Maps meta alarm names to predicate Handler functions
         self.meta_alarms = {}
 
         # Outside interface to the alarm system. Usually you don't want to 
         # interface with these directly.
-        self.alarm_pub = rospy.Publisher("/alarm/updates", AlarmMsg, latch=True, queue_size=100)
+        self._alarm_pub = rospy.Publisher("/alarm/updates", AlarmMsg, latch=True, queue_size=100)
         rospy.Service("/alarm/set", AlarmSet, self.set_alarm)
         rospy.Service("/alarm/get", AlarmGet, self.get_alarm)
         
@@ -162,7 +163,7 @@ class AlarmServer(object):
         else:
             self.alarms[alarm.alarm_name] = Alarm.from_msg(alarm)
         
-        self.alarm_pub.publish(alarm)
+        self._alarm_pub.publish(alarm)
         return True
 
     def get_alarm(self, srv):
@@ -170,9 +171,17 @@ class AlarmServer(object):
         rospy.logdebug("Got request for alarm: {}".format(srv.alarm_name))
         return self.alarms.get(srv.alarm_name, Alarm.blank(srv.alarm_name)).as_srv_resp()
 
-    def _handle_meta_alarm(self, meta_alarm):
-        if meta_alarm not in self.meta_alarms:
-            return
+    def _handle_meta_alarm(self, meta_alarm, sub_alarms):
+        alarms = {name: alarm for name, alarm in self.alarms.items() if name in sub_alarms}
+        meta = self.alarms[meta_alarm]
+
+        # Check the predicate, this should return the new `raised` status of the meta alarm
+        raised_status = self.meta_alarms[meta_alarm](meta, alarms)
+        if raised_status != meta.raised:
+            temp = meta.as_msg()
+            temp.raised = raised_status
+            meta.update(temp)
+            self._alarm_pub.publish(meta.as_msg())
 
     def _create_alarm_handlers(self):
         # If the param exists, load it here
@@ -194,6 +203,10 @@ class AlarmServer(object):
                 self.alarms[alarm_name] = Alarm.blank(alarm_name)
             self.alarms[alarm_name].raised = h.initally_raised
 
+            # If a handler exists for a meta alarm, we need to save the predicate
+            if alarm_name in self.meta_alarms:
+                self.meta_alarms[alarm_name] = h.meta_predicate
+
             # Register the raised or cleared functions
             self.alarms[alarm_name].add_callback(h.raised, call_when_cleared=False, 
                                                  severity_required=severity)
@@ -203,39 +216,22 @@ class AlarmServer(object):
 
             rospy.loginfo("Loaded handler: {}".format(h.alarm_name))
 
-    def _create_meta_alarms(self, namespace="/meta_alarms/"):
+    def _create_meta_alarms(self, namespace="meta_alarms/"):
         meta_alarms_dict = rospy.get_param(namespace, {})
-
-        def raise_meta(from_alarm, meta_name):
-            ''' Raises a meta alarm from one of it's sub alarms '''
-            meta_message = self.alarms[meta_name].as_msg()
-            meta_message.node_name = from_alarm.node_name
-
-            # Meta alarm should have the highest severity of all it's sub alarms
-            if from_alarm.severity < meta_message.severity:
-                meta_message.severity = from_alarm.severity 
-
-            meta_message.raised = True
-            self.alarms[meta_name].update(meta_message)
-
-        for meta, alarms_of_interest in meta_alarms_dict.iteritems():
+        for meta, alarms in meta_alarms_dict.iteritems():
             # Add the meta alarm
             if meta not in self.alarms:
                 self.alarms[meta] = Alarm.blank(meta)
 
-            # Add the raise meta alarm callback to each sub alarm
-            for alarm in alarms_of_interest:
-                # Check for a listed severity with the sub alarm
-                severity = (0, 5)
-                if isinstance(alarm, list):
-                    severity = alarm[1]
-                    alarm = alarm[0]
+            default = lambda meta, alarms: any(alarms.items())
+            self.meta_alarms[meta] = default
 
+            cb = lambda alarm, meta_name=meta, sub_alarms=alarms: self._handle_meta_alarm(meta_name, sub_alarms)
+            for alarm in alarms:
                 if alarm not in self.alarms:
                     self.alarms[alarm] = Alarm.blank(alarm)
 
-                cb = lambda alarm, meta_name=meta: raise_meta(alarm, meta_name)
-                self.alarms[alarm].add_callback(cb, call_when_cleared=False, severity_required=severity)
+                self.alarms[alarm].add_callback(cb)
 
 
 if __name__ == "__main__":
