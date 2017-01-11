@@ -90,6 +90,7 @@ class Alarm(object):
         self.parameters = parameters
         self.severity = srv.severity
         
+        rospy.loginfo("Updating alarm: {}, {}.".format(self.alarm_name, "raised" if self.raised else "cleared"))
         # Run the callbacks for that alarm
         cb_list = self.raised_cbs if srv.raised else self.cleared_cbs
         for severity, cb in cb_list:
@@ -127,17 +128,19 @@ class AlarmServer(object):
     def __init__(self):
         # Maps alarm name to Alarm objects
         self.alarms = {}
+        self.meta_alarms = {}
 
         # Outside interface to the alarm system. Usually you don't want to 
         # interface with these directly.
-        self.alarm_pub = rospy.Publisher("/alarm/updates", Alarms, latch=True, queue_size=100)
+        self.alarm_pub = rospy.Publisher("/alarm/updates", AlarmMsg, latch=True, queue_size=100)
         rospy.Service("/alarm/set", AlarmSet, self.set_alarm)
         rospy.Service("/alarm/get", AlarmGet, self.get_alarm)
         
+        msg = "Expecting at most the following alarms: {}"
+        rospy.loginfo(msg.format(rospy.get_param("/known_alarms", [])))
+
         self._create_meta_alarms()
         self._create_alarm_handlers()
-
-        self._publish_alarms()
 
     def set_alarm(self, srv):
         ''' Sets or updates the alarm
@@ -155,13 +158,11 @@ class AlarmServer(object):
             return True
 
         if alarm.alarm_name in self.alarms:
-            rospy.loginfo("Updating alarm: {}, {}.".format(alarm.alarm_name, "raised" if alarm.raised else "cleared"))
             self.alarms[alarm.alarm_name].update(alarm)
         else:
-            rospy.loginfo("Adding alarm: {}, {}.".format(alarm.alarm_name, alarm.raised))
             self.alarms[alarm.alarm_name] = Alarm.from_msg(alarm)
-
-        self._publish_alarms()
+        
+        self.alarm_pub.publish(alarm)
         return True
 
     def get_alarm(self, srv):
@@ -169,11 +170,9 @@ class AlarmServer(object):
         rospy.logdebug("Got request for alarm: {}".format(srv.alarm_name))
         return self.alarms.get(srv.alarm_name, Alarm.blank(srv.alarm_name)).as_srv_resp()
 
-    def _publish_alarms(self):
-        alarms = Alarms()
-        alarms.header = Header(stamp=rospy.Time.now())
-        alarms.alarms = [a.as_msg() for a in self.alarms.values()]
-        self.alarm_pub.publish(alarms)
+    def _handle_meta_alarm(self, meta_alarm):
+        if meta_alarm not in self.meta_alarms:
+            return
 
     def _create_alarm_handlers(self):
         # If the param exists, load it here
@@ -193,7 +192,8 @@ class AlarmServer(object):
 
             if alarm_name not in self.alarms:
                 self.alarms[alarm_name] = Alarm.blank(alarm_name)
-            
+            self.alarms[alarm_name].raised = h.initally_raised
+
             # Register the raised or cleared functions
             self.alarms[alarm_name].add_callback(h.raised, call_when_cleared=False, 
                                                  severity_required=severity)
@@ -204,7 +204,7 @@ class AlarmServer(object):
             rospy.loginfo("Loaded handler: {}".format(h.alarm_name))
 
     def _create_meta_alarms(self, namespace="/meta_alarms/"):
-        meta_alarms_dict = rospy.get_param(namespace)
+        meta_alarms_dict = rospy.get_param(namespace, {})
 
         def raise_meta(from_alarm, meta_name):
             ''' Raises a meta alarm from one of it's sub alarms '''
@@ -218,13 +218,13 @@ class AlarmServer(object):
             meta_message.raised = True
             self.alarms[meta_name].update(meta_message)
 
-        for meta, alarms in meta_alarms_dict.iteritems():
+        for meta, alarms_of_interest in meta_alarms_dict.iteritems():
             # Add the meta alarm
-            if meta not in alarms:
+            if meta not in self.alarms:
                 self.alarms[meta] = Alarm.blank(meta)
 
             # Add the raise meta alarm callback to each sub alarm
-            for alarm in alarms:
+            for alarm in alarms_of_interest:
                 # Check for a listed severity with the sub alarm
                 severity = (0, 5)
                 if isinstance(alarm, list):

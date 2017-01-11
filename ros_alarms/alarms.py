@@ -2,7 +2,7 @@ from __future__ import division
 import rospy
 import rostopic
 
-from ros_alarms.msg import Alarms
+from ros_alarms.msg import Alarm
 from ros_alarms.srv import AlarmSet, AlarmGet, AlarmSetRequest, AlarmGetRequest
 
 import json
@@ -69,10 +69,9 @@ class AlarmListener(object):
             rospy.logerr("No alarm sever found! Alarm behaviours will be unpredictable.")
         
         # Data used to trigger callbacks
-        self._last_alarm = None
         self._raised_cbs = []  # [(severity_for_cb1, cb1), (severity_for_cb2, cb2), ...]
         self._cleared_cbs = []
-        rospy.Subscriber("/alarm/updates", Alarms, self._alarm_update)
+        rospy.Subscriber("/alarm/updates", Alarm, self._alarm_update)
 
         if callback_funct is not None:
             self.add_callback(callback_funct, **kwargs)
@@ -131,15 +130,10 @@ class AlarmListener(object):
         self._raised_cbs = []
         self._cleared_cbs = []
 
-    def _alarm_update(self, msg):
-        alarm = [a for a in msg.alarms if a.alarm_name == self._alarm_name]
-        if len(alarm) == 0:
+    def _alarm_update(self, alarm):
+        if alarm.alarm_name != self._alarm_name:
             return
-        alarm = alarm[0]
-
-        # No change from the last update of this alarm
-        if alarm == self._last_alarm:
-            return
+        
         self._last_alarm = alarm
 
         # Run the callbacks if severity conditions are met
