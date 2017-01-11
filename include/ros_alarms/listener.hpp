@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ros/ros.h>
-#include <ros_alarms/Alarms.h>
+#include <ros_alarms/Alarm.h>
 #include <ros_alarms/AlarmGet.h>
 
 #include <ros_alarms/alarm_proxy.hpp>
@@ -83,7 +83,7 @@ private:
   AlarmProxy __last_alarm;
   ros::Time __last_update { 0, 0 };
   void __add_cb(callable_t cb, int severity_lo, int severity_hi, CallScenario call_scenario);
-  void __alarm_update(ros_alarms::Alarms);
+  void __alarm_update(ros_alarms::Alarm);
 };
 
 
@@ -164,21 +164,17 @@ void AlarmListener<callable_t>
 
 template <typename callable_t>
 void AlarmListener<callable_t>
-::__alarm_update(ros_alarms::Alarms alarms)
+::__alarm_update(ros_alarms::Alarm alarm_msg)
 {
-  // Check update list for our alarm name
-  for(auto alarm_msg : alarms.alarms)
+  if(alarm_msg.alarm_name == __last_alarm.alarm_name)
   {
-    if(alarm_msg.alarm_name == __last_alarm.alarm_name)
-    {
-      // Update internal alarm data
-      __last_alarm = alarm_msg;
-      __last_update = ros::Time::now();
-      
-      // Invoke callbacks if necessary
-      for(auto& cb : __callbacks)
-        cb(alarm_msg);
-    }
+    // Update internal alarm data
+    __last_alarm = alarm_msg;
+    __last_update = ros::Time::now();
+ 
+    // Invoke callbacks if necessary
+    for(auto& cb : __callbacks)
+      cb(alarm_msg);
   }
 }
 
