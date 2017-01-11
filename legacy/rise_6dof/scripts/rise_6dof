@@ -15,8 +15,7 @@ from std_msgs.msg import Header
 from uf_common.msg import PoseTwist, PoseTwistStamped
 from sub8_ros_tools import pose_to_numpy, twist_to_numpy
 
-
-from kill_handling.listener import KillListener
+from ros_alarms import AlarmListener 
 
 from rise_6dof import controller
 from rise_6dof.cfg import controllerConfig
@@ -44,7 +43,7 @@ class Node(object):
             return self.config
 
     def __init__(self):
-        self.kill_listener = KillListener()
+        self.kill_listener = AlarmListener("kill")
 
         self.reconfigure(controllerConfig.defaults, 0)
         self.server = DynamicReconfigureServer(controllerConfig, self.reconfigure)
@@ -74,7 +73,7 @@ class Node(object):
                 self.kill()
                 continue
 
-            if self.kill_listener.get_killed():
+            if self.kill_listener.is_raised():
                 self.kill()
                 continue
 

@@ -8,7 +8,6 @@ find_package(
     actionlib
     message_runtime
     message_generation
-    kill_handling
     uf_common
     tf
     cmake_modules
@@ -36,7 +35,6 @@ catkin_package(
     message_generation
     uf_common
     tf
-    kill_handling
     ros_alarms
   INCLUDE_DIRS
     include

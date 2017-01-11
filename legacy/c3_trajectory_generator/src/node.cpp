@@ -8,7 +8,6 @@
 #include <uf_common/msg_helpers.h>
 #include <uf_common/param_helpers.h>
 #include <kill_handling/Kill.h>
-#include <kill_handling/listener.h>
 #include <ros_alarms/listener.hpp>
 
 #include "uf_common/MoveToAction.h"
