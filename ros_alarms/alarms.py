@@ -4,6 +4,7 @@ import rostopic
 
 from ros_alarms.msg import Alarm
 from ros_alarms.srv import AlarmSet, AlarmGet, AlarmSetRequest, AlarmGetRequest
+from std_msgs.msg import Header
 
 import json
 
@@ -151,7 +152,7 @@ class AlarmListener(object):
                 rospy.logwarn(e)
 
 class HeartbeatMonitor(AlarmBroadcaster):
-    def __init__(self, alarm_name, topic_name, prd=0.2, predicate=None, nowarn=False, **kwargs):
+    def __init__(self, alarm_name, topic_name, prd=0.2, msg_class=Header, predicate=None, nowarn=False, **kwargs):
         ''' Used to trigger an alarm if a message on the topic `topic_name` isn't published
             atleast every `prd` seconds.
 
@@ -163,7 +164,6 @@ class HeartbeatMonitor(AlarmBroadcaster):
         self._dropped = False
         
         super(HeartbeatMonitor, self).__init__(alarm_name, nowarn=nowarn, **kwargs)
-        msg_class, _, _ = rostopic.get_topic_class(topic_name)
         rospy.Subscriber(topic_name, msg_class, self._got_msg)
 
         rospy.Timer(rospy.Duration(prd / 2), self._check_for_message)

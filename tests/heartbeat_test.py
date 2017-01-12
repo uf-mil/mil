@@ -12,7 +12,7 @@ if __name__ == "__main__":
     pub = rospy.Publisher("/heartbeat", String, queue_size=1)
     al = AlarmListener("kill")
     al.add_callback(printit, call_when_cleared=False)
-    hm = HeartbeatMonitor("kill", "/heartbeat", 1)
+    hm = HeartbeatMonitor("kill", "/heartbeat", 1, String)
     hm.clear_alarm()
 
     rospy.loginfo("Timeout test")
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     def parse(msg):
         return "test" in msg.data
 
-    hm = HeartbeatMonitor("kill", "/heartbeat", 1, parse)
+    hm = HeartbeatMonitor("kill", "/heartbeat", 1, String, parse)
     hm.clear_alarm()
 
     rospy.loginfo("Timeout with Predicate test")
