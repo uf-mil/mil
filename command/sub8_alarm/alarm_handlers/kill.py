@@ -23,7 +23,7 @@ class Kill(HandlerBase):
             return True
 
         # Battery too low
-        if sub_alarms["bus-voltage"].severity == 5:
+        if sub_alarms["bus-voltage"].raised and sub_alarms["bus-voltage"].severity == 5:
             return True
         ignore.append("bus-voltage")
 
@@ -31,6 +31,11 @@ class Kill(HandlerBase):
         if sub_alarms["network-loss"].raised and not rospy.get_param("autonomous", False):
             return True
         ignore.append("network-loss")
+
+        # Severity level of 5 means too many thrusters out 
+        if sub_alarms["thruster-out"].raised and subs_alarms["thruster-out"].severity == 5:
+            return True
+        ignore.append("thruster-out")
 
         # If a mission wants us to kill, go ahead and kill 
         if sub_alarms["mission-kill"].raised:

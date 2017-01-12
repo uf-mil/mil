@@ -26,6 +26,7 @@ class ThrusterDriver(object):
             - Send a thruster status message describing the status of the particular thruster
         '''
         self.thruster_out_alarm = AlarmBroadcaster("thruster-out")
+        AlarmListener("thruster-out", self.update_failed_thrusters)
         self.bus_voltage_alarm = AlarmBroadcaster("bus-voltage")
         
         self.thruster_heartbeats = {}
@@ -56,6 +57,10 @@ class ThrusterDriver(object):
         # This is essentially only for testing
         self.fail_thruster_server = rospy.Service('fail_thruster', FailThruster, self.fail_thruster)
 
+    def update_failed_thrusters(self, alarm):
+        # This will just make sure that this list of failed thrusters matches the current alarm's list
+        self.failed_thrusters = alarm.parameters.get("thrusters-out", [])
+
     def publish_bus_voltage(self, *args):
         if (rospy.Time.now() - self.last_bus_voltage_time) > rospy.Duration(0.5):
             self.stop()
@@ -64,9 +69,8 @@ class ThrusterDriver(object):
             msg = Float64(self.bus_voltage)
             self.bus_voltage_pub.publish(msg)
             if self.bus_voltage < rospy.get_param("/battery/warn_voltage", 44.5):
-                self.alert_bus_voltage(self.bus_voltage, 2)
-            if self.bus_voltage < rospy.get_param("/battery/kill_voltage", 44.0):
-                self.alert_bus_voltage(self.bus_voltage, 0)
+                # This alert checks the severity of the battery voltage level as well 
+                self.alert_bus_voltage(self.bus_voltage)
 
     def check_for_drops(self, *args):
         for name, time in self.thruster_heartbeats.items():
@@ -93,7 +97,7 @@ class ThrusterDriver(object):
 
         if 40.0 < voltage < 50.0:
             self.last_bus_voltage_time = rospy.Time.now()
-            self.bus_voltage = (0.6 * voltage) + (0.4 * self.bus_voltage)
+            self.bus_voltage = (0.1 * voltage) + (0.9 * self.bus_voltage)
 
     def load_config(self, path):
         '''Load the configuration data:
@@ -229,26 +233,41 @@ class ThrusterDriver(object):
             self.command_thruster(thrust_cmd.name, thrust_cmd.thrust)
 
     def alert_thruster_unloss(self, thruster_name):
-        self.thruster_out_alarm.clear_alarm(
-            parameters={
-                'thruster_name': thruster_name,
-            }
-        )
-        rospy.logerr(self.failed_thrusters)
-        self.failed_thrusters.remove(thruster_name)
+        if thruster_name in self.failed_thrusters
+            self.failed_thrusters.remove(thruster_name)
+        
+        if len(self.failed_thrusters) == 0:
+            self.thruster_out_alarm.clear_alarm()
+        else:
+            rospy.logerr(self.failed_thrusters)
+            self.thruster_out_alarm.raise_alarm(
+                parameters={
+                    'thruster_name': self.failed_thrusters,
+                }
+            )
 
-    def alert_thruster_loss(self, thruster_name, fault_info):
+    def alert_thruster_loss(self, thruster_name, last_update):
+        if thruster_name not in self.failed_thrusters
+            self.failed_thrusters.append(thruster_name)
+
+        # Severity rises to 5 if too many thrusters are out
+        severity = 3 if len(self.failed_thrusters) < rospy.get_param("thruster_loss_limit", 2) else 5
+        rospy.logerr(self.failed_thrusters)
         self.thruster_out_alarm.raise_alarm(
             problem_description='Thruster {} has failed'.format(thruster_name),
             parameters={
-                'thruster_name': thruster_name,
-                'fault_info': fault_info
+                'thruster_names': self.failed_thrusters,
+                'last_update': last_update
             },
-            severity=1
+            severity=severity
         )
-        self.failed_thrusters.append(thruster_name)
 
-    def alert_bus_voltage(self, voltage, severity):
+    def alert_bus_voltage(self, voltage):
+        severity = 3 
+        # Kill if the voltage goes too low
+        if self.bus_voltage < rospy.get_param("/battery/kill_voltage", 44.0):
+            severity = 5
+        
         self.bus_voltage_alarm.raise_alarm(
             problem_description='Bus voltage has fallen to {}'.format(voltage),
             parameters={
