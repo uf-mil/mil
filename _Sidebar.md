@@ -23,12 +23,9 @@
     * [[Model Learning]]
 * Implementation
     * [[Gazebo Job Runner]]
-    * [[Simul8]]
     * [[Trajectory Generator]]
-    * [[System Alarms]]
     * [[Thrusters]]
     * [[Monte Carlo Engine]]
-    * [[Goal Manager]]
     * [[Cameras]]
 * Tribal Knowledge
     * [[ROS things]]
