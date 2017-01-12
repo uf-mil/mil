@@ -22,7 +22,7 @@ If you have any questions, don't hesitate to email David.
 
 * Kevin Allen
 
-* Daniel Voyla
+* Daniel Volya
 
 * Israelle Peroszcki
 
