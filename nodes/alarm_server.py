@@ -67,12 +67,22 @@ class Alarm(object):
         if call_when_raised:
             self.raised_cbs.append((severity_required, funct))
             if self.raised and self._severity_cb_check(severity_required):
-                funct(self)
+                # Try to run the callback, absorbing any errors
+                try:
+                    funct(self)
+                except Exception as e:
+                    rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self.alarm_name))
+                    rospy.logwarn(e)
 
         if call_when_cleared:
             self.cleared_cbs.append(((0, 5), funct))
             if not self.raised and self._severity_cb_check(severity_required):
-                funct(self)
+                # Try to run the callback, absorbing any errors
+                try:
+                    funct(self)
+                except Exception as e:
+                    rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self.alarm_name))
+                    rospy.logwarn(e)
 
     def update(self, srv):
         ''' Updates this alarm with a new AlarmSet request. 

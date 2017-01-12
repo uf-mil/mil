@@ -120,11 +120,29 @@ class AlarmListener(object):
         Each callback can have a severity level associated with it such that different callbacks can 
             be triggered for different levels of severity.
         '''
+        alarm = self.get_alarm()
         if call_when_raised:
             self._raised_cbs.append((severity_required, funct))
+            if alarm.raised and self._severity_cb_check(severity_required):
+                # Try to run the callback, absorbing any errors
+                try:
+                    alarm.parameters = json.loads(alarm.parameters)
+                    cb(alarm)
+                except Exception as e:
+                    rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self._alarm_name))
+                    rospy.logwarn(e)
 
         if call_when_cleared:
             self._cleared_cbs.append(((0, 5), funct))  # Clear callbacks always run
+            if alarm.raised:
+                # Try to run the callback, absorbing any errors
+                try:
+                    alarm.parameters = json.loads(alarm.parameters)
+                    funct(alarm)
+                except Exception as e:
+                    rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self._alarm_name))
+                    rospy.logwarn(e)
+
 
     def clear_callbacks(self):
         ''' Clears all callbacks '''
@@ -146,6 +164,7 @@ class AlarmListener(object):
 
             # Try to run the callback, absorbing any errors
             try:
+                alarm.parameters = json.loads(alarm.parameters)
                 cb(alarm)
             except Exception as e:
                 rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self._alarm_name))
