@@ -39,7 +39,8 @@ class RvizVisualizer(object):
         self.depth_marker.scale.z = 0.1
 
         # create marker for displaying current battery voltage
-        self.low_battery_threshold = 44.5
+        self.low_battery_threshold = rospy.get_param('/battery/kill_voltage', 44.0)
+        self.warn_battery_threshold = rospy.get_param('/battery/warn_voltage', 44.5)
         self.voltage_marker = visualization_msgs.Marker()
         self.voltage_marker.header.frame_id = "base_link"
         self.voltage_marker.lifetime = rospy.Duration(5)
@@ -98,7 +99,7 @@ class RvizVisualizer(object):
 
     def kill_alarm_callback(self, alarm):
         self.need_kill_update = False
-        self.killed = not alarm.clear
+        self.killed = alarm.raised
         self.update_kill_button()
 
     def kill_buttton_callback(self, feedback):
@@ -113,11 +114,14 @@ class RvizVisualizer(object):
             self.kill_alarm.raise_alarm()
 
     def voltage_callback(self, voltage):
-        self.voltage_marker.text = str(round(voltage.data, 3)) + ' volts'
+        self.voltage_marker.text = str(round(voltage.data, 2)) + ' volts'
         self.voltage_marker.header.stamp = rospy.Time()
         if voltage.data < self.low_battery_threshold:
             self.voltage_marker.color.r = 1
             self.voltage_marker.color.g = 0
+        elif voltage.data < self.warn_battery_threshold:
+            self.voltage_marker.color.r = 1
+            self.voltage_marker.color.g = 1
         else:
             self.voltage_marker.color.r = 0
             self.voltage_marker.color.g = 1
