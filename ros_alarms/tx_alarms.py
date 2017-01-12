@@ -145,6 +145,7 @@ class TxHeartbeatMonitor(TxAlarmBroadcaster):
 
         An alarm won't be triggered if no messages are initally received
         '''
+        raise NotImplementedError
         self._predicate = predicate if predicate is not None else lambda *args: True
         self._last_msg_time = None
         self._prd = txros.Genpy.Duration(prd)

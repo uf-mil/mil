@@ -11,7 +11,7 @@ def print_alarm(alarm):
     rospy.loginfo("Alarm: {} ({}) ({})".format(alarm.alarm_name, 'raised' if alarm.raised else 'clear', 
                                                alarm.severity))
     for name, value in alarm.parameters.items():
-        rospy.loginfo("\t{} = {}".formt(name, value))
+        rospy.loginfo("\t{} = {}".format(name, value))
 
 rospy.init_node("alarm_report", anonymous=True)
 al = AlarmListener(args.alarm_name)

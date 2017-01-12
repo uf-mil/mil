@@ -94,7 +94,6 @@ AlarmListener<callable_t>
 {
   // Service to query alarm server
   __get_alarm = __nh.serviceClient<ros_alarms::AlarmGet>("/alarm/get");
-  ROS_INFO("Waiting for alarm server...");
   __get_alarm.waitForExistence();
 
 
