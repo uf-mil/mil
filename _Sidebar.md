@@ -1,7 +1,6 @@
 * [[Home]]
     * [[Getting Started]]
     * [[Editing the Wiki]]
-    * [[Tech Talks]]
     * [[Reading List]]
     * [[Manifesto]]
 * [[Code Policy]]
