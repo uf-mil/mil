@@ -3,7 +3,7 @@ Networking with the sub
 
 # Aliases
 
-Add the following aliases to your ~/.bashrc file
+Add the following aliases to your ~/.bashrc file (or source the `.sub_alias` file)
 
     alias setrosip='export ROS_IP=`hostname -I | cut -f1 -d" "`'
     alias rsub='setrosip;export ROS_MASTER_URI=http://sub8:11311'
@@ -35,12 +35,8 @@ Now you're in business.
 
 When connected to the sub network, (Ask someone for the password)
 
-    ssh sub@sub8
+    ssh sub8@sub8
 
 You are now in the sub. Don't hurt anything!
 
 If you get an error like "Could not find route, port 22", check that you are actually connected to the network. Remember, unplugged cables are the leading cause of unplugged cables.
-
-# Other
-
-If you want to be able to use the internet while networking into the sub, go to network, edit connections, subjugator2ghz, ipv4 settings, routes, set `use this connection only for resources on this network`
