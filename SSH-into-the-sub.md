@@ -3,22 +3,22 @@ Networking with the sub
 
 # Aliases
 
-Add the following aliases to your ~/.bashrc file (or source the `.sub_alias` file)
+Add the following aliases to your ~/.bashrc file (or source the `.sub_aliases` file)
 
     alias setrosip='export ROS_IP=`hostname -I | cut -f1 -d" "`'
     alias rsub='setrosip;export ROS_MASTER_URI=http://sub8:11311'
     alias unsub='unset ROS_IP; export ROS_MASTER_URI=http://localhost:11311'
 
 
-Then, whenever you want to connect to the sub in a terminal instance, just run
+Then, whenever you want ROS commands to communicate with the roscore running on the sub:
 
     rsub
 
-And when you would like to return to your own roscore on your local machine, just run
+And when you would like to return to a roscore on your local machine, just run:
 
     unsub
 
-Don't feel that you have to use these silly names.
+_Don't feel that you have to use these silly names._
 
 # Hosts
 
