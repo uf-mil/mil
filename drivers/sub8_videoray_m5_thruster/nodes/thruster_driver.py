@@ -10,7 +10,7 @@ from sub8_msgs.msg import Thrust, ThrusterStatus
 from sub8_ros_tools import wait_for_param, thread_lock
 from sub8_msgs.srv import ThrusterInfo, ThrusterInfoResponse, FailThruster, FailThrusterResponse
 from sub8_thruster_comm import thruster_comm_factory
-from ros_alarms import AlarmBroadcaster
+from ros_alarms import AlarmBroadcaster, AlarmListener
 lock = threading.Lock()
 
 
@@ -26,7 +26,7 @@ class ThrusterDriver(object):
             - Send a thruster status message describing the status of the particular thruster
         '''
         self.thruster_out_alarm = AlarmBroadcaster("thruster-out")
-        AlarmListener("thruster-out", self.update_failed_thrusters)
+        AlarmListener("thruster-out", self.check_alarm_status, call_when_raised=False)
         self.bus_voltage_alarm = AlarmBroadcaster("bus-voltage")
         
         self.thruster_heartbeats = {}
@@ -57,9 +57,10 @@ class ThrusterDriver(object):
         # This is essentially only for testing
         self.fail_thruster_server = rospy.Service('fail_thruster', FailThruster, self.fail_thruster)
 
-    def update_failed_thrusters(self, alarm):
-        # This will just make sure that this list of failed thrusters matches the current alarm's list
-        self.failed_thrusters = alarm.parameters.get("thrusters-out", [])
+    def check_alarm_status(self, alarm):
+        # If someone else cleared this alarm, we need to make sure to raise it again
+        if not alarm.raised and len(self.failed_thrusters) != 0 and not alarm.parameters.get("clear_all", False):
+            self.alert_thruster_loss(self.failed_thrusters[0], "Timed out")
 
     def publish_bus_voltage(self, *args):
         if (rospy.Time.now() - self.last_bus_voltage_time) > rospy.Duration(0.5):
@@ -233,25 +234,27 @@ class ThrusterDriver(object):
             self.command_thruster(thrust_cmd.name, thrust_cmd.thrust)
 
     def alert_thruster_unloss(self, thruster_name):
-        if thruster_name in self.failed_thrusters
+        if thruster_name in self.failed_thrusters:
             self.failed_thrusters.remove(thruster_name)
         
         if len(self.failed_thrusters) == 0:
-            self.thruster_out_alarm.clear_alarm()
+            self.thruster_out_alarm.clear_alarm(parameters={"clear_all"})
         else:
+            severity = 3 if len(self.failed_thrusters) <= rospy.get_param("thruster_loss_limit", 2) else 5
             rospy.logerr(self.failed_thrusters)
             self.thruster_out_alarm.raise_alarm(
                 parameters={
-                    'thruster_name': self.failed_thrusters,
-                }
+                    'thruster_names': self.failed_thrusters,
+                },
+                severity=severity
             )
 
     def alert_thruster_loss(self, thruster_name, last_update):
-        if thruster_name not in self.failed_thrusters
+        if thruster_name not in self.failed_thrusters:
             self.failed_thrusters.append(thruster_name)
 
         # Severity rises to 5 if too many thrusters are out
-        severity = 3 if len(self.failed_thrusters) < rospy.get_param("thruster_loss_limit", 2) else 5
+        severity = 3 if len(self.failed_thrusters) <= rospy.get_param("thruster_loss_limit", 2) else 5
         rospy.logerr(self.failed_thrusters)
         self.thruster_out_alarm.raise_alarm(
             problem_description='Thruster {} has failed'.format(thruster_name),

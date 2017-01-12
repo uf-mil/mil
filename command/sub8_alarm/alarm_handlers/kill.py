@@ -33,7 +33,7 @@ class Kill(HandlerBase):
         ignore.append("network-loss")
 
         # Severity level of 5 means too many thrusters out 
-        if sub_alarms["thruster-out"].raised and subs_alarms["thruster-out"].severity == 5:
+        if sub_alarms["thruster-out"].raised and sub_alarms["thruster-out"].severity == 5:
             return True
         ignore.append("thruster-out")
 
