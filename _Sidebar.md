@@ -5,9 +5,7 @@
     * [[Editing the Wiki]]
 * [[Code Policy]]
     * [[ROS Conventions]]
-    * [[Logging]]
     * [[Other Conventions]]
-    * [[Exception Handling]]
 * Using the Sub
     * [[SSH into the sub]]
     * [[Operator Guide]]
