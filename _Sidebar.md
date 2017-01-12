@@ -1,4 +1,3 @@
-* [[ROBOSUB 2016]]
 * [[Home]]
     * [[Getting Started]]
     * [[Editing the Wiki]]
