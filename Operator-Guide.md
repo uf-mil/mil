@@ -5,16 +5,25 @@ This is a guide for operating the sub.
 
 # Startup on the Sub
 
+Start a launch tmux session so others know where to look for the launch output:
+```shell
+launch_sess
+```
+_or_
+```shell
+tmux new -s launch
+```
+
 A self checking node exists to run a system check on everything the sub needs to preform nominally. For the most reliable results, run this check whilst in the water:
 ```shell
 rosrun sub8_launch self_check.py
 ```
 
-It will prompt you to make sure certain certain launches are running as well. In a tmux or screen session on the sub, run:
+It will prompt you to make sure certain certain launches are running as well. In the launch tmux session, run:
 ```shell
 roslaunch sub8_launch sub8.launch
 ```
-and on a terminal on a shore computer (that has its `ROS_MASTER_URI` set to the sub) run:
+and on a terminal on a shore computer that is `rsub`ed in (has its `ROS_MASTER_URI` set to the sub) run:
 ```shell
 roslaunch sub8_launch shore_control.launch
 ```
@@ -25,7 +34,7 @@ rosrun ros_alarms clear kill
 aclear kill
 ```
 
-At time of writing, perception is not yet stable enough to live inside the main launch. Someday it will.
+At time of writing, perception is not yet stable enough to live inside the main launch. Someday it will be.
 
 ```shell
 roslaunch sub8_launch perception.launch
@@ -38,7 +47,7 @@ Happy Subbing!
 Sometimes you will want to check to make sure all the props are moving the in right direction in the pool or on land in the lab, in these cases publishing a direct wrench to be executed is desired. Do so as follows:
 
 ```shell
-rostopic pub /wrench geometry_msgs/WrenchStamped (tab-tab)
+rostopic pub /wrench geometry_msgs/WrenchStamped (tab-tab) -r20
 ```
 
 _Note: as per standard connection +x is forward, +y is left, and +z is up._
@@ -48,5 +57,5 @@ _Note: as per standard connection +x is forward, +y is left, and +z is up._
 This lets you publish a list of thrusts. For just one, supply the thruster name and a force (in Newtons) that you'd like to apply.
 
 ```shell
-rostopic pub /thusters/thrust /sub8_msgs/Thrust (tab-tab)
+rostopic pub /thusters/thrust /sub8_msgs/Thrust (tab-tab) -r20
 ```
