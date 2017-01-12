@@ -12,7 +12,6 @@ This diagram is a draft, and is not all-inclusive, but should contain all of the
 # Trajectories
 
 * A Trajectory, all of whose waypoints exist in a single (but arbitrary) frame, is published by the Trajectory Generator. The controller then takes that trajectory and achieves those waypoints, and determines internally when a waypoint has been achieved.
-    * See sub8_msgs/Trajectory.msg and sub8_msgs/Waypoint.msg
 
 # Considerations
 The sub should be able to...
