@@ -1,5 +1,6 @@
 Getting Started Guide for the Subjugator Software Team
 ======================================================
+## [Can I work on the Sub?](https://github.com/uf-mil/Sub8/wiki/Manifesto#can-i-work-on-the-sub)
 
 # How to join
 
@@ -18,11 +19,13 @@ Assuming you've already come by the lab and spoken to us
 
 2. Read the code policy page on this wiki.
 
-3. Install dependencies (use install.sh, follow the instructions the Sub8 repository readme)
+3. Install Sub8 and dependencies (use install.sh, follow the instructions the Sub8 repository readme).
 
-4. If you do not already have a task, choose one from [[Implementation Plans]], or propose a project
+4. Skim over the repository's ROS packages so you have an idea of what the software components are.
 
-5. Ask someone to add you to the sub Facebook chat, mailing list, or to another contact medium.
+5. If you do not already have a task, choose one from [[Implementation Plans]], or propose a project
+
+6. Ask someone to add you to the sub Facebook chat, mailing list, or to another contact medium.
 
 Make sure you have some task or learning in progress before you start coming to Wednesday meetings.
 
