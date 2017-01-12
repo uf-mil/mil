@@ -1,3 +1,5 @@
+**THIS PAGE IS DEPRICATED**
+
 ## Alarm Structure
 
 An alarm is be described by the following:
