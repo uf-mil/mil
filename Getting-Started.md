@@ -3,9 +3,9 @@ Getting Started Guide for the Subjugator Software Team
 
 # How to join
 
-1. Email or contact Ralph in person. You can find his contact information scattered in the repository, and you can find his body in MAE-C 126.
+1. Come on by MAE-C 126 and find out what's going on in MIL.
 
-2. You and Ralph will walk through the next steps
+2. You will walk through the next steps with one of the software guys in there.
 
 3. If you don't feel that you meet our requirements, but would still like to get started working on robots, there are other projects in the lab with less stringent requirements
     * If you are sharp, funny and hard-working, we have a place for you, no matter what
@@ -20,12 +20,9 @@ Assuming you've already come by the lab and spoken to us
 
 3. Install dependencies (use install.sh, follow the instructions the Sub8 repository readme)
 
+4. If you do not already have a task, choose one from [[Implementation Plans]], or propose a project
 
-4. Clone this repository. As of now, Sub8 has no dependencies on the rest of uf-mil, so it can exist in its own catkin workspace.
-
-5. If you do not already have a task, choose one from [[Implementation Plans]], or propose a project
-
-6. Ask someone to add you to the software mailing list
+5. Ask someone to add you to the sub Facebook chat, mailing list, or to another contact medium.
 
 Make sure you have some task or learning in progress before you start coming to Wednesday meetings.
 
@@ -35,16 +32,11 @@ Everyone Else: "Okay."
 
 # Meetings
 
-* We meet every week on Wednesday in MIL at 5:15. MIL is in MAE-C 126.
-
-* Reply to the weekly meeting email with the progress you made in the last week
-    * Spent time learning XYZ is still progress!
-    * Writing code that didn't/doesn't work is still progress!
-    * Negative results are still results!
+* We will have semi-regular meetings MAE-C 126 according to the will of Dr. Schwartz.
 
 * Don't be the sort of person who has a new excuse every week
 
-# Learning backgrond material
+# Learning background material
 
 Check out a few libraries:
 [OpenCV](http://opencv.org/), [PCL](pointclouds.org), [OMPL](http://ompl.kavrakilab.org/)
