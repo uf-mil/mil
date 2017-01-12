@@ -1,4 +1,4 @@
-**THIS PAGE IS DEPRICATED**
+**THIS PAGE IS DEPRECATED**
 
 ## Alarm Structure
 
