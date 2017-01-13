@@ -46,11 +46,6 @@
     * [[General To Do (Mechanical)]]
     * [[Sonar Box To Do]]
 * [[Networking]]
-    * [[Sub Motherboard]]
-    * [[Sub Switch]]
-    * [[MIL Local Network]]
-    * [[SSH Keys]]
-    * [[Accessing Bag Files]]
-    * [[Remote Access]]
+
 * Old Notes
     * [[Simulation]]
