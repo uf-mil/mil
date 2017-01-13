@@ -5,16 +5,18 @@ This is a guide for operating the sub.
 
 # Startup on the Sub
 
+## Start a launch session
+
 Start a launch tmux session so others know where to look for the launch output:
 ```shell
 launch_sess
-```
-_or_
-```shell
+# or
 tmux new -s launch
 ```
+ _[tmux](http://www.hamvocke.com/blog/a-quick-and-easy-guide-to-tmux/) is great because it allows us to re-attach to terminal instances after losing connection with the sub._
 
-A self checking node exists to run a system check on everything the sub needs to preform nominally. For the most reliable results, run this check whilst in the water:
+## Perform a systems check
+A self checking node exists to run a system check on everything the sub needs to perform nominally. For the most reliable results, run this check whilst in the water:
 ```shell
 rosrun sub8_launch self_check.py
 ```
@@ -27,11 +29,19 @@ and on a terminal on a shore computer that is `rsub`ed in (has its `ROS_MASTER_U
 ```shell
 roslaunch sub8_launch shore_control.launch
 ```
-The self check should complete, and hopefully almost everything passed! The next step is clearing the initial kill that is raised on launch. **NOTE: CLEARING THIS KILL WILL START SPINNING PROPS AND CAUSE THE SUB TO MOVE.** Usually it is best to check in rviz that odom looks stable before doing this and not be near any walls.
+The self check should complete, and hopefully almost everything passed!
+
+## Start station-keeping
+The next step is clearing the initial kill that is raised on launch. **NOTE: CLEARING THIS KILL WILL START SPINNING PROPS AND CAUSE THE SUB TO MOVE.** Usually it is best to check in rviz that odom looks stable before doing this and not be near any walls.
+Make sure you have a kill ready in another terminal in case you need to quickly kill the sub!
 ```shell
-rosrun ros_alarms clear kill
-# Or if you have .sub_aliases aliased:
+# get this command ready in a terminal that is rsubed in!
+araise kill
+
+# run this command to start station-keeping
 aclear kill
+
+# if you don't have .sub_aliases sourced, replace a<raise|clear> with rosrun ros_alarms <raise|clear>
 ```
 
 At time of writing, perception is not yet stable enough to live inside the main launch. Someday it will be.
@@ -59,3 +69,10 @@ This lets you publish a list of thrusts. For just one, supply the thruster name 
 ```shell
 rostopic pub /thusters/thrust /sub8_msgs/Thrust (tab-tab) -r20
 ```
+
+# Commanding a wrench or thruster using rqt
+
+Alternatively, you can open **rqt** and send either wrench or thruster commands using a gui by opening the `Message Publisher` plugin (open the plugin menu and look under Topics).
+
+Press the green plus icon to add a msg to publish. Set the topic and msg type to /wrench and geometry_msgs/WrenchStamped respectively or /thrusters/thrust and /sub8_msgs/Thrust. Modify the msg fields to reflect your desired command. Set the frequency to 20 Hz and check the leftmost box to start publishing.
+
