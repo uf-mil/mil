@@ -1,6 +1,8 @@
 Git
 ===
 
+If you want to understand the git versioning model and not just memorize commands and when to run them, read [this](https://www.sbf5.com/~cduan/technical/git/).
+
 ### Forking Workflow
 * [Tutorial](https://www.atlassian.com/git/tutorials/comparing-workflows/forking-workflow)
 
