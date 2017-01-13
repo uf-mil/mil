@@ -65,3 +65,4 @@ add_library(ros_alarms
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_compile_options(${PROJECT_NAME} PRIVATE -g -Wall -std=c++11)
 
+add_dependencies(ros_alarms ros_alarms_generate_messages_cpp)
