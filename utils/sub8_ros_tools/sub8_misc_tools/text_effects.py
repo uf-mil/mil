@@ -99,7 +99,7 @@ class Printer(object):
 class FprintFactory(object):
     def __init__(self, title=None, time=None, msg_color=None, newline=1):
         assert time is None or callable(time), "`time` should be `None` for no printing or a function that generates a timestamp."
-        assert msg_color is None or isinstance(newline, str), "`msg_color` should be `None` for default printing or a string color."
+        assert msg_color is None or isinstance(msg_color, str), "`msg_color` should be `None` for default printing or a string color."
         assert newline is None or isinstance(newline, int), "`newline` should be the number of newlines after the text (default 1)"
 
         # All these can be overwritten if not specified here
