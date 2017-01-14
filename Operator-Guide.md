@@ -41,7 +41,8 @@ araise kill
 # run this command to start station-keeping
 aclear kill
 
-# if you don't have .sub_aliases sourced, replace a<raise|clear> with rosrun ros_alarms <raise|clear>
+# if you don't have .sub_aliases sourced, replace a<raise|clear> 
+# with rosrun ros_alarms <raise|clear>
 ```
 
 At time of writing, perception is not yet stable enough to live inside the main launch. Someday it will be.
@@ -72,7 +73,11 @@ rostopic pub /thusters/thrust /sub8_msgs/Thrust (tab-tab) -r20
 
 # Commanding a wrench or thruster using rqt
 
-Alternatively, you can open **rqt** and send either wrench or thruster commands using a gui by opening the `Message Publisher` plugin (open the plugin menu and look under Topics).
+Alternatively, you can use the [**rqt**](http://wiki.ros.org/rqt) `Message Publisher` to send either wrench or thruster commands using a graphical interface. Run:
 
-Press the green plus icon to add a msg to publish. Set the topic and msg type to /wrench and geometry_msgs/WrenchStamped respectively or /thrusters/thrust and /sub8_msgs/Thrust. Modify the msg fields to reflect your desired command. Set the frequency to 20 Hz and check the leftmost box to start publishing.
+```shell
+rosrun rqt_publisher rqt_publisher
+```
+
+Set the topic and msg type to /wrench and geometry_msgs/WrenchStamped respectively or /thrusters/thrust and /sub8_msgs/Thrust. Press the green plus icon to add this msg. Modify the msg fields to reflect your desired command. Set the frequency to 20 Hz and check the leftmost box to start publishing.
 
