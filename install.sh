@@ -189,8 +189,10 @@ sudo pip install -q -U scikit-learn > /dev/null 2>&1
 sudo pip install -q -U tqdm
 
 instlog "Getting ROS packages we need to install from source"
+source $CATKIN_DIR/src/Sub8/scripts/bash_tools.sh
 ros_git_get https://github.com/txros/txros.git
 ros_git_get https://github.com/uf-mil/rawgps-tools.git
+ros_git_get https://github.com/uf-mil/ros_alarms.git
 ros_git_get "https://github.com/ros-simulation/gazebo_ros_pkgs.git --branch indigo-devel"
 # catkin_make -C $INSTALL_FOLDER/..
 
