@@ -10,7 +10,8 @@ from interactive_markers.interactive_marker_server import *
 from geometry_msgs.msg import Pose, Vector3
 from std_msgs.msg import ColorRGBA, Float64
 from uf_common.msg import Float64Stamped  # This needs to be deprecated
-from sub8_alarm import AlarmListener, AlarmBroadcaster
+#from sub8_alarm import AlarmListener, AlarmBroadcaster
+from ros_alarms import AlarmBroadcaster, AlarmListener
 import sub8_ros_tools as sub8_utils
 
 
@@ -38,7 +39,8 @@ class RvizVisualizer(object):
         self.depth_marker.scale.z = 0.1
 
         # create marker for displaying current battery voltage
-        self.low_battery_threshold = 44.5
+        self.low_battery_threshold = rospy.get_param('/battery/kill_voltage', 44.0)
+        self.warn_battery_threshold = rospy.get_param('/battery/warn_voltage', 44.5)
         self.voltage_marker = visualization_msgs.Marker()
         self.voltage_marker.header.frame_id = "base_link"
         self.voltage_marker.lifetime = rospy.Duration(5)
@@ -71,8 +73,9 @@ class RvizVisualizer(object):
         self.killed = False
 
         # connect kill marker to kill alarm
-        self.kill_listener = AlarmListener(alarm_name="kill", callback_funct=self.kill_alarm_callback)
-        self.kill_alarm = AlarmBroadcaster().add_alarm("kill")
+        self.kill_listener = AlarmListener("kill")
+        self.kill_listener.add_callback(self.kill_alarm_callback)
+        self.kill_alarm = AlarmBroadcaster("kill")
 
         # distance to bottom
         self.range_sub = rospy.Subscriber("dvl/range", Float64Stamped, self.range_callback)
@@ -96,7 +99,7 @@ class RvizVisualizer(object):
 
     def kill_alarm_callback(self, alarm):
         self.need_kill_update = False
-        self.killed = not alarm.clear
+        self.killed = alarm.raised
         self.update_kill_button()
 
     def kill_buttton_callback(self, feedback):
@@ -111,11 +114,14 @@ class RvizVisualizer(object):
             self.kill_alarm.raise_alarm()
 
     def voltage_callback(self, voltage):
-        self.voltage_marker.text = str(round(voltage.data, 3)) + ' volts'
+        self.voltage_marker.text = str(round(voltage.data, 2)) + ' volts'
         self.voltage_marker.header.stamp = rospy.Time()
         if voltage.data < self.low_battery_threshold:
             self.voltage_marker.color.r = 1
             self.voltage_marker.color.g = 0
+        elif voltage.data < self.warn_battery_threshold:
+            self.voltage_marker.color.r = 1
+            self.voltage_marker.color.g = 1
         else:
             self.voltage_marker.color.r = 0
             self.voltage_marker.color.g = 1

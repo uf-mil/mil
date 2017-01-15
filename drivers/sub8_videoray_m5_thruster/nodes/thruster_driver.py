@@ -10,12 +10,12 @@ from sub8_msgs.msg import Thrust, ThrusterStatus
 from sub8_ros_tools import wait_for_param, thread_lock
 from sub8_msgs.srv import ThrusterInfo, ThrusterInfoResponse, FailThruster, FailThrusterResponse
 from sub8_thruster_comm import thruster_comm_factory
-from sub8_alarm import AlarmBroadcaster
+from ros_alarms import AlarmBroadcaster, AlarmListener
 lock = threading.Lock()
 
 
 class ThrusterDriver(object):
-    _dropped_timeout = 2 # s
+    _dropped_timeout = 1 # s
 
     def __init__(self, config_path, bus_layout):
         '''Thruster driver, an object for commanding all of the sub's thrusters
@@ -25,17 +25,9 @@ class ThrusterDriver(object):
             - Given a command message, route that command to the appropriate port/thruster
             - Send a thruster status message describing the status of the particular thruster
         '''
-        self.alarm_broadcaster = AlarmBroadcaster()
-        self.thruster_out_alarm = self.alarm_broadcaster.add_alarm(
-            name='thruster-out',
-            action_required=True,
-            severity=2
-        )
-        self.bus_voltage_alarm = self.alarm_broadcaster.add_alarm(
-            name='bus-voltage',
-            action_required=False,
-            severity=2
-        )
+        self.thruster_out_alarm = AlarmBroadcaster("thruster-out")
+        AlarmListener("thruster-out", self.check_alarm_status, call_when_raised=False)
+        self.bus_voltage_alarm = AlarmBroadcaster("bus-voltage")
         
         self.thruster_heartbeats = {}
         self.failed_thrusters = []
@@ -65,6 +57,11 @@ class ThrusterDriver(object):
         # This is essentially only for testing
         self.fail_thruster_server = rospy.Service('fail_thruster', FailThruster, self.fail_thruster)
 
+    def check_alarm_status(self, alarm):
+        # If someone else cleared this alarm, we need to make sure to raise it again
+        if not alarm.raised and len(self.failed_thrusters) != 0 and not alarm.parameters.get("clear_all", False):
+            self.alert_thruster_loss(self.failed_thrusters[0], "Timed out")
+
     def publish_bus_voltage(self, *args):
         if (rospy.Time.now() - self.last_bus_voltage_time) > rospy.Duration(0.5):
             self.stop()
@@ -72,7 +69,8 @@ class ThrusterDriver(object):
         if self.bus_voltage is not None:
             msg = Float64(self.bus_voltage)
             self.bus_voltage_pub.publish(msg)
-            if self.bus_voltage < 44.0:
+            if self.bus_voltage < rospy.get_param("/battery/warn_voltage", 44.5):
+                # This alert checks the severity of the battery voltage level as well 
                 self.alert_bus_voltage(self.bus_voltage)
 
     def check_for_drops(self, *args):
@@ -100,7 +98,7 @@ class ThrusterDriver(object):
 
         if 40.0 < voltage < 50.0:
             self.last_bus_voltage_time = rospy.Time.now()
-            self.bus_voltage = (0.6 * voltage) + (0.4 * self.bus_voltage)
+            self.bus_voltage = (0.1 * voltage) + (0.9 * self.bus_voltage)
 
     def load_config(self, path):
         '''Load the configuration data:
@@ -165,11 +163,7 @@ class ThrusterDriver(object):
     @thread_lock(lock)
     def command_thruster(self, name, force):
         '''Issue a a force command (in Newtons) to a named thruster
-            Example names are BLR, FLL, etc
-
-            TODO:
-                Make this still get a thruster status when the thruster is failed
-                (We could figure out if it has stopped being failed!)
+            Example names are BLR, FLH, etc.
         '''
         target_port = self.port_dict[name]
         margin_factor = 0.8
@@ -240,30 +234,49 @@ class ThrusterDriver(object):
             self.command_thruster(thrust_cmd.name, thrust_cmd.thrust)
 
     def alert_thruster_unloss(self, thruster_name):
-        self.thruster_out_alarm.clear_alarm(
-            parameters={
-                'thruster_name': thruster_name,
-            }
-        )
-        rospy.logerr(self.failed_thrusters)
-        self.failed_thrusters.remove(thruster_name)
+        if thruster_name in self.failed_thrusters:
+            self.failed_thrusters.remove(thruster_name)
+        
+        if len(self.failed_thrusters) == 0:
+            self.thruster_out_alarm.clear_alarm(parameters={"clear_all"})
+        else:
+            severity = 3 if len(self.failed_thrusters) <= rospy.get_param("thruster_loss_limit", 2) else 5
+            rospy.logerr(self.failed_thrusters)
+            self.thruster_out_alarm.raise_alarm(
+                parameters={
+                    'thruster_names': self.failed_thrusters,
+                },
+                severity=severity
+            )
 
-    def alert_thruster_loss(self, thruster_name, fault_info):
+    def alert_thruster_loss(self, thruster_name, last_update):
+        if thruster_name not in self.failed_thrusters:
+            self.failed_thrusters.append(thruster_name)
+
+        # Severity rises to 5 if too many thrusters are out
+        severity = 3 if len(self.failed_thrusters) <= rospy.get_param("thruster_loss_limit", 2) else 5
+        rospy.logerr(self.failed_thrusters)
         self.thruster_out_alarm.raise_alarm(
             problem_description='Thruster {} has failed'.format(thruster_name),
             parameters={
-                'thruster_name': thruster_name,
-                'fault_info': fault_info
-            }
+                'thruster_names': self.failed_thrusters,
+                'last_update': last_update
+            },
+            severity=severity
         )
-        self.failed_thrusters.append(thruster_name)
 
     def alert_bus_voltage(self, voltage):
+        severity = 3 
+        # Kill if the voltage goes too low
+        if self.bus_voltage < rospy.get_param("/battery/kill_voltage", 44.0):
+            severity = 5
+        
         self.bus_voltage_alarm.raise_alarm(
             problem_description='Bus voltage has fallen to {}'.format(voltage),
             parameters={
                 'bus_voltage': voltage,
-            }
+            },
+            severity=severity
         )
 
     def fail_thruster(self, srv):

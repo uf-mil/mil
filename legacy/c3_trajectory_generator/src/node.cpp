@@ -7,8 +7,7 @@
 #include <uf_common/PoseTwistStamped.h>
 #include <uf_common/msg_helpers.h>
 #include <uf_common/param_helpers.h>
-#include <kill_handling/Kill.h>
-#include <kill_handling/listener.h>
+#include <ros_alarms/listener.hpp>
 
 #include "uf_common/MoveToAction.h"
 #include "c3_trajectory_generator/SetDisabled.h"
@@ -74,7 +73,7 @@ struct Node {
   ros::NodeHandle nh;
   ros::NodeHandle private_nh;
   tf::TransformListener tf_listener;
-  kill_handling::KillListener kill_listener;
+  ros_alarms::AlarmListener<> kill_listener;
 
   string body_frame;
   string fixed_frame;
@@ -84,6 +83,7 @@ struct Node {
   ros::Subscriber odom_sub;
   actionlib::SimpleActionServer<uf_common::MoveToAction> actionserver;
   ros::Publisher trajectory_pub;
+  ros::Publisher trajectory_vis_pub;
   ros::Publisher waypoint_pose_pub;
   ros::ServiceServer set_disabled_service;
 
@@ -109,10 +109,13 @@ struct Node {
   }
 
   Node()
-      : private_nh("~"),
-        kill_listener(boost::bind(&Node::killed_callback, this)),
-        actionserver(nh, "moveto", false),
-        disabled(false) {
+  : private_nh("~"),
+    actionserver(nh, "moveto", false),
+    disabled(false),
+    kill_listener(nh, "kill")
+  {
+    kill_listener.add_raise_cb([this](ros_alarms::AlarmProxy) { this->killed_callback(); });
+
     fixed_frame = uf_common::getParam<std::string>(private_nh, "fixed_frame");
     body_frame = uf_common::getParam<std::string>(private_nh, "body_frame");
 
@@ -127,6 +130,7 @@ struct Node {
     odom_sub = nh.subscribe<Odometry>("odom", 1, boost::bind(&Node::odom_callback, this, _1));
 
     trajectory_pub = nh.advertise<PoseTwistStamped>("trajectory", 1);
+    trajectory_vis_pub = private_nh.advertise<PoseStamped>("trajectory_v", 1);
     waypoint_pose_pub = private_nh.advertise<PoseStamped>("waypoint", 1);
 
     update_timer =
@@ -140,8 +144,8 @@ struct Node {
 
   void odom_callback(const OdometryConstPtr &odom) {
     if (c3trajectory) return;                            // already initialized
-    if (kill_listener.get_killed() || disabled) return;  // only initialize when unkilled
-
+    if (kill_listener.is_raised() || disabled) return;  // only initialize when unkilled
+    
     ros::Time now = ros::Time::now();
 
     subjugator::C3Trajectory::Point current =
@@ -191,6 +195,11 @@ struct Node {
     msg.header.frame_id = fixed_frame;
     msg.posetwist = PoseTwist_from_PointWithAcceleration(c3trajectory->getCurrentPoint());
     trajectory_pub.publish(msg);
+
+    PoseStamped msgVis;
+    msgVis.header = msg.header;
+    msgVis.pose = msg.posetwist.pose;
+    trajectory_vis_pub.publish(msgVis);
 
     PoseStamped posemsg;
     posemsg.header.stamp = c3trajectory_t;

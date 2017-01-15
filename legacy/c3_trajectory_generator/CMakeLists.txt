@@ -8,10 +8,10 @@ find_package(
     actionlib
     message_runtime
     message_generation
-    kill_handling
     uf_common
     tf
     cmake_modules
+    ros_alarms
 )
 
 add_service_files(
@@ -19,7 +19,7 @@ add_service_files(
   SetDisabled.srv
 )
 
-find_package(Eigen REQUIRED)
+find_package(Eigen3 REQUIRED)
 include_directories(${Eigen_INCLUDE_DIRS})
 generate_messages(
     DEPENDENCIES
@@ -35,7 +35,7 @@ catkin_package(
     message_generation
     uf_common
     tf
-    kill_handling
+    ros_alarms
   INCLUDE_DIRS
     include
   LIBRARIES
