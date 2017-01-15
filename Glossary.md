@@ -20,3 +20,5 @@ Useful terms, acronyms and initialisms. Many useful to robotics, some particular
 **Underactuated** - The robot or vehicle has more degrees of freedom than degrees of control
 
 **Overactuated** - The robot or vehicle has fewer degrees of freedom than degrees of control
+
+**Pose** - The position and orientation of a rigid body (6D)
