@@ -58,6 +58,5 @@ sudo pip install -q -U tqdm
 instlog "Getting ROS packages we need to install from source"
 ros_git_get https://github.com/txros/txros.git
 ros_git_get https://github.com/uf-mil/rawgps-tools.git
-ros_git_get https://github.com/ros-simulation/gazebo_ros_pkgs.git
-
+ros_git_get "https://github.com/ros-simulation/gazebo_ros_pkgs.git --branch indigo-devel"
 # catkin_make -C $INSTALL_FOLDER/..
