@@ -1,0 +1,21 @@
+<launch>
+  <!-- Start up alarm server -->
+  <node name="alarm_sever" pkg="ros_alarms" type="alarm_server.py" output="screen">
+      <!-- A folder that is in your system path containing all alarm handlers-->
+      <param name="handler_module" type="string" value="test_handlers"/>
+  </node>
+
+  <!-- Meta alarm definitions -->
+  <rosparam ns="meta_alarms">
+      kill: ["test1", "test2", "test3"]
+      network: ["testing1", "testing2", "testing3"]
+  </rosparam>
+
+  <!-- List known alarms here -->
+  <rosparam ns="known_alarms">
+      test1, test2, test3, testing1, testing2
+  </rosparam>
+
+  <!-- Run gtests test nodes (http://wiki.ros.org/roslaunch/XML/test) -->
+  <test test-name="ros_alarms_integration" pkg="ros_alarms" type="ros_alarms_integration_tests"/>
+</launch>

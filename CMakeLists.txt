@@ -44,25 +44,41 @@ catkin_package(
     roscpp
     rospy
     message_generation
-#  DEPENDS system_lib
 )
 
-###########
-## Build ##
-###########
-
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-# include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
-
 # Declare a C++ library
-add_library(ros_alarms
-   src/${PROJECT_NAME}/broadcaster.cpp
-)
+set(SRCS src/${PROJECT_NAME}/broadcaster.cpp)
+add_library(ros_alarms ${SRCS})
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_compile_options(${PROJECT_NAME} PRIVATE -g -Wall -std=c++11)
 
 add_dependencies(ros_alarms ros_alarms_generate_messages_cpp)
+
+#if(CATKIN_ENABLE_TESTING)
+#  foreach(T
+#    test/test_ros_alarms.test)
+#     add_rostest(${T})
+#  endforeach()
+#endif()
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+
+  # The test driver with your main function
+  # must be listed last (before the source files)
+  add_rostest_gtest(${PROJECT_NAME}_integration_tests
+    test/ros_alarms_integration.test
+    #test/heartbeat_monitor_test.cpp
+    #test/broadcaster_test.cpp
+    test/listener_test.cpp
+    test/integration_test_driver.cpp
+    ${SRCS}
+  )
+  set_target_properties(${PROJECT_NAME}_integration_tests PROPERTIES COMPILE_FLAGS "-std=c++11")
+  target_include_directories(${PROJECT_NAME}_integration_tests PUBLIC include)
+  target_link_libraries(${PROJECT_NAME}_integration_tests ${catkin_LIBRARIES})
+endif()
+>>>>>>> ROSALARMS: add barebones gtest
