@@ -51,7 +51,7 @@ class TestROSTools(unittest.TestCase):
         msg_force = rosmsg_to_numpy(wrench_msg.wrench.force)  # noqa
         msg_torque = rosmsg_to_numpy(wrench_msg.wrench.torque)  # noqa
         self.assertIsNotNone(msg_force)
-        self.assertIsnotNone(msg_torque)
+        self.assertIsNotNone(msg_torque)
 
     def test_make_image_msg(self):
         '''Test that make ros image message doesn't fail'''
