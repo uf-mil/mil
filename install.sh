@@ -88,7 +88,6 @@ ros_git_get() {
 
 # Sane installation defaults for no argument cases
 REQUIRED_OS="xenial"
-CATKIN_DIR=~/mil_ws
 INSTALL_ALL=false
 INSTALL_SUB=false
 INSTALL_NAV=false
@@ -101,16 +100,11 @@ SCRIPT_DIR="`dirname $SCRIPT_PATH`"
 while [ "$#" -gt 0 ]; do
 	case $1 in
 		-h) printf "\nUsage: $0\n"
-			printf "\n    [-c] catkin_workspace (Recommend: ~/mil_ws)\n"
 			printf "\n    [-a] Installs everything needed for all MIL projects\n"
 			printf "\n    [-s] Installs everything needed for SubjuGator 8\n"
 			printf "\n    [-n] Installs everything needed for Navigator\n"
-			printf "\n    example: ./install.sh -c ~/mil_ws\n"
 			printf "\n"
 			exit 0
-			;;
-		-c) CATKIN_DIR="$2"
-			shift 2
 			;;
 		-a) INSTALL_ALL=true
 			shift 1
@@ -140,6 +134,18 @@ elif ($INSTALL_NAV); then
 	# This may change soon, but this will install Sub8 for now
 	INSTALL_SUB=true
 fi
+
+# Confirmation of where to put CATKIN directory
+CATKIN_DIR=~/mil_ws
+while true; do
+	instlog "The CATKIN Directory is $CATKIN_DIR. Is this okay(y/n)? "
+	read yn
+	case $yn in
+		[Yy]* ) break;;
+		[Nn]* ) read -p "Enter a new directory: " CATKIN_DIR; break;;
+		* ) echo "Please answer yes or no.";;
+	esac
+done
 
 # The paths to the aliases configuration files
 BASHRC_FILE=~/.bashrc
