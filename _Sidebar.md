@@ -15,7 +15,6 @@
     * [[Implementation Plans]]
         * [[Visual SLAM]]
         * [[Perception Stack]]
-        * [[Imaging Sonar]]
     * [[Mission Scheduler]]
     * [[Open Questions]]
     * [[Model Learning]]
