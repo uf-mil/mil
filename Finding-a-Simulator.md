@@ -1,7 +1,7 @@
-Simulation
-==========
+Finding a Simulator
+===================
 
-We require a full dynamic simulation of the Sub. This includes some things listed in the considerations section of this page. 
+We required a full dynamic simulation of the Sub. This included some things listed in the considerations section of this page. After much consideration, we have settled on Gazebo. For all of it's bugs, it is still the cleanest to integrate into our stack and configure.
 
 # Tools
 
