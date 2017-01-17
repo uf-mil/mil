@@ -18,6 +18,3 @@ __Mac OS X:__
      `catkin_make -DCMAKE_C_COMPILER=/usr/local/bin/gcc-5 -DCMAKE_CXX_COMPILER=/usr/local/bin/g++-5 ...`
 
 This is assuming that GCC is placed in /usr/local (Homebrew default)
-
-__Debian:__
-* Should be supported once ROS Kinetic Kame rolls around, and we move over to it. (Post-competition)
