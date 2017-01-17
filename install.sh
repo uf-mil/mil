@@ -87,7 +87,7 @@ ros_git_get() {
 #======================#
 
 # Sane installation defaults for no argument cases
-REQUIRED_OS="trusty"
+REQUIRED_OS="xenial"
 CATKIN_DIR=~/mil_ws
 INSTALL_ALL=false
 INSTALL_SUB=false
@@ -192,7 +192,7 @@ if !($OS_CHECK); then
 
 	# The script will not allow the user to install on an unsupported OS
 	instwarn "Terminating installation due to incorrect OS (detected $DTETCTED_OS)"
-	instwarn "MIL projects require Ubuntu 14.04 (trusty)"
+	instwarn "MIL projects require Ubuntu 16.04 (xenial)"
 	exit 1
 fi
 
@@ -221,46 +221,23 @@ fi
 instlog "Installing install script dependencies"
 sudo apt-get install -qq wget curl aptitude fakeroot ssh git
 
-# Add software repositories for ROS and Gazebo
-instlog "Adding ROS, Gazebo, and ARM PPAs to software sources"
-sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu trusty main\" > /etc/apt/sources.list.d/ros-latest.list"
-sudo sh -c "echo \"deb http://packages.osrfoundation.org/gazebo/ubuntu trusty main\" > /etc/apt/sources.list.d/gazebo-latest.list"
-sudo mkdir -p /etc/apt/preferences.d/
-sudo sh -c "echo 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm"
-sudo sh -c "echo \"deb http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu trusty main\" > /etc/apt/sources.list.d/gcc-arm-embedded.list"
+# Add software repository for ROS to software sources
+instlog "Adding ROS PPA to software sources"
+sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros.list'
+sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
 
-# Get the GPG signing keys for the above repositories
-wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
-sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xB01FA116
-sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xA3421AFB
-
-# Add software repository for Git-LFS
+# Add software repository for Git-LFS to software sources
 instlog "Adding the Git-LFS packagecloud repository to software sources"
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
 
-# Install ROS and other project dependencies
-instlog "Installing ROS Indigo base packages"
+# Install ROS and a few ROS dependencies
+instlog "Installing ROS Kinetic"
 sudo apt-get update -qq
 sudo apt-get install -qq python-catkin-pkg python-rosdep
 if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
-	sudo apt-get install -qq ros-indigo-desktop
+	sudo apt-get install -qq ros-kinetic-desktop
 else
-	sudo apt-get install -qq ros-indigo-desktop-full
-fi
-
-# Break the ROS Indigo metapackage and install an updated version of Gazebo
-instlog "Installing the latest version of Gazebo"
-sudo aptitude unmarkauto -q '?reverse-depends(ros-indigo-desktop-full) | ?reverse-recommends(ros-indigo-desktop-full)'
-sudo apt-get purge -qq ros-indigo-gazebo*
-sudo apt-get install -qq gazebo7
-sudo apt-get install -qq ros-indigo-gazebo7-msgs ros-indigo-gazebo7-ros ros-indigo-gazebo7-plugins ros-indigo-gazebo7-ros-control
-
-# Source ROS configurations for bash on this user account
-source /opt/ros/indigo/setup.bash
-if !(cat $BASHRC_FILE | grep --quiet "source /opt/ros"); then
-	echo "" >> $BASHRC_FILE
-	echo "# Sets up the shell environment for ROS" >> $BASHRC_FILE
-	echo "source /opt/ros/indigo/setup.bash" >> $BASHRC_FILE
+	sudo apt-get install -qq ros-kinetic-desktop-full
 fi
 
 # Get information about ROS versions
@@ -269,6 +246,14 @@ if !([ -f /etc/ros/rosdep/sources.list.d/20-default.list ]); then
 	sudo rosdep init > /dev/null 2>&1
 fi
 rosdep update
+
+# Source ROS configurations for bash on this user account
+source /opt/ros/kinetic/setup.bash
+if !(cat $BASHRC_FILE | grep --quiet "source /opt/ros"); then
+	echo "" >> $BASHRC_FILE
+	echo "# Sets up the shell environment for ROS" >> $BASHRC_FILE
+	echo "source /opt/ros/kinetic/setup.bash" >> $BASHRC_FILE
+fi
 
 
 #=================================#
@@ -338,9 +323,6 @@ sudo apt-get install -qq python-dev python-scipy python-numpy python-serial
 # Point clouds
 sudo apt-get install -qq libpcl-1.7-all libpcl-1.7-all-dev
 
-# Motion planning
-sudo apt-get install -qq libompl-dev
-
 # Visualization and graphical interfaces
 sudo apt-get install -qq python-opengl freeglut3-dev libassimp-dev
 sudo apt-get install -qq libvtk5-dev python-vtk
@@ -369,22 +351,25 @@ instlog "Installing common ROS dependencies"
 sudo apt-get install -qq ros-indigo-driver-base
 
 # Cameras
-sudo apt-get install -qq ros-indigo-camera-info-manager
+sudo apt-get install -qq ros-kinetic-camera-info-manager
 sudo apt-get install -qq ros-indigo-camera1394
-sudo apt-get install -qq ros-indigo-stereo-image-proc
+sudo apt-get install -qq ros-kinetic-stereo-image-proc
 
 # Image compression
-sudo apt-get install -qq ros-indigo-rosbag-image-compressor ros-indigo-compressed-image-transport ros-indigo-compressed-depth-image-transport
+sudo apt-get install -qq ros-kinetic-compressed-image-transport ros-kinetic-compressed-depth-image-transport
 
 # Point clouds
-sudo apt-get install -qq ros-indigo-pcl-ros ros-indigo-pcl-conversions
+sudo apt-get install -qq ros-kinetic-pcl-ros ros-kinetic-pcl-conversions
 
-# Lie Groups using Eigen
-sudo apt-get install -qq ros-indigo-sophus
+# Lie groups using Eigen
+sudo apt-get install -qq ros-kinetic-sophus
 
 # Controller
-sudo apt-get install -qq ros-indigo-control-toolbox ros-indigo-controller-manager
-sudo apt-get install -qq ros-indigo-hardware-interface ros-indigo-transmission-interface ros-indigo-joint-limits-interface
+sudo apt-get install -qq ros-kinetic-control-toolbox ros-kinetic-controller-manager
+sudo apt-get install -qq ros-kinetic-hardware-interface ros-kinetic-transmission-interface ros-kinetic-joint-limits-interface
+
+# Motion planning
+sudo apt-get install -qq ros-kinetic-ompl
 
 instlog "Installing common dependencies from Python PIP"
 
@@ -410,7 +395,7 @@ sudo pip install -q -U mayavi > /dev/null 2>&1
 instlog "Cloning common Git repositories that need to be built"
 ros_git_get https://github.com/txros/txros.git
 ros_git_get https://github.com/uf-mil/rawgps-tools.git
-ros_git_get "https://github.com/ros-simulation/gazebo_ros_pkgs.git --branch indigo-devel"
+ros_git_get https://github.com/ros-simulation/gazebo_ros_pkgs.git
 ros_git_get https://github.com/uf-mil/hardware-common.git
 
 
@@ -472,7 +457,7 @@ if ($INSTALL_SUB); then
 	instlog "Installing Sub8 ROS dependencies"
 
 	# 3D Mouse
-	sudo apt-get install -qq ros-indigo-spacenav-node
+	sudo apt-get install -qq ros-kinetic-spacenav-node
 
 	instlog "Installing Sub8 dependencies from Python PIP"
 
