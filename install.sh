@@ -149,7 +149,7 @@ done
 
 # The paths to the aliases configuration files
 BASHRC_FILE=~/.bashrc
-ALIASES_FILE=~/.mil_aliases
+ALIASES_FILE=$CATKIN_DIR/src/Sub8/.sub_aliases
 
 #==================#
 # Pre-Flight Check #
@@ -475,14 +475,13 @@ fi
 # Bashrc Alias Management #
 #=========================#
 
-# Copies the MIL aliases file to the machine's home directory file and sources it
-cat $CATKIN_DIR/src/Navigator/scripts/mil_aliases.sh > $ALIASES_FILE
+# Source the Sub8 configurations for bash on this user account
 source $ALIASES_FILE
 if !(cat $BASHRC_FILE | grep --quiet "source $ALIASES_FILE"); then
+	echo "" >> $BASHRC_FILE
+	echo "# Adds Sub8 aliases to shell environment" >> $BASHRC_FILE
 	echo "source $ALIASES_FILE" >> $BASHRC_FILE
 fi
-
-instlog "The ~/.mil_aliases file has been updated with the latest aliases"
 
 
 #==========================#
