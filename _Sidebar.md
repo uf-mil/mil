@@ -17,7 +17,6 @@
         * [[Perception Stack]]
     * [[Mission Scheduler]]
     * [[Open Questions]]
-    * [[Model Learning]]
 * Implementation
     * [[Gazebo Job Runner]]
     * [[Trajectory Generator]]
