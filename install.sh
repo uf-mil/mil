@@ -40,10 +40,9 @@ check_host() {
 		if [ $HOST_PING -lt 25 ]; then
 
 			# Will return true if ping was successful and packet loss was below 25%
-			return `true`
+			echo "true"
 		fi
 	fi
-	return `false`
 }
 
 ros_git_get() {
@@ -185,7 +184,7 @@ echo "Running user check"
 
 # Check whether or not github.com is reachable
 # This also makes sure that the user is connected to the internet
-if (check_host "github.com"); then
+if [ "`check_host github.com`" = "true" ]; then
 	NET_CHECK=true
 	echo -n "[ " && instpass && echo -n "] "
 else
