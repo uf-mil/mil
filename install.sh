@@ -191,8 +191,17 @@ while !($SELECTED); do
 	echo -n "Project selection: " && read RESPONSE
 	case "$RESPONSE" in
 		"1")
-			INSTALL_SUB=true
-			SELECTED=true
+			if (cat $BASHRC_FILE | grep --quiet "source /opt/ros/indigo/setup.bash") && \
+			   !(cat $BASHRC_FILE | grep --quiet "#source /opt/ros/indigo/setup.bash"); then
+				instwarn "Terminating installation due to conflicting ROS versions"
+				instwarn "SubjuGator requires ROS Kinetic, but ROS Indigo is being sourced"
+				instwarn "To fix this issue, comment out the following line in $BASHRC_FILE:"
+				instwarn "source /opt/ros/indigo/setup.bash"
+				exit 1
+			else
+				INSTALL_SUB=true
+				SELECTED=true
+			fi
 		;;
 		"2")
 			echo ""
@@ -207,8 +216,18 @@ while !($SELECTED); do
 			echo "old dependencies will need to be downloaded and installed."
 			echo -n "Do you still wish to proceed? [y/N] " && read RESPONSE
 			if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
-				INSTALL_NAV=true
-				SELECTED=true
+				if (cat $BASHRC_FILE | grep --quiet "source /opt/ros/kinetic/setup.bash") && \
+				   !(cat $BASHRC_FILE | grep --quiet "#source /opt/ros/kinetic/setup.bash"); then
+					instwarn "Terminating installation due to conflicting ROS versions"
+					instwarn "NaviGator requires ROS Indigo, but ROS Kinetic is being sourced"
+					instwarn "To fix this issue, comment out the following line in $BASHRC_FILE:"
+					instwarn "source /opt/ros/kinetic/setup.bash"
+					exit 1
+				else
+					INSTALL_NAV=true
+					SELECTED=true
+
+				fi
 			fi
 		;;
 		"")
@@ -255,7 +274,7 @@ rosdep update
 
 # Source ROS configurations for bash on this user account
 source /opt/ros/kinetic/setup.bash
-if !(cat $BASHRC_FILE | grep --quiet "source /opt/ros"); then
+if !(cat $BASHRC_FILE | grep --quiet "source /opt/ros/kinetic/setup.bash"); then
 	echo "" >> $BASHRC_FILE
 	echo "# Sets up the shell environment for ROS" >> $BASHRC_FILE
 	echo "source /opt/ros/kinetic/setup.bash" >> $BASHRC_FILE
@@ -292,22 +311,31 @@ if !(cat $BASHRC_FILE | grep --quiet "source $CATKIN_DIR/devel/setup.bash"); the
 	echo "source $CATKIN_DIR/devel/setup.bash" >> $BASHRC_FILE
 fi
 
-# Check if the Navigator repository is present; if it isn't, download it
-if ($INSTALL_NAV) && !(ls $CATKIN_DIR/src | grep --quiet "Navigator"); then
-	instlog "Downloading the Navigator repository"
+# Download the software-common repository if it has not already been downloaded
+if !(ls $CATKIN_DIR/src | grep --quiet "software-common"); then
+	instlog "Downloading the software-common repository"
 	cd $CATKIN_DIR/src
-	git clone -q https://github.com/uf-mil/Navigator.git
-	cd $CATKIN_DIR/src/Navigator
+	git clone -q https://github.com/uf-mil/software-common.git
+	cd $CATKIN_DIR/src/software-common
 	git remote rename origin upstream
-	instlog "Make sure you change your git origin to point to your own fork! (git remote add origin your_forks_url)"
 fi
 
-# Check if the Sub8 repository is present; if it isn't, download it
+# Download the Sub8 repository if it has not already been downloaded and was selected for installation
 if ($INSTALL_SUB) && !(ls $CATKIN_DIR/src | grep --quiet "Sub8"); then
 	instlog "Downloading the Sub8 repository"
 	cd $CATKIN_DIR/src
 	git clone -q https://github.com/uf-mil/Sub8.git
 	cd $CATKIN_DIR/src/Sub8
+	git remote rename origin upstream
+	instlog "Make sure you change your git origin to point to your own fork! (git remote add origin your_forks_url)"
+fi
+
+# Download the Navigator repository if it has not already been downloaded and was selected for installation
+if ($INSTALL_NAV) && !(ls $CATKIN_DIR/src | grep --quiet "Navigator"); then
+	instlog "Downloading the Navigator repository"
+	cd $CATKIN_DIR/src
+	git clone -q https://github.com/uf-mil/Navigator.git
+	cd $CATKIN_DIR/src/Navigator
 	git remote rename origin upstream
 	instlog "Make sure you change your git origin to point to your own fork! (git remote add origin your_forks_url)"
 fi
@@ -476,12 +504,36 @@ fi
 # Bashrc Alias Management #
 #=========================#
 
-# Source the Sub8 configurations for bash on this user account
-source $ALIASES_FILE
-if !(cat $BASHRC_FILE | grep --quiet "source $ALIASES_FILE"); then
+SWC_ALIASES=$CATKIN_DIR/src/software-common/scripts/bash_aliases.sh
+SUB_ALIASES=$CATKIN_DIR/src/Sub8/scripts/bash_aliases.sh
+NAV_ALIASES=$CATKIN_DIR/src/Navigator/scripts/bash_aliases.sh
+
+# Source the software-common configurations for bash on this user account
+source $SWC_ALIASES
+if !(cat $BASHRC_FILE | grep --quiet "source $SWC_ALIASES"); then
 	echo "" >> $BASHRC_FILE
-	echo "# Adds Sub8 aliases to shell environment" >> $BASHRC_FILE
-	echo "source $ALIASES_FILE" >> $BASHRC_FILE
+	echo "# Adds MIL aliases to shell environment" >> $BASHRC_FILE
+	echo "source $SWC_ALIASES" >> $BASHRC_FILE
+fi
+
+# Source the Sub8 configurations for bash on this user account
+if ($INSTALL_SUB); then
+	source $SUB_ALIASES
+	if !(cat $BASHRC_FILE | grep --quiet "source $SUB_ALIASES"); then
+		echo "" >> $BASHRC_FILE
+		echo "# Adds SubjuGator aliases to shell environment" >> $BASHRC_FILE
+		echo "source $SUB_ALIASES" >> $BASHRC_FILE
+	fi
+fi
+
+# Source the Navigator configurations for bash on this user account
+if ($INSTALL_NAV); then
+	source $NAV_ALIASES
+	if !(cat $BASHRC_FILE | grep --quiet "source $NAV_ALIASES"); then
+		echo "" >> $BASHRC_FILE
+		echo "# Adds NaviGator aliases to shell environment" >> $BASHRC_FILE
+		echo "source $NAV_ALIASES" >> $BASHRC_FILE
+	fi
 fi
 
 
