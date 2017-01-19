@@ -46,7 +46,7 @@ check_host() {
 }
 
 ros_git_get() {
-	# Uasge example: ros_git_get git@github.com:jpanikulam/ROS-Boat.git
+	# Usage example: ros_git_get git@github.com:jpanikulam/ROS-Boat.git
 	NEEDS_INSTALL=true;
 	INSTALL_URL=$1;
 	builtin cd $CATKIN_DIR/src
@@ -76,94 +76,56 @@ ros_git_get() {
 	done
 	if $NEEDS_INSTALL; then
 		instlog "Installing $INSTALL_URL in $CATKIN_DIR/src"
-		git clone -q $INSTALL_URL --depth=1 --recursive
+		git clone -q $INSTALL_URL --depth=100 --recursive
 	fi
 }
 
 
-#======================#
-# Script Configuration #
-#======================#
+#=======================#
+# Configurable Defaults #
+#=======================#
 
-# Sane installation defaults for no argument cases
 REQUIRED_OS="xenial"
-INSTALL_ALL=false
-INSTALL_SUB=false
-INSTALL_NAV=false
-
-# Retrievs information about the location of the script
-SCRIPT_PATH="`readlink -f ${BASH_SOURCE[0]}`"
-SCRIPT_DIR="`dirname $SCRIPT_PATH`"
-
-# Convert script arguments to variables
-while [ "$#" -gt 0 ]; do
-	case $1 in
-		-h) printf "\nUsage: $0\n"
-			printf "\n    [-a] Installs everything needed for all MIL projects\n"
-			printf "\n    [-s] Installs everything needed for SubjuGator 8\n"
-			printf "\n    [-n] Installs everything needed for Navigator\n"
-			printf "\n"
-			exit 0
-			;;
-		-a) INSTALL_ALL=true
-			shift 1
-			;;
-		-s) INSTALL_SUB=true
-			shift 1
-			;;
-		-n) INSTALL_NAV=true
-			shift 1
-			;;
-		-?) instwarn "Option $1 is not implemented"
-			exit 1
-			;;
-	esac
-done
-
-if !($INSTALL_ALL || $INSTALL_SUB || $INSTALL_NAV); then
-	echo "A MIL project must be selected for install"
-	echo "Run ./install.sh -h for more information"
-	exit 1
-elif ($INSTALL_ALL); then
-	INSTALL_SUB=true
-	INSTALL_NAV=true
-elif ($INSTALL_NAV); then
-
-	# Navigator currently depends on the Sub8 repository
-	# This may change soon, but this will install Sub8 for now
-	INSTALL_SUB=true
-fi
-
-# Confirmation of where to put CATKIN directory
 CATKIN_DIR=~/mil_ws
-while true; do
-	instlog "The CATKIN Directory is $CATKIN_DIR. Is this okay(y/n)? "
-	read yn
-	case $yn in
-		[Yy]* ) break;;
-		[Nn]* ) read -p "Enter a new directory: " CATKIN_DIR; break;;
-		* ) echo "Please answer yes or no.";;
-	esac
-done
-
-# The paths to the aliases configuration files
 BASHRC_FILE=~/.bashrc
-ALIASES_FILE=$CATKIN_DIR/src/Sub8/.sub_aliases
+
 
 #==================#
 # Pre-Flight Check #
 #==================#
 
+# Gets the user to enter their sudo password here instead of in the middle of the pre-flight check
+# Purely here for aesthetics and to satisfy OCD
+sudo true
+
 instlog "Starting the pre-flight system check to ensure installation was done properly"
 
-# The lsb-release package is critical to check the OS version
-# It may not be on bare-bones systems, so it is installed here if necessary
+# Check whether or not github.com is reachable
+# This also makes sure that the user is connected to the internet
+if [ "`check_host github.com`" = "true" ]; then
+	NET_CHECK=true
+	echo -n "[ " && instpass && echo -n "] "
+else
+	NET_CHECK=false
+	echo -n "[ " && instfail && echo -n "] "
+fi
+echo "Internet connectivity check"
+
+if !($NET_CHECK); then
+
+	# The script will not allow the user to install without internet
+	instwarn "Terminating installation due to the lack of an internet connection"
+	instwarn "The install script needs to be able to connect to Github and other sites"
+	exit 1
+fi
+
+# Make sure script dependencies are installed quietly on bare bones installations
 sudo apt-get update -qq
-sudo apt-get install -qq lsb-release
+sudo apt-get install -qq lsb-release dialog git > /dev/null 2>&1
 
 # Ensure that the correct OS is installed
-DTETCTED_OS="`lsb_release -sc`"
-if [ $DTETCTED_OS = $REQUIRED_OS ]; then
+DETECTED_OS="`lsb_release -sc`"
+if [ $DETECTED_OS = $REQUIRED_OS ]; then
 	OS_CHECK=true
 	echo -n "[ " && instpass && echo -n "] "
 else
@@ -180,23 +142,12 @@ else
 	ROOT_CHECK=false
 	echo -n "[ " && instfail && echo -n "] "
 fi
-echo "Running user check"
-
-# Check whether or not github.com is reachable
-# This also makes sure that the user is connected to the internet
-if [ "`check_host github.com`" = "true" ]; then
-	NET_CHECK=true
-	echo -n "[ " && instpass && echo -n "] "
-else
-	NET_CHECK=false
-	echo -n "[ " && instfail && echo -n "] "
-fi
-echo "Internet connectivity check"
+echo "User permissions check"
 
 if !($OS_CHECK); then
 
 	# The script will not allow the user to install on an unsupported OS
-	instwarn "Terminating installation due to incorrect OS (detected $DTETCTED_OS)"
+	instwarn "Terminating installation due to incorrect OS (detected $DETECTED_OS)"
 	instwarn "MIL projects require Ubuntu 16.04 (xenial)"
 	exit 1
 fi
@@ -204,27 +155,77 @@ fi
 if !($ROOT_CHECK); then
 
 	# The script will not allow the user to install as root
-	instwarn "Terminating installation due to forbidden user"
+	instwarn "Terminating installation due to elevated user permissions"
 	instwarn "The install script should not be run as root"
 	exit 1
 fi
 
-if !($NET_CHECK); then
 
-	# The script will not allow the user to install without internet
-	instwarn "Terminating installation due to the lack of an internet connection"
-	instwarn "The install script needs to be able to connect to GitHub and other sites"
-	exit 1
+#======================#
+# Script Configuration #
+#======================#
+
+# Install no project by default, the user must select one
+INSTALL_SUB=false
+INSTALL_PRO=false
+INSTALL_NAV=false
+
+# Prompt the user to enter a catkin workspace to use
+echo ""
+echo "Catkin is the ROS build system and it combines CMake macros and Python scripts."
+echo "The catkin workspace is the directory where all source and build files for the"
+echo "project are stored. Our default is in brackets below, press enter to use it."
+echo -n "What catkin workspace should be used? [$CATKIN_DIR]: " && read RESPONSE
+if [ "$RESPONSE" != "" ]; then
+	CATKIN_DIR=${RESPONSE/\~//home/$USER}
 fi
+
+# Prompt the user to select a project to install
+SELECTED=false
+while !($SELECTED); do
+	echo ""
+	echo "A MIL project must be selected for install"
+	echo "	1. SubjuGator"
+	echo "	2. PropaGator $(tput bold)[DEPRECATED]$(tput sgr0)"
+	echo "	3. NaviGator $(tput bold)[DEPRECATED]$(tput sgr0)"
+	echo -n "Project selection: " && read RESPONSE
+	case "$RESPONSE" in
+		"1")
+			INSTALL_SUB=true
+			SELECTED=true
+		;;
+		"2")
+			echo ""
+			echo "The PropaGator project has not been worked on since the dark ages of MIL, so"
+			echo "it is not supported by this script."
+		;;
+		"3")
+			echo ""
+			echo "The NaviGator project was last tested on Ubuntu 14.04 with ROS Indigo."
+			echo "Several dependencies no longer exist in ROS Kinetic, so in order to install it,"
+			echo "ROS Indigo along with the Sub8 repository at an earlier date and all of it's"
+			echo "old dependencies will need to be downloaded and installed."
+			echo -n "Do you still wish to proceed? [y/N] " && read RESPONSE
+			if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
+				INSTALL_NAV=true
+				SELECTED=true
+			fi
+		;;
+		"")
+			echo ""
+			echo "You must select one of the projects by entering it's number on the list"
+		;;
+		*)
+			echo ""
+			echo "$RESPONSE is not a valid selection"
+		;;
+	esac
+done
 
 
 #===================================================#
 # Repository and Set Up and Main Stack Installation #
 #===================================================#
-
-# Make sure script dependencies are installed on bare bones installations
-instlog "Installing install script dependencies"
-sudo apt-get install -qq wget curl aptitude fakeroot ssh git
 
 # Add software repository for ROS to software sources
 instlog "Adding ROS PPA to software sources"
@@ -238,7 +239,7 @@ curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.s
 # Install ROS and a few ROS dependencies
 instlog "Installing ROS Kinetic"
 sudo apt-get update -qq
-sudo apt-get install -qq python-catkin-pkg python-rosdep
+sudo apt-get install -qq python-rosdep python-catkin-pkg
 if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
 	sudo apt-get install -qq ros-kinetic-desktop
 else
@@ -470,6 +471,7 @@ if ($INSTALL_SUB); then
 	sudo pip install -q -U crc16
 fi
 
+
 #=========================#
 # Bashrc Alias Management #
 #=========================#
@@ -491,9 +493,4 @@ fi
 if !(env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
 	instlog "Building MIL's software stack with catkin_make"
 	catkin_make -C $CATKIN_DIR -B
-fi
-
-# Remove the initial install script if it was not in the Navigator repository
-if !(echo $SCRIPT_DIR | grep --quiet "src/Navigator"); then
-	rm -f "$SCRIPT_PATH"
 fi
