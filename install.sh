@@ -94,7 +94,7 @@ BASHRC_FILE=~/.bashrc
 # Pre-Flight Check #
 #==================#
 
-# Gets the user to enter their sudo password here instead of in the middle of the pre-flight check
+# Gets the user to enter their password here instead of in the middle of the pre-flight check
 # Purely here for aesthetics and to satisfy OCD
 sudo true
 
@@ -121,7 +121,7 @@ fi
 
 # Make sure script dependencies are installed quietly on bare bones installations
 sudo apt-get update -qq
-sudo apt-get install -qq lsb-release dialog git > /dev/null 2>&1
+sudo apt-get install -qq lsb-release git > /dev/null 2>&1
 
 # Ensure that the correct OS is installed
 DETECTED_OS="`lsb_release -sc`"
@@ -170,76 +170,86 @@ INSTALL_SUB=false
 INSTALL_PRO=false
 INSTALL_NAV=false
 
-# Prompt the user to enter a catkin workspace to use
-echo ""
-echo "Catkin is the ROS build system and it combines CMake macros and Python scripts."
-echo "The catkin workspace is the directory where all source and build files for the"
-echo "project are stored. Our default is in brackets below, press enter to use it."
-echo -n "What catkin workspace should be used? [$CATKIN_DIR]: " && read RESPONSE
-if [ "$RESPONSE" != "" ]; then
-	CATKIN_DIR=${RESPONSE/\~//home/$USER}
-fi
+# Use environment variables to determine which project to install on Semaphore
+if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
+	if (env | grep INSTALL_SUB | grep --quiet -oe '[^=]*$'); then
+		INSTALL_SUB=true
+	elif (env | grep INSTALL_PRO | grep --quiet -oe '[^=]*$'); then
+		INSTALL_PRO=true
+	elif (env | grep INSTALL_NAV | grep --quiet -oe '[^=]*$'); then
+		INSTALL_NAV=true
+	fi
 
-# Prompt the user to select a project to install
-SELECTED=false
-while !($SELECTED); do
+else
+	# Prompt the user to enter a catkin workspace to use
 	echo ""
-	echo "A MIL project must be selected for install"
-	echo "	1. SubjuGator"
-	echo "	2. PropaGator $(tput bold)[DEPRECATED]$(tput sgr0)"
-	echo "	3. NaviGator $(tput bold)[DEPRECATED]$(tput sgr0)"
-	echo -n "Project selection: " && read RESPONSE
-	case "$RESPONSE" in
-		"1")
-			if (cat $BASHRC_FILE | grep --quiet "source /opt/ros/indigo/setup.bash") && \
-			   !(cat $BASHRC_FILE | grep --quiet "#source /opt/ros/indigo/setup.bash"); then
-				instwarn "Terminating installation due to conflicting ROS versions"
-				instwarn "SubjuGator requires ROS Kinetic, but ROS Indigo is being sourced"
-				instwarn "To fix this issue, comment out the following line in $BASHRC_FILE:"
-				instwarn "source /opt/ros/indigo/setup.bash"
-				exit 1
-			else
-				INSTALL_SUB=true
-				SELECTED=true
-			fi
-		;;
-		"2")
-			echo ""
-			echo "The PropaGator project has not been worked on since the dark ages of MIL, so"
-			echo "it is not supported by this script."
-		;;
-		"3")
-			echo ""
-			echo "The NaviGator project was last tested on Ubuntu 14.04 with ROS Indigo."
-			echo "Several dependencies no longer exist in ROS Kinetic, so in order to install it,"
-			echo "ROS Indigo along with the Sub8 repository at an earlier date and all of it's"
-			echo "old dependencies will need to be downloaded and installed."
-			echo -n "Do you still wish to proceed? [y/N] " && read RESPONSE
-			if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
-				if (cat $BASHRC_FILE | grep --quiet "source /opt/ros/kinetic/setup.bash") && \
-				   !(cat $BASHRC_FILE | grep --quiet "#source /opt/ros/kinetic/setup.bash"); then
+	echo "Catkin is the ROS build system and it combines CMake macros and Python scripts."
+	echo "The catkin workspace is the directory where all source and build files for the"
+	echo "project are stored. Our default is in brackets below, press enter to use it."
+	echo -n "What catkin workspace should be used? [$CATKIN_DIR]: " && read RESPONSE
+	echo ""
+	if [ "$RESPONSE" != "" ]; then
+		CATKIN_DIR=${RESPONSE/\~//home/$USER}
+	fi
+
+	# Prompt the user to select a project to install
+	SELECTED=false
+	while !($SELECTED); do
+		echo "A MIL project must be selected for install"
+		echo "	1. SubjuGator"
+		echo "	2. PropaGator $(tput bold)[DEPRECATED]$(tput sgr0)"
+		echo "	3. NaviGator $(tput bold)[DEPRECATED]$(tput sgr0)"
+		echo -n "Project selection: " && read RESPONSE
+		echo ""
+		case "$RESPONSE" in
+			"1")
+				if (cat $BASHRC_FILE | grep --quiet "source /opt/ros/indigo/setup.bash") && \
+				   !(cat $BASHRC_FILE | grep --quiet "#source /opt/ros/indigo/setup.bash"); then
 					instwarn "Terminating installation due to conflicting ROS versions"
-					instwarn "NaviGator requires ROS Indigo, but ROS Kinetic is being sourced"
-					instwarn "To fix this issue, comment out the following line in $BASHRC_FILE:"
-					instwarn "source /opt/ros/kinetic/setup.bash"
+					instwarn "SubjuGator requires ROS Kinetic, but ROS Indigo is being sourced"
+					instwarn "To fix this issue, comment out this line in $BASHRC_FILE: source /opt/ros/indigo/setup.bash"
 					exit 1
 				else
-					INSTALL_NAV=true
+					INSTALL_SUB=true
 					SELECTED=true
-
 				fi
-			fi
-		;;
-		"")
-			echo ""
-			echo "You must select one of the projects by entering it's number on the list"
-		;;
-		*)
-			echo ""
-			echo "$RESPONSE is not a valid selection"
-		;;
-	esac
-done
+			;;
+			"2")
+				echo "The PropaGator project has not been worked on since the dark ages of MIL, so"
+				echo "it is not supported by this script."
+				echo ""
+			;;
+			"3")
+				echo "The NaviGator project was developed on Ubuntu 14.04 with ROS Indigo."
+				echo "Several dependencies no longer exist in ROS Kinetic, so in order to install it,"
+				echo "ROS Indigo, the Sub8 repository at an earlier date,  and all of the old Sub8"
+				echo "dependencies will need to be downloaded and installed."
+				echo -n "Do you still wish to proceed? [y/N] " && read RESPONSE
+				echo ""
+				if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
+					if (cat $BASHRC_FILE | grep --quiet "source /opt/ros/kinetic/setup.bash") && \
+					   !(cat $BASHRC_FILE | grep --quiet "#source /opt/ros/kinetic/setup.bash"); then
+						instwarn "Terminating installation due to conflicting ROS versions"
+						instwarn "NaviGator requires ROS Indigo, but ROS Kinetic is being sourced"
+						instwarn "To fix this issue, comment out this line in $BASHRC_FILE: source /opt/ros/kinetic/setup.bash"
+						exit 1
+					else
+						INSTALL_NAV=true
+						SELECTED=true
+					fi
+				fi
+			;;
+			"")
+				echo "You must select one of the projects by entering it's number on the list"
+				echo ""
+			;;
+			*)
+				echo "$RESPONSE is not a valid selection"
+				echo ""
+			;;
+		esac
+	done
+fi
 
 
 #===================================================#
