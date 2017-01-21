@@ -17,17 +17,24 @@ def _check_for_alarm(nh, alarm_name, nowarn=False):
         print msg.format(alarm_name)
 
 class TxAlarmBroadcaster(object):
+    @classmethod
     @txros.util.cancellableInlineCallbacks
-    def _init(self, nh, name, node_name=None, nowarn=False):
+    def init(cls, nh, name, node_name=None, nowarn=False):
+        yield _check_for_alarm(nh, name, nowarn)
+        
+        node_name = nh.get_name() if node_name is None else node_name
+
+        defer.returnValue(cls(nh, name, node_name))
+
+    def __init__(self, nh, name, node_name):
+        ''' Don't invoke this function directly, use the `init` function above '''
         self._nh = nh
         self._alarm_name = name
 
-        yield _check_for_alarm(self._nh, self._alarm_name, nowarn)
-        self._node_name = self._nh.get_name() if node_name is None else node_name
-        self._alarm_set = yield self._nh.get_service_client("/alarm/set", AlarmSet)
+        self._node_name = node_name
+        self._alarm_set = self._nh.get_service_client("/alarm/set", AlarmSet)
 
         print "Created alarm broadcaster for alarm {}".format(name)
-        defer.returnValue(self)
 
     def _generate_request(self, raised, problem_description="", parameters={}, severity=0):
         request = AlarmSetRequest()
@@ -51,17 +58,24 @@ class TxAlarmBroadcaster(object):
 
 
 class TxAlarmListener(object):
+    @classmethod
     @txros.util.cancellableInlineCallbacks
-    def _init(self, nh, name, callback_funct=None, nowarn=False, **kwargs):
-        self.nh = nh
-        self._alarm_name = name
-        yield _check_for_alarm(nh, self._alarm_name, nowarn)
+    def init(cls, nh, name, callback_funct=None, nowarn=False, **kwargs):
+        yield _check_for_alarm(nh, name, nowarn)
 
-        self._alarm_get = self.nh.get_service_client("/alarm/get", AlarmGet)
+        alarm_client = nh.get_service_client("/alarm/get", AlarmGet)
         try:
-            yield txros.util.wrap_timeout(self._alarm_get.wait_for_service(), 1)
+            yield txros.util.wrap_timeout(alarm_client.wait_for_service(), 1)
         except txros.util.TimeoutError:
             print "No alarm sever found! Alarm behaviours will be unpredictable."
+
+        defer.returnValue(cls(nh, name, alarm_client, callback_funct))
+
+    def __init__(self, nh, name, alarm_client, callback_funct):
+        ''' Don't invoke this function directly, use the `init` function above '''
+        self.nh = nh
+        self._alarm_name = name
+        self._alarm_get = alarm_client
         
         # Data used to trigger callbacks
         self._raised_cbs = []  # [(severity_for_cb1, cb1), (severity_for_cb2, cb2), ...]
@@ -70,16 +84,18 @@ class TxAlarmListener(object):
 
         if callback_funct is not None:
             self.add_callback(callback_funct, **kwargs)
-
-        defer.returnValue(self)
-        
+     
+    @txros.util.cancellableInlineCallbacks
     def is_raised(self):
         ''' Returns whether this alarm is raised or not '''
-        return self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
+        resp = yield self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
+        defer.returnValue(resp.alarm.raised)
 
+    @txros.util.cancellableInlineCallbacks
     def is_cleared(self):
-        ''' Returns whether this alarm is cleared or not '''
-        return not self.is_raised()
+        ''' Returns whether this alarm is raised or not '''
+        resp = yield self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
+        defer.returnValue(not resp.alarm.raised)
 
     @txros.util.cancellableInlineCallbacks
     def get_alarm(self):
@@ -138,8 +154,10 @@ class TxAlarmListener(object):
                     print "A callback function for the alarm: {} threw an error!".format(self._alarm_name)
                     print e
 
+
 class TxHeartbeatMonitor(TxAlarmBroadcaster):
-    def __init__(self, alarm_name, topic_name, prd=0.2, predicate=None, nowarn=False, **kwargs):
+    @txros.util.cancellableInlineCallbacks
+    def _init(self, alarm_name, topic_name, msg_type, prd=0.2, predicate=None, nowarn=False, **kwargs):
         ''' Used to trigger an alarm if a message on the topic `topic_name` isn't published
             atleast every `prd` seconds.
 
@@ -150,9 +168,9 @@ class TxHeartbeatMonitor(TxAlarmBroadcaster):
         self._last_msg_time = None
         self._prd = txros.Genpy.Duration(prd)
         self._dropped = False
-        
+
         super(HeartbeatMonitor, self).__init__(alarm_name, nowarn=nowarn, **kwargs)
-        msg_class, _, _ = rostopic.get_topic_class(topic_name)
+
         rospy.Subscriber(topic_name, msg_class, self._got_msg)
 
         rospy.Timer(rospy.Duration(prd / 2), self._check_for_message)
