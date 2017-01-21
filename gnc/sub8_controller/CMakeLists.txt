@@ -19,7 +19,7 @@ generate_dynamic_reconfigure_options(
 
 catkin_package(
   CATKIN_DEPENDS roscpp sub8_msgs dynamic_reconfigure
-  DEPENDS system_lib
+  DEPENDS
 )
 
 include_directories(

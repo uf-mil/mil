@@ -38,7 +38,6 @@ catkin_package(
     std_msgs
     geometry_msgs
   DEPENDS
-    system_lib
     image_transport
     image_geometry
     cv_bridge

@@ -88,5 +88,5 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES duck_gazebo
     CATKIN_DEPENDS gazebo_ros roscpp rospy std_msgs message_runtime
-    DEPENDS system_lib
+    DEPENDS
 )
