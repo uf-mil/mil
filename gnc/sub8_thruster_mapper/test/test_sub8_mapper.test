@@ -4,12 +4,12 @@
   <!-- Start up alarm server -->
   <node name="alarm_sever" pkg="ros_alarms" type="alarm_server.py" output="screen">
       <!-- A folder that is in your system path containing all alarm handlers-->
-      <param name="handler_module" type="string" value="test_handlers"/>
+      <param name="handler_module" type="string" value="alarm_handlers"/>
   </node>
 
   <!-- List known alarms here -->
   <rosparam ns="known_alarms">
-      bus-voltage, thruster-out
+      bus-voltage, thruster-out, height-over-bottom, network-loss
   </rosparam>
 
   <include file="$(find sub8_videoray_m5_thruster)/launch/thruster_driver.launch" />

@@ -45,7 +45,6 @@ class TestMapThrusters(unittest.TestCase):
         '''
         target_node = 'thruster_mapper'
         target_topic = '/wrench'
-
         subscribed = wait_for_subscriber(target_node, target_topic)
         self.assertTrue(
             subscribed,
