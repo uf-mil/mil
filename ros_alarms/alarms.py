@@ -176,7 +176,7 @@ class AlarmListener(object):
                 rospy.logwarn(e)
 
 class HeartbeatMonitor(AlarmBroadcaster):
-    def __init__(self, alarm_name, topic_name, prd=0.2, msg_class=Header, predicate=None, nowarn=False, **kwargs):
+    def __init__(self, alarm_name, topic_name, msg_class, prd=0.2, predicate=None, nowarn=False, **kwargs):
         ''' Used to trigger an alarm if a message on the topic `topic_name` isn't published
             atleast every `prd` seconds.
 
