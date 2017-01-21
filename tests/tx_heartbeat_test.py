@@ -20,7 +20,7 @@ def main():
     global publish
     nh = yield txros.NodeHandle.from_argv('tx_hearbeat_test')
 
-    alarm_name = "test_alarm"
+    alarm_name = "test_alarm123"
     hbm = yield TxHeartbeatMonitor.init(nh, alarm_name, "/heartbeat", String, nowarn=True)
     monitor_df = hbm.start_monitor()
 

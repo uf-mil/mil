@@ -6,7 +6,7 @@ from ros_alarms import TxAlarmBroadcaster, TxAlarmListener
 def main():
     nh = yield txros.NodeHandle.from_argv('tx_alarm_test')
 
-    alarm_name = "test_alarm"
+    alarm_name = "test_alarm567"
     ab = yield TxAlarmBroadcaster.init(nh, alarm_name)
     al = yield TxAlarmListener.init(nh, alarm_name, nowarn=True)
 
@@ -28,7 +28,8 @@ def main():
         yield nh.sleep(1)
         print "DONE SLEEPING"
 
-    al.add_callback(cb, call_when_raised=False)
+    yield al.add_callback(cb, call_when_raised=False)
+    yield nh.sleep(.1)
     assert not var
 
     yield ab.raise_alarm()

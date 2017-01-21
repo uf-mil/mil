@@ -75,14 +75,15 @@ class TxAlarmListener(object):
 
     def __init__(self, nh, name, alarm_client, callback_funct):
         ''' Don't invoke this function directly, use the `init` function above '''
-        self.nh = nh
+        self._nh = nh
         self._alarm_name = name
         self._alarm_get = alarm_client
+        self._last_alarm = None
         
         # Data used to trigger callbacks
         self._raised_cbs = []  # [(severity_for_cb1, cb1), (severity_for_cb2, cb2), ...]
         self._cleared_cbs = []
-        self.update_sub = self.nh.subscribe("/alarm/updates", Alarm, self._alarm_update)
+        self.update_sub = self._nh.subscribe("/alarm/updates", Alarm, self._alarm_update)
 
         if callback_funct is not None:
             self.add_callback(callback_funct, **kwargs)
@@ -99,7 +100,6 @@ class TxAlarmListener(object):
         resp = yield self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
         defer.returnValue(not resp.alarm.raised)
 
-    @txros.util.cancellableInlineCallbacks
     def get_alarm(self):
         ''' Returns the alarm message 
         Also worth noting, the alarm this returns has it's `parameter` field 
@@ -118,6 +118,7 @@ class TxAlarmListener(object):
         # Not a tuple, just an int. The severities should match
         return self._last_alarm.severity == severity
 
+    @txros.util.cancellableInlineCallbacks
     def add_callback(self, funct, call_when_raised=True, call_when_cleared=True,
                      severity_required=(0, 5)):
         ''' Deals with adding function callbacks
@@ -126,11 +127,23 @@ class TxAlarmListener(object):
         Each callback can have a severity level associated with it such that different callbacks can 
             be triggered for different levels of severity.
         '''
+
+        def _errback(err):
+            print "Error in alarm callback!"
+            print err.getErrorMessage()
+
         if call_when_raised:
             self._raised_cbs.append((severity_required, funct))
 
+            if self._last_alarm is not None and self._last_alarm.raised and \
+               self._severity_cb_check(severity_required):
+                yield funct(self._nh, self._last_alarm).addErrback(_errback)
+
         if call_when_cleared:
             self._cleared_cbs.append(((0, 5), funct))  # Clear callbacks always run
+            
+            if self._last_alarm is not None and not self._last_alarm.raised:
+                yield funct(self._nh, self._last_alarm).addErrback(_errback)
 
     def clear_callbacks(self):
         ''' Clears all callbacks '''
@@ -156,7 +169,7 @@ class TxAlarmListener(object):
                     except:
                         pass
 
-                    yield cb(self.nh, alarm)
+                    yield cb(self._nh, alarm)
                 except Exception as e:
                     print "A callback function for the alarm: {} threw an error!".format(self._alarm_name)
                     print e
