@@ -97,15 +97,17 @@ class Printer(object):
     
 
 class FprintFactory(object):
-    def __init__(self, title=None, time=None, msg_color=None, newline=1):
+    def __init__(self, title=None, time=None, msg_color=None, auto_bold=True, newline=1):
         assert time is None or callable(time), "`time` should be `None` for no printing or a function that generates a timestamp."
         assert msg_color is None or isinstance(msg_color, str), "`msg_color` should be `None` for default printing or a string color."
+        assert isinstance(auto_bold, bool), "`auto_bold` should be true or false if messages should be printed as bold by default or not"
         assert newline is None or isinstance(newline, int), "`newline` should be the number of newlines after the text (default 1)"
 
         # All these can be overwritten if not specified here
         self.title = title          # Title to print with each message
         self.time = time            # Either `None` for no printing or a function that generates a timestamp
         self.msg_color = msg_color  # Either `None` for deafult printing or a string color 
+        self.auto_bold = auto_bold  # Should each message be bolded by default
         self.newline = newline      # The number of newlines characters to add to the end
 
         self.printer = Printer()
@@ -114,6 +116,7 @@ class FprintFactory(object):
         title = kwargs.get("title", self.title)
         time = kwargs.get("time", self.time)
         msg_color = kwargs.get("msg_color", self.msg_color)
+        auto_bold = kwargs.get("auto_bold", self.auto_bold)
         newline = kwargs.get("newline", self.newline)
             
         message = self.printer
@@ -123,7 +126,12 @@ class FprintFactory(object):
         if time is not None:
             t = time()
             message = message.bold(t).space()
+
+        message += ": "
             
+        if auto_bold:
+            text = str(self.printer.bold(text))
+
         if msg_color is not None:
             message = message.custom(text, getattr(Colors, msg_color))
         else:
