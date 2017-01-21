@@ -1,7 +1,6 @@
 from __future__ import division
 import txros
 from twisted.internet import defer
-import rospy  # TEMP
 
 from ros_alarms.msg import Alarm
 from ros_alarms.srv import AlarmSet, AlarmGet, AlarmSetRequest, AlarmGetRequest
