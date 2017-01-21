@@ -56,7 +56,7 @@ def main():
             fprint('Waiting for odom...')
             yield sub.tx_pose()
 
-        fprint('Odom found!', msg_color='green')
+        fprint('Odom found!', msg_color='green', newline=2)
         for mission in mission_list:
             yield mission.run(sub).addErrback(catch_error)
             yield txros.util.wall_sleep(1.0)  # Seems to make things behave more nicely
