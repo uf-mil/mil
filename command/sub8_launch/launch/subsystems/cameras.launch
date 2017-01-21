@@ -1,6 +1,0 @@
-<launch>
-  <!-- These launch files should NOT be in camera1394 -->
-  <!--include file="$(find sub8_launch)/launch/subsystems/cameras/launch/downward.launch"/-->
-  <include file="$(find sub8_launch)/launch/subsystems/cameras/launch/front_stereo.launch"/>
-  <include file="$(find sub8_launch)/launch/subsystems/cameras/launch/stereo.launch"/>
-</launch>
