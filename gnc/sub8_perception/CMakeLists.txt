@@ -13,7 +13,6 @@ find_package(catkin
     image_transport
     image_geometry
     cv_bridge
-    sub8_build_tools
     sub8_msgs
     message_generation
     std_msgs
@@ -43,7 +42,6 @@ catkin_package(
     image_transport
     image_geometry
     cv_bridge
-    sub8_build_tools
     sub8_msgs
 )
 
