@@ -151,6 +151,11 @@ class TxAlarmListener(object):
 
                 # Try to run the callback, absorbing any errors
                 try:
+                    try:
+                        alarm.parameters = json.loads(alarm.parameters)
+                    except:
+                        pass
+
                     yield cb(self.nh, alarm)
                 except Exception as e:
                     print "A callback function for the alarm: {} threw an error!".format(self._alarm_name)

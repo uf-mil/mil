@@ -164,7 +164,12 @@ class AlarmListener(object):
 
             # Try to run the callback, absorbing any errors
             try:
-                alarm.parameters = json.loads(alarm.parameters)
+                try:
+                    alarm.parameters = json.loads(alarm.parameters)
+                except:
+                    # Sometimes the json get's funky
+                    pass
+
                 cb(alarm)
             except Exception as e:
                 rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self._alarm_name))
