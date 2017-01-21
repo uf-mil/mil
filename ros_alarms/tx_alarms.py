@@ -8,6 +8,9 @@ from ros_alarms.srv import AlarmSet, AlarmGet, AlarmSetRequest, AlarmGetRequest
 
 import json
 
+'''
+Alarms implementation for txros (https://github.com/txros/txros)
+'''
 
 @txros.util.cancellableInlineCallbacks
 def _check_for_alarm(nh, alarm_name, nowarn=False):
@@ -156,40 +159,55 @@ class TxAlarmListener(object):
 
 
 class TxHeartbeatMonitor(TxAlarmBroadcaster):
+    @classmethod
     @txros.util.cancellableInlineCallbacks
-    def _init(self, alarm_name, topic_name, msg_type, prd=0.2, predicate=None, nowarn=False, **kwargs):
+    def init(cls, nh, alarm_name, topic_name, msg_class, prd=0.2, predicate=None, **kwargs):
         ''' Used to trigger an alarm if a message on the topic `topic_name` isn't published
-            atleast every `prd` seconds.
+            atleast every `prd` seconds. This alarm is self clearing.
 
         An alarm won't be triggered if no messages are initally received
         '''
-        raise NotImplementedError
-        self._predicate = predicate if predicate is not None else lambda *args: True
+        ab = yield TxAlarmBroadcaster.init(nh, alarm_name, **kwargs)
+        predicate = predicate if predicate is not None else lambda *args: True
+        prd = txros.util.genpy.Duration(prd)
+        defer.returnValue(cls(nh, ab, topic_name, msg_class, predicate, prd))
+
+    def __init__(self, nh, ab, topic_name, msg_class, predicate, prd):
+        ''' Don't invoke this function directly, use the `init` function above '''
+        self._nh = nh
+        self._predicate = predicate
+        self._prd = prd
+        self._ab = ab
+
         self._last_msg_time = None
-        self._prd = txros.Genpy.Duration(prd)
         self._dropped = False
 
-        super(HeartbeatMonitor, self).__init__(alarm_name, nowarn=nowarn, **kwargs)
+        self.sub = self._nh.subscribe(topic_name, msg_class)
 
-        rospy.Subscriber(topic_name, msg_class, self._got_msg)
+    def set_predicate(self, funct):
+        self._predicate = funct
 
-        rospy.Timer(rospy.Duration(prd / 2), self._check_for_message)
+    @txros.util.cancellableInlineCallbacks
+    def start_monitor(self, sample_prd=-1):
+        ''' Starts monitoring the topic 
+        This seperate function allows you to start and stop the heartbeat monitor
+        '''
+        if sample_prd == -1:
+            sample_prd = self._prd.to_sec() / 2
+        
+        # Wait for that first messgae
+        yield self.sub.get_next_message()
+        
+        while True:
+            yield self._nh.sleep(sample_prd)
 
-    def _got_msg(self, msg):
-        # If the predicate passes, store the message time
-        if self._predicate(msg):
-            self._last_msg_time = rospy.Time.now()
-            
-            # If it's dropped, clear the alarm and reset the dropped status
-            if self._dropped:
-                self.clear_alarm()
+            last_time = self.sub.get_last_message_time() 
+            last_msg = self.sub.get_last_message()
+            if (self._nh.get_time() - last_time > self._prd) and (yield self._predicate(self._nh, last_msg)):
+                if not self._dropped:
+                    yield self._ab.raise_alarm()
+                    self._dropped = True
+
+            elif self._dropped:
+                yield self._ab.clear_alarm()
                 self._dropped = False
-
-    def _check_for_message(self, *args):
-        if self._last_msg_time is None:
-            return
-
-        if rospy.Time.now() - self._last_msg_time > self._prd and not self._dropped:
-            self.raise_alarm()
-            self._dropped = True
-
