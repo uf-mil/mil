@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 NOCOLOR='\033[0m'
@@ -46,18 +47,18 @@ check_host() {
 }
 
 ros_git_get() {
-	# Usage example: ros_git_get git@github.com:jpanikulam/ROS-Boat.git
+	# Usage example: ros_git_get https://github.com/uf-mil/software-common.git
 	NEEDS_INSTALL=true;
 	INSTALL_URL=$1;
 	builtin cd $CATKIN_DIR/src
 
 	# Check if it already exists
-	for folder in $CATKIN_DIR/src/*; do
-		if ! [ -d $folder ]; then
+	for FOLDER in $CATKIN_DIR/src/*; do
+		if ! [ -d $FOLDER ]; then
 			continue;
 		fi
 
-		builtin cd $folder
+		builtin cd $FOLDER
 		if ! [ -d .git ]; then
 			continue;
 		fi
@@ -121,7 +122,7 @@ fi
 
 # Make sure script dependencies are installed quietly on bare bones installations
 sudo apt-get update -qq
-sudo apt-get install -qq lsb-release git > /dev/null 2>&1
+sudo apt-get install -qq lsb-release python-pip git build-essential > /dev/null 2>&1
 
 # Ensure that the correct OS is installed
 DETECTED_OS="`lsb_release -sc`"
@@ -259,6 +260,7 @@ fi
 # Add software repository for ROS to software sources
 instlog "Adding ROS PPA to software sources"
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros.list'
+sudo sh -c 'echo "deb-src http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" >> /etc/apt/sources.list.d/ros.list'
 sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
 
 # Add software repository for Git-LFS to software sources
@@ -299,7 +301,7 @@ fi
 if !([ -f $CATKIN_DIR/src/CMakeLists.txt ]); then
 	instlog "Generating catkin workspace at $CATKIN_DIR"
 	mkdir -p $CATKIN_DIR/src
-	cd $CATKIN_DIR/sr
+	cd $CATKIN_DIR/src
 	catkin_init_workspace
 	catkin_make -C $CATKIN_DIR -B
 else
@@ -318,6 +320,8 @@ fi
 # Source the workspace's configurations for bash on this user account
 source $CATKIN_DIR/devel/setup.bash
 if !(cat $BASHRC_FILE | grep --quiet "source $CATKIN_DIR/devel/setup.bash"); then
+	echo "" >> $BASHRC_FILE
+	echo "# Sets up the shell environment for the $CATKIN_DIR workspace" >> $BASHRC_FILE
 	echo "source $CATKIN_DIR/devel/setup.bash" >> $BASHRC_FILE
 fi
 
@@ -357,90 +361,66 @@ fi
 
 instlog "Installing common dependencies from the Ubuntu repositories"
 
-# Utilities for building and package management
-sudo apt-get install -qq cmake binutils-dev python-pip
-
-# Common backend libraries
-sudo apt-get install -qq libboost-all-dev
-sudo apt-get install -qq python-dev python-scipy python-numpy python-serial
-
-# Point clouds
-sudo apt-get install -qq libpcl-1.7-all libpcl-1.7-all-dev
-
-# Visualization and graphical interfaces
-sudo apt-get install -qq python-opengl freeglut3-dev libassimp-dev
-sudo apt-get install -qq libvtk5-dev python-vtk
-sudo apt-get install -qq python-qt4-dev python-qt4-gl
-sudo apt-get install -qq qt5-default
-
-# Tools
-sudo apt-get install -qq sshfs
-sudo apt-get install -qq git-lfs gitk
-git lfs install --skip-smudge
+# System tools
 sudo apt-get install -qq tmux
+sudo apt-get install -qq sshfs
 
-# Tools needed for hardware-common
-sudo apt-get install -qq gcc-arm-none-eabi
-sudo apt-get install -qq autoconf automake libtool
+# Git-LFS for models and other large files
+sudo apt-get install -qq git-lfs
+git lfs install --skip-smudge
 
-# Libraries needed by txros
-sudo apt-get install -qq python-twisted socat
-
-# Libraries needed by the old simulator
-sudo apt-get install -qq python-pygame
-
-instlog "Installing common ROS dependencies"
-
-# Hardware drivers
-sudo apt-get install -qq ros-indigo-driver-base
-
-# Cameras
-sudo apt-get install -qq ros-kinetic-camera-info-manager
-sudo apt-get install -qq ros-indigo-camera1394
-sudo apt-get install -qq ros-kinetic-stereo-image-proc
-
-# Image compression
-sudo apt-get install -qq ros-kinetic-compressed-image-transport ros-kinetic-compressed-depth-image-transport
-
-# Point clouds
-sudo apt-get install -qq ros-kinetic-pcl-ros ros-kinetic-pcl-conversions
-
-# Lie groups using Eigen
-sudo apt-get install -qq ros-kinetic-sophus
-
-# Controller
-sudo apt-get install -qq ros-kinetic-control-toolbox ros-kinetic-controller-manager
-sudo apt-get install -qq ros-kinetic-hardware-interface ros-kinetic-transmission-interface ros-kinetic-joint-limits-interface
-
-# Motion planning
-sudo apt-get install -qq ros-kinetic-ompl
+# Debugging utility
+sudo apt-get install -qq gdb
 
 instlog "Installing common dependencies from Python PIP"
 
-# Package management
-sudo pip install -q -U setuptools
+# Communication tool for the hydrophone board
+sudo pip install -q -U crc16
 
-# Service identity verification
-sudo pip install -q -U service_identity
-
-# Utilities
+# Utility
 sudo pip install -q -U argcomplete
-sudo pip install -q -U tqdm
-sudo pip install -q -U pyasn1
-sudo pip install -q -U characteristic
-sudo pip install -q -U progressbar
 
 # Machine Learning
 sudo pip install -q -U scikit-learn > /dev/null 2>&1
 
 # Visualization
 sudo pip install -q -U mayavi > /dev/null 2>&1
+sudo pip install -q -U tqdm
 
 instlog "Cloning common Git repositories that need to be built"
-ros_git_get https://github.com/txros/txros.git
 ros_git_get https://github.com/uf-mil/rawgps-tools.git
-ros_git_get https://github.com/ros-simulation/gazebo_ros_pkgs.git
-ros_git_get https://github.com/uf-mil/hardware-common.git
+ros_git_get https://github.com/txros/txros.git
+ros_git_get https://github.com/uf-mil/ros_alarms
+
+
+#==============================#
+# Sub8 Dependency Installation #
+#==============================#
+
+if ($INSTALL_SUB); then
+	instlog "Installing Sub8 dependencies from the Ubuntu repositories"
+
+	# Communication pipe for the navigation vessel
+	sudo apt-get install -qq socat
+
+	# Optical character recognition
+	sudo apt-get install -qq tesseract-ocr
+
+	instlog "Installing Sub8 ROS dependencies"
+
+	# Controller
+	sudo apt-get install -qq ros-kinetic-control-toolbox
+	sudo apt-get install -qq ros-kinetic-controller-manager
+	sudo apt-get install -qq ros-kinetic-hardware-interface
+	sudo apt-get install -qq ros-kinetic-transmission-interface
+	sudo apt-get install -qq ros-kinetic-joint-limits-interface
+
+	# Trajectory Generation
+	sudo apt-get install -qq ros-kinetic-ompl
+
+	# 3D Mouse
+	sudo apt-get install -qq ros-kinetic-spacenav-node
+fi
 
 
 #===================================#
@@ -451,62 +431,35 @@ if ($INSTALL_NAV); then
 	instlog "Installing Navigator ROS dependencies"
 
 	# Serial communications
-	sudo apt-get install -qq ros-indigo-rosserial ros-indigo-rosserial-python ros-indigo-rosserial-arduino
+	sudo apt-get install -qq ros-indigo-rosserial
+	sudo apt-get install -qq ros-indigo-rosserial-python
+	sudo apt-get install -qq ros-indigo-rosserial-arduino
 
 	# Thruster driver
 	sudo apt-get install -qq ros-indigo-roboteq-driver
 
 	instlog "Installing Navigator dependencies from source"
 
-	# Open Dynamics Engine
-	rm -rf /tmp/pyode-build
-	mkdir -p /tmp/pyode-build
-	cd /tmp/pyode-build
-	sudo apt-get build-dep -qq python-pyode
-	sudo apt-get remove -qq python-pyode
-	apt-get source --compile -qq python-pyode
-	sudo dpkg -i python-pyode_*.deb
-
 	# Message types
-	sudo apt-get install -qq ros-indigo-tf2-sensor-msgs ros-indigo-tf2-geometry-msgs
+	sudo apt-get install -qq ros-indigo-tf2-sensor-msgs
+	sudo apt-get install -qq ros-indigo-tf2-geometry-msgs
+
+	instlog "Installing Navigator dependencies from Python PIP"
+
+	# Visualization
+	sudo pip install -q -U progressbar
+
+	instlog "Cloning Navigator Git repositories that need to be built"
+	ros_git_get https://github.com/jnez71/lqRRT.git
+
+	# Required steps to build and install lqRRT
+	sudo python $CATKIN_DIR/src/lqRRT/setup.py build
+	sudo python $CATKIN_DIR/src/lqRRT/setup.py install
 
 	# Pulling large project files from Git-LFS
 	instlog "Pulling large files for Navigator"
 	cd $CATKIN_DIR/src/Navigator
 	git lfs pull
-
-	instlog "Cloning Navigator Git repositories that need to be built"
-	ros_git_get https://github.com/jnez71/lqRRT.git
-	ros_git_get https://github.com/gareth-cross/rviz_satellite.git
-
-	# Required steps to build and install lqRRT
-	sudo python $CATKIN_DIR/src/lqRRT/setup.py build
-	sudo python $CATKIN_DIR/src/lqRRT/setup.py install
-fi
-
-
-#==============================#
-# Sub8 Dependency Installation #
-#==============================#
-
-if ($INSTALL_SUB); then
-	instlog "Installing Sub8 dependencies from the Ubuntu repositories"
-
-	# Optical character recognition
-	sudo apt-get install -qq tesseract-ocr
-
-	# Hardware drivers
-	sudo apt-get install -qq libusb-1.0-0-dev
-
-	instlog "Installing Sub8 ROS dependencies"
-
-	# 3D Mouse
-	sudo apt-get install -qq ros-kinetic-spacenav-node
-
-	instlog "Installing Sub8 dependencies from Python PIP"
-
-	# Libraries needed by the hydrophone board
-	sudo pip install -q -U crc16
 fi
 
 
