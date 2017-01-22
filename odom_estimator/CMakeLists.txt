@@ -36,7 +36,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp pluginlib sensor_msgs eigen_conve
 #uncomment if you have defined services
 #rosbuild_gensrv()
 
-find_package(Eigen REQUIRED)
+find_package(Eigen3 REQUIRED)
 include_directories(${Eigen_INCLUDE_DIRS})
 ## Generate added messages and services with any dependencies listed here
 add_message_files(
