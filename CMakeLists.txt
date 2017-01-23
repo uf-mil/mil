@@ -50,7 +50,10 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 # Declare a C++ library
-set(SRCS src/${PROJECT_NAME}/broadcaster.cpp)
+set(SRCS
+ src/${PROJECT_NAME}/broadcaster.cpp
+ src/${PROJECT_NAME}/alarm_proxy.cpp
+)
 add_library(ros_alarms ${SRCS})
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_compile_options(${PROJECT_NAME} PRIVATE -g -Wall -std=c++11)
