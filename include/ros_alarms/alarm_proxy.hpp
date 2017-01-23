@@ -4,6 +4,7 @@
 #include <ros_alarms/Alarm.h>
 
 #include <string>
+#include <sstream>
 
 namespace ros_alarms
 {
@@ -17,21 +18,23 @@ struct AlarmProxy
         std::string node_name,
         std::string problem_description,
         std::string json_parameters,
-        uint8_t severity)
+        int severity)
   {
+    std::cerr << alarm_name << (raised? "raised" : "cleared") << node_name << problem_description << json_parameters << severity << std::endl;
     alarm_name = alarm_name;
     raised = raised;
     node_name = node_name;
     problem_description = problem_description;
     json_parameters = json_parameters;
     severity = severity;
+    std::cerr << "***" << this->str() << std::endl;
   }
 
   AlarmProxy(std::string alarm_name,
         bool raised,
         std::string problem_description,
         std::string json_parameters,
-        uint8_t severity)
+        int severity)
   {
     *this = AlarmProxy(alarm_name, raised, ros::this_node::getName(), problem_description,
                   json_parameters, severity);
@@ -59,6 +62,16 @@ struct AlarmProxy
     return a;
   }
 
+  std::string str() const
+  {
+    std::stringstream repr;
+    repr << "[alarm_name: " << alarm_name << ", status: " << (raised? "raised" : "cleared");
+    if(raised)
+      repr << ", severity: " << severity;
+    repr << "]";
+    return repr.str();
+  }
+
   bool operator ==(const AlarmProxy &other) const
   {
     if(alarm_name != other.alarm_name) return false;
@@ -75,7 +88,7 @@ struct AlarmProxy
   std::string node_name;
   std::string problem_description;
   std::string json_parameters;
-  uint8_t severity = 0;
+  int severity = 0;
 };
 
 }  // namespace ros_alarms
