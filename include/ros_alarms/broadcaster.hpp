@@ -14,7 +14,7 @@ namespace ros_alarms
 class AlarmBroadcaster
 {
 public:
-  AlarmBroadcaster(ros::NodeHandle &nh, AlarmProxy* alarm);
+  AlarmBroadcaster(ros::NodeHandle &nh, AlarmProxy* alarm = nullptr);
   void clear() { __alarm_ptr->raised = false; publish(); }
   void raise() { __alarm_ptr->raised = true;  publish(); }
   void updateSeverity(uint8_t sev) { __alarm_ptr->severity = sev; publish();}
@@ -23,7 +23,8 @@ public:
 private:
   ros::NodeHandle __nh;
   ros::ServiceClient __set_alarm;
-  AlarmProxy* __alarm_ptr;
+  AlarmProxy __alarm_proxy; // This allows internal management of the alarm proxy
+  AlarmProxy* __alarm_ptr;  // All code should refer to the proxy via ptr
   bool publish();
 };
 
