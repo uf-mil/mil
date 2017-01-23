@@ -17,17 +17,23 @@ class Alarm(object):
         ''' Generate a general blank alarm that is cleared with a low severity '''
         return cls(name, False, severity=0)
 
+    @staticmethod
+    def parse_json_str(json_str):
+        parameters = ''
+        try:
+            parameters = '' if json_str is '' else json.loads(json_str)
+        except ValueError:
+            # User passed in a non JSON string
+            parameters = {}
+            parameters['data'] = json_str
+        finally:
+            return parameters
+
     @classmethod
     def from_msg(cls, msg):
         ''' Generate an alarm object from an Alarm message '''
         node_name = "unknown" if msg.node_name is "" else msg.node_name
-        parameters = {}
-        if msg.parameters is not '':
-            try:
-                parameters = json.loads(msg.parameters)
-            except ValueError:
-                # User passed in a non JSON string
-                parameters['data'] = msg.parameters
+        parameters = cls.parse_json_str(msg.parameters)
 
         return cls(msg.alarm_name, msg.raised, node_name, 
                    msg.problem_description, parameters, msg.severity)
@@ -91,7 +97,7 @@ class Alarm(object):
         self.stamp = rospy.Time.now()
         
         node_name = "unknown" if srv.node_name is "" else srv.node_name
-        parameters = '' if srv.parameters is '' else json.loads(srv.parameters)
+        parameters = self.parse_json_str(srv.parameters)
 
         # Update all possible parameters
         self.raised = srv.raised
@@ -122,7 +128,7 @@ class Alarm(object):
         alarm.raised = self.raised
         alarm.node_name = self.node_name
         alarm.problem_description = self.problem_description
-        alarm.parameters = json.dumps(self.parameters)
+        alarm.parameters = self.parse_json_str(self.parameters)
         alarm.severity = self.severity
         return alarm
 
@@ -190,7 +196,7 @@ class AlarmServer(object):
 
     def get_alarm(self, srv):
         ''' Either returns the alarm request if it exists or a blank alarm '''
-        rospy.logdebug("Got request for alarm: {}".format(srv.alarm_name))
+        rospy.loginfo("Got request for alarm: {}".format(srv.alarm_name))
         return self.alarms.get(srv.alarm_name, Alarm.blank(srv.alarm_name)).as_srv_resp()
 
     def _handle_meta_alarm(self, meta_alarm, sub_alarms):
