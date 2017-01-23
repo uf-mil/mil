@@ -196,7 +196,7 @@ class AlarmServer(object):
 
     def get_alarm(self, srv):
         ''' Either returns the alarm request if it exists or a blank alarm '''
-        rospy.loginfo("Got request for alarm: {}".format(srv.alarm_name))
+        rospy.logdebug("Got request for alarm: {}".format(srv.alarm_name))
         return self.alarms.get(srv.alarm_name, Alarm.blank(srv.alarm_name)).as_srv_resp()
 
     def _handle_meta_alarm(self, meta_alarm, sub_alarms):
