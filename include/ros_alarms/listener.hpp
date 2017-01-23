@@ -51,8 +51,14 @@ class AlarmListener
 
 public:
   AlarmListener(ros::NodeHandle &nh, std::string alarm_name);
+
+  // Functions that return the status of the alarm at time of last update
   bool is_raised() const        { return __last_alarm.raised; }
   bool is_cleared() const       { return !is_raised(); }
+
+  // Functions that query the server before returning the latest status of the alarm
+  bool query_raised() const        { return get_alarm(); __last_alarm.raised; }
+  bool query_cleared() const       { return get_alarm(); !is_raised(); }
 
   // Queries server and parses response into an AlarmProxy
   AlarmProxy get_alarm();
@@ -71,6 +77,12 @@ public:
 
   // Registers a callback to be invoked when alarm is cleared
   void add_clear_cb(callable_t cb);
+
+  // Returns the last time the alarm was updated
+  ros::Time last_update_time() const { return __last_update; }
+
+  // Returns the time since last update
+  ros::Duration time_since_update() const { return ros::Time::now() - __last_update; }
 
   void clear_callbacks()      { __callbacks.clear(); }
 
