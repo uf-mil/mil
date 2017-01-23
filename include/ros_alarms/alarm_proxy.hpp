@@ -75,7 +75,7 @@ struct AlarmProxy
   std::string node_name;
   std::string problem_description;
   std::string json_parameters;
-  uint8_t severity = -1;
+  uint8_t severity = 0;
 };
 
 }  // namespace ros_alarms

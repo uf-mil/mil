@@ -81,4 +81,3 @@ if(CATKIN_ENABLE_TESTING)
   target_include_directories(${PROJECT_NAME}_integration_tests PUBLIC include)
   target_link_libraries(${PROJECT_NAME}_integration_tests ${catkin_LIBRARIES})
 endif()
->>>>>>> ROSALARMS: add barebones gtest
