@@ -52,13 +52,16 @@ class AlarmListener
 public:
   AlarmListener(ros::NodeHandle &nh, std::string alarm_name);
 
+  // Return status of listener
+  bool ok() const { return __ok; }
+
   // Functions that return the status of the alarm at time of last update
   bool is_raised() const        { return __last_alarm.raised; }
   bool is_cleared() const       { return !is_raised(); }
 
   // Functions that query the server before returning the latest status of the alarm
-  bool query_raised() const        { return get_alarm(); __last_alarm.raised; }
-  bool query_cleared() const       { return get_alarm(); !is_raised(); }
+  bool query_raised()           { get_alarm(); return __last_alarm.raised; }
+  bool query_cleared()          { get_alarm(); return !is_raised(); }
 
   // Queries server and parses response into an AlarmProxy
   AlarmProxy get_alarm();
@@ -87,6 +90,7 @@ public:
   void clear_callbacks()      { __callbacks.clear(); }
 
 private:
+  bool __ok = true;  // listener fail-bit
   ros::NodeHandle __nh;
   std::string __alarm_name;
   ros::ServiceClient __get_alarm;
@@ -106,11 +110,25 @@ AlarmListener<callable_t>
 {
   // Service to query alarm server
   __get_alarm = __nh.serviceClient<ros_alarms::AlarmGet>("/alarm/get");
-  __get_alarm.waitForExistence();
-
+  bool service_exists = __get_alarm.waitForExistence(ros::Duration(2.0));
+  if(!service_exists)
+  {
+    __ok = false;
+    std::string msg = __PRETTY_FUNCTION__;
+    msg += ": timed out waiting for service /alarm/get";
+    ROS_WARN(msg.c_str());
+  }
 
   // Subscribes to list of recently modified alarms from alarm server
-  __update_subscriber = __nh.subscribe("/alarm/updates", 10, &AlarmListener<callable_t>::__alarm_update, this);
+  try
+  {
+    __update_subscriber = __nh.subscribe("/alarm/updates", 10, &AlarmListener<callable_t>::__alarm_update, this);
+  }
+  catch(ros::Exception &e)
+  {
+    __ok = false;
+    ROS_WARN((std::string(__PRETTY_FUNCTION__) + ": " + e.what()).c_str());
+  }
 
   // Initial server query so stored AlarmProxy is initialized
   get_alarm();
