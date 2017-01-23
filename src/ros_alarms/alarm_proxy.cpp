@@ -44,12 +44,18 @@ Alarm AlarmProxy::as_msg()
   return a;
 }
 
-std::string AlarmProxy::str() const
+std::string AlarmProxy::str(bool full) const
 {
   std::stringstream repr;
   repr << "[alarm_name: " << alarm_name << ", status: " << (raised? "raised" : "cleared");
   if(raised)
     repr << ", severity: " << severity;
+  if(full)
+  {
+    repr << ", node_name: " << (node_name.empty()? "N/A" : node_name)
+         << ", problem: " << (problem_description.empty()? "N/A" : problem_description)
+         << ", json_parameters: " << (json_parameters.empty()? "N/A" : json_parameters);
+  }
   repr << "]";
   return repr.str();
 }
@@ -60,7 +66,8 @@ bool AlarmProxy::operator ==(const AlarmProxy &other) const
   if(raised != other.raised) return false;
   if(node_name != other.node_name) return false;
   if(problem_description != other.problem_description) return false;
-  if(json_parameters != other.json_parameters) return false;
+  // JSON parameters can be stripped off by the alarm server if they can't be deserialized
+  //if(json_parameters != other.json_parameters) return false;
   if(severity != other.severity) return false;
   return true;
 }
