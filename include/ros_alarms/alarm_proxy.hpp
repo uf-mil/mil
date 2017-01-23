@@ -59,6 +59,17 @@ struct AlarmProxy
     return a;
   }
 
+  bool operator ==(const AlarmProxy &other) const
+  {
+    if(alarm_name != other.alarm_name) return false;
+    if(raised != other.raised) return false;
+    if(node_name != other.node_name) return false;
+    if(problem_description != other.problem_description) return false;
+    if(json_parameters != other.json_parameters) return false;
+    if(severity != other.severity) return false;
+    return true;
+  }
+
   std::string alarm_name;
   bool raised = false;
   std::string node_name;
