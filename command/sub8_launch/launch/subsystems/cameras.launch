@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find sub8_launch)/launch/subsystems/cameras/launch/pt_grey_stereo.launch" />
+  <include file="$(find sub8_launch)/launch/subsystems/cameras/launch/downward.launch" />
+</launch>
