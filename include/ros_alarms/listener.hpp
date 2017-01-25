@@ -30,6 +30,7 @@ struct ListenerCb
   // the associated callbacks and calls them if necessary
   void operator()(ros_alarms::Alarm msg)
   {
+    // Only call if alarm status matches the call_scenario
     bool call_scenario_match = call_scenario == CallScenario::always
       || (call_scenario == CallScenario::raise && msg.raised)
       || (call_scenario == CallScenario::clear && !msg.raised);
@@ -72,11 +73,14 @@ public:
   // Registers a callback to be invoked on both raise and clear
   void add_cb(callable_t cb);
 
+  // Registers a raise callback to be called for any severity level
+  void add_raise_cb(callable_t cb);
+
   // Registers a raise callback to be called for a single severity level
   void add_raise_cb(callable_t cb, int severity);
 
   // Registers a callback to be invoked at alarm raise for a range of severities
-  void add_raise_cb(callable_t cb, int severity_lo=0, int severity_hi=5);
+  void add_raise_cb(callable_t cb, int severity_lo, int severity_hi);
 
   // Registers a callback to be invoked when alarm is cleared
   void add_clear_cb(callable_t cb);
@@ -119,19 +123,33 @@ AlarmListener<callable_t>
     ROS_WARN(msg.c_str());
   }
 
-  // Subscribes to list of recently modified alarms from alarm server
   try
   {
-    __update_subscriber = __nh.subscribe("/alarm/updates", 10, &AlarmListener<callable_t>::__alarm_update, this);
+    // Subscribes to list of recently modified alarms from alarm server
+    __update_subscriber = __nh.subscribe("/alarm/updates", 1000,
+                                         &AlarmListener<callable_t>::__alarm_update, this);
+    // Initial server query so stored AlarmProxy is initialized
+    get_alarm();
   }
-  catch(ros::Exception &e)
+  catch(std::exception &e)
   {
     __ok = false;
+    std::cerr << __PRETTY_FUNCTION__ << e.what() << std::endl;
     ROS_WARN((std::string(__PRETTY_FUNCTION__) + ": " + e.what()).c_str());
   }
 
-  // Initial server query so stored AlarmProxy is initialized
-  get_alarm();
+  // Make sure that the update subscriber is connected to something or you wont get cb's
+  ros::Duration wait{2.0};
+  ros::Duration period{0.05};  // or else it's not interesting
+  ros::Time start = ros::Time::now();
+  while(__update_subscriber.getNumPublishers() <= 0)
+  {
+    if(ros::Time::now() - start > wait)
+    {
+      __ok = false;
+      break;
+    }
+  }
 }
 
 template <typename callable_t>
@@ -157,6 +175,13 @@ void AlarmListener<callable_t>
 ::add_cb(callable_t cb)
 {
   __add_cb(cb, 0, 5, CallScenario::always);
+}
+
+template <typename callable_t>
+void AlarmListener<callable_t>
+::add_raise_cb(callable_t cb)
+{
+  __add_cb(cb, 0, 5, CallScenario::raise);
 }
 
 template <typename callable_t>
@@ -192,14 +217,13 @@ void AlarmListener<callable_t>
   l_cb.call_scenario = call_scenario;
 
   __callbacks.push_back(l_cb);
-  cb(__last_alarm);
 }
 
 template <typename callable_t>
 void AlarmListener<callable_t>
 ::__alarm_update(ros_alarms::Alarm alarm_msg)
 {
-  if(alarm_msg.alarm_name == __last_alarm.alarm_name)
+  if(alarm_msg.alarm_name == __alarm_name)
   {
     // Update internal alarm data
     __last_alarm = alarm_msg;
