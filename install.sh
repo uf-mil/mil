@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 NOCOLOR='\033[0m'
@@ -86,80 +85,8 @@ ros_git_get() {
 # Configurable Defaults #
 #=======================#
 
-REQUIRED_OS="xenial"
 CATKIN_DIR=~/mil_ws
 BASHRC_FILE=~/.bashrc
-
-
-#==================#
-# Pre-Flight Check #
-#==================#
-
-# Gets the user to enter their password here instead of in the middle of the pre-flight check
-# Purely here for aesthetics and to satisfy OCD
-sudo true
-
-instlog "Starting the pre-flight system check to ensure installation was done properly"
-
-# Check whether or not github.com is reachable
-# This also makes sure that the user is connected to the internet
-if [ "`check_host github.com`" = "true" ]; then
-	NET_CHECK=true
-	echo -n "[ " && instpass && echo -n "] "
-else
-	NET_CHECK=false
-	echo -n "[ " && instfail && echo -n "] "
-fi
-echo "Internet connectivity check"
-
-if !($NET_CHECK); then
-
-	# The script will not allow the user to install without internet
-	instwarn "Terminating installation due to the lack of an internet connection"
-	instwarn "The install script needs to be able to connect to Github and other sites"
-	exit 1
-fi
-
-# Make sure script dependencies are installed quietly on bare bones installations
-sudo apt-get update -qq
-sudo apt-get install -qq lsb-release python-pip git build-essential > /dev/null 2>&1
-
-# Ensure that the correct OS is installed
-DETECTED_OS="`lsb_release -sc`"
-if [ $DETECTED_OS = $REQUIRED_OS ]; then
-	OS_CHECK=true
-	echo -n "[ " && instpass && echo -n "] "
-else
-	OS_CHECK=false
-	echo -n "[ " && instfail && echo -n "] "
-fi
-echo "OS distribution and version check"
-
-# Prevent the script from being run as root
-if [ $USER != "root" ]; then
-	ROOT_CHECK=true
-	echo -n "[ " && instpass && echo -n "] "
-else
-	ROOT_CHECK=false
-	echo -n "[ " && instfail && echo -n "] "
-fi
-echo "User permissions check"
-
-if !($OS_CHECK); then
-
-	# The script will not allow the user to install on an unsupported OS
-	instwarn "Terminating installation due to incorrect OS (detected $DETECTED_OS)"
-	instwarn "MIL projects require Ubuntu 16.04 (xenial)"
-	exit 1
-fi
-
-if !($ROOT_CHECK); then
-
-	# The script will not allow the user to install as root
-	instwarn "Terminating installation due to elevated user permissions"
-	instwarn "The install script should not be run as root"
-	exit 1
-fi
 
 
 #======================#
@@ -183,7 +110,6 @@ if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
 
 else
 	# Prompt the user to enter a catkin workspace to use
-	echo ""
 	echo "Catkin is the ROS build system and it combines CMake macros and Python scripts."
 	echo "The catkin workspace is the directory where all source and build files for the"
 	echo "project are stored. Our default is in brackets below, press enter to use it."
@@ -252,6 +178,89 @@ else
 	done
 fi
 
+if ($INSTALL_SUB); then
+	REQUIRED_OS_CODENAME="xenial"
+	REQUIRED_OS_VERSION="16.04"
+	ROS_VERSION="kinetic"
+else
+	REQUIRED_OS_CODENAME="trusty"
+	REQUIRED_OS_VERSION="14.04"
+	ROS_VERSION="indigo"
+fi
+
+
+#==================#
+# Pre-Flight Check #
+#==================#
+
+instlog "Acquiring root privileges"
+
+# Gets the user to enter their password here instead of in the middle of the pre-flight check
+# Purely here for aesthetics and to satisfy OCD
+sudo true
+
+instlog "Starting the pre-flight system check to ensure installation was done properly"
+
+# Check whether or not github.com is reachable
+# This also makes sure that the user is connected to the internet
+if [ "`check_host github.com`" = "true" ]; then
+	NET_CHECK=true
+	echo -n "[ " && instpass && echo -n "] "
+else
+	NET_CHECK=false
+	echo -n "[ " && instfail && echo -n "] "
+fi
+echo "Internet connectivity check"
+
+if !($NET_CHECK); then
+
+	# The script will not allow the user to install without internet
+	instwarn "Terminating installation due to the lack of an internet connection"
+	instwarn "The install script needs to be able to connect to Github and other sites"
+	exit 1
+fi
+
+# Make sure script dependencies are installed quietly on bare bones installations
+sudo apt-get update -qq
+sudo apt-get install -qq lsb-release python-pip git build-essential > /dev/null 2>&1
+
+# Ensure that the correct OS is installed
+DETECTED_OS_CODENAME="`lsb_release -sc`"
+if [ $DETECTED_OS_CODENAME = $REQUIRED_OS_CODENAME ]; then
+	OS_CHECK=true
+	echo -n "[ " && instpass && echo -n "] "
+else
+	OS_CHECK=false
+	echo -n "[ " && instfail && echo -n "] "
+fi
+echo "OS distribution and version check"
+
+# Prevent the script from being run as root
+if [ $USER != "root" ]; then
+	ROOT_CHECK=true
+	echo -n "[ " && instpass && echo -n "] "
+else
+	ROOT_CHECK=false
+	echo -n "[ " && instfail && echo -n "] "
+fi
+echo "User permissions check"
+
+if !($OS_CHECK); then
+
+	# The script will not allow the user to install on an unsupported OS
+	instwarn "Terminating installation due to incorrect OS (detected $DETECTED_OS_CODENAME)"
+	instwarn "MIL projects require Ubuntu $REQUIRED_OS_VERSION ($REQUIRED_OS_CODENAME)"
+	exit 1
+fi
+
+if !($ROOT_CHECK); then
+
+	# The script will not allow the user to install as root
+	instwarn "Terminating installation due to elevated user permissions"
+	instwarn "The install script should not be run as root"
+	exit 1
+fi
+
 
 #===================================================#
 # Repository and Set Up and Main Stack Installation #
@@ -268,13 +277,12 @@ instlog "Adding the Git-LFS packagecloud repository to software sources"
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
 
 # Install ROS and a few ROS dependencies
-instlog "Installing ROS Kinetic"
+instlog "Installing ROS $(tr '[:lower:]' '[:upper:]' <<< ${ROS_VERSION:0:1})${ROS_VERSION:1}"
 sudo apt-get update -qq
-sudo apt-get install -qq python-rosdep python-catkin-pkg
 if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
-	sudo apt-get install -qq ros-kinetic-desktop
+	sudo apt-get install -qq ros-$ROS_VERSION-desktop
 else
-	sudo apt-get install -qq ros-kinetic-desktop-full
+	sudo apt-get install -qq ros-$ROS_VERSION-desktop-full
 fi
 
 # Get information about ROS versions
@@ -285,11 +293,11 @@ fi
 rosdep update
 
 # Source ROS configurations for bash on this user account
-source /opt/ros/kinetic/setup.bash
-if !(cat $BASHRC_FILE | grep --quiet "source /opt/ros/kinetic/setup.bash"); then
+source /opt/ros/$ROS_VERSION/setup.bash
+if !(cat $BASHRC_FILE | grep --quiet "source /opt/ros/$ROS_VERSION/setup.bash"); then
 	echo "" >> $BASHRC_FILE
 	echo "# Sets up the shell environment for ROS" >> $BASHRC_FILE
-	echo "source /opt/ros/kinetic/setup.bash" >> $BASHRC_FILE
+	echo "source /opt/ros/$ROS_VERSION/setup.bash" >> $BASHRC_FILE
 fi
 
 
@@ -310,10 +318,10 @@ fi
 
 # Move the cloned git repository to the catkin workspace in semaphore
 if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
-	if [ -d ~/Navigator ]; then
-		mv ~/Navigator $CATKIN_DIR/src
-	elif [ -d ~/Sub8 ]; then
+	if [ -d ~/Sub8 ]; then
 		mv ~/Sub8 $CATKIN_DIR/src
+	elif [ -d ~/Navigator ]; then
+		mv ~/Navigator $CATKIN_DIR/src
 	fi
 fi
 
@@ -346,6 +354,13 @@ fi
 
 # Download the Navigator repository if it has not already been downloaded and was selected for installation
 if ($INSTALL_NAV) && !(ls $CATKIN_DIR/src | grep --quiet "Navigator"); then
+	instlog "Downloading the Sub8 repository"
+	cd $CATKIN_DIR/src
+	git clone -q https://github.com/uf-mil/Sub8.git
+	cd $CATKIN_DIR/src/Sub8
+	instlog "Rolling back the Sub8 repository; do not pull the latest versiion!"
+	git reset --hard 0089e68b9f48b96af9c3821f356e3a487841e87e
+	git remote remove origin
 	instlog "Downloading the Navigator repository"
 	cd $CATKIN_DIR/src
 	git clone -q https://github.com/uf-mil/Navigator.git
@@ -367,6 +382,7 @@ sudo apt-get install -qq sshfs
 
 # Git-LFS for models and other large files
 sudo apt-get install -qq git-lfs
+cd $CATKIN_DIR
 git lfs install --skip-smudge
 
 # Debugging utility
@@ -376,9 +392,6 @@ instlog "Installing common dependencies from Python PIP"
 
 # Communication tool for the hydrophone board
 sudo pip install -q -U crc16
-
-# Utility
-sudo pip install -q -U argcomplete
 
 # Machine Learning
 sudo pip install -q -U scikit-learn > /dev/null 2>&1
@@ -409,17 +422,16 @@ if ($INSTALL_SUB); then
 	instlog "Installing Sub8 ROS dependencies"
 
 	# Controller
-	sudo apt-get install -qq ros-kinetic-control-toolbox
-	sudo apt-get install -qq ros-kinetic-controller-manager
-	sudo apt-get install -qq ros-kinetic-hardware-interface
-	sudo apt-get install -qq ros-kinetic-transmission-interface
-	sudo apt-get install -qq ros-kinetic-joint-limits-interface
+	sudo apt-get install -qq ros-$ROS_VERSION-control-toolbox
+	sudo apt-get install -qq ros-$ROS_VERSION-controller-manager
+	sudo apt-get install -qq ros-$ROS_VERSION-transmission-interface
+	sudo apt-get install -qq ros-$ROS_VERSION-joint-limits-interface
 
 	# Trajectory Generation
-	sudo apt-get install -qq ros-kinetic-ompl
+	sudo apt-get install -qq ros-$ROS_VERSION-ompl
 
 	# 3D Mouse
-	sudo apt-get install -qq ros-kinetic-spacenav-node
+	sudo apt-get install -qq ros-$ROS_VERSION-spacenav-node
 fi
 
 
@@ -428,35 +440,40 @@ fi
 #===================================#
 
 if ($INSTALL_NAV); then
+	instlog "Installing Sub8 dependencies from the Ubuntu repositories"
+
+	# Terry Guo's ARM toolchain
+	sudo mkdir -p /etc/apt/preferences.d
+	sudo sh -c "echo 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm"
+	sudo sh -c 'echo "deb http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu trusty main" > /etc/apt/sources.list.d/gcc-arm-embedded.list'
+	sudo sh -c 'echo "deb-src http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu trusty main" > /etc/apt/sources.list.d/gcc-arm-embedded.list'
+	sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xA3421AFB
+	sudo apt-get update -qq
+	sudo apt-get install -qq gcc-arm-none-eabi
+
+	# Visualization
+	sudo apt-get install -qq python-progressbar
+
 	instlog "Installing Navigator ROS dependencies"
 
 	# Serial communications
-	sudo apt-get install -qq ros-indigo-rosserial
-	sudo apt-get install -qq ros-indigo-rosserial-python
-	sudo apt-get install -qq ros-indigo-rosserial-arduino
+	sudo apt-get install -qq ros-$ROS_VERSION-rosserial
+	sudo apt-get install -qq ros-$ROS_VERSION-rosserial-arduino
 
 	# Thruster driver
-	sudo apt-get install -qq ros-indigo-roboteq-driver
-
-	instlog "Installing Navigator dependencies from source"
-
-	# Message types
-	sudo apt-get install -qq ros-indigo-tf2-sensor-msgs
-	sudo apt-get install -qq ros-indigo-tf2-geometry-msgs
-
-	instlog "Installing Navigator dependencies from Python PIP"
-
-	# Visualization
-	sudo pip install -q -U progressbar
+	sudo apt-get install -qq ros-$ROS_VERSION-roboteq-driver
 
 	instlog "Cloning Navigator Git repositories that need to be built"
-	ros_git_get https://github.com/jnez71/lqRRT.git
+
+	# Software to interface with MIL hardware
+	ros_git_get https://github.com/uf-mil-archive/hardware-common
 
 	# Required steps to build and install lqRRT
+	ros_git_get https://github.com/jnez71/lqRRT.git
 	sudo python $CATKIN_DIR/src/lqRRT/setup.py build
 	sudo python $CATKIN_DIR/src/lqRRT/setup.py install
 
-	# Pulling large project files from Git-LFS
+	# Pull large project files from Git-LFS
 	instlog "Pulling large files for Navigator"
 	cd $CATKIN_DIR/src/Navigator
 	git lfs pull
