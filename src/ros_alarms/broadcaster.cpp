@@ -33,7 +33,7 @@ bool AlarmBroadcaster::publish()
     std::string msg = "Failed to register " + __alarm_ptr->str() + "with the alarm server";
     ROS_WARN(msg.c_str());
   }
-  return __set_alarm.call(srv);
+  return success;
 }
 
 }  // namespace ros_alarms
