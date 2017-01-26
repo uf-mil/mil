@@ -178,6 +178,19 @@ else
 	done
 fi
 
+echo "The BlueView SDK used to interface with the Telodyne imaging sonar is encrypted"
+echo "in order to protect the intellectual property of BlueView. If you will be doing"
+echo "work with the imaging sonar on your machine, it is recommended that you install"
+echo "this now. If not, you probably do not need to."
+echo -n "Do you wish to install the SDK? [y/N] " && read RESPONSE
+echo ""
+if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
+	echo "The SDK is encrypted with a password. You need to obtain this password from one"
+	echo "of the senior members of MIL."
+	echo -n "Encryption password: " && read -s PASSWORD
+	echo ""
+fi
+
 if ($INSTALL_SUB); then
 	REQUIRED_OS_CODENAME="xenial"
 	REQUIRED_OS_VERSION="16.04"
@@ -340,6 +353,7 @@ if !(ls $CATKIN_DIR/src | grep --quiet "software-common"); then
 	git clone -q https://github.com/uf-mil/software-common.git
 	cd $CATKIN_DIR/src/software-common
 	git remote rename origin upstream
+	instlog "Make sure you change your git origin to point to your own fork! (git remote add origin your_forks_url)"
 fi
 
 # Download the Sub8 repository if it has not already been downloaded and was selected for installation
@@ -399,6 +413,14 @@ sudo pip install -q -U scikit-learn > /dev/null 2>&1
 # Visualization
 sudo pip install -q -U mayavi > /dev/null 2>&1
 sudo pip install -q -U tqdm
+
+# The BlueView SDK for the Telodyne imaging sonar
+if [ ! -z $PASSWORD ]; then
+	instlog "Decrypting and installing the BlueView SDK"
+	cd $CATKIN_DIR/src
+	curl -s https://raw.githubusercontent.com/whispercoros/installer/master/bvtsdk.tar.gz.enc | \
+	openssl enc -aes-256-cbc -d -pass file:<(echo -n $PASSWORD) | tar -xpz
+fi
 
 instlog "Cloning common Git repositories that need to be built"
 ros_git_get https://github.com/uf-mil/rawgps-tools.git
