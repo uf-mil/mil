@@ -9,6 +9,7 @@ def cb1(alarm):
     global cb1_ran
     print alarm.alarm_name, alarm.raised
     cb1_ran = True
+    print alarm
     print "Callback1!"
 
 def cb2(alarm):
