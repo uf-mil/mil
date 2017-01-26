@@ -18,10 +18,20 @@ def _check_for_alarm(nh, alarm_name, nowarn=False):
         msg = "'{}' is not in the list of known alarms (as defined in the /known_alarms rosparam)"
         print msg.format(alarm_name)
 
+
+def _check_for_valid_name(alarm_name, nowarn=False):
+    if nowarn:
+        return
+
+    assert alarm_name.isalnum() or '_' in alarm_name or '-' in alarm_name, \
+        "Alarm name '{}' is not valid!".format(alarm_name)
+        
+
 class TxAlarmBroadcaster(object):
     @classmethod
     @txros.util.cancellableInlineCallbacks
     def init(cls, nh, name, node_name=None, nowarn=False):
+        _check_for_valid_name(name, nowarn)
         yield _check_for_alarm(nh, name, nowarn)
         
         node_name = nh.get_name() if node_name is None else node_name
@@ -63,6 +73,7 @@ class TxAlarmListener(object):
     @classmethod
     @txros.util.cancellableInlineCallbacks
     def init(cls, nh, name, callback_funct=None, nowarn=False, **kwargs):
+        _check_for_valid_name(name, nowarn)
         yield _check_for_alarm(nh, name, nowarn)
 
         alarm_client = nh.get_service_client("/alarm/get", AlarmGet)

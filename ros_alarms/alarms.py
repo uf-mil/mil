@@ -15,9 +15,18 @@ def _check_for_alarm(alarm_name, nowarn=False):
         msg = "'{}' is not in the list of known alarms (as defined in the /known_alarms rosparam)"
         rospy.logwarn(msg.format(alarm_name)) 
 
+
+def _check_for_valid_name(alarm_name, nowarn=False):
+    if nowarn:
+        return
+
+    assert alarm_name.isalnum() or '_' in alarm_name or '-' in alarm_name, \
+        "Alarm name '{}' is not valid!".format(alarm_name)
+
 class AlarmBroadcaster(object):
     def __init__(self, name, node_name=None, nowarn=False):
         self._alarm_name = name
+        _check_for_valid_name(self._alarm_name, nowarn)
         _check_for_alarm(self._alarm_name, nowarn)
 
         self._node_name = rospy.get_name() if node_name is None else node_name
@@ -61,6 +70,7 @@ class AlarmBroadcaster(object):
 class AlarmListener(object):
     def __init__(self, name, callback_funct=None, nowarn=False, **kwargs):
         self._alarm_name = name
+        _check_for_valid_name(self._alarm_name, nowarn)
         _check_for_alarm(self._alarm_name, nowarn)
 
         self._alarm_get = rospy.ServiceProxy("/alarm/get", AlarmGet)
@@ -174,6 +184,7 @@ class AlarmListener(object):
             except Exception as e:
                 rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self._alarm_name))
                 rospy.logwarn(e)
+
 
 class HeartbeatMonitor(AlarmBroadcaster):
     def __init__(self, alarm_name, topic_name, msg_class, prd=0.2, predicate=None, nowarn=False, **kwargs):
