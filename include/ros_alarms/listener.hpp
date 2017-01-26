@@ -120,7 +120,7 @@ AlarmListener<callable_t>
     __ok = false;
     std::string msg = __PRETTY_FUNCTION__;
     msg += ": timed out waiting for service /alarm/get";
-    ROS_WARN(msg.c_str());
+    ROS_WARN("%s", msg.c_str());
   }
 
   try
@@ -135,7 +135,7 @@ AlarmListener<callable_t>
   {
     __ok = false;
     std::cerr << __PRETTY_FUNCTION__ << e.what() << std::endl;
-    ROS_WARN((std::string(__PRETTY_FUNCTION__) + ": " + e.what()).c_str());
+    ROS_WARN("%s", (std::string(__PRETTY_FUNCTION__) + ": " + e.what()).c_str());
   }
 
   // Make sure that the update subscriber is connected to something or you wont get cb's
