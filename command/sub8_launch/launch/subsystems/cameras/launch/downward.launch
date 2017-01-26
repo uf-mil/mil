@@ -3,7 +3,7 @@
   <!--group ns="down"-->
     <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
 
-    <!-- LEFT CAMERA -->
+    <!-- DOWN CAMERA -->
     <node pkg="nodelet" type="nodelet" name="down_camera_nodelet"
          args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
       <param name="frame_id" value="/down_cam" />
@@ -25,7 +25,7 @@
     </node>
 
     <!-- Bayer color decoding -->
-    <node pkg="nodelet" type="nodelet" name="left_image_proc_debayer"
+    <node pkg="nodelet" type="nodelet" name="down_image_proc_debayer"
          args="load image_proc/debayer camera_nodelet_manager">
       <remap from="image_color" to="down/image_color" />
       <remap from="image_mono" to="down/image_mono" />
