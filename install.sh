@@ -107,6 +107,7 @@ if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
 	elif (env | grep INSTALL_NAV | grep --quiet -oe '[^=]*$'); then
 		INSTALL_NAV=true
 	fi
+	PASSWORD="`env | grep PASSWORD | grep --quiet -oe '[^=]*$'`"
 
 else
 	# Prompt the user to enter a catkin workspace to use
@@ -176,19 +177,20 @@ else
 			;;
 		esac
 	done
-fi
 
-echo "The BlueView SDK used to interface with the Telodyne imaging sonar is encrypted"
-echo "in order to protect the intellectual property of BlueView. If you will be doing"
-echo "work with the imaging sonar on your machine, it is recommended that you install"
-echo "this now. If not, you probably do not need to."
-echo -n "Do you wish to install the SDK? [y/N] " && read RESPONSE
-echo ""
-if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
-	echo "The SDK is encrypted with a password. You need to obtain this password from one"
-	echo "of the senior members of MIL."
-	echo -n "Encryption password: " && read -s PASSWORD
+	# If the user chooses to install the BlueView SDK, retrieve the password from them
+	echo "The BlueView SDK used to interface with the Telodyne imaging sonar is encrypted"
+	echo "in order to protect the intellectual property of BlueView. If you will be doing"
+	echo "work with the imaging sonar on your machine, it is recommended that you install"
+	echo "this now. If not, you probably do not need to."
+	echo -n "Do you wish to install the SDK? [y/N] " && read RESPONSE
 	echo ""
+	if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
+		echo "The SDK is encrypted with a password. You need to obtain this password from one"
+		echo "of the senior members of MIL."
+		echo -n "Encryption password: " && read -s PASSWORD
+		echo ""
+	fi
 fi
 
 if ($INSTALL_SUB); then
