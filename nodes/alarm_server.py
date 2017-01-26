@@ -17,23 +17,17 @@ class Alarm(object):
         ''' Generate a general blank alarm that is cleared with a low severity '''
         return cls(name, False, severity=0)
 
-    @staticmethod
-    def parse_json_str(json_str):
-        parameters = ''
-        try:
-            parameters = '' if json_str is '' else json.loads(json_str)
-        except ValueError:
-            # User passed in a non JSON string
-            parameters = {}
-            parameters['data'] = json_str
-        finally:
-            return parameters
-
     @classmethod
     def from_msg(cls, msg):
         ''' Generate an alarm object from an Alarm message '''
         node_name = "unknown" if msg.node_name is "" else msg.node_name
-        parameters = cls.parse_json_str(msg.parameters)
+        parameters = {}
+        if msg.parameters is not '':
+            try:
+                parameters = json.loads(msg.parameters)
+            except ValueError:
+                # User passed in a non JSON string
+                parameters['data'] = msg.parameters
 
         return cls(msg.alarm_name, msg.raised, node_name, 
                    msg.problem_description, parameters, msg.severity)
@@ -53,6 +47,16 @@ class Alarm(object):
         #   [(severity_required, cb1), (severity_required, cb2), ...]
         self.raised_cbs = []
         self.cleared_cbs = []
+    
+    def __repr__(self):
+        data = self.as_msg()
+        try:
+            data.parameters = json.loads(data.parameters)
+        except ValueError:
+            pass
+
+        return data
+    __str__ = __repr__
     
     def _severity_cb_check(self, severity):
         if isinstance(severity, tuple) or isinstance(severity, list):
@@ -97,7 +101,7 @@ class Alarm(object):
         self.stamp = rospy.Time.now()
         
         node_name = "unknown" if srv.node_name is "" else srv.node_name
-        parameters = self.parse_json_str(srv.parameters)
+        parameters = '' if srv.parameters is '' else json.loads(srv.parameters)
 
         # Update all possible parameters
         self.raised = srv.raised
@@ -128,7 +132,7 @@ class Alarm(object):
         alarm.raised = self.raised
         alarm.node_name = self.node_name
         alarm.problem_description = self.problem_description
-        alarm.parameters = self.parse_json_str(self.parameters)
+        alarm.parameters = json.dumps(self.parameters)
         alarm.severity = self.severity
         return alarm
 
