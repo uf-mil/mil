@@ -11,6 +11,18 @@ import json
 import inspect
 
 
+def parse_json_str(json_str):
+    parameters = ''
+    try:
+        parameters = '' if json_str is '' else json.loads(json_str)
+    except ValueError:
+        # User passed in a non JSON string
+        parameters = {}
+        parameters['data'] = json_str
+    finally:
+        return parameters
+
+
 class Alarm(object):
     @classmethod
     def blank(cls, name):
@@ -21,13 +33,7 @@ class Alarm(object):
     def from_msg(cls, msg):
         ''' Generate an alarm object from an Alarm message '''
         node_name = "unknown" if msg.node_name is "" else msg.node_name
-        parameters = {}
-        if msg.parameters is not '':
-            try:
-                parameters = json.loads(msg.parameters)
-            except ValueError:
-                # User passed in a non JSON string
-                parameters['data'] = msg.parameters
+        parameters = parse_json_str(msg.parameters)
 
         return cls(msg.alarm_name, msg.raised, node_name, 
                    msg.problem_description, parameters, msg.severity)
@@ -47,15 +53,11 @@ class Alarm(object):
         #   [(severity_required, cb1), (severity_required, cb2), ...]
         self.raised_cbs = []
         self.cleared_cbs = []
-    
-    def __repr__(self):
-        data = self.as_msg()
-        try:
-            data.parameters = json.loads(data.parameters)
-        except ValueError:
-            pass
 
-        return data
+    def __repr__(self):
+        msg = self.as_msg()
+        msg.parameters = self.parse_json_str(msg.parameters)
+        return msg
     __str__ = __repr__
     
     def _severity_cb_check(self, severity):
@@ -101,7 +103,7 @@ class Alarm(object):
         self.stamp = rospy.Time.now()
         
         node_name = "unknown" if srv.node_name is "" else srv.node_name
-        parameters = '' if srv.parameters is '' else json.loads(srv.parameters)
+        parameters = parse_json_str(srv.parameters)
 
         # Update all possible parameters
         self.raised = srv.raised
