@@ -1,6 +1,5 @@
 #include <ros_alarms/listener.hpp>
 #include <ros_alarms/broadcaster.hpp>
-#include <ros_alarms/heartbeat_monitor.hpp>
 #include <iostream>
 #include <functional>
 #include <gtest/gtest.h>
@@ -10,7 +9,6 @@ using ros_alarms::Alarm;
 using ros_alarms::AlarmProxy;
 using ros_alarms::AlarmListener;
 using ros_alarms::AlarmBroadcaster;
-using ros_alarms::HeartbeatMonitor;
 
 TEST(ServerCheck, setServiceCheck)
 {
@@ -274,8 +272,8 @@ TEST_F(AlarmTest, listenerTest)
   return;
 }
 
-TEST_F(AlarmTest, heartbeatMonitorTest)
-{
-
-  return;
-}
+//TEST_F(AlarmTest, heartbeatMonitorTest)
+//{
+//
+//  return;
+//}

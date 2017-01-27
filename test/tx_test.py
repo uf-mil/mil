@@ -6,7 +6,7 @@ from ros_alarms import TxAlarmBroadcaster, TxAlarmListener
 def main():
     nh = yield txros.NodeHandle.from_argv('tx_alarm_test')
 
-    alarm_name = "test_alarm567"
+    alarm_name = "tx"
     ab = yield TxAlarmBroadcaster.init(nh, alarm_name)
     al = yield TxAlarmListener.init(nh, alarm_name, nowarn=True)
 
