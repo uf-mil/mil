@@ -10,8 +10,5 @@
       test_alarm
   </rosparam>
 
-  <test test-name="ros_alarms_integration" pkg="ros_alarms" type="ros_alarms_integration_tests" />
-  <!-- Example Python Test Setup -->
-  <node name="talker" pkg="ros_alarms" type="example_support_python_node.py" output="screen"/>
-  <test test-name="ros_alarms_integration_py" pkg="ros_alarms" type="example_test.py" />
+  <test test-name="ros_alarms_cpp_tests" pkg="ros_alarms" type="ros_alarms_integration_tests" />
 </launch>

@@ -72,16 +72,16 @@ if(CATKIN_ENABLE_TESTING)
 
   # The test driver with your main function
   # must be listed last (before the source files)
-  add_rostest_gtest(${PROJECT_NAME}_integration_tests
-    test/ros_alarms_integration.test
-    test/heartbeat_monitor_test.cpp
-    test/broadcaster_test.cpp
+  add_rostest_gtest(${PROJECT_NAME}_cpp_tests
+    test/ros_alarms_cpp.test
+    #test/heartbeat_monitor_test.cpp
+    #test/broadcaster_test.cpp
     test/listener_test.cpp
     test/alarm_proxy_test.cpp
     test/integration_test_driver.cpp
     ${SRCS}
   )
-  set_target_properties(${PROJECT_NAME}_integration_tests PROPERTIES COMPILE_FLAGS "-std=c++11")
-  target_include_directories(${PROJECT_NAME}_integration_tests PUBLIC include)
-  target_link_libraries(${PROJECT_NAME}_integration_tests ${catkin_LIBRARIES})
+  set_target_properties(${PROJECT_NAME}_cpp_tests PROPERTIES COMPILE_FLAGS "-std=c++11")
+  target_include_directories(${PROJECT_NAME}_cpp_tests PUBLIC include)
+  target_link_libraries(${PROJECT_NAME}_cpp_tests ${catkin_LIBRARIES})
 endif()
