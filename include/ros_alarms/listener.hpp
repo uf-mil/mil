@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ros/ros.h>
+#include <ros/callback_queue.h>
 #include <ros_alarms/Alarm.h>
 #include <ros_alarms/AlarmGet.h>
 
@@ -55,6 +56,14 @@ public:
 
   // Return status of listener
   bool ok() const { return __ok; }
+  int get_num_connections() { return __update_subscriber.getNumPublishers(); }
+
+  // Returns true if a connection was detected before timing out, else false
+  bool wait_for_connection(ros::Duration timeout = {-1.0});
+
+  // Start and stop spinner (start processing subscriber callbacks)
+  void start() { __async_spinner.start(); }
+  void stop() { __async_spinner.stop(); }
 
   // Functions that return the status of the alarm at time of last update
   bool is_raised() const        { return __last_alarm.raised; }
@@ -98,10 +107,13 @@ private:
   ros::NodeHandle __nh;
   std::string __alarm_name;
   ros::ServiceClient __get_alarm;
+  ros::CallbackQueue __cb_queue;
+  ros::AsyncSpinner __async_spinner;
   ros::Subscriber __update_subscriber;
   std::vector<ListenerCb<callable_t>> __callbacks;
   AlarmProxy __last_alarm;
   ros::Time __last_update { 0, 0 };
+  std::string __object_name;
   void __add_cb(callable_t cb, int severity_lo, int severity_hi, CallScenario call_scenario);
   void __alarm_update(ros_alarms::Alarm);
 };
@@ -110,46 +122,64 @@ private:
 template <typename callable_t>
 AlarmListener<callable_t>
 ::AlarmListener(ros::NodeHandle &nh, std::string alarm_name)
-: __nh(nh), __alarm_name(alarm_name)
+try
+: __nh(nh),
+  __alarm_name(alarm_name),
+  __get_alarm(__nh.serviceClient<ros_alarms::AlarmGet>("/alarm/get")),
+  __async_spinner(1, &__cb_queue)
+
 {
+  std::stringstream obj_name;  // For better error msgs
+  obj_name << "AlarmListener[alarm_name=" << __alarm_name << ", node_name=" 
+           << ros::this_node::getName() << "]";
+  __object_name =  obj_name.str();
+
+  // Use owned callback queue
+  __nh.setCallbackQueue(&__cb_queue);
+  __update_subscriber = __nh.subscribe("/alarm/updates", 1000, &AlarmListener::__alarm_update,
+                                       this);
+
   // Service to query alarm server
-  __get_alarm = __nh.serviceClient<ros_alarms::AlarmGet>("/alarm/get");
-  bool service_exists = __get_alarm.waitForExistence(ros::Duration(2.0));
+  bool service_exists = __get_alarm.waitForExistence(ros::Duration(1.0));
   if(!service_exists)
   {
     __ok = false;
-    std::string msg = __PRETTY_FUNCTION__;
+    std::string msg = __object_name;
     msg += ": timed out waiting for service /alarm/get";
     ROS_WARN("%s", msg.c_str());
   }
 
-  try
+  try  // Initial server query so stored AlarmProxy is initialized
   {
-    // Subscribes to list of recently modified alarms from alarm server
-    __update_subscriber = __nh.subscribe("/alarm/updates", 1000,
-                                         &AlarmListener<callable_t>::__alarm_update, this);
-    // Initial server query so stored AlarmProxy is initialized
     get_alarm();
   }
   catch(std::exception &e)
   {
-    __ok = false;
-    std::cerr << __PRETTY_FUNCTION__ << e.what() << std::endl;
-    ROS_WARN("%s", (std::string(__PRETTY_FUNCTION__) + ": " + e.what()).c_str());
+    std::stringstream msg;
+    msg << __object_name << " getAlarm() threw an exception: " << e.what();
+    ROS_ERROR("%s", msg.str().c_str());
   }
+}
+catch(std::exception &e)
+{
+  __ok = false;
+  std::stringstream msg;
+  msg << __object_name << "  Constructor threw an exception: " << e.what();
+  ROS_ERROR("%s", msg.str().c_str());
+}
 
-  // Make sure that the update subscriber is connected to something or you wont get cb's
-  ros::Duration wait{2.0};
-  ros::Duration period{0.05};  // or else it's not interesting
+template <typename callable_t>
+bool AlarmListener<callable_t>
+::wait_for_connection(ros::Duration timeout)
+{
   ros::Time start = ros::Time::now();
-  while(__update_subscriber.getNumPublishers() <= 0)
+  while(ros::Time::now() - start < timeout)
   {
-    if(ros::Time::now() - start > wait)
-    {
-      __ok = false;
-      break;
-    }
+    if(this->get_num_connections() > 0)
+      return true;
+    ros::Duration(1E-3).sleep();
   }
+  return false;
 }
 
 template <typename callable_t>
@@ -162,7 +192,7 @@ AlarmProxy AlarmListener<callable_t>
 
   // Query alarm server
   if(!__get_alarm.call(alarm_query))
-    ROS_INFO("Alarm server query was unsuccessful.");
+    ROS_INFO("%s: %s", __object_name.c_str(), "Alarm server query was unsuccessful.");
 
   // Update internal alarm data
   __last_update = alarm_query.response.header.stamp;
@@ -231,7 +261,16 @@ void AlarmListener<callable_t>
  
     // Invoke callbacks if necessary
     for(auto& cb : __callbacks)
-      cb(alarm_msg);
+      try
+      {
+        cb(alarm_msg);
+      }
+      catch(std::exception &e)
+      {
+        std::stringstream msg;
+        msg << __object_name << ": callback threw an exception: " << e.what();
+        ROS_ERROR("%s", msg.str().c_str());
+      }
   }
 }
 

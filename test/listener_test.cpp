@@ -178,6 +178,11 @@ TEST_F(AlarmTest, listenerTest)
   function<void(AlarmProxy)> clear_cb =
     [&clear_count](AlarmProxy pxy) -> void { ++clear_count; };
 
+  // Listener will now start processing callbacks from messages to '/alarm/updates'
+  ASSERT_TRUE(listener.wait_for_connection(ros::Duration(0.2)))
+    << "Timed out trying to detect a publisher to the '/alarm/updates' topic";
+  listener.start();
+
   // Make sure initial conditians are good for testing callbacks
   ab.alarm().raised = false;
   ab.alarm().severity = 0;
@@ -189,7 +194,6 @@ TEST_F(AlarmTest, listenerTest)
     == exact_priority_raise_count == raise_count == clear_count);
 
   // Add callbacks to listener
-  ros::spinOnce();                           // Clear callback queue just in case
   listener.clear_callbacks();
   listener.add_cb(update_cb);                // Called for any update of the alarm
   listener.add_raise_cb(lo_raise_cb, 0, 2);  // Last 2 args specify severity range
@@ -198,8 +202,16 @@ TEST_F(AlarmTest, listenerTest)
   listener.add_raise_cb(raise_cb);           // Use this overload for any severity raise
   listener.add_clear_cb(clear_cb);           // Called for any clear of the alarm
 
+
   // Go crazy raising and clearing!
   ros::Duration latency(0.001);  // Approximate upper bound on publisher latency
+  auto update_start = update_count;
+  auto lo_start = lo_priority_raise_count;
+  auto hi_start = hi_priority_raise_count;
+  auto start_start = exact_priority_raise_count;
+  auto raise_start = raise_count;
+  auto clear_start = clear_count;
+  for(int i = 0; i <= 5, i++)
   ab.updateSeverity(0);
   latency.sleep();  // Make sure listener has time to receive published updates
   ros::spinOnce();  // Process ros callback queue
