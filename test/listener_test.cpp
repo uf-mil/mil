@@ -1,5 +1,7 @@
 #include <ros_alarms/listener.hpp>
 #include <ros_alarms/broadcaster.hpp>
+#include <ros_alarms/heartbeat_monitor.hpp>
+#include <std_msgs/String.h>
 #include <iostream>
 #include <functional>
 #include <gtest/gtest.h>
@@ -272,8 +274,62 @@ TEST_F(AlarmTest, listenerTest)
   return;
 }
 
-//TEST_F(AlarmTest, heartbeatMonitorTest)
-//{
-//
-//  return;
-//}
+TEST_F(AlarmTest, heartbeatMonitorTest)
+{
+  string heartbeat_topic {"heartbeat_topic"};
+  string alarm_name {"lost_heartbeat"};
+  ros::Duration time_to_raise(0.2);
+  ros::Duration time_to_clear(0.4);
+  ros::Duration init_period(0.8);
+
+  // Publish heartbeat
+  ros::Publisher heartbeat_pub = nh.advertise<std_msgs::String>(heartbeat_topic, 1000);
+  auto pub_valid = [&heartbeat_pub](bool valid){
+    std_msgs::String msg;
+    msg.data = (valid? "" : "Won't pass the predicate");
+    heartbeat_pub.publish(msg); };
+
+  // Listener to get status of alarm
+  AlarmListener<> listener{nh, alarm_name};
+
+  // Create callbacks
+  function<bool(std_msgs::String)> cb1 =
+    [](std_msgs::String msg){ return (msg.data.size() == 0? true : false); };
+
+  // Initialize HertbeatMonitor with topic name, alarm name, period
+  ros::Time approx_init_time = ros::Time::now();
+  HeartbeatMonitor<std_msgs::String> hb_monitor(nh, alarm_name, heartbeat_topic,
+                                                cb1, time_to_raise, time_to_clear,
+                                                init_period);
+  EXPECT_TRUE(listener.ok());
+
+  // Test for proper initialization
+  auto sleep_until = [approx_init_time](double secs_after_init)
+    { (approx_init_time + ros::Duration(secs_after_init) - ros::Time::now()).sleep();
+      std::cerr << "Init time: " << approx_init_time << " Current time: " << ros::Time::now()
+        << endl; };
+  EXPECT_TRUE(hb_monitor.healthy())
+    << "Heartbeat should be healthy before the end of the initialization period.";
+  EXPECT_GE(1, hb_monitor.getNumConnections())
+    << "Monitor should be connected to at least one publisher";
+  EXPECT_STREQ(heartbeat_topic.c_str(), hb_monitor.heartbeat_name().c_str());
+  EXPECT_STREQ(alarm_name.c_str(), hb_monitor.alarm_name().c_str());
+  EXPECT_TRUE(listener.query_cleared()) << "The alarm should start out cleared";
+
+  // Test initialization buffer, alarm will not raise during the first n
+  //  seconds after it is constructed
+  sleep_until(0.75);
+  ros::spinOnce();
+  EXPECT_FALSE(listener.query_raised())
+    << "Alarm should not be raised before the end of the initialization period.";
+  sleep_until(0.85);
+  ros::spinOnce();
+  EXPECT_TRUE(listener.query_raised())
+    << "The initialization period has ended so the alarm should have been raised.";
+
+  // The alarm should be raised once the heartbeat stops publishing
+
+  // The alarm should be cleared if the heartbeat comes back
+
+  return;
+}

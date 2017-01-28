@@ -26,9 +26,10 @@ public:
                    std::function<bool(msg_t)> predicate, ros::Duration time_to_raise= {0.1, 0},
                    ros::Duration time_to_clear={0.1, 0}, ros::Duration init_period = {0.1});
   std::string alarm_name() const { return __alarm_proxy.alarm_name; }
-  std::string topic_name() const { return __heartbeat_topic; }
+  std::string heartbeat_name() const { return __heartbeat_topic; }
   bool healthy() const { return __healthy; }
   ros::Time last_beat() { return __last_beat; }
+  int getNumConnections() { return __heartbeat_listener.getNumPublishers(); }
 
 private:
   ros::NodeHandle __nh;
@@ -47,7 +48,7 @@ private:
   bool __recovering = false;
   bool __healthy = true;
   void __record_heartbeat(msg_t beat_msg);  // Callback for heartbeat topic subscriber
-  void __diagnose_heartbeat();              // Callback for __status_checker
+  void __diagnose_heartbeat(const ros::TimerEvent &te);  // Callback for __status_checker
 };
 
 template <typename msg_t>
@@ -63,7 +64,7 @@ HeartbeatMonitor<msg_t>
                                       &HeartbeatMonitor::__record_heartbeat, this)),
   __status_checker(
     __nh.createTimer(ros::Duration(std::min(time_to_raise, time_to_clear).toSec() / 5.0),
-                     &HeartbeatMonitor<msg_t>::__status_checker, this)),
+                     &HeartbeatMonitor::__diagnose_heartbeat, this)),
   __time_to_raise(time_to_raise),
   __time_to_clear(time_to_clear),
   __init_period(init_period),
@@ -72,6 +73,7 @@ HeartbeatMonitor<msg_t>
   std::stringstream init_msg;
   init_msg << "Node " << __alarm_proxy.node_name << " is now monitoring the following"
     << " Heartbeat topic: " << __heartbeat_topic;
+  std::cerr << init_msg.str() << std::endl;
   ROS_INFO("%s", init_msg.str().c_str());
 }
 
@@ -79,6 +81,7 @@ template <typename msg_t>
 void HeartbeatMonitor<msg_t>
 ::__record_heartbeat(msg_t beat_msg)
 {
+  std::cerr << "Got Heartbeat" << std::endl;
   // Call predicate and set last healthy beat time
   auto receipt_time = ros::Time::now();
   bool valid_beat = false;
@@ -103,7 +106,7 @@ void HeartbeatMonitor<msg_t>
     std::stringstream json;
     // not exactly sure if this will work with json.loads()
     json << "{last_heathy_beat : " <<  __last_beat.toSec() << "}";
-    __alarm_proxy.json_parameters = json;
+    __alarm_proxy.json_parameters = json.str();
 
    // We're done if the heartbeat is healthy
    if(__healthy)
@@ -122,8 +125,9 @@ void HeartbeatMonitor<msg_t>
 
 template <typename msg_t>
 void HeartbeatMonitor<msg_t>
-::__diagnose_heartbeat()
+::__diagnose_heartbeat(const ros::TimerEvent &te)
 {
+  std::cerr << "Checking heartbeat status, " << ros::Time::now() << std::endl;
   // Case 1: Within Init Period
   //   won't raise alarm even if healthy heartbeat not detected
   if(ros::Time::now() - __init_time < __init_period)
@@ -139,6 +143,7 @@ void HeartbeatMonitor<msg_t>
       __alarm_proxy.raised = true;
       __alarm_broadcaster.raise();
       __healthy = false;
+      std::cerr << "Raising lost heartbeat alarm" << ros::Time::now() << std::endl;
     }
     // Should we add a mode where we increase the severity based on the time the
     //   heartbeat has been lost?
