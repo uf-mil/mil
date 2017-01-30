@@ -87,6 +87,7 @@ ros_git_get() {
 
 CATKIN_DIR=~/mil_ws
 BASHRC_FILE=~/.bashrc
+MILRC_FILE=~/.milrc
 
 
 #======================#
@@ -120,6 +121,16 @@ else
 		CATKIN_DIR=${RESPONSE/\~//home/$USER}
 	fi
 
+	echo "We use a forking workflow to facilitate code contributions on Github. This means"
+	echo "that each user forks the main repository and has their own copy. In the"
+	echo "repositories that we clone for projects, the main repository will be the"
+	echo "'upstream' remote and your local fork will be the 'origin' remote. You should"
+	echo "specify a fork URI for each repository you plan to push code to; otherwise,"
+	echo "leave the field blank. These can also be set manually using this command:"
+	echo "git remote add <remote_name> <user_fork_url>"
+	echo -n "User fork URI for the software-common repository: " && read SWC_USER_FORK
+	echo ""
+
 	# Prompt the user to select a project to install
 	SELECTED=false
 	while !($SELECTED); do
@@ -131,40 +142,26 @@ else
 		echo ""
 		case "$RESPONSE" in
 			"1")
-				if (cat $BASHRC_FILE | grep --quiet "source /opt/ros/indigo/setup.bash") && \
-				   !(cat $BASHRC_FILE | grep --quiet "#source /opt/ros/indigo/setup.bash"); then
-					instwarn "Terminating installation due to conflicting ROS versions"
-					instwarn "SubjuGator requires ROS Kinetic, but ROS Indigo is being sourced"
-					instwarn "To fix this issue, comment out this line in $BASHRC_FILE: source /opt/ros/indigo/setup.bash"
-					exit 1
-				else
-					INSTALL_SUB=true
-					SELECTED=true
-				fi
+				echo -n "User fork URI for the Sub8 repository: " && read SUB_USER_FORK
+				INSTALL_SUB=true
+				SELECTED=true
 			;;
 			"2")
-				echo "The PropaGator project has not been worked on since the dark ages of MIL, so"
-				echo "it is not supported by this script."
+				echo "The PropaGator project has not been worked on since the dark ages of MIL, so it"
+				echo "is not supported by this script."
 				echo ""
 			;;
 			"3")
-				echo "The NaviGator project was developed on Ubuntu 14.04 with ROS Indigo."
-				echo "Several dependencies no longer exist in ROS Kinetic, so in order to install it,"
-				echo "ROS Indigo, the Sub8 repository at an earlier date,  and all of the old Sub8"
+				echo "The NaviGator project was developed on Ubuntu 14.04 with ROS Indigo. Several"
+				echo "dependencies no longer exist in ROS Kinetic, so in order to install it, ROS"
+				echo "Indigo, the Sub8 repository at an earlier date,  and all of the old Sub8"
 				echo "dependencies will need to be downloaded and installed."
 				echo -n "Do you still wish to proceed? [y/N] " && read RESPONSE
 				echo ""
 				if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
-					if (cat $BASHRC_FILE | grep --quiet "source /opt/ros/kinetic/setup.bash") && \
-					   !(cat $BASHRC_FILE | grep --quiet "#source /opt/ros/kinetic/setup.bash"); then
-						instwarn "Terminating installation due to conflicting ROS versions"
-						instwarn "NaviGator requires ROS Indigo, but ROS Kinetic is being sourced"
-						instwarn "To fix this issue, comment out this line in $BASHRC_FILE: source /opt/ros/kinetic/setup.bash"
-						exit 1
-					else
-						INSTALL_NAV=true
-						SELECTED=true
-					fi
+					echo -n "User fork URI for the Navigator repository: " && read NAV_USER_FORK
+					INSTALL_NAV=true
+					SELECTED=true
 				fi
 			;;
 			"")
@@ -178,18 +175,22 @@ else
 		esac
 	done
 
-	# If the user chooses to install the BlueView SDK, retrieve the password from them
-	echo "The BlueView SDK used to interface with the Telodyne imaging sonar is encrypted"
-	echo "in order to protect the intellectual property of BlueView. If you will be doing"
-	echo "work with the imaging sonar on your machine, it is recommended that you install"
-	echo "this now. If not, you probably do not need to."
-	echo -n "Do you wish to install the SDK? [y/N] " && read RESPONSE
-	echo ""
-	if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
-		echo "The SDK is encrypted with a password. You need to obtain this password from one"
-		echo "of the senior members of MIL."
-		echo -n "Encryption password: " && read -s PASSWORD
+	# Prompt the user to install the BlueView SDK if it is not already installed
+	if [ ! -d $CATKIN_DIR/src/bvtsdk ]; then
+		echo "The BlueView SDK used to interface with the Teledyne imaging sonar is encrypted"
+		echo "in order to protect the intellectual property of BlueView. If you will be doing"
+		echo "work with the imaging sonar on your machine, it is recommended that you install"
+		echo "this now. If not, you probably do not need to."
+		echo -n "Do you wish to install the SDK? [y/N] " && read RESPONSE
 		echo ""
+
+		# If the user chooses to install the BlueView SDK, retrieve the password from them
+		if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
+			echo "The SDK is encrypted with a password. You need to obtain this password from one"
+			echo "of the senior members of MIL."
+			echo -n "Encryption password: " && read -s PASSWORD
+			echo ""
+		fi
 	fi
 fi
 
@@ -260,6 +261,16 @@ else
 fi
 echo "User permissions check"
 
+# Ensure that no ROS version is being sourced in the user's bash runcom file
+if !(cat $BASHRC_FILE | grep --quiet "source /opt/ros"); then
+	BASHRC_CHECK=true
+	echo -n "[ " && instpass && echo -n "] "
+else
+	BASHRC_CHECK=false
+	echo -n "[ " && instfail && echo -n "] "
+fi
+echo "Bash runcom file check"
+
 if !($OS_CHECK); then
 
 	# The script will not allow the user to install on an unsupported OS
@@ -271,8 +282,18 @@ fi
 if !($ROOT_CHECK); then
 
 	# The script will not allow the user to install as root
-	instwarn "Terminating installation due to elevated user permissions"
+	instwarn "Terminating installation due to forbidden user account"
 	instwarn "The install script should not be run as root"
+	exit 1
+fi
+
+if !($BASHRC_CHECK); then
+
+	# The script will not allow the user to install if ROS is being sourced
+	instwarn "Terminating installation due to $BASHRC_FILE sourcing a ROS version"
+	instwarn "This should be handled through the MIL runcom file instead"
+	instwarn "Removing lines that source ROS, workspaces, or project aliases is recommended"
+	instwarn "However, removing only lines that source ROS will be enough to clear this error"
 	exit 1
 fi
 
@@ -294,11 +315,7 @@ curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.s
 # Install ROS and a few ROS dependencies
 instlog "Installing ROS $(tr '[:lower:]' '[:upper:]' <<< ${ROS_VERSION:0:1})${ROS_VERSION:1}"
 sudo apt-get update -qq
-if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
-	sudo apt-get install -qq ros-$ROS_VERSION-desktop
-else
-	sudo apt-get install -qq ros-$ROS_VERSION-desktop-full
-fi
+sudo apt-get install -qq ros-$ROS_VERSION-desktop-full
 
 # Get information about ROS versions
 instlog "Initializing ROS"
@@ -307,13 +324,8 @@ if !([ -f /etc/ros/rosdep/sources.list.d/20-default.list ]); then
 fi
 rosdep update
 
-# Source ROS configurations for bash on this user account
+# Source ROS configurations for bash
 source /opt/ros/$ROS_VERSION/setup.bash
-if !(cat $BASHRC_FILE | grep --quiet "source /opt/ros/$ROS_VERSION/setup.bash"); then
-	echo "" >> $BASHRC_FILE
-	echo "# Sets up the shell environment for ROS" >> $BASHRC_FILE
-	echo "source /opt/ros/$ROS_VERSION/setup.bash" >> $BASHRC_FILE
-fi
 
 
 #=================================#
@@ -340,13 +352,8 @@ if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
 	fi
 fi
 
-# Source the workspace's configurations for bash on this user account
+# Source the workspace's configurations for bash
 source $CATKIN_DIR/devel/setup.bash
-if !(cat $BASHRC_FILE | grep --quiet "source $CATKIN_DIR/devel/setup.bash"); then
-	echo "" >> $BASHRC_FILE
-	echo "# Sets up the shell environment for the $CATKIN_DIR workspace" >> $BASHRC_FILE
-	echo "source $CATKIN_DIR/devel/setup.bash" >> $BASHRC_FILE
-fi
 
 # Download the software-common repository if it has not already been downloaded
 if !(ls $CATKIN_DIR/src | grep --quiet "software-common"); then
@@ -355,7 +362,9 @@ if !(ls $CATKIN_DIR/src | grep --quiet "software-common"); then
 	git clone -q https://github.com/uf-mil/software-common.git
 	cd $CATKIN_DIR/src/software-common
 	git remote rename origin upstream
-	instlog "Make sure you change your git origin to point to your own fork! (git remote add origin your_forks_url)"
+	if [ ! -z "$SWC_USER_FORK" ]; then
+		git remote add origin "$SWC_USER_FORK"
+	fi
 fi
 
 # Download the Sub8 repository if it has not already been downloaded and was selected for installation
@@ -365,7 +374,9 @@ if ($INSTALL_SUB) && !(ls $CATKIN_DIR/src | grep --quiet "Sub8"); then
 	git clone -q https://github.com/uf-mil/Sub8.git
 	cd $CATKIN_DIR/src/Sub8
 	git remote rename origin upstream
-	instlog "Make sure you change your git origin to point to your own fork! (git remote add origin your_forks_url)"
+	if [ ! -z "$SUB_USER_FORK" ]; then
+		git remote add origin "$SUB_USER_FORK"
+	fi
 fi
 
 # Download the Navigator repository if it has not already been downloaded and was selected for installation
@@ -374,7 +385,7 @@ if ($INSTALL_NAV) && !(ls $CATKIN_DIR/src | grep --quiet "Navigator"); then
 	cd $CATKIN_DIR/src
 	git clone -q https://github.com/uf-mil/Sub8.git
 	cd $CATKIN_DIR/src/Sub8
-	instlog "Rolling back the Sub8 repository; do not pull the latest versiion!"
+	instlog "Rolling back the Sub8 repository; do not pull the latest version!"
 	git reset --hard 0089e68b9f48b96af9c3821f356e3a487841e87e
 	git remote remove origin
 	instlog "Downloading the Navigator repository"
@@ -382,7 +393,9 @@ if ($INSTALL_NAV) && !(ls $CATKIN_DIR/src | grep --quiet "Navigator"); then
 	git clone -q https://github.com/uf-mil/Navigator.git
 	cd $CATKIN_DIR/src/Navigator
 	git remote rename origin upstream
-	instlog "Make sure you change your git origin to point to your own fork! (git remote add origin your_forks_url)"
+	if [ ! -z "$NAV_USER_FORK" ]; then
+		git remote add origin "$NAV_USER_FORK"
+	fi
 fi
 
 
@@ -391,6 +404,9 @@ fi
 #================================#
 
 instlog "Installing common dependencies from the Ubuntu repositories"
+
+# Scientific and technical computing
+sudo apt-get install -qq python-scipy
 
 # System tools
 sudo apt-get install -qq tmux
@@ -416,7 +432,7 @@ sudo pip install -q -U scikit-learn > /dev/null 2>&1
 sudo pip install -q -U mayavi > /dev/null 2>&1
 sudo pip install -q -U tqdm
 
-# The BlueView SDK for the Telodyne imaging sonar
+# The BlueView SDK for the Teledyne imaging sonar
 if [ ! -z $PASSWORD ]; then
 	instlog "Decrypting and installing the BlueView SDK"
 	cd $CATKIN_DIR/src
@@ -508,36 +524,40 @@ fi
 # Bashrc Alias Management #
 #=========================#
 
-SWC_ALIASES=$CATKIN_DIR/src/software-common/scripts/bash_aliases.sh
-SUB_ALIASES=$CATKIN_DIR/src/Sub8/scripts/bash_aliases.sh
-NAV_ALIASES=$CATKIN_DIR/src/Navigator/scripts/bash_aliases.sh
+# Write the MIL runcom file for sourcing all of the required project configurations
+echo "# This file is created by the install script to source all of the configurations" > $MILRC_FILE
+echo "# needed to work on the installed projects. Do not edit this file manually! Your" >> $MILRC_FILE
+echo "# changes will be overwritten the next time the install script is run. Please use" >> $MILRC_FILE
+echo "# the script to make changes." >> $MILRC_FILE
 
-# Source the software-common configurations for bash on this user account
-source $SWC_ALIASES
-if !(cat $BASHRC_FILE | grep --quiet "source $SWC_ALIASES"); then
+# Source ROS configurations for bash
+echo "" >> $MILRC_FILE
+echo "# Sets up the shell environment for ROS" >> $MILRC_FILE
+echo "source /opt/ros/$ROS_VERSION/setup.bash" >> $MILRC_FILE
+
+# Source the workspace's configurations for bash
+echo "" >> $MILRC_FILE
+echo "# Sets up the shell environment for the $CATKIN_DIR workspace" >> $MILRC_FILE
+echo "source $CATKIN_DIR/devel/setup.bash" >> $MILRC_FILE
+
+# Source the project configurations for bash
+declare -a ALIASED_REPOSITORIES=("software-common" "Sub8" "Navigator")
+for REPOSITORY in "${ALIASED_REPOSITORIES[@]}"; do
+	if [ -f $CATKIN_DIR/src/$REPOSITORY/scripts/bash_aliases.sh ]; then
+		if !(cat $MILRC_FILE | grep --quiet "# Sets up the shell environment for each installed project"); then
+			echo "" >> $MILRC_FILE
+			echo "# Sets up the shell environment for each installed project" >> $MILRC_FILE
+		fi
+		echo "source $CATKIN_DIR/src/$REPOSITORY/scripts/bash_aliases.sh"  >> $MILRC_FILE
+	fi
+done
+
+# Source MIL configurations for bash on this user account
+source $MILRC_FILE
+if !(cat $BASHRC_FILE | grep --quiet "source $MILRC_FILE"); then
 	echo "" >> $BASHRC_FILE
-	echo "# Adds MIL aliases to shell environment" >> $BASHRC_FILE
-	echo "source $SWC_ALIASES" >> $BASHRC_FILE
-fi
-
-# Source the Sub8 configurations for bash on this user account
-if ($INSTALL_SUB); then
-	source $SUB_ALIASES
-	if !(cat $BASHRC_FILE | grep --quiet "source $SUB_ALIASES"); then
-		echo "" >> $BASHRC_FILE
-		echo "# Adds SubjuGator aliases to shell environment" >> $BASHRC_FILE
-		echo "source $SUB_ALIASES" >> $BASHRC_FILE
-	fi
-fi
-
-# Source the Navigator configurations for bash on this user account
-if ($INSTALL_NAV); then
-	source $NAV_ALIASES
-	if !(cat $BASHRC_FILE | grep --quiet "source $NAV_ALIASES"); then
-		echo "" >> $BASHRC_FILE
-		echo "# Adds NaviGator aliases to shell environment" >> $BASHRC_FILE
-		echo "source $NAV_ALIASES" >> $BASHRC_FILE
-	fi
+	echo "# Sets up the shell environment for installed MIL projects" >> $BASHRC_FILE
+	echo "source $MILRC_FILE" >> $BASHRC_FILE
 fi
 
 
