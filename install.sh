@@ -89,7 +89,6 @@ CATKIN_DIR=~/mil_ws
 BASHRC_FILE=~/.bashrc
 MILRC_FILE=~/.milrc
 
-
 #======================#
 # Script Configuration #
 #======================#
@@ -190,6 +189,23 @@ else
 			echo "of the senior members of MIL."
 			echo -n "Encryption password: " && read -s PASSWORD
 			echo ""
+		fi
+	fi
+
+	# Warn users about the security risks associated with enabling USB cameras before doing it
+	if [ ! -f /etc/udev/rules.d/40-pgr.rules ]; then
+		echo "MIL projects use Point Grey machine vision cameras for perception. A user only"
+		echo "needs to enable access to USB cameras if they intend to connect a one directly"
+		echo "to their machine, which is unlikely. In order for a user to access a USB"
+		echo "camera, a udev rule needs to be added that gives a group access to the hardware"
+		echo "device on the camera. Long story short, this creates a fairly significant"
+		echo "security hole on the machine that goes beyond the OS to actual device firmware."
+		echo -n "Do you want to enable access to USB cameras? [y/N] " && read RESPONSE
+		echo ""
+		if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
+			ENABLE_USB_CAM=true
+		else
+			ENABLE_USB_CAM=false
 		fi
 	fi
 fi
@@ -403,7 +419,19 @@ fi
 # Common Dependency Installation #
 #================================#
 
+if ($ENABLE_USB_CAM); then
+	instlog "Enabling USB cameras (a reboot is required for this to take full effect)"
+	sudo usermod -a -G dialout "$USER"
+	sudo groupadd --gid 999 pgrimaging
+	sudo usermod -a -G pgrimaging "$USER"
+	sudo wget -q https://raw.githubusercontent.com/uf-mil/installer/master/40-pgr.rules -O /etc/udev/rules.d/40-pgr.rules
+	sudo service udev restart
+fi
+
 instlog "Installing common dependencies from the Ubuntu repositories"
+
+# Hardware drivers
+sudo apt-get install -qq ros-kinetic-pointgrey-camera-driver
 
 # Scientific and technical computing
 sudo apt-get install -qq python-scipy
@@ -436,7 +464,7 @@ sudo pip install -q -U tqdm
 if [ ! -z $PASSWORD ]; then
 	instlog "Decrypting and installing the BlueView SDK"
 	cd $CATKIN_DIR/src
-	curl -s https://raw.githubusercontent.com/whispercoros/installer/master/bvtsdk.tar.gz.enc | \
+	curl -s https://raw.githubusercontent.com/uf-mil/installer/master/bvtsdk.tar.gz.enc | \
 	openssl enc -aes-256-cbc -d -pass file:<(echo -n $PASSWORD) | tar -xpz
 fi
 
