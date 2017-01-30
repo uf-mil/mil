@@ -36,8 +36,8 @@ public:
 private:
   ros::NodeHandle __nh;
   AlarmProxy* __alarm_ptr;  // All code should refer to the proxy via ptr
-  ros::ServiceClient __set_alarm;
   AlarmProxy __alarm_proxy; // This allows internal management of the alarm proxy
+  ros::ServiceClient __set_alarm;
 };
 
 }  // namespace ros_alarms

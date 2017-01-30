@@ -8,6 +8,7 @@ using namespace std;
 AlarmBroadcaster::AlarmBroadcaster(ros::NodeHandle &nh, AlarmProxy* alarm)
 : __nh(nh),
   __alarm_ptr(alarm),
+  __alarm_proxy("uninitialized_alarm", false, "", "", 5),
   __set_alarm(__nh.serviceClient<ros_alarms::AlarmSet>("/alarm/set"))
 {
   // Broadcaster should use the AlarmProxy allocated internally if the user did
@@ -16,8 +17,10 @@ AlarmBroadcaster::AlarmBroadcaster(ros::NodeHandle &nh, AlarmProxy* alarm)
   {
     __alarm_ptr = &__alarm_proxy;
   }
-  string msg {string("Created alarm broadcaster for alarm: ") + __alarm_ptr->str()};
-  ROS_INFO(msg.c_str());
+  stringstream msg;
+  msg << "Node " << __alarm_proxy.node_name << " created an AlarmBroadcaster for alarm: "
+      << __alarm_ptr->str();
+  ROS_INFO("%s", msg.str().c_str());
 }
 
 bool AlarmBroadcaster::publish()
@@ -31,7 +34,7 @@ bool AlarmBroadcaster::publish()
   if(!success)
   {
     std::string msg = "Failed to register " + __alarm_ptr->str() + "with the alarm server";
-    ROS_WARN(msg.c_str());
+    ROS_WARN("%s", msg.c_str());
   }
   return success;
 }
