@@ -132,18 +132,18 @@ TEST_F(AlarmTest, listenerTest)
   ab.updateSeverity(5); // This is an update to the alarm
 
   // The listener isn't querying the server before returning the status on these next
-  // two lines, It is returning the current status of the internal AlarmProxy object,
-  // which is not updated by these calls.
+  //   two lines, It is returning the current status of the internal AlarmProxy object,
+  //   which is not updated by these calls.
   listener.is_raised();
   listener.is_cleared();
 
   // Last update time should not have changed because of calls to is_raised() or is_cleared()
-  // Unless you are unlucky enough to have an update cb in that short time
+  //   unless you are unlucky enough to have an update cb in that short time
   EXPECT_EQ(first_query, listener.last_update_time());
   EXPECT_EQ(listener.get_cached_alarm().raised, listener.is_raised());
 
   // The following query_* functions query the server before reporting the status, so the
-  // last update time should have changed
+  //   last update time should have changed
   listener.query_raised();
   listener.query_cleared();
   EXPECT_NE(first_query, listener.last_update_time());
@@ -179,9 +179,11 @@ TEST_F(AlarmTest, listenerTest)
     [&clear_count](AlarmProxy pxy) -> void { ++clear_count; };
 
   // Listener will now start processing callbacks from messages to '/alarm/updates'
-  ASSERT_TRUE(listener.wait_for_connection(ros::Duration(0.2)))
+  EXPECT_TRUE(listener.wait_for_connection(ros::Duration(0.4)))
     << "Timed out trying to detect a publisher to the '/alarm/updates' topic";
-  listener.start();
+  ASSERT_GE(listener.get_num_connections(), 1)
+    << "There are no publishers on the '/alarm/updates' topic";
+  listener.start();  // Starts spinning in worker thread
 
   // Make sure initial conditians are good for testing callbacks
   ab.alarm().raised = false;
@@ -202,87 +204,70 @@ TEST_F(AlarmTest, listenerTest)
   listener.add_raise_cb(raise_cb);           // Use this overload for any severity raise
   listener.add_clear_cb(clear_cb);           // Called for any clear of the alarm
 
-
-  // Go crazy raising and clearing!
-  ros::Duration latency(0.001);  // Approximate upper bound on publisher latency
+  ros::Duration latency(0.01);  // Approximate upper bound on publisher latency
   auto update_start = update_count;
   auto lo_start = lo_priority_raise_count;
   auto hi_start = hi_priority_raise_count;
-  auto start_start = exact_priority_raise_count;
+  auto exact_start = exact_priority_raise_count;
   auto raise_start = raise_count;
   auto clear_start = clear_count;
-  for(int i = 0; i <= 5, i++)
-  ab.updateSeverity(0);
-  latency.sleep();  // Make sure listener has time to receive published updates
-  ros::spinOnce();  // Process ros callback queue
-  EXPECT_EQ(1, update_count);
-  EXPECT_EQ(1, lo_priority_raise_count);
-  EXPECT_EQ(1, raise_count);
-  ab.clear();
-  latency.sleep();
-  ros::spinOnce();
-  EXPECT_EQ(2, update_count);
-  EXPECT_EQ(1, clear_count);
-  ab.updateSeverity(1);
-  latency.sleep();
-  ros::spinOnce();
-  EXPECT_EQ(3, update_count);
-  EXPECT_EQ(2, lo_priority_raise_count);
-  EXPECT_EQ(2, raise_count);
-  ab.clear();
-  latency.sleep();
-  ros::spinOnce();
-  EXPECT_EQ(4, update_count);
-  EXPECT_EQ(2, clear_count);
-  ab.updateSeverity(2);
-  latency.sleep();
-  ros::spinOnce();
-  EXPECT_EQ(5, update_count);
-  EXPECT_EQ(3, lo_priority_raise_count);
-  EXPECT_EQ(3, raise_count);
-  ab.clear();
-  latency.sleep();
-  ros::spinOnce();
-  EXPECT_EQ(6, update_count);
-  EXPECT_EQ(3, clear_count);
-  ab.updateSeverity(3);
-  latency.sleep();
-  ros::spinOnce();
-  EXPECT_EQ(7, update_count);
-  EXPECT_EQ(1, exact_priority_raise_count);
-  EXPECT_EQ(4, raise_count);
-  ab.clear();
-  latency.sleep();
-  ros::spinOnce();
-  EXPECT_EQ(8, update_count);
-  EXPECT_EQ(4, clear_count);
-  ab.updateSeverity(4);
-  latency.sleep();
-  ros::spinOnce();
-  EXPECT_EQ(9, update_count);
-  EXPECT_EQ(1, hi_priority_raise_count);
-  EXPECT_EQ(5, raise_count);
-  ab.clear();
-  latency.sleep();
-  ros::spinOnce();
-  EXPECT_EQ(10, update_count);
-  EXPECT_EQ(5, clear_count);
-  ab.updateSeverity(5);
-  latency.sleep();
-  ros::spinOnce();
-  EXPECT_EQ(11, update_count);
-  EXPECT_EQ(2, hi_priority_raise_count);
-  EXPECT_EQ(6, raise_count);
-  EXPECT_EQ(5, clear_count);
-  ab.clear();
-  latency.sleep();
-  ros::spinOnce();
-  EXPECT_EQ(12, update_count);
-  EXPECT_EQ(3, lo_priority_raise_count);
-  EXPECT_EQ(2, hi_priority_raise_count);
-  EXPECT_EQ(1, exact_priority_raise_count);
-  EXPECT_EQ(6, raise_count);
-  EXPECT_EQ(6, clear_count);
+  for(int i = 0; i <= 5; i++)
+  {
+    ab.updateSeverity(i);
+    ab.clear();
+    latency.sleep();
+    auto update_diff = update_count - update_start;
+    auto lo_diff = lo_priority_raise_count - lo_start;
+    auto hi_diff = hi_priority_raise_count - hi_start;
+    auto exact_diff = exact_priority_raise_count - exact_start;
+    auto raise_diff = raise_count - raise_start;
+    auto clear_diff = clear_count - clear_start;
+
+    if(i == 0)
+    {
+      EXPECT_EQ(2, update_diff);
+      EXPECT_EQ(1, lo_diff);
+      EXPECT_EQ(1, raise_diff);
+      EXPECT_EQ(1, clear_diff);
+    }
+    else if(i == 1)
+    {
+      EXPECT_EQ(4, update_diff);
+      EXPECT_EQ(2, lo_diff);
+      EXPECT_EQ(2, raise_diff);
+      EXPECT_EQ(2, clear_diff);
+    }
+    else if(i == 2)
+    {
+      EXPECT_EQ(6, update_diff);
+      EXPECT_EQ(3, lo_diff);
+      EXPECT_EQ(3, raise_diff);
+      EXPECT_EQ(3, clear_diff);
+    }
+    else if(i == 3)
+    {
+      EXPECT_EQ(8, update_diff);
+      EXPECT_EQ(1, exact_diff);
+      EXPECT_EQ(4, raise_diff);
+      EXPECT_EQ(4, clear_diff);
+    }
+    else if(i == 4)
+    {
+      EXPECT_EQ(10, update_diff);
+      EXPECT_EQ(1, hi_diff);
+      EXPECT_EQ(5, raise_diff);
+      EXPECT_EQ(5, clear_diff);
+    }
+    else if(i == 5)
+    {
+      EXPECT_EQ(12, update_diff);
+      EXPECT_EQ(3, lo_diff);
+      EXPECT_EQ(2, hi_diff);
+      EXPECT_EQ(1, exact_diff);
+      EXPECT_EQ(6, raise_diff);
+      EXPECT_EQ(6, clear_diff);
+    }
+  }
   return;
 }
 
