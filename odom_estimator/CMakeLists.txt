@@ -36,7 +36,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp pluginlib sensor_msgs eigen_conve
 #uncomment if you have defined services
 #rosbuild_gensrv()
 
-find_package(Eigen REQUIRED)
+find_package(Eigen3 REQUIRED)
 include_directories(${Eigen_INCLUDE_DIRS})
 ## Generate added messages and services with any dependencies listed here
 add_message_files(
@@ -69,18 +69,18 @@ add_library(odom_estimator_nodelet src/nodelet.cpp)
 target_link_libraries(odom_estimator_nodelet ${catkin_LIBRARIES})
 add_dependencies(odom_estimator_nodelet ${catkin_EXPORTED_TARGETS})
 add_dependencies(odom_estimator_nodelet ${PROJECT_NAME}_generate_messages_cpp)
-set_target_properties(odom_estimator_nodelet PROPERTIES COMPILE_FLAGS -std=c++0x)
+set_target_properties(odom_estimator_nodelet PROPERTIES COMPILE_FLAGS "-O3 -std=c++0x")
 #target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 add_executable(test_unscented_transform src/test_unscented_transform.cpp)
 target_link_libraries(test_unscented_transform ${catkin_LIBRARIES})
 add_dependencies(test_unscented_transform ${catkin_EXPORTED_TARGETS})
-set_target_properties(test_unscented_transform PROPERTIES COMPILE_FLAGS -std=c++0x)
+set_target_properties(test_unscented_transform PROPERTIES COMPILE_FLAGS  "-O3 -std=c++0x")
 add_executable(test_mag src/test_mag.cpp)
 target_link_libraries(test_mag ${catkin_LIBRARIES})
 add_dependencies(test_mag ${catkin_EXPORTED_TARGETS})
-set_target_properties(test_mag PROPERTIES COMPILE_FLAGS -std=c++0x)
+set_target_properties(test_mag PROPERTIES COMPILE_FLAGS "-O3 -std=c++0x")
 #target_link_libraries(example ${PROJECT_NAME})
 
 install(PROGRAMS scripts/test DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
