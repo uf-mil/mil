@@ -55,15 +55,15 @@ public:
   AlarmListener(ros::NodeHandle &nh, std::string alarm_name);
 
   // Return status of listener
-  bool ok() const { return __ok; }
-  int get_num_connections() { return __update_subscriber.getNumPublishers(); }
+  bool ok() const               { return __ok; }
+  int get_num_connections()     { return __update_subscriber.getNumPublishers(); }
 
   // Returns true if a connection was detected before timing out, else false
   bool wait_for_connection(ros::Duration timeout = {-1.0});
 
   // Start and stop spinner (start processing subscriber callbacks)
-  void start() { __async_spinner.start(); }
-  void stop() { __async_spinner.stop(); }
+  void start()                  { __async_spinner.start(); }
+  void stop()                   { __async_spinner.stop(); }
 
   // Functions that return the status of the alarm at time of last update
   bool is_raised() const        { return __last_alarm.raised; }
@@ -100,7 +100,10 @@ public:
   // Returns the time since last update
   ros::Duration time_since_update() const { return ros::Time::now() - __last_update; }
 
-  void clear_callbacks()      { __callbacks.clear(); }
+  // Waits for an update to the alarm via '/alarm/udates' with timeout
+  bool waitForUpdate(ros::Duration timeout = ros::Duration(-1.0)) const;
+
+  void clear_callbacks() { __callbacks.clear(); }
 
 private:
   bool __ok = true;  // listener fail-bit
@@ -235,6 +238,19 @@ void AlarmListener<callable_t>
   __add_cb(cb, 0, 5, CallScenario::clear);
 }
 
+template <typename callable_t>
+bool AlarmListener<callable_t>
+::waitForUpdate(ros::Duration timeout) const
+{
+  auto start = ros::Time::now();
+  auto old_update_time = last_update_time();
+  while(ros::Time::now() - start < timeout)
+  {
+    if(last_update_time() != old_update_time)
+      return true;
+  }
+  return false;
+}
 template <typename callable_t>
 void AlarmListener<callable_t>
 ::__add_cb(callable_t cb, int severity_lo, int severity_hi,
