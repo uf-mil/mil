@@ -195,7 +195,7 @@ else
 	# Warn users about the security risks associated with enabling USB cameras before doing it
 	if [ ! -f /etc/udev/rules.d/40-pgr.rules ]; then
 		echo "MIL projects use Point Grey machine vision cameras for perception. A user only"
-		echo "needs to enable access to USB cameras if they intend to connect a one directly"
+		echo "needs to enable access to USB cameras if they intend to connect one directly"
 		echo "to their machine, which is unlikely. In order for a user to access a USB"
 		echo "camera, a udev rule needs to be added that gives a group access to the hardware"
 		echo "device on the camera. Long story short, this creates a fairly significant"
@@ -430,14 +430,12 @@ fi
 
 instlog "Installing common dependencies from the Ubuntu repositories"
 
-# Hardware drivers
-sudo apt-get install -qq ros-kinetic-pointgrey-camera-driver
-
 # Scientific and technical computing
 sudo apt-get install -qq python-scipy
 
 # System tools
 sudo apt-get install -qq tmux
+sudo apt-get install -qq htop
 sudo apt-get install -qq sshfs
 
 # Git-LFS for models and other large files
@@ -447,6 +445,14 @@ git lfs install --skip-smudge
 
 # Debugging utility
 sudo apt-get install -qq gdb
+
+# Visualization
+sudo apt-get install -qq python-vtk
+
+instlog "Installing Sub8 ROS dependencies"
+
+# Hardware drivers
+sudo apt-get install -qq ros-$ROS_VERSION-pointgrey-camera-driver
 
 instlog "Installing common dependencies from Python PIP"
 
@@ -460,6 +466,11 @@ sudo pip install -q -U scikit-learn > /dev/null 2>&1
 sudo pip install -q -U mayavi > /dev/null 2>&1
 sudo pip install -q -U tqdm
 
+instlog "Cloning common Git repositories that need to be built"
+ros_git_get https://github.com/uf-mil/rawgps-tools.git
+ros_git_get https://github.com/txros/txros.git
+ros_git_get https://github.com/uf-mil/ros_alarms
+
 # The BlueView SDK for the Teledyne imaging sonar
 if [ ! -z $PASSWORD ]; then
 	instlog "Decrypting and installing the BlueView SDK"
@@ -467,11 +478,6 @@ if [ ! -z $PASSWORD ]; then
 	curl -s https://raw.githubusercontent.com/uf-mil/installer/master/bvtsdk.tar.gz.enc | \
 	openssl enc -aes-256-cbc -d -pass file:<(echo -n $PASSWORD) | tar -xpz
 fi
-
-instlog "Cloning common Git repositories that need to be built"
-ros_git_get https://github.com/uf-mil/rawgps-tools.git
-ros_git_get https://github.com/txros/txros.git
-ros_git_get https://github.com/uf-mil/ros_alarms
 
 
 #==============================#
