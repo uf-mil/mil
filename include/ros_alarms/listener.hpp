@@ -1,3 +1,7 @@
+/**
+ * Author: David Soto
+ * Date: Jan 16, 2017
+ */
 #pragma once
 
 #include <ros/ros.h>
@@ -55,55 +59,55 @@ public:
   AlarmListener(ros::NodeHandle &nh, std::string alarm_name);
 
   // Return status of listener
-  bool ok() const               { return __ok; }
-  int get_num_connections()     { return __update_subscriber.getNumPublishers(); }
+  bool ok() const             { return __ok; }
+  int getNumConnections()     { return __update_subscriber.getNumPublishers(); }
 
   // Returns true if a connection was detected before timing out, else false
-  bool wait_for_connection(ros::Duration timeout = {-1.0});
+  bool waitForConnection(ros::Duration timeout = {-1.0});
 
   // Start and stop spinner (start processing subscriber callbacks)
-  void start()                  { __async_spinner.start(); }
-  void stop()                   { __async_spinner.stop(); }
+  void start()                 { __async_spinner.start(); }
+  void stop()                  { __async_spinner.stop(); }
 
   // Functions that return the status of the alarm at time of last update
-  bool is_raised() const        { return __last_alarm.raised; }
-  bool is_cleared() const       { return !is_raised(); }
+  bool isRaised() const        { return __last_alarm.raised; }
+  bool isCleared() const       { return !isRaised(); }
 
   // Functions that query the server before returning the latest status of the alarm
-  bool query_raised()           { get_alarm(); return __last_alarm.raised; }
-  bool query_cleared()          { get_alarm(); return !is_raised(); }
+  bool queryRaised()           { getAlarm(); return __last_alarm.raised; }
+  bool queryCleared()          { getAlarm(); return !isRaised(); }
 
   // Queries server and parses response into an AlarmProxy
-  AlarmProxy get_alarm();
+  AlarmProxy getAlarm();
 
   // Returns AlarmProxy for last alarm of this name published to '/alarm/updates'
-  AlarmProxy get_cached_alarm() { return __last_alarm; }
+  AlarmProxy getCachedAlarm() { return __last_alarm; }
 
   // Registers a callback to be invoked on both raise and clear
-  void add_cb(callable_t cb);
+  void addCb(callable_t cb);
 
   // Registers a raise callback to be called for any severity level
-  void add_raise_cb(callable_t cb);
+  void addRaiseCb(callable_t cb);
 
   // Registers a raise callback to be called for a single severity level
-  void add_raise_cb(callable_t cb, int severity);
+  void addRaiseCb(callable_t cb, int severity);
 
   // Registers a callback to be invoked at alarm raise for a range of severities
-  void add_raise_cb(callable_t cb, int severity_lo, int severity_hi);
+  void addRaiseCb(callable_t cb, int severity_lo, int severity_hi);
 
   // Registers a callback to be invoked when alarm is cleared
-  void add_clear_cb(callable_t cb);
+  void addClearCb(callable_t cb);
 
   // Returns the last time the alarm was updated
-  ros::Time last_update_time() const { return __last_update; }
+  ros::Time getLastUpdateTime() const { return __last_update; }
 
   // Returns the time since last update
-  ros::Duration time_since_update() const { return ros::Time::now() - __last_update; }
+  ros::Duration getTimeSinceUpdate() const { return ros::Time::now() - __last_update; }
 
   // Waits for an update to the alarm via '/alarm/udates' with timeout
   bool waitForUpdate(ros::Duration timeout = ros::Duration(-1.0)) const;
 
-  void clear_callbacks() { __callbacks.clear(); }
+  void clearCallbacks() { __callbacks.clear(); }
 
 private:
   bool __ok = true;  // listener fail-bit
@@ -117,8 +121,9 @@ private:
   AlarmProxy __last_alarm;
   ros::Time __last_update { 0, 0 };
   std::string __object_name;
-  void __add_cb(callable_t cb, int severity_lo, int severity_hi, CallScenario call_scenario);
-  void __alarm_update(ros_alarms::Alarm);
+  void __addCb(callable_t cb, int severity_lo, int severity_hi,
+               CallScenario call_scenario);
+  void __alarmUpdate(ros_alarms::Alarm);
 };
 
 
@@ -139,8 +144,8 @@ try
 
   // Use owned callback queue
   __nh.setCallbackQueue(&__cb_queue);
-  __update_subscriber = __nh.subscribe("/alarm/updates", 1000, &AlarmListener::__alarm_update,
-                                       this);
+  __update_subscriber =
+    __nh.subscribe("/alarm/updates", 1000, &AlarmListener::__alarmUpdate, this);
 
   // Service to query alarm server
   bool service_exists = __get_alarm.waitForExistence(ros::Duration(1.0));
@@ -154,7 +159,7 @@ try
 
   try  // Initial server query so stored AlarmProxy is initialized
   {
-    get_alarm();
+    getAlarm();
   }
   catch(std::exception &e)
   {
@@ -173,12 +178,12 @@ catch(std::exception &e)
 
 template <typename callable_t>
 bool AlarmListener<callable_t>
-::wait_for_connection(ros::Duration timeout)
+::waitForConnection(ros::Duration timeout)
 {
   ros::Time start = ros::Time::now();
   while(ros::Time::now() - start < timeout)
   {
-    if(this->get_num_connections() > 0)
+    if(this->getNumConnections() > 0)
       return true;
     ros::Duration(1E-3).sleep();
   }
@@ -187,7 +192,7 @@ bool AlarmListener<callable_t>
 
 template <typename callable_t>
 AlarmProxy AlarmListener<callable_t>
-::get_alarm()
+::getAlarm()
 {
   // Create Query msg
   ros_alarms::AlarmGet alarm_query;
@@ -205,37 +210,37 @@ AlarmProxy AlarmListener<callable_t>
 
 template <typename callable_t>
 void AlarmListener<callable_t>
-::add_cb(callable_t cb)
+::addCb(callable_t cb)
 {
-  __add_cb(cb, 0, 5, CallScenario::always);
+  __addCb(cb, 0, 5, CallScenario::always);
 }
 
 template <typename callable_t>
 void AlarmListener<callable_t>
-::add_raise_cb(callable_t cb)
+::addRaiseCb(callable_t cb)
 {
-  __add_cb(cb, 0, 5, CallScenario::raise);
+  __addCb(cb, 0, 5, CallScenario::raise);
 }
 
 template <typename callable_t>
 void AlarmListener<callable_t>
-::add_raise_cb(callable_t cb, int severity)
+::addRaiseCb(callable_t cb, int severity)
 {
-  __add_cb(cb, severity, severity, CallScenario::raise);
+  __addCb(cb, severity, severity, CallScenario::raise);
 }
 
 template <typename callable_t>
 void AlarmListener<callable_t>
-::add_raise_cb(callable_t cb, int severity_lo, int severity_hi)
+::addRaiseCb(callable_t cb, int severity_lo, int severity_hi)
 {
-  __add_cb(cb, severity_lo, severity_hi, CallScenario::raise);
+  __addCb(cb, severity_lo, severity_hi, CallScenario::raise);
 }
 
 template <typename callable_t>
 void AlarmListener<callable_t>
-::add_clear_cb(callable_t cb)
+::addClearCb(callable_t cb)
 {
-  __add_cb(cb, 0, 5, CallScenario::clear);
+  __addCb(cb, 0, 5, CallScenario::clear);
 }
 
 template <typename callable_t>
@@ -243,17 +248,17 @@ bool AlarmListener<callable_t>
 ::waitForUpdate(ros::Duration timeout) const
 {
   auto start = ros::Time::now();
-  auto old_update_time = last_update_time();
+  auto old_update_time = getLastUpdateTime();
   while(ros::Time::now() - start < timeout)
   {
-    if(last_update_time() != old_update_time)
+    if(getLastUpdateTime() != old_update_time)
       return true;
   }
   return false;
 }
 template <typename callable_t>
 void AlarmListener<callable_t>
-::__add_cb(callable_t cb, int severity_lo, int severity_hi,
+::__addCb(callable_t cb, int severity_lo, int severity_hi,
            CallScenario call_scenario)
 {
   ListenerCb<callable_t> l_cb;
@@ -267,7 +272,7 @@ void AlarmListener<callable_t>
 
 template <typename callable_t>
 void AlarmListener<callable_t>
-::__alarm_update(ros_alarms::Alarm alarm_msg)
+::__alarmUpdate(ros_alarms::Alarm alarm_msg)
 {
   if(alarm_msg.alarm_name == __alarm_name)
   {

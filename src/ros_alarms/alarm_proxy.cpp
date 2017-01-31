@@ -1,3 +1,7 @@
+/**
+ * Author: David Soto
+ * Date: Jan 16, 2017
+ */
 #include <ros_alarms/alarm_proxy.hpp>
 
 using namespace std;
@@ -19,7 +23,8 @@ AlarmProxy::AlarmProxy(string _alarm_name, bool _raised, string _node_name,
 AlarmProxy::AlarmProxy(string _alarm_name, bool _raised, string _problem,
                        string _json, int _severity)
 {
-  *this = AlarmProxy(_alarm_name, _raised, ros::this_node::getName(), _problem, _json, _severity);
+  *this = AlarmProxy(_alarm_name, _raised, ros::this_node::getName(),
+                     _problem, _json, _severity);
 }
 
 AlarmProxy::AlarmProxy(ros_alarms::Alarm msg)
@@ -66,11 +71,10 @@ bool AlarmProxy::operator ==(const AlarmProxy &other) const
   if(raised != other.raised) return false;
   if(node_name != other.node_name) return false;
   if(problem_description != other.problem_description) return false;
-  // JSON parameters can be stripped off by the alarm server if they can't be deserialized
-  //if(json_parameters != other.json_parameters) return false;
+  // JSON parameters can be stripped off by the alarm server if they can't be
+  //   deserialized if(json_parameters != other.json_parameters) return false;
   if(severity != other.severity) return false;
   return true;
 }
-
 
 }  // namespace ros_alarms

@@ -31,7 +31,7 @@ public:
 
   // Handle to update the AlarmProxy (if this is an externally managed AlPxy, then modifying
   // could potentially have side effects for other broadcasters that may use it. Exert Caution!)
-  AlarmProxy& alarm() { return *__alarm_ptr; }
+  AlarmProxy& getAlarm() { return *__alarm_ptr; }
 
 private:
   ros::NodeHandle __nh;

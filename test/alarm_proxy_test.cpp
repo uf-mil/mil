@@ -1,3 +1,7 @@
+/**
+ * Author: David Soto
+ * Date: Jan 16, 2017
+ */
 #include <ros_alarms/alarm_proxy.hpp>
 #include <gtest/gtest.h>
 

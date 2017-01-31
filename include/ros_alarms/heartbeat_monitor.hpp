@@ -34,7 +34,7 @@ public:
   std::string alarm_name()     const { return __alarm_proxy.alarm_name; }
   std::string heartbeat_name() const { return __heartbeat_topic; }
   bool healthy()               const { return __healthy; }
-  ros::Time last_beat()        const { return __last_beat; }
+  ros::Time getLastBeatTime()  const { return __last_beat; }
   int getNumConnections()      const { return __heartbeat_listener.getNumPublishers(); }
   bool waitForConnection(ros::Duration timeout = {-1.0}) const;  // waits forever by default
   void startMonitoring();
@@ -59,8 +59,8 @@ private:
   bool __recovering = false;
   bool __healthy = true;
   std::string __object_name;
-  void __heard_heartbeat(msg_t beat_msg);  // Callback for heartbeat topic subscriber
-  void __check_for_heartbeat_loss(const ros::TimerEvent &te);  // Callback for __status_checker
+  void __heardHeartbeat(msg_t beat_msg);  // Callback for heartbeat topic subscriber
+  void __checkForHeartbeatLoss(const ros::TimerEvent &te);  // Callback for __status_checker
 };
 
 template <typename msg_t>
@@ -84,9 +84,9 @@ HeartbeatMonitor<msg_t>
   //   because setCallbackQueue() has to be called firs
   __nh.setCallbackQueue(&__cb_queue);
   __heartbeat_listener = __nh.subscribe(__heartbeat_topic, 10,
-                                        &HeartbeatMonitor::__heard_heartbeat, this);
+                                        &HeartbeatMonitor::__heardHeartbeat, this);
   __status_checker = __nh.createTimer(__period, 
-                                      &HeartbeatMonitor::__check_for_heartbeat_loss, this);
+                                      &HeartbeatMonitor::__checkForHeartbeatLoss, this);
 
   // Register cleared alarm w/ alarm server
   __alarm_broadcaster.clear();
@@ -106,7 +106,7 @@ HeartbeatMonitor<msg_t>
 
 template <typename msg_t>
 void HeartbeatMonitor<msg_t>
-::__heard_heartbeat(msg_t beat_msg)
+::__heardHeartbeat(msg_t beat_msg)
 {
   auto receipt_time = ros::Time::now();
   auto last_beat_time  = __last_beat;
@@ -171,7 +171,7 @@ void HeartbeatMonitor<msg_t>
 
 template <typename msg_t>
 void HeartbeatMonitor<msg_t>
-::__check_for_heartbeat_loss(const ros::TimerEvent &te)
+::__checkForHeartbeatLoss(const ros::TimerEvent &te)
 {
   if(!__healthy) // Can't lose what's already lost
     return;
@@ -192,7 +192,7 @@ template <typename msg_t>
 void HeartbeatMonitor<msg_t>
 ::startMonitoring()
 {
-  __healthy = __alarm_listener.query_cleared();
+  __healthy = __alarm_listener.queryCleared();
   __recovering = false;
   __last_beat = ros::Time::now(); // Comparisons for time_to_raised or time_to_clear
   __cb_queue.clear();             //   will be based off this time

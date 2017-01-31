@@ -1,3 +1,7 @@
+/**
+ * Author: David Soto
+ * Date: Jan 16, 2017
+ */
 #include <ros_alarms/listener.hpp>
 #include <ros_alarms/broadcaster.hpp>
 #include <ros_alarms/heartbeat_monitor.hpp>
@@ -46,30 +50,30 @@ TEST(ListenerTest, listenerTest)
   AlarmListener<> listener{nh, alarm_name};  // You can omit template args for any cb that can
   EXPECT_TRUE(listener.ok());                // be put into a std::function<void(AlarmProxy)>
   AlarmBroadcaster ab(nh);
-  ab.alarm() = pxy;
+  ab.getAlarm() = pxy;
   ab.clear();  // alarm starts off cleared
 
   // Last update time happened wehen we called ab.clear()
-  auto first_query = listener.last_update_time();
+  auto first_query = listener.getLastUpdateTime();
 
   ab.updateSeverity(5); // This is an update to the alarm
 
   // The listener isn't querying the server before returning the status on these next
   //   two lines, It is returning the current status of the internal AlarmProxy object,
   //   which is not updated by these calls.
-  listener.is_raised();
-  listener.is_cleared();
+  listener.isRaised();
+  listener.isCleared();
 
-  // Last update time should not have changed because of calls to is_raised() or is_cleared()
+  // Last update time should not have changed because of calls to isRaised() or isCleared()
   //   unless you are unlucky enough to have an update cb in that short time
-  EXPECT_EQ(first_query, listener.last_update_time());
-  EXPECT_EQ(listener.get_cached_alarm().raised, listener.is_raised());
+  EXPECT_EQ(first_query, listener.getLastUpdateTime());
+  EXPECT_EQ(listener.getCachedAlarm().raised, listener.isRaised());
 
   // The following query_* functions query the server before reporting the status, so the
   //   last update time should have changed
-  listener.query_raised();
-  listener.query_cleared();
-  EXPECT_NE(first_query, listener.last_update_time());
+  listener.queryRaised();
+  listener.queryCleared();
+  EXPECT_NE(first_query, listener.getLastUpdateTime());
 
 #define PRINT(x) cerr << #x ":" << x  << endl; // For debugging in case of test failures
 #define COUNTS() {                  \
@@ -102,32 +106,32 @@ TEST(ListenerTest, listenerTest)
     [&clear_count](AlarmProxy pxy) -> void { ++clear_count; };
 
   // Listener will now start processing callbacks from messages to '/alarm/updates'
-  EXPECT_TRUE(listener.wait_for_connection(ros::Duration(0.4)))
+  EXPECT_TRUE(listener.waitForConnection(ros::Duration(0.4)))
     << "Timed out trying to detect a publisher to the '/alarm/updates' topic";
-  ASSERT_GE(listener.get_num_connections(), 1)
+  ASSERT_GE(listener.getNumConnections(), 1)
     << "There are no publishers on the '/alarm/updates' topic";
   listener.start();  // Starts spinning in worker thread
 
   // Make sure initial conditians are good for testing callbacks
-  ab.alarm().raised = false;
-  ab.alarm().severity = 0;
+  ab.getAlarm().raised = false;
+  ab.getAlarm().severity = 0;
   ab.publish();
-  ASSERT_FALSE(listener.query_raised());
-  ASSERT_EQ(0, listener.get_cached_alarm().severity);
+  ASSERT_FALSE(listener.queryRaised());
+  ASSERT_EQ(0, listener.getCachedAlarm().severity);
   ASSERT_EQ(0, update_count);
   ASSERT_TRUE(update_count == lo_priority_raise_count == hi_priority_raise_count
     == exact_priority_raise_count == raise_count == clear_count);
 
   // Add callbacks to listener
-  listener.clear_callbacks();
-  listener.add_cb(update_cb);                // Called for any update of the alarm
-  listener.add_raise_cb(lo_raise_cb, 0, 2);  // Last 2 args specify severity range
-  listener.add_raise_cb(hi_raise_cb, 4, 5);  // Last 2 args specify severity range
-  listener.add_raise_cb(exact_raise_cb, 3);  // Use this overload for a single severity
-  listener.add_raise_cb(raise_cb);           // Use this overload for any severity raise
-  listener.add_clear_cb(clear_cb);           // Called for any clear of the alarm
+  listener.clearCallbacks();
+  listener.addCb(update_cb);               // Called for any update of the alarm
+  listener.addRaiseCb(lo_raise_cb, 0, 2);  // Last 2 args specify severity range
+  listener.addRaiseCb(hi_raise_cb, 4, 5);  // Last 2 args specify severity range
+  listener.addRaiseCb(exact_raise_cb, 3);  // Use this overload for a single severity
+  listener.addRaiseCb(raise_cb);           // Use this overload for any severity raise
+  listener.addClearCb(clear_cb);           // Called for any clear of the alarm
 
-  ros::Duration latency(0.01);  // Approximate upper bound on publisher latency
+  ros::Duration latency(0.01);             // Approximate upper bound on publisher latency
   auto update_start = update_count;
   auto lo_start = lo_priority_raise_count;
   auto hi_start = hi_priority_raise_count;

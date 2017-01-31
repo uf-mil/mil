@@ -1,3 +1,7 @@
+/**
+ * Author: David Soto
+ * Date: Jan 16, 2017
+ */
 #include <ros_alarms/listener.hpp>
 #include <ros_alarms/broadcaster.hpp>
 #include <ros_alarms/heartbeat_monitor.hpp>
@@ -23,9 +27,9 @@ TEST(HeartbeatMonitorTest, heartbeatMonitorTest)
 
   // Publish heartbeat
   ros::Publisher heartbeat_pub = nh.advertise<std_msgs::String>(heartbeat_topic, 1000);
-  auto pub_valid = [&heartbeat_pub](bool valid){ // Can publish a valid or invalid heartveat
+  auto pub_valid = [&heartbeat_pub](bool valid){ // Can publish a valid or invalid heartbeat
     std_msgs::String msg;
-    msg.data = (valid? "Will pass the predicate" : ""); // second one will
+    msg.data = (valid? "Will pass the predicate" : ""); // second one won't
     heartbeat_pub.publish(msg); };
 
   // Listener to get status of alarm
@@ -41,7 +45,7 @@ TEST(HeartbeatMonitorTest, heartbeatMonitorTest)
   HeartbeatMonitor<std_msgs::String>
     hb_monitor(nh, alarm_name, heartbeat_topic, predicate, time_to_raise, time_to_clear);
   EXPECT_TRUE(listener.ok());
-  EXPECT_TRUE(listener.query_cleared()) << "The alarm should start out cleared";
+  EXPECT_TRUE(listener.queryCleared()) << "The alarm should start out cleared";
   EXPECT_STREQ(alarm_name.c_str(), hb_monitor.alarm_name().c_str());
   EXPECT_STREQ(heartbeat_topic.c_str(), hb_monitor.heartbeat_name().c_str());
 
@@ -66,12 +70,12 @@ TEST(HeartbeatMonitorTest, heartbeatMonitorTest)
   EXPECT_TRUE(hb_monitor.healthy())
     << "Heartbeat should be healthy before the loss time threshold {time_to_raise} is cleared.";
   listener.waitForUpdate();
-  EXPECT_TRUE(listener.query_cleared());
+  EXPECT_TRUE(listener.queryCleared());
   sleep_until(time_to_raise * 1.2, monitor_start_time);
   EXPECT_FALSE(hb_monitor.healthy())
     << "Heartbeat shouldn't be healthy after {time_to_raise} w/o receiving a heartbeat.";
   listener.waitForUpdate();
-  EXPECT_TRUE(listener.query_raised());
+  EXPECT_TRUE(listener.queryRaised());
 
   auto recovery_start_time = ros::Time::now();
   pub_valid(true);
@@ -80,19 +84,19 @@ TEST(HeartbeatMonitorTest, heartbeatMonitorTest)
     sleep_until(time_to_raise * 0.8, ros::Time::now());
     pub_valid(true);
   }
-  EXPECT_TRUE(listener.query_cleared())
+  EXPECT_TRUE(listener.queryCleared())
     << "Monitor has gotten beats for over {time_to_clear}, alarm should have cleared.";
   
-  sleep_until(time_to_raise * 1.2, hb_monitor.last_beat());
-  EXPECT_TRUE(listener.query_raised())
+  sleep_until(time_to_raise * 1.2, hb_monitor.getLastBeatTime());
+  EXPECT_TRUE(listener.queryRaised())
     << "Heartbeat shouldn't be healthy after {time_to_raise} w/o receiving a heartbeat.";
 
-  while(ros::Time::now() - hb_monitor.last_beat() < time_to_clear) // Shouldn't recover here,
-  {                                                                //  invalid heartbeat
+  while(ros::Time::now() - hb_monitor.getLastBeatTime() < time_to_clear) // Shouldn't recover here,
+  {                                                                      //  invalid heartbeat
     sleep_until(time_to_raise * 0.8, ros::Time::now());
     pub_valid(false);  // False --> publish invalid heartbeat
   }
-  EXPECT_TRUE(listener.query_raised());
+  EXPECT_TRUE(listener.queryRaised());
 
   auto ref_time = ros::Time::now();
   while(ros::Time::now() - ref_time < time_to_clear*2.0) // Given a lot of time to recover,
@@ -100,7 +104,7 @@ TEST(HeartbeatMonitorTest, heartbeatMonitorTest)
     sleep_until(time_to_raise * 1.2, ros::Time::now());  // are too far apart
     pub_valid(true);
   }
-  EXPECT_TRUE(listener.query_raised());
+  EXPECT_TRUE(listener.queryRaised());
 
   return;
 }
