@@ -33,11 +33,5 @@
     * [[Unsupported OSes]]
 * Software
    * [[Onboard Utilities]]
-* Electrical
-    * [[Navigation Vessel (Electrical)]]
-    * [[Vessel Pinouts (Electrical)]]
-    * [[Spares (Electrical)]]
-    * [[To Do (Electrical)]]
-    * [[Testing SW Stuff (Electrical)]]
 * Mechanical
     * [Sub Map](https://drive.google.com/file/d/0B2qRA9f_CN_9TndLZUNseURVUEk/view?usp=sharing)
