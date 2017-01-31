@@ -40,25 +40,24 @@ check_host() {
 		if [ $HOST_PING -lt 25 ]; then
 
 			# Will return true if ping was successful and packet loss was below 25%
-			return `true`
+			echo "true"
 		fi
 	fi
-	return `false`
 }
 
 ros_git_get() {
-	# Uasge example: ros_git_get git@github.com:jpanikulam/ROS-Boat.git
+	# Usage example: ros_git_get https://github.com/uf-mil/software-common.git
 	NEEDS_INSTALL=true;
 	INSTALL_URL=$1;
 	builtin cd $CATKIN_DIR/src
 
 	# Check if it already exists
-	for folder in $CATKIN_DIR/src/*; do
-		if ! [ -d $folder ]; then
+	for FOLDER in $CATKIN_DIR/src/*; do
+		if ! [ -d $FOLDER ]; then
 			continue;
 		fi
 
-		builtin cd $folder
+		builtin cd $FOLDER
 		if ! [ -d .git ]; then
 			continue;
 		fi
@@ -77,88 +76,189 @@ ros_git_get() {
 	done
 	if $NEEDS_INSTALL; then
 		instlog "Installing $INSTALL_URL in $CATKIN_DIR/src"
-		git clone -q $INSTALL_URL --depth=1 --recursive
+		git clone -q $INSTALL_URL --depth=100 --recursive
 	fi
 }
 
+
+#=======================#
+# Configurable Defaults #
+#=======================#
+
+CATKIN_DIR=~/mil_ws
+BASHRC_FILE=~/.bashrc
+MILRC_FILE=~/.milrc
 
 #======================#
 # Script Configuration #
 #======================#
 
-# Sane installation defaults for no argument cases
-REQUIRED_OS="trusty"
-CATKIN_DIR=~/mil_ws
-INSTALL_ALL=false
+# Install no project by default, the user must select one
 INSTALL_SUB=false
+INSTALL_PRO=false
 INSTALL_NAV=false
 
-# Retrievs information about the location of the script
-SCRIPT_PATH="`readlink -f ${BASH_SOURCE[0]}`"
-SCRIPT_DIR="`dirname $SCRIPT_PATH`"
+# Use environment variables to determine which project to install on Semaphore
+if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
+	if (env | grep INSTALL_SUB | grep --quiet -oe '[^=]*$'); then
+		INSTALL_SUB=true
+	elif (env | grep INSTALL_PRO | grep --quiet -oe '[^=]*$'); then
+		INSTALL_PRO=true
+	elif (env | grep INSTALL_NAV | grep --quiet -oe '[^=]*$'); then
+		INSTALL_NAV=true
+	fi
+	PASSWORD="`env | grep PASSWORD | grep --quiet -oe '[^=]*$'`"
 
-# Convert script arguments to variables
-while [ "$#" -gt 0 ]; do
-	case $1 in
-		-h) printf "\nUsage: $0\n"
-			printf "\n    [-c] catkin_workspace (Recommend: ~/mil_ws)\n"
-			printf "\n    [-a] Installs everything needed for all MIL projects\n"
-			printf "\n    [-s] Installs everything needed for SubjuGator 8\n"
-			printf "\n    [-n] Installs everything needed for Navigator\n"
-			printf "\n    example: ./install.sh -c ~/mil_ws\n"
-			printf "\n"
-			exit 0
-			;;
-		-c) CATKIN_DIR="$2"
-			shift 2
-			;;
-		-a) INSTALL_ALL=true
-			shift 1
-			;;
-		-s) INSTALL_SUB=true
-			shift 1
-			;;
-		-n) INSTALL_NAV=true
-			shift 1
-			;;
-		-?) instwarn "Option $1 is not implemented"
-			exit 1
-			;;
-	esac
-done
+else
+	# Prompt the user to enter a catkin workspace to use
+	echo "Catkin is the ROS build system and it combines CMake macros and Python scripts."
+	echo "The catkin workspace is the directory where all source and build files for the"
+	echo "project are stored. Our default is in brackets below, press enter to use it."
+	echo -n "What catkin workspace should be used? [$CATKIN_DIR]: " && read RESPONSE
+	echo ""
+	if [ "$RESPONSE" != "" ]; then
+		CATKIN_DIR=${RESPONSE/\~//home/$USER}
+	fi
 
-if !($INSTALL_ALL || $INSTALL_SUB || $INSTALL_NAV); then
-	echo "A MIL project must be selected for install"
-	echo "Run ./install.sh -h for more information"
-	exit 1
-elif ($INSTALL_ALL); then
-	INSTALL_SUB=true
-	INSTALL_NAV=true
-elif ($INSTALL_NAV); then
+	echo "We use a forking workflow to facilitate code contributions on Github. This means"
+	echo "that each user forks the main repository and has their own copy. In the"
+	echo "repositories that we clone for projects, the main repository will be the"
+	echo "'upstream' remote and your local fork will be the 'origin' remote. You should"
+	echo "specify a fork URI for each repository you plan to push code to; otherwise,"
+	echo "leave the field blank. These can also be set manually using this command:"
+	echo "git remote add <remote_name> <user_fork_url>"
+	echo -n "User fork URI for the software-common repository: " && read SWC_USER_FORK
+	echo ""
 
-	# Navigator currently depends on the Sub8 repository
-	# This may change soon, but this will install Sub8 for now
-	INSTALL_SUB=true
+	# Prompt the user to select a project to install
+	SELECTED=false
+	while !($SELECTED); do
+		echo "A MIL project must be selected for install"
+		echo "	1. SubjuGator"
+		echo "	2. PropaGator $(tput bold)[DEPRECATED]$(tput sgr0)"
+		echo "	3. NaviGator $(tput bold)[DEPRECATED]$(tput sgr0)"
+		echo -n "Project selection: " && read RESPONSE
+		echo ""
+		case "$RESPONSE" in
+			"1")
+				echo -n "User fork URI for the Sub8 repository: " && read SUB_USER_FORK
+				INSTALL_SUB=true
+				SELECTED=true
+			;;
+			"2")
+				echo "The PropaGator project has not been worked on since the dark ages of MIL, so it"
+				echo "is not supported by this script."
+				echo ""
+			;;
+			"3")
+				echo "The NaviGator project was developed on Ubuntu 14.04 with ROS Indigo. Several"
+				echo "dependencies no longer exist in ROS Kinetic, so in order to install it, ROS"
+				echo "Indigo, the Sub8 repository at an earlier date,  and all of the old Sub8"
+				echo "dependencies will need to be downloaded and installed."
+				echo -n "Do you still wish to proceed? [y/N] " && read RESPONSE
+				echo ""
+				if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
+					echo -n "User fork URI for the Navigator repository: " && read NAV_USER_FORK
+					INSTALL_NAV=true
+					SELECTED=true
+				fi
+			;;
+			"")
+				echo "You must select one of the projects by entering it's number on the list"
+				echo ""
+			;;
+			*)
+				echo "$RESPONSE is not a valid selection"
+				echo ""
+			;;
+		esac
+	done
+
+	# Prompt the user to install the BlueView SDK if it is not already installed
+	if [ ! -d $CATKIN_DIR/src/bvtsdk ]; then
+		echo "The BlueView SDK used to interface with the Teledyne imaging sonar is encrypted"
+		echo "in order to protect the intellectual property of BlueView. If you will be doing"
+		echo "work with the imaging sonar on your machine, it is recommended that you install"
+		echo "this now. If not, you probably do not need to."
+		echo -n "Do you wish to install the SDK? [y/N] " && read RESPONSE
+		echo ""
+
+		# If the user chooses to install the BlueView SDK, retrieve the password from them
+		if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
+			echo "The SDK is encrypted with a password. You need to obtain this password from one"
+			echo "of the senior members of MIL."
+			echo -n "Encryption password: " && read -s PASSWORD
+			echo ""
+		fi
+	fi
+
+	# Warn users about the security risks associated with enabling USB cameras before doing it
+	if [ ! -f /etc/udev/rules.d/40-pgr.rules ]; then
+		echo "MIL projects use Point Grey machine vision cameras for perception. A user only"
+		echo "needs to enable access to USB cameras if they intend to connect a one directly"
+		echo "to their machine, which is unlikely. In order for a user to access a USB"
+		echo "camera, a udev rule needs to be added that gives a group access to the hardware"
+		echo "device on the camera. Long story short, this creates a fairly significant"
+		echo "security hole on the machine that goes beyond the OS to actual device firmware."
+		echo -n "Do you want to enable access to USB cameras? [y/N] " && read RESPONSE
+		echo ""
+		if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
+			ENABLE_USB_CAM=true
+		else
+			ENABLE_USB_CAM=false
+		fi
+	fi
 fi
 
-# The paths to the aliases configuration files
-BASHRC_FILE=~/.bashrc
-ALIASES_FILE=~/.mil_aliases
+if ($INSTALL_SUB); then
+	REQUIRED_OS_CODENAME="xenial"
+	REQUIRED_OS_VERSION="16.04"
+	ROS_VERSION="kinetic"
+else
+	REQUIRED_OS_CODENAME="trusty"
+	REQUIRED_OS_VERSION="14.04"
+	ROS_VERSION="indigo"
+fi
+
 
 #==================#
 # Pre-Flight Check #
 #==================#
 
+instlog "Acquiring root privileges"
+
+# Gets the user to enter their password here instead of in the middle of the pre-flight check
+# Purely here for aesthetics and to satisfy OCD
+sudo true
+
 instlog "Starting the pre-flight system check to ensure installation was done properly"
 
-# The lsb-release package is critical to check the OS version
-# It may not be on bare-bones systems, so it is installed here if necessary
+# Check whether or not github.com is reachable
+# This also makes sure that the user is connected to the internet
+if [ "`check_host github.com`" = "true" ]; then
+	NET_CHECK=true
+	echo -n "[ " && instpass && echo -n "] "
+else
+	NET_CHECK=false
+	echo -n "[ " && instfail && echo -n "] "
+fi
+echo "Internet connectivity check"
+
+if !($NET_CHECK); then
+
+	# The script will not allow the user to install without internet
+	instwarn "Terminating installation due to the lack of an internet connection"
+	instwarn "The install script needs to be able to connect to Github and other sites"
+	exit 1
+fi
+
+# Make sure script dependencies are installed quietly on bare bones installations
 sudo apt-get update -qq
-sudo apt-get install -qq lsb-release
+sudo apt-get install -qq lsb-release python-pip git build-essential > /dev/null 2>&1
 
 # Ensure that the correct OS is installed
-DTETCTED_OS="`lsb_release -sc`"
-if [ $DTETCTED_OS = $REQUIRED_OS ]; then
+DETECTED_OS_CODENAME="`lsb_release -sc`"
+if [ $DETECTED_OS_CODENAME = $REQUIRED_OS_CODENAME ]; then
 	OS_CHECK=true
 	echo -n "[ " && instpass && echo -n "] "
 else
@@ -175,40 +275,41 @@ else
 	ROOT_CHECK=false
 	echo -n "[ " && instfail && echo -n "] "
 fi
-echo "Running user check"
+echo "User permissions check"
 
-# Check whether or not github.com is reachable
-# This also makes sure that the user is connected to the internet
-if (check_host "github.com"); then
-	NET_CHECK=true
+# Ensure that no ROS version is being sourced in the user's bash runcom file
+if !(cat $BASHRC_FILE | grep --quiet "source /opt/ros"); then
+	BASHRC_CHECK=true
 	echo -n "[ " && instpass && echo -n "] "
 else
-	NET_CHECK=false
+	BASHRC_CHECK=false
 	echo -n "[ " && instfail && echo -n "] "
 fi
-echo "Internet connectivity check"
+echo "Bash runcom file check"
 
 if !($OS_CHECK); then
 
 	# The script will not allow the user to install on an unsupported OS
-	instwarn "Terminating installation due to incorrect OS (detected $DTETCTED_OS)"
-	instwarn "MIL projects require Ubuntu 14.04 (trusty)"
+	instwarn "Terminating installation due to incorrect OS (detected $DETECTED_OS_CODENAME)"
+	instwarn "MIL projects require Ubuntu $REQUIRED_OS_VERSION ($REQUIRED_OS_CODENAME)"
 	exit 1
 fi
 
 if !($ROOT_CHECK); then
 
 	# The script will not allow the user to install as root
-	instwarn "Terminating installation due to forbidden user"
+	instwarn "Terminating installation due to forbidden user account"
 	instwarn "The install script should not be run as root"
 	exit 1
 fi
 
-if !($NET_CHECK); then
+if !($BASHRC_CHECK); then
 
-	# The script will not allow the user to install without internet
-	instwarn "Terminating installation due to the lack of an internet connection"
-	instwarn "The install script needs to be able to connect to GitHub and other sites"
+	# The script will not allow the user to install if ROS is being sourced
+	instwarn "Terminating installation due to $BASHRC_FILE sourcing a ROS version"
+	instwarn "This should be handled through the MIL runcom file instead"
+	instwarn "Removing lines that source ROS, workspaces, or project aliases is recommended"
+	instwarn "However, removing only lines that source ROS will be enough to clear this error"
 	exit 1
 fi
 
@@ -217,51 +318,20 @@ fi
 # Repository and Set Up and Main Stack Installation #
 #===================================================#
 
-# Make sure script dependencies are installed on bare bones installations
-instlog "Installing install script dependencies"
-sudo apt-get install -qq wget curl aptitude fakeroot ssh git
+# Add software repository for ROS to software sources
+instlog "Adding ROS PPA to software sources"
+sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros.list'
+sudo sh -c 'echo "deb-src http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" >> /etc/apt/sources.list.d/ros.list'
+sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
 
-# Add software repositories for ROS and Gazebo
-instlog "Adding ROS, Gazebo, and ARM PPAs to software sources"
-sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu trusty main\" > /etc/apt/sources.list.d/ros-latest.list"
-sudo sh -c "echo \"deb http://packages.osrfoundation.org/gazebo/ubuntu trusty main\" > /etc/apt/sources.list.d/gazebo-latest.list"
-sudo mkdir -p /etc/apt/preferences.d/
-sudo sh -c "echo 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm"
-sudo sh -c "echo \"deb http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu trusty main\" > /etc/apt/sources.list.d/gcc-arm-embedded.list"
-
-# Get the GPG signing keys for the above repositories
-wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
-sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xB01FA116
-sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xA3421AFB
-
-# Add software repository for Git-LFS
+# Add software repository for Git-LFS to software sources
 instlog "Adding the Git-LFS packagecloud repository to software sources"
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
 
-# Install ROS and other project dependencies
-instlog "Installing ROS Indigo base packages"
+# Install ROS and a few ROS dependencies
+instlog "Installing ROS $(tr '[:lower:]' '[:upper:]' <<< ${ROS_VERSION:0:1})${ROS_VERSION:1}"
 sudo apt-get update -qq
-sudo apt-get install -qq python-catkin-pkg python-rosdep
-if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
-	sudo apt-get install -qq ros-indigo-desktop
-else
-	sudo apt-get install -qq ros-indigo-desktop-full
-fi
-
-# Break the ROS Indigo metapackage and install an updated version of Gazebo
-instlog "Installing the latest version of Gazebo"
-sudo aptitude unmarkauto -q '?reverse-depends(ros-indigo-desktop-full) | ?reverse-recommends(ros-indigo-desktop-full)'
-sudo apt-get purge -qq ros-indigo-gazebo*
-sudo apt-get install -qq gazebo7
-sudo apt-get install -qq ros-indigo-gazebo7-msgs ros-indigo-gazebo7-ros ros-indigo-gazebo7-plugins ros-indigo-gazebo7-ros-control
-
-# Source ROS configurations for bash on this user account
-source /opt/ros/indigo/setup.bash
-if !(cat $BASHRC_FILE | grep --quiet "source /opt/ros"); then
-	echo "" >> $BASHRC_FILE
-	echo "# Sets up the shell environment for ROS" >> $BASHRC_FILE
-	echo "source /opt/ros/indigo/setup.bash" >> $BASHRC_FILE
-fi
+sudo apt-get install -qq ros-$ROS_VERSION-desktop-full
 
 # Get information about ROS versions
 instlog "Initializing ROS"
@@ -269,6 +339,9 @@ if !([ -f /etc/ros/rosdep/sources.list.d/20-default.list ]); then
 	sudo rosdep init > /dev/null 2>&1
 fi
 rosdep update
+
+# Source ROS configurations for bash
+source /opt/ros/$ROS_VERSION/setup.bash
 
 
 #=================================#
@@ -279,7 +352,7 @@ rosdep update
 if !([ -f $CATKIN_DIR/src/CMakeLists.txt ]); then
 	instlog "Generating catkin workspace at $CATKIN_DIR"
 	mkdir -p $CATKIN_DIR/src
-	cd $CATKIN_DIR/sr
+	cd $CATKIN_DIR/src
 	catkin_init_workspace
 	catkin_make -C $CATKIN_DIR -B
 else
@@ -288,37 +361,57 @@ fi
 
 # Move the cloned git repository to the catkin workspace in semaphore
 if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
-	if [ -d ~/Navigator ]; then
-		mv ~/Navigator $CATKIN_DIR/src
-	elif [ -d ~/Sub8 ]; then
+	if [ -d ~/Sub8 ]; then
 		mv ~/Sub8 $CATKIN_DIR/src
+	elif [ -d ~/Navigator ]; then
+		mv ~/Navigator $CATKIN_DIR/src
 	fi
 fi
 
-# Source the workspace's configurations for bash on this user account
+# Source the workspace's configurations for bash
 source $CATKIN_DIR/devel/setup.bash
-if !(cat $BASHRC_FILE | grep --quiet "source $CATKIN_DIR/devel/setup.bash"); then
-	echo "source $CATKIN_DIR/devel/setup.bash" >> $BASHRC_FILE
-fi
 
-# Check if the Navigator repository is present; if it isn't, download it
-if ($INSTALL_NAV) && !(ls $CATKIN_DIR/src | grep --quiet "Navigator"); then
-	instlog "Downloading the Navigator repository"
+# Download the software-common repository if it has not already been downloaded
+if !(ls $CATKIN_DIR/src | grep --quiet "software-common"); then
+	instlog "Downloading the software-common repository"
 	cd $CATKIN_DIR/src
-	git clone -q https://github.com/uf-mil/Navigator.git
-	cd $CATKIN_DIR/src/Navigator
+	git clone -q https://github.com/uf-mil/software-common.git
+	cd $CATKIN_DIR/src/software-common
 	git remote rename origin upstream
-	instlog "Make sure you change your git origin to point to your own fork! (git remote add origin your_forks_url)"
+	if [ ! -z "$SWC_USER_FORK" ]; then
+		git remote add origin "$SWC_USER_FORK"
+	fi
 fi
 
-# Check if the Sub8 repository is present; if it isn't, download it
+# Download the Sub8 repository if it has not already been downloaded and was selected for installation
 if ($INSTALL_SUB) && !(ls $CATKIN_DIR/src | grep --quiet "Sub8"); then
 	instlog "Downloading the Sub8 repository"
 	cd $CATKIN_DIR/src
 	git clone -q https://github.com/uf-mil/Sub8.git
 	cd $CATKIN_DIR/src/Sub8
 	git remote rename origin upstream
-	instlog "Make sure you change your git origin to point to your own fork! (git remote add origin your_forks_url)"
+	if [ ! -z "$SUB_USER_FORK" ]; then
+		git remote add origin "$SUB_USER_FORK"
+	fi
+fi
+
+# Download the Navigator repository if it has not already been downloaded and was selected for installation
+if ($INSTALL_NAV) && !(ls $CATKIN_DIR/src | grep --quiet "Navigator"); then
+	instlog "Downloading the Sub8 repository"
+	cd $CATKIN_DIR/src
+	git clone -q https://github.com/uf-mil/Sub8.git
+	cd $CATKIN_DIR/src/Sub8
+	instlog "Rolling back the Sub8 repository; do not pull the latest version!"
+	git reset --hard 0089e68b9f48b96af9c3821f356e3a487841e87e
+	git remote remove origin
+	instlog "Downloading the Navigator repository"
+	cd $CATKIN_DIR/src
+	git clone -q https://github.com/uf-mil/Navigator.git
+	cd $CATKIN_DIR/src/Navigator
+	git remote rename origin upstream
+	if [ ! -z "$NAV_USER_FORK" ]; then
+		git remote add origin "$NAV_USER_FORK"
+	fi
 fi
 
 
@@ -326,134 +419,59 @@ fi
 # Common Dependency Installation #
 #================================#
 
+if ($ENABLE_USB_CAM); then
+	instlog "Enabling USB cameras (a reboot is required for this to take full effect)"
+	sudo usermod -a -G dialout "$USER"
+	sudo groupadd --gid 999 pgrimaging
+	sudo usermod -a -G pgrimaging "$USER"
+	sudo wget -q https://raw.githubusercontent.com/uf-mil/installer/master/40-pgr.rules -O /etc/udev/rules.d/40-pgr.rules
+	sudo service udev restart
+fi
+
 instlog "Installing common dependencies from the Ubuntu repositories"
 
-# Utilities for building and package management
-sudo apt-get install -qq cmake binutils-dev python-pip
-
-# Common backend libraries
-sudo apt-get install -qq libboost-all-dev
-sudo apt-get install -qq python-dev python-scipy python-numpy python-serial
-
-# Point clouds
-sudo apt-get install -qq libpcl-1.7-all libpcl-1.7-all-dev
-
-# Motion planning
-sudo apt-get install -qq libompl-dev
-
-# Visualization and graphical interfaces
-sudo apt-get install -qq python-opengl freeglut3-dev libassimp-dev
-sudo apt-get install -qq libvtk5-dev python-vtk
-sudo apt-get install -qq python-qt4-dev python-qt4-gl
-sudo apt-get install -qq qt5-default
-
-# Tools
-sudo apt-get install -qq sshfs
-sudo apt-get install -qq git-lfs gitk
-git lfs install --skip-smudge
-sudo apt-get install -qq tmux
-
-# Tools needed for hardware-common
-sudo apt-get install -qq gcc-arm-none-eabi
-sudo apt-get install -qq autoconf automake libtool
-
-# Libraries needed by txros
-sudo apt-get install -qq python-twisted socat
-
-# Libraries needed by the old simulator
-sudo apt-get install -qq python-pygame
-
-instlog "Installing common ROS dependencies"
-
 # Hardware drivers
-sudo apt-get install -qq ros-indigo-driver-base
+sudo apt-get install -qq ros-kinetic-pointgrey-camera-driver
 
-# Cameras
-sudo apt-get install -qq ros-indigo-camera-info-manager
-sudo apt-get install -qq ros-indigo-camera1394
-sudo apt-get install -qq ros-indigo-stereo-image-proc
+# Scientific and technical computing
+sudo apt-get install -qq python-scipy
 
-# Image compression
-sudo apt-get install -qq ros-indigo-rosbag-image-compressor ros-indigo-compressed-image-transport ros-indigo-compressed-depth-image-transport
+# System tools
+sudo apt-get install -qq tmux
+sudo apt-get install -qq sshfs
 
-# Point clouds
-sudo apt-get install -qq ros-indigo-pcl-ros ros-indigo-pcl-conversions
+# Git-LFS for models and other large files
+sudo apt-get install -qq git-lfs
+cd $CATKIN_DIR
+git lfs install --skip-smudge
 
-# Lie Groups using Eigen
-sudo apt-get install -qq ros-indigo-sophus
-
-# Controller
-sudo apt-get install -qq ros-indigo-control-toolbox ros-indigo-controller-manager
-sudo apt-get install -qq ros-indigo-hardware-interface ros-indigo-transmission-interface ros-indigo-joint-limits-interface
+# Debugging utility
+sudo apt-get install -qq gdb
 
 instlog "Installing common dependencies from Python PIP"
 
-# Package management
-sudo pip install -q -U setuptools
-
-# Service identity verification
-sudo pip install -q -U service_identity
-
-# Utilities
-sudo pip install -q -U argcomplete
-sudo pip install -q -U tqdm
-sudo pip install -q -U pyasn1
-sudo pip install -q -U characteristic
-sudo pip install -q -U progressbar
+# Communication tool for the hydrophone board
+sudo pip install -q -U crc16
 
 # Machine Learning
 sudo pip install -q -U scikit-learn > /dev/null 2>&1
 
 # Visualization
 sudo pip install -q -U mayavi > /dev/null 2>&1
+sudo pip install -q -U tqdm
+
+# The BlueView SDK for the Teledyne imaging sonar
+if [ ! -z $PASSWORD ]; then
+	instlog "Decrypting and installing the BlueView SDK"
+	cd $CATKIN_DIR/src
+	curl -s https://raw.githubusercontent.com/uf-mil/installer/master/bvtsdk.tar.gz.enc | \
+	openssl enc -aes-256-cbc -d -pass file:<(echo -n $PASSWORD) | tar -xpz
+fi
 
 instlog "Cloning common Git repositories that need to be built"
-ros_git_get https://github.com/txros/txros.git
 ros_git_get https://github.com/uf-mil/rawgps-tools.git
-ros_git_get "https://github.com/ros-simulation/gazebo_ros_pkgs.git --branch indigo-devel"
-ros_git_get https://github.com/uf-mil/hardware-common.git
-
-
-#===================================#
-# Navigator Dependency Installation #
-#===================================#
-
-if ($INSTALL_NAV); then
-	instlog "Installing Navigator ROS dependencies"
-
-	# Serial communications
-	sudo apt-get install -qq ros-indigo-rosserial ros-indigo-rosserial-python ros-indigo-rosserial-arduino
-
-	# Thruster driver
-	sudo apt-get install -qq ros-indigo-roboteq-driver
-
-	instlog "Installing Navigator dependencies from source"
-
-	# Open Dynamics Engine
-	rm -rf /tmp/pyode-build
-	mkdir -p /tmp/pyode-build
-	cd /tmp/pyode-build
-	sudo apt-get build-dep -qq python-pyode
-	sudo apt-get remove -qq python-pyode
-	apt-get source --compile -qq python-pyode
-	sudo dpkg -i python-pyode_*.deb
-
-	# Message types
-	sudo apt-get install -qq ros-indigo-tf2-sensor-msgs ros-indigo-tf2-geometry-msgs
-
-	# Pulling large project files from Git-LFS
-	instlog "Pulling large files for Navigator"
-	cd $CATKIN_DIR/src/Navigator
-	git lfs pull
-
-	instlog "Cloning Navigator Git repositories that need to be built"
-	ros_git_get https://github.com/jnez71/lqRRT.git
-	ros_git_get https://github.com/gareth-cross/rviz_satellite.git
-
-	# Required steps to build and install lqRRT
-	sudo python $CATKIN_DIR/src/lqRRT/setup.py build
-	sudo python $CATKIN_DIR/src/lqRRT/setup.py install
-fi
+ros_git_get https://github.com/txros/txros.git
+ros_git_get https://github.com/uf-mil/ros_alarms
 
 
 #==============================#
@@ -463,35 +481,112 @@ fi
 if ($INSTALL_SUB); then
 	instlog "Installing Sub8 dependencies from the Ubuntu repositories"
 
+	# Communication pipe for the navigation vessel
+	sudo apt-get install -qq socat
+
 	# Optical character recognition
 	sudo apt-get install -qq tesseract-ocr
 
-	# Hardware drivers
-	sudo apt-get install -qq libusb-1.0-0-dev
-
 	instlog "Installing Sub8 ROS dependencies"
 
+	# Controller
+	sudo apt-get install -qq ros-$ROS_VERSION-control-toolbox
+	sudo apt-get install -qq ros-$ROS_VERSION-controller-manager
+	sudo apt-get install -qq ros-$ROS_VERSION-transmission-interface
+	sudo apt-get install -qq ros-$ROS_VERSION-joint-limits-interface
+
+	# Trajectory Generation
+	sudo apt-get install -qq ros-$ROS_VERSION-ompl
+
 	# 3D Mouse
-	sudo apt-get install -qq ros-indigo-spacenav-node
-
-	instlog "Installing Sub8 dependencies from Python PIP"
-
-	# Libraries needed by the hydrophone board
-	sudo pip install -q -U crc16
+	sudo apt-get install -qq ros-$ROS_VERSION-spacenav-node
 fi
+
+
+#===================================#
+# Navigator Dependency Installation #
+#===================================#
+
+if ($INSTALL_NAV); then
+	instlog "Installing Sub8 dependencies from the Ubuntu repositories"
+
+	# Terry Guo's ARM toolchain
+	sudo mkdir -p /etc/apt/preferences.d
+	sudo sh -c "echo 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm"
+	sudo sh -c 'echo "deb http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu trusty main" > /etc/apt/sources.list.d/gcc-arm-embedded.list'
+	sudo sh -c 'echo "deb-src http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu trusty main" > /etc/apt/sources.list.d/gcc-arm-embedded.list'
+	sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xA3421AFB
+	sudo apt-get update -qq
+	sudo apt-get install -qq gcc-arm-none-eabi
+
+	# Visualization
+	sudo apt-get install -qq python-progressbar
+
+	instlog "Installing Navigator ROS dependencies"
+
+	# Serial communications
+	sudo apt-get install -qq ros-$ROS_VERSION-rosserial
+	sudo apt-get install -qq ros-$ROS_VERSION-rosserial-arduino
+
+	# Thruster driver
+	sudo apt-get install -qq ros-$ROS_VERSION-roboteq-driver
+
+	instlog "Cloning Navigator Git repositories that need to be built"
+
+	# Software to interface with MIL hardware
+	ros_git_get https://github.com/uf-mil-archive/hardware-common
+
+	# Required steps to build and install lqRRT
+	ros_git_get https://github.com/jnez71/lqRRT.git
+	sudo python $CATKIN_DIR/src/lqRRT/setup.py build
+	sudo python $CATKIN_DIR/src/lqRRT/setup.py install
+
+	# Pull large project files from Git-LFS
+	instlog "Pulling large files for Navigator"
+	cd $CATKIN_DIR/src/Navigator
+	git lfs pull
+fi
+
 
 #=========================#
 # Bashrc Alias Management #
 #=========================#
 
-# Copies the MIL aliases file to the machine's home directory file and sources it
-cat $CATKIN_DIR/src/Navigator/scripts/mil_aliases.sh > $ALIASES_FILE
-source $ALIASES_FILE
-if !(cat $BASHRC_FILE | grep --quiet "source $ALIASES_FILE"); then
-	echo "source $ALIASES_FILE" >> $BASHRC_FILE
-fi
+# Write the MIL runcom file for sourcing all of the required project configurations
+echo "# This file is created by the install script to source all of the configurations" > $MILRC_FILE
+echo "# needed to work on the installed projects. Do not edit this file manually! Your" >> $MILRC_FILE
+echo "# changes will be overwritten the next time the install script is run. Please use" >> $MILRC_FILE
+echo "# the script to make changes." >> $MILRC_FILE
 
-instlog "The ~/.mil_aliases file has been updated with the latest aliases"
+# Source ROS configurations for bash
+echo "" >> $MILRC_FILE
+echo "# Sets up the shell environment for ROS" >> $MILRC_FILE
+echo "source /opt/ros/$ROS_VERSION/setup.bash" >> $MILRC_FILE
+
+# Source the workspace's configurations for bash
+echo "" >> $MILRC_FILE
+echo "# Sets up the shell environment for the $CATKIN_DIR workspace" >> $MILRC_FILE
+echo "source $CATKIN_DIR/devel/setup.bash" >> $MILRC_FILE
+
+# Source the project configurations for bash
+declare -a ALIASED_REPOSITORIES=("software-common" "Sub8" "Navigator")
+for REPOSITORY in "${ALIASED_REPOSITORIES[@]}"; do
+	if [ -f $CATKIN_DIR/src/$REPOSITORY/scripts/bash_aliases.sh ]; then
+		if !(cat $MILRC_FILE | grep --quiet "# Sets up the shell environment for each installed project"); then
+			echo "" >> $MILRC_FILE
+			echo "# Sets up the shell environment for each installed project" >> $MILRC_FILE
+		fi
+		echo "source $CATKIN_DIR/src/$REPOSITORY/scripts/bash_aliases.sh"  >> $MILRC_FILE
+	fi
+done
+
+# Source MIL configurations for bash on this user account
+source $MILRC_FILE
+if !(cat $BASHRC_FILE | grep --quiet "source $MILRC_FILE"); then
+	echo "" >> $BASHRC_FILE
+	echo "# Sets up the shell environment for installed MIL projects" >> $BASHRC_FILE
+	echo "source $MILRC_FILE" >> $BASHRC_FILE
+fi
 
 
 #==========================#
@@ -502,9 +597,4 @@ instlog "The ~/.mil_aliases file has been updated with the latest aliases"
 if !(env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
 	instlog "Building MIL's software stack with catkin_make"
 	catkin_make -C $CATKIN_DIR -B
-fi
-
-# Remove the initial install script if it was not in the Navigator repository
-if !(echo $SCRIPT_DIR | grep --quiet "src/Navigator"); then
-	rm -f "$SCRIPT_PATH"
 fi
