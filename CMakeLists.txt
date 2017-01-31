@@ -70,9 +70,6 @@ add_dependencies(ros_alarms ros_alarms_generate_messages_cpp)
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
 
-  # For python unittests
-  add_rostest(test/ros_alarms_integration.test)
-
   # The test driver with your main function
   # must be listed last (before the source files)
   add_rostest_gtest(${PROJECT_NAME}_integration_tests
