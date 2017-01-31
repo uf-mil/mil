@@ -1,8 +1,14 @@
 #include <ros_alarms/listener.hpp>
 #include <ros_alarms/broadcaster.hpp>
+#include <string>
 #include <iostream>
 #include <functional>
 #include <gtest/gtest.h>
+
+using namespace std;
+using ros_alarms::AlarmProxy;
+using ros_alarms::AlarmBroadcaster;
+using ros_alarms::AlarmListener;
 
 TEST(BroadcasterTest, broadcasterTest)
 {

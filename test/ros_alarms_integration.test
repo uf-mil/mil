@@ -1,8 +1,8 @@
 <launch>
   <!-- Start up alarm server -->
-  <node name="ros_alarms_test_server" pkg="ros_alarms" type="alarm_server.py" output="screen">
+  <node name="ros_alarms_test_server" pkg="ros_alarms" type="alarm_server.py">
       <!-- A folder that is in your system path containing all alarm handlers-->
-      <!--param name="handler_module" type="string" value="test_handlers"/-->
+      <param name="handler_module" type="string" value="test_handlers"/>
   </node>
 
   <!-- List known alarms here -->
@@ -11,4 +11,7 @@
   </rosparam>
 
   <test test-name="ros_alarms_integration" pkg="ros_alarms" type="ros_alarms_integration_tests" />
+  <!-- Example Python Test Setup -->
+  <node name="talker" pkg="ros_alarms" type="example_support_python_node.py" output="screen"/>
+  <test test-name="ros_alarms_integration_py" pkg="ros_alarms" type="example_test.py" />
 </launch>
