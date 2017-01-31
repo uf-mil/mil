@@ -16,10 +16,10 @@ TEST(ServerCheck, setServiceCheck)
 {
   // Check for existence of alarm server
   ros::Time::init();  // needed to use ros::Time::now() w/o creating a  NodeHandle
+  ros::NodeHandle nh;
   ros::Duration time_out {2, 0};
   ASSERT_TRUE(ros::service::waitForService("/alarm/set", time_out))
     << "/alarm/set service not available";
-  
   return;
 }
 
@@ -27,97 +27,20 @@ TEST(ServerCheck, getServiceCheck)
 {
   // Check for existence of alarm server
   ros::Time::init();  // needed to use ros::Time::now() w/o creating a  NodeHandle
+  ros::NodeHandle nh;
   ros::Duration time_out {2, 0};
   ASSERT_TRUE(ros::service::waitForService("/alarm/get", time_out))
     << "/alarm/get service not available";
   return;
 }
 
-class AlarmTest : public ::testing::Test
+
+TEST(ListenerTest, listenerTest)
 {
-public:
   ros::NodeHandle nh;
   string alarm_name = "test_alarm";
-  string node_name = "test_alarm_client_node";
   AlarmProxy pxy {"test_alarm", false, "test_alarm_client_node", "", "json", 5};
-  AlarmTest()
-  {
-  }
-};
 
-TEST_F(AlarmTest, alarmProxyTest)
-{
-  // Test ctor
-  auto ctor_err {"AlarmProxy different field than expected based on value passed to ctor."};
-  EXPECT_STREQ("test_alarm", pxy.alarm_name.c_str()) << ctor_err;
-  EXPECT_STREQ("test_alarm_client_node", pxy.node_name.c_str()) << ctor_err;
-  EXPECT_STREQ("", pxy.problem_description.c_str()) << ctor_err;
-  EXPECT_STREQ("json", pxy.json_parameters.c_str()) << ctor_err;
-  EXPECT_EQ(5, pxy.severity) << ctor_err;
-
-  // Test conversion ctor
-  EXPECT_EQ(pxy, AlarmProxy(pxy.as_msg()))
-    << "Proxy was turned into a ros msg and back into a proxy but is different from original";
-
-  // Test operator== and copy cotr
-  AlarmProxy pxy2 = pxy;
-  EXPECT_EQ(pxy, pxy2)
-    << "Operator == returned false when called w/ an AlarmProxy copy constructed from itself";
-  AlarmProxy pxy3 = pxy;
-  EXPECT_EQ(pxy2, pxy3)
-    << "Operator == returned false when called w/ 2 copies of the same AlarmProxy.";
-}
-
-TEST_F(AlarmTest, broadcasterTest)
-{
-  // Construct Kill broadcaster using the 2 different methods
-  AlarmBroadcaster a_caster1{nh};            // Manipulates encapsulated AlarmProxy that
-  a_caster1.alarm() = pxy;                   //   is a copy of the one in the text fixture
-  AlarmBroadcaster a_caster2{nh, &pxy};      // Broadcaster is bound to external AlarmProxy
-  AlarmListener<> listener(nh, alarm_name);  // Callback-less listener for testing broadcasters
-
-  a_caster1.clear();
-  EXPECT_FALSE(listener.query_raised()) << "'test_alarm' should start out cleared";
-  EXPECT_EQ(!listener.is_raised(), listener.is_cleared())
-    << "is_raised() returned the same thing as is_cleared()";
-
-  // Test raising and clearing
-  auto raise_msg {"Broadcaster wasn't able to raise test_alarm"};
-  auto clear_msg {"Broadcaster wasn't able to clear test_alarm"};
-  a_caster1.raise();
-  EXPECT_TRUE(listener.query_raised()) << raise_msg;
-  a_caster1.clear();
-  EXPECT_FALSE(listener.query_raised()) << clear_msg;
-  a_caster2.raise();
-  EXPECT_TRUE(listener.query_raised()) << raise_msg;
-  a_caster2.clear();
-  EXPECT_FALSE(listener.query_raised()) << clear_msg;
-
-  // Test changing alarm via outside pxy or internal ref to it and updating server
-  pxy.severity = 2;                                    // Change external AlarmProxy
-  a_caster2.alarm().raised = true;                     // Change internal handle
-  EXPECT_EQ(pxy, a_caster2.alarm());                   // And yet, pxy == a_caster2.alarm()
-  a_caster2.publish();                                 // Publish changed status to server
-  EXPECT_EQ(a_caster2.alarm(), listener.get_alarm())   // Listener should confirm server 
-                                                       //   received updates
-    << a_caster2.alarm().str(true) + " =/= " + listener.get_alarm().str(true);
-  EXPECT_EQ(2, listener.get_alarm().severity)
-    << "Unable to use external AlarmProxy to publish new alarm status";
-
-  // Test changing alarm via reference to internal pxy and updating server
-  a_caster1.updateSeverity(3);
-  EXPECT_EQ(3, listener.get_alarm().severity);
-  a_caster1.alarm().problem_description = "There's no problem here";
-  a_caster1.publish();
-  EXPECT_STREQ("There's no problem here", listener.get_alarm().problem_description.c_str());
-  a_caster1.clear();  // make sure alarm starts cleared for following tests
-  EXPECT_TRUE(listener.query_cleared());
-
-  return;
-}
-
-TEST_F(AlarmTest, listenerTest)
-{
   // Create broadcaster & listener
   // You can skip the template args for any
   AlarmListener<> listener{nh, alarm_name};  // You can omit template args for any cb that can
@@ -271,93 +194,3 @@ TEST_F(AlarmTest, listenerTest)
   return;
 }
 
-TEST_F(AlarmTest, heartbeatMonitorTest)
-{
-  string heartbeat_topic {"heartbeat_topic"};
-  string alarm_name {"lost_heartbeat"};
-  ros::Duration time_to_raise(0.2);
-  ros::Duration time_to_clear(0.4);
-
-  // Publish heartbeat
-  ros::Publisher heartbeat_pub = nh.advertise<std_msgs::String>(heartbeat_topic, 1000);
-  auto pub_valid = [&heartbeat_pub](bool valid){ // Can publish a valid or invalid heartveat
-    std_msgs::String msg;
-    msg.data = (valid? "Will pass the predicate" : ""); // second one will
-    heartbeat_pub.publish(msg); };
-
-  // Listener to get status of alarm
-  AlarmListener<> listener{nh, alarm_name};
-
-  // Create callbacks
-  function<bool(std_msgs::String)> predicate = [](std_msgs::String msg)
-  {
-   return (msg.data.size() == 0? false : true);
-  };
-
-  // Initialize HertbeatMonitor with topic name, alarm name, period
-  HeartbeatMonitor<std_msgs::String>
-    hb_monitor(nh, alarm_name, heartbeat_topic, predicate, time_to_raise, time_to_clear);
-  EXPECT_TRUE(listener.ok());
-  EXPECT_TRUE(listener.query_cleared()) << "The alarm should start out cleared";
-  EXPECT_STREQ(alarm_name.c_str(), hb_monitor.alarm_name().c_str());
-  EXPECT_STREQ(heartbeat_topic.c_str(), hb_monitor.heartbeat_name().c_str());
-
-
-  EXPECT_GE(1, hb_monitor.getNumConnections())
-    << "Monitor should be connected to at least one publisher";
-  ASSERT_TRUE(hb_monitor.waitForConnection(ros::Duration(0.5)))  // Returns false if timed-out
-    << "Timed out waiting for a publisher to " << heartbeat_topic;
-
-  // Neede to test time_to_raise and time_to_clear behaviour
-  ros::Time monitor_start_time = ros::Time::now();
-  hb_monitor.startMonitoring();
-
-  // Timing utility function for this test
-  auto sleep_until = [](ros::Duration offset, ros::Time reference)
-  {
-    auto sleep_time = reference + offset - ros::Time::now();
-    return sleep_time > ros::Duration(0.0)? sleep_time.sleep() : false;
-  };
-
-  sleep_until(time_to_raise * 0.8, monitor_start_time);
-  EXPECT_TRUE(hb_monitor.healthy())
-    << "Heartbeat should be healthy before the loss time threshold {time_to_raise} is cleared.";
-  listener.waitForUpdate();
-  EXPECT_TRUE(listener.query_cleared());
-  sleep_until(time_to_raise * 1.2, monitor_start_time);
-  EXPECT_FALSE(hb_monitor.healthy())
-    << "Heartbeat shouldn't be healthy after {time_to_raise} w/o receiving a heartbeat.";
-  listener.waitForUpdate();
-  EXPECT_TRUE(listener.query_raised());
-
-  auto recovery_start_time = ros::Time::now();
-  pub_valid(true);
-  while(ros::Time::now() - recovery_start_time < time_to_clear) // Heartbeat is recovering here
-  {
-    sleep_until(time_to_raise * 0.8, ros::Time::now());
-    pub_valid(true);
-  }
-  EXPECT_TRUE(listener.query_cleared())
-    << "Monitor has gotten beats for over {time_to_clear}, alarm should have cleared.";
-  
-  sleep_until(time_to_raise * 1.2, hb_monitor.last_beat());
-  EXPECT_TRUE(listener.query_raised())
-    << "Heartbeat shouldn't be healthy after {time_to_raise} w/o receiving a heartbeat.";
-
-  while(ros::Time::now() - hb_monitor.last_beat() < time_to_clear) // Shouldn't recover here,
-  {                                                                //  invalid heartbeat
-    sleep_until(time_to_raise * 0.8, ros::Time::now());
-    pub_valid(false);  // False --> publish invalid heartbeat
-  }
-  EXPECT_TRUE(listener.query_raised());
-
-  auto ref_time = ros::Time::now();
-  while(ros::Time::now() - ref_time < time_to_clear*2.0) // Given a lot of time to recover,
-  {                                                      // but never doing so because hb's
-    sleep_until(time_to_raise * 1.2, ros::Time::now());  // are too far apart
-    pub_valid(true);
-  }
-  EXPECT_TRUE(listener.query_raised());
-
-  return;
-}

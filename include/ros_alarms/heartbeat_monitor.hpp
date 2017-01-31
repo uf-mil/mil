@@ -101,7 +101,7 @@ HeartbeatMonitor<msg_t>
   std::stringstream init_msg;
   init_msg << "Node " << __alarm_proxy.node_name << " is now monitoring the following"
     " heartbeat: " << __heartbeat_topic;
-  ROS_INFO("%s", init_msg.str().c_str());
+  //ROS_INFO("%s", init_msg.str().c_str());
 }
 
 template <typename msg_t>

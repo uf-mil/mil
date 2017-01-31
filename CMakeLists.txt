@@ -74,9 +74,10 @@ if(CATKIN_ENABLE_TESTING)
   # must be listed last (before the source files)
   add_rostest_gtest(${PROJECT_NAME}_integration_tests
     test/ros_alarms_integration.test
-    #test/heartbeat_monitor_test.cpp
-    #test/broadcaster_test.cpp
+    test/heartbeat_monitor_test.cpp
+    test/broadcaster_test.cpp
     test/listener_test.cpp
+    test/alarm_proxy_test.cpp
     test/integration_test_driver.cpp
     ${SRCS}
   )
