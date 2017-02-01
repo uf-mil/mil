@@ -446,8 +446,11 @@ git lfs install --skip-smudge
 # Debugging utility
 sudo apt-get install -qq gdb
 
+# Machine Learning
+sudo apt-get install -qq python-sklearn
+
 # Visualization
-sudo apt-get install -qq python-vtk
+sudo apt-get install -qq mayavi2
 
 instlog "Installing Sub8 ROS dependencies"
 
@@ -459,11 +462,7 @@ instlog "Installing common dependencies from Python PIP"
 # Communication tool for the hydrophone board
 sudo pip install -q -U crc16
 
-# Machine Learning
-sudo pip install -q -U scikit-learn > /dev/null 2>&1
-
 # Visualization
-sudo pip install -q -U mayavi > /dev/null 2>&1
 sudo pip install -q -U tqdm
 
 instlog "Cloning common Git repositories that need to be built"
