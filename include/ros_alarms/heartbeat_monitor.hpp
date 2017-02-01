@@ -133,7 +133,7 @@ void HeartbeatMonitor<msg_t>
   // Set the last healthy beat time as a json param on the alarm proxy
   std::stringstream json;
   // not exactly sure if this will work with json.loads()
-  json << "{last_heathy_beat : " <<  __last_beat.toSec() << "}";
+  json << "{\"last_heathy_beat\" : " <<  __last_beat.toSec() << "}";
   __alarm_proxy.json_parameters = json.str();
 
   if(__healthy)  // We're done if the heartbeat is healthy
@@ -147,7 +147,7 @@ void HeartbeatMonitor<msg_t>
     if(time_since_prev_beat < __time_to_raise)
     {
       __time_recovering += time_since_prev_beat;
-      if(__time_recovering > __time_to_raise)
+      if(__time_recovering > __time_to_clear)
       {
         // Reset health flag and exit recovery mode
         __healthy = true;

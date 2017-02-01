@@ -66,17 +66,21 @@ TEST(HeartbeatMonitorTest, heartbeatMonitorTest)
     return sleep_time > ros::Duration(0.0)? sleep_time.sleep() : false;
   };
 
+  // Test health status before {time_to_raise}
   sleep_until(time_to_raise * 0.8, monitor_start_time);
   EXPECT_TRUE(hb_monitor.healthy())
     << "Heartbeat should be healthy before the loss time threshold {time_to_raise} is cleared.";
   listener.waitForUpdate();
   EXPECT_TRUE(listener.queryCleared());
+
+  // Test detecting heartbeat loss / raising alarm
   sleep_until(time_to_raise * 1.2, monitor_start_time);
   EXPECT_FALSE(hb_monitor.healthy())
     << "Heartbeat shouldn't be healthy after {time_to_raise} w/o receiving a heartbeat.";
   listener.waitForUpdate();
   EXPECT_TRUE(listener.queryRaised());
 
+  //  Test heartbeat recovery
   auto recovery_start_time = ros::Time::now();
   pub_valid(true);
   while(ros::Time::now() - recovery_start_time < time_to_clear) // Heartbeat is recovering here
@@ -91,6 +95,7 @@ TEST(HeartbeatMonitorTest, heartbeatMonitorTest)
   EXPECT_TRUE(listener.queryRaised())
     << "Heartbeat shouldn't be healthy after {time_to_raise} w/o receiving a heartbeat.";
 
+  // Test rejection of invalid heartbeats
   while(ros::Time::now() - hb_monitor.getLastBeatTime() < time_to_clear) // Shouldn't recover here,
   {                                                                      //  invalid heartbeat
     sleep_until(time_to_raise * 0.8, ros::Time::now());
@@ -106,5 +111,6 @@ TEST(HeartbeatMonitorTest, heartbeatMonitorTest)
   }
   EXPECT_TRUE(listener.queryRaised());
 
+  // TODO: separate these into separate test cases
   return;
 }
