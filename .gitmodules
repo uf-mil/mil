@@ -1,0 +1,6 @@
+[submodule "gnc/lqRRT"]
+	path = gnc/lqRRT
+	url = https://github.com/jnez71/lqRRT
+[submodule "hardware_drivers/hardware-common"]
+	path = hardware_drivers/hardware-common
+	url = https://github.com/uf-mil-archive/hardware-common
