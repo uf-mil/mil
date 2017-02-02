@@ -547,7 +547,7 @@ fi
 #===================================#
 
 if ($INSTALL_NAV); then
-	instlog "Installing Sub8 dependencies from the Ubuntu repositories"
+	instlog "Installing Navigator dependencies from the Ubuntu repositories"
 
 	# Terry Guo's ARM toolchain
 	sudo mkdir -p /etc/apt/preferences.d
@@ -557,9 +557,6 @@ if ($INSTALL_NAV); then
 	sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xA3421AFB
 	sudo apt-get update -qq
 	sudo apt-get install -qq gcc-arm-none-eabi
-
-	# Visualization
-	sudo apt-get install -qq python-progressbar
 
 	instlog "Installing Navigator ROS dependencies"
 
