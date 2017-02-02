@@ -108,6 +108,8 @@ if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
 		INSTALL_NAV=true
 	fi
 	PASSWORD="`env | grep PASSWORD | grep --quiet -oe '[^=]*$'`"
+	ENABLE_USB_CAM=false
+	INSTALL_CUDA=false
 
 else
 	# Prompt the user to enter a catkin workspace to use
@@ -189,6 +191,7 @@ else
 			echo "of the senior members of MIL."
 			echo -n "Encryption password: " && read -s PASSWORD
 			echo ""
+			echo ""
 		fi
 	fi
 
@@ -208,9 +211,28 @@ else
 			ENABLE_USB_CAM=false
 		fi
 	fi
+
+	# Give users the option to install the CUDA toolkit if an Nvidia card is detected
+	if !($INSTALL_NAV) && (lspci | grep --quiet "VGA compatible controller: NVIDIA"); then
+		echo "An Nvidia graphics card was detected on this machine. Some of the perception"
+		echo "packages may run faster with or require CUDA parallel processing on the GPU."
+		echo "CUDA is not required, but the script can install it automatically. Ubuntu 16.04"
+		echo "supports the 7.5 version natively; however, the 8.0 version can be installed"
+		echo "through a repository maintained by Nvidia and runs much smoother. Since the 8.0"
+		echo "version seems fairly stable, this is the version that the script will install."
+		echo "The 7.5 version can still be installed manually with the following command:"
+		echo "sudo apt-get install nvidia-cuda-toolkit"
+		echo "Do you want to install CUDA Toolkit 8.0? [y/N] "
+		echo ""
+		if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
+			INSTALL_CUDA=true
+		else
+			INSTALL_CUDA=false
+		fi
+	fi
 fi
 
-if ($INSTALL_SUB); then
+if !($INSTALL_NAV); then
 	REQUIRED_OS_CODENAME="xenial"
 	REQUIRED_OS_VERSION="16.04"
 	ROS_VERSION="kinetic"
@@ -328,6 +350,13 @@ sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C
 instlog "Adding the Git-LFS packagecloud repository to software sources"
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
 
+# Add software repository for Nvidia to software sources
+if ($INSTALL_CUDA); then
+	instlog "Adding Nvidia PPA to software sources"
+	sudo sh -c 'echo "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64 /" >> /etc/apt/sources.list.d/cuda.list'
+	wget -q -O - http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub | sudo apt-key add -
+fi
+
 # Install ROS and a few ROS dependencies
 instlog "Installing ROS $(tr '[:lower:]' '[:upper:]' <<< ${ROS_VERSION:0:1})${ROS_VERSION:1}"
 sudo apt-get update -qq
@@ -429,6 +458,11 @@ if ($ENABLE_USB_CAM); then
 fi
 
 instlog "Installing common dependencies from the Ubuntu repositories"
+
+# Cuda Toolkit 8.0
+if ($INSTALL_CUDA); then
+	sudo apt-get install -qq cuda
+fi
 
 # Scientific and technical computing
 sudo apt-get install -qq python-scipy
