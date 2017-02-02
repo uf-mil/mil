@@ -45,41 +45,6 @@ check_host() {
 	fi
 }
 
-ros_git_get() {
-	# Usage example: ros_git_get https://github.com/uf-mil/software-common.git
-	NEEDS_INSTALL=true;
-	INSTALL_URL=$1;
-	builtin cd $CATKIN_DIR/src
-
-	# Check if it already exists
-	for FOLDER in $CATKIN_DIR/src/*; do
-		if ! [ -d $FOLDER ]; then
-			continue;
-		fi
-
-		builtin cd $FOLDER
-		if ! [ -d .git ]; then
-			continue;
-		fi
-		LOCAL_BRANCH=`git name-rev --name-only HEAD`
-		TRACKING_BRANCH=`git config branch.$LOCAL_BRANCH.merge`
-		TRACKING_REMOTE=`git config branch.$LOCAL_BRANCH.remote`
-
-		# Automatically checks if HTTPS is available
-		REMOTE_URL=`git config remote.$TRACKING_REMOTE.url`
-		if python -c "import re; _, have_url = re.split('https://github.com|git@github.com:', '$REMOTE_URL');_, want_url = re.split('https://github.com|git@github.com:', '$INSTALL_URL'); exit(have_url != want_url)"; then
-			instlog "Already have package at url $INSTALL_URL"
-			NEEDS_INSTALL=false;
-			break;
-		fi
-		builtin cd $CATKIN_DIR/src
-	done
-	if $NEEDS_INSTALL; then
-		instlog "Installing $INSTALL_URL in $CATKIN_DIR/src"
-		git clone -q $INSTALL_URL --depth=100 --recursive
-	fi
-}
-
 
 #=======================#
 # Configurable Defaults #
@@ -404,7 +369,7 @@ source $CATKIN_DIR/devel/setup.bash
 if !(ls $CATKIN_DIR/src | grep --quiet "software-common"); then
 	instlog "Downloading the software-common repository"
 	cd $CATKIN_DIR/src
-	git clone -q https://github.com/uf-mil/software-common.git
+	git clone --recursive -q https://github.com/uf-mil/software-common.git
 	cd $CATKIN_DIR/src/software-common
 	git remote rename origin upstream
 	if [ ! -z "$SWC_USER_FORK" ]; then
@@ -416,7 +381,7 @@ fi
 if ($INSTALL_SUB) && !(ls $CATKIN_DIR/src | grep --quiet "Sub8"); then
 	instlog "Downloading the Sub8 repository"
 	cd $CATKIN_DIR/src
-	git clone -q https://github.com/uf-mil/Sub8.git
+	git clone --recursive -q https://github.com/uf-mil/Sub8.git
 	cd $CATKIN_DIR/src/Sub8
 	git remote rename origin upstream
 	if [ ! -z "$SUB_USER_FORK" ]; then
@@ -428,14 +393,14 @@ fi
 if ($INSTALL_NAV) && !(ls $CATKIN_DIR/src | grep --quiet "Navigator"); then
 	instlog "Downloading the Sub8 repository"
 	cd $CATKIN_DIR/src
-	git clone -q https://github.com/uf-mil/Sub8.git
+	git clone --recursive -q https://github.com/uf-mil/Sub8.git
 	cd $CATKIN_DIR/src/Sub8
 	instlog "Rolling back the Sub8 repository; do not pull the latest version!"
 	git reset --hard 0089e68b9f48b96af9c3821f356e3a487841e87e
 	git remote remove origin
 	instlog "Downloading the Navigator repository"
 	cd $CATKIN_DIR/src
-	git clone -q https://github.com/uf-mil/Navigator.git
+	git clone --recursive -q https://github.com/uf-mil/Navigator.git
 	cd $CATKIN_DIR/src/Navigator
 	git remote rename origin upstream
 	if [ ! -z "$NAV_USER_FORK" ]; then
@@ -498,11 +463,6 @@ sudo pip install -q -U crc16
 
 # Visualization
 sudo pip install -q -U tqdm
-
-instlog "Cloning common Git repositories that need to be built"
-ros_git_get https://github.com/uf-mil/rawgps-tools.git
-ros_git_get https://github.com/txros/txros.git
-ros_git_get https://github.com/uf-mil/ros_alarms
 
 # The BlueView SDK for the Teledyne imaging sonar
 if [ ! -z $PASSWORD ]; then
@@ -567,15 +527,9 @@ if ($INSTALL_NAV); then
 	# Thruster driver
 	sudo apt-get install -qq ros-$ROS_VERSION-roboteq-driver
 
-	instlog "Cloning Navigator Git repositories that need to be built"
-
-	# Software to interface with MIL hardware
-	ros_git_get https://github.com/uf-mil-archive/hardware-common
-
-	# Required steps to build and install lqRRT
-	ros_git_get https://github.com/jnez71/lqRRT.git
-	sudo python $CATKIN_DIR/src/lqRRT/setup.py build
-	sudo python $CATKIN_DIR/src/lqRRT/setup.py install
+	instlog "Performing setup tasks for lqRRT"
+	sudo python $CATKIN_DIR/src/Navigator/gnc/lqRRT/setup.py build
+	sudo python $CATKIN_DIR/src/Navigator/gnc/lqRRT/setup.py install
 
 	# Pull large project files from Git-LFS
 	instlog "Pulling large files for Navigator"
