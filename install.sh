@@ -72,9 +72,9 @@ if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
 	elif (env | grep INSTALL_NAV | grep --quiet -oe '[^=]*$'); then
 		INSTALL_NAV=true
 	fi
-	PASSWORD="`env | grep PASSWORD | grep --quiet -oe '[^=]*$'`"
+	BVSDK_PASSWORD="`env | grep BVSDK_PASSWORD | grep -oe '[^=]*$'`"
 	ENABLE_USB_CAM=false
-	INSTALL_CUDA=false
+	INSTALL_CUDA=true
 
 else
 	# Prompt the user to enter a catkin workspace to use
@@ -154,7 +154,7 @@ else
 		if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
 			echo "The SDK is encrypted with a password. You need to obtain this password from one"
 			echo "of the senior members of MIL."
-			echo -n "Encryption password: " && read -s PASSWORD
+			echo -n "Encryption password: " && read BVSDK_PASSWORD
 			echo ""
 			echo ""
 		fi
@@ -465,11 +465,11 @@ sudo pip install -q -U crc16
 sudo pip install -q -U tqdm
 
 # The BlueView SDK for the Teledyne imaging sonar
-if [ ! -z $PASSWORD ]; then
+if [ ! -z $BVSDK_PASSWORD ]; then
 	instlog "Decrypting and installing the BlueView SDK"
 	cd $CATKIN_DIR/src
 	curl -s https://raw.githubusercontent.com/uf-mil/installer/master/bvtsdk.tar.gz.enc | \
-	openssl enc -aes-256-cbc -d -pass file:<(echo -n $PASSWORD) | tar -xpz
+	openssl enc -aes-256-cbc -d -pass file:<(echo -n $BVSDK_PASSWORD) | tar -xpz
 fi
 
 
