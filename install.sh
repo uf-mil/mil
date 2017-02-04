@@ -555,8 +555,9 @@ echo "source /opt/ros/$ROS_VERSION/setup.bash" >> $MILRC_FILE
 
 # Source the workspace's configurations for bash
 echo "" >> $MILRC_FILE
-echo "# Sets up the shell environment for the $CATKIN_DIR workspace" >> $MILRC_FILE
-echo "source $CATKIN_DIR/devel/setup.bash" >> $MILRC_FILE
+echo "# Sets up the shell environment for the catkin workspace" >> $MILRC_FILE
+echo "export CATKIN_DIR=$CATKIN_DIR" >> $MILRC_FILE
+echo "source \$CATKIN_DIR/devel/setup.bash" >> $MILRC_FILE
 
 # Source the project configurations for bash
 declare -a ALIASED_REPOSITORIES=("software-common" "Sub8" "Navigator")
@@ -566,7 +567,7 @@ for REPOSITORY in "${ALIASED_REPOSITORIES[@]}"; do
 			echo "" >> $MILRC_FILE
 			echo "# Sets up the shell environment for each installed project" >> $MILRC_FILE
 		fi
-		echo "source $CATKIN_DIR/src/$REPOSITORY/scripts/bash_aliases.sh"  >> $MILRC_FILE
+		echo "source \$CATKIN_DIR/src/$REPOSITORY/scripts/bash_aliases.sh"  >> $MILRC_FILE
 	fi
 done
 
@@ -579,9 +580,9 @@ if !(cat $BASHRC_FILE | grep --quiet "source $MILRC_FILE"); then
 fi
 
 
-#==========================#
-# Finalization an Clean Up #
-#==========================#
+#========================#
+# Build Catkin Workspace #
+#========================#
 
 # Attempt to build the Navigator stack on client machines
 if !(env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
