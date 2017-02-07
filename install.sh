@@ -29,12 +29,11 @@ instfail() {
 }
 
 check_host() {
-
-	# Attempts to ping a host to make sure it is reachable
 	HOST="$1"
 
-	HOST_PING=$(ping -c 2 $HOST 2>&1 | grep "% packet" | cut -d" " -f 6 | tr -d "%")
-	if ! [ -z "${HOST_PING}" ]; then
+	# Attempts to ping the host to make sure it is reachable
+	HOST_PING=$(ping -c 2 $HOST 2>&1 | grep "% packet" | awk -F'[%]' '{print $1}' | awk -F'[ ]' '{print $NF}')
+	if [ ! -z "${HOST_PING}" ]; then
 
 		# Uses packet loss percentage to determine if the connection is strong
 		if [ $HOST_PING -lt 25 ]; then
