@@ -22,6 +22,12 @@
 <td></td>
 </tr>
 
+<tr>
+<td>Finalized Sub8 OS</td>
+<td>Anthony</td>
+<td>Stalled (#199)</td>
+</tr>
+
 </table>
 
 
