@@ -1,3 +1,7 @@
+# Getting Involved
+
+Information about getting involved in MIL is available on the [software-common wiki](https://github.com/uf-mil/software-common/wiki). The home page will introduce you to the various projects that are under development in the lab and provide a link to the getting started guide.
+
 # Setting Up the Development Environment
 
 If you have decided to develop for one of our projects, then you will need to set up a development environment that is compatible with it. All of the projects have many dependencies, but there is a convenient install script in this repository to fetch and install them. The script covers all MIL projects that are currently on Ubuntu 16.04 and ROS Kinetic and will allow you to select which one(s) you would like to set up. If the default install location of the catkin workspace at `~/mil_ws` is not ideal, then a different path can be selected when the script prompts for one.

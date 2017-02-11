@@ -29,12 +29,11 @@ instfail() {
 }
 
 check_host() {
-
-	# Attempts to ping a host to make sure it is reachable
 	HOST="$1"
 
-	HOST_PING=$(ping -c 2 $HOST 2>&1 | grep "% packet" | cut -d" " -f 6 | tr -d "%")
-	if ! [ -z "${HOST_PING}" ]; then
+	# Attempts to ping the host to make sure it is reachable
+	HOST_PING=$(ping -c 2 $HOST 2>&1 | grep "% packet" | awk -F'[%]' '{print $1}' | awk -F'[ ]' '{print $NF}')
+	if [ ! -z "${HOST_PING}" ]; then
 
 		# Uses packet loss percentage to determine if the connection is strong
 		if [ $HOST_PING -lt 25 ]; then
@@ -42,41 +41,6 @@ check_host() {
 			# Will return true if ping was successful and packet loss was below 25%
 			echo "true"
 		fi
-	fi
-}
-
-ros_git_get() {
-	# Usage example: ros_git_get https://github.com/uf-mil/software-common.git
-	NEEDS_INSTALL=true;
-	INSTALL_URL=$1;
-	builtin cd $CATKIN_DIR/src
-
-	# Check if it already exists
-	for FOLDER in $CATKIN_DIR/src/*; do
-		if ! [ -d $FOLDER ]; then
-			continue;
-		fi
-
-		builtin cd $FOLDER
-		if ! [ -d .git ]; then
-			continue;
-		fi
-		LOCAL_BRANCH=`git name-rev --name-only HEAD`
-		TRACKING_BRANCH=`git config branch.$LOCAL_BRANCH.merge`
-		TRACKING_REMOTE=`git config branch.$LOCAL_BRANCH.remote`
-
-		# Automatically checks if HTTPS is available
-		REMOTE_URL=`git config remote.$TRACKING_REMOTE.url`
-		if python -c "import re; _, have_url = re.split('https://github.com|git@github.com:', '$REMOTE_URL');_, want_url = re.split('https://github.com|git@github.com:', '$INSTALL_URL'); exit(have_url != want_url)"; then
-			instlog "Already have package at url $INSTALL_URL"
-			NEEDS_INSTALL=false;
-			break;
-		fi
-		builtin cd $CATKIN_DIR/src
-	done
-	if $NEEDS_INSTALL; then
-		instlog "Installing $INSTALL_URL in $CATKIN_DIR/src"
-		git clone -q $INSTALL_URL --depth=100 --recursive
 	fi
 }
 
@@ -107,7 +71,9 @@ if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
 	elif (env | grep INSTALL_NAV | grep --quiet -oe '[^=]*$'); then
 		INSTALL_NAV=true
 	fi
-	PASSWORD="`env | grep PASSWORD | grep --quiet -oe '[^=]*$'`"
+	BVSDK_PASSWORD="`env | grep BVSDK_PASSWORD | grep -oe '[^=]*$'`"
+	ENABLE_USB_CAM=false
+	INSTALL_CUDA=true
 
 else
 	# Prompt the user to enter a catkin workspace to use
@@ -187,7 +153,8 @@ else
 		if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
 			echo "The SDK is encrypted with a password. You need to obtain this password from one"
 			echo "of the senior members of MIL."
-			echo -n "Encryption password: " && read -s PASSWORD
+			echo -n "Encryption password: " && read BVSDK_PASSWORD
+			echo ""
 			echo ""
 		fi
 	fi
@@ -195,7 +162,7 @@ else
 	# Warn users about the security risks associated with enabling USB cameras before doing it
 	if [ ! -f /etc/udev/rules.d/40-pgr.rules ]; then
 		echo "MIL projects use Point Grey machine vision cameras for perception. A user only"
-		echo "needs to enable access to USB cameras if they intend to connect a one directly"
+		echo "needs to enable access to USB cameras if they intend to connect one directly"
 		echo "to their machine, which is unlikely. In order for a user to access a USB"
 		echo "camera, a udev rule needs to be added that gives a group access to the hardware"
 		echo "device on the camera. Long story short, this creates a fairly significant"
@@ -208,9 +175,28 @@ else
 			ENABLE_USB_CAM=false
 		fi
 	fi
+
+	# Give users the option to install the CUDA toolkit if an Nvidia card is detected
+	if !($INSTALL_NAV) && (lspci | grep --quiet "VGA compatible controller: NVIDIA"); then
+		echo "An Nvidia graphics card was detected on this machine. Some of the perception"
+		echo "packages may run faster with or require CUDA parallel processing on the GPU."
+		echo "CUDA is not required, but the script can install it automatically. Ubuntu 16.04"
+		echo "supports the 7.5 version natively; however, the 8.0 version can be installed"
+		echo "through a repository maintained by Nvidia and runs much smoother. Since the 8.0"
+		echo "version seems fairly stable, this is the version that the script will install."
+		echo "The 7.5 version can still be installed manually with the following command:"
+		echo "sudo apt-get install nvidia-cuda-toolkit"
+		echo "Do you want to install CUDA Toolkit 8.0? [y/N] "
+		echo ""
+		if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
+			INSTALL_CUDA=true
+		else
+			INSTALL_CUDA=false
+		fi
+	fi
 fi
 
-if ($INSTALL_SUB); then
+if !($INSTALL_NAV); then
 	REQUIRED_OS_CODENAME="xenial"
 	REQUIRED_OS_VERSION="16.04"
 	ROS_VERSION="kinetic"
@@ -328,6 +314,13 @@ sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C
 instlog "Adding the Git-LFS packagecloud repository to software sources"
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
 
+# Add software repository for Nvidia to software sources
+if ($INSTALL_CUDA); then
+	instlog "Adding Nvidia PPA to software sources"
+	sudo sh -c 'echo "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64 /" >> /etc/apt/sources.list.d/cuda.list'
+	wget -q -O - http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub | sudo apt-key add -
+fi
+
 # Install ROS and a few ROS dependencies
 instlog "Installing ROS $(tr '[:lower:]' '[:upper:]' <<< ${ROS_VERSION:0:1})${ROS_VERSION:1}"
 sudo apt-get update -qq
@@ -375,7 +368,7 @@ source $CATKIN_DIR/devel/setup.bash
 if !(ls $CATKIN_DIR/src | grep --quiet "software-common"); then
 	instlog "Downloading the software-common repository"
 	cd $CATKIN_DIR/src
-	git clone -q https://github.com/uf-mil/software-common.git
+	git clone --recursive -q https://github.com/uf-mil/software-common.git
 	cd $CATKIN_DIR/src/software-common
 	git remote rename origin upstream
 	if [ ! -z "$SWC_USER_FORK" ]; then
@@ -387,7 +380,7 @@ fi
 if ($INSTALL_SUB) && !(ls $CATKIN_DIR/src | grep --quiet "Sub8"); then
 	instlog "Downloading the Sub8 repository"
 	cd $CATKIN_DIR/src
-	git clone -q https://github.com/uf-mil/Sub8.git
+	git clone --recursive -q https://github.com/uf-mil/Sub8.git
 	cd $CATKIN_DIR/src/Sub8
 	git remote rename origin upstream
 	if [ ! -z "$SUB_USER_FORK" ]; then
@@ -399,14 +392,14 @@ fi
 if ($INSTALL_NAV) && !(ls $CATKIN_DIR/src | grep --quiet "Navigator"); then
 	instlog "Downloading the Sub8 repository"
 	cd $CATKIN_DIR/src
-	git clone -q https://github.com/uf-mil/Sub8.git
+	git clone --recursive -q https://github.com/uf-mil/Sub8.git
 	cd $CATKIN_DIR/src/Sub8
 	instlog "Rolling back the Sub8 repository; do not pull the latest version!"
 	git reset --hard 0089e68b9f48b96af9c3821f356e3a487841e87e
 	git remote remove origin
 	instlog "Downloading the Navigator repository"
 	cd $CATKIN_DIR/src
-	git clone -q https://github.com/uf-mil/Navigator.git
+	git clone --recursive -q https://github.com/uf-mil/Navigator.git
 	cd $CATKIN_DIR/src/Navigator
 	git remote rename origin upstream
 	if [ ! -z "$NAV_USER_FORK" ]; then
@@ -430,14 +423,17 @@ fi
 
 instlog "Installing common dependencies from the Ubuntu repositories"
 
-# Hardware drivers
-sudo apt-get install -qq ros-kinetic-pointgrey-camera-driver
+# Cuda Toolkit 8.0
+if ($INSTALL_CUDA); then
+	sudo apt-get install -qq cuda
+fi
 
 # Scientific and technical computing
 sudo apt-get install -qq python-scipy
 
 # System tools
 sudo apt-get install -qq tmux
+sudo apt-get install -qq htop
 sudo apt-get install -qq sshfs
 
 # Git-LFS for models and other large files
@@ -448,30 +444,32 @@ git lfs install --skip-smudge
 # Debugging utility
 sudo apt-get install -qq gdb
 
+# Machine Learning
+sudo apt-get install -qq python-sklearn
+
+# Visualization
+sudo apt-get install -qq mayavi2
+
+instlog "Installing Sub8 ROS dependencies"
+
+# Hardware drivers
+sudo apt-get install -qq ros-$ROS_VERSION-pointgrey-camera-driver
+
 instlog "Installing common dependencies from Python PIP"
 
 # Communication tool for the hydrophone board
 sudo pip install -q -U crc16
 
-# Machine Learning
-sudo pip install -q -U scikit-learn > /dev/null 2>&1
-
 # Visualization
-sudo pip install -q -U mayavi > /dev/null 2>&1
 sudo pip install -q -U tqdm
 
 # The BlueView SDK for the Teledyne imaging sonar
-if [ ! -z $PASSWORD ]; then
+if [ ! -z $BVSDK_PASSWORD ]; then
 	instlog "Decrypting and installing the BlueView SDK"
 	cd $CATKIN_DIR/src
 	curl -s https://raw.githubusercontent.com/uf-mil/installer/master/bvtsdk.tar.gz.enc | \
-	openssl enc -aes-256-cbc -d -pass file:<(echo -n $PASSWORD) | tar -xpz
+	openssl enc -aes-256-cbc -d -pass file:<(echo -n $BVSDK_PASSWORD) | tar -xpz
 fi
-
-instlog "Cloning common Git repositories that need to be built"
-ros_git_get https://github.com/uf-mil/rawgps-tools.git
-ros_git_get https://github.com/txros/txros.git
-ros_git_get https://github.com/uf-mil/ros_alarms
 
 
 #==============================#
@@ -508,7 +506,7 @@ fi
 #===================================#
 
 if ($INSTALL_NAV); then
-	instlog "Installing Sub8 dependencies from the Ubuntu repositories"
+	instlog "Installing Navigator dependencies from the Ubuntu repositories"
 
 	# Terry Guo's ARM toolchain
 	sudo mkdir -p /etc/apt/preferences.d
@@ -519,9 +517,6 @@ if ($INSTALL_NAV); then
 	sudo apt-get update -qq
 	sudo apt-get install -qq gcc-arm-none-eabi
 
-	# Visualization
-	sudo apt-get install -qq python-progressbar
-
 	instlog "Installing Navigator ROS dependencies"
 
 	# Serial communications
@@ -531,15 +526,9 @@ if ($INSTALL_NAV); then
 	# Thruster driver
 	sudo apt-get install -qq ros-$ROS_VERSION-roboteq-driver
 
-	instlog "Cloning Navigator Git repositories that need to be built"
-
-	# Software to interface with MIL hardware
-	ros_git_get https://github.com/uf-mil-archive/hardware-common
-
-	# Required steps to build and install lqRRT
-	ros_git_get https://github.com/jnez71/lqRRT.git
-	sudo python $CATKIN_DIR/src/lqRRT/setup.py build
-	sudo python $CATKIN_DIR/src/lqRRT/setup.py install
+	instlog "Performing setup tasks for lqRRT"
+	sudo python $CATKIN_DIR/src/Navigator/gnc/lqRRT/setup.py build
+	sudo python $CATKIN_DIR/src/Navigator/gnc/lqRRT/setup.py install
 
 	# Pull large project files from Git-LFS
 	instlog "Pulling large files for Navigator"
@@ -565,8 +554,9 @@ echo "source /opt/ros/$ROS_VERSION/setup.bash" >> $MILRC_FILE
 
 # Source the workspace's configurations for bash
 echo "" >> $MILRC_FILE
-echo "# Sets up the shell environment for the $CATKIN_DIR workspace" >> $MILRC_FILE
-echo "source $CATKIN_DIR/devel/setup.bash" >> $MILRC_FILE
+echo "# Sets up the shell environment for the catkin workspace" >> $MILRC_FILE
+echo "export CATKIN_DIR=$CATKIN_DIR" >> $MILRC_FILE
+echo "source \$CATKIN_DIR/devel/setup.bash" >> $MILRC_FILE
 
 # Source the project configurations for bash
 declare -a ALIASED_REPOSITORIES=("software-common" "Sub8" "Navigator")
@@ -576,7 +566,7 @@ for REPOSITORY in "${ALIASED_REPOSITORIES[@]}"; do
 			echo "" >> $MILRC_FILE
 			echo "# Sets up the shell environment for each installed project" >> $MILRC_FILE
 		fi
-		echo "source $CATKIN_DIR/src/$REPOSITORY/scripts/bash_aliases.sh"  >> $MILRC_FILE
+		echo "source \$CATKIN_DIR/src/$REPOSITORY/scripts/bash_aliases.sh"  >> $MILRC_FILE
 	fi
 done
 
@@ -589,9 +579,9 @@ if !(cat $BASHRC_FILE | grep --quiet "source $MILRC_FILE"); then
 fi
 
 
-#==========================#
-# Finalization an Clean Up #
-#==========================#
+#========================#
+# Build Catkin Workspace #
+#========================#
 
 # Attempt to build the Navigator stack on client machines
 if !(env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
