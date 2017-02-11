@@ -16,7 +16,7 @@
 <tr>
 <td>Torpedo Board</td>
 <td>David</td>
-<td></td>
+<td>Delayed to next test day</td>
 </tr>
 
 <tr>
