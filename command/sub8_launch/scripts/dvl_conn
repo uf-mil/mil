@@ -1,2 +1,2 @@
 #!/bin/sh
-exec socat -d -d pty,link=/tmp/dvl,raw,echo=0 tcp:sub-gumstix:349
+exec socat -d -d pty,link=/tmp/dvl,raw,echo=0 tcp:mil-sub-gumstix.ad.mil.ufl.edu:349
