@@ -3,10 +3,8 @@
 
 ## Past
 
+###2.11.2017 -- 9:30-13:30 -- Graham Pool
 <table>
-
-<tr>2.11.2017 -- 9:30-13:30 -- Graham Pool</tr>
-
 <tr>
 <th>Plan</th>
 <th>Who</th>
