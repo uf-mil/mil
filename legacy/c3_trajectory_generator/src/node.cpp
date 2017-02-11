@@ -98,8 +98,6 @@ struct Node {
 
   double linear_tolerance, angular_tolerance;
 
-  void killed_callback() { c3trajectory.reset(); }
-
   bool set_disabled(SetDisabledRequest &request, SetDisabledResponse &response) {
     disabled = request.disabled;
     if (disabled) {
@@ -114,7 +112,15 @@ struct Node {
     disabled(false),
     kill_listener(nh, "kill")
   {
-    kill_listener.addRaiseCb([this](ros_alarms::AlarmProxy) { this->killed_callback(); });
+    // Callback to reset trajectory when (un)killing
+    auto reset_traj = [this](ros_alarms::AlarmProxy a) { this->c3trajectory.reset(); };
+    kill_listener.addRaiseCb(reset_traj);
+
+    // Make sure alarm integration is ok
+    kill_listener.waitForConnection(ros::Duration(2));
+    if(kill_listener.getNumConnections() < 1)
+      throw std::runtime_error("The kill listener isn't connected to the alarm server");
+    kill_listener.start();  // Fuck.
 
     fixed_frame = uf_common::getParam<std::string>(private_nh, "fixed_frame");
     body_frame = uf_common::getParam<std::string>(private_nh, "body_frame");
