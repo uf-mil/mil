@@ -1,6 +1,8 @@
 ## Upcoming
 
 
+## Past
+
 <table>
 
 <tr>2.11.2017 -- 9:30-13:30 -- Graham Pool</tr>
@@ -10,6 +12,7 @@
 <th>Who</th>
 <th>Status</th>
 </tr>
+
 <tr>
 <td>Torpedo Board</td>
 <td>David</td>
@@ -19,7 +22,7 @@
 <tr>
 <td>Start Gate</td>
 <td>Daniel++</td>
-<td></td>
+<td>Okay</td>
 </tr>
 
 <tr>
@@ -29,6 +32,11 @@
 </tr>
 
 </table>
+- Hostnames work?
+- socat hostnames
+- Problems with alarm package with c3 (needed to actually start the callback) 
+- Unmerged code --> problems
+- Wires not connected
+- Detected start gate
+- Could see torpedo board and start gate with imaging sonar
 
-
-## Past
