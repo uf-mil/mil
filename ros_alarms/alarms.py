@@ -83,6 +83,7 @@ class AlarmBroadcaster(object):
 class AlarmListener(object):
     def __init__(self, name, callback_funct=None, nowarn=False, **kwargs):
         self._alarm_name = name
+        self._last_alarm = None
         _check_for_valid_name(self._alarm_name, nowarn)
         _check_for_alarm(self._alarm_name, nowarn)
 
@@ -131,10 +132,12 @@ class AlarmListener(object):
 
     def _severity_cb_check(self, severity):
         if isinstance(severity, tuple) or isinstance(severity, list):
-            return severity[0] <= self._last_alarm.severity <= severity[1]
+            if self._last_alarm is not None:
+                return severity[0] <= self._last_alarm.severity <= severity[1]
 
         # Not a tuple, just an int. The severities should match
-        return self._last_alarm.severity == severity
+        if self._last_alarm is not None:
+            return self._last_alarm.severity == severity
 
     def add_callback(self, funct, call_when_raised=True, call_when_cleared=True,
                      severity_required=(0, 5)):
