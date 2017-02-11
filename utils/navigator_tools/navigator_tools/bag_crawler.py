@@ -1,12 +1,13 @@
+
 #!/usr/bin/python
 """
-This file wis written by the  team at UF MIL for the 2016 robosub competition.
+This file wis written by the team at UF MIL for the 2016 robosub competition.
 
 github.com/uf-mil
 """
 import rosbag
 from cv_bridge import CvBridge
-import progressbar
+import tqdm
 
 
 class BagCrawler(object):
@@ -23,7 +24,7 @@ class BagCrawler(object):
     def crawl(self, topic=None, is_image=False, max_msgs=float('inf')):
         num_seen = 0
         num_msgs = 0
-        bar = progressbar.ProgressBar(max_value=self.bag.get_message_count())
+        bar = tqdm.tqdm(total=self.bag.get_message_count())
         if is_image:
             topic = self.image_topics[0]
         for msg_topic, msg, t in self.bag.read_messages():
@@ -35,6 +36,7 @@ class BagCrawler(object):
                 break
             num_seen += 1
             yield msg
+        bar.close()
 
     @property
     def image_topics(self, cam="right"):
