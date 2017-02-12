@@ -31,7 +31,7 @@ class GazeboInterface(object):
 
         self.reset_srv = rospy.Service('gazebo/reset_gazebo', ResetGazebo, self.reset)
         self.state_pub = rospy.Publisher('odom', Odometry, queue_size=1)
-        self.map_state_pub = rospy.Publisher('map_odom', Odometry, queue_size=1)
+        self.world_state_pub = rospy.Publisher('world_odom', Odometry, queue_size=1)
 
         self.odom_freq = 0.03
         rospy.Timer(rospy.Duration(self.odom_freq), self.publish_odom)
@@ -94,10 +94,10 @@ class GazeboInterface(object):
                 )
             )
 
-            header = sub8_utils.make_header(frame='/map')
+            header = sub8_utils.make_header(frame='/world')
             twist = msg.twist[target_index]
             pose = msg.pose[target_index]
-            self.map_state_pub.publish(
+            self.world_state_pub.publish(
                 header=header,
                 child_frame_id='/base_link',
                 pose=PoseWithCovariance(

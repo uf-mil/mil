@@ -56,8 +56,8 @@ def run_mission(srv, sub, nh):
 @txros.util.cancellableInlineCallbacks
 def main():
     nh = yield txros.NodeHandle.from_argv('test')
-    map_position_actual = yield nh.subscribe('/map_odom', Odometry)
-    yield run_mission(None, map_position_actual, nh)
+    world_position_actual = yield nh.subscribe('/world_odom', Odometry)
+    yield run_mission(None, world_position_actual, nh)
     print "Waiting for service call."
 
 if __name__ == '__main__':
