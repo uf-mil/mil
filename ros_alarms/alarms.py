@@ -9,6 +9,18 @@ from std_msgs.msg import Header
 import json
 
 
+def parse_json_str(json_str):
+    parameters = ''
+    try:
+        parameters = '' if json_str is '' else json.loads(json_str)
+    except ValueError:
+        # User passed in a non JSON string
+        parameters = {}
+        parameters['data'] = json_str
+    finally:
+        return parameters
+
+
 def _check_for_alarm(alarm_name, nowarn=False):
     if not nowarn and rospy.has_param("/known_alarms") and \
        alarm_name not in rospy.get_param("/known_alarms"):
@@ -22,6 +34,7 @@ def _check_for_valid_name(alarm_name, nowarn=False):
 
     assert alarm_name.isalnum() or '_' in alarm_name or '-' in alarm_name, \
         "Alarm name '{}' is not valid!".format(alarm_name)
+
 
 class AlarmBroadcaster(object):
     def __init__(self, name, node_name=None, nowarn=False):
@@ -111,8 +124,9 @@ class AlarmListener(object):
             rospy.logerr("No alarm sever found!")
             return None
 
+        self._last_alarm = resp.alarm
         params = resp.alarm.parameters
-        resp.alarm.parameters = params if params == '' else json.loads(params)
+        resp.alarm.parameters = parse_json_str(params)
         return resp.alarm 
 
     def _severity_cb_check(self, severity):
@@ -136,7 +150,7 @@ class AlarmListener(object):
             if alarm.raised and self._severity_cb_check(severity_required):
                 # Try to run the callback, absorbing any errors
                 try:
-                    alarm.parameters = json.loads(alarm.parameters)
+                    alarm.parameters = parse_json_str(alarm.parameters)
                     cb(alarm)
                 except Exception as e:
                     rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self._alarm_name))
@@ -144,10 +158,10 @@ class AlarmListener(object):
 
         if call_when_cleared:
             self._cleared_cbs.append(((0, 5), funct))  # Clear callbacks always run
-            if alarm.raised:
+            if not alarm.raised:
                 # Try to run the callback, absorbing any errors
                 try:
-                    alarm.parameters = json.loads(alarm.parameters)
+                    alarm.parameters = parse_json_str(alarm.parameters)
                     funct(alarm)
                 except Exception as e:
                     rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self._alarm_name))
@@ -174,12 +188,7 @@ class AlarmListener(object):
 
             # Try to run the callback, absorbing any errors
             try:
-                try:
-                    alarm.parameters = json.loads(alarm.parameters)
-                except:
-                    # Sometimes the json get's funky
-                    pass
-
+                alarm.parameters = parse_json_str(alarm.parameters)
                 cb(alarm)
             except Exception as e:
                 rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self._alarm_name))

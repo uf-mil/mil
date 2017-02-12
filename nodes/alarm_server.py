@@ -6,21 +6,10 @@ from std_msgs.msg import Header
 from ros_alarms.msg import Alarms
 from ros_alarms.msg import Alarm as AlarmMsg
 from ros_alarms.srv import AlarmGet, AlarmGetResponse, AlarmSet, AlarmSetResponse
+from ros_alarms import parse_json_str
 
 import json
 import inspect
-
-
-def parse_json_str(json_str):
-    parameters = ''
-    try:
-        parameters = '' if json_str is '' else json.loads(json_str)
-    except ValueError:
-        # User passed in a non JSON string
-        parameters = {}
-        parameters['data'] = json_str
-    finally:
-        return parameters
 
 
 class Alarm(object):
