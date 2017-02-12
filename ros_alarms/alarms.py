@@ -121,23 +121,24 @@ class AlarmListener(object):
         '''
         try:
             resp = self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
-        except rospy.service.ServiceExection:
+        except rospy.service.ServiceException:
             rospy.logerr("No alarm sever found!")
             return None
 
+        resp.alarm.parameters = parse_json_str(resp.alarm.parameters)
         self._last_alarm = resp.alarm
-        params = resp.alarm.parameters
-        resp.alarm.parameters = parse_json_str(params)
         return resp.alarm 
 
     def _severity_cb_check(self, severity):
-        if isinstance(severity, tuple) or isinstance(severity, list):
-            if self._last_alarm is not None:
-                return severity[0] <= self._last_alarm.severity <= severity[1]
+        # In case _last alarm hasnt been declared yet
+        if _last_alarm is not None:
+            return False
 
-        # Not a tuple, just an int. The severities should match
-        if self._last_alarm is not None:
-            return self._last_alarm.severity == severity
+        if isinstance(severity, tuple) or isinstance(severity, list):
+            return severity[0] <= self._last_alarm.severity <= severity[1]
+
+        # Not a tuple or list, just an int. The severities should match
+        return self._last_alarm.severity == severity
 
     def add_callback(self, funct, call_when_raised=True, call_when_cleared=True,
                      severity_required=(0, 5)):
