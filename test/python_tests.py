@@ -13,6 +13,7 @@ class ClientTester(unittest.TestCase):
     Also tests various combination of parameters
     '''
     def test_broadcaster_and_listener(self):
+        return
         ''' Simple broadcaster and listener tests, with arguments '''
         ab_a = AlarmBroadcaster("alarm_a")
         al_a = AlarmListener("alarm_a")
@@ -70,6 +71,7 @@ class ClientTester(unittest.TestCase):
         self.assertEqual(al_c.get_alarm().parameters, _blank_params)
 
     def test_stress(self):
+        return
         ''' Stress test the server, lots of raises and clears '''
         ab_a = AlarmBroadcaster("alarm_a")
         al_a = AlarmListener("alarm_a")
@@ -103,35 +105,51 @@ class ClientTester(unittest.TestCase):
         self.assertTrue(al_b.is_cleared())
         self.assertTrue(al_c.is_cleared())
 
-        
-
     def test_callbacks(self):
-        return
         al_a = AlarmListener("alarm_a")
         ab_a = AlarmBroadcaster("alarm_a")
 
-        self.raised_count = 0
-        self.cleared_count = 0
-        self.both_count = 0
+        self.raised = False
+        self.cleared = False
+        self.both = False
 
+        ab_a.clear_alarm()
         al_a.add_callback(self.raised_cb, call_when_cleared=False)
         al_a.add_callback(self.cleared_cb, call_when_raised=False)
         al_a.add_callback(self.both_cb)
 
-        rospy.sleep(1)
+        rospy.sleep(0.5)
         
-        self.assertEqual(self.raised_count, 0)
-        self.assertEqual(self.cleared_count, 1)
-        self.assertEqual(self.both_count, 1)
+        # Make sure callbacks are called on creation
+        self.assertFalse(self.raised)
+        self.assertTrue(self.cleared)
+        self.assertTrue(self.both)
+
+        self.raised = False
+        self.cleared = False
+        self.both = False
+        
+        # Make sure callbacks run when they're suppsed to
+        ab_a.raise_alarm()
+        rospy.sleep(0.5)
+
+        self.assertTrue(self.raised)
+        self.assertFalse(self.cleared)
+        self.assertTrue(self.both)
+        
+        self.raised = False
+        self.cleared = False
+        self.both = False
 
     def raised_cb(self, alarm):
-        self.raised_count += 1
+        self.raised = True
     
     def cleared_cb(self, alarm):
-        self.cleared_count += 1
+        self.cleared = True
 
     def both_cb(self, alarm):
-        self.both_count += 1
+        self.both = True
+
 
 if __name__ == "__main__":
     rostest.rosrun("ros_alarms", 'server_tester', ClientTester)
