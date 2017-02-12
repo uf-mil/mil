@@ -14,15 +14,15 @@ source $CATKIN_DIR/src/software-common/scripts/ros_connect.sh
 alias swc="cd $CATKIN_DIR/src/software-common"
 
 # Bash sourcing
-alias srcbrc='source ~/.bashrc'
+alias srcbrc="source ~/.bashrc"
 
 # Catkin workspace management
-alias cm='catkin_make -C $CATKIN_DIR'
+alias cm="catkin_make -C $CATKIN_DIR -j8"
 
 # Alarms
-alias araise='rosrun ros_alarms raise'
-alias aclear='rosrun ros_alarms clear'
-alias areport='rosrun ros_alarms report'
+alias araise="rosrun ros_alarms raise"
+alias aclear="rosrun ros_alarms clear"
+alias areport="rosrun ros_alarms report"
 
 # Simulation
 alias killgazebo="killall -9 gazebo && killall -9 gzserver && killall -9 gzclient"
