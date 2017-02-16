@@ -7,20 +7,20 @@
 # these will likely increase productivity, so it is recommended to do so.
 
 # Directory navigation
-alias nav='cd $CATKIN_DIR/src/Navigator'
+alias nav="cd $CATKIN_DIR/src/Navigator"
 
 # Networking
 alias rnav="ros_connect -n ${HOSTNAMES[1]}"
 alias sshnav="ssh navigator@${HOSTNAMES[1]} -Y"
 
 # Missions
-alias navm='rosrun navigator_missions run_mission'
-alias navc='rosrun navigator_missions move_command'
+alias navm="rosrun navigator_missions run_mission"
+alias navc="rosrun navigator_missions move_command"
 
 # Alarms
-alias naraise='rosrun navigator_alarm raise'
-alias naclear='rosrun navigator_alarm clear'
-alias navst='rosrun navigator_alarm raise station_hold'
+alias naraise="rosrun navigator_alarm raise"
+alias naclear="rosrun navigator_alarm clear"
+alias navst="rosrun navigator_alarm raise station_hold"
 
 # Rosbag Templates
 export NAV_CORE_TOPICS="/odom /absodom /clock"
@@ -32,8 +32,8 @@ export NAV_VELODYNE_TOPIC="/velodyne_points"
 export NAV_SICK_TOPIC="/scan"
 export NAV_STEREO_TOPICS="$NAV_STEREO_LEFT_TOPICS $NAV_STEREO_RIGHT_TOPICS"
 export NAV_LQRRT_TOPICS="/ogrid_master /unclassified_markers /lqrrt/effor /lqrrt/focus /lqrrt/goal /lqrrt/impact /lqrrt/path /lqrrt/ref /lqrrt/tree /move_to/feedback /move_to/goal /move_to/result"
-alias nav-bag-custom="mkdir -p ~/bags/"`date +%Y-%m-%d`" && cd ~/bags/"`date +%Y-%m-%d`" && rosbag record $NAV_CORE_TOPICS "
-alias nav-bag-stereo="bag-custom $NAV_STEREO_TOPICS"
+alias nav-bag-custom='mkdir -p ~/bags/"`date +%Y-%m-%d`" && cd ~/bags/"`date +%Y-%m-%d`" && rosbag record $NAV_CORE_TOPICS '
+alias nav-bag-stereo='bag-custom $NAV_STEREO_TOPICS'
 alias nav-bag-front='mkdir -p ~/bags/"`date +%Y-%m-%d`" && cd ~/bags/"`date +%Y-%m-%d`" && rosbag record /stereo/right/camera_info /stereo/right/image_raw /odom /absodom /clock'
 alias nav-bag-right='mkdir -p ~/bags/"`date +%Y-%m-%d`" && cd ~/bags/"`date +%Y-%m-%d`" && rosbag record /right/right/camera_info /right/right/image_raw /odom /absodom /clock'
 alias nav-bag-down='mkdir -p ~/bags/"`date +%Y-%m-%d`" && cd ~/bags/"`date +%Y-%m-%d`" && rosbag record /down/left/camera_info /down/left/image_raw /odom /absodom /clock'
