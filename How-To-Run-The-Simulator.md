@@ -1,8 +1,8 @@
 # **How To Run The Simulator**
 
-Open a new terminal and run:
-
-    roslaunch navigator_launch simulation.launch
+- Pull the model files with `git lfs pull`
+- Run `roslaunch navigator_launch simulation.launch`
+- If you are running missions run`aclear all` then run` rosrun navigator_missions <name_of_mission>`
 
 This file will start simulation as well as the gnc.launch file
 
