@@ -4,5 +4,6 @@
     * [[ROS Conventions]]
     * [[Other Conventions]]
 * Tribal Knowledge
-    * [[Glossary]]
+    * [[ROS]]
     * [[Unsupported OSes]]
+    * [[Glossary]]
