@@ -1,6 +1,6 @@
 This policy was conceived of and written by Jacob Panikulam and Patrick Emami. You know where to find us if you want to start a fight.
 
-# Adding Code
+## Adding Code
 We follow the [fork-and-pull](https://guides.github.com/activities/contributing-to-open-source) model of repository code management.
 
 Before submitting changes, read the rest of this page. Any code that is pull-requested should *absolutely never* break catkin_make for master. Test locally before pull-requesting. Incomplete code should be pull-requested to a feature branch (It's okay if this doesn't pass unit-tests, but it does have to make).
