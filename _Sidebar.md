@@ -1,7 +1,7 @@
 * [[Home]]
     * [[Getting Started]]
     * [[Manifesto]]
-* Code Policy
+* [[Code Policy]]
     * [[ROS Conventions]]
     * [[Other Conventions]]
 * Networking
