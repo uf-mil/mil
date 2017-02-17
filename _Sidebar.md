@@ -1,12 +1,8 @@
 * [[Home]]
     * [[Sub Testing Plans]]
     * [[Getting Started]]
-    * [[Manifesto]]
     * [[Reading List]]
     * [[Editing the Wiki]]
-* [[Code Policy]]
-    * [[ROS Conventions]]
-    * [[Other Conventions]]
 * Using the Sub
     * [[SSH into the sub]]
     * [[Operator Guide]]
@@ -17,7 +13,6 @@
         * [[Visual SLAM]]
         * [[Perception Stack]]
     * [[Mission Scheduler]]
-    * [[Open Questions]]
 * Implementation
     * [[Gazebo Job Runner]]
     * [[Trajectory Generator]]
@@ -25,13 +20,9 @@
     * [[Monte Carlo Engine]]
     * [[Cameras]]
 * Tribal Knowledge
-    * [[ROS things]]
     * [[Continuous Integration]]
     * [[Git]]
-    * [[Glossary]]
     * [[C++ Spells]]
-    * [[Aws]]
-    * [[Unsupported OSes]]
 * Software
    * [[Onboard Utilities]]
 * Mechanical
