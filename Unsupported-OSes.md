@@ -1,6 +1,7 @@
-This writeup is for those of you who wish to work with ROS on an unsupported OS (I'm looking at you, OS X). These are just a few random notes for dealing with issues that I have come across. 
+**WARNING: Running MIL software on anything other than the OS it was developed for is unsupported.**
 
-__WARNING: RUNNING MIL SOFTWARE ON ANYTHING OTHER THAN OS IT WAS DEVELOPED FOR IS COMPLETELY UNSUPPORTED__
+
+This writeup is for those of you who wish to work with ROS on an unsupported OS (I'm looking at you, OS X). These are just a few random notes for dealing with issues that I have come across. 
 
 
 __Mac OS X:__
