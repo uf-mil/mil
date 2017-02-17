@@ -1,3 +1,5 @@
+**DEPRECATED:** This page contains outdated information. It is based on the simulator for SubjuGator before the migration to Ubuntu 16.04 and ROS Kinetic. We have opted to use our in house machines over AWS. They have more processing power and we don't have to pay to use them.
+
 Setting up AWS for gazebo
 =========================
 
