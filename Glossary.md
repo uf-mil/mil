@@ -2,7 +2,7 @@ Useful terms, acronyms and initialisms. Many useful to robotics, some particular
 
 # Abbreviations
 
-**MIL** - Machine Intelligence Lab, MAE-C 126, UF
+**MIL** - Machine Intelligence Lab, MAEC 126, UF
 
 **GNC** - [Guidance, Navigation and Controls](https://en.wikipedia.org/wiki/Guidance,_navigation_and_control)
 
