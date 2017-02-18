@@ -577,8 +577,9 @@ if ($INSTALL_NAV); then
 	sudo apt-get install -qq ros-$ROS_VERSION-ompl
 
 	instlog "Performing setup tasks for lqRRT"
-	sudo python $CATKIN_DIR/src/Navigator/gnc/lqRRT/setup.py build
-	sudo python $CATKIN_DIR/src/Navigator/gnc/lqRRT/setup.py install
+	cd $CATKIN_DIR/src/Navigator/gnc/lqRRT
+	sudo python setup.py build
+	sudo python setup.py install
 
 	# Pull large project files from Git-LFS
 	instlog "Pulling large files for Navigator"
