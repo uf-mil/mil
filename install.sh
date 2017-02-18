@@ -241,7 +241,7 @@ fi
 
 # Make sure script dependencies are installed quietly on bare bones installations
 sudo apt-get update -qq
-sudo apt-get install -qq lsb-release python-pip git build-essential > /dev/null 2>&1
+sudo apt-get install -qq lsb-release aptitude python-pip git build-essential > /dev/null 2>&1
 
 # Ensure that the correct OS is installed
 DETECTED_OS_CODENAME="`lsb_release -sc`"
@@ -306,7 +306,7 @@ fi
 #===================================================#
 
 # Add software repository for ROS to software sources
-instlog "Adding ROS PPA to software sources"
+instlog "Adding the ROS PPA to software sources"
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros.list'
 sudo sh -c 'echo "deb-src http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" >> /etc/apt/sources.list.d/ros.list'
 sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
@@ -315,9 +315,17 @@ sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C
 instlog "Adding the Git-LFS packagecloud repository to software sources"
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
 
-# Add software repository for Nvidia to software sources
+# Add software repository for Gazebo to software sources if ROS Indigo is being installed
+if [ "$ROS_VERSION" = "indigo" ]; then
+	instlog "Adding the Gazebo PPA to software sources"
+	sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/gazebo.list'
+	sudo sh -c 'echo "deb-src http://packages.osrfoundation.org/gazebo/ubuntu $(lsb_release -sc) main" >> /etc/apt/sources.list.d/gazebo.list'
+	wget -q http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
+fi
+
+# Add software repository for Nvidia to software sources if the Cuda option was selected
 if ($INSTALL_CUDA); then
-	instlog "Adding Nvidia PPA to software sources"
+	instlog "Adding the Nvidia PPA to software sources"
 	sudo sh -c 'echo "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64 /" >> /etc/apt/sources.list.d/cuda.list'
 	wget -q -O - http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub | sudo apt-key add -
 fi
@@ -326,6 +334,15 @@ fi
 instlog "Installing ROS $(tr '[:lower:]' '[:upper:]' <<< ${ROS_VERSION:0:1})${ROS_VERSION:1}"
 sudo apt-get update -qq
 sudo apt-get install -qq ros-$ROS_VERSION-desktop-full
+
+# If ROS Indigo is being installed, break the metapackage and install an updated version of Gazebo
+if [ "$ROS_VERSION" = "indigo" ]; then
+	instlog "Installing the latest version of Gazebo"
+	sudo aptitude unmarkauto -q '?reverse-depends(ros-indigo-desktop-full) | ?reverse-recommends(ros-indigo-desktop-full)'
+	sudo apt-get purge -qq ros-indigo-gazebo*
+	sudo apt-get install -qq gazebo7
+	sudo apt-get install -qq ros-indigo-gazebo7-ros-pkgs
+fi
 
 # Get information about ROS versions
 instlog "Initializing ROS"
@@ -390,21 +407,25 @@ if ($INSTALL_SUB) && !(ls $CATKIN_DIR/src | grep --quiet "Sub8"); then
 fi
 
 # Download the Navigator repository if it has not already been downloaded and was selected for installation
-if ($INSTALL_NAV) && !(ls $CATKIN_DIR/src | grep --quiet "Navigator"); then
-	instlog "Downloading the Sub8 repository"
-	cd $CATKIN_DIR/src
-	git clone --recursive -q https://github.com/uf-mil/Sub8.git
-	cd $CATKIN_DIR/src/Sub8
-	instlog "Rolling back the Sub8 repository; do not pull the latest version!"
-	git reset --hard 0089e68b9f48b96af9c3821f356e3a487841e87e
-	git remote remove origin
-	instlog "Downloading the Navigator repository"
-	cd $CATKIN_DIR/src
-	git clone --recursive -q https://github.com/uf-mil/Navigator.git
-	cd $CATKIN_DIR/src/Navigator
-	git remote rename origin upstream
-	if [ ! -z "$NAV_USER_FORK" ]; then
-		git remote add origin "$NAV_USER_FORK"
+if ($INSTALL_NAV); then
+	if !(ls $CATKIN_DIR/src | grep --quiet "Sub8"); then
+		instlog "Downloading the Sub8 repository"
+		cd $CATKIN_DIR/src
+		git clone --recursive -q https://github.com/uf-mil/Sub8.git
+		cd $CATKIN_DIR/src/Sub8
+		instlog "Rolling back the Sub8 repository; do not pull the latest version!"
+		git reset --hard 0089e68b9f48b96af9c3821f356e3a487841e87e
+		git remote remove origin
+	fi
+	if !(ls $CATKIN_DIR/src | grep --quiet "Navigator"); then
+		instlog "Downloading the Navigator repository"
+		cd $CATKIN_DIR/src
+		git clone --recursive -q https://github.com/uf-mil/Navigator.git
+		cd $CATKIN_DIR/src/Navigator
+		git remote rename origin upstream
+		if [ ! -z "$NAV_USER_FORK" ]; then
+			git remote add origin "$NAV_USER_FORK"
+		fi
 	fi
 fi
 
@@ -444,6 +465,9 @@ git lfs install --skip-smudge
 
 # Debugging utility
 sudo apt-get install -qq gdb
+
+# Networking
+sudo apt-get install -qq python-twisted
 
 # Machine Learning
 sudo apt-get install -qq python-sklearn
@@ -518,6 +542,12 @@ if ($INSTALL_NAV); then
 	sudo apt-get update -qq
 	sudo apt-get install -qq gcc-arm-none-eabi
 
+	# Hardware drivers
+	sudo apt-get install -qq ros-$ROS_VERSION-camera1394
+
+	# Visualization
+	sudo apt-get install -qq qt5-default
+
 	instlog "Installing Navigator ROS dependencies"
 
 	# Serial communications
@@ -526,6 +556,9 @@ if ($INSTALL_NAV); then
 
 	# Thruster driver
 	sudo apt-get install -qq ros-$ROS_VERSION-roboteq-driver
+
+	# Trajectory Generation
+	sudo apt-get install -qq ros-$ROS_VERSION-ompl
 
 	instlog "Performing setup tasks for lqRRT"
 	sudo python $CATKIN_DIR/src/Navigator/gnc/lqRRT/setup.py build
