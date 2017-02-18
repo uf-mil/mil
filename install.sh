@@ -153,7 +153,7 @@ else
 		if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
 			echo "The SDK is encrypted with a password. You need to obtain this password from one"
 			echo "of the senior members of MIL."
-			echo -n "Encryption password: " && read BVSDK_PASSWORD
+			echo -n "Encryption password: " && read -s BVSDK_PASSWORD
 			echo ""
 			echo ""
 		fi
@@ -450,7 +450,7 @@ sudo apt-get install -qq python-sklearn
 # Visualization
 sudo apt-get install -qq mayavi2
 
-instlog "Installing Sub8 ROS dependencies"
+instlog "Installing common ROS dependencies"
 
 # Hardware drivers
 sudo apt-get install -qq ros-$ROS_VERSION-pointgrey-camera-driver
