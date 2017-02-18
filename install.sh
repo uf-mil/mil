@@ -330,6 +330,16 @@ if [ "$ROS_VERSION" = "indigo" ]; then
 	wget -q http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 fi
 
+# Add software repository for Terry Guo's ARM toolchain if NaviGator is being installed
+if ($INSTALL_NAV); then
+	instlog "Adding Terry Guo's ARM toolchain PPA to software sources"
+	sudo mkdir -p /etc/apt/preferences.d
+	sudo sh -c "echo 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm"
+	sudo sh -c 'echo "deb http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/gcc-arm-embedded.list'
+	sudo sh -c 'echo "deb-src http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu $(lsb_release -sc) main" >> /etc/apt/sources.list.d/gcc-arm-embedded.list'
+	sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xA3421AFB
+fi
+
 # Add software repository for Nvidia to software sources if the Cuda option was selected
 if ($INSTALL_CUDA); then
 	instlog "Adding the Nvidia PPA to software sources"
@@ -540,13 +550,12 @@ fi
 if ($INSTALL_NAV); then
 	instlog "Installing Navigator dependencies from the Ubuntu repositories"
 
+	# Compiler tools
+	sudo apt-get install -qq autoconf
+	sudo apt-get install -qq automake
+	sudo apt-get install -qq binutils-dev
+
 	# Terry Guo's ARM toolchain
-	sudo mkdir -p /etc/apt/preferences.d
-	sudo sh -c "echo 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm"
-	sudo sh -c 'echo "deb http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu trusty main" > /etc/apt/sources.list.d/gcc-arm-embedded.list'
-	sudo sh -c 'echo "deb-src http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu trusty main" > /etc/apt/sources.list.d/gcc-arm-embedded.list'
-	sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xA3421AFB
-	sudo apt-get update -qq
 	sudo apt-get install -qq gcc-arm-none-eabi
 
 	# Hardware drivers
