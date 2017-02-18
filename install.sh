@@ -58,9 +58,15 @@ MILRC_FILE=~/.milrc
 #======================#
 
 # Install no project by default, the user must select one
+SELECTED=false
 INSTALL_SUB=false
 INSTALL_PRO=false
 INSTALL_NAV=false
+
+# Set sane defaults for other install parameters
+BVSDK_PASSWORD=""
+ENABLE_USB_CAM=false
+INSTALL_CUDA=false
 
 # Use environment variables to determine which project to install on Semaphore
 if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
@@ -97,7 +103,6 @@ else
 	echo ""
 
 	# Prompt the user to select a project to install
-	SELECTED=false
 	while !($SELECTED); do
 		echo "A MIL project must be selected for install"
 		echo "	1. SubjuGator"
@@ -171,8 +176,6 @@ else
 		echo ""
 		if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
 			ENABLE_USB_CAM=true
-		else
-			ENABLE_USB_CAM=false
 		fi
 	fi
 
@@ -190,8 +193,6 @@ else
 		echo ""
 		if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
 			INSTALL_CUDA=true
-		else
-			INSTALL_CUDA=false
 		fi
 	fi
 fi
@@ -464,7 +465,7 @@ sudo pip install -q -U crc16
 sudo pip install -q -U tqdm
 
 # The BlueView SDK for the Teledyne imaging sonar
-if [ ! -z $BVSDK_PASSWORD ]; then
+if [ ! -z "$BVSDK_PASSWORD" ]; then
 	instlog "Decrypting and installing the BlueView SDK"
 	cd $CATKIN_DIR/src
 	curl -s https://raw.githubusercontent.com/uf-mil/installer/master/bvtsdk.tar.gz.enc | \
