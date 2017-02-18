@@ -87,20 +87,22 @@ else
 	echo "The catkin workspace is the directory where all source and build files for the"
 	echo "project are stored. Our default is in brackets below, press enter to use it."
 	echo -n "What catkin workspace should be used? [$CATKIN_DIR]: " && read RESPONSE
-	echo ""
 	if [ "$RESPONSE" != "" ]; then
 		CATKIN_DIR=${RESPONSE/\~//home/$USER}
 	fi
-
-	echo "We use a forking workflow to facilitate code contributions on Github. This means"
-	echo "that each user forks the main repository and has their own copy. In the"
-	echo "repositories that we clone for projects, the main repository will be the"
-	echo "'upstream' remote and your local fork will be the 'origin' remote. You should"
-	echo "specify a fork URI for each repository you plan to push code to; otherwise,"
-	echo "leave the field blank. These can also be set manually using this command:"
-	echo "git remote add <remote_name> <user_fork_url>"
-	echo -n "User fork URI for the software-common repository: " && read SWC_USER_FORK
 	echo ""
+
+	if [ ! -d $CATKIN_DIR/src/software-common ]; then
+		echo "We use a forking workflow to facilitate code contributions on Github. This means"
+		echo "that each user forks the main repository and has their own copy. In the"
+		echo "repositories that we clone for projects, the main repository will be the"
+		echo "'upstream' remote and your local fork will be the 'origin' remote. You should"
+		echo "specify a fork URI for each repository you plan to push code to; otherwise,"
+		echo "leave the field blank. These can also be set manually using this command:"
+		echo "git remote add <remote_name> <user_fork_url>"
+		echo -n "User fork URI for the software-common repository: " && read SWC_USER_FORK
+		echo ""
+	fi
 
 	# Prompt the user to select a project to install
 	while !($SELECTED); do
@@ -112,9 +114,12 @@ else
 		echo ""
 		case "$RESPONSE" in
 			"1")
-				echo -n "User fork URI for the Sub8 repository: " && read SUB_USER_FORK
+				if [ ! -d $CATKIN_DIR/src/Sub8 ]; then
+					echo -n "User fork URI for the Sub8 repository: " && read SUB_USER_FORK
+				fi
 				INSTALL_SUB=true
 				SELECTED=true
+				echo ""
 			;;
 			"2")
 				echo "The PropaGator project has not been worked on since the dark ages of MIL, so it"
@@ -127,12 +132,14 @@ else
 				echo "Indigo, the Sub8 repository at an earlier date,  and all of the old Sub8"
 				echo "dependencies will need to be downloaded and installed."
 				echo -n "Do you still wish to proceed? [y/N] " && read RESPONSE
-				echo ""
 				if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
-					echo -n "User fork URI for the Navigator repository: " && read NAV_USER_FORK
+					if [ ! -d $CATKIN_DIR/src/Navigator ]; then
+						echo -n "User fork URI for the Navigator repository: " && read NAV_USER_FORK
+					fi
 					INSTALL_NAV=true
 					SELECTED=true
 				fi
+				echo ""
 			;;
 			"")
 				echo "You must select one of the projects by entering it's number on the list"
@@ -173,10 +180,10 @@ else
 		echo "device on the camera. Long story short, this creates a fairly significant"
 		echo "security hole on the machine that goes beyond the OS to actual device firmware."
 		echo -n "Do you want to enable access to USB cameras? [y/N] " && read RESPONSE
-		echo ""
 		if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
 			ENABLE_USB_CAM=true
 		fi
+		echo ""
 	fi
 
 	# Give users the option to install the CUDA toolkit if an Nvidia card is detected
@@ -190,10 +197,10 @@ else
 		echo "The 7.5 version can still be installed manually with the following command:"
 		echo "sudo apt-get install nvidia-cuda-toolkit"
 		echo "Do you want to install CUDA Toolkit 8.0? [y/N] "
-		echo ""
 		if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
 			INSTALL_CUDA=true
 		fi
+		echo ""
 	fi
 fi
 
