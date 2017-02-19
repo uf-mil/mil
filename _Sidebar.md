@@ -1,6 +1,7 @@
 * [[Home]]
     * [[Getting Started]]
     * [[Manifesto]]
+    * [[Editing the Wikis]]
 * [[Code Policy]]
     * [[ROS Conventions]]
     * [[Other Conventions]]
