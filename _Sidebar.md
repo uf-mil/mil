@@ -10,5 +10,6 @@
 * Tribal Knowledge
     * [[ROS]]
     * [[Git]]
+    * [[Programming Spells]]
     * [[Unsupported OSes]]
     * [[Glossary]]
