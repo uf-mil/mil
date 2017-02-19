@@ -1,18 +1,11 @@
-* **[[Home]]**
-* **Getting Started**
-    * [[Software Dependencies]]
-* **General Information**
-    * [[Current Testing Plans]]
-    * [[Adding to the Wiki]]
-    * [[Code Policy]]
+* [[Home]]
+* General Information
     * [[Architecture]]
     * [[Helpful Readings]]
-* **Operating Instructions**
-    * [[How To Run The Boat]]
+* Operating Instructions
     * [[How To Run The Simulator]]
-* **Implementation Details**
+* Implementation Details
     * [[Thrust Mapper]]
     * [[State Estimation]]
-    * [[Kill System]]
 
 
