@@ -2,7 +2,6 @@
     * [[Sub Testing Plans]]
     * [[Getting Started]]
     * [[Reading List]]
-    * [[Editing the Wiki]]
 * Using the Sub
     * [[SSH into the sub]]
     * [[Operator Guide]]
@@ -19,10 +18,6 @@
     * [[Thrusters]]
     * [[Monte Carlo Engine]]
     * [[Cameras]]
-* Tribal Knowledge
-    * [[Continuous Integration]]
-    * [[Git]]
-    * [[C++ Spells]]
 * Software
    * [[Onboard Utilities]]
 * Mechanical
