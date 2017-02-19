@@ -107,5 +107,5 @@ If you have any questions about what you should unit tests, talk to Patrick Emam
 * [Clang-format](https://github.com/rosshemsley/SublimeClangFormat) to automatically format your code
     * We use the Google styleguide, because LLVM style breaks nested template declarations
     * We set the maximum line length to 130
-* [Google Styleguide](https://google-styleguide.googlecode.com/svn/trunk/cppguide.html)
-* [Google styleguide linter](https://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py) or find a Sublime plugin/linter that enforces the google styleguide
+* [Google Styleguide](https://google.github.io/styleguide/cppguide.html)
+* [Google styleguide linter](https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py) or find a Sublime plugin/linter that enforces the google styleguide
