@@ -8,5 +8,6 @@
     * [[SSH Keys]]
 * Tribal Knowledge
     * [[ROS]]
+    * [[Git]]
     * [[Unsupported OSes]]
     * [[Glossary]]
