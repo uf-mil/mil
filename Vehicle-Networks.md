@@ -6,7 +6,7 @@ If the network infrastructure is performing it's function properly, users should
 
 # Resolving network problems
 
-In the event that establishing a network connection fails, there are a few things that users can try to fix it. If the network administrator is present, obviously bug them before messing with any configurations. If the vehicle was only recently powered on, be sure to wait a while before jumping to conclusions; it takes a couple minutes to bring up the OS. While you're waiting, double check that all power and network cables are properly connected on the vehicle, switch, and client computer. Unplugged cables are the number one cause of hair loss. Only you can prevent unplugged cables.
+In the event that establishing a network connection fails, there are a few things that users can try to fix it. If the network administrator is present, obviously bug them before messing with any configurations. If the vehicle was only recently powered on, be sure to wait a while before jumping to conclusions; it takes a couple minutes to bring up the OS. While you're waiting, double check that all power and network cables are properly connected on the vehicle, switch, and client computer. Unplugged cables are the number one cause of unplugged cables (and hair loss). Only you can prevent unplugged cables.
 
 If you are unable to get a DHCP lease from the vehicle (i.e. you attempt to connect, but cannot):
 * Try setting up a static connection with ip=192.168.37.254 and netmask=255.255.255.0
