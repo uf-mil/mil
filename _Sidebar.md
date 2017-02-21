@@ -6,6 +6,7 @@
     * [[ROS Conventions]]
     * [[Other Conventions]]
 * Networking
+    * [[Connecting to Vehicles]]
     * [[SSH Keys]]
     * [[Vehicle Networks]]
 * Tribal Knowledge
