@@ -7,6 +7,7 @@
     * [[Other Conventions]]
 * Networking
     * [[SSH Keys]]
+    * [[Vehicle Network Services]]
 * Tribal Knowledge
     * [[ROS]]
     * [[Git]]
