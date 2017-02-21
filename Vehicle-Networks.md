@@ -1,4 +1,4 @@
-The network infrastructure on vehicles is set up to be a self contained system and should rarely need to be changed by anyone other than the network administrator (currently Anthony Olive). In the rare case that something does need to be fixed or updated, this page is here to provide a comprehensive guide for each of the network services that we run.
+The network infrastructure on vehicles is set up to be a self contained system and should rarely need to be changed by anyone other than the network administrator (currently [Anthony Olive](https://github.com/whispercoros)). In the rare case that something does need to be fixed or updated, this page is here to provide a comprehensive guide for each of the network services that we run.
 
 # Accessing the network
 
