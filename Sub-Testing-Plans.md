@@ -30,8 +30,8 @@
 </tr>
 
 </table>
-- Hostnames work?
-- socat hostnames
+- Network infrastructure stable
+- socat hostnames corrected
 - Problems with alarm package with c3 (needed to actually start the callback) 
 - Unmerged code --> problems
 - Wires not connected
