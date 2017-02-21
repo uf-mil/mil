@@ -53,6 +53,7 @@ CATKIN_DIR=~/mil_ws
 BASHRC_FILE=~/.bashrc
 MILRC_FILE=~/.milrc
 
+
 #======================#
 # Script Configuration #
 #======================#
@@ -190,28 +191,23 @@ else
 	if !($INSTALL_NAV) && (lspci | grep --quiet "VGA compatible controller: NVIDIA"); then
 		echo "An Nvidia graphics card was detected on this machine. Some of the perception"
 		echo "packages may run faster with or require CUDA parallel processing on the GPU."
-		echo "CUDA is not required, but the script can install it automatically. Ubuntu 16.04"
-		echo "supports the 7.5 version natively; however, the 8.0 version can be installed"
-		echo "through a repository maintained by Nvidia and runs much smoother. Since the 8.0"
-		echo "version seems fairly stable, this is the version that the script will install."
-		echo "The 7.5 version can still be installed manually with the following command:"
-		echo "sudo apt-get install nvidia-cuda-toolkit"
-		echo "Do you want to install CUDA Toolkit 8.0? [y/N] "
+		echo "CUDA is not required, but the script can install it automatically."
+		echo "	* Ubuntu 16.04 supports the 7.5 version natively; however, the 8.0"
+		echo "	  version can be installed through a repository maintained by Nvidia"
+		echo "	  and runs much smoother. Since the 8.0 version seems stable, this"
+		echo "	  is the version that the script will install on Ubuntu."
+		echo "	  The 7.5 version can still be installed manually with the following"
+		echo "	  command: sudo apt-get install nvidia-cuda-toolkit"
+		echo "	* Debian 8.7 supports the 6.0 version natively. Since it is not"
+		echo "	  officially supported by the Nvidia development team, installing"
+		echo "	  the 7.5 or 8.0 version should be done by the user at their own"
+		echo "	  risk. The 6.0 version is what will be installed on Debian."
+		echo "Do you want to install CUDA Toolkit? [y/N] "
 		if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
 			INSTALL_CUDA=true
 		fi
 		echo ""
 	fi
-fi
-
-if !($INSTALL_NAV); then
-	REQUIRED_OS_CODENAME="xenial"
-	REQUIRED_OS_VERSION="16.04"
-	ROS_VERSION="kinetic"
-else
-	REQUIRED_OS_CODENAME="trusty"
-	REQUIRED_OS_VERSION="14.04"
-	ROS_VERSION="indigo"
 fi
 
 
@@ -250,6 +246,24 @@ fi
 sudo apt-get update -qq
 sudo apt-get install -qq lsb-release aptitude python-pip git build-essential > /dev/null 2>&1
 
+# Set the required OS based on inputs and installed distribution
+if ($INSTALL_NAV); then
+	REQUIRED_OS_ID="Ubuntu"
+	REQUIRED_OS_CODENAME="trusty"
+	REQUIRED_OS_RELEASE="14.04"
+	ROS_VERSION="indigo"
+elif [ "`lsb_release -si`" = "Debian" ]; then
+	REQUIRED_OS_ID="Debian"
+	REQUIRED_OS_CODENAME="jessie"
+	REQUIRED_OS_RELEASE="8.7"
+	ROS_VERSION="kinetic"
+else
+	REQUIRED_OS_ID="Ubuntu"
+	REQUIRED_OS_CODENAME="xenial"
+	REQUIRED_OS_RELEASE="16.04"
+	ROS_VERSION="kinetic"
+fi
+
 # Ensure that the correct OS is installed
 DETECTED_OS_CODENAME="`lsb_release -sc`"
 if [ $DETECTED_OS_CODENAME = $REQUIRED_OS_CODENAME ]; then
@@ -285,7 +299,7 @@ if !($OS_CHECK); then
 
 	# The script will not allow the user to install on an unsupported OS
 	instwarn "Terminating installation due to incorrect OS (detected $DETECTED_OS_CODENAME)"
-	instwarn "MIL projects require Ubuntu $REQUIRED_OS_VERSION ($REQUIRED_OS_CODENAME)"
+	instwarn "This project requires $REQUIRED_OS_RELEASE $REQUIRED_OS_RELEASE ($REQUIRED_OS_CODENAME)"
 	exit 1
 fi
 
@@ -341,7 +355,7 @@ if ($INSTALL_NAV); then
 fi
 
 # Add software repository for Nvidia to software sources if the Cuda option was selected
-if ($INSTALL_CUDA); then
+if ($INSTALL_CUDA) && [ "$REQUIRED_OS_ID" = "Ubuntu" ]; then
 	instlog "Adding the Nvidia PPA to software sources"
 	sudo sh -c 'echo "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64 /" >> /etc/apt/sources.list.d/cuda.list'
 	wget -q -O - http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub | sudo apt-key add -
@@ -460,11 +474,15 @@ if ($ENABLE_USB_CAM); then
 	sudo service udev restart
 fi
 
-instlog "Installing common dependencies from the Ubuntu repositories"
+instlog "Installing common dependencies from the $REQUIRED_OS_ID repositories"
 
 # Cuda Toolkit 8.0
 if ($INSTALL_CUDA); then
-	sudo apt-get install -qq cuda
+	if [ "$REQUIRED_OS_ID" = "Ubuntu" ]; then
+		sudo apt-get install -qq cuda
+	else
+		sudo apt-get install -qq nvidia-cuda-toolkit
+	fi
 fi
 
 # Scientific and technical computing
@@ -519,7 +537,7 @@ fi
 #==============================#
 
 if ($INSTALL_SUB); then
-	instlog "Installing Sub8 dependencies from the Ubuntu repositories"
+	instlog "Installing Sub8 dependencies from the $REQUIRED_OS_ID repositories"
 
 	# Communication pipe for the navigation vessel
 	sudo apt-get install -qq socat
@@ -548,7 +566,7 @@ fi
 #===================================#
 
 if ($INSTALL_NAV); then
-	instlog "Installing Navigator dependencies from the Ubuntu repositories"
+	instlog "Installing Navigator dependencies from the $REQUIRED_OS_ID repositories"
 
 	# Compiler tools
 	sudo apt-get install -qq autoconf
@@ -630,9 +648,9 @@ if !(cat $BASHRC_FILE | grep --quiet "source $MILRC_FILE"); then
 fi
 
 
-#========================#
-# Build Catkin Workspace #
-#========================#
+#===========================#
+# Catkin Workspace Building #
+#===========================#
 
 # Attempt to build the Navigator stack on client machines
 if !(env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
