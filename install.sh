@@ -53,14 +53,21 @@ CATKIN_DIR=~/mil_ws
 BASHRC_FILE=~/.bashrc
 MILRC_FILE=~/.milrc
 
+
 #======================#
 # Script Configuration #
 #======================#
 
 # Install no project by default, the user must select one
+SELECTED=false
 INSTALL_SUB=false
 INSTALL_PRO=false
 INSTALL_NAV=false
+
+# Set sane defaults for other install parameters
+BVSDK_PASSWORD=""
+ENABLE_USB_CAM=false
+INSTALL_CUDA=false
 
 # Use environment variables to determine which project to install on Semaphore
 if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
@@ -81,23 +88,24 @@ else
 	echo "The catkin workspace is the directory where all source and build files for the"
 	echo "project are stored. Our default is in brackets below, press enter to use it."
 	echo -n "What catkin workspace should be used? [$CATKIN_DIR]: " && read RESPONSE
-	echo ""
 	if [ "$RESPONSE" != "" ]; then
 		CATKIN_DIR=${RESPONSE/\~//home/$USER}
 	fi
-
-	echo "We use a forking workflow to facilitate code contributions on Github. This means"
-	echo "that each user forks the main repository and has their own copy. In the"
-	echo "repositories that we clone for projects, the main repository will be the"
-	echo "'upstream' remote and your local fork will be the 'origin' remote. You should"
-	echo "specify a fork URI for each repository you plan to push code to; otherwise,"
-	echo "leave the field blank. These can also be set manually using this command:"
-	echo "git remote add <remote_name> <user_fork_url>"
-	echo -n "User fork URI for the software-common repository: " && read SWC_USER_FORK
 	echo ""
 
+	if [ ! -d $CATKIN_DIR/src/software-common ]; then
+		echo "We use a forking workflow to facilitate code contributions on Github. This means"
+		echo "that each user forks the main repository and has their own copy. In the"
+		echo "repositories that we clone for projects, the main repository will be the"
+		echo "'upstream' remote and your local fork will be the 'origin' remote. You should"
+		echo "specify a fork URI for each repository you plan to push code to; otherwise,"
+		echo "leave the field blank. These can also be set manually using this command:"
+		echo "git remote add <remote_name> <user_fork_url>"
+		echo -n "User fork URI for the software-common repository: " && read SWC_USER_FORK
+		echo ""
+	fi
+
 	# Prompt the user to select a project to install
-	SELECTED=false
 	while !($SELECTED); do
 		echo "A MIL project must be selected for install"
 		echo "	1. SubjuGator"
@@ -107,9 +115,12 @@ else
 		echo ""
 		case "$RESPONSE" in
 			"1")
-				echo -n "User fork URI for the Sub8 repository: " && read SUB_USER_FORK
+				if [ ! -d $CATKIN_DIR/src/Sub8 ]; then
+					echo -n "User fork URI for the Sub8 repository: " && read SUB_USER_FORK
+				fi
 				INSTALL_SUB=true
 				SELECTED=true
+				echo ""
 			;;
 			"2")
 				echo "The PropaGator project has not been worked on since the dark ages of MIL, so it"
@@ -122,12 +133,14 @@ else
 				echo "Indigo, the Sub8 repository at an earlier date,  and all of the old Sub8"
 				echo "dependencies will need to be downloaded and installed."
 				echo -n "Do you still wish to proceed? [y/N] " && read RESPONSE
-				echo ""
 				if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
-					echo -n "User fork URI for the Navigator repository: " && read NAV_USER_FORK
+					if [ ! -d $CATKIN_DIR/src/Navigator ]; then
+						echo -n "User fork URI for the Navigator repository: " && read NAV_USER_FORK
+					fi
 					INSTALL_NAV=true
 					SELECTED=true
 				fi
+				echo ""
 			;;
 			"")
 				echo "You must select one of the projects by entering it's number on the list"
@@ -153,7 +166,7 @@ else
 		if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
 			echo "The SDK is encrypted with a password. You need to obtain this password from one"
 			echo "of the senior members of MIL."
-			echo -n "Encryption password: " && read BVSDK_PASSWORD
+			echo -n "Encryption password: " && read -s BVSDK_PASSWORD
 			echo ""
 			echo ""
 		fi
@@ -168,42 +181,33 @@ else
 		echo "device on the camera. Long story short, this creates a fairly significant"
 		echo "security hole on the machine that goes beyond the OS to actual device firmware."
 		echo -n "Do you want to enable access to USB cameras? [y/N] " && read RESPONSE
-		echo ""
 		if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
 			ENABLE_USB_CAM=true
-		else
-			ENABLE_USB_CAM=false
 		fi
+		echo ""
 	fi
 
 	# Give users the option to install the CUDA toolkit if an Nvidia card is detected
 	if !($INSTALL_NAV) && (lspci | grep --quiet "VGA compatible controller: NVIDIA"); then
 		echo "An Nvidia graphics card was detected on this machine. Some of the perception"
 		echo "packages may run faster with or require CUDA parallel processing on the GPU."
-		echo "CUDA is not required, but the script can install it automatically. Ubuntu 16.04"
-		echo "supports the 7.5 version natively; however, the 8.0 version can be installed"
-		echo "through a repository maintained by Nvidia and runs much smoother. Since the 8.0"
-		echo "version seems fairly stable, this is the version that the script will install."
-		echo "The 7.5 version can still be installed manually with the following command:"
-		echo "sudo apt-get install nvidia-cuda-toolkit"
-		echo "Do you want to install CUDA Toolkit 8.0? [y/N] "
-		echo ""
+		echo "CUDA is not required, but the script can install it automatically."
+		echo "	* Ubuntu 16.04 supports the 7.5 version natively; however, the 8.0"
+		echo "	  version can be installed through a repository maintained by Nvidia"
+		echo "	  and runs much smoother. Since the 8.0 version seems stable, this"
+		echo "	  is the version that the script will install on Ubuntu."
+		echo "	  The 7.5 version can still be installed manually with the following"
+		echo "	  command: sudo apt-get install nvidia-cuda-toolkit"
+		echo "	* Debian 8.7 supports the 6.0 version natively. Since it is not"
+		echo "	  officially supported by the Nvidia development team, installing"
+		echo "	  the 7.5 or 8.0 version should be done by the user at their own"
+		echo "	  risk. The 6.0 version is what will be installed on Debian."
+		echo "Do you want to install CUDA Toolkit? [y/N] "
 		if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
 			INSTALL_CUDA=true
-		else
-			INSTALL_CUDA=false
 		fi
+		echo ""
 	fi
-fi
-
-if !($INSTALL_NAV); then
-	REQUIRED_OS_CODENAME="xenial"
-	REQUIRED_OS_VERSION="16.04"
-	ROS_VERSION="kinetic"
-else
-	REQUIRED_OS_CODENAME="trusty"
-	REQUIRED_OS_VERSION="14.04"
-	ROS_VERSION="indigo"
 fi
 
 
@@ -240,7 +244,25 @@ fi
 
 # Make sure script dependencies are installed quietly on bare bones installations
 sudo apt-get update -qq
-sudo apt-get install -qq lsb-release python-pip git build-essential > /dev/null 2>&1
+sudo apt-get install -qq lsb-release aptitude python-pip git build-essential > /dev/null 2>&1
+
+# Set the required OS based on inputs and installed distribution
+if ($INSTALL_NAV); then
+	REQUIRED_OS_ID="Ubuntu"
+	REQUIRED_OS_CODENAME="trusty"
+	REQUIRED_OS_RELEASE="14.04"
+	ROS_VERSION="indigo"
+elif [ "`lsb_release -si`" = "Debian" ]; then
+	REQUIRED_OS_ID="Debian"
+	REQUIRED_OS_CODENAME="jessie"
+	REQUIRED_OS_RELEASE="8.7"
+	ROS_VERSION="kinetic"
+else
+	REQUIRED_OS_ID="Ubuntu"
+	REQUIRED_OS_CODENAME="xenial"
+	REQUIRED_OS_RELEASE="16.04"
+	ROS_VERSION="kinetic"
+fi
 
 # Ensure that the correct OS is installed
 DETECTED_OS_CODENAME="`lsb_release -sc`"
@@ -277,7 +299,7 @@ if !($OS_CHECK); then
 
 	# The script will not allow the user to install on an unsupported OS
 	instwarn "Terminating installation due to incorrect OS (detected $DETECTED_OS_CODENAME)"
-	instwarn "MIL projects require Ubuntu $REQUIRED_OS_VERSION ($REQUIRED_OS_CODENAME)"
+	instwarn "This project requires $REQUIRED_OS_RELEASE $REQUIRED_OS_RELEASE ($REQUIRED_OS_CODENAME)"
 	exit 1
 fi
 
@@ -305,7 +327,7 @@ fi
 #===================================================#
 
 # Add software repository for ROS to software sources
-instlog "Adding ROS PPA to software sources"
+instlog "Adding the ROS PPA to software sources"
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros.list'
 sudo sh -c 'echo "deb-src http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" >> /etc/apt/sources.list.d/ros.list'
 sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
@@ -314,9 +336,27 @@ sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C
 instlog "Adding the Git-LFS packagecloud repository to software sources"
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
 
-# Add software repository for Nvidia to software sources
-if ($INSTALL_CUDA); then
-	instlog "Adding Nvidia PPA to software sources"
+# Add software repository for Gazebo to software sources if ROS Indigo is being installed
+if [ "$ROS_VERSION" = "indigo" ]; then
+	instlog "Adding the Gazebo PPA to software sources"
+	sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/gazebo.list'
+	sudo sh -c 'echo "deb-src http://packages.osrfoundation.org/gazebo/ubuntu $(lsb_release -sc) main" >> /etc/apt/sources.list.d/gazebo.list'
+	wget -q http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
+fi
+
+# Add software repository for Terry Guo's ARM toolchain if NaviGator is being installed
+if ($INSTALL_NAV); then
+	instlog "Adding Terry Guo's ARM toolchain PPA to software sources"
+	sudo mkdir -p /etc/apt/preferences.d
+	sudo sh -c "echo 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm"
+	sudo sh -c 'echo "deb http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/gcc-arm-embedded.list'
+	sudo sh -c 'echo "deb-src http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu $(lsb_release -sc) main" >> /etc/apt/sources.list.d/gcc-arm-embedded.list'
+	sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xA3421AFB
+fi
+
+# Add software repository for Nvidia to software sources if the Cuda option was selected
+if ($INSTALL_CUDA) && [ "$REQUIRED_OS_ID" = "Ubuntu" ]; then
+	instlog "Adding the Nvidia PPA to software sources"
 	sudo sh -c 'echo "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64 /" >> /etc/apt/sources.list.d/cuda.list'
 	wget -q -O - http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub | sudo apt-key add -
 fi
@@ -325,6 +365,15 @@ fi
 instlog "Installing ROS $(tr '[:lower:]' '[:upper:]' <<< ${ROS_VERSION:0:1})${ROS_VERSION:1}"
 sudo apt-get update -qq
 sudo apt-get install -qq ros-$ROS_VERSION-desktop-full
+
+# If ROS Indigo is being installed, break the metapackage and install an updated version of Gazebo
+if [ "$ROS_VERSION" = "indigo" ]; then
+	instlog "Installing the latest version of Gazebo"
+	sudo aptitude unmarkauto -q '?reverse-depends(ros-indigo-desktop-full) | ?reverse-recommends(ros-indigo-desktop-full)'
+	sudo apt-get purge -qq ros-indigo-gazebo*
+	sudo apt-get install -qq gazebo7
+	sudo apt-get install -qq ros-indigo-gazebo7-ros-pkgs
+fi
 
 # Get information about ROS versions
 instlog "Initializing ROS"
@@ -389,21 +438,25 @@ if ($INSTALL_SUB) && !(ls $CATKIN_DIR/src | grep --quiet "Sub8"); then
 fi
 
 # Download the Navigator repository if it has not already been downloaded and was selected for installation
-if ($INSTALL_NAV) && !(ls $CATKIN_DIR/src | grep --quiet "Navigator"); then
-	instlog "Downloading the Sub8 repository"
-	cd $CATKIN_DIR/src
-	git clone --recursive -q https://github.com/uf-mil/Sub8.git
-	cd $CATKIN_DIR/src/Sub8
-	instlog "Rolling back the Sub8 repository; do not pull the latest version!"
-	git reset --hard 0089e68b9f48b96af9c3821f356e3a487841e87e
-	git remote remove origin
-	instlog "Downloading the Navigator repository"
-	cd $CATKIN_DIR/src
-	git clone --recursive -q https://github.com/uf-mil/Navigator.git
-	cd $CATKIN_DIR/src/Navigator
-	git remote rename origin upstream
-	if [ ! -z "$NAV_USER_FORK" ]; then
-		git remote add origin "$NAV_USER_FORK"
+if ($INSTALL_NAV); then
+	if !(ls $CATKIN_DIR/src | grep --quiet "Sub8"); then
+		instlog "Downloading the Sub8 repository"
+		cd $CATKIN_DIR/src
+		git clone --recursive -q https://github.com/uf-mil/Sub8.git
+		cd $CATKIN_DIR/src/Sub8
+		instlog "Rolling back the Sub8 repository; do not pull the latest version!"
+		git reset --hard 0089e68b9f48b96af9c3821f356e3a487841e87e
+		git remote remove origin
+	fi
+	if !(ls $CATKIN_DIR/src | grep --quiet "Navigator"); then
+		instlog "Downloading the Navigator repository"
+		cd $CATKIN_DIR/src
+		git clone --recursive -q https://github.com/uf-mil/Navigator.git
+		cd $CATKIN_DIR/src/Navigator
+		git remote rename origin upstream
+		if [ ! -z "$NAV_USER_FORK" ]; then
+			git remote add origin "$NAV_USER_FORK"
+		fi
 	fi
 fi
 
@@ -421,11 +474,15 @@ if ($ENABLE_USB_CAM); then
 	sudo service udev restart
 fi
 
-instlog "Installing common dependencies from the Ubuntu repositories"
+instlog "Installing common dependencies from the $REQUIRED_OS_ID repositories"
 
 # Cuda Toolkit 8.0
 if ($INSTALL_CUDA); then
-	sudo apt-get install -qq cuda
+	if [ "$REQUIRED_OS_ID" = "Ubuntu" ]; then
+		sudo apt-get install -qq cuda
+	else
+		sudo apt-get install -qq nvidia-cuda-toolkit
+	fi
 fi
 
 # Scientific and technical computing
@@ -444,13 +501,16 @@ git lfs install --skip-smudge
 # Debugging utility
 sudo apt-get install -qq gdb
 
+# Networking
+sudo apt-get install -qq python-twisted
+
 # Machine Learning
 sudo apt-get install -qq python-sklearn
 
 # Visualization
 sudo apt-get install -qq mayavi2
 
-instlog "Installing Sub8 ROS dependencies"
+instlog "Installing common ROS dependencies"
 
 # Hardware drivers
 sudo apt-get install -qq ros-$ROS_VERSION-pointgrey-camera-driver
@@ -464,7 +524,7 @@ sudo pip install -q -U crc16
 sudo pip install -q -U tqdm
 
 # The BlueView SDK for the Teledyne imaging sonar
-if [ ! -z $BVSDK_PASSWORD ]; then
+if [ ! -z "$BVSDK_PASSWORD" ]; then
 	instlog "Decrypting and installing the BlueView SDK"
 	cd $CATKIN_DIR/src
 	curl -s https://raw.githubusercontent.com/uf-mil/installer/master/bvtsdk.tar.gz.enc | \
@@ -477,7 +537,7 @@ fi
 #==============================#
 
 if ($INSTALL_SUB); then
-	instlog "Installing Sub8 dependencies from the Ubuntu repositories"
+	instlog "Installing Sub8 dependencies from the $REQUIRED_OS_ID repositories"
 
 	# Communication pipe for the navigation vessel
 	sudo apt-get install -qq socat
@@ -506,16 +566,21 @@ fi
 #===================================#
 
 if ($INSTALL_NAV); then
-	instlog "Installing Navigator dependencies from the Ubuntu repositories"
+	instlog "Installing Navigator dependencies from the $REQUIRED_OS_ID repositories"
+
+	# Compiler tools
+	sudo apt-get install -qq autoconf
+	sudo apt-get install -qq automake
+	sudo apt-get install -qq binutils-dev
 
 	# Terry Guo's ARM toolchain
-	sudo mkdir -p /etc/apt/preferences.d
-	sudo sh -c "echo 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm"
-	sudo sh -c 'echo "deb http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu trusty main" > /etc/apt/sources.list.d/gcc-arm-embedded.list'
-	sudo sh -c 'echo "deb-src http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu trusty main" > /etc/apt/sources.list.d/gcc-arm-embedded.list'
-	sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xA3421AFB
-	sudo apt-get update -qq
 	sudo apt-get install -qq gcc-arm-none-eabi
+
+	# Hardware drivers
+	sudo apt-get install -qq ros-$ROS_VERSION-camera1394
+
+	# Visualization
+	sudo apt-get install -qq qt5-default
 
 	instlog "Installing Navigator ROS dependencies"
 
@@ -526,9 +591,13 @@ if ($INSTALL_NAV); then
 	# Thruster driver
 	sudo apt-get install -qq ros-$ROS_VERSION-roboteq-driver
 
+	# Trajectory Generation
+	sudo apt-get install -qq ros-$ROS_VERSION-ompl
+
 	instlog "Performing setup tasks for lqRRT"
-	sudo python $CATKIN_DIR/src/Navigator/gnc/lqRRT/setup.py build
-	sudo python $CATKIN_DIR/src/Navigator/gnc/lqRRT/setup.py install
+	cd $CATKIN_DIR/src/Navigator/gnc/lqRRT
+	sudo python setup.py build
+	sudo python setup.py install
 
 	# Pull large project files from Git-LFS
 	instlog "Pulling large files for Navigator"
@@ -579,9 +648,9 @@ if !(cat $BASHRC_FILE | grep --quiet "source $MILRC_FILE"); then
 fi
 
 
-#========================#
-# Build Catkin Workspace #
-#========================#
+#===========================#
+# Catkin Workspace Building #
+#===========================#
 
 # Attempt to build the Navigator stack on client machines
 if !(env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
