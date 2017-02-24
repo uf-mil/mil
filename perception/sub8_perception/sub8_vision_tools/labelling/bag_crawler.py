@@ -35,7 +35,7 @@ class BagCrawler(object):
 if __name__ == '__main__':
     import cv2
 
-    bag = '/home/jacob/catkin_ws/src/Sub8/gnc/sub8_perception/data/bag_test.bag'
+    bag = '/home/jacob/mil_ws/src/SubjuGator/gnc/sub8_perception/data/bag_test.bag'
     bc = BagCrawler(bag)
 
     for image in bc.crawl(topic=bc.image_topics[0]):

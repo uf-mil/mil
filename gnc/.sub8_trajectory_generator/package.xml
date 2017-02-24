@@ -9,7 +9,7 @@
 
   <license>MIT</license>
   
-  <url>https://github.com/uf-mil/Sub8/wiki/Trajectory-Generator</url>
+  <url>https://github.com/uf-mil/SubjuGator/wiki/Trajectory-Generator</url>
   <author>Patrick Emami</author>
   
   <buildtool_depend>catkin</buildtool_depend>
