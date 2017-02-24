@@ -22,11 +22,11 @@ Notes for Pool Days
 
 * Copy things to the sub...
 
-    scp /some/local/directory forrest@Subjugator:~/sub8_ws/src/Sub8
+    scp /some/local/directory sub8@mil-sub-sub8.ad.mil.ufl.edu:~/mil_ws/src/SubjuGator
 
 * Add a git remote for the usb
 
-    git remote add sub ssh://forrest@subjugator/home/forrest/sub8_ws/src/Sub8
+    git remote add sub ssh://sub8@mil-sub-sub8.ad.mil.ufl.edu/home/sub8/mil_ws/src/SubjuGator
 
 
 # TODO
