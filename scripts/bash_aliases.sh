@@ -7,11 +7,11 @@
 # these will likely increase productivity, so it is recommended to do so.
 
 # Source external alias modules
-source $CATKIN_DIR/src/software-common/scripts/two_line_bash.sh
-source $CATKIN_DIR/src/software-common/scripts/ros_connect.sh
+source $CATKIN_DIR/src/mil_common/scripts/two_line_bash.sh
+source $CATKIN_DIR/src/mil_common/scripts/ros_connect.sh
 
 # Directory navigation
-alias swc="cd $CATKIN_DIR/src/software-common"
+alias swc="cd $CATKIN_DIR/src/mil_common"
 
 # Bash sourcing
 alias srcbrc="source ~/.bashrc"

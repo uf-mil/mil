@@ -3,4 +3,4 @@ This repository is the foundation of the software used on MIL's projects. It con
 
 # Getting Involved
 
-Information about getting involved in MIL is available on the [software-common wiki](https://github.com/uf-mil/software-common/wiki). The home page will introduce you to the various projects that are under development in the lab and provide a link to the getting started guide.
+Information about getting involved in MIL is available on the [mil_common wiki](https://github.com/uf-mil/mil_common/wiki). The home page will introduce you to the various projects that are under development in the lab and provide a link to the getting started guide.
