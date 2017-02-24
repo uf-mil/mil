@@ -93,7 +93,7 @@ else
 	fi
 	echo ""
 
-	if [ ! -d $CATKIN_DIR/src/software-common ]; then
+	if [ ! -d $CATKIN_DIR/src/mil_common ]; then
 		echo "We use a forking workflow to facilitate code contributions on Github. This means"
 		echo "that each user forks the main repository and has their own copy. In the"
 		echo "repositories that we clone for projects, the main repository will be the"
@@ -101,7 +101,7 @@ else
 		echo "specify a fork URI for each repository you plan to push code to; otherwise,"
 		echo "leave the field blank. These can also be set manually using this command:"
 		echo "git remote add <remote_name> <user_fork_url>"
-		echo -n "User fork URI for the software-common repository: " && read SWC_USER_FORK
+		echo -n "User fork URI for the mil_common repository: " && read SWC_USER_FORK
 		echo ""
 	fi
 
@@ -115,8 +115,8 @@ else
 		echo ""
 		case "$RESPONSE" in
 			"1")
-				if [ ! -d $CATKIN_DIR/src/Sub8 ]; then
-					echo -n "User fork URI for the Sub8 repository: " && read SUB_USER_FORK
+				if [ ! -d $CATKIN_DIR/src/SubjuGator ]; then
+					echo -n "User fork URI for the SubjuGator repository: " && read SUB_USER_FORK
 				fi
 				INSTALL_SUB=true
 				SELECTED=true
@@ -130,12 +130,12 @@ else
 			"3")
 				echo "The NaviGator project was developed on Ubuntu 14.04 with ROS Indigo. Several"
 				echo "dependencies no longer exist in ROS Kinetic, so in order to install it, ROS"
-				echo "Indigo, the Sub8 repository at an earlier date,  and all of the old Sub8"
-				echo "dependencies will need to be downloaded and installed."
+				echo "Indigo, the SubjuGator repository at an earlier date,  and all of the old"
+				echo "SubjuGator dependencies will need to be downloaded and installed."
 				echo -n "Do you still wish to proceed? [y/N] " && read RESPONSE
 				if ([ "$RESPONSE" = "Y" ] || [ "$RESPONSE" = "y" ]); then
-					if [ ! -d $CATKIN_DIR/src/Navigator ]; then
-						echo -n "User fork URI for the Navigator repository: " && read NAV_USER_FORK
+					if [ ! -d $CATKIN_DIR/src/NaviGator ]; then
+						echo -n "User fork URI for the NaviGator repository: " && read NAV_USER_FORK
 					fi
 					INSTALL_NAV=true
 					SELECTED=true
@@ -403,56 +403,56 @@ fi
 
 # Move the cloned git repository to the catkin workspace in semaphore
 if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
-	if [ -d ~/Sub8 ]; then
-		mv ~/Sub8 $CATKIN_DIR/src
-	elif [ -d ~/Navigator ]; then
-		mv ~/Navigator $CATKIN_DIR/src
+	if [ -d ~/SubjuGator ]; then
+		mv ~/SubjuGator $CATKIN_DIR/src
+	elif [ -d ~/NaviGator ]; then
+		mv ~/NaviGator $CATKIN_DIR/src
 	fi
 fi
 
 # Source the workspace's configurations for bash
 source $CATKIN_DIR/devel/setup.bash
 
-# Download the software-common repository if it has not already been downloaded
-if !(ls $CATKIN_DIR/src | grep --quiet "software-common"); then
-	instlog "Downloading the software-common repository"
+# Download the mil_common repository if it has not already been downloaded
+if !(ls $CATKIN_DIR/src | grep --quiet "mil_common"); then
+	instlog "Downloading the mil_common repository"
 	cd $CATKIN_DIR/src
-	git clone --recursive -q https://github.com/uf-mil/software-common.git
-	cd $CATKIN_DIR/src/software-common
+	git clone --recursive -q https://github.com/uf-mil/mil_common.git
+	cd $CATKIN_DIR/src/mil_common
 	git remote rename origin upstream
 	if [ ! -z "$SWC_USER_FORK" ]; then
 		git remote add origin "$SWC_USER_FORK"
 	fi
 fi
 
-# Download the Sub8 repository if it has not already been downloaded and was selected for installation
-if ($INSTALL_SUB) && !(ls $CATKIN_DIR/src | grep --quiet "Sub8"); then
-	instlog "Downloading the Sub8 repository"
+# Download the SubjuGator repository if it has not already been downloaded and was selected for installation
+if ($INSTALL_SUB) && !(ls $CATKIN_DIR/src | grep --quiet "SubjuGator"); then
+	instlog "Downloading the SubjuGator repository"
 	cd $CATKIN_DIR/src
-	git clone --recursive -q https://github.com/uf-mil/Sub8.git
-	cd $CATKIN_DIR/src/Sub8
+	git clone --recursive -q https://github.com/uf-mil/SubjuGator.git
+	cd $CATKIN_DIR/src/SubjuGator
 	git remote rename origin upstream
 	if [ ! -z "$SUB_USER_FORK" ]; then
 		git remote add origin "$SUB_USER_FORK"
 	fi
 fi
 
-# Download the Navigator repository if it has not already been downloaded and was selected for installation
+# Download the NaviGator repository if it has not already been downloaded and was selected for installation
 if ($INSTALL_NAV); then
-	if !(ls $CATKIN_DIR/src | grep --quiet "Sub8"); then
-		instlog "Downloading the Sub8 repository"
+	if !(ls $CATKIN_DIR/src | grep --quiet "SubjuGator"); then
+		instlog "Downloading the SubjuGator repository"
 		cd $CATKIN_DIR/src
-		git clone --recursive -q https://github.com/uf-mil/Sub8.git
-		cd $CATKIN_DIR/src/Sub8
-		instlog "Rolling back the Sub8 repository; do not pull the latest version!"
+		git clone --recursive -q https://github.com/uf-mil/SubjuGator.git
+		cd $CATKIN_DIR/src/SubjuGator
+		instlog "Rolling back the SubjuGator repository; do not pull the latest version!"
 		git reset --hard 0089e68b9f48b96af9c3821f356e3a487841e87e
 		git remote remove origin
 	fi
-	if !(ls $CATKIN_DIR/src | grep --quiet "Navigator"); then
-		instlog "Downloading the Navigator repository"
+	if !(ls $CATKIN_DIR/src | grep --quiet "NaviGator"); then
+		instlog "Downloading the NaviGator repository"
 		cd $CATKIN_DIR/src
-		git clone --recursive -q https://github.com/uf-mil/Navigator.git
-		cd $CATKIN_DIR/src/Navigator
+		git clone --recursive -q https://github.com/uf-mil/NaviGator.git
+		cd $CATKIN_DIR/src/NaviGator
 		git remote rename origin upstream
 		if [ ! -z "$NAV_USER_FORK" ]; then
 			git remote add origin "$NAV_USER_FORK"
@@ -532,12 +532,12 @@ if [ ! -z "$BVSDK_PASSWORD" ]; then
 fi
 
 
-#==============================#
-# Sub8 Dependency Installation #
-#==============================#
+#====================================#
+# SubjuGator Dependency Installation #
+#====================================#
 
 if ($INSTALL_SUB); then
-	instlog "Installing Sub8 dependencies from the $REQUIRED_OS_ID repositories"
+	instlog "Installing SubjuGator dependencies from the $REQUIRED_OS_ID repositories"
 
 	# Communication pipe for the navigation vessel
 	sudo apt-get install -qq socat
@@ -545,7 +545,7 @@ if ($INSTALL_SUB); then
 	# Optical character recognition
 	sudo apt-get install -qq tesseract-ocr
 
-	instlog "Installing Sub8 ROS dependencies"
+	instlog "Installing SubjuGator ROS dependencies"
 
 	# Controller
 	sudo apt-get install -qq ros-$ROS_VERSION-control-toolbox
@@ -562,11 +562,11 @@ fi
 
 
 #===================================#
-# Navigator Dependency Installation #
+# NaviGator Dependency Installation #
 #===================================#
 
 if ($INSTALL_NAV); then
-	instlog "Installing Navigator dependencies from the $REQUIRED_OS_ID repositories"
+	instlog "Installing NaviGator dependencies from the $REQUIRED_OS_ID repositories"
 
 	# Compiler tools
 	sudo apt-get install -qq autoconf
@@ -582,7 +582,7 @@ if ($INSTALL_NAV); then
 	# Visualization
 	sudo apt-get install -qq qt5-default
 
-	instlog "Installing Navigator ROS dependencies"
+	instlog "Installing NaviGator ROS dependencies"
 
 	# Serial communications
 	sudo apt-get install -qq ros-$ROS_VERSION-rosserial
@@ -595,13 +595,13 @@ if ($INSTALL_NAV); then
 	sudo apt-get install -qq ros-$ROS_VERSION-ompl
 
 	instlog "Performing setup tasks for lqRRT"
-	cd $CATKIN_DIR/src/Navigator/gnc/lqRRT
+	cd $CATKIN_DIR/src/NaviGator/gnc/lqRRT
 	sudo python setup.py build
 	sudo python setup.py install
 
 	# Pull large project files from Git-LFS
-	instlog "Pulling large files for Navigator"
-	cd $CATKIN_DIR/src/Navigator
+	instlog "Pulling large files for NaviGator"
+	cd $CATKIN_DIR/src/NaviGator
 	git lfs pull
 fi
 
@@ -628,7 +628,7 @@ echo "export CATKIN_DIR=$CATKIN_DIR" >> $MILRC_FILE
 echo "source \$CATKIN_DIR/devel/setup.bash" >> $MILRC_FILE
 
 # Source the project configurations for bash
-declare -a ALIASED_REPOSITORIES=("software-common" "Sub8" "Navigator")
+declare -a ALIASED_REPOSITORIES=("mil_common" "SubjuGator" "NaviGator")
 for REPOSITORY in "${ALIASED_REPOSITORIES[@]}"; do
 	if [ -f $CATKIN_DIR/src/$REPOSITORY/scripts/bash_aliases.sh ]; then
 		if !(cat $MILRC_FILE | grep --quiet "# Sets up the shell environment for each installed project"); then
@@ -652,8 +652,8 @@ fi
 # Catkin Workspace Building #
 #===========================#
 
-# Attempt to build the Navigator stack on client machines
+# Attempt to build the selected MIL software stack on client machines
 if !(env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
-	instlog "Building MIL's software stack with catkin_make"
+	instlog "Building selected MIL software stack with catkin_make"
 	catkin_make -C $CATKIN_DIR -B
 fi
