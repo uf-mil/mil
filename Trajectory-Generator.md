@@ -56,7 +56,7 @@ The Trajectory Generator should...
 1. Planning and re-planning both failed (0): abort mission / attempt to flounder about blind (???)
 
 ## Main Components ##
-1. **Sub8 Motion-Planning**
+1. **SubjuGator Motion-Planning**
     1. Implementation of OMPL for AUVs
     1. Main task is to use one of OMPL's path-planning algorithms (RRT) to generate a trajectory
     1. RRT* with a distance function that has a distance metric defined in the control space is being considered. It would need to be implemented from scratch. 
