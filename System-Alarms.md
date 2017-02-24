@@ -19,7 +19,7 @@ An alarm is be described by the following:
 
 ## Alarm Node
 
-The Sub8 alarm system has two key components. AlarmBroadcasters, which "raise" alarms, and Alarm Scenarios, which handle alarms. In addition to those, the alarm system relies on each node exposing some behavior like "kill", or "disable_thruster" so that the alarm system can *do* something with the alarm state.
+The SubjuGator alarm system has two key components. AlarmBroadcasters, which "raise" alarms, and Alarm Scenarios, which handle alarms. In addition to those, the alarm system relies on each node exposing some behavior like "kill", or "disable_thruster" so that the alarm system can *do* something with the alarm state.
 
 ## AlarmBroadcaster
 
@@ -121,7 +121,7 @@ Add the `#include <sub8_alarm/alarm_helpers.h>` include directive to your code t
 
 # Things to worry about
 
-- [Monitor the queue_size in the alarm subscribe](https://github.com/uf-mil/Sub8/pull/23#discussion_r42393150), let's see how many alarms show up at max.
+- [Monitor the queue_size in the alarm subscribe](https://github.com/uf-mil/SubjuGator/pull/23#discussion_r42393150), let's see how many alarms show up at max.
 
 
 # Plans for 2.0
