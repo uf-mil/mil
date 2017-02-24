@@ -8,9 +8,11 @@
 # user machines, if you're into that sort of thing.
 
 
+WS_MARKER=".catkin_workspace"
+
+
 _catkin_ws_complete() {
 	local FILE
-	local WS_MARKER=".catkin_workspace"
 
 	# Check for workspaces in the home directory based on the argument
 	for FILE in ~/"$2"*; do

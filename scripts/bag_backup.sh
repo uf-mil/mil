@@ -24,17 +24,10 @@
 # mounted.
 
 
-#======================#
-# Script Configuration #
-#======================#
-
 # The directories to sync are set in the command to run the script
 LOCAL_BAGS_DIR=$1
 REMOTE_BAGS_DIR=$2
 
-#================#
-# Backup Command #
-#================#
 
 if [ -d $REMOTE_BAGS_DIR ]; then
 	echo "Synchronizing bags to the MIL fileserver share mounted at $REMOTE_BAGS_DIR"

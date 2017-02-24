@@ -7,6 +7,7 @@
 # the user's home directory. This can be accomplished with the following
 # command: touch ~/.disable_tlb
 
+
 function parse_git_branch {
 	PS_BRANCH=''
 	PS_FILL=${PS_LINE:0:$COLUMNS}
@@ -20,6 +21,7 @@ function parse_git_branch {
 	ref=$(git symbolic-ref HEAD 2> /dev/null) || return
 	PS_BRANCH="(git ${ref#refs/heads/}) "
 }
+
 
 if [ ! -f ~/.disable_tlb ]; then
 	RESET="\[\033[0m\]"

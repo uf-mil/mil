@@ -6,11 +6,13 @@
 # aliased to make them faster or easier to execute. Becoming familiar with
 # these will likely increase productivity, so it is recommended to do so.
 
+
 # Source external alias modules
 source $CATKIN_DIR/src/mil_common/scripts/two_line_bash.sh
 source $CATKIN_DIR/src/mil_common/scripts/ros_connect.sh
 source $CATKIN_DIR/src/mil_common/scripts/wsmux.sh
 source $CATKIN_DIR/src/mil_common/scripts/bmux.sh
+
 
 # Directory navigation
 alias swc="cd $CATKIN_DIR/src/mil_common"

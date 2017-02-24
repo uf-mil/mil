@@ -11,6 +11,7 @@
 
 
 # These parameters define the network to search on
+DEFAULT_HOST="localhost"
 SEARCH_DOMAIN="ad.mil.ufl.edu"
 SUBNET="192.168.37.0/24"
 
@@ -27,11 +28,7 @@ COMMNAMES=(	"SubjuGator"
 )
 
 # The hostname persistence file
-DEFAULT_HOST="localhost"
 PERSISTENCE_FILE=~/.ros_connect_persistence
-if [ ! -f $PERSISTENCE_FILE ]; then
-	echo $DEFAULT_HOST > $PERSISTENCE_FILE
-fi
 
 
 check_host() {
@@ -198,10 +195,17 @@ ros_disconnect() {
 	ros_connect -n $DEFAULT_HOST
 }
 
+
 # Prints debugging output for the master roscore that is currently selected
 alias ros_env='echo "ROS_IP=$ROS_IP
 ROS_HOSTNAME=$ROS_HOSTNAME
 ROS_MASTER_URI=$ROS_MASTER_URI"'
+
+
+# Generates the persistence file if it does not exist
+if [ ! -f $PERSISTENCE_FILE ]; then
+	echo $DEFAULT_HOST > $PERSISTENCE_FILE
+fi
 
 # A simple implementation of hostname selection persistence
 if [ -z `cat $PERSISTENCE_FILE | grep "disabled"` ] && [ ! -z "`cat $PERSISTENCE_FILE`" ]; then
