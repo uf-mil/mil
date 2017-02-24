@@ -8,7 +8,7 @@ Some of this may have been deprecated or otherwise changed. If you notice any di
 # Manual Segmentation
 
 ```shell
-# in Sub8/gnc/sub8_perception/sub8_vision_tools/labelling
+# in SubjuGator/gnc/sub8_perception/sub8_vision_tools/labelling
 python ./manual_grabcut <path_to_bag> --topic <topic-to-segment> --output <pickle file name>
 
 # For example,
@@ -18,7 +18,7 @@ python ./manual_grabcut ~/bag/2016-torpedo-bag.bag --topic /image/right --output
 # Training an OpenCV Boost classifier on newly segmented data
 
 ```shell
-# in Sub8/gnc/sub8_perception/sub8_vision_tools/machine_learning
+# in SubjuGator/gnc/sub8_perception/sub8_vision_tools/machine_learning
 python ./boost.py <pkl_file>
 
 # For example,
@@ -32,7 +32,7 @@ This will generate a python `pickle` file that contains a list of images and seg
 # Testing/Verifying the output
 
 ```shell
-# In Sub8/gnc/sub8_perception/sub8_vision_tools/machine_learning
+# In SubjuGator/gnc/sub8_perception/sub8_vision_tools/machine_learning
 
 # For example
 python verify_method.py ../data/start-gate.p ./start-gate-column-boost.cv2
