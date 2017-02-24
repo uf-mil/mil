@@ -1,6 +1,4 @@
-# SubjuGator 8 Wiki
-
-Welcome to the Sub8 Wiki! Check out the "getting started" on this wiki, to get started with Sub8, and look at the [uf-mil/installer](https://github.com/uf-mil/installer) repository for guides to installing ROS and all of the MIL vehicle dependencies.
+Welcome to the SubjuGator 8 Wiki! Check out the "getting started" on this wiki, to get started with SubjuGator, and look at the [uf-mil/installer](https://github.com/uf-mil/installer) repository for guides to installing ROS and all of the MIL vehicle dependencies.
 
 If you have any questions, don't hesitate to email David.
 
