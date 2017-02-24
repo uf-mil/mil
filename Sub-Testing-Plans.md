@@ -14,19 +14,19 @@
 <tr>
 <td>Torpedo Board</td>
 <td>David</td>
-<td>Delayed to next test day</td>
+<td>Delayed</td>
 </tr>
 
 <tr>
 <td>Start Gate</td>
 <td>Daniel++</td>
-<td>Okay</td>
+<td>Incomplete</td>
 </tr>
 
 <tr>
-<td>Finalized Sub8 OS</td>
+<td>Finalized SubjuGator OS</td>
 <td>Anthony</td>
-<td>Stalled (#199)</td>
+<td>Complete</td>
 </tr>
 
 </table>
