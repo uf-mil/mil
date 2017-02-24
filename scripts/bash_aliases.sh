@@ -9,6 +9,7 @@
 # Source external alias modules
 source $CATKIN_DIR/src/mil_common/scripts/two_line_bash.sh
 source $CATKIN_DIR/src/mil_common/scripts/ros_connect.sh
+source $CATKIN_DIR/src/mil_common/scripts/wsmux.sh
 
 # Directory navigation
 alias swc="cd $CATKIN_DIR/src/mil_common"
