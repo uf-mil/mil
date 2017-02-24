@@ -1,7 +1,7 @@
 Simul8
 ======
 
-Simul8 is our internally implemented water vehicle dynamics and vision simulation. It is designed to support multiple vehicles at once, and always with one eye toward surface vessels. At least some part of this is to anticipate the possibility of both the RobotX WAM-V and some sub (probably not Sub8) interacting in the water.
+Simul8 is our internally implemented water vehicle dynamics and vision simulation. It is designed to support multiple vehicles at once, and always with one eye toward surface vessels. At least some part of this is to anticipate the possibility of both the RobotX WAM-V and some sub (probably not SubjuGator 8) interacting in the water.
 
 # How to install
 (You don't need to do any installation if you've run the install script)
@@ -37,7 +37,7 @@ Simul8 has two major submodules: Physics and Rendering.
 The physics module is driven by pyODE (Python bindings to the Open Dynamics Engine). We define our own "World" object that manages all of the geometries and bodies that exist in the physics universe.
 
 ### Physics Entity
-An entity is an object with physics. Currently implemented are Spheres, Boxes, and Sub8 approximated as a box. We will soon add arbitrary meshes.
+An entity is an object with physics. Currently implemented are Spheres, Boxes, and SubjuGator 8 approximated as a box. We will soon add arbitrary meshes.
 
 Each entity implements a "step" method that is called for each physics step. They must also implement their own means for applying damping and buoyancy (Right now, everything uses a spherical submerged volume approximation, but you can implement your own)
 
@@ -76,7 +76,7 @@ Todo
 ## Implement
 * [ ] Scene
     * [x] Transdec model
-    * [x] Sub8 Model
+    * [x] SubjuGator 8 Model
     * [ ] AUVSI models
     * [ ] Global configuration register
 
