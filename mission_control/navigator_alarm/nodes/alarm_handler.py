@@ -91,7 +91,7 @@ class AlarmHandler(object):
             else:
                 scenario.handle(alarm, time, parameters)
 
-        # Handle meta-alarms (See Sub8 wiki)
+        # Handle meta-alarms (See SubjuGator wiki)
         meta_alarm = meta_alarms.get(alarm.alarm_name, None)
         if meta_alarm is not None:
             # Meta alarms require one of each alarm raiser clears before the meta alarm clears

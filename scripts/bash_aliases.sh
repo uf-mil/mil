@@ -7,7 +7,7 @@
 # these will likely increase productivity, so it is recommended to do so.
 
 # Directory navigation
-alias nav="cd $CATKIN_DIR/src/Navigator"
+alias nav="cd $CATKIN_DIR/src/NaviGator"
 
 # Networking
 alias rnav="ros_connect -n ${HOSTNAMES[1]}"

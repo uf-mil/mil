@@ -1,4 +1,4 @@
-# Sub8 Alarm message. All alarms should be published on the /alarm topic
+# SubjuGator Alarm message. All alarms should be published on the /alarm topic
 
 std_msgs/Header header
 

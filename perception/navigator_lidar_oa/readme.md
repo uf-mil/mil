@@ -1,4 +1,4 @@
-#Navigator Lidar Node - Ira Hill
+#NaviGator Lidar Node - Ira Hill
 
 ##Quick Overview
 
