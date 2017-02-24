@@ -4,7 +4,7 @@ MIL uses a server with the hostname mil-plumbusi [(in honor of the plumbus, plum
 
 **WARNING: No device running Windows is allowed to connect to this network unless explicitly allowed by one of the network administrators in the lab (Anthony Olive or Daniel Dugger)!**
 
-The network can easily be accessed by clients with a wired (ethernet) or a wireless connection. To connect over ethernet, simply plug the computer into a free port on the unmanaged switch, which is located on the same table as the mil-plumbusi server, or on the Sub8 Router, which is located on the same table as the sub. To connect over WiFi, select either the uf-sub-2ghz or uf-sub-5ghz network (uf-sub-5ghz is recommended if it is available on the machine) and ask a senior lab member for the password.
+The network can easily be accessed by clients with a wired (ethernet) or a wireless connection. To connect over ethernet, simply plug the computer into a free port on the unmanaged switch, which is located on the same table as the mil-plumbusi server, or on the SubjuGator Router, which is located on the same table as the sub. To connect over WiFi, select either the uf-sub-2ghz or uf-sub-5ghz network (uf-sub-5ghz is recommended if it is available on the machine) and ask a senior lab member for the password.
 
 # Networking Hardware
 
@@ -16,13 +16,13 @@ The network can easily be accessed by clients with a wired (ethernet) or a wirel
 * The unmanaged switch connects to
     * The mil-plumbusi server
     * The mil-johnny-five workstation
-    * The Sub8 Router (a dual band wireless router that acts as a network access point)
+    * The SubjuGator Router (a dual band wireless router that acts as a network access point)
         * This cable runs across the room through the ceiling (and looks super professional)
     * There are two open ports for future connections
         * Daniel is using one of these at the time of writing
 
-* The Sub8 Router connects to
-    * Sub8 is connected via the tether spool
+* The SubjuGator Router connects to
+    * SubjuGator 8 is connected via the tether spool
     * There are three open ports for future connections
         * Ralph and David are using two of these at the time of writing
     * This operates in access point mode, enabling wireless access to the network
@@ -59,7 +59,7 @@ If something needs to be changed on the server, the best way to access it is via
 
     ssh plumbusiadmin@mil-plumbusi.mil.lan
 
-If you are wearing your tinfoil hat, you can have a look at [this article](https://github.com/uf-mil/Sub8/wiki/Remote-Access) for the server's key fingerprint. This should not be required on the LAN unless some nefarious business is going on. See Anthony for the password for this account or to have one made for you.
+If you are wearing your tinfoil hat, you can have a look at [this article](https://github.com/uf-mil/SubjuGator/wiki/Remote-Access) for the server's key fingerprint. This should not be required on the LAN unless some nefarious business is going on. See Anthony for the password for this account or to have one made for you.
 
 # DHCP Server
 
@@ -73,7 +73,7 @@ In MIL, a few different IP ranges have been laid out as follows:
 * 192.168.1.90-192.168.1.99: Reserved for special use cases (e.g. client-defined static IP's)
 * 192.168.1.100-192.168.1.199: Dynamic IP address allocation for all other devices
 
-A complete listing of all configured static IP address reservations can be found in the [scripts/update_hosts.sh](https://github.com/uf-mil/Sub8/blob/master/scripts/update-hosts.bash) file. This file helps client computers and the sub keep track of networked devices when the DNS server is not available and **any additions to or deletions from the isc-dhcp-server configuration file should be reflected there**. They should also be added to the bind9 DNS server for hostname-based lookups (see DNS below).
+A complete listing of all configured static IP address reservations can be found in the [scripts/update_hosts.sh](https://github.com/uf-mil/SubjuGator/blob/master/scripts/update-hosts.bash) file. This file helps client computers and the sub keep track of networked devices when the DNS server is not available and **any additions to or deletions from the isc-dhcp-server configuration file should be reflected there**. They should also be added to the bind9 DNS server for hostname-based lookups (see DNS below).
 
 Static IP allocations can be found at the bottom of the file and will look something like this:
 
@@ -98,7 +98,7 @@ Please place new entries in the correct commented block based on the type of dev
 
 The server uses a package called bind9 to resolve local DNS queries. For our local network, the domain that all devices are on is mil.lan. As an example, one could use the hostname sub.mil.lan instead of the IP address 192.168.1.21. The server is set up with some sane defaults, so they should not need to be changed at all. For more information about the package, see [this tutorial](https://help.ubuntu.com/community/BIND9ServerHowto).
 
-Before adding any new hostnames to this file, **ensure that they are listed as static DHCP entries** (see above for details) and are present in the [scripts/update_hosts.sh](https://github.com/uf-mil/Sub8/blob/master/scripts/update-hosts.bash) file.
+Before adding any new hostnames to this file, **ensure that they are listed as static DHCP entries** (see above for details) and are present in the [scripts/update_hosts.sh](https://github.com/uf-mil/SubjuGator/blob/master/scripts/update-hosts.bash) file.
 
 To add a new entry for hostname-based lookup, edit the /etc/bind/db.192 and add a line in descending numerical order based on the device's IP address:
 
@@ -165,7 +165,7 @@ The iptables configuration currently handles the following:
 * Blocking all kinds of nefarious traffic
 * Making sure network clients can access important services on mil-plumbusi
 * Enabling internet access through IP masquerading (Network Address Traversal, or NAT)
-* Forwarding certain remote connections from the VPN tunnel to local services (see [this article](https://github.com/uf-mil/Sub8/wiki/Remote-Access) for more information)
+* Forwarding certain remote connections from the VPN tunnel to local services (see [this article](https://github.com/uf-mil/SubjuGator/wiki/Remote-Access) for more information)
 
 # Unattended Upgrades
 
@@ -251,7 +251,7 @@ To make the user accessible over ssh, edit the /etc/ssh/sshd_config file and fin
 
     AllowUsers user1 user2 user3
 
-This is all that is required to create a new SSHFS share. After rebooting the server, you should be able to use sshfs, as documented [here](https://github.com/uf-mil/Sub8/wiki/Accessing-Bag-Files), to connect to the share with a password. You should also be able to copy your key file over to the server for ease of access, as documented [here](https://github.com/uf-mil/Sub8/wiki/SSH-Keys).
+This is all that is required to create a new SSHFS share. After rebooting the server, you should be able to use sshfs, as documented [here](https://github.com/uf-mil/SubjuGator/wiki/Accessing-Bag-Files), to connect to the share with a password. You should also be able to copy your key file over to the server for ease of access, as documented [here](https://github.com/uf-mil/SubjuGator/wiki/SSH-Keys).
 
 Enabling samba access to the share is easy and it is highly recommended that each share be accessible over both fileservers unless a specific circumstance warrent that they not be. A configuration block for the new share needs to be added to the bottom of the /etc/samba/smb.conf file. The format for this is as follows:
 
@@ -285,4 +285,4 @@ It is recommended to set the samba password to the same thing as the system pass
 
     service samba restart
 
-The share should now be accessible over both SSHFS and Samba. This should also work remotely over SSHFS as detailed [here](https://github.com/uf-mil/Sub8/wiki/Remote-Access). Enjoy your free large file storage!
+The share should now be accessible over both SSHFS and Samba. This should also work remotely over SSHFS as detailed [here](https://github.com/uf-mil/SubjuGator/wiki/Remote-Access). Enjoy your free large file storage!
