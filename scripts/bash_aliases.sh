@@ -15,7 +15,7 @@ source $CATKIN_DIR/src/mil_common/scripts/bmux.sh
 
 
 # Directory navigation
-alias swc="cd $CATKIN_DIR/src/mil_common"
+alias mc="cd $CATKIN_DIR/src/mil_common"
 
 # Bash sourcing
 alias srcbrc="source ~/.bashrc"

@@ -26,30 +26,76 @@ _catkin_ws_complete() {
 }
 
 wsmux() {
-	if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+	local SELECTION
 
-		# Print the help menu if the user passes in -h or --help
-		echo "Usage: wsmux CATKIN_WORKSPACE"
-		echo "Quick catkin workspace switcher."
-		echo ""
-		echo "Option		GNU long option		Meaning"
-		echo "-h		--help			Display the help menu"
-	else
+	# Get the list of catkin workspaces in the user's home directory
+	_catkin_ws_complete
 
-		# If the workspace was specified as a path, use it as is
-		if [ -f "$1"/devel/setup.sh ]; then
-			source "$1"/devel/setup.sh
+	# Handles command line arguments
+	while [ "$#" -gt 0 ]; do
+		case $1 in
+			-h|--help)
+				echo "Usage: wsmux CATKIN_WORKSPACE"
+				echo "Quick catkin workspace switcher."
+				echo ""
+				echo "Option		GNU long option		Meaning"
+				echo "-h		--help			Display the help menu"
+				echo "-l		--list			List the detected catkin workspaces"
+				echo "-s		--show			Show the selected catkin workspace"
+				SELECTION=false
+				shift 1
+				;;
+			-l|--list)
+				if [ ! -z "COMPREPLY" ]; then
+					echo "${COMPREPLY[@]}" | sed 's/ /  /g'
+				fi
+				SELECTION=false
+				shift 1
+				;;
+			-s|--show)
+				if [ ! -z "$ROS_PACKAGE_PATH" ]; then
+					echo -n "Currently sourced catkin workspace: "
+					echo "$ROS_PACKAGE_PATH" | cut -d ":" -f1 | sed "s@/src@@"
+				else
+					echo "No catkin workspace is currently sourced"
+				fi
+				SELECTION=false
+				shift 1
+				;;
+			-*)
+				echo "Option $1 is not implemented."
+				echo "Try 'wsmux --help' for more information."
+				SELECTION=false
+				shift 1
+				;;
+			*)
+				if [ "$SELECTION" != "false" ]; then
 
-		# If a workspace name was passed, find it in the home directory
-		elif [ -f ~/"$1"/devel/setup.sh ]; then
-			source ~/"$1"/devel/setup.sh
+					# If the workspace was specified as a path, use it as is
+					if [ -f "$1"/devel/setup.sh ]; then
+						SELECTION="$1"/devel/setup.sh
 
-		# If neither of these were the case, informe the user that they were wrong
-		else
-			echo "The specified workspace is not valid. I don't trust like that..."
-			echo "Please specify a path or the name of a workspace in the home directory"
-		fi
+					# If a workspace name was passed, find it in the home directory
+					elif [ -f ~/"$1"/devel/setup.sh ]; then
+						SELECTION=~/"$1"/devel/setup.sh
+
+					# If neither of these were the case, prompt the user to check themself
+					else
+						echo "The specified workspace is not valid. I don't trust like that..."
+						echo "Please specify a path or the name of a workspace in the home directory"
+						SELECTION=false
+					fi
+				fi
+				shift 1
+				;;
+		esac
+	done
+
+	if [ ! -z "$SELECTION" ] && [ "$SELECTION" != "false" ]; then
+			source $SELECTION
 	fi
+
+	unset COMPREPLY
 }
 
 
