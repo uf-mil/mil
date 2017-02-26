@@ -35,7 +35,7 @@ wsmux() {
 	while [ "$#" -gt 0 ]; do
 		case $1 in
 			-h|--help)
-				echo "Usage: wsmux CATKIN_WORKSPACE"
+				echo "Usage: wsmux [OPTION]... [CATKIN_WORKSPACE]"
 				echo "Quick catkin workspace switcher."
 				echo ""
 				echo "Option		GNU long option		Meaning"

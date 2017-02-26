@@ -102,29 +102,15 @@ ros_connect() {
 	while [ "$#" -gt 0 ]; do
 		case $1 in
 			-h|--help)
-				echo "Usage: ros_connect [OPTION] [HOSTNAME]..."
+				echo "Usage: ros_connect [OPTION]..."
 				echo "Manager for connections to remote roscores."
 				echo ""
 				echo "Option		GNU long option		Meaning"
 				echo "-h		--help			Display the help menu"
-				echo "-p		--persistence		Toggle persistence across shells"
-				echo "-o		--one-time		Only set the roscore for this shell"
 				echo "-n [HOSTNAME]	--hostname		Manually pass in a hostname"
+				echo "-o		--one-time		Only set the roscore for this shell"
+				echo "-p		--persistence		Toggle persistence across shells"
 				HOST_DISCOVERY=false
-				PERSIST=false
-				shift 1
-				;;
-			-p|--persistence)
-				if [ -z `cat $PERSISTENCE_FILE | grep "disabled"` ]; then
-					echo "disabled" > $PERSISTENCE_FILE
-				else
-					echo $DEFAULT_HOST > $PERSISTENCE_FILE
-				fi
-				HOST_DISCOVERY=false
-				PERSIST=false
-				shift 1
-				;;
-			-o|--one-time)
 				PERSIST=false
 				shift 1
 				;;
@@ -138,6 +124,20 @@ ros_connect() {
 				set_ros_master $HOST
 				HOST_DISCOVERY=false
 				shift 2
+				;;
+			-o|--one-time)
+				PERSIST=false
+				shift 1
+				;;
+			-p|--persistence)
+				if [ -z `cat $PERSISTENCE_FILE | grep "disabled"` ]; then
+					echo "disabled" > $PERSISTENCE_FILE
+				else
+					echo $DEFAULT_HOST > $PERSISTENCE_FILE
+				fi
+				HOST_DISCOVERY=false
+				PERSIST=false
+				shift 1
 				;;
 			*)
 				echo "Option $1 is not implemented."
