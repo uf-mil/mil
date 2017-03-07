@@ -3,7 +3,7 @@
 
 stream_time: 30 # seconds
       # down_stream_rate: 10 Hz 
-ram_limit: 3 # gb 
+ram_limit: 0.5 # gb 
 message_topics: ["/odom", 
                  "/absodom", 
                  "/stereo/left/camera_info",
