@@ -1,3 +1,5 @@
+# DEPRECATED: The alarm system on NaviGator needs to be changed from the old
+# SubjuGator alarms to ros_alarms.
 # SubjuGator Alarm message. All alarms should be published on the /alarm topic
 
 std_msgs/Header header
