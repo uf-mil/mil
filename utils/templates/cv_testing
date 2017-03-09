@@ -36,7 +36,7 @@ class vision_sandbox:
             print e
 
         # Show keypoints
-        cv2.imshow("Navigator Image Testing", self.master_image)
+        cv2.imshow("NaviGator Image Testing", self.master_image)
         cv2.waitKey(1)
 
 if __name__ == '__main__':

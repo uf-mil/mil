@@ -2,7 +2,7 @@
 <package>
   <name>navigator_vision</name>
   <version>1.0.0</version>
-  <description>Nodes and libraries used for computer vision perception on Navigator</description>
+  <description>Nodes and libraries used for computer vision perception on NaviGator</description>
 
   <maintainer email="tessbianchi@ufl.edu">tess</maintainer>
   <maintainer email="d.soto@ufl.edu">David Soto</maintainer>

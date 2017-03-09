@@ -2,7 +2,7 @@
 
 '''
 Dashboard: A graphical interface to view the status of various systems on
-Navigator and a control panel to interact with the running system.
+NaviGator and a control panel to interact with the running system.
 '''
 
 

@@ -4,7 +4,7 @@
      on_boot
 
   </description>
-  <author>Navigator</author>
+  <author>NaviGator</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/on_boot</url>

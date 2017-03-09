@@ -22,7 +22,7 @@ def main():
     nh, args = yield NodeHandle.from_argv_with_remaining("navigator_test")
     available_missions = [mission_name for mission_name in dir(navigator_tests) if mission_name[0] != '_']
 
-    parser = argparse.ArgumentParser(description='Navigator Test')
+    parser = argparse.ArgumentParser(description='NaviGator Test')
     parser.add_argument('tests', type=str, nargs='+',
                         help='Test(s) from the navigator_tests folder to run.')
     args = parser.parse_args(args[1:])
