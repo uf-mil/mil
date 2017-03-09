@@ -11,6 +11,7 @@
 
 
 # These parameters define the network to search on
+DEFAULT_HOST="localhost"
 SEARCH_DOMAIN="ad.mil.ufl.edu"
 SUBNET="192.168.37.0/24"
 
@@ -27,11 +28,7 @@ COMMNAMES=(	"SubjuGator"
 )
 
 # The hostname persistence file
-DEFAULT_HOST="localhost"
 PERSISTENCE_FILE=~/.ros_connect_persistence
-if [ ! -f $PERSISTENCE_FILE ]; then
-	echo $DEFAULT_HOST > $PERSISTENCE_FILE
-fi
 
 
 check_host() {
@@ -105,29 +102,15 @@ ros_connect() {
 	while [ "$#" -gt 0 ]; do
 		case $1 in
 			-h|--help)
-				echo "Usage: ros_connect [OPTION] [HOSTNAME]..."
+				echo "Usage: ros_connect [OPTION]..."
 				echo "Manager for connections to remote roscores."
 				echo ""
 				echo "Option		GNU long option		Meaning"
 				echo "-h		--help			Display the help menu"
-				echo "-p		--persistence		Toggle persistence across shells"
-				echo "-o		--one-time		Only set the roscore for this shell"
 				echo "-n [HOSTNAME]	--hostname		Manually pass in a hostname"
+				echo "-o		--one-time		Only set the roscore for this shell"
+				echo "-p		--persistence		Toggle persistence across shells"
 				HOST_DISCOVERY=false
-				PERSIST=false
-				shift 1
-				;;
-			-p|--persistence)
-				if [ -z `cat $PERSISTENCE_FILE | grep "disabled"` ]; then
-					echo "disabled" > $PERSISTENCE_FILE
-				else
-					echo $DEFAULT_HOST > $PERSISTENCE_FILE
-				fi
-				HOST_DISCOVERY=false
-				PERSIST=false
-				shift 1
-				;;
-			-o|--one-time)
 				PERSIST=false
 				shift 1
 				;;
@@ -141,6 +124,20 @@ ros_connect() {
 				set_ros_master $HOST
 				HOST_DISCOVERY=false
 				shift 2
+				;;
+			-o|--one-time)
+				PERSIST=false
+				shift 1
+				;;
+			-p|--persistence)
+				if [ -z `cat $PERSISTENCE_FILE | grep "disabled"` ]; then
+					echo "disabled" > $PERSISTENCE_FILE
+				else
+					echo $DEFAULT_HOST > $PERSISTENCE_FILE
+				fi
+				HOST_DISCOVERY=false
+				PERSIST=false
+				shift 1
 				;;
 			*)
 				echo "Option $1 is not implemented."
@@ -198,10 +195,11 @@ ros_disconnect() {
 	ros_connect -n $DEFAULT_HOST
 }
 
-# Prints debugging output for the master roscore that is currently selected
-alias ros_env='echo "ROS_IP=$ROS_IP
-ROS_HOSTNAME=$ROS_HOSTNAME
-ROS_MASTER_URI=$ROS_MASTER_URI"'
+
+# Generates the persistence file if it does not exist
+if [ ! -f $PERSISTENCE_FILE ]; then
+	echo $DEFAULT_HOST > $PERSISTENCE_FILE
+fi
 
 # A simple implementation of hostname selection persistence
 if [ -z `cat $PERSISTENCE_FILE | grep "disabled"` ] && [ ! -z "`cat $PERSISTENCE_FILE`" ]; then

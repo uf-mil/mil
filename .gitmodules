@@ -1,9 +1,9 @@
-[submodule "rawgps-tools"]
-	path = rawgps-tools
-	url = https://github.com/uf-mil/rawgps-tools
+[submodule "odometry_tools"]
+	path = odometry_tools
+	url = https://github.com/uf-mil/odometry_tools.git
 [submodule "txros"]
 	path = txros
-	url = https://github.com/txros/txros
+	url = https://github.com/txros/txros.git
 [submodule "ros_alarms"]
 	path = ros_alarms
-	url = https://github.com/uf-mil/ros_alarms
+	url = https://github.com/uf-mil/ros_alarms.git

@@ -9,7 +9,7 @@
 # # Backup the bags to the MIL fileserver if it is available
 # USER={user that owns the bags directory}
 # CATKIN_DIR={The directory of the user's catkin workspace}
-# BAG_BACKUP_SCRIPT=$CATKIN_DIR/src/software-common/scripts/bag_backup.sh
+# BAG_BACKUP_SCRIPT=$CATKIN_DIR/src/mil_common/scripts/bag_backup.sh
 # LOCAL_BAGS_DIR={bags directory on the internal drive}
 # REMOTE_BAGS_DIR={bags directory on the mounted MIL fileserver share}
 # sudo -u $USER -i screen -dmS bag-backup bash -i -c \
@@ -24,17 +24,10 @@
 # mounted.
 
 
-#======================#
-# Script Configuration #
-#======================#
-
 # The directories to sync are set in the command to run the script
 LOCAL_BAGS_DIR=$1
 REMOTE_BAGS_DIR=$2
 
-#================#
-# Backup Command #
-#================#
 
 if [ -d $REMOTE_BAGS_DIR ]; then
 	echo "Synchronizing bags to the MIL fileserver share mounted at $REMOTE_BAGS_DIR"
