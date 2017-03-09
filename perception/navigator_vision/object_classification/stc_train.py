@@ -205,4 +205,4 @@ if __name__ == "__main__":
             succ, color_vec = get_rectangle(roi)
             if succ:
                 t.train(img, color_vec, color)
-    t.pickle("/home/tess/mil_ws/src/Navigator/mission_systems/navigator_scan_the_code/navigator_scan_the_code/scan_the_code_lib/svm_train.p")
+    t.pickle("/home/tess/mil_ws/src/NaviGator/mission_systems/navigator_scan_the_code/navigator_scan_the_code/scan_the_code_lib/svm_train.p")
