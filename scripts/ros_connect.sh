@@ -196,12 +196,6 @@ ros_disconnect() {
 }
 
 
-# Prints debugging output for the master roscore that is currently selected
-alias ros_env='echo "ROS_IP=$ROS_IP
-ROS_HOSTNAME=$ROS_HOSTNAME
-ROS_MASTER_URI=$ROS_MASTER_URI"'
-
-
 # Generates the persistence file if it does not exist
 if [ ! -f $PERSISTENCE_FILE ]; then
 	echo $DEFAULT_HOST > $PERSISTENCE_FILE

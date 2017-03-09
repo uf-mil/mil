@@ -14,6 +14,14 @@ source $CATKIN_DIR/src/mil_common/scripts/wsmux.sh
 source $CATKIN_DIR/src/mil_common/scripts/bmux.sh
 
 
+# Debugging for ROS networking
+ros_env() {
+	echo "ROS_IP=$ROS_IP"
+	echo "ROS_HOSTNAME=$ROS_HOSTNAME"
+	echo "ROS_MASTER_URI=$ROS_MASTER_URI"
+}
+
+
 # Directory navigation
 alias mc="cd $CATKIN_DIR/src/mil_common"
 
