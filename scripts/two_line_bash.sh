@@ -10,10 +10,18 @@
 
 function parse_catkin_workspace {
 	PS_WORKSPACE=""
-	local WORKSPACE_DIR="`echo $ROS_PACKAGE_PATH | cut -d ':' -f1 | sed 's@/src@@'`"
-	if [ -f $WORKSPACE_DIR/.catkin_workspace ]; then
-		PS_WORKSPACE="(catkin `echo $WORKSPACE_DIR | rev | cut -d "/" -f1 | rev`) "
+
+	# Store a list of catkin workspaces in the COMPREPLY variable
+	_catkin_ws_complete
+
+	# Only print the selected workspace if more than one is present
+	if [ ${#COMPREPLY[@]} -gt 1 ]; then
+		local WORKSPACE_DIR="`echo $ROS_PACKAGE_PATH | cut -d ':' -f1 | sed 's@/src@@'`"
+		if [ -f $WORKSPACE_DIR/.catkin_workspace ]; then
+			PS_WORKSPACE="(catkin `echo $WORKSPACE_DIR | rev | cut -d "/" -f1 | rev`) "
+		fi
 	fi
+	unset COMPREPLY
 }
 
 function parse_git_branch {
@@ -32,6 +40,8 @@ function parse_git_branch {
 function parse_tlb_info {
 	parse_catkin_workspace
 	parse_git_branch
+	PS_LINE=`printf -- "- %.0s" {1..200}`
+	PS_FILL=${PS_LINE:0:$COLUMNS}
 }
 
 
@@ -43,8 +53,6 @@ if [ ! -f ~/.disable_tlb ]; then
 	YELLOW="\[\033[0;33m\]"
 
 	PROMPT_COMMAND=parse_tlb_info
-	PS_LINE=`printf -- "- %.0s" {1..200}`
-	PS_FILL=${PS_LINE:0:$COLUMNS}
 	PS_INFO="$GREEN\u@\h$RESET:$BLUE\w "
 	PS_CATKIN="$YELLOW\$PS_WORKSPACE"
 	PS_GIT="$YELLOW\$PS_BRANCH"
