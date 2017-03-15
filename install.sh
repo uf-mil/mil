@@ -363,7 +363,7 @@ fi
 # Add software repository for Nvidia to software sources if the CUDA option was selected
 if ($INSTALL_CUDA) && [ "$REQUIRED_OS_ID" = "Ubuntu" ]; then
 	instlog "Adding the Nvidia PPA to software sources"
-	sudo sh -c 'echo "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64 /" >> /etc/apt/sources.list.d/cuda.list'
+	sudo sh -c 'echo "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64 /" > /etc/apt/sources.list.d/cuda.list'
 	wget -q -O - http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub | sudo apt-key add -
 fi
 
