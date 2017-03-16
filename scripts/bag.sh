@@ -14,12 +14,19 @@ VARIABLE_PREFIX="bag_"
 _bagging_complete() {
 	local VARIABLE
 
-	# Iterate over all of the bagging variables in the environment with the prefix removed
-	for VARIABLE in `env | grep "$VARIABLE_PREFIX$2" | cut -d"=" -f1 | sed "s@$VARIABLE_PREFIX@@"`; do
+	# Append all ROS topics to the autocomplete list if the string to autocomplete begins with a '/' character
+	if [ "${2:0:1}" = '/' ]; then
+		COMPREPLY+=( `rostopic list 2> /dev/null` )
 
-		# Append the variable to the autocomplete list
-		COMPREPLY+=( "$VARIABLE" )
-	done
+	else
+
+		# Otherwise, iterate over all of the bagging variables in the environment with the prefix removed
+		for VARIABLE in `env | grep "$VARIABLE_PREFIX$2" | cut -d"=" -f1 | sed "s@$VARIABLE_PREFIX@@"`; do
+
+			# Append the variable to the autocomplete list
+			COMPREPLY+=( "$VARIABLE" )
+		done
+	fi
 }
 
 
@@ -110,8 +117,7 @@ bag() {
 				;;
 			*)
 				if [ "$MODE" != "false" ]; then
-					if [ ! -z "$(eval echo \$${VARIABLE_PREFIX}${1})" ] || \
-					   [ "${1:0:1}" = "/" ]; then
+					if [ ! -z "$(eval echo \$${VARIABLE_PREFIX}${1})" ] || [ "${1:0:1}" = "/" ]; then
 						if [ -z "$TOPICS" ]; then
 							TOPICS=$(eval echo \$${VARIABLE_PREFIX}${1})
 						else
