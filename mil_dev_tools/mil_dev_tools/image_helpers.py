@@ -9,7 +9,7 @@ import numpy as np
 from os import path
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, CameraInfo
-from sub8_ros_tools.init_helpers import wait_for_param
+from navigator_tools.init_helpers import wait_for_param
 
 
 def get_parameter_range(parameter_root):
@@ -89,7 +89,9 @@ class Image_Subscriber(object):
         rospy.logwarn("Blocking -- waiting at most %d seconds for camera info." % timeout)
 
         timeout = rospy.Duration(timeout)
+        rospy.sleep(.1)  # Make sure we don't have negative time
         start_time = rospy.Time.now()
+
         while (rospy.Time.now() - start_time < timeout) and (not rospy.is_shutdown()):
             if self.camera_info is not None:
                 rospy.loginfo("Camera info found!")

@@ -40,7 +40,7 @@ def rosmsg_to_numpy(rosmsg, keys=None):
                 output_array.append(getattr(rosmsg, key))
             else:
                 break
-
+        assert len(output_array) is not 0, "Input type {} has none of these attributes {}.".format(type(rosmsg).__name__, keys)
         return np.array(output_array).astype(np.float32)
 
     else:
@@ -97,6 +97,10 @@ def wrench_to_numpy(wrench):
 
 
 def numpy_to_point(np_vector):
+    np_vector = np.array(vector)
+    if np_vector.size == 2:
+        np_vector = np.append(np_vector, 0)  # Assume user is give 2d point
+
     return geometry_msgs.Point(*np_vector)
 
 
@@ -184,3 +188,7 @@ def odom_sub(topic, callback):
         callback(odometry_to_numpy(msg))
 
     return rospy.Subscriber(topic, nav_msgs.Odometry, wrapped_callback, queue_size=1)
+
+def ros_to_np_3D(msg):
+    xyz_array = np.array(([msg.x, msg.y, msg.z]))
+    return xyz_array
