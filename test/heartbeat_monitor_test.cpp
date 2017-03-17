@@ -83,9 +83,9 @@ TEST(HeartbeatMonitorTest, heartbeatMonitorTest)
   //  Test heartbeat recovery
   auto recovery_start_time = ros::Time::now();
   pub_valid(true);
-  while(ros::Time::now() - recovery_start_time < time_to_clear) // Heartbeat is recovering here
+  while(ros::Time::now() - recovery_start_time < time_to_clear*1.1) // Heartbeat is recovering here
   {
-    sleep_until(time_to_raise * 0.8, ros::Time::now());
+    sleep_until(time_to_clear * 0.1, ros::Time::now());
     pub_valid(true);
   }
   EXPECT_TRUE(listener.queryCleared())
