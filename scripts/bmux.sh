@@ -45,7 +45,7 @@ bmux() {
 
 				# Special variables used in the bag command
 				unset BAG_ALWAYS
-				unset BAG_HOME
+				unset BAG_DIR
 				SELECTION=false
 				shift 1
 				;;

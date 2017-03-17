@@ -10,6 +10,8 @@
 # persistence feature as well as how to set the roscore for a single shell.
 
 
+RC_CONFIG_FILE=$MIL_CONFIG_DIR/ros_connect.conf
+
 # These parameters define the network to search on
 DEFAULT_HOST="localhost"
 SEARCH_DOMAIN="ad.mil.ufl.edu"
@@ -26,9 +28,6 @@ COMMNAMES=(	"SubjuGator"
 		"NaviGator"
 		"Shuttle"
 )
-
-# The hostname persistence file
-PERSISTENCE_FILE=~/.ros_connect_persistence
 
 
 check_host() {
@@ -56,6 +55,11 @@ check_roscore_hosts() {
 			AVAILABLE_HOSTS+=($HOST_ID)
 		fi
 	done
+}
+
+write_rc_config_file() {
+	echo "PERSIST_ENABLED=$1" > $RC_CONFIG_FILE
+	echo "PERSIST_HOSTNAME=$2" >> $RC_CONFIG_FILE
 }
 
 set_ros_ip() {
@@ -91,12 +95,8 @@ set_ros_master() {
 ros_connect() {
 	HOST_DISCOVERY=true
 
-	# Gets the state of hostname persistence from the persistence file
-	if [ -z `cat $PERSISTENCE_FILE | grep "disabled"` ]; then
-		PERSIST=true
-	else
-		PERSIST=false
-	fi
+	# Gets the persistence state from the configuration file
+	PERSIST=`cat $RC_CONFIG_FILE | grep PERSIST_ENABLED | grep -oe '[^=]*$'`
 
 	# Handles command line arguments
 	while [ "$#" -gt 0 ]; do
@@ -130,10 +130,10 @@ ros_connect() {
 				shift 1
 				;;
 			-p|--persistence)
-				if [ -z `cat $PERSISTENCE_FILE | grep "disabled"` ]; then
-					echo "disabled" > $PERSISTENCE_FILE
+				if [ "$PERSIST" = "true" ]; then
+					write_rc_config_file "false" "$DEFAULT_HOST"
 				else
-					echo $DEFAULT_HOST > $PERSISTENCE_FILE
+					write_rc_config_file "true" "$DEFAULT_HOST"
 				fi
 				HOST_DISCOVERY=false
 				PERSIST=false
@@ -185,7 +185,7 @@ ros_connect() {
 	fi
 
 	if ($PERSIST) && [ ! -z $HOST ]; then
-		echo $HOST > $PERSISTENCE_FILE
+		write_rc_config_file "true" "$HOST"
 	fi
 }
 
@@ -196,12 +196,12 @@ ros_disconnect() {
 }
 
 
-# Generates the persistence file if it does not exist
-if [ ! -f $PERSISTENCE_FILE ]; then
-	echo $DEFAULT_HOST > $PERSISTENCE_FILE
+# Generates the configuration file if it does not exist
+if [ ! -f $RC_CONFIG_FILE ]; then
+	write_rc_config_file "true" "$DEFAULT_HOST"
 fi
 
 # A simple implementation of hostname selection persistence
-if [ -z `cat $PERSISTENCE_FILE | grep "disabled"` ] && [ ! -z "`cat $PERSISTENCE_FILE`" ]; then
-	ros_connect -n "`cat $PERSISTENCE_FILE`"
+if [ "`cat $RC_CONFIG_FILE | grep PERSIST_ENABLED | grep -oe '[^=]*$'`" = "true" ]; then
+	ros_connect -n "`cat $RC_CONFIG_FILE | grep PERSIST_HOSTNAME | grep -oe '[^=]*$'`"
 fi
