@@ -11,7 +11,7 @@ catkin_package()
 
 # Add folders to be run by python nosetests
 if(CATKIN_ENABLE_TESTING)
-    catkin_add_nosetests(test_ros_tools)
+    catkin_add_nosetests(test)
 endif()
 
 catkin_python_setup()

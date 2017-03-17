@@ -5,6 +5,7 @@
   <description>Development tools used in MIL projects</description>
   <maintainer email="kma1660@gmail.com">Kevin Allen</maintainer>
   <maintainer email="dsoto@ufl.edu">David Soto</maintainer>
+  <maintainer email="mattlangford95@ufl.edu">Matthew Langford</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rostest</build_depend>

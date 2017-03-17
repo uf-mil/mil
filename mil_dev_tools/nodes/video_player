@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-Usage: rosrun navigator_tools video_player _filename:=MyVideoFile.mp4
-       rosrun navigator_tools video_player MyVideoFile.mp4
+Usage: rosrun mil_dev_tools video_player _filename:=MyVideoFile.mp4
+       rosrun mil_dev_tools video_player MyVideoFile.mp4
 
 Utility to play video files into a ros topic
 with some added conveniences like pausing and

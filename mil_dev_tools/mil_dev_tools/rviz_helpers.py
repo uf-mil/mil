@@ -7,22 +7,21 @@ import visualization_msgs.msg as visualization_msgs
 
 from geometry_msgs.msg import Pose, Vector3, Point
 from std_msgs.msg import ColorRGBA
-from uf_common.msg import Float64Stamped  # This needs to be deprecated
 
-import navigator_tools
+import mil_dev_tools
 
 rviz_pub = rospy.Publisher("visualization", visualization_msgs.Marker, queue_size=3)
 
 def draw_sphere(position, color, scaling=(0.11, 0.11, 0.11), m_id=4, frame='/base_link'):
     pose = Pose(
-        position=navigator_tools.numpy_to_point(position),
-        orientation=navigator_tools.numpy_to_quaternion([0.0, 0.0, 0.0, 1.0])
+        position=mil_dev_tools.numpy_to_point(position),
+        orientation=mil_dev_tools.numpy_to_quaternion([0.0, 0.0, 0.0, 1.0])
     )
 
     marker = visualization_msgs.Marker(
         ns='wamv',
         id=m_id,
-        header=navigator_tools.make_header(frame=frame),
+        header=mil_dev_tools.make_header(frame=frame),
         type=visualization_msgs.Marker.SPHERE,
         action=visualization_msgs.Marker.ADD,
         pose=pose,
@@ -49,7 +48,7 @@ def make_ray(base, direction, length, color, frame='/base_link', m_id=0, **kwarg
     marker = visualization_msgs.Marker(
         ns='wamv',
         id=m_id,
-        header=navigator_tools.make_header(frame=frame),
+        header=mil_dev_tools.make_header(frame=frame),
         type=visualization_msgs.Marker.LINE_STRIP,
         action=visualization_msgs.Marker.ADD,
         color=ColorRGBA(*color),

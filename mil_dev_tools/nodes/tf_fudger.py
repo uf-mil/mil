@@ -122,6 +122,8 @@ while not rospy.is_shutdown():
     if k == ord('z'):
         set_bars((0, 0, 0), (0, 0, 0))
 
+    # This functionality was configured to replace lines in navigator's tf launch file, should refactor to be general later
+    '''
     if k == ord('s'):
         # Save the transform in navigator_launch/launch/tf.launch replacing the line
         import rospkg
@@ -162,6 +164,7 @@ while not rospy.is_shutdown():
                 f.write(line)
 
         break
+    '''
 
     br.sendTransform(p, q, rospy.Time.now(), args.tf_child, args.tf_parent)
 
