@@ -52,7 +52,7 @@ check_host() {
 CATKIN_DIR=~/mil_ws
 MIL_CONFIG_DIR=~/.mil
 BASHRC_FILE=~/.bashrc
-MILRC_FILE=~/.milrc
+MILRC_FILE=$MIL_CONFIG_DIR/milrc
 
 
 #======================#
@@ -615,6 +615,9 @@ fi
 #=========================#
 # Bashrc Alias Management #
 #=========================#
+
+# Generates the configuration directory if it does not exist
+mkdir -p $MIL_CONFIG_DIR
 
 # Write the MIL runcom file for sourcing all of the required project configurations
 echo "# This file is created by the install script to source all of the configurations" > $MILRC_FILE
