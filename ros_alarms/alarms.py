@@ -151,7 +151,7 @@ class AlarmListener(object):
                 # Try to run the callback, absorbing any errors
                 try:
                     alarm.parameters = parse_json_str(alarm.parameters)
-                    cb(alarm)
+                    funct(alarm)
                 except Exception as e:
                     rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self._alarm_name))
                     rospy.logwarn(e)
@@ -178,7 +178,6 @@ class AlarmListener(object):
             return
         
         self._last_alarm = alarm
-
         # Run the callbacks if severity conditions are met
         cb_list = self._raised_cbs if alarm.raised else self._cleared_cbs
         for severity, cb in cb_list:

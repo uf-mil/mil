@@ -3,17 +3,23 @@ import rospy
 import rostest
 import unittest
 import random
+import sys
 
 from ros_alarms import AlarmBroadcaster, AlarmListener
 
+PKG = 'ros_alarms'
+NAME = 'server_tester'
 
 class ClientTester(unittest.TestCase):
+    def __init__(self, *args):
+        rospy.init_node(NAME, anonymous=True)
+        super(ClientTester, self).__init__(*args)
+
     ''' Tests alarm client operations
     Creates some listeners and some broadcasters and tests various raising and clearing conditoins
     Also tests various combination of parameters
     '''
     def test_broadcaster_and_listener(self):
-        return
         ''' Simple broadcaster and listener tests, with arguments '''
         ab_a = AlarmBroadcaster("alarm_a")
         al_a = AlarmListener("alarm_a")
@@ -71,7 +77,6 @@ class ClientTester(unittest.TestCase):
         self.assertEqual(al_c.get_alarm().parameters, _blank_params)
 
     def test_stress(self):
-        return
         ''' Stress test the server, lots of raises and clears '''
         ab_a = AlarmBroadcaster("alarm_a")
         al_a = AlarmListener("alarm_a")
@@ -106,8 +111,8 @@ class ClientTester(unittest.TestCase):
         self.assertTrue(al_c.is_cleared())
 
     def test_callbacks(self):
-        al_a = AlarmListener("alarm_a")
-        ab_a = AlarmBroadcaster("alarm_a")
+        al_a = AlarmListener("alarm_d")
+        ab_a = AlarmBroadcaster("alarm_d")
 
         self.raised = False
         self.cleared = False
@@ -143,7 +148,7 @@ class ClientTester(unittest.TestCase):
 
     def raised_cb(self, alarm):
         self.raised = True
-    
+
     def cleared_cb(self, alarm):
         self.cleared = True
 
@@ -152,4 +157,4 @@ class ClientTester(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    rostest.rosrun("ros_alarms", 'server_tester', ClientTester)
+    rostest.rosrun(PKG, NAME, ClientTester, sys.argv)
