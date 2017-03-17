@@ -1,0 +1,29 @@
+<package>
+  <name>paulboard_driver</name>
+  <version>1.0.0</version>
+  <description>paulboard_driver</description>
+  <maintainer email="matthewbot@gmail.com">Matthew Thompson</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/paulboard_driver</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author>Matthew Thompson</author>
+
+  <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Dependencies needed to compile this package. -->
+  <build_depend>rospy</build_depend>
+  <build_depend>hydrophones</build_depend>
+
+  <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>rospy</run_depend>
+  <run_depend>hydrophones</run_depend>
+
+  <!-- Dependencies needed only for running tests. -->
+  <!-- <test_depend>rospy</test_depend> -->
+  <!-- <test_depend>hydrophones</test_depend> -->
+
+</package>
