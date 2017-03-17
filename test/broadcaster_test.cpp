@@ -32,8 +32,8 @@ TEST(BroadcasterTest, broadcasterTest)
     << "isRaised() returned the same thing as isCleared()";
 
   // Test raising and clearing
-  auto raise_msg {"Broadcaster wasn't able to raise test_alarm"};
-  auto clear_msg {"Broadcaster wasn't able to clear test_alarm"};
+  const char* raise_msg = "Broadcaster wasn't able to raise test_alarm";
+  const char* clear_msg = "Broadcaster wasn't able to clear test_alarm";
   a_caster1.raise();
   EXPECT_TRUE(listener.queryRaised()) << raise_msg;
   a_caster1.clear();

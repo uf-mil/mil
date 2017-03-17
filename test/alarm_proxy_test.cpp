@@ -14,7 +14,7 @@ TEST(AlarmProxyTest, alarmProxyTest)
   AlarmProxy pxy {"test_alarm", false, "test_alarm_client_node", "", "json", 5};
 
   // Test ctor
-  auto ctor_err {"AlarmProxy different field than expected based on value passed to ctor."};
+  const char* ctor_err  = "AlarmProxy different field than expected based on value passed to ctor.";
   EXPECT_STREQ("test_alarm", pxy.alarm_name.c_str()) << ctor_err;
   EXPECT_STREQ("test_alarm_client_node", pxy.node_name.c_str()) << ctor_err;
   EXPECT_STREQ("", pxy.problem_description.c_str()) << ctor_err;
