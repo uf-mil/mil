@@ -8,7 +8,7 @@ If you have decided to develop for one of our projects, then you will need to se
 
 This repository does not need to be cloned locally unless you want to make changes to it. The following command will fetch and run the script:
 
-    bash <(curl -s https://raw.githubusercontent.com/uf-mil/installer/master/install.sh)
+    sudo apt-get -qq update && sudo apt-get install -qq curl && bash <(curl -s https://raw.githubusercontent.com/uf-mil/installer/master/install.sh)
 
 The install script is intended to handle *every single thing* that needs to be installed to develop for the robot. If it does not work, something has gone terribly wrong and it needs to be fixed. If you resolve an issue while installing, please fix it in the install script and submit a pull-request with the changes. Otherwise, notify the script's maintainer (currently [Anthony Olive](https://github.com/whispercoros)).
 
