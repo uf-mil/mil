@@ -1,1 +1,0 @@
-rosrun navigator_perception scan_the_code
