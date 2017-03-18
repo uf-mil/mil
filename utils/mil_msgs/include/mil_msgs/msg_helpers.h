@@ -1,5 +1,4 @@
-#ifndef UF_COMMON__MSG_HELPERS_H
-#define UF_COMMON__MSG_HELPERS_H
+#pragma once
 
 #include <Eigen/Dense>
 #include <tf/tf.h>
@@ -76,4 +75,3 @@ inline T quat2xyzw(Eigen::Quaterniond q) {
 }
 }
 
-#endif

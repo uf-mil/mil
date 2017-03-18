@@ -1,12 +1,13 @@
 <package>
-  <name>uf_common</name>
+  <name>mil_msgs</name>
   <version>1.0.0</version>
-  <description>uf_common</description>
+  <description>Common ROS msgs,srvs and actions for MIL repos</description>
   <maintainer email="forrest@forre.st">Forrest Voight</maintainer>
+  <maintainer email="d.soto@ufl.edu">David Soto</maintainer>
 
   <license>BSD</license>
 
-  <url type="website">http://ros.org/wiki/uf_common</url>
+  <url type="website">http://github.com/uf-mil/mil_common</url>
   <author>Forrest Voight</author>
   <buildtool_depend>catkin</buildtool_depend>
 

@@ -1,5 +1,4 @@
-#ifndef UF_COMMON__PARAM_HELPERS_H
-#define UF_COMMON__PARAM_HELPERS_H
+#pragma once
 
 #include <ros/ros.h>
 #include <tf/LinearMath/Quaternion.h>
@@ -124,4 +123,3 @@ T getParam(ros::NodeHandle &nh, std::string name, T default_value) {
 }
 }
 
-#endif
