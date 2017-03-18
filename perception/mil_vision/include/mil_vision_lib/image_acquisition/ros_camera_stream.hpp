@@ -1,7 +1,7 @@
 #pragma once
 
-#include <navigator_vision_lib/image_acquisition/camera_frame_sequence.hpp>
-#include <navigator_tools.hpp>
+#include <mil_vision_lib/image_acquisition/camera_frame_sequence.hpp>
+#include <mil_tools.hpp>
 #include <boost/circular_buffer.hpp>
 
 #include <ros/ros.h>

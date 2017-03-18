@@ -1,10 +1,9 @@
 <?xml version="1.0"?>
 <package>
-  <name>navigator_vision</name>
-  <version>1.0.0</version>
+  <name>mil_vision</name>
+  <version>2.0.0</version>
   <description>Nodes and libraries used for computer vision perception on NaviGator</description>
 
-  <maintainer email="tessbianchi@ufl.edu">tess</maintainer>
   <maintainer email="d.soto@ufl.edu">David Soto</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
@@ -18,8 +17,8 @@
   <run_depend>image_geometry</run_depend>
   <build_depend>cv_bridge</build_depend>
   <run_depend>cv_bridge</run_depend>
-  <build_depend>navigator_msgs</build_depend>
-  <run_depend>navigator_msgs</run_depend>
+  <build_depend>mil_msgs</build_depend>
+  <run_depend>mil_msgs</run_depend>
   <build_depend>message_generation</build_depend>
   <run_depend>message_runtime</run_depend>
   <build_depend>std_msgs</build_depend>

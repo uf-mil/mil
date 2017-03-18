@@ -5,7 +5,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include <navigator_tools.hpp>
+#include <mil_tools.hpp>
 
 namespace nav
 {

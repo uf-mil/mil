@@ -1,6 +1,6 @@
 #pragma once
 
-#include <navigator_vision_lib/image_acquisition/camera_frame.hpp>
+#include <mil_vision_lib/image_acquisition/camera_frame.hpp>
 #include <boost/circular_buffer.hpp>
 #include <image_geometry/pinhole_camera_model.h>
 #include <vector>

@@ -5,7 +5,7 @@
 #include <image_geometry/pinhole_camera_model.h>
 #include <message_filters/cache.h>
 #include <message_filters/subscriber.h>
-#include <navigator_msgs/CameraToLidarTransform.h>
+#include <mil_msgs/CameraToLidarTransform.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
@@ -53,7 +53,7 @@ class CameraLidarTransformer
     bool inCameraFrame(cv::Point2d& p);
     void cameraInfoCallback(const sensor_msgs::CameraInfo info);
     void drawPoint(cv::Mat& mat, cv::Point2d& p, cv::Scalar color=cv::Scalar(0, 0, 255));
-    bool transformServiceCallback(navigator_msgs::CameraToLidarTransform::Request &req,navigator_msgs::CameraToLidarTransform::Response &res);
+    bool transformServiceCallback(mil_msgs::CameraToLidarTransform::Request &req,mil_msgs::CameraToLidarTransform::Response &res);
     static ros::Duration MAX_TIME_ERR;
     #ifdef DO_ROS_DEBUG
     ros::Publisher pubMarkers;

@@ -1,6 +1,6 @@
 #pragma once
 
-// #include <navigator_vision_lib/image_acquisition/camera_model.hpp>
+// #include <mil_vision_lib/image_acquisition/camera_model.hpp>
 #include <opencv2/core/core.hpp>
 #include <ros/ros.h>
 #include <image_geometry/pinhole_camera_model.h>

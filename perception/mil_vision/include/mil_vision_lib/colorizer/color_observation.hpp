@@ -1,7 +1,7 @@
 #pragma once
 
-#include <navigator_vision_lib/image_acquisition/ros_camera_stream.hpp>
-#include <navigator_vision_lib/colorizer/common.hpp>
+#include <mil_vision_lib/image_acquisition/ros_camera_stream.hpp>
+#include <mil_vision_lib/colorizer/common.hpp>
 #include <boost/shared_ptr.hpp>
 #include <Eigen/Core>
 
