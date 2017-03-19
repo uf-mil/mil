@@ -3,7 +3,7 @@
 #include <mil_vision_lib/image_acquisition/ros_camera_stream.hpp>
 #include <mil_vision_lib/colorizer/camera_observer.hpp>
 #include <mil_vision_lib/colorizer/common.hpp>
-#include <mil_tools.hpp>
+#include <mil_tools/mil_tools.hpp>
 #include <pcl_ros/transforms.h>
 #include <tf/transform_listener.h>
 

@@ -1,4 +1,4 @@
-#include <navigator_vision_lib/colorizer/pcd_colorizer.hpp>
+#include <mil_vision_lib/colorizer/pcd_colorizer.hpp>
 
 using namespace std;
 using namespace cv;
@@ -9,7 +9,7 @@ PcdColorizer::PcdColorizer(ros::NodeHandle nh, string input_pcd_topic)
   : _nh(nh), _img_hist_size{10}, _cloud_processor{nh, input_pcd_topic, _img_hist_size},
   _input_pcd_topic{input_pcd_topic}, _output_pcd_topic{input_pcd_topic + "_colored"}  
 {
-  using nav::tools::operator "" _s; // converts to std::string
+  using mil::tools::operator "" _s; // converts to std::string
 
   try
   {
@@ -52,7 +52,7 @@ void PcdColorizer::_cloud_cb(const PCD<>::ConstPtr &cloud_in)
 // {
 //   cout << "img hist size: " << _img_hist_size << endl;
 //   // Subscribe to all rectified color img topics
-//   auto rect_color_topics = nav::tools::getRectifiedImageTopics(true);
+//   auto rect_color_topics = mil::tools::getRectifiedImageTopics(true);
 //   if(rect_color_topics.size() == 0)
 //   {
 //     _err_msg += "COLORIZER: There are no rectified color camera topics currently publishing on this ROS master (";

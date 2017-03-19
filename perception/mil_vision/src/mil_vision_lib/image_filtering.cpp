@@ -1,11 +1,11 @@
-#include <navigator_vision_lib/image_filtering.hpp>
+#include <mil_vision_lib/image_filtering.hpp>
 
 namespace nav
 {
 
 cv::Mat rotateKernel(const cv::Mat &kernel, float theta, bool deg, bool no_expand)
 {
-  theta = deg? theta : theta * nav::PI / 180.0f;
+  theta = deg? theta : theta * mil::PI / 180.0f;
   cv::Point2f c_org{kernel.cols * 0.5f, kernel.rows * 0.5f};  // center of original
 
   if(no_expand) // rotates without expanding the canvas
@@ -73,12 +73,12 @@ float getRadialSymmetryAngle(const cv::Mat &kernel, float ang_res, bool deg)
   cv::Mat elem_wise_mult{original.size(), CV_32S};
   cv::multiply(original, original, elem_wise_mult);
   auto standard = cv::sum(elem_wise_mult)[0];
-  float max = deg? 360.0f : 2 * nav::PI;
+  float max = deg? 360.0f : 2 * mil::PI;
   float result = max;
   float best_score = 0;
   bool left_starting_region = false;
 
-  for(float theta = 0.0f; theta < max; theta += (deg? ang_res * 180.0f / nav::PI : ang_res))
+  for(float theta = 0.0f; theta < max; theta += (deg? ang_res * 180.0f / mil::PI : ang_res))
   {
     cv::multiply(original, rotateKernel(original, theta, deg, true), elem_wise_mult);
     double score = standard / cv::sum(elem_wise_mult)[0];

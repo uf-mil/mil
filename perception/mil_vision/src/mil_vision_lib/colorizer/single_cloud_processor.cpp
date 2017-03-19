@@ -4,13 +4,13 @@
 
 namespace nav {
 
-using nav::tools::operator "" _s; // converts to std::string
+using mil::tools::operator "" _s; // converts to std::string
 
 SingleCloudProcessor::SingleCloudProcessor(ros::NodeHandle nh, std::string& in_pcd_topic, size_t hist_size)
 : _nh{nh}, _hist_size{hist_size}
 {
   ROS_INFO(("SingleCloudProcessor: Initializing with " + in_pcd_topic).c_str());
-  auto rect_color_topics = nav::tools::getRectifiedImageTopics(true);
+  auto rect_color_topics = mil::tools::getRectifiedImageTopics(true);
   if(rect_color_topics.size() == 0)
   {
     _err_msg += "COLORIZER: There are no rectified color camera topics currently publishing on this ROS master (";

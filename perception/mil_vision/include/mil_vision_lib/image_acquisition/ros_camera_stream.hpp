@@ -1,7 +1,7 @@
 #pragma once
 
 #include <mil_vision_lib/image_acquisition/camera_frame_sequence.hpp>
-#include <mil_tools.hpp>
+#include <mil_tools/mil_tools.hpp>
 #include <boost/circular_buffer.hpp>
 
 #include <ros/ros.h>
@@ -168,7 +168,7 @@ private:
 template<typename img_scalar_t, typename float_t>
 bool ROSCameraStream<img_scalar_t, float_t>::init(std::string &camera_topic)
 {
-  using nav::tools::operator "" _s;  // convert raw string literal to std::string
+  using mil::tools::operator "" _s;  // convert raw string literal to std::string
   _img_topic = camera_topic;
   bool success = false;
   image_transport::CameraSubscriber cam_sub;
@@ -237,7 +237,7 @@ template<typename img_scalar_t, typename float_t>
 typename ROSCameraStream<img_scalar_t, float_t>::CamFrameConstPtr
 ROSCameraStream<img_scalar_t, float_t>::getFrameFromTime(ros::Time desired_time)
 {
-  using nav::tools::operator "" _s;
+  using mil::tools::operator "" _s;
 
   // Check bounds on time
   if(desired_time < this->_start_time || desired_time > this->_end_time)
@@ -269,7 +269,7 @@ template<typename img_scalar_t, typename float_t>
 typename ROSCameraStream<img_scalar_t, float_t>::CamFrameConstPtr 
 ROSCameraStream<img_scalar_t, float_t>::operator[](int i)
 {
-  using nav::tools::operator "" _s;
+  using mil::tools::operator "" _s;
 
   // Prevent adding new frames while frames are being accessed
   _mtx.lock();

@@ -2,7 +2,7 @@
 
 namespace nav{
 
-using nav::tools::operator "" _s; // converts to std::string
+using mil::tools::operator "" _s; // converts to std::string
   
 CameraObserver::CameraObserver(ros::NodeHandle &nh, std::string &pcd_in_topic, std::string &cam_topic, size_t hist_size)
 : _nh{nh}, _cam_stream{nh, hist_size}

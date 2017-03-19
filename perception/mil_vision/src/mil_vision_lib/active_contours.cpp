@@ -1,4 +1,4 @@
-#include <navigator_vision_lib/active_contours.hpp>
+#include <mil_vision_lib/active_contours.hpp>
 
 using namespace std;
 using namespace cv;
