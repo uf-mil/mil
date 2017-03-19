@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(sub8_sonar)
+project(mil_passive_sonar)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
