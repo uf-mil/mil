@@ -635,8 +635,8 @@ if ($INSTALL_CUDA); then
 	if [ "$REQUIRED_OS_ID" = "Ubuntu" ]; then
 		echo "" >> $MILRC_FILE
 		echo "# Adds CUDA programs and libraries to the shell's path" >> $MILRC_FILE
-		echo "export PATH=$PATH:/usr/local/cuda/bin" >> $MILRC_FILE
-		echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64" >> $MILRC_FILE
+		echo "export PATH=\$PATH:/usr/local/cuda/bin" >> $MILRC_FILE
+		echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/cuda/lib64" >> $MILRC_FILE
 	fi
 fi
 
