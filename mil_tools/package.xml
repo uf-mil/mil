@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>mil_dev_tools</name>
+  <name>mil_tools</name>
   <version>1.0.0</version>
   <description>Development tools used in MIL projects</description>
   <maintainer email="kma1660@gmail.com">Kevin Allen</maintainer>
