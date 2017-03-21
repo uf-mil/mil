@@ -4,7 +4,6 @@ from __future__ import division
 import rospy
 import rosbag
 import rostopic
-from std_srvs.srv import SetBool
 import os
 import rospkg
 import time
@@ -13,18 +12,21 @@ import resource
 from collections import deque
 import itertools
 import datetime
+from mil_ros_tools.srv import  BaggerCommands
 
 """
-To call call service call the '/online_bagger' service with the SetBool
-Parameter set to True. Doing this will generate a rosbag with the
+To call call service call the '/online_bagger/dump' service with the BaggerCommands.srv
+Amount and Unit. Doing this will generate a rosbag with the
 last x number of seconds saved
 
-for example:
+For example:
 
-    bagging_server = rospy.ServiceProxy('/online_bagger', SetBool)
-    bag_status = bagging_server(True)
-"""
-
+        bagging_server = rospy.ServiceProxy('/online_bagger/dump', BaggerCommands)
+        bag_status = bagging_server(x, 's')
+        bag_status = bagging_server(Amount, Unit)
+        amount = float32 (leave blank to dump entire bag)
+        unit = string (select units 's' or 'm')
+        """
 
 class OnlineBagger(object):
 
@@ -39,14 +41,14 @@ class OnlineBagger(object):
         self.n = 0  # number of iterations
         self.streaming = True
         self.dumping = False
-
         self.get_params()
         self.make_dicts()
-        self.subscribe()
-        rospy.loginfo('subscriber success: %s', self.subscriber_list)
 
-        self.bagging_service = rospy.Service('/online_bagger/dump', SetBool,
-                                             self.start_bagging)
+        self.bagging_service = rospy.Service('/online_bagger/dump', BaggerCommands,
+                                             self.check_action)
+
+        self.subscribe_loop()
+        rospy.loginfo('subscriber success: %s', self.subscriber_list)
 
     def get_params(self):
 
@@ -54,7 +56,7 @@ class OnlineBagger(object):
         Retrieve parameters from param server.
         """
 
-        self.topics = rospy.get_param('/online_bagger/message_topics')
+        self.topics = rospy.get_param('/online_bagger/topics')
         self.ram_limit = rospy.get_param('/online_bagger/ram_limit') * 1.073e9  # gigabytes to bytes
         # self.stream_time = rospy.get_param('/online_bagger/stream_time')
         self.dir = rospy.get_param('/online_bagger/bag_package_path')
@@ -112,6 +114,19 @@ class OnlineBagger(object):
 
         rospy.loginfo('failed topics: %s', self.subscriber_list)
 
+    def subscribe_loop(self):
+
+        """
+        Continue to subscribe until no topics fail
+        """
+
+        i = 0
+        while self.subscribe():
+            i = i + 1
+            self.subscribe
+            if not i % 1000:
+                rospy.loginfo('still subscribing!')
+
     def subscribe(self):
 
         """
@@ -124,18 +139,24 @@ class OnlineBagger(object):
 
         Each element in self.subscriber list is a list [topic, Bool]
         where the Bool tells the current status of the subscriber (sucess/failure).
+
+        Return number of topics that failed subscription
         """
+
+        i = 0  # failed subscriptions
 
         for topic in self.subscriber_list:
             if not topic[1]:
                 msg_class = rostopic.get_topic_class(topic[0])
                 if msg_class[1] is None:
-                    pass
+                    i = i + 1
                 else:
                     rospy.Subscriber(topic[0], msg_class[0],
                                      lambda msg, _topic=topic[0]: self.bagger_callback(msg, _topic))
 
                     topic[1] = True  # successful subscription
+
+        return i
 
     def get_oldest_topic_time(self, topic):
 
@@ -180,10 +201,10 @@ class OnlineBagger(object):
 
         self.usage = resource.getrusage(resource.RUSAGE_SELF)
 
-        # getattr returns ram usage in kilobytes
-        self.ram_usage = getattr(self.usage, 'ru_maxrss')
+        # getattr returns ram usage in kilobytes multiply by 1e3 to obtain megabytes
+        self.ram_usage = getattr(self.usage, 'ru_maxrss')*1e3
 
-        return self.ram_usage*1e3
+        return self.ram_usage
 
     def set_ram_limit(self, topic):
 
@@ -195,24 +216,12 @@ class OnlineBagger(object):
             self.topic_messages[topic].popleft()
 
     def bagger_callback(self, msg, topic):
+
         """
         streaming callback function, stops streaming during bagging process
-        also pops off msgs from dequeue if length of stream is longer than
-        stream time specified in yaml parameters
-
-        stores all data in a dictionary.
-        the keys are topic names
-        the values are dequeues of tuples
-        each tuple is a time stamp of rostime and the message for that topic
-
-        if any errors are occuring you can uncomment the lines with
-        if self.n % 50  == 0 to display every 50th message, time diff and topic
-        this will not give every 50th message on each topic, it provides every
-        50th message accross all topics.
+        also pops off msgs from dequeue if stream size is greater than specified ram limit
 
         stream, callback function does nothing if streaming is not active
-
-        Continually resubscribes to any failed topics.
         """
 
         if not self.streaming:
@@ -226,26 +235,26 @@ class OnlineBagger(object):
         self.set_ram_limit(topic)
 
         # verify streaming is popping off and recording topics
-        if not self.n % 100:
-        #     rospy.loginfo('time_diff: %s', time_diff.to_sec())
-        #     rospy.loginfo('topic: %s', topic)
-        #     rospy.loginfo('topic type: %s', type(msg))
-            rospy.loginfo('ram size: %s', self.ram_usage/1e3)
-        #     rospy.loginfo('number of messages: %s', self.get_topic_message_count(topic))
-
-
-        # self.subscribe() # loop
+        if not self.n % 50:
+            rospy.logdebug('time_difference: %s', self.get_topic_duration(topic).to_sec())
+            rospy.logdebug('topic: %s', topic)
+            rospy.logdebug('topic type: %s', type(msg))
+            rospy.logdebug('ram usage: %s mb', self.get_ram_usage()/1e6)
+            rospy.logdebug('number of topic messages: %s', self.get_topic_message_count(topic))
 
     def get_subscribed_topics(self):
 
         """
-        Return subscribed and failed topics
+        Return subscribed topics
         """
 
         return self.subscriber_list
 
     def get_number_subscribed_topics(self):
-        pass
+        """
+        Return number of subscribed topics
+        """
+        return len(self.subscriber_list)
 
     def get_topic_message_count(self, topic):
 
@@ -255,16 +264,17 @@ class OnlineBagger(object):
 
         return len(self.topic_messages[topic])
 
-    def get_all_message_count(self):
+    def get_total_message_count(self):
 
         """
         Returns total number of messages across all topics
         """
 
-        message_count = 0
+        self.total_message_count = 0
         for topic in self.topic_messages.keys():
-            message_count = message_count + get_topic_message_count(topic)
-            return message_count
+            self.total_message_count = self.total_message_count + self.get_topic_message_count(topic)
+
+        return self.total_message_count
 
     def set_bag_directory(self):
 
@@ -311,12 +321,48 @@ class OnlineBagger(object):
             messages were bagged' %  (topic_duration, requested_seconds)
         return int(index)
 
+    def check_action(self, req):
+
+        """
+        Determine units for OnlineBagger
+        Typos result in assuming minutes instead of seconds, which is more conservative when bagging
+
+        Print Status Topic if Requested:
+        """
+
+        if req.unit == 'status':
+            self.display_status()
+            self.message = "Status Displayed: "
+            return self.message
+        elif not req.amount:
+            self.start_bagging(req)
+        elif req.unit[0] == 's':
+            self.requested_seconds = req.amount
+        else:
+            self.requested_seconds = 60*req.amount
+
+        self.start_bagging(req)
+
+        return self.message
+
+    def display_status(self):
+        print '\n'
+        rospy.loginfo('Number of Topics Subscribed To: %s', self.get_number_subscribed_topics())
+        rospy.loginfo('Topics Subscribed to: %s', self.subscriber_list)
+        rospy.loginfo('Message Count: %s', self.get_total_message_count())
+        rospy.loginfo('Memory Usage: %s Mb\n', self.get_ram_usage()/1e6)
+        print '\n'
+
     def start_bagging(self, req):
+
         """
         Dump all data in dictionary to bags, temporarily stops streaming
         during the bagging process, resumes streaming when over.
         """
-        self.dumping = req.data
+
+        rospy.loginfo('bagging %s %s', req.amount, req.unit)
+
+        self.dumping = True
         self.streaming = False
 
         self.set_bag_directory()
@@ -324,11 +370,14 @@ class OnlineBagger(object):
         rospy.loginfo('dumping value: %s', self.dumping)
         rospy.loginfo('bagging commencing!')
 
-        self.requested_seconds = int(10)
 
         for topic in self.topic_messages.keys():
             rospy.loginfo('topic: %s', topic)
-            self.i = self.get_time_index(topic, self.requested_seconds)
+            if not req.amount:
+                self.i = 0
+                self.bag_report = 'All messages were bagged'
+            else:
+                self.i = self.get_time_index(topic, self.requested_seconds)
             self.m = 0  # message number in a given topic
             for msgs in self.topic_messages[topic][self.i:]:
                 self.m = self.m + 1
@@ -342,8 +391,8 @@ class OnlineBagger(object):
         rospy.loginfo('bagging finished!')
         self.streaming = True
 
-        message = 'bagging finished'
-        return (True, message)
+        self.message = 'bagging finished'
+
 
 if __name__ == "__main__":
     rospy.init_node('online_bagger')

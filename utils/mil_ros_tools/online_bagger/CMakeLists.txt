@@ -3,8 +3,15 @@ project(mil_ros_tools)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
-  std_srvs
+  message_generation
+  
+)
+add_service_files(
+  DIRECTORY srv
+  FILES
+  BaggerCommands.srv
 )
 
+generate_messages()
 catkin_package()
 

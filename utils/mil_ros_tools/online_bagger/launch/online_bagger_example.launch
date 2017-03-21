@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="mil_ros_tools" type="online_bagger.py" name="online_bagger" output="screen"/>
+    <rosparam file="$(find mil_ros_tools)/config/online_bagger_example.yaml" command="load" ns="online_bagger"/>
+</launch>
