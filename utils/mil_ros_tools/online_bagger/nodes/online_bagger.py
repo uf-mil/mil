@@ -31,6 +31,7 @@ For example:
 class OnlineBagger(object):
 
     def __init__(self):
+
         """
         Make dictionary of dequeues.
         Subscribe to set of topics defined by the yaml file in directory
@@ -38,6 +39,7 @@ class OnlineBagger(object):
         Set up service to bag n seconds of data default to all of available data
         """
 
+        self.i = 0  # successful subscriptions
         self.n = 0  # number of iterations
         self.streaming = True
         self.dumping = False
@@ -117,15 +119,15 @@ class OnlineBagger(object):
     def subscribe_loop(self):
 
         """
-        Continue to subscribe until no topics fail
+        Continue to subscribe until at least one topic is successful
         """
 
         i = 0
-        while self.subscribe():
+        while not self.subscribe():
             i = i + 1
             self.subscribe
             if not i % 1000:
-                rospy.loginfo('still subscribing!')
+                rospy.logdebug('still subscribing!')
 
     def subscribe(self):
 
@@ -143,20 +145,20 @@ class OnlineBagger(object):
         Return number of topics that failed subscription
         """
 
-        i = 0  # failed subscriptions
 
         for topic in self.subscriber_list:
             if not topic[1]:
                 msg_class = rostopic.get_topic_class(topic[0])
                 if msg_class[1] is None:
-                    i = i + 1
+                    pass
                 else:
+                    self.i = self.i + 1
                     rospy.Subscriber(topic[0], msg_class[0],
                                      lambda msg, _topic=topic[0]: self.bagger_callback(msg, _topic))
 
                     topic[1] = True  # successful subscription
 
-        return i
+        return self.i
 
     def get_oldest_topic_time(self, topic):
 
@@ -245,16 +247,26 @@ class OnlineBagger(object):
     def get_subscribed_topics(self):
 
         """
-        Return subscribed topics
+        Return subscribed and failed topic list
         """
 
         return self.subscriber_list
 
     def get_number_subscribed_topics(self):
+
         """
         Return number of subscribed topics
         """
-        return len(self.subscriber_list)
+
+        return self.subscribe()
+
+    def get_number_failed_topics(self):
+
+        """
+        Return number of failed topics for subscription
+        """
+
+        return len(self.subscriber_list) - self.i
 
     def get_topic_message_count(self, topic):
 
@@ -294,6 +306,7 @@ class OnlineBagger(object):
         self.bag = rosbag.Bag(os.path.join(self.directory, self.bag_name + '.bag'), 'w')
 
     def get_time_index(self, topic, requested_seconds):
+
         """
         Return the index for the time index for a topic at 'n' seconds from the end of the dequeue
 
@@ -346,8 +359,14 @@ class OnlineBagger(object):
         return self.message
 
     def display_status(self):
+
+        """
+        Print status of online bagger
+
+        """
         print '\n'
         rospy.loginfo('Number of Topics Subscribed To: %s', self.get_number_subscribed_topics())
+        rospy.loginfo('Number of Failed Topics: %s', self.get_number_failed_topics())
         rospy.loginfo('Topics Subscribed to: %s', self.subscriber_list)
         rospy.loginfo('Message Count: %s', self.get_total_message_count())
         rospy.loginfo('Memory Usage: %s Mb\n', self.get_ram_usage()/1e6)
@@ -370,14 +389,22 @@ class OnlineBagger(object):
         rospy.loginfo('dumping value: %s', self.dumping)
         rospy.loginfo('bagging commencing!')
 
+        for topic in self.subscriber_list:
+            if topic[1] == False:
+                continue
 
-        for topic in self.topic_messages.keys():
+            topic = topic[0]
             rospy.loginfo('topic: %s', topic)
+
+            # if no number is provided or a zero is given, bag all messages
             if not req.amount:
                 self.i = 0
                 self.bag_report = 'All messages were bagged'
+
+            # get time index the normal way
             else:
                 self.i = self.get_time_index(topic, self.requested_seconds)
+
             self.m = 0  # message number in a given topic
             for msgs in self.topic_messages[topic][self.i:]:
                 self.m = self.m + 1
