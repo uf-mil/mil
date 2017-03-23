@@ -1,4 +1,4 @@
-float32 amount
-string unit
+string bag_name
+float32 bag_time
 ---
-string success
+string status

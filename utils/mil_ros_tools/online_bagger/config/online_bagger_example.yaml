@@ -1,16 +1,18 @@
 # list an arbitrary set of topics to  subscribe to and stream:
 
-      # down_stream_rate: 10 Hz 
-ram_limit: 3.0 # gb 
+# the more conservative between the two, stream_time and ram_limit are always in place
+# the more conservative will be enforced
+stream_time: 10  # seconds
+# ram_limit: 0.25 # gb soft limit not hard enforced 
 topics: ["/odom", 
          "/absodom", 
          "/stereo/left/camera_info",
          "/stereo/left/image_raw", 
          "/stereo/right/camera_info",
          "/stereo/right/image_raw", 
-         "/velodyne_points"]
+         "/velodyne_points",
+         "/ooka"]
 
-bag_package_path: 'mil_ros_tools'
+# comment out if default home/user/online_bagger is desired
+# bag_package_path: ''
 
-# leave bag name empty if default
-bag_name: ''
