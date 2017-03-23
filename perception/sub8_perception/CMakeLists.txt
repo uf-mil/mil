@@ -133,6 +133,10 @@ install(DIRECTORY include/${PROJECT_NAME}/
 #     "src/sub8_perception/*.cc"
 # )
 
+file(GLOB START_GATE_SOURCES
+      "src/sub8_perception/start_gate.cc"
+)
+
 MESSAGE( STATUS "Include search path: " ${INCLUDE_DIRECTORIES} )
 
 add_executable(
@@ -198,6 +202,31 @@ target_link_libraries(
 #     bfd
 #     dl
 # )
+
+add_executable(
+  sub8_start_gate
+    nodes/start_gate_node.cc
+    ${START_GATE_SOURCES}
+)
+
+add_dependencies(
+  sub8_start_gate
+   sub8_msgs_generate_messages_cpp
+   ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(
+  sub8_start_gate
+    sub8_vision_lib
+    ${catkin_LIBRARIES}
+    ${PCL_COMMON_LIBRARIES}
+    ${PCL_IO_LIBRARIES}
+    ${PCL_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${OpenCV_INCLUDE_DIRS}
+    bfd
+    dl
+)
+
 
 install(
   TARGETS
