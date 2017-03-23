@@ -1,8 +1,9 @@
 <package>
-  <name>blue_view_driver</name>
+  <name>blueview_driver</name>
   <version>1.0.0</version>
-  <description>Ros driver for Telodyne blue view</description>
+  <description>Ros driver for Telodyne blue view, depends on blue view library</description>
   <maintainer email="tessbianchi@ufl.edu">Tess Bianchi</maintainer>
+  <maintainer email="kma1660@gmail.com">Kevin Allen</maintainer>
 
   <license>MIT</license>
 

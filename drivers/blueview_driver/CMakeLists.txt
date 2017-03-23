@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ")
-project(blue_view_driver)
+project(blueview_driver)
 
 find_package(catkin REQUIRED COMPONENTS
   roslib
@@ -30,7 +30,7 @@ catkin_package(
   INCLUDE_DIRS
     include 
   LIBRARIES
-    sonar_tools
+    blueview_tools
   CATKIN_DEPENDS
     bvtsdkpkg
     roslib
@@ -43,16 +43,17 @@ catkin_package(
 
 include_directories(include ${bvtsdkpkg_INCLUDE_DIRS} ${roslib_INCLUDE_DIRS})
 
-add_library(sonar_tools
+add_library(blueview_tools
 			src/BVWrapper.cpp)
 
-target_link_libraries(sonar_tools 
+target_link_libraries(blueview_tools
   ${catkin_LIBRARIES} 
   ${OpenCV_LIBRARIES}
   ${roslib_LIBRARIES}
   ${bvtsdkpkg_LIBRARIES}
 )
 
+# Not built while working on proper rostest/gtest
 #add_executable(test_sdk test/test_sdk.cpp)
 
 #target_link_libraries(test_sdk
@@ -62,7 +63,7 @@ target_link_libraries(sonar_tools
 #	sonar_tools
 #)
 
-add_executable(blue_view_driver src/BlueViewRosDriver.cpp)
-add_dependencies(blue_view_driver sonar_tools)
+add_executable(blueview_driver src/BlueViewRosDriver.cpp)
+add_dependencies(blueview_driver blueview_tools)
 
-target_link_libraries(blue_view_driver sonar_tools ${catkin_LIBRARIES})
+target_link_libraries(blueview_driver blueview_tools ${catkin_LIBRARIES})
