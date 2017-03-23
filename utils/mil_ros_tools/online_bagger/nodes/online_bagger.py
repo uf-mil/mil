@@ -19,13 +19,12 @@ last x number of seconds saved
 For example:
 
         bagging_server = rospy.ServiceProxy('/online_bagger/dump', BaggerCommands)
-        bag_status = bagging_server(x, 'name')
-        bag_status = bagging_server(bag_time, bag_name)
-        bag_time = float32 (leave blank to dump entire bag)
+        bag_status = bagging_server(bag_name, bag_time)
         bag_name = name of bag (leave blank to use default name: current date and time)
+        bag_time = float32 (leave blank to dump entire bag)
 """
 
-class OnlineBagger():
+class OnlineBagger(object):
 
     def __init__(self):
 
@@ -258,7 +257,7 @@ class OnlineBagger():
         topic_duration = self.get_topic_duration(topic).to_sec()
 
         ratio = requested_seconds / topic_duration
-        index = int(math.floor(self.get_topic_message_count(topic) * (1 - min(ratio, 1))))
+        index = int(self.get_topic_message_count(topic) * (1 - min(ratio, 1)))
 
         self.bag_report = 'The requested %s seconds were bagged' % requested_seconds
 
@@ -301,18 +300,18 @@ class OnlineBagger():
             # if no number is provided or a zero is given, bag all messages
             types = (0, 0.0, None)
             if req.bag_time in types:
-                self.i = 0
+                bag_index = 0
                 self.bag_report = 'All messages were bagged'
 
             # get time index the normal way
             else:
-                self.i = self.get_time_index(topic, requested_seconds)
+                bag_index = self.get_time_index(topic, requested_seconds)
 
-            self.m = 0  # message number in a given topic
-            for msgs in self.topic_messages[topic][self.i:]:
-                self.m = self.m + 1
+            messages = 0  # message number in a given topic
+            for msgs in self.topic_messages[topic][bag_index:]:
+                messages = messages + 1
                 self.bag.write(topic, msgs[1], t=msgs[0])
-                if not self.m % 100:  # print every 100th topic, type and time
+                if messages % 100 == 0:  # print every 100th topic, type and time
                     rospy.loginfo('topic: %s, message type: %s, time: %s',
                                   topic, type(msgs[1]), type(msgs[0]))
 
