@@ -11,7 +11,7 @@
 #include <string>
 
 
-#include "BVWrapper.h"
+#include "BVWrapper.hpp"
 
 #include <opencv2/core/core.hpp> 
 
@@ -23,7 +23,8 @@ int main( void )
 		cv::Mat imagebw8;
 		cv::Mat imagebw16;
 		cv::Mat imagecolor;
-		while(sonar.getNextPing(imagebw8, imagebw16, imagecolor)){
+		while(sonar.getNextPing()){
+			sonar.getImages(imagebw8, imagebw16, imagecolor);
 			cv::imshow("image", imagecolor);
 			cv::waitKey(0);
 		}
