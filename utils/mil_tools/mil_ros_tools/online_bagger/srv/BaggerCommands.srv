@@ -1,4 +1,3 @@
 string bag_name
-float32 bag_time
 ---
 string status

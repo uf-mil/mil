@@ -1,0 +1,15 @@
+# list an arbitrary set of topics to  subscribe to and stream:
+
+stream_time: 10  # seconds
+
+topics: [["/odom",                    300] ,
+         ["/absodom",                 300],
+         ["/stereo/left/camera_info"     ],
+         ["/stereo/left/image_raw",    20],
+         ["/stereo/right/camera_info", 20],
+         ["/stereo/right/image_raw",   20], 
+         ["/velodyne_points",         300],
+         ["/ooka",                    100]]
+
+# comment out if default home/user/online_bagger is desired
+# bag_package_path: ''  
