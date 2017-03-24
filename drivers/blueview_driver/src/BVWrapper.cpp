@@ -1,114 +1,117 @@
 #include "BVWrapper.hpp"
 
-BlueViewSonar::BlueViewSonar() :
-	head(NULL),
-	latest_ping(NULL),
-	mag_img(NULL),
-	has_ping(false),
-	has_image(false),
-	cur_ping(0)
+BlueViewSonar::BlueViewSonar()
+  : head_(NULL), latest_ping_(NULL), mag_img_(NULL), has_ping_(false), has_image_(false), cur_ping_(0)
 {
-
 }
 bool BlueViewSonar::hasImage() const
 {
-	return has_image;
+  return has_image_;
 }
 void BlueViewSonar::init(ConnectionType type, const std::string& params, int head_id)
 {
-	connection_type = type;
-	// Open the sonar as either a recorded data file or live device
-	if(connection_type == ConnectionType::FILE)
-		sonar.Open("FILE", params);
-	else
-		sonar.Open("NET", params); // default ip address
-	// Get the first head, might have to
-	head = sonar.GetHead(head_id);
-	image_generator.SetHead(head);
+  connection_type_ = type;
+  // Open the sonar as either a recorded data file or live device
+  if (connection_type_ == ConnectionType::FILE)
+    sonar_.Open("FILE", params);
+  else
+    sonar_.Open("NET", params);  // default ip address
+  head_ = sonar_.GetHead(head_id);
+  image_generator_.SetHead(head_);
 }
 BVTSDK::Head& BlueViewSonar::getHead()
 {
-	return head;
+  return head_;
 }
 BlueViewSonar::~BlueViewSonar()
 {
-	
-} 
-void BlueViewSonar::SetRange(float lower, float upper)
-{
-	head.SetRange(lower, upper);
 }
 bool BlueViewSonar::hasPing() const
 {
-	return has_ping;
+  return has_ping_;
 }
-void BlueViewSonar::getNextPing()
+void BlueViewSonar::SetRangeProfileMinIntensity(uint16_t thresh)
 {
-	has_ping = true;
-	int ping_num;
-	if(connection_type == ConnectionType::FILE) {
-		cur_ping++;
-		ping_num = cur_ping;
-	}
-	else
-		ping_num = -1;
-	latest_ping = head.GetPing(ping_num);
+  image_generator_.SetRangeProfileIntensityThreshold(thresh);
+}
+bool BlueViewSonar::getNextPing()
+{
+  image_generator_.SetHead(head_);
+  cur_ping_++;
+  if (cur_ping_ + 1 > head_.GetPingCount())
+    return false;
+  int ping_num;
+  if (connection_type_ == ConnectionType::FILE)
+    ping_num = cur_ping_;
+  else
+    ping_num = -1;
+  latest_ping_ = head_.GetPing(ping_num);
+  has_ping_ = true;
+  return true;
 }
 
 int BlueViewSonar::getPingCount()
 {
-	return head.GetPingCount();
-}
-
-void BlueViewSonar::setStopRange(float val)
-{
-	head.SetStopRange(val);
+  return head_.GetPingCount();
 }
 void BlueViewSonar::generateImage()
 {
-	if (!hasPing()) throw std::runtime_error("Cannot generate image before calling getNextPing");
-	has_image = true;
-	mag_img = image_generator.GetImageXY(latest_ping);
+  if (!hasPing())
+    throw std::runtime_error("Cannot generate image before calling getNextPing");
+  mag_img_ = image_generator_.GetImageXY(latest_ping_);
+  has_image_ = true;
 }
 void BlueViewSonar::getGrayscaleImage(cv::Mat& img)
 {
-	if (!hasImage()) throw std::runtime_error("Cannot get grayscale image before calling generateImages()");
-	int height = mag_img.GetHeight();
-	int width =  mag_img.GetWidth();
-	size_t buffer_len = width * height;
-	uint16_t buffer[buffer_len];
-	mag_img.CopyBits(buffer, buffer_len);
-	img = cv::Mat(height, width, CV_16U, buffer);
+  if (!hasImage())
+    throw std::runtime_error("Cannot get grayscale image before calling generateImages()");
+  int height = mag_img_.GetHeight();
+  int width = mag_img_.GetWidth();
+  size_t buffer_len = width * height;
+  uint16_t buffer[buffer_len];
+  mag_img_.CopyBits(buffer, buffer_len);
+  img = cv::Mat(height, width, CV_16U, buffer);
 }
 void BlueViewSonar::loadColorMapper(const std::string& file)
 {
-	color_mapper.Load(file);
-    has_color_map = true;
+  color_mapper_.Load(file);
+  has_color_map_ = true;
 }
 void BlueViewSonar::getColorImage(cv::Mat& img)
 {
-	if (!hasImage()) throw std::runtime_error("Cannot get color image before calling generateImages()");
-    if (!has_color_map) throw std::runtime_error("Cannot get color image before calling loadColorMapper");
-	BVTSDK::ColorImage bv_img = color_mapper.MapImage(mag_img);
-	int height = mag_img.GetHeight();
-	int width = mag_img.GetWidth();
-	size_t buffer_len = height*width;
-	uint32_t buffer[buffer_len];
-	bv_img.CopyBits(buffer, buffer_len);
-	img = cv::Mat(height, width, CV_8UC4, buffer);
+  if (!hasImage())
+    throw std::runtime_error("Cannot get color image before calling generateImages()");
+  if (!has_color_map_)
+    throw std::runtime_error("Cannot get color image before calling loadColorMapper");
+  BVTSDK::ColorImage bv_img = color_mapper_.MapImage(mag_img_);
+  int height = mag_img_.GetHeight();
+  int width = mag_img_.GetWidth();
+  size_t buffer_len = height * width;
+  uint32_t buffer[buffer_len];
+  bv_img.CopyBits(buffer, buffer_len);
+  img = cv::Mat(height, width, CV_8UC4, buffer);
 }
-void BlueViewSonar::getRanges(std::vector<float>& bearings, std::vector<float>& ranges, std::vector<uint16_t>& intensities)
+void BlueViewSonar::getRanges(std::vector<float>& bearings, std::vector<float>& ranges,
+                              std::vector<uint16_t>& intensities)
 {
-	BVTSDK::RangeProfile range_profile = image_generator.GetRangeProfile(latest_ping);
-	size_t count = range_profile.GetCount();
+  if (!hasPing())
+    throw std::runtime_error("Cannot generate range profile before calling getNextPing");
+  BVTSDK::RangeProfile range_profile = image_generator_.GetRangeProfile(latest_ping_);
 
-	// Resize vectors to number of hits
-	bearings.resize(count);
-	ranges.resize(count);
-	intensities.resize(count);
+  // Handles very annoying bug in library with older sonar files that don't support range profiles
+  if (range_profile.Handle() == nullptr)
+  {
+    throw std::runtime_error("Range profile can not be generated. Perhaps this is an old sonar / file. Please disable "
+                             "raw data");
+  }
+  size_t count = range_profile.GetCount();
+  // Resize vectors to number of hits
+  bearings.resize(count);
+  ranges.resize(count);
+  intensities.resize(count);
 
-	// Filll vectors with bearing, range, and intensity values
-	range_profile.CopyBearingValues(&bearings[0], count);
-	range_profile.CopyRangeValues(&ranges[0], count);
-	range_profile.CopyIntensityValues(&intensities[0], count);
+  // Fill vectors with bearing, range, and intensity values
+  range_profile.CopyBearingValues(&bearings[0], count);
+  range_profile.CopyRangeValues(&ranges[0], count);
+  range_profile.CopyIntensityValues(&intensities[0], count);
 }
