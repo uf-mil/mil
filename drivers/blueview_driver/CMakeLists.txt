@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 project(blueview_driver)
 
 find_package(catkin REQUIRED COMPONENTS
-  roslib
   roscpp
   rospy
   image_transport
@@ -33,19 +32,15 @@ catkin_package(
     blueview_tools
   CATKIN_DEPENDS
     bvtsdkpkg
-    roslib
 	image_transport
 	cv_bridge
 	message_runtime
-  DEPENDS 
-	OpenCV
 )
 
 include_directories(include ${bvtsdkpkg_INCLUDE_DIRS} ${roslib_INCLUDE_DIRS})
 
 add_library(blueview_tools
 			src/BVWrapper.cpp)
-
 target_link_libraries(blueview_tools
   ${catkin_LIBRARIES} 
   ${OpenCV_LIBRARIES}
@@ -53,17 +48,15 @@ target_link_libraries(blueview_tools
   ${bvtsdkpkg_LIBRARIES}
 )
 
-# Not built while working on proper rostest/gtest
-#add_executable(test_sdk test/test_sdk.cpp)
-
-#target_link_libraries(test_sdk
-#	${catkin_LIBRARIES}
-#	${OpenCV_LIBRARIES}
-#	${bvtsdkpkg_LIBRARIES}
-#	sonar_tools
-#)
-
 add_executable(blueview_driver src/BlueViewRosDriver.cpp)
 add_dependencies(blueview_driver blueview_tools)
-
 target_link_libraries(blueview_driver blueview_tools ${catkin_LIBRARIES})
+
+if (CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest_gtest(blueview_driver_test
+    test/blueview_driver.test
+    test/blueview_driver_test.cpp
+  )
+  target_link_libraries(blueview_driver_test ${catkin_LIBRARIES})
+endif()
