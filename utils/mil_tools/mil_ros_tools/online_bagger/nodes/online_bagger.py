@@ -19,10 +19,11 @@ last x number of seconds saved
 For example:
 
         bagging_server = rospy.ServiceProxy('/online_bagger/dump', BaggerCommands)
-        bag_status = bagging_server(bag_name)
-        bag_name = name of bag (leave blank to use default name: current date and time) : ''
-        * Blank is an empty string
-
+        bag_status = bagging_server(bag_name, bag_time)
+        bag_name = name of bag (leave blank to use default name: current date and time)
+            Provide an empty string: '' to bag everything
+        bag_time = float32 (leave blank to dump entire bag): 
+            Provide 0.0, or 0 to bag everything
 """
 
 class OnlineBagger(object):
@@ -32,7 +33,7 @@ class OnlineBagger(object):
         """
         Make dictionary of dequeues.
         Subscribe to set of topics defined by the yaml file in directory
-        Stream topics up to a given ram limit, dump oldest messages when limit is reached
+        Stream topics up to a given stream time, dump oldest messages when limit is reached
         Set up service to bag n seconds of data default to all of available data
         """
 
@@ -95,13 +96,18 @@ class OnlineBagger(object):
         self.topic_messages = {}
         self.topic_list = []
 
-        rospy.loginfo('items: %s', len(self.subscriber_list))
+        class SliceableDeque(deque):
+            def __getitem__(self, index):
+                if isinstance(index, slice):
+                    return type(self)(itertools.islice(self, index.start,
+                                                       index.stop, index.step))
+                return deque.__getitem__(self, index)
 
         for topic in self.subscriber_list:
             if len(topic) == 1:
                 topic.append(self.stream_time)
                 rospy.loginfo('no stream time provided, default used for: %s', topic)
-            self.topic_messages[topic[0]] = deque()
+            self.topic_messages[topic[0]] = SliceableDeque(deque())
             topic.append(False)
             self.topic_list.append(topic[0])
 
@@ -169,11 +175,36 @@ class OnlineBagger(object):
         else:
             return rospy.get_rostime()
 
+    def get_time_index(self, topic, requested_seconds):
+
+        """
+        Return the index for the time index for a topic at 'n' seconds from the end of the dequeue
+        For example, to bag the last 10 seconds of data, the index for 10 seconds back from the most
+        recent message can be obtained with this function.
+        The number of requested seconds should be the number of seoncds desired from
+        the end of deque. (ie. requested_seconds = 10 )
+        If the desired time length of the bag is greater than the available messages it will output a
+        message and return how ever many seconds of data are avaiable at the moment.
+        Seconds is of a number type (not a rospy.Time type) (ie. int, float)
+        """
+
+        topic_duration = self.get_topic_duration(topic).to_sec()
+
+        ratio = requested_seconds / topic_duration
+        index = int(self.get_topic_message_count(topic) * (1 - min(ratio, 1)))
+
+        self.bag_report = 'The requested %s seconds were bagged' % requested_seconds
+
+        if index == 0:
+            self.bag_report = 'Only %s seconds of the request %s seconds were available, all \
+            messages were bagged' %  (topic_duration, requested_seconds)
+        return index
+
     def bagger_callback(self, msg, topic):
 
         """
         Streaming callback function, stops streaming during bagging process
-        also pops off msgs from dequeue if stream size is greater than specified ram limit
+        also pops off msgs from dequeue if stream size is greater than specified stream_time
 
         Stream, callback function does nothing if streaming is not active
         """
@@ -266,6 +297,8 @@ class OnlineBagger(object):
         self.set_bag_directory(req.bag_name)
         self.set_bagger_status()
 
+        requested_seconds = req.bag_time
+
         for topic in self.subscriber_list:
             if topic[2] == False:
                 continue
@@ -273,13 +306,23 @@ class OnlineBagger(object):
             topic = topic[0]
             rospy.loginfo('topic: %s', topic)
 
+            # if no number is provided or a zero is given, bag all messages
+            types = (0, 0.0, None)
+            if req.bag_time in types:
+                bag_index = 0
+                self.bag_report = 'All messages were bagged'
+
+            # get time index the normal way
+            else:
+                bag_index = self.get_time_index(topic, requested_seconds)
+
             messages = 0  # message number in a given topic
-            for msgs in self.topic_messages[topic]:
+            for msgs in self.topic_messages[topic][bag_index:]:
                 messages = messages + 1
                 self.bag.write(topic, msgs[1], t=msgs[0])
                 if messages % 100 == 0:  # print every 100th topic, type and time
                     rospy.loginfo('topic: %s, message type: %s, time: %s',
-                                  topic, type(msgs[1]), type(msgs[0]))
+                    topic, type(msgs[1]), type(msgs[0]))
 
             # empty deque when done writing to bag
             self.topic_messages[topic].clear()
