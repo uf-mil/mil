@@ -13,8 +13,6 @@ find_package(catkin REQUIRED COMPONENTS
 )
 find_package(OpenCV REQUIRED)
 
-catkin_python_setup()
-
 add_message_files(
   FILES
     BlueViewPing.msg
