@@ -161,6 +161,6 @@ int main(int argc, char **argv)
   } 
   catch (const std::runtime_error& err) 
   {
-      
+    ROS_FATAL("Exception: %s", err.what());
   }
 }
