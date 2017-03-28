@@ -1,5 +1,5 @@
 <launch>
-    <node pkg="sub8_sonar" type="sonar_test.py" name="sonar_test" output="screen">
+    <node pkg="mil_passsive_sonar" type="sonar_test.py" name="sonar_test" output="screen">
         <!-- units in millimeters for greater accuracy -->
         <!-- current configuration -->
 <!--         <rosparam param="hydrophones">
