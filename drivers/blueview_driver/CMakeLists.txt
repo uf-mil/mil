@@ -48,6 +48,7 @@ target_link_libraries(blueview_tools
 
 add_executable(blueview_driver src/BlueViewRosDriver.cpp)
 add_dependencies(blueview_driver blueview_tools)
+add_dependencies(blueview_driver blueview_driver_generate_messages ${catkin_EXPORTED_TARGETS})
 target_link_libraries(blueview_driver blueview_tools ${catkin_LIBRARIES})
 
 if (CATKIN_ENABLE_TESTING)
