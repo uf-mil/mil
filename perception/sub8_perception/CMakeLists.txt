@@ -202,3 +202,8 @@ target_link_libraries(
 install(
   TARGETS
 )
+
+if (CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest(test/path_marker.test)
+endif()
