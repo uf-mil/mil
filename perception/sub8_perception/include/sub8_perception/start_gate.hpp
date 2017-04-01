@@ -20,46 +20,42 @@
 
 using namespace boost::accumulators;
 
-class Sub8StartGateDetector {
+class Sub8StartGateDetector
+{
 public:
-    Sub8StartGateDetector();
-    ~Sub8StartGateDetector();
+  Sub8StartGateDetector();
+  ~Sub8StartGateDetector();
 
-    const double START_GATE_WIDTH = 2.0; //Meters
-    const double START_GATE_HEIGHT = 1.0;
-    const double START_GATE_SIZE_TOLERANCE = 10000;
+  const double START_GATE_WIDTH = 2.0;  // Meters
+  const double START_GATE_HEIGHT = 1.0;
+  const double START_GATE_SIZE_TOLERANCE = 10000;
 
-    void image_callback(const sensor_msgs::ImageConstPtr &msg,
-                        const sensor_msgs::CameraInfoConstPtr &info_msg);
-    bool request_start_gate_position_2d(sub8_msgs::VisionRequest2D::Request &req,
-                                        sub8_msgs::VisionRequest2D::Response &resp);
-    bool request_start_gate_enable(std_srvs::SetBool::Request &req,
-                                   std_srvs::SetBool::Response &resp);
-    void findGate(const sensor_msgs::ImageConstPtr &image_msg);
+  void imageCallback(const sensor_msgs::ImageConstPtr &msg, const sensor_msgs::CameraInfoConstPtr &info_msg);
+  bool requestStartGatePosition2d(sub8_msgs::VisionRequest2D::Request &req,
+                                      sub8_msgs::VisionRequest2D::Response &resp);
+  bool requestStartGateEnable(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &resp);
+  void findGate(const sensor_msgs::ImageConstPtr &image_msg);
 
-    double getGateDistance();
+  double getGateDistance();
 
-    ros::NodeHandle nh;
-    bool running;
+  ros::NodeHandle nh_;
+  bool running_;
 
-    image_transport::ImageTransport image_transport;
-    image_transport::CameraSubscriber image_sub;
+  image_transport::ImageTransport image_transport_;
+  image_transport::CameraSubscriber image_sub_;
 
-    image_geometry::PinholeCameraModel cam_model;
-    ros::Time image_time;
+  image_geometry::PinholeCameraModel cam_model_;
+  ros::Time image_time_;
 
-    int rows;
-    int cols;
+  int rows_;
+  int cols_;
 
-    boost::circular_buffer<std::vector<std::vector<cv::Point2f>>> gate_line_buffer;
-    accumulator_set<int, features<tag::mean, tag::variance>> accX;
-    accumulator_set<int, features<tag::mean, tag::variance>> accY;
-    accumulator_set<int, features<tag::mean, tag::variance>> accSizeX;
-    accumulator_set<int, features<tag::mean, tag::variance>> accSizeY;
+  boost::circular_buffer<std::vector<std::vector<cv::Point2f>>> gate_line_buffer_;
+  accumulator_set<int, features<tag::mean, tag::variance>> accX_;
+  accumulator_set<int, features<tag::mean, tag::variance>> accY_;
+  accumulator_set<int, features<tag::mean, tag::variance>> accSizeX_;
+  accumulator_set<int, features<tag::mean, tag::variance>> accSizeY_;
 
-
-
-
-    ros::ServiceServer service_enable;
-    ros::ServiceServer service_2d;
+  ros::ServiceServer service_enable_;
+  ros::ServiceServer service_2d_;
 };
