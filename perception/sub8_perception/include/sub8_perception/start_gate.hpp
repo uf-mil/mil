@@ -27,6 +27,7 @@ public:
 
     const double START_GATE_WIDTH = 2.0; //Meters
     const double START_GATE_HEIGHT = 1.0;
+    const double START_GATE_SIZE_TOLERANCE = 10000;
 
     void image_callback(const sensor_msgs::ImageConstPtr &msg,
                         const sensor_msgs::CameraInfoConstPtr &info_msg);
@@ -36,7 +37,7 @@ public:
                                    std_srvs::SetBool::Response &resp);
     void findGate(const sensor_msgs::ImageConstPtr &image_msg);
 
-    double distance();
+    double getGateDistance();
 
     ros::NodeHandle nh;
     bool running;

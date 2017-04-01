@@ -3,15 +3,9 @@
 #include "ros/ros.h"
 
 #ifdef VISUALIZE
-  #warning(Compiling with visualization enabled)
+  #warning(Compiling with visualization enabled for start_gate_node)
 #else
-  #warning(Compiling with NO visualization)
-#endif
-
-#ifdef SEGMENTATION_DEBUG
-  #warning(Compiling with segmentation debugging info enabled)
-#else
-  #warning(Compiling with NO segmentation debugging info)
+  #warning(Compiling with NO visualization for start_gate_node)
 #endif
 
 int main(int argc, char **argv) {
