@@ -28,7 +28,7 @@ include_directories(
   include
 )
 
-add_executable(pd_controller nodes/pd_controller.cc)
+add_executable(pd_controller nodes/pd_controller.cpp)
 target_link_libraries(pd_controller ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 set_target_properties(pd_controller PROPERTIES COMPILE_FLAGS "-std=c++11")

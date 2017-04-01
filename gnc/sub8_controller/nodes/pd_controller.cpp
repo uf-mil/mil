@@ -10,7 +10,7 @@
     - Intended to be a serious replacement for the sub7 controller
         (Something else is cooking to replace that)
 */
-#include "sub8_controller/pd_controller.h"
+#include "sub8_controller/pd_controller.hpp"
 
 PDController::PDController() {
   reconfigure_callback = boost::bind(&PDController::gain_callback, this, _1, _2);
