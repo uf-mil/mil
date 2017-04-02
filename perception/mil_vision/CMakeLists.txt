@@ -95,3 +95,12 @@ target_link_libraries(
     ${OpenCV_INCLUDE_DIRS}
 )
 
+add_executable(camera_lidar_transformer src/camera_lidar_transformer.cpp)
+add_dependencies(camera_lidar_transformer mil_vision_lib ${catkin_EXPORTED_TARGETS})
+target_link_libraries(
+  camera_lidar_transformer
+    mil_vision_lib
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${OpenCV_INCLUDE_DIRS}
+)
