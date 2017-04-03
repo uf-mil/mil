@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import division
 
+import genpy
 from txros import action, util, tf, serviceclient
 import rospkg
 from tf import transformations
@@ -158,11 +159,11 @@ class _Sub(object):
 
     @util.cancellableInlineCallbacks
     def _init(self):
-        self._moveto_action_client = yield action.ActionClient(self.nh, 'moveto', MoveToAction)
-        self._odom_sub = yield self.nh.subscribe('odom', Odometry)
-        self._trajectory_sub = yield self.nh.subscribe('trajectory', PoseTwistStamped)
-        self._trajectory_pub = yield self.nh.advertise('trajectory', PoseTwistStamped)
-        self._dvl_range_sub = yield self.nh.subscribe('dvl/range', Float64Stamped)
+        self._moveto_action_client = yield action.ActionClient(self.nh, '/moveto', MoveToAction)
+        self._odom_sub = yield self.nh.subscribe('/odom', Odometry)
+        self._trajectory_sub = yield self.nh.subscribe('/trajectory', PoseTwistStamped)
+        self._trajectory_pub = yield self.nh.advertise('/trajectory', PoseTwistStamped)
+        self._dvl_range_sub = yield self.nh.subscribe('/dvl/range', Float64Stamped)
         self._tf_listener = yield tf.TransformListener(self.nh)
         
         self.vision_proxies = _VisionProxies(self.nh, 'vision_proxies.yaml')
@@ -246,7 +247,7 @@ class Searcher(object):
 
         start_pose = self.sub.move.forward(0)
         start_time = self.sub.nh.get_time()
-        while self.sub.nh.get_time() - start_time < txros.genpy.Duration(timeout):
+        while self.sub.nh.get_time() - start_time < genpy.Duration(timeout):
 
             # If we find the object
             if self.object_found:
