@@ -57,9 +57,9 @@
           <alwaysOn>true</alwaysOn>
           <updateRate>15</updateRate>
           <cameraName>stereo/left</cameraName>
-          <imageTopicName>image_raw</imageTopicName>
-          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-          <frameName>stereo_front</frameName>
+          <imageTopicName>/camera/front/left/image_raw</imageTopicName>
+          <cameraInfoTopicName>/camera/front/left/camera_info</cameraInfoTopicName>
+          <frameName>front_left_cam</frameName>
           <hackBaseline>0.089</hackBaseline>
           <distortionK1>0</distortionK1>
           <distortionK2>0</distortionK2>
@@ -90,9 +90,9 @@
           <alwaysOn>true</alwaysOn>
           <updateRate>15</updateRate>
           <cameraName>stereo/right</cameraName>
-          <imageTopicName>image_raw</imageTopicName>
-          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-          <frameName>stereo_front</frameName>
+          <imageTopicName>/camera/front/right/image_raw</imageTopicName>
+          <cameraInfoTopicName>/camera/front/right/camera_info</cameraInfoTopicName>
+          <frameName>front_right_cam</frameName>
           <hackBaseline>0.089</hackBaseline>
           <distortionK1>0</distortionK1>
           <distortionK2>0</distortionK2>
@@ -122,9 +122,9 @@
           <alwaysOn>true</alwaysOn>
           <updateRate>15</updateRate>
           <cameraName>down/left</cameraName>
-          <imageTopicName>image_raw</imageTopicName>
-          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-          <frameName>down_camera</frameName>
+          <imageTopicName>/camera/down/left/image_raw</imageTopicName>
+          <cameraInfoTopicName>/camera/down/left/camera_info</cameraInfoTopicName>
+          <frameName>down_left_cam</frameName>
           <hackBaseline>0.89</hackBaseline>
           <distortionK1>0</distortionK1>
           <distortionK2>0</distortionK2>
