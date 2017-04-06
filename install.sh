@@ -70,20 +70,8 @@ BVSDK_PASSWORD=""
 ENABLE_USB_CAM=false
 INSTALL_CUDA=false
 
-# Use environment variables to determine which project to install on Semaphore
-if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
-	if (env | grep INSTALL_SUB | grep --quiet -oe '[^=]*$'); then
-		INSTALL_SUB=true
-	elif (env | grep INSTALL_PRO | grep --quiet -oe '[^=]*$'); then
-		INSTALL_PRO=true
-	elif (env | grep INSTALL_NAV | grep --quiet -oe '[^=]*$'); then
-		INSTALL_NAV=true
-	fi
-	BVSDK_PASSWORD="`env | grep BVSDK_PASSWORD | grep -oe '[^=]*$'`"
-	ENABLE_USB_CAM=false
-	INSTALL_CUDA=true
-
-else
+# Prompt the user to configure the installation if the script is not being used in Docker
+if [ "$DOCKER" != "true" ]; then
 	# Prompt the user to enter a catkin workspace to use
 	echo "Catkin is the ROS build system and it combines CMake macros and Python scripts."
 	echo "The catkin workspace is the directory where all source and build files for the"
@@ -407,61 +395,56 @@ else
 	instlog "Using existing catkin workspace at $CATKIN_DIR"
 fi
 
-# Move the cloned git repository to the catkin workspace in semaphore
-if (env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
-	if [ -d ~/SubjuGator ]; then
-		mv ~/SubjuGator $CATKIN_DIR/src
-	elif [ -d ~/NaviGator ]; then
-		mv ~/NaviGator $CATKIN_DIR/src
-	fi
-fi
-
 # Source the workspace's configurations for bash
 source $CATKIN_DIR/devel/setup.bash
 
-# Download the mil_common repository if it has not already been downloaded
-if !(ls $CATKIN_DIR/src | grep --quiet "mil_common"); then
-	instlog "Downloading the mil_common repository"
-	cd $CATKIN_DIR/src
-	git clone --recursive -q https://github.com/uf-mil/mil_common.git
-	cd $CATKIN_DIR/src/mil_common
-	git remote rename origin upstream
-	if [ ! -z "$SWC_USER_FORK" ]; then
-		git remote add origin "$SWC_USER_FORK"
-	fi
-fi
+# Only clone the github repositories if the script is not being used by Docker
+if [ "$DOCKER" != "true" ]; then
 
-# Download the SubjuGator repository if it has not already been downloaded and was selected for installation
-if ($INSTALL_SUB) && !(ls $CATKIN_DIR/src | grep --quiet "SubjuGator"); then
-	instlog "Downloading the SubjuGator repository"
-	cd $CATKIN_DIR/src
-	git clone --recursive -q https://github.com/uf-mil/SubjuGator.git
-	cd $CATKIN_DIR/src/SubjuGator
-	git remote rename origin upstream
-	if [ ! -z "$SUB_USER_FORK" ]; then
-		git remote add origin "$SUB_USER_FORK"
+	# Download the mil_common repository if it has not already been downloaded
+	if !(ls $CATKIN_DIR/src | grep --quiet "mil_common"); then
+		instlog "Downloading the mil_common repository"
+		cd $CATKIN_DIR/src
+		git clone --recursive -q https://github.com/uf-mil/mil_common.git
+		cd $CATKIN_DIR/src/mil_common
+		git remote rename origin upstream
+		if [ ! -z "$SWC_USER_FORK" ]; then
+			git remote add origin "$SWC_USER_FORK"
+		fi
 	fi
-fi
 
-# Download the NaviGator repository if it has not already been downloaded and was selected for installation
-if ($INSTALL_NAV); then
-	if !(ls $CATKIN_DIR/src | grep --quiet "SubjuGator"); then
+	# Download the SubjuGator repository if it has not already been downloaded and was selected for installation
+	if ($INSTALL_SUB) && !(ls $CATKIN_DIR/src | grep --quiet "SubjuGator"); then
 		instlog "Downloading the SubjuGator repository"
 		cd $CATKIN_DIR/src
 		git clone --recursive -q https://github.com/uf-mil/SubjuGator.git
 		cd $CATKIN_DIR/src/SubjuGator
-		instlog "Rolling back the SubjuGator repository; do not pull the latest version!"
-		git reset --hard 0089e68b9f48b96af9c3821f356e3a487841e87e
-		git remote remove origin
-	fi
-	if !(ls $CATKIN_DIR/src | grep --quiet "NaviGator"); then
-		instlog "Downloading the NaviGator repository"
-		cd $CATKIN_DIR/src
-		git clone --recursive -q https://github.com/uf-mil/NaviGator.git
-		cd $CATKIN_DIR/src/NaviGator
 		git remote rename origin upstream
-		if [ ! -z "$NAV_USER_FORK" ]; then
-			git remote add origin "$NAV_USER_FORK"
+		if [ ! -z "$SUB_USER_FORK" ]; then
+			git remote add origin "$SUB_USER_FORK"
+		fi
+	fi
+
+	# Download the NaviGator repository if it has not already been downloaded and was selected for installation
+	if ($INSTALL_NAV); then
+		if !(ls $CATKIN_DIR/src | grep --quiet "SubjuGator"); then
+			instlog "Downloading the SubjuGator repository"
+			cd $CATKIN_DIR/src
+			git clone --recursive -q https://github.com/uf-mil/SubjuGator.git
+			cd $CATKIN_DIR/src/SubjuGator
+			instlog "Rolling back the SubjuGator repository; do not pull the latest version!"
+			git reset --hard 0089e68b9f48b96af9c3821f356e3a487841e87e
+			git remote remove origin
+		fi
+		if !(ls $CATKIN_DIR/src | grep --quiet "NaviGator"); then
+			instlog "Downloading the NaviGator repository"
+			cd $CATKIN_DIR/src
+			git clone --recursive -q https://github.com/uf-mil/NaviGator.git
+			cd $CATKIN_DIR/src/NaviGator
+			git remote rename origin upstream
+			if [ ! -z "$NAV_USER_FORK" ]; then
+				git remote add origin "$NAV_USER_FORK"
+			fi
 		fi
 	fi
 fi
@@ -676,7 +659,7 @@ fi
 #===========================#
 
 # Attempt to build the selected MIL software stack on client machines
-if !(env | grep SEMAPHORE | grep --quiet -oe '[^=]*$'); then
+if [ "$DOCKER" != "true" ]; then
 	instlog "Building selected MIL software stack with catkin_make"
 	catkin_make -C $CATKIN_DIR -B
 fi
