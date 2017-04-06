@@ -8,24 +8,11 @@ from sub8 import Searcher
 from sub8_ros_tools import pose_to_numpy, rosmsg_to_numpy
 import numpy as np
 
-
 SEARCH_DEPTH = .65
-SPEED = 3.0
-
-def catch_error(failure):
-    print failure.printTraceback()
 
 @util.cancellableInlineCallbacks
 def run(sub):
-    def error(e):
-        print "Failure ",e.printTraceback()
     print "MARKER MISSION - STARTING"
-    # Go to max height to see as much as we can.
-    #print "zrping"
-    #yield sub.move.depth(SEARCH_DEPTH).zero_roll_and_pitch().go(speed=SPEED)
-    #print "sleeping"
-    #yield sub.nh.sleep(1.0)
-
     # Do a little jig - change this for the pool.
     pattern = []
     #pattern = [sub.move.right(1), sub.move.forward(1), sub.move.left(1), sub.move.backward(1),
@@ -35,7 +22,7 @@ def run(sub):
     print "running pattern"
     resp = yield s.start_search(loop=False, timeout=60)
 
-    if resp == None:
+    if resp is None:
         print "MARKER_MISSION - Marker not found."
         defer.returnValue(None)
     print "MARKER_MISSION: transforing marker pose", resp.pose.header.frame_id
