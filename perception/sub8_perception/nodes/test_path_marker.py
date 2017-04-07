@@ -7,6 +7,7 @@ import unittest
 import numpy as np
 from sub8_msgs.srv import VisionRequest2D, VisionRequest2DRequest, VisionRequest2DResponse
 from sensor_msgs.msg import Image, CameraInfo
+from std_srvs.srv import SetBool, SetBoolRequest
 
 PKG = 'sub8_perception'
 class TestPathMarker(unittest.TestCase):
@@ -22,7 +23,10 @@ class TestPathMarker(unittest.TestCase):
         self.info_topic = "/camera/down/left/camera_info"
         self.img_topic = "/camera/down/left/image_rect_color"
         rospy.wait_for_service('/vision/path_marker/2D', 3.0)
-        self.service = rospy.ServiceProxy('/vision/path_marker/2D', VisionRequest2D) 
+        rospy.wait_for_service('/vision/path_marker/enable', 3.0)
+        self.service = rospy.ServiceProxy('/vision/path_marker/2D', VisionRequest2D)
+        enable = rospy.ServiceProxy('/vision/path_marker/enable', SetBool)
+        enable(SetBoolRequest(data=True))
         self.cam_info_pub = rospy.Publisher(self.info_topic, CameraInfo, queue_size=5)
         self.img_pub = rospy.Publisher(self.img_topic, Image, queue_size=5)
         super(TestPathMarker, self).__init__(*args)

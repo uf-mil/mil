@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 import cv2
 import numpy as np
-import sys
 import rospy
-import rospkg
 from tf.transformations import quaternion_from_euler
-import os
 from std_msgs.msg import Header
 from std_srvs.srv import SetBool, SetBoolResponse
 from sub8_msgs.srv import VisionRequestResponse, VisionRequest, VisionRequest2D, VisionRequest2DResponse, VisionRequest, VisionRequestResponse
@@ -15,8 +12,7 @@ from sub8_ros_tools import Image_Publisher, Image_Subscriber
 from image_geometry import PinholeCameraModel
 from visualization_msgs.msg import Marker
 
-rospack = rospkg.RosPack()
-
+__author__ = "Kevin Allen"
 
 class PathMarkerFinder():
     """
@@ -53,6 +49,10 @@ class PathMarkerFinder():
         self.debug_gui = False
         self.last2d = None
         self.last3d = None
+        self.enabled = False
+        self.cam = None
+        self.last_image = None
+        self.last_found_time = None
 
         # Constants from launch config file
         self.debug_ros = rospy.get_param("debug_ros", True)
@@ -65,25 +65,25 @@ class PathMarkerFinder():
         self.approx_polygon_thresh = rospy.get_param("approx_polygon_thresh", 10)
         camera = rospy.get_param("marker_camera", "/camera/down/left/image_rect_color")
 
-        self.enabled = False
+        if self.debug_ros:
+            self.debug_pub = Image_Publisher("debug_image")
+            self.markerPub = rospy.Publisher('path_marker_visualization', Marker, queue_size=10)
         self.service2D = rospy.Service('/vision/path_marker/2D', VisionRequest2D, self.cb_2d)
         self.service3D = rospy.Service('/vision/path_marker/pose', VisionRequest, self.cb_3d)
         self.toggle = rospy.Service('/vision/path_marker/enable', SetBool, self.enable_cb)
         self.image_sub = Image_Subscriber(camera, self.img_cb)
-        self.camera_info = self.image_sub.wait_for_camera_info()
+        camera_info = self.image_sub.wait_for_camera_info()
         self.cam = PinholeCameraModel()
-        self.cam.fromCameraInfo(self.camera_info)
-        self.last_image = None
-        self.last_found_time = None
-        if self.debug_ros:
-            self.debug_pub = Image_Publisher("debug_image")
-            self.markerPub = rospy.Publisher('path_marker_visualization', Marker, queue_size=10)
-        self.enabled = True
+        self.cam.fromCameraInfo(camera_info)
 
     def sendDebugMarker(self):
-        # Sends a rviz marker in the camera frame with the estimated pose of the path marker
+        '''
+        Sends a rviz marker in the camera frame with the estimated pose of the path marker.
+        This marker is a scaled cube with the demensions and color of the actual marker.
+        Only called if debug_ros param == True
+        '''
         m = Marker()
-        m.header.frame_id = self.image_sub.camera_info.header.frame_id
+        m.header.frame_id = self.cam.tfFrame()
         m.header.stamp = self.last_found_time
         m.ns = "path_markers"
         m.id = 0
@@ -105,6 +105,7 @@ class PathMarkerFinder():
 
     def enable_cb(self, x):
         self.enabled = x.data
+        return SetBoolResponse(success=True)
 
     def sortRect(self, rect):
         '''
@@ -143,7 +144,7 @@ class PathMarkerFinder():
         if (self.last2d == None or not self.enabled):
             res.found = False
         else:
-            res.pose.header.frame_id = self.image_sub.camera_info.header.frame_id
+            res.pose.header.frame_id = self.cam.tfFrame()
             res.pose.header.stamp = self.last_found_time
             res.pose.pose.position = numpy_to_point(self.last3d[0])
             res.pose.pose.orientation = numpy_to_quaternion(self.last3d[1])
@@ -155,7 +156,7 @@ class PathMarkerFinder():
         if (self.last3d == None or not self.enabled):
             res.found = False
         else:
-            res.header.frame_id = self.image_sub.camera_info.header.frame_id
+            res.header.frame_id = self.cam.tfFrame()
             res.header.stamp = self.last_found_time
             res.pose.x = self.last2d[0][0]
             res.pose.y = self.last2d[0][1]
@@ -178,10 +179,20 @@ class PathMarkerFinder():
         return True
     
     def get_2d_pose(self, r):
+        '''
+        Given a sorted 4 sided polygon, stores the centriod and angle
+        for the next service call to get 2dpose.
+        returns False if dx of polygon is 0, otherwise True
+        '''
         top_center = r[0][0] + (r[1][0]-r[0][0])/2.0
         bot_center = r[2][0] + (r[3][0]-r[2][0])/2.0
         center = bot_center + (top_center - bot_center)/2.0
-        angle = np.arctan( (top_center[1]-bot_center[1]) / (top_center[0] - bot_center[0]) )
+        y = top_center[1] - bot_center[1]
+        x = top_center[0] - bot_center[0]
+        if x == 0:
+            rospy.logerr("Contour dx is 0, strange...")
+            return False
+        angle = np.arctan( y / x )
         self.last2d = (center, angle)
         return True
 
@@ -201,7 +212,12 @@ class PathMarkerFinder():
         rect = self.sortRect(polygon)
         for idx, p in enumerate(rect):
             cv2.putText(self.last_image, str(idx), (p[0][0], p[0][1]), cv2.FONT_HERSHEY_SCRIPT_COMPLEX,1, (0,0,255))
-        length_width_ratio = np.linalg.norm(rect[0][0]-rect[3][0])/np.linalg.norm(rect[0][0]-rect[1][0])
+        length = np.linalg.norm(rect[0][0]-rect[3][0])
+        width = np.linalg.norm(rect[0][0]-rect[1][0])
+        if width == 0:
+            rospy.logerr("Width == 0, strange...")
+            return False
+        length_width_ratio = length / width
         # Checks that ratio of length to width is similar to known demensions (8:1)
         if abs(length_width_ratio-8.0)/8.0 > self.length_width_ratio_err:
             return False
@@ -212,18 +228,22 @@ class PathMarkerFinder():
         return True
 
     def get_edges(self):
+        '''
+        Proccesses latest image to find edges by:
+        blurring and thresholding for highly saturated orangish objects
+        then runs canny on threshold images and returns canny's edges
+        '''
         blur = cv2.blur(self.last_image, (5,5))
         hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
         thresh = cv2.inRange(hsv, (0, self.thresh_saturation_low, 0), (self.thresh_hue_high, 255, 255))
         return cv2.Canny(thresh, self.canny_low, self.canny_low*self.canny_ratio)
 
     def img_cb(self, img):
-        if not self.enabled:
+        if not self.enabled or self.cam == None:
             return
         self.last_image = img
         edges = self.get_edges()
-        _, contours, hierarchy = cv2.findContours(edges,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        contours_img = img.copy()
+        _, contours, _ = cv2.findContours(edges,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         
         # Check if each contour is valid
         for idx, c in enumerate(contours):
