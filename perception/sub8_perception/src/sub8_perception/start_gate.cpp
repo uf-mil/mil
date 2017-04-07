@@ -2,11 +2,13 @@
 Sub8StartGateDetector::Sub8StartGateDetector() : image_transport_(nh_), gate_line_buffer_(30), running_(true)
 {
   image_sub_ =
-      image_transport_.subscribeCamera("stereo/left/image_color", 1, &Sub8StartGateDetector::imageCallback, this);
+      image_transport_.subscribeCamera("/stereo/right/image_rect_color", 1, &Sub8StartGateDetector::imageCallback, this);
   service_2d_ =
       nh_.advertiseService("/vision/start_gate/pose", &Sub8StartGateDetector::requestStartGatePosition2d, this);
   service_enable_ =
       nh_.advertiseService("/vision/start_gate/enable", &Sub8StartGateDetector::requestStartGateEnable, this);
+  service_distance_ =
+      nh_.advertiseService("/vision/start_gate/distance", &Sub8StartGateDetector::requestStartGateDistance, this);   
 }
 Sub8StartGateDetector::~Sub8StartGateDetector()
 {
@@ -71,13 +73,22 @@ void Sub8StartGateDetector::imageCallback(const sensor_msgs::ImageConstPtr &imag
         }
       }
 
-      // Visualize on of the saved gates in the buffer
+      // Visualize one of the saved gates in the buffer
+     
+      // std::vector<cv::Point3f> gate_3d = {cv::Point3f(-0.9652, 0.50165, 0), cv::Point3f(-0.9652, -0.50165, 0), cv::Point3f(0.9652, -0.50165,0), cv::Point3f(0.9652,0.50165,0)};
+      // std::vector<cv::Point3f> gate_2d = {cv:;Point3f()}
 
       // #ifdef VISUALIZE
       cv::Mat show = cv_bridge::toCvShare(image_msg, "bgr8")->image;
       for (auto &gate : gate_line_buffer_[29])
       {
+      	 // std::vector<cv::Point2f> gate_2d = {gate[0], cv::Point2f(gate[1].x-gate[0].x, gate[0].y), gate[1], cv::Point2f(gate[1].x, gate[1].y-gate[0].y)};
+      	cv::Mat rvec, tvec;
+      	// cv::solvePnP(cv::Mat(gate_3d), cv::Mat(gate_2d), cam_model_.intrinsicMatrix(), cam_model_.distortionCoeffs(), rvec, tvec, false);
         cv::rectangle(show, gate[0], gate[1], cv::Scalar(255, 0, 0), 2, 8, 0);
+       	// std::cout << gate[0] << " " << gate[1] << std::endl;
+       	// std::cout << rvec << " " << tvec << std::endl;
+       	std::cout << getGateDistance() << std::endl;
       }
       cv::imshow("ay", show);
       cv::waitKey(30);
@@ -91,8 +102,15 @@ void Sub8StartGateDetector::findGate(const sensor_msgs::ImageConstPtr &image_msg
 {
   cv::Mat cvImageMat = cv_bridge::toCvShare(image_msg, "bgr8")->image;
 
+  // cv::imshow("ayyy", cvImageMat);
   cols_ = cvImageMat.cols;
   rows_ = cvImageMat.rows;
+
+
+  // cv::circle(cvImageMat, cv::Point2d(400,300), 15, cv::Scalar(100, 200, 255), -1);
+
+  // cv::imshow("aaaay", cvImageMat);
+  // cv::waitKey(30);
 
   // Get mean and deviation of the color in the image
   cv::Scalar mean;
@@ -101,9 +119,12 @@ void Sub8StartGateDetector::findGate(const sensor_msgs::ImageConstPtr &image_msg
 
   // Threshold the image using mean and 2 standard deviations
   cv::Mat output;
-  cv::inRange(cvImageMat, mean - 2 * stddev, mean + 2 * stddev, output);
+  cv::inRange(cvImageMat, mean - 1 * stddev, mean + 1 * stddev, output);
   cv::bitwise_not(output, output);
   cv::dilate(output, output, cv::Mat(), cv::Point(-1, -1), 2, 1, 1);
+
+  // cv::imshow("test", output);
+  // cv::waitKey(30);
 
   // Get a skeleton of things in the thresholded image
   cv::Mat skel(output.size(), CV_8UC1, cv::Scalar(0));
@@ -166,6 +187,10 @@ void Sub8StartGateDetector::findGate(const sensor_msgs::ImageConstPtr &image_msg
 
 double Sub8StartGateDetector::getGateDistance()
 {
+  if (gate_line_buffer_.size() < 15)
+  {
+    return -1;
+  }
   double x = (START_GATE_WIDTH * cam_model_.fx()) / mean(accSizeX_);
   double y = (START_GATE_HEIGHT * cam_model_.fy()) / mean(accSizeY_);
   return (x + y) / 2;
@@ -200,5 +225,12 @@ bool Sub8StartGateDetector::requestStartGateEnable(std_srvs::SetBool::Request &r
   {  // If false we should also clear the buffer
     gate_line_buffer_.clear();
   }
+  return true;
+}
+
+bool Sub8StartGateDetector::requestStartGateDistance(sub8_msgs::BMatrix::Request &req,
+                                                     sub8_msgs::BMatrix::Response &resp)
+{
+  resp.B = std::vector<double>{getGateDistance()};
   return true;
 }

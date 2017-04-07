@@ -10,7 +10,7 @@ from tf import transformations
 from uf_common.msg import MoveToAction, PoseTwistStamped, Float64Stamped
 from sub8 import pose_editor
 import sub8_tools
-from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D
+from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D, BMatrix, BMatrixRequest
 from std_srvs.srv import SetBool, SetBoolRequest
 from nav_msgs.msg import Odometry
 
@@ -40,7 +40,7 @@ class StartGateMission:
         fprint('Leveling off', msg_color="yellow")
         yield self.sub_singleton.move.zero_roll_and_pitch().go()
         fprint('Going down', msg_color="yellow")
-        yield self.sub_singleton.move.down(1).go()
+        yield self.sub_singleton.move.down(.7).go()
 
         start_gate_enable = yield self.sub_singleton.nh.get_service_client('/vision/start_gate/enable', SetBool)
         fprint('Turning on vision service')
@@ -66,12 +66,19 @@ class StartGateMission:
                 yield self.search_pattern()
         
         fprint("Found start gate: " + str(start_gate_search_res.pose))
-        yield self.align_for_dummies( start_gate_search_res)
-        fprint("YOLO")
+        
+        start_gate_distance_request = yield self.sub_singleton.nh.get_service_client('/vision/start_gate/distance', BMatrix)
+        start_gate_distance = yield start_gate_distance_request(BMatrixRequest())
+        fprint("Distance: " + str(start_gate_distance.B[0]))
 
-        while(self.FOUND_START_GATE):
-            self.start_gate_find()
-            yield self.sub_singleton.move.forward(.3).zero_roll_and_pitch().go(speed=self.SPEED)
+
+        yield self.align_for_dummies( start_gate_search_res)
+        fprint("YOLO -- MOVING FORWARD")
+
+        # while(self.FOUND_START_GATE):
+            # self.start_gate_find()
+            # yield self.sub_singleton.move.forward(.3).zero_roll_and_pitch().go(speed=self.SPEED)
+        yield self.sub_singleton.move.forward(start_gate_distance.B[0] + 0.5).zero_roll_and_pitch().go(speed=self.SPEED)
 
         fprint("Finished")
 

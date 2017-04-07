@@ -17,6 +17,7 @@
 #include <std_srvs/SetBool.h>
 
 #include "sub8_msgs/VisionRequest2D.h"
+#include "sub8_msgs/BMatrix.h"
 
 using namespace boost::accumulators;
 
@@ -26,14 +27,18 @@ public:
   Sub8StartGateDetector();
   ~Sub8StartGateDetector();
 
-  const double START_GATE_WIDTH = 2.0;  // Meters
-  const double START_GATE_HEIGHT = 1.0;
+  // 76 inches x 39.5 inches
+  //1.9304 x 1.0033
+  const double START_GATE_WIDTH = 1.9304;  // Meters
+  const double START_GATE_HEIGHT = 1.0033;
   const double START_GATE_SIZE_TOLERANCE = 10000;
 
   void imageCallback(const sensor_msgs::ImageConstPtr &msg, const sensor_msgs::CameraInfoConstPtr &info_msg);
   bool requestStartGatePosition2d(sub8_msgs::VisionRequest2D::Request &req,
                                       sub8_msgs::VisionRequest2D::Response &resp);
   bool requestStartGateEnable(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &resp);
+  bool requestStartGateDistance(sub8_msgs::BMatrix::Request &req,
+                                                     	sub8_msgs::BMatrix::Response &resp);
   void findGate(const sensor_msgs::ImageConstPtr &image_msg);
 
   double getGateDistance();
@@ -58,4 +63,5 @@ public:
 
   ros::ServiceServer service_enable_;
   ros::ServiceServer service_2d_;
+  ros::ServiceServer service_distance_;
 };
