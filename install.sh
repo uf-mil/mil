@@ -215,6 +215,14 @@ instlog "Acquiring root privileges"
 # Purely here for aesthetics and to satisfy OCD
 sudo true
 
+# Make sure script dependencies are installed quietly on bare bones installations
+sudo apt-get update -qq
+sudo apt-get install -qq lsb-release
+sudo apt-get install -qq iputils-ping
+sudo apt-get install -qq curl
+sudo apt-get install -qq git
+sudo apt-get install -qq python-pip
+
 instlog "Starting the pre-flight system check to ensure installation was done properly"
 
 # Check whether or not github.com is reachable
@@ -235,10 +243,6 @@ if !($NET_CHECK); then
 	instwarn "The install script needs to be able to connect to Github and other sites"
 	exit 1
 fi
-
-# Make sure script dependencies are installed quietly on bare bones installations
-sudo apt-get update -qq
-sudo apt-get install -qq lsb-release aptitude python-pip git build-essential > /dev/null 2>&1
 
 # Set the required OS based on inputs and installed distribution
 if ($INSTALL_NAV); then
@@ -363,6 +367,7 @@ sudo apt-get install -qq ros-$ROS_VERSION-desktop-full
 # If ROS Indigo is being installed, break the metapackage and install an updated version of Gazebo
 if [ "$ROS_VERSION" = "indigo" ]; then
 	instlog "Installing the latest version of Gazebo"
+	sudo apt-get install -qq aptitude
 	sudo aptitude unmarkauto -q '?reverse-depends(ros-indigo-desktop-full) | ?reverse-recommends(ros-indigo-desktop-full)'
 	sudo apt-get purge -qq ros-indigo-gazebo*
 	sudo apt-get install -qq gazebo7
@@ -558,6 +563,7 @@ if ($INSTALL_NAV); then
 	instlog "Installing NaviGator dependencies from the $REQUIRED_OS_ID repositories"
 
 	# Compiler tools
+	sudo apt-get install -qq build-essential
 	sudo apt-get install -qq autoconf
 	sudo apt-get install -qq automake
 	sudo apt-get install -qq binutils-dev
