@@ -131,7 +131,7 @@ class AlarmListener(object):
 
     def _severity_cb_check(self, severity):
         # In case _last alarm hasnt been declared yet
-        if _last_alarm is not None:
+        if self._last_alarm is None:
             return False
 
         if isinstance(severity, tuple) or isinstance(severity, list):

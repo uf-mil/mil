@@ -7,7 +7,7 @@
 
   <!-- List known alarms here -->
   <rosparam ns="known_alarms">
-      alarm_a, alarm_b, alarm_c
+      alarm_a, alarm_b, alarm_c, alarm_d
   </rosparam>
 
   <test test-name="ros_alarms_python_tests" pkg="ros_alarms" type="python_tests.py" />
