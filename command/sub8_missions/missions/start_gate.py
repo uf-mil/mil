@@ -25,7 +25,7 @@ from sub8 import sub_singleton
 fprint = sub8_tools.text_effects.FprintFactory(
 title="START_GATE", msg_color="white").fprint
 
-class StartGateMission:
+class StartGateMission(object):
 
     FOUND_START_GATE = False
     SPEED = 0.3
@@ -54,8 +54,9 @@ class StartGateMission:
             fprint("Waiting a few seconds and trying again:")
             time.sleep(3)
             start_gate_search_res = yield start_gate_search(VisionRequest2DRequest(target_name=''))
-        # yield start_gate_enable(SetBoolRequest(data=False))
-        # yield start_gate_enable(SetBoolRequest(data=True))
+        # This is to reset the buffer
+        yield start_gate_enable(SetBoolRequest(data=False))
+        yield start_gate_enable(SetBoolRequest(data=True))
         if not start_gate_search_res.found:
             fprint("Running search pattern")
             while not self.FOUND_START_GATE and start_gate_search_res.pose.x == 0:

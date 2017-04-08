@@ -64,4 +64,6 @@ public:
   ros::ServiceServer service_enable_;
   ros::ServiceServer service_2d_;
   ros::ServiceServer service_distance_;
+
+  image_transport::Publisher pubImage_;
 };
