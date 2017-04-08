@@ -199,6 +199,26 @@ target_link_libraries(
 #     dl
 # )
 
+add_executable(
+  sub8_start_gate
+    nodes/start_gate_node.cpp
+    src/sub8_perception/start_gate.cpp
+)
+
+add_dependencies(
+  sub8_start_gate
+   sub8_msgs_generate_messages_cpp
+   ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(
+  sub8_start_gate
+    sub8_vision_lib
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${OpenCV_INCLUDE_DIRS}
+)
+
+
 install(
   TARGETS
 )
