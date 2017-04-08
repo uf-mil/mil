@@ -159,11 +159,11 @@ class _Sub(object):
 
     @util.cancellableInlineCallbacks
     def _init(self):
-        self._moveto_action_client = yield action.ActionClient(self.nh, '/moveto', MoveToAction)
-        self._odom_sub = yield self.nh.subscribe('/odom', Odometry)
-        self._trajectory_sub = yield self.nh.subscribe('/trajectory', PoseTwistStamped)
-        self._trajectory_pub = yield self.nh.advertise('/trajectory', PoseTwistStamped)
-        self._dvl_range_sub = yield self.nh.subscribe('/dvl/range', Float64Stamped)
+        self._moveto_action_client = yield action.ActionClient(self.nh, 'moveto', MoveToAction)
+        self._odom_sub = yield self.nh.subscribe('odom', Odometry)
+        self._trajectory_sub = yield self.nh.subscribe('trajectory', PoseTwistStamped)
+        self._trajectory_pub = yield self.nh.advertise('trajectory', PoseTwistStamped)
+        self._dvl_range_sub = yield self.nh.subscribe('dvl/range', Float64Stamped)
         self._tf_listener = yield tf.TransformListener(self.nh)
         
         self.vision_proxies = _VisionProxies(self.nh, 'vision_proxies.yaml')

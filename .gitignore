@@ -61,7 +61,7 @@ target/
 
 # PyCharm
 .idea/
-CMakeLists.txt
+#CMakeLists.txt
 
 # Other
 *.mtl
