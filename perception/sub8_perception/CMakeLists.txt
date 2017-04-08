@@ -57,11 +57,11 @@ include_directories(
 # add_definitions(${PCL_DEFINITIONS})
 
 add_library(sub8_vision_lib
-    # src/sub8_vision_lib/align.cc
-    src/sub8_vision_lib/cv_utils.cc
-    # src/sub8_vision_lib/cv_param_helpers.cc
-    src/sub8_vision_lib/visualization.cc
-    # src/sub8_vision_lib/object_finder.cc
+    # src/sub8_vision_lib/align.cpp
+    src/sub8_vision_lib/cv_utils.cpp
+    # src/sub8_vision_lib/cv_param_helpers.cpp
+    src/sub8_vision_lib/visualization.cpp
+    # src/sub8_vision_lib/object_finder.cpp
 )
 
 target_link_libraries(
@@ -130,14 +130,14 @@ install(DIRECTORY include/${PROJECT_NAME}/
 )
 
 # file(GLOB BUOY_SOURCES
-#     "src/sub8_perception/*.cc"
+#     "src/sub8_perception/*.cpp"
 # )
 
 MESSAGE( STATUS "Include search path: " ${INCLUDE_DIRECTORIES} )
 
 add_executable(
   torpedos_cpp
-    nodes/torpedo_board.cc
+    nodes/torpedo_board.cpp
 )
 
 add_dependencies(
@@ -157,7 +157,7 @@ target_link_libraries(
 
 #add_executable(
 #  perception_server
-#    nodes/perception_server.cc
+#    nodes/perception_server.cpp
 #)
 
 #add_dependencies(
@@ -176,7 +176,7 @@ target_link_libraries(
 
 # add_executable(
 #   pcl_buoy
-#     nodes/buoy_node.cc
+#     nodes/buoy_node.cpp
 #     ${BUOY_SOURCES}
 # )
 
