@@ -22,7 +22,7 @@ If you have any questions, don't hesitate to email David.
 
 * Daniel Volya
 
-* Israelle Peroszcki
+* Israelle Widjaja
 
 * Aaron Iglésias
 
