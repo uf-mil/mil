@@ -2,3 +2,5 @@ proxy1:
     root: "/vision/serviceTest"
 proxy2:
     root: "/vision/serviceTesting2"
+path_marker:
+    root: "/vision/path_marker"

@@ -1,0 +1,9 @@
+debug_ros: True
+canny_low: 100
+canny_ratio: 3.0
+thresh_hue_high: 60
+thresh_satuation_low: 100
+min_contour_area: 100
+length_width_ratio_err: 0.2
+approx_polygon_thresh: 10
+marker_camera: "/camera/down/left/image_rect_color"

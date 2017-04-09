@@ -1,0 +1,11 @@
+<launch>
+  <node pkg="sub8_perception" type="follow_orange_pipes.py" name="orange_markers" output="screen">
+    <rosparam file="$(find sub8_launch)/config/follow_orange_pipes.yaml" command="load" ns="orange_markers" />
+  </node>
+  <test test-name="path_marker_test" pkg="sub8_perception" type="test_path_marker.py">
+    <param name="pool_path2" value="$(find sub8_perception)/tests/follow_orange_pipes/pool_path2.bag" />
+    <param name="pool_path3" value="$(find sub8_perception)/tests/follow_orange_pipes/pool_path3.bag" />
+    <param name="transdec_path1" value="$(find sub8_perception)/tests/follow_orange_pipes/transdec_path1.bag" />
+    <param name="transdec_path3" value="$(find sub8_perception)/tests/follow_orange_pipes/transdec_path3.bag" />
+  </test>
+</launch>

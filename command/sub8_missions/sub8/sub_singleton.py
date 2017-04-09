@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import division
 
+import genpy
 from txros import action, util, tf, serviceclient
 import rospkg
 from tf import transformations
@@ -246,7 +247,7 @@ class Searcher(object):
 
         start_pose = self.sub.move.forward(0)
         start_time = self.sub.nh.get_time()
-        while self.sub.nh.get_time() - start_time < txros.genpy.Duration(timeout):
+        while self.sub.nh.get_time() - start_time < genpy.Duration(timeout):
 
             # If we find the object
             if self.object_found:
