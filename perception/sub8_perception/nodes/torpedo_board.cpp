@@ -1,4 +1,4 @@
-#include <sub8_vision_lib/torpedo_board.hpp>
+#include <mil_vision_lib/torpedo_board.hpp>
 
 using namespace std;
 using namespace cv;

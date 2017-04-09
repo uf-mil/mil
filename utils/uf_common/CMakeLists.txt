@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(uf_common)
+project(mil_msgs)
 find_package(catkin REQUIRED COMPONENTS message_generation message_runtime geometry_msgs tf actionlib interactive_markers std_msgs actionlib_msgs cmake_modules)
 catkin_python_setup()
 
@@ -22,7 +22,7 @@ add_message_files(
 find_package(Eigen REQUIRED)
 include_directories(${Eigen_INCLUDE_DIRS})
 generate_messages(
-    DEPENDENCIES std_msgs actionlib_msgs geometry_msgs uf_common
+    DEPENDENCIES std_msgs actionlib_msgs geometry_msgs mil_msgs
 )
 catkin_package(
     DEPENDS Eigen

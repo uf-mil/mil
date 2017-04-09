@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-import sub8_ros_tools as sub8_utils
+import mil_ros_tools as sub8_utils
 from tf import transformations
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import WrenchStamped, PoseWithCovariance, TwistWithCovariance, Pose, Point, Quaternion
@@ -8,7 +8,7 @@ from sensor_msgs.msg import LaserScan
 from gazebo_msgs.srv import ApplyBodyWrench
 from gazebo_msgs.msg import LinkStates, ModelState
 from sub8_gazebo.srv import ResetGazebo, ResetGazeboResponse
-from uf_common.msg import Float64Stamped
+from mil_msgs.msg import Float64Stamped
 import numpy as np
 import os
 

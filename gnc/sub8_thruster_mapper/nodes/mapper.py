@@ -2,7 +2,7 @@
 import rospy
 from scipy.optimize import minimize
 import numpy as np
-from sub8_ros_tools import wait_for_param, thread_lock, rosmsg_to_numpy, msg_helpers
+from mil_ros_tools import wait_for_param, thread_lock, rosmsg_to_numpy, msg_helpers
 import threading
 from sub8_msgs.msg import Thrust, ThrusterCmd
 from sub8_msgs.srv import (ThrusterInfo, UpdateThrusterLayout, UpdateThrusterLayoutResponse,

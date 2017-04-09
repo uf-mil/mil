@@ -4,7 +4,7 @@ import numpy as np
 import sys
 import rospy
 import image_geometry
-import sub8_ros_tools
+import mil_ros_tools
 import tf
 from sub8_vision_tools import machine_learning
 import rospkg
@@ -297,7 +297,7 @@ class BuoyFinder:
 
             (t, rot_q) = self.transformer.lookupTransform('/map', '/front_left_cam', timestamp)
             trans = np.array(t)
-            R = sub8_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
+            R = mil_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
 
             self.rviz.draw_ray_3d(tuple_center, self.camera_model, buoy.draw_colors, frame='/front_left_cam',
                 _id=self._id + 100, timestamp=timestamp)

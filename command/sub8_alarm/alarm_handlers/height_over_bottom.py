@@ -1,6 +1,6 @@
 import rospy
 from ros_alarms import AlarmBroadcaster, HandlerBase
-from uf_common.msg import Float64Stamped
+from mil_msgs.msg import Float64Stamped
 
 class HeightOverBottom(HandlerBase):
     alarm_name = "height-over-bottom"

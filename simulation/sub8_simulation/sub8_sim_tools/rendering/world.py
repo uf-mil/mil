@@ -1,6 +1,6 @@
 from __future__ import division
 from sub8_sim_tools import Shaders, ShaderManager
-from sub8_ros_tools import make_rotation, compose_transformation
+from mil_ros_tools import make_rotation, compose_transformation
 from vispy import geometry, gloo
 import numpy as np
 from vispy.util.transforms import perspective, translate, rotate

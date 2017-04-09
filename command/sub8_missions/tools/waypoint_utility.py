@@ -2,7 +2,7 @@
 import sys
 import rospy
 import nav_msgs.msg as nav_msgs
-import sub8_ros_tools as sub8_utils
+import mil_ros_tools as sub8_utils
 import tf
 import numpy as np
 
@@ -12,7 +12,7 @@ from sensor_msgs.msg import Joy
 from scipy import linalg
 
 import actionlib
-import uf_common.msg as uf_common_msgs
+import mil_msgs.msg as mil_msgs_msgs
 import geometry_msgs.msg as geom_msgs
 
 
@@ -55,7 +55,7 @@ class Spacenav(object):
         self.target_orientation = np.eye(3)
         self.target_orientation_quaternion = np.array([0.0, 0.0, 0.0, 1.0])
 
-        self.client = actionlib.SimpleActionClient('/moveto', uf_common_msgs.MoveToAction)
+        self.client = actionlib.SimpleActionClient('/moveto', mil_msgs_msgs.MoveToAction)
         # self.client.wait_for_server()
 
         self.target_pose_pub = rospy.Publisher('/posegoal', PoseStamped, queue_size=1)
@@ -140,9 +140,9 @@ class Spacenav(object):
             rospy.logwarn("Waypoint set too high!")
             position[2] = -0.5
 
-        goal = uf_common_msgs.MoveToGoal(
+        goal = mil_msgs_msgs.MoveToGoal(
             header=sub8_utils.make_header('/map'),
-            posetwist=uf_common_msgs.PoseTwist(
+            posetwist=mil_msgs_msgs.PoseTwist(
                 pose=geom_msgs.Pose(
                     position=sub8_utils.numpy_to_point(position),
                     orientation=sub8_utils.numpy_to_quaternion(orientation)

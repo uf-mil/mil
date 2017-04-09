@@ -29,7 +29,7 @@ prefix = 'hsv' if args.hsv else 'bgr'
 
 # Importing these late so that argcomplete can run quickly
 from sub8_vision_tools import visual_threshold_tools  # noqa
-from sub8_ros_tools.image_helpers import Image_Subscriber  # noqa
+from mil_ros_tools.image_helpers import Image_Subscriber  # noqa
 import cv2  # noqa
 import numpy as np  # noqa
 import os  # noqa

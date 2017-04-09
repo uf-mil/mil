@@ -2,7 +2,7 @@ from twisted.internet import defer
 from txros import util, tf
 import numpy as np
 from std_srvs.srv import SetBool, SetBoolRequest
-from sub8_ros_tools import pose_to_numpy
+from mil_ros_tools import pose_to_numpy
 
 SPEED = .3
 SEARCH = 0

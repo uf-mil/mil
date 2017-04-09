@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rise_6dof)
-find_package(catkin REQUIRED COMPONENTS nav_msgs dynamic_reconfigure message_runtime message_generation rospy uf_common tf geometry_msgs)
+find_package(catkin REQUIRED COMPONENTS nav_msgs dynamic_reconfigure message_runtime message_generation rospy mil_msgs tf geometry_msgs)
 catkin_python_setup()
 
 add_service_files(
@@ -18,7 +18,7 @@ generate_messages(
 
 catkin_package(
     DEPENDS
-    CATKIN_DEPENDS nav_msgs dynamic_reconfigure message_runtime message_generation rospy uf_common tf geometry_msgs
+    CATKIN_DEPENDS nav_msgs dynamic_reconfigure message_runtime message_generation rospy mil_msgs tf geometry_msgs
     INCLUDE_DIRS
     LIBRARIES
 )

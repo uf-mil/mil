@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 import rospy
-from sub8_ros_tools.func_helpers import Cache
+from mil_ros_tools.func_helpers import Cache
 
 
 def bgr_vec_to_hsv(vector):

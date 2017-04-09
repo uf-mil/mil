@@ -9,7 +9,7 @@ import numpy as np
 from sub8_msgs.msg import Thrust, ThrusterCmd
 from sub8_msgs.srv import ThrusterInfo, ThrusterInfoResponse
 from geometry_msgs.msg import WrenchStamped, Wrench, Vector3
-from sub8_ros_tools import wait_for_subscriber
+from mil_ros_tools import wait_for_subscriber
 import rospy
 import rostest
 import time

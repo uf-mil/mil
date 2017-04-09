@@ -5,7 +5,7 @@ import numpy as np
 import sys
 import rospy
 import image_geometry
-import sub8_ros_tools
+import mil_ros_tools
 from sub8_msgs.srv import OcrRequest
 from std_msgs.msg import Header, String
 from geometry_msgs.msg import Pose2D

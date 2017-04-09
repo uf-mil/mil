@@ -7,7 +7,7 @@
 
 #include "msg_helpers.h"
 
-namespace uf_common {
+namespace mil_msgs {
 
 void fail(std::string const &error_string) { throw std::runtime_error(error_string); }
 template <typename FirstType, typename SecondType, typename... MoreTypes>

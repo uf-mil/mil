@@ -148,7 +148,7 @@ class CameraChecker(TemplateChecker):
 
 from nav_msgs.msg import Odometry
 from tf.msg import tfMessage
-from uf_common.msg import VelocityMeasurements, Float64Stamped
+from mil_msgs.msg import VelocityMeasurements, Float64Stamped
 from sensor_msgs.msg import Imu, MagneticField
 class StateEstChecker(TemplateChecker):
     @txros.util.cancellableInlineCallbacks

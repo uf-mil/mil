@@ -4,11 +4,11 @@ import numpy as np
 import sys
 import rospy
 import image_geometry
-import sub8_ros_tools
+import mil_ros_tools
 from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D
 from std_msgs.msg import Header
 from geometry_msgs.msg import Pose2D
-from uf_common.msg import Float64Stamped  # This needs to be deprecated
+from mil_msgs.msg import Float64Stamped  # This needs to be deprecated
 
 
 def contour_sort(l):
@@ -54,8 +54,8 @@ class BinFinder:
         self.last_image_time = None
         self.camera_model = None
         self.pose_service = rospy.Service('vision/bin/2D', VisionRequest2D, self.request_bin)
-        self.image_sub = sub8_ros_tools.Image_Subscriber('/down/left/image_rect_color', self.image_cb)
-        self.image_pub = sub8_ros_tools.Image_Publisher('/vision/bin_2d/target_info')
+        self.image_sub = mil_ros_tools.Image_Subscriber('/down/left/image_rect_color', self.image_cb)
+        self.image_pub = mil_ros_tools.Image_Publisher('/vision/bin_2d/target_info')
         self.range = None
         self.range_sub = rospy.Subscriber("dvl/range", Float64Stamped, self.range_callback)
 
@@ -76,7 +76,7 @@ class BinFinder:
             if response is False or response is None:
                 print 'did not find'
                 resp = VisionRequest2DResponse(
-                    header=sub8_ros_tools.make_header(frame='/down'),
+                    header=mil_ros_tools.make_header(frame='/down'),
                     found=False
                 )
 

@@ -4,7 +4,7 @@
 import rospy
 import numpy as np
 import time
-import sub8_ros_tools as sub8_utils
+import mil_ros_tools as sub8_utils
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa
 

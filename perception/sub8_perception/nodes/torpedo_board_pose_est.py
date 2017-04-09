@@ -8,7 +8,7 @@ import tf
 import visualization_msgs.msg as visualization_msgs
 from geometry_msgs.msg import Point, Vector3, Pose, Quaternion
 from std_msgs.msg import ColorRGBA
-import sub8_ros_tools as sub8_utils
+import mil_ros_tools as sub8_utils
 
 
 class PoseObserver(object):

@@ -3,8 +3,8 @@ import rospy
 from gazebo_msgs.srv import GetModelState
 from sub8_msgs.srv import Sonar
 from sub8_sonar import EchoLocator
-from sub8_ros_tools import msg_helpers
-from sub8_ros_tools.geometry_helpers import rotate_vect_by_quat
+from mil_ros_tools import msg_helpers
+from mil_ros_tools.geometry_helpers import rotate_vect_by_quat
 import tf
 
 import numpy as np

@@ -2,7 +2,7 @@ from vispy import io
 import os
 from time import time
 import numpy as np
-from sub8_misc_tools import download_and_unzip
+from mil_misc_tools import download_and_unzip
 
 
 def load_and_cache_mesh(file_path, url=None):

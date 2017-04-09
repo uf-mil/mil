@@ -6,7 +6,7 @@ import rospy
 import visualization_msgs.msg as visualization_msgs
 from geometry_msgs.msg import Pose, Vector3, Point
 from std_msgs.msg import ColorRGBA
-import sub8_ros_tools as sub8_utils
+import mil_ros_tools as sub8_utils
 
 
 class RvizVisualizer(object):

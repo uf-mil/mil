@@ -8,7 +8,7 @@ find_package(
     actionlib
     message_runtime
     message_generation
-    uf_common
+    mil_msgs
     tf
     cmake_modules
     ros_alarms
@@ -27,13 +27,13 @@ generate_messages(
 
 catkin_package(
   DEPENDS
-    uf_common
+    mil_msgs
   CATKIN_DEPENDS
     nav_msgs
     actionlib
     message_runtime
     message_generation
-    uf_common
+    mil_msgs
     tf
     ros_alarms
   INCLUDE_DIRS
@@ -49,7 +49,7 @@ add_dependencies(c3_trajectory_generator ${catkin_EXPORTED_TARGETS})
 add_dependencies(c3_trajectory_generator ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(
   ${PROJECT_NAME}
-  uf_common_generate_messages_cpp
+  mil_msgs_generate_messages_cpp
   ${catkin_EXPORTED_TARGETS}
 )
 set_target_properties(c3_trajectory_generator PROPERTIES COMPILE_FLAGS "-std=c++11 -O2")

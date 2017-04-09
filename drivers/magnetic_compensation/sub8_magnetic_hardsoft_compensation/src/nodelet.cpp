@@ -7,7 +7,7 @@
 #include <sensor_msgs/MagneticField.h>
 #include <eigen_conversions/eigen_msg.h>
 
-#include <uf_common/param_helpers.h>
+#include <mil_msgs/param_helpers.h>
 
 namespace magnetic_hardsoft_compensation {
 class Nodelet : public nodelet::Nodelet {
@@ -42,9 +42,9 @@ class Nodelet : public nodelet::Nodelet {
   virtual void onInit() {
     ros::NodeHandle& private_nh = getPrivateNodeHandle();
 
-    frame_id = uf_common::getParam<std::string>(private_nh, "frame_id");
-    scale_inverse = uf_common::getParam<Eigen::Matrix3d>(private_nh, "scale").inverse();
-    shift = uf_common::getParam<Eigen::Vector3d>(private_nh, "shift");
+    frame_id = mil_msgs::getParam<std::string>(private_nh, "frame_id");
+    scale_inverse = mil_msgs::getParam<Eigen::Matrix3d>(private_nh, "scale").inverse();
+    shift = mil_msgs::getParam<Eigen::Vector3d>(private_nh, "shift");
 
     ros::NodeHandle& nh = getNodeHandle();
 

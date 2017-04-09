@@ -2,7 +2,7 @@
 
 import rospy
 import tf
-from uf_common.msg import Float64Stamped
+from mil_msgs.msg import Float64Stamped
 
 
 def got_range(msg):

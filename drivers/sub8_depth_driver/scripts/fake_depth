@@ -3,7 +3,7 @@
 import roslib
 import rospy
 from std_msgs.msg import Header
-from uf_common.msg import Float64Stamped
+from mil_msgs.msg import Float64Stamped
 roslib.load_manifest('depth_driver')
 
 

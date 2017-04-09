@@ -7,8 +7,8 @@ from std_msgs.msg import Header
 from std_srvs.srv import SetBool, SetBoolResponse
 from sub8_msgs.srv import VisionRequestResponse, VisionRequest, VisionRequest2D, VisionRequest2DResponse, VisionRequest, VisionRequestResponse
 from geometry_msgs.msg import PoseStamped
-from sub8_ros_tools import numpy_quat_pair_to_pose, numpy_to_point, numpy_matrix_to_quaternion, numpy_to_quaternion
-from sub8_ros_tools import Image_Publisher, Image_Subscriber
+from mil_ros_tools import numpy_quat_pair_to_pose, numpy_to_point, numpy_matrix_to_quaternion, numpy_to_quaternion
+from mil_ros_tools import Image_Publisher, Image_Subscriber
 from image_geometry import PinholeCameraModel
 from visualization_msgs.msg import Marker
 

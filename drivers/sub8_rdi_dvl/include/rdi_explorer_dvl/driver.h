@@ -9,10 +9,10 @@
 #include <boost/none.hpp>
 #include <boost/math/constants/constants.hpp>
 
-#include <uf_common/msg_helpers.h>
+#include <mil_msgs/msg_helpers.h>
 
-#include <uf_common/VelocityMeasurements.h>
-#include <uf_common/Float64Stamped.h>
+#include <mil_msgs/VelocityMeasurements.h>
+#include <mil_msgs/Float64Stamped.h>
 
 namespace rdi_explorer_dvl {
 static uint16_t getu16le(uint8_t *i) { return *i | (*(i + 1) << 8); }
@@ -67,8 +67,8 @@ class Device {
     // open is called on first read() in the _polling_ thread
   }
 
-  void read(boost::optional<uf_common::VelocityMeasurements> &res,
-            boost::optional<uf_common::Float64Stamped> &height_res) {
+  void read(boost::optional<mil_msgs::VelocityMeasurements> &res,
+            boost::optional<mil_msgs::Float64Stamped> &height_res) {
     res = boost::none;
     height_res = boost::none;
 
@@ -116,7 +116,7 @@ class Device {
       std::vector<double> correlations(4, nan(""));
       if (section_id == 0x5803) {  // Bottom Track High Resolution Velocity
         if (ensemble.size() - offset < 2 + 4 * 4) continue;
-        res = boost::make_optional(uf_common::VelocityMeasurements());
+        res = boost::make_optional(mil_msgs::VelocityMeasurements());
         res->header.stamp = stamp;
 
         std::vector<geometry_msgs::Vector3> dirs;
@@ -124,13 +124,13 @@ class Device {
           double tilt = 30 * boost::math::constants::pi<double>() / 180;
           double x = sin(tilt);
           double z = cos(tilt);
-          dirs.push_back(uf_common::make_xyz<geometry_msgs::Vector3>(-x, 0, -z));
-          dirs.push_back(uf_common::make_xyz<geometry_msgs::Vector3>(+x, 0, -z));
-          dirs.push_back(uf_common::make_xyz<geometry_msgs::Vector3>(0, +x, -z));
-          dirs.push_back(uf_common::make_xyz<geometry_msgs::Vector3>(0, -x, -z));
+          dirs.push_back(mil_msgs::make_xyz<geometry_msgs::Vector3>(-x, 0, -z));
+          dirs.push_back(mil_msgs::make_xyz<geometry_msgs::Vector3>(+x, 0, -z));
+          dirs.push_back(mil_msgs::make_xyz<geometry_msgs::Vector3>(0, +x, -z));
+          dirs.push_back(mil_msgs::make_xyz<geometry_msgs::Vector3>(0, -x, -z));
         }
         for (int i = 0; i < 4; i++) {
-          uf_common::VelocityMeasurement m;
+          mil_msgs::VelocityMeasurement m;
           m.direction = dirs[i];
           int32_t vel = gets32le(ensemble.data() + offset + 2 + 4 * i);
           m.velocity = -vel * .01e-3;
@@ -150,7 +150,7 @@ class Device {
           ROS_ERROR("DVL didn't return height over bottom");
           continue;
         }
-        height_res = boost::make_optional(uf_common::Float64Stamped());
+        height_res = boost::make_optional(mil_msgs::Float64Stamped());
         height_res->header.stamp = stamp;
         height_res->data = gets32le(ensemble.data() + offset + 10) * 0.1e-3;
       }

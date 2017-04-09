@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(depth_driver)
-find_package(catkin REQUIRED COMPONENTS nodelet roscpp uf_common)
+find_package(catkin REQUIRED COMPONENTS nodelet roscpp mil_msgs)
 
 catkin_package(
     DEPENDS
-    CATKIN_DEPENDS nodelet roscpp uf_common
+    CATKIN_DEPENDS nodelet roscpp mil_msgs
     INCLUDE_DIRS include
     LIBRARIES
 )

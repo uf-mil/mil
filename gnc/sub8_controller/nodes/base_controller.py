@@ -9,7 +9,7 @@ from collections import deque
 from scipy import linalg
 from sub8_simulation.srv import SimSetPose
 import nav_msgs.msg as nav_msgs
-import sub8_ros_tools as sub8_utils
+import mil_ros_tools as sub8_utils
 from dynamic_reconfigure.server import Server
 from sub8_controller.cfg import GainConfig  # Configuration file
 

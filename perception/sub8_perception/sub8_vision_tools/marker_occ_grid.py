@@ -8,7 +8,7 @@ from geometry_msgs.msg import Pose, Point, Quaternion, Pose2D
 from nav_msgs.msg import OccupancyGrid, MapMetaData
 from sub8_msgs.srv import VisionRequest2D, VisionRequest2DResponse, SearchPose
 from image_geometry import PinholeCameraModel
-from sub8_ros_tools import threading_helpers, msg_helpers
+from mil_ros_tools import threading_helpers, msg_helpers
 from std_srvs.srv import Empty, EmptyResponse
 import cv2
 import numpy as np

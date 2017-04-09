@@ -10,7 +10,7 @@ import rospy
 import rosparam
 
 from sub8_msgs.srv import Sonar, SonarResponse
-from sub8_ros_tools import thread_lock, make_header
+from mil_ros_tools import thread_lock, make_header
 from sub8_alarm import AlarmBroadcaster
 from multilateration import Multilaterator
 

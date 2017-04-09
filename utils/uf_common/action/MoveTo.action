@@ -1,6 +1,6 @@
 # goal. copies PoseTwistStamped.
 Header header
-uf_common/PoseTwist posetwist
+mil_msgs/PoseTwist posetwist
 float64 speed
 bool uncoordinated # false goes in a straight line, true achieves some components before others
 float64 linear_tolerance # distance from goal for result to be sent

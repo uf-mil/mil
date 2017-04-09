@@ -5,7 +5,7 @@ import random
 import yaml
 
 import roslib
-roslib.load_manifest('uf_common')
+roslib.load_manifest('mil_msgs')
 import rospy
 
 

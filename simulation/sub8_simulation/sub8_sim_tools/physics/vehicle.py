@@ -1,6 +1,6 @@
 import numpy as np
 import rospy
-import sub8_ros_tools as sub8_utils
+import mil_ros_tools as sub8_utils
 from sub8_sim_tools.physics.physics import Entity
 from sub8_simulation.srv import SimSetPose, SimSetPoseResponse
 from sub8_msgs.msg import Thrust, VelocityMeasurement, VelocityMeasurements

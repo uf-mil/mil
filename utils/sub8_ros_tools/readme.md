@@ -1,4 +1,4 @@
-sub8_ros_tools
+mil_ros_tools
 ==============
 
 Miscellaneous ROS tools that are useful for various tasks.

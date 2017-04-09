@@ -9,10 +9,10 @@ from interactive_markers.interactive_marker_server import *
 
 from geometry_msgs.msg import Pose, Vector3
 from std_msgs.msg import ColorRGBA, Float64
-from uf_common.msg import Float64Stamped  # This needs to be deprecated
+from mil_msgs.msg import Float64Stamped  # This needs to be deprecated
 #from sub8_alarm import AlarmListener, AlarmBroadcaster
 from ros_alarms import AlarmBroadcaster, AlarmListener
-import sub8_ros_tools as sub8_utils
+import mil_ros_tools as sub8_utils
 
 
 class RvizVisualizer(object):
