@@ -2,7 +2,7 @@
     <node pkg="blueview_driver" type="blueview_driver" name="blueview_driver" >
         <rosparam>
             frame_id: blueview
-            device: 192.168.37.53
+            device: mil-com-teledyne-p900.ad.mil.ufl.edu
             raw:
                 enable: True
             grayscale:
@@ -15,7 +15,6 @@
               stop: 15
         </rosparam>
         <param name="color/map_file" value="$(find bvtsdkpkg)/colormaps/jet.cmap" />
-        <!-- param name="file" value="$(find bvtsdkpkg)/data/swimmer.son" / -->
     </node>
 </launch>
 
