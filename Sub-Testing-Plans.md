@@ -1,9 +1,6 @@
 ## Upcoming
-3.19.2017 -- Graham Pool
 
-## Past
-
-###2.11.2017 -- 9:30-13:30 -- Graham Pool
+### 4-8-2017 - 9:00-13:00 - Towne Parc Pool
 <table>
 <tr>
 <th>Plan</th>
@@ -12,13 +9,61 @@
 </tr>
 
 <tr>
-<td>Torpedo Board</td>
+<td>Pinger headings</td>
 <td>David</td>
-<td>Delayed</td>
+<td></td>
 </tr>
 
 <tr>
-<td>Start Gate</td>
+<td>Kill system</td>
+<td>Kevin</td>
+<td></td>
+</tr>
+
+<tr>
+<td>Imaging sonar bagging</td>
+<td>Daniel++</td>
+<td></td>
+</tr>
+
+<tr>
+<td>Start gate</td>
+<td>Daniel++</td>
+<td></td>
+</tr>
+
+<tr>
+<td>User workspaces</td>
+<td>Anthony</td>
+<td></td>
+</tr>
+
+<tr>
+<td>Bagging variables</td>
+<td>Anthony</td>
+<td></td>
+</tr>
+</table>
+
+
+## Past
+
+### 2-11-2017 - 9:30-13:30 - Graham Pool
+<table>
+<tr>
+<th>Plan</th>
+<th>Who</th>
+<th>Status</th>
+</tr>
+
+<tr>
+<td>Torpedo board</td>
+<td>David</td>
+<td>Incomplete</td>
+</tr>
+
+<tr>
+<td>Start gate</td>
 <td>Daniel++</td>
 <td>Incomplete</td>
 </tr>
@@ -28,8 +73,8 @@
 <td>Anthony</td>
 <td>Complete</td>
 </tr>
-
 </table>
+
 - Network infrastructure stable
 - socat hostnames corrected
 - Problems with alarm package with c3 (needed to actually start the callback) 
@@ -37,4 +82,3 @@
 - Wires not connected
 - Detected start gate
 - Could see torpedo board and start gate with imaging sonar
-
