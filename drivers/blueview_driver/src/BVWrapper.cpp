@@ -38,13 +38,12 @@ bool BlueViewSonar::getNextPing()
 {
   image_generator_.SetHead(head_);
   cur_ping_++;
-  if (cur_ping_ + 1 > head_.GetPingCount())
-    return false;
-  int ping_num;
+  int ping_num = -1;
   if (connection_type_ == ConnectionType::FILE)
+  {
+    if (cur_ping_ + 1 > head_.GetPingCount()) return false;
     ping_num = cur_ping_;
-  else
-    ping_num = -1;
+  }
   latest_ping_ = head_.GetPing(ping_num);
   has_ping_ = true;
   return true;
