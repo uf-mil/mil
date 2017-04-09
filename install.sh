@@ -510,6 +510,9 @@ instlog "Installing common ROS dependencies"
 # Hardware drivers
 sudo apt-get install -qq ros-$ROS_VERSION-pointgrey-camera-driver
 
+# Messages
+sudo apt-get install -qq ros-$ROS_VERSION-tf2-sensor-msgs
+
 instlog "Installing common dependencies from Python PIP"
 
 # Communication tool for the hydrophone board
