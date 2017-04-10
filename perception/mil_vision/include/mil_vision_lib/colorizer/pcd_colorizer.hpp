@@ -8,7 +8,7 @@
 #include <pcl_ros/transforms.h>
 #include <tf/transform_listener.h>
 
-namespace nav{
+namespace mil_vision{
 
 class PcdColorizer{
   /*
@@ -69,4 +69,4 @@ private:
 
 }; // end class PcdColorizer
 
-} // namespace nav
+} // namespace mil_vision

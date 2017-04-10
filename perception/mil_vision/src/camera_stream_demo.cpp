@@ -15,7 +15,7 @@ int main(int argc, char **argv)
 
   // Template argument should be cv::Vec3b for color images or uint8_t 
   // For grayscale images
-  nav::ROSCameraStream<cv::Vec3b> left_cam_stream(nh, history_length);  // Constructs empty inactive
+  mil_vision::ROSCameraStream<cv::Vec3b> left_cam_stream(nh, history_length);  // Constructs empty inactive
                                                                         // camera stream object
   if(!left_cam_stream.init(cam_topic)) // Initializes object, if sucessful, object will automatically 
     return -1;                         // store a history of images published to cam_topic in its buffer

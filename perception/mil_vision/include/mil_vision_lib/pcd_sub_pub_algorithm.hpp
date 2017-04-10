@@ -7,7 +7,7 @@
 #include <functional>
 
 
-namespace nav{
+namespace mil_vision{
 
 template <typename output_T = pcl::PointXYZ, typename input_T = pcl::PointXYZ>
 class PcdSubPubAlgorithm{
@@ -78,4 +78,4 @@ protected:
   std::string _err_msg;
 };
 
-}  //namespace nav
+}  //namespace mil_vision

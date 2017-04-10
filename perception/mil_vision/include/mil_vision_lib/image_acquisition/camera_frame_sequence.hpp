@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 
-namespace nav
+namespace mil_vision
 {
 
 template<typename cam_model_ptr_t, typename img_scalar_t, typename time_t_,typename float_t = float>
@@ -68,4 +68,4 @@ public:
 
 };
 
-}  // namespace nav
+}  // namespace mil_vision

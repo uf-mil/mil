@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 #include <tf/tf.h>
 
-namespace uf_common {
+namespace mil_tools {
 
 template <class T>
 inline T make_rgba(double r, double g, double b, double a) {

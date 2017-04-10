@@ -1,7 +1,7 @@
 #include <mil_vision_lib/visualization.hpp>
 #include <visualization_msgs/Marker.h>
 
-namespace nav {
+namespace mil_vision {
 
 RvizVisualizer::RvizVisualizer(std::string rviz_topic) {
   rviz_pub = nh.advertise<visualization_msgs::Marker>(rviz_topic, 1);

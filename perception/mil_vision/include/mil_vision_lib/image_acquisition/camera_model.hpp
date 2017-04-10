@@ -3,7 +3,7 @@
 #include <Eigen/Core>
 #include <ros/ros.h>
 
-namespace nav{
+namespace mil_vision{
 
 template<typename T = float>
 class CameraModel{
@@ -59,4 +59,4 @@ Eigen::Matrix<T, 3, 4> CameraModel<T>::get_projection_matrix()
     return K * R * aug; 
 }
 
-} // namespace nav
+} // namespace mil_vision

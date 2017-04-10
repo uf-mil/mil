@@ -24,6 +24,7 @@ find_package(catkin
     pcl_ros
     tf2_sensor_msgs
     tf2_geometry_msgs
+    mil_tools
 )
 
 find_package(PCL 1.7 REQUIRED)
@@ -83,7 +84,7 @@ add_library(
     src/mil_vision_lib/colorizer/color_observation.cpp
 )
 target_include_directories(mil_vision_lib PUBLIC include/mil_vision_lib)
-target_link_libraries(mil_vision_lib mil_tools_lib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_COMMON_LIBRARIES})
+target_link_libraries(mil_vision_lib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_COMMON_LIBRARIES})
 
 add_executable(camera_stream_demo src/camera_stream_demo.cpp)
 add_dependencies(camera_stream_demo mil_vision_lib ${catkin_EXPORTED_TARGETS})

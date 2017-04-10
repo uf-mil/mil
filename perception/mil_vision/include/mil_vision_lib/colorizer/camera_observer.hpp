@@ -6,7 +6,7 @@
 #include <image_geometry/pinhole_camera_model.h>
 #include <opencv2/core/eigen.hpp>
 
-namespace nav{
+namespace mil_vision{
   
 class CameraObserver
 {
@@ -42,4 +42,4 @@ public:
 
 };
 
-}  // namespace nav
+}  // namespace mil_vision

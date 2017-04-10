@@ -8,7 +8,7 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Pose.h"
 
-namespace nav {
+namespace mil_vision {
 
 // ******* 3D Visualization *******
 class RvizVisualizer {

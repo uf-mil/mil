@@ -18,7 +18,7 @@
 #include <iostream>
 
 
-namespace nav
+namespace mil_vision
 {
 
 template<typename img_scalar_t = uint8_t, typename float_t = float>
@@ -130,7 +130,7 @@ private:
   // Shared CameraFrame properties if camera geometry is constant
   int COLS = -1;
   int ROWS = -1;
-  nav::PixelType TYPE = nav::PixelType::_UNKNOWN;
+  mil_vision::PixelType TYPE = mil_vision::PixelType::_UNKNOWN;
 
   // Mutex for multithreaded access to camera frame data
   std::mutex _mtx;
@@ -168,7 +168,7 @@ private:
 template<typename img_scalar_t, typename float_t>
 bool ROSCameraStream<img_scalar_t, float_t>::init(std::string &camera_topic)
 {
-  using mil::tools::operator "" _s;  // convert raw string literal to std::string
+  using mil_tools::operator "" _s;  // convert raw string literal to std::string
   _img_topic = camera_topic;
   bool success = false;
   image_transport::CameraSubscriber cam_sub;
@@ -237,7 +237,7 @@ template<typename img_scalar_t, typename float_t>
 typename ROSCameraStream<img_scalar_t, float_t>::CamFrameConstPtr
 ROSCameraStream<img_scalar_t, float_t>::getFrameFromTime(ros::Time desired_time)
 {
-  using mil::tools::operator "" _s;
+  using mil_tools::operator "" _s;
 
   // Check bounds on time
   if(desired_time < this->_start_time || desired_time > this->_end_time)
@@ -269,7 +269,7 @@ template<typename img_scalar_t, typename float_t>
 typename ROSCameraStream<img_scalar_t, float_t>::CamFrameConstPtr 
 ROSCameraStream<img_scalar_t, float_t>::operator[](int i)
 {
-  using mil::tools::operator "" _s;
+  using mil_tools::operator "" _s;
 
   // Prevent adding new frames while frames are being accessed
   _mtx.lock();
@@ -337,4 +337,4 @@ ROSCameraStream<img_scalar_t, float_t>::~ROSCameraStream()
   _cb_queue.disable();
 }
 
-} // namespace nav
+} // namespace mil_vision

@@ -20,11 +20,11 @@
 #include <future>
 #include <list>
 
-namespace nav{
+namespace mil_vision{
 
 template<typename T = pcl::PointXYZ> using PCD = pcl::PointCloud<T>;
 template<typename T = pcl::PointXYZ> using PCDPtr = std::shared_ptr<PCD<T>>;
 template<typename T> using SPtrVector = std::vector<std::shared_ptr<T>>;
 template<typename T> using UPtrVector = std::vector<std::unique_ptr<T>>;
 
-} // namespace nav
+} // namespace mil_vision

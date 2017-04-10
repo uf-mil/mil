@@ -1,6 +1,6 @@
 #include <mil_vision_lib/cv_tools.hpp>
 
-namespace nav {
+namespace mil_vision {
 
 cv::Point contour_centroid(Contour &contour) {
   cv::Moments m = cv::moments(contour, true);
@@ -208,7 +208,7 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest,
 
   // Smooth histogram
   const int kernel_size = 11;
-  hist_smooth = nav::smooth_histogram(hist, kernel_size, sigma);
+  hist_smooth = mil_vision::smooth_histogram(hist, kernel_size, sigma);
 
   // Calculate histogram derivative (central finite difference)
   hist_derivative = hist_smooth.clone();
@@ -218,12 +218,12 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest,
     hist_derivative.at<float>(i) =
         (hist_smooth.at<float>(i + 1) - hist_smooth.at<float>(i - 1)) / 2.0;
   }
-  hist_derivative = nav::smooth_histogram(hist_derivative, kernel_size, sigma);
+  hist_derivative = mil_vision::smooth_histogram(hist_derivative, kernel_size, sigma);
 
   // Find target mode
   std::vector<cv::Point> histogram_modes =
-      nav::find_local_maxima(hist_smooth, 0.1);
-  int target_mode = nav::select_hist_mode(histogram_modes, target);
+      mil_vision::find_local_maxima(hist_smooth, 0.1);
+  int target_mode = mil_vision::select_hist_mode(histogram_modes, target);
   ros_log << "Target: " << target << std::endl;
   ros_log << "Mode Selected: " << target_mode << std::endl;
 
@@ -238,9 +238,9 @@ void statistical_image_segmentation(const cv::Mat &src, cv::Mat &dest,
   int low_abs_derivative_thresh =
       std::abs(hist_deriv_stddev[0] * low_thresh_gain);
   std::vector<cv::Point> derivative_maxima =
-      nav::find_local_maxima(hist_derivative, 0.01);
+      mil_vision::find_local_maxima(hist_derivative, 0.01);
   std::vector<cv::Point> derivative_minima =
-      nav::find_local_minima(hist_derivative, 0.01);
+      mil_vision::find_local_minima(hist_derivative, 0.01);
   int high_thresh_search_start = target_mode;
   int low_thresh_search_start = target_mode;
   ros_log << "high_thresh_search_start: " << target_mode << std::endl;
@@ -653,4 +653,4 @@ FrameHistory::get_frame_history(unsigned int frames_requested) {
   return frame_history;
 }
 
-} // namespace nav
+} // namespace mil_vision

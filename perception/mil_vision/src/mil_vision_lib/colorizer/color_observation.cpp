@@ -1,7 +1,7 @@
 #include <colorizer/color_observation.hpp>
 
 
-namespace nav{
+namespace mil_vision{
 
 UnoccludedPointsImg::UnoccludedPointsImg()
 // : frame_ptr(frame_ptr),
@@ -12,4 +12,4 @@ UnoccludedPointsImg::UnoccludedPointsImg()
 
 }
 
-} // namespace nav
+} // namespace mil_vision

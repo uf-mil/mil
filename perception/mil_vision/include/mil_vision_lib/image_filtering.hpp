@@ -7,7 +7,7 @@
 
 #include <mil_tools/mil_tools.hpp>
 
-namespace nav
+namespace mil_vision
 {
 
 /*
@@ -39,4 +39,4 @@ cv::Mat makeRotInvariant(const cv::Mat &kernel, int rotations=8);
 */
 float getRadialSymmetryAngle(const cv::Mat &kernel, float ang_res=0.1, bool deg=false);
 
-} // namespace nav
+} // namespace mil_vision

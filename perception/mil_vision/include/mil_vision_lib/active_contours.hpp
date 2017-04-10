@@ -14,7 +14,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-namespace nav
+namespace mil_vision
 {
 
 class SegmentDescription;
@@ -65,4 +65,4 @@ public:
   ActiveContour();
 };
   
-}  // namespace nav
+}  // namespace mil_vision

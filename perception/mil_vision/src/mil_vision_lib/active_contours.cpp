@@ -3,7 +3,7 @@
 using namespace std;
 using namespace cv;
 
-namespace nav
+namespace mil_vision
 {
 
 namespace Perturbations
@@ -226,7 +226,7 @@ bool ClosedCurve::validateCurve(std::vector<cv::Point2i>& curve)
       if(count > 1)
       {
         auto conflict_pt = find_if(forbidden_neighbors.begin(), forbidden_neighbors.end(),
-          [pt](Point2i test_pt){ return nav::Perturbations::isNeighborPoint(pt, test_pt); });
+          [pt](Point2i test_pt){ return mil_vision::Perturbations::isNeighborPoint(pt, test_pt); });
         cout << "failure pts: " << curve[1] << "\t" << (conflict_pt != forbidden_neighbors.end()? Point2i(0,0) : *conflict_pt) << endl;
         return false;
       }
@@ -236,7 +236,7 @@ bool ClosedCurve::validateCurve(std::vector<cv::Point2i>& curve)
       if(count > 0)
       {
         auto conflict_pt = find_if(forbidden_neighbors.begin(), forbidden_neighbors.end(),
-          [pt](Point2i test_pt){ return nav::Perturbations::isNeighborPoint(pt, test_pt); });
+          [pt](Point2i test_pt){ return mil_vision::Perturbations::isNeighborPoint(pt, test_pt); });
         cout << "failure pts: " << curve[1] << "\t" << (conflict_pt != forbidden_neighbors.end()? Point2i(0,0) : *conflict_pt) << endl;
         return false;
       }
@@ -250,4 +250,4 @@ vector<float> calcCosts(const Mat& img, vector<ClosedCurve::Perturbation> candid
 
 }
 
-}  // namespace nav
+}  // namespace mil_vision
