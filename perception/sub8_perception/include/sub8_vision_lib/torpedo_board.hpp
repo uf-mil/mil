@@ -27,7 +27,7 @@
 #include <sensor_msgs/image_encodings.h>
 
 #include <mil_vision_lib/cv_tools.hpp>
-#include <mil_vision_lib/visualization.hpp>
+#include <sub8_vision_lib/visualization.hpp>
 #include <sub8_msgs/TorpBoardPoseRequest.h>
 #include <sub8_msgs/TBDetectionSwitch.h>
 
@@ -113,7 +113,7 @@ private:
   long long int run_id;
 
   // RVIZ
-  mil_vision::RvizVisualizer rviz;
+  sub::RvizVisualizer rviz;
 
   // DBG images will be generated and published when true
   bool generate_dbg_img;
