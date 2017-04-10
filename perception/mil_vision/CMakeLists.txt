@@ -74,7 +74,6 @@ set_target_properties(mil_sparsestereo PROPERTIES COMPILE_FLAGS "-O3 -DNDEBUG -f
 
 add_library(
   mil_vision_lib
-    src/mil_vision_lib/visualization.cc
     src/mil_vision_lib/cv_utils.cc
     src/mil_vision_lib/image_filtering.cpp
     src/mil_vision_lib/active_contours.cpp
