@@ -7,7 +7,6 @@ import rospkg
 import time
 from tf import transformations
 
-from uf_common.msg import MoveToAction, PoseTwistStamped, Float64Stamped
 from sub8 import pose_editor
 import sub8_tools
 from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D, BMatrix, BMatrixRequest
