@@ -13,8 +13,8 @@
 #include <eigen_conversions/eigen_msg.h>
 #include <tf_conversions/tf_eigen.h>
 
-#include <uf_common/VelocityMeasurements.h>
-#include <uf_common/Float64Stamped.h>
+#include <mil_msgs/VelocityMeasurements.h>
+#include <mil_msgs/Float64Stamped.h>
 
 #include <odom_estimator/Info.h>
 #include <odom_estimator/SetIgnoreMagnetometer.h>
@@ -263,8 +263,8 @@ class NodeImpl {
         *state);
     }
     
-    void got_dvl(const uf_common::VelocityMeasurementsConstPtr &msgp) {
-      uf_common::VelocityMeasurements const & msg = *msgp;
+    void got_dvl(const mil_msgs::VelocityMeasurementsConstPtr &msgp) {
+      mil_msgs::VelocityMeasurements const & msg = *msgp;
       
       tf::StampedTransform transform;
       try {
@@ -277,9 +277,9 @@ class NodeImpl {
       Vec<3> local_dvl_pos; tf::vectorTFToEigen(transform.getOrigin(), local_dvl_pos);
       Quaternion local_dvl_orientation; tf::quaternionTFToEigen(transform.getRotation(), local_dvl_orientation);
       
-      std::vector<uf_common::VelocityMeasurement> good;
+      std::vector<mil_msgs::VelocityMeasurement> good;
       for(unsigned int i = 0; i < msg.velocity_measurements.size(); i++) {
-        uf_common::VelocityMeasurement const & vm = msg.velocity_measurements[i];
+        mil_msgs::VelocityMeasurement const & vm = msg.velocity_measurements[i];
         if(!std::isnan(vm.velocity)) {
           good.push_back(vm);
         }
@@ -303,7 +303,7 @@ class NodeImpl {
             
             Vec<Dynamic> res(good.size());
             for(unsigned int i = 0; i < good.size(); i++) {
-              uf_common::VelocityMeasurement const & vm = good[i];
+              mil_msgs::VelocityMeasurement const & vm = good[i];
               res(i) = (xyz2vec(vm.direction).dot(dvl_vel) + measurement_noise(i)) - vm.velocity;
             }
             return res;
@@ -314,8 +314,8 @@ class NodeImpl {
         *state);
     }
     
-    void got_depth(const uf_common::Float64StampedConstPtr &msgp) {
-      uf_common::Float64Stamped const & msg = *msgp;
+    void got_depth(const mil_msgs::Float64StampedConstPtr &msgp) {
+      mil_msgs::Float64Stamped const & msg = *msgp;
       
       
       tf::StampedTransform transform;
@@ -354,10 +354,10 @@ class NodeImpl {
     ros::Subscriber imu_sub;
     message_filters::Subscriber<sensor_msgs::MagneticField> mag_sub;
     tf::MessageFilter<sensor_msgs::MagneticField> mag_filter;
-    message_filters::Subscriber<uf_common::VelocityMeasurements> dvl_sub;
-    tf::MessageFilter<uf_common::VelocityMeasurements> dvl_filter;
-    message_filters::Subscriber<uf_common::Float64Stamped> depth_sub;
-    tf::MessageFilter<uf_common::Float64Stamped> depth_filter;
+    message_filters::Subscriber<mil_msgs::VelocityMeasurements> dvl_sub;
+    tf::MessageFilter<mil_msgs::VelocityMeasurements> dvl_filter;
+    message_filters::Subscriber<mil_msgs::Float64Stamped> depth_sub;
+    tf::MessageFilter<mil_msgs::Float64Stamped> depth_filter;
     ros::Publisher odom_pub;
     ros::Publisher absodom_pub;
     ros::Publisher info_pub;
