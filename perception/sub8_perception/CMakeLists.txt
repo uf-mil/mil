@@ -17,6 +17,7 @@ find_package(catkin
     message_generation
     std_msgs
     geometry_msgs
+    mil_vision
 )
 
 catkin_python_setup()
@@ -28,7 +29,7 @@ catkin_package(
     include
     # exFAST_SparseStereo/src/sparsestereo
   LIBRARIES
-    mil_vision_lib
+    sub8_vision_lib
     sparsestereo
   CATKIN_DEPENDS
     roscpp
@@ -56,16 +57,15 @@ include_directories(
 # link_directories(${PCL_LIBRARY_DIRS})
 # add_definitions(${PCL_DEFINITIONS})
 
-add_library(mil_vision_lib
-    # src/mil_vision_lib/align.cpp
-    src/mil_vision_lib/cv_utils.cpp
-    # src/mil_vision_lib/cv_param_helpers.cpp
-    src/mil_vision_lib/visualization.cpp
-    # src/mil_vision_lib/object_finder.cpp
+add_library(sub8_vision_lib
+    # src/sub8_vision_lib/align.cpp
+    # src/sub8_vision_lib/cv_param_helpers.cpp
+    src/sub8_vision_lib/visualization.cpp
+    # src/sub8_vision_lib/object_finder.cpp
 )
 
 target_link_libraries(
-  mil_vision_lib
+  sub8_vision_lib
     ${catkin_LIBRARIES}
     # ${PCL_COMMON_LIBRARIES}
     # ${PCL_IO_LIBRARIES}
@@ -111,7 +111,7 @@ target_link_libraries(
 
 # set_target_properties(sparsestereo PROPERTIES COMPILE_FLAGS "-O3 -DNDEBUG -fopenmp -g -Wall -march=native -msse -msse2 -msse3 -mssse3 -msse4 -ffast-math -mfpmath=sse")
 
-install(TARGETS mil_vision_lib
+install(TARGETS sub8_vision_lib
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -148,7 +148,7 @@ add_dependencies(
 
 target_link_libraries(
   torpedos_cpp
-    mil_vision_lib
+    sub8_vision_lib
     # sparsestereo
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
@@ -168,7 +168,7 @@ target_link_libraries(
 
 #target_link_libraries(
 #  perception_server
-#    mil_vision_lib
+#    sub8_vision_lib
 #    ${catkin_LIBRARIES}
 #    ${Boost_LIBRARIES}
 #    ${OpenCV_INCLUDE_DIRS}
@@ -188,7 +188,6 @@ target_link_libraries(
 
 # target_link_libraries(
 #   pcl_buoy
-#     mil_vision_lib
 #     ${catkin_LIBRARIES}
 #     ${PCL_COMMON_LIBRARIES}
 #     ${PCL_IO_LIBRARIES}
@@ -212,7 +211,7 @@ add_dependencies(
 )
 target_link_libraries(
   sub8_start_gate
-    mil_vision_lib
+    sub8_vision_lib
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
     ${OpenCV_INCLUDE_DIRS}

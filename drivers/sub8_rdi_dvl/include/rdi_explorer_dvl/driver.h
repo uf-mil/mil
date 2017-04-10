@@ -9,7 +9,7 @@
 #include <boost/none.hpp>
 #include <boost/math/constants/constants.hpp>
 
-#include <mil_msgs/msg_helpers.h>
+#include <mil_tools/msg_helpers.h>
 
 #include <mil_msgs/VelocityMeasurements.h>
 #include <mil_msgs/Float64Stamped.h>
@@ -124,10 +124,10 @@ class Device {
           double tilt = 30 * boost::math::constants::pi<double>() / 180;
           double x = sin(tilt);
           double z = cos(tilt);
-          dirs.push_back(mil_msgs::make_xyz<geometry_msgs::Vector3>(-x, 0, -z));
-          dirs.push_back(mil_msgs::make_xyz<geometry_msgs::Vector3>(+x, 0, -z));
-          dirs.push_back(mil_msgs::make_xyz<geometry_msgs::Vector3>(0, +x, -z));
-          dirs.push_back(mil_msgs::make_xyz<geometry_msgs::Vector3>(0, -x, -z));
+          dirs.push_back(mil_tools::make_xyz<geometry_msgs::Vector3>(-x, 0, -z));
+          dirs.push_back(mil_tools::make_xyz<geometry_msgs::Vector3>(+x, 0, -z));
+          dirs.push_back(mil_tools::make_xyz<geometry_msgs::Vector3>(0, +x, -z));
+          dirs.push_back(mil_tools::make_xyz<geometry_msgs::Vector3>(0, -x, -z));
         }
         for (int i = 0; i < 4; i++) {
           mil_msgs::VelocityMeasurement m;

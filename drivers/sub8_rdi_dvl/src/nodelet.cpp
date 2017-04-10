@@ -6,7 +6,7 @@
 #include <pluginlib/class_list_macros.h>
 #include <ros/ros.h>
 
-#include <mil_msgs/param_helpers.h>
+#include <mil_tools/param_helpers.h>
 
 #include "rdi_explorer_dvl/driver.h"
 
@@ -23,11 +23,11 @@ class Nodelet : public nodelet::Nodelet {
   }
 
   virtual void onInit() {
-    std::string port = mil_msgs::getParam<std::string>(getPrivateNodeHandle(), "port");
+    std::string port = mil_tools::getParam<std::string>(getPrivateNodeHandle(), "port");
 
-    int baudrate = mil_msgs::getParam<int>(getPrivateNodeHandle(), "baudrate", 115200);
+    int baudrate = mil_tools::getParam<int>(getPrivateNodeHandle(), "baudrate", 115200);
 
-    frame_id = mil_msgs::getParam<std::string>(getPrivateNodeHandle(), "frame_id");
+    frame_id = mil_tools::getParam<std::string>(getPrivateNodeHandle(), "frame_id");
 
     pub = getNodeHandle().advertise<mil_msgs::VelocityMeasurements>("dvl", 10);
     range_pub = getNodeHandle().advertise<mil_msgs::Float64Stamped>("dvl/range", 10);

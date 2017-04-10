@@ -12,9 +12,11 @@
   <build_depend>nodelet</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>mil_msgs</build_depend>
+  <build_depend>mil_tools</build_depend>
   <run_depend>nodelet</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>mil_msgs</run_depend>
+  <run_depend>mil_tools</run_depend>
 <export>
     <nodelet plugin="${prefix}/nodelet.xml"/>
 </export>

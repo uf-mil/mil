@@ -5,7 +5,7 @@
 #include <pluginlib/class_list_macros.h>
 #include <ros/ros.h>
 
-#include <mil_msgs/param_helpers.h>
+#include <mil_tools/param_helpers.h>
 #include <mil_msgs/Float64Stamped.h>
 
 #include <depth_driver/driver.h>
@@ -23,9 +23,9 @@ class Nodelet : public nodelet::Nodelet {
   }
 
   virtual void onInit() {
-    std::string port = mil_msgs::getParam<std::string>(getPrivateNodeHandle(), "port");
-    int baudrate = mil_msgs::getParam<int>(getPrivateNodeHandle(), "baudrate", 115200);
-    frame_id = mil_msgs::getParam<std::string>(getPrivateNodeHandle(), "frame_id");
+    std::string port = mil_tools::getParam<std::string>(getPrivateNodeHandle(), "port");
+    int baudrate = mil_tools::getParam<int>(getPrivateNodeHandle(), "baudrate", 115200);
+    frame_id = mil_tools::getParam<std::string>(getPrivateNodeHandle(), "frame_id");
 
     pub = getNodeHandle().advertise<mil_msgs::Float64Stamped>("depth", 10);
 

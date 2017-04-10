@@ -5,7 +5,7 @@
 #include <pluginlib/class_list_macros.h>
 #include <ros/ros.h>
 
-#include <mil_msgs/param_helpers.h>
+#include <mil_tools/param_helpers.h>
 
 #include "adis16400_imu/driver.h"
 
@@ -20,9 +20,9 @@ class Nodelet : public nodelet::Nodelet {
   }
 
   virtual void onInit() {
-    std::string port = mil_msgs::getParam<std::string>(getPrivateNodeHandle(), "port");
-    frame_id = mil_msgs::getParam<std::string>(getPrivateNodeHandle(), "frame_id");
-    drop_every_ = mil_msgs::getParam<unsigned int>(getPrivateNodeHandle(), "divide", 1);
+    std::string port = mil_tools::getParam<std::string>(getPrivateNodeHandle(), "port");
+    frame_id = mil_tools::getParam<std::string>(getPrivateNodeHandle(), "frame_id");
+    drop_every_ = mil_tools::getParam<unsigned int>(getPrivateNodeHandle(), "divide", 1);
 
     ros::NodeHandle& nh = getNodeHandle();
     pub = nh.advertise<sensor_msgs::Imu>("imu/data_raw", 10);

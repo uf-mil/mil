@@ -12,6 +12,7 @@ find_package(
     tf
     cmake_modules
     ros_alarms
+    mil_tools
 )
 
 add_service_files(
@@ -19,8 +20,8 @@ add_service_files(
   SetDisabled.srv
 )
 
-find_package(Eigen3 REQUIRED)
-include_directories(${Eigen_INCLUDE_DIRS})
+find_package(Eigen 3 REQUIRED)
+
 generate_messages(
     DEPENDENCIES
 )
@@ -28,6 +29,7 @@ generate_messages(
 catkin_package(
   DEPENDS
     mil_msgs
+    Eigen3
   CATKIN_DEPENDS
     nav_msgs
     actionlib
@@ -36,12 +38,14 @@ catkin_package(
     mil_msgs
     tf
     ros_alarms
+    mil_tools
   INCLUDE_DIRS
     include
+    ${Eigen_INCLUDE_DIRS}
   LIBRARIES
 )
 
-include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
+include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${Eigen_INCLUDE_DIRS})
 
 add_executable(c3_trajectory_generator src/C3Trajectory.cpp src/node.cpp src/AttitudeHelpers.cpp)
 target_link_libraries(c3_trajectory_generator ${catkin_LIBRARIES})

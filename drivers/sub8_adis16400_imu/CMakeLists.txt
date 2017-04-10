@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(adis16400_imu)
-find_package(catkin REQUIRED COMPONENTS sensor_msgs geometry_msgs nodelet roscpp mil_msgs)
+find_package(catkin REQUIRED COMPONENTS sensor_msgs geometry_msgs nodelet roscpp mil_tools)
 catkin_package(
     DEPENDS
-    CATKIN_DEPENDS sensor_msgs geometry_msgs nodelet roscpp mil_msgs
+    CATKIN_DEPENDS sensor_msgs geometry_msgs nodelet roscpp mil_tools
     INCLUDE_DIRS include
     LIBRARIES
 )

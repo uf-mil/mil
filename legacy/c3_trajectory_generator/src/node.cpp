@@ -5,11 +5,11 @@
 #include <actionlib/server/simple_action_server.h>
 
 #include <mil_msgs/PoseTwistStamped.h>
-#include <mil_msgs/msg_helpers.h>
-#include <mil_msgs/param_helpers.h>
+#include <mil_tools/msg_helpers.h>
+#include <mil_tools/param_helpers.h>
 #include <ros_alarms/listener.hpp>
 
-#include "mil_msgs/MoveToAction.h"
+#include <mil_msgs/MoveToAction.h>
 #include "c3_trajectory_generator/SetDisabled.h"
 #include "C3Trajectory.h"
 
@@ -17,6 +17,7 @@ using namespace std;
 using namespace geometry_msgs;
 using namespace nav_msgs;
 using namespace mil_msgs;
+using namespace mil_tools;
 using namespace c3_trajectory_generator;
 
 subjugator::C3Trajectory::Point Point_from_PoseTwist(const Pose &pose, const Twist &twist) {
@@ -122,16 +123,16 @@ struct Node {
       throw std::runtime_error("The kill listener isn't connected to the alarm server");
     kill_listener.start();  // Fuck.
 
-    fixed_frame = mil_msgs::getParam<std::string>(private_nh, "fixed_frame");
-    body_frame = mil_msgs::getParam<std::string>(private_nh, "body_frame");
+    fixed_frame = mil_tools::getParam<std::string>(private_nh, "fixed_frame");
+    body_frame = mil_tools::getParam<std::string>(private_nh, "body_frame");
 
-    limits.vmin_b = mil_msgs::getParam<subjugator::Vector6d>(private_nh, "vmin_b");
-    limits.vmax_b = mil_msgs::getParam<subjugator::Vector6d>(private_nh, "vmax_b");
-    limits.amin_b = mil_msgs::getParam<subjugator::Vector6d>(private_nh, "amin_b");
-    limits.amax_b = mil_msgs::getParam<subjugator::Vector6d>(private_nh, "amax_b");
-    limits.arevoffset_b = mil_msgs::getParam<Eigen::Vector3d>(private_nh, "arevoffset_b");
-    limits.umax_b = mil_msgs::getParam<subjugator::Vector6d>(private_nh, "umax_b");
-    traj_dt = mil_msgs::getParam<ros::Duration>(private_nh, "traj_dt", ros::Duration(0.0001));
+    limits.vmin_b = mil_tools::getParam<subjugator::Vector6d>(private_nh, "vmin_b");
+    limits.vmax_b = mil_tools::getParam<subjugator::Vector6d>(private_nh, "vmax_b");
+    limits.amin_b = mil_tools::getParam<subjugator::Vector6d>(private_nh, "amin_b");
+    limits.amax_b = mil_tools::getParam<subjugator::Vector6d>(private_nh, "amax_b");
+    limits.arevoffset_b = mil_tools::getParam<Eigen::Vector3d>(private_nh, "arevoffset_b");
+    limits.umax_b = mil_tools::getParam<subjugator::Vector6d>(private_nh, "umax_b");
+    traj_dt = mil_tools::getParam<ros::Duration>(private_nh, "traj_dt", ros::Duration(0.0001));
 
     odom_sub = nh.subscribe<Odometry>("odom", 1, boost::bind(&Node::odom_callback, this, _1));
 

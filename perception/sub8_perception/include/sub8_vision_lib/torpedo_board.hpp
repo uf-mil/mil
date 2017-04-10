@@ -57,8 +57,8 @@ public:
   // Public Variables
   double image_proc_scale, feature_min_distance;
   int diffusion_time, max_features, feature_block_size;
-  sub::Contour left_corners, right_corners;
-  sub::ImageWithCameraInfo left_most_recent, right_most_recent;
+  mil_vision::Contour left_corners, right_corners;
+  mil_vision::ImageWithCameraInfo left_most_recent, right_most_recent;
 
 private:
   // Callbacks
@@ -113,7 +113,7 @@ private:
   long long int run_id;
 
   // RVIZ
-  sub::RvizVisualizer rviz;
+  mil_vision::RvizVisualizer rviz;
 
   // DBG images will be generated and published when true
   bool generate_dbg_img;
