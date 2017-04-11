@@ -6,7 +6,7 @@ import txros
 
 from tf import transformations
 
-from mil_msgs.msg import MoveToAction, PoseTwistStamped, Float64Stamped
+from mil_msgs.msg import MoveToAction, PoseTwistStamped
 from mil_misc_tools import text_effects
 from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D, BMatrix, BMatrixRequest
 from std_srvs.srv import SetBool, SetBoolRequest

@@ -148,7 +148,7 @@ class CameraChecker(TemplateChecker):
 
 from nav_msgs.msg import Odometry
 from tf.msg import tfMessage
-from mil_msgs.msg import VelocityMeasurements, Float64Stamped
+from mil_msgs.msg import VelocityMeasurements, RangeStamped, DepthStamped
 from sensor_msgs.msg import Imu, MagneticField
 class StateEstChecker(TemplateChecker):
     @txros.util.cancellableInlineCallbacks
@@ -156,8 +156,8 @@ class StateEstChecker(TemplateChecker):
         self.odom = self.nh.subscribe("/odom", Odometry)
         self.tf = self.nh.subscribe("/tf", tfMessage)
         self.dvl = self.nh.subscribe("/dvl", VelocityMeasurements)
-        self.depth = self.nh.subscribe("/depth", Float64Stamped)
-        self.height = self.nh.subscribe("/dvl/range", Float64Stamped)
+        self.depth = self.nh.subscribe("/depth", DepthStamped)
+        self.height = self.nh.subscribe("/dvl/range", RangeStamped)
         self.imu = self.nh.subscribe("/imu/data_raw", Imu)
         self.mag = self.nh.subscribe("/imu/mag", MagneticField)
 

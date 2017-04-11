@@ -30,7 +30,7 @@ class Nodelet : public nodelet::Nodelet {
     frame_id = mil_tools::getParam<std::string>(getPrivateNodeHandle(), "frame_id");
 
     pub = getNodeHandle().advertise<mil_msgs::VelocityMeasurements>("dvl", 10);
-    range_pub = getNodeHandle().advertise<mil_msgs::Float64Stamped>("dvl/range", 10);
+    range_pub = getNodeHandle().advertise<mil_msgs::RangeStamped>("dvl/range", 10);
 
     device = boost::make_shared<Device>(port, baudrate);
     heartbeat_timer = getNodeHandle().createTimer(
@@ -45,7 +45,7 @@ class Nodelet : public nodelet::Nodelet {
   void polling_thread() {
     while (running) {
       boost::optional<mil_msgs::VelocityMeasurements> msg;
-      boost::optional<mil_msgs::Float64Stamped> range_msg;
+      boost::optional<mil_msgs::RangeStamped> range_msg;
       device->read(msg, range_msg);
       if (msg) {
         msg->header.frame_id = frame_id;

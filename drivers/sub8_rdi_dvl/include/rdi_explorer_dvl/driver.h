@@ -12,7 +12,7 @@
 #include <mil_tools/msg_helpers.h>
 
 #include <mil_msgs/VelocityMeasurements.h>
-#include <mil_msgs/Float64Stamped.h>
+#include <mil_msgs/RangeStamped.h>
 
 namespace rdi_explorer_dvl {
 static uint16_t getu16le(uint8_t *i) { return *i | (*(i + 1) << 8); }
@@ -68,7 +68,7 @@ class Device {
   }
 
   void read(boost::optional<mil_msgs::VelocityMeasurements> &res,
-            boost::optional<mil_msgs::Float64Stamped> &height_res) {
+            boost::optional<mil_msgs::RangeStamped> &height_res) {
     res = boost::none;
     height_res = boost::none;
 
@@ -150,9 +150,9 @@ class Device {
           ROS_ERROR("DVL didn't return height over bottom");
           continue;
         }
-        height_res = boost::make_optional(mil_msgs::Float64Stamped());
+        height_res = boost::make_optional(mil_msgs::RangeStamped());
         height_res->header.stamp = stamp;
-        height_res->data = gets32le(ensemble.data() + offset + 10) * 0.1e-3;
+        height_res->range = gets32le(ensemble.data() + offset + 10) * 0.1e-3;
       }
       if (res) {
         for (int i = 0; i < 4; i++) {

@@ -8,7 +8,7 @@ from sensor_msgs.msg import LaserScan
 from gazebo_msgs.srv import ApplyBodyWrench
 from gazebo_msgs.msg import LinkStates, ModelState
 from sub8_gazebo.srv import ResetGazebo, ResetGazeboResponse
-from mil_msgs.msg import Float64Stamped
+from mil_msgs.msg import RangeStamped
 import numpy as np
 import os
 
@@ -27,7 +27,7 @@ class GazeboInterface(object):
         self.state_set_pub = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
 
         self.raw_dvl_sub = rospy.Subscriber('dvl/range_raw', LaserScan, self.publish_height)
-        self.dvl_pub = rospy.Publisher('dvl/range', Float64Stamped, queue_size=1)
+        self.dvl_pub = rospy.Publisher('dvl/range', RangeStamped, queue_size=1)
 
         self.reset_srv = rospy.Service('gazebo/reset_gazebo', ResetGazebo, self.reset)
         self.state_pub = rospy.Publisher('odom', Odometry, queue_size=1)
@@ -62,9 +62,9 @@ class GazeboInterface(object):
     def publish_height(self, msg):
         '''Sim DVL uses laserscan message to relay height'''
         self.dvl_pub.publish(
-            Float64Stamped(
+            RangeStamped(
                 header=sub8_utils.make_header(),
-                data=float(np.mean(msg.ranges))
+                range=float(np.mean(msg.ranges))
             )
         )
 

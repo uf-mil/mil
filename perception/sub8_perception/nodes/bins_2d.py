@@ -8,7 +8,7 @@ import mil_ros_tools
 from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D
 from std_msgs.msg import Header
 from geometry_msgs.msg import Pose2D
-from mil_msgs.msg import Float64Stamped  # This needs to be deprecated
+from mil_msgs.msg import RangeStamped
 
 
 def contour_sort(l):
@@ -57,7 +57,7 @@ class BinFinder:
         self.image_sub = mil_ros_tools.Image_Subscriber('/down/left/image_rect_color', self.image_cb)
         self.image_pub = mil_ros_tools.Image_Publisher('/vision/bin_2d/target_info')
         self.range = None
-        self.range_sub = rospy.Subscriber("dvl/range", Float64Stamped, self.range_callback)
+        self.range_sub = rospy.Subscriber("dvl/range", RangeStamped, self.range_callback)
 
         # Occasional status publisher
         self.timer = rospy.Timer(rospy.Duration(1.0), self.publish_target_info)
@@ -177,7 +177,7 @@ class BinFinder:
     def range_callback(self, msg):
         '''Handle range data grabbed from dvl'''
         frame = '/dvl'
-        self.range = msg.data
+        self.range = msg.range
 
     def find_bins(self, img, srv):
         draw_image = np.copy(img)

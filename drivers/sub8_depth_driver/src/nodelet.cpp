@@ -6,7 +6,7 @@
 #include <ros/ros.h>
 
 #include <mil_tools/param_helpers.h>
-#include <mil_msgs/Float64Stamped.h>
+#include <mil_msgs/DepthStamped.h>
 
 #include <depth_driver/driver.h>
 
@@ -27,7 +27,7 @@ class Nodelet : public nodelet::Nodelet {
     int baudrate = mil_tools::getParam<int>(getPrivateNodeHandle(), "baudrate", 115200);
     frame_id = mil_tools::getParam<std::string>(getPrivateNodeHandle(), "frame_id");
 
-    pub = getNodeHandle().advertise<mil_msgs::Float64Stamped>("depth", 10);
+    pub = getNodeHandle().advertise<mil_msgs::DepthStamped>("depth", 10);
 
     device = boost::make_shared<Device>(port, baudrate);
     heartbeat_timer = getNodeHandle().createTimer(
@@ -41,8 +41,8 @@ class Nodelet : public nodelet::Nodelet {
 
   void polling_thread() {
     while (running) {
-      mil_msgs::Float64Stamped msg;
-      if (!device->read(msg.data)) continue;
+      mil_msgs::DepthStamped msg;
+      if (!device->read(msg.depth)) continue;
       msg.header.stamp = ros::Time::now();
       msg.header.frame_id = frame_id;
       pub.publish(msg);

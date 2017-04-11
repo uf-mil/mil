@@ -9,7 +9,7 @@ from interactive_markers.interactive_marker_server import *
 
 from geometry_msgs.msg import Pose, Vector3
 from std_msgs.msg import ColorRGBA, Float64
-from mil_msgs.msg import Float64Stamped  # This needs to be deprecated
+from mil_msgs.msg import RangeStamped, DepthStamped
 #from sub8_alarm import AlarmListener, AlarmBroadcaster
 from ros_alarms import AlarmBroadcaster, AlarmListener
 import mil_ros_tools as sub8_utils
@@ -78,9 +78,9 @@ class RvizVisualizer(object):
         self.kill_alarm = AlarmBroadcaster("kill")
 
         # distance to bottom
-        self.range_sub = rospy.Subscriber("dvl/range", Float64Stamped, self.range_callback)
+        self.range_sub = rospy.Subscriber("dvl/range", RangeStamped, self.range_callback)
         # distance to surface
-        self.depth_sub = rospy.Subscriber("depth", Float64Stamped, self.depth_callback)
+        self.depth_sub = rospy.Subscriber("depth", DepthStamped, self.depth_callback)
         # battery voltage
         self.voltage_sub = rospy.Subscriber("/bus_voltage", Float64, self.voltage_callback)
 
@@ -130,7 +130,7 @@ class RvizVisualizer(object):
     def depth_callback(self, msg):
         '''Handle depth data sent from depth sensor'''
         frame = '/depth'
-        distance = msg.data
+        distance = msg.depth
         marker = self.make_cylinder_marker(
             np.array([0.0, 0.0, 0.0]),  # place at origin
             length=distance,
@@ -151,7 +151,7 @@ class RvizVisualizer(object):
         '''Handle range data grabbed from dvl'''
         # future: should be /base_link/dvl, no?
         frame = '/dvl'
-        distance = msg.data
+        distance = msg.range
 
         # Color a sharper red if we're in danger
         if distance < 1.0:

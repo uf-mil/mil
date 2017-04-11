@@ -6,7 +6,7 @@ from txros import action, util, tf, serviceclient
 import rospkg
 from tf import transformations
 
-from mil_msgs.msg import MoveToAction, PoseTwistStamped, Float64Stamped
+from mil_msgs.msg import MoveToAction, PoseTwistStamped, RangeStamped
 from sub8 import pose_editor
 import mil_ros_tools
 from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D
@@ -122,7 +122,7 @@ class _PoseProxy(object):
     # Some special moves
     def to_height(self, height):
         dist_to_bot = self._sub._dvl_range_sub.get_last_message()
-        delta_height = dist_to_bot.data - height
+        delta_height = dist_to_bot.range - height
         return self.down(delta_height)
 
     def check_goal(self):
@@ -163,7 +163,7 @@ class _Sub(object):
         self._odom_sub = yield self.nh.subscribe('odom', Odometry)
         self._trajectory_sub = yield self.nh.subscribe('trajectory', PoseTwistStamped)
         self._trajectory_pub = yield self.nh.advertise('trajectory', PoseTwistStamped)
-        self._dvl_range_sub = yield self.nh.subscribe('dvl/range', Float64Stamped)
+        self._dvl_range_sub = yield self.nh.subscribe('dvl/range', RangeStamped)
         self._tf_listener = yield tf.TransformListener(self.nh)
         
         self.vision_proxies = _VisionProxies(self.nh, 'vision_proxies.yaml')
@@ -200,7 +200,7 @@ class _Sub(object):
     @util.cancellableInlineCallbacks
     def get_dvl_range(self):
         msg = yield self._dvl_range_sub.get_next_message()
-        defer.returnValue(msg.data)
+        defer.returnValue(msg.range)
 
     @util.cancellableInlineCallbacks
     def get_in_frame(self, pose_stamped, frame='/map'):
