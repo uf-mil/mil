@@ -4,7 +4,7 @@ from twisted.internet import defer, reactor
 from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge, CvBridgeError
 
-from navigator_tools import image_helpers
+from mil_ros_tools import image_helpers
 import numpy as np
 import argcomplete
 import sys

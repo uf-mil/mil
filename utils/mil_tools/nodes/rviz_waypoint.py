@@ -3,7 +3,6 @@ from __future__ import division
 
 import txros
 import numpy as np
-import navigator_tools
 from twisted.internet import defer
 from geometry_msgs.msg import PoseStamped, PointStamped
 
