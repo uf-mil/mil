@@ -1,7 +1,7 @@
 import txros
 from twisted.internet import defer
 from ros_alarms import TxAlarmListener, TxAlarmBroadcaster
-from sub8_tools import text_effects 
+from mil_misc_tools import text_effects 
 
 # Import missions here
 import square

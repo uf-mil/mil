@@ -8,7 +8,7 @@ from tf import transformations
 
 from mil_msgs.msg import MoveToAction, PoseTwistStamped, Float64Stamped
 from sub8 import pose_editor
-import sub8_tools
+import mil_ros_tools
 from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D
 from std_srvs.srv import SetBool, SetBoolRequest
 from nav_msgs.msg import Odometry
@@ -186,11 +186,11 @@ class _Sub(object):
         '''Slighty safer to use.'''
         if self.test_mode:
             yield self.nh.sleep(.1)
-            blank = sub8_tools.pose_to_numpy(Odometry().pose.pose)
+            blank = mil_ros_tools.pose_to_numpy(Odometry().pose.pose)
             defer.returnValue(blank)
 
         next_odom_msg = yield self._odom_sub.get_next_message()
-        pose = sub8_tools.pose_to_numpy(next_odom_msg.pose.pose)
+        pose = mil_ros_tools.pose_to_numpy(next_odom_msg.pose.pose)
         defer.returnValue(pose)
 
     @property

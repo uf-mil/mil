@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import txros
-from sub8_tools import text_effects
+from mil_misc_tools import text_effects
 from twisted.internet import defer, reactor
 import sys
 
