@@ -1,6 +1,6 @@
 
 from roi_generator import ROI_Collection
-from navigator_tools import CvDebug, BagCrawler
+from mil_ros_tools import CvDebug, BagCrawler
 import numpy as np
 from HOG_descriptor import HOGDescriptor
 from SVM_classifier import SVMClassifier

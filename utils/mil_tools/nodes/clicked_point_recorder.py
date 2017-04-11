@@ -3,7 +3,7 @@
 """
 Listens to RVIZ clicked points, storing points in a csv file
 
-Usage: rosrun navigator_tools clicked_point_recorder.py
+Usage: rosrun mil_tools clicked_point_recorder.py
 """
 
 import rospy

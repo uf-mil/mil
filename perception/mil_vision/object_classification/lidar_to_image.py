@@ -12,12 +12,15 @@ from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Image, CameraInfo
 import genpy
 import cv2
-import navigator_tools as nt
+from mil_ros_tools import odometry_to_numpy
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from image_geometry import PinholeCameraModel
 import numpy as np
 ___author___ = "Tess Bianchi"
 
+'''
+Needs to be refactored to be generic and non depend on navigator
+'''
 
 class LidarToImage(object):
 
@@ -45,7 +48,7 @@ class LidarToImage(object):
         yield self.nh.subscribe(image_sub, Image, self._img_cb)
         self._database = yield self.nh.get_service_client('/database/requests', ObjectDBQuery)
         self._odom_sub = yield self.nh.subscribe('/odom', Odometry,
-                                                 lambda odom: setattr(self, 'pose', nt.odometry_to_numpy(odom)[0]))
+                                                 lambda odom: setattr(self, 'pose', odometry_to_numpy(odom)[0]))
         self.cam_info_sub = yield self.nh.subscribe(cam_info, CameraInfo, self._info_cb)
         self.tf_listener = tf.TransformListener(self.nh)
         defer.returnValue(self)
