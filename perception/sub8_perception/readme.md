@@ -56,7 +56,7 @@ Add a "Marker" visualizer, and set its topic to `/visualization/buoys`. Buoy det
 If you are using a bag
 
 ```shell
-    ROS_NAMESPACE=/stereo/left rosrun image_proc image_proc
+    ROS_NAMESPACE=/camera/front/left rosrun image_proc image_proc
     rosbag play ./holding_buoy_mil.bag
 ```
 

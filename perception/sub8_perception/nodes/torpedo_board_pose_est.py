@@ -84,8 +84,8 @@ class TBPoseEstimator(object):
         if self.minimization_result.success:
             if not rospy.is_shutdown():
                 try:
-                    self.tf_listener.waitForTransform('/map', 'stereo_front', self.current_req.stamp, rospy.Duration(0.1))
-                    (trans, rot) = self.tf_listener.lookupTransform('/map', 'stereo_front', self.current_req.stamp)
+                    self.tf_listener.waitForTransform('/map', 'front_stereo', self.current_req.stamp, rospy.Duration(0.1))
+                    (trans, rot) = self.tf_listener.lookupTransform('/map', 'front_stereo', self.current_req.stamp)
                     yaw = tf.transformations.euler_from_quaternion(rot, 'syxz')[0]
                     pose = np.array([trans.x, trans.y, trans.z, yaw])
                     self.pose_obs.push_back(pose)

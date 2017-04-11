@@ -56,7 +56,7 @@
         <plugin name="left_camera_controller" filename="libgazebo_ros_camera.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>15</updateRate>
-          <cameraName>stereo/left</cameraName>
+          <cameraName>front/left</cameraName>
           <imageTopicName>/camera/front/left/image_raw</imageTopicName>
           <cameraInfoTopicName>/camera/front/left/camera_info</cameraInfoTopicName>
           <frameName>front_left_cam</frameName>
@@ -89,7 +89,7 @@
         <plugin name="right_camera_controller" filename="libgazebo_ros_camera.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>15</updateRate>
-          <cameraName>stereo/right</cameraName>
+          <cameraName>front/right</cameraName>
           <imageTopicName>/camera/front/right/image_raw</imageTopicName>
           <cameraInfoTopicName>/camera/front/right/camera_info</cameraInfoTopicName>
           <frameName>front_right_cam</frameName>

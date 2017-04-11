@@ -17,8 +17,8 @@ Sub8TorpedoBoardDetector::Sub8TorpedoBoardDetector()
   int tab_sz = 4;
 
   // Default parameters
-  string img_topic_left_default = "/stereo/left/image_rect_color/";
-  string img_topic_right_default = "/stereo/right/image_rect_color/";
+  string img_topic_left_default = "/camera/front/left/image_rect_color/";
+  string img_topic_right_default = "/camera/front/right/image_rect_color/";
   string activation_default = "/torpedo_board/detection_activation_switch";
   string dbg_topic_default = "/torpedo_board/dbg_imgs";
   string pose_est_srv_default = "/torpedo_board/pose_est_srv";

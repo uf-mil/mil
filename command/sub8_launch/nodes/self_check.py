@@ -118,12 +118,12 @@ from sensor_msgs.msg import CameraInfo
 class CameraChecker(TemplateChecker):
     @txros.util.cancellableInlineCallbacks
     def tx_init(self):
-        self.right = self.nh.subscribe("/stereo/right/image_rect_color", Image)
-        self.right_info = self.nh.subscribe("/stereo/right/camera_info", CameraInfo)
-        self.left = self.nh.subscribe("/stereo/left/image_rect_color", Image)
-        self.left_info = self.nh.subscribe("/stereo/left/camera_info", CameraInfo)
-        self.down = self.nh.subscribe("/down/left/image_rect_color", Image)  # TODO
-        self.down_info = self.nh.subscribe("/down/left/camera_info", CameraInfo)  # TODO
+        self.right = self.nh.subscribe("/camera/front/right/image_rect_color", Image)
+        self.right_info = self.nh.subscribe("/camera/front/right/camera_info", CameraInfo)
+        self.left = self.nh.subscribe("/camera/front/left/image_rect_color", Image)
+        self.left_info = self.nh.subscribe("/camera/front/left/camera_info", CameraInfo)
+        self.down = self.nh.subscribe("/camera/down/left/image_rect_color", Image)  # TODO
+        self.down_info = self.nh.subscribe("/camera/down/left/camera_info", CameraInfo)  # TODO
         
         self.subs = [("Right Image", self.right.get_next_message()), ("Right Info", self.right_info.get_next_message()),
                      ("Left Image", self.left.get_next_message()), ("Left Info", self.left_info.get_next_message()),

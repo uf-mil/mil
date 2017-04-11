@@ -104,7 +104,7 @@ def test():
     from mayavi import mlab
 
     rospy.init_node('test_estimation')
-    q = sub8_ros_tools.Image_Subscriber('/stereo/left/image_raw')
+    q = sub8_ros_tools.Image_Subscriber('/camera/front/left/image_raw')
     while(q.camera_info is None):
         time.sleep(0.1)
 

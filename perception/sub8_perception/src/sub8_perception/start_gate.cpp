@@ -2,7 +2,7 @@
 Sub8StartGateDetector::Sub8StartGateDetector() : image_transport_(nh_), gate_line_buffer_(30), running_(true)
 {
   image_sub_ =
-      image_transport_.subscribeCamera("/stereo/right/image_rect_color", 1, &Sub8StartGateDetector::imageCallback, this);
+      image_transport_.subscribeCamera("/camera/front/right/image_rect_color", 1, &Sub8StartGateDetector::imageCallback, this);
   service_2d_ =
       nh_.advertiseService("/vision/start_gate/pose", &Sub8StartGateDetector::requestStartGatePosition2d, this);
   service_enable_ =

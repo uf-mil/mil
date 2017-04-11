@@ -1,14 +1,14 @@
 <launch>
   <!-- This is not exactly right, because of weirdness in the K-matrix from camera_info for the stereo cams -->
-    <node pkg="tf" type="static_transform_publisher" name="stereo_front_broadcaster"
+    <node pkg="tf" type="static_transform_publisher" name="front_cams_broadcaster"
       args="0.2559 0 0.1707   0.5 -0.5  0.5  -0.5 base_link front_stereo 100">
     </node>
 
-    <node pkg="tf" type="static_transform_publisher" name="stereo_front_left_broadcaster"
+    <node pkg="tf" type="static_transform_publisher" name="front_left_cam_broadcaster"
       args="-0.0445 0 0   0 0 0 1 front_stereo front_left_cam 100">
     </node>
 
-    <node pkg="tf" type="static_transform_publisher" name="stereo_front_right_broadcaster"
+    <node pkg="tf" type="static_transform_publisher" name="front_right_cam_broadcaster"
       args="0.0445 0 0   0 0 0 1 front_stereo front_right_cam 100">
     </node>
 
