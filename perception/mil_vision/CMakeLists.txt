@@ -85,7 +85,7 @@ add_library(
 target_include_directories(mil_vision_lib PUBLIC include/mil_vision_lib)
 target_link_libraries(mil_vision_lib mil_tools_lib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_COMMON_LIBRARIES})
 
-add_executable(camera_stream_demo nodes/camera_stream_demo.cpp)
+add_executable(camera_stream_demo src/camera_stream_demo.cpp)
 add_dependencies(camera_stream_demo mil_vision_lib ${catkin_EXPORTED_TARGETS})
 target_link_libraries(
   camera_stream_demo
@@ -95,3 +95,12 @@ target_link_libraries(
     ${OpenCV_INCLUDE_DIRS}
 )
 
+add_executable(camera_lidar_transformer src/camera_lidar_transformer.cpp)
+add_dependencies(camera_lidar_transformer mil_vision_lib ${catkin_EXPORTED_TARGETS})
+target_link_libraries(
+  camera_lidar_transformer
+    mil_vision_lib
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${OpenCV_INCLUDE_DIRS}
+)

@@ -1,17 +1,17 @@
-#include "CameraLidarTransformer.hpp"
+#include "camera_lidar_transformer.hpp"
 
 ros::Duration CameraLidarTransformer::MAX_TIME_ERR = ros::Duration(0,6E7);
 CameraLidarTransformer::CameraLidarTransformer()
-    : nh(ros::this_node::getName()),
-      tfBuffer(),
-      tfListener(tfBuffer, nh),
-      lidarSub(nh, "/velodyne_points", 10),
-      lidarCache(lidarSub, 10),
-      camera_info_received(false)
-      #ifdef DO_ROS_DEBUG
-      ,
-      image_transport(nh)
-      #endif
+  : nh(ros::this_node::getName()),
+    tfBuffer(),
+    tfListener(tfBuffer, nh),
+    lidarSub(nh, "/velodyne_points", 10),
+    lidarCache(lidarSub, 10),
+    camera_info_received(false)
+    #ifdef DO_ROS_DEBUG
+    ,
+    image_transport(nh)
+    #endif
 {
   #ifdef DO_ROS_DEBUG
   points_debug_publisher = image_transport.advertise("points_debug", 1);
@@ -23,23 +23,27 @@ CameraLidarTransformer::CameraLidarTransformer()
   nh.param<std::string>("camera_to_lidar_transform_topic",camera_to_lidar_transform_topic,"transform_camera");
   transformServiceServer = nh.advertiseService(camera_to_lidar_transform_topic, &CameraLidarTransformer::transformServiceCallback, this);
 }
+
 void CameraLidarTransformer::cameraInfoCallback(sensor_msgs::CameraInfo info)
 {
   camera_info = info;
   cam_model.fromCameraInfo(camera_info);
   camera_info_received = true;
 }
+
 bool CameraLidarTransformer::inCameraFrame(cv::Point2d& point)
 {
   return point.x > 0 && point.x < camera_info.width &&
          point.y > 0 && point.y < camera_info.height;
 }
+
 void CameraLidarTransformer::drawPoint(cv::Mat& mat, cv::Point2d& point, cv::Scalar color)
 {
   if (point.x - 20 > 0 && point.x + 20 < mat.cols && point.y - 20 > 0 && point.y + 20 < mat.rows)
     cv::circle(mat, point, 3, color, -1);
 }
-bool CameraLidarTransformer::transformServiceCallback(navigator_msgs::CameraToLidarTransform::Request &req, navigator_msgs::CameraToLidarTransform::Response &res)
+
+bool CameraLidarTransformer::transformServiceCallback(mil_msgs::CameraToLidarTransform::Request &req, mil_msgs::CameraToLidarTransform::Response &res)
 {
   if (!camera_info_received)
   {
@@ -47,12 +51,14 @@ bool CameraLidarTransformer::transformServiceCallback(navigator_msgs::CameraToLi
     res.error = "NO CAMERA INFO";
     return true;
   }
+
   if (camera_info.header.frame_id != req.header.frame_id)
   {
     res.success = false;
     res.error = "DIFFERENT FRAME ID THAN SUBSCRIBED CAMERA";
     return true;
   }
+
   visualization_msgs::MarkerArray markers;
   std::vector<sensor_msgs::PointCloud2ConstPtr> nearbyLidar = lidarCache.getInterval(req.header.stamp-MAX_TIME_ERR, req.header.stamp+MAX_TIME_ERR);
   sensor_msgs::PointCloud2ConstPtr scloud;
@@ -68,7 +74,7 @@ bool CameraLidarTransformer::transformServiceCallback(navigator_msgs::CameraToLi
   }
   if (!scloud) {
     res.success = false;
-    res.error =  navigator_msgs::CameraToLidarTransform::Response::CLOUD_NOT_FOUND;
+    res.error =  mil_msgs::CameraToLidarTransform::Response::CLOUD_NOT_FOUND;
     return true;
   }
   if (!tfBuffer.canTransform(req.header.frame_id, "velodyne", ros::Time(0), ros::Duration(1)))
@@ -181,7 +187,7 @@ bool CameraLidarTransformer::transformServiceCallback(navigator_msgs::CameraToLi
     res.distance = res.closest.z;
     res.success = true;
   } else {
-    res.error = navigator_msgs::CameraToLidarTransform::Response::NO_POINTS_FOUND;
+    res.error = mil_msgs::CameraToLidarTransform::Response::NO_POINTS_FOUND;
     res.success = false;
   }
 
@@ -196,4 +202,11 @@ bool CameraLidarTransformer::transformServiceCallback(navigator_msgs::CameraToLi
 #endif
 
   return true;
+}
+
+int main (int argc, char** argv)
+{
+    ros::init (argc, argv, "camera_lidar_transformer");
+    CameraLidarTransformer transformer;
+    ros::spin ();
 }

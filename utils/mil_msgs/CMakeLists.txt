@@ -28,6 +28,10 @@ add_message_files(FILES
   Acceleration.msg
 )
 
+add_service_files(FILES
+  CameraToLidarTransform.srv
+)
+
 find_package(Eigen 3 REQUIRED)
 include_directories(${Eigen_INCLUDE_DIRS})
 generate_messages(
