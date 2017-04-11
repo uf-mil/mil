@@ -3,7 +3,7 @@
 using namespace std;
 using namespace cv;
 
-namespace nav{
+namespace mil_vision {
 
 Mat g_color_sequence;
 
@@ -139,4 +139,4 @@ void PcdColorizer::_color_pcd(){
   }
 }
 
-} //namespace nav
+} //namespace mil_vision

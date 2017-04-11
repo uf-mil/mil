@@ -8,7 +8,7 @@
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>
 
-namespace nav{
+namespace mil_vision {
 
 class PcdSubPubAlgorithm{
   /*

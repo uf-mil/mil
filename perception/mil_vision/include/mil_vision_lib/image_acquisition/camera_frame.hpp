@@ -11,7 +11,7 @@
 #include <exception>
 
 
-namespace nav
+namespace mil_vision
 {
 
 enum class PixelType
@@ -139,7 +139,7 @@ private:
     float_t _img_scale = 1.0f;
 
     // Stores the pixel data type
-    nav::PixelType TYPE = nav::PixelType::_UNKNOWN;
+    mil_vision::PixelType TYPE = mil_vision::PixelType::_UNKNOWN;
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -198,5 +198,5 @@ catch(const std::exception &e)
     ROS_WARN(e.what());
 }
 
-}  // namespace nav
+}  // namespace mil_vision
 

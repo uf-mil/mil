@@ -1,7 +1,8 @@
 #include <mil_tools/mil_tools.hpp>
+#include <mil_tools/msg_helpers.h>
+#include <mil_tools/param_helpers.h>
 
-namespace mil{
-namespace tools{
+namespace mil_tools {
 
 using namespace std;
 
@@ -52,6 +53,4 @@ void sortContours(vector<vector<cv::Point2i>>& contour_vec, bool ascending)
 }
 
 
-}  // namespace mil::tools  
-}  // namespace mil
-
+}

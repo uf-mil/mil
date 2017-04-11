@@ -6,7 +6,7 @@
 #include <Eigen/Core>
 
 
-namespace nav{
+namespace mil_vision{
 
 struct alignas(16) ColorObservation
 {
@@ -42,4 +42,4 @@ struct PointColorStats
   int n;
 };
 
-}  //namespace nav
+}  //namespace mil_vision

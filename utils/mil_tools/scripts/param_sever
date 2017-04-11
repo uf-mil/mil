@@ -4,8 +4,6 @@ import os
 import random
 import yaml
 
-import roslib
-roslib.load_manifest('uf_common')
 import rospy
 
 

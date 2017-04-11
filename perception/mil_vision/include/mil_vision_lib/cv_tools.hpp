@@ -23,7 +23,7 @@
 
 // #define SEGMENTATION_DEBUG
 
-namespace nav {
+namespace mil_vision {
 
 /// UTILS
 

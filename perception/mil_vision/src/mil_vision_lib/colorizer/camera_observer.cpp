@@ -1,8 +1,8 @@
 #include <colorizer/camera_observer.hpp>
 
-namespace nav{
+namespace mil_vision{
 
-using mil::tools::operator "" _s; // converts to std::string
+using mil_tools::operator "" _s; // converts to std::string
   
 CameraObserver::CameraObserver(ros::NodeHandle &nh, std::string &pcd_in_topic, std::string &cam_topic, size_t hist_size)
 : _nh{nh}, _cam_stream{nh, hist_size}
@@ -70,4 +70,4 @@ ColorObservation::VecImg CameraObserver::get_color_observations(const PCD<pcl::P
   
 }
 
-}  // namespace nav
+}  // namespace mil_vision

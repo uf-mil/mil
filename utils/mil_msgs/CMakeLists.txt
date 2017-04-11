@@ -5,14 +5,11 @@ find_package(catkin
     message_generation
     message_runtime
     geometry_msgs
-    tf
     actionlib
     interactive_markers
     std_msgs
     actionlib_msgs
-    cmake_modules
 )
-catkin_python_setup()
 
 add_action_files(FILES
   MoveTo.action
@@ -32,17 +29,10 @@ add_service_files(FILES
   CameraToLidarTransform.srv
 )
 
-find_package(Eigen 3 REQUIRED)
-include_directories(${Eigen_INCLUDE_DIRS})
 generate_messages(
-    DEPENDENCIES std_msgs actionlib_msgs geometry_msgs mil_msgs
+    DEPENDENCIES std_msgs actionlib_msgs geometry_msgs
 )
 catkin_package(
-    DEPENDS Eigen
-    CATKIN_DEPENDS message_generation message_runtime geometry_msgs tf actionlib interactive_markers std_msgs actionlib_msgs
-    INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS} include
-    LIBRARIES
+    CATKIN_DEPENDS message_generation message_runtime geometry_msgs actionlib std_msgs actionlib_msgs
 )
 
-include_directories(${EIGEN_INCLUDE_DIRS} include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
-#install(PROGRAMS scripts/interactive_marker_moveto scripts/velocitymeasurements_to_vector3 scripts/param_saver DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
