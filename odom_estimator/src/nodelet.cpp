@@ -14,7 +14,7 @@
 #include <tf_conversions/tf_eigen.h>
 
 #include <mil_msgs/VelocityMeasurements.h>
-#include <mil_msgs/Float64Stamped.h>
+#include <mil_msgs/DepthStamped.h>
 
 #include <odom_estimator/Info.h>
 #include <odom_estimator/SetIgnoreMagnetometer.h>
@@ -314,8 +314,8 @@ class NodeImpl {
         *state);
     }
     
-    void got_depth(const mil_msgs::Float64StampedConstPtr &msgp) {
-      mil_msgs::Float64Stamped const & msg = *msgp;
+    void got_depth(const mil_msgs::DepthStampedConstPtr &msgp) {
+      mil_msgs::DepthStamped const & msg = *msgp;
       
       
       tf::StampedTransform transform;
@@ -335,7 +335,7 @@ class NodeImpl {
           [&](State const &state, Vec<1> const &measurement_noise) {
             SqMat<3> m = enu_from_ecef_mat(state.getPosECEF());
             double estimated = -(m * state.getRelPosECEF(local_depth_pos))(2) + measurement_noise(0);
-            return scalar_matrix(estimated - msg.data);
+            return scalar_matrix(estimated - msg.depth);
           },
           GaussianDistribution<Vec<1> >(
             Vec<1>::Zero(),
@@ -356,8 +356,8 @@ class NodeImpl {
     tf::MessageFilter<sensor_msgs::MagneticField> mag_filter;
     message_filters::Subscriber<mil_msgs::VelocityMeasurements> dvl_sub;
     tf::MessageFilter<mil_msgs::VelocityMeasurements> dvl_filter;
-    message_filters::Subscriber<mil_msgs::Float64Stamped> depth_sub;
-    tf::MessageFilter<mil_msgs::Float64Stamped> depth_filter;
+    message_filters::Subscriber<mil_msgs::DepthStamped> depth_sub;
+    tf::MessageFilter<mil_msgs::DepthStamped> depth_filter;
     ros::Publisher odom_pub;
     ros::Publisher absodom_pub;
     ros::Publisher info_pub;
