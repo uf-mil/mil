@@ -368,7 +368,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position() {
 
     Matx31d pt_L_hom(pt_L.x, pt_L.y, 1);
     Matx31d pt_R_hom(pt_R.x, pt_R.y, 1);
-    Mat X_hom = sub::triangulate_Linear_LS(Mat(left_cam_mat),
+    Mat X_hom = mil_vision::triangulate_Linear_LS(Mat(left_cam_mat),
                                            Mat(right_cam_mat),
                                            Mat(pt_L_hom), Mat(pt_R_hom));
     X_hom = X_hom / X_hom.at<double>(3, 0);
@@ -787,7 +787,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position() {
     Point2d pt_R_ = right_corners[i];
     Matx31d pt_L(pt_L_.x, pt_L_.y, 1);
     Matx31d pt_R(pt_R_.x, pt_R_.y, 1);
-    Mat X_hom = sub::triangulate_Linear_LS(Mat(left_cam_mat),
+    Mat X_hom = mil_vision::triangulate_Linear_LS(Mat(left_cam_mat),
                                                Mat(right_cam_mat),
                                                Mat(pt_L), Mat(pt_R));
     X_hom = X_hom / X_hom.at<double>(3, 0);
@@ -997,10 +997,10 @@ void Sub8TorpedoBoardDetector::segment_board(const Mat &src, Mat &dest,
   Mat threshed_hue, threshed_sat, segmented_board;
   int target_yellow = 20;
   int target_saturation = 180;
-  sub::statistical_image_segmentation(
+  mil_vision::statistical_image_segmentation(
       hsv_channels[0], threshed_hue, hue_segment_dbg_img, hist_size, ranges,
       target_yellow, "Hue", draw_dbg_img, 6, 3.0, 3.0);
-  sub::statistical_image_segmentation(
+  mil_vision::statistical_image_segmentation(
       hsv_channels[1], threshed_sat, sat_segment_dbg_img, hist_size, ranges,
       target_saturation, "Saturation", draw_dbg_img, 6, 0.1, 0.1);
 #ifdef SEGMENTATION_DEBUG
@@ -1052,7 +1052,7 @@ bool Sub8TorpedoBoardDetector::find_board_corners(
   // Put longest 2 contours at beginning of "contours" vector
   if (contours.size() > 2) {
     partial_sort(contours.begin(), contours.begin() + 2, contours.end(),
-                      sub::larger_contour);
+                      mil_vision::larger_contour);
   }
   if (contours.size() < 2) { // prevent out of range access of contours
     corners_success = false;
@@ -1075,8 +1075,8 @@ bool Sub8TorpedoBoardDetector::find_board_corners(
   }
 
   // Connect yellow pannels
-  Point pt1 = sub::contour_centroid(contours[0]);
-  Point pt2 = sub::contour_centroid(contours[1]);
+  Point pt1 = mil_vision::contour_centroid(contours[0]);
+  Point pt2 = mil_vision::contour_centroid(contours[1]);
   convex_hull_working_img =
       Mat::zeros(convex_hull_working_img.size(), CV_8UC1);
   drawContours(convex_hull_working_img, contours, 0, Scalar(255));
@@ -1089,7 +1089,7 @@ bool Sub8TorpedoBoardDetector::find_board_corners(
   if (contours.size() > 1) {
     partial_sort(connected_contours.begin(),
                       connected_contours.begin() + 1, connected_contours.end(),
-                      sub::larger_contour);
+                      mil_vision::larger_contour);
   }
 
   // Find convex hull of connected panels

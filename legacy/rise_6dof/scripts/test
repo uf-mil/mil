@@ -11,7 +11,7 @@ roslib.load_manifest("rise_6dof")
 from geometry_msgs.msg import Point, Vector3, Quaternion, Pose, Twist
 from tf import transformations
 
-from uf_common.msg import PoseTwist
+from mil_msgs.msg import PoseTwist
 
 from rise_6dof.controller import Controller
 

@@ -2,7 +2,7 @@
 import rospy
 import numpy as np
 import tf
-import sub8_ros_tools
+import mil_ros_tools
 from sensor_msgs.msg import PointCloud
 
 
@@ -12,7 +12,7 @@ pub = rospy.Publisher("ground_est", PointCloud, queue_size=1)
 
 listener = tf.TransformListener()
 pc = PointCloud()
-pc.header = sub8_ros_tools.make_header(frame="map")
+pc.header = mil_ros_tools.make_header(frame="map")
 pc.points = []
 
 rate = rospy.Rate(1.0)
@@ -24,7 +24,7 @@ while not rospy.is_shutdown():
         rospy.logwarn("TF waitForTransform timeout")
         continue
     
-    pc.points.append(sub8_ros_tools.numpy_to_point(np.array(trans)))
+    pc.points.append(mil_ros_tools.numpy_to_point(np.array(trans)))
     pub.publish(pc)
 
     rate.sleep()

@@ -5,7 +5,7 @@ from gazebo_msgs.srv import SetModelState, SetModelStateRequest, DeleteModel, De
 from gazebo_msgs.msg import ModelState, ModelStates
 from kill_handling.srv import SetKill, SetKillRequest
 from kill_handling.msg import Kill
-from sub8_ros_tools import numpy_to_twist
+from mil_ros_tools import numpy_to_twist
 import txros
 
 

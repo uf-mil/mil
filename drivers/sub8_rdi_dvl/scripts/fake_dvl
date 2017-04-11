@@ -5,7 +5,7 @@ import math
 import rospy
 from std_msgs.msg import Header
 from geometry_msgs.msg import Vector3
-from uf_common.msg import VelocityMeasurements, VelocityMeasurement
+from mil_msgs.msg import VelocityMeasurements, VelocityMeasurement
 
 rospy.init_node('fake_dvl')
 

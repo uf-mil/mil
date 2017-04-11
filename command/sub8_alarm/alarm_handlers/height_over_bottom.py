@@ -1,6 +1,6 @@
 import rospy
 from ros_alarms import AlarmBroadcaster, HandlerBase
-from uf_common.msg import Float64Stamped
+from mil_msgs.msg import RangeStamped
 
 class HeightOverBottom(HandlerBase):
     alarm_name = "height-over-bottom"
@@ -13,8 +13,8 @@ class HeightOverBottom(HandlerBase):
         
         # Keep track of the current height
         self._last_height = 100 
-        set_last_height = lambda msg: setattr(self, "_last_height", msg.data)
-        rospy.Subscriber("/dvl/range", Float64Stamped, set_last_height)
+        set_last_height = lambda msg: setattr(self, "_last_height", msg.range)
+        rospy.Subscriber("/dvl/range", RangeStamped, set_last_height)
        
         # Every 5 seconds, check for an updated height param. A pseudo dynamic reconfig thing.
         rospy.Timer(rospy.Duration(5), self._update_height)

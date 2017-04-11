@@ -6,7 +6,7 @@ import rospy
 import visualization_msgs.msg as visualization_msgs
 from geometry_msgs.msg import Pose, Vector3, Point
 from std_msgs.msg import ColorRGBA
-import sub8_ros_tools as sub8_utils
+import mil_ros_tools
 
 
 class RvizVisualizer(object):
@@ -18,14 +18,14 @@ class RvizVisualizer(object):
 
     def draw_sphere(self, position, color, scaling=(0.11, 0.11, 0.11), _id=4, frame='/front_stereo'):
         pose = Pose(
-            position=sub8_utils.numpy_to_point(position),
-            orientation=sub8_utils.numpy_to_quaternion([0.0, 0.0, 0.0, 1.0])
+            position=mil_ros_tools.numpy_to_point(position),
+            orientation=mil_ros_tools.numpy_to_quaternion([0.0, 0.0, 0.0, 1.0])
         )
 
         marker = visualization_msgs.Marker(
             ns='sub',
             id=_id,
-            header=sub8_utils.make_header(frame=frame),
+            header=mil_ros_tools.make_header(frame=frame),
             type=visualization_msgs.Marker.SPHERE,
             action=visualization_msgs.Marker.ADD,
             pose=pose,
@@ -55,7 +55,7 @@ class RvizVisualizer(object):
         marker = visualization_msgs.Marker(
             ns='sub',
             id=_id,
-            header=sub8_utils.make_header(frame=frame, stamp=timestamp),
+            header=mil_ros_tools.make_header(frame=frame, stamp=timestamp),
             type=visualization_msgs.Marker.LINE_STRIP,
             action=visualization_msgs.Marker.ADD,
             color=ColorRGBA(*color),

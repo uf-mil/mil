@@ -9,7 +9,7 @@ from gazebo_msgs.srv import SetModelState, GetModelState, ApplyJointEffort, Appl
 from geometry_msgs.msg import Pose, Twist
 from sub8_msgs.srv import SetValve
 
-from sub8_ros_tools import msg_helpers, geometry_helpers
+from mil_ros_tools import msg_helpers, geometry_helpers
 
 import numpy as np
 

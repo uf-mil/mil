@@ -5,10 +5,10 @@ import numpy as np
 import rospy
 from tf import transformations
 from nav_msgs.msg import Odometry
-from uf_common.msg import PoseTwistStamped, PoseTwist, MoveToGoal
+from mil_msgs.msg import PoseTwistStamped, PoseTwist, MoveToGoal
 from std_msgs.msg import Header
 from geometry_msgs.msg import Pose as Pose, Quaternion, Point, Vector3, Twist
-from sub8_ros_tools import rosmsg_to_numpy
+from mil_ros_tools import rosmsg_to_numpy
 
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)

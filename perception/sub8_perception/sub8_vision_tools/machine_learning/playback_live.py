@@ -5,7 +5,7 @@ import pickle
 import numpy as np
 import sys
 from boost_auto import observe
-import sub8_ros_tools
+import mil_ros_tools
 
 def got_image(img):
     global last_image, last_image_time
@@ -35,8 +35,8 @@ if __name__ == '__main__':
     clf = cv2.Boost()
     clf.load(args.classifer)
 
-    image_sub = sub8_ros_tools.Image_Subscriber(args.topic, got_image, queue_size=1)
-    image_pub = sub8_ros_tools.Image_Publisher(args.topic + "_segmented")
+    image_sub = mil_ros_tools.Image_Subscriber(args.topic, got_image, queue_size=1)
+    image_pub = mil_ros_tools.Image_Publisher(args.topic + "_segmented")
 
     last_image = None
     last_image_time = None

@@ -5,8 +5,8 @@ import tf
 from twisted.internet import defer
 from txros import util
 from sub8 import Searcher
-from sub8_ros_tools import pose_to_numpy, rosmsg_to_numpy
-from sub8_misc_tools import text_effects
+from mil_ros_tools import pose_to_numpy, rosmsg_to_numpy
+from mil_misc_tools import text_effects
 import numpy as np
 
 SEARCH_DEPTH = .65

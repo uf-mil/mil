@@ -4,7 +4,7 @@ from __future__ import division
 import tf
 import txros
 from std_srvs.srv import Empty, EmptyRequest
-from sub8_ros_tools import msg_helpers
+from mil_ros_tools import msg_helpers
 from gazebo_msgs.srv import DeleteModelRequest, SpawnModelRequest
 import missions
 

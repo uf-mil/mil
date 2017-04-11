@@ -7,7 +7,7 @@ import threading
 import argparse
 from std_msgs.msg import Header, Float64
 from sub8_msgs.msg import Thrust, ThrusterStatus
-from sub8_ros_tools import wait_for_param, thread_lock
+from mil_ros_tools import wait_for_param, thread_lock
 from sub8_msgs.srv import ThrusterInfo, ThrusterInfoResponse, FailThruster, FailThrusterResponse
 from sub8_thruster_comm import thruster_comm_factory
 from ros_alarms import AlarmBroadcaster, AlarmListener

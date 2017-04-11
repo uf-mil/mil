@@ -6,8 +6,8 @@ import txros
 
 from tf import transformations
 
-from sub8 import pose_editor
-import sub8_tools
+from mil_msgs.msg import MoveToAction, PoseTwistStamped
+from mil_misc_tools import text_effects
 from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D, BMatrix, BMatrixRequest
 from std_srvs.srv import SetBool, SetBoolRequest
 from nav_msgs.msg import Odometry
@@ -17,10 +17,7 @@ from twisted.internet import defer
 import os
 import yaml
 
-from sub8 import sub_singleton
-
-
-fprint = sub8_tools.text_effects.FprintFactory(
+fprint = text_effects.FprintFactory(
 title="START_GATE", msg_color="white").fprint
 
 class StartGateMission(object):

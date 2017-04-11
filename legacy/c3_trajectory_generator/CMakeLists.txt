@@ -8,10 +8,11 @@ find_package(
     actionlib
     message_runtime
     message_generation
-    uf_common
+    mil_msgs
     tf
     cmake_modules
     ros_alarms
+    mil_tools
 )
 
 add_service_files(
@@ -19,29 +20,32 @@ add_service_files(
   SetDisabled.srv
 )
 
-find_package(Eigen3 REQUIRED)
-include_directories(${Eigen_INCLUDE_DIRS})
+find_package(Eigen 3 REQUIRED)
+
 generate_messages(
     DEPENDENCIES
 )
 
 catkin_package(
   DEPENDS
-    uf_common
+    mil_msgs
+    Eigen3
   CATKIN_DEPENDS
     nav_msgs
     actionlib
     message_runtime
     message_generation
-    uf_common
+    mil_msgs
     tf
     ros_alarms
+    mil_tools
   INCLUDE_DIRS
     include
+    ${Eigen_INCLUDE_DIRS}
   LIBRARIES
 )
 
-include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
+include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${Eigen_INCLUDE_DIRS})
 
 add_executable(c3_trajectory_generator src/C3Trajectory.cpp src/node.cpp src/AttitudeHelpers.cpp)
 target_link_libraries(c3_trajectory_generator ${catkin_LIBRARIES})
@@ -49,7 +53,7 @@ add_dependencies(c3_trajectory_generator ${catkin_EXPORTED_TARGETS})
 add_dependencies(c3_trajectory_generator ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(
   ${PROJECT_NAME}
-  uf_common_generate_messages_cpp
+  mil_msgs_generate_messages_cpp
   ${catkin_EXPORTED_TARGETS}
 )
 set_target_properties(c3_trajectory_generator PROPERTIES COMPILE_FLAGS "-std=c++11 -O2")

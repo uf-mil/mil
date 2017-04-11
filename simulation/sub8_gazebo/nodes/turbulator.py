@@ -2,7 +2,7 @@
 import rospy
 from gazebo_msgs.srv import GetModelState, ApplyBodyWrenchRequest, ApplyBodyWrench, ApplyBodyWrenchResponse
 from sub8_gazebo.srv import SetTurbulence
-from sub8_ros_tools import msg_helpers
+from mil_ros_tools import msg_helpers
 
 import numpy as np
 

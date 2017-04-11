@@ -1,6 +1,6 @@
 import numpy as np
 import rospy
-import sub8_ros_tools as sub8_utils
+import mil_ros_tools
 from sub8_sim_tools.physics.physics import Entity
 from sub8_simulation.srv import SimSetPose, SimSetPoseResponse
 from sub8_msgs.msg import Thrust, VelocityMeasurement, VelocityMeasurements
@@ -134,21 +134,21 @@ class Sub8(Entity):
         TODO: Make this an 'abstract' method of Entity, and assign each new Entity a name/id
         '''
         rospy.logwarn("Manually setting position of simulated vehicle")
-        position = sub8_utils.rosmsg_to_numpy(srv.pose.position)
+        position = mil_ros_tools.rosmsg_to_numpy(srv.pose.position)
         self.body.setPosition(position)
 
-        rotation_q = sub8_utils.rosmsg_to_numpy(srv.pose.orientation)
+        rotation_q = mil_ros_tools.rosmsg_to_numpy(srv.pose.orientation)
         rotation_norm = np.linalg.norm(rotation_q)
 
-        velocity = sub8_utils.rosmsg_to_numpy(srv.twist.linear)
-        angular = sub8_utils.rosmsg_to_numpy(srv.twist.angular)
+        velocity = mil_ros_tools.rosmsg_to_numpy(srv.twist.linear)
+        angular = mil_ros_tools.rosmsg_to_numpy(srv.twist.angular)
 
         self.body.setLinearVel(velocity)
         self.body.setAngularVel(angular)
 
         # If the commanded rotation is valid
         if np.isclose(rotation_norm, 1., atol=1e-2):
-            self.body.setQuaternion(sub8_utils.normalize(rotation_q))
+            self.body.setQuaternion(mil_ros_tools.normalize(rotation_q))
         else:
             rospy.logwarn("Commanded quaternion was not a unit quaternion, NOT setting rotation")
 
@@ -167,7 +167,7 @@ class Sub8(Entity):
 
         translation = self.body.getPosition()
 
-        header = sub8_utils.make_header(frame='/map')
+        header = mil_ros_tools.make_header(frame='/map')
 
         pose = geometry.Pose(
             position=geometry.Point(*translation),
@@ -209,7 +209,7 @@ class Sub8(Entity):
         # TODO: Fix frame
         angular_vel = orientation_matrix.dot(self.body.getAngularVel()) + (noise * dt)
 
-        header = sub8_utils.make_header(frame='/body')
+        header = mil_ros_tools.make_header(frame='/body')
 
         linear = geometry.Vector3(*linear_acc)
         angular = geometry.Vector3(*angular_vel)
@@ -237,7 +237,7 @@ class Sub8(Entity):
         """Publishes dvl sensor data - twist message, and array of 4 dvl velocities based off of ray orientations"""
         correlation = -1
 
-        header = sub8_utils.make_header(frame='/body')
+        header = mil_ros_tools.make_header(frame='/body')
 
         vel_dvl_body = self.body.vectorFromWorld(self.body.getRelPointVel(self.dvl_position))
 

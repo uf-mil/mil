@@ -26,7 +26,7 @@
 #include <tf/transform_listener.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include <sub8_vision_lib/cv_tools.hpp>
+#include <mil_vision_lib/cv_tools.hpp>
 #include <sub8_vision_lib/visualization.hpp>
 #include <sub8_msgs/TorpBoardPoseRequest.h>
 #include <sub8_msgs/TBDetectionSwitch.h>
@@ -57,8 +57,8 @@ public:
   // Public Variables
   double image_proc_scale, feature_min_distance;
   int diffusion_time, max_features, feature_block_size;
-  sub::Contour left_corners, right_corners;
-  sub::ImageWithCameraInfo left_most_recent, right_most_recent;
+  mil_vision::Contour left_corners, right_corners;
+  mil_vision::ImageWithCameraInfo left_most_recent, right_most_recent;
 
 private:
   // Callbacks

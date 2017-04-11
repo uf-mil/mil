@@ -6,12 +6,12 @@ import argparse
 from twisted.internet import defer, reactor
 import exceptions
 import txros
-import sub8_tools
+from mil_misc_tools import text_effects
 from sub8 import sub_singleton
 import missions
 
 
-fprint = sub8_tools.text_effects.FprintFactory(title="MISSION_RUNNER").fprint
+fprint = text_effects.FprintFactory(title="MISSION_RUNNER").fprint
 
 @txros.util.cancellableInlineCallbacks
 def main():

@@ -4,19 +4,20 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <actionlib/server/simple_action_server.h>
 
-#include <uf_common/PoseTwistStamped.h>
-#include <uf_common/msg_helpers.h>
-#include <uf_common/param_helpers.h>
+#include <mil_msgs/PoseTwistStamped.h>
+#include <mil_tools/msg_helpers.h>
+#include <mil_tools/param_helpers.h>
 #include <ros_alarms/listener.hpp>
 
-#include "uf_common/MoveToAction.h"
+#include <mil_msgs/MoveToAction.h>
 #include "c3_trajectory_generator/SetDisabled.h"
 #include "C3Trajectory.h"
 
 using namespace std;
 using namespace geometry_msgs;
 using namespace nav_msgs;
-using namespace uf_common;
+using namespace mil_msgs;
+using namespace mil_tools;
 using namespace c3_trajectory_generator;
 
 subjugator::C3Trajectory::Point Point_from_PoseTwist(const Pose &pose, const Twist &twist) {
@@ -81,7 +82,7 @@ struct Node {
   ros::Duration traj_dt;
 
   ros::Subscriber odom_sub;
-  actionlib::SimpleActionServer<uf_common::MoveToAction> actionserver;
+  actionlib::SimpleActionServer<mil_msgs::MoveToAction> actionserver;
   ros::Publisher trajectory_pub;
   ros::Publisher trajectory_vis_pub;
   ros::Publisher waypoint_pose_pub;
@@ -122,16 +123,16 @@ struct Node {
       throw std::runtime_error("The kill listener isn't connected to the alarm server");
     kill_listener.start();  // Fuck.
 
-    fixed_frame = uf_common::getParam<std::string>(private_nh, "fixed_frame");
-    body_frame = uf_common::getParam<std::string>(private_nh, "body_frame");
+    fixed_frame = mil_tools::getParam<std::string>(private_nh, "fixed_frame");
+    body_frame = mil_tools::getParam<std::string>(private_nh, "body_frame");
 
-    limits.vmin_b = uf_common::getParam<subjugator::Vector6d>(private_nh, "vmin_b");
-    limits.vmax_b = uf_common::getParam<subjugator::Vector6d>(private_nh, "vmax_b");
-    limits.amin_b = uf_common::getParam<subjugator::Vector6d>(private_nh, "amin_b");
-    limits.amax_b = uf_common::getParam<subjugator::Vector6d>(private_nh, "amax_b");
-    limits.arevoffset_b = uf_common::getParam<Eigen::Vector3d>(private_nh, "arevoffset_b");
-    limits.umax_b = uf_common::getParam<subjugator::Vector6d>(private_nh, "umax_b");
-    traj_dt = uf_common::getParam<ros::Duration>(private_nh, "traj_dt", ros::Duration(0.0001));
+    limits.vmin_b = mil_tools::getParam<subjugator::Vector6d>(private_nh, "vmin_b");
+    limits.vmax_b = mil_tools::getParam<subjugator::Vector6d>(private_nh, "vmax_b");
+    limits.amin_b = mil_tools::getParam<subjugator::Vector6d>(private_nh, "amin_b");
+    limits.amax_b = mil_tools::getParam<subjugator::Vector6d>(private_nh, "amax_b");
+    limits.arevoffset_b = mil_tools::getParam<Eigen::Vector3d>(private_nh, "arevoffset_b");
+    limits.umax_b = mil_tools::getParam<subjugator::Vector6d>(private_nh, "umax_b");
+    traj_dt = mil_tools::getParam<ros::Duration>(private_nh, "traj_dt", ros::Duration(0.0001));
 
     odom_sub = nh.subscribe<Odometry>("odom", 1, boost::bind(&Node::odom_callback, this, _1));
 
@@ -172,7 +173,7 @@ struct Node {
     ros::Time now = ros::Time::now();
 
     if (actionserver.isNewGoalAvailable()) {
-      boost::shared_ptr<const uf_common::MoveToGoal> goal = actionserver.acceptNewGoal();
+      boost::shared_ptr<const mil_msgs::MoveToGoal> goal = actionserver.acceptNewGoal();
       current_waypoint = subjugator::C3Trajectory::Waypoint(
           Point_from_PoseTwist(goal->posetwist.pose, goal->posetwist.twist), goal->speed,
           !goal->uncoordinated);

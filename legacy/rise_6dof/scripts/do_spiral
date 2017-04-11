@@ -14,8 +14,8 @@ from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, Twist, Vector3, Quaternion, Point
 from tf import transformations
 
-from uf_common import orientation_helpers
-from uf_common.msg import PoseTwist, PoseTwistStamped
+from mil_msgs import orientation_helpers
+from mil_msgs.msg import PoseTwist, PoseTwistStamped
 
 
 rospy.init_node('do_spiral')

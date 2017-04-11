@@ -2,7 +2,7 @@
 
 import rospy
 import tf
-from uf_common.msg import Float64Stamped
+from mil_msgs.msg import RangeStamped
 
 
 def got_range(msg):
@@ -25,6 +25,6 @@ if __name__ == '__main__':
     listener = tf.TransformListener()
     rospy.sleep(1)
 
-    sub = rospy.Subscriber('/dvl/range', Float64Stamped, got_range)
+    sub = rospy.Subscriber('/dvl/range', RangeStamped, got_range)
 
     rospy.spin()

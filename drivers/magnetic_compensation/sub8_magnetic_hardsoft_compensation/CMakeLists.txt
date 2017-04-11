@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(magnetic_hardsoft_compensation)
-find_package(catkin REQUIRED COMPONENTS tf geometry_msgs nodelet roscpp uf_common eigen_conversions)
+find_package(catkin REQUIRED COMPONENTS tf geometry_msgs nodelet roscpp mil_tools eigen_conversions)
 
 catkin_package(
     DEPENDS
-    CATKIN_DEPENDS tf geometry_msgs nodelet roscpp uf_common eigen_conversions
+    CATKIN_DEPENDS tf geometry_msgs nodelet roscpp mil_tools eigen_conversions
     INCLUDE_DIRS
     LIBRARIES
 )

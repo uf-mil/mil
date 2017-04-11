@@ -17,6 +17,7 @@ find_package(catkin
     message_generation
     std_msgs
     geometry_msgs
+    mil_vision
 )
 
 catkin_python_setup()
@@ -58,7 +59,6 @@ include_directories(
 
 add_library(sub8_vision_lib
     # src/sub8_vision_lib/align.cpp
-    src/sub8_vision_lib/cv_utils.cpp
     # src/sub8_vision_lib/cv_param_helpers.cpp
     src/sub8_vision_lib/visualization.cpp
     # src/sub8_vision_lib/object_finder.cpp
@@ -188,7 +188,6 @@ target_link_libraries(
 
 # target_link_libraries(
 #   pcl_buoy
-#     sub8_vision_lib
 #     ${catkin_LIBRARIES}
 #     ${PCL_COMMON_LIBRARIES}
 #     ${PCL_IO_LIBRARIES}
