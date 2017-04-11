@@ -2,7 +2,7 @@
 import sys
 import rospy
 import nav_msgs.msg as nav_msgs
-import mil_ros_tools as sub8_utils
+import mil_ros_tools
 import tf
 import numpy as np
 
@@ -12,7 +12,7 @@ from sensor_msgs.msg import Joy
 from scipy import linalg
 
 import actionlib
-import mil_msgs.msg as mil_msgs_msgs
+import mil_msgs.msg as mil_msgs
 import geometry_msgs.msg as geom_msgs
 
 
@@ -55,7 +55,7 @@ class Spacenav(object):
         self.target_orientation = np.eye(3)
         self.target_orientation_quaternion = np.array([0.0, 0.0, 0.0, 1.0])
 
-        self.client = actionlib.SimpleActionClient('/moveto', mil_msgs_msgs.MoveToAction)
+        self.client = actionlib.SimpleActionClient('/moveto', mil_msgs.MoveToAction)
         # self.client.wait_for_server()
 
         self.target_pose_pub = rospy.Publisher('/posegoal', PoseStamped, queue_size=1)
@@ -66,7 +66,7 @@ class Spacenav(object):
 
     def odom_cb(self, msg):
         '''HACK: Intermediate hack until we have tf set up'''
-        pose, twist, _, _ = sub8_utils.odometry_to_numpy(msg)
+        pose, twist, _, _ = mil_ros_tools.odometry_to_numpy(msg)
         position, orientation = pose
         self.world_to_body = self.transformer.fromTranslationRotation(position, orientation)[:3, :3]
 
@@ -77,13 +77,13 @@ class Spacenav(object):
     def twist_cb(self, msg):
         if self.cur_orientation is None or self.cur_position is None:
             return
-        linear = sub8_utils.rosmsg_to_numpy(msg.linear)
-        angular = sub8_utils.rosmsg_to_numpy(msg.angular)
+        linear = mil_ros_tools.rosmsg_to_numpy(msg.linear)
+        angular = mil_ros_tools.rosmsg_to_numpy(msg.angular)
         self.target_position += self.target_orientation.dot(self._position_gain * linear)
         self.diff_position = np.subtract(self.cur_position, self.target_position)
 
         gained_angular = self._orientation_gain * angular
-        skewed = sub8_utils.skew_symmetric_cross(gained_angular)
+        skewed = mil_ros_tools.skew_symmetric_cross(gained_angular)
         rotation = linalg.expm(skewed)
 
         # TODO: Better
@@ -103,19 +103,19 @@ class Spacenav(object):
     def publish_target_pose(self, position, orientation):
         self.target_pose_pub.publish(
             PoseStamped(
-                header=sub8_utils.make_header('/map'),
+                header=mil_ros_tools.make_header('/map'),
                 pose=Pose(
-                    position=sub8_utils.numpy_to_point(position),
-                    orientation=sub8_utils.numpy_to_quaternion(orientation)
+                    position=mil_ros_tools.numpy_to_point(position),
+                    orientation=mil_ros_tools.numpy_to_quaternion(orientation)
                 )
             )
         )
-        self.distance_marker.header = sub8_utils.make_header('/map')
+        self.distance_marker.header = mil_ros_tools.make_header('/map')
         self.distance_marker.text = 'XY: ' + str(self.target_distance) + 'm\n' +\
                                     'Z: ' + str(self.target_depth) + 'm'
         self.distance_marker.pose = Pose(
-                    position=sub8_utils.numpy_to_point(position),
-                    orientation=sub8_utils.numpy_to_quaternion(orientation)
+                    position=mil_ros_tools.numpy_to_point(position),
+                    orientation=mil_ros_tools.numpy_to_quaternion(orientation)
                 )
         self.target_distance_pub.publish(self.distance_marker)
 
@@ -140,12 +140,12 @@ class Spacenav(object):
             rospy.logwarn("Waypoint set too high!")
             position[2] = -0.5
 
-        goal = mil_msgs_msgs.MoveToGoal(
-            header=sub8_utils.make_header('/map'),
-            posetwist=mil_msgs_msgs.PoseTwist(
+        goal = mil_msgs.MoveToGoal(
+            header=mil_ros_tools.make_header('/map'),
+            posetwist=mil_msgs.PoseTwist(
                 pose=geom_msgs.Pose(
-                    position=sub8_utils.numpy_to_point(position),
-                    orientation=sub8_utils.numpy_to_quaternion(orientation)
+                    position=mil_ros_tools.numpy_to_point(position),
+                    orientation=mil_ros_tools.numpy_to_quaternion(orientation)
                 )
             ),
             speed=0.2,

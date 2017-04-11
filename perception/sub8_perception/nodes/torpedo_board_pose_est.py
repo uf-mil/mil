@@ -8,7 +8,7 @@ import tf
 import visualization_msgs.msg as visualization_msgs
 from geometry_msgs.msg import Point, Vector3, Pose, Quaternion
 from std_msgs.msg import ColorRGBA
-import mil_ros_tools as sub8_utils
+import mil_ros_tools
 
 
 class PoseObserver(object):
@@ -131,7 +131,7 @@ class TBPoseEstimator(object):
         marker = visualization_msgs.Marker(
             ns='torpedo_board/pose_est',
             id=0,
-            header=sub8_utils.make_header(frame=self.current_req.frame_id),
+            header=mil_ros_tools.make_header(frame=self.current_req.frame_id),
             type=visualization_msgs.Marker.LINE_STRIP,
             action=visualization_msgs.Marker.ADD,
             color=ColorRGBA(0.0, 1.0, 10, 0.7),

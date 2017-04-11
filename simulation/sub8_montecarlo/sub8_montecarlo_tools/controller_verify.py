@@ -4,7 +4,7 @@
 import rospy
 import numpy as np
 import time
-import mil_ros_tools as sub8_utils
+import mil_ros_tools
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa
 
@@ -76,7 +76,7 @@ class VerifyController(object):
         '''
         # self.target = make_pose_stamped(position=pos, orientation=orientation)
         target_msg = Trajectory(
-            header=sub8_utils.make_header(frame='/body'),
+            header=mil_ros_tools.make_header(frame='/body'),
             trajectory=[Waypoint(
                 pose=geometry_msgs.Pose(
                     position=geometry_msgs.Vector3(*pos),
@@ -87,7 +87,7 @@ class VerifyController(object):
         self.target_pub.publish(target_msg)
 
     def traj_cb(self, msg):
-        pose, twist = sub8_utils.posetwist_to_numpy(msg.trajectory[0])
+        pose, twist = mil_ros_tools.posetwist_to_numpy(msg.trajectory[0])
         self.target_state = pose[0]
 
     def odom_cb(self, msg):
@@ -97,7 +97,7 @@ class VerifyController(object):
         else:
             self.last_sample = time_of
 
-        pose, twist, _, _ = sub8_utils.odometry_to_numpy(msg)
+        pose, twist, _, _ = mil_ros_tools.odometry_to_numpy(msg)
         position, orientation = pose
         linear, angular = twist
         self.cur_state_history.append(np.hstack((position, linear)))

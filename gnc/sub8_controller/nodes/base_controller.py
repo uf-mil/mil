@@ -9,7 +9,7 @@ from collections import deque
 from scipy import linalg
 from sub8_simulation.srv import SimSetPose
 import nav_msgs.msg as nav_msgs
-import mil_ros_tools as sub8_utils
+import mil_ros_tools
 from dynamic_reconfigure.server import Server
 from sub8_controller.cfg import GainConfig  # Configuration file
 
@@ -70,7 +70,7 @@ class Controller(object):
     def stop(self):
         self.control_manager.shutdown()
 
-    @sub8_utils.thread_lock(lock)
+    @mil_ros_tools.thread_lock(lock)
     def dynamic_reconfig(self, config, level):
         rospy.logwarn("Reconfiguring contoller gains at level {}".format(level))
         self.cfg = config
@@ -100,7 +100,7 @@ class Controller(object):
         }
         for struct_waypoint in msg.trajectory:
             # Deserialize to numpy
-            pose, twist = sub8_utils.posetwist_to_numpy(struct_waypoint)
+            pose, twist = mil_ros_tools.posetwist_to_numpy(struct_waypoint)
             (position, orientation_q), (linear_vel, angular_vel) = pose, twist
 
             # TODO: Less repeated code
@@ -116,7 +116,7 @@ class Controller(object):
         '''
 
         # Using ropsy.Time.now() so we can use simulated accelerated time (not CPU time)
-        pose, twist, pose_cov, twist_cov = sub8_utils.odometry_to_numpy(msg)
+        pose, twist, pose_cov, twist_cov = mil_ros_tools.odometry_to_numpy(msg)
         (position, orientation_q), (linear_vel, angular_vel) = pose, twist
 
         self.current_state = {
@@ -162,7 +162,7 @@ class Controller(object):
             (Are you supposed to say Newtons-meter? Newtons-Meters?)
         '''
         wrench_msg = geometry_msgs.WrenchStamped(
-            header=sub8_utils.make_header(),
+            header=mil_ros_tools.make_header(),
             wrench=geometry_msgs.Wrench(
                 force=geometry_msgs.Vector3(*force),
                 torque=geometry_msgs.Vector3(*torque)
@@ -183,11 +183,11 @@ class Controller(object):
             # No error!
             return np.array([0.0, 0.0, 0.0])
 
-        angle_axis = sub8_utils.deskew(lie_alg_error)
+        angle_axis = mil_ros_tools.deskew(lie_alg_error)
         assert np.linalg.norm(angle_axis) < (2 * np.pi) + 0.01, "uh-oh, unnormalized {}".format(angle_axis)
         return angle_axis
 
-    @sub8_utils.thread_lock(lock)
+    @mil_ros_tools.thread_lock(lock)
     def run(self, time):
         '''
             Do the bookkeeping before calling "execute"

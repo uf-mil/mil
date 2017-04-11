@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-import mil_ros_tools as sub8_utils
+import mil_ros_tools
 from tf import transformations
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import WrenchStamped, PoseWithCovariance, TwistWithCovariance, Pose, Point, Quaternion
@@ -63,7 +63,7 @@ class GazeboInterface(object):
         '''Sim DVL uses laserscan message to relay height'''
         self.dvl_pub.publish(
             RangeStamped(
-                header=sub8_utils.make_header(),
+                header=mil_ros_tools.make_header(),
                 range=float(np.mean(msg.ranges))
             )
         )
@@ -74,14 +74,14 @@ class GazeboInterface(object):
 
         msg = self.last_odom
         if self.target in msg.name:
-            header = sub8_utils.make_header(frame='/map')
+            header = mil_ros_tools.make_header(frame='/map')
 
             target_index = msg.name.index(self.target)
             twist = msg.twist[target_index]
 
             # Add position offset to make the start position (0, 0, -depth)
-            position_np, orientation_np = sub8_utils.pose_to_numpy(msg.pose[target_index])
-            pose = sub8_utils.numpy_quat_pair_to_pose(position_np - self.position_offset, orientation_np)
+            position_np, orientation_np = mil_ros_tools.pose_to_numpy(msg.pose[target_index])
+            pose = mil_ros_tools.numpy_quat_pair_to_pose(position_np - self.position_offset, orientation_np)
 
             self.state_pub.publish(
                 header=header,
@@ -94,7 +94,7 @@ class GazeboInterface(object):
                 )
             )
 
-            header = sub8_utils.make_header(frame='/world')
+            header = mil_ros_tools.make_header(frame='/world')
             twist = msg.twist[target_index]
             pose = msg.pose[target_index]
             self.world_state_pub.publish(
@@ -108,7 +108,7 @@ class GazeboInterface(object):
                 )
             )
 
-            dist = np.linalg.norm(sub8_utils.twist_to_numpy(twist)) * self.odom_freq
+            dist = np.linalg.norm(mil_ros_tools.twist_to_numpy(twist)) * self.odom_freq
 
         else:
             # fail
@@ -126,7 +126,7 @@ class GazeboInterface(object):
 
         if (self.last_odom is None or self.position_offset is None):
             pose = msg.pose[msg.name.index(self.target)]
-            position, orientation = sub8_utils.pose_to_numpy(pose)
+            position, orientation = mil_ros_tools.pose_to_numpy(pose)
 
             self.position_offset = position
             self.position_offset[2] = 0

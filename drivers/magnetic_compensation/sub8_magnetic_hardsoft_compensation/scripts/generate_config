@@ -10,7 +10,7 @@ import yaml
 import roslib
 import rosbag
 from tf import transformations
-import mil_ros_tools as sub8_utils
+import mil_ros_tools
 roslib.load_manifest('magnetic_hardsoft_compensation')
 
 
@@ -116,8 +116,8 @@ if __name__ == '__main__':
 
     with rosbag.Bag(sys.argv[1]) as bag:
         points = numpy.array([
-            sub8_utils.rosmsg_to_numpy(msg.magnetic_field) if hasattr(msg, 'magnetic_field') else
-            sub8_utils.rosmsg_to_numpy(msg.vector)
+            mil_ros_tools.rosmsg_to_numpy(msg.magnetic_field) if hasattr(msg, 'magnetic_field') else
+            mil_ros_tools.rosmsg_to_numpy(msg.vector)
             for topic, msg, t in bag.read_messages(topics=['/imu/mag_raw'])])
 
     if not len(points):

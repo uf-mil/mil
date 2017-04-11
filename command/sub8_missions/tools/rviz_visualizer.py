@@ -12,7 +12,7 @@ from std_msgs.msg import ColorRGBA, Float64
 from mil_msgs.msg import RangeStamped, DepthStamped
 #from sub8_alarm import AlarmListener, AlarmBroadcaster
 from ros_alarms import AlarmBroadcaster, AlarmListener
-import mil_ros_tools as sub8_utils
+import mil_ros_tools
 
 
 class RvizVisualizer(object):
@@ -139,7 +139,7 @@ class RvizVisualizer(object):
             id=0  # Keep these guys from overwriting eachother
         )
         self.surface_marker.ns='sub'
-        self.surface_marker.header = sub8_utils.make_header(frame='/depth')
+        self.surface_marker.header = mil_ros_tools.make_header(frame='/depth')
         self.surface_marker.pose = marker.pose
         self.surface_marker.text = str(round(distance, 3)) + 'm'
         self.surface_marker.id = 0
@@ -168,7 +168,7 @@ class RvizVisualizer(object):
             id=1  # Keep these guys from overwriting eachother
         )
         self.depth_marker.ns='sub'
-        self.depth_marker.header = sub8_utils.make_header(frame='/dvl')
+        self.depth_marker.header = mil_ros_tools.make_header(frame='/dvl')
         self.depth_marker.pose = marker.pose
         self.depth_marker.text = str(round(distance, 3)) + 'm'
         self.depth_marker.id = 1
@@ -182,13 +182,13 @@ class RvizVisualizer(object):
         center = base + (up_vector * (length / 2))
 
         pose = Pose(
-            position=sub8_utils.numpy_to_point(center),
-            orientation=sub8_utils.numpy_to_quaternion([0.0, 0.0, 0.0, 1.0])
+            position=mil_ros_tools.numpy_to_point(center),
+            orientation=mil_ros_tools.numpy_to_quaternion([0.0, 0.0, 0.0, 1.0])
         )
 
         marker = visualization_msgs.Marker(
             ns='sub',
-            header=sub8_utils.make_header(frame=frame),
+            header=mil_ros_tools.make_header(frame=frame),
             type=visualization_msgs.Marker.CYLINDER,
             action=visualization_msgs.Marker.ADD,
             pose=pose,

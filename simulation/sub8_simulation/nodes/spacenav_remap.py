@@ -7,7 +7,7 @@ import tf
 import numpy as np
 from geometry_msgs.msg import Twist, WrenchStamped
 import nav_msgs.msg as nav_msgs
-import mil_ros_tools as sub8_utils
+import mil_ros_tools
 
 
 class Spacenav(object):
@@ -34,20 +34,20 @@ class Spacenav(object):
 
     def odom_cb(self, msg):
         '''HACK: Intermediate hack until we have tf set up'''
-        pose, twist, _, _ = sub8_utils.odometry_to_numpy(msg)
+        pose, twist, _, _ = mil_ros_tools.odometry_to_numpy(msg)
         position, orientation = pose
         self.world_to_body = self.transformer.fromTranslationRotation(position, orientation)[:3, :3]
 
     def twist_cb(self, msg):
-        linear = sub8_utils.rosmsg_to_numpy(msg.linear)
-        angular = sub8_utils.rosmsg_to_numpy(msg.angular)
+        linear = mil_ros_tools.rosmsg_to_numpy(msg.linear)
+        angular = mil_ros_tools.rosmsg_to_numpy(msg.angular)
 
         if self.behavior == 'wrench':
             # Directly transcribe linear and angular 'velocities' to torque
             # TODO: Setup actual TF!
 
             self.wrench_pub.publish(
-                sub8_utils.make_wrench_stamped(
+                mil_ros_tools.make_wrench_stamped(
                     force=self.linear_gain * self.world_to_body.dot(linear),
                     torque=self.angular_gain * self.world_to_body.dot(angular)
                 )
