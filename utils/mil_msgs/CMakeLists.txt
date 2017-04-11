@@ -22,7 +22,8 @@ add_message_files(FILES
   PoseTwistStamped.msg
   PoseTwist.msg
   VelocityMeasurements.msg
-  Float64Stamped.msg
+  DepthStamped.msg
+  RangeStamped.msg
   VelocityMeasurement.msg
   Acceleration.msg
 )
