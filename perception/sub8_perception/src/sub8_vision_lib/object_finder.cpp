@@ -12,8 +12,8 @@ Sub8ObjectFinder::Sub8ObjectFinder()
   int tab_sz = 4;
 
   // Default parameters
-  std::string img_topic_left_default = "/stereo/left/image_rect_color/";
-  std::string img_topic_right_default = "/stereo/right/image_rect_color/";
+  std::string img_topic_left_default = "/camera/front/left/image_rect_color/";
+  std::string img_topic_right_default = "/camera/front/right/image_rect_color/";
   std::string activation_default = "/torpedo_board/detection_activation_switch";
   std::string dbg_topic_default = "/torpedo_board/dbg_imgs";
   float image_proc_scale_default = 0.5;

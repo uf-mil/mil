@@ -23,7 +23,7 @@ class Ocr:
         self.camera_model = None
         self.white_list = None
         self.ocr_service = rospy.Service('vision/ocr', OcrRequest, self.request_characters)
-        self.image_sub = sub8_ros_tools.Image_Subscriber('/stereo_front/right/image_rect_color', self.image_cb)
+        self.image_sub = sub8_ros_tools.Image_Subscriber('/camera/front/right/image_rect_color', self.image_cb)
 
     def request_characters(self, srv):
         self.white_list = srv.target_name

@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(usage="", description="")
     parser.add_argument(dest='classifer', type=str, help="Name of the classifer to use.")
-    parser.add_argument(dest='topic', type=str, help="Topic to listen to for image callbacks", default="/stereo/left/image_rect_color")
+    parser.add_argument(dest='topic', type=str, help="Topic to listen to for image callbacks", default="/camera/front/left/image_rect_color")
     
     args = parser.parse_args(sys.argv[1:])
 

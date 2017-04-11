@@ -2,8 +2,8 @@
 # if these parameters aren't set, the defaults in torpedo_board.cc will be used
 
 # input
-input_left            :  "/stereo/left/image_rect_color"
-input_right           :  "/stereo/right/image_rect_color"
+input_left            :  "/camera/front/left/image_rect_color"
+input_right           :  "/camera/front/right/image_rect_color"
 activation            :  "/torpedo_board/detection_activation_switch"
 frame_height          :  644
 frame_width           :  482

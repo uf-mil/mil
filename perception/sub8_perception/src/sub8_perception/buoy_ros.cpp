@@ -20,7 +20,7 @@ Sub8BuoyDetector::Sub8BuoyDetector()
   }
 
   compute_timer = nh.createTimer(ros::Duration(0.09), &Sub8BuoyDetector::compute_loop, this);
-  image_sub = image_transport.subscribeCamera("stereo/right/image_rect_color", 1,
+  image_sub = image_transport.subscribeCamera("/camera/front/right/image_rect_color", 1,
                                               &Sub8BuoyDetector::image_callback, this);
   image_pub = image_transport.advertise("vision/buoy/target_info", 1);
 
@@ -37,7 +37,7 @@ Sub8BuoyDetector::Sub8BuoyDetector()
 
   // Not yet able to build with C++11, should be done with an initialized vector
 
-  data_sub = nh.subscribe("/stereo/points2", 1, &Sub8BuoyDetector::cloud_callback, this);
+  data_sub = nh.subscribe("/camera/front/points2", 1, &Sub8BuoyDetector::cloud_callback, this);
   service_3d =
       nh.advertiseService("/vision/buoy/pose", &Sub8BuoyDetector::request_buoy_position, this);
   pcl::console::print_highlight("--PCL Sub8BuoyDetector Initialized\n");

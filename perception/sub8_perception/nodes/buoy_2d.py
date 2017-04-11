@@ -111,7 +111,7 @@ class BuoyFinder:
             self.buoys[color] = Buoy(color, boosting)
             self.buoys[color].load_segmentation()
 
-        self.image_sub = sub8_ros_tools.Image_Subscriber('/stereo/left/image_raw', self.image_cb)
+        self.image_sub = sub8_ros_tools.Image_Subscriber('/camera/front/left/image_raw', self.image_cb)
         self.image_pub = sub8_ros_tools.Image_Publisher('/vision/buoy_2d/target_info')
         self.mask_pub = sub8_ros_tools.Image_Publisher('/vision/buoy_2d/mask')
 
@@ -142,7 +142,7 @@ class BuoyFinder:
         if response is False:
             print 'did not find'
             resp = VisionRequest2DResponse(
-                header=sub8_ros_tools.make_header(frame='/stereo_front/left'),
+                header=sub8_ros_tools.make_header(frame='front_left_cam'),
                 found=False
             )
 
@@ -150,7 +150,7 @@ class BuoyFinder:
             # Fill in
             center, radius = response
             resp = VisionRequest2DResponse(
-                header=Header(stamp=timestamp, frame_id='/stereo_front/left'),
+                header=Header(stamp=timestamp, frame_id='front_left_cam'),
                 pose=Pose2D(
                     x=center[0],
                     y=center[1],
@@ -295,11 +295,11 @@ class BuoyFinder:
             if not self.sanity_check(tuple_center, timestamp):
                 return False
 
-            (t, rot_q) = self.transformer.lookupTransform('/map', '/stereo_front/left', timestamp)
+            (t, rot_q) = self.transformer.lookupTransform('/map', '/front_left_cam', timestamp)
             trans = np.array(t)
             R = sub8_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
 
-            self.rviz.draw_ray_3d(tuple_center, self.camera_model, buoy.draw_colors, frame='/stereo_front/left',
+            self.rviz.draw_ray_3d(tuple_center, self.camera_model, buoy.draw_colors, frame='/front_left_cam',
                 _id=self._id + 100, timestamp=timestamp)
             self._id += 1
             if self._id >= self.max_observations * 3:
@@ -353,7 +353,7 @@ class BuoyFinder:
         Check if the observation is unreasonable. More can go here if we want.
         '''
         sane = True
-        if np.linalg.norm(self.transformer.lookupTwist('/map', '/stereo_front/left', timestamp, rospy.Duration(.5))) > 1:
+        if np.linalg.norm(self.transformer.lookupTwist('/map', '/front_left_cam', timestamp, rospy.Duration(.5))) > 1:
             rospy.logerr("BUOY - Moving too fast. Not observing buoy.")
             sane = False
 

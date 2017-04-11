@@ -288,7 +288,7 @@ def main():
     import time
     import rospy
     rospy.init_node('test_estimation')
-    q = sub8_ros_tools.Image_Subscriber('/stereo/left/image_rect_color')
+    q = sub8_ros_tools.Image_Subscriber('/camera/front/left/image_rect_color')
     while(q.camera_info is None):
         time.sleep(0.1)
 

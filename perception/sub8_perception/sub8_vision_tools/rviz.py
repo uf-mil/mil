@@ -16,7 +16,7 @@ class RvizVisualizer(object):
     def __init__(self):
         self.rviz_pub = rospy.Publisher("visualization/projection", visualization_msgs.Marker, queue_size=3)
 
-    def draw_sphere(self, position, color, scaling=(0.11, 0.11, 0.11), _id=4, frame='/stereo_front'):
+    def draw_sphere(self, position, color, scaling=(0.11, 0.11, 0.11), _id=4, frame='/front_stereo'):
         pose = Pose(
             position=sub8_utils.numpy_to_point(position),
             orientation=sub8_utils.numpy_to_quaternion([0.0, 0.0, 0.0, 1.0])
@@ -35,7 +35,7 @@ class RvizVisualizer(object):
         )
         self.rviz_pub.publish(marker)
 
-    def draw_ray_3d(self, pix_coords, camera_model, color, frame='/stereo_front', _id=100, length=35, timestamp=None):
+    def draw_ray_3d(self, pix_coords, camera_model, color, frame='/front_stereo', _id=100, length=35, timestamp=None):
         '''Handle range data grabbed from dvl'''
         # future: should be /base_link/dvl, no?
         marker = self.make_ray(

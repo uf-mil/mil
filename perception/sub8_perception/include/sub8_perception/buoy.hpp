@@ -35,7 +35,7 @@
 #define BACKWARD_HAS_BFD 1
 #include <sub8_build_tools/backward.hpp>
 
-// ROS_NAMESPACE=/stereo/left rosrun image_proc image_proc
+// ROS_NAMESPACE=/camera/front/left rosrun image_proc image_proc
 // rosbag play ./holding_buoy_mil.bag -r 0.1
 // [1]
 // http://docs.ros.org/hydro/api/image_geometry/html/c++/classimage__geometry_1_1PinholeCameraModel.html
