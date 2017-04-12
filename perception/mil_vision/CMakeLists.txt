@@ -49,7 +49,6 @@ catkin_package(
     mil_tools
     pcl_ros
   DEPENDS
-    system_lib
     image_transport
     image_geometry
     cv_bridge
