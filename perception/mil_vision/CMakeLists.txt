@@ -37,7 +37,6 @@ catkin_package(
     include
   LIBRARIES
     mil_vision_lib
-    mil_sparsestereo
   CATKIN_DEPENDS
     roscpp
     rospy
@@ -64,12 +63,6 @@ include_directories(
 )
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
-
-FILE(GLOB EXFAST_SOURCES exFAST_SparseStereo/src/sparsestereo/*)
-add_library( mil_sparsestereo SHARED ${EXFAST_SOURCES})
-target_include_directories(mil_sparsestereo PUBLIC exFAST_SparseStereo/src)
-target_link_libraries(mil_sparsestereo ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_INCLUDE_DIRS})
-set_target_properties(mil_sparsestereo PROPERTIES COMPILE_FLAGS "-O3 -DNDEBUG -fopenmp -g -Wall -march=native -msse -msse2 -msse3 -mssse3 -msse4 -ffast-math -mfpmath=sse")
 
 add_library(
   mil_vision_lib
