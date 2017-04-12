@@ -5,7 +5,7 @@
 #include <pluginlib/class_list_macros.h>
 #include <ros/ros.h>
 
-#include <mil_tools/param_helpers.h>
+#include <mil_tools/param_helpers.hpp>
 
 #include "adis16400_imu/driver.h"
 

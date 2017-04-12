@@ -9,7 +9,7 @@
 #include <boost/none.hpp>
 #include <boost/math/constants/constants.hpp>
 
-#include <mil_tools/msg_helpers.h>
+#include <mil_tools/msg_helpers.hpp>
 
 #include <mil_msgs/VelocityMeasurements.h>
 #include <mil_msgs/RangeStamped.h>

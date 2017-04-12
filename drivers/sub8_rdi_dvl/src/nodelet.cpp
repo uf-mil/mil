@@ -6,9 +6,9 @@
 #include <pluginlib/class_list_macros.h>
 #include <ros/ros.h>
 
-#include <mil_tools/param_helpers.h>
+#include <mil_tools/param_helpers.hpp>
 
-#include "rdi_explorer_dvl/driver.h"
+#include "rdi_explorer_dvl/driver.hpp"
 
 namespace rdi_explorer_dvl {
 

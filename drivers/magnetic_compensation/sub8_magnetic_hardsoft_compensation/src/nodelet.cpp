@@ -7,7 +7,7 @@
 #include <sensor_msgs/MagneticField.h>
 #include <eigen_conversions/eigen_msg.h>
 
-#include <mil_tools/param_helpers.h>
+#include <mil_tools/param_helpers.hpp>
 
 namespace magnetic_hardsoft_compensation {
 class Nodelet : public nodelet::Nodelet {

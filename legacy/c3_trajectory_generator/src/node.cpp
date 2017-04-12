@@ -5,8 +5,8 @@
 #include <actionlib/server/simple_action_server.h>
 
 #include <mil_msgs/PoseTwistStamped.h>
-#include <mil_tools/msg_helpers.h>
-#include <mil_tools/param_helpers.h>
+#include <mil_tools/msg_helpers.hpp>
+#include <mil_tools/param_helpers.hpp>
 #include <ros_alarms/listener.hpp>
 
 #include <mil_msgs/MoveToAction.h>
