@@ -23,7 +23,6 @@ add_message_files(FILES
   DepthStamped.msg
   RangeStamped.msg
   VelocityMeasurement.msg
-  Acceleration.msg # Needs to be deprecated
   LabeledObject.msg
   LabeledImage.msg
 )
