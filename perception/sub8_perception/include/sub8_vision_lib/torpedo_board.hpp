@@ -33,12 +33,6 @@
 
 // #define SEGMENTATION_DEBUG
 
-#ifdef SEGMENTATION_DEBUG
-#warning(Compiling with segmentation debugging info enabled)
-#else
-#warning(Compiling with NO segmentation debugging info)
-#endif
-
 /*
   Warning:
   Because of its multithreadedness, this class cannot be copy constructed. 
