@@ -1,7 +1,7 @@
 <launch>
   <rosparam>
     busses:
-      - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if01-port0
+      - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if00-port0
         thrusters:
           FLH: {
             node_id: 0,
@@ -15,7 +15,7 @@
             position: [0.1583, 0.169, 0.0142],
             direction: [0, 0, -1]
           }
-      - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if00-port0
+      - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if01-port0
         thrusters:
           FRH: {
             node_id: 2,
