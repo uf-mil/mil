@@ -51,14 +51,14 @@ include_directories(
 )
 
 # Declare a C++ library
-set(ros_alarms_srcs
+set(ROS_ALARMS_SRCS
  src/${PROJECT_NAME}/broadcaster.cpp
  src/${PROJECT_NAME}/alarm_proxy.cpp
 )
-add_library(${PROJECT_NAME} ${ros_alarms_srcs})
+add_library(${PROJECT_NAME} ${ROS_ALARMS_SRCS})
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_compile_options(${PROJECT_NAME} PRIVATE -g -Wall -std=c++11)
-add_dependencies(ros_alarms ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+add_dependencies(ros_alarms ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
@@ -72,7 +72,7 @@ if(CATKIN_ENABLE_TESTING)
     test/listener_test.cpp
     test/alarm_proxy_test.cpp
     test/integration_test_driver.cpp
-    ${ros_alarms_srcs}
+    ${ROS_ALARMS_SRCS}
   )
   add_rostest(test/ros_alarms_python.test)
   set_target_properties(${PROJECT_NAME}_cpp_tests PROPERTIES COMPILE_FLAGS "-std=c++11")
