@@ -1,6 +1,6 @@
 <launch>
   <!-- Start up alarm server -->
-  <node name="ros_alarms_test_server" pkg="ros_alarms" type="alarm_server.py" output="screen" clear_params="true">
+  <node name="ros_alarms_test_server" pkg="ros_alarms" type="alarm_server.py" clear_params="true">
       <!-- A folder that is in your system path containing all alarm handlers-->
       <!--param name="handler_module" type="string" value="test_handlers"/-->
   </node>
