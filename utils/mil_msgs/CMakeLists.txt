@@ -5,6 +5,7 @@ find_package(catkin
     message_generation
     message_runtime
     geometry_msgs
+    sensor_msgs
     actionlib
     interactive_markers
     std_msgs
@@ -22,7 +23,9 @@ add_message_files(FILES
   DepthStamped.msg
   RangeStamped.msg
   VelocityMeasurement.msg
-  Acceleration.msg
+  Acceleration.msg # Needs to be deprecated
+  LabeledObject.msg
+  LabeledImage.msg
 )
 
 add_service_files(FILES
@@ -30,7 +33,7 @@ add_service_files(FILES
 )
 
 generate_messages(
-    DEPENDENCIES std_msgs actionlib_msgs geometry_msgs
+    DEPENDENCIES std_msgs actionlib_msgs geometry_msgs sensor_msgs
 )
 catkin_package(
     CATKIN_DEPENDS message_generation message_runtime geometry_msgs actionlib std_msgs actionlib_msgs
