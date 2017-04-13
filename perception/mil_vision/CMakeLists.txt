@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mil_vision)
 
-# set c++11 as default, overide with target_vompile_options()
+# set c++11 as default, overide with target_compile_options()
 # if needed for specific nodes (cough..cough... PCL)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -g -pedantic -Wall -std=c++11 ")
 

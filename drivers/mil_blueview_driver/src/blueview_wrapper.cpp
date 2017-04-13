@@ -1,4 +1,4 @@
-#include "BVWrapper.hpp"
+#include <blueview_wrapper.hpp>
 
 BlueViewSonar::BlueViewSonar()
   : head_(NULL), latest_ping_(NULL), mag_img_(NULL), has_ping_(false), has_image_(false), cur_ping_(0)

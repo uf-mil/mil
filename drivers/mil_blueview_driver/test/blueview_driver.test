@@ -1,13 +1,18 @@
 <launch>
-    <node pkg="blueview_driver" type="blueview_driver" name="test_blue_view" >
+    <node pkg="mil_blueview_driver" type="blueview_driver" name="test_blue_view" >
         <rosparam>
             frame_id: my_sonar
-            
+            raw:
+                enable: false
+            color:
+                enable: True
+            grayscale:
+                enable: True
             # How often to send output (raw data / images), seconds
             period_seconds: 0.1
         </rosparam>
         <param name="color/map_file" value="$(find bvtsdkpkg)/colormaps/jet.cmap" />
         <param name="file" value="$(find bvtsdkpkg)/data/swimmer.son" />
     </node>
+    <test test-name="blueview_driver_test" pkg="mil_blueview_driver" type="blueview_driver_test" />
 </launch>
-
