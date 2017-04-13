@@ -1,4 +1,4 @@
-[![Build Status](https://semaphoreci.com/api/v1/uf-mil/sub8-2/branches/master/shields_badge.svg)](https://semaphoreci.com/uf-mil/sub8-2)
+[![Build Status](https://ci.mil.ufl.edu/jenkins/buildStatus/icon?job=uf-mil/SubjuGator/master)](https://ci.mil.ufl.edu/jenkins/job/uf-mil/job/SubjuGator/job/master/)
 
 # SubjuGator Autonomous Underwater Vehicle
 
