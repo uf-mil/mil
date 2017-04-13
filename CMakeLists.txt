@@ -31,8 +31,7 @@ add_service_files(
 # Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  std_msgs
-  ros_alarms
+    std_msgs
 )
 
 catkin_package(
@@ -44,28 +43,22 @@ catkin_package(
     roscpp
     rospy
     message_generation
+    message_runtime
 )
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
+
 # Declare a C++ library
-set(SRCS
+set(ros_alarms_srcs
  src/${PROJECT_NAME}/broadcaster.cpp
  src/${PROJECT_NAME}/alarm_proxy.cpp
 )
-add_library(ros_alarms ${SRCS})
+add_library(${PROJECT_NAME} ${ros_alarms_srcs})
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_compile_options(${PROJECT_NAME} PRIVATE -g -Wall -std=c++11)
-
-add_dependencies(ros_alarms ros_alarms_generate_messages_cpp)
-
-#if(CATKIN_ENABLE_TESTING)
-#  foreach(T
-#    test/test_ros_alarms.test)
-#     add_rostest(${T})
-#  endforeach()
-#endif()
+add_dependencies(ros_alarms ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
@@ -79,7 +72,7 @@ if(CATKIN_ENABLE_TESTING)
     test/listener_test.cpp
     test/alarm_proxy_test.cpp
     test/integration_test_driver.cpp
-    ${SRCS}
+    ${ros_alarms_srcs}
   )
   add_rostest(test/ros_alarms_python.test)
   set_target_properties(${PROJECT_NAME}_cpp_tests PROPERTIES COMPILE_FLAGS "-std=c++11")
