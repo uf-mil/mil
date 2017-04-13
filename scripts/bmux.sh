@@ -97,6 +97,7 @@ bmux() {
 	done
 
 	if [ ! -z "$SELECTION" ] && [ "$SELECTION" != "false" ]; then
+			bmux -c
 			source $CATKIN_DIR/src/$SELECTION/$BAGGING_VARIABLES_FILE
 	fi
 
