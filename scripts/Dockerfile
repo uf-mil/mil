@@ -20,16 +20,13 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y install sudo \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y install curl \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y install wget \
-	&& DEBIAN_FRONTEND=noninteractive apt-get -y install bash-completion \
-	&& DEBIAN_FRONTEND=noninteractive apt-get -y install openjdk-8-jdk \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y autoremove --purge \
-	&& curl --create-dirs -sSLo /usr/share/jenkins/slave.jar https://repo.jenkins-ci.org/public/org/jenkins-ci/main/remoting/3.7/remoting-3.7.jar \
 	&& apt-get -y clean \
 	&& rm -rf /var/lib/apt/lists/* \
 	&& rm -f /var/cache/apt/*.bin
 
 # Create a jenkins user for Jenkins CI and grant it passwordless sudo access
-RUN useradd --uid 10000 --create-home --shell /bin/bash --groups sudo jenkins \
+RUN useradd --uid 10000 --create-home --shell /bin/bash jenkins \
 	&& echo "" >> /etc/sudoers \
 	&& echo "jenkins ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
