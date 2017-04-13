@@ -1,0 +1,62 @@
+thruster_ports:
+  - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if00-port0
+    thruster_names: [FLH, FLV]
+  - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if01-port0
+    thruster_names: [FRH, FRV]
+  - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if02-port0
+    thruster_names: [BLH, BLV]
+  - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if03-port0
+    thruster_names: [BRH, BRV]
+
+# motor_id's should be globally unique among all thrusters
+# all vectors should be specified in body frame
+thrusters:
+  FLH: {
+    motor_id:  0,
+    position:  [0.2678, 0.2795, 0.0],
+    direction: [-0.866, 0.5, 0.0],
+    bounds:    [-90.0, 90.0]
+  }
+  FLV: {
+    motor_id:  1,
+    position:  [0.1583, 0.169, 0.0142],
+    direction: [0.0, 0.0, -1.0],
+    bounds:    [-90.0, 90.0]
+  }
+  FRH: {
+    motor_id:  2,
+    position:  [0.2678, -0.2795, 0.0],
+    direction: [0.866, 0.5, 0.0],
+    bounds:    [-90.0, 90.0]
+  }
+  FRV: {
+    motor_id:  3,
+    position:  [0.1583, -0.169, 0.0142],
+    direction: [0.0, 0.0, -1.0],
+    bounds:    [-90.0, 90.0]
+  }
+  BLH: {
+    motor_id:  4,
+    position:  [-0.2678, 0.2795, 0.0],
+    direction: [0.866, 0.5, 0.0],
+    bounds:    [-90.0, 90.0]
+  }
+  BLV: {
+    motor_id:  5,
+    position:  [-0.1583, 0.169, 0.0142],
+    direction: [0.0, 0.0, 1.0],
+    bounds:    [-90.0, 90.0]
+  }
+  BRH: {
+    motor_id:  6,
+    position:  [-0.2678, -0.2795, 0.0],
+    direction: [0.866, -0.5, 0.0],
+    bounds:    [-90.0, 90.0]
+  }
+  BRV: {
+    motor_id:  7,
+    position:  [-0.1583, -0.169, 0.0142],
+    direction: [0.0, 0.0, 1.0],
+    bounds:    [-90.0, 90.0]
+  }
+
