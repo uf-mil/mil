@@ -2,7 +2,7 @@
   <param name="simulate" value="true" />
 
   <!-- Start up alarm server -->
-  <node name="alarm_sever" pkg="ros_alarms" type="alarm_server.py" output="screen">
+  <node name="alarm_sever" pkg="ros_alarms" type="alarm_server.py">
       <!-- A folder that is in your system path containing all alarm handlers-->
       <param name="handler_module" type="string" value="alarm_handlers"/>
   </node>
