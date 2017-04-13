@@ -2,6 +2,7 @@
 import numpy as np
 import json
 import rospy
+import rospkg
 import scipy.interpolate
 import threading
 import argparse
@@ -227,7 +228,7 @@ class ThrusterDriver(object):
             self.alert_thruster_loss(name, message_keyword_args)
 
     def thrust_cb(self, msg):
-        '''Callback for recieving thrust commands
+        '''Callback for receiving thrust commands
         These messages contain a list of instructions, one for each thruster
         '''
         for thrust_cmd in list(msg.thruster_commands):
@@ -285,10 +286,12 @@ class ThrusterDriver(object):
 
 
 if __name__ == '__main__':
+    PKG = 'sub8_videoray_m5_thruster'
     usage_msg = "Interface to Sub8's VideoRay M5 thrusters"
     desc_msg = "Specify a path to the configuration.json file containing the thrust calibration data"
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
     parser.add_argument('--configuration_path', dest='config_path',
+                        default=rospkg.RosPack().get_path(PKG) + '/config/calibration.json',
                         help='Designate the absolute path of the calibration/configuration json file')
     args = parser.parse_args(rospy.myargv()[1:])
     config_path = args.config_path
