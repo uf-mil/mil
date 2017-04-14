@@ -1,6 +1,4 @@
 * [[Home]]
-    * [[Getting Started]]
-    * [[Reading List]]
     * [[Mission Assignments]]
     * [[Sub Testing Plans]]
 * Using the Sub
