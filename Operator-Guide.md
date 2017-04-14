@@ -1,6 +1,3 @@
-Operator's Guide
-================
-
 This is a guide for operating the sub.
 
 # Startup on the Sub
