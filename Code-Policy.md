@@ -74,7 +74,7 @@ Before submitting changes, read the rest of this page. Any code that is pull-req
 * C++ code: Add docstrings in the same manner as Python, using multi-line comments
 
 ## Adding Dependencies
-* If you add a new library that your code depends on, that is not installed with ros-desktop-full or Ubuntu 14.04 by default, you MUST note it in your readme and somewhere on the wiki if applicable.
+* If you add a new library that your code depends on, that is not installed with ros-kinetic-desktop-full or Ubuntu 16.04 by default, you MUST note it in your readme and somewhere on the wiki if applicable.
     * New dependencies also need to be added to the automated install process. Add a line for them under in the correct block of commands to the install.sh script in the [installer repository](https://github.com/uf-mil/installer). If you are unsure about how to do this, open an issue and request for a senior team member to add it.
 * If you submit a PR that requires some new library without updating the install script, the Semaphore build will fail and yell at you.
 
