@@ -84,16 +84,15 @@ class TestPathMarker(unittest.TestCase):
                         msg=msg)
 
     def test_transdec(self):
-        print "PARAM", rospy.get_param_names()
         self._test_bag(rospy.get_param(self.name+'/transdec_path1'),
                        rospy.Duration(3.10),
                        [ [43, 443], [216,307] ])
 
     #Disabled because not long enough
-    #~ def test_transdec2(self):
-        #~ self._test_bag('/home/kallen/bag/path_marker_transdcec/fixed/transdec_path2.bag',
-                       #~ rospy.Duration(1.9),
-                       #~ [ [392, 166], [428,16] ])
+    def test_transdec2(self):
+        self._test_bag(rospy.get_param(self.name+'/transdec_path2'),
+                       rospy.Duration(1.9),
+                       [ [392, 166], [428,16] ])
     def test_transdec3(self):
         self._test_bag(rospy.get_param(self.name+'/transdec_path3'),
                        rospy.Duration(0.8),
@@ -102,7 +101,7 @@ class TestPathMarker(unittest.TestCase):
     #~ def test_pool1(self):
         #~ self._test_bag('/home/kallen/bag/path_marker_transdcec/fixed/pool_path1.bag',
                        #~ rospy.Duration(2.7),
-                       #~ [ [236, 410],[295, 216] ])
+                       #~ [ [237, 407],[295, 216] ])
 
     def test_pool2(self):
         self._test_bag(rospy.get_param(self.name+'/pool_path2'),

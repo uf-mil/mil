@@ -35,10 +35,18 @@ class PathMarkerFinder():
     TODO: Implement Kalman filter to smooth pose estimate / eliminate outliers
     """
     # Model of four corners of path marker, centered around 0 in meters
-    PATH_MARKER = np.array([[0.6096,  -0.0762, 0],
-                            [0.6096,  0.0762,  0],
-                            [-0.6096,  0.0762, 0],
-                            [-0.6096, -0.0762, 0]], dtype=np.float)
+    LENGTH = 0.6096 # Longer side of path marker in meters
+    WIDTH = 0.0762 # Shorter Side
+    PATH_MARKER = np.array([[LENGTH,  -WIDTH, 0],
+                            [LENGTH,  WIDTH,  0],
+                            [-LENGTH,  WIDTH, 0],
+                            [-LENGTH, -WIDTH, 0]], dtype=np.float)
+
+    # Scale model of marker as a cv2 contour, for use in cv2.matchShape
+    PATH_MARKER_2D = np.array([[[0, 0]],
+                               [[WIDTH*10000, 0]],
+                               [[WIDTH*10000, LENGTH*10000]],
+                               [[0, LENGTH*10000]]], dtype=np.int)
 
     # Coordinate axes for debugging image
     REFERENCE_POINTS = np.array([[0, 0, 0],
@@ -63,6 +71,7 @@ class PathMarkerFinder():
         self.min_contour_area = rospy.get_param("min_contour_area", 100)
         self.length_width_ratio_err = rospy.get_param("length_width_ratio_err", 0.2)
         self.approx_polygon_thresh = rospy.get_param("approx_polygon_thresh", 10)
+        self.shape_match_thresh = rospy.get_param("shape_match_thresh", 0.4)
         camera = rospy.get_param("marker_camera", "/camera/down/left/image_rect_color")
 
         if self.debug_ros:
@@ -205,22 +214,15 @@ class PathMarkerFinder():
         '''
         if cv2.contourArea(contour) < self.min_contour_area:
             return False
+        match_shapes = cv2.matchShapes(contour, PathMarkerFinder.PATH_MARKER_2D, 3, 0.0)
+        if match_shapes > self.shape_match_thresh :
+            return False
         # Checks that contour is 4 sided
         polygon = cv2.approxPolyDP(contour, self.approx_polygon_thresh, True)
         if len(polygon) != 4:
+            #rospy.loginfo("Polygon not 4 sided ({}), throwing out".format(len(polygon)))
             return False
         rect = self.sortRect(polygon)
-        for idx, p in enumerate(rect):
-            cv2.putText(self.last_image, str(idx), (p[0][0], p[0][1]), cv2.FONT_HERSHEY_SCRIPT_COMPLEX,1, (0,0,255))
-        length = np.linalg.norm(rect[0][0]-rect[3][0])
-        width = np.linalg.norm(rect[0][0]-rect[1][0])
-        if width == 0:
-            rospy.logerr("Width == 0, strange...")
-            return False
-        length_width_ratio = length / width
-        # Checks that ratio of length to width is similar to known demensions (8:1)
-        if abs(length_width_ratio-8.0)/8.0 > self.length_width_ratio_err:
-            return False
         if not self.get_2d_pose(rect):
             return False
         if not self.get_3d_pose(rect):
@@ -244,7 +246,7 @@ class PathMarkerFinder():
         self.last_image = img
         edges = self.get_edges()
         _, contours, _ = cv2.findContours(edges,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        
+
         # Check if each contour is valid
         for idx, c in enumerate(contours):
             if self.valid_contour(c):
@@ -253,6 +255,10 @@ class PathMarkerFinder():
                 if self.debug_ros:
                     self.sendDebugMarker()
                     cv2.drawContours(self.last_image, contours, idx, (0,255,0), 3)
+                    angle = np.round(np.degrees(self.last2d[1]),2)
+                    center = self.last2d[0]
+                    text = str(angle)+"deg"
+                    cv2.putText(self.last_image, text, (int(center[0]), int(center[1])), cv2.FONT_HERSHEY_SCRIPT_COMPLEX,1, (0,0,255))
                 break
             else:
                 if self.debug_ros:
