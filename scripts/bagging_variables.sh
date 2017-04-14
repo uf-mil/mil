@@ -22,4 +22,3 @@ export bag_blueview_ranges="/blueview_driver/ranges"
 export bag_blueview_color="/blueview_driver/image_color"
 export bag_blueview_mono="/bluewview_driver/image_mono"
 export bag_blueview="$bag_blueview_ranges $bag_blueview_color $bag_blueview_mono"
-
