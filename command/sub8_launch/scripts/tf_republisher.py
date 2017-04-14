@@ -9,7 +9,7 @@ def got_range(msg):
     '''TODO:
         - Make parallel to surface
     '''
-    translation = (0.0, 0.0, -msg.data)
+    translation = (0.0, 0.0, -msg.range)
     if rospy.Time.now() < rospy.Time(0.5):
         listener.clear()
     t = rospy.Time(0)

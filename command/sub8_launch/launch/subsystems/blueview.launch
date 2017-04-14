@@ -1,5 +1,5 @@
 <launch>
-    <node pkg="blueview_driver" type="blueview_driver" name="blueview_driver" >
+    <node pkg="mil_blueview_driver" type="blueview_driver" name="blueview_driver" >
         <rosparam>
             frame_id: blueview
             device: mil-com-teledyne-p900.ad.mil.ufl.edu
