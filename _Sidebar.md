@@ -1,4 +1,6 @@
 * [[Home]]
+    * [[Getting Started]]
+    * [[Reading List]]
     * [[Editing the Wikis]]
 * [[Getting Started]]
     * [[Manifesto]]
