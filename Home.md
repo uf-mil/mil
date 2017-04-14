@@ -1,4 +1,4 @@
-The mil_common repository contains all of the ROS packages, scripts, and libraries that are common to all MIL vehicles. This allows us to avoid duplicating code as well as build up a library of useful tools. This wiki serves as the main landing page for the uf-mil Github organization and contains general information about the lab as well as documentation of the software in this repository.
+This wiki serves as the main landing page for the uf-mil Github organization and contains general information about the lab as well as documentation of the software in this repository. The mil_common repository contains all of the ROS packages, scripts, and libraries that are common to all MIL vehicles. This allows us to avoid duplicating code as well as build up a library of useful tools.
 
 # General Information
 
