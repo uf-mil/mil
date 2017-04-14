@@ -1,6 +1,3 @@
-Imaging Sonar Acquisition
-=========================
-
 We needed an imaging sonar for underwater SLAM. We have purchased a Telodyne BlueView P900 and had success using it for basic object detection. This page documents the call-center style scramble that was used to find it.
 
 # Requirements
