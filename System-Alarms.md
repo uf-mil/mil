@@ -1,4 +1,4 @@
-**THIS PAGE IS DEPRECATED**
+**WARNING:** This page is now deprecated. The software stack now uses [ros_alarms](https://github.com/uf-mil/ros_alarms), a package we developed.
 
 ## Alarm Structure
 
