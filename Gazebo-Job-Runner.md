@@ -1,6 +1,3 @@
-Gazebo Job Runner
-=================
-
 # Running a job
 
 ```shell
