@@ -1,5 +1,3 @@
-# _**ROBOSUB 2016**_
-
 ![Transdec pool](http://matchbin-assets.s3.amazonaws.com/public/sites/351/assets/New_Image_2_copy.JPG)
 
 ## General
