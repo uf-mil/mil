@@ -18,10 +18,11 @@ _catkin_ws_complete() {
 	for FILE in ~/"$2"*; do
 
 		# Skip any directory that does not contain the marker file
-		[[ -f $FILE/$WS_MARKER ]] || continue
+		if [[ -f $FILE/$WS_MARKER ]]; then
 
-		# Append just the name of the workspace folder to the autocomplete list
-		COMPREPLY+=( `echo "$FILE" | rev | cut -d "/" -f1 | rev` )
+			# Append just the name of the workspace folder to the autocomplete list
+			COMPREPLY+=( `echo "$FILE" | rev | cut -d "/" -f1 | rev` )
+		fi
 	done
 }
 

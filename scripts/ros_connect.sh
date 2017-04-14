@@ -30,6 +30,22 @@ COMMNAMES=(	"SubjuGator"
 )
 
 
+_mil_hosts_complete() {
+	for HOST in ${HOSTNAMES[@]}; do
+
+		# Only complete for the '-n' argument
+		if [[ "${COMP_WORDS[$(($COMP_CWORD - 1))]}" == "-n" ]]; then
+
+			# Skip any entry that does not match with the string to complete
+			if [[ -z "$2" || ! -z "`echo $HOST | grep $2`" ]]; then
+
+				# Append the host to the autocomplete list
+				COMPREPLY+=( "$HOST" )
+			fi
+		fi
+	done
+}
+
 check_host() {
 	HOST="$1"
 
@@ -205,3 +221,6 @@ fi
 if [[ "`cat $RC_CONFIG_FILE | grep PERSIST_ENABLED | grep -oe '[^=]*$'`" == "true" ]]; then
 	ros_connect -n "`cat $RC_CONFIG_FILE | grep PERSIST_HOSTNAME | grep -oe '[^=]*$'`"
 fi
+
+# Registers the autocompletion function to be invoked for ros_connect
+complete -F _mil_hosts_complete ros_connect

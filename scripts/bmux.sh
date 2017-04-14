@@ -19,10 +19,11 @@ _bagging_variables_file_complete() {
 	for FILE in $CATKIN_DIR/src/"$2"*; do
 
 		# Skip any repository that does not contain a bagging variables file
-		[[ -f $FILE/$BAGGING_VARIABLES_FILE ]] || continue
+		if [[ -f $FILE/$BAGGING_VARIABLES_FILE ]]; then
 
-		# Append just the name of the repository to the autocomplete list
-		COMPREPLY+=( `echo "$FILE" | rev | cut -d "/" -f1 | rev` )
+			# Append just the name of the repository to the autocomplete list
+			COMPREPLY+=( `echo "$FILE" | rev | cut -d "/" -f1 | rev` )
+		fi
 	done
 }
 
