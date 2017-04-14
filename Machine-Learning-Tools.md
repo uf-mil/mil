@@ -1,6 +1,3 @@
-Machine learning tools
-===========
-
 There are a few machine learning tools that exist for the sub.
 
 Some of this may have been deprecated or otherwise changed. If you notice any discrepancies, point them out for bonus points!  
