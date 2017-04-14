@@ -1,6 +1,6 @@
 * [[Home]]
     * [[Mission Assignments]]
-    * [[Sub Testing Plans]]
+    * [[Testing Plans]]
 * Using the Sub
     * [[Operator Guide]]
     * [[Machine Learning Tools]]
