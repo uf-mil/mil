@@ -9,6 +9,7 @@
 * Networking
     * [[Connecting to Vehicles]]
     * [[SSH Keys]]
+    * [[Mounting Remote Filesystems]]
     * [[Vehicle Networks]]
 * Tribal Knowledge
     * [[ROS]]
