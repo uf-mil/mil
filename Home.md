@@ -1,12 +1,14 @@
-#**NaviGator Wiki**
+Welcome to the NaviGator Wiki! This repository hosts all of the code that is specific to the NaviGator platform. For general information about MIL and our projects, see the [mil_common wiki](https://github.com/uf-mil/mil_common/wiki).
 
-Welcome to the NaviGator Wiki! Check out the [readme](https://github.com/uf-mil/Navigator/blob/master/readme.md) to get all the necessary software and information for the operating the boat.
+If you have any questions, don't hesitate to email David Soto.
 
-##**What's NaviGator?**
 
-NaviGator is a fully autonomous maritime surface vehicle built by graduates and undergraduates at the University of Florida. It is built to compete in the [AUVSI Maritime RobotX Challenge](http://www.robotx.org), but it is used for much more. NaviGator is an excellent research platform for students interested in creating autonomous systems. We research and implement all the necessary systems in areas such as controls, computer perception, motion planning, navigation, simulation, and more. While we aim to win, we aim to learn just as much. **With that said, Robots are cool, let's build some robots.**
+# What is NaviGator?
 
-##**Software Team**
+NaviGator is a fully An Autonomous Surface Vehicle (ASV) built by undergraduate and graduate students at the University of Florida. It is built to compete in the [Maritime RobotX Challenge](http://www.robotx.org), but it is used for much more. NaviGator is an excellent research platform for students interested in creating autonomous systems. We research and implement all the necessary systems in areas such as controls, perception, motion planning, simulation, and more. While we aim to win, our main goal is to learn.
+
+
+# Software Team
 
 Andy Gray
 
@@ -27,3 +29,8 @@ Anthony Olive
 Tess Bianchi
 
 Lucas Bassett-Audain
+
+
+# Getting Involved
+
+Interested in working on NaviGator? Schedule a one-on-one meeting with David (David Soto), or just come by the lab and talk to people. Find his contact information floating around in the repository.
