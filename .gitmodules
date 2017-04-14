@@ -1,6 +1,3 @@
-[submodule "odometry_tools"]
-	path = odometry_tools
-	url = https://github.com/uf-mil/odometry_tools.git
 [submodule "txros"]
 	path = txros
 	url = https://github.com/txros/txros.git
