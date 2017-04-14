@@ -1,6 +1,3 @@
-Monte Carlo Engine
-=================
-
 The "Monte-Carlo Engine" is a catch-all name for the toolbox we're building for quickly running many tests with randomized initial conditions.
 
 For code like the controller, unit-tests just tell us that each function/class does what it claims. Further, simple integration tests just tell us that everything communicates properly. Enter Monte-Carlo testing. By running many tests, with randomized initial conditions, we can generate a very firm idea of the quality of something like a controller, motion-planner, perception algorithm, etc.
