@@ -1,6 +1,3 @@
-Thrusters
-=========
-
 We have 8 VideoRay M5 Thrusters on Subjugator 8. These are the primary mode of actuation for vehicle motion, other than throwing.
 
 # Thrust Allocation
