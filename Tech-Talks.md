@@ -1,4 +1,5 @@
 # Done
+
 9/11/15 - Intro to CUDA - J. Panikulam
 
 9/25/15 - Intro to Reinforcement Learning and Applications - P. Emami
@@ -7,10 +8,9 @@
 
 10/8/15 - State estimation and Kalman Filtering - Z. Goins
 
-# Schedule
-
 
 # Candidates
+
 * Intro to computer vision
 
 * Intro to point cloud analysis
