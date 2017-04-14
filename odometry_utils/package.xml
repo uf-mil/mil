@@ -1,0 +1,51 @@
+<package>
+  <name>odometry_utils</name>
+  <version>1.0.0</version>
+  <description>odometry_utils</description>
+  <maintainer email="forrest@forre.st">Forrest Voight</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/odometry_utils</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author>Forrest Voight</author>
+
+  <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Dependencies needed to compile this package. -->
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>eigen_conversions</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>odom_estimator</build_depend>
+  <build_depend>nodelet</build_depend>
+  <build_depend>tf_conversions</build_depend>
+
+  <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>nav_msgs</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>eigen_conversions</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>odom_estimator</run_depend>
+  <run_depend>nodelet</run_depend>
+  <run_depend>tf_conversions</run_depend>
+
+  <!-- Dependencies needed only for running tests. -->
+  <!-- <test_depend>nav_msgs</test_depend> -->
+  <!-- <test_depend>roscpp</test_depend> -->
+  <!-- <test_depend>eigen_conversions</test_depend> -->
+  <!-- <test_depend>odom_estimator</test_depend> -->
+  <!-- <test_depend>geometry_msgs</test_depend> -->
+  <!-- <test_depend>tf</test_depend> -->
+  <!-- <test_depend>nodelet</test_depend> -->
+  <!-- <test_depend>tf_conversions</test_depend> -->
+
+<export>
+    <nodelet plugin="${prefix}/nodelet.xml"/>
+</export>
+
+</package>
