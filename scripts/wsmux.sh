@@ -74,11 +74,13 @@ wsmux() {
 
 					# If the workspace was specified as a path, use it as is
 					if [[ -f $1/devel/setup.sh ]]; then
-						SELECTION=$1/devel/setup.sh
+						CATKIN_DIR=`pwd`/$1
+						SELECTION=$CATKIN_DIR/devel/setup.sh
 
 					# If a workspace name was passed, find it in the home directory
 					elif [[ -f ~/$1/devel/setup.sh ]]; then
-						SELECTION=~/$1/devel/setup.sh
+						CATKIN_DIR=~/$1
+						SELECTION=$CATKIN_DIR/devel/setup.sh
 
 					# If neither of these were the case, prompt the user to check themself
 					else
@@ -94,6 +96,7 @@ wsmux() {
 
 	if [[ ! -z "$SELECTION" && "$SELECTION" != "false" ]]; then
 			source $SELECTION
+			export CATKIN_DIR
 	fi
 
 	unset COMPREPLY

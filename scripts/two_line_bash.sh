@@ -20,10 +20,7 @@ parse_catkin_workspace() {
 
 	# Only print the selected workspace if more than one is present
 	if (( ${#COMPREPLY[@]} > 1 )); then
-		local WORKSPACE_DIR="`echo $ROS_PACKAGE_PATH | cut -d ':' -f1 | sed 's@/src@@'`"
-		if [[ -f $WORKSPACE_DIR/.catkin_workspace ]]; then
-			PS_WORKSPACE="(catkin `echo $WORKSPACE_DIR | rev | cut -d "/" -f1 | rev`) "
-		fi
+		PS_WORKSPACE="(catkin `echo $CATKIN_DIR | rev | cut -d "/" -f1 | rev`) "
 	fi
 	unset COMPREPLY
 }
