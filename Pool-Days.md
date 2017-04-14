@@ -1,6 +1,4 @@
-These are just a few notes on how pool days should be run.
-
-Checklist:
+These are just a few notes on how pool days should be run. The following is a checklist that should be read before each pool day:
 
 * Charge batteries
 * Update `~/mil_ws` to the current master branches for all repositories
