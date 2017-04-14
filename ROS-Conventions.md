@@ -1,5 +1,9 @@
 This page outlines a few simple conventions that keep the software stack clean and easy to use.
 
+# Helpful Hints
+* [When should I use a ROS topic vs service vs action?](http://answers.ros.org/question/11834/when-should-i-use-topics-vs-services-vs-actionlib-actions-vs-dynamic_reconfigure/)
+* [param vs. rosparam](http://answers.ros.org/question/37916/when-to-use-param-and-rosparam-on-launch-file/)
+
 # Timers
 Timers of any kind should **ALWAYS** use rospy or roscpp time. Any robot-facing code that uses time to make decisions should use time from Rospy or Roscpp. 
 
