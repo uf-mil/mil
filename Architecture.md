@@ -1,6 +1,3 @@
-Architecture Overview
-====================
-
 TODO: Update to include navigation nodelet
 
 # Simple Diagram
