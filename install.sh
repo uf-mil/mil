@@ -645,16 +645,13 @@ if [ "$DOCKER" != "true" ]; then
 fi
 
 # Source the project configurations for bash
-declare -a ALIASED_REPOSITORIES=("mil_common" "SubjuGator" "NaviGator")
-for REPOSITORY in "${ALIASED_REPOSITORIES[@]}"; do
-	if [ -f $CATKIN_DIR/src/$REPOSITORY/scripts/bash_aliases.sh ]; then
-		if [ -z "`cat $MILRC_FILE | grep '# Sets up the shell environment for each installed project'`" ]; then
-			echo "" >> $MILRC_FILE
-			echo "# Sets up the shell environment for each installed project" >> $MILRC_FILE
-		fi
-		echo "source \$CATKIN_DIR/src/$REPOSITORY/scripts/bash_aliases.sh"  >> $MILRC_FILE
-	fi
-done
+echo "" >> $MILRC_FILE
+echo "# Sets up the shell environment for each installed project" >> $MILRC_FILE
+echo "for FILE in \$CATKIN_DIR/src/*; do" >> $MILRC_FILE
+echo "	if [[ -f \$FILE/scripts/bash_aliases.sh ]]; then" >> $MILRC_FILE
+echo "		source \$FILE/scripts/bash_aliases.sh" >> $MILRC_FILE
+echo "	fi" >> $MILRC_FILE
+echo "done" >> $MILRC_FILE
 
 # Source MIL configurations for bash on this user account
 if [ -z "`cat $BASHRC_FILE | grep 'source $MILRC_FILE'`" ]; then
