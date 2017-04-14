@@ -29,7 +29,7 @@ LOCAL_BAGS_DIR=$1
 REMOTE_BAGS_DIR=$2
 
 
-if [ -d $REMOTE_BAGS_DIR ]; then
+if [[ -d $REMOTE_BAGS_DIR ]]; then
 	echo "Synchronizing bags to the MIL fileserver share mounted at $REMOTE_BAGS_DIR"
 
 	# Transfers bags to the fileserver with rsync

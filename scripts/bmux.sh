@@ -34,10 +34,10 @@ bmux() {
 	_bagging_variables_file_complete
 
 	# Handles command line arguments
-	while [ "$#" -gt 0 ]; do
+	while (( $# > 0 )); do
 		case $1 in
 			-c|--clear)
-				if [ ! -z "$BAGGING_VARIABLES" ]; then
+				if [[ ! -z "$BAGGING_VARIABLES" ]]; then
 					for VARIABLE in $BAGGING_VARIABLES; do
 						unset "$VARIABLE"
 					done
@@ -46,7 +46,7 @@ bmux() {
 				# Special variables used in the bag command
 				unset BAG_ALWAYS
 				unset BAG_DIR
-				SELECTION=false
+				SELECTION="false"
 				shift 1
 				;;
 			-h|--help)
@@ -58,37 +58,37 @@ bmux() {
 				echo "-h		--help			Display the help menu"
 				echo "-l		--list			List projects with bagging variables"
 				echo "-s		--show			Show current bagging variables"
-				SELECTION=false
+				SELECTION="false"
 				shift 1
 				;;
 			-l|--list)
-				if [ ! -z "$COMPREPLY" ]; then
+				if [[ ! -z "$COMPREPLY" ]]; then
 					echo "${COMPREPLY[@]}" | sed 's/ /  /g'
 				fi
-				SELECTION=false
+				SELECTION="false"
 				shift 1
 				;;
 			-s|--show)
-				if [ ! -z "$BAGGING_VARIABLES" ]; then
+				if [[ ! -z "$BAGGING_VARIABLES" ]]; then
 					echo "$BAGGING_VARIABLES" | sed ':a;N;$!ba;s/\n/  /g'
 				fi
-				SELECTION=false
+				SELECTION="false"
 				shift 1
 				;;
 			-*)
 				echo "Option $1 is not implemented."
 				echo "Try 'bmux --help' for more information."
-				SELECTION=false
+				SELECTION="false"
 				shift 1
 				;;
 			*)
-				if [ "$SELECTION" != "false" ]; then
-					if [ -f $CATKIN_DIR/src/"$1"/$BAGGING_VARIABLES_FILE ]; then
+				if [[ "$SELECTION" != "false" ]]; then
+					if [[ -f $CATKIN_DIR/src/"$1"/$BAGGING_VARIABLES_FILE ]]; then
 						SELECTION="$1"
 					else
 						echo "$CATKIN_DIR/src/$1 has no scripts/bagging_variables.sh file."
 						echo "Try 'bmux --help' for more information."
-						SELECTION=false
+						SELECTION="false"
 					fi
 				fi
 				shift 1
@@ -96,7 +96,7 @@ bmux() {
 		esac
 	done
 
-	if [ ! -z "$SELECTION" ] && [ "$SELECTION" != "false" ]; then
+	if [[ ! -z "$SELECTION" && "$SELECTION" != "false" ]]; then
 			bmux -c
 			source $CATKIN_DIR/src/$SELECTION/$BAGGING_VARIABLES_FILE
 	fi

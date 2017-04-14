@@ -15,7 +15,7 @@ _bagging_complete() {
 	local VARIABLE
 
 	# Append all ROS topics to the autocomplete list if the string to autocomplete begins with a '/' character
-	if [ "${2:0:1}" = '/' ]; then
+	if [[ "${2:0:1}" == '/' ]]; then
 		COMPREPLY+=( `rostopic list 2> /dev/null` )
 
 	else
@@ -41,12 +41,12 @@ bag() {
 	_bagging_complete
 
 	# Handles command line arguments
-	while [ "$#" -gt 0 ]; do
+	while (( $# > 0 )); do
 		case $1 in
 			-a|--args)
 				shift 1
-				while [ "$#" -gt 0 ]; do
-					if [ -z "$ARGS" ]; then
+				while (( $# > 0 )); do
+					if [[ -z "$ARGS" ]]; then
 						ARGS="$1"
 					else
 						ARGS="$ARGS $1"
@@ -57,11 +57,11 @@ bag() {
 			-d|--directory)
 				export BAG_DIR="$2"
 				echo "The bag storage directory is set to $BAG_DIR"
-				MODE=false
+				MODE="false"
 				shift 2
 				;;
 			-g|--group)
-				if [ "$MODE" != "false" ]; then
+				if [[ "$MODE" != "false" ]]; then
 					MODE="group"
 				fi
 				shift 1
@@ -78,17 +78,17 @@ bag() {
 				echo "-l		--list			List available bagging variables"
 				echo "-n [BAG_NAME]	--name			Pass a name for bags or groups"
 				echo "-s		--show			Show full bag configuration"
-				MODE=false
+				MODE="false"
 				shift 1
 				;;
 			-l|--list)
-				if [ ! -z "$COMPREPLY" ]; then
+				if [[ ! -z "$COMPREPLY" ]]; then
 					echo "${COMPREPLY[@]}" | sed 's/ /  /g'
 				else
 					echo "No bagging variables have been loaded"
 					echo "Try 'bmux --help' for more information."
 				fi
-				MODE=false
+				MODE="false"
 				shift 1
 				;;
 			-n|--name)
@@ -96,7 +96,7 @@ bag() {
 				shift 2
 				;;
 			-s|--show)
-				if [ ! -z "$COMPREPLY" ]; then
+				if [[ ! -z "$COMPREPLY" ]]; then
 					echo "Bag storage directory:	$BAG_DIR"
 					echo "Always bag topics:	$BAG_ALWAYS"
 					echo ""
@@ -106,19 +106,19 @@ bag() {
 					echo "No bagging variables have been loaded"
 					echo "Try 'bmux --help' for more information."
 				fi
-				MODE=false
+				MODE="false"
 				shift 1
 				;;
 			-*)
 				echo "Option $1 is not implemented."
 				echo "Try 'bag --help' for more information."
-				MODE=false
+				MODE="false"
 				shift 1
 				;;
 			*)
-				if [ "$MODE" != "false" ]; then
-					if [ ! -z "$(eval echo \$${VARIABLE_PREFIX}${1})" ] || [ "${1:0:1}" = "/" ]; then
-						if [ -z "$TOPICS" ]; then
+				if [[ "$MODE" != "false" ]]; then
+					if [[ ! -z "$(eval echo \$${VARIABLE_PREFIX}${1})" || "${1:0:1}" == '/' ]]; then
+						if [[ -z "$TOPICS" ]]; then
 							TOPICS=$(eval echo \$${VARIABLE_PREFIX}${1})
 						else
 							TOPICS="$TOPICS "$(eval echo \$${VARIABLE_PREFIX}${1})
@@ -126,7 +126,7 @@ bag() {
 					else
 						echo "$1 is not one of the available bagging aliases."
 						echo "Try 'bag --help' for more information."
-						MODE=false
+						MODE="false"
 					fi
 				fi
 				shift 1
@@ -134,14 +134,14 @@ bag() {
 		esac
 	done
 
-	if [ "$MODE" != "false" ]; then
-		if [ "$MODE" = "group" ] && [ ! -z "$TOPICS" ]; then
-			while [ -z "$NAME" ]; do
+	if [[ "$MODE" != "false" ]]; then
+		if [[ "$MODE" == "group" && ! -z "$TOPICS" ]]; then
+			while [[ -z "$NAME" ]]; do
 				echo -n "What should this group be called? " && read NAME
 			done
 			export "${VARIABLE_PREFIX}${NAME}"="$TOPICS"
-		elif [ "$MODE" = "bag" ]; then
-			while [ -z "$NAME" ]; do
+		elif [[ "$MODE" == "bag" ]]; then
+			while [[ -z "$NAME" ]]; do
 				echo -n "What should this bag be called? " && read NAME
 			done
 			mkdir -p $BAG_DIR"/`date +%Y-%m-%d`"
