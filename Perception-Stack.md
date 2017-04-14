@@ -1,6 +1,3 @@
-SubjuGator Perception
-===============
-
 Perception includes point cloud data from stereo and the imaging sonar as well as 2D-RGB data from the forward and down cameras.
 
 The ultimate goal for SubjuGator is to perform all tasks based on abstracted knowledge of what we're trying to do. 
