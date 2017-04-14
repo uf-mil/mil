@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-project(blueview_driver)
+project(mil_blueview_driver)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -29,27 +29,31 @@ catkin_package(
   LIBRARIES
     blueview_tools
   CATKIN_DEPENDS
+    image_transport
+    cv_bridge
+    message_runtime
+  DEPENDS
     bvtsdkpkg
-	image_transport
-	cv_bridge
-	message_runtime
 )
 
-include_directories(include ${bvtsdkpkg_INCLUDE_DIRS} ${roslib_INCLUDE_DIRS})
-
-add_library(blueview_tools
-			src/BVWrapper.cpp)
-target_link_libraries(blueview_tools
-  ${catkin_LIBRARIES} 
+include_directories(
+  include
+  ${bvtsdkpkg_INCLUDE_DIRS}
+  ${roslib_INCLUDE_DIRS}
+)
+link_libraries(
+  ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${roslib_LIBRARIES}
   ${bvtsdkpkg_LIBRARIES}
 )
 
-add_executable(blueview_driver src/BlueViewRosDriver.cpp)
-add_dependencies(blueview_driver blueview_tools)
-add_dependencies(blueview_driver blueview_driver_generate_messages ${catkin_EXPORTED_TARGETS})
-target_link_libraries(blueview_driver blueview_tools ${catkin_LIBRARIES})
+add_library(mil_blueview_tools src/blueview_wrapper.cpp)
+add_dependencies(mil_blueview_tools ${PROJECT_NAME}_generate_messages ${catkin_EXPORTED_TARGETS})
+
+add_executable(blueview_driver src/blueview_ros_driver.cpp)
+add_dependencies(blueview_driver mil_blueview_tools ${catkin_EXPORTED_TARGETS})
+target_link_libraries(blueview_driver mil_blueview_tools)
 
 if (CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
@@ -57,5 +61,4 @@ if (CATKIN_ENABLE_TESTING)
     test/blueview_driver.test
     test/blueview_driver_test.cpp
   )
-  target_link_libraries(blueview_driver_test ${catkin_LIBRARIES})
 endif()

@@ -1,6 +1,6 @@
 #include <ros/ros.h>
 #include <gtest/gtest.h>
-#include <blueview_driver/BlueViewPing.h>
+#include <mil_blueview_driver/BlueViewPing.h>
 #include <sensor_msgs/Image.h>
 #include <memory>
 #include <string>

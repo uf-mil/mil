@@ -8,13 +8,11 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   roscpp
   cv_bridge
-  cmake_modules
 )
 
-find_package(Eigen 3 REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 catkin_package(
-  DEPENDS Eigen
   INCLUDE_DIRS
     include
   LIBRARIES
@@ -22,6 +20,7 @@ catkin_package(
   CATKIN_DEPENDS
     roscpp
     cv_bridge
+  DEPENDS
 )
 
 # Add folders to be run by python nosetests
@@ -36,15 +35,11 @@ include_directories(
   SYSTEM
     ${catkin_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
-    ${Eigen_INCLUDE_DIRS}
 )
 
 add_library(mil_tools
   src/mil_tools/mil_tools.cpp
 )
-target_include_directories(mil_tools PUBLIC include)
+target_include_directories(mil_tools PUBLIC include ${EIGEN3_INCLUDE_DIRS})
 target_link_libraries(mil_tools ${catkin_LIBRARIES} ${Boost_LIBRARIES})
-
-install(DIRECTORY include/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 

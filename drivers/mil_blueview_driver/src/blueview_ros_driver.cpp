@@ -1,4 +1,4 @@
-#include "BlueViewRosDriver.hpp"
+#include <blueview_ros_driver.hpp>
 
 BlueViewRosDriver::BlueViewRosDriver() : nh(ros::this_node::getName()), image_transport(nh)
 {
@@ -34,8 +34,8 @@ void BlueViewRosDriver::initParams()
   }
   if (do_raw)
   {
-    ping_msg.reset(new blueview_driver::BlueViewPing());
-    raw_pub = nh.advertise<blueview_driver::BlueViewPing>("ranges", 5);
+    ping_msg.reset(new mil_blueview_driver::BlueViewPing());
+    raw_pub = nh.advertise<mil_blueview_driver::BlueViewPing>("ranges", 5);
   }
   std::string params;
   if (nh.getParam("file", params))

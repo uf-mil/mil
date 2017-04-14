@@ -4,7 +4,7 @@
 #include <tf/LinearMath/Quaternion.h>
 #include <Eigen/Dense>
 
-#include "msg_helpers.h"
+#include <mil_tools/msg_helpers.hpp>
 
 namespace mil_tools {
 
