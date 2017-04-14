@@ -1,7 +1,7 @@
 To get started in MIL, visit the lab in MAEC 126; the software team will walk you through the next steps. To get an idea of what kind of environment MIL is, read the [[Manifesto]] page. If you are sharp, funny and hard-working, we have a place for you.
 
 
-# Setting up your development environment
+# Steps to Start Working in MIL
 
 Assuming you've already come by the lab and spoken to us:
 
