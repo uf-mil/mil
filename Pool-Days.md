@@ -7,7 +7,7 @@ These are just a few notes on how pool days should be run. The following is a ch
     * Tether
     * Gigabit ethernet switch
     * Ethernet cables for everyone
-    * The testing gateway box and power cable
+    * The testing gateway and power cable
     * Telodyne imaging sonar cables and PoE injector
     * Power strips and extension cables
 
