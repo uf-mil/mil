@@ -1,4 +1,3 @@
-## Working with older bag files
 The software team has changed naming conventions for topic names and frame ids several times. 
 This means that when exploring older subjugator bag files for testing and development, 
 you may stumble upon files with different topics or frames for various sensors (particularly cameras) 
