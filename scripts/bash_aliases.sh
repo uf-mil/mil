@@ -8,7 +8,7 @@
 
 
 # Directory navigation
-alias sub="cd $CATKIN_DIR/src/SubjuGator"
+alias sub="cd \$CATKIN_DIR/src/SubjuGator"
 
 # Networking
 alias rsub="ros_connect -n ${HOSTNAMES[0]}"
