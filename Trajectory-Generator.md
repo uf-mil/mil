@@ -1,5 +1,3 @@
-# Requirements #
-
 The Trajectory Generator should...
 
 1. Know the start state of a desired trajectory
