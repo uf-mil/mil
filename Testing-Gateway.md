@@ -226,4 +226,4 @@ If something needs to be changed on the testing gateway, the best way to access 
 
     ssh gatewayadmin@mil-com-gateway.ad.mil.ufl.edu
 
-If you are wearing your tinfoil hat, you can verify that the server's key fingerprint is `60:72:c3:75:d9:6d:23:67:95:44:04:2a:34:a7:e5:f8`. This should not be required on the LAN unless some nefarious business is going on. If you don't already know the password for this device (most of you do), then you probably should not be connecting to it.
+If you are wearing your tinfoil hat, you can verify that the server's key fingerprints are `60:72:c3:75:d9:6d:23:67:95:44:04:2a:34:a7:e5:f8` for ED25519 and `02:b7:15:04:ba:c2:91:6b:29:9c:d3:3c:c0:98:c9:d8` for RSA. This should not be required on the LAN unless some nefarious business is going on. If you don't already know the password for this device (most of you do), then you probably should not be connecting to it.
