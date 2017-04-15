@@ -35,9 +35,11 @@ public:
 
   // Return a reference to the head for configuration like setting range
   BVTSDK::Head& getHead();
+  void updateHead(); // Must call after changes to head from getHead()
   int getPingCount();
 
   void SetRangeProfileMinIntensity(uint16_t thresh);
+  void SetNoiseThreshold(float thresh);
 
 private:
   ConnectionType connection_type_;
@@ -48,5 +50,5 @@ private:
   BVTSDK::Ping latest_ping_;
   BVTSDK::ImageGenerator image_generator_;
   int cur_ping_;
-  bool has_ping_, has_image_, has_color_map_;
+  bool has_ping_, has_image_, has_color_map_, has_init_;
 };
