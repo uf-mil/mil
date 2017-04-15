@@ -24,7 +24,7 @@ add_message_files(FILES
   RangeStamped.msg
   VelocityMeasurement.msg
   LabeledObject.msg
-  LabeledImage.msg
+  LabeledObjects.msg
 )
 
 add_service_files(FILES
