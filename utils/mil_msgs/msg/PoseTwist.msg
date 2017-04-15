@@ -1,3 +1,3 @@
 geometry_msgs/Pose pose
 geometry_msgs/Twist twist
-Acceleration acceleration
+geometry_msgs/Accel acceleration
