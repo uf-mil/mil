@@ -4,6 +4,7 @@ from mil_misc_tools import text_effects
 from twisted.internet import defer, reactor
 import sys
 import xmlrpclib
+import subprocess
 
 
 MESSAGE_TIMEOUT = 1  # s
@@ -126,6 +127,7 @@ from sensor_msgs.msg import CameraInfo
 class CameraChecker(TemplateChecker):
     @txros.util.cancellableInlineCallbacks
     def tx_init(self):
+        self.front_cam_product_id = "1e10:3300"
         self.right = self.nh.subscribe("/camera/front/right/image_rect_color", Image)
         self.right_info = self.nh.subscribe("/camera/front/right/camera_info", CameraInfo)
         self.left = self.nh.subscribe("/camera/front/left/image_rect_color", Image)
@@ -144,6 +146,20 @@ class CameraChecker(TemplateChecker):
     @txros.util.cancellableInlineCallbacks
     def do_check(self):
         passed = True
+
+        # Check if front cameras are actally on usb bus
+        command = "lsusb -d {}".format(self.front_cam_product_id)
+        err_str = "{} front camera{} not connected to usb port"
+        try:
+            count_front_cam_usb = \
+                subprocess.check_output(["/bin/sh", "-c", command]).count("Point Grey")
+            if(count_front_cam_usb < 2):
+                self.fail_check(err_str.format("One", ""))
+                passed = False
+        except subprocess.CalledProcessError:
+            self.fail_check(err_str.format("Both", "s"))
+            passed = False
+
         for name, df in self.subs:
             try: 
                 yield txros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
