@@ -3,6 +3,7 @@ import txros
 from mil_misc_tools import text_effects
 from twisted.internet import defer, reactor
 import sys
+import xmlrpclib
 
 
 MESSAGE_TIMEOUT = 1  # s
@@ -75,12 +76,15 @@ class ThrusterChecker(TemplateChecker):
     def tx_init(self):
         self.thruster_topic = self.nh.subscribe("thrusters/thruster_status", ThrusterStatus)
 
-        busses = yield self.nh.get_param("/busses")
+        thrusters = None
+        try:
+            thrusters = yield self.nh.get_param("/thruster_layout/thrusters")
+        except txros.rosxmlrpc.Error as e:
+            raise IOError(e.message)
 
         self.found_thrusters = {}
-        for bus in busses:
-            for thruster in bus.get("thrusters"):
-                self.found_thrusters[thruster] = False
+        for thruster_name in thrusters.keys():
+            self.found_thrusters[thruster_name] = False
         print self.p.bold("  >>>>   ").set_blue.bold("Thruster Check")
 
     @txros.util.cancellableInlineCallbacks
@@ -88,12 +92,16 @@ class ThrusterChecker(TemplateChecker):
         try: 
             passed = yield txros.util.wrap_timeout(self.get_all_thrusters(), MESSAGE_TIMEOUT)
         except txros.util.TimeoutError:
+            lost_thrusters = [x[0] for x in self.found_thrusters.items() if not x[1]]
+            err_msg = ''
             if not any(self.found_thrusters.values()):
                 self.fail_check("no messages found.")
             elif self.found_thrusters.values().count(False) > 1:
-                self.fail_check("more than one failed thruster.")
+                err_msg += "more than one failed thruster: {}".format(lost_thrusters)
+                self.fail_check(err_msg)
             elif self.found_thrusters.values().count(False) == 1:
-                self.warn_check("one thruster is out, things should still work.")
+                err_msg += "one thruster is out ({}), things should still work.".format(lost_thrusters)
+                self.warn_check(err_msg)
             else:
                 self.warn_check("unknown timeout reason.")
 
