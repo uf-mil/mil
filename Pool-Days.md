@@ -20,12 +20,12 @@ Always meet in MIL beforehand, we may spend as much as an hour of unexpected tim
 
     scp <local_directory> sub8@mil-sub-sub8.ad.mil.ufl.edu:<remote_directory>
 
-    * local_dir - The file on your local machine that you want to copy
-    * remote_dir - The file that you want create on the sub (if none is specified, the file with the same name as the original will be placed in the home folder)
+* `local_directory` - The file on your local machine that you want to copy
+* `remote_directory` - The file that you want create on the sub (if none is specified, the file with the same name as the original will be placed in the home folder)
 
 * Add a git remote for the sub
 
     git remote add sub ssh://sub8@mil-sub-sub8.ad.mil.ufl.edu:/home/sub8/<workspace>/src/<repository>
 
-    * workspace - The name of the catkin workspace in which the repository exists
-    * repository - The name of the repository that is being selected as a remote
+* workspace - The name of the catkin workspace in which the repository exists
+* repository - The name of the repository that is being selected as a remote
