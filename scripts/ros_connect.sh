@@ -37,7 +37,7 @@ _mil_hosts_complete() {
 		if [[ "${COMP_WORDS[$(($COMP_CWORD - 1))]}" == "-n" ]]; then
 
 			# Skip any entry that does not match with the string to complete
-			if [[ -z "$2" || ! -z "`echo $HOST | grep $2`" ]]; then
+			if [[ -z "$2" || ! -z "$(echo $HOST | grep $2)" ]]; then
 
 				# Append the host to the autocomplete list
 				COMPREPLY+=( "$HOST" )
@@ -50,8 +50,8 @@ check_host() {
 	HOST="$1"
 
 	# Attempts to ping the host to make sure it is reachable
-	HOST_PING="`ping -c 2 $HOST 2>&1 | grep '% packet' | awk -F'[%]' '{print $1}' | awk -F'[ ]' '{print $NF}'`"
-	if [[ ! -z "${HOST_PING}" ]]; then
+	HOST_PING="$(ping -c 2 $HOST 2>&1 | grep '% packet' | awk -F'[%]' '{print $1}' | awk -F'[ ]' '{print $NF}')"
+	if [[ ! -z "$HOST_PING" ]]; then
 
 		# Uses packet loss percentage to determine if the connection is strong
 		if (( $HOST_PING < 25 )); then
@@ -67,7 +67,7 @@ check_roscore_hosts() {
 
 	# Check whether or not each hostname is online
 	for (( HOST_ID=0; HOST_ID < ${#HOSTNAMES[@]}; HOST_ID++ )); do
-		if [[ "`check_host ${HOSTNAMES[$HOST_ID]}`" == "true" ]]; then
+		if [[ "$(check_host ${HOSTNAMES[$HOST_ID]})" == "true" ]]; then
 			AVAILABLE_HOSTS+=( "$HOST_ID" )
 		fi
 	done
@@ -79,11 +79,11 @@ write_rc_config_file() {
 }
 
 set_ros_ip() {
-	LOCAL_IP="`ip route get $SUBNET | awk '{print $NF; exit}'`"
-	LOCAL_HOSTNAME="`hostname`.$SEARCH_DOMAIN"
+	LOCAL_IP="$(ip route get $SUBNET | awk '{print $NF; exit}')"
+	LOCAL_HOSTNAME="$(hostname).$SEARCH_DOMAIN"
 
 	# Sets ROS_HOSTNAME if the hostname is resolvable on the search domain
-	if [[ ! -z "`dig +short $LOCAL_HOSTNAME | awk '{ print ; exit }'`" ]]; then
+	if [[ ! -z "$(dig +short $LOCAL_HOSTNAME | awk '{ print ; exit }')" ]]; then
 		unset ROS_IP
 		export ROS_HOSTNAME="$LOCAL_HOSTNAME"
 
@@ -112,7 +112,7 @@ ros_connect() {
 	HOST_DISCOVERY="true"
 
 	# Gets the persistence state from the configuration file
-	PERSIST=`cat $RC_CONFIG_FILE | grep PERSIST_ENABLED | grep -oe '[^=]*$'`
+	PERSIST=$(cat $RC_CONFIG_FILE | grep PERSIST_ENABLED | grep -oe '[^=]*$')
 
 	# Handles command line arguments
 	while (( $# > 0 )); do
@@ -218,8 +218,8 @@ if [[ ! -f $RC_CONFIG_FILE ]]; then
 fi
 
 # A simple implementation of hostname selection persistence
-if [[ "`cat $RC_CONFIG_FILE | grep PERSIST_ENABLED | grep -oe '[^=]*$'`" == "true" ]]; then
-	ros_connect -n "`cat $RC_CONFIG_FILE | grep PERSIST_HOSTNAME | grep -oe '[^=]*$'`"
+if [[ "$(cat $RC_CONFIG_FILE | grep PERSIST_ENABLED | grep -oe '[^=]*$')" == "true" ]]; then
+	ros_connect -n "$(cat $RC_CONFIG_FILE | grep PERSIST_HOSTNAME | grep -oe '[^=]*$')"
 fi
 
 # Registers the autocompletion function to be invoked for ros_connect

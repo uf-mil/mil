@@ -20,7 +20,7 @@ parse_catkin_workspace() {
 
 	# Only print the selected workspace if more than one is present
 	if (( ${#COMPREPLY[@]} > 1 )); then
-		PS_WORKSPACE="(catkin `echo $CATKIN_DIR | rev | cut -d "/" -f1 | rev`) "
+		PS_WORKSPACE="(catkin $(echo $CATKIN_DIR | rev | cut -d "/" -f1 | rev)) "
 	fi
 	unset COMPREPLY
 }
@@ -28,7 +28,7 @@ parse_catkin_workspace() {
 # Obtain the name of the current git branch if the working directory is a git repository
 parse_git_branch() {
 	PS_BRANCH=""
-	REF="`git symbolic-ref HEAD 2> /dev/null`" || return
+	REF="$(git symbolic-ref HEAD 2> /dev/null)" || return
 	PS_BRANCH="(git ${REF#refs/heads/}) "
 }
 
@@ -36,7 +36,7 @@ parse_git_branch() {
 parse_tlb_info() {
 	parse_catkin_workspace
 	parse_git_branch
-	PS_LINE=`printf -- "- %.0s" {1..200}`
+	PS_LINE=$(printf -- "- %.0s" {1..200})
 	PS_FILL=${PS_LINE:0:$COLUMNS}
 }
 
@@ -47,7 +47,7 @@ if [[ ! -f $TLB_CONFIG_FILE ]]; then
 fi
 
 # If two line bash is enabled, add it to the shell configuration
-if [[ "`cat $TLB_CONFIG_FILE | grep ENABLED | grep -oe '[^=]*$'`" == "true" ]]; then
+if [[ "$(cat $TLB_CONFIG_FILE | grep ENABLED | grep -oe '[^=]*$')" == "true" ]]; then
 	RESET="\[\033[0m\]"
 	RED="\[\033[0;31m\]"
 	GREEN="\[\033[01;32m\]"

@@ -22,14 +22,14 @@ _bagging_variables_file_complete() {
 		if [[ -f $FILE/$BAGGING_VARIABLES_FILE ]]; then
 
 			# Append just the name of the repository to the autocomplete list
-			COMPREPLY+=( `echo "$FILE" | rev | cut -d "/" -f1 | rev` )
+			COMPREPLY+=( $(echo "$FILE" | rev | cut -d "/" -f1 | rev) )
 		fi
 	done
 }
 
 bmux() {
 	local SELECTION
-	local BAGGING_VARIABLES="`env | grep 'bag_' | cut -d '=' -f1 | cut -d ' ' -f2`"
+	local BAGGING_VARIABLES="$(env | grep 'bag_' | cut -d '=' -f1 | cut -d ' ' -f2)"
 
 	# Get the list of catkin workspaces containing bagging variables files
 	_bagging_variables_file_complete

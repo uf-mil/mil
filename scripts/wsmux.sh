@@ -21,7 +21,7 @@ _catkin_ws_complete() {
 		if [[ -f $FILE/$WS_MARKER ]]; then
 
 			# Append just the name of the workspace folder to the autocomplete list
-			COMPREPLY+=( `echo "$FILE" | rev | cut -d "/" -f1 | rev` )
+			COMPREPLY+=( $(echo "$FILE" | rev | cut -d "/" -f1 | rev) )
 		fi
 	done
 }
@@ -74,7 +74,7 @@ wsmux() {
 
 					# If the workspace was specified as a path, use it as is
 					if [[ -f $1/devel/setup.sh ]]; then
-						CATKIN_DIR=`pwd`/$1
+						CATKIN_DIR=$(pwd)/$1
 						SELECTION=$CATKIN_DIR/devel/setup.sh
 
 					# If a workspace name was passed, find it in the home directory

@@ -16,12 +16,12 @@ _bagging_complete() {
 
 	# Append all ROS topics to the autocomplete list if the string to autocomplete begins with a '/' character
 	if [[ "${2:0:1}" == '/' ]]; then
-		COMPREPLY+=( `rostopic list 2> /dev/null` )
+		COMPREPLY+=( $(rostopic list 2> /dev/null) )
 
 	else
 
 		# Otherwise, iterate over all of the bagging variables in the environment with the prefix removed
-		for VARIABLE in `env | grep "$VARIABLE_PREFIX$2" | cut -d"=" -f1 | sed "s@$VARIABLE_PREFIX@@"`; do
+		for VARIABLE in $(env | grep "$VARIABLE_PREFIX$2" | cut -d"=" -f1 | sed "s@$VARIABLE_PREFIX@@"); do
 
 			# Append the variable to the autocomplete list
 			COMPREPLY+=( "$VARIABLE" )
@@ -144,8 +144,8 @@ bag() {
 			while [[ -z "$NAME" ]]; do
 				echo -n "What should this bag be called? " && read NAME
 			done
-			mkdir -p $BAG_DIR"/`date +%Y-%m-%d`"
-			cd $BAG_DIR"/`date +%Y-%m-%d`"
+			mkdir -p $BAG_DIR"/$(date +%Y-%m-%d)"
+			cd $BAG_DIR"/$(date +%Y-%m-%d)"
 			rosbag record -O $NAME $ARGS $BAG_ALWAYS $TOPICS
 			cd $WORKING_DIRECTORY
 		fi
