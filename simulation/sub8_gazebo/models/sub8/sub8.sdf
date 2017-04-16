@@ -183,7 +183,7 @@
     </plugin>
 
     <plugin name="sub8_thrusters" filename="libsub8_thrusters.so">
-      <layout_param>thrusters</layout_param>
+      <layout_param>thruster_layout</layout_param>
       <min_abs_thrust>2.2</min_abs_thrust>
       <link>base_link</link>
     </plugin>

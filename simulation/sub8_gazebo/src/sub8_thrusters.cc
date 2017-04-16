@@ -45,14 +45,17 @@ void ThrusterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   this->targetLink = this->model->GetLink(link_name);
   GZ_ASSERT(this->targetLink, "Could not find specified link");
 
-  std::vector<std::string> thrusterNames;
-  ros::param::get(this->layoutParam + "/thruster_names", thrusterNames);
+  // Load thruster layout from parameter server
+  XmlRpc::XmlRpcValue thrusterLayout;
+  ros::param::get(this->layoutParam, thrusterLayout);
+  std::map<std::string, sub8_gazebo::ThrusterDef> thrusterDefs;
+  sub8_gazebo::load_thrusters(thrusterLayout["thrusters"], thrusterDefs);
 
   // Prevent silly warnings (WHO IS STILL USING VARIADIC MACROS!?)
-  ROS_INFO("Found %d thrusters", static_cast<int>(thrusterNames.size()));
-  for (std::string thrusterName : thrusterNames) {
-    Thruster thruster(layoutParam + "/" + thrusterName);
-    thrusterMap[thrusterName] = thruster;
+  ROS_INFO("Found %d thrusters", static_cast<int>(thrusterDefs.size()));
+  for (const auto& td : thrusterDefs) {
+    Thruster thruster(td.second);
+    thrusterMap[td.first] = thruster;
   }
   this->lastTime = ros::Time::now();
 }
@@ -113,4 +116,5 @@ void ThrusterPlugin::OnUpdate() {
     this->targetLink->AddRelativeTorque(net_torque);
   }
 }
-}
+
+}  // namespace gazebo

@@ -11,8 +11,9 @@
 #include "gazebo/common/Plugin.hh"
 #include "gazebo/math/Vector3.hh"
 #include "gazebo/physics/physics.hh"
-#include "sub8_msgs/Thrust.h"
-#include "sub8_msgs/ThrusterCmd.h"
+#include <sub8_msgs/Thrust.h>
+#include <sub8_msgs/ThrusterCmd.h>
+#include <sub8_gazebo/sub8_thruster_config.hpp>
 #include <ros/ros.h>
 
 namespace gazebo {
@@ -22,15 +23,11 @@ struct Thruster {
     min = 0;
     max = 0;
   }
-  Thruster(std::string param_name) {
-    std::vector<double> v_direction, v_position, v_bounds;
-    ros::param::get(param_name + "/direction", v_direction);
-    ros::param::get(param_name + "/position", v_position);
-    ros::param::get(param_name + "/bounds", v_bounds);
-    position = math::Vector3(v_position[0], v_position[1], v_position[2]);
-    direction = math::Vector3(v_direction[0], v_direction[1], v_direction[2]);
-    min = v_bounds[0];
-    max = v_bounds[1];
+  Thruster(sub8_gazebo::ThrusterDef td) {
+    position = math::Vector3(td.position[0], td.position[1], td.position[2]);
+    direction = math::Vector3(td.direction[0], td.direction[1], td.direction[2]);
+    min = td.bounds[0];
+    max = td.bounds[1];
   }
   math::Vector3 position;
   math::Vector3 direction;
@@ -64,12 +61,5 @@ class ThrusterPlugin : public ModelPlugin {
   ros::Time lastTime;
   std::vector<sub8_msgs::ThrusterCmd> cmdQueue;
 
-  // Store
-  // math::Vector3 netForce;
-  // math::Vector3 netTorque;
-
-  // protected: double fluidDensity;
-  // protected: double dragCoeff;
-  // protected: std::map<int, VolumeProperties> volPropsMap;
 };
 }

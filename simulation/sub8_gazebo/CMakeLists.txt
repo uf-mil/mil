@@ -42,6 +42,7 @@ target_link_libraries(
 add_library(
     sub8_thrusters
         src/sub8_thrusters.cc
+        src/sub8_thruster_config.cpp
 )
 
 set_target_properties(sub8_thrusters PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
