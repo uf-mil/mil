@@ -4,19 +4,25 @@
 
 OGridGen::OGridGen() : nh_(ros::this_node::getName()), classification_(&nh_)
 {
+  //The publishers
   pub_grid_ = nh_.advertise<nav_msgs::OccupancyGrid>("ogrid", 10, true);
   pub_point_cloud_ = nh_.advertise<pcl::PointCloud<pcl::PointXYZI>>("point_cloud", 1);
 
+  //Resolution is meters/pixel
   nh_.param<float>("resolution_", resolution_, 0.2f);
   nh_.param<float>("ogrid_size_", ogrid_size_, 50.f);
+  //Ignore points that are below the potential pool
   nh_.param<float>("pool_depth_", pool_depth_, 7.f);
   
+  //Buffer that will only hold a certain amount of points
   int point_cloud_buffer_Size;
   nh_.param<int>("buffer_size", point_cloud_buffer_Size, 5000);
   point_cloud_buffer_.set_capacity(point_cloud_buffer_Size);
 
+  //TODO: Publish bounds
   service_get_bounds_ = nh_.serviceClient<sub8_msgs::Bounds>("get_bounds");
 
+  //Run the publisher
   timer_ = nh_.createTimer(ros::Duration(0.3), std::bind(&OGridGen::publish_ogrid, this, std::placeholders::_1));
   sub_to_imaging_sonar_ = nh_.subscribe("/blueview_driver/ranges", 1, &OGridGen::callback, this);
 
@@ -91,9 +97,15 @@ void OGridGen::publish_ogrid(const ros::TimerEvent &)
 
 }
 
+
+/*
+
+  Subscribes to pingmsgs from blueview sonar and saves a plane of pings into a buffer based on sub pose
+
+*/
 void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
 {
-  try
+  try //TODO: Switch to TF2
   {
     listener_.lookupTransform("/map", "/blueview", ros::Time(0), transform_);
   }
@@ -103,6 +115,7 @@ void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
     return;
   }
 
+  //Clear the last ogrid
   mat_ogrid_ = cv::Mat::zeros(int(ogrid_size_ / resolution_), int(ogrid_size_ / resolution_), CV_8U);
   for (size_t i = 0; i < ping_msg->ranges.size(); ++i)
   {
