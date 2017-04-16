@@ -4,13 +4,13 @@ SSHFS is the primary way to mount a remote filesystem to a local directory becau
 
 Once that is done, mounting any directory on a remote machine is as simple as:
 
-    sshfs user@host:remote_dir local_dir -o reconnect [-p port]
+    sshfs <user>@<host>:<remote_directory> <local_directory> -o reconnect [-p <port>]
 
-* user - The username that you want to access files with
-* host - The IP address or domain name of the machine you are connecting to
-* remote_dir - The directory that you want to mount on the remote machine (if none is specified, this defaults to the home folder for the user you specified)
-* local_dir - The directory on your local machine that the bags are mounted to (this must be an empty folder that you have permissions to access)
-* port - The port that the SSH server is running on (this defaults to 22, so it is optional in most cases)
+* `user` - The username that you want to access files with
+* `host` - The IP address or domain name of the machine you are connecting to
+* `remote_directory` - The directory that you want to mount on the remote machine (if none is specified, this defaults to the home folder for the user you specified)
+* `local_directory` - The directory on your local machine that the bags are mounted to (this must be an empty folder that you have permissions to access)
+* `port` - The port that the SSH server is running on (this defaults to 22, so it is optional in most cases)
 
 This will mount the remote directory to the local directory you specified, making it seem to the OS that the files in that directory are on your system. Simply put, you can interact with them like regular files on your system.
 
