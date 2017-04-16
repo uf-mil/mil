@@ -67,9 +67,9 @@ IP allocations can be found at the bottom of the file and will look something li
       fixed-address 192.168.37.YY;
     }
 
-* hostname - The hostname for the client machine
-* XX:XX:XX:XX:XX:XX - the MAC address of **the connecting interface**, meaning it should be the interface used to connect to the network, not just the default one.
-* 192.168.37.YY - the IP that the client will be given; it must be in the pre-defined range of for the device (e.g. a client computer's IP needs to be between 192.168.37.120 and 192.168.37.140).
+* `hostname` - The hostname for the client machine
+* `XX:XX:XX:XX:XX:XX` - the MAC address of **the connecting interface**, meaning it should be the interface used to connect to the network, not just the default one.
+* `192.168.37.YY` - the IP that the client will be given; it must be in the pre-defined range of for the device (e.g. a client computer's IP needs to be between 192.168.37.120 and 192.168.37.140).
 
 To find the hostname of a Linux machine, run this command:
 
@@ -87,19 +87,19 @@ To add a new entry for hostname-based lookup, edit the /etc/bind/db.192 and add 
 
     ip      IN      PTR     hostname
 
-* ip - The digits after the last decimal place of the client's IP address (e.g. 192.168.37.YY)
-* IN - Leave this as is
-* PTR - Leave this as is
-* hostname - The hostname for the client machine
+* `ip` - The digits after the last decimal place of the client's IP address (e.g. 192.168.37.YY)
+* `IN` - Leave this as is
+* `PTR` - Leave this as is
+* `hostname` - The hostname for the client machine
 
 To add a new entry for reverse lookup (this allows an IP query to resolve to a hostname), edit the /etc/bind/db.ad.mil.ufl.edu and add a line in ascending numerical order based on the device's IP address:
 
     hostname        IN      A       ip
 
-* hostname - The hostname for the client machine
-* IN - Leave this as is
-* A - Leave this as is
-* ip - The client's full IP address (e.g. 192.168.37.YY)
+* `hostname` - The hostname for the client machine
+* `IN` - Leave this as is
+* `A` - Leave this as is
+* `ip` - The client's full IP address (e.g. 192.168.37.YY)
 
 Make sure that changes made are reflected in both lookup files. **All of the spacing in these two files is done with tabs, not spaces!** If you use spaces in these files, I will find you...
 
