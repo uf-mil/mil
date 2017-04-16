@@ -27,7 +27,7 @@ catkin_package(
   INCLUDE_DIRS
     include 
   LIBRARIES
-    blueview_tools
+    mil_blueview_tools
   CATKIN_DEPENDS
     image_transport
     cv_bridge
