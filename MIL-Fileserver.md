@@ -30,12 +30,13 @@ The `/etc/auto.master` file containes, you guessed it, the master configuration 
 
 Yes, those are tabs, stop your complaining. The `timeout` value specifies how long to wait since the last use to unmount the shares specified in `auto.mil`. This can be extended if you want, but 200 works fairly seamlessly (keep in mind there is only a small delay to mount the share when you next need it). Now, create the `/etc/auto.mil` and place each share on it's own line in the following format:
 
-    <share> -fstype=cifs,nodev,noexec,nosuid,uid=<uid>,gid=<gid>,workgroup=MIL,credentials=<credentials_file>       ://fs.mil.ufl.edu/<share>/
+    <local_name> -fstype=cifs,nodev,noexec,nosuid,uid=<uid>,gid=<gid>,workgroup=MIL,credentials=<credentials_file>       ://fs.mil.ufl.edu/<share>/
 
-* `share` - The share you want to mount (e.g. <username>, mil, subjugator, navigator, etc.)
+* `local_name` - This is the name of the directory that will be created for the share (the share name is recommended)
 * `uid` - The user ID for your user (this should be 1000 on your personal machine)
 * `gid` - The group ID for your user (this should be 1000 on your personal machine)
 * `credentials_file` - The path to your credentials file
+* `share` - The share you want to mount (e.g. <username>, mil, subjugator, navigator, etc.)
 
 Once you have created a credentials file, run this command to restart the service with the new configurations:
 
