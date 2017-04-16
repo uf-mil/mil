@@ -52,7 +52,7 @@ private:
       }
       catch (const std::exception &exc)
       {
-        ROS_ERROR_THROTTLE(0.1, "DVL: error on read: %s; reopening serial port", exc.what());
+        ROS_ERROR_THROTTLE(0.5, "DVL: error on read: %s; reopening serial port", exc.what());
         open();
         return false;
       }
@@ -149,7 +149,7 @@ public:
       return;
     if(received_checksum != checksum)
     {
-      ROS_ERROR("DVL: invalid ensemble checksum. received: %i calculated: %i size: %i",
+      ROS_ERROR_THROTTLE(0.5, "DVL: invalid ensemble checksum. received: %i calculated: %i size: %i",
                 received_checksum, checksum, ensemble_size);
       return;
     }
@@ -185,7 +185,8 @@ public:
         }
 
         // Keep track of which beams didn't return for logging
-        std::vector<size_t> invalid_beams(4);
+        std::vector<size_t> invalid_beams;
+        invalid_beams.reserve(4);
         for(int i = 0; i < 4; i++)
         {
           mil_msgs::VelocityMeasurement m;
@@ -206,7 +207,7 @@ public:
           std::string to_log {"DVL: didn't return bottom velocity for beam(s): "};
           for(auto beam : invalid_beams)
             to_log += std::to_string(beam) + " ";
-          ROS_ERROR_THROTTLE(0.1, "%s", to_log.c_str());
+          ROS_ERROR_THROTTLE(0.5, "%s", to_log.c_str());
         }
       }
       else if(section_id == 0x0600)  // Bottom Track
@@ -220,7 +221,7 @@ public:
           continue;
         if(gets32le(ensemble.data() + offset + 10) <= 0)
         {
-          ROS_ERROR_THROTTLE(0.1, "%s", "DVL: didn't return height over bottom");
+          ROS_ERROR_THROTTLE(0.5, "%s", "DVL: didn't return height over bottom");
           continue;
         }
         height_res = boost::make_optional(mil_msgs::RangeStamped());
@@ -268,7 +269,7 @@ public:
     }
     catch (const std::exception &exc)
     {
-      ROS_ERROR_THROTTLE(0.1, "DVL: error on write: %s; dropping heartbeat", exc.what());
+      ROS_ERROR_THROTTLE(0.5, "DVL: error on write: %s; dropping heartbeat", exc.what());
     }
   }
 

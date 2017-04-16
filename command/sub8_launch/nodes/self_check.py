@@ -127,7 +127,7 @@ from sensor_msgs.msg import CameraInfo
 class CameraChecker(TemplateChecker):
     @txros.util.cancellableInlineCallbacks
     def tx_init(self):
-        self.front_cam_product_id = "1e10:3300"
+        self.front_cam_product_id = "1e10:3300" # should be changed if cameras change
         self.right = self.nh.subscribe("/camera/front/right/image_rect_color", Image)
         self.right_info = self.nh.subscribe("/camera/front/right/camera_info", CameraInfo)
         self.left = self.nh.subscribe("/camera/front/left/image_rect_color", Image)
