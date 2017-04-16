@@ -19,30 +19,22 @@ class ThrusterMapper(object):
         '''The layout should be a dictionary of the form used in thruster_mapper.launch
         an excerpt is quoted here for posterity
 
-        busses:
-          - port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A403IMC9-if00-port0
-            thrusters:
-              FLV: {
-                node_id: 10,
-                frame_id: /base_link,
-                position: [0.1583, 0.169, 0.0142],
-                direction: [0, 0, -1]
-              }
-              FLL: {
-                node_id: 11,
-                frame_id: /base_link,
-                position: [0.2678, 0.2795, 0],
-                direction: [-0.866, 0.5, 0]
-              }
-
-          - port: ....
-            thrusters: ....
-
+        thrusters:
+          FLH: {
+            motor_id:  0,
+            position:  [0.2678, 0.2795, 0.0],
+            direction: [-0.866, 0.5, 0.0],
+            bounds:    [-90.0, 90.0]
+          }
+          FLV: {
+            ...
+          }
+          ...
         '''
         self.num_thrusters = 0
         rospy.init_node('thruster_mapper')
         self.last_command_time = rospy.Time.now()
-        self.thruster_layout = wait_for_param('busses')
+        self.thruster_layout = wait_for_param('thruster_layout')
         self.thruster_name_map = []
         self.dropped_thrusters = []
         self.B = self.generate_B(self.thruster_layout)
@@ -118,21 +110,19 @@ class ThrusterMapper(object):
          B * u = [Fx, Fy, Fz, Tx, Ty, Tz]
         '''
         # Maintain an ordered list, tracking which column corresponds to which thruster
-        self.num_thrusters = 0
         self.thruster_name_map = []
         self.thruster_bounds = []
         B = []
-        for port in layout:
-            for thruster_name, thruster_info in port['thrusters'].items():
-                # Assemble the B matrix by columns
-                self.thruster_name_map.append(thruster_name)
-                wrench_column = self.get_thruster_wrench(
-                    thruster_info['position'],
-                    thruster_info['direction']
-                )
-                self.num_thrusters += 1
-                B.append(wrench_column)
-
+        self.num_thrusters = 0
+        for thruster_name, thruster_info in layout['thrusters'].items():
+            # Assemble the B matrix by columns
+            self.thruster_name_map.append(thruster_name)
+            wrench_column = self.get_thruster_wrench(
+                thruster_info['position'],
+                thruster_info['direction']
+            )
+            self.num_thrusters += 1
+            B.append(wrench_column)
         return np.transpose(np.array(B))
 
     def map(self, wrench):
@@ -205,11 +195,11 @@ class ThrusterMapper(object):
                 if name in self.dropped_thrusters:
                     continue  # Ignore dropped thrusters
 
+                # Simulate thruster deadband
                 if np.fabs(thrust) < self.min_commandable_thrust:
                     thrust = 0
-                thrust_cmds.append(ThrusterCmd(name=name, thrust=thrust))
 
-        # TODO: Make this account for dropped thrusters
+                thrust_cmds.append(ThrusterCmd(name=name, thrust=thrust))
 
         actual_wrench = self.B.dot(u)
         self.actual_wrench_pub.publish(
