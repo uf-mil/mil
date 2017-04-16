@@ -32,7 +32,7 @@ Yes, those are tabs, stop your complaining. The `timeout` value specifies how lo
 
     <local_name> -fstype=cifs,nodev,noexec,nosuid,uid=<uid>,gid=<gid>,workgroup=MIL,credentials=<credentials_file>       ://fs.mil.ufl.edu/<share>/
 
-* `local_name` - This is the name of the directory that will be created for the share (the share name is recommended)
+* `local_name` - The name of the directory that will be created for the share (the share name is recommended)
 * `uid` - The user ID for your user (this should be 1000 on your personal machine)
 * `gid` - The group ID for your user (this should be 1000 on your personal machine)
 * `credentials_file` - The path to your credentials file
