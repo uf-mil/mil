@@ -1,5 +1,5 @@
 <launch>
-    <node pkg="mil_blueview_driver" type="mil_blueview_driver" name="test_blue_view" >
+    <node pkg="mil_blueview_driver" type="blueview_driver" name="test_blue_view" >
         <rosparam>
             frame_id: my_sonar
             
