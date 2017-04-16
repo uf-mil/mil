@@ -18,7 +18,7 @@ With the CIFS utilities installed, mounting can be done with the familiar `mount
 
 # Automatic Mounting with autofs
 
-The autofs utility will handle cleanly mounting fileserver shares when they are available and being used and unmounting them when they are not. It can be installed with the following command:
+The `autofs` utility will handle cleanly mounting fileserver shares when they are available and being used and unmounting them when they are not. It can be installed with the following command:
 
     sudo apt-get install autofs
 
