@@ -15,8 +15,8 @@ if __name__ == '__main__':
             '''Load and handle the thruster bus layout'''
             port_dict = {}
     
-            for port in layout:
-                thruster_port = thruster_comm_factory(port, fake=True)
+            for port in layout['thruster_ports']:
+                thruster_port = thruster_comm_factory(port, layout['thrusters'], fake=True)
     
                 # Add the thrusters to the thruster dict
                 for thruster_name, thruster_info in port['thrusters'].items():
@@ -27,8 +27,8 @@ if __name__ == '__main__':
     rospy.init_node('thruster_spin_test')
 
     sub8_thruster_mapper = rospack.get_path('sub8_thruster_mapper')
-    busses = rosparam.load_file(sub8_thruster_mapper + '/config/busses.yaml')[0][0]
-    thruster_ports = ports_from_layout(busses)
+    thruster_layout = rosparam.load_file(sub8_thruster_mapper + '/config/thruster_layout.yaml')[0][0]
+    thruster_ports = ports_from_layout(thruster_layout)
     print len(thruster_ports)
     print thruster_ports
     names_from_motor_id = {0: 'FLH', 1: 'FLV', 2: 'FRH', 3: 'FRV',

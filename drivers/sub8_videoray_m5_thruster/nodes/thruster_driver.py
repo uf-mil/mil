@@ -18,7 +18,7 @@ lock = threading.Lock()
 class ThrusterDriver(object):
     _dropped_timeout = 1 # s
 
-    def __init__(self, config_path, bus_layout):
+    def __init__(self, config_path, ports, thruster_definitions):
         '''Thruster driver, an object for commanding all of the sub's thrusters
             - Gather configuration data and make it available to other nodes
             - Instantiate ThrusterPorts, (Either simulated or real), for communicating with thrusters
@@ -26,13 +26,13 @@ class ThrusterDriver(object):
             - Given a command message, route that command to the appropriate port/thruster
             - Send a thruster status message describing the status of the particular thruster
         '''
+        self.thruster_heartbeats = {}
+        self.failed_thrusters = []
+
         self.thruster_out_alarm = AlarmBroadcaster("thruster-out")
         AlarmListener("thruster-out", self.check_alarm_status, call_when_raised=False)
         self.bus_voltage_alarm = AlarmBroadcaster("bus-voltage")
         
-        self.thruster_heartbeats = {}
-        self.failed_thrusters = []
-
         self.make_fake = rospy.get_param('simulate', False)
         if self.make_fake:
             rospy.logwarn("Running fake thrusters for simulation, based on parameter '/simulate'")
@@ -45,7 +45,7 @@ class ThrusterDriver(object):
         self.status_pub = rospy.Publisher('thrusters/thruster_status', ThrusterStatus, queue_size=8)
 
         # Bus configuration
-        self.port_dict = self.load_bus_layout(bus_layout)
+        self.port_dict = self.load_thruster_layout(ports, thruster_definitions)
         self.bus_voltage = None
         self.last_bus_voltage_time = rospy.Time.now()
         self.bus_voltage_pub = rospy.Publisher('bus_voltage', Float64, queue_size=1)
@@ -117,7 +117,8 @@ class ThrusterDriver(object):
         return newtons, thruster_input
 
     def get_thruster_info(self, srv):
-        '''Get the thruster info for a particular thruster ID
+        '''
+        Get the thruster info for a particular thruster ID
         Right now, this is only the min and max thrust data
         '''
         # Unused right now
@@ -132,7 +133,7 @@ class ThrusterDriver(object):
         return thruster_info
 
     @thread_lock(lock)
-    def load_bus_layout(self, layout):
+    def load_thruster_layout(self, ports, thruster_definitions):
         '''Load and handle the thruster bus layout'''
         port_dict = {}
 
@@ -140,11 +141,11 @@ class ThrusterDriver(object):
         rospy.wait_for_service("update_thruster_layout")
         self.thruster_out_alarm.clear_alarm(parameters={'clear_all': True})
         
-        for port in layout:
-            thruster_port = thruster_comm_factory(port, fake=self.make_fake)
+        for port_info in ports:
+            thruster_port = thruster_comm_factory(port_info, thruster_definitions, fake=self.make_fake)
 
             # Add the thrusters to the thruster dict
-            for thruster_name, thruster_info in port['thrusters'].items():
+            for thruster_name in port_info['thruster_names']:
                 if thruster_name in thruster_port.missing_thrusters:
                     rospy.logerr("{} IS MISSING!".format(thruster_name))
                     self.alert_thruster_loss(thruster_name, "Motor ID was not found on it's port.")
@@ -298,11 +299,12 @@ if __name__ == '__main__':
 
     rospy.init_node('videoray_m5_thruster_driver')
 
-    layout_parameter = '/busses'
+    layout_parameter = '/thruster_layout'
     rospy.loginfo("Thruster Driver waiting for parameter, {}".format(layout_parameter))
-    busses = wait_for_param(layout_parameter)
-    if busses is None:
+    thruster_layout = wait_for_param(layout_parameter)
+    if thruster_layout is None:
         raise(rospy.exceptions.ROSException("Failed to find parameter '{}'".format(layout_parameter)))
 
-    thruster_driver = ThrusterDriver(config_path, busses)
+    thruster_driver = ThrusterDriver(config_path, thruster_layout['thruster_ports'],
+                                     thruster_layout['thrusters'])
     rospy.spin()
