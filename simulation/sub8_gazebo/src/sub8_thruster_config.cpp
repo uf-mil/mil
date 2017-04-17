@@ -26,8 +26,8 @@ try
     auto names = port_def["thruster_names"];
 
     port.port_name = (string)port_def["port"];
-    for(int i = 0; i < names.size(); ++i)
-      port.thruster_names.push_back(names[i]);
+    for(int j = 0; j < names.size(); ++j)
+      port.thruster_names.push_back(names[j]);
 
     ports_vec.push_back(port);
   }
