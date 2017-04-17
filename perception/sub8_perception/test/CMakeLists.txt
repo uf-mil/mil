@@ -21,6 +21,12 @@ if (CATKIN_ENABLE_TESTING)
     MD5 cf69477332c0b16cba5d1c9cea9acadd)
 
   catkin_download_test_data(
+    ${PROJECT_NAME}_transdec_path2.bag
+    https://ci.mil.ufl.edu/unit_test_data/subjugator/follow_orange_pipes/transdec_path2.bag
+    DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/tests/follow_orange_pipes
+    MD5 19ffe6b6747d471f41b43884763c38ac)
+
+  catkin_download_test_data(
     ${PROJECT_NAME}_transdec_path3.bag
     https://ci.mil.ufl.edu/unit_test_data/subjugator/follow_orange_pipes/transdec_path3.bag
     DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/tests/follow_orange_pipes

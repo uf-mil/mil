@@ -6,4 +6,5 @@ thresh_satuation_low: 100
 min_contour_area: 100
 length_width_ratio_err: 0.2
 approx_polygon_thresh: 10
+shape_match_thresh: 0.4
 marker_camera: "/camera/down/left/image_rect_color"

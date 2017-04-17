@@ -10,9 +10,11 @@
             color:
                 enable: True
             # How often to send output (raw data / images), seconds
-            period_seconds: 0.1
+            period_seconds: -1.0
             range:
               stop: 15
+            range_profile_intensity_threshold: 2000
+            noise_threshold: 0.2
         </rosparam>
         <param name="color/map_file" value="$(find bvtsdkpkg)/colormaps/jet.cmap" />
     </node>
