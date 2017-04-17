@@ -33,10 +33,10 @@ check_host() {
 
 	# Attempts to ping the host to make sure it is reachable
 	HOST_PING=$(ping -c 2 $HOST 2>&1 | grep "% packet" | awk -F'[%]' '{print $1}' | awk -F'[ ]' '{print $NF}')
-	if [ ! -z "${HOST_PING}" ]; then
+	if [[ ! -z "$HOST_PING" ]]; then
 
 		# Uses packet loss percentage to determine if the connection is strong
-		if [ $HOST_PING -lt 25 ]; then
+		if (( $HOST_PING < 25 )); then
 
 			# Will return true if ping was successful and packet loss was below 25%
 			echo "true"
@@ -60,7 +60,7 @@ MILRC_FILE=$MIL_CONFIG_DIR/milrc
 #======================#
 
 # Prompt the user to configure the installation if the script is not being used in Docker
-if [ "$DOCKER" != "true" ]; then
+if [[ "$DOCKER" != "true" ]]; then
 
 	# Install no project by default, the user must select one
 	SELECTED="false"
@@ -78,12 +78,12 @@ if [ "$DOCKER" != "true" ]; then
 	echo "The catkin workspace is the directory where all source and build files for the"
 	echo "project are stored. Our default is in brackets below, press enter to use it."
 	echo -n "What catkin workspace should be used? [$CATKIN_DIR]: " && read RESPONSE
-	if [ ! -z "$RESPONSE" ]; then
+	if [[ ! -z "$RESPONSE" ]]; then
 		CATKIN_DIR=${RESPONSE/\~//home/$USER}
 	fi
 	echo ""
 
-	if [ ! -d $CATKIN_DIR/src/mil_common ]; then
+	if [[ ! -d $CATKIN_DIR/src/mil_common ]]; then
 		echo "We use a forking workflow to facilitate code contributions on Github. This means"
 		echo "that each user forks the main repository and has their own copy. In the"
 		echo "repositories that we clone for projects, the main repository will be the"
@@ -96,7 +96,7 @@ if [ "$DOCKER" != "true" ]; then
 	fi
 
 	# Prompt the user to select a project to install
-	while !($SELECTED); do
+	while [[ "$SELECTED" != "true" ]]; do
 		echo "A MIL project must be selected for install"
 		echo "	1. SubjuGator"
 		echo "	2. PropaGator $(tput bold)[DEPRECATED]$(tput sgr0)"
@@ -105,7 +105,7 @@ if [ "$DOCKER" != "true" ]; then
 		echo ""
 		case "$RESPONSE" in
 			"1")
-				if [ ! -d $CATKIN_DIR/src/SubjuGator ]; then
+				if [[ ! -d $CATKIN_DIR/src/SubjuGator ]]; then
 					echo -n "User fork URI for the SubjuGator repository: " && read SUB_USER_FORK
 				fi
 				INSTALL_SUB="true"
@@ -123,8 +123,8 @@ if [ "$DOCKER" != "true" ]; then
 				echo "Indigo, the SubjuGator repository at an earlier date,  and all of the old"
 				echo "SubjuGator dependencies will need to be downloaded and installed."
 				echo -n "Do you still wish to proceed? [y/N] " && read RESPONSE
-				if ([ "$RESPONSE" == "Y" ] || [ "$RESPONSE" == "y" ]); then
-					if [ ! -d $CATKIN_DIR/src/NaviGator ]; then
+				if [[ "$RESPONSE" == "Y" || "$RESPONSE" == "y" ]]; then
+					if [[ ! -d $CATKIN_DIR/src/NaviGator ]]; then
 						echo -n "User fork URI for the NaviGator repository: " && read NAV_USER_FORK
 					fi
 					INSTALL_NAV="true"
@@ -144,7 +144,7 @@ if [ "$DOCKER" != "true" ]; then
 	done
 
 	# Prompt the user to install the BlueView SDK if it is not already installed
-	if [ ! -d $CATKIN_DIR/src/bvtsdk ]; then
+	if [[ ! -d $CATKIN_DIR/src/bvtsdk ]]; then
 		echo "The BlueView SDK used to interface with the Teledyne imaging sonar is encrypted"
 		echo "in order to protect the intellectual property of BlueView. If you will be doing"
 		echo "work with the imaging sonar on your machine, it is recommended that you install"
@@ -153,7 +153,7 @@ if [ "$DOCKER" != "true" ]; then
 		echo ""
 
 		# If the user chooses to install the BlueView SDK, retrieve the password from them
-		if ([ "$RESPONSE" == "Y" ] || [ "$RESPONSE" == "y" ]); then
+		if [[ "$RESPONSE" == "Y" || "$RESPONSE" == "y" ]]; then
 			echo "The SDK is encrypted with a password. You need to obtain this password from one"
 			echo "of the senior members of MIL."
 			echo -n "Encryption password: " && read -s BVSDK_PASSWORD
@@ -163,7 +163,7 @@ if [ "$DOCKER" != "true" ]; then
 	fi
 
 	# Warn users about the security risks associated with enabling USB cameras before doing it
-	if [ ! -f /etc/udev/rules.d/40-pgr.rules ]; then
+	if [[ ! -f /etc/udev/rules.d/40-pgr.rules ]]; then
 		echo "MIL projects use Point Grey machine vision cameras for perception. A user only"
 		echo "needs to enable access to USB cameras if they intend to connect one directly"
 		echo "to their machine, which is unlikely. In order for a user to access a USB"
@@ -171,19 +171,19 @@ if [ "$DOCKER" != "true" ]; then
 		echo "device on the camera. Long story short, this creates a fairly significant"
 		echo "security hole on the machine that goes beyond the OS to actual device firmware."
 		echo -n "Do you want to enable access to USB cameras? [y/N] " && read RESPONSE
-		if ([ "$RESPONSE" == "Y" ] || [ "$RESPONSE" == "y" ]); then
+		if [[ "$RESPONSE" == "Y" || "$RESPONSE" == "y" ]]; then
 			ENABLE_USB_CAM="true"
 		fi
 		echo ""
 	fi
 
 	# Detect whether or not a CUDA toolkit has already been installed
-	if ([ ! -z "`dpkg-query -W -f='${Status}' cuda 2>/dev/null | grep 'ok installed'`" ] ||
-	    [ ! -z "`dpkg-query -W -f='${Status}' nvidia-cuda-toolkit  2>/dev/null | grep 'ok installed'`" ]); then
+	if [[ ! -z "$(dpkg-query -W -f='${Status}' cuda 2>/dev/null | grep 'ok installed')" ||
+	      ! -z "$(dpkg-query -W -f='${Status}' nvidia-cuda-toolkit  2>/dev/null | grep 'ok installed')" ]]; then
 		INSTALL_CUDA="true"
 
 	# Give users the option to install the CUDA toolkit if an Nvidia card is detected
-	elif ([ "$INSTALL_NAV" != "true" ] && [ ! -z "`lspci | grep 'VGA compatible controller: NVIDIA'`" ]); then
+	elif [[ "$INSTALL_NAV" != "true" && ! -z "$(lspci | grep 'VGA compatible controller: NVIDIA')" ]]; then
 		echo "An Nvidia graphics card was detected on this machine. Some of the perception"
 		echo "packages may run faster with or require CUDA parallel processing on the GPU."
 		echo "CUDA is not required, but the script can install it automatically."
@@ -198,7 +198,7 @@ if [ "$DOCKER" != "true" ]; then
 		echo "	  the 7.5 or 8.0 version should be done by the user at their own"
 		echo "	  risk. The 6.0 version is what will be installed on Debian."
 		echo -n "Do you want to install CUDA Toolkit? [y/N] " && read RESPONSE
-		if ([ "$RESPONSE" == "Y" ] || [ "$RESPONSE" == "y" ]); then
+		if [[ "$RESPONSE" == "Y" || "$RESPONSE" == "y" ]]; then
 			INSTALL_CUDA="true"
 		fi
 		echo ""
@@ -229,7 +229,7 @@ instlog "Starting the pre-flight system check to ensure installation was done pr
 
 # Check whether or not github.com is reachable
 # This also makes sure that the user is connected to the internet
-if [ "`check_host github.com`" == "true" ]; then
+if [[ "$(check_host github.com)" == "true" ]]; then
 	NET_CHECK="true"
 	echo -n "[ " && instpass && echo -n "] "
 else
@@ -238,7 +238,7 @@ else
 fi
 echo "Internet connectivity check"
 
-if [ "$NET_CHECK" != "true" ]; then
+if [[ "$NET_CHECK" != "true" ]]; then
 
 	# The script will not allow the user to install without internet
 	instwarn "Terminating installation due to the lack of an internet connection"
@@ -247,12 +247,12 @@ if [ "$NET_CHECK" != "true" ]; then
 fi
 
 # Set the required OS based on inputs and installed distribution
-if [ "$INSTALL_NAV" == "true" ]; then
+if [[ "$INSTALL_NAV" == "true" ]]; then
 	REQUIRED_OS_ID="Ubuntu"
 	REQUIRED_OS_CODENAME="trusty"
 	REQUIRED_OS_RELEASE="14.04"
 	ROS_VERSION="indigo"
-elif [ "`lsb_release -si`" == "Debian" ]; then
+elif [[ "$(lsb_release -si)" == "Debian" ]]; then
 	REQUIRED_OS_ID="Debian"
 	REQUIRED_OS_CODENAME="jessie"
 	REQUIRED_OS_RELEASE="8.7"
@@ -265,8 +265,8 @@ else
 fi
 
 # Ensure that the correct OS is installed
-DETECTED_OS_CODENAME="`lsb_release -sc`"
-if [ "$DETECTED_OS_CODENAME" == "$REQUIRED_OS_CODENAME" ]; then
+DETECTED_OS_CODENAME="$(lsb_release -sc)"
+if [[ "$DETECTED_OS_CODENAME" == "$REQUIRED_OS_CODENAME" ]]; then
 	OS_CHECK="true"
 	echo -n "[ " && instpass && echo -n "] "
 else
@@ -276,7 +276,7 @@ fi
 echo "OS distribution and version check"
 
 # Prevent the script from being run as root
-if [ "$USER" != "root" ]; then
+if [[ "$USER" != "root" ]]; then
 	ROOT_CHECK="true"
 	echo -n "[ " && instpass && echo -n "] "
 else
@@ -286,7 +286,7 @@ fi
 echo "User permissions check"
 
 # Ensure that no ROS version is being sourced in the user's bash runcom file
-if [ -z "`cat $BASHRC_FILE | grep 'source /opt/ros'`" ]; then
+if [[ -z "$(cat $BASHRC_FILE | grep 'source /opt/ros')" ]]; then
 	BASHRC_CHECK="true"
 	echo -n "[ " && instpass && echo -n "] "
 else
@@ -295,7 +295,7 @@ else
 fi
 echo "Bash runcom file check"
 
-if [ "$OS_CHECK" != "true" ]; then
+if [[ "$OS_CHECK" != "true" ]]; then
 
 	# The script will not allow the user to install on an unsupported OS
 	instwarn "Terminating installation due to incorrect OS (detected $DETECTED_OS_CODENAME)"
@@ -303,7 +303,7 @@ if [ "$OS_CHECK" != "true" ]; then
 	exit 1
 fi
 
-if [ "$ROOT_CHECK" != "true" ]; then
+if [[ "$ROOT_CHECK" != "true" ]]; then
 
 	# The script will not allow the user to install as root
 	instwarn "Terminating installation due to forbidden user account"
@@ -311,7 +311,7 @@ if [ "$ROOT_CHECK" != "true" ]; then
 	exit 1
 fi
 
-if [ "$BASHRC_CHECK" != "true" ]; then
+if [[ "$BASHRC_CHECK" != "true" ]]; then
 
 	# The script will not allow the user to install if ROS is being sourced
 	instwarn "Terminating installation due to $BASHRC_FILE sourcing a ROS version"
@@ -337,7 +337,7 @@ instlog "Adding the Git-LFS packagecloud repository to software sources"
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
 
 # Add software repository for Gazebo to software sources if ROS Indigo is being installed
-if [ "$ROS_VERSION" == "indigo" ]; then
+if [[ "$ROS_VERSION" == "indigo" ]]; then
 	instlog "Adding the Gazebo PPA to software sources"
 	sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/gazebo.list'
 	sudo sh -c 'echo "deb-src http://packages.osrfoundation.org/gazebo/ubuntu $(lsb_release -sc) main" >> /etc/apt/sources.list.d/gazebo.list'
@@ -345,7 +345,7 @@ if [ "$ROS_VERSION" == "indigo" ]; then
 fi
 
 # Add software repository for Terry Guo's ARM toolchain if NaviGator is being installed
-if [ "$INSTALL_NAV" == "true" ]; then
+if [[ "$INSTALL_NAV" == "true" ]]; then
 	instlog "Adding Terry Guo's ARM toolchain PPA to software sources"
 	sudo mkdir -p /etc/apt/preferences.d
 	sudo sh -c "echo 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm"
@@ -355,7 +355,7 @@ if [ "$INSTALL_NAV" == "true" ]; then
 fi
 
 # Add software repository for Nvidia to software sources if the CUDA option was selected
-if ([ "$INSTALL_CUDA" == "true" ] && [ "$REQUIRED_OS_ID" == "Ubuntu" ]); then
+if [[ "$INSTALL_CUDA" == "true" && "$REQUIRED_OS_ID" == "Ubuntu" ]]; then
 	instlog "Adding the Nvidia PPA to software sources"
 	sudo sh -c 'echo "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64 /" > /etc/apt/sources.list.d/cuda.list'
 	wget -q -O - http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub | sudo apt-key add -
@@ -367,7 +367,7 @@ sudo apt-get update -qq
 sudo apt-get install -qq ros-$ROS_VERSION-desktop-full
 
 # If ROS Indigo is being installed, break the metapackage and install an updated version of Gazebo
-if [ "$ROS_VERSION" == "indigo" ]; then
+if [[ "$ROS_VERSION" == "indigo" ]]; then
 	instlog "Installing the latest version of Gazebo"
 	sudo apt-get install -qq aptitude
 	sudo aptitude unmarkauto -q '?reverse-depends(ros-indigo-desktop-full) | ?reverse-recommends(ros-indigo-desktop-full)'
@@ -378,7 +378,7 @@ fi
 
 # Get information about ROS versions
 instlog "Initializing ROS"
-if [ ! -f /etc/ros/rosdep/sources.list.d/20-default.list ]; then
+if [[ ! -f /etc/ros/rosdep/sources.list.d/20-default.list ]]; then
 	sudo rosdep init > /dev/null 2>&1
 fi
 rosdep update
@@ -392,7 +392,7 @@ source /opt/ros/$ROS_VERSION/setup.bash
 #=================================#
 
 # Set up catkin workspace directory
-if [ ! -f $CATKIN_DIR/src/CMakeLists.txt ]; then
+if [[ ! -f $CATKIN_DIR/src/CMakeLists.txt ]]; then
 	instlog "Generating catkin workspace at $CATKIN_DIR"
 	mkdir -p $CATKIN_DIR/src
 	cd $CATKIN_DIR/src
@@ -402,35 +402,35 @@ else
 fi
 
 # Only clone the github repositories if the script is not being used by Docker
-if [ "$DOCKER" != "true" ]; then
+if [[ "$DOCKER" != "true" ]]; then
 
 	# Download the mil_common repository if it has not already been downloaded
-	if [ ! -d $CATKIN_DIR/src/mil_common ]; then
+	if [[ ! -d $CATKIN_DIR/src/mil_common ]]; then
 		instlog "Downloading the mil_common repository"
 		cd $CATKIN_DIR/src
 		git clone --recursive -q https://github.com/uf-mil/mil_common.git
 		cd $CATKIN_DIR/src/mil_common
 		git remote rename origin upstream
-		if [ ! -z "$SWC_USER_FORK" ]; then
+		if [[ ! -z "$SWC_USER_FORK" ]]; then
 			git remote add origin "$SWC_USER_FORK"
 		fi
 	fi
 
 	# Download the SubjuGator repository if it has not already been downloaded and was selected for installation
-	if ([ "$INSTALL_SUB" == "true" ] && [ ! -d $CATKIN_DIR/src/SubjuGator ]); then
+	if [[ "$INSTALL_SUB" == "true" && ! -d $CATKIN_DIR/src/SubjuGator ]]; then
 		instlog "Downloading the SubjuGator repository"
 		cd $CATKIN_DIR/src
 		git clone --recursive -q https://github.com/uf-mil/SubjuGator.git
 		cd $CATKIN_DIR/src/SubjuGator
 		git remote rename origin upstream
-		if [ ! -z "$SUB_USER_FORK" ]; then
+		if [[ ! -z "$SUB_USER_FORK" ]]; then
 			git remote add origin "$SUB_USER_FORK"
 		fi
 	fi
 
 	# Download the NaviGator repository if it has not already been downloaded and was selected for installation
-	if [ "$INSTALL_NAV" == "true" ]; then
-		if [ ! -d $CATKIN_DIR/src/SubjuGator ]; then
+	if [[ "$INSTALL_NAV" == "true" ]]; then
+		if [[ ! -d $CATKIN_DIR/src/SubjuGator ]]; then
 			instlog "Downloading the SubjuGator repository"
 			cd $CATKIN_DIR/src
 			git clone --recursive -q https://github.com/uf-mil/SubjuGator.git
@@ -439,13 +439,13 @@ if [ "$DOCKER" != "true" ]; then
 			git reset --hard 0089e68b9f48b96af9c3821f356e3a487841e87e
 			git remote remove origin
 		fi
-		if [ ! -d $CATKIN_DIR/src/NaviGator ]; then
+		if [[ ! -d $CATKIN_DIR/src/NaviGator ]]; then
 			instlog "Downloading the NaviGator repository"
 			cd $CATKIN_DIR/src
 			git clone --recursive -q https://github.com/uf-mil/NaviGator.git
 			cd $CATKIN_DIR/src/NaviGator
 			git remote rename origin upstream
-			if [ ! -z "$NAV_USER_FORK" ]; then
+			if [[ ! -z "$NAV_USER_FORK" ]]; then
 				git remote add origin "$NAV_USER_FORK"
 			fi
 		fi
@@ -457,7 +457,7 @@ fi
 # Common Dependency Installation #
 #================================#
 
-if [ "$ENABLE_USB_CAM" == "true" ]; then
+if [[ "$ENABLE_USB_CAM" == "true" ]]; then
 	instlog "Enabling USB cameras (a reboot is required for this to take full effect)"
 	sudo usermod -a -G dialout "$USER"
 	sudo groupadd --gid 999 pgrimaging
@@ -469,8 +469,8 @@ fi
 instlog "Installing common dependencies from the $REQUIRED_OS_ID repositories"
 
 # CUDA toolkit
-if [ "$INSTALL_CUDA" == "true" ]; then
-	if [ "$REQUIRED_OS_ID" == "Ubuntu" ]; then
+if [[ "$INSTALL_CUDA" == "true" ]]; then
+	if [[ "$REQUIRED_OS_ID" == "Ubuntu" ]]; then
 		sudo apt-get install -qq cuda
 	else
 		sudo apt-get install -qq nvidia-cuda-toolkit
@@ -519,7 +519,7 @@ sudo pip install -q -U crc16
 sudo pip install -q -U tqdm
 
 # The BlueView SDK for the Teledyne imaging sonar
-if [ ! -z "$BVSDK_PASSWORD" ]; then
+if [[ ! -z "$BVSDK_PASSWORD" ]]; then
 	instlog "Decrypting and installing the BlueView SDK"
 	cd $CATKIN_DIR/src
 	curl -s https://raw.githubusercontent.com/uf-mil/installer/master/bvtsdk.tar.gz.enc | \
@@ -531,7 +531,7 @@ fi
 # SubjuGator Dependency Installation #
 #====================================#
 
-if [ "$INSTALL_SUB" == "true" ]; then
+if [[ "$INSTALL_SUB" == "true" ]]; then
 	instlog "Installing SubjuGator dependencies from the $REQUIRED_OS_ID repositories"
 
 	# Communication pipe for the navigation vessel
@@ -560,7 +560,7 @@ fi
 # NaviGator Dependency Installation #
 #===================================#
 
-if [ "$INSTALL_NAV" == "true" ]; then
+if [[ "$INSTALL_NAV" == "true" ]]; then
 	instlog "Installing NaviGator dependencies from the $REQUIRED_OS_ID repositories"
 
 	# Compiler tools
@@ -623,8 +623,8 @@ echo "export CATKIN_DIR=$CATKIN_DIR" >> $MILRC_FILE
 echo "export MIL_CONFIG_DIR=$MIL_CONFIG_DIR" >> $MILRC_FILE
 
 # Add CUDA programs to the path if the Nvidia repository was used to install it
-if [ "$INSTALL_CUDA" == "true" ]; then
-	if [ "$REQUIRED_OS_ID" == "Ubuntu" ]; then
+if [[ "$INSTALL_CUDA" == "true" ]]; then
+	if [[ "$REQUIRED_OS_ID" == "Ubuntu" ]]; then
 		echo "" >> $MILRC_FILE
 		echo "# Adds CUDA programs and libraries to the shell's path" >> $MILRC_FILE
 		echo "export PATH=\$PATH:/usr/local/cuda/bin" >> $MILRC_FILE
@@ -638,7 +638,7 @@ echo "# Sets up the shell environment for ROS" >> $MILRC_FILE
 echo "source /opt/ros/$ROS_VERSION/setup.bash" >> $MILRC_FILE
 
 # Source the workspace's configurations for bash on client machines
-if [ "$DOCKER" != "true" ]; then
+if [[ "$DOCKER" != "true" ]]; then
 	echo "" >> $MILRC_FILE
 	echo "# Sets up the shell environment for the catkin workspace" >> $MILRC_FILE
 	echo "source \$CATKIN_DIR/devel/setup.bash" >> $MILRC_FILE
@@ -654,7 +654,7 @@ echo "	fi" >> $MILRC_FILE
 echo "done" >> $MILRC_FILE
 
 # Source MIL configurations for bash on this user account
-if [ -z "`cat $BASHRC_FILE | grep 'source $MILRC_FILE'`" ]; then
+if [[ -z "$(cat $BASHRC_FILE | grep 'source $MILRC_FILE')" ]]; then
 	echo "" >> $BASHRC_FILE
 	echo "# Sets up the shell environment for installed MIL projects" >> $BASHRC_FILE
 	echo "source $MILRC_FILE" >> $BASHRC_FILE
@@ -666,7 +666,7 @@ fi
 #===========================#
 
 # Attempt to build the selected MIL software stack on client machines
-if [ "$DOCKER" != "true" ]; then
+if [[ "$DOCKER" != "true" ]]; then
 	instlog "Building selected MIL software stack with catkin_make"
 	catkin_make -C $CATKIN_DIR -B
 fi
