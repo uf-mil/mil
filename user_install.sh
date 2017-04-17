@@ -230,7 +230,7 @@ fi
 echo "User permissions check"
 
 # Ensure that no ROS version is being sourced in the user's bash runcom file
-if [[ -z "$(cat $BASHRC_FILE | grep 'source /opt/ros')" ]]; then
+if [[ -z "$(cat $BASHRC_FILE | grep /opt/ros)" ]]; then
 	BASHRC_CHECK="true"
 	echo -n "[ " && instpass && echo -n "] "
 else
@@ -384,8 +384,8 @@ if [[ "$INSTALL_CUDA" == "true" ]]; then
 	if [[ "$REQUIRED_OS_ID" == "Ubuntu" ]]; then
 		echo "" >> $MILRC_FILE
 		echo "# Adds CUDA programs and libraries to the shell's path" >> $MILRC_FILE
-		echo "export PATH=$PATH:/usr/local/cuda/bin" >> $MILRC_FILE
-		echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64" >> $MILRC_FILE
+		echo "export PATH=\$PATH:/usr/local/cuda/bin" >> $MILRC_FILE
+		echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/cuda/lib64" >> $MILRC_FILE
 	fi
 fi
 
@@ -410,7 +410,7 @@ echo "done" >> $MILRC_FILE
 
 # Source MIL configurations for bash on this user account
 source $MILRC_FILE
-if [[ -z "$(cat $BASHRC_FILE | grep 'source $MILRC_FILE')" ]]; then
+if [[ -z "$(cat $BASHRC_FILE | grep $MILRC_FILE)" ]]; then
 	echo "" >> $BASHRC_FILE
 	echo "# Sets up the shell environment for installed MIL projects" >> $BASHRC_FILE
 	echo "source $MILRC_FILE" >> $BASHRC_FILE

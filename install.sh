@@ -286,7 +286,7 @@ fi
 echo "User permissions check"
 
 # Ensure that no ROS version is being sourced in the user's bash runcom file
-if [[ -z "$(cat $BASHRC_FILE | grep 'source /opt/ros')" ]]; then
+if [[ -z "$(cat $BASHRC_FILE | grep /opt/ros)" ]]; then
 	BASHRC_CHECK="true"
 	echo -n "[ " && instpass && echo -n "] "
 else
@@ -654,7 +654,7 @@ echo "	fi" >> $MILRC_FILE
 echo "done" >> $MILRC_FILE
 
 # Source MIL configurations for bash on this user account
-if [[ -z "$(cat $BASHRC_FILE | grep 'source $MILRC_FILE')" ]]; then
+if [[ -z "$(cat $BASHRC_FILE | grep $MILRC_FILE)" ]]; then
 	echo "" >> $BASHRC_FILE
 	echo "# Sets up the shell environment for installed MIL projects" >> $BASHRC_FILE
 	echo "source $MILRC_FILE" >> $BASHRC_FILE
