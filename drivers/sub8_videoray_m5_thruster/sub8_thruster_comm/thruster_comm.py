@@ -52,7 +52,7 @@ class ThrusterPort(object):
         self.thruster_dict = {} # holds the motor_ids of all the thrusters that were supposed
                                 # to be here and were actually found
 
-        # Determine which thrusters are really on this port
+        # Determine which thrusters are really responding
         self.motor_ids_on_port = []
         for guess_id in range(self._max_motor_id):  # search a subset of possible motor ids
             have_thruster = self.check_for_thruster(guess_id)
@@ -81,10 +81,10 @@ class ThrusterPort(object):
         '''Loads the motor_id from the config file if the thruster was found'''
         # Get our humungous error string ready
         errstr = "Could not find motor_id {} (Called {}) on port {}; existing ids are {}".format(
-            thruster_info['node_id'], thruster_name, self.port_name, self.motor_ids_on_port)
+            thruster_definitions[thruster_name]['motor_id'], thruster_name, self.port_name, self.motor_ids_on_port)
 
         # Check if we can actually find the thruster on this port
-        motor_id = int(thruster_info[thruster_name][motor_id])
+        motor_id = int(thruster_definitions[thruster_name]["motor_id"])
         if not motor_id in self.motor_ids_on_port:
             rospy.logerr(errstr)
             raise(IOError(errstr))
