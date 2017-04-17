@@ -224,11 +224,12 @@ class ShoreControlChecker(TemplateChecker):
         p = self.p.bold("\n  >>>>").text("   Press return when ").negative("shore_control.launch").text(" is running.\n")
         yield txros.util.nonblocking_raw_input(str(p))
 
-        self.keepalive = self.nh.subscribe("/keep_alive", Header)
+        self.network = self.nh.subscribe("/network", Header)
         self.spacenav = self.nh.subscribe("/spacenav/joy", Joy)
         self.posegoal = self.nh.subscribe("/posegoal", PoseStamped)
 
-        self.subs = [("Keep Alive", self.keepalive.get_next_message()), ("Spacenav", self.spacenav.get_next_message()),
+        self.subs = [("Keep Alive", self.network.get_next_message()),
+                     ("Spacenav", self.spacenav.get_next_message()),
                      ("Pose Goal", self.posegoal.get_next_message())]
 
         print self.p.bold("  >>>>   ").set_blue.bold("Shore Control Check")
