@@ -1,0 +1,14 @@
+<library path="lib/libtransform_odometry">
+  <class name="odometry_utils/transform_odometry" type="odometry_utils::transform_odometry" base_class_type="nodelet::Nodelet">
+    <description> 
+      odometry frame converter
+    </description>
+  </class>
+</library>
+<library path="lib/libodometry_to_tf">
+  <class name="odometry_utils/odometry_to_tf" type="odometry_utils::odometry_to_tf" base_class_type="nodelet::Nodelet">
+    <description> 
+      odometry frame converter
+    </description>
+  </class>
+</library>
