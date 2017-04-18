@@ -11,8 +11,8 @@ ENV DOCKER true
 ENV INSTALL_SUB true
 ENV INSTALL_CUDA true
 
-# Allow the user to pass in the BlueView SDK with '--build-arg BVSDK_PASSWORD="password"'
-ARG BVSDK_PASSWORD
+# Allow the user to pass in the BlueView SDK with '--build-arg BVTSDK_PASSWORD="password"'
+ARG BVTSDK_PASSWORD
 
 # Update the image and install tools needed to create the image
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
