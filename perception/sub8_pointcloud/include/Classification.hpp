@@ -12,7 +12,6 @@
 #include <pcl/filters/statistical_outlier_removal.h>
 #include "pcl_ros/point_cloud.h"
 
-
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <geometry_msgs/Point.h>
@@ -23,10 +22,6 @@ class Classification
 
 public:
   Classification(ros::NodeHandle *nh);
-  void findNormals(pcl::PointCloud<pcl::PointXYZI>::ConstPtr pointCloud);
-  void segment(pcl::PointCloud<pcl::PointXYZI>::ConstPtr pointCloud);
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered(pcl::PointCloud<pcl::PointXYZI>::ConstPtr pointCloud);
-  ros::Publisher pubTest;
-  ros::Publisher pubTest2;
 };
