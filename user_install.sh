@@ -66,7 +66,7 @@ INSTALL_PRO="false"
 INSTALL_NAV="false"
 
 # Set sane defaults for other install parameters
-BVSDK_PASSWORD=""
+BVTSDK_PASSWORD=""
 
 # Prompt the user to enter a catkin workspace to use
 echo "Catkin is the ROS build system and it combines CMake macros and Python scripts."
@@ -151,7 +151,7 @@ if [[ ! -d $CATKIN_DIR/src/bvtsdk ]]; then
 	if [[ "$RESPONSE" == "Y" || "$RESPONSE" == "y" ]]; then
 		echo "The SDK is encrypted with a password. You need to obtain this password from one"
 		echo "of the senior members of MIL."
-		echo -n "Encryption password: " && read -s BVSDK_PASSWORD
+		echo -n "Encryption password: " && read -s BVTSDK_PASSWORD
 		echo ""
 		echo ""
 	fi
@@ -344,11 +344,15 @@ cd $CATKIN_DIR
 git lfs install --skip-smudge
 
 # The BlueView SDK for the Teledyne imaging sonar
-if [[ ! -z "$BVSDK_PASSWORD" ]]; then
+if [[ ! -z "$BVTSDK_PASSWORD" ]]; then
 	instlog "Decrypting and installing the BlueView SDK"
 	cd $CATKIN_DIR/src
 	curl -s https://raw.githubusercontent.com/uf-mil/installer/master/bvtsdk.tar.gz.enc | \
-	openssl enc -aes-256-cbc -d -pass file:<(echo -n $BVSDK_PASSWORD) | tar -xpz
+	openssl enc -aes-256-cbc -d -pass file:<(echo -n $BVTSDK_PASSWORD) | tar -xpz
+	if [[ ! -d $CATKIN_DIR/src/bvtsdk ]]; then
+		instwarn "Terminating installation due to incorrect password for the BlueView SDK"
+		exit 1
+	fi
 fi
 
 # Pull large project files from Git-LFS
