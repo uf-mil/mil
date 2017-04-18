@@ -1,7 +1,12 @@
+//TODO: Segmentation, Classification, Bounds, Ogrid filtering
+
 #include "Classification.hpp"
 Classification::Classification(ros::NodeHandle *nh)
 {
   nh_ = nh;
+
+  //TODO: Algorithms to filter pointcloud and possibly some classification scheme
+
   // pubTest = nh_->advertise<visualization_msgs::MarkerArray>( "/test_pub", 0 );
   // pubTest = nh_->advertise<pcl::PointCloud<pcl::PointXYZI>>("ogridgen/point_cloud_filtered", 0);
   // pubTest2 = nh_->advertise<pcl::PointCloud<pcl::PointXYZI>>("ogridgen/point_cloud_test", 0);
@@ -24,6 +29,7 @@ void Classification::findNormals(pcl::PointCloud<pcl::PointXYZI>::ConstPtr point
   pubTest2.publish(normals_out);
 }
 
+// Some segmentation
 void Classification::segment(pcl::PointCloud<pcl::PointXYZI>::ConstPtr pointCloud) {
   if (pointCloud->points.size() < 1000) {
     return;
@@ -66,7 +72,6 @@ void Classification::segment(pcl::PointCloud<pcl::PointXYZI>::ConstPtr pointClou
     seg.segment (*inliers, *coefficients);
     if (inliers->indices.size () == 0)
     {
-      std::cerr << "Could not estimate a planar model for the given dataset." << std::endl;
       break;
     }
 
@@ -75,11 +80,10 @@ void Classification::segment(pcl::PointCloud<pcl::PointXYZI>::ConstPtr pointClou
     extract.setIndices (inliers);
     extract.setNegative (false);
     extract.filter (*cloud_p);
-    std::cerr << "PointCloud representing the planar component: " << cloud_p->width * cloud_p->height << " data points." << std::endl;
 
-    std::stringstream ss;
-    ss << "plane" << i << ".pcd";
-    writer.write<pcl::PointXYZI> (ss.str (), *cloud_p, false);
+    // std::stringstream ss;
+    // ss << "plane" << i << ".pcd";
+    // writer.write<pcl::PointXYZI> (ss.str (), *cloud_p, false);
 
     pubTest2.publish(cloud_p);
     // Create the filtering object

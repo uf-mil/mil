@@ -63,23 +63,24 @@ void OGridGen::publish_ogrid(const ros::TimerEvent &)
     pointCloud->push_back(p);
   }
   
-  // Publish the point cloud
+  // Publish the raw point cloud
   pointCloud->header.frame_id = "map";
   pcl_conversions::toPCL(ros::Time::now(), pointCloud->header.stamp);
   pub_point_cloud_raw_.publish(pointCloud);
 
+  // Publish the filtered cloud
   pcl::PointCloud<pcl::PointXYZI>::Ptr pointCloud_filtered = classification_.filtered(pointCloud);
   pub_point_cloud_filtered_.publish(pointCloud_filtered);
 
-  // Do some algorithms using the PCL pointcloud
-  // classification_.segment(pointCloud);
-  // classification_.findNormals(pointCloud);
+
+  //TODO: Implement some k-nearest neighbors algorithm to filter ogrid
 
   // Populate the Ogrid by projecting down the pointcloud
   for(auto &point_pcl : pointCloud_filtered->points) {
-    cv::Rect rect(cv::Point(), mat_ogrid_.size());
+    //Check if point is inside the potential ogrid
+    cv::Rect rect(cv::Point(0,0), mat_ogrid_.size());
     cv::Point p(point_pcl.x/resolution_ +mat_ogrid_.cols / 2, point_pcl.y/resolution_+mat_ogrid_.rows / 2);
-    if (rect.contains(p) && mat_ogrid_.at<uchar>(p.y, p.x) == 0)
+    if (rect.contains(p))
     {
       mat_ogrid_.at<uchar>(p.y, p.x) = 99;
     }
@@ -109,14 +110,11 @@ void OGridGen::publish_ogrid(const ros::TimerEvent &)
   rosGrid.info.origin.position.y = -ogrid_size_ / 2;
   rosGrid.data = data;
   pub_grid_.publish(rosGrid);
-
 }
 
 
 /*
-
   Subscribes to pingmsgs from blueview sonar and saves a plane of pings into a buffer based on sub pose
-
 */
 void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
 {
@@ -135,15 +133,15 @@ void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
     if (ping_msg->intensities.at(i) > 2000)
     {  // TODO: Better thresholding
 
-      // Get distance. RIGHT TRIANGLES
+      // Get x and y of a ping. RIGHT TRIANGLES
       double x_d = ping_msg->ranges.at(i) * cos(ping_msg->bearings.at(i));
       double y_d = ping_msg->ranges.at(i) * sin(ping_msg->bearings.at(i));
 
-      // Transform point using TF
+      // Rotate point using TF
       tf::Vector3 vec = tf::Vector3(x_d, y_d, 0);
       tf::Vector3 newVec = transform_.getBasis() * vec;
 
-      // Check if point is inside the OGRID
+      // Shift point relative to sub's location
       pcl::PointXYZI point;
       point.x = newVec.x() + transform_.getOrigin().x();
       point.y = newVec.y() + transform_.getOrigin().y();
