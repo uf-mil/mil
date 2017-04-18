@@ -12,52 +12,42 @@ TLB_CONFIG_FILE=$MIL_CONFIG_DIR/two_line_bash.conf
 
 
 # Obtain the name of the currently sourced catkin workspace if more than one exist
-function parse_catkin_workspace {
+parse_catkin_workspace() {
 	PS_WORKSPACE=""
 
 	# Store a list of catkin workspaces in the COMPREPLY variable
 	_catkin_ws_complete
 
 	# Only print the selected workspace if more than one is present
-	if [ ${#COMPREPLY[@]} -gt 1 ]; then
-		local WORKSPACE_DIR="`echo $ROS_PACKAGE_PATH | cut -d ':' -f1 | sed 's@/src@@'`"
-		if [ -f $WORKSPACE_DIR/.catkin_workspace ]; then
-			PS_WORKSPACE="(catkin `echo $WORKSPACE_DIR | rev | cut -d "/" -f1 | rev`) "
-		fi
+	if (( ${#COMPREPLY[@]} > 1 )); then
+		PS_WORKSPACE="(catkin $(echo $CATKIN_DIR | rev | cut -d "/" -f1 | rev)) "
 	fi
 	unset COMPREPLY
 }
 
 # Obtain the name of the current git branch if the working directory is a git repository
-function parse_git_branch {
+parse_git_branch() {
 	PS_BRANCH=""
-	if [ -d .svn ]; then
-		PS_BRANCH="(svn r$(svn info|awk '/Revision/{print $2}')) "
-		return
-	elif [ -f _FOSSIL_ -o -f .fslckout ]; then
-		PS_BRANCH="(fossil $(fossil status|awk '/tags/{print $2}')) "
-		return
-	fi
-	ref=$(git symbolic-ref HEAD 2> /dev/null) || return
-	PS_BRANCH="(git ${ref#refs/heads/}) "
+	REF="$(git symbolic-ref HEAD 2> /dev/null)" || return
+	PS_BRANCH="(git ${REF#refs/heads/}) "
 }
 
 # Gather dynamic information for each prompt
-function parse_tlb_info {
+parse_tlb_info() {
 	parse_catkin_workspace
 	parse_git_branch
-	PS_LINE=`printf -- "- %.0s" {1..200}`
+	PS_LINE=$(printf -- "- %.0s" {1..200})
 	PS_FILL=${PS_LINE:0:$COLUMNS}
 }
 
 
 # Generates the configuration file if it does not exist
-if [ ! -f $TLB_CONFIG_FILE ]; then
+if [[ ! -f $TLB_CONFIG_FILE ]]; then
 	echo "ENABLED=true" > $TLB_CONFIG_FILE
 fi
 
 # If two line bash is enabled, add it to the shell configuration
-if [ "`cat $TLB_CONFIG_FILE | grep ENABLED | grep -oe '[^=]*$'`" = "true" ]; then
+if [[ "$(cat $TLB_CONFIG_FILE | grep ENABLED | grep -oe '[^=]*$')" == "true" ]]; then
 	RESET="\[\033[0m\]"
 	RED="\[\033[0;31m\]"
 	GREEN="\[\033[01;32m\]"

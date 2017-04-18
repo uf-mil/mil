@@ -24,13 +24,13 @@ ros_env() {
 
 
 # Directory navigation
-alias mc="cd $CATKIN_DIR/src/mil_common"
+alias mc="cd \$CATKIN_DIR/src/mil_common"
 
 # Bash sourcing
 alias srcbrc="source ~/.bashrc"
 
 # Catkin workspace management
-alias cm="catkin_make -C $CATKIN_DIR -j8"
+alias cm="catkin_make -C \$CATKIN_DIR -j8"
 
 # Alarms
 alias araise="rosrun ros_alarms raise"
