@@ -6,7 +6,8 @@ OGridGen::OGridGen() : nh_(ros::this_node::getName()), classification_(&nh_)
 {
   //The publishers
   pub_grid_ = nh_.advertise<nav_msgs::OccupancyGrid>("ogrid", 10, true);
-  pub_point_cloud_ = nh_.advertise<pcl::PointCloud<pcl::PointXYZI>>("point_cloud", 1);
+  pub_point_cloud_filtered_ = nh_.advertise<pcl::PointCloud<pcl::PointXYZI>>("point_cloud/filtered", 1);
+  pub_point_cloud_raw_ = nh_.advertise<pcl::PointCloud<pcl::PointXYZI>>("point_cloud/raw", 1);
 
   //Resolution is meters/pixel
   nh_.param<float>("resolution_", resolution_, 0.2f);
@@ -26,6 +27,7 @@ OGridGen::OGridGen() : nh_(ros::this_node::getName()), classification_(&nh_)
   timer_ = nh_.createTimer(ros::Duration(0.3), std::bind(&OGridGen::publish_ogrid, this, std::placeholders::_1));
   sub_to_imaging_sonar_ = nh_.subscribe("/blueview_driver/ranges", 1, &OGridGen::callback, this);
 
+  mat_ogrid_ = cv::Mat::zeros(int(ogrid_size_ / resolution_), int(ogrid_size_ / resolution_), CV_8U);
 }
 /*
   Looped based on timer_.
@@ -50,6 +52,37 @@ void OGridGen::publish_ogrid(const ros::TimerEvent &)
     const cv::Point *pts = (const cv::Point *)cv::Mat(bounds_).data;
     int npts = cv::Mat(bounds_).rows;
     cv::polylines(mat_ogrid_, &pts, &npts, 1, true, 255, 3, CV_8U, 0);
+  }
+
+
+  // Populate a PCL pointcloud using the point_cloud_buffer_
+  pcl::PointCloud<pcl::PointXYZI>::Ptr pointCloud(new pcl::PointCloud<pcl::PointXYZI>());
+  pointCloud->reserve(point_cloud_buffer_.capacity());
+  for (auto &p : point_cloud_buffer_)
+  {
+    pointCloud->push_back(p);
+  }
+  
+  // Publish the point cloud
+  pointCloud->header.frame_id = "map";
+  pcl_conversions::toPCL(ros::Time::now(), pointCloud->header.stamp);
+  pub_point_cloud_raw_.publish(pointCloud);
+
+  pcl::PointCloud<pcl::PointXYZI>::Ptr pointCloud_filtered = classification_.filtered(pointCloud);
+  pub_point_cloud_filtered_.publish(pointCloud_filtered);
+
+  // Do some algorithms using the PCL pointcloud
+  // classification_.segment(pointCloud);
+  // classification_.findNormals(pointCloud);
+
+  // Populate the Ogrid by projecting down the pointcloud
+  for(auto &point_pcl : pointCloud_filtered->points) {
+    cv::Rect rect(cv::Point(), mat_ogrid_.size());
+    cv::Point p(point_pcl.x/resolution_ +mat_ogrid_.cols / 2, point_pcl.y/resolution_+mat_ogrid_.rows / 2);
+    if (rect.contains(p) && mat_ogrid_.at<uchar>(p.y, p.x) == 0)
+    {
+      mat_ogrid_.at<uchar>(p.y, p.x) = 99;
+    }
   }
 
   // Flatten the mat_ogrid_ into a 1D vector for OccupencyGrid message
@@ -77,24 +110,6 @@ void OGridGen::publish_ogrid(const ros::TimerEvent &)
   rosGrid.data = data;
   pub_grid_.publish(rosGrid);
 
-  // Populate a PCL pointcloud using the point_cloud_buffer_
-  pcl::PointCloud<pcl::PointXYZI>::Ptr pointCloud(new pcl::PointCloud<pcl::PointXYZI>());
-  pointCloud->reserve(point_cloud_buffer_.capacity());
-  for (auto &p : point_cloud_buffer_)
-  {
-    pointCloud->push_back(p);
-  }
-  
-  // Publish the point cloud
-  pointCloud->header.frame_id = "map";
-  pcl_conversions::toPCL(ros::Time::now(), pointCloud->header.stamp);
-  pub_point_cloud_.publish(pointCloud);
-
-  // Do some algorithms using the PCL pointcloud
-  // classification_.segment(pointCloud);
-  // classification_.findNormals(pointCloud);
-  classification_.filtered(pointCloud);
-
 }
 
 
@@ -115,8 +130,6 @@ void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
     return;
   }
 
-  //Clear the last ogrid
-  mat_ogrid_ = cv::Mat::zeros(int(ogrid_size_ / resolution_), int(ogrid_size_ / resolution_), CV_8U);
   for (size_t i = 0; i < ping_msg->ranges.size(); ++i)
   {
     if (ping_msg->intensities.at(i) > 2000)
@@ -130,26 +143,15 @@ void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
       tf::Vector3 vec = tf::Vector3(x_d, y_d, 0);
       tf::Vector3 newVec = transform_.getBasis() * vec;
 
-      // Where to draw in opencv mat
-      int x = newVec.x() / resolution_ + transform_.getOrigin().x() / resolution_ + mat_ogrid_.cols / 2;
-      int y = newVec.y() / resolution_ + transform_.getOrigin().y() / resolution_ + mat_ogrid_.rows / 2;
-
       // Check if point is inside the OGRID
-      cv::Rect rect(cv::Point(), mat_ogrid_.size());
-      cv::Point p(x, y);
-      if (rect.contains(p) && mat_ogrid_.at<uchar>(y, x) == 0 && newVec.z() > -pool_depth_)
-      {
-        mat_ogrid_.at<uchar>(y, x) = 99;
-        pcl::PointXYZI point;
-        point.x = newVec.x() + transform_.getOrigin().x();
-        point.y = newVec.y() + transform_.getOrigin().y();
-        point.z = newVec.z() + transform_.getOrigin().z();
-        point.intensity = ping_msg->intensities.at(i);
-        point_cloud_buffer_.push_back(point);
-      }
+      pcl::PointXYZI point;
+      point.x = newVec.x() + transform_.getOrigin().x();
+      point.y = newVec.y() + transform_.getOrigin().y();
+      point.z = newVec.z() + transform_.getOrigin().z();
+      point.intensity = ping_msg->intensities.at(i);
+      point_cloud_buffer_.push_back(point);
     }
   }
-  // cv::transpose(mat_ogrid_, mat_ogrid_);
 }
 
 int main(int argc, char **argv)

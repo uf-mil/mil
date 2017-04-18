@@ -42,7 +42,8 @@ private:
   tf::TransformListener listener_;
 
   ros::Publisher pub_grid_;
-  ros::Publisher pub_point_cloud_;
+  ros::Publisher pub_point_cloud_filtered_;
+  ros::Publisher pub_point_cloud_raw_;
   ros::Timer timer_;
 
   cv::Mat mat_ogrid_;

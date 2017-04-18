@@ -26,7 +26,7 @@ public:
   void findNormals(pcl::PointCloud<pcl::PointXYZI>::ConstPtr pointCloud);
   void segment(pcl::PointCloud<pcl::PointXYZI>::ConstPtr pointCloud);
 
-  void filtered(pcl::PointCloud<pcl::PointXYZI>::ConstPtr pointCloud);
+  pcl::PointCloud<pcl::PointXYZI>::Ptr filtered(pcl::PointCloud<pcl::PointXYZI>::ConstPtr pointCloud);
   ros::Publisher pubTest;
   ros::Publisher pubTest2;
 };
