@@ -228,7 +228,7 @@ class ShoreControlChecker(TemplateChecker):
         self.spacenav = self.nh.subscribe("/spacenav/joy", Joy)
         self.posegoal = self.nh.subscribe("/posegoal", PoseStamped)
 
-        self.subs = [("Keep Alive", self.network.get_next_message()),
+        self.subs = [("Network", self.network.get_next_message()),
                      ("Spacenav", self.spacenav.get_next_message()),
                      ("Pose Goal", self.posegoal.get_next_message())]
 
