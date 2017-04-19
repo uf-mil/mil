@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import numpy as np
 import sys
+import serial
 import rospy
 import rospkg
 import rosparam
@@ -12,7 +13,7 @@ __author__ = 'David Soto'
 
 rospack = rospkg.RosPack()
 
-fprint = FprintFactory(title='thruster_spin_test', auto_bold=False).fprint
+fprint = FprintFactory(title='ThrusterSpinner').fprint
 
 def ports_from_layout(layout):
     '''Load and handle the thruster bus layout'''
@@ -20,25 +21,32 @@ def ports_from_layout(layout):
     thruster_definitions = layout['thrusters']
 
     for port_info in layout['thruster_ports']:
-        port = port_info['port']
-        thruster_names = port_info['thruster_names']
-        msg = "Instantiating thruster_port:\n\tName: {}".format(port)
-        thruster_port = thruster_comm_factory(port_info, thruster_definitions, fake=False)
+        try:
+            port = port_info['port']
+            thruster_names = port_info['thruster_names']
+            msg = "Instantiating thruster_port:\n\tName: {}".format(port)
+            thruster_port = thruster_comm_factory(port_info, thruster_definitions, fake=False)
 
-        # Add the thrusters to the thruster dict
-        for name in thruster_names:
-            port_dict[name] = thruster_port
+            # Add the thrusters to the thruster dict
+            for name in thruster_names:
+                port_dict[name] = thruster_port
 
-        msg += "\n\tMotor id's on port: {}".format(thruster_port.motor_ids_on_port)
-        fprint(msg)
+            msg += "\n\tMotor id's on port: {}".format(thruster_port.motor_ids_on_port)
+            fprint(msg)
+
+        except serial.serialutil.SerialException as e:
+            pass
 
     return port_dict
 
-rospy.init_node('thruster_spin_test')
+rospy.init_node('thruster_spinner')
 
 sub8_thruster_mapper = rospack.get_path('sub8_thruster_mapper')
 thruster_layout = rosparam.load_file(sub8_thruster_mapper + '/config/thruster_layout.yaml')[0][0]
 thruster_ports = ports_from_layout(thruster_layout)
+if thruster_ports == {}:
+    fprint('Unable to connect to any thruster ports. Quitting.')
+    sys.exit()
 names_from_motor_id = {0: 'FLH', 1: 'FLV', 2: 'FRH', 3: 'FRV',
                        4: 'BLH', 5: 'BLV', 6: 'BRH', 7: 'BRV'}
 active_thrusters = set()
