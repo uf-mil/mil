@@ -10,6 +10,7 @@
 class BlueViewSonar
 {
 public:
+  /// Represents the two ways to connect to a sonar, either from a live device or a .son file
   enum ConnectionType
   {
     FILE,
@@ -18,27 +19,70 @@ public:
   BlueViewSonar();
   ~BlueViewSonar();
 
-  // Connects to sonar, called by constructor but can be recalled to retry connection
+  /**  Connects to sonar, called by constructor but can be recalled to retry connection
+   *   \param params ConnectionType specific paramater, IP/Domain of sonar or path to .son file
+   *   \param head_id For systems with multiple heads, which head to connect to
+   */
   void init(ConnectionType type, const std::string& params, int head_id = 0);
 
-  bool getNextPing();  // Must be called before any data proccessing (image or range profile) calls
+  /**
+   * Retrieves a new ping from file or sonar, must be called before other processing functions
+   * \return true if ping successful, false if error (like end of file)
+   */
+  bool getNextPing();
+
+  /// \return True if a ping has been retrieved
   bool hasPing() const;
+
+  /// \return True if an image has been generated
   bool hasImage() const;
 
-  void generateImage();                  // Internally generates image from latest ping, must be called before running
-  void getGrayscaleImage(cv::Mat& img);  // CV_16U img to fill with grayscale intensity
-  void getColorImage(cv::Mat& img);      // CV_8UC4 to fill with mapped colors from loadColorMapper
+  /** Generates a mag image from most recent ping, call before getting images
+   *  \pre getNextPing has been called and returned True
+   */
+  void generateImage();
+
+  /** Fills an opencv image with the XY mag image from latest ping
+   *  \pre generateImage has been called
+   *  \param img OpenCV image to fill with mag image
+   *  \post img will be a CV_16U OpenCV Mat with mag image
+   */
+  void getGrayscaleImage(cv::Mat& img);
+
+  /** Uses loaded colar mapper to create a color image of latest ping
+   *  \pre generateImage has been called
+   *  \pre loadColorMapper has been called
+   *  \param img OpenCV Mat to fil with color XY ping image
+   *  \post img is a CV_8UC4 mat with color image of latest ping
+   */
+  void getColorImage(cv::Mat& img);
+
+  /** Loads a blueview color map for use in color image generation
+   *  \param file Path to blueview .cmap file
+   */
   void loadColorMapper(const std::string& file);
 
-  // Fills bearings with location of range in degrees and ranges with corresponding distance in meters
+  /** Fills bearings with location of range in degrees and ranges with corresponding distance in meters
+   *  \pre getNextPing has been called and returned True
+   */
   void getRanges(std::vector<float>& bearings, std::vector<float>& ranges, std::vector<uint16_t>& intensities);
 
-  // Return a reference to the head for configuration like setting range
+  /// Return a reference to blueview sdk head object for configuration like setting range
+  /// Note: Must call updateHead after making changes for all changes to be used
   BVTSDK::Head& getHead();
-  void updateHead(); // Must call after changes to head from getHead()
+
+  /// Update internal members to changes made after call to getHead
+  void updateHead();
+
+  /// Returns number of pings in file, -1 if connected to device
   int getPingCount();
 
+  /// Sets minimum intensity value from blueview to be included in call to getRanges
   void SetRangeProfileMinIntensity(uint16_t thresh);
+
+  /** Sets threshold of dynamic noise to filter out for images and ranges
+   *  \param thresh float between 0.0 and 1.0, where 0.0 thresholds no noise and 1.0 threshold all noise
+   */
   void SetNoiseThreshold(float thresh);
 
 private:

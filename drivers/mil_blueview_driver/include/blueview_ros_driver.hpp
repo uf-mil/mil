@@ -14,8 +14,11 @@ class BlueViewRosDriver
 {
 public:
   BlueViewRosDriver();
+
+  /// Loads blue view settings such as range from ROS params, see example launch file
   void initParams();
-  double period_seconds;
+
+  /// Blocks until node is shutdown, generating pings and pushing them to ros
   void run();
 private:
   ros::NodeHandle nh;
@@ -29,6 +32,8 @@ private:
   cv_bridge::CvImagePtr grayscale_img, color_img;
   mil_blueview_driver::BlueViewPingPtr ping_msg;
 
+
+  double period_seconds;
   ros::Timer timer;
   bool do_grayscale, do_color, do_raw;
   std::string frame_id;

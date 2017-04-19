@@ -71,6 +71,7 @@ int BlueViewSonar::getPingCount()
 {
   if (!has_init_)
       throw std::runtime_error("updateHead called on sonar before init");
+  if (connection_type_ == ConnectionType::DEVICE) return -1;
   return head_.GetPingCount();
 }
 void BlueViewSonar::generateImage()

@@ -167,9 +167,9 @@ void BlueViewRosDriver::loop(const ros::TimerEvent &)
 
 int main(int argc, char **argv)
 {
+  ros::init(argc, argv, "blue_view_driver");
   try
   {
-    ros::init(argc, argv, "blue_view_driver");
     BlueViewRosDriver driver;
     driver.run();
   }
