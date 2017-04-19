@@ -29,7 +29,6 @@ def finput(prompt):
     return input()
 
 while True:
-    print "fuck"
     option = finput(main_menu)
     if option == 1:
         valveNumber = finput(valve_menu.format('open and close'))
@@ -40,18 +39,18 @@ while True:
             ser.write(bytearray([valveCommand, valveChecksum]))
             reply = ser.read(2)
             if reply == '\x01\xFE':
-                fprint("Valve opened")
+                fprint(text="Valve opened", msg_color='green')
             else:
-                fprint("Unknown reply")
+                fprint(text="Unknown reply", msg_color='red')
             time.sleep(valveDelay)
             valveCommand2 = int('30', 16) + valveNumber
             valveChecksum2 = valveCommand2 ^ int('ff', 16)
             ser.write(bytearray([valveCommand2, valveChecksum2]))
             reply2 = ser.read(2)
             if reply2 == '\x00\xFF':
-                fprint("Valve closed")
+                fprint(text="Valve closed", msg_color='green')
             else:
-                fprint("Unknown reply")
+                fprint(text="Unknown reply", msg_color='red')
     elif option == 2:
         valveNumber = finput(valve_menu.format('open'))
         if valveNumber >= 1 and valveNumber <=12:
@@ -60,9 +59,9 @@ while True:
             ser.write(bytearray([valveCommand, valveChecksum]))
             reply = ser.read(2)
             if reply == '\x01\xFE':
-                fprint("Valve opened")
+                fprint(text="Valve opened", msg_color='green')
             else:
-                fprint("Unknown reply")
+                fprint(text="Unknown reply", msg_color='red')
         else:
             print "Valve number must be between 1 and 12)"
     elif option == 3:
@@ -73,9 +72,9 @@ while True:
             ser.write(bytearray([valveCommand, valveChecksum]))
             reply = ser.read(2)
             if reply == '\x00\xFF':
-                fprint("Valve closed")
+                fprint(text="Valve closed", msg_color='green')
             else:
-                fprint("Unknown reply")
+                fprint(text="Unknown reply", msg_color='red')
         else:
             fprint("Valve number must be between 1 and 12")
     elif option == 4:
@@ -83,11 +82,11 @@ while True:
         pingReply = ser.read(2)
         fprint(pingReply.encode('hex'))
         if pingReply == "\x11\xEE":
-            fprint("Ping Reply OK")
+            fprint(text="Ping Reply OK", msg_color='green')
         else:
-            fprint("Ping Reply BAD")
+            fprint(text="Ping Reply BAD", msg_color='red')
     elif option == 9:
         sys.exit()
     else:
-        fprint("Unsupported Option")
+        fprint(text="Unsupported Option", msg_color='red')
 
