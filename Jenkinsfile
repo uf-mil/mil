@@ -6,6 +6,7 @@ dockerNode(image: 'uf-mil:subjugator') {
 			git submodule update --init --recursive
 			ln -s `pwd` $CATKIN_DIR/src/SubjuGator
 			git clone --recursive https://github.com/uf-mil/mil_common $CATKIN_DIR/src/mil_common
+			ln -s $MIL_CONFIG_DIR/bvtsdk $CATKIN_DIR/src/mil_common/drivers/mil_blueview_driver/bvtsdk
 		'''
 	}
 	stage("Build") {
