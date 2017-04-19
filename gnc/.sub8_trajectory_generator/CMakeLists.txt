@@ -6,7 +6,7 @@ project(${PROJECT_NAME})
 find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs sub8_msgs cmake_modules)
 find_package(OMPL REQUIRED)
 find_package(Boost REQUIRED)
-find_package(Eigen REQUIRED)
+find_package(EIGEN REQUIRED)
 # find_package(sub8_alarm REQUIRED)
 
 set(catkin_LIBRARIES
@@ -29,7 +29,7 @@ include_directories(
  	${catkin_INCLUDE_DIRS}
   	${OMPL_INCLUDE_DIRS}
   	${Boost_INCLUDE_DIRS}
-  	${Eigen_INCLUDE_DIRS}
+  	${EIGEN_INCLUDE_DIRS}
   	${sub8_alarm_INCLUDE_DIRS}
 )
 
@@ -44,7 +44,7 @@ include_directories(
 #target_link_libraries(${PROJECT_NAME}
 #	${catkin_LIBRARIES}
 #	${OMPL_LIBRARIES}
-#	${Eigen_LIBRARIES}
+#	${EIGEN_LIBRARIES}
 #	${sub8_alarm_LIBRARIES}
 #)
 
@@ -65,7 +65,7 @@ if(CATKIN_ENABLE_TESTING)
 	target_link_libraries(${PROJECT_NAME}_unit_tests
 		${catkin_LIBRARIES}
 		${OMPL_LIBRARIES}
-		${Eigen_LIBRARIES}
+		${EIGEN_LIBRARIES}
 		${sub8_alarm_LIBRARIES}
 	)
 
@@ -85,7 +85,7 @@ if(CATKIN_ENABLE_TESTING)
   	target_link_libraries(${PROJECT_NAME}_integration_tests
   		${catkin_LIBRARIES}
   		${OMPL_LIBRARIES}
-		${Eigen_LIBRARIES}
+		${EIGEN_LIBRARIES}
 		${sub8_alarm_LIBRARIES}
   	)
 endif()
