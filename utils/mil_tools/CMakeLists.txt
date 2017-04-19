@@ -15,6 +15,7 @@ find_package(Eigen3 REQUIRED)
 catkin_package(
   INCLUDE_DIRS
     include
+    ${EIGEN_INCLUDE_DIRS}
   LIBRARIES
     mil_tools
   CATKIN_DEPENDS
@@ -35,6 +36,7 @@ include_directories(
   SYSTEM
     ${catkin_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
+    ${EIGEN_INCLUDE_DIRS}
 )
 
 add_library(mil_tools
