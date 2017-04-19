@@ -39,7 +39,7 @@ catkin_package(
     mil_tools
   INCLUDE_DIRS
     include
-    ${Eigen_INCLUDE_DIRS}
+    ${EIGEN_INCLUDE_DIRS}
   LIBRARIES
 )
 
@@ -48,7 +48,7 @@ include_directories(
   SYSTEM
     ${Boost_INCLUDE_DIR}
     ${catkin_INCLUDE_DIRS}
-    ${Eigen_INCLUDE_DIRS}
+    ${EIGEN_INCLUDE_DIRS}
 )
 
 add_executable(c3_trajectory_generator

@@ -35,7 +35,7 @@ try
 catch(XmlRpcException& e)
 {
   auto err_str = "Error parsing port definitions: %s";
-  ROS_ERROR(err_str, e.getMessage());
+  ROS_ERROR(err_str, e.getMessage().c_str());
   return;
 }
 
@@ -84,7 +84,7 @@ try
     catch(XmlRpcException& e)
     {
       auto err_str = "Error parsing thruster definition (%s): %s";
-      ROS_ERROR(err_str, thruster.first, e.getMessage());
+      ROS_ERROR(err_str, string(thruster.first).c_str(), e.getMessage().c_str());
       continue;
     }
   }
@@ -92,7 +92,7 @@ try
 catch(XmlRpcException& e)
 {
     auto err_str = "Error loading thruster definitions: %s";
-    ROS_ERROR(err_str, e.getMessage());
+    ROS_ERROR(err_str, e.getMessage().c_str());
     return;
 }
 
