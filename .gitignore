@@ -79,4 +79,4 @@ pedometry.txt
 *.swp
 
 # Ignore proprietary blueview sdk
-drivers/mil_blueview_driver/bvtsdk/
+drivers/mil_blueview_driver/bvtsdk

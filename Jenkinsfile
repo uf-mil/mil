@@ -5,6 +5,7 @@ dockerNode(image: 'uf-mil:mil_common') {
 			source ~/.mil/milrc > /dev/null 2>&1
 			git submodule update --init --recursive
 			ln -s `pwd` $CATKIN_DIR/src/mil_common
+			ln -s $MIL_CONFIG_DIR/bvtsdk $CATKIN_DIR/src/mil_common/drivers/mil_blueview_driver/bvtsdk
 		'''
 	}
 	stage("Build") {

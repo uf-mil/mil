@@ -113,11 +113,11 @@ void BlueViewRosDriver::initParams()
     sonar.SetRangeProfileMinIntensity(noise_threshold);
 
   // Start loop
-  nh.param<double>("period_seconds", period_seconds, -1);
+  nh.param<double>("period_seconds", period_seconds_, -1);
 }
 void BlueViewRosDriver::run()
 {
-    if (period_seconds <= 0.0)
+    if (period_seconds_ <= 0.0)
     {
       while (ros::ok())
       {
@@ -126,7 +126,7 @@ void BlueViewRosDriver::run()
       }
     }
     else {
-      timer = nh.createTimer(ros::Duration(period_seconds), std::bind(&BlueViewRosDriver::loop, this, std::placeholders::_1));
+      timer = nh.createTimer(ros::Duration(period_seconds_), std::bind(&BlueViewRosDriver::loop, this, std::placeholders::_1));
       ros::spin();
     }
 }
@@ -167,7 +167,7 @@ void BlueViewRosDriver::loop(const ros::TimerEvent &)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "blue_view_driver");
+  ros::init(argc, argv, "blueview_driver");
   try
   {
     BlueViewRosDriver driver;

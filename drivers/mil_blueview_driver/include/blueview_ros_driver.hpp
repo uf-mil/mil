@@ -33,7 +33,7 @@ private:
   mil_blueview_driver::BlueViewPingPtr ping_msg;
 
 
-  double period_seconds;
+  double period_seconds_;
   ros::Timer timer;
   bool do_grayscale, do_color, do_raw;
   std::string frame_id;
