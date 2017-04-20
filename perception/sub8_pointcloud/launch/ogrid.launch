@@ -1,0 +1,13 @@
+<launch>
+    <node pkg="sub8_pointcloud" type="ogrid_generator" name="sub8_pointcloud_launch" >
+        <rosparam>
+            resolution: 0.2
+            ogrid_size: 50.0
+            pool_depth: 3.0
+
+            # How many points should be allowed
+            buffer_size: 7000
+        </rosparam>
+    </node>
+</launch>
+

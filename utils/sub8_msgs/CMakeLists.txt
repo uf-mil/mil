@@ -42,6 +42,7 @@ add_service_files(
   TorpBoardPoseRequest.srv
   TBDetectionSwitch.srv
   OcrRequest.srv
+  Bounds.srv
 )
 
 # add_action_files(
