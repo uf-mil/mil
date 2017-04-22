@@ -53,6 +53,7 @@ CATKIN_DIR=~/mil_ws
 MIL_CONFIG_DIR=~/.mil
 BASHRC_FILE=~/.bashrc
 MILRC_FILE=$MIL_CONFIG_DIR/milrc
+BVTSDK_DIR=$MIL_CONFIG_DIR/bvtsdk
 
 
 #======================#
@@ -139,7 +140,7 @@ while [[ "$SELECTED" != "true" ]]; do
 done
 
 # Prompt the user to install the BlueView SDK if it is not already installed
-if [[ ! -d $CATKIN_DIR/src/bvtsdk ]]; then
+if [[ ! -d $BVTSDK_DIR ]]; then
 	echo "The BlueView SDK used to interface with the Teledyne imaging sonar is encrypted"
 	echo "in order to protect the intellectual property of BlueView. If you will be doing"
 	echo "work with the imaging sonar on your machine, it is recommended that you install"
@@ -346,12 +347,18 @@ git lfs install --skip-smudge
 # The BlueView SDK for the Teledyne imaging sonar
 if [[ ! -z "$BVTSDK_PASSWORD" ]]; then
 	instlog "Decrypting and installing the BlueView SDK"
-	cd $CATKIN_DIR/src
-	curl -s https://raw.githubusercontent.com/uf-mil/installer/master/bvtsdk.tar.gz.enc | \
+	cd $MIL_CONFIG_DIR
+	curl -s https://raw.githubusercontent.com/uf-mil/installer/master/libbvtsdk.tar.gz.enc | \
 	openssl enc -aes-256-cbc -d -pass file:<(echo -n $BVTSDK_PASSWORD) | tar -xpz
-	if [[ ! -d $CATKIN_DIR/src/bvtsdk ]]; then
+
+	# If the SDK does not decrypt correctly due to an incorrect password, fail the installation
+	if [[ ! -d $BVTSDK_DIR ]]; then
 		instwarn "Terminating installation due to incorrect password for the BlueView SDK"
 		exit 1
+
+	# Link the SDK to mil_blueview_driver
+	else
+		ln -s $BVTSDK_DIR $CATKIN_DIR/src/mil_common/drivers/mil_blueview_driver/bvtsdk
 	fi
 fi
 
