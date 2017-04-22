@@ -1,0 +1,14 @@
+bags:
+  - file: orange_pipes.bag
+    labeled_file: orange_pipes_labeled.bag
+    segments:
+      - name: path_marker_pool_1
+        start: 1.0
+        stop: 10.0
+        topic: /down/left/image_raw
+        freq: 0.5
+      - name: path_marker_pool_2
+        start: 15.0
+        stop: 20.0
+        topic: /down/left/image_raw
+        freq: 1.0
