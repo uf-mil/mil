@@ -1,5 +1,6 @@
 import rospy
 from ros_alarms import HandlerBase
+from mil_msgs.srv import BaggerCommands
 
 class Kill(HandlerBase):
     alarm_name = 'kill'
@@ -8,12 +9,21 @@ class Kill(HandlerBase):
     def __init__(self):
         self._killed = False
         self._last_mission_killed = False
+        self.bagging_server = rospy.ServiceProxy('/online_bagger/dump', BaggerCommands)
 
     def raised(self, alarm):
         self._killed = True
+        self.bagger_dump()
 
     def cleared(self, alarm):
         self._killed = False
+
+    def bagger_dump(self):
+        """Call online_bagger/dump service"""
+        try:
+            bag_status = self.bagging_server(bag_name='kill_bag', bag_time=0)
+        except rospy.ServiceException, e:
+            print "/online_bagger service failed: %s" %e
 
     def meta_predicate(self, meta_alarm, sub_alarms):
         ignore = []
