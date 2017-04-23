@@ -21,7 +21,7 @@ _bagging_complete() {
 	else
 
 		# Otherwise, iterate over all of the bagging variables in the environment with the prefix removed
-		for VARIABLE in $(env | grep "$VARIABLE_PREFIX$2" | cut -d"=" -f1 | sed "s@$VARIABLE_PREFIX@@"); do
+		for VARIABLE in $(env | grep "$VARIABLE_PREFIX$2" | cut -d '=' -f1 | sed "s@$VARIABLE_PREFIX@@"); do
 
 			# Append the variable to the autocomplete list
 			COMPREPLY+=( "$VARIABLE" )

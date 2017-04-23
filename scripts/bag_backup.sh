@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # This script can be used to sync all new bags in the local bags directory
 # to the MIL fileserver. The autofs package can be installed and configured

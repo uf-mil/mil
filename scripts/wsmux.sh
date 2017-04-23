@@ -21,7 +21,7 @@ _catkin_ws_complete() {
 		if [[ -f $FILE/$WS_MARKER ]]; then
 
 			# Append just the name of the workspace folder to the autocomplete list
-			COMPREPLY+=( $(echo "$FILE" | rev | cut -d "/" -f1 | rev) )
+			COMPREPLY+=( $(echo "$FILE" | rev | cut -d '/' -f1 | rev) )
 		fi
 	done
 }
@@ -56,7 +56,7 @@ wsmux() {
 			-s|--show)
 				if [[ ! -z "$ROS_PACKAGE_PATH" ]]; then
 					echo -n "Currently sourced catkin workspace: "
-					echo "$ROS_PACKAGE_PATH" | cut -d ":" -f1 | sed "s@/src@@"
+					echo "$ROS_PACKAGE_PATH" | cut -d ':' -f1 | sed "s@/src@@"
 				else
 					echo "No catkin workspace is currently sourced"
 				fi

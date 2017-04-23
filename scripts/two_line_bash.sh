@@ -20,7 +20,7 @@ parse_catkin_workspace() {
 
 	# Only print the selected workspace if more than one is present
 	if (( ${#COMPREPLY[@]} > 1 )); then
-		PS_WORKSPACE="(catkin $(echo $CATKIN_DIR | rev | cut -d "/" -f1 | rev)) "
+		PS_WORKSPACE="(catkin $(echo $CATKIN_DIR | rev | cut -d '/' -f1 | rev)) "
 	fi
 	unset COMPREPLY
 }
