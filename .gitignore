@@ -77,3 +77,6 @@ pedometry.txt
 
 # Vim swaps
 *.swp
+
+# Ignore proprietary blueview sdk
+drivers/mil_blueview_driver/bvtsdk

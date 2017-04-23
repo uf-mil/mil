@@ -35,6 +35,7 @@ void BlueViewRosDriver::initParams()
   if (do_raw)
   {
     ping_msg.reset(new mil_blueview_driver::BlueViewPing());
+    ping_msg->header.frame_id = frame_id;
     raw_pub = nh.advertise<mil_blueview_driver::BlueViewPing>("ranges", 5);
   }
   std::string params;
@@ -80,9 +81,7 @@ void BlueViewRosDriver::initParams()
 
   float range_resolution;
   if (nh.getParam("range_resolution", range_resolution))
-  {
     head.SetRangeResolution(range_resolution);
-  }
 
   // Set analog gain adjustment in dB
   float gain;
@@ -103,22 +102,39 @@ void BlueViewRosDriver::initParams()
   float ping_interval;
   if (nh.getParam("ping_interval", ping_interval))
     head.SetPingInterval(ping_interval);
+  sonar.updateHead();
 
   int range_profile_thresh;
-  nh.param<int>("range_profile_intensity_threshold", range_profile_thresh, 1000);
+  if(nh.param<int>("range_profile_intensity_threshold", range_profile_thresh))
+    sonar.SetRangeProfileMinIntensity(range_profile_thresh);
+
+  float noise_threshold;
+  if(nh.param<int>("noise_threshold", noise_threshold))
+    sonar.SetRangeProfileMinIntensity(noise_threshold);
 
   // Start loop
-  double period_seconds;
-  nh.param<double>("period_seconds", period_seconds, 0.1);
-  timer =
-      nh.createTimer(ros::Duration(period_seconds), std::bind(&BlueViewRosDriver::loop, this, std::placeholders::_1));
+  nh.param<double>("period_seconds", period_seconds_, -1);
 }
-void BlueViewRosDriver::loop(const ros::TimerEvent &)
+void BlueViewRosDriver::run()
+{
+    if (period_seconds_ <= 0.0)
+    {
+      while (ros::ok())
+      {
+        get_ping();
+        ros::spinOnce();
+      }
+    }
+    else {
+      timer = nh.createTimer(ros::Duration(period_seconds_), std::bind(&BlueViewRosDriver::loop, this, std::placeholders::_1));
+      ros::spin();
+    }
+}
+void BlueViewRosDriver::get_ping()
 {
   if (!sonar.getNextPing())
   {
-    ROS_INFO("No pings remaining in file, shutting down...");
-    timer.stop();
+    ROS_WARN("No pings remaining in file, shutting down...");
     ros::shutdown();
     return;
   }
@@ -139,20 +155,23 @@ void BlueViewRosDriver::loop(const ros::TimerEvent &)
   }
   if (do_raw)
   {
-    ping_msg->header.frame_id = frame_id;
     ping_msg->header.stamp = ros::Time::now();
     sonar.getRanges(ping_msg->bearings, ping_msg->ranges, ping_msg->intensities);
     raw_pub.publish(ping_msg);
   }
 }
+void BlueViewRosDriver::loop(const ros::TimerEvent &)
+{
+  get_ping();
+}
 
 int main(int argc, char **argv)
 {
+  ros::init(argc, argv, "blueview_driver");
   try
   {
-    ros::init(argc, argv, "blue_view_driver");
     BlueViewRosDriver driver;
-    ros::spin();
+    driver.run();
   }
   catch (const BVTSDK::SdkException &err)
   {

@@ -1,7 +1,7 @@
 #include <blueview_wrapper.hpp>
 
 BlueViewSonar::BlueViewSonar()
-  : head_(NULL), latest_ping_(NULL), mag_img_(NULL), has_ping_(false), has_image_(false), cur_ping_(0)
+  : head_(NULL), latest_ping_(NULL), mag_img_(NULL), has_ping_(false), has_image_(false), has_init_(false), cur_ping_(0)
 {
 }
 bool BlueViewSonar::hasImage() const
@@ -17,10 +17,19 @@ void BlueViewSonar::init(ConnectionType type, const std::string& params, int hea
   else
     sonar_.Open("NET", params);  // default ip address
   head_ = sonar_.GetHead(head_id);
+  has_init_ = true;
+  updateHead();
+}
+void BlueViewSonar::updateHead()
+{
+  if (!has_init_)
+      throw std::runtime_error("updateHead called on sonar before init");
   image_generator_.SetHead(head_);
 }
 BVTSDK::Head& BlueViewSonar::getHead()
 {
+  if (!has_init_)
+      throw std::runtime_error("updateHead called on sonar before init");
   return head_;
 }
 BlueViewSonar::~BlueViewSonar()
@@ -32,11 +41,20 @@ bool BlueViewSonar::hasPing() const
 }
 void BlueViewSonar::SetRangeProfileMinIntensity(uint16_t thresh)
 {
+  if (!has_init_)
+      throw std::runtime_error("SetRangeProfileMinIntensity called on sonar before init");
   image_generator_.SetRangeProfileIntensityThreshold(thresh);
+}
+void BlueViewSonar::SetNoiseThreshold(float thresh)
+{
+  if (!has_init_)
+      throw std::runtime_error("SetNoiseThreshold called on sonar before init");
+  image_generator_.SetNoiseThreshold(thresh);
 }
 bool BlueViewSonar::getNextPing()
 {
-  image_generator_.SetHead(head_);
+  if (!has_init_)
+      throw std::runtime_error("getNextPing called on sonar before init");
   cur_ping_++;
   int ping_num = -1;
   if (connection_type_ == ConnectionType::FILE)
@@ -51,6 +69,9 @@ bool BlueViewSonar::getNextPing()
 
 int BlueViewSonar::getPingCount()
 {
+  if (!has_init_)
+      throw std::runtime_error("updateHead called on sonar before init");
+  if (connection_type_ == ConnectionType::DEVICE) return -1;
   return head_.GetPingCount();
 }
 void BlueViewSonar::generateImage()
