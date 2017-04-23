@@ -522,9 +522,9 @@ sudo pip install -q -U tqdm
 # The BlueView SDK for the Teledyne imaging sonar
 if [[ ! -z "$BVTSDK_PASSWORD" ]]; then
 	instlog "Decrypting and installing the BlueView SDK"
-	cd $MIL_CONFIG_DIR
+	mkdir -p $MIL_CONFIG_DIR
 	curl -s https://raw.githubusercontent.com/uf-mil/installer/master/libbvtsdk.tar.gz.enc | \
-	openssl enc -aes-256-cbc -d -pass file:<(echo -n $BVTSDK_PASSWORD) | tar -xpz
+	openssl enc -aes-256-cbc -d -pass file:<(echo -n $BVTSDK_PASSWORD) | tar -xpzC $MIL_CONFIG_DIR
 
 	# If the SDK does not decrypt correctly due to an incorrect password, fail the installation
 	if [[ ! -d $BVTSDK_DIR ]]; then
