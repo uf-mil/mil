@@ -21,7 +21,7 @@ class Kill(HandlerBase):
     def bagger_dump(self):
         """Call online_bagger/dump service"""
         try:
-            bag_status = self.bagging_server(bag_name='kill_bag', bag_time=0)
+            bag_status = self.bagging_server(bag_name='kill_bag', bag_time=60)
         except rospy.ServiceException, e:
             print "/online_bagger service failed: %s" %e
 
