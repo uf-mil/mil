@@ -29,6 +29,7 @@ add_message_files(FILES
 
 add_service_files(FILES
   CameraToLidarTransform.srv
+  BaggerCommands.srv
 )
 
 generate_messages(

@@ -9,7 +9,7 @@ import resource
 from collections import deque
 import itertools
 import datetime
-from mil_ros_tools.srv import BaggerCommands
+from mil_msgs.srv import BaggerCommands
 
 """
 To call call service call the '/online_bagger/dump' service with the BaggerCommands.srv
