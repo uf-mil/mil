@@ -37,13 +37,14 @@ class BagToLabelMe():
   
   TODO: improve verbosity, disable print statements with toggle
   """
-  def __init__(self, config, labelme_dir):
+  def __init__(self, config, labelme_dir, verbose=False):
       """
       Generates class that can be used to insert or extract images to/from LabelMe
       
       config: path to YAML file following format of the example yaml file in this package
       labelme_dir: root directory of labelme instalation (should contain Images and Annotations directories)
       """
+      self.verbose = verbose
       if not os.path.isdir(labelme_dir):
           raise Exception("Labelme directory {} does not exsist".format(labelme_dir))
 
@@ -52,6 +53,42 @@ class BagToLabelMe():
       self._verify_yaml()
       self.bridge = CvBridge()
       self.labelme_dir = labelme_dir
+
+  def _print(self, string,*args):
+      if self.verbose:
+          print string.format(*args)
+
+  def _verify_yaml(self):
+      """
+      Called by constructor to ensure YAML follows correct format.
+
+      TODO: Improve this process, perhaps using the YAML library more extensiviely
+      """
+      def verify_attr(obj, attr, objname, throw=True):
+          if not throw:
+              return attr in obj
+          if not attr in obj:
+              raise Exception("{} does not have required attribute {} in config".format(objname, attr))
+      verify_attr(self.config, 'bags', 'Config')
+      self._print('Pulling segments from {} bag(s):', len(self.config['bags']))
+      for bag in self.config['bags']:
+          verify_attr(bag, 'file', 'Bag')
+          verify_attr(bag, 'labeled_file', 'Bag')
+          if not 'file' in bag:
+              raise Exception("Bag does not contain 'file' attribute {}".format(bag))
+          verify_attr(bag, 'segments', bag['file'])
+          self._print('\tFound {} segments for {}:', len(bag['segments']), bag['file'])
+          for segment in bag['segments']:
+              verify_attr(segment, 'start', 'segment', throw=False)
+              verify_attr(segment, 'stop', 'segment', throw=False)
+              verify_attr(segment, 'freq', 'segment', throw=False)
+              verify_attr(segment, 'topic', 'segment')
+              verify_attr(segment, 'name', 'segment')
+              self._print("\t\tFound segment '{}' from topic '{}' from {} to {} every {}",
+                          segment['name'], segment['topic'],
+                          segment['start'] if segment.has_key('start') else 'start',
+                          segment['stop'] if segment.has_key('stop') else 'stop',
+                          str(segment['freq']) + ' seconds' if segment.has_key('freq') else 'frame')
 
   def read_bags(self):
       """
@@ -64,7 +101,7 @@ class BagToLabelMe():
       where TOPIC_NAME replaces all / with @ for compatibility with filesystems.
       """
       for bag in self.config['bags']:
-          print "Opening {}".format(bag['file'])
+          self._print("Opening {}", bag['file'])
           self._read_bag(bag['file'], bag['segments'])
 
   def extract_labels(self):
@@ -72,9 +109,9 @@ class BagToLabelMe():
       Finds labeled XML files in LabelMe directories determined from the
       config file, placing parsed annotation data as ros messages in a new bag
       """
-      print "Extracting labels for all bags in config"
+      self._print("Extracting labels for all bags in config")
       for bag in self.config['bags']:
-          print "\tExtracting LabelMe annotations for {}".format(bag['file'])
+          self._print("\tExtracting LabelMe annotations for {}".format(bag['file']))
           # TODO: give output bag a default name like INFILE_labeled.bag
           outfile = bag['labeled_file']
           self._extract_labels_bag(bag, outfile)
@@ -87,54 +124,37 @@ class BagToLabelMe():
       
       Prints out these counts in percentages by segement, bag, and overall
       """
-      print "Generating completion report for all bags in config"
+      self._print("Generating completion report for all bags in config")
       total_xml_count = 0
       total_img_count = 0
       for bag in self.config['bags']:
-          print "\tGenerating completion report for {}".format(bag['file'])
+          self._print("\tGenerating completion report for {}", bag['file'])
           x, i = self._print_bag_report(bag)
           total_xml_count += x
           total_img_count += i
-      print "{}/{} TOTAL images labeled ({}%)".format(total_xml_count, total_img_count, round(100.0*total_xml_count/total_img_count,2))
-
-  def _verify_yaml(self):
-      """
-      Called by constructor to ensure YAML follows correct format.
-      
-      TODO: Improve this process, perhaps using the YAML library more extensiviely
-      """
-      if not 'bags' in self.config:
-          raise Exception("Config file does not contain 'bags' attribute")
-      for bag in self.config['bags']:
-          if not 'file' in bag:
-              raise Exception("Bag does not contain 'file' attribute {}".format(bag))
-          if not 'segments' in bag:
-              raise Exception("Bag does not contain 'segments' attribute {}".format(bag))
-          for segment in bag['segments']:
-              if not 'start' in segment:
-                  raise Exception("Segment does not contain 'start' attribute {}".format(segment))
-              if not 'stop' in segment:
-                  raise Exception("Segment does not contain 'stop' attribute {}".format(segment))
-              if not 'topic' in segment:
-                  raise Exception("Segment does not contain 'topic' attribute {}".format(segment))
-              if not 'name' in segment:
-                  raise Exception("Segment does not contain 'name' attribute {}".format(segment))
-              if not 'freq' in segment:
-                  raise Exception("Segment does not contain 'freq' attribute {}".format(segment))
+      if total_img_count == 0:
+          print "{}/{} TOTAL images labeled (0%)".format(total_xml_count, total_img_count)
+      else:
+          print "{}/{} TOTAL images labeled ({:.1%})".format(total_xml_count, total_img_count, total_xml_count/total_img_count)
 
   def _read_bag(self, bagfile, segments):
       bag = rosbag.Bag(bagfile)
       _, _, first_time = bag.read_messages().next()
       for segment in segments:
-          print "\tProccessing Segment '{}' with topic '{}'".format(segment['name'], segment['topic'])
+          self._print("\tProccessing Segment '{}'",segment['name'])
           path = os.path.join(self.labelme_dir, 'Images', segment['name'], segment['topic'].replace('/', '@'))
           if not os.path.exists(path):
               os.makedirs(path)
-          start = first_time + rospy.Duration(segment['start'])
-          stop = first_time + rospy.Duration(segment['stop'])
-          interval = rospy.Duration(1.0 / segment['freq'])
-          print "\t\tSaving Images from duration {} to {} every {} seconds".format(segment['start'], segment['stop'], interval.to_sec())
-          next_time = start
+          start = None
+          stop = None
+          interval = rospy.Duration(0)
+          if segment.has_key('start'):
+              start = first_time + rospy.Duration(segment['start'])
+          if segment.has_key('stop'):
+              stop = first_time + rospy.Duration(segment['stop'])
+          if segment.has_key('freq'):
+              interval = rospy.Duration(1.0 / segment['freq'])
+          next_time = start if start is not None else rospy.Time(0)
           for topic, msg, time in bag.read_messages(topics=[segment['topic']], start_time = start, end_time = stop):
               if time >= next_time:
                   img = self.bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
@@ -146,19 +166,29 @@ class BagToLabelMe():
       total_xml_count = 0
       total_img_count = 0
       for segment in bagconfig['segments']:
-          print "\t\tGenerating Report for segment '{}' with topic '{}'".format(segment['name'], segment['topic'])
+          self._print("\t\tGenerating Report for segment '{}'",segment['name'])
           xml_path = os.path.join(self.labelme_dir, 'Annotations', segment['name'], segment['topic'].replace('/', '@'))
           img_path = os.path.join(self.labelme_dir, 'Images', segment['name'], segment['topic'].replace('/', '@'))
           xml_count = 0
           img_count = 0
-          for xmlfile in os.listdir(xml_path):
-              xml_count += 1
-          for imgfile in os.listdir(img_path):
-              img_count += 1
-          print "\t\t\t{}/{} images labeled in this segment ({}%)".format(xml_count, img_count, round(100.0*xml_count/img_count,2))
+          if os.path.isdir(xml_path):
+              for xmlfile in os.listdir(xml_path):
+                  xml_count += 1
+          if os.path.isdir(img_path):
+              for imgfile in os.listdir(img_path):
+                  img_count += 1
+          else:
+              raise Exception("Directory {} not found. Have you run once to generate images yet?".format(img_path))
+          if img_count == 0:
+                self._print("\t\t\t{}/{} images labeled in this segment (0%)", xml_count, img_count)
+          else:
+                self._print("\t\t\t{}/{} images labeled in this segment ({:.1%})", xml_count, img_count, xml_count/img_count)
           total_xml_count += xml_count
           total_img_count += img_count
-      print "\t\t{}/{} images labeled in this bag ({}%)".format(total_xml_count, total_img_count, round(100.0*total_xml_count/total_img_count,2))
+      if total_img_count == 0:
+          self._print("\t\t{}/{} images labeled in this bag (0%)", total_xml_count, total_img_count)
+      else:
+          self._print("\t\t{}/{} images labeled in this bag ({:.1%})", total_xml_count, total_img_count, total_xml_count/total_img_count)
       return total_xml_count, total_img_count
 
   def _parse_label_xml(self, filename):
@@ -176,9 +206,9 @@ class BagToLabelMe():
               obj_msg.attributes = attributes
           polygon = obj.find('polygon')
           for pt in polygon.findall('pt'):
-            x = int(pt.find('x').text)
-            y = int(pt.find('y').text)
-            obj_msg.polygon.append(Point(x, y, 0))
+              x = int(pt.find('x').text)
+              y = int(pt.find('y').text)
+              obj_msg.polygon.append(Point(x, y, 0))
           msg.objects.append(obj_msg)
       return msg
 
@@ -188,7 +218,9 @@ class BagToLabelMe():
           labels[segment['topic']] = {}
       for segment in bag_config['segments']:
           path = os.path.join(self.labelme_dir, 'Annotations', segment['name'], segment['topic'].replace('/', '@'))
-          print "\t\tExtracting LabelMe annotations from {}".format(path)
+          self._print("\t\tExtracting LabelMe annotations from {}", path)
+          if not os.path.isdir(path):
+              continue
           for xmlfile in os.listdir(path):
               stamp = xmlfile.split('.xml', 1)
               assert len(stamp) == 2
@@ -203,11 +235,10 @@ class BagToLabelMe():
       for topic, msg, t in bag.read_messages():
         if msg._type == 'sensor_msgs/Image':
             if topic in label_files:
-              if str(msg.header.stamp) in label_files[topic]:
-                  labels = self._parse_label_xml(label_files[topic][str(msg.header.stamp)])
-                  labels.header = msg.header
-                  print "\t\tFound matching label at {} {}".format(topic, str(msg.header.stamp))
-                  out.write(topic+'/labels', labels, t+rospy.Duration(0.0000001))
+                if str(msg.header.stamp) in label_files[topic]:
+                    labels = self._parse_label_xml(label_files[topic][str(msg.header.stamp)])
+                    labels.header = msg.header
+                    out.write(topic+'/labels', labels, t)
         out.write(topic, msg, t)
       out.flush()
 
@@ -217,13 +248,19 @@ if __name__ == "__main__":
                         help='YAML file specifying what bags to read and extract images from. See example YAML for details')
     parser.add_argument('--labelme-dir', '-d', dest='dir',type=str, required=True,
                         help='root directory of labelme instalation')
-    parser.add_argument('--extract', '-e', dest='extract_labels', action='store_true',
+    parser.add_argument('--extract-labels', '-e', dest='extract_labels', action='store_true',
                         help='Read annotations from labelme, inserting them into a new bag')
-    parser.add_argument('--report', '-r', dest='do_report', action='store_true',
+    parser.add_argument('--generate-report', '-r', dest='do_report', action='store_true',
                         help='Read annotations from labelme and produces a report on labeling coverage')
+    parser.add_argument('--dry-run', '-n', dest='do_dry_run', action='store_true',
+                        help='No op, just verify parsed config of yaml. Use -v for to print info about parsed config.')
+    parser.add_argument('--verbose', '-v', dest='verbose', action='store_true',
+                        help='Print extra information about what the script is doing')
     args = parser.parse_args()
-    bag_to_labelme = BagToLabelMe(args.config, args.dir)
-    if args.extract_labels:
+    bag_to_labelme = BagToLabelMe(args.config, args.dir, verbose = args.verbose)
+    if args.do_dry_run:
+        pass
+    elif args.extract_labels:
         bag_to_labelme.extract_labels()
     elif args.do_report:
         bag_to_labelme.print_report()
