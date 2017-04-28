@@ -1,40 +1,60 @@
 #!/bin/bash
 
-# The bag command works in tandum with the bmux command. Once the bagging
-# variables have been loaded with bmux, the bag command can be used with
-# autocompletion to select topics. It is mainly a convenience layer for
-# rosbag; however, it does introduce a few features. A list of BAG_ALWAYS
-# topics can include topics that every bag should contain, bag directory
-# management is handled cleanly, and naming bags is... strongly encouraged.
+# The bag command is mainly a convenience layer for rosbag; however, it does
+# introduce a few features. A list of BAG_ALWAYS topics can include topics that
+# every bag should contain, bag directory management is handled cleanly, and
+# naming bags is... strongly encouraged. The configuration can be imported from
+# and exported to a file, meaning the bagging variables can be version
+# controlled for each project. Once a configuration file is loaded, bagging
+# variables will be autocompleted by bash and can be grouped on the fly.
 
 
+BAGGING_VARIABLES_FILE="scripts/bagging_variables.sh"
 VARIABLE_PREFIX="bag_"
 
 
 _bagging_complete() {
-	local VARIABLE
+	local ITEM
+	if [[ ! -z "$COMP_CWORD" ]]; then
+		local PREVIOUS="${COMP_WORDS[$((COMP_CWORD - 1))]}"
+	fi
+
+	# If the previous argument signifies an import, complete from bagging variables files
+	if [[ "$PREVIOUS" == "-i" || "$PREVIOUS" == "--import" ]]; then
+
+		# Check for bagging variables files in the catkin workspace repositories
+		for ITEM in $CATKIN_DIR/src/"$2"*; do
+
+			# Skip any repository that does not contain a bagging variables file
+			if [[ -f $ITEM/$BAGGING_VARIABLES_FILE ]]; then
+
+				# Append just the name of the repository to the autocomplete list
+				COMPREPLY+=( $(echo "$ITEM" | rev | cut -d '/' -f1 | rev) )
+			fi
+		done
 
 	# Append all ROS topics to the autocomplete list if the string to autocomplete begins with a '/' character
-	if [[ "${2:0:1}" == '/' ]]; then
+	elif [[ "${2:0:1}" == '/' ]]; then
 		COMPREPLY+=( $(rostopic list 2> /dev/null) )
 
 	else
 
 		# Otherwise, iterate over all of the bagging variables in the environment with the prefix removed
-		for VARIABLE in $(env | grep "$VARIABLE_PREFIX$2" | cut -d '=' -f1 | sed "s@$VARIABLE_PREFIX@@"); do
+		for ITEM in $(env | grep "$VARIABLE_PREFIX$2" | cut -d '=' -f1 | sed "s@$VARIABLE_PREFIX@@"); do
 
 			# Append the variable to the autocomplete list
-			COMPREPLY+=( "$VARIABLE" )
+			COMPREPLY+=( "$ITEM" )
 		done
 	fi
 }
 
 
 bag() {
+	local BAGGING_VARIABLES="$(env | grep 'bag_' | cut -d '=' -f1 | cut -d ' ' -f2)"
 	local WORKING_DIRECTORY=$PWD
 	local MODE="bag"
-	local NAME
 	local TOPICS
+	local NAME
 	local ARGS
 
 	# Get the list of bagging variables
@@ -60,6 +80,19 @@ bag() {
 				MODE="false"
 				shift 2
 				;;
+			-c|--clear)
+				if [[ ! -z "$BAGGING_VARIABLES" ]]; then
+					for VARIABLE in $BAGGING_VARIABLES; do
+						unset "$VARIABLE"
+					done
+				fi
+
+				# Unset special variables separately
+				unset BAG_ALWAYS
+				unset BAG_DIR
+				MODE="false"
+				shift 1
+				;;
 			-g|--group)
 				if [[ "$MODE" != "false" ]]; then
 					MODE="group"
@@ -72,12 +105,30 @@ bag() {
 				echo ""
 				echo "Option		GNU long option		Meaning"
 				echo "-a [ROSBAG_ARG]	--args			Pass arguments after to rosbag"
+				echo "-c		--clear			Clear all existing bagging variables"
 				echo "-d [DIRECTORY]	--directory		Set the bag storage directory"
 				echo "-g 		--group			Group a set of existing variables"
 				echo "-h		--help			Display the help menu"
+				echo "-i [REPOSITORY]	--import		Import bagging variables from a file"
 				echo "-l		--list			List available bagging variables"
 				echo "-n [BAG_NAME]	--name			Pass a name for bags or groups"
 				echo "-s		--show			Show full bag configuration"
+				MODE="false"
+				shift 1
+				;;
+			-i|--import)
+
+				# Clear existing bagging aliases before importiing new ones
+				bag -c
+
+				if [[ -f $CATKIN_DIR/src/$2/$BAGGING_VARIABLES_FILE ]]; then
+					source $CATKIN_DIR/src/$2/$BAGGING_VARIABLES_FILE
+
+				# Inform the user if the selected file does not exist
+				else
+					echo "$CATKIN_DIR/src/$2 has no scripts/bagging_variables.sh file."
+					echo "Try 'bag --help' for more information."
+				fi
 				MODE="false"
 				shift 1
 				;;
@@ -86,7 +137,7 @@ bag() {
 					echo "${COMPREPLY[@]}" | sed 's/ /  /g'
 				else
 					echo "No bagging variables have been loaded"
-					echo "Try 'bmux --help' for more information."
+					echo "Try 'bag --help' for more information."
 				fi
 				MODE="false"
 				shift 1
@@ -104,7 +155,7 @@ bag() {
 					env | grep $VARIABLE_PREFIX
 				else
 					echo "No bagging variables have been loaded"
-					echo "Try 'bmux --help' for more information."
+					echo "Try 'bag --help' for more information."
 				fi
 				MODE="false"
 				shift 1
