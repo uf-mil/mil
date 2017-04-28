@@ -8,6 +8,9 @@
 # user machines, if you're into that sort of thing.
 
 
+WS_CONFIG_FILE=$MIL_CONFIG_DIR/wsmux.conf
+
+# This file is created in the root directory of a catkin workspace
 WS_MARKER=".catkin_workspace"
 
 
@@ -36,14 +39,76 @@ wsmux() {
 	while (( $# > 0 )); do
 		case $1 in
 			-h|--help)
-				echo "Usage: wsmux [OPTION]... [CATKIN_WORKSPACE]"
+				echo "Usage: wsmux [OPTION]... [WORKSPACE]"
 				echo "Quick catkin workspace switcher."
 				echo ""
 				echo "Option		GNU long option		Meaning"
+				echo "-b [WORKSPACE]	--bind			Bind an SSH client to a workspace"
+				echo "-c		--connect		Select the SSH client's workspace"
 				echo "-h		--help			Display the help menu"
-				echo "-l		--list			List the detected catkin workspaces"
-				echo "-s		--show			Show the selected catkin workspace"
+				echo "-l		--list			List the detected workspaces"
+				echo "-s		--show			Show the selected workspace"
 				SELECTION="false"
+				shift 1
+				;;
+			-b|--bind)
+
+				# Ensure that a client has connected via SSH
+				if [[ -z "$SSH_CLIENT" ]]; then
+					echo "This is not an SSH session, so there is no client to bind"
+
+				# Prompt the user to check themself if the workspace is not valid
+				elif [[ ! -f ~/$2/devel/setup.sh ]]; then
+					echo "The specified workspace is not valid. I don't trust like that..."
+					echo "Please specify the name of a workspace in the home directory"
+
+				else
+					source $WS_CONFIG_FILE
+
+					# Replace any binding that already exists for this SSH client
+					local REPLACED="false"
+					for (( BINDING_INDEX=0; BINDING_INDEX < ${#WORKSPACE_BINDINGS[@]}; BINDING_INDEX++ )); do
+						if [[ "$(echo ${WORKSPACE_BINDINGS[BINDING_INDEX]} | cut -d ':' -f1)" == "$(echo $SSH_CLIENT | cut -d ' ' -f1)" ]]; then
+							WORKSPACE_BINDINGS[BINDING_INDEX]="$(echo $SSH_CLIENT | cut -d ' ' -f1):$2"
+							REPLACED="true"
+						fi
+					done
+
+					# Add a new binding for the client if no previous one was found
+					if [[ "$REPLACED" != "true" ]]; then
+						WORKSPACE_BINDINGS+=( "$(echo $SSH_CLIENT | cut -d ' ' -f1):$2" )
+					fi
+
+					# Rewrite the configuration file with the new binding
+					echo "WORKSPACE_BINDINGS=(	${WORKSPACE_BINDINGS[0]}" > $WS_CONFIG_FILE
+					for (( BINDING_INDEX=1; BINDING_INDEX < ${#WORKSPACE_BINDINGS[@]}; BINDING_INDEX++ )); do
+						echo "			${WORKSPACE_BINDINGS[$BINDING_INDEX]}" >> $WS_CONFIG_FILE
+					done
+					echo ")" >> $WS_CONFIG_FILE
+				fi
+				SELECTION="false"
+				shift 1
+				;;
+			-c|--connect)
+				SELECTION="false"
+				source $WS_CONFIG_FILE
+
+				# Iterate through the list of bindings
+				for BINDING in ${WORKSPACE_BINDINGS[@]}; do
+					if [[ "$(echo $BINDING | cut -d ':' -f1)" == "$(echo $SSH_CLIENT | cut -d ' ' -f1)" ]]; then
+
+						# If the binding was found for this SSH client, find it in the home directory
+						if [[ -f ~/$(echo $BINDING | cut -d ':' -f2)/devel/setup.sh ]]; then
+							SELECTION=~/$(echo $BINDING | cut -d ':' -f2)
+
+						# Otherwise, prompt the user to check themself
+						else
+							echo "The specified workspace is not valid. I don't trust like that..."
+							echo "Please specify the name of a workspace in the home directory"
+							SELECTION="false"
+						fi
+					fi
+				done
 				shift 1
 				;;
 			-l|--list)
@@ -72,20 +137,14 @@ wsmux() {
 			*)
 				if [[ "$SELECTION" != "false" ]]; then
 
-					# If the workspace was specified as a path, use it as is
-					if [[ -f $1/devel/setup.sh ]]; then
-						CATKIN_DIR=$(pwd)/$1
-						SELECTION=$CATKIN_DIR/devel/setup.sh
-
 					# If a workspace name was passed, find it in the home directory
-					elif [[ -f ~/$1/devel/setup.sh ]]; then
-						CATKIN_DIR=~/$1
-						SELECTION=$CATKIN_DIR/devel/setup.sh
+					if [[ -f ~/$1/devel/setup.sh ]]; then
+						SELECTION=~/$1
 
-					# If neither of these were the case, prompt the user to check themself
+					# Otherwise, prompt the user to check themself
 					else
 						echo "The specified workspace is not valid. I don't trust like that..."
-						echo "Please specify a path or the name of a workspace in the home directory"
+						echo "Please specify the name of a workspace in the home directory"
 						SELECTION="false"
 					fi
 				fi
@@ -95,13 +154,18 @@ wsmux() {
 	done
 
 	if [[ ! -z "$SELECTION" && "$SELECTION" != "false" ]]; then
-			source $SELECTION
-			export CATKIN_DIR
+			source $SELECTION/devel/setup.sh
+			export CATKIN_DIR=$SELECTION
 	fi
 
 	unset COMPREPLY
 }
 
+# Generates the configuration file if it does not exist
+if [[ ! -f $WS_CONFIG_FILE ]]; then
+	echo "WORKSPACE_BINDINGS=(	" > $WS_CONFIG_FILE
+	echo ")" >> $WS_CONFIG_FILE
+fi
 
 # Registers the autocompletion function to be invoked for wsmux
 complete -F _catkin_ws_complete wsmux
