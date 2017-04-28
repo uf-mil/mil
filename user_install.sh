@@ -197,7 +197,7 @@ if [[ "$INSTALL_NAV" == "true" ]]; then
 	REQUIRED_OS_RELEASE="14.04"
 	ROS_VERSION="indigo"
 
-if [[ "$(lsb_release -si)" == "Debian" ]]; then
+elif [[ "$(lsb_release -si)" == "Debian" ]]; then
 	REQUIRED_OS_ID="Debian"
 	REQUIRED_OS_CODENAME="jessie"
 	REQUIRED_OS_RELEASE="8.7"
