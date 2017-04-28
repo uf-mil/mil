@@ -1,4 +1,4 @@
-Welcome to the SubjuGator Wiki! This repository hosts all of the code that is specific to the SubjuGator platform. For general information about MIL and our projects, see the [mil_common wiki](https://github.com/uf-mil/mil_common/wiki).
+Welcome to the SubjuGator Wiki! This repository hosts all of the code that is specific to the SubjuGator platform. For general information about MIL and our projects, see the [mil_common wiki](https://github.com/uf-mil/mil_common/wiki). Be sure to check out the [preliminary rules](https://drive.google.com/file/d/0B6R3K-IZtXFXLVhlQnF4ZzdLQlU/view) for more information about the competition.
 
 If you have any questions, don't hesitate to email David Soto.
 
