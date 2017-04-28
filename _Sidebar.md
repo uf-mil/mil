@@ -1,5 +1,6 @@
 * [[Home]]
     * [[Mission Assignments]]
+    * [[Mission Props]]
     * [[Testing Plans]]
 * Using the Sub
     * [[Operator Guide]]
