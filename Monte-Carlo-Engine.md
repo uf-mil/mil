@@ -30,6 +30,5 @@ We can test much more rich behaviors, like:
 
 * Test at state in N~(sigma, some_state_X), with 1000 tests
 * Test in simulation without requiring rendering
-    * We should be able these tests on Semaphore
 * Should be able to use them in nosetests, and do everything in Python
 * Should be able to use this outside of a unit-test, for gain optimization or whatever
