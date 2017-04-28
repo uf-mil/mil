@@ -101,6 +101,11 @@ wsmux() {
 						if [[ -f ~/$(echo $BINDING | cut -d ':' -f2)/devel/setup.sh ]]; then
 							SELECTION=~/$(echo $BINDING | cut -d ':' -f2)
 
+							# Source the workspace runcom file if it exists
+							if [[ -f $SELECTION/.wsrc ]]; then
+								source $SELECTION/.wsrc
+							fi
+
 						# Otherwise, prompt the user to check themself
 						else
 							echo "The specified workspace is not valid. I don't trust like that..."
