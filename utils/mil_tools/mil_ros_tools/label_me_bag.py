@@ -4,15 +4,16 @@
 Converts bags to labelme images, or labelme annotations to bags.
 
 Uses a YAML file to specify what times and topics in a set of bag files
-will be used to produce images which are places in a corosponding
-folder in a LabelMe instalation.
+will be used to extract images for labeling. These images will be placed
+in the correct folder to be displayed in the LabelMe web interface.
 
-When run with the -e flag, uses same YAML file to read LabelMe annotations
-and place them as a ros message at syncronized times with the images
-they corospond to.
+Once images are labeled, run this command again with --inject-annotations
+to parse the labeled images and inject them as a ros message into a new bag file.
 
 With the -r flag, a report will be generated based on the specified YAML
-about how many images are labeled in LabelMe
+about how many images are labeled in LabelMe. If this returns 100%,
+all images generated from the bag are now labeled and can be injected
+back into a bag.
 
 """
 
@@ -93,7 +94,7 @@ class BagToLabelMe():
   def read_bags(self):
       """
       Crawls through all bags in config YAML, placing images from the specified
-      topics and the specified frequency into corosponding folders within
+      topics and the specified frequency into corresponding folders within
       Images of the labelme instalation.
       
       These folders will be created as follows if not already:
@@ -113,8 +114,14 @@ class BagToLabelMe():
       for bag in self.config['bags']:
           self._print("\tExtracting LabelMe annotations for {}".format(bag['file']))
           # TODO: give output bag a default name like INFILE_labeled.bag
-          outfile = bag['labeled_file']
-          self._extract_labels_bag(bag, outfile)
+          if not bag.has_key('labeled_file'):
+              split = os.path.split(bag['file'])
+              filename = split[1].rsplit('.bag', 1)[0]
+              outfile = os.path.join(split[0], filename, '.bag')
+              self._extract_labels_bag(bag, outfile)
+          else:
+              outfile = bag['labeled_file']
+              self._extract_labels_bag(bag, outfile)
 
   def print_report(self):
       """
@@ -138,13 +145,21 @@ class BagToLabelMe():
           print "{}/{} TOTAL images labeled ({:.1%})".format(total_xml_count, total_img_count, total_xml_count/total_img_count)
 
   def _read_bag(self, bagfile, segments):
+      """
+      Crawls through a single bag specified in the config YAML, placing
+      images into the Images/ directory of labelme.
+      
+      Called me read_bags for each bag in YAML
+      """
       bag = rosbag.Bag(bagfile)
       _, _, first_time = bag.read_messages().next()
       for segment in segments:
           self._print("\tProccessing Segment '{}'",segment['name'])
+          # Put images in LABELMEDIR/Images/SEGMENTNAME/TOPIC, where TOPIC replaces / with @
           path = os.path.join(self.labelme_dir, 'Images', segment['name'], segment['topic'].replace('/', '@'))
           if not os.path.exists(path):
               os.makedirs(path)
+          # Ensure start and stop are passed as None to read_messages if not defined
           start = None
           stop = None
           interval = rospy.Duration(0)
@@ -155,14 +170,27 @@ class BagToLabelMe():
           if segment.has_key('freq'):
               interval = rospy.Duration(1.0 / segment['freq'])
           next_time = start if start is not None else rospy.Time(0)
+          # Crawl through bag between start and stop time at freq
           for topic, msg, time in bag.read_messages(topics=[segment['topic']], start_time = start, end_time = stop):
               if time >= next_time:
+                  # If enough time has elapsed, put an image in this segment's directory,
+                  # named by the frame's timestamp converted to a string: str(ros.Time(stamp))
                   img = self.bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
                   filename = os.path.join(path, str(msg.header.stamp) + '.jpg')
                   cv2.imwrite(filename, img)
                   next_time = next_time + interval
       
   def _print_bag_report(self, bagconfig):
+      """
+      Compares number of labeled XML files in LabelMe for a given
+      bag specified in YAML config to number of images in LabelMe for this
+      bag.
+      
+      If verbose is enabled, prints info for each segment. Otherwise,
+      just returns total counts.
+      
+      Called by print_report for each bag in config.
+      """
       total_xml_count = 0
       total_img_count = 0
       for segment in bagconfig['segments']:
@@ -192,6 +220,11 @@ class BagToLabelMe():
       return total_xml_count, total_img_count
 
   def _parse_label_xml(self, filename):
+      """
+      Given an XML file containing annotation data in LabelMe format,
+      generates and returns a mil_msgs/LabeledObjects message
+      containing the same data.
+      """
       msg = LabeledObjects()
       e = xml.etree.ElementTree.parse(filename).getroot()
       for obj in e.findall('object'):
@@ -213,6 +246,13 @@ class BagToLabelMe():
       return msg
 
   def _get_labels(self, bag_config):
+      """
+      Given a config for a single bag, finds all XML files in LabelMe
+      containing data for the segments in this bag.
+      
+      returns a dictionary mapping ros.Time stamps to XML files.
+      Used by extract_labels to put labelme data back into bag.
+      """
       labels = {}
       for segment in bag_config['segments']:
           labels[segment['topic']] = {}
@@ -244,12 +284,13 @@ class BagToLabelMe():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generates rosbags based on LabelMe data and visa/versa')
-    parser.add_argument('config', type=str,
+    parser.add_argument('--config-file', '-c', dest='config', type=str, required=True,
                         help='YAML file specifying what bags to read and extract images from. See example YAML for details')
     parser.add_argument('--labelme-dir', '-d', dest='dir',type=str, required=True,
                         help='root directory of labelme instalation')
-    parser.add_argument('--extract-labels', '-e', dest='extract_labels', action='store_true',
-                        help='Read annotations from labelme, inserting them into a new bag')
+    parser.add_argument('--inject-annotations', '-i', dest='extract_labels', action='store_true',
+                        help='Instead of putting bag images into LabelMe, read annotations from labelme,\
+                              inserting them into a new bag as specified in config')
     parser.add_argument('--generate-report', '-r', dest='do_report', action='store_true',
                         help='Read annotations from labelme and produces a report on labeling coverage')
     parser.add_argument('--dry-run', '-n', dest='do_dry_run', action='store_true',
