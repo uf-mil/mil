@@ -91,6 +91,7 @@ generate_configuration() {
 bag() {
 	local BAGGING_VARIABLES="$(env | grep 'bag_' | cut -d '=' -f1 | cut -d ' ' -f2)"
 	local WORKING_DIRECTORY=$PWD
+	local NOTE_TEXT="true"
 	local MODE="bag"
 	local TOPICS
 	local NAME
@@ -165,6 +166,7 @@ bag() {
 				echo "-l		--list			List available bagging variables"
 				echo "-n [BAG_NAME]	--name			Pass a name for bags or groups"
 				echo "-s		--show			Show full bag configuration"
+				echo "-t		--text			Open a text file for taking notes"
 				MODE="false"
 				shift 1
 				;;
@@ -212,6 +214,10 @@ bag() {
 				MODE="false"
 				shift 1
 				;;
+			-t|--text)
+				NOTE_TEXT="true"
+				shift 1
+				;;
 			-*)
 				echo "Option $1 is not implemented."
 				echo "Try 'bag --help' for more information."
@@ -238,18 +244,35 @@ bag() {
 	done
 
 	if [[ "$MODE" != "false" ]]; then
+
+		# If grouping mode was selected, create a new bagging variable
 		if [[ "$MODE" == "group" && ! -z "$TOPICS" ]]; then
+
+			# Retrieve a variable name if one was not passed
 			while [[ -z "$NAME" ]]; do
 				echo -n "What should this group be called? " && read NAME
 			done
 			export "${VARIABLE_PREFIX}${NAME}"="$TOPICS"
+
+		# If bagging mode was selected, create a ROS bag
 		elif [[ "$MODE" == "bag" ]]; then
+
+			# Retrieve a bag name if one was not passed
 			while [[ -z "$NAME" ]]; do
 				echo -n "What should this bag be called? " && read NAME
 			done
+
+			# Store the bag in the correct dated folder
 			mkdir -p $BAG_DIR"/$(date +%Y-%m-%d)"
 			cd $BAG_DIR"/$(date +%Y-%m-%d)"
 			rosbag record -O $NAME $ARGS $BAG_ALWAYS $TOPICS
+
+			# If the text flag was passed in, create a notes file of the same name
+			if [[ "$NOTE_TEXT" == "true" ]]; then
+				vim $NAME.txt
+			fi
+
+			# Return the user to the directory they ran the command from
 			cd $WORKING_DIRECTORY
 		fi
 	fi
