@@ -9,7 +9,7 @@
 # variables will be autocompleted by bash and can be grouped on the fly.
 
 
-BAGGING_VARIABLES_FILE="scripts/bagging_variables.sh"
+CONFIGURATION_FILE="bagging_variables.sh"
 VARIABLE_PREFIX="bag_"
 
 
@@ -19,14 +19,28 @@ _bagging_complete() {
 		local PREVIOUS="${COMP_WORDS[$((COMP_CWORD - 1))]}"
 	fi
 
-	# If the previous argument signifies an import, complete from bagging variables files
+	# If the previous argument signifies an import, complete from configuration files
 	if [[ "$PREVIOUS" == "-i" || "$PREVIOUS" == "--import" ]]; then
 
-		# Check for bagging variables files in the catkin workspace repositories
+		# Check for configuration files in the catkin workspace repositories
 		for ITEM in $CATKIN_DIR/src/"$2"*; do
 
-			# Skip any repository that does not contain a bagging variables file
-			if [[ -f $ITEM/$BAGGING_VARIABLES_FILE ]]; then
+			# Skip any repository that does not contain a configuration file
+			if [[ -f $ITEM/scripts/$CONFIGURATION_FILE ]]; then
+
+				# Append just the name of the repository to the autocomplete list
+				COMPREPLY+=( $(echo "$ITEM" | rev | cut -d '/' -f1 | rev) )
+			fi
+		done
+
+	# If the previous argument signifies an export, complete from repository scripts directories
+	elif [[ "$PREVIOUS" == "-e" || "$PREVIOUS" == "--export" ]]; then
+
+		# Check for scripts directories in the catkin workspace repositories
+		for ITEM in $CATKIN_DIR/src/"$2"*; do
+
+			# Skip any repository that does not contain a scripts directories
+			if [[ -d $ITEM/scripts ]]; then
 
 				# Append just the name of the repository to the autocomplete list
 				COMPREPLY+=( $(echo "$ITEM" | rev | cut -d '/' -f1 | rev) )
@@ -48,6 +62,31 @@ _bagging_complete() {
 	fi
 }
 
+generate_configuration() {
+	local BAGGING_VARIABLES="$(env | grep 'bag_' | cut -d '=' -f1 | cut -d ' ' -f2)"
+	local VARIABLE
+
+	echo "#!/bin/bash"
+	echo ""
+	echo "# This script will be sourced by the bag command as a configuration file. It is"
+	echo "# imperative that each variable is in the bag_* namespace and contains a space"
+	echo "# diliniated list of ROS topics. The only two exceptions to this rule are the"
+	echo "# BAG_ALWAYS and BAG_DIR variables."
+	echo ""
+	echo ""
+	echo "# Define topics that should be in every bag"
+	echo "export BAG_ALWAYS=\"$BAG_ALWAYS\""
+	echo ""
+	echo "# Define the directory that the bags will be stored in"
+	echo "export BAG_DIR=$BAG_DIR"
+	echo ""
+	echo ""
+	echo "# Topic variables that can be used from the bag command"
+
+	for VARIABLE in $BAGGING_VARIABLES; do
+		echo "export $VARIABLE=\"$(env | grep $VARIABLE= | cut -d '=' -f2)\""
+	done
+}
 
 bag() {
 	local BAGGING_VARIABLES="$(env | grep 'bag_' | cut -d '=' -f1 | cut -d ' ' -f2)"
@@ -74,12 +113,6 @@ bag() {
 					shift 1
 				done
 				;;
-			-d|--directory)
-				export BAG_DIR="$2"
-				echo "The bag storage directory is set to $BAG_DIR"
-				MODE="false"
-				shift 2
-				;;
 			-c|--clear)
 				if [[ ! -z "$BAGGING_VARIABLES" ]]; then
 					for VARIABLE in $BAGGING_VARIABLES; do
@@ -93,6 +126,24 @@ bag() {
 				MODE="false"
 				shift 1
 				;;
+			-d|--directory)
+				export BAG_DIR="$2"
+				echo "The bag storage directory is set to $BAG_DIR"
+				MODE="false"
+				shift 2
+				;;
+			-e|--export)
+				if [[ -d $CATKIN_DIR/src/$2/scripts ]]; then
+					generate_configuration > $CATKIN_DIR/src/$2/scripts/$CONFIGURATION_FILE
+
+				# Inform the user if the selected repository does not have a scripts directory
+				else
+					echo "$CATKIN_DIR/src/$2 has no scripts directory."
+					echo "Try 'bag --help' for more information."
+				fi
+				MODE="false"
+				shift 2
+				;;
 			-g|--group)
 				if [[ "$MODE" != "false" ]]; then
 					MODE="group"
@@ -101,15 +152,16 @@ bag() {
 				;;
 			-h|--help)
 				echo "Usage: bag [OPTION]... [BAG_VARIABLE]..."
-				echo "Manager for sourcing bagging variables for different MIL vehicles."
+				echo "Wrapper for efficiently using the rosbag command."
 				echo ""
 				echo "Option		GNU long option		Meaning"
 				echo "-a [ROSBAG_ARG]	--args			Pass arguments after to rosbag"
-				echo "-c		--clear			Clear all existing bagging variables"
+				echo "-c		--clear			Clear the existing configuration"
 				echo "-d [DIRECTORY]	--directory		Set the bag storage directory"
+				echo "-e [REPOSITORY]	--export		Export the configuration to a file"
 				echo "-g 		--group			Group a set of existing variables"
 				echo "-h		--help			Display the help menu"
-				echo "-i [REPOSITORY]	--import		Import bagging variables from a file"
+				echo "-i [REPOSITORY]	--import		Import a configuration from a file"
 				echo "-l		--list			List available bagging variables"
 				echo "-n [BAG_NAME]	--name			Pass a name for bags or groups"
 				echo "-s		--show			Show full bag configuration"
@@ -121,8 +173,8 @@ bag() {
 				# Clear existing bagging aliases before importiing new ones
 				bag -c
 
-				if [[ -f $CATKIN_DIR/src/$2/$BAGGING_VARIABLES_FILE ]]; then
-					source $CATKIN_DIR/src/$2/$BAGGING_VARIABLES_FILE
+				if [[ -f $CATKIN_DIR/src/$2/scripts/$CONFIGURATION_FILE ]]; then
+					source $CATKIN_DIR/src/$2/scripts/$CONFIGURATION_FILE
 
 				# Inform the user if the selected file does not exist
 				else
