@@ -95,6 +95,7 @@ bag() {
 	local MODE="bag"
 	local TOPICS
 	local NAME
+	local TIME
 	local ARGS
 
 	# Get the list of bagging variables
@@ -152,7 +153,7 @@ bag() {
 				shift 1
 				;;
 			-h|--help)
-				echo "Usage: bag [OPTION]... [BAG_VARIABLE]..."
+				echo "Usage: bag [OPTION]... [BAG_VARS]..."
 				echo "Wrapper for efficiently using the rosbag command."
 				echo ""
 				echo "Option		GNU long option		Meaning"
@@ -160,11 +161,12 @@ bag() {
 				echo "-c		--clear			Clear the existing configuration"
 				echo "-d [DIRECTORY]	--directory		Set the bag storage directory"
 				echo "-e [REPOSITORY]	--export		Export the configuration to a file"
-				echo "-g 		--group			Group a set of existing variables"
+				echo "-g [BAG_VARS]	--group			Group existing variables and topics"
 				echo "-h		--help			Display the help menu"
 				echo "-i [REPOSITORY]	--import		Import a configuration from a file"
 				echo "-l		--list			List available bagging variables"
 				echo "-n [BAG_NAME]	--name			Pass a name for bags or groups"
+				echo "-o [TIME]	--online		Bag a number of seconds in the past"
 				echo "-s		--show			Show full bag configuration"
 				echo "-t		--text			Open a text file for taking notes"
 				MODE="false"
@@ -198,6 +200,13 @@ bag() {
 				;;
 			-n|--name)
 				NAME="$2"
+				shift 2
+				;;
+			-o|--online)
+				if [[ "$MODE" != "false" ]]; then
+					MODE="online"
+					TIME="$2"
+				fi
 				shift 2
 				;;
 			-s|--show)
@@ -243,37 +252,50 @@ bag() {
 		esac
 	done
 
-	if [[ "$MODE" != "false" ]]; then
+	# If grouping mode was selected, create a new bagging variable
+	if [[ "$MODE" == "group" && ! -z "$TOPICS" ]]; then
 
-		# If grouping mode was selected, create a new bagging variable
-		if [[ "$MODE" == "group" && ! -z "$TOPICS" ]]; then
+		# Retrieve a variable name if one was not passed
+		while [[ -z "$NAME" ]]; do
+			echo -n "What should this group be called? " && read NAME
+		done
+		export "${VARIABLE_PREFIX}${NAME}"="$TOPICS"
 
-			# Retrieve a variable name if one was not passed
-			while [[ -z "$NAME" ]]; do
-				echo -n "What should this group be called? " && read NAME
-			done
-			export "${VARIABLE_PREFIX}${NAME}"="$TOPICS"
+	# If bagging mode was selected, create a ROS bag
+	elif [[ "$MODE" == "bag" ]]; then
 
-		# If bagging mode was selected, create a ROS bag
-		elif [[ "$MODE" == "bag" ]]; then
+		# Retrieve a bag name if one was not passed
+		while [[ -z "$NAME" ]]; do
+			echo -n "What should this bag be called? " && read NAME
+		done
 
-			# Retrieve a bag name if one was not passed
-			while [[ -z "$NAME" ]]; do
-				echo -n "What should this bag be called? " && read NAME
-			done
+		# Store the bag in the correct dated folder
+		mkdir -p $BAG_DIR"/$(date +%Y-%m-%d)"
+		cd $BAG_DIR"/$(date +%Y-%m-%d)"
+		rosbag record -O "$NAME $ARGS $BAG_ALWAYS $TOPICS"
 
-			# Store the bag in the correct dated folder
-			mkdir -p $BAG_DIR"/$(date +%Y-%m-%d)"
-			cd $BAG_DIR"/$(date +%Y-%m-%d)"
-			rosbag record -O $NAME $ARGS $BAG_ALWAYS $TOPICS
+		# If the text flag was passed in, create a notes file of the same name
+		if [[ "$NOTE_TEXT" == "true" ]]; then
+			vim $NAME.txt
+		fi
 
-			# If the text flag was passed in, create a notes file of the same name
-			if [[ "$NOTE_TEXT" == "true" ]]; then
-				vim $NAME.txt
-			fi
+		# Return the user to the directory they ran the command from
+		cd $WORKING_DIRECTORY
 
-			# Return the user to the directory they ran the command from
-			cd $WORKING_DIRECTORY
+	# If online mode was selected, call the online bagger service
+	elif [[ "$MODE" == "online" ]]; then
+
+		# Retrieve a bag name if one was not passed
+		while [[ -z "$NAME" ]]; do
+			echo -n "What should this bag be called? " && read NAME
+		done
+
+		# Call to the online bagger with what topics to dump and where
+		rosservice call /online_bagger/dump "{bag_name: '$NAME', topics: '$TOPICS', bag_time: '$TIME'}"
+
+		# If the text flag was passed in, create a notes file of the same name
+		if [[ "$NOTE_TEXT" == "true" ]]; then
+			vim $BAG_DIR"/$(date +%Y-%m-%d)"/$NAME.txt
 		fi
 	fi
 
