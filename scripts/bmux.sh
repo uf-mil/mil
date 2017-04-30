@@ -22,7 +22,7 @@ _bagging_variables_file_complete() {
 		if [[ -f $FILE/$BAGGING_VARIABLES_FILE ]]; then
 
 			# Append just the name of the repository to the autocomplete list
-			COMPREPLY+=( $(echo "$FILE" | rev | cut -d "/" -f1 | rev) )
+			COMPREPLY+=( $(echo "$FILE" | rev | cut -d '/' -f1 | rev) )
 		fi
 	done
 }
