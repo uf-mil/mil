@@ -43,7 +43,7 @@ class OnlineBagger(object):
         self.get_params()
         self.make_dicts()
 
-        self.bagging_service = rospy.Service('dump', BaggerCommands,
+        self.bagging_service = rospy.Service(rospy.get_name() + '/dump', BaggerCommands,
                                              self.start_bagging)
 
         self.subscribe_loop()
@@ -54,10 +54,10 @@ class OnlineBagger(object):
         """
         Retrieve parameters from param server.
         """
-        self.dir = rospy.get_param('bag_package_path', default=os.environ['HOME'])
-        self.stream_time = rospy.get_param('stream_time', default=30)  # seconds
+        self.dir = rospy.get_param(rospy.get_name() + '/bag_package_path', default=os.environ['HOME'])
+        self.stream_time = rospy.get_param(rospy.get_name() + '/stream_time', default=30)  # seconds
 
-        self.subscriber_list = rospy.get_param('topics', default=[])
+        self.subscriber_list = rospy.get_param(rospy.get_name() + '/topics', default=[])
 
         # Ensure all elements in list are a 3 element tuple
         for topic in self.subscriber_list:
