@@ -54,7 +54,7 @@ class OnlineBagger(object):
         """
         Retrieve parameters from param server.
         """
-        self.dir = rospy.get_param(rospy.get_name() + '/bag_package_path', default=os.environ['HOME'])
+        self.dir = rospy.get_param(rospy.get_name() + '/bag_package_path', default=None)
         self.stream_time = rospy.get_param(rospy.get_name() + '/stream_time', default=30)  # seconds
 
         self.subscriber_list = rospy.get_param(rospy.get_name() + '/topics', default=[])
@@ -286,9 +286,14 @@ class OnlineBagger(object):
         If no bag name is provided, the current date/time is used as default.
         """
 
+        # If directory param is not set, default to $HOME/bags/<date>
+        default_dir = self.dir
+        if default_dir == None:
+            default_dir = os.path.join(os.environ['HOME'], 'bags' ,str(datetime.date.today()))
+
         # Split filename from directory
         bag_dir, bag_name = os.path.split(filename)
-        bag_dir = os.path.join(self.dir, bag_dir)
+        bag_dir = os.path.join(default_dir, bag_dir)
         if not os.path.exists(bag_dir):
             os.makedirs(bag_dir)
 
