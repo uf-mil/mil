@@ -55,6 +55,10 @@ class OnlineBagger(object):
         Retrieve parameters from param server.
         """
         self.dir = rospy.get_param('~bag_package_path', default=None)
+        # Handle bag directory for MIL bag script
+        if self.dir is None and os.environ.has_key('BAG_DIR'):
+            self.dir = os.environ['BAG_DIR']
+
         self.stream_time = rospy.get_param('~stream_time', default=30)  # seconds
 
         self.subscriber_list = {}
