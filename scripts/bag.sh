@@ -70,7 +70,7 @@ generate_configuration() {
 	echo ""
 	echo "# This script will be sourced by the bag command as a configuration file. It is"
 	echo "# imperative that each variable is in the bag_* namespace and contains a space"
-	echo "# diliniated list of ROS topics. The only two exceptions to this rule are the"
+	echo "# deliniated list of ROS topics. The only two exceptions to this rule are the"
 	echo "# BAG_ALWAYS and BAG_DIR variables."
 	echo ""
 	echo ""
@@ -291,7 +291,7 @@ bag() {
 		done
 
 		# Call to the online bagger with what topics to dump and where
-		rosservice call /online_bagger/dump "{bag_name: '$NAME', topics: '$TOPICS', bag_time: '$TIME'}"
+		rosservice call /online_bagger/dump "{bag_name: '$BAG_DIR/$(date +%Y-%m-%d)/$NAME', topics: '$TOPICS', bag_time: '$TIME'}"
 
 		# If the text flag was passed in, create a notes file of the same name
 		if [[ "$NOTE_TEXT" == "true" ]]; then
