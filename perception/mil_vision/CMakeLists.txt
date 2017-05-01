@@ -98,3 +98,4 @@ link_libraries(mil_vision_lib)
 add_executable(camera_stream_demo src/camera_stream_demo.cpp)
 
 add_executable(camera_lidar_transformer src/camera_lidar_transformer.cpp)
+add_dependencies(camera_lidar_transformer ${catkin_EXPORTED_TARGETS})
