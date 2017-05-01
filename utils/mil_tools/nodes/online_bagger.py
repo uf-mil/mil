@@ -43,7 +43,7 @@ class OnlineBagger(object):
         self.get_params()
         self.make_dicts()
 
-        self.bagging_service = rospy.Service('/online_bagger/dump', BaggerCommands,
+        self.bagging_service = rospy.Service('~dump', BaggerCommands,
                                              self.start_bagging)
 
         self.subscribe_loop()
@@ -54,10 +54,35 @@ class OnlineBagger(object):
         """
         Retrieve parameters from param server.
         """
+        self.dir = rospy.get_param('~bag_package_path', default=None)
+        # Handle bag directory for MIL bag script
+        if self.dir is None and os.environ.has_key('BAG_DIR'):
+            self.dir = os.environ['BAG_DIR']
 
-        self.subscriber_list = rospy.get_param('/online_bagger/topics')
-        self.dir = rospy.get_param('/online_bagger/bag_package_path', default=os.environ['HOME'])
-        self.stream_time = rospy.get_param('/online_bagger/stream_time', default=30)  # seconds
+        self.stream_time = rospy.get_param('~stream_time', default=30)  # seconds
+
+        self.subscriber_list = {}
+        topics_param = rospy.get_param('~topics', default=[])
+
+        # Add topics from rosparam to subscribe list
+        for topic in topics_param:
+            time = topic[1] if len(topic) == 2 else self.stream_time
+            self.subscriber_list[topic[0]] = (time, False)
+
+        def add_unique_topic(topic):
+            if not self.subscriber_list.has_key(topic):
+                self.subscriber_list[topic] = (self.stream_time, False)
+
+        def add_env_var(var):
+            for topic in var.split():
+                add_unique_topic(topic)
+
+        # Add topics from MIL bag script environment variables
+        if os.environ.has_key('BAG_ALWAYS'):
+            add_env_var(os.environ['BAG_ALWAYS'])
+        for key in os.environ.keys():
+            if key[0:4] == 'bag_':
+                add_env_var(os.environ[key])
 
         rospy.loginfo('subscriber list: %s', self.subscriber_list)
         rospy.loginfo('stream_time: %s seconds', self.stream_time)
@@ -94,7 +119,6 @@ class OnlineBagger(object):
         """
 
         self.topic_messages = {}
-        self.topic_list = []
 
         class SliceableDeque(deque):
             def __getitem__(self, index):
@@ -104,12 +128,7 @@ class OnlineBagger(object):
                 return deque.__getitem__(self, index)
 
         for topic in self.subscriber_list:
-            if len(topic) == 1:
-                topic.append(self.stream_time)
-                rospy.loginfo('no stream time provided, default used for: %s', topic)
-            self.topic_messages[topic[0]] = SliceableDeque(deque())
-            topic.append(False)
-            self.topic_list.append(topic[0])
+            self.topic_messages[topic] = SliceableDeque(deque())
 
         rospy.loginfo('topics status: %s', self.subscriber_list)
 
@@ -146,15 +165,15 @@ class OnlineBagger(object):
         Return number of topics that failed subscription
         """
 
-        for topic in self.subscriber_list:
-            if not topic[2]:
-                msg_class = rostopic.get_topic_class(topic[0])
+        for topic, (time, subscribed) in self.subscriber_list.items():
+            if not subscribed:
+                msg_class = rostopic.get_topic_class(topic)
                 if msg_class[1] is not None:
-                    self.successful_subscription_count = self.successful_subscription_count + 1
-                    rospy.Subscriber(topic[0], msg_class[0],
-                                     lambda msg, _topic=topic[0]: self.bagger_callback(msg, _topic))
+                    self.successful_subscription_count += 1
+                    rospy.Subscriber(topic, msg_class[0],
+                                     lambda msg, _topic=topic: self.bagger_callback(msg, _topic))
 
-                    topic[2] = True  # successful subscription
+                    self.subscriber_list[topic] = (time, True)
 
     def get_topic_duration(self, topic):
 
@@ -226,9 +245,7 @@ class OnlineBagger(object):
             rospy.logdebug('topic type: %s', type(msg))
             rospy.logdebug('number of topic messages: %s', self.get_topic_message_count(topic))
 
-        index = self.topic_list.index(topic)
-
-        while time_diff > rospy.Duration(self.subscriber_list[index][1]) and not rospy.is_shutdown():
+        while time_diff > rospy.Duration(self.subscriber_list[topic][0]) and not rospy.is_shutdown():
             self.topic_messages[topic].popleft()
             time_diff = self.get_topic_duration(topic)
 
@@ -255,27 +272,37 @@ class OnlineBagger(object):
 
         return total_message_count
 
-    def set_bag_directory(self,bag_name=''):
+    def _get_default_filename(self):
+        return str(datetime.date.today()) + '-' + str(datetime.datetime.now().time())[0:8]
+
+    def set_bag_directory(self, filename=''):
 
         """
         Create ros bag save directory
         If no bag name is provided, the current date/time is used as default.
         """
 
-        types = ('', None, False)
+        # If directory param is not set, default to $HOME/bags/<date>
+        default_dir = self.dir
+        if default_dir == None:
+            default_dir = os.path.join(os.environ['HOME'], 'bags' ,str(datetime.date.today()))
 
-        if bag_name in types:
-            bag_name = str(datetime.date.today()) + '-' + str(datetime.datetime.now().time())[0:8]
+        # Split filename from directory
+        bag_dir, bag_name = os.path.split(filename)
+        bag_dir = os.path.join(default_dir, bag_dir)
+        if not os.path.exists(bag_dir):
+            os.makedirs(bag_dir)
 
-        directory = os.path.join(self.dir, 'online_bagger/')
-
-        rospy.loginfo('bag directory: %s', directory)
+        # Create default filename if only directory specified
+        if bag_name == '':
+            bag_name = self._get_default_filename()
+        # Make sure filename ends in .bag, add otherwise
+        if bag_name[-4:] != '.bag':
+            bag_name = bag_name+'.bag'
+        rospy.loginfo('bag directory: %s', bag_dir)
         rospy.loginfo('bag name: %s', bag_name)
 
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-        self.bag = rosbag.Bag(os.path.join(directory, bag_name + '.bag'), 'w')
+        self.bag = rosbag.Bag(os.path.join(bag_dir, bag_name), 'w')
 
     def set_bagger_status(self):
 
@@ -299,11 +326,15 @@ class OnlineBagger(object):
 
         requested_seconds = req.bag_time
 
-        for topic in self.subscriber_list:
-            if topic[2] == False:
+        selected_topics = req.topics.split()
+        for topic, (time, subscribed) in self.subscriber_list.items():
+            if not subscribed:
+                continue
+            # Exclude topics that aren't in topics service argument
+            # If topics argument is empty string, include all topics
+            if len(selected_topics) > 0 and not topic in selected_topics:
                 continue
 
-            topic = topic[0]
             rospy.loginfo('topic: %s', topic)
 
             # if no number is provided or a zero is given, bag all messages
