@@ -11,7 +11,7 @@ Before submitting changes, read the rest of this page. Any code that is pull-req
 3. Submit a [pull request](https://help.github.com/articles/using-pull-requests)
 4. Assign the pull-request to an appropriate reviewer, or someone random on the team if there is no obvious reviewer. Ask questions at meetings if you have any questions about review policy.
     * You may not see movement on your PR for some time, as the reviewer waits for it to build on our continuous integration server
-    * MAKE SURE you are a collaborator on SemaphoreCI. If the CI build fails, everyone will get a notification, and will likely not respond to your PR on the assumption that you noticed the failed build.
+    * MAKE SURE you check the build and test output on the CI. If the CI build fails, everyone will likely not respond to your PR on the assumption that you noticed the failed build.
 5. Code that is to be run on a vehicle (Obeying all style-guides, and the MIL internal guides) should go into the master branch. Code that obeys the style-guides, but is still in development, belongs into your own feature branch (ex: sim, monte-carlo, controller), to be merged when complete.
 
 
@@ -25,7 +25,7 @@ Before submitting changes, read the rest of this page. Any code that is pull-req
     * If your pull-request is a single commit, [amend](https://www.atlassian.com/git/tutorials/rewriting-history/git-commit--amend) that commit with the suggested changes
 * If you are reviewing code, use github's line-comment feature on their commits to outline issues with an individual line
 * Broader issues should be outlined in a comment on the pull-request
-* Reviewers: Be sure to manually read the SemaphoreCI output, there may have been a quiet failure that didn't kill the build
+* Reviewers: Be sure to manually read the CI output, there may have been a quiet failure that didn't kill the build
 
 ## Commit Messages
 * Follow [this guide](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html) for writing a good commit message
