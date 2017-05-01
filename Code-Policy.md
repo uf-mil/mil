@@ -79,12 +79,13 @@ Before submitting changes, read the rest of this page. Any code that is pull-req
 * If you submit a PR that requires some new library without updating the install script, the Semaphore build will fail and yell at you.
 
 ## Testing
-* We use SemaphoreCI to automatically test pull-requests and new commits to our repositories. You still need to test your code locally, but know that everyone can view make and unit-test results on Semaphore before considering your pull-request.
+* We use our own CI (continuous integration) server to automatically test pull-requests and new commits to our repositories. You still need to test your code locally, but know that everyone can view build and unit-test results on our CI before considering your pull-request.
 * Operation critical code shall have unit-tests. Unit tests should fail if your code no longer works
 * General code should have unit-tests
 * Automated test-by-Simulation (Automatic Hardware-out-of-the-loop testing), e.g. Monte-Carlo testing is highly recommended for all software
 * [C++ unit testing with gtest](https://code.google.com/p/googletest)
 * [Python unit testing with Nose](https://nose.readthedocs.org/en/latest)
+* [Quickly make a python rostest with this template](https://gist.github.com/DSsoto/2fcb0d10a6fcb53ca9ce77a647d6d521)
 
 Unit testing generally saves time for the developer. Despite the initial time spent implementing the test, unit tests make it very easy to make changes to your code, and verify that your code will work.
 If you have any questions about what you should unit tests, talk to Patrick Emami.
