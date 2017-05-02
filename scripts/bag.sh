@@ -91,7 +91,7 @@ generate_configuration() {
 bag() {
 	local BAGGING_VARIABLES="$(env | grep 'bag_' | cut -d '=' -f1 | cut -d ' ' -f2)"
 	local WORKING_DIRECTORY=$PWD
-	local NOTE_TEXT="true"
+	local NOTE_TEXT="false"
 	local MODE="bag"
 	local TOPICS
 	local NAME
@@ -272,7 +272,7 @@ bag() {
 		# Store the bag in the correct dated folder
 		mkdir -p $BAG_DIR"/$(date +%Y-%m-%d)"
 		cd $BAG_DIR"/$(date +%Y-%m-%d)"
-		rosbag record -O "$NAME $ARGS $BAG_ALWAYS $TOPICS"
+		rosbag record -O $NAME $ARGS $BAG_ALWAYS $TOPICS
 
 		# If the text flag was passed in, create a notes file of the same name
 		if [[ "$NOTE_TEXT" == "true" ]]; then
