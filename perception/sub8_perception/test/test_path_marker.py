@@ -66,6 +66,8 @@ class TestPathMarker(unittest.TestCase):
             if topic == self.info_topic:
                 self.cam_info_pub.publish(msg)
         res = self.service(VisionRequest2DRequest())
+        msg = "Marker not found after playing bag"
+        self.assertTrue(res.found, msg=msg)
         # 10 pixel error accepted
         res_xy = np.array([res.pose.x, res.pose.y])
         correct_xy = np.array([correct.pose.x, correct.pose.y])

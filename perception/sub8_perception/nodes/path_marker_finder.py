@@ -63,20 +63,36 @@ class PathMarkerFinder():
         self.last_found_time = None
 
         # Constants from launch config file
-        self.debug_ros = rospy.get_param("debug_ros", True)
-        self.canny_low = rospy.get_param("canny_low", 100)
-        self.canny_ratio = rospy.get_param("canny_ratio", 3.0)
-        self.thresh_hue_high = rospy.get_param("thresh_hue_high", 60)
-        self.thresh_saturation_low = rospy.get_param("thresh_satuation_low", 100)
-        self.min_contour_area = rospy.get_param("min_contour_area", 100)
-        self.length_width_ratio_err = rospy.get_param("length_width_ratio_err", 0.2)
-        self.approx_polygon_thresh = rospy.get_param("approx_polygon_thresh", 10)
-        self.shape_match_thresh = rospy.get_param("shape_match_thresh", 0.4)
-        camera = rospy.get_param("marker_camera", "/camera/down/left/image_rect_color")
+        self.debug_ros = rospy.get_param("~debug_ros", True)
+        self.canny_low = rospy.get_param("~canny_low", 100)
+        self.canny_ratio = rospy.get_param("~canny_ratio", 3.0)
+        self.thresh_hue_high = rospy.get_param("~thresh_hue_high", 60)
+        self.thresh_saturation_low = rospy.get_param("~thresh_satuation_low", 100)
+        self.min_contour_area = rospy.get_param("~min_contour_area", 100)
+        self.length_width_ratio_err = rospy.get_param("~length_width_ratio_err", 0.2)
+        self.approx_polygon_thresh = rospy.get_param("~approx_polygon_thresh", 10)
+        self.shape_match_thresh = rospy.get_param("~shape_match_thresh", 0.4)
+        self.min_found_count = rospy.get_param("~min_found_count", 10)
+        self.timeout_seconds = rospy.get_param("~timeout_seconds", 2.0)
+        camera = rospy.get_param("~marker_camera", "/camera/down/left/image_rect_color")
+
+        self.state_size = 8 # X, Y, Z, THETA, vx, vy, vz, vtheta
+        self.measurement_size = 4
+
+        self.filter = cv2.KalmanFilter(self.state_size, self.measurement_size)
+        self.filter.transitionMatrix = 1.* np.eye(self.state_size, self.state_size, dtype=np.float32)
+        self.filter.measurementMatrix = 1. * np.array([[1, 0, 0, 0, 0, 0, 0, 0],
+                                                       [0, 1, 0, 0, 0, 0, 0, 0],
+                                                       [0, 0, 1, 0, 0, 0, 0, 0],
+                                                       [0, 0, 0, 1, 0, 0, 0, 0]], dtype=np.float32)
+        self.filter.processNoiseCov = 1e-5 * np.eye(self.state_size, dtype=np.float32)
+        self.filter.measurementNoiseCov = 1e-4 * np.eye(self.measurement_size, dtype=np.float32)
+        self.filter.errorCovPost = 1.* np.eye(self.state_size, dtype=np.float32)
+        self._clear_filter(None)
 
         if self.debug_ros:
-            self.debug_pub = Image_Publisher("debug_image")
-            self.markerPub = rospy.Publisher('path_marker_visualization', Marker, queue_size=10)
+            self.debug_pub = Image_Publisher("~debug_image")
+            self.markerPub = rospy.Publisher('~path_marker_visualization', Marker, queue_size=10)
         self.service2D = rospy.Service('/vision/path_marker/2D', VisionRequest2D, self.cb_2d)
         self.service3D = rospy.Service('/vision/path_marker/pose', VisionRequest, self.cb_3d)
         self.toggle = rospy.Service('/vision/path_marker/enable', SetBool, self.enable_cb)
@@ -113,6 +129,8 @@ class PathMarkerFinder():
         self.markerPub.publish(m)
 
     def enable_cb(self, x):
+        if x.data != self.enabled:
+            self._clear_filter(None)
         self.enabled = x.data
         return SetBoolResponse(success=True)
 
@@ -146,11 +164,18 @@ class PathMarkerFinder():
             if sorted_y[3][0][0] > sorted_y[2][0][0]:
                 sorted_y[3], sorted_y[2] = sorted_y[2].copy(), sorted_y[3].copy()
             sorted_rect = sorted_y
+        for i, pixel in enumerate(sorted_rect):
+            center = (int(pixel[0][0]), int(pixel[0][1]))
+            cv2.circle(self.last_image, center, 5, (255, 0, 0), -1)
+            cv2.putText(self.last_image, str(i), center, cv2.FONT_HERSHEY_SCRIPT_COMPLEX,1, (0,0,255))
         return sorted_rect
 
     def cb_3d(self, req):
         res = VisionRequestResponse()
-        if (self.last2d == None or not self.enabled):
+        dt = (self.image_sub.last_image_time - self.last_found_time).to_sec()
+        if dt <= 0 or dt > self.timeout_seconds:
+            res.found = False
+        elif (self.last3d == None or not self.enabled):
             res.found = False
         else:
             res.pose.header.frame_id = self.cam.tfFrame()
@@ -162,7 +187,7 @@ class PathMarkerFinder():
     
     def cb_2d(self, req):
         res = VisionRequest2DResponse()
-        if (self.last3d == None or not self.enabled):
+        if (self.last2d == None or not self.enabled):
             res.found = False
         else:
             res.header.frame_id = self.cam.tfFrame()
@@ -173,12 +198,62 @@ class PathMarkerFinder():
             res.found = True
         return res
 
+    def _update_transition_matrix(self, dt):
+        self.filter.transitionMatrix[0][4] = dt
+        self.filter.transitionMatrix[1][5] = dt
+        self.filter.transitionMatrix[2][6] = dt
+        self.filter.transitionMatrix[3][7] = dt
+
+    def _clear_filter(self, state):
+        self.found_count = 0
+        self.found = False
+        self.last3d = None
+        self.filter.errorCovPre = 1. * np.eye(self.state_size, dtype=np.float32)
+        if state is not None:
+            (x, y, z, theta) = state
+            state = np.array([[x], [y], [z], [theta], [0], [0], [0], [0]], dtype=np.float32)
+            self.filter.statePost = state
+
+    def _update_kf(self, (x, y, z, theta)):
+        if self.last_found_time is None:
+            self._clear_filter((x, y, z, theta))
+            return
+        dt = (self.image_sub.last_image_time - self.last_found_time).to_sec()
+        if dt <= 0 or dt > self.timeout_seconds:
+            rospy.logwarn("Timed out since last saw marker, resetting")
+            self._clear_filter((x, y, z, theta))
+            return
+        if self.last3d is not None:
+            if np.linalg.norm(np.array([x, y, z], dtype=np.float32) - self.last3d[0]) > 15:
+                self._clear_filter((x, y, z, theta))
+                rospy.logwarn("Too far apart, resetting")
+                return
+
+        self.found_count += 1
+        self._update_transition_matrix(dt)
+        measurement = 1.* np.array([x, y, z, theta], dtype=np.float32)
+        predict = self.filter.predict()
+        estimated = self.filter.correct(measurement)
+        if self.found_count > self.min_found_count:
+              self.last3d = ((estimated[0][0], estimated[1][0], estimated[2][0]),
+                              quaternion_from_euler(0.0, 0.0, estimated[3][0]))
+              if not self.found:
+                  rospy.loginfo("Marker Found")
+              self.found = True
+              if self.debug_ros:
+                  refs, _ = cv2.projectPoints(np.array([[ estimated[0][0], estimated[1][0], estimated[2][0] ]] ), (0, 0, 0), (0,0,0), self.cam.intrinsicMatrix(), np.zeros((5,1)))
+                  center = (int(refs[0][0][0]), int(refs[0][0][1]))
+                  cv2.circle(self.last_image, center, 8, (0, 0, 255), -1)
+                  text = str(np.degrees(estimated[3][0]))+"deg"
+                  cv2.putText(self.last_image, text, center, cv2.FONT_HERSHEY_SCRIPT_COMPLEX,1, (0,0,255))
+                  self.sendDebugMarker()
+
     def get_3d_pose(self, p):
         i_points = np.array((p[0][0], p[1][0], p[2][0], p[3][0]),dtype=np.float)
         retval, rvec, tvec =  cv2.solvePnP(PathMarkerFinder.PATH_MARKER, i_points, self.cam.intrinsicMatrix(), np.zeros((5,1)))
         if tvec[2] < 0.3 :
             return False
-        self.last3d = (tvec.copy(), quaternion_from_euler(0.0, 0.0, self.last2d[1]))
+        self._update_kf((tvec[0], tvec[1], tvec[2], self.last2d[1]))
         if self.debug_ros:
             refs, _ = cv2.projectPoints(PathMarkerFinder.REFERENCE_POINTS, rvec, tvec, self.cam.intrinsicMatrix(), np.zeros((5,1)))
             refs = np.array(refs, dtype=np.int)
@@ -193,15 +268,16 @@ class PathMarkerFinder():
         for the next service call to get 2dpose.
         returns False if dx of polygon is 0, otherwise True
         '''
-        top_center = r[0][0] + (r[1][0]-r[0][0])/2.0
-        bot_center = r[2][0] + (r[3][0]-r[2][0])/2.0
+        top_center = (r[1][0]+r[0][0])/2.0
+        bot_center = (r[2][0]+r[3][0])/2.0
         center = bot_center + (top_center - bot_center)/2.0
-        y = top_center[1] - bot_center[1]
-        x = top_center[0] - bot_center[0]
-        if x == 0:
+        dy = top_center[1] - bot_center[1]
+        dx = top_center[0] - bot_center[0]
+        if dx == 0:
             rospy.logerr("Contour dx is 0, strange...")
             return False
-        angle = np.arctan( y / x )
+
+        angle = np.arctan(dy / dx)
         self.last2d = (center, angle)
         return True
 
@@ -250,15 +326,9 @@ class PathMarkerFinder():
         # Check if each contour is valid
         for idx, c in enumerate(contours):
             if self.valid_contour(c):
-                rospy.loginfo("Found path marker")
                 self.last_found_time = self.image_sub.last_image_time
                 if self.debug_ros:
-                    self.sendDebugMarker()
                     cv2.drawContours(self.last_image, contours, idx, (0,255,0), 3)
-                    angle = np.round(np.degrees(self.last2d[1]),2)
-                    center = self.last2d[0]
-                    text = str(angle)+"deg"
-                    cv2.putText(self.last_image, text, (int(center[0]), int(center[1])), cv2.FONT_HERSHEY_SCRIPT_COMPLEX,1, (0,0,255))
                 break
             else:
                 if self.debug_ros:
