@@ -1,5 +1,6 @@
 * [[Home]]
     * [[Mission Assignments]]
+    * [[Testing Log]]
     * [[Mission Props]]
     * [[Testing Plans]]
 * Using the Sub
