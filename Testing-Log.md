@@ -14,6 +14,8 @@ Our goal was to test the new path alignment code we had working on bags and simu
 two of those together. It turned out that the new down camera had a too narrow field of view to see
 the whole marker even at the maximum depth.
 
+The new down camera enclosure was first used this testing day, no seal/leak problems at all. The new ethernet bulkhead on the sub also did not leak. The 1st generation POE injector was used in the sub to power the down camera, and we did not see any ethernet decode drops on the camera ethernet interface.
+
 Some of the takeaways from testing are:
 + We should pay to get the props machined as early as possible and as soon as we are confident in
   the design
