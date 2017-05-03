@@ -13,7 +13,7 @@ For more information check the [preliminary rules](https://drive.google.com/file
 ## Navigate Pass
 - [X] Yellow 8ft long piece, 2" daimeter pvc pipe
 - [X] Yellow 4ft long piece, 2" daimeter pvc pipe (**x2**)
-- [ ] Mechanism for making sure that the structure sinks and stays level
+- [X] Mechanism for making sure that the structure sinks and stays level
 
 ## Bins
 - [ ] Replica of last years bins but with 3d printed handle and lid
