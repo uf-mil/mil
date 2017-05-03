@@ -11,8 +11,8 @@ For more information check the [preliminary rules](https://drive.google.com/file
 - [ ] Path markers (**x2**) (The ones we currently have are not 4ft x 0.5 ft)
 
 ## Navigate Pass
-- [ ] Yellow 8ft long piece, 2" daimeter pvc pipe
-- [ ] Yellow 4ft long piece, 2" daimeter pvc pipe (**x2**)
+- [X] Yellow 8ft long piece, 2" daimeter pvc pipe
+- [X] Yellow 4ft long piece, 2" daimeter pvc pipe (**x2**)
 - [ ] Mechanism for making sure that the structure sinks and stays level
 
 ## Bins
