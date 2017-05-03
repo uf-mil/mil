@@ -8,7 +8,7 @@ For more information check the [preliminary rules](https://drive.google.com/file
 - [ ] Base to ensure buoys are in-line and with 4 ft. spacing
 
 ## Path markers
-- [ ] Path markers (**x2**) (The ones we currently have are not 4ft x 0.5 ft)
+- [X] Path markers (**x2**) (The ones we currently have are not 4ft x 0.5 ft) //Path markers are .75 scaled
 
 ## Navigate Pass
 - [X] Yellow 8ft long piece, 2" daimeter pvc pipe
