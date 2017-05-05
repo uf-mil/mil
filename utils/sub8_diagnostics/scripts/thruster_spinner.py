@@ -31,7 +31,10 @@ def ports_from_layout(layout):
             for name in thruster_names:
                 port_dict[name] = thruster_port
 
-            msg += "\n\tMotor id's on port: {}".format(thruster_port.motor_ids_on_port)
+            msg += "\n\tMotor id's on port: {}{}{}".format(
+                Colors.bold + Colors.blue,
+                np.sort([x[1] for x in thruster_port.thruster_dict.items()]).tolist(),
+                Colors.reset)
             fprint(msg)
 
         except serial.serialutil.SerialException as e:
