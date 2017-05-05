@@ -4,27 +4,13 @@
   <arg name="gui" default="true" />
   <arg name="cameras" default="true" />
   <arg name="turbulence" default="false" />
+  <arg name="thrusters" default="false" />
 
 
   <!-- start gazebo server-->
   <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false"
     args="$(find sub8_gazebo)/worlds/a_whole_new.world" />
   <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" if="$(arg gui)" />
-
-
-  <!-- We need to spawn a torpedo that the launcher script can use to shoot -->
-  <node
-    name="spawn_torpedo" pkg="gazebo_ros" type="spawn_model"
-    args="-file $(find sub8_gazebo)/models/torpedo/torpedo.sdf -sdf
-      -x 0 -y 0 -z 0 -model torpedo"
-    output="screen" />
-
-  <node
-    name="torpedo_board" pkg="gazebo_ros" type="spawn_model"
-    args="-file $(find sub8_gazebo)/models/torpedo_board/torpedo_board.sdf -sdf
-      -x 23 -y 11 -z -4.72 -Z 1.5707 -model torpedo_board"
-    output="screen" />
-
 
   <!-- Start the sub model with cameras if desired -->
   <node if="$(arg cameras)"
@@ -78,19 +64,22 @@
   <node pkg="sub8_gazebo" type="turbulator.py" name="turbulator" output="screen" if="$(arg turbulence)" />
 
   <include file="$(find sub8_alarm)/launch/alarms.launch" />
+
   <include file="$(find sub8_launch)/launch/subsystems/rise.launch" />
-  <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper.launch" />
-  <include file="$(find sub8_videoray_m5_thruster)/launch/thruster_driver.launch" />
+  <group if="$(arg thrusters)">
+    <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper.launch" />
+    <include file="$(find sub8_videoray_m5_thruster)/launch/thruster_driver.launch"/>
+  </group>
 
   <include file="$(find sub8_launch)/launch/tf.launch" />
   <node pkg="nodelet" type="nodelet" args="standalone odometry_utils/odometry_to_tf" name="odometry_to_tf"/>
-  <!--  <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry">
+  <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry">
     <rosparam>
       frame_id: /map
       child_frame_id: /base_link
     </rosparam>
-    <remap from="orig_odom" to="imu_odom"/>
-  </node> -->
+    <remap from="orig_odom" to="model_odom"/>
+  </node>
 
   <group ns="/camera" if="$(arg cameras)">
     <group ns="front">

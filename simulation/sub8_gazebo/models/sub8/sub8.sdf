@@ -2,11 +2,11 @@
 <sdf version="1.5">
   <model name="sub8">
     <link name="base_link">
+      <!-- Removed for direct follow carrot controls
       <velocity_decay>
         <linear>0.005</linear>
         <angular>0.01</angular>
       </velocity_decay>
-
       <inertial>
         <mass>36.75</mass>
         <inertia>
@@ -18,7 +18,8 @@
           <izz>1.262</izz>
         </inertia>
       </inertial>
-
+      -->
+      <gravity>0</gravity>
       <collision name="box_collision">
         <pose>0 0 0 0 0 1.5707</pose>
         <geometry>
@@ -156,7 +157,7 @@
             <resolution>0.01</resolution>
           </range>
         </ray>
-        <plugin name="hokuyo_node" filename="libgazebo_ros_laser.so">
+        <plugin name="hokuyo_node" filename="libgazebo_ros_range.so">
           <topicName>/dvl/range_raw</topicName>
           <frameName>dvl</frameName>
         </plugin>
@@ -172,7 +173,14 @@
         </plugin>
       </sensor>
     </link>
+    <!-- Commend out to enable physics simulated controls -->
+    <plugin name="sub8_state_set" filename="libsub8_state_set.so">
+      <staticOffset>0 0 0</staticOffset>
+      <referenceTopic>/c3_trajectory_generator/trajectory_v</referenceTopic>
+      <alwaysOn>true</alwaysOn>
+    </plugin>
 
+    <!-- Uncomment to enable physics simulated controls
     <plugin name="sub8_buoyancy" filename="libsub8_buoyancy.so">
       <fluid_density>1000</fluid_density>
       <drag_coefficient>1</drag_coefficient>
@@ -187,6 +195,7 @@
       <min_abs_thrust>2.2</min_abs_thrust>
       <link>base_link</link>
     </plugin>
+    -->
 
   </model>
 </sdf>
