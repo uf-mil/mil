@@ -173,7 +173,7 @@
         </plugin>
       </sensor>
     </link>
-    <!-- Commend out to enable physics simulated controls -->
+    <!-- Comment out to enable physics simulated controls -->
     <plugin name="sub8_state_set" filename="libsub8_state_set.so">
       <staticOffset>0 0 0</staticOffset>
       <referenceTopic>/c3_trajectory_generator/trajectory_v</referenceTopic>
