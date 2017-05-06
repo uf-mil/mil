@@ -64,7 +64,9 @@ Welcome to David's thruster_spin_test tool.
 '''
 fprint(usage_msg)
 
-thrust = 0.5  # Normalized thrust in [0, 1]
+thrust = 0.0  # Normalized thrust in [-1, 1]
+step = 0.05
+
 key = None
 
 def command_thrusters(timer_event):
@@ -90,12 +92,12 @@ while not rospy.is_shutdown():
         if get_ch() == '[':        # Got an arrow key
             arrow_type = get_ch()
             if arrow_type == 'A':  # UP key
-                thrust = thrust + 0.1
+                thrust = thrust + step
             if arrow_type == 'B':  # DOWN key
-                thrust = thrust - 0.1
+                thrust = thrust - step
         else:                      # Got other ESC sequence
             continue
-        thrust = np.clip(thrust, 0.0, 1.0)
+        thrust = np.clip(thrust, -1.0, 1.0)
         fprint("Thrust: {}".format(thrust))
         continue
 
