@@ -204,6 +204,23 @@ class ThrusterPort(object):
             found = response_dict['response_node_id'] == motor_id
             return found
 
+    def get_motor_ids_on_port(self, start_id, end_id):
+        '''
+        Polls for thrusters with motor ids within provided range and returns
+        a list with the ids of thrusters that responded
+        Also returns the average time between sending the poll packet and
+        receiving a response for all detected thrusters
+        '''
+        to_check = range(start_id, end_id + 1)
+        found_ids = []
+        turnaround_times = []
+        for i in to_check:
+            t0 = time.time()
+            if self.check_for_thruster(i):
+                found_ids.append(i)
+                turnaround_times.append(time.time() - t0)
+        return found_ids, np.mean(turnaround_times)
+
     def read_status(self):
         response_bytearray = self.port.read(Const.thrust_response_length)
         # We should always get $Const.thrust_response_length bytes, if we don't
