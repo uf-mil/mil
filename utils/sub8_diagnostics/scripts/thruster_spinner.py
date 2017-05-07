@@ -6,36 +6,34 @@ import rospy
 import rospkg
 import rosparam
 from sub8_thruster_comm import thruster_comm_factory
-from mil_misc_tools.text_effects import *
+import mil_misc_tools.text_effects as te
 from mil_misc_tools.terminal_input import get_ch
 
 __author__ = 'David Soto'
 
 rospack = rospkg.RosPack()
 
-fprint = FprintFactory(title='ThrusterSpinner').fprint
+fprint = te.FprintFactory(title='ThrusterSpinner').fprint
 
 def ports_from_layout(layout):
     '''Load and handle the thruster bus layout'''
     port_dict = {}
     thruster_definitions = layout['thrusters']
 
+    msg = te.Printer('Instantiating thruster_port:')
     for port_info in layout['thruster_ports']:
         try:
             port = port_info['port']
             thruster_names = port_info['thruster_names']
-            msg = "Instantiating thruster_port:\n\tName: {}".format(port)
             thruster_port = thruster_comm_factory(port_info, thruster_definitions, fake=False)
 
             # Add the thrusters to the thruster dict
             for name in thruster_names:
                 port_dict[name] = thruster_port
 
-            msg += "\n\tMotor id's on port: {}{}{}".format(
-                Colors.bold + Colors.blue,
-                np.sort([x[1] for x in thruster_port.thruster_dict.items()]).tolist(),
-                Colors.reset)
-            fprint(msg)
+            s =  str(np.sort([x[1] for x in thruster_port.thruster_dict.items()]).tolist())
+            fprint(msg.reset.text("\n\tName: ").set_yellow.text(port).reset
+                   .text("\n\tMotor id's on port: ").set_cyan.bold(s).reset)
 
         except serial.serialutil.SerialException as e:
             pass
@@ -52,22 +50,52 @@ if thruster_ports == {}:
     sys.exit()
 names_from_motor_id = {0: 'FLH', 1: 'FLV', 2: 'FRH', 3: 'FRV',
                        4: 'BLH', 5: 'BLV', 6: 'BRH', 7: 'BRV'}
-active_thrusters = set()
-
 usage_msg = \
 '''
 Welcome to David's thruster_spin_test tool.
 \tInstructions:
 \t* press up or down to control the thrust commanded
 \t* press the thruster id to toggle spinning for that thruster (0-indexed, 8 for all)
+\t* press 'C' to check for thrusters on a specific port (even if not in layout)
+\t* press 'H' to see this usage message again
 \t* press 'Q' to exit
 '''
 fprint(usage_msg)
+
+active_thrusters = set()
 
 thrust = 0.0  # Normalized thrust in [-1, 1]
 step = 0.05
 
 key = None
+
+def check_for_thrusters():
+    ''' Checks for a response from thrusters on a given port '''
+    active_thrusters = set()
+    fprint("Active thrusters: {}".format(list(active_thrusters)))
+
+    declared_ports = []
+    for port in thruster_ports.values():
+        if port not in declared_ports:
+            declared_ports.append(port)
+
+    declared_ports.sort(key=lambda p: p.port_name)
+
+    fprint('Declared ports:')
+    for i, p in enumerate(declared_ports):
+        print "{})".format(i), p.port_name
+
+    fprint("Select a port by index: ")
+    sel = int(raw_input())
+
+    start_id = 0
+    end_id = 10
+    fprint("Checking for thrusters with id's in [{}, {}]".format(start_id, end_id))
+
+    found_motor_ids, avg_turnaround_time = \
+        declared_ports[sel].get_motor_ids_on_port(start_id, end_id)
+    fprint("Responding motor ids:\t\t\t{}".format(te.Printer().set_cyan.bold(found_motor_ids)))
+    fprint("Average packet turnaround time:\t{} seconds".format(te.Printer().set_cyan.bold(avg_turnaround_time)))
 
 def command_thrusters(timer_event):
     thrusters_to_command = active_thrusters.copy()
@@ -117,4 +145,16 @@ while not rospy.is_shutdown():
             else:
                 active_thrusters.add(motor_id)
         fprint("Active thrusters: {}".format(list(active_thrusters)))
+
+    # Perform thruster check
+    if key == 'c':
+        try:
+            check_for_thrusters()
+        except BaseException as e:
+            fprint(e)
+        continue
+
+    # Display help
+    if key == 'h':
+        fprint(usage_msg)
 
