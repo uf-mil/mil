@@ -10,8 +10,7 @@ import rospy
 
 class ThrusterPort(object):
     _baud_rate = 115200
-    _timeout = 0.01  # How long to wait for a serial response
-    _max_motor_id = 100  # Max motor ID for which to verify the existence
+    _timeout = 0.1  # How long to wait for a serial response
 
     def __init__(self, port_info, thruster_definitions):
         '''Communicate on a single port with some thrusters
@@ -37,10 +36,6 @@ class ThrusterPort(object):
             - The thrusters automatically shut down if they do not recieve a
              command for ~2 seconds
 
-            - Potential source of problem for future users:
-                If the sub is ever using more than 100 thrusters, and you find that the Sub isn't finding them,
-                it is because of max_motor_id
-            - This might also trigger timeout errors in the thruster_driver node spin-up
         TODO:
             --> 0x88, 0x8c: Set slew-rate up and down to something tiny
             --> Send messages without getting status
@@ -52,17 +47,12 @@ class ThrusterPort(object):
         self.thruster_dict = {} # holds the motor_ids of all the thrusters that were supposed
                                 # to be here and were actually found
 
-        # Determine which thrusters are really responding
-        self.motor_ids_on_port = []
-        for guess_id in range(self._max_motor_id):  # search a subset of possible motor ids
-            have_thruster = self.check_for_thruster(guess_id)
-            if have_thruster:
-                self.motor_ids_on_port.append(guess_id)
-
         # Load thruster configurations and check if the requested thruster exists on this port
         self.missing_thrusters = []
         for thruster_name in port_info['thruster_names']:
             try:
+                # Note: will only try to detect thrusters as listed in the layout. That means 
+                # that if a thruster is connected to the wrong port, IT WILL NOT BE FOUND.
                 self.load_thruster_config(thruster_name, thruster_definitions)
             except IOError:
                 self.missing_thrusters.append(thruster_name)
@@ -80,12 +70,12 @@ class ThrusterPort(object):
     def load_thruster_config(self, thruster_name, thruster_definitions):
         '''Loads the motor_id from the config file if the thruster was found'''
         # Get our humungous error string ready
-        errstr = "Could not find motor_id {} (Called {}) on port {}; existing ids are {}".format(
-            thruster_definitions[thruster_name]['motor_id'], thruster_name, self.port_name, self.motor_ids_on_port)
+        errstr = "Could not get a response from motor_id {} (Called {}) on port {}".format(
+            thruster_definitions[thruster_name]['motor_id'], thruster_name, self.port_name)
 
         # Check if we can actually find the thruster on this port
         motor_id = int(thruster_definitions[thruster_name]["motor_id"])
-        if not motor_id in self.motor_ids_on_port:
+        if not self.check_for_thruster(motor_id):
             rospy.logerr(errstr)
             raise(IOError(errstr))
         self.thruster_dict[thruster_name] = motor_id
@@ -206,12 +196,30 @@ class ThrusterPort(object):
 
     def check_for_thruster(self, motor_id):
         self.send_poll_msg(motor_id)
-        response_bytearray = self.port.read(Const.thrust_response_length)
-        if len(response_bytearray) != Const.thrust_response_length:
+        response_dict = self.read_status()
+        if response_dict is None:
             return False
         else:
             # We have the thruster!
-            return True
+            found = response_dict['response_node_id'] == motor_id
+            return found
+
+    def get_motor_ids_on_port(self, start_id, end_id):
+        '''
+        Polls for thrusters with motor ids within provided range and returns
+        a list with the ids of thrusters that responded
+        Also returns the average time between sending the poll packet and
+        receiving a response for all detected thrusters
+        '''
+        to_check = range(start_id, end_id + 1)
+        found_ids = []
+        turnaround_times = []
+        for i in to_check:
+            t0 = time.time()
+            if self.check_for_thruster(i):
+                found_ids.append(i)
+                turnaround_times.append(time.time() - t0)
+        return found_ids, np.mean(turnaround_times)
 
     def read_status(self):
         response_bytearray = self.port.read(Const.thrust_response_length)
