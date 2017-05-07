@@ -7,6 +7,7 @@ project(sub8_gazebo)
 find_package(catkin
     REQUIRED COMPONENTS
     std_msgs
+    geometry_msgs
     rospy
     gazebo_ros
     roscpp
@@ -29,10 +30,7 @@ add_library(
     sub8_buoyancy
         src/sub8_buoyancy.cc
 )
-
 set_target_properties(sub8_buoyancy PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
-
-
 target_link_libraries(
     sub8_buoyancy
         ${catkin_LIBRARIES}
@@ -44,14 +42,25 @@ add_library(
         src/sub8_thrusters.cc
         src/sub8_thruster_config.cpp
 )
-
 set_target_properties(sub8_thrusters PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
-
-
 target_link_libraries(
     sub8_thrusters
         ${catkin_LIBRARIES}
         ${GAZEBO_LIBRARIES}
+)
+
+add_library(
+    sub8_state_set
+        src/sub8_state_set.cpp
+)
+set_target_properties(sub8_state_set PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
+target_link_libraries(
+    sub8_state_set
+        ${catkin_LIBRARIES}
+        ${GAZEBO_LIBRARIES}
+)
+add_dependencies(sub8_state_set
+        ${catkin_EXPORTED_TARGETS}
 )
 
 add_service_files(
@@ -74,10 +83,7 @@ add_library(
     sub8_test
         src/sub8_test.cc
 )
-
 set_target_properties(sub8_test PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
-
-
 target_link_libraries(
     sub8_test
         ${catkin_LIBRARIES}
@@ -87,7 +93,7 @@ target_link_libraries(
 
 catkin_package(
     INCLUDE_DIRS include
-    LIBRARIES duck_gazebo
+    LIBRARIES sub8_buoyancy sub8_thrusters sub8_state_set
     CATKIN_DEPENDS gazebo_ros roscpp rospy std_msgs message_runtime
     DEPENDS
 )

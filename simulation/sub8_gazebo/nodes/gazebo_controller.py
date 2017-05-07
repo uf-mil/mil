@@ -4,7 +4,7 @@ import mil_ros_tools
 from tf import transformations
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import WrenchStamped, PoseWithCovariance, TwistWithCovariance, Pose, Point, Quaternion
-from sensor_msgs.msg import LaserScan
+from sensor_msgs.msg import Range
 from gazebo_msgs.srv import ApplyBodyWrench
 from gazebo_msgs.msg import LinkStates, ModelState
 from sub8_gazebo.srv import ResetGazebo, ResetGazeboResponse
@@ -26,11 +26,11 @@ class GazeboInterface(object):
         self.state_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self.state_cb)
         self.state_set_pub = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
 
-        self.raw_dvl_sub = rospy.Subscriber('dvl/range_raw', LaserScan, self.publish_height)
+        self.raw_dvl_sub = rospy.Subscriber('dvl/range_raw', Range, self.publish_height)
         self.dvl_pub = rospy.Publisher('dvl/range', RangeStamped, queue_size=1)
 
         self.reset_srv = rospy.Service('gazebo/reset_gazebo', ResetGazebo, self.reset)
-        self.state_pub = rospy.Publisher('odom', Odometry, queue_size=1)
+        self.state_pub = rospy.Publisher('model_odom', Odometry, queue_size=1)
         self.world_state_pub = rospy.Publisher('world_odom', Odometry, queue_size=1)
 
         self.odom_freq = 0.03
@@ -49,7 +49,7 @@ class GazeboInterface(object):
         self.state_set_pub.publish(ModelState(
             model_name=model,
             pose=Pose(
-                position=Point(self.position_offset[0], self.position_offset[1], -1),
+                position=Point(*self.position_offset),
                 orientation=Quaternion(*transformations.quaternion_from_euler(0, 0, 0))
             )
         ))
@@ -64,7 +64,7 @@ class GazeboInterface(object):
         self.dvl_pub.publish(
             RangeStamped(
                 header=mil_ros_tools.make_header(),
-                range=float(np.mean(msg.ranges))
+                range=msg.range
             )
         )
 
@@ -127,9 +127,7 @@ class GazeboInterface(object):
         if (self.last_odom is None or self.position_offset is None):
             pose = msg.pose[msg.name.index(self.target)]
             position, orientation = mil_ros_tools.pose_to_numpy(pose)
-
             self.position_offset = position
-            self.position_offset[2] = 0
 
         self.last_odom = msg
 
