@@ -519,7 +519,7 @@ sudo pip install -q -U crc16
 # Visualization
 sudo pip install -q -U tqdm
 
-# The BlueView SDK for the Teledyne imaging sonar
+# Decrypt and extract the BlueView SDK for the Teledyne imaging sonar
 if [[ ! -z "$BVTSDK_PASSWORD" ]]; then
 	instlog "Decrypting and installing the BlueView SDK"
 	mkdir -p $MIL_CONFIG_DIR
@@ -530,11 +530,12 @@ if [[ ! -z "$BVTSDK_PASSWORD" ]]; then
 	if [[ ! -d $BVTSDK_DIR ]]; then
 		instwarn "Terminating installation due to incorrect password for the BlueView SDK"
 		exit 1
-
-	# If this is not being run to create a Docker image, link the SDK to mil_blueview_driver
-	elif [[ "$DOCKER" != "true" ]]; then
-		ln -s $BVTSDK_DIR $CATKIN_DIR/src/mil_common/drivers/mil_blueview_driver/bvtsdk
 	fi
+fi
+
+# If this is not being run to create a Docker image, link the BlueView SDK to mil_blueview_driver
+if [[ -d $BVTSDK_DIR && "$DOCKER" != "true" ]]; then
+	ln -s $BVTSDK_DIR $CATKIN_DIR/src/mil_common/drivers/mil_blueview_driver/bvtsdk
 fi
 
 
