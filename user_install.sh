@@ -344,7 +344,7 @@ fi
 cd $CATKIN_DIR
 git lfs install --skip-smudge
 
-# The BlueView SDK for the Teledyne imaging sonar
+# Decrypt and extract the BlueView SDK for the Teledyne imaging sonar
 if [[ ! -z "$BVTSDK_PASSWORD" ]]; then
 	instlog "Decrypting and installing the BlueView SDK"
 	mkdir -p $MIL_CONFIG_DIR
@@ -355,11 +355,12 @@ if [[ ! -z "$BVTSDK_PASSWORD" ]]; then
 	if [[ ! -d $BVTSDK_DIR ]]; then
 		instwarn "Terminating installation due to incorrect password for the BlueView SDK"
 		exit 1
-
-	# Link the SDK to mil_blueview_driver
-	else
-		ln -s $BVTSDK_DIR $CATKIN_DIR/src/mil_common/drivers/mil_blueview_driver/bvtsdk
 	fi
+fi
+
+# Link the BlueView SDK to mil_blueview_driver
+if [[ -d $BVTSDK_DIR ]]; then
+	ln -s $BVTSDK_DIR $CATKIN_DIR/src/mil_common/drivers/mil_blueview_driver/bvtsdk
 fi
 
 # Pull large project files from Git-LFS
