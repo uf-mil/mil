@@ -29,4 +29,6 @@ Some of the takeaways from testing are:
 
 # May 8
 - blueview launch file has an error referencing wrong directory for color map file, fixed and should be PRed
-- 
+- oscillating (yaw) when station keeping
+- down camera has significant amount of frame blocked by housing, needs to be moved closer to glass
+- bus voltage kill raised with charged battery
