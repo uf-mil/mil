@@ -26,3 +26,7 @@ Some of the takeaways from testing are:
   front cameras and 7 fps for down. These did not respond well when we tried to increase them so
   we should figure out how to get higher frame rates before the next pool day.
 + We need to make progress on [mission props](https://github.com/uf-mil/SubjuGator/wiki/Mission-Props)
+
+# May 8
+- blueview launch file has an error referencing wrong directory for color map file, fixed and should be PRed
+- 
