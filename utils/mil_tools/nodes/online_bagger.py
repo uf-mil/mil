@@ -50,12 +50,12 @@ class OnlineBagger(object):
 
         rospy.loginfo('')
         rospy.loginfo('Remaining Failed Topics:')
-        self.print_failed_list()
+        self.print_subscriber_list(False)
         rospy.loginfo('')
 
-    def print_failed_list(self):
+    def print_subscriber_list(self, status):
         for topic in self.subscriber_list.keys():
-            if self.subscriber_list[topic][1] == False:
+            if self.subscriber_list[topic][1] == status:
                 rospy.loginfo('{}, {}'.format(self.subscriber_list[topic], topic))
 
     def get_params(self):
@@ -96,7 +96,7 @@ class OnlineBagger(object):
         self.resubscribe_period = rospy.get_param('~resubscribe_period', default=3.0)
 
         rospy.loginfo('Default stream_time: {} seconds'.format(self.stream_time))
-
+        rospy.loginfo('Bag Directory: {}'.format(self.dir))
     def make_dicts(self):
 
         """
@@ -142,7 +142,7 @@ class OnlineBagger(object):
 
         rospy.loginfo('')
         rospy.loginfo('Initial subscriber_list:')
-        self.print_failed_list()
+        self.print_subscriber_list(False)
 
     def subscribe_loop(self):
 
@@ -224,6 +224,9 @@ class OnlineBagger(object):
 
         topic_duration = self.get_topic_duration(topic).to_sec()
 
+        if topic_duration == 0:
+            return 0
+
         ratio = requested_seconds / topic_duration
         index = int(self.get_topic_message_count(topic) * (1 - min(ratio, 1)))
 
@@ -294,8 +297,8 @@ class OnlineBagger(object):
         # If directory param is not set, default to $HOME/bags/<date>
         default_dir = self.dir
         if default_dir == None:
-            default_dir = os.path.join(os.environ['HOME'], 'bags' ,str(datetime.date.today()))
-
+            default_dir = os.path.join(os.environ['HOME'], 'bags')
+        default_dir = os.path.join(default_dir, str(datetime.date.today()))
         # Split filename from directory
         bag_dir, bag_name = os.path.split(filename)
         bag_dir = os.path.join(default_dir, bag_dir)
@@ -319,8 +322,7 @@ class OnlineBagger(object):
         Set status of online bagger
         """
 
-        self.bagger_status = 'Subscriber List: ' + str(self.subscriber_list) + ' Message Count: ' \
-        + str(self.get_total_message_count())
+        self.bagger_status = 'Message Count: {}'.format(str(self.get_total_message_count())) \
 
     def start_bagging(self, req):
 
@@ -343,6 +345,8 @@ class OnlineBagger(object):
             # If topics argument is empty string, include all topics
             if len(selected_topics) > 0 and not topic in selected_topics:
                 continue
+            if len(self.topic_messages[topic]) == 0:
+                continue
 
             rospy.loginfo('topic: %s', topic)
 
@@ -355,7 +359,7 @@ class OnlineBagger(object):
             # get time index the normal way
             else:
                 bag_index = self.get_time_index(topic, requested_seconds)
-
+            rospy.loginfo('topic: {}, bag_index: {}'.format(topic, bag_index))
             messages = 0  # message number in a given topic
             for msgs in self.topic_messages[topic][bag_index:]:
                 messages = messages + 1
@@ -367,7 +371,9 @@ class OnlineBagger(object):
             # empty deque when done writing to bag
             self.topic_messages[topic].clear()
 
-        rospy.loginfo('Bag Report: %s', self.bagger_status)
+        rospy.loginfo('Bag Report: {}'.format(self.bagger_status))
+        rospy.loginfo('Subscriber List:')
+        self.print_subscriber_list(True)
         self.bag.close()
         rospy.loginfo('bagging finished!')
 
