@@ -7,10 +7,10 @@ stream_time: 60  # seconds
 # potential parameters
 
 # determines how frequently unavailable topics are resubscribed to:
-# resubscriber_period : 5.0 # seconds
+resubscriber_period : 3.0 # seconds
 
 # adds additional topics to stream, also overrides default stream time
 # topics : [["/odom", 20], ["/absodom", 20]]
 
 # sets bag package path, default to home/user/bags/current-date
-# bag_package_path : "home/sub8/bags"
+# bag_package_path : "home/sub8/mil_ws/bags"
