@@ -47,7 +47,16 @@ class OnlineBagger(object):
                                              self.start_bagging)
 
         self.subscribe_loop()
-        rospy.loginfo('subscriber list: %s', self.subscriber_list)
+
+        rospy.loginfo('')
+        rospy.loginfo('Remaining Failed Topics:')
+        self.print_failed_list()
+        rospy.loginfo('')
+
+    def print_failed_list(self):
+        for topic in self.subscriber_list.keys():
+            if self.subscriber_list[topic][1] == False:
+                rospy.loginfo('{}, {}'.format(self.subscriber_list[topic], topic))
 
     def get_params(self):
 
@@ -84,8 +93,9 @@ class OnlineBagger(object):
             if key[0:4] == 'bag_':
                 add_env_var(os.environ[key])
 
-        rospy.loginfo('subscriber list: %s', self.subscriber_list)
-        rospy.loginfo('stream_time: %s seconds', self.stream_time)
+        self.resubscribe_period = rospy.get_param('~resubscribe_period', default=3.0)
+
+        rospy.loginfo('Default stream_time: {} seconds'.format(self.stream_time))
 
     def make_dicts(self):
 
@@ -130,7 +140,9 @@ class OnlineBagger(object):
         for topic in self.subscriber_list:
             self.topic_messages[topic] = SliceableDeque(deque())
 
-        rospy.loginfo('topics status: %s', self.subscriber_list)
+        rospy.loginfo('')
+        rospy.loginfo('Initial subscriber_list:')
+        self.print_failed_list()
 
     def subscribe_loop(self):
 
@@ -148,8 +160,11 @@ class OnlineBagger(object):
             i = i + 1
             if i % 1000 == 0:
                 rospy.logdebug('still subscribing!')
+        rospy.loginfo("Subscribed to {} of {} topics, will try again every {} seconds".format(self.successful_subscription_count, 
+            len(self.subscriber_list), self.resubscribe_period))
+        rospy.Timer(rospy.Duration(self.resubscribe_period), self.subscribe)
 
-    def subscribe(self):
+    def subscribe(self, time_info=None):
 
         """
         Subscribe to the topics defined in the yaml configuration file
@@ -240,17 +255,11 @@ class OnlineBagger(object):
 
         # verify streaming is popping off and recording topics
         if self.iteration_count % 100 == 0:
-            rospy.logdebug('time_difference: %s', time_diff.to_sec())
-            rospy.logdebug('topic: %s', topic)
-            rospy.logdebug('topic type: %s', type(msg))
-            rospy.logdebug('number of topic messages: %s', self.get_topic_message_count(topic))
+            rospy.logdebug("{} has {} messages spanning {} seconds".format(topic, self.get_topic_message_count(topic), round(time_diff.to_sec(),2)))
 
         while time_diff > rospy.Duration(self.subscriber_list[topic][0]) and not rospy.is_shutdown():
             self.topic_messages[topic].popleft()
             time_diff = self.get_topic_duration(topic)
-
-        # re subscribe to failed topics if available later
-        self.subscribe()
 
     def get_topic_message_count(self, topic):
 
