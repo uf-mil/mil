@@ -1,4 +1,4 @@
 <launch>
   <include file="$(find sub8_launch)/launch/subsystems/cameras/launch/front_cameras.launch" />
-  <!-- include file="$(find sub8_launch)/launch/subsystems/cameras/launch/down_cameras.launch" / -->
+  <include file="$(find sub8_launch)/launch/subsystems/cameras/launch/down_cameras.launch" />
 </launch>
