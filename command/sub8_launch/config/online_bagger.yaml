@@ -1,12 +1,16 @@
 # list an arbitrary set of topics to  subscribe to and stream:
+# over write default stream time on specific topics in this config
+# 
 
 stream_time: 60  # seconds
 
-topics: [["/odom",                          ],
-         ["/absodom",                       ],
-         ["/stereo/right/camera_info",      ],
-         ["/stereo/right/image_raw",        ],
-         ["/blueview_driver/ranges",        ],
-         ["/blueview_driver/image_color",   ], 
-         ["/ooka",                          ]]
+# potential parameters
 
+# determines how frequently unavailable topics are resubscribed to:
+# resubscriber_period : 5.0 # seconds
+
+# adds additional topics to stream, also overrides default stream time
+# topics : [["/odom", 20], ["/absodom", 20]]
+
+# sets bag package path, default to home/user/bags/current-date
+# bag_package_path : "home/sub8/bags"
