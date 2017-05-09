@@ -16,7 +16,7 @@
             range_profile_intensity_threshold: 2000
             noise_threshold: 0.2
         </rosparam>
-        <param name="color/map_file" value="$(find bvtsdkpkg)/colormaps/jet.cmap" />
+        <param name="color/map_file" value="$(find mil_blueview_driver)/bvtsdk/colormaps/jet.cmap" />
     </node>
 </launch>
 
