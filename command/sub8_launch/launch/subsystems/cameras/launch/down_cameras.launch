@@ -4,7 +4,7 @@
     <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
 
     <!-- DOWN CAMERA -->
-    <node pkg="nodelet" type="nodelet" name="left_camera_nodelet"
+    <node pkg="nodelet" type="nodelet" name="down_camera_nodelet"
          args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
       <param name="frame_id" value="down_left_cam" />
       <param name="serial" value="16292323" />
@@ -31,18 +31,19 @@
       <remap from="image_raw" to="left/image_raw" />
     </node>
 
-    <!-- mono rectification -->
+    <!-- Uncomment this when calibration is set
+    mono rectification 
     <node pkg="nodelet" type="nodelet" name="down_image_proc_rect"
          args="load image_proc/rectify camera_nodelet_manager">
       <remap from="image_mono" to="left/image_mono" />
       <remap from="image_rect" to="left/image_rect" />
     </node>
 
-    <!-- color rectification -->
+    color rectification
     <node pkg="nodelet" type="nodelet" name="down_image_proc_rect_color"
          args="load image_proc/rectify camera_nodelet_manager">
       <remap from="image_mono" to="left/image_color" />
       <remap from="image_rect" to="left/image_rect_color" />
-    </node>
+    </node> -->
   </group>
 </launch>
