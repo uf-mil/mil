@@ -12,10 +12,15 @@ topics: [["/odom",                    300] ,
          ["/stereo/right/camera_info", 20],
          ["/stereo/right/image_raw",   20], 
          ["/velodyne_points",         300],
-         ["/ooka",                    100]]
+         ["/tf",                    100]]
 
 # determines how frequently unavailable topics are resubscribed to defaults to 3.0 seconds:
 resubscribe_period: 3.0 # seconds
 
 # comment out if default env variable 'BAG_DIR'/current_date is desired:
-# bag_package_path: ''  
+# bag_package_path: ''
+
+# Bool parameter that determines if current date is appended to bag directory
+# for example defaults to: "home/user/bags/current-date" when True
+# else bag directory goes to: "home/user/bags when False
+dated_folder: True 

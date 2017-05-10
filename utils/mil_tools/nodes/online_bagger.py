@@ -45,11 +45,8 @@ class OnlineBagger(object):
 
         self.bagging_service = rospy.Service('~dump', BaggerCommands,
                                              self.start_bagging)
-
         self.subscribe_loop()
-
-
-        rospy.loginfo('\nRemaining Failed Topics: {}\n'.format(self.get_subscriber_list(False)))
+        rospy.loginfo('Remaining Failed Topics: {}\n'.format(self.get_subscriber_list(False)))
 
     def get_subscriber_list(self, status):
         """
@@ -73,6 +70,8 @@ class OnlineBagger(object):
             self.dir = os.environ['BAG_DIR']
 
         self.stream_time = rospy.get_param('~stream_time', default=30)  # seconds
+        self.resubscribe_period = rospy.get_param('~resubscribe_period', default=3.0) # seconds
+        self.dated_folder = rospy.get_param('~dated_folder', default=True) # bool
 
         self.subscriber_list = {}
         topics_param = rospy.get_param('~topics', default=[])
@@ -97,7 +96,6 @@ class OnlineBagger(object):
             if key[0:4] == 'bag_':
                 add_env_var(os.environ[key])
 
-        self.resubscribe_period = rospy.get_param('~resubscribe_period', default=3.0)
 
         rospy.loginfo('Default stream_time: {} seconds'.format(self.stream_time))
         rospy.loginfo('Bag Directory: {}'.format(self.dir))
@@ -145,7 +143,7 @@ class OnlineBagger(object):
         for topic in self.subscriber_list:
             self.topic_messages[topic] = SliceableDeque(deque())
 
-        rospy.loginfo('\nInitial subscriber_list: {}'.format(self.get_subscriber_list(False)))
+        rospy.loginfo('Initial subscriber_list: {}'.format(self.get_subscriber_list(False)))
 
     def subscribe_loop(self):
 
@@ -165,7 +163,7 @@ class OnlineBagger(object):
                 rospy.logdebug('still subscribing!')
         rospy.loginfo("Subscribed to {} of {} topics, will try again every {} seconds".format(self.successful_subscription_count, 
             len(self.subscriber_list), self.resubscribe_period))
-        rospy.Timer(rospy.Duration(self.resubscribe_period), self.subscribe)
+        self.resubscriber = rospy.Timer(rospy.Duration(self.resubscribe_period), self.subscribe)
 
     def subscribe(self, time_info=None):
 
@@ -182,6 +180,10 @@ class OnlineBagger(object):
 
         Return number of topics that failed subscription
         """
+
+        if self.successful_subscription_count == len(self.subscriber_list):
+            self.resubscriber.shutdown()
+            rospy.loginfo('All topics subscribed too! Shutting down resubscriber')
 
         for topic, (time, subscribed) in self.subscriber_list.items():
             if not subscribed:
@@ -301,7 +303,10 @@ class OnlineBagger(object):
         default_dir = self.dir
         if default_dir == None:
             default_dir = os.path.join(os.environ['HOME'], 'bags')
-        default_dir = os.path.join(default_dir, str(datetime.date.today()))
+
+        # if dated folder param is set to True, append current date to directory
+        if self.dated_folder == True:
+            default_dir = os.path.join(default_dir, str(datetime.date.today()))
         # Split filename from directory
         bag_dir, bag_name = os.path.split(filename)
         bag_dir = os.path.join(default_dir, bag_dir)
