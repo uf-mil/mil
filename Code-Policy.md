@@ -105,8 +105,6 @@ If you have any questions about what you should unit tests, talk to Patrick Emam
 * Your code will not be pulled if it is not PEP8 compliant
 
 ## C++ Style Guide
-* [Clang-format](https://github.com/rosshemsley/SublimeClangFormat) to automatically format your code
-    * We use the Google styleguide, because LLVM style breaks nested template declarations
-    * We set the maximum line length to 130
-* [Google Styleguide](https://google.github.io/styleguide/cppguide.html)
-* [Google styleguide linter](https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py) or find a Sublime plugin/linter that enforces the google styleguide
+* We use the [ROS style guide](http://wiki.ros.org/CppStyleGuide), because LLVM style breaks nested template declarations
+    * The clang-format utility can be used with it's [ROS style guide file](https://github.com/davetcoleman/roscpp_code_format) to automatically format your code
+    * The ROS style guide is based on the [Google style guide](https://google.github.io/styleguide/cppguide.html)
