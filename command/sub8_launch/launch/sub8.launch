@@ -15,6 +15,7 @@
   <include file="$(find sub8_launch)/launch/subsystems/odometry.launch"/>
   <include file="$(find sub8_launch)/launch/subsystems/thrusters.launch"/>
   <include file="$(find sub8_launch)/launch/subsystems/rise.launch"/>
+  <include file="$(find sub8_launch)/launch/subsystems/online_bagger.launch"/>
   <include file="$(find sub8_alarm)/launch/alarms.launch" />
 
   <!-- 
