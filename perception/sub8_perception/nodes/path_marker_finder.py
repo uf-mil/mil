@@ -2,12 +2,13 @@
 import cv2
 import numpy as np
 import rospy
-from tf.transformations import quaternion_from_euler
+import tf
+from tf.transformations import quaternion_from_euler, euler_from_quaternion, quaternion_matrix
 from std_msgs.msg import Header
 from std_srvs.srv import SetBool, SetBoolResponse
 from sub8_msgs.srv import VisionRequestResponse, VisionRequest, VisionRequest2D, VisionRequest2DResponse, VisionRequest, VisionRequestResponse
-from geometry_msgs.msg import PoseStamped
-from mil_ros_tools import numpy_quat_pair_to_pose, numpy_to_point, numpy_matrix_to_quaternion, numpy_to_quaternion
+from geometry_msgs.msg import PointStamped, Point, Quaternion, Vector3Stamped
+from mil_ros_tools import numpy_quat_pair_to_pose, numpy_to_point, numpy_matrix_to_quaternion, numpy_to_quaternion, rosmsg_to_numpy
 from mil_ros_tools import Image_Publisher, Image_Subscriber
 from image_geometry import PinholeCameraModel
 from visualization_msgs.msg import Marker
@@ -60,7 +61,8 @@ class PathMarkerFinder():
         self.enabled = False
         self.cam = None
         self.last_image = None
-        self.last_found_time = None
+        self.last_found_time_2D = None
+        self.last_found_time_3D = None
 
         # Constants from launch config file
         self.debug_ros = rospy.get_param("~debug_ros", True)
@@ -74,52 +76,56 @@ class PathMarkerFinder():
         self.shape_match_thresh = rospy.get_param("~shape_match_thresh", 0.4)
         self.min_found_count = rospy.get_param("~min_found_count", 10)
         self.timeout_seconds = rospy.get_param("~timeout_seconds", 2.0)
+        self.do_3D = rospy.get_param("~do_3D", True)
         camera = rospy.get_param("~marker_camera", "/camera/down/left/image_rect_color")
 
-        self.state_size = 8 # X, Y, Z, THETA, vx, vy, vz, vtheta
-        self.measurement_size = 4
+        self.tf_listener = tf.TransformListener()
 
-        self.filter = cv2.KalmanFilter(self.state_size, self.measurement_size)
-        self.filter.transitionMatrix = 1.* np.eye(self.state_size, self.state_size, dtype=np.float32)
-        self.filter.measurementMatrix = 1. * np.array([[1, 0, 0, 0, 0, 0, 0, 0],
-                                                       [0, 1, 0, 0, 0, 0, 0, 0],
-                                                       [0, 0, 1, 0, 0, 0, 0, 0],
-                                                       [0, 0, 0, 1, 0, 0, 0, 0]], dtype=np.float32)
+        # Create kalman filter to track 3d position and direction vector for marker in /map frame
+        self.state_size = 5 # X, Y, Z, DY, DX
+        self.filter = cv2.KalmanFilter(self.state_size, self.state_size)
+        self.filter.transitionMatrix = 1.* np.eye(self.state_size, dtype=np.float32)
+        self.filter.measurementMatrix = 1. * np.eye(self.state_size, dtype=np.float32)
         self.filter.processNoiseCov = 1e-5 * np.eye(self.state_size, dtype=np.float32)
-        self.filter.measurementNoiseCov = 1e-4 * np.eye(self.measurement_size, dtype=np.float32)
+        self.filter.measurementNoiseCov = 1e-4 * np.eye(self.state_size, dtype=np.float32)
         self.filter.errorCovPost = 1.* np.eye(self.state_size, dtype=np.float32)
         self._clear_filter(None)
 
         if self.debug_ros:
             self.debug_pub = Image_Publisher("~debug_image")
             self.markerPub = rospy.Publisher('~path_marker_visualization', Marker, queue_size=10)
-        self.service2D = rospy.Service('/vision/path_marker/2D', VisionRequest2D, self.cb_2d)
-        self.service3D = rospy.Service('/vision/path_marker/pose', VisionRequest, self.cb_3d)
-        self.toggle = rospy.Service('/vision/path_marker/enable', SetBool, self.enable_cb)
-        self.image_sub = Image_Subscriber(camera, self.img_cb)
+        self.service2D = rospy.Service('/vision/path_marker/2D', VisionRequest2D, self._vision_cb_2D)
+        if self.do_3D:
+            self.service3D = rospy.Service('/vision/path_marker/pose', VisionRequest, self._vision_cb_3D)
+        self.toggle = rospy.Service('/vision/path_marker/enable', SetBool, self._enable_cb)
+        self.image_sub = Image_Subscriber(camera, self._img_cb)
         camera_info = self.image_sub.wait_for_camera_info()
         self.cam = PinholeCameraModel()
         self.cam.fromCameraInfo(camera_info)
 
-    def sendDebugMarker(self):
+    def _send_debug_marker(self):
         '''
         Sends a rviz marker in the camera frame with the estimated pose of the path marker.
         This marker is a scaled cube with the demensions and color of the actual marker.
         Only called if debug_ros param == True
         '''
+        if self.last3d is None or not self.found:
+            return
         m = Marker()
-        m.header.frame_id = self.cam.tfFrame()
-        m.header.stamp = self.last_found_time
+        m.header.frame_id = '/map'
+        m.header.stamp = self.last_found_time_3D
         m.ns = "path_markers"
         m.id = 0
-        m.type = 1
+        m.type = 0 #Arrow so we can see where it's pointing
         m.action = 0
-        m.pose.position = numpy_to_point(self.last3d[0])
-        m.pose.orientation = numpy_to_quaternion(self.last3d[1])
         # Real demensions of path marker
         m.scale.x = 1.2192
         m.scale.y = 0.1524
         m.scale.z = 0.05
+        # Adjust error so the center is the center of the path marker
+        position = self.last3d[0] - quaternion_matrix(self.last3d[1])[:3, :3].dot(np.array([1.2192, 0.1524, 0]))/2.0
+        m.pose.position = numpy_to_point(position)
+        m.pose.orientation = numpy_to_quaternion(self.last3d[1])
         m.color.r = 0.0
         m.color.g = 0.5
         m.color.b = 0.0
@@ -128,160 +134,211 @@ class PathMarkerFinder():
         m.lifetime = rospy.Duration(0)
         self.markerPub.publish(m)
 
-    def enable_cb(self, x):
+    def _enable_cb(self, x):
         if x.data != self.enabled:
             self._clear_filter(None)
         self.enabled = x.data
         return SetBoolResponse(success=True)
 
-    def sortRect(self, rect):
+    def _sort_rect(self, rect):
         '''
         Given a contour of 4 points, returns the same 4 points sorted in a known way.
         Used so that indicies of contour line up to that in model for cv2.solvePnp
-        p[0] = Top left corner of marker
-        p[1] = Top right corner of marker
-        p[2] = Bottom right corner of marker
-        p[3] = Bottom left cornet of marker
+        p[0] = Top left corner of marker         0--1
+        p[1] = Top right corner of marker        |  |
+        p[2] = Bottom right corner of marker     |  |
+        p[3] = Bottom left cornet of marker      3--2
+
+        The implementation of this is a little bit of magic, and there may be an easier way
+        to do this. For now you can just see it as a black box, which takes four corners
+        of the path marker and returns the same four corners in a known order
         '''
-        def sort_contour_y(c):
-            return c[0][1]
-        def sort_contour_x(c):
-            return c[0][0]
-        sorted_y = np.array(sorted(rect, key=sort_contour_y))
-        sorted_x = np.array(sorted(rect, key=sort_contour_x))
+        rect = np.reshape(rect, (rect.shape[0], 2))
+        sorted_x = np.argsort(rect[:,0])
+        sorted_y = np.argsort(rect[:,1])
+        # Wrap index around from 3 to 0
+        def ind_next(i):
+            if i >= 3:
+              return 0
+            return i+1
+        # Given two correct corner indexes, get other 2
+        def get_two(a, b):
+            if a - b == 1: # Ex: (1,0) -> (3,2)
+                return (ind_next(ind_next(a)), ind_next(a))
+            elif a - b == -1: # Ex: (0, 1) -> (2,3)
+                return (ind_next(b), ind_next(ind_next(b)))
+            elif a - b == 3:
+                return (1,2)
+            elif a - b == -3:
+                return (2,1)
 
-        sorted_rect = None
-        if (np.linalg.norm(sorted_y[0] - sorted_y[1]) > np.linalg.norm(sorted_y[0] - sorted_y[2]) or
-                np.linalg.norm(sorted_y[0] - sorted_y[1]) > np.linalg.norm(sorted_y[0] - sorted_y[3])):
-            if sorted_x[1][0][1] > sorted_x[0][0][1]:
+        # Horizontal orientation
+        if np.linalg.norm(rect[sorted_y[0]] - rect[sorted_y[1]]) >  np.linalg.norm(rect[sorted_y[0]] - rect[sorted_y[2]]):
+            # If 1 is lower than 0, reverse
+            if rect[sorted_x[1]][1] > rect[sorted_x[0]][1]:
                 sorted_x[0], sorted_x[1] = sorted_x[1].copy(), sorted_x[0].copy()
-            if sorted_x[2][0][1] > sorted_x[3][0][1]:
-                sorted_x[2], sorted_x[3] = sorted_x[3].copy(), sorted_x[2].copy()
-            sorted_rect =  sorted_x
+            next_two = get_two(sorted_x[0], sorted_x[1])
+            sorted_x[2], sorted_x[3] = next_two[0], next_two[1]
+            rect = np.array([rect[sorted_x[0]], rect[sorted_x[1]], rect[sorted_x[2]], rect[sorted_x[3]]])
         else:
-            if sorted_y[0][0][0] > sorted_y[1][0][0]:
+            # If 1 is to the left of zero, reverse
+            if rect[sorted_y[0]][0] > rect[sorted_y[1]][0]:
                 sorted_y[0], sorted_y[1] = sorted_y[1].copy(), sorted_y[0].copy()
-            if sorted_y[3][0][0] > sorted_y[2][0][0]:
-                sorted_y[3], sorted_y[2] = sorted_y[2].copy(), sorted_y[3].copy()
-            sorted_rect = sorted_y
-        for i, pixel in enumerate(sorted_rect):
-            center = (int(pixel[0][0]), int(pixel[0][1]))
-            cv2.circle(self.last_image, center, 5, (255, 0, 0), -1)
-            cv2.putText(self.last_image, str(i), center, cv2.FONT_HERSHEY_SCRIPT_COMPLEX,1, (0,0,255))
-        return sorted_rect
+            next_two = get_two(sorted_y[0], sorted_y[1])
+            sorted_y[2], sorted_y[3] = next_two[0], next_two[1]
+            rect = np.array([rect[sorted_y[0]], rect[sorted_y[1]], rect[sorted_y[2]], rect[sorted_y[3]]])
+        if self.debug_ros:
+            for i, pixel in enumerate(rect):
+                center = (int(pixel[0]), int(pixel[1]))
+                cv2.circle(self.last_image, center, 5, (0, 255, 0), -1)
+                cv2.putText(self.last_image, str(i), center, cv2.FONT_HERSHEY_SCRIPT_COMPLEX,1, (0,0,255))
+        return rect
 
-    def cb_3d(self, req):
+    def _vision_cb_3D(self, req):
         res = VisionRequestResponse()
-        dt = (self.image_sub.last_image_time - self.last_found_time).to_sec()
+        if self.last_found_time_3D is None or self.image_sub.last_image_time is None:
+            res.found = False
+            return res
+        dt = (self.image_sub.last_image_time - self.last_found_time_3D).to_sec()
         if dt <= 0 or dt > self.timeout_seconds:
             res.found = False
         elif (self.last3d == None or not self.enabled):
             res.found = False
         else:
-            res.pose.header.frame_id = self.cam.tfFrame()
-            res.pose.header.stamp = self.last_found_time
+            res.pose.header.frame_id = "/map"
+            res.pose.header.stamp = self.last_found_time_3D
             res.pose.pose.position = numpy_to_point(self.last3d[0])
             res.pose.pose.orientation = numpy_to_quaternion(self.last3d[1])
             res.found = True
         return res
     
-    def cb_2d(self, req):
+    def _vision_cb_2D(self, req):
         res = VisionRequest2DResponse()
         if (self.last2d == None or not self.enabled):
             res.found = False
         else:
             res.header.frame_id = self.cam.tfFrame()
-            res.header.stamp = self.last_found_time
+            res.header.stamp = self.last_found_time_2D
             res.pose.x = self.last2d[0][0]
             res.pose.y = self.last2d[0][1]
-            res.pose.theta = self.last2d[1]
+            if self.last2d[1][0] < 0:
+                self.last2d[1][0] = -self.last2d[1][0]
+                self.last2d[1][1] = -self.last2d[1][1]
+            angle = np.arctan2(self.last2d[1][1], self.last2d[1][0])
+            res.pose.theta = angle
             res.found = True
         return res
 
-    def _update_transition_matrix(self, dt):
-        self.filter.transitionMatrix[0][4] = dt
-        self.filter.transitionMatrix[1][5] = dt
-        self.filter.transitionMatrix[2][6] = dt
-        self.filter.transitionMatrix[3][7] = dt
-
     def _clear_filter(self, state):
+        '''
+        Reset filter and found state. This will ensure that the path marker
+        is seen consistently before vision request returns true
+        '''
+        rospy.loginfo("MARKER LOST")
         self.found_count = 0
         self.found = False
         self.last3d = None
         self.filter.errorCovPre = 1. * np.eye(self.state_size, dtype=np.float32)
         if state is not None:
-            (x, y, z, theta) = state
-            state = np.array([[x], [y], [z], [theta], [0], [0], [0], [0]], dtype=np.float32)
+            self.found_count = 1
+            state = np.array(state, dtype=np.float32)
             self.filter.statePost = state
 
-    def _update_kf(self, (x, y, z, theta)):
-        if self.last_found_time is None:
-            self._clear_filter((x, y, z, theta))
+    def _update_kf(self, (x, y, z, dy, dx)):
+        '''
+        Updates the path marker kalman filter using the pose estimation
+        from the most recent frame. Also tracks time since last seen and how
+        often is has been seen to set the boolean "found" for the vision request
+        '''
+        if self.last_found_time_3D is None: # First time found, set initial KF pose to this frame
+            self._clear_filter((x, y, z, dy, dx))
             return
-        dt = (self.image_sub.last_image_time - self.last_found_time).to_sec()
+        dt = (self.image_sub.last_image_time - self.last_found_time_3D).to_sec()
+        self.last_found_time_3D = self.image_sub.last_image_time
         if dt <= 0 or dt > self.timeout_seconds:
             rospy.logwarn("Timed out since last saw marker, resetting")
-            self._clear_filter((x, y, z, theta))
+            self._clear_filter((x, y, z, dy, dx))
             return
-        if self.last3d is not None:
-            if np.linalg.norm(np.array([x, y, z], dtype=np.float32) - self.last3d[0]) > 15:
-                self._clear_filter((x, y, z, theta))
-                rospy.logwarn("Too far apart, resetting")
-                return
 
         self.found_count += 1
-        self._update_transition_matrix(dt)
-        measurement = 1.* np.array([x, y, z, theta], dtype=np.float32)
+        measurement = 1.* np.array([x, y, z, dy, dx], dtype=np.float32)
         predict = self.filter.predict()
         estimated = self.filter.correct(measurement)
         if self.found_count > self.min_found_count:
-              self.last3d = ((estimated[0][0], estimated[1][0], estimated[2][0]),
-                              quaternion_from_euler(0.0, 0.0, estimated[3][0]))
+              angle = np.arctan2(estimated[3], estimated[4])
+              self.last3d = ((estimated[0], estimated[1], estimated[2]),
+                              quaternion_from_euler(0.0, 0.0, angle))
               if not self.found:
                   rospy.loginfo("Marker Found")
               self.found = True
-              if self.debug_ros:
-                  refs, _ = cv2.projectPoints(np.array([[ estimated[0][0], estimated[1][0], estimated[2][0] ]] ), (0, 0, 0), (0,0,0), self.cam.intrinsicMatrix(), np.zeros((5,1)))
-                  center = (int(refs[0][0][0]), int(refs[0][0][1]))
-                  cv2.circle(self.last_image, center, 8, (0, 0, 255), -1)
-                  text = str(np.degrees(estimated[3][0]))+"deg"
-                  cv2.putText(self.last_image, text, center, cv2.FONT_HERSHEY_SCRIPT_COMPLEX,1, (0,0,255))
-                  self.sendDebugMarker()
 
-    def get_3d_pose(self, p):
-        i_points = np.array((p[0][0], p[1][0], p[2][0], p[3][0]),dtype=np.float)
-        retval, rvec, tvec =  cv2.solvePnP(PathMarkerFinder.PATH_MARKER, i_points, self.cam.intrinsicMatrix(), np.zeros((5,1)))
-        if tvec[2] < 0.3 :
+    def _get_pose_3D(self, p):
+        i_points = np.array(p,dtype=np.float)
+        # Use camera intrinsics and knowledge of marker's real demensions to get a pose estimate in camera frame
+        _, rvec, tvec =  cv2.solvePnP(PathMarkerFinder.PATH_MARKER, i_points, self.cam.intrinsicMatrix(), np.zeros((5,1)))
+        if tvec[2][0] < 0.3: # Sanity check on position estimate
+            rospy.logwarn("Marker too close, must be wrong...")
             return False
-        self._update_kf((tvec[0], tvec[1], tvec[2], self.last2d[1]))
+
+        # Convert position estimate and 2d direction vector to messages to they can be transformed
+        ps = PointStamped()
+        ps.header.frame_id = self.cam.tfFrame()
+        ps.header.stamp = self.image_sub.last_image_time
+        ps.point = Point(*tvec)
+        vec3 = Vector3Stamped()
+        vec3.vector.x = self.last2d[1][0]
+        vec3.vector.y = self.last2d[1][1]
+        vec3.header.frame_id = self.cam.tfFrame()
+        vec3.header.stamp = self.image_sub.last_image_time
+        map_vec3 = None
+        map_ps = None
+
+        # Transform pose estimate to map framr
+        try:
+            self.tf_listener.waitForTransform('/map', ps.header.frame_id, ps.header.stamp, rospy.Duration(0.05))
+            map_ps = self.tf_listener.transformPoint('/map', ps)
+            map_vec3 = self.tf_listener.transformVector3('/map', vec3)
+        except tf.Exception as err:
+            rospy.logwarn("Could not transform {} to /map error={}".format(self.cam.tfFrame(),err))
+            return False
+        # Try to ensure vector always points the same way, so kf is not thrown off at some angles
+        if map_vec3.vector.y < 0.0:
+            map_vec3.vector.y = -map_vec3.vector.y
+            map_vec3.vector.x = -map_vec3.vector.x
+        measurement = (map_ps.point.x, map_ps.point.y, map_ps.point.z, map_vec3.vector.y, map_vec3.vector.x)
+
+        # Update filter and found state with the pose estimate from this frame
+        self._update_kf(measurement)
+
         if self.debug_ros:
+            # Draw coordinate axis onto path marker using pose estimate to project
             refs, _ = cv2.projectPoints(PathMarkerFinder.REFERENCE_POINTS, rvec, tvec, self.cam.intrinsicMatrix(), np.zeros((5,1)))
             refs = np.array(refs, dtype=np.int)
             cv2.line(self.last_image, (refs[0][0][0], refs[0][0][1]), (refs[1][0][0], refs[1][0][1]), (0, 0, 255)) # X axis refs
             cv2.line(self.last_image, (refs[0][0][0], refs[0][0][1]), (refs[2][0][0], refs[2][0][1]), (0, 255, 0)) # Y axis ref
             cv2.line(self.last_image, (refs[0][0][0], refs[0][0][1]), (refs[3][0][0], refs[3][0][1]), (255, 0, 0)) # Z axis ref
+            self._send_debug_marker()
         return True
-    
-    def get_2d_pose(self, r):
+
+    def _get_pose_2D(self, r):
         '''
         Given a sorted 4 sided polygon, stores the centriod and angle
         for the next service call to get 2dpose.
         returns False if dx of polygon is 0, otherwise True
         '''
-        top_center = (r[1][0]+r[0][0])/2.0
-        bot_center = (r[2][0]+r[3][0])/2.0
+        top_center = (r[1]+r[0])/2.0
+        bot_center = (r[2]+r[3])/2.0
+        vector = top_center - bot_center
+        vector = vector / np.linalg.norm(vector)
         center = bot_center + (top_center - bot_center)/2.0
-        dy = top_center[1] - bot_center[1]
-        dx = top_center[0] - bot_center[0]
-        if dx == 0:
-            rospy.logerr("Contour dx is 0, strange...")
-            return False
-
-        angle = np.arctan(dy / dx)
-        self.last2d = (center, angle)
+        vector = top_center - bot_center
+        vector = vector/np.linalg.norm(vector)
+        # Store last2d as a center pixel point and unit direction vector
+        self.last2d = (center, vector)
+        self.last_found_time_2D = self.image_sub.last_image_time
         return True
 
-    def valid_contour(self, contour):
+    def _is_valid_contour(self, contour):
         '''
         Does various tests to filter out contours that are clearly not
         a valid path marker.
@@ -296,16 +353,16 @@ class PathMarkerFinder():
         # Checks that contour is 4 sided
         polygon = cv2.approxPolyDP(contour, self.approx_polygon_thresh, True)
         if len(polygon) != 4:
-            #rospy.loginfo("Polygon not 4 sided ({}), throwing out".format(len(polygon)))
             return False
-        rect = self.sortRect(polygon)
-        if not self.get_2d_pose(rect):
+        rect = self._sort_rect(polygon)
+        if not self._get_pose_2D(rect):
             return False
-        if not self.get_3d_pose(rect):
-            return False
+        if self.do_3D:
+            if not self._get_pose_3D(rect):
+                return False
         return True
 
-    def get_edges(self):
+    def _get_edges(self):
         '''
         Proccesses latest image to find edges by:
         blurring and thresholding for highly saturated orangish objects
@@ -316,17 +373,16 @@ class PathMarkerFinder():
         thresh = cv2.inRange(hsv, (0, self.thresh_saturation_low, 0), (self.thresh_hue_high, 255, 255))
         return cv2.Canny(thresh, self.canny_low, self.canny_low*self.canny_ratio)
 
-    def img_cb(self, img):
+    def _img_cb(self, img):
         if not self.enabled or self.cam == None:
             return
         self.last_image = img
-        edges = self.get_edges()
+        edges = self._get_edges()
         _, contours, _ = cv2.findContours(edges,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
         # Check if each contour is valid
         for idx, c in enumerate(contours):
-            if self.valid_contour(c):
-                self.last_found_time = self.image_sub.last_image_time
+            if self._is_valid_contour(c):
                 if self.debug_ros:
                     cv2.drawContours(self.last_image, contours, idx, (0,255,0), 3)
                 break

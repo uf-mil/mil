@@ -29,23 +29,17 @@ def run(sub):
     s = Searcher(sub, sub.vision_proxies.path_marker.get_pose, pattern)
     resp = None
     print_info.fprint("RUNNING SEARCH PATTERN")
-    resp = yield s.start_search(loop=False, timeout=TIMEOUT_SECONDS)
+    resp = yield s.start_search(loop=False, timeout=TIMEOUT_SECONDS, spotings_req=1)
 
-    if resp is None:
+    if resp is None or not resp.found:
         print_bad.fprint("MARKER NOT FOUND")
         defer.returnValue(None)
     
     print_good.fprint("PATH MARKER POSE FOUND")
-    print_info.fprint("TRANFORMING MARKER POSE TO /map FROM {}".format(resp.pose.header.frame_id))
-    cam_to_baselink = yield sub._tf_listener.get_transform('/base_link', '/'+resp.pose.header.frame_id)
-    cam_to_map = yield sub._tf_listener.get_transform('/map', '/'+resp.pose.header.frame_id)
-    marker_position = cam_to_map.transform_point(rosmsg_to_numpy(resp.pose.pose.position))
-    marker_orientation = cam_to_map.transform_quaternion(rosmsg_to_numpy(resp.pose.pose.orientation))
-    move = sub.move.set_orientation(marker_orientation).zero_roll_and_pitch()
-    position = marker_position.copy()
+    assert(resp.pose.header.frame_id == "/map")
+    move = sub.move.set_orientation(rosmsg_to_numpy(resp.pose.pose.orientation)).zero_roll_and_pitch()
+    position = rosmsg_to_numpy(resp.pose.pose.position)
     position[2] = move._pose.position[2]
-    position[0] = position[0] + cam_to_baselink._p[0]
-    position[1] = position[1] + cam_to_baselink._p[1]
     move = move.set_position(position)
     print_info.fprint("MOVING TO MARKER POSE")
     yield move.go(speed=0.2)
