@@ -1,7 +1,10 @@
 # list an arbitrary set of topics to  subscribe to and stream:
+# overwrite default stream time on specific topics in this config
 
 stream_time: 10  # seconds
 
+# adds additional topics to stream, or overrides default stream time on specific topics
+# leave blank to bag MIL bag script enviromental variables only
 topics: [["/odom",                    300] ,
          ["/absodom",                 300],
          ["/stereo/left/camera_info"     ],
@@ -11,5 +14,8 @@ topics: [["/odom",                    300] ,
          ["/velodyne_points",         300],
          ["/ooka",                    100]]
 
-# comment out if default home/user/online_bagger is desired
+# determines how frequently unavailable topics are resubscribed to defaults to 3.0 seconds:
+resubscribe_period: 3.0 # seconds
+
+# comment out if default env variable 'BAG_DIR'/current_date is desired:
 # bag_package_path: ''  

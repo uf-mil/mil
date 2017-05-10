@@ -48,15 +48,19 @@ class OnlineBagger(object):
 
         self.subscribe_loop()
 
-        rospy.loginfo('')
-        rospy.loginfo('Remaining Failed Topics:')
-        self.print_subscriber_list(False)
-        rospy.loginfo('')
 
-    def print_subscriber_list(self, status):
+        rospy.loginfo('\nRemaining Failed Topics: {}\n'.format(self.get_subscriber_list(False)))
+
+    def get_subscriber_list(self, status):
+        """
+        Get string of all topics, if their subscribe status matches the input (True / False)
+        Outputs each topics: time_buffer(float in seconds), subscribe_statue(bool), topic(string)
+        """
+        sub_list = ''
         for topic in self.subscriber_list.keys():
             if self.subscriber_list[topic][1] == status:
-                rospy.loginfo('{}, {}'.format(self.subscriber_list[topic], topic))
+                sub_list = sub_list + '\n{:13}, {}'.format(self.subscriber_list[topic], topic)
+        return sub_list
 
     def get_params(self):
 
@@ -97,6 +101,7 @@ class OnlineBagger(object):
 
         rospy.loginfo('Default stream_time: {} seconds'.format(self.stream_time))
         rospy.loginfo('Bag Directory: {}'.format(self.dir))
+
     def make_dicts(self):
 
         """
@@ -140,9 +145,7 @@ class OnlineBagger(object):
         for topic in self.subscriber_list:
             self.topic_messages[topic] = SliceableDeque(deque())
 
-        rospy.loginfo('')
-        rospy.loginfo('Initial subscriber_list:')
-        self.print_subscriber_list(False)
+        rospy.loginfo('\nInitial subscriber_list: {}'.format(self.get_subscriber_list(False)))
 
     def subscribe_loop(self):
 
@@ -316,39 +319,38 @@ class OnlineBagger(object):
 
         self.bag = rosbag.Bag(os.path.join(bag_dir, bag_name), 'w')
 
-    def set_bagger_status(self):
-
-        """
-        Set status of online bagger
-        """
-
-        self.bagger_status = 'Message Count: {}'.format(str(self.get_total_message_count())) \
-
     def start_bagging(self, req):
 
         """
         Dump all data in dictionary to bags, temporarily stops streaming
         during the bagging process, resumes streaming when over.
+        If bagging is already false because of an active call to this service
         """
+        if self.streaming == False:
+                status = 'Bag Request came in while bagging, priority given to prior request'
+                rospy.logwarn(status)
+                return status
 
         self.streaming = False
         self.set_bag_directory(req.bag_name)
-        self.set_bagger_status()
 
+        self.bagger_status = 'Total Message Count: {} \nFailed Requested Topics: \n'.format(self.get_total_message_count())
         requested_seconds = req.bag_time
 
         selected_topics = req.topics.split()
         for topic, (time, subscribed) in self.subscriber_list.items():
             if not subscribed:
+                self.bagger_status = self.bagger_status + 'topic: {}\n'.format(topic)
                 continue
             # Exclude topics that aren't in topics service argument
             # If topics argument is empty string, include all topics
             if len(selected_topics) > 0 and not topic in selected_topics:
                 continue
             if len(self.topic_messages[topic]) == 0:
+                self.bagger_status = self.bagger_status + 'topic: {}\n'.format(topic)
                 continue
 
-            rospy.loginfo('topic: %s', topic)
+            rospy.logdebug('message count: {:6}, topic: {}'.format(self.get_topic_message_count(topic), topic))
 
             # if no number is provided or a zero is given, bag all messages
             types = (0, 0.0, None)
@@ -358,22 +360,21 @@ class OnlineBagger(object):
 
             # get time index the normal way
             else:
+                # bag index will return the appropriate index to begin bagging at
+                # in order to have the requested number of seconds
                 bag_index = self.get_time_index(topic, requested_seconds)
-            rospy.loginfo('topic: {}, bag_index: {}'.format(topic, bag_index))
+            rospy.logdebug('topic: {}, bag_index: {}'.format(topic, bag_index))
             messages = 0  # message number in a given topic
             for msgs in self.topic_messages[topic][bag_index:]:
                 messages = messages + 1
                 self.bag.write(topic, msgs[1], t=msgs[0])
-                if messages % 100 == 0:  # print every 100th topic, type and time
-                    rospy.loginfo('topic: %s, message type: %s, time: %s',
+                if messages % 100 == 0:  # log every 100th topic, type and time
+                    rospy.logdebug('topic: %s, message type: %s, time: %s',
                     topic, type(msgs[1]), type(msgs[0]))
 
             # empty deque when done writing to bag
             self.topic_messages[topic].clear()
 
-        rospy.loginfo('Bag Report: {}'.format(self.bagger_status))
-        rospy.loginfo('Subscriber List:')
-        self.print_subscriber_list(True)
         self.bag.close()
         rospy.loginfo('bagging finished!')
 
