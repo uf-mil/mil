@@ -1,6 +1,5 @@
 # list an arbitrary set of topics to  subscribe to and stream:
-# over write default stream time on specific topics in this config
-# 
+# overwrite default stream time on specific topics in this config
 
 stream_time: 60  # seconds
 
