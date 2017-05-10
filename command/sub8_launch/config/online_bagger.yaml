@@ -14,3 +14,8 @@ stream_time: 60  # seconds
 
 # sets bag package path, default to home/user/bags/current-date
 # bag_package_path : "home/sub8/mil_ws/bags"
+
+# Bool parameter that determines if current date is appended to bag directory
+# for example defaults to: "home/user/bags/current-date" when True
+# else bag directory goes to: "home/user/bags when False
+dated_folder: True
