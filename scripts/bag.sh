@@ -291,7 +291,7 @@ bag() {
 		done
 
 		# Call to the online bagger with what topics to dump and where
-		rosservice call /online_bagger/dump "{bag_name: '$BAG_DIR/$(date +%Y-%m-%d)/$NAME', topics: '$TOPICS', bag_time: '$TIME'}"
+		rosservice call /online_bagger/dump "{bag_name: '$BAG_DIR/$(date +%Y-%m-%d)/$NAME', topics: '$TOPICS', bag_time: $TIME}"
 
 		# If the text flag was passed in, create a notes file of the same name
 		if [[ "$NOTE_TEXT" == "true" ]]; then
