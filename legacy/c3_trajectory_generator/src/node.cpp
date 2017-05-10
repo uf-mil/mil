@@ -196,6 +196,25 @@ struct Node {
                            (c3trajectory_t - current_waypoint_t).toSec());
       c3trajectory_t += traj_dt;
     }
+    nh.serviceClient<movement_validity::isWaypointValid>("isWaypointValid");
+    movement_validity::isWaypointValid srv;
+    srv.request = (current_waypoint);    
+    if (client.call(srv))
+    {
+      ROS_INFO("resp: %1d", srv.response.resp);
+    }
+    else
+    {
+      ROS_ERROR("Failed to call service isWaypointValid");
+    }
+    if(srv.response.resp == false)
+    {
+      current_waypoint.r.qdot = subjugator::Vector6d::Zero();  // zero velocities
+      current_waypoint_t = now;
+
+      c3trajectory.reset(new subjugator::C3Trajectory(current_waypoint.r, limits));
+      c3trajectory_t = now;
+    }
 
     PoseTwistStamped msg;
     msg.header.stamp = c3trajectory_t;
