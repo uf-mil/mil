@@ -41,7 +41,10 @@ add_dependencies(pd_controller
 
 add_executable(movement_validity nodes/movement_validity.cpp)
 target_link_libraries(movement_validity ${catkin_LIBRARIES} ${Boost_LIBRARIES})
-
+add_dependencies(movement_validity
+    sub8_msgs_generate_messages_cpp
+    ${catkin_EXPORTED_TARGETS}
+)
 
 # add_executable(mpc nodes/mpc.cc)
 # target_link_libraries(mpc ${catkin_LIBRARIES} ${Boost_LIBRARIES})

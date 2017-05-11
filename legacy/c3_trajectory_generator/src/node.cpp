@@ -143,7 +143,7 @@ struct Node {
     trajectory_vis_pub = private_nh.advertise<PoseStamped>("trajectory_v", 1);
     waypoint_pose_pub = private_nh.advertise<PoseStamped>("waypoint", 1);
 
-    wpValidClient = nh.serviceClient<sub8_msgs::WaypointValidity>("isWaypointValid");
+    wpValidClient = nh.serviceClient<sub8_msgs::WaypointValidity>("is_waypoint_valid");
 
     update_timer =
         nh.createTimer(ros::Duration(1. / 50), boost::bind(&Node::timer_callback, this, _1));
@@ -177,6 +177,8 @@ struct Node {
 
     ros::Time now = ros::Time::now();
 
+    auto old_waypoint = current_waypoint;
+
     if (actionserver.isNewGoalAvailable()) {
       boost::shared_ptr<const mil_msgs::MoveToGoal> goal = actionserver.acceptNewGoal();
       current_waypoint = subjugator::C3Trajectory::Waypoint(
@@ -198,21 +200,14 @@ struct Node {
 
     sub8_msgs::WaypointValidity srv;
     srv.request.wp = Pose_from_Waypoint(current_waypoint);    
-    if (wpValidClient.call(srv))
+    if (!wpValidClient.call(srv))
     {
-      ROS_INFO("resp: %1d", srv.response.valid);
-    }
-    else
-    {
-      ROS_ERROR("Failed to call service isWaypointValid");
+      ROS_ERROR("Failed to call service is_waypoint_valid");
     }
     if(srv.response.valid == false)
     {
-      current_waypoint.r.qdot = subjugator::Vector6d::Zero();  // zero velocities
-      current_waypoint_t = now;
-
-      c3trajectory.reset(new subjugator::C3Trajectory(current_waypoint.r, limits));
-      c3trajectory_t = now;
+      ROS_ERROR("can't move there!");
+      current_waypoint = old_waypoint;
     }
 
     while (c3trajectory_t + traj_dt < now) {
