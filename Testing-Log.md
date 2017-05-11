@@ -66,6 +66,11 @@ TO DO:
 
 ### Imaging Sonar
 - [x] Blueview launch file had an error referencing wrong directory for color map file. [**Fixed**](https://github.com/uf-mil/SubjuGator/pull/236)
+
+
+* **_PROGRESS:_** Occupied regions, safe zones, and uncertain zones and some way-point validity in C3. If missions do a tilting up-down motion, it may be possible to obtain a 3D position of an object and re-project to front cameras.
+* **_ISSUES:_** Blueview. From the bags, Blueview does get hits for objects (gate, torpedo board, and sometimes buoy.)  This data can be used for estimating 3D position of an object, but not it's orientation. However, it is uncertain what the limitations are and how likely blueview will get hits of an object.
+ 
 * **_TODO:_** note progress, issues, results with creating point clouds, recognizing areas or volumes of interest (Daniel++)
 
 ### Gate Detection, Posing
