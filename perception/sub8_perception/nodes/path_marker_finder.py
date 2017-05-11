@@ -116,22 +116,20 @@ class PathMarkerFinder():
         m.header.stamp = self.last_found_time_3D
         m.ns = "path_markers"
         m.id = 0
-        m.type = 0 #Arrow so we can see where it's pointing
+        m.type = 1
         m.action = 0
         # Real demensions of path marker
         m.scale.x = 1.2192
         m.scale.y = 0.1524
         m.scale.z = 0.05
-        # Adjust error so the center is the center of the path marker
-        position = self.last3d[0] - quaternion_matrix(self.last3d[1])[:3, :3].dot(np.array([1.2192, 0.1524, 0]))/2.0
-        m.pose.position = numpy_to_point(position)
+        m.pose.position = numpy_to_point(self.last3d[0])
         m.pose.orientation = numpy_to_quaternion(self.last3d[1])
         m.color.r = 0.0
         m.color.g = 0.5
         m.color.b = 0.0
         m.color.r = 1.0
         m.color.a = 1.0
-        m.lifetime = rospy.Duration(0)
+        m.lifetime = rospy.Duration(self.timeout_seconds)
         self.markerPub.publish(m)
 
     def _enable_cb(self, x):
@@ -200,7 +198,7 @@ class PathMarkerFinder():
             res.found = False
             return res
         dt = (self.image_sub.last_image_time - self.last_found_time_3D).to_sec()
-        if dt <= 0 or dt > self.timeout_seconds:
+        if dt < 0 or dt > self.timeout_seconds:
             res.found = False
         elif (self.last3d == None or not self.enabled):
             res.found = False
@@ -252,6 +250,7 @@ class PathMarkerFinder():
         '''
         if self.last_found_time_3D is None: # First time found, set initial KF pose to this frame
             self._clear_filter((x, y, z, dy, dx))
+            self.last_found_time_3D = self.image_sub.last_image_time
             return
         dt = (self.image_sub.last_image_time - self.last_found_time_3D).to_sec()
         self.last_found_time_3D = self.image_sub.last_image_time
