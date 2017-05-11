@@ -50,6 +50,8 @@ private:
   float ogrid_size_;
   float resolution_;
   float pool_depth_;
+  int min_intensity_;
+
   ros::ServiceClient service_get_bounds_;
   tf::StampedTransform transform_;
 

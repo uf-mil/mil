@@ -10,10 +10,11 @@ OGridGen::OGridGen() : nh_(ros::this_node::getName()), classification_(&nh_)
   pub_point_cloud_raw_ = nh_.advertise<pcl::PointCloud<pcl::PointXYZI>>("point_cloud/raw", 1);
 
   // Resolution is meters/pixel
-  nh_.param<float>("resolution_", resolution_, 0.2f);
-  nh_.param<float>("ogrid_size_", ogrid_size_, 50.f);
+  nh_.param<float>("resolution", resolution_, 0.2f);
+  nh_.param<float>("ogrid_size", ogrid_size_, 50.f);
   // Ignore points that are below the potential pool
-  nh_.param<float>("pool_depth_", pool_depth_, 7.f);
+  nh_.param<float>("pool_depth", pool_depth_, 7.f);
+  nh_.param<int>("min_intensity", min_intensity_, 2000);
 
   // Buffer that will only hold a certain amount of points
   int point_cloud_buffer_Size;
@@ -73,6 +74,7 @@ void OGridGen::publish_ogrid(const ros::TimerEvent &)
 
   // TODO: Implement some k-nearest neighbors algorithm to filter ogrid
 
+  mat_ogrid_ = cv::Scalar(50);
   // Populate the Ogrid by projecting down the pointcloud
   for (auto &point_pcl : pointCloud_filtered->points)
   {
@@ -84,6 +86,8 @@ void OGridGen::publish_ogrid(const ros::TimerEvent &)
       mat_ogrid_.at<uchar>(p.y, p.x) = 99;
     }
   }
+
+  classification_.zonify(mat_ogrid_, resolution_, transform_);
 
   // Flatten the mat_ogrid_ into a 1D vector for OccupencyGrid message
   nav_msgs::OccupancyGrid rosGrid;
@@ -130,7 +134,7 @@ void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
 
   for (size_t i = 0; i < ping_msg->ranges.size(); ++i)
   {
-    if (ping_msg->intensities.at(i) > 2000)
+    if (ping_msg->intensities.at(i) > min_intensity_)
     {  // TODO: Better thresholding
 
       // Get x and y of a ping. RIGHT TRIANGLES
