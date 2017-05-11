@@ -3,7 +3,7 @@ This wiki serves as the main landing page for the uf-mil Github organization and
 # General Information
 
 The [Machine Intelligence Lab (MIL)](http://mil.ufl.edu/) focuses on a few different projects throughout the year. These include the following vehicles:
-* [SubjuGator](http://subjugator.org) - An Autonomous Underwater Vehicle (AUV) that is entered in the [RoboSub competition](http://www.robonation.org/competition/robosub)
+* [SubjuGator](http://subjugator.org) - An Autonomous Underwater Vehicle (AUV) that is entered in the [RoboSub competition](http://www.robonation.org/competition/robosub). [**_Read the wiki!_**](https://github.com/uf-mil/SubjuGator/wiki)
 * [PropaGator](http://propagator.org) - An Autonomous Surface Vehicle (ASV) that is entered in the [RoboBoat competition](http://www.robonation.org/competition/roboboat)
 * [NaviGator](http://www.navigatoruf.org) - An Autonomous Surface Vehicle (ASV) that is entered in the [Maritime RobotX Challenge](https://www.robotx.org)
 
