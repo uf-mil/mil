@@ -47,7 +47,22 @@ David spent a couple of hours [calibrating the stereo cameras](https://github.co
   - [ ] Down camera mounted with new mount (_date_)
 
 ### OnlineBagger
-* **_TODO:_** note current status, progress (Israelle)
+STATUS:
+* Tested online bagger on sub while integrated with current bagging utility successfully
+
+ISSUES:
+* Partial bagging on topics with one or zero messages (but topics that are available)
+* Bagging directory was not consistent with the rest of bagging utilities
+* Lots of unnecessary output to terminal when running
+
+These problems have been addressed in PR51 in mil_common : https://github.com/uf-mil/mil_common/pull/51 [**Merged**]
+
+Online Bagger has also been added to launch and kill systems now: https://github.com/uf-mil/SubjuGator/pull/228 [**Merged**]
+
+TO DO:
+  - [ ] Add feature to allow for multiple calls to bagging service simultaneously (_date_)
+
+
 
 ### Imaging Sonar
 - [x] Blueview launch file had an error referencing wrong directory for color map file. [**Fixed**](https://github.com/uf-mil/SubjuGator/pull/236)
