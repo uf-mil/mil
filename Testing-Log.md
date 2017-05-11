@@ -68,13 +68,15 @@ TO DO:
 - [x] Blueview launch file had an error referencing wrong directory for color map file. [**Fixed**](https://github.com/uf-mil/SubjuGator/pull/236)
 
 
-* **_PROGRESS:_** Occupied regions, safe zones, and uncertain zones and some way-point validity in C3. If missions do a tilting up-down motion, it may be possible to obtain a 3D position of an object and re-project to front cameras.
-* **_ISSUES:_** Blueview. From the bags, Blueview does get hits for objects (gate, torpedo board, and sometimes buoy.)  This data can be used for estimating 3D position of an object, but not it's orientation. However, it is uncertain what the limitations are and how likely blueview will get hits of an object.
- 
-* **_TODO:_** note progress, issues, results with creating point clouds, recognizing areas or volumes of interest (Daniel++)
+* **_PROGRESS:_** Plainer Occupied regions, safe zones, and uncertain zones using blueview and some way-point validity in C3. If missions do a tilting up-down motion, it may be possible to obtain a 3D position of an object and re-project to front cameras.
+
+* **_ISSUES:_** Blueview. From the bags, Blueview does get hits for objects (gate, torpedo board, and sometimes buoy.)  This data can be used for estimating 3D position of an object, but not it's orientation. However, it is uncertain what the limitations are and how likely blueview will get hits of an object. Classification or volume recognition from blueview data appears to be impractical.
+
+* **_TODO:_** Test out waypoint validity. Implement a tilt mission to populate a pointcloud with blueview. More thorough testing of blueview data on pool-days. (Daniel++)
 
 ### Gate Detection, Posing
-* **_TODO:_** note current status, progress (Daniel++)
+* **_PROGRESS:_** Detection of gate works. Mission - vision stereoing to the gate.
+* **_TODO:_** More robost gate detection, perhaps use blueview or stereo to obtain a pose. Add gate into simulator.
 
 ### Buoy Segmentation
 * **_TODO:_** note current status, progress (Aaron)
