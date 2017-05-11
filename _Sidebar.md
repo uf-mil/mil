@@ -1,7 +1,7 @@
 * [[Home]]
     * [[Getting Started]]
-    * [[Reading List]]
     * [[Manifesto]]
+    * [[Reading List]]
     * [[Editing the Wikis]]
 * [[Code Policy]]
     * [[ROS Conventions]]
