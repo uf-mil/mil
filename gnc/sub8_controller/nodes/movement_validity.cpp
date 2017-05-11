@@ -3,16 +3,7 @@
 //Gonna be using a lot of namespaces probably. 
 #include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
-#include <actionlib/server/simple_action_server.h>
-
-#include <mil_msgs/PoseTwistStamped.h>
-#include <mil_tools/msg_helpers.hpp>
-#include <mil_tools/param_helpers.hpp>
-
-
-#include <mil_msgs/MoveToAction.h>
-#include "C3Trajectory.h"
-#include "sub8_msgs/Waypoint.h"
+#include "sub8_msgs/WaypointValidity.h"
 
 /*
 * Goal: This is going to need to check whether the current waypoint is valid. 
@@ -25,26 +16,26 @@
 using namespace std;
 using namespace geometry_msgs;
 
-bool isWaypointValid(const subjugator::C3Trajectory::Waypoint &wp)
+bool isWaypointValid(sub8_msgs::WaypointValidity::Request &req, sub8_msgs::WaypointValidity::Response &resp)
 {
-  double wpDepth = wp.pose.point.z;
-  bool resp = true;
+  double wpDepth = req.wp.position.z;
+  resp.valid = true;
   //stay below the surface
-  ROS_INFO("request: check waypoint depth=%1d", wpDepth);
+  // ROS_INFO("request: check waypoint depth=%1d", wpDepth);
   if(wpDepth > 0)
-    {
-	resp = false;
-    }
-  ROS_INFO("response: %1d", resp);
-  return resp;
+  {
+	 resp.valid = false;
+  }
+  // ROS_INFO("response: %1d", resp.valid);
+  return true;
 }
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "isWaypointValid");
+  ros::init(argc, argv, "waypoint_validity_node");
   ros::NodeHandle n;
 
-  ros::ServiceServer service = n.advertiseService("isWaypointValid", add);
+  ros::ServiceServer service = n.advertiseService("isWaypointValid", isWaypointValid);
   ROS_INFO("Ready to evaluate waypoint.");
   ros::spin();
 

@@ -1,4 +1,4 @@
 #Service file for waypoint validity return true if waypoint valid, false if not.
-waypoint wp
+geometry_msgs/Pose wp
 ---
-bool resp
+bool valid

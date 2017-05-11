@@ -13,6 +13,8 @@
 #include "c3_trajectory_generator/SetDisabled.h"
 #include "C3Trajectory.h"
 
+#include "sub8_msgs/WaypointValidity.h"
+
 using namespace std;
 using namespace geometry_msgs;
 using namespace nav_msgs;
@@ -83,6 +85,7 @@ struct Node {
 
   ros::Subscriber odom_sub;
   actionlib::SimpleActionServer<mil_msgs::MoveToAction> actionserver;
+  ros::ServiceClient wpValidClient;
   ros::Publisher trajectory_pub;
   ros::Publisher trajectory_vis_pub;
   ros::Publisher waypoint_pose_pub;
@@ -140,6 +143,8 @@ struct Node {
     trajectory_vis_pub = private_nh.advertise<PoseStamped>("trajectory_v", 1);
     waypoint_pose_pub = private_nh.advertise<PoseStamped>("waypoint", 1);
 
+    wpValidClient = nh.serviceClient<sub8_msgs::WaypointValidity>("isWaypointValid");
+
     update_timer =
         nh.createTimer(ros::Duration(1. / 50), boost::bind(&Node::timer_callback, this, _1));
 
@@ -191,29 +196,29 @@ struct Node {
       c3trajectory_t = now;
     }
 
-    while (c3trajectory_t + traj_dt < now) {
-      c3trajectory->update(traj_dt.toSec(), current_waypoint,
-                           (c3trajectory_t - current_waypoint_t).toSec());
-      c3trajectory_t += traj_dt;
-    }
-    nh.serviceClient<movement_validity::isWaypointValid>("isWaypointValid");
-    movement_validity::isWaypointValid srv;
-    srv.request = (current_waypoint);    
-    if (client.call(srv))
+    sub8_msgs::WaypointValidity srv;
+    srv.request.wp = Pose_from_Waypoint(current_waypoint);    
+    if (wpValidClient.call(srv))
     {
-      ROS_INFO("resp: %1d", srv.response.resp);
+      ROS_INFO("resp: %1d", srv.response.valid);
     }
     else
     {
       ROS_ERROR("Failed to call service isWaypointValid");
     }
-    if(srv.response.resp == false)
+    if(srv.response.valid == false)
     {
       current_waypoint.r.qdot = subjugator::Vector6d::Zero();  // zero velocities
       current_waypoint_t = now;
 
       c3trajectory.reset(new subjugator::C3Trajectory(current_waypoint.r, limits));
       c3trajectory_t = now;
+    }
+
+    while (c3trajectory_t + traj_dt < now) {
+      c3trajectory->update(traj_dt.toSec(), current_waypoint,
+                           (c3trajectory_t - current_waypoint_t).toSec());
+      c3trajectory_t += traj_dt;
     }
 
     PoseTwistStamped msg;
