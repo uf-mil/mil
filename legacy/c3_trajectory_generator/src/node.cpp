@@ -143,7 +143,7 @@ struct Node {
     trajectory_vis_pub = private_nh.advertise<PoseStamped>("trajectory_v", 1);
     waypoint_pose_pub = private_nh.advertise<PoseStamped>("waypoint", 1);
 
-    wpValidClient = nh.serviceClient<sub8_msgs::WaypointValidity>("is_waypoint_valid");
+    wpValidClient = nh.serviceClient<sub8_msgs::WaypointValidity>("/waypoint_validity_node/is_waypoint_valid");
 
     update_timer =
         nh.createTimer(ros::Duration(1. / 50), boost::bind(&Node::timer_callback, this, _1));
