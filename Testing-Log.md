@@ -41,7 +41,9 @@ David spent a couple of hours [calibrating the stereo cameras](https://github.co
 <img src="https://cloud.githubusercontent.com/assets/8714358/25931032/c20b3052-35d7-11e7-983b-97380052d5f7.png" width="300"> <img src="https://cloud.githubusercontent.com/assets/8714358/25931094/36a22f4c-35d8-11e7-8649-2e9b810f4b1c.png" width="300"> <img src="https://cloud.githubusercontent.com/assets/8714358/25931126/64c0a2dc-35d8-11e7-8088-8557d5e188d7.png" width="300">
 
 ### Path Marker Alignment
-* **_TODO:_** note progress on this missions perception and mission (Kevin)
+* More data collected for testing with new camera
+* Attempted to calibrate camera underwater, could not with large part of frame blocked by camera housing
+* Lack of control and calibration prevented running mission, perception recognized path marker when in frame and pose estimates seemed reasonable.
 * We overcompensated for having too narrow of a field of view last pool day and used one with two wide of a field of view (too much radial distortion)
 * After testing we found and tested a camera lens that works well, it just needs to have a new mount printed for it to bring it closer to the glass
   - [ ] Down camera mounted with new mount (_date_)
