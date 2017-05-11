@@ -29,10 +29,35 @@ Some of the takeaways from testing are:
 ---
 
 # May 8
-- blueview launch file has an error referencing wrong directory for color map file, fixed and should be PRed
-- oscillating (yaw) when station keeping
-- down camera has significant amount of frame blocked by housing, needs to be moved closer to glass
-- bus voltage kill raised with charged battery
+### GNC
+* These [changes](https://github.com/uf-mil/SubjuGator/pull/233) to the thruster driver solved our previous pool day's issues with detecting thrusters, also makes it easy to discover thrusters that are mis-configured.
+* We ran without thruster 3 (FRV) after hearing it scrape against the shrouds
+* We were not able to track waypoints in the water with zero steady state error. There were strong oscillations around our yaw reference. The sub was stable however and did track position, pitch, and roll.
+- [ ] The current controller gains have not been assured to be stable for our current mass + buoyancy parameters which have changed substantially.
+
+### Stereo
+David spent a couple of hours [calibrating the stereo cameras](https://github.com/uf-mil/SubjuGator/pull/235) with as high fidelity as possible and we were able to generate some stereo point clouds that were encouraging. He argued that we can use stereo clouds generated using this calibration to segment out things like the start and navigation gate among others. He will be using this calibration to try and generate some stereo benchmarks from Robosub 2016 data.
+
+<img src="https://cloud.githubusercontent.com/assets/8714358/25931032/c20b3052-35d7-11e7-983b-97380052d5f7.png" width="300"> <img src="https://cloud.githubusercontent.com/assets/8714358/25931094/36a22f4c-35d8-11e7-8649-2e9b810f4b1c.png" width="300"> <img src="https://cloud.githubusercontent.com/assets/8714358/25931126/64c0a2dc-35d8-11e7-8088-8557d5e188d7.png" width="300">
+
+### Path Marker Alignment
+* **_TODO:_** note progress on this missions perception and mission (Kevin)
+* We overcompensated for having too narrow of a field of view last pool day and used one with two wide of a field of view (too much radial distortion)
+* After testing we found and tested a camera lens that works well, it just needs to have a new mount printed for it to bring it closer to the glass
+  - [ ] Down camera mounted with new mount (_date_)
+
+### OnlineBagger
+* **_TODO:_** note current status, progress (Israelle)
+
+### Imaging Sonar
+- [x] Blueview launch file had an error referencing wrong directory for color map file. [**Fixed**](https://github.com/uf-mil/SubjuGator/pull/236)
+* **_TODO:_** note progress, issues, results with creating point clouds, recognizing areas or volumes of interest (Daniel++)
+
+### Gate Detection, Posing
+* **_TODO:_** note current status, progress (Daniel++)
+
+### Buoy Segmentation
+* **_TODO:_** note current status, progress (Aaron)
 ---
 
 # May 10
@@ -68,3 +93,4 @@ _Check off the following boxes as the issue is addressed and leave a note with n
 * We cannot control our orientation very well during depth displacement moves, but still converge to our waypoint. (partly due to losing a vertical thruster)
 * Our bus_voltage kill measurements fluctuate too much to be very useful. _See [issue #238](https://github.com/uf-mil/SubjuGator/issues/238)_
 * It would be very convenient to have a script to pull all of the latest master branches from our repos into `mil_ws` on the sub. _See [issue #239](https://github.com/uf-mil/SubjuGator/issues/239)_
+---
