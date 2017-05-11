@@ -55,9 +55,9 @@ ISSUES:
 * Bagging directory was not consistent with the rest of bagging utilities
 * Lots of unnecessary output to terminal when running
 
-These problems have been addressed in PR51 in mil_common : https://github.com/uf-mil/mil_common/pull/51 [**Merged**]
+These problems have been addressed in [PR51](https://github.com/uf-mil/mil_common/pull/51) in mil_common **Merged**
 
-Online Bagger has also been added to launch and kill systems now: https://github.com/uf-mil/SubjuGator/pull/228 [**Merged**]
+Online Bagger has also been added to launch and kill systems now ([PR228](https://github.com/uf-mil/SubjuGator/pull/228)) **Merged**
 
 TO DO:
   - [ ] Add feature to allow for multiple calls to bagging service simultaneously (_date_)
