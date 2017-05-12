@@ -285,6 +285,11 @@ else
 	instlog "Using existing catkin workspace at $CATKIN_DIR"
 fi
 
+# Download the clang-format rules for the ROS C++ style guide to the workspace
+if [[ ! -f $CATKIN_DIR/.clang-format ]]; then
+	wget -O $CATKIN_DIR/.clang-format https://raw.githubusercontent.com/uf-mil/installer/master/.clang-format
+fi
+
 # Source the workspace's configurations for bash
 source $CATKIN_DIR/devel/setup.bash
 
