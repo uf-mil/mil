@@ -12,7 +12,7 @@ These are the missions that need to be written for the 2017 competition. Mission
     * Mission System **Anthony**
 * Target Board **David**
 * Manipulation Task
-    * Perception **Kevin**
-    * Mission System **David**
+    * "Collect"  (Tower with PVC pipes) **David**
+    * "Classify" (Ellipses)- **Kevin**
 *  Black Box (sonar) **David**
 *  Wall Finding and Obstacle Avoidance **Daniel++**
