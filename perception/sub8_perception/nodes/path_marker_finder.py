@@ -38,6 +38,11 @@ class PathMarkerFinder():
     # Model of four corners of path marker, centered around 0 in meters
     LENGTH = 0.6096 # Longer side of path marker in meters
     WIDTH = 0.0762 # Shorter Side
+
+    # Demensions of the prop we made for testing
+    # LENGTH = 0.4572
+    # WIDTH = 0.05715
+
     PATH_MARKER = np.array([[LENGTH,  -WIDTH, 0],
                             [LENGTH,  WIDTH,  0],
                             [-LENGTH,  WIDTH, 0],
