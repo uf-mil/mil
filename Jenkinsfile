@@ -23,6 +23,12 @@ dockerNode(image: 'uf-mil:ros_alarms') {
 	}
 	stage("Format") {
 		sh '''
+			if [[ ! -z "$(python2.7 -m flake8 --max-line-length=120 --exclude=__init__.py .)" ]]; then
+				echo "The preceding Python following files are not formatted correctly"
+				exit 1
+			fi
+		'''
+		sh '''
 			source /opt/ros/kinetic/setup.bash > /dev/null 2>&1
 			wget -O ~/.clang-format https://raw.githubusercontent.com/uf-mil/installer/master/.clang-format
 			for FILE in $(find . -name '*.h' -or -name '*.hpp' -or -name '*.cpp'); do
