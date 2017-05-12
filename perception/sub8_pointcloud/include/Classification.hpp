@@ -42,4 +42,6 @@ public:
   void color_ogrid(cv::Mat &ogrid, tf::StampedTransform &transform);
 
   void zonify(cv::Mat &mat_ogrid, float resolution, const tf::StampedTransform &transform);
+
+  void fake_ogrid(cv::Mat &mat_ogrid, float resolution, const tf::StampedTransform &transform);
 };

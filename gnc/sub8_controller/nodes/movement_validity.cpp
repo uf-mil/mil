@@ -30,14 +30,15 @@ private:
   ros::ServiceServer validity_service_;
   nav_msgs::OccupancyGridConstPtr ogrid_map_;
   ros::Subscriber sub_;
-public:
 
+public:
   WaypointChecker() : nh_(ros::this_node::getName())
   {
     sub_ = nh_.subscribe<nav_msgs::OccupancyGrid>("/ogridgen/ogrid", 1,
                                                   boost::bind(&WaypointChecker::ogrid_callback, this, _1));
-    validity_service_ = nh_.advertiseService<sub8_msgs::WaypointValidity::Request, sub8_msgs::WaypointValidity::Response>(
-        "is_waypoint_valid", boost::bind(&WaypointChecker::is_waypoint_valid, this, _1, _2));
+    validity_service_ =
+        nh_.advertiseService<sub8_msgs::WaypointValidity::Request, sub8_msgs::WaypointValidity::Response>(
+            "is_waypoint_valid", boost::bind(&WaypointChecker::is_waypoint_valid, this, _1, _2));
   }
 
   // TODO: What the error was
@@ -52,12 +53,21 @@ public:
       return true;
     }
 
-    // Check if point is occupied
     cv::Point where_sub = cv::Point(req.wp.position.x / ogrid_map_->info.resolution + ogrid_map_->info.width / 2,
                                     req.wp.position.y / ogrid_map_->info.resolution + ogrid_map_->info.height / 2);
-    if (ogrid_map_->data.at(where_sub.x + where_sub.y * ogrid_map_->info.width) == 99)
+
+    // Is the new point in an unknown region?
+    if (ogrid_map_->data.at(where_sub.x + where_sub.y * ogrid_map_->info.width) == 50)
     {
       resp.valid = false;
+      resp.type = 50;
+    }
+
+    // Is the new point next to an occupied region?
+    if (check_if_hit(where_sub, cv::Size(5, 5)))
+    {
+      resp.valid = false;
+      resp.type = 99;
     }
 
     return true;
@@ -66,6 +76,21 @@ public:
   void ogrid_callback(const nav_msgs::OccupancyGridConstPtr &ogrid_map)
   {
     this->ogrid_map_ = ogrid_map;
+  }
+
+  bool check_if_hit(cv::Point center, cv::Size sub_size)
+  {
+    for (int x = center.x - sub_size.width / 2; x < center.x + sub_size.width / 2; ++x)
+    {
+      for (int y = center.y - sub_size.height / 2; y < center.y + sub_size.height / 2; ++y)
+      {
+        if (ogrid_map_->data.at(x + y * ogrid_map_->info.width) == 99)
+        {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 };
 

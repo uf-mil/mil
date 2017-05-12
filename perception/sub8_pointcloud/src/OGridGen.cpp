@@ -89,6 +89,9 @@ void OGridGen::publish_ogrid(const ros::TimerEvent &)
 
   classification_.zonify(mat_ogrid_, resolution_, transform_);
 
+  // classification_.fake_ogrid(mat_ogrid_, resolution_, transform_);
+
+
   // Flatten the mat_ogrid_ into a 1D vector for OccupencyGrid message
   nav_msgs::OccupancyGrid rosGrid;
   std::vector<int8_t> data(mat_ogrid_.cols * mat_ogrid_.rows);

@@ -22,7 +22,8 @@ using namespace mil_msgs;
 using namespace mil_tools;
 using namespace c3_trajectory_generator;
 
-subjugator::C3Trajectory::Point Point_from_PoseTwist(const Pose &pose, const Twist &twist) {
+subjugator::C3Trajectory::Point Point_from_PoseTwist(const Pose &pose, const Twist &twist)
+{
   tf::Quaternion q;
   tf::quaternionMsgToTF(pose.orientation, q);
 
@@ -32,16 +33,16 @@ subjugator::C3Trajectory::Point Point_from_PoseTwist(const Pose &pose, const Twi
   tf::Matrix3x3(q).getRPY(res.q[3], res.q[4], res.q[5]);
 
   res.qdot.head(3) = vec2vec(tf::Matrix3x3(q) * vec2vec(xyz2vec(twist.linear)));
-  res.qdot.tail(3) = (Eigen::Matrix3d() << 1, sin(res.q[3]) * tan(res.q[4]),
-                      cos(res.q[3]) * tan(res.q[4]), 0, cos(res.q[3]), -sin(res.q[3]), 0,
-                      sin(res.q[3]) / cos(res.q[4]), cos(res.q[3]) / cos(res.q[4])).finished() *
-                     xyz2vec(twist.angular);
+  res.qdot.tail(3) =
+      (Eigen::Matrix3d() << 1, sin(res.q[3]) * tan(res.q[4]), cos(res.q[3]) * tan(res.q[4]), 0, cos(res.q[3]),
+       -sin(res.q[3]), 0, sin(res.q[3]) / cos(res.q[4]), cos(res.q[3]) / cos(res.q[4])).finished() *
+      xyz2vec(twist.angular);
 
   return res;
 }
 
-PoseTwist PoseTwist_from_PointWithAcceleration(
-    const subjugator::C3Trajectory::PointWithAcceleration &p) {
+PoseTwist PoseTwist_from_PointWithAcceleration(const subjugator::C3Trajectory::PointWithAcceleration &p)
+{
   tf::Quaternion orient = tf::createQuaternionFromRPY(p.q[3], p.q[4], p.q[5]);
 
   PoseTwist res;
@@ -50,20 +51,20 @@ PoseTwist PoseTwist_from_PointWithAcceleration(
   quaternionTFToMsg(orient, res.pose.orientation);
 
   Eigen::Matrix3d worldangvel_from_eulerrates =
-      (Eigen::Matrix3d() << 1, 0, -sin(p.q[4]), 0, cos(p.q[3]), sin(p.q[3]) * cos(p.q[4]), 0,
-       -sin(p.q[3]), cos(p.q[3]) * cos(p.q[4])).finished();
+      (Eigen::Matrix3d() << 1, 0, -sin(p.q[4]), 0, cos(p.q[3]), sin(p.q[3]) * cos(p.q[4]), 0, -sin(p.q[3]),
+       cos(p.q[3]) * cos(p.q[4])).finished();
 
   res.twist.linear = vec2xyz<Vector3>(tf::Matrix3x3(orient.inverse()) * vec2vec(p.qdot.head(3)));
   res.twist.angular = vec2xyz<Vector3>(worldangvel_from_eulerrates * p.qdot.tail(3));
 
-  res.acceleration.linear =
-      vec2xyz<Vector3>(tf::Matrix3x3(orient.inverse()) * vec2vec(p.qdotdot.head(3)));
+  res.acceleration.linear = vec2xyz<Vector3>(tf::Matrix3x3(orient.inverse()) * vec2vec(p.qdotdot.head(3)));
   res.acceleration.angular = vec2xyz<Vector3>(worldangvel_from_eulerrates * p.qdotdot.tail(3));
 
   return res;
 }
 
-Pose Pose_from_Waypoint(const subjugator::C3Trajectory::Waypoint &wp) {
+Pose Pose_from_Waypoint(const subjugator::C3Trajectory::Waypoint &wp)
+{
   Pose res;
 
   res.position = vec2xyz<Point>(wp.r.q.head(3));
@@ -72,7 +73,8 @@ Pose Pose_from_Waypoint(const subjugator::C3Trajectory::Waypoint &wp) {
   return res;
 }
 
-struct Node {
+struct Node
+{
   ros::NodeHandle nh;
   ros::NodeHandle private_nh;
   tf::TransformListener tf_listener;
@@ -102,27 +104,28 @@ struct Node {
 
   double linear_tolerance, angular_tolerance;
 
-  bool set_disabled(SetDisabledRequest &request, SetDisabledResponse &response) {
+  bool set_disabled(SetDisabledRequest &request, SetDisabledResponse &response)
+  {
     disabled = request.disabled;
-    if (disabled) {
+    if (disabled)
+    {
       c3trajectory.reset();
     }
     return true;
   }
 
-  Node()
-  : private_nh("~"),
-    actionserver(nh, "moveto", false),
-    disabled(false),
-    kill_listener(nh, "kill")
+  Node() : private_nh("~"), actionserver(nh, "moveto", false), disabled(false), kill_listener(nh, "kill")
   {
     // Callback to reset trajectory when (un)killing
-    auto reset_traj = [this](ros_alarms::AlarmProxy a) { this->c3trajectory.reset(); };
+    auto reset_traj = [this](ros_alarms::AlarmProxy a)
+    {
+      this->c3trajectory.reset();
+    };
     kill_listener.addRaiseCb(reset_traj);
 
     // Make sure alarm integration is ok
     kill_listener.waitForConnection(ros::Duration(2));
-    if(kill_listener.getNumConnections() < 1)
+    if (kill_listener.getNumConnections() < 1)
       throw std::runtime_error("The kill listener isn't connected to the alarm server");
     kill_listener.start();  // Fuck.
 
@@ -145,8 +148,7 @@ struct Node {
 
     wpValidClient = nh.serviceClient<sub8_msgs::WaypointValidity>("/waypoint_validity_node/is_waypoint_valid");
 
-    update_timer =
-        nh.createTimer(ros::Duration(1. / 50), boost::bind(&Node::timer_callback, this, _1));
+    update_timer = nh.createTimer(ros::Duration(1. / 50), boost::bind(&Node::timer_callback, this, _1));
 
     actionserver.start();
 
@@ -154,14 +156,16 @@ struct Node {
         "set_disabled", boost::bind(&Node::set_disabled, this, _1, _2));
   }
 
-  void odom_callback(const OdometryConstPtr &odom) {
-    if (c3trajectory) return;                            // already initialized
-    if (kill_listener.isRaised() || disabled) return;  // only initialize when unkilled
-    
+  void odom_callback(const OdometryConstPtr &odom)
+  {
+    if (c3trajectory)
+      return;  // already initialized
+    if (kill_listener.isRaised() || disabled)
+      return;  // only initialize when unkilled
+
     ros::Time now = ros::Time::now();
 
-    subjugator::C3Trajectory::Point current =
-        Point_from_PoseTwist(odom->pose.pose, odom->twist.twist);
+    subjugator::C3Trajectory::Point current = Point_from_PoseTwist(odom->pose.pose, odom->twist.twist);
     current.q[3] = current.q[4] = 0;              // zero roll and pitch
     current.qdot = subjugator::Vector6d::Zero();  // zero velocities
 
@@ -172,23 +176,56 @@ struct Node {
     current_waypoint_t = now;
   }
 
-  void timer_callback(const ros::TimerEvent &) {
-    if (!c3trajectory) return;
+  void timer_callback(const ros::TimerEvent &)
+  {
+    if (!c3trajectory)
+      return;
 
     ros::Time now = ros::Time::now();
 
     auto old_waypoint = current_waypoint;
 
-    if (actionserver.isNewGoalAvailable()) {
+    if (actionserver.isNewGoalAvailable())
+    {
       boost::shared_ptr<const mil_msgs::MoveToGoal> goal = actionserver.acceptNewGoal();
       current_waypoint = subjugator::C3Trajectory::Waypoint(
-          Point_from_PoseTwist(goal->posetwist.pose, goal->posetwist.twist), goal->speed,
-          !goal->uncoordinated);
+          Point_from_PoseTwist(goal->posetwist.pose, goal->posetwist.twist), goal->speed, !goal->uncoordinated);
       current_waypoint_t = now;
       this->linear_tolerance = goal->linear_tolerance;
       this->angular_tolerance = goal->angular_tolerance;
+      // Check if waypoit is valid
+      sub8_msgs::WaypointValidity srv;
+      srv.request.wp = Pose_from_Waypoint(current_waypoint);
+      if (!wpValidClient.call(srv))
+      {
+        ROS_ERROR("Failed to call service is_waypoint_valid");
+      }
+      else
+      {
+        if (srv.response.valid == false)  // got a bad point
+        {
+          if (srv.response.type == 50)  // if unknown, check if there's a huge displacement with the new waypoint
+          {
+            auto a_point = Pose_from_Waypoint(current_waypoint);
+            auto b_point = Pose_from_Waypoint(old_waypoint);
+            // If moved more than .5m, then don't allow
+            if (abs(a_point.position.x - b_point.position.x) > .5 || abs(a_point.position.y - b_point.position.y) > .5)
+            {
+              ROS_ERROR("can't move there! - need to rotate");
+              current_waypoint = old_waypoint;
+            }
+          }
+          // if point is occupied, reject move
+          if (srv.response.type == 99)
+          {
+            ROS_ERROR("can't move there! - waypoint is occupied");
+            current_waypoint = old_waypoint;
+          }
+        }
+      }
     }
-    if (actionserver.isPreemptRequested()) {
+    if (actionserver.isPreemptRequested())
+    {
       current_waypoint = c3trajectory->getCurrentPoint();
       current_waypoint.r.qdot = subjugator::Vector6d::Zero();  // zero velocities
       current_waypoint_t = now;
@@ -198,22 +235,36 @@ struct Node {
       c3trajectory_t = now;
     }
 
+    auto old_trajectory = c3trajectory->getCurrentPoint();
+
+    while (c3trajectory_t + traj_dt < now)
+    {
+      c3trajectory->update(traj_dt.toSec(), current_waypoint, (c3trajectory_t - current_waypoint_t).toSec());
+      c3trajectory_t += traj_dt;
+    }
+
+    // Check if we will hit something while in trajectory
     sub8_msgs::WaypointValidity srv;
-    srv.request.wp = Pose_from_Waypoint(current_waypoint);    
+    auto p = c3trajectory->getCurrentPoint();
+    srv.request.wp.position = vec2xyz<Point>(p.q.head(3));
+    quaternionTFToMsg(tf::createQuaternionFromRPY(p.q[3], p.q[4], p.q[5]), srv.request.wp.orientation);
+
     if (!wpValidClient.call(srv))
     {
       ROS_ERROR("Failed to call service is_waypoint_valid");
     }
-    if(srv.response.valid == false)
+    else
     {
-      ROS_ERROR("can't move there!");
-      current_waypoint = old_waypoint;
-    }
+      if (srv.response.valid == false && srv.response.type == 99)
+      {
+        ROS_ERROR("can't move there! - bad trajectory");
+        current_waypoint = old_trajectory;
+        current_waypoint.r.qdot = subjugator::Vector6d::Zero();  // zero velocities
+        current_waypoint_t = now;
 
-    while (c3trajectory_t + traj_dt < now) {
-      c3trajectory->update(traj_dt.toSec(), current_waypoint,
-                           (c3trajectory_t - current_waypoint_t).toSec());
-      c3trajectory_t += traj_dt;
+        c3trajectory.reset(new subjugator::C3Trajectory(current_waypoint.r, limits));
+        c3trajectory_t = now;
+      }
     }
 
     PoseTwistStamped msg;
@@ -234,15 +285,17 @@ struct Node {
     waypoint_pose_pub.publish(posemsg);
 
     if (actionserver.isActive() &&
-        c3trajectory->getCurrentPoint().is_approximately(
-            current_waypoint.r, max(1e-3, linear_tolerance), max(1e-3, angular_tolerance)) &&
-        current_waypoint.r.qdot == subjugator::Vector6d::Zero()) {
+        c3trajectory->getCurrentPoint().is_approximately(current_waypoint.r, max(1e-3, linear_tolerance),
+                                                         max(1e-3, angular_tolerance)) &&
+        current_waypoint.r.qdot == subjugator::Vector6d::Zero())
+    {
       actionserver.setSucceeded();
     }
   }
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   ros::init(argc, argv, "c3_trajectory_generator");
 
   Node n;
