@@ -402,6 +402,11 @@ else
 	instlog "Using existing catkin workspace at $CATKIN_DIR"
 fi
 
+# Download the clang-format rules for the ROS C++ style guide to the workspace
+if [[ ! -f $CATKIN_DIR/.clang-format ]]; then
+	wget -O $CATKIN_DIR/.clang-format https://raw.githubusercontent.com/uf-mil/installer/master/.clang-format
+fi
+
 # Only clone the github repositories if the script is not being used by Docker
 if [[ "$DOCKER" != "true" ]]; then
 
@@ -482,6 +487,7 @@ fi
 sudo apt-get install -qq python-scipy
 
 # System tools
+sudo apt-get install -qq vim
 sudo apt-get install -qq tmux
 sudo apt-get install -qq htop
 sudo apt-get install -qq sshfs
@@ -493,6 +499,10 @@ git lfs install --skip-smudge
 
 # Debugging utility
 sudo apt-get install -qq gdb
+
+# Formatting utilities
+sudo apt-get install -qq clang-format-3.8
+sudo apt-get install -qq python-flake8
 
 # Networking
 sudo apt-get install -qq python-twisted
