@@ -1,8 +1,7 @@
 * [[Home]]
     * [[Mission Assignments]]
-    * [[Testing Log]]
     * [[Mission Props]]
-    * [[Testing Plans]]
+    * [[Testing Log]]
 * Using the Sub
     * [[Operator Guide]]
     * [[Pool Days]]
