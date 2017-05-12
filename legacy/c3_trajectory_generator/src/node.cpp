@@ -13,7 +13,7 @@
 #include "c3_trajectory_generator/SetDisabled.h"
 #include "C3Trajectory.h"
 
-#include "sub8_msgs/WaypointValidity.h"
+#include <waypoint_validity.hpp>
 
 using namespace std;
 using namespace geometry_msgs;
@@ -87,7 +87,6 @@ struct Node
 
   ros::Subscriber odom_sub;
   actionlib::SimpleActionServer<mil_msgs::MoveToAction> actionserver;
-  ros::ServiceClient wpValidClient;
   ros::Publisher trajectory_pub;
   ros::Publisher trajectory_vis_pub;
   ros::Publisher waypoint_pose_pub;
@@ -104,6 +103,8 @@ struct Node
 
   double linear_tolerance, angular_tolerance;
 
+  WaypointValidity waypoint_validity_;
+
   bool set_disabled(SetDisabledRequest &request, SetDisabledResponse &response)
   {
     disabled = request.disabled;
@@ -114,7 +115,12 @@ struct Node
     return true;
   }
 
-  Node() : private_nh("~"), actionserver(nh, "moveto", false), disabled(false), kill_listener(nh, "kill")
+  Node()
+    : private_nh("~")
+    , actionserver(nh, "moveto", false)
+    , disabled(false)
+    , kill_listener(nh, "kill")
+    , waypoint_validity_(nh)
   {
     // Callback to reset trajectory when (un)killing
     auto reset_traj = [this](ros_alarms::AlarmProxy a)
@@ -145,8 +151,6 @@ struct Node
     trajectory_pub = nh.advertise<PoseTwistStamped>("trajectory", 1);
     trajectory_vis_pub = private_nh.advertise<PoseStamped>("trajectory_v", 1);
     waypoint_pose_pub = private_nh.advertise<PoseStamped>("waypoint", 1);
-
-    wpValidClient = nh.serviceClient<sub8_msgs::WaypointValidity>("/waypoint_validity_node/is_waypoint_valid");
 
     update_timer = nh.createTimer(ros::Duration(1. / 50), boost::bind(&Node::timer_callback, this, _1));
 
@@ -194,33 +198,29 @@ struct Node
       this->linear_tolerance = goal->linear_tolerance;
       this->angular_tolerance = goal->angular_tolerance;
       // Check if waypoit is valid
-      sub8_msgs::WaypointValidity srv;
-      srv.request.wp = Pose_from_Waypoint(current_waypoint);
-      if (!wpValidClient.call(srv))
+
+      bool valid_move;
+      int error_type;
+      waypoint_validity_.is_waypoint_valid(Pose_from_Waypoint(current_waypoint), valid_move, error_type);
+
+      if (valid_move == false)  // got a bad point
       {
-        ROS_ERROR("Failed to call service is_waypoint_valid");
-      }
-      else
-      {
-        if (srv.response.valid == false)  // got a bad point
+        if (error_type == 50)  // if unknown, check if there's a huge displacement with the new waypoint
         {
-          if (srv.response.type == 50)  // if unknown, check if there's a huge displacement with the new waypoint
+          auto a_point = Pose_from_Waypoint(current_waypoint);
+          auto b_point = Pose_from_Waypoint(old_waypoint);
+          // If moved more than .5m, then don't allow
+          if (abs(a_point.position.x - b_point.position.x) > .5 || abs(a_point.position.y - b_point.position.y) > .5)
           {
-            auto a_point = Pose_from_Waypoint(current_waypoint);
-            auto b_point = Pose_from_Waypoint(old_waypoint);
-            // If moved more than .5m, then don't allow
-            if (abs(a_point.position.x - b_point.position.x) > .5 || abs(a_point.position.y - b_point.position.y) > .5)
-            {
-              ROS_ERROR("can't move there! - need to rotate");
-              current_waypoint = old_waypoint;
-            }
-          }
-          // if point is occupied, reject move
-          if (srv.response.type == 99)
-          {
-            ROS_ERROR("can't move there! - waypoint is occupied");
+            ROS_ERROR("can't move there! - need to rotate");
             current_waypoint = old_waypoint;
           }
+        }
+        // if point is occupied, reject move
+        if (error_type == 99)
+        {
+          ROS_ERROR("can't move there! - waypoint is occupied");
+          current_waypoint = old_waypoint;
         }
       }
     }
@@ -244,27 +244,24 @@ struct Node
     }
 
     // Check if we will hit something while in trajectory
-    sub8_msgs::WaypointValidity srv;
+    geometry_msgs::Pose traj_point;
     auto p = c3trajectory->getCurrentPoint();
-    srv.request.wp.position = vec2xyz<Point>(p.q.head(3));
-    quaternionTFToMsg(tf::createQuaternionFromRPY(p.q[3], p.q[4], p.q[5]), srv.request.wp.orientation);
+    traj_point.position = vec2xyz<Point>(p.q.head(3));
+    quaternionTFToMsg(tf::createQuaternionFromRPY(p.q[3], p.q[4], p.q[5]), traj_point.orientation);
 
-    if (!wpValidClient.call(srv))
-    {
-      ROS_ERROR("Failed to call service is_waypoint_valid");
-    }
-    else
-    {
-      if (srv.response.valid == false && srv.response.type == 99)
-      {
-        ROS_ERROR("can't move there! - bad trajectory");
-        current_waypoint = old_trajectory;
-        current_waypoint.r.qdot = subjugator::Vector6d::Zero();  // zero velocities
-        current_waypoint_t = now;
+    bool valid_move;
+    int error_type;
+    waypoint_validity_.is_waypoint_valid(traj_point, valid_move, error_type);
 
-        c3trajectory.reset(new subjugator::C3Trajectory(current_waypoint.r, limits));
-        c3trajectory_t = now;
-      }
+    if (valid_move == false && error_type == 99)
+    {
+      ROS_ERROR("can't move there! - bad trajectory");
+      current_waypoint = old_trajectory;
+      current_waypoint.r.qdot = subjugator::Vector6d::Zero();  // zero velocities
+      current_waypoint_t = now;
+
+      c3trajectory.reset(new subjugator::C3Trajectory(current_waypoint.r, limits));
+      c3trajectory_t = now;
     }
 
     PoseTwistStamped msg;

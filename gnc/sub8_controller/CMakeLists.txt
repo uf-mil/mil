@@ -7,8 +7,6 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   eigen_conversions
   dynamic_reconfigure
-  cv_bridge
-
 )
 
 find_package(Eigen3 REQUIRED)
@@ -37,13 +35,6 @@ set_target_properties(pd_controller PROPERTIES COMPILE_FLAGS "-std=c++11")
 
 
 add_dependencies(pd_controller
-    sub8_msgs_generate_messages_cpp
-    ${catkin_EXPORTED_TARGETS}
-)
-
-add_executable(movement_validity nodes/movement_validity.cpp)
-target_link_libraries(movement_validity ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_INCLUDE_DIRS})
-add_dependencies(movement_validity
     sub8_msgs_generate_messages_cpp
     ${catkin_EXPORTED_TARGETS}
 )

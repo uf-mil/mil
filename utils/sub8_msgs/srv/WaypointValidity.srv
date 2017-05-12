@@ -1,5 +1,0 @@
-#Service file for waypoint validity return true if waypoint valid, false if not.
-geometry_msgs/Pose wp
----
-bool valid # Bad move = will hurt sub
-int32 type # 0 = safe, 50 = unknown, 99 = occupied

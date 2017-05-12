@@ -43,7 +43,6 @@ add_service_files(
   TBDetectionSwitch.srv
   OcrRequest.srv
   Bounds.srv
-  WaypointValidity.srv
 )
 
 # add_action_files(

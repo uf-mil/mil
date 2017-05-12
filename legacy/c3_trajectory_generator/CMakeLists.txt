@@ -55,6 +55,7 @@ add_executable(c3_trajectory_generator
   src/C3Trajectory.cpp
   src/node.cpp
   src/AttitudeHelpers.cpp
+  src/waypoint_validity.cpp
 )
 target_link_libraries(c3_trajectory_generator ${catkin_LIBRARIES})
 add_dependencies(c3_trajectory_generator ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
