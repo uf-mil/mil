@@ -6,7 +6,7 @@ SPEED_LIMIT = .2  # m/s
 
 @util.cancellableInlineCallbacks
 def run(sub):
-    print "Heil!"
+    print "Square!"
     
     center = sub.move.forward(0).zero_roll_and_pitch()
     for i in range(4):
