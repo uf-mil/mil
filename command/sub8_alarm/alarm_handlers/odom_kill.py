@@ -5,7 +5,7 @@ from nav_msgs.msg import Odometry
 from ros_alarms import AlarmBroadcaster, HandlerBase
 from twisted.internet import reactor
 import time
-
+__author__ = 'David Soto'
 
 class OdomKill(HandlerBase):
     '''
@@ -56,7 +56,7 @@ class OdomKill(HandlerBase):
 
         this_p = new_odom_msg.pose.pose.position
         last_p = self.last_position
-        jump = ((this_p.x - last_p.x) ** 2 + (this_p.y - last_p.y) ** 2) ** 0.5
+        jump = ((this_p.x - last_p.x) ** 2 + (this_p.y - last_p.y) ** 2 + (this_p.z - last_p.z) ** 2) ** 0.5
         if jump > self.max_jump:
             rospy.logerr('ODOM DISCONTINUITY DETECTED')
             self.ab.raise_alarm(problem_description='ODOM DISCONTINUITY DETECTED JUMPED {} METERS'.format(jump),
