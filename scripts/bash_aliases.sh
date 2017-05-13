@@ -14,7 +14,11 @@ _alarm_complete() {
 		if [[ -z "$2" || ! -z "$(echo ${ALARM:0:${#2}} | grep $2)" ]]; then
 
 			# Append the alarm name to the autocomplete list
-			COMPREPLY+=( "${ALARM:0:-1}" )
+			if [[ ! -z "$( echo ${ALARM: -1} | grep ',')" ]]; then
+				COMPREPLY+=( "${ALARM:0:-1}" )
+			else
+				COMPREPLY+=( "$ALARM" )
+			fi
 		fi
 	done
 }
