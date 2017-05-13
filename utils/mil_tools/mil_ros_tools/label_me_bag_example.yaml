@@ -1,13 +1,15 @@
 bags:                                       # List of bags to generate images for labeling from
   - file: orange_pipes.bag                  # File to pull images from
-    labeled_file: orange_pipes_labeled.bag  # Output file for original data + label topics
+    combined: False                         # If true all labeled segments go into one bag,
+                                            # otherwise each segment produces its own bag
     segments:                               # List of named segments in bag to get images from
       - name: path_marker_1                 # Name of segment to appear in LabelMe
         start: 1.0                          # Duration in seconds to start getting images, optional
         stop: 2.0                           # Duration in seconds to stop getting images, optional
-        topic: /down/left/image_raw         # Topic to pull images from
+        topics: /down/left/image_raw        # Topic to pull images from, can be multiple (ex: stereo)
                                             # Note missing freq, will pull each frame in this time period
       - name: path_marker_2
-        topic: /down/left/image_raw
+        topics: [/front/left/image_rect_color, /front/right/image_rect_color] #List of two topics
         freq: 1.0                           # Frequency to pull images from bag in Hz, optional
+        outfile: pool_low_lighting.bag      # Optional explicit name of bag, defaults to <segment name>.bag
                                             # Note missing start and stop, will pull from entire bag
