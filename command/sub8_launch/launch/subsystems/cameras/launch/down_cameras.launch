@@ -31,19 +31,18 @@
       <remap from="image_raw" to="left/image_raw" />
     </node>
 
-    <!-- Uncomment this when calibration is set
-    mono rectification 
+    <!-- mono rectification -->
     <node pkg="nodelet" type="nodelet" name="down_image_proc_rect"
          args="load image_proc/rectify camera_nodelet_manager">
       <remap from="image_mono" to="left/image_mono" />
       <remap from="image_rect" to="left/image_rect" />
     </node>
 
-    color rectification
+    <!-- color rectification -->
     <node pkg="nodelet" type="nodelet" name="down_image_proc_rect_color"
          args="load image_proc/rectify camera_nodelet_manager">
       <remap from="image_mono" to="left/image_color" />
       <remap from="image_rect" to="left/image_rect_color" />
-    </node> -->
+    </node>
   </group>
 </launch>
