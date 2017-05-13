@@ -42,6 +42,11 @@ class Kill(HandlerBase):
             return True
         ignore.append("bus-voltage")
 
+        if sub_alarms["odom-kill"].raised and sub_alarms["odom-kill"].severity == 5:
+            return True
+        ignore.append("odom-kill")
+
+
         # If we lose network but don't want to go autonomous
         if sub_alarms["network-loss"].raised and not rospy.get_param("autonomous", False):
             return True
