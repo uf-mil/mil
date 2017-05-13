@@ -7,11 +7,16 @@
 # these will likely increase productivity, so it is recommended to do so.
 
 
-# Source external alias modules
+# Source common utilities
 source $CATKIN_DIR/src/mil_common/scripts/two_line_bash.sh
 source $CATKIN_DIR/src/mil_common/scripts/ros_connect.sh
 source $CATKIN_DIR/src/mil_common/scripts/wsmux.sh
 source $CATKIN_DIR/src/mil_common/scripts/bag.sh
+
+# Source submodule aliases if the submodules have been pulled
+if [[ -f $CATKIN_DIR/src/mil_common/ros_alarms/scripts/bash_aliases.sh ]]; then
+	source $CATKIN_DIR/src/mil_common/ros_alarms/scripts/bash_aliases.sh
+fi
 
 
 # Debugging for ROS networking
@@ -30,11 +35,6 @@ alias srcbrc="source ~/.bashrc"
 
 # Catkin workspace management
 alias cm="catkin_make -C \$CATKIN_DIR -j8"
-
-# Alarms
-alias araise="rosrun ros_alarms raise"
-alias aclear="rosrun ros_alarms clear"
-alias areport="rosrun ros_alarms report"
 
 # Simulation
 alias killgazebo="killall -9 gazebo && killall -9 gzserver && killall -9 gzclient"
