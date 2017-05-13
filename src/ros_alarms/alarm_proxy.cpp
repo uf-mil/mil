@@ -8,9 +8,8 @@ using namespace std;
 
 namespace ros_alarms
 {
-
-AlarmProxy::AlarmProxy(string _alarm_name, bool _raised, string _node_name,
-                       string _problem, string _json, int _severity)
+AlarmProxy::AlarmProxy(string _alarm_name, bool _raised, string _node_name, string _problem, string _json,
+                       int _severity)
 {
   alarm_name = _alarm_name;
   raised = _raised;
@@ -20,11 +19,9 @@ AlarmProxy::AlarmProxy(string _alarm_name, bool _raised, string _node_name,
   severity = _severity;
 }
 
-AlarmProxy::AlarmProxy(string _alarm_name, bool _raised, string _problem,
-                       string _json, int _severity)
+AlarmProxy::AlarmProxy(string _alarm_name, bool _raised, string _problem, string _json, int _severity)
 {
-  *this = AlarmProxy(_alarm_name, _raised, ros::this_node::getName(),
-                     _problem, _json, _severity);
+  *this = AlarmProxy(_alarm_name, _raised, ros::this_node::getName(), _problem, _json, _severity);
 }
 
 AlarmProxy::AlarmProxy(ros_alarms::Alarm msg)
@@ -52,28 +49,33 @@ Alarm AlarmProxy::as_msg()
 std::string AlarmProxy::str(bool full) const
 {
   std::stringstream repr;
-  repr << "[alarm_name: " << alarm_name << ", status: " << (raised? "raised" : "cleared");
-  if(raised)
+  repr << "[alarm_name: " << alarm_name << ", status: " << (raised ? "raised" : "cleared");
+  if (raised)
     repr << ", severity: " << severity;
-  if(full)
+  if (full)
   {
-    repr << ", node_name: " << (node_name.empty()? "N/A" : node_name)
-         << ", problem: " << (problem_description.empty()? "N/A" : problem_description)
-         << ", json_parameters: " << (json_parameters.empty()? "N/A" : json_parameters);
+    repr << ", node_name: " << (node_name.empty() ? "N/A" : node_name)
+         << ", problem: " << (problem_description.empty() ? "N/A" : problem_description)
+         << ", json_parameters: " << (json_parameters.empty() ? "N/A" : json_parameters);
   }
   repr << "]";
   return repr.str();
 }
 
-bool AlarmProxy::operator ==(const AlarmProxy &other) const
+bool AlarmProxy::operator==(const AlarmProxy &other) const
 {
-  if(alarm_name != other.alarm_name) return false;
-  if(raised != other.raised) return false;
-  if(node_name != other.node_name) return false;
-  if(problem_description != other.problem_description) return false;
+  if (alarm_name != other.alarm_name)
+    return false;
+  if (raised != other.raised)
+    return false;
+  if (node_name != other.node_name)
+    return false;
+  if (problem_description != other.problem_description)
+    return false;
   // JSON parameters can be stripped off by the alarm server if they can't be
   //   deserialized if(json_parameters != other.json_parameters) return false;
-  if(severity != other.severity) return false;
+  if (severity != other.severity)
+    return false;
   return true;
 }
 
