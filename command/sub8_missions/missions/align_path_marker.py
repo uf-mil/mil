@@ -14,6 +14,7 @@ SEARCH_DEPTH = .65
 SEARCH_RADIUS_METERS = 1.0
 TIMEOUT_SECONDS = 60
 DO_PATTERN=True
+FACE_FORWARD=True
 SPEED = 0.5
 MISSION="Align Path Marker"
 
@@ -31,10 +32,17 @@ def run(sub):
 
     pattern = []
     if DO_PATTERN:
-        pattern = [sub.move.right(SEARCH_RADIUS_METERS), sub.move.forward(SEARCH_RADIUS_METERS),
-                   sub.move.left(SEARCH_RADIUS_METERS), sub.move.backward(SEARCH_RADIUS_METERS),
-                   sub.move.right(2.0*SEARCH_RADIUS_METERS), sub.move.forward(2.0*SEARCH_RADIUS_METERS),
-                   sub.move.left(2.0*SEARCH_RADIUS_METERS), sub.move.backward(2.0*SEARCH_RADIUS_METERS)]
+        start = sub.move.zero_roll_and_pitch()
+        r = SEARCH_RADIUS_METERS
+        pattern = [start.zero_roll_and_pitch(),
+                   start.right(r),
+                   start.forward(r),
+                   start.left(r),
+                   start.backward(r),
+                   start.right(2*r),
+                   start.forward(2*r),
+                   start.left(2*r),
+                   start.backward(2*r)]
     s = Searcher(sub, sub.vision_proxies.path_marker.get_pose, pattern)
     resp = None
     print_info("RUNNING SEARCH PATTERN")
@@ -57,7 +65,7 @@ def run(sub):
     # Ensure SubjuGator continues to face same general direction as before (doesn't go in opposite direction)
     odom_forward = tf.transformations.quaternion_matrix(sub.move._pose.orientation).dot(forward_vec)
     marker_forward = tf.transformations.quaternion_matrix(orientation).dot(forward_vec)
-    if np.sign(odom_forward[0]) != np.sign(marker_forward[0]):
+    if FACE_FORWARD and np.sign(odom_forward[0]) != np.sign(marker_forward[0]):
         move = move.yaw_right(np.pi)
 
     print_info("MOVING TO MARKER AT {}".format(move._pose.position))

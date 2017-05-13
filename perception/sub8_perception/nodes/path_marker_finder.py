@@ -32,8 +32,11 @@ class PathMarkerFinder():
       * checking # of sides in appox polygon
       * checking ratio of length/width close to known model
     * estimates 3D pose using cv2.solvePnP with known object demensions and camera model
+    * Use translation vector from PnP and direction vector from 2d contour for pose
+    * Transform this frames pose into /map frame
+    * Plug this frames pose in /map into a kalman filter to reduce noise
     
-    TODO: Implement Kalman filter to smooth pose estimate / eliminate outliers
+    TODO: Allow for two path markers identifed at once, both filtered through its own KF
     """
     # Model of four corners of path marker, centered around 0 in meters
     LENGTH = 0.6096 # Longer side of path marker in meters
@@ -297,7 +300,7 @@ class PathMarkerFinder():
         map_vec3 = None
         map_ps = None
 
-        # Transform pose estimate to map framr
+        # Transform pose estimate to map frame
         try:
             self.tf_listener.waitForTransform('/map', ps.header.frame_id, ps.header.stamp, rospy.Duration(0.05))
             map_ps = self.tf_listener.transformPoint('/map', ps)
@@ -326,9 +329,8 @@ class PathMarkerFinder():
 
     def _get_pose_2D(self, r):
         '''
-        Given a sorted 4 sided polygon, stores the centriod and angle
+        Given a sorted 4 sided polygon, stores the centroid and angle
         for the next service call to get 2dpose.
-        returns False if dx of polygon is 0, otherwise True
         '''
         top_center = (r[1]+r[0])/2.0
         bot_center = (r[2]+r[3])/2.0
