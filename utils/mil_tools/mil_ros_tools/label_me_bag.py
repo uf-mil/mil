@@ -87,7 +87,7 @@ class BagToLabelMe():
               verify_attr(segment, 'topics', 'segment')
               # Ensure topics is still a list
               if type(segment['topics']) == str:
-                  self.config['bags'][i]['segments'][j]['topics'] = [self.config['bags'][i]['segments'][j]['topics']]
+                  self.config['bags'][i]['segments'][j]['topics'] = [segment]
               verify_attr(segment, 'name', 'segment')
               self._print("\t\tFound segment '{}' of topics '{}' from {} to {} every {}",
                           segment['name'], segment['topics'],
