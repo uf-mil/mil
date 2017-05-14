@@ -17,3 +17,6 @@ alias sshsub="ssh sub8@${HOSTNAMES[0]} -Y"
 # Missions
 alias subm="rosrun sub8_missions run_mission"
 alias subc="rosrun sub8_missions move_command"
+
+# Cameras
+alias subfps="rostopic hz $bag_front_cams $bag_down_cam"
