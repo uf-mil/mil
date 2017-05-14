@@ -46,3 +46,4 @@ add_executable(ogrid_generator src/OGridGen.cpp)
 add_dependencies(ogrid_generator pointcloud_ogrid_lib)
 add_dependencies(ogrid_generator ${catkin_EXPORTED_TARGETS})
 target_link_libraries(ogrid_generator pointcloud_ogrid_lib ${catkin_LIBRARIES})
+

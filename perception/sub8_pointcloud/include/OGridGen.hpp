@@ -12,7 +12,6 @@
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 
 #include <opencv2/core/core.hpp>
-#include "opencv2/opencv.hpp"
 #include <stdexcept>
 
 #include <sensor_msgs/PointCloud2.h>
@@ -24,6 +23,8 @@
 #include <boost/circular_buffer.hpp>
 
 #include <sub8_msgs/Bounds.h>
+
+#include "OGridRegionType.hpp"
 
 #include "Classification.hpp"
 

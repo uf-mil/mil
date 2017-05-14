@@ -32,12 +32,13 @@ subjugator::C3Trajectory::Point Point_from_PoseTwist(const Pose &pose, const Twi
   res.q.head(3) = xyz2vec(pose.position);
   tf::Matrix3x3(q).getRPY(res.q[3], res.q[4], res.q[5]);
 
+  // clang-format off
   res.qdot.head(3) = vec2vec(tf::Matrix3x3(q) * vec2vec(xyz2vec(twist.linear)));
-  res.qdot.tail(3) =
-      (Eigen::Matrix3d() << 1, sin(res.q[3]) * tan(res.q[4]), cos(res.q[3]) * tan(res.q[4]), 0, cos(res.q[3]),
-       -sin(res.q[3]), 0, sin(res.q[3]) / cos(res.q[4]), cos(res.q[3]) / cos(res.q[4])).finished() *
-      xyz2vec(twist.angular);
-
+  res.qdot.tail(3) = (Eigen::Matrix3d() << 1, sin(res.q[3]) * tan(res.q[4]),
+                        cos(res.q[3]) * tan(res.q[4]), 0, cos(res.q[3]), -sin(res.q[3]), 0,
+                        sin(res.q[3]) / cos(res.q[4]), cos(res.q[3]) / cos(res.q[4])).finished() *
+                      xyz2vec(twist.angular);
+  // clang-format on
   return res;
 }
 
@@ -197,15 +198,14 @@ struct Node
       current_waypoint_t = now;
       this->linear_tolerance = goal->linear_tolerance;
       this->angular_tolerance = goal->angular_tolerance;
-      // Check if waypoit is valid
 
-      bool valid_move;
-      int error_type;
-      waypoint_validity_.is_waypoint_valid(Pose_from_Waypoint(current_waypoint), valid_move, error_type);
-
-      if (valid_move == false)  // got a bad point
+      // Check if waypoint is valid
+      std::pair<bool, WAYPOINT_ERROR_TYPE> checkWPResult =
+          waypoint_validity_.is_waypoint_valid(Pose_from_Waypoint(current_waypoint));
+      if (checkWPResult.first == false)  // got a point that we should not move to
       {
-        if (error_type == 50)  // if unknown, check if there's a huge displacement with the new waypoint
+        if (checkWPResult.second ==
+            WAYPOINT_ERROR_TYPE::UNKNOWN)  // if unknown, check if there's a huge displacement with the new waypoint
         {
           auto a_point = Pose_from_Waypoint(current_waypoint);
           auto b_point = Pose_from_Waypoint(old_waypoint);
@@ -217,7 +217,7 @@ struct Node
           }
         }
         // if point is occupied, reject move
-        if (error_type == 99)
+        if (checkWPResult.second == WAYPOINT_ERROR_TYPE::OCCUPIED)
         {
           ROS_ERROR("can't move there! - waypoint is occupied");
           current_waypoint = old_waypoint;
@@ -235,6 +235,7 @@ struct Node
       c3trajectory_t = now;
     }
 
+    // Remember the previous trajectory
     auto old_trajectory = c3trajectory->getCurrentPoint();
 
     while (c3trajectory_t + traj_dt < now)
@@ -243,18 +244,16 @@ struct Node
       c3trajectory_t += traj_dt;
     }
 
-    // Check if we will hit something while in trajectory
-    geometry_msgs::Pose traj_point;
+    // Check if we will hit something while in trajectory the new trajectory
+    geometry_msgs::Pose traj_point;  // Convert messages to correct type
     auto p = c3trajectory->getCurrentPoint();
     traj_point.position = vec2xyz<Point>(p.q.head(3));
     quaternionTFToMsg(tf::createQuaternionFromRPY(p.q[3], p.q[4], p.q[5]), traj_point.orientation);
 
-    bool valid_move;
-    int error_type;
-    waypoint_validity_.is_waypoint_valid(traj_point, valid_move, error_type);
-
-    if (valid_move == false && error_type == 99)
-    {
+    std::pair<bool, WAYPOINT_ERROR_TYPE> checkWPResult =
+        waypoint_validity_.is_waypoint_valid(Pose_from_Waypoint(current_waypoint));
+    if (checkWPResult.first == false && checkWPResult.second == WAYPOINT_ERROR_TYPE::OCCUPIED)
+    {  // New trajectory will hit an occupied goal, so reject
       ROS_ERROR("can't move there! - bad trajectory");
       current_waypoint = old_trajectory;
       current_waypoint.r.qdot = subjugator::Vector6d::Zero();  // zero velocities

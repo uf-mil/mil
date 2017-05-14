@@ -74,7 +74,7 @@ void OGridGen::publish_ogrid(const ros::TimerEvent &)
 
   // TODO: Implement some k-nearest neighbors algorithm to filter ogrid
 
-  mat_ogrid_ = cv::Scalar(50);
+  mat_ogrid_ = cv::Scalar(UNKNOWN);
   // Populate the Ogrid by projecting down the pointcloud
   for (auto &point_pcl : pointCloud_filtered->points)
   {
@@ -83,13 +83,11 @@ void OGridGen::publish_ogrid(const ros::TimerEvent &)
     cv::Point p(point_pcl.x / resolution_ + mat_ogrid_.cols / 2, point_pcl.y / resolution_ + mat_ogrid_.rows / 2);
     if (rect.contains(p))
     {
-      mat_ogrid_.at<uchar>(p.y, p.x) = 99;
+      mat_ogrid_.at<uchar>(p.y, p.x) = OCCUPIED;
     }
   }
 
   classification_.zonify(mat_ogrid_, resolution_, transform_);
-
-  // classification_.fake_ogrid(mat_ogrid_, resolution_, transform_);
 
 
   // Flatten the mat_ogrid_ into a 1D vector for OccupencyGrid message
@@ -161,7 +159,7 @@ void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "ogridgen");
+  ros::init(argc, argv, "ogrid_pointcloud");
   OGridGen oGridGen;
   ros::spin();
 }
