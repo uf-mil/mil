@@ -312,6 +312,17 @@ class Searcher(object):
 
             yield self.sub.nh.sleep(.5)
 
+class PoseSequenceCommander(object):
+    def __init__(self, sub, pose_array):
+        self.sub = sub
+        self.pose_array = pose_array
+
+    @util.cancellableInlineCallbacks
+    def go_to_sequence(self):
+        for pose in self.pose_array:
+            yield self.sub.move.look_at_without_pitching(np.array(pose[0:3])).go()
+            yield self.sub.move.relative(np.array(pose[0:3])).go()
+            yield self.sub.move.set_orientation(transformations.quaternion_multiply(self.sub.pose.orientation,transformations.quaternion_from_euler(pose[3], pose[4], pose[5]))).go()
 
 _subs = {}
 
