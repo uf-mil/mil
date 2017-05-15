@@ -38,19 +38,6 @@ wsmux() {
 	# Handles command line arguments
 	while (( $# > 0 )); do
 		case $1 in
-			-h|--help)
-				echo "Usage: wsmux [OPTION]... [WORKSPACE]"
-				echo "Quick catkin workspace switcher."
-				echo ""
-				echo "Option		GNU long option		Meaning"
-				echo "-b [WORKSPACE]	--bind			Bind an SSH client to a workspace"
-				echo "-c		--connect		Select the SSH client's workspace"
-				echo "-h		--help			Display the help menu"
-				echo "-l		--list			List the detected workspaces"
-				echo "-s		--show			Show the selected workspace"
-				SELECTION="false"
-				shift 1
-				;;
 			-b|--bind)
 
 				# Ensure that a client has connected via SSH
@@ -79,7 +66,6 @@ wsmux() {
 
 
 				if [[ "$SELECTION" != "false" ]]; then
-					echo "SSH connections from $(echo $SSH_CLIENT | cut -d ' ' -f1) are bound to $SELECTION"
 					source $WS_CONFIG_FILE
 
 					# Replace any binding that already exists for this SSH client
@@ -102,8 +88,10 @@ wsmux() {
 						echo "			${WORKSPACE_BINDINGS[$BINDING_INDEX]}" >> $WS_CONFIG_FILE
 					done
 					echo ")" >> $WS_CONFIG_FILE
-					SELECTION="false"
+
+					echo "SSH connections from $(echo $SSH_CLIENT | cut -d ' ' -f1) are bound to $SELECTION"
 				fi
+				SELECTION="false"
 				;;
 			-c|--connect)
 				SELECTION="false"
@@ -133,6 +121,20 @@ wsmux() {
 				done
 				shift 1
 				;;
+			-h|--help)
+				echo "Usage: wsmux [OPTION]... [WORKSPACE]"
+				echo "Quick catkin workspace switcher."
+				echo ""
+				echo "Option		GNU long option		Meaning"
+				echo "-b [WORKSPACE]	--bind			Bind an SSH client to a workspace"
+				echo "-c		--connect		Select the SSH client's workspace"
+				echo "-h		--help			Display the help menu"
+				echo "-l		--list			List the detected workspaces"
+				echo "-s		--show			Show the selected workspace"
+				echo "-u		--unbind		Remove the binding for an SSH client"
+				SELECTION="false"
+				shift 1
+				;;
 			-l|--list)
 				if [[ ! -z "COMPREPLY" ]]; then
 					echo "${COMPREPLY[@]}" | sed 's/ /  /g'
@@ -146,6 +148,42 @@ wsmux() {
 					echo "$ROS_PACKAGE_PATH" | cut -d ':' -f1 | sed "s@/src@@"
 				else
 					echo "No catkin workspace is currently sourced"
+				fi
+				SELECTION="false"
+				shift 1
+				;;
+			-u|--unbind)
+
+				# Ensure that a client has connected via SSH
+				if [[ -z "$SSH_CLIENT" ]]; then
+					echo "This is not an SSH session, so there is no client to unbind"
+					SELECTION="false"
+					shift $#
+
+				elif [[ "$SELECTION" != "false" ]]; then
+					source $WS_CONFIG_FILE
+
+					# Remove any binding that exists for this SSH client
+					local NEW_BINDINGS
+					for (( BINDING_INDEX=0; BINDING_INDEX < ${#WORKSPACE_BINDINGS[@]}; BINDING_INDEX++ )); do
+						if [[ "$(echo ${WORKSPACE_BINDINGS[BINDING_INDEX]} | cut -d ':' -f1)" != "$(echo $SSH_CLIENT | cut -d ' ' -f1)" ]]; then
+							NEW_BINDINGS+=( "${WORKSPACE_BINDINGS[BINDING_INDEX]}" )
+						fi
+					done
+
+					if [[ "${NEW_BINDINGS[@]}" != "${WORKSPACE_BINDINGS[@]}" ]]; then
+
+						# Rewrite the configuration file with the new binding
+						echo "WORKSPACE_BINDINGS=(	${NEW_BINDINGS[0]}" > $WS_CONFIG_FILE
+						for (( BINDING_INDEX=1; BINDING_INDEX < ${#NEW_BINDINGS[@]}; BINDING_INDEX++ )); do
+							echo "			${NEW_BINDINGS[$BINDING_INDEX]}" >> $WS_CONFIG_FILE
+						done
+						echo ")" >> $WS_CONFIG_FILE
+
+						echo "SSH connections from $(echo $SSH_CLIENT | cut -d ' ' -f1) are no longer bound"
+					else
+						echo "SSH connections from $(echo $SSH_CLIENT | cut -d ' ' -f1) were not bound"
+					fi
 				fi
 				SELECTION="false"
 				shift 1
