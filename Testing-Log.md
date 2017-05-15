@@ -125,6 +125,7 @@ _Check off the following boxes as the issue is addressed and leave a note with n
 * We started without thruster #3 (no prop mounted)
 * We were able to station keep briefly but then lost thruster #5 due to prop slip.
   + Left us dead in the water.
+  + We need to be able to detect degenerate configurations and kill the sub. _See [issue 252](https://github.com/uf-mil/SubjuGator/issues/252)_
 * We tried to regain mobility by moving thruster 2 (horizontal) to 5's location.
   + We changed the firmware motor_id from 2, 5
   + The thruster was still being detected under it's old motor_id, even at this new port.
@@ -136,13 +137,13 @@ _Check off the following boxes as the issue is addressed and leave a note with n
   + We were able to see the torpedo board, both gates, buoys, and walls
 * Daniel tested out his OGrid generation code
   + It sucessfully segemented out occupied and unoccupied regions, as well as unknown ones
-  + Next step: make the OGrid persistent
+  + Next step: make the OGrid persistent. _See [issue 254](https://github.com/uf-mil/SubjuGator/issues/254)_
 
 ### Path Marker Alignment
 * After multiple iterations, we finally got the down camera setup necessary for perception
 * We tested Kevin's path marker pose estimation code
   + Successfully segmented out the marker and got good pose estimations
-  + We found out it could also get the pose of the bin lid just by changing the height and width parameters. (good segmentation of the lid)
+  + We found out it could also get the pose of the bin lid just by changing the height and width parameters. (we saw a good segmentation of the lid) _See [issue 253](https://github.com/uf-mil/SubjuGator/issues/253)_
 
 ### Stereo
 * We had lighting conditions ranging from very sunny to really cloudy and the quality of generated point clounds was pretty high on both
