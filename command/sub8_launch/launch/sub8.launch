@@ -23,4 +23,6 @@
   <include file="$(find sub8_launch)/launch/subsystems/sonar.launch"/> 
   -->
 
+  <!-- Load model for rviz to use -->
+  <param name="robot_description" command="cat $(find sub8_missions)/tools/sub8/sub8.xml" />
 </launch>
