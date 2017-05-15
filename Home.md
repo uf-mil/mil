@@ -10,11 +10,7 @@ SubjuGator is a fully Autonomous Underwater Vehicle (AUV) built by undergraduate
 
 # Software Team
 
-* Ralph Leyva
-
 * David Soto
-
-* Jacob Panikulam
 
 * Tess Bianchi
 
