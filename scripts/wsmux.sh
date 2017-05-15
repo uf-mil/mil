@@ -30,7 +30,9 @@ _catkin_ws_complete() {
 }
 
 wsmux() {
+	local WORKING_DIRECTORY=$PWD
 	local SELECTION
+	local FILE
 
 	# Get the list of catkin workspaces in the user's home directory
 	_catkin_ws_complete
@@ -130,6 +132,7 @@ wsmux() {
 				echo "-c		--connect		Select the SSH client's workspace"
 				echo "-h		--help			Display the help menu"
 				echo "-l		--list			List the detected workspaces"
+				echo "-p [WORKSPACE]	--pull			Pull the latest changes from upstream"
 				echo "-s		--show			Show the selected workspace"
 				echo "-u		--unbind		Remove the binding for an SSH client"
 				SELECTION="false"
@@ -141,6 +144,62 @@ wsmux() {
 				fi
 				SELECTION="false"
 				shift 1
+				;;
+			-p|--pull)
+				SELECTION=""
+
+				# Make sure the user understands what they are doing
+				echo -n "Are you sure you want to delete changes on repository master branches? [y/N] "
+				read SELECTION
+				if [[ "$SELECTION" != "Y" && "$SELECTION" != "y" ]]; then
+					SELECTION="false"
+					shift $#
+
+				# If a workspace name was entered, select that workspace
+				elif [[ -f ~/$2/devel/setup.sh ]]; then
+					SELECTION=$2
+					shift 2
+
+				# If no workspace name was entered, use the currently selected workspace
+				elif [[ -z "$2" && \
+					-f ~/$(echo $CATKIN_DIR | rev | cut -d '/' -f1 | rev)/devel/setup.sh ]]; then
+					SELECTION=$(echo $CATKIN_DIR | rev | cut -d '/' -f1 | rev)
+					shift 1
+
+				# Prompt the user to check themself if the selected workspace is not valid
+				else
+					echo "The specified workspace is not valid. I don't trust like that..."
+					echo "Please specify the name of a workspace in the home directory"
+					SELECTION="false"
+					shift $#
+				fi
+
+				if [[ "$SELECTION" != "false" ]]; then
+					for FILE in ~/$SELECTION/src/*; do
+
+						# Verify that the directory is a Git repository
+						if [[ -d $FILE/.git ]]; then
+							cd $FILE
+
+							# Verify that the repository's working directory is clean
+							if $(git diff-index --quiet HEAD --); then
+
+								# Fetch the most recent changes from upstream
+								git fetch upstream
+
+								# Force the creation of a master branch from upstream
+								git checkout -B master upstream/master
+
+								# Checkout submodules to the commits specified
+								git submodule update
+							else
+								echo "The repository at $FILE is dirty"
+							fi
+						fi
+					done
+					cd $WORKING_DIRECTORY
+				fi
+				SELECTION="false"
 				;;
 			-s|--show)
 				if [[ ! -z "$ROS_PACKAGE_PATH" ]]; then
