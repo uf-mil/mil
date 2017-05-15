@@ -120,3 +120,34 @@ _Check off the following boxes as the issue is addressed and leave a note with n
 * Our bus_voltage kill measurements fluctuate too much to be very useful. _See [issue #238](https://github.com/uf-mil/SubjuGator/issues/238)_
 * It would be very convenient to have a script to pull all of the latest master branches from our repos into `mil_ws` on the sub. _See [issue #239](https://github.com/uf-mil/SubjuGator/issues/239)_
 ---
+# May 14
+### Thrusters
+* We started without thruster #3 (no prop mounted)
+* We were able to station keep briefly but then lost thruster #5 due to prop slip.
+  + Left us dead in the water.
+* We tried to regain mobility by moving thruster 2 (horizontal) to 5's location.
+  + We changed the firmware motor_id from 2, 5
+  + The thruster was still being detected under it's old motor_id, even at this new port.
+  + Accepted the fact that we wouldn't move for the rest of the day.
+
+### Imaging Sonar
+* Daniel++ changed zeroed out all of the thresholds on the imaging sonar.
+  + On RVIZ we were getting results that made it look like an underwater lidar
+  + We were able to see the torpedo board, both gates, buoys, and walls
+* Daniel tested out his OGrid generation code
+  + It sucessfully segemented out occupied and unoccupied regions, as well as unknown ones
+  + Next step: make the OGrid persistent
+
+### Path Marker Alignment
+* After multiple iterations, we finally got the down camera setup necessary for perception
+* We tested Kevin's path marker pose estimation code
+  + Successfully segmented out the marker and got good pose estimations
+  + We found out it could also get the pose of the bin lid just by changing the height and width parameters. (good segmentation of the lid)
+
+### Stereo
+* We had lighting conditions ranging from very sunny to really cloudy and the quality of generated point clounds was pretty high on both
+* We need to calibrate the transform between the imu (odom) and the stereo cameras because there was some misalignment between stereo clouds as we moved and the misalignment got worse over time
+  + David will do something similar to what we did for NaviGator with Lidar.
+* David is working on a benchmark of stereo reprojection error using this calibration using RoboSub2016 bags.
+
+---
