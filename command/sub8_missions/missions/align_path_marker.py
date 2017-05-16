@@ -2,6 +2,7 @@ from __future__ import division
 
 import genpy
 import tf
+import numpy as np
 from twisted.internet import defer
 from txros import util
 from sub8 import Searcher
@@ -10,45 +11,65 @@ from mil_misc_tools import text_effects
 import numpy as np
 
 SEARCH_DEPTH = .65
+SEARCH_RADIUS_METERS = 1.0
 TIMEOUT_SECONDS = 60
+DO_PATTERN=True
+FACE_FORWARD=True
+SPEED = 0.5
 MISSION="Align Path Marker"
+
+forward_vec = np.array([1, 0, 0, 0])
 @util.cancellableInlineCallbacks
 def run(sub):
-    print_info = text_effects.FprintFactory(title=MISSION)
-    print_bad = text_effects.FprintFactory(title=MISSION, msg_color="red")
-    print_good = text_effects.FprintFactory(title=MISSION, msg_color="green")
-    print_info.fprint("STARTING")
+    print_info = text_effects.FprintFactory(title=MISSION).fprint
+    print_bad = text_effects.FprintFactory(title=MISSION, msg_color="red").fprint
+    print_good = text_effects.FprintFactory(title=MISSION, msg_color="green").fprint
+    print_info("STARTING")
 
     # Wait for vision services, enable perception
-    print_info.fprint("ACTIVATING PERCEPTION SERVICE")
+    print_info("ACTIVATING PERCEPTION SERVICE")
     sub.vision_proxies.path_marker.start()
 
     pattern = []
-    #pattern = [sub.move.right(1), sub.move.forward(1), sub.move.left(1), sub.move.backward(1),
-     #          sub.move.right(2), sub.move.forward(2), sub.move.left(2), sub.move.backward(2)]
+    if DO_PATTERN:
+        start = sub.move.zero_roll_and_pitch()
+        r = SEARCH_RADIUS_METERS
+        pattern = [start.zero_roll_and_pitch(),
+                   start.right(r),
+                   start.forward(r),
+                   start.left(r),
+                   start.backward(r),
+                   start.right(2*r),
+                   start.forward(2*r),
+                   start.left(2*r),
+                   start.backward(2*r)]
     s = Searcher(sub, sub.vision_proxies.path_marker.get_pose, pattern)
     resp = None
-    print_info.fprint("RUNNING SEARCH PATTERN")
-    resp = yield s.start_search(loop=False, timeout=TIMEOUT_SECONDS)
+    print_info("RUNNING SEARCH PATTERN")
+    resp = yield s.start_search(loop=False, timeout=TIMEOUT_SECONDS, spotings_req=1)
 
-    if resp is None:
-        print_bad.fprint("MARKER NOT FOUND")
+    if resp is None or not resp.found:
+        print_bad("MARKER NOT FOUND")
         defer.returnValue(None)
-    
-    print_good.fprint("PATH MARKER POSE FOUND")
-    print_info.fprint("TRANFORMING MARKER POSE TO /map FROM {}".format(resp.pose.header.frame_id))
-    cam_to_baselink = yield sub._tf_listener.get_transform('/base_link', '/'+resp.pose.header.frame_id)
-    cam_to_map = yield sub._tf_listener.get_transform('/map', '/'+resp.pose.header.frame_id)
-    marker_position = cam_to_map.transform_point(rosmsg_to_numpy(resp.pose.pose.position))
-    marker_orientation = cam_to_map.transform_quaternion(rosmsg_to_numpy(resp.pose.pose.orientation))
-    move = sub.move.set_orientation(marker_orientation).zero_roll_and_pitch()
-    position = marker_position.copy()
-    position[2] = move._pose.position[2]
-    position[0] = position[0] + cam_to_baselink._p[0]
-    position[1] = position[1] + cam_to_baselink._p[1]
-    move = move.set_position(position)
-    print_info.fprint("MOVING TO MARKER POSE")
-    yield move.go(speed=0.2)
-    print_good.fprint("ALIGNED TO PATH MARKER, DONE!")
+
+    print_good("PATH MARKER POSE FOUND")
+    assert(resp.pose.header.frame_id == "/map")
+
+    move = sub.move
+    position = rosmsg_to_numpy(resp.pose.pose.position)
+    position[2] = move._pose.position[2] # Leave Z alone!
+    orientation = rosmsg_to_numpy(resp.pose.pose.orientation)
+
+    move = move.set_position(position).set_orientation(orientation).zero_roll_and_pitch()
+
+    # Ensure SubjuGator continues to face same general direction as before (doesn't go in opposite direction)
+    odom_forward = tf.transformations.quaternion_matrix(sub.move._pose.orientation).dot(forward_vec)
+    marker_forward = tf.transformations.quaternion_matrix(orientation).dot(forward_vec)
+    if FACE_FORWARD and np.sign(odom_forward[0]) != np.sign(marker_forward[0]):
+        move = move.yaw_right(np.pi)
+
+    print_info("MOVING TO MARKER AT {}".format(move._pose.position))
+    yield move.go(speed=SPEED)
+    print_good("ALIGNED TO PATH MARKER. MOVE FORWARD TO NEXT CHALLENGE!")
     sub.vision_proxies.path_marker.stop()
     defer.returnValue(True)
