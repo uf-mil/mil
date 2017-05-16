@@ -317,6 +317,7 @@ class BagToLabelMe():
                         out.write(topic+'/labels', labels, t)
             out.write(topic, msg, t)
           out.flush()
+          out.close()
       else:
           _, _, first_time = bag.read_messages().next()
           for segment in bag_config['segments']:
@@ -337,6 +338,8 @@ class BagToLabelMe():
                               out.write(topic+'/labels', labels, t)
                   out.write(topic, msg, t)
               out.flush()
+              out.close()
+      bag.close()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generates rosbags based on LabelMe data and visa/versa')

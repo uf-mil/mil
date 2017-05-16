@@ -55,6 +55,7 @@ class BagFixer():
           msg = self.fix_tf(msg)
         out.write(topic, msg, time)
       out.flush()
+      out.close()
 
   def _fix_strings(self, strings):
       if type(strings) == dict:
