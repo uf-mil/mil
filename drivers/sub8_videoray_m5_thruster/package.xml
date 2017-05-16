@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package>
   <name>sub8_videoray_m5_thruster</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>The sub8_videoray_m5_thruster package</description>
-  <maintainer email="jpanikulam@ufl.edu">jacob</maintainer>
+  <maintainer email="d.soto@ufl.edu">David Soto</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rospy</build_depend>
