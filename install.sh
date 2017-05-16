@@ -488,6 +488,7 @@ sudo apt-get install -qq python-scipy
 
 # System tools
 sudo apt-get install -qq vim
+sudo apt-get install -qq ipython
 sudo apt-get install -qq tmux
 sudo apt-get install -qq htop
 sudo apt-get install -qq sshfs
