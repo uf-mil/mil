@@ -6,6 +6,9 @@
   <arg name="turbulence" default="false" />
   <arg name="thrusters" default="false" />
 
+  <!-- Load model for rviz to use -->
+  <param name="robot_description" command="cat $(find sub8_missions)/tools/sub8/sub8.xml" />
+
   <!-- start gazebo server-->
   <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false"
     args="$(find sub8_gazebo)/worlds/a_whole_new.world" />
