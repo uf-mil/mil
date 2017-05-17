@@ -11,6 +11,7 @@ import json
 Alarms implementation for txros (https://github.com/txros/txros)
 '''
 
+
 @txros.util.cancellableInlineCallbacks
 def _check_for_alarm(nh, alarm_name, nowarn=False):
     if not nowarn and (yield nh.has_param("/known_alarms")) and \
@@ -25,15 +26,16 @@ def _check_for_valid_name(alarm_name, nowarn=False):
 
     assert alarm_name.isalnum() or '_' in alarm_name or '-' in alarm_name, \
         "Alarm name '{}' is not valid!".format(alarm_name)
-        
+
 
 class TxAlarmBroadcaster(object):
+
     @classmethod
     @txros.util.cancellableInlineCallbacks
     def init(cls, nh, name, node_name=None, nowarn=False):
         _check_for_valid_name(name, nowarn)
         yield _check_for_alarm(nh, name, nowarn)
-        
+
         node_name = nh.get_name() if node_name is None else node_name
 
         defer.returnValue(cls(nh, name, node_name))
@@ -70,6 +72,7 @@ class TxAlarmBroadcaster(object):
 
 
 class TxAlarmListener(object):
+
     @classmethod
     @txros.util.cancellableInlineCallbacks
     def init(cls, nh, name, callback_funct=None, nowarn=False, **kwargs):
@@ -90,7 +93,7 @@ class TxAlarmListener(object):
         self._alarm_name = name
         self._alarm_get = alarm_client
         self._last_alarm = None
-        
+
         # Data used to trigger callbacks
         self._raised_cbs = []  # [(severity_for_cb1, cb1), (severity_for_cb2, cb2), ...]
         self._cleared_cbs = []
@@ -98,7 +101,7 @@ class TxAlarmListener(object):
 
         if callback_funct is not None:
             self.add_callback(callback_funct, **kwargs)
-     
+
     @txros.util.cancellableInlineCallbacks
     def is_raised(self):
         ''' Returns whether this alarm is raised or not '''
@@ -112,8 +115,8 @@ class TxAlarmListener(object):
         defer.returnValue(not resp.alarm.raised)
 
     def get_alarm(self):
-        ''' Returns the alarm message 
-        Also worth noting, the alarm this returns has it's `parameter` field 
+        ''' Returns the alarm message
+        Also worth noting, the alarm this returns has it's `parameter` field
             converted to a dictionary
         '''
         resp = yield self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
@@ -135,7 +138,7 @@ class TxAlarmListener(object):
         ''' Deals with adding function callbacks
         The user can specify if the function should be run on a raise or clear of this alarm.
 
-        Each callback can have a severity level associated with it such that different callbacks can 
+        Each callback can have a severity level associated with it such that different callbacks can
             be triggered for different levels of severity.
         '''
 
@@ -152,7 +155,7 @@ class TxAlarmListener(object):
 
         if call_when_cleared:
             self._cleared_cbs.append(((0, 5), funct))  # Clear callbacks always run
-            
+
             if self._last_alarm is not None and not self._last_alarm.raised:
                 yield funct(self._nh, self._last_alarm).addErrback(_errback)
 
@@ -160,7 +163,7 @@ class TxAlarmListener(object):
         ''' Clears all callbacks '''
         self._raised_cbs = []
         self._cleared_cbs = []
-    
+
     @txros.util.cancellableInlineCallbacks
     def _alarm_update(self, alarm):
         if alarm.alarm_name == self._alarm_name:
@@ -187,6 +190,7 @@ class TxAlarmListener(object):
 
 
 class TxHeartbeatMonitor(TxAlarmBroadcaster):
+
     @classmethod
     @txros.util.cancellableInlineCallbacks
     def init(cls, nh, alarm_name, topic_name, msg_class, prd=0.2, predicate=None, **kwargs):
@@ -217,19 +221,19 @@ class TxHeartbeatMonitor(TxAlarmBroadcaster):
 
     @txros.util.cancellableInlineCallbacks
     def start_monitor(self, sample_prd=-1):
-        ''' Starts monitoring the topic 
+        ''' Starts monitoring the topic
         This seperate function allows you to start and stop the heartbeat monitor
         '''
         if sample_prd == -1:
             sample_prd = self._prd.to_sec() / 2
-        
+
         # Wait for that first messgae
         yield self.sub.get_next_message()
-        
+
         while True:
             yield self._nh.sleep(sample_prd)
 
-            last_time = self.sub.get_last_message_time() 
+            last_time = self.sub.get_last_message_time()
             last_msg = self.sub.get_last_message()
             if (self._nh.get_time() - last_time > self._prd) and (yield self._predicate(self._nh, last_msg)):
                 if not self._dropped:

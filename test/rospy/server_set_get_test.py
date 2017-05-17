@@ -12,6 +12,7 @@ names = list(np.random.randint(50, size=20).astype('str'))
 raised = []
 cleared = []
 
+
 def raise_some(setter, count=20):
     for i in range(count):
         a = AlarmSetRequest()
@@ -20,7 +21,7 @@ def raise_some(setter, count=20):
         a.alarm.parameters = json.dumps(parameters)
         a.alarm.severity = 3
         a.alarm.raised = random.choice([True, False])
-        
+
         if a.alarm.alarm_name in raised or a.alarm.alarm_name in cleared:
             continue
 
@@ -31,11 +32,12 @@ def raise_some(setter, count=20):
         else:
             cleared.append(a.alarm.alarm_name)
 
+
 def check_some(getter, count=50):
     for i in range(count):
         a = AlarmGetRequest()
         a.alarm_name = random.choice(names)
-    
+
         rospy.loginfo("Checking '{}' alarm".format(a.alarm_name))
 
         resp = getter(a)
@@ -49,14 +51,14 @@ def check_some(getter, count=50):
         elif a.alarm_name in cleared:
             found = True
             assert not resp.alarm.raised
-        
+
         if found:
             assert json.loads(resp.alarm.parameters) == parameters
-        
+
 
 if __name__ == "__main__":
     rospy.init_node("alarm_set_get_test")
-    
+
     setter = rospy.ServiceProxy("/alarm/set", AlarmSet)
     getter = rospy.ServiceProxy("/alarm/get", AlarmGet)
 

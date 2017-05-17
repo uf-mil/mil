@@ -1,6 +1,8 @@
 import rospy
 
+
 class HandlerBase(object):
+
     '''
     Listens for an alarm with this `alarm_name`.
     When that alarm is raised, self.raised will be called.

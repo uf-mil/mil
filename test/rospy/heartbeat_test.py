@@ -3,6 +3,7 @@ import rospy
 from ros_alarms import AlarmListener, HeartbeatMonitor
 from std_msgs.msg import String
 
+
 def printit(alarm):
     rospy.loginfo("Alarm {} raised".format(alarm.alarm_name))
 
@@ -21,7 +22,7 @@ if __name__ == "__main__":
         rospy.sleep(0.1)
     rospy.sleep(2)
     assert al.is_raised()
-        
+
     rospy.loginfo("Revive test")
     pub.publish("testing 1, 2, 3")
     rospy.sleep(0.1)
@@ -30,6 +31,7 @@ if __name__ == "__main__":
     assert al.is_raised()
 
     del hm
+
     def parse(msg):
         return "test" in msg.data
 
@@ -41,7 +43,7 @@ if __name__ == "__main__":
         pub.publish("teting 1, 2, 3")
         rospy.sleep(0.1)
     assert al.is_cleared()
-        
+
     rospy.loginfo("Timeout with Predicate test 2")
     pub.publish("testing 1, 2, 3")
     rospy.sleep(0.1)

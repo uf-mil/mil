@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import rospy
-from ros_alarms import HandlerBase 
+from ros_alarms import HandlerBase
 
-from std_msgs.msg import Header 
+from std_msgs.msg import Header
 from ros_alarms.msg import Alarms
 from ros_alarms.msg import Alarm as AlarmMsg
 from ros_alarms.srv import AlarmGet, AlarmGetResponse, AlarmSet, AlarmSetResponse
@@ -13,6 +13,7 @@ import inspect
 
 
 class Alarm(object):
+
     @classmethod
     def blank(cls, name):
         ''' Generate a general blank alarm that is cleared with a low severity '''
@@ -24,7 +25,7 @@ class Alarm(object):
         node_name = "unknown" if msg.node_name is "" else msg.node_name
         parameters = parse_json_str(msg.parameters)
 
-        return cls(msg.alarm_name, msg.raised, node_name, 
+        return cls(msg.alarm_name, msg.raised, node_name,
                    msg.problem_description, parameters, msg.severity)
 
     def __init__(self, alarm_name, raised, node_name="unknown",
@@ -48,7 +49,7 @@ class Alarm(object):
         msg.parameters = self.parse_json_str(msg.parameters)
         return msg
     __str__ = __repr__
-    
+
     def _severity_cb_check(self, severity):
         if isinstance(severity, tuple) or isinstance(severity, list):
             return severity[0] <= self.severity <= severity[1]
@@ -56,13 +57,13 @@ class Alarm(object):
         # Not a tuple, just an int. The severities should match
         return self.severity == severity
 
-    def add_callback(self, funct, call_when_raised=True, call_when_cleared=True, 
+    def add_callback(self, funct, call_when_raised=True, call_when_cleared=True,
                      severity_required=(0, 5)):
         ''' Deals with adding handler function callbacks
         The user can specify if the function should be run on a raise or clear
         This will call the function when added if that condition is met.
 
-        Each callback can have a severity level associated with it such that different callbacks can 
+        Each callback can have a severity level associated with it such that different callbacks can
             be triggered for different levels or ranges of severity.
         '''
         if call_when_raised:
@@ -86,11 +87,11 @@ class Alarm(object):
                     rospy.logwarn(e)
 
     def update(self, srv):
-        ''' Updates this alarm with a new AlarmSet request. 
-        Also will call any required callbacks. 
+        ''' Updates this alarm with a new AlarmSet request.
+        Also will call any required callbacks.
         '''
         self.stamp = rospy.Time.now()
-        
+
         node_name = "unknown" if srv.node_name is "" else srv.node_name
         parameters = parse_json_str(srv.parameters)
 
@@ -100,7 +101,7 @@ class Alarm(object):
         self.problem_description = srv.problem_description
         self.parameters = parameters
         self.severity = srv.severity
-        
+
         rospy.loginfo("Updating alarm: {}, {}.".format(self.alarm_name, "raised" if self.raised else "cleared"))
         # Run the callbacks for that alarm
         cb_list = self.raised_cbs if srv.raised else self.cleared_cbs
@@ -136,18 +137,19 @@ class Alarm(object):
 
 
 class AlarmServer(object):
+
     def __init__(self):
         # Maps alarm name to Alarm objects
         self.alarms = {}
         # Maps meta alarm names to predicate Handler functions
         self.meta_alarms = {}
 
-        # Outside interface to the alarm system. Usually you don't want to 
+        # Outside interface to the alarm system. Usually you don't want to
         # interface with these directly.
         self._alarm_pub = rospy.Publisher("/alarm/updates", AlarmMsg, latch=True, queue_size=100)
         rospy.Service("/alarm/set", AlarmSet, self.set_alarm)
         rospy.Service("/alarm/get", AlarmGet, self.get_alarm)
-        
+
         msg = "Expecting at most the following alarms: {}"
         rospy.loginfo(msg.format(rospy.get_param("/known_alarms", [])))
 
@@ -178,14 +180,14 @@ class AlarmServer(object):
                 cleared_alarm.raised = False
                 alarm.update(cleared_alarm)
                 self._alarm_pub.publish(alarm.as_msg())
-                
+
             return True
 
         if alarm.alarm_name in self.alarms:
             self.alarms[alarm.alarm_name].update(alarm)
         else:
             self.alarms[alarm.alarm_name] = Alarm.from_msg(alarm)
-        
+
         self._alarm_pub.publish(alarm)
         return True
 
@@ -214,12 +216,12 @@ class AlarmServer(object):
 
         # Import the module where the handlers are stored
         alarm_handlers = __import__(handler_module, fromlist=[""])
-        for handler in [cls for name, cls in inspect.getmembers(alarm_handlers) \
-                        if inspect.isclass(cls) and issubclass(cls, HandlerBase) and \
+        for handler in [cls for name, cls in inspect.getmembers(alarm_handlers)
+                        if inspect.isclass(cls) and issubclass(cls, HandlerBase) and
                         hasattr(cls, "alarm_name") and name is not "HandlerBase"]:
 
             # Have to instantiate so the class exists exists
-            h = handler() 
+            h = handler()
 
             alarm_name = handler.alarm_name
             severity = handler.severity_required
@@ -233,10 +235,10 @@ class AlarmServer(object):
                 self.meta_alarms[alarm_name] = h.meta_predicate
 
             # Register the raised or cleared functions
-            self.alarms[alarm_name].add_callback(h.raised, call_when_cleared=False, 
+            self.alarms[alarm_name].add_callback(h.raised, call_when_cleared=False,
                                                  severity_required=severity)
 
-            self.alarms[alarm_name].add_callback(h.cleared, call_when_raised=False, 
+            self.alarms[alarm_name].add_callback(h.cleared, call_when_raised=False,
                                                  severity_required=severity)
 
             rospy.loginfo("Loaded handler: {}".format(h.alarm_name))

@@ -5,12 +5,14 @@ from ros_alarms import AlarmListener, AlarmBroadcaster
 cb1_ran = False
 cb2_ran = False
 
+
 def cb1(alarm):
     global cb1_ran
     print alarm.alarm_name, alarm.raised
     cb1_ran = True
     print alarm
     print "Callback1!"
+
 
 def cb2(alarm):
     global cb2_ran
@@ -29,7 +31,7 @@ if __name__ == "__main__":
 
     print "Inited"
     assert al.is_cleared()
-    
+
     rospy.loginfo("Raise Test")
     ab.raise_alarm()
     rospy.sleep(0.1)
@@ -41,7 +43,7 @@ if __name__ == "__main__":
 
     al.add_callback(cb1, severity_required=2)
     al.add_callback(cb2, call_when_raised=False)
-    
+
     rospy.loginfo("Severity Fail Test")
     ab.raise_alarm(severity=3)
     rospy.sleep(0.1)
@@ -61,13 +63,13 @@ if __name__ == "__main__":
     assert cb1_ran
     assert cb2_ran
     cb1_ran = False
-    
+
     al.clear_callbacks()
 
     al.add_callback(cb1, severity_required=(0, 3))
     al.add_callback(cb2, severity_required=(2, 4))
     rospy.sleep(0.1)
-    
+
     rospy.loginfo("Severity Range Test 1")
     ab.raise_alarm(severity=4)
     rospy.sleep(0.1)

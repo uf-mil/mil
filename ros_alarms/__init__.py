@@ -6,5 +6,5 @@ try:
 except:
     # No txros installed
     pass
-    
+
 from handler_template import HandlerBase

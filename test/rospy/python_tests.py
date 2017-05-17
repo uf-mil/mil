@@ -10,7 +10,9 @@ from ros_alarms import AlarmBroadcaster, AlarmListener
 PKG = 'ros_alarms'
 NAME = 'server_tester'
 
+
 class ClientTester(unittest.TestCase):
+
     def __init__(self, *args):
         rospy.init_node(NAME, anonymous=True)
         super(ClientTester, self).__init__(*args)
@@ -19,6 +21,7 @@ class ClientTester(unittest.TestCase):
     Creates some listeners and some broadcasters and tests various raising and clearing conditoins
     Also tests various combination of parameters
     '''
+
     def test_broadcaster_and_listener(self):
         ''' Simple broadcaster and listener tests, with arguments '''
         ab_a = AlarmBroadcaster("alarm_a")
@@ -29,7 +32,7 @@ class ClientTester(unittest.TestCase):
 
         al_c = AlarmListener("alarm_c")
         ab_c = AlarmBroadcaster("alarm_c")
-        
+
         # Make sure all the alarm start off clear
         self.assertFalse(al_a.is_raised())
         self.assertFalse(al_b.is_raised())
@@ -101,11 +104,11 @@ class ClientTester(unittest.TestCase):
         self.assertTrue(al_a.is_cleared())
         self.assertFalse(al_b.is_cleared())
         self.assertFalse(al_c.is_cleared())
-        
+
         # Set everyhing cleared
         ab_b.clear_alarm()
         ab_c.clear_alarm()
-        
+
         # Make sure of that
         self.assertTrue(al_b.is_cleared())
         self.assertTrue(al_c.is_cleared())
@@ -124,7 +127,7 @@ class ClientTester(unittest.TestCase):
         al_a.add_callback(self.both_cb)
 
         rospy.sleep(0.5)
-        
+
         # Make sure callbacks are called on creation
         self.assertFalse(self.raised)
         self.assertTrue(self.cleared)
@@ -133,7 +136,7 @@ class ClientTester(unittest.TestCase):
         self.raised = False
         self.cleared = False
         self.both = False
-        
+
         # Make sure callbacks run when they're suppsed to
         ab_a.raise_alarm()
         rospy.sleep(0.5)
@@ -141,7 +144,7 @@ class ClientTester(unittest.TestCase):
         self.assertTrue(self.raised)
         self.assertFalse(self.cleared)
         self.assertTrue(self.both)
-        
+
         self.raised = False
         self.cleared = False
         self.both = False
