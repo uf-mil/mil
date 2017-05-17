@@ -2,10 +2,8 @@
 import rospy
 from ros_alarms import HandlerBase
 
-from std_msgs.msg import Header
-from ros_alarms.msg import Alarms
 from ros_alarms.msg import Alarm as AlarmMsg
-from ros_alarms.srv import AlarmGet, AlarmGetResponse, AlarmSet, AlarmSetResponse
+from ros_alarms.srv import AlarmGet, AlarmGetResponse, AlarmSet
 from ros_alarms import parse_json_str
 
 import json
@@ -250,10 +248,14 @@ class AlarmServer(object):
             if meta not in self.alarms:
                 self.alarms[meta] = Alarm.blank(meta)
 
-            default = lambda meta, alarms: any(alarms.items())
+            def default(meta, alarms):
+                return any(alarms.items)
+
             self.meta_alarms[meta] = default
 
-            cb = lambda alarm, meta_name=meta, sub_alarms=alarms: self._handle_meta_alarm(meta_name, sub_alarms)
+            def cb(alarm, meta_name=meta, sub_alarms=alarms):
+                return self._handle_meta_alarm(meta_name, sub_alarms)
+
             for alarm in alarms:
                 if alarm not in self.alarms:
                     self.alarms[alarm] = Alarm.blank(alarm)

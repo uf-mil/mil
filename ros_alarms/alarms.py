@@ -1,10 +1,8 @@
 from __future__ import division
 import rospy
-import rostopic
 
 from ros_alarms.msg import Alarm
 from ros_alarms.srv import AlarmSet, AlarmGet, AlarmSetRequest, AlarmGetRequest
-from std_msgs.msg import Header
 
 import json
 

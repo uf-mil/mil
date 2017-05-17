@@ -87,7 +87,7 @@ class TxAlarmListener(object):
 
         defer.returnValue(cls(nh, name, alarm_client, callback_funct))
 
-    def __init__(self, nh, name, alarm_client, callback_funct):
+    def __init__(self, nh, name, alarm_client, callback_funct, **kwargs):
         ''' Don't invoke this function directly, use the `init` function above '''
         self._nh = nh
         self._alarm_name = name
