@@ -1,4 +1,3 @@
-import rospy
 from ros_alarms import HandlerBase
 
 

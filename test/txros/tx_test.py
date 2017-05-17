@@ -26,6 +26,7 @@ def main():
 
     @txros.util.cancellableInlineCallbacks
     def cb(nh, alarm):
+        global var
         var = True
         yield nh.sleep(1)
         print "DONE SLEEPING"
