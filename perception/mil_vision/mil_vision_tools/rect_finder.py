@@ -7,13 +7,24 @@ import cv2
 __author__ = "Kevin Allen"
 
 class RectFinder(object):
+    '''
+    Keeps a model of a rectangle in meters, providing utility functions
+    to find 2D and 3D pose estimations of rectangles matching this model
+    found in a computer vision program.
+
+    See github.com/uf-mil/SubjuGator/blob/master/perception/sub8_perception/nodes/path_marker_finder.py
+    for an example of this used in a real time computer vision application.
+    '''
     def __init__(self, length=1.0, width=1.0):
         '''
-        p[0] = Top left corner of marker         0-W-1
-        p[1] = Top right corner of marker        |   |
-                                                 L   L
-        p[2] = Bottom right corner of marker     |   |
-        p[3] = Bottom left cornet of marker      3-W-2
+        Initializes the internal model of the rectangle.
+        Also see RectFinder.from_polygon for creating this from a ROS message
+
+        @param length the measurment of the longer side of the rectangle in meters
+        @param width the measurment of the longer side of the rectangle in meters
+
+        If width > length, the two will be reversed so that length is
+        always the longer side.
         '''
         # Ensure length >= width
         self.width, self.length = tuple(np.sort([length, width]))
@@ -29,14 +40,26 @@ class RectFinder(object):
 
     @classmethod
     def from_polygon(cls, polygon):
+        '''
+        Creates a RectFinder from a geometry_msgs/Polygon message.
+
+        The length of the Rect becomes the range of x/y (whichever larger)
+
+        The width of the Rect becomes the range of x/y (whichever shorter)
+        '''
         assert isinstance(polygon, Polygon)
         arr = rosmsg_to_numpy(polygon.points)
+        # If it contains just one point, treat the x/y and length/width
         if arr.shape[0] == 1:
             return cls(arr[:,0][0], arr[:,1][0])
         else:
             return cls(np.ptp(arr[:,0]), np.ptp(arr[:,1]))
 
     def to_polygon(self):
+        '''
+        Returns a geometry_msgs/Polygon representing the four corners
+        of the rectangle where all z = 0
+        '''
         return numpy_to_polygon(self.model_3D)
 
     @staticmethod
@@ -44,9 +67,12 @@ class RectFinder(object):
         '''
         Given a contour of 4 points, returns the same 4 points sorted in a known way.
         Used so that indicies of contour line up to that in model for cv2.solvePnp
-        p[0] = Top left corner of marker         0--1
-        p[1] = Top right corner of marker        |  |
-        p[2] = Bottom right corner of marker     |  |
+
+        @param debug_image if not None, puts a circle and text of the index in each corner
+
+        p[0] = Top left corner of marker         0--1     1--------2
+        p[1] = Top right corner of marker        |  |  or |        |
+        p[2] = Bottom right corner of marker     |  |     0--------3
         p[3] = Bottom left cornet of marker      3--2
 
         The implementation of this is a little bit of magic, and there may be an easier way
@@ -97,14 +123,25 @@ class RectFinder(object):
 
     def verify_contour(self, contour):
         '''
-        Does various tests to filter out contours that are clearly not
-        a valid path marker.
-        * run approx polygon, check that sides == 4
-        * find ratio of length to width, check close to known ratio IRL
+        Returns a numerical comparison between a contour and the perfect
+        model of the rectangle. A perfectly matched contour returns 0.0.
+
+        Useful for filtering contours.
         '''
         return cv2.matchShapes(contour, self.model_2D, 3, 0.0)
 
-    def get_corners(self, contour, epsilon_factor=0.1, debug_image=None):
+    def get_corners(self, contour, epsilon_factor=0.02, debug_image=None):
+        '''
+        Attempts to find the 4 corners of a contour representing a quadrilateral.
+
+        If the corners are found, it returns these 4 points sorted as described
+        in sort_corners. These corners can be used for get_pose_2D and get_pose_3D
+
+        If a 4 sided polygon cannot be approximated, returns None.
+
+        @param epsilon_factor passed to OpenCV approx polygon function. May have to be tuned for your setup.
+        @param debug_image if not None, will draw corners with text for indexes onto image
+        '''
         epsilon = epsilon_factor*cv2.arcLength(contour,True)
         polygon = cv2.approxPolyDP(contour,epsilon,True)
         if len(polygon) != 4:
@@ -112,6 +149,24 @@ class RectFinder(object):
         return self.sort_corners(polygon, debug_image=debug_image)
 
     def get_pose_3D(self, corners, intrinsics=None, dist_coeffs=None, cam=None, rectified=False):
+        '''
+        Uses the model of the object, the corosponding pixels in the image, and camera
+        intrinsics to estimate a 3D pose of the object.
+
+        @param corners 4x2 numpy array from get_corners representing the 4 sorted corners in the image
+
+        One of the two must be set:
+        @param cam PinholeCameraModel object from ImageGeometry package
+        @param rectified if cam is set, set True if corners were found in an already rectified image (image_rect_color topic)
+
+        Or:
+        @param instrinsics camera intrinisic matrix as numpy array
+        @param dist_coeffs camera distortion coefficients as numpy array
+
+        @return tuple (tvec, rvec) representing the translation and rotation vector
+        between the camera and the object in meters/radians. Use cv2.Rodrigues to convert
+        rvec to a 3x3 rotation matrix.
+        '''
         corners = np.array(corners,dtype=np.float)
         # Use camera intrinsics and knowledge of marker's real demensions to get a pose estimate in camera frame
         if cam is not None:
@@ -127,8 +182,12 @@ class RectFinder(object):
 
     def get_pose_2D(self, corners):
         '''
-        Given a sorted 4 sided polygon, stores the centroid and angle
-        for the next service call to get 2dpose.
+        Finds the 2D center of the rectangle and a unit direction vector along the length
+        of the rectangle in pixels
+
+        @param corners 4x2 numpy array from get_corners representing the 4 sorted corners in the image
+
+        @return a tuple (center, vecter)
         '''
         top_center = (corners[1]+corners[0])/2.0
         bot_center = (corners[2]+corners[3])/2.0
