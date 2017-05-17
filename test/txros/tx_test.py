@@ -2,6 +2,7 @@
 import txros
 from ros_alarms import TxAlarmBroadcaster, TxAlarmListener
 
+
 @txros.util.cancellableInlineCallbacks
 def main():
     nh = yield txros.NodeHandle.from_argv('tx_alarm_test')
@@ -22,6 +23,7 @@ def main():
     assert (yield al.is_cleared())
 
     var = False
+
     @txros.util.cancellableInlineCallbacks
     def cb(nh, alarm):
         var = True
@@ -42,4 +44,3 @@ def main():
     yield nh.sleep(2)
 
 txros.util.launch_main(main)
-

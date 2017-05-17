@@ -8,7 +8,7 @@ if __name__ == "__main__":
 
     ab = AlarmBroadcaster("test_alarm")
     al = AlarmListener("test_alarm")
-    
+
     print "Inited"
     assert al.is_cleared()
 

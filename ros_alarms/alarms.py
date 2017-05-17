@@ -25,7 +25,7 @@ def _check_for_alarm(alarm_name, nowarn=False):
     if not nowarn and rospy.has_param("/known_alarms") and \
        alarm_name not in rospy.get_param("/known_alarms"):
         msg = "'{}' is not in the list of known alarms (as defined in the /known_alarms rosparam)"
-        rospy.logwarn(msg.format(alarm_name)) 
+        rospy.logwarn(msg.format(alarm_name))
 
 
 def _check_for_valid_name(alarm_name, nowarn=False):
@@ -37,6 +37,7 @@ def _check_for_valid_name(alarm_name, nowarn=False):
 
 
 class AlarmBroadcaster(object):
+
     def __init__(self, name, node_name=None, nowarn=False):
         self._alarm_name = name
         _check_for_valid_name(self._alarm_name, nowarn)
@@ -70,7 +71,6 @@ class AlarmBroadcaster(object):
             return self._alarm_set(self._generate_request(True, **kwargs))
         except rospy.service.ServiceException:
             rospy.logerr("No alarm sever found! Can't raise alarm.")
-            
 
     def clear_alarm(self, **kwargs):
         ''' Clears this alarm '''
@@ -81,6 +81,7 @@ class AlarmBroadcaster(object):
 
 
 class AlarmListener(object):
+
     def __init__(self, name, callback_funct=None, nowarn=False, **kwargs):
         self._alarm_name = name
         self._last_alarm = None
@@ -92,7 +93,7 @@ class AlarmListener(object):
             rospy.wait_for_service("/alarm/get", timeout=1)
         except rospy.exceptions.ROSException:
             rospy.logerr("No alarm sever found! Alarm behaviours will be unpredictable.")
-        
+
         # Data used to trigger callbacks
         self._raised_cbs = []  # [(severity_for_cb1, cb1), (severity_for_cb2, cb2), ...]
         self._cleared_cbs = []
@@ -100,7 +101,7 @@ class AlarmListener(object):
 
         if callback_funct is not None:
             self.add_callback(callback_funct, **kwargs)
-        
+
     def is_raised(self):
         ''' Returns whether this alarm is raised or not '''
         try:
@@ -115,8 +116,8 @@ class AlarmListener(object):
         return not self.is_raised()
 
     def get_alarm(self):
-        ''' Returns the alarm message 
-        Also worth noting, the alarm this returns has it's `parameter` field 
+        ''' Returns the alarm message
+        Also worth noting, the alarm this returns has it's `parameter` field
             converted to a dictionary
         '''
         try:
@@ -127,7 +128,7 @@ class AlarmListener(object):
 
         resp.alarm.parameters = parse_json_str(resp.alarm.parameters)
         self._last_alarm = resp.alarm
-        return resp.alarm 
+        return resp.alarm
 
     def _severity_cb_check(self, severity):
         # In case _last alarm hasnt been declared yet
@@ -145,7 +146,7 @@ class AlarmListener(object):
         ''' Deals with adding function callbacks
         The user can specify if the function should be run on a raise or clear of this alarm.
 
-        Each callback can have a severity level associated with it such that different callbacks can 
+        Each callback can have a severity level associated with it such that different callbacks can
             be triggered for different levels of severity.
         '''
         alarm = self.get_alarm()
@@ -171,7 +172,6 @@ class AlarmListener(object):
                     rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self._alarm_name))
                     rospy.logwarn(e)
 
-
     def clear_callbacks(self):
         ''' Clears all callbacks '''
         self._raised_cbs = []
@@ -180,7 +180,7 @@ class AlarmListener(object):
     def _alarm_update(self, alarm):
         if alarm.alarm_name != self._alarm_name:
             return
-        
+
         self._last_alarm = alarm
         # Run the callbacks if severity conditions are met
         cb_list = self._raised_cbs if alarm.raised else self._cleared_cbs
@@ -199,6 +199,7 @@ class AlarmListener(object):
 
 
 class HeartbeatMonitor(AlarmBroadcaster):
+
     def __init__(self, alarm_name, topic_name, msg_class, prd=0.2, predicate=None, nowarn=False, **kwargs):
         ''' Used to trigger an alarm if a message on the topic `topic_name` isn't published
             atleast every `prd` seconds.
@@ -209,7 +210,7 @@ class HeartbeatMonitor(AlarmBroadcaster):
         self._last_msg_time = None
         self._prd = rospy.Duration(prd)
         self._dropped = False
-        
+
         super(HeartbeatMonitor, self).__init__(alarm_name, nowarn=nowarn, **kwargs)
         rospy.Subscriber(topic_name, msg_class, self._got_msg)
 
@@ -219,7 +220,7 @@ class HeartbeatMonitor(AlarmBroadcaster):
         # If the predicate passes, store the message time
         if self._predicate(msg):
             self._last_msg_time = rospy.Time.now()
-            
+
             # If it's dropped, clear the alarm and reset the dropped status
             if self._dropped:
                 self.clear_alarm()
@@ -232,4 +233,3 @@ class HeartbeatMonitor(AlarmBroadcaster):
         if rospy.Time.now() - self._last_msg_time > self._prd and not self._dropped:
             self.raise_alarm()
             self._dropped = True
-

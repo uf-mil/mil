@@ -5,6 +5,8 @@ from std_msgs.msg import String
 from ros_alarms import TxAlarmListener, TxHeartbeatMonitor
 
 publish = True
+
+
 @txros.util.cancellableInlineCallbacks
 def do_publishing(nh):
     global publish
@@ -27,7 +29,7 @@ def main():
     do_publishing(nh)
 
     al = yield TxAlarmListener.init(nh, alarm_name)
-     
+
     print "Inital Clear test"
     assert (yield al.is_cleared())
     yield nh.sleep(0.5)
@@ -49,9 +51,10 @@ def main():
     yield nh.sleep(1)
     assert (yield al.is_cleared())
     yield nh.sleep(0.5)
-    
+
     print "Predicated test"
     publish = True
+
     @txros.util.cancellableInlineCallbacks
     def cb(nh, alarm):
         yield nh.sleep(1)
@@ -59,7 +62,7 @@ def main():
 
     hbm.set_predicate(cb)
     monitor_df = hbm.start_monitor()
-    
+
     yield nh.sleep(0.5)
     publish = False
     yield nh.sleep(0.5)
@@ -68,4 +71,3 @@ def main():
     print "\nPassed!"
 
 txros.util.launch_main(main)
-
