@@ -28,6 +28,18 @@
       -x 23 -y 11 -z -4.72 -Z 1.5707 -model torpedo_board"
     output="screen" />
 
+  <!-- Attempting to spawn the bin and lid -->
+  <node
+    name ="bin_assembly" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find sub8_gazebo)/models/bin/bin_assembly.sdf -sdf
+    -x -22.0 -y 14.0 -z -4.52 -Z -1.57 -model bin_assembly"
+    output="screen" />
+  <node
+    name ="lid" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find sub8_gazebo)/models/bin/lid.sdf -sdf
+    -x -22.3 -y 14.16 -z -4.47 -Z -1.57 -model lid"
+    output="screen" />
+
   <!-- Start the sub model with cameras if desired -->
   <node if="$(arg cameras)"
     name="spawn_sub" pkg="gazebo_ros" type="spawn_model"
