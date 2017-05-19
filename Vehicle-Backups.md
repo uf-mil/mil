@@ -64,7 +64,7 @@ Zero free space to increase image compressibility:
 
 Create an archive backup of the filesystem (preserves permissions and file metadata):
 
-    tar -cpvzf /{fileserver_mount_directory}/Backups/{further_separation_if_needed}/{vehicle_hostname}_{partition_name}_{date (in mmddyyyy)}.tar.gz .
+    tar -cpvzf /{fileserver_mount_directory}/Backups/{further_separation_if_needed}/{vehicle_hostname}_{partition_name}_{date (in yyyymmdd)}.tar.gz .
 
 An example of the backup naming convention is `mil-sub-sub8_root_02202017.tar.gz`
 
@@ -78,7 +78,7 @@ Zero free space on the swap partition to increase image compressibility:
 
 Create a compressed image of the drive:
 
-    dd if=/dev/{drive_id} | pv | gzip > /{fileserver_mount_directory}/Backups/{further_separation_if_needed}/{vehicle_hostname}_image_{date (in mmddyyyy)}.gz
+    dd if=/dev/{drive_id} | pv | gzip > /{fileserver_mount_directory}/Backups/{further_separation_if_needed}/{vehicle_hostname}_image_{date (in yyyymmdd)}.gz
 
 # Restoring a Partition
 
@@ -96,10 +96,10 @@ cd /mnt
 
 Restore an archive backup of the filesystem (preserves permissions and file metadata):
 
-    tar -xpvzf /{fileserver_mount_directory}/Backups/{further_separation_if_needed}/{vehicle_hostname}_{partition_name}_{date (in mmddyyyy)}.tar.gz
+    tar -xpvzf /{fileserver_mount_directory}/Backups/{further_separation_if_needed}/{vehicle_hostname}_{partition_name}_{date (in yyyymmdd)}.tar.gz
 
 # Restoring an Image
 
 Restore a compressed image of the drive:
 
-    gzip -dc /{fileserver_mount_directory}/Backups/{further_separation_if_needed}/{vehicle_hostname}_image_{date (in mmddyyyy)}.gz | pv | dd of=/dev/{drive_id}
+    gzip -dc /{fileserver_mount_directory}/Backups/{further_separation_if_needed}/{vehicle_hostname}_image_{date (in yyyymmdd)}.gz | pv | dd of=/dev/{drive_id}
