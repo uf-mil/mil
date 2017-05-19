@@ -9,6 +9,7 @@ rospack = rospkg.RosPack()
 
 
 class TestThrusterComm(unittest.TestCase):
+
     def setUp(self):
         sub8_thruster_mapper = rospack.get_path('sub8_thruster_mapper')
         self.thruster_layout = rosparam.load_file(sub8_thruster_mapper

@@ -15,6 +15,7 @@ import numpy as np
 
 
 class ActuatorBoard():
+
     def __init__(self):
         self.torpedo_launcher = TorpedoLauncher()
         self.gripper_controller = GripperController()
@@ -35,6 +36,7 @@ class ActuatorBoard():
 
 
 class TorpedoLauncher():
+
     def __init__(self):
         self.launched = False
 
@@ -115,6 +117,7 @@ class TorpedoLauncher():
 
 
 class GripperController():
+
     def __init__(self):
         self.apply_force = rospy.ServiceProxy('/gazebo/apply_joint_effort', ApplyJointEffort)
         self.clear_force = rospy.ServiceProxy('/gazebo/clear_joint_forces', JointRequest)

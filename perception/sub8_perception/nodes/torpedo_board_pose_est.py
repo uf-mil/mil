@@ -12,6 +12,7 @@ import mil_ros_tools
 
 
 class PoseObserver(object):
+
     def __init__(self):
         self.x = 0
         self.y = 0
@@ -36,12 +37,12 @@ class PoseObserver(object):
 
     def get_pose_est_msg(self):
         ignore_num = int(len(self.xList) * 0.1)
-        xInliers = sorted(self.xList)[ignore_num : -ignore_num]
-        yInliers = sorted(self.yList)[ignore_num : -ignore_num]
-        zInliers = sorted(self.zList)[ignore_num : -ignore_num]
-        yawInliers = sorted(self.yawList)[ignore_num : -ignore_num]
+        xInliers = sorted(self.xList)[ignore_num: -ignore_num]
+        yInliers = sorted(self.yList)[ignore_num: -ignore_num]
+        zInliers = sorted(self.zList)[ignore_num: -ignore_num]
+        yawInliers = sorted(self.yawList)[ignore_num: -ignore_num]
         pose = Pose()
-        if(len(xInliers) == 0): 
+        if(len(xInliers) == 0):
             return pose
         pose.position.x = sum(xInliers) / float(len(xInliers))
         pose.position.y = sum(yInliers) / float(len(yInliers))
@@ -54,21 +55,28 @@ class PoseObserver(object):
 
 
 class TBPoseEstimator(object):
+
     def __init__(self):
         self.H = 1.24  # in meters
         self.W = 0.61  # in meters
         self.corners_from_tb_hom = np.array([
-            [-self.W/2.0, -self.H/2.0, 0.0, 1.0],  # TL
-            [ self.W/2.0, -self.H/2.0, 0.0, 1.0],  # TR
-            [ self.W/2.0,  self.H/2.0, 0.0, 1.0],  # BR
-            [-self.W/2.0,  self.H/2.0, 0.0, 1.0]], # BL
+            [-self.W / 2.0, -self.H / 2.0, 0.0, 1.0],  # TL
+            [self.W / 2.0, -self.H / 2.0, 0.0, 1.0],  # TR
+            [self.W / 2.0, self.H / 2.0, 0.0, 1.0],  # BR
+            [-self.W / 2.0, self.H / 2.0, 0.0, 1.0]],  # BL
             dtype=np.float32).T
         self.pose_obs = PoseObserver()
-        self.pose_est_service = rospy.Service('/torpedo_board/pose_est_srv', TorpBoardPoseRequest, self.handle_pose_est_requests)
+        self.pose_est_service = rospy.Service(
+            '/torpedo_board/pose_est_srv',
+            TorpBoardPoseRequest,
+            self.handle_pose_est_requests)
         self.tf_listener = tf.TransformListener()
         self.tf_broadcaster = tf.TransformBroadcaster()
-        self.pose_pub =  rospy.Publisher('/torpedo_board/pose', Pose, queue_size=100)
-        self.marker_pub = rospy.Publisher('/torpedo_board/visualization/pose_est', visualization_msgs.Marker, queue_size=100)
+        self.pose_pub = rospy.Publisher('/torpedo_board/pose', Pose, queue_size=100)
+        self.marker_pub = rospy.Publisher(
+            '/torpedo_board/visualization/pose_est',
+            visualization_msgs.Marker,
+            queue_size=100)
 
     def handle_pose_est_requests(self, req):
         self.current_req = ParsedPoseEstRequest(req)
@@ -80,16 +88,24 @@ class TBPoseEstimator(object):
     def minimize_reprojection_error(self):
         opt = {'disp': False}
         # Nelder-Mead and Powell seem to be the best methods for this problem
-        self.minimization_result = optimize.minimize(self.calc_reprojection_error, self.current_req.pose, method='Nelder-Mead', options=opt)
+        self.minimization_result = optimize.minimize(
+            self.calc_reprojection_error,
+            self.current_req.pose,
+            method='Nelder-Mead',
+            options=opt)
         if self.minimization_result.success:
             if not rospy.is_shutdown():
                 try:
-                    self.tf_listener.waitForTransform('/map', 'front_stereo', self.current_req.stamp, rospy.Duration(0.1))
+                    self.tf_listener.waitForTransform(
+                        '/map',
+                        'front_stereo',
+                        self.current_req.stamp,
+                        rospy.Duration(0.1))
                     (trans, rot) = self.tf_listener.lookupTransform('/map', 'front_stereo', self.current_req.stamp)
                     yaw = tf.transformations.euler_from_quaternion(rot, 'syxz')[0]
                     pose = np.array([trans.x, trans.y, trans.z, yaw])
                     self.pose_obs.push_back(pose)
-                except tf.Exception, e:
+                except tf.Exception as e:
                     print "Exception! " + str(e)
                 finally:
                     self.pose_pub.publish(self.pose_obs.get_pose_est_msg())
@@ -148,6 +164,7 @@ class TBPoseEstimator(object):
 
 
 class ParsedPoseEstRequest(object):
+
     def __init__(self, req):
         self.seq = req.pose_stamped.header.seq
         self.stamp = rospy.Time.from_sec(req.pose_stamped.header.stamp.to_time())

@@ -32,6 +32,7 @@ FUTURE:
 
 
 class JobManager(object):
+
     def __init__(self, nh, sub, bag=True, verbose=False):
         self.nh = nh
         self.sub = sub
@@ -69,7 +70,7 @@ class JobManager(object):
             current_loop += 1
             try:
                 yield current_job.setup()
-            except Exception, error:
+            except Exception as error:
                 response = "On test #{}, a {} raised an error on test setup, error:\n{}".format(
                     current_loop,
                     current_job._job_name,
@@ -85,7 +86,7 @@ class JobManager(object):
             try:
                 # Return True or False
                 success, description = yield current_job.run(self.sub)
-            except Exception, error:
+            except Exception as error:
                 response = "On test #{}, a {} raised an error on run, error:\n{}".format(
                     current_loop,
                     current_job._job_name,

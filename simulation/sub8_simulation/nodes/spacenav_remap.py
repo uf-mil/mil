@@ -11,6 +11,7 @@ import mil_ros_tools
 
 
 class Spacenav(object):
+
     def __init__(self):
         rospy.init_node('spacenav_remap')
 
@@ -25,7 +26,7 @@ class Spacenav(object):
         if self.behavior == 'wrench':
             self.wrench_pub = rospy.Publisher('/wrench', WrenchStamped, queue_size=1)
         else:
-            raise(NotImplementedError("Velocity and position control by mouse are not yet supported"))
+            raise NotImplementedError
 
         self.transformer = tf.TransformerROS()
         self.world_to_body = np.eye(3)
@@ -53,7 +54,7 @@ class Spacenav(object):
                 )
             )
         else:
-            raise(NotImplementedError("Velocity and position control by mouse are not yet supported"))
+            raise NotImplementedError
 
 
 if __name__ == '__main__':

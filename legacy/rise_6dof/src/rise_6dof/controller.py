@@ -7,6 +7,7 @@ from sub8.pose_editor import quat_to_rotvec
 
 
 class Controller(object):
+
     '''
     config is a dict of k, ks, alpha, beta
 
@@ -58,7 +59,8 @@ class Controller(object):
         # Permitting lambda assignment b/c legacy
         body_gain = lambda x: world_from_body2.dot(x).dot(world_from_body2.T)  # noqa
 
-        error_velocity_world = (desired_x_dot + body_gain(numpy.diag(self.config['k'])).dot(error_position_world)) - x_dot
+        error_velocity_world = (desired_x_dot + body_gain(
+            numpy.diag(self.config['k'])).dot(error_position_world)) - x_dot
         if self.config['two_d_mode']:
             error_velocity_world = error_velocity_world * [1, 1, 0, 0, 0, 1]
 

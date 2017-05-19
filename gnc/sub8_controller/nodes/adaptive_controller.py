@@ -9,6 +9,7 @@ from tf import transformations
 
 
 class AdaptiveController(Controller):
+
     def __init__(self, odom_topic='/truth/odom', sampling_period=0.1, control_period=None,
                  history_length=100, waypoint_epsilon=1, plot=False):
 

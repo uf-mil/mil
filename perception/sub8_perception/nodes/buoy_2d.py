@@ -74,7 +74,7 @@ class Buoy(object):
             # Segmentation here (machine learning right now)
             some_observations = machine_learning.boost.observe(img)
             prediction = [int(x) for x in [self.boost.predict(obs) for obs in some_observations]]
-            mask = np.reshape(prediction, img[:, :, 2].shape).astype(np.uint8) * 255
+            mask = np.reshape(prediction, img[:,:, 2].shape).astype(np.uint8) * 255
         else:
             # Thresholding here
             if self.color_space == 'hsv':
@@ -259,16 +259,16 @@ class BuoyFinder:
         buoy = self.buoys[buoy_type]
         rospy.sleep(.1)
         mask = buoy.segment(img)
-        kernel = np.ones((5,5),np.uint8)
+        kernel = np.ones((5, 5), np.uint8)
         mask = cv2.erode(mask, kernel, iterations = 2)
         mask = cv2.dilate(mask, kernel, iterations = 2)
 
         draw_mask = np.dstack([mask] * 3)
-        draw_mask[:,:,0] *= 0
+        draw_mask[:,:, 0] *= 0
         if buoy_type == 'red':
-            draw_mask[:,:,1] *= 0
+            draw_mask[:,:, 1] *= 0
         if buoy_type == 'green':
-            draw_mask[:,:,2] *= 0
+            draw_mask[:,:, 2] *= 0
         self.mask_pub.publish(draw_mask)
 
         contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)

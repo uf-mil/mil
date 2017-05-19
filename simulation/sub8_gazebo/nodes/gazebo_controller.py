@@ -14,6 +14,7 @@ import os
 
 
 class GazeboInterface(object):
+
     def __init__(self, target='sub8::base_link'):
         self.target = target
         # rospy.wait_for_service('/gazebo/apply_body_wrench')

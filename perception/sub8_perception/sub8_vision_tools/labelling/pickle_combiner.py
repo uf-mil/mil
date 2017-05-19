@@ -13,11 +13,11 @@ if __name__ == '__main__':
                         default='combine.p')
 
     args = parser.parse_args(sys.argv[1:])
-    
+
     out_pickle = []
     print "Loading pickles."
     for pickle_file in args.pickles:
-    	out_pickle += pickle.load(open(pickle_file, 'rb'))
+        out_pickle += pickle.load(open(pickle_file, 'rb'))
     print "Pickles loaded - saving."
     pickle.dump(out_pickle, open(args.output, 'wb'))
     print "Done!"

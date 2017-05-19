@@ -3,6 +3,7 @@ import collections
 
 
 class ShaderReader(object):
+
     @classmethod
     def read_shader(self, shader_text):
         '''Given an iterable containing the text of a shader file,
@@ -67,6 +68,7 @@ class ShaderReader(object):
 
 
 class Shaders(object):
+
     '''A Shaders class, which automatically contains all of the shaders
         in the shaders folder
     WTF?

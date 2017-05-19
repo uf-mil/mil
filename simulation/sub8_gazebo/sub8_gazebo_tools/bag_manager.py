@@ -7,6 +7,7 @@ import yaml
 
 
 class BagManager(object):
+
     def __init__(self, nh, diag_dir):
         self.nh = nh
         self.diag_dir = diag_dir

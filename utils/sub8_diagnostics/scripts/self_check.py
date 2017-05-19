@@ -9,11 +9,14 @@ import subprocess
 
 MESSAGE_TIMEOUT = 1  # s
 
+
 class TemplateChecker(object):
+
     '''Template for how each checker class should look.
     This provides interface functions for the main function to use. You don't have to
         implement them all in each checker.
     '''
+
     def __init__(self, nh, name):
         self.nh = nh
         self.name = name
@@ -72,7 +75,10 @@ class TemplateChecker(object):
         print fail_text
 
 from sub8_msgs.msg import ThrusterStatus
+
+
 class ThrusterChecker(TemplateChecker):
+
     @txros.util.cancellableInlineCallbacks
     def tx_init(self):
         self.thruster_topic = self.nh.subscribe("thrusters/thruster_status", ThrusterStatus)
@@ -90,7 +96,7 @@ class ThrusterChecker(TemplateChecker):
 
     @txros.util.cancellableInlineCallbacks
     def do_check(self):
-        try: 
+        try:
             passed = yield txros.util.wrap_timeout(self.get_all_thrusters(), MESSAGE_TIMEOUT)
         except txros.util.TimeoutError:
             lost_thrusters = [x[0] for x in self.found_thrusters.items() if not x[1]]
@@ -124,24 +130,26 @@ class ThrusterChecker(TemplateChecker):
 
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import CameraInfo
+
+
 class CameraChecker(TemplateChecker):
+
     @txros.util.cancellableInlineCallbacks
     def tx_init(self):
-        self.front_cam_product_id = "1e10:3300" # should be changed if cameras change
+        self.front_cam_product_id = "1e10:3300"  # should be changed if cameras change
         self.right = self.nh.subscribe("/camera/front/right/image_rect_color", Image)
         self.right_info = self.nh.subscribe("/camera/front/right/camera_info", CameraInfo)
         self.left = self.nh.subscribe("/camera/front/left/image_rect_color", Image)
         self.left_info = self.nh.subscribe("/camera/front/left/camera_info", CameraInfo)
         self.down = self.nh.subscribe("/camera/down/left/image_rect_color", Image)  # TODO
         self.down_info = self.nh.subscribe("/camera/down/left/camera_info", CameraInfo)  # TODO
-        
+
         self.subs = [("Right Image", self.right.get_next_message()), ("Right Info", self.right_info.get_next_message()),
                      ("Left Image", self.left.get_next_message()), ("Left Info", self.left_info.get_next_message()),
                      ("Down Image", self.down.get_next_message()), ("Down Info", self.down_info.get_next_message())]
 
         print self.p.bold("\n  >>>>   ").set_blue.bold("Camera Check")
         yield self.nh.sleep(0.1)  # Try to get all the images
-        
 
     @txros.util.cancellableInlineCallbacks
     def do_check(self):
@@ -161,7 +169,7 @@ class CameraChecker(TemplateChecker):
             passed = False
 
         for name, df in self.subs:
-            try: 
+            try:
                 yield txros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
             except txros.util.TimeoutError:
                 self.fail_check("no messages found.", name)
@@ -174,7 +182,10 @@ from nav_msgs.msg import Odometry
 from tf.msg import tfMessage
 from mil_msgs.msg import VelocityMeasurements, RangeStamped, DepthStamped
 from sensor_msgs.msg import Imu, MagneticField
+
+
 class StateEstChecker(TemplateChecker):
+
     @txros.util.cancellableInlineCallbacks
     def tx_init(self):
         self.odom = self.nh.subscribe("/odom", Odometry)
@@ -187,7 +198,7 @@ class StateEstChecker(TemplateChecker):
 
         self.subs = [("Odom", self.odom.get_next_message()), ("TF", self.tf.get_next_message()),
                      ("DVL", self.dvl.get_next_message()), ("Height", self.height.get_next_message()),
-                     ("Depth", self.depth.get_next_message()), ("IMU", self.imu.get_next_message()), 
+                     ("Depth", self.depth.get_next_message()), ("IMU", self.imu.get_next_message()),
                      ("Mag", self.mag.get_next_message())]
 
         print self.p.bold("\n  >>>>   ").set_blue.bold("State Estimation Check")
@@ -197,7 +208,7 @@ class StateEstChecker(TemplateChecker):
     def do_check(self):
         passed = True
         for name, df in self.subs:
-            try: 
+            try:
                 res = yield txros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
             except txros.util.TimeoutError:
                 self.fail_check("no messages found.", name)
@@ -218,10 +229,17 @@ class StateEstChecker(TemplateChecker):
 from std_msgs.msg import Header
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import PoseStamped
+
+
 class ShoreControlChecker(TemplateChecker):
+
     @txros.util.cancellableInlineCallbacks
     def tx_init(self):
-        p = self.p.bold("\n  >>>>").text("   Press return when ").negative("shore_control.launch").text(" is running.\n")
+        p = self.p.bold(
+            "\n  >>>>").text(
+                "   Press return when ").negative(
+            "shore_control.launch").text(
+                " is running.\n")
         yield txros.util.nonblocking_raw_input(str(p))
 
         self.network = self.nh.subscribe("/network", Header)
@@ -239,7 +257,7 @@ class ShoreControlChecker(TemplateChecker):
     def do_check(self):
         passed = True
         for name, df in self.subs:
-            try: 
+            try:
                 res = yield txros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
             except txros.util.TimeoutError:
                 self.fail_check("no messages found.", name)
@@ -248,12 +266,13 @@ class ShoreControlChecker(TemplateChecker):
 
             self.pass_check("message found.", name)
 
+
 @txros.util.cancellableInlineCallbacks
 def main():
     nh = yield txros.NodeHandle.from_argv("startup_checker")
-    check_order = [ThrusterChecker(nh, "Thrusters"), CameraChecker(nh, "Cameras"), 
+    check_order = [ThrusterChecker(nh, "Thrusters"), CameraChecker(nh, "Cameras"),
                    StateEstChecker(nh, "State Estimation"), ShoreControlChecker(nh, "Shore Control")]
-    
+
     p = text_effects.Printer()
     yield txros.util.nonblocking_raw_input(str(p.bold("\n  >>>>").text("   Press return when ").negative("sub8.launch").text(" is running.")))
     print p.newline().set_blue.bold("-------- Running self checks...").newline()

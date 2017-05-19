@@ -29,6 +29,7 @@ CONSIDER:
 - Package kernels alongside Boost
 """
 
+
 def gen_data():
     '''
     Set parameters here - which methods you want to use and trees/depth.
@@ -36,13 +37,13 @@ def gen_data():
     '''
     method = [cv2.BOOST_GENTLE]
     name = ["gentle"]
-    trees = [8,9]
-    depth = [3,5]
+    trees = [8, 9]
+    depth = [3, 5]
 
     for t in trees:
         for d in depth:
-            for m,n in zip(method, name):
-                yield m,t,d,n
+            for m, n in zip(method, name):
+                yield m, t, d, n
 
 
 def observe(image):
@@ -79,12 +80,12 @@ def train_on_data(observation_list, label_list, split_factor=4):
 
     all_observations_split = np.vsplit(all_observations, split_factor)
     all_labels_split = np.vsplit(all_labels, split_factor)
-        
+
     print
     print "Building classifier..."
     print
     param_gen = gen_data()
-    for m,t,d,n in param_gen:
+    for m, t, d, n in param_gen:
         f_name = "{}_{}tree_{}depth.dic".format(n, t, d)
         print "====================="
         print "Generating {}...".format(f_name)
@@ -100,7 +101,7 @@ def train_on_data(observation_list, label_list, split_factor=4):
         s_time = time.time()
         process_round = 0
         # Split this into multiple passes in an attempt to free RAM (no idea if this works).
-        for x, y in zip(all_observations_split ,all_labels_split):
+        for x, y in zip(all_observations_split, all_labels_split):
             print "Training subset {}/{}.".format(process_round + 1, split_factor)
             boost.train(x, cv2.CV_ROW_SAMPLE, y, params=parameters)
             process_round += 1
@@ -109,10 +110,10 @@ def train_on_data(observation_list, label_list, split_factor=4):
         print "Done! Saving..."
         boost.save(f_name, 's')
         print
-        
+
 
 def load_images(path, images_to_use=8):
-    assert type(images_to_use) is int
+    assert isinstance(images_to_use, int)
     images = os.listdir(path)
     observation_list = []
     label_list = []
@@ -153,7 +154,7 @@ def load_images(path, images_to_use=8):
 
             observation_list.append(observations)
             label_list.append(target_labels)
-        
+
         except KeyboardInterrupt:
             return None
 
@@ -161,6 +162,7 @@ def load_images(path, images_to_use=8):
             print "There was an issue with loading an image. Skipping it..."
 
     return observation_list, label_list
+
 
 def main():
     usage_msg = ("Pass the path to a bag, and we'll crawl through the images in it")

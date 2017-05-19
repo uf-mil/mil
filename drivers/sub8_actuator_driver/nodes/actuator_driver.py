@@ -21,6 +21,7 @@ lock = threading.Lock()
 
 
 class ActuatorDriver():
+
     '''
     Allows high level ros code to interface with Daniel's pneumatics board.
 
@@ -29,6 +30,7 @@ class ActuatorDriver():
 
     TODO: Add a function to try and reconnect to the serial port if we lose connection.
     '''
+
     def __init__(self, port, baud=9600):
         self.load_yaml()
 
@@ -88,11 +90,14 @@ class ActuatorDriver():
         try:
             this_valve = self.actuators[srv.actuator]
         except:
-            rospy.logerr("'%s' not found in valves.yaml so no configuration has been set for that actuator." % srv.actuator)
+            rospy.logerr(
+                "'%s' not found in valves.yaml so no configuration has been set for that actuator." %
+                srv.actuator)
             return False
 
         if this_valve['type'] == 'pulse':
-            # We want to pulse the port from the default value for the desired pulse_time then go back to the default value.
+            # We want to pulse the port from the default value for the desired
+            # pulse_time then go back to the default value.
             open_port = this_valve['ports']['open_port']
             open_id = open_port['id']
             open_default_value = open_port['default']
@@ -113,7 +118,8 @@ class ActuatorDriver():
             self.send_data(close_id, close_default_value)
 
         elif this_valve['type'] == 'set':
-            # If the desired action is to open, set the open valve to true and the closed false (and visa versa for closing).
+            # If the desired action is to open, set the open valve to true and the
+            # closed false (and visa versa for closing).
             open_port = this_valve['ports']['open_port']
             open_id = open_port['id']
 

@@ -13,6 +13,7 @@ from geometry_msgs.msg import Pose2D
 import tesseract
 from matplotlib import pyplot as plt
 
+
 class Ocr:
 
     def __init__(self):
@@ -27,7 +28,7 @@ class Ocr:
 
     def request_characters(self, srv):
         self.white_list = srv.target_name
-        if (self.last_image != None):
+        if (self.last_image is not None):
             print 'requesting', srv
             response = self.ocr()
             return response
@@ -42,29 +43,38 @@ class Ocr:
 
             self.camera_model = image_geometry.PinholeCameraModel()
             self.camera_model.fromCameraInfo(self.image_sub.camera_info)
-    
+
     def ocr(self):
         if self.last_image is not None:
             image = self.last_image
             # Add border to keep the characters off the edges
-            offset=20
-            height,width,channel = image.shape
-            image=cv2.copyMakeBorder(image,offset,offset,offset,offset,cv2.BORDER_CONSTANT,value=(255,255,255))
-            # Init and configure tesseract api 
+            offset = 20
+            height, width, channel = image.shape
+            image = cv2.copyMakeBorder(
+                image,
+                offset,
+                offset,
+                offset,
+                offset,
+                cv2.BORDER_CONSTANT,
+                value=(255,
+                       255,
+                       255))
+            # Init and configure tesseract api
             api = tesseract.TessBaseAPI()
-            api.Init(".","eng",tesseract.OEM_DEFAULT)
+            api.Init(".", "eng", tesseract.OEM_DEFAULT)
             api.SetPageSegMode(tesseract.PSM_AUTO)
             api.SetVariable("tessedit_char_whitelist", self.white_list)
             # Convert to cv image to to pass to tess api
             # Derived from example code here: http://blog.mimvp.com/2015/11/python-ocr-recognition/
-            height,width,channel=image.shape
-            width_step = width*image.dtype.itemsize
-            iplimage = cv.CreateImageHeader((width,height), cv.IPL_DEPTH_8U, channel)
-            cv.SetData(iplimage, image.tostring(),image.dtype.itemsize * channel * (width))
-            tesseract.SetCvImage(iplimage,api)
+            height, width, channel = image.shape
+            width_step = width * image.dtype.itemsize
+            iplimage = cv.CreateImageHeader((width, height), cv.IPL_DEPTH_8U, channel)
+            cv.SetData(iplimage, image.tostring(), image.dtype.itemsize * channel * (width))
+            tesseract.SetCvImage(iplimage, api)
             api.Recognize(None)
-            ri=api.GetIterator()
-            level=tesseract.RIL_WORD
+            ri = api.GetIterator()
+            level = tesseract.RIL_WORD
             if (ri):
                 word = ri.GetUTF8Text(level)
                 return word

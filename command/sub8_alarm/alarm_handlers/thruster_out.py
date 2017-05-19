@@ -18,4 +18,3 @@ class ThrusterOut(HandlerBase):
     def cleared(self, alarm):
         if alarm.parameters.get("clear_all", False):
             self.update_layout()
-

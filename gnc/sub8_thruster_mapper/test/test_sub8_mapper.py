@@ -16,6 +16,7 @@ import time
 
 
 class TestMapThrusters(unittest.TestCase):
+
     def setUp(self, *args):
         '''TODO:
             - Assert that wrenches within bounds are close to the unbounded least-squares estimate
@@ -78,7 +79,10 @@ class TestMapThrusters(unittest.TestCase):
             while not rospy.is_shutdown() and time.time() < timeout_t and not self.got_msg:
                 time.sleep(0.01)
 
-            self.assertEqual(len(self.test_data) - 1, num, msg="Could not compute wrench for " + str(wrench) + " within timeout")
+            self.assertEqual(
+                len(self.test_data) - 1,
+                num,
+                msg="Could not compute wrench for " + str(wrench) + " within timeout")
             self.got_msg = False
             rospy.sleep(0.06)  # Wait the timeout period
 

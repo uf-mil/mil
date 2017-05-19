@@ -2,7 +2,9 @@
 import rospy
 from std_msgs.msg import Header
 
+
 class NetworkBroadcaster(object):
+
     def __init__(self):
         self.pub = rospy.Publisher("/network", Header, queue_size=1)
 
@@ -17,4 +19,3 @@ if __name__ == "__main__":
     rospy.init_node("network_broadcaster")
     nb = NetworkBroadcaster()
     rospy.spin()
-

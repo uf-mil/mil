@@ -58,7 +58,8 @@ class ProjectionParticleFilter(object):
         self.jitter_pdf = stats.uniform(loc=0.0, scale=max(self.image_size))
 
         # This line doesn't *necessarily* do something
-        self.particles = np.random.uniform((-25, -25, self.min_Z), (25, 25, self.max_Z), size=(self.num_particles, 3)).transpose()
+        self.particles = np.random.uniform((-25, -25, self.min_Z), (
+            25, 25, self.max_Z), size=(self.num_particles, 3)).transpose()
         self.weights = np.ones(self.num_particles)
         self.weights = self.weights / np.sum(self.weights)
         self.t = np.zeros(3)
@@ -144,7 +145,12 @@ class ProjectionParticleFilter(object):
             range_distribution = np.random.normal(loc=self.max_Z / 2, scale=self.max_Z / 6, size=self.num_particles)
 
             self.particles = self.t + (range_distribution * unit_ray)
-            self.particles += np.random.normal(scale=(self.salt, self.salt, self.salt), size=(self.num_particles, 3)).transpose()
+            self.particles += np.random.normal(
+                scale=(self.salt,
+                       self.salt,
+                       self.salt),
+                size=(self.num_particles,
+                      3)).transpose()
 
         else:
             # Doesn't yet work

@@ -18,7 +18,8 @@ import os
 import yaml
 
 fprint = text_effects.FprintFactory(
-title="START_GATE", msg_color="white").fprint
+    title="START_GATE", msg_color="white").fprint
+
 
 class StartGateMission(object):
 
@@ -60,15 +61,14 @@ class StartGateMission(object):
                 fprint("AGAIN - Searching for start gate pose")
                 self.start_gate_find()
                 yield self.search_pattern()
-        
+
         fprint("Found start gate: " + str(start_gate_search_res.pose))
-        
+
         start_gate_distance_request = yield self.sub_singleton.nh.get_service_client('/vision/start_gate/distance', BMatrix)
         start_gate_distance = yield start_gate_distance_request(BMatrixRequest())
         fprint("Distance: " + str(start_gate_distance.B[0]))
 
-
-        yield self.align_for_dummies( start_gate_search_res)
+        yield self.align_for_dummies(start_gate_search_res)
         fprint("YOLO -- MOVING FORWARD")
 
         # while(self.FOUND_START_GATE):
@@ -97,22 +97,22 @@ class StartGateMission(object):
             fprint("Moving right .3", msg_color="yellow")
             yield self.sub_singleton.move.right(.3).zero_roll_and_pitch().go(speed=self.SPEED)
 
-
     @txros.util.cancellableInlineCallbacks
     def align_for_dummies(self, start_gate_search_res):
         error_tolerance = 0.1
-        deviation = ((start_gate_search_res.pose.x - start_gate_search_res.camera_info.width/2)/start_gate_search_res.camera_info.width,(start_gate_search_res.pose.y - start_gate_search_res.camera_info.height/2)/start_gate_search_res.camera_info.height)
-           
+        deviation = (
+            (start_gate_search_res.pose.x - start_gate_search_res.camera_info.width / 2) /
+            start_gate_search_res.camera_info.width,
+            (start_gate_search_res.pose.y - start_gate_search_res.camera_info.height / 2) / start_gate_search_res.camera_info.height)
+
         fprint("Alignment -- Deviation: " + str(deviation), msg_color="cyan")
         while(np.abs(deviation[0]) > error_tolerance):
-            fprint("Moving right " + str(.1*np.sign(deviation[0])), msg_color="yellow")
-            yield self.sub_singleton.move.right(.1*np.sign(deviation[0])).zero_roll_and_pitch().go(speed=self.SPEED)
+            fprint("Moving right " + str(.1 * np.sign(deviation[0])), msg_color="yellow")
+            yield self.sub_singleton.move.right(.1 * np.sign(deviation[0])).zero_roll_and_pitch().go(speed=self.SPEED)
         while(np.abs(deviation[1]) > error_tolerance):
-            fprint("Moving up " + str(.1*np.sign(deviation[1])), msg_color="yellow")
-            yield self.sub_singleton.move.up(.1*np.sign(deviation[1])).zero_roll_and_pitch().go(speed=self.SPEED)
+            fprint("Moving up " + str(.1 * np.sign(deviation[1])), msg_color="yellow")
+            yield self.sub_singleton.move.up(.1 * np.sign(deviation[1])).zero_roll_and_pitch().go(speed=self.SPEED)
         yield fprint("Finished Alignment -- Deviation: " + str(deviation), msg_color="cyan")
-
-
 
 
 @txros.util.cancellableInlineCallbacks

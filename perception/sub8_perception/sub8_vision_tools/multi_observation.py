@@ -5,12 +5,14 @@ import estimation
 
 
 class MultiObservation(object):
+
     """
     This is NOT a bundle adjuster.
 
     TODO:
         Compute outliers by clustering minimum distance between rays
     """
+
     def __init__(self, camera_model):
         self.camera_model = camera_model
         self.image_size = (self.camera_model.cx() * 2, self.camera_model.cy() * 2)
@@ -36,8 +38,8 @@ class MultiObservation(object):
             t_cost = 0
             for observation, (t, R) in zip(observations, cameras):
                 d = R.dot(observation)
-                term_1 = norm(c - t)**2
-                term_2 = (norm((c - t).dot(d))**2) / (norm(d)**2)
+                term_1 = norm(c - t) ** 2
+                term_2 = (norm((c - t).dot(d)) ** 2) / (norm(d) ** 2)
                 t_cost += term_1 - term_2
             return t_cost
 

@@ -15,6 +15,7 @@ rospack = rospkg.RosPack()
 
 fprint = te.FprintFactory(title='ThrusterSpinner').fprint
 
+
 def ports_from_layout(layout):
     '''Load and handle the thruster bus layout'''
     port_dict = {}
@@ -31,7 +32,7 @@ def ports_from_layout(layout):
             for name in thruster_names:
                 port_dict[name] = thruster_port
 
-            s =  str(np.sort([x[1] for x in thruster_port.thruster_dict.items()]).tolist())
+            s = str(np.sort([x[1] for x in thruster_port.thruster_dict.items()]).tolist())
             fprint(msg.reset.text("\n\tName: ").set_yellow.text(port).reset
                    .text("\n\tMotor id's on port: ").set_cyan.bold(s).reset)
 
@@ -51,7 +52,7 @@ if thruster_ports == {}:
 names_from_motor_id = {0: 'FLH', 1: 'FLV', 2: 'FRH', 3: 'FRV',
                        4: 'BLH', 5: 'BLV', 6: 'BRH', 7: 'BRV'}
 usage_msg = \
-'''
+    '''
 Welcome to David's thruster_spin_test tool.
 \tInstructions:
 \t* press up or down to control the thrust commanded
@@ -68,6 +69,7 @@ thrust = 0.0  # Normalized thrust in [-1, 1]
 step = 0.05
 
 key = None
+
 
 def check_for_thrusters():
     ''' Checks for a response from thrusters on a given port '''
@@ -96,6 +98,7 @@ def check_for_thrusters():
         declared_ports[sel].get_motor_ids_on_port(start_id, end_id)
     fprint("Responding motor ids:\t\t\t{}".format(te.Printer().set_cyan.bold(found_motor_ids)))
     fprint("Average packet turnaround time:\t{} seconds".format(te.Printer().set_cyan.bold(avg_turnaround_time)))
+
 
 def command_thrusters(timer_event):
     thrusters_to_command = active_thrusters.copy()
@@ -157,4 +160,3 @@ while not rospy.is_shutdown():
     # Display help
     if key == 'h':
         fprint(usage_msg)
-

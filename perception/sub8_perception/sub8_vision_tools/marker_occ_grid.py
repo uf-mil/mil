@@ -26,11 +26,13 @@ def make_2D_rotation(angle):
 
 
 class OccGridUtils(object):
+
     '''
     Contains functions for dealing with occupancy grids as well as storing and publishing them.
 
     All distance measured in meters.
     '''
+
     def __init__(self, res, width, height, starting_pose, topic_name='/search_grid'):
         self.meta_data = MapMetaData()
         # Resolution is m/cell. Width is X, height is Y.
@@ -119,10 +121,12 @@ class OccGridUtils(object):
 
 
 class Searcher():
+
     '''
     Intented to provide a service that will return a pose to go to in order to search for a missing marker.
     Not sure how this will be implemented in its entirety.
     '''
+
     def __init__(self, searched_area, grid_res, position_offset):
         self.searched_area = searched_area
         self.grid_res = grid_res
@@ -211,12 +215,19 @@ class Searcher():
 
 
 class MarkerOccGrid(OccGridUtils):
+
     '''
     Handles updating occupancy grid when new data comes in.
     TODO: Upon call can return some path to go to in order to find them.
     '''
+
     def __init__(self, image_sub, grid_res, grid_width, grid_height, grid_starting_pose):
-        super(self.__class__, self).__init__(res=grid_res, width=grid_width, height=grid_height, starting_pose=grid_starting_pose)
+        super(
+            self.__class__,
+            self).__init__(res=grid_res,
+                           width=grid_width,
+                           height=grid_height,
+                           starting_pose=grid_starting_pose)
 
         self.tf_listener = tf.TransformListener()
 
@@ -271,7 +282,7 @@ class MarkerOccGrid(OccGridUtils):
         local_position = dir_vector[::-1] * magnitude
         position = local_position + x_y_position
 
-        #print local_position
+        # print local_position
 
         # Pose on ground plane from center
         pose = Pose2D(x=position[0], y=position[1], theta=marker_rotation)

@@ -10,7 +10,7 @@ import tqdm
 
 
 def load_images(path, images_to_use=2):
-    assert type(images_to_use) is int
+    assert isinstance(images_to_use, int)
     images = os.listdir(path)
     data = []
 
@@ -69,18 +69,18 @@ if __name__ == '__main__':
     data = load_images(args.impath)
 
     report_data = {
-        "Type":[],
-        "Average accuracy":[],
-        "Average false positives":[],
-        "Min accuracy":[],
-        "Max false positives":[],
-        "Average execution time":[]
+        "Type": [],
+        "Average accuracy": [],
+        "Average false positives": [],
+        "Min accuracy": [],
+        "Max false positives": [],
+        "Average execution time": []
     }
 
     print "Verifying..."
     count = 0
     param_gen = gen_data()
-    for m,t,d,n in param_gen:
+    for m, t, d, n in param_gen:
 
         f_name = "{}_{}tree_{}depth.dic".format(n, t, d)
         print " ===================== "
@@ -102,9 +102,9 @@ if __name__ == '__main__':
             if u_image is None or u_mask is None:
                 continue
 
-            print "Image:",image_name
+            print "Image:", image_name
 
-            image = u_image[::2, ::2, :]
+            image = u_image[::2, ::2,:]
             mask = u_mask[::2, ::2]
             tic_observation = time()
             some_observations = observe(image)
@@ -121,9 +121,9 @@ if __name__ == '__main__':
             print 'Predicting took {} seconds'.format(time() - tic_prediction)
             total_time = time() - tic_observation
 
-            segmentation_image = np.reshape(segmentation, image[:, :, 2].shape)
+            segmentation_image = np.reshape(segmentation, image[:,:, 2].shape)
             # cv2.imshow('im2', image)
-            #cv2.imshow('im', (segmentation_image * 250).astype(np.uint8))
+            # cv2.imshow('im', (segmentation_image * 250).astype(np.uint8))
 
             bool_targets = mask == 1
             bool_predictions = segmentation_image == 1
@@ -145,8 +145,8 @@ if __name__ == '__main__':
             attributes['false_positives'].append(false_positives)
             attributes['times'].append(total_time)
 
-            #key = chr(cv2.waitKey(100) & 0xff)
-            #if key == 'q':
+            # key = chr(cv2.waitKey(100) & 0xff)
+            # if key == 'q':
             #    break
             print
 
@@ -172,7 +172,7 @@ if __name__ == '__main__':
     print "===== RESULTS ====="
     print
 
-    for i,t in enumerate(report_data["Type"]):
+    for i, t in enumerate(report_data["Type"]):
         print t
         print "Average accuracy", report_data["Average accuracy"][i]
         print "Average false positives", report_data["Average false positives"][i]

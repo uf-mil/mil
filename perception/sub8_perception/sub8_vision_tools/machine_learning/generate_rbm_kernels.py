@@ -22,7 +22,7 @@ print(__doc__)
 # Authors: Yann N. Dauphin, Vlad Niculae, Gabriel Synnaeve
 # License: BSD
 
-###############################################################################
+#
 # Setting up
 
 
@@ -84,7 +84,7 @@ svc = sklearn.svm.SVC()
 classifier = Pipeline(steps=[('rbm', rbm), ('svc', svc)])
 
 
-###############################################################################
+#
 # Training
 
 # Hyper-parameters. These were set by cross-validation,
@@ -104,7 +104,7 @@ classifier.fit(X_train, Y_train)
 logistic_classifier = linear_model.LogisticRegression(C=100.0)
 logistic_classifier.fit(X_train, Y_train)
 
-###############################################################################
+#
 # Evaluation
 
 print()
@@ -118,7 +118,7 @@ print("Logistic regression using raw pixel features:\n%s\n" % (
         Y_test,
         logistic_classifier.predict(X_test))))
 
-###############################################################################
+#
 # Plotting
 
 plt.figure(figsize=(4.2, 4))

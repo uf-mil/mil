@@ -39,7 +39,7 @@ class Picker(object):
 
         if self.out_mask is None or len(self.out_mask[self.out_mask == 1]) == 0:
             self.mask = np.zeros(image.shape[:2], dtype=np.uint8)
-            self.mask[:, :] = int(cv2.GC_PR_BGD)
+            self.mask[:,:] = int(cv2.GC_PR_BGD)
         else:
             self.mask = np.ones(image.shape[:2], dtype=np.uint8) * int(cv2.GC_PR_BGD)
             self.mask[self.out_mask == int(cv2.GC_FGD)] = int(cv2.GC_FGD)
@@ -66,7 +66,7 @@ class Picker(object):
         if self.done_drawing:
             return
        
-        cv2.circle(self.visual_brush_size, (x,y), self.brush_size, (255, 255, 255), 1) 
+        cv2.circle(self.visual_brush_size, (x, y), self.brush_size, (255, 255, 255), 1) 
         if event == cv2.EVENT_LBUTTONDOWN:
             self.mouse_state[0] = 1
             cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 200, 0), -1)
@@ -189,7 +189,7 @@ class Picker(object):
             cv2.drawContours(return_mask, [ctr], -1, 1, -1)
 
         self.out_mask = out_mask
-        display = display_mask[:, :, np.newaxis] * self.image.astype(np.float64)
+        display = display_mask[:,:, np.newaxis] * self.image.astype(np.float64)
         cv2.imshow('segment', display / np.max(display))
 
         cv2.imshow('all', np.logical_not(bgnd).astype(np.uint8) * 255)

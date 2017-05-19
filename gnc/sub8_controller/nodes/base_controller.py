@@ -17,6 +17,7 @@ lock = threading.Lock()
 
 
 class Controller(object):
+
     def __init__(self, odom_topic='/truth/odom', sampling_period=0.1, control_period=None,
                  history_length=100, waypoint_epsilon=1):
         '''
@@ -198,7 +199,7 @@ class Controller(object):
         if len(self.state_history['position']) < 2:
             return
 
-        # #### Setup target/current state stuff ##### #
+        # Setup target/current state stuff ##### #
 
         # Last recieved state
         current_position = self.current_state['position']
@@ -212,16 +213,17 @@ class Controller(object):
         target_orientation_q = self.target_trajectory['orientation_q'][0]
         target_angular_vel = self.target_trajectory['angular_vel'][0]
 
-        # ##### Setup Done ##### #
+        # Setup Done ##### #
 
         self.execute((current_position, current_linear_vel, current_orientation_q, current_angular_vel),
                      (target_position, target_linear_vel, target_orientation_q, target_angular_vel), self.state_history)
 
-    def execute(self, (current_position, current_linear_vel, current_orientation_q, current_angular_vel),
-                (target_position, target_linear_vel, target_orientation_q, target_angular_vel), state_history):
+    def execute(self, xxx_todo_changeme, xxx_todo_changeme1, state_history):
         '''This is the default 'execute' implementation
            Your code should implement this method
         '''
+        (current_position, current_linear_vel, current_orientation_q, current_angular_vel) = xxx_todo_changeme
+        (target_position, target_linear_vel, target_orientation_q, target_angular_vel) = xxx_todo_changeme1
         orientation_est = transformations.quaternion_matrix(current_orientation_q)[:3, :3]
 
         error_position = target_position - current_position

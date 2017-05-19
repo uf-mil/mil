@@ -22,7 +22,7 @@ def get_threshold(parameter_basename, prefix='bgr'):
             bounds.append(np.array(param_value))
 
     if len(bounds) < 2:
-        raise(KeyError("Could not find parameter starting with {} with prefix {}".format(parameter_basename, prefix)))
+        raise KeyError
 
     vals = np.vstack(bounds)
     upper_bound = np.max(vals, axis=0)
@@ -39,7 +39,7 @@ def param_thresh(rgb_image, parameter_basename, prefer='bgr'):
     elif prefer == 'hsv':
         thresh_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2HSV)
     else:
-        raise(TypeError("You did not choose bgr or hsv, how am I supposed to handle that?"))
+        raise TypeError
 
     _range = get_threshold(parameter_basename)
     color_mask = cv2.inRange(thresh_image, _range[:, 0], _range[:, 1])

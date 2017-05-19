@@ -10,6 +10,7 @@ import txros
 
 
 class Job(object):
+
     """Inherit from this!"""
     _job_name = 'generic job'
 
@@ -33,12 +34,12 @@ class Job(object):
     @txros.util.cancellableInlineCallbacks
     def setup(self):
         """Set up for a single test (And undo any shenanigans done by the previous test)"""
-        raise(NotImplementedError())
+        raise NotImplementedError
 
     @txros.util.cancellableInlineCallbacks
     def run(self, sub):
         """Run your tests"""
-        raise(NotImplementedError())
+        raise NotImplementedError
 
     @txros.util.cancellableInlineCallbacks
     def set_model_position(self, position, model='sub8'):

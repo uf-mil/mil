@@ -9,7 +9,8 @@ import mil_ros_tools
 
 if __name__ == '__main__':
 
-    usage_msg = ("Pass the path to a bag, the start of an image sequence, or 'video' for a webcam to play through the media and look for the learned object.")
+    usage_msg = (
+        "Pass the path to a bag, the start of an image sequence, or 'video' for a webcam to play through the media and look for the learned object.")
     desc_msg = "glhf"
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
@@ -17,7 +18,7 @@ if __name__ == '__main__':
                         help="Pass the path to a bag, the start of an image sequence, or 'video' for a webcam.")
     parser.add_argument(dest='classifer', type=str, help="Name of the classifer to use.")
     parser.add_argument('--topic', type=str, help="Name of the topic to use in a bag or the usb camera number.")
-    
+
     args = parser.parse_args(sys.argv[1:])
 
     clf = cv2.Boost()
@@ -30,7 +31,7 @@ if __name__ == '__main__':
         bc = b.BagCrawler(file_name)
         print bc.image_topics[0]
     else:
-        import sub8_vision_tools.labelling.image_crawler        
+        import sub8_vision_tools.labelling.image_crawler
         if file_name == 'video':
             bc = image_crawler.VideoCrawler(file_name, args.topic)
         else:

@@ -2,6 +2,7 @@ import rospy
 from ros_alarms import HandlerBase
 from mil_msgs.srv import BaggerCommands
 
+
 class Kill(HandlerBase):
     alarm_name = 'kill'
     initally_raised = True
@@ -27,8 +28,8 @@ class Kill(HandlerBase):
         kill_topics = camera + navigation + controller + blueview
         try:
             bag_status = self.bagging_server(bag_name='kill_bag', bag_time=60, topics=kill_topics)
-        except rospy.ServiceException, e:
-            print "/online_bagger service failed: %s" %e
+        except rospy.ServiceException as e:
+            print "/online_bagger service failed: %s" % e
 
     def meta_predicate(self, meta_alarm, sub_alarms):
         ignore = []
@@ -46,18 +47,17 @@ class Kill(HandlerBase):
             return True
         ignore.append("odom-kill")
 
-
         # If we lose network but don't want to go autonomous
         if sub_alarms["network-loss"].raised and not rospy.get_param("autonomous", False):
             return True
         ignore.append("network-loss")
 
-        # Severity level of 5 means too many thrusters out 
+        # Severity level of 5 means too many thrusters out
         if sub_alarms["thruster-out"].raised and sub_alarms["thruster-out"].severity == 5:
             return True
         ignore.append("thruster-out")
 
-        # If a mission wants us to kill, go ahead and kill 
+        # If a mission wants us to kill, go ahead and kill
         if sub_alarms["mission-kill"].raised:
             self._last_mission_killed = True
             return True
@@ -68,8 +68,7 @@ class Kill(HandlerBase):
             if not self._killed:
                 return False
         ignore.append("mission-kill")
-        
-        # Raised if any alarms besides the two above are raised
-        return any([alarm.raised for name, alarm in sub_alarms.items() \
-                    if name not in ignore])
 
+        # Raised if any alarms besides the two above are raised
+        return any([alarm.raised for name, alarm in sub_alarms.items()
+                    if name not in ignore])
