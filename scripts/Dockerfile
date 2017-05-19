@@ -12,6 +12,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y install sudo \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y install lsb-release \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y install git \
+	&& DEBIAN_FRONTEND=noninteractive apt-get -y install wget \
+	&& DEBIAN_FRONTEND=noninteractive apt-get -y install python-flake8 \
+	&& DEBIAN_FRONTEND=noninteractive apt-get -y install clang-format-3.8 \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y autoremove --purge \
 	&& apt-get -y clean \
 	&& rm -rf /var/lib/apt/lists/* \
