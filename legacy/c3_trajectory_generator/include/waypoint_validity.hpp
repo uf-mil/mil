@@ -30,5 +30,5 @@ public:
   void ogrid_callback(const nav_msgs::OccupancyGridConstPtr &ogrid_map);
 
   // Usage: Given a waypoint or trajectory, check what it will hit on the ogrid.
-  std::pair<bool, WAYPOINT_ERROR_TYPE> is_waypoint_valid(const geometry_msgs::Pose &waypoint);
+  std::pair<bool, WAYPOINT_ERROR_TYPE> is_waypoint_valid(const geometry_msgs::Pose &waypoint, bool do_waypoint_validation);
 };

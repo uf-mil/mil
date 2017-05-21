@@ -194,14 +194,14 @@ struct Node
     {
       boost::shared_ptr<const mil_msgs::MoveToGoal> goal = actionserver.acceptNewGoal();
       current_waypoint = subjugator::C3Trajectory::Waypoint(
-          Point_from_PoseTwist(goal->posetwist.pose, goal->posetwist.twist), goal->speed, !goal->uncoordinated);
+          Point_from_PoseTwist(goal->posetwist.pose, goal->posetwist.twist), goal->speed, !goal->uncoordinated, goal->do_waypoint_validation);
       current_waypoint_t = now;
       this->linear_tolerance = goal->linear_tolerance;
       this->angular_tolerance = goal->angular_tolerance;
 
       // Check if waypoint is valid
       std::pair<bool, WAYPOINT_ERROR_TYPE> checkWPResult =
-          waypoint_validity_.is_waypoint_valid(Pose_from_Waypoint(current_waypoint));
+          waypoint_validity_.is_waypoint_valid(Pose_from_Waypoint(current_waypoint), current_waypoint.do_waypoint_validation);
       if (checkWPResult.first == false)  // got a point that we should not move to
       {
         if (checkWPResult.second ==
@@ -222,11 +222,18 @@ struct Node
           ROS_ERROR("can't move there! - waypoint is occupied");
           current_waypoint = old_waypoint;
         }
+        // if point is above water, reject move
+        if (checkWPResult.second == WAYPOINT_ERROR_TYPE::ABOVE_WATER)
+        {
+          ROS_ERROR("can't move there! - waypoint is above water");
+          current_waypoint = old_waypoint;
+        }
       }
     }
     if (actionserver.isPreemptRequested())
     {
       current_waypoint = c3trajectory->getCurrentPoint();
+      current_waypoint.do_waypoint_validation = c3trajectory->do_waypoint_validation;
       current_waypoint.r.qdot = subjugator::Vector6d::Zero();  // zero velocities
       current_waypoint_t = now;
 
@@ -251,11 +258,12 @@ struct Node
     quaternionTFToMsg(tf::createQuaternionFromRPY(p.q[3], p.q[4], p.q[5]), traj_point.orientation);
 
     std::pair<bool, WAYPOINT_ERROR_TYPE> checkWPResult =
-        waypoint_validity_.is_waypoint_valid(Pose_from_Waypoint(current_waypoint));
+        waypoint_validity_.is_waypoint_valid(Pose_from_Waypoint(p), c3trajectory->do_waypoint_validation);
     if (checkWPResult.first == false && checkWPResult.second == WAYPOINT_ERROR_TYPE::OCCUPIED)
     {  // New trajectory will hit an occupied goal, so reject
       ROS_ERROR("can't move there! - bad trajectory");
       current_waypoint = old_trajectory;
+      current_waypoint = c3trajectory->do_waypoint_validation;
       current_waypoint.r.qdot = subjugator::Vector6d::Zero();  // zero velocities
       current_waypoint_t = now;
 
