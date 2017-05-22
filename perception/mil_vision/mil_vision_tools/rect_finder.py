@@ -70,50 +70,29 @@ class RectFinder(object):
 
         @param debug_image if not None, puts a circle and text of the index in each corner
 
-        p[0] = Top left corner of marker         0--1     1--------2
-        p[1] = Top right corner of marker        |  |  or |        |
-        p[2] = Bottom right corner of marker     |  |     0--------3
-        p[3] = Bottom left cornet of marker      3--2
+        p[0] = Top left corner         0--1     1--------2
+        p[1] = Top right corner        |  |  or |        |
+        p[2] = Bottom right corner     |  |     0--------3
+        p[3] = Bottom left corner      3--2
 
-        The implementation of this is a little bit of magic, and there may be an easier way
-        to do this. For now you can just see it as a black box, which takes four corners
-        of the path marker and returns the same four corners in a known order
+        Credit to David Soto for this implementation.
         '''
         if rect.shape != (rect.shape[0], 2):
+            M = cv2.moments(rect)
             rect = np.reshape(rect, (rect.shape[0], 2))
-        sorted_x = np.argsort(rect[:,0])
-        sorted_y = np.argsort(rect[:,1])
-        # Wrap index around from 3 to 0
-        def ind_next(i):
-            if i >= 3:
-              return 0
-            return i+1
-        # Given two correct corner indexes, get other 2
-        def get_two(a, b):
-            if a - b == 1: # Ex: (1,0) -> (3,2)
-                return (ind_next(ind_next(a)), ind_next(a))
-            elif a - b == -1: # Ex: (0, 1) -> (2,3)
-                return (ind_next(b), ind_next(ind_next(b)))
-            elif a - b == 3:
-                return (1,2)
-            elif a - b == -3:
-                return (2,1)
-
-        # Horizontal orientation
-        if np.linalg.norm(rect[sorted_y[0]] - rect[sorted_y[1]]) >  np.linalg.norm(rect[sorted_y[0]] - rect[sorted_y[2]]):
-            # If 1 is lower than 0, reverse
-            if rect[sorted_x[1]][1] > rect[sorted_x[0]][1]:
-                sorted_x[0], sorted_x[1] = sorted_x[1].copy(), sorted_x[0].copy()
-            next_two = get_two(sorted_x[0], sorted_x[1])
-            sorted_x[2], sorted_x[3] = next_two[0], next_two[1]
-            rect = np.array([rect[sorted_x[0]], rect[sorted_x[1]], rect[sorted_x[2]], rect[sorted_x[3]]])
         else:
-            # If 1 is to the left of zero, reverse
-            if rect[sorted_y[0]][0] > rect[sorted_y[1]][0]:
-                sorted_y[0], sorted_y[1] = sorted_y[1].copy(), sorted_y[0].copy()
-            next_two = get_two(sorted_y[0], sorted_y[1])
-            sorted_y[2], sorted_y[3] = next_two[0], next_two[1]
-            rect = np.array([rect[sorted_y[0]], rect[sorted_y[1]], rect[sorted_y[2]], rect[sorted_y[3]]])
+            temp = rect.reshape(rect.shape[0], 1, 2)
+            M = cv2.moments(temp)
+        centroid = np.array((int(M['m10']/M['m00']), int(M['m01']/M['m00'])))
+        vectors = rect - centroid
+        atan = np.arctan2( vectors[:,1], vectors[:,0] )
+        atan_indicies = np.argsort(atan)
+        # Sort by arctan formed by vector from centroid to each point
+        rect = rect[atan_indicies]
+        # If rect is horizontal, correct indicies as noted above
+        if np.linalg.norm(rect[0] - rect[1]) > np.linalg.norm(rect[0] - rect[3]):
+              rect = rect[[3, 0, 1, 2]]
+        # Print indicies onto image if debug_image is given
         if debug_image is not None:
             for i, pixel in enumerate(rect):
                 center = (int(pixel[0]), int(pixel[1]))
