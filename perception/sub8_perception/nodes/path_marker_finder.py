@@ -12,6 +12,8 @@ from mil_ros_tools import numpy_quat_pair_to_pose, numpy_to_point, numpy_matrix_
 from mil_ros_tools import Image_Publisher, Image_Subscriber
 from image_geometry import PinholeCameraModel
 from visualization_msgs.msg import Marker
+from mil_msgs.srv import SetGeometry, SetGeometryResponse
+from mil_vision_tools import RectFinder
 
 __author__ = "Kevin Allen"
 
@@ -20,9 +22,9 @@ class PathMarkerFinder():
     Node which finds orange path markers in image frame, 
     estimates the 2d and 3d position/orientation of marker
     and returns this estimate when service is called.
-    
+
     Unit tests for this node is in test_path_marker.py
-    
+
     Finding the marker works as follows:
     * blur image
     * threshold image mostly for highly saturated, orange/yellow/red objects
@@ -38,25 +40,6 @@ class PathMarkerFinder():
     
     TODO: Allow for two path markers identifed at once, both filtered through its own KF
     """
-    # Model of four corners of path marker, centered around 0 in meters
-    LENGTH = 0.6096 # Longer side of path marker in meters
-    WIDTH = 0.0762 # Shorter Side
-
-    # Demensions of the prop we made for testing
-    # LENGTH = 0.4572
-    # WIDTH = 0.05715
-
-    PATH_MARKER = np.array([[LENGTH,  -WIDTH, 0],
-                            [LENGTH,  WIDTH,  0],
-                            [-LENGTH,  WIDTH, 0],
-                            [-LENGTH, -WIDTH, 0]], dtype=np.float)
-
-    # Scale model of marker as a cv2 contour, for use in cv2.matchShape
-    PATH_MARKER_2D = np.array([[[0, 0]],
-                               [[WIDTH*10000, 0]],
-                               [[WIDTH*10000, LENGTH*10000]],
-                               [[0, LENGTH*10000]]], dtype=np.int)
-
     # Coordinate axes for debugging image
     REFERENCE_POINTS = np.array([[0, 0, 0],
                                  [0.3, 0, 0],
@@ -64,13 +47,8 @@ class PathMarkerFinder():
                                  [0, 0, 0.3]], dtype=np.float)
     def __init__(self):
         self.debug_gui = False
-        self.last2d = None
-        self.last3d = None
         self.enabled = False
         self.cam = None
-        self.last_image = None
-        self.last_found_time_2D = None
-        self.last_found_time_3D = None
 
         # Constants from launch config file
         self.debug_ros = rospy.get_param("~debug_ros", True)
@@ -79,11 +57,13 @@ class PathMarkerFinder():
         self.thresh_hue_high = rospy.get_param("~thresh_hue_high", 60)
         self.thresh_saturation_low = rospy.get_param("~thresh_satuation_low", 100)
         self.min_contour_area = rospy.get_param("~min_contour_area", 100)
-        self.length_width_ratio_err = rospy.get_param("~length_width_ratio_err", 0.2)
-        self.approx_polygon_thresh = rospy.get_param("~approx_polygon_thresh", 10)
+        self.epsilon_factor = rospy.get_param("~epsilon_factor", 0.02)
         self.shape_match_thresh = rospy.get_param("~shape_match_thresh", 0.4)
         self.min_found_count = rospy.get_param("~min_found_count", 10)
         self.timeout_seconds = rospy.get_param("~timeout_seconds", 2.0)
+        length = rospy.get_param("~length", 1.2192)
+        width = rospy.get_param("~width", 0.1524)
+        self.rect_model = RectFinder(length, width)
         self.do_3D = rospy.get_param("~do_3D", True)
         camera = rospy.get_param("~marker_camera", "/camera/down/left/image_rect_color")
 
@@ -97,8 +77,9 @@ class PathMarkerFinder():
         self.filter.processNoiseCov = 1e-5 * np.eye(self.state_size, dtype=np.float32)
         self.filter.measurementNoiseCov = 1e-4 * np.eye(self.state_size, dtype=np.float32)
         self.filter.errorCovPost = 1.* np.eye(self.state_size, dtype=np.float32)
-        self._clear_filter(None)
 
+        self.reset()
+        self.service_set_geometry = rospy.Service('/vision/path_marker/set_geometry', SetGeometry, self._set_geometry_cb)
         if self.debug_ros:
             self.debug_pub = Image_Publisher("~debug_image")
             self.markerPub = rospy.Publisher('~path_marker_visualization', Marker, queue_size=10)
@@ -106,10 +87,17 @@ class PathMarkerFinder():
         if self.do_3D:
             self.service3D = rospy.Service('/vision/path_marker/pose', VisionRequest, self._vision_cb_3D)
         self.toggle = rospy.Service('/vision/path_marker/enable', SetBool, self._enable_cb)
+
         self.image_sub = Image_Subscriber(camera, self._img_cb)
         camera_info = self.image_sub.wait_for_camera_info()
         self.cam = PinholeCameraModel()
         self.cam.fromCameraInfo(camera_info)
+
+    def _set_geometry_cb(self, req):
+        self.rect_model = RectFinder.from_polygon(req.model)
+        self.reset()
+        rospy.loginfo("Resetting rectangle model to LENGTH=%f, WIDTH=%f", self.rect_model.length, self.rect_model.width)
+        return {'success': True}
 
     def _send_debug_marker(self):
         '''
@@ -142,63 +130,10 @@ class PathMarkerFinder():
 
     def _enable_cb(self, x):
         if x.data != self.enabled:
-            self._clear_filter(None)
+            self.reset()
+            self.tf_listener.clear()
         self.enabled = x.data
         return SetBoolResponse(success=True)
-
-    def _sort_rect(self, rect):
-        '''
-        Given a contour of 4 points, returns the same 4 points sorted in a known way.
-        Used so that indicies of contour line up to that in model for cv2.solvePnp
-        p[0] = Top left corner of marker         0--1
-        p[1] = Top right corner of marker        |  |
-        p[2] = Bottom right corner of marker     |  |
-        p[3] = Bottom left cornet of marker      3--2
-
-        The implementation of this is a little bit of magic, and there may be an easier way
-        to do this. For now you can just see it as a black box, which takes four corners
-        of the path marker and returns the same four corners in a known order
-        '''
-        rect = np.reshape(rect, (rect.shape[0], 2))
-        sorted_x = np.argsort(rect[:,0])
-        sorted_y = np.argsort(rect[:,1])
-        # Wrap index around from 3 to 0
-        def ind_next(i):
-            if i >= 3:
-              return 0
-            return i+1
-        # Given two correct corner indexes, get other 2
-        def get_two(a, b):
-            if a - b == 1: # Ex: (1,0) -> (3,2)
-                return (ind_next(ind_next(a)), ind_next(a))
-            elif a - b == -1: # Ex: (0, 1) -> (2,3)
-                return (ind_next(b), ind_next(ind_next(b)))
-            elif a - b == 3:
-                return (1,2)
-            elif a - b == -3:
-                return (2,1)
-
-        # Horizontal orientation
-        if np.linalg.norm(rect[sorted_y[0]] - rect[sorted_y[1]]) >  np.linalg.norm(rect[sorted_y[0]] - rect[sorted_y[2]]):
-            # If 1 is lower than 0, reverse
-            if rect[sorted_x[1]][1] > rect[sorted_x[0]][1]:
-                sorted_x[0], sorted_x[1] = sorted_x[1].copy(), sorted_x[0].copy()
-            next_two = get_two(sorted_x[0], sorted_x[1])
-            sorted_x[2], sorted_x[3] = next_two[0], next_two[1]
-            rect = np.array([rect[sorted_x[0]], rect[sorted_x[1]], rect[sorted_x[2]], rect[sorted_x[3]]])
-        else:
-            # If 1 is to the left of zero, reverse
-            if rect[sorted_y[0]][0] > rect[sorted_y[1]][0]:
-                sorted_y[0], sorted_y[1] = sorted_y[1].copy(), sorted_y[0].copy()
-            next_two = get_two(sorted_y[0], sorted_y[1])
-            sorted_y[2], sorted_y[3] = next_two[0], next_two[1]
-            rect = np.array([rect[sorted_y[0]], rect[sorted_y[1]], rect[sorted_y[2]], rect[sorted_y[3]]])
-        if self.debug_ros:
-            for i, pixel in enumerate(rect):
-                center = (int(pixel[0]), int(pixel[1]))
-                cv2.circle(self.last_image, center, 5, (0, 255, 0), -1)
-                cv2.putText(self.last_image, str(i), center, cv2.FONT_HERSHEY_SCRIPT_COMPLEX,1, (0,0,255))
-        return rect
 
     def _vision_cb_3D(self, req):
         res = VisionRequestResponse()
@@ -217,7 +152,7 @@ class PathMarkerFinder():
             res.pose.pose.orientation = numpy_to_quaternion(self.last3d[1])
             res.found = True
         return res
-    
+
     def _vision_cb_2D(self, req):
         res = VisionRequest2DResponse()
         if (self.last2d == None or not self.enabled):
@@ -234,6 +169,13 @@ class PathMarkerFinder():
             res.pose.theta = angle
             res.found = True
         return res
+
+    def reset(self):
+        self.last_found_time_2D = None
+        self.last_found_time_3D = None
+        self.last2d = None
+        self.last3d = None
+        self._clear_filter(None)
 
     def _clear_filter(self, state):
         '''
@@ -262,8 +204,8 @@ class PathMarkerFinder():
             return
         dt = (self.image_sub.last_image_time - self.last_found_time_3D).to_sec()
         self.last_found_time_3D = self.image_sub.last_image_time
-        if dt <= 0 or dt > self.timeout_seconds:
-            rospy.logwarn("Timed out since last saw marker, resetting")
+        if dt < 0 or dt > self.timeout_seconds:
+            rospy.logwarn("Timed out since last saw marker, resetting. DT={}".format(dt))
             self._clear_filter((x, y, z, dy, dx))
             return
 
@@ -279,13 +221,13 @@ class PathMarkerFinder():
                   rospy.loginfo("Marker Found")
               self.found = True
 
-    def _get_pose_3D(self, p):
-        i_points = np.array(p,dtype=np.float)
-        # Use camera intrinsics and knowledge of marker's real demensions to get a pose estimate in camera frame
-        _, rvec, tvec =  cv2.solvePnP(PathMarkerFinder.PATH_MARKER, i_points, self.cam.intrinsicMatrix(), np.zeros((5,1)))
+    def _get_pose_3D(self, corners):
+        tvec, rvec = self.rect_model.get_pose_3D(corners, cam=self.cam, rectified=True)
         if tvec[2][0] < 0.3: # Sanity check on position estimate
             rospy.logwarn("Marker too close, must be wrong...")
             return False
+        rmat, _ = cv2.Rodrigues(rvec)
+        vec = rmat.dot(np.array([1, 0 , 0]))
 
         # Convert position estimate and 2d direction vector to messages to they can be transformed
         ps = PointStamped()
@@ -293,8 +235,8 @@ class PathMarkerFinder():
         ps.header.stamp = self.image_sub.last_image_time
         ps.point = Point(*tvec)
         vec3 = Vector3Stamped()
-        vec3.vector.x = self.last2d[1][0]
-        vec3.vector.y = self.last2d[1][1]
+        vec3.vector.x = vec[0]
+        vec3.vector.y = vec[1]
         vec3.header.frame_id = self.cam.tfFrame()
         vec3.header.stamp = self.image_sub.last_image_time
         map_vec3 = None
@@ -302,7 +244,7 @@ class PathMarkerFinder():
 
         # Transform pose estimate to map frame
         try:
-            self.tf_listener.waitForTransform('/map', ps.header.frame_id, ps.header.stamp, rospy.Duration(0.05))
+            self.tf_listener.waitForTransform('/map', ps.header.frame_id, ps.header.stamp, rospy.Duration(0.1))
             map_ps = self.tf_listener.transformPoint('/map', ps)
             map_vec3 = self.tf_listener.transformVector3('/map', vec3)
         except tf.Exception as err:
@@ -327,23 +269,6 @@ class PathMarkerFinder():
             self._send_debug_marker()
         return True
 
-    def _get_pose_2D(self, r):
-        '''
-        Given a sorted 4 sided polygon, stores the centroid and angle
-        for the next service call to get 2dpose.
-        '''
-        top_center = (r[1]+r[0])/2.0
-        bot_center = (r[2]+r[3])/2.0
-        vector = top_center - bot_center
-        vector = vector / np.linalg.norm(vector)
-        center = bot_center + (top_center - bot_center)/2.0
-        vector = top_center - bot_center
-        vector = vector/np.linalg.norm(vector)
-        # Store last2d as a center pixel point and unit direction vector
-        self.last2d = (center, vector)
-        self.last_found_time_2D = self.image_sub.last_image_time
-        return True
-
     def _is_valid_contour(self, contour):
         '''
         Does various tests to filter out contours that are clearly not
@@ -353,18 +278,17 @@ class PathMarkerFinder():
         '''
         if cv2.contourArea(contour) < self.min_contour_area:
             return False
-        match_shapes = cv2.matchShapes(contour, PathMarkerFinder.PATH_MARKER_2D, 3, 0.0)
-        if match_shapes > self.shape_match_thresh :
+        match = self.rect_model.verify_contour(contour)
+        if match > self.shape_match_thresh:
             return False
         # Checks that contour is 4 sided
-        polygon = cv2.approxPolyDP(contour, self.approx_polygon_thresh, True)
-        if len(polygon) != 4:
+        corners = self.rect_model.get_corners(contour, epsilon_factor=self.epsilon_factor, debug_image=self.last_image)
+        if corners is None:
             return False
-        rect = self._sort_rect(polygon)
-        if not self._get_pose_2D(rect):
-            return False
+        self.last2d = self.rect_model.get_pose_2D(corners)
+        self.last_found_time_2D = self.image_sub.last_image_time
         if self.do_3D:
-            if not self._get_pose_3D(rect):
+            if not self._get_pose_3D(corners):
                 return False
         return True
 
