@@ -8,6 +8,7 @@ from txros import util
 from sub8 import Searcher
 from mil_ros_tools import pose_to_numpy, rosmsg_to_numpy
 from mil_misc_tools import text_effects
+from mil_vision_tools import RectFinder
 import numpy as np
 
 SEARCH_DEPTH = .65
@@ -18,6 +19,14 @@ FACE_FORWARD=True
 SPEED = 0.5
 MISSION="Align Path Marker"
 
+# Model of four corners of path marker, centered around 0 in meters
+LENGTH = 1.2192 # Longer side of path marker in meters
+WIDTH = 0.1524 # Shorter Side
+
+# Demensions of the prop we made for testing
+# LENGTH = LENGTH*0.75
+# WIDTH = WIDTH*0.75
+
 forward_vec = np.array([1, 0, 0, 0])
 @util.cancellableInlineCallbacks
 def run(sub):
@@ -25,6 +34,11 @@ def run(sub):
     print_bad = text_effects.FprintFactory(title=MISSION, msg_color="red").fprint
     print_good = text_effects.FprintFactory(title=MISSION, msg_color="green").fprint
     print_info("STARTING")
+
+    # Set geometry of marker model
+    print_info("SETTING GEOMETRY")
+    polygon = RectFinder(LENGTH, WIDTH).to_polygon()
+    sub.vision_proxies.path_marker.set_geometry(polygon)
 
     # Wait for vision services, enable perception
     print_info("ACTIVATING PERCEPTION SERVICE")

@@ -4,7 +4,11 @@ canny_ratio: 3.0
 thresh_hue_high: 60
 thresh_satuation_low: 100
 min_contour_area: 100
-length_width_ratio_err: 0.2
-approx_polygon_thresh: 10
+epsilon_factor: 0.02
 shape_match_thresh: 0.4
+min_found_count: 10
+timeout_seconds: 2.0
+length: 1.2192
+width: 0.1524
+do_3D: True
 marker_camera: "/camera/down/left/image_rect_color"
