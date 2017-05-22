@@ -18,15 +18,15 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include "pcl_ros/point_cloud.h"
+#include <pcl_ros/point_cloud.h>
 
 #include <boost/circular_buffer.hpp>
 
 #include <sub8_msgs/Bounds.h>
 
-#include "OGridRegionType.hpp"
+#include <waypoint_validity.hpp>
 
-#include "Classification.hpp"
+#include <Classification.hpp>
 
 class OGridGen
 {

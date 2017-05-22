@@ -28,7 +28,7 @@ cv::Point2d Classification::get_first_hit(cv::Mat &mat_ogrid, cv::Point2d start,
   for (int i = 0; i < max_dis; ++i)
   {
     cv::Point2d p_on_ray = vec_d_theta * i + start;
-    if (mat_ogrid.at<uchar>(p_on_ray.y, p_on_ray.x) == OCCUPIED)
+    if (mat_ogrid.at<uchar>(p_on_ray.y, p_on_ray.x) == (uchar)WAYPOINT_ERROR_TYPE::OCCUPIED)
     {
       return p_on_ray;
     }
@@ -41,9 +41,9 @@ void Classification::fake_ogrid(cv::Mat &mat_ogrid, float resolution, const tf::
   // Sub's position relative to the ogrid
   cv::Point where_sub = cv::Point2d(transform.getOrigin().x() / resolution + mat_ogrid.cols / 2,
                                     transform.getOrigin().y() / resolution + mat_ogrid.rows / 2);
-  cv::rectangle(mat_ogrid, cv::Point(-10, -10) + where_sub, cv::Point(15, 10) + where_sub, cv::Scalar(OCCUPIED), 2);
+  cv::rectangle(mat_ogrid, cv::Point(-10, -10) + where_sub, cv::Point(15, 10) + where_sub, cv::Scalar((uchar)WAYPOINT_ERROR_TYPE::OCCUPIED), 2);
   cv::rectangle(mat_ogrid, cv::Point(-5, -5) + where_sub, cv::Point(12, 5) + where_sub, cv::Scalar(0), -1);
-  cv::rectangle(mat_ogrid, cv::Point(5, -2) + where_sub, cv::Point(7, 0) + where_sub, cv::Scalar(OCCUPIED), -1);
+  cv::rectangle(mat_ogrid, cv::Point(5, -2) + where_sub, cv::Point(7, 0) + where_sub, cv::Scalar((uchar)WAYPOINT_ERROR_TYPE::OCCUPIED), -1);
 }
 
 /*
@@ -69,5 +69,5 @@ void Classification::zonify(cv::Mat &mat_ogrid, float resolution, const tf::Stam
 
   const cv::Point *pts = (const cv::Point *)cv::Mat(intersections).data;
   int npts = cv::Mat(intersections).rows;
-  cv::fillPoly(mat_ogrid, &pts, &npts, 1, cv::Scalar(UNOCCUPIED));
+  cv::fillPoly(mat_ogrid, &pts, &npts, 1, cv::Scalar((uchar)WAYPOINT_ERROR_TYPE::UNOCCUPIED));
 }

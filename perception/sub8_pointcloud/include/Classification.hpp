@@ -25,7 +25,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <geometry_msgs/Point.h>
 
-#include "OGridRegionType.hpp"
+#include <waypoint_validity.hpp> // C3
 
 class Classification
 {

@@ -1,10 +1,11 @@
+#pragma once
 #include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/OccupancyGrid.h>
 
 #include <opencv2/core/core.hpp>
 
-enum WAYPOINT_ERROR_TYPE
+enum class WAYPOINT_ERROR_TYPE
 {
   OCCUPIED = 99,
   UNKNOWN = 50,

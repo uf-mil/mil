@@ -7,7 +7,7 @@ bool WaypointValidity::check_if_hit(cv::Point center, cv::Size sub_size)
   {
     for (int y = center.y - sub_size.height / 2; y < center.y + sub_size.height / 2; ++y)
     {
-      if (ogrid_map_->data.at(x + y * ogrid_map_->info.width) == (uchar)OCCUPIED)
+      if (ogrid_map_->data.at(x + y * ogrid_map_->info.width) == (uchar)WAYPOINT_ERROR_TYPE::OCCUPIED)
       {
         return true;
       }
@@ -25,16 +25,16 @@ void WaypointValidity::ogrid_callback(const nav_msgs::OccupancyGridConstPtr &ogr
 // Returns a bool that represents if the move is safe, and an error
 std::pair<bool, WAYPOINT_ERROR_TYPE> WaypointValidity::is_waypoint_valid(const geometry_msgs::Pose &waypoint, bool do_waypoint_validation)
 {
-  if(!do_waypoint_validation) return std::make_pair(true, UNKNOWN);
+  if(!do_waypoint_validation) return std::make_pair(true, WAYPOINT_ERROR_TYPE::UNKNOWN);
   if (waypoint.position.z > 0.2)
   {
-    return std::make_pair(false, ABOVE_WATER);
+    return std::make_pair(false, WAYPOINT_ERROR_TYPE::ABOVE_WATER);
   }
 
   if(!this->ogrid_map_)
   {
     ROS_ERROR("WaypointValidity - Did not recieve any ogrid");
-    return std::make_pair(false, NO_OGRID);
+    return std::make_pair(false, WAYPOINT_ERROR_TYPE::NO_OGRID);
   }
 
   cv::Point where_sub = cv::Point(waypoint.position.x / ogrid_map_->info.resolution + ogrid_map_->info.width / 2,
@@ -45,15 +45,15 @@ std::pair<bool, WAYPOINT_ERROR_TYPE> WaypointValidity::is_waypoint_valid(const g
   int sub_y = 1 / ogrid_map_->info.resolution;
   if (check_if_hit(where_sub, cv::Size(sub_x, sub_y)))
   {
-    return std::make_pair(false, OCCUPIED);
+    return std::make_pair(false, WAYPOINT_ERROR_TYPE::OCCUPIED);
   }
 
-  if (ogrid_map_->data.at(where_sub.x + where_sub.y * ogrid_map_->info.width) == (uchar)UNKNOWN)
+  if (ogrid_map_->data.at(where_sub.x + where_sub.y * ogrid_map_->info.width) == (uchar)WAYPOINT_ERROR_TYPE::UNKNOWN)
   {
-    return std::make_pair(false, UNKNOWN);
+    return std::make_pair(false, WAYPOINT_ERROR_TYPE::UNKNOWN);
   }
 
-  return std::make_pair(true, UNOCCUPIED);
+  return std::make_pair(true, WAYPOINT_ERROR_TYPE::UNOCCUPIED);
 }
 
 WaypointValidity::WaypointValidity(ros::NodeHandle &nh)
