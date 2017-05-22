@@ -263,7 +263,7 @@ struct Node
     {  // New trajectory will hit an occupied goal, so reject
       ROS_ERROR("can't move there! - bad trajectory");
       current_waypoint = old_trajectory;
-      current_waypoint = c3trajectory->do_waypoint_validation;
+      current_waypoint.do_waypoint_validation = c3trajectory->do_waypoint_validation;
       current_waypoint.r.qdot = subjugator::Vector6d::Zero();  // zero velocities
       current_waypoint_t = now;
 

@@ -38,7 +38,7 @@ def main(args):
         yield sub.tx_pose()
         fprint("Odom found!", msg_color='green')
 
-        action_kwargs = {'speed': float(args.speed)}
+        action_kwargs = {'speed': float(args.speed), 'blind': bool(args.blind)}
 
         if command == 'custom':
             # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
@@ -92,6 +92,8 @@ if __name__ == '__main__':
         help="How fast to execute the move. (m/s)")
     parser.add_argument('-z', '--zrp', action='store_true',
         help="Make end goal have zero roll and pitch.")
+    parser.add_argument('-b', '--blind', action='store_true',
+        help="Do not check if waypoint is safe.")
     args = parser.parse_args()
 
     reactor.callWhenRunning(lambda: main(args))
