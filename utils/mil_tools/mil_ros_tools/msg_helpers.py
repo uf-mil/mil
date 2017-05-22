@@ -9,7 +9,7 @@ import rospy
 def rosmsg_to_numpy(rosmsg, keys=None):
     '''Convert an arbitrary ROS msg to a numpy array
     With no additional arguments, it will by default handle:
-        Point2D, Point3D, Vector3D, and quaternions
+        Point2D, Point3D, Vector3D, Quaternion and any lists of these (like Polygon)
 
     Ex:
         quat = Quaternion(1.0, 0.0, 0.0, 0.0)
@@ -31,6 +31,14 @@ def rosmsg_to_numpy(rosmsg, keys=None):
         - This function is designed to handle the most common use cases (vectors, points and quaternions)
             without requiring any additional arguments.
     '''
+
+    # Recurse for lists like geometry_msgs/Polygon, Pointclou
+    if type(rosmsg) == list:
+        output_array = []
+        for item in rosmsg:
+            output_array.append(rosmsg_to_numpy(item, keys=keys))
+        return np.array(output_array).astype(np.float32)
+
     if keys is None:
         keys = ['x', 'y', 'z', 'w']
         output_array = []
@@ -142,6 +150,11 @@ def numpy_quat_pair_to_pose(np_translation, np_quaternion):
     position = numpy_to_point(np_translation)
     return geometry_msgs.Pose(position=position, orientation=orientation)
 
+def numpy_to_polygon(polygon):
+    points = []
+    for point in polygon:
+        points.append(numpy_to_point(point))
+    return geometry_msgs.Polygon(points=points)
 
 def make_header(frame='/body', stamp=None):
     if stamp is None:
