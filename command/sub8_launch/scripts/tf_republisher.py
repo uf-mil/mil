@@ -3,6 +3,7 @@
 import rospy
 import tf
 from mil_msgs.msg import RangeStamped
+import mil_misc_tools.text_effects as te
 
 
 def got_range(msg):
@@ -13,7 +14,11 @@ def got_range(msg):
     if rospy.Time.now() < rospy.Time(0.5):
         listener.clear()
     t = rospy.Time(0)
-    trans, rot = listener.lookupTransform("/base_link", "/map", t)
+    try:
+        listener.waitForTransform('/base_link', '/map', t, rospy.Duration(1))
+        trans, rot = listener.lookupTransform("/base_link", "/map", t)
+    except (tf.Exception, tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
+        te.fprint(e, title='TF REPUB')
 
     bc.sendTransform(translation, rot, rospy.Time.now(), "/ground", "/dvl")
 
