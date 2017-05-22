@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import cv2
+# Ensure opencv3 is used, needed for KalmanFilter
+assert cv2.__version__[0] == '3'
 import numpy as np
 import rospy
 import tf
