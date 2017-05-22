@@ -312,6 +312,38 @@ class Searcher(object):
 
             yield self.sub.nh.sleep(.5)
 
+class PoseSequenceCommander(object):
+    def __init__(self, sub):
+        self.sub = sub
+
+    @util.cancellableInlineCallbacks
+    def go_to_sequence_eulers(self, positions, orientations, speed=0.2):
+        '''Pass a list of positions and orientations (euler).
+        Each is realive to the sub's pose folloing the previous
+        pose command.
+        '''
+        for i in xrange(len(positions)):
+            yield self.sub.move.look_at_without_pitching(np.array(positions[i][0:3])).go(speed)
+            yield self.sub.move.relative(np.array(positions[i][0:3])).go(speed)
+            yield self.sub.move.set_orientation(
+                transformations.quaternion_multiply(
+                    self.sub.pose.orientation,
+                    transformations.quaternion_from_euler(orientations[i][0], orientations[i][1], orientations[i][2]))).go(speed)
+
+    @util.cancellableInlineCallbacks
+    def go_to_sequence_quaternions(self, positions, orientations, speed=0.2):
+        '''Pass a list of positions and orientations (quaternion).
+        Each is realive to the sub's pose folloing the previous
+        pose command.
+        '''
+        for i in xrange(len(positions)):
+            yield self.sub.move.look_at_without_pitching(np.array(positions[i][0:3])).go(speed)
+            yield self.sub.move.relative(np.array(positions[i][0:3])).go(speed)
+            yield self.sub.move.set_orientation(
+                transformations.quaternion_multiply(
+                    self.sub.pose.orientation,
+                    (orientations[i][0], orientations[i][1], orientations[i][2], orientations[i][3]))).go(speed)
+
 
 _subs = {}
 

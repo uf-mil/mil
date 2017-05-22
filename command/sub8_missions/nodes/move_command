@@ -19,69 +19,73 @@ fprint = text_effects.FprintFactory(title="MOVE_COMMAND").fprint
 
 @util.cancellableInlineCallbacks
 def main(args):
-    nh, _ = yield NodeHandle.from_argv_with_remaining("move_command", anonymous=True)
-    available_missions = [mission_name for mission_name in dir(missions) if not mission_name.startswith('_')]
+    commands = args.commands
+    arguments = commands[1::2] #Split into commands and arguments, every other index
+    commands = commands[0::2]
 
-    sub = yield sub_singleton._Sub(nh)._init()
-    if args.test:
-        fprint("Running in test mode", msg_color='yellow')
-        sub.set_test_mode()
+    for i in xrange(len(commands)):
+        command = commands[i]
+        argument = arguments[i]
+        nh, _ = yield NodeHandle.from_argv_with_remaining("move_command", anonymous=True)
+        available_missions = [mission_name for mission_name in dir(missions) if not mission_name.startswith('_')]
 
-    fprint("Waiting for odom...")
-    yield sub.tx_pose()
-    fprint("Odom found!", msg_color='green')
+        sub = yield sub_singleton._Sub(nh)._init()
+        if args.test:
+            fprint("Running in test mode", msg_color='yellow')
+            sub.set_test_mode()
 
-    action_kwargs = {'speed': float(args.speed)}
+        fprint("Waiting for odom...")
+        yield sub.tx_pose()
+        fprint("Odom found!", msg_color='green')
 
-    if args.command == 'custom':
-        # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
-        fprint("Moving with the command: {}".format(args.argument))
-        res = yield eval("sub.move.{}.go()".format(args.argument, **action_kwargs))
+        action_kwargs = {'speed': float(args.speed)}
 
-    elif args.command in ['zrp', 'level_off', 'zpr']:
-        fprint("Zeroing roll and pitch")
-        res = yield sub.move.zero_roll_and_pitch().go(**action_kwargs)
+        if command == 'custom':
+            # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
+            fprint("Moving with the command: {}".format(argument))
+            res = yield eval("sub.move.{}.go()".format(argument, **action_kwargs))
 
-    elif args.command == "stop":
-        fprint("Stopping...")
-        if args.zrp:
-            res = yield sub.move.forward(0).zero_roll_and_pitch().go(**action_kwargs)
+        elif command in ['zrp', 'level_off', 'zpr']:
+            fprint("Zeroing roll and pitch")
+            res = yield sub.move.zero_roll_and_pitch().go(**action_kwargs)
+
+        elif command == "stop":
+            fprint("Stopping...")
+            if args.zrp:
+                res = yield sub.move.forward(0).zero_roll_and_pitch().go(**action_kwargs)
+            else:
+                res = yield sub.move.forward(0).go(**action_kwargs)
+
         else:
-            res = yield sub.move.forward(0).go(**action_kwargs)
+            # Get the command from shorthand if it's there
+            command = SHORTHAND.get(command, command)
+            movement = getattr(sub.move, command)
 
-    else:
-        # Get the command from shorthand if it's there
-        command = SHORTHAND.get(args.command, args.command)
-        movement = getattr(sub.move, command)
+            trans_move = command[:3] != "yaw" and command[:5] != "pitch" and command[:4] != "roll"
+            unit = "m" if trans_move else "rad"
 
-        trans_move = command[:3] != "yaw" and command[:5] != "pitch" and command[:4] != "roll"
-        unit = "m" if trans_move else "rad"
+            amount = argument
+            # See if there's a non standard unit at the end of the argument
+            if not argument[-1].isdigit():
+                last_digit_index = [i for i, c in enumerate(argument) if c.isdigit()][-1] + 1
+                amount = argument[:last_digit_index]
+                unit = argument[last_digit_index:]
 
-        amount = args.argument
-        # See if there's a non standard unit at the end of the argument
-        if not args.argument[-1].isdigit():
-            last_digit_index = [i for i, c in enumerate(args.argument) if c.isdigit()][-1] + 1
-            amount = args.argument[:last_digit_index]
-            unit = args.argument[last_digit_index:]
-        amout = float(amount)
-
-        extra = "and zeroing pitch and roll" if args.zrp else ""
-        fprint("{}ing {}{} {}".format(command, amount, unit, extra))
-        goal = movement(float(amount) * UNITS.get(unit, 1))
-        if args.zrp:
-            res = yield goal.zero_roll_and_pitch().go(**action_kwargs)
-        else:
-            res = yield goal.go(**action_kwargs)
+            extra = "and zeroing pitch and roll" if args.zrp else ""
+            fprint("{}ing {}{} {}".format(command, amount, unit, extra))
+            goal = movement(float(amount) * UNITS.get(unit, 1))
+            if args.zrp:
+                res = yield goal.zero_roll_and_pitch().go(**action_kwargs)
+            else:
+                res = yield goal.go(**action_kwargs)
 
     defer.returnValue(reactor.stop())
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Command Line Mission Runner',
-        usage='Pass any pose editor command with an argument. \n\t forward 1 (moves forward 1 meter) \n\t backward 2ft (moves backward 2 feet), ')
-    parser.add_argument('command', type=str,
-        help='Pose editor command to run')
-    parser.add_argument('argument', type=str, default=0,
-        help='An argument to pass to the command (distance or angle usally). Optionally a unit can be added if a non-standard unit is desired.')
+        usage='Pass any pose editor commands with an arguments. \n\t forward 1 (moves forward 1 meter) \n\t backward 2ft (moves backward 2 feet) \n\t forward 1 backward 2ft (moves forward 1 meter then from there moves backward 2 feet), ')
+    parser.add_argument('commands', type=str, nargs='*',
+        help='Pose editor commands to run each followed by an argument to pass to the command (distance or angle usally). Optionally a unit can be added if a non-standard unit is desired.')
     parser.add_argument('-t', '--test', action='store_true',
         help="Runs the mission in test mode and not move the sub.")
     parser.add_argument('-s', '--speed', type=float, default=0.2,
