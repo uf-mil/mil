@@ -19,11 +19,12 @@ from mil_vision_tools import RectFinder
 
 __author__ = "Kevin Allen"
 
-class PathMarkerFinder():
+class OrangeRectangleFinder():
     """
-    Node which finds orange path markers in image frame, 
-    estimates the 2d and 3d position/orientation of marker
-    and returns this estimate when service is called.
+    Node which finds orange rectangular objects in image frame.
+    This can be used for the path marker challenge and to detect
+    the lid of the bins challenge. The node estimates the 2d and 3d
+    position/orientation of this object and returns this estimate when service is called.
 
     Unit tests for this node is in test_path_marker.py
 
@@ -40,7 +41,7 @@ class PathMarkerFinder():
     * Transform this frames pose into /map frame
     * Plug this frames pose in /map into a kalman filter to reduce noise
     
-    TODO: Allow for two path markers identifed at once, both filtered through its own KF
+    TODO: Allow for two objects to be identifed at once, both filtered through its own KF
     """
     # Coordinate axes for debugging image
     REFERENCE_POINTS = np.array([[0, 0, 0],
@@ -63,6 +64,8 @@ class PathMarkerFinder():
         self.shape_match_thresh = rospy.get_param("~shape_match_thresh", 0.4)
         self.min_found_count = rospy.get_param("~min_found_count", 10)
         self.timeout_seconds = rospy.get_param("~timeout_seconds", 2.0)
+        # Default to scale model of path marker. Please use set_geometry service
+        # to set to correct model of object.
         length = rospy.get_param("~length", 1.2192)
         width = rospy.get_param("~width", 0.1524)
         self.rect_model = RectFinder(length, width)
@@ -81,14 +84,14 @@ class PathMarkerFinder():
         self.filter.errorCovPost = 1.* np.eye(self.state_size, dtype=np.float32)
 
         self.reset()
-        self.service_set_geometry = rospy.Service('/vision/path_marker/set_geometry', SetGeometry, self._set_geometry_cb)
+        self.service_set_geometry = rospy.Service('~set_geometry', SetGeometry, self._set_geometry_cb)
         if self.debug_ros:
             self.debug_pub = Image_Publisher("~debug_image")
-            self.markerPub = rospy.Publisher('~path_marker_visualization', Marker, queue_size=10)
-        self.service2D = rospy.Service('/vision/path_marker/2D', VisionRequest2D, self._vision_cb_2D)
+            self.markerPub = rospy.Publisher('~marker', Marker, queue_size=10)
+        self.service2D = rospy.Service('~2D', VisionRequest2D, self._vision_cb_2D)
         if self.do_3D:
-            self.service3D = rospy.Service('/vision/path_marker/pose', VisionRequest, self._vision_cb_3D)
-        self.toggle = rospy.Service('/vision/path_marker/enable', SetBool, self._enable_cb)
+            self.service3D = rospy.Service('~pose', VisionRequest, self._vision_cb_3D)
+        self.toggle = rospy.Service('~enable', SetBool, self._enable_cb)
 
         self.image_sub = Image_Subscriber(camera, self._img_cb)
         camera_info = self.image_sub.wait_for_camera_info()
@@ -103,8 +106,8 @@ class PathMarkerFinder():
 
     def _send_debug_marker(self):
         '''
-        Sends a rviz marker in the camera frame with the estimated pose of the path marker.
-        This marker is a scaled cube with the demensions and color of the actual marker.
+        Sends a rviz marker in the camera frame with the estimated pose of the object.
+        This marker is a scaled cube with the demensions of the model.
         Only called if debug_ros param == True
         '''
         if self.last3d is None or not self.found:
@@ -112,13 +115,13 @@ class PathMarkerFinder():
         m = Marker()
         m.header.frame_id = '/map'
         m.header.stamp = self.last_found_time_3D
-        m.ns = "path_markers"
+        m.ns = "orange_rectangle"
         m.id = 0
         m.type = 1
         m.action = 0
         # Real demensions of path marker
-        m.scale.x = 1.2192
-        m.scale.y = 0.1524
+        m.scale.x = self.rect_model.length
+        m.scale.y = self.rect_model.width
         m.scale.z = 0.05
         m.pose.position = numpy_to_point(self.last3d[0])
         m.pose.orientation = numpy_to_quaternion(self.last3d[1])
@@ -181,7 +184,7 @@ class PathMarkerFinder():
 
     def _clear_filter(self, state):
         '''
-        Reset filter and found state. This will ensure that the path marker
+        Reset filter and found state. This will ensure that the object
         is seen consistently before vision request returns true
         '''
         rospy.loginfo("MARKER LOST")
@@ -196,7 +199,7 @@ class PathMarkerFinder():
 
     def _update_kf(self, (x, y, z, dy, dx)):
         '''
-        Updates the path marker kalman filter using the pose estimation
+        Updates the kalman filter using the pose estimation
         from the most recent frame. Also tracks time since last seen and how
         often is has been seen to set the boolean "found" for the vision request
         '''
@@ -262,8 +265,8 @@ class PathMarkerFinder():
         self._update_kf(measurement)
 
         if self.debug_ros:
-            # Draw coordinate axis onto path marker using pose estimate to project
-            refs, _ = cv2.projectPoints(PathMarkerFinder.REFERENCE_POINTS, rvec, tvec, self.cam.intrinsicMatrix(), np.zeros((5,1)))
+            # Draw coordinate axis onto object using pose estimate to project
+            refs, _ = cv2.projectPoints(self.REFERENCE_POINTS, rvec, tvec, self.cam.intrinsicMatrix(), np.zeros((5,1)))
             refs = np.array(refs, dtype=np.int)
             cv2.line(self.last_image, (refs[0][0][0], refs[0][0][1]), (refs[1][0][0], refs[1][0][1]), (0, 0, 255)) # X axis refs
             cv2.line(self.last_image, (refs[0][0][0], refs[0][0][1]), (refs[2][0][0], refs[2][0][1]), (0, 255, 0)) # Y axis ref
@@ -274,7 +277,7 @@ class PathMarkerFinder():
     def _is_valid_contour(self, contour):
         '''
         Does various tests to filter out contours that are clearly not
-        a valid path marker.
+        a valid orange rectangle.
         * run approx polygon, check that sides == 4
         * find ratio of length to width, check close to known ratio IRL
         '''
@@ -328,6 +331,6 @@ class PathMarkerFinder():
             cv2.waitKey(5)
 
 if __name__ == '__main__':
-    rospy.init_node('path_marker_finder')
-    find = PathMarkerFinder()
+    rospy.init_node('orange_rectangle_finder')
+    OrangeRectangleFinder()
     rospy.spin()
