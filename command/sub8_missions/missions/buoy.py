@@ -90,7 +90,7 @@ def bump_buoy(sub, color):
 
     # Now we are 1m away from the buoy
     print "BUOY MISSION - bumping!"
-    forward = sub.move.forward(dist + .3).go(speed=SPEED)
+    sub.move.forward(dist + .3).go(speed=SPEED)
 
     print "BUOY MISSION - Bumped the buoy"
     defer.returnValue(True)

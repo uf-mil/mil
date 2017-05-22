@@ -5,8 +5,9 @@ import numpy as np
 
 '''
 Generate a random name from a wikipedia article.
-Before you freak out - I want to do this so I dont overwrite segemented images. I want to arbitrarly add and remove images without
-    having to scan the folder everytime. Plus this is more entertaining.
+Before you freak out - I want to do this so I dont overwrite segemented images.
+I want to arbitrarly add and remove images without having to scan the folder everytime.
+Plus this is more entertaining.
 '''
 
 
@@ -31,9 +32,9 @@ def name_gen(no_web=False):
 
             '''
             Ex of what will be in page:
-                <title>List of United States Supreme Court cases, volume 457 - Wikipedia, the free encyclopedia</title>\n
+              <title>List of United States Supreme Court cases, volume 457 - Wikipedia, the free encyclopedia</title>\n
             We just want:
-                list_of_united_states_supreme_court_cases_volume_457
+              list_of_united_states_supreme_court_cases_volume_457
             '''
             stripped_title = title.split('title>')[1].split(
                 ' - Wikipedia, the free encyclopedia')[0].replace(' ', '_').lower()

@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 import rospy
-import tf
-
 from gazebo_msgs.msg import ContactsState
 from std_msgs.msg import String
-
-import numpy as np
 
 
 def check_contact(msg, buoy_pub):

@@ -7,12 +7,11 @@ from sub8.pose_editor import quat_to_rotvec
 
 
 class Controller(object):
-
     '''
     config is a dict of k, ks, alpha, beta
 
-    input poses must all be in world frame/velocities must all be in body frame (follows convention from Odometry message)
-    output wrench is in body frame
+    input poses must all be in world frame/velocities must all be in body frame
+    (follows convention from Odometry message) output wrench is in body frame
     '''
 
     def __init__(self, config):
@@ -68,7 +67,7 @@ class Controller(object):
 
         output = pd_output
         if self.config['use_rise']:
-            rise_term_int = body_gain(numpy.diag(self.config['ks'] * self.config['alpha'])).dot(error_velocity_world) + \
+            rise_term_int = body_gain(numpy.diag(self.config['ks'] * self.config['alpha'])).dot(error_velocity_world) +\
                 body_gain(numpy.diag(self.config['beta'])).dot(numpy.sign(error_velocity_world))
 
             self._rise_term = self._rise_term + dt / 2 * (rise_term_int + self._rise_term_int_prev)

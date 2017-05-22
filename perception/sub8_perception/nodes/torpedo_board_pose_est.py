@@ -50,7 +50,6 @@ class PoseObserver(object):
         yaw = sum(yawInliers) / float(len(yawInliers))
         quat = tf.transformations.quaternion_from_euler(0, 0, yaw)
         pose.orientation = Quaternion(*quat)
-        print "\x1b[37m", pose, "\x1b[0m"
         return pose
 
 
@@ -82,7 +81,6 @@ class TBPoseEstimator(object):
         self.current_req = ParsedPoseEstRequest(req)
         # print self.current_req
         self.minimize_reprojection_error()
-        print "Optimization success: ", self.minimization_result.success
         return self.minimization_result.success
 
     def minimize_reprojection_error(self):
@@ -106,12 +104,12 @@ class TBPoseEstimator(object):
                     pose = np.array([trans.x, trans.y, trans.z, yaw])
                     self.pose_obs.push_back(pose)
                 except tf.Exception as e:
-                    print "Exception! " + str(e)
+                    rospy.logerr("Exception! " + str(e))
                 finally:
                     self.pose_pub.publish(self.pose_obs.get_pose_est_msg())
                     self.visualize_pose_est()
         else:
-            print "\x1b[31mcost: " + str(self.minimization_result.fun) + "\x1b[0m"
+            rospy.loginfo("\x1b[31mcost: " + str(self.minimization_result.fun) + "\x1b[0m")
 
     def calc_reprojection_error(self, pose_tb_from_cam):
         # pose_tb_from_cam = np.array([x, y, z, yaw])
@@ -122,10 +120,8 @@ class TBPoseEstimator(object):
         R_cam_corners = np.divide(R_cam_corners_hom[0:2, :], R_cam_corners_hom[2])
         reprojection_error = 0.0
         for i in xrange(4):
-            reprojection_error = (reprojection_error
-                                  + lin.norm(self.current_req.l_obs_corners[:, i] - L_cam_corners[:, i]))
-            reprojection_error = (reprojection_error
-                                  + lin.norm(self.current_req.r_obs_corners[:, i] - R_cam_corners[:, i]))
+            reprojection_error += lin.norm(self.current_req.l_obs_corners[:, i] - L_cam_corners[:, i])
+            reprojection_error += lin.norm(self.current_req.r_obs_corners[:, i] - R_cam_corners[:, i])
         return reprojection_error
 
     def generate_hom_tb_corners_from_cam(self, pose_tb_from_cam):
@@ -197,24 +193,18 @@ class ParsedPoseEstRequest(object):
         # To get rid of color characters: w_on = ""; reset = "\n"
         w_on = "\x1b[37m"
         reset = "\x1b[0m\n"
-        str_rep = ("Pose Estimation request:\n"
-                   + "Seq: " + w_on + str(self.seq) + reset
-                   + "Stamp: " + w_on + str(self.stamp) + reset
-                   + "Frame_ID: " + w_on + self.frame_id + reset
-                   + "Position:\n" + w_on + str(self.position) + reset
-                   + "Orientation:\n" + w_on + str(self.orientation) + reset
-                   + "Left camera projection matrix:\n" + w_on + str(self.left_cam_matx) + reset
-                   + "Right camera projection matrix:\n" + w_on + str(self.right_cam_matx) + reset
-                   + "Observed Board corners left image:\n" + w_on + str(self.l_obs_corners) + reset
-                   + "Observed Board corners right image:\n" + w_on + str(self.r_obs_corners) + reset)
-        return str_rep
+        return "Pose Estimation request:{r}Seq:{w}{}{r}Frame_ID:{}{r}Position:{w}{}{r}Orientation:{w}{}{r}\
+                Left camera projection matrix:{w}{}{r}Right camera projection matrix:{w}{}{r}\
+                Observed Board corners left image:{w}{}{r}Observed Board corners right image:{w}{}{r}".format(
+            self.seq, self.stamp, self.frame_id, self.position, self.orientation, self.last_cam_matx,
+            self.right_cam_matx, self.l_obs_corners, self.r_obs_corners, w=w_on, r=reset)
 
 # def tf_to_world_frame()
 
 
 if __name__ == '__main__':
-    print '\x1b[1;31mInitializing the Torpedo Board Pose Estimation node\x1b[0m'
-    print "Awaiting pose estimation requests through:\n\t/torpedo_board_pose_est_srv\n"
     rospy.init_node('torpedo_board_pose_est')
-    pose_estimator = TBPoseEstimator()
+    rospy.loginfo('\x1b[1;31mInitializing the Torpedo Board Pose Estimation node\x1b[0m')
+    rospy.loginfo("Awaiting pose estimation requests through:\n\t/torpedo_board_pose_est_srv\n")
+    TBPoseEstimator()
     rospy.spin()

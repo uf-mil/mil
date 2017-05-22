@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 import rospy
-from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 from ros_alarms import AlarmBroadcaster, HandlerBase
-from twisted.internet import reactor
-import time
 __author__ = 'David Soto'
 
 
@@ -63,8 +60,7 @@ class OdomKill(HandlerBase):
         if jump > self.max_jump:
             rospy.logerr('ODOM DISCONTINUITY DETECTED')
             self.ab.raise_alarm(problem_description='ODOM DISCONTINUITY DETECTED JUMPED {} METERS'.format(jump),
-                                severity=5
-                                )
+                                severity=5)
             self.odom_discontinuity = True
             return False
 
@@ -74,7 +70,7 @@ class OdomKill(HandlerBase):
             rospy.logerr('LOST ODOM FOR {} SECONDS'.format((rospy.Time.now() - self.last_time).to_sec()))
             self.ab.raise_alarm(
                 problem_description='LOST ODOM FOR {} SECONDS'.format((rospy.Time.now() - self.last_time).to_sec()),
-                                severity=5
+                severity=5
             )
         return odom_loss or self.odom_discontinuity
 

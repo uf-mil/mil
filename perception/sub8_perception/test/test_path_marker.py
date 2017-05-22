@@ -2,7 +2,6 @@
 from __future__ import division
 import rosbag
 import rospy
-import sys
 import unittest
 import numpy as np
 from sub8_msgs.srv import VisionRequest2D, VisionRequest2DRequest, VisionRequest2DResponse
@@ -56,7 +55,6 @@ class TestPathMarker(unittest.TestCase):
         first = True
         first_time = None
         previous_time = None
-        i = 0
         for topic, msg, t in bag.read_messages():
             if first:
                 first_time = t
@@ -66,7 +64,6 @@ class TestPathMarker(unittest.TestCase):
                 rospy.sleep(t - previous_time)  # Slow down to watch happen
                 previous_time = t
                 if t - first_time > duration:
-                    did = True
                     break
             if topic == self.img_topic:
                 self.img_pub.publish(msg)
@@ -101,7 +98,6 @@ class TestPathMarker(unittest.TestCase):
                        rospy.Duration(3.10),
                        [[43, 443], [216, 307]])
 
-    # Disabled because not long enough
     def test_transdec2(self):
         self._test_bag(rospy.get_param(self.name + '/transdec_path2'),
                        rospy.Duration(1.9),
@@ -111,11 +107,12 @@ class TestPathMarker(unittest.TestCase):
         self._test_bag(rospy.get_param(self.name + '/transdec_path3'),
                        rospy.Duration(0.8),
                        [[244, 9], [321, 127]])
-    # Disabled because too noisey
-    #~ def test_pool1(self):
-        #~ self._test_bag('/home/kallen/bag/path_marker_transdcec/fixed/pool_path1.bag',
-                       #~ rospy.Duration(2.7),
-                       #~ [ [237, 407],[295, 216] ])
+    ''' Disabled because too noisey
+     def test_pool1(self):
+         self._test_bag('/home/kallen/bag/path_marker_transdcec/fixed/pool_path1.bag',
+                        rospy.Duration(2.7),
+                        [ [237, 407],[295, 216] ])
+    '''
 
     def test_pool2(self):
         self._test_bag(rospy.get_param(self.name + '/pool_path2'),

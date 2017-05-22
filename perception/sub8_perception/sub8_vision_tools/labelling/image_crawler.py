@@ -46,8 +46,6 @@ class VideoCrawler(object):
         return [None]
 
 if __name__ == '__main__':
-    import cv2
-
     bag = '/Volumes/FLASHDRIVE/2016-05-22-11-31-42_images/0.png'
     bc = ImageCrawler(bag)
 

@@ -4,8 +4,8 @@ from __future__ import division
 import numpy as np
 import rospy
 import visualization_msgs.msg as visualization_msgs
-from visualization_msgs.msg import Marker, InteractiveMarkerControl, InteractiveMarker
-from interactive_markers.interactive_marker_server import *
+from visualization_msgs.msg import Marker, InteractiveMarker, InteractiveMarkerControl
+from interactive_markers.interactive_marker_server import InteractiveMarkerServer
 
 from geometry_msgs.msg import Pose, Vector3
 from std_msgs.msg import ColorRGBA, Float64
@@ -175,16 +175,8 @@ class RvizVisualizer(object):
         self.rviz_pub_t.publish(self.depth_marker)
         self.rviz_pub.publish(marker)
 
-    def make_cylinder_marker(
-        self,
-        base,
-     length,
-     color,
-     frame='/base_link',
-     up_vector=np.array([0.0,
-                         0.0,
-                         1.0]),
-     **kwargs):
+    def make_cylinder_marker(self, base, length, color, frame='/base_link',
+                             up_vector=np.array([0.0, 0.0, 1.0]), **kwargs):
         '''Handle the frustration that Rviz cylinders are designated by their center, not base'''
 
         center = base + (up_vector * (length / 2))

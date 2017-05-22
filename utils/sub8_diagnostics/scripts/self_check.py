@@ -3,8 +3,17 @@ import txros
 from mil_misc_tools import text_effects
 from twisted.internet import defer, reactor
 import sys
-import xmlrpclib
 import subprocess
+from sub8_msgs.msg import ThrusterStatus
+from sensor_msgs.msg import Image
+from sensor_msgs.msg import CameraInfo
+from nav_msgs.msg import Odometry
+from tf.msg import tfMessage
+from mil_msgs.msg import VelocityMeasurements, RangeStamped, DepthStamped
+from sensor_msgs.msg import Imu, MagneticField
+from std_msgs.msg import Header
+from sensor_msgs.msg import Joy
+from geometry_msgs.msg import PoseStamped
 
 
 MESSAGE_TIMEOUT = 1  # s
@@ -74,8 +83,6 @@ class TemplateChecker(object):
 
         print fail_text
 
-from sub8_msgs.msg import ThrusterStatus
-
 
 class ThrusterChecker(TemplateChecker):
 
@@ -128,9 +135,6 @@ class ThrusterChecker(TemplateChecker):
             if all(self.found_thrusters.values()):
                 defer.returnValue(True)
 
-from sensor_msgs.msg import Image
-from sensor_msgs.msg import CameraInfo
-
 
 class CameraChecker(TemplateChecker):
 
@@ -153,8 +157,6 @@ class CameraChecker(TemplateChecker):
 
     @txros.util.cancellableInlineCallbacks
     def do_check(self):
-        passed = True
-
         # Check if front cameras are actally on usb bus
         command = "lsusb -d {}".format(self.front_cam_product_id)
         err_str = "{} front camera{} not connected to usb port"
@@ -163,25 +165,17 @@ class CameraChecker(TemplateChecker):
                 subprocess.check_output(["/bin/sh", "-c", command]).count("Point Grey")
             if(count_front_cam_usb < 2):
                 self.fail_check(err_str.format("One", ""))
-                passed = False
         except subprocess.CalledProcessError:
             self.fail_check(err_str.format("Both", "s"))
-            passed = False
 
         for name, df in self.subs:
             try:
                 yield txros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
             except txros.util.TimeoutError:
                 self.fail_check("no messages found.", name)
-                passed = False
                 continue
 
             self.pass_check("message found.", name)
-
-from nav_msgs.msg import Odometry
-from tf.msg import tfMessage
-from mil_msgs.msg import VelocityMeasurements, RangeStamped, DepthStamped
-from sensor_msgs.msg import Imu, MagneticField
 
 
 class StateEstChecker(TemplateChecker):
@@ -206,13 +200,11 @@ class StateEstChecker(TemplateChecker):
 
     @txros.util.cancellableInlineCallbacks
     def do_check(self):
-        passed = True
         for name, df in self.subs:
             try:
                 res = yield txros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
             except txros.util.TimeoutError:
                 self.fail_check("no messages found.", name)
-                passed = False
                 continue
 
             if name == "DVL":
@@ -225,10 +217,6 @@ class StateEstChecker(TemplateChecker):
                     self.warn_check("not all beams are being published", name)
             else:
                 self.pass_check("message found.", name)
-
-from std_msgs.msg import Header
-from sensor_msgs.msg import Joy
-from geometry_msgs.msg import PoseStamped
 
 
 class ShoreControlChecker(TemplateChecker):
@@ -255,13 +243,11 @@ class ShoreControlChecker(TemplateChecker):
 
     @txros.util.cancellableInlineCallbacks
     def do_check(self):
-        passed = True
         for name, df in self.subs:
             try:
-                res = yield txros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
+                yield txros.util.wrap_timeout(df, MESSAGE_TIMEOUT)
             except txros.util.TimeoutError:
                 self.fail_check("no messages found.", name)
-                passed = False
                 continue
 
             self.pass_check("message found.", name)
@@ -274,7 +260,9 @@ def main():
                    StateEstChecker(nh, "State Estimation"), ShoreControlChecker(nh, "Shore Control")]
 
     p = text_effects.Printer()
-    yield txros.util.nonblocking_raw_input(str(p.bold("\n  >>>>").text("   Press return when ").negative("sub8.launch").text(" is running.")))
+    yield txros.util.nonblocking_raw_input(str(p.bold("\n  >>>>").text("   Press return when ")
+                                                                 .negative("sub8.launch")
+                                                                 .text(" is running.")))
     print p.newline().set_blue.bold("-------- Running self checks...").newline()
 
     for check in check_order:

@@ -1,5 +1,4 @@
 from txros import util
-from sub8 import pose_editor
 
 SIDE_LENGTH = 1  # meters
 SPEED_LIMIT = .2  # m/s

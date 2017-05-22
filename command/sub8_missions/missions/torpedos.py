@@ -1,14 +1,15 @@
-from txros import util, tf
-import numpy as np
+from txros import util
 import rospy
 from sub8_msgs.srv import TBDetectionSwitch
 # from sub8_perception.srv import TBDetectionSwitch
-from geometry_msgs.msg import Point, Vector3, Pose, Quaternion
+from geometry_msgs.msg import Pose
+from mil_ros_tools import rosmsg_to_numpy
 
 
 @util.cancellableInlineCallbacks
 def align_to_board(msg, sub):
-    yield sub.move.set_position(target_position).zero_roll_and_pitch().go()
+    position = rosmsg_to_numpy(msg.position)
+    yield sub.move.set_position(position).zero_roll_and_pitch().go()
 
 
 @util.cancellableInlineCallbacks

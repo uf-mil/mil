@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-import copy
 from collections import deque
 from base_controller import Controller
 import matplotlib.pyplot as plt

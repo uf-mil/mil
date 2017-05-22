@@ -72,7 +72,6 @@ class ProjectionParticleFilter(object):
             Only the diagonal has interesting stuff, you should mostly be concerned with the Z covariance
                 being smaller than the radius of your target
         """
-        ind = np.argmax(self.weights)
         weighted_avg = np.average(self.particles, axis=1, weights=self.weights)
         # return self.particles[:, ind], np.diag(np.cov(self.particles))
         # This allows us to handle a fair bit of random noise
@@ -131,8 +130,9 @@ class ProjectionParticleFilter(object):
         """Rest all of the particles to lie along the observation ray
         :param observation: A column vector representing the pixel coordinates
         :param weights: dims=[num_particles], particle weight, higher is better
-        We *know* that the true point lies along a ray from the camera center through the focal plane at the observation point
-         So, if we reset all of our particles to lie along that ray, we save convergence time substantially
+        We *know* that the true point lies along a ray from the camera center through the focal plane
+        at the observation point. So, if we reset all of our particles to lie along that ray,
+        we save convergence time substantially
         """
         unit_ray = self.R.dot(self.get_ray(observation))
         if self._debug:
@@ -308,7 +308,6 @@ def main():
     projected_h = ppf.K.dot(real)
     projected = projected_h[:2] / projected_h[2]
 
-    print 'starting'
     R = np.diag([1.0, 1.0, 1.0])
     camera_t = np.array([0.0, 0.0, 0.0])
     cameras = []
@@ -330,7 +329,6 @@ def main():
             camera_t = np.hstack([(np.random.random(2) - 0.5) * 5, 0.0])
 
         if (np.random.random() < p_wrong) and (k > 1):
-            print "Doing a random observation"
             projected = np.random.random(2) * np.array([640., 480.])
         else:
             projected_h = ppf.K.dot(np.dot(R.transpose(), real) - R.transpose().dot(camera_t))
@@ -350,9 +348,6 @@ def main():
         ppf.observe(np.reshape(obs_final, (2, 1)))
 
         best_v, cov = ppf.get_best()
-
-        print 'best', best_v
-        print 'cov', cov
 
     draw_cameras(observations, cameras)
     draw_particles(ppf, color_hsv=((k + 1) / (max_k + 1), 0.7, 0.8), scale=0.1 * ((k + 1) / max_k))

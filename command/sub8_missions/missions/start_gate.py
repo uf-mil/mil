@@ -4,18 +4,11 @@ from __future__ import division
 # from txros import action, util, tf, serviceclient
 import txros
 
-from tf import transformations
-
-from mil_msgs.msg import MoveToAction, PoseTwistStamped
 from mil_misc_tools import text_effects
-from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D, BMatrix, BMatrixRequest
+from sub8_msgs.srv import VisionRequest2DRequest, VisionRequest2D, BMatrix, BMatrixRequest
 from std_srvs.srv import SetBool, SetBoolRequest
-from nav_msgs.msg import Odometry
 
 import numpy as np
-from twisted.internet import defer
-import os
-import yaml
 
 fprint = text_effects.FprintFactory(
     title="START_GATE", msg_color="white").fprint
@@ -64,16 +57,19 @@ class StartGateMission(object):
 
         fprint("Found start gate: " + str(start_gate_search_res.pose))
 
-        start_gate_distance_request = yield self.sub_singleton.nh.get_service_client('/vision/start_gate/distance', BMatrix)
+        start_gate_distance_request = yield self.sub_singleton.nh.get_service_client('/vision/start_gate/distance',
+                                                                                     BMatrix)
         start_gate_distance = yield start_gate_distance_request(BMatrixRequest())
         fprint("Distance: " + str(start_gate_distance.B[0]))
 
         yield self.align_for_dummies(start_gate_search_res)
         fprint("YOLO -- MOVING FORWARD")
 
-        # while(self.FOUND_START_GATE):
-            # self.start_gate_find()
-            # yield self.sub_singleton.move.forward(.3).zero_roll_and_pitch().go(speed=self.SPEED)
+        '''
+        while(self.FOUND_START_GATE):
+            self.start_gate_find()
+            yield self.sub_singleton.move.forward(.3).zero_roll_and_pitch().go(speed=self.SPEED)
+        '''
         yield self.sub_singleton.move.forward(start_gate_distance.B[0] + 0.5).zero_roll_and_pitch().go(speed=self.SPEED)
 
         fprint("Finished")
@@ -103,7 +99,8 @@ class StartGateMission(object):
         deviation = (
             (start_gate_search_res.pose.x - start_gate_search_res.camera_info.width / 2) /
             start_gate_search_res.camera_info.width,
-            (start_gate_search_res.pose.y - start_gate_search_res.camera_info.height / 2) / start_gate_search_res.camera_info.height)
+            (start_gate_search_res.pose.y - start_gate_search_res.camera_info.height / 2) /
+            start_gate_search_res.camera_info.height)
 
         fprint("Alignment -- Deviation: " + str(deviation), msg_color="cyan")
         while(np.abs(deviation[0]) > error_tolerance):

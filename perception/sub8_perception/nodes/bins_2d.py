@@ -70,16 +70,12 @@ class BinFinder:
     def request_bin(self, srv):
         self.bin_type = srv.target_name
         if (self.last_image is not None):
-            print 'requesting', srv
             response = self.find_single_bin(np.copy(self.last_image), srv.target_name)
 
             if response is False or response is None:
-                print 'did not find'
-                resp = VisionRequest2DResponse(
-                    header=mil_ros_tools.make_header(frame='/down'),
-                    found=False
-                )
-
+                rospy.loginfo('did not find')
+                resp = VisionRequest2DResponse(header=mil_ros_tools.make_header(frame='/down'),
+                                               found=False)
             else:
                 # Fill in
                 center, radius = response
@@ -102,7 +98,6 @@ class BinFinder:
             return
         self.find_bins(np.copy(self.last_image), self.bin_type)
         if self.last_draw_image is not None:
-            print 'flag'
             self.image_pub.publish(self.last_draw_image)
 
     def image_cb(self, image):
@@ -124,7 +119,6 @@ class BinFinder:
             img = cv2.filter2D(img, -1, kernel)
             debug_image = np.copy(img)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            zeros = np.array([0])
             ret, img = cv2.threshold(img, 254, 255, cv2.THRESH_BINARY)
             contours, hierarchy = cv2.findContours(np.copy(img), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             contours = contour_sort(contours)
@@ -144,8 +138,8 @@ class BinFinder:
                     x, y, w, h = cv2.boundingRect(contours[i])
                     roi = debug_image[y: y + h, x: x + w]
                     temp = evaluate_bin(roi)
-                    if ((orangeness > temp and self.bin_type == 'norange')
-                       or (orangeness < temp and self.bin_type == 'orange')):
+                    if ((orangeness > temp and self.bin_type == 'norange') or
+                       (orangeness < temp and self.bin_type == 'orange')):
                         orangeness = temp
                         M = cv2.moments(contours[i])
                         cx = int(M['m10'] / M['m00'])
@@ -170,21 +164,18 @@ class BinFinder:
                     tuple_center = self.range * ray
                     tuple_center[2] = -tuple_center[2] + 0.45 + 1  # height of the bin and some buffer
                     self.last_draw_image = debug_image
-                    print tuple_center
                     return tuple_center, rad
 
     def range_callback(self, msg):
         '''Handle range data grabbed from dvl'''
-        frame = '/dvl'
         self.range = msg.range
 
     def find_bins(self, img, srv):
-        draw_image = np.copy(img)
-        result = self.find_single_bin(img, self.bin_type)
+        return self.find_single_bin(img, self.bin_type)
 
 
 def main(args):
-    bf = BinFinder()
+    BinFinder()
     rospy.spin()
 
 if __name__ == '__main__':

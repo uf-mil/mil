@@ -1,6 +1,4 @@
-from twisted.internet import defer
-from txros import util, tf
-import numpy as np
+from txros import util
 
 
 @util.cancellableInlineCallbacks

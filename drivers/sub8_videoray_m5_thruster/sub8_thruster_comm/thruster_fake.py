@@ -52,7 +52,6 @@ class FakeThrusterPort(object):
         '''
         assert thruster_name in self.thruster_dict.keys(), "{} must be associated with this port".format(thruster_name)
         rospy.loginfo('Commanding {}: {}'.format(thruster_name, normalized_thrust))
-        motor_id = self.thruster_dict[thruster_name]
         thruster_status = self.read_status(thruster_name)
         return thruster_status
 

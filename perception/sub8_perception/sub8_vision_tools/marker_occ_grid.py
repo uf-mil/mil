@@ -6,13 +6,12 @@ import tf
 from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, Point, Quaternion, Pose2D
 from nav_msgs.msg import OccupancyGrid, MapMetaData
-from sub8_msgs.srv import VisionRequest2D, VisionRequest2DResponse, SearchPose
+from sub8_msgs.srv import SearchPose
 from image_geometry import PinholeCameraModel
-from mil_ros_tools import threading_helpers, msg_helpers
+from mil_ros_tools import msg_helpers
 from std_srvs.srv import Empty, EmptyResponse
 import cv2
 import numpy as np
-import threading
 
 
 def unit_vector(vect):
@@ -44,10 +43,11 @@ class OccGridUtils(object):
         self.mid_x = -starting_pose.x
         self.mid_y = -starting_pose.y
 
-        self.meta_data.origin = Pose(position=Point(x=-starting_pose.x * res, y=-starting_pose.y * res, z=0),
-                                     orientation=Quaternion(*tf.transformations.quaternion_from_euler(0, 0, starting_pose.theta)))
+        p = Point(x=-starting_pose.x * res, y=-starting_pose.y * res, z=0)
+        q = Quaternion(*tf.transformations.quaternion_from_euler(0, 0, starting_pose.theta))
+        self.meta_data.origin = Pose(position=p, orientation=q)
 
-        s = rospy.Service('/reset_occ_grid', Empty, self.reset_grid)
+        rospy.Service('/reset_occ_grid', Empty, self.reset_grid)
 
         # Create array of -1's of the correct size
         self.occ_grid = np.zeros((self.meta_data.height, self.meta_data.width)) - 1
@@ -110,10 +110,11 @@ class OccGridUtils(object):
 
     def reset_grid(self, srv):
         '''
-        Resets occupancy grid. I'm using a random service since I don't really care about getting or returning information here.
+        Resets occupancy grid. I'm using a random service since I don't
+        really care about getting or returning information here.
         '''
         # Create array of -1's of the correct size
-        print "Resetting Grid."
+        rospy.loginfo("Resetting Grid.")
         self.occ_grid = np.zeros((self.meta_data.height, self.meta_data.width)) - 1
         self.searched = np.zeros((self.meta_data.height, self.meta_data.width))
         self.markers = np.zeros((self.meta_data.height, self.meta_data.width))
@@ -135,7 +136,7 @@ class Searcher():
         self.max_searches = 12
         self.current_search = 0
 
-        s = rospy.Service('/next_search_pose', SearchPose, self.return_pose)
+        rospy.Service('/next_search_pose', SearchPose, self.return_pose)
 
     def return_pose(self, srv):
         '''

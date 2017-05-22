@@ -9,8 +9,6 @@ from diagnostics import gazebo_tests
 import argparse
 import traceback
 import datetime
-import time
-
 from collections import deque
 from twisted.internet import reactor
 import time
@@ -111,11 +109,10 @@ class JobManager(object):
 
             actual_time = datetime.datetime.now().strftime('%I:%M:%S.%f')
             success_str = "succeeded" if success else "failed"
-            report = (
-                "Test #{}/{}: {} at {} (Duration: {}).\n".format(current_loop, loop_count, success_str, actual_time, elapsed) +
-                "Test reported: {}\n".format(description) +
-                "{0} Successes, {1} Fails, {2} Total \n".format(self.successes, self.fails, current_loop)
-            )
+            report = "Test #{}/{}: {} at {} (Duration: {}).\nTest reported: {}\n\
+                     {0} Successes, {1} Fails, {2} Total \n".format(
+                     current_loop, loop_count, success_str, actual_time, elapsed, description,
+                     self.successes, self.fails, current_loop)
             self.log(report)
 
             print "JOB - Done!"

@@ -5,8 +5,6 @@ import os
 import argparse
 import sys
 import features
-from sklearn.preprocessing import scale
-from sub8_vision_tools.machine_learning import balanced_resample, desample_binary
 import time
 import tqdm
 
@@ -177,7 +175,7 @@ def main():
     args = parser.parse_args(sys.argv[1:])
 
     observation_list, label_list = load_images(args.folder)
-    clf = train_on_data(observation_list, label_list)
+    train_on_data(observation_list, label_list)
 
 if __name__ == "__main__":
     main()

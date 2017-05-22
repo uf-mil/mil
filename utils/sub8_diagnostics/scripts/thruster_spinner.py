@@ -36,7 +36,7 @@ def ports_from_layout(layout):
             fprint(msg.reset.text("\n\tName: ").set_yellow.text(port).reset
                    .text("\n\tMotor id's on port: ").set_cyan.bold(s).reset)
 
-        except serial.serialutil.SerialException as e:
+        except serial.serialutil.SerialException:
             pass
 
     return port_dict

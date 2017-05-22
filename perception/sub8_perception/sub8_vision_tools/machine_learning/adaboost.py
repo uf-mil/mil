@@ -4,9 +4,8 @@ import pickle
 import argparse
 import sys
 import features
-from sklearn.preprocessing import scale, normalize
-from sklearn.ensemble import AdaBoostClassifier, GradientBoostingClassifier
-from sub8_vision_tools.machine_learning import balanced_resample, desample_binary
+from sklearn.preprocessing import normalize
+from sklearn.ensemble import GradientBoostingClassifier
 from tqdm import tqdm
 """
 TODO
@@ -61,7 +60,7 @@ def train_on_pkl(pkl_data, images_to_use=None):
             if u_image is None or u_targets is None:
                 continue
 
-            image = u_image[::2, ::2,:]
+            image = u_image[::2, ::2, :]
             targets = u_targets[::2, ::2]
             target_labels = np.reshape(targets, (-1, 1)).astype(np.int32)
             observations = observe(image)
@@ -91,10 +90,11 @@ def train_classifier(x, y, n_trees=5, max_depth=3):
 
     return boost
 
+
 def monitor(i, self, local_vars):
-    global bar
     bar.update(1)
     bar.write("Train Loss: {}".format(self.train_score_[i]))
+
 
 def main():
     usage_msg = ("Pass the path to a bag, and we'll crawl through the images in it")
@@ -114,7 +114,7 @@ def main():
     print 'Saving as {}'.format(args.output)
     pickle.dump(clf, open(args.output, 'wb'))
     u_image, u_targets = data[-1]
-    image = u_image[::2, ::2,:]
+    image = u_image[::2, ::2, :]
     targets = u_targets[::2, ::2]
 
     some_observations = observe(image)
@@ -133,7 +133,7 @@ def main():
     plt.figure(2)
     plt.imshow(image)
     plt.figure(4)
-    plt.imshow(prediction_image2[:,:, np.newaxis] * image[:,:])
+    plt.imshow(prediction_image2[:, :, np.newaxis] * image[:, :])
     plt.show()
     # pickle.dump(clf, open("boost.p", "wb"))
 

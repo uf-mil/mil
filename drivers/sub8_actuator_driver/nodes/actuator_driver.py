@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import rospy
-import rosparam
 import rospkg
 
 from sub8_msgs.srv import SetValve
@@ -9,9 +8,7 @@ from sub8_alarm import AlarmBroadcaster
 
 import threading
 import serial
-import binascii
 import struct
-import time
 import yaml
 import os
 
@@ -163,13 +160,18 @@ class ActuatorDriver():
         - 0x30 close valve (prevent air flow)
         - 0x40 read switch
 
-        - To 'ping' board (check if board is operational): send 0x10, if operational, will reply with 0x11.
-        - To open valve (allow air flow): send 0x20 + valve number (ex. 0x20 + 0x04 (valve #4) = 0x24 <-- byte to send),
-        will reply with 0x01.
-        - To close valve (prevent air flow): send 0x30 + valve number (ex. 0x30 + 0x0B (valve #11) = 0x3B <-- byte to send),
-        will reply with 0x00.
-        - To read switch: send 0x40 + switch number (ex. 0x40 + 0x09 (valve #9) = 0x49 <-- byte to send), will reply with 0x00
-        if switch is open (not pressed) or 0x01 if switch is closed (pressed).
+        - To 'ping' board (check if board is operational): send 0x10, if operational,
+          will reply with 0x11.
+
+        - To open valve (allow air flow): send 0x20 + valve number
+          (ex. 0x20 + 0x04 (valve #4) = 0x24 <-- byte to send), will reply with 0x01.
+
+        - To close valve (prevent air flow): send 0x30 + valve number
+          (ex. 0x30 + 0x0B (valve #11) = 0x3B <-- byte to send),will reply with 0x00.
+
+        - To read switch: send 0x40 + switch number
+          (ex. 0x40 + 0x09 (valve #9) = 0x49 <-- byte to send), will reply with 0x00
+          if switch is open (not pressed) or 0x01 if switch is closed (pressed).
         '''
         if port == -1:
             return

@@ -24,8 +24,9 @@ class BagManager(object):
         '''
         Caches bags using big dicts.
         {topic_name_1: subscriber_1, topic_name_2: subscriber_2, ...}
-        Every 'time_step' seconds it will save all of the subscribers' most recent message. This will continue and will fill
-            a cache array that will store 'pre_cache_time' seconds worth of messages before erasing the oldest messages.
+        Every 'time_step' seconds it will save all of the subscribers' most recent message.
+        This will continue and will fill a cache array that will store 'pre_cache_time'
+        seconds worth of messages before erasing the oldest messages.
         '''
 
         # Used to avoid adding copies of the same message.
@@ -43,7 +44,8 @@ class BagManager(object):
                 msg_time = yield self.cache_dict[key].get_last_message_time()
 
                 if msg is not None:
-                    if (self.nh.get_time() > rospy.Time.from_sec(30)) and (msg_time < self.nh.get_time() - rospy.Duration(30)):
+                    if (self.nh.get_time() > rospy.Time.from_sec(30)) and\
+                       (msg_time < self.nh.get_time() - rospy.Duration(30)):
                         # This fixes a negative time exception if we are within the first 30 seconds of time.
                         continue
 

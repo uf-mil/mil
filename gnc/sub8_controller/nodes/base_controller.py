@@ -4,7 +4,7 @@ import threading
 import geometry_msgs.msg as geometry_msgs
 import rospy
 import numpy as np
-from sub8_msgs.msg import Trajectory, Waypoint
+from sub8_msgs.msg import Trajectory
 from collections import deque
 from scipy import linalg
 from sub8_simulation.srv import SimSetPose

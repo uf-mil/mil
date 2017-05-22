@@ -1,7 +1,6 @@
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Twist, Pose, Vector3
-from gazebo_msgs.srv import SetModelState, SetModelStateRequest, DeleteModel, DeleteModelRequest, \
-    SpawnModel, SpawnModelRequest
+from geometry_msgs.msg import Pose, Vector3
+from gazebo_msgs.srv import SetModelState, SetModelStateRequest, DeleteModel, SpawnModel
 from gazebo_msgs.msg import ModelState, ModelStates
 from kill_handling.srv import SetKill, SetKillRequest
 from kill_handling.msg import Kill

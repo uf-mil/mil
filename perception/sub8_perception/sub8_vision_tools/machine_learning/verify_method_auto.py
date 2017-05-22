@@ -43,7 +43,7 @@ def load_images(path, images_to_use=2):
                 mask /= mask.max()
 
             data.append([image, mask, images[i]])
-    
+
             if count == 10:
                 # Reset when we get to 10
                 count = 0
@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
             print "Image:", image_name
 
-            image = u_image[::2, ::2,:]
+            image = u_image[::2, ::2, :]
             mask = u_mask[::2, ::2]
             tic_observation = time()
             some_observations = observe(image)
@@ -121,7 +121,7 @@ if __name__ == '__main__':
             print 'Predicting took {} seconds'.format(time() - tic_prediction)
             total_time = time() - tic_observation
 
-            segmentation_image = np.reshape(segmentation, image[:,:, 2].shape)
+            segmentation_image = np.reshape(segmentation, image[:, :, 2].shape)
             # cv2.imshow('im2', image)
             # cv2.imshow('im', (segmentation_image * 250).astype(np.uint8))
 
@@ -139,7 +139,6 @@ if __name__ == '__main__':
 
             print '\tPercent correct: {}'.format(true_positives)
             print '\tFalse Positives: {}'.format(false_positives)
-
 
             attributes['true_positives'].append(true_positives)
             attributes['false_positives'].append(false_positives)
@@ -165,12 +164,9 @@ if __name__ == '__main__':
             report_data["Average execution time"].append(np.average(attributes['times']))
         except:
             print "Issue"
-    
+
     # Give the results.
-    print 
-    print
-    print "===== RESULTS ====="
-    print
+    print "\n\n===== RESULTS =====\n"
 
     for i, t in enumerate(report_data["Type"]):
         print t

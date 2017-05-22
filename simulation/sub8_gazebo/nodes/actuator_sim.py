@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 import rospy
-import tf
 
 from std_msgs.msg import String
-from gazebo_msgs.msg import ContactsState, ModelStates, ModelState
+from gazebo_msgs.msg import ContactsState, ModelState
 from gazebo_msgs.srv import SetModelState, GetModelState, ApplyJointEffort, ApplyJointEffortRequest, \
     JointRequest, JointRequestRequest
-from geometry_msgs.msg import Pose, Twist
+from geometry_msgs.msg import Twist
 from sub8_msgs.srv import SetValve
 
 from mil_ros_tools import msg_helpers, geometry_helpers
@@ -54,7 +53,6 @@ class TorpedoLauncher():
             return
 
         torpedo_name = "torpedo::body::bodycol"
-        board_name = "torpedo_board::hole_1::hole_1_col"
 
         real_state = None
         for state in msg.states:

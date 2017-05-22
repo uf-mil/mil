@@ -1,5 +1,4 @@
-import rospy
-from ros_alarms import HandlerBase, AlarmBroadcaster, HeartbeatMonitor
+from ros_alarms import HandlerBase, HeartbeatMonitor
 from std_msgs.msg import Header
 
 

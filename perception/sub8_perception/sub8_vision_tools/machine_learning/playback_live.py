@@ -1,7 +1,6 @@
 import rospy
 import argparse
 import cv2
-import pickle
 import numpy as np
 import sys
 from boost_auto import observe
@@ -33,8 +32,8 @@ if __name__ == '__main__':
     parser.add_argument(
         dest='topic',
         type=str,
-     help="Topic to listen to for image callbacks",
-     default="/camera/front/left/image_rect_color")
+        help="Topic to listen to for image callbacks",
+        default="/camera/front/left/image_rect_color")
 
     args = parser.parse_args(sys.argv[1:])
 

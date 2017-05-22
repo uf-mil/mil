@@ -44,8 +44,8 @@ class ThrusterPort(object):
         '''
         self.port_name = port_info['port']
         self.port = self.connect_port(self.port_name)
-        self.thruster_dict = {}  # holds the motor_ids of all the thrusters that were supposed
-                                # to be here and were actually found
+        # holds the motor_ids of all the thrusters that were supposed to be here and were actually found
+        self.thruster_dict = {}
 
         # Load thruster configurations and check if the requested thruster exists on this port
         self.missing_thrusters = []

@@ -26,8 +26,8 @@ class HOG:
 
 
 def main(args):
-    h = HOG(args[1])
     rospy.init_node('HOG', anonymous=True)
+    HOG(args[1])
     try:
         rospy.spin()
     except KeyboardInterrupt:

@@ -22,12 +22,13 @@ class Kill(HandlerBase):
     def bagger_dump(self):
         """Call online_bagger/dump service"""
         camera = '/camera/front/left/camera_info /camera/front/left/image_raw '
-        navigation = '/wrench /wrench_actual /c3_trajectory_generator/trajectory_v /c3_trajectory_generator/waypoint /trajectory '
+        navigation = '/wrench /wrench_actual /c3_trajectory_generator/trajectory_v \
+                      /c3_trajectory_generator/waypoint /trajectory '
         controller = '/pd_out /rise_6dof/parameter_descriptions /rise_6dof/parameter_updates '
         blueview = '/blueview_driver/ranges /blueview_driver/image_color'
         kill_topics = camera + navigation + controller + blueview
         try:
-            bag_status = self.bagging_server(bag_name='kill_bag', bag_time=60, topics=kill_topics)
+            self.bagging_server(bag_name='kill_bag', bag_time=60, topics=kill_topics)
         except rospy.ServiceException as e:
             print "/online_bagger service failed: %s" % e
 

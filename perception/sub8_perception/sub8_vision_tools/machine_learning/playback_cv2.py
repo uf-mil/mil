@@ -1,16 +1,16 @@
 #!/usr/bin/python
 import argparse
 import cv2
-import pickle
 import numpy as np
 import sys
 from boost_auto import observe
-import mil_ros_tools
+from mil_ros_tools import BagCrawler
+from sub8_vision_tools import ImageCrawler, VideoCrawler
 
 if __name__ == '__main__':
 
-    usage_msg = (
-        "Pass the path to a bag, the start of an image sequence, or 'video' for a webcam to play through the media and look for the learned object.")
+    usage_msg = "Pass the path to a bag, the start of an image sequence, or 'video' for a webcam\
+                 to play through the media and look for the learned object."
     desc_msg = "glhf"
 
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
@@ -26,16 +26,14 @@ if __name__ == '__main__':
 
     file_name = args.file_name
     if file_name.split('.')[-1] == 'bag':
-        import sub8_vision_tools.labelling.bag_crawler as b
         print "Loading bag..."
-        bc = b.BagCrawler(file_name)
+        bc = BagCrawler(file_name)
         print bc.image_topics[0]
     else:
-        import sub8_vision_tools.labelling.image_crawler
         if file_name == 'video':
-            bc = image_crawler.VideoCrawler(file_name, args.topic)
+            bc = VideoCrawler(file_name, args.topic)
         else:
-            bc = image_crawler.ImageCrawler(file_name)
+            bc = ImageCrawler(file_name)
 
     last_mask = None
     if args.topic is not None:
@@ -56,4 +54,9 @@ if __name__ == '__main__':
         cv2.waitKey(1)
 
     print 'saving output'
+    '''
+    It was unclear what this is supposed to do when ensuring it complies with pep8.
+    data is undefined.
+
     pickle.dump(data, open(args.output, 'wb'))
+    '''
