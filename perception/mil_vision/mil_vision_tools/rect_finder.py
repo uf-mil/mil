@@ -174,7 +174,7 @@ class RectFinder(object):
             if rectified:
                 dist_coeffs = np.zeros((5,1))
             else:
-                dist_coeffs = distortionCoeffs()
+                dist_coeffs = cam.distortionCoeffs()
         assert intrinsics is not None
         assert dist_coeffs is not None
         _, rvec, tvec =  cv2.solvePnP(self.model_3D, corners, intrinsics, dist_coeffs)
