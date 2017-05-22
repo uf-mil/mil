@@ -41,8 +41,8 @@ std::pair<bool, WAYPOINT_ERROR_TYPE> WaypointValidity::is_waypoint_valid(const g
                                   waypoint.position.y / ogrid_map_->info.resolution + ogrid_map_->info.height / 2);
 
   // Area we want to check around the sub
-  int sub_x = 1 / ogrid_map_->info.resolution;
-  int sub_y = 1 / ogrid_map_->info.resolution;
+  int sub_x = 1.5 / ogrid_map_->info.resolution;
+  int sub_y = 1.5 / ogrid_map_->info.resolution;
   if (check_if_hit(where_sub, cv::Size(sub_x, sub_y)))
   {
     return std::make_pair(false, WAYPOINT_ERROR_TYPE::OCCUPIED);

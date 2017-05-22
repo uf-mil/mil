@@ -194,7 +194,7 @@ struct Node
     {
       boost::shared_ptr<const mil_msgs::MoveToGoal> goal = actionserver.acceptNewGoal();
       current_waypoint = subjugator::C3Trajectory::Waypoint(
-          Point_from_PoseTwist(goal->posetwist.pose, goal->posetwist.twist), goal->speed, !goal->uncoordinated, goal->do_waypoint_validation);
+          Point_from_PoseTwist(goal->posetwist.pose, goal->posetwist.twist), goal->speed, !goal->uncoordinated, !goal->blind);
       current_waypoint_t = now;
       this->linear_tolerance = goal->linear_tolerance;
       this->angular_tolerance = goal->angular_tolerance;
