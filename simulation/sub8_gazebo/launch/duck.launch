@@ -40,6 +40,27 @@
     -x -22.3 -y 14.16 -z -4.47 -Z -1.57 -model lid"
     output="screen" />
 
+  <!-- Attempting to spawn the start gate -->
+  <node
+      name ="start_gate" pkg="gazebo_ros" type="spawn_model"
+      args="-file $(find sub8_gazebo)/models/start_gate/start_gate.sdf -sdf
+      -x 15 -y 10 -z -2 -Z -1.57 -model start_gate"
+      output="screen" />
+
+    <!-- Attempting to spawn the nav gate -->
+    <node
+        name ="nav_gate" pkg="gazebo_ros" type="spawn_model"
+        args="-file $(find sub8_gazebo)/models/nav_gate/nav_gate.sdf -sdf
+        -x 25 -y -15 -z -1.5 -Z -1.57 -model nav_gate"
+        output="screen" />
+
+    <!-- Attempting to spawn the octogon -->
+    <node
+        name ="octogon" pkg="gazebo_ros" type="spawn_model"
+        args="-file $(find sub8_gazebo)/models/octogon/octogon.sdf -sdf
+        -x 20 -y -20 -z 0 -Z -1.57 -model octogon"
+        output="screen" />
+
   <!-- Start the sub model with cameras if desired -->
   <node if="$(arg cameras)"
     name="spawn_sub" pkg="gazebo_ros" type="spawn_model"
