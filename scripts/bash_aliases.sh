@@ -20,3 +20,6 @@ alias subc="rosrun sub8_missions move_command"
 
 # Cameras
 alias subfps="rostopic hz $bag_front_cams $bag_down_cam"
+
+# Visualization
+alias subrviz="rviz -d \$CATKIN_DIR/src/SubjuGator/sub.rviz"
