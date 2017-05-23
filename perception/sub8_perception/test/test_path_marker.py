@@ -22,10 +22,10 @@ class TestPathMarker(unittest.TestCase):
         rospy.set_param("test", 5)
         self.info_topic = "/camera/down/left/camera_info"
         self.img_topic = "/camera/down/left/image_rect_color"
-        rospy.wait_for_service('/vision/path_marker/2D', 3.0)
-        rospy.wait_for_service('/vision/path_marker/enable', 3.0)
-        self.service = rospy.ServiceProxy('/vision/path_marker/2D', VisionRequest2D)
-        enable = rospy.ServiceProxy('/vision/path_marker/enable', SetBool)
+        rospy.wait_for_service('/vision/orange_rectangle/2D', 3.0)
+        rospy.wait_for_service('/vision/orange_rectangle/enable', 3.0)
+        self.service = rospy.ServiceProxy('/vision/orange_rectangle/2D', VisionRequest2D)
+        enable = rospy.ServiceProxy('/vision/orange_rectangle/enable', SetBool)
         enable(SetBoolRequest(data=True))
         self.cam_info_pub = rospy.Publisher(self.info_topic, CameraInfo, queue_size=5)
         self.img_pub = rospy.Publisher(self.img_topic, Image, queue_size=5)
