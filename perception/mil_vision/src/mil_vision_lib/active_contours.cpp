@@ -249,9 +249,11 @@ bool ClosedCurve::validateCurve(std::vector<cv::Point2i>& curve)
   return true;  // No failures!
 }
 
+/* NOT IMPLEMENTED
 vector<float> calcCosts(const Mat& img, vector<ClosedCurve::Perturbation> candidate_perturbs,
                         function<float(const Mat&, ClosedCurve::Perturbation)> cb)
 {
 }
+*/
 
 }  // namespace mil_vision

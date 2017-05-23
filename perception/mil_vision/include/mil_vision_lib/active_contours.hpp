@@ -51,8 +51,10 @@ public:
   void applyPerturbation(const std::vector<uint8_t>& perturbation, int idx);
   ClosedCurve perturb(const std::vector<uint8_t>& perturbation, int idx);
   static bool validateCurve(std::vector<cv::Point2i>& curve);
+  /* NOT IMPLEMENTED
   std::vector<float> calcCosts(const cv::Mat& img, std::vector<Perturbation> candidate_perturbs,
                                std::function<float(const cv::Mat&, Perturbation)> cb);
+  */
 };
 
 class ActiveContour
