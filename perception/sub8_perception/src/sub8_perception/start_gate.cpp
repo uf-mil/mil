@@ -1,5 +1,5 @@
 #include <sub8_perception/start_gate.hpp>
-Sub8StartGateDetector::Sub8StartGateDetector() : image_transport_(nh_), gate_line_buffer_(30), running_(true)
+Sub8StartGateDetector::Sub8StartGateDetector() :  running_(true), image_transport_(nh_), gate_line_buffer_(30)
 {
   image_sub_ =
       image_transport_.subscribeCamera("/camera/front/right/image_rect_color", 1, &Sub8StartGateDetector::imageCallback, this);
@@ -7,7 +7,7 @@ Sub8StartGateDetector::Sub8StartGateDetector() : image_transport_(nh_), gate_lin
       nh_.advertiseService("/vision/start_gate/pose", &Sub8StartGateDetector::requestStartGatePosition2d, this);
   service_enable_ =
       nh_.advertiseService("/vision/start_gate/enable", &Sub8StartGateDetector::requestStartGateEnable, this);
-  service_distance_ =
+  service_distance_ = 
       nh_.advertiseService("/vision/start_gate/distance", &Sub8StartGateDetector::requestStartGateDistance, this);  
   pubImage_ = image_transport_.advertise("/start_gate/debug_image", 1);
 }
