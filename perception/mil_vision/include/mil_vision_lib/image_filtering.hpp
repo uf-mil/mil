@@ -9,7 +9,6 @@
 
 namespace mil_vision
 {
-
 /*
   Returns a version of the input kernel rotated about its center point.
   kernel - original kernel
@@ -18,7 +17,7 @@ namespace mil_vision
   no_expand - OPTIONAL. Will leave the output size the same as the input size. Parts of the
     original kernel may fall outside the output canvas after the rotation.
 */
-cv::Mat rotateKernel(const cv::Mat &kernel, float theta, bool deg=false, bool no_expand=false);
+cv::Mat rotateKernel(const cv::Mat &kernel, float theta, bool deg = false, bool no_expand = false);
 
 /*
   Creates a new kernel that is rotationally invariant by averaging rotated instances of the
@@ -28,7 +27,7 @@ cv::Mat rotateKernel(const cv::Mat &kernel, float theta, bool deg=false, bool no
     the rotated versions are averaged together. The rotated kernels will be uniformly spread
     angularly.
 */
-cv::Mat makeRotInvariant(const cv::Mat &kernel, int rotations=8);
+cv::Mat makeRotInvariant(const cv::Mat &kernel, int rotations = 8);
 
 /*
   Returns the minimum theta for which a version of the kernel that has been rotated
@@ -37,6 +36,6 @@ cv::Mat makeRotInvariant(const cv::Mat &kernel, int rotations=8);
   ang_res - OPTIONAL. The result will be a multiple of this angle
   deg - OPTIONAL. The output will be in degrees instead of radias if set to true
 */
-float getRadialSymmetryAngle(const cv::Mat &kernel, float ang_res=0.1, bool deg=false);
+float getRadialSymmetryAngle(const cv::Mat &kernel, float ang_res = 0.1, bool deg = false);
 
-} // namespace mil_vision
+}  // namespace mil_vision

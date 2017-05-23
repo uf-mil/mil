@@ -23,13 +23,13 @@ void BlueViewSonar::init(ConnectionType type, const std::string& params, int hea
 void BlueViewSonar::updateHead()
 {
   if (!has_init_)
-      throw std::runtime_error("updateHead called on sonar before init");
+    throw std::runtime_error("updateHead called on sonar before init");
   image_generator_.SetHead(head_);
 }
 BVTSDK::Head& BlueViewSonar::getHead()
 {
   if (!has_init_)
-      throw std::runtime_error("updateHead called on sonar before init");
+    throw std::runtime_error("updateHead called on sonar before init");
   return head_;
 }
 BlueViewSonar::~BlueViewSonar()
@@ -42,24 +42,25 @@ bool BlueViewSonar::hasPing() const
 void BlueViewSonar::SetRangeProfileMinIntensity(uint16_t thresh)
 {
   if (!has_init_)
-      throw std::runtime_error("SetRangeProfileMinIntensity called on sonar before init");
+    throw std::runtime_error("SetRangeProfileMinIntensity called on sonar before init");
   image_generator_.SetRangeProfileIntensityThreshold(thresh);
 }
 void BlueViewSonar::SetNoiseThreshold(float thresh)
 {
   if (!has_init_)
-      throw std::runtime_error("SetNoiseThreshold called on sonar before init");
+    throw std::runtime_error("SetNoiseThreshold called on sonar before init");
   image_generator_.SetNoiseThreshold(thresh);
 }
 bool BlueViewSonar::getNextPing()
 {
   if (!has_init_)
-      throw std::runtime_error("getNextPing called on sonar before init");
+    throw std::runtime_error("getNextPing called on sonar before init");
   cur_ping_++;
   int ping_num = -1;
   if (connection_type_ == ConnectionType::FILE)
   {
-    if (cur_ping_ + 1 > head_.GetPingCount()) return false;
+    if (cur_ping_ + 1 > head_.GetPingCount())
+      return false;
     ping_num = cur_ping_;
   }
   latest_ping_ = head_.GetPing(ping_num);
@@ -70,8 +71,9 @@ bool BlueViewSonar::getNextPing()
 int BlueViewSonar::getPingCount()
 {
   if (!has_init_)
-      throw std::runtime_error("updateHead called on sonar before init");
-  if (connection_type_ == ConnectionType::DEVICE) return -1;
+    throw std::runtime_error("updateHead called on sonar before init");
+  if (connection_type_ == ConnectionType::DEVICE)
+    return -1;
   return head_.GetPingCount();
 }
 void BlueViewSonar::generateImage()
