@@ -41,9 +41,11 @@ void Classification::fake_ogrid(cv::Mat &mat_ogrid, float resolution, const tf::
   // Sub's position relative to the ogrid
   cv::Point where_sub = cv::Point2d(transform.getOrigin().x() / resolution + mat_ogrid.cols / 2,
                                     transform.getOrigin().y() / resolution + mat_ogrid.rows / 2);
-  cv::rectangle(mat_ogrid, cv::Point(-10, -10) + where_sub, cv::Point(15, 10) + where_sub, cv::Scalar((uchar)WAYPOINT_ERROR_TYPE::OCCUPIED), 2);
+  cv::rectangle(mat_ogrid, cv::Point(-10, -10) + where_sub, cv::Point(15, 10) + where_sub,
+                cv::Scalar((uchar)WAYPOINT_ERROR_TYPE::OCCUPIED), 2);
   cv::rectangle(mat_ogrid, cv::Point(-5, -5) + where_sub, cv::Point(12, 5) + where_sub, cv::Scalar(0), -1);
-  cv::rectangle(mat_ogrid, cv::Point(5, -2) + where_sub, cv::Point(7, 0) + where_sub, cv::Scalar((uchar)WAYPOINT_ERROR_TYPE::OCCUPIED), -1);
+  cv::rectangle(mat_ogrid, cv::Point(5, -2) + where_sub, cv::Point(7, 0) + where_sub,
+                cv::Scalar((uchar)WAYPOINT_ERROR_TYPE::OCCUPIED), -1);
 }
 
 /*

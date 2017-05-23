@@ -7,42 +7,61 @@
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/MagneticField.h>
 
-namespace adis16400_imu {
-static uint16_t getu16(char *i) { return reinterpret_cast<const boost::uint16_t &>(*i); }
-static int16_t get16(char *i) { return reinterpret_cast<const boost::int16_t &>(*i); }
-static int64_t get64(char *i) { return reinterpret_cast<const boost::int64_t &>(*i); }
+namespace adis16400_imu
+{
+static uint16_t getu16(char *i)
+{
+  return reinterpret_cast<const boost::uint16_t &>(*i);
+}
+static int16_t get16(char *i)
+{
+  return reinterpret_cast<const boost::int16_t &>(*i);
+}
+static int64_t get64(char *i)
+{
+  return reinterpret_cast<const boost::int64_t &>(*i);
+}
 
-class Device {
- private:
+class Device
+{
+private:
   const std::string port;
   std::ifstream is;
 
-  bool open() {
-    try {
+  bool open()
+  {
+    try
+    {
       is.exceptions(std::ifstream::goodbit);
       is.close();
       is.clear();
       is.exceptions(std::ifstream::eofbit | std::ifstream::failbit | std::ifstream::badbit);
       is.open(port.c_str());
       return true;
-    } catch (const std::exception &exc) {
+    }
+    catch (const std::exception &exc)
+    {
       ROS_ERROR("error on open(%s): %s; reopening after delay", port.c_str(), exc.what());
       boost::this_thread::sleep(boost::posix_time::seconds(1));
       return false;
     }
   }
 
- public:
-  Device(const std::string port) : port(port) {
+public:
+  Device(const std::string port) : port(port)
+  {
     is.exceptions(std::ifstream::eofbit | std::ifstream::failbit | std::ifstream::badbit);
   }
 
-  bool read(const std::string frame_id, sensor_msgs::Imu &result,
-            sensor_msgs::MagneticField &mag_result) {
+  bool read(const std::string frame_id, sensor_msgs::Imu &result, sensor_msgs::MagneticField &mag_result)
+  {
     char data[32];
-    try {
+    try
+    {
       is.read(data, 32);
-    } catch (const std::exception &exc) {
+    }
+    catch (const std::exception &exc)
+    {
       ROS_ERROR("error on read: %s; reopening", exc.what());
       open();
       return false;
@@ -53,14 +72,13 @@ class Device {
 
     result.orientation_covariance[0] = -1;  // indicate no orientation data
 
-    static const double GYRO_CONVERSION =
-        0.05 * (2 * M_PI / 360);  // convert to deg/s and then to rad/s
+    static const double GYRO_CONVERSION = 0.05 * (2 * M_PI / 360);  // convert to deg/s and then to rad/s
     result.angular_velocity.x = get16(data + 4 + 2 * 0) * GYRO_CONVERSION;
     result.angular_velocity.y = get16(data + 4 + 2 * 1) * GYRO_CONVERSION;
     result.angular_velocity.z = get16(data + 4 + 2 * 2) * GYRO_CONVERSION;
     result.angular_velocity_covariance[0] = result.angular_velocity_covariance[4] =
-        result.angular_velocity_covariance[8] = pow(
-            0.9 * (2 * M_PI / 360), 2);  // 0.9 deg/sec rms converted to rad/sec and then squared
+        result.angular_velocity_covariance[8] =
+            pow(0.9 * (2 * M_PI / 360), 2);  // 0.9 deg/sec rms converted to rad/sec and then squared
 
     static const double ACC_CONVERSION = 3.33e-3 * 9.80665;  // convert to g's and then to m/s^2
     result.linear_acceleration.x = -get16(data + 10 + 2 * 0) * ACC_CONVERSION;

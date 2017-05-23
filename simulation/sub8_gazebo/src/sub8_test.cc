@@ -1,5 +1,5 @@
-#include <gazebo/common/Plugin.hh>
 #include <ros/ros.h>
+#include <gazebo/common/Plugin.hh>
 
 namespace gazebo
 {
@@ -16,13 +16,12 @@ public:
     if (!ros::isInitialized())
     {
       ROS_FATAL_STREAM("A ROS node for Gazebo has not been initialized, unable to load plugin. "
-        << "Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package)");
+                       << "Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package)");
       return;
     }
 
     ROS_INFO("Hello World!");
   }
-
 };
 GZ_REGISTER_WORLD_PLUGIN(WorldPluginTutorial)
 }

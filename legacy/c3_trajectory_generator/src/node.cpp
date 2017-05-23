@@ -1,8 +1,8 @@
+#include <actionlib/server/simple_action_server.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
-#include <nav_msgs/Odometry.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <actionlib/server/simple_action_server.h>
 
 #include <mil_msgs/PoseTwistStamped.h>
 #include <mil_tools/msg_helpers.hpp>
@@ -10,8 +10,8 @@
 #include <ros_alarms/listener.hpp>
 
 #include <mil_msgs/MoveToAction.h>
-#include "c3_trajectory_generator/SetDisabled.h"
 #include "C3Trajectory.h"
+#include "c3_trajectory_generator/SetDisabled.h"
 
 #include <waypoint_validity.hpp>
 
@@ -25,14 +25,11 @@ using namespace mil_msgs;
 using namespace mil_tools;
 using namespace c3_trajectory_generator;
 
-const boost::unordered_map<WAYPOINT_ERROR_TYPE, const std::string> WAYPOINT_ERROR_TO_STRING = boost::assign::map_list_of
-    (WAYPOINT_ERROR_TYPE::OCCUPIED, "OCCUPIED")
-    (WAYPOINT_ERROR_TYPE::UNKNOWN, "UNKNOWN")
-    (WAYPOINT_ERROR_TYPE::UNOCCUPIED, "UNOCCUPIED")
-    (WAYPOINT_ERROR_TYPE::ABOVE_WATER, "ABOVE_WATER")
-    (WAYPOINT_ERROR_TYPE::NO_OGRID, "NO_OGRID")
-    (WAYPOINT_ERROR_TYPE::NOT_CHECKED, "NOT_CHECKED")
-    (WAYPOINT_ERROR_TYPE::OCCUPIED_TRAJECTORY, "OCCUPIED_TRAJECTORY");
+const boost::unordered_map<WAYPOINT_ERROR_TYPE, const std::string> WAYPOINT_ERROR_TO_STRING =
+    boost::assign::map_list_of(WAYPOINT_ERROR_TYPE::OCCUPIED, "OCCUPIED")(WAYPOINT_ERROR_TYPE::UNKNOWN, "UNKNOWN")(
+        WAYPOINT_ERROR_TYPE::UNOCCUPIED, "UNOCCUPIED")(WAYPOINT_ERROR_TYPE::ABOVE_WATER, "ABOVE_WATER")(
+        WAYPOINT_ERROR_TYPE::NO_OGRID, "NO_OGRID")(WAYPOINT_ERROR_TYPE::NOT_CHECKED, "NOT_CHECKED")(
+        WAYPOINT_ERROR_TYPE::OCCUPIED_TRAJECTORY, "OCCUPIED_TRAJECTORY");
 
 subjugator::C3Trajectory::Point Point_from_PoseTwist(const Pose &pose, const Twist &twist)
 {
@@ -63,9 +60,9 @@ PoseTwist PoseTwist_from_PointWithAcceleration(const subjugator::C3Trajectory::P
   res.pose.position = vec2xyz<Point>(p.q.head(3));
   quaternionTFToMsg(orient, res.pose.orientation);
 
-  Eigen::Matrix3d worldangvel_from_eulerrates =
-      (Eigen::Matrix3d() << 1, 0, -sin(p.q[4]), 0, cos(p.q[3]), sin(p.q[3]) * cos(p.q[4]), 0, -sin(p.q[3]),
-       cos(p.q[3]) * cos(p.q[4])).finished();
+  Eigen::Matrix3d worldangvel_from_eulerrates = (Eigen::Matrix3d() << 1, 0, -sin(p.q[4]), 0, cos(p.q[3]),
+                                                 sin(p.q[3]) * cos(p.q[4]), 0, -sin(p.q[3]), cos(p.q[3]) * cos(p.q[4]))
+                                                    .finished();
 
   res.twist.linear = vec2xyz<Vector3>(tf::Matrix3x3(orient.inverse()) * vec2vec(p.qdot.head(3)));
   res.twist.angular = vec2xyz<Vector3>(worldangvel_from_eulerrates * p.qdot.tail(3));
@@ -107,7 +104,7 @@ struct Node
 
   ros::Timer update_timer;
 
-  //Action result for waypoint validation
+  // Action result for waypoint validation
   mil_msgs::MoveToResult actionresult_;
 
   bool disabled;
@@ -139,10 +136,7 @@ struct Node
     , waypoint_validity_(nh)
   {
     // Callback to reset trajectory when (un)killing
-    auto reset_traj = [this](ros_alarms::AlarmProxy a)
-    {
-      this->c3trajectory.reset();
-    };
+    auto reset_traj = [this](ros_alarms::AlarmProxy a) { this->c3trajectory.reset(); };
     kill_listener.addRaiseCb(reset_traj);
 
     // Make sure alarm integration is ok
@@ -205,19 +199,19 @@ struct Node
 
     auto old_waypoint = current_waypoint;
 
-
     if (actionserver.isNewGoalAvailable())
     {
       boost::shared_ptr<const mil_msgs::MoveToGoal> goal = actionserver.acceptNewGoal();
-      current_waypoint = subjugator::C3Trajectory::Waypoint(
-          Point_from_PoseTwist(goal->posetwist.pose, goal->posetwist.twist), goal->speed, !goal->uncoordinated, !goal->blind);
+      current_waypoint =
+          subjugator::C3Trajectory::Waypoint(Point_from_PoseTwist(goal->posetwist.pose, goal->posetwist.twist),
+                                             goal->speed, !goal->uncoordinated, !goal->blind);
       current_waypoint_t = now;
       this->linear_tolerance = goal->linear_tolerance;
       this->angular_tolerance = goal->angular_tolerance;
 
       // Check if waypoint is valid
-      std::pair<bool, WAYPOINT_ERROR_TYPE> checkWPResult =
-          waypoint_validity_.is_waypoint_valid(Pose_from_Waypoint(current_waypoint), current_waypoint.do_waypoint_validation);
+      std::pair<bool, WAYPOINT_ERROR_TYPE> checkWPResult = waypoint_validity_.is_waypoint_valid(
+          Pose_from_Waypoint(current_waypoint), current_waypoint.do_waypoint_validation);
       actionresult_.error = WAYPOINT_ERROR_TO_STRING.at(checkWPResult.second);
       actionresult_.success = checkWPResult.first;
       if (checkWPResult.first == false)  // got a point that we should not move to

@@ -1,18 +1,18 @@
+#include <dynamic_reconfigure/server.h>
 #include <eigen_conversions/eigen_msg.h>
 #include <Eigen/Geometry>
-#include <dynamic_reconfigure/server.h>
 #include <deque>
-#include "sub8_controller/GainConfig.h"
-#include "ros/ros.h"
-#include "nav_msgs/Odometry.h"
 #include "geometry_msgs/WrenchStamped.h"
+#include "nav_msgs/Odometry.h"
+#include "ros/ros.h"
+#include "sub8_controller/GainConfig.h"
 #include "sub8_msgs/Trajectory.h"
 #include "sub8_msgs/Waypoint.h"
 
-
 typedef std::deque<Eigen::Vector3d> ControllerDeque;
 
-class PDController {
+class PDController
+{
   /*
     [1] One day, all the land will be boxplus
         http://arxiv.org/pdf/1107.1119.pdf
@@ -31,13 +31,14 @@ private:
   dynamic_reconfigure::Server<sub8_controller::GainConfig> server;
   dynamic_reconfigure::Server<sub8_controller::GainConfig>::CallbackType reconfigure_callback;
 
-  bool ready = false; // Wait until we're ready
+  bool ready = false;  // Wait until we're ready
   bool got_state = false;
   bool got_target = false;
   double control_period = 0.02;
 
   // Pose-trackings
-  struct PoseStruct {
+  struct PoseStruct
+  {
     Eigen::Vector3d position;
     Eigen::Matrix3d orientation;
     Eigen::Vector3d linear_velocity;
@@ -64,7 +65,7 @@ private:
   double kp_angle = 29;
   double kd_angle = 14;
   double ki_angle = 5;
-  double sub_mass = 25; // kg
+  double sub_mass = 25;  // kg
 
   // Callbacks
   void gain_callback(sub8_controller::GainConfig &config, uint32_t level);

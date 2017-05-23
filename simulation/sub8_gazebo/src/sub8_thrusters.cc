@@ -1,13 +1,16 @@
 #include "sub8_gazebo/sub8_thrusters.hpp"
 #include <gazebo/common/Plugin.hh>
 
-namespace gazebo {
-
+namespace gazebo
+{
 GZ_REGISTER_MODEL_PLUGIN(ThrusterPlugin)
 
-ThrusterPlugin::ThrusterPlugin() {}
+ThrusterPlugin::ThrusterPlugin()
+{
+}
 
-void ThrusterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
+void ThrusterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
+{
   GZ_ASSERT(_model != NULL, "Received NULL model pointer");
 
   this->model = _model;
@@ -25,18 +28,23 @@ void ThrusterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   thrustSub = nh.subscribe("thrusters/thrust", 1, &ThrusterPlugin::ThrustCallback, this);
 
   // Parse SDF
-  if (this->sdf->HasElement("layout_param")) {
+  if (this->sdf->HasElement("layout_param"))
+  {
     this->layoutParam = this->sdf->Get<std::string>("layout_param");
-  } else {
+  }
+  else
+  {
     GZ_ASSERT(false, "Requires layout_param to be set!");
   }
 
-  if (this->sdf->HasElement("min_abs_thrust")) {
+  if (this->sdf->HasElement("min_abs_thrust"))
+  {
     this->minAbsThrust = this->sdf->Get<double>("min_abs_thrust");
-  } else {
+  }
+  else
+  {
     GZ_ASSERT(false, "Requires layout_param to be set!");
   }
-
 
   // Apply to multiple links
   GZ_ASSERT(this->sdf->HasElement("link"), "Must have a link specified!");
@@ -53,19 +61,21 @@ void ThrusterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
 
   // Prevent silly warnings (WHO IS STILL USING VARIADIC MACROS!?)
   ROS_INFO("Found %d thrusters", static_cast<int>(thrusterDefs.size()));
-  for (const auto& td : thrusterDefs) {
+  for (const auto& td : thrusterDefs)
+  {
     Thruster thruster(td.second);
     thrusterMap[td.first] = thruster;
   }
   this->lastTime = ros::Time::now();
 }
 
-void ThrusterPlugin::Init() {
-  this->updateConnection =
-      event::Events::ConnectWorldUpdateBegin(std::bind(&ThrusterPlugin::OnUpdate, this));
+void ThrusterPlugin::Init()
+{
+  this->updateConnection = event::Events::ConnectWorldUpdateBegin(std::bind(&ThrusterPlugin::OnUpdate, this));
 }
 
-void ThrusterPlugin::ThrustCallback(const sub8_msgs::Thrust::ConstPtr& thrust) {
+void ThrusterPlugin::ThrustCallback(const sub8_msgs::Thrust::ConstPtr& thrust)
+{
   math::Vector3 netForce = math::Vector3::Zero;
   math::Vector3 netTorque = math::Vector3::Zero;
 
@@ -75,8 +85,10 @@ void ThrusterPlugin::ThrustCallback(const sub8_msgs::Thrust::ConstPtr& thrust) {
   mtx.unlock();
 }
 
-void ThrusterPlugin::OnUpdate() {
-  if ((ros::Time::now() - this->lastTime) > ros::Duration(2.0)) {
+void ThrusterPlugin::OnUpdate()
+{
+  if ((ros::Time::now() - this->lastTime) > ros::Duration(2.0))
+  {
     return;
   }
   mtx.lock();
@@ -89,19 +101,21 @@ void ThrusterPlugin::OnUpdate() {
   math::Vector3 net_force(0.0, 0.0, 0.0);
   math::Vector3 net_torque(0.0, 0.0, 0.0);
 
-  for (auto thrustCmd : cmdBuffer) {
+  for (auto thrustCmd : cmdBuffer)
+  {
     const std::string name = thrustCmd.name;
     const double thrust = thrustCmd.thrust;
 
-    if (std::abs(thrust) < this->minAbsThrust) {
+    if (std::abs(thrust) < this->minAbsThrust)
+    {
       // Apply no force
       continue;
     }
 
     // clamp idea from: https://www.c-plusplus.net/forum/323030-full
     // email me (jake) if you ever find this line
-    math::Vector3 force = thrusterMap[name].direction *
-                          std::max(thrusterMap[name].min, std::min(thrusterMap[name].max, thrust));
+    math::Vector3 force =
+        thrusterMap[name].direction * std::max(thrusterMap[name].min, std::min(thrusterMap[name].max, thrust));
     math::Vector3 torque = thrusterMap[name].position.Cross(force);
     net_force += force;
     net_torque += torque;
@@ -111,7 +125,8 @@ void ThrusterPlugin::OnUpdate() {
   }
   // this->targetLink->AddForceAtRelativePosition(force, thrusterMap[name].position);
   math::Pose subFrame = this->targetLink->GetWorldPose();
-  if (subFrame.pos.z < 0.0) {
+  if (subFrame.pos.z < 0.0)
+  {
     this->targetLink->AddRelativeForce(net_force);
     this->targetLink->AddRelativeTorque(net_torque);
   }

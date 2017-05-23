@@ -1,6 +1,6 @@
+#include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
-#include <boost/optional.hpp>
 
 #include <nodelet/nodelet.h>
 #include <pluginlib/class_list_macros.h>
@@ -10,19 +10,24 @@
 
 #include "rdi_explorer_dvl/driver.hpp"
 
-namespace rdi_explorer_dvl {
-
-class Nodelet : public nodelet::Nodelet {
- public:
-  Nodelet() {}
-  ~Nodelet() {
+namespace rdi_explorer_dvl
+{
+class Nodelet : public nodelet::Nodelet
+{
+public:
+  Nodelet()
+  {
+  }
+  ~Nodelet()
+  {
     heartbeat_timer.stop();
     running = false;
     device->abort();
     polling_thread_inst.join();
   }
 
-  virtual void onInit() {
+  virtual void onInit()
+  {
     std::string port = mil_tools::getParam<std::string>(getPrivateNodeHandle(), "port");
 
     int baudrate = mil_tools::getParam<int>(getPrivateNodeHandle(), "baudrate", 115200);
@@ -33,25 +38,32 @@ class Nodelet : public nodelet::Nodelet {
     range_pub = getNodeHandle().advertise<mil_msgs::RangeStamped>("dvl/range", 10);
 
     device = boost::make_shared<Device>(port, baudrate);
-    heartbeat_timer = getNodeHandle().createTimer(
-        ros::Duration(0.5), boost::bind(&Nodelet::heartbeat_callback, this, _1));
+    heartbeat_timer =
+        getNodeHandle().createTimer(ros::Duration(0.5), boost::bind(&Nodelet::heartbeat_callback, this, _1));
     running = true;
     polling_thread_inst = boost::thread(boost::bind(&Nodelet::polling_thread, this));
   }
 
- private:
-  void heartbeat_callback(const ros::TimerEvent& event) { device->send_heartbeat(); }
+private:
+  void heartbeat_callback(const ros::TimerEvent& event)
+  {
+    device->send_heartbeat();
+  }
 
-  void polling_thread() {
-    while (running) {
+  void polling_thread()
+  {
+    while (running)
+    {
       boost::optional<mil_msgs::VelocityMeasurements> msg;
       boost::optional<mil_msgs::RangeStamped> range_msg;
       device->read(msg, range_msg);
-      if (msg) {
+      if (msg)
+      {
         msg->header.frame_id = frame_id;
         pub.publish(*msg);
       }
-      if (range_msg) {
+      if (range_msg)
+      {
         range_msg->header.frame_id = frame_id;
         range_pub.publish(*range_msg);
       }

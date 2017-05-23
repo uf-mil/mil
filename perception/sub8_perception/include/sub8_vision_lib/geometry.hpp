@@ -1,12 +1,12 @@
 #pragma once
-#include "typedefs.hpp"
-#include <opencv2/opencv.hpp>
 #include <image_geometry/pinhole_camera_model.h>
 #include <iostream>
 #include <limits>
+#include <opencv2/opencv.hpp>
+#include "typedefs.hpp"
 
-namespace sub {
-
+namespace sub
+{
 // TODO: "further" -- point in xyz, uv for camera_n --> a point $dist further along that ray
 
 // OMP: Compute the point in $cloud that is closest to the ray defined by $direction and $line_pt
@@ -23,16 +23,16 @@ namespace sub {
 // @param[in] line_pt A point on the line, ideally the origin of the ray
 // @return The index of the point in the target point cloud that is closest to the ray of interest
 template <typename PointT>
-size_t closest_point_index_rayOMP(const pcl::PointCloud<PointT>& cloud,
-                                  const Eigen::Vector3f& direction_pre,
-                                  const Eigen::Vector3f& line_pt,
-                                  double& distance_to_ray) {
+size_t closest_point_index_rayOMP(const pcl::PointCloud<PointT>& cloud, const Eigen::Vector3f& direction_pre,
+                                  const Eigen::Vector3f& line_pt, double& distance_to_ray)
+{
   Eigen::Vector3f direction = direction_pre / direction_pre.norm();
   PointT point;
   std::vector<double> distances(cloud.points.size(), 10);  // Initialize to value 10
 // Generate a vector of distances
 #pragma omp parallel for
-  for (size_t index = 0; index < cloud.points.size(); index++) {
+  for (size_t index = 0; index < cloud.points.size(); index++)
+  {
     point = cloud.points[index];
 
     Eigen::Vector3f cloud_pt(point.x, point.y, point.z);
@@ -45,9 +45,11 @@ size_t closest_point_index_rayOMP(const pcl::PointCloud<PointT>& cloud,
   double min_distance = std::numeric_limits<double>::infinity();
   size_t min_index = 0;
   // Find index of maximum (TODO: Figure out how to OMP this)
-  for (size_t index = 0; index < cloud.points.size(); index++) {
+  for (size_t index = 0; index < cloud.points.size(); index++)
+  {
     const double distance = distances[index];
-    if (distance < min_distance) {
+    if (distance < min_distance)
+    {
       min_distance = distance;
       min_index = index;
     }
@@ -71,14 +73,15 @@ size_t closest_point_index_rayOMP(const pcl::PointCloud<PointT>& cloud,
 // @param[in] line_pt A point on the line, ideally the origin of the ray
 // @return The index of the point in the target point cloud that is closest to the ray of interest
 template <typename PointT>
-size_t closest_point_index_ray(const pcl::PointCloud<PointT>& cloud,
-                               const Eigen::Vector3f& direction_pre,
-                               const Eigen::Vector3f& line_pt) {
+size_t closest_point_index_ray(const pcl::PointCloud<PointT>& cloud, const Eigen::Vector3f& direction_pre,
+                               const Eigen::Vector3f& line_pt)
+{
   // One number greater than all others...one number to rule them all...
   Eigen::Vector3f direction = direction_pre / direction_pre.norm();
   double min_distance = std::numeric_limits<double>::infinity();
   size_t min_index = 0;
-  for (size_t index = 0; index < cloud.points.size(); index++) {
+  for (size_t index = 0; index < cloud.points.size(); index++)
+  {
     const PointT point = cloud.points[index];
 
     Eigen::Vector3f cloud_pt(point.x, point.y, point.z);
@@ -86,7 +89,8 @@ size_t closest_point_index_ray(const pcl::PointCloud<PointT>& cloud,
     // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Vector_formulation
     double distance = (difference - (difference.dot(direction) * direction)).norm();
 
-    if (distance < min_distance) {
+    if (distance < min_distance)
+    {
       min_distance = distance;
       min_index = index;
     }
@@ -97,17 +101,17 @@ size_t closest_point_index_ray(const pcl::PointCloud<PointT>& cloud,
 // Determine the nearest point to a ray, and return the actual point
 template <typename PointT>
 PointT closest_point_ray(const pcl::PointCloud<PointT>& cloud, const Eigen::Vector3f& direction,
-                         const Eigen::Vector3f& line_pt, double& distance) {
+                         const Eigen::Vector3f& line_pt, double& distance)
+{
   size_t index = closest_point_index_rayOMP(cloud, direction, line_pt, distance);
   return (cloud.points[index]);
 }
 
 // Get the index of the point closest to the ray deprojected from a point (u, v) in an image
 template <typename PointT>
-size_t project_uv_to_cloud_index(const pcl::PointCloud<PointT>& cloud,
-                                 const cv::Point2d& image_point,
-                                 const image_geometry::PinholeCameraModel camera_model,
-                                 double& distance) {
+size_t project_uv_to_cloud_index(const pcl::PointCloud<PointT>& cloud, const cv::Point2d& image_point,
+                                 const image_geometry::PinholeCameraModel camera_model, double& distance)
+{
   // Assumes camera is at origin, pointed in the normal direction
   size_t pt_pcl_index;
   cv::Point3d pt_cv;
@@ -123,7 +127,8 @@ size_t project_uv_to_cloud_index(const pcl::PointCloud<PointT>& cloud,
 // projection of that pixel into 3D
 template <typename PointT>
 PointT project_uv_to_cloud(const pcl::PointCloud<PointT>& cloud, const cv::Point2d& image_point,
-                           const image_geometry::PinholeCameraModel camera_model, double& distance) {
+                           const image_geometry::PinholeCameraModel camera_model, double& distance)
+{
   PointT pt_pcl;
   size_t pt_index = project_uv_to_cloud_index(cloud, image_point, camera_model, distance);
   pt_pcl = cloud.points[pt_index];
@@ -132,7 +137,8 @@ PointT project_uv_to_cloud(const pcl::PointCloud<PointT>& cloud, const cv::Point
 
 // Convert a pcl point to an eigen vector3f
 template <typename PointT>
-Eigen::Vector3f point_to_eigen(const PointT& pcl_point) {
+Eigen::Vector3f point_to_eigen(const PointT& pcl_point)
+{
   Eigen::Vector3f eig_point(pcl_point.x, pcl_point.y, pcl_point.z);
   return (eig_point);
 }

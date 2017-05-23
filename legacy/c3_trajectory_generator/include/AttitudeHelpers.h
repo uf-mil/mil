@@ -5,9 +5,11 @@
 
 using namespace Eigen;
 
-namespace subjugator {
-class AttitudeHelpers {
- public:
+namespace subjugator
+{
+class AttitudeHelpers
+{
+public:
   static Vector3d LocalGravity(double lat, double depth);
   static double Markov_wStdDev(double dt, double T, double sigma);
   static Vector3d RotationToEuler(const Matrix3d& R);

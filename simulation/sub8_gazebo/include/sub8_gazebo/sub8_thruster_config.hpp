@@ -1,16 +1,15 @@
 #pragma once
 
-#include <ros/ros.h>
-#include <XmlRpcValue.h>
 #include <XmlRpcException.h>
+#include <XmlRpcValue.h>
+#include <ros/ros.h>
 
-#include <string>
 #include <map>
+#include <string>
 #include <vector>
 
 namespace sub8_gazebo
 {
-
 /*
   Struct used for encoding the comms layout of the thrusters on the sub
 */
@@ -45,8 +44,6 @@ void load_ports(XmlRpc::XmlRpcValue& ports_xmlrpc, std::vector<ThrusterPort>& po
   - ports_xmlrpc: dict with structure ((motor_id, position, direction, bounds), ...)
   - ports_vec: reference to map in wich to store the loaded ThrusterDef's
 */
-void load_thrusters(XmlRpc::XmlRpcValue& thrusters_xmlrpc,
-                    std::map<std::string, ThrusterDef>& thruster_map);
+void load_thrusters(XmlRpc::XmlRpcValue& thrusters_xmlrpc, std::map<std::string, ThrusterDef>& thruster_map);
 
 }  // sub8_gazebo
-

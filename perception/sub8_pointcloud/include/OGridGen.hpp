@@ -1,8 +1,8 @@
 #pragma once
-#include <mil_blueview_driver/BlueViewPing.h>
-#include <ros/ros.h>
-#include <nav_msgs/OccupancyGrid.h>
 #include <geometry_msgs/Point.h>
+#include <mil_blueview_driver/BlueViewPing.h>
+#include <nav_msgs/OccupancyGrid.h>
+#include <ros/ros.h>
 
 #include <tf/transform_listener.h>
 #include <tf2/convert.h>
@@ -13,9 +13,8 @@
 
 #include <opencv2/core/core.hpp>
 #include <stdexcept>
+#include "opencv2/opencv.hpp"
 
-#include <sensor_msgs/PointCloud2.h>
-#include <pcl_conversions/pcl_conversions.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl_ros/point_cloud.h>

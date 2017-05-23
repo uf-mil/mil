@@ -1,29 +1,29 @@
 #pragma once
-#include <string>
-#include <vector>
-#include <utility>  // std::pair
-#include <iostream>
 #include <algorithm>
-#include <stdexcept>
-#include <boost/thread.hpp>
 #include <boost/bind.hpp>
+#include <boost/thread.hpp>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <utility>  // std::pair
+#include <vector>
 
-#include <opencv2/opencv.hpp>
-#include <Eigen/Core>
 #include <eigen_conversions/eigen_msg.h>
+#include <Eigen/Core>
 #include <Eigen/StdVector>
+#include <opencv2/opencv.hpp>
 
-#include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
-#include <image_transport/image_transport.h>
 #include <image_geometry/pinhole_camera_model.h>
-#include <tf/transform_listener.h>
+#include <image_transport/image_transport.h>
+#include <ros/ros.h>
 #include <sensor_msgs/image_encodings.h>
+#include <tf/transform_listener.h>
 
+#include <sub8_msgs/TBDetectionSwitch.h>
+#include <sub8_msgs/TorpBoardPoseRequest.h>
 #include <mil_vision_lib/cv_tools.hpp>
 #include <mil_vision_lib/visualization.hpp>
-#include <sub8_msgs/TorpBoardPoseRequest.h>
-#include <sub8_msgs/TBDetectionSwitch.h>
 
 // #define SEGMENTATION_DEBUG
 
@@ -35,15 +35,15 @@
 
 /*
   Warning:
-  This class cannot be copy constructed. 
+  This class cannot be copy constructed.
   For examlple, the following will not compile:
     Sub8ObjectFinder tb_detector = Sub8ObjectFinder();
   Do this instead:
     Sub8ObjectFinder tb_detector();
 */
 
-class Sub8ObjectFinder {
-
+class Sub8ObjectFinder
+{
 public:
   Sub8ObjectFinder();
   ~Sub8ObjectFinder();
@@ -55,14 +55,12 @@ public:
 
 private:
   // Callbacks
-  bool detection_activation_switch(
-      sub8_msgs::TBDetectionSwitch::Request &req,
-      sub8_msgs::TBDetectionSwitch::Response &resp);
+  bool detection_activation_switch(sub8_msgs::TBDetectionSwitch::Request &req,
+                                   sub8_msgs::TBDetectionSwitch::Response &resp);
   void left_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
                            const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
-  void
-  right_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
-                       const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
+  void right_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
+                            const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
 
   // Detection / Processing
   void run();

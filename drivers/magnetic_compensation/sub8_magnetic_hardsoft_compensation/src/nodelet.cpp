@@ -1,25 +1,29 @@
-#include <boost/thread.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
 
+#include <eigen_conversions/eigen_msg.h>
 #include <nodelet/nodelet.h>
 #include <pluginlib/class_list_macros.h>
 #include <ros/ros.h>
 #include <sensor_msgs/MagneticField.h>
-#include <eigen_conversions/eigen_msg.h>
 
 #include <mil_tools/param_helpers.hpp>
 
-namespace magnetic_hardsoft_compensation {
-class Nodelet : public nodelet::Nodelet {
- private:
+namespace magnetic_hardsoft_compensation
+{
+class Nodelet : public nodelet::Nodelet
+{
+private:
   std::string frame_id;
   Eigen::Matrix3d scale_inverse;
   Eigen::Vector3d shift;
   ros::Subscriber sub;
   ros::Publisher pub;
 
-  void handle(const sensor_msgs::MagneticField::ConstPtr& msg) {
-    if (msg->header.frame_id != frame_id) {
+  void handle(const sensor_msgs::MagneticField::ConstPtr& msg)
+  {
+    if (msg->header.frame_id != frame_id)
+    {
       ROS_ERROR("msg's frame_id != configured frame_id! ignoring message");
       return;
     }
@@ -36,10 +40,13 @@ class Nodelet : public nodelet::Nodelet {
     pub.publish(result);
   }
 
- public:
-  Nodelet() {}
+public:
+  Nodelet()
+  {
+  }
 
-  virtual void onInit() {
+  virtual void onInit()
+  {
     ros::NodeHandle& private_nh = getPrivateNodeHandle();
 
     frame_id = mil_tools::getParam<std::string>(private_nh, "frame_id");
@@ -48,12 +55,11 @@ class Nodelet : public nodelet::Nodelet {
 
     ros::NodeHandle& nh = getNodeHandle();
 
-    sub = nh.subscribe<sensor_msgs::MagneticField>("imu/mag_raw", 1000,
-                                                   boost::bind(&Nodelet::handle, this, _1));
+    sub = nh.subscribe<sensor_msgs::MagneticField>("imu/mag_raw", 1000, boost::bind(&Nodelet::handle, this, _1));
     pub = nh.advertise<sensor_msgs::MagneticField>("imu/mag", 10);
   }
 };
 
-PLUGINLIB_DECLARE_CLASS(magnetic_hardsoft_compensation, nodelet,
-                        magnetic_hardsoft_compensation::Nodelet, nodelet::Nodelet);
+PLUGINLIB_DECLARE_CLASS(magnetic_hardsoft_compensation, nodelet, magnetic_hardsoft_compensation::Nodelet,
+                        nodelet::Nodelet);
 }
