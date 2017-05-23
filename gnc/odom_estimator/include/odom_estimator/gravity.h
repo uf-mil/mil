@@ -1,6 +1,8 @@
 #ifndef GUARD_FPPPRRCZKGOFCAVZ
 #define GUARD_FPPPRRCZKGOFCAVZ
 
+#include "odom_estimator/util.h"
+
 namespace odom_estimator
 {
 namespace gravity
