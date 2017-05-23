@@ -94,9 +94,10 @@ class OrangeRectangleFinder():
         self.toggle = rospy.Service('~enable', SetBool, self._enable_cb)
 
         self.image_sub = Image_Subscriber(camera, self._img_cb)
-        camera_info = self.image_sub.wait_for_camera_info()
+        self.camera_info = self.image_sub.wait_for_camera_info()
+        assert self.camera_info is not None
         self.cam = PinholeCameraModel()
-        self.cam.fromCameraInfo(camera_info)
+        self.cam.fromCameraInfo(self.camera_info)
 
     def _set_geometry_cb(self, req):
         self.rect_model = RectFinder.from_polygon(req.model)
@@ -167,6 +168,9 @@ class OrangeRectangleFinder():
             res.header.stamp = self.last_found_time_2D
             res.pose.x = self.last2d[0][0]
             res.pose.y = self.last2d[0][1]
+            res.camera_info = self.camera_info
+            res.max_x = self.camera_info.width
+            res.max_y = self.camera_info.height
             if self.last2d[1][0] < 0:
                 self.last2d[1][0] = -self.last2d[1][0]
                 self.last2d[1][1] = -self.last2d[1][1]
