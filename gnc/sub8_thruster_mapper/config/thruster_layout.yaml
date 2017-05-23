@@ -18,13 +18,13 @@ thrusters:
   FLH: {
     motor_id:  0,
     position:  [0.2678, 0.2795, 0.0],
-    direction: [-0.866, 0.5, 0.0],
+    direction: [0.866, -0.5, 0.0],
     bounds:    [-90.0, 90.0]
   }
   FLV: {
     motor_id:  1,
     position:  [0.1583, 0.169, 0.0142],
-    direction: [0.0, 0.0, -1.0],
+    direction: [0.0, 0.0, 1.0],
     bounds:    [-90.0, 90.0]
   }
   FRH: {
@@ -36,13 +36,13 @@ thrusters:
   FRV: {
     motor_id:  3,
     position:  [0.1583, -0.169, 0.0142],
-    direction: [0.0, 0.0, -1.0],
+    direction: [0.0, 0.0, 1.0],
     bounds:    [-90.0, 90.0]
   }
   BLH: {
     motor_id:  4,
     position:  [-0.2678, 0.2795, 0.0],
-    direction: [0.866, 0.5, 0.0],
+    direction: [-0.866, -0.5, 0.0],
     bounds:    [-90.0, 90.0]
   }
   BLV: {
@@ -54,7 +54,7 @@ thrusters:
   BRH: {
     motor_id:  6,
     position:  [-0.2678, -0.2795, 0.0],
-    direction: [0.866, -0.5, 0.0],
+    direction: [-0.866, 0.5, 0.0],
     bounds:    [-90.0, 90.0]
   }
   BRV: {
