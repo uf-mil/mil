@@ -38,11 +38,11 @@ def run(sub):
     # Set geometry of marker model
     print_info("SETTING GEOMETRY")
     polygon = RectFinder(LENGTH, WIDTH).to_polygon()
-    sub.vision_proxies.orange_rectangle.set_geometry(polygon)
+    yield sub.vision_proxies.orange_rectangle.set_geometry(polygon)
 
     # Wait for vision services, enable perception
     print_info("ACTIVATING PERCEPTION SERVICE")
-    sub.vision_proxies.orange_rectangle.start()
+    yield sub.vision_proxies.orange_rectangle.start()
 
     pattern = []
     if DO_PATTERN:
@@ -85,5 +85,5 @@ def run(sub):
     print_info("MOVING TO MARKER AT {}".format(move._pose.position))
     yield move.go(speed=SPEED)
     print_good("ALIGNED TO PATH MARKER. MOVE FORWARD TO NEXT CHALLENGE!")
-    sub.vision_proxies.orange_rectangle.stop()
+    yield sub.vision_proxies.orange_rectangle.stop()
     defer.returnValue(True)
