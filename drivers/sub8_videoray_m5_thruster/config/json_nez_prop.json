@@ -1,5 +1,5 @@
 {
-    "note": "Force calibration data for the VideoRay m5 Thrusters, gifted to UF by VideoRay",
+    "note": "Force calibration data for the VideoRay m5 Thrusters, (using Jason's prop design)",
     "calibration_data": {
         "newtons": [
             -85.16798603621542,
