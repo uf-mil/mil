@@ -11,7 +11,10 @@ enum class WAYPOINT_ERROR_TYPE
   UNKNOWN = 50,
   UNOCCUPIED = 0,
   ABOVE_WATER = 1,
-  NO_OGRID = 100
+
+  NO_OGRID = 100,
+  NOT_CHECKED = 2,
+  OCCUPIED_TRAJECTORY = 98
 };
 
 class WaypointValidity

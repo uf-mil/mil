@@ -55,7 +55,7 @@ def main(args):
                 res = yield sub.move.forward(0).zero_roll_and_pitch().go(**action_kwargs)
             else:
                 res = yield sub.move.forward(0).go(**action_kwargs)
-
+            
         else:
             # Get the command from shorthand if it's there
             command = SHORTHAND.get(command, command)
@@ -78,6 +78,7 @@ def main(args):
                 res = yield goal.zero_roll_and_pitch().go(**action_kwargs)
             else:
                 res = yield goal.go(**action_kwargs)
+            fprint("Result: {}".format(res.error))
 
     defer.returnValue(reactor.stop())
 

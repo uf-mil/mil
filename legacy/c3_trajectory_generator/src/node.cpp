@@ -15,12 +15,24 @@
 
 #include <waypoint_validity.hpp>
 
+#include <boost/assign/list_of.hpp>
+#include <boost/unordered_map.hpp>
+
 using namespace std;
 using namespace geometry_msgs;
 using namespace nav_msgs;
 using namespace mil_msgs;
 using namespace mil_tools;
 using namespace c3_trajectory_generator;
+
+const boost::unordered_map<WAYPOINT_ERROR_TYPE, const std::string> WAYPOINT_ERROR_TO_STRING = boost::assign::map_list_of
+    (WAYPOINT_ERROR_TYPE::OCCUPIED, "OCCUPIED")
+    (WAYPOINT_ERROR_TYPE::UNKNOWN, "UNKNOWN")
+    (WAYPOINT_ERROR_TYPE::UNOCCUPIED, "UNOCCUPIED")
+    (WAYPOINT_ERROR_TYPE::ABOVE_WATER, "ABOVE_WATER")
+    (WAYPOINT_ERROR_TYPE::NO_OGRID, "NO_OGRID")
+    (WAYPOINT_ERROR_TYPE::NOT_CHECKED, "NOT_CHECKED")
+    (WAYPOINT_ERROR_TYPE::OCCUPIED_TRAJECTORY, "OCCUPIED_TRAJECTORY");
 
 subjugator::C3Trajectory::Point Point_from_PoseTwist(const Pose &pose, const Twist &twist)
 {
@@ -94,6 +106,9 @@ struct Node
   ros::ServiceServer set_disabled_service;
 
   ros::Timer update_timer;
+
+  //Action result for waypoint validation
+  mil_msgs::MoveToResult actionresult_;
 
   bool disabled;
   boost::scoped_ptr<subjugator::C3Trajectory> c3trajectory;
@@ -190,6 +205,7 @@ struct Node
 
     auto old_waypoint = current_waypoint;
 
+
     if (actionserver.isNewGoalAvailable())
     {
       boost::shared_ptr<const mil_msgs::MoveToGoal> goal = actionserver.acceptNewGoal();
@@ -202,6 +218,8 @@ struct Node
       // Check if waypoint is valid
       std::pair<bool, WAYPOINT_ERROR_TYPE> checkWPResult =
           waypoint_validity_.is_waypoint_valid(Pose_from_Waypoint(current_waypoint), current_waypoint.do_waypoint_validation);
+      actionresult_.error = WAYPOINT_ERROR_TO_STRING.at(checkWPResult.second);
+      actionresult_.success = checkWPResult.first;
       if (checkWPResult.first == false)  // got a point that we should not move to
       {
         if (checkWPResult.second ==
@@ -233,7 +251,7 @@ struct Node
     if (actionserver.isPreemptRequested())
     {
       current_waypoint = c3trajectory->getCurrentPoint();
-      current_waypoint.do_waypoint_validation = c3trajectory->do_waypoint_validation;
+      current_waypoint.do_waypoint_validation = false;
       current_waypoint.r.qdot = subjugator::Vector6d::Zero();  // zero velocities
       current_waypoint_t = now;
 
@@ -259,16 +277,19 @@ struct Node
 
     std::pair<bool, WAYPOINT_ERROR_TYPE> checkWPResult =
         waypoint_validity_.is_waypoint_valid(Pose_from_Waypoint(p), c3trajectory->do_waypoint_validation);
+
     if (checkWPResult.first == false && checkWPResult.second == WAYPOINT_ERROR_TYPE::OCCUPIED)
     {  // New trajectory will hit an occupied goal, so reject
       ROS_ERROR("can't move there! - bad trajectory");
       current_waypoint = old_trajectory;
-      current_waypoint.do_waypoint_validation = c3trajectory->do_waypoint_validation;
+      current_waypoint.do_waypoint_validation = false;
       current_waypoint.r.qdot = subjugator::Vector6d::Zero();  // zero velocities
       current_waypoint_t = now;
 
       c3trajectory.reset(new subjugator::C3Trajectory(current_waypoint.r, limits));
       c3trajectory_t = now;
+      actionresult_.success = false;
+      actionresult_.error = WAYPOINT_ERROR_TO_STRING.at(WAYPOINT_ERROR_TYPE::OCCUPIED_TRAJECTORY);
     }
 
     PoseTwistStamped msg;
@@ -293,7 +314,7 @@ struct Node
                                                          max(1e-3, angular_tolerance)) &&
         current_waypoint.r.qdot == subjugator::Vector6d::Zero())
     {
-      actionserver.setSucceeded();
+      actionserver.setSucceeded(actionresult_);
     }
   }
 };
