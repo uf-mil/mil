@@ -8,5 +8,7 @@ float64 linear_tolerance # distance from goal for result to be sent
 float64 angular_tolerance
 ---
 # result
+string error # Returns waypoint error
+bool success # true if successfully went to assigned waypoint
 ---
 # feedback
