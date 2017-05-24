@@ -18,6 +18,10 @@ And these can be combined if you'd like.
 **NOTE:** You can run the sub with or without a gui. Disabling one or both of these is intended for use when testing controllers or other things that only rely on the data and not the actual visuals. Also it is intended for people who have shitty computers that would benefit from not having to run the gazebo window and the cameras (which saves a nontrival amount of CPU time).
 
 ### To add custom textures to models
+This guide assumes you have created a mesh and texture within gazebo. All the models I have been given from Solidworks have already come with meshes so I did not have to create them. Look up guides on how to bind textures to UV Maps in Blender. That is what you will be doing for the most part to create your texture files. You'll want to save the texture file as a separate png for this. An interesting side note about Blender, the way the UV Maps work and meshes work, you cannot scale an object differently in each dimension and preserve the mesh. The entire object must be scaled at the same ratio (.5,.5,.5 for example). Otherwise when you export the object you will encounter many terrible errors trying to load it into Gazebo. 
+
+tldr; Scale your objects evenly in blender or else the machine spirits will be displeased. 
+
 1. Open DAE file and move to library_images tag. If one does not exist, create it.
 2. Add image id and import image within this tag. Example found in colored_lid.dae. Close library_images tage.
 3. Immediately after, go to the library_effects tag or create one directly beneath library_images. 
