@@ -6,6 +6,7 @@
 * [[Code Policy]]
     * [[ROS Conventions]]
     * [[Other Conventions]]
+    * [[Continuous Integration]]
 * Networking
     * [[Connecting to Vehicles]]
     * [[SSH Keys]]
