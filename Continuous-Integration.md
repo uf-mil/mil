@@ -2,6 +2,7 @@ The Continuous Integration (CI) service for MIL projects is a self-hosted [Jenki
 
 MIL had been using [Semaphore](https://semaphoreci.com) before the upgrade to Ubuntu 16.04 and ROS Kinetic. Due to this new software stack not being supported on that platform, and after considering other available services, it was decided to self-host the CI infrastructure for increased performance and configurability. This page is meant to provide an overview of the way that the service was configured and why certain design decisions were made. If you have any questions that are not answered on this page, feel free to contact [Anthony Olive](https://github.com/whispercoros) with any further questions.
 
+
 # Jenkins
 Jenkins is a task automation server primarily focused on continuous integration. It allows a build pipeline to be defined for each project that we work on so that a series of checks can be performed on changes to that project to ensure that those changes meet our requirements. The [Blue Ocean](https://jenkins.io/projects/blueocean) suite of plugins have been installed to improve the look and functionality of the server.
 
@@ -24,6 +25,7 @@ The [Active Directory plugin](https://wiki.jenkins-ci.org/display/JENKINS/Active
 
 #### Apache Reverse Proxy
 The Jenkins instance sits behind an Apache reverse proxy under the `/jenkins` path. This enables us to run other web services on the domain as well as to secure the service with TLS. See [this guide](https://wiki.jenkins-ci.org/display/JENKINS/Running+Jenkins+behind+Apache) for more information on how this was done. Keep in mind that the `AllowEncodedSlashes NoDecode` must be set for the virtual hosts on port 80 and port 443 as well (this took us far too long to figure out).
+
 
 # Docker
 Docker is the platform that is used to provision hosts for each build. It enables the creation of an image based on a build file that can contain eenvironment variables, commands to run, external volume configurations, and more. The filesystem for this image is built in layers of differences using aurfs. For more information on how Docker works and how to use it, please refer to the [documentation](https://docs.docker.com/get-started).
