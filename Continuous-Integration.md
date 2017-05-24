@@ -11,10 +11,10 @@ Jenkins has been in development for a long time. It is very stable and has an ac
 #### Pipeline as Code
 The pipeline for Jenkins builds of MIL repositories is defined in a file that sits in the root directory of the repository. This file must be named `Jenkinsfile`. See [this page](https://jenkins.io/solutions/pipeline) for more information and the [pipeline file](https://github.com/uf-mil/mil_common/blob/master/Jenkinsfile) for the mil_common repository for an example. Note that the entire pipeline is wrapped in a `dockerNode(image: 'uf-mil:mil_common')` block. This provisions a Docker container for the build based on the mil_common image. Each stage of the build process is run in a new shell, so the MIL runcom must be sourced for each of them (the output of this is piped to `/dev/null` to reduce verbosity). At the time of writing, there are four stages in the build process for projects:
 
-* Checkout - pull the branch or pull request that is to be built and any other repositories needed for the build
-* Build - run `catkin_make` on the workspace to ensure that the project builds
-* Test - run all ROS tests in the workspace and output the results to ensure that they all pass
-* Format - run `clang_format` and `flake8` to ensure that all code meets our style guide requirements
+* `Checkout` - pull the branch or pull request that is to be built and any other repositories needed for the build
+* `Build` - run `catkin_make` on the workspace to ensure that the project builds
+* `Test` - run all ROS tests in the workspace and output the results to ensure that they all pass
+* `Format` - run `clang_format` and `flake8` to ensure that all code meets our style guide requirements
 
 #### Github
 Using the [Github Organization Folder plugin](https://wiki.jenkins-ci.org/display/JENKINS/GitHub+Organization+Folder+Plugin), it is trivial to interact with many of the features Github offers for CI. The plugin is configured to scan the organization at a regular interval in order to index new repositories and uses an organization hook to initiate builds whenever a pull request or branch is updated. The Jenkins server has a personal authentication token for for the mil-bot Github account, which is used for the sole purpose of updating the build status of commit messages.
