@@ -105,4 +105,5 @@ Unit testing generally saves time for the developer. Despite the initial time sp
 # C++ Style Guide
 * We use the [ROS style guide](http://wiki.ros.org/CppStyleGuide), because LLVM style breaks nested template declarations
     * The clang-format utility can be used with it's [ROS style guide file](https://github.com/davetcoleman/roscpp_code_format) to automatically format your code
+    * The install script automatically pulls the `.clang-format` file to the root of the catkin workspace it creates
     * The ROS style guide is based on the [Google style guide](https://google.github.io/styleguide/cppguide.html)
