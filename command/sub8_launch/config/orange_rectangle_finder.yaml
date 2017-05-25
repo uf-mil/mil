@@ -1,17 +1,36 @@
+# True to provide debug image and rviz Markers for debugging
 debug_ros: True
+
+# paramaters to pass to canny contour detection.
+#   runs: cv2.Canny(img, canny_low, canny_low*self.canny_ratio)
 canny_low: 100
 canny_ratio: 3.0
+
+# Threshold hue and saturation values to create mask to find orange objects.
+#   runs: cv2.inRange(img, (0, thresh_saturation_low, 0), (thresh_hue_high, 255, 255))
 thresh_hue_high: 60
 thresh_satuation_low: 100
+
+# Minimum number of pixels in area of a contour to not be filtered
 min_contour_area: 100
+
+# multiple of contour arcLength to pass to OpenCV approxPolygon to find 4 sided polygon
 epsilon_factor: 0.02
+
+# Maximum value from cv2.matchshapes to be considered a valid contour
 shape_match_thresh: 0.4
+
+# <min_found_count> number of images where object is found within <timeout_seconds> to be considered found
 min_found_count: 10
 timeout_seconds: 2.0
+
+# True to provide 3d pose approximation service using PnP
 do_3D: True
-marker_camera: "/camera/down/left/image_rect_color"
+
+# Topic to pull images from to find rectangle
+image_topic: "/camera/down/left/image_rect_color"
 
 # initialize to correct scale model of path marker
 # missions should call /vision/path_marker/set_geometry with correct model
-length: 1.2192
-width: 0.1524
+length: 1.2192 # longer side of rectangle in meters
+width: 0.1524  # shorter side of rectangle in meters

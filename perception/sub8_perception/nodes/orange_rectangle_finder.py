@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 import cv2
-# Ensure opencv3 is used, needed for KalmanFilter
-assert cv2.__version__[0] == '3'
 import numpy as np
 import rospy
 import tf
@@ -18,6 +16,11 @@ from mil_msgs.srv import SetGeometry, SetGeometryResponse
 from mil_vision_tools import RectFinder
 
 __author__ = "Kevin Allen"
+
+
+# Ensure opencv3 is used, needed for KalmanFilter
+assert cv2.__version__[0] == '3'
+
 
 class OrangeRectangleFinder():
     """
@@ -70,7 +73,7 @@ class OrangeRectangleFinder():
         width = rospy.get_param("~width", 0.1524)
         self.rect_model = RectFinder(length, width)
         self.do_3D = rospy.get_param("~do_3D", True)
-        camera = rospy.get_param("~marker_camera", "/camera/down/left/image_rect_color")
+        camera = rospy.get_param("~image_topic", "/camera/down/left/image_rect_color")
 
         self.tf_listener = tf.TransformListener()
 
@@ -236,7 +239,7 @@ class OrangeRectangleFinder():
             rospy.logwarn("Marker too close, must be wrong...")
             return False
         rmat, _ = cv2.Rodrigues(rvec)
-        vec = rmat.dot(np.array([1, 0 , 0]))
+        vec = rmat[:, 0]
 
         # Convert position estimate and 2d direction vector to messages to they can be transformed
         ps = PointStamped()
