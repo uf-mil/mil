@@ -65,7 +65,7 @@ class Segmenter(object):
 
         self.is_done = False
         rect = cv2.minAreaRect(np.array([np.array(self.corners)]))
-        box = cv2.cv.BoxPoints(rect)
+        box = cv2.boxPoints(rect)
         box = np.int0(box)
         return box
 
