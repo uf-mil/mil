@@ -3,13 +3,16 @@
 using namespace std;
 using namespace cv;
 
-namespace mil_vision{
-
-PcdColorizer::PcdColorizer(ros::NodeHandle nh, string input_pcd_topic)
-  : _nh(nh), _img_hist_size{10}, _cloud_processor{nh, input_pcd_topic, _img_hist_size},
-  _input_pcd_topic{input_pcd_topic}, _output_pcd_topic{input_pcd_topic + "_colored"}  
+namespace mil_vision
 {
-  using mil_tools::operator "" _s; // converts to std::string
+PcdColorizer::PcdColorizer(ros::NodeHandle nh, string input_pcd_topic)
+  : _nh(nh)
+  , _img_hist_size{ 10 }
+  , _cloud_processor{ nh, input_pcd_topic, _img_hist_size }
+  , _input_pcd_topic{ input_pcd_topic }
+  , _output_pcd_topic{ input_pcd_topic + "_colored" }
+{
+  using mil_tools::operator"" _s;  // converts to std::string
 
   try
   {
@@ -17,20 +20,20 @@ PcdColorizer::PcdColorizer(ros::NodeHandle nh, string input_pcd_topic)
     _cloud_sub = _nh.subscribe<PCD<>>(_input_pcd_topic, 1, &SingleCloudProcessor::operator(), &_cloud_processor);
 
     // Advertise output topic
-    _cloud_pub = _nh.advertise<PCD<>>(_output_pcd_topic, 1, true); // output type will probably be different
+    _cloud_pub = _nh.advertise<PCD<>>(_output_pcd_topic, 1, true);  // output type will probably be different
   }
-  catch(std::exception &e)
+  catch (std::exception &e)
   {
     _err_msg = "COLORIZER: Suscriber or publisher error caught: "_s + e.what();
     ROS_ERROR(_err_msg.c_str());
     return;
   }
 
-  std::string msg = "COLORIZER: Initialization was "_s + (_cloud_processor.ok()? "successful" : "unsuccessful");
+  std::string msg = "COLORIZER: Initialization was "_s + (_cloud_processor.ok() ? "successful" : "unsuccessful");
   msg += "\n    Input point cloud topic: " + _input_pcd_topic + "\n    Output point cloud topic: " + _output_pcd_topic;
   ROS_INFO(msg.c_str());
 
-  if(_cloud_processor.ok())
+  if (_cloud_processor.ok())
   {
     _ok = true;
     _active = true;
@@ -40,7 +43,8 @@ PcdColorizer::PcdColorizer(ros::NodeHandle nh, string input_pcd_topic)
 void PcdColorizer::_cloud_cb(const PCD<>::ConstPtr &cloud_in)
 {
   change_input_mtx.lock();
-  // _input_pcd = cloud_in;  // TODO: figure out a good communication mechanism b/w colorizer, single processor and merger
+  // _input_pcd = cloud_in;  // TODO: figure out a good communication mechanism b/w colorizer, single processor and
+  // merger
   ROS_INFO("Got a new cloud");
   change_input_mtx.unlock();
 }
@@ -60,7 +64,7 @@ void PcdColorizer::_cloud_cb(const PCD<>::ConstPtr &cloud_in)
 //     _err_msg += ") Re-run after rectified color images are being published.";
 //     ROS_ERROR(_err_msg.c_str());
 //     return;
-//   } 
+//   }
 
 //   // Construct and initialize Camera Stream objects
 //   size_t good_init = 0;
@@ -97,7 +101,7 @@ void PcdColorizer::_cloud_cb(const PCD<>::ConstPtr &cloud_in)
 //       {
 //         std::string err {"COLORIZER: waiting for tf between "};
 //         err += src_frame_id + std::string(" and ") + target_frame_id + std::string(": ");
-//         if(! this->_tf_listener.waitForTransform(this->_ros_cam_ptrs[i]->getCameraModelPtr()->tfFrame(), 
+//         if(! this->_tf_listener.waitForTransform(this->_ros_cam_ptrs[i]->getCameraModelPtr()->tfFrame(),
 //                                                  src_frame_id, ros::Time(0), tf_timeout, ros::Duration(0.05), &err))
 //         {
 //           ROS_ERROR(err.c_str());  // TF not available
@@ -156,13 +160,13 @@ void PcdColorizer::_cloud_cb(const PCD<>::ConstPtr &cloud_in)
 //     _transformed_cloud_ptrs[i] = transfromed_pcd;
 //   }
 
-  // #pragma omp parallel for
-  // for(size_t i = 0; i < _transformed_cloud_ptrs.size(); i++)
-  // {
-  //   // This should be merged with above loop
-  //   std::cout << "hey" << std::endl;
-  // }
-  // std::cout << "pcd: " <<  cloud_in->header << std::endl;
+// #pragma omp parallel for
+// for(size_t i = 0; i < _transformed_cloud_ptrs.size(); i++)
+// {
+//   // This should be merged with above loop
+//   std::cout << "hey" << std::endl;
+// }
+// std::cout << "pcd: " <<  cloud_in->header << std::endl;
 // }
 
 // inline void PcdColorizer::_combine_pcd()
@@ -170,4 +174,4 @@ void PcdColorizer::_cloud_cb(const PCD<>::ConstPtr &cloud_in)
 
 // }
 
-} // namespace mil_vision
+}  // namespace mil_vision

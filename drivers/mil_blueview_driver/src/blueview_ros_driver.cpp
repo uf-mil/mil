@@ -105,11 +105,11 @@ void BlueViewRosDriver::initParams()
   sonar.updateHead();
 
   int range_profile_thresh;
-  if(nh.param<int>("range_profile_intensity_threshold", range_profile_thresh))
+  if (nh.param<int>("range_profile_intensity_threshold", range_profile_thresh))
     sonar.SetRangeProfileMinIntensity(range_profile_thresh);
 
   float noise_threshold;
-  if(nh.param<int>("noise_threshold", noise_threshold))
+  if (nh.param<int>("noise_threshold", noise_threshold))
     sonar.SetRangeProfileMinIntensity(noise_threshold);
 
   // Start loop
@@ -117,18 +117,20 @@ void BlueViewRosDriver::initParams()
 }
 void BlueViewRosDriver::run()
 {
-    if (period_seconds_ <= 0.0)
+  if (period_seconds_ <= 0.0)
+  {
+    while (ros::ok())
     {
-      while (ros::ok())
-      {
-        get_ping();
-        ros::spinOnce();
-      }
+      get_ping();
+      ros::spinOnce();
     }
-    else {
-      timer = nh.createTimer(ros::Duration(period_seconds_), std::bind(&BlueViewRosDriver::loop, this, std::placeholders::_1));
-      ros::spin();
-    }
+  }
+  else
+  {
+    timer = nh.createTimer(ros::Duration(period_seconds_),
+                           std::bind(&BlueViewRosDriver::loop, this, std::placeholders::_1));
+    ros::spin();
+  }
 }
 void BlueViewRosDriver::get_ping()
 {
@@ -176,9 +178,9 @@ int main(int argc, char **argv)
   catch (const BVTSDK::SdkException &err)
   {
     ROS_FATAL("Exception thrown in Blue View SDK (Error #%d):\n\t%s: %s\n", err.ReturnCode(), err.ErrorName().c_str(),
-           err.ErrorMessage().c_str());
-  } 
-  catch (const std::runtime_error& err) 
+              err.ErrorMessage().c_str());
+  }
+  catch (const std::runtime_error &err)
   {
     ROS_FATAL("Exception: %s", err.what());
   }
