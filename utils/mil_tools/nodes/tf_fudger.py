@@ -68,7 +68,9 @@ p = q = None
 q_mode = False
 
 # Used for printing and saving
-tf_line = '<node pkg="tf" type="static_transform_publisher" name="{child}_tf" args="{p[0]} {p[1]} {p[2]}  {q[0]} {q[1]} {q[2]} {q[3]}  /{parent} /{child} {prd}" />\n'
+tf_line = '<node pkg="tf" type="static_transform_publisher" \
+          name="{child}_tf" args="{p[0]} {p[1]} {p[2]}\
+          {q[0]} {q[1]} {q[2]} {q[3]}  /{parent} /{child} {prd}" />\n'
 prd = 100  # This will get replaced if it needs to
 
 args.tf_child = args.tf_child[1:] if args.tf_child[0] == '/' else args.tf_child
@@ -97,9 +99,7 @@ def set_bars(p, rpy):
     cv2.setTrackbarPos("roll", "tf", int(toCvAng(rpy[0])))
     cv2.setTrackbarPos("pitch", "tf", int(toCvAng(rpy[1])))
     cv2.setTrackbarPos("yaw", "tf", int(toCvAng(rpy[2])))
-    k = cv2.waitKey(100) & 0xFF
-    if k == ord('q'):
-        q_mode = not q_mode
+    cv2.waitKey(100) & 0xFF
 
 
 def reset():
@@ -121,9 +121,9 @@ while not rospy.is_shutdown():
 
     if (not p == p_last) or (not rpy == rpy_last):
         rpy_feedback = "xyz: {}, euler: {}".format(
-            [round(x, 5) for x in p], [round(np.degrees(x), 5) for x in rpy])
+            [round(e, 5) for e in p], [round(np.degrees(f), 5) for f in rpy])
         q_feedback = "xyz: {},     q: {}".format(
-            [round(x, 5) for x in p], [round(x, 5) for x in q])
+            [round(x, 5) for e in p], [round(f, 5) for f in q])
         print q_feedback if q_mode else rpy_feedback
     p_last = p
     rpy_last = rpy
@@ -167,12 +167,14 @@ while not rospy.is_shutdown():
                 break
 
             elif 'pkg="tf"' in line:
-                # Incase we don't find the tf line of interest to change, we want to insert the new tf line after the last tf line
+                # Incase we don't find the tf line of interest to change, we want to insert the new tf line after
+                # the last tf line
                 tab_level = line[:line.find("<")]  # The labs infront of the tf line
                 last_static_pub = i
 
         else:
-            print "Tf link not found between /{parent} /{child} in tf.launch.".format(parent=args.tf_parent, child=args.tf_child)
+            print "Tf link not found between /{parent} /{child} in tf.launch.".format(
+                   parent=args.tf_parent, child=args.tf_child)
             lines.insert(last_static_pub + 1, '\n' + tab_level + tf_line_to_add.format(prd=prd))
             print "Adding: {}".format(lines[last_static_pub + 1].replace(tab_level, '')[:-1])
 

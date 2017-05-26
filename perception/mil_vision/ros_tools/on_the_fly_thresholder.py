@@ -1,12 +1,9 @@
 #!/usr/bin/python
 from txros import util, NodeHandle
-from twisted.internet import defer, reactor
-from sensor_msgs.msg import Image, CompressedImage
-from cv_bridge import CvBridge, CvBridgeError
-
+from twisted.internet import reactor
+from sensor_msgs.msg import Image
 from mil_ros_tools import image_helpers
 import numpy as np
-import argcomplete
 import sys
 import argparse
 import cv2
@@ -54,7 +51,8 @@ class Thresholder(object):
 
     def update_mask(self):
         self.lower, self.upper = self.trackbars.get_bounds()
-        self.mask = cv2.inRange(self.image if self.thresh_type == 'bgr' else cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV),
+        self.mask = cv2.inRange(self.image if self.thresh_type == 'bgr' else
+                                cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV),
                                 self.lower, self.upper)
         cv2.imshow("mask", self.mask)
 
@@ -106,8 +104,9 @@ def do_parsing():
     parser.add_argument(dest='topic_name',
                         help="The topic name you'd like to listen to.")
     parser.add_argument(dest='parameter_family',
-                        help="This script will set the rosparams: \n\t `parameter_family`/bgr_high \n\t `parameter_family`/bgr_low \n OR \
-                              \n\t `parameter_family`/hsv_high \n\t `parameter_family`/hsv_high \n (depending on --hsv)")
+                        help="This script will set the rosparams: \n\t `parameter_family`/bgr_high \n\t\
+                              `parameter_family`/bgr_low \n OR \\n\t `parameter_family`/hsv_high \n\t\
+                              `parameter_family`/hsv_high \n (depending on --hsv)")
     parser.add_argument('--hsv', action='store_true',
                         help="Use HSV instead of BGR")
 

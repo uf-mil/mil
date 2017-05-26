@@ -71,7 +71,6 @@ class OGridPub(object):
         m.width = width
         m.height = height
         pos = np.array([-width * resolution / 2, -height * resolution / 2, 0])
-        quat = np.array([0, 0, 0, 1])
         m.origin = Pose()
         m.origin.position.x, m.origin.position.y = pos[:2]
 

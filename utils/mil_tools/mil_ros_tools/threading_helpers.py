@@ -14,9 +14,10 @@ def thread_lock(lock):
     def lock_thread(function_to_lock):
         '''thread_lock(function) -> locked function
         Thread locking decorator
-            If you use this as a decorator for a function, it will apply a threading lock during the execution of that function,
-            Which guarantees that no ROS callbacks can change the state of data while it is executing. This
-                is critical to make sure that a new message being sent doesn't cause a weird serial interruption
+            If you use this as a decorator for a function, it will apply a threading lock during
+            the execution of that function, which guarantees that no ROS callbacks can change the
+            state of data while it is executing. This is critical to make sure that a new message
+            being sent doesn't cause a weird serial interruption
         '''
         def locked_function(*args, **kwargs):
             # Get threading lock

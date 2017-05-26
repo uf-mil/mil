@@ -113,7 +113,8 @@ class FprintFactory(object):
         assert msg_color is None or isinstance(
             msg_color, str), "`msg_color` should be `None` for default printing or a string color."
         assert isinstance(
-            auto_bold, bool), "`auto_bold` should be true or false if messages should be printed as bold by default or not"
+            auto_bold, bool), "`auto_bold` should be true or false if messages should be printed\
+                               as bold by default or not"
         assert newline is None or isinstance(
             newline, int), "`newline` should be the number of newlines after the text (default 1)"
 

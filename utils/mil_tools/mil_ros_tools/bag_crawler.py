@@ -1,4 +1,3 @@
-
 #!/usr/bin/python
 """
 This file wis written by the team at UF MIL for the 2016 robosub competition.

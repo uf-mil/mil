@@ -5,7 +5,6 @@ import rospy
 import rosbag
 import rostopic
 import os
-import resource
 from collections import deque
 import itertools
 import datetime
@@ -22,7 +21,7 @@ For example:
         bag_status = bagging_server(bag_name, bag_time)
         bag_name = name of bag (leave blank to use default name: current date and time)
             Provide an empty string: '' to bag everything
-        bag_time = float32 (leave blank to dump entire bag): 
+        bag_time = float32 (leave blank to dump entire bag):
             Provide 0.0, or 0 to bag everything
 """
 
@@ -67,7 +66,7 @@ class OnlineBagger(object):
         """
         self.dir = rospy.get_param('~bag_package_path', default=None)
         # Handle bag directory for MIL bag script
-        if self.dir is None and os.environ.has_key('BAG_DIR'):
+        if self.dir is None and 'BAG_DIR' in os.environ:
             self.dir = os.environ['BAG_DIR']
 
         self.stream_time = rospy.get_param(
@@ -86,7 +85,7 @@ class OnlineBagger(object):
             self.subscriber_list[topic[0]] = (time, False)
 
         def add_unique_topic(topic):
-            if not self.subscriber_list.has_key(topic):
+            if topic not in self.subscriber_list:
                 self.subscriber_list[topic] = (self.stream_time, False)
 
         def add_env_var(var):
@@ -94,7 +93,7 @@ class OnlineBagger(object):
                 add_unique_topic(topic)
 
         # Add topics from MIL bag script environment variables
-        if os.environ.has_key('BAG_ALWAYS'):
+        if 'BAG_ALWAYS' in os.environ:
             add_env_var(os.environ['BAG_ALWAYS'])
         for key in os.environ.keys():
             if key[0:4] == 'bag_':
@@ -165,8 +164,8 @@ class OnlineBagger(object):
             i = i + 1
             if i % 1000 == 0:
                 rospy.logdebug('still subscribing!')
-        rospy.loginfo("Subscribed to {} of {} topics, will try again every {} seconds".format(self.successful_subscription_count,
-                                                                                              len(self.subscriber_list), self.resubscribe_period))
+        rospy.loginfo("Subscribed to {} of {} topics, will try again every {} seconds".format(
+                      self.successful_subscription_count, len(self.subscriber_list), self.resubscribe_period))
         self.resubscriber = rospy.Timer(rospy.Duration(
             self.resubscribe_period), self.subscribe)
 
@@ -301,12 +300,12 @@ class OnlineBagger(object):
 
         # If directory param is not set, default to $HOME/bags/<date>
         default_dir = self.dir
-        if default_dir == None:
+        if default_dir is None:
             default_dir = os.path.join(os.environ['HOME'], 'bags')
 
         # if dated folder param is set to True, append current date to
         # directory
-        if self.dated_folder == True:
+        if self.dated_folder is True:
             default_dir = os.path.join(default_dir, str(datetime.date.today()))
         # Split filename from directory
         bag_dir, bag_name = os.path.split(filename)
@@ -331,7 +330,7 @@ class OnlineBagger(object):
         during the bagging process, resumes streaming when over.
         If bagging is already false because of an active call to this service
         """
-        if self.streaming == False:
+        if self.streaming is False:
             status = 'Bag Request came in while bagging, priority given to prior request'
             rospy.logwarn(status)
             return status
@@ -351,7 +350,7 @@ class OnlineBagger(object):
                 continue
             # Exclude topics that aren't in topics service argument
             # If topics argument is empty string, include all topics
-            if len(selected_topics) > 0 and not topic in selected_topics:
+            if len(selected_topics) > 0 and topic not in selected_topics:
                 continue
             if len(self.topic_messages[topic]) == 0:
                 self.bagger_status = self.bagger_status + \

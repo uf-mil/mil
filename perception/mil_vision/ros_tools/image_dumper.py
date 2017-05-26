@@ -6,10 +6,8 @@ import sys
 import fnmatch
 import argparse
 from tqdm import tqdm
-
 import cv2
 import rospy
-import roslib
 import rosbag
 
 from cv_bridge import CvBridge, CvBridgeError

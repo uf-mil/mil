@@ -2,7 +2,6 @@
 from __future__ import division
 
 import txros
-import numpy as np
 from twisted.internet import defer
 from geometry_msgs.msg import PoseStamped, PointStamped
 

@@ -1,10 +1,7 @@
 import txros
 from twisted.internet import defer
 from txros import util, tf
-import navigator_tools as nt
 from navigator_tools import CvDebug
-from collections import Counter
-from image_geometry import PinholeCameraModel
 import sys
 from collections import deque
 from cv_bridge import CvBridge
@@ -14,7 +11,6 @@ import genpy
 import cv2
 from mil_ros_tools import odometry_to_numpy
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
-from image_geometry import PinholeCameraModel
 import numpy as np
 ___author___ = "Tess Bianchi"
 
@@ -114,7 +110,7 @@ class LidarToImage(object):
         xmin, ymin, xmax, ymax = int(xmin), int(ymin), int(xmax), int(ymax)
         h, w, r = img.shape
         if xmin < 0 or xmax < 0 or xmin > w or xmax > w or xmax - xmin == 0 or ymax - ymin == 0:
-            continue
+            defer.returnValue((None, None))
         if ymin < 0:
             ymin = 0
         roi = img[ymin:ymax, xmin:xmax]

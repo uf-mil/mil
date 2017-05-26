@@ -1,5 +1,3 @@
-
-from roi_generator import ROI_Collection
 from mil_ros_tools import CvDebug, BagCrawler
 import numpy as np
 from HOG_descriptor import HOGDescriptor
