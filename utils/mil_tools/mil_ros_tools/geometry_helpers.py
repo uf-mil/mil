@@ -120,6 +120,7 @@ def quaternion_matrix(q):
     mat_h = trans.quaternion_matrix(q)
     return mat_h[:3, :3] / mat_h[3, 3]
 
+
 def quat_to_euler(q):
     ''' Approximate a quaternion as a euler rotation vector'''
 
@@ -133,6 +134,7 @@ def euler_to_quat(rotvec):
 
     quat = trans.quaternion_from_euler(rotvec[0], rotvec[1], rotvec[2])
     return Quaternion(quat[0], quat[1], quat[2], quat[3])
+
 
 def random_pose(_min, _max):
     ''' Gives a random pose in the xyz range `_min` to `_max` '''

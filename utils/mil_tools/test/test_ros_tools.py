@@ -90,7 +90,8 @@ class TestROSTools(unittest.TestCase):
 
         self.assertTrue(fake_lock.entry, msg='Thread was never locked')
         self.assertTrue(fake_lock.exit, msg='Thread was never released')
-        self.assertTrue(result, msg='Thread was not locked while the function was executed')
+        self.assertTrue(
+            result, msg='Thread was not locked while the function was executed')
 
     def test_skew_symmetric_cross(self):
         '''Test that the skew symmetric cross product matrix produces the definition
@@ -102,7 +103,8 @@ class TestROSTools(unittest.TestCase):
             [+3, +0, -1],
             [-2, +1, +0],
         ])
-        np.testing.assert_allclose(skew_sym, truth, err_msg="Did not make a Skew-symmetric matrix. Pretty big screw-up imho.")
+        np.testing.assert_allclose(
+            skew_sym, truth, err_msg="Did not make a Skew-symmetric matrix. Pretty big screw-up imho.")
 
     def test_make_rotation(self):
         '''Test several random vector pairs, and see if we can generate a valid alignment'''
@@ -121,20 +123,23 @@ class TestROSTools(unittest.TestCase):
                     p, q
                 )
             )
-            self.assertGreater(np.dot(p_rotated, q), 0.0, msg="The rotation did wacky inversion")
+            self.assertGreater(np.dot(p_rotated, q), 0.0,
+                               msg="The rotation did wacky inversion")
 
     def test_normalize_vector(self):
         '''Test vector normalization'''
         for k in range(10):
             rand_vec = np.random.random(k)  # Make a random k-length vector
 
-            # Ignore the astronomically unlikely case that a vector has near 0 norm
+            # Ignore the astronomically unlikely case that a vector has near 0
+            # norm
             if not np.isclose(np.sum(rand_vec), 0):
                 normalized = normalize(rand_vec)
                 norm = np.linalg.norm(normalized)
 
                 # Test that the norm is 1
-                np.testing.assert_almost_equal(norm, 1.0, err_msg="The normalized vector did not have length 1")
+                np.testing.assert_almost_equal(
+                    norm, 1.0, err_msg="The normalized vector did not have length 1")
 
 
 if __name__ == '__main__':

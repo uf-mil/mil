@@ -16,16 +16,21 @@ class Trackbars(object):
     '''
     Keeps track of the different colorspace trackbars
     '''
+
     def __init__(self, thresh_type):
         self.thresh_type = list(thresh_type)
-        [cv2.createTrackbar(name + '_high', 'parameters', 0, 255 if name != 'h' else 179, lambda a: a) for name in self.thresh_type]
-        [cv2.createTrackbar(name + '_low', 'parameters', 0, 255 if name != 'h' else 179, lambda a: a) for name in self.thresh_type]
+        [cv2.createTrackbar(name + '_high', 'parameters', 0, 255 if name !=
+                            'h' else 179, lambda a: a) for name in self.thresh_type]
+        [cv2.createTrackbar(name + '_low', 'parameters', 0, 255 if name !=
+                            'h' else 179, lambda a: a) for name in self.thresh_type]
 
         cv2.waitKey(10)
 
     def get_bounds(self):
-        upper_bounds = np.array([cv2.getTrackbarPos(name + '_high', 'parameters') for name in self.thresh_type])
-        lower_bounds = np.array([cv2.getTrackbarPos(name + '_low', 'parameters') for name in self.thresh_type])
+        upper_bounds = np.array([cv2.getTrackbarPos(
+            name + '_high', 'parameters') for name in self.thresh_type])
+        lower_bounds = np.array(
+            [cv2.getTrackbarPos(name + '_low', 'parameters') for name in self.thresh_type])
         return lower_bounds, upper_bounds
 
 
@@ -33,10 +38,11 @@ class Thresholder(object):
     '''
     Does the thresholding and manages the windows associated with that
     '''
+
     def __init__(self, img, thresh_type='bgr'):
         cv2.namedWindow('parameters', cv2.WINDOW_NORMAL)
         cv2.namedWindow('mask')
-        cv2.imshow('mask', np.zeros_like(img[:,:,0]))
+        cv2.imshow('mask', np.zeros_like(img[:, :, 0]))
 
         self.image = img
 
@@ -55,7 +61,7 @@ class Thresholder(object):
     def to_dict(self):
         lower = map(float, self.lower)
         upper = map(float, self.upper)
-        return {'color_space':self.thresh_type, 'ranges': {'lower': lower, 'upper': upper}, 'invert': False}
+        return {'color_space': self.thresh_type, 'ranges': {'lower': lower, 'upper': upper}, 'invert': False}
 
 
 @util.cancellableInlineCallbacks

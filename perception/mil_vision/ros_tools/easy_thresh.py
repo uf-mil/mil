@@ -149,7 +149,8 @@ if __name__ == '__main__':
             break
 
     ranges = thresholder.ranges
-    labels = visual_threshold_tools.np_inrange(hsv_dsamp, ranges[:, 0], ranges[:, 1])
+    labels = visual_threshold_tools.np_inrange(
+        hsv_dsamp, ranges[:, 0], ranges[:, 1])
 
     # Print out thresholds that can be put in the configuration yaml
     low = ranges[:, 0]

@@ -11,6 +11,7 @@ from visualization_msgs.msg import Marker
 from std_srvs.srv import SetBool, SetBoolResponse
 import navigator_tools
 
+
 class PingerFinder(object):
     """
     This class will find the position of a pinger at a given frequency. For it 
@@ -38,18 +39,23 @@ class PingerFinder(object):
         self.freq_tol = 1E3
         self.min_amp = 200  # if too many outliers, increase this
         self.max_observations = 200
-        self.line_array =np.empty((0, 4), float)
+        self.line_array = np.empty((0, 4), float)
         self.observation_amplitudes = np.empty((0, 0), float)
         self.pinger_position = Point(0, 0, 0)
         self.heading_pseudorange = 10
         self.debug_arrow_id = 0
         self.debug_arrow_lifetime = rospy.Duration(10, 0)
         self.listen = False
-        self.ping_sub = rospy.Subscriber("/hydrophones/processed", ProcessedPing, callback=self.ping_cb)
-        self.marker_pub = rospy.Publisher("/visualization_marker", Marker, queue_size=10)
-        self.pinger_finder_srv = rospy.Service('hydrophones/find_pinger', FindPinger, self.find_pinger)
-        self.activate_listening = rospy.Service('hydrophones/set_listen', SetBool, self.set_listen)
-        self.set_freq_srv = rospy.Service('hydrophones/set_freq', SetFrequency, self.set_freq)
+        self.ping_sub = rospy.Subscriber(
+            "/hydrophones/processed", ProcessedPing, callback=self.ping_cb)
+        self.marker_pub = rospy.Publisher(
+            "/visualization_marker", Marker, queue_size=10)
+        self.pinger_finder_srv = rospy.Service(
+            'hydrophones/find_pinger', FindPinger, self.find_pinger)
+        self.activate_listening = rospy.Service(
+            'hydrophones/set_listen', SetBool, self.set_listen)
+        self.set_freq_srv = rospy.Service(
+            'hydrophones/set_freq', SetFrequency, self.set_freq)
 
     def ping_cb(self, ping):
         print rospkg.get_ros_package_path()
@@ -57,8 +63,10 @@ class PingerFinder(object):
         if abs(ping.freq - self.target_freq) < self.freq_tol and ping.amplitude > self.min_amp and self.listen:
             trans, rot = None, None
             try:
-                self.tf_listener.waitForTransform(self.map_frame, self.hydrophone_frame, ping.header.stamp, rospy.Duration(0.25))
-                trans, rot = self.tf_listener.lookupTransform(self.map_frame, self.hydrophone_frame, ping.header.stamp)
+                self.tf_listener.waitForTransform(
+                    self.map_frame, self.hydrophone_frame, ping.header.stamp, rospy.Duration(0.25))
+                trans, rot = self.tf_listener.lookupTransform(
+                    self.map_frame, self.hydrophone_frame, ping.header.stamp)
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
                 print e
                 return
@@ -66,14 +74,20 @@ class PingerFinder(object):
             R = tf.transformations.quaternion_matrix(rot)[:3, :3]
             delta = R.dot(navigator_tools.point_to_numpy(ping.position))[:2]
             p1 = p0 + self.heading_pseudorange * delta / npl.norm(delta)
-            line_coeffs = np.array([[p0[0], p0[1], p1[0], p1[1]]]) # p0 and p1 define a line
-            self.visualize_arrow(Point(p0[0], p0[1], 0), Point(p1[0], p1[1], 0))
+            # p0 and p1 define a line
+            line_coeffs = np.array([[p0[0], p0[1], p1[0], p1[1]]])
+            self.visualize_arrow(
+                Point(p0[0], p0[1], 0), Point(p1[0], p1[1], 0))
             self.line_array = np.append(self.line_array, line_coeffs, 0)
-            self.observation_amplitudes = np.append(self.observation_amplitudes, ping.amplitude)
-            if len(self.line_array) >= self.max_observations:  # delete softest samples if we have over max_observations
+            self.observation_amplitudes = np.append(
+                self.observation_amplitudes, ping.amplitude)
+            # delete softest samples if we have over max_observations
+            if len(self.line_array) >= self.max_observations:
                 softest_idx = np.argmin(self.observation_amplitudes)
-                self.line_array = np.delete(self.line_array, softest_idx, axis=0)  
-                self.observation_amplitudes = np.delete(self.observation_amplitudes, softest_idx)
+                self.line_array = np.delete(
+                    self.line_array, softest_idx, axis=0)
+                self.observation_amplitudes = np.delete(
+                    self.observation_amplitudes, softest_idx)
             print "PINGERFINDER: Observation collected. Total: {}".format(self.line_array.shape[0])
 
     def LS_intersection(self):
@@ -91,9 +105,11 @@ class PingerFinder(object):
 
         begin_pts = self.line_array[:, :2]
         diffs = self.line_array[:, 2:4] - begin_pts
-        norms = np.apply_along_axis(line_segment_norm, 1, self.line_array).reshape(diffs.shape[0], 1)
+        norms = np.apply_along_axis(
+            line_segment_norm, 1, self.line_array).reshape(diffs.shape[0], 1)
         rot_left_90 = np.array([[0, -1], [1, 0]])
-        perp_unit_vecs = np.apply_along_axis(lambda unit_diffs: rot_left_90.dot(unit_diffs), 1, diffs / norms)
+        perp_unit_vecs = np.apply_along_axis(
+            lambda unit_diffs: rot_left_90.dot(unit_diffs), 1, diffs / norms)
         A_sum = np.zeros((2, 2))
         Ap_sum = np.zeros((2, 1))
 
@@ -113,7 +129,8 @@ class PingerFinder(object):
         if self.line_array.shape[0] < 2:
             print "PINGER_FINDER: Can't locate pinger. Less than two valid observations have been recorded."
             return {}
-        res =  {'pinger_position' : self.LS_intersection(), 'num_samples' : self.line_array.shape[0]}
+        res = {'pinger_position': self.LS_intersection(
+        ), 'num_samples': self.line_array.shape[0]}
         self.visualize_pinger()
         return res
 
@@ -133,7 +150,6 @@ class PingerFinder(object):
         if self.pinger_position != Point(0, 0, 0):
             self.marker_pub.publish(marker)
             print "PINGERFINDER: position: ({p.x[0]:.2f}, {p.y[0]:.2f})".format(p=self.pinger_position)
-                 
 
     def visualize_arrow(self, tail, head):
         marker = Marker()
@@ -154,7 +170,7 @@ class PingerFinder(object):
         marker.color.b = 1.0
         marker.color.a = 0.5
         self.marker_pub.publish(marker)
-        
+
     def set_listen(self, listen_status):
         self.listen = listen_status.data
         print "PINGERFINDER: setting listening to on" if self.listen else "PINGERFINDER: setting listening to off"
@@ -166,6 +182,7 @@ class PingerFinder(object):
         self.sample_amplitudes = np.empty((0, 0), float)
         self.pinger_position = Point(0, 0, 0)
         return SetFrequencyResponse()
+
 
 if __name__ == '__main__':
     rospy.init_node('pinger_finder')

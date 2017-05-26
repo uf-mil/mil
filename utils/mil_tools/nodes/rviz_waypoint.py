@@ -6,21 +6,23 @@ import numpy as np
 from twisted.internet import defer
 from geometry_msgs.msg import PoseStamped, PointStamped
 
+
 class RvizRepublisher(object):
     @txros.util.cancellableInlineCallbacks
     def init(self):
         self.nh = yield txros.NodeHandle.from_argv("rviz_republisher")
         self.point_republish = self.nh.advertise("/rviz_point", PointStamped)
         self.pose_republish = self.nh.advertise("/rviz_goal", PoseStamped)
-        
-        self.rviz_goal = self.nh.subscribe("/move_base_simple/goal", PoseStamped)
+
+        self.rviz_goal = self.nh.subscribe(
+            "/move_base_simple/goal", PoseStamped)
         self.clicked_point = self.nh.subscribe("/clicked_point", PointStamped)
-    
+
         self.delay = .1  # s
         self.publish_point()
         self.publish_pose()
 
-    @txros.util.cancellableInlineCallbacks 
+    @txros.util.cancellableInlineCallbacks
     def publish_point(self):
         yield self.clicked_point.get_next_message()
 

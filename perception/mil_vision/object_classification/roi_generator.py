@@ -53,7 +53,8 @@ class ROI_Generator(object):
         w, h, r = self.image.shape
         self.button_pressed = False
         if load:
-            self.collection = pickle.load(open(self.folder + '/' + output, "rb"))
+            self.collection = pickle.load(
+                open(self.folder + '/' + output, "rb"))
         else:
             self.collection = ROI_Collection()
 
@@ -128,7 +129,8 @@ class ROI_Generator(object):
                 if key == self.sel_rect:
                     color = (0, 255, 0)
 
-                cv2.rectangle(clone, (r[0], r[1]), (r[0] + r[2], r[1] + r[3]), color, 2)
+                cv2.rectangle(clone, (r[0], r[1]),
+                              (r[0] + r[2], r[1] + r[3]), color, 2)
                 cv2.putText(clone, key, (r[0], r[1]), 1, 1.0, (255, 0, 0))
 
             cv2.imshow(self.window_name, clone)
@@ -178,14 +180,16 @@ class ROI_Generator(object):
                 self.x, self.y = x, y
                 if self.sel_rect is not None:
                     r = self.rects[self.sel_rect]
-                    self.rects[self.sel_rect][0:4] = [self.x, self.y, r[2], r[3]]
+                    self.rects[self.sel_rect][0:4] = [
+                        self.x, self.y, r[2], r[3]]
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('bag', type=str, help='The bag you would like to use')
     parser.add_argument('name', type=str, help='The name of the output file')
-    parser.add_argument('--load', action='store_true', help='The name of the output file')
+    parser.add_argument('--load', action='store_true',
+                        help='The name of the output file')
     args = parser.parse_args(sys.argv[1:])
 
     roi = ROI_Generator()

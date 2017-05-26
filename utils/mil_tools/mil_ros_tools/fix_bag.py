@@ -9,6 +9,7 @@ class BagFixer():
     Dictionary of topics to remap. If ends in /, remaps everything after
     Otherwise, topic must match exactly
     '''
+
     def fix_topic(self, topic):
         for k, t in self.topic_map.iteritems():
             if topic.find(k) == 0:
@@ -17,8 +18,10 @@ class BagFixer():
 
     def fix_tf(self, tf):
         for i, t in enumerate(tf.transforms):
-            tf.transforms[i].header.frame_id = self.fix_frame(tf.transforms[i].header.frame_id)
-            tf.transforms[i].child_frame_id = self.fix_frame(tf.transforms[i].child_frame_id)
+            tf.transforms[i].header.frame_id = self.fix_frame(
+                tf.transforms[i].header.frame_id)
+            tf.transforms[i].child_frame_id = self.fix_frame(
+                tf.transforms[i].child_frame_id)
         return tf
 
     def fix_frame(self, frame):
@@ -43,7 +46,8 @@ class BagFixer():
         if self.stop is not None:
             stop = first_time + rospy.Duration(self.stop)
         # This could be made signifigantly faster by using ag.get_type_and_topic_info
-        # to do some preprocessing on what topics will be used / remaped / processed
+        # to do some preprocessing on what topics will be used / remaped /
+        # processed
         for topic, msg, time in bag.read_messages(start_time=start, end_time=stop):
             if not self.valid_topic(topic):
                 continue
@@ -87,6 +91,7 @@ class BagFixer():
         self.keep_topics = keep if keep is not None else []
         self.ignore_topics = ignore if keep is not None else []
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fix bag topics/frame_ids')
     parser.add_argument('--in', '-i', dest='infile', type=str, required=True,
@@ -112,7 +117,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.keep_topics and args.ignore_topics:
-        parser.error('Only --keep-topics or --ignore-topics can be used at once')
+        parser.error(
+            'Only --keep-topics or --ignore-topics can be used at once')
 
     fixer = BagFixer(topic_map=args.topics, frame_map=args.frames,
                      start=args.start, stop=args.stop,

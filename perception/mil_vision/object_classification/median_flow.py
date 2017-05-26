@@ -4,6 +4,7 @@ from collections import deque
 import itertools
 ___author___ = "Tess Bianchi"
 
+
 class MedianFlow(object):
     TRACKING_LENGTH = 3
 
@@ -69,10 +70,12 @@ class MedianFlow(object):
     def _calculate_forward_backward_error(self, prev_frame, prev_points):
         # Get the last set of frame in the list, calulate optical flow from f(t) to f(t-TRACKING_LENGTH)
         # for the number of frame in tracking frame
-        # Go backwards through the list because we want the most recent element first
+        # Go backwards through the list because we want the most recent element
+        # first
         for i in range(self.TRACKING_LENGTH - 1, -1, -1):
             _frame = self.tracking_frames[i]
-            _points, status, err = cv2.calcOpticalFlowPyrLK(prev_frame, _frame, prev_points, None, **self.lk_params)
+            _points, status, err = cv2.calcOpticalFlowPyrLK(
+                prev_frame, _frame, prev_points, None, **self.lk_params)
             prev_frame = _frame
             prev_points = _points
 
@@ -101,7 +104,8 @@ class MedianFlow(object):
         # If this is the first time median flow is tracking these points, eliminate the top 60% of the points with the highest
         # fb tracking error 60% is defined in self.elimination_amount)
         if(self._amount_mdn_flow_tracked == 0):
-            lrgst_ind = np.argsort(diff_norm)[-int(len(diff_norm) * self.elimination_amount):]
+            lrgst_ind = np.argsort(
+                diff_norm)[-int(len(diff_norm) * self.elimination_amount):]
             msk = np.ones(len(diff_norm), dtype=bool)
             msk[lrgst_ind] = False
         else:
@@ -111,7 +115,8 @@ class MedianFlow(object):
             msk = np.ones(len(diff_norm), dtype=bool)
             msk[high_val] = False
 
-        # Eliminate these from the current points, also, from all previous points as well
+        # Eliminate these from the current points, also, from all previous
+        # points as well
         points = points[msk]
         for i, tp in enumerate(self.tracking_points):
             self.tracking_points[i] = tp[np.array(msk)]
@@ -144,7 +149,8 @@ class MedianFlow(object):
         x_n = int(round(x + x_d))
         y_n = int(round(y + y_d))
 
-        # Scale is a little trickier, get every permutation of two points from previous points and current points
+        # Scale is a little trickier, get every permutation of two points from
+        # previous points and current points
         prev_comb = list(itertools.permutations(self.prev_points, 2))
         curr_comb = list(itertools.permutations(curr_points, 2))
         ratios = []
@@ -152,7 +158,8 @@ class MedianFlow(object):
         for i, val in enumerate(prev_comb):
             if(i >= len(curr_comb)):
                 # This should never happen
-                raise ValueError('The previous points and current points are not synchronized')
+                raise ValueError(
+                    'The previous points and current points are not synchronized')
             prev_point_A = prev_comb[i][0]
             prev_point_B = prev_comb[i][1]
             curr_point_A = curr_comb[i][0]
@@ -167,7 +174,8 @@ class MedianFlow(object):
                 continue
 
             # Get the ration of the current distance, to the previous distance
-            ratios.append(np.linalg.norm(curr_dist) / np.linalg.norm(prev_dist))
+            ratios.append(np.linalg.norm(curr_dist) /
+                          np.linalg.norm(prev_dist))
 
         # Choose the median of these distances
         scale = np.median(ratios)
@@ -193,7 +201,8 @@ class MedianFlow(object):
         if frame is None:
             raise TypeError("The frame is invalid")
 
-        points, status, err = cv2.calcOpticalFlowPyrLK(self.prev_frame, frame, self.prev_points, None, **self.lk_params)
+        points, status, err = cv2.calcOpticalFlowPyrLK(
+            self.prev_frame, frame, self.prev_points, None, **self.lk_params)
         points = self._eliminate_points(points, frame)
         try:
             self._update_bbox(points)

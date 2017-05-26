@@ -22,6 +22,7 @@ ___author___ = "Tess Bianchi"
 Needs to be refactored to be generic and non depend on navigator
 '''
 
+
 class LidarToImage(object):
 
     def __init__(self, nh, classes=None, dist=50):
@@ -58,7 +59,8 @@ class LidarToImage(object):
 
     def _get_2d_points(self, points_3d):
         # xmin, ymin, zmin = self._get_top_left_point(points_3d)
-        points_2d = map(lambda x: self.camera_model.project3dToPixel(x), points_3d)
+        points_2d = map(
+            lambda x: self.camera_model.project3dToPixel(x), points_3d)
         return points_2d
 
     def _get_bounding_rect(self, points_2d, img):
@@ -105,7 +107,8 @@ class LidarToImage(object):
         o = obj.objects[0]
 
         points_3d = yield self.get_3d_points(o)
-        points_2d_all = map(lambda x: self.camera_model.project3dToPixel(x), points_3d)
+        points_2d_all = map(
+            lambda x: self.camera_model.project3dToPixel(x), points_3d)
         points_2d = self._get_2d_points(points_3d)
         xmin, ymin, xmax, ymax = self._get_bounding_rect(points_2d, img)
         xmin, ymin, xmax, ymax = int(xmin), int(ymin), int(xmax), int(ymax)

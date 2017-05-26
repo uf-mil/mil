@@ -10,7 +10,9 @@ from std_msgs.msg import ColorRGBA
 
 import mil_ros_tools
 
-rviz_pub = rospy.Publisher("visualization", visualization_msgs.Marker, queue_size=3)
+rviz_pub = rospy.Publisher(
+    "visualization", visualization_msgs.Marker, queue_size=3)
+
 
 def draw_sphere(position, color, scaling=(0.11, 0.11, 0.11), m_id=4, frame='/base_link'):
     pose = Pose(
@@ -31,6 +33,7 @@ def draw_sphere(position, color, scaling=(0.11, 0.11, 0.11), m_id=4, frame='/bas
     )
     rviz_pub.publish(marker)
 
+
 def draw_ray_3d(pix_coords, camera_model, color, frame='/stereo_front', m_id=0, length=35):
     marker = make_ray(
         base=np.array([0.0, 0.0, 0.0]),
@@ -42,6 +45,7 @@ def draw_ray_3d(pix_coords, camera_model, color, frame='/stereo_front', m_id=0, 
     )
 
     rviz_pub.publish(marker)
+
 
 def make_ray(base, direction, length, color, frame='/base_link', m_id=0, **kwargs):
     '''Handle the frustration that Rviz cylinders are designated by their center, not base'''
