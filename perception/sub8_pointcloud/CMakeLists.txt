@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   pcl_ros
   mil_blueview_driver
+  c3_trajectory_generator
 )
 
 catkin_package(
@@ -43,6 +44,6 @@ target_link_libraries(pointcloud_ogrid_lib
 include_directories(include ${roslib_INCLUDE_DIRS}  ${PCL_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 
 add_executable(ogrid_generator src/OGridGen.cpp)
-add_dependencies(ogrid_generator pointcloud_ogrid_lib)
-add_dependencies(ogrid_generator ${catkin_EXPORTED_TARGETS})
+add_dependencies(ogrid_generator pointcloud_ogrid_lib ${catkin_EXPORTED_TARGETS})
 target_link_libraries(ogrid_generator pointcloud_ogrid_lib ${catkin_LIBRARIES})
+

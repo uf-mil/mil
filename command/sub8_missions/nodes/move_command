@@ -38,7 +38,7 @@ def main(args):
         yield sub.tx_pose()
         fprint("Odom found!", msg_color='green')
 
-        action_kwargs = {'speed': float(args.speed)}
+        action_kwargs = {'speed': float(args.speed), 'blind': bool(args.blind)}
 
         if command == 'custom':
             # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
@@ -55,7 +55,7 @@ def main(args):
                 res = yield sub.move.forward(0).zero_roll_and_pitch().go(**action_kwargs)
             else:
                 res = yield sub.move.forward(0).go(**action_kwargs)
-
+            
         else:
             # Get the command from shorthand if it's there
             command = SHORTHAND.get(command, command)
@@ -78,6 +78,7 @@ def main(args):
                 res = yield goal.zero_roll_and_pitch().go(**action_kwargs)
             else:
                 res = yield goal.go(**action_kwargs)
+            fprint("Result: {}".format(res.error))
 
     defer.returnValue(reactor.stop())
 
@@ -92,6 +93,8 @@ if __name__ == '__main__':
         help="How fast to execute the move. (m/s)")
     parser.add_argument('-z', '--zrp', action='store_true',
         help="Make end goal have zero roll and pitch.")
+    parser.add_argument('-b', '--blind', action='store_true',
+        help="Do not check if waypoint is safe.")
     args = parser.parse_args()
 
     reactor.callWhenRunning(lambda: main(args))

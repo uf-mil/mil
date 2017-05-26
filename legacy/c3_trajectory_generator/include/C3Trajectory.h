@@ -42,10 +42,11 @@ class C3Trajectory {
     Point r;
     double speed;
     bool coordinate_unaligned;
+    bool do_waypoint_validation;
 
     Waypoint() {}
-    Waypoint(const Point &r, double speed = 0, bool coordinate_unaligned = true)
-        : r(r), speed(speed), coordinate_unaligned(coordinate_unaligned) {}
+    Waypoint(const Point &r, double speed = 0, bool coordinate_unaligned = true, bool do_waypoint_validation = true)
+        : r(r), speed(speed), coordinate_unaligned(coordinate_unaligned), do_waypoint_validation(do_waypoint_validation) {}
   };
 
   C3Trajectory(const Point &start, const Limits &limits);
@@ -53,7 +54,10 @@ class C3Trajectory {
 
   PointWithAcceleration getCurrentPoint() const;
 
+  bool do_waypoint_validation;
+  
  private:
+
   Vector6d q;
   Vector6d qdot;
   Vector6d qdotdot_b;

@@ -12,20 +12,21 @@
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 
 #include <opencv2/core/core.hpp>
-#include "opencv2/opencv.hpp"
 #include <stdexcept>
 
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include "pcl_ros/point_cloud.h"
+#include <pcl_ros/point_cloud.h>
 
 #include <boost/circular_buffer.hpp>
 
 #include <sub8_msgs/Bounds.h>
 
-#include "Classification.hpp"
+#include <waypoint_validity.hpp>
+
+#include <Classification.hpp>
 
 class OGridGen
 {
@@ -50,6 +51,8 @@ private:
   float ogrid_size_;
   float resolution_;
   float pool_depth_;
+  int min_intensity_;
+
   ros::ServiceClient service_get_bounds_;
   tf::StampedTransform transform_;
 

@@ -35,6 +35,8 @@ C3Trajectory::PointWithAcceleration C3Trajectory::getCurrentPoint() const {
 }
 
 void C3Trajectory::update(double dt, const Waypoint &waypoint, double waypoint_t) {
+  do_waypoint_validation = waypoint.do_waypoint_validation;
+
   pair<Matrix4d, Matrix4d> Ts = transformation_pair(q);
   const Matrix4d &T = Ts.first;
   const Matrix4d &T_inv = Ts.second;
