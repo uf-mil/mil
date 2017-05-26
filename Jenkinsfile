@@ -33,7 +33,7 @@ dockerNode(image: 'uf-mil:subjugator') {
 		sh '''
 			source /opt/ros/kinetic/setup.bash > /dev/null 2>&1
 			wget -O ~/.clang-format https://raw.githubusercontent.com/uf-mil/installer/master/.clang-format
-			for FILE in $(find . -name '*.h' -or -name '*.hpp' -or -name '*.cpp'); do
+			for FILE in $(find -regex ".*/.*\\.\\(c\\|cc\\|cpp\\|h\\|hpp\\)$"); do
 				if [ ! -z "$(clang-format-3.8 -style=file -output-replacements-xml $FILE | grep '<replacement ')" ]; then
 					FILES+=( "$FILE" )
 				fi
