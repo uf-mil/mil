@@ -5,12 +5,12 @@ from sub8_msgs.srv import Sonar
 from sub8_sonar import EchoLocator
 from mil_ros_tools import msg_helpers
 from mil_ros_tools.geometry_helpers import rotate_vect_by_quat
-import tf
 
 import numpy as np
 
 
 class Pinger():
+
     def __init__(self, wave_propagation_speed, precision=14):
         self.get_model = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
 
@@ -18,10 +18,10 @@ class Pinger():
         self.precision = precision
 
         self.hydrophone_board_tf = np.array([0, 0, 0])
-        self.hydro_loc =  {'hydro0': {'x': 0,'y': 0,'z': 0},
-                           'hydro1': {'x': -0.0254, 'y': 0, 'z': 0.0254},
-                           'hydro2': {'x': 0.0254, 'y': 0, 'z': 0},
-                           'hydro3': {'x': 0, 'y': -0.0254, 'z': 0} }
+        self.hydro_loc = {'hydro0': {'x': 0, 'y': 0, 'z': 0},
+                          'hydro1': {'x': -0.0254, 'y': 0, 'z': 0.0254},
+                          'hydro2': {'x': 0.0254, 'y': 0, 'z': 0},
+                          'hydro3': {'x': 0, 'y': -0.0254, 'z': 0}}
 
         self.echo_locator = EchoLocator(self.hydro_loc, wave_propagation_speed)
 
@@ -47,18 +47,21 @@ class Pinger():
 
         print sub_pose[1]
         # Calculate distances to each hydrophone from the pinger (need to be accounting for sub rotation).
-        hydro_poses = np.array([[self.hydro_loc['hydro0']['x'], self.hydro_loc['hydro0']['y'], self.hydro_loc['hydro0']['z']],
-                                [self.hydro_loc['hydro1']['x'], self.hydro_loc['hydro1']['y'], self.hydro_loc['hydro1']['z']],
-                                [self.hydro_loc['hydro2']['x'], self.hydro_loc['hydro2']['y'], self.hydro_loc['hydro2']['z']],
-                                [self.hydro_loc['hydro3']['x'], self.hydro_loc['hydro3']['y'], self.hydro_loc['hydro3']['z']]]) + hydro_board_pose
+        hydro_poses = hydro_board_pose + np.array(
+            [[self.hydro_loc['hydro0']['x'], self.hydro_loc['hydro0']['y'], self.hydro_loc['hydro0']['z']],
+             [self.hydro_loc['hydro1']['x'], self.hydro_loc['hydro1']['y'], self.hydro_loc['hydro1']['z']],
+             [self.hydro_loc['hydro2']['x'], self.hydro_loc['hydro2']['y'], self.hydro_loc['hydro2']['z']],
+             [self.hydro_loc['hydro3']['x'], self.hydro_loc['hydro3']['y'], self.hydro_loc['hydro3']['z']]])
         print hydro_poses
-        distances = np.linalg.norm(pinger_pose - hydro_poses, axis=1) 
+        distances = np.linalg.norm(pinger_pose - hydro_poses, axis=1)
         timestamps = np.round(distances / self.wave_propagation_speed, decimals=self.precision)
         print timestamps - timestamps[0]
 
         # Don't forget estimated location is in map frame, transform to sub frame.
         est_location = self.echo_locator.getPulseLocation(timestamps - timestamps[0])
-        est_location_np = rotate_vect_by_quat(np.array([est_location.x, est_location.y, est_location.z, 0]) - np.hstack((sub_pose[0], 0)), sub_pose[1])
+        est_location_np = rotate_vect_by_quat(np.array([est_location.x,
+                                              est_location.y, est_location.z, 0]) - np.hstack((sub_pose[0], 0)),
+                                              sub_pose[1])
         est_location.x = est_location_np[0]
         est_location.y = est_location_np[1]
         est_location.z = est_location_np[2]

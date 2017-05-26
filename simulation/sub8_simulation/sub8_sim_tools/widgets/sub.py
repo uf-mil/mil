@@ -6,6 +6,7 @@ from sub8_sim_tools.meshes import Sub8 as Sub8Visual
 
 
 class Sub(object):
+
     def __init__(self, rendering_world, physics_world, position, thrust_indicators=True):
         self.thruster_list = [
             ("FLV", np.array([+0.000, +0.0, -1.]), np.array([+0.1583, +0.1690, +0.0142])),
@@ -42,8 +43,10 @@ class Sub(object):
                                         radius=0.025, color=(200, 10, 0), scaling_factor=0.01)
 
         class ThrustGetter(object):
+
             '''This is a pretty garbage thing, and will be replaced by the scenegraph system
             '''
+
             def __init__(self, thruster_name, rdir):
                 self.thruster_name = thruster_name
                 self.rdir = rdir

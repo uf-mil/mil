@@ -21,13 +21,13 @@ class HOG:
             img = self.hog.detect(cv_image)
             cv2.imshow("window", img)
             cv2.waitKey(20)
-        except CvBridgeError, e:
+        except CvBridgeError as e:
             print e
 
 
 def main(args):
-    h = HOG(args[1])
     rospy.init_node('HOG', anonymous=True)
+    HOG(args[1])
     try:
         rospy.spin()
     except KeyboardInterrupt:

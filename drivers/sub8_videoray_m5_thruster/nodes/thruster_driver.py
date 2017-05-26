@@ -14,7 +14,9 @@ from sub8_thruster_comm import thruster_comm_factory
 from ros_alarms import AlarmBroadcaster, AlarmListener
 lock = threading.Lock()
 
+
 class BusVoltageEstimator(object):
+
     '''
     Class that estimates sub8's thruster bus voltage.
     As of May 2017, this is just a simple rolling average with a constant width sliding
@@ -22,17 +24,18 @@ class BusVoltageEstimator(object):
     filtering is needed
     '''
     class VoltageReading(object):
+
         def __init__(self, voltage, time):
             self.v = voltage
             self.t = time
 
     def __init__(self, window_duration):
-         '''
-         window_duration - float (amount of seconds for which to keep a reading in the buffer)
-         '''
-         self.window_duration = rospy.Duration(window_duration)
-         self.last_update_time = None
-         self.buffer = []
+        '''
+        window_duration - float (amount of seconds for which to keep a reading in the buffer)
+        '''
+        self.window_duration = rospy.Duration(window_duration)
+        self.last_update_time = None
+        self.buffer = []
 
     def add_reading(self, voltage, time):
         ''' Adds voltage readings to buffer '''
@@ -63,9 +66,10 @@ class BusVoltageEstimator(object):
             self.last_update_time = rospy.Time.now()
         return self.last_update_time
 
+
 class ThrusterDriver(object):
-    _dropped_timeout = 1.0 # s
-    _window_duration = 30.0 # s
+    _dropped_timeout = 1.0  # s
+    _window_duration = 30.0  # s
 
     def __init__(self, config_path, ports, thruster_definitions):
         '''Thruster driver, an object for commanding all of the sub's thrusters
@@ -102,7 +106,7 @@ class ThrusterDriver(object):
         AlarmListener("thruster-out", self.check_alarm_status, call_when_raised=False)
         self.port_dict = self.load_thruster_layout(ports, thruster_definitions)
         self.drop_check = rospy.Timer(rospy.Duration(0.5), self.check_for_drops)
-    
+
         # The bread and bones
         self.thrust_sub = rospy.Subscriber('thrusters/thrust', Thrust, self.thrust_cb, queue_size=1)
 
@@ -115,7 +119,7 @@ class ThrusterDriver(object):
         '''
         try:
             _file = file(path)
-        except IOError, e:
+        except IOError as e:
             rospy.logerr("Could not find thruster configuration file at {}".format(path))
             raise(e)
 
@@ -132,7 +136,7 @@ class ThrusterDriver(object):
         # These alarms require this service to be available before things will work
         rospy.wait_for_service("update_thruster_layout")
         self.thruster_out_alarm.clear_alarm(parameters={'clear_all': True})
-        
+
         for port_info in ports:
             thruster_port = thruster_comm_factory(port_info, thruster_definitions, fake=self.make_fake)
 
@@ -144,9 +148,9 @@ class ThrusterDriver(object):
                 else:
                     rospy.loginfo("{} registered".format(thruster_name))
 
-                self.thruster_heartbeats[thruster_name] = None 
+                self.thruster_heartbeats[thruster_name] = None
                 port_dict[thruster_name] = thruster_port
-            
+
         return port_dict
 
     def get_thruster_info(self, srv):
@@ -169,13 +173,13 @@ class ThrusterDriver(object):
         ''' Publishes bus voltage estimate and raises bus_voltage alarm if needed '''
         since_voltage = rospy.Time.now() - self.bus_voltage_estimator.get_last_update_time()
         if (since_voltage) > rospy.Duration(0.5):
-            self.stop() # for safety
+            self.stop()  # for safety
 
         bus_voltage = self.bus_voltage_estimator.get_voltage_estimate()
         if bus_voltage is not None:
             msg = Float64(bus_voltage)
             self.bus_voltage_pub.publish(msg)
-            self.check_bus_voltage(bus_voltage) # also checks the severity of the bus voltage
+            self.check_bus_voltage(bus_voltage)  # also checks the severity of the bus voltage
 
     def check_bus_voltage(self, voltage):
         ''' Raises bus_voltage alarm with a corresponding severity given a bus voltage '''
@@ -351,7 +355,7 @@ if __name__ == '__main__':
     rospy.loginfo("Thruster Driver waiting for parameter, {}".format(layout_parameter))
     thruster_layout = wait_for_param(layout_parameter)
     if thruster_layout is None:
-        raise(rospy.exceptions.ROSException("Failed to find parameter '{}'".format(layout_parameter)))
+        raise rospy
 
     thruster_driver = ThrusterDriver(config_path, thruster_layout['thruster_ports'],
                                      thruster_layout['thrusters'])

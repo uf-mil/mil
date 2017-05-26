@@ -10,6 +10,7 @@ import mil_ros_tools
 
 
 class RvizVisualizer(object):
+
     '''Cute tool for drawing both depth and height-from-bottom in RVIZ
     '''
 
@@ -50,7 +51,7 @@ class RvizVisualizer(object):
 
         self.rviz_pub.publish(marker)
 
-    def make_ray(self, base, direction, length, color, frame='/base_link', _id=100, timestamp=None,**kwargs):
+    def make_ray(self, base, direction, length, color, frame='/base_link', _id=100, timestamp=None, **kwargs):
         '''Handle the frustration that Rviz cylinders are designated by their center, not base'''
         marker = visualization_msgs.Marker(
             ns='sub',

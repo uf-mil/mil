@@ -1,19 +1,22 @@
-from txros import util, tf
-import numpy as np
+from txros import util
 import rospy
 from sub8_msgs.srv import TBDetectionSwitch
 # from sub8_perception.srv import TBDetectionSwitch
-from geometry_msgs.msg import Point, Vector3, Pose, Quaternion
+from geometry_msgs.msg import Pose
+from mil_ros_tools import rosmsg_to_numpy
+
 
 @util.cancellableInlineCallbacks
 def align_to_board(msg, sub):
-    yield sub.move.set_position(target_position).zero_roll_and_pitch().go()
+    position = rosmsg_to_numpy(msg.position)
+    yield sub.move.set_position(position).zero_roll_and_pitch().go()
+
 
 @util.cancellableInlineCallbacks
 def run(sub):
 
     # dive to mission start depth
-    mission_start_depth = float(input("Entered the desired depth for the 'set course' mission: ")) # For pool testing
+    mission_start_depth = float(input("Entered the desired depth for the 'set course' mission: "))  # For pool testing
     # mission_start_depth = 2.15        # meters
     print "descending to set course mission depth"
     sub.to_height(mission_start_depth, 0.5)
@@ -38,13 +41,16 @@ def run(sub):
     # TODO: align x-axis of sub with z axis of torpedo board
     print "aligning to torpedo board"
 
-    # TODO: approach board until it occupies most of our field of view, save this position as the best obserbation position
+    # TODO: approach board until it occupies most of our field of view, save
+    # this position as the best obserbation position
     print "Approaching board"
 
     # TODO: Determine which of the targets has the sliding door covering it
     print "Examining targets"
 
-    # TODO: While moving in the plane parallel to the board align bottom paddle to a position on the board slightly to the right of the door handle
+    # TODO: While moving in the plane parallel to the board align bottom
+    # paddle to a position on the board slightly to the right of the door
+    # handle
     print "Aligning to door removal position"
 
     # TODO: move directly torwards the board until the bottom pattle is aligned with the handle

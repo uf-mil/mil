@@ -4,8 +4,6 @@ import pickle
 import argparse
 import sys
 import features
-from sklearn.preprocessing import scale
-from sub8_vision_tools.machine_learning import balanced_resample, desample_binary
 """
 TODO
 MUST:

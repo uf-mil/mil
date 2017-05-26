@@ -9,6 +9,7 @@ import sys
 
 
 class Canvas(app.Canvas):
+
     def __init__(self, time_acceleration=1.0, show_window=True, physics_dt=(1 / 30.)):
         app.Canvas.__init__(self, keys='interactive', size=(800, 800))
         rospy.on_shutdown(self.end)
@@ -38,7 +39,6 @@ class Canvas(app.Canvas):
         self.keypress_pub = rospy.Publisher('sim/keypress', String, queue_size=10)
 
     def end(self):
-
         '''This sometimes generates errors due to unfavorable ROS-Vispy interactions
             when SIGINT is issued'''
         self.close()

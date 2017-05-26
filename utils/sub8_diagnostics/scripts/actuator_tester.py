@@ -12,16 +12,17 @@ fprint = mil_misc_tools.FprintFactory(title='ActuatorTester').fprint
 
 ser = None
 try:
-  ser = serial.Serial(PORT, baudrate=9600)
+    ser = serial.Serial(PORT, baudrate=9600)
 except serial.serialutil.SerialException as e:
-  fprint(e)
-  sys.exit()
+    fprint(e)
+    sys.exit()
 
 fprint("Using serial resource: " + ser.name)
 
 main_menu = "(1) Open & Close Valve, (2) Open Valve, (3) Close Valve, (4) Ping, (9) Exit: "
 valve_menu = "Enter valve number to {} (1-12): "
 delay_menu = "Enter delay between valve open and close (seconds): "
+
 
 def finput(prompt):
     '''Get input with fancy prompt'''
@@ -33,7 +34,7 @@ while True:
     if option == 1:
         valveNumber = finput(valve_menu.format('open and close'))
         valveDelay = finput(delay_menu)
-        if valveNumber >= 1 and valveNumber <=12:
+        if valveNumber >= 1 and valveNumber <= 12:
             valveCommand = int('20', 16) + valveNumber
             valveChecksum = valveCommand ^ int('ff', 16)
             ser.write(bytearray([valveCommand, valveChecksum]))
@@ -53,7 +54,7 @@ while True:
                 fprint(text="Unknown reply", msg_color='red')
     elif option == 2:
         valveNumber = finput(valve_menu.format('open'))
-        if valveNumber >= 1 and valveNumber <=12:
+        if valveNumber >= 1 and valveNumber <= 12:
             valveCommand = int('20', 16) + valveNumber
             valveChecksum = valveCommand ^ int('ff', 16)
             ser.write(bytearray([valveCommand, valveChecksum]))
@@ -66,7 +67,7 @@ while True:
             print "Valve number must be between 1 and 12)"
     elif option == 3:
         valveNumber = finput(valve_menu.format('close'))
-        if valveNumber >= 1 and valveNumber <=12:
+        if valveNumber >= 1 and valveNumber <= 12:
             valveCommand = int('30', 16) + valveNumber
             valveChecksum = valveCommand ^ int('ff', 16)
             ser.write(bytearray([valveCommand, valveChecksum]))
@@ -89,4 +90,3 @@ while True:
         sys.exit()
     else:
         fprint(text="Unsupported Option", msg_color='red')
-

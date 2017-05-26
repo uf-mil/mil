@@ -6,13 +6,12 @@ import tf
 from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, Point, Quaternion, Pose2D
 from nav_msgs.msg import OccupancyGrid, MapMetaData
-from sub8_msgs.srv import VisionRequest2D, VisionRequest2DResponse, SearchPose
+from sub8_msgs.srv import SearchPose
 from image_geometry import PinholeCameraModel
-from mil_ros_tools import threading_helpers, msg_helpers
+from mil_ros_tools import msg_helpers
 from std_srvs.srv import Empty, EmptyResponse
 import cv2
 import numpy as np
-import threading
 
 
 def unit_vector(vect):
@@ -26,11 +25,13 @@ def make_2D_rotation(angle):
 
 
 class OccGridUtils(object):
+
     '''
     Contains functions for dealing with occupancy grids as well as storing and publishing them.
 
     All distance measured in meters.
     '''
+
     def __init__(self, res, width, height, starting_pose, topic_name='/search_grid'):
         self.meta_data = MapMetaData()
         # Resolution is m/cell. Width is X, height is Y.
@@ -42,10 +43,11 @@ class OccGridUtils(object):
         self.mid_x = -starting_pose.x
         self.mid_y = -starting_pose.y
 
-        self.meta_data.origin = Pose(position=Point(x=-starting_pose.x * res, y=-starting_pose.y * res, z=0),
-                                     orientation=Quaternion(*tf.transformations.quaternion_from_euler(0, 0, starting_pose.theta)))
+        p = Point(x=-starting_pose.x * res, y=-starting_pose.y * res, z=0)
+        q = Quaternion(*tf.transformations.quaternion_from_euler(0, 0, starting_pose.theta))
+        self.meta_data.origin = Pose(position=p, orientation=q)
 
-        s = rospy.Service('/reset_occ_grid', Empty, self.reset_grid)
+        rospy.Service('/reset_occ_grid', Empty, self.reset_grid)
 
         # Create array of -1's of the correct size
         self.occ_grid = np.zeros((self.meta_data.height, self.meta_data.width)) - 1
@@ -108,10 +110,11 @@ class OccGridUtils(object):
 
     def reset_grid(self, srv):
         '''
-        Resets occupancy grid. I'm using a random service since I don't really care about getting or returning information here.
+        Resets occupancy grid. I'm using a random service since I don't
+        really care about getting or returning information here.
         '''
         # Create array of -1's of the correct size
-        print "Resetting Grid."
+        rospy.loginfo("Resetting Grid.")
         self.occ_grid = np.zeros((self.meta_data.height, self.meta_data.width)) - 1
         self.searched = np.zeros((self.meta_data.height, self.meta_data.width))
         self.markers = np.zeros((self.meta_data.height, self.meta_data.width))
@@ -119,10 +122,12 @@ class OccGridUtils(object):
 
 
 class Searcher():
+
     '''
     Intented to provide a service that will return a pose to go to in order to search for a missing marker.
     Not sure how this will be implemented in its entirety.
     '''
+
     def __init__(self, searched_area, grid_res, position_offset):
         self.searched_area = searched_area
         self.grid_res = grid_res
@@ -131,7 +136,7 @@ class Searcher():
         self.max_searches = 12
         self.current_search = 0
 
-        s = rospy.Service('/next_search_pose', SearchPose, self.return_pose)
+        rospy.Service('/next_search_pose', SearchPose, self.return_pose)
 
     def return_pose(self, srv):
         '''
@@ -211,12 +216,19 @@ class Searcher():
 
 
 class MarkerOccGrid(OccGridUtils):
+
     '''
     Handles updating occupancy grid when new data comes in.
     TODO: Upon call can return some path to go to in order to find them.
     '''
+
     def __init__(self, image_sub, grid_res, grid_width, grid_height, grid_starting_pose):
-        super(self.__class__, self).__init__(res=grid_res, width=grid_width, height=grid_height, starting_pose=grid_starting_pose)
+        super(
+            self.__class__,
+            self).__init__(res=grid_res,
+                           width=grid_width,
+                           height=grid_height,
+                           starting_pose=grid_starting_pose)
 
         self.tf_listener = tf.TransformListener()
 
@@ -271,7 +283,7 @@ class MarkerOccGrid(OccGridUtils):
         local_position = dir_vector[::-1] * magnitude
         position = local_position + x_y_position
 
-        #print local_position
+        # print local_position
 
         # Pose on ground plane from center
         pose = Pose2D(x=position[0], y=position[1], theta=marker_rotation)

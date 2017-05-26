@@ -303,14 +303,14 @@ class World(object):
         '''Add a ros-camera to view the scene
             TODO: Only draw when the frame is going to be needed
         '''
-        raise(NotImplementedError('add_camera not implemented!'))
+        raise NotImplementedError
         # camera = Camera((640, 640), position, orientation, topic, projection=projection)
         # self.views.append(camera)
         # return camera
 
     def add_sonar(self, position, orientation, projection=None, maxdepth=100):
         '''Add a ros-sonar to view the scene'''
-        raise(NotImplementedError('add_sonar not implemented!'))
+        raise NotImplementedError
 
     def add_point_light(self, position, intensity):
         '''Add a point-light to illuminate the scene
@@ -336,7 +336,7 @@ class World(object):
             entity.draw()
 
         # for view in self.views:
-        #     # Attach to view framebuffer
+        # Attach to view framebuffer
         #     with view.view_buffer:
         #         gloo.set_viewport(0, 0, *view.resolution)
         #         for entity in self.entities:

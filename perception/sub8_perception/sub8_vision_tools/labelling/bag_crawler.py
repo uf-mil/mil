@@ -3,6 +3,7 @@ from cv_bridge import CvBridge
 
 
 class BagCrawler(object):
+
     def __init__(self, bag_path):
         self.bag_path = bag_path
         self.bag = rosbag.Bag(self.bag_path)

@@ -1,7 +1,6 @@
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Twist, Pose, Vector3
-from gazebo_msgs.srv import SetModelState, SetModelStateRequest, DeleteModel, DeleteModelRequest, \
-    SpawnModel, SpawnModelRequest
+from geometry_msgs.msg import Pose, Vector3
+from gazebo_msgs.srv import SetModelState, SetModelStateRequest, DeleteModel, SpawnModel
 from gazebo_msgs.msg import ModelState, ModelStates
 from kill_handling.srv import SetKill, SetKillRequest
 from kill_handling.msg import Kill
@@ -10,6 +9,7 @@ import txros
 
 
 class Job(object):
+
     """Inherit from this!"""
     _job_name = 'generic job'
 
@@ -33,12 +33,12 @@ class Job(object):
     @txros.util.cancellableInlineCallbacks
     def setup(self):
         """Set up for a single test (And undo any shenanigans done by the previous test)"""
-        raise(NotImplementedError())
+        raise NotImplementedError
 
     @txros.util.cancellableInlineCallbacks
     def run(self, sub):
         """Run your tests"""
-        raise(NotImplementedError())
+        raise NotImplementedError
 
     @txros.util.cancellableInlineCallbacks
     def set_model_position(self, position, model='sub8'):

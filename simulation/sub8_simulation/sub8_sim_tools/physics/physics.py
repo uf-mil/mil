@@ -15,6 +15,7 @@ class Constants(object):
 
 
 class World(object):
+
     def __init__(self, dt=(1 / 45.)):
         '''This section incorporates PyODE to define methods to create and draw three objects: a sphere, box, or cylinder.
             Some code borrowed from http://sourceforge.net/p/pyode/mailman/message/19674697/.
@@ -72,12 +73,12 @@ class World(object):
         # Remove all contact joints
         self.contact_group.empty()
 
-    def near_callback(self, (world, contact_group), geom1, geom2):
+    def near_callback(self, xxx_todo_changeme, geom1, geom2):
         '''Callback function for the collide() method.
         This function checks if the given geoms do collide and
         creates contact joints if they do.
         '''
-        # Check if the objects do collide
+        (world, contact_group) = xxx_todo_changeme
         contacts = ode.collide(geom1, geom2)
         # Create contact joints
         for c in contacts:
@@ -95,7 +96,7 @@ class Entity(object):
         self.body = ode.Body(world)
 
     def step(self):
-        raise(NotImplementedError("You must implement a step function!"))
+        raise NotImplementedError
 
     @property
     def pos(self):
@@ -212,6 +213,7 @@ class Sphere(Entity):
 
 
 class Mesh(Entity):
+
     def __init__(self, world, space, position, density, mesh_info):
         '''Mesh object - Dynamics are *unsupported* right now
             This spawns a static object that can only be collided with and does not move

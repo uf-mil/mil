@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import rospy
-import rosparam
 import rospkg
 
 from sub8_msgs.srv import SetValve
@@ -9,9 +8,7 @@ from sub8_alarm import AlarmBroadcaster
 
 import threading
 import serial
-import binascii
 import struct
-import time
 import yaml
 import os
 
@@ -21,6 +18,7 @@ lock = threading.Lock()
 
 
 class ActuatorDriver():
+
     '''
     Allows high level ros code to interface with Daniel's pneumatics board.
 
@@ -29,6 +27,7 @@ class ActuatorDriver():
 
     TODO: Add a function to try and reconnect to the serial port if we lose connection.
     '''
+
     def __init__(self, port, baud=9600):
         self.load_yaml()
 
@@ -88,11 +87,14 @@ class ActuatorDriver():
         try:
             this_valve = self.actuators[srv.actuator]
         except:
-            rospy.logerr("'%s' not found in valves.yaml so no configuration has been set for that actuator." % srv.actuator)
+            rospy.logerr(
+                "'%s' not found in valves.yaml so no configuration has been set for that actuator." %
+                srv.actuator)
             return False
 
         if this_valve['type'] == 'pulse':
-            # We want to pulse the port from the default value for the desired pulse_time then go back to the default value.
+            # We want to pulse the port from the default value for the desired
+            # pulse_time then go back to the default value.
             open_port = this_valve['ports']['open_port']
             open_id = open_port['id']
             open_default_value = open_port['default']
@@ -113,7 +115,8 @@ class ActuatorDriver():
             self.send_data(close_id, close_default_value)
 
         elif this_valve['type'] == 'set':
-            # If the desired action is to open, set the open valve to true and the closed false (and visa versa for closing).
+            # If the desired action is to open, set the open valve to true and the
+            # closed false (and visa versa for closing).
             open_port = this_valve['ports']['open_port']
             open_id = open_port['id']
 
@@ -157,13 +160,18 @@ class ActuatorDriver():
         - 0x30 close valve (prevent air flow)
         - 0x40 read switch
 
-        - To 'ping' board (check if board is operational): send 0x10, if operational, will reply with 0x11.
-        - To open valve (allow air flow): send 0x20 + valve number (ex. 0x20 + 0x04 (valve #4) = 0x24 <-- byte to send),
-        will reply with 0x01.
-        - To close valve (prevent air flow): send 0x30 + valve number (ex. 0x30 + 0x0B (valve #11) = 0x3B <-- byte to send),
-        will reply with 0x00.
-        - To read switch: send 0x40 + switch number (ex. 0x40 + 0x09 (valve #9) = 0x49 <-- byte to send), will reply with 0x00
-        if switch is open (not pressed) or 0x01 if switch is closed (pressed).
+        - To 'ping' board (check if board is operational): send 0x10, if operational,
+          will reply with 0x11.
+
+        - To open valve (allow air flow): send 0x20 + valve number
+          (ex. 0x20 + 0x04 (valve #4) = 0x24 <-- byte to send), will reply with 0x01.
+
+        - To close valve (prevent air flow): send 0x30 + valve number
+          (ex. 0x30 + 0x0B (valve #11) = 0x3B <-- byte to send),will reply with 0x00.
+
+        - To read switch: send 0x40 + switch number
+          (ex. 0x40 + 0x09 (valve #9) = 0x49 <-- byte to send), will reply with 0x00
+          if switch is open (not pressed) or 0x01 if switch is closed (pressed).
         '''
         if port == -1:
             return

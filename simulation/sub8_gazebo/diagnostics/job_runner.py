@@ -9,8 +9,6 @@ from diagnostics import gazebo_tests
 import argparse
 import traceback
 import datetime
-import time
-
 from collections import deque
 from twisted.internet import reactor
 import time
@@ -32,6 +30,7 @@ FUTURE:
 
 
 class JobManager(object):
+
     def __init__(self, nh, sub, bag=True, verbose=False):
         self.nh = nh
         self.sub = sub
@@ -69,7 +68,7 @@ class JobManager(object):
             current_loop += 1
             try:
                 yield current_job.setup()
-            except Exception, error:
+            except Exception as error:
                 response = "On test #{}, a {} raised an error on test setup, error:\n{}".format(
                     current_loop,
                     current_job._job_name,
@@ -85,7 +84,7 @@ class JobManager(object):
             try:
                 # Return True or False
                 success, description = yield current_job.run(self.sub)
-            except Exception, error:
+            except Exception as error:
                 response = "On test #{}, a {} raised an error on run, error:\n{}".format(
                     current_loop,
                     current_job._job_name,
@@ -110,11 +109,10 @@ class JobManager(object):
 
             actual_time = datetime.datetime.now().strftime('%I:%M:%S.%f')
             success_str = "succeeded" if success else "failed"
-            report = (
-                "Test #{}/{}: {} at {} (Duration: {}).\n".format(current_loop, loop_count, success_str, actual_time, elapsed) +
-                "Test reported: {}\n".format(description) +
-                "{0} Successes, {1} Fails, {2} Total \n".format(self.successes, self.fails, current_loop)
-            )
+            report = "Test #{}/{}: {} at {} (Duration: {}).\nTest reported: {}\n\
+                     {0} Successes, {1} Fails, {2} Total \n".format(
+                     current_loop, loop_count, success_str, actual_time, elapsed, description,
+                     self.successes, self.fails, current_loop)
             self.log(report)
 
             print "JOB - Done!"

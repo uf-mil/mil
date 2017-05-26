@@ -1,33 +1,32 @@
 from __future__ import division
-
-import genpy
 import tf
 import numpy as np
 from twisted.internet import defer
 from txros import util
 from sub8 import Searcher
-from mil_ros_tools import pose_to_numpy, rosmsg_to_numpy
+from mil_ros_tools import rosmsg_to_numpy
 from mil_misc_tools import text_effects
 from mil_vision_tools import RectFinder
-import numpy as np
 
 SEARCH_DEPTH = .65
 SEARCH_RADIUS_METERS = 1.0
 TIMEOUT_SECONDS = 60
-DO_PATTERN=True
-FACE_FORWARD=True
+DO_PATTERN = True
+FACE_FORWARD = True
 SPEED = 0.5
-MISSION="Align Path Marker"
+MISSION = "Align Path Marker"
 
 # Model of four corners of path marker, centered around 0 in meters
-LENGTH = 1.2192 # Longer side of path marker in meters
-WIDTH = 0.1524 # Shorter Side
+LENGTH = 1.2192  # Longer side of path marker in meters
+WIDTH = 0.1524  # Shorter Side
 
 # Demensions of the prop we made for testing
 # LENGTH = LENGTH*0.75
 # WIDTH = WIDTH*0.75
 
 forward_vec = np.array([1, 0, 0, 0])
+
+
 @util.cancellableInlineCallbacks
 def run(sub):
     print_info = text_effects.FprintFactory(title=MISSION).fprint
@@ -53,10 +52,10 @@ def run(sub):
                    start.forward(r),
                    start.left(r),
                    start.backward(r),
-                   start.right(2*r),
-                   start.forward(2*r),
-                   start.left(2*r),
-                   start.backward(2*r)]
+                   start.right(2 * r),
+                   start.forward(2 * r),
+                   start.left(2 * r),
+                   start.backward(2 * r)]
     s = Searcher(sub, sub.vision_proxies.orange_rectangle.get_pose, pattern)
     resp = None
     print_info("RUNNING SEARCH PATTERN")
@@ -71,7 +70,7 @@ def run(sub):
 
     move = sub.move
     position = rosmsg_to_numpy(resp.pose.pose.position)
-    position[2] = move._pose.position[2] # Leave Z alone!
+    position[2] = move._pose.position[2]  # Leave Z alone!
     orientation = rosmsg_to_numpy(resp.pose.pose.orientation)
 
     move = move.set_position(position).set_orientation(orientation).zero_roll_and_pitch()

@@ -4,7 +4,6 @@ from __future__ import division
 import genpy
 from txros import action, util, tf, serviceclient
 import rospkg
-from tf import transformations
 
 from mil_msgs.msg import MoveToAction, PoseTwistStamped, RangeStamped
 from sub8 import pose_editor
@@ -13,7 +12,7 @@ from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRe
 from mil_msgs.srv import SetGeometry, SetGeometryRequest
 from std_srvs.srv import SetBool, SetBoolRequest
 from nav_msgs.msg import Odometry
-
+from tf.transformations import quaternion_multiply, quaternion_from_euler
 import numpy as np
 from twisted.internet import defer
 import os
@@ -26,7 +25,7 @@ class VisionProxy(object):
         - The node provides an enable service to start and stop percetion
         - The node provides a 3d and/or 2d pose service to get the position of the
             object of intrest in real world or pixel
-        - All services need to have the same root, for example: 
+        - All services need to have the same root, for example:
             A buoy finder node may provide the following:
             /vision/buoy_finder/enable  # Starts and stops the perception (type = setBool)
             /vision/buoy_finder/2D      # Returns the pixel coordinates for the buoy (type = VisionRequest2D)
@@ -38,7 +37,7 @@ class VisionProxy(object):
         self._get_pose_service = nh.get_service_client(service_root + "/pose", VisionRequest)
         self._enable_service = nh.get_service_client(service_root + "/enable", SetBool)
         self._set_geometry_service = nh.get_service_client(service_root + "/set_geometry", SetGeometry)
-    
+
     def start(self):
         '''Allow user to start the vision processing backend
         Can be used when the mission starts
@@ -95,6 +94,7 @@ class VisionProxy(object):
         theta = vision_response.pose.theta
         return (xy - (bounds / 2.0)) / bounds, theta
 
+
 class _VisionProxies(object):
     '''Gives interface to vision proxies.
     Add vision proxy names and roots to the yaml config file and acccess them through here, ex:
@@ -121,7 +121,7 @@ class _PoseProxy(object):
         self._sub = sub
         self._pose = pose
         self.print_only = print_only
-    
+
     # Normal moves get routed here
     def __getattr__(self, name):
         def sub_attr_proxy(*args, **kwargs):
@@ -174,7 +174,7 @@ class _Sub(object):
         self._trajectory_pub = yield self.nh.advertise('trajectory', PoseTwistStamped)
         self._dvl_range_sub = yield self.nh.subscribe('dvl/range', RangeStamped)
         self._tf_listener = yield tf.TransformListener(self.nh)
-        
+
         self.vision_proxies = _VisionProxies(self.nh, 'vision_proxies.yaml')
 
         defer.returnValue(self)
@@ -321,6 +321,7 @@ class Searcher(object):
 
             yield self.sub.nh.sleep(.5)
 
+
 class PoseSequenceCommander(object):
     def __init__(self, sub):
         self.sub = sub
@@ -335,9 +336,9 @@ class PoseSequenceCommander(object):
             yield self.sub.move.look_at_without_pitching(np.array(positions[i][0:3])).go(speed)
             yield self.sub.move.relative(np.array(positions[i][0:3])).go(speed)
             yield self.sub.move.set_orientation(
-                transformations.quaternion_multiply(
+                quaternion_multiply(
                     self.sub.pose.orientation,
-                    transformations.quaternion_from_euler(orientations[i][0], orientations[i][1], orientations[i][2]))).go(speed)
+                    quaternion_from_euler(orientations[i][0], orientations[i][1], orientations[i][2]))).go(speed)
 
     @util.cancellableInlineCallbacks
     def go_to_sequence_quaternions(self, positions, orientations, speed=0.2):
@@ -349,12 +350,13 @@ class PoseSequenceCommander(object):
             yield self.sub.move.look_at_without_pitching(np.array(positions[i][0:3])).go(speed)
             yield self.sub.move.relative(np.array(positions[i][0:3])).go(speed)
             yield self.sub.move.set_orientation(
-                transformations.quaternion_multiply(
+                quaternion_multiply(
                     self.sub.pose.orientation,
                     (orientations[i][0], orientations[i][1], orientations[i][2], orientations[i][3]))).go(speed)
 
 
 _subs = {}
+
 
 @util.cancellableInlineCallbacks
 def get_sub(node_handle, need_trajectory=True):

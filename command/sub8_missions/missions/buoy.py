@@ -8,6 +8,7 @@ SPEED = .3
 SEARCH = 0
 MAX_TRIES = 3
 
+
 @util.cancellableInlineCallbacks
 def run(sub):
     start_search = yield sub.nh.get_service_client('/vision/buoys/search', SetBool)
@@ -53,6 +54,7 @@ def search_again(sub):
         yield sub.move.down(0.3).go(speed=SPEED)
         SEARCH = 0
 
+
 @util.cancellableInlineCallbacks
 def bump_buoy(sub, color):
     '''
@@ -88,10 +90,11 @@ def bump_buoy(sub, color):
 
     # Now we are 1m away from the buoy
     print "BUOY MISSION - bumping!"
-    forward = sub.move.forward(dist + .3).go(speed=SPEED)
+    sub.move.forward(dist + .3).go(speed=SPEED)
 
     print "BUOY MISSION - Bumped the buoy"
     defer.returnValue(True)
+
 
 @util.cancellableInlineCallbacks
 def get_buoy_tf(sub, color):
@@ -113,6 +116,7 @@ def get_buoy_tf(sub, color):
     full_transform = tf.Transform.from_Pose_message(response.pose.pose)
 
     defer.returnValue(full_transform)
+
 
 @util.cancellableInlineCallbacks
 def sanity_check(sub, est_pos):

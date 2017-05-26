@@ -113,10 +113,8 @@ class Spacenav(object):
         self.distance_marker.header = mil_ros_tools.make_header('/map')
         self.distance_marker.text = 'XY: ' + str(self.target_distance) + 'm\n' +\
                                     'Z: ' + str(self.target_depth) + 'm'
-        self.distance_marker.pose = Pose(
-                    position=mil_ros_tools.numpy_to_point(position),
-                    orientation=mil_ros_tools.numpy_to_quaternion(orientation)
-                )
+        self.distance_marker.pose = Pose(position=mil_ros_tools.numpy_to_point(position),
+                                         orientation=mil_ros_tools.numpy_to_quaternion(orientation))
         self.target_distance_pub.publish(self.distance_marker)
 
     def joy_cb(self, msg):

@@ -3,17 +3,15 @@ import rospy
 import mil_ros_tools
 from tf import transformations
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import WrenchStamped, PoseWithCovariance, TwistWithCovariance, Pose, Point, Quaternion
+from geometry_msgs.msg import PoseWithCovariance, TwistWithCovariance, Pose, Point, Quaternion
 from sensor_msgs.msg import Range
-from gazebo_msgs.srv import ApplyBodyWrench
 from gazebo_msgs.msg import LinkStates, ModelState
 from sub8_gazebo.srv import ResetGazebo, ResetGazeboResponse
 from mil_msgs.msg import RangeStamped
-import numpy as np
-import os
 
 
 class GazeboInterface(object):
+
     def __init__(self, target='sub8::base_link'):
         self.target = target
         # rospy.wait_for_service('/gazebo/apply_body_wrench')
@@ -107,9 +105,6 @@ class GazeboInterface(object):
                     twist=twist
                 )
             )
-
-            dist = np.linalg.norm(mil_ros_tools.twist_to_numpy(twist)) * self.odom_freq
-
         else:
             # fail
             return

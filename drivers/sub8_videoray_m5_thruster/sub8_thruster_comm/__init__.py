@@ -12,4 +12,3 @@ def thruster_comm_factory(port_info, thruster_definitions, fake=False):
         return FakeThrusterPort(port_info, thruster_definitions)
     else:
         return ThrusterPort(port_info, thruster_definitions)
-

@@ -2,6 +2,7 @@ import rospy
 from ros_alarms import HandlerBase
 from mil_msgs.srv import BaggerCommands
 
+
 class Kill(HandlerBase):
     alarm_name = 'kill'
     initally_raised = True
@@ -21,14 +22,15 @@ class Kill(HandlerBase):
     def bagger_dump(self):
         """Call online_bagger/dump service"""
         camera = '/camera/front/left/camera_info /camera/front/left/image_raw '
-        navigation = '/wrench /wrench_actual /c3_trajectory_generator/trajectory_v /c3_trajectory_generator/waypoint /trajectory '
+        navigation = '/wrench /wrench_actual /c3_trajectory_generator/trajectory_v \
+                      /c3_trajectory_generator/waypoint /trajectory '
         controller = '/pd_out /rise_6dof/parameter_descriptions /rise_6dof/parameter_updates '
         blueview = '/blueview_driver/ranges /blueview_driver/image_color'
         kill_topics = camera + navigation + controller + blueview
         try:
-            bag_status = self.bagging_server(bag_name='kill_bag', bag_time=60, topics=kill_topics)
-        except rospy.ServiceException, e:
-            print "/online_bagger service failed: %s" %e
+            self.bagging_server(bag_name='kill_bag', bag_time=60, topics=kill_topics)
+        except rospy.ServiceException as e:
+            print "/online_bagger service failed: %s" % e
 
     def meta_predicate(self, meta_alarm, sub_alarms):
         ignore = []
@@ -46,18 +48,17 @@ class Kill(HandlerBase):
             return True
         ignore.append("odom-kill")
 
-
         # If we lose network but don't want to go autonomous
         if sub_alarms["network-loss"].raised and not rospy.get_param("autonomous", False):
             return True
         ignore.append("network-loss")
 
-        # Severity level of 5 means too many thrusters out 
+        # Severity level of 5 means too many thrusters out
         if sub_alarms["thruster-out"].raised and sub_alarms["thruster-out"].severity == 5:
             return True
         ignore.append("thruster-out")
 
-        # If a mission wants us to kill, go ahead and kill 
+        # If a mission wants us to kill, go ahead and kill
         if sub_alarms["mission-kill"].raised:
             self._last_mission_killed = True
             return True
@@ -68,8 +69,7 @@ class Kill(HandlerBase):
             if not self._killed:
                 return False
         ignore.append("mission-kill")
-        
-        # Raised if any alarms besides the two above are raised
-        return any([alarm.raised for name, alarm in sub_alarms.items() \
-                    if name not in ignore])
 
+        # Raised if any alarms besides the two above are raised
+        return any([alarm.raised for name, alarm in sub_alarms.items()
+                    if name not in ignore])

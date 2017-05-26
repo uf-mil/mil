@@ -10,8 +10,8 @@ class Controller(object):
     '''
     config is a dict of k, ks, alpha, beta
 
-    input poses must all be in world frame/velocities must all be in body frame (follows convention from Odometry message)
-    output wrench is in body frame
+    input poses must all be in world frame/velocities must all be in body frame
+    (follows convention from Odometry message) output wrench is in body frame
     '''
 
     def __init__(self, config):
@@ -58,7 +58,8 @@ class Controller(object):
         # Permitting lambda assignment b/c legacy
         body_gain = lambda x: world_from_body2.dot(x).dot(world_from_body2.T)  # noqa
 
-        error_velocity_world = (desired_x_dot + body_gain(numpy.diag(self.config['k'])).dot(error_position_world)) - x_dot
+        error_velocity_world = (desired_x_dot + body_gain(
+            numpy.diag(self.config['k'])).dot(error_position_world)) - x_dot
         if self.config['two_d_mode']:
             error_velocity_world = error_velocity_world * [1, 1, 0, 0, 0, 1]
 
@@ -66,7 +67,7 @@ class Controller(object):
 
         output = pd_output
         if self.config['use_rise']:
-            rise_term_int = body_gain(numpy.diag(self.config['ks'] * self.config['alpha'])).dot(error_velocity_world) + \
+            rise_term_int = body_gain(numpy.diag(self.config['ks'] * self.config['alpha'])).dot(error_velocity_world) +\
                 body_gain(numpy.diag(self.config['beta'])).dot(numpy.sign(error_velocity_world))
 
             self._rise_term = self._rise_term + dt / 2 * (rise_term_int + self._rise_term_int_prev)

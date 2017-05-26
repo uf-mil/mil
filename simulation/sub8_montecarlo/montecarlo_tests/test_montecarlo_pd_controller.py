@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 
-PKG = 'sub8_montecarlo'
-NAME = 'test_controller'
-
 import sys
 import unittest
 import rospy
 import rostest
 from sub8_montecarlo_tools import VerifyController
 
+PKG = 'sub8_montecarlo'
+NAME = 'test_controller'
+
 
 class TestController(unittest.TestCase):
+
     def setUp(self, *args):
         '''TODO:
             - Assert that wrenches within bounds are close to the unbounded least-squares estimate

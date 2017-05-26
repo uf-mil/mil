@@ -5,7 +5,6 @@ import argparse
 import sys
 from time import time
 from adaboost import observe
-from sklearn.ensemble import GradientBoostingClassifier
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

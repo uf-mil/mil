@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 from __future__ import division
 
-import rospy
 import txros
-from geometry_msgs.msg import Pose, Point, Quaternion
 from nav_msgs.msg import Odometry
-from sub8_gazebo.srv import RunJob, RunJobResponse
+from sub8_gazebo.srv import RunJobResponse
 from mil_ros_tools import msg_helpers
 import job_runner
 import tf
@@ -27,7 +25,7 @@ def run_mission(srv, sub, nh):
     print pose
 
     # Go to point
-    j = yield job_runner.JobManager.set_model_position(nh, pose)
+    yield job_runner.JobManager.set_model_position(nh, pose)
     yield txros.util.wall_sleep(5.0)
     print "Movement should be complete."
 

@@ -1,12 +1,8 @@
 #!/usr/bin/env python
-
-PKG = 'sub8_thruster_mapper'
-NAME = 'test_map'
-
 import sys
 import unittest
 import numpy as np
-from sub8_msgs.msg import Thrust, ThrusterCmd
+from sub8_msgs.msg import Thrust
 from sub8_msgs.srv import ThrusterInfo, ThrusterInfoResponse
 from geometry_msgs.msg import WrenchStamped, Wrench, Vector3
 from mil_ros_tools import wait_for_subscriber
@@ -14,8 +10,12 @@ import rospy
 import rostest
 import time
 
+PKG = 'sub8_thruster_mapper'
+NAME = 'test_map'
+
 
 class TestMapThrusters(unittest.TestCase):
+
     def setUp(self, *args):
         '''TODO:
             - Assert that wrenches within bounds are close to the unbounded least-squares estimate
@@ -24,14 +24,13 @@ class TestMapThrusters(unittest.TestCase):
         '''
         self.got_msg = False
         self.test_data = []
-        thrust_service = rospy.Service('thrusters/thruster_range', ThrusterInfo, self.get_thruster_info)
+        rospy.Service('thrusters/thruster_range', ThrusterInfo, self.get_thruster_info)
 
     def thrust_callback(self, msg):
         self.got_msg = True
         self.test_data.append(msg)
 
     def get_thruster_info(self, srv):
-        query_id = srv.thruster_id
         min_thrust = -100
         max_thrust = 90
         thruster_info = ThrusterInfoResponse(
@@ -78,7 +77,10 @@ class TestMapThrusters(unittest.TestCase):
             while not rospy.is_shutdown() and time.time() < timeout_t and not self.got_msg:
                 time.sleep(0.01)
 
-            self.assertEqual(len(self.test_data) - 1, num, msg="Could not compute wrench for " + str(wrench) + " within timeout")
+            self.assertEqual(
+                len(self.test_data) - 1,
+                num,
+                msg="Could not compute wrench for " + str(wrench) + " within timeout")
             self.got_msg = False
             rospy.sleep(0.06)  # Wait the timeout period
 

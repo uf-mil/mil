@@ -38,7 +38,8 @@ for i in os.listdir(os.path.abspath(folder)):
                 break
 
         if len(refPt) == 2:
-            f.write(str(refPt[0][1]) + ", " + str(refPt[1][1]) + ", " + str(refPt[0][0]) + ", " + str(refPt[1][0]) + "\n")
+            f.write(str(refPt[0][1]) + ", " + str(refPt[1][1]) + ", " + str(
+                refPt[0][0]) + ", " + str(refPt[1][0]) + "\n")
             refPt = []
 
 cv2.destroyAllWindows()

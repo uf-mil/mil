@@ -54,9 +54,11 @@ def rotvec_to_quat(rotvec):
     return transformations.quaternion_about_axis(np.linalg.norm(rotvec), rotvec)
 
 
-def triad((a1, a2), (b1, b2)):
+def triad(xxx_todo_changeme, xxx_todo_changeme1):
     # returns quaternion that rotates b1 to a1 and b2 near a2
     # can get orientation by passing in (global, local)
+    (a1, a2) = xxx_todo_changeme
+    (b1, b2) = xxx_todo_changeme1
     aa = get_perpendicular(a1, a2)
     A = np.array([normalized(a1), aa, normalized(np.cross(a1, aa))])
     bb = get_perpendicular(b1, b2)
@@ -103,13 +105,14 @@ def safe_wait_for_message(topic, topic_type):
     while True:
         try:
             return rospy.wait_for_message(topic, topic_type, .5)
-        except rospy.exceptions.ROSException, e:
+        except rospy.exceptions.ROSException as e:
             if 'timeout' not in e.message:
                 raise
             print topic, 'wait_for_message timed out!'
 
 
 class PoseEditor(object):
+
     @classmethod
     def from_Odometry_topic(cls, topic='/odom'):
         return cls.from_Odometry(safe_wait_for_message(topic, Odometry))

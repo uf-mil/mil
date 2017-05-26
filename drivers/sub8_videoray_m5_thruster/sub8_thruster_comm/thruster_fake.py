@@ -3,6 +3,7 @@ import rospy
 
 
 class FakeThrusterPort(object):
+
     def __init__(self, port_info, thruster_definitions):
         '''Fake the behavior of a thruster'''
         self.port_name = port_info['port']
@@ -51,7 +52,6 @@ class FakeThrusterPort(object):
         '''
         assert thruster_name in self.thruster_dict.keys(), "{} must be associated with this port".format(thruster_name)
         rospy.loginfo('Commanding {}: {}'.format(thruster_name, normalized_thrust))
-        motor_id = self.thruster_dict[thruster_name]
         thruster_status = self.read_status(thruster_name)
         return thruster_status
 
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     '''
     import rospkg
     import rosparam
-    import numpy.random as npr # haha
+    import numpy.random as npr  # haha
     sub8_thruster_mapper = rospkg.RosPack().get_path('sub8_thruster_mapper')
     thruster_layout = rosparam.load_file(sub8_thruster_mapper + '/config/thruster_layout.yaml')[0][0]
     print thruster_layout
@@ -83,4 +83,3 @@ if __name__ == '__main__':
 
     tp = FakeThrusterPort(port_info, thruster_definitions)
     print tp.command_thruster(thruster_name, 0.04)
-

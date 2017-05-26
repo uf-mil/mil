@@ -44,14 +44,14 @@ class ThrusterPort(object):
         '''
         self.port_name = port_info['port']
         self.port = self.connect_port(self.port_name)
-        self.thruster_dict = {} # holds the motor_ids of all the thrusters that were supposed
-                                # to be here and were actually found
+        # holds the motor_ids of all the thrusters that were supposed to be here and were actually found
+        self.thruster_dict = {}
 
         # Load thruster configurations and check if the requested thruster exists on this port
         self.missing_thrusters = []
         for thruster_name in port_info['thruster_names']:
             try:
-                # Note: will only try to detect thrusters as listed in the layout. That means 
+                # Note: will only try to detect thrusters as listed in the layout. That means
                 # that if a thruster is connected to the wrong port, IT WILL NOT BE FOUND.
                 self.load_thruster_config(thruster_name, thruster_definitions)
             except IOError:
@@ -62,7 +62,7 @@ class ThrusterPort(object):
         '''Connect to and return a serial port'''
         try:
             serial_port = serial.Serial(port_name, baudrate=self._baud_rate, timeout=self._timeout)
-        except IOError, e:
+        except IOError as e:
             rospy.logerr("Could not connect to thruster port {}".format(port_name))
             raise(e)
         return serial_port
@@ -77,7 +77,7 @@ class ThrusterPort(object):
         motor_id = int(thruster_definitions[thruster_name]["motor_id"])
         if not self.check_for_thruster(motor_id):
             rospy.logerr(errstr)
-            raise(IOError(errstr))
+            raise IOError
         self.thruster_dict[thruster_name] = motor_id
 
     def checksum_struct(self, _struct):
@@ -265,7 +265,7 @@ if __name__ == '__main__':
     '''
     import rospkg
     import rosparam
-    import numpy.random as npr # haha
+    import numpy.random as npr  # haha
     sub8_thruster_mapper = rospkg.RosPack().get_path('sub8_thruster_mapper')
     thruster_layout = rosparam.load_file(sub8_thruster_mapper + '/config/thruster_layout.yaml')[0][0]
     print thruster_layout

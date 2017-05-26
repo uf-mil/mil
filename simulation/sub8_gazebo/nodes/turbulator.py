@@ -8,6 +8,7 @@ import numpy as np
 
 
 class Turbulizor():
+
     def __init__(self, mag, freq):
         rospy.wait_for_service('/gazebo/apply_body_wrench')
         self.set_wrench = rospy.ServiceProxy('/gazebo/apply_body_wrench', ApplyBodyWrench)
@@ -63,7 +64,7 @@ class Turbulizor():
                 body_wrench.start_time = rospy.Time()
                 body_wrench.duration = rospy.Duration(sleep_step)
 
-                #rospy.loginfo("{}: Wrench Applied: {}".format(i, body_wrench.wrench))
+                # rospy.loginfo("{}: Wrench Applied: {}".format(i, body_wrench.wrench))
 
                 self.set_wrench(body_wrench)
 

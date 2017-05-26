@@ -10,6 +10,5 @@ def run(sub_singleton):
     s = Searcher(sub_singleton, sub_singleton.channel_marker.get_2d, pattern)
     resp = yield s.start_search(loop=False)
     print resp
-    
-    print "Done!"
 
+    print "Done!"

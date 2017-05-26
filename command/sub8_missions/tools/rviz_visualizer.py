@@ -4,18 +4,19 @@ from __future__ import division
 import numpy as np
 import rospy
 import visualization_msgs.msg as visualization_msgs
-from visualization_msgs.msg import Marker, InteractiveMarkerControl, InteractiveMarker
-from interactive_markers.interactive_marker_server import *
+from visualization_msgs.msg import Marker, InteractiveMarker, InteractiveMarkerControl
+from interactive_markers.interactive_marker_server import InteractiveMarkerServer
 
 from geometry_msgs.msg import Pose, Vector3
 from std_msgs.msg import ColorRGBA, Float64
 from mil_msgs.msg import RangeStamped, DepthStamped
-#from sub8_alarm import AlarmListener, AlarmBroadcaster
+# from sub8_alarm import AlarmListener, AlarmBroadcaster
 from ros_alarms import AlarmBroadcaster, AlarmListener
 import mil_ros_tools
 
 
 class RvizVisualizer(object):
+
     '''Cute tool for drawing both depth and height-from-bottom in RVIZ
     '''
 
@@ -51,7 +52,6 @@ class RvizVisualizer(object):
         self.voltage_marker.color.a = 1
         self.voltage_marker.type = visualization_msgs.Marker.TEXT_VIEW_FACING
 
-
         # create an interactive marker to display kill status and change it
         self.need_kill_update = True
         self.kill_marker = InteractiveMarker()
@@ -83,7 +83,6 @@ class RvizVisualizer(object):
         self.depth_sub = rospy.Subscriber("depth", DepthStamped, self.depth_callback)
         # battery voltage
         self.voltage_sub = rospy.Subscriber("/bus_voltage", Float64, self.voltage_callback)
-
 
     def update_kill_button(self):
         if self.killed:
@@ -138,7 +137,7 @@ class RvizVisualizer(object):
             frame=frame,
             id=0  # Keep these guys from overwriting eachother
         )
-        self.surface_marker.ns='sub'
+        self.surface_marker.ns = 'sub'
         self.surface_marker.header = mil_ros_tools.make_header(frame='/depth')
         self.surface_marker.pose = marker.pose
         self.surface_marker.text = str(round(distance, 3)) + 'm'
@@ -167,7 +166,7 @@ class RvizVisualizer(object):
             up_vector=np.array([0.0, 0.0, -1.0]),  # up is down in range world
             id=1  # Keep these guys from overwriting eachother
         )
-        self.depth_marker.ns='sub'
+        self.depth_marker.ns = 'sub'
         self.depth_marker.header = mil_ros_tools.make_header(frame='/dvl')
         self.depth_marker.pose = marker.pose
         self.depth_marker.text = str(round(distance, 3)) + 'm'
@@ -176,7 +175,8 @@ class RvizVisualizer(object):
         self.rviz_pub_t.publish(self.depth_marker)
         self.rviz_pub.publish(marker)
 
-    def make_cylinder_marker(self, base, length, color, frame='/base_link', up_vector=np.array([0.0, 0.0, 1.0]), **kwargs):
+    def make_cylinder_marker(self, base, length, color, frame='/base_link',
+                             up_vector=np.array([0.0, 0.0, 1.0]), **kwargs):
         '''Handle the frustration that Rviz cylinders are designated by their center, not base'''
 
         center = base + (up_vector * (length / 2))

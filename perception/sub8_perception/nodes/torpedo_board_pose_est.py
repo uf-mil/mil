@@ -12,6 +12,7 @@ import mil_ros_tools
 
 
 class PoseObserver(object):
+
     def __init__(self):
         self.x = 0
         self.y = 0
@@ -36,12 +37,12 @@ class PoseObserver(object):
 
     def get_pose_est_msg(self):
         ignore_num = int(len(self.xList) * 0.1)
-        xInliers = sorted(self.xList)[ignore_num : -ignore_num]
-        yInliers = sorted(self.yList)[ignore_num : -ignore_num]
-        zInliers = sorted(self.zList)[ignore_num : -ignore_num]
-        yawInliers = sorted(self.yawList)[ignore_num : -ignore_num]
+        xInliers = sorted(self.xList)[ignore_num: -ignore_num]
+        yInliers = sorted(self.yList)[ignore_num: -ignore_num]
+        zInliers = sorted(self.zList)[ignore_num: -ignore_num]
+        yawInliers = sorted(self.yawList)[ignore_num: -ignore_num]
         pose = Pose()
-        if(len(xInliers) == 0): 
+        if(len(xInliers) == 0):
             return pose
         pose.position.x = sum(xInliers) / float(len(xInliers))
         pose.position.y = sum(yInliers) / float(len(yInliers))
@@ -49,53 +50,66 @@ class PoseObserver(object):
         yaw = sum(yawInliers) / float(len(yawInliers))
         quat = tf.transformations.quaternion_from_euler(0, 0, yaw)
         pose.orientation = Quaternion(*quat)
-        print "\x1b[37m", pose, "\x1b[0m"
         return pose
 
 
 class TBPoseEstimator(object):
+
     def __init__(self):
         self.H = 1.24  # in meters
         self.W = 0.61  # in meters
         self.corners_from_tb_hom = np.array([
-            [-self.W/2.0, -self.H/2.0, 0.0, 1.0],  # TL
-            [ self.W/2.0, -self.H/2.0, 0.0, 1.0],  # TR
-            [ self.W/2.0,  self.H/2.0, 0.0, 1.0],  # BR
-            [-self.W/2.0,  self.H/2.0, 0.0, 1.0]], # BL
+            [-self.W / 2.0, -self.H / 2.0, 0.0, 1.0],  # TL
+            [self.W / 2.0, -self.H / 2.0, 0.0, 1.0],  # TR
+            [self.W / 2.0, self.H / 2.0, 0.0, 1.0],  # BR
+            [-self.W / 2.0, self.H / 2.0, 0.0, 1.0]],  # BL
             dtype=np.float32).T
         self.pose_obs = PoseObserver()
-        self.pose_est_service = rospy.Service('/torpedo_board/pose_est_srv', TorpBoardPoseRequest, self.handle_pose_est_requests)
+        self.pose_est_service = rospy.Service(
+            '/torpedo_board/pose_est_srv',
+            TorpBoardPoseRequest,
+            self.handle_pose_est_requests)
         self.tf_listener = tf.TransformListener()
         self.tf_broadcaster = tf.TransformBroadcaster()
-        self.pose_pub =  rospy.Publisher('/torpedo_board/pose', Pose, queue_size=100)
-        self.marker_pub = rospy.Publisher('/torpedo_board/visualization/pose_est', visualization_msgs.Marker, queue_size=100)
+        self.pose_pub = rospy.Publisher('/torpedo_board/pose', Pose, queue_size=100)
+        self.marker_pub = rospy.Publisher(
+            '/torpedo_board/visualization/pose_est',
+            visualization_msgs.Marker,
+            queue_size=100)
 
     def handle_pose_est_requests(self, req):
         self.current_req = ParsedPoseEstRequest(req)
         # print self.current_req
         self.minimize_reprojection_error()
-        print "Optimization success: ", self.minimization_result.success
         return self.minimization_result.success
 
     def minimize_reprojection_error(self):
         opt = {'disp': False}
         # Nelder-Mead and Powell seem to be the best methods for this problem
-        self.minimization_result = optimize.minimize(self.calc_reprojection_error, self.current_req.pose, method='Nelder-Mead', options=opt)
+        self.minimization_result = optimize.minimize(
+            self.calc_reprojection_error,
+            self.current_req.pose,
+            method='Nelder-Mead',
+            options=opt)
         if self.minimization_result.success:
             if not rospy.is_shutdown():
                 try:
-                    self.tf_listener.waitForTransform('/map', 'front_stereo', self.current_req.stamp, rospy.Duration(0.1))
+                    self.tf_listener.waitForTransform(
+                        '/map',
+                        'front_stereo',
+                        self.current_req.stamp,
+                        rospy.Duration(0.1))
                     (trans, rot) = self.tf_listener.lookupTransform('/map', 'front_stereo', self.current_req.stamp)
                     yaw = tf.transformations.euler_from_quaternion(rot, 'syxz')[0]
                     pose = np.array([trans.x, trans.y, trans.z, yaw])
                     self.pose_obs.push_back(pose)
-                except tf.Exception, e:
-                    print "Exception! " + str(e)
+                except tf.Exception as e:
+                    rospy.logerr("Exception! " + str(e))
                 finally:
                     self.pose_pub.publish(self.pose_obs.get_pose_est_msg())
                     self.visualize_pose_est()
         else:
-            print "\x1b[31mcost: " + str(self.minimization_result.fun) + "\x1b[0m"
+            rospy.loginfo("\x1b[31mcost: " + str(self.minimization_result.fun) + "\x1b[0m")
 
     def calc_reprojection_error(self, pose_tb_from_cam):
         # pose_tb_from_cam = np.array([x, y, z, yaw])
@@ -106,10 +120,8 @@ class TBPoseEstimator(object):
         R_cam_corners = np.divide(R_cam_corners_hom[0:2, :], R_cam_corners_hom[2])
         reprojection_error = 0.0
         for i in xrange(4):
-            reprojection_error = (reprojection_error
-                                  + lin.norm(self.current_req.l_obs_corners[:, i] - L_cam_corners[:, i]))
-            reprojection_error = (reprojection_error
-                                  + lin.norm(self.current_req.r_obs_corners[:, i] - R_cam_corners[:, i]))
+            reprojection_error += lin.norm(self.current_req.l_obs_corners[:, i] - L_cam_corners[:, i])
+            reprojection_error += lin.norm(self.current_req.r_obs_corners[:, i] - R_cam_corners[:, i])
         return reprojection_error
 
     def generate_hom_tb_corners_from_cam(self, pose_tb_from_cam):
@@ -148,6 +160,7 @@ class TBPoseEstimator(object):
 
 
 class ParsedPoseEstRequest(object):
+
     def __init__(self, req):
         self.seq = req.pose_stamped.header.seq
         self.stamp = rospy.Time.from_sec(req.pose_stamped.header.stamp.to_time())
@@ -180,24 +193,18 @@ class ParsedPoseEstRequest(object):
         # To get rid of color characters: w_on = ""; reset = "\n"
         w_on = "\x1b[37m"
         reset = "\x1b[0m\n"
-        str_rep = ("Pose Estimation request:\n"
-                   + "Seq: " + w_on + str(self.seq) + reset
-                   + "Stamp: " + w_on + str(self.stamp) + reset
-                   + "Frame_ID: " + w_on + self.frame_id + reset
-                   + "Position:\n" + w_on + str(self.position) + reset
-                   + "Orientation:\n" + w_on + str(self.orientation) + reset
-                   + "Left camera projection matrix:\n" + w_on + str(self.left_cam_matx) + reset
-                   + "Right camera projection matrix:\n" + w_on + str(self.right_cam_matx) + reset
-                   + "Observed Board corners left image:\n" + w_on + str(self.l_obs_corners) + reset
-                   + "Observed Board corners right image:\n" + w_on + str(self.r_obs_corners) + reset)
-        return str_rep
+        return "Pose Estimation request:{r}Seq:{w}{}{r}Frame_ID:{}{r}Position:{w}{}{r}Orientation:{w}{}{r}\
+                Left camera projection matrix:{w}{}{r}Right camera projection matrix:{w}{}{r}\
+                Observed Board corners left image:{w}{}{r}Observed Board corners right image:{w}{}{r}".format(
+            self.seq, self.stamp, self.frame_id, self.position, self.orientation, self.last_cam_matx,
+            self.right_cam_matx, self.l_obs_corners, self.r_obs_corners, w=w_on, r=reset)
 
 # def tf_to_world_frame()
 
 
 if __name__ == '__main__':
-    print '\x1b[1;31mInitializing the Torpedo Board Pose Estimation node\x1b[0m'
-    print "Awaiting pose estimation requests through:\n\t/torpedo_board_pose_est_srv\n"
     rospy.init_node('torpedo_board_pose_est')
-    pose_estimator = TBPoseEstimator()
+    rospy.loginfo('\x1b[1;31mInitializing the Torpedo Board Pose Estimation node\x1b[0m')
+    rospy.loginfo("Awaiting pose estimation requests through:\n\t/torpedo_board_pose_est_srv\n")
+    TBPoseEstimator()
     rospy.spin()

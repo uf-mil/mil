@@ -69,17 +69,13 @@ class BinFinder:
 
     def request_bin(self, srv):
         self.bin_type = srv.target_name
-        if (self.last_image != None):
-            print 'requesting', srv
+        if (self.last_image is not None):
             response = self.find_single_bin(np.copy(self.last_image), srv.target_name)
 
             if response is False or response is None:
-                print 'did not find'
-                resp = VisionRequest2DResponse(
-                    header=mil_ros_tools.make_header(frame='/down'),
-                    found=False
-                )
-
+                rospy.loginfo('did not find')
+                resp = VisionRequest2DResponse(header=mil_ros_tools.make_header(frame='/down'),
+                                               found=False)
             else:
                 # Fill in
                 center, radius = response
@@ -102,7 +98,6 @@ class BinFinder:
             return
         self.find_bins(np.copy(self.last_image), self.bin_type)
         if self.last_draw_image is not None:
-            print 'flag'
             self.image_pub.publish(self.last_draw_image)
 
     def image_cb(self, image):
@@ -116,21 +111,19 @@ class BinFinder:
             self.camera_model = image_geometry.PinholeCameraModel()
             self.camera_model.fromCameraInfo(self.image_sub.camera_info)
 
-
     def find_single_bin(self, img, bin_type):
         """Find the bins and their orientations."""
         assert bin_type in self.bins[bin_type], "Bins_2d does not know bin color: {}".format(bin_type)
         if img is not None:
-            kernel = np.ones((2,2),np.float32)/4
-            img = cv2.filter2D(img,-1,kernel)
+            kernel = np.ones((2, 2), np.float32) / 4
+            img = cv2.filter2D(img, -1, kernel)
             debug_image = np.copy(img)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            zeros = np.array([0])
-            ret,img = cv2.threshold(img,254,255,cv2.THRESH_BINARY)
+            ret, img = cv2.threshold(img, 254, 255, cv2.THRESH_BINARY)
             contours, hierarchy = cv2.findContours(np.copy(img), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             contours = contour_sort(contours)
             """This finds the bins and looks for the one that is orange or is not
-               orange. Each bin is given an orangeness rating and either the most 
+               orange. Each bin is given an orangeness rating and either the most
                or least orange bin is selected.
             """
             if len(contours) > 0:
@@ -141,12 +134,12 @@ class BinFinder:
                     orangeness = 100000
                 if len(contours) < bins:
                     bins = len(contours)
-                for i in range(0, bins+1):
+                for i in range(0, bins + 1):
                     x, y, w, h = cv2.boundingRect(contours[i])
                     roi = debug_image[y: y + h, x: x + w]
                     temp = evaluate_bin(roi)
-                    if ((orangeness > temp and self.bin_type == 'norange') 
-                    or (orangeness < temp and self.bin_type == 'orange')):
+                    if ((orangeness > temp and self.bin_type == 'norange') or
+                       (orangeness < temp and self.bin_type == 'orange')):
                         orangeness = temp
                         M = cv2.moments(contours[i])
                         cx = int(M['m10'] / M['m00'])
@@ -158,33 +151,31 @@ class BinFinder:
                     ellipse = cv2.fitEllipse(contours[i])
                     cv2.ellipse(debug_image, ellipse, (170), 2)
 
-                if point != None:
+                if point is not None:
                     cv2.circle(debug_image, point, 5, (0, 0, 255), -1)
                     pixels = np.copy(point)
                     point = [cx - (img_w / 2), cy - (img_h / 2)]
                     tuple_center = (point[0], point[1], 0)
                     rad = ((rad) * np.pi) / 180.0
-                    P = np.asarray(self.image_sub.camera_info.P).reshape(3,4)
+                    P = np.asarray(self.image_sub.camera_info.P).reshape(3, 4)
                     _P = np.linalg.pinv(P)
                     pixels = np.asarray([pixels[0], pixels[1], 1])
                     ray = _P.dot(pixels)
-                    tuple_center = self.range*ray
-                    tuple_center[2] = -tuple_center[2]+0.45+1 #height of the bin and some buffer
+                    tuple_center = self.range * ray
+                    tuple_center[2] = -tuple_center[2] + 0.45 + 1  # height of the bin and some buffer
                     self.last_draw_image = debug_image
-                    print tuple_center
                     return tuple_center, rad
 
     def range_callback(self, msg):
         '''Handle range data grabbed from dvl'''
-        frame = '/dvl'
         self.range = msg.range
 
     def find_bins(self, img, srv):
-        draw_image = np.copy(img)
-        result = self.find_single_bin(img, self.bin_type)
+        return self.find_single_bin(img, self.bin_type)
+
 
 def main(args):
-    bf = BinFinder()
+    BinFinder()
     rospy.spin()
 
 if __name__ == '__main__':

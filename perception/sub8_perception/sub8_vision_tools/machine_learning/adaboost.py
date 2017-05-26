@@ -4,9 +4,8 @@ import pickle
 import argparse
 import sys
 import features
-from sklearn.preprocessing import scale, normalize
-from sklearn.ensemble import AdaBoostClassifier, GradientBoostingClassifier
-from sub8_vision_tools.machine_learning import balanced_resample, desample_binary
+from sklearn.preprocessing import normalize
+from sklearn.ensemble import GradientBoostingClassifier
 from tqdm import tqdm
 """
 TODO
@@ -80,7 +79,7 @@ def train_classifier(x, y, n_trees=5, max_depth=3):
 
     iterations = 25
     print 'Training...'
-    bar = tqdm(total=iterations,unit=" estimators")
+    bar = tqdm(total=iterations, unit=" estimators")
     boost = GradientBoostingClassifier(
         n_estimators=iterations, learning_rate=1.0, max_depth=3,
         loss='exponential'
@@ -91,10 +90,11 @@ def train_classifier(x, y, n_trees=5, max_depth=3):
 
     return boost
 
+
 def monitor(i, self, local_vars):
-    global bar
     bar.update(1)
     bar.write("Train Loss: {}".format(self.train_score_[i]))
+
 
 def main():
     usage_msg = ("Pass the path to a bag, and we'll crawl through the images in it")

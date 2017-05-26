@@ -3,7 +3,6 @@ import argparse
 import cv2
 import numpy as np
 import sys
-from matplotlib import pyplot as plt
 from segment_name_gen import name_gen
 
 
@@ -53,7 +52,6 @@ class Picker(object):
         cv2.imshow("segment", display)
         cv2.waitKey(1)
 
-
     def mouse_cb(self, event, x, y, flags, param):
         '''
         Controls:
@@ -61,12 +59,12 @@ class Picker(object):
             R_MSB click to paint red.
             MIDDLE_MSB to clear paint.
             CTRL then move up and down to change paint opacity.
-            SHIFT then move up and down to change brush size. 
+            SHIFT then move up and down to change brush size.
         '''
         if self.done_drawing:
             return
-       
-        cv2.circle(self.visual_brush_size, (x,y), self.brush_size, (255, 255, 255), 1) 
+
+        cv2.circle(self.visual_brush_size, (x, y), self.brush_size, (255, 255, 255), 1)
         if event == cv2.EVENT_LBUTTONDOWN:
             self.mouse_state[0] = 1
             cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 200, 0), -1)
@@ -118,9 +116,9 @@ class Picker(object):
                     cv2.circle(self.visualize_draw, (x, y), self.brush_size, (0, 0, 200), -1)
                     cv2.circle(self.mask, (x, y), self.brush_size, int(cv2.GC_BGD), -1)
 
-        display = np.array(np.clip(self.visualize + self.visualize_draw * self.draw_opacity + 
+        display = np.array(np.clip(self.visualize + self.visualize_draw * self.draw_opacity +
                                    self.visual_brush_size * self.brush_size_opacity, 0, 255), np.uint8)
-        
+
         cv2.imshow("segment", display)
         self.visual_brush_size *= 0
         self.brush_size_opacity = .4
@@ -136,11 +134,6 @@ class Picker(object):
         contours, _ = cv2.findContours(np.copy(image), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         if len(contours) > 0:
             cnt = max(contours, key=cv2.contourArea)
-            area = cv2.contourArea(cnt)
-            M = cv2.moments(cnt)
-            cx = int(M['m10'] / M['m00'])
-            cy = int(M['m01'] / M['m00'])
-            tpl_center = (int(cx), int(cy))
             return cnt
         else:
             return None
@@ -163,8 +156,7 @@ class Picker(object):
         fgdModel = np.zeros((1, 65), np.float64)
 
         out_mask = np.copy(self.mask)
-        
-        print 'Segmenting...'
+
         if out_mask[out_mask == 1].size == 0:
             out_mask = np.zeros(shape=image.shape[:2], dtype=np.uint8)
         else:
@@ -235,7 +227,7 @@ if __name__ == '__main__':
             def is_shutdown(self):
                 return False
 
-        import image_crawler        
+        import image_crawler
         if file_name == 'video':
             bc = image_crawler.VideoCrawler(file_name, args.topic)
         else:

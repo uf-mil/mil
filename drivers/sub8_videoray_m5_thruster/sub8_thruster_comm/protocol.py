@@ -1,4 +1,5 @@
 class Const(object):
+
     '''
     Bibliography:
         [1] VideoRay Example Code [Online]
