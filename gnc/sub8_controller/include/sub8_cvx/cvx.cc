@@ -1,4 +1,4 @@
-#include "solver.h"
-#include "solver.c"
-#include "matrix_support.c"
 #include "ldl.c"
+#include "matrix_support.c"
+#include "solver.c"
+#include "solver.h"

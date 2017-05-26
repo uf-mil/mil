@@ -1,7 +1,7 @@
 #pragma once
-#include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/OccupancyGrid.h>
+#include <ros/ros.h>
 
 #include <opencv2/core/core.hpp>
 
@@ -34,5 +34,6 @@ public:
   void ogrid_callback(const nav_msgs::OccupancyGridConstPtr &ogrid_map);
 
   // Usage: Given a waypoint or trajectory, check what it will hit on the ogrid.
-  std::pair<bool, WAYPOINT_ERROR_TYPE> is_waypoint_valid(const geometry_msgs::Pose &waypoint, bool do_waypoint_validation);
+  std::pair<bool, WAYPOINT_ERROR_TYPE> is_waypoint_valid(const geometry_msgs::Pose &waypoint,
+                                                         bool do_waypoint_validation);
 };

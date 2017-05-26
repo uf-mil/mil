@@ -4,14 +4,16 @@
 */
 #include "sub8_state_validity_checker.h"
 
-using sub8::trajectory_generator::Sub8StateValidityChecker; 
- 
-bool Sub8StateValidityChecker::isValid(const State* state) const {
-	// TODO - collision avoidance
-	return si_->satisfiesBounds(state);
-} 
+using sub8::trajectory_generator::Sub8StateValidityChecker;
 
-double Sub8StateValidityChecker::clearance(const State* state) const {
-	// TODO
-	return 0.0;
+bool Sub8StateValidityChecker::isValid(const State* state) const
+{
+  // TODO - collision avoidance
+  return si_->satisfiesBounds(state);
+}
+
+double Sub8StateValidityChecker::clearance(const State* state) const
+{
+  // TODO
+  return 0.0;
 }

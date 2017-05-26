@@ -1,27 +1,29 @@
 #include "C3Trajectory.h"
+#include <cmath>
 #include "AttitudeHelpers.h"
 #include "boost/tuple/tuple.hpp"
-#include <cmath>
 
 using namespace subjugator;
 using namespace Eigen;
 using namespace boost;
 using namespace std;
 
-static double sign(double x) {
-  if (x > 0) return 1;
-  if (x < 0) return -1;
+static double sign(double x)
+{
+  if (x > 0)
+    return 1;
+  if (x < 0)
+    return -1;
   return 0;
 }
 
 C3Trajectory::C3Trajectory(const Point &start, const Limits &limits)
-    : q(start.q),
-      qdot(start.qdot),
-      qdotdot_b(Vector6d::Zero()),
-      u_b(Vector6d::Zero()),
-      limits(limits) {}
+  : q(start.q), qdot(start.qdot), qdotdot_b(Vector6d::Zero()), u_b(Vector6d::Zero()), limits(limits)
+{
+}
 
-static Vector6d apply(const Matrix4d &T, const Vector6d &q, double w) {
+static Vector6d apply(const Matrix4d &T, const Vector6d &q, double w)
+{
   Vector6d q_t;
   q_t << q.head(3), w, 0, 0;
   q_t.head(4) = T * q_t.head(4);
@@ -29,14 +31,14 @@ static Vector6d apply(const Matrix4d &T, const Vector6d &q, double w) {
   return q_t;
 }
 
-C3Trajectory::PointWithAcceleration C3Trajectory::getCurrentPoint() const {
-  return PointWithAcceleration(q, qdot,
-                               apply(C3Trajectory::transformation_pair(q).second, qdotdot_b, 0));
+C3Trajectory::PointWithAcceleration C3Trajectory::getCurrentPoint() const
+{
+  return PointWithAcceleration(q, qdot, apply(C3Trajectory::transformation_pair(q).second, qdotdot_b, 0));
 }
 
-void C3Trajectory::update(double dt, const Waypoint &waypoint, double waypoint_t) {
+void C3Trajectory::update(double dt, const Waypoint &waypoint, double waypoint_t)
+{
   do_waypoint_validation = waypoint.do_waypoint_validation;
-
   pair<Matrix4d, Matrix4d> Ts = transformation_pair(q);
   const Matrix4d &T = Ts.first;
   const Matrix4d &T_inv = Ts.second;
@@ -51,14 +53,17 @@ void C3Trajectory::update(double dt, const Waypoint &waypoint, double waypoint_t
   Vector6d vmax_b_prime = limits.vmax_b;
   Vector3d posdelta = r_b.head(3);
 
-  if (waypoint.speed > 0) {
-    for (int i = 0; i < 6; i++) {
+  if (waypoint.speed > 0)
+  {
+    for (int i = 0; i < 6; i++)
+    {
       vmin_b_prime(i) = max(vmin_b_prime(i), -waypoint.speed);
       vmax_b_prime(i) = min(vmax_b_prime(i), waypoint.speed);
     }
   }
 
-  if (posdelta.norm() > 0.01 && waypoint.coordinate_unaligned) {
+  if (posdelta.norm() > 0.01 && waypoint.coordinate_unaligned)
+  {
     pair<Vector3d, Vector3d> result = limit(vmin_b_prime.head(3), vmax_b_prime.head(3), posdelta);
     vmin_b_prime.head(3) = result.first;
     vmax_b_prime.head(3) = result.second;
@@ -67,21 +72,27 @@ void C3Trajectory::update(double dt, const Waypoint &waypoint, double waypoint_t
   Vector6d amin_b_prime = limits.amin_b;
   Vector6d amax_b_prime = limits.amax_b;
 
-  for (int i = 0; i < 3; i++) {
-    if (qdot_b(i) < 0) {
+  for (int i = 0; i < 3; i++)
+  {
+    if (qdot_b(i) < 0)
+    {
       amin_b_prime(i) += limits.arevoffset_b(i);
       amax_b_prime(i) += limits.arevoffset_b(i);
     }
   }
 
-  for (int i = 3; i < 6; i++) {
-    while (r_b(i) - q_b(i) > M_PI) r_b(i) -= 2 * M_PI;
-    while (r_b(i) - q_b(i) < -M_PI) r_b(i) += 2 * M_PI;
+  for (int i = 3; i < 6; i++)
+  {
+    while (r_b(i) - q_b(i) > M_PI)
+      r_b(i) -= 2 * M_PI;
+    while (r_b(i) - q_b(i) < -M_PI)
+      r_b(i) += 2 * M_PI;
   }
 
-  for (int i = 0; i < 6; i++) {
-    u_b(i) = c3filter(q_b(i), qdot_b(i), qdotdot_b(i), r_b(i), rdot_b(i), 0, vmin_b_prime(i),
-                      vmax_b_prime(i), amin_b_prime(i), amax_b_prime(i), limits.umax_b(i));
+  for (int i = 0; i < 6; i++)
+  {
+    u_b(i) = c3filter(q_b(i), qdot_b(i), qdotdot_b(i), r_b(i), rdot_b(i), 0, vmin_b_prime(i), vmax_b_prime(i),
+                      amin_b_prime(i), amax_b_prime(i), limits.umax_b(i));
   }
 
   qdotdot_b += dt * u_b;
@@ -89,32 +100,39 @@ void C3Trajectory::update(double dt, const Waypoint &waypoint, double waypoint_t
   qdot += dt * qdotdot;
   q += dt * qdot;
 
-  for (int i = 3; i < 6; i++) {
-    while (q(i) > M_PI) q(i) -= 2 * M_PI;
-    while (q(i) < -M_PI) q(i) += 2 * M_PI;
+  for (int i = 3; i < 6; i++)
+  {
+    while (q(i) > M_PI)
+      q(i) -= 2 * M_PI;
+    while (q(i) < -M_PI)
+      q(i) += 2 * M_PI;
   }
 }
 
-static double deltav(double v, double edot, double edotdot) {
+static double deltav(double v, double edot, double edotdot)
+{
   return edotdot * abs(edotdot) + 2 * (edot - v);
 }
 
-static double ucv(double v, double edot, double edotdot, double umax) {
+static double ucv(double v, double edot, double edotdot, double umax)
+{
   double tmp = deltav(v, edot, edotdot);
   return -umax * sign(tmp + (1 - abs(sign(tmp))) * edotdot);
 }
 
-static double ua(double a, double edotdot, double umax) { return -umax * sign(edotdot - a); }
-
-static double uv(double v, double edot, double edotdot, double edotdotmin, double edotdotmax,
-                 double umax) {
-  return max(ua(edotdotmin, edotdot, umax),
-             min(ucv(v, edot, edotdot, umax), ua(edotdotmax, edotdot, umax)));
+static double ua(double a, double edotdot, double umax)
+{
+  return -umax * sign(edotdot - a);
 }
 
-double C3Trajectory::c3filter(double q, double qdot, double qdotdot, double r, double rdot,
-                              double rdotdot, double vmin, double vmax, double amin, double amax,
-                              double umax) {
+static double uv(double v, double edot, double edotdot, double edotdotmin, double edotdotmax, double umax)
+{
+  return max(ua(edotdotmin, edotdot, umax), min(ucv(v, edot, edotdot, umax), ua(edotdotmax, edotdot, umax)));
+}
+
+double C3Trajectory::c3filter(double q, double qdot, double qdotdot, double r, double rdot, double rdotdot, double vmin,
+                              double vmax, double amin, double amax, double umax)
+{
   double e = (q - r) / umax;
   double edot = (qdot - rdot) / umax;
   double edotdot = (qdotdot - rdotdot) / umax;
@@ -128,17 +146,18 @@ double C3Trajectory::c3filter(double q, double qdot, double qdotdot, double r, d
   double sd = sign(delta);
 
   double S;
-  if (edotdotmax != 0 && edotdot <= edotdotmax &&
-      edot <= pow(edotdot, 2) / 2 - pow(edotdotmax, 2)) {
-    S = e - edotdotmax * (pow(edotdot, 2) - 2 * edot) / 4 -
-        pow(pow(edotdot, 2) - 2 * edot, 2) / (8 * edotdotmax) -
+  if (edotdotmax != 0 && edotdot <= edotdotmax && edot <= pow(edotdot, 2) / 2 - pow(edotdotmax, 2))
+  {
+    S = e - edotdotmax * (pow(edotdot, 2) - 2 * edot) / 4 - pow(pow(edotdot, 2) - 2 * edot, 2) / (8 * edotdotmax) -
         edotdot * (3 * edot - pow(edotdot, 2)) / 3;
-  } else if (edotdotmin != 0 && edotdot >= edotdotmin &&
-             edot >= pow(edotdotmin, 2) - pow(edotdot, 2) / 2) {
-    S = e - edotdotmin * (pow(edotdot, 2) + 2 * edot) / 4 -
-        pow(pow(edotdot, 2) + 2 * edot, 2) / (8 * edotdotmin) +
+  }
+  else if (edotdotmin != 0 && edotdot >= edotdotmin && edot >= pow(edotdotmin, 2) - pow(edotdot, 2) / 2)
+  {
+    S = e - edotdotmin * (pow(edotdot, 2) + 2 * edot) / 4 - pow(pow(edotdot, 2) + 2 * edot, 2) / (8 * edotdotmin) +
         edotdot * (3 * edot + pow(edotdot, 2)) / 3;
-  } else {
+  }
+  else
+  {
     S = e + edot * edotdot * sd - (pow(edotdot, 3)) / 6 * (1 - 3 * abs(sd)) +
         sd / 4 * sqrt(2 * pow(pow(edotdot, 2) + 2 * edot * sd, 3));
   }
@@ -150,7 +169,8 @@ double C3Trajectory::c3filter(double q, double qdot, double qdotdot, double r, d
   return max(uv_emin, min(uc, uv_emax));
 }
 
-pair<Matrix4d, Matrix4d> C3Trajectory::transformation_pair(const Vector6d &q) {
+pair<Matrix4d, Matrix4d> C3Trajectory::transformation_pair(const Vector6d &q)
+{
   Matrix4d R;
   R.block<3, 3>(0, 0) = AttitudeHelpers::EulerToRotation(q.tail(3));
   R.block<1, 3>(3, 0).fill(0);
@@ -169,16 +189,20 @@ pair<Matrix4d, Matrix4d> C3Trajectory::transformation_pair(const Vector6d &q) {
   return result;
 }
 
-std::pair<Vector3d, Vector3d> C3Trajectory::limit(const Vector3d &vmin, const Vector3d &vmax,
-                                                  const Vector3d &delta) {
+std::pair<Vector3d, Vector3d> C3Trajectory::limit(const Vector3d &vmin, const Vector3d &vmax, const Vector3d &delta)
+{
   Vector3d adelta = delta.array().abs();
 
   double maxtime = 0;
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 3; i++)
+  {
     double time;
-    if (delta(i) > 0) {
+    if (delta(i) > 0)
+    {
       time = adelta(i) / vmax(i);
-    } else {
+    }
+    else
+    {
       time = adelta(i) / -vmin(i);
     }
 
@@ -191,14 +215,20 @@ std::pair<Vector3d, Vector3d> C3Trajectory::limit(const Vector3d &vmin, const Ve
   Vector3d maxv_prime;
   Vector3d minv_prime;
 
-  for (int i = 0; i < 3; i++) {
-    if (delta(i) > 0.001) {
+  for (int i = 0; i < 3; i++)
+  {
+    if (delta(i) > 0.001)
+    {
       maxv_prime(i) = av_prime(i);
       minv_prime(i) = vmin(i);
-    } else if (delta(i) < -0.001) {
+    }
+    else if (delta(i) < -0.001)
+    {
       maxv_prime(i) = vmax(i);
       minv_prime(i) = -av_prime(i);
-    } else {
+    }
+    else
+    {
       maxv_prime(i) = 0;
       minv_prime(i) = 0;
     }

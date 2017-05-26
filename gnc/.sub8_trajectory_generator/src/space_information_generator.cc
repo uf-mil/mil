@@ -3,26 +3,27 @@
 * Date: 9/22/15
 */
 #include "space_information_generator.h"
-#include "sub8_state_validity_checker.h"
-#include "sub8_state_space.h"
-#include "ompl/base/spaces/RealVectorBounds.h"
-#include "ompl/base/SpaceInformation.h"
 #include <ros/console.h>
+#include "ompl/base/SpaceInformation.h"
+#include "ompl/base/spaces/RealVectorBounds.h"
+#include "sub8_state_space.h"
+#include "sub8_state_validity_checker.h"
 
 using sub8::trajectory_generator::SpaceInformationGenerator;
 using sub8::trajectory_generator::Sub8StateValidityChecker;
 using sub8::trajectory_generator::Sub8StateValidityCheckerPtr;
-using sub8::trajectory_generator::Sub8StateSpace; 
+using sub8::trajectory_generator::Sub8StateSpace;
 using ompl::base::SpaceInformationPtr;
 using ompl::base::RealVectorBounds;
 
-SpaceInformationPtr SpaceInformationGenerator::generate() {
+SpaceInformationPtr SpaceInformationGenerator::generate()
+{
   double checking_res;
   double prop_step_size;
 
   // Grab config parameters
   ros::param::get("state_validity_checking_resolution", checking_res);
-  
+
   ompl::base::StateSpacePtr space(new Sub8StateSpace());
   setStateSpaceBounds(space);
 
@@ -30,9 +31,8 @@ SpaceInformationPtr SpaceInformationGenerator::generate() {
 
   // Create and set the state validity checker
   Sub8StateValidityCheckerPtr vc_ptr(new Sub8StateValidityChecker(si_ptr));
-  si_ptr->setStateValidityChecker(
-      static_cast<ompl::base::StateValidityCheckerPtr>(vc_ptr));
-  
+  si_ptr->setStateValidityChecker(static_cast<ompl::base::StateValidityCheckerPtr>(vc_ptr));
+
   // configuration
   si_ptr->setStateValidityCheckingResolution(checking_res);
 
@@ -42,9 +42,8 @@ SpaceInformationPtr SpaceInformationGenerator::generate() {
   return si_ptr;
 }
 
-void SpaceInformationGenerator::setStateSpaceBounds(
-    const StateSpacePtr& space) {
-
+void SpaceInformationGenerator::setStateSpaceBounds(const StateSpacePtr& space)
+{
   // Bounds on position (x, y, z)
   RealVectorBounds pos_bounds(3);
 
@@ -55,6 +54,6 @@ void SpaceInformationGenerator::setStateSpaceBounds(
   ros::param::get("zmin", pos_bounds.low[2]);
   ros::param::get("zmax", pos_bounds.high[2]);
 
-  // set bounds on the R^3 component  
+  // set bounds on the R^3 component
   space->as<Sub8StateSpace>()->setBounds(pos_bounds);
 }

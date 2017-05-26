@@ -3,17 +3,17 @@
  * Date: 9/30/15
  */
 #include "tgen_manager.h"
-#include "tgen_common.h"
-#include "sub8_msgs/Path.h"
-#include "sub8_state_space.h"
-#include "ompl/base/StateSampler.h"
+#include <gtest/gtest.h>
+#include <ros/console.h>
 #include <sub8_alarm/alarm_helpers.h>
 #include <sub8_msgs/PathPoint.h>
-#include <Eigen/Geometry>
 #include <Eigen/Dense>
-#include <gtest/gtest.h>
+#include <Eigen/Geometry>
 #include <boost/math/constants/constants.hpp>
-#include <ros/console.h>
+#include "ompl/base/StateSampler.h"
+#include "sub8_msgs/Path.h"
+#include "sub8_state_space.h"
+#include "tgen_common.h"
 
 using sub8::trajectory_generator::TGenManager;
 using sub8::trajectory_generator::TGenManagerPtr;
@@ -22,24 +22,31 @@ using sub8::AlarmBroadcasterPtr;
 using sub8::AlarmBroadcaster;
 using ompl::base::StateSamplerPtr;
 
-class TGenManagerTest : public ::testing::Test {
- public:
-  TGenManagerTest()
-      : _node_handle(new ros::NodeHandle()),
-        _test_space(new Sub8StateSpace()){};
+class TGenManagerTest : public ::testing::Test
+{
+public:
+  TGenManagerTest() : _node_handle(new ros::NodeHandle()), _test_space(new Sub8StateSpace()){};
 
-  boost::shared_ptr<ros::NodeHandle> getNodeHandle() { return _node_handle; }
+  boost::shared_ptr<ros::NodeHandle> getNodeHandle()
+  {
+    return _node_handle;
+  }
 
-  TGenManagerPtr tgenManagerFactory() {
+  TGenManagerPtr tgenManagerFactory()
+  {
     AlarmBroadcasterPtr ab(new AlarmBroadcaster(getNodeHandle()));
     return TGenManagerPtr(new TGenManager(std::move(ab)));
   }
 
   // return a reference to the state space
-  const ompl::base::StateSpacePtr& ss() const { return _test_space; }
+  const ompl::base::StateSpacePtr& ss() const
+  {
+    return _test_space;
+  }
 
   // Sample a random start and goal state
-  std::vector<State*> randomProblemDef() {
+  std::vector<State*> randomProblemDef()
+  {
     std::vector<State*> pd;
 
     // Set up start and goal states
@@ -56,12 +63,13 @@ class TGenManagerTest : public ::testing::Test {
     return pd;
   }
 
- private:
+private:
   boost::shared_ptr<ros::NodeHandle> _node_handle;
   ompl::base::StateSpacePtr _test_space;
 };
 
-TEST_F(TGenManagerTest, testSetProblemDefinition) {
+TEST_F(TGenManagerTest, testSetProblemDefinition)
+{
   TGenManagerPtr test_tgen_manager = tgenManagerFactory();
 
   std::vector<State*> pd = randomProblemDef();
@@ -71,7 +79,8 @@ TEST_F(TGenManagerTest, testSetProblemDefinition) {
   ss()->freeState(pd[1]);
 }
 
-TEST_F(TGenManagerTest, testBadProblemDefinition) {
+TEST_F(TGenManagerTest, testBadProblemDefinition)
+{
   TGenManagerPtr test_tgen_manager = tgenManagerFactory();
 
   // Set up start and goal states
@@ -84,7 +93,8 @@ TEST_F(TGenManagerTest, testBadProblemDefinition) {
   ASSERT_FALSE(test_tgen_manager->setProblemDefinition(pd[0], pd[1]));
 }
 
-TEST_F(TGenManagerTest, testGeneratePath) {
+TEST_F(TGenManagerTest, testGeneratePath)
+{
   TGenManagerPtr test_tgen_manager = tgenManagerFactory();
 
   std::vector<State*> pd = randomProblemDef();
@@ -98,7 +108,8 @@ TEST_F(TGenManagerTest, testGeneratePath) {
   ss()->freeState(pd[1]);
 }
 
-TEST_F(TGenManagerTest, testGetPath) {
+TEST_F(TGenManagerTest, testGetPath)
+{
   TGenManagerPtr test_tgen_manager = tgenManagerFactory();
 
   std::vector<State*> pd = randomProblemDef();
@@ -111,7 +122,8 @@ TEST_F(TGenManagerTest, testGetPath) {
   ASSERT_GT(path.size(), 2);
 }
 
-TEST_F(TGenManagerTest, testGeneratePathMessage) {
+TEST_F(TGenManagerTest, testGeneratePathMessage)
+{
   TGenManagerPtr test_tgen_manager = tgenManagerFactory();
 
   std::vector<State*> pd = randomProblemDef();
@@ -123,45 +135,39 @@ TEST_F(TGenManagerTest, testGeneratePathMessage) {
 
   std::vector<sub8_msgs::PathPoint> pp = path_msg.path;
 
-  ASSERT_NEAR(pd[0]->as<Sub8StateSpace::StateType>()->getX(), pp[0].position.x,
-              0.01);
-  ASSERT_NEAR(pd[0]->as<Sub8StateSpace::StateType>()->getY(), pp[0].position.y,
-              0.01);
-  ASSERT_NEAR(pd[0]->as<Sub8StateSpace::StateType>()->getZ(), pp[0].position.z,
-              0.01);
-  ASSERT_NEAR(pd[0]->as<Sub8StateSpace::StateType>()->getYaw(), pp[0].yaw,
-              0.01);
+  ASSERT_NEAR(pd[0]->as<Sub8StateSpace::StateType>()->getX(), pp[0].position.x, 0.01);
+  ASSERT_NEAR(pd[0]->as<Sub8StateSpace::StateType>()->getY(), pp[0].position.y, 0.01);
+  ASSERT_NEAR(pd[0]->as<Sub8StateSpace::StateType>()->getZ(), pp[0].position.z, 0.01);
+  ASSERT_NEAR(pd[0]->as<Sub8StateSpace::StateType>()->getYaw(), pp[0].yaw, 0.01);
 }
 
 // TODO - needs Octomap
-TEST_F(TGenManagerTest, testPathValidation) {
+TEST_F(TGenManagerTest, testPathValidation)
+{
   ADD_FAILURE() << "Unimplemented test";
 }
 
-TEST_F(TGenManagerTest, testStateToPathPoint) {
+TEST_F(TGenManagerTest, testStateToPathPoint)
+{
   TGenManagerPtr test_tgen_manager = tgenManagerFactory();
 
   State* state = ss()->allocState();
   state->as<Sub8StateSpace::StateType>()->setXYZ(1, 1, 1);
 
-  state->as<Sub8StateSpace::StateType>()->setYaw(
-      boost::math::constants::pi<double>());
+  state->as<Sub8StateSpace::StateType>()->setYaw(boost::math::constants::pi<double>());
 
   sub8_msgs::PathPoint path_point = test_tgen_manager->stateToPathPoint(state);
 
-  ASSERT_NEAR(state->as<Sub8StateSpace::StateType>()->getX(),
-              path_point.position.x, 0.01);
-  ASSERT_NEAR(state->as<Sub8StateSpace::StateType>()->getY(),
-              path_point.position.y, 0.01);
-  ASSERT_NEAR(state->as<Sub8StateSpace::StateType>()->getZ(),
-              path_point.position.z, 0.01);
-  ASSERT_NEAR(state->as<Sub8StateSpace::StateType>()->getYaw(), path_point.yaw,
-              0.01);
+  ASSERT_NEAR(state->as<Sub8StateSpace::StateType>()->getX(), path_point.position.x, 0.01);
+  ASSERT_NEAR(state->as<Sub8StateSpace::StateType>()->getY(), path_point.position.y, 0.01);
+  ASSERT_NEAR(state->as<Sub8StateSpace::StateType>()->getZ(), path_point.position.z, 0.01);
+  ASSERT_NEAR(state->as<Sub8StateSpace::StateType>()->getYaw(), path_point.yaw, 0.01);
 
   ss()->freeState(state);
 }
 
-TEST_F(TGenManagerTest, testPoseToState) {
+TEST_F(TGenManagerTest, testPoseToState)
+{
   TGenManagerPtr test_tgen_manager = tgenManagerFactory();
 
   State* state = ss()->allocState();
@@ -176,12 +182,9 @@ TEST_F(TGenManagerTest, testPoseToState) {
   pose.orientation.w = 0;
   state = test_tgen_manager->poseToState(pose);
 
-  ASSERT_NEAR(pose.position.x, state->as<Sub8StateSpace::StateType>()->getX(),
-              0.01);
-  ASSERT_NEAR(pose.position.y, state->as<Sub8StateSpace::StateType>()->getY(),
-              0.01);
-  ASSERT_NEAR(pose.position.z, state->as<Sub8StateSpace::StateType>()->getZ(),
-              0.01);
+  ASSERT_NEAR(pose.position.x, state->as<Sub8StateSpace::StateType>()->getX(), 0.01);
+  ASSERT_NEAR(pose.position.y, state->as<Sub8StateSpace::StateType>()->getY(), 0.01);
+  ASSERT_NEAR(pose.position.z, state->as<Sub8StateSpace::StateType>()->getZ(), 0.01);
   ASSERT_NEAR(0, state->as<Sub8StateSpace::StateType>()->getYaw(), 0.01);
 
   ss()->freeState(state);

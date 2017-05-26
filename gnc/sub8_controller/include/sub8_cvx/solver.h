@@ -27,7 +27,8 @@
 #include <math.h>
 #define pm(A, m, n) printmatrix(#A, A, m, n, 1)
 #endif
-typedef struct Params_t {
+typedef struct Params_t
+{
   double Q_final[6];
   double A_0[36];
   double x_0[6];
@@ -72,26 +73,27 @@ typedef struct Params_t {
   double *x[1];
   double *B[18];
 } Params;
-typedef struct Vars_t {
+typedef struct Vars_t
+{
   double *x_18; /* 6 rows. */
   double *t_01; /* 1 rows. */
-  double *x_1; /* 6 rows. */
+  double *x_1;  /* 6 rows. */
   double *t_02; /* 1 rows. */
-  double *x_2; /* 6 rows. */
+  double *x_2;  /* 6 rows. */
   double *t_03; /* 1 rows. */
-  double *x_3; /* 6 rows. */
+  double *x_3;  /* 6 rows. */
   double *t_04; /* 1 rows. */
-  double *x_4; /* 6 rows. */
+  double *x_4;  /* 6 rows. */
   double *t_05; /* 1 rows. */
-  double *x_5; /* 6 rows. */
+  double *x_5;  /* 6 rows. */
   double *t_06; /* 1 rows. */
-  double *x_6; /* 6 rows. */
+  double *x_6;  /* 6 rows. */
   double *t_07; /* 1 rows. */
-  double *x_7; /* 6 rows. */
+  double *x_7;  /* 6 rows. */
   double *t_08; /* 1 rows. */
-  double *x_8; /* 6 rows. */
+  double *x_8;  /* 6 rows. */
   double *t_09; /* 1 rows. */
-  double *x_9; /* 6 rows. */
+  double *x_9;  /* 6 rows. */
   double *t_10; /* 1 rows. */
   double *x_10; /* 6 rows. */
   double *t_11; /* 1 rows. */
@@ -146,25 +148,25 @@ typedef struct Vars_t {
   double *t_53; /* 1 rows. */
   double *t_54; /* 1 rows. */
   double *t_55; /* 3 rows. */
-  double *u_0; /* 3 rows. */
+  double *u_0;  /* 3 rows. */
   double *t_56; /* 3 rows. */
-  double *u_1; /* 3 rows. */
+  double *u_1;  /* 3 rows. */
   double *t_57; /* 3 rows. */
-  double *u_2; /* 3 rows. */
+  double *u_2;  /* 3 rows. */
   double *t_58; /* 3 rows. */
-  double *u_3; /* 3 rows. */
+  double *u_3;  /* 3 rows. */
   double *t_59; /* 3 rows. */
-  double *u_4; /* 3 rows. */
+  double *u_4;  /* 3 rows. */
   double *t_60; /* 3 rows. */
-  double *u_5; /* 3 rows. */
+  double *u_5;  /* 3 rows. */
   double *t_61; /* 3 rows. */
-  double *u_6; /* 3 rows. */
+  double *u_6;  /* 3 rows. */
   double *t_62; /* 3 rows. */
-  double *u_7; /* 3 rows. */
+  double *u_7;  /* 3 rows. */
   double *t_63; /* 3 rows. */
-  double *u_8; /* 3 rows. */
+  double *u_8;  /* 3 rows. */
   double *t_64; /* 3 rows. */
-  double *u_9; /* 3 rows. */
+  double *u_9;  /* 3 rows. */
   double *t_65; /* 3 rows. */
   double *u_10; /* 3 rows. */
   double *t_66; /* 3 rows. */
@@ -184,7 +186,8 @@ typedef struct Vars_t {
   double *x[19];
   double *u[18];
 } Vars;
-typedef struct Workspace_t {
+typedef struct Workspace_t
+{
   double h[324];
   double s_inv[324];
   double s_inv_z[324];
@@ -212,7 +215,8 @@ typedef struct Workspace_t {
   /* Pre-op symbols. */
   int converged;
 } Workspace;
-typedef struct Settings_t {
+typedef struct Settings_t
+{
   double resid_tol;
   double eps;
   int max_iters;
@@ -279,7 +283,7 @@ float toc(void);
 float tocq(void);
 void printmatrix(char *name, double *A, int m, int n, int sparse);
 double unif(double lower, double upper);
-float ran1(long*idum, int reset);
+float ran1(long *idum, int reset);
 float randn_internal(long *idum, int reset);
 double randn(void);
 void reset_rand(void);

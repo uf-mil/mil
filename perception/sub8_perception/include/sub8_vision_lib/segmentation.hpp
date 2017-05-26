@@ -1,15 +1,15 @@
 #pragma once
-#include <vector>
-#include <pcl/filters/passthrough.h>
-#include <pcl/filters/crop_box.h>
-#include <pcl/segmentation/region_growing_rgb.h>
-#include <pcl/search/search.h>
-#include <pcl/search/kdtree.h>
 #include <pcl/features/normal_3d.h>
+#include <pcl/filters/crop_box.h>
+#include <pcl/filters/passthrough.h>
+#include <pcl/search/kdtree.h>
+#include <pcl/search/search.h>
+#include <pcl/segmentation/region_growing_rgb.h>
+#include <vector>
 #include "typedefs.hpp"
 
-namespace sub {
-
+namespace sub
+{
 // Compute the point in $cloud that is closest to the ray defined by $direction and $line_pt
 //
 // Compute the minimum over the set of points $cloud: dist(line_pt + direction*t, point)
@@ -25,9 +25,9 @@ namespace sub {
 // is not NULL)
 template <typename PointT>
 void segment_rgb_region_growing(const typename pcl::PointCloud<PointT>::Ptr target_cloud,
-                                const std::vector<int>& indices,
-                                std::vector<pcl::PointIndices>& clusters,
-                                typename pcl::PointCloud<PointT>::Ptr colored_cloud) {
+                                const std::vector<int>& indices, std::vector<pcl::PointIndices>& clusters,
+                                typename pcl::PointCloud<PointT>::Ptr colored_cloud)
+{
   typename pcl::search::Search<PointT>::Ptr tree =
       boost::shared_ptr<pcl::search::Search<PointT> >(new pcl::search::KdTree<PointT>);
   // typename pcl::search::Search<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
@@ -52,7 +52,8 @@ void segment_rgb_region_growing(const typename pcl::PointCloud<PointT>::Ptr targ
   region_grower.extract(clusters);
 
   // std::cout << "Cluster Sizes: " << clusters.size() << " " << IndicesPtr->size() << std::endl;
-  if (clusters.size() == 0) {
+  if (clusters.size() == 0)
+  {
     return;
   }
   colored_cloud = region_grower.getColoredCloud();
@@ -61,9 +62,9 @@ void segment_rgb_region_growing(const typename pcl::PointCloud<PointT>::Ptr targ
 }
 
 template <typename PointT>
-void segment_box(const typename pcl::PointCloud<PointT>::Ptr input_cloud,
-                 const Eigen::Vector3f& center, const double edge_length,
-                 pcl::PointCloud<PointT>& output_cloud) {
+void segment_box(const typename pcl::PointCloud<PointT>::Ptr input_cloud, const Eigen::Vector3f& center,
+                 const double edge_length, pcl::PointCloud<PointT>& output_cloud)
+{
   pcl::CropBox<PointT> box_cropper;
   box_cropper.setInputCloud(input_cloud);
 

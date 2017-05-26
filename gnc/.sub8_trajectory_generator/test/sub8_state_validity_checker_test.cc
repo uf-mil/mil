@@ -5,11 +5,13 @@
 #include <gtest/gtest.h>
 
 // virtual bool isValid(const State* state) const
-TEST(Sub8StateValidityCheckerTest, testIsValid) {
+TEST(Sub8StateValidityCheckerTest, testIsValid)
+{
   ADD_FAILURE() << "Unimplemented test";
 }
 
 // virtual double clearance(const State* state) const
-TEST(Sub8StateValidityCheckerTest, testClearance) {
+TEST(Sub8StateValidityCheckerTest, testClearance)
+{
   ADD_FAILURE() << "Unimplemented test";
 }

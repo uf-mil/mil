@@ -12,7 +12,7 @@ bool WaypointValidity::check_if_hit(cv::Point center, cv::Size sub_size)
         if (ogrid_map_->data.at(x + y * ogrid_map_->info.width) == (uchar)WAYPOINT_ERROR_TYPE::OCCUPIED)
         {
           return true;
-        } 
+        }
       }
       catch (std::out_of_range &e)
       {
@@ -30,15 +30,17 @@ void WaypointValidity::ogrid_callback(const nav_msgs::OccupancyGridConstPtr &ogr
 
 // Convert waypoint to be relative to ogrid, then do a series of checks (unknown, occupied, or above water).
 // Returns a bool that represents if the move is safe, and an error
-std::pair<bool, WAYPOINT_ERROR_TYPE> WaypointValidity::is_waypoint_valid(const geometry_msgs::Pose &waypoint, bool do_waypoint_validation)
+std::pair<bool, WAYPOINT_ERROR_TYPE> WaypointValidity::is_waypoint_valid(const geometry_msgs::Pose &waypoint,
+                                                                         bool do_waypoint_validation)
 {
-  if(!do_waypoint_validation) return std::make_pair(true, WAYPOINT_ERROR_TYPE::NOT_CHECKED);
+  if (!do_waypoint_validation)
+    return std::make_pair(true, WAYPOINT_ERROR_TYPE::NOT_CHECKED);
   if (waypoint.position.z > 0.2)
   {
     return std::make_pair(false, WAYPOINT_ERROR_TYPE::ABOVE_WATER);
   }
 
-  if(!this->ogrid_map_)
+  if (!this->ogrid_map_)
   {
     ROS_ERROR("WaypointValidity - Did not recieve any ogrid");
     return std::make_pair(false, WAYPOINT_ERROR_TYPE::NO_OGRID);

@@ -1,30 +1,30 @@
 #pragma once
-#include <string>
-#include <vector>
-#include <map>
-#include <iostream>
-#include <pcl/console/time.h>  // TicToc
+#include <pcl/PCLPointCloud2.h>
 #include <pcl/common/time.h>
 #include <pcl/console/print.h>
-#include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/console/time.h>  // TicToc
 #include <pcl/conversions.h>
-#include <pcl/PCLPointCloud2.h>
 #include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/visualization/pcl_visualizer.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <iostream>
+#include <map>
+#include <string>
+#include <vector>
 
+#include <cv_bridge/cv_bridge.h>
+#include <image_geometry/pinhole_camera_model.h>
+#include <image_transport/image_transport.h>
 #include <algorithm>
 #include <opencv2/opencv.hpp>
-#include <cv_bridge/cv_bridge.h>
-#include <image_transport/image_transport.h>
-#include <image_geometry/pinhole_camera_model.h>
 
-#include <tf/transform_listener.h>
 #include <sensor_msgs/image_encodings.h>
+#include <tf/transform_listener.h>
 
 #include <eigen_conversions/eigen_msg.h>
 #include <Eigen/StdVector>
-#include <mil_vision_lib/pcl_tools.hpp>
 #include <mil_vision_lib/cv_tools.hpp>
+#include <mil_vision_lib/pcl_tools.hpp>
 
 #include "ros/ros.h"
 
@@ -45,25 +45,22 @@
   - Better cacheing (instead of immediate assignment)
 */
 
-class Sub8BuoyDetector {
- public:
+class Sub8BuoyDetector
+{
+public:
   Sub8BuoyDetector();
   ~Sub8BuoyDetector();
   void compute_loop(const ros::TimerEvent &);
   void cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &);
-  void image_callback(const sensor_msgs::ImageConstPtr &msg,
-                      const sensor_msgs::CameraInfoConstPtr &info_msg);
+  void image_callback(const sensor_msgs::ImageConstPtr &msg, const sensor_msgs::CameraInfoConstPtr &info_msg);
   bool get_last_image(cv::Mat &last_image);
-  bool determine_buoy_position(const image_geometry::PinholeCameraModel &cam_model,
-                               const std::string &target_color, const cv::Mat &image_raw,
-                               const sub::PointCloudT::Ptr &point_cloud_raw,
+  bool determine_buoy_position(const image_geometry::PinholeCameraModel &cam_model, const std::string &target_color,
+                               const cv::Mat &image_raw, const sub::PointCloudT::Ptr &point_cloud_raw,
                                Eigen::Vector3f &center);
-  bool segment_buoy(cv::Mat &input_image, cv::Point &center,
-                    std::vector<sub::Contour> &output_contours, std::string &target_name);
-  bool request_buoy_position_2d(sub8_msgs::VisionRequest2D::Request &req,
-                                sub8_msgs::VisionRequest2D::Response &resp);
-  bool request_buoy_position(sub8_msgs::VisionRequest::Request &req,
-                             sub8_msgs::VisionRequest::Response &resp);
+  bool segment_buoy(cv::Mat &input_image, cv::Point &center, std::vector<sub::Contour> &output_contours,
+                    std::string &target_name);
+  bool request_buoy_position_2d(sub8_msgs::VisionRequest2D::Request &req, sub8_msgs::VisionRequest2D::Response &resp);
+  bool request_buoy_position(sub8_msgs::VisionRequest::Request &req, sub8_msgs::VisionRequest::Response &resp);
   // Visualize
   int vp1;
   int vp2;

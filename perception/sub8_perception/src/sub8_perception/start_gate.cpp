@@ -1,14 +1,14 @@
 #include <sub8_perception/start_gate.hpp>
-Sub8StartGateDetector::Sub8StartGateDetector() :  running_(true), image_transport_(nh_), gate_line_buffer_(30)
+Sub8StartGateDetector::Sub8StartGateDetector() : running_(true), image_transport_(nh_), gate_line_buffer_(30)
 {
-  image_sub_ =
-      image_transport_.subscribeCamera("/camera/front/right/image_rect_color", 1, &Sub8StartGateDetector::imageCallback, this);
+  image_sub_ = image_transport_.subscribeCamera("/camera/front/right/image_rect_color", 1,
+                                                &Sub8StartGateDetector::imageCallback, this);
   service_2d_ =
       nh_.advertiseService("/vision/start_gate/pose", &Sub8StartGateDetector::requestStartGatePosition2d, this);
   service_enable_ =
       nh_.advertiseService("/vision/start_gate/enable", &Sub8StartGateDetector::requestStartGateEnable, this);
-  service_distance_ = 
-      nh_.advertiseService("/vision/start_gate/distance", &Sub8StartGateDetector::requestStartGateDistance, this);  
+  service_distance_ =
+      nh_.advertiseService("/vision/start_gate/distance", &Sub8StartGateDetector::requestStartGateDistance, this);
   pubImage_ = image_transport_.advertise("/start_gate/debug_image", 1);
 }
 Sub8StartGateDetector::~Sub8StartGateDetector()
@@ -16,7 +16,7 @@ Sub8StartGateDetector::~Sub8StartGateDetector()
 }
 
 void Sub8StartGateDetector::imageCallback(const sensor_msgs::ImageConstPtr &image_msg,
-                                           const sensor_msgs::CameraInfoConstPtr &info_msg)
+                                          const sensor_msgs::CameraInfoConstPtr &info_msg)
 {
   if (running_)
   {
@@ -78,7 +78,7 @@ void Sub8StartGateDetector::imageCallback(const sensor_msgs::ImageConstPtr &imag
       cv::Mat show = cv_bridge::toCvShare(image_msg, "bgr8")->image;
       for (auto &gate : gate_line_buffer_[29])
       {
-      	cv::Mat rvec, tvec;
+        cv::Mat rvec, tvec;
         cv::rectangle(show, gate[0], gate[1], cv::Scalar(255, 0, 0), 2, 8, 0);
       }
       sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", show).toImageMsg();
@@ -178,7 +178,7 @@ double Sub8StartGateDetector::getGateDistance()
 }
 
 bool Sub8StartGateDetector::requestStartGatePosition2d(sub8_msgs::VisionRequest2D::Request &req,
-                                                           sub8_msgs::VisionRequest2D::Response &resp)
+                                                       sub8_msgs::VisionRequest2D::Response &resp)
 {
   // This was called too soon and doesn't have enough in the buffer
   if (gate_line_buffer_.size() < 15)
@@ -196,8 +196,7 @@ bool Sub8StartGateDetector::requestStartGatePosition2d(sub8_msgs::VisionRequest2
   return true;
 }
 
-bool Sub8StartGateDetector::requestStartGateEnable(std_srvs::SetBool::Request &req,
-                                                      std_srvs::SetBool::Response &resp)
+bool Sub8StartGateDetector::requestStartGateEnable(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &resp)
 {
   running_ = req.data;
   resp.success = true;
@@ -212,6 +211,6 @@ bool Sub8StartGateDetector::requestStartGateEnable(std_srvs::SetBool::Request &r
 bool Sub8StartGateDetector::requestStartGateDistance(sub8_msgs::BMatrix::Request &req,
                                                      sub8_msgs::BMatrix::Response &resp)
 {
-  resp.B = std::vector<double>{getGateDistance()};
+  resp.B = std::vector<double>{ getGateDistance() };
   return true;
 }

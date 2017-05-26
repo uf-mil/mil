@@ -1,21 +1,27 @@
 #include <sub8_perception/buoy.hpp>
 
 Sub8BuoyDetector::Sub8BuoyDetector()
-    : vp1(0),
-      vp2(1),
+  : vp1(0)
+  , vp2(1)
+  ,
 #ifdef VISUALIZE
-      viewer(new pcl::visualization::PCLVisualizer("Incoming Cloud")),
+  viewer(new pcl::visualization::PCLVisualizer("Incoming Cloud"))
+  ,
 #endif
-      rviz("/visualization/buoys"),
-      last_bump_target(0.0, 0.0, 0.0),
-      image_transport(nh) {
+  rviz("/visualization/buoys")
+  , last_bump_target(0.0, 0.0, 0.0)
+  , image_transport(nh)
+{
   pcl::console::print_highlight("Initializing PCL Sub8BuoyDetector\n");
 
   // Check if radius parameter exists
   // TODO: Make this templated library code, allow defaults
-  if (nh.hasParam("vision/buoy_radius")) {
+  if (nh.hasParam("vision/buoy_radius"))
+  {
     nh.getParam("vision/buoy_radius", buoy_radius);
-  } else {
+  }
+  else
+  {
     buoy_radius = 0.1016;  // m
   }
 
@@ -38,20 +44,21 @@ Sub8BuoyDetector::Sub8BuoyDetector()
   // Not yet able to build with C++11, should be done with an initialized vector
 
   data_sub = nh.subscribe("/camera/front/points2", 1, &Sub8BuoyDetector::cloud_callback, this);
-  service_3d =
-      nh.advertiseService("/vision/buoy/pose", &Sub8BuoyDetector::request_buoy_position, this);
+  service_3d = nh.advertiseService("/vision/buoy/pose", &Sub8BuoyDetector::request_buoy_position, this);
   pcl::console::print_highlight("--PCL Sub8BuoyDetector Initialized\n");
 }
 
-Sub8BuoyDetector::~Sub8BuoyDetector() {
+Sub8BuoyDetector::~Sub8BuoyDetector()
+{
 #ifdef VISUALIZE
   viewer->close();
 #endif
 }
 
-
-void Sub8BuoyDetector::compute_loop(const ros::TimerEvent &timer_event) {
-  if (last_draw_image.empty()) {
+void Sub8BuoyDetector::compute_loop(const ros::TimerEvent &timer_event)
+{
+  if (last_draw_image.empty())
+  {
     // ROS_ERROR("POOP");
     return;
   }
@@ -65,16 +72,20 @@ void Sub8BuoyDetector::compute_loop(const ros::TimerEvent &timer_event) {
 #endif
 }
 
-
-bool Sub8BuoyDetector::get_last_image(cv::Mat &last_image) {
+bool Sub8BuoyDetector::get_last_image(cv::Mat &last_image)
+{
   cv_bridge::CvImagePtr input_bridge;
-  if (!got_image) {
+  if (!got_image)
+  {
     return false;
   }
-  try {
+  try
+  {
     input_bridge = cv_bridge::toCvCopy(last_image_msg, sensor_msgs::image_encodings::BGR8);
     last_image = input_bridge->image;
-  } catch (cv_bridge::Exception &ex) {
+  }
+  catch (cv_bridge::Exception &ex)
+  {
     ROS_ERROR("Failed to convert image");
     return false;
   }
@@ -82,7 +93,8 @@ bool Sub8BuoyDetector::get_last_image(cv::Mat &last_image) {
 }
 
 void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_msg,
-                                      const sensor_msgs::CameraInfoConstPtr &info_msg) {
+                                      const sensor_msgs::CameraInfoConstPtr &info_msg)
+{
   need_new_cloud = true;
   got_image = true;
 
@@ -96,18 +108,23 @@ void Sub8BuoyDetector::image_callback(const sensor_msgs::ImageConstPtr &image_ms
   image_time = image_msg->header.stamp;
 }
 
-void Sub8BuoyDetector::cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &input_cloud) {
-  if (computing) {
+void Sub8BuoyDetector::cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &input_cloud)
+{
+  if (computing)
+  {
     return;
   }
 
   // Require reasonable time-similarity
   // (Not using message filters because image_transport eats the image and info msgs. Is there a
   // better way to do this?)
-  if (((input_cloud->header.stamp - image_time) < ros::Duration(0.3)) and (need_new_cloud)) {
+  if (((input_cloud->header.stamp - image_time) < ros::Duration(0.3)) and (need_new_cloud))
+  {
     last_cloud_time = input_cloud->header.stamp;
     need_new_cloud = false;
-  } else {
+  }
+  else
+  {
     return;
   }
 
@@ -120,9 +137,12 @@ void Sub8BuoyDetector::cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &
   sub8_msgs::VisionRequest::Response resp;
   request_buoy_position(req, resp);
   pcl::console::print_highlight("Getting Point Cloud\n");
-  if (!got_cloud) {
+  if (!got_cloud)
+  {
     viewer->addPointCloud(current_cloud, "current_input", vp1);
-  } else {
+  }
+  else
+  {
     viewer->updatePointCloud(current_cloud, "current_input");
     viewer->spinOnce();
     // Downsample

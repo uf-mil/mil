@@ -1,49 +1,49 @@
 #pragma once
-#include <string>
-#include <vector>
-#include <utility>
-#include <iostream>
 #include <algorithm>
-#include <stdexcept>
 #include <cstdint>
+#include <iostream>
 #include <iterator>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
 
-#include <boost/thread.hpp>
 #include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/thread.hpp>
 
-#include <opencv2/opencv.hpp>
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-#include <Eigen/Dense>
 #include <eigen_conversions/eigen_msg.h>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
 #include <Eigen/StdVector>
+#include <opencv2/opencv.hpp>
 
-#include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
-#include <image_transport/image_transport.h>
 #include <image_geometry/pinhole_camera_model.h>
-#include <tf/transform_listener.h>
+#include <image_transport/image_transport.h>
+#include <ros/ros.h>
 #include <sensor_msgs/image_encodings.h>
+#include <tf/transform_listener.h>
 
+#include <sub8_msgs/TBDetectionSwitch.h>
+#include <sub8_msgs/TorpBoardPoseRequest.h>
 #include <mil_vision_lib/cv_tools.hpp>
 #include <sub8_vision_lib/visualization.hpp>
-#include <sub8_msgs/TorpBoardPoseRequest.h>
-#include <sub8_msgs/TBDetectionSwitch.h>
 
 // #define SEGMENTATION_DEBUG
 
 /*
   Warning:
-  Because of its multithreadedness, this class cannot be copy constructed. 
+  Because of its multithreadedness, this class cannot be copy constructed.
   For examlple, the following will not compile:
     Sub8TorpedoBoardDetector tb_detector = Sub8TorpedoBoardDetector();
   Do this instead:
     Sub8TorpedoBoardDetector tb_detector();
 */
 
-class Sub8TorpedoBoardDetector {
-
+class Sub8TorpedoBoardDetector
+{
 public:
   Sub8TorpedoBoardDetector();
   ~Sub8TorpedoBoardDetector();
@@ -56,28 +56,23 @@ public:
 
 private:
   // Callbacks
-  bool detection_activation_switch(
-      sub8_msgs::TBDetectionSwitch::Request &req,
-      sub8_msgs::TBDetectionSwitch::Response &resp);
+  bool detection_activation_switch(sub8_msgs::TBDetectionSwitch::Request &req,
+                                   sub8_msgs::TBDetectionSwitch::Response &resp);
   void left_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
                            const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
-  void
-  right_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
-                       const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
+  void right_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
+                            const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
 
   // Detection / Processing
   void run();
   void determine_torpedo_board_position();
-  void segment_board(const cv::Mat &src, cv::Mat &dest, cv::Mat &dbg_img,
-                     bool draw_dbg_img = false);
-  bool find_board_corners(const cv::Mat &segmented_board, std::vector<cv::Point> &corners,
-                          bool draw_dbg_left = true);
-  void stereo_correspondence(const cv::Mat &gray_L, const cv::Mat &gray_R, 
-                             const std::vector< cv::Point > &features_L,
-                             const std::vector< cv::Point > &features_R,
-                             std::vector< std::vector<int> > &corresponding_feat_idxs);
+  void segment_board(const cv::Mat &src, cv::Mat &dest, cv::Mat &dbg_img, bool draw_dbg_img = false);
+  bool find_board_corners(const cv::Mat &segmented_board, std::vector<cv::Point> &corners, bool draw_dbg_left = true);
+  void stereo_correspondence(const cv::Mat &gray_L, const cv::Mat &gray_R, const std::vector<cv::Point> &features_L,
+                             const std::vector<cv::Point> &features_R,
+                             std::vector<std::vector<int> > &corresponding_feat_idxs);
 
-  // std::vector<cv::Point2d> project_rotated_model(Eigen::Matrix<double, 3, 4> cam_matx, 
+  // std::vector<cv::Point2d> project_rotated_model(Eigen::Matrix<double, 3, 4> cam_matx,
   //                                                Eigen::Quaterniond orientation);
 
   // ROS
@@ -115,29 +110,26 @@ private:
   cv::Rect upper_left, upper_right, lower_left, lower_right;
 };
 
-class TorpedoBoardReprojectionCost {
+class TorpedoBoardReprojectionCost
+{
 public:
-  TorpedoBoardReprojectionCost(cv::Matx34d &proj_L, cv::Matx34d &proj_R,
-                               std::vector<cv::Point> &corners_L,
+  TorpedoBoardReprojectionCost(cv::Matx34d &proj_L, cv::Matx34d &proj_R, std::vector<cv::Point> &corners_L,
                                std::vector<cv::Point> &corners_R);
   ~TorpedoBoardReprojectionCost();
 
   template <typename T>
-  bool operator()(const T *const x, const T *const y, const T *const z,
-                  const T *const yaw, T *residual) const;
+  bool operator()(const T *const x, const T *const y, const T *const z, const T *const yaw, T *residual) const;
 
 private:
-  static std::vector<cv::Point> getProjectedCorners(double center_x,
-                                                    double center_y,
-                                                    double center_z, double yaw,
+  static std::vector<cv::Point> getProjectedCorners(double center_x, double center_y, double center_z, double yaw,
                                                     cv::Matx34d &proj_matrix);
 
 #if __cplusplus > 199711L
-  static constexpr double height_m = 1.24; // in meters, aka(49 in.)
-  static constexpr double width_m = 0.61;  // in meters, aka(24 in.)
+  static constexpr double height_m = 1.24;  // in meters, aka(49 in.)
+  static constexpr double width_m = 0.61;   // in meters, aka(24 in.)
 #else
-  static const double height_m = 1.24; // in meters, aka(49 in.)
-  static const double width_m = 0.61;  // in meters, aka(24 in.)
+  static const double height_m = 1.24;  // in meters, aka(49 in.)
+  static const double width_m = 0.61;   // in meters, aka(24 in.)
 #endif
 
   const cv::Matx34d proj_L;
@@ -152,16 +144,16 @@ private:
 */
 
 // Combinations of k elements from a set of size n (indexes)
-void combinations(uint8_t n, uint8_t k, std::vector< std::vector<uint8_t> > &idx_array);
-void _increase_elements_after_level(std::vector<uint8_t> comb, std::vector< std::vector<uint8_t> > &comb_array,
-                                   uint8_t n, uint8_t k, uint8_t level);
+void combinations(uint8_t n, uint8_t k, std::vector<std::vector<uint8_t> > &idx_array);
+void _increase_elements_after_level(std::vector<uint8_t> comb, std::vector<std::vector<uint8_t> > &comb_array,
+                                    uint8_t n, uint8_t k, uint8_t level);
 
 // Edge preserving image denoising
 void anisotropic_diffusion(const cv::Mat &src, cv::Mat &dest, int t_max);
 
 // Pick a plane from a triplet of 3 points from a vector of points
-void best_plane_from_combination(const std::vector<Eigen::Vector3d> &point_list,
-                                 double distance_threshold, std::vector<double> &result_coeffs);
+void best_plane_from_combination(const std::vector<Eigen::Vector3d> &point_list, double distance_threshold,
+                                 std::vector<double> &result_coeffs);
 
 // Calculate coefficients of plane equation from 3 points
 void calc_plane_coeffs(Eigen::Vector3d &pt1, Eigen::Vector3d &pt2, Eigen::Vector3d &pt3,

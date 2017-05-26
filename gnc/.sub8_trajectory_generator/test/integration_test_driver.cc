@@ -5,7 +5,8 @@
 #include <gtest/gtest.h>
 #include <ros/ros.h>
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
   ::testing::InitGoogleTest(&argc, argv);
   ros::init(argc, argv, "tgen_integration_test");
   return RUN_ALL_TESTS();

@@ -14,24 +14,24 @@
 using ompl::base::SpaceInformationPtr;
 using ompl::base::StateSpacePtr;
 
-namespace sub8 {
-
-namespace trajectory_generator {
-
+namespace sub8
+{
+namespace trajectory_generator
+{
 // forward declarations for typedefs
 class SpaceInformationGenerator;
 
 // Typedefs for shared_ptr wrappers
-typedef boost::shared_ptr<SpaceInformationGenerator>
-    SpaceInformationGeneratorPtr;
+typedef boost::shared_ptr<SpaceInformationGenerator> SpaceInformationGeneratorPtr;
 
-class SpaceInformationGenerator {
- public:
+class SpaceInformationGenerator
+{
+public:
   // method that handles instantiation and customization of the
   // SpaceInformation state and control spaces
   SpaceInformationPtr generate();
 
- private:
+private:
   // Boundary definitions for the subspaces that
   // together make up the Sub8 state space
   void setStateSpaceBounds(const StateSpacePtr& space);

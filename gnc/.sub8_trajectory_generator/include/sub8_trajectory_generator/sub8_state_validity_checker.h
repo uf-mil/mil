@@ -6,9 +6,9 @@
 #ifndef SUB8_STATE_VALIDITY_CHECKER_H_
 #define SUB8_STATE_VALIDITY_CHECKER_H_
 
-#include "ompl/base/StateValidityChecker.h"
-#include "ompl/base/SpaceInformation.h"
 #include "ompl/base/Path.h"
+#include "ompl/base/SpaceInformation.h"
+#include "ompl/base/StateValidityChecker.h"
 #include "tgen_common.h"
 
 using ompl::base::StateValidityChecker;
@@ -16,10 +16,10 @@ using ompl::base::Path;
 using ompl::base::State;
 using ompl::base::SpaceInformationPtr;
 
-namespace sub8 {
-
-namespace trajectory_generator {
-
+namespace sub8
+{
+namespace trajectory_generator
+{
 // forward declaration for the typedef
 class Sub8StateValidityChecker;
 
@@ -28,10 +28,12 @@ typedef boost::shared_ptr<Sub8StateValidityChecker> Sub8StateValidityCheckerPtr;
 
 // Encapsulates collision checking and other functionality
 // necessary for determining whether a trajectory is safe
-class Sub8StateValidityChecker : public StateValidityChecker {
- public:
-  Sub8StateValidityChecker(const SpaceInformationPtr& si)
-      : StateValidityChecker(si) {}
+class Sub8StateValidityChecker : public StateValidityChecker
+{
+public:
+  Sub8StateValidityChecker(const SpaceInformationPtr& si) : StateValidityChecker(si)
+  {
+  }
 
   /////////////////////////////////////////////////////
   // Inherited methods
