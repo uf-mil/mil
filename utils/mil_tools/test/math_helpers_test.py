@@ -13,13 +13,15 @@ class TestROSTools(unittest.TestCase):
         for k in range(10):
             rand_vec = np.random.random(k)  # Make a random k-length vector
 
-            # Ignore the astronomically unlikely case that a vector has near 0 norm
+            # Ignore the astronomically unlikely case that a vector has near 0
+            # norm
             if not np.isclose(np.sum(rand_vec), 0):
                 normalized = normalize(rand_vec)
                 norm = np.linalg.norm(normalized)
 
                 # Test that the norm is 1
-                np.testing.assert_almost_equal(norm, 1.0, err_msg="The normalized vector did not have length 1")
+                np.testing.assert_almost_equal(
+                    norm, 1.0, err_msg="The normalized vector did not have length 1")
 
     def test_quat_to_euler(self):
         ''' Test quaternion to euler angle '''
@@ -27,7 +29,8 @@ class TestROSTools(unittest.TestCase):
         q = Quaternion(x=0.70711, y=0.0, z=0.0, w=0.70711)
         numpy_array = quat_to_euler(q)
         truth = np.array(([1.57079633, 0.0, 0.0]))
-        np.testing.assert_almost_equal(numpy_array, truth, err_msg="Quaternion to euler conversion incorrect")
+        np.testing.assert_almost_equal(
+            numpy_array, truth, err_msg="Quaternion to euler conversion incorrect")
 
     def test_compose_transformation(self):
         ''' Test quaternion to euler angle '''
@@ -43,7 +46,8 @@ class TestROSTools(unittest.TestCase):
                           [1, 2, 3, 1]))
 
         test = compose_transformation(R, t)
-        np.testing.assert_almost_equal(test, truth, err_msg="Error composing transformation")
+        np.testing.assert_almost_equal(
+            test, truth, err_msg="Error composing transformation")
 
     def test_euler_to_quat(self):
         ''' Test quaternion to euler angle '''
@@ -54,7 +58,8 @@ class TestROSTools(unittest.TestCase):
         # because unittest doesn't support ROS message operandsss
         testing = np.array(([testing.x, testing.y, testing.z, testing.w]))
         truth = np.array(([0.70710678, 0.0, 0.0, 0.70710678]))
-        np.testing.assert_almost_equal(testing, truth, err_msg="Incorrect euler to quaternion conversion")
+        np.testing.assert_almost_equal(
+            testing, truth, err_msg="Incorrect euler to quaternion conversion")
 
 
 if __name__ == '__main__':

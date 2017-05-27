@@ -1,5 +1,6 @@
 class Cache(object):
     """No support for **kwargs**"""
+
     def __init__(self, func):
         self.call_dict = {}
         self.func = func

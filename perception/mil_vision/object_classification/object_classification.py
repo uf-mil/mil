@@ -1,5 +1,3 @@
-
-from roi_generator import ROI_Collection
 from mil_ros_tools import CvDebug, BagCrawler
 import numpy as np
 from HOG_descriptor import HOGDescriptor
@@ -136,11 +134,14 @@ class ClassiferTest(object):
                 desc = desc.flatten()
                 clss, prob = self.classifier.classify(desc)
                 clss = self.config.to_class(clss)
-                cv2.rectangle(draw, (myroi[0], myroi[1]), (myroi[0] + myroi[2], myroi[1] + myroi[3]), (0, 0, 255))
-                cv2.putText(draw, clss + ": " + str(prob), (myroi[0], myroi[1]), 1, 1.0, (0, 255, 0))
+                cv2.rectangle(
+                    draw, (myroi[0], myroi[1]), (myroi[0] + myroi[2], myroi[1] + myroi[3]), (0, 0, 255))
+                cv2.putText(draw, clss + ": " + str(prob),
+                            (myroi[0], myroi[1]), 1, 1.0, (0, 255, 0))
             # self.debug.add_image(draw, topic="roi")
             cv2.imshow("roi", draw)
             cv2.waitKey(33)
+
 
 if __name__ == "__main__":
     t = Training("roi_competition.p", "train_competition.p")

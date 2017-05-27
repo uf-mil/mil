@@ -51,17 +51,26 @@ cv2.createTrackbar("roll", 'tf', 0, ang_max, lambda x: x)
 cv2.createTrackbar("pitch", 'tf', 0, ang_max, lambda x: x)
 cv2.createTrackbar("yaw", 'tf', 0, ang_max, lambda x: x)
 
-toTfLin = lambda x: x * x_res - 0.5 * x_range
-toTfAng = lambda x: x * ang_res - 0.5 * ang_range
 
-toCvLin = lambda x: (x+0.5*x_range)/x_res
-toCvAng = lambda x: (x+0.5*ang_range)/ang_res
+def toTfLin(x): return x * x_res - 0.5 * x_range
+
+
+def toTfAng(x): return x * ang_res - 0.5 * ang_range
+
+
+def toCvLin(x): return (x + 0.5 * x_range) / x_res
+
+
+def toCvAng(x): return (x + 0.5 * ang_range) / ang_res
+
 
 p = q = None
 q_mode = False
 
 # Used for printing and saving
-tf_line = '<node pkg="tf" type="static_transform_publisher" name="{child}_tf" args="{p[0]} {p[1]} {p[2]}  {q[0]} {q[1]} {q[2]} {q[3]}  /{parent} /{child} {prd}" />\n'
+tf_line = '<node pkg="tf" type="static_transform_publisher" \
+          name="{child}_tf" args="{p[0]} {p[1]} {p[2]}\
+          {q[0]} {q[1]} {q[2]} {q[3]}  /{parent} /{child} {prd}" />\n'
 prd = 100  # This will get replaced if it needs to
 
 args.tf_child = args.tf_child[1:] if args.tf_child[0] == '/' else args.tf_child
@@ -69,30 +78,33 @@ args.tf_parent = args.tf_parent[1:] if args.tf_parent[0] == '/' else args.tf_par
 
 listener = tf.TransformListener()
 
-p_original = (0,0,0)
-rpy_original = (0,0,0)
+p_original = (0, 0, 0)
+rpy_original = (0, 0, 0)
 try:
-    listener.waitForTransform(args.tf_parent,args.tf_child, rospy.Time(0), rospy.Duration(1))
-    (trans,rot) = listener.lookupTransform(args.tf_parent,args.tf_child, rospy.Time(0))
+    listener.waitForTransform(
+        args.tf_parent, args.tf_child, rospy.Time(0), rospy.Duration(1))
+    (trans, rot) = listener.lookupTransform(
+        args.tf_parent, args.tf_child, rospy.Time(0))
     euler = trns.euler_from_quaternion(rot)
     p_original = trans
     rpy_original = euler
 except tf.Exception:
     print "TF not found, setting everything to zero"
 
+
 def set_bars(p, rpy):
-    cv2.setTrackbarPos("x", "tf",int( toCvLin(p[0]) ) )
-    cv2.setTrackbarPos("y", "tf",int( toCvLin(p[1]) ) )
-    cv2.setTrackbarPos("z", "tf",int( toCvLin(p[2]) ) )
-    cv2.setTrackbarPos("roll", "tf",int( toCvAng(rpy[0]) ))
-    cv2.setTrackbarPos("pitch", "tf",int( toCvAng(rpy[1]) ))
-    cv2.setTrackbarPos("yaw", "tf",int( toCvAng(rpy[2]) ))
-    k = cv2.waitKey(100) & 0xFF
-    if k == ord('q'):
-        q_mode = not q_mode
+    cv2.setTrackbarPos("x", "tf", int(toCvLin(p[0])))
+    cv2.setTrackbarPos("y", "tf", int(toCvLin(p[1])))
+    cv2.setTrackbarPos("z", "tf", int(toCvLin(p[2])))
+    cv2.setTrackbarPos("roll", "tf", int(toCvAng(rpy[0])))
+    cv2.setTrackbarPos("pitch", "tf", int(toCvAng(rpy[1])))
+    cv2.setTrackbarPos("yaw", "tf", int(toCvAng(rpy[2])))
+    cv2.waitKey(100) & 0xFF
+
 
 def reset():
-    set_bars(p_original,rpy_original)
+    set_bars(p_original, rpy_original)
+
 
 reset()
 
@@ -100,14 +112,18 @@ p_last = p_original
 rpy_last = rpy_original
 
 while not rospy.is_shutdown():
-    x, y, z = toTfLin(cv2.getTrackbarPos("x", "tf")), toTfLin(cv2.getTrackbarPos("y", "tf")), toTfLin(cv2.getTrackbarPos("z", "tf"))
+    x, y, z = toTfLin(cv2.getTrackbarPos("x", "tf")), toTfLin(
+        cv2.getTrackbarPos("y", "tf")), toTfLin(cv2.getTrackbarPos("z", "tf"))
     p = (x, y, z)
-    rpy = (toTfAng(cv2.getTrackbarPos("roll", "tf")), toTfAng(cv2.getTrackbarPos("pitch", "tf")), toTfAng(cv2.getTrackbarPos("yaw", "tf")))
+    rpy = (toTfAng(cv2.getTrackbarPos("roll", "tf")), toTfAng(
+        cv2.getTrackbarPos("pitch", "tf")), toTfAng(cv2.getTrackbarPos("yaw", "tf")))
     q = tf.transformations.quaternion_from_euler(*rpy)
 
     if (not p == p_last) or (not rpy == rpy_last):
-        rpy_feedback = "xyz: {}, euler: {}".format([round(x, 5) for x in p], [round(np.degrees(x), 5) for x in rpy])
-        q_feedback = "xyz: {},     q: {}".format([round(x, 5) for x in p], [round(x, 5) for x in q])
+        rpy_feedback = "xyz: {}, euler: {}".format(
+            [round(e, 5) for e in p], [round(np.degrees(f), 5) for f in rpy])
+        q_feedback = "xyz: {},     q: {}".format(
+            [round(x, 5) for e in p], [round(f, 5) for f in q])
         print q_feedback if q_mode else rpy_feedback
     p_last = p
     rpy_last = rpy
@@ -122,7 +138,8 @@ while not rospy.is_shutdown():
     if k == ord('z'):
         set_bars((0, 0, 0), (0, 0, 0))
 
-    # This functionality was configured to replace lines in navigator's tf launch file, should refactor to be general later
+    # This functionality was configured to replace lines in navigator's tf
+    # launch file, should refactor to be general later
     '''
     if k == ord('s'):
         # Save the transform in navigator_launch/launch/tf.launch replacing the line
@@ -150,12 +167,14 @@ while not rospy.is_shutdown():
                 break
 
             elif 'pkg="tf"' in line:
-                # Incase we don't find the tf line of interest to change, we want to insert the new tf line after the last tf line
+                # Incase we don't find the tf line of interest to change, we want to insert the new tf line after
+                # the last tf line
                 tab_level = line[:line.find("<")]  # The labs infront of the tf line
                 last_static_pub = i
 
         else:
-            print "Tf link not found between /{parent} /{child} in tf.launch.".format(parent=args.tf_parent, child=args.tf_child)
+            print "Tf link not found between /{parent} /{child} in tf.launch.".format(
+                   parent=args.tf_parent, child=args.tf_child)
             lines.insert(last_static_pub + 1, '\n' + tab_level + tf_line_to_add.format(prd=prd))
             print "Adding: {}".format(lines[last_static_pub + 1].replace(tab_level, '')[:-1])
 
@@ -169,4 +188,4 @@ while not rospy.is_shutdown():
     br.sendTransform(p, q, rospy.Time.now(), args.tf_child, args.tf_parent)
 
 # Print out the tf static transform line with the fudged tf
-print '\n',tf_line.format(child=args.tf_child, p=p, q=np.round(q, 5), parent=args.tf_parent, prd=prd)
+print '\n', tf_line.format(child=args.tf_child, p=p, q=np.round(q, 5), parent=args.tf_parent, prd=prd)

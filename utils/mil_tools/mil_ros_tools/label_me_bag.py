@@ -39,6 +39,7 @@ class BagToLabelMe():
 
     TODO: improve verbosity, disable print statements with toggle
     """
+
     def __init__(self, config, labelme_dir, verbose=False, indir='', outdir=''):
         """
         Generates class that can be used to insert or extract images to/from LabelMe
@@ -48,7 +49,8 @@ class BagToLabelMe():
         """
         self.verbose = verbose
         if not os.path.isdir(labelme_dir):
-            raise Exception("Labelme directory {} does not exsist".format(labelme_dir))
+            raise Exception(
+                "Labelme directory {} does not exsist".format(labelme_dir))
 
         config_file = open(config, 'r')
         self.config = yaml.load(config_file)
@@ -72,17 +74,21 @@ class BagToLabelMe():
             if not throw:
                 return attr in obj
             if attr not in obj:
-                raise Exception("{} does not have required attribute {} in config".format(objname, attr))
+                raise Exception(
+                    "{} does not have required attribute {} in config".format(objname, attr))
         verify_attr(self.config, 'bags', 'Config')
-        self._print('Pulling segments from {} bag(s):', len(self.config['bags']))
+        self._print('Pulling segments from {} bag(s):',
+                    len(self.config['bags']))
         for i, bag in enumerate(self.config['bags']):
             verify_attr(bag, 'file', 'Bag')
             if 'file' not in bag:
-                raise Exception("Bag does not contain 'file' attribute {}".format(bag))
+                raise Exception(
+                    "Bag does not contain 'file' attribute {}".format(bag))
             verify_attr(bag, 'segments', bag['file'])
             if 'combined' not in bag:
                 self.config['bags'][i]['combined'] = False
-            self._print('\tFound {} segments for {}:', len(bag['segments']), bag['file'])
+            self._print('\tFound {} segments for {}:',
+                        len(bag['segments']), bag['file'])
             for j, segment in enumerate(bag['segments']):
                 verify_attr(segment, 'topics', 'segment')
                 # Ensure topics is still a list
@@ -116,7 +122,8 @@ class BagToLabelMe():
         """
         self._print("Extracting labels for all bags in config")
         for bag in self.config['bags']:
-            self._print("\tExtracting LabelMe annotations for {}".format(bag['file']))
+            self._print(
+                "\tExtracting LabelMe annotations for {}".format(bag['file']))
             self._extract_labels_bag(bag)
 
     def print_report(self):
@@ -152,14 +159,17 @@ class BagToLabelMe():
         _, _, first_time = bag.read_messages().next()
         for segment in segments:
             self._print("\tProccessing Segment '{}'", segment['name'])
-            # Put images in LABELMEDIR/Images/SEGMENTNAME/TOPIC, where TOPIC replaces / with @
+            # Put images in LABELMEDIR/Images/SEGMENTNAME/TOPIC, where TOPIC
+            # replaces / with @
             paths = {}
             for t in segment['topics']:
-                path = os.path.join(self.labelme_dir, 'Images', segment['name'].replace('/', '@'), t.replace('/', '@'))
+                path = os.path.join(self.labelme_dir, 'Images', segment['name'].replace(
+                    '/', '@'), t.replace('/', '@'))
                 if not os.path.exists(path):
                     os.makedirs(path)
                 paths[t] = path
-            # Ensure start and stop are passed as None to read_messages if not defined
+            # Ensure start and stop are passed as None to read_messages if not
+            # defined
             start = None
             stop = None
             interval = rospy.Duration(0)
@@ -174,9 +184,12 @@ class BagToLabelMe():
             for topic, msg, time in bag.read_messages(topics=segment['topics'], start_time=start, end_time=stop):
                 if time >= next_time:
                     # If enough time has elapsed, put an image in this segment's directory,
-                    # named by the frame's timestamp converted to a string: str(ros.Time(stamp))
-                    img = self.bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
-                    filename = os.path.join(paths[topic], str(msg.header.stamp) + '.jpg')
+                    # named by the frame's timestamp converted to a string:
+                    # str(ros.Time(stamp))
+                    img = self.bridge.imgmsg_to_cv2(
+                        msg, desired_encoding="passthrough")
+                    filename = os.path.join(
+                        paths[topic], str(msg.header.stamp) + '.jpg')
                     cv2.imwrite(filename, img)
                     next_time = next_time + interval
 
@@ -194,7 +207,8 @@ class BagToLabelMe():
         total_xml_count = 0
         total_img_count = 0
         for segment in bagconfig['segments']:
-            self._print("\t\tGenerating Report for segment '{}'", segment['name'])
+            self._print("\t\tGenerating Report for segment '{}'",
+                        segment['name'])
             xml_count = 0
             img_count = 0
             for t in segment['topics']:
@@ -209,14 +223,16 @@ class BagToLabelMe():
                     for imgfile in os.listdir(img_path):
                         img_count += 1
             if img_count == 0:
-                self._print("\t\t\t{}/{} images labeled in this segment (0%)", xml_count, img_count)
+                self._print(
+                    "\t\t\t{}/{} images labeled in this segment (0%)", xml_count, img_count)
             else:
                 self._print("\t\t\t{}/{} images labeled in this segment ({:.1%})", xml_count, img_count,
                             xml_count / img_count)
             total_xml_count += xml_count
             total_img_count += img_count
         if total_img_count == 0:
-            self._print("\t\t{}/{} images labeled in this bag (0%)", total_xml_count, total_img_count)
+            self._print("\t\t{}/{} images labeled in this bag (0%)",
+                        total_xml_count, total_img_count)
         else:
             self._print("\t\t{}/{} images labeled in this bag ({:.1%})", total_xml_count, total_img_count,
                         total_xml_count / total_img_count)
@@ -252,7 +268,8 @@ class BagToLabelMe():
         for t in segment['topics']:
             if t not in labels:
                 labels[t] = {}
-            path = os.path.join(self.labelme_dir, 'Annotations', segment['name'].replace('/', '@'), t.replace('/', '@'))
+            path = os.path.join(self.labelme_dir, 'Annotations', segment['name'].replace(
+                '/', '@'), t.replace('/', '@'))
             if not os.path.isdir(path):
                 continue
             for xmlfile in os.listdir(path):
@@ -288,7 +305,8 @@ class BagToLabelMe():
 
     def _get_combined_output_bag(self, bag_config):
         if 'outfile' in bag_config:
-            filename = self._get_bag_filename(bag_config['outfile'], self.outdir)
+            filename = self._get_bag_filename(
+                bag_config['outfile'], self.outdir)
             return rosbag.Bag(filename)
         base = os.path.split(bag_config['file'])[1]
         filename = self._get_bag_filename(base, self.outdir)
@@ -316,7 +334,8 @@ class BagToLabelMe():
                 if msg._type == 'sensor_msgs/Image':
                     if topic in label_files:
                         if str(msg.header.stamp) in label_files[topic]:
-                            labels = self._parse_label_xml(label_files[topic][str(msg.header.stamp)])
+                            labels = self._parse_label_xml(
+                                label_files[topic][str(msg.header.stamp)])
                             labels.header = msg.header
                             out.write(topic + '/labels', labels, t)
                 out.write(topic, msg, t)
@@ -337,7 +356,8 @@ class BagToLabelMe():
                     if msg._type == 'sensor_msgs/Image':
                         if topic in label_files:
                             if str(msg.header.stamp) in label_files[topic]:
-                                labels = self._parse_label_xml(label_files[topic][str(msg.header.stamp)])
+                                labels = self._parse_label_xml(
+                                    label_files[topic][str(msg.header.stamp)])
                                 labels.header = msg.header
                                 out.write(topic + '/labels', labels, t)
                     out.write(topic, msg, t)
@@ -345,8 +365,10 @@ class BagToLabelMe():
                 out.close()
         bag.close()
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Generates rosbags based on LabelMe data and visa/versa')
+    parser = argparse.ArgumentParser(
+        description='Generates rosbags based on LabelMe data and visa/versa')
     parser.add_argument('--config-file', '-c', dest='config', type=str, required=True,
                         help='YAML file specifying what bags to read and extract images from.\
                               See example YAML for details')

@@ -6,10 +6,8 @@ import sys
 import fnmatch
 import argparse
 from tqdm import tqdm
-
 import cv2
 import rospy
-import roslib
 import rosbag
 
 from cv_bridge import CvBridge, CvBridgeError
@@ -77,7 +75,7 @@ class ImageHandler:
         # TODO: Add ability to pickup where it last left off
         with tqdm(total=self.msgs) as pbar:
             for topic, msg, t in self.bag.read_messages(
-                                            topics=self.image_topics):
+                    topics=self.image_topics):
                 try:
                     cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
                     cv2.imwrite(self.working_dir + '/' +
@@ -88,6 +86,7 @@ class ImageHandler:
                 pbar.update(1)
             self.bag.close()
         print self.image_index + 1, 'images saved to', self.working_dir, '\n'
+
 
 if __name__ == '__main__':
 

@@ -22,26 +22,36 @@ class Printer(object):
     def __init__(self, string="", autospace=False):
         self._autospace = autospace
         self._string = string
-        
+
         # Default adding text
         self.text = lambda text: self + text
 
         # Colors
         self.red = lambda text: self + (Colors.red + str(text) + Colors.reset)
-        self.green = lambda text: self + (Colors.green + str(text) + Colors.reset)
-        self.yellow = lambda text: self + (Colors.yellow + str(text) + Colors.reset)
-        self.blue = lambda text: self + (Colors.blue + str(text) + Colors.reset)
-        self.purple = lambda text: self + (Colors.purple + str(text) + Colors.reset)
-        self.cyan = lambda text: self + (Colors.cyna + str(text) + Colors.reset)
-        self.white = lambda text: self + (Colors.white + str(text) + Colors.reset)
-    
+        self.green = lambda text: self + \
+            (Colors.green + str(text) + Colors.reset)
+        self.yellow = lambda text: self + \
+            (Colors.yellow + str(text) + Colors.reset)
+        self.blue = lambda text: self + \
+            (Colors.blue + str(text) + Colors.reset)
+        self.purple = lambda text: self + \
+            (Colors.purple + str(text) + Colors.reset)
+        self.cyan = lambda text: self + \
+            (Colors.cyna + str(text) + Colors.reset)
+        self.white = lambda text: self + \
+            (Colors.white + str(text) + Colors.reset)
+
         # Text effects
-        self.underline = lambda text: Printer(self._string + Colors.underline + str(text) + Colors.reset)
-        self.bold = lambda text: Printer(self._string + Colors.bold + str(text) + Colors.reset)
-        self.negative = lambda text: Printer(self._string + Colors.negative + str(text) + Colors.reset)
-        
+        self.underline = lambda text: Printer(
+            self._string + Colors.underline + str(text) + Colors.reset)
+        self.bold = lambda text: Printer(
+            self._string + Colors.bold + str(text) + Colors.reset)
+        self.negative = lambda text: Printer(
+            self._string + Colors.negative + str(text) + Colors.reset)
+
         # For passing in custom formatting
-        self.custom = lambda text, effect: self + (effect + str(text) + Colors.reset)
+        self.custom = lambda text, effect: self + \
+            (effect + str(text) + Colors.reset)
 
     def __repr__(self):
         return self._string + Colors.reset
@@ -54,7 +64,7 @@ class Printer(object):
     @property
     def set_red(self):
         return Printer(self._string + Colors.red)
-    
+
     @property
     def set_green(self):
         return Printer(self._string + Colors.green)
@@ -94,19 +104,26 @@ class Printer(object):
 
     def disable_autospaces(self):
         self._autospace = True
-    
+
 
 class FprintFactory(object):
     def __init__(self, title=None, time=None, msg_color=None, auto_bold=True, newline=1):
-        assert time is None or callable(time), "`time` should be `None` for no printing or a function that generates a timestamp."
-        assert msg_color is None or isinstance(msg_color, str), "`msg_color` should be `None` for default printing or a string color."
-        assert isinstance(auto_bold, bool), "`auto_bold` should be true or false if messages should be printed as bold by default or not"
-        assert newline is None or isinstance(newline, int), "`newline` should be the number of newlines after the text (default 1)"
+        assert time is None or callable(
+            time), "`time` should be `None` for no printing or a function that generates a timestamp."
+        assert msg_color is None or isinstance(
+            msg_color, str), "`msg_color` should be `None` for default printing or a string color."
+        assert isinstance(
+            auto_bold, bool), "`auto_bold` should be true or false if messages should be printed\
+                               as bold by default or not"
+        assert newline is None or isinstance(
+            newline, int), "`newline` should be the number of newlines after the text (default 1)"
 
         # All these can be overwritten if not specified here
         self.title = title          # Title to print with each message
-        self.time = time            # Either `None` for no printing or a function that generates a timestamp
-        self.msg_color = msg_color  # Either `None` for deafult printing or a string color 
+        # Either `None` for no printing or a function that generates a
+        # timestamp
+        self.time = time
+        self.msg_color = msg_color  # Either `None` for deafult printing or a string color
         self.auto_bold = auto_bold  # Should each message be bolded by default
         self.newline = newline      # The number of newlines characters to add to the end
 
@@ -118,17 +135,17 @@ class FprintFactory(object):
         msg_color = kwargs.get("msg_color", self.msg_color)
         auto_bold = kwargs.get("auto_bold", self.auto_bold)
         newline = kwargs.get("newline", self.newline)
-            
+
         message = self.printer
         if title is not None:
             message = message.set_blue.bold(title).reset.space()
-        
+
         if time is not None:
             t = time()
             message = message.bold(t).space()
 
         message += ": "
-            
+
         if auto_bold:
             text = str(self.printer.bold(text))
 
@@ -136,11 +153,12 @@ class FprintFactory(object):
             message = message.custom(text, getattr(Colors, msg_color))
         else:
             message = message.text(text)
-        
+
         if newline == 1:
             print message
         else:
             print message.newline(newline - 1)
+
 
 # Standard instantiation
 fprint = FprintFactory().fprint

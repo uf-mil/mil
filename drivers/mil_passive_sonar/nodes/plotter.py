@@ -14,7 +14,7 @@ ax = fig.add_subplot(111, projection='3d')
 
 print "Waiting for sonar service"
 rospy.wait_for_service('~/sonar/get_pinger_pulse')
-sonar =  rospy.ServiceProxy('~/sonar/get_pinger_pulse', Sonar)
+sonar = rospy.ServiceProxy('~/sonar/get_pinger_pulse', Sonar)
 print "sonar serv proxy created"
 
 try:

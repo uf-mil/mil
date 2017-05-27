@@ -17,9 +17,11 @@ def get_parameter_range(parameter_root):
     ex: parameter_root='/vision/buoy/red'
     this will then fetch /vision/buoy/red/hsv_low and hsv_high
     '''
-    low_param, high_param = parameter_root + '/hsv_low', parameter_root + '/hsv_high'
+    low_param, high_param = parameter_root + \
+        '/hsv_low', parameter_root + '/hsv_high'
 
-    rospy.logwarn("Blocking -- waiting for parameters {} and {}".format(low_param, high_param))
+    rospy.logwarn(
+        "Blocking -- waiting for parameters {} and {}".format(low_param, high_param))
 
     wait_for_param(low_param)
     wait_for_param(high_param)
@@ -67,16 +69,18 @@ class Image_Subscriber(object):
         This behaves like a conventional subscriber, except handling the additional image conversion
         '''
         if callback is None:
-            callback = lambda im: setattr(self, 'last_image', im)
+            def callback(im): return setattr(self, 'last_image', im)
 
         self.encoding = encoding
         self.camera_info = None
         self.last_image_time = None
         self.last_image = None
-        self.im_sub = rospy.Subscriber(topic, Image, self.convert, queue_size=queue_size)
+        self.im_sub = rospy.Subscriber(
+            topic, Image, self.convert, queue_size=queue_size)
 
         root_topic, image_subtopic = path.split(topic)
-        self.info_sub = rospy.Subscriber(root_topic + '/camera_info', CameraInfo, self.info_cb, queue_size=queue_size)
+        self.info_sub = rospy.Subscriber(
+            root_topic + '/camera_info', CameraInfo, self.info_cb, queue_size=queue_size)
 
         self.bridge = CvBridge()
         self.callback = callback
@@ -86,7 +90,8 @@ class Image_Subscriber(object):
         Blocks until camera info has been received.
         Note: 'timeout' is in seconds.
         '''
-        rospy.logwarn("Blocking -- waiting at most %d seconds for camera info." % timeout)
+        rospy.logwarn(
+            "Blocking -- waiting at most %d seconds for camera info." % timeout)
 
         timeout = rospy.Duration(timeout)
         rospy.sleep(.1)  # Make sure we don't have negative time
@@ -109,7 +114,8 @@ class Image_Subscriber(object):
     def convert(self, data):
         self.last_image_time = data.header.stamp
         try:
-            image = self.bridge.imgmsg_to_cv2(data, desired_encoding=self.encoding)
+            image = self.bridge.imgmsg_to_cv2(
+                data, desired_encoding=self.encoding)
             self.callback(image)
         except CvBridgeError, e:
             # Intentionally absorb CvBridge Errors

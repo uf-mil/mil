@@ -16,6 +16,7 @@ class RectFinder(object):
     See github.com/uf-mil/SubjuGator/blob/master/perception/sub8_perception/nodes/path_marker_finder.py
     for an example of this used in a real time computer vision application.
     '''
+
     def __init__(self, length=1.0, width=1.0):
         '''
         Initializes the internal model of the rectangle.
@@ -85,7 +86,8 @@ class RectFinder(object):
         else:
             temp = rect.reshape(rect.shape[0], 1, 2)
             M = cv2.moments(temp)
-        centroid = np.array((int(M['m10'] / M['m00']), int(M['m01'] / M['m00'])))
+        centroid = np.array(
+            (int(M['m10'] / M['m00']), int(M['m01'] / M['m00'])))
         vectors = rect - centroid
         atan = np.arctan2(vectors[:, 1], vectors[:, 0])
         atan_indicies = np.argsort(atan)
@@ -99,7 +101,8 @@ class RectFinder(object):
             for i, pixel in enumerate(rect):
                 center = (int(pixel[0]), int(pixel[1]))
                 cv2.circle(debug_image, center, 5, (0, 255, 0), -1)
-                cv2.putText(debug_image, str(i), center, cv2.FONT_HERSHEY_SCRIPT_COMPLEX, 1, (0, 0, 255))
+                cv2.putText(debug_image, str(i), center,
+                            cv2.FONT_HERSHEY_SCRIPT_COMPLEX, 1, (0, 0, 255))
         return rect
 
     def verify_contour(self, contour):
@@ -152,7 +155,8 @@ class RectFinder(object):
         rvec to a 3x3 rotation matrix.
         '''
         corners = np.array(corners, dtype=np.float)
-        # Use camera intrinsics and knowledge of marker's real demensions to get a pose estimate in camera frame
+        # Use camera intrinsics and knowledge of marker's real demensions to
+        # get a pose estimate in camera frame
         if cam is not None:
             intrinsics = cam.intrinsicMatrix()
             if rectified:
@@ -161,7 +165,8 @@ class RectFinder(object):
                 dist_coeffs = cam.distortionCoeffs()
         assert intrinsics is not None
         assert dist_coeffs is not None
-        _, rvec, tvec = cv2.solvePnP(self.model_3D, corners, intrinsics, dist_coeffs)
+        _, rvec, tvec = cv2.solvePnP(
+            self.model_3D, corners, intrinsics, dist_coeffs)
         return (tvec, rvec)
 
     def get_pose_2D(self, corners):

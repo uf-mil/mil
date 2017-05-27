@@ -14,6 +14,7 @@ from nav_msgs.msg import OccupancyGrid, MapMetaData
 
 rospy.init_node("ogrid_draw_node", anonymous=True)
 
+
 class DrawGrid(object):
     def __init__(self, height, width, image_path):
         self.height, self.width = height, width
@@ -33,7 +34,8 @@ class DrawGrid(object):
             print "Image not found at '{}'".format(image_path)
             return
 
-        img = cv2.resize(img, (self.width, self.height), interpolation=cv2.INTER_CUBIC)
+        img = cv2.resize(img, (self.width, self.height),
+                         interpolation=cv2.INTER_CUBIC)
         _, img = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY_INV)
         self.img = np.clip(img, -1, 100)
 
@@ -52,6 +54,7 @@ class DrawGrid(object):
         elif self.drawing != 0:
             cv2.circle(self.img, (x, y), 5, draw_vals[self.drawing], -1)
 
+
 class OGridPub(object):
     def __init__(self, image_path=None):
         height = int(rospy.get_param("~grid_height", 800))
@@ -60,14 +63,14 @@ class OGridPub(object):
         ogrid_topic = rospy.get_param("~grid_topic", "/ogrid")
 
         self.grid_drawer = DrawGrid(height, width, image_path)
-        self.ogrid_pub = rospy.Publisher(ogrid_topic, OccupancyGrid, queue_size=1)
+        self.ogrid_pub = rospy.Publisher(
+            ogrid_topic, OccupancyGrid, queue_size=1)
 
         m = MapMetaData()
         m.resolution = resolution
         m.width = width
         m.height = height
         pos = np.array([-width * resolution / 2, -height * resolution / 2, 0])
-        quat = np.array([0, 0, 0, 1])
         m.origin = Pose()
         m.origin.position.x, m.origin.position.y = pos[:2]
 
@@ -82,9 +85,11 @@ class OGridPub(object):
         ogrid.header.frame_id = '/enu'
         ogrid.header.stamp = rospy.Time.now()
         ogrid.info = self.map_meta_data
-        ogrid.data = np.subtract(np.flipud(grid).flatten(), 1).astype(np.int8).tolist()
+        ogrid.data = np.subtract(
+            np.flipud(grid).flatten(), 1).astype(np.int8).tolist()
 
         self.ogrid_pub.publish(ogrid)
+
 
 if __name__ == "__main__":
     usage_msg = "Lets you draw an occupancy grid!"
@@ -94,7 +99,8 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--image', action='store', type=str,
                         help="Path to an image to use as an ogrid.")
 
-    # Roslaunch passes in some args we don't want to deal with (there may be a better way than this)
+    # Roslaunch passes in some args we don't want to deal with (there may be a
+    # better way than this)
     if '-i' in sys.argv:
         args = parser.parse_args(sys.argv[1:])
         im_path = args.image

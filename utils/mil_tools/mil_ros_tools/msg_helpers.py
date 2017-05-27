@@ -48,7 +48,8 @@ def rosmsg_to_numpy(rosmsg, keys=None):
                 output_array.append(getattr(rosmsg, key))
             else:
                 break
-        assert len(output_array) is not 0, "Input type {} has none of these attributes {}.".format(type(rosmsg).__name__, keys)
+        assert len(output_array) is not 0, "Input type {} has none of these attributes {}.".format(
+            type(rosmsg).__name__, keys)
         return np.array(output_array).astype(np.float32)
 
     else:
@@ -150,11 +151,13 @@ def numpy_quat_pair_to_pose(np_translation, np_quaternion):
     position = numpy_to_point(np_translation)
     return geometry_msgs.Pose(position=position, orientation=orientation)
 
+
 def numpy_to_polygon(polygon):
     points = []
     for point in polygon:
         points.append(numpy_to_point(point))
     return geometry_msgs.Polygon(points=points)
+
 
 def make_header(frame='/body', stamp=None):
     if stamp is None:
@@ -201,6 +204,7 @@ def odom_sub(topic, callback):
         callback(odometry_to_numpy(msg))
 
     return rospy.Subscriber(topic, nav_msgs.Odometry, wrapped_callback, queue_size=1)
+
 
 def ros_to_np_3D(msg):
     xyz_array = np.array(([msg.x, msg.y, msg.z]))

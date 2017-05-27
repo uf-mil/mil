@@ -1,10 +1,7 @@
 import txros
 from twisted.internet import defer
 from txros import util, tf
-import navigator_tools as nt
 from navigator_tools import CvDebug
-from collections import Counter
-from image_geometry import PinholeCameraModel
 import sys
 from collections import deque
 from cv_bridge import CvBridge
@@ -14,13 +11,13 @@ import genpy
 import cv2
 from mil_ros_tools import odometry_to_numpy
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
-from image_geometry import PinholeCameraModel
 import numpy as np
 ___author___ = "Tess Bianchi"
 
 '''
 Needs to be refactored to be generic and non depend on navigator
 '''
+
 
 class LidarToImage(object):
 
@@ -58,7 +55,8 @@ class LidarToImage(object):
 
     def _get_2d_points(self, points_3d):
         # xmin, ymin, zmin = self._get_top_left_point(points_3d)
-        points_2d = map(lambda x: self.camera_model.project3dToPixel(x), points_3d)
+        points_2d = map(
+            lambda x: self.camera_model.project3dToPixel(x), points_3d)
         return points_2d
 
     def _get_bounding_rect(self, points_2d, img):
@@ -105,13 +103,14 @@ class LidarToImage(object):
         o = obj.objects[0]
 
         points_3d = yield self.get_3d_points(o)
-        points_2d_all = map(lambda x: self.camera_model.project3dToPixel(x), points_3d)
+        points_2d_all = map(
+            lambda x: self.camera_model.project3dToPixel(x), points_3d)
         points_2d = self._get_2d_points(points_3d)
         xmin, ymin, xmax, ymax = self._get_bounding_rect(points_2d, img)
         xmin, ymin, xmax, ymax = int(xmin), int(ymin), int(xmax), int(ymax)
         h, w, r = img.shape
         if xmin < 0 or xmax < 0 or xmin > w or xmax > w or xmax - xmin == 0 or ymax - ymin == 0:
-            continue
+            defer.returnValue((None, None))
         if ymin < 0:
             ymin = 0
         roi = img[ymin:ymax, xmin:xmax]
