@@ -29,8 +29,10 @@ alias alist="rosparam get /known_alarms"
 alias araise="rosrun ros_alarms raise"
 alias aclear="rosrun ros_alarms clear"
 alias areport="rosrun ros_alarms report"
+alias amonitor="rosrun ros_alarms monitor"
 
 # Registers the autocompletion function to be invoked for ros_alarms aliases
 complete -F _alarm_complete araise
 complete -F _alarm_complete aclear
 complete -F _alarm_complete areport
+complete -F _alarm_complete amonitor
