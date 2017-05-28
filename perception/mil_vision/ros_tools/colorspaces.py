@@ -3,9 +3,12 @@ from __future__ import division
 import numpy as np
 import cv2
 import argparse
+import time
 
 NAME = 'Colorspaces'
-clicked = False
+clicked = True
+total = 0
+iterations = 0
 
 
 def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
@@ -16,11 +19,14 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
     '''
 
     global clicked
+    global total
+    global iterations
 
     # Create grid of reduced size image panels
     w, h = (int(rgb_image.shape[1] * viz_scale), int(rgb_image.shape[0] * viz_scale)) if disp_size is None \
         else (int(disp_size[0] / 4), int(disp_size[1] / 3))
     viz = np.zeros((h * 3, w * 4, 3), dtype=np.uint8)
+    labels = [['B', 'G', 'R'], ['H', 'S', 'V'], ['L', 'A', 'B']]
 
     def flatten_channels(img, labels):
         ''' Return horizontal stacking of single channels with a label overlayed '''
@@ -37,57 +43,65 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
     # Create small versions of image converted to HSV and LAB colorspaces
     images_and_labels = \
         zip([rgb_small, cv2.cvtColor(rgb_small, cv2.COLOR_BGR2HSV), cv2.cvtColor(rgb_small, cv2.COLOR_BGR2LAB)],
-            [['B', 'G', 'R'], ['H', 'S', 'V'], ['L', 'A', 'B']])
+            labels)
 
     # Set 3x3 grid of single channel images from 3 3-channel images
     make_3deep = lambda x: np.repeat(x[:, :, np.newaxis], 3, axis=2)  # Needed for displaying in color
-    viz[:, w:] = np.vstack(map(make_3deep, map(lambda x: flatten_channels(*x), images_and_labels)))
 
+    t0 = time.time()
     if clicked:
+        # print 'iterations', iterations
+        iterations = iterations + 1
+
         def hist_curve(im, width, height):
             """
             Given an image in any color space (BGR, HSV, LAB)
             Return three lists for each channel in that color space.
             Each of the three return lists contains a list with two elements
             Those two elements are :
-            - The actual histogram information stored as a numpy array in
-              the requested shape (width, height)
-            - The indices where the histogram is non_zero
+            - The image of the histogram in the requested shape (width, height)
+            - The indices where the image of the histogram is non_zero
             """
 
             y = []
+            # https://github.com/opencv/opencv/blob/master/samples/python/hist.py
+            # lines 32 - 39 (with slight modifications)
             for ch in xrange(3):
-                h = np.zeros((height, 255, 3))
+                original_image = np.copy(im)
                 bins = np.arange(255).reshape(255, 1)
-                hist_item = cv2.calcHist([im], [ch], None, [255], [0, 255])
-                cv2.normalize(hist_item, hist_item, 0, 255, cv2.NORM_MINMAX)
+                hist_item = cv2.calcHist([original_image], [ch], None, [255], [0, 255])
+                cv2.normalize(hist_item, hist_item, 0, height, cv2.NORM_MINMAX)
                 hist = np.int32(np.around(hist_item))
                 pts = np.int32(np.column_stack((bins, hist)))
-                cv2.polylines(h, [pts], False, (1, 1, 255))
-                h = np.flipud(h)
-                h = cv2.resize(h, dsize=(width, height))
-                y.append([h, np.where(h != 0)])
+                pts[:, 0] = pts[:, 0]*(width/255)
+                cv2.polylines(original_image, [pts], False, (1, 1, 255))
+                y.append(np.flipud(original_image))
             return y
 
         hists_and_indices = []
         for image in images_and_labels:
             hists_and_indices.append(hist_curve(image[0], w, h))
 
+        images_and_labels = zip(hists_and_indices, labels)
+
         # Space represents each colorspace
         # 0 : BGR
         # 1 : HSV
         # 2 : LAB
         space = 0
-        for hists in hists_and_indices:
-            # Each 'hists' variable is represent a set of histograms and indices for a colorspace
-            channel = 1  # represents channels in a color space
-            for hist in hists:
-                # hist[0] := histogram for each channel of a given colorspace
-                # hist[1] := non_zero_indices
-                viz[h*space:h*(space + 1), channel*w:(channel + 1)*w][hist[1]] = hist[0][hist[1]]
-                channel = channel + 1
+        for i, hists in enumerate(hists_and_indices):
+            # Each 'hists' variable is represent a set of histograms for a given color space
+            viz[h*space:h*(space + 1), w:, 1] = flatten_channels(hists[0], labels[i])
+            viz[h*space:h*(space + 1), w:, 2] = flatten_channels(hists[0], labels[i])
+            viz[h*space:h*(space + 1), w:, 0] = flatten_channels(hists[0], labels[i])
             space = space + 1
-
+        t1 = time.time()
+        total = total + (t1 - t0)
+        if iterations % 5 == 0:
+            print 'total: ', total
+            print 'time: ', total/iterations
+    else:
+        viz[:, w:] = np.vstack(map(make_3deep, map(lambda x: flatten_channels(*x), images_and_labels)))
     return viz
 
 if __name__ == '__main__':
