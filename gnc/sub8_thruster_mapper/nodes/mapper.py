@@ -207,7 +207,7 @@ class ThrusterMapper(object):
 
         actual_wrench = self.B.dot(u)
         self.actual_wrench_pub.publish(
-            msg_helpers.make_wrench_stamped(actual_wrench[:3], actual_wrench[3:])
+            msg_helpers.make_wrench_stamped(actual_wrench[:3], actual_wrench[3:], frame='/base_link')
         )
         self.thruster_pub.publish(thrust_cmds)
 

@@ -183,6 +183,10 @@ class ThrusterDriver(object):
 
     def check_bus_voltage(self, voltage):
         ''' Raises bus_voltage alarm with a corresponding severity given a bus voltage '''
+        # Timing bug occurs here occasionally so I (David) wil disable enforcing bus_voltage kills
+        # until I submit a PR fixing the issue
+        return
+
         severity = None
         if voltage < self.warn_voltage:
             severity = 3
@@ -263,7 +267,7 @@ class ThrusterDriver(object):
             Example names are BLR, FLH, etc.
         '''
         target_port = self.port_dict[name]
-        margin_factor = 0.8
+        margin_factor = 1.0  # Not sure why this would not be anything but one - David + Jason
         clipped_force = np.clip(
             force,
             margin_factor * min(self.interpolate.x),
@@ -344,7 +348,6 @@ if __name__ == '__main__':
     desc_msg = "Specify a path to the configuration.json file containing the thrust calibration data"
     parser = argparse.ArgumentParser(usage=usage_msg, description=desc_msg)
     parser.add_argument('--calibration_path', dest='calib_path',
-                        default=rospkg.RosPack().get_path(PKG) + '/config/calibration.json',
                         help='Designate the absolute path of the calibration json file')
     args = parser.parse_args(rospy.myargv()[1:])
     config_path = args.calib_path

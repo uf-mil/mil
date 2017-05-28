@@ -1,5 +1,5 @@
 # This file has all of the thruster layout information needed by the sub except the
-# Effort to force mapping which is in "${find sub8_videoray_m5_thruster)/config/calibration.json"
+# Effort to force mapping which is in "${find sub8_videoray_m5_thruster)/config/calibration/"
 # This is used when simulating or running actual thrusters.
 
 thruster_ports:

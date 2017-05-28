@@ -38,3 +38,4 @@ SW Version: 0.9.8 Jun  9 2015 22:07:06
 32: System control flags:        0x3
 33:     Loss of comms timeout:   ENABLED
 34:     Play startup tone:       ENABLED
+

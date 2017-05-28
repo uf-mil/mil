@@ -1,4 +1,4 @@
 <launch>
     <node pkg="sub8_videoray_m5_thruster" type="thruster_driver.py" name="thruster_driver"
-        args="--calibration_path=$(find sub8_videoray_m5_thruster)/config/json_nez_prop.json" />
+        args="--calibration_path=$(find sub8_videoray_m5_thruster)/config/calibration/video_ray_prop_calibration.json" />
 </launch>

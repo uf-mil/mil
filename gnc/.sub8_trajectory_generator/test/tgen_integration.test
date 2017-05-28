@@ -1,7 +1,7 @@
 <launch>
   <param name="simulate" value="True" type="bool"/>
   <node pkg="sub8_videoray_m5_thruster" type="thruster_driver.py" name="thruster_driver"
-        args="--configuration_path=$(find sub8_videoray_m5_thruster)/config/calibration.json" />
+        args="--configuration_path=$(find sub8_videoray_m5_thruster)/config/calibration/video_ray_prop_calibration.json" />
   <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper.launch" />  
   <include file="$(find sub8_trajectory_generator)/launch/trajectory_generator_params.launch" />
   <test test-name="tgen_integration" name="tgen_integration_test" pkg="sub8_trajectory_generator" type="sub8_trajectory_generator_integration_tests" time-limit="60.0"/>
