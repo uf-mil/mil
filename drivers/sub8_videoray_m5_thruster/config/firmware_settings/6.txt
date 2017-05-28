@@ -1,0 +1,40 @@
+Motor Controller: THR000197
+SW Version: 0.9.8 Jun  9 2015 22:07:06
+
+1: Motor control flags:          0x1
+2:      Reverse rotation:        ENABLED
+3: Motor poles:                  14
+4: PWM deadband:                 32
+5: Commutation threshold:        0.100000
+6: Commutation loss timeout:     100
+7: Startup duty cycle:           0.040000
+8: Startup initial RPM:          80
+9: Startup final RPM:            100
+10: Startup duration:            50.000000
+11: Negative deadband:           -0.020000
+12: Positive deadband:           0.020000
+13: Negative duty cycle limit:   -0.990000
+14: Positive duty limit:         0.990000
+15: Acceleration rate:           0.000050
+16: Deceleration rate:           0.000050
+17: Maximum allowable power:     600.000000
+
+18: Fault control:               0x0
+19:     Under voltage halt:      DISABLED
+20:     Over voltage  halt:      DISABLED
+21:     Over current halt:       DISABLED
+22:     Temperature halt:        DISABLED
+23:     Stall error halt:        DISABLED
+24: Min bus voltage:             19.200001
+25: Max bus voltage:             50.000000
+26: Max current:                 20.000000
+27: Max temperature:             100.000000
+28: Max stall count:             100
+
+29: Node Id:                     6
+30: Group Id:                    129
+31: Motor Id:                    0
+32: System control flags:        0x3
+33:     Loss of comms timeout:   ENABLED
+34:     Play startup tone:       ENABLED
+
