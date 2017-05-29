@@ -38,6 +38,7 @@ class ThrusterMapper(object):
         self.thruster_name_map = []
         self.dropped_thrusters = []
         self.B = self.generate_B(self.thruster_layout)
+        self.Binv = np.linalg.pinv(self.B)
         self.min_thrusts, self.max_thrusts = self.get_ranges()
         self.default_min_thrusts, self.default_max_thrusts = np.copy(self.min_thrusts), np.copy(self.max_thrusts)
 
@@ -129,19 +130,21 @@ class ThrusterMapper(object):
         '''TODO:
             - Account for variable thrusters
         '''
-        thrust_cost = np.diag([1.0] * self.num_thrusters)
+        thrust_cost = np.diag([1E-4] * self.num_thrusters)
 
         def objective(u):
-            '''Compute a cost resembling analytical least squares
+            '''Tikhonov-regularized least-squares cost function
+               https://en.wikipedia.org/wiki/Tikhonov_regularization
             Minimize
-                norm((B * u) - wrench) + (u.T * Q * u)
+                norm((B * u) - wrench) + (u.T * R * u)
             Subject to
                 min_u < u < max_u
             Where
-                Q defines the cost of firing the thrusters
+                R defines the cost of firing the thrusters
                 u is a vector where u[n] is the thrust output by thruster_n
 
-            i.e., least squares with bounds
+            We make R as small as possible to avoid leaving the solution space of
+            B*u = wrench.
             '''
             error_cost = np.linalg.norm(self.B.dot(u) - wrench) ** 2
             effort_cost = np.transpose(u).dot(thrust_cost).dot(u)
@@ -157,13 +160,14 @@ class ThrusterMapper(object):
             effort_jacobian = np.transpose(u).dot(2 * thrust_cost)
             return error_jacobian + effort_jacobian
 
+        # Initialize minimization at the analytical solution of the unconstrained problem
         minimization = minimize(
             method='slsqp',
             fun=objective,
             jac=obj_jacobian,
-            x0=(self.min_thrusts + self.max_thrusts) / 2,
+            x0=np.clip(self.Binv.dot(wrench), self.min_thrusts, self.max_thrusts),
             bounds=zip(self.min_thrusts, self.max_thrusts),
-            tol=0.1
+            tol=1E-6
         )
         return minimization.x, minimization.success
 
