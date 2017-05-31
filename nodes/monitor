@@ -125,7 +125,11 @@ if __name__ == "__main__":
     parser.add_argument('alarm', type=str, help='name of alarm to monitor and control')
     args = parser.parse_args()
 
+    # Restore cursor on close
+    def cleanup():
+        curses.curs_set(1)
     rospy.init_node('alarms_cli', anonymous=True)
+    rospy.on_shutdown(cleanup)
     cli = AlarmMonitor(args.alarm)
     curses.wrapper(cli.attach_screen)
     rospy.spin()
