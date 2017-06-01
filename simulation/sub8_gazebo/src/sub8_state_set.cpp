@@ -59,6 +59,8 @@ void StatePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     ROS_WARN("SDF does not have 'referenceTopic' element, using default /trajectory topic");
 
   first_pose_ = model_->GetWorldPose();  // Init pose
+  last_ref_pose_.pos.z = first_pose_.pos.z;
+  first_pose_.pos.z = 0.0;
 
   // Make sure the ROS node for Gazebo has already been initialized
   GZ_ASSERT(ros::isInitialized(), "ROS not initialized");
