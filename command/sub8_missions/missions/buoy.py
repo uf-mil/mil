@@ -1,7 +1,5 @@
-from twisted.internet import defer
-from txros import util, tf
+from txros import util
 import numpy as np
-from std_srvs.srv import SetBool, SetBoolRequest
 from mil_ros_tools import rosmsg_to_numpy
 from mil_misc_tools import FprintFactory
 
@@ -32,10 +30,10 @@ class BumpBuoysMission(object):
     def generate_pattern(self):
         self.moves = [[0, 0, 0.3],
                       [0, 1.5, 0],
-                      [0, 0, -2*0.3],
-                      [0, -2*1.5, 0]]
+                      [0, 0, -2 * 0.3],
+                      [0, -2 * 1.5, 0]]
         self.move_index = 0
-        
+
     @util.cancellableInlineCallbacks
     def search(self):
         while self.search:
@@ -46,13 +44,13 @@ class BumpBuoysMission(object):
                     self.found[color] = rosmsg_to_numpy(res.pose.pose.position)
                 if self.found[color] is not None:
                     info += color + ' '
-                yield self.sub.nh.sleep(0.5) # Throttle service calls
+                yield self.sub.nh.sleep(0.5)  # Throttle service calls
             self.print_info(info)
 
     @util.cancellableInlineCallbacks
     def pattern(self):
         def err():
-            print_info('Search pattern canceled')
+            self.print_info('Search pattern canceled')
         for i, move in enumerate(self.moves[self.move_index:]):
             move = self.sub.move.relative(np.array(move)).go()
             move.addErrback(err)
@@ -62,13 +60,10 @@ class BumpBuoysMission(object):
     @util.cancellableInlineCallbacks
     def bump(self, buoy):
         self.print_info("BUMPING {}".format(buoy))
-        yield self.sub.move.go() # Station hold
-        start_pose = self.sub.pose
- 
+        yield self.sub.move.go()  # Station hold
         buoy_position = self.found[buoy]
         yield self.sub.move.depth(-buoy_position[2]).go()
         yield self.sub.move.look_at_without_pitching(buoy_position).go()
-        dist = np.linalg.norm(buoy_position - self.sub.pose.position)
         yield self.sub.move.set_position(buoy_position).forward(0.2).go()
         self.print_good("{} BUMPED. Backing up".format(buoy))
         yield self.sub.move.backward(3.5).go()
@@ -92,6 +87,7 @@ class BumpBuoysMission(object):
             yield self.sub.nh.sleep(0.1)
         search.cancel()
         self.print_good('Done!')
+
 
 @util.cancellableInlineCallbacks
 def run(sub):

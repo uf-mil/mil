@@ -1,21 +1,17 @@
 #!/usr/bin/env python
 import cv2
 import numpy as np
-import sys
 import rospy
 from image_geometry import PinholeCameraModel
 import mil_ros_tools
 import tf
-from sub8_vision_tools import machine_learning
-import rospkg
-import os
 from collections import deque
-from sub8_vision_tools import threshold_tools, rviz, ProjectionParticleFilter, MultiObservation
+from sub8_vision_tools import rviz, MultiObservation
 from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D, VisionRequest, VisionRequestResponse
 from std_msgs.msg import Header
 from std_srvs.srv import SetBool, SetBoolResponse
 from geometry_msgs.msg import Pose2D, PoseStamped, Pose, Point
-from mil_ros_tools import Image_Subscriber, Image_Publisher, make_header
+from mil_ros_tools import Image_Subscriber, Image_Publisher
 
 
 class Buoy(object):
@@ -53,7 +49,6 @@ class Buoy(object):
         if self.debug_cv:
             cv2.namedWindow(self.color)
 
-
     def load_segmentation(self):
         '''
         Load threshold values in BGR, HSV, or LAB colorspace for segmenting an image.
@@ -66,7 +61,8 @@ class Buoy(object):
                 continue
             self.thresholds = [np.array(rospy.get_param(low)),
                                np.array(rospy.get_param(high))]
-            rospy.loginfo("BUOY - Thresholds for {} buoy loaded using {} colorspace".format(self.color, self.color_space))
+            rospy.loginfo("BUOY - Thresholds for {} buoy loaded using {} colorspace".format(
+                          self.color, self.color_space))
             return
 
         if self.debug_cv:
@@ -83,7 +79,7 @@ class Buoy(object):
 
     def segment(self, img):
         '''
-        Use loaded threshold values to create a mask of img 
+        Use loaded threshold values to create a mask of img
         '''
         if self.color_space == 'hsv':
             hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -122,7 +118,7 @@ class BuoyFinder(object):
         self.min_contour_area = rospy.get_param('~min_contour_area')
         self.max_velocity = rospy.get_param('~max_velocity')
         camera = rospy.get_param('~camera_topic', '/camera/front/right/image_rect_color')
- 
+
         self.buoys = {}
         for color in ['red', 'yellow', 'green']:
             self.buoys[color] = Buoy(color, debug_cv=self.debug_cv)
@@ -218,8 +214,8 @@ class BuoyFinder(object):
 
         # Crop out some of the top and bottom to exclude the floor and surface reflections
         height = image.shape[0]
-        roi_y = int(0.2*height)
-        roi_height = height - int(0.2*height)
+        roi_y = int(0.2 * height)
+        roi_height = height - int(0.2 * height)
         self.roi = (0, roi_y, roi_height, image.shape[1])
         self.last_image = image[self.roi[1]:self.roi[2], self.roi[0]:self.roi[3]]
 
@@ -233,7 +229,7 @@ class BuoyFinder(object):
         self.find_buoys()
         if self.debug_ros:
             self.mask_pub.publish(self.mask_image)
- 
+
     def print_status(self, _):
         '''
         Called at 1 second intervals to display the status (not found, n observations, FOUND)
@@ -257,7 +253,7 @@ class BuoyFinder(object):
         Attempts to find a good buoy contour among those found within the
         thresholded mask. If a good one is found, it return (contour, centroid, area),
         otherwise returns None. Right now the best contour is just the largest.
-        
+
         TODO: Use smarter contour filtering methods, like checking this it is circle like
         '''
         if len(contours) > 0:
@@ -285,14 +281,13 @@ class BuoyFinder(object):
            position using the least squares tool imported
         '''
         assert buoy_type in self.buoys.keys(), "Buoys_2d does not know buoy color: {}".format(buoy_type)
-        best_ret = None
         buoy = self.buoys[buoy_type]
         mask = buoy.segment(self.last_image)
-        kernel = np.ones((5,5),np.uint8)
-        mask = cv2.erode(mask, kernel, iterations = 2)
-        mask = cv2.dilate(mask, kernel, iterations = 2)
+        kernel = np.ones((5, 5), np.uint8)
+        mask = cv2.erode(mask, kernel, iterations=2)
+        mask = cv2.dilate(mask, kernel, iterations=2)
 
-        _, contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE, 
+        _, contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE,
                                           offset=(self.roi[0], self.roi[1]))
         ret = self.get_best_contour(contours)
         if ret is None:
@@ -303,7 +298,7 @@ class BuoyFinder(object):
 
         if self.debug_ros:
             cv2.add(self.mask_image.copy(), self.buoys[buoy_type].cv_colors, mask=mask, dst=self.mask_image)
-            cv2.circle(self.mask_image, (int(true_center[0]-self.roi[0]), int(true_center[1])-self.roi[1]), 
+            cv2.circle(self.mask_image, (int(true_center[0] - self.roi[0]), int(true_center[1]) - self.roi[1]),
                        int(rad), self.buoys[buoy_type].cv_colors, 2)
         if self.debug_cv:
             self.debug_images[buoy_type] = mask.copy()
@@ -348,7 +343,7 @@ class BuoyFinder(object):
         '''
         sane = True
         velocity = np.linalg.norm(self.tf_listener.lookupTwist('/map', self.frame_id, timestamp, rospy.Duration(.5)))
-        if velocity> self.max_velocity:
+        if velocity > self.max_velocity:
             sane = False
         return sane
 
