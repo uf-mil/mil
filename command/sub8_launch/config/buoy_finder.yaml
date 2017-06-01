@@ -1,5 +1,5 @@
 use_boost          :  False
-camera_topic     : /stereo/right/image_rect_color #Image topic to use to find buoys
+camera_topic     : /camera/front/right/image_rect_color #Image topic to use to find buoys
 max_observations : 300 # Max size of oberservations buffer per buoy
 min_observations : 5 # Observations needed to attempt a least squares position estimate
 min_contour_area : 10 # Minimum pixels for a pottential buoy contour to not be rejected

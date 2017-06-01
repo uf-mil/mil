@@ -2,132 +2,98 @@ from twisted.internet import defer
 from txros import util, tf
 import numpy as np
 from std_srvs.srv import SetBool, SetBoolRequest
-from mil_ros_tools import pose_to_numpy
+from mil_ros_tools import rosmsg_to_numpy
+from mil_misc_tools import FprintFactory
 
-SPEED = .3
-SEARCH = 0
-MAX_TRIES = 3
+MISSION = "BUMP BUOYS"
 
+
+class BumpBuoysMission(object):
+    '''
+    Mission to solve the recurring bump buoys RoboSub challenge.
+
+    Designed to use the async features of txros to solve the mission in as little
+    time as possible. One async function constantly pings the percption node for
+    the latest pose, if available, for each color buoy. Another function continually
+    checks if a new buoy has been found and performs moves to bump it. Another function
+    runs search patterns (left, right, up, down) to attempt to gain more observations on
+    buoys between bumping moves.
+    '''
+    def __init__(self, sub):
+        self.sub = sub
+        self.print_info = FprintFactory(title=MISSION).fprint
+        self.print_bad = FprintFactory(title=MISSION, msg_color="red").fprint
+        self.print_good = FprintFactory(title=MISSION, msg_color="green").fprint
+        self.found = {'red': None, 'green': None, 'yellow': None}
+        self.bumped = []
+        self.do_search = False
+        self.generate_pattern()
+
+    def generate_pattern(self):
+        self.moves = [[0, 0, 0.3],
+                      [0, 1.5, 0],
+                      [0, 0, -2*0.3],
+                      [0, -2*1.5, 0]]
+        self.move_index = 0
+        
+    @util.cancellableInlineCallbacks
+    def search(self):
+        while self.search:
+            info = 'FOUND: '
+            for color in self.found:
+                res = yield self.sub.vision_proxies.buoy.get_pose(target=color)
+                if res.found:
+                    self.found[color] = rosmsg_to_numpy(res.pose.pose.position)
+                if self.found[color] is not None:
+                    info += color + ' '
+                yield self.sub.nh.sleep(0.5) # Throttle service calls
+            self.print_info(info)
+
+    @util.cancellableInlineCallbacks
+    def pattern(self):
+        def err():
+            print_info('Search pattern canceled')
+        for i, move in enumerate(self.moves[self.move_index:]):
+            move = self.sub.move.relative(np.array(move)).go()
+            move.addErrback(err)
+            yield move
+            self.move_index = i + 1
+
+    @util.cancellableInlineCallbacks
+    def bump(self, buoy):
+        self.print_info("BUMPING {}".format(buoy))
+        yield self.sub.move.go() # Station hold
+        start_pose = self.sub.pose
+ 
+        buoy_position = self.found[buoy]
+        yield self.sub.move.depth(-buoy_position[2]).go()
+        yield self.sub.move.look_at_without_pitching(buoy_position).go()
+        dist = np.linalg.norm(buoy_position - self.sub.pose.position)
+        yield self.sub.move.set_position(buoy_position).forward(0.2).go()
+        self.print_good("{} BUMPED. Backing up".format(buoy))
+        yield self.sub.move.backward(3.5).go()
+
+    @util.cancellableInlineCallbacks
+    def run(self):
+        self.print_info("Enabling Perception")
+        self.sub.vision_proxies.buoy.start()
+
+        pattern = self.pattern()
+        self.do_search = True
+        search = self.search()
+        while len(self.bumped) != len(self.found):
+            for color in self.found:
+                if self.found[color] is not None and color not in self.bumped:
+                    pattern.cancel()
+                    yield self.bump(color)
+                    self.bumped.append(color)
+                    if len(self.bumped) != len(self.found):
+                        pattern = self.pattern()
+            yield self.sub.nh.sleep(0.1)
+        search.cancel()
+        self.print_good('Done!')
 
 @util.cancellableInlineCallbacks
 def run(sub):
-    start_search = yield sub.nh.get_service_client('/vision/buoys/search', SetBool)
-    yield start_search(SetBoolRequest(data=True))
-
-    print "BUOY MISSION - Executing search pattern"
-    yield search_again(sub)
-
-    ret = None
-    this_try = 0
-    while ret is None:
-        ret = yield bump_buoy(sub, 'red')
-        yield search_again(sub)
-
-        this_try += 1
-        if this_try > MAX_TRIES:
-            defer.returnValue(None)
-
-        print ret
-
-    yield sub.move.backward(2).go(speed=SPEED)
-
-    ret = None
-    this_try = 0
-    while ret is None:
-        ret = yield bump_buoy(sub, 'green')
-        yield search_again(sub)
-
-        this_try += 1
-        if this_try > MAX_TRIES:
-            defer.returnValue(None)
-
-
-@util.cancellableInlineCallbacks
-def search_again(sub):
-    global SEARCH
-    if SEARCH == 0:
-        yield sub.move.up(.3).zero_roll_and_pitch().go(speed=SPEED)
-        yield sub.move.left(0.3).zero_roll_and_pitch().go(speed=SPEED)
-        SEARCH = 1
-    elif SEARCH == 1:
-        yield sub.move.right(2.0).go(speed=SPEED)
-        yield sub.move.down(0.3).go(speed=SPEED)
-        SEARCH = 0
-
-
-@util.cancellableInlineCallbacks
-def bump_buoy(sub, color):
-    '''
-    Performs a buoy bump
-    '''
-    print "BUOY MISSION - We're looking for a {} buoy.".format(color)
-    full_transform = yield get_buoy_tf(sub, color)
-
-    if full_transform is None:
-        print 'BUOY MISSION - No buoy found.'
-        defer.returnValue(None)
-
-    print 'BUOY MISSION - setting height'
-
-    yield sub.move.depth(-full_transform._p[2]).go(speed=SPEED)
-
-    print 'BUOY MISSION - looking at'
-    yield sub.move.look_at_without_pitching(full_transform._p).go(speed=SPEED)
-
-    dist = np.inf
-    while(dist > 1.0):
-        full_transform = yield get_buoy_tf(sub, color)
-
-        if full_transform is None:
-            continue
-
-        dist = np.linalg.norm(full_transform._p - sub.pose.position) * 0.5
-        print "BUOY MISSION - {}m away".format(dist)
-        yield sub.move.look_at_without_pitching(full_transform._p).go(speed=SPEED)
-        yield sub.nh.sleep(0.5)
-        yield sub.move.forward(dist).go(speed=SPEED)
-        yield sub.nh.sleep(0.5)
-
-    # Now we are 1m away from the buoy
-    print "BUOY MISSION - bumping!"
-    sub.move.forward(dist + .3).go(speed=SPEED)
-
-    print "BUOY MISSION - Bumped the buoy"
-    defer.returnValue(True)
-
-
-@util.cancellableInlineCallbacks
-def get_buoy_tf(sub, color):
-    print "Getting buoy pose"
-    response = yield sub.buoy.get_pose(color)
-    if not response.found:
-        print 'BUOY MISSION - failed to discover buoy location'
-        defer.returnValue(None)
-    else:
-        print "BUOY MISSION - Got buoy pose"
-
-        s = yield sanity_check(sub, response.pose)
-        if s is None:
-            print "BUOY MISSION - Sanity check failed"
-            defer.returnValue(None)
-
-        print response.pose
-
-    full_transform = tf.Transform.from_Pose_message(response.pose.pose)
-
-    defer.returnValue(full_transform)
-
-
-@util.cancellableInlineCallbacks
-def sanity_check(sub, est_pos):
-    yield None
-    est_pos_np = pose_to_numpy(est_pos.pose)[0]
-    print (est_pos_np == np.array([5, 5, 5])).all()
-    if (est_pos_np == np.array([5, 5, 5])).all():
-        print "BUOY MISSION - Problem with guess."
-        defer.returnValue(None)
-    if est_pos_np[2] > -0.2:
-        print 'BUOY MISSION - Detected buoy above the water'
-        defer.returnValue(None)
-
-    defer.returnValue(True)
+    mission = BumpBuoysMission(sub)
+    yield mission.run()
