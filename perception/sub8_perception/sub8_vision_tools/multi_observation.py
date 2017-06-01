@@ -13,7 +13,8 @@ class MultiObservation(object):
         Compute outliers by clustering minimum distance between rays
     """
 
-    def __init__(self, camera_model):
+    def __init__(self, camera_model, debug=False):
+        self.debug = debug
         self.camera_model = camera_model
         self.image_size = (self.camera_model.cx() * 2, self.camera_model.cy() * 2)
         self.K = np.array(camera_model.fullIntrinsicMatrix(), dtype=np.float32)
@@ -59,13 +60,14 @@ class MultiObservation(object):
             dists.append(norm(np.cross(ray.T, minimization.x - t)))
         dists = np.array(dists)
         threshold = dists.std()
-        print threshold
         if threshold < .1:  # May need to be tuned
-            print "MULTI_OBS: No outliers."
+            if self.debug:
+                print "MULTI_OBS: No outliers."
             return minimization.x  # No outliers
 
         outliers = np.where(dists > threshold)[0][::-1]
-        print "MULTI_OBS: Removing ({}) outliers.".format(len(outliers))
+        if self.debug:
+            print "MULTI_OBS: Removing ({}) outliers.".format(len(outliers))
         for index in outliers:
             del observations[index]
             del cameras[index]
