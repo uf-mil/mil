@@ -30,7 +30,7 @@ class Buoy(object):
         self.last_t = None
         self.debug_cv = debug_cv
         self.status = ''
-
+        self.est = None
         self.color = color
 
         # Only for visualization
@@ -196,14 +196,13 @@ class BuoyFinder(object):
         if srv.target_name not in self.buoys or not self.enabled:
             return VisionRequestResponse(found=False)
         buoy = self.buoys[srv.target_name]
-        if len(buoy.observations) < self.min_observations:
+        if buoy.est is None:
             return VisionRequestResponse(found=False)
-        estimated_pose = self.multi_obs.lst_sqr_intersection(buoy.observations, buoy.pose_pairs)
         return VisionRequestResponse(
             pose=PoseStamped(
                 header=Header(stamp=self.last_image_time, frame_id='/map'),
                 pose=Pose(
-                    position=Point(*estimated_pose)
+                    position=Point(*buoy.est)
                 )
             ),
             found=True
@@ -329,10 +328,11 @@ class BuoyFinder(object):
             buoy.pose_pairs.append((t, R))
 
         if len(buoy.observations) > self.min_observations:
-            est = self.multi_obs.lst_sqr_intersection(buoy.observations, buoy.pose_pairs)
+            self.buoys[buoy_type].est = self.multi_obs.lst_sqr_intersection(buoy.observations, buoy.pose_pairs)
             self.buoys[buoy_type].status = 'Pose found'
             if self.debug_ros:
-                self.rviz.draw_sphere(est, color=buoy.draw_colors, scaling=(0.2286, 0.2286, 0.2286),
+                self.rviz.draw_sphere(self.buoys[buoy_type].est, color=buoy.draw_colors,
+                                      scaling=(0.2286, 0.2286, 0.2286),
                                       frame='/map', _id=buoy.visual_id)
         else:
             self.buoys[buoy_type].status = '{} observations'.format(len(buoy.observations))
