@@ -11,7 +11,7 @@ OGridGen::OGridGen() : nh_(ros::this_node::getName()), classification_(&nh_)
 
   // Resolution is meters/pixel
   nh_.param<float>("resolution", resolution_, 0.2f);
-  nh_.param<float>("ogrid_size", ogrid_size_, 50.f);
+  nh_.param<float>("ogrid_size", ogrid_size_, 91.44);
   // Ignore points that are below the potential pool
   nh_.param<float>("pool_depth", pool_depth_, 7.f);
   nh_.param<int>("min_intensity", min_intensity_, 2000);
@@ -131,7 +131,6 @@ void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
     ROS_DEBUG_STREAM("Did not get TF for imaging sonar");
     return;
   }
-
   for (size_t i = 0; i < ping_msg->ranges.size(); ++i)
   {
     if (ping_msg->intensities.at(i) > min_intensity_)

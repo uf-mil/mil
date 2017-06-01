@@ -42,7 +42,6 @@ std::pair<bool, WAYPOINT_ERROR_TYPE> WaypointValidity::is_waypoint_valid(const g
 
   if (!this->ogrid_map_)
   {
-    ROS_ERROR("WaypointValidity - Did not recieve any ogrid");
     return std::make_pair(false, WAYPOINT_ERROR_TYPE::NO_OGRID);
   }
 

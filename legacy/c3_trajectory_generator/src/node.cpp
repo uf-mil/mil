@@ -240,6 +240,10 @@ struct Node
           ROS_ERROR("can't move there! - waypoint is above water");
           current_waypoint = old_waypoint;
         }
+        if (checkWPResult.second == WAYPOINT_ERROR_TYPE::NO_OGRID)
+        {
+          ROS_ERROR("WaypointValidity - Did not recieve any ogrid");
+        }
       }
     }
     if (actionserver.isPreemptRequested())
