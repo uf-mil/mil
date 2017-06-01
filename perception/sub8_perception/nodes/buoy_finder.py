@@ -3,369 +3,367 @@ import cv2
 import numpy as np
 import sys
 import rospy
-import image_geometry
+from image_geometry import PinholeCameraModel
 import mil_ros_tools
 import tf
 from sub8_vision_tools import machine_learning
 import rospkg
 import os
 from collections import deque
-from sub8_vision_tools import rviz, MultiObservation
+from sub8_vision_tools import threshold_tools, rviz, ProjectionParticleFilter, MultiObservation
 from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D, VisionRequest, VisionRequestResponse
 from std_msgs.msg import Header
 from std_srvs.srv import SetBool, SetBoolResponse
 from geometry_msgs.msg import Pose2D, PoseStamped, Pose, Point
-from mil_ros_tools import Image_Publisher, Image_Subscriber, make_header
-
-rospack = rospkg.RosPack()
+from mil_ros_tools import Image_Subscriber, Image_Publisher, make_header
 
 
 class Buoy(object):
-    def __init__(self, color, boosting):
+    '''
+    Represents one colored buoy for use in BuoyFinder. Contains
+    color values to segment an image for its color and an internal
+    buffer of observations to use in position estimation.
+    '''
+    def __init__(self, color, debug_cv=False):
         self.observations = deque()
         self.pose_pairs = deque()
         self.last_t = None
+        self.debug_cv = debug_cv
+        self.status = ''
 
         self.color = color
-        self.boosting = boosting
 
         # Only for visualization
         if color == 'red':
             self.draw_colors = (1.0, 0.0, 0.0, 1.0)
+            self.cv_colors = (0, 0, 255, 0)
             self.visual_id = 0
         elif color == 'green':
             self.draw_colors = (0.0, 1.0, 0.0, 1.0)
+            self.cv_colors = (0, 255, 0, 0)
             self.visual_id = 1
         elif color == 'yellow':
             self.draw_colors = (1.0, 1.0, 0.0, 1.0)
+            self.cv_colors = (0, 255, 255, 0)
             self.visual_id = 2
         else:
             rospy.logerr('Unknown buoy color {}'.format(color))
             self.draw_colors = (0.0, 0.0, 0.0, 1.0)
             self.visual_id = 3
+        if self.debug_cv:
+            cv2.namedWindow(self.color)
+
 
     def load_segmentation(self):
-        if self.boosting:
-            # Classifiers should be located in the ml_classifiers folder.
-            # The rosparam should be `COLOR_classifier`
-            param = rospy.get_param("/buoys/{}_classifier".format(self.color))
-            filename = 'ml_classifiers/buoys/{}/{}'.format(self.color, param)
-            path = os.path.join(rospack.get_path('sub8_perception'), filename)
+        '''
+        Load threshold values in BGR, HSV, or LAB colorspace for segmenting an image.
+        '''
+        for color_space in ['hsv', 'bgr', 'lab']:
+            self.color_space = color_space
+            low = '/color/buoy/{}/{}_low'.format(self.color, color_space)
+            high = '/color/buoy/{}/{}_high'.format(self.color, color_space)
+            if not rospy.has_param(low):
+                continue
+            self.thresholds = [np.array(rospy.get_param(low)),
+                               np.array(rospy.get_param(high))]
+            rospy.loginfo("BUOY - Thresholds for {} buoy loaded using {} colorspace".format(self.color, self.color_space))
+            return
 
-            self.boost = cv2.Boost()
-            rospy.loginfo("BUOY - Loading {} boost...".format(self.color))
-            self.boost.load(path)
-            rospy.loginfo("BUOY - Classifier for {} buoy loaded.".format(self.color))
-        else:
-            # Give either an HSV or BGR threshold with param name /COLOR/COLOR_SPACE_low and /COLOR/COLOR_SPACE_high
-            for color_space in ['hsv', 'bgr']:
-                self.color_space = color_space
-                low = '/color/buoy/{}/{}_low'.format(self.color, color_space)
-                high = '/color/buoy/{}/{}_high'.format(self.color, color_space)
-
-                if not rospy.has_param(low):
-                    # Using a different colorspace
-                    continue
-
-                rospy.loginfo("BUOY - Loading {} thresholds for {} buoy...".format(color_space, self.color))
-                self.thresholds = [np.array(rospy.get_param(low)),
-                                   np.array(rospy.get_param(high))]
-                rospy.loginfo("BUOY - Thresholds for {} buoy loaded.".format(self.color))
+        if self.debug_cv:
+            # If debug_cv is enabled, create trackbars to adjust thresholds for this buoy
+            def change_threshold(i, i2, val):
+                self.thresholds[i][i2] = float(val)
+                rospy.loginfo("SETTING {} thresholds[{}][{}]={}".format(self.color, i, i2, self.thresholds[i][i2]))
+            for i in range(len(self.thresholds[0])):
+                cv2.createTrackbar('low {}'.format(self.color_space[i]), self.color, int(self.thresholds[0][i]), 255,
+                                   lambda x, _ind=i: change_threshold(0, _ind, x))
+            for i in range(len(self.thresholds[1])):
+                cv2.createTrackbar('high {}'.format(self.color_space[i]), self.color, int(self.thresholds[1][i]), 255,
+                                   lambda x, _ind=i: change_threshold(1, _ind, x))
 
     def segment(self, img):
-        if self.boosting:
-            # Segmentation here (machine learning right now)
-            some_observations = machine_learning.boost.observe(img)
-            prediction = [int(x) for x in [self.boost.predict(obs) for obs in some_observations]]
-            mask = np.reshape(prediction, img[:, :, 2].shape).astype(np.uint8) * 255
+        '''
+        Use loaded threshold values to create a mask of img 
+        '''
+        if self.color_space == 'hsv':
+            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            mask = cv2.inRange(hsv, *self.thresholds)
+        elif self.color_space == 'lab':
+            lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+            mask = cv2.inRange(lab, *self.thresholds)
         else:
-            # Thresholding here
-            if self.color_space == 'hsv':
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
             mask = cv2.inRange(img, *self.thresholds)
-
         return mask
 
 
-class BuoyFinder:
-    _min_size = 50
+class BuoyFinder(object):
     '''
-    TODO:
-        Check for outliers in observations
+    Node to find red, green, and yellow buoys in a single camera frame.
+
+    Combines several observations and uses a least-squares approach to get a 3D
+    position estimate of a buoy when requested.
+
+    Intended to be modular so other approaches can be tried. Adding more sophistication
+    to segmentation would increase reliability.
     '''
     def __init__(self):
-        self.transformer = tf.TransformListener()
-        rospy.sleep(2.0)
+        self.tf_listener = tf.TransformListener()
 
-        self.search = False
+        self.enabled = False
         self.last_image = None
-        self.last_draw_image = None
         self.last_image_time = None
         self.camera_model = None
-        self.multi_obs = None
-        self.max_observations = 200
-        self._id = 0  # Only for display
 
-        self.rviz = rviz.RvizVisualizer()
-
-        boosting = rospy.get_param("/buoys/use_boost")
+        # Various constants for tuning, debugging. See buoy_finder.yaml for more info
+        self.min_observations = rospy.get_param('~min_observations')
+        self.max_observations = rospy.get_param('~max_observations')
+        self.debug_ros = rospy.get_param('~debug/ros', True)
+        self.debug_cv = rospy.get_param('~debug/cv', False)
+        self.min_contour_area = rospy.get_param('~min_contour_area')
+        self.max_velocity = rospy.get_param('~max_velocity')
+        camera = rospy.get_param('~camera_topic', '/camera/front/right/image_rect_color')
+ 
         self.buoys = {}
         for color in ['red', 'yellow', 'green']:
-            self.buoys[color] = Buoy(color, boosting)
+            self.buoys[color] = Buoy(color, debug_cv=self.debug_cv)
             self.buoys[color].load_segmentation()
+        if self.debug_cv:
+            cv2.waitKey(1)
+            self.debug_images = {}
 
-        self.image_sub = Image_Subscriber('/camera/front/left/image_raw', self.image_cb)
-        self.image_pub = Image_Publisher('/vision/buoy_2d/target_info')
-        self.mask_pub = Image_Publisher('/vision/buoy_2d/mask')
+        self.image_sub = Image_Subscriber(camera, self.image_cb)
+        if self.debug_ros:
+            self.rviz = rviz.RvizVisualizer(topic='~markers')
+            self.mask_pub = Image_Publisher('~mask_image')
+            rospy.Timer(rospy.Duration(1), self.print_status)
 
-        # Occasional status publisher
-        self.timer = rospy.Timer(rospy.Duration(.25), self.publish_target_info)
+        self.camera_info = self.image_sub.wait_for_camera_info()
+        self.camera_model = PinholeCameraModel()
+        self.camera_model.fromCameraInfo(self.camera_info)
+        self.frame_id = self.camera_model.tfFrame()
+        self.multi_obs = MultiObservation(self.camera_model)
 
-        self.toggle = rospy.Service('vision/buoys/search', SetBool, self.toggle_search)
-        self.pose2d_service = rospy.Service('vision/buoys/2D', VisionRequest2D, self.request_buoy)
-        self.pose_service = rospy.Service('vision/buoys/pose', VisionRequest, self.request_buoy3d)
+        rospy.Service('~enable', SetBool, self.toggle_search)
+        rospy.Service('~2D', VisionRequest2D, self.request_buoy)
+        rospy.Service('~pose', VisionRequest, self.request_buoy3d)
 
-        rospy.loginfo("BUOY - Fueled up, ready to go!")
+        rospy.loginfo("BUOY FINDER: initialized successfully")
 
     def toggle_search(self, srv):
+        '''
+        Callback for standard ~enable service. If true, start
+        looking at frames for buoys.
+        '''
         if srv.data:
-            rospy.loginfo("BUOY - Looking for buoys now.")
-            self.search = True
+            rospy.loginfo("BUOY FINDER: enabled")
+            self.enabled = True
         else:
-            rospy.loginfo("BUOY - Done looking for buoys.")
-            self.search = False
+            rospy.loginfo("BUOY FINDER: disabled")
+            self.enabled = False
 
-        return SetBoolResponse(success=srv.data)
+        return SetBoolResponse(success=True)
 
     def request_buoy(self, srv):
-        timestamp = self.last_image_time
-        response = self.find_single_buoy(np.copy(self.last_image), timestamp, srv.target_name)
-
-        if response is False:
-            resp = VisionRequest2DResponse(
-                header=make_header(frame='front_left_cam'),
-                found=False
-            )
-
-        else:
-            # Fill in
-            center, radius = response
-            resp = VisionRequest2DResponse(
-                header=Header(stamp=timestamp, frame_id='front_left_cam'),
-                pose=Pose2D(
-                    x=center[0],
-                    y=center[1],
-                ),
-                max_x=self.last_image.shape[0],
-                max_y=self.last_image.shape[1],
-                camera_info=self.image_sub.camera_info,
-                found=True
-            )
-        return resp
+        '''
+        Callback for 2D vision request. Returns centroid
+        of buoy found with color specified in target_name
+        if found.
+        '''
+        if not self.enabled or srv.target_name not in self.buoys:
+            return VisionRequest2DResponse(found=False)
+        response = self.find_single_buoy(srv.target_name)
+        if response is False or response is None:
+            return VisionRequest2DResponse(found=False)
+        center, radius = response
+        return VisionRequest2DResponse(
+            header=Header(stamp=self.last_image_time, frame_id=self.frame_id),
+            pose=Pose2D(
+                x=center[0],
+                y=center[1],
+            ),
+            max_x=self.last_image.shape[0],
+            max_y=self.last_image.shape[1],
+            camera_info=self.image_sub.camera_info,
+            found=True
+        )
 
     def request_buoy3d(self, srv):
+        '''
+        Callback for 3D vision request. Uses recent observations of buoy
+        specified in target_name to attempt a least-squares position estimate.
+        As buoys are spheres, orientation is meaningless.
+        '''
+        if srv.target_name not in self.buoys or not self.enabled:
+            return VisionRequestResponse(found=False)
         buoy = self.buoys[srv.target_name]
-        if (len(buoy.observations) > 5) and self.multi_obs is not None:
-            estimated_pose = self.multi_obs.lst_sqr_intersection(buoy.observations, buoy.pose_pairs)
-
-            rospy.loginfo("===================================")
-            rospy.loginfo("BUOY: est pose: {}".format(estimated_pose))
-            rospy.loginfo("===================================")
-
-            self.rviz.draw_sphere(estimated_pose, color=buoy.draw_colors,
-                                  scaling=(0.5, 0.5, 0.5), frame='/map', _id=buoy.visual_id)
-
-            resp = VisionRequestResponse(
-                pose=PoseStamped(
-                    header=Header(stamp=self.last_image_time, frame_id='/map'),
-                    pose=Pose(
-                        position=Point(*estimated_pose)
-                    )
-                ),
-                found=True
-            )
-        else:
-            if len(buoy.observations) <= 5:
-                rospy.logerr("Did not attempt search because we did not have enough observations ({})"
-                             .format(len(buoy.observations)))
-            else:
-                rospy.logerr("Did not attempt search because buoys_2d was not fully initialized")
-
-            resp = VisionRequestResponse(
-                pose=PoseStamped(
-                    header=Header(stamp=self.last_image_time, frame_id='/map'),
-                ),
-                found=False
-            )
-        return resp
-
-    def publish_target_info(self, *args):
-        if not self.search or self.last_image is None:
-            return
-
-        self.find_buoys(np.copy(self.last_image), self.last_image_time)
-        if self.last_draw_image is not None:
-            self.image_pub.publish(self.last_draw_image)
+        if len(buoy.observations) < self.min_observations:
+            return VisionRequestResponse(found=False)
+        estimated_pose = self.multi_obs.lst_sqr_intersection(buoy.observations, buoy.pose_pairs)
+        return VisionRequestResponse(
+            pose=PoseStamped(
+                header=Header(stamp=self.last_image_time, frame_id='/map'),
+                pose=Pose(
+                    position=Point(*estimated_pose)
+                )
+            ),
+            found=True
+        )
 
     def image_cb(self, image):
-        '''Hang on to last image'''
-        self.last_image = image
-        self.last_image_time = self.image_sub.last_image_time
-        if self.camera_model is None:
-            if self.image_sub.camera_info is None:
-                return
-
-            self.camera_model = image_geometry.PinholeCameraModel()
-            self.camera_model.fromCameraInfo(self.image_sub.camera_info)
-            self.multi_obs = MultiObservation(self.camera_model)
-
-    def ncc(self, image, mean_thresh, scale=15):
-        '''Compute normalized cross correlation w.r.t a shadowed pillbox fcn
-
-        The expected scale will vary, so we don't cache it
         '''
-        kernel = np.ones((scale, scale)) * -1
-        midpoint = (scale // 2, scale // 2)
-        cv2.circle(kernel, midpoint, midpoint[0], 1, -1)
+        Run each time an image comes in from ROS. If enabled,
+        attempt to find each color buoy.
+        '''
+        if not self.enabled:
+            return
 
-        mean, std_dev = cv2.meanStdDev(image)
+        # Crop out some of the top and bottom to exclude the floor and surface reflections
+        height = image.shape[0]
+        roi_y = int(0.2*height)
+        roi_height = height - int(0.2*height)
+        self.roi = (0, roi_y, roi_height, image.shape[1])
+        self.last_image = image[self.roi[1]:self.roi[2], self.roi[0]:self.roi[3]]
 
-        # Check if the scene is brighter than our a priori target
-        if mean > mean_thresh:
-            kernel = -kernel
+        if self.debug_ros:
+            # Create a blacked out debug image for putting masks in
+            self.mask_image = np.zeros(self.last_image.shape, dtype=image.dtype)
+        if self.last_image_time is not None and self.image_sub.last_image_time < self.last_image_time:
+            # Clear tf buffer if time went backwards (nice for playing bags in loop)
+            self.tf_listener.clear()
+        self.last_image_time = self.image_sub.last_image_time
+        self.find_buoys()
+        if self.debug_ros:
+            self.mask_pub.publish(self.mask_image)
+ 
+    def print_status(self, _):
+        '''
+        Called at 1 second intervals to display the status (not found, n observations, FOUND)
+        for each buoy.
+        '''
+        if self.enabled:
+            rospy.loginfo("STATUS: RED='%s', GREEN='%s', YELLOW='%s'",
+                          self.buoys['red'].status,
+                          self.buoys['green'].status,
+                          self.buoys['yellow'].status)
 
-        normalized_cross_correlation = cv2.filter2D((image - mean) / std_dev, -1, kernel)
-        renormalized = normalized_cross_correlation
-        return renormalized
+    def find_buoys(self):
+        '''
+        Run find_single_buoy for each color of buoy
+        '''
+        for buoy_name in self.buoys:
+            self.find_single_buoy(buoy_name)
 
-    def get_biggest(self, contours):
+    def get_best_contour(self, contours):
+        '''
+        Attempts to find a good buoy contour among those found within the
+        thresholded mask. If a good one is found, it return (contour, centroid, area),
+        otherwise returns None. Right now the best contour is just the largest.
+        
+        TODO: Use smarter contour filtering methods, like checking this it is circle like
+        '''
         if len(contours) > 0:
             cnt = max(contours, key=cv2.contourArea)
             area = cv2.contourArea(cnt)
-            if area > self._min_size:
-                M = cv2.moments(cnt)
-                cx = int(M['m10'] / M['m00'])
-                cy = int(M['m01'] / M['m00'])
-                tpl_center = (int(cx), int(cy))
-                return cnt, tpl_center, area
-            return None
+            if area < self.min_contour_area:
+                return None
+            M = cv2.moments(cnt)
+            cx = int(M['m10'] / M['m00'])
+            cy = int(M['m01'] / M['m00'])
+            tpl_center = (int(cx), int(cy))
+            return cnt, tpl_center, area
         else:
             return None
 
-    def find_single_buoy(self, img, timestamp, buoy_type):
+    def find_single_buoy(self, buoy_type):
+        '''
+        Attempt to find one color buoy in the image.
+        1) Create mask for buoy's color in colorspace specified in paramaters
+        2) Select the largest contour in this mask
+        3) Approximate a circle around this contour
+        4) Store the center of this circle and the current tf between /map and camera
+           as an observation
+        5) If observations for this buoy is now >= min_observations, approximate buoy
+           position using the least squares tool imported
+        '''
         assert buoy_type in self.buoys.keys(), "Buoys_2d does not know buoy color: {}".format(buoy_type)
-        max_area = 0
         best_ret = None
-
         buoy = self.buoys[buoy_type]
-        rospy.sleep(.1)
-        mask = buoy.segment(img)
-        kernel = np.ones((5, 5), np.uint8)
-        mask = cv2.erode(mask, kernel, iterations=2)
-        mask = cv2.dilate(mask, kernel, iterations=2)
+        mask = buoy.segment(self.last_image)
+        kernel = np.ones((5,5),np.uint8)
+        mask = cv2.erode(mask, kernel, iterations = 2)
+        mask = cv2.dilate(mask, kernel, iterations = 2)
 
-        draw_mask = np.dstack([mask] * 3)
-        draw_mask[:, :, 0] *= 0
-        if buoy_type == 'red':
-            draw_mask[:, :, 1] *= 0
-        if buoy_type == 'green':
-            draw_mask[:, :, 2] *= 0
-        self.mask_pub.publish(draw_mask)
-
-        contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-        ret = self.get_biggest(contours)
+        _, contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE, 
+                                          offset=(self.roi[0], self.roi[1]))
+        ret = self.get_best_contour(contours)
         if ret is None:
-            rospy.loginfo("BUOY {} - No contours found".format(buoy_type))
+            self.buoys[buoy_type].status = 'not seen'
             return
-
         contour, tuple_center, area = ret
-        if area > max_area:
-            max_area = area
-            best_ret = ret
-
-        if best_ret is None:
-            rospy.loginfo("BUOY {} - best_ret is None".format(buoy_type))
-            return False
-
-        contour, tuple_center, area = best_ret
         true_center, rad = cv2.minEnclosingCircle(contour)
 
-        if self.camera_model is not None:
+        if self.debug_ros:
+            cv2.add(self.mask_image.copy(), self.buoys[buoy_type].cv_colors, mask=mask, dst=self.mask_image)
+            cv2.circle(self.mask_image, (int(true_center[0]-self.roi[0]), int(true_center[1])-self.roi[1]), 
+                       int(rad), self.buoys[buoy_type].cv_colors, 2)
+        if self.debug_cv:
+            self.debug_images[buoy_type] = mask.copy()
 
-            if not self.sanity_check(tuple_center, timestamp):
-                return False
+        try:
+            self.tf_listener.waitForTransform('/map', self.frame_id, self.last_image_time, rospy.Duration(0.2))
+        except tf.Exception as e:
+            rospy.logwarn("Could not transform camera to map: {}".format(e))
+            return False
 
-            (t, rot_q) = self.transformer.lookupTransform('/map', '/front_left_cam', timestamp)
-            trans = np.array(t)
-            R = mil_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
+        if not self.sanity_check(tuple_center, self.last_image_time):
+            self.buoys[buoy_type].status = 'failed sanity check'
+            return False
 
-            self.rviz.draw_ray_3d(tuple_center, self.camera_model, buoy.draw_colors, frame='/front_left_cam',
-                                  _id=self._id + 100, timestamp=timestamp)
-            self._id += 1
-            if self._id >= self.max_observations * 3:
-                self._id = 0
+        (t, rot_q) = self.tf_listener.lookupTransform('/map', self.frame_id, self.last_image_time)
+        trans = np.array(t)
+        R = mil_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
 
-            if (buoy.last_t is None) or (np.linalg.norm(trans - buoy.last_t) > 0.1):
-                buoy.last_t = trans
-                buoy.observations.append(true_center)
-                buoy.pose_pairs.append((t, R))
+        if (buoy.last_t is None) or (np.linalg.norm(trans - buoy.last_t) > 0.1):
+            buoy.last_t = trans
+            buoy.observations.append(true_center)
+            buoy.pose_pairs.append((t, R))
 
-            rospy.loginfo("BUOY {} - {} observations".format(buoy_type, len(buoy.observations)))
-            if len(buoy.observations) > 5:
-                est = self.multi_obs.lst_sqr_intersection(buoy.observations, buoy.pose_pairs)
-
-                rospy.loginfo("===================================")
-                rospy.loginfo("BUOY: est pose: {}".format(est))
-                rospy.loginfo("===================================")
-
-                self.rviz.draw_sphere(est, color=buoy.draw_colors, scaling=(0.5, 0.5, 0.5),
+        if len(buoy.observations) > self.min_observations:
+            est = self.multi_obs.lst_sqr_intersection(buoy.observations, buoy.pose_pairs)
+            self.buoys[buoy_type].status = 'Pose found'
+            if self.debug_ros:
+                self.rviz.draw_sphere(est, color=buoy.draw_colors, scaling=(0.2286, 0.2286, 0.2286),
                                       frame='/map', _id=buoy.visual_id)
-
-            if len(buoy.observations) > self.max_observations:
-                buoy.observations.popleft()
-                buoy.pose_pairs.popleft()
         else:
-            rospy.loginfo("BUOY {} - camera_model is None".format(buoy_type))
+            self.buoys[buoy_type].status = '{} observations'.format(len(buoy.observations))
 
+        if len(buoy.observations) > self.max_observations:
+            buoy.observations.popleft()
+            buoy.pose_pairs.popleft()
         return tuple_center, rad
-
-    def find_buoys(self, img, timestamp):
-        draw_image = np.copy(img)
-
-        for buoy_name in self.buoys.keys():
-            if self.buoys[buoy_name] is None:
-                continue
-
-            rospy.loginfo("BUOY - Looking for {}".format(buoy_name))
-            result = self.find_single_buoy(img, timestamp, buoy_name)
-            if not result:
-                continue
-
-            center, rad = result
-            cv2.circle(draw_image, center, int(rad), (255, 255, 0), 2)
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            cv2.putText(draw_image, '{}'.format(buoy_name), center, font, 0.8, (20, 20, 240), 1)
-
-        self.last_draw_image = np.copy(draw_image)
 
     def sanity_check(self, coordinate, timestamp):
         '''
         Check if the observation is unreasonable. More can go here if we want.
         '''
         sane = True
-        if np.linalg.norm(self.transformer.lookupTwist('/map', '/front_left_cam', timestamp, rospy.Duration(.5))) > 1:
-            rospy.logerr("BUOY - Moving too fast. Not observing buoy.")
+        velocity = np.linalg.norm(self.tf_listener.lookupTwist('/map', self.frame_id, timestamp, rospy.Duration(.5)))
+        if velocity> self.max_velocity:
             sane = False
-
         return sane
 
-
-def main(args):
-    BuoyFinder()
-    rospy.spin()
-
 if __name__ == '__main__':
-    rospy.init_node('orange_pipe_vision')
-    main(sys.argv)
+    rospy.init_node('buoy_finder')
+    b = BuoyFinder()
+
+    if b.debug_cv:
+        # Keep opencv gui alive as ros spins
+        cv2.waitKey(1)
+        r = rospy.Rate(5)
+        while not rospy.is_shutdown():
+            for k in b.debug_images:
+                cv2.imshow(k, b.debug_images[k])
+            cv2.waitKey(1)
+            r.sleep()
+    else:
+        rospy.spin()
