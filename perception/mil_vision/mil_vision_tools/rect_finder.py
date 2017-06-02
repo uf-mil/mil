@@ -114,7 +114,7 @@ class RectFinder(object):
         '''
         return cv2.matchShapes(contour, self.model_2D, 3, 0.0)
 
-    def get_corners(self, contour, epsilon_factor=0.02, debug_image=None):
+    def get_corners(self, contour, debug_image=None, epsilon_range=(0.01, 0.1), epsilon_step=0.01):
         '''
         Attempts to find the 4 corners of a contour representing a quadrilateral.
 
@@ -123,16 +123,20 @@ class RectFinder(object):
 
         If a 4 sided polygon cannot be approximated, returns None.
 
-        @param epsilon_factor passed to OpenCV approx polygon function. May have to be tuned for your setup.
         @param debug_image if not None, will draw corners with text for indexes onto image
+        @param epsilon_range size 2 tuple of epsilon values (factor of contour arclength) to try for polygon approx
+        @param epsilon_step  how much to increment epsilon each time while iterating through epsilon_range
 
-        TODO: instead of using one epsilon value, iterate until a 4 sided polygon is found
+        Credit David Soto for idea to iterate through multiple epsilon values
         '''
-        epsilon = epsilon_factor * cv2.arcLength(contour, True)
-        polygon = cv2.approxPolyDP(contour, epsilon, True)
-        if len(polygon) != 4:
-            return None
-        return self.sort_corners(polygon, debug_image=debug_image)
+        arclength = cv2.arcLength(contour, True)
+        epsilon = epsilon_range[0]
+        while epsilon <= epsilon_range[1]:
+            polygon = cv2.approxPolyDP(contour, epsilon * arclength, True)
+            if len(polygon) == 4:
+                return self.sort_corners(polygon, debug_image=debug_image)
+            epsilon += epsilon_step
+        return None
 
     def get_pose_3D(self, corners, intrinsics=None, dist_coeffs=None, cam=None, rectified=False):
         '''
