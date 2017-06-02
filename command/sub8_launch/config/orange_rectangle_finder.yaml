@@ -14,8 +14,9 @@ thresh_satuation_low: 100
 # Minimum number of pixels in area of a contour to not be filtered
 min_contour_area: 100
 
-# multiple of contour arcLength to pass to OpenCV approxPolygon to find 4 sided polygon
-epsilon_factor: 0.02
+# widen range or lower step if having trouble approximating 4 sided polygon in contours
+epsilon_range: [0.01, 0.1]
+epsilon_step: 0.01
 
 # Maximum value from cv2.matchshapes to be considered a valid contour
 shape_match_thresh: 0.4

@@ -62,7 +62,8 @@ class OrangeRectangleFinder():
         self.thresh_hue_high = rospy.get_param("~thresh_hue_high", 60)
         self.thresh_saturation_low = rospy.get_param("~thresh_satuation_low", 100)
         self.min_contour_area = rospy.get_param("~min_contour_area", 100)
-        self.epsilon_factor = rospy.get_param("~epsilon_factor", 0.02)
+        self.epsilon_range = rospy.get_param("~epsilon_range", (0.01, 0.1))
+        self.epsilon_step = rospy.get_param("~epsilon_step", 0.01)
         self.shape_match_thresh = rospy.get_param("~shape_match_thresh", 0.4)
         self.min_found_count = rospy.get_param("~min_found_count", 10)
         self.timeout_seconds = rospy.get_param("~timeout_seconds", 2.0)
@@ -296,7 +297,9 @@ class OrangeRectangleFinder():
         if match > self.shape_match_thresh:
             return False
         # Checks that contour is 4 sided
-        corners = self.rect_model.get_corners(contour, epsilon_factor=self.epsilon_factor, debug_image=self.last_image)
+        corners = self.rect_model.get_corners(contour, debug_image=self.last_image,
+                                              epsilon_range=self.epsilon_range,
+                                              epsilon_step=self.epsilon_step)
         if corners is None:
             return False
         self.last2d = self.rect_model.get_pose_2D(corners)
