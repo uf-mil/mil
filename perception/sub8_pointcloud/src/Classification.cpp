@@ -24,15 +24,19 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr Classification::filtered(pcl::PointCloud<pc
 // Get first incidient point in a ray. If no such point exist, return the starting point of the ray
 cv::Point2d Classification::get_first_hit(cv::Mat &mat_ogrid, cv::Point2d start, float theta, int max_dis = 100)
 {
+  cv::Rect rect(cv::Point(0, 0), mat_ogrid.size());
   cv::Point2d vec_d_theta(cos(theta), sin(theta));
   for (int i = 0; i < max_dis; ++i)
   {
     cv::Point2d p_on_ray = vec_d_theta * i + start;
+    if (!rect.contains(p_on_ray))
+      return start;
     if (mat_ogrid.at<uchar>(p_on_ray.y, p_on_ray.x) == (uchar)WAYPOINT_ERROR_TYPE::OCCUPIED)
     {
       return p_on_ray;
     }
   }
+
   return start;
 }
 
@@ -63,9 +67,9 @@ void Classification::zonify(cv::Mat &mat_ogrid, float resolution, const tf::Stam
   intersections.push_back(where_sub);
 
   // Find first hits in an expanding circle
-  for (float d_theta = 0.f; d_theta <= 2 * CV_PI; d_theta += 0.05)
+  for (float d_theta = 0.f; d_theta <= 2 * CV_PI; d_theta += 0.005)
   {
-    cv::Point2d p_on_ray = get_first_hit(mat_ogrid, where_sub, d_theta);
+    cv::Point2d p_on_ray = get_first_hit(mat_ogrid, where_sub, d_theta, mat_ogrid.cols);
     intersections.push_back(cv::Point(p_on_ray.x, p_on_ray.y));
   }
 

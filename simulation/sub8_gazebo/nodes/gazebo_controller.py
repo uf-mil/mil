@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 import rospy
 import mil_ros_tools
+import numpy as np
 from tf import transformations
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovariance, TwistWithCovariance, Pose, Point, Quaternion
 from sensor_msgs.msg import Range
+from sensor_msgs.msg import LaserScan
 from gazebo_msgs.msg import LinkStates, ModelState
 from sub8_gazebo.srv import ResetGazebo, ResetGazeboResponse
 from mil_msgs.msg import RangeStamped
+from mil_blueview_driver.msg import BlueViewPing
 
 
 class GazeboInterface(object):
@@ -26,6 +29,9 @@ class GazeboInterface(object):
 
         self.raw_dvl_sub = rospy.Subscriber('dvl/range_raw', Range, self.publish_height)
         self.dvl_pub = rospy.Publisher('dvl/range', RangeStamped, queue_size=1)
+
+        self.raw_blueview_sub = rospy.Subscriber('/blueview_driver/gazebo', LaserScan, self.publish_blueview_ping)
+        self.blueview_ranges_pub = rospy.Publisher('/blueview_driver/ranges', BlueViewPing, queue_size=1)
 
         self.reset_srv = rospy.Service('gazebo/reset_gazebo', ResetGazebo, self.reset)
         self.state_pub = rospy.Publisher('model_odom', Odometry, queue_size=1)
@@ -63,6 +69,16 @@ class GazeboInterface(object):
             RangeStamped(
                 header=mil_ros_tools.make_header(),
                 range=msg.range
+            )
+        )
+
+    def publish_blueview_ping(self, msg):
+        self.blueview_ranges_pub.publish(
+            BlueViewPing(
+                header=msg.header,
+                bearings=[(msg.angle_min + i * msg.angle_increment) for i in xrange(len(msg.ranges))],
+                ranges=msg.ranges,
+                intensities=[np.uint16(x) for x in msg.ranges]
             )
         )
 
@@ -125,6 +141,7 @@ class GazeboInterface(object):
             self.position_offset = position
 
         self.last_odom = msg
+
 
 if __name__ == '__main__':
     rospy.init_node('gazebo_interface')

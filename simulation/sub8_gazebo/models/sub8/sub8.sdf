@@ -135,6 +135,37 @@
         </plugin>
       </sensor>
 
+      <!--Uses lidar ray plugin to simulate a laser sweep which is used
+          by gazebo interface to convert to BlueViewPing.-->
+      <sensor name="blueview_sonar" type="ray">
+        <pose>0.333 0 0.381  3.1415 0.044 0</pose>
+        <visualize>false</visualize>
+        <update_rate>25</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>1000</samples>
+              <resolution>10</resolution>
+              <min_angle>-1.134465</min_angle>
+              <max_angle>1.134465</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.5</min>
+            <max>100.0</max>
+            <resolution>0.01</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <stddev>0.3</stddev>
+          </noise>
+        </ray>
+        <plugin name="_sick_lidar" filename="libgazebo_ros_laser.so">
+          <topicName>/blueview_driver/gazebo</topicName>
+          <frameName>blueview</frameName>
+        </plugin>
+      </sensor>
+
       <!-- Uses LIDAR plugin to simulate 1 LIDAR ray to get distance to floor.
            Best solution would be to write custom plugin but fuck it.-->
       <sensor name="dvl_range" type="ray">
