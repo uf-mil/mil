@@ -3,26 +3,41 @@ from __future__ import division
 import numpy as np
 import cv2
 import argparse
-import time
 
+__author__ = "David Soto"
+
+'''
+Script to play a video through ROS, a webcam, or a video file
+and display visual information about the colors in the video
+in the RGB, HSV, and LAB colorspaces.
+
+Usage:
+rosrun mil_vision colorspaces.py -h
+By pressing 'h', the GUI will display a histogram in each color
+By pressing 'c', the GUI will display the precise color values at the cursor location
+
+'''
+
+# Globals variables which change behavior of viz_colorspaces
 NAME = 'Colorspaces'
-clicked = True
-total = 0
-iterations = 0
+w, h = 0, 0
+mouse_x, mouse_y = None, None
+show_color = False
+show_histogram = False
+bins = np.arange(256).reshape(256, 1)
 
 
 def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
-
     '''
     Returns image that shows the channels of the BGR, HSV, and LAB colorspace
     representations of a given image
     '''
 
-    global clicked
-    global total
-    global iterations
+    global show_color, show_histogram
+    global w, h
+    global mouse_x, mouse_y
 
-    # Create grid of reduced size image panels
+    # Pick a width and height of each image in GUI window based on start parameters
     w, h = (int(rgb_image.shape[1] * viz_scale), int(rgb_image.shape[0] * viz_scale)) if disp_size is None \
         else (int(disp_size[0] / 4), int(disp_size[1] / 3))
     viz = np.zeros((h * 3, w * 4, 3), dtype=np.uint8)
@@ -45,64 +60,44 @@ def viz_colorspaces(rgb_image, viz_scale, disp_size=None):
         zip([rgb_small, cv2.cvtColor(rgb_small, cv2.COLOR_BGR2HSV), cv2.cvtColor(rgb_small, cv2.COLOR_BGR2LAB)],
             labels)
 
+    # If enabled, show specific color information at current cursor location
+    if show_color and mouse_x is not None and mouse_y is not None:
+        # In empty bottom left panel, fill with RGB color at cursor location
+        viz[h * 2:, 0:w] = rgb_small[mouse_y, mouse_x]
+        t_y = 0
+        for i in xrange(len(images_and_labels)):
+            # Print values in each color space of current cursor location
+            text = "[{l[0]}, {l[1]}, {l[2]}] = [{r[0]:>3}   {r[1]:>3}   {r[2]:>3}]".format(
+                l=images_and_labels[i][1], r=images_and_labels[i][0][mouse_y, mouse_x])
+            (t_w, t_h), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_PLAIN, 2.3 * viz_scale, 1)
+            t_y += t_h * 2
+            cv2.putText(viz, text, (0, t_y), cv2.FONT_HERSHEY_PLAIN, 2.3 * viz_scale, (255, 255, 255), 1)
+
     # Set 3x3 grid of single channel images from 3 3-channel images
     make_3deep = lambda x: np.repeat(x[:, :, np.newaxis], 3, axis=2)  # Needed for displaying in color
+    viz[:, w:] = np.vstack(map(make_3deep, map(lambda x: flatten_channels(*x), images_and_labels)))
 
-    t0 = time.time()
-    if clicked:
-        # print 'iterations', iterations
-        iterations = iterations + 1
-
-        def hist_curve(im, width, height):
-            """
-            Given an image in any color space (BGR, HSV, LAB)
-            Return three lists for each channel in that color space.
-            Each of the three return lists contains a list with two elements
-            Those two elements are :
-            - The image of the histogram in the requested shape (width, height)
-            - The indices where the image of the histogram is non_zero
-            """
-
-            y = []
-            # https://github.com/opencv/opencv/blob/master/samples/python/hist.py
-            # lines 32 - 39 (with slight modifications)
-            for ch in xrange(3):
-                original_image = np.copy(im)
-                bins = np.arange(255).reshape(255, 1)
-                hist_item = cv2.calcHist([original_image], [ch], None, [255], [0, 255])
-                cv2.normalize(hist_item, hist_item, 0, height, cv2.NORM_MINMAX)
+    # If enabled, display a color histogram in each panel
+    if show_histogram:
+        def get_hist_curves(img):
+            ''' Return list of curves for each channel in image '''
+            curves = [None for i in range(img.shape[2])]
+            for ch in xrange(img.shape[2]):
+                hist_item = cv2.calcHist([img], [ch], None, [256], [0, 256])
+                cv2.normalize(hist_item, hist_item, 0, 255, cv2.NORM_MINMAX)
                 hist = np.int32(np.around(hist_item))
-                pts = np.int32(np.column_stack((bins, hist)))
-                pts[:, 0] = pts[:, 0]*(width/255)
-                cv2.polylines(original_image, [pts], False, (1, 1, 255))
-                y.append(np.flipud(original_image))
-            return y
+                curves[ch] = np.int32(np.column_stack((bins, hist)))
+            return curves
 
-        hists_and_indices = []
-        for image in images_and_labels:
-            hists_and_indices.append(hist_curve(image[0], w, h))
-
-        images_and_labels = zip(hists_and_indices, labels)
-
-        # Space represents each colorspace
-        # 0 : BGR
-        # 1 : HSV
-        # 2 : LAB
-        space = 0
-        for i, hists in enumerate(hists_and_indices):
-            # Each 'hists' variable is represent a set of histograms for a given color space
-            viz[h*space:h*(space + 1), w:, 1] = flatten_channels(hists[0], labels[i])
-            viz[h*space:h*(space + 1), w:, 2] = flatten_channels(hists[0], labels[i])
-            viz[h*space:h*(space + 1), w:, 0] = flatten_channels(hists[0], labels[i])
-            space = space + 1
-        t1 = time.time()
-        total = total + (t1 - t0)
-        if iterations % 5 == 0:
-            print 'total: ', total
-            print 'time: ', total/iterations
-    else:
-        viz[:, w:] = np.vstack(map(make_3deep, map(lambda x: flatten_channels(*x), images_and_labels)))
+        for i in range(len(images_and_labels)):
+            for c, curve in enumerate(get_hist_curves(images_and_labels[i][0])):
+                mask = np.zeros(images_and_labels[i][0].shape, dtype=np.uint8)
+                cv2.polylines(mask, [curve], False, (255, 0, 0))
+                mask = np.flipud(mask)
+                cv2.bitwise_or(viz[i * h:(i + 1) * h, (c + 1) * w:(c + 2) * w], mask,
+                               dst=viz[i * h:(i + 1) * h, (c + 1) * w:(c + 2) * w])
     return viz
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -112,41 +107,48 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--scale', help='Scale for image processing', type=float, default=0.5)
     args = parser.parse_args()
 
+    print "PRESS 'h' to display histograms"
+    print "PRESS 'c' to display color values"
+
+    def image_cb(img):
+        ''' Display a single image and check for mouse events '''
+        cv2.imshow(NAME, viz_colorspaces(img, args.scale))
+        key = cv2.waitKey(10)
+        if key == ord('c'):
+            global show_color
+            show_color = not show_color
+        if key == ord('h'):
+            global show_histogram
+            show_histogram = not show_histogram
+
+        def set_clicked(event, x, y, flags, param):
+            global mouse_x, mouse_y
+            # Get index in any panel, not whole window
+            mouse_x, mouse_y = x % w, y % h
+        cv2.setMouseCallback(NAME, set_clicked)
+
+    # Handle webcam or video file
     if args.use_cam is not None or args.use_video:
         if args.use_cam is not None:
             cap = cv2.VideoCapture(args.use_cam)
         else:
             cap = cv2.VideoCapture(args.use_video)
-
         while(True):
             success, rgb_orig = cap.read()
-
             if not success:
                 break
-
-            cv2.imshow(NAME, viz_colorspaces(rgb_orig, args.scale, disp_size=(500, 500)))
-            cv2.waitKey(5)
-
+            image_cb(rgb_orig)
         cap.release()
 
+    # Pull images from a ROS image topic
     elif args.use_ros_topic is not None:
-        key = None
-
-        def disp_image(img):
-            cv2.imshow(NAME, viz_colorspaces(img, args.scale))
-            cv2.waitKey(10)
-
-            def set_clicked(event, x, y, flags, param):
-
-                global clicked
-                if event == cv2.EVENT_LBUTTONDOWN:
-                    clicked = not clicked
-            cv2.setMouseCallback(NAME, set_clicked)
-
         import rospy
         import mil_ros_tools
-        rospy.init_node(NAME)
-        mil_ros_tools.Image_Subscriber(topic=args.use_ros_topic, callback=disp_image)
+        rospy.init_node(NAME, anonymous=True)
+        mil_ros_tools.Image_Subscriber(topic=args.use_ros_topic, callback=image_cb)
         rospy.spin()
+    
+    else:
+        print 'No video, camera, or ROS topic specified. Closing'
 
     cv2.destroyAllWindows()
