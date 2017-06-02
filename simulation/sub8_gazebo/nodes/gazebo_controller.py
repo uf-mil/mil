@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import mil_ros_tools
+import numpy as np
 from tf import transformations
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovariance, TwistWithCovariance, Pose, Point, Quaternion
@@ -77,7 +78,7 @@ class GazeboInterface(object):
                 header=msg.header,
                 bearings=[(msg.angle_min + i * msg.angle_increment) for i in xrange(len(msg.ranges))],
                 ranges=msg.ranges,
-                intensities=[500 for x in msg.ranges]
+                intensities=[np.uint16(x) for x in msg.ranges]
             )
         )
 
