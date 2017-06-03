@@ -31,6 +31,9 @@ class BumpBuoysMission(object):
     '''
     ORDER = ['red', 'green', 'yellow']
     TIMEOUT_SECONDS = 30
+    Z_PATTERN_RADIUS = 0.3
+    Y_PATTERN_RADIUS = 1.5
+    BACKUP_METERS = 3.0
 
     def __init__(self, sub):
         self.sub = sub
@@ -42,10 +45,12 @@ class BumpBuoysMission(object):
         self.generate_pattern()
 
     def generate_pattern(self):
-        self.moves = [[0, 0, 0.3],
-                      [0, 1.5, 0],
-                      [0, 0, -2 * 0.3],
-                      [0, -2 * 1.5, 0]]
+        z = self.Z_PATTERN_RADIUS
+        y = self.Y_PATTERN_RADIUS
+        self.moves = [[0, 0, z],
+                      [0, y, 0],
+                      [0, 0, -2 * z],
+                      [0, -2 * y, 0]]
         self.move_index = 0
 
     @util.cancellableInlineCallbacks
@@ -85,7 +90,7 @@ class BumpBuoysMission(object):
         yield self.sub.move.look_at_without_pitching(buoy_position).go()
         yield self.sub.move.set_position(buoy_position).forward(0.2).go()
         self.print_good("{} BUMPED. Backing up".format(buoy))
-        yield self.sub.move.backward(3.5).go()
+        yield self.sub.move.backward(self.BACKUP_METERS).go()
 
     def get_next_bump(self):
         '''
