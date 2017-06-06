@@ -1,5 +1,7 @@
 # Gazeb
 
+# Current Maintainer/servitor: Nicholas Suhlman, Grymestone@ufl.edu
+
 A brief tutorial on how to gazeb.
 
 > If you wish to simulate the sub from scratch, you must first invent the universe. <br>
@@ -18,21 +20,37 @@ And these can be combined if you'd like.
 **NOTE:** You can run the sub with or without a gui. Disabling one or both of these is intended for use when testing controllers or other things that only rely on the data and not the actual visuals. Also it is intended for people who have shitty computers that would benefit from not having to run the gazebo window and the cameras (which saves a nontrival amount of CPU time).
 
 ### To add custom textures to models
-This guide assumes you have created a mesh and texture within gazebo. All the models I have been given from Solidworks have already come with meshes so I did not have to create them. Look up guides on how to bind textures to UV Maps in Blender. That is what you will be doing for the most part to create your texture files. You'll want to save the texture file as a separate png for this. An interesting side note about Blender, the way the UV Maps work and meshes work, you cannot scale an object differently in each dimension and preserve the mesh. The entire object must be scaled at the same ratio (.5,.5,.5 for example). Otherwise when you export the object you will encounter many terrible errors trying to load it into Gazebo. 
+This guide assumes you have created a mesh and texture within gazebo. All the models I have been given from Solidworks have already come with meshes so I did not have to create them. Look up guides on how to bind textures to UV Maps in Blender. That is what you will be doing for the most part to create your texture files. You'll want to save the texture file as a separate png for this. An interesting side note about Blender, the way the UV Maps work and meshes work, you cannot scale an object differently in each dimension and preserve the mesh. The entire object must be scaled at the same ratio (.5,.5,.5 for example). Otherwise when you export the object you will encounter many terrible errors trying to load it into Gazebo.
 
-tldr; Scale your objects evenly in blender or else the machine spirits will be displeased. 
+tldr; Scale your objects evenly in blender or else the machine spirits will be displeased.
 
 1. Open DAE file and move to library_images tag. If one does not exist, create it.
 2. Add image id and import image within this tag. Example found in colored_lid.dae. Close library_images tage.
-3. Immediately after, go to the library_effects tag or create one directly beneath library_images. 
-4. Create Material Effect and Material Effect 2. 
+3. Immediately after, go to the library_effects tag or create one directly beneath library_images.
+4. Create Material Effect and Material Effect 2.
 5. These will allow you to bind the image to a material as its texture. Examples found in colored_lid.dae.
-6. Close library_effects tag and open library_materials tage if one does not yet exist. 
+6. Close library_effects tag and open library_materials tage if one does not yet exist.
 7. Follow format set in colored_lid.dae.
-8. Within the mesh settings under the library_geometry tag, search for materials and ensure they carry the same name as your material. 
+8. Within the mesh settings under the library_geometry tag, search for materials and ensure they carry the same name as your material.
 9. In colored_lid, the material is simply called 'Material'.
 10. Finally under the library_visual_scenes search for the instance_geometry tag that creates your mesh.
-11. Here you shall place bind_material and bind your materials to the mesh, applying your texture to the object. 
-12. Copy the format as shown in colored_lid.dae. 
+11. Here you shall place bind_material and bind your materials to the mesh, applying your texture to the object.
+12. Copy the format as shown in colored_lid.dae.
 
 **NOTE:** I have not tested trying to apply more than one texture. To create the texture, I used Blender. This created a texture wrapped around the mesh. I exported the texture file as a png as you can see in the bin folder of models. The image you use should be in the same directory as the dae file. I have not tested putting it elsewhere. Additionally, if you see yellow and black lines on your object as opposed to your  texture, it means Gazebo/dae file could not find you texture! Check to make sure the name of the image matches the name of the file being imported. If you see a standard grey object, this means you did not import or code the  texture properly. Recheck the steps and compare to either the skybox or the colored_lid dae files.  
+
+### Teleport Pose Coordinates for Challenges
+To use command: subc tp STRING
+  To input a saved location, merely type the name of the location where you wish to teleport. Shorthand names located in the teleport_locs.yaml file in  sub8_gazebo/configs. Ex:
+  subc tp buoy
+
+  To input raw coords input in quotes the X,Y,Z coords you wish to teleport to as detailed below:
+  subc tp "X Y Z"
+
+Raw coords if desired:
+1. Bin Assembly - -24 14 -3.5
+2. Start Gate - 16 13 -1.5  (Will need to rotate sub to actually see it)
+3. Nav Gate - 26 -13 -1.5 (Will need to rotate sub to actually see it)
+4. Buoy - 19 20 -1
+5. Octogon - floats on surface above 20 -20 -1
+6. Squilliamson & his single tentacle- 21 11 -2.75

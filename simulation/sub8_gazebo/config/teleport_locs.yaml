@@ -1,0 +1,7 @@
+bin: -24 14 -3.5
+buoy: 19 20 -1
+octo: 20 -20 -1
+navgt: 26 -13 -1.5
+strgt: 16 13 -1.5
+tpbrd: 21 11 -2.75
+#Numbers represent X Y Z coordinates from Origin (center of transdeck) in Gazebo. 

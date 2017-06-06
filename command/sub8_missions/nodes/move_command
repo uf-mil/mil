@@ -5,8 +5,17 @@ from twisted.internet import defer, reactor
 import numpy as np
 from mil_misc_tools import text_effects
 from sub8 import sub_singleton
-from geometry_msgs.msg import PoseStamped, PointStamped
+from geometry_msgs.msg import PoseStamped, PointStamped, Pose, Point, Quaternion, Twist
+from gazebo_msgs.msg import LinkStates, ModelState
 import missions
+from txros import publisher
+from std_msgs.msg import Float64
+from mil_msgs.srv import BaggerCommands
+from ros_alarms import TxAlarmBroadcaster, HandlerBase
+import rospkg
+import yaml
+import os
+
 
 import argparse
 
@@ -16,6 +25,7 @@ SHORTHAND = {"f": "forward", "b": "backward", "l": "left", "r": "right", "yl": "
 
 ros_t = lambda d: util.genpy.Duration(d)
 fprint = text_effects.FprintFactory(title="MOVE_COMMAND").fprint
+
 
 @util.cancellableInlineCallbacks
 def main(args):
@@ -37,13 +47,52 @@ def main(args):
         fprint("Waiting for odom...")
         yield sub.tx_pose()
         fprint("Odom found!", msg_color='green')
-
+        rospack = rospkg.RosPack()
         action_kwargs = {'speed': float(args.speed), 'blind': bool(args.blind)}
 
         if command == 'custom':
             # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
             fprint("Moving with the command: {}".format(argument))
             res = yield eval("sub.move.{}.go()".format(argument, **action_kwargs))
+
+        elif command in ['tp', 'teleport']:
+            try:
+                state_set_pub = yield nh.advertise('gazebo/set_model_state', ModelState)
+                config_file = os.path.join(rospack.get_path('sub8_gazebo'), 'config', 'teleport_locs.yaml')
+                f = yaml.load(open(config_file, 'r'))
+                try:
+                    x = float(argument.split(' ')[0])
+                    y = float(argument.split(' ')[1])
+                    z = float(argument.split(' ')[2])
+                except Exception:
+                    try:
+                        argz = f[argument]
+                        x = float(argz.split(' ')[0])
+                        y = float(argz.split(' ')[1])
+                        z = float(argz.split(' ')[2])
+                    except Exception:
+                        fprint("Saved location not found or coordinates not recognized.", msg_color='red')
+                modelstate = ModelState(
+                    model_name='sub8',
+                    pose = Pose(position=Point(x,y,z), orientation=Quaternion(0,0,0,0)),
+                    twist = Twist(linear=Point(0,0,0),angular=Point(0,0,0)),
+                    reference_frame= 'world')
+                    #Sometimes you need to sleep in order to get the thing to publish
+                    #Apparently there is a latency when you set a publisher and it needs to actually hook into it.
+                    #As an additional note, given the way we do trajectory in the sim, we must kill sub to prevent
+                    #the trajectory from overriding our teleport and bringing it back to its expected position.
+                #kill sub
+                ab = TxAlarmBroadcaster(nh,'kill', node_name='kill')
+                ab.raise_alarm(problem_description='TELEPORTING: KILLING SUB',
+                        severity=5)
+                yield nh.sleep(1)
+                yield state_set_pub.publish(modelstate)
+                yield nh.sleep(1)
+                #unkill sub
+                ab.clear_alarm()
+
+            except Exception as e:
+                fprint("Command invalid. Exception: {}" .format(e), msg_color='red')
 
         elif command in ['zrp', 'level_off', 'zpr']:
             fprint("Zeroing roll and pitch")
@@ -55,7 +104,7 @@ def main(args):
                 res = yield sub.move.forward(0).zero_roll_and_pitch().go(**action_kwargs)
             else:
                 res = yield sub.move.forward(0).go(**action_kwargs)
-            
+
         else:
             # Get the command from shorthand if it's there
             command = SHORTHAND.get(command, command)
@@ -95,6 +144,8 @@ if __name__ == '__main__':
         help="Make end goal have zero roll and pitch.")
     parser.add_argument('-b', '--blind', action='store_true',
         help="Do not check if waypoint is safe.")
+    parser.add_argument('-tp', '--teleport',metavar='Loc', type=str,
+        help="Teleport sub in Gazebo to object Takes a string. Locations: bin, buoy, octo, navgt, strgt, tpbrd")
     args = parser.parse_args()
 
     reactor.callWhenRunning(lambda: main(args))

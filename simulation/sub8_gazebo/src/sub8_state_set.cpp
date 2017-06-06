@@ -4,6 +4,7 @@
 #include "gazebo/common/Events.hh"
 #include "ros/ros.h"
 
+
 using namespace gazebo;
 using namespace std;
 
@@ -63,6 +64,7 @@ void StatePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   // Make sure the ROS node for Gazebo has already been initialized
   GZ_ASSERT(ros::isInitialized(), "ROS not initialized");
   reference_sub_ = nh_.subscribe(ref_topic, 1, &StatePlugin::PoseRefUpdate, this);
+
 }
 /////////////////////////////////////////////////
 void StatePlugin::PoseRefUpdate(const geometry_msgs::PoseStampedConstPtr& ps)
@@ -71,6 +73,8 @@ void StatePlugin::PoseRefUpdate(const geometry_msgs::PoseStampedConstPtr& ps)
   math::Quaternion rot(ps->pose.orientation.w, ps->pose.orientation.x, ps->pose.orientation.y, ps->pose.orientation.z);
 
   last_ref_pose_ = math::Pose(pos, rot);
+  auto fixed_pose = last_ref_pose_ + first_pose_;
+  model_->SetWorldPose(fixed_pose);
 }
 
 /////////////////////////////////////////////////
@@ -82,6 +86,6 @@ void StatePlugin::Init()
 /////////////////////////////////////////////////
 void StatePlugin::OnUpdate()
 {
-  auto fixed_pose = last_ref_pose_ + first_pose_;
-  model_->SetWorldPose(fixed_pose);
+
+
 }
