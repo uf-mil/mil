@@ -1,9 +1,9 @@
-use_boost          :  False
 camera_topic     : /camera/front/right/image_rect_color #Image topic to use to find buoys
-max_observations : 300 # Max size of oberservations buffer per buoy
-min_observations : 5 # Observations needed to attempt a least squares position estimate
+min_observations : 8 # Observations needed to attempt a least squares position estimate
 min_contour_area : 10 # Minimum pixels for a pottential buoy contour to not be rejected
 max_velocity     : 1 # Highest velocity sub can be moving as in m/s before observations are ignored
+min_trans        : 0.05 # Smallest movement of sub in meters between observations to count towards observation count
+timeout_seconds  : 2.5 # Time in which min_observations must be seen to be considered found
 debug:
     ros: True # Publish marker and mask topics for debugging
     cv: False # Create OpenCV GUI windows with sliders for thresholds, etc

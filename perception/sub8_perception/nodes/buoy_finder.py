@@ -21,13 +21,17 @@ class Buoy(object):
     buffer of observations to use in position estimation.
     '''
     def __init__(self, color, debug_cv=False):
-        self.observations = deque()
-        self.pose_pairs = deque()
+        self._observations = deque()
+        self._pose_pairs = deque()
+        self._times = deque()
         self.last_t = None
         self.debug_cv = debug_cv
         self.status = ''
         self.est = None
         self.color = color
+
+        self.timeout = rospy.Duration(rospy.get_param('~timeout_seconds'))
+        self.min_trans = rospy.get_param('~min_trans')
 
         # Only for visualization
         if color == 'red':
@@ -63,7 +67,6 @@ class Buoy(object):
                                np.array(rospy.get_param(high))]
             rospy.loginfo("BUOY - Thresholds for {} buoy loaded using {} colorspace".format(
                           self.color, self.color_space))
-            return
 
         if self.debug_cv:
             # If debug_cv is enabled, create trackbars to adjust thresholds for this buoy
@@ -77,7 +80,7 @@ class Buoy(object):
                 cv2.createTrackbar('high {}'.format(self.color_space[i]), self.color, int(self.thresholds[1][i]), 255,
                                    lambda x, _ind=i: change_threshold(1, _ind, x))
 
-    def segment(self, img):
+    def get_mask(self, img):
         '''
         Use loaded threshold values to create a mask of img
         '''
@@ -90,6 +93,36 @@ class Buoy(object):
         else:
             mask = cv2.inRange(img, *self.thresholds)
         return mask
+
+    def clear_old_observations(self):
+        time = rospy.Time.now()
+        i = 0
+        while i < len(self._times):
+            if time - self._times[i] > self.timeout:
+                self._times.popleft()
+                self._observations.popleft()
+                self._pose_pairs.popleft()
+            else:
+                i += 1
+
+    def add_observation(self, obs, pose_pair, time):
+        self.clear_old_observations()
+        if self.size() == 0 or np.linalg.norm(self._pose_pairs[-1][0] - pose_pair[0]) > self.min_trans:
+            self._observations.append(obs)
+            self._pose_pairs.append(pose_pair)
+            self._times.append(time)
+
+    def get_observations_and_pose_pairs(self):
+        self.clear_old_observations()
+        return (self._observations, self._pose_pairs)
+
+    def size(self):
+        return len(self._observations)
+
+    def clear(self):
+        self._times.clear()
+        self._observations.clear()
+        self._pose_pairs.clear()
 
 
 class BuoyFinder(object):
@@ -282,7 +315,7 @@ class BuoyFinder(object):
         '''
         assert buoy_type in self.buoys.keys(), "Buoys_2d does not know buoy color: {}".format(buoy_type)
         buoy = self.buoys[buoy_type]
-        mask = buoy.segment(self.last_image)
+        mask = buoy.get_mask(self.last_image)
         kernel = np.ones((5, 5), np.uint8)
         mask = cv2.erode(mask, kernel, iterations=2)
         mask = cv2.dilate(mask, kernel, iterations=2)
@@ -291,15 +324,16 @@ class BuoyFinder(object):
                                           offset=(self.roi[0], self.roi[1]))
         ret = self.get_best_contour(contours)
         if ret is None:
-            self.buoys[buoy_type].status = 'not seen'
+            buoy.clear_old_observations()
+            buoy.status = 'not seen w/ {} obs'.format(buoy.size())
             return
         contour, tuple_center, area = ret
         true_center, rad = cv2.minEnclosingCircle(contour)
 
         if self.debug_ros:
-            cv2.add(self.mask_image.copy(), self.buoys[buoy_type].cv_colors, mask=mask, dst=self.mask_image)
+            cv2.add(self.mask_image.copy(), buoy.cv_colors, mask=mask, dst=self.mask_image)
             cv2.circle(self.mask_image, (int(true_center[0] - self.roi[0]), int(true_center[1]) - self.roi[1]),
-                       int(rad), self.buoys[buoy_type].cv_colors, 2)
+                       int(rad), buoy.cv_colors, 2)
         if self.debug_cv:
             self.debug_images[buoy_type] = mask.copy()
 
@@ -310,31 +344,25 @@ class BuoyFinder(object):
             return False
 
         if not self.sanity_check(tuple_center, self.last_image_time):
-            self.buoys[buoy_type].status = 'failed sanity check'
+            buoy.status = 'failed sanity check'
             return False
 
         (t, rot_q) = self.tf_listener.lookupTransform('/map', self.frame_id, self.last_image_time)
-        trans = np.array(t)
         R = mil_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
 
-        if (buoy.last_t is None) or (np.linalg.norm(trans - buoy.last_t) > 0.1):
-            buoy.last_t = trans
-            buoy.observations.append(true_center)
-            buoy.pose_pairs.append((t, R))
+        buoy.add_observation(true_center, (np.array(t), R), self.last_image_time)
 
-        if len(buoy.observations) > self.min_observations:
-            self.buoys[buoy_type].est = self.multi_obs.lst_sqr_intersection(buoy.observations, buoy.pose_pairs)
-            self.buoys[buoy_type].status = 'Pose found'
+        observations, pose_pairs = buoy.get_observations_and_pose_pairs()
+        if len(observations) > self.min_observations:
+            buoy.est = self.multi_obs.lst_sqr_intersection(observations, pose_pairs)
+            buoy.status = 'Pose found'
             if self.debug_ros:
-                self.rviz.draw_sphere(self.buoys[buoy_type].est, color=buoy.draw_colors,
+                self.rviz.draw_sphere(buoy.est, color=buoy.draw_colors,
                                       scaling=(0.2286, 0.2286, 0.2286),
                                       frame='/map', _id=buoy.visual_id)
         else:
-            self.buoys[buoy_type].status = '{} observations'.format(len(buoy.observations))
+            buoy.status = '{} observations'.format(len(observations))
 
-        if len(buoy.observations) > self.max_observations:
-            buoy.observations.popleft()
-            buoy.pose_pairs.popleft()
         return tuple_center, rad
 
     def sanity_check(self, coordinate, timestamp):
