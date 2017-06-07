@@ -28,10 +28,15 @@ ros_env() {
 
 
 # Directory navigation
+alias ws="cd \$CATKIN_DIR"
 alias mc="cd \$CATKIN_DIR/src/mil_common"
 
 # Bash sourcing
 alias srcbrc="source ~/.bashrc"
+
+# Workspace specific and shared tmux sockets
+alias tmux="tmux -L \$(echo \$CATKIN_DIR | rev | cut -d '/' -f1 | rev)"
+alias shared-tmux="tmux -L mil_ws"
 
 # Catkin workspace management
 alias cm="catkin_make -C \$CATKIN_DIR -j8"
