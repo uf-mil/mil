@@ -147,7 +147,7 @@ if __name__ == '__main__':
         rospy.init_node(NAME, anonymous=True)
         mil_ros_tools.Image_Subscriber(topic=args.use_ros_topic, callback=image_cb)
         rospy.spin()
-    
+
     else:
         print 'No video, camera, or ROS topic specified. Closing'
 

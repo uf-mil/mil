@@ -69,7 +69,8 @@ class Image_Subscriber(object):
         This behaves like a conventional subscriber, except handling the additional image conversion
         '''
         if callback is None:
-            def callback(im): return setattr(self, 'last_image', im)
+            def callback(im):
+                return setattr(self, 'last_image', im)
 
         self.encoding = encoding
         self.camera_info = None

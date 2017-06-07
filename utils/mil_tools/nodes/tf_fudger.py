@@ -52,16 +52,20 @@ cv2.createTrackbar("pitch", 'tf', 0, ang_max, lambda x: x)
 cv2.createTrackbar("yaw", 'tf', 0, ang_max, lambda x: x)
 
 
-def toTfLin(x): return x * x_res - 0.5 * x_range
+def toTfLin(x):
+    return x * x_res - 0.5 * x_range
 
 
-def toTfAng(x): return x * ang_res - 0.5 * ang_range
+def toTfAng(x):
+    return x * ang_res - 0.5 * ang_range
 
 
-def toCvLin(x): return (x + 0.5 * x_range) / x_res
+def toCvLin(x):
+    return (x + 0.5 * x_range) / x_res
 
 
-def toCvAng(x): return (x + 0.5 * ang_range) / ang_res
+def toCvAng(x):
+    return (x + 0.5 * ang_range) / ang_res
 
 
 p = q = None
