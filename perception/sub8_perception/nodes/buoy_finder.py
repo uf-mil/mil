@@ -11,7 +11,8 @@ from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D, VisionReques
 from std_msgs.msg import Header
 from std_srvs.srv import SetBool, SetBoolResponse
 from geometry_msgs.msg import Pose2D, PoseStamped, Pose, Point
-from mil_ros_tools import Image_Subscriber, Image_Publisher
+from mil_ros_tools import Image_Subscriber, Image_Publisher, rosmsg_to_numpy
+from nav_msgs.msg import Odometry
 
 
 class Buoy(object):
@@ -145,7 +146,6 @@ class BuoyFinder(object):
 
         # Various constants for tuning, debugging. See buoy_finder.yaml for more info
         self.min_observations = rospy.get_param('~min_observations')
-        self.max_observations = rospy.get_param('~max_observations')
         self.debug_ros = rospy.get_param('~debug/ros', True)
         self.debug_cv = rospy.get_param('~debug/cv', False)
         self.min_contour_area = rospy.get_param('~min_contour_area')
@@ -159,6 +159,10 @@ class BuoyFinder(object):
         if self.debug_cv:
             cv2.waitKey(1)
             self.debug_images = {}
+
+        # Keep latest odom message for sanity check
+        self.last_odom = None
+        self.odom_sub = rospy.Subscriber('/odom', Odometry, self.odom_cb, queue_size=3)
 
         self.image_sub = Image_Subscriber(camera, self.image_cb)
         if self.debug_ros:
@@ -177,6 +181,9 @@ class BuoyFinder(object):
         rospy.Service('~pose', VisionRequest, self.request_buoy3d)
 
         rospy.loginfo("BUOY FINDER: initialized successfully")
+
+    def odom_cb(self, odom):
+        self.last_odom = odom
 
     def toggle_search(self, srv):
         '''
@@ -369,11 +376,14 @@ class BuoyFinder(object):
         '''
         Check if the observation is unreasonable. More can go here if we want.
         '''
-        sane = True
-        velocity = np.linalg.norm(self.tf_listener.lookupTwist('/map', self.frame_id, timestamp, rospy.Duration(.5)))
-        if velocity > self.max_velocity:
-            sane = False
-        return sane
+        if self.last_odom is None:
+            return False
+
+        linear_velocity = rosmsg_to_numpy(self.last_odom.twist.twist.linear)
+        if np.linalg.norm(linear_velocity) > self.max_velocity:
+            return False
+
+        return True
 
 if __name__ == '__main__':
     rospy.init_node('buoy_finder')

@@ -14,7 +14,7 @@ class RvizVisualizer(object):
     '''Cute tool for drawing both depth and height-from-bottom in RVIZ
     '''
 
-    def __init__(self, topic="visualization/projection"):
+    def __init__(self, topic="visualization/markers"):
         self.rviz_pub = rospy.Publisher(topic, visualization_msgs.Marker, queue_size=3)
 
     def draw_sphere(self, position, color, scaling=(0.11, 0.11, 0.11), _id=4, frame='/front_stereo'):

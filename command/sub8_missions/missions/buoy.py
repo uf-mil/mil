@@ -32,8 +32,9 @@ class BumpBuoysMission(object):
     ORDER = ['red', 'green', 'yellow']
     TIMEOUT_SECONDS = 30
     Z_PATTERN_RADIUS = 0.3
-    Y_PATTERN_RADIUS = 1.5
+    Y_PATTERN_RADIUS = 2.0
     BACKUP_METERS = 3.0
+    BLIND = False
 
     def __init__(self, sub):
         self.sub = sub
@@ -74,7 +75,7 @@ class BumpBuoysMission(object):
 
         self.pattern_done = False
         for i, move in enumerate(self.moves[self.move_index:]):
-            move = self.sub.move.relative(np.array(move)).go()
+            move = self.sub.move.relative(np.array(move)).go(blind=self.BLIND)
             move.addErrback(err)
             yield move
             self.move_index = i + 1
@@ -84,13 +85,13 @@ class BumpBuoysMission(object):
     @util.cancellableInlineCallbacks
     def bump(self, buoy):
         self.print_info("BUMPING {}".format(buoy))
-        yield self.sub.move.go()  # Station hold
+        yield self.sub.move.go(blind=self.BLIND)  # Station hold
         buoy_position = self.buoys[buoy].position
-        yield self.sub.move.depth(-buoy_position[2]).go()
-        yield self.sub.move.look_at_without_pitching(buoy_position).go()
-        yield self.sub.move.set_position(buoy_position).forward(0.2).go()
+        yield self.sub.move.depth(-buoy_position[2]).go(blind=self.BLIND)
+        yield self.sub.move.look_at_without_pitching(buoy_position).go(blind=self.BLIND)
+        yield self.sub.move.set_position(buoy_position).forward(0.2).go(blind=self.BLIND)
         self.print_good("{} BUMPED. Backing up".format(buoy))
-        yield self.sub.move.backward(self.BACKUP_METERS).go()
+        yield self.sub.move.backward(self.BACKUP_METERS).go(blind=self.BLIND)
 
     def get_next_bump(self):
         '''
@@ -103,7 +104,7 @@ class BumpBuoysMission(object):
                 continue
             elif self.buoys[color].position is not None:
                 return color
-            elif self.pattern_done:
+            elif self.pattern_done and self.buoys[color].position is not None:
                 return color
             else:
                 return None
@@ -130,6 +131,8 @@ class BumpBuoysMission(object):
                 self.buoys[b].set_bumped()
                 if not self.done():
                     pattern = self.pattern()
+            elif self.pattern_done:
+                break
             yield self.sub.nh.sleep(0.1)
         search.cancel()
         pattern.cancel()

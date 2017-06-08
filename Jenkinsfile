@@ -20,13 +20,13 @@ dockerNode(image: 'uf-mil:subjugator') {
 			source ~/.mil/milrc > /dev/null 2>&1
 			source $CATKIN_DIR/devel/setup.bash > /dev/null 2>&1
 			catkin_make -C $CATKIN_DIR run_tests
-			catkin_test_results $CATKIN_DIR/build/test_results --verbose 
+			catkin_test_results $CATKIN_DIR/build/test_results --verbose
 		'''
 	}
 	stage("Format") {
 		sh '''
 			if [[ ! -z "$(python2.7 -m flake8 --ignore E731 --max-line-length=120 --exclude=__init__.py .)" ]]; then
-				echo "The preceding Python following files are not formatted correctly"
+				echo "The preceding Python files are not formatted correctly"
 				exit 1
 			fi
 		'''

@@ -5,11 +5,11 @@ color:
       lab_high: [255, 210, 188]
 
     green:
-      lab_low: [0, 90, 135]
+      lab_low: [0, 80, 135]
       lab_high: [255, 120, 160]
 
     yellow:
-      lab_low: [0, 95, 150]
+      lab_low: [0, 85, 150]
       lab_high: [255, 160, 220]
 
   channel_marker:
