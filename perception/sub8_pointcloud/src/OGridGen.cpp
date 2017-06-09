@@ -2,7 +2,8 @@
 
 // TODO: Add service call to clear ogrid
 
-OGridGen::OGridGen() : nh_(ros::this_node::getName()), classification_(&nh_)
+OGridGen::OGridGen()
+  : nh_(ros::this_node::getName()), kill_listener_(nh_, "kill"), was_killed_(true), classification_(&nh_)
 {
   // The publishers
   pub_grid_ = nh_.advertise<nav_msgs::OccupancyGrid>("ogrid", 10, true);
@@ -31,6 +32,14 @@ OGridGen::OGridGen() : nh_(ros::this_node::getName()), classification_(&nh_)
   sub_to_dvl_ = nh_.subscribe("/dvl/ranges", 1, &OGridGen::dvl_callback, this);
 
   mat_ogrid_ = cv::Mat::zeros(int(ogrid_size_ / resolution_), int(ogrid_size_ / resolution_), CV_8U);
+
+  // Make sure alarm integration is ok
+  kill_listener_.waitForConnection(ros::Duration(2));
+  if (kill_listener_.getNumConnections() < 1)
+    throw std::runtime_error("The kill listener isn't connected to the alarm server");
+  kill_listener_.start();
+
+  mat_origin_ = cv::Point(0, 0);
 }
 
 void OGridGen::dvl_callback(const mil_msgs::RangeStampedConstPtr &dvl)
@@ -87,14 +96,15 @@ void OGridGen::publish_ogrid(const ros::TimerEvent &)
   {
     // Check if point is inside the potential ogrid
     cv::Rect rect(cv::Point(0, 0), mat_ogrid_.size());
-    cv::Point p(point_pcl.x / resolution_ + mat_ogrid_.cols / 2, point_pcl.y / resolution_ + mat_ogrid_.rows / 2);
+    cv::Point p(point_pcl.x / resolution_ + mat_ogrid_.cols / 2 - mat_origin_.x / resolution_,
+                point_pcl.y / resolution_ + mat_ogrid_.rows / 2 - mat_origin_.y / resolution_);
     if (rect.contains(p))
     {
       mat_ogrid_.at<uchar>(p.y, p.x) = (uchar)WAYPOINT_ERROR_TYPE::OCCUPIED;
     }
   }
 
-  classification_.zonify(mat_ogrid_, resolution_, transform_);
+  classification_.zonify(mat_ogrid_, resolution_, transform_, mat_origin_);
 
   // Flatten the mat_ogrid_ into a 1D vector for OccupencyGrid message
   nav_msgs::OccupancyGrid rosGrid;
@@ -118,8 +128,8 @@ void OGridGen::publish_ogrid(const ros::TimerEvent &)
   rosGrid.info.map_load_time = ros::Time::now();
   rosGrid.info.width = mat_ogrid_.cols;
   rosGrid.info.height = mat_ogrid_.rows;
-  rosGrid.info.origin.position.x = -ogrid_size_ / 2;
-  rosGrid.info.origin.position.y = -ogrid_size_ / 2;
+  rosGrid.info.origin.position.x = mat_origin_.x - ogrid_size_ / 2;
+  rosGrid.info.origin.position.y = mat_origin_.y - ogrid_size_ / 2;
   rosGrid.data = data;
   pub_grid_.publish(rosGrid);
 }
@@ -138,6 +148,14 @@ void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
     ROS_DEBUG_STREAM("Did not get TF for imaging sonar");
     return;
   }
+  if (kill_listener_.isRaised())
+    was_killed_ = true;
+  else if (was_killed_)
+  {
+    was_killed_ = false;
+    mat_origin_ = cv::Point(transform_.getOrigin().x(), transform_.getOrigin().y());
+  }
+
   pcl::PointCloud<pcl::PointXYZI>::Ptr point_cloud_plane(new pcl::PointCloud<pcl::PointXYZI>());
   for (size_t i = 0; i < ping_msg->ranges.size(); ++i)
   {

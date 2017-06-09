@@ -45,8 +45,12 @@ std::pair<bool, WAYPOINT_ERROR_TYPE> WaypointValidity::is_waypoint_valid(const g
     return std::make_pair(false, WAYPOINT_ERROR_TYPE::NO_OGRID);
   }
 
-  cv::Point where_sub = cv::Point(waypoint.position.x / ogrid_map_->info.resolution + ogrid_map_->info.width / 2,
-                                  waypoint.position.y / ogrid_map_->info.resolution + ogrid_map_->info.height / 2);
+  cv::Point center_of_ogird =
+      cv::Point(ogrid_map_->info.origin.position.x, ogrid_map_->info.origin.position.y) +
+      cv::Point(ogrid_map_->info.width, ogrid_map_->info.height) * ogrid_map_->info.resolution / 2;
+  cv::Point where_sub =
+      cv::Point((waypoint.position.x - center_of_ogird.x) / ogrid_map_->info.resolution + ogrid_map_->info.width / 2,
+                (waypoint.position.y - center_of_ogird.y) / ogrid_map_->info.resolution + ogrid_map_->info.height / 2);
 
   // Area we want to check around the sub
   int sub_x = sub_ogrid_size_ / ogrid_map_->info.resolution;

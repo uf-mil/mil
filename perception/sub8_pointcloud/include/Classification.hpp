@@ -40,7 +40,7 @@ public:
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered(pcl::PointCloud<pcl::PointXYZI>::ConstPtr pointCloud);
 
   // Usage: Find all the first occupied points in an expanding circle, then color the ogrid
-  void zonify(cv::Mat &mat_ogrid, float resolution, const tf::StampedTransform &transform);
+  void zonify(cv::Mat &mat_ogrid, float resolution, const tf::StampedTransform &transform, cv::Point &mat_origin);
 
   // Usage: Draw a fake ogrid to test in SIM
   void fake_ogrid(cv::Mat &mat_ogrid, float resolution, const tf::StampedTransform &transform);

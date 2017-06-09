@@ -28,6 +28,7 @@
 #include <Classification.hpp>
 
 #include <mil_msgs/RangeStamped.h>
+#include <ros_alarms/listener.hpp>
 
 class OGridGen
 {
@@ -44,6 +45,10 @@ private:
   ros::Subscriber sub_to_dvl_;
 
   tf::TransformListener listener_;
+
+  ros_alarms::AlarmListener<> kill_listener_;
+  bool was_killed_;
+  cv::Point mat_origin_;
 
   ros::Publisher pub_grid_;
   ros::Publisher pub_point_cloud_filtered_;

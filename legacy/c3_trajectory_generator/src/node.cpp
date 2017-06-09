@@ -60,9 +60,9 @@ PoseTwist PoseTwist_from_PointWithAcceleration(const subjugator::C3Trajectory::P
   res.pose.position = vec2xyz<Point>(p.q.head(3));
   quaternionTFToMsg(orient, res.pose.orientation);
 
-  Eigen::Matrix3d worldangvel_from_eulerrates =
-      (Eigen::Matrix3d() << 1, 0, -sin(p.q[4]), 0, cos(p.q[3]), sin(p.q[3]) * cos(p.q[4]), 0, -sin(p.q[3]),
-       cos(p.q[3]) * cos(p.q[4])).finished();
+  Eigen::Matrix3d worldangvel_from_eulerrates = (Eigen::Matrix3d() << 1, 0, -sin(p.q[4]), 0, cos(p.q[3]),
+                                                 sin(p.q[3]) * cos(p.q[4]), 0, -sin(p.q[3]), cos(p.q[3]) * cos(p.q[4]))
+                                                    .finished();
 
   res.twist.linear = vec2xyz<Vector3>(tf::Matrix3x3(orient.inverse()) * vec2vec(p.qdot.head(3)));
   res.twist.angular = vec2xyz<Vector3>(worldangvel_from_eulerrates * p.qdot.tail(3));
@@ -136,10 +136,7 @@ struct Node
     , waypoint_validity_(nh)
   {
     // Callback to reset trajectory when (un)killing
-    auto reset_traj = [this](ros_alarms::AlarmProxy a)
-    {
-      this->c3trajectory.reset();
-    };
+    auto reset_traj = [this](ros_alarms::AlarmProxy a) { this->c3trajectory.reset(); };
     kill_listener.addRaiseCb(reset_traj);
 
     // Make sure alarm integration is ok
