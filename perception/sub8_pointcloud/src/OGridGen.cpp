@@ -8,13 +8,14 @@ OGridGen::OGridGen() : nh_(ros::this_node::getName()), classification_(&nh_)
   pub_grid_ = nh_.advertise<nav_msgs::OccupancyGrid>("ogrid", 10, true);
   pub_point_cloud_filtered_ = nh_.advertise<pcl::PointCloud<pcl::PointXYZI>>("point_cloud/filtered", 1);
   pub_point_cloud_raw_ = nh_.advertise<pcl::PointCloud<pcl::PointXYZI>>("point_cloud/raw", 1);
+  pub_point_cloud_plane_ = nh_.advertise<pcl::PointCloud<pcl::PointXYZI>>("point_cloud/plane", 1);
 
   // Resolution is meters/pixel
   nh_.param<float>("resolution", resolution_, 0.2f);
   nh_.param<float>("ogrid_size", ogrid_size_, 91.44);
   // Ignore points that are below the potential pool
-  nh_.param<float>("pool_depth", pool_depth_, 7.f);
   nh_.param<int>("min_intensity", min_intensity_, 2000);
+  dvl_range_ = 0;
 
   // Buffer that will only hold a certain amount of points
   int point_cloud_buffer_Size;
@@ -27,8 +28,14 @@ OGridGen::OGridGen() : nh_(ros::this_node::getName()), classification_(&nh_)
   // Run the publisher
   timer_ = nh_.createTimer(ros::Duration(0.3), std::bind(&OGridGen::publish_ogrid, this, std::placeholders::_1));
   sub_to_imaging_sonar_ = nh_.subscribe("/blueview_driver/ranges", 1, &OGridGen::callback, this);
+  sub_to_dvl_ = nh_.subscribe("/dvl/ranges", 1, &OGridGen::dvl_callback, this);
 
   mat_ogrid_ = cv::Mat::zeros(int(ogrid_size_ / resolution_), int(ogrid_size_ / resolution_), CV_8U);
+}
+
+void OGridGen::dvl_callback(const mil_msgs::RangeStampedConstPtr &dvl)
+{
+  dvl_range_ = dvl->range;
 }
 /*
   Looped based on timer_.
@@ -131,6 +138,7 @@ void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
     ROS_DEBUG_STREAM("Did not get TF for imaging sonar");
     return;
   }
+  pcl::PointCloud<pcl::PointXYZI>::Ptr point_cloud_plane(new pcl::PointCloud<pcl::PointXYZI>());
   for (size_t i = 0; i < ping_msg->ranges.size(); ++i)
   {
     if (ping_msg->intensities.at(i) > min_intensity_)
@@ -149,10 +157,16 @@ void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
       point.x = newVec.x() + transform_.getOrigin().x();
       point.y = newVec.y() + transform_.getOrigin().y();
       point.z = newVec.z() + transform_.getOrigin().z();
+      if (point.z + dvl_range_ > 0)
+        continue;
       point.intensity = ping_msg->intensities.at(i);
       point_cloud_buffer_.push_back(point);
+      point_cloud_plane->push_back(point);
     }
   }
+  point_cloud_plane->header.frame_id = "map";
+  pcl_conversions::toPCL(ros::Time::now(), point_cloud_plane->header.stamp);
+  pub_point_cloud_plane_.publish(point_cloud_plane);
 }
 
 int main(int argc, char **argv)

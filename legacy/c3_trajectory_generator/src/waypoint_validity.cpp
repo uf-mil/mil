@@ -49,8 +49,9 @@ std::pair<bool, WAYPOINT_ERROR_TYPE> WaypointValidity::is_waypoint_valid(const g
                                   waypoint.position.y / ogrid_map_->info.resolution + ogrid_map_->info.height / 2);
 
   // Area we want to check around the sub
-  int sub_x = 1.5 / ogrid_map_->info.resolution;
-  int sub_y = 1.5 / ogrid_map_->info.resolution;
+  int sub_x = sub_ogrid_size_ / ogrid_map_->info.resolution;
+  int sub_y = sub_ogrid_size_ / ogrid_map_->info.resolution;
+
   if (check_if_hit(where_sub, cv::Size(sub_x, sub_y)))
   {
     return std::make_pair(false, WAYPOINT_ERROR_TYPE::OCCUPIED);
@@ -70,9 +71,32 @@ std::pair<bool, WAYPOINT_ERROR_TYPE> WaypointValidity::is_waypoint_valid(const g
   return std::make_pair(true, WAYPOINT_ERROR_TYPE::UNOCCUPIED);
 }
 
+void WaypointValidity::pub_size_ogrid(const geometry_msgs::Pose &waypoint, int d)
+{
+  std::vector<int8_t> sub_ogrid_data(std::pow(sub_ogrid_size_ / ogrid_map_->info.resolution, 2), d);
+  nav_msgs::OccupancyGrid rosGrid;
+  rosGrid.header.seq = 0;
+  rosGrid.info.resolution = ogrid_map_->info.resolution;
+  rosGrid.header.frame_id = "map";
+  rosGrid.header.stamp = ros::Time::now();
+  rosGrid.info.map_load_time = ros::Time::now();
+  rosGrid.info.width = sub_ogrid_size_ / ogrid_map_->info.resolution;
+  rosGrid.info.height = sub_ogrid_size_ / ogrid_map_->info.resolution;
+  rosGrid.info.origin.position.x = waypoint.position.x - sub_ogrid_size_ / 2;
+  rosGrid.info.origin.position.y = waypoint.position.y - sub_ogrid_size_ / 2;
+  rosGrid.data = sub_ogrid_data;
+  if (d == 200)
+    pub_sub_ogrid_.publish(rosGrid);
+  else
+    pub_waypoint_ogrid_.publish(rosGrid);
+}
+
 WaypointValidity::WaypointValidity(ros::NodeHandle &nh)
 {
   nh_ = &nh;
   sub_ = nh_->subscribe<nav_msgs::OccupancyGrid>("/ogrid_pointcloud/ogrid", 1,
                                                  boost::bind(&WaypointValidity::ogrid_callback, this, _1));
+  nh_->param<double>("sub_ogrid_size", sub_ogrid_size_, 1.5);
+  pub_waypoint_ogrid_ = nh_->advertise<nav_msgs::OccupancyGrid>("/c3_trajectory_generator/waypoint_ogrid", 1, true);
+  pub_sub_ogrid_ = nh_->advertise<nav_msgs::OccupancyGrid>("/c3_trajectory_generator/sub_ogrid", 1, true);
 }

@@ -27,6 +27,8 @@
 
 #include <Classification.hpp>
 
+#include <mil_msgs/RangeStamped.h>
+
 class OGridGen
 {
 public:
@@ -34,22 +36,25 @@ public:
   void publish_ogrid(const ros::TimerEvent &);
 
   void callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg);
+  void dvl_callback(const mil_msgs::RangeStampedConstPtr &dvl);
 
 private:
   ros::NodeHandle nh_;
   ros::Subscriber sub_to_imaging_sonar_;
+  ros::Subscriber sub_to_dvl_;
 
   tf::TransformListener listener_;
 
   ros::Publisher pub_grid_;
   ros::Publisher pub_point_cloud_filtered_;
   ros::Publisher pub_point_cloud_raw_;
+  ros::Publisher pub_point_cloud_plane_;
   ros::Timer timer_;
 
   cv::Mat mat_ogrid_;
   float ogrid_size_;
   float resolution_;
-  float pool_depth_;
+  double dvl_range_;
   int min_intensity_;
 
   ros::ServiceClient service_get_bounds_;

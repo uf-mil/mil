@@ -60,9 +60,9 @@ PoseTwist PoseTwist_from_PointWithAcceleration(const subjugator::C3Trajectory::P
   res.pose.position = vec2xyz<Point>(p.q.head(3));
   quaternionTFToMsg(orient, res.pose.orientation);
 
-  Eigen::Matrix3d worldangvel_from_eulerrates = (Eigen::Matrix3d() << 1, 0, -sin(p.q[4]), 0, cos(p.q[3]),
-                                                 sin(p.q[3]) * cos(p.q[4]), 0, -sin(p.q[3]), cos(p.q[3]) * cos(p.q[4]))
-                                                    .finished();
+  Eigen::Matrix3d worldangvel_from_eulerrates =
+      (Eigen::Matrix3d() << 1, 0, -sin(p.q[4]), 0, cos(p.q[3]), sin(p.q[3]) * cos(p.q[4]), 0, -sin(p.q[3]),
+       cos(p.q[3]) * cos(p.q[4])).finished();
 
   res.twist.linear = vec2xyz<Vector3>(tf::Matrix3x3(orient.inverse()) * vec2vec(p.qdot.head(3)));
   res.twist.angular = vec2xyz<Vector3>(worldangvel_from_eulerrates * p.qdot.tail(3));
@@ -136,7 +136,10 @@ struct Node
     , waypoint_validity_(nh)
   {
     // Callback to reset trajectory when (un)killing
-    auto reset_traj = [this](ros_alarms::AlarmProxy a) { this->c3trajectory.reset(); };
+    auto reset_traj = [this](ros_alarms::AlarmProxy a)
+    {
+      this->c3trajectory.reset();
+    };
     kill_listener.addRaiseCb(reset_traj);
 
     // Make sure alarm integration is ok
@@ -209,6 +212,8 @@ struct Node
       this->linear_tolerance = goal->linear_tolerance;
       this->angular_tolerance = goal->angular_tolerance;
 
+      waypoint_validity_.pub_size_ogrid(Pose_from_Waypoint(current_waypoint));
+
       // Check if waypoint is valid
       std::pair<bool, WAYPOINT_ERROR_TYPE> checkWPResult = waypoint_validity_.is_waypoint_valid(
           Pose_from_Waypoint(current_waypoint), current_waypoint.do_waypoint_validation);
@@ -216,6 +221,7 @@ struct Node
       actionresult_.success = checkWPResult.first;
       if (checkWPResult.first == false)  // got a point that we should not move to
       {
+        waypoint_validity_.pub_size_ogrid(Pose_from_Waypoint(current_waypoint), 130);
         if (checkWPResult.second ==
             WAYPOINT_ERROR_TYPE::UNKNOWN)  // if unknown, check if there's a huge displacement with the new waypoint
         {
@@ -295,6 +301,8 @@ struct Node
     msg.header.frame_id = fixed_frame;
     msg.posetwist = PoseTwist_from_PointWithAcceleration(c3trajectory->getCurrentPoint());
     trajectory_pub.publish(msg);
+
+    waypoint_validity_.pub_size_ogrid(Pose_from_Waypoint(c3trajectory->getCurrentPoint()), 200);
 
     PoseStamped msgVis;
     msgVis.header = msg.header;
