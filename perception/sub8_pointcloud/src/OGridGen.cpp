@@ -10,6 +10,7 @@ OGridGen::OGridGen()
   pub_point_cloud_filtered_ = nh_.advertise<pcl::PointCloud<pcl::PointXYZI>>("point_cloud/filtered", 1);
   pub_point_cloud_raw_ = nh_.advertise<pcl::PointCloud<pcl::PointXYZI>>("point_cloud/raw", 1);
   pub_point_cloud_plane_ = nh_.advertise<pcl::PointCloud<pcl::PointXYZI>>("point_cloud/plane", 1);
+  clear_ogrid_service_ = nh_.advertiseService("clear_ogrid", &OGridGen::clear_ogrid_callback, this);
 
   // Resolution is meters/pixel
   nh_.param<float>("resolution", resolution_, 0.2f);
@@ -27,11 +28,14 @@ OGridGen::OGridGen()
   service_get_bounds_ = nh_.serviceClient<sub8_msgs::Bounds>("get_bounds");
 
   // Run the publisher
-  timer_ = nh_.createTimer(ros::Duration(0.3), std::bind(&OGridGen::publish_ogrid, this, std::placeholders::_1));
+  timer_ =
+      nh_.createTimer(ros::Duration(0.3), std::bind(&OGridGen::publish_big_pointcloud, this, std::placeholders::_1));
   sub_to_imaging_sonar_ = nh_.subscribe("/blueview_driver/ranges", 1, &OGridGen::callback, this);
   sub_to_dvl_ = nh_.subscribe("/dvl/ranges", 1, &OGridGen::dvl_callback, this);
 
   mat_ogrid_ = cv::Mat::zeros(int(ogrid_size_ / resolution_), int(ogrid_size_ / resolution_), CV_8U);
+  persistant_ogrid_ = cv::Mat(int(ogrid_size_) / resolution_, int(ogrid_size_ / resolution_), CV_32FC1);
+  persistant_ogrid_ = 0.5;
 
   // Make sure alarm integration is ok
   kill_listener_.waitForConnection(ros::Duration(2));
@@ -51,7 +55,7 @@ void OGridGen::dvl_callback(const mil_msgs::RangeStampedConstPtr &dvl)
   Reads point_cloud_buffer_ and publishes a PointCloud2
   Reads mat_ogrid_ and publish a OccupencyGrid
 */
-void OGridGen::publish_ogrid(const ros::TimerEvent &)
+void OGridGen::publish_big_pointcloud(const ros::TimerEvent &)
 {
   // Service call for 'get_bounds'
   sub8_msgs::Bounds get_bound_data;
@@ -87,51 +91,6 @@ void OGridGen::publish_ogrid(const ros::TimerEvent &)
   // Publish the filtered cloud
   pcl::PointCloud<pcl::PointXYZI>::Ptr pointCloud_filtered = classification_.filtered(pointCloud);
   pub_point_cloud_filtered_.publish(pointCloud_filtered);
-
-  // TODO: Implement some k-nearest neighbors algorithm to filter ogrid
-
-  mat_ogrid_ = cv::Scalar((uchar)WAYPOINT_ERROR_TYPE::UNKNOWN);
-  // Populate the Ogrid by projecting down the pointcloud
-  for (auto &point_pcl : pointCloud_filtered->points)
-  {
-    // Check if point is inside the potential ogrid
-    cv::Rect rect(cv::Point(0, 0), mat_ogrid_.size());
-    cv::Point p(point_pcl.x / resolution_ + mat_ogrid_.cols / 2 - mat_origin_.x / resolution_,
-                point_pcl.y / resolution_ + mat_ogrid_.rows / 2 - mat_origin_.y / resolution_);
-    if (rect.contains(p))
-    {
-      mat_ogrid_.at<uchar>(p.y, p.x) = (uchar)WAYPOINT_ERROR_TYPE::OCCUPIED;
-    }
-  }
-
-  classification_.zonify(mat_ogrid_, resolution_, transform_, mat_origin_);
-
-  // Flatten the mat_ogrid_ into a 1D vector for OccupencyGrid message
-  nav_msgs::OccupancyGrid rosGrid;
-  std::vector<int8_t> data(mat_ogrid_.cols * mat_ogrid_.rows);
-  auto out_it = data.begin();
-  for (int row = 0; row < mat_ogrid_.rows; ++row)
-  {
-    auto *p = mat_ogrid_.ptr(row);
-    for (int col = 0; col < mat_ogrid_.cols; ++col)
-    {
-      *out_it = int(*p++);
-      out_it++;
-    }
-  }
-
-  // Publish the ogrid
-  rosGrid.header.seq = 0;
-  rosGrid.info.resolution = resolution_;
-  rosGrid.header.frame_id = "map";
-  rosGrid.header.stamp = ros::Time::now();
-  rosGrid.info.map_load_time = ros::Time::now();
-  rosGrid.info.width = mat_ogrid_.cols;
-  rosGrid.info.height = mat_ogrid_.rows;
-  rosGrid.info.origin.position.x = mat_origin_.x - ogrid_size_ / 2;
-  rosGrid.info.origin.position.y = mat_origin_.y - ogrid_size_ / 2;
-  rosGrid.data = data;
-  pub_grid_.publish(rosGrid);
 }
 
 /*
@@ -185,6 +144,84 @@ void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
   point_cloud_plane->header.frame_id = "map";
   pcl_conversions::toPCL(ros::Time::now(), point_cloud_plane->header.stamp);
   pub_point_cloud_plane_.publish(point_cloud_plane);
+
+  process_persistant_ogrid(point_cloud_plane);
+  populate_mat_ogrid();
+  publish_ogrid();
+}
+void OGridGen::populate_mat_ogrid()
+{
+  classification_.zonify(persistant_ogrid_, resolution_, transform_, mat_origin_);
+  for (int i = 0; i < persistant_ogrid_.cols; ++i)
+  {
+    for (int j = 0; j < persistant_ogrid_.rows; ++j)
+    {
+      float val = persistant_ogrid_.at<float>(cv::Point(i, j));
+      if (val > .8)
+        mat_ogrid_.at<uchar>(cv::Point(i, j)) = (uchar)WAYPOINT_ERROR_TYPE::OCCUPIED;
+      else if (val < .1)
+        mat_ogrid_.at<uchar>(cv::Point(i, j)) = (uchar)WAYPOINT_ERROR_TYPE::UNOCCUPIED;
+      else
+        mat_ogrid_.at<uchar>(cv::Point(i, j)) = (uchar)WAYPOINT_ERROR_TYPE::UNKNOWN;
+    }
+  }
+}
+
+void OGridGen::publish_ogrid()
+{
+  // Flatten the mat_ogrid_ into a 1D vector for OccupencyGrid message
+  nav_msgs::OccupancyGrid rosGrid;
+  std::vector<int8_t> data(mat_ogrid_.cols * mat_ogrid_.rows);
+  auto out_it = data.begin();
+  for (int row = 0; row < mat_ogrid_.rows; ++row)
+  {
+    auto *p = mat_ogrid_.ptr(row);
+    for (int col = 0; col < mat_ogrid_.cols; ++col)
+    {
+      *out_it = int(*p++);
+      out_it++;
+    }
+  }
+
+  // Publish the ogrid
+  rosGrid.header.seq = 0;
+  rosGrid.info.resolution = resolution_;
+  rosGrid.header.frame_id = "map";
+  rosGrid.header.stamp = ros::Time::now();
+  rosGrid.info.map_load_time = ros::Time::now();
+  rosGrid.info.width = mat_ogrid_.cols;
+  rosGrid.info.height = mat_ogrid_.rows;
+  rosGrid.info.origin.position.x = mat_origin_.x - ogrid_size_ / 2;
+  rosGrid.info.origin.position.y = mat_origin_.y - ogrid_size_ / 2;
+  rosGrid.data = data;
+  pub_grid_.publish(rosGrid);
+}
+
+void OGridGen::process_persistant_ogrid(pcl::PointCloud<pcl::PointXYZI>::Ptr point_cloud_plane)
+{
+  nh_.param<float>("hit_prob", hit_prob_, 0.1);
+
+  for (auto &point_pcl : point_cloud_plane->points)
+  {
+    // Check if point is inside the potential ogrid
+    cv::Rect rect(cv::Point(0, 0), persistant_ogrid_.size());
+    cv::Point p(point_pcl.x / resolution_ + persistant_ogrid_.cols / 2 - mat_origin_.x / resolution_,
+                point_pcl.y / resolution_ + persistant_ogrid_.rows / 2 - mat_origin_.y / resolution_);
+    if (rect.contains(p))
+    {
+      if (persistant_ogrid_.at<float>(p.y, p.x) < 1)
+      {
+        persistant_ogrid_.at<float>(p.y, p.x) += hit_prob_;
+      }
+    }
+  }
+}
+
+bool OGridGen::clear_ogrid_callback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+{
+  persistant_ogrid_ = 0.5;
+  res.success = true;
+  return true;
 }
 
 int main(int argc, char **argv)

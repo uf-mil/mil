@@ -45,12 +45,12 @@ std::pair<bool, WAYPOINT_ERROR_TYPE> WaypointValidity::is_waypoint_valid(const g
     return std::make_pair(false, WAYPOINT_ERROR_TYPE::NO_OGRID);
   }
 
-  cv::Point center_of_ogird =
+  cv::Point center_of_ogrid =
       cv::Point(ogrid_map_->info.origin.position.x, ogrid_map_->info.origin.position.y) +
       cv::Point(ogrid_map_->info.width, ogrid_map_->info.height) * ogrid_map_->info.resolution / 2;
   cv::Point where_sub =
-      cv::Point((waypoint.position.x - center_of_ogird.x) / ogrid_map_->info.resolution + ogrid_map_->info.width / 2,
-                (waypoint.position.y - center_of_ogird.y) / ogrid_map_->info.resolution + ogrid_map_->info.height / 2);
+      cv::Point((waypoint.position.x - center_of_ogrid.x) / ogrid_map_->info.resolution + ogrid_map_->info.width / 2,
+                (waypoint.position.y - center_of_ogrid.y) / ogrid_map_->info.resolution + ogrid_map_->info.height / 2);
 
   // Area we want to check around the sub
   int sub_x = sub_ogrid_size_ / ogrid_map_->info.resolution;
@@ -77,6 +77,8 @@ std::pair<bool, WAYPOINT_ERROR_TYPE> WaypointValidity::is_waypoint_valid(const g
 
 void WaypointValidity::pub_size_ogrid(const geometry_msgs::Pose &waypoint, int d)
 {
+  if (!this->ogrid_map_)
+    return;
   std::vector<int8_t> sub_ogrid_data(std::pow(sub_ogrid_size_ / ogrid_map_->info.resolution, 2), d);
   nav_msgs::OccupancyGrid rosGrid;
   rosGrid.header.seq = 0;
@@ -89,7 +91,7 @@ void WaypointValidity::pub_size_ogrid(const geometry_msgs::Pose &waypoint, int d
   rosGrid.info.origin.position.x = waypoint.position.x - sub_ogrid_size_ / 2;
   rosGrid.info.origin.position.y = waypoint.position.y - sub_ogrid_size_ / 2;
   rosGrid.data = sub_ogrid_data;
-  if (d == 200)
+  if (d == (int)OGRID_COLOR::ORANGE)
     pub_sub_ogrid_.publish(rosGrid);
   else
     pub_waypoint_ogrid_.publish(rosGrid);

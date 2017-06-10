@@ -209,7 +209,7 @@ struct Node
       this->linear_tolerance = goal->linear_tolerance;
       this->angular_tolerance = goal->angular_tolerance;
 
-      waypoint_validity_.pub_size_ogrid(Pose_from_Waypoint(current_waypoint));
+      waypoint_validity_.pub_size_ogrid(Pose_from_Waypoint(current_waypoint), (int)OGRID_COLOR::GREEN);
 
       // Check if waypoint is valid
       std::pair<bool, WAYPOINT_ERROR_TYPE> checkWPResult = waypoint_validity_.is_waypoint_valid(
@@ -218,7 +218,7 @@ struct Node
       actionresult_.success = checkWPResult.first;
       if (checkWPResult.first == false)  // got a point that we should not move to
       {
-        waypoint_validity_.pub_size_ogrid(Pose_from_Waypoint(current_waypoint), 130);
+        waypoint_validity_.pub_size_ogrid(Pose_from_Waypoint(current_waypoint), (int)OGRID_COLOR::RED);
         if (checkWPResult.second ==
             WAYPOINT_ERROR_TYPE::UNKNOWN)  // if unknown, check if there's a huge displacement with the new waypoint
         {

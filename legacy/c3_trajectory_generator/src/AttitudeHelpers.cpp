@@ -17,5 +17,6 @@ Matrix3d AttitudeHelpers::EulerToRotation(const Vector3d& rpy)
 
   return (Matrix3d() << cpsi * ctheta, -spsi * cphi + cpsi * stheta * sphi, spsi * sphi + cphi * cphi * stheta,
           spsi * ctheta, cpsi * cphi + sphi * stheta * spsi, -cpsi * sphi + stheta * spsi * cphi, -stheta,
-          ctheta * sphi, ctheta * cphi).finished();
+          ctheta * sphi, ctheta * cphi)
+      .finished();
 }
