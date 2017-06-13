@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 from __future__ import division
 import numpy as np
+import scipy.interpolate
 import struct
 import binascii
 from sub8_thruster_comm.protocol import Const
 import serial
 import rospy
+import json
 
 class UnavailableThrusterException(BaseException):
     ''' Indicates that a thruster is not available to be commanded '''
@@ -82,7 +84,7 @@ class ThrusterPort(object):
             try:
                 # Note: will only try to detect thrusters as listed in the layout. That means
                 # that if a thruster is connected to the wrong port, IT WILL NOT BE FOUND.
-                self.load_thruster_config(thruster_name, thruster_definitions)
+                self.load_thruster(thruster_name, thruster_definitions)
             except UnavailableThrusterException:
                 self.missing_thrusters.append(thruster_name)
                 continue
@@ -94,7 +96,6 @@ class ThrusterPort(object):
         self._status_rx_count = dict.fromkeys(names, 0)  # Statuses received per thruster
         self._command_latency_avg = dict.fromkeys(names, rospy.Duration(0))  # Average latency tx rx per thruster
 
-
     def connect_port(self, port_name):
         '''Connect to and return a serial port'''
         try:
@@ -104,8 +105,11 @@ class ThrusterPort(object):
             raise(e)
         return serial_port
 
-    def load_thruster_config(self, thruster_name, thruster_definitions):
-        '''Loads the motor_id from the config file if the thruster was found'''
+    def load_thruster(self, thruster_name, thruster_definitions):
+        '''
+        Looks for thruster definition in the thruster layout yaml and loads motor_id and
+        effort to thrust calibration if the thruster responds through this serial port
+        '''
         # Get our humungous error string ready
         errstr = "Could not get a response from motor_id {} (Called {}) on port {}".format(
             thruster_definitions[thruster_name]['motor_id'], thruster_name, self.port_name)
@@ -116,6 +120,30 @@ class ThrusterPort(object):
             rospy.logerr(errstr)
             raise UnavailableThrusterException(motor_id=motor_id, name=thruster_name)
         self.active_motor_ids_from_names[thruster_name] = motor_id
+
+        # Load effort to force calibration from file
+        calib_dir = rospy.get_param('/thrusters/calibration_dir')
+        calib_file = calib_dir + thruster_definitions[thruster_name]['calib']
+        if not hasattr(self, 'effort_to_thrust'):
+            self.effort_to_thrust = {}
+        self.effort_to_thrust[thruster_name] = self.load_effort_to_thrust_map(calib_file)
+
+    def load_effort_to_thrust_map(self, path):
+        '''
+        Load the effort to thrust mapping from a yaml file:
+        - Map force inputs from Newtons to [-1, 1] required by the thruster
+        '''
+        try:
+            rospy.logdebug("Loading thruster calibration from {}".format(path))
+            _file = file(path)
+        except IOError as e:
+            rospy.logerr("Could not find thruster configuration file at {}".format(path))
+            raise(e)
+
+        json_data = json.load(_file)
+        newtons = json_data['calibration_data']['newtons']
+        thruster_input = json_data['calibration_data']['thruster_input']
+        return scipy.interpolate.interp1d(newtons, thruster_input)
 
     def checksum_struct(self, _struct):
         '''Take a struct, convert it to a bytearray, and append its crc32 checksum'''
