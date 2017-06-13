@@ -1,6 +1,8 @@
 import rospy
 from ros_alarms import HandlerBase
-from mil_msgs.srv import BaggerCommands
+from actionlib import SimpleActionClient, TerminalState
+from mil_msgs.msg import BagOnlineAction, BagOnlineGoal
+import os
 
 
 class Kill(HandlerBase):
@@ -10,27 +12,33 @@ class Kill(HandlerBase):
     def __init__(self):
         self._killed = False
         self._last_mission_killed = False
-        self.bagging_server = rospy.ServiceProxy('/online_bagger/dump', BaggerCommands)
+        self.bag_client = SimpleActionClient('/online_bagger/bag', BagOnlineAction)
+        self.first = True
 
     def raised(self, alarm):
         self._killed = True
         self.bagger_dump()
+        self.first = False
 
     def cleared(self, alarm):
         self._killed = False
 
+    def _bag_done_cb(self, status, result):
+        if status == 3:
+            rospy.loginfo('KILL BAG WRITTEN TO {}'.format(result.filename))
+        else:
+            rospy.logwarn('KILL BAG {}, status: {}'.format(TerminalState.to_string(status), result.status))
+
     def bagger_dump(self):
         """Call online_bagger/dump service"""
-        camera = '/camera/front/left/camera_info /camera/front/left/image_raw '
-        navigation = '/wrench /wrench_actual /c3_trajectory_generator/trajectory_v \
-                      /c3_trajectory_generator/waypoint /trajectory '
-        controller = '/pd_out /rise_6dof/parameter_descriptions /rise_6dof/parameter_updates '
-        blueview = '/blueview_driver/ranges /blueview_driver/image_color'
-        kill_topics = camera + navigation + controller + blueview
-        try:
-            self.bagging_server(bag_name='kill_bag', bag_time=60, topics=kill_topics)
-        except rospy.ServiceException as e:
-            print "/online_bagger service failed: %s" % e
+        if self.first:
+            return
+        if 'BAG_ALWAYS' not in os.environ or 'bag_kill' not in os.environ:
+            rospy.logwarn('BAG_ALWAYS or BAG_KILL not set. Not making kill bag.')
+            return
+        goal = BagOnlineGoal(bag_name='kill.bag')
+        goal.topics = os.environ['BAG_ALWAYS'] + ' ' + os.environ['bag_kill']
+        self.bag_client.send_goal(goal, done_cb=self._bag_done_cb)
 
     def meta_predicate(self, meta_alarm, sub_alarms):
         ignore = []

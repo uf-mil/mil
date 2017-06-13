@@ -30,3 +30,4 @@ export bag_controller="/pd_out /rise_6dof/parameter_descriptions /rise_6dof/para
 export bag_navigation="/wrench /wrench_actual /c3_trajectory_generator/trajectory_v /c3_trajectory_generator/waypoint /trajectory"
 export bag_thrusters="/thrusters/thrust /thrusters/thruster_status"
 export bag_gnc="$bag_controller $bag_navigation $bag_thrusters"
+export bag_kill="$bag_gnc $bag_front_left_cam $bag_blueview"
