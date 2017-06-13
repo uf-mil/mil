@@ -14,4 +14,12 @@ string topics
 # Time in seconds
 float32 bag_time
 ---
-string status
+
+bool success
+string status # Contains error information if success is False
+string filename # Full path to file where bag was written
+
+---
+
+# Proportion of messages that will be included in bag that have been written
+float64 progress
