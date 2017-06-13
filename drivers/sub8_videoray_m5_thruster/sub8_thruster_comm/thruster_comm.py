@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import time
+from __future__ import division
 import numpy as np
 import struct
 import binascii
@@ -34,7 +34,8 @@ class UndeclaredThrusterException(BaseException):
 
 class ThrusterPort(object):
     _baud_rate = 115200
-    _timeout = 0.1  # How long to wait for a serial response
+    _read_timeout = 0.1            # How long to wait for a serial response
+    _wait_for_line_timeout = 0.02  # How long to wait for the line to become available
 
     def __init__(self, port_info, thruster_definitions):
         '''Communicate on a single port with some thrusters
@@ -68,8 +69,12 @@ class ThrusterPort(object):
         '''
         self.port_name = port_info['port']
         self.port = self.connect_port(self.port_name)
-        # holds the motor_ids of all the thrusters that were supposed to be here and were actually found
-        self.thruster_dict = {}
+
+        # Mapping from name to motor_id for all thrusters responsive at startup
+        self.active_motor_ids_from_names = {}
+
+        # Flag to avoid simultaneous sharing of the serial line b/w thrusters
+        self._serial_busy = False
 
         # Load thruster configurations and check if the requested thruster exists on this port
         self.missing_thrusters = []
@@ -78,14 +83,22 @@ class ThrusterPort(object):
                 # Note: will only try to detect thrusters as listed in the layout. That means
                 # that if a thruster is connected to the wrong port, IT WILL NOT BE FOUND.
                 self.load_thruster_config(thruster_name, thruster_definitions)
-            except IOError:
+            except UnavailableThrusterException:
                 self.missing_thrusters.append(thruster_name)
                 continue
+
+        # Setup infrastructure to monitor comms quality
+        num_thrusters = len(self.active_motor_ids_from_names)
+        names = self.active_motor_ids_from_names.keys()
+        self._command_tx_count = dict.fromkeys(names, 0)  # Commands sent per thruster
+        self._status_rx_count = dict.fromkeys(names, 0)  # Statuses received per thruster
+        self._command_latency_avg = dict.fromkeys(names, rospy.Duration(0))  # Average latency tx rx per thruster
+
 
     def connect_port(self, port_name):
         '''Connect to and return a serial port'''
         try:
-            serial_port = serial.Serial(port_name, baudrate=self._baud_rate, timeout=self._timeout)
+            serial_port = serial.Serial(port_name, baudrate=self._baud_rate, timeout=self._read_timeout)
         except IOError as e:
             rospy.logerr("Could not connect to thruster port {}".format(port_name))
             raise(e)
@@ -101,8 +114,8 @@ class ThrusterPort(object):
         motor_id = int(thruster_definitions[thruster_name]["motor_id"])
         if not self.check_for_thruster(motor_id):
             rospy.logerr(errstr)
-            raise IOError
-        self.thruster_dict[thruster_name] = motor_id
+            raise UnavailableThrusterException(motor_id=motor_id, name=thruster_name)
+        self.active_motor_ids_from_names[thruster_name] = motor_id
 
     def checksum_struct(self, _struct):
         '''Take a struct, convert it to a bytearray, and append its crc32 checksum'''
@@ -237,12 +250,12 @@ class ThrusterPort(object):
         '''
         to_check = range(start_id, end_id + 1)
         found_ids = []
-        turnaround_times = []
+        turnaround_times = [] # seconds
         for i in to_check:
-            t0 = time.time()
+            t0 = rospy.Time.now()
             if self.check_for_thruster(i):
                 found_ids.append(i)
-                turnaround_times.append(time.time() - t0)
+                turnaround_times.append((rospy.Time.now() - t0).to_sec())
         return found_ids, np.mean(turnaround_times)
 
     def read_status(self):
@@ -273,13 +286,36 @@ class ThrusterPort(object):
 
         return response_dict
 
-    def command_thruster(self, thruster_name, normalized_thrust):
-        '''normalized_thrust should be between 0 and 1'''
-        if thruster_name not in self.thruster_dict.keys():
-            raise UnavailableThrusterException(name=thruster_name)
-        motor_id = self.thruster_dict[thruster_name]
-        self.send_thrust_msg(motor_id, normalized_thrust)
+    def command_thruster(self, name, effort):
+        ''' Sets effort value on motor controller, effort should be in [-1.0, 1.0] '''
+        # Confirm thruster is available
+        if name not in self.active_motor_ids_from_names.keys():
+            raise UnavailableThrusterException(name=name)
+
+        motor_id = self.active_motor_ids_from_names[name]
+
+        # Don't try to send command packet if line is busy
+        t0 = rospy.Time.now()
+        while self._serial_busy and rospy.Time.now() - t0 < rospy.Duration(_wait_for_line_timeout):
+            rospy.sleep(0.001)
+        if self._serial_busy:
+            raise serial.SerialTimeoutException('{} timed out waiting on busy serial line'.format(name))
+
+        # Might not need to do this mutex around tx and rx together
+        self._serial_busy = True  # Take ownership of line
+        t0 = rospy.Time.now()
+        self.send_thrust_msg(motor_id, effort)
+        self._command_tx_count[name] = self._command_tx_count[name] + 1
         thruster_status = self.read_status()
+        t1 = rospy.Time.now()
+        self._serial_busy = False  # Release line
+
+        # Keep track of latency
+        if thruster_status is not None:
+            total_latency = (t1 - t0) + self._command_latency_avg[name] * self._status_rx_count[name]
+            self._status_rx_count[name] = self._status_rx_count[name] + 1
+            self._command_latency_avg[name] = total_latency / self._status_rx_count[name]
+
         return thruster_status
 
 
