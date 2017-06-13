@@ -4,6 +4,8 @@ import numpy as np
 import scipy.interpolate
 import struct
 import binascii
+import copy
+from ros_alarms import AlarmBroadcaster
 from sub8_thruster_comm.protocol import Const
 import serial
 import rospy
@@ -34,6 +36,50 @@ class UndeclaredThrusterException(BaseException):
 
     __str__ = __repr__
 
+class ThrusterModel(object):
+    ''' Holds the pose and effort to thrust mapping for a thruster '''
+
+    def __init__(self, thruster_definition):
+        # VideoRay comms motor_id (know in VideoRay firmware as node_id)
+        motor_id = thruster_definition['motor_id']
+
+        # Get thruster geometry
+        position = thruster_definition['position']
+        direction = thruster_definition['direction']
+
+        # Minimum and Maximum thrust in newtons
+        thrust_bounds = thruster_definition['thrust_bounds']
+
+        # Loads forward and backward thrust to effort mappings (4th order polynomial)
+        calib = thruster_definition['calib']
+
+        # Validate config yaml
+        assert type(motor_id) == int
+        assert len(position) == 3, len(direction) == 3
+        assert len(thrust_bounds) == 2, 'Need positive and backwards bounds'
+        assert len(calib) == 2, 'Calib should have 2 fields: (forward, backward)'
+        assert len(calib['forward']) == 4, 'Expected coefficients of 4th order model'
+        assert len(calib['backward']) == 4, 'Expected coefficients of 4th order model'
+
+        # Everything's good, assign to object
+        self.motor_id = motor_id
+        self.position = position
+        self.direction = direction
+        self.thrust_bounds = thrust_bounds
+        self.calib = calib
+
+    def get_effort_from_thrust(self, thrust):
+        '''
+        Uses thruster calibration to determine what effort should be sent to the motor
+        to produce the desired thrust (clips output to [-1, 1])
+        '''
+        #t = np.array((thrust**4, thrust**3, thrust**2, thrust, 1))
+        t = np.array((0, 0, 0, thrust, 1))
+        calib = np.hstack((self.calib['forward'], [0])) if thrust >= 0 else \
+            np.hstack((self.calib['backward'], [0]))
+        return np.clip(np.dot(t, calib), -1.0, 1.0)
+
+
 class ThrusterPort(object):
     _baud_rate = 115200
     _read_timeout = 0.1            # How long to wait for a serial response
@@ -55,7 +101,11 @@ class ThrusterPort(object):
             motor_id:  0
             position:  [0.2678, 0.2795, 0.0],
             direction: [-0.866, 0.5, 0.0],
-            bounds:    [-90.0, 90.0]
+            bounds:    [-90.0, 90.0],
+            calib:  {
+                forward: [3.160275618251677e-09, -2.994243542435666e-07, 6.455032155657309e-05, 0.0022659798706770326],
+                backward: [4.5751802697389835e-08, 4.862785867579268e-06, -4.481294657490641e-05, 0.004241966780303877]
+            }
           }
           <other_thruster_definitions_continue_here>
 
@@ -67,34 +117,27 @@ class ThrusterPort(object):
             --> 0x88, 0x8c: Set slew-rate up and down to something tiny
             --> Send messages without getting status
             --> Get status without sending thrust
-            --> Determine which thrusters are on a port
         '''
         self.port_name = port_info['port']
         self.port = self.connect_port(self.port_name)
+        self.thruster_out_alarm = AlarmBroadcaster('thruster-out')
 
-        # Mapping from name to motor_id for all thrusters responsive at startup
-        self.active_motor_ids_from_names = {}
+        self.thruster_info = {}  # Information about all thrusters declared in the layout
+        self.online_thruster_names = set()  # Keeps track of all thrusters that can be allocated thrust
 
         # Flag to avoid simultaneous sharing of the serial line b/w thrusters
-        self._serial_busy = False
+        self.serial_busy = False
 
         # Load thruster configurations and check if the requested thruster exists on this port
-        self.missing_thrusters = []
         for thruster_name in port_info['thruster_names']:
-            try:
-                # Note: will only try to detect thrusters as listed in the layout. That means
-                # that if a thruster is connected to the wrong port, IT WILL NOT BE FOUND.
-                self.load_thruster(thruster_name, thruster_definitions)
-            except UnavailableThrusterException:
-                self.missing_thrusters.append(thruster_name)
-                continue
+            self.load_thruster(thruster_name, thruster_definitions)
 
         # Setup infrastructure to monitor comms quality
-        num_thrusters = len(self.active_motor_ids_from_names)
-        names = self.active_motor_ids_from_names.keys()
-        self._command_tx_count = dict.fromkeys(names, 0)  # Commands sent per thruster
-        self._status_rx_count = dict.fromkeys(names, 0)  # Statuses received per thruster
-        self._command_latency_avg = dict.fromkeys(names, rospy.Duration(0))  # Average latency tx rx per thruster
+        num_thrusters = len(self.online_thruster_names)
+        names = self.get_declared_thruster_names()
+        self.command_tx_count = dict.fromkeys(names, 0)  # Commands sent per thruster
+        self.status_rx_count = dict.fromkeys(names, 0)  # Statuses received per thruster
+        self.command_latency_avg = dict.fromkeys(names, rospy.Duration(0))  # Average latency tx rx per thruster
 
     def connect_port(self, port_name):
         '''Connect to and return a serial port'''
@@ -102,48 +145,37 @@ class ThrusterPort(object):
             serial_port = serial.Serial(port_name, baudrate=self._baud_rate, timeout=self._read_timeout)
         except IOError as e:
             rospy.logerr("Could not connect to thruster port {}".format(port_name))
-            raise(e)
         return serial_port
 
     def load_thruster(self, thruster_name, thruster_definitions):
         '''
-        Looks for thruster definition in the thruster layout yaml and loads motor_id and
-        effort to thrust calibration if the thruster responds through this serial port
+        Checks for ability to communicate with a thruster on this port. If the thruster is responsive,
+        it will load the thruster definition from the thruster layout yaml (including pose and calibration)
         '''
-        # Get our humungous error string ready
+        # Get our humongous error string ready
         errstr = "Could not get a response from motor_id {} (Called {}) on port {}".format(
             thruster_definitions[thruster_name]['motor_id'], thruster_name, self.port_name)
 
-        # Check if we can actually find the thruster on this port
-        motor_id = int(thruster_definitions[thruster_name]["motor_id"])
-        if not self.check_for_thruster(motor_id):
-            rospy.logerr(errstr)
-            raise UnavailableThrusterException(motor_id=motor_id, name=thruster_name)
-        self.active_motor_ids_from_names[thruster_name] = motor_id
+        # Load thruster info regardless of wether thruster is responsive
+        self.thruster_info[thruster_name] = ThrusterModel(thruster_definitions[thruster_name])
 
-        # Load effort to force calibration from file
-        calib_dir = rospy.get_param('/thrusters/calibration_dir')
-        calib_file = calib_dir + thruster_definitions[thruster_name]['calib']
-        if not hasattr(self, 'effort_to_thrust'):
-            self.effort_to_thrust = {}
-        self.effort_to_thrust[thruster_name] = self.load_effort_to_thrust_map(calib_file)
+        # See if thruster is responsive on this port
+        if not self.check_for_thruster(self.thruster_info[thruster_name].motor_id):
+            rospy.logwarn(errstr)
+        else:
+            self.online_thruster_names.add(thruster_name)
 
-    def load_effort_to_thrust_map(self, path):
-        '''
-        Load the effort to thrust mapping from a yaml file:
-        - Map force inputs from Newtons to [-1, 1] required by the thruster
-        '''
-        try:
-            rospy.logdebug("Loading thruster calibration from {}".format(path))
-            _file = file(path)
-        except IOError as e:
-            rospy.logerr("Could not find thruster configuration file at {}".format(path))
-            raise(e)
+    def get_declared_thruster_names(self):
+        ''' Gets the names of all the ports that were declared on this port '''
+        return self.thruster_info.keys()
 
-        json_data = json.load(_file)
-        newtons = json_data['calibration_data']['newtons']
-        thruster_input = json_data['calibration_data']['thruster_input']
-        return scipy.interpolate.interp1d(newtons, thruster_input)
+    def get_offline_thruster_names(self):
+        ''' Gets the names of all of the declared thrusters that are offline '''
+        offline = self.get_declared_thruster_names()
+        for name in copy.deepcopy(offline):
+            if name in self.online_thruster_names:
+                offline.remove(name)
+        return offline
 
     def checksum_struct(self, _struct):
         '''Take a struct, convert it to a bytearray, and append its crc32 checksum'''
@@ -185,7 +217,7 @@ class ThrusterPort(object):
             struct.pack(
                 '<BB',
                 Const.propulsion_command,
-                motor_id,
+                motor_id
             )
         )
         return payload
@@ -196,36 +228,50 @@ class ThrusterPort(object):
         Note: This fails randomly
         '''
         assert register in Const.csr_address.keys(), "Unknown register, {}".format(register)
-        address, return_size = Const.csr_address[register]
+        address, return_size, format_char, permission = Const.csr_address[register]
+        print register, address, return_size, format_char, permission
 
         size_char = Const.format_char_map[return_size]
 
         if value is not None:
-            send_size = return_size
             payload = self.checksum_struct(struct.pack('<' + size_char, value))
+            send_size = return_size
         else:
             payload = self.checksum_struct(struct.pack('<'))
             send_size = 0
 
+        print 'return_size', return_size
         header = self.checksum_struct(
-            struct.pack(
-                '<HBBBB',
+            struct.pack('<HBBBB',
                 Const.sync_request,
                 int(motor_id),
-                0x80 | return_size,
-                # Const.addr_custom_command,
+                #0xFF,    # This works, but returns all the registers, not sure how to write using this
+                0x80 | return_size, #This doesnt work, sync is not request but something different
                 address,
                 send_size
             )
         )
 
         packet = header + payload
+        print 'sent:', self.make_hex(packet)
         self.port.write(bytes(packet))
-        response_bytearray = self.port.read(Const.response_normal_length + return_size)
+        read_len = Const.response_normal_length + return_size
+        print 'read_len', read_len
+        #response_bytearray = self.port.read(Const.response_normal_length + return_size)
+        response_bytearray = self.port.read(1000)
         if len(response_bytearray) == 0:
+            print 'Got nothing'
             return None
 
-        response = struct.unpack('<HBBBB I B I'.format(size_char), response_bytearray)
+        print 'resp len:\t', len(response_bytearray)
+        print 'full\t', len(response_bytearray), self.make_hex(response_bytearray)
+        #print 'clipped\t', self.make_hex(response_bytearray[:read_len])
+        #if not response_bytearray.startswith(bytearray('\x08\x10')):
+        #    print "Bad response packet"
+        #else:
+        #    print 'Good response packet'
+        #response = struct.unpack('<HBBBB I B {} I'.format(size_char), response_bytearray[:read_len])
+        response = struct.unpack('<HBBBB I {} I'.format(format_char), response_bytearray[:read_len])
         response_contents = [
             'sync',
             'response_node_id',
@@ -233,10 +279,15 @@ class ThrusterPort(object):
             'CSR_address',
             'length',
             'header_checksum',
+            #'device_type',
             register,
             'payload_checksum',
         ]
         response_dict = dict(zip(response_contents, response))
+        try:
+            print register, response_dict[register]
+        except:
+            pass
         return response_dict
 
     def send_poll_msg(self, motor_id):
@@ -250,6 +301,8 @@ class ThrusterPort(object):
         payload = self.make_thrust_payload(int(motor_id), thrust)
         header = self.make_header(int(motor_id), msg_size=1)
         packet = header + payload
+        print 'sent:', self.make_hex(packet)
+        #self.port.flush()
         self.port.write(bytes(packet))
 
     def make_hex(self, msg):
@@ -257,6 +310,8 @@ class ThrusterPort(object):
         Return a bytearray formatted as a string of hexadecimal characters
         Useful for packet debugging
         '''
+        if type(msg) == str:
+            msg = bytearray(msg)
         return ":".join("{:02x}".format(c) for c in msg)
 
     def check_for_thruster(self, motor_id):
@@ -288,9 +343,14 @@ class ThrusterPort(object):
 
     def read_status(self):
         response_bytearray = self.port.read(Const.thrust_response_length)
+        print 'received:', self.make_hex(bytearray(response_bytearray))
         # We should always get $Const.thrust_response_length bytes, if we don't
         # we *are* failing to communicate
-        if len(response_bytearray) != Const.thrust_response_length:
+        read_len = len(response_bytearray)
+        if read_len != Const.thrust_response_length:
+            if read_len != 0:
+                pass
+                #self.port.flushInput()  # Throw away packets that we only half read
             return None
 
         response = struct.unpack('<HBBBB I BffffB I', response_bytearray)
@@ -311,38 +371,48 @@ class ThrusterPort(object):
         ]
 
         response_dict = dict(zip(response_contents, response))
+        print 'received: dict: {}'.format(response_dict)
 
         return response_dict
 
     def command_thruster(self, name, effort):
         ''' Sets effort value on motor controller, effort should be in [-1.0, 1.0] '''
-        # Confirm thruster is available
-        if name not in self.active_motor_ids_from_names.keys():
-            raise UnavailableThrusterException(name=name)
-
-        motor_id = self.active_motor_ids_from_names[name]
+        print name, effort
+        
+        # Perform availability checks
+        if name not in self.thruster_info.keys():
+            raise UndeclaredThrusterException(name=name)
+        motor_id = self.thruster_info[name].motor_id
 
         # Don't try to send command packet if line is busy
         t0 = rospy.Time.now()
-        while self._serial_busy and rospy.Time.now() - t0 < rospy.Duration(_wait_for_line_timeout):
+        while self.serial_busy and rospy.Time.now() - t0 < rospy.Duration(self._wait_for_line_timeout):
             rospy.sleep(0.001)
-        if self._serial_busy:
-            raise serial.SerialTimeoutException('{} timed out waiting on busy serial line'.format(name))
+        if self.serial_busy and name in self.online_thruster_names:  # Don't raise if thruster is offline
+            raise serial.SerialTimeoutException('{} timed out waiting on busy serial line (waited {} s)'.
+                                                format(name, (rospy.Time.now() - t0).to_sec()))
 
         # Might not need to do this mutex around tx and rx together
-        self._serial_busy = True  # Take ownership of line
+        self.serial_busy = True  # Take ownership of line
         t0 = rospy.Time.now()
         self.send_thrust_msg(motor_id, effort)
-        self._command_tx_count[name] = self._command_tx_count[name] + 1
+        self.command_tx_count[name] = self.command_tx_count[name] + 1
         thruster_status = self.read_status()
         t1 = rospy.Time.now()
-        self._serial_busy = False  # Release line
+        self.serial_busy = False  # Release line
 
-        # Keep track of latency
-        if thruster_status is not None:
-            total_latency = (t1 - t0) + self._command_latency_avg[name] * self._status_rx_count[name]
-            self._status_rx_count[name] = self._status_rx_count[name] + 1
-            self._command_latency_avg[name] = total_latency / self._status_rx_count[name]
+        # Keep track of thrusters going offline or coming back online
+        if thruster_status is None:
+            if name in self.online_thruster_names:
+                self.online_thruster_names.remove(name)
+        else:
+            if name not in self.online_thruster_names:
+                self.online_thruster_names.add(name)
+
+            # Keep track of latency
+            total_latency = (t1 - t0) + self.command_latency_avg[name] * self.status_rx_count[name]
+            self.status_rx_count[name] = self.status_rx_count[name] + 1
+            self.command_latency_avg[name] = total_latency / self.status_rx_count[name]
 
         return thruster_status
 

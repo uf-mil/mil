@@ -34,7 +34,7 @@ def ports_from_layout(layout):
             for name in thruster_names:
                 port_dict[name] = thruster_port
 
-            s = str(np.sort([x[1] for x in thruster_port.active_motor_ids_from_names.items()]).tolist())
+            s = list(thruster_port.online_thruster_names)
             fprint(msg.reset.text('\n\tName: ').set_yellow.text(port).reset
                    .text('\n\tMotor id\'s on port: ').set_cyan.bold(s).reset)
 
@@ -79,7 +79,7 @@ unavailable_thrusters = []
 
 individual_mode = False
 key = None
-STEP = 1 / 16  # Effort
+STEP = 1 / 64  # Effort
 ALL_KEY = '*'
 
 # For individual mode on
