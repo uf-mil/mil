@@ -35,21 +35,66 @@ class Const(object):
         protocol_vrcsr_xsum_size
     )
 
-    # TODO: Get R/W flags
+    # Address, size, type (format char), and read/write status of named CSR fields
     csr_address = {
-        'undervoltage_trigger': (0xa5, 1),
-        'overvoltage_trigger': (0xa6, 1),
-        'overcurrent_trigger': (0xa7, 1),
-        'temp_trigger': (0xa8, 1),
-        'stall_count_max': (0xa9, 1),
-        'fault_control': (0xa4, 1),
-        'fault': (0x14, 4),
-        'save_settings': (0xee, 2),
-        'undervoltage_err_cnt': (0xac, 4),
-        'overvoltage_err_cnt': (0xb0, 4),
-        'overcurrent_err_cnt': (0xb4, 4),
-        'temp_err_cnt': (0xb8, 4),
-        'stall_err_cnt': (0xbc, 4),
+        'rpm_target':                (0x0, 4, 'f', 'RW'),
+        'pwr_target':                (0x4, 4, 'f', 'RW'),
+        'rpm':                       (0x8, 4, 'f', 'R'),
+        'bus_v':                     (0xc, 4, 'f', 'R'),
+        'bus_i':                     (0x10, 4, 'f', 'R'),
+        'fault':                     (0x14, 4, 'I', 'R'),
+        'temp':                      (0x18, 4, 'f', 'R'),
+        'pwr_actual':                (0x1c, 4, 'f', 'R'),
+        'rpm_P':                     (0x20, 4, 'f', 'R'),
+        'rpm_I':                     (0x24, 4, 'f', 'R'),
+        'rpm_D':                     (0x28, 4, 'f', 'R'),
+        'thruster_ID':               (0x4c, 2, 'H', 'RW'),
+        'operation_flags':           (0x50, 1, 'B', ''),
+        'motor_fault_interlock':     (0x54, 4, 'I', 'RW'),
+        'motor_control_flags':       (0x60, 1, 'B', 'RW'),
+        'poles':                     (0x61, 1, 'B', 'RW'),
+        'pwm_deadband':              (0x62, 1, 'B', 'RW'),
+        'commutation_threshold':     (0x64, 4, 'f', 'RW'),
+        'commutation_loss_timeout':  (0x68, 4, 'I', 'RW'),
+        'startup_dutycycle':         (0x6c, 4, 'f', 'RW'),
+        'startup_initial_rpm':       (0x70, 2, 'H', 'RW'),
+        'startup_final_rpm':         (0x72, 2, 'H', 'RW'),
+        'startup_duration':          (0x74, 4, 'f', 'RW'),
+        'deadband_neg':              (0x78, 4, 'f', 'RW'),
+        'deadband_pos':              (0x7c, 4, 'f', 'RW'),
+        'limit_neg':                 (0x80, 4, 'f', 'RW'),
+        'limit_pos':                 (0x84, 4, 'f', 'RW'),
+        'slew_rate_up':              (0x88, 4, 'f', 'RW'),
+        'slew_rate_down':            (0x8c, 4, 'f', 'RW'),
+        'rpm_kP':                    (0x90, 4, 'f', 'RW'),
+        'rpm_kI':                    (0x94, 4, 'f', 'RW'),
+        'rpm_kD':                    (0x98, 4, 'f', 'RW'),
+        'fault_control':             (0xa4, 1, 'B', 'RW'),
+        'undervoltage_trigger':      (0xa5, 1, 'B', 'RW'),
+        'overvoltage_trigger':       (0xa6, 1, 'B', 'RW'),
+        'overcurrent_trigger':       (0xa7, 1, 'B', 'RW'),
+        'temp_trigger':              (0xa8, 1, 'B', 'RW'),
+        'stall_count_max':           (0xa9, 1, 'B', 'RW'),
+        'undervoltage_err_cnt':      (0xac, 4, 'I', 'R'),
+        'overvoltage_err_cnt':       (0xb0, 4, 'I', 'R'),
+        'overcurrent_err_cnt':       (0xb4, 4, 'I', 'R'),
+        'temp_err_cnt':              (0xb8, 4, 'I', 'R'),
+        'stall_err_cnt':             (0xbc, 4, 'I', 'R'),
+        'comms_sync1_err_cnt':       (0xd8, 4, 'I', 'R'),
+        'comms_sync2_err_cnt':       (0xdc, 4, 'I', 'R'),
+        'comms_headerxsum_err_cnt':  (0xe0, 4, 'I', 'R'),
+        'comms_overrun_err_cnt':     (0xe4, 4, 'I', 'R'),
+        'comms_payloadxsum_err_cnt': (0xe8, 4, 'I', 'R'),
+        'comms_err_flag':            (0xec, 2, 'H', ''),
+        'save_settings':             (0xee, 2, 'H', 'W'),
+        'custom_command':            (0xf0, 4, 'I', 'W'),
+        'FACTORY_SERVICE_DATA':      (0xf4, 4, 'I', 'R'),
+        'CONFIG_DATA_SIZE':          (0xf8, 2, 'H', 'R'),
+        'CONFIG_DATA':               (0xfa, 1, 'B', 'R'),
+        'FIRMWARE_VERSION':          (0xfb, 1, 'B', 'R'),
+        'NODE_ID':                   (0xfc, 1, 'B', 'RW'),
+        'GROUP_ID':                  (0xfd, 1, 'B', 'RW'),
+        'UTILITY':                   (0xfe, 2, 'H', 'W')
     }
 
     format_char_map = {
@@ -59,6 +104,3 @@ class Const(object):
         8: 'Q',  # unsigned long long integer 8
     }
 
-
-if __name__ == '__main__':
-    addr, size = Const.csr_address['stall_err_cnt']
