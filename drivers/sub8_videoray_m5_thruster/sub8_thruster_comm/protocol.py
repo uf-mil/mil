@@ -8,32 +8,23 @@ class Const(object):
     # VRCSR protocol defines
     sync_request = 0x5ff5
     sync_response = 0x0ff0
-    protocol_vrcsr_header_size = 6
-    protocol_vrcsr_xsum_size = 4
+    header_size = 6
+    xsum_size = 4
 
     # CSR address for sending an application specific custom command
     addr_custom_command = 0xf0
     propulsion_command = 0xaa
 
-    # Flag for the standard thruster response which contain
+    # Flag for the standard thruster response
     response_thruster_standard = 0x2
     response_ask_nothing = 0x00
 
-    # Standard response is the device type followed by 4 32-bit floats and 1 byte
-    response_thruster_standard_length = 1 + 4 * 4 + 1
-    thrust_response_length = (
-        protocol_vrcsr_header_size +
-        protocol_vrcsr_xsum_size +
-        response_thruster_standard_length +
-        protocol_vrcsr_xsum_size
-    )
+    # Standard propulsion response is the device type (1 byte) followed by 4 32-bit floats and 1 byte
+    response_thruster_standard_length = 18
+    thrust_response_length = header_size + xsum_size + response_thruster_standard_length + xsum_size
 
     # Add your stupid size to this!
-    response_normal_length = (
-        protocol_vrcsr_header_size +
-        protocol_vrcsr_xsum_size +
-        protocol_vrcsr_xsum_size
-    )
+    response_normal_length = header_size + xsum_size + xsum_size
 
     # Address, size, type (format char), and read/write status of named CSR fields
     csr_address = {
