@@ -7,6 +7,30 @@ from sub8_thruster_comm.protocol import Const
 import serial
 import rospy
 
+class UnavailableThrusterException(BaseException):
+    ''' Indicates that a thruster is not available to be commanded '''
+    def __init__(self, motor_id=None, name=None):
+        self.thruster_name = name
+        self.motor_id = motor_id
+
+    def __repr__(self):
+        return 'Thruster ({}, {}) is not available to be commanded'.format(self.motor_id, self.thruster_name)
+
+    def __str__(self):
+        return self.__repr__()
+
+    __str__ = __repr__
+
+class UndeclaredThrusterException(BaseException):
+    ''' Indicates that a thruster was not declared in the thruster layout '''
+    def __init__(self, motor_id=None, name=None):
+        self.thruster_name = name
+        self.motor_id = motor_id
+
+    def __repr__(self):
+        return 'Thruster ({}, {}) was not declared in the layout'.format(self.motor_id, self.thruster_name)
+
+    __str__ = __repr__
 
 class ThrusterPort(object):
     _baud_rate = 115200
@@ -251,8 +275,8 @@ class ThrusterPort(object):
 
     def command_thruster(self, thruster_name, normalized_thrust):
         '''normalized_thrust should be between 0 and 1'''
-        assert thruster_name in self.thruster_dict.keys(), "{} is not associated with port {}".format(
-            thruster_name, self.port_name)
+        if thruster_name not in self.thruster_dict.keys():
+            raise UnavailableThrusterException(name=thruster_name)
         motor_id = self.thruster_dict[thruster_name]
         self.send_thrust_msg(motor_id, normalized_thrust)
         thruster_status = self.read_status()

@@ -1,3 +1,5 @@
+from .thruster_comm import UnavailableThrusterException
+from .thruster_comm import UndeclaredThrusterException
 from .thruster_comm import ThrusterPort
 from .thruster_fake import FakeThrusterPort
 
