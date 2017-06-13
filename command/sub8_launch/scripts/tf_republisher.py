@@ -17,10 +17,9 @@ def got_range(msg):
     try:
         listener.waitForTransform('/base_link', '/map', t, rospy.Duration(1))
         trans, rot = listener.lookupTransform("/base_link", "/map", t)
+        bc.sendTransform(translation, rot, rospy.Time.now(), "/ground", "/dvl")
     except (tf.Exception, tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
         te.fprint(e, title='TF REPUB')
-
-    bc.sendTransform(translation, rot, rospy.Time.now(), "/ground", "/dvl")
 
 
 if __name__ == '__main__':
