@@ -39,10 +39,12 @@ class ThrusterMapper(object):
         self.dropped_thrusters = []
         self.B = self.generate_B(self.thruster_layout)
         self.Binv = np.linalg.pinv(self.B)
-        self.min_thrusts, self.max_thrusts = self.get_ranges()
+        self.min_thrusts, self.max_thrusts = self.get_ranges()  # Will block until thruster driver provides srv
         self.default_min_thrusts, self.default_max_thrusts = np.copy(self.min_thrusts), np.copy(self.max_thrusts)
+        self.update_layout_server = rospy.Service('update_thruster_layout',  # Needs to come before call to
+                                                  UpdateThrusterLayout,      # self.get_ranges
+                                                  self.update_layout)
 
-        self.update_layout_server = rospy.Service('update_thruster_layout', UpdateThrusterLayout, self.update_layout)
         # Expose B matrix through a srv
         self.b_matrix_server = rospy.Service('b_matrix', BMatrix, self.get_b_matrix)
 
@@ -76,16 +78,18 @@ class ThrusterMapper(object):
             --> Add range service proxy using thruster names
                 --> This is not necessary, since they are all the same thruster
         '''
-        range_service = 'thrusters/thruster_range'
-        rospy.logwarn("Waiting for service {}".format(range_service))
-        rospy.wait_for_service(range_service)
-        rospy.logwarn("Got {}".format(range_service))
+        thruster_info_service = 'thrusters/thruster_info'
+        rospy.logwarn("Waiting for service {}".format(thruster_info_service))
+        rospy.wait_for_service(thruster_info_service)
+        rospy.logwarn("Got {}".format(thruster_info_service))
 
-        range_service_proxy = rospy.ServiceProxy(range_service, ThrusterInfo)
-        thruster_range = range_service_proxy(0)
+        thruster_info_service_proxy = rospy.ServiceProxy(thruster_info_service, ThrusterInfo)
+        #thruster_ranges = thruster_info_service_proxy('FLH')
+        minima = np.array([thruster_info_service_proxy(x).min_force for x in self.thruster_name_map])
+        maxima = np.array([thruster_info_service_proxy(x).max_force for x in self.thruster_name_map])
 
-        minima = np.array([thruster_range.min_force] * self.num_thrusters)
-        maxima = np.array([thruster_range.max_force] * self.num_thrusters)
+        #minima = np.array([thruster_range.min_force] * self.num_thrusters)
+        #maxima = np.array([thruster_range.max_force] * self.num_thrusters)
         return minima, maxima
 
     def get_thruster_wrench(self, position, direction):
@@ -131,6 +135,7 @@ class ThrusterMapper(object):
             - Account for variable thrusters
         '''
         thrust_cost = np.diag([1E-4] * self.num_thrusters)
+        print 'bounds: {}'.format(zip(self.min_thrusts, self.max_thrusts))
 
         def objective(u):
             '''Tikhonov-regularized least-squares cost function
