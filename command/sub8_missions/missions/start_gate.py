@@ -3,116 +3,141 @@ from __future__ import division
 
 # from txros import action, util, tf, serviceclient
 import txros
+# from txros import action, util, tf, serviceclient
+
+from twisted.internet import defer
+import txros.tf as tf
+import tf.transformations as trns
 
 from mil_misc_tools import text_effects
 from sub8_msgs.srv import VisionRequest2DRequest, VisionRequest2D, BMatrix, BMatrixRequest
 from std_srvs.srv import SetBool, SetBoolRequest
+from geometry_msgs.msg import Quaternion, Point, Vector3, PointStamped, Vector3Stamped, Pose, PoseStamped
 
 import numpy as np
 
 fprint = text_effects.FprintFactory(
     title="START_GATE", msg_color="white").fprint
-
-
+# @txros.util.cancellableInlineCallbacks
 class StartGateMission(object):
-
-    FOUND_START_GATE = False
     SPEED = 0.3
-
+    HOW_MANY = 20
     def __init__(self, sub):
-        self.sub_singleton = sub
+        self._sub = sub
+        self._how_many_points = 0
+        self._how_many_normals = 0
+        self._center_pt_avg = Point()
+        self._normal_avg = Vector3()
+        self._found_center_pt = False
+        self._found_normal = False
+        self._found = False
+
+        self._tf_listener = self._sub._tf_listener
+
+        self._start_away_from_gate = 1;
+        self._end_away_from_gate = 0.5;
+
+        self._center_of_gate_sub = self._sub.nh.subscribe('/sub8_start_gate/center', Point, callback = self.process_centers)
+        self._normal_of_gate_sub =  self._sub.nh.subscribe('/sub8_start_gate/normal', Vector3, callback = self.process_normals)
+        # self._normal_avg = Point( 0.100018282763, 0.221645119556, -0.931298662269)
+        # self._center_pt_avg = Vector3(-0.112004441869, 0.0125564267227, 2.06587832023)
+        # defer.returnValue(None)
+
+    def process_centers(self, point):
+        self._how_many_points = self._how_many_points + 1
+        self._center_pt_avg.x += point.x
+        self._center_pt_avg.y += point.y
+        self._center_pt_avg.z += point.z
+
+        if(self._how_many_points > self.HOW_MANY):
+            self._found_center_pt = True
+
+    def process_normals(self, normal):
+        self._how_many_normals = self._how_many_normals + 1
+        if(normal.z > 0):
+            normal.x = -normal.x
+            normal.y = -normal.y
+            normal.z = -normal.z
+        self._normal_avg.x += normal.x
+        self._normal_avg.y += normal.y
+        self._normal_avg.z += normal.z
+
+        if(self._how_many_normals > self.HOW_MANY):
+            self._found_normal = True
+
 
     @txros.util.cancellableInlineCallbacks
     def run_mission(self):
         fprint('Starting mission')
         fprint('Assuming camera is facing gate')
         fprint('Leveling off', msg_color="yellow")
-        yield self.sub_singleton.move.zero_roll_and_pitch().go()
-        fprint('Going down', msg_color="yellow")
-        yield self.sub_singleton.move.down(.7).go()
+        # yield self._sub.move.zero_roll_and_pitch().go()
+        while(not self._found_normal and not self._found_center_pt):
+            fprint('Waiting for detection...')
+            yield self._sub.nh.sleep(1)
+        self._found = True
+        fprint('Found {} points and {} normals'.format(self._how_many_points, self._how_many_normals))
+        self._normal_avg.x/=self._how_many_normals
+        self._normal_avg.y/=self._how_many_normals
+        self._normal_avg.z/=self._how_many_normals
 
-        start_gate_enable = yield self.sub_singleton.nh.get_service_client('/vision/start_gate/enable', SetBool)
-        fprint('Turning on vision service')
-        yield start_gate_enable(SetBoolRequest(data=True))
+        self._center_pt_avg.x/=self._how_many_points
+        self._center_pt_avg.y/=self._how_many_points
+        self._center_pt_avg.z/=self._how_many_points
 
-        start_gate_search = yield self.sub_singleton.nh.get_service_client('/vision/start_gate/pose', VisionRequest2D)
-        fprint("Searching for start gate pose")
-        start_gate_search_res = yield start_gate_search(VisionRequest2DRequest(target_name=''))
-
-        if not start_gate_search_res.found:
-            fprint("Waiting a few seconds and trying again:")
-            yield self.sub_singleton.sleep(3)
-            start_gate_search_res = yield start_gate_search(VisionRequest2DRequest(target_name=''))
-        # This is to reset the buffer
-        yield start_gate_enable(SetBoolRequest(data=False))
-        yield start_gate_enable(SetBoolRequest(data=True))
-        if not start_gate_search_res.found:
-            fprint("Running search pattern")
-            while not self.FOUND_START_GATE and start_gate_search_res.pose.x == 0:
-                fprint(self.FOUND_START_GATE)
-                yield self.sub_singleton.sleep(1)
-                fprint("AGAIN - Searching for start gate pose")
-                self.start_gate_find()
-                yield self.search_pattern()
-
-        fprint("Found start gate: " + str(start_gate_search_res.pose))
-
-        start_gate_distance_request = yield self.sub_singleton.nh.get_service_client('/vision/start_gate/distance',
-                                                                                     BMatrix)
-        start_gate_distance = yield start_gate_distance_request(BMatrixRequest())
-        fprint("Distance: " + str(start_gate_distance.B[0]))
-
-        yield self.align_for_dummies(start_gate_search_res)
-        fprint("YOLO -- MOVING FORWARD")
+        fprint('The normal: {} '.format(self._normal_avg))
+        fprint('The point: {} '.format(self._center_pt_avg))
 
         '''
-        while(self.FOUND_START_GATE):
-            self.start_gate_find()
-            yield self.sub_singleton.move.forward(.3).zero_roll_and_pitch().go(speed=self.SPEED)
+            Go directly in front of gate
         '''
-        yield self.sub_singleton.move.forward(start_gate_distance.B[0] + 0.5).zero_roll_and_pitch().go(speed=self.SPEED)
+        pose = Pose()
+        pose.position = Point(self._center_pt_avg.x + self._normal_avg.x * self._start_away_from_gate, 
+                            self._center_pt_avg.y + self._normal_avg.y * self._start_away_from_gate, 
+                            self._center_pt_avg.z + self._normal_avg.z * self._start_away_from_gate)
+        transform = yield self._tf_listener.get_transform(
+            '/map',
+            '/front_stereo',
+            self._sub.nh.get_time()
+        )
+        tft = tf.Transform.from_Pose_message(pose)
+        transformed_before_gate = transform * tft
 
-        fprint("Finished")
+        '''
+            Go through the gate
+        '''
+        pose = Pose()
+        pose.position = Point(self._center_pt_avg.x + self._normal_avg.x * -self._end_away_from_gate, 
+                            self._center_pt_avg.y + self._normal_avg.y * -self._end_away_from_gate,
+                            self._center_pt_avg.z + self._normal_avg.z * -self._end_away_from_gate)
 
-    @txros.util.cancellableInlineCallbacks
-    def start_gate_find(self):
-        start_gate_search = yield self.sub_singleton.nh.get_service_client('/vision/start_gate/pose', VisionRequest2D)
-        start_gate_search_res = yield start_gate_search(VisionRequest2DRequest(target_name=''))
-        self.FOUND_START_GATE = start_gate_search_res.found
+        transform = yield self._tf_listener.get_transform(
+            '/map',
+            '/front_stereo',
+            self._sub.nh.get_time()
+        )
+        tft = tf.Transform.from_Pose_message(pose)
+        transformed_after_gate = transform * tft
 
-    @txros.util.cancellableInlineCallbacks
-    def search_pattern(self):
-        if not self.FOUND_START_GATE:
-            fprint("Moving up .1", msg_color="yellow")
-            yield self.sub_singleton.move.up(.1).zero_roll_and_pitch().go(speed=self.SPEED)
-            fprint("Moving down .3", msg_color="yellow")
-            yield self.sub_singleton.move.down(.3).zero_roll_and_pitch().go(speed=self.SPEED)
-        if not self.FOUND_START_GATE:
-            fprint("Moving left .3", msg_color="yellow")
-            yield self.sub_singleton.move.left(.3).zero_roll_and_pitch().go(speed=self.SPEED)
-            fprint("Moving right .3", msg_color="yellow")
-            yield self.sub_singleton.move.right(.3).zero_roll_and_pitch().go(speed=self.SPEED)
 
-    @txros.util.cancellableInlineCallbacks
-    def align_for_dummies(self, start_gate_search_res):
-        error_tolerance = 0.1
-        deviation = (
-            (start_gate_search_res.pose.x - start_gate_search_res.camera_info.width / 2) /
-            start_gate_search_res.camera_info.width,
-            (start_gate_search_res.pose.y - start_gate_search_res.camera_info.height / 2) /
-            start_gate_search_res.camera_info.height)
+        fprint('Going infront of gate {}'.format(transformed_before_gate._p))
+        yield self._sub.move.set_position(transformed_before_gate._p).go(speed = self.SPEED)
 
-        fprint("Alignment -- Deviation: " + str(deviation), msg_color="cyan")
-        while(np.abs(deviation[0]) > error_tolerance):
-            fprint("Moving right " + str(.1 * np.sign(deviation[0])), msg_color="yellow")
-            yield self.sub_singleton.move.right(.1 * np.sign(deviation[0])).zero_roll_and_pitch().go(speed=self.SPEED)
-        while(np.abs(deviation[1]) > error_tolerance):
-            fprint("Moving up " + str(.1 * np.sign(deviation[1])), msg_color="yellow")
-            yield self.sub_singleton.move.up(.1 * np.sign(deviation[1])).zero_roll_and_pitch().go(speed=self.SPEED)
-        yield fprint("Finished Alignment -- Deviation: " + str(deviation), msg_color="cyan")
+        fprint('Going through gate... YOLO! {}'.format(transformed_after_gate._p))
+        yield self._sub.move.set_position(transformed_after_gate._p).go(speed = self.SPEED)
 
+    def search_patten(self):
+        yield self._sub.move.yaw_right(0.261799).go()
+        yield self._sub.move.pitch_down(0.261799).go()
+        yield self._sub.move.yaw_left(0.261799).go()
+        yield self._sub.move.pitch_up(0.261799).go()
+        yield self._sub.move.yaw_left(0.261799).go()
+        yield self._sub.move.pitch_down(0.261799).go()
+        yield self._sub.move.yaw_right(0.261799).go()
+        yield self._sub.move.pitch_up(0.261799).go()
 
 @txros.util.cancellableInlineCallbacks
 def run(sub_singleton):
     start_gate_mission = StartGateMission(sub_singleton)
+    # start_gate_mission.search_patten()
     yield start_gate_mission.run_mission()

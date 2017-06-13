@@ -1,67 +1,87 @@
 #pragma once
+
+#include <vector>
 #include <iostream>
 #include <string>
 
-#include "ros/ros.h"
-
-#include <image_geometry/pinhole_camera_model.h>
-#include <image_transport/image_transport.h>
+#include <boost/bind.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/thread.hpp>
 
 #include <cv_bridge/cv_bridge.h>
-#include <opencv2/highgui/highgui.hpp>
+#include <image_geometry/pinhole_camera_model.h>
+#include <image_transport/image_transport.h>
+#include <ros/ros.h>
+
+#include <sub8_msgs/TBDetectionSwitch.h>
+#include <sub8_msgs/TorpBoardPoseRequest.h>
+#include <mil_vision_lib/cv_tools.hpp>
+#include <sub8_vision_lib/visualization.hpp>
+
+#include <eigen_conversions/eigen_msg.h>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+#include <Eigen/StdVector>
 
 #include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics.hpp>
 #include <boost/circular_buffer.hpp>
 
-#include <std_srvs/SetBool.h>
+#include <visualization_msgs/Marker.h>
 
-#include "sub8_msgs/BMatrix.h"
-#include "sub8_msgs/VisionRequest2D.h"
-
-using namespace boost::accumulators;
+// #include <pcl/features/normal_3d.h>
+// #include <pcl_conversions/pcl_conversions.h>
+// #include <pcl/point_cloud.h>
 
 class Sub8StartGateDetector
 {
 public:
   Sub8StartGateDetector();
-  ~Sub8StartGateDetector();
+  mil_vision::ImageWithCameraInfo left_most_recent, right_most_recent;
 
-  // 76 inches x 39.5 inches
-  // 1.9304 x 1.0033
-  const double START_GATE_WIDTH = 1.9304;  // Meters
-  const double START_GATE_HEIGHT = 1.0033;
-  const double START_GATE_SIZE_TOLERANCE = 10000;
+private:
+  
+  // Combinations of k elements from a set of size n (indexes)
+  void combinations(uint8_t n, uint8_t k, std::vector<std::vector<uint8_t> > &idx_array);
+  void _increase_elements_after_level(std::vector<uint8_t> comb, std::vector<std::vector<uint8_t> > &comb_array,
+                                      uint8_t n, uint8_t k, uint8_t level);
 
-  void imageCallback(const sensor_msgs::ImageConstPtr &msg, const sensor_msgs::CameraInfoConstPtr &info_msg);
-  bool requestStartGatePosition2d(sub8_msgs::VisionRequest2D::Request &req, sub8_msgs::VisionRequest2D::Response &resp);
-  bool requestStartGateEnable(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &resp);
-  bool requestStartGateDistance(sub8_msgs::BMatrix::Request &req, sub8_msgs::BMatrix::Response &resp);
-  void findGate(const sensor_msgs::ImageConstPtr &image_msg);
+  void left_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
+                           const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
+  void right_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
+                            const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
+  void run();
+  void determine_start_gate_position();
 
-  double getGateDistance();
+  double get_angle(cv::Point a, cv::Point b, cv::Point c);
 
-  ros::NodeHandle nh_;
-  bool running_;
+  bool valid_contour(std::vector<cv::Point> &contour);
 
-  image_transport::ImageTransport image_transport_;
-  image_transport::CameraSubscriber image_sub_;
+  ros::NodeHandle nh;
+  image_transport::CameraSubscriber left_image_sub, right_image_sub;
+  image_transport::ImageTransport image_transport;
+  image_transport::Publisher debug_image_pub_left;
+  image_transport::Publisher debug_image_pub_right;
+  image_transport::Publisher debug_image_pub_canny;
 
-  image_geometry::PinholeCameraModel cam_model_;
-  ros::Time image_time_;
+  image_geometry::PinholeCameraModel left_cam_model, right_cam_model;
 
-  int rows_;
-  int cols_;
+  bool active;
+  double sync_thresh;
 
-  boost::circular_buffer<std::vector<std::vector<cv::Point2f>>> gate_line_buffer_;
-  accumulator_set<int, features<tag::mean, tag::variance>> accX_;
-  accumulator_set<int, features<tag::mean, tag::variance>> accY_;
-  accumulator_set<int, features<tag::mean, tag::variance>> accSizeX_;
-  accumulator_set<int, features<tag::mean, tag::variance>> accSizeY_;
+  // To prevent invalid img pointers from being passed to toCvCopy (segfault)
+  boost::mutex left_mtx, right_mtx;
+  cv::KalmanFilter kf;
 
-  ros::ServiceServer service_enable_;
-  ros::ServiceServer service_2d_;
-  ros::ServiceServer service_distance_;
+  boost::circular_buffer<Eigen::Vector3d> center_estimate_xyz;
+  ros::Publisher marker_pub;
 
-  image_transport::Publisher pubImage_;
+  ros::Publisher center_gate_pub;
+  ros::Publisher normal_gate_pub;
+
+  int canny_low;
+  float canny_ratio;
+  int blur_size;
+  int dilate_amount;
+
 };
