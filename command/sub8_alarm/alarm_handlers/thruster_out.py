@@ -13,8 +13,7 @@ class ThrusterOut(HandlerBase):
         if alarm.parameters is None:
             return
 
-        self.update_layout(map(str, alarm.parameters['thruster_names']))
+        self.update_layout(map(str, alarm.parameters['offline_thruster_names']))
 
     def cleared(self, alarm):
-        if alarm.parameters.get("clear_all", False):
-            self.update_layout()
+        self.update_layout(map(str, alarm.parameters['offline_thruster_names']))
