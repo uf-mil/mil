@@ -14,7 +14,7 @@ find_package(catkin
 
 add_action_files(FILES
   MoveTo.action
-  Bag.action
+  BagOnline.action
 )
 
 add_message_files(FILES

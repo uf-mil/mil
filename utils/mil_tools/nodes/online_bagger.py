@@ -9,7 +9,7 @@ from collections import deque
 import itertools
 import datetime
 from actionlib import SimpleActionServer, SimpleActionClient, TerminalState
-from mil_msgs.msg import BagAction, BagResult, BagFeedback, BagGoal
+from mil_msgs.msg import BagOnlineAction, BagOnlineResult, BagOnlineFeedback, BagOnlineGoal
 import argparse
 from tqdm import tqdm
 
@@ -27,6 +27,7 @@ as it writes.
 
 
 class OnlineBagger(object):
+    BAG_TOPIC = '/online_bagger/bag'
 
     def __init__(self):
         """
@@ -42,7 +43,8 @@ class OnlineBagger(object):
         self.get_params()
         self.make_dicts()
 
-        self._action_server = SimpleActionServer('~bag', BagAction, execute_cb=self.start_bagging, auto_start=False)
+        self._action_server = SimpleActionServer(OnlineBagger.BAG_TOPIC, BagOnlineAction,
+                                                 execute_cb=self.start_bagging, auto_start=False)
         self.subscribe_loop()
         rospy.loginfo('Remaining Failed Topics: {}\n'.format(
             self.get_subscriber_list(False)))
@@ -321,7 +323,7 @@ class OnlineBagger(object):
         during the bagging process, resumes streaming when over.
         If bagging is already false because of an active call to this service
         """
-        result = BagResult()
+        result = BagOnlineResult()
         if self.streaming is False:
             result.status = 'Bag Request came in while bagging, priority given to prior request'
             result.success = False
@@ -337,7 +339,7 @@ class OnlineBagger(object):
 
             selected_topics = req.topics.split()
 
-            feedback = BagFeedback()
+            feedback = BagOnlineFeedback()
             total_messages = 0
             bag_topics = {}
             for topic, (time, subscribed) in self.subscriber_list.iteritems():
@@ -398,8 +400,8 @@ class OnlineBaggerClient(object):
     occurs.
     '''
     def __init__(self, name='', topics='', time=0.0):
-        self.client = SimpleActionClient('/online_bagger/bag', BagAction)
-        self.goal = BagGoal(bag_name=name, topics=topics, bag_time=time)
+        self.client = SimpleActionClient(OnlineBagger.BAG_TOPIC, BagOnlineAction)
+        self.goal = BagOnlineGoal(bag_name=name, topics=topics, bag_time=time)
         self.result = None
         self.last_progress = 0
 
@@ -409,7 +411,6 @@ class OnlineBaggerClient(object):
     def _feedback_cb(self, feedback):
         iterations = int((feedback.progress - self.last_progress) / 0.01)
         if iterations >= 1:
-            rospy.set_param('/test', feedback.progress)
             self.bar.update(iterations)
             self.bar.refresh()
             self.last_progress = feedback.progress
