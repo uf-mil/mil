@@ -105,7 +105,7 @@
 
       <sensor name="down_camera" type="camera">
         <camera>
-          <pose>0.0537 0.1048 -0.2565  0 1.57 0</pose>
+          <pose>0.0537 0.1048 -0.2565 -1.57079632679 1.57079632679 0.0 </pose>
           <horizontal_fov>1.047</horizontal_fov>
           <image>
             <width>644</width>
