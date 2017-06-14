@@ -14,6 +14,7 @@ find_package(catkin
 
 add_action_files(FILES
   MoveTo.action
+  BagOnline.action
 )
 
 add_message_files(FILES
@@ -29,7 +30,6 @@ add_message_files(FILES
 
 add_service_files(FILES
   CameraToLidarTransform.srv
-  BaggerCommands.srv
   SetGeometry.srv
 )
 

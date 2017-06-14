@@ -8,25 +8,26 @@ import os
 from collections import deque
 import itertools
 import datetime
-from mil_msgs.srv import BaggerCommands
+from actionlib import SimpleActionServer, SimpleActionClient, TerminalState
+from mil_msgs.msg import BagOnlineAction, BagOnlineResult, BagOnlineFeedback, BagOnlineGoal
+import argparse
+from tqdm import tqdm
 
 """
-To call call service call the '/online_bagger/dump' service with the BaggerCommands.srv
-Amount and Unit. Doing this will generate a rosbag with the
-last x number of seconds saved
+Online Bagger is a node which subscribes to a list of ros topics,
+maintaining a buffer of the most recent n seconds. Parts or all of
+these buffered topics can be written to a bag file by
+sending a new goal to the /online_bagger/bag action server.
 
-For example:
+When run with the -c flag, instead runs an action client which connects
+to online bagger, triggering a bag write and displaying a progress bar
+as it writes.
 
-        bagging_server = rospy.ServiceProxy('/online_bagger/dump', BaggerCommands)
-        bag_status = bagging_server(bag_name, bag_time)
-        bag_name = name of bag (leave blank to use default name: current date and time)
-            Provide an empty string: '' to bag everything
-        bag_time = float32 (leave blank to dump entire bag):
-            Provide 0.0, or 0 to bag everything
 """
 
 
 class OnlineBagger(object):
+    BAG_TOPIC = '/online_bagger/bag'
 
     def __init__(self):
         """
@@ -42,11 +43,12 @@ class OnlineBagger(object):
         self.get_params()
         self.make_dicts()
 
-        self.bagging_service = rospy.Service('~dump', BaggerCommands,
-                                             self.start_bagging)
+        self._action_server = SimpleActionServer(OnlineBagger.BAG_TOPIC, BagOnlineAction,
+                                                 execute_cb=self.start_bagging, auto_start=False)
         self.subscribe_loop()
         rospy.loginfo('Remaining Failed Topics: {}\n'.format(
             self.get_subscriber_list(False)))
+        self._action_server.start()
 
     def get_subscriber_list(self, status):
         """
@@ -154,7 +156,7 @@ class OnlineBagger(object):
         then break out of loop and be called in the callback function to prevent the function
         from locking up.
         """
-
+        self.resubscriber = None
         i = 0
         # if self.successful_subscription_count == 0 and not
         # rospy.is_shutdown():
@@ -185,7 +187,8 @@ class OnlineBagger(object):
         """
 
         if self.successful_subscription_count == len(self.subscriber_list):
-            self.resubscriber.shutdown()
+            if self.resubscriber is not None:
+                self.resubscriber.shutdown()
             rospy.loginfo(
                 'All topics subscribed too! Shutting down resubscriber')
 
@@ -235,12 +238,6 @@ class OnlineBagger(object):
 
         ratio = requested_seconds / topic_duration
         index = int(self.get_topic_message_count(topic) * (1 - min(ratio, 1)))
-
-        self.bag_report = 'The requested %s seconds were bagged' % requested_seconds
-
-        if index == 0:
-            self.bag_report = 'Only %s seconds of the request %s seconds were available, all \
-            messages were bagged' % (topic_duration, requested_seconds)
         return index
 
     def bagger_callback(self, msg, topic):
@@ -292,12 +289,11 @@ class OnlineBagger(object):
     def _get_default_filename(self):
         return str(datetime.date.today()) + '-' + str(datetime.datetime.now().time())[0:8]
 
-    def set_bag_directory(self, filename=''):
+    def get_bag_name(self, filename=''):
         """
         Create ros bag save directory
         If no bag name is provided, the current date/time is used as default.
         """
-
         # If directory param is not set, default to $HOME/bags/<date>
         default_dir = self.dir
         if default_dir is None:
@@ -319,10 +315,7 @@ class OnlineBagger(object):
         # Make sure filename ends in .bag, add otherwise
         if bag_name[-4:] != '.bag':
             bag_name = bag_name + '.bag'
-        rospy.loginfo('bag directory: %s', bag_dir)
-        rospy.loginfo('bag name: %s', bag_name)
-
-        self.bag = rosbag.Bag(os.path.join(bag_dir, bag_name), 'w')
+        return os.path.join(bag_dir, bag_name)
 
     def start_bagging(self, req):
         """
@@ -330,67 +323,137 @@ class OnlineBagger(object):
         during the bagging process, resumes streaming when over.
         If bagging is already false because of an active call to this service
         """
+        result = BagOnlineResult()
         if self.streaming is False:
-            status = 'Bag Request came in while bagging, priority given to prior request'
-            rospy.logwarn(status)
-            return status
+            result.status = 'Bag Request came in while bagging, priority given to prior request'
+            result.success = False
+            self._action_server.set_aborted(result)
+            return
 
-        self.streaming = False
-        self.set_bag_directory(req.bag_name)
+        try:
+            self.streaming = False
+            result.filename = self.get_bag_name(req.bag_name)
+            bag = rosbag.Bag(result.filename, 'w')
 
-        self.bagger_status = 'Total Message Count: {} \nFailed Requested Topics: \n'.format(
-            self.get_total_message_count())
-        requested_seconds = req.bag_time
+            requested_seconds = req.bag_time
 
-        selected_topics = req.topics.split()
-        for topic, (time, subscribed) in self.subscriber_list.items():
-            if not subscribed:
-                self.bagger_status = self.bagger_status + \
-                    'topic: {}\n'.format(topic)
-                continue
-            # Exclude topics that aren't in topics service argument
-            # If topics argument is empty string, include all topics
-            if len(selected_topics) > 0 and topic not in selected_topics:
-                continue
-            if len(self.topic_messages[topic]) == 0:
-                self.bagger_status = self.bagger_status + \
-                    'topic: {}\n'.format(topic)
-                continue
+            selected_topics = req.topics.split()
 
-            rospy.logdebug('message count: {:6}, topic: {}'.format(
-                self.get_topic_message_count(topic), topic))
+            feedback = BagOnlineFeedback()
+            total_messages = 0
+            bag_topics = {}
+            for topic, (time, subscribed) in self.subscriber_list.iteritems():
+                if not subscribed:
+                    continue
+                # Exclude topics that aren't in topics service argument
+                # If topics argument is empty string, include all topics
+                if len(selected_topics) > 0 and topic not in selected_topics:
+                    continue
+                if len(self.topic_messages[topic]) == 0:
+                    continue
 
-            # if no number is provided or a zero is given, bag all messages
-            types = (0, 0.0, None)
-            if req.bag_time in types:
-                bag_index = 0
-                self.bag_report = 'All messages were bagged'
-
-            # get time index the normal way
-            else:
-                # bag index will return the appropriate index to begin bagging at
-                # in order to have the requested number of seconds
-                bag_index = self.get_time_index(topic, requested_seconds)
-            rospy.logdebug('topic: {}, bag_index: {}'.format(topic, bag_index))
-            messages = 0  # message number in a given topic
-            for msgs in self.topic_messages[topic][bag_index:]:
-                messages = messages + 1
-                self.bag.write(topic, msgs[1], t=msgs[0])
-                if messages % 100 == 0:  # log every 100th topic, type and time
-                    rospy.logdebug('topic: %s, message type: %s, time: %s',
-                                   topic, type(msgs[1]), type(msgs[0]))
-
-            # empty deque when done writing to bag
-            self.topic_messages[topic].clear()
-
-        self.bag.close()
-        rospy.loginfo('bagging finished!')
-
+                if req.bag_time == 0:
+                    index = 0
+                else:
+                    index = self.get_time_index(topic, requested_seconds)
+                    total_messages += len(self.topic_messages[topic][index:])
+                    bag_topics[topic] = index
+            if total_messages == 0:
+                result.success = False
+                result.status = 'no messages'
+                self._action_server.set_aborted(result)
+                self.streaming = True
+                bag.close()
+                return
+            self._action_server.publish_feedback(feedback)
+            msg_inc = 0
+            for topic, index in bag_topics.iteritems():
+                for msgs in self.topic_messages[topic][index:]:
+                    bag.write(topic, msgs[1], t=msgs[0])
+                    if msg_inc % 50 == 0:  # send feedback every 50 messages
+                        feedback.progress = float(msg_inc) / total_messages
+                        self._action_server.publish_feedback(feedback)
+                    msg_inc += 1
+                    # empty deque when done writing to bag
+                self.topic_messages[topic].clear()
+            feedback.progress = 1.0
+            self._action_server.publish_feedback(feedback)
+            bag.close()
+        except Exception as e:
+            result.success = False
+            result.status = 'Exception while writing bag: ' + str(e)
+            self._action_server.set_aborted(result)
+            self.streaming = True
+            bag.close()
+            return
+        rospy.loginfo('Bag written to {}'.format(result.filename))
+        result.success = True
+        self._action_server.set_succeeded(result)
         self.streaming = True
-        return self.bagger_status
 
+
+class OnlineBaggerClient(object):
+    '''
+    Wrapper to run an action client connecting to online bagger
+    and triggering a write with the specified topics, time, and
+    filename. Uses tqdm to display a progress bar as the write
+    occurs.
+    '''
+    def __init__(self, name='', topics='', time=0.0):
+        self.client = SimpleActionClient(OnlineBagger.BAG_TOPIC, BagOnlineAction)
+        self.goal = BagOnlineGoal(bag_name=name, topics=topics, bag_time=time)
+        self.result = None
+        self.last_progress = 0
+
+    def _done_cb(self, status, result):
+        self.result = (status, result)
+
+    def _feedback_cb(self, feedback):
+        iterations = int((feedback.progress - self.last_progress) / 0.01)
+        if iterations >= 1:
+            self.bar.update(iterations)
+            self.bar.refresh()
+            self.last_progress = feedback.progress
+
+    def bag(self, timeout=rospy.Duration(0)):
+        self.client.wait_for_server()
+        self.result = None
+        self.last_progress = 0.0
+        self.bar = tqdm(desc='Writing bag', unit=' percent', total=100,
+                        bar_format='{desc} {bar} {percentage:3.0f}%')
+        self.client.send_goal(self.goal, done_cb=self._done_cb,
+                              feedback_cb=self._feedback_cb)
+        while self.result is None and not rospy.is_shutdown():
+            rospy.sleep(0.1)
+        self.bar.close()
+        (status, result) = self.result
+        if status == 3:
+            print 'Bag successful'
+        else:
+            print 'Bag {}: {}'.format(TerminalState.to_string(status), result.status)
 
 if __name__ == "__main__":
-    rospy.init_node('online_bagger')
-    stream = OnlineBagger()
-    rospy.spin()
+    argv = rospy.myargv()
+    parser = argparse.ArgumentParser(description='ROS node to maintain buffers to create bags of the past\
+                                                  and client to call this node.')
+    parser.add_argument('-c', '--client', dest='client', action='store_true',
+                        help='Run as an online bagger client instead of server')
+    parser.add_argument('-d', '--duration', dest='time', type=float, default=0.0,
+                        help='Time in seconds to bag when running as client')
+    parser.add_argument('-t', '--topics', dest='topics', type=str, nargs='+', metavar='topic',
+                        help='List of topics to include in bag when running in client, bag all topics if not set')
+    parser.add_argument('-n', '--name', dest='name', type=str, default='',
+                        help='name of bag to create when running as client')
+    args = parser.parse_args(argv[1:])
+    if args.client:  # Run as actionclient
+        rospy.init_node('online_bagger_client', anonymous=True)
+        if args.topics is None:
+            topics = ''
+        else:
+            topics = ''.join(args.topics)
+        client = OnlineBaggerClient(name=args.name, topics=topics, time=args.time)
+        client.bag()
+    else:  # Run as OnlineBagger server
+        rospy.init_node('online_bagger')
+        bagger = OnlineBagger()
+        rospy.spin()
