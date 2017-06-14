@@ -1,16 +1,16 @@
 color:
   buoy:
     red:
-      bgr_low: [17.697, 0.0, 63.75]
-      bgr_high: [92.0805, 74.3835, 255.0]
+      lab_low: [0, 160, 140]
+      lab_high: [255, 210, 188]
 
     green:
-      hsv_low: [52.2143, 155.8305, 17.697]
-      hsv_high: [82.0357, 255.0, 255.0]
+      lab_low: [0, 80, 135]
+      lab_high: [255, 120, 160]
 
     yellow:
-      hsv_low: [26.6531, 0.0, 0.0]
-      hsv_high: [67.125, 255.0, 255.0]
+      lab_low: [0, 85, 150]
+      lab_high: [255, 160, 220]
 
   channel_marker:
     hsv_low: [17.3988, 17.697, 223.125]

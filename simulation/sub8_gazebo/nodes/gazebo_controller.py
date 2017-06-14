@@ -134,10 +134,10 @@ class GazeboInterface(object):
         '''
         if self.target not in msg.name:
             return
-
         if (self.last_odom is None or self.position_offset is None):
             pose = msg.pose[msg.name.index(self.target)]
             position, orientation = mil_ros_tools.pose_to_numpy(pose)
+            position[2] = 0.0
             self.position_offset = position
 
         self.last_odom = msg

@@ -2,7 +2,7 @@ from __future__ import division
 import image_geometry
 import numpy as np
 from scipy import stats
-from mayavi import mlab
+import mayavi
 
 
 class ProjectionParticleFilter(object):
@@ -233,13 +233,13 @@ class ProjectionParticleFilter(object):
     def visualize(self):
         draw_particles(self)
         draw_cameras(self.observations, self.cameras)
-        mlab.show()
+        mayavi.mlab.show()
 
 
 def draw_particles(ppf, color_hsv=(1.0, 0.2, 1.0), scale=0.05):
     """Draw the particles we are tracking! Whoa!
     """
-    mlab.points3d(
+    mayavi.mlab.points3d(
         ppf.particles[0, :][::20],
         ppf.particles[1, :][::20],
         ppf.particles[2, :][::20],
@@ -247,7 +247,7 @@ def draw_particles(ppf, color_hsv=(1.0, 0.2, 1.0), scale=0.05):
         color=color_hsv,
         colormap='hsv'
     )
-    mlab.axes()
+    mayavi.mlab.axes()
 
 
 def draw_cameras(observations, cameras):
@@ -268,7 +268,7 @@ def draw_camera(t, R):
     for line, color in zip(R, colors):
         draw_line(t, t + line, color=color)
 
-    mlab.points3d(
+    mayavi.mlab.points3d(
         [t[0]],
         [t[1]],
         [t[2]],
@@ -279,7 +279,7 @@ def draw_camera(t, R):
 
 def draw_line(pt_1, pt_2, color=(1.0, 0.0, 0.0)):
     """Draw a line between two points"""
-    mlab.plot3d(
+    mayavi.mlab.plot3d(
         np.hstack([pt_1[0], pt_2[0]]),
         np.hstack([pt_1[1], pt_2[1]]),
         np.hstack([pt_1[2], pt_2[2]]),
@@ -340,7 +340,7 @@ def main():
         observations.append(ppf.get_ray(obs_final))
         # draw_cameras(observations, cameras)
         # draw_particles(ppf, color_hsv=((k + 1) / (max_k + 1), 0.7, 0.8), scale=0.1 * ((k + 1) / max_k))
-        # mlab.show()
+        # mayavi.mlab.show()
 
         # Interpolate along hsv to get a cool heatmap effect
 
@@ -352,7 +352,7 @@ def main():
     draw_cameras(observations, cameras)
     draw_particles(ppf, color_hsv=((k + 1) / (max_k + 1), 0.7, 0.8), scale=0.1 * ((k + 1) / max_k))
 
-    mlab.show()
+    mayavi.mlab.show()
 
 
 if __name__ == '__main__':

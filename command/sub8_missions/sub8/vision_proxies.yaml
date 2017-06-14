@@ -4,3 +4,5 @@ proxy2:
     root: "/vision/serviceTesting2"
 orange_rectangle:
     root: "/vision/orange_rectangle"
+buoy:
+    root: "/vision/buoys"
