@@ -222,79 +222,68 @@ class ThrusterPort(object):
         )
         return payload
 
-
     def set_register(self, motor_id, register, value):
         '''
-        Get a register (and optionally try to set it)
-        Note: This fails randomly
+        Sets a CSR register on a thruster microcontroller
+        Returns a tuple with the value and raw bytes of the recently changed register
+        Note: Can only set registers that are writeable (see comms protocol)
         '''
-        assert register in Const.csr_address.keys(), "Unknown register, {}".format(register)
-        address, return_size, format_char, permission = Const.csr_address[register]
-        print register, address, return_size, format_char, permission
+        # Validate input
+        assert register in Const.csr_address.keys(), 'Unknown register: {}'.format(register)
+        address, register_size, format_char, permission = Const.csr_address[register]
+        expected_response_length = Const.header_size + Const.xsum_size + 1 + register_size + Const.xsum_size
+        assert 'W' in permission, 'Register ' + register + ' doesn\'t have read permission'
 
-
-        if value is not None:
-            payload = self.checksum_struct(struct.pack('<' + size_char, value))
-            send_size = return_size
-        else:
-            payload = self.checksum_struct(struct.pack('<'))
-            send_size = 0
-
-        print 'return_size', return_size
+        # Create VR_CSR packet
         header = self.checksum_struct(
             struct.pack('<HBBBB',
                 Const.sync_request,
                 int(motor_id),
-                #0xFF,    # This works, but returns all the registers, not sure how to write using this
-                0x80 | return_size, #This doesnt work, sync is not request but something different
+                0x80 | register_size,
                 address,
-                send_size
+                register_size
             )
         )
-
+        payload = self.checksum_struct(struct.pack('<' + format_char, value))
         packet = header + payload
-        print 'sent:', self.make_hex(packet)
-        self.port.write(bytes(packet))
-        read_len = Const.response_normal_length + return_size
-        print 'read_len', read_len
-        #response_bytearray = self.port.read(Const.response_normal_length + return_size)
-        response_bytearray = self.port.read(1000)
-        if len(response_bytearray) == 0:
-            print 'Got nothing'
-            return None
 
-        print 'resp len:\t', len(response_bytearray)
-        print 'full\t', len(response_bytearray), self.make_hex(response_bytearray)
-        #print 'clipped\t', self.make_hex(response_bytearray[:read_len])
-        #if not response_bytearray.startswith(bytearray('\x08\x10')):
-        #    print "Bad response packet"
-        #else:
-        #    print 'Good response packet'
-        #response = struct.unpack('<HBBBB I B {} I'.format(size_char), response_bytearray[:read_len])
-        response = struct.unpack('<HBBBB I {} I'.format(format_char), response_bytearray[:read_len])
+        # Write packet and read response
+        self.port.write(bytes(packet))
+        response_bytearray = self.port.read(expected_response_length)
+        assert len(response_bytearray) == expected_response_length, \
+            'Expected response packet to have {} bytes, got {}'.format(expected_response_length, len(response_bytearray))
+
+        # Unpack response packet
+        response = struct.unpack('<HBBBB I B{} I'.format(format_char), response_bytearray)
         response_contents = [
             'sync',
-            'response_node_id',
+            'node_id',
             'flag',
-            'CSR_address',
+            'address',
             'length',
             'header_checksum',
-            #'device_type',
+            'device_type',
             register,
             'payload_checksum',
         ]
         response_dict = dict(zip(response_contents, response))
-        try:
-            print register, response_dict[register]
-        except:
-            pass
-        return response_dict
+
+        # Validate packet
+        assert response_dict['sync'] == Const.sync_response, 'Got invalid packet type: {}'.format(
+            response_dict['sync'])
+        assert response_dict['node_id'] == motor_id, 'Got response packet from wrong thruster: {}'.format(
+            response_dict['node_id'])
+        assert response_dict['address'] == address, 'Got corrupted response packet'
+
+        register_bytes = response_bytearray[-register_size - 4 : -4]
+        return response_dict[register], register_bytes
 
     def read_register(self, motor_id, register):
         '''
         Reads a CSR register on a thruster microcontroller
+        Returns the a tuple with the value of the register and the raw bytes)
         Note: This roundabout way of reading gets a response packet with all of the registers on the
-        motor controller because VideoRay's comms protocol doesn't work as advertised.
+            motor controller because VideoRay's comms protocol doesn't work as advertised.
         '''
         # Validate input
         assert register in Const.csr_address.keys(), 'Unknown register: {}'.format(register)
@@ -308,8 +297,10 @@ class ThrusterPort(object):
             struct.pack('<HBBBB',
                 Const.sync_request,
                 int(motor_id),
-                0xFF,
+                #0xFF,
+                0x80 | register_size,
                 address,
+                #0 # payload size
                 0 # payload size
             )
         )
@@ -318,7 +309,6 @@ class ThrusterPort(object):
         # Write packet and read response
         self.port.write(bytes(packet))
         response_bytearray = self.port.read(expected_response_length) # with flag byte 0xFF
-        print register, motor_id
         assert len(response_bytearray) == expected_response_length, \
             'Expected response packet to have {} bytes, got {}'.format(expected_response_length, len(response_bytearray))
 
