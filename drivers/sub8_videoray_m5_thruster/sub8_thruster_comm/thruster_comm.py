@@ -229,6 +229,23 @@ class ThrusterPort(object):
         except:
             pass
 
+    def send_VRCSR_request_packet(self, node_id, flags, address, length, payload_bytes):
+        ''' Wries a VideoRay CSR (Control Service Register) packet to the serial port '''
+        # Create VR_CSR packet
+        header = self.checksum_struct(
+            struct.pack('<HBBBB',
+                Const.sync_request,
+                int(node_id),
+                flags,
+                address,
+                length
+            )
+        )
+        packet = header + payload_bytes
+
+        # Write packet
+        self.port.write(bytes(packet))
+
     def set_register(self, motor_id, register, value):
         '''
         Sets a CSR register on a thruster microcontroller
@@ -241,21 +258,14 @@ class ThrusterPort(object):
         expected_response_length = Const.header_size + Const.xsum_size + 1 + register_size + Const.xsum_size
         assert 'W' in permission, 'Register ' + register + ' doesn\'t have read permission'
 
-        # Create VR_CSR packet
-        header = self.checksum_struct(
-            struct.pack('<HBBBB',
-                Const.sync_request,
-                int(motor_id),
-                0x80 | register_size,
-                address,
-                register_size
-            )
+        # Do serial comms
+        self.send_VRCSR_request_packet(
+                node_id=int(motor_id),
+                flags=0x80 | register_size,
+                address=address,
+                length=register_size,
+                payload_bytes=self.checksum_struct(struct.pack('<' + format_char, value))
         )
-        payload = self.checksum_struct(struct.pack('<' + format_char, value))
-        packet = header + payload
-
-        # Write packet and read response
-        self.port.write(bytes(packet))
         response_bytearray = self.port.read(expected_response_length)
         assert len(response_bytearray) == expected_response_length, \
             'Expected response packet to have {} bytes, got {}'.format(expected_response_length, len(response_bytearray))
@@ -285,6 +295,19 @@ class ThrusterPort(object):
         register_bytes = response_bytearray[-register_size - 4 : -4]
         return response_dict[register], register_bytes
 
+    def parse_VRCSR_response_packet(self, packet):
+        '''
+        Returns a dictionary with a parsed version of the response packet header fields and the payload bytes
+        '''
+        payload_start_idx = Const.header_size + Const.xsum_size + 1
+        header_bytes = packet[:payload_start_idx]
+        payload_bytes = packet[payload_start_idx:]
+        header_names = ['sync', 'node_id', 'flag', 'address', 'length', 'header_xsum', 'device_type']
+        header_fields = struct.unpack('<HBBBB I B', header_bytes)
+        response_dict = dict(zip(header_names, header_fields))
+        response_dict['payload_bytes'] = payload_bytes
+        return response_dict
+
     def read_register(self, motor_id, register):
         '''
         Reads a CSR register on a thruster microcontroller
@@ -299,21 +322,15 @@ class ThrusterPort(object):
         expected_response_length = 142
         assert 'R' in permission, 'Register ' + register + ' doesn\'t have read permission'
 
-        # Create VR_CSR packet
-        header = self.checksum_struct(
-            struct.pack('<HBBBB',
-                Const.sync_request,
-                int(motor_id),
-                0xFF,
-                address,
-                0 # payload size
-            )
+        # Do serial comms
+        self.send_VRCSR_request_packet(
+                node_id=int(motor_id),
+                flags=0xFF,
+                address=address,
+                length=0,
+                payload_bytes=self.checksum_struct(struct.pack(''))
         )
-        packet = header + self.checksum_struct(struct.pack(''))
-
-        # Write packet and read response
-        self.port.write(bytes(packet))
-        response_bytearray = self.port.read(expected_response_length) # with flag byte 0xFF
+        response_bytearray = self.port.read(expected_response_length)
         assert len(response_bytearray) == expected_response_length, \
             'Expected response packet to have {} bytes, got {}'.format(expected_response_length, len(response_bytearray))
 
