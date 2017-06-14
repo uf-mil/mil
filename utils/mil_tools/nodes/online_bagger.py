@@ -409,7 +409,7 @@ class OnlineBaggerClient(object):
         self.result = (status, result)
 
     def _feedback_cb(self, feedback):
-        percentage = int(100.0*feedback.progress)
+        percentage = int(100.0 * feedback.progress)
         if percentage - self.total_it >= 1:
             self.bar.update(percentage - self.total_it)
             self.bar.refresh()

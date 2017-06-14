@@ -291,7 +291,7 @@ bag() {
 		done
 
 		# Call to the online bagger with what topics to dump and where
-		rosrun mil_tools online_bagger.py -c -n "$BAG_DIR/$(date +%Y-%m-%d)/$NAME" -t "$TOPICS" -d "$TIME"
+		rosrun mil_tools online_bagger.py -c -n "$BAG_DIR/$(date +%Y-%m-%d)/$NAME" -t "$BAG_ALWAYS $TOPICS" -d "$TIME"
 
 		# If the text flag was passed in, create a notes file of the same name
 		if [[ "$NOTE_TEXT" == "true" ]]; then
