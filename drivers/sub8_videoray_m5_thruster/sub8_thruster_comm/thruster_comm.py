@@ -222,6 +222,13 @@ class ThrusterPort(object):
         )
         return payload
 
+    def reboot_thruster(self, motor_id):
+        ''' Reboots a thruster '''
+        try:
+            self.set_register(motor_id, 'UTILITY', 0xDEAD)
+        except:
+            pass
+
     def set_register(self, motor_id, register, value):
         '''
         Sets a CSR register on a thruster microcontroller
@@ -297,10 +304,8 @@ class ThrusterPort(object):
             struct.pack('<HBBBB',
                 Const.sync_request,
                 int(motor_id),
-                #0xFF,
-                0x80 | register_size,
+                0xFF,
                 address,
-                #0 # payload size
                 0 # payload size
             )
         )
