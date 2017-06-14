@@ -356,8 +356,8 @@ class OnlineBagger(object):
                     index = 0
                 else:
                     index = self.get_time_index(topic, requested_seconds)
-                    total_messages += len(self.topic_messages[topic][index:])
-                    bag_topics[topic] = index
+                total_messages += len(self.topic_messages[topic][index:])
+                bag_topics[topic] = index
             if total_messages == 0:
                 result.success = False
                 result.status = 'no messages'
