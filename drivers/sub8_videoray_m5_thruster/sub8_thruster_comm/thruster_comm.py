@@ -114,9 +114,7 @@ class ThrusterPort(object):
              command for ~2 seconds
 
         TODO:
-            --> 0x88, 0x8c: Set slew-rate up and down to something tiny
             --> Send messages without getting status
-            --> Get status without sending thrust
         '''
         self.port_name = port_info['port']
         self.port = self.connect_port(self.port_name)
@@ -212,16 +210,6 @@ class ThrusterPort(object):
         )
         return payload
 
-    def make_poll_payload(self, motor_id):
-        payload = self.checksum_struct(
-            struct.pack(
-                '<BB',
-                Const.propulsion_command,
-                motor_id
-            )
-        )
-        return payload
-
     def reboot_thruster(self, motor_id):
         ''' Reboots a thruster '''
         address, register_size, format_char, permission = Const.csr_address['UTILITY']
@@ -275,7 +263,6 @@ class ThrusterPort(object):
         assert register in Const.csr_address.keys(), 'Unknown register: {}'.format(register)
         address, register_size, format_char, permission = Const.csr_address[register]
         response_roi_len = Const.header_size + Const.xsum_size + 1 + register_size
-        #expected_response_length = 142
         expected_response_length = Const.header_size + Const.xsum_size + 1 + register_size + Const.xsum_size
         assert 'R' in permission, 'Register ' + register + ' doesn\'t have read permission'
 
@@ -343,20 +330,15 @@ class ThrusterPort(object):
 
         return register_val, register_bytes
 
-    def send_poll_msg(self, motor_id):
-        payload = self.make_poll_payload(int(motor_id))
-        header = self.make_header(int(motor_id), msg_size=0)
-        packet = header + payload
-        self.port.write(bytes(packet))
-
-    def send_thrust_msg(self, motor_id, thrust):
-        '''Construct and send a message to set thrust'''
-        payload = self.make_thrust_payload(int(motor_id), thrust)
-        header = self.make_header(int(motor_id), msg_size=1)
-        packet = header + payload
-        #print 'sent:', self.make_hex(packet)
-        #self.port.flush()
-        self.port.write(bytes(packet))
+    def send_thrust_msg(self, motor_id, effort):
+        ''' Construct and send a message to set motor effort '''
+        self.send_VRCSR_request_packet(
+                node_id=int(motor_id),
+                flags=Const.response_thruster_standard,
+                address=Const.addr_custom_command,
+                length=6,  # 2 bytes and a float: (propulsion_command, motor_id, effort)
+                payload_bytes=self.make_thrust_payload(int(motor_id), effort)
+        )
 
     def make_hex(self, msg):
         '''
@@ -368,14 +350,11 @@ class ThrusterPort(object):
         return ":".join("{:02x}".format(c) for c in msg)
 
     def check_for_thruster(self, motor_id):
-        self.send_poll_msg(motor_id)
-        response_dict = self.read_status()
-        if response_dict is None:
+        ''' Determines if a thruster with the given motor_id is responsive on this port '''
+        try:
+            return self.read_register(motor_id, 'NODE_ID')[0] == motor_id
+        except AssertionError:
             return False
-        else:
-            # We have the thruster!
-            found = response_dict['response_node_id'] == motor_id
-            return found
 
     def get_motor_ids_on_port(self, start_id, end_id):
         '''
@@ -394,43 +373,14 @@ class ThrusterPort(object):
                 turnaround_times.append((rospy.Time.now() - t0).to_sec())
         return found_ids, np.mean(turnaround_times)
 
-    def read_status(self):
-        response_bytearray = self.port.read(Const.thrust_response_length)
-        #print 'received:', self.make_hex(bytearray(response_bytearray))
-        # We should always get $Const.thrust_response_length bytes, if we don't
-        # we *are* failing to communicate
-        read_len = len(response_bytearray)
-        if read_len != Const.thrust_response_length:
-            if read_len != 0:
-                pass
-                #self.port.flushInput()  # Throw away packets that we only half read
-            return None
-
-        response = struct.unpack('<HBBBB I BffffB I', response_bytearray)
-        response_contents = [
-            'sync',
-            'response_node_id',
-            'flag',
-            'CSR_address',
-            'length',
-            'header_checksum',
-            'device_type',
-            'rpm',
-            'bus_voltage',
-            'bus_current',
-            'temperature',
-            'fault',
-            'payload_checksum',
-        ]
-
-        response_dict = dict(zip(response_contents, response))
-        #print 'received: dict: {}'.format(response_dict)
-
-        return response_dict
+    def parse_thrust_response(self, payload_bytes):
+        ''' Parses the response to the standard propulsion command (0xAA) '''
+        names = ['rpm', 'bus_v', 'bus_i', 'temp', 'fault']
+        fields = struct.unpack('<ffffB', payload_bytes[:-Const.xsum_size])
+        return dict(zip(names, fields))
 
     def command_thruster(self, name, effort):
         ''' Sets effort value on motor controller, effort should be in [-1.0, 1.0] '''
-        print name, effort
         
         # Perform availability checks
         if name not in self.thruster_info.keys():
@@ -448,14 +398,22 @@ class ThrusterPort(object):
         # Might not need to do this mutex around tx and rx together
         self.serial_busy = True  # Take ownership of line
         t0 = rospy.Time.now()
+
+        # Send thrust command
         self.send_thrust_msg(motor_id, effort)
         self.command_tx_count[name] = self.command_tx_count[name] + 1
-        thruster_status = self.read_status()
+
+        # Parse thrust response
+        response_bytearray = self.port.read(Const.thrust_response_length)
         t1 = rospy.Time.now()
         self.serial_busy = False  # Release line
+        valid = len(response_bytearray) == Const.thrust_response_length
+        response_dict = self.parse_VRCSR_response_packet(response_bytearray) if valid else None
+        valid = valid and response_dict['sync'] == Const.sync_response and response_dict['node_id'] == motor_id \
+                and response_dict['address'] == Const.addr_custom_command
 
         # Keep track of thrusters going offline or coming back online
-        if thruster_status is None:
+        if not valid:
             if name in self.online_thruster_names:
                 self.online_thruster_names.remove(name)
         else:
@@ -467,7 +425,7 @@ class ThrusterPort(object):
             self.status_rx_count[name] = self.status_rx_count[name] + 1
             self.command_latency_avg[name] = total_latency / self.status_rx_count[name]
 
-        return thruster_status
+        return self.parse_thrust_response(response_dict['payload_bytes']) if valid else None
 
 
 if __name__ == '__main__':
