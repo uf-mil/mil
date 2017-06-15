@@ -356,8 +356,8 @@ class OnlineBagger(object):
                     index = 0
                 else:
                     index = self.get_time_index(topic, requested_seconds)
-                    total_messages += len(self.topic_messages[topic][index:])
-                    bag_topics[topic] = index
+                total_messages += len(self.topic_messages[topic][index:])
+                bag_topics[topic] = index
             if total_messages == 0:
                 result.success = False
                 result.status = 'no messages'
@@ -403,28 +403,29 @@ class OnlineBaggerClient(object):
         self.client = SimpleActionClient(OnlineBagger.BAG_TOPIC, BagOnlineAction)
         self.goal = BagOnlineGoal(bag_name=name, topics=topics, bag_time=time)
         self.result = None
-        self.last_progress = 0
+        self.total_it = 0
 
     def _done_cb(self, status, result):
         self.result = (status, result)
 
     def _feedback_cb(self, feedback):
-        iterations = int((feedback.progress - self.last_progress) / 0.01)
-        if iterations >= 1:
-            self.bar.update(iterations)
+        percentage = int(100.0 * feedback.progress)
+        if percentage - self.total_it >= 1:
+            self.bar.update(percentage - self.total_it)
             self.bar.refresh()
-            self.last_progress = feedback.progress
+            self.total_it = percentage
 
     def bag(self, timeout=rospy.Duration(0)):
         self.client.wait_for_server()
         self.result = None
-        self.last_progress = 0.0
+        self.total_it = 0
         self.bar = tqdm(desc='Writing bag', unit=' percent', total=100,
                         bar_format='{desc} {bar} {percentage:3.0f}%')
         self.client.send_goal(self.goal, done_cb=self._done_cb,
                               feedback_cb=self._feedback_cb)
         while self.result is None and not rospy.is_shutdown():
             rospy.sleep(0.1)
+        self.bar.refresh()
         self.bar.close()
         (status, result) = self.result
         if status == 3:
