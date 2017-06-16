@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import division
 import cv2
 import numpy as np
 import rospy
@@ -135,6 +136,8 @@ class BuoyFinder(object):
 
     Intended to be modular so other approaches can be tried. Adding more sophistication
     to segmentation would increase reliability.
+
+    TODO: Use same mask for yellow/green
     '''
     def __init__(self):
         self.tf_listener = tf.TransformListener()
@@ -149,6 +152,7 @@ class BuoyFinder(object):
         self.debug_ros = rospy.get_param('~debug/ros', True)
         self.debug_cv = rospy.get_param('~debug/cv', False)
         self.min_contour_area = rospy.get_param('~min_contour_area')
+        self.max_circle_error = rospy.get_param('~max_circle_error')
         self.max_velocity = rospy.get_param('~max_velocity')
         camera = rospy.get_param('~camera_topic', '/camera/front/right/image_rect_color')
 
@@ -255,9 +259,10 @@ class BuoyFinder(object):
         # Crop out some of the top and bottom to exclude the floor and surface reflections
         height = image.shape[0]
         roi_y = int(0.2 * height)
-        roi_height = height - int(0.2 * height)
+        roi_height = height - int(0.1 * height)
         self.roi = (0, roi_y, roi_height, image.shape[1])
         self.last_image = image[self.roi[1]:self.roi[2], self.roi[0]:self.roi[3]]
+        self.image_area = self.last_image.shape[0] * self.last_image.shape[1]
 
         if self.debug_ros:
             # Create a blacked out debug image for putting masks in
@@ -297,15 +302,18 @@ class BuoyFinder(object):
         TODO: Use smarter contour filtering methods, like checking this it is circle like
         '''
         if len(contours) > 0:
-            cnt = max(contours, key=cv2.contourArea)
-            area = cv2.contourArea(cnt)
-            if area < self.min_contour_area:
-                return None
-            M = cv2.moments(cnt)
-            cx = int(M['m10'] / M['m00'])
-            cy = int(M['m01'] / M['m00'])
-            tpl_center = (int(cx), int(cy))
-            return cnt, tpl_center, area
+            sort = sorted(contours, key=cv2.contourArea, reverse=True)
+            for cnt in sort:
+                (x, y), radius = cv2.minEnclosingCircle(cnt)
+                circle_area = np.pi * pow(radius, 2)
+                M = cv2.moments(cnt)
+                area = M['m00']
+                if area / self.image_area < self.min_contour_area:
+                    return None
+                area_err = abs(area - circle_area) / circle_area
+                if area_err > self.max_circle_error:
+                    continue
+                return cnt, (x, y), area, radius
         else:
             return None
 
@@ -329,20 +337,20 @@ class BuoyFinder(object):
 
         _, contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE,
                                           offset=(self.roi[0], self.roi[1]))
+        if self.debug_ros:
+            cv2.add(self.mask_image.copy(), buoy.cv_colors, mask=mask, dst=self.mask_image)
+        if self.debug_cv:
+            self.debug_images[buoy_type] = mask.copy()
+
         ret = self.get_best_contour(contours)
         if ret is None:
             buoy.clear_old_observations()
             buoy.status = 'not seen w/ {} obs'.format(buoy.size())
             return
-        contour, tuple_center, area = ret
-        true_center, rad = cv2.minEnclosingCircle(contour)
-
+        contour, center, area, rad = ret
         if self.debug_ros:
-            cv2.add(self.mask_image.copy(), buoy.cv_colors, mask=mask, dst=self.mask_image)
-            cv2.circle(self.mask_image, (int(true_center[0] - self.roi[0]), int(true_center[1]) - self.roi[1]),
-                       int(rad), buoy.cv_colors, 2)
-        if self.debug_cv:
-            self.debug_images[buoy_type] = mask.copy()
+            cv2.circle(self.mask_image, (int(center[0] - self.roi[0]), int(center[1]) - self.roi[1]),
+                       int(rad), buoy.cv_colors, 4)
 
         try:
             self.tf_listener.waitForTransform('/map', self.frame_id, self.last_image_time, rospy.Duration(0.2))
@@ -350,14 +358,14 @@ class BuoyFinder(object):
             rospy.logwarn("Could not transform camera to map: {}".format(e))
             return False
 
-        if not self.sanity_check(tuple_center, self.last_image_time):
+        if not self.sanity_check(center, self.last_image_time):
             buoy.status = 'failed sanity check'
             return False
 
         (t, rot_q) = self.tf_listener.lookupTransform('/map', self.frame_id, self.last_image_time)
         R = mil_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
 
-        buoy.add_observation(true_center, (np.array(t), R), self.last_image_time)
+        buoy.add_observation(center, (np.array(t), R), self.last_image_time)
 
         observations, pose_pairs = buoy.get_observations_and_pose_pairs()
         if len(observations) > self.min_observations:
@@ -369,8 +377,7 @@ class BuoyFinder(object):
                                       frame='/map', _id=buoy.visual_id)
         else:
             buoy.status = '{} observations'.format(len(observations))
-
-        return tuple_center, rad
+        return center, rad
 
     def sanity_check(self, coordinate, timestamp):
         '''
