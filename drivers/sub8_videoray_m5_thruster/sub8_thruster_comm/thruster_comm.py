@@ -5,7 +5,6 @@ import scipy.interpolate
 import struct
 import binascii
 import copy
-from ros_alarms import AlarmBroadcaster
 from sub8_thruster_comm.protocol import Const
 import serial
 import rospy
@@ -118,7 +117,6 @@ class ThrusterPort(object):
         '''
         self.port_name = port_info['port']
         self.port = self.connect_port(self.port_name)
-        self.thruster_out_alarm = AlarmBroadcaster('thruster-out')
 
         self.thruster_info = {}  # Information about all thrusters declared in the layout
         self.online_thruster_names = set()  # Keeps track of all thrusters that can be allocated thrust

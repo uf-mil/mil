@@ -11,7 +11,7 @@ from geometry_msgs.msg import Vector3
 from std_msgs.msg import Header, Float64
 from sub8_msgs.msg import Thrust, ThrusterStatus
 from mil_ros_tools import wait_for_param, thread_lock, numpy_to_point
-from sub8_msgs.srv import ThrusterInfo, ThrusterInfoResponse, FailThruster, FailThrusterResponse
+from sub8_msgs.srv import ThrusterInfo, ThrusterInfoResponse, FailThruster, UnfailThruster
 from sub8_thruster_comm import thruster_comm_factory, UnavailableThrusterException
 from ros_alarms import AlarmBroadcaster, AlarmListener
 lock = threading.Lock()
@@ -136,12 +136,13 @@ class ThrusterDriver(object):
 
         # To programmatically deactivate thrusters
         self.fail_thruster_server = rospy.Service('fail_thruster', FailThruster, self.fail_thruster)
+        self.unfail_thruster_server = rospy.Service('unfail_thruster', UnfailThruster, self.unfail_thruster)
 
     @thread_lock(lock)
     def load_thruster_ports(self, ports_layout, thruster_definitions):
         ''' Loads a dictionary ThrusterPort objects '''
-        self.ports = {}
-        self.thruster_to_port_map = {}
+        self.ports = {}                      # ThrusterPort objects
+        self.thruster_to_port_map = {}       # motor_id to ThrusterPort
 
         self.make_fake = rospy.get_param('simulate', False)
         if self.make_fake:
@@ -314,7 +315,14 @@ class ThrusterDriver(object):
 
         # So that thruster_mapper updates the B-matrix
         self.update_thruster_out_alarm()
-        return FailThrusterResponse()
+        return {}
+
+    def unfail_thruster(self, srv):
+        ''' Undoes effect of self.fail_thruster '''
+        self.failed_thrusters.remove(srv.thruster_name)
+        self.deactivated_thrusters.remove(srv.thruster_name)
+        self.update_thruster_out_alarm()
+        return {}
 
 
 if __name__ == '__main__':

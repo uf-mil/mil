@@ -1,5 +1,5 @@
 
-tor Controller: THR000205
+Motor Controller: THR000205
 SW Version: 0.9.8 Jun  9 2015 22:07:06
 
 1: Motor control flags:          0x0
