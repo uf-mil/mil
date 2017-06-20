@@ -4,7 +4,6 @@
 #include "gazebo/common/Events.hh"
 #include "ros/ros.h"
 
-
 using namespace gazebo;
 using namespace std;
 
@@ -64,7 +63,6 @@ void StatePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   // Make sure the ROS node for Gazebo has already been initialized
   GZ_ASSERT(ros::isInitialized(), "ROS not initialized");
   reference_sub_ = nh_.subscribe(ref_topic, 1, &StatePlugin::PoseRefUpdate, this);
-
 }
 /////////////////////////////////////////////////
 void StatePlugin::PoseRefUpdate(const geometry_msgs::PoseStampedConstPtr& ps)
@@ -86,6 +84,4 @@ void StatePlugin::Init()
 /////////////////////////////////////////////////
 void StatePlugin::OnUpdate()
 {
-
-
 }
