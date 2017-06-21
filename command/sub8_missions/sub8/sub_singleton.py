@@ -10,9 +10,11 @@ from sub8 import pose_editor
 import mil_ros_tools
 from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D
 from mil_msgs.srv import SetGeometry, SetGeometryRequest
+from sub8_msgs.srv import SetValve, SetValveRequest
 from std_srvs.srv import SetBool, SetBoolRequest
 from nav_msgs.msg import Odometry
 from tf.transformations import quaternion_multiply, quaternion_from_euler
+
 import numpy as np
 from twisted.internet import defer
 import os
@@ -161,6 +163,46 @@ class _PoseProxy(object):
         return traj
 
 
+class _ActuatorProxy(object):
+    '''
+    Wrapper for making service calls to pneumatic valve board.
+
+    Example usage:
+    yield self.sub.gripper_open()
+    yield self.sub.set('torpedo1', True)
+    '''
+    def __init__(self, nh, namespace='actuator_driver'):
+        self._actuator_service = nh.get_service_client(namespace + '/actuate', SetValve)
+        self._raw_service = nh.get_service_client(namespace + '/actuate_raw', SetValve)
+
+    def open(self, name):
+        return self.set(name, False)
+
+    def close(self, name):
+        return self.set(name, True)
+
+    def set(self, name, opened):
+        return self._actuator_service(SetValveRequest(actuator=name, opened=opened))
+
+    def set_raw(self, name, opened):
+        return self._raw_service(SetValveRequest(actuator=name, opened=opened))
+
+    def gripper_open(self):
+        return self.set('gripper', True)
+
+    def gripper_close(self):
+        return self.set('gripper', False)
+
+    def shoot_torpedo1(self):
+        return self.set('torpedo1', True)
+
+    def shoot_torpedo2(self):
+        return self.set('torpedo2', True)
+
+    def drop_marker(self):
+        return self.set('dropper', True)
+
+
 class _Sub(object):
     def __init__(self, node_handle):
         self.nh = node_handle
@@ -176,6 +218,7 @@ class _Sub(object):
         self._tf_listener = yield tf.TransformListener(self.nh)
 
         self.vision_proxies = _VisionProxies(self.nh, 'vision_proxies.yaml')
+        self.actuators = _ActuatorProxy(self.nh)
 
         defer.returnValue(self)
 
