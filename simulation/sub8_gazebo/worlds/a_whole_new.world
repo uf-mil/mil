@@ -17,7 +17,7 @@
       <uri>model://sun</uri>
     </include>
 
-    <!-- Never delete this -->
+    <!-- Never delete this, uncomment to bring back the ghost cessna
     <model name="physics_engine">
       <static>false</static>
       <link name="physics_engine">
@@ -38,7 +38,7 @@
         </collision>
       </link>
     </model>
-
+    -->
     <model name="water">
       <static>true</static>
       <pose>0 0 0 0 3.1415 0</pose>

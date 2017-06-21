@@ -73,6 +73,8 @@ void StatePlugin::PoseRefUpdate(const geometry_msgs::PoseStampedConstPtr& ps)
   math::Quaternion rot(ps->pose.orientation.w, ps->pose.orientation.x, ps->pose.orientation.y, ps->pose.orientation.z);
 
   last_ref_pose_ = math::Pose(pos, rot);
+  auto fixed_pose = last_ref_pose_ + first_pose_;
+  model_->SetWorldPose(fixed_pose);
 }
 
 /////////////////////////////////////////////////
@@ -84,6 +86,4 @@ void StatePlugin::Init()
 /////////////////////////////////////////////////
 void StatePlugin::OnUpdate()
 {
-  auto fixed_pose = last_ref_pose_ + first_pose_;
-  model_->SetWorldPose(fixed_pose);
 }
