@@ -78,6 +78,11 @@ def main(args):
                         break
                     except ValueError:
                         try:
+                            if argument in ('list', 'l'):
+                                fprint('Available TP locations:')
+                                for k in f:
+                                    print '  * ' + k
+                                break
                             argz = f[argument]
                             x = float(argz.split(' ')[0])
                             y = float(argz.split(' ')[1])
@@ -96,12 +101,12 @@ def main(args):
                         #As an additional note, given the way we do trajectory in the sim, we must kill sub to prevent
                         #the trajectory from overriding our teleport and bringing it back to its expected position.
                     ab = TxAlarmBroadcaster(nh,'kill', node_name='kill')
-                    ab.raise_alarm(problem_description='TELEPORTING: KILLING SUB',
+                    yield ab.raise_alarm(problem_description='TELEPORTING: KILLING SUB',
                             severity=5)
                     yield nh.sleep(1)
                     yield state_set_pub.publish(modelstate)
                     yield nh.sleep(1)
-                    ab.clear_alarm()
+                    yield ab.clear_alarm()
 
             except KeyboardInterrupt as e:
                 #Catches a ctrl-c situation and ends the program. Break will just bring the program to its natural conclusion.
