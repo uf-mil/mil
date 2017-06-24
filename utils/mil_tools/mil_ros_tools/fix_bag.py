@@ -2,6 +2,7 @@
 import argparse
 import rosbag
 import rospy
+from tqdm import tqdm
 
 
 class BagFixer():
@@ -45,10 +46,12 @@ class BagFixer():
             start = first_time + rospy.Duration(self.start)
         if self.stop is not None:
             stop = first_time + rospy.Duration(self.stop)
+        total_messages = bag.get_message_count()
         # This could be made signifigantly faster by using ag.get_type_and_topic_info
         # to do some preprocessing on what topics will be used / remaped /
         # processed
-        for topic, msg, time in bag.read_messages(start_time=start, end_time=stop):
+        for topic, msg, time in tqdm(bag.read_messages(start_time=start, end_time=stop),
+                                     total=total_messages, unit=' messages', desc='Fixing bag'):
             if not self.valid_topic(topic):
                 continue
             topic = self.fix_topic(topic)
