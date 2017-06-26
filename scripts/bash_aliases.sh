@@ -23,3 +23,6 @@ alias subfps="rostopic hz $bag_front_cams $bag_down_cam"
 
 # Visualization
 alias subrviz="rviz -d \$CATKIN_DIR/src/SubjuGator/sub.rviz"
+
+# Formatting (update with Jenkinsfile)
+alias subfmt="python2.7 -m flake8 --ignore E731 --max-line-length=120 --exclude=__init__.py \$CATKIN_DIR/src/SubjuGator"
