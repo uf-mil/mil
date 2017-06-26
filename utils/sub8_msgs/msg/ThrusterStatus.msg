@@ -1,8 +1,10 @@
 std_msgs/Header header
 string name
+uint8 motor_id
+float32 power
 float32 rpm
-float32 bus_voltage
-float32 bus_current
-float32 temperature
+float32 bus_v
+float32 bus_i
+float32 temp
 uint8 fault
-uint8 response_node_id
+

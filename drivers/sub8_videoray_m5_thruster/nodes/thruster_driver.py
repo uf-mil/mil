@@ -207,8 +207,6 @@ class ThrusterDriver(object):
         Raises RuntimeError if a thrust value outside of the configured thrust bounds is commanded
         Raises UnavailableThrusterException if a thruster that is offline is commanded a non-zero thrust
         '''
-        print 'commanding {} : {} Newtons'.format(name, thrust)
-        print 'failed_thrusters: {}'.format(self.failed_thrusters)
         port_name = self.thruster_to_port_map[name]
         target_port = self.ports[port_name]
         thruster_model = target_port.thruster_info[name]
@@ -223,6 +221,7 @@ class ThrusterDriver(object):
                 #raise UnavailableThrusterException(motor_id=thruster_model.motor_id, name=name)
 
         effort = target_port.thruster_info[name].get_effort_from_thrust(thrust)
+        print name, effort
 
         # We immediately get thruster_status back
         thruster_status = target_port.command_thruster(name, effort)
@@ -240,27 +239,30 @@ class ThrusterDriver(object):
         if thruster_status is None:
             return
 
+        print thruster_status
         message_contents = [
             'rpm',
-            'bus_voltage',
-            'bus_current',
-            'temperature',
-            'fault',
-            'response_node_id',
+            'bus_v',
+            'bus_i',
+            'temp',
+            'fault'
         ]
 
         message_keyword_args = {key: thruster_status[key] for key in message_contents}
+        power = thruster_status['bus_v'] * thruster_status['bus_i']
         self.status_publishers[name].publish(
             ThrusterStatus(
                 header=Header(stamp=rospy.Time.now()),
                 name=name,
+                motor_id=motor_id,
+                power=power,
                 **message_keyword_args
             )
         )
 
         # TODO: TEST
         # Will publish bus_voltage and raise alarm if necessary
-        self.bus_voltage_monitor.add_reading(message_keyword_args['bus_voltage'], rospy.Time.now())
+        self.bus_voltage_monitor.add_reading(message_keyword_args['bus_v'], rospy.Time.now())
         return
 
         # Undervolt/overvolt faults are unreliable
