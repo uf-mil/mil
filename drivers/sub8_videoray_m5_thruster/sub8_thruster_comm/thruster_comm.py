@@ -102,8 +102,9 @@ class ThrusterPort(object):
             direction: [-0.866, 0.5, 0.0],
             bounds:    [-90.0, 90.0],
             calib:  {
-                forward: [0.0, 0.0, 6.455032155657309e-05, 0.0022659798706770326],
-                backward: [0.0, 0.0, -4.481294657490641e-05, 0.004241966780303877]
+                forward:  [0.0, 0.0, -0.000135, 0.0228],
+                backward: [0.0, 0.0, 0.0000531, 0.0151]
+
             }
           }
           <other_thruster_definitions_continue_here>
@@ -417,7 +418,7 @@ class ThrusterPort(object):
         if not valid:
             if name in self.online_thruster_names:
                 if self.CONFIDENT_MODE:
-                    rospy.logerr_throttle(1, 'Got invalid response from thruster {} (packet: {})'.format(motor_id, 
+                    rospy.logerr_throttle(1, 'Got invalid response from thruster {} (packet: {})'.format(motor_id,
                         self.make_hex(response_bytearray)))
                 else:
                     self.online_thruster_names.remove(name)
@@ -430,7 +431,11 @@ class ThrusterPort(object):
             self.status_rx_count[name] = self.status_rx_count[name] + 1
             self.command_latency_avg[name] = total_latency / self.status_rx_count[name]
 
-        return self.parse_thrust_response(response_dict['payload_bytes']) if valid else None
+        ret = self.parse_thrust_response(response_dict['payload_bytes']) if valid else None
+        ret['command_tx_count'] = self.command_tx_count
+        ret['status_rx_count'] = self.status_rx_count
+        ret['command_latency_avg'] = self.command_latency_avg[name]
+        return ret
 
 
 if __name__ == '__main__':

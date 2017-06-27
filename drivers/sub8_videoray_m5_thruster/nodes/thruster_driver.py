@@ -245,7 +245,10 @@ class ThrusterDriver(object):
             'bus_v',
             'bus_i',
             'temp',
-            'fault'
+            'fault',
+            'command_tx_count',
+            'status_rx_count',
+            'command_latency_avg'
         ]
 
         message_keyword_args = {key: thruster_status[key] for key in message_contents}
