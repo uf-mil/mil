@@ -72,8 +72,7 @@ class ThrusterModel(object):
         Uses thruster calibration to determine what effort should be sent to the motor
         to produce the desired thrust (clips output to [-1, 1])
         '''
-        #t = np.array((thrust**4, thrust**3, thrust**2, thrust, 1))
-        t = np.array((0, 0, 0, thrust, 1))
+        t = np.array((thrust**4, thrust**3, thrust**2, thrust, 1))
         calib = np.hstack((self.calib['forward'], [0])) if thrust >= 0 else \
             np.hstack((self.calib['backward'], [0]))
         return np.clip(np.dot(t, calib), -1.0, 1.0)
@@ -81,18 +80,19 @@ class ThrusterModel(object):
 
 class ThrusterPort(object):
     _baud_rate = 115200
-    _read_timeout = 0.1            # How long to wait for a serial response
+    _read_timeout = 0.2            # How long to wait for a serial response
     _wait_for_line_timeout = 0.02  # How long to wait for the line to become available
 
     def __init__(self, port_info, thruster_definitions):
         '''Communicate on a single port with some thrusters
-        port_info an associates a serial port name with a list of thruster names.
+        @param port_info Dictionary that associates a serial port name with a list of thruster names.
         YAML form: (part of list)
 
         - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if00-port0
           thruster_names: [FLH, FLV]
+          CONFIDENT_MODE: False
 
-        thruster_definitions should be a dictionary mapping thruster names to thruster properties.
+        @param thruster_definitions Dictionary mapping thruster names to thruster properties.
         YAML form:
 
         thrusters:
@@ -102,8 +102,8 @@ class ThrusterPort(object):
             direction: [-0.866, 0.5, 0.0],
             bounds:    [-90.0, 90.0],
             calib:  {
-                forward: [3.160275618251677e-09, -2.994243542435666e-07, 6.455032155657309e-05, 0.0022659798706770326],
-                backward: [4.5751802697389835e-08, 4.862785867579268e-06, -4.481294657490641e-05, 0.004241966780303877]
+                forward: [0.0, 0.0, 6.455032155657309e-05, 0.0022659798706770326],
+                backward: [0.0, 0.0, -4.481294657490641e-05, 0.004241966780303877]
             }
           }
           <other_thruster_definitions_continue_here>
@@ -111,12 +111,10 @@ class ThrusterPort(object):
         Note:
             - The thrusters automatically shut down if they do not recieve a
              command for ~2 seconds
-
-        TODO:
-            --> Send messages without getting status
         '''
         self.port_name = port_info['port']
         self.port = self.connect_port(self.port_name)
+        self.CONFIDENT_MODE = port_info['CONFIDENT_MODE']  # Dangerous mode that will not detect thruster losses
 
         self.thruster_info = {}  # Information about all thrusters declared in the layout
         self.online_thruster_names = set()  # Keeps track of all thrusters that can be allocated thrust
@@ -139,6 +137,7 @@ class ThrusterPort(object):
         '''Connect to and return a serial port'''
         try:
             serial_port = serial.Serial(port_name, baudrate=self._baud_rate, timeout=self._read_timeout)
+            serial_port.flushInput()
         except IOError as e:
             rospy.logerr("Could not connect to thruster port {}".format(port_name))
         return serial_port
@@ -154,6 +153,8 @@ class ThrusterPort(object):
 
         # Load thruster info regardless of wether thruster is responsive
         self.thruster_info[thruster_name] = ThrusterModel(thruster_definitions[thruster_name])
+        if self.CONFIDENT_MODE:
+            self.online_thruster_names.add(thruster_name) # Online to begin with, no response needed
 
         # See if thruster is responsive on this port
         if not self.check_for_thruster(self.thruster_info[thruster_name].motor_id):
@@ -350,8 +351,10 @@ class ThrusterPort(object):
     def check_for_thruster(self, motor_id):
         ''' Determines if a thruster with the given motor_id is responsive on this port '''
         try:
-            return self.read_register(motor_id, 'NODE_ID')[0] == motor_id
-        except AssertionError:
+            res = self.read_register(motor_id, 'NODE_ID')
+            return res[0] == motor_id
+        except AssertionError as e:
+	    rospy.logwarn("Motor id: {}. Assertion error parsing response packet: {}".format(motor_id, e))
             return False
 
     def get_motor_ids_on_port(self, start_id, end_id):
@@ -413,7 +416,11 @@ class ThrusterPort(object):
         # Keep track of thrusters going offline or coming back online
         if not valid:
             if name in self.online_thruster_names:
-                self.online_thruster_names.remove(name)
+                if self.CONFIDENT_MODE:
+                    rospy.logerr_throttle(1, 'Got invalid response from thruster {} (packet: {})'.format(motor_id, 
+                        self.make_hex(response_bytearray)))
+                else:
+                    self.online_thruster_names.remove(name)
         else:
             if name not in self.online_thruster_names:
                 self.online_thruster_names.add(name)

@@ -1,16 +1,21 @@
-# This file has all of the thruster layout information needed by the sub except the
-# Effort to force mapping which is in "${find sub8_videoray_m5_thruster)/config/calibration/"
+# This file has all of the thruster layout information needed by the sub
 # This is used when simulating or running actual thrusters.
+# CONFIDENT_MODE means that the thrusters on this port will never go offline (command packets
+#   will always be sent even if no responses are received)
 
 thruster_ports:
   - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if00-port0
     thruster_names: [FLH, FLV]
+    CONFIDENT_MODE: False
   - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if01-port0
     thruster_names: [FRH, FRV]
+    CONFIDENT_MODE: False
   - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if02-port0
     thruster_names: [BLH, BLV]
+    CONFIDENT_MODE: False
   - port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_1_to_4_DMBP14-if03-port0
     thruster_names: [BRH, BRV]
+    CONFIDENT_MODE: False
 
 # motor_id's should be globally unique among all thrusters
 # position and orientation vectors should be specified in body frame
