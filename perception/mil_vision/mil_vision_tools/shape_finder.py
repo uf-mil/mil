@@ -34,11 +34,12 @@ class RectFinder(object):
                                   [self.length / 2.0, self.width / 2.0, 0],
                                   [-self.length / 2.0, self.width / 2.0, 0],
                                   [-self.length / 2.0, -self.width / 2.0, 0]], dtype=np.float)
-        # multiplied by 10000 for 0.1mm accuracy in integer image
+
+        scale = 10000 / self.length  # Scale 2D model to maintain precision when converting to int
         self.model_2D = np.array([[[0, 0]],
-                                  [[self.width * 10000, 0]],
-                                  [[self.width * 10000, self.length * 10000]],
-                                  [[0, self.length * 10000]]], dtype=np.int)
+                                  [[self.width * scale, 0]],
+                                  [[self.width * scale, self.length * scale]],
+                                  [[0, self.length * scale]]], dtype=np.int)
 
     @classmethod
     def from_polygon(cls, polygon):
@@ -189,5 +190,67 @@ class RectFinder(object):
         center = bot_center + (top_center - bot_center) / 2.0
         vector = top_center - bot_center
         vector = vector / np.linalg.norm(vector)
-        # Store last2d as a center pixel point and unit direction vector
         return (center, vector)
+
+    def draw_model(self, size=(500, 500), border=25):
+        '''
+        Returns a 1 channel image displaying the internal model of the rectangle.
+        Useful for visually checking that your model is reasonable. Also useful
+        to see what orientation of a contour will be considered 0 rotation in get_pose_3D.
+
+        @param size a 2 element tuple/list/np.ndarray (x, y) which will be the resolution of the returned image
+        @param border Size of the border, in pixels, around the model contour in the returned image
+
+        @return A one channel image with shape specified by size param with internal model
+                drawn in white surrounded by a black border
+        '''
+        size = np.array(size)
+        scale = float(min(size)) / np.max(self.model_2D)
+        model = np.array(border + (scale * self.model_2D), dtype=np.int)
+        img = np.zeros(2 * border + size, dtype=np.uint8)
+        cv2.drawContours(img, [model], 0, (255), 3)
+        return img
+
+
+class EllipseFinder(RectFinder):
+    '''
+    Class to test contours in images for being close to an ellipse
+    matching a given model. Uses RectFinder on well matched
+    contours to get 3D pose estimates.
+
+    Can be used just as RectFinder is used, but contours passed to verify_contour
+    will be evaluated based on their similarity to an ellipse, not a rectangle.
+    The get_corners function will return the corners of the least area rotated
+    rectangle around the ellipse contour, so 3D pose estimation will still work.
+    '''
+    def __init__(self, length=1.0, width=1.0):
+        '''
+        Create internal model for an ellipse.
+        '''
+        super(EllipseFinder, self).__init__(length, width)
+
+        # Correct 2D model to be an oval to that verify_contour works
+        scale = 1000.0 / self.length
+        self.model_2D = np.zeros((50, 1, 2), dtype=np.int)
+        # Approximate an ellipse with 50 points, so that verify_contour is reasonable fast still
+        for idx, theta in enumerate(np.linspace(0.0, 2.0 * np.pi, num=50)):
+            self.model_2D[idx][0][0] = self.length * 0.5 * scale + self.length * 0.5 * scale * np.cos(theta)
+            self.model_2D[idx][0][1] = self.width * 0.5 * scale + self.width * 0.5 * scale * np.sin(theta)
+
+    def get_corners(self, contour, debug_image=None):
+        '''
+        Override get corner function for Ellipses to approximate an ellipse
+        instead of a four sided polygon around the contour.
+        '''
+        ellipse = cv2.fitEllipse(contour)
+        points = np.array(cv2.boxPoints(ellipse), dtype=np.int32).reshape(4, 1, 2)
+        return self.sort_corners(points, debug_image=debug_image)
+
+
+class CircleFinder(EllipseFinder):
+    '''
+    Cute abstraction for circles, which are just ellipses with the same
+    length and width. See EllipseFinder for usage.
+    '''
+    def __init__(self, radius, _=None):
+        super(CircleFinder, self).__init__(radius, radius)
