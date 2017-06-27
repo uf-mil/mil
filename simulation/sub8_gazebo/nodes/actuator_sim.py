@@ -18,20 +18,44 @@ class ActuatorBoard():
     def __init__(self):
         self.torpedo_launcher = TorpedoLauncher()
         self.gripper_controller = GripperController()
+        self.marker_dropper = MarkerDropper()
 
-        self.actuator_lookup = {'shooter_l': self.torpedo_launcher.launch_torpedo,
-                                'shooter_r': self.torpedo_launcher.launch_torpedo,
-                                'gripper': self.gripper_controller.set_gripper}
+        self.actuator_lookup = {'torpedo1': self.torpedo_launcher.launch_torpedo,
+                                'torpedo2': self.torpedo_launcher.launch_torpedo,
+                                'gripper': self.gripper_controller.set_gripper,
+                                'dropper': self.marker_dropper.drop}
 
         rospy.Service('/actuator_driver/actuate', SetValve, self.actuate)
+        rospy.Service('/actuator_driver/actuate_raw', SetValve, self.actuate)
 
-    def actuate(self, srv):
+    def actuate(self, req):
+        rospy.loginfo('Setting simulated actuator {} to {}'.format(req.actuator, 'opened' if req.opened else 'closed'))
+        return self._actuate(req)
+
+    def acuate_raw(self, req):
+        rospy.loginfo('Setting simulated actuator {} to {} (raw)'.format(req.actuator,
+                                                                         'opened' if req.opened else 'closed'))
+        return self._actuate(req)
+
+    def _actuate(self, req):
         for port in self.actuator_lookup:
-            if port == srv.actuator:
-                self.actuator_lookup[port](srv)
-                return True
-
+            if port == req.actuator:
+                return self.actuator_lookup[port](req)
         return False
+
+
+class MarkerDropper():
+    '''
+    Dummy class to provide compatibility for simulated actuator board.
+    Does nothing, but could be used to simulate marker dropping in the future.
+    '''
+    def __init__(self):
+        pass
+
+    def drop(self, req):
+        if req.opened:
+            rospy.loginfo('Dropping marker')
+        return True
 
 
 class TorpedoLauncher():
@@ -89,6 +113,7 @@ class TorpedoLauncher():
             - Test to make sure it always fires from the right spot in the right direction.
                 (It seems to but I haven't tested from all rotations.)
         '''
+        rospy.loginfo('Launching torpedo')
         sub_state = self.get_model(model_name='sub8')
         sub_pose = msg_helpers.pose_to_numpy(sub_state.pose)
 
@@ -128,6 +153,10 @@ class GripperController():
         First clear the existing forces on the gripper then apply a new one in the direction
             specified by the service call.
         '''
+        if srv.opened:
+            rospy.loginfo('Opening Gripper')
+        else:
+            rospy.loginfo('Clossing Gripper')
         self.clear_force(JointRequestRequest(joint_name=self.joint_name))
 
         effort_mod = 1
@@ -140,6 +169,7 @@ class GripperController():
         joint_effort.duration = rospy.Duration(-1)
 
         self.apply_force(joint_effort)
+        return True
 
 if __name__ == '__main__':
     rospy.init_node('actuator_board_simulator')
