@@ -1,2 +1,2 @@
 from shape_finder import RectFinder, EllipseFinder, CircleFinder
-from threshold import Threshold
+from cv_tools import Threshold, auto_canny

@@ -115,3 +115,22 @@ class Threshold(object):
 
     def __repr__(self):
         return str((self.low, self.high, self.conversion_code))
+
+
+def auto_canny(image, sigma=0.33):
+    '''
+    Returns a binary image of the edges in an image.
+    Uses the median of the image to pick good low and upper threshold values
+    for Canny, which makes it both adaptive and require less tunning.
+
+    @param image grayscale image to find edges in
+    @param sigma 0-1 float, how aggressively to find edges in an image, where
+           1 will produce the most edges but also the most noise
+
+    Credit Adrian Rosebrock
+    http://www.pyimagesearch.com/2015/04/06/zero-parameter-automatic-canny-edge-detection-with-python-and-opencv/
+    '''
+    m = np.median(image)
+    lower = int(max(0, (1.0 - sigma) * m))
+    upper = int(min(255, (1.0 + sigma) * m))
+    return cv2.Canny(image, lower, upper)
