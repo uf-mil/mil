@@ -249,7 +249,7 @@ class AlarmServer(object):
                 self.alarms[meta] = Alarm.blank(meta)
 
             def default(meta, alarms):
-                return any(alarms.items)
+                return any(alarms.items())
 
             self.meta_alarms[meta] = default
 
