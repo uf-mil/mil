@@ -7,9 +7,6 @@
             # width and height of ogrid in meters 
             ogrid_size: 150
 
-            # Ignore blueview imaging sonar points below depth in meters
-            pool_depth: 3.0
-
             # How many points should be allowed
             buffer_size: 7000
             min_intensity: 0

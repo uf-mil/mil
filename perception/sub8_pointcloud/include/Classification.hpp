@@ -33,15 +33,22 @@ class Classification
   // Usage: Given starting point, and an angle, find the first occupied point in that direction.
   cv::Point2d get_first_hit(cv::Mat &mat_ogrid, cv::Point2d start, float theta, int max_dis);
 
+  float certainty_as_hit_;
+  int hit_buffer_;
+  float uncertainty_as_hit_;
+  float not_hit_degrade_;
+
 public:
   Classification(ros::NodeHandle *nh);
 
   // Usage: statistical filterting to get rid of outliers and noise
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered(pcl::PointCloud<pcl::PointXYZI>::ConstPtr pointCloud);
 
-  // Usage: Find all the first occupied points in an expanding circle, then color the ogrid
-  void zonify(cv::Mat &mat_ogrid, float resolution, const tf::StampedTransform &transform);
-
-  // Usage: Draw a fake ogrid to test in SIM
-  void fake_ogrid(cv::Mat &mat_ogrid, float resolution, const tf::StampedTransform &transform);
+  /* Usage: Find all the first occupied points in an expanding circle, then color the ogrid
+     param mat_ogrid: what ogrid will be used for processing and drawn on
+     param resolution: used to convert meters to pixels
+     param transform: get subs pose
+     param mat_origin: where the center of the ogrid is in resepct to map frame
+  */
+  void zonify(cv::Mat &mat_ogrid, float resolution, const tf::StampedTransform &transform, cv::Point &mat_origin);
 };

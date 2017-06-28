@@ -209,6 +209,8 @@ struct Node
       this->linear_tolerance = goal->linear_tolerance;
       this->angular_tolerance = goal->angular_tolerance;
 
+      waypoint_validity_.pub_size_ogrid(Pose_from_Waypoint(current_waypoint), (int)OGRID_COLOR::GREEN);
+
       // Check if waypoint is valid
       std::pair<bool, WAYPOINT_ERROR_TYPE> checkWPResult = waypoint_validity_.is_waypoint_valid(
           Pose_from_Waypoint(current_waypoint), current_waypoint.do_waypoint_validation);
@@ -216,6 +218,7 @@ struct Node
       actionresult_.success = checkWPResult.first;
       if (checkWPResult.first == false)  // got a point that we should not move to
       {
+        waypoint_validity_.pub_size_ogrid(Pose_from_Waypoint(current_waypoint), (int)OGRID_COLOR::RED);
         if (checkWPResult.second ==
             WAYPOINT_ERROR_TYPE::UNKNOWN)  // if unknown, check if there's a huge displacement with the new waypoint
         {
@@ -295,6 +298,8 @@ struct Node
     msg.header.frame_id = fixed_frame;
     msg.posetwist = PoseTwist_from_PointWithAcceleration(c3trajectory->getCurrentPoint());
     trajectory_pub.publish(msg);
+
+    waypoint_validity_.pub_size_ogrid(Pose_from_Waypoint(c3trajectory->getCurrentPoint()), 200);
 
     PoseStamped msgVis;
     msgVis.header = msg.header;
