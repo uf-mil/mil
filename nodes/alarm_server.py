@@ -8,6 +8,7 @@ from ros_alarms import parse_json_str
 
 import json
 import inspect
+import traceback
 
 
 class Alarm(object):
@@ -64,6 +65,7 @@ class Alarm(object):
         Each callback can have a severity level associated with it such that different callbacks can
             be triggered for different levels or ranges of severity.
         '''
+        err_msg = "A {} callback for the alarm: {} threw an error!\n{}"
         if call_when_raised:
             self.raised_cbs.append((severity_required, funct))
             if self.raised and self._severity_cb_check(severity_required):
@@ -71,8 +73,7 @@ class Alarm(object):
                 try:
                     funct(self)
                 except Exception as e:
-                    rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self.alarm_name))
-                    rospy.logwarn(e)
+                    rospy.logwarn(err_msg.format('raise', self.alarm_name, traceback.format_exc()))
 
         if call_when_cleared:
             self.cleared_cbs.append(((0, 5), funct))
@@ -81,8 +82,7 @@ class Alarm(object):
                 try:
                     funct(self)
                 except Exception as e:
-                    rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self.alarm_name))
-                    rospy.logwarn(e)
+                    rospy.logwarn(err_msg.format('clear', self.alarm_name, traceback.format_exc()))
 
     def update(self, srv):
         ''' Updates this alarm with a new AlarmSet request.
@@ -194,6 +194,15 @@ class AlarmServer(object):
         rospy.logdebug("Got request for alarm: {}".format(srv.alarm_name))
         return self.alarms.get(srv.alarm_name, Alarm.blank(srv.alarm_name)).as_srv_resp()
 
+    def make_tagged_alarm(self, name):
+        '''
+        Makes a blank alarm with the node_name of the alarm_server so that users know it is the
+        initial state
+        '''
+        alarm = Alarm.blank(name)
+        alarm.node_name = 'alarm_server'
+        return alarm
+
     def _handle_meta_alarm(self, meta_alarm, sub_alarms):
         alarms = {name: alarm for name, alarm in self.alarms.items() if name in sub_alarms}
         meta = self.alarms[meta_alarm]
@@ -225,7 +234,7 @@ class AlarmServer(object):
             severity = handler.severity_required
 
             if alarm_name not in self.alarms:
-                self.alarms[alarm_name] = Alarm.blank(alarm_name)
+                self.alarms[alarm_name] = self.make_tagged_alarm(alarm_name)
             self.alarms[alarm_name].raised = h.initally_raised
 
             # If a handler exists for a meta alarm, we need to save the predicate
@@ -233,11 +242,8 @@ class AlarmServer(object):
                 self.meta_alarms[alarm_name] = h.meta_predicate
 
             # Register the raised or cleared functions
-            self.alarms[alarm_name].add_callback(h.raised, call_when_cleared=False,
-                                                 severity_required=severity)
-
-            self.alarms[alarm_name].add_callback(h.cleared, call_when_raised=False,
-                                                 severity_required=severity)
+            self.alarms[alarm_name].add_callback(h.raised, call_when_cleared=False, severity_required=severity)
+            self.alarms[alarm_name].add_callback(h.cleared, call_when_raised=False, severity_required=severity)
 
             rospy.loginfo("Loaded handler: {}".format(h.alarm_name))
 
@@ -246,7 +252,7 @@ class AlarmServer(object):
         for meta, alarms in meta_alarms_dict.iteritems():
             # Add the meta alarm
             if meta not in self.alarms:
-                self.alarms[meta] = Alarm.blank(meta)
+                self.alarms[meta] = self.make_tagged_alarm(meta)
 
             def default(meta, alarms):
                 return any(alarms.items())
@@ -258,7 +264,7 @@ class AlarmServer(object):
 
             for alarm in alarms:
                 if alarm not in self.alarms:
-                    self.alarms[alarm] = Alarm.blank(alarm)
+                    self.alarms[alarm] = self.make_tagged_alarm(alarm)
 
                 self.alarms[alarm].add_callback(cb)
 
