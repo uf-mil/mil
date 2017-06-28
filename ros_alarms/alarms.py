@@ -1,10 +1,11 @@
 from __future__ import division
 import rospy
 
-from ros_alarms.msg import Alarm
+from ros_alarms.msg import Alarm as AlarmMsg
 from ros_alarms.srv import AlarmSet, AlarmGet, AlarmSetRequest, AlarmGetRequest
 
 import json
+import traceback
 
 
 def parse_json_str(json_str):
@@ -32,6 +33,129 @@ def _check_for_valid_name(alarm_name, nowarn=False):
 
     assert alarm_name.isalnum() or '_' in alarm_name or '-' in alarm_name, \
         "Alarm name '{}' is not valid!".format(alarm_name)
+
+
+class Alarm(object):
+
+    @classmethod
+    def blank(cls, name):
+        ''' Generate a general blank alarm that is cleared with a low severity '''
+        return cls(name, raised=False, severity=0)
+
+    @classmethod
+    def from_msg(cls, msg):
+        ''' Generate an alarm object from an Alarm message '''
+        node_name = "unknown" if msg.node_name is "" else msg.node_name
+        parameters = parse_json_str(msg.parameters)
+
+        return cls(msg.alarm_name, msg.raised, node_name,
+                   msg.problem_description, parameters, msg.severity)
+
+    def __init__(self, alarm_name, raised, node_name="unknown",
+                 problem_description="", parameters={}, severity=0):
+        self.alarm_name = alarm_name
+        self.raised = raised
+        self.node_name = node_name
+        self.problem_description = problem_description
+        self.parameters = parameters
+        self.severity = severity
+
+        self.stamp = rospy.Time.now()
+
+        # Callbacks to run if the alarm is cleared or raised formatted as follows:
+        #   [(severity_required, cb1), (severity_required, cb2), ...]
+        self.raised_cbs = []
+        self.cleared_cbs = []
+
+    def __repr__(self):
+        msg = self.as_msg()
+        msg.parameters = parse_json_str(msg.parameters)
+        return str(msg)
+    __str__ = __repr__
+
+    def _severity_cb_check(self, severity):
+        if isinstance(severity, tuple) or isinstance(severity, list):
+            return severity[0] <= self.severity <= severity[1]
+
+        # Not a tuple, just an int. The severities should match
+        return self.severity == severity
+
+    def add_callback(self, funct, call_when_raised=True, call_when_cleared=True,
+                     severity_required=(0, 5)):
+        ''' Deals with adding handler function callbacks
+        The user can specify if the function should be run on a raise or clear
+        This will call the function when added if that condition is met.
+
+        Each callback can have a severity level associated with it such that different callbacks can
+            be triggered for different levels or ranges of severity.
+        '''
+        err_msg = "A {} callback for the alarm: {} threw an error!\n{}"
+        if call_when_raised:
+            self.raised_cbs.append((severity_required, funct))
+            if self.raised and self._severity_cb_check(severity_required):
+                # Try to run the callback, absorbing any errors
+                try:
+                    funct(self)
+                except Exception as e:
+                    rospy.logwarn(err_msg.format('raise', self.alarm_name, traceback.format_exc()))
+
+        if call_when_cleared:
+            self.cleared_cbs.append(((0, 5), funct))
+            if not self.raised and self._severity_cb_check(severity_required):
+                # Try to run the callback, absorbing any errors
+                try:
+                    funct(self)
+                except Exception as e:
+                    rospy.logwarn(err_msg.format('clear', self.alarm_name, traceback.format_exc()))
+
+    def update(self, srv):
+        ''' Updates this alarm with a new AlarmSet request.
+        Also will call any required callbacks.
+        '''
+        self.stamp = rospy.Time.now()
+
+        node_name = "unknown" if srv.node_name is "" else srv.node_name
+        parameters = parse_json_str(srv.parameters)
+
+        # Update all possible parameters
+        self.raised = srv.raised
+        self.node_name = node_name
+        self.problem_description = srv.problem_description
+        self.parameters = parameters
+        self.severity = srv.severity
+
+        rospy.loginfo("Updating alarm: {}, {}.".format(self.alarm_name, "raised" if self.raised else "cleared"))
+        # Run the callbacks for that alarm
+        cb_list = self.raised_cbs if srv.raised else self.cleared_cbs
+        for severity, cb in cb_list:
+            # If the cb severity is not valid for this alarm's severity, skip it
+            if srv.raised and not self._severity_cb_check(severity):
+                continue
+
+            # Try to run the callback, absorbing any errors
+            try:
+                cb(self)
+            except Exception as e:
+                rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self.alarm_name))
+                rospy.logwarn(e)
+
+    def as_msg(self):
+        ''' Get this alarm as an Alarm message '''
+        alarm = AlarmMsg()
+        alarm.alarm_name = self.alarm_name
+        alarm.raised = self.raised
+        alarm.node_name = self.node_name
+        alarm.problem_description = self.problem_description
+        alarm.parameters = json.dumps(self.parameters)
+        alarm.severity = self.severity
+        return alarm
+
+    def as_srv_resp(self):
+        ''' Get this alarm as an AlarmGet response '''
+        resp = AlarmGetResponse()
+        resp.header.stamp = self.stamp
+        resp.alarm = self.as_msg()
+        return resp
 
 
 class AlarmBroadcaster(object):
@@ -95,7 +219,7 @@ class AlarmListener(object):
         # Data used to trigger callbacks
         self._raised_cbs = []  # [(severity_for_cb1, cb1), (severity_for_cb2, cb2), ...]
         self._cleared_cbs = []
-        rospy.Subscriber("/alarm/updates", Alarm, self._alarm_update)
+        rospy.Subscriber("/alarm/updates", AlarmMsg, self._alarm_update)
 
         if callback_funct is not None:
             self.add_callback(callback_funct, **kwargs)
