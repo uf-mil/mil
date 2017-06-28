@@ -4,7 +4,7 @@ import rospkg
 
 from sub8_msgs.srv import SetValve
 from mil_ros_tools import thread_lock
-from sub8_alarm import AlarmBroadcaster
+from ros_alarms import AlarmBroadcaster
 
 import threading
 import serial
@@ -33,17 +33,8 @@ class ActuatorDriver():
 
         rospy.init_node("actuator_driver")
 
-        alarm_broadcaster = AlarmBroadcaster()
-        self.disconnection_alarm = alarm_broadcaster.add_alarm(
-            name='actuator_board_disconnect',
-            action_required=True,
-            severity=0
-        )
-        self.packet_error_alarm = alarm_broadcaster.add_alarm(
-            name='packet_error',
-            action_required=False,
-            severity=2
-        )
+        self.disconnection_alarm = AlarmBroadcaster('actuator-board-disconnect')
+        self.packet_error_alarm = AlarmBroadcaster('actuator-board-packet-error')
 
         self.ser = serial.Serial(port=port, baudrate=baud, timeout=None)
         self.ser.flushInput()
