@@ -204,6 +204,10 @@ class AlarmServer(object):
         return alarm
 
     def _handle_meta_alarm(self, meta_alarm, sub_alarms):
+        '''
+        Passes the state of all of the child alarms to the specified meta alarm handler predicate
+        function. The alarm will be raised if the predicate returns true or cleared otherwise
+        '''
         alarms = {name: alarm for name, alarm in self.alarms.items() if name in sub_alarms}
         meta = self.alarms[meta_alarm]
 
@@ -216,6 +220,14 @@ class AlarmServer(object):
             self._alarm_pub.publish(meta.as_msg())
 
     def _create_alarm_handlers(self):
+        '''
+        Alarm handlers are classes imported by the alarm server and run code upon a change of state
+        of their respective alarms.
+
+        Handlers should be in a python module (directory with an __init__.py) and in the python path.
+        They will be loaded from the module specified with the ~handler_module param to the alarm server.
+        '''
+
         # If the param exists, load it here
         handler_module = rospy.get_param("~handler_module", None)
         if handler_module is None:
@@ -248,6 +260,17 @@ class AlarmServer(object):
             rospy.loginfo("Loaded handler: {}".format(h.alarm_name))
 
     def _create_meta_alarms(self, namespace="meta_alarms/"):
+        ''' Adds meta alarms to the alarm server
+        Meta alarms are special in that they are not directly raised or cleared but are instead triggered
+        by a change of state of their child alarms.
+
+        The /meta_alarms parameter defines a the structure of a meta alarm. It has the following structure:
+        {meta_alarm_name : [list of child alarm names], ...}
+
+        Users can also provide more complex triggering mechanisms by providing an alarm handler class with
+        a 'meta_predicate' method.
+        '''
+
         meta_alarms_dict = rospy.get_param(namespace, {})
         for meta, alarms in meta_alarms_dict.iteritems():
             # Add the meta alarm
@@ -255,6 +278,10 @@ class AlarmServer(object):
                 self.alarms[meta] = self.make_tagged_alarm(meta)
 
             def default(meta, alarms):
+                '''
+                If no predicate for a meta-alarm is provided, then the meta-alarm will be raised
+                if any of the child alarms are raised
+                '''
                 return any(alarms.items())
 
             self.meta_alarms[meta] = default
