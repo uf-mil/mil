@@ -44,8 +44,8 @@ class Alarm(object):
 
     def __repr__(self):
         msg = self.as_msg()
-        msg.parameters = self.parse_json_str(msg.parameters)
-        return msg
+        msg.parameters = parse_json_str(msg.parameters)
+        return str(msg)
     __str__ = __repr__
 
     def _severity_cb_check(self, severity):
