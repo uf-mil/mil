@@ -8,6 +8,7 @@ import rospkg
 import rosparam
 import sub8_thruster_comm as thrust_comm
 from sub8_thruster_comm import thruster_comm
+from sub8_exception import SubjuGatorException
 import mil_misc_tools.text_effects as te
 from mil_misc_tools.terminal_input import get_ch
 
@@ -38,7 +39,7 @@ def ports_from_layout(layout):
             fprint(msg.reset.text('\n\tName: ').set_yellow.text(port).reset
                    .text('\n\tMotor id\'s on port: ').set_cyan.bold(s).reset)
 
-        except serial.SerialException:
+        except SubjuGatorException:
             pass
 
     return port_dict

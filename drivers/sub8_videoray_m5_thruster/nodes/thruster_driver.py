@@ -100,6 +100,7 @@ class BusVoltageMonitor(object):
 class ThrusterDriver(object):
     _dropped_timeout = 1.0  # s
     _window_duration = 30.0  # s
+    _NODE_NAME = 'thruster_driver'
 
     def __init__(self, ports_layout, thruster_definitions):
         '''Thruster driver, an object for commanding all of the sub's thrusters
@@ -178,8 +179,7 @@ class ThrusterDriver(object):
 
     def check_alarm_status(self, alarm):
         # If someone else cleared this alarm, we need to make sure to raise it again
-        if not alarm.raised and alarm.parameters.get('offline_thruster_names', []) != list(self.failed_thrusters):
-            print 'RESETTING thruster-out alarm!!', alarm.parameters.get('get_offline_thruster_names', []), self.failed_thrusters
+        if not alarm.raised and alarm.node_name != self._NODE_NAME:
             self.update_thruster_out_alarm()
 
     def update_thruster_out_alarm(self):
@@ -191,12 +191,16 @@ class ThrusterDriver(object):
         offline_names = list(self.failed_thrusters)
         if len(self.failed_thrusters) == 0:
             self.thruster_out_alarm.raise_alarm(
+                node_name=self._NODE_NAME,
                 parameters={'offline_thruster_names': offline_names},
                 severity=int(np.clip(len(self.failed_thrusters), 1, 5))
             )
         else:
             print 'clearing thruster-out alarm'
-            self.thruster_out_alarm.clear_alarm(parameters={'offline_thruster_names' : offline_names})
+            self.thruster_out_alarm.clear_alarm(
+                node_name=self._NODE_NAME,
+                parameters={'offline_thruster_names' : offline_names}
+            )
 
 
     @thread_lock(lock)
@@ -212,16 +216,14 @@ class ThrusterDriver(object):
         thruster_model = target_port.thruster_info[name]
 
         if thrust < thruster_model.thrust_bounds[0] or thrust > thruster_model.thrust_bounds[1]:
-            print 'Tried to command thrust outside of physical thrust bounds ({})'.format(thruster_model.thrust_bounds)
-            #raise RuntimeError('Tried to command thrust outside of physical thrust bounds ({})'.format(thruster_model.thrust_bounds))
+            rospy.logwarn('Tried to command thrust ({}) outside of physical thrust bounds ({})'.format(
+                thrust, thruster_model.thrust_bounds)
 
         if name in self.failed_thrusters:
             if not np.isclose(thrust, 0):
                 rospy.logwarn('ThrusterDriver: commanding non-zero thrust to offline thruster (' + name + ')')
-                #raise UnavailableThrusterException(motor_id=thruster_model.motor_id, name=name)
 
         effort = target_port.thruster_info[name].get_effort_from_thrust(thrust)
-        print name, effort
 
         # We immediately get thruster_status back
         thruster_status = target_port.command_thruster(name, effort)
@@ -232,14 +234,15 @@ class ThrusterDriver(object):
             if offline not in self.failed_thrusters:
                 self.failed_thrusters.add(offline)    # Thruster went offline
         for failed in copy.deepcopy(self.failed_thrusters):
-            if failed not in offline_on_port and failed not in self.deactivated_thrusters:
+            if (failed in target_port.get_declared_thruster_names() and
+                failed not in offline_on_port and
+                failed not in self.deactivated_thrusters):
                 self.failed_thrusters.remove(failed)  # Thruster came online
 
         # Don't try to do anything if the thruster status is bad
         if thruster_status is None:
             return
 
-        print thruster_status
         message_contents = [
             'rpm',
             'bus_v',
@@ -257,18 +260,16 @@ class ThrusterDriver(object):
             ThrusterStatus(
                 header=Header(stamp=rospy.Time.now()),
                 name=name,
-                motor_id=motor_id,
+                motor_id=thruster_model.motor_id,
                 power=power,
                 **message_keyword_args
             )
         )
 
-        # TODO: TEST
         # Will publish bus_voltage and raise alarm if necessary
         self.bus_voltage_monitor.add_reading(message_keyword_args['bus_v'], rospy.Time.now())
-        return
 
-        # Undervolt/overvolt faults are unreliable
+        # Undervolt/overvolt faults are unreliable (might not still be true - David)
         if message_keyword_args['fault'] > 2:
             fault_codes = {
                 (1 << 0): 'UNDERVOLT',
@@ -285,7 +286,7 @@ class ThrusterDriver(object):
                     faults.append(fault_name)
             rospy.logwarn("Thruster: {} has entered fault with status {}".format(name, message_keyword_args))
             rospy.logwarn("Fault causes are: {}".format(faults))
-            self.alert_thruster_loss(name, message_keyword_args)
+        return
 
     def thrust_cb(self, msg):
         '''

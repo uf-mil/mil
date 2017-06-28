@@ -84,12 +84,9 @@ class ThrusterMapper(object):
         rospy.logwarn("Got {}".format(thruster_info_service))
 
         thruster_info_service_proxy = rospy.ServiceProxy(thruster_info_service, ThrusterInfo)
-        #thruster_ranges = thruster_info_service_proxy('FLH')
         minima = np.array([thruster_info_service_proxy(x).min_force for x in self.thruster_name_map])
         maxima = np.array([thruster_info_service_proxy(x).max_force for x in self.thruster_name_map])
 
-        #minima = np.array([thruster_range.min_force] * self.num_thrusters)
-        #maxima = np.array([thruster_range.max_force] * self.num_thrusters)
         return minima, maxima
 
     def get_thruster_wrench(self, position, direction):
@@ -135,7 +132,6 @@ class ThrusterMapper(object):
             - Account for variable thrusters
         '''
         thrust_cost = np.diag([1E-4] * self.num_thrusters)
-        print 'bounds: {}'.format(zip(self.min_thrusts, self.max_thrusts))
 
         def objective(u):
             '''Tikhonov-regularized least-squares cost function

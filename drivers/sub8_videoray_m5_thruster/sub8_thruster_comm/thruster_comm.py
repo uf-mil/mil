@@ -6,6 +6,7 @@ import struct
 import binascii
 import copy
 from sub8_thruster_comm.protocol import Const
+from sub8_exception import SubjuGatorException
 import serial
 import rospy
 import json
@@ -139,9 +140,10 @@ class ThrusterPort(object):
         try:
             serial_port = serial.Serial(port_name, baudrate=self._baud_rate, timeout=self._read_timeout)
             serial_port.flushInput()
-        except IOError as e:
-            rospy.logerr("Could not connect to thruster port {}".format(port_name))
-        return serial_port
+            return serial_port
+        except serial.serialutil.SerialException as e:
+            rospy.logwarn("Could not connect to thruster port {}".format(port_name))
+            raise SubjuGatorException()
 
     def load_thruster(self, thruster_name, thruster_definitions):
         '''
@@ -158,7 +160,7 @@ class ThrusterPort(object):
             self.online_thruster_names.add(thruster_name) # Online to begin with, no response needed
 
         # See if thruster is responsive on this port
-        if not self.check_for_thruster(self.thruster_info[thruster_name].motor_id):
+        if self.port and not self.check_for_thruster(self.thruster_info[thruster_name].motor_id):
             rospy.logwarn(errstr)
         else:
             self.online_thruster_names.add(thruster_name)
@@ -355,7 +357,7 @@ class ThrusterPort(object):
             res = self.read_register(motor_id, 'NODE_ID')
             return res[0] == motor_id
         except AssertionError as e:
-	    rospy.logwarn("Motor id: {}. Assertion error parsing response packet: {}".format(motor_id, e))
+	    rospy.logdebug("Motor id: {}. Assertion error parsing response packet: {}".format(motor_id, e))
             return False
 
     def get_motor_ids_on_port(self, start_id, end_id):
@@ -418,7 +420,7 @@ class ThrusterPort(object):
         if not valid:
             if name in self.online_thruster_names:
                 if self.CONFIDENT_MODE:
-                    rospy.logerr_throttle(1, 'Got invalid response from thruster {} (packet: {})'.format(motor_id,
+                    rospy.logdebug_throttle(1, 'Got invalid response from thruster {} (packet: {})'.format(motor_id,
                         self.make_hex(response_bytearray)))
                 else:
                     self.online_thruster_names.remove(name)
@@ -432,9 +434,10 @@ class ThrusterPort(object):
             self.command_latency_avg[name] = total_latency / self.status_rx_count[name]
 
         ret = self.parse_thrust_response(response_dict['payload_bytes']) if valid else None
-        ret['command_tx_count'] = self.command_tx_count
-        ret['status_rx_count'] = self.status_rx_count
-        ret['command_latency_avg'] = self.command_latency_avg[name]
+        if ret is not None:
+            ret['command_tx_count'] = self.command_tx_count[name]
+            ret['status_rx_count'] = self.status_rx_count[name]
+            ret['command_latency_avg'] = self.command_latency_avg[name].to_sec()
         return ret
 
 
