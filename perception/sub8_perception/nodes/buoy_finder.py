@@ -154,6 +154,8 @@ class BuoyFinder(object):
         self.min_contour_area = rospy.get_param('~min_contour_area')
         self.max_circle_error = rospy.get_param('~max_circle_error')
         self.max_velocity = rospy.get_param('~max_velocity')
+        self.roi_y = rospy.get_param('~roi_y')
+        self.roi_height = rospy.get_param('~roi_height')
         camera = rospy.get_param('~camera_topic', '/camera/front/right/image_rect_color')
 
         self.buoys = {}
@@ -258,8 +260,8 @@ class BuoyFinder(object):
 
         # Crop out some of the top and bottom to exclude the floor and surface reflections
         height = image.shape[0]
-        roi_y = int(0.2 * height)
-        roi_height = height - int(0.1 * height)
+        roi_y = int(self.roi_y * height)
+        roi_height = height - int(self.roi_height * height)
         self.roi = (0, roi_y, roi_height, image.shape[1])
         self.last_image = image[self.roi[1]:self.roi[2], self.roi[0]:self.roi[3]]
         self.image_area = self.last_image.shape[0] * self.last_image.shape[1]
@@ -298,12 +300,15 @@ class BuoyFinder(object):
         Attempts to find a good buoy contour among those found within the
         thresholded mask. If a good one is found, it return (contour, centroid, area),
         otherwise returns None. Right now the best contour is just the largest.
-
-        TODO: Use smarter contour filtering methods, like checking this it is circle like
         '''
         if len(contours) > 0:
             sort = sorted(contours, key=cv2.contourArea, reverse=True)
             for cnt in sort:
+                '''
+                Loop through each contour by area, descending. Pick the largest contour
+                which is also 'circular' enough to be a pottential buoy. If no contours
+                are circular and larger than min_contour_area, return None.
+                '''
                 (x, y), radius = cv2.minEnclosingCircle(cnt)
                 circle_area = np.pi * pow(radius, 2)
                 M = cv2.moments(cnt)
