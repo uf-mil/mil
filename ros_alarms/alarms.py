@@ -60,7 +60,10 @@ class Alarm(object):
         self.parameters = parameters
         self.severity = severity
 
-        self.stamp = rospy.Time.now()
+        try:
+            self.stamp = rospy.Time.now()
+        except rospy.ROSInitException:
+            self.stamp = rospy.Time(0)
 
         # Callbacks to run if the alarm is cleared or raised formatted as follows:
         #   [(severity_required, cb1), (severity_required, cb2), ...]

@@ -121,9 +121,14 @@ class AlarmServer(object):
             alarm_name = handler.alarm_name
             severity = handler.severity_required
 
-            if alarm_name not in self.alarms:
+            # Set initial state if necessary (could have already been added while creating metas)
+            if hasattr(h, 'initial_alarm'):
+                self.alarms[alarm_name] = h.initial_alarm  #  Update even if already added to server
+            elif alarm_name not in self.alarms:  # Add default initial if not there already
                 self.alarms[alarm_name] = self.make_tagged_alarm(alarm_name)
-            self.alarms[alarm_name].raised = h.initally_raised
+            else:
+                pass
+
 
             # If a handler exists for a meta alarm, we need to save the predicate
             if alarm_name in self.meta_alarms:
