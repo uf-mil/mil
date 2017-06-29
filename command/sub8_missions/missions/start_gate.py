@@ -3,143 +3,58 @@ from __future__ import division
 
 import txros
 import txros.tf as tf
+from twisted.internet import defer
 
 from mil_misc_tools import text_effects
-from geometry_msgs.msg import Point, Vector3, Pose
 
+from sub8 import Searcher
+from mil_ros_tools import rosmsg_to_numpy
+
+import numpy as np
 
 fprint = text_effects.FprintFactory(
-    title="START_GATE", msg_color="white").fprint
+    title="START_GATE", msg_color="cyan").fprint
 
-
-class StartGateMission(object):
-    SPEED = 0.3
-    HOW_MANY = 20
-
-    def __init__(self, sub):
-        # TODO: vision proxy
-        self._sub = sub
-        self._how_many_points = 0
-        self._how_many_normals = 0
-        self._center_pt_avg = Point()
-        self._normal_avg = Vector3()
-        self._found_center_pt = False
-        self._found_normal = False
-        self._found = False
-
-        self._tf_listener = self._sub._tf_listener
-
-        self._start_away_from_gate = 1
-        self._end_away_from_gate = 0.5
-
-        self._center_of_gate_sub = self._sub.nh.subscribe(
-            '/sub8_start_gate/center', Point, callback=self.process_centers)
-        self._normal_of_gate_sub = self._sub.nh.subscribe(
-            '/sub8_start_gate/normal', Vector3, callback=self.process_normals)
-
-    def process_centers(self, point):
-        if self._found:
-            return
-        self._how_many_points = self._how_many_points + 1
-        self._center_pt_avg.x += point.x
-        self._center_pt_avg.y += point.y
-        self._center_pt_avg.z += point.z
-
-        if(self._how_many_points > self.HOW_MANY):
-            self._found_center_pt = True
-
-    def process_normals(self, normal):
-        if self._found:
-            return
-        self._how_many_normals = self._how_many_normals + 1
-        if(normal.z > 0):
-            normal.x = -normal.x
-            normal.y = -normal.y
-            normal.z = -normal.z
-        self._normal_avg.x += normal.x
-        self._normal_avg.y += normal.y
-        self._normal_avg.z += normal.z
-
-        if(self._how_many_normals > self.HOW_MANY):
-            self._found_normal = True
-
-    @txros.util.cancellableInlineCallbacks
-    def run_mission(self):
-        fprint('Starting mission')
-        fprint('Assuming camera is facing gate')
-        fprint('Leveling off', msg_color="yellow")
-        # yield self._sub.move.zero_roll_and_pitch().go()
-        while(not self._found_normal and not self._found_center_pt):
-            fprint('Waiting for detection...')
-            yield self._sub.nh.sleep(1)
-        self._found = True
-        fprint(
-            'Found {} points and {} normals'.format(
-                self._how_many_points,
-                self._how_many_normals))
-        self._normal_avg.x /= self._how_many_normals
-        self._normal_avg.y /= self._how_many_normals
-        self._normal_avg.z /= self._how_many_normals
-
-        self._center_pt_avg.x /= self._how_many_points
-        self._center_pt_avg.y /= self._how_many_points
-        self._center_pt_avg.z /= self._how_many_points
-
-        fprint('The normal: {} '.format(self._normal_avg))
-        fprint('The point: {} '.format(self._center_pt_avg))
-
-        '''
-            Go directly in front of gate
-        '''
-        pose = Pose()
-        pose.position = Point(self._center_pt_avg.x + self._normal_avg.x * self._start_away_from_gate,
-                              self._center_pt_avg.y + self._normal_avg.y * self._start_away_from_gate,
-                              self._center_pt_avg.z + self._normal_avg.z * self._start_away_from_gate)
-        transform = yield self._tf_listener.get_transform(
-            '/map',
-            '/front_stereo',
-            self._sub.nh.get_time()
-        )
-        tft = tf.Transform.from_Pose_message(pose)
-        transformed_before_gate = transform * tft
-
-        '''
-            Go through the gate
-        '''
-        pose = Pose()
-        pose.position = Point(self._center_pt_avg.x + self._normal_avg.x * -self._end_away_from_gate,
-                              self._center_pt_avg.y + self._normal_avg.y * -self._end_away_from_gate,
-                              self._center_pt_avg.z + self._normal_avg.z * -self._end_away_from_gate)
-
-        transform = yield self._tf_listener.get_transform(
-            '/map',
-            '/front_stereo',
-            self._sub.nh.get_time()
-        )
-        tft = tf.Transform.from_Pose_message(pose)
-        transformed_after_gate = transform * tft
-
-        fprint('Going infront of gate {}'.format(transformed_before_gate._p))
-        yield self._sub.move.set_position(transformed_before_gate._p).go(speed=self.SPEED)
-
-        fprint(
-            'Going through gate... YOLO! {}'.format(
-                transformed_after_gate._p))
-        yield self._sub.move.set_position(transformed_after_gate._p).go(speed=self.SPEED)
-
-    def search_patten(self):
-        yield self._sub.move.yaw_right(0.261799).go()
-        yield self._sub.move.pitch_down(0.261799).go()
-        yield self._sub.move.yaw_left(0.261799).go()
-        yield self._sub.move.pitch_up(0.261799).go()
-        yield self._sub.move.yaw_left(0.261799).go()
-        yield self._sub.move.pitch_down(0.261799).go()
-        yield self._sub.move.yaw_right(0.261799).go()
-        yield self._sub.move.pitch_up(0.261799).go()
+FACTOR_DISTANCE_BEFORE = 0.5
+FACTOR_DISTANCE_AFTER = 1
+SPEED = 0.3
 
 
 @txros.util.cancellableInlineCallbacks
-def run(sub_singleton):
-    start_gate_mission = StartGateMission(sub_singleton)
-    # start_gate_mission.search_patten()
-    yield start_gate_mission.run_mission()
+def run(sub):
+    yield sub.vision_proxies.start_gate.start()
+
+    search_pattern = []
+    search = Searcher(
+        sub,
+        sub.vision_proxies.start_gate.get_pose,
+        search_pattern)
+
+    resp = None
+    fprint('Searching...')
+    resp = yield search.start_search(loop=False, timeout=100, spotings_req=1)
+
+    if resp is None or not resp.found:
+        fprint("No gate found...", msg_color="red")
+        defer.returnValue(None)
+
+    position = rosmsg_to_numpy(resp.pose.pose.position)
+    orientation = rosmsg_to_numpy(resp.pose.pose.orientation)
+    fprint('Gate\'s position in map is: {}'.format(position))
+    fprint('Gate\'s orientation in map is: {}'.format(orientation))
+
+    normal = tf.transformations.quaternion_matrix(
+        orientation).dot(np.array([1, 0, 0, 0]))[0:3]
+    fprint('Computed normal vector: {}'.format(normal))
+
+    point_before = np.array(
+        [position[0], position[1], position[2]]) + FACTOR_DISTANCE_BEFORE * normal
+    fprint('Moving infront of gate {}'.format(point_before))
+    sub.move.set_position(point_before).go(speed=SPEED)
+
+    point_after = np.array(
+        [position[0], position[1], position[2]]) - FACTOR_DISTANCE_AFTER * normal
+    fprint('YOLO! Going through gate {}'.format(point_after))
+    sub.move.set_position(point_after).go(speed=SPEED)
+
+    defer.returnValue(True)

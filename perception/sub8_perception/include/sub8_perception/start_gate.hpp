@@ -27,6 +27,14 @@
 
 #include <visualization_msgs/Marker.h>
 
+#include <sub8_msgs/VisionRequest.h>
+#include <sub8_msgs/VisionRequest2D.h>
+
+#include <tf2/transform_datatypes.h>
+#include <tf2_ros/transform_listener.h>
+
+#include <geometry_msgs/TransformStamped.h>
+
 class Sub8StartGateDetector
 {
 public:
@@ -44,6 +52,8 @@ private:
   void right_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
                             const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
   bool set_active_enable_cb(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
+  bool vision_request_cb(sub8_msgs::VisionRequest::Request &req, sub8_msgs::VisionRequest::Response &resp);
+
   void run();
 
   // Main algorithm that gets left and right image pointers and finds gate in 3D
@@ -71,6 +81,7 @@ private:
                                    cv::Mat &current_image_right);
   void visualize_3d_points_rviz(const std::vector<Eigen::Vector3d> &feature_pts_3d,
                                 const std::vector<Eigen::Vector3d> &proj_pts);
+  void visualize_k_gate_normal();
 
   ros::NodeHandle nh;
   image_transport::CameraSubscriber left_image_sub_, right_image_sub_;
@@ -91,15 +102,35 @@ private:
 
   // Publish marker visualization as well as the normal approximation
   ros::Publisher marker_pub_;
-  ros::Publisher center_gate_pub_;
-  ros::Publisher normal_gate_pub_;
 
   // Toggle to run the vision
   ros::ServiceServer active_service_;
+  ros::ServiceServer vision_request_service_;
 
   // Some filtering params used by the 'process_image' function
   int canny_low_;
   float canny_ratio_;
   int blur_size_;
   int dilate_amount_;
+
+  // how often to process images
+  double dt_;
+
+  Eigen::Vector3d gate_position_;
+  Eigen::Quaterniond gate_orientation_;
+  bool gate_found_;
+  ros::Time last_time_found_;
+  ros::Duration timeout_for_found_;
+
+  int n_states_;
+  int n_measurements_;
+  cv::KalmanFilter k_filter_;
+  void init_kalman_filter();
+  void update_kalman_filter(Eigen::Vector3d center_point, Eigen::Vector3d normal_vector);
+  cv::Mat get_measurement_as_cv_mat(Eigen::Vector3d center_point, Eigen::Vector3d normal_vector);
+  void reset_filter_from_time();
+
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener tf_listener_;
+  geometry_msgs::TransformStamped transform_to_map_;
 };

@@ -1,27 +1,40 @@
 #include <sub8_perception/start_gate.hpp>
-Sub8StartGateDetector::Sub8StartGateDetector() : nh("~"), image_transport_(nh), active_(true), sync_thresh_(0.5)
+Sub8StartGateDetector::Sub8StartGateDetector()
+  : nh("~"), image_transport_(nh), active_(true), sync_thresh_(0.5), timeout_for_found_(2), tf_listener_(tf_buffer_)
 {
   std::string img_topic_left_default = "/camera/front/left/image_rect_color";
   std::string img_topic_right_default = "/camera/front/right/image_rect_color";
 
-  std::string left = nh.param<std::string>("~input_left", img_topic_left_default);
-  std::string right = nh.param<std::string>("~input_right", img_topic_right_default);
+  std::string left = nh.param<std::string>("input_left", img_topic_left_default);
+  std::string right = nh.param<std::string>("input_right", img_topic_right_default);
   left_image_sub_ = image_transport_.subscribeCamera(left, 10, &Sub8StartGateDetector::left_image_callback, this);
   right_image_sub_ = image_transport_.subscribeCamera(right, 10, &Sub8StartGateDetector::right_image_callback, this);
 
-  marker_pub_ = nh.advertise<visualization_msgs::Marker>("~visualization_marker", 1, true);
-  center_gate_pub_ = nh.advertise<geometry_msgs::Point>("~center", 1, true);
-  normal_gate_pub_ = nh.advertise<geometry_msgs::Vector3>("~normal", 1, true);
-  active_service_ = nh.advertiseService("~enable", &Sub8StartGateDetector::set_active_enable_cb, this);
+  marker_pub_ = nh.advertise<visualization_msgs::Marker>("visualization_marker", 1, true);
+  vision_request_service_ =
+      nh.advertiseService("/vision/start_gate/pose", &Sub8StartGateDetector::vision_request_cb, this);
+  active_service_ =
+      nh.advertiseService("/vision/start_gate/enable", &Sub8StartGateDetector::set_active_enable_cb, this);
 
-  debug_image_pub_left_ = image_transport_.advertise("~left", 1, true);
-  debug_image_pub_right_ = image_transport_.advertise("~right", 1, true);
-  debug_image_pub_canny_ = image_transport_.advertise("~canny", 1, true);
+  debug_image_pub_left_ = image_transport_.advertise("left", 1, true);
+  debug_image_pub_right_ = image_transport_.advertise("right", 1, true);
+  debug_image_pub_canny_ = image_transport_.advertise("canny", 1, true);
 
-  canny_low_ = nh.param<int>("~canny_low_", 100);
-  canny_ratio_ = nh.param<int>("~canny_ratio_", 3.0);
-  blur_size_ = nh.param<int>("~blur_size_", 1);
-  dilate_amount_ = nh.param<int>("~dilate_amount_", 3);
+  canny_low_ = nh.param<int>("canny_low_", 100);
+  canny_ratio_ = nh.param<int>("canny_ratio_", 3.0);
+  blur_size_ = nh.param<int>("blur_size_", 1);
+  dilate_amount_ = nh.param<int>("dilate_amount_", 3);
+
+  // process 10 images per second
+  dt_ = 1 / 10;
+
+  // Initialize kalman
+  // position (x,y,z) and its 1st and 2nd dervatives, euler angles and the 1st and 2nd dervatives
+  n_states_ = 18;
+  // postion xyz and euler roll, pitch, yaw
+  n_measurements_ = 6;
+
+  init_kalman_filter();
 
   run();
 }
@@ -51,9 +64,35 @@ bool Sub8StartGateDetector::set_active_enable_cb(std_srvs::SetBool::Request &req
   return true;
 }
 
+bool Sub8StartGateDetector::vision_request_cb(sub8_msgs::VisionRequest::Request &req,
+                                              sub8_msgs::VisionRequest::Response &resp)
+{
+  if (!gate_found_)
+  {
+    resp.found = false;
+    return true;
+  }
+  Eigen::Quaterniond map_quat(transform_to_map_.transform.rotation.w, transform_to_map_.transform.rotation.x,
+                              transform_to_map_.transform.rotation.y, transform_to_map_.transform.rotation.z);
+  // order of multiplication matters ;)
+  auto result = map_quat * gate_orientation_;
+
+  result.normalized();
+  resp.pose.pose.position.x = gate_position_(0, 0) + transform_to_map_.transform.translation.x;
+  resp.pose.pose.position.y = gate_position_(1, 0) + transform_to_map_.transform.translation.y;
+  resp.pose.pose.position.z = gate_position_(2, 0) + transform_to_map_.transform.translation.z;
+
+  resp.pose.pose.orientation.w = result.w();
+  resp.pose.pose.orientation.x = result.x();
+  resp.pose.pose.orientation.y = result.y();
+  resp.pose.pose.orientation.z = result.z();
+  resp.found = true;
+  return true;
+}
+
 void Sub8StartGateDetector::run()
 {
-  ros::Rate loop_rate(10);  // process images 10 times per second
+  ros::Rate loop_rate(1 / dt_);  // process images 10 times per second
   while (ros::ok())
   {
     if (active_)
@@ -66,6 +105,7 @@ void Sub8StartGateDetector::run()
 
 void Sub8StartGateDetector::determine_start_gate_position()
 {
+  reset_filter_from_time();
   // Prevent segfault if service is called before we get valid img_msg_ptr's
   if (left_most_recent.image_msg_ptr == NULL || right_most_recent.image_msg_ptr == NULL)
   {
@@ -119,6 +159,15 @@ void Sub8StartGateDetector::determine_start_gate_position()
   if (sync_error > sync_thresh_)
   {
     ROS_WARN("Left and right not synchronized");
+    return;
+  }
+  try
+  {
+    transform_to_map_ = tf_buffer_.lookupTransform("map", "front_left_cam", ros::Time(0));
+  }
+  catch (tf2::TransformException &ex)
+  {
+    ROS_ERROR("No transform from front_left_cam to map");
     return;
   }
 
@@ -213,6 +262,11 @@ void Sub8StartGateDetector::determine_start_gate_position()
   Eigen::Vector3d plane_unit_normal;
   plane_unit_normal << plane_constants[0], plane_constants[1], plane_constants[2];
   plane_unit_normal = plane_unit_normal / plane_unit_normal.norm();
+
+  // Reject if z is too far off
+  if (fabs(plane_unit_normal(2, 0)) < 0.5)
+    return;
+
   Eigen::Vector3d pt_on_plane;
   pt_on_plane << 0, 0, -plane_constants[3] / plane_constants[2];
   for (uint8_t pt_idx = 0; pt_idx < feature_pts_3d.size(); ++pt_idx)
@@ -223,52 +277,29 @@ void Sub8StartGateDetector::determine_start_gate_position()
     Eigen::Vector3d corr_pt = pt - plane_to_pt_proj_normal;
     proj_pts.push_back(corr_pt);
   }
+  // Flip the vector to point towards camera if necessary
+  plane_unit_normal = plane_unit_normal(2, 0) < 0 ? plane_unit_normal : -plane_unit_normal;
 
-  geometry_msgs::Point center_pt;
+  // Get the center point
+  Eigen::Vector3d center_pt;
   for (auto p : proj_pts)
   {
-    center_pt.x += p[0];
-    center_pt.y += p[1];
-    center_pt.z += p[2];
+    center_pt(0, 0) += p[0];
+    center_pt(1, 0) += p[1];
+    center_pt(2, 0) += p[2];
   }
-  center_pt.x /= proj_pts.size();
-  center_pt.y /= proj_pts.size();
-  center_pt.z /= proj_pts.size();
+  center_pt(0, 0) /= proj_pts.size();
+  center_pt(1, 0) /= proj_pts.size();
+  center_pt(2, 0) /= proj_pts.size();
 
-  geometry_msgs::Point sdp_normalvec_ros;
-  sdp_normalvec_ros.x = center_pt.x + plane_unit_normal(0, 0);
-  sdp_normalvec_ros.y = center_pt.y + plane_unit_normal(1, 0);
-  sdp_normalvec_ros.z = center_pt.z + plane_unit_normal(2, 0);
-  geometry_msgs::Vector3 normal_vec;
-  normal_vec.x = plane_unit_normal(0, 0);
-  normal_vec.y = plane_unit_normal(1, 0);
-  normal_vec.z = plane_unit_normal(2, 0);
-
-  // TODO: kalman filter for pose
-  // TODO: make this a vision proxy
-  center_gate_pub_.publish(center_pt);
-  normal_gate_pub_.publish(normal_vec);
+  update_kalman_filter(center_pt, plane_unit_normal);
+  last_time_found_ = ros::Time::now();
+  gate_found_ = true;
 
   // Visualize stuff
+  visualize_k_gate_normal();
   visualize_3d_reconstruction(feature_pts_3d, left_cam_mat, right_cam_mat, current_image_left, current_image_right);
   visualize_3d_points_rviz(feature_pts_3d, proj_pts);
-
-  visualization_msgs::Marker marker_normal;
-  marker_normal.header.seq = 0;
-  marker_normal.header.stamp = ros::Time::now();
-  marker_normal.header.frame_id = "/front_left_cam";
-  marker_normal.id = 3000;
-  marker_normal.type = visualization_msgs::Marker::ARROW;
-  marker_normal.points.push_back(center_pt);
-  marker_normal.points.push_back(sdp_normalvec_ros);
-  marker_normal.scale.x = 0.1;
-  marker_normal.scale.y = 0.5;
-  marker_normal.scale.z = 0.5;
-  marker_normal.color.a = 1.0;
-  marker_normal.color.r = 0.0;
-  marker_normal.color.g = 0.0;
-  marker_normal.color.b = 1.0;
-  marker_pub_.publish(marker_normal);
 
   sensor_msgs::ImagePtr dbg_img_msg_left =
       cv_bridge::CvImage(std_msgs::Header(), "bgr8", current_image_left).toImageMsg();
@@ -436,6 +467,38 @@ void Sub8StartGateDetector::visualize_3d_points_rviz(const std::vector<Eigen::Ve
   marker_pub_.publish(points_raw_marker);
 }
 
+void Sub8StartGateDetector::visualize_k_gate_normal()
+{
+  geometry_msgs::Point center_pt;
+  center_pt.x = gate_position_(0, 0);
+  center_pt.y = gate_position_(1, 0);
+  center_pt.z = gate_position_(2, 0);
+
+  Eigen::Vector3d normal = gate_orientation_ * Eigen::Vector3d(1, 0, 0);
+
+  geometry_msgs::Point sdp_normalvec_ros;
+  sdp_normalvec_ros.x = center_pt.x + normal(0, 0);
+  sdp_normalvec_ros.y = center_pt.y + normal(1, 0);
+  sdp_normalvec_ros.z = center_pt.z + normal(2, 0);
+
+  visualization_msgs::Marker marker_normal;
+  marker_normal.header.seq = 0;
+  marker_normal.header.stamp = ros::Time::now();
+  marker_normal.header.frame_id = "/front_left_cam";
+  marker_normal.id = 2222;
+  marker_normal.type = visualization_msgs::Marker::ARROW;
+  marker_normal.points.push_back(center_pt);
+  marker_normal.points.push_back(sdp_normalvec_ros);
+  marker_normal.scale.x = 0.1;
+  marker_normal.scale.y = 0.5;
+  marker_normal.scale.z = 0.5;
+  marker_normal.color.a = 1.0;
+  marker_normal.color.r = 1.0;
+  marker_normal.color.g = 0.0;
+  marker_normal.color.b = 1.0;
+  marker_pub_.publish(marker_normal);
+}
+
 cv::Mat Sub8StartGateDetector::process_image(cv::Mat &image)
 {
   cv::Mat kernal = cv::Mat::ones(5, 5, CV_8U);
@@ -518,6 +581,100 @@ bool Sub8StartGateDetector::valid_contour(std::vector<cv::Point> &contour)
   if (abs(angle - 90) > 30)
     return false;
   return true;
+}
+
+void Sub8StartGateDetector::init_kalman_filter()
+{
+  k_filter_.init(n_states_, n_measurements_, 0, CV_64F);
+  cv::setIdentity(k_filter_.processNoiseCov, cv::Scalar::all(1e-5));
+  // How much to trust measurements
+  cv::setIdentity(k_filter_.measurementNoiseCov, cv::Scalar::all(0.005));
+  cv::setIdentity(k_filter_.errorCovPost, cv::Scalar::all(1));
+
+  // position
+  k_filter_.transitionMatrix.at<double>(0, 3) = dt_;
+  k_filter_.transitionMatrix.at<double>(1, 4) = dt_;
+  k_filter_.transitionMatrix.at<double>(2, 5) = dt_;
+  k_filter_.transitionMatrix.at<double>(3, 6) = dt_;
+  k_filter_.transitionMatrix.at<double>(4, 7) = dt_;
+  k_filter_.transitionMatrix.at<double>(5, 8) = dt_;
+  k_filter_.transitionMatrix.at<double>(0, 6) = 0.5 * pow(dt_, 2);
+  k_filter_.transitionMatrix.at<double>(1, 7) = 0.5 * pow(dt_, 2);
+  k_filter_.transitionMatrix.at<double>(2, 8) = 0.5 * pow(dt_, 2);
+
+  // orientation
+  k_filter_.transitionMatrix.at<double>(9, 12) = dt_;
+  k_filter_.transitionMatrix.at<double>(10, 13) = dt_;
+  k_filter_.transitionMatrix.at<double>(11, 14) = dt_;
+  k_filter_.transitionMatrix.at<double>(12, 15) = dt_;
+  k_filter_.transitionMatrix.at<double>(13, 16) = dt_;
+  k_filter_.transitionMatrix.at<double>(14, 17) = dt_;
+  k_filter_.transitionMatrix.at<double>(9, 15) = 0.5 * pow(dt_, 2);
+  k_filter_.transitionMatrix.at<double>(10, 16) = 0.5 * pow(dt_, 2);
+  k_filter_.transitionMatrix.at<double>(11, 17) = 0.5 * pow(dt_, 2);
+
+  // x
+  k_filter_.measurementMatrix.at<double>(0, 0) = 1;
+  // y
+  k_filter_.measurementMatrix.at<double>(1, 1) = 1;
+  // z
+  k_filter_.measurementMatrix.at<double>(2, 2) = 1;
+  // roll
+  k_filter_.measurementMatrix.at<double>(3, 9) = 1;
+  // pitch
+  k_filter_.measurementMatrix.at<double>(4, 10) = 1;
+  // yaw
+  k_filter_.measurementMatrix.at<double>(5, 11) = 1;
+}
+
+cv::Mat Sub8StartGateDetector::get_measurement_as_cv_mat(Eigen::Vector3d center_point, Eigen::Vector3d normal_vector)
+{
+  cv::Mat measurement(n_measurements_, 1, CV_64F);
+  Eigen::Vector3d euler = Eigen::Quaterniond()
+                              .setFromTwoVectors(Eigen::Vector3d(1, 0, 0), normal_vector)
+                              .toRotationMatrix()
+                              .eulerAngles(0, 1, 2);
+  measurement.at<double>(0) = center_point(0, 0);
+  measurement.at<double>(1) = center_point(1, 0);
+  measurement.at<double>(2) = center_point(2, 0);
+  measurement.at<double>(3) = euler(0, 0);
+  measurement.at<double>(4) = euler(1, 0);
+  measurement.at<double>(5) = euler(2, 0);
+  return measurement;
+}
+
+void Sub8StartGateDetector::update_kalman_filter(Eigen::Vector3d center_point, Eigen::Vector3d normal_vector)
+{
+  cv::Mat prediction = k_filter_.predict();
+  cv::Mat measurement = get_measurement_as_cv_mat(center_point, normal_vector);
+
+  cv::Mat estimated = k_filter_.correct(measurement);
+
+  this->gate_position_(0, 0) = estimated.at<double>(0);
+  this->gate_position_(1, 0) = estimated.at<double>(1);
+  this->gate_position_(2, 0) = estimated.at<double>(2);
+
+  Eigen::Vector3d euler;
+  euler(0, 0) = estimated.at<double>(9);
+  euler(1, 0) = estimated.at<double>(10);
+  euler(2, 0) = estimated.at<double>(11);
+
+  Eigen::AngleAxisd rollAngle(euler(0, 0), Eigen::Vector3d::UnitX());
+  Eigen::AngleAxisd yawAngle(euler(1, 0), Eigen::Vector3d::UnitY());
+  Eigen::AngleAxisd pitchAngle(euler(2, 0), Eigen::Vector3d::UnitZ());
+
+  this->gate_orientation_ = rollAngle * yawAngle * pitchAngle;
+}
+
+void Sub8StartGateDetector::reset_filter_from_time()
+{
+  if (!gate_found_)
+    return;
+  if (ros::Time::now() - last_time_found_ > timeout_for_found_)
+  {
+    init_kalman_filter();
+    gate_found_ = false;
+  }
 }
 
 void Sub8StartGateDetector::combinations(uint8_t n, uint8_t k, std::vector<std::vector<uint8_t>> &idx_array)
