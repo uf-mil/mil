@@ -331,7 +331,7 @@ std::vector<cv::Point> Sub8StartGateDetector::get_corner_center_points(const std
 {
   // Get all the possible number of combinations of points
   std::vector<std::vector<uint8_t>> id_comb;
-  combinations(features.size(), 2, id_comb);
+  mil_tools::combinations(features.size(), 2, id_comb);
 
   // Order pairs of points based of shortest distance. store that in id_comb
   std::sort(id_comb.begin(), id_comb.end(),
@@ -674,58 +674,5 @@ void Sub8StartGateDetector::reset_filter_from_time()
   {
     init_kalman_filter();
     gate_found_ = false;
-  }
-}
-
-void Sub8StartGateDetector::combinations(uint8_t n, uint8_t k, std::vector<std::vector<uint8_t>> &idx_array)
-{
-  idx_array = std::vector<std::vector<uint8_t>>();
-
-  std::vector<uint8_t> first_comb;
-
-  // set first combination indices
-  for (uint8_t i = 0; i < k; i++)
-  {
-    first_comb.push_back(i);
-  }
-
-  uint8_t level = 0;
-
-  _increase_elements_after_level(first_comb, idx_array, n, k, level);
-}
-
-void Sub8StartGateDetector::_increase_elements_after_level(std::vector<uint8_t> comb,
-                                                           std::vector<std::vector<uint8_t>> &comb_array, uint8_t n,
-                                                           uint8_t k, uint8_t level)
-{
-  std::vector<uint8_t> parent = comb;
-  std::vector<std::vector<uint8_t>> children;
-
-  while (true)
-  {
-    for (uint8_t idx = level; idx < k; idx++)
-    {
-      comb[idx] = comb[idx] + 1;
-    }
-    if (comb[level] > n - (k - level))
-      break;
-    children.push_back(comb);
-  }
-
-  if (level == k - 1)
-  {
-    comb_array.push_back(parent);
-    for (std::vector<uint8_t> child : children)
-    {
-      comb_array.push_back(child);
-    }
-  }
-  else
-  {
-    _increase_elements_after_level(parent, comb_array, n, k, level + 1);
-    for (std::vector<uint8_t> child : children)
-    {
-      _increase_elements_after_level(child, comb_array, n, k, level + 1);
-    }
   }
 }

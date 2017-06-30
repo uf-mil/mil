@@ -31,6 +31,8 @@
 #include <mil_vision_lib/cv_tools.hpp>
 #include <sub8_vision_lib/visualization.hpp>
 
+#include <mil_tools/mil_tools.hpp>
+
 // #define SEGMENTATION_DEBUG
 
 /*
@@ -142,12 +144,6 @@ private:
 /*
   Helper Functions
 */
-
-// Combinations of k elements from a set of size n (indexes)
-void combinations(uint8_t n, uint8_t k, std::vector<std::vector<uint8_t> > &idx_array);
-void _increase_elements_after_level(std::vector<uint8_t> comb, std::vector<std::vector<uint8_t> > &comb_array,
-                                    uint8_t n, uint8_t k, uint8_t level);
-
 // Edge preserving image denoising
 void anisotropic_diffusion(const cv::Mat &src, cv::Mat &dest, int t_max);
 

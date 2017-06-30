@@ -15,6 +15,7 @@
 #include <std_srvs/SetBool.h>
 
 #include <mil_vision_lib/cv_tools.hpp>
+#include <mil_tools/mil_tools.hpp>
 
 #include <eigen_conversions/eigen_msg.h>
 #include <Eigen/Core>
@@ -42,11 +43,6 @@ public:
   mil_vision::ImageWithCameraInfo left_most_recent, right_most_recent;
 
 private:
-  // Combinations of k elements from a set of size n (indexes)
-  void combinations(uint8_t n, uint8_t k, std::vector<std::vector<uint8_t>> &idx_array);
-  void _increase_elements_after_level(std::vector<uint8_t> comb, std::vector<std::vector<uint8_t>> &comb_array,
-                                      uint8_t n, uint8_t k, uint8_t level);
-
   void left_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
                            const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
   void right_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
