@@ -23,4 +23,10 @@ inline std::string operator"" _s(const char* str, size_t /*length*/)
 
 // Sorts contours by curve length
 void sortContours(std::vector<std::vector<cv::Point>>& contour_vec, bool ascending = true);
+
+// nCk: Combinations of k elements from a set of size n (indexes)
+void combinations(uint8_t n, uint8_t k, std::vector<std::vector<uint8_t>>& idx_array);
+// Helper function for combinations
+void _increase_elements_after_level(std::vector<uint8_t> comb, std::vector<std::vector<uint8_t>>& comb_array, uint8_t n,
+                                    uint8_t k, uint8_t level);
 }
