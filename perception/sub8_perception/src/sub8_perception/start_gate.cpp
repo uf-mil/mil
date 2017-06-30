@@ -62,20 +62,11 @@ bool Sub8StartGateDetector::vision_request_cb(sub8_msgs::VisionRequest::Request 
     resp.found = false;
     return true;
   }
-  Eigen::Quaterniond map_quat(transform_to_map_.transform.rotation.w, transform_to_map_.transform.rotation.x,
-                              transform_to_map_.transform.rotation.y, transform_to_map_.transform.rotation.z);
-  // order of multiplication matters ;)
-  auto result = map_quat * gate_orientation_;
-
-  result.normalized();
-  resp.pose.pose.position.x = gate_position_(0, 0) + transform_to_map_.transform.translation.x;
-  resp.pose.pose.position.y = gate_position_(1, 0) + transform_to_map_.transform.translation.y;
-  resp.pose.pose.position.z = gate_position_(2, 0) + transform_to_map_.transform.translation.z;
-
-  resp.pose.pose.orientation.w = result.w();
-  resp.pose.pose.orientation.x = result.x();
-  resp.pose.pose.orientation.y = result.y();
-  resp.pose.pose.orientation.z = result.z();
+  Eigen::Affine3d gate_pose(Eigen::Translation3d(gate_position_(0, 0), gate_position_(1, 0), gate_position_(2, 0)) *
+                            gate_orientation_);
+  Eigen::Affine3d gate_in_map;
+  tf2::doTransform(gate_pose, gate_in_map, transform_to_map_);
+  resp.pose.pose = tf2::toMsg(gate_in_map);
   resp.found = true;
   return true;
 }
@@ -125,7 +116,7 @@ void Sub8StartGateDetector::determine_start_gate_position()
   }
   try
   {
-    transform_to_map_ = tf_buffer_.lookupTransform("map", "front_left_cam", ros::Time(0));
+    transform_to_map_ = tf_buffer_.lookupTransform("map", "front_stereo", ros::Time(0));
   }
   catch (tf2::TransformException &ex)
   {

@@ -18,6 +18,9 @@ find_package(catkin
     std_msgs
     geometry_msgs
     mil_vision
+    tf2
+    tf2_ros
+    tf2_eigen
 )
 
 catkin_python_setup()
