@@ -14,8 +14,9 @@
 #include <ros/ros.h>
 #include <std_srvs/SetBool.h>
 
-#include <mil_vision_lib/cv_tools.hpp>
 #include <mil_tools/mil_tools.hpp>
+#include <mil_vision_lib/cv_tools.hpp>
+#include <mil_vision_lib/image_acquisition/ros_camera_stream.hpp>
 
 #include <eigen_conversions/eigen_msg.h>
 #include <Eigen/Core>
@@ -40,13 +41,8 @@ class Sub8StartGateDetector
 {
 public:
   Sub8StartGateDetector();
-  mil_vision::ImageWithCameraInfo left_most_recent, right_most_recent;
 
 private:
-  void left_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
-                           const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
-  void right_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
-                            const sensor_msgs::CameraInfoConstPtr &info_msg_ptr);
   bool set_active_enable_cb(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
   bool vision_request_cb(sub8_msgs::VisionRequest::Request &req, sub8_msgs::VisionRequest::Response &resp);
 
@@ -65,7 +61,7 @@ private:
   std::vector<cv::Point> contour_to_2d_features(std::vector<std::vector<cv::Point>> &contour);
   // Given a set of points, find the center points between the closest point pairs
   std::vector<cv::Point> get_corner_center_points(const std::vector<cv::Point> &features);
-  // Distance-based stereo matching
+  // Distance-based stereo matchin
   std::vector<int> shortest_pair_stereo_matching(const std::vector<cv::Point> &features_l,
                                                  const std::vector<cv::Point> &features_r, int y_axis_diff_thresh = 0);
   // Finds a plane
@@ -80,12 +76,12 @@ private:
   void visualize_k_gate_normal();
 
   ros::NodeHandle nh;
-  image_transport::CameraSubscriber left_image_sub_, right_image_sub_;
   image_transport::ImageTransport image_transport_;
   image_transport::Publisher debug_image_pub_left_;
   image_transport::Publisher debug_image_pub_right_;
   image_transport::Publisher debug_image_pub_canny_;
-  image_geometry::PinholeCameraModel left_cam_model_, right_cam_model_;
+  mil_vision::ROSCameraStream<cv::Vec3b> left_cam_stream_;
+  mil_vision::ROSCameraStream<cv::Vec3b> right_cam_stream_;
 
   // To prevent invalid img pointers from being passed to toCvCopy (segfault)
   boost::mutex left_mtx_, right_mtx_;

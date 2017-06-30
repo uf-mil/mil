@@ -1,14 +1,22 @@
 #include <sub8_perception/start_gate.hpp>
 Sub8StartGateDetector::Sub8StartGateDetector()
-  : nh("~"), image_transport_(nh), active_(true), sync_thresh_(0.5), timeout_for_found_(2), tf_listener_(tf_buffer_)
+  : nh("~")
+  , image_transport_(nh)
+  , left_cam_stream_(nh, 1)
+  , right_cam_stream_(nh, 1)
+  , active_(false)
+  , sync_thresh_(0.5)
+  , timeout_for_found_(2)
+  , tf_listener_(tf_buffer_)
 {
   std::string img_topic_left_default = "/camera/front/left/image_rect_color";
   std::string img_topic_right_default = "/camera/front/right/image_rect_color";
 
   std::string left = nh.param<std::string>("input_left", img_topic_left_default);
   std::string right = nh.param<std::string>("input_right", img_topic_right_default);
-  left_image_sub_ = image_transport_.subscribeCamera(left, 10, &Sub8StartGateDetector::left_image_callback, this);
-  right_image_sub_ = image_transport_.subscribeCamera(right, 10, &Sub8StartGateDetector::right_image_callback, this);
+
+  left_cam_stream_.init(img_topic_left_default);
+  right_cam_stream_.init(img_topic_right_default);
 
   marker_pub_ = nh.advertise<visualization_msgs::Marker>("visualization_marker", 1, true);
   vision_request_service_ =
@@ -37,24 +45,6 @@ Sub8StartGateDetector::Sub8StartGateDetector()
   init_kalman_filter();
 
   run();
-}
-
-void Sub8StartGateDetector::left_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
-                                                const sensor_msgs::CameraInfoConstPtr &info_msg_ptr)
-{
-  left_mtx_.lock();
-  left_most_recent.image_msg_ptr = image_msg_ptr;
-  left_most_recent.info_msg_ptr = info_msg_ptr;
-  left_mtx_.unlock();
-}
-
-void Sub8StartGateDetector::right_image_callback(const sensor_msgs::ImageConstPtr &image_msg_ptr,
-                                                 const sensor_msgs::CameraInfoConstPtr &info_msg_ptr)
-{
-  right_mtx_.lock();
-  right_most_recent.image_msg_ptr = image_msg_ptr;
-  right_most_recent.info_msg_ptr = info_msg_ptr;
-  right_mtx_.unlock();
 }
 
 bool Sub8StartGateDetector::set_active_enable_cb(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
@@ -106,55 +96,27 @@ void Sub8StartGateDetector::run()
 void Sub8StartGateDetector::determine_start_gate_position()
 {
   reset_filter_from_time();
-  // Prevent segfault if service is called before we get valid img_msg_ptr's
-  if (left_most_recent.image_msg_ptr == NULL || right_most_recent.image_msg_ptr == NULL)
+
+  if (!left_cam_stream_.ok() || !right_cam_stream_.ok())
   {
-    ROS_WARN("Start Gate Detector: Image Pointers are NULL.");
+    ROS_WARN("Start Gate Detector: not getting images.");
     return;
   }
 
-  cv_bridge::CvImagePtr input_bridge;
-  cv::Mat current_image_left, current_image_right, processing_size_image_left, processing_size_image_right;
-
-  try
+  if (left_cam_stream_.size() < 1 || right_cam_stream_.size() < 1)
   {
-    left_mtx_.lock();
-    right_mtx_.lock();
-
-    // Left Camera
-    input_bridge = cv_bridge::toCvCopy(left_most_recent.image_msg_ptr, sensor_msgs::image_encodings::BGR8);
-    current_image_left = input_bridge->image;
-    left_cam_model_.fromCameraInfo(left_most_recent.info_msg_ptr);
-    if (current_image_left.channels() != 3)
-    {
-      ROS_ERROR("The left image topic does not contain a color image.");
-      return;
-    }
-
-    // Right Camera
-    input_bridge = cv_bridge::toCvCopy(right_most_recent.image_msg_ptr, sensor_msgs::image_encodings::BGR8);
-    current_image_right = input_bridge->image;
-    right_cam_model_.fromCameraInfo(right_most_recent.info_msg_ptr);
-    if (current_image_right.channels() != 3)
-    {
-      ROS_ERROR("The right image topic does not contain a color image.");
-      return;
-    }
-    left_mtx_.unlock();
-    right_mtx_.unlock();
-  }
-  catch (const std::exception &ex)
-  {
-    ROS_ERROR("[start_gate] cv_bridge: Failed to convert images");
-    left_mtx_.unlock();
-    right_mtx_.unlock();
+    ROS_WARN("Calling too soon -- no images ready");
     return;
   }
+
+  cv::Mat current_image_left, current_image_right;
+  current_image_left = left_cam_stream_[0]->image();
+  current_image_right = right_cam_stream_[0]->image();
 
   // Enforce approximate image synchronization
   double left_stamp, right_stamp;
-  left_stamp = left_most_recent.image_msg_ptr->header.stamp.toSec();
-  right_stamp = right_most_recent.image_msg_ptr->header.stamp.toSec();
+  left_stamp = left_cam_stream_[0]->stamp().toSec();
+  right_stamp = right_cam_stream_[0]->stamp().toSec();
   double sync_error = fabs(left_stamp - right_stamp);
   if (sync_error > sync_thresh_)
   {
@@ -214,8 +176,8 @@ void Sub8StartGateDetector::determine_start_gate_position()
   }
 
   // Get camera projection matrices
-  cv::Matx34d left_cam_mat = left_cam_model_.fullProjectionMatrix();
-  cv::Matx34d right_cam_mat = right_cam_model_.fullProjectionMatrix();
+  cv::Matx34d left_cam_mat = left_cam_stream_[0]->getCameraModelPtr()->fullProjectionMatrix();
+  cv::Matx34d right_cam_mat = right_cam_stream_[0]->getCameraModelPtr()->fullProjectionMatrix();
 
   // Calculate 3D stereo reconstructions
   std::vector<Eigen::Vector3d> feature_pts_3d;
