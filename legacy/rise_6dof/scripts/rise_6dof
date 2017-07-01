@@ -15,7 +15,7 @@ from std_msgs.msg import Header
 from mil_msgs.msg import PoseTwist, PoseTwistStamped
 from mil_ros_tools import pose_to_numpy, twist_to_numpy
 
-from ros_alarms import AlarmListener 
+from ros_alarms import AlarmListener
 
 from rise_6dof import controller
 from rise_6dof.cfg import controllerConfig
@@ -75,6 +75,14 @@ class Node(object):
 
             if self.kill_listener.is_raised():
                 self.kill()
+                # Published zeroed wrench when killed so thruster feedback is still produced
+                pub.publish(WrenchStamped(
+                    header=Header(
+                      stamp=rospy.Time.now(),
+                      frame_id='/base_link'
+                    ),
+                    wrench=Wrench(force=Vector3(0, 0, 0), torque=Vector3(0, 0, 0))
+                ))
                 continue
 
             if self.current is None:
