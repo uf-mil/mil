@@ -44,15 +44,15 @@ class AlarmServer(object):
                     continue
                 cleared_alarm = alarm.as_msg()
                 cleared_alarm.raised = False
-                alarm.update(cleared_alarm)
                 self._alarm_pub.publish(alarm.as_msg())
+                alarm.update(cleared_alarm)
 
             for _alarm in self.meta_alarms.keys():
                 alarm = self.alarms[_alarm]
                 cleared_alarm = alarm.as_msg()
                 cleared_alarm.raised = False
-                alarm.update(cleared_alarm)
                 self._alarm_pub.publish(alarm.as_msg())
+                alarm.update(cleared_alarm)
 
             return True
 
