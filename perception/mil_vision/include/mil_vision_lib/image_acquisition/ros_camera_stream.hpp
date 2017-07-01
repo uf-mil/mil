@@ -292,6 +292,7 @@ operator[](int i)
   {
     auto err = "ROSCameraStream: The circular buffer index you are trying to acess is out of bounds:\n"_s + e.what();
     ROS_WARN_THROTTLE_NAMED(1, "ROSCameraStream", err.c_str());
+    _mtx.unlock();
     return nullptr;
   }
 
