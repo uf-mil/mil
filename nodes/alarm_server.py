@@ -3,10 +3,9 @@ import rospy
 from ros_alarms import HandlerBase
 
 from ros_alarms.msg import Alarm as AlarmMsg
-from ros_alarms.srv import AlarmGet, AlarmGetResponse, AlarmSet
-from ros_alarms import parse_json_str, Alarm
+from ros_alarms.srv import AlarmGet, AlarmSet
+from ros_alarms import Alarm
 
-import json
 import inspect
 
 
@@ -123,12 +122,11 @@ class AlarmServer(object):
 
             # Set initial state if necessary (could have already been added while creating metas)
             if hasattr(h, 'initial_alarm'):
-                self.alarms[alarm_name] = h.initial_alarm  #  Update even if already added to server
+                self.alarms[alarm_name] = h.initial_alarm  # Update even if already added to server
             elif alarm_name not in self.alarms:  # Add default initial if not there already
                 self.alarms[alarm_name] = self.make_tagged_alarm(alarm_name)
             else:
                 pass
-
 
             # If a handler exists for a meta alarm, we need to save the predicate
             if alarm_name in self.meta_alarms:

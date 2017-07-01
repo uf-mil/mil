@@ -2,7 +2,7 @@ from __future__ import division
 import rospy
 
 from ros_alarms.msg import Alarm as AlarmMsg
-from ros_alarms.srv import AlarmSet, AlarmGet, AlarmSetRequest, AlarmGetRequest
+from ros_alarms.srv import AlarmSet, AlarmGet, AlarmSetRequest, AlarmGetRequest, AlarmGetResponse
 
 import json
 import traceback
@@ -99,7 +99,7 @@ class Alarm(object):
                 # Try to run the callback, absorbing any errors
                 try:
                     funct(self)
-                except Exception as e:
+                except Exception:
                     rospy.logwarn(err_msg.format('raise', self.alarm_name, traceback.format_exc()))
 
         if call_when_cleared:
@@ -108,7 +108,7 @@ class Alarm(object):
                 # Try to run the callback, absorbing any errors
                 try:
                     funct(self)
-                except Exception as e:
+                except Exception:
                     rospy.logwarn(err_msg.format('clear', self.alarm_name, traceback.format_exc()))
 
     def update(self, srv):
@@ -138,9 +138,9 @@ class Alarm(object):
             # Try to run the callback, absorbing any errors
             try:
                 cb(self)
-            except Exception as e:
-                rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self.alarm_name))
-                rospy.logwarn(e)
+            except Exception:
+                err_msg = "A callback function for the alarm: {} threw an error!"
+                rospy.logwarn(err_msg.format(self.alarm_name, traceback.format_exc()))
 
     def as_msg(self):
         ''' Get this alarm as an Alarm message '''
@@ -178,11 +178,12 @@ class AlarmBroadcaster(object):
 
         rospy.logdebug("Created alarm broadcaster for alarm {}".format(name))
 
-    def _generate_request(self, raised, problem_description="", parameters={}, severity=0):
+    def _generate_request(self, raised, node_name=None, problem_description="",
+                          parameters={}, severity=0):
         request = AlarmSetRequest()
         request.alarm.alarm_name = self._alarm_name
-        request.alarm.node_name = self._node_name
 
+        request.alarm.node_name = node_name if node_name is not None else self._node_name
         request.alarm.raised = raised
         request.alarm.problem_description = problem_description
         request.alarm.parameters = json.dumps(parameters)
@@ -191,14 +192,24 @@ class AlarmBroadcaster(object):
         return request
 
     def raise_alarm(self, **kwargs):
-        ''' Raises this alarm '''
+        ''' Raises this alarm
+        @param node_name String that holds the name of the node making the request (optional)
+        @param problem_description String with a description of the problem (defaults to empty string)
+        @param parameters JSON dumpable dictionary with optional parameters that describe the alarm
+        @parma severity Integer in [0, 5] that indicates the severity of the alarm. (5 is most severe)
+        '''
         try:
             return self._alarm_set(self._generate_request(True, **kwargs))
         except rospy.service.ServiceException:
             rospy.logerr("No alarm sever found! Can't raise alarm.")
 
     def clear_alarm(self, **kwargs):
-        ''' Clears this alarm '''
+        ''' Clears this alarm
+        @param node_name String that holds the name of the node making the request (optional)
+        @param problem_description String with a description of the problem (defaults to empty string)
+        @param parameters JSON dumpable dictionary with optional parameters that describe the alarm
+        @parma severity Integer in [0, 5] that indicates the severity of the alarm. (5 is most severe)
+        '''
         try:
             return self._alarm_set(self._generate_request(False, **kwargs))
         except rospy.service.ServiceException:
