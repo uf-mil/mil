@@ -6,6 +6,7 @@ from ros_alarms.msg import Alarm
 from ros_alarms.srv import AlarmSet, AlarmGet, AlarmSetRequest, AlarmGetRequest
 
 import json
+import traceback
 
 '''
 Alarms implementation for txros (https://github.com/txros/txros)
@@ -185,8 +186,8 @@ class TxAlarmListener(object):
 
                     yield cb(self._nh, alarm)
                 except Exception as e:
-                    print "A callback function for the alarm: {} threw an error!".format(self._alarm_name)
-                    print e
+                    err_msg = "A callback function for the alarm: {} threw an error!\n{}\nException:{}"
+                    print err_msg.format(self._alarm_name, traceback.format_exc(), e)
 
 
 class TxHeartbeatMonitor(TxAlarmBroadcaster):

@@ -35,6 +35,12 @@ def _check_for_valid_name(alarm_name, nowarn=False):
         "Alarm name '{}' is not valid!".format(alarm_name)
 
 
+def _make_callback_error_string(alarm_name, backtrace=''):
+    ''' Creates a string with the name of the alarm, the stacktrace, and an exception '''
+    err_msg = "A callback for the alarm: {} threw an error!\n{}"
+    return err_msg.format(alarm_name, backtrace)
+
+
 class Alarm(object):
 
     @classmethod
@@ -92,7 +98,6 @@ class Alarm(object):
         Each callback can have a severity level associated with it such that different callbacks can
             be triggered for different levels or ranges of severity.
         '''
-        err_msg = "A {} callback for the alarm: {} threw an error!\n{}"
         if call_when_raised:
             self.raised_cbs.append((severity_required, funct))
             if self.raised and self._severity_cb_check(severity_required):
@@ -100,7 +105,7 @@ class Alarm(object):
                 try:
                     funct(self)
                 except Exception:
-                    rospy.logwarn(err_msg.format('raise', self.alarm_name, traceback.format_exc()))
+                    rospy.logwarn(_make_callback_error_string(self.alarm_name, traceback.format_exc()))
 
         if call_when_cleared:
             self.cleared_cbs.append(((0, 5), funct))
@@ -109,7 +114,7 @@ class Alarm(object):
                 try:
                     funct(self)
                 except Exception:
-                    rospy.logwarn(err_msg.format('clear', self.alarm_name, traceback.format_exc()))
+                    rospy.logwarn(_make_callback_error_string(self.alarm_name, traceback.format_exc()))
 
     def update(self, srv):
         ''' Updates this alarm with a new AlarmSet request.
@@ -139,8 +144,7 @@ class Alarm(object):
             try:
                 cb(self)
             except Exception:
-                err_msg = "A callback function for the alarm: {} threw an error!"
-                rospy.logwarn(err_msg.format(self.alarm_name, traceback.format_exc()))
+                rospy.logwarn(_make_callback_error_string(self.alarm_name, traceback.format_exc()))
 
     def as_msg(self):
         ''' Get this alarm as an Alarm message '''
@@ -293,9 +297,8 @@ class AlarmListener(object):
                 try:
                     alarm.parameters = parse_json_str(alarm.parameters)
                     funct(alarm)
-                except Exception as e:
-                    rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self._alarm_name))
-                    rospy.logwarn(e)
+                except Exception:
+                    rospy.logwarn(_make_callback_error_string(self._alarm_name, traceback.format_exc()))
 
         if call_when_cleared:
             self._cleared_cbs.append(((0, 5), funct))  # Clear callbacks always run
@@ -304,9 +307,8 @@ class AlarmListener(object):
                 try:
                     alarm.parameters = parse_json_str(alarm.parameters)
                     funct(alarm)
-                except Exception as e:
-                    rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self._alarm_name))
-                    rospy.logwarn(e)
+                except Exception:
+                    rospy.logwarn(_make_callback_error_string(self._alarm_name, traceback.format_exc()))
 
     def clear_callbacks(self):
         ''' Clears all callbacks '''
@@ -329,9 +331,8 @@ class AlarmListener(object):
             try:
                 alarm.parameters = parse_json_str(alarm.parameters)
                 cb(alarm)
-            except Exception as e:
-                rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self._alarm_name))
-                rospy.logwarn(e)
+            except Exception:
+                rospy.logwarn(_make_callback_error_string(self._alarm_name, traceback.format_exc()))
 
 
 class HeartbeatMonitor(AlarmBroadcaster):
