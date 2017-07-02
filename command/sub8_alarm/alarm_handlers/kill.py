@@ -1,5 +1,5 @@
 import rospy
-from ros_alarms import HandlerBase
+from ros_alarms import HandlerBase, Alarm
 from actionlib import SimpleActionClient, TerminalState
 from mil_msgs.msg import BagOnlineAction, BagOnlineGoal
 import os
@@ -10,6 +10,9 @@ class Kill(HandlerBase):
     initally_raised = True
 
     def __init__(self):
+        # Alarm server wil set this as the intial state of kill alarm (starts killed)
+        self.initial_alarm = Alarm(self.alarm_name, True, node_name=alarm_server)
+
         self._killed = False
         self._last_mission_killed = False
         self.bag_client = SimpleActionClient('/online_bagger/bag', BagOnlineAction)
