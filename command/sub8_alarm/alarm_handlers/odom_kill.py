@@ -13,12 +13,13 @@ class OdomKill(HandlerBase):
     '''
 
     def __init__(self, timeout=0.5):
-
-        self.timeout = rospy.Duration(timeout)
-        self.last_time = rospy.Time.now()
+        self.GRACE_PERIOD = rospy.Duration(5.0) # Alarms won't be raised within grace period
+        self.TIMEOUT = rospy.Duration(timeout)
+        self.MAX_JUMP = 0.5
+        self.LAUNCH_TIME = rospy.Time.now()
+        self.last_time = self.LAUNCH_TIME
         self.last_position = None
         self.check_count = 0
-        self.max_jump = 1.0
         self.odom_discontinuity = False
         self._killed = False
         self.odom_listener = rospy.Subscriber('/odom', Odometry, self.got_odom_msg, queue_size=1)
@@ -34,14 +35,11 @@ class OdomKill(HandlerBase):
                 else:  # Odom is probably not publishing
                     self._killed = True
                     self.ab.raise_alarm(problem_description='STATE ESTIMATION NOT AVAILABLE: KILLING SUB',
-                                        severity=5
-                                        )
+                                        severity=5)
                     rospy.logerr('STATE ESTIMATION NOT AVAILABLE: KILLING SUB')
             else:
                 self._killed = True
-                self.ab.raise_alarm(problem_description='STATE ESTIMATION LOSS: KILLING SUB',
-                                    severity=5
-                                    )
+                self.ab.raise_alarm(problem_description='STATE ESTIMATION LOSS: KILLING SUB', severity=5)
                 rospy.logerr("STATE ESTIMATION LOSS: KILLING SUB")
 
     def got_odom_msg(self, msg):
@@ -57,7 +55,7 @@ class OdomKill(HandlerBase):
         this_p = new_odom_msg.pose.pose.position
         last_p = self.last_position
         jump = ((this_p.x - last_p.x) ** 2 + (this_p.y - last_p.y) ** 2 + (this_p.z - last_p.z) ** 2) ** 0.5
-        if jump > self.max_jump:
+        if jump > self.MAX_JUMP:
             rospy.logerr('ODOM DISCONTINUITY DETECTED')
             self.ab.raise_alarm(problem_description='ODOM DISCONTINUITY DETECTED JUMPED {} METERS'.format(jump),
                                 severity=5)
@@ -65,9 +63,11 @@ class OdomKill(HandlerBase):
             return False
 
     def need_kill(self):
-        odom_loss = rospy.Time.now() - self.last_time > self.timeout
+        now = rospy.Time.now()
+        in_grace_period = now - self.LAUNCH_TIME < self.GRACE_PERIOD
+        odom_loss = now - self.last_time > self.TIMEOUT and not in_grace_period
         if odom_loss:
-            rospy.logerr('LOST ODOM FOR {} SECONDS'.format((rospy.Time.now() - self.last_time).to_sec()))
+            rospy.logerr_throttle(1, 'LOST ODOM FOR {} SECONDS'.format((rospy.Time.now() - self.last_time).to_sec()))
             self.ab.raise_alarm(
                 problem_description='LOST ODOM FOR {} SECONDS'.format((rospy.Time.now() - self.last_time).to_sec()),
                 severity=5
