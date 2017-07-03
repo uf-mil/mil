@@ -20,86 +20,86 @@ thruster_ports:
 # motor_id's should be globally unique among all thrusters
 # position and orientation vectors should be specified in body frame
 # calib contains the 4th to 1st order coefficients for a polynomial
-#     mapping from thrust in Newtons to effort
+#     mapping from thrust in Newtons to effort (e = t[0]x^4 + t[1]x^3 + t[2]x^2 + t[3]x)
 thrusters:
   FLH: {
     motor_id:  0,
     position:  [0.2678, 0.2795, 0.0],
     direction: [0.866, -0.5, 0.0],
-    thrust_bounds:    [-60.0, 90.0],
+    thrust_bounds:    [-30.0, 45.0],
     calib:  {
-        forward:  [0.0, 0.0, 0.0, 0.006623102],
-        backward: [0.0, 0.0, 0.0, 0.006258566]
+        forward:  [0.0, 0.0, 0.0, 0.0136],
+        backward: [0.0, 0.0, 0.0, 0.0199]
     }
   }
   FLV: {
     motor_id:  1,
     position:  [0.1583, 0.169, 0.0142],
     direction: [0.0, 0.0, 1.0],
-    thrust_bounds:    [-60.0, 90.0],
+    thrust_bounds:    [-30.0, 45.0],
     calib:  {
-        forward:  [0.0, 0.0, 0.0, 0.006623102],
-        backward: [0.0, 0.0, 0.0, 0.006258566]
+        forward:  [0.0, 0.0, 0.0, 0.0136],
+        backward: [0.0, 0.0, 0.0, 0.0214]
     }
   }
   FRH: {
     motor_id:  2,
     position:  [0.2678, -0.2795, 0.0],
     direction: [0.866, 0.5, 0.0],
-    thrust_bounds:    [-60.0, 90.0],
+    thrust_bounds:    [-30.0, 45.0],
     calib:  {
-        forward:  [0.0, 0.0, 0.0, 0.006623102],
-        backward: [0.0, 0.0, 0.0, 0.006258566]
+        forward:  [0.0, 0.0, 0.0, 0.0139],
+        backward: [0.0, 0.0, 0.0, 0.0225]
     }
   }
   FRV: {
     motor_id:  3,
     position:  [0.1583, -0.169, 0.0142],
     direction: [0.0, 0.0, 1.0],
-    thrust_bounds:    [-60.0, 90.0],
+    thrust_bounds:    [-30.0, 45.0],
     calib:  {
-        forward:  [0.0, 0.0, 0.0, 0.006623102],
-        backward: [0.0, 0.0, 0.0, 0.006258566]
+        forward:  [0.0, 0.0, 0.0, 0.0157],
+        backward: [0.0, 0.0, 0.0, 0.0227]
     }
   }
   BLH: {
     motor_id:  4,
     position:  [-0.2678, 0.2795, 0.0],
     direction: [-0.866, -0.5, 0.0],
-    thrust_bounds:    [-60.0, 90.0],
+    thrust_bounds:    [-30.0, 45.0],
     calib:  {
-        forward:  [0.0, 0.0, 0.0, 0.006623102],
-        backward: [0.0, 0.0, 0.0, 0.006258566]
+        forward:  [0.0, 0.0, 0.0, 0.0134],
+        backward: [0.0, 0.0, 0.0, 0.0198]
     }
   }
   BLV: {
-    motor_id:  8,
+    motor_id:  5,
     position:  [-0.1583, 0.169, 0.0142],
     direction: [0.0, 0.0, 1.0],
-    thrust_bounds:    [-60.0, 90.0],
+    thrust_bounds:    [-30.0, 45.0],
     calib:  {
-        forward:  [0.0, 0.0, 0.0, 0.006623102],
-        backward: [0.0, 0.0, 0.0, 0.006258566]
+        forward:  [0.0, 0.0, 0.0, 0.0143],
+        backward: [0.0, 0.0, 0.0, 0.0220]
     }
   }
   BRH: {
     motor_id:  6,
     position:  [-0.2678, -0.2795, 0.0],
     direction: [-0.866, 0.5, 0.0],
-    thrust_bounds:    [-60.0, 90.0],
+    thrust_bounds:    [-30.0, 45.0],
     calib:  {
-        forward:  [0.0, 0.0, 0.0, 0.006623102],
-        backward: [0.0, 0.0, 0.0, 0.006258566]
+        forward:  [0.0, 0.0, 0.0, 0.0134],
+        backward: [0.0, 0.0, 0.0, 0.0207]
     }
   }
   BRV: {
     motor_id:  7,
     position:  [-0.1583, -0.169, 0.0142],
     direction: [0.0, 0.0, 1.0],
-    thrust_bounds:    [-60.0, 90.0],
+    thrust_bounds:    [-30.0, 45.0],
     calib:  {
-        forward:  [0.0, 0.0, 0.0, 0.006623102],
-        backward: [0.0, 0.0, 0.0, 0.006258566]
+        forward:  [0.0, 0.0, 0.0, 0.0144],
+        backward: [0.0, 0.0, 0.0, 0.0202]
     }
   }
 

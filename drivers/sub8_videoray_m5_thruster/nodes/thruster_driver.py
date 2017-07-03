@@ -189,14 +189,13 @@ class ThrusterDriver(object):
         Sets the severity to the number of failed thrusters (clipped at 5)
         '''
         offline_names = list(self.failed_thrusters)
-        if len(self.failed_thrusters) == 0:
+        if len(self.failed_thrusters) > 0:
             self.thruster_out_alarm.raise_alarm(
                 node_name=self._NODE_NAME,
                 parameters={'offline_thruster_names': offline_names},
                 severity=int(np.clip(len(self.failed_thrusters), 1, 5))
             )
         else:
-            print 'clearing thruster-out alarm'
             self.thruster_out_alarm.clear_alarm(
                 node_name=self._NODE_NAME,
                 parameters={'offline_thruster_names' : offline_names}
@@ -217,7 +216,7 @@ class ThrusterDriver(object):
 
         if thrust < thruster_model.thrust_bounds[0] or thrust > thruster_model.thrust_bounds[1]:
             rospy.logwarn('Tried to command thrust ({}) outside of physical thrust bounds ({})'.format(
-                thrust, thruster_model.thrust_bounds)
+                thrust, thruster_model.thrust_bounds))
 
         if name in self.failed_thrusters:
             if not np.isclose(thrust, 0):
