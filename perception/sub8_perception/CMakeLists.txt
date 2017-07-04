@@ -95,6 +95,7 @@ add_executable(
   sub8_start_gate
     nodes/start_gate_node.cpp
     src/sub8_perception/start_gate.cpp
+    src/sub8_vision_lib/stereo_base.cpp
 )
 add_dependencies(
   sub8_start_gate
