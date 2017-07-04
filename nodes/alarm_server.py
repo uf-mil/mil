@@ -3,135 +3,10 @@ import rospy
 from ros_alarms import HandlerBase
 
 from ros_alarms.msg import Alarm as AlarmMsg
-from ros_alarms.srv import AlarmGet, AlarmGetResponse, AlarmSet
-from ros_alarms import parse_json_str
+from ros_alarms.srv import AlarmGet, AlarmSet
+from ros_alarms import Alarm
 
-import json
 import inspect
-
-
-class Alarm(object):
-
-    @classmethod
-    def blank(cls, name):
-        ''' Generate a general blank alarm that is cleared with a low severity '''
-        return cls(name, False, severity=0)
-
-    @classmethod
-    def from_msg(cls, msg):
-        ''' Generate an alarm object from an Alarm message '''
-        node_name = "unknown" if msg.node_name is "" else msg.node_name
-        parameters = parse_json_str(msg.parameters)
-
-        return cls(msg.alarm_name, msg.raised, node_name,
-                   msg.problem_description, parameters, msg.severity)
-
-    def __init__(self, alarm_name, raised, node_name="unknown",
-                 problem_description="", parameters={}, severity=0):
-        self.alarm_name = alarm_name
-        self.raised = raised
-        self.node_name = node_name
-        self.problem_description = problem_description
-        self.parameters = parameters
-        self.severity = severity
-
-        self.stamp = rospy.Time.now()
-
-        # Callbacks to run if the alarm is cleared or raised formatted as follows:
-        #   [(severity_required, cb1), (severity_required, cb2), ...]
-        self.raised_cbs = []
-        self.cleared_cbs = []
-
-    def __repr__(self):
-        msg = self.as_msg()
-        msg.parameters = self.parse_json_str(msg.parameters)
-        return msg
-    __str__ = __repr__
-
-    def _severity_cb_check(self, severity):
-        if isinstance(severity, tuple) or isinstance(severity, list):
-            return severity[0] <= self.severity <= severity[1]
-
-        # Not a tuple, just an int. The severities should match
-        return self.severity == severity
-
-    def add_callback(self, funct, call_when_raised=True, call_when_cleared=True,
-                     severity_required=(0, 5)):
-        ''' Deals with adding handler function callbacks
-        The user can specify if the function should be run on a raise or clear
-        This will call the function when added if that condition is met.
-
-        Each callback can have a severity level associated with it such that different callbacks can
-            be triggered for different levels or ranges of severity.
-        '''
-        if call_when_raised:
-            self.raised_cbs.append((severity_required, funct))
-            if self.raised and self._severity_cb_check(severity_required):
-                # Try to run the callback, absorbing any errors
-                try:
-                    funct(self)
-                except Exception as e:
-                    rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self.alarm_name))
-                    rospy.logwarn(e)
-
-        if call_when_cleared:
-            self.cleared_cbs.append(((0, 5), funct))
-            if not self.raised and self._severity_cb_check(severity_required):
-                # Try to run the callback, absorbing any errors
-                try:
-                    funct(self)
-                except Exception as e:
-                    rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self.alarm_name))
-                    rospy.logwarn(e)
-
-    def update(self, srv):
-        ''' Updates this alarm with a new AlarmSet request.
-        Also will call any required callbacks.
-        '''
-        self.stamp = rospy.Time.now()
-
-        node_name = "unknown" if srv.node_name is "" else srv.node_name
-        parameters = parse_json_str(srv.parameters)
-
-        # Update all possible parameters
-        self.raised = srv.raised
-        self.node_name = node_name
-        self.problem_description = srv.problem_description
-        self.parameters = parameters
-        self.severity = srv.severity
-
-        rospy.loginfo("Updating alarm: {}, {}.".format(self.alarm_name, "raised" if self.raised else "cleared"))
-        # Run the callbacks for that alarm
-        cb_list = self.raised_cbs if srv.raised else self.cleared_cbs
-        for severity, cb in cb_list:
-            # If the cb severity is not valid for this alarm's severity, skip it
-            if srv.raised and not self._severity_cb_check(severity):
-                continue
-
-            # Try to run the callback, absorbing any errors
-            try:
-                cb(self)
-            except Exception as e:
-                rospy.logwarn("A callback function for the alarm: {} threw an error!".format(self.alarm_name))
-                rospy.logwarn(e)
-
-    def as_msg(self):
-        ''' Get this alarm as an Alarm message '''
-        alarm = AlarmMsg()
-        alarm.alarm_name = self.alarm_name
-        alarm.raised = self.raised
-        alarm.node_name = self.node_name
-        alarm.problem_description = self.problem_description
-        alarm.parameters = json.dumps(self.parameters)
-        alarm.severity = self.severity
-        return alarm
-
-    def as_srv_resp(self):
-        ''' Get this alarm as an AlarmGet response '''
-        resp = AlarmGetResponse()
-        resp.header.stamp = self.stamp
-        resp.alarm = self.as_msg()
-        return resp
 
 
 class AlarmServer(object):
@@ -169,15 +44,15 @@ class AlarmServer(object):
                     continue
                 cleared_alarm = alarm.as_msg()
                 cleared_alarm.raised = False
-                alarm.update(cleared_alarm)
                 self._alarm_pub.publish(alarm.as_msg())
+                alarm.update(cleared_alarm)
 
             for _alarm in self.meta_alarms.keys():
                 alarm = self.alarms[_alarm]
                 cleared_alarm = alarm.as_msg()
                 cleared_alarm.raised = False
-                alarm.update(cleared_alarm)
                 self._alarm_pub.publish(alarm.as_msg())
+                alarm.update(cleared_alarm)
 
             return True
 
@@ -194,7 +69,20 @@ class AlarmServer(object):
         rospy.logdebug("Got request for alarm: {}".format(srv.alarm_name))
         return self.alarms.get(srv.alarm_name, Alarm.blank(srv.alarm_name)).as_srv_resp()
 
+    def make_tagged_alarm(self, name):
+        '''
+        Makes a blank alarm with the node_name of the alarm_server so that users know it is the
+        initial state
+        '''
+        alarm = Alarm.blank(name)
+        alarm.node_name = 'alarm_server'
+        return alarm
+
     def _handle_meta_alarm(self, meta_alarm, sub_alarms):
+        '''
+        Passes the state of all of the child alarms to the specified meta alarm handler predicate
+        function. The alarm will be raised if the predicate returns true or cleared otherwise
+        '''
         alarms = {name: alarm for name, alarm in self.alarms.items() if name in sub_alarms}
         meta = self.alarms[meta_alarm]
 
@@ -207,6 +95,14 @@ class AlarmServer(object):
             self._alarm_pub.publish(meta.as_msg())
 
     def _create_alarm_handlers(self):
+        '''
+        Alarm handlers are classes imported by the alarm server and run code upon a change of state
+        of their respective alarms.
+
+        Handlers should be in a python module (directory with an __init__.py) and in the python path.
+        They will be loaded from the module specified with the ~handler_module param to the alarm server.
+        '''
+
         # If the param exists, load it here
         handler_module = rospy.get_param("~handler_module", None)
         if handler_module is None:
@@ -224,31 +120,47 @@ class AlarmServer(object):
             alarm_name = handler.alarm_name
             severity = handler.severity_required
 
-            if alarm_name not in self.alarms:
-                self.alarms[alarm_name] = Alarm.blank(alarm_name)
-            self.alarms[alarm_name].raised = h.initally_raised
+            # Set initial state if necessary (could have already been added while creating metas)
+            if hasattr(h, 'initial_alarm'):
+                self.alarms[alarm_name] = h.initial_alarm  # Update even if already added to server
+            elif alarm_name not in self.alarms:  # Add default initial if not there already
+                self.alarms[alarm_name] = self.make_tagged_alarm(alarm_name)
+            else:
+                pass
 
             # If a handler exists for a meta alarm, we need to save the predicate
             if alarm_name in self.meta_alarms:
                 self.meta_alarms[alarm_name] = h.meta_predicate
 
             # Register the raised or cleared functions
-            self.alarms[alarm_name].add_callback(h.raised, call_when_cleared=False,
-                                                 severity_required=severity)
-
-            self.alarms[alarm_name].add_callback(h.cleared, call_when_raised=False,
-                                                 severity_required=severity)
+            self.alarms[alarm_name].add_callback(h.raised, call_when_cleared=False, severity_required=severity)
+            self.alarms[alarm_name].add_callback(h.cleared, call_when_raised=False, severity_required=severity)
 
             rospy.loginfo("Loaded handler: {}".format(h.alarm_name))
 
     def _create_meta_alarms(self, namespace="meta_alarms/"):
+        ''' Adds meta alarms to the alarm server
+        Meta alarms are special in that they are not directly raised or cleared but are instead triggered
+        by a change of state of their child alarms.
+
+        The /meta_alarms parameter defines a the structure of a meta alarm. It has the following structure:
+        {meta_alarm_name : [list of child alarm names], ...}
+
+        Users can also provide more complex triggering mechanisms by providing an alarm handler class with
+        a 'meta_predicate' method.
+        '''
+
         meta_alarms_dict = rospy.get_param(namespace, {})
         for meta, alarms in meta_alarms_dict.iteritems():
             # Add the meta alarm
             if meta not in self.alarms:
-                self.alarms[meta] = Alarm.blank(meta)
+                self.alarms[meta] = self.make_tagged_alarm(meta)
 
             def default(meta, alarms):
+                '''
+                If no predicate for a meta-alarm is provided, then the meta-alarm will be raised
+                if any of the child alarms are raised
+                '''
                 return any(alarms.items())
 
             self.meta_alarms[meta] = default
@@ -258,7 +170,7 @@ class AlarmServer(object):
 
             for alarm in alarms:
                 if alarm not in self.alarms:
-                    self.alarms[alarm] = Alarm.blank(alarm)
+                    self.alarms[alarm] = self.make_tagged_alarm(alarm)
 
                 self.alarms[alarm].add_callback(cb)
 
