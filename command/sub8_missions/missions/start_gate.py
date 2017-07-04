@@ -15,8 +15,10 @@ import numpy as np
 fprint = text_effects.FprintFactory(
     title="START_GATE", msg_color="cyan").fprint
 
+# Distance before and after the gate in meters
 FACTOR_DISTANCE_BEFORE = 1.5
 FACTOR_DISTANCE_AFTER = 1.5
+
 SPEED = 0.3
 
 
@@ -50,15 +52,15 @@ def run(sub):
         orientation).dot(np.array([1, 0, 0, 0]))[0:3]
     fprint('Computed normal vector: {}'.format(normal))
 
+    # Computer points before and after the gate for the sub to go to
+    point_before = position + FACTOR_DISTANCE_BEFORE * normal
+    point_after = position - FACTOR_DISTANCE_AFTER * normal
+
     # go in front of gate
-    point_before = np.array(
-        [position[0], position[1], position[2]]) + FACTOR_DISTANCE_BEFORE * normal
     fprint('Moving infront of gate {}'.format(point_before))
-    yield sub.move.set_position(point_before).zero_roll_and_pitch().go(speed=SPEED)
+    yield sub.move.set_position(point_before).look_at(point_after).zero_roll_and_pitch().go(speed=SPEED)
 
     # go through the gate
-    point_after = np.array(
-        [position[0], position[1], position[2]]) - FACTOR_DISTANCE_AFTER * normal
     fprint('YOLO! Going through gate {}'.format(point_after))
     yield sub.move.set_position(point_after).zero_roll_and_pitch().go(speed=SPEED)
 

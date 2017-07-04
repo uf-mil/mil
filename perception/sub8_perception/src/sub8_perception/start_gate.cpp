@@ -34,7 +34,7 @@ Sub8StartGateDetector::Sub8StartGateDetector()
   dilate_amount_ = nh.param<int>("dilate_amount_", 3);
 
   // process 10 images per second
-  dt_ = 1 / 10;
+  dt_ = 1.0 / 10.0;
 
   // Initialize kalman
   // position (x,y,z) and its 1st and 2nd dervatives, euler angles and the 1st and 2nd dervatives
