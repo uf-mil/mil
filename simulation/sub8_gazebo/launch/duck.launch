@@ -31,7 +31,7 @@
     <node
       name="tentacle" pkg="gazebo_ros" type="spawn_model"
       args="-file $(find sub8_gazebo)/models/tentacle/tentacle.sdf -sdf
-        -x 24 -y 10 -z -4.72 -Z 0 -model tentacle"
+        -x 24 -y 10 -z -4.4 -Z 0 -model tentacle"
       output="screen" />
 
   <!-- Attempting to spawn the bin and lid -->
@@ -69,9 +69,26 @@
 
     <!-- Attempting to spawn the octogon -->
     <node
-        name ="octogon" pkg="gazebo_ros" type="spawn_model"
+        name ="octagon" pkg="gazebo_ros" type="spawn_model"
         args="-file $(find sub8_gazebo)/models/octogon/octogon.sdf -sdf
         -x 20 -y -20 -z 0 -Z -1.57 -model octogon"
+        output="screen" />
+
+    <node
+      name="ball1" pkg="gazebo_ros" type="spawn_model"
+      args="-file $(find sub8_gazebo)/models/ball/ball1.sdf -sdf
+        -x 18.8 -y -20.2 -z 0 -Z -1.57 -model ball1"
+      output="screen" />
+    <node
+      name="ball2" pkg="gazebo_ros" type="spawn_model"
+      args="-file $(find sub8_gazebo)/models/ball/ball2.sdf -sdf
+        -x 20 -y -21.477 -z 0 -Z -1.57 -model ball2"
+      output="screen" />
+
+      <node
+        name="ball3" pkg="gazebo_ros" type="spawn_model"
+        args="-file $(find sub8_gazebo)/models/ball/ball3.sdf -sdf
+          -x 21.19 -y -20.283 -z 0 -Z -1.57 -model ball3"
         output="screen" />
 
     <!-- Attempting to spawn the start gate -->
@@ -97,27 +114,27 @@
 
   <!-- Buoys -->
   <node
-    name="spawn_buoy_red" pkg="gazebo_ros" type="spawn_model"
+    name="red" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find sub8_gazebo)/models/buoys/red.sdf -sdf
-      -x 20.1 -y 20.0 -z -1.0 -model red"
+      -x 20.1 -y 20.0 -z -1.0 -X 0 -Y 0 -Z 0 -model red"
     output="screen" />
 
   <node
-    name="spawn_buoy_green" pkg="gazebo_ros" type="spawn_model"
+    name="green" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find sub8_gazebo)/models/buoys/green.sdf -sdf
-      -x 20.0 -y 21.2 -z -1.0 -model green"
+      -x 20.0 -y 21.2 -z -1.0 -X 0 -Y 0 -Z 0 -model green"
     output="screen" />
 
   <node
-    name="spawn_buoy_yellow" pkg="gazebo_ros" type="spawn_model"
+    name="yellow" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find sub8_gazebo)/models/buoys/yellow.sdf -sdf
-      -x 20.03 -y 18.8 -z -1.0 -model yellow"
+      -x 20.03 -y 18.8 -z -1.0 -X 0 -Y 0 -Z 0 -model yellow"
     output="screen" />
 
   <node
-    name="spawn_chnl_marker_1" pkg="gazebo_ros" type="spawn_model"
+    name="orange_rectangle" pkg="gazebo_ros" type="spawn_model"
     args="-file $(find sub8_gazebo)/models/markers/channel_marker.sdf -sdf
-      -x 12.0 -y 24.0 -z -4.0 -Y -0.5 -model channel_marker_1"
+      -x 12.0 -y 24.0 -z -4.0 -X 0 -Y -0.5 -Z 0 -model channel_marker_1"
     output="screen" />
 
   <node
@@ -127,8 +144,8 @@
     output="screen" />
 
   <node pkg="sub8_gazebo" type="gazebo_controller.py" name="gazebo_interface" />
-  <!--   <node pkg="sub8_gazebo" type="pinger_sim.py" name="pinger_sim" / -->
-  <node pkg="sub8_gazebo" type="actuator_sim.py" name="actuator_sim" />
+  <!--   <node pkg="sub8_gazebo" type="pinger_sim.py" name="pinger_sim" />
+  <node pkg="sub8_gazebo" type="actuator_sim.py" name="actuator_sim" /> -->
   <node pkg="sub8_gazebo" type="buoys.py" name="buoy_contact_reporter" />
   <node pkg="sub8_gazebo" type="turbulator.py" name="turbulator" output="screen" if="$(arg turbulence)" />
 
