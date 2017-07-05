@@ -261,6 +261,8 @@ class ThrusterDriver(object):
                 name=name,
                 motor_id=thruster_model.motor_id,
                 power=power,
+                effort=effort,
+                thrust=thrust,
                 **message_keyword_args
             )
         )

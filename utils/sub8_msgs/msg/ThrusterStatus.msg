@@ -1,6 +1,8 @@
 std_msgs/Header header
 string name
 uint8 motor_id
+float32 effort
+float32 thrust
 float32 power
 float32 rpm
 float32 bus_v
