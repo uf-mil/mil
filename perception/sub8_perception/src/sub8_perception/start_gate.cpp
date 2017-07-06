@@ -1,216 +1,323 @@
 #include <sub8_perception/start_gate.hpp>
-Sub8StartGateDetector::Sub8StartGateDetector() : running_(true), image_transport_(nh_), gate_line_buffer_(30)
+Sub8StartGateDetector::Sub8StartGateDetector() : nh("~"), timeout_for_found_(2), tf_listener_(tf_buffer_)
 {
-  image_sub_ = image_transport_.subscribeCamera("/camera/front/right/image_rect_color", 1,
-                                                &Sub8StartGateDetector::imageCallback, this);
-  service_2d_ =
-      nh_.advertiseService("/vision/start_gate/pose", &Sub8StartGateDetector::requestStartGatePosition2d, this);
-  service_enable_ =
-      nh_.advertiseService("/vision/start_gate/enable", &Sub8StartGateDetector::requestStartGateEnable, this);
-  service_distance_ =
-      nh_.advertiseService("/vision/start_gate/distance", &Sub8StartGateDetector::requestStartGateDistance, this);
-  pubImage_ = image_transport_.advertise("/start_gate/debug_image", 1);
-}
-Sub8StartGateDetector::~Sub8StartGateDetector()
-{
-}
+  // Start the camera streamers
+  left_cam_stream_ = std::unique_ptr<ROSCameraStream_Vec3>(new ROSCameraStream_Vec3(nh, 1));
+  right_cam_stream_ = std::unique_ptr<ROSCameraStream_Vec3>(new ROSCameraStream_Vec3(nh, 1));
 
-void Sub8StartGateDetector::imageCallback(const sensor_msgs::ImageConstPtr &image_msg,
-                                          const sensor_msgs::CameraInfoConstPtr &info_msg)
-{
-  if (running_)
-  {
-    // Get some image/camera info
-    cam_model_.fromCameraInfo(info_msg);
-    image_time_ = image_msg->header.stamp;
+  std::string img_topic_left_default = "/camera/front/left/image_rect_color";
+  std::string img_topic_right_default = "/camera/front/right/image_rect_color";
 
-    // If we have a large enough sample of gate identifications:
-    if (gate_line_buffer_.size() > gate_line_buffer_.capacity() - 1)
-    {
-      // Loop through the buffer and save mean and deviations of both size and
-      // position
-      for (auto &gate1 : gate_line_buffer_)
-      {
-        for (auto &gate2 : gate1)
-        {
-          cv::Point2i s = gate2[1] - gate2[0];
-          cv::Point2i center = cv::Point2i(s.x / 2 + s.x, s.y / 2 + s.y);
-          accX_(center.x);
-          accY_(center.y);
-          accSizeX_(s.x);
-          accSizeY_(s.y);
-        }
-      }
+  std::string left = nh.param<std::string>("left_camera_topic", img_topic_left_default);
+  std::string right = nh.param<std::string>("right_camera_topic", img_topic_right_default);
 
-      // Look at one of the elements (gate_line_buffer_.capacity()-1) in the
-      // circular buffer and check it's statistics and delete if necessary
-      for (size_t i = 0; i < gate_line_buffer_[gate_line_buffer_.capacity() - 1].size(); i++)
-      {
-        cv::Point2i s = gate_line_buffer_[gate_line_buffer_.capacity() - 1][i][1] -
-                        gate_line_buffer_[gate_line_buffer_.capacity() - 1][i][0];
-        cv::Point2i center = cv::Point2i(s.x / 2 + s.x, s.y / 2 + s.y);
+  // Initialize the streamers with the topic paths
+  left_cam_stream_->init(left);
+  right_cam_stream_->init(right);
 
-        // If position of the element is greater than one deviation from the
-        // mean, then delete
-        if (abs(center.x - mean(accX_)) > sqrt(variance(accX_)) || abs(center.y - mean(accY_) > sqrt(variance(accY_))))
-        {
-          gate_line_buffer_[gate_line_buffer_.capacity() - 1].erase(
-              gate_line_buffer_[gate_line_buffer_.capacity() - 1].begin() + i);
-          ROS_INFO_STREAM("Deleted center: " << center);
-          i--;
-          continue;
-        }
+  canny_low_ = nh.param<int>("canny_low_", 100);
+  canny_ratio_ = nh.param<int>("canny_ratio_", 3.0);
+  blur_size_ = nh.param<int>("blur_size_", 1);
+  dilate_amount_ = nh.param<int>("dilate_amount_", 3);
 
-        // If the size of the element is greater than one deviation from the
-        // mean, then delete
-        if (abs(s.x - mean(accSizeX_)) > sqrt(variance(accSizeX_)) ||
-            abs(s.y - mean(accSizeY_)) > sqrt(variance(accSizeY_)))
-        {
-          gate_line_buffer_[gate_line_buffer_.capacity() - 1].erase(
-              gate_line_buffer_[gate_line_buffer_.capacity() - 1].begin() + i);
-          ROS_INFO_STREAM("Deleted size: " << s);
-          i--;
-          continue;
-        }
-      }
+  // Should node be processing image
+  active_ = false;
+  // The maximum time difference between the two camera time stamps
+  sync_thresh_ = 0.5;
+  // process 10 times per second
+  refresh_rate_ = 10;
 
-      // Visualize one of the saved gates in the buffer
-      cv::Mat show = cv_bridge::toCvShare(image_msg, "bgr8")->image;
-      for (auto &gate : gate_line_buffer_[29])
-      {
-        cv::Mat rvec, tvec;
-        cv::rectangle(show, gate[0], gate[1], cv::Scalar(255, 0, 0), 2, 8, 0);
-      }
-      sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", show).toImageMsg();
-      pubImage_.publish(msg);
-    }
+  gate_found_ = false;
 
-    findGate(image_msg);
-  }
+  // Visualization
+  marker_pub_ = nh.advertise<visualization_msgs::Marker>("visualization_marker", 1, true);
+
+  // Service providers for VisionProxy
+  vision_request_service_ =
+      nh.advertiseService("/vision/start_gate/pose", &Sub8StartGateDetector::vision_request_cb, this);
+  active_service_ =
+      nh.advertiseService("/vision/start_gate/enable", &Sub8StartGateDetector::set_active_enable_cb, this);
+
+  run();
 }
 
-void Sub8StartGateDetector::findGate(const sensor_msgs::ImageConstPtr &image_msg)
+std::vector<cv::Point> Sub8StartGateDetector::get_2d_feature_points(cv::Mat image)
 {
-  cv::Mat cvImageMat = cv_bridge::toCvShare(image_msg, "bgr8")->image;
+  // Filter the image
+  cv::Mat processed_image = process_image(image);
 
-  cols_ = cvImageMat.cols;
-  rows_ = cvImageMat.rows;
-
-  // Get mean and deviation of the color in the image
-  cv::Scalar mean;
-  cv::Scalar stddev;
-  cv::meanStdDev(cvImageMat, mean, stddev);
-
-  // Threshold the image using mean and 2 standard deviations
-  cv::Mat output;
-  cv::inRange(cvImageMat, mean - 2 * stddev, mean + 2 * stddev, output);
-  cv::bitwise_not(output, output);
-  cv::dilate(output, output, cv::Mat(), cv::Point(-1, -1), 2, 1, 1);
-
-  // Get a skeleton of things in the thresholded image
-  cv::Mat skel(output.size(), CV_8UC1, cv::Scalar(0));
-  cv::Mat temp(output.size(), CV_8UC1);
-  cv::Mat element = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(3, 3));
-  bool done = false;
-  do
-  {
-    cv::morphologyEx(output, temp, cv::MORPH_OPEN, element);
-    cv::bitwise_not(temp, temp);
-    cv::bitwise_and(output, temp, temp);
-    cv::bitwise_or(skel, temp, skel);
-    cv::erode(output, output, element);
-
-    double max;
-    cv::minMaxLoc(output, 0, &max);
-    done = (max == 0);
-  } while (!done);
-
-  // Use HoughLine to find lines from the skeleton image
-  cv::Mat cdst = cv::Mat::zeros(cvImageMat.size(), cvImageMat.type());
-  std::vector<cv::Vec4i> lines;
-  cv::HoughLinesP(skel, lines, 1, CV_PI / 180, 70, 50, 20);
-  for (size_t i = 0; i < lines.size(); i++)
-  {
-    cv::Vec4i l = lines[i];
-    cv::line(cdst, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0, 0, 255), 3, CV_AA);
-  }
-
-  // Dilate the image a little and find contours
-  cv::dilate(cdst, cdst, cv::Mat(), cv::Point(-1, -1), 2, 1, 1);
-  cv::Mat canny_output = cv::Mat::zeros(cvImageMat.size(), cvImageMat.type());
+  // Find contours
   std::vector<std::vector<cv::Point>> contours;
   std::vector<cv::Vec4i> hierarchy;
-  cv::cvtColor(cdst, canny_output, CV_BGR2GRAY);
-  cv::Canny(canny_output, canny_output, 100, 100 * 2, 3);
-  cv::findContours(canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+  cv::findContours(processed_image, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE, cv::Point(-1, -1));
 
-  // Find occupying rectangles and save the ones that are within the tolerance
-  // size
-  std::vector<cv::Rect> minRect;
-  for (auto &contour : contours)
-  {
-    cv::Rect rect = cv::boundingRect(cv::Mat(contour));
-    if (rect.area() > START_GATE_SIZE_TOLERANCE)
-    {
-      minRect.push_back(rect);
-    }
-  }
+  // Find contour that closely matches a gate
+  std::vector<cv::Point> features = contour_to_2d_features(contours);
 
-  // Add the points to the buffer
-  std::vector<std::vector<cv::Point2f>> rectanglePoints;
-  for (auto &rect : minRect)
-  {
-    rectanglePoints.push_back(std::vector<cv::Point2f>({ rect.tl(), rect.br() }));
-  }
+  // Ignore if we don't get enough feature points for the gate
+  if (features.size() < 5)
+    return {};
 
-  gate_line_buffer_.push_back(rectanglePoints);
+  return get_corner_center_points(features);
 }
 
-double Sub8StartGateDetector::getGateDistance()
+void Sub8StartGateDetector::run()
 {
-  if (gate_line_buffer_.size() < 15)
+  ros::Rate loop_rate(refresh_rate_);
+  while (ros::ok())
   {
-    return -1;
+    if (active_)
+      determine_start_gate_position();
+    loop_rate.sleep();
+    ros::spinOnce();
   }
-  double x = (START_GATE_WIDTH * cam_model_.fx()) / mean(accSizeX_);
-  double y = (START_GATE_HEIGHT * cam_model_.fy()) / mean(accSizeY_);
-  return (x + y) / 2;
+  return;
 }
 
-bool Sub8StartGateDetector::requestStartGatePosition2d(sub8_msgs::VisionRequest2D::Request &req,
-                                                       sub8_msgs::VisionRequest2D::Response &resp)
+void Sub8StartGateDetector::determine_start_gate_position()
 {
-  // This was called too soon and doesn't have enough in the buffer
-  if (gate_line_buffer_.size() < 15)
+  // Find transform between map frame and stereo frame
+  try
+  {
+    transform_to_map_ = tf_buffer_.lookupTransform("map", "front_stereo", ros::Time(0));
+  }
+  catch (tf2::TransformException &ex)
+  {
+    ROS_ERROR("No transform from front_left_cam to map");
+    return;
+  }
+
+  // If no gates have been found in a while, reset kalman
+  if (gate_found_ && ros::Time::now() - last_time_found_ > timeout_for_found_)
+  {
+    init_kalman_filter();
+    gate_found_ = false;
+  }
+
+  // If cameras are out of sync or not publishing, don't do anything
+  if (!is_stereo_coherent())
+    return;
+
+  auto feature_pts_3d_ptr = get_3d_feature_points();
+  if (!feature_pts_3d_ptr)
+    return;
+  // Use inherited function to find 3d points and then estimate a pose
+  auto pose_ptr = get_3d_pose(*feature_pts_3d_ptr);
+  if (pose_ptr)
+  {
+    auto pose = *pose_ptr;
+    gate_pose_ = update_kalman_filter(pose);
+    gate_found_ = true;
+    last_time_found_ = ros::Time::now();
+    visualize_3d_points_rviz(*feature_pts_3d_ptr);
+    visualize_k_gate_normal();
+  }
+}
+
+bool Sub8StartGateDetector::set_active_enable_cb(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
+{
+  active_ = req.data;
+  res.success = true;
+  return true;
+}
+
+bool Sub8StartGateDetector::vision_request_cb(sub8_msgs::VisionRequest::Request &req,
+                                              sub8_msgs::VisionRequest::Response &resp)
+{
+  if (!gate_found_)
   {
     resp.found = false;
     return true;
   }
-
-  resp.pose.x = mean(accX_);
-  resp.pose.y = mean(accY_);
-  resp.pose.theta = 0;
-
-  resp.camera_info = cam_model_.cameraInfo();
+  Eigen::Affine3d gate_in_map;
+  tf2::doTransform(gate_pose_, gate_in_map, transform_to_map_);
+  resp.pose.pose = tf2::toMsg(gate_in_map);
   resp.found = true;
   return true;
 }
 
-bool Sub8StartGateDetector::requestStartGateEnable(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &resp)
+std::vector<cv::Point> Sub8StartGateDetector::get_corner_center_points(const std::vector<cv::Point> &features)
 {
-  running_ = req.data;
-  resp.success = true;
-  resp.message = "Set start_gate running boolean";
-  if (!req.data)
-  {  // If false we should also clear the buffer
-    gate_line_buffer_.clear();
+  // Get all the possible number of combinations of points
+  std::vector<std::vector<uint8_t>> id_comb;
+  mil_tools::combinations(features.size(), 2, id_comb);
+
+  // Order pairs of points based of shortest distance. store that in id_comb
+  std::sort(id_comb.begin(), id_comb.end(),
+            [&features](const std::vector<uint8_t> &a, const std::vector<uint8_t> &b) -> bool {
+              auto diffx = features[a[0]].x - features[a[1]].x;
+              auto diffy = features[a[0]].y - features[a[1]].y;
+              auto distanceA = std::sqrt(std::pow(diffx, 2) + std::pow(diffy, 2));
+
+              diffx = features[b[0]].x - features[b[1]].x;
+              diffy = features[b[0]].y - features[b[1]].y;
+              auto distanceB = std::sqrt(std::pow(diffx, 2) + std::pow(diffy, 2));
+
+              return distanceA < distanceB;
+            });
+
+  // Store the center points between the 4 shortest pairs
+  std::vector<cv::Point> features_l(4);
+  for (size_t i = 0; i < 4; ++i)
+  {
+    features_l.at(i) = ((features[id_comb[i][0]] + features[id_comb[i][1]]) / 2);
   }
-  return true;
+  return features_l;
 }
 
-bool Sub8StartGateDetector::requestStartGateDistance(sub8_msgs::BMatrix::Request &req,
-                                                     sub8_msgs::BMatrix::Response &resp)
+cv::Mat Sub8StartGateDetector::process_image(cv::Mat &image)
 {
-  resp.B = std::vector<double>{ getGateDistance() };
+  cv::Mat kernal = cv::Mat::ones(5, 5, CV_8U);
+
+  cv::Mat lab;
+  cv::cvtColor(image, lab, cv::COLOR_BGR2Lab);
+
+  cv::Mat hsv;
+  cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV);
+
+  cv::Mat bitwised_image;
+  {
+    cv::Mat lab_channels[3];
+    cv::split(lab, lab_channels);
+    cv::Mat hsv_channels[3];
+    cv::split(hsv, hsv_channels);
+    cv::bitwise_and(lab_channels[1], hsv_channels[0], bitwised_image);
+  }
+
+  cv::Mat processed_image;
+  cv::blur(bitwised_image, processed_image, cv::Size(blur_size_, blur_size_));
+
+  cv::Mat canny;
+  cv::Canny(processed_image, canny, canny_low_, canny_low_ * 3.0);
+
+  // sensor_msgs::ImagePtr dbg_img_msg_canny = cv_bridge::CvImage(std_msgs::Header(), "mono8", canny).toImageMsg();
+  // debug_image_pub_canny_.publish(dbg_img_msg_canny);
+
+  cv::Mat closing;
+  cv::morphologyEx(canny, closing, cv::MORPH_CLOSE, kernal);
+
+  cv::Mat dilation;
+  cv::dilate(closing, dilation, kernal, cv::Point(), dilate_amount_);
+
+  return dilation;
+}
+
+double Sub8StartGateDetector::get_angle(cv::Point a, cv::Point b, cv::Point c)
+{
+  auto ba = a - b;
+  auto bc = c - b;
+
+  auto cos_ang = ba.dot(bc) / cv::norm(ba) * cv::norm(bc);
+  auto angle = acos(cos_ang);
+
+  return angle * 180 / CV_PI;
+}
+
+bool Sub8StartGateDetector::valid_contour(std::vector<cv::Point> &contour)
+{
+  if (cv::isContourConvex(contour))
+    return false;
+  auto area = cv::contourArea(contour);
+  if (area < 3000)
+    return false;
+  if (area > 30000)
+    return false;
+  auto epsilon = 0.01 * cv::arcLength(contour, true);
+  std::vector<cv::Point> approx;
+  cv::approxPolyDP(contour, approx, epsilon, true);
+  cv::Moments mu = cv::moments(contour, false);
+  auto center = cv::Point(mu.m10 / mu.m00, mu.m01 / mu.m00);
+
+  // Is the center of mass within the contour?
+  if (cv::pointPolygonTest(contour, center, false) == 1)
+    return false;
+
+  if (approx.size() < 4)
+    return false;
+  if (approx.size() > 15)
+    return false;
+
+  for (size_t i = 0; i < approx.size(); i += 2)
+  {
+    auto angle = get_angle(approx[i], approx[i + 1], approx[i + 2]);
+    if (abs(angle - 90) > 30)
+      return false;
+  }
+  auto angle = get_angle(approx[approx.size() - 1], approx[0], approx[1]);
+  if (abs(angle - 90) > 30)
+    return false;
   return true;
+}
+std::vector<cv::Point> Sub8StartGateDetector::contour_to_2d_features(std::vector<std::vector<cv::Point>> &contour)
+{
+  // Loop through all the contours
+  std::vector<cv::Point> features;
+  for (size_t i = 0; i < contour.size(); ++i)
+  {
+    // Check if the contour is a gate
+    if (valid_contour(contour.at(i)))
+    {
+      // Match the contour with a polygon
+      auto epsilon = 0.01 * cv::arcLength(contour.at(i), true);
+      cv::approxPolyDP(contour.at(i), features, epsilon, true);
+    }
+  }
+  return features;
+}
+
+void Sub8StartGateDetector::visualize_k_gate_normal()
+{
+  geometry_msgs::Point center_pt;
+  center_pt.x = gate_pose_.translation().x();
+  center_pt.y = gate_pose_.translation().y();
+  center_pt.z = gate_pose_.translation().z();
+
+  Eigen::Vector3d normal = gate_pose_.rotation() * Eigen::Vector3d(1, 0, 0);
+
+  geometry_msgs::Point sdp_normalvec_ros;
+  sdp_normalvec_ros.x = center_pt.x + normal(0, 0);
+  sdp_normalvec_ros.y = center_pt.y + normal(1, 0);
+  sdp_normalvec_ros.z = center_pt.z + normal(2, 0);
+
+  visualization_msgs::Marker marker_normal;
+  marker_normal.header.seq = 0;
+  marker_normal.header.stamp = ros::Time::now();
+  marker_normal.header.frame_id = "/front_left_cam";
+  marker_normal.id = 2222;
+  marker_normal.type = visualization_msgs::Marker::ARROW;
+  marker_normal.points.push_back(center_pt);
+  marker_normal.points.push_back(sdp_normalvec_ros);
+  marker_normal.scale.x = 0.1;
+  marker_normal.scale.y = 0.5;
+  marker_normal.scale.z = 0.5;
+  marker_normal.color.a = 1.0;
+  marker_normal.color.r = 1.0;
+  marker_normal.color.g = 0.0;
+  marker_normal.color.b = 1.0;
+  marker_pub_.publish(marker_normal);
+}
+
+void Sub8StartGateDetector::visualize_3d_points_rviz(const std::vector<Eigen::Vector3d> &feature_pts_3d)
+{
+  visualization_msgs::Marker points_raw_marker;
+  points_raw_marker.header.stamp = ros::Time::now();
+  points_raw_marker.type = visualization_msgs::Marker::POINTS;
+  points_raw_marker.header.frame_id = "/front_left_cam";
+
+  points_raw_marker.id = 5;
+  points_raw_marker.scale.x = 0.2;
+  points_raw_marker.scale.y = 0.2;
+  points_raw_marker.color.r = 1.0f;
+  points_raw_marker.color.a = 1.0;
+
+  for (size_t i = 0; i < feature_pts_3d.size(); i++)
+  {
+    geometry_msgs::Point p;
+    p.x = feature_pts_3d[i][0];
+    p.y = feature_pts_3d[i][1];
+    p.z = feature_pts_3d[i][2];
+    points_raw_marker.points.push_back(p);
+  }
+
+  marker_pub_.publish(points_raw_marker);
 }

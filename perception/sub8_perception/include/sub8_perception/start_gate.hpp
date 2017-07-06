@@ -1,67 +1,70 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <vector>
 
-#include "ros/ros.h"
-
-#include <image_geometry/pinhole_camera_model.h>
-#include <image_transport/image_transport.h>
+#include <ros/ros.h>
 
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/highgui/highgui.hpp>
 
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics.hpp>
-#include <boost/circular_buffer.hpp>
-
 #include <std_srvs/SetBool.h>
+#include <sub8_msgs/VisionRequest.h>
+#include <sub8_msgs/VisionRequest2D.h>
 
-#include "sub8_msgs/BMatrix.h"
-#include "sub8_msgs/VisionRequest2D.h"
+#include <sub8_vision_lib/stereo_base.hpp>
 
-using namespace boost::accumulators;
+#include <tf2/convert.h>
+#include <tf2/transform_datatypes.h>
+#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_ros/transform_listener.h>
 
-class Sub8StartGateDetector
+#include <visualization_msgs/Marker.h>
+
+class Sub8StartGateDetector : public StereoBase
 {
 public:
   Sub8StartGateDetector();
-  ~Sub8StartGateDetector();
 
-  // 76 inches x 39.5 inches
-  // 1.9304 x 1.0033
-  const double START_GATE_WIDTH = 1.9304;  // Meters
-  const double START_GATE_HEIGHT = 1.0033;
-  const double START_GATE_SIZE_TOLERANCE = 10000;
+  virtual std::vector<cv::Point> get_2d_feature_points(cv::Mat image);
 
-  void imageCallback(const sensor_msgs::ImageConstPtr &msg, const sensor_msgs::CameraInfoConstPtr &info_msg);
-  bool requestStartGatePosition2d(sub8_msgs::VisionRequest2D::Request &req, sub8_msgs::VisionRequest2D::Response &resp);
-  bool requestStartGateEnable(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &resp);
-  bool requestStartGateDistance(sub8_msgs::BMatrix::Request &req, sub8_msgs::BMatrix::Response &resp);
-  void findGate(const sensor_msgs::ImageConstPtr &image_msg);
+  ros::NodeHandle nh;
+  void run();
 
-  double getGateDistance();
+private:
+  void determine_start_gate_position();
 
-  ros::NodeHandle nh_;
-  bool running_;
+  // Some filtering params used by the 'process_image' function
+  int canny_low_;
+  float canny_ratio_;
+  int blur_size_;
+  int dilate_amount_;
 
-  image_transport::ImageTransport image_transport_;
-  image_transport::CameraSubscriber image_sub_;
+  double get_angle(cv::Point a, cv::Point b, cv::Point c);
+  // Helper function that checks if a contour is of a gate shape
+  bool valid_contour(std::vector<cv::Point> &contour);
+  // Helper function that does a blur and filters
+  cv::Mat process_image(cv::Mat &image);
+  // Given an array of contours, returns a polygon that is most similar to that of a gate
+  std::vector<cv::Point> contour_to_2d_features(std::vector<std::vector<cv::Point>> &contour);
+  // Given a set of points, find the center points between the closest point pairs
+  std::vector<cv::Point> get_corner_center_points(const std::vector<cv::Point> &features);
 
-  image_geometry::PinholeCameraModel cam_model_;
-  ros::Time image_time_;
+  ros::Publisher marker_pub_;
+  void visualize_k_gate_normal();
+  void visualize_3d_points_rviz(const std::vector<Eigen::Vector3d> &feature_pts_3d);
 
-  int rows_;
-  int cols_;
+  Eigen::Affine3d gate_pose_;
+  bool gate_found_;
+  ros::Time last_time_found_;
+  ros::Duration timeout_for_found_;
 
-  boost::circular_buffer<std::vector<std::vector<cv::Point2f>>> gate_line_buffer_;
-  accumulator_set<int, features<tag::mean, tag::variance>> accX_;
-  accumulator_set<int, features<tag::mean, tag::variance>> accY_;
-  accumulator_set<int, features<tag::mean, tag::variance>> accSizeX_;
-  accumulator_set<int, features<tag::mean, tag::variance>> accSizeY_;
+  ros::ServiceServer active_service_;
+  ros::ServiceServer vision_request_service_;
+  bool set_active_enable_cb(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
+  bool vision_request_cb(sub8_msgs::VisionRequest::Request &req, sub8_msgs::VisionRequest::Response &resp);
 
-  ros::ServiceServer service_enable_;
-  ros::ServiceServer service_2d_;
-  ros::ServiceServer service_distance_;
-
-  image_transport::Publisher pubImage_;
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener tf_listener_;
+  geometry_msgs::TransformStamped transform_to_map_;
 };

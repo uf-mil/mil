@@ -415,7 +415,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position()
 
   // Pick a combination of four points that closely matches our model
   vector<vector<uint8_t> > four_pt_combo_idxs;
-  combinations(feature_pts_3d.size(), 4, four_pt_combo_idxs);
+  mil_tools::combinations(feature_pts_3d.size(), 4, four_pt_combo_idxs);
 
   Eigen::Vector3d centroid;
   double model_height = 1.7;
@@ -468,7 +468,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position()
     double sum_network_distances = 0;
     vector<double> network_distances, model_match_costs;
     vector<vector<uint8_t> > four_choose_2;
-    combinations(4, 2, four_choose_2);
+    mil_tools::combinations(4, 2, four_choose_2);
     for (vector<uint8_t> pair_idx : four_choose_2)
     {
       double dist =
@@ -638,7 +638,7 @@ void Sub8TorpedoBoardDetector::determine_torpedo_board_position()
 
   // // Determine indices for each possible pair from the threshed points
   // vector< vector<uint8_t> > pt_pair_idxs;
-  // combinations(threshed_features.size(), 2, pt_pair_idxs);
+  // mil_tools::combinations(threshed_features.size(), 2, pt_pair_idxs);
 
   // // Calculate distances between all previous pairs
   // vector<double> pt_pair_dists;
@@ -1460,58 +1460,6 @@ bool TorpedoBoardReprojectionCost::operator()(const T *const x, const T *const y
 // Helper Functions ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-void combinations(uint8_t n, uint8_t k, vector<vector<uint8_t> > &idx_array)
-{
-  idx_array = vector<vector<uint8_t> >();
-
-  vector<uint8_t> first_comb;
-
-  // set first combination indices
-  for (uint8_t i = 0; i < k; i++)
-  {
-    first_comb.push_back(i);
-  }
-
-  uint8_t level = 0;
-
-  _increase_elements_after_level(first_comb, idx_array, n, k, level);
-}
-
-void _increase_elements_after_level(vector<uint8_t> comb, vector<vector<uint8_t> > &comb_array, uint8_t n, uint8_t k,
-                                    uint8_t level)
-{
-  vector<uint8_t> parent = comb;
-  vector<vector<uint8_t> > children;
-
-  while (true)
-  {
-    for (uint8_t idx = level; idx < k; idx++)
-    {
-      comb[idx] = comb[idx] + 1;
-    }
-    if (comb[level] > n - (k - level))
-      break;
-    children.push_back(comb);
-  }
-
-  if (level == k - 1)
-  {
-    comb_array.push_back(parent);
-    for (vector<uint8_t> child : children)
-    {
-      comb_array.push_back(child);
-    }
-  }
-  else
-  {
-    _increase_elements_after_level(parent, comb_array, n, k, level + 1);
-    for (vector<uint8_t> child : children)
-    {
-      _increase_elements_after_level(child, comb_array, n, k, level + 1);
-    }
-  }
-}
-
 void anisotropic_diffusion(const Mat &src, Mat &dest, int t_max)
 {
   Mat x = src;
@@ -1682,7 +1630,7 @@ void best_plane_from_combination(const vector<Eigen::Vector3d> &point_list, doub
 {
   /*
     Takes in a list of 3D points as input. From this list of points, all possible
-    combinations of 3 points are determined. For each possible 3 point combination,
+    mil_tools::combinations of 3 points are determined. For each possible 3 point combination,
     the number of points that lie within a threshold distane of the plane defined
     is calculated. The combination with the largest number of included points is
     selected as the best plane. The output is the set of coefficients for the
@@ -1692,7 +1640,7 @@ void best_plane_from_combination(const vector<Eigen::Vector3d> &point_list, doub
   // Calculate indeces for all possible point triplets
   size_t features3D_count = point_list.size();
   vector<vector<uint8_t> > combination_idxs;
-  combinations(features3D_count, 3, combination_idxs);
+  mil_tools::combinations(features3D_count, 3, combination_idxs);
 
   vector<int> num_included(combination_idxs.size(), 0);
 

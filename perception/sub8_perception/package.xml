@@ -29,6 +29,12 @@
   <run_depend>geometry_msgs</run_depend>
   <test_depend>rostest</test_depend>
   <build_depend>mil_vision</build_depend>
+  <build_depend>tf2_eigen</build_depend>
+  <run_depend>tf2_eigen</run_depend>
+  <build_depend>tf2</build_depend>
+  <run_depend>tf2</run_depend>
+  <build_depend>tf2_ros</build_depend>
+  <run_depend>tf2_ros</run_depend>
   <export>
   </export>
 </package>
