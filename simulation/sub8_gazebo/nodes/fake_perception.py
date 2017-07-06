@@ -15,13 +15,14 @@ import yaml
 
 
 rospack = rospkg.RosPack()
-config_file = os.path.join(rospack.get_path('sub8_missions'), 'sub8', 'vision_proxies.yaml')
+config_file = os.path.join(rospack.get_path(
+    'sub8_missions'), 'sub8', 'vision_proxies.yaml')
 f = yaml.load(open(config_file, 'r'))
 
 fprint = text_effects.FprintFactory(title="SIMULATOR").fprint
 
-def handle_fake_perception (extra, target_object):
 
+def handle_fake_perception(extra, target_object):
     '''
     Calls the GetModelState service from gazebo to get the realtime position of the model targeted.
     Provides this information to the mission.
@@ -36,50 +37,60 @@ def handle_fake_perception (extra, target_object):
     if extra != '':
         target_object = extra
     if target_object == '':
-        fprint ("NO TARGET")
+        fprint("NO TARGET")
         sys.exit(0)
     model = get_position(target_object)
-    pose_stamp = PoseStamped(header = Header(seq = k, stamp = now, frame_id = "/map"),
-        # We must offset our pose by the starting position of the sub relative to the world in Gazebo.
-        pose = Pose(position=Point(model.pose.position.x-13, model.pose.position.y-24, -1),
-        orientation=model.pose.orientation))
+    pose_stamp = PoseStamped(header=Header(seq=k, stamp=now, frame_id="/map"),
+                             # Offset our pose by the starting position of the sub relative to the world in Gazebo.
+                             pose=Pose(position=Point(model.pose.position.x - 13, model.pose.position.y - 24, -1),
+                                       orientation=model.pose.orientation))
     covariance_diagonal = Vector3(0, 0, 0)
     found = True
-    resp2 = VisionRequestResponse(pose_stamp,covariance_diagonal,found)
+    resp2 = VisionRequestResponse(pose_stamp, covariance_diagonal, found)
     return resp2
 
-def get_position (model_name):
+
+def get_position(model_name):
 
     rospy.wait_for_service('/gazebo/get_model_state')
     try:
-        model_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
-        resp1 = model_state(model_name,'world')
+        model_state = rospy.ServiceProxy(
+            '/gazebo/get_model_state', GetModelState)
+        resp1 = model_state(model_name, 'world')
         return resp1
     except rospy.ServiceException, e:
-        print "Service call failed: %s"%e
+        print "Service call failed: % s " % e
 
-def set_geometry (req):
+
+def set_geometry(req):
 
     return {'success': True}
 
-def vision_cb_2D ():
+
+def vision_cb_2D():
 
     return True
 
-def start (resp):
 
-    return SetBoolResponse(True,"")
+def start(resp):
 
-def init_service (name,target):
+    return SetBoolResponse(True, "")
 
-    #Generates services required for missions and target aquisition
-    rospy.Service('/vision/'+name+'/pose', VisionRequest, lambda h: handle_fake_perception(h.target_name,target))
-    #The following three services do nothing other than return true values. They are not needed in sim but a return value is required for missions.
-    rospy.Service('/vision/'+name+'/set_geometry', SetGeometry, set_geometry)
-    rospy.Service('/vision/'+name+'/2D', VisionRequest2D, vision_cb_2D)
-    rospy.Service('/vision/'+name+'/enable', SetBool, start)
 
-def fake_perception_server ():
+def init_service(name, target):
+
+    # Generates services required for missions and target aquisition
+    rospy.Service('/vision/' + name + '/pose', VisionRequest,
+                  lambda h: handle_fake_perception(h.target_name, target))
+    # The following three services do nothing other than return true values.
+    # They are not needed in sim but a return value is required for missions.
+    rospy.Service('/vision/' + name + '/set_geometry',
+                  SetGeometry, set_geometry)
+    rospy.Service('/vision/' + name + '/2D', VisionRequest2D, vision_cb_2D)
+    rospy.Service('/vision/' + name + '/enable', SetBool, start)
+
+
+def fake_perception_server():
 
     rospy.init_node('fake_perception')
     '''
@@ -94,6 +105,7 @@ def fake_perception_server ():
 
     fprint("Faking perception.")
     rospy.spin()
+
 
 if __name__ == "__main__":
 
