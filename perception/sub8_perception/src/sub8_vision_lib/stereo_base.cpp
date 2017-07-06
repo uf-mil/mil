@@ -44,6 +44,7 @@ std::unique_ptr<std::vector<Eigen::Vector3d>> StereoBase::get_3d_feature_points(
   std::vector<int> correspondence_pair_idxs =
       shortest_pair_stereo_matching(features_l, features_r, left_cam_stream_->rows() * 0.02);
 
+  // Check if we have any undefined correspondence pairs
   if (std::count(correspondence_pair_idxs.begin(), correspondence_pair_idxs.end(), -1) != 0)
     return nullptr;
 

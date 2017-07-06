@@ -64,4 +64,6 @@ def run(sub):
     fprint('YOLO! Going through gate {}'.format(point_after))
     yield sub.move.set_position(point_after).zero_roll_and_pitch().go(speed=SPEED)
 
+    yield sub.vision_proxies.start_gate.stop()
+
     defer.returnValue(True)
