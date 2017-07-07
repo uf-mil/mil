@@ -36,7 +36,7 @@ class Threshold(object):
             try:
                 self.conversion_code = getattr(cv2, 'COLOR_{}2{}'.format(in_space, thresh_space))
             except AttributeError:
-                raise Exception('Could not determine conversion code from params.\
+                raise AttributeError('Could not determine conversion code from params.\
                                  Are [{}, {}] valid OpenCV colorspaces?'.format(in_space, thresh_space))
         else:
             self.conversion_code = conversion_code
@@ -62,7 +62,13 @@ class Threshold(object):
         assert isinstance(d, dict), 'd is not a dictionary'
         if thresh_space is None:
             assert len(d) > 0, 'Dictionary is empty'
-            return cls.from_dict(d, in_space=in_space, thresh_space=d.keys()[0])
+            for key in d:  # Try each key for valid threshold
+                try:
+                    return cls.from_dict(d, in_space=in_space, thresh_space=key)
+                except AttributeError:
+                    pass
+            raise AttributeError('No valid colorspace found in dictionary. Are {} valid OpenCV colorspaces?'.format(
+                d.keys()))
         assert thresh_space in d, '{} color space not in dictionary'.format(thresh_space)
         inner = d[thresh_space]
         if 'low' in inner and 'high' in inner:
