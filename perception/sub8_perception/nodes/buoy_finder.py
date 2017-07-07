@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import division
 import cv2
 import numpy as np
 import rospy
@@ -13,6 +14,7 @@ from std_srvs.srv import SetBool, SetBoolResponse
 from geometry_msgs.msg import Pose2D, PoseStamped, Pose, Point
 from mil_ros_tools import Image_Subscriber, Image_Publisher, rosmsg_to_numpy
 from nav_msgs.msg import Odometry
+from mil_vision_tools import CircleFinder, Threshold
 
 
 class Buoy(object):
@@ -30,9 +32,12 @@ class Buoy(object):
         self.status = ''
         self.est = None
         self.color = color
-
         self.timeout = rospy.Duration(rospy.get_param('~timeout_seconds'))
         self.min_trans = rospy.get_param('~min_trans')
+        self.threshold = Threshold.from_param('/color/buoy/{}'.format(color))
+        rospy.loginfo('{} buoy has {}'.format(color, self.threshold))  # Print threshold for each buoy
+        if debug_cv:
+            self.threshold.create_trackbars(window=color)
 
         # Only for visualization
         if color == 'red':
@@ -51,49 +56,13 @@ class Buoy(object):
             rospy.logerr('Unknown buoy color {}'.format(color))
             self.draw_colors = (0.0, 0.0, 0.0, 1.0)
             self.visual_id = 3
-        if self.debug_cv:
-            cv2.namedWindow(self.color)
-
-    def load_segmentation(self):
-        '''
-        Load threshold values in BGR, HSV, or LAB colorspace for segmenting an image.
-        '''
-        for color_space in ['hsv', 'bgr', 'lab']:
-            self.color_space = color_space
-            low = '/color/buoy/{}/{}_low'.format(self.color, color_space)
-            high = '/color/buoy/{}/{}_high'.format(self.color, color_space)
-            if not rospy.has_param(low):
-                continue
-            self.thresholds = [np.array(rospy.get_param(low)),
-                               np.array(rospy.get_param(high))]
-            rospy.loginfo("BUOY - Thresholds for {} buoy loaded using {} colorspace".format(
-                          self.color, self.color_space))
-
-        if self.debug_cv:
-            # If debug_cv is enabled, create trackbars to adjust thresholds for this buoy
-            def change_threshold(i, i2, val):
-                self.thresholds[i][i2] = float(val)
-                rospy.loginfo("SETTING {} thresholds[{}][{}]={}".format(self.color, i, i2, self.thresholds[i][i2]))
-            for i in range(len(self.thresholds[0])):
-                cv2.createTrackbar('low {}'.format(self.color_space[i]), self.color, int(self.thresholds[0][i]), 255,
-                                   lambda x, _ind=i: change_threshold(0, _ind, x))
-            for i in range(len(self.thresholds[1])):
-                cv2.createTrackbar('high {}'.format(self.color_space[i]), self.color, int(self.thresholds[1][i]), 255,
-                                   lambda x, _ind=i: change_threshold(1, _ind, x))
 
     def get_mask(self, img):
         '''
-        Use loaded threshold values to create a mask of img
+        Return an image thresholded with the values and colorspace specified
+        in the color calibration file.
         '''
-        if self.color_space == 'hsv':
-            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            mask = cv2.inRange(hsv, *self.thresholds)
-        elif self.color_space == 'lab':
-            lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
-            mask = cv2.inRange(lab, *self.thresholds)
-        else:
-            mask = cv2.inRange(img, *self.thresholds)
-        return mask
+        return self.threshold(img)
 
     def clear_old_observations(self):
         time = rospy.Time.now()
@@ -135,6 +104,8 @@ class BuoyFinder(object):
 
     Intended to be modular so other approaches can be tried. Adding more sophistication
     to segmentation would increase reliability.
+
+    TODO: Use same mask for yellow/green
     '''
     def __init__(self):
         self.tf_listener = tf.TransformListener()
@@ -143,19 +114,22 @@ class BuoyFinder(object):
         self.last_image = None
         self.last_image_time = None
         self.camera_model = None
+        self.circle_finder = CircleFinder(1.0)  # Model radius doesn't matter beacause it's not being used for 3D pose
 
         # Various constants for tuning, debugging. See buoy_finder.yaml for more info
         self.min_observations = rospy.get_param('~min_observations')
         self.debug_ros = rospy.get_param('~debug/ros', True)
         self.debug_cv = rospy.get_param('~debug/cv', False)
         self.min_contour_area = rospy.get_param('~min_contour_area')
+        self.max_circle_error = rospy.get_param('~max_circle_error')
         self.max_velocity = rospy.get_param('~max_velocity')
+        self.roi_y = rospy.get_param('~roi_y')
+        self.roi_height = rospy.get_param('~roi_height')
         camera = rospy.get_param('~camera_topic', '/camera/front/right/image_rect_color')
 
         self.buoys = {}
         for color in ['red', 'yellow', 'green']:
             self.buoys[color] = Buoy(color, debug_cv=self.debug_cv)
-            self.buoys[color].load_segmentation()
         if self.debug_cv:
             cv2.waitKey(1)
             self.debug_images = {}
@@ -254,10 +228,11 @@ class BuoyFinder(object):
 
         # Crop out some of the top and bottom to exclude the floor and surface reflections
         height = image.shape[0]
-        roi_y = int(0.2 * height)
-        roi_height = height - int(0.2 * height)
+        roi_y = int(self.roi_y * height)
+        roi_height = height - int(self.roi_height * height)
         self.roi = (0, roi_y, roi_height, image.shape[1])
         self.last_image = image[self.roi[1]:self.roi[2], self.roi[0]:self.roi[3]]
+        self.image_area = self.last_image.shape[0] * self.last_image.shape[1]
 
         if self.debug_ros:
             # Create a blacked out debug image for putting masks in
@@ -288,26 +263,33 @@ class BuoyFinder(object):
         for buoy_name in self.buoys:
             self.find_single_buoy(buoy_name)
 
+    def is_circular_contour(self, cnt):
+        '''
+        Check that a contour is close enough to a circle (using hue invariants)
+        to be a pottential buoy.
+        '''
+        return self.circle_finder.verify_contour(cnt) <= self.max_circle_error
+
     def get_best_contour(self, contours):
         '''
         Attempts to find a good buoy contour among those found within the
         thresholded mask. If a good one is found, it return (contour, centroid, area),
         otherwise returns None. Right now the best contour is just the largest.
 
-        TODO: Use smarter contour filtering methods, like checking this it is circle like
+        @param contours Numpy array of contours from a particular buoy's mask
+        @return A tuple (contour, error) where contour will be the best contour
+                in an image or None if no contours pass criteria. Error will be a string
+                describing why no good contour was found, or None if contour is not None.
         '''
-        if len(contours) > 0:
-            cnt = max(contours, key=cv2.contourArea)
-            area = cv2.contourArea(cnt)
-            if area < self.min_contour_area:
-                return None
-            M = cv2.moments(cnt)
-            cx = int(M['m10'] / M['m00'])
-            cy = int(M['m01'] / M['m00'])
-            tpl_center = (int(cx), int(cy))
-            return cnt, tpl_center, area
-        else:
-            return None
+        if len(contours) == 0:
+            return None, 'no contours in mask'
+        circular_contours = filter(self.is_circular_contour, contours)
+        if len(circular_contours) == 0:
+            return None, 'fails circularity test'
+        circles_sorted = sorted(circular_contours, key=cv2.contourArea, reverse=True)
+        if cv2.contourArea(circles_sorted[0]) < self.min_contour_area * self.image_area:
+            return None, 'fails area test'
+        return circles_sorted[0], None  # Return the largest contour that pases shape test
 
     def find_single_buoy(self, buoy_type):
         '''
@@ -329,20 +311,21 @@ class BuoyFinder(object):
 
         _, contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE,
                                           offset=(self.roi[0], self.roi[1]))
-        ret = self.get_best_contour(contours)
-        if ret is None:
-            buoy.clear_old_observations()
-            buoy.status = 'not seen w/ {} obs'.format(buoy.size())
-            return
-        contour, tuple_center, area = ret
-        true_center, rad = cv2.minEnclosingCircle(contour)
-
         if self.debug_ros:
             cv2.add(self.mask_image.copy(), buoy.cv_colors, mask=mask, dst=self.mask_image)
-            cv2.circle(self.mask_image, (int(true_center[0] - self.roi[0]), int(true_center[1]) - self.roi[1]),
-                       int(rad), buoy.cv_colors, 2)
         if self.debug_cv:
             self.debug_images[buoy_type] = mask.copy()
+
+        cnt, err = self.get_best_contour(contours)
+        if cnt is None:
+            buoy.clear_old_observations()
+            buoy.status = '{} w/ {} obs'.format(err, buoy.size())
+            return
+        center, radius = cv2.minEnclosingCircle(cnt)
+
+        if self.debug_ros:
+            cv2.circle(self.mask_image, (int(center[0] - self.roi[0]), int(center[1]) - self.roi[1]),
+                       int(radius), buoy.cv_colors, 4)
 
         try:
             self.tf_listener.waitForTransform('/map', self.frame_id, self.last_image_time, rospy.Duration(0.2))
@@ -350,14 +333,14 @@ class BuoyFinder(object):
             rospy.logwarn("Could not transform camera to map: {}".format(e))
             return False
 
-        if not self.sanity_check(tuple_center, self.last_image_time):
+        if not self.sanity_check(center, self.last_image_time):
             buoy.status = 'failed sanity check'
             return False
 
         (t, rot_q) = self.tf_listener.lookupTransform('/map', self.frame_id, self.last_image_time)
         R = mil_ros_tools.geometry_helpers.quaternion_matrix(rot_q)
 
-        buoy.add_observation(true_center, (np.array(t), R), self.last_image_time)
+        buoy.add_observation(center, (np.array(t), R), self.last_image_time)
 
         observations, pose_pairs = buoy.get_observations_and_pose_pairs()
         if len(observations) > self.min_observations:
@@ -369,8 +352,7 @@ class BuoyFinder(object):
                                       frame='/map', _id=buoy.visual_id)
         else:
             buoy.status = '{} observations'.format(len(observations))
-
-        return tuple_center, rad
+        return center, radius
 
     def sanity_check(self, coordinate, timestamp):
         '''
