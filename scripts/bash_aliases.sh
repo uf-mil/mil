@@ -45,4 +45,4 @@ alias cm="catkin_make -C \$CATKIN_DIR -j8"
 alias killgazebo="killall -9 gazebo && killall -9 gzserver && killall -9 gzclient"
 
 # Formatting (be sure to update with Jenkinsfile)
-alias mcfmt="python2.7 -m flake8 --ignore E731 --max-line-length=120 --exclude=__init__.py,drivers/mil_passive_sonar \$CATKIN_DIR/src/mil_common"
+alias mcfmt="python2.7 -m flake8 --ignore E731 --max-line-length=120 --exclude=__init__.py,\$CATKIN_DIR/src/mil_common/drivers/mil_passive_sonar \$CATKIN_DIR/src/mil_common"
