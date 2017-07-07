@@ -159,6 +159,15 @@ def numpy_to_polygon(polygon):
     return geometry_msgs.Polygon(points=points)
 
 
+def numpy_to_vector3(vec):
+    assert len(vec) == 3
+    return geometry_msgs.Vector3(*vec)
+
+
+def numpy_to_pose2D(pose):
+    return geometry_msgs.Pose2D(*pose)
+
+
 def make_header(frame='/body', stamp=None):
     if stamp is None:
         try:
