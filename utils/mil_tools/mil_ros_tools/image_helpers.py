@@ -10,6 +10,7 @@ from os import path
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, CameraInfo
 from mil_ros_tools import wait_for_param
+import message_filters
 
 
 def get_parameter_range(parameter_root):
@@ -118,6 +119,106 @@ class Image_Subscriber(object):
             image = self.bridge.imgmsg_to_cv2(
                 data, desired_encoding=self.encoding)
             self.callback(image)
+        except CvBridgeError, e:
+            # Intentionally absorb CvBridge Errors
+            rospy.logerr(e)
+
+
+class StereoImageSubscriber(object):
+    '''
+    Abstraction to subscribe to two image topics (ex: left and right camera) and
+    receive callbacks for synchronized images (already converted to numpy arrays).
+    Also contains a helper function to block until the camera info messages for both
+    cameras are received.
+    '''
+    def __init__(self, left_image_topic, right_image_topic, callback=None, slop=None, encoding="bgr8", queue_size=5):
+        '''
+        Contruct a StereoImageSubscriber
+
+        @param left_image_topic ROS topic to subscribe for the left camera ex: /camera/front/left/image_rect_color
+        @param right_image_topic ROS topic to subscribe to for the right camera ex: /camera/front/right/image_rect_color
+        @param callback Function with signature foo(left_img, right_img) to call when a synchronized pair is ready.
+               If left as None, the latest synced images are stored as self.image_left and self.image_right
+        @param slop Maximum time in seconds between left and right images to be considered synced.
+               If left as None, will only consider synced if left and right images have exact same header time.
+        @param encoding String to pass to CvBridge to encode ROS image message to numpy array
+        @param queue_size Integer, the number of images to store in a buffer for each camera to find synced images
+        '''
+        if callback is None:  # Set default callback to just set image_left and image_right
+            def callback(image_left, image_right):
+                setattr(self, 'image_left', image_left)
+                setattr(self, 'image_right', image_right)
+
+        self.bridge = CvBridge()
+        self.encoding = encoding
+        self.callback = callback
+        self.camera_info_left = None
+        self.camera_info_right = None
+        self.image_left = None
+        self.image_time_left = None
+        self.image_right = None
+        self.image_time_right = None
+
+        # Subscribe to image and camera info topics for both cameras
+        root_topic_left, image_subtopic_left = path.split(left_image_topic)
+        self._info_sub_left = rospy.Subscriber(
+            root_topic_left + '/camera_info', CameraInfo,
+            lambda info: setattr(self, 'camera_info_left', info), queue_size=queue_size)
+        image_sub_left = message_filters.Subscriber(left_image_topic, Image)
+        root_topic_right, image_subtopic_right = path.split(right_image_topic)
+        self._info_sub_right = rospy.Subscriber(
+            root_topic_right + '/camera_info', CameraInfo,
+            lambda info: setattr(self, 'camera_info_right', info), queue_size=queue_size)
+        image_sub_right = message_filters.Subscriber(right_image_topic, Image)
+
+        # Use message_filters library to set up synchronized subscriber to both image topics
+        if slop is None:
+            self._image_sub = message_filters.TimeSynchronizer([image_sub_left, image_sub_right], queue_size)
+        else:
+            self._image_sub = message_filters.ApproximateTimeSynchronizer([image_sub_left, image_sub_right],
+                                                                          slop, queue_size)
+        self._image_sub.registerCallback(self._image_callback)
+
+    def wait_for_camera_info(self, timeout=10, unregister=True):
+        '''
+        Blocks until camera info has been received.
+
+        @param timeout Time in seconds to wait before throwing exception if camera info is not received
+        @param unregister Boolean, if True will unsubscribe to camera info after receiving initial info message,
+               so self.camera_info_left and self.camera_info_right will not be updated
+        @return Tuple(camera_info_left, camera_info_right) camera info for each camera if received before timeout
+        @throws Exception if camera info for both cameras is not received within timeout
+        '''
+        timeout = rospy.Time.now() + rospy.Duration(timeout)
+        while (rospy.Time.now() < timeout) and (not rospy.is_shutdown()):
+            if self.camera_info_left is not None and self.camera_info_right is not None:
+                if unregister:
+                    self._info_sub_left.unregister()
+                    self._info_sub_right.unregister()
+                return self.camera_info_left, self.camera_info_right
+            rospy.sleep(0.05)
+        if self.camera_info_left is not None and self.camera_info_right is not None:
+            if unregister:
+                self._info_sub_left.unregister()
+                self._info_sub_right.unregister()
+            return self.camera_info_left, self.camera_info_right
+        raise Exception("Camera info not found.")
+
+    def _image_callback(self, left, right):
+        '''
+        Internal wrapper around image callback. Updates
+        latest timestamps and converts ROS image messages
+        to numpy arrays (for use with OpenCV, etc) before
+        calling user defined callback.
+        '''
+        try:
+            self.image_time_left = left.header.stamp
+            self.image_time_right = right.header.stamp
+            img_left = self.bridge.imgmsg_to_cv2(
+                left, desired_encoding=self.encoding)
+            img_right = self.bridge.imgmsg_to_cv2(
+                right, desired_encoding=self.encoding)
+            self.callback(img_left.copy(), img_right.copy())
         except CvBridgeError, e:
             # Intentionally absorb CvBridge Errors
             rospy.logerr(e)
