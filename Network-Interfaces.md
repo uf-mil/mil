@@ -1,7 +1,7 @@
 # Network Interfaces
 _Accurate as of 8 July, 2017_
 
-Subjugator's motherboard has 5, ethernet interfaces. 4 are used: eno1, eno2, eno3, and eno4.
+Subjugator's motherboard has 5 ethernet interfaces. 4 are used: eno1, eno2, eno3, and eno4.
 
 
 ## Table
