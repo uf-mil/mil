@@ -168,6 +168,10 @@ def numpy_to_pose2D(pose):
     return geometry_msgs.Pose2D(*pose)
 
 
+def numpy_to_colorRGBA(color):
+    return std_msgs.ColorRGBA(*color)
+
+
 def make_header(frame='/body', stamp=None):
     if stamp is None:
         try:
