@@ -125,12 +125,18 @@ class ImageMux(object):
 
     __setitem__ = set_image  # Overload index [] operator to set image
 
-    @property
-    def image(self):  # accessing .image will draw decorations onto image then return the full image grid
+    def get_image(self):
+        '''
+        Returns the image grid, with labels and borders
+        '''
         self._apply_decorations()
         return self._image
 
-    __call__ = image  # Overload () operator to access grid image
+    @property
+    def image(self):  # accessing .image will draw decorations onto image then return the full image grid
+        return self.get_image()
+
+    __call__ = get_image  # Overload () operator to access grid image
 
 
 if __name__ == '__main__':
@@ -154,5 +160,6 @@ if __name__ == '__main__':
     for i in xrange(len(images)):
         t[i] = np.array(images[i])
     cv2.imshow('Grid', t.image)
+    cv2.imshow('Grid2', t())
     print 'Press any key in GUI window to exit'
     cv2.waitKey(0)
