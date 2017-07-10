@@ -138,7 +138,7 @@ class StereoImageSubscriber(object):
         @param left_image_topic ROS topic to subscribe for the left camera ex: /camera/front/left/image_rect_color
         @param right_image_topic ROS topic to subscribe to for the right camera ex: /camera/front/right/image_rect_color
         @param callback Function with signature foo(left_img, right_img) to call when a synchronized pair is ready.
-               If left as None, the latest synced images are stored as self.image_left and self.image_right
+               If left as None, the latest synced images are stored as self.last_image_left and self.last_image_right
         @param slop Maximum time in seconds between left and right images to be considered synced.
                If left as None, will only consider synced if left and right images have exact same header time.
         @param encoding String to pass to CvBridge to encode ROS image message to numpy array
@@ -146,18 +146,18 @@ class StereoImageSubscriber(object):
         '''
         if callback is None:  # Set default callback to just set image_left and image_right
             def callback(image_left, image_right):
-                setattr(self, 'image_left', image_left)
-                setattr(self, 'image_right', image_right)
+                setattr(self, 'last_image_left', image_left)
+                setattr(self, 'last_image_right', image_right)
 
         self.bridge = CvBridge()
         self.encoding = encoding
         self.callback = callback
         self.camera_info_left = None
         self.camera_info_right = None
-        self.image_left = None
-        self.image_time_left = None
-        self.image_right = None
-        self.image_time_right = None
+        self.last_image_left = None
+        self.last_image_time_left = None
+        self.last_image_right = None
+        self.last_image_time_right = None
 
         # Subscribe to image and camera info topics for both cameras
         root_topic_left, image_subtopic_left = path.split(left_image_topic)
@@ -204,21 +204,24 @@ class StereoImageSubscriber(object):
             return self.camera_info_left, self.camera_info_right
         raise Exception("Camera info not found.")
 
-    def _image_callback(self, left, right):
+    def _image_callback(self, left_img, right_img):
         '''
         Internal wrapper around image callback. Updates
         latest timestamps and converts ROS image messages
         to numpy arrays (for use with OpenCV, etc) before
         calling user defined callback.
+
+        @param left_img the synchronized image from the left camera
+        @param right_img the synchronized image from the right camera
         '''
         try:
-            self.image_time_left = left.header.stamp
-            self.image_time_right = right.header.stamp
+            self.last_image_time_left = left_img.header.stamp
+            self.last_image_time_right = right_img.header.stamp
             img_left = self.bridge.imgmsg_to_cv2(
-                left, desired_encoding=self.encoding)
+                left_img, desired_encoding=self.encoding)
             img_right = self.bridge.imgmsg_to_cv2(
-                right, desired_encoding=self.encoding)
-            self.callback(img_left.copy(), img_right.copy())
+                right_img, desired_encoding=self.encoding)
+            self.callback(img_left, img_right)
         except CvBridgeError, e:
             # Intentionally absorb CvBridge Errors
             rospy.logerr(e)
