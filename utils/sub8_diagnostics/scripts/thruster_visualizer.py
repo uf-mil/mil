@@ -35,8 +35,6 @@ class ThrusterVisualizer(object):
             m.type = Marker.ARROW
             m.ns = 'thrusters'
             m.color.a = 0.8
-            m.color.r = 1.0
-            m.color.g = 0.5
             m.scale.x = 0.01  # Shaft diameter
             m.scale.y = 0.05  # Head diameter
             m.action = Marker.DELETE
@@ -58,31 +56,44 @@ class ThrusterVisualizer(object):
         '''
         Each thrust callback, update the length of the arrow
         based on the commanded thrust (in newtons).
+
+        Also update the color of the arrow based on thrust, from green to yellow, with
+        red being reserved for bounds.
         '''
         for cmd in thrust.thruster_commands:
             if cmd.name not in self.layout:  # Don't draw marker if thruster is not in layout
                 continue
             layout = self.layout[cmd.name]
+            idx = layout['motor_id']
+            bounds = layout['thrust_bounds']
 
             # Select an arrow length based on commanded thrust, max thrust (from layout), and the MAX_LENGTH constant
             if cmd.thrust < 0:
-                scale = -self.MAX_LENGTH * cmd.thrust / layout['thrust_bounds'][0]
+                scale = -cmd.thrust / bounds[0]
             else:
-                scale = self.MAX_LENGTH * cmd.thrust / layout['thrust_bounds'][1]
+                scale = cmd.thrust / bounds[1]
 
             if np.isclose(scale, 0.0):  # Avoid sending 0 length disk-like markers
-                self.markers.markers[layout['motor_id']].action = Marker.DELETE
+                self.markers.markers[idx].action = Marker.DELETE
                 continue
             else:
-                self.markers.markers[layout['motor_id']].action = Marker.ADD
+                self.markers.markers[idx].action = Marker.ADD
+
+            # Set color of marker based on thrust
+            if (cmd.thrust < 0 and cmd.thrust == bounds[0]) or cmd.thrust == bounds[1]:
+                self.markers.markers[idx].color.r = 1.0
+                self.markers.markers[idx].color.g = 0.0
+            else:
+                self.markers.markers[idx].color.r = abs(scale)
+                self.markers.markers[idx].color.g = 1.0
 
             # Select endpoint for arrow based on length and direction vector from layout
             direction = np.array(layout['direction'])
             direction = direction / np.linalg.norm(direction)
-            pt2 = np.array(layout['position']) + scale * direction
+            pt2 = np.array(layout['position']) + self.MAX_LENGTH * scale * direction
 
-            self.markers.markers[layout['motor_id']].points[1] = numpy_to_point(pt2)
-            self.markers.markers[layout['motor_id']].header.stamp = rospy.Time.now()
+            self.markers.markers[idx].points[1] = numpy_to_point(pt2)
+            self.markers.markers[idx].header.stamp = rospy.Time.now()
 
         self.pub.publish(self.markers)
 
