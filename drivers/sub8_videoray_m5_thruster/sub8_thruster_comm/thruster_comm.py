@@ -11,7 +11,7 @@ import serial
 import rospy
 import json
 
-class UnavailableThrusterException(BaseException):
+class UnavailableThrusterException(SubjuGatorException):
     ''' Indicates that a thruster is not available to be commanded '''
     def __init__(self, motor_id=None, name=None):
         self.thruster_name = name
@@ -25,7 +25,7 @@ class UnavailableThrusterException(BaseException):
 
     __str__ = __repr__
 
-class UndeclaredThrusterException(BaseException):
+class UndeclaredThrusterException(SubjuGatorException):
     ''' Indicates that a thruster was not declared in the thruster layout '''
     def __init__(self, motor_id=None, name=None):
         self.thruster_name = name
@@ -35,6 +35,14 @@ class UndeclaredThrusterException(BaseException):
         return 'Thruster ({}, {}) was not declared in the layout'.format(self.motor_id, self.thruster_name)
 
     __str__ = __repr__
+
+class VRCSRException(SubjuGatorException):
+    ''' Identifies exceptional states that are related to VideoRay CSR comms
+    Takes an arbitrary number of ordered and keyword params
+    '''
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
 
 class ThrusterModel(object):
     ''' Holds the pose and effort to thrust mapping for a thruster '''
@@ -75,13 +83,13 @@ class ThrusterModel(object):
         '''
         t = np.array((thrust**4, thrust**3, thrust**2, thrust, 1))
         calib = np.hstack((self.calib['forward'], [0])) if thrust >= 0 else \
-            np.hstack((self.calib['backward'], [0]))
+                           np.hstack((self.calib['backward'], [0]))
         return np.clip(np.dot(t, calib), -1.0, 1.0)
 
 
 class ThrusterPort(object):
     _baud_rate = 115200
-    _read_timeout = 0.2            # How long to wait for a serial response
+    _read_timeout = 0.03           # About twice of the average responce latency
     _wait_for_line_timeout = 0.02  # How long to wait for the line to become available
 
     def __init__(self, port_info, thruster_definitions):
@@ -177,6 +185,30 @@ class ThrusterPort(object):
                 offline.remove(name)
         return offline
 
+    def validate_packet_integrity(self, response_bytearray):
+        ''' Validates the integrity of a VRCSR response packet using crc32 checksums
+        @param response_bytearray Bytearray holding the response to a VRCSR packet
+        '''
+        size = len(response_bytearray)
+        if size == 0:
+            return False
+        payload_start_idx = Const.header_size + Const.xsum_size
+        header_bytes = response_bytearray[:Const.header_size]
+        header_xsum_bytes = response_bytearray[Const.header_size : payload_start_idx]
+        expected_header_xsum = struct.unpack('<I', header_xsum_bytes)[0]
+        actual_header_xsum = binascii.crc32(header_bytes) & 0xffffffff
+        if expected_header_xsum != actual_header_xsum:
+            return False
+        if len(response_bytearray) > payload_start_idx:  # Null checksums are usually ommited
+            remaining_bytes = response_bytearray[payload_start_idx:]
+            payload_bytes = remaining_bytes[:-Const.xsum_size]
+            payload_xsum_bytes = remaining_bytes[-Const.xsum_size:]
+            expected_header_xsum = struct.unpack('<I', payload_xsum_bytes)[0]
+            actual_header_xsum = binascii.crc32(payload_bytes) & 0xffffffff
+            if expected_header_xsum != actual_header_xsum:
+                return False
+        return True
+
     def checksum_struct(self, _struct):
         '''Take a struct, convert it to a bytearray, and append its crc32 checksum'''
         struct_bytearray = bytearray(_struct)
@@ -225,7 +257,7 @@ class ThrusterPort(object):
 
 
     def send_VRCSR_request_packet(self, node_id, flags, address, length, payload_bytes):
-        ''' Wries a VideoRay CSR (Control Service Register) packet to the serial port '''
+        ''' Writes a VideoRay CSR (Control Service Register) packet to the serial port '''
         # Create VR_CSR packet
         header = self.checksum_struct(
             struct.pack('<HBBBB',
@@ -239,6 +271,7 @@ class ThrusterPort(object):
         packet = header + payload_bytes
 
         # Write packet
+        self.port.flushInput()
         self.port.write(bytes(packet))
 
     def parse_VRCSR_response_packet(self, packet):
@@ -277,6 +310,7 @@ class ThrusterPort(object):
                 payload_bytes='' # It is important that the null payload xsum is ommitted!
         )
         response_bytearray = self.port.read(expected_response_length)
+        rospy.logdebug('Received packet: ' + response_bytearray)
         assert len(response_bytearray) == expected_response_length, \
             'Expected response packet to have {} bytes, got {}'.format(expected_response_length, len(response_bytearray))
 
@@ -332,6 +366,24 @@ class ThrusterPort(object):
 
         return register_val, register_bytes
 
+    def set_registers_from_dict(reg_dict, node_id=None, name=None):
+        ''' Sets thruster registers specified in a dictionary
+        @param reg_dict Dictionary that holds a dict of register name, register value pairs
+        Register names must are specified in the protocol.py file in this directory.
+        '''
+        assert issubclass(reg_dict, dict)
+        assert node_id is not None or name is not None, 'Either a name or node_id argument must be provided'
+        assert not (node_id is not None and name is not None), 'Only name, or node_id should be provided, not both'
+
+        for register, value in reg_dict.item():
+            try:
+                if node_id is not None:
+                    self.set_register(node_id, register, value)
+                else:
+                    self.set_register(self.thruster_info[name].motor_id, register, value)
+            except:
+                pass
+
     def send_thrust_msg(self, motor_id, effort):
         ''' Construct and send a message to set motor effort '''
         self.send_VRCSR_request_packet(
@@ -343,16 +395,19 @@ class ThrusterPort(object):
         )
 
     def make_hex(self, msg):
-        '''
-        Return a bytearray formatted as a string of hexadecimal characters
+        ''' Return a bytearray formatted as a string of hexadecimal characters
         Useful for packet debugging
+        @param msg String or bytearray
         '''
         if type(msg) == str:
             msg = bytearray(msg)
         return ":".join("{:02x}".format(c) for c in msg)
 
     def check_for_thruster(self, motor_id):
-        ''' Determines if a thruster with the given motor_id is responsive on this port '''
+        ''' Checks for a thruster on this port
+        @param motor_id Node_id of the thruster to check for
+        returns True if the a valid response from the given thruster was received.
+        '''
         try:
             res = self.read_register(motor_id, 'NODE_ID')
             return res[0] == motor_id
@@ -360,12 +415,13 @@ class ThrusterPort(object):
 	    rospy.logdebug("Motor id: {}. Assertion error parsing response packet: {}".format(motor_id, e))
             return False
 
-    def get_motor_ids_on_port(self, start_id, end_id):
-        '''
-        Polls for thrusters with motor ids within provided range and returns
-        a list with the ids of thrusters that responded
-        Also returns the average time between sending the poll packet and
-        receiving a response for all detected thrusters
+    def get_motor_ids_on_port(self, start_id=0, end_id=9):
+        ''' Polls for node_id's on a port
+        @param start_id Beggining of node_id range to search for
+        @param end_id End of node_id range to search for
+
+        Returns a list with the ids of thrusters that responded. Also returns the
+        average response latency for all detected thrusters
         '''
         to_check = range(start_id, end_id + 1)
         found_ids = []
@@ -375,7 +431,19 @@ class ThrusterPort(object):
             if self.check_for_thruster(i):
                 found_ids.append(i)
                 turnaround_times.append((rospy.Time.now() - t0).to_sec())
-        return found_ids, np.mean(turnaround_times)
+        return found_ids, np.mean(turnaround_times) if len(turnaround_times) > 0 else 0
+
+    def parse_thrust_response(self, payload_bytes):
+        ''' Parses the response to the standard propulsion command (0xAA) '''
+        names = ['rpm', 'bus_v', 'bus_i', 'temp', 'fault']
+        fields = struct.unpack('<ffffB', payload_bytes[:-Const.x])
+        turnaround_times = [] # seconds
+        for i in to_check:
+            t0 = rospy.Time.now()
+            if self.check_for_thruster(i):
+                found_ids.append(i)
+                turnaround_times.append((rospy.Time.now() - t0).to_sec())
+        return found_ids, np.mean(turnaround_times) if len(turnaround_times) > 0 else 0
 
     def parse_thrust_response(self, payload_bytes):
         ''' Parses the response to the standard propulsion command (0xAA) '''
@@ -384,7 +452,10 @@ class ThrusterPort(object):
         return dict(zip(names, fields))
 
     def command_thruster(self, name, effort):
-        ''' Sets effort value on motor controller, effort should be in [-1.0, 1.0] '''
+        ''' Sets effort value on motor controller
+        @param name Name of the thruster to be commanded as specified on the thruster layout
+        @param effort Normalized power value ([-1.0, 1.0]) to set on the motor controller 
+        '''
         
         # Perform availability checks
         if name not in self.thruster_info.keys():
@@ -396,8 +467,8 @@ class ThrusterPort(object):
         while self.serial_busy and rospy.Time.now() - t0 < rospy.Duration(self._wait_for_line_timeout):
             rospy.sleep(0.001)
         if self.serial_busy and name in self.online_thruster_names:  # Don't raise if thruster is offline
-            raise serial.SerialTimeoutException('{} timed out waiting on busy serial line (waited {} s)'.
-                                                format(name, (rospy.Time.now() - t0).to_sec()))
+            rospy.logwarn('{} timed out waiting on busy serial line (waited {} s)'.
+                format(name, (rospy.Time.now() - t0).to_sec()))
 
         # Might not need to do this mutex around tx and rx together
         self.serial_busy = True  # Take ownership of line
