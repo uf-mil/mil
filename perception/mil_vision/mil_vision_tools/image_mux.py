@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import division
 import numpy as np
 import cv2
 
@@ -12,10 +13,8 @@ class ImageMux(object):
     combining several debug images into one.
 
     See bottom of this file for a usage example.
-
-    TODO: implement keep_ratio as described below
     '''
-    def __init__(self, size=(640, 480), shape=(2, 2), labels=None, keep_ratio=False,
+    def __init__(self, size=(480, 640), shape=(2, 2), labels=None, keep_ratio=True,
                  border_color=(255, 255, 255), border_thickness=1, text_color=(255, 255, 255),
                  text_font=cv2.FONT_HERSHEY_COMPLEX_SMALL, text_scale=1, text_thickness=2):
         '''
@@ -109,7 +108,20 @@ class ImageMux(object):
         assert key[0] < self.shape[0] and key[1] < self.shape[1], 'out of bounds'
         rows = slice(key[0] * self.pane_size[0], (key[0] + 1) * self.pane_size[0])
         cols = slice(key[1] * self.pane_size[1], (key[1] + 1) * self.pane_size[1])
-        self._image[rows, cols] = cv2.resize(img, (self.pane_size[1], self.pane_size[0]))
+        if self.keep_ratio:
+            row_count = rows.stop - rows.start
+            col_count = cols.stop - cols.start
+            ratio = np.array([img.shape[0] / row_count, img.shape[1] / col_count])
+            scale = 1 / np.max(ratio)
+            size = (int(img.shape[1] * scale), int(img.shape[0] * scale))
+            v_border = int((row_count - size[1]) / 2)
+            h_border = int((col_count - size[0]) / 2)
+            rows = slice(rows.start + v_border, rows.start + size[1] + v_border)
+            cols = slice(cols.start + h_border, cols.start + size[0] + h_border)
+            self._image[rows, cols] = cv2.resize(img, size)
+        else:
+            size = (self.pane_size[1], self.pane_size[0])
+            self._image[rows, cols] = cv2.resize(img, size)
 
     __setitem__ = set_image  # Overload index [] operator to set image
 
@@ -130,10 +142,15 @@ if __name__ == '__main__':
     To run this yourself, download some images, put them in $HOME/Pictures/[1.jpg, 2.jpg, 3.jpg, 4.jpg]
     '''
     import os
-    labels = ['Chubby Racoon', 'Kiddo Racoons', None, 'Racoons in Da Street']  # Create strings for labels
-    images = [cv2.imread(os.path.join(os.environ['HOME'], 'Pictures', str(i + 1) + '.jpg')) for i in xrange(4)]
-    t = ImageMux(size=(900, 700), border_color=(0, 0, 255), border_thickness=3, shape=(2, 2),
-                 labels=labels, text_scale=1)
+    labels = ['Chubby Racoon', 'Kiddo Racoons', 'wide', 'tall', 'big wide', 'big tall']  # Create strings for labels
+    images = [cv2.imread(os.path.join(os.environ['HOME'], 'Pictures', str(i + 1) + '.jpg')) for i in xrange(2)]
+    # Add strange ratio white blocks to test keep_ratio flag
+    images.append(255 * np.ones((20, 201, 3), dtype=np.uint8))     # A small, wide image
+    images.append(255 * np.ones((200, 20, 3), dtype=np.uint8))     # A small, tall image
+    images.append(255 * np.ones((200, 2000, 3), dtype=np.uint8))   # A large, wide image
+    images.append(255 * np.ones((2000, 200, 3), dtype=np.uint8))   # A large, tall image
+    t = ImageMux(size=(500, 900), border_color=(0, 0, 255), border_thickness=3, shape=(3, 2),
+                 labels=labels, text_scale=1, keep_ratio=True)
     for i in xrange(len(images)):
         t[i] = np.array(images[i])
     cv2.imshow('Grid', t.image)
