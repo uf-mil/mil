@@ -41,7 +41,7 @@ class ImageMux(object):
 
         # If labels not specified, fill a list with None's
         if labels is None:
-            self.labels = [None for _ in xrange(self.size.size)]
+            self.labels = [None for _ in xrange(self.shape[0] * self.shape[1])]
         else:
             assert len(labels) == self.shape[0] * self.shape[1], 'not enough labels'
             self.labels = labels
