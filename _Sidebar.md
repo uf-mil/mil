@@ -24,4 +24,4 @@
     * [Sub Map](https://drive.google.com/file/d/0B2qRA9f_CN_9TndLZUNseURVUEk/view?usp=sharing)
 * Hardware
     * [[Network Interfaces]]
-    * [[Motherboard]]
+    * [[Main Computer]]
