@@ -143,7 +143,7 @@ class ThrusterDriver(object):
     def load_thruster_ports(self, ports_layout, thruster_definitions):
         ''' Loads a dictionary ThrusterPort objects '''
         self.ports = {}                      # ThrusterPort objects
-        self.thruster_to_port_map = {}       # motor_id to ThrusterPort
+        self.thruster_to_port_map = {}       # node_id to ThrusterPort
 
         self.make_fake = rospy.get_param('simulate', False)
         if self.make_fake:
@@ -169,7 +169,7 @@ class ThrusterDriver(object):
         info = self.ports[self.thruster_to_port_map[query_name]].thruster_info[query_name]
 
         thruster_info = ThrusterInfoResponse(
-            motor_id=info.motor_id,
+            node_id=info.node_id,
             min_force=info.thrust_bounds[0],
             max_force=info.thrust_bounds[1],
             position=numpy_to_point(info.position),
@@ -259,7 +259,7 @@ class ThrusterDriver(object):
             ThrusterStatus(
                 header=Header(stamp=rospy.Time.now()),
                 name=name,
-                motor_id=thruster_model.motor_id,
+                node_id=thruster_model.node_id,
                 power=power,
                 effort=effort,
                 thrust=thrust,

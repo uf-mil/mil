@@ -17,13 +17,13 @@ thruster_ports:
     thruster_names: [BRH, BRV]
     CONFIDENT_MODE: False
 
-# motor_id's should be globally unique among all thrusters
+# node_id's should be globally unique among all thrusters
 # position and orientation vectors should be specified in body frame
 # calib contains the 4th to 1st order coefficients for a polynomial
 #     mapping from thrust in Newtons to effort (e = t[0]x^4 + t[1]x^3 + t[2]x^2 + t[3]x)
 thrusters:
   FLH: {
-    motor_id:  0,
+    node_id:  0,
     position:  [0.2678, 0.2795, 0.0],
     direction: [0.866, -0.5, 0.0],
     thrust_bounds:    [-30.0, 45.0],
@@ -33,7 +33,7 @@ thrusters:
     }
   }
   FLV: {
-    motor_id:  1,
+    node_id:  1,
     position:  [0.1583, 0.169, 0.0142],
     direction: [0.0, 0.0, 1.0],
     thrust_bounds:    [-30.0, 45.0],
@@ -43,7 +43,7 @@ thrusters:
     }
   }
   FRH: {
-    motor_id:  2,
+    node_id:  2,
     position:  [0.2678, -0.2795, 0.0],
     direction: [0.866, 0.5, 0.0],
     thrust_bounds:    [-30.0, 45.0],
@@ -53,7 +53,7 @@ thrusters:
     }
   }
   FRV: {
-    motor_id:  3,
+    node_id:  3,
     position:  [0.1583, -0.169, 0.0142],
     direction: [0.0, 0.0, 1.0],
     thrust_bounds:    [-30.0, 45.0],
@@ -63,7 +63,7 @@ thrusters:
     }
   }
   BLH: {
-    motor_id:  4,
+    node_id:  4,
     position:  [-0.2678, 0.2795, 0.0],
     direction: [-0.866, -0.5, 0.0],
     thrust_bounds:    [-30.0, 45.0],
@@ -73,7 +73,7 @@ thrusters:
     }
   }
   BLV: {
-    motor_id:  5,
+    node_id:  5,
     position:  [-0.1583, 0.169, 0.0142],
     direction: [0.0, 0.0, 1.0],
     thrust_bounds:    [-30.0, 45.0],
@@ -83,7 +83,7 @@ thrusters:
     }
   }
   BRH: {
-    motor_id:  6,
+    node_id:  6,
     position:  [-0.2678, -0.2795, 0.0],
     direction: [-0.866, 0.5, 0.0],
     thrust_bounds:    [-30.0, 45.0],
@@ -93,7 +93,7 @@ thrusters:
     }
   }
   BRV: {
-    motor_id:  7,
+    node_id:  7,
     position:  [-0.1583, -0.169, 0.0142],
     direction: [0.0, 0.0, 1.0],
     thrust_bounds:    [-30.0, 45.0],

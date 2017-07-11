@@ -13,26 +13,23 @@ import json
 
 class UnavailableThrusterException(SubjuGatorException):
     ''' Indicates that a thruster is not available to be commanded '''
-    def __init__(self, motor_id=None, name=None):
+    def __init__(self, node_id=None, name=None):
         self.thruster_name = name
-        self.motor_id = motor_id
+        self.node_id = node_id
 
     def __repr__(self):
-        return 'Thruster ({}, {}) is not available to be commanded'.format(self.motor_id, self.thruster_name)
-
-    def __str__(self):
-        return self.__repr__()
+        return 'Thruster ({}, {}) is not available to be commanded'.format(self.node_id, self.thruster_name)
 
     __str__ = __repr__
 
 class UndeclaredThrusterException(SubjuGatorException):
     ''' Indicates that a thruster was not declared in the thruster layout '''
-    def __init__(self, motor_id=None, name=None):
+    def __init__(self, node_id=None, name=None):
         self.thruster_name = name
-        self.motor_id = motor_id
+        self.node_id = node_id
 
     def __repr__(self):
-        return 'Thruster ({}, {}) was not declared in the layout'.format(self.motor_id, self.thruster_name)
+        return 'Thruster ({}, {}) was not declared in the layout'.format(self.node_id, self.thruster_name)
 
     __str__ = __repr__
 
@@ -48,8 +45,8 @@ class ThrusterModel(object):
     ''' Holds the pose and effort to thrust mapping for a thruster '''
 
     def __init__(self, thruster_definition):
-        # VideoRay comms motor_id (know in VideoRay firmware as node_id)
-        motor_id = thruster_definition['motor_id']
+        # VideoRay comms node_id (know in VideoRay firmware as node_id)
+        node_id = thruster_definition['node_id']
 
         # Get thruster geometry
         position = thruster_definition['position']
@@ -62,7 +59,7 @@ class ThrusterModel(object):
         calib = thruster_definition['calib']
 
         # Validate config yaml
-        assert type(motor_id) == int
+        assert type(node_id) == int
         assert len(position) == 3, len(direction) == 3
         assert len(thrust_bounds) == 2, 'Need positive and backwards bounds'
         assert len(calib) == 2, 'Calib should have 2 fields: (forward, backward)'
@@ -70,7 +67,7 @@ class ThrusterModel(object):
         assert len(calib['backward']) == 4, 'Expected coefficients of 4th order model'
 
         # Everything's good, assign to object
-        self.motor_id = motor_id
+        self.node_id = node_id
         self.position = position
         self.direction = direction
         self.thrust_bounds = thrust_bounds
@@ -106,7 +103,7 @@ class ThrusterPort(object):
 
         thrusters:
           FLH: {
-            motor_id:  0
+            node_id:  0
             position:  [0.2678, 0.2795, 0.0],
             direction: [-0.866, 0.5, 0.0],
             bounds:    [-90.0, 90.0],
@@ -159,8 +156,8 @@ class ThrusterPort(object):
         it will load the thruster definition from the thruster layout yaml (including pose and calibration)
         '''
         # Get our humongous error string ready
-        errstr = "Could not get a response from motor_id {} (Called {}) on port {}".format(
-            thruster_definitions[thruster_name]['motor_id'], thruster_name, self.port_name)
+        errstr = "Could not get a response from node_id {} (Called {}) on port {}".format(
+            thruster_definitions[thruster_name]['node_id'], thruster_name, self.port_name)
 
         # Load thruster info regardless of wether thruster is responsive
         self.thruster_info[thruster_name] = ThrusterModel(thruster_definitions[thruster_name])
@@ -168,7 +165,7 @@ class ThrusterPort(object):
             self.online_thruster_names.add(thruster_name) # Online to begin with, no response needed
 
         # See if thruster is responsive on this port
-        if self.port and not self.check_for_thruster(self.thruster_info[thruster_name].motor_id):
+        if self.port and not self.check_for_thruster(self.thruster_info[thruster_name].node_id):
             rospy.logwarn(errstr)
         else:
             self.online_thruster_names.add(thruster_name)
@@ -187,27 +184,31 @@ class ThrusterPort(object):
 
     def validate_packet_integrity(self, response_bytearray):
         ''' Validates the integrity of a VRCSR response packet using crc32 checksums
-        @param response_bytearray Bytearray holding the response to a VRCSR packet
+        @type response_bytearray: bytearray
+        @param response_bytearray: The response to a VRCSR packet
+
+        @rtype: (bool, string)
+        @return: Packet validity, reason for packet being invalid if it is
         '''
         size = len(response_bytearray)
-        if size == 0:
-            return False
+        if size < Const.header_size + 1 + 2 * Const.xsum_size: # Minimum size is header + device_type + 2 xsums
+            return False, 'Packet size ({}) less than minimum for a valid packet'.format(size)
         payload_start_idx = Const.header_size + Const.xsum_size
         header_bytes = response_bytearray[:Const.header_size]
         header_xsum_bytes = response_bytearray[Const.header_size : payload_start_idx]
         expected_header_xsum = struct.unpack('<I', header_xsum_bytes)[0]
         actual_header_xsum = binascii.crc32(header_bytes) & 0xffffffff
         if expected_header_xsum != actual_header_xsum:
-            return False
-        if len(response_bytearray) > payload_start_idx:  # Null checksums are usually ommited
+            return False, 'Packet has invalid header checksum'
+        if len(response_bytearray) > payload_start_idx: # Null checksums are usually ommited
             remaining_bytes = response_bytearray[payload_start_idx:]
             payload_bytes = remaining_bytes[:-Const.xsum_size]
             payload_xsum_bytes = remaining_bytes[-Const.xsum_size:]
             expected_header_xsum = struct.unpack('<I', payload_xsum_bytes)[0]
             actual_header_xsum = binascii.crc32(payload_bytes) & 0xffffffff
             if expected_header_xsum != actual_header_xsum:
-                return False
-        return True
+                return False, 'Packet has invalid payload checksum'
+        return True, ''
 
     def checksum_struct(self, _struct):
         '''Take a struct, convert it to a bytearray, and append its crc32 checksum'''
@@ -231,28 +232,35 @@ class ThrusterPort(object):
         )
         return header
 
-    def make_thrust_payload(self, motor_id, thrust):
+    def make_thrust_payload(self, node_id, thrust):
         '''Construct a payload that commands a thrust'''
         send_thrust = np.clip(thrust, -1, 1)
         payload = self.checksum_struct(
             struct.pack(
                 '<BBf',
                 Const.propulsion_command,
-                motor_id,
+                node_id,
                 send_thrust
             )
         )
         return payload
 
-    def reboot_thruster(self, motor_id):
+    def save_settings(self, node_id):
+        ''' Saves the settings on a thruster motorcontroller
+        @type node_id: int
+        @param node_id: Node_id  of the thruster of interest
+        '''
+        self.set_register(node_id, 'save_settings', 0x1234) # 0x1234 is the save settings password
+
+    def reboot_thruster(self, node_id):
         ''' Reboots a thruster '''
         address, register_size, format_char, permission = Const.csr_address['UTILITY']
         self.send_VRCSR_request_packet(
-                node_id=int(motor_id),
-                flags=0x80 | register_size,
-                address=address,
-                length=register_size,
-                payload_bytes=self.checksum_struct(struct.pack('<' + format_char, 0xDEAD))
+            node_id=int(node_id),
+            flags=0x80 | register_size,
+            address=address,
+            length=register_size,
+            payload_bytes=self.checksum_struct(struct.pack('<' + format_char, 0xDEAD))
         )
 
 
@@ -275,8 +283,13 @@ class ThrusterPort(object):
         self.port.write(bytes(packet))
 
     def parse_VRCSR_response_packet(self, packet):
-        '''
-        Returns a dictionary with a parsed version of the response packet header fields and the payload bytes
+        ''' Parses the fields of a VRCSR packet
+        @type packet: bytearray|string
+        @param packet: The response to a VRCSR packet
+        @rtype: dict
+        @return: Dictionary holding the names and parsed values of packet segments
+        Dictionary will contain the header and payload fields excluding checksums.
+        It will separate the payload into 'device_type' and 'payload_bytes' fields
         '''
         payload_start_idx = Const.header_size + Const.xsum_size + 1
         header_bytes = packet[:payload_start_idx]
@@ -284,85 +297,95 @@ class ThrusterPort(object):
         header_names = ['sync', 'node_id', 'flag', 'address', 'length', 'header_xsum', 'device_type']
         header_fields = struct.unpack('<HBBBB I B', header_bytes)
         response_dict = dict(zip(header_names, header_fields))
-        response_dict['payload_bytes'] = payload_bytes
+        response_dict.pop('header_xsum')
+        response_dict['payload_bytes'] = payload_bytes[:-Const.xsum_size] # Exclude payload xsum
         return response_dict
 
-    def read_register(self, motor_id, register):
-        '''
-        Reads a CSR register on a thruster microcontroller
-        Returns the a tuple with the value of the register and the raw bytes)
-        Note: although not documented by VideoRay, the payload checksum needs to be
-          ommitted for this to work
+    def read_register(self, node_id, register):
+        ''' Reads a CSR register on a thruster microcontroller
+        @type node_id: int
+        @param node_id: Node id of the thruster
+        @type register: string
+        @param register Name of the register to read
+        @rtype: (int, bytearray)
+        @return The value and raw bytes read from register
         '''
         # Validate input
-        assert register in Const.csr_address.keys(), 'Unknown register: {}'.format(register)
+        if register not in Const.csr_address.keys():
+            raise VRCSRException('Unknown register', node_id=node_id, register=register)
         address, register_size, format_char, permission = Const.csr_address[register]
-        response_roi_len = Const.header_size + Const.xsum_size + 1 + register_size
-        expected_response_length = Const.header_size + Const.xsum_size + 1 + register_size + Const.xsum_size
-        assert 'R' in permission, 'Register ' + register + ' doesn\'t have read permission'
+        if 'R' not in permission:
+            raise VRCSRException('Register doesn\'t have read permission', node_id=node_id, register=register)
 
         # Do serial comms
         self.send_VRCSR_request_packet(
-                node_id=int(motor_id),
-                flags=0x80 | register_size,
-                address=address,
-                length=0,
-                payload_bytes='' # It is important that the null payload xsum is ommitted!
+            node_id=int(node_id),
+            flags=0x80 | register_size,
+            address=address,
+            length=0,
+            payload_bytes='' # It is important that the null payload xsum is ommitted!
         )
-        response_bytearray = self.port.read(expected_response_length)
-        rospy.logdebug('Received packet: ' + response_bytearray)
-        assert len(response_bytearray) == expected_response_length, \
-            'Expected response packet to have {} bytes, got {}'.format(expected_response_length, len(response_bytearray))
+        response_bytearray = self.port.read(Const.header_size + 2 * Const.xsum_size + 1 + register_size)
+        rospy.logdebug('Received packet: ' + self.make_hex(response_bytearray))
+        valid, reason = self.validate_packet_integrity(response_bytearray)
+        if not valid:
+            raise VRCSRException('Response packet invalid', node_id=node_id, register=register, reason=reason)
 
         # Unpack response packet
         response_dict = self.parse_VRCSR_response_packet(response_bytearray)
-        register_bytes = response_dict['payload_bytes'][:register_size]
+        register_bytes = response_dict['payload_bytes']
         register_val = struct.unpack(format_char, register_bytes)[0]
 
         # Validate packet
-        assert response_dict['sync'] == Const.sync_response, 'Got invalid packet type: {}'.format(
-            response_dict['sync'])
-        assert response_dict['node_id'] == motor_id, 'Got response packet from wrong thruster: {}'.format(
-            response_dict['node_id'])
-        assert response_dict['address'] == address, 'Got corrupted response packet'
+        if response_dict['node_id'] != node_id:
+            raise VRCSRException('Got response packet from wrong thruster', sent_to=node_id,
+                received_from=response_dict['node_id'])
 
         return register_val, register_bytes
 
-    def set_register(self, motor_id, register, value):
-        '''
-        Sets a CSR register on a thruster microcontroller
+    def set_register(self, node_id, register, value):
+        ''' Sets a CSR register on a thruster microcontroller
         Returns a tuple with the value and raw bytes of the recently changed register
         Note: Can only set registers that are writeable (see comms protocol)
+        @type node_id: int
+        @param node_id: Node id of the thruster
+        @type register: string
+        @param register Name of the register to write
+        @param value Value to be written to the register
+        @rtype: (int, bytearray)
+        @return The value and raw bytes read from register after the set request
         '''
         # Validate input
-        assert register in Const.csr_address.keys(), 'Unknown register: {}'.format(register)
+        if register not in Const.csr_address.keys():
+            raise VRCSRException('Unknown register', node_id=node_id, register=register)
         address, register_size, format_char, permission = Const.csr_address[register]
         expected_response_length = Const.header_size + Const.xsum_size + 1 + register_size + Const.xsum_size
-        assert 'W' in permission, 'Register ' + register + ' doesn\'t have read permission'
+        if 'W' not in permission:
+            raise VRCSRException('Register doesn\'t have write permission', node_id=node_id, register=register)
 
         # Do serial comms
         self.send_VRCSR_request_packet(
-                node_id=int(motor_id),
-                flags=0x80 | register_size,
-                address=address,
-                length=register_size,
-                payload_bytes=self.checksum_struct(struct.pack('<' + format_char, value))
+            node_id=int(node_id),
+            flags=0x80 | register_size,
+            address=address,
+            length=register_size,
+            payload_bytes=self.checksum_struct(struct.pack('<' + format_char, value))
         )
         response_bytearray = self.port.read(expected_response_length)
-        assert len(response_bytearray) == expected_response_length, \
-            'Expected response packet to have {} bytes, got {}'.format(expected_response_length, len(response_bytearray))
+        rospy.logdebug('Received packet: ' + self.make_hex(response_bytearray))
+        valid, reason = self.validate_packet_integrity(response_bytearray)
+        if not valid:
+            raise VRCSRException('Response packet invalid', node_id=node_id, register=register, reason=reason)
 
         # Unpack response packet
         response_dict = self.parse_VRCSR_response_packet(response_bytearray)
-        register_bytes = response_dict['payload_bytes'][:register_size]
+        register_bytes = response_dict['payload_bytes']
         register_val = struct.unpack('<' + format_char, register_bytes)[0]
 
         # Validate packet
-        assert response_dict['sync'] == Const.sync_response, 'Got invalid packet type: {}'.format(
-            response_dict['sync'])
-        assert response_dict['node_id'] == motor_id, 'Got response packet from wrong thruster: {}'.format(
-            response_dict['node_id'])
-        assert response_dict['address'] == address, 'Got corrupted response packet'
+        if response_dict['node_id'] != node_id:
+            raise VRCSRException('Got response packet from wrong thruster', sent_to=node_id,
+                received_from=response_dict['node_id'])
 
         return register_val, register_bytes
 
@@ -374,24 +397,25 @@ class ThrusterPort(object):
         assert issubclass(reg_dict, dict)
         assert node_id is not None or name is not None, 'Either a name or node_id argument must be provided'
         assert not (node_id is not None and name is not None), 'Only name, or node_id should be provided, not both'
+        print register_bytes
 
         for register, value in reg_dict.item():
             try:
                 if node_id is not None:
                     self.set_register(node_id, register, value)
                 else:
-                    self.set_register(self.thruster_info[name].motor_id, register, value)
+                    self.set_register(self.thruster_info[name].node_id, register, value)
             except:
                 pass
 
-    def send_thrust_msg(self, motor_id, effort):
+    def send_thrust_msg(self, node_id, effort):
         ''' Construct and send a message to set motor effort '''
         self.send_VRCSR_request_packet(
-                node_id=int(motor_id),
-                flags=Const.response_thruster_standard,
-                address=Const.addr_custom_command,
-                length=6,  # 2 bytes and a float: (propulsion_command, motor_id, effort)
-                payload_bytes=self.make_thrust_payload(int(motor_id), effort)
+            node_id=int(node_id),
+            flags=Const.response_thruster_standard,
+            address=Const.addr_custom_command,
+            length=6,  # 2 bytes and a float: (propulsion_command, node_id, effort)
+            payload_bytes=self.make_thrust_payload(int(node_id), effort)
         )
 
     def make_hex(self, msg):
@@ -403,19 +427,19 @@ class ThrusterPort(object):
             msg = bytearray(msg)
         return ":".join("{:02x}".format(c) for c in msg)
 
-    def check_for_thruster(self, motor_id):
+    def check_for_thruster(self, node_id):
         ''' Checks for a thruster on this port
-        @param motor_id Node_id of the thruster to check for
+        @param node_id Node_id of the thruster to check for
         returns True if the a valid response from the given thruster was received.
         '''
         try:
-            res = self.read_register(motor_id, 'NODE_ID')
-            return res[0] == motor_id
-        except AssertionError as e:
-	    rospy.logdebug("Motor id: {}. Assertion error parsing response packet: {}".format(motor_id, e))
+            res = self.read_register(node_id, 'NODE_ID')
+            return res[0] == node_id
+        except VRCSRException as e:
+	    rospy.logdebug(e)
             return False
 
-    def get_motor_ids_on_port(self, start_id=0, end_id=9):
+    def get_node_ids_on_port(self, start_id=0, end_id=9):
         ''' Polls for node_id's on a port
         @param start_id Beggining of node_id range to search for
         @param end_id End of node_id range to search for
@@ -436,19 +460,7 @@ class ThrusterPort(object):
     def parse_thrust_response(self, payload_bytes):
         ''' Parses the response to the standard propulsion command (0xAA) '''
         names = ['rpm', 'bus_v', 'bus_i', 'temp', 'fault']
-        fields = struct.unpack('<ffffB', payload_bytes[:-Const.x])
-        turnaround_times = [] # seconds
-        for i in to_check:
-            t0 = rospy.Time.now()
-            if self.check_for_thruster(i):
-                found_ids.append(i)
-                turnaround_times.append((rospy.Time.now() - t0).to_sec())
-        return found_ids, np.mean(turnaround_times) if len(turnaround_times) > 0 else 0
-
-    def parse_thrust_response(self, payload_bytes):
-        ''' Parses the response to the standard propulsion command (0xAA) '''
-        names = ['rpm', 'bus_v', 'bus_i', 'temp', 'fault']
-        fields = struct.unpack('<ffffB', payload_bytes[:-Const.xsum_size])
+        fields = struct.unpack('<ffffB', payload_bytes)
         return dict(zip(names, fields))
 
     def command_thruster(self, name, effort):
@@ -460,7 +472,7 @@ class ThrusterPort(object):
         # Perform availability checks
         if name not in self.thruster_info.keys():
             raise UndeclaredThrusterException(name=name)
-        motor_id = self.thruster_info[name].motor_id
+        node_id = self.thruster_info[name].node_id
 
         # Don't try to send command packet if line is busy
         t0 = rospy.Time.now()
@@ -475,7 +487,7 @@ class ThrusterPort(object):
         t0 = rospy.Time.now()
 
         # Send thrust command
-        self.send_thrust_msg(motor_id, effort)
+        self.send_thrust_msg(node_id, effort)
         self.command_tx_count[name] = self.command_tx_count[name] + 1
 
         # Parse thrust response
@@ -484,14 +496,14 @@ class ThrusterPort(object):
         self.serial_busy = False  # Release line
         valid = len(response_bytearray) == Const.thrust_response_length
         response_dict = self.parse_VRCSR_response_packet(response_bytearray) if valid else None
-        valid = valid and response_dict['sync'] == Const.sync_response and response_dict['node_id'] == motor_id \
+        valid = valid and response_dict['sync'] == Const.sync_response and response_dict['node_id'] == node_id \
                 and response_dict['address'] == Const.addr_custom_command
 
         # Keep track of thrusters going offline or coming back online
         if not valid:
             if name in self.online_thruster_names:
                 if self.CONFIDENT_MODE:
-                    rospy.logdebug_throttle(1, 'Got invalid response from thruster {} (packet: {})'.format(motor_id,
+                    rospy.logdebug_throttle(1, 'Got invalid response from thruster {} (packet: {})'.format(node_id,
                         self.make_hex(response_bytearray)))
                 else:
                     self.online_thruster_names.remove(name)
@@ -528,11 +540,11 @@ if __name__ == '__main__':
     thruster_definitions = thruster_layout['thrusters']
 
     thruster_name = npr.choice(port_info['thruster_names'])
-    motor_id = thruster_definitions[thruster_name]['motor_id']
+    node_id = thruster_definitions[thruster_name]['node_id']
 
     print'Test thruster comm over port {}, node_id {}, thruster name {}'.format(
         port_info['port'],
-        motor_id,
+        node_id,
         thruster_name
     )
 
