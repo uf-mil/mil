@@ -199,7 +199,7 @@ class ThrusterMapper(object):
             for name, thrust in zip(self.thruster_name_map, u):
                 # > Can speed this up by avoiding appends
                 if name in self.dropped_thrusters:
-                    continue  # Ignore dropped thrusters
+                    thrust = 0  # Sending a command packet is an opportunity to detect thruster recovery
 
                 # Simulate thruster deadband
                 if np.fabs(thrust) < self.min_commandable_thrust:
