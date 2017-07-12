@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 from geometry_msgs.msg import Pose, Point, PoseStamped, Vector3
 from mil_misc_tools import text_effects
 from mil_msgs.srv import SetGeometry
@@ -18,6 +18,7 @@ rospack = rospkg.RosPack()
 config_file = os.path.join(rospack.get_path(
     'sub8_missions'), 'sub8', 'vision_proxies.yaml')
 f = yaml.load(open(config_file, 'r'))
+model_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
 
 fprint = text_effects.FprintFactory(title="SIMULATOR").fprint
 
@@ -40,9 +41,15 @@ def handle_fake_perception(extra, target_object):
         fprint("NO TARGET")
         sys.exit(0)
     model = get_position(target_object)
+    # Library of offets. Models must be manually offset as gazebo coordinates != center of model.
+    centlib = {'start_gate': Point(1.5, 0, 0), 'nav_gate': Point(1.15, 0, 0)}
+    if model in centlib:
+        offset = Point(centlib[model])
+    else:
+        offset = Point(0, 0, 0)
     pose_stamp = PoseStamped(header=Header(seq=k, stamp=now, frame_id="/map"),
                              # Offset our pose by the starting position of the sub relative to the world in Gazebo.
-                             pose=Pose(position=Point(model.pose.position.x - 13, model.pose.position.y - 24, -1),
+                             pose=Pose(position=Point(model.pose.position.x - 13 - offset.x, model.pose.position.y - 24 - offset.y, -1 - offset.z),
                                        orientation=model.pose.orientation))
     covariance_diagonal = Vector3(0, 0, 0)
     found = True
@@ -52,14 +59,11 @@ def handle_fake_perception(extra, target_object):
 
 def get_position(model_name):
 
-    rospy.wait_for_service('/gazebo/get_model_state')
     try:
-        model_state = rospy.ServiceProxy(
-            '/gazebo/get_model_state', GetModelState)
         resp1 = model_state(model_name, 'world')
         return resp1
-    except rospy.ServiceException, e:
-        print "Service call failed: % s " % e
+    except rospy.ServiceException:
+        print None
 
 
 def set_geometry(req):
@@ -69,7 +73,7 @@ def set_geometry(req):
 
 def vision_cb_2D():
 
-    return True
+    return False
 
 
 def start(resp):
@@ -99,7 +103,8 @@ def fake_perception_server():
     -model tag within the node tied to the model. Example is orange_rectangle mapped to channel_marker_1.
     If the service provides a target_name you may leave the target empty as done with buoys.
     '''
-    missions = {'orange_rectangle': 'channel_marker_1', 'buoys': ''}
+    missions = {'orange_rectangle': 'channel_marker_1',
+                'buoys': '', 'start_gate': 'start_gate'}
     for key in missions:
         init_service(key, missions[key])
 
@@ -110,3 +115,4 @@ def fake_perception_server():
 if __name__ == "__main__":
 
     fake_perception_server()
+    rospy.wait_for_service('/gazebo/get_model_state')
