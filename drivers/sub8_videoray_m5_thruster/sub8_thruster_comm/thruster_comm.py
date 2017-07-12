@@ -263,6 +263,25 @@ class ThrusterPort(object):
             payload_bytes=self.checksum_struct(struct.pack('<' + format_char, 0xDEAD))
         )
 
+    def enter_config_mode(self, node_id, close_port=True):
+        ''' Enters the m5 thruster's configuration mode
+        @type node_id: int
+        @param node_id: Node_id of the thruster of interest
+
+        @type close_port: bool
+        @param close_port: If true, the connection to the serial port will be closed.
+            This allows the user to open a serial terminal to use the configuration mode menu.
+        '''
+        self.reboot_thruster(node_id)
+        rospy.sleep(3)  # Time waiting for thruster reboot to take effect
+        [self.port.write('+') for i in range(5)] # 5 plusses are used to trigger entry into config mode
+
+        if close_port:
+            self.port.close()
+            msg = 'Run the following command to open a serial terminal in configuration mode:\n\'screen {} {}\''
+            rospy.loginfo(msg.format(self.port_name, self._baud_rate) + '\nThen press \'?\' to see the menu')
+            rospy.loginfo(
+                'To continue using this ThrusterPort, call \'{this}.port.open()\' after closing screen.')
 
     def send_VRCSR_request_packet(self, node_id, flags, address, length, payload_bytes):
         ''' Writes a VideoRay CSR (Control Service Register) packet to the serial port '''
@@ -397,16 +416,15 @@ class ThrusterPort(object):
         assert issubclass(reg_dict, dict)
         assert node_id is not None or name is not None, 'Either a name or node_id argument must be provided'
         assert not (node_id is not None and name is not None), 'Only name, or node_id should be provided, not both'
-        print register_bytes
 
         for register, value in reg_dict.item():
             try:
                 if node_id is not None:
-                    self.set_register(node_id, register, value)
-                else:
-                    self.set_register(self.thruster_info[name].node_id, register, value)
-            except:
-                pass
+                         self.set_register(node_id, register, value)
+                     else:
+                         self.set_register(self.thruster_info[name].node_id, register, value)
+                 except:
+                     pass
 
     def send_thrust_msg(self, node_id, effort):
         ''' Construct and send a message to set motor effort '''
