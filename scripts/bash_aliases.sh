@@ -33,3 +33,4 @@ alias submodel="rosparam set /robot_description -t \$CATKIN_DIR/src/SubjuGator/c
 # Thrusters
 alias thruster_debug_shell="rosrun sub8_diagnostics thruster_debug_shell.py -i"
 alias thruster_spinner="rosrun sub8_diagnostics thruster_spinner.py"
+alias thruster_monitor="/usr/bin/tmux -L diagnostics attach-session -t thruster_monitoring"
