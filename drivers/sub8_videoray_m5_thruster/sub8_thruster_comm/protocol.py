@@ -40,7 +40,7 @@ class Const(object):
         'rpm_I':                     (0x24, 4, 'f', 'R'),
         'rpm_D':                     (0x28, 4, 'f', 'R'),
         'thruster_ID':               (0x4c, 2, 'H', 'RW'),
-        'operation_flags':           (0x50, 1, 'B', ''),
+        'control_flags':             (0x50, 1, 'B', 'RW'),
         'motor_fault_interlock':     (0x54, 4, 'I', 'RW'),
         'motor_control_flags':       (0x60, 1, 'B', 'RW'),
         'poles':                     (0x61, 1, 'B', 'RW'),
@@ -60,12 +60,13 @@ class Const(object):
         'rpm_kP':                    (0x90, 4, 'f', 'RW'),
         'rpm_kI':                    (0x94, 4, 'f', 'RW'),
         'rpm_kD':                    (0x98, 4, 'f', 'RW'),
-        'fault_control':             (0xa4, 1, 'B', 'RW'),
-        'undervoltage_trigger':      (0xa5, 1, 'B', 'RW'),
-        'overvoltage_trigger':       (0xa6, 1, 'B', 'RW'),
-        'overcurrent_trigger':       (0xa7, 1, 'B', 'RW'),
-        'temp_trigger':              (0xa8, 1, 'B', 'RW'),
-        'stall_count_max':           (0xa9, 1, 'B', 'RW'),
+        'max_allowable_power':       (0x99, 4, 'I', 'RW'), # ???
+        'fault_control':             (0xa3, 1, 'B', 'RW'), # The addresses in this section are one
+        'undervoltage_trigger':      (0xa4, 1, 'B', 'RW'), # less than what was documented by
+        'overvoltage_trigger':       (0xa5, 1, 'B', 'RW'), # VideoRay becauese I discovered it to
+        'overcurrent_trigger':       (0xa6, 1, 'B', 'RW'), # be wrong experimentally.
+        'temp_trigger':              (0xa7, 1, 'B', 'RW'), #
+        'stall_count_max':           (0xa8, 1, 'B', 'RW'), #                   - David Soto
         'undervoltage_err_cnt':      (0xac, 4, 'I', 'R'),
         'overvoltage_err_cnt':       (0xb0, 4, 'I', 'R'),
         'overcurrent_err_cnt':       (0xb4, 4, 'I', 'R'),
@@ -76,7 +77,7 @@ class Const(object):
         'comms_headerxsum_err_cnt':  (0xe0, 4, 'I', 'R'),
         'comms_overrun_err_cnt':     (0xe4, 4, 'I', 'R'),
         'comms_payloadxsum_err_cnt': (0xe8, 4, 'I', 'R'),
-        'comms_err_flag':            (0xec, 2, 'H', ''),
+        'comms_err_flag':            (0xec, 2, 'H', 'R'),
         'save_settings':             (0xee, 2, 'H', 'W'),
         'custom_command':            (0xf0, 4, 'I', 'W'),
         'FACTORY_SERVICE_DATA':      (0xf4, 4, 'I', 'R'),
