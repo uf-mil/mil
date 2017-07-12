@@ -41,6 +41,14 @@ class VRCSRException(SubjuGatorException):
         self.args = args
         self.kwargs = kwargs
 
+class Sub8SerialException(SubjuGatorException):
+    ''' Identifies an exceptional state of the comms port
+    Takes an arbitrary number of ordered and keyword params
+    '''
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
 class ThrusterModel(object):
     ''' Holds the pose and effort to thrust mapping for a thruster '''
 
@@ -148,7 +156,7 @@ class ThrusterPort(object):
             return serial_port
         except serial.serialutil.SerialException as e:
             rospy.logwarn("Could not connect to thruster port {}".format(port_name))
-            raise SubjuGatorException()
+            raise SubjuGatorException('Unable to connect to serial port', port_name=port_name)
 
     def load_thruster(self, thruster_name, thruster_definitions):
         '''
@@ -408,23 +416,24 @@ class ThrusterPort(object):
 
         return register_val, register_bytes
 
-    def set_registers_from_dict(reg_dict, node_id=None, name=None):
+    def set_registers_from_dict(self, node_id, reg_dict):
         ''' Sets thruster registers specified in a dictionary
         @param reg_dict Dictionary that holds a dict of register name, register value pairs
         Register names must are specified in the protocol.py file in this directory.
         '''
-        assert issubclass(reg_dict, dict)
-        assert node_id is not None or name is not None, 'Either a name or node_id argument must be provided'
-        assert not (node_id is not None and name is not None), 'Only name, or node_id should be provided, not both'
+        assert isinstance(reg_dict, dict)
 
-        for register, value in reg_dict.item():
+        for register, value in reg_dict.items():
             try:
-                if node_id is not None:
-                         self.set_register(node_id, register, value)
-                     else:
-                         self.set_register(self.thruster_info[name].node_id, register, value)
-                 except:
-                     pass
+                self.set_register(node_id, register, value)
+
+                value_after = self.read_register(node_id, register)[0]
+                if not np.isclose(value, value_after):
+                    msg = 'Tried to set register "{}" on thruster {} to {}. It remained at value {}.'
+                    rospy.logwarn(msg.format(register, node_id, value, value_after))
+            except VRCSRException as e:
+                msg = 'VRCSRException raised while attempting to set register {} on thruster {}. {}'
+                rospy.logwarn(msg.format(register, node_id, e))
 
     def send_thrust_msg(self, node_id, effort):
         ''' Construct and send a message to set motor effort '''
