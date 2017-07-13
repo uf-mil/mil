@@ -353,7 +353,7 @@ class ThrusterPort(object):
             payload_bytes='' # It is important that the null payload xsum is ommitted!
         )
         response_bytearray = self.port.read(Const.header_size + 2 * Const.xsum_size + 1 + register_size)
-        rospy.logdebug('Received packet: ' + self.make_hex(response_bytearray))
+        rospy.logdebug('Received packet: "' + self.make_hex(response_bytearray), '" on port ' + self.port_name)
         valid, reason = self.validate_packet_integrity(response_bytearray)
         if not valid:
             raise VRCSRException('Response packet invalid', node_id=node_id, register=register, reason=reason)
@@ -399,7 +399,7 @@ class ThrusterPort(object):
             payload_bytes=self.checksum_struct(struct.pack('<' + format_char, value))
         )
         response_bytearray = self.port.read(expected_response_length)
-        rospy.logdebug('Received packet: ' + self.make_hex(response_bytearray))
+        rospy.logdebug('Received packet: "' + self.make_hex(response_bytearray), '" on port ' + self.port_name)
         valid, reason = self.validate_packet_integrity(response_bytearray)
         if not valid:
             raise VRCSRException('Response packet invalid', node_id=node_id, register=register, reason=reason)
@@ -519,12 +519,11 @@ class ThrusterPort(object):
 
         # Parse thrust response
         response_bytearray = self.port.read(Const.thrust_response_length)
+        rospy.logdebug('Received packet: "' + self.make_hex(response_bytearray), '" on port ' + self.port_name)
         t1 = rospy.Time.now()
         self.serial_busy = False  # Release line
-        valid = len(response_bytearray) == Const.thrust_response_length
+        valid, reason = self.validate_packet_integrity(response_bytearray)
         response_dict = self.parse_VRCSR_response_packet(response_bytearray) if valid else None
-        valid = valid and response_dict['sync'] == Const.sync_response and response_dict['node_id'] == node_id \
-                and response_dict['address'] == Const.addr_custom_command
 
         # Keep track of thrusters going offline or coming back online
         if not valid:

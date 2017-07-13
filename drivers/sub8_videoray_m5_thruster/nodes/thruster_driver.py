@@ -302,8 +302,7 @@ class ThrusterDriver(object):
 
         # Raise or clear 'thruster-out' alarm
         if not self.failed_thrusters == failed_before:
-            print 'change to failed:', self.failed_thrusters, 'vs', failed_before
-            rospy.logwarn(self.failed_thrusters)
+            rospy.logdebug('Failed thrusters:', self.failed_thrusters)
             self.update_thruster_out_alarm()
 
     def stop(self):
