@@ -30,7 +30,6 @@ def main(args):
     commands = args.commands
     arguments = commands[1::2] #Split into commands and arguments, every other index
     commands = commands[0::2]
-
     for i in xrange(len(commands)):
         command = commands[i]
         argument = arguments[i]
@@ -140,6 +139,10 @@ def main(args):
 
             extra = "and zeroing pitch and roll" if args.zrp else ""
             fprint("{}ing {}{} {}".format(command, amount, unit, extra))
+            bad_unit = UNITS.get(unit,"BAD")
+            if bad_unit == "BAD":
+                fprint("BAD UNIT")
+                break
             goal = movement(float(amount) * UNITS.get(unit, 1))
             if args.zrp:
                 res = yield goal.zero_roll_and_pitch().go(**action_kwargs)
