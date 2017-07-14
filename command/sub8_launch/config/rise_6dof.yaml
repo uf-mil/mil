@@ -1,7 +1,9 @@
 accel_feedforward: 0, 0, 0, 0, 0, 0
-alpha: 0, 0, 0.1, 0.1, 0, 0
+alpha: 0, 0, 0.1, 0.1, 0.1, 0
 beta: 0, 0, 0, 0, 0, 0
-k: 1.5, 1.5, 1.0, 1.0, 0.8, 1.0
-ks: 350, 350, 300, 100, 100, 100
-use_rise: True
+k: 1.3, 1.3, 1.0, 1.3, 1.3, 1.0
+ks: 400, 400, 600, 70, 70, 70
+state: true
+two_d_mode: false
+use_rise: true
 vel_feedforward: 0, 0, 0, 0, 0, 0

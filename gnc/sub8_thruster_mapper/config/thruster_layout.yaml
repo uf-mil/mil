@@ -26,80 +26,80 @@ thrusters:
     node_id:  0,
     position:  [0.2678, 0.2795, 0.0],
     direction: [0.866, -0.5, 0.0],
-    thrust_bounds:    [-30.0, 45.0],
+    thrust_bounds:    [-180.0, 300.0],
     calib:  {
-        forward:  [0.0, 0.0, 0.0, 0.0136],
-        backward: [0.0, 0.0, 0.0, 0.0199]
+        forward:  [0.0, 0.0, 0.0, 0.005],
+        backward: [0.0, 0.0, 0.0, 0.005]
     }
   }
   FLV: {
     node_id:  1,
     position:  [0.1583, 0.169, 0.0142],
     direction: [0.0, 0.0, 1.0],
-    thrust_bounds:    [-30.0, 45.0],
+    thrust_bounds:    [-180.0, 300.0],
     calib:  {
-        forward:  [0.0, 0.0, 0.0, 0.0136],
-        backward: [0.0, 0.0, 0.0, 0.0214]
+        forward:  [0.0, 0.0, 0.0, 0.005],
+        backward: [0.0, 0.0, 0.0, 0.005]
     }
   }
   FRH: {
     node_id:  2,
     position:  [0.2678, -0.2795, 0.0],
     direction: [0.866, 0.5, 0.0],
-    thrust_bounds:    [-30.0, 45.0],
+    thrust_bounds:    [-180.0, 300.0],
     calib:  {
-        forward:  [0.0, 0.0, 0.0, 0.0139],
-        backward: [0.0, 0.0, 0.0, 0.0225]
+        forward:  [0.0, 0.0, 0.0, 0.005],
+        backward: [0.0, 0.0, 0.0, 0.005]
     }
   }
   FRV: {
     node_id:  3,
     position:  [0.1583, -0.169, 0.0142],
     direction: [0.0, 0.0, 1.0],
-    thrust_bounds:    [-30.0, 45.0],
+    thrust_bounds:    [-180.0, 300.0],
     calib:  {
-        forward:  [0.0, 0.0, 0.0, 0.0157],
-        backward: [0.0, 0.0, 0.0, 0.0227]
+        forward:  [0.0, 0.0, 0.0, 0.005],
+        backward: [0.0, 0.0, 0.0, 0.005]
     }
   }
   BLH: {
     node_id:  4,
     position:  [-0.2678, 0.2795, 0.0],
     direction: [-0.866, -0.5, 0.0],
-    thrust_bounds:    [-30.0, 45.0],
+    thrust_bounds:    [-180.0, 300.0],
     calib:  {
-        forward:  [0.0, 0.0, 0.0, 0.0134],
-        backward: [0.0, 0.0, 0.0, 0.0198]
+        forward:  [0.0, 0.0, 0.0, 0.005],
+        backward: [0.0, 0.0, 0.0, 0.005]
     }
   }
   BLV: {
     node_id:  5,
     position:  [-0.1583, 0.169, 0.0142],
     direction: [0.0, 0.0, 1.0],
-    thrust_bounds:    [-30.0, 45.0],
+    thrust_bounds:    [-180.0, 300.0],
     calib:  {
-        forward:  [0.0, 0.0, 0.0, 0.0143],
-        backward: [0.0, 0.0, 0.0, 0.0220]
+        forward:  [0.0, 0.0, 0.0, 0.005],
+        backward: [0.0, 0.0, 0.0, 0.005]
     }
   }
   BRH: {
     node_id:  6,
     position:  [-0.2678, -0.2795, 0.0],
     direction: [-0.866, 0.5, 0.0],
-    thrust_bounds:    [-30.0, 45.0],
+    thrust_bounds:    [-180.0, 300.0],
     calib:  {
-        forward:  [0.0, 0.0, 0.0, 0.0134],
-        backward: [0.0, 0.0, 0.0, 0.0207]
+        forward:  [0.0, 0.0, 0.0, 0.005],
+        backward: [0.0, 0.0, 0.0, 0.005]
     }
   }
   BRV: {
     node_id:  7,
     position:  [-0.1583, -0.169, 0.0142],
     direction: [0.0, 0.0, 1.0],
-    thrust_bounds:    [-30.0, 45.0],
+    thrust_bounds:    [-180.0, 300.0],
     calib:  {
-        forward:  [0.0, 0.0, 0.0, 0.0144],
-        backward: [0.0, 0.0, 0.0, 0.0202]
+        forward:  [0.0, 0.0, 0.0, 0.005],
+        backward: [0.0, 0.0, 0.0, 0.005]
     }
   }
 
