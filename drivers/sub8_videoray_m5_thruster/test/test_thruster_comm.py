@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import unittest
-from sub8_thruster_comm import thruster_comm_factory, FakeThrusterPort
+from sub8_thruster_comm import thruster_comm_factory, FakeThrusterPort, Sub8SerialException
 import rospkg
 import rosparam
 
@@ -26,7 +26,7 @@ class TestThrusterComm(unittest.TestCase):
         thruster_defs = self.thruster_layout['thrusters']
         thrust_comm = FakeThrusterPort(port_info, thruster_defs)
         fake_status = thrust_comm.command_thruster(port_info['thruster_names'][0], 0.2)
-        self.assertEqual(fake_status['bus_voltage'], 48)
+        self.assertEqual(fake_status['bus_v'], 48)
 
     def test_thruster_comm_factory_real_fail(self):
         '''Test that the comm factory fails to create a ThrusterPort on a port that does not exist'''
@@ -34,10 +34,9 @@ class TestThrusterComm(unittest.TestCase):
         port_info = self.thruster_layout['thruster_ports'][0]
         thruster_defs = self.thruster_layout['thrusters']
         port_info['port'] = 'bad_name'
-        with self.assertRaises(IOError):
+        with self.assertRaises(Sub8SerialException):
             thrust_comm = thruster_comm_factory(port_info, thruster_defs, fake=False)
             self.assertIsNotNone(thrust_comm)
-
 
 if __name__ == '__main__':
     unittest.main()

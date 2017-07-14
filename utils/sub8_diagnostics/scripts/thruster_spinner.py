@@ -7,7 +7,6 @@ import rospy
 import rospkg
 import rosparam
 import sub8_thruster_comm as thrust_comm
-from sub8_thruster_comm import thruster_comm
 from sub8_exception import SubjuGatorException
 import mil_misc_tools.text_effects as te
 from mil_misc_tools.terminal_input import get_ch
@@ -95,7 +94,6 @@ common_thrust = 0.0  # Normalized thrust in [-1, 1]
 def check_for_thrusters():
     ''' Checks for a response from thrusters on a given port '''
     # Stop all thrusters
-    active_thrusters = set()
     for key in individual_thrusts.keys():
         individual_thrusts[key] = 0
 

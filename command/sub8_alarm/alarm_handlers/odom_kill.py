@@ -13,7 +13,7 @@ class OdomKill(HandlerBase):
     '''
 
     def __init__(self, timeout=0.5):
-        self.GRACE_PERIOD = rospy.Duration(5.0) # Alarms won't be raised within grace period
+        self.GRACE_PERIOD = rospy.Duration(5.0)  # Alarms won't be raised within grace period
         self.TIMEOUT = rospy.Duration(timeout)
         self.MAX_JUMP = 0.5
         self.LAUNCH_TIME = rospy.Time.now()

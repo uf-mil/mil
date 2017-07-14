@@ -9,11 +9,10 @@
 
   <!-- List known alarms here -->
   <rosparam ns="known_alarms">
-      bus-voltage, thruster-out, height-over-bottom, network-loss
+      bus-voltage, thruster-out, height-over-bottom, network-loss, odom-kill
   </rosparam>
 
-  <include file="$(find sub8_videoray_m5_thruster)/launch/thruster_driver.launch" />
-  <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper.launch" />
+  <include file="$(find sub8_launch)/launch/subsystems/thrusters.launch" />
 
   <test test-name="sub8_mapper_test" pkg="sub8_thruster_mapper" type="test_sub8_mapper.py" retry="1"/>
 </launch>

@@ -11,7 +11,9 @@ class Kill(HandlerBase):
 
     def __init__(self):
         # Alarm server wil set this as the intial state of kill alarm (starts killed)
-        self.initial_alarm = Alarm(self.alarm_name, True, node_name='alarm_server')
+        self.initial_alarm = Alarm(self.alarm_name, True,
+                                   node_name='alarm_server',
+                                   problem_description='Initial kill')
 
         self._killed = False
         self._last_mission_killed = False
@@ -64,8 +66,8 @@ class Kill(HandlerBase):
             return True
         ignore.append("network-loss")
 
-        # Severity level of 5 means too many thrusters out
-        if sub_alarms["thruster-out"].raised and sub_alarms["thruster-out"].severity == 5:
+        # Severity level of 3 means too many thrusters out (3 thrusters out)
+        if sub_alarms["thruster-out"].raised and sub_alarms["thruster-out"].severity == 3:
             return True
         ignore.append("thruster-out")
 

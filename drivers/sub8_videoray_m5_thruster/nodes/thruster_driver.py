@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 import numpy as np
 import copy
-import json
 import rospy
-import rospkg
-import scipy.interpolate
 import threading
 import argparse
 from geometry_msgs.msg import Vector3
@@ -12,7 +9,7 @@ from std_msgs.msg import Header, Float64
 from sub8_msgs.msg import Thrust, ThrusterStatus
 from mil_ros_tools import wait_for_param, thread_lock, numpy_to_point
 from sub8_msgs.srv import ThrusterInfo, ThrusterInfoResponse, FailThruster, UnfailThruster
-from sub8_thruster_comm import thruster_comm_factory, UnavailableThrusterException
+from sub8_thruster_comm import thruster_comm_factory
 from ros_alarms import AlarmBroadcaster, AlarmListener
 lock = threading.Lock()
 
@@ -51,7 +48,7 @@ class BusVoltageMonitor(object):
         voltage = float(voltage)
 
         # Only add if it makes sense (the M5's will give nonsense feedback at times)
-        if voltage >= self.VMIN and voltage <= self.VMAX:        
+        if voltage >= self.VMIN and voltage <= self.VMAX:
             self.buffer.append(self.VoltageReading(voltage, time))
             self.prune_buffer()
 
@@ -89,18 +86,18 @@ class BusVoltageMonitor(object):
         if bus_voltage < self.kill_voltage:
             severity = 5
 
-        #if severity is not None:
-        if False:
+        if severity is not None:
             self.bus_voltage_alarm.raise_alarm(
                 problem_description='Bus voltage has fallen to {}'.format(bus_voltage),
                 parameters={'bus_voltage': bus_voltage},
                 severity=severity
             )
 
+
 class ThrusterDriver(object):
     _dropped_timeout = 1.0  # s
     _window_duration = 30.0  # s
-    _NODE_NAME = 'thruster_driver'
+    _NODE_NAME = rospy.get_name()
 
     def __init__(self, ports_layout, thruster_definitions):
         '''Thruster driver, an object for commanding all of the sub's thrusters
@@ -122,8 +119,8 @@ class ThrusterDriver(object):
 
         # Feedback on thrusters (thruster mapper blocks until it can use this service)
         self.thruster_info_service = rospy.Service('thrusters/thruster_info', ThrusterInfo, self.get_thruster_info)
-        self.status_publishers = {name : rospy.Publisher('thrusters/status/' + name, ThrusterStatus, queue_size=10)
-                for  name in self.thruster_to_port_map.keys()}
+        self.status_publishers = {name: rospy.Publisher('thrusters/status/' + name, ThrusterStatus, queue_size=10)
+                                  for name in self.thruster_to_port_map.keys()}
 
         # These alarms require this service to be available before things will work
         rospy.wait_for_service("update_thruster_layout")
@@ -193,14 +190,11 @@ class ThrusterDriver(object):
             self.thruster_out_alarm.raise_alarm(
                 node_name=self._NODE_NAME,
                 parameters={'offline_thruster_names': offline_names},
-                severity=int(np.clip(len(self.failed_thrusters), 1, 5))
-            )
+                severity=int(np.clip(len(self.failed_thrusters), 1, 5)))
         else:
             self.thruster_out_alarm.clear_alarm(
                 node_name=self._NODE_NAME,
-                parameters={'offline_thruster_names' : offline_names}
-            )
-
+                parameters={'offline_thruster_names': offline_names})
 
     @thread_lock(lock)
     def command_thruster(self, name, thrust):
@@ -231,11 +225,11 @@ class ThrusterDriver(object):
         offline_on_port = target_port.get_offline_thruster_names()
         for offline in offline_on_port:
             if offline not in self.failed_thrusters:
-                self.failed_thrusters.add(offline)    # Thruster went offline
+                self.failed_thrusters.add(offline)        # Thruster went offline
         for failed in copy.deepcopy(self.failed_thrusters):
             if (failed in target_port.get_declared_thruster_names() and
-                failed not in offline_on_port and
-                failed not in self.deactivated_thrusters):
+                    failed not in offline_on_port and
+                    failed not in self.deactivated_thrusters):
                 self.failed_thrusters.remove(failed)  # Thruster came online
 
         # Don't try to do anything if the thruster status is bad

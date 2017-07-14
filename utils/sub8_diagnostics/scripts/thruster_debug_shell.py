@@ -1,4 +1,5 @@
 #!/usr/bin/env ipython
+# flake8: noqa
 # Using ipython because tab completion makes using the shell much easier
 
 print "\nWelcome to David's M5 Thruster Shell\n"

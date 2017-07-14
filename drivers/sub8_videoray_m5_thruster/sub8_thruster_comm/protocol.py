@@ -1,3 +1,4 @@
+# flake8: noqa
 class Const(object):
 
     '''
@@ -60,7 +61,7 @@ class Const(object):
         'rpm_kP':                    (0x90, 4, 'f', 'RW'),
         'rpm_kI':                    (0x94, 4, 'f', 'RW'),
         'rpm_kD':                    (0x98, 4, 'f', 'RW'),
-        'max_allowable_power':       (0x99, 4, 'I', 'RW'), # ???
+        'max_allowable_power':       (0x99, 4, 'I', 'RW'), # ? (Recently changed in some firmwares)
         'fault_control':             (0xa3, 1, 'B', 'RW'), # The addresses in this section are one
         'undervoltage_trigger':      (0xa4, 1, 'B', 'RW'), # less than what was documented by
         'overvoltage_trigger':       (0xa5, 1, 'B', 'RW'), # VideoRay becauese I discovered it to
@@ -95,4 +96,3 @@ class Const(object):
         4: 'I',  # unsigned int       integer 4
         8: 'Q',  # unsigned long long integer 8
     }
-

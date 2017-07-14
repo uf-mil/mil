@@ -43,21 +43,21 @@ $TMUX split-window -h
 
 # Run all of the topic monitoring commands
 $TMUX select-pane -t top-left
-$TMUX send-keys "rostopic echo /thrusters/thrust/FLH" C-m
+$TMUX send-keys "rostopic echo /thrusters/status/FLH" C-m
 $TMUX select-pane -R
-$TMUX send-keys "rostopic echo /thrusters/thrust/FRH" C-m
+$TMUX send-keys "rostopic echo /thrusters/status/FRH" C-m
 $TMUX select-pane -R
-$TMUX send-keys "rostopic echo /thrusters/thrust/BLH" C-m
+$TMUX send-keys "rostopic echo /thrusters/status/BLH" C-m
 $TMUX select-pane -R
-$TMUX send-keys "rostopic echo /thrusters/thrust/BRH" C-m
+$TMUX send-keys "rostopic echo /thrusters/status/BRH" C-m
 $TMUX select-pane -R
-$TMUX send-keys "rostopic echo /thrusters/thrust/FLV" C-m
+$TMUX send-keys "rostopic echo /thrusters/status/FLV" C-m
 $TMUX select-pane -R
-$TMUX send-keys "rostopic echo /thrusters/thrust/FRV" C-m
+$TMUX send-keys "rostopic echo /thrusters/status/FRV" C-m
 $TMUX select-pane -R
-$TMUX send-keys "rostopic echo /thrusters/thrust/BLV" C-m
+$TMUX send-keys "rostopic echo /thrusters/status/BLV" C-m
 $TMUX select-pane -R
-$TMUX send-keys "rostopic echo /thrusters/thrust/BRV" C-m
+$TMUX send-keys "rostopic echo /thrusters/status/BRV" C-m
 $TMUX select-pane -t bottom-left
 $TMUX send-keys "rostopic echo /thrusters/thrust" C-m
 $TMUX select-pane -R
@@ -65,4 +65,6 @@ $TMUX send-keys "rostopic echo /wrench" C-m
 $TMUX select-pane -R
 $TMUX send-keys "rostopic echo /wrench_error" C-m
 $TMUX select-pane -R
-$TMUX send-keys "araise kill"
+$TMUX send-keys "rostopic echo /bus_voltage" C-m
+$TMUX split-window -v -p50
+$TMUX send-keys "amonitor kill" C-m

@@ -1,4 +1,0 @@
-<launch>
-  <param name='thrusters/calibration_dir' type='string' value='$find subb8_videoray_m5_thruster)/config/calibration/' />
-  <node pkg="sub8_videoray_m5_thruster" type="thruster_driver.py" name="thruster_driver" />
-</launch>

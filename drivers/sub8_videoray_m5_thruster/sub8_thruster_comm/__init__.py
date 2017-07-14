@@ -1,5 +1,8 @@
 from .thruster_comm import UnavailableThrusterException
 from .thruster_comm import UndeclaredThrusterException
+from .thruster_comm import VRCSRException
+from .thruster_comm import Sub8SerialException
+from .thruster_comm import ThrusterModel
 from .thruster_comm import ThrusterPort
 from .thruster_fake import FakeThrusterPort
 
