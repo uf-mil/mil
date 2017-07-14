@@ -42,7 +42,8 @@ def handle_fake_perception(extra, target_object):
         sys.exit(0)
     model = get_position(target_object)
     # Library of offets. Models must be manually offset as gazebo coordinates != center of model.
-    centlib = {'start_gate': Point(1.5, 0, 0), 'nav_gate': Point(1.15, 0, 0)}
+    centlib = {'start_gate': Point(1.5, 0, 0), 'nav_gate': Point(
+        1.15, 0, 0), 'orange_rectangle': Point(0, 0, 2)}
     if target_object in centlib:
         offset = centlib[target_object]
     else:
@@ -50,7 +51,8 @@ def handle_fake_perception(extra, target_object):
     pose_stamp = PoseStamped(header=Header(seq=k, stamp=now, frame_id="/map"),
                              # Offset our pose by the starting position of the sub relative to the world in Gazebo.
                              pose=Pose(position=Point(model.pose.position.x - 13 + offset.x,
-                                                      model.pose.position.y - 24 + offset.y, - 1 + offset.z),
+                                                      model.pose.position.y - 24 + offset.y,
+                                                      model.pose.position.z + offset.z),
                                        orientation=model.pose.orientation))
     covariance_diagonal = Vector3(0, 0, 0)
     found = True
@@ -65,7 +67,7 @@ def get_position(model_name):
         resp1 = model_state(model_name, 'world')
         return resp1
     except rospy.ServiceException:
-        print None
+        return None
 
 
 def set_geometry(req):
