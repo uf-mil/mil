@@ -113,6 +113,8 @@ class AlarmMonitor(object):
         '''
         key = self._read_key()
         if key is not None:
+            if key == 10:  # Draw window in window resize
+                self._draw()
             if key in self.RAISE_KEYS:
                 self.broadcaster.raise_alarm()
             elif key in self.CLEAR_KEYS:
