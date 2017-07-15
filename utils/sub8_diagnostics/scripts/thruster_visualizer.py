@@ -23,7 +23,7 @@ class ThrusterVisualizer(object):
         assert self.layout is not None, 'Could not load thruster layout from ROS param'
 
         '''
-        Create MarkerArray with an arrow marker for each thruster at index motor_id.
+        Create MarkerArray with an arrow marker for each thruster at index node_id.
         The position of the marker is as specified in the layout, but the length of the arrow
         will be set at each thrust callback.
         '''
@@ -42,7 +42,7 @@ class ThrusterVisualizer(object):
             self.markers.markers.append(m)
         for key, layout in self.layout.iteritems():
             # Set position and id of marker from thruster layout
-            idx = layout['motor_id']
+            idx = layout['node_id']
             pt = numpy_to_point(layout['position'])
             self.markers.markers[idx].points.append(pt)
             self.markers.markers[idx].points.append(pt)
@@ -64,7 +64,7 @@ class ThrusterVisualizer(object):
             if cmd.name not in self.layout:  # Don't draw marker if thruster is not in layout
                 continue
             layout = self.layout[cmd.name]
-            idx = layout['motor_id']
+            idx = layout['node_id']
             bounds = layout['thrust_bounds']
 
             # Select an arrow length based on commanded thrust, max thrust (from layout), and the MAX_LENGTH constant
