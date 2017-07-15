@@ -30,6 +30,9 @@ class FakeThrusterPort(object):
     def get_offline_thruster_names(self):
         return self.missing_thrusters
 
+    def set_registers_from_dict(*args, **kwargs):
+        pass
+
     def read_status(self, thruster_name):
         '''
             TODO: Add simulated thruster-out

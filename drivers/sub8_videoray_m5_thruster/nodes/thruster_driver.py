@@ -2,6 +2,8 @@
 import numpy as np
 import copy
 import rospy
+import rospkg
+import rosparam
 import threading
 import argparse
 from geometry_msgs.msg import Vector3
@@ -41,6 +43,7 @@ class BusVoltageMonitor(object):
         self.last_estimate_time = rospy.Time.now()
         self.WINDOW_DURATION = rospy.Duration(window_duration)
         self.ESTIMATION_PERIOD = rospy.Duration(0.2)
+        self.cached_severity = 0
         self.buffer = []
 
     def add_reading(self, voltage, time):
@@ -86,12 +89,13 @@ class BusVoltageMonitor(object):
         if bus_voltage < self.kill_voltage:
             severity = 5
 
-        if severity is not None:
+        if severity is not None and self.cached_severity != severity:
             self.bus_voltage_alarm.raise_alarm(
                 problem_description='Bus voltage has fallen to {}'.format(bus_voltage),
                 parameters={'bus_voltage': bus_voltage},
                 severity=severity
             )
+            self.cached_severity = severity
 
 
 class ThrusterDriver(object):
@@ -141,6 +145,7 @@ class ThrusterDriver(object):
         ''' Loads a dictionary ThrusterPort objects '''
         self.ports = {}                      # ThrusterPort objects
         self.thruster_to_port_map = {}       # node_id to ThrusterPort
+        rospack = rospkg.RosPack()
 
         self.make_fake = rospy.get_param('simulate', False)
         if self.make_fake:
@@ -151,7 +156,7 @@ class ThrusterDriver(object):
             port_name = port_info['port']
             self.ports[port_name] = thruster_comm_factory(port_info, thruster_definitions, fake=self.make_fake)
 
-            # Add the thrusters to the thruster dict
+            # Add the thrusters to the thruster dict and configure if present
             for thruster_name in port_info['thruster_names']:
                 self.thruster_to_port_map[thruster_name] = port_info['port']
 
@@ -159,6 +164,17 @@ class ThrusterDriver(object):
                     rospy.logerr("ThrusterDriver: {} IS MISSING!".format(thruster_name))
                 else:
                     rospy.loginfo("ThrusterDriver: {} registered".format(thruster_name))
+
+                    # Set firmware settings
+                    port = self.ports[port_name]
+                    node_id = thruster_definitions[thruster_name]['node_id']
+                    config_path = (rospack.get_path('sub8_videoray_m5_thruster') + '/config/firmware_settings/'
+                                   + thruster_name + '.yaml')
+                    rospy.loginfo('Configuring {} with settings specified in {}.'.format(thruster_name,
+                                  config_path))
+                    port.set_registers_from_dict(node_id=node_id,
+                                                 reg_dict=rosparam.load_file(config_path)[0][0])
+
 
     def get_thruster_info(self, srv):
         ''' Get the thruster info for a particular thruster name '''
