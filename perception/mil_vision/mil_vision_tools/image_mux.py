@@ -19,14 +19,14 @@ class ImageMux(object):
                  text_font=cv2.FONT_HERSHEY_COMPLEX_SMALL, text_scale=1, text_thickness=2):
         '''
         Contruct an ImageMux grid.
-        @param size Tuple (rows, cols) representing the size of the grid image, in pixels
-        @param shape Tuple (rows, cols) representing the number of smaller images in the grid
-        @param labels List of strings of length shape[0] * shape[1]
-        @param keep_ratio If True, do not stretch image to insert into grid pane
-        @param text_color Tuple (Blue, Green, Red) color of label text
-        @param text_font Integer, a valid OpenCV font to use in label text
-        @param text_scale Scaling factor for label text, float
-        @param text_thickness Thickness of label text, int
+        @param size: Tuple (rows, cols) representing the size of the grid image, in pixels
+        @param shape: Tuple (rows, cols) representing the number of smaller images in the grid
+        @param labels: List of strings of length shape[0] * shape[1]
+        @param keep_ratio: If True, do not stretch image to insert into grid pane
+        @param text_color: Tuple (Blue, Green, Red) color of label text
+        @param text_font: Integer, a valid OpenCV font to use in label text
+        @param text_scale: Scaling factor for label text, float
+        @param text_thickness: Thickness of label text, int
         '''
         self.size = np.array(size, dtype=np.uint)
         self.shape = np.array(shape, dtype=np.uint)
@@ -87,14 +87,14 @@ class ImageMux(object):
     def set_image(self, key, img):
         '''
         Sets the content of one pane in the image grid.
-        @param The index of the pane to set to the data of img
+        @param key: The index of the pane to set to the data of img
                If an integer -> sets pane at index, counting left to right, then top to bottom
                If a tuple (row, col) -> set pane at specified (index 0) row and column
-        @param img numpy array with shape (m, n, 3) or (m, n, 1) representing the image to insert
+        @param img: numpy array with shape (m, n, 3) or (m, n, 1) representing the image to insert
                in the pane specified in key. If a one channel image, first convert grayscale to BGR.
                If keep_ratio was True in contructor, will add black bars as necessary to fill pane.
                Otherwise, use standard cv2.resize to fit img into pane.
-        @throw AssertionError if key is wrong type of out of bounds
+        @raise AssertionError: if key is wrong type of out of bounds
         '''
         assert isinstance(img, np.ndarray), 'img must be numpy array'
         # If image is grayscale, convert to 3 channel

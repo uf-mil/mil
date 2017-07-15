@@ -135,14 +135,16 @@ class StereoImageSubscriber(object):
         '''
         Contruct a StereoImageSubscriber
 
-        @param left_image_topic ROS topic to subscribe for the left camera ex: /camera/front/left/image_rect_color
-        @param right_image_topic ROS topic to subscribe to for the right camera ex: /camera/front/right/image_rect_color
-        @param callback Function with signature foo(left_img, right_img) to call when a synchronized pair is ready.
+        @param left_image_topic: ROS topic to subscribe for the left camera
+                                 ex: /camera/front/left/image_rect_color
+        @param right_image_topic: ROS topic to subscribe to for the right camera
+                                 ex: /camera/front/right/image_rect_color
+        @param callback: Function with signature foo(left_img, right_img) to call when a synchronized pair is ready.
                If left as None, the latest synced images are stored as self.last_image_left and self.last_image_right
-        @param slop Maximum time in seconds between left and right images to be considered synced.
+        @param slop: Maximum time in seconds between left and right images to be considered synced.
                If left as None, will only consider synced if left and right images have exact same header time.
-        @param encoding String to pass to CvBridge to encode ROS image message to numpy array
-        @param queue_size Integer, the number of images to store in a buffer for each camera to find synced images
+        @param encoding: String to pass to CvBridge to encode ROS image message to numpy array
+        @param queue_size: Integer, the number of images to store in a buffer for each camera to find synced images
         '''
         if callback is None:  # Set default callback to just set image_left and image_right
             def callback(image_left, image_right):
@@ -183,11 +185,11 @@ class StereoImageSubscriber(object):
         '''
         Blocks until camera info has been received.
 
-        @param timeout Time in seconds to wait before throwing exception if camera info is not received
-        @param unregister Boolean, if True will unsubscribe to camera info after receiving initial info message,
+        @param timeout: Time in seconds to wait before throwing exception if camera info is not received
+        @param unregister: Boolean, if True will unsubscribe to camera info after receiving initial info message,
                so self.camera_info_left and self.camera_info_right will not be updated
-        @return Tuple(camera_info_left, camera_info_right) camera info for each camera if received before timeout
-        @throws Exception if camera info for both cameras is not received within timeout
+        @return: Tuple(camera_info_left, camera_info_right) camera info for each camera if received before timeout
+        @raise Exception: if camera info for both cameras is not received within timeout
         '''
         timeout = rospy.Time.now() + rospy.Duration(timeout)
         while (rospy.Time.now() < timeout) and (not rospy.is_shutdown()):
@@ -211,8 +213,8 @@ class StereoImageSubscriber(object):
         to numpy arrays (for use with OpenCV, etc) before
         calling user defined callback.
 
-        @param left_img the synchronized image from the left camera
-        @param right_img the synchronized image from the right camera
+        @param left_img: the synchronized image from the left camera
+        @param right_img: the synchronized image from the right camera
         '''
         try:
             self.last_image_time_left = left_img.header.stamp
