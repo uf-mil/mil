@@ -191,7 +191,7 @@ wsmux() {
 								git checkout -B master upstream/master
 
 								# Checkout submodules to the commits specified
-								git submodule update
+								git submodule update --init --recursive
 							else
 								echo "The repository at $FILE is dirty"
 							fi
