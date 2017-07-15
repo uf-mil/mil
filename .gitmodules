@@ -4,3 +4,6 @@
 [submodule "ros_alarms"]
 	path = ros_alarms
 	url = https://github.com/uf-mil/ros_alarms.git
+[submodule "drivers/pointgrey_camera_driver"]
+	path = drivers/pointgrey_camera_driver
+	url = https://github.com/ros-drivers/pointgrey_camera_driver
