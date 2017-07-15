@@ -168,13 +168,13 @@ class ThrusterDriver(object):
                     # Set firmware settings
                     port = self.ports[port_name]
                     node_id = thruster_definitions[thruster_name]['node_id']
-                    config_path = (rospack.get_path('sub8_videoray_m5_thruster') + '/config/firmware_settings/'
-                                   + thruster_name + '.yaml')
+                    config_path = (rospack.get_path('sub8_videoray_m5_thruster') + '/config/firmware_settings/' +
+                                   thruster_name + '.yaml')
                     rospy.loginfo('Configuring {} with settings specified in {}.'.format(thruster_name,
                                   config_path))
                     port.set_registers_from_dict(node_id=node_id,
                                                  reg_dict=rosparam.load_file(config_path)[0][0])
-
+                    port.reboot_thruster(node_id)  # Necessary for some settings to take effect
 
     def get_thruster_info(self, srv):
         ''' Get the thruster info for a particular thruster name '''

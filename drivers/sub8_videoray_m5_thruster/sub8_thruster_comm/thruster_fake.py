@@ -33,6 +33,9 @@ class FakeThrusterPort(object):
     def set_registers_from_dict(*args, **kwargs):
         pass
 
+    def reboot_thruster(*args, **kwargs):
+        pass
+
     def read_status(self, thruster_name):
         '''
             TODO: Add simulated thruster-out

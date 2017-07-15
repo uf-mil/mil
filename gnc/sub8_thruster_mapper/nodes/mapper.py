@@ -5,7 +5,7 @@ import numpy as np
 from mil_ros_tools import wait_for_param, thread_lock, rosmsg_to_numpy, msg_helpers
 import threading
 from sub8_msgs.msg import Thrust, ThrusterCmd
-from sub8_msgs.srv import (ThrusterInfo, UpdateThrusterLayout, UpdateThrusterLayoutResponse,
+from sub8_msgs.srv import (UpdateThrusterLayout, UpdateThrusterLayoutResponse,
                            BMatrix, BMatrixResponse)
 from geometry_msgs.msg import WrenchStamped
 lock = threading.Lock()
@@ -39,10 +39,9 @@ class ThrusterMapper(object):
         self.dropped_thrusters = []
         self.B = self.generate_B(self.thruster_layout)
         self.Binv = np.linalg.pinv(self.B)
-        self.min_thrusts, self.max_thrusts = self.get_ranges()  # Will block until thruster driver provides srv
+        self.min_thrusts, self.max_thrusts = self.get_ranges()
         self.default_min_thrusts, self.default_max_thrusts = np.copy(self.min_thrusts), np.copy(self.max_thrusts)
-        self.update_layout_server = rospy.Service('update_thruster_layout',  # Needs to come before call to
-                                                  UpdateThrusterLayout,      # self.get_ranges
+        self.update_layout_server = rospy.Service('update_thruster_layout', UpdateThrusterLayout,
                                                   self.update_layout)
 
         # Expose B matrix through a srv
@@ -76,18 +75,11 @@ class ThrusterMapper(object):
 
     def get_ranges(self):
         '''Get upper and lower thrust limits for each thruster
-            --> Add range service proxy using thruster names
-                --> This is not necessary, since they are all the same thruster
         '''
-        thruster_info_service = 'thrusters/thruster_info'
-        rospy.logwarn("Waiting for service {}".format(thruster_info_service))
-        rospy.wait_for_service(thruster_info_service)
-        rospy.logwarn("Got {}".format(thruster_info_service))
-
-        thruster_info_service_proxy = rospy.ServiceProxy(thruster_info_service, ThrusterInfo)
-        minima = np.array([thruster_info_service_proxy(x).min_force for x in self.thruster_name_map])
-        maxima = np.array([thruster_info_service_proxy(x).max_force for x in self.thruster_name_map])
-
+        minima = np.array([self.thruster_layout['thrusters'][x]['thrust_bounds'][0]
+                           for x in self.thruster_name_map])
+        maxima = np.array([self.thruster_layout['thrusters'][x]['thrust_bounds'][1]
+                           for x in self.thruster_name_map])
         return minima, maxima
 
     def get_thruster_wrench(self, position, direction):

@@ -1,6 +1,9 @@
 #!/usr/bin/env ipython
-# flake8: noqa
 # Using ipython because tab completion makes using the shell much easier
+
+# flake8: noqa
+# Not doing formatting checks because there will be many unused declared objects and
+# imports since this is an interactive shell
 
 print "\nWelcome to David's M5 Thruster Shell\n"
 import rospy

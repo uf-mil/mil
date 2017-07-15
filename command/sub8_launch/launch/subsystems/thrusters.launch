@@ -6,4 +6,5 @@
   <node pkg="sub8_videoray_m5_thruster" type="thruster_driver.py" name="thruster_driver" />
 
   <node pkg="sub8_diagnostics" type="start_thruster_monitor" name="start_thruster_monitor"/>
+  <node pkg="sub8_diagnostics" type="thruster_visualizer.py" name="thruster_visualizer" />
 </launch>
