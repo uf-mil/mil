@@ -17,8 +17,26 @@ rosrun sub8_diagnostics self_check.py
 To manually spin sets of thrusters or individual thrusters via the keyboard,
 or to find out what motor_id's are found on each port:
 
-```
+```sh
+thruster_spinner
+#or
 rosrun sub8_diagnostics thruster_spinner.py
+```
+
+## ThrusterMonitor
+
+The thruster monitor is a special tmux session for monitoring thruster statuses, wrenches, bus voltage, and other things. Users don't need to launch it, as that is done by the 'thrusters' launch file.
+
+To attach to it, use the alias `thruster_monitor`.
+
+## ThrusterDebugShell
+
+To manually send commands to thrusters, among many other ways of interacting with them using ThrusterPort functionality:
+
+```sh
+thruster_debug_shell
+#or
+rosrun sub8_diagnostics thruster_debug_shell.py
 ```
 
 ## ActuatorTester

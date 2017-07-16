@@ -5,7 +5,7 @@ import numpy as np
 from mil_ros_tools import wait_for_param, thread_lock, rosmsg_to_numpy, msg_helpers
 import threading
 from sub8_msgs.msg import Thrust, ThrusterCmd
-from sub8_msgs.srv import (ThrusterInfo, UpdateThrusterLayout, UpdateThrusterLayoutResponse,
+from sub8_msgs.srv import (UpdateThrusterLayout, UpdateThrusterLayoutResponse,
                            BMatrix, BMatrixResponse)
 from geometry_msgs.msg import WrenchStamped
 lock = threading.Lock()
@@ -41,13 +41,15 @@ class ThrusterMapper(object):
         self.Binv = np.linalg.pinv(self.B)
         self.min_thrusts, self.max_thrusts = self.get_ranges()
         self.default_min_thrusts, self.default_max_thrusts = np.copy(self.min_thrusts), np.copy(self.max_thrusts)
+        self.update_layout_server = rospy.Service('update_thruster_layout', UpdateThrusterLayout,
+                                                  self.update_layout)
 
-        self.update_layout_server = rospy.Service('update_thruster_layout', UpdateThrusterLayout, self.update_layout)
         # Expose B matrix through a srv
         self.b_matrix_server = rospy.Service('b_matrix', BMatrix, self.get_b_matrix)
 
         self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.request_wrench_cb, queue_size=1)
         self.actual_wrench_pub = rospy.Publisher('wrench_actual', WrenchStamped, queue_size=1)
+        self.wrench_error_pub = rospy.Publisher('wrench_error', WrenchStamped, queue_size=1)
         self.thruster_pub = rospy.Publisher('thrusters/thrust', Thrust, queue_size=1)
 
     @thread_lock(lock)
@@ -73,19 +75,11 @@ class ThrusterMapper(object):
 
     def get_ranges(self):
         '''Get upper and lower thrust limits for each thruster
-            --> Add range service proxy using thruster names
-                --> This is not necessary, since they are all the same thruster
         '''
-        range_service = 'thrusters/thruster_range'
-        rospy.logwarn("Waiting for service {}".format(range_service))
-        rospy.wait_for_service(range_service)
-        rospy.logwarn("Got {}".format(range_service))
-
-        range_service_proxy = rospy.ServiceProxy(range_service, ThrusterInfo)
-        thruster_range = range_service_proxy(0)
-
-        minima = np.array([thruster_range.min_force] * self.num_thrusters)
-        maxima = np.array([thruster_range.max_force] * self.num_thrusters)
+        minima = np.array([self.thruster_layout['thrusters'][x]['thrust_bounds'][0]
+                           for x in self.thruster_name_map])
+        maxima = np.array([self.thruster_layout['thrusters'][x]['thrust_bounds'][1]
+                           for x in self.thruster_name_map])
         return minima, maxima
 
     def get_thruster_wrench(self, position, direction):
@@ -197,7 +191,7 @@ class ThrusterMapper(object):
             for name, thrust in zip(self.thruster_name_map, u):
                 # > Can speed this up by avoiding appends
                 if name in self.dropped_thrusters:
-                    continue  # Ignore dropped thrusters
+                    thrust = 0  # Sending a command packet is an opportunity to detect thruster recovery
 
                 # Simulate thruster deadband
                 if np.fabs(thrust) < self.min_commandable_thrust:
@@ -207,7 +201,11 @@ class ThrusterMapper(object):
 
         actual_wrench = self.B.dot(u)
         self.actual_wrench_pub.publish(
-            msg_helpers.make_wrench_stamped(actual_wrench[:3], actual_wrench[3:])
+            msg_helpers.make_wrench_stamped(actual_wrench[:3], actual_wrench[3:], frame='/base_link')
+        )
+        mapper_wrench_error = wrench - actual_wrench
+        self.wrench_error_pub.publish(
+            msg_helpers.make_wrench_stamped(mapper_wrench_error[:3], mapper_wrench_error[3:], frame='/base_link')
         )
         self.thruster_pub.publish(thrust_cmds)
 

@@ -32,6 +32,7 @@ add_service_files(
   MotionPlan.srv
   UpdateThrusterLayout.srv
   FailThruster.srv
+  UnfailThruster.srv
   VisionRequest.srv
   VisionRequest2D.srv
   BMatrix.srv

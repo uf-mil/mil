@@ -29,3 +29,8 @@ alias subfmt="python2.7 -m flake8 --ignore E731 --max-line-length=120 --exclude=
 
 # Set robot model param, for using rviz when playing bags
 alias submodel="rosparam set /robot_description -t \$CATKIN_DIR/src/SubjuGator/command/sub8_missions/tools/sub8/sub8.xml"
+
+# Thrusters
+alias subthruster_shell="rosrun sub8_diagnostics thruster_shell.py -i"
+alias subthruster_spinner="rosrun sub8_diagnostics thruster_spinner.py"
+alias subthruster_monitor="/usr/bin/tmux -L diagnostics attach-session -t thruster_monitoring"

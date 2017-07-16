@@ -1,0 +1,28 @@
+# For the meaning of these settings, look at VideoRay's documentation here:
+# http://download.videoray.com/documentation/m5_thruster/pdf/videoray_doc_m5_thruster.pdf
+# All of these settings will be set by the thruster_driver at startup.
+motor_control_flags      : 0x1
+poles                    : 14
+pwm_deadband             : 32
+commutation_threshold    : 0.1
+commutation_loss_timeout : 100
+startup_dutycycle        : 0.04
+startup_initial_rpm      : 80
+startup_final_rpm        : 100
+startup_duration         : 50.0
+deadband_neg             : -0.02
+deadband_pos             : 0.02
+limit_neg                : -0.99
+limit_pos                : 0.99
+slew_rate_up             : 0.0005
+slew_rate_down           : 0.0005
+fault_control            : 0x0
+undervoltage_trigger     : 19
+overvoltage_trigger      : 50
+overcurrent_trigger      : 20
+temp_trigger             : 100
+stall_count_max          : 100
+NODE_ID                  : 6
+GROUP_ID                 : 129
+control_flags            : 0x3
+motor_fault_interlock    : 0xDEADBEEF

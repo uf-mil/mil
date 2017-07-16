@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import rospy
+from sub8_thruster_comm import ThrusterModel
 
 
 class FakeThrusterPort(object):
@@ -8,19 +9,32 @@ class FakeThrusterPort(object):
         '''Fake the behavior of a thruster'''
         self.port_name = port_info['port']
         self.thruster_dict = {}
+        self.thruster_info = {}
         self.status_dict = {}
+        self.online_thruster_names = []
         self.missing_thrusters = []
         for thruster_name in port_info['thruster_names']:
             self.load_thruster_config(thruster_name, thruster_definitions[thruster_name])
 
     def load_thruster_config(self, thruster_name, thruster_info):
-        self.thruster_dict[thruster_name] = thruster_info['motor_id']
+        self.thruster_dict[thruster_name] = thruster_info['node_id']
+        self.thruster_info[thruster_name] = ThrusterModel(thruster_info)
+        self.online_thruster_names.append(thruster_name)
         self.status_dict[thruster_name] = {
             'fault': 0,
             'rpm': 0,
-            'temperature': 30,
-            'bus_voltage': 48,
+            'temp': 30,
+            'bus_v': 48,
         }
+
+    def get_offline_thruster_names(self):
+        return self.missing_thrusters
+
+    def set_registers_from_dict(*args, **kwargs):
+        pass
+
+    def reboot_thruster(*args, **kwargs):
+        pass
 
     def read_status(self, thruster_name):
         '''
@@ -36,11 +50,14 @@ class FakeThrusterPort(object):
             'header_checksum',
             'device_type',
             'rpm',
-            'bus_voltage',
-            'bus_current',
-            'temperature',
+            'bus_v',
+            'bus_i',
+            'temp',
             'fault',
             'payload_checksum',
+            'command_tx_count',
+            'status_rx_count',
+            'command_latency_avg'
         ]
         response_dict = {key: self.status_dict[thruster_name].get(key, 0) for key in response_keys}
         return response_dict
@@ -73,9 +90,9 @@ if __name__ == '__main__':
     thruster_definitions = thruster_layout['thrusters']
 
     thruster_name = npr.choice(port_info['thruster_names'])
-    motor_id = thruster_definitions[thruster_name]['motor_id']
+    motor_id = thruster_definitions[thruster_name]['node_id']
 
-    print'Test fake thruster comm over port {}, node_id {}, thruster name {}'.format(
+    print 'Test fake thruster comm over port {}, node_id {}, thruster name {}'.format(
         port_info['port'],
         motor_id,
         thruster_name
