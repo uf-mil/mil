@@ -104,9 +104,6 @@ struct Node
 
   ros::Timer update_timer;
 
-  // Action result for waypoint validation
-  mil_msgs::MoveToResult actionresult_;
-
   bool disabled;
   boost::scoped_ptr<subjugator::C3Trajectory> c3trajectory;
   ros::Time c3trajectory_t;
@@ -135,10 +132,6 @@ struct Node
     , kill_listener(nh, "kill")
     , waypoint_validity_(nh)
   {
-    // Callback to reset trajectory when (un)killing
-    auto reset_traj = [this](ros_alarms::AlarmProxy a) { this->c3trajectory.reset(); };
-    kill_listener.addRaiseCb(reset_traj);
-
     // Make sure alarm integration is ok
     kill_listener.waitForConnection(ros::Duration(2));
     if (kill_listener.getNumConnections() < 1)
@@ -192,8 +185,33 @@ struct Node
 
   void timer_callback(const ros::TimerEvent &)
   {
-    if (!c3trajectory)
+    mil_msgs::MoveToResult actionresult;
+
+    // Handle disabled, killed, or no odom before attempting to produce trajectory
+    std::string err = "";
+    if (disabled)
+      err = "c3 disabled";
+    else if (kill_listener.isRaised())
+      err = "killed";
+    else if (!c3trajectory)
+      err = "no odom";
+
+    if (!err.empty())
+    {
+      if (c3trajectory)
+        c3trajectory.reset();  // On revive/enable, wait for odom before station keeping
+
+      // Cancel all goals while killed/disabled/no odom
+      if (actionserver.isNewGoalAvailable())
+        actionserver.acceptNewGoal();
+      if (actionserver.isActive())
+      {
+        actionresult.error = err;
+        actionresult.success = false;
+        actionserver.setAborted(actionresult);
+      }
       return;
+    }
 
     ros::Time now = ros::Time::now();
 
@@ -214,8 +232,8 @@ struct Node
       // Check if waypoint is valid
       std::pair<bool, WAYPOINT_ERROR_TYPE> checkWPResult = waypoint_validity_.is_waypoint_valid(
           Pose_from_Waypoint(current_waypoint), current_waypoint.do_waypoint_validation);
-      actionresult_.error = WAYPOINT_ERROR_TO_STRING.at(checkWPResult.second);
-      actionresult_.success = checkWPResult.first;
+      actionresult.error = WAYPOINT_ERROR_TO_STRING.at(checkWPResult.second);
+      actionresult.success = checkWPResult.first;
       if (checkWPResult.first == false)  // got a point that we should not move to
       {
         waypoint_validity_.pub_size_ogrid(Pose_from_Waypoint(current_waypoint), (int)OGRID_COLOR::RED);
@@ -289,8 +307,8 @@ struct Node
 
       c3trajectory.reset(new subjugator::C3Trajectory(current_waypoint.r, limits));
       c3trajectory_t = now;
-      actionresult_.success = false;
-      actionresult_.error = WAYPOINT_ERROR_TO_STRING.at(WAYPOINT_ERROR_TYPE::OCCUPIED_TRAJECTORY);
+      actionresult.success = false;
+      actionresult.error = WAYPOINT_ERROR_TO_STRING.at(WAYPOINT_ERROR_TYPE::OCCUPIED_TRAJECTORY);
     }
 
     PoseTwistStamped msg;
@@ -317,7 +335,9 @@ struct Node
                                                          max(1e-3, angular_tolerance)) &&
         current_waypoint.r.qdot == subjugator::Vector6d::Zero())
     {
-      actionserver.setSucceeded(actionresult_);
+      actionresult.error = "";
+      actionresult.success = true;
+      actionserver.setSucceeded(actionresult);
     }
   }
 };
