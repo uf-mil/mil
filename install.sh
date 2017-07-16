@@ -70,9 +70,11 @@ if [[ "$DOCKER" != "true" ]]; then
 	INSTALL_NAV="false"
 
 	# Set sane defaults for other install parameters
-	BVTSDK_PASSWORD=""
+	SDK_PASSWORD=""
 	ENABLE_USB_CAM="false"
 	INSTALL_CUDA="false"
+	INSTALL_BVTSDK="false"
+	INSTALL_FLYCAP="false"
 
 	# Prompt the user to enter a catkin workspace to use
 	echo "Catkin is the ROS build system and it combines CMake macros and Python scripts."
@@ -153,18 +155,35 @@ if [[ "$DOCKER" != "true" ]]; then
 		echo -n "Do you wish to install the SDK? [y/N] " && read RESPONSE
 		echo ""
 
-		# If the user chooses to install the BlueView SDK, retrieve the password from them
 		if [[ "$RESPONSE" == "Y" || "$RESPONSE" == "y" ]]; then
-			echo "The SDK is encrypted with a password. You need to obtain this password from one"
-			echo "of the senior members of MIL."
-			echo -n "Encryption password: " && read -s BVTSDK_PASSWORD
-			echo ""
-			echo ""
+			INSTALL_BVTSDK="true"
 		fi
 	fi
 
+	# Detect whether or not the Flycapture SDK has already been installed
+	if [[ -z "$(dpkg-query -W -f='${Status}' flycap 2>/dev/null | grep 'ok installed')" ]]; then
+		echo "MIL projects use Point Grey machine vision cameras for perception. A user only"
+		echo "needs to install the Flycapture SDK if they intend to connect one directly to"
+		echo "their machine, which is unlikely. This SDK containes closed source binaries."
+		echo -n "Do you wish to install the SDK? [y/N] " && read RESPONSE
+		echo ""
+
+		if [[ "$RESPONSE" == "Y" || "$RESPONSE" == "y" ]]; then
+			INSTALL_FLYCAP="true"
+		fi
+	fi
+
+	# If the user chooses to install an SDK, retrieve the password from them
+	if [[ "$INSTALL_BVTSDK" == "true" || "$INSTALL_FLYCAP" == "true" ]]; then
+		echo "One or more of the selected SDKs is encrypted with a password. You need to"
+		echo "obtain this password from one of the senior members of MIL."
+		echo -n "Encryption password: " && read -s SDK_PASSWORD
+		echo ""
+		echo ""
+	fi
+
 	# Warn users about the security risks associated with enabling USB cameras before doing it
-	if [[ ! -f /etc/udev/rules.d/40-pgr.rules ]]; then
+	if [[ ! -f /etc/udev/rules.d/40-pgr.rules && "$INSTALL_FLYCAP" == "true" ]]; then
 		echo "MIL projects use Point Grey machine vision cameras for perception. A user only"
 		echo "needs to enable access to USB cameras if they intend to connect one directly"
 		echo "to their machine, which is unlikely. In order for a user to access a USB"
@@ -180,7 +199,7 @@ if [[ "$DOCKER" != "true" ]]; then
 
 	# Detect whether or not a CUDA toolkit has already been installed
 	if [[ ! -z "$(dpkg-query -W -f='${Status}' cuda 2>/dev/null | grep 'ok installed')" ||
-	      ! -z "$(dpkg-query -W -f='${Status}' nvidia-cuda-toolkit  2>/dev/null | grep 'ok installed')" ]]; then
+	      ! -z "$(dpkg-query -W -f='${Status}' nvidia-cuda-toolkit 2>/dev/null | grep 'ok installed')" ]]; then
 		INSTALL_CUDA="true"
 
 	# Give users the option to install the CUDA toolkit if an Nvidia card is detected
@@ -516,9 +535,6 @@ sudo apt-get install -qq mayavi2
 
 instlog "Installing common ROS dependencies"
 
-# Hardware drivers
-sudo apt-get install -qq ros-$ROS_VERSION-pointgrey-camera-driver
-
 # Messages
 sudo apt-get install -qq ros-$ROS_VERSION-tf2-sensor-msgs
 
@@ -531,17 +547,52 @@ sudo pip install -q -U crc16
 sudo pip install -q -U tqdm
 
 # Decrypt and extract the BlueView SDK for the Teledyne imaging sonar
-if [[ ! -z "$BVTSDK_PASSWORD" ]]; then
+if [[ "$INSTALL_BVTSDK" == "true" ]]; then
 	instlog "Decrypting and installing the BlueView SDK"
 	mkdir -p $MIL_CONFIG_DIR
 	curl -s https://raw.githubusercontent.com/uf-mil/installer/master/libbvtsdk.tar.gz.enc | \
-	openssl enc -aes-256-cbc -d -pass file:<(echo -n $BVTSDK_PASSWORD) | tar -xpzC $MIL_CONFIG_DIR
+	openssl enc -aes-256-cbc -d -pass file:<(echo -n $SDK_PASSWORD) | tar -xpzC $MIL_CONFIG_DIR
 
 	# If the SDK does not decrypt correctly due to an incorrect password, fail the installation
 	if [[ ! -d $BVTSDK_DIR ]]; then
 		instwarn "Terminating installation due to incorrect password for the BlueView SDK"
 		exit 1
 	fi
+fi
+
+# Decrypt and extract the Flycapture SDK for the Point Grey cameras
+if [[ "$INSTALL_FLYCAP" == "true" ]]; then
+	instlog "Decrypting and installing the Flycapture SDK"
+	curl -s https://raw.githubusercontent.com/uf-mil/installer/master/flycapture-2-2.11.3.121-amd64.tar.gz.enc | \
+	openssl enc -aes-256-cbc -d -pass file:<(echo -n $SDK_PASSWORD) | tar -xpzC /tmp
+
+	# If the SDK does not decrypt correctly due to an incorrect password, fail the installation
+	if [[ ! -d /tmp/flycapture-2-2.11.3.121-amd64 ]]; then
+		instwarn "Terminating installation due to incorrect password for the Flycapture SDK"
+		exit 1
+	fi
+
+	# Install the (unlisted...) dependencies needed for the Flycapture SDK
+	sudo apt-get install -qq libraw1394-11
+	sudo apt-get install -qq libusb-1.0-0
+	sudo apt-get install -qq libgtk2.0-0
+	sudo apt-get install -qq libgtkmm-2.4-1v5
+	sudo apt-get install -qq libglademm-2.4-1v5
+	sudo apt-get install -qq libgtkmm-2.4-dev
+	sudo apt-get install -qq libglademm-2.4-dev
+	sudo apt-get install -qq libgtkglextmm-x11-1.2-dev
+
+	# Install the Flycapture SDK based on the install script packaged with it
+	cd /tmp/flycapture-2-2.11.3.121-amd64
+	sudo dpkg -i libflycapture-2*
+	sudo dpkg -i libflycapturegui-2*
+	sudo dpkg -i libflycapture-c-2*
+	sudo dpkg -i libflycapturegui-c-2*
+	sudo dpkg -i libmultisync-2*
+	sudo dpkg -i libmultisync-c-2*
+	sudo dpkg -i flycap-2*
+	sudo dpkg -i flycapture-doc-2*
+	sudo dpkg -i updatorgui*
 fi
 
 # If this is not being run to create a Docker image, link the BlueView SDK to mil_blueview_driver
