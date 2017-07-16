@@ -571,29 +571,29 @@ if [[ "$INSTALL_FLYCAP" == "true" ]]; then
 		instwarn "Terminating installation due to incorrect password for the Flycapture SDK"
 		exit 1
 	fi
+
+	# Install the (unlisted...) dependencies needed for the Flycapture SDK
+	sudo apt-get install -qq libraw1394-11
+	sudo apt-get install -qq libusb-1.0-0
+	sudo apt-get install -qq libgtk2.0-0
+	sudo apt-get install -qq libgtkmm-2.4-1v5
+	sudo apt-get install -qq libglademm-2.4-1v5
+	sudo apt-get install -qq libgtkmm-2.4-dev
+	sudo apt-get install -qq libglademm-2.4-dev
+	sudo apt-get install -qq libgtkglextmm-x11-1.2-dev
+
+	# Install the Flycapture SDK based on the install script packaged with it
+	cd /tmp/flycapture-2-2.11.3.121-amd64
+	sudo dpkg -i libflycapture-2*
+	sudo dpkg -i libflycapturegui-2*
+	sudo dpkg -i libflycapture-c-2*
+	sudo dpkg -i libflycapturegui-c-2*
+	sudo dpkg -i libmultisync-2*
+	sudo dpkg -i libmultisync-c-2*
+	sudo dpkg -i flycap-2*
+	sudo dpkg -i flycapture-doc-2*
+	sudo dpkg -i updatorgui*
 fi
-
-# Install the (unlisted...) dependencies needed for the Flycapture SDK
-sudo apt-get install -qq libraw1394-11
-sudo apt-get install -qq libusb-1.0-0
-sudo apt-get install -qq libgtk2.0-0
-sudo apt-get install -qq libgtkmm-2.4-1v5
-sudo apt-get install -qq libglademm-2.4-1v5
-sudo apt-get install -qq libgtkmm-2.4-dev
-sudo apt-get install -qq libglademm-2.4-dev
-sudo apt-get install -qq libgtkglextmm-x11-1.2-dev
-
-# Install the Flycapture SDK based on the install script packaged with it
-cd /tmp/flycapture-2-2.11.3.121-amd64
-sudo dpkg -i libflycapture-2*
-sudo dpkg -i libflycapturegui-2*
-sudo dpkg -i libflycapture-c-2*
-sudo dpkg -i libflycapturegui-c-2*
-sudo dpkg -i libmultisync-2*
-sudo dpkg -i libmultisync-c-2*
-sudo dpkg -i flycap-2*
-sudo dpkg -i flycapture-doc-2*
-sudo dpkg -i updatorgui*
 
 # If this is not being run to create a Docker image, link the BlueView SDK to mil_blueview_driver
 if [[ -d $BVTSDK_DIR && "$DOCKER" != "true" ]]; then
