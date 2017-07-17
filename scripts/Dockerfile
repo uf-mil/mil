@@ -10,6 +10,8 @@ MAINTAINER Anthony Olive <anthony@iris-systems.net>
 ENV DOCKER true
 ENV INSTALL_SUB true
 ENV INSTALL_CUDA true
+ENV INSTALL_BVTSDK true
+ENV INSTALL_FLYCAP true
 
 # Allow the user to pass in the SDK password with '--build-arg SDK_PASSWORD="password"'
 ARG SDK_PASSWORD
