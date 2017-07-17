@@ -20,6 +20,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y install sudo \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y install curl \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y install wget \
+	&& DEBIAN_FRONTEND=noninteractive apt-get -y install lightdm \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y autoremove --purge \
 	&& apt-get -y clean \
 	&& rm -rf /var/lib/apt/lists/* \
