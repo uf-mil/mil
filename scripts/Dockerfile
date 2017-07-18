@@ -9,9 +9,11 @@ MAINTAINER Anthony Olive <anthony@iris-systems.net>
 # Configure the install script for SubjuGator with CUDA
 ENV DOCKER true
 ENV INSTALL_CUDA true
+ENV INSTALL_BVTSDK true
+ENV INSTALL_FLYCAP true
 
-# Allow the user to pass in the BlueView SDK with '--build-arg BVTSDK_PASSWORD="password"'
-ARG BVTSDK_PASSWORD
+# Allow the user to pass in the SDK password with '--build-arg SDK_PASSWORD="password"'
+ARG SDK_PASSWORD
 
 # Update the image and install tools needed to create the image
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
@@ -19,6 +21,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y install sudo \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y install curl \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y install wget \
+	&& DEBIAN_FRONTEND=noninteractive apt-get -y install lightdm \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y autoremove --purge \
 	&& apt-get -y clean \
 	&& rm -rf /var/lib/apt/lists/* \

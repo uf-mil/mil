@@ -23,7 +23,7 @@ class RectFinder(object):
         Also see RectFinder.from_polygon for creating this from a ROS message
 
         @param length the measurment of the longer side of the rectangle in meters
-        @param width the measurment of the longer side of the rectangle in meters
+        @param width the measurment of the shorter side of the rectangle in meters
 
         If width > length, the two will be reversed so that length is
         always the longer side.
