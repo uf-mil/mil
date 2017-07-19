@@ -7,9 +7,9 @@
     <node pkg="nodelet" type="nodelet" name="left_camera_nodelet"
          args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
       <param name="frame_id" value="front_left_cam" />
-      <param name="serial" value="15356356" />
-      <param name="guid" value="00b09d0100ea51c4"/>
-      <param name="camera_info_url" value="file://$(find sub8_launch)/launch/subsystems/cameras/calibration/00b09d0100ea51c4.yaml" />
+      <param name="serial" value="15356350" />
+      <param name="guid" value="00b09d0100ea51be"/>
+      <param name="camera_info_url" value="file://$(find sub8_launch)/launch/subsystems/cameras/calibration/00b09d0100ea51be.yaml" />
       <param name="num_dma_buffers" value="10"/>
       <param name="video_mode" value="format7_mode1"/>
       <param name="format7_packet_size" value="1200"/>
@@ -31,28 +31,28 @@
       <remap from="image_mono" to="left/image_mono" />
       <remap from="image_raw" to="left/image_raw" />
     </node>
-  
+
     <!-- mono rectification -->
     <node pkg="nodelet" type="nodelet" name="left_image_proc_rect"
          args="load image_proc/rectify camera_nodelet_manager">
       <remap from="image_mono" to="left/image_mono" />
       <remap from="image_rect" to="left/image_rect" />
     </node>
-  
+
     <!-- color rectification -->
     <node pkg="nodelet" type="nodelet" name="left_image_proc_rect_color"
          args="load image_proc/rectify camera_nodelet_manager">
       <remap from="image_mono" to="left/image_color" />
       <remap from="image_rect" to="left/image_rect_color" />
     </node>
-  
+
     <!-- RIGHT CAMERA -->
     <node pkg="nodelet" type="nodelet" name="right_camera_nodelet"
         args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
       <param name="frame_id" value="front_right_cam" />
-      <param name="serial" value="15356350" />
-      <param name="guid" value="00b09d0100ea51be"/>
-      <param name="camera_info_url" value="file://$(find sub8_launch)/launch/subsystems/cameras/calibration/00b09d0100ea51be.yaml" />
+      <param name="serial" value="15356356" />
+      <param name="guid" value="00b09d0100ea51c4"/>
+      <param name="camera_info_url" value="file://$(find sub8_launch)/launch/subsystems/cameras/calibration/00b09d0100ea51c4.yaml" />
       <param name="num_dma_buffers" value="10"/>
       <param name="video_mode" value="format7_mode1"/>
       <param name="format7_packet_size" value="1200"/>
@@ -66,7 +66,7 @@
       <remap from="image_raw" to="right/image_raw"/>
       <remap from="set_camera_info" to="right/set_camera_info"/>
     </node>
-  
+
     <!-- Bayer color decoding -->
     <node pkg="nodelet" type="nodelet" name="right_image_proc_debayer"
           args="load image_proc/debayer camera_nodelet_manager">
@@ -74,21 +74,21 @@
       <remap from="image_mono" to="right/image_mono" />
       <remap from="image_raw" to="right/image_raw" />
     </node>
-  
+
     <!-- mono rectification -->
     <node pkg="nodelet" type="nodelet" name="right_image_proc_rect"
          args="load image_proc/rectify camera_nodelet_manager">
       <remap from="image_mono" to="right/image_mono" />
       <remap from="image_rect" to="right/image_rect" />
     </node>
-  
+
     <!-- color rectification -->
     <node pkg="nodelet" type="nodelet" name="right_image_proc_rect_color"
          args="load image_proc/rectify camera_nodelet_manager">
       <remap from="image_mono" to="right/image_color" />
       <remap from="image_rect" to="right/image_rect_color" />
     </node>
-  
+
     <!-- Stereo Image Processing -->
     <node pkg="stereo_image_proc" type="stereo_image_proc" respawn="false" name="stereo_image_proc" args="_approximate_sync:=True"/>
   </group>
