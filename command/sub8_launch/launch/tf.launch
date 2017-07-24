@@ -36,6 +36,6 @@
 
     <!-- TODO: make sure this TF is correct -->
     <node pkg="tf" type="static_transform_publisher" name="hyd_broadcaster"
-    args="-0.4 0 0 1.571 0 0 base_link hydrophones 100" />
+    args="-0.0908 0 -0.2459 1.571 0 0 base_link hydrophones 100" />
 
 </launch>
