@@ -144,8 +144,8 @@
     output="screen" />
 
   <node pkg="sub8_gazebo" type="gazebo_controller.py" name="gazebo_interface" />
-  <!--   <node pkg="sub8_gazebo" type="pinger_sim.py" name="pinger_sim" />
-  <node pkg="sub8_gazebo" type="actuator_sim.py" name="actuator_sim" /> -->
+  <node pkg="sub8_gazebo" type="pinger_tf_pub.py" name="pinger_sim_tf_pub" />
+  <!--node pkg="sub8_gazebo" type="actuator_sim.py" name="actuator_sim" /> -->
   <node pkg="sub8_gazebo" type="buoys.py" name="buoy_contact_reporter" />
   <node pkg="sub8_gazebo" type="turbulator.py" name="turbulator" output="screen" if="$(arg turbulence)" />
 
