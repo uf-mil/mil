@@ -4,10 +4,11 @@ from ros_alarms import TxAlarmListener, TxAlarmBroadcaster
 from mil_misc_tools import text_effects
 
 # Import missions here
-import square
+import start_gate_simple
 
 
 fprint = text_effects.FprintFactory(title="AUTO_MISSION").fprint
+WAIT_SECONDS = 5.0
 
 
 @txros.util.cancellableInlineCallbacks
@@ -16,7 +17,7 @@ def do_mission(sub):
 
     # Chain 1 missions
     try:
-        yield square.run(sub)
+        yield start_gate_simple.run(sub)
     except Exception as e:
         fprint("Error in Chain 1 missions!", msg_color="red")
         print e
@@ -31,8 +32,9 @@ def do_mission(sub):
 def _check_for_run(sub, nh, alarm):
     ''' Waits for the network loss alarm to trigger before '''
     if (yield nh.has_param("autonomous")) and (yield nh.get_param("autonomous")):
-        fprint("Preparing to go...")
-        yield nh.sleep(5)
+        fprint("Waiting {} seconds before running missions...".format(WAIT_SECONDS))
+        yield nh.sleep(WAIT_SECONDS)
+        fprint('Running Missions')
         yield do_mission(sub)
     else:
         fprint("Network loss deteceted but NOT starting mission.", msg_color='red')

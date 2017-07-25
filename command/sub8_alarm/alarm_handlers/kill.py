@@ -62,7 +62,7 @@ class Kill(HandlerBase):
         ignore.append("odom-kill")
 
         # If we lose network but don't want to go autonomous
-        if sub_alarms["network-loss"].raised and not rospy.get_param("autonomous", False):
+        if sub_alarms["network-loss"].raised and not rospy.get_param("/autonomous", False):
             return True
         ignore.append("network-loss")
 
