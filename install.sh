@@ -535,6 +535,10 @@ sudo apt-get install -qq mayavi2
 
 instlog "Installing common ROS dependencies"
 
+# Hardware drivers
+sudo apt-get install -qq ros-$ROS_VERSION-joy
+sudo apt-get install -qq ros-$ROS_VERSION-serial
+
 # Messages
 sudo apt-get install -qq ros-$ROS_VERSION-tf2-sensor-msgs
 
@@ -657,9 +661,6 @@ if [[ "$INSTALL_NAV" == "true" ]]; then
 	# Serial communications
 	sudo apt-get install -qq ros-$ROS_VERSION-rosserial
 	sudo apt-get install -qq ros-$ROS_VERSION-rosserial-arduino
-
-	# Thruster driver
-	sudo apt-get install -qq ros-$ROS_VERSION-roboteq-driver
 
 	# Trajectory Generation
 	sudo apt-get install -qq ros-$ROS_VERSION-ompl
