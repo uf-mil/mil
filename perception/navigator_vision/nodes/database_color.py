@@ -20,7 +20,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from image_geometry import PinholeCameraModel
 
 import navigator_tools
-from navigator_tools import fprint as _fprint
+from mil_misc_tools.text_effects import fprint as _fprint
 
 
 camera_root = "/camera/front/right"  # /camera_root/root

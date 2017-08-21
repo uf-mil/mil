@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import numpy.ma as ma
 import numpy.linalg as npl
-from navigator_tools import fprint
+from mil_misc_tools.text_effects import fprint
 # from skimage importmeasure
 import scipy.ndimage.measurements as mes
 ___author___ = "Tess Bianchi"

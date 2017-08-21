@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import txros
-import navigator_tools as nt
+import mil_tools as nt
 from twisted.internet import defer
 
 

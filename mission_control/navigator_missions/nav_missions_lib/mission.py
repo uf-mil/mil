@@ -1,6 +1,6 @@
 from txros import util, NodeHandle
 from twisted.internet import defer
-from navigator_tools import fprint
+from mil_misc_tools.text_effects import fprint
 
 
 class Mission(object):

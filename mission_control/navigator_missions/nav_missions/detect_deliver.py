@@ -12,8 +12,8 @@ from std_srvs.srv import SetBool, SetBoolRequest
 from twisted.internet import defer
 from image_geometry import PinholeCameraModel
 from visualization_msgs.msg import Marker,MarkerArray
-import navigator_tools
-from navigator_tools import fprint, MissingPerceptionObject
+import mil_tools
+from mil_misc_tools.text_effects import fprint, MissingPerceptionObject
 import genpy
 
 class DetectDeliverMission:
@@ -47,7 +47,7 @@ class DetectDeliverMission:
         self.align_forest_pause = False
 
     def _bounding_rect(self,points):
-        np_points = map(navigator_tools.point_to_numpy, points)
+        np_points = map(mil_tools.point_to_numpy, points)
         xy_max = np.max(np_points, axis=0)
         xy_min = np.min(np_points, axis=0)
         return np.append(xy_max, xy_min)
@@ -89,7 +89,7 @@ class DetectDeliverMission:
 
     @txros.util.cancellableInlineCallbacks
     def circle_search(self):
-        platform_np = navigator_tools.rosmsg_to_numpy(self.waypoint_res.objects[0].position)
+        platform_np = mil_tools.rosmsg_to_numpy(self.waypoint_res.objects[0].position)
         yield self.navigator.move.look_at(platform_np).set_position(platform_np).backward(self.circle_radius).yaw_left(90,unit='deg').go(move_type="drive")
 
         done_circle = False
@@ -215,8 +215,8 @@ class DetectDeliverMission:
         return (aligned_position, aligned_orientation)
 
     def get_shape_pos(self, normal_res, enu_cam_tf):
-        enunormal = enu_cam_tf.transform_vector(navigator_tools.rosmsg_to_numpy(normal_res.normal))
-        enupoint = enu_cam_tf.transform_point(navigator_tools.rosmsg_to_numpy(normal_res.closest))
+        enunormal = enu_cam_tf.transform_vector(mil_tools.rosmsg_to_numpy(normal_res.normal))
+        enupoint = enu_cam_tf.transform_point(mil_tools.rosmsg_to_numpy(normal_res.closest))
         return (enupoint, enunormal)
 
     @txros.util.cancellableInlineCallbacks
@@ -235,7 +235,7 @@ class DetectDeliverMission:
         defer.returnValue(normal_res)
 
     def normal_is_sane(self, vector3):
-         return abs(navigator_tools.rosmsg_to_numpy(vector3)[1]) < 0.4
+         return abs(mil_tools.rosmsg_to_numpy(vector3)[1]) < 0.4
 
     @txros.util.cancellableInlineCallbacks
     def shoot_all_balls(self):

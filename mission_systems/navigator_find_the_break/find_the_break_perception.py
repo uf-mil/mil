@@ -1,7 +1,7 @@
 import txros
 from twisted.internet import defer
 from txros import util
-from navigator_tools import fprint, CvDebug
+from mil_misc_tools.text_effects import fprint, CvDebug
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import numpy as np

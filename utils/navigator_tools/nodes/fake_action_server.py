@@ -11,8 +11,8 @@ from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseStamped
 from lqrrt_ros.msg import MoveAction, MoveFeedback, MoveResult
 
-import navigator_tools
-from navigator_tools import fprint as _fprint
+from navigator_tools import make_header, rosmsg_to_numpy, pose_to_numpy
+from mil_misc_tools.text_effects import fprint as _fprint
 from behaviors import params
 
 
@@ -21,7 +21,7 @@ fprint = lambda *args, **kwargs: _fprint(title="FAKE_ACTION_SERVER", time="", *a
 class FakeActionServer(object):
     def __init__(self):
         self.goal_pose_pub = rospy.Publisher("/lqrrt/goal", PoseStamped, queue_size=3)
-        
+
         # Parameters to simulate lqrrt
         self.blind = False
         
@@ -37,23 +37,23 @@ class FakeActionServer(object):
 
     def move_cb(self, msg):
         fprint("Move request received!", msg_color="blue")
-        
+
         if msg.move_type not in ['hold', 'drive', 'skid', 'circle']:
             fprint("Move type '{}' not found".format(msg.move_type), msg_color='red')
             self.move_server.set_aborted(MoveResult('move_type'))
             return
-        
+
         self.blind = msg.blind
 
         p = PoseStamped()
-        p.header = navigator_tools.make_header(frame="enu")
+        p.header = make_header(frame="enu")
         p.pose = msg.goal
         self.goal_pose_pub.publish(p)
 
         # Sleep before you continue
         rospy.sleep(1)
 
-        yaw = trns.euler_from_quaternion(navigator_tools.rosmsg_to_numpy(msg.goal.orientation))[2]        
+        yaw = trns.euler_from_quaternion(rosmsg_to_numpy(msg.goal.orientation))[2]
         if not self.is_feasible(np.array([msg.goal.position.x, msg.goal.position.y, yaw]), np.zeros(3)):
             fprint("Not feasible", msg_color='red')
             self.move_server.set_aborted(MoveResult('occupied'))
@@ -82,9 +82,9 @@ class FakeActionServer(object):
 
         # Check for collision
         cpm = 1 / self.ogrid.info.resolution
-        origin = navigator_tools.pose_to_numpy(self.ogrid.info.origin)[0][:2]
+        origin = pose_to_numpy(self.ogrid.info.origin)[0][:2]
         indicies = (cpm * (points - origin)).astype(np.int64)
-        
+
         try:
             data = np.array(self.ogrid.data).reshape(self.ogrid.info.width, self.ogrid.info.height)
             grid_values = data[indicies[:, 1], indicies[:, 0]]

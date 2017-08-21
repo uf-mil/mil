@@ -3,8 +3,8 @@ from __future__ import division
 
 import rospy
 import tf.transformations as trns
-import navigator_tools
-from navigator_tools import fprint as _fprint
+import mil_tools
+from mil_misc_tools.text_effects import fprint as _fprint
 from std_srvs.srv import Trigger
 
 import cv2
@@ -28,7 +28,7 @@ def make_ogrid_transform(ogrid):
     Invert the result to get ogrid -> ENU.
     """
     resolution = ogrid.info.resolution
-    origin = navigator_tools.pose_to_numpy(ogrid.info.origin)[0]
+    origin = mil_tools.pose_to_numpy(ogrid.info.origin)[0]
 
     # Transforms points from ENU to ogrid frame coordinates
     t = np.array([[1 / resolution,  0, -origin[0] / resolution],
@@ -130,11 +130,11 @@ class OGridServer:
         # Default to centering the ogrid
         position = np.array([-(map_size * resolution) / 2, -(map_size * resolution) / 2, 0])
         quaternion = np.array([0, 0, 0, 1])
-        self.origin = navigator_tools.numpy_quat_pair_to_pose(position, quaternion)
+        self.origin = mil_tools.numpy_quat_pair_to_pose(position, quaternion)
 
         self.global_ogrid = self.create_grid((map_size, map_size))
 
-        set_odom = lambda msg: setattr(self, 'odom', navigator_tools.pose_to_numpy(msg.pose.pose))
+        set_odom = lambda msg: setattr(self, 'odom', mil_tools.pose_to_numpy(msg.pose.pose))
         rospy.Subscriber('/odom', Odometry, set_odom)
         self.publisher = rospy.Publisher('/ogrid_master', OccupancyGrid, queue_size=1)
 
@@ -196,11 +196,11 @@ class OGridServer:
             fprint("Setting origin!")
             position = np.array([config['origin_x'], config['origin_y'], 0])
             quaternion = np.array([0, 0, 0, 1])
-            self.origin = navigator_tools.numpy_quat_pair_to_pose(position, quaternion)
+            self.origin = mil_tools.numpy_quat_pair_to_pose(position, quaternion)
         else:
             position = np.array([-(map_size[1] * self.resolution) / 2, -(map_size[0] * self.resolution) / 2, 0])
             quaternion = np.array([0, 0, 0, 1])
-            self.origin = navigator_tools.numpy_quat_pair_to_pose(position, quaternion)
+            self.origin = mil_tools.numpy_quat_pair_to_pose(position, quaternion)
 
         self.global_ogrid = self.create_grid(map_size)
         return config

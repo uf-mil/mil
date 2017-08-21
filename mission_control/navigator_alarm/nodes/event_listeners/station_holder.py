@@ -6,7 +6,7 @@ from navigator_alarm import AlarmListener
 from lqrrt_ros.msg import MoveAction, MoveGoal
 from navigator_msgs.srv import WrenchSelect, WrenchSelectRequest
 
-from navigator_tools import fprint as _fprint
+from mil_misc_tools.text_effects import fprint as _fprint
 
 fprint = lambda *args, **kwargs: _fprint(title="STATION_HOLDER", time="", *args, **kwargs)
 

@@ -2,7 +2,7 @@
 import numpy as np
 
 import rospy
-import navigator_tools
+from navigator_tools import numpy_to_point
 from twisted.internet import defer
 
 from navigator_tools.cfg import BoundsConfig
@@ -73,14 +73,14 @@ class BoundsServer(object):
 
     def got_request(self, req):
         to_frame = "enu" if req.to_frame == '' else req.to_frame
-        
+
         resp = BoundsResponse(enforce=False)
 
         self.bounds = [self.convert(CoordinateConversionRequest(frame="lla", point=lla)) for lla in self.lla_bounds]
-        bounds = [navigator_tools.numpy_to_point(getattr(response, to_frame)) for response in self.bounds]
+        bounds = [numpy_to_point(getattr(response, to_frame)) for response in self.bounds]
 
         resp.enforce = self.enforce
-        resp.bounds = bounds        
+        resp.bounds = bounds
 
         return resp
 

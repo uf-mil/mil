@@ -1,7 +1,7 @@
 # flake8: noqa
 import os
 import rospkg
-from navigator_tools import fprint
+from mil_misc_tools.text_effects import fprint
 
 # Had to use rospkg, os.path.dirname(__file__) wasn't working
 for module in os.listdir(os.path.join(rospkg.RosPack().get_path("navigator_missions"), 'nav_missions/')):

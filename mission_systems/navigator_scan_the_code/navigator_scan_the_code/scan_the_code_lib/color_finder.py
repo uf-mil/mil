@@ -1,7 +1,7 @@
 """Model for the ScanTheCode that tracks its own color."""
 from __future__ import division
 import cv2
-from navigator_tools import fprint
+from mil_misc_tools.text_effects import fprint
 import numpy as np
 import operator
 ___author___ = "Tess Bianchi"

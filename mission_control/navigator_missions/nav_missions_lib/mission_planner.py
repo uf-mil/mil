@@ -7,7 +7,7 @@ import nav_missions
 import nav_missions_test
 from navigator_tools import DBHelper
 from std_msgs.msg import String
-from navigator_tools import fprint
+from mil_misc_tools.text_effects import fprint
 from timeout_manager import TimeoutManager
 from YAML_parser import yaml_parse
 __author__ = "Tess Bianchi"

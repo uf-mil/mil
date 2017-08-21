@@ -11,7 +11,7 @@ from twisted.internet import defer
 from txros import action, util, tf, NodeHandle
 from pose_editor import PoseEditor2
 
-import navigator_tools
+import mil_tools
 from navigator_alarm import AlarmListenerTx
 
 from lqrrt_ros.msg import MoveAction
@@ -20,7 +20,7 @@ from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import PointCloud
 import navigator_msgs.srv as navigator_srvs
-from navigator_tools import fprint, MissingPerceptionObject
+from mil_misc_tools.text_effects import fprint, MissingPerceptionObject
 
 
 class MissionResult(object):
@@ -87,9 +87,9 @@ class Navigator(object):
 
         self._moveto_client = action.ActionClient(self.nh, 'move_to', MoveAction)
 
-        odom_set = lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0])
+        odom_set = lambda odom: setattr(self, 'pose', mil_tools.odometry_to_numpy(odom)[0])
         self._odom_sub = self.nh.subscribe('odom', Odometry, odom_set)
-        enu_odom_set = lambda odom: setattr(self, 'ecef_pose', navigator_tools.odometry_to_numpy(odom)[0])
+        enu_odom_set = lambda odom: setattr(self, 'ecef_pose', mil_tools.odometry_to_numpy(odom)[0])
         self._ecef_odom_sub = self.nh.subscribe('absodom', Odometry, enu_odom_set)
 
         try:
@@ -124,13 +124,13 @@ class Navigator(object):
     @util.cancellableInlineCallbacks
     def tx_pose(self):
         last_odom_msg = yield self._odom_sub.get_next_message()
-        defer.returnValue(navigator_tools.odometry_to_numpy(last_odom_msg)[0])
+        defer.returnValue(mil_tools.odometry_to_numpy(last_odom_msg)[0])
 
     @property
     @util.cancellableInlineCallbacks
     def tx_ecef_pose(self):
         last_odom_msg = yield self._ecef_odom_sub.get_next_message()
-        defer.returnValue(navigator_tools.odometry_to_numpy(last_odom_msg)[0])
+        defer.returnValue(mil_tools.odometry_to_numpy(last_odom_msg)[0])
 
     @property
     def move(self):
@@ -149,11 +149,11 @@ class Navigator(object):
             yield _bounds.wait_for_service()
             resp = yield _bounds(navigator_srvs.BoundsRequest())
             if resp.enforce:
-                self.enu_bounds = [navigator_tools.point_to_numpy(bound) for bound in resp.bounds]
+                self.enu_bounds = [mil_tools.point_to_numpy(bound) for bound in resp.bounds]
 
                 # Just for display
-                pc = PointCloud(header=navigator_tools.make_header(frame='/enu'),
-                                points=np.array([navigator_tools.numpy_to_point(point) for point in self.enu_bounds]))
+                pc = PointCloud(header=mil_tools.make_header(frame='/enu'),
+                                points=np.array([mil_tools.numpy_to_point(point) for point in self.enu_bounds]))
                 yield self._point_cloud_pub.publish(pc)
         else:
             fprint("No bounds param found, defaulting to none.", title="NAVIGATOR")

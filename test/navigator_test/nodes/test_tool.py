@@ -4,7 +4,7 @@ import argparse
 import navigator_tests
 from txros import util, NodeHandle
 from twisted.internet import defer, reactor
-from navigator_tools import fprint
+from mil_misc_tools.text_effects import fprint
 import inspect
 from navigator_test_lib import TestUnit
 

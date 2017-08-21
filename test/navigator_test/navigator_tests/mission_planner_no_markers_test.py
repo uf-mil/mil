@@ -5,7 +5,7 @@ from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryResponse
 from nav_missions_lib import MissionPlanner
 import yaml
 from txros import util
-from navigator_tools import fprint
+from mil_misc_tools.text_effects import fprint
 
 
 class MissionPlannerTest(TestUnit):

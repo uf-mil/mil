@@ -6,9 +6,9 @@ import numpy as np
 from navigator_msgs.srv import FindPinger, FindPingerRequest, SetFrequency, SetFrequencyRequest
 from geometry_msgs.msg import Point
 from std_srvs.srv import SetBool, SetBoolRequest
-import navigator_tools
+import mil_tools
 from visualization_msgs.msg import Marker, MarkerArray
-from navigator_tools import fprint
+from mil_misc_tools.text_effects import fprint
 import rospy
 
 ___author___ = "Kevin Allen"
@@ -48,15 +48,15 @@ class PingerMission:
         """Get position of 3 gates from database"""
         gate_1 = yield self.navigator.database_query("Gate_1")
         assert gate_1.found, "Gate 1 Not found"
-        gate_1_pos = navigator_tools.rosmsg_to_numpy(gate_1.objects[0].position)[:2]
+        gate_1_pos = mil_tools.rosmsg_to_numpy(gate_1.objects[0].position)[:2]
 
         gate_2 = yield self.navigator.database_query("Gate_2")
         assert gate_2.found, "Gate 2 Not found"
-        gate_2_pos = navigator_tools.rosmsg_to_numpy(gate_2.objects[0].position)[:2]
+        gate_2_pos = mil_tools.rosmsg_to_numpy(gate_2.objects[0].position)[:2]
 
         gate_3 = yield self.navigator.database_query("Gate_3")
         assert gate_3.found, "Gate 3 Not found"
-        gate_3_pos = navigator_tools.rosmsg_to_numpy(gate_3.objects[0].position)[:2]
+        gate_3_pos = mil_tools.rosmsg_to_numpy(gate_3.objects[0].position)[:2]
 
         self.gate_poses = np.array([gate_1_pos, gate_2_pos, gate_3_pos])
 
@@ -114,7 +114,7 @@ class PingerMission:
         if res.pinger_position.x == 0:
            self.pinger_pose = self.gate_poses[1]
         pinger_pose = res.pinger_position
-        self.pinger_pose = navigator_tools.rosmsg_to_numpy(pinger_pose)[:2]
+        self.pinger_pose = mil_tools.rosmsg_to_numpy(pinger_pose)[:2]
         self.distances = np.array([np.linalg.norm(self.pinger_pose - self.gate_poses[0]),
                                    np.linalg.norm(self.pinger_pose - self.gate_poses[1]),
                                    np.linalg.norm(self.pinger_pose - self.gate_poses[2])])
@@ -169,13 +169,13 @@ class PingerMission:
 
         totems = yield self.navigator.database_query("totem", raise_exception=False)
         if totems.found:
-            sorted_1 = sorted(totems.objects, key=lambda t: np.linalg.norm(estimated_1_endbuoy - navigator_tools.rosmsg_to_numpy(t.position)[:2]))
-            sorted_3 = sorted(totems.objects, key=lambda t: np.linalg.norm(estimated_3_endbuoy - navigator_tools.rosmsg_to_numpy(t.position)[:2]))
+            sorted_1 = sorted(totems.objects, key=lambda t: np.linalg.norm(estimated_1_endbuoy - mil_tools.rosmsg_to_numpy(t.position)[:2]))
+            sorted_3 = sorted(totems.objects, key=lambda t: np.linalg.norm(estimated_3_endbuoy - mil_tools.rosmsg_to_numpy(t.position)[:2]))
 
-            sorted_circle = sorted(totems.objects, key=lambda t: abs(np.linalg.norm(estimated_circle_buoy - navigator_tools.rosmsg_to_numpy(t.position)[:2])))
-            self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_circle[0].position), color=(1,1,1), time=cur_time)
-            if np.linalg.norm(navigator_tools.rosmsg_to_numpy(sorted_circle[0].position)[:2] - estimated_circle_buoy) < self.MAX_CIRCLE_BUOY_ERROR:
-                self.circle_totem = navigator_tools.rosmsg_to_numpy(sorted_circle[0].position)
+            sorted_circle = sorted(totems.objects, key=lambda t: abs(np.linalg.norm(estimated_circle_buoy - mil_tools.rosmsg_to_numpy(t.position)[:2])))
+            self.new_marker(position=mil_tools.rosmsg_to_numpy(sorted_circle[0].position), color=(1,1,1), time=cur_time)
+            if np.linalg.norm(mil_tools.rosmsg_to_numpy(sorted_circle[0].position)[:2] - estimated_circle_buoy) < self.MAX_CIRCLE_BUOY_ERROR:
+                self.circle_totem = mil_tools.rosmsg_to_numpy(sorted_circle[0].position)
                 fprint("PINGER: found buoy to circle at {}".format(self.circle_totem), msg_color='green')
             else:
                 fprint("PINGER: circle buoy is too far from where it should be", msg_color='red')
@@ -183,23 +183,23 @@ class PingerMission:
             if sorted_3[0].color.r > 0.9:
                 self.color_wrong = True
                 color_3 = "RED"
-                self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_3[0].position), color=(1,0,0), time=cur_time)
+                self.new_marker(position=mil_tools.rosmsg_to_numpy(sorted_3[0].position), color=(1,0,0), time=cur_time)
             elif sorted_3[0].color.g > 0.9:
                 color_3 = "GREEN"
-                self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_3[0].position), color=(0,1,0), time=cur_time)
+                self.new_marker(position=mil_tools.rosmsg_to_numpy(sorted_3[0].position), color=(0,1,0), time=cur_time)
             else:
                 color_3 = "UNKNOWN"
-                self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_3[0].position), color=(1,1,1), time=cur_time)
+                self.new_marker(position=mil_tools.rosmsg_to_numpy(sorted_3[0].position), color=(1,1,1), time=cur_time)
             if sorted_1[0].color.r > 0.9:
                 color_1 = "RED"
-                self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(1,0,0), time=cur_time)
+                self.new_marker(position=mil_tools.rosmsg_to_numpy(sorted_1[0].position), color=(1,0,0), time=cur_time)
             elif sorted_1[0].color.g > 0.9:
                 self.color_wrong = True
                 color_1 = "GREEN"
-                self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(0,1,0), time=cur_time)
+                self.new_marker(position=mil_tools.rosmsg_to_numpy(sorted_1[0].position), color=(0,1,0), time=cur_time)
             else:
                 color_1 = "UNKNOWN"
-                self.new_marker(position=navigator_tools.rosmsg_to_numpy(sorted_1[0].position), color=(1,1,1), time=cur_time)
+                self.new_marker(position=mil_tools.rosmsg_to_numpy(sorted_1[0].position), color=(1,1,1), time=cur_time)
 
             if int(self.gate_index) == 0:
                 if color_1 == "RED":

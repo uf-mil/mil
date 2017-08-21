@@ -12,6 +12,7 @@ find_package(catkin
     gazebo_ros
     roscpp
     message_generation
+    roboteq_msgs
 )
 
 
@@ -37,6 +38,8 @@ target_link_libraries(
         ${catkin_LIBRARIES}
         ${GAZEBO_LIBRARIES}
 )
+
+
 
 add_library(
     navigator_buoyancy
@@ -90,5 +93,4 @@ add_dependencies(navigator_thrusters
 catkin_package(
     INCLUDE_DIRS include
     CATKIN_DEPENDS gazebo_ros roscpp rospy std_msgs nav_msgs message_runtime tf gazebo_plugins sensor_msgs
-    DEPENDS system_lib gazebo
 )

@@ -8,7 +8,7 @@ import time
 import sys
 from sets import Set
 from missing_perception_object import MissingPerceptionObject
-import navigator_tools as nt
+import mil_tools as nt
 import numpy as np
 __author__ = "Tess Bianchi"
 

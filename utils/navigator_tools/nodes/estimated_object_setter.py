@@ -6,7 +6,6 @@ import sys
 from argparse import RawTextHelpFormatter, ArgumentParser
 
 import txros
-import navigator_tools
 from twisted.internet import defer
 from coordinate_conversion_server import Converter
 from navigator_msgs.srv import CoordinateConversionRequest, ObjectDBQuery, ObjectDBQueryRequest

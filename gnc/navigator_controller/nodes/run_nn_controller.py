@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 from nav_msgs.msg import Odometry
-from uf_common.msg import PoseTwistStamped
+from mil_common.msg import PoseTwistStamped
 from neural_control.nn_controller import NN_controller
 from geometry_msgs.msg import PoseStamped
 

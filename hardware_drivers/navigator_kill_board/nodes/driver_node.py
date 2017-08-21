@@ -7,8 +7,8 @@ import serial
 from std_msgs.msg import String
 from std_msgs.msg import Header
 
-from navigator_tools import thread_lock
-from navigator_tools import fprint as _fprint
+from mil_tools import thread_lock
+from mil_misc_tools.text_effects import fprint as _fprint
 from navigator_alarm import AlarmBroadcaster, AlarmListener
 from navigator_msgs.msg import KillStatus
 

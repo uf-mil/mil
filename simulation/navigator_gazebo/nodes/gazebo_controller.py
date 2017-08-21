@@ -2,13 +2,12 @@
 from __future__ import division
 
 import rospy
-import navigator_tools
+import mil_tools
 from tf import transformations
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovariance, TwistWithCovariance, Pose, Point, Quaternion
 from gazebo_msgs.msg import LinkStates, ModelState
 from gazebo_msgs.srv import SetModelState
-from uf_common.msg import Float64Stamped
 import numpy as np
 import os
 
@@ -60,16 +59,16 @@ class GazeboInterface(object):
             target_index = msg.name.index(self.target)
 
             twist = msg.twist[target_index]
-            enu_pose = navigator_tools.pose_to_numpy(msg.pose[target_index])
+            enu_pose = mil_tools.pose_to_numpy(msg.pose[target_index])
 
             self.last_ecef = self.enu_to_ecef(enu_pose[0])
             self.last_enu = enu_pose
 
             self.last_odom = Odometry(
-                header=navigator_tools.make_header(frame='/enu'),
+                header=mil_tools.make_header(frame='/enu'),
                 child_frame_id='/measurement',
                 pose=PoseWithCovariance(
-                    pose=navigator_tools.numpy_quat_pair_to_pose(*self.last_enu)
+                    pose=mil_tools.numpy_quat_pair_to_pose(*self.last_enu)
                 ),
                 twist=TwistWithCovariance(
                     twist=twist
@@ -77,10 +76,10 @@ class GazeboInterface(object):
             )
 
             self.last_absodom = Odometry(
-                header=navigator_tools.make_header(frame='/ecef'),
+                header=mil_tools.make_header(frame='/ecef'),
                 child_frame_id='/measurement',
                 pose=PoseWithCovariance(
-                    pose=navigator_tools.numpy_quat_pair_to_pose(self.last_ecef, self.last_enu[1])
+                    pose=mil_tools.numpy_quat_pair_to_pose(self.last_ecef, self.last_enu[1])
                 ),
                 twist=TwistWithCovariance(
                     twist=twist

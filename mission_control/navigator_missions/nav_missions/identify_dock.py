@@ -9,8 +9,8 @@ from geometry_msgs.msg import Point
 from std_srvs.srv import SetBool, SetBoolRequest
 from twisted.internet import defer
 from visualization_msgs.msg import Marker,MarkerArray
-import navigator_tools
-from navigator_tools import fprint, MissingPerceptionObject
+import mil_tools
+from mil_misc_tools.text_effects import fprint, MissingPerceptionObject
 from navigator_msgs.srv import GetDockBays, GetDockBaysRequest
 from navigator_msgs.srv import CameraToLidarTransform,CameraToLidarTransformRequest
 import genpy
@@ -56,7 +56,7 @@ class IdentifyDockMission:
     @txros.util.cancellableInlineCallbacks
     def get_waypoint(self):
         res = yield self.navigator.database_query(self.WAYPOINT_NAME)
-        self.dock_pose = navigator_tools.rosmsg_to_numpy(res.objects[0].position)
+        self.dock_pose = mil_tools.rosmsg_to_numpy(res.objects[0].position)
         #  self.dock_pose = np.array([88.6192321777,-515.189880371,0])
 
     def call_get_bays(self):
@@ -81,10 +81,10 @@ class IdentifyDockMission:
             if not res.success:
                 yield self.navigator.nh.sleep(0.1)
                 continue
-            self.bay_poses = (navigator_tools.rosmsg_to_numpy(res.bays[0]),
-              navigator_tools.rosmsg_to_numpy(res.bays[1]),
-              navigator_tools.rosmsg_to_numpy(res.bays[2]))
-            self.bay_normal = navigator_tools.rosmsg_to_numpy(res.normal)
+            self.bay_poses = (mil_tools.rosmsg_to_numpy(res.bays[0]),
+              mil_tools.rosmsg_to_numpy(res.bays[1]),
+              mil_tools.rosmsg_to_numpy(res.bays[2]))
+            self.bay_normal = mil_tools.rosmsg_to_numpy(res.normal)
             print_good("Got GetDockShapes response")
             return
         raise Exception("Bays not found after circling or timed out")
@@ -139,7 +139,7 @@ class IdentifyDockMission:
         defer.returnValue(False)
 
     def _bounding_rect(self,points):
-        np_points = map(navigator_tools.point_to_numpy, points)
+        np_points = map(mil_tools.point_to_numpy, points)
         xy_max = np.max(np_points, axis=0)
         xy_min = np.min(np_points, axis=0)
         return np.append(xy_max, xy_min)
@@ -162,7 +162,7 @@ class IdentifyDockMission:
         raise Exception("Shapes not identified after circling or timed out")
 
     def normal_is_sane(self, vector3):
-         return abs(navigator_tools.rosmsg_to_numpy(vector3)[1]) < 0.4
+         return abs(mil_tools.rosmsg_to_numpy(vector3)[1]) < 0.4
 
     @txros.util.cancellableInlineCallbacks
     def get_normal(self, shape):
@@ -181,8 +181,8 @@ class IdentifyDockMission:
         defer.returnValue(normal_res)
 
     def get_shape_pos(self, normal_res, enu_cam_tf):
-        enunormal = enu_cam_tf.transform_vector(navigator_tools.rosmsg_to_numpy(normal_res.normal))
-        enupoint = enu_cam_tf.transform_point(navigator_tools.rosmsg_to_numpy(normal_res.closest))
+        enunormal = enu_cam_tf.transform_vector(mil_tools.rosmsg_to_numpy(normal_res.normal))
+        enupoint = enu_cam_tf.transform_point(mil_tools.rosmsg_to_numpy(normal_res.closest))
         return (enupoint, enunormal)
 
     @txros.util.cancellableInlineCallbacks
@@ -244,10 +244,10 @@ class IdentifyDockMission:
     @txros.util.cancellableInlineCallbacks
     def get_dock_search_markers(self):
         left_res = yield self.navigator.database_query("DockEdgeLeft")
-        left_pose = navigator_tools.rosmsg_to_numpy(left_res.objects[0].position)
+        left_pose = mil_tools.rosmsg_to_numpy(left_res.objects[0].position)
 
         right_res = yield self.navigator.database_query("DockEdgeRight")
-        right_pose = navigator_tools.rosmsg_to_numpy(right_res.objects[0].position)
+        right_pose = mil_tools.rosmsg_to_numpy(right_res.objects[0].position)
 
         search_line_vector        = right_pose - left_pose
         search_line_vector_normal = search_line_vector / np.linalg.norm(search_line_vector)

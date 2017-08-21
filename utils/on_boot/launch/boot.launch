@@ -5,7 +5,7 @@
   <!-- Some utilities (maybe move these to a different launch at some point) -->
   <node name="coordinate_converter" pkg="navigator_tools" type="coordinate_conversion_server.py"/>
   <node name="bounds_server" pkg="navigator_tools" type="bounds.py"/>
-  <node name="rviz_repub" pkg="navigator_tools" type="rviz_waypoint.py"/>
+  <node name="rviz_repub" pkg="mil_tools" type="rviz_waypoint.py"/>
 
   <node name="set_bounds" pkg="dynamic_reconfigure" type="dynparam" args="load /bounds_server $(find navigator_tools)/cfg/wauberg.yaml -t 10" />
 

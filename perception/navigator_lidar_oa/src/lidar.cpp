@@ -22,7 +22,7 @@
 #include <navigator_msgs/Bounds.h>
 #include <interactive_markers/interactive_marker_server.h>
 #include <interactive_markers/menu_handler.h>
-#include <uf_common/PoseTwistStamped.h>
+#include <mil_msgs/PoseTwistStamped.h>
 
 #include <iostream>
 #include <string>
@@ -46,7 +46,7 @@ ObjectTracker object_tracker(MIN_OBJECT_SEPERATION_DISTANCE*2);
 geometry_msgs::Point waypoint_ogrid;
 geometry_msgs::Pose boatPose_enu;
 geometry_msgs::Twist boatTwist_enu;
-uf_common::PoseTwistStamped waypoint_enu,carrot_enu;
+mil_msgs::PoseTwistStamped waypoint_enu,carrot_enu;
 ros::Time pubObjectsTimer;
 ros::ServiceClient boundsClient;
 

@@ -7,9 +7,9 @@ from random import shuffle
 import numpy as np
 import cv2
 
-import navigator_tools
+import mil_tools
 import tf.transformations as trns
-from navigator_tools import fprint as _fprint
+from mil_misc_tools.text_effects import fprint as _fprint
 from navigator_msgs.srv import ObjectDBQuery
 from navigator_msgs.msg import PerceptionObject
 from nav_msgs.msg import OccupancyGrid, Odometry
@@ -31,15 +31,15 @@ class DoOdom(object):
         # We need to publish an inital odom message for lqrrt
         start_ori = trns.quaternion_from_euler(0, 0, np.random.normal() * 3.14)
         start_pos = np.append(np.random.uniform(rand_size, size=(2)), 1)
-        start_pose = navigator_tools.numpy_quat_pair_to_pose(start_pos, start_ori)
+        start_pose = mil_tools.numpy_quat_pair_to_pose(start_pos, start_ori)
         start_odom = Odometry()
-        start_odom.header = navigator_tools.make_header(frame='enu')
+        start_odom.header = mil_tools.make_header(frame='enu')
         start_odom.child_frame_id = 'base_link'
         start_odom.pose.pose = start_pose
         self.odom_pub.publish(start_odom)
 
     def set_odom(self, msg):
-        self.odom = navigator_tools.pose_to_numpy(msg.pose.pose) 
+        self.odom = mil_tools.pose_to_numpy(msg.pose.pose) 
         self.odom_pub.publish(msg)
 
 
@@ -57,7 +57,7 @@ class Sim(object):
         self.resolution = 0.3
         self.height = bf_size * 3 
         self.width = bf_size * 3
-        self.origin = navigator_tools.numpy_quat_pair_to_pose([-bf_size, -bf_size, 0],
+        self.origin = mil_tools.numpy_quat_pair_to_pose([-bf_size, -bf_size, 0],
                                                               [0, 0, 0, 1])
         
         self.publish_ogrid = lambda *args: self.ogrid_pub.publish(self.get_message())
@@ -113,9 +113,9 @@ class Sim(object):
     def position_to_object(self, position, color, id,  name="totem"):
         obj = PerceptionObject()
         obj.id = int(id)
-        obj.header = navigator_tools.make_header(frame="enu")
+        obj.header = mil_tools.make_header(frame="enu")
         obj.name = name
-        obj.position = navigator_tools.numpy_to_point(position)
+        obj.position = mil_tools.numpy_to_point(position)
         obj.color.r = color[0]
         obj.color.g = color[1]
         obj.color.b = color[2]
@@ -143,7 +143,7 @@ class Sim(object):
             self.grid = np.zeros((self.height / self.resolution, self.width / self.resolution))
 
         ogrid = OccupancyGrid()
-        ogrid.header = navigator_tools.make_header(frame="enu")
+        ogrid.header = mil_tools.make_header(frame="enu")
         ogrid.info.resolution = self.resolution
         ogrid.info.height, ogrid.info.width = self.grid.shape
         ogrid.info.origin = self.origin

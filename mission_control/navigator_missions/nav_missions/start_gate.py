@@ -5,7 +5,7 @@ import txros
 import tf
 import tf.transformations as trns
 import numpy as np
-import navigator_tools
+import mil_tools
 from sensor_msgs.msg import PointCloud
 from twisted.internet import defer
 
@@ -13,7 +13,7 @@ from twisted.internet import defer
 class Buoy(object):
     @classmethod
     def from_srv(cls, srv):
-        return cls(navigator_tools.point_to_numpy(srv.position), srv.color)
+        return cls(mil_tools.point_to_numpy(srv.position), srv.color)
 
     def __init__(self, position, color):
         self.position = np.array(position)
@@ -48,7 +48,7 @@ def two_buoys(navigator, buoys, setup_dist, channel_length=30):
     # Get the ones closest to us and assume those are the front
     front = buoys
 
-    t = txros.tf.Transform.from_Pose_message(navigator_tools.numpy_quat_pair_to_pose(*pose))
+    t = txros.tf.Transform.from_Pose_message(mil_tools.numpy_quat_pair_to_pose(*pose))
     t_mat44 = np.linalg.inv(t.as_matrix())
     f_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1)) for buoy in front]
     
@@ -80,7 +80,7 @@ def four_buoys(navigator, buoys, setup_dist):
     #print "back", back
 
     # Made it this far, make sure the red one is on the left and green on the right ================
-    t = txros.tf.Transform.from_Pose_message(navigator_tools.numpy_quat_pair_to_pose(*pose))
+    t = txros.tf.Transform.from_Pose_message(mil_tools.numpy_quat_pair_to_pose(*pose))
     t_mat44 = np.linalg.inv(t.as_matrix())
     f_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1)) for buoy in front]
     b_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1)) for buoy in back]
@@ -127,8 +127,8 @@ def main(navigator):
 
     # Put the target into the point cloud as well
     points = []
-    points.append(navigator_tools.numpy_to_point(target.position))
-    pc = PointCloud(header=navigator_tools.make_header(frame='/enu'),
+    points.append(mil_tools.numpy_to_point(target.position))
+    pc = PointCloud(header=mil_tools.make_header(frame='/enu'),
                     points=np.array(points))
    
     yield navigator._point_cloud_pub.publish(pc)
@@ -178,7 +178,7 @@ class OgridFactory():
         self.draw_lines(self.walls)
 
     def make_ogrid_transform(self):
-        self.origin = navigator_tools.numpy_quat_pair_to_pose([self.x_lower, self.y_lower, 0],
+        self.origin = mil_tools.numpy_quat_pair_to_pose([self.x_lower, self.y_lower, 0],
                                                               [0, 0, 0, 1])
         dx = self.x_upper - self.x_lower
         dy = self.y_upper - self.y_lower
@@ -294,7 +294,7 @@ class OgridFactory():
 
     def get_message(self):
         ogrid = OccupancyGrid()
-        ogrid.header = navigator_tools.make_header(frame="enu")
+        ogrid.header = mil_tools.make_header(frame="enu")
         ogrid.info.resolution = self.resolution
         ogrid.info.height, ogrid.info.width = self.grid.shape
         ogrid.info.origin = self.origin
