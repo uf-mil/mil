@@ -88,9 +88,11 @@ class AlarmServer(object):
 
         # Check the predicate, this should return the new `raised` status of the meta alarm
         raised_status = self.meta_alarms[meta_alarm](meta, alarms)
-        if raised_status != meta.raised:
+        if bool(raised_status) != meta.raised:
             temp = meta.as_msg()
-            temp.raised = raised_status
+            temp.raised = bool(raised_status)
+            if type(raised_status) == int:  # Allow alarm handlers to return severity from meta alarm predicate
+                temp.severity = raised_status
             meta.update(temp)
             self._alarm_pub.publish(meta.as_msg())
 
