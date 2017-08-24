@@ -9,7 +9,7 @@ NaviGator and a control panel to interact with the running system.
 import functools
 import os
 
-from navigator_alarm import AlarmListener
+from ros_alarms import AlarmListener
 from navigator_msgs.msg import Hosts, Host
 from python_qt_binding import QtCore
 from python_qt_binding import QtGui
@@ -158,7 +158,7 @@ class Dashboard(Plugin):
         rospy.Subscriber("/clock", Clock, self.cache_system_time)
         rospy.Subscriber("/host_monitor", Hosts, self.cache_hosts)
 
-        self.kill_listener = AlarmListener("kill", self.update_kill_status)
+        self.kill_listener = AlarmListener("kill", callback_funct=self.update_kill_status)
 
     def _timeout_check(function):
         '''
@@ -178,7 +178,7 @@ class Dashboard(Plugin):
         alarm. Caches the last displayed kill status to avoid updating the
         display with the same information twice.
         '''
-        if (alarm.clear):
+        if (not alarm.raised):
             if (self.is_killed):
                 self.is_killed = False
                 self.kill_status_status.setText("Alive")

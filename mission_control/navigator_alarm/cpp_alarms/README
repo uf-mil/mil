@@ -1,2 +1,0 @@
-Whenever a new cpp_alarm is defined, a json file describing it should be placed in this folder.
-Use navigator_trajectory_generator_planning_failure.json as a template for these files. 

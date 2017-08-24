@@ -9,7 +9,7 @@ from std_msgs.msg import Header
 
 from mil_tools import thread_lock
 from mil_misc_tools.text_effects import fprint as _fprint
-from navigator_alarm import AlarmBroadcaster, AlarmListener
+from ros_alarms import AlarmBroadcaster, AlarmListener
 from navigator_msgs.msg import KillStatus
 
 fprint = lambda *args, **kwargs: _fprint(time='', *args, **kwargs)
@@ -26,23 +26,22 @@ class KillInterface(object):
     def __init__(self, port="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A104OWRY-if00-port0", baud=9600):
         self.ser = serial.Serial(port=port, baudrate=baud, timeout=0.25)
         self.ser.flush()
-        
+
         self.timeout = rospy.Duration(1)
         self.network_msg = None
         update_network = lambda msg: setattr(self, "network_msg", msg)
         self.network_listener = rospy.Subscriber("/keep_alive", Header, update_network)
-        
+
         self.killstatus_pub = rospy.Publisher("/killstatus", KillStatus, queue_size=1)
 
-        ab = AlarmBroadcaster()
-        self.kill_alarm = ab.add_alarm("hw_kill", problem_description="Hardware kill from a kill switch.")
-        self.disconnect = ab.add_alarm("kill_system_disconnect")
-        
+        self.kill_alarm = AlarmBroadcaster('hw_kill')
+        self.disconnect = AlarmBroadcaster('kill_system_disconnect')
+
         self.killed = False
-        
+
         self.kill_status = {'overall': False, 'PF': False, 'PA': False, 'SF': False, 'SA': False, 'computer': False, 'remote': False}
         # Dict of op-codes to functions that need to be run with each code for aysnc responses
-        self.update_cbs = {'\x10': lambda: self.update('overall', True), '\x11': lambda: self.update('overall', False), 
+        self.update_cbs = {'\x10': lambda: self.update('overall', True), '\x11': lambda: self.update('overall', False),
                            '\x12': lambda: self.update('PF', True), '\x13': lambda: self.update('PF', False), 
                            '\x14': lambda: self.update('PA', True), '\x15': lambda: self.update('PA', False),
                            '\x16': lambda: self.update('SF', True), '\x17': lambda: self.update('SF', False), 

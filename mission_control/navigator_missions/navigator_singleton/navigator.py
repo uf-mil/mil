@@ -12,7 +12,7 @@ from txros import action, util, tf, NodeHandle
 from pose_editor import PoseEditor2
 
 import mil_tools
-from navigator_alarm import AlarmListenerTx
+from ros_alarms import TxAlarmListener
 
 from lqrrt_ros.msg import MoveAction
 from nav_msgs.msg import Odometry
@@ -249,16 +249,12 @@ class Navigator(object):
 
     @util.cancellableInlineCallbacks
     def _make_alarms(self):
-        self.alarm_listener = AlarmListenerTx()
-        yield self.alarm_listener.init(self.nh)
-
+        self.odom_loss_listener = yield AlarmListenerTx.init(self.nh, 'odom-loss', lambda alarm: setattr(self, 'odom_loss', alarm.raised)
+        self.kill_listener = yield AlarmListenerTx.init(self.nh, 'kill',lambda alarm: setattr(self, 'killed', alarm.raised))
         fprint("Alarm listener created, listening to alarms: ", title="NAVIGATOR")
 
-        self.alarm_listener.add_listener("odom_loss", lambda alarm: setattr(self, 'odom_loss', not alarm.clear))
-        self.alarm_listener.add_listener("kill", lambda alarm: setattr(self, 'killed', not alarm.clear))
-
-        yield self.alarm_listener.wait_for_alarm("kill", timeout=.5)
-        yield self.alarm_listener.wait_for_alarm("odom_loss", timeout=.5)
+        self.killed = yield self.kill_listener.is_raised()
+        self.odom_loss = yield self.odom_loss_listener.is_raised()
         fprint("\tkill :", newline=False)
         fprint(self.killed)
         fprint("\todom_loss :", newline=False)

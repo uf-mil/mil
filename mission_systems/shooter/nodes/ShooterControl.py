@@ -4,7 +4,7 @@ from sensor_msgs.msg import Joy
 import rospy
 import actionlib
 import time
-from navigator_alarm import AlarmListener
+from ros_alarms import AlarmListener
 from navigator_msgs.msg import ShooterDoAction, ShooterDoActionFeedback, ShooterDoActionResult, ShooterDoActionGoal
 from navigator_msgs.srv import ShooterManual, ShooterManualResponse
 from std_srvs.srv import Trigger,TriggerResponse, TriggerRequest
@@ -43,16 +43,16 @@ class ShooterControl:
         self.status_pub = rospy.Publisher('/shooter/status', String, queue_size=5)
         self.manual_used = False
         self.killed = False
-        #self.kill_listener = AlarmListener("/kill", self.update_kill_status)
+        self.kill_listener = AlarmListener("/kill", callback_funct=self.update_kill_status)
 
     def update_kill_status(self, alarm):
         '''
         Updates the kill status display when there is an update on the kill
         alarm.
         '''
-        if (alarm.clear and self.killed):
+        if (not alarm.raised and self.killed):
             self.killed = False
-        elif (not self.killed) and (not alarm.clear):
+        elif (not self.killed) and (alarm.raised):
             self.cancel_callback(TriggerRequest())
             self.killed = True
 
