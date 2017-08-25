@@ -9,9 +9,8 @@
 
 #include <boost/filesystem.hpp>
 
-#include <navigator_vision_lib/image_acquisition/ros_camera_stream.hpp>
-#include <navigator_vision_lib/image_filtering.hpp>
-#include <navigator_tools.hpp>
+#include <mil_vision_lib/image_acquisition/ros_camera_stream.hpp>
+#include <mil_vision_lib/image_filtering.hpp>
 
 #include <ros/ros.h>
 #include <ros/package.h>
@@ -59,7 +58,7 @@ struct ShapeDetection
 class UnderwaterShapeDetector
 {
   ros::NodeHandle _nh;
-  nav::ROSCameraStream<cv::Vec3b> _camera;
+  mil_vision::ROSCameraStream<cv::Vec3b> _camera;
   std::string _ns;
   std::string _template_dir;
   float _shape_area;

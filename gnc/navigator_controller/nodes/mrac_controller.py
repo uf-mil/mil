@@ -9,7 +9,7 @@ import rospy
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, WrenchStamped, PoseStamped, Quaternion, Pose
 from std_msgs.msg import Header
-from mil_common.msg import PoseTwistStamped
+from mil_msgs.msg import PoseTwistStamped
 from std_msgs.msg import Bool, Float64MultiArray
 
 

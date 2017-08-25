@@ -11,7 +11,7 @@ from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseStamped
 from lqrrt_ros.msg import MoveAction, MoveFeedback, MoveResult
 
-from navigator_tools import make_header, rosmsg_to_numpy, pose_to_numpy
+from mil_tools import make_header, rosmsg_to_numpy, pose_to_numpy
 from mil_misc_tools.text_effects import fprint as _fprint
 from behaviors import params
 

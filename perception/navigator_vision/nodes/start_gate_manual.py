@@ -10,13 +10,13 @@ import tf
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import PointStamped, PoseStamped
 from navigator_msgs.srv import StartGate, StartGateResponse
-import navigator_tools
+import mil_tools
 import image_geometry
 from scipy.optimize import minimize
 
 class ImageGetter(object):
     def __init__(self, topic_name):
-        self.sub = navigator_tools.Image_Subscriber(topic_name, self.get_image)
+        self.sub = mil_tools.Image_Subscriber(topic_name, self.get_image)
 
         print 'getting topic', topic_name
         self.frame = None
@@ -227,19 +227,19 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
     # Just for visualization
     for i in range(5):
         # Publish it 5 times so we can see it in rviz
-        navigator_tools.draw_ray_3d(red_left_pt, left_cam, [1, 0, 0, 1],  m_id=0, frame="front_left_cam")
-        navigator_tools.draw_ray_3d(red_right_pt, right_cam, [1, 0, 0, 1],  m_id=1, frame="front_right_cam")
-        navigator_tools.draw_ray_3d(green_left_pt, left_cam, [0, 1, 0, 1],  m_id=2, frame="front_left_cam")
-        navigator_tools.draw_ray_3d(green_right_pt, right_cam, [0, 1, 0, 1],  m_id=3, frame="front_right_cam")
+        mil_tools.draw_ray_3d(red_left_pt, left_cam, [1, 0, 0, 1],  m_id=0, frame="front_left_cam")
+        mil_tools.draw_ray_3d(red_right_pt, right_cam, [1, 0, 0, 1],  m_id=1, frame="front_right_cam")
+        mil_tools.draw_ray_3d(green_left_pt, left_cam, [0, 1, 0, 1],  m_id=2, frame="front_left_cam")
+        mil_tools.draw_ray_3d(green_right_pt, right_cam, [0, 1, 0, 1],  m_id=3, frame="front_right_cam")
 
         red_point = PointStamped()
-        red_point.header = navigator_tools.make_header(frame="enu")
-        red_point.point = navigator_tools.numpy_to_point(red_point_np)
+        red_point.header = mil_tools.make_header(frame="enu")
+        red_point.point = mil_tools.numpy_to_point(red_point_np)
         red_pub.publish(red_point)
 
         green_point = PointStamped()
-        green_point.header = navigator_tools.make_header(frame="enu")
-        green_point.point = navigator_tools.numpy_to_point(green_point_np)
+        green_point.header = mil_tools.make_header(frame="enu")
+        green_point.point = mil_tools.numpy_to_point(green_point_np)
         green_pub.publish(green_point)
 
         time.sleep(1)
@@ -255,8 +255,8 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
     q = tf.transformations.quaternion_from_euler(0, 0, yaw_theta)
 
     target_pose = PoseStamped()
-    target_pose.header = navigator_tools.make_header(frame="enu")
-    target_pose.pose = navigator_tools.numpy_quat_pair_to_pose(p, q)
+    target_pose.header = mil_tools.make_header(frame="enu")
+    target_pose.pose = mil_tools.numpy_quat_pair_to_pose(p, q)
 
     return StartGateResponse(target=target_pose, success=True)
 
@@ -265,8 +265,8 @@ def publish_debug(red_pub, green_pub, red_seg, green_seg, camera, *args):
     r_debug = red_seg.segment(camera.frame, (0, 10, 250))
     g_debug = green_seg.segment(camera.frame, (0, 250, 10))
 
-    red_pub.publish(navigator_tools.make_image_msg(r_debug))
-    green_pub.publish(navigator_tools.make_image_msg(g_debug))
+    red_pub.publish(mil_tools.make_image_msg(r_debug))
+    green_pub.publish(mil_tools.make_image_msg(g_debug))
 
 
 if __name__ == "__main__":
@@ -296,7 +296,7 @@ if __name__ == "__main__":
 
     # while not rospy.is_shutdown():
     #     l_center, debug_img = red.segment(left.frame, (0, 70, 255))
-    #     red_debug.publish(navigator_tools.make_image_msg(debug_img))
+    #     red_debug.publish(mil_tools.make_image_msg(debug_img))
     #     rospy.sleep(1)
 
     s = rospy.Service("/vision/start_gate_buoys", StartGate,

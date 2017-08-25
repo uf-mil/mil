@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-
-
 from remote_control_lib import RemoteControl
 import rospy
 from sensor_msgs.msg import Joy

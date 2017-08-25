@@ -29,8 +29,4 @@
     <node pkg="navigator_tools" type="boat_info.py" name="boat_info_markers" />
 
     <include file="$(find navigator_launch)/launch/subsystems/object_classification.launch" />
-
-    <!-- Legacy - should be phased out -->
-    <node pkg="kill_handling" type="kill_master" name="kill_master"/>
-
 </launch>

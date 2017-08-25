@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 from nav_msgs.msg import Odometry
-from ros_alarms import AlarmBroadcaster, HandlerBase
+from ros_alarms import AlarmBroadcaster, HandlerBase, HeartbeatMonitor
 import numpy as np
 from mil_ros_tools import rosmsg_to_numpy
 __author__ = 'David Soto'
@@ -18,7 +18,7 @@ class OdomKill(HandlerBase):
     TIMEOUT_SECONDS = 0.1  # Max time delta between Odometry messages before alarm is raised
     MAX_DISTANCE_METERS = 0.5  # Max distance in position between Odometry messages before alarm is raised
     def __init__(self):
-        self.hm = HeartbeatMonitor(self.alarm_name, "/odom", Odometry, node_name="alarm_server", prd=TIMEOUT)
+        self.hm = HeartbeatMonitor(self.alarm_name, "/odom", Odometry, node_name="alarm_server", prd=self.TIMEOUT_SECONDS)
         self.MAX_JUMP = 0.5
         self.launch_time = rospy.Time.now()
         self.last_time = self.launch_time

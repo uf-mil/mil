@@ -23,7 +23,7 @@
   <!-- Putting this here since lqrrt needs a real ogrid in it's life -->
   <node pkg="navigator_msg_multiplexer" type="ogrid_arbiter.py" name="ogrid_arbiter" />
 
-  <node if="$(arg draw)" pkg="navigator_tools" type="ogrid_draw.py" name="ogrid_draw">
+  <node if="$(arg draw)" pkg="mil_tools" type="ogrid_draw.py" name="ogrid_draw">
     <param name="grid_topic" value="/draw_ogrid" />
   </node>
 

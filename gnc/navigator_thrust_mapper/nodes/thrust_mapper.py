@@ -49,7 +49,7 @@ import tf
 from geometry_msgs.msg import WrenchStamped
 from std_msgs.msg import Float32MultiArray, Bool
 from roboteq_msgs.msg import *
-from sub8_alarm import AlarmListener
+from ros_alarms import AlarmListener
 
 
 class Thruster(object):
@@ -78,10 +78,8 @@ class Mapper(object):
         self.effort_limit = effort_limit
 
         self.kill = False
-        self.docking_alarm = False
 
         self.kill_listener = AlarmListener('kill', self.kill_cb)
-        self.docking_alarm_listener = AlarmListener('docking', self.docking_alarm_cb)
 
         # ROS data
         self.BL_pub = rospy.Publisher("/BL_motor/cmd" , Command, queue_size=1)
@@ -91,10 +89,7 @@ class Mapper(object):
         rospy.Subscriber("/wrench/cmd", WrenchStamped, self.wrench_cb)
 
     def kill_cb(self, alarm):
-        self.kill = not alarm.clear
-
-    def docking_alarm_cb(self, alarm):
-        self.docking_alarm = not alarm.clear
+        self.kill = alarm.raised
 
     def wrench_cb(self, msg):
         ''' Grab new wrench
@@ -149,11 +144,6 @@ class Mapper(object):
         if self.kill is True:
             self.BL_pub.publish(Command(setpoint=0))
             self.BR_pub.publish(Command(setpoint=0))
-            self.FL_pub.publish(Command(setpoint=0))
-            self.FR_pub.publish(Command(setpoint=0))
-        elif self.docking_alarm is True:
-            self.BL_pub.publish(BL_msg)
-            self.BR_pub.publish(BR_msg)
             self.FL_pub.publish(Command(setpoint=0))
             self.FR_pub.publish(Command(setpoint=0))
         else:

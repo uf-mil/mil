@@ -70,7 +70,7 @@ void Shape::load(string path, float shape_area)
   _pixels_per_meter = sqrt(template_area / shape_area);
 
   // Find angle of radial symmetry
-  _radial_symmetry_angle = getRadialSymmetryAngle(_template, 0.01);
+  _radial_symmetry_angle = mil_vision::getRadialSymmetryAngle(_template, 0.01);
 }
 
 UnderwaterShapeDetector::UnderwaterShapeDetector(ros::NodeHandle &nh, int img_buf_size, string name_space)

@@ -2,7 +2,7 @@
 import numpy as np
 
 import rospy
-from navigator_tools import numpy_to_point
+from mil_tools import numpy_to_point
 from twisted.internet import defer
 
 from navigator_tools.cfg import BoundsConfig

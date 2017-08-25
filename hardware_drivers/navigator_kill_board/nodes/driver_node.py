@@ -34,7 +34,7 @@ class KillInterface(object):
 
         self.killstatus_pub = rospy.Publisher("/killstatus", KillStatus, queue_size=1)
 
-        self.kill_alarm = AlarmBroadcaster('hw_kill')
+        self.kill_alarm = AlarmBroadcaster('hw-kill')
         self.disconnect = AlarmBroadcaster('kill_system_disconnect')
 
         self.killed = False

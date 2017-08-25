@@ -19,15 +19,14 @@ from nav_msgs.msg import Odometry
 from cv_bridge import CvBridge, CvBridgeError
 from image_geometry import PinholeCameraModel
 
-import navigator_tools
-from mil_misc_tools.text_effects import fprint as _fprint
+from mil_ros_tools import pose_to_numpy, make_header
+from mil_misc_tools.text_effects import FprintFactory
 
 
 camera_root = "/camera/front/right"  # /camera_root/root
 
 ros_t = lambda t: rospy.Duration(t)
-fprint = lambda *args, **kwargs: _fprint(title="COLORAMA", time="", *args, **kwargs)
-p2np = navigator_tools.point_to_numpy
+fprint = FprintFactory(title="COLORAMA", time=None).fprint
 
 class ImageHolder(object):
     @classmethod
@@ -209,7 +208,7 @@ class Colorama(object):
         self.status_pub = rospy.Publisher("/database_color_status", ColoramaDebug, queue_size=1)
 
         self.odom = None 
-        set_odom = lambda msg: setattr(self, "odom", navigator_tools.pose_to_numpy(msg.pose.pose))
+        set_odom = lambda msg: setattr(self, "odom", pose_to_numpy(msg.pose.pose))
         rospy.Subscriber("/odom", Odometry, set_odom)
         fprint("Waiting for odom...")
         while self.odom is None and not rospy.is_shutdown():
@@ -378,10 +377,10 @@ class Colorama(object):
                 if t is None:
                     fprint("No images found.")
                     return
-                
+
                 fprint("No valid image found for t={} ({}) dt: {}".format(time_of_marker.to_sec(), t.to_sec(), (rospy.Time.now() - t).to_sec()), msg_color='red')
                 return
-            header = navigator_tools.make_header(frame='/enu', stamp=image_holder.time)
+            header = make_header(frame='/enu', stamp=image_holder.time)
             image = image_holder.image
             self.debug.image = np.copy(image)
 
@@ -402,14 +401,14 @@ class Colorama(object):
                 fprint("{} {}".format(obj.id, "=" * 50))
                 
                 # Get object position in px coordinates to determine if it's in frame
-                object_cam = t_mat44.dot(np.append(p2np(obj.position), 1))
+                object_cam = t_mat44.dot(np.append(point_to_nump(obj.position), 1))
                 object_px = map(int, self.camera_model.project3dToPixel(object_cam[:3]))
                 if not self._object_in_frame(object_cam):
                     fprint("Object not in frame")
                     continue
                 
                 # Get enu points associated with this totem and remove ones that are too low
-                points_np = np.array(map(p2np, obj.points))
+                points_np = np.array(map(point_to_nump, obj.points))
                 height = np.max(points_np[:, 2]) - np.min(points_np[:, 2])
                 if height < .1:
                     # If the height of the object is too small, skip (units are meters)
@@ -435,7 +434,7 @@ class Colorama(object):
                 target_q = self._get_solar_angle()
                 q_err = self._get_quaternion_error(boat_q, target_q)
                 
-                dist = np.linalg.norm(self.odom[0] - p2np(obj.position))
+                dist = np.linalg.norm(self.odom[0] - point_to_nump(obj.position))
 
                 fprint("H: {}, S: {}, V: {}".format(h, s, v))
                 fprint("q_err: {}, dist: {}".format(q_err, dist))

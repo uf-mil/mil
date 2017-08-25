@@ -28,5 +28,5 @@ class Kill(HandlerBase):
             ignore.append('battery-voltage')
 
         # Raised if any alarms besides the two above are raised
-        return any([alarm.raised for name, alarm in sub_alarms.items()
+        return any([alarm.raised for name, alarm in alarms.items()
                     if name not in ignore])

@@ -1,9 +1,9 @@
 <launch>
-  <node pkg="ros_alarms" type="alarm_server.py" name="alarm_server" output="screen" />
-    <param name="handler_module" type="string" value="$(find navigator_alarm)/navigator_alarm_handlers"
+  <node pkg="ros_alarms" type="alarm_server.py" name="alarm_server" output="screen">
+    <param name="handler_module" type="string" value="navigator_alarm_handlers" />
   </node>
   <rosparam ns="meta_alarms">
-    kill: ['odom-kill', 'network-loss', 'battery-voltage']
+    kill: ['odom-kill', 'network-loss', 'battery-voltage', 'hw-kill']
   </rosparam>
   <rosparam ns="known_alarms">
     kill, odom-kill, network-loss, station-hold, battery-voltage

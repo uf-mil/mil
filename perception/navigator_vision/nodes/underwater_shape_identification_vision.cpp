@@ -3,9 +3,6 @@
 
 #include <opencv2/highgui/highgui.hpp>
 
-#include <navigator_vision_lib/image_acquisition/ros_camera_stream.hpp>
-#include <navigator_vision_lib/image_filtering.hpp>
-
 #include <missions/underwater_shape_identification.hpp>
 
 using namespace std;

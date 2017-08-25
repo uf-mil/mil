@@ -7,7 +7,8 @@ import sys
 from sensor_msgs.msg import Image, CameraInfo
 from scan_the_code_lib import ScanTheCodeAction, ScanTheCodePerception, Debug
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
-from navigator_tools import DBHelper, fprint
+from navigator_tools import DBHelper
+from mil_tools import fprint
 ___author___ = "Tess Bianchi"
 
 

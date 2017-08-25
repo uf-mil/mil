@@ -3,6 +3,7 @@ import rospy
 from actionlib import SimpleActionClient, TerminalState
 from lqrrt_ros.msg import MoveAction, MoveGoal
 from navigator_msgs.srv import WrenchSelect, WrenchSelectRequest
+from ros_alarms import HandlerBase
 
 class StationHold(HandlerBase):
     alarm_name = 'station-hold'
@@ -10,7 +11,6 @@ class StationHold(HandlerBase):
     def __init__(self):
         self.move_client = SimpleActionClient('/move_to', MoveAction)
         self.change_wrench = rospy.ServiceProxy('/change_wrench', WrenchSelect)
-        self.station_hold_alarm = self.alarm_broadcaster.add_alarm('station_hold', node_name='StationHoldHandler')
 
     def _client_cb(self, terminal_state, result):
         if terminal_state != 3:

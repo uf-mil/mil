@@ -31,7 +31,6 @@ class RemoteControl(object):
         self.name = controller_name
         self.wrench_choices = itertools.cycle(["rc", "emergency", "keyboard", "autonomous"])
 
-        self.alarm_broadcaster = AlarmBroadcaster()
         self.kill_broadcaster = AlarmBroadcaster('kill')
         self.station_hold_broadcaster = AlarmBroadcaster('station-hold')
 
@@ -81,7 +80,7 @@ class RemoteControl(object):
         self.wrench_changer("rc")
         self.kill_broadcaster.raise_alarm(
             problem_description="System kill from user remote control",
-            paramaters: {'location':self.name}
+            parameters={'location':self.name}
         )
 
     @_timeout_check
@@ -107,7 +106,7 @@ class RemoteControl(object):
             self.wrench_changer("rc")
             self.kill_broadcaster.raise_alarm(
                 problem_description="System kill from user remote control",
-                paramaters: {'location':self.name}
+                paramaters={'location':self.name}
             )
 
 
@@ -121,8 +120,8 @@ class RemoteControl(object):
 
         # Trigger station holding at the current pose
         self.station_hold_broadcaster.raise_alarm(
-            problem_description="Request to station hold from remote control"
-            paramaters: {'location':self.name}
+            problem_description="Request to station hold from remote control",
+            parameters={'location':self.name}
         )
         rospy.sleep(0.2)
         self.station_hold_broadcaster.clear_alarm()
