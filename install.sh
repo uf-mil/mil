@@ -538,6 +538,7 @@ instlog "Installing common ROS dependencies"
 # Hardware drivers
 sudo apt-get install -qq ros-$ROS_VERSION-joy
 sudo apt-get install -qq ros-$ROS_VERSION-serial
+sudo apt-get install -qq libpcap-dev
 
 # Messages
 sudo apt-get install -qq ros-$ROS_VERSION-tf2-sensor-msgs
