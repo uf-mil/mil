@@ -538,7 +538,7 @@ instlog "Installing common ROS dependencies"
 # Hardware drivers
 sudo apt-get install -qq ros-$ROS_VERSION-joy
 sudo apt-get install -qq ros-$ROS_VERSION-serial
-sudo apt-get install -qq libpcap-dev
+sudo apt-get install -qq libpcap-dev  # Needed for velodyne driver building
 
 # Messages
 sudo apt-get install -qq ros-$ROS_VERSION-tf2-sensor-msgs
@@ -662,6 +662,9 @@ if [[ "$INSTALL_NAV" == "true" ]]; then
 	# Serial communications
 	sudo apt-get install -qq ros-$ROS_VERSION-rosserial
 	sudo apt-get install -qq ros-$ROS_VERSION-rosserial-arduino
+
+	# Sick lidar driver
+	sudo apt-get install -qq ros-$ROS_VERSION-lms1xx
 
 	# Trajectory Generation
 	sudo apt-get install -qq ros-$ROS_VERSION-ompl
