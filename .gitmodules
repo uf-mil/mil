@@ -9,5 +9,9 @@
 	url = https://github.com/ros-drivers/pointgrey_camera_driver
 [submodule "drivers/velodyne"]
 	path = drivers/velodyne
-        url = https://github.com/ros-drivers/velodyne
-        branch = master
+	url = https://github.com/ros-drivers/velodyne
+	branch = master
+[submodule "drivers/roboteq"]
+	path = drivers/roboteq
+	url = https://github.com/g/roboteq
+	branch = indigo-devel
