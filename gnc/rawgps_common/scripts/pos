@@ -1,0 +1,86 @@
+#!/usr/bin/python
+
+from __future__ import division
+
+import math
+import struct
+
+import numpy
+import scipy
+
+import roslib
+roslib.load_manifest('rawgps_common')
+
+import rospy
+from std_msgs.msg import String, Header
+from geometry_msgs.msg import Vector3, Point, PointStamped
+
+from uf_common.orientation_helpers import xyz_array
+from rawgps_common import gps, glonass
+from rawgps_common.msg import Measurements, Satellite
+
+rospy.init_node('pos', anonymous=True)
+
+def mean(xs):
+    xs = list(xs)
+    return sum(xs)/len(xs)
+
+def jacobian(f, x):
+    x = numpy.array(x)
+    c = numpy.array(f(x))
+    return numpy.array([(f(x+[1 if j == i else 0 for j in xrange(len(x))]) - c)/1 for i in xrange(len(x))]).T
+
+def find_minimum(x0, residuals):
+    #print 'x0', x0
+    x = x0
+    for i in xrange(10):
+        r = residuals(x)
+        #print 'r', r
+        #print sum(r)
+        print '|r|', numpy.linalg.norm(r)/math.sqrt(len(r))
+        J = jacobian(residuals, x)
+        #print 'J', J
+        x = x - numpy.linalg.inv(J.T.dot(J)).dot(J.T).dot(r)
+        #lat, lon, height = gps.latlongheight_from_ecef(x[:3])
+        #print 'x', x, '=', math.degrees(lat), math.degrees(lon), height
+    return x
+
+def cb(msg):
+    sats = msg.satellites
+    
+    def residuals(x):
+        assert len(x) == 4
+        pos = x[0:3]
+        t = x[3]
+        
+        return [
+            numpy.linalg.norm(
+                glonass.inertial_from_ecef(t, pos) -
+                glonass.inertial_from_ecef(sat.time, xyz_array(sat.position))
+            ) - (t - sat.time)*gps.c
+        for sat in sats]
+    x = find_minimum([0, 0, 0,
+        mean(sat.time + numpy.linalg.norm(xyz_array(sat.position))/gps.c for sat in sats),
+        #0,
+    ], residuals)
+    pos = x[:3]
+    t = x[3]
+    
+    lat, lon, height = gps.latlongheight_from_ecef(pos)
+    print len(sats)
+    print zip((s.prn for s in sats), residuals(x))
+    print pos
+    print math.degrees(lat), math.degrees(lon), height
+    for i in xrange(10):
+        print
+
+#print gps.ecef_from_latlongheight(math.radians(29.636597),math.radians(-82.358356),0)
+# [  737793.47470689 -5499013.87053299  3135423.99413285]
+
+rospy.Subscriber('gps', Measurements, cb)
+
+rospy.spin()
+
+#msg = Measurements()
+#msg.deserialize('4b0100001d695452d553c3290a0000002f6770735f66726f6e74090000000400000000000000000045407504aa01d97f7241c07683edd2235fc1a12f50f6969e6e41004058c0df5c9f4000809b06bf97834000c085719be79fc0227480f3c2ca75415b968c34c4c6f94063cc676fc33578c0050000000000000000804640601a83e254c707c1ce1e17fef72477c1ae0785d9042d644100200a75d23686400000afd54799924000e0291b657ea5406a256a3e026473414cb04c5dbed7e5c0a2c858b07eae62400c000000000000000000444017aa21ff8eee64c1ab609154858376c1ed7fbe49a4ec55410000701302c341c0008015774c7687c000c8e7132b44a8c017ca0e63cdab744185ac0751171bef4041890d8df1e66ec00d0000000000000000003e40b7f988509fed70417406441a8fb8374133721b09b7b4724100c0aee536d69bc000f0319389a59b400040929403a29640b504d8443f8c7741c9c25138857feb40dfaa3157fb866bc01900000000000000008040406086d72805e66ec1f9483241ab9069c1aba687433cf56e4100008e71fb2b80c000401ddc71539fc0006044f859d5a0c0f969ee5a72b875417867c5e1944eeac09f58bfc4a7c866400a0000000000000000004440ae75d71ab3136741240588f3691565c1029b6ee336907341008068bc61d78c400010bdb333c4a3400000ebc8d2868a40daf4a3695a86744155f0e8d8b7cdff40425c770c94ff7ec01d0000000000000000003a40d296b9da1fcb6dc19cd39abc210c52c1fc8979871603744100402e924f259c4000a06404dd7d9ec000807bbc16518c40d9a8d902ecf67641000000000000f8ff1627dce445d883400200000000000000000043409434b36810565441691200424c9a6cc11b514effb07674410048452b3c8da44000806e8283af804000005a768ee174c01b5439b5620874416aab484c8115b0402ec51ff467c931c0110000000000000000003a4006cacd46a9ed7341acce8b20c2076bc17d3b4060d1085dc1000012c417207fc000c01b2a6d7f8c400030956b7871a7c012775100ba4f7741000000000000f8ff27f5ce1a108981c0'.decode('hex'))
+#cb(msg)

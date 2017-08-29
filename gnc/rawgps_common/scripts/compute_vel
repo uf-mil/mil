@@ -1,0 +1,60 @@
+#!/usr/bin/python
+
+from __future__ import division
+
+import struct
+import time
+import math
+
+import numpy
+
+import roslib
+roslib.load_manifest('rawgps_common')
+from geometry_msgs.msg import Vector3, Vector3Stamped
+import rospy
+from std_msgs.msg import Header
+
+from rawgps_common import gps
+from rawgps_common.msg import Measurements
+
+xyz_array = lambda o: numpy.array([o.x, o.y, o.z])
+
+pub = rospy.Publisher('/gps_vel', Vector3Stamped)
+
+def got_msg(msg):
+    if not pub.get_num_connections():
+        return
+    
+    satellites = [satellite for satellite in msg.satellites] # if satellite.cn0 >= 20]
+    
+    if len(satellites) < 4:
+        rospy.logerr('not enough satellites to determine velocity')
+        return
+    
+    A = numpy.zeros((len(satellites), 4))
+    b = numpy.zeros(len(satellites))
+    for i, satellite in enumerate(satellites):
+        scale = 10**(satellite.cn0/10)
+        A[i] = numpy.concatenate([xyz_array(satellite.direction_enu), [1]])*scale
+        b[i] = satellite.velocity_plus_drift*scale
+    vel_and_drift, _, _, _ = numpy.linalg.lstsq(A, b)
+    
+    vel, drift = vel_and_drift[:3], float(vel_and_drift[3])
+    print vel
+    print drift
+    print numpy.linalg.norm(vel)*2.236
+    print
+    
+    pub.publish(Vector3Stamped(
+        header=Header(
+            stamp=msg.header.stamp,
+            frame_id='/map',
+        ),
+        vector=Vector3(*vel),
+    ))
+
+rospy.init_node('rawgps_common_compute_vel')
+
+rospy.Subscriber('gps', Measurements, got_msg)
+
+rospy.spin()

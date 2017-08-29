@@ -1,0 +1,57 @@
+#!/usr/bin/python
+
+import math
+import time
+
+import rospy
+from nav_msgs.msg import Odometry
+from geometry_msgs.msg import PointStamped
+from rawgps_common import gps
+
+rospy.init_node('livegps')
+
+xyz_array = lambda o: (o.x, o.y, o.z)
+
+def get_expire():
+ now = time.time()
+ future = time.gmtime(now + 3)
+ y = future[0]
+ mo = future[1]
+ d = future[2]
+ h = future[3]
+ mi = future[4]
+ s = future[5]
+ iso8601 = '%04d-%02d-%02dT%02d:%02d:%02dZ' % (y,mo,d,h,mi,s)
+ return iso8601
+
+def cb(pos, filename):
+	latitude, longitude, altitude = gps.latlongheight_from_ecef(pos)
+        latitude = math.degrees(latitude)
+        longitude = math.degrees(longitude)
+	output = """<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.2">
+<NetworkLinkControl>
+<expires>%s</expires>
+</NetworkLinkControl>
+	<Placemark>
+		<name>%s</name>
+		<description>^</description>
+		<LookAt>
+			<longitude>%s</longitude>
+			<latitude>%s</latitude>
+			<range>20</range>
+			<heading>0</heading>
+			<tilt>30</tilt>
+		</LookAt>
+		<Point>
+			<coordinates>%s,%s,%s</coordinates>
+		</Point>
+	</Placemark>
+</kml>""" % (get_expire(), filename, longitude,latitude,longitude,latitude,altitude)
+
+	with open(filename, 'wb') as f:
+		f.write(output)
+rospy.Subscriber('absodom', Odometry, lambda msg: cb(xyz_array(msg.pose.pose.position), '/tmp/absodom.kml'))
+rospy.Subscriber('gps_pos', PointStamped, lambda msg: cb(xyz_array(msg.point), '/tmp/gps_pos.kml'))
+
+rospy.spin()
