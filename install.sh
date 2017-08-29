@@ -103,7 +103,7 @@ if [[ "$DOCKER" != "true" ]]; then
 		echo "A MIL project must be selected for install"
 		echo "	1. SubjuGator"
 		echo "	2. PropaGator $(tput bold)[DEPRECATED]$(tput sgr0)"
-		echo "	3. NaviGator $(tput bold)[DEPRECATED]$(tput sgr0)"
+		echo "	3. NaviGator"
 		echo -n "Project selection: " && read RESPONSE
 		echo ""
 		case "$RESPONSE" in
@@ -121,18 +121,11 @@ if [[ "$DOCKER" != "true" ]]; then
 				echo ""
 			;;
 			"3")
-				echo "The NaviGator project was developed on Ubuntu 14.04 with ROS Indigo. Several"
-				echo "dependencies no longer exist in ROS Kinetic, so in order to install it, ROS"
-				echo "Indigo, the SubjuGator repository at an earlier date,  and all of the old"
-				echo "SubjuGator dependencies will need to be downloaded and installed."
-				echo -n "Do you still wish to proceed? [y/N] " && read RESPONSE
-				if [[ "$RESPONSE" == "Y" || "$RESPONSE" == "y" ]]; then
-					if [[ ! -d $CATKIN_DIR/src/NaviGator ]]; then
-						echo -n "User fork URI for the NaviGator repository: " && read NAV_USER_FORK
-					fi
-					INSTALL_NAV="true"
-					SELECTED="true"
+				if [[ ! -d $CATKIN_DIR/src/NaviGator ]]; then
+					echo -n "User fork URI for the NaviGator repository: " && read NAV_USER_FORK
 				fi
+				INSTALL_NAV="true"
+				SELECTED="true"
 				echo ""
 			;;
 			"")
@@ -267,12 +260,7 @@ if [[ "$NET_CHECK" != "true" ]]; then
 fi
 
 # Set the required OS based on inputs and installed distribution
-if [[ "$INSTALL_NAV" == "true" ]]; then
-	REQUIRED_OS_ID="Ubuntu"
-	REQUIRED_OS_CODENAME="trusty"
-	REQUIRED_OS_RELEASE="14.04"
-	ROS_VERSION="indigo"
-elif [[ "$(lsb_release -si)" == "Debian" ]]; then
+if [[ "$(lsb_release -si)" == "Debian" ]]; then
 	REQUIRED_OS_ID="Debian"
 	REQUIRED_OS_CODENAME="jessie"
 	REQUIRED_OS_RELEASE="8.7"
@@ -356,23 +344,20 @@ sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C
 instlog "Adding the Git-LFS packagecloud repository to software sources"
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
 
-# Add software repository for Gazebo to software sources if ROS Indigo is being installed
-if [[ "$ROS_VERSION" == "indigo" ]]; then
-	instlog "Adding the Gazebo PPA to software sources"
-	sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/gazebo.list'
-	sudo sh -c 'echo "deb-src http://packages.osrfoundation.org/gazebo/ubuntu $(lsb_release -sc) main" >> /etc/apt/sources.list.d/gazebo.list'
-	wget -q http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
-fi
 
 # Add software repository for Terry Guo's ARM toolchain if NaviGator is being installed
-if [[ "$INSTALL_NAV" == "true" ]]; then
-	instlog "Adding Terry Guo's ARM toolchain PPA to software sources"
-	sudo mkdir -p /etc/apt/preferences.d
-	sudo sh -c "echo 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm"
-	sudo sh -c 'echo "deb http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/gcc-arm-embedded.list'
-	sudo sh -c 'echo "deb-src http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu $(lsb_release -sc) main" >> /etc/apt/sources.list.d/gcc-arm-embedded.list'
-	sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xA3421AFB
-fi
+# This is a dependency for the emergency controller, which in its current iteration on 2017-29-08 does not work
+# Currently Terry Guo's ARM toolchain is hosted somewhere else and this portion of the install script does not work either.
+# It has been kept until we determine if we are keeping the current Emergency Controller or making a new one.
+# Should we make a new one, this script will be re-enabled and the link will have to be updated.
+# if [[ "$INSTALL_NAV" == "true" ]]; then
+# 	instlog "Adding Terry Guo's ARM toolchain PPA to software sources"
+# 	sudo mkdir -p /etc/apt/preferences.d
+# 	sudo sh -c "echo 'Package: *\nPin: origin "ppa.launchpad.net"\nPin-Priority: 999' > /etc/apt/preferences.d/arm"
+# 	sudo sh -c 'echo "deb http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/gcc-arm-embedded.list'
+# 	sudo sh -c 'echo "deb-src http://ppa.launchpad.net/terry.guo/gcc-arm-embedded/ubuntu $(lsb_release -sc) main" >> /etc/apt/sources.list.d/gcc-arm-embedded.list'
+# 	sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xA3421AFB
+# fi
 
 # Add software repository for Nvidia to software sources if the CUDA option was selected
 if [[ "$INSTALL_CUDA" == "true" && "$REQUIRED_OS_ID" == "Ubuntu" ]]; then
@@ -385,16 +370,6 @@ fi
 instlog "Installing ROS $(tr '[:lower:]' '[:upper:]' <<< ${ROS_VERSION:0:1})${ROS_VERSION:1}"
 sudo apt-get update -qq
 sudo apt-get install -qq ros-$ROS_VERSION-desktop-full
-
-# If ROS Indigo is being installed, break the metapackage and install an updated version of Gazebo
-if [[ "$ROS_VERSION" == "indigo" ]]; then
-	instlog "Installing the latest version of Gazebo"
-	sudo apt-get install -qq aptitude
-	sudo aptitude unmarkauto -q '?reverse-depends(ros-indigo-desktop-full) | ?reverse-recommends(ros-indigo-desktop-full)'
-	sudo apt-get purge -qq ros-indigo-gazebo*
-	sudo apt-get install -qq gazebo7
-	sudo apt-get install -qq ros-indigo-gazebo7-ros-pkgs
-fi
 
 # Get information about ROS versions
 instlog "Initializing ROS"
@@ -455,15 +430,6 @@ if [[ "$DOCKER" != "true" ]]; then
 
 	# Download the NaviGator repository if it has not already been downloaded and was selected for installation
 	if [[ "$INSTALL_NAV" == "true" ]]; then
-		if [[ ! -d $CATKIN_DIR/src/SubjuGator ]]; then
-			instlog "Downloading the SubjuGator repository"
-			cd $CATKIN_DIR/src
-			git clone --recursive -q https://github.com/uf-mil/SubjuGator.git
-			cd $CATKIN_DIR/src/SubjuGator
-			instlog "Rolling back the SubjuGator repository; do not pull the latest version!"
-			git reset --hard 0089e68b9f48b96af9c3821f356e3a487841e87e
-			git remote remove origin
-		fi
 		if [[ ! -d $CATKIN_DIR/src/NaviGator ]]; then
 			instlog "Downloading the NaviGator repository"
 			cd $CATKIN_DIR/src
@@ -649,7 +615,8 @@ if [[ "$INSTALL_NAV" == "true" ]]; then
 	sudo apt-get install -qq binutils-dev
 
 	# Terry Guo's ARM toolchain
-	sudo apt-get install -qq gcc-arm-none-eabi
+	# Does not work/may not be needed as of 2017-29-08
+	# sudo apt-get install -qq gcc-arm-none-eabi
 
 	# Hardware drivers
 	sudo apt-get install -qq ros-$ROS_VERSION-camera1394
