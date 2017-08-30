@@ -10,7 +10,8 @@ from std_srvs.srv import SetBool, SetBoolRequest
 from twisted.internet import defer
 from visualization_msgs.msg import Marker,MarkerArray
 import mil_tools
-from mil_misc_tools.text_effects import fprint, MissingPerceptionObject
+from mil_misc_tools.text_effects import fprint
+from navigator_tools import MissingPerceptionObject
 from navigator_msgs.srv import GetDockBays, GetDockBaysRequest
 from navigator_msgs.srv import CameraToLidarTransform,CameraToLidarTransformRequest
 import genpy

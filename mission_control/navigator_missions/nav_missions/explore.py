@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import txros
 import mil_tools as nt
-from mil_misc_tools.text_effects import fprint, MissingPerceptionObject
+from mil_misc_tools.text_effects import fprint
+from navigator_tools import MissingPerceptionObject
 from twisted.internet import defer
 from mil_tools import rosmsg_to_numpy
 import numpy as np

@@ -16,7 +16,8 @@ from sensor_msgs.msg import PointCloud2, Image
 import sys
 import numpy as np
 import genpy
-from mil_misc_tools.text_effects import fprint, rosmsg_to_numpy
+from mil_misc_tools.text_effects import fprint
+from mil_tools import rosmsg_to_numpy
 
 ___author___ = "Tess Bianchi"
 

@@ -5,7 +5,7 @@ import txros
 import numpy as np
 from tf import transformations
 from nav_msgs.msg import Odometry
-from mil_common.msg import PoseTwistStamped, PoseTwist, MoveToGoal
+from mil_msgs.msg import PoseTwistStamped, PoseTwist, MoveToGoal
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Point, Vector3, Twist
 from mil_tools import rosmsg_to_numpy, make_header, normalize
 from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef

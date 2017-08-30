@@ -20,7 +20,8 @@ from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import PointCloud
 import navigator_msgs.srv as navigator_srvs
-from mil_misc_tools.text_effects import fprint, MissingPerceptionObject
+from mil_misc_tools.text_effects import fprint
+from navigator_tools import MissingPerceptionObject
 
 
 class MissionResult(object):
@@ -249,15 +250,15 @@ class Navigator(object):
 
     @util.cancellableInlineCallbacks
     def _make_alarms(self):
-        self.odom_loss_listener = yield AlarmListenerTx.init(self.nh, 'odom-loss', lambda alarm: setattr(self, 'odom_loss', alarm.raised)
-        self.kill_listener = yield AlarmListenerTx.init(self.nh, 'kill',lambda alarm: setattr(self, 'killed', alarm.raised))
+        self.odom_loss_listener = yield TxAlarmListener.init(self.nh, 'odom-kill', lambda alarm: setattr(self, 'odom_loss', alarm.raised))
+        self.kill_listener = yield TxAlarmListener.init(self.nh, 'kill',lambda alarm: setattr(self, 'killed', alarm.raised))
         fprint("Alarm listener created, listening to alarms: ", title="NAVIGATOR")
 
         self.killed = yield self.kill_listener.is_raised()
         self.odom_loss = yield self.odom_loss_listener.is_raised()
         fprint("\tkill :", newline=False)
         fprint(self.killed)
-        fprint("\todom_loss :", newline=False)
+        fprint("\todom-kill :", newline=False)
         fprint(self.odom_loss)
 
 

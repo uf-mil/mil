@@ -13,7 +13,8 @@ from twisted.internet import defer
 from image_geometry import PinholeCameraModel
 from visualization_msgs.msg import Marker,MarkerArray
 import mil_tools
-from mil_misc_tools.text_effects import fprint, MissingPerceptionObject
+from mil_misc_tools.text_effects import fprint
+from navigator_tools import MissingPerceptionObject
 import genpy
 
 class DetectDeliverMission:
