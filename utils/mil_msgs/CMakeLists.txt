@@ -10,7 +10,7 @@ find_package(catkin
     interactive_markers
     std_msgs
     actionlib_msgs
-)
+   )
 
 add_action_files(FILES
   MoveTo.action
@@ -18,20 +18,23 @@ add_action_files(FILES
 )
 
 add_message_files(FILES
-  PoseTwistStamped.msg
-  PoseTwist.msg
-  VelocityMeasurements.msg
   DepthStamped.msg
-  RangeStamped.msg
-  VelocityMeasurement.msg
   LabeledObject.msg
   LabeledObjects.msg
+  RangeStamped.msg
+  Rectangle3D.msg
   PerceptionObject.msg
   PerceptionObjectArray.msg
+  PoseTwist.msg
+  PoseTwistStamped.msg
+  VelocityMeasurement.msg
+  VelocityMeasurements.msg
 )
 
 add_service_files(FILES
+  Bounds.srv
   CameraToLidarTransform.srv
+  ObjectDBQuery.srv
   SetGeometry.srv
   ObjectDBQuery.srv
 )

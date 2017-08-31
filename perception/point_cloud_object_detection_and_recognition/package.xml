@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<package>
+  <name>point_cloud_object_detection_and_recognition</name>
+  <version>0.0.2</version>
+  <description>The lidar package</description>
+  <maintainer email="TODO@TODO.com">TODO</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <run_depend>roscpp</run_depend>
+  
+  <build_depend>sensor_msgs</build_depend>
+  <run_depend>sensor_msgs</run_depend>
+  
+  <build_depend>mil_msgs</build_depend>
+  <run_depend>mil_msgs</run_depend>
+
+  <build_depend>std_msgs</build_depend>
+  <run_depend>std_msgs</run_depend>
+
+  <build_depend>tf</build_depend>
+  <run_depend>tf</run_depend>
+  
+  <build_depend>tf2</build_depend>
+  <run_depend>tf2</run_depend>
+  
+  <build_depend>eigen_conversions</build_depend>
+  <run_depend>eigen_conversions</run_depend>
+  
+  <build_depend>pcl_ros</build_depend>
+  <run_depend>pcl_ros</run_depend>
+
+  <build_depend>cv_bridge</build_depend>
+  <run_depend>cv_bridge</run_depend>
+
+</package>
