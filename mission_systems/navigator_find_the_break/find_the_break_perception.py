@@ -34,7 +34,7 @@ class FindTheBreakPerception(object):
     @util.cancellableInlineCallbacks
     def init_(self):
         """Initialize the txros aspect of FindTheBreakPerception."""
-        self._image_sub = yield self.nh.subscribe("/down/down/image_rect_color", Image, lambda x: x)
+        self._image_sub = yield self.nh.subscribe("/camera/down/image_rect_color", Image, lambda x: x)
 
     @property
     @util.cancellableInlineCallbacks

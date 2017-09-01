@@ -74,13 +74,13 @@ Visualization Manager:
           Value: true
         measurement:
           Value: true
-        right_right_cam:
+        starboard_cam:
           Value: true
         sick:
           Value: true
-        stereo_left_cam:
+        front_left_cam:
           Value: true
-        stereo_right_cam:
+        front_right_cam:
           Value: true
         velodyne:
           Value: true
@@ -100,11 +100,11 @@ Visualization Manager:
               sick:
                 {}
               velodyne:
-                right_right_cam:
+                starboard_cam:
                   {}
-                stereo_left_cam:
+                front_left_cam:
                   {}
-                stereo_right_cam:
+                front_right_cam:
                   {}
       Update Interval: 0
       Value: true

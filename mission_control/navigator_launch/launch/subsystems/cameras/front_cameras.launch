@@ -1,19 +1,19 @@
 <launch>
-  <arg name="stereo_left"  default="True" />
-  <arg name="stereo_right" default="True" />
+  <arg name="front_left"  default="True" />
+  <arg name="front_right" default="True" />
   <!-- Nodelet Manager Process -->
-  <group ns="stereo">
+  <group ns="camera/front">
     <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager"
           args="manager" />
 
     <!-- Left/Right Camera Driver Nodelets -->
 
     <!-- LEFT CAMERA-->
-    <node if="$(arg stereo_left)" pkg="nodelet" type="nodelet" name="left_camera1394_nodelet"
-          args="load camera1394/driver camera_nodelet_manager">
+    <node if="$(arg front_left)" pkg="nodelet" type="nodelet" name="front_left_camera_nodelet"
+          args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager">
           <param name="guid" value="00b09d0100e84a44"/>
           <param name="camera_info_url" value="file://$(find navigator_launch)/launch/subsystems/cameras/calibration/${NAME}.yaml"/>
-          <param name="frame_id" value="stereo_left_cam"/>
+          <param name="frame_id" value="front_left_cam"/>
           <param name="num_dma_buffers" value="10"/>
           <param name="video_mode" value="format7_mode4"/>
           <param name="format7_packet_size" value="3024"/>
@@ -24,14 +24,16 @@
           <param name="auto_white_balance" value="2"/>
           <param name="use_ros_time" value="true"/>
           <remap from="camera" to="left"/>
+          <remap from="image_raw" to="left/image_raw"/>
+          <remap from="set_camera_info" to="left/set_camera_info"/>
     </node>
 
     <!-- RIGHT CAMERA -->
-    <node if="$(arg stereo_right)" pkg="nodelet" type="nodelet" name="right_camera1394_nodelet"
-          args="load camera1394/driver camera_nodelet_manager">
+    <node if="$(arg front_right)" pkg="nodelet" type="nodelet" name="front_right_camera_nodelet"
+          args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager">
           <param name="guid" value="00b09d0100e84a42"/>
           <param name="camera_info_url" value="file://$(find navigator_launch)/launch/subsystems/cameras/calibration/${NAME}.yaml"/>
-          <param name="frame_id" value="stereo_right_cam"/>
+          <param name="frame_id" value="front_right_cam"/>
           <param name="num_dma_buffers" value="10"/>
           <param name="video_mode" value="format7_mode4"/>
           <param name="format7_packet_size" value="3024"/>
@@ -42,6 +44,8 @@
           <param name="auto_white_balance" value="2"/>
           <param name="use_ros_time" value="true"/>
           <remap from="camera" to="right"/>
+          <remap from="image_raw" to="right/image_raw"/>
+          <remap from="set_camera_info" to="right/set_camera_info"/>
     </node>
 
 
@@ -52,7 +56,7 @@
 
     <!-- LEFT CAMERA -->
     <!-- Bayer color decoding -->
-    <node if="$(arg stereo_left)" pkg="nodelet" type="nodelet" name="left_image_proc_debayer"
+    <node if="$(arg front_left)" pkg="nodelet" type="nodelet" name="left_image_proc_debayer"
         args="load image_proc/debayer camera_nodelet_manager">
      <remap from="image_color" to="left/image_color" />
      <remap from="image_mono" to="left/image_mono" />
@@ -60,14 +64,14 @@
     </node>
 
     <!-- mono rectification -->
-    <node if="$(arg stereo_left)" pkg="nodelet" type="nodelet" name="left_image_proc_rect"
+    <node if="$(arg front_left)" pkg="nodelet" type="nodelet" name="left_image_proc_rect"
           args="load image_proc/rectify camera_nodelet_manager">
       <remap from="image_mono" to="left/image_mono" />
       <remap from="image_rect" to="left/image_rect" />
     </node>
 
     <!-- color rectification -->
-    <node if="$(arg stereo_left)" pkg="nodelet" type="nodelet" name="left_image_proc_rect_color"
+    <node if="$(arg front_left)" pkg="nodelet" type="nodelet" name="left_image_proc_rect_color"
           args="load image_proc/rectify camera_nodelet_manager">
       <remap from="image_mono" to="left/image_color" />
       <remap from="image_rect" to="left/image_rect_color" />
@@ -75,7 +79,7 @@
 
     <!-- RIGHT CAMERA -->
     <!-- Bayer color decoding -->
-    <node if="$(arg stereo_right)" pkg="nodelet" type="nodelet" name="right_image_proc_debayer"
+    <node if="$(arg front_right)" pkg="nodelet" type="nodelet" name="right_image_proc_debayer"
         args="load image_proc/debayer camera_nodelet_manager">
      <remap from="image_color" to="right/image_color" />
      <remap from="image_mono" to="right/image_mono" />
@@ -83,14 +87,14 @@
     </node>
 
     <!-- mono rectification -->
-    <node if="$(arg stereo_right)" pkg="nodelet" type="nodelet" name="right_image_proc_rect"
+    <node if="$(arg front_right)" pkg="nodelet" type="nodelet" name="right_image_proc_rect"
           args="load image_proc/rectify camera_nodelet_manager">
       <remap from="image_mono" to="right/image_mono" />
       <remap from="image_rect" to="right/image_rect" />
     </node>
 
     <!-- color rectification -->
-    <node if="$(arg stereo_right)" pkg="nodelet" type="nodelet" name="right_image_proc_rect_color"
+    <node if="$(arg front_right)" pkg="nodelet" type="nodelet" name="right_image_proc_rect_color"
           args="load image_proc/rectify camera_nodelet_manager">
       <remap from="image_mono" to="right/image_color" />
       <remap from="image_rect" to="right/image_rect_color" />

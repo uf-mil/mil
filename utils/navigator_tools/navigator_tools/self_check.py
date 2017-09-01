@@ -19,15 +19,19 @@ class FancyPrint(object):
     def error(self, text):
         print self.BAD + text + self.NORMAL
 
+
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import CompressedImage
+
+
 def add_camera_feeds(nh, cam_name, image_type="image_raw"):
     ''' Returns subscribers to the raw and compressed `image_type` '''
 
     raw = '/{}/{}'.format(cam_name, image_type)
     compressed = '/{}/{}/compressed'.format(cam_name, image_type)
     return nh.subscribe(raw, Image).get_next_message(), \
-           nh.subscribe(compressed, CompressedImage).get_next_message()
+        nh.subscribe(compressed, CompressedImage).get_next_message()
+
 
 @txros.util.cancellableInlineCallbacks
 def main():
@@ -43,19 +47,27 @@ def main():
     topics['joy'] = nh.subscribe('joy', Joy).get_next_message()
 
     # Perception Subs
-    topics['right_images'], topics['right_compressed'] = add_camera_feeds(nh, "right")
-    topics['stereo_right_images'], topics['stereo_right_compressed'] = add_camera_feeds(nh, "stereo/right")
-    topics['stereo_left_images'], topics['stereo_left_compressed'] = add_camera_feeds(nh, "stereo/left")
+    topics['right_images'], topics['right_compressed'] = add_camera_feeds(
+        nh, "camera/starboard")
+    topics['front_right_images'], topics['front_right_compressed'] = add_camera_feeds(
+        nh, "camera/front/right")
+    topics['front_left_images'], topics['front_left_compressed'] = add_camera_feeds(
+        nh, "camera/front/left")
 
     from sensor_msgs.msg import PointCloud2
-    topics['velodyne'] = nh.subscribe('/velodyne_points', PointCloud2).get_next_message()
+    topics['velodyne'] = nh.subscribe(
+        '/velodyne_points', PointCloud2).get_next_message()
 
     # Thrusters
     from roboteq_msgs.msg import Feedback
-    topics['BL_motor'] = nh.subscribe('/BL_motor/Feedback', Feedback).get_next_message()
-    topics['BR_motor'] = nh.subscribe('/BR_motor/Feedback', Feedback).get_next_message()
-    topics['FL_motor'] = nh.subscribe('/FL_motor/Feedback', Feedback).get_next_message()
-    topics['FR_motor'] = nh.subscribe('/FR_motor/Feedback', Feedback).get_next_message()
+    topics['BL_motor'] = nh.subscribe(
+        '/BL_motor/Feedback', Feedback).get_next_message()
+    topics['BR_motor'] = nh.subscribe(
+        '/BR_motor/Feedback', Feedback).get_next_message()
+    topics['FL_motor'] = nh.subscribe(
+        '/FL_motor/Feedback', Feedback).get_next_message()
+    topics['FR_motor'] = nh.subscribe(
+        '/FR_motor/Feedback', Feedback).get_next_message()
 
     for name, sub in topics.iteritems():
         try:
@@ -63,11 +75,14 @@ def main():
             fancy_name = FancyPrint.BOLD + name + FancyPrint.NORMAL
             print " - - - - Testing for {}".format(fancy_name)
 
-            result = yield txros.util.wrap_timeout(sub, 2)  # 2 second timeout should be good
+            # 2 second timeout should be good
+            result = yield txros.util.wrap_timeout(sub, 2)
             if result is None:
-                FancyPrint.error("[ FAIL ] Response was None from {}".format(fancy_name))
+                FancyPrint.error(
+                    "[ FAIL ] Response was None from {}".format(fancy_name))
             else:
-                FancyPrint.okay("[ PASS ] Response found from {}".format(fancy_name))
+                FancyPrint.okay(
+                    "[ PASS ] Response found from {}".format(fancy_name))
 
         except:
             FancyPrint.error("[ FAIL ] No response from {}".format(fancy_name))

@@ -1,7 +1,7 @@
 
 # input
-input_left            :  "/stereo/left/image_rect_color"
-input_right           :  "/stereo/right/image_rect_color"
+input_left            :  "/camera/front/left/image_rect_color"
+input_right           :  "/camera/front/right/image_rect_color"
 activation            :  "/stereo_shape_finder/activation_switch"
 
 # options

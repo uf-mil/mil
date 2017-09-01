@@ -23,7 +23,7 @@ import navigator_tools
 from navigator_tools import fprint as _fprint
 
 
-camera_root = "/stereo/right"  # /camera_root/root
+camera_root = "/camera/front/right"  # /camera_root/root
 
 ros_t = lambda t: rospy.Duration(t)
 fprint = lambda *args, **kwargs: _fprint(title="COLORAMA", time="", *args, **kwargs)

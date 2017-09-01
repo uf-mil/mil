@@ -56,10 +56,10 @@
         <plugin name="stereo_left_camera_controller" filename="libgazebo_ros_camera.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>30</updateRate>
-          <cameraName>stereo/left</cameraName>
+          <cameraName>camera/front/left</cameraName>
           <imageTopicName>image_raw</imageTopicName>
           <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-          <frameName>stereo_left_cam</frameName>
+          <frameName>front_left_cam</frameName>
           <hackBaseline>0</hackBaseline>
           <distortionK1>0</distortionK1>
           <distortionK2>0</distortionK2>
@@ -88,10 +88,10 @@
         <plugin name="stereo_right_camera_controller" filename="libgazebo_ros_camera.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>30</updateRate>
-          <cameraName>stereo/right</cameraName>
+          <cameraName>camera/front/right</cameraName>
           <imageTopicName>image_raw</imageTopicName>
           <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-          <frameName>stereo_right_cam</frameName>
+          <frameName>front_right_cam</frameName>
           <hackBaseline>0</hackBaseline>
           <distortionK1>0</distortionK1>
           <distortionK2>0</distortionK2>
@@ -120,10 +120,10 @@
         <plugin name="right_camera_controller" filename="libgazebo_ros_camera.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>30</updateRate>
-          <cameraName>right/right</cameraName>
+          <cameraName>camera/starboard</cameraName>
           <imageTopicName>image_raw</imageTopicName>
           <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-          <frameName>right_right_cam</frameName>
+          <frameName>starboard_cam</frameName>
           <hackBaseline>0</hackBaseline>
           <distortionK1>0</distortionK1>
           <distortionK2>0</distortionK2>
@@ -152,7 +152,7 @@
         <plugin name="down_camera_controller" filename="libgazebo_ros_camera.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>30</updateRate>
-          <cameraName>down</cameraName>
+          <cameraName>camera/down</cameraName>
           <imageTopicName>image_raw</imageTopicName>
           <cameraInfoTopicName>camera_info</cameraInfoTopicName>
           <frameName>down_cam</frameName>

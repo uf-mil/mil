@@ -34,7 +34,7 @@ class IdentifyDockMission:
         self.navigator = navigator
         self.ogrid_activation_client = self.navigator.nh.get_service_client('/identify_dock/active', SetBool)
         self.get_bays = self.navigator.nh.get_service_client('/identify_dock/get_bays', GetDockBays)
-        self.cameraLidarTransformer = self.navigator.nh.get_service_client("/camera_to_lidar/stereo_right_cam", CameraToLidarTransform)
+        self.cameraLidarTransformer = self.navigator.nh.get_service_client("/camera_to_lidar/front_right_cam", CameraToLidarTransform)
         self.identified_shapes = {}
 
     def start_ogrid(self):
