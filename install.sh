@@ -340,10 +340,6 @@ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main
 sudo sh -c 'echo "deb-src http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" >> /etc/apt/sources.list.d/ros.list'
 sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
 
-# Add software repository for Git-LFS to software sources
-instlog "Adding the Git-LFS packagecloud repository to software sources"
-curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
-
 
 # Add software repository for Terry Guo's ARM toolchain if NaviGator is being installed
 # This is a dependency for the emergency controller, which in its current iteration on 2017-29-08 does not work
@@ -477,11 +473,6 @@ sudo apt-get install -qq ipython
 sudo apt-get install -qq tmux
 sudo apt-get install -qq htop
 sudo apt-get install -qq sshfs
-
-# Git-LFS for models and other large files
-sudo apt-get install -qq git-lfs
-cd $CATKIN_DIR
-git lfs install --skip-smudge
 
 # Debugging utility
 sudo apt-get install -qq gdb
@@ -640,11 +631,6 @@ if [[ "$INSTALL_NAV" == "true" ]]; then
 	cd $CATKIN_DIR/src/NaviGator/gnc/lqRRT
 	sudo python setup.py build
 	sudo python setup.py install
-
-	# Pull large project files from Git-LFS
-	instlog "Pulling large files for NaviGator"
-	cd $CATKIN_DIR/src/NaviGator
-	git lfs pull
 fi
 
 
