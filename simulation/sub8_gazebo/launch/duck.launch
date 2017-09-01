@@ -170,7 +170,7 @@
   <group ns="/camera" if="$(arg cameras)">
     <group ns="front">
       <node pkg="image_proc" type="image_proc" name="front_left_image_proc" ns="left" />
-      <node pkg="image_proc" type="image_proc" name="front_left_image_proc" ns="right" />
+      <node pkg="image_proc" type="image_proc" name="front_right_image_proc" ns="right" />
     </group>
     <group ns="down">
       <node pkg="image_proc" type="image_proc" name="down_left_image_proc" ns="left" />
