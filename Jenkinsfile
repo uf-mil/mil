@@ -24,7 +24,7 @@ dockerNode(image: 'uf-mil:mil_common') {
 	}
 	stage("Format") {
 		sh '''
-			if [[ ! -z "$(python2.7 -m flake8 --ignore E731 --max-line-length=120 --exclude=__init__.py,drivers/pointgrey_camera_driver,drivers/mil_passive_sonar .)" ]]; then
+			if [[ ! -z "$(python2.7 -m flake8 --ignore E731 --max-line-length=120 --exclude=__init__.py,drivers/pointgrey_camera_driver,drivers/velodyne,drivers/mil_passive_sonar .)" ]]; then
 				echo "The preceding Python following files are not formatted correctly"
 				exit 1
 			fi
