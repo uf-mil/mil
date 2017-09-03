@@ -150,7 +150,7 @@ class Navigator(object):
             yield _bounds.wait_for_service()
             resp = yield _bounds(navigator_srvs.BoundsRequest())
             if resp.enforce:
-                self.enu_bounds = [mil_tools.point_to_numpy(bound) for bound in resp.bounds]
+                self.enu_bounds = [mil_tools.rosmsg_to_numpy(bound) for bound in resp.bounds]
 
                 # Just for display
                 pc = PointCloud(header=mil_tools.make_header(frame='/enu'),

@@ -1,6 +1,11 @@
 <launch>
   <node pkg="ros_alarms" type="alarm_server.py" name="alarm_server" output="screen">
     <param name="handler_module" type="string" value="navigator_alarm_handlers" />
+    <rosparam>
+        battery-voltage:
+            low: 26
+            critical: 20
+    </rosparam>
   </node>
   <rosparam ns="meta_alarms">
     kill: ['odom-kill', 'network-loss', 'battery-voltage', 'hw-kill']
