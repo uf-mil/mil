@@ -14,11 +14,11 @@ export BAG_DIR=~/bags
 
 
 # Topic variables that can be used from the bag command
-export bag_stereo_left_cam="/stereo/left/camera_info /stereo/left/image_raw"
-export bag_stereo_right_cam="/stereo/right/camera_info /stereo/right/image_raw"
-export bag_stereo_cam="$bag_stereo_left_cam $bag_stereo_right_cam"
-export bag_right_cam="/right/right/image_raw /right/right/camera_info"
-export bag_down_cam="/down/camera_info /down/image_raw"
+export bag_front_left_cam="/camera/front/left/camera_info /camera/front/left/image_raw"
+export bag_front_right_cam="/camera/front/right/camera_info /camera/front/right/image_raw"
+export bag_front_cam="$bag_front_left_cam $bag_front_right_cam"
+export bag_starboard_cam="/camera/starboard/image_raw /camera/starboard/camera_info"
+export bag_down_cam="/camera/down/camera_info /camera/down/image_raw"
 export bag_velodyne="/velodyne_points"
 export bag_sick="/scan"
 export bag_motors="/BL_motor/cmd /BL_motor/feedback /BL_motor/status /BR_motor/cmd /BR_motor/feedback /BR_motor/status /FL_motor/cmd /FL_motor/feedback /FL_motor/status /FR_motor/cmd /FR_motor/feedback /FR_motor/status"

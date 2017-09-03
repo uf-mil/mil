@@ -1,8 +1,8 @@
 <launch>
-    <include file="$(find navigator_launch)/launch/subsystems/cameras/front_stereo.launch">
-        <arg name="stereo_left"  value="False" />
-        <arg name="stereo_right" value="True" />
+    <include file="$(find navigator_launch)/launch/subsystems/cameras/front_cameras.launch">
+        <arg name="front_left"  value="False" />
+        <arg name="front_right" value="True" />
     </include>
-    <include file="$(find navigator_launch)/launch/subsystems/cameras/right.launch"/>
+    <include file="$(find navigator_launch)/launch/subsystems/cameras/starboard.launch"/>
     <include file="$(find navigator_launch)/launch/subsystems/cameras/downward.launch"/>
 </launch>

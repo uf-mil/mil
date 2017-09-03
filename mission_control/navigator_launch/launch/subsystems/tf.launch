@@ -7,9 +7,9 @@
     <node pkg="tf" type="static_transform_publisher" name="sick_tf" args="0.5334 -0.0254 -0.6858  0 0 0 1  /measurement /sick 10" />
 
     <!-- Cameras -->
-    <node pkg="tf" type="static_transform_publisher" name="stereo_left_cam_tf" args="0.294 0.1 -0.45  -0.5665 0.55359 -0.42663 0.43658  /velodyne /stereo_left_cam 100" />
-    <node pkg="tf" type="static_transform_publisher" name="stereo_right_cam_tf" args="0.294 -0.099 -0.45  -0.56527 0.55938 -0.42644 0.43093  /velodyne /stereo_right_cam 100" />
-    <node pkg="tf" type="static_transform_publisher" name="right_right_cam_tf" args="-0.285 -0.495 0.129  -0.01555 -0.70694 0.70694 0.01555  /measurement /right_right_cam 100" />
+    <node pkg="tf" type="static_transform_publisher" name="front_left_cam_tf" args="0.294 0.1 -0.45  -0.5665 0.55359 -0.42663 0.43658  /velodyne /front_left_cam 100" />
+    <node pkg="tf" type="static_transform_publisher" name="front_right_cam_tf" args="0.294 -0.099 -0.45  -0.56527 0.55938 -0.42644 0.43093  /velodyne /front_right_cam 100" />
+    <node pkg="tf" type="static_transform_publisher" name="starboard_cam_tf" args="-0.285 -0.495 0.129  -0.01555 -0.70694 0.70694 0.01555  /measurement /starboard_cam 100" />
     <!-- Shooter -->
     <node pkg="tf" type="static_transform_publisher" name="shooter_tf" args="-0.6096 -0.635 0.2032  -1.571 -0.349066 0 /measurement /shooter 100" />
 

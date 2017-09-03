@@ -39,8 +39,8 @@ class LidarToImage(object):
 
     @util.cancellableInlineCallbacks
     def init_(self, cam):
-        image_sub = "/stereo/right/image_rect_color"
-        cam_info = "/stereo/right/camera_info"
+        image_sub = "/camera/front/right/image_rect_color"
+        cam_info = "/camera/front/right/camera_info"
 
         yield self.nh.subscribe(image_sub, Image, self._img_cb)
         self._database = yield self.nh.get_service_client('/database/requests', ObjectDBQuery)
@@ -177,7 +177,7 @@ class LidarToImage(object):
 
     @txros.util.cancellableInlineCallbacks
     def get_3d_points(self, perc_obj):
-        trans = yield self.my_tf.get_transform("/stereo_right_cam", "/enu", perc_obj.header.stamp)
+        trans = yield self.my_tf.get_transform("/front_right_cam", "/enu", perc_obj.header.stamp)
 
         stereo_points = []
         for point in perc_obj.points:

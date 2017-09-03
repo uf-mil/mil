@@ -23,9 +23,9 @@
         [29.533803, -82.302639]]
     </rosparam>
 
-    <node name="stereo_right_proc" pkg="image_proc" type="image_proc" ns="/stereo/right" if="$(arg im_proc_sr)"/>
-    <node name="stereo_left_proc" pkg="image_proc" type="image_proc" ns="/stereo/left" if="$(arg im_proc_sl)"/>
-    <node name="right_right_proc" pkg="image_proc" type="image_proc" ns="/right/right" if="$(arg im_proc_rr)"/>
+    <node name="front_right_proc" pkg="image_proc" type="image_proc" ns="/camera/front/right" if="$(arg im_proc_sr)"/>
+    <node name="front_left_proc" pkg="image_proc" type="image_proc" ns="/camera/front/left" if="$(arg im_proc_sl)"/>
+    <node name="starboard_proc" pkg="image_proc" type="image_proc" ns="/camera/starboard" if="$(arg im_proc_rr)"/>
 
     <node name="action_server" pkg="navigator_tools" type="fake_action_server.py" output="screen"/>
 

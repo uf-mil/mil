@@ -44,7 +44,7 @@ class ScanTheCodePerception(object):
     @txros.util.cancellableInlineCallbacks
     def _init(self):
         self.vel_sub = yield self.nh.subscribe("/velodyne_points", PointCloud2)
-        self.image_sub = yield self.nh.subscribe("/stereo/right/image_rect_color", Image)
+        self.image_sub = yield self.nh.subscribe("/camera/front/right/image_rect_color", Image)
         defer.returnValue(self)
 
     def add_image(self, image):
@@ -153,8 +153,8 @@ class ScanTheCodePerception(object):
 
     @txros.util.cancellableInlineCallbacks
     def get_stc_points(self, msg, stc_pos):
-        trans = yield self.my_tf.get_transform("/stereo_right_cam", "/velodyne", msg.header.stamp)
-        trans1 = yield self.my_tf.get_transform("/stereo_right_cam", "/enu", msg.header.stamp)
+        trans = yield self.my_tf.get_transform("/front_right_cam", "/velodyne", msg.header.stamp)
+        trans1 = yield self.my_tf.get_transform("/front_right_cam", "/enu", msg.header.stamp)
         stc_pos = rosmsg_to_numpy(stc_pos)
         stc_pos = np.append(stc_pos, 1)
         position = trans1.as_matrix().dot(stc_pos)
