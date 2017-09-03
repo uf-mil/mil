@@ -13,5 +13,5 @@
 	branch = master
 [submodule "drivers/roboteq"]
 	path = drivers/roboteq
-	url = https://github.com/g/roboteq
-	branch = indigo-devel
+	url = https://github.com/uf-mil/roboteq
+	branch = master
