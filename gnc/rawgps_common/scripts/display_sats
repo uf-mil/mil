@@ -17,25 +17,35 @@ from rawgps_common.msg import Measurements
 
 from odom_estimator.msg import Info
 
-xyz_array = lambda o: numpy.array([o.x, o.y, o.z])
+
+def xyz_array(o): return numpy.array([o.x, o.y, o.z])
+
 
 pygame.init()
 display = pygame.display.set_mode((500, 500))
 font = pygame.font.SysFont("monospace", 12)
 
-round = lambda f: int(f + .5)
+
+def round(f): return int(f + .5)
+
 
 last_info = {}
+
+
 def update_last_info(msg):
     global last_info
-    last_info = dict(zip(msg.gps_bias_prns, zip(msg.gps_bias_biases, msg.gps_bias_stddevs)))
+    last_info = dict(zip(msg.gps_bias_prns, zip(
+        msg.gps_bias_biases, msg.gps_bias_stddevs)))
+
+
 rospy.Subscriber('/odom_estimator/info', Info, update_last_info)
+
 
 def got_msg(msg):
     display.fill((0, 0, 0))
     for elevation in [0, 30, 60]:
         pygame.draw.circle(display, (255, 255, 255),
-            (250, 250), round(200*math.cos(math.radians(elevation))), 1)
+                           (250, 250), round(200 * math.cos(math.radians(elevation))), 1)
     pygame.draw.circle(display, (255, 255, 255), (250, 250), 200, 1)
     for sat in msg.satellites:
         pos = (
@@ -43,19 +53,23 @@ def got_msg(msg):
             round(sat.direction_enu.y * -200 + 250),
         )
         pygame.draw.circle(display, (0, 255, 0), pos, 25)
-        
+
         s = font.render(str(sat.prn), True, (0, 0, 0))
-        display.blit(s, (pos[0] - s.get_width()/2, pos[1] - s.get_height()/2 - font.get_linesize()))
-        
+        display.blit(s, (pos[0] - s.get_width() / 2, pos[1] -
+                         s.get_height() / 2 - font.get_linesize()))
+
         if sat.prn in last_info:
             bias, stddev = last_info[sat.prn]
             s = font.render('%.1f' % (bias,), True, (0, 0, 0))
-            display.blit(s, (pos[0] - s.get_width()/2, pos[1] - s.get_height()/2))
-        
+            display.blit(s, (pos[0] - s.get_width() / 2,
+                             pos[1] - s.get_height() / 2))
+
         s = font.render('%.1f' % (gps.c * sat.T_iono,), True, (0, 0, 0))
-        display.blit(s, (pos[0] - s.get_width()/2, pos[1] - s.get_height()/2 + font.get_linesize()))
-    
+        display.blit(s, (pos[0] - s.get_width() / 2, pos[1] -
+                         s.get_height() / 2 + font.get_linesize()))
+
     pygame.display.update()
+
 
 rospy.init_node('rawgps_common_display_sats')
 
