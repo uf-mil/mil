@@ -260,12 +260,12 @@ class OgridFactory():
         right_wall_points = np.array([self.transform(point) for point in self.right_wall_points])
 
         rect = cv2.minAreaRect(left_wall_points[:,:2].astype(np.float32))
-        box = cv2.cv.BoxPoints(rect)
+        box = cv2.boxPoints(rect)
         box = np.int0(box)
         cv2.drawContours(self.grid, [box], 0, 128, -1)
 
         rect = cv2.minAreaRect(right_wall_points[:,:2].astype(np.float32))
-        box = cv2.cv.BoxPoints(rect)
+        box = cv2.boxPoints(rect)
         box = np.int0(box)
         cv2.drawContours(self.grid, [box], 0, 128, -1)
 

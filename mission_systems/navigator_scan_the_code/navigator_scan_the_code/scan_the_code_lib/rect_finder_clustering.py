@@ -122,7 +122,7 @@ class RectangleFinderClustering(object):
             top = np.count_nonzero(draw_mask)
             valz = np.fliplr(np.transpose(draw_mask.nonzero()))
             rect = cv2.minAreaRect(valz)
-            box = cv2.cv.BoxPoints(rect)
+            box = cv2.boxPoints(rect)
             box = np.int0(box)
             rect_mask = np.zeros((nh, nw))
             cv2.drawContours(rect_mask, [box], 0, 255, -1)

@@ -473,7 +473,7 @@ class Colorama(object):
     def _get_ROI_from_points(self, image_points):
         cnt = np.array([image_points]).astype(np.float32)
         rect = cv2.minAreaRect(cnt)
-        box = cv2.cv.BoxPoints(rect)
+        box = cv2.boxPoints(rect)
         box = np.int0(box)
         fprint("Drawing rectangle")
         cv2.drawContours(self.debug.image, [box], 0, (0, 0, 255), 2)
