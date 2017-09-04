@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 from actionlib import SimpleActionClient, TerminalState
-from lqrrt_ros.msg import MoveAction, MoveGoal
+from navigator_path_planner.msg import MoveAction, MoveGoal
 from navigator_msgs.srv import WrenchSelect, WrenchSelectRequest
 from ros_alarms import HandlerBase
 

@@ -14,7 +14,7 @@ from pose_editor import PoseEditor2
 import mil_tools
 from ros_alarms import TxAlarmListener
 
-from lqrrt_ros.msg import MoveAction
+from navigator_path_planner.msg import MoveAction
 from nav_msgs.msg import Odometry
 from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped

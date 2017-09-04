@@ -9,7 +9,7 @@ from mil_msgs.msg import PoseTwistStamped, PoseTwist, MoveToGoal
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Point, Vector3, Twist
 from mil_tools import rosmsg_to_numpy, make_header, normalize
 from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
-from lqrrt_ros.msg import MoveGoal
+from navigator_path_planner.msg import MoveGoal
 
 import mil_tools
 from mil_misc_tools.text_effects import fprint

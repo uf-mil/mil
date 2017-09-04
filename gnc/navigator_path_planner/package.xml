@@ -1,0 +1,19 @@
+<package format="2">
+
+  <name>navigator_path_planner</name>
+  <version>0.0.0</version>
+  <description>Node for NaviGator's lqRRT based path planner</description>
+  <maintainer email="nez.jason7@gmail.com">jason</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>rospy</depend>
+  <depend>actionlib</depend>
+  <depend>actionlib_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <export>
+  </export>
+
+</package>
+
