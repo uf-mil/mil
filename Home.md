@@ -30,6 +30,8 @@ Tess Bianchi
 
 Lucas Bassett-Audain
 
+Kevin Michael Allen
+
 
 # Getting Involved
 
