@@ -13,7 +13,7 @@ from twisted.internet import defer
 class Buoy(object):
     @classmethod
     def from_srv(cls, srv):
-        return cls(mil_tools.point_to_numpy(srv.position), srv.color)
+        return cls(mil_tools.rosmsg_to_numpy(srv.position), srv.color)
 
     def __init__(self, position, color):
         self.position = np.array(position)

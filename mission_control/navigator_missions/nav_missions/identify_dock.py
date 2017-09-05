@@ -140,7 +140,7 @@ class IdentifyDockMission:
         defer.returnValue(False)
 
     def _bounding_rect(self,points):
-        np_points = map(mil_tools.point_to_numpy, points)
+        np_points = map(mil_tools.rosmsg_to_numpy, points)
         xy_max = np.max(np_points, axis=0)
         xy_min = np.min(np_points, axis=0)
         return np.append(xy_max, xy_min)

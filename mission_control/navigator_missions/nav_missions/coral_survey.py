@@ -29,8 +29,8 @@ def main(navigator, **kwargs):
     totem = yield navigator.database_query("all")
     
     # Get the closest totem object to the boat
-    totems_np = map(lambda obj: mil_tools.point_to_numpy(obj.position), totem.objects)
-    dist = map(lambda totem_np: np.linalg.norm(totem_np - mil_tools.point_to_numpy(est_coral_survey.objects[0].position)), totems_np)
+    totems_np = map(lambda obj: mil_tools.rosmsg_to_numpy(obj.position), totem.objects)
+    dist = map(lambda totem_np: np.linalg.norm(totem_np - mil_tools.rosmsg_to_numpy(est_coral_survey.objects[0].position)), totems_np)
     middle_point = totems_np[np.argmin(dist)]
 
     print "Totem sorted:", totems_np
