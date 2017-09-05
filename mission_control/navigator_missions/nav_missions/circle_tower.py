@@ -40,7 +40,7 @@ def main(navigator, **kwargs):
     colors = [c1, c2, c3]
 
     buoy_field = yield navigator.database_query("BuoyField")
-    buoy_field_point = mil_tools.point_to_numpy(buoy_field.objects[0].position)
+    buoy_field_point = mil_tools.rosmsg_to_numpy(buoy_field.objects[0].position)
 
     _dist_from_bf = lambda pt: np.linalg.norm(buoy_field_point - pt)
 
@@ -58,13 +58,13 @@ def main(navigator, **kwargs):
     
         fprint("Going to totem colored {} in direction {}".format(color, direction), title="CIRCLE_TOTEM")
         target = yield get_colored_buoy(navigator, color_map[color])
-        if target is None or _dist_from_bf(mil_tools.point_to_numpy(target.position)) > (BF_WIDTH / 2 + BF_EST_COFIDENCE):
+        if target is None or _dist_from_bf(mil_tools.rosmsg_to_numpy(target.position)) > (BF_WIDTH / 2 + BF_EST_COFIDENCE):
             # Need to do something
             fprint("No suitable totems found, going to circle any nearby totems.", msg_color='red', title="CIRCLE_TOTEM")
             target, searched = yield get_closest_totem(navigator, searched)
             need_recolor = True
 
-        target_np = mil_tools.point_to_numpy(target.position)
+        target_np = mil_tools.rosmsg_to_numpy(target.position)
         circler = navigator.move.d_circle_point(point=target_np, radius=TOTEM_SAFE_DIST, direction=direction)
         
         # Give the totem a look at
@@ -117,7 +117,7 @@ def get_colored_buoy(navigator, color):
     Returns the closest colored buoy with the specified color
     """
     buoy_field = yield navigator.database_query("BuoyField")
-    buoy_field_point = mil_tools.point_to_numpy(buoy_field.objects[0].position)
+    buoy_field_point = mil_tools.rosmsg_to_numpy(buoy_field.objects[0].position)
 
     _dist_from_bf = lambda pt: np.linalg.norm(buoy_field_point - pt)
 
@@ -126,7 +126,7 @@ def get_colored_buoy(navigator, color):
     if len(correct_colored) == 0:
         closest = None 
     else:
-        closest = sorted(correct_colored, key=lambda totem: _dist_from_bf(mil_tools.point_to_numpy(totem.position)))[0]
+        closest = sorted(correct_colored, key=lambda totem: _dist_from_bf(mil_tools.rosmsg_to_numpy(totem.position)))[0]
     
     defer.returnValue(closest)
 
@@ -135,7 +135,7 @@ def get_colored_buoy(navigator, color):
 def get_closest_totem(navigator, explored_ids):
     pose = yield navigator.tx_pose
     buoy_field = yield navigator.database_query("BuoyField")
-    buoy_field_np = mil_tools.point_to_numpy(buoy_field.objects[0].position)
+    buoy_field_np = mil_tools.rosmsg_to_numpy(buoy_field.objects[0].position)
 
     # Find which totems we haven't explored yet
     totems = yield navigator.database_query("totem", raise_exception=False)
@@ -144,7 +144,7 @@ def get_closest_totem(navigator, explored_ids):
         defer.returnValue([None, explored_ids])
     
     u_totems = [totem for totem in totems.objects if totem.id not in explored_ids]
-    u_totems_np = map(lambda totem: mil_tools.point_to_numpy(totem.position), u_totems)
+    u_totems_np = map(lambda totem: mil_tools.rosmsg_to_numpy(totem.position), u_totems)
 
     if len(u_totems_np) == 0:
         defer.returnValue([None, explored_ids])
@@ -169,7 +169,7 @@ def get_closest_totem(navigator, explored_ids):
 def get_closest_object(navigator):
     pose = yield navigator.tx_pose
     buoy_field = yield navigator.database_query("BuoyField")
-    buoy_field_np = mil_tools.point_to_numpy(buoy_field.objects[0].position)
+    buoy_field_np = mil_tools.rosmsg_to_numpy(buoy_field.objects[0].position)
 
     # Find which totems we haven't explored yet
     totems = yield navigator.database_query("all", raise_exception=False)
@@ -178,7 +178,7 @@ def get_closest_object(navigator):
         defer.returnValue([None, explored_ids])
 
     u_totems = [totem for totem in totems.objects if totem.id not in explored_ids]
-    u_totems_np = map(lambda totem: mil_tools.point_to_numpy(totem.position), u_totems)
+    u_totems_np = map(lambda totem: mil_tools.rosmsg_to_numpy(totem.position), u_totems)
 
     if len(u_totems_np) == 0:
         defer.returnValue([None, explored_ids])

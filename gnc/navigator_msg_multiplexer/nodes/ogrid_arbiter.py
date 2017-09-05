@@ -343,7 +343,7 @@ class OGridServer:
         w = boat_width / ogrid.info.resolution
         h = boat_height / ogrid.info.resolution
 
-        box = cv2.cv.BoxPoints(((x,y), (w,h), np.degrees(theta)))
+        box = cv2.boxPoints(((x,y), (w,h), np.degrees(theta)))
         box = np.int0(box)
         cv2.drawContours(np_grid, [box], 0, 0, -1)
         
@@ -355,7 +355,7 @@ class OGridServer:
         w = boat_width / ogrid.info.resolution
         h = boat_height / ogrid.info.resolution
 
-        box = cv2.cv.BoxPoints(((x,y), (w,h), np.degrees(theta)))
+        box = cv2.boxPoints(((x,y), (w,h), np.degrees(theta)))
         box = np.int0(box)
         cv2.drawContours(np_grid, [box], 0, 40, -1)
         

@@ -1,9 +1,9 @@
-from ros_alarms import HandlerBase, HeartbeatMonitor
+from ros_alarms import HandlerBase, AlarmBroadcaster
 from std_msgs.msg import Header, Float32
 import rospy
 
 
-class NetworkLoss(HandlerBase):
+class BatteryVoltage(HandlerBase):
     alarm_name = 'battery-voltage'
 
     def __init__(self):
@@ -14,7 +14,7 @@ class NetworkLoss(HandlerBase):
         self._raised = False
         self._severity = 0
 
-    def _check_voltage(self, msg)
+    def _check_voltage(self, msg):
         voltage = msg.data
         do_raise = voltage < self.low_threshold
         if do_raise:
@@ -23,7 +23,7 @@ class NetworkLoss(HandlerBase):
                 self.broadcaster.raise_alarm(
                     severity=severity,
                     problem_description='battery critcaly low' if severity == 2 else 'battery low',
-                    paramaters: {'voltage':voltage}
+                    parameters={'voltage':voltage}
                 )
 
     def raised(self, alarm):

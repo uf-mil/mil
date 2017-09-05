@@ -64,7 +64,7 @@ class PingerFinder(object):
                 return
             p0 = np.array([trans[0], trans[1]])
             R = tf.transformations.quaternion_matrix(rot)[:3, :3]
-            delta = R.dot(navigator_tools.point_to_numpy(ping.position))[:2]
+            delta = R.dot(navigator_tools.rosmsg_to_numpy(ping.position))[:2]
             p1 = p0 + self.heading_pseudorange * delta / npl.norm(delta)
             line_coeffs = np.array([[p0[0], p0[1], p1[0], p1[1]]]) # p0 and p1 define a line
             self.visualize_arrow(Point(p0[0], p0[1], 0), Point(p1[0], p1[1], 0))

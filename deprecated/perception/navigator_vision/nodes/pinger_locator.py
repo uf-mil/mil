@@ -21,11 +21,11 @@ while True:
             freq_dev = abs(target_freq - processed_ping.freq)
             print "Trustworthy pinger heading"
             hydrophones_enu_p, hydrophones_enu_q = tf.lookupTransform("/hydrophones", "/enu", processed_ping.header.stamp)
-            pinger_enu_p = navigator_tools.point_to_numpy(tf.transformPoint())
-            dir_ = navigator_tools.point_to_numpy(processed_ping.position)
+            pinger_enu_p = navigator_tools.rosmsg_to_numpy(tf.transformPoint())
+            dir_ = navigator_tools.rosmsg_to_numpy(processed_ping.position)
         	mv_mag = 2
             mv_hyd_frame = dir_ / np.linalg.norm(dir_)
-            pinger_move = navigator.move.set_position(navigator_tools.point_to_numpy(processed_ping.position)).go()
+            pinger_move = navigator.move.set_position(navigator_tools.rosmsg_to_numpy(processed_ping.position)).go()
 
             print "Heading towards pinger"
         else:

@@ -13,7 +13,7 @@ from twisted.internet import defer
 class Buoy(object):
     @classmethod
     def from_srv(cls, srv):
-        return cls(mil_tools.point_to_numpy(srv.position), srv.color)
+        return cls(mil_tools.rosmsg_to_numpy(srv.position), srv.color)
 
     def __init__(self, position, color):
         self.position = np.array(position)
@@ -260,12 +260,12 @@ class OgridFactory():
         right_wall_points = np.array([self.transform(point) for point in self.right_wall_points])
 
         rect = cv2.minAreaRect(left_wall_points[:,:2].astype(np.float32))
-        box = cv2.cv.BoxPoints(rect)
+        box = cv2.boxPoints(rect)
         box = np.int0(box)
         cv2.drawContours(self.grid, [box], 0, 128, -1)
 
         rect = cv2.minAreaRect(right_wall_points[:,:2].astype(np.float32))
-        box = cv2.cv.BoxPoints(rect)
+        box = cv2.boxPoints(rect)
         box = np.int0(box)
         cv2.drawContours(self.grid, [box], 0, 128, -1)
 
