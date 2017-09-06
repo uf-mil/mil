@@ -1,235 +1,163 @@
 #!/usr/bin/env python
 import rospy
-
 import threading
 import serial
-
-from std_msgs.msg import String
-from std_msgs.msg import Header
-
+from std_msgs.msg import Header, String
 from mil_tools import thread_lock
-from mil_misc_tools.text_effects import fprint as _fprint
 from ros_alarms import AlarmBroadcaster, AlarmListener
-from navigator_msgs.msg import KillStatus
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
+from navigator_kill_board import constants
 
-fprint = lambda *args, **kwargs: _fprint(time='', *args, **kwargs)
 lock = threading.Lock()
+
 
 class KillInterface(object):
     """
-    This handles the comms node between ROS and kill/status embedded board.
-    There are two things running here:
-        1. From ROS: Check current operation mode of the boat and tell that to the light
-        2. From BASE: Check the current kill status from the other sources
+    Driver to interface with NaviGator's kill handeling board, which disconnects power to actuators
+    if any of 4 emergency buttons is pressed, a software kill command is sent, or the network hearbeat
+    stops. This driver enables the software kill option via ros_alarms and outputs diagnostics
+    data about the board to ROS.
     """
 
-    def __init__(self, port="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A104OWRY-if00-port0", baud=9600):
-        self.ser = serial.Serial(port=port, baudrate=baud, timeout=0.25)
+    ALARM = 'hw-kill'  # Alarm to raise when hardware kill is detected
+    YELLOW_WRENCHES = ['rc', 'keyboard']  # List of wrenches which will activate yellow diagnostic light
+    GREEN_WRENCHES = ['autonomous']  # List of wrenches which will activate green diagnostic light
+
+    def __init__(self):
+        self.port = rospy.get_param('~port', "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A104OWRY-if00-port0")
+        if rospy.get_param('/is_simulation', False):  # If in Gazebo, run fake serial class following board's protocol
+            from navigator_kill_board import SimulatedKillBoard
+            self.ser = SimulatedKillBoard()
+        else:
+            baud = rospy.get_param('~baud', 9600)
+            self.ser = serial.Serial(port=self.port, baud=baud)
         self.ser.flush()
 
-        self.timeout = rospy.Duration(1)
+        self.board_status = {}
+        for kill in constants['KILLS']:
+            self.board_status[kill] = False
         self.network_msg = None
-        update_network = lambda msg: setattr(self, "network_msg", msg)
-        self.network_listener = rospy.Subscriber("/keep_alive", Header, update_network)
+        self.wrench = ''
+        self._hw_killed = False
 
-        self.killstatus_pub = rospy.Publisher("/killstatus", KillStatus, queue_size=1)
+        self.hw_kill_broadcaster = AlarmBroadcaster('hw-kill')
+        self.diagnostics_pub = rospy.Publisher("/diagnostics", DiagnosticArray, queue_size=3)
 
-        self.kill_alarm = AlarmBroadcaster('hw-kill')
-        self.disconnect = AlarmBroadcaster('kill_system_disconnect')
+        AlarmListener('hw-kill', self.hw_kill_alarm_cb)
+        AlarmListener('kill', self.kill_alarm_cb)
+        rospy.Subscriber("/wrench/current", String, self.wrench_cb)
+        rospy.Subscriber("/network", Header, self.network_cb)  # Passes along network hearbeat to kill board
 
-        self.killed = False
-
-        self.kill_status = {'overall': False, 'PF': False, 'PA': False, 'SF': False, 'SA': False, 'computer': False, 'remote': False}
-        # Dict of op-codes to functions that need to be run with each code for aysnc responses
-        self.update_cbs = {'\x10': lambda: self.update('overall', True), '\x11': lambda: self.update('overall', False),
-                           '\x12': lambda: self.update('PF', True), '\x13': lambda: self.update('PF', False), 
-                           '\x14': lambda: self.update('PA', True), '\x15': lambda: self.update('PA', False),
-                           '\x16': lambda: self.update('SF', True), '\x17': lambda: self.update('SF', False), 
-                           '\x18': lambda: self.update('SA', True), '\x19': lambda: self.update('SA', False),
-                           '\x1A': lambda: self.update('remote', True), '\x1B': lambda: self.update('remote', False),
-                           '\x1C': lambda: self.update('computer', True), '\x1D': lambda: self.update('computer', False),
-                           '\x1E': self.disconnect.clear_alarm, '\x1F': self.disconnect.raise_alarm}
-
-        # Initial check of kill status
-        self.get_status() 
-
-        self.current_wrencher = ''
-        _set_wrencher = lambda msg: setattr(self, 'current_wrencher', msg.data)
-        rospy.Subscriber("/wrench/current", String, _set_wrencher)
-
-        al = AlarmListener("kill", self.alarm_kill_cb)
-        
-        rospy.Timer(rospy.Duration(.5), self.get_status)
-
+    def run(self):
+        '''
+        Main loop for driver, at a fixed rate updates alarms and diagnostics output with new
+        kill board output.
+        '''
+        rate = rospy.Rate(20)
         while not rospy.is_shutdown():
-            self.control_check()
+            while self.ser.in_waiting > 0 and not rospy.is_shutdown():
+                self.receive_async()
+            self.update_hw_kill()  # Raise hw-kill alarm if any kills are active on board
+            self.publish_diagnostics()
+            rate.sleep()
 
-            while self.ser.inWaiting() > 0 and not rospy.is_shutdown():
-                self.check_buffer()
+    @thread_lock(lock)
+    def receive_async(self):
+        '''
+        Recieve update bytes sent from the board without requests being sent, updating internal
+        state, raising alarms, etc in response to board updates.
+        '''
+        msg = self.ser.read(1)
+        for kill in self.board_status:
+            if msg == constants[kill]['FALSE']:
+                self.board_status[kill] = False
+            if msg == constants[kill]['TRUE']:
+                self.board_status[kill] = True
 
-            if not self.network_kill():
-                self.ping()
+    def wrench_cb(self, msg):
+        '''
+        Updates wrench (autnomous vs teleop) diagnostic light if nessesary
+        on wrench changes
+        '''
+        wrench = msg.data
+        if wrench != self.wrench:
+            if wrench in self.YELLOW_WRENCHES:
+                self.request(constants['LIGHTS']['YELLOW_REQUEST'])
+            elif wrench in self.GREEN_WRENCHES:
+                self.request(constants['LIGHTS']['GREEN_WRENCHES'])
             else:
-                rospy.logerr("KILLBOARD: Network Kill!") 
+                self.request(constants['LIGHTS']['OFF_REQUEST'])
+            self.wrench = wrench
 
-    def update(self, src, status):
-        rospy.loginfo("Updating... from {}: {}".format(src, status))
-        self.kill_status[src] = status
+    def network_cb(self, msg):
+        '''
+        Pings kill board on every network hearbeat message. Pretends to be the rf-based hearbeat because
+        real one does not work :(
+        '''
+        self.request(constants['PING']['REQUEST'])
 
-    def network_kill(self):
-        if self.network_msg is None:
-           return False
+    def publish_diagnostics(self):
+        '''
+        Publishes current kill board state in ROS diagnostics package, making it easy to use in GUIs and other ROS tools
+        '''
+        msg = DiagnosticArray()
+        msg.header.stamp = rospy.Time.now()
+        status = DiagnosticStatus()
+        status.name = 'kill_board'
+        status.hardware_id = self.port
+        for key, value in self.board_status.items():
+            status.values.append(KeyValue(key, str(value)))
+        msg.status.append(status)
+        self.diagnostics_pub.publish(msg)
 
-        return ((rospy.Time.now() - self.network_msg.stamp) > self.timeout)
-
-    def to_hex(self, arg):
-        ret = '\x99'
-        try:
-            ret = hex(ord(arg))
-        except Exception as e:
-            rospy.logerr(e)
-            self.ser.flushInput()
-            self.ser.flushOutput()
-
-        return ret
-
-    def set_kill(self):
-        self.killed = True
-        self.kill_alarm.raise_alarm()
-
-    def set_unkill(self):
-        self.killed = False
-        self.kill_alarm.clear_alarm()
-
-    @thread_lock(lock)
-    def check_buffer(self):
-        # The board appears to not be return async data
-        resp = self.ser.read(1)
-        print resp.encode('hex')
-        if resp in self.update_cbs:
-            rospy.loginfo("Check Buffer response: {}".format(resp.encode('hex')))
-            self.update_cbs[resp]()
+    def update_hw_kill(self):
+        '''
+        Raise/Clear hw-kill ROS Alarm is nessesary (any kills on board are engaged)
+        '''
+        killed =  any([self.board_status[key] for key in self.board_status])
+        if killed and not self._hw_killed:
+            self._hw_killed = True
+            self.hw_kill_broadcaster.raise_alarm(parameters=self.board_status)
+        if not killed and self._hw_killed:
+            self._hw_killed = False
+            self.hw_kill_broadcaster.clear_alarm()
 
     @thread_lock(lock)
-    def request(self, write_str, recv_str=None):
+    def request(self, write_str, expected_response=None):
         """
         Deals with requesting data and checking if the response matches some `recv_str`.
         Returns True or False depending on the response.
         With no `recv_str` passed in the raw result will be returned.
         """
-        rospy.loginfo("Writing {}".format(write_str.encode('hex')))
         self.ser.write(write_str)
-        rospy.sleep(.1)
+        resp = self.ser.read(1)
 
-        return True 
+        #self.ser.reset_input_buffer()
+        #self.ser.reset_output_buffer()
 
-        resp = self.ser.read(1) 
-        
-        rospy.loginfo("Sent: {}, Rec: {}".format(write_str.encode('hex'), resp.encode('hex')))
-
-        rospy.sleep(.05)
-        if recv_str is None:
-            #fprint("Response received: {}".format(self.to_hex(resp)), msg_color='blue')
+        if expected_response is None:
             return resp
-        
-        if resp in recv_str:
-            # It matched!
-            fprint("Response matched!", title="REQUEST", msg_color='green')
+
+        if resp == expected_response:
             return True
-
-        self.ser.flushOutput()
-        # Result didn't match
-        rospy.logerr("Response didn't match. Expected: {}, got: {}.".format(recv_str.encode('hex'), resp.encode('hex')))
-        return False
-
-    def alarm_kill_cb(self, alarm):
-        # Ignore the alarm if it came from us
-        if alarm.node_name == rospy.get_name() and not alarm.clear:
-            return
-        
-        if not alarm.clear:
-            rospy.loginfo("Computer kill raise received")
-            self.request('\x45')
         else:
-            rospy.loginfo("Computer kill clear received")
-            self.request('\x46')
+            rospy.logerr("Response didn't match. Expected: {}, got: {}.".format(hex(ord(write_str)), hex(ord(resp))))
+            return False
 
-    def control_check(self, *args):
-        # Update status light with current control
-        
-        if self.current_wrencher == 'autonomous':
-            self.request('\x42', '\x52')
-        elif self.current_wrencher in ['keyboard', 'rc']:
-            self.request('\x41', '\x51')
+    def kill_alarm_cb(self, alarm):
+        '''
+        Informs kill board about software kills through ROS Alarms
+        '''
+        if alarm.raised:
+            self.request(constants['COMPUTER']['KILL']['REQUEST'])
         else:
-            self.request('\x40', '\x50')
+            self.request(constants['COMPUTER']['CLEAR']['REQUEST'])
 
-    def get_status(self, *args):
-        killstatus = KillStatus()
-        killstatus.overall = self.kill_status['overall']
-        killstatus.pf = self.kill_status['PF']
-        killstatus.pa = self.kill_status['PA'] 
-        killstatus.sf = self.kill_status['SF']
-        killstatus.sa = self.kill_status['SA']
-        killstatus.remote = self.kill_status['remote']
-        killstatus.computer = self.kill_status['computer']
-        # killstatus.remote_conn = ord(remote_conn) == 1
-        self.killstatus_pub.publish(killstatus)
-
-        # If any of the kill options (except the computer) are true, raise the alarm.
-        if any([killstatus.pf, killstatus.pa, killstatus.sf, killstatus.sa, killstatus.remote]):
-            self.set_kill()
-        else:
-            self.set_unkill()
-
-    def _get_status(self):
-        """
-        Request an updates all current status indicators
-        """
-        # Overall kill status
-        overall = self.request('\x21')
-        pf = self.request('\x22')
-        pa = self.request('\x23')
-        sf = self.request('\x24')
-        sa = self.request('\x25')
-        remote = self.request('\x26')
-        computer = self.request('\x27')
-        # remote_conn = self.request('\x28')
-        
-        try:
-            killstatus = KillStatus()
-            killstatus.overall = ord(overall) == 1
-            killstatus.pf = ord(pf) == 1
-            killstatus.pa = ord(pa) == 1
-            killstatus.sf = ord(sf) == 1
-            killstatus.sa = ord(sa) == 1
-            killstatus.remote = ord(remote) == 1
-            killstatus.computer = ord(computer) == 1
-            # killstatus.remote_conn = ord(remote_conn) == 1
-            self.killstatus_pub.publish(killstatus)
-
-            # self.need_kill = ord(remote_conn) == 0 
-        except Exception as e:
-            rospy.logerr(e)
-            self.ser.flushInput()
-            self.ser.flushOutput()
-
-        # If any of the kill options (except the computer) are true, raise the alarm.
-        if 5 >= sum(map(ord, [pf, pa, sf, sa, remote])) >= 1:
-            self.set_kill()
-        else:
-            self.set_unkill()
-
-    def ping(self):
-        #rospy.loginfo("Pinging")
-        self.request('\x20') 
-        # if self.request('\x20', '\x30'):
-        #     #rospy.loginfo("Ponged")
-        # else:
-        #     rospy.logerr("Incorrect ping response")
+    def hw_kill_alarm_cb(self, alarm):
+        self._hw_killed = alarm.raised
 
 
 if __name__ == '__main__':
-    rospy.init_node("kill_interface")
-    k = KillInterface() 
-    rospy.spin()
+    rospy.init_node("kill_board_driver")
+    driver = KillInterface()
+    driver.run()

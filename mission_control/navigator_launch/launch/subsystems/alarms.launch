@@ -11,6 +11,6 @@
     kill: ['odom-kill', 'network-loss', 'battery-voltage', 'hw-kill']
   </rosparam>
   <rosparam ns="known_alarms">
-    kill, odom-kill, network-loss, station-hold, battery-voltage
+    kill, odom-kill, network-loss, station-hold, battery-voltage, hw-kill
   </rosparam>
 </launch>
