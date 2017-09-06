@@ -5,14 +5,8 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
 )
 
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES navigator_kill_board
-#  CATKIN_DEPENDS rospy
-#  DEPENDS system_lib
-)
+catkin_python_setup()
 
-include_directories(
-  ${catkin_INCLUDE_DIRS}
+catkin_package(
 )
 
