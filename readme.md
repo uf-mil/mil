@@ -9,3 +9,5 @@ This is where all of the project specific code for [NaviGator](http://www.naviga
 # Getting Involved
 
 Information about getting involved in MIL is available on the [mil_common wiki](https://github.com/uf-mil/mil_common/wiki). The home page will introduce you to the various projects that are under development in the lab and provide a link to the getting started guide.
+
+You can also join [our slack](https://uf-navigator.slack.com), which we use for communication within the team.
