@@ -1,0 +1,22 @@
+# Goal
+
+string move_type  # 'hold', 'drive', 'drive!', 'skid', 'spiral', 'bypass'
+geometry_msgs/Pose goal
+geometry_msgs/Point focus
+float64 initial_plan_time
+bool blind
+float64[] speed_factor
+
+---
+# Result
+
+string failure_reason
+
+---
+# Feedback
+
+string behavior
+int64 tree_size
+bool tracking
+float64[] distance
+float64 time_till_next_branch

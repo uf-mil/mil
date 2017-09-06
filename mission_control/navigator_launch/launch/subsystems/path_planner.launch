@@ -1,7 +1,7 @@
 <launch>
   <arg name="draw" default="false"/>
 
-  <node pkg="lqrrt_ros" type="lqrrt_node.py" name="lqrrt_node" output="screen">
+  <node pkg="navigator_path_planner" type="lqrrt_node.py" name="lqrrt_node" output="screen">
     <!-- Action topic to send commands to -->
     <param name="move_topic" value="/move_to"/>
 

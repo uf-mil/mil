@@ -9,7 +9,7 @@ import tf.transformations as trns
 
 from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseStamped
-from lqrrt_ros.msg import MoveAction, MoveFeedback, MoveResult
+from navigator_path_planner.msg import MoveAction, MoveFeedback, MoveResult
 
 from mil_tools import make_header, rosmsg_to_numpy, pose_to_numpy
 from mil_misc_tools.text_effects import fprint as _fprint
