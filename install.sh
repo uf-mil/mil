@@ -626,11 +626,6 @@ if [[ "$INSTALL_NAV" == "true" ]]; then
 
 	# Trajectory Generation
 	sudo apt-get install -qq ros-$ROS_VERSION-ompl
-
-	instlog "Performing setup tasks for lqRRT"
-	cd $CATKIN_DIR/src/NaviGator/gnc/lqRRT
-	sudo python setup.py build
-	sudo python setup.py install
 fi
 
 
