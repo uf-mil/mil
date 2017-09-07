@@ -1,4 +1,3 @@
 Launching the simulator will automatically generate the virtual world and bring the core systems of NaviGator online inside of it. The majority of the sensors (cameras, lidar, etc.) are implemented in simulation, so the platform should behave as it does in the real world for the most part.
-* Pull the model files with `git lfs pull`
 * Run `roslaunch navigator_launch simulation.launch`
 * If you are running missions run `aclear all` then run `rosrun navigator_missions <name_of_mission>`
