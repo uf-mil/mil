@@ -1,6 +1,6 @@
 Welcome to the NaviGator Wiki! This repository hosts all of the code that is specific to the NaviGator platform. For general information about MIL and our projects, see the [mil_common wiki](https://github.com/uf-mil/mil_common/wiki).
 
-If you have any questions, don't hesitate to email David Soto.
+If you have any questions, don't hesitate to email Kevin Allen or Daniel Volya.
 
 
 # What is NaviGator?
@@ -32,7 +32,8 @@ Lucas Bassett-Audain
 
 Kevin Michael Allen
 
+Daniel Volya
 
 # Getting Involved
 
-Interested in working on NaviGator? Schedule a one-on-one meeting with David (David Soto), or just come by the lab and talk to people. Find his contact information floating around in the repository.
+Interested in working on NaviGator? Schedule a one-on-one meeting, or just come by the lab and talk to people.
