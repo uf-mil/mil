@@ -50,6 +50,7 @@ class NoopSerial(serial.Serial):
     def send_break(self, *args, **kwargs):
         pass
 
+
 class SimulatedSerial(NoopSerial):
     '''
     Simulates a serial device, storing a buffer to be read in a program like a normal OS serial device.
@@ -80,7 +81,6 @@ class SimulatedKillBoard(SimulatedSerial):
     port = 'simulated-kill-board'
     def __init__(self, *args, **kwargs):
         super(SimulatedKillBoard, self).__init__()
-        self.async = True
         self.last_ping = None
         self.memory = {
             'BUTTON_FRONT_PORT': False,
@@ -103,8 +103,6 @@ class SimulatedKillBoard(SimulatedSerial):
         return SetBoolResponse(success=True)
 
     def _timer_cb(self, *args):
-        if self.async:
-            self.buffer += self._handle_async()
         self._check_timeout()
 
     def _check_timeout(self, *args):
@@ -115,60 +113,57 @@ class SimulatedKillBoard(SimulatedSerial):
         else:
             self._set_kill('REMOTE', False)
 
-    def _set_kill(self, name, on):
+    def _set_kill(self, name, on, update=True):
         if self.memory[name] != on:
             self.memory[name] = on
             self.killed = np.any([self.memory[x] for x in self.memory])
             print 'Setting {} {}, Overall={}'.format(name, on, self.killed)
+        if not update:
+            return
+        if on:
+            self.buffer += constants[name]['TRUE']
+        else:
+            self.buffer += constants[name]['FALSE']
+        if self.killed:
+            self.buffer += constants['OVERALL']['TRUE']
+        else:
+            self.buffer += constants['OVERALL']['FALSE']
 
     def _set_light(self, status):
         if self.light != status:
             print 'setting lights',status
             self.light = status
 
-    def _ping(self):
-        self.last_ping = rospy.Time.now()
-        return constants['PING']['RESPONSE']
-
-    _res = lambda boolean: constants['RESPONSE_TRUE'] if boolean else constants['RESPONSE_FALSE']
-
     def _get_status(self, byte):
+        _res = lambda boolean: constants['RESPONSE_TRUE'] if boolean else constants['RESPONSE_FALSE']
         if byte == constants['OVERALL']['REQUEST']:
-            return self._res(self.killed)
-        for key in constants:
-            if 'REQUEST' in constants[key] and key in self.memory and byte == constants[key]['REQUEST']:
-                return self._res(self.memory[key])
-        return ''
-
-    def _handle_async(self):
-        tmp = ''
-        tmp += constants['OVERALL']['TRUE'] if self.killed else constants['OVERALL']['FALSE']
+            self.buffer = _res(self.killed) + self.buffer
         for key in self.memory:
-            if key in self.memory:
-                print key, self.memory[key]
-                tmp += constants[key]['TRUE'] if self.memory[key] else constants[key]['FALSE']
-        return tmp
+            if byte == constants[key]['REQUEST']:
+                self.buffer = _res(self.memory[key]) + self.buffer
 
     def _handle_sync(self, data):
         # Handle syncronous requests
         if data == constants['PING']['REQUEST']:
-            return self._ping()
-        if data == constants['COMPUTER']['KILL']['REQUEST']:
+            self.last_ping = rospy.Time.now()
+            self.buffer = constants['PING']['RESPONSE'] + self.buffer
+        elif data == constants['COMPUTER']['KILL']['REQUEST']:
             self._set_kill('COMPUTER', True)
-            return constants['COMPUTER']['KILL']['RESPONSE']
-        if data == constants['COMPUTER']['CLEAR']['REQUEST']:
+            self.buffer = constants['COMPUTER']['KILL']['RESPONSE'] + self.buffer
+        elif data == constants['COMPUTER']['CLEAR']['REQUEST']:
             self._set_kill('COMPUTER', False)
-            return constants['COMPUTER']['CLEAR']['RESPONSE']
-        if data == constants['LIGHTS']['OFF_REQUEST']:
+            self.buffer = constants['COMPUTER']['CLEAR']['RESPONSE'] + self.buffer
+        elif data == constants['LIGHTS']['OFF_REQUEST']:
             self._set_light('OFF')
-            return constants['LIGHTS']['OFF_RESPONSE']
-        if data == constants['LIGHTS']['YELLOW_REQUEST']:
+            self.buffer = constants['LIGHTS']['OFF_RESPONSE'] + self.buffer
+        elif data == constants['LIGHTS']['YELLOW_REQUEST']:
             self._set_light('YELLOW')
-            return constants['LIGHTS']['YELLOW_RESPONSE']
-        if data == constants['LIGHTS']['GREEN_REQUEST']:
+            self.buffer = constants['LIGHTS']['YELLOW_RESPONSE'] + self.buffer
+        elif data == constants['LIGHTS']['GREEN_REQUEST']:
             self._set_light('GREEN')
-            return constants['LIGHTS']['GREEN_RESPONSE']
-        return self._get_status(data)
+            self.buffer = constants['LIGHTS']['GREEN_RESPONSE'] + self.buffer
+        else:
+            self._get_status(data)
 
     def write(self, data):
         def s(data):
@@ -178,5 +173,5 @@ class SimulatedKillBoard(SimulatedSerial):
             '''
             return hex(ord(data))
         self._check_timeout()
-        self.buffer += self._handle_sync(data)
+        self._handle_sync(data)
         return len(data)

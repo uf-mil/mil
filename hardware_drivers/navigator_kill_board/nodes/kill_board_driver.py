@@ -30,7 +30,7 @@ class KillInterface(object):
             self.ser = SimulatedKillBoard()
         else:
             baud = rospy.get_param('~baud', 9600)
-            self.ser = serial.Serial(port=self.port, baud=baud)
+            self.ser = serial.Serial(port=self.port, baudrate=baud)
         self.ser.flush()
 
         self.board_status = {}
@@ -53,13 +53,18 @@ class KillInterface(object):
         Main loop for driver, at a fixed rate updates alarms and diagnostics output with new
         kill board output.
         '''
+        self.receive_async()
+        self.request_update()
+        self.update_ros()
         rate = rospy.Rate(20)
         while not rospy.is_shutdown():
-            while self.ser.in_waiting > 0 and not rospy.is_shutdown():
-                self.receive_async()
-            self.update_hw_kill()  # Raise hw-kill alarm if any kills are active on board
-            self.publish_diagnostics()
+            self.receive_async()
+            self.update_ros()
             rate.sleep()
+
+    def update_ros(self):
+        self.update_hw_kill()
+        self.publish_diagnostics()
 
     @thread_lock(lock)
     def receive_async(self):
@@ -67,12 +72,27 @@ class KillInterface(object):
         Recieve update bytes sent from the board without requests being sent, updating internal
         state, raising alarms, etc in response to board updates.
         '''
-        msg = self.ser.read(1)
-        for kill in self.board_status:
-            if msg == constants[kill]['FALSE']:
-                self.board_status[kill] = False
-            if msg == constants[kill]['TRUE']:
-                self.board_status[kill] = True
+        while self.ser.in_waiting > 0 and not rospy.is_shutdown():
+            msg = self.ser.read(1)
+            for kill in self.board_status:
+                if msg == constants[kill]['FALSE']:
+                    self.board_status[kill] = False
+                if msg == constants[kill]['TRUE']:
+                    self.board_status[kill] = True
+
+    def request_update(self):
+        '''
+        Manually request status of all kills, used on program startup to
+        get up to date with current state
+        '''
+        for key in self.board_status:
+            res = self.request(constants[key]['REQUEST'])
+            if res == constants['RESPONSE_FALSE']:
+                self.board_status[key] = False
+            elif res == constants['RESPONSE_TRUE']:
+                self.board_status[key] = True
+            else:
+                print 'got unexpected response on kill request'
 
     def wrench_cb(self, msg):
         '''
