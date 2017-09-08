@@ -124,6 +124,10 @@ class KillInterface(object):
         msg.header.stamp = rospy.Time.now()
         status = DiagnosticStatus()
         status.name = 'kill_board'
+        if self.board_status['OVERALL']:
+            status.level = DiagnosticStatus.WARN
+        else:
+            status.level = DiagnosticStatus.OK
         status.hardware_id = self.port
         for key, value in self.board_status.items():
             status.values.append(KeyValue(key, str(value)))
@@ -151,9 +155,6 @@ class KillInterface(object):
         """
         self.ser.write(write_str)
         resp = self.ser.read(1)
-
-        #self.ser.reset_input_buffer()
-        #self.ser.reset_output_buffer()
 
         if expected_response is None:
             return resp
