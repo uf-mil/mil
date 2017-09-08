@@ -153,7 +153,7 @@ class Dashboard(Plugin):
         self.battery_low_voltage = rospy.get_param("/battery_monitor/battery_low_voltage", 24)
         self.battery_critical_voltage = rospy.get_param("/battery_monitor/battery_critical_voltage", 20)
 
-        rospy.Subscriber("/wrench/current", String, self.cache_operating_mode)
+        rospy.Subscriber("/wrench/selected", String, self.cache_operating_mode)
         rospy.Subscriber("/battery_monitor", Float32, self.cache_battery_voltage)
         rospy.Subscriber("/clock", Clock, self.cache_system_time)
         rospy.Subscriber("/host_monitor", Hosts, self.cache_hosts)
@@ -222,19 +222,19 @@ class Dashboard(Plugin):
             self.operating_mode_status.setText("Unknown")
             self.operating_mode_frame.setStyleSheet(self.colors["red"])
 
-        elif (self.operating_mode["received"] == "rc"):
+        elif ('rc' in self.operating_mode["received"]):
             self.operating_mode_status.setText("Joystick")
             self.operating_mode_frame.setStyleSheet(self.colors["blue"])
 
-        elif (self.operating_mode["received"] == "emergency"):
+        elif ('emergency' in self.operating_mode["received"]):
             self.operating_mode_status.setText("Emergency")
             self.operating_mode_frame.setStyleSheet(self.colors["orange"])
 
-        elif (self.operating_mode["received"] == "keyboard"):
+        elif ('keyboard' in self.operating_mode["received"]):
             self.operating_mode_status.setText("Keyboard")
             self.operating_mode_frame.setStyleSheet(self.colors["yellow"])
 
-        elif (self.operating_mode["received"] == "autonomous"):
+        elif ('autonomous' in self.operating_mode["received"]):
             self.operating_mode_status.setText("Autonomous")
             self.operating_mode_frame.setStyleSheet(self.colors["green"])
 

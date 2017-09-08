@@ -17,7 +17,7 @@ class RvizStrings(object):
         self.kill_alarm = False
         self.voltage = None
         self.wrench = None
-        rospy.Subscriber("/wrench/current", String, self.wrench_current_cb)
+        rospy.Subscriber("/wrench/selected", String, self.wrench_current_cb)
         rospy.Subscriber("/battery_monitor",Float32, self.battery_monitor_cb)
         self.markers_pub = rospy.Publisher('/boat_info', Marker, queue_size=10)
         self.kill_listener = AlarmListener('kill', callback_funct=self.kill_alarm_cb)

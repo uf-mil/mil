@@ -22,8 +22,8 @@ class KillInterface(object):
     """
 
     ALARM = 'hw-kill'  # Alarm to raise when hardware kill is detected
-    YELLOW_WRENCHES = ['rc', 'keyboard']  # List of wrenches which will activate yellow diagnostic light
-    GREEN_WRENCHES = ['autonomous']  # List of wrenches which will activate green diagnostic light
+    YELLOW_WRENCHES = ['rc', '/wrench/rc', 'keyboard', '/wrench/keyboard']  # Wrenches which activate YELLOW LED
+    GREEN_WRENCHES = ['autonomous', '/wrench/autonomous']  # Wrenches which activate GREEN LED
 
     def __init__(self):
         self.port = rospy.get_param('~port', "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A104OWRY-if00-port0")
@@ -54,7 +54,7 @@ class KillInterface(object):
 
         AlarmListener('hw-kill', self.hw_kill_alarm_cb)
         AlarmListener('kill', self.kill_alarm_cb)
-        rospy.Subscriber("/wrench/current", String, self.wrench_cb)
+        rospy.Subscriber("/wrench/selected", String, self.wrench_cb)
         rospy.Subscriber("/network", Header, self.network_cb)  # Passes along network hearbeat to kill board
 
     def connect(self):
@@ -145,7 +145,7 @@ class KillInterface(object):
             if wrench in self.YELLOW_WRENCHES:
                 self.request(constants['LIGHTS']['YELLOW_REQUEST'], constants['LIGHTS']['YELLOW_RESPONSE'])
             elif wrench in self.GREEN_WRENCHES:
-                self.request(constants['LIGHTS']['GREEN_WRENCHES'], constants['LIGHTS']['GREEN_RESPONSE'])
+                self.request(constants['LIGHTS']['GREEN_REQUEST'], constants['LIGHTS']['GREEN_RESPONSE'])
             else:
                 self.request(constants['LIGHTS']['OFF_REQUEST'], constants['LIGHTS']['OFF_RESPONSE'])
             self.wrench = wrench
