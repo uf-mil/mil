@@ -2,7 +2,7 @@
 import rospy
 from actionlib import SimpleActionClient, TerminalState
 from navigator_path_planner.msg import MoveAction, MoveGoal
-from navigator_msgs.srv import WrenchSelect, WrenchSelectRequest
+from topic_tools.srv import MuxSelect, MuxSelectRequest
 from ros_alarms import HandlerBase
 
 class StationHold(HandlerBase):
@@ -10,7 +10,7 @@ class StationHold(HandlerBase):
 
     def __init__(self):
         self.move_client = SimpleActionClient('/move_to', MoveAction)
-        self.change_wrench = rospy.ServiceProxy('/change_wrench', WrenchSelect)
+        self.change_wrench = rospy.ServiceProxy('/wrench/select', MuxSelect)
 
     def _client_cb(self, terminal_state, result):
         if terminal_state != 3:

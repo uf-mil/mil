@@ -13,7 +13,8 @@ import actionlib
 from geometry_msgs.msg import WrenchStamped
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from navigator_msgs.msg import ShooterDoAction, ShooterDoActionGoal
-from navigator_msgs.srv import WrenchSelect, ShooterManual, ShooterManualRequest
+from topic_tools.srv import MuxSelect, MuxSelectRequest
+from navigator_msgs.srv import ShooterManual, ShooterManualRequest
 import rospy
 from std_srvs.srv import Trigger, TriggerRequest
 
@@ -34,8 +35,7 @@ class RemoteControl(object):
         self.kill_broadcaster = AlarmBroadcaster('kill')
         self.station_hold_broadcaster = AlarmBroadcaster('station-hold')
 
-        # rospy.wait_for_service("/change_wrench")
-        self.wrench_changer = rospy.ServiceProxy("/change_wrench", WrenchSelect)
+        self.wrench_changer = rospy.ServiceProxy("/wrench/select", MuxSelect)
         self.kill_listener = AlarmListener('kill', callback_funct=self._update_kill_status)
 
         if (wrench_pub is None):
@@ -106,7 +106,7 @@ class RemoteControl(object):
             self.wrench_changer("rc")
             self.kill_broadcaster.raise_alarm(
                 problem_description="System kill from user remote control",
-                paramaters={'location':self.name}
+                parameters={'location':self.name}
             )
 
 

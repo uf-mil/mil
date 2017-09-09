@@ -343,9 +343,9 @@ class MRAC_Controller:
             return
         self.learn = learn
         if self.learn:
-            print("MRAC controller is learning.")
+            rospy.loginfo("MRAC: learning")
         else:
-            print("MRAC controller reset and stopped learning.")
+            rospy.loginfo("MRAC: reset and not learning")
             self.dist_est = np.zeros(3)
             self.drag_est = np.zeros(5)
 

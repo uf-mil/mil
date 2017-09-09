@@ -43,6 +43,7 @@
   <run_depend>navigator_path_planner</run_depend>
   <run_depend>navigator_gui</run_depend>
   <run_depend>diagnostic_aggregator</run_depend>
+  <run_depend>topic_tools</run_depend>
   <export>
   </export>
 </package>

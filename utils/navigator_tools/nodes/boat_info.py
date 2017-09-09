@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from geometry_msgs.msg import WrenchStamped
-from navigator_msgs.srv import WrenchSelect
+from topic_tools.srv import MuxSelect
 import rospy
 from std_msgs.msg import Bool, String, Float32
 from visualization_msgs.msg import Marker, MarkerArray
