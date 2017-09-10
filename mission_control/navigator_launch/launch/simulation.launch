@@ -41,24 +41,6 @@
 
     <group unless="$(arg gazebo)">
         <include file="$(find navigator_launch)/launch/perception.launch"/>
-        <node pkg="navigator_sim_model" type="sim.py" name="navigator_sim_model" output="screen">
-            <rosparam param="initial_position">[10, -5, 0]</rosparam>
-            <param name="boat_mass" value="300" type="double"/>
-            <param name="boat_length" value="4.85" type="double"/>
-            <param name="boat_width" value="1.2" type="double"/>
-            <param name="boat_height" value="0.8" type="double"/>
-            <rosparam param="BL_offset">[-1.9304, 1.016]</rosparam>
-            <rosparam param="BR_offset">[-1.9304, -1.016]</rosparam>
-            <rosparam param="FL_offset">[1.5748, 0.6096]</rosparam>
-            <rosparam param="FR_offset">[1.5748, -0.6096]</rosparam>
-            <rosparam param="effort_ratio">2.7</rosparam>
-            <param name="friction_coefficient_forward" value="200" type="double"/>
-            <param name="friction_coefficient_forward_reduction" value="0.76462" type="double"/>
-            <param name="friction_coefficient_lateral" value="300" type="double"/>
-            <param name="friction_coefficient_lateral_reduction" value="0.0" type="double"/>
-            <param name="friction_coefficient_rotational" value="300" type="double"/>
-            <param name="friction_coefficient_rotational_reduction" value="0.0" type="double"/>
-        </node>
         <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui"/>
     </group>
     <group ns="/camera" if="$(arg cameras)">
