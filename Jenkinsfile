@@ -24,7 +24,7 @@ dockerNode(image: 'uf-mil:mil_common') {
 	}
 	stage("Format") {
 		sh '''
-			if [[ ! -z "$(python2.7 -m flake8 --ignore E731 --max-line-length=120 --exclude=__init__.py,drivers/pointgrey_camera_driver,drivers/mil_passive_sonar .)" ]]; then
+			if [[ ! -z "$(python2.7 -m flake8 --ignore E731 --max-line-length=120 --exclude=__init__.py,drivers/pointgrey_camera_driver,drivers/velodyne,drivers/mil_passive_sonar .)" ]]; then
 				echo "The preceding Python following files are not formatted correctly"
 				exit 1
 			fi
@@ -32,7 +32,7 @@ dockerNode(image: 'uf-mil:mil_common') {
 		sh '''
 			source /opt/ros/kinetic/setup.bash > /dev/null 2>&1
 			wget -O ~/.clang-format https://raw.githubusercontent.com/uf-mil/installer/master/.clang-format
-			for FILE in $(find -path ./drivers/pointgrey_camera_driver -prune -o -regex ".*/.*\\.\\(c\\|cc\\|cpp\\|h\\|hpp\\)$"); do
+			for FILE in $(find -path ./drivers/pointgrey_camera_driver -prune -o -path ./drivers/velodyne -prune -o -path ./drivers/roboteq -prune -o -regex ".*/.*\\.\\(c\\|cc\\|cpp\\|h\\|hpp\\)$"); do
 				if [ ! -z "$(clang-format-3.8 -style=file -output-replacements-xml $FILE | grep '<replacement ')" ]; then
 					FILES+=( "$FILE" )
 				fi
