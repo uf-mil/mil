@@ -34,17 +34,17 @@
 
 #include <navigator_gazebo/GazeboRosVelodyneLaser.h>
 
-#include <algorithm>
 #include <assert.h>
+#include <algorithm>
 
-#include <gazebo/physics/World.hh>
-#include <gazebo/sensors/Sensor.hh>
-#include <sdf/sdf.hh>
-#include <sdf/Param.hh>
 #include <gazebo/common/Exception.hh>
+#include <gazebo/physics/World.hh>
 #include <gazebo/sensors/RaySensor.hh>
+#include <gazebo/sensors/Sensor.hh>
 #include <gazebo/sensors/SensorTypes.hh>
 #include <gazebo/transport/Node.hh>
+#include <sdf/Param.hh>
+#include <sdf/sdf.hh>
 
 #include <sensor_msgs/PointCloud2.h>
 
@@ -69,7 +69,8 @@ GazeboRosVelodyneLaser::~GazeboRosVelodyneLaser()
   // Finalize the controller / Custom Callback Queue
   laser_queue_.clear();
   laser_queue_.disable();
-  if (rosnode_) {
+  if (rosnode_)
+  {
     rosnode_->shutdown();
     delete rosnode_;
     rosnode_ = NULL;
@@ -87,7 +88,7 @@ void GazeboRosVelodyneLaser::Load(sensors::SensorPtr _parent, sdf::ElementPtr _s
   // Get then name of the parent sensor
   parent_sensor_ = _parent;
 
-  // Get the world name.
+// Get the world name.
 #if GAZEBO_MAJOR_VERSION >= 7
   std::string worldName = _parent->WorldName();
 #else
@@ -106,55 +107,73 @@ void GazeboRosVelodyneLaser::Load(sensors::SensorPtr _parent, sdf::ElementPtr _s
   parent_ray_sensor_ = boost::dynamic_pointer_cast<sensors::RaySensor>(parent_sensor_);
 #endif
 
-  if (!parent_ray_sensor_) {
+  if (!parent_ray_sensor_)
+  {
     gzthrow("GazeboRosVelodyneLaser controller requires a Ray Sensor as its parent");
   }
 
   robot_namespace_ = "";
-  if (_sdf->HasElement("robotNamespace")) {
+  if (_sdf->HasElement("robotNamespace"))
+  {
     robot_namespace_ = _sdf->GetElement("robotNamespace")->Get<std::string>() + "/";
   }
 
-  if (!_sdf->HasElement("frameName")) {
+  if (!_sdf->HasElement("frameName"))
+  {
     ROS_INFO("Velodyne laser plugin missing <frameName>, defaults to /world");
     frame_name_ = "/world";
-  } else {
+  }
+  else
+  {
     frame_name_ = _sdf->GetElement("frameName")->Get<std::string>();
   }
 
-  if (!_sdf->HasElement("min_range")) {
+  if (!_sdf->HasElement("min_range"))
+  {
     ROS_INFO("Velodyne laser plugin missing <min_range>, defaults to 0");
     min_range_ = 0;
-  } else {
+  }
+  else
+  {
     min_range_ = _sdf->GetElement("min_range")->Get<double>();
   }
 
-  if (!_sdf->HasElement("max_range")) {
+  if (!_sdf->HasElement("max_range"))
+  {
     ROS_INFO("Velodyne laser plugin missing <max_range>, defaults to infinity");
     max_range_ = INFINITY;
-  } else {
+  }
+  else
+  {
     max_range_ = _sdf->GetElement("max_range")->Get<double>();
   }
 
-  if (!_sdf->HasElement("topicName")) {
+  if (!_sdf->HasElement("topicName"))
+  {
     ROS_INFO("Velodyne laser plugin missing <topicName>, defaults to /world");
     topic_name_ = "/world";
-  } else {
+  }
+  else
+  {
     topic_name_ = _sdf->GetElement("topicName")->Get<std::string>();
   }
 
-  if (!_sdf->HasElement("gaussianNoise")) {
+  if (!_sdf->HasElement("gaussianNoise"))
+  {
     ROS_INFO("Velodyne laser plugin missing <gaussianNoise>, defaults to 0.0");
     gaussian_noise_ = 0;
-  } else {
-    //gaussian_noise_ = _sdf->GetElement("gaussianNoise")->Get<double>();
+  }
+  else
+  {
+    // gaussian_noise_ = _sdf->GetElement("gaussianNoise")->Get<double>();
     gaussian_noise_ = 0;
   }
 
   // Make sure the ROS node for Gazebo has already been initialized
-  if (!ros::isInitialized()) {
+  if (!ros::isInitialized())
+  {
     ROS_FATAL_STREAM("A ROS node for Gazebo has not been initialized, unable to load plugin. "
-      << "Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package)");
+                     << "Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package)");
     return;
   }
 
@@ -165,19 +184,19 @@ void GazeboRosVelodyneLaser::Load(sensors::SensorPtr _parent, sdf::ElementPtr _s
   rosnode_->getParam(std::string("tf_prefix"), prefix);
   frame_name_ = tf::resolve(prefix, frame_name_);
 
-  if (topic_name_ != "") {
+  if (topic_name_ != "")
+  {
     // Custom Callback Queue
     ros::AdvertiseOptions ao = ros::AdvertiseOptions::create<sensor_msgs::PointCloud2>(
-      topic_name_,1,
-      boost::bind( &GazeboRosVelodyneLaser::laserConnect,this),
-      boost::bind( &GazeboRosVelodyneLaser::laserDisconnect,this), ros::VoidPtr(), &laser_queue_);
+        topic_name_, 1, boost::bind(&GazeboRosVelodyneLaser::laserConnect, this),
+        boost::bind(&GazeboRosVelodyneLaser::laserDisconnect, this), ros::VoidPtr(), &laser_queue_);
     pub_ = rosnode_->advertise(ao);
   }
 
   // sensor generation off by default
   parent_ray_sensor_->SetActive(false);
   // start custom queue for laser
-  callback_laser_queue_thread_ = boost::thread( boost::bind( &GazeboRosVelodyneLaser::laserQueueThread,this ) );
+  callback_laser_queue_thread_ = boost::thread(boost::bind(&GazeboRosVelodyneLaser::laserQueueThread, this));
 
 #if GAZEBO_MAJOR_VERSION >= 7
   ROS_INFO("Velodyne laser plugin ready, %i lasers", parent_ray_sensor_->VerticalRangeCount());
@@ -198,7 +217,8 @@ void GazeboRosVelodyneLaser::laserConnect()
 void GazeboRosVelodyneLaser::laserDisconnect()
 {
   laser_connect_count_--;
-  if (laser_connect_count_ == 0) {
+  if (laser_connect_count_ == 0)
+  {
     parent_ray_sensor_->SetActive(false);
   }
 }
@@ -207,17 +227,21 @@ void GazeboRosVelodyneLaser::laserDisconnect()
 // Update the controller
 void GazeboRosVelodyneLaser::OnNewLaserScans()
 {
-  if (topic_name_ != "") {
+  if (topic_name_ != "")
+  {
 #if GAZEBO_MAJOR_VERSION >= 7
     common::Time sensor_update_time = parent_sensor_->LastUpdateTime();
 #else
     common::Time sensor_update_time = parent_sensor_->GetLastUpdateTime();
 #endif
-    if (last_update_time_ < sensor_update_time) {
+    if (last_update_time_ < sensor_update_time)
+    {
       putLaserData(sensor_update_time);
       last_update_time_ = sensor_update_time;
     }
-  } else {
+  }
+  else
+  {
     ROS_INFO("gazebo_ros_velodyne_laser topic name not set");
   }
 }
@@ -229,8 +253,8 @@ void GazeboRosVelodyneLaser::putLaserData(common::Time &_updateTime)
   int i, hja, hjb;
   int j, vja, vjb;
   double vb, hb;
-  int    j1, j2, j3, j4; // four corners indices
-  double r1, r2, r3, r4, r; // four corner values + interpolated range
+  int j1, j2, j3, j4;        // four corners indices
+  double r1, r2, r3, r4, r;  // four corner values + interpolated range
   double intensity;
 
   parent_ray_sensor_->SetActive(false);
@@ -308,22 +332,24 @@ void GazeboRosVelodyneLaser::putLaserData(common::Time &_updateTime)
   const double MAX_RANGE = std::min(max_range_, maxRange - minRange - 0.01);
 
   uint8_t *ptr = msg.data.data();
-  for (j = 0; j<verticalRangeCount; j++) {
+  for (j = 0; j < verticalRangeCount; j++)
+  {
     // interpolating in vertical direction
-    vb = (verticalRangeCount == 1) ? 0 : (double) j * (verticalRayCount - 1) / (verticalRangeCount - 1);
-    vja = (int) floor(vb);
+    vb = (verticalRangeCount == 1) ? 0 : (double)j * (verticalRayCount - 1) / (verticalRangeCount - 1);
+    vja = (int)floor(vb);
     vjb = std::min(vja + 1, verticalRayCount - 1);
-    vb = vb - floor(vb); // fraction from min
+    vb = vb - floor(vb);  // fraction from min
 
     assert(vja >= 0 && vja < verticalRayCount);
     assert(vjb >= 0 && vjb < verticalRayCount);
 
-    for (i = 0; i<rangeCount; i++) {
+    for (i = 0; i < rangeCount; i++)
+    {
       // Interpolate the range readings from the rays in horizontal direction
-      hb = (rangeCount == 1)? 0 : (double) i * (rayCount - 1) / (rangeCount - 1);
-      hja = (int) floor(hb);
+      hb = (rangeCount == 1) ? 0 : (double)i * (rayCount - 1) / (rangeCount - 1);
+      hja = (int)floor(hb);
       hjb = std::min(hja + 1, rayCount - 1);
-      hb = hb - floor(hb); // fraction from min
+      hb = hb - floor(hb);  // fraction from min
 
       assert(hja >= 0 && hja < rayCount);
       assert(hjb >= 0 && hjb < rayCount);
@@ -333,58 +359,58 @@ void GazeboRosVelodyneLaser::putLaserData(common::Time &_updateTime)
       j2 = hjb + vja * rayCount;
       j3 = hja + vjb * rayCount;
       j4 = hjb + vjb * rayCount;
-      // range readings of 4 corners
+// range readings of 4 corners
 #if GAZEBO_MAJOR_VERSION >= 7
-      r1 = std::min(parent_ray_sensor_->LaserShape()->GetRange(j1) , maxRange-minRange);
-      r2 = std::min(parent_ray_sensor_->LaserShape()->GetRange(j2) , maxRange-minRange);
-      r3 = std::min(parent_ray_sensor_->LaserShape()->GetRange(j3) , maxRange-minRange);
-      r4 = std::min(parent_ray_sensor_->LaserShape()->GetRange(j4) , maxRange-minRange);
+      r1 = std::min(parent_ray_sensor_->LaserShape()->GetRange(j1), maxRange - minRange);
+      r2 = std::min(parent_ray_sensor_->LaserShape()->GetRange(j2), maxRange - minRange);
+      r3 = std::min(parent_ray_sensor_->LaserShape()->GetRange(j3), maxRange - minRange);
+      r4 = std::min(parent_ray_sensor_->LaserShape()->GetRange(j4), maxRange - minRange);
 #else
-      r1 = std::min(parent_ray_sensor_->GetLaserShape()->GetRange(j1) , maxRange-minRange);
-      r2 = std::min(parent_ray_sensor_->GetLaserShape()->GetRange(j2) , maxRange-minRange);
-      r3 = std::min(parent_ray_sensor_->GetLaserShape()->GetRange(j3) , maxRange-minRange);
-      r4 = std::min(parent_ray_sensor_->GetLaserShape()->GetRange(j4) , maxRange-minRange);
+      r1 = std::min(parent_ray_sensor_->GetLaserShape()->GetRange(j1), maxRange - minRange);
+      r2 = std::min(parent_ray_sensor_->GetLaserShape()->GetRange(j2), maxRange - minRange);
+      r3 = std::min(parent_ray_sensor_->GetLaserShape()->GetRange(j3), maxRange - minRange);
+      r4 = std::min(parent_ray_sensor_->GetLaserShape()->GetRange(j4), maxRange - minRange);
 #endif
 
       // Range is linear interpolation if values are close,
       // and min if they are very different
-      r = (1 - vb) * ((1 - hb) * r1 + hb * r2)
-         +     vb  * ((1 - hb) * r3 + hb * r4);
-      if (gaussian_noise_ != 0.0) {
-        r += gaussianKernel(0,gaussian_noise_);
+      r = (1 - vb) * ((1 - hb) * r1 + hb * r2) + vb * ((1 - hb) * r3 + hb * r4);
+      if (gaussian_noise_ != 0.0)
+      {
+        r += gaussianKernel(0, gaussian_noise_);
       }
 
-      // Intensity is averaged
+// Intensity is averaged
 #if GAZEBO_MAJOR_VERSION >= 7
-      intensity = 0.25*(parent_ray_sensor_->LaserShape()->GetRetro(j1) +
-                        parent_ray_sensor_->LaserShape()->GetRetro(j2) +
-                        parent_ray_sensor_->LaserShape()->GetRetro(j3) +
-                        parent_ray_sensor_->LaserShape()->GetRetro(j4));
+      intensity =
+          0.25 * (parent_ray_sensor_->LaserShape()->GetRetro(j1) + parent_ray_sensor_->LaserShape()->GetRetro(j2) +
+                  parent_ray_sensor_->LaserShape()->GetRetro(j3) + parent_ray_sensor_->LaserShape()->GetRetro(j4));
 #else
-      intensity = 0.25*(parent_ray_sensor_->GetLaserShape()->GetRetro(j1) +
-                        parent_ray_sensor_->GetLaserShape()->GetRetro(j2) +
-                        parent_ray_sensor_->GetLaserShape()->GetRetro(j3) +
-                        parent_ray_sensor_->GetLaserShape()->GetRetro(j4));
+      intensity =
+          0.25 *
+          (parent_ray_sensor_->GetLaserShape()->GetRetro(j1) + parent_ray_sensor_->GetLaserShape()->GetRetro(j2) +
+           parent_ray_sensor_->GetLaserShape()->GetRetro(j3) + parent_ray_sensor_->GetLaserShape()->GetRetro(j4));
 #endif
 
       // get angles of ray to get xyz for point
-      double yAngle = 0.5*(hja+hjb) * yDiff / (rayCount -1) + minAngle.Radian();
-      double pAngle = 0.5*(vja+vjb) * pDiff / (verticalRayCount -1) + verticalMinAngle.Radian();
+      double yAngle = 0.5 * (hja + hjb) * yDiff / (rayCount - 1) + minAngle.Radian();
+      double pAngle = 0.5 * (vja + vjb) * pDiff / (verticalRayCount - 1) + verticalMinAngle.Radian();
 
-      //pAngle is rotated by yAngle:
-      if ((MIN_RANGE < r) && (r < MAX_RANGE)) {
-        *((float*)(ptr + 0)) = r * cos(pAngle) * cos(yAngle);
-        *((float*)(ptr + 4)) = r * cos(pAngle) * sin(yAngle);
+      // pAngle is rotated by yAngle:
+      if ((MIN_RANGE < r) && (r < MAX_RANGE))
+      {
+        *((float *)(ptr + 0)) = r * cos(pAngle) * cos(yAngle);
+        *((float *)(ptr + 4)) = r * cos(pAngle) * sin(yAngle);
 #if GAZEBO_MAJOR_VERSION > 2
-        *((float*)(ptr + 8)) = r * sin(pAngle);
+        *((float *)(ptr + 8)) = r * sin(pAngle);
 #else
-        *((float*)(ptr + 8)) = -r * sin(pAngle);
+        *((float *)(ptr + 8)) = -r * sin(pAngle);
 #endif
-        *((float*)(ptr + 16)) = intensity;
+        *((float *)(ptr + 16)) = intensity;
 #if GAZEBO_MAJOR_VERSION > 2
-        *((uint16_t*)(ptr + 20)) = j; // ring
+        *((uint16_t *)(ptr + 20)) = j;  // ring
 #else
-        *((uint16_t*)(ptr + 20)) = verticalRangeCount - 1 - j; // ring
+        *((uint16_t *)(ptr + 20)) = verticalRangeCount - 1 - j;  // ring
 #endif
         ptr += POINT_STEP;
       }
@@ -399,7 +425,7 @@ void GazeboRosVelodyneLaser::putLaserData(common::Time &_updateTime)
   msg.width = msg.row_step / POINT_STEP;
   msg.is_bigendian = false;
   msg.is_dense = true;
-  msg.data.resize(msg.row_step); // Shrink to actual size
+  msg.data.resize(msg.row_step);  // Shrink to actual size
 
   // Publish output
   pub_.publish(msg);
@@ -412,18 +438,18 @@ void GazeboRosVelodyneLaser::laserQueueThread()
 {
   static const double TIMEOUT = 0.01;
 
-  while (rosnode_->ok()) {
+  while (rosnode_->ok())
+  {
     laser_queue_.callAvailable(ros::WallDuration(TIMEOUT));
   }
 }
 
-void GazeboRosVelodyneLaser::onStats( const boost::shared_ptr<msgs::WorldStatistics const> &_msg)
+void GazeboRosVelodyneLaser::onStats(const boost::shared_ptr<msgs::WorldStatistics const> &_msg)
 {
-  sim_time_  = msgs::Convert( _msg->sim_time() );
+  sim_time_ = msgs::Convert(_msg->sim_time());
 
   math::Pose pose;
-  pose.pos.x = 0.5*sin(0.01*sim_time_.Double());
+  pose.pos.x = 0.5 * sin(0.01 * sim_time_.Double());
   gzdbg << "plugin simTime [" << sim_time_.Double() << "] update pose [" << pose.pos.x << "]\n";
 }
-
 }
