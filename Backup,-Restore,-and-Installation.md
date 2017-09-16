@@ -1,3 +1,6 @@
+# Backup, Restore, and Installation
+This page contains information on backing up NaviGator's hard drive(s), restoring these backups, and installing an operating system (from the backup) onto NaviGator if the hard drive(s) or motherboard has changed.
+
 ## Restoring
 ### Materials
 To restore an image backup of NaviGator's hardrive you will need
@@ -16,7 +19,7 @@ To restore an image backup of NaviGator's hardrive you will need
 1. Install grub ```sudo grub-install /dev/sdX``` (note pass in the hard drive device, not the partition)
 1. Reboot without Live USB plugged in, and you should boot into the NaviGator ubuntu install
 
-## Common issues
+### Common issues
 Here are some solutions to issues encountered while restoring from a backup:
 * If you are restoring on a new hard drive, you need to change /etc/fstab as mentioned below
 * If you are restoring onto a new computer (motherboard), you will need to edit /etc/network/interfaces to use the new interface ids (like eth0, enp0s31f6)
@@ -26,7 +29,7 @@ Here are some solutions to issues encountered while restoring from a backup:
   * grub-install may file from the LiveUSB, in which case you need to chroot to the mounted navigator install, see [this guide](http://logan.tw/posts/2015/05/17/grub-install-and-btrfs-root-file-system/)
   * For grub to see the file system you may also need to run ```update-grub``` (this may also require you to be in a chroot)
   * For an EFI system (either MRB/GPT), follow [this guide](https://help.ubuntu.com/community/UEFI). You need to create an EFI partition (300 MB or so, FAT32 filesystem, boot flag) and have it mount to /boot/efi
-# Restoring with a new hard drive
+### Restoring with a new hard drive
 In the event that NaviGator's hard drive changed, one more step is needed after the restore process to boot the system. 
 1. Boot to an Ubuntu Live USB
 1. Find the UUID of the system partition where the navigator image is installed ```blkid /dev/sda2```
