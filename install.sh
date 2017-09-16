@@ -626,6 +626,9 @@ if [[ "$INSTALL_NAV" == "true" ]]; then
 
 	# Trajectory Generation
 	sudo apt-get install -qq ros-$ROS_VERSION-ompl
+
+	# FFTW library needed to build Sylphase GPS/INS software
+	sudo apt-get install -qq libfftw3-dev
 fi
 
 
