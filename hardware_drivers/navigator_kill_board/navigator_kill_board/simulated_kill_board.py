@@ -2,10 +2,17 @@ import serial
 import rospy
 from constants import constants
 import numpy as np
-from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
+from std_srvs.srv import SetBool, SetBoolResponse
+
 
 class NoopSerial(serial.Serial):
+    '''
+    Inherits from serial.Serial, doing nothing for each function.
+    Allows super classes to implement custom behavior for simulating
+    serial devices.
+    '''
     port = 'noop-serial'
+
     def __init__(*args, **kwargs):
         pass
 
@@ -58,6 +65,8 @@ class SimulatedSerial(NoopSerial):
     Intended to be extended by other classes, which should override the write function to recieve writes to
     the simulated device. These classes simply append to the buffer string which will be returned
     on reads to the simulated device.
+
+    Note: NoopSerial and SimulatedSerial are generic and are candidates for mil_common.
     '''
     def __init__(self, *args, **kwargs):
         self.buffer = ''
@@ -73,12 +82,14 @@ class SimulatedSerial(NoopSerial):
         b, self.buffer = self.buffer[0:length], self.buffer[length:]
         return b
 
+
 class SimulatedKillBoard(SimulatedSerial):
     '''
     Pretends to be NaviGator's kill board over serial, responding according to the protocol
     to requests and sending current state periodically
     '''
     port = 'simulated-kill-board'
+
     def __init__(self, *args, **kwargs):
         super(SimulatedKillBoard, self).__init__()
         self.last_ping = None
@@ -117,7 +128,6 @@ class SimulatedKillBoard(SimulatedSerial):
         if self.memory[name] != on:
             self.memory[name] = on
             self.killed = np.any([self.memory[x] for x in self.memory])
-            print 'Setting {} {}, Overall={}'.format(name, on, self.killed)
         if not update:
             return
         if on:
@@ -131,16 +141,18 @@ class SimulatedKillBoard(SimulatedSerial):
 
     def _set_light(self, status):
         if self.light != status:
-            print 'setting lights',status
+            print 'setting lights', status
             self.light = status
 
     def _get_status(self, byte):
         _res = lambda boolean: constants['RESPONSE_TRUE'] if boolean else constants['RESPONSE_FALSE']
         if byte == constants['OVERALL']['REQUEST']:
             self.buffer = _res(self.killed) + self.buffer
+            return
         for key in self.memory:
             if byte == constants[key]['REQUEST']:
                 self.buffer = _res(self.memory[key]) + self.buffer
+                return
 
     def _handle_sync(self, data):
         # Handle syncronous requests

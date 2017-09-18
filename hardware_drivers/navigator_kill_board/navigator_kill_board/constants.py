@@ -18,65 +18,66 @@ The computer can also command a kill (for example, if ROS notices a criticaly lo
 by sending the COMPUTER.KILL.REQUEST and undone with COMPUTER.CLEAR.REQUEST
 '''
 constants = {
-    'TIMEOUT_SECONDS' : 1.0,  # How often board must be pinged to not set REMOTE to True
-                              # Note: not official documented, this is just a guess
-    'RESPONSE_FALSE' : '\x00',  # True status for synchronous requests of individual addresses
-    'RESPONSE_TRUE' : '\x01',   # False status for synchronous requests of individual addresses
+    'TIMEOUT_SECONDS': 8.0,  # How often board must be pinged to not set REMOTE to True
+                             # Note: not official documented, this is just a guess
+    'RESPONSE_FALSE': '\x00',  # True status for synchronous requests of individual addresses
+    'RESPONSE_TRUE': '\x01',   # False status for synchronous requests of individual addresses
 
-    'PING' : {
-        'REQUEST' : '\x20',
-        'RESPONSE' : '\x30'
+    'PING': {
+        'REQUEST': '\x20',
+        'RESPONSE': '\x30'
     },
 
-    'KILLS' : ['OVERALL', 'BUTTON_FRONT_PORT', 'BUTTON_AFT_PORT', 'BUTTON_FRONT_STARBOARD', 'BUTTON_AFT_STARBOARD', 'REMOTE', 'COMPUTER'],
-    'OVERALL' : {  # Should be True if any of the over are True
-        'REQUEST' : '\x21',
+    'KILLS': ['OVERALL', 'BUTTON_FRONT_PORT', 'BUTTON_AFT_PORT', 'BUTTON_FRONT_STARBOARD',\
+              'BUTTON_AFT_STARBOARD', 'REMOTE', 'COMPUTER'],
+    'OVERALL': {  # Should be True if any of the over are True
+        'REQUEST': '\x21',
         'TRUE': '\x10',
         'FALSE': '\x11'
     },
     'BUTTON_FRONT_PORT': {
-        'REQUEST' : '\x22',
+        'REQUEST': '\x22',
         'TRUE': '\x12',
-        'FALSE' : '\x13'
+        'FALSE': '\x13'
     },
-    'BUTTON_AFT_PORT' : {
-        'REQUEST' : '\x24',
+    'BUTTON_AFT_PORT': {
+        'REQUEST': '\x23',
         'TRUE': '\x14',
-        'FALSE' : '\x15'
+        'FALSE': '\x15'
     },
-    'BUTTON_FRONT_STARBOARD' : {
-        'REQUEST' : '\x24',
+    'BUTTON_FRONT_STARBOARD': {
+        'REQUEST': '\x24',
         'TRUE': '\x16',
         'FALSE': '\x17'
     },
     'BUTTON_AFT_STARBOARD': {
-        'REQUEST' : '\x25',
+        'REQUEST': '\x25',
         'TRUE': '\x18',
         'FALSE': '\x19'
     },
-    'REMOTE': { # Will return True if board is not pinged often enough
-        'REQUEST' : '\x26',
+    'REMOTE': {  # Will return True if board is not pinged often enough
+        'REQUEST': '\x26',
         'TRUE': '\x1A',
-        'FALSE' : '\x1B'
+        'FALSE': '\x1B'
     },
     'COMPUTER': {  # Allows board to be killed over serial (like through ROS)
-        'KILL' : {
-            'REQUEST' : '\x45',
-            'RESPONSE' : '\x55\x1C'
+        'KILL': {
+            'REQUEST': '\x45',
+            'RESPONSE': '\x55'
         },
-        'CLEAR' : {
-            'REQUEST' : '\x46',
-            'RESPONSE' : '\x56\x1D'
+        'CLEAR': {
+            'REQUEST': '\x46',
+            'RESPONSE': '\x56'
         },
-        'REQUEST' : '\x27',
-        'TRUE' : '\x1C',
-        'FALSE' : '\x1D'
+        'REQUEST': '\x27',
+        'TRUE': '\x1C',
+        'FALSE': '\x1D'
     },
-    'CONNECTED' : {
-        'TRUE' : '\x1E',
+    'CONNECTED': {
+        'TRUE': '\x1E',
         'FALSE': '\x1F'
     },
-    'LIGHTS' : { # Note: YELLOW turns off GREEN and visa versa
+    'LIGHTS': {  # Note: YELLOW turns off GREEN and visa versa
         'OFF_REQUEST': '\x40',
         'OFF_RESPONSE': '\x50',
         'YELLOW_REQUEST': '\x41',
