@@ -12,7 +12,7 @@ import os
 from ros_alarms import AlarmListener
 from navigator_msgs.msg import Hosts, Host
 from python_qt_binding import QtCore
-from python_qt_binding import QtGui
+from python_qt_binding import QtWidgets
 from python_qt_binding import loadUi
 from qt_gui.plugin import Plugin
 from remote_control_lib import RemoteControl
@@ -35,7 +35,7 @@ class Dashboard(Plugin):
         super(Dashboard, self).__init__(context)
 
         # Create the widget and name it
-        self._widget = QtGui.QWidget()
+        self._widget = QtWidgets.QWidget()
         self._widget.setObjectName("Dashboard")
         self.setObjectName("Dashboard")
 
@@ -103,36 +103,36 @@ class Dashboard(Plugin):
         '''
 
         # Kill status
-        self.kill_status_frame = self._widget.findChild(QtGui.QFrame, "kill_status_frame")
-        self.kill_status_status = self._widget.findChild(QtGui.QLabel, "kill_status_status")
+        self.kill_status_frame = self._widget.findChild(QtWidgets.QFrame, "kill_status_frame")
+        self.kill_status_status = self._widget.findChild(QtWidgets.QLabel, "kill_status_status")
 
         # Operating mode status
-        self.operating_mode_frame = self._widget.findChild(QtGui.QFrame, "operating_mode_frame")
-        self.operating_mode_status = self._widget.findChild(QtGui.QLabel, "operating_mode_status")
+        self.operating_mode_frame = self._widget.findChild(QtWidgets.QFrame, "operating_mode_frame")
+        self.operating_mode_status = self._widget.findChild(QtWidgets.QLabel, "operating_mode_status")
 
         # Battery voltage
-        self.battery_voltage_frame = self._widget.findChild(QtGui.QFrame, "battery_voltage_frame")
-        self.battery_voltage_status = self._widget.findChild(QtGui.QLabel, "battery_voltage_status")
+        self.battery_voltage_frame = self._widget.findChild(QtWidgets.QFrame, "battery_voltage_frame")
+        self.battery_voltage_status = self._widget.findChild(QtWidgets.QLabel, "battery_voltage_status")
 
         # System time
-        self.system_time_frame = self._widget.findChild(QtGui.QFrame, "system_time_frame")
-        self.system_time_status = self._widget.findChild(QtGui.QLabel, "system_time_status")
+        self.system_time_frame = self._widget.findChild(QtWidgets.QFrame, "system_time_frame")
+        self.system_time_status = self._widget.findChild(QtWidgets.QLabel, "system_time_status")
 
         # Devices table
-        self.device_table = self._widget.findChild(QtGui.QFrame, "device_table")
+        self.device_table = self._widget.findChild(QtWidgets.QFrame, "device_table")
 
         # Control panel buttons
-        toggle_kill_button = self._widget.findChild(QtGui.QPushButton, "toggle_kill_button")
+        toggle_kill_button = self._widget.findChild(QtWidgets.QPushButton, "toggle_kill_button")
         toggle_kill_button.clicked.connect(self.remote.toggle_kill)
-        station_hold_button = self._widget.findChild(QtGui.QPushButton, "station_hold_button")
+        station_hold_button = self._widget.findChild(QtWidgets.QPushButton, "station_hold_button")
         station_hold_button.clicked.connect(self.remote.station_hold)
-        rc_control_button = self._widget.findChild(QtGui.QPushButton, "rc_control_button")
+        rc_control_button = self._widget.findChild(QtWidgets.QPushButton, "rc_control_button")
         rc_control_button.clicked.connect(self.remote.select_rc_control)
-        emergency_control_button = self._widget.findChild(QtGui.QPushButton, "emergency_control_button")
+        emergency_control_button = self._widget.findChild(QtWidgets.QPushButton, "emergency_control_button")
         emergency_control_button.clicked.connect(self.remote.select_emergency_control)
-        keyboard_control_button = self._widget.findChild(QtGui.QPushButton, "keyboard_control_button")
+        keyboard_control_button = self._widget.findChild(QtWidgets.QPushButton, "keyboard_control_button")
         keyboard_control_button.clicked.connect(self.remote.select_keyboard_control)
-        autonomous_control_button = self._widget.findChild(QtGui.QPushButton, "autonomous_control_button")
+        autonomous_control_button = self._widget.findChild(QtWidgets.QPushButton, "autonomous_control_button")
         autonomous_control_button.clicked.connect(self.remote.select_autonomous_control)
 
         # Defines the color scheme as QT style sheets
@@ -416,7 +416,7 @@ class Dashboard(Plugin):
 
             # Updates the host's IP address and status in the devices table
             for column in range(len(columns)):
-                entry = QtGui.QLabel(getattr(rows[row], columns[column]))
+                entry = QtWidgets.QLabel(getattr(rows[row], columns[column]))
                 entry.setAlignment(QtCore.Qt.AlignCenter)
                 entry.setStyleSheet(column_color[column])
                 self.device_table.setCellWidget(row, column, entry)
