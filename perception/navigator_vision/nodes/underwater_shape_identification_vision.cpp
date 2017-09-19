@@ -7,14 +7,14 @@
 
 using namespace std;
 
-int main(int argc, char** argv) 
-{ 
-  cout << "\033[1;31mUnderwater Shape Identification Vision\033[0m" << endl;  
+int main(int argc, char** argv)
+{
+  cout << "\033[1;31mUnderwater Shape Identification Vision\033[0m" << endl;
 
   ros::NodeHandle nh;
   string challenge_name = "underwater_shape_identification";
   ros::init(argc, argv, challenge_name + "_vision");
-  string name_space{challenge_name + "/"};
+  string name_space{ challenge_name + "/" };
 
   int img_buffer_size = 0;
   nh.param<int>(name_space + "buffer_size", img_buffer_size, 5);
@@ -22,4 +22,3 @@ int main(int argc, char** argv)
 
   return 0;
 }
-

@@ -1,16 +1,18 @@
-#include <navigator_vision_lib/visualization.hpp>
 #include <visualization_msgs/Marker.h>
+#include <navigator_vision_lib/visualization.hpp>
 
-namespace nav {
-
-RvizVisualizer::RvizVisualizer(std::string rviz_topic) {
+namespace nav
+{
+RvizVisualizer::RvizVisualizer(std::string rviz_topic)
+{
   rviz_pub = nh.advertise<visualization_msgs::Marker>(rviz_topic, 1);
   ros::spinOnce();
   // Give these guys some time to get ready
   ros::Duration(0.5).sleep();
 }
 
-void RvizVisualizer::visualize_buoy(geometry_msgs::Pose& pose, std::string& frame_id) {
+void RvizVisualizer::visualize_buoy(geometry_msgs::Pose& pose, std::string& frame_id)
+{
   visualization_msgs::Marker marker;
 
   // Generate sphere marker for the buoy
@@ -56,8 +58,9 @@ void RvizVisualizer::visualize_buoy(geometry_msgs::Pose& pose, std::string& fram
 }
 
 void RvizVisualizer::visualize_torpedo_board(geometry_msgs::Pose& pose, Eigen::Quaterniond orientation,
-                                             std::vector<Eigen::Vector3d>& targets, std::vector<Eigen::Vector3d>& corners3d, 
-                                             std::string& frame_id) {
+                                             std::vector<Eigen::Vector3d>& targets,
+                                             std::vector<Eigen::Vector3d>& corners3d, std::string& frame_id)
+{
   visualization_msgs::Marker centroid, target_markers, text, borders;
   centroid.header.frame_id = target_markers.header.frame_id = text.header.frame_id = borders.header.frame_id = frame_id;
   centroid.header.stamp = target_markers.header.stamp = text.header.stamp = borders.header.stamp = ros::Time::now();
@@ -87,7 +90,8 @@ void RvizVisualizer::visualize_torpedo_board(geometry_msgs::Pose& pose, Eigen::Q
   target_markers.type = visualization_msgs::Marker::SPHERE_LIST;
   target_markers.action = visualization_msgs::Marker::ADD;
   geometry_msgs::Point p;
-  for(size_t i = 0; i < targets.size(); i++){
+  for (size_t i = 0; i < targets.size(); i++)
+  {
     p.x = targets[i](0);
     p.y = targets[i](1);
     p.z = targets[i](2);
@@ -125,17 +129,20 @@ void RvizVisualizer::visualize_torpedo_board(geometry_msgs::Pose& pose, Eigen::Q
   borders.type = visualization_msgs::Marker::LINE_STRIP;
   borders.action = visualization_msgs::Marker::ADD;
   borders.pose.orientation.w = 1.0;
-  for(size_t i = 0; i <= corners3d.size(); i++){
-    if(i == corners3d.size()){
+  for (size_t i = 0; i <= corners3d.size(); i++)
+  {
+    if (i == corners3d.size())
+    {
       p.x = corners3d[0](0);
       p.y = corners3d[0](1);
       p.z = corners3d[0](2);
     }
-    else{
+    else
+    {
       p.x = corners3d[i](0);
       p.y = corners3d[i](1);
       p.z = corners3d[i](2);
-    } 
+    }
     borders.points.push_back(p);
   }
   borders.scale.x = 0.05;
@@ -148,4 +155,4 @@ void RvizVisualizer::visualize_torpedo_board(geometry_msgs::Pose& pose, Eigen::Q
   rviz_pub.publish(borders);
 }
 
-} // End namespace "sub"
+}  // End namespace "sub"
