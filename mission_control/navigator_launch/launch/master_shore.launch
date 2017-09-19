@@ -5,7 +5,7 @@
         <param name="autorepeat_rate" value="5"/>
     </node>
 
-    <!-- TODO: start up mil common network pub here -->
+    <node name="network_heartbeat" pkg="mil_tools" type="network_broadcaster" output="screen" />
 
     <!-- Load model into rviz -->
     <param name="robot_description" command="cat $(find navigator_gazebo)/models/wamv/wamv.xml"/>
