@@ -20,6 +20,7 @@ from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import PointCloud
 import navigator_msgs.srv as navigator_srvs
+from topic_tools.srv import MuxSelect, MuxSelectRequest
 from mil_misc_tools.text_effects import fprint
 from navigator_tools import MissingPerceptionObject
 
@@ -96,7 +97,7 @@ class Navigator(object):
         try:
             self._database_query = self.nh.get_service_client('/database/requests', navigator_srvs.ObjectDBQuery)
             self._camera_database_query = self.nh.get_service_client('/camera_database/requests', navigator_srvs.CameraDBQuery)
-            self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
+            self._change_wrench = self.nh.get_service_client('/wrench/select', MuxSelect)
         except AttributeError, err:
             fprint("Error getting service clients in nav singleton init: {}".format(err), title="NAVIGATOR", msg_color='red')
 
@@ -190,7 +191,7 @@ class Navigator(object):
         return self.vision_proxies[request_name].get_response(**kwargs)
 
     def change_wrench(self, source):
-        return self._change_wrench(navigator_srvs.WrenchSelectRequest(source))
+        return self._change_wrench(MuxSelectRequest(source))
 
     def search(self, *args, **kwargs):
         return Searcher(self, *args, **kwargs)

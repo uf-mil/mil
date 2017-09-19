@@ -15,9 +15,13 @@
 
     <include file="$(find navigator_launch)/launch/subsystems/tf.launch"/>
 
-    <node name="wrench_arbiter" pkg="navigator_msg_multiplexer" type="wrench_arbiter.py"/>
 
-    <node name="mrac" pkg="navigator_controller" type="mrac_controller.py"/>
+    <node name="wrench_arbiter" ns="/wrench" pkg="topic_tools" type="mux"
+          args="cmd autonomous rc emergency keyboard" >
+        <remap from="mux" to="/wrench" />
+    </node>
+
+    <node name="mrac" pkg="navigator_controller" type="mrac_controller.py" output="screen" />
 
     <node pkg="navigator_joystick_control" type="navigator_joystick.py" name="joystick_wrench" output="screen">
         <param name="force_scale" value="600" type="double"/>

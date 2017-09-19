@@ -10,11 +10,11 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, WrenchStamped, PoseStamped, Quaternion, Pose
 from std_msgs.msg import Header
 from mil_msgs.msg import PoseTwistStamped
-from std_msgs.msg import Bool, Float64MultiArray
+from std_msgs.msg import String, Float64MultiArray
 
 
 class MRAC_Controller:
-
+    LEARN_WRENCHES = ['/wrench/autonomous', 'autonomous']
     def __init__(self):
         '''
         Set-up.
@@ -107,7 +107,7 @@ class MRAC_Controller:
             rospy.Subscriber("/trajectory", PoseTwistStamped, self.set_traj)
 
         rospy.Subscriber("/odom", Odometry, self.get_command)
-        rospy.Subscriber('/learn', Bool, self.toggle_learning)
+        rospy.Subscriber("/wrench/selected", String, self.set_learning)
         # Publishers
         self.wrench_pub = rospy.Publisher("/wrench/autonomous", WrenchStamped, queue_size=0)
         self.pose_ref_pub = rospy.Publisher("pose_ref", PoseStamped, queue_size=0)
@@ -275,7 +275,7 @@ class MRAC_Controller:
         adaptation_msg.wrench.force.y = (self.dist_est + self.drag_effort)[1]
         adaptation_msg.wrench.torque.z = (self.dist_est + self.drag_effort)[2]
         self.adaptation_pub.publish(adaptation_msg)
-        
+
         try:
             self.theta_pub.publish(Float64MultiArray(data=self.drag_est))
         except:
@@ -334,18 +334,18 @@ class MRAC_Controller:
         self.v_ref = self.v_ref + (self.a_ref * self.timestep)
         self.w_ref = self.w_ref + (self.aa_ref * self.timestep)
 
-    def toggle_learning(self, bool_msg):
+    def set_learning(self, str_msg):
         '''
-        Callback for the /mrac_learn topic. Sets
-        self.learn to True or False depending
-        on the Bool message.
-
+        Sets learning status based on current wrench
         '''
-        self.learn = bool_msg.data
+        learn = str_msg.data in self.LEARN_WRENCHES
+        if learn == self.learn:
+            return
+        self.learn = learn
         if self.learn:
-            print("MRAC controller is learning.")
+            rospy.loginfo("MRAC: learning")
         else:
-            print("MRAC controller reset and stopped learning.")
+            rospy.loginfo("MRAC: reset and not learning")
             self.dist_est = np.zeros(3)
             self.drag_est = np.zeros(5)
 
