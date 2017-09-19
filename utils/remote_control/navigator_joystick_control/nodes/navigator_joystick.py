@@ -23,28 +23,22 @@ class Joystick(object):
         self.reset()
         rospy.Subscriber("joy", Joy, self.joy_recieved)
 
-        self.active = False
-
     def reset(self):
         '''
         Used to reset the state of the controller. Sometimes when it
         disconnects then comes back online, the settings are all out of whack.
         '''
-        self.last_kill = False
+        self.last_raise_kill = False
+        self.last_clear_kill = False
         self.last_station_hold_state = False
         self.last_rc_control = False
         self.last_emergency_control = False
         self.last_keyboard_control = False
         self.last_auto_control = False
-        self.last_change_mode = False
-#        self.last_shooter_load = False
-#        self.last_shooter_fire = False
-        self.last_shooter_cancel = False
 
         self.start_count = 0
         self.last_joy = None
         self.active = False
-
         self.remote.clear_wrench()
 
     def check_for_timeout(self, joy):
@@ -71,16 +65,13 @@ class Joystick(object):
 
         # Assigns readable names to the buttons that are used
         start = joy.buttons[7]
-        kill = bool(joy.buttons[2])  # X
+        raise_kill = bool(joy.buttons[1])  # B
+        clear_kill = bool(joy.buttons[2]) # X
         station_hold = bool(joy.buttons[0])  # A
         rc_control = bool(joy.buttons[11])  # d-pad left
         emergency_control = bool(joy.buttons[13])  # d-pad up
         keyboard_control = bool(joy.buttons[14])  # d-pad down
         auto_control = bool(joy.buttons[12])  # d-pad right
-        change_mode = bool(joy.buttons[3])  # Y
-#        shooter_load = bool(joy.buttons[4])
-#        shooter_fire = bool(joy.axes[5] < -0.9)
-        shooter_cancel = bool(joy.buttons[5])
 
         # Reset controller state if only start is pressed down about 3 seconds
         self.start_count += start
@@ -88,13 +79,16 @@ class Joystick(object):
             rospy.loginfo("Resetting controller state")
             self.reset()
             self.active = True
-            self.remote.clear_kill()
 
         if not self.active:
+            self.remote.clear_wrench()
             return
 
-        if kill and not self.last_kill:
-            self.remote.toggle_kill()
+        if raise_kill and not self.last_raise_kill:
+            self.remote.kill()
+
+        if clear_kill and not self.last_clear_kill:
+            self.remote.clear_kill()
 
         if station_hold and not self.last_station_hold_state:
             self.remote.station_hold()
@@ -111,28 +105,13 @@ class Joystick(object):
         if auto_control and not self.last_auto_control:
             self.remote.select_autonomous_control()
 
-        if change_mode and not self.last_change_mode:
-            self.remote.select_next_control()
-
-#        if shooter_load and not self.last_shooter_load:
-#            self.remote.shooter_load()
-
-#        if shooter_fire and not self.last_shooter_fire:
-#            self.remote.shooter_fire()
-
-        if shooter_cancel and not self.last_shooter_cancel:
-            self.remote.shooter_cancel()
-
-        self.last_kill = kill
+        self.last_raise_kill = raise_kill
+        self.last_clear_kill = clear_kill
         self.last_station_hold_state = station_hold
         self.last_rc_control = rc_control
         self.last_emergency_control = emergency_control
         self.last_keyboard_control = keyboard_control
         self.last_auto_control = auto_control
-        self.last_change_mode = change_mode
-#        self.last_shooter_load = shooter_load
-#        self.last_shooter_fire = shooter_fire
-        self.last_shooter_cancel = shooter_cancel
 
         # Scale joystick input to force and publish a wrench
         x = joy.axes[1] * self.force_scale

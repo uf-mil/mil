@@ -77,7 +77,6 @@ class RemoteControl(object):
         Kills the system regardless of what state it is in.
         '''
         rospy.loginfo("Killing")
-        self.wrench_changer("rc")
         self.kill_broadcaster.raise_alarm(
             problem_description="System kill from user remote control",
             parameters={'location':self.name}
@@ -89,7 +88,6 @@ class RemoteControl(object):
         Clears the system kill regardless of what state it is in.
         '''
         rospy.loginfo("Reviving")
-        self.wrench_changer("rc")
         self.kill_broadcaster.clear_alarm()
 
     @_timeout_check
@@ -103,7 +101,6 @@ class RemoteControl(object):
         if self.is_killed:
             self.kill_broadcaster.clear_alarm()
         else:
-            self.wrench_changer("rc")
             self.kill_broadcaster.raise_alarm(
                 problem_description="System kill from user remote control",
                 parameters={'location':self.name}
@@ -123,8 +120,6 @@ class RemoteControl(object):
             problem_description="Request to station hold from remote control",
             parameters={'location':self.name}
         )
-        rospy.sleep(0.2)
-        self.station_hold_broadcaster.clear_alarm()
 
     @_timeout_check
     def select_autonomous_control(self, *args, **kwargs):
