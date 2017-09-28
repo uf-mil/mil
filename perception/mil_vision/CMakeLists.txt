@@ -99,3 +99,11 @@ add_executable(camera_stream_demo src/camera_stream_demo.cpp)
 
 add_executable(camera_lidar_transformer src/camera_lidar_transformer.cpp)
 add_dependencies(camera_lidar_transformer ${catkin_EXPORTED_TARGETS})
+
+
+add_executable(pc_colorizer
+  src/pc_colorizer.cpp
+)
+add_dependencies(pc_colorizer
+  ${catkin_EXPORTED_TARGETS}
+)
