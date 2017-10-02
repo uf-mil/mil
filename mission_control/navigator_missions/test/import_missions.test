@@ -1,0 +1,3 @@
+<launch>
+    <test test-name="import_missions" pkg="navigator_missions" type="test_import_missions.py" />
+</launch>
