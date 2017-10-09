@@ -11,7 +11,7 @@ from __future__ import division
 import os
 
 from python_qt_binding import QtCore
-from python_qt_binding import QtGui
+from python_qt_binding import QtWidgets
 from python_qt_binding import loadUi
 from qt_gui.plugin import Plugin
 from remote_control_lib import RemoteControl
@@ -33,7 +33,7 @@ class Shooter(Plugin):
         super(Shooter, self).__init__(context)
 
         # Create the widget and name it
-        self._widget = QtGui.QWidget()
+        self._widget = QtWidgets.QWidget()
         self._widget.setObjectName("Shooter")
         self.setObjectName("Shooter")
 
@@ -56,9 +56,7 @@ class Shooter(Plugin):
 
         rospy.Subscriber("/shooter/status", String, self.cache_shooter_status)
 
-        # Show _widget.windowTitle on left-top of each plugin (when it's set in _widget). This is useful when you open multiple
-        # plugins at once. Also if you open multiple instances of your plugin at once, these lines add number to make it easy to
-        # tell from pane to pane.
+        # Deals with problem of multiple instances of same plugin
         if context.serial_number() > 1:
             self._widget.setWindowTitle(self._widget.windowTitle() + (" (%d)" % context.serial_number()))
 
@@ -72,25 +70,25 @@ class Shooter(Plugin):
         '''
 
         # Shooter status indicator
-        self.shooter_status_frame = self._widget.findChild(QtGui.QFrame, "shooter_status_frame")
-        self.shooter_status_message = self._widget.findChild(QtGui.QLabel, "shooter_status_message")
+        self.shooter_status_frame = self._widget.findChild(QtWidgets.QFrame, "shooter_status_frame")
+        self.shooter_status_message = self._widget.findChild(QtWidgets.QLabel, "shooter_status_message")
 
         # Control panel buttons
-        load_button = self._widget.findChild(QtGui.QPushButton, "load_button")
+        load_button = self._widget.findChild(QtWidgets.QPushButton, "load_button")
         load_button.clicked.connect(self.remote.shooter_load)
-        fire_button = self._widget.findChild(QtGui.QPushButton, "fire_button")
+        fire_button = self._widget.findChild(QtWidgets.QPushButton, "fire_button")
         fire_button.clicked.connect(self.remote.shooter_fire)
-        cancel_button = self._widget.findChild(QtGui.QPushButton, "cancel_button")
+        cancel_button = self._widget.findChild(QtWidgets.QPushButton, "cancel_button")
         cancel_button.clicked.connect(self.remote.shooter_cancel)
-        reset_button = self._widget.findChild(QtGui.QPushButton, "reset_button")
+        reset_button = self._widget.findChild(QtWidgets.QPushButton, "reset_button")
         reset_button.clicked.connect(self.remote.shooter_reset)
-        linear_extend_button = self._widget.findChild(QtGui.QPushButton, "linear_extend_button")
+        linear_extend_button = self._widget.findChild(QtWidgets.QPushButton, "linear_extend_button")
         linear_extend_button.clicked.connect(self.remote.shooter_linear_extend)
-        linear_retract_button = self._widget.findChild(QtGui.QPushButton, "linear_retract_button")
+        linear_retract_button = self._widget.findChild(QtWidgets.QPushButton, "linear_retract_button")
         linear_retract_button.clicked.connect(self.remote.shooter_linear_retract)
-        disc_speed_slider = self._widget.findChild(QtGui.QSlider, "disc_speed_slider")
+        disc_speed_slider = self._widget.findChild(QtWidgets.QSlider, "disc_speed_slider")
         disc_speed_slider.valueChanged[int].connect(self.cache_disc_speed_setting)
-        set_disc_speed_button = self._widget.findChild(QtGui.QPushButton, "set_disc_speed_button")
+        set_disc_speed_button = self._widget.findChild(QtWidgets.QPushButton, "set_disc_speed_button")
         set_disc_speed_button.clicked.connect(self.set_disc_speed)
 
         # Defines the color scheme as QT style sheets
