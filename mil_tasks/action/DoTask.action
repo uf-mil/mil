@@ -1,0 +1,11 @@
+string task
+string parameters
+
+---
+
+bool success
+string result
+
+---
+
+string message

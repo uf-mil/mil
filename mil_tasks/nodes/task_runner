@@ -1,0 +1,116 @@
+#!/usr/bin/env python
+from mil_tasks.msg import DoTaskAction, DoTaskResult, DoTaskFeedback
+from mil_tasks_core import BaseTask
+from txros import util, NodeHandle, action
+from twisted.internet import defer, reactor
+import twisted.python
+import inspect
+
+class TaskRunner(object):
+    def __init__(self):
+        pass
+
+    @defer.inlineCallbacks
+    def init(self):
+        self.nh = yield NodeHandle.from_argv('task_runner')
+        self.server = action.SimpleActionServer(self.nh, '/task', DoTaskAction)
+
+        task_module_name = yield self.nh.get_param('~tasks_module')
+        base_task_name = yield self.nh.get_param('~base_task')
+        task_module = __import__(task_module_name)
+
+        if not hasattr(task_module, base_task_name):
+            raise Exception('Base task not in module')
+        base_task = getattr(task_module, base_task_name)
+        yield base_task._init(self)
+
+        self.tasks = {}
+        for name, cls in inspect.getmembers(task_module):
+            if inspect.isclass(cls) and issubclass(cls, BaseTask) and name != base_task_name:
+                yield cls.init()
+                self.tasks[cls.name()] = cls
+
+        yield self.nh.set_param('/available_tasks', self.tasks.keys())
+
+        self.task_defer = None
+        self.task = None
+
+        # Register callbacks for new goals and start the action server
+        self.server.register_preempt_callback(self.check_new_task)
+        self.server.register_goal_callback(self.check_new_task)
+        self.server.start()
+
+    def has_task(self, task):
+        return task in self.tasks
+
+    def send_feedback(self, message):
+        if self.task is None:
+            print('Tried to send feedback when task is None...')
+            return
+        feedback = DoTaskFeedback()
+        feedback.message = message
+        self.server.publish_feedback(feedback)
+
+    def do_new_task(self):
+        if not self.server.is_new_goal_available():
+            return
+        goal = self.server.accept_new_goal()
+        if not self.has_task(goal.task):
+            print('TASK RUNNER: unrecognized task \'{}\''.format(goal.task))
+            self.server.set_aborted(result=DoTaskResult(False, 'task unknown'))
+            return
+        self.task = self.tasks[goal.task]()
+        parameters = self.task.decode_parameters(goal.parameters)
+        self.task_defer = self.task.run(parameters)
+        self.task_defer.addBoth(self.task_finished_cb)
+
+    @util.cancellableInlineCallbacks
+    def check_new_task(self):
+        if (self.server.is_cancel_requested()):
+            print('Cancel requested')
+            yield self.task_defer.cancel()
+        elif (self.server.is_preempt_requested()):
+            print('Preempt Requested')
+            yield self.task_defer.cancel()
+        self.do_new_task()
+
+    @util.cancellableInlineCallbacks
+    def task_finished_cb(self, final):
+        result = DoTaskResult()
+        text = ''
+        if isinstance(final, twisted.python.failure.Failure):
+            result.success = False
+            if final.check(defer.CancelledError):
+                result.result = text = 'task cancelled'
+            else:
+                print ''
+                print final.getTraceback()
+                print self.task.name(), ' failed with above exception'
+                result.result = text = final.getErrorMessage()
+                final.printTraceback()
+            self.server.set_aborted(result=result, text=text)
+            yield self.task.cleanup()
+        else:
+            result.success = True
+            result.result = text = str(final)
+            self.server.set_succeeded(result=result, text=text)
+        self.task = None
+        self.task_defer = None
+        yield self.check_new_task()
+
+@defer.inlineCallbacks
+def main():
+    t = TaskRunner()
+    def err(err):
+        print err.getTraceback()
+        print 'Error initializing task runnner'
+        print err.getErrorMessage()
+        reactor.stop()
+    d = t.init()
+    d.addErrback(err)
+    yield d
+
+if __name__ == '__main__':
+    t = TaskRunner()
+    reactor.callWhenRunning(main)
+    reactor.run()
