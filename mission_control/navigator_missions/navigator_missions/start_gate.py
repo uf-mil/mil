@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from __future__ import division
-
+from navigator import Navigator
 import txros
 import tf
 import tf.transformations as trns
@@ -8,6 +8,8 @@ import numpy as np
 import mil_tools
 from sensor_msgs.msg import PointCloud
 from twisted.internet import defer
+from nav_msgs.msg import OccupancyGrid
+import cv2
 
 
 class Buoy(object):
@@ -27,131 +29,124 @@ class Buoy(object):
         return np.linalg.norm(self.position - odom)
 
 
-def get_path(buoy_l, buoy_r):
-    # Vector between the two buoys
-    between_vector = buoy_r.position - buoy_l.position
 
-    # Rotate that vector to point through the buoys
-    r = trns.euler_matrix(0, 0, np.radians(90))[:3, :3]
-    direction_vector = r.dot(between_vector)
-    direction_vector /= np.linalg.norm(direction_vector)
+class StartGate(Navigator):
+    def get_path(buoy_l, buoy_r):
+        # Vector between the two buoys
+        between_vector = buoy_r.position - buoy_l.position
 
-    return between_vector, direction_vector
+        # Rotate that vector to point through the buoys
+        r = trns.euler_matrix(0, 0, np.radians(90))[:3, :3]
+        direction_vector = r.dot(between_vector)
+        direction_vector /= np.linalg.norm(direction_vector)
 
+        return between_vector, direction_vector
 
-return_with = defer.returnValue
+    @txros.util.cancellableInlineCallbacks
+    def two_buoys(buoys, setup_dist, channel_length=30):
+        # We only have the front two buoys in view
+        pose = yield self.tx_pose
+        # Get the ones closest to us and assume those are the front
+        front = buoys
 
-@txros.util.cancellableInlineCallbacks
-def two_buoys(navigator, buoys, setup_dist, channel_length=30):
-    # We only have the front two buoys in view
-    pose = yield navigator.tx_pose
-    # Get the ones closest to us and assume those are the front
-    front = buoys
+        t = txros.tf.Transform.from_Pose_message(mil_tools.numpy_quat_pair_to_pose(*pose))
+        t_mat44 = np.linalg.inv(t.as_matrix())
+        f_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1)) for buoy in front]
 
-    t = txros.tf.Transform.from_Pose_message(mil_tools.numpy_quat_pair_to_pose(*pose))
-    t_mat44 = np.linalg.inv(t.as_matrix())
-    f_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1)) for buoy in front]
-    
-    #print f_bl_buoys
+        #print f_bl_buoys
 
-    # Angles are w.r.t positive x-axis. Positive is CCW around the z-axis.
-    angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in f_bl_buoys])
-    #print angle_buoys, front
-    f_left_buoy, f_right_buoy = front[np.argmax(angle_buoys)], front[np.argmin(angle_buoys)]
-    between_v = f_right_buoy.position - f_left_buoy.position
-    f_mid_point = f_left_buoy.position + between_v / 2
+        # Angles are w.r.t positive x-axis. Positive is CCW around the z-axis.
+        angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in f_bl_buoys])
+        #print angle_buoys, front
+        f_left_buoy, f_right_buoy = front[np.argmax(angle_buoys)], front[np.argmin(angle_buoys)]
+        between_v = f_right_buoy.position - f_left_buoy.position
+        f_mid_point = f_left_buoy.position + between_v / 2
 
-    setup = navigator.move.set_position(f_mid_point).look_at(f_left_buoy.position).yaw_right(1.57).backward(setup_dist)
-    target = setup.forward(2 * setup_dist + channel_length)
+        setup = self.move.set_position(f_mid_point).look_at(f_left_buoy.position).yaw_right(1.57).backward(setup_dist)
+        target = setup.forward(2 * setup_dist + channel_length)
 
-    ogrid = OgridFactory(f_left_buoy.position, f_right_buoy.position, target.position, channel_length=channel_length)
-    defer.returnValue([ogrid, setup, target])
-
-
-@txros.util.cancellableInlineCallbacks
-def four_buoys(navigator, buoys, setup_dist):
-    pose = yield navigator.tx_pose
-    # Get the ones closest to us and assume those are the front
-    distances = np.array([b.distance(pose[0]) for b in buoys])
-    back = buoys[np.argsort(distances)[-2:]]
-    front = buoys[np.argsort(distances)[:2]]
-
-    #print "front", front
-    #print "back", back
-
-    # Made it this far, make sure the red one is on the left and green on the right ================
-    t = txros.tf.Transform.from_Pose_message(mil_tools.numpy_quat_pair_to_pose(*pose))
-    t_mat44 = np.linalg.inv(t.as_matrix())
-    f_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1)) for buoy in front]
-    b_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1)) for buoy in back]
-
-    # Angles are w.r.t positive x-axis. Positive is CCW around the z-axis.
-    angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in f_bl_buoys])
-    #print angle_buoys, front
-    f_left_buoy, f_right_buoy = front[np.argmax(angle_buoys)], front[np.argmin(angle_buoys)]
-
-    angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in b_bl_buoys])
-    b_left_buoy, b_right_buoy = back[np.argmax(angle_buoys)], back[np.argmin(angle_buoys)]
+        ogrid = OgridFactory(f_left_buoy.position, f_right_buoy.position, target.position, channel_length=channel_length)
+        defer.returnValue([ogrid, setup, target])
 
 
-    # Lets plot a course, yarrr
-    f_between_vector, f_direction_vector = get_path(f_left_buoy, f_right_buoy)
-    f_mid_point = f_left_buoy.position + f_between_vector / 2
+    @txros.util.cancellableInlineCallbacks
+    def four_buoys(buoys, setup_dist):
+        pose = yield self.tx_pose
+        # Get the ones closest to us and assume those are the front
+        distances = np.array([b.distance(pose[0]) for b in buoys])
+        back = buoys[np.argsort(distances)[-2:]]
+        front = buoys[np.argsort(distances)[:2]]
 
-    b_between_vector, _ = get_path(b_left_buoy, b_right_buoy)
-    b_mid_point = b_left_buoy.position + b_between_vector / 2
-    
-    setup = navigator.move.set_position(f_mid_point).look_at(b_mid_point).backward(setup_dist)
-    target = setup.set_position(b_mid_point).forward(setup_dist)
-    
-    ogrid = OgridFactory(f_left_buoy.position, f_right_buoy.position, target.position,
-                         left_b_pos=b_left_buoy.position, right_b_pos=b_right_buoy.position)
+        #print "front", front
+        #print "back", back
 
-    defer.returnValue([ogrid, setup, target])
+        # Made it this far, make sure the red one is on the left and green on the right ================
+        t = txros.tf.Transform.from_Pose_message(mil_tools.numpy_quat_pair_to_pose(*pose))
+        t_mat44 = np.linalg.inv(t.as_matrix())
+        f_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1)) for buoy in front]
+        b_bl_buoys = [t_mat44.dot(np.append(buoy.position, 1)) for buoy in back]
 
+        # Angles are w.r.t positive x-axis. Positive is CCW around the z-axis.
+        angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in f_bl_buoys])
+        #print angle_buoys, front
+        f_left_buoy, f_right_buoy = front[np.argmax(angle_buoys)], front[np.argmin(angle_buoys)]
 
-@txros.util.cancellableInlineCallbacks
-def main(navigator):
-    result = navigator.fetch_result()
-
-    found_buoys = yield navigator.database_query("start_gate")
-
-    buoys = np.array(map(Buoy.from_srv, found_buoys.objects))
-
-    if len(buoys) == 2:
-        ogrid, setup, target = yield two_buoys(navigator, buoys, 10)
-    elif len(buoys) == 4:
-        ogrid, setup, target = yield four_buoys(navigator, buoys, 10)
-    else:
-        raise Exception
-
-    # Put the target into the point cloud as well
-    points = []
-    points.append(mil_tools.numpy_to_point(target.position))
-    pc = PointCloud(header=mil_tools.make_header(frame='/enu'),
-                    points=np.array(points))
-   
-    yield navigator._point_cloud_pub.publish(pc)
-    print "Waiting 3 seconds to move..."
-    yield navigator.nh.sleep(3)
-    yield setup.go(move_type='skid')
- 
-    pose = yield navigator.tx_pose
-    ogrid.generate_grid(pose)
-    msg = ogrid.get_message()
-
-    print "publishing"
-    latched = navigator.latching_publisher("/mission_ogrid", OccupancyGrid, msg)
+        angle_buoys = np.array([np.arctan2(buoy[1], buoy[0]) for buoy in b_bl_buoys])
+        b_left_buoy, b_right_buoy = back[np.argmax(angle_buoys)], back[np.argmin(angle_buoys)]
 
 
-    print "START_GATE: Moving in 5 seconds!"
-    yield target.go(initial_plan_time=5)
-    return_with(result)
+        # Lets plot a course, yarrr
+        f_between_vector, f_direction_vector = get_path(f_left_buoy, f_right_buoy)
+        f_mid_point = f_left_buoy.position + f_between_vector / 2
+
+        b_between_vector, _ = get_path(b_left_buoy, b_right_buoy)
+        b_mid_point = b_left_buoy.position + b_between_vector / 2
+
+        setup = self.move.set_position(f_mid_point).look_at(b_mid_point).backward(setup_dist)
+        target = setup.set_position(b_mid_point).forward(setup_dist)
+
+        ogrid = OgridFactory(f_left_buoy.position, f_right_buoy.position, target.position,
+                             left_b_pos=b_left_buoy.position, right_b_pos=b_right_buoy.position)
+
+        defer.returnValue([ogrid, setup, target])
+
+    @txros.util.cancellableInlineCallbacks
+    def run(self, parameters):
+        result = self.fetch_result()
+
+        found_buoys = yield self.database_query("start_gate")
+
+        buoys = np.array(map(Buoy.from_srv, found_buoys.objects))
+
+        if len(buoys) == 2:
+            ogrid, setup, target = yield self.two_buoys(buoys, 10)
+        elif len(buoys) == 4:
+            ogrid, setup, target = yield self.four_buoys(buoys, 10)
+        else:
+            raise Exception
+
+        # Put the target into the point cloud as well
+        points = []
+        points.append(mil_tools.numpy_to_point(target.position))
+        pc = PointCloud(header=mil_tools.make_header(frame='/enu'),
+                        points=np.array(points))
+
+        yield self._point_cloud_pub.publish(pc)
+        print "Waiting 3 seconds to move..."
+        yield self.nh.sleep(3)
+        yield setup.go(move_type='skid')
+
+        pose = yield self.tx_pose
+        ogrid.generate_grid(pose)
+        msg = ogrid.get_message()
+
+        print "publishing"
+        latched = self.latching_publisher("/mission_ogrid", OccupancyGrid, msg)
 
 
-# This really shouldn't be here - it should be somewhere behind the scenes
-from nav_msgs.msg import OccupancyGrid
-import cv2
+        print "START_GATE: Moving in 5 seconds!"
+        yield target.go(initial_plan_time=5)
+        defer.returnValue(result)
 
 class OgridFactory():
     def __init__(self, left_f_pos, right_f_pos, target, left_b_pos=None, right_b_pos=None, channel_length=30):

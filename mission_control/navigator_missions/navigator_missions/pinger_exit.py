@@ -10,10 +10,11 @@ import mil_tools
 from visualization_msgs.msg import Marker, MarkerArray
 from mil_misc_tools.text_effects import fprint
 import rospy
+from navigator import Navigator
 
 ___author___ = "Kevin Allen"
 
-class PingerExitMission:
+class PingerExitMission(Navigator):
     OBSERVE_DISTANCE_METERS = 6
     GATE_CROSS_METERS = 7
     FREQ = 35000
@@ -21,21 +22,18 @@ class PingerExitMission:
     MAX_CIRCLE_BUOY_ERROR = 30
     CIRCLE_RADIUS = 8
 
-    def __init__(self, navigator):
-        self.navigator = navigator
-
     @txros.util.cancellableInlineCallbacks
     def get_objects(self):
         """Get position of 3 gates from database"""
-        gate_1 = yield self.navigator.database_query("Gate_1")
+        gate_1 = yield self.database_query("Gate_1")
         assert gate_1.found, "Gate 1 Not found"
         gate_1_pos = mil_tools.rosmsg_to_numpy(gate_1.objects[0].position)[:2]
 
-        gate_2 = yield self.navigator.database_query("Gate_2")
+        gate_2 = yield self.database_query("Gate_2")
         assert gate_2.found, "Gate 2 Not found"
         gate_2_pos = mil_tools.rosmsg_to_numpy(gate_2.objects[0].position)[:2]
 
-        gate_3 = yield self.navigator.database_query("Gate_3")
+        gate_3 = yield self.database_query("Gate_3")
         assert gate_3.found, "Gate 3 Not found"
         gate_3_pos = mil_tools.rosmsg_to_numpy(gate_3.objects[0].position)[:2]
 
@@ -48,17 +46,17 @@ class PingerExitMission:
         #Make sure they are actually in a line
         if np.isnan(self.g_perp[0]) or np.isnan(self.g_perp[1]):
             raise Exception("Gates are not in a line")
-        neg = yield self.navigator.mission_params["pinger_negate"].get()
+        neg = yield self.mission_params["pinger_negate"].get()
         self.negate = not neg
 
     @txros.util.cancellableInlineCallbacks
     def go_thru_gate(self):
         """Move to the points needed to go through the correct gate"""
         self.get_gate_thru_points()
-        yield self.navigator.move.set_position(self.gate_thru_points[0]).look_at(self.gate_thru_points[1]).go()
-        yield self.navigator.move.set_position(self.gate_thru_points[1]).go()
+        yield self.move.set_position(self.gate_thru_points[0]).look_at(self.gate_thru_points[1]).go()
+        yield self.move.set_position(self.gate_thru_points[1]).go()
         #for p in self.gate_thru_points:
-        #    yield self.navigator.move.set_position(p).go(initial_plan_time=5)
+        #    yield self.move.set_position(p).go(initial_plan_time=5)
 
     def get_gate_perp(self):
         """Calculate a perpendicular to the line formed by the three gates"""
@@ -80,19 +78,12 @@ class PingerExitMission:
         self.gate_thru_points = (np.append(pose1, 0), np.append(pose2, 0))
 
     @txros.util.cancellableInlineCallbacks
-    def run(self):
-        fprint("PINGER EXIT: Starting", msg_color='green') 
-        self.gate_index = yield self.navigator.mission_params["acoustic_pinger_active_index"].get()
+    def run(self, parameters):
+        fprint("PINGER EXIT: Starting", msg_color='green')
+        self.gate_index = yield self.mission_params["acoustic_pinger_active_index"].get()
         self.gate_index = self.gate_index - 1
         yield self.get_objects()
         yield self.set_side()
         self.get_gate_thru_points()
         yield self.go_thru_gate()
-        fprint("PINGER EXIT: Done", msg_color='green') 
-
-@txros.util.cancellableInlineCallbacks
-def main(navigator, **kwargs):
-    mission = PingerExitMission(navigator)
-    yield mission.run()
-
-
+        fprint("PINGER EXIT: Done", msg_color='green')

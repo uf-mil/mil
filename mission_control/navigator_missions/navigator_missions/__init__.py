@@ -1,19 +1,15 @@
-# flake8: noqa
-import os
-import rospkg
-from mil_misc_tools.text_effects import fprint
+from navigator import Navigator
+from detect_deliver import DetectDeliver
+from teleop import Teleop
+from circle import Circle
+from back_and_forth import BackAndForth
+from start_gate import StartGate
+from coral_survey import CoralSurvey
+from pinger import PingerMission
+from pinger_exit import PingerExitMission
+from gps_points import GPSWaypoints
+from scan_the_code import ScanTheCode
+from wait import Wait
+from move import Move
+import pose_editor
 
-# Had to use rospkg, os.path.dirname(__file__) wasn't working
-for module in os.listdir(os.path.join(rospkg.RosPack().get_path("navigator_missions"), 'nav_missions/')):
-    if module[0] == '_' or module[-3:] != '.py':
-        continue
-    try:
-        __import__(module[:-3], locals(), globals())
-    except Exception as e:
-        fprint("ERROR in module: {}".format(module), msg_color='red')
-        print e, '\n'
-
-del fprint
-del rospkg
-del module
-del os
