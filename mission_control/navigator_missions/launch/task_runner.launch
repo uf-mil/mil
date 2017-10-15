@@ -1,0 +1,6 @@
+<launch>
+    <node pkg="mil_tasks" type="task_runner" name="task_runner">
+        <param name="tasks_module" value="navigator_missions" />
+        <param name="base_task" value="Navigator" />
+    </node>
+</launch>
