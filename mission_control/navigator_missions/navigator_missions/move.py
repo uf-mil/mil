@@ -11,6 +11,9 @@ fprint = mil_tools.fprint
 
 
 class Move(Navigator):
+    def decode_parameters(self, parameters):
+        return parameters  # Dont bother trying to see params as json
+
     @util.cancellableInlineCallbacks
     def run(self, parameters):
         if type(parameters) != str:

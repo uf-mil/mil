@@ -9,5 +9,5 @@ class Teleop(Navigator):
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
         yield self.change_wrench("rc")
-        self.set_status('Wrench set to "RC"')
+        self.send_feedback('Wrench set to "RC"')
         defer.returnValue('Now in RC mode')

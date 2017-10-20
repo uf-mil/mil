@@ -13,7 +13,7 @@ from pose_editor import PoseEditor2
 import mil_tools
 from ros_alarms import TxAlarmListener
 
-from navigator_path_planner.msg import MoveAction
+from navigator_path_planner.msg import MoveAction, MoveGoal
 from nav_msgs.msg import Odometry
 from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped
@@ -83,8 +83,8 @@ class Navigator(BaseTask):
         cls.killed = '?'
         cls.odom_loss = '?'
 
-        if (yield cls.nh.has_param('~sim')):
-            cls.sim = yield cls.nh.get_param('~sim')
+        if (yield cls.nh.has_param('/is_simulation')):
+            cls.sim = yield cls.nh.get_param('/is_simulation')
         else:
             cls.sim = False
 
@@ -140,6 +140,10 @@ class Navigator(BaseTask):
     @property
     def move(self):
         return PoseEditor2(self, self.pose)
+
+    def hold(self):
+        goal = MoveGoal(move_type='hold')
+        return self._moveto_client.send_goal(goal)
 
     def fetch_result(self, *args, **kwargs):
         # For a unified result class
