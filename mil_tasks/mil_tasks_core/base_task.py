@@ -1,5 +1,4 @@
 from txros import util
-from mil_tasks.msg import TaskFeedback, TaskStatus
 import json
 
 class BaseTask(object):
