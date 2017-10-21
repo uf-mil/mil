@@ -8,7 +8,7 @@
     </rosparam>
   </node>
   <rosparam ns="meta_alarms">
-    kill: ['odom-kill', 'network-loss', 'battery-voltage', 'hw-kill']
+    kill: ['odom-kill', 'network-loss', 'hw-kill']
   </rosparam>
   <rosparam ns="known_alarms">
     kill, odom-kill, network-loss, station-hold, battery-voltage, hw-kill

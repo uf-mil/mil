@@ -34,6 +34,9 @@
 
     <include file="$(find navigator_launch)/launch/subsystems/object_classification.launch" />
 
+    <!-- Run Path Planner -->
+    <include file="$(find navigator_launch)/launch/subsystems/path_planner.launch" />
+
     <!-- Core utilities: bounds, coordinate conversion -->
     <node name="coordinate_converter" pkg="navigator_tools" type="coordinate_conversion_server.py"/>
     <node name="bounds_server" pkg="navigator_tools" type="bounds.py"/>
