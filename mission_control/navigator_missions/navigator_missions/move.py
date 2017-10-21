@@ -16,6 +16,8 @@ class Move(Navigator):
 
     @util.cancellableInlineCallbacks
     def run(self, parameters):
+        if type(parameters) == unicode:
+            parameters = str(parameters)
         if type(parameters) != str:
             defer.returnValue('parameters not string')
         argv = parameters.split()
@@ -42,7 +44,7 @@ class Move(Navigator):
         action_kwargs = {'move_type': args.movetype}#, 'speed_factor': args.speedfactor}
 
         action_kwargs['blind'] = args.blind
-
+        yield self.change_wrench('autonomous')
         if args.speedfactor is not None:
             if ',' in args.speedfactor:
                 sf = np.array(map(float, args.speedfactor[1:-1].split(',')))

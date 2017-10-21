@@ -61,8 +61,8 @@ class Navigator(BaseTask):
     green = "GREEN"
     blue = "BLUE"
 
-    def __init__(self):
-        super(Navigator, self).__init__()
+    def __init__(self, **kwargs):
+        super(Navigator, self).__init__(**kwargs)
 
     @classmethod
     @util.cancellableInlineCallbacks
@@ -151,7 +151,7 @@ class Navigator(BaseTask):
 
     @classmethod
     @util.cancellableInlineCallbacks
-    def _make_bounds(self):
+    def _make_bounds(cls):
         fprint("Constructing bounds.", title="NAVIGATOR")
 
         if (yield cls.nh.has_param("/bounds/enforce")):
@@ -159,11 +159,11 @@ class Navigator(BaseTask):
             yield _bounds.wait_for_service()
             resp = yield _bounds(navigator_srvs.BoundsRequest())
             if resp.enforce:
-                self.enu_bounds = [mil_tools.rosmsg_to_numpy(bound) for bound in resp.bounds]
+                cls.enu_bounds = [mil_tools.rosmsg_to_numpy(bound) for bound in resp.bounds]
 
                 # Just for display
                 pc = PointCloud(header=mil_tools.make_header(frame='/enu'),
-                                points=np.array([mil_tools.numpy_to_point(point) for point in self.enu_bounds]))
+                                points=np.array([mil_tools.numpy_to_point(point) for point in cls.enu_bounds]))
                 yield cls._point_cloud_pub.publish(pc)
         else:
             fprint("No bounds param found, defaulting to none.", title="NAVIGATOR")
