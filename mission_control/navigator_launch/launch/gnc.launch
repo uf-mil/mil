@@ -17,7 +17,7 @@
 
 
     <node name="wrench_arbiter" ns="/wrench" pkg="topic_tools" type="mux"
-          args="cmd autonomous rc emergency keyboard" >
+          args="cmd cmd autonomous rc emergency keyboard" >
         <remap from="mux" to="/wrench" />
     </node>
 
