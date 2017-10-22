@@ -14,9 +14,8 @@ alias nav="cd $CATKIN_DIR/src/NaviGator"
 alias rnav="ros_connect -n ${HOSTNAMES[1]}"
 alias sshnav="ssh navigator@${HOSTNAMES[1]} -Y"
 
-# Missions
-alias navm="rosrun navigator_missions run_mission"
-alias navc="rosrun navigator_missions move_command"
+# Tasks
+alias nmove="runtask Move"
 
 # Wrench
 _nwrench_complete()
