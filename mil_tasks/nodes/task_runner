@@ -61,7 +61,7 @@ class TaskRunner(object):
             return
         self.task = self.tasks[goal.task]()
         parameters = self.task.decode_parameters(goal.parameters)
-        self.task_defer = self.task.run(parameters)
+        self.task_defer = defer.maybeDeferred(self.task.run, parameters)
         self.task_defer.addBoth(self.task_finished_cb)
 
     @util.cancellableInlineCallbacks
