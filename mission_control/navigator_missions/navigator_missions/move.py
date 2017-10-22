@@ -3,25 +3,18 @@ from txros import util, NodeHandle
 from twisted.internet import defer, reactor
 from navigator import Navigator
 import numpy as np
-import mil_tools
+from mil_tools import numpy_to_point, rosmsg_to_numpy
 from geometry_msgs.msg import PoseStamped, PointStamped
-import argparse
-
-fprint = mil_tools.fprint
+from mil_misc_tools import ThrowingArgumentParser, ArgumentParserException
 
 
 class Move(Navigator):
     def decode_parameters(self, parameters):
         return parameters  # Dont bother trying to see params as json
 
-    @util.cancellableInlineCallbacks
-    def run(self, parameters):
-        if type(parameters) == unicode:
-            parameters = str(parameters)
-        if type(parameters) != str:
-            defer.returnValue('parameters not string')
-        argv = parameters.split()
-        parser = argparse.ArgumentParser(description='Command Line Mission Runner',
+    @classmethod
+    def init(cls):
+        parser = ThrowingArgumentParser(description='Command Line Mission Runner',
             usage='Pass any pose editor command with an argument. \n\t forward 1 (moves forward 1 meter) \n\t backward 2ft (moves backward 2 feet)')
         parser.add_argument('command', type=str,
             help='Pose editor command to run')
@@ -39,8 +32,20 @@ class Move(Navigator):
             help='Move without looking at the ogrid. DANGEROUS.')
         parser.add_argument('-sf', '--speedfactor', type=str, default="[1, 1, 1]",
             help='Speed to execute the command, don\'t go too much higher than 1 on the real boat. Use like "[1, 1, .2]" to reduce rotation speed to 20% max or just ".5" to reduce x, y, and rotational speed to 50% max.')
+        cls.parser = parser
 
-        args = parser.parse_args(argv)
+    @util.cancellableInlineCallbacks
+    def run(self, parameters):
+        if type(parameters) == unicode:
+            parameters = str(parameters)
+        if type(parameters) != str:
+            defer.returnValue('parameters not string')
+        argv = parameters.split()
+        args = self.parser.parse_args(argv)
+
+        if not self.pose:
+            raise Exception('Cant move: No odom')
+
         action_kwargs = {'move_type': args.movetype}#, 'speed_factor': args.speedfactor}
 
         action_kwargs['blind'] = args.blind
@@ -59,25 +64,25 @@ class Move(Navigator):
         if args.focus is not None:
             focus = np.array(map(float, args.focus[1:-1].split(',')))
             focus[2] = 1  # Tell lqrrt we want to look at the point
-            point = mil_tools.numpy_to_point(focus)
+            point = numpy_to_point(focus)
             action_kwargs['focus'] = point
 
         if args.command == 'custom':
             # Let the user input custom commands, the eval may be dangerous so do away with that at some point.
-            fprint("Moving with the command: {}".format(args.argument), title="MOVE_COMMAND")
+            self.send_feedback("Moving with the command: {}".format(args.argument))
             res = yield eval("self.move.{}.go(move_type='{move_type}')".format(args.argument, **action_kwargs))
 
         elif args.command == 'rviz':
-            fprint("Moving to last published rviz position", title="MOVE_COMMAND")
+            self.send_feedback("Moving to last published rviz position")
             sub = nh.subscribe("/rviz_goal", PoseStamped)
             target_pose = yield util.wrap_time_notice(sub.get_next_message(), 2,  "Rviz goal")
             res = yield self.move.to_pose(target_pose).go(**action_kwargs)
 
         elif args.command == 'circle':
-            fprint("Moving in a circle around last clicked_point", title="MOVE_COMMAND")
+            self.send_feedback("Moving in a circle around last clicked_point")
             sub = nh.subscribe("/rviz_point", PointStamped)
             target_point = yield util.wrap_time_notice(sub.get_next_message(), 2, "Rviz point")
-            target_point = mil_tools.rosmsg_to_numpy(target_point.point)
+            target_point = rosmsg_to_numpy(target_point.point)
             circle = self.move.circle_point(target_point, float(args.argument))
             direction = 'cw' if args.argument == '-1' else 'ccw'
             res = yield self.move.circle_point(target_point, direction).go()
@@ -102,11 +107,9 @@ class Move(Navigator):
                 action_kwargs['move_type'] = 'hold'
 
             msg = "Moving {} ".format(command) if trans_move else "Yawing {} ".format(command[4:])
-            fprint(msg + "{}{}".format(amount, unit), title="MOVE_COMMAND")
+            self.send_feedback(msg + "{}{}".format(amount, unit))
             res = yield movement(float(amount), unit).go(**action_kwargs)
-
         if res.failure_reason is not '':
-            fprint("FAILURE! Reason: {}".format(res.failure_reason), msg_color='red', title="MOVE_COMMAND")
-        else:
-            fprint("Move completed!", msg_color="green", title="MOVE_COMMAND")
+            raise Exception('Move failed. Reason: {}'.format(res.failure_reason))
+        defer.returnValue('Move completed successfully!')
 
