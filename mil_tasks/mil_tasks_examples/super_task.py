@@ -2,13 +2,14 @@ from twisted.internet import defer
 from txros import util
 from base_task import ExampleBaseTask
 
+
 class SuperTask(ExampleBaseTask):
     def __init__(self, **kwargs):
         super(SuperTask, self).__init__(**kwargs)
 
     @classmethod
     def init(cls):
-        print('SuperTask init')
+        print 'SuperTask init'
 
     @util.cancellableInlineCallbacks
     def run(self, parameters):

@@ -1,6 +1,7 @@
 from twisted.internet import defer
 from txros import util
 
+
 def MakeChainWithTimeout(base):
     class ChainWithTimeout(base):
         def __init__(self):
@@ -17,7 +18,8 @@ def MakeChainWithTimeout(base):
                 result = yield subtask
                 defer.returnValue(result)
             timeout_df = self.nh.sleep(timeout)
-            result, index = yield defer.DeferredList([subtask, timeout_df], fireOnOneCallback=True, fireOnOneErrback=True)
+            result, index = yield defer.DeferredList([subtask, timeout_df], fireOnOneCallback=True,
+                                                     fireOnOneErrback=True)
             if index == 0:
                 yield timeout_df.cancel()
                 defer.returnValue(result)
@@ -32,7 +34,7 @@ def MakeChainWithTimeout(base):
                 if 'task' not in mission:
                     raise Exception('invalid parameters, element missing task')
                 if not self.has_task(mission['task']):
-                    raise Exception('task "{}" not available'.format(task))
+                    raise Exception('task "{}" not available'.format(mission['task']))
 
         @util.cancellableInlineCallbacks
         def run(self, parameters):

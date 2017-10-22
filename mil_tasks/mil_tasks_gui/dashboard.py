@@ -1,19 +1,12 @@
 #!/usr/bin/env python
 import os
-import threading
-from mil_tools import thread_lock
-from ros_alarms import AlarmListener
-from navigator_msgs.msg import Hosts, Host
-from python_qt_binding import QtCore, QtWidgets, loadUi
+from python_qt_binding import QtWidgets, loadUi
 from qt_gui.plugin import Plugin
-from remote_control_lib import RemoteControl
 import rospkg
 import rospy
-from copy import copy
-from std_msgs.msg import Float32, String, Header
 from mil_tasks.msg import DoTaskAction, DoTaskGoal
 from actionlib_msgs.msg import GoalID, GoalStatus
-from actionlib import ActionClient, GoalManager, CommStateMachine, ClientGoalHandle, TerminalState
+from actionlib import ActionClient, GoalManager, CommStateMachine, TerminalState
 import json
 import weakref
 import datetime
@@ -30,6 +23,7 @@ class ExtendedGoalManager(GoalManager):
 
 class ObserveActionClient(ActionClient):
     g_goal_id = 0
+
     def __init__(self, ns, ActionSpec):
         ActionClient.__init__(self, ns, ActionSpec)
         self.manager = ExtendedGoalManager(ActionSpec)
@@ -68,9 +62,11 @@ class ObserveActionClient(ActionClient):
         self.pub_goal.publish(action_goal)  # Should still be added through goal_cb
 
     def goal_cb(self, msg):
-        self.observe_goals[msg.goal_id.id] = self.manager.init_observe_goal(msg,
-                transition_cb = lambda msg, _goal=msg.goal_id: self._observer_transition_cb(_goal, msg),
-                feedback_cb = lambda handler, feedback,  _goal=msg.goal_id: self._observer_feedback_cb(_goal, handler, feedback))
+        self.observe_goals[msg.goal_id.id] = self.manager.init_observe_goal(
+            msg,
+            transition_cb=lambda msg, _goal=msg.goal_id: self._observer_transition_cb(_goal, msg),
+            feedback_cb=lambda handler, feedback, _goal=msg.goal_id: self._observer_feedback_cb(_goal, handler,
+                                                                                                feedback))
 
 
 class Dashboard(Plugin):
@@ -105,9 +101,7 @@ class Dashboard(Plugin):
         # Add widget to the user interface
         context.add_widget(self._widget)
 
-
     def ui_log(self, string):
-        time = rospy.Time.now()
         date_time = datetime.datetime.fromtimestamp(rospy.Time.now().to_time())
         time_str = '{}:{}:{}'.format(date_time.hour, date_time.minute, date_time.second).ljust(12, ' ')
         formatted = time_str + string
@@ -152,7 +146,7 @@ class Dashboard(Plugin):
         for i in reversed(range(self.chained_missions_table.rowCount())):
             self.chained_missions_table.removeRow(i)
         for i, mission in enumerate(self.missions):
-           self.available_missions_list.insertItem(i, mission)
+            self.available_missions_list.insertItem(i, mission)
         return True
 
     def clear_log(self, event):
@@ -164,7 +158,7 @@ class Dashboard(Plugin):
         if idx == -1:
             idx = self.chained_missions_table.rowCount()
         if event.source() == self.chained_missions_table:
-           # Now swap the two rows
+            # Now swap the two rows
             selected_index = self.chained_missions_table.selectedIndexes()[0].row()
             if idx == selected_index:
                 return
@@ -172,7 +166,9 @@ class Dashboard(Plugin):
             if selected_index > idx:
                 selected_index += 1
             for i in range(self.chained_missions_table.columnCount()):
-                self.chained_missions_table.setCellWidget(idx, i, self.chained_missions_table.cellWidget(selected_index, i))
+                self.chained_missions_table.setCellWidget(
+                    idx, i,
+                    self.chained_missions_table.cellWidget(selected_index, i))
             self.chained_missions_table.removeRow(selected_index)
         elif event.source() == self.available_missions_list:
             selected_item = self.available_missions_list.selectedItems()[0]
@@ -181,14 +177,14 @@ class Dashboard(Plugin):
             timeout.setValue(0)
             timeout.setMaximum(10000)
             timeout.setSuffix('s')
-            #required = QtWidgets.QCheckBox()
-            #required.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+            # required = QtWidgets.QCheckBox()
+            # required.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
             parameters = QtWidgets.QLineEdit('')
             self.chained_missions_table.insertRow(idx)
             self.chained_missions_table.setCellWidget(idx, 0, mission)
             self.chained_missions_table.setCellWidget(idx, 1, timeout)
-            #self.chained_missions_table.setCellWidget(idx, 2, required)
-            #self.chained_missions_table.setCellWidget(idx, 3, parameters)
+            # self.chained_missions_table.setCellWidget(idx, 2, required)
+            # self.chained_missions_table.setCellWidget(idx, 3, parameters)
             self.chained_missions_table.setCellWidget(idx, 2, parameters)
         else:
             print 'hmmmmmm table', event.source(), self.chained_missions_table
@@ -199,7 +195,7 @@ class Dashboard(Plugin):
             self.chained_missions_table.removeRow(selected_index)
 
     def run_chained_cb(self, event):
-        #TODO: deal with possibility of table being changed in this loop, perhaps by freezing it
+        # TODO: deal with possibility of table being changed in this loop, perhaps by freezing it
         tasks = []
         for i in range(self.chained_missions_table.rowCount()):
             task = self.chained_missions_table.cellWidget(i, 0).text()
@@ -259,4 +255,3 @@ class Dashboard(Plugin):
         self.clear_log_button.clicked.connect(self.clear_log)
         self.refresh_missions_button = self._widget.findChild(QtWidgets.QPushButton, 'refresh_missions_button')
         self.refresh_missions_button.clicked.connect(self.reload_available_missions)
-

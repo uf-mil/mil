@@ -7,6 +7,7 @@ from mil_tasks.msg import DoTaskAction, DoTaskGoal
 class TaskClient(SimpleActionClient):
     NS = '/task'
     LIST_PARAM = '/available_tasks'
+
     def __init__(self):
         SimpleActionClient.__init__(self, self.NS, DoTaskAction)
 

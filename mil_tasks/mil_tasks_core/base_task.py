@@ -1,6 +1,7 @@
 from txros import util
 import json
 
+
 class BaseTask(object):
     '''
     The base for all tasks used in mil_tasks. Lots of this class
@@ -9,6 +10,7 @@ class BaseTask(object):
     '''
     nh = None
     task_runner = None
+
     def __init__(self, parent=None):
         '''
         Called when a new instance of a task is created. Tasks
@@ -74,7 +76,6 @@ class BaseTask(object):
         if not self.has_task(name):
             raise Exception('Cannot run_subtask, \'{}\' unrecognized'.format(name))
         task = self.task_runner.tasks[name](parent=self)
-        #self.children.append(task)
         return task.run(parameters)
 
     def decode_parameters(self, parameters):

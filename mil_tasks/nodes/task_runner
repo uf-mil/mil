@@ -84,8 +84,8 @@ class TaskRunner(object):
                 result.result = text = 'task cancelled'
             else:
                 print ''
+                print self.task.name(), ' failed with the following exception:'
                 print final.getTraceback()
-                print self.task.name(), ' failed with above exception'
                 result.result = text = final.getErrorMessage()
                 final.printTraceback()
             self.server.set_aborted(result=result, text=text)

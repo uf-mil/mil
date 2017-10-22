@@ -4,6 +4,7 @@ from base_task import ExampleBaseTask
 from std_msgs.msg import String
 import genpy
 
+
 class PublishThings(ExampleBaseTask):
     publish_time = 5.0
     publish_frequency = 10
