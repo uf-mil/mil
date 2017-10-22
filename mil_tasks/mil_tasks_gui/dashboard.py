@@ -13,6 +13,10 @@ import datetime
 
 
 class ExtendedGoalManager(GoalManager):
+    '''
+    Extends actionlib's goal manager with another function allowing monitoring
+    a goal that did not originate in this node.
+    '''
     def init_observe_goal(self, action_goal, transition_cb=None, feedback_cb=None):
         csm = CommStateMachine(action_goal, transition_cb, feedback_cb,
                                self.send_goal_fn, self.cancel_fn)
@@ -22,6 +26,12 @@ class ExtendedGoalManager(GoalManager):
 
 
 class ObserveActionClient(ActionClient):
+    '''
+    Extension of actionlib's actionclient which will also
+    notice goals comming from other clients by subscribing to the goal topic.
+    Used in the GUI to monitor the current task even when it was triggered
+    by a different client.
+    '''
     g_goal_id = 0
 
     def __init__(self, ns, ActionSpec):
@@ -70,6 +80,11 @@ class ObserveActionClient(ActionClient):
 
 
 class Dashboard(Plugin):
+    '''
+    RQT plugin to interface with a mil_tasks server, allowing the user to graphicly monitor
+    the current task and result, cancel the current task, run a task with optional parameters,
+    and create a linear chain of tasks.
+    '''
     def __init__(self, context):
         super(Dashboard, self).__init__(context)
 
@@ -102,15 +117,28 @@ class Dashboard(Plugin):
         context.add_widget(self._widget)
 
     def ui_log(self, string):
+        '''
+        Adds a new line to the log pane with the current time and specified string.
+
+        ex: ui_log('Hello world')
+        12:25       Hello world
+        '''
         date_time = datetime.datetime.fromtimestamp(rospy.Time.now().to_time())
         time_str = '{}:{}:{}'.format(date_time.hour, date_time.minute, date_time.second).ljust(12, ' ')
         formatted = time_str + string
         self.feedback_list.insertItem(0, formatted)
 
     def feedback_cb(self, goal, handler, feedback):
+        '''
+        Add feedback from tasks to the log
+        '''
         self.ui_log('FEEDBACK: ' + feedback.message)
 
     def transition_cb(self, goal, handler):
+        '''
+        When a task "transitions" (canceled, started, aborted, succeded), update
+        the log and result pane
+        '''
         status = handler.get_goal_status()
         if status == GoalStatus.ACTIVE:
             if self.current_mission and goal.id != self.current_mission:
@@ -138,7 +166,11 @@ class Dashboard(Plugin):
                 self.ui_log('FINISHED: task finished ({})'.format(self.current_mission_status))
 
     def reload_available_missions(self, _):
-        if not rospy.has_param('/available_tasks'):
+        '''
+        Load available tasks from the ROS param set by the task server. Called when the refresh
+        button is hit and once on startup. Also clears the chained pane as it may now be invalid.
+        '''
+        if not rospy.has_param('/available_tasks'):  # If the param is not there, log this
             self.ui_log('ERROR: /available_tasks param not set. Perhaps task runner is not running?')
             return
         self.missions = rospy.get_param('/available_tasks')
@@ -150,13 +182,22 @@ class Dashboard(Plugin):
         return True
 
     def clear_log(self, event):
+        '''
+        Clear the log pane when the button is pressed.
+        '''
         self.feedback_list.clear()
         return True
 
     def chained_missions_drop_cb(self, event):
+        '''
+        Called when a mission is dropped from the available_missions_list to the chained_missions_table,
+        or when a mission is moved (reordered) within the chained_missions_table.
+        '''
         idx = self.chained_missions_table.indexAt(event.pos()).row()
-        if idx == -1:
+        if idx == -1:  # Handle insertion at end of table
             idx = self.chained_missions_table.rowCount()
+
+        # If drop is from itself, do a reorder
         if event.source() == self.chained_missions_table:
             # Now swap the two rows
             selected_index = self.chained_missions_table.selectedIndexes()[0].row()
@@ -170,6 +211,8 @@ class Dashboard(Plugin):
                     idx, i,
                     self.chained_missions_table.cellWidget(selected_index, i))
             self.chained_missions_table.removeRow(selected_index)
+
+        # If drop is from available list, insert it at the dropped row
         elif event.source() == self.available_missions_list:
             selected_item = self.available_missions_list.selectedItems()[0]
             mission = QtWidgets.QLabel(selected_item.text())
@@ -186,16 +229,23 @@ class Dashboard(Plugin):
             # self.chained_missions_table.setCellWidget(idx, 2, required)
             # self.chained_missions_table.setCellWidget(idx, 3, parameters)
             self.chained_missions_table.setCellWidget(idx, 2, parameters)
-        else:
-            print 'hmmmmmm table', event.source(), self.chained_missions_table
 
     def available_missions_drop_cb(self, event):
+        '''
+        Handles drag and drops from the chained task table to the available tasks pane,
+        which should just delete it from the table.
+        '''
         if event.source() == self.chained_missions_table:  # If dragged from table, delete from table
             selected_index = self.chained_missions_table.selectedIndexes()[0].row()
             self.chained_missions_table.removeRow(selected_index)
 
     def run_chained_cb(self, event):
-        # TODO: deal with possibility of table being changed in this loop, perhaps by freezing it
+        '''
+        When the run chained button is pressed, parse the table contents as the parameters
+        to the ChainedWithTimeouts task and send this goal to the tasks server.
+
+        TODO: deal with possibility of table being changed in this loop, perhaps by freezing it
+        '''
         tasks = []
         for i in range(self.chained_missions_table.rowCount()):
             task = self.chained_missions_table.cellWidget(i, 0).text()
@@ -212,6 +262,10 @@ class Dashboard(Plugin):
         return True
 
     def run_single_cb(self, event):
+        '''
+        When the run task button is pressed, run the selected task in the available task pane
+        with the parameters in the textbox.
+        '''
         selected = self.available_missions_list.selectedItems()
         if len(selected) == 0:
             self.ui_log('ERROR: tried to run single mission with none selected')
@@ -226,6 +280,9 @@ class Dashboard(Plugin):
         return True
 
     def cancel_mission_cb(self, event):
+        '''
+        When the cancel button is pressed, send a goal to the task server to cancel the current task.
+        '''
         self.task_runner_client.cancel_all_goals()
         return True
 

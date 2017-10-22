@@ -6,11 +6,15 @@ from mil_tasks_core import TaskClient
 
 
 class TaskClientCli(object):
+    '''
+    Node to send and monitor a new task, cancel a task, or cancel the current
+    tasks. Verbosely prints current state and fedback to the terminal.
+    '''
     def __init__(self):
         self.client = TaskClient()
         connected = self.client.wait_for_server(rospy.Duration(0.25))
         if not connected:  # If it didn't connect quickly, print and wait forever
-            print 'Waiting on action server at ', self.NS
+            print 'Waiting on action server at ', self.client.NS
             self.client.wait_for_server()
 
     @classmethod
