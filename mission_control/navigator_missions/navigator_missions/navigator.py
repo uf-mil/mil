@@ -260,13 +260,19 @@ class Navigator(BaseTask):
                 fprint("" + err, title="NAVIGATOR", msg_color='red')
 
     @classmethod
+    def kill_alarm_cb(cls, _, alarm):
+        self.killed = alarm.raised
+        self.kill_alarm = alarm
+
+    @classmethod
     @util.cancellableInlineCallbacks
     def _make_alarms(cls):
-        cls.odom_loss_listener = yield TxAlarmListener.init(cls.nh, 'odom-kill', lambda alarm: setattr(cls, 'odom_loss', alarm.raised))
-        cls.kill_listener = yield TxAlarmListener.init(cls.nh, 'kill',lambda alarm: setattr(cls, 'killed', alarm.raised))
+        cls.odom_loss_listener = yield TxAlarmListener.init(cls.nh, 'odom-kill', lambda _, alarm: setattr(cls, 'odom_loss', alarm.raised))
+        cls.kill_listener = yield TxAlarmListener.init(cls.nh, 'kill', cls.kill_alarm_cb)
         fprint("Alarm listener created, listening to alarms: ", title="NAVIGATOR")
 
-        cls.killed = yield cls.kill_listener.is_raised()
+        cls.kill_alarm = yield cls.kill_listener.get_alarm()
+        cls.killed = cls.kill_alarm.raised
         cls.odom_loss = yield cls.odom_loss_listener.is_raised()
         fprint("\tkill :", newline=False)
         fprint(cls.killed)
