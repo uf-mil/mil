@@ -149,7 +149,7 @@ class Dashboard(Plugin):
             return
         self.missions = rospy.get_param('/available_tasks')
         self.available_missions_list.clear()
-        for i in range(self.chained_missions_table.rowCount()):
+        for i in reversed(range(self.chained_missions_table.rowCount())):
             self.chained_missions_table.removeRow(i)
         for i, mission in enumerate(self.missions):
            self.available_missions_list.insertItem(i, mission)
