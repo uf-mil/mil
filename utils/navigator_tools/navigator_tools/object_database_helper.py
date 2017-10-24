@@ -163,7 +163,7 @@ class DBHelper(object):
         if len(pobjs) == 0:
             raise MissingPerceptionObject("All")
 
-        min_dist = sys.maxint
+        min_dist = sys.maxsize
         min_obj = None
         for o in pobjs:
             dist = yield self._dist(o)
@@ -200,7 +200,7 @@ class DBHelper(object):
             req.name = "all"
             resp = yield self._database(req)
             closest_potential_object = None
-            min_dist = sys.maxint
+            min_dist = sys.maxsize
             actual_objects = []
             for o in resp.objects:
                 distance = yield self._dist(o)
@@ -213,11 +213,11 @@ class DBHelper(object):
             # print closest_potential_object.name
             # sys.exit()
 
-            if len(actual_objects) == 0 and min_dist == sys.maxint:
+            if len(actual_objects) == 0 and min_dist == sys.maxsize:
                 raise MissingPerceptionObject(object_name)
 
             if len(actual_objects) > 1:
-                min_dist = sys.maxint
+                min_dist = sys.maxsize
                 min_obj = None
                 for o in actual_objects:
                     dist = yield self._dist(o)

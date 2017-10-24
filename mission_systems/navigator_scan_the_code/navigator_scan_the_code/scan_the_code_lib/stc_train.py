@@ -6,6 +6,7 @@ from navigator_tools import BagCrawler
 from cv_bridge import CvBridge
 from SVM_classifier import SVMClassifier
 
+
 class Config():
 
     def __init__(self):

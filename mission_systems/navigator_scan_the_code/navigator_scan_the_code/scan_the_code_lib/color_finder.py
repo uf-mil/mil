@@ -26,7 +26,7 @@ class ColorFinder:
     def _get_closest_color(self, hue_angle):
         """
         Returns a pair of the most likely color and the radian error associated with that prediction
-            `hue_angle` := The radian value associated with hue [0, 2*pi] 
+            `hue_angle` := The radian value associated with hue [0, 2*pi]
         Colors are found from `self.color_map`
         """
         c = np.cos(hue_angle)
@@ -100,7 +100,8 @@ class ColorFinder:
         else:
             color = 'g'
 
-        cv2.putText(draw, "{} | {} | {} | {}".format(color, np.round(a), np.round(b), np.round(c)), (20, 20), 1, 2, (255, 0, 0))
+        cv2.putText(draw, "{} | {} | {} | {}".format(color, np.round(
+            a), np.round(b), np.round(c)), (20, 20), 1, 2, (255, 0, 0))
         debug.add_image(draw, "colors", topic="colors")
         return color
 

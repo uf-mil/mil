@@ -7,6 +7,7 @@ from visualization_msgs.msg import Marker, MarkerArray
 from ros_alarms import AlarmListener
 import numpy as np
 
+
 class RvizStrings(object):
     ID = 1337
     NS = "boat_info"
@@ -19,7 +20,7 @@ class RvizStrings(object):
         self.wrench = None
         self.markers_pub = rospy.Publisher('/boat_info', Marker, queue_size=10)
         rospy.Subscriber("/wrench/selected", String, self.wrench_current_cb)
-        rospy.Subscriber("/battery_monitor",Float32, self.battery_monitor_cb)
+        rospy.Subscriber("/battery_monitor", Float32, self.battery_monitor_cb)
         self.kill_listener = AlarmListener('kill', callback_funct=self.kill_alarm_cb)
         self.station_hold_listner = AlarmListener('station-hold', callback_funct=self.station_alarm_cb)
 
@@ -28,7 +29,7 @@ class RvizStrings(object):
         marker.scale.x = 1
         marker.scale.y = 1
         marker.scale.z = 1
-        marker.action = Marker.ADD;
+        marker.action = Marker.ADD
         marker.header.frame_id = "base_link"
         marker.header.stamp = rospy.Time()
         marker.type = Marker.TEXT_VIEW_FACING
@@ -37,9 +38,9 @@ class RvizStrings(object):
         marker.id = self.ID
         marker.color.a = 1
         marker.color.b = 1
-        if not self.voltage == None:
+        if not self.voltage is None:
             marker.text += "Voltage {}".format(self.voltage)
-        if not self.wrench == None:
+        if not self.wrench is None:
             marker.text += "\nWrench {}".format(self.wrench)
         if self.station_holding:
             marker.text += "\nStation Holding"
@@ -55,12 +56,12 @@ class RvizStrings(object):
         self.kill_alarm = alarm.raised
         self.update()
 
-    def wrench_current_cb(self,string):
+    def wrench_current_cb(self, string):
         self.wrench = string.data
         self.update()
 
-    def battery_monitor_cb(self,voltage):
-        self.voltage = np.round(voltage.data,2)
+    def battery_monitor_cb(self, voltage):
+        self.voltage = np.round(voltage.data, 2)
         self.update()
 
 

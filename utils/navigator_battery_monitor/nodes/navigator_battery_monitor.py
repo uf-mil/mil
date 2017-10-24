@@ -71,6 +71,7 @@ class BatteryMonitor():
 
         self.pub_voltage.publish(self.voltage)
 
+
 if __name__ == "__main__":
     monitor = BatteryMonitor()
     rospy.Timer(rospy.Duration(1), monitor.publish_voltage, oneshot=False)

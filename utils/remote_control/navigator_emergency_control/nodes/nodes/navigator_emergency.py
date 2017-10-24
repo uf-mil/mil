@@ -65,7 +65,7 @@ class Joystick(object):
             self.last_joy = joy
 
     def joy_recieved(self, joy):
-	self.last_time = rospy.Time.now()
+        self.last_time = rospy.Time.now()
         self.check_for_timeout(joy)
 
         # Assigns readable names to the buttons that are used
@@ -121,16 +121,17 @@ class Joystick(object):
 
     def die_check(self, event):
         '''
-        Publishes zeros after 2 seconds of no update 
-	in case node navigator_emergency_xbee dies
+        Publishes zeros after 2 seconds of no update
+        in case node navigator_emergency_xbee dies
         '''
         if self.active:
 
-	    # No new instructions after 2 seconds
-	    if rospy.Time.now() - self.last_time > rospy.Duration(2):
+            # No new instructions after 2 seconds
+            if rospy.Time.now() - self.last_time > rospy.Duration(2):
 
-	        # Zero the wrench, reset
+                # Zero the wrench, reset
                 self.reset()
+
 
 if __name__ == "__main__":
     emergency = Joystick()

@@ -9,7 +9,8 @@ import numpy.linalg as npl
 from params import *
 import lqrrt
 
-################################################# DYNAMICS
+# DYNAMICS
+
 
 def dynamics(x, u, dt):
     """
@@ -18,10 +19,10 @@ def dynamics(x, u, dt):
     """
     # Rotation matrix (orientation, converts body to world)
     R = np.array([
-                  [np.cos(x[2]), -np.sin(x[2]), 0],
-                  [np.sin(x[2]),  np.cos(x[2]), 0],
-                  [           0,             0, 1]
-                ])
+        [np.cos(x[2]), -np.sin(x[2]), 0],
+        [np.sin(x[2]), np.cos(x[2]), 0],
+        [0, 0, 1]
+    ])
 
     # Construct drag coefficients based on our motion signs
     D = np.copy(D_neg)
@@ -36,18 +37,20 @@ def dynamics(x, u, dt):
         u = B.dot(np.min(ratios) * thrusts)
 
     # M*vdot + D*v = u  and  pdot = R*v
-    xdot = np.concatenate((R.dot(x[3:]), invM*(u - D*x[3:])))
+    xdot = np.concatenate((R.dot(x[3:]), invM * (u - D * x[3:])))
 
     # First-order integrate
-    xnext = x + xdot*dt
+    xnext = x + xdot * dt
 
     return xnext
 
-################################################# POLICY
+# POLICY
+
 
 kp = np.diag([150, 150, 2000])
 kd = np.diag([120, 120, 0.01])
 S = np.diag([1, 1, 1, 1, 1, 1])
+
 
 def lqr(x, u):
     """
@@ -55,17 +58,19 @@ def lqr(x, u):
 
     """
     R = np.array([
-                  [np.cos(x[2]), -np.sin(x[2]), 0],
-                  [np.sin(x[2]),  np.cos(x[2]), 0],
-                  [           0,             0, 1]
-                ])
+        [np.cos(x[2]), -np.sin(x[2]), 0],
+        [np.sin(x[2]), np.cos(x[2]), 0],
+        [0, 0, 1]
+    ])
     K = np.hstack((kp.dot(R.T), kd))
     return (S, K)
 
-################################################# HEURISTICS
+# HEURISTICS
+
 
 goal_buffer = [free_radius, free_radius, np.inf, np.inf, np.inf, np.inf]
 error_tol = np.copy(goal_buffer)
+
 
 def gen_ss(seed, goal, buff=40):
     """
@@ -79,7 +84,8 @@ def gen_ss(seed, goal, buff=40):
             (-abs(velmax_neg[1]), velmax_pos[1]),
             (-abs(velmax_neg[2]), velmax_pos[2])]
 
-################################################# MAIN ATTRIBUTES
+# MAIN ATTRIBUTES
+
 
 constraints = lqrrt.Constraints(nstates=nstates, ncontrols=ncontrols,
                                 goal_buffer=goal_buffer, is_feasible=unset)

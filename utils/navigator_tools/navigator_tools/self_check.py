@@ -84,7 +84,7 @@ def main():
                 FancyPrint.okay(
                     "[ PASS ] Response found from {}".format(fancy_name))
 
-        except:
+        except BaseException:
             FancyPrint.error("[ FAIL ] No response from {}".format(fancy_name))
 
 

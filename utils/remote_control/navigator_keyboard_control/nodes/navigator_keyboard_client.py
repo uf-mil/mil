@@ -149,6 +149,7 @@ def main(stdscr):
     rospy.Timer(rospy.Duration(0.05), tele.send_key, oneshot=False)
     rospy.spin()
 
+
 if __name__ == "__main__":
     try:
         curses.wrapper(main)

@@ -16,15 +16,17 @@ from nav_msgs.msg import OccupancyGrid, Odometry
 from std_srvs.srv import Trigger
 
 
-fprint = lambda *args, **kwargs: _fprint(time='', title='SIM',*args, **kwargs)
+fprint = lambda *args, **kwargs: _fprint(time='', title='SIM', *args, **kwargs)
+
 
 class DoOdom(object):
     """Republish odom  for lqrrt"""
+
     def __init__(self, rand_size):
         self.odom_pub = rospy.Publisher("/odom", Odometry, queue_size=2)
         self.odom = None
         self.carrot_sub = rospy.Subscriber("/lqrrt/ref", Odometry, self.set_odom)
-        
+
         fprint("Shaking hands and taking names.")
         rospy.sleep(1)
 
@@ -39,7 +41,7 @@ class DoOdom(object):
         self.odom_pub.publish(start_odom)
 
     def set_odom(self, msg):
-        self.odom = mil_tools.pose_to_numpy(msg.pose.pose) 
+        self.odom = mil_tools.pose_to_numpy(msg.pose.pose)
         self.odom_pub.publish(msg)
 
 
@@ -47,19 +49,19 @@ class Sim(object):
     def __init__(self, bf_size=60, min_t_spacing=9, num_of_buoys=20):
         self.ogrid_pub = rospy.Publisher('/ogrid', OccupancyGrid, queue_size=2)
         self.odom = DoOdom(bf_size)
-        
+
         self.bf_size = bf_size
         self.min_t_spacing = min_t_spacing
         self.num_of_buoys = num_of_buoys
-       
+
         # Some ogrid defs
         self.grid = None
         self.resolution = 0.3
-        self.height = bf_size * 3 
+        self.height = bf_size * 3
         self.width = bf_size * 3
         self.origin = mil_tools.numpy_quat_pair_to_pose([-bf_size, -bf_size, 0],
-                                                              [0, 0, 0, 1])
-        
+                                                        [0, 0, 0, 1])
+
         self.publish_ogrid = lambda *args: self.ogrid_pub.publish(self.get_message())
 
         self.buoy_size = 1  # radius of buoy (m)
@@ -81,8 +83,8 @@ class Sim(object):
         # Transforms points from ENU to ogrid frame coordinates
         self.t = np.array([[1 / self.resolution, 0, -self.origin.position.x / self.resolution],
                            [0, 1 / self.resolution, -self.origin.position.y / self.resolution],
-                           [0,               0,            1]])
-        
+                           [0, 0, 1]])
+
         return lambda point: self.t.dot(np.append(point[:2], 1))[:2]
 
     def reseed(self, req):
@@ -105,12 +107,12 @@ class Sim(object):
             self.reseed(req)
 
         self.transform = self._make_ogrid_transform()
- 
+
         self.draw_buoys()
         self.draw_totems()
         self.publish_ogrid()
 
-    def position_to_object(self, position, color, id,  name="totem"):
+    def position_to_object(self, position, color, id, name="totem"):
         obj = PerceptionObject()
         obj.id = int(id)
         obj.header = mil_tools.make_header(frame="enu")
@@ -131,11 +133,11 @@ class Sim(object):
         elif req.name == "totem":
             objects = [self.position_to_object(p, c, i) for p, c, i in zip(self.totem_positions, self.colors, self.ids)]
         elif req.name == "BuoyField":
-            objects = [self.position_to_object([self.bf_size / 2, self.bf_size / 2, 0 ], [0, 0, 0], 0, "BuoyField")]
+            objects = [self.position_to_object([self.bf_size / 2, self.bf_size / 2, 0], [0, 0, 0], 0, "BuoyField")]
         else:
             return {'found': False}
 
-        return {'objects': objects, 'found':True}
+        return {'objects': objects, 'found': True}
 
     def get_message(self):
         if self.grid is None:

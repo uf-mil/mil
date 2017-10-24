@@ -60,9 +60,9 @@ class ScanTheCodePerception(object):
         self.camera_model.fromCameraInfo(info)
 
     def _get_top_left_point(self, points_3d):
-        xmin = sys.maxint
-        zmin = -sys.maxint
-        ymin = sys.maxint
+        xmin = sys.maxsize
+        zmin = -sys.maxsize
+        ymin = sys.maxsize
         for i, point in enumerate(points_3d):
             if point[1] < ymin:
                 xmin = point[0]
@@ -95,7 +95,7 @@ class ScanTheCodePerception(object):
             idx = 1
         if axis == 'z':
             idx = 2
-        min_val, max_val = sys.maxint, -sys.maxint
+        min_val, max_val = sys.maxsize, -sys.maxsize
         points_3d = np.array(points_3d)
         my_points = points_3d[:, idx]
         mean = np.mean(my_points)

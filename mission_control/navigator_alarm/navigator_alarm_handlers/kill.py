@@ -5,6 +5,7 @@ from actionlib import SimpleActionClient, TerminalState
 from mil_msgs.msg import BagOnlineAction, BagOnlineGoal
 import os
 
+
 class Kill(HandlerBase):
     alarm_name = 'kill'
 
@@ -33,7 +34,6 @@ class Kill(HandlerBase):
         goal = BagOnlineGoal(bag_name='kill.bag')
         goal.topics = os.environ['BAG_ALWAYS'] + ' ' + os.environ['bag_kill']
         self.bag_client.send_goal(goal, done_cb=self._online_bagger_cb)
-
 
     def cleared(self, alarm):
         self._killed = False

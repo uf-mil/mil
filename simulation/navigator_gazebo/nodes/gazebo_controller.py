@@ -23,7 +23,7 @@ class GazeboInterface(object):
         self.last_odom = None
         self.position_offset = None
 
-        self.state_sub_max_prd = rospy.Duration(1/100)  # s
+        self.state_sub_max_prd = rospy.Duration(1 / 100)  # s
         self.last_state_sub_time = rospy.Time.now()
         self.state_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self.state_cb)
         self.state_pub = rospy.Publisher('model_odom', Odometry, queue_size=1)
@@ -32,7 +32,7 @@ class GazeboInterface(object):
         self.last_odom = None
         self.last_absodom = None
 
-        rospy.Timer(rospy.Duration(1/100), self.publish_odom)
+        rospy.Timer(rospy.Duration(1 / 100), self.publish_odom)
 
     def publish_odom(self, *args):
         if self.last_odom is not None:
@@ -85,7 +85,6 @@ class GazeboInterface(object):
                     twist=twist
                 )
             )
-
 
 
 if __name__ == '__main__':

@@ -70,6 +70,7 @@ def main():
     cl = depicklify(class_file)
     oc = yield ObjectClassifier(nh, cl, config).init_()
 
+
 if __name__ == "__main__":
     reactor.callWhenRunning(main)
     reactor.run()

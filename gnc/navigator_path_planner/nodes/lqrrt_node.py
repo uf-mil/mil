@@ -19,7 +19,7 @@ import tf.transformations as trns
 
 from nav_msgs.msg import Odometry, OccupancyGrid
 from geometry_msgs.msg import Point32, PointStamped, Pose, PoseArray, \
-                              PoseStamped, WrenchStamped, PolygonStamped
+    PoseStamped, WrenchStamped, PolygonStamped
 
 from navigator_path_planner import params, car, boat, escape
 from navigator_path_planner.msg import MoveAction, MoveFeedback, MoveResult
@@ -33,7 +33,8 @@ if int(scipy.__version__.split('.')[1]) < 16:
 else:
     interp1d = scipy.interpolate.interp1d
 
-################################################# INITIALIZATIONS
+# INITIALIZATIONS
+
 
 class LQRRT_Node(object):
 
@@ -55,7 +56,7 @@ class LQRRT_Node(object):
         # Lil helpers
         self.rostime = lambda: rospy.Time.now().to_sec()
         self.intup = lambda arr: tuple(np.array(arr, dtype=np.int64))
-        self.get_hood = lambda img, row, col: img[row-1:row+2, col-1:col+2]
+        self.get_hood = lambda img, row, col: img[row - 1:row + 2, col - 1:col + 2]
 
         # Set-up planners
         self.behaviors_list = [car, boat, escape]
@@ -83,14 +84,14 @@ class LQRRT_Node(object):
         self.guide_pub = rospy.Publisher(guide_topic, PointStamped, queue_size=3)
 
         # Actions
-        self.move_server = actionlib.SimpleActionServer(move_topic, MoveAction, execute_cb=self.move_cb, auto_start=False)
+        self.move_server = actionlib.SimpleActionServer(
+            move_topic, MoveAction, execute_cb=self.move_cb, auto_start=False)
         self.move_server.start()
         rospy.sleep(1)
 
         # Timers
         rospy.Timer(rospy.Duration(self.revisit_period), self.publish_ref)
         rospy.Timer(rospy.Duration(self.revisit_period), self.action_check)
-
 
     def reset(self):
         """
@@ -138,7 +139,7 @@ class LQRRT_Node(object):
         for behavior in self.behaviors_list:
             behavior.planner.unkill()
 
-################################################# ACTION
+# ACTION
 
     def move_cb(self, msg):
         """
@@ -148,7 +149,7 @@ class LQRRT_Node(object):
         # Start clean
         self.done = False
         self.reset()
-        print("="*50)
+        print("=" * 50)
 
         # Make sure odom is publishing (well, at least once)
         if self.state is None:
@@ -274,12 +275,12 @@ class LQRRT_Node(object):
                                            x=self.state,
                                            N=abs(boat.focus[2]),
                                            direc=np.sign(boat.focus[2]),
-                                           mpr=msg.goal.position.z/(2*np.pi))
+                                           mpr=msg.goal.position.z / (2 * np.pi))
             x_seq_spr, T_spr, spr_success = spr_results
             if len(x_seq_spr) and spr_success:
                 self.x_seq = x_seq_spr
                 self.set_goal(x_seq_spr[-1][:])
-                self.get_ref = interp1d(np.arange(len(x_seq_spr))*self.dt, np.array(x_seq_spr), axis=0,
+                self.get_ref = interp1d(np.arange(len(x_seq_spr)) * self.dt, np.array(x_seq_spr), axis=0,
                                         assume_sorted=True, bounds_error=False, fill_value=x_seq_spr[-1][:])
                 self.last_update_time = self.rostime()
                 self.next_runtime = T_spr
@@ -299,7 +300,8 @@ class LQRRT_Node(object):
             h_goal = np.arctan2(p_err[1], p_err[0])
 
             # If we aren't within a cone of that heading and the goal is far away, construct rotation
-            if abs(self.angle_diff(h_goal, self.state[2])) > params.pointshoot_tol and npl.norm(p_err) > params.free_radius and self.move_type != 'drive!':
+            if abs(self.angle_diff(h_goal, self.state[2])) > params.pointshoot_tol and npl.norm(
+                    p_err) > params.free_radius and self.move_type != 'drive!':
                 x_seq_rot, T_rot, rot_success, u_seq_rot = self.rotation_move(self.state, h_goal, params.pointshoot_tol)
                 print("\nRotating towards goal (duration: {})".format(np.round(T_rot, 2)))
                 if not rot_success:
@@ -308,11 +310,11 @@ class LQRRT_Node(object):
                 # Begin interpolating rotation move
                 self.last_update_time = self.rostime()
                 if len(x_seq_rot):
-                    self.get_ref = interp1d(np.arange(len(x_seq_rot))*self.dt, np.array(x_seq_rot), axis=0,
+                    self.get_ref = interp1d(np.arange(len(x_seq_rot)) * self.dt, np.array(x_seq_rot), axis=0,
                                             assume_sorted=True, bounds_error=False, fill_value=x_seq_rot[-1][:])
-                    self.get_eff = interp1d(np.arange(len(u_seq_rot))*self.dt, np.array(u_seq_rot), axis=0,
+                    self.get_eff = interp1d(np.arange(len(u_seq_rot)) * self.dt, np.array(u_seq_rot), axis=0,
                                             assume_sorted=True, bounds_error=False, fill_value=u_seq_rot[-1][:])
-                    self.next_runtime = np.clip(T_rot, params.basic_duration, 2*np.pi/params.velmax_pos[2])
+                    self.next_runtime = np.clip(T_rot, params.basic_duration, 2 * np.pi / params.velmax_pos[2])
                     self.next_seed = np.copy(x_seq_rot[-1])
                 else:
                     self.next_runtime = params.basic_duration
@@ -384,7 +386,7 @@ class LQRRT_Node(object):
                 self.done = True
                 return False
 
-################################################# WHERE IT HAPPENS
+# WHERE IT HAPPENS
 
     def tree_chain(self):
         """
@@ -411,7 +413,7 @@ class LQRRT_Node(object):
             self.goal_bias, self.sample_space, self.guide, self.pruning = self.select_exploration()
 
         # Distant issue
-        elif self.time_till_issue > 2*params.basic_duration:
+        elif self.time_till_issue > 2 * params.basic_duration:
             self.next_runtime = params.basic_duration
             self.next_seed = self.get_ref(self.next_runtime + self.rostime() - self.last_update_time)
             self.behavior = self.select_behavior()
@@ -499,7 +501,7 @@ class LQRRT_Node(object):
 
         return clean_update
 
-################################################# DECISIONS
+# DECISIONS
 
     def select_behavior(self):
         """
@@ -528,7 +530,6 @@ class LQRRT_Node(object):
         # (debug)
         raise ValueError("Indeterminant behavior configuration.")
 
-
     def select_exploration(self):
         """
         Chooses the goal bias, sample space, guide point, and pruning
@@ -541,8 +542,8 @@ class LQRRT_Node(object):
                 gs = np.copy(self.goal)
                 vec = self.goal[:2] - self.next_seed[:2]
                 dist = npl.norm(vec)
-                if dist < 2*params.free_radius:
-                    gs[:2] = vec + 2*params.free_radius*(vec/dist)
+                if dist < 2 * params.free_radius:
+                    gs[:2] = vec + 2 * params.free_radius * (vec / dist)
             else:
                 gs = np.copy(self.guide)
             return(0, escape.gen_ss(self.next_seed, self.goal), gs, True)
@@ -551,11 +552,11 @@ class LQRRT_Node(object):
         if self.ogrid is not None and not self.blind and self.next_seed is not None:
 
             # Get opencv-ready image from current ogrid (255 is occupied, 0 is clear)
-            occ_img = 255*np.greater(self.ogrid, self.ogrid_threshold).astype(np.uint8)
+            occ_img = 255 * np.greater(self.ogrid, self.ogrid_threshold).astype(np.uint8)
 
             # Dilate the image
-            boat_pix = int(self.ogrid_cpm*params.boat_width)
-            boat_pix += boat_pix%2
+            boat_pix = int(self.ogrid_cpm * params.boat_width)
+            boat_pix += boat_pix % 2
             occ_img_dial = cv2.dilate(occ_img, np.ones((boat_pix, boat_pix), np.uint8))
 
             # Construct the initial sample space and get bounds in pixel coordinates
@@ -613,7 +614,8 @@ class LQRRT_Node(object):
                 push_ymax = False
 
                 # Buffered boundary imensions
-                row_min = 1; col_min = 1
+                row_min = 1
+                col_min = 1
                 row_max = ss_img.shape[0] - 2
                 col_max = ss_img.shape[1] - 2
 
@@ -651,8 +653,8 @@ class LQRRT_Node(object):
                         npush += 1
 
                     # Get image cropped to sample space and offset points of interest
-                    offset_x = (pmin[0]-push[0], pmax[0]+push[1])
-                    offset_y = (pmin[1]-push[2], pmax[1]+push[3])
+                    offset_x = (pmin[0] - push[0], pmax[0] + push[1])
+                    offset_y = (pmin[1] - push[2], pmax[1] + push[3])
                     ss_img = np.copy(occ_img_dial[offset_y[0]:offset_y[1], offset_x[0]:offset_x[1]])
                     if np.any(np.equal(ss_img.shape, 0)):
                         print("\nOccupancy grid analysis failed... Please report this!")
@@ -660,9 +662,11 @@ class LQRRT_Node(object):
                     ss_goal = self.intup(np.subtract(goal, [offset_x[0], offset_y[0]]))
                     ss_seed = self.intup(np.subtract(seed, [offset_x[0], offset_y[0]]))
                     test_flood = np.copy(ss_img)
-                    cv2.floodFill(test_flood, np.zeros((test_flood.shape[0]+2, test_flood.shape[1]+2), np.uint8), ss_goal, 69)
+                    cv2.floodFill(test_flood, np.zeros(
+                        (test_flood.shape[0] + 2, test_flood.shape[1] + 2), np.uint8), ss_goal, 69)
                     if test_flood[ss_seed[1], ss_seed[0]] == 69:
-                        gs[:2] = (np.add([col, row], [last_offsets[0], last_offsets[1]]).astype(np.float64) / self.ogrid_cpm) + self.ogrid_origin
+                        gs[:2] = (np.add([col, row], [last_offsets[0], last_offsets[1]]).astype(
+                            np.float64) / self.ogrid_cpm) + self.ogrid_origin
                         found_entry = True
                         break
 
@@ -682,12 +686,12 @@ class LQRRT_Node(object):
             push = np.array(push, dtype=np.float64) / self.ogrid_cpm
             if npush > 0:
                 push += params.boat_length
-            ss = self.behavior.gen_ss(self.next_seed, self.goal, push + [params.ss_start]*4)
+            ss = self.behavior.gen_ss(self.next_seed, self.goal, push + [params.ss_start] * 4)
 
             # Select bias based on density of ogrid in sample space
             if ss_img.size:
                 free_ratio = len(np.argwhere(ss_img == 0)) / ss_img.size
-                b = np.clip(free_ratio - 0.05*npush, 0, 1)
+                b = np.clip(free_ratio - 0.05 * npush, 0, 1)
                 if b < 0.9:
                     b -= 0.2
             else:
@@ -714,7 +718,7 @@ class LQRRT_Node(object):
         # (debug)
         raise ValueError("Indeterminant behavior configuration.")
 
-################################################# VERIFICATIONS
+# VERIFICATIONS
 
     def is_feasible(self, x, u):
         """
@@ -729,7 +733,7 @@ class LQRRT_Node(object):
         # Body to world
         c, s = np.cos(x[2]), np.sin(x[2])
         R = np.array([[c, -s],
-                      [s,  c]])
+                      [s, c]])
 
         # Vehicle points in world frame
         points = x[:2] + R.dot(params.vps).T
@@ -743,7 +747,6 @@ class LQRRT_Node(object):
 
         # Greater than threshold is a hit
         return np.all(grid_values < self.ogrid_threshold)
-
 
     def reevaluate_plan(self):
         """
@@ -774,7 +777,7 @@ class LQRRT_Node(object):
                 print("...looks like I am already nearby.")
                 self.set_goal(self.state)
                 return
-            npoints = p_err_mag / (params.boat_length/2)
+            npoints = p_err_mag / (params.boat_length / 2)
             xline = np.linspace(self.goal[0], self.state[0], npoints)
             yline = np.linspace(self.goal[1], self.state[1], npoints)
             hline = [np.arctan2(p_err[1], p_err[0])] * npoints
@@ -782,7 +785,7 @@ class LQRRT_Node(object):
             found_free_goal = False
             for i, x in enumerate(sline[:-1]):
                 if self.is_feasible(x, np.zeros(3)):
-                    self.set_goal(sline[i+1])
+                    self.set_goal(sline[i + 1])
                     found_free_goal = True
                     break
             if not found_free_goal:
@@ -804,12 +807,13 @@ class LQRRT_Node(object):
             return
 
         # Check that the next reeval_time seconds in the current plan are still feasible
-        p_seq = np.copy(x_seq[iters_passed:min([len(x_seq), int(iters_passed+(params.reeval_time/self.dt)), params.reeval_limit])])
+        p_seq = np.copy(x_seq[iters_passed:min(
+            [len(x_seq), int(iters_passed + (params.reeval_time / self.dt)), params.reeval_limit])])
         if len(p_seq):
             p_seq[:, 3:] = 0
-            for i, (x, u) in enumerate(zip(p_seq, [np.zeros(3)]*len(p_seq))):
+            for i, (x, u) in enumerate(zip(p_seq, [np.zeros(3)] * len(p_seq))):
                 if not self.is_feasible(x, u):
-                    time_till_collision = i*self.dt
+                    time_till_collision = i * self.dt
                     if time_till_collision <= params.collision_threshold:
                         if not self.collided:
                             print("\nCollided! (*seppuku*)")
@@ -854,7 +858,6 @@ class LQRRT_Node(object):
         # No concerns
         self.time_till_issue = None
 
-
     def action_check(self, *args):
         """
         Manages action preempting.
@@ -882,16 +885,18 @@ class LQRRT_Node(object):
                 self.move_server.publish_feedback(MoveFeedback('boat',
                                                                0,
                                                                self.tracking,
-                                                               self.erf(self.goal, self.get_ref(self.rostime() - last_update_time))[:3],
+                                                               self.erf(self.goal, self.get_ref(
+                                                                   self.rostime() - last_update_time))[:3],
                                                                time_till_next_branch))
             elif self.enroute_behavior is not None and self.tree is not None and self.tracking is not None:
                 self.move_server.publish_feedback(MoveFeedback(self.enroute_behavior.__name__[10:],
                                                                self.tree.size,
                                                                self.tracking,
-                                                               self.erf(self.goal, self.get_ref(self.rostime() - last_update_time))[:3],
+                                                               self.erf(self.goal, self.get_ref(
+                                                                   self.rostime() - last_update_time))[:3],
                                                                time_till_next_branch))
 
-################################################# LIL MATH DOERS
+# LIL MATH DOERS
 
     def rotation_move(self, x, h, tol):
         """
@@ -903,9 +908,12 @@ class LQRRT_Node(object):
         """
         # Set-up
         x = np.array(x, dtype=np.float64)
-        xg = np.copy(x); xg[2] = h
-        x_seq = []; u_seq = []
-        T = 0; i = 0
+        xg = np.copy(x)
+        xg[2] = h
+        x_seq = []
+        u_seq = []
+        T = 0
+        i = 0
         u = np.zeros(3)
 
         # Simulate rotation move
@@ -913,8 +921,8 @@ class LQRRT_Node(object):
 
             # Stop if pose is infeasible
             if not self.is_feasible(np.concatenate((x[:3], np.zeros(3))), np.zeros(3)) and len(x_seq):
-                portion = params.FPR*len(x_seq)
-                return (x_seq[:int(portion)], T-portion*self.dt, False, u_seq[:int(portion)])
+                portion = params.FPR * len(x_seq)
+                return (x_seq[:int(portion)], T - portion * self.dt, False, u_seq[:int(portion)])
             else:
                 x_seq.append(x)
                 u_seq.append(u)
@@ -925,11 +933,10 @@ class LQRRT_Node(object):
                 return (x_seq, T, True, u_seq)
 
             # Step
-            u = 3*boat.lqr(x, u)[1].dot(e)
+            u = 3 * boat.lqr(x, u)[1].dot(e)
             x = boat.dynamics(x, u, self.dt)
             T += self.dt
             i += 1
-
 
     def spiral_move(self, x, c, N, direc, mpr):
         """
@@ -944,7 +951,9 @@ class LQRRT_Node(object):
             mpr *= -1
         x = np.array(x, dtype=np.float64)
         c = np.array(c, dtype=np.float64)
-        vt = 0; ang = 0; t = 0
+        vt = 0
+        ang = 0
+        t = 0
         x_seq = []
 
         # Radial vector
@@ -959,31 +968,31 @@ class LQRRT_Node(object):
             ht = np.arctan2(-rdir[0], rdir[1])
         h0 = self.angle_diff(x[2], ht)
         R_h0 = np.array([[np.cos(h0), -np.sin(h0)], [np.sin(h0), np.cos(h0)]])
-        vtmax = abs(R_h0.dot(self.speed_factor*params.velmax_pos[:2])[0])
+        vtmax = abs(R_h0.dot(self.speed_factor * params.velmax_pos[:2])[0])
         atmax = abs(R_h0.dot([params.Fx_max, params.Fy_max])[0] / params.m)
         magic_ratio = 0.5 / 5
 
         # Simulate spiral move
-        anglim = abs(2*np.pi*N)
+        anglim = abs(2 * np.pi * N)
         while abs(ang) < anglim and not rospy.is_shutdown():
 
             # Rotation for this instant
-            radfactor = np.clip(magic_ratio*rmag, 0, 1)
-            vt = np.clip(vt + radfactor*atmax*self.dt, 0, radfactor*vtmax)
-            w = direc*vt/np.clip(rmag, 1E-6, rmag)
-            dang = w*self.dt
+            radfactor = np.clip(magic_ratio * rmag, 0, 1)
+            vt = np.clip(vt + radfactor * atmax * self.dt, 0, radfactor * vtmax)
+            w = direc * vt / np.clip(rmag, 1E-6, rmag)
+            dang = w * self.dt
             R = np.array([[np.cos(dang), -np.sin(dang)], [np.sin(dang), np.cos(dang)]])
 
             # Update
             t += self.dt
             ang += dang
             rdir = R.dot(rdir)
-            rmag += mpr*dang
+            rmag += mpr * dang
 
             # Record
-            x[:2] = c + rmag*rdir
+            x[:2] = c + rmag * rdir
             x[2] = x[2] + dang
-            x[3:5] = R_h0.T.dot([vt, mpr*w])
+            x[3:5] = R_h0.T.dot([vt, mpr * w])
             x[5] = w
             if self.is_feasible(x, np.zeros(3)):
                 x_seq.append(np.copy(x))
@@ -991,7 +1000,6 @@ class LQRRT_Node(object):
                 return x_seq, t, False
 
         return x_seq, t, True
-
 
     def erf(self, xgoal, x):
         """
@@ -1003,7 +1011,6 @@ class LQRRT_Node(object):
         e[2] = self.angle_diff(xgoal[2], x[2])
         return e
 
-
     def angle_diff(self, agoal, a):
         """
         Takes an angle difference properly on SO2.
@@ -1013,8 +1020,7 @@ class LQRRT_Node(object):
         s = np.sin(a)
         cg = np.cos(agoal)
         sg = np.sin(agoal)
-        return np.arctan2(sg*c - cg*s, cg*c + sg*s)
-
+        return np.arctan2(sg * c - cg * s, cg * c + sg * s)
 
     def boundary_analysis(self, img, seed, goal):
         """
@@ -1027,27 +1033,29 @@ class LQRRT_Node(object):
         """
         # Set-up
         img = np.copy(img)
-        fc1 = 1; fc2 = 2
+        fc1 = 1
+        fc2 = 2
         bpts = []
 
         # If goal can flood to seed then done
         flood_goal = np.copy(img)
-        cv2.floodFill(flood_goal, np.zeros((flood_goal.shape[0]+2, flood_goal.shape[1]+2), np.uint8), goal, fc1)
+        cv2.floodFill(flood_goal, np.zeros((flood_goal.shape[0] + 2, flood_goal.shape[1] + 2), np.uint8), goal, fc1)
         if flood_goal[seed[1], seed[0]] == fc1:
             return 'connected'
-        
+
         # Filter out the dividing boundary
-        flood_goal_thresh = fc1*np.equal(flood_goal, fc1).astype(np.uint8)
+        flood_goal_thresh = fc1 * np.equal(flood_goal, fc1).astype(np.uint8)
         flood_seed = np.copy(flood_goal_thresh)
-        cv2.floodFill(flood_seed, np.zeros((flood_seed.shape[0]+2, flood_seed.shape[1]+2), np.uint8), seed, fc2)
-        flood_seed_thresh = fc2*np.equal(flood_seed, fc2).astype(np.uint8)
+        cv2.floodFill(flood_seed, np.zeros((flood_seed.shape[0] + 2, flood_seed.shape[1] + 2), np.uint8), seed, fc2)
+        flood_seed_thresh = fc2 * np.equal(flood_seed, fc2).astype(np.uint8)
 
         # Buffered boundaries and dimensions
         left = img[1:-1, 1]
         right = img[1:-1, -2]
         top = img[1, 2:-2]
         bottom = img[-2, 2:-2]
-        row_min = 1; col_min = 1
+        row_min = 1
+        col_min = 1
         row_max = img.shape[0] - 2
         col_max = img.shape[1] - 2
 
@@ -1058,10 +1066,10 @@ class LQRRT_Node(object):
         bottom_cands = np.argwhere(np.equal(bottom, 255))
 
         # Convert to original coordinates
-        left_cands = np.hstack((left_cands+1, col_min*np.ones_like(left_cands)))
-        right_cands = np.hstack((right_cands+1, col_max*np.ones_like(right_cands)))
-        top_cands = np.hstack((row_min*np.ones_like(top_cands), top_cands+2))
-        bottom_cands = np.hstack((row_max*np.ones_like(bottom_cands), bottom_cands+2))
+        left_cands = np.hstack((left_cands + 1, col_min * np.ones_like(left_cands)))
+        right_cands = np.hstack((right_cands + 1, col_max * np.ones_like(right_cands)))
+        top_cands = np.hstack((row_min * np.ones_like(top_cands), top_cands + 2))
+        bottom_cands = np.hstack((row_max * np.ones_like(bottom_cands), bottom_cands + 2))
         cands = np.vstack((left_cands, right_cands, top_cands, bottom_cands))
 
         # Iterate through candidates and store the dividing boundary points
@@ -1077,7 +1085,7 @@ class LQRRT_Node(object):
         else:
             return bpts
 
-################################################# PUBDUBS
+# PUBDUBS
 
     def set_goal(self, x):
         """
@@ -1089,7 +1097,6 @@ class LQRRT_Node(object):
         for behavior in self.behaviors_list:
             behavior.planner.set_goal(self.goal)
         self.goal_pub.publish(self.pack_posestamped(np.copy(self.goal), rospy.Time.now()))
-
 
     def publish_ref(self, *args):
         """
@@ -1113,7 +1120,6 @@ class LQRRT_Node(object):
         if self.get_eff is not None:
             self.eff_pub.publish(self.pack_wrenchstamped(self.get_eff(T), stamp))
 
-
     def publish_path(self):
         """
         Publishes all tree-node poses along the current path as a PoseArray.
@@ -1132,7 +1138,6 @@ class LQRRT_Node(object):
             msg = PoseArray(poses=pose_list)
             msg.header.frame_id = self.world_frame_id
             self.path_pub.publish(msg)
-
 
     def publish_tree(self):
         """
@@ -1153,7 +1158,6 @@ class LQRRT_Node(object):
             msg = PoseArray(poses=pose_list)
             msg.header.frame_id = self.world_frame_id
             self.tree_pub.publish(msg)
-
 
     def publish_expl(self):
         """
@@ -1176,7 +1180,7 @@ class LQRRT_Node(object):
         self.sampspace_pub.publish(ss_msg)
         self.guide_pub.publish(self.pack_pointstamped(self.guide[:2], rospy.Time.now()))
 
-################################################# SUBSCRUBS
+# SUBSCRUBS
 
     def ogrid_cb(self, msg):
         """
@@ -1191,12 +1195,11 @@ class LQRRT_Node(object):
         self.ogrid_cpm = 1 / msg.info.resolution
         try:
             self.reevaluate_plan()
-        except:
+        except BaseException:
             print("\n(WARNING: something went wrong in reevaluate_plan)\n")
         elapsed = abs(self.rostime() - start)
         if elapsed > 1:
             print("\n(WARNING: ogrid callback is taking {} seconds)\n".format(np.round(elapsed, 2)))
-
 
     def odom_cb(self, msg):
         """
@@ -1211,12 +1214,13 @@ class LQRRT_Node(object):
         self.state = self.unpack_odom(msg)
         last_update_time = self.last_update_time
         if self.get_ref is not None and last_update_time is not None:
-            if np.all(np.abs(self.erf(self.get_ref(self.rostime() - last_update_time), self.state)) < 2*np.array(params.real_tol)):
+            if np.all(np.abs(self.erf(self.get_ref(self.rostime() - last_update_time), self.state))
+                      < 2 * np.array(params.real_tol)):
                 self.tracking = True
             else:
                 self.tracking = False
 
-################################################# CONVERTERS
+# CONVERTERS
 
     def unpack_pose(self, msg):
         """
@@ -1226,16 +1230,15 @@ class LQRRT_Node(object):
         q = [msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]
         return np.array([msg.position.x, msg.position.y, trns.euler_from_quaternion(q)[2], 0, 0, 0])
 
-
     def unpack_odom(self, msg):
         """
         Converts an Odometry message into a state vector.
 
         """
-        q = [msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
+        q = [msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
+             msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
         return np.array([msg.pose.pose.position.x, msg.pose.pose.position.y, trns.euler_from_quaternion(q)[2],
                          msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.angular.z])
-
 
     def pack_pose(self, state):
         """
@@ -1244,9 +1247,9 @@ class LQRRT_Node(object):
         """
         msg = Pose()
         msg.position.x, msg.position.y = state[:2]
-        msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w = trns.quaternion_from_euler(0, 0, state[2])
+        msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w = trns.quaternion_from_euler(
+            0, 0, state[2])
         return msg
-
 
     def pack_posestamped(self, state, stamp):
         """
@@ -1258,9 +1261,9 @@ class LQRRT_Node(object):
         msg.header.stamp = stamp
         msg.header.frame_id = self.world_frame_id
         msg.pose.position.x, msg.pose.position.y = state[:2]
-        msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w = trns.quaternion_from_euler(0, 0, state[2])
+        msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w = trns.quaternion_from_euler(
+            0, 0, state[2])
         return msg
-
 
     def pack_odom(self, state, stamp):
         """
@@ -1273,11 +1276,11 @@ class LQRRT_Node(object):
         msg.header.frame_id = self.world_frame_id
         msg.child_frame_id = self.body_frame_id
         msg.pose.pose.position.x, msg.pose.pose.position.y = state[:2]
-        msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w = trns.quaternion_from_euler(0, 0, state[2])
+        msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w = trns.quaternion_from_euler(
+            0, 0, state[2])
         msg.twist.twist.linear.x, msg.twist.twist.linear.y = state[3:5]
         msg.twist.twist.angular.z = state[5]
         return msg
-
 
     def pack_pointstamped(self, point, stamp):
         """
@@ -1292,7 +1295,6 @@ class LQRRT_Node(object):
         msg.point.z = 0
         return msg
 
-
     def pack_wrenchstamped(self, effort, stamp):
         """
         Converts an effort vector into a WrenchStamped message
@@ -1306,7 +1308,8 @@ class LQRRT_Node(object):
         msg.wrench.torque.z = effort[2]
         return msg
 
-################################################# NODE
+# NODE
+
 
 if __name__ == "__main__":
     rospy.init_node("lqrrt_node")

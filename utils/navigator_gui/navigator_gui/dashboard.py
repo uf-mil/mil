@@ -29,6 +29,7 @@ lock = threading.Lock()
 class Dashboard(Plugin):
 
     UPDATE_MILLISECONDS = 100
+
     def __init__(self, context):
         super(Dashboard, self).__init__(context)
 

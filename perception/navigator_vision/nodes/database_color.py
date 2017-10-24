@@ -25,8 +25,12 @@ from mil_misc_tools.text_effects import FprintFactory
 
 camera_root = "/camera/front/right"  # /camera_root/root
 
-ros_t = lambda t: rospy.Duration(t)
+
+def ros_t(t): return rospy.Duration(t)
+
+
 fprint = FprintFactory(title="COLORAMA", time=None).fprint
+
 
 class ImageHolder(object):
     @classmethod
@@ -36,7 +40,7 @@ class ImageHolder(object):
         try:
             image = CvBridge().imgmsg_to_cv2(msg)
             return cls(image, time)
-        except CvBridgeError, e:
+        except CvBridgeError as e:
             # Intentionally absorb CvBridge Errors
             rospy.logerr(e)
 
@@ -98,8 +102,9 @@ class ImageHistory(object):
                 continue  # Return invalid image
 
             return closest
-        
+
         return ImageHolder()
+
 
 class DebugImage(object):
     def __init__(self, topic, encoding="bgr8", queue_size=1, prd=1):
@@ -114,58 +119,59 @@ class DebugImage(object):
             try:
                 image_message = self.bridge.cv2_to_imgmsg(self.image, self.encoding)
                 self.im_pub.publish(image_message)
-            except CvBridgeError, e:
+            except CvBridgeError as e:
                 # Intentionally absorb CvBridge Errors
                 rospy.logerr(e)
 
 
 class Observation(object):
     history_length = 100  # Default to 100
-    
+
     @classmethod
     def as_message(self):
         msg = ColoramaDebug()
         msg.num_observations = len(self.hues)
 
-        msg.mean_value = np.mean(self.values) 
+        msg.mean_value = np.mean(self.values)
         msg.hues = self.hues
 
     def __init__(self):
         self.hues = deque([], maxlen=self.history_length)
-        self.values = deque([], maxlen=self.history_length) 
+        self.values = deque([], maxlen=self.history_length)
         self.q_errs = deque([], maxlen=self.history_length)
         self.dists = deque([], maxlen=self.history_length)
-    
+
     def __len__(self):
         return len(self.hues)
-   
-    def __iadd__(self, (hue, value, dist, q_diff)):
+
+    def __iadd__(self, xxx_todo_changeme):
         """
         Add observations like:
             >>> co += [0.65, 0.4, ..., 0.1]
         """
+        (hue, value, dist, q_diff) = xxx_todo_changeme
         self.hues.append(hue)
         self.values.append(value)
         self.dists.append(dist)
         self.q_errs.append(q_diff)
 
         return self
-  
+
     def __repr__(self):
         _str = 'hues: {}\nvalues: {}\ndists: {}\nq_errs: {}'
         return _str.format(*np.round(map(np.array, [self.hues, self.values, self.dists, self.q_errs]), 3))
 
-    def extend(self, (hues, values, dists, q_diffs)):
+    def extend(self, xxx_todo_changeme1):
         """Add lists of data in at once"""
+        (hues, values, dists, q_diffs) = xxx_todo_changeme1
         self.hues.extend(hues)
         self.values.extend(values)
         self.dists.extend(dists)
         self.q_errs.extend(q_diffs)
 
-    def compute_confidence(self, (value_w, dist_w, q_diff_w), get_conf=False, **kwargs):
+    def compute_confidence(self, xxx_todo_changeme2, get_conf=False, **kwargs):
         """Don't try to compute weights with bad data (too few samples)"""
-
-        # Get some value information
+        (value_w, dist_w, q_diff_w) = xxx_todo_changeme2
         v_u = kwargs.get('v_u', 230)
         v_sig = kwargs.get('v_sig', 30)
         dist_sig = kwargs.get('dist_sig', 70)
@@ -183,10 +189,10 @@ class Observation(object):
         dist_w /= w_norm
         q_diff_w /= w_norm
 
-        #print "1", hue_std_w, np.round(hue_std, 2), hue_std_w * hue_std
-        #print "2", value_w, np.round(value_errs, 2), value_w * value_errs
-        #print "3", dist_w, np.round(dists, 2), dist_w * dists
-        #print "4", q_diff_w, np.round(q_diffs, 2), q_diff_w * q_diffs
+        # print "1", hue_std_w, np.round(hue_std, 2), hue_std_w * hue_std
+        # print "2", value_w, np.round(value_errs, 2), value_w * value_errs
+        # print "3", dist_w, np.round(dists, 2), dist_w * dists
+        # print "4", q_diff_w, np.round(q_diffs, 2), q_diff_w * q_diffs
 
         # Compute normalized confidence
         c = value_w * value_errs + dist_w * dists + q_diff_w * q_diffs
@@ -194,7 +200,7 @@ class Observation(object):
             return c, [value_errs, dists, q_diffs]
 
         return c
-    
+
     def _guass(self, data, mean, sig):
         return np.exp(-np.power(np.array(data).astype(np.float64) - mean, 2) / (2 * np.power(sig, 2)))
 
@@ -207,8 +213,9 @@ class Colorama(object):
         self.tf_listener = tf.TransformListener()
         self.status_pub = rospy.Publisher("/database_color_status", ColoramaDebug, queue_size=1)
 
-        self.odom = None 
-        set_odom = lambda msg: setattr(self, "odom", pose_to_numpy(msg.pose.pose))
+        self.odom = None
+
+        def set_odom(msg): return setattr(self, "odom", pose_to_numpy(msg.pose.pose))
         rospy.Subscriber("/odom", Odometry, set_odom)
         fprint("Waiting for odom...")
         while self.odom is None and not rospy.is_shutdown():
@@ -241,16 +248,17 @@ class Colorama(object):
                           'green': np.radians(120), 'blue': np.radians(200)}
 
         # RGB map for database setting
-        self.database_color_map = {'red': (255, 0, 0), 'yellow': (255, 255, 0), 'green': (0, 255, 0), 'blue': (0, 0, 255)}
+        self.database_color_map = {'red': (255, 0, 0), 'yellow': (
+            255, 255, 0), 'green': (0, 255, 0), 'blue': (0, 0, 255)}
 
         # ========= Some tunable parameters ===================================
         self.update_time = 1  # s
 
         # Observation parameters
-        self.saturation_reject = 20 # Reject color obs with below this saturation
+        self.saturation_reject = 20  # Reject color obs with below this saturation
         self.value_reject = 50      # Reject color obs with below this value
         self.height_remove = 0.4    # Remove points that are this percent down on the object (%)
-                                    # 1 keeps all, .4 removes the bottom 40%
+        # 1 keeps all, .4 removes the bottom 40%
         # Update parameters
         self.history_length = 100   # How many of each color to keep
         self.min_obs = 5            # Need atleast this many observations before making a determination
@@ -264,7 +272,7 @@ class Colorama(object):
         self.dist_sig = 30          # Sigma of distance (m)
         self.q_factor = 0           # Favor not looking into the sun
         self.q_sig = 1.2            # Sigma of norm for quaternion error (rads)
-        
+
         # Maps id => observations
         self.colored = {}
 
@@ -284,7 +292,7 @@ class Colorama(object):
         c = np.sum(w * np.cos(angles))
         avg_angle = np.arctan2(s, c)
         return avg_angle
-   
+
     def _get_quaternion_error(self, q, target_q):
         """
         Returns an angluar differnce between q and target_q in radians
@@ -295,7 +303,7 @@ class Colorama(object):
     def _get_closest_color(self, hue_angle):
         """
         Returns a pair of the most likely color and the radian error associated with that prediction
-            `hue_angle` := The radian value associated with hue [0, 2*pi] 
+            `hue_angle` := The radian value associated with hue [0, 2*pi]
         Colors are found from `self.color_map`
         """
         c = np.cos(hue_angle)
@@ -306,40 +314,40 @@ class Colorama(object):
             cg = np.cos(h_val)
             sg = np.sin(h_val)
             # We need a signed error for some math later on so no absolute value
-            this_error = np.arctan2(sg*c - cg*s, cg*c + sg*s)
+            this_error = np.arctan2(sg * c - cg * s, cg * c + sg * s)
             if np.abs(this_error) < np.abs(error):
                 error = this_error
                 likely_color = color
 
         fprint("Likely color: {} with an hue error of {} rads.".format(likely_color, np.round(error, 3)))
-        return [likely_color, error] 
+        return [likely_color, error]
 
     def do_estimate(self, totem_id):
         """Calculates best color estimate for a given totem id"""
-        fprint("DOING ESTIMATE", msg_color='blue') 
+        fprint("DOING ESTIMATE", msg_color='blue')
         if totem_id not in self.colored:
             fprint("Totem ID {} not found!".format(totem_id), msg_color='red')
             return None
-       
+
         t_color = self.colored[totem_id]
-        
+
         if len(t_color) < self.min_obs:
             fprint("Only {} observations. {} required.".format(len(t_color), self.min_obs), msg_color='red')
             return None
 
-        kwargs = {'v_u': self.v_u, 'v_sig': self.v_sig, 'dist_sig': self.dist_sig, 
+        kwargs = {'v_u': self.v_u, 'v_sig': self.v_sig, 'dist_sig': self.dist_sig,
                   'q_factor': self.q_factor, 'q_sig': self.q_sig}
 
         w, weights = t_color.compute_confidence([self.v_factor, self.dist_factor, self.q_factor], True, **kwargs)
         fprint("CONF: {}".format(w))
         if np.mean(w) < self.conf_reject:
             return None
-        
-        hue_angles = np.radians(np.array(t_color.hues) * 2) 
+
+        hue_angles = np.radians(np.array(t_color.hues) * 2)
         angle = self._compute_average_angle(hue_angles, w)
         color = self._get_closest_color(angle)
-        
-        msg = t_color.as_message 
+
+        msg = t_color.as_message
         msg.id = totem_id
         msg.confidence = w
         msg.labels = ["value_errs", "dists", "q_diffs"]
@@ -351,25 +359,25 @@ class Colorama(object):
 
         fprint("Color: {}".format(color[0]))
         return color
-    
+
     def got_request(self, req):
         # Threading blah blah something unsafe
         colored_ids = [_id for _id, color_err in self.colored.iteritems() if self.valid_color(_id) == req.color]
-        
+
         fprint("Colored IDs: {}".format(colored_ids), msg_color='blue')
         print '\n' * 50
         if len(colored_ids) == 0:
             return ColorRequestResponse(found=False)
-        
+
         return ColorRequestResponse(found=True, ids=colored_ids)
 
     def do_observe(self, *args):
         resp = self.make_request(name='totem')
-        
+
         # If atleast one totem was found start observing
         if resp.found:
             # Time of the databse request
-            time_of_marker = resp.objects[0].header.stamp# - ros_t(1)
+            time_of_marker = resp.objects[0].header.stamp  # - ros_t(1)
             fprint("Looking for image at {}".format(time_of_marker.to_sec()), msg_color='yellow')
             image_holder = self.image_history.get_around_time(time_of_marker)
             if not image_holder.contains_valid_image:
@@ -378,7 +386,8 @@ class Colorama(object):
                     fprint("No images found.")
                     return
 
-                fprint("No valid image found for t={} ({}) dt: {}".format(time_of_marker.to_sec(), t.to_sec(), (rospy.Time.now() - t).to_sec()), msg_color='red')
+                fprint("No valid image found for t={} ({}) dt: {}".format(
+                    time_of_marker.to_sec(), t.to_sec(), (rospy.Time.now() - t).to_sec()), msg_color='red')
                 return
             header = make_header(frame='/enu', stamp=image_holder.time)
             image = image_holder.image
@@ -399,14 +408,14 @@ class Colorama(object):
                     continue
 
                 fprint("{} {}".format(obj.id, "=" * 50))
-                
+
                 # Get object position in px coordinates to determine if it's in frame
                 object_cam = t_mat44.dot(np.append(point_to_nump(obj.position), 1))
                 object_px = map(int, self.camera_model.project3dToPixel(object_cam[:3]))
                 if not self._object_in_frame(object_cam):
                     fprint("Object not in frame")
                     continue
-                
+
                 # Get enu points associated with this totem and remove ones that are too low
                 points_np = np.array(map(point_to_nump, obj.points))
                 height = np.max(points_np[:, 2]) - np.min(points_np[:, 2])
@@ -415,16 +424,16 @@ class Colorama(object):
                     fprint("Object too small")
                     continue
 
-                threshold = np.min(points_np[:, 2]) + self.height_remove * height  
+                threshold = np.min(points_np[:, 2]) + self.height_remove * height
                 points_np = points_np[points_np[:, 2] > threshold]
-                
+
                 # Shove ones in there to make homogenous points to get points in image frame
                 points_np_homo = np.hstack((points_np, np.ones((points_np.shape[0], 1)))).T
                 points_cam = t_mat44.dot(points_np_homo).T
                 points_px = map(self.camera_model.project3dToPixel, points_cam[:, :3])
-                
+
                 [cv2.circle(self.debug.image, tuple(map(int, p)), 2, (255, 255, 255), -1) for p in points_px]
-                
+
                 # Get color information from the points
                 roi = self._get_ROI_from_points(points_px)
                 h, s, v = self._get_hsv_from_ROI(roi, image)
@@ -433,7 +442,7 @@ class Colorama(object):
                 boat_q = self.odom[1]
                 target_q = self._get_solar_angle()
                 q_err = self._get_quaternion_error(boat_q, target_q)
-                
+
                 dist = np.linalg.norm(self.odom[0] - point_to_nump(obj.position))
 
                 fprint("H: {}, S: {}, V: {}".format(h, s, v))
@@ -446,8 +455,8 @@ class Colorama(object):
 
                 else:
                     if obj.id not in self.colored:
-                       self.colored[obj.id] = Observation() 
-                    
+                        self.colored[obj.id] = Observation()
+
                     # Add this observation in
                     self.colored[obj.id] += h, v, dist, q_err
                     print self.colored[obj.id]
@@ -458,9 +467,9 @@ class Colorama(object):
                 if color:
                     fprint("COLOR IS VALID", msg_color='green')
                     rgb = self.database_color_map[color[0]]
-                    
+
                     cmd = '{name}={rgb[0]},{rgb[1]},{rgb[2]},{_id}'
-                    self.make_request(cmd=cmd.format(name=obj.name,_id=obj.id, rgb=rgb))
+                    self.make_request(cmd=cmd.format(name=obj.name, _id=obj.id, rgb=rgb))
 
                 bgr = rgb[::-1]
                 cv2.circle(self.debug.image, tuple(object_px), 10, bgr, -1)
@@ -488,7 +497,7 @@ class Colorama(object):
         h, s, v = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)[0, 0]
 
         return h, s, v
-        
+
         # Now check that s and v are in a good range
         if s < self.saturation_reject or v < self.value_reject:
             err_msg = "The colors aren't expressive enough s: {} ({}) v: {} ({}). Rejecting."
@@ -496,18 +505,18 @@ class Colorama(object):
             return None
 
         # Compute hue error in SO2
-        hue_angle = np.radians(h * 2) 
-        
+        hue_angle = np.radians(h * 2)
+
         # Display the current values
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(self.debug.image, "h_val: {}".format(np.degrees(hue_angle)), 
+        cv2.putText(self.debug.image, "h_val: {}".format(np.degrees(hue_angle)),
                     tuple(roi[1]), font, 1, (255, 255, 255), 2)
 
         likely_color, error = self.get_closest_color(hue_angle)
 
         if error > self.hue_error_reject:
-            fprint("Closest color was {} with an error of {} rads (> {}). Rejecting.".format(likely_color, np.round(error, 3), 
-                                                                                            self.hue_error_reject), msg_color='red')
+            fprint("Closest color was {} with an error of {} rads (> {}). Rejecting.".format(likely_color, np.round(error, 3),
+                                                                                             self.hue_error_reject), msg_color='red')
             return None
 
         fprint("Likely color: {} with an hue error of {} rads.".format(likely_color, np.round(error, 3)))

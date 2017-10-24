@@ -10,6 +10,7 @@ from twisted.internet import defer
 from coordinate_conversion_server import Converter
 from navigator_msgs.srv import CoordinateConversionRequest, ObjectDBQuery, ObjectDBQueryRequest
 
+
 @txros.util.cancellableInlineCallbacks
 def main(name, lla):
     nh = yield txros.NodeHandle.from_argv("esitmated_object_setter")
@@ -22,7 +23,7 @@ def main(name, lla):
     name = '_'.join(map(lambda txt: txt.title(), name.split("_")))
 
     point = yield convert.request(CoordinateConversionRequest(frame="lla", point=lla))
-    yield db(ObjectDBQueryRequest(cmd="{}={p[0]}, {p[1]}".format(name, p=point.enu)))    
+    yield db(ObjectDBQueryRequest(cmd="{}={p[0]}, {p[1]}".format(name, p=point.enu)))
 
 
 if __name__ == "__main__":
