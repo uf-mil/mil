@@ -11,7 +11,6 @@ import cv2
 import traceback
 import time
 import operator
-import random
 
 defer.setDebugging(True)
 

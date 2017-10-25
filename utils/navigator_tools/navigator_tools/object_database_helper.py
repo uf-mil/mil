@@ -1,5 +1,4 @@
 """Use the DBHelper class to interface with the Database without having to deal with ROS things."""
-from navigator_msgs.msg import PerceptionObjectArray
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from nav_msgs.msg import Odometry
 from twisted.internet import defer, threads

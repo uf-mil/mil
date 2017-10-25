@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-import roslib
 import numpy
-import math
-import tf
-import threading
 from tf import transformations as trns
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped, Point

@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 from Sabertooth2x12 import Sabertooth2x12
-from sensor_msgs.msg import Joy
 import rospy
 import actionlib
-import time
 from ros_alarms import AlarmListener
-from navigator_msgs.msg import ShooterDoAction, ShooterDoActionFeedback, ShooterDoActionResult, ShooterDoActionGoal
+from navigator_msgs.msg import ShooterDoAction, ShooterDoActionFeedback, ShooterDoActionGoal, ShooterDoActionResult
 from navigator_msgs.srv import ShooterManual, ShooterManualResponse
 from std_srvs.srv import Trigger, TriggerResponse, TriggerRequest
 from std_msgs.msg import String

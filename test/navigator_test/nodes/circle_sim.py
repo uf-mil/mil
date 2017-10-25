@@ -3,7 +3,6 @@ from __future__ import division
 
 import rospy
 
-from random import shuffle
 import numpy as np
 import cv2
 

@@ -1,8 +1,6 @@
 #!/usr/bin/env python
-from geometry_msgs.msg import WrenchStamped
-from topic_tools.srv import MuxSelect
 import rospy
-from std_msgs.msg import Bool, String, Float32
+from std_msgs.msg import Bool, Float32, String
 from visualization_msgs.msg import Marker, MarkerArray
 from ros_alarms import AlarmListener
 import numpy as np

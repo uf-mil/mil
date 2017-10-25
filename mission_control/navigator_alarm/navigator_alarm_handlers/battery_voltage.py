@@ -1,5 +1,5 @@
 from ros_alarms import HandlerBase, AlarmBroadcaster
-from std_msgs.msg import Header, Float32
+from std_msgs.msg import Float32, Header
 import rospy
 
 

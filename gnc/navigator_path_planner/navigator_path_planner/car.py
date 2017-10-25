@@ -4,7 +4,6 @@ Constructs a planner that is good for being kinda like a car-boat thing!
 """
 from __future__ import division
 import numpy as np
-import numpy.linalg as npl
 
 from params import *
 import lqrrt

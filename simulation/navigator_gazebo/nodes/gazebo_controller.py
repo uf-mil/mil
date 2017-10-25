@@ -3,13 +3,10 @@ from __future__ import division
 
 import rospy
 import mil_tools
-from tf import transformations
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import PoseWithCovariance, TwistWithCovariance, Pose, Point, Quaternion
+from geometry_msgs.msg import Point, Pose, PoseWithCovariance, Quaternion, TwistWithCovariance
 from gazebo_msgs.msg import LinkStates, ModelState
-from gazebo_msgs.srv import SetModelState
 import numpy as np
-import os
 
 from rawgps_common import gps
 

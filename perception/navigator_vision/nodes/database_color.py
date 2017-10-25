@@ -4,14 +4,12 @@ from __future__ import division
 import cv2
 import numpy as np
 from collections import deque
-from copy import deepcopy
 
 import rospy
 import tf
 import tf.transformations as trns
 
-import sensor_msgs.point_cloud2 as pc2
-from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest, ColorRequest, ColorRequestResponse
+from navigator_msgs.srv import ColorRequest, ColorRequestResponse, ObjectDBQuery, ObjectDBQueryRequest
 from navigator_msgs.msg import ColoramaDebug
 from sensor_msgs.msg import CameraInfo, Image
 from nav_msgs.msg import Odometry

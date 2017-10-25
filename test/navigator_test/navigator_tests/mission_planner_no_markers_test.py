@@ -1,4 +1,3 @@
-import abc
 from navigator_test_lib import TestUnit, SpoofGenerator
 from navigator_msgs.msg import PerceptionObjectArray, PerceptionObject
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryResponse

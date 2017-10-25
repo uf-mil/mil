@@ -14,7 +14,7 @@ from copy import deepcopy
 from dynamic_reconfigure.server import Server
 from dynamic_reconfigure.client import Client
 from navigator_msg_multiplexer.cfg import OgridConfig
-from nav_msgs.msg import OccupancyGrid, MapMetaData, Odometry
+from nav_msgs.msg import MapMetaData, OccupancyGrid, Odometry
 
 from navigator_path_planner import params
 

@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-import numpy as np
 
 import rospy
 from mil_tools import numpy_to_point
-from twisted.internet import defer
 
 from navigator_tools.cfg import BoundsConfig
 from dynamic_reconfigure.server import Server

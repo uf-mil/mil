@@ -1,12 +1,9 @@
 #!/usr/bin/env python
-import numpy as np
 
-import ast
 import sys
 from argparse import RawTextHelpFormatter, ArgumentParser
 
 import txros
-from twisted.internet import defer
 from coordinate_conversion_server import Converter
 from navigator_msgs.srv import CoordinateConversionRequest, ObjectDBQuery, ObjectDBQueryRequest
 

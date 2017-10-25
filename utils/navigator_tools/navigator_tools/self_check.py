@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 from twisted.internet import defer, reactor
-import traceback
-import signal
 import txros
 
 
