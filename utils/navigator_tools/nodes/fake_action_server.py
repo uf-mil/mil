@@ -9,7 +9,7 @@ import tf.transformations as trns
 
 from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseStamped
-from navigator_path_planner.msg import MoveAction, MoveFeedback, MoveResult
+from navigator_path_planner.msg import MoveAction, MoveResult
 
 from mil_tools import make_header, rosmsg_to_numpy, pose_to_numpy
 from mil_misc_tools.text_effects import fprint as _fprint
@@ -28,7 +28,8 @@ class FakeActionServer(object):
 
         self.ogrid = None
 
-        def set_ogrid(msg): return setattr(self, "ogrid", msg)
+        def set_ogrid(msg):
+            return setattr(self, "ogrid", msg)
         rospy.Subscriber("/ogrid_master", OccupancyGrid, set_ogrid)
 
         self.move_server = actionlib.SimpleActionServer(

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
-from std_msgs.msg import Bool, Float32, String
-from visualization_msgs.msg import Marker, MarkerArray
+from std_msgs.msg import Float32, String
+from visualization_msgs.msg import Marker
 from ros_alarms import AlarmListener
 import numpy as np
 
@@ -36,9 +36,9 @@ class RvizStrings(object):
         marker.id = self.ID
         marker.color.a = 1
         marker.color.b = 1
-        if not self.voltage is None:
+        if self.voltage is not None:
             marker.text += "Voltage {}".format(self.voltage)
-        if not self.wrench is None:
+        if self.wrench is not None:
             marker.text += "\nWrench {}".format(self.wrench)
         if self.station_holding:
             marker.text += "\nStation Holding"

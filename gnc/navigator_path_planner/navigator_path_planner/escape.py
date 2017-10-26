@@ -4,8 +4,8 @@ Constructs a planner that is good for getting out of sticky situations!
 """
 from __future__ import division
 import numpy as np
-
-from params import *
+from params import D_neg, D_pos, B, invB, thrust_max, invM, velmax_pos, velmax_neg,\
+    nstates, ncontrols, unset, horizon, dt, FPR, max_nodes, free_radius
 import lqrrt
 
 # DYNAMICS

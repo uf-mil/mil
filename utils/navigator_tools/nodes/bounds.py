@@ -20,7 +20,7 @@ class BoundsServer(object):
         rospy.set_param("/bounds/enu/", [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]])
         rospy.set_param("/bounds/enforce", self.enforce)
 
-        #self.convert = Converter()
+        # self.convert = Converter()
         Server(BoundsConfig, self.update_config)
         rospy.Service('/get_bounds', Bounds, self.got_request)
 

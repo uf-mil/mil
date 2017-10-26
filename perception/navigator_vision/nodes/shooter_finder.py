@@ -1,21 +1,15 @@
 #!/usr/bin/python
-
 from __future__ import division
-
 import math
 import numpy
-from twisted.internet import defer, threads
+from twisted.internet import defer
 import txros
 from txros import util, tf
 import cv2
 import traceback
 import time
 import operator
-
-defer.setDebugging(True)
-
 from mil_tools import msg_helpers
-
 from tf import transformations
 from sensor_msgs.msg import PointCloud2
 import sensor_msgs.point_cloud2 as pc2
@@ -24,6 +18,8 @@ from visualization_msgs.msg import Marker, MarkerArray
 from std_msgs.msg import Header, ColorRGBA
 from geometry_msgs.msg import Pose, Vector3, Point, Quaternion, PoseStamped
 from nav_msgs.msg import Odometry
+
+defer.setDebugging(True)
 
 
 def rect_lines(rect):
@@ -54,7 +50,7 @@ def dist_from_rect(p, rect):
 def fit(good_points, rect):
     print 'count', len(good_points)
     for i in xrange(1):
-        r, J = zip(*[dist_from_rect(p, rect) for p in good_points])
+        r, J = zip(*[dist_from_rect(pnt, rect) for pnt in good_points])
         r = numpy.array(r)
         J = numpy.vstack(list(J))
         cost = numpy.sum(r * r)
@@ -211,25 +207,25 @@ def main():
                 print 'filtered out based on side length'
                 continue
 
-            front_points = [p for p in good_points if abs((p - best[1]).dot(best[0])) < .2]
+            front_points = [pnt for pnt in good_points if abs((pnt - best[1]).dot(best[0])) < .2]
             print 'len(front_points)', len(front_points)
             a, b = numpy.linalg.lstsq(
                 numpy.vstack([
-                    [p[0] for p in front_points],
-                    [p[1] for p in front_points],
+                    [pnt[0] for pnt in front_points],
+                    [pnt[1] for pnt in front_points],
                 ]).T,
                 numpy.ones(len(front_points)),
             )[0]
             m, b_ = numpy.linalg.lstsq(
                 numpy.vstack([
-                    [p[0] for p in front_points],
+                    [pnt[0] for pnt in front_points],
                     numpy.ones(len(front_points)),
                 ]).T,
-                [p[1] for p in front_points],
+                [pnt[1] for pnt in front_points],
             )[0]
             print 'a, b', a, b, m, b_
 
-            print 'RES', numpy.std([numpy.array([a, b]).dot(p) for p in good_points])
+            print 'RES', numpy.std([numpy.array([a, b]).dot(pnt) for pnt in good_points])
 
             # x = a, b
             # x . p = 1

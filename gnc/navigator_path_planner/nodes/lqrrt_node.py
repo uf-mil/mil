@@ -16,6 +16,7 @@ import cv2  # for occupancy grid analysis
 import rospy
 import actionlib
 import tf.transformations as trns
+from mil_tools import numpy_to_quaternion
 
 from nav_msgs.msg import Odometry, OccupancyGrid
 from geometry_msgs.msg import Point32, PointStamped, Pose, PoseArray, \
@@ -1131,7 +1132,6 @@ class LQRRT_Node(object):
 
         # Construct pose array and publish
         pose_list = []
-        stamp = rospy.Time.now()
         for x in self.x_seq:
             pose_list.append(self.pack_pose(x))
         if len(pose_list):
@@ -1150,7 +1150,6 @@ class LQRRT_Node(object):
 
         # Construct pose array and publish
         pose_list = []
-        stamp = rospy.Time.now()
         for ID in xrange(self.tree.size):
             x = self.tree.state[ID]
             pose_list.append(self.pack_pose(x))
@@ -1214,8 +1213,8 @@ class LQRRT_Node(object):
         self.state = self.unpack_odom(msg)
         last_update_time = self.last_update_time
         if self.get_ref is not None and last_update_time is not None:
-            if np.all(np.abs(self.erf(self.get_ref(self.rostime() - last_update_time), self.state))
-                      < 2 * np.array(params.real_tol)):
+            error = np.abs(self.erf(self.get_ref(self.rostime() - last_update_time), self.state))
+            if np.all(error < 2 * np.array(params.real_tol)):
                 self.tracking = True
             else:
                 self.tracking = False
@@ -1247,8 +1246,8 @@ class LQRRT_Node(object):
         """
         msg = Pose()
         msg.position.x, msg.position.y = state[:2]
-        msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w = trns.quaternion_from_euler(
-            0, 0, state[2])
+        quat = trns.quaternion_from_euler(0, 0, state[2])
+        msg.orientation = numpy_to_quaternion(quat)
         return msg
 
     def pack_posestamped(self, state, stamp):
@@ -1261,8 +1260,8 @@ class LQRRT_Node(object):
         msg.header.stamp = stamp
         msg.header.frame_id = self.world_frame_id
         msg.pose.position.x, msg.pose.position.y = state[:2]
-        msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w = trns.quaternion_from_euler(
-            0, 0, state[2])
+        quat = trns.quaternion_from_euler(0, 0, state[2])
+        msg.pose.orientation = numpy_to_quaternion(quat)
         return msg
 
     def pack_odom(self, state, stamp):
@@ -1276,8 +1275,8 @@ class LQRRT_Node(object):
         msg.header.frame_id = self.world_frame_id
         msg.child_frame_id = self.body_frame_id
         msg.pose.pose.position.x, msg.pose.pose.position.y = state[:2]
-        msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w = trns.quaternion_from_euler(
-            0, 0, state[2])
+        quat = trns.quaternion_from_euler(0, 0, state[2])
+        msg.pose.pose.orientation = numpy_to_quaternion(quat)
         msg.twist.twist.linear.x, msg.twist.twist.linear.y = state[3:5]
         msg.twist.twist.angular.z = state[5]
         return msg

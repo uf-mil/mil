@@ -126,7 +126,8 @@ class DBHelper(object):
         self.found.remove(name)
 
     def ensure_object_permanence(self, object_dep, cb):
-        """Ensure that all the objects in the object_dep list remain in the database. Call the callback if this isn't true."""
+        """Ensure that all the objects in the object_dep list remain in the database.
+           Call the callback if this isn't true."""
         if object_dep is None or cb is None:
             return
         self.ensuring_objects = True

@@ -99,7 +99,8 @@ class MedianFlow(object):
         # Eliminate the points based on the fb error
         msk = None
 
-        # If this is the first time median flow is tracking these points, eliminate the top 60% of the points with the highest
+        # If this is the first time median flow is tracking these points,
+        # eliminate the top 60% of the points with the highest
         # fb tracking error 60% is defined in self.elimination_amount)
         if(self._amount_mdn_flow_tracked == 0):
             lrgst_ind = np.argsort(diff_norm)[-int(len(diff_norm) * self.elimination_amount):]

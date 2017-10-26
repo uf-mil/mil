@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
-from std_srvs.srv import SetBool, SetBoolResponse
-from navigator_msgs.srv import FindPinger, FindPingerResponse, SetFrequency, SetFrequencyResponse
+from std_srvs.srv import SetBool
+from navigator_msgs.srv import FindPinger, FindPingerResponse, SetFrequency
 
 
 def find_pinger_cb(req):

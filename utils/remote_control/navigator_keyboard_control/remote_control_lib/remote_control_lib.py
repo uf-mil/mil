@@ -13,8 +13,8 @@ import actionlib
 from geometry_msgs.msg import WrenchStamped
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from navigator_msgs.msg import ShooterDoAction, ShooterDoActionGoal
-from topic_tools.srv import MuxSelect, MuxSelectRequest
-from navigator_msgs.srv import ShooterManual, ShooterManualRequest
+from topic_tools.srv import MuxSelect
+from navigator_msgs.srv import ShooterManual
 import rospy
 from std_srvs.srv import Trigger, TriggerRequest
 

@@ -6,6 +6,7 @@ from tf import transformations as trns
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped, Point
 from mil_tools import geometry_helpers as gh
+from mil_tools import numpy_to_quaternion
 
 rospy.init_node('move_helper')
 
@@ -39,7 +40,7 @@ class move_helper(object):
 
         to_send.pose.position.x = desired[0]
         to_send.pose.position.y = desired[1]
-        to_send.pose.orientation.x, to_send.pose.orientation.y, to_send.pose.orientation.z, to_send.pose.orientation.w = desired_quaternion
+        to_send.pose.orientation = numpy_to_quaternion(desired_quaternion)
 
         self.pose_pub.publish(to_send)
 

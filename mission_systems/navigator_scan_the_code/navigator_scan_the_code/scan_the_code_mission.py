@@ -4,9 +4,9 @@ import txros
 import genpy
 from twisted.internet import defer
 import sys
-from sensor_msgs.msg import CameraInfo, Image
+from sensor_msgs.msg import CameraInfo
 from scan_the_code_lib import ScanTheCodeAction, ScanTheCodePerception, Debug
-from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
+from navigator_msgs.srv import ObjectDBQuery
 from navigator_tools import DBHelper
 from mil_tools import fprint
 ___author___ = "Tess Bianchi"

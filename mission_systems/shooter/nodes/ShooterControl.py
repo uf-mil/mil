@@ -3,7 +3,7 @@ from Sabertooth2x12 import Sabertooth2x12
 import rospy
 import actionlib
 from ros_alarms import AlarmListener
-from navigator_msgs.msg import ShooterDoAction, ShooterDoActionFeedback, ShooterDoActionGoal, ShooterDoActionResult
+from navigator_msgs.msg import ShooterDoAction, ShooterDoActionFeedback, ShooterDoActionResult
 from navigator_msgs.srv import ShooterManual, ShooterManualResponse
 from std_srvs.srv import Trigger, TriggerResponse, TriggerRequest
 from std_msgs.msg import String
@@ -153,7 +153,6 @@ class ShooterControl:
         start_time = rospy.get_rostime()
         dur_from_start = rospy.Duration(0, 0)
         rospy.loginfo("starting fire")
-        rate = rospy.Rate(50)  # 50hz
         feedback = ShooterDoActionFeedback()
         self.motor_controller.setMotor1(1.0)
         self.motor_controller.setMotor2(-1.0)

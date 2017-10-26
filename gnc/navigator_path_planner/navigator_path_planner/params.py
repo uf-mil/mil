@@ -83,8 +83,13 @@ boat_buffer = 0.15  # m
 
 # Grid of points defining boat
 vps_spacing = 0.1  # m
-vps_grid_x, vps_grid_y = np.mgrid[slice(-(boat_length + boat_buffer) / 2, (boat_length + boat_buffer) / 2 + vps_spacing, vps_spacing),
-                                  slice(-(boat_width + boat_buffer) / 2, (boat_width + boat_buffer) / 2 + vps_spacing, vps_spacing)]
+vps_grid_x, vps_grid_y = np.mgrid[
+    slice(
+        -(boat_length + boat_buffer) / 2,
+        (boat_length + boat_buffer) / 2 + vps_spacing, vps_spacing),
+    slice(
+        -(boat_width + boat_buffer) / 2,
+        (boat_width + boat_buffer) / 2 + vps_spacing, vps_spacing)]
 vps_grid_x = vps_grid_x.reshape(vps_grid_x.size)
 vps_grid_y = vps_grid_y.reshape(vps_grid_y.size)
 vps = np.zeros((vps_grid_x.size, 2))

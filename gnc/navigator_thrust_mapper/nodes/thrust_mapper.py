@@ -43,8 +43,7 @@ Bibliography:
 import rospy
 import numpy as np
 from geometry_msgs.msg import WrenchStamped
-from std_msgs.msg import Bool, Float32MultiArray
-from roboteq_msgs.msg import *
+from roboteq_msgs.msg import Command
 from ros_alarms import AlarmListener
 
 

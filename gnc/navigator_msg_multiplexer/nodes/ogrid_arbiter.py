@@ -14,7 +14,7 @@ from copy import deepcopy
 from dynamic_reconfigure.server import Server
 from dynamic_reconfigure.client import Client
 from navigator_msg_multiplexer.cfg import OgridConfig
-from nav_msgs.msg import MapMetaData, OccupancyGrid, Odometry
+from nav_msgs.msg import OccupancyGrid, Odometry
 
 from navigator_path_planner import params
 
@@ -136,12 +136,13 @@ class OGridServer:
 
         self.global_ogrid = self.create_grid((map_size, map_size))
 
-        def set_odom(msg): return setattr(self, 'odom', mil_tools.pose_to_numpy(msg.pose.pose))
+        def set_odom(msg):
+            return setattr(self, 'odom', mil_tools.pose_to_numpy(msg.pose.pose))
         rospy.Subscriber('/odom', Odometry, set_odom)
         self.publisher = rospy.Publisher('/ogrid_master', OccupancyGrid, queue_size=1)
 
         self.ogrid_server = Server(OgridConfig, self.dynamic_cb)
-        dynam_client = Client("bounds_server", config_callback=self.bounds_cb)
+        self.dynam_client = Client("bounds_server", config_callback=self.bounds_cb)
         self.ogrid_server.update_configuration({'width': 500})
 
         rospy.Service("/center_ogrid", Trigger, self.center_ogrid)
@@ -251,7 +252,7 @@ class OGridServer:
             for ogrid in ogrids:
                 # Hard coded 5 second timeout - probably no need to reconfig this.
                 if ogrid.nav_ogrid is None or ogrid.callback_delta > self.ogrid_timeout:
-                    #fprint("Ogrid too old!")
+                    # fprint("Ogrid too old!")
                     continue
 
                 # Proactively checking for errors.
@@ -320,7 +321,7 @@ class OGridServer:
         if self.plow:
             self.plow_snow(np_grid, global_ogrid)
 
-       # Clip and flatten grid
+        # Clip and flatten grid
         np_grid = np.clip(np_grid, self.ogrid_min_value, 100)
         global_ogrid.data = np_grid.flatten().astype(np.int8)
 

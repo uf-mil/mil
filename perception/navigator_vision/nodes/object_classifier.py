@@ -68,7 +68,7 @@ def main():
     class_file = class_file + "object_classification/train.p"
 
     cl = depicklify(class_file)
-    oc = yield ObjectClassifier(nh, cl, config).init_()
+    yield ObjectClassifier(nh, cl, config).init_()
 
 
 if __name__ == "__main__":

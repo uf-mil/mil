@@ -55,14 +55,18 @@ class MRAC_Controller:
         self.mass_ref = 500  # kg, determined to be larger than boat in practice due to water mass
         self.inertia_ref = 400  # kg*m^2, determined to be larger than boat in practice due to water mass
         self.thrust_max = 220  # N
+
+        # back-left, back-right, front-left front-right, thruster positions in meters
         self.thruster_positions = np.array([[-1.9000, 1.0000, -0.0123],
                                             [-1.9000, -1.0000, -0.0123],
                                             [1.6000, 0.6000, -0.0123],
-                                            [1.6000, -0.6000, -0.0123]])  # back-left, back-right, front-left front-right, m
+                                            [1.6000, -0.6000, -0.0123]])
+
+        # back-left, back-right, front-left, front-right thruster directions in radians
         self.thruster_directions = np.array([[0.7071, 0.7071, 0.0000],
                                              [0.7071, -0.7071, 0.0000],
                                              [0.7071, -0.7071, 0.0000],
-                                             [0.7071, 0.7071, 0.0000]])  # back-left, back-right, front-left front-right
+                                             [0.7071, 0.7071, 0.0000]])
         self.lever_arms = np.cross(self.thruster_positions, self.thruster_directions)
         self.B_body = np.concatenate((self.thruster_directions.T, self.lever_arms.T))
         self.Fx_max_body = self.B_body.dot(self.thrust_max * np.array([1, 1, 1, 1]))
@@ -231,10 +235,28 @@ class MRAC_Controller:
             (self.a_ref, [self.aa_ref])) * [self.mass_ref, self.mass_ref, self.inertia_ref]
 
         # Compute the "learning" matrix
-        drag_regressor = np.array([[self.lin_vel[0] * np.cos(y)**2 + self.lin_vel[1] * np.sin(y) * np.cos(y), self.lin_vel[0] / 2 - (self.lin_vel[0] * np.cos(2 * y)) / 2 - (self.lin_vel[1] * np.sin(2 * y)) / 2, -self.ang_vel * np.sin(y), -self.ang_vel * np.cos(y), 0],
-                                   [self.lin_vel[1] / 2 - (self.lin_vel[1] * np.cos(2 * y)) / 2 + (self.lin_vel[0] * np.sin(2 * y)) / 2, self.lin_vel[1] * np.cos(
-                                       y)**2 - self.lin_vel[0] * np.cos(y) * np.sin(y), self.ang_vel * np.cos(y), -self.ang_vel * np.sin(y), 0],
-                                   [0, 0, self.lin_vel[1] * np.cos(y) - self.lin_vel[0] * np.sin(y), - self.lin_vel[0] * np.cos(y) - self.lin_vel[1] * np.sin(y), self.ang_vel]])
+        drag_regressor = np.array([
+            [
+                self.lin_vel[0] * np.cos(y)**2 + self.lin_vel[1] * np.sin(y) * np.cos(y),
+                self.lin_vel[0] / 2 - (self.lin_vel[0] * np.cos(2 * y)) / 2 - (self.lin_vel[1] * np.sin(2 * y)) / 2,
+                -self.ang_vel * np.sin(y),
+                -self.ang_vel * np.cos(y),
+                0
+            ],
+            [
+                self.lin_vel[1] / 2 - (self.lin_vel[1] * np.cos(2 * y)) / 2 + (self.lin_vel[0] * np.sin(2 * y)) / 2,
+                self.lin_vel[1] * np.cos(y)**2 - self.lin_vel[0] * np.cos(y) * np.sin(y),
+                self.ang_vel * np.cos(y),
+                -self.ang_vel * np.sin(y),
+                0
+            ],
+            [
+                0,
+                0,
+                self.lin_vel[1] * np.cos(y) - self.lin_vel[0] * np.sin(y),
+                - self.lin_vel[0] * np.cos(y) - self.lin_vel[1] * np.sin(y),
+                self.ang_vel
+            ]])
 
         # wrench = PD + feedforward + I + adaptation
         if self.only_PD:

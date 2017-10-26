@@ -97,7 +97,6 @@ class Segmenter(object):
         If you want only the debug image returned, pass a color in for `debug_color` (ex. (255, 0, 0) for blue)
         '''
         image = orig_image if self.color_space == 'bgr' else cv2.cvtColor(orig_image, cv2.COLOR_BGR2HSV)
-        filtered_image = self.filter_image(image)
 
         mask = cv2.inRange(image, self.lower, self.upper)
         filtered_mask = self.filter_mask(mask)
@@ -191,8 +190,6 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
         `left`: the left camera ImageGetter object
         `right`: the right camera ImageGetter object
     '''
-    left_point = None
-    right_point = None
 
     while not rospy.is_shutdown():
         # Get all the required TF links

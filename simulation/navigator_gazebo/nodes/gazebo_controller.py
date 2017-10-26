@@ -4,8 +4,8 @@ from __future__ import division
 import rospy
 import mil_tools
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Point, Pose, PoseWithCovariance, Quaternion, TwistWithCovariance
-from gazebo_msgs.msg import LinkStates, ModelState
+from geometry_msgs.msg import PoseWithCovariance, TwistWithCovariance
+from gazebo_msgs.msg import LinkStates
 import numpy as np
 
 from rawgps_common import gps

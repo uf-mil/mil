@@ -9,7 +9,7 @@ import rospy
 import tf
 import tf.transformations as trns
 
-from navigator_msgs.srv import ColorRequest, ColorRequestResponse, ObjectDBQuery, ObjectDBQueryRequest
+from navigator_msgs.srv import ColorRequestResponse, ObjectDBQuery, ObjectDBQueryRequest
 from navigator_msgs.msg import ColoramaDebug
 from sensor_msgs.msg import CameraInfo, Image
 from nav_msgs.msg import Odometry
@@ -17,14 +17,15 @@ from nav_msgs.msg import Odometry
 from cv_bridge import CvBridge, CvBridgeError
 from image_geometry import PinholeCameraModel
 
-from mil_ros_tools import pose_to_numpy, make_header
+from mil_ros_tools import pose_to_numpy, make_header, point_to_numpy
 from mil_misc_tools.text_effects import FprintFactory
 
 
 camera_root = "/camera/front/right"  # /camera_root/root
 
 
-def ros_t(t): return rospy.Duration(t)
+def ros_t(t):
+    return rospy.Duration(t)
 
 
 fprint = FprintFactory(title="COLORAMA", time=None).fprint
@@ -213,7 +214,8 @@ class Colorama(object):
 
         self.odom = None
 
-        def set_odom(msg): return setattr(self, "odom", pose_to_numpy(msg.pose.pose))
+        def set_odom(msg):
+            return setattr(self, "odom", pose_to_numpy(msg.pose.pose))
         rospy.Subscriber("/odom", Odometry, set_odom)
         fprint("Waiting for odom...")
         while self.odom is None and not rospy.is_shutdown():
@@ -350,7 +352,7 @@ class Colorama(object):
         msg.confidence = w
         msg.labels = ["value_errs", "dists", "q_diffs"]
         msg.weights = weights
-        msg.color = colors[0]
+        msg.color = color[0]
         msg.est_hues = angle * 2
         msg.hues = np.array(t_color.hues) * 2
         self.status_pub.publish(msg)
@@ -408,14 +410,14 @@ class Colorama(object):
                 fprint("{} {}".format(obj.id, "=" * 50))
 
                 # Get object position in px coordinates to determine if it's in frame
-                object_cam = t_mat44.dot(np.append(point_to_nump(obj.position), 1))
+                object_cam = t_mat44.dot(np.append(point_to_numpy(obj.position), 1))
                 object_px = map(int, self.camera_model.project3dToPixel(object_cam[:3]))
                 if not self._object_in_frame(object_cam):
                     fprint("Object not in frame")
                     continue
 
                 # Get enu points associated with this totem and remove ones that are too low
-                points_np = np.array(map(point_to_nump, obj.points))
+                points_np = np.array(map(point_to_numpy, obj.points))
                 height = np.max(points_np[:, 2]) - np.min(points_np[:, 2])
                 if height < .1:
                     # If the height of the object is too small, skip (units are meters)
@@ -441,7 +443,7 @@ class Colorama(object):
                 target_q = self._get_solar_angle()
                 q_err = self._get_quaternion_error(boat_q, target_q)
 
-                dist = np.linalg.norm(self.odom[0] - point_to_nump(obj.position))
+                dist = np.linalg.norm(self.odom[0] - point_to_numpy(obj.position))
 
                 fprint("H: {}, S: {}, V: {}".format(h, s, v))
                 fprint("q_err: {}, dist: {}".format(q_err, dist))
@@ -513,8 +515,8 @@ class Colorama(object):
         likely_color, error = self.get_closest_color(hue_angle)
 
         if error > self.hue_error_reject:
-            fprint("Closest color was {} with an error of {} rads (> {}). Rejecting.".format(likely_color, np.round(error, 3),
-                                                                                             self.hue_error_reject), msg_color='red')
+            fprint("Closest color was {} with an error of {} rads (> {}). Rejecting.".format(
+                likely_color, np.round(error, 3), self.hue_error_reject), msg_color='red')
             return None
 
         fprint("Likely color: {} with an hue error of {} rads.".format(likely_color, np.round(error, 3)))

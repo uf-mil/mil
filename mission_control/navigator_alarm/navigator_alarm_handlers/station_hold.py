@@ -2,7 +2,7 @@
 import rospy
 from actionlib import SimpleActionClient, TerminalState
 from navigator_path_planner.msg import MoveAction, MoveGoal
-from topic_tools.srv import MuxSelect, MuxSelectRequest
+from topic_tools.srv import MuxSelect
 from ros_alarms import HandlerBase, AlarmBroadcaster
 
 
