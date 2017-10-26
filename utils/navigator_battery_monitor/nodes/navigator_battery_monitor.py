@@ -8,9 +8,10 @@ averaging the supply voltage to each of the four thrusters.
 
 from __future__ import division
 
-from roboteq_msgs.msg import Feedback
+from roboteq_msgs.msg import Feedback, Status
 import rospy
 from std_msgs.msg import Float32
+import message_filters
 
 
 __author__ = "Anthony Olive"
@@ -40,22 +41,32 @@ class BatteryMonitor():
         self.supply_voltages = []
 
         # The publisher for the averaged voltage
-        self.pub_voltage = rospy.Publisher("/battery_monitor", Float32, queue_size=1)
+        self.pub_voltage = rospy.Publisher(
+            "/battery_monitor", Float32, queue_size=1)
 
         # Subscribes to the feedback from each of the four thrusters
-        rospy.Subscriber("/FL_motor/feedback", Feedback, self.add_voltage)
-        rospy.Subscriber("/FR_motor/feedback", Feedback, self.add_voltage)
-        rospy.Subscriber("/BL_motor/feedback", Feedback, self.add_voltage)
-        rospy.Subscriber("/BR_motor/feedback", Feedback, self.add_voltage)
+        motor_topics = ['/FL_motor', '/FR_motor', '/BL_motor', '/BR_motor']
 
-    def add_voltage(self, msg):
+        feedback_sub = [message_filters.Subscriber(
+            topic + '/feedback', Feedback) for topic in motor_topics]
+
+        status_sub = [message_filters.Subscriber(
+            topic + '/status', Status) for topic in motor_topics]
+
+        time_sync = [message_filters.ApproximateTimeSynchronizer([feedback, status], 1, 10).registerCallback(
+            self.add_voltage) for feedback, status in zip(feedback_sub, status_sub)]
+
+    def add_voltage(self, feedback, status):
         '''
         This is the callback function for feedback from all four motors.
         It appends the new readings to the end of the list and
         ensures that the list stays under 1000 entries.
         '''
 
-        self.supply_voltages.append(msg.supply_voltage)
+        # Check if 3rd bit is raised
+        if status.fault & 4 == 4:
+            return
+        self.supply_voltages.append(feedback.supply_voltage)
 
         # Limits the list by removing the oldest readings when it contains more then 1000 readings
         while (len(self.supply_voltages) > 1000):
@@ -68,7 +79,8 @@ class BatteryMonitor():
         '''
 
         if (len(self.supply_voltages) > 0):
-            self.voltage = sum(self.supply_voltages) / len(self.supply_voltages)
+            self.voltage = sum(self.supply_voltages) / \
+                len(self.supply_voltages)
 
         self.pub_voltage.publish(self.voltage)
 
