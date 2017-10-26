@@ -1,4 +1,6 @@
 <launch>
+    <arg name="gps" default="True" />
+
     <node pkg="navigator_thrust_mapper" type="thrust_mapper.py" name="thrust_mapper">
     <!-- Parameters used to set the thruster locations and angles relative to the center of gravity of the boat -->
         <rosparam param="thruster_BL_cog">[-1.9304, 1.016]</rosparam>
@@ -42,5 +44,7 @@
     <node name="bounds_server" pkg="navigator_tools" type="bounds.py"/>
     <node name="rviz_repub" pkg="mil_tools" type="rviz_waypoint.py"/>
     <node name="set_bounds" pkg="dynamic_reconfigure" type="dynparam" args="load /bounds_server $(find navigator_tools)/cfg/wauberg.yaml -t 10" />
-    <include file="$(find navigator_launch)/launch/subsystems/gps.launch" />
+
+    <!-- Connect to GPS device -->
+    <include if="$(arg gps)" file="$(find navigator_launch)/launch/subsystems/gps.launch" />
 </launch>
