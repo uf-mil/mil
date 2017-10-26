@@ -143,12 +143,12 @@ class Observation(object):
     def __len__(self):
         return len(self.hues)
 
-    def __iadd__(self, xxx_todo_changeme):
+    def __iadd__(self, params_tuple):
         """
         Add observations like:
             >>> co += [0.65, 0.4, ..., 0.1]
         """
-        (hue, value, dist, q_diff) = xxx_todo_changeme
+        (hue, value, dist, q_diff) = params_tuple
         self.hues.append(hue)
         self.values.append(value)
         self.dists.append(dist)
@@ -160,17 +160,17 @@ class Observation(object):
         _str = 'hues: {}\nvalues: {}\ndists: {}\nq_errs: {}'
         return _str.format(*np.round(map(np.array, [self.hues, self.values, self.dists, self.q_errs]), 3))
 
-    def extend(self, xxx_todo_changeme1):
+    def extend(self, params_tuple):
         """Add lists of data in at once"""
-        (hues, values, dists, q_diffs) = xxx_todo_changeme1
+        (hues, values, dists, q_diffs) = params_tuple
         self.hues.extend(hues)
         self.values.extend(values)
         self.dists.extend(dists)
         self.q_errs.extend(q_diffs)
 
-    def compute_confidence(self, xxx_todo_changeme2, get_conf=False, **kwargs):
+    def compute_confidence(self, value_dist_q, get_conf=False, **kwargs):
         """Don't try to compute weights with bad data (too few samples)"""
-        (value_w, dist_w, q_diff_w) = xxx_todo_changeme2
+        (value_w, dist_w, q_diff_w) = value_dist_q
         v_u = kwargs.get('v_u', 230)
         v_sig = kwargs.get('v_sig', 30)
         dist_sig = kwargs.get('dist_sig', 70)
