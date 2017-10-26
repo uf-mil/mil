@@ -2,7 +2,7 @@
 import rospy
 from actionlib import SimpleActionClient, TerminalState
 from navigator_path_planner.msg import MoveAction, MoveGoal
-from topic_tools.srv import MuxSelect, MuxSelectRequest
+from topic_tools.srv import MuxSelect
 from ros_alarms import HandlerBase, AlarmBroadcaster
 
 
@@ -16,7 +16,8 @@ class StationHold(HandlerBase):
 
     def _client_cb(self, terminal_state, result):
         if terminal_state != 3:
-            rospy.logwarn('Station hold goal failed (Status={}, Result={})'.format(TerminalState.to_string(terminal_state), result))
+            rospy.logwarn('Station hold goal failed (Status={}, Result={})'.format(
+                TerminalState.to_string(terminal_state), result))
             return
         try:
             self.change_wrench('autonomous')
@@ -34,5 +35,3 @@ class StationHold(HandlerBase):
     def cleared(self, alarm):
         # When cleared, do nothing and just wait for new goal / custom wrench
         pass
-
-

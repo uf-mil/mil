@@ -14,6 +14,7 @@ import mil_tools
 import image_geometry
 from scipy.optimize import minimize
 
+
 class ImageGetter(object):
     def __init__(self, topic_name):
         self.sub = mil_tools.Image_Subscriber(topic_name, self.get_image)
@@ -33,6 +34,7 @@ class BuoySelector(object):
     '''
     Allows user to manually click the buoys
     '''
+
     def __init__(self, name, img, scale_factor=1, color=(10, 75, 250), draw_radius=10):
         assert img is not None, "Image is none"
 
@@ -95,7 +97,6 @@ class Segmenter(object):
         If you want only the debug image returned, pass a color in for `debug_color` (ex. (255, 0, 0) for blue)
         '''
         image = orig_image if self.color_space == 'bgr' else cv2.cvtColor(orig_image, cv2.COLOR_BGR2HSV)
-        filtered_image = self.filter_image(image)
 
         mask = cv2.inRange(image, self.lower, self.upper)
         filtered_mask = self.filter_mask(mask)
@@ -129,9 +130,9 @@ def intersect(A, a, B, b):
     # Based on http://morroworks.com/Content/Docs/Rays%20closest%20point.pdf
     # Finds the intersection of two rays `a` and `b` whose origin are `A` and `B`
     return (A + a * (-np.dot(a, b) * np.dot(b, B - A) + np.dot(a, B - A) * np.dot(b, b)) /
-           (np.dot(a, a) * np.dot(b, b) - np.dot(a, b) ** 2) +
-           B + b * (np.dot(a, b) * np.dot(a, B - A) - np.dot(b, B - A) * np.dot(a, a)) /
-           (np.dot(a, a) * np.dot(b, b) - np.dot(a, b) ** 2)) / 2
+            (np.dot(a, a) * np.dot(b, b) - np.dot(a, b) ** 2) +
+            B + b * (np.dot(a, b) * np.dot(a, B - A) - np.dot(b, B - A) * np.dot(a, a)) /
+            (np.dot(a, a) * np.dot(b, b) - np.dot(a, b) ** 2)) / 2
 
 
 def minimize_repro_error(left_cam, right_cam, pt_l, pt_r, estimation):
@@ -142,12 +143,13 @@ def minimize_repro_error(left_cam, right_cam, pt_l, pt_r, estimation):
         return left_error ** 2 + right_error ** 2
 
     correction = minimize(
-                          fun=f,
-                          x0=estimation,
-                          tol=1e-9,
-                          method="TNC",
-                         )
+        fun=f,
+        x0=estimation,
+        tol=1e-9,
+        method="TNC",
+    )
     return correction.x
+
 
 def do_the_magic(pt_l, pt_r, cam_tf):
     '''
@@ -188,8 +190,6 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
         `left`: the left camera ImageGetter object
         `right`: the right camera ImageGetter object
     '''
-    left_point = None
-    right_point = None
 
     while not rospy.is_shutdown():
         # Get all the required TF links
@@ -227,10 +227,10 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
     # Just for visualization
     for i in range(5):
         # Publish it 5 times so we can see it in rviz
-        mil_tools.draw_ray_3d(red_left_pt, left_cam, [1, 0, 0, 1],  m_id=0, frame="front_left_cam")
-        mil_tools.draw_ray_3d(red_right_pt, right_cam, [1, 0, 0, 1],  m_id=1, frame="front_right_cam")
-        mil_tools.draw_ray_3d(green_left_pt, left_cam, [0, 1, 0, 1],  m_id=2, frame="front_left_cam")
-        mil_tools.draw_ray_3d(green_right_pt, right_cam, [0, 1, 0, 1],  m_id=3, frame="front_right_cam")
+        mil_tools.draw_ray_3d(red_left_pt, left_cam, [1, 0, 0, 1], m_id=0, frame="front_left_cam")
+        mil_tools.draw_ray_3d(red_right_pt, right_cam, [1, 0, 0, 1], m_id=1, frame="front_right_cam")
+        mil_tools.draw_ray_3d(green_left_pt, left_cam, [0, 1, 0, 1], m_id=2, frame="front_left_cam")
+        mil_tools.draw_ray_3d(green_right_pt, right_cam, [0, 1, 0, 1], m_id=3, frame="front_right_cam")
 
         red_point = PointStamped()
         red_point.header = mil_tools.make_header(frame="enu")
@@ -300,7 +300,7 @@ if __name__ == "__main__":
     #     rospy.sleep(1)
 
     s = rospy.Service("/vision/start_gate_buoys", StartGate,
-                  lambda srv: do_buoys(srv, left, right, red_seg, green_seg, tf_listener))
+                      lambda srv: do_buoys(srv, left, right, red_seg, green_seg, tf_listener))
 
     # rospy.Timer(rospy.Duration(.5), lambda republish: publish_debug(red_debug, green_debug,
     #                                                                 red_seg, green_seg, left))

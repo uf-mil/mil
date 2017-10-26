@@ -4,14 +4,14 @@ Constructs a planner that is good for being kinda like a car-boat thing!
 """
 from __future__ import division
 import numpy as np
-import numpy.linalg as npl
-
-from params import *
+from params import D_neg, D_pos, B, invB, thrust_max, invM, ss_start, velmax_pos, velmax_neg,\
+    nstates, ncontrols, unset, horizon, dt, FPR, basic_duration, max_nodes, free_radius
 import lqrrt
 
-################################################# DYNAMICS
+# DYNAMICS
 
 magic_rudder = 6000
+
 
 def dynamics(x, u, dt):
     """
@@ -20,10 +20,10 @@ def dynamics(x, u, dt):
     """
     # Rotation matrix (orientation, converts body to world)
     R = np.array([
-                  [np.cos(x[2]), -np.sin(x[2]), 0],
-                  [np.sin(x[2]),  np.cos(x[2]), 0],
-                  [           0,             0, 1]
-                ])
+        [np.cos(x[2]), -np.sin(x[2]), 0],
+        [np.sin(x[2]), np.cos(x[2]), 0],
+        [0, 0, 1]
+    ])
 
     # Construct drag coefficients based on our motion signs
     D = np.copy(D_neg)
@@ -38,16 +38,16 @@ def dynamics(x, u, dt):
     s = np.sin(x[2])
     cg = np.cos(ang)
     sg = np.sin(ang)
-    u[2] = magic_rudder*np.arctan2(sg*c - cg*s, cg*c + sg*s)
+    u[2] = magic_rudder * np.arctan2(sg * c - cg * s, cg * c + sg * s)
 
     # Actuator saturation
     u = B.dot(np.clip(invB.dot(u), -thrust_max, thrust_max))
 
     # M*vdot + D*v = u  and  pdot = R*v
-    xdot = np.concatenate((R.dot(x[3:]), invM*(u - D*x[3:])))
+    xdot = np.concatenate((R.dot(x[3:]), invM * (u - D * x[3:])))
 
     # First-order integrate
-    xnext = x + xdot*dt
+    xnext = x + xdot * dt
 
     # Impose not driving backwards
     if xnext[3] < 0:
@@ -58,11 +58,13 @@ def dynamics(x, u, dt):
 
     return xnext
 
-################################################# POLICY
+# POLICY
+
 
 kp = np.diag([150, 150, 0])
-kd = np.diag([150,   5, 0])
+kd = np.diag([150, 5, 0])
 S = np.diag([1, 1, 1, 0, 0, 0])
+
 
 def lqr(x, u):
     """
@@ -70,19 +72,21 @@ def lqr(x, u):
 
     """
     R = np.array([
-                  [np.cos(x[2]), -np.sin(x[2]), 0],
-                  [np.sin(x[2]),  np.cos(x[2]), 0],
-                  [           0,             0, 1]
-                ])
+        [np.cos(x[2]), -np.sin(x[2]), 0],
+        [np.sin(x[2]), np.cos(x[2]), 0],
+        [0, 0, 1]
+    ])
     K = np.hstack((kp.dot(R.T), kd))
     return (S, K)
 
-################################################# HEURISTICS
+# HEURISTICS
 
-goal_buffer = [0.5*free_radius, 0.5*free_radius, np.inf, np.inf, np.inf, np.inf]
-error_tol = np.copy(goal_buffer)/10
 
-def gen_ss(seed, goal, buff=[ss_start]*4):
+goal_buffer = [0.5 * free_radius, 0.5 * free_radius, np.inf, np.inf, np.inf, np.inf]
+error_tol = np.copy(goal_buffer) / 10
+
+
+def gen_ss(seed, goal, buff=[ss_start] * 4):
     """
     Returns a sample space given a seed state, goal state, and buffer.
 
@@ -90,11 +94,12 @@ def gen_ss(seed, goal, buff=[ss_start]*4):
     return [(min([seed[0], goal[0]]) - buff[0], max([seed[0], goal[0]]) + buff[1]),
             (min([seed[1], goal[1]]) - buff[2], max([seed[1], goal[1]]) + buff[3]),
             (-np.pi, np.pi),
-            (0.9*velmax_pos[0], velmax_pos[0]),
+            (0.9 * velmax_pos[0], velmax_pos[0]),
             (-abs(velmax_neg[1]), velmax_pos[1]),
             (-abs(velmax_neg[2]), velmax_pos[2])]
 
-################################################# MAIN ATTRIBUTES
+# MAIN ATTRIBUTES
+
 
 constraints = lqrrt.Constraints(nstates=nstates, ncontrols=ncontrols,
                                 goal_buffer=goal_buffer, is_feasible=unset)

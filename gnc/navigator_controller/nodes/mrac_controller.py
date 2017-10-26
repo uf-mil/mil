@@ -15,12 +15,13 @@ from std_msgs.msg import String, Float64MultiArray
 
 class MRAC_Controller:
     LEARN_WRENCHES = ['/wrench/autonomous', 'autonomous']
+
     def __init__(self):
         '''
         Set-up.
 
         '''
-        #### TUNABLES
+        # TUNABLES
         # Proportional gains, body frame
         self.kp_body = np.diag([1000, 1000, 5600])
         # Derivative gains, body frame
@@ -38,7 +39,7 @@ class MRAC_Controller:
         # Limits on drag estimate effort
         self.drag_limit = np.array([1000, 1000, 1000])
         # User-imposed speed limit
-        self.vel_max_body_positive = np.array([1.1,  0.45, 0.19])  # [m/s, m/s, rad/s]
+        self.vel_max_body_positive = np.array([1.1, 0.45, 0.19])  # [m/s, m/s, rad/s]
         self.vel_max_body_negative = np.array([0.68, 0.45, 0.19])  # [m/s, m/s, rad/s]
         # "Smart heading" threshold
         self.heading_threshold = 500  # m
@@ -49,28 +50,34 @@ class MRAC_Controller:
         # Subscribes to /trajectory if using external, else just takes /waypoint for the end goal
         self.use_external_tgen = True
 
-        #### REFERENCE MODEL (note that this is not the adaptively estimated TRUE model; rather,
+        # REFERENCE MODEL (note that this is not the adaptively estimated TRUE model; rather,
         #                     these parameters will govern the trajectory we want to achieve).
         self.mass_ref = 500  # kg, determined to be larger than boat in practice due to water mass
         self.inertia_ref = 400  # kg*m^2, determined to be larger than boat in practice due to water mass
         self.thrust_max = 220  # N
-        self.thruster_positions = np.array([[-1.9000,  1.0000, -0.0123],
+
+        # back-left, back-right, front-left front-right, thruster positions in meters
+        self.thruster_positions = np.array([[-1.9000, 1.0000, -0.0123],
                                             [-1.9000, -1.0000, -0.0123],
-                                            [ 1.6000,  0.6000, -0.0123],
-                                            [ 1.6000, -0.6000, -0.0123]]) # back-left, back-right, front-left front-right, m
-        self.thruster_directions = np.array([[ 0.7071,  0.7071,  0.0000],
-                                             [ 0.7071, -0.7071,  0.0000],
-                                             [ 0.7071, -0.7071,  0.0000],
-                                             [ 0.7071,  0.7071,  0.0000]]) # back-left, back-right, front-left front-right
+                                            [1.6000, 0.6000, -0.0123],
+                                            [1.6000, -0.6000, -0.0123]])
+
+        # back-left, back-right, front-left, front-right thruster directions in radians
+        self.thruster_directions = np.array([[0.7071, 0.7071, 0.0000],
+                                             [0.7071, -0.7071, 0.0000],
+                                             [0.7071, -0.7071, 0.0000],
+                                             [0.7071, 0.7071, 0.0000]])
         self.lever_arms = np.cross(self.thruster_positions, self.thruster_directions)
         self.B_body = np.concatenate((self.thruster_directions.T, self.lever_arms.T))
         self.Fx_max_body = self.B_body.dot(self.thrust_max * np.array([1, 1, 1, 1]))
         self.Fy_max_body = self.B_body.dot(self.thrust_max * np.array([1, -1, -1, 1]))
         self.Mz_max_body = self.B_body.dot(self.thrust_max * np.array([-1, 1, -1, 1]))
-        self.D_body_positive = abs(np.array([self.Fx_max_body[0], self.Fy_max_body[1], self.Mz_max_body[5]])) / self.vel_max_body_positive**2
-        self.D_body_negative = abs(np.array([self.Fx_max_body[0], self.Fy_max_body[1], self.Mz_max_body[5]])) / self.vel_max_body_negative**2
+        self.D_body_positive = abs(np.array([self.Fx_max_body[0], self.Fy_max_body[1],
+                                             self.Mz_max_body[5]])) / self.vel_max_body_positive**2
+        self.D_body_negative = abs(np.array([self.Fx_max_body[0], self.Fy_max_body[1],
+                                             self.Mz_max_body[5]])) / self.vel_max_body_negative**2
 
-        #### BASIC INITIALIZATIONS
+        # BASIC INITIALIZATIONS
         # Position waypoint
         self.p_des = np.array([0, 0])
         # Orientation waypoint
@@ -78,7 +85,7 @@ class MRAC_Controller:
         # Total distance that will be traversed for this waypoint
         self.traversal = 0
         # Reference states
-        self.p_ref = None #np.array([0, 0])
+        self.p_ref = None  # np.array([0, 0])
         self.v_ref = np.array([0, 0])
         self.q_ref = np.array([0, 0, 0, 0])
         self.w_ref = 0
@@ -88,7 +95,7 @@ class MRAC_Controller:
         self.last_odom = None
         self.learn = False
 
-        #### ROS
+        # ROS
         # Time since last controller call = 1/controller_call_frequency
         self.timestep = 0.02
         # For unpacking ROS messages later on
@@ -122,15 +129,20 @@ class MRAC_Controller:
         Convert twist to world frame for controller math.
         '''
         self.p_ref = np.array([msg.posetwist.pose.position.x, msg.posetwist.pose.position.y])
-        self.q_ref = np.array([msg.posetwist.pose.orientation.x, msg.posetwist.pose.orientation.y, msg.posetwist.pose.orientation.z, msg.posetwist.pose.orientation.w])
+        self.q_ref = np.array([msg.posetwist.pose.orientation.x, msg.posetwist.pose.orientation.y,
+                               msg.posetwist.pose.orientation.z, msg.posetwist.pose.orientation.w])
 
         R = trns.quaternion_matrix(self.q_ref)[:3, :3]
 
-        self.v_ref = R.dot(np.array([msg.posetwist.twist.linear.x, msg.posetwist.twist.linear.y, msg.posetwist.twist.linear.z]))[:2]
-        self.w_ref = R.dot(np.array([msg.posetwist.twist.angular.x, msg.posetwist.twist.angular.y, msg.posetwist.twist.angular.z]))[2]
+        self.v_ref = R.dot(np.array([msg.posetwist.twist.linear.x,
+                                     msg.posetwist.twist.linear.y, msg.posetwist.twist.linear.z]))[:2]
+        self.w_ref = R.dot(np.array([msg.posetwist.twist.angular.x,
+                                     msg.posetwist.twist.angular.y, msg.posetwist.twist.angular.z]))[2]
 
-        self.a_ref = R.dot(np.array([msg.posetwist.acceleration.linear.x, msg.posetwist.acceleration.linear.y, msg.posetwist.acceleration.linear.z]))[:2]
-        self.aa_ref = R.dot(np.array([msg.posetwist.acceleration.angular.x, msg.posetwist.acceleration.angular.y, msg.posetwist.acceleration.angular.z]))[2]
+        self.a_ref = R.dot(np.array([msg.posetwist.acceleration.linear.x,
+                                     msg.posetwist.acceleration.linear.y, msg.posetwist.acceleration.linear.z]))[:2]
+        self.aa_ref = R.dot(np.array([msg.posetwist.acceleration.angular.x,
+                                      msg.posetwist.acceleration.angular.y, msg.posetwist.acceleration.angular.z]))[2]
 
     def set_traj_from_odom_msg(self, msg):
         '''
@@ -138,12 +150,14 @@ class MRAC_Controller:
         Convert twist to world frame for controller math.
         '''
         self.p_ref = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y])
-        self.q_ref = np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
+        self.q_ref = np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
+                               msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
 
         R = trns.quaternion_matrix(self.q_ref)[:3, :3]
 
         self.v_ref = R.dot(np.array([msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.linear.z]))[:2]
-        self.w_ref = R.dot(np.array([msg.twist.twist.angular.x, msg.twist.twist.angular.y, msg.twist.twist.angular.z]))[2]
+        self.w_ref = R.dot(
+            np.array([msg.twist.twist.angular.x, msg.twist.twist.angular.y, msg.twist.twist.angular.z]))[2]
 
         self.a_ref = np.array([0, 0])
         self.aa_ref = 0
@@ -154,7 +168,8 @@ class MRAC_Controller:
         Resets reference model to current state (i.e. resets trajectory generation).
         '''
         self.p_des = np.array([msg.pose.position.x, msg.pose.position.y])
-        self.q_des = np.array([msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w])
+        self.q_des = np.array([msg.pose.orientation.x, msg.pose.orientation.y,
+                               msg.pose.orientation.z, msg.pose.orientation.w])
         self.traversal = npl.norm(self.p_des - self.position)
         self.p_ref = self.position
         self.v_ref = self.lin_vel
@@ -206,7 +221,8 @@ class MRAC_Controller:
 
         # Compute error components (reference - true)
         p_err = self.p_ref - self.position
-        y_err = trns.euler_from_quaternion(trns.quaternion_multiply(self.q_ref, trns.quaternion_inverse(self.orientation)))[2]
+        y_err = trns.euler_from_quaternion(trns.quaternion_multiply(
+            self.q_ref, trns.quaternion_inverse(self.orientation)))[2]
         v_err = self.v_ref - self.lin_vel
         w_err = self.w_ref - self.ang_vel
 
@@ -215,12 +231,32 @@ class MRAC_Controller:
         errdot = np.concatenate((v_err, [w_err]))
 
         # Compute "anticipation" feedforward based on the boat's inertia
-        inertial_feedforward = np.concatenate((self.a_ref, [self.aa_ref])) * [self.mass_ref, self.mass_ref, self.inertia_ref]
+        inertial_feedforward = np.concatenate(
+            (self.a_ref, [self.aa_ref])) * [self.mass_ref, self.mass_ref, self.inertia_ref]
 
         # Compute the "learning" matrix
-        drag_regressor = np.array([[               self.lin_vel[0]*np.cos(y)**2 + self.lin_vel[1]*np.sin(y)*np.cos(y),    self.lin_vel[0]/2 - (self.lin_vel[0]*np.cos(2*y))/2 - (self.lin_vel[1]*np.sin(2*y))/2,                             -self.ang_vel*np.sin(y),                               -self.ang_vel*np.cos(y),          0],
-                                   [self.lin_vel[1]/2 - (self.lin_vel[1]*np.cos(2*y))/2 + (self.lin_vel[0]*np.sin(2*y))/2,                   self.lin_vel[1]*np.cos(y)**2 - self.lin_vel[0]*np.cos(y)*np.sin(y),                              self.ang_vel*np.cos(y),                               -self.ang_vel*np.sin(y),          0],
-                                   [                                                                     0,                                                                         0,    self.lin_vel[1]*np.cos(y) - self.lin_vel[0]*np.sin(y),    - self.lin_vel[0]*np.cos(y) - self.lin_vel[1]*np.sin(y),    self.ang_vel]])
+        drag_regressor = np.array([
+            [
+                self.lin_vel[0] * np.cos(y)**2 + self.lin_vel[1] * np.sin(y) * np.cos(y),
+                self.lin_vel[0] / 2 - (self.lin_vel[0] * np.cos(2 * y)) / 2 - (self.lin_vel[1] * np.sin(2 * y)) / 2,
+                -self.ang_vel * np.sin(y),
+                -self.ang_vel * np.cos(y),
+                0
+            ],
+            [
+                self.lin_vel[1] / 2 - (self.lin_vel[1] * np.cos(2 * y)) / 2 + (self.lin_vel[0] * np.sin(2 * y)) / 2,
+                self.lin_vel[1] * np.cos(y)**2 - self.lin_vel[0] * np.cos(y) * np.sin(y),
+                self.ang_vel * np.cos(y),
+                -self.ang_vel * np.sin(y),
+                0
+            ],
+            [
+                0,
+                0,
+                self.lin_vel[1] * np.cos(y) - self.lin_vel[0] * np.sin(y),
+                - self.lin_vel[0] * np.cos(y) - self.lin_vel[1] * np.sin(y),
+                self.ang_vel
+            ]])
 
         # wrench = PD + feedforward + I + adaptation
         if self.only_PD:
@@ -232,7 +268,8 @@ class MRAC_Controller:
             wrench = (kp.dot(err)) + (kd.dot(errdot)) + inertial_feedforward + self.dist_est + self.drag_effort
             # Update disturbance estimate, drag estimates
             if self.learn and (npl.norm(p_err) < self.learning_radius):
-                self.dist_est = np.clip(self.dist_est + (self.ki * err * self.timestep), -self.dist_limit, self.dist_limit)
+                self.dist_est = np.clip(self.dist_est + (self.ki * err * self.timestep), -
+                                        self.dist_limit, self.dist_limit)
                 self.drag_est = self.drag_est + (self.kg * (drag_regressor.T.dot(err + errdot)) * self.timestep)
 
         # Update model reference for the next call
@@ -258,14 +295,14 @@ class MRAC_Controller:
 
         # Publish reference pose for examination
         self.pose_ref_pub.publish(PoseStamped(
-             header=Header(
-                 frame_id='/enu',
-                 stamp=msg.header.stamp,
-             ),
-             pose=Pose(
-                 position=Point(self.p_ref[0], self.p_ref[1], 0),
-                 orientation=Quaternion(*self.q_ref),
-             ),
+            header=Header(
+                frame_id='/enu',
+                stamp=msg.header.stamp,
+            ),
+            pose=Pose(
+                position=Point(self.p_ref[0], self.p_ref[1], 0),
+                orientation=Quaternion(*self.q_ref),
+            ),
         ))
 
         # Publish adaptation (Y*theta) for plotting
@@ -278,7 +315,7 @@ class MRAC_Controller:
 
         try:
             self.theta_pub.publish(Float64MultiArray(data=self.drag_est))
-        except:
+        except BaseException:
             traceback.print_exc()
 
     def increment_reference(self):

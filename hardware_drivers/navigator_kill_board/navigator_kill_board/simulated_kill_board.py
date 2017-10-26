@@ -68,6 +68,7 @@ class SimulatedSerial(NoopSerial):
 
     Note: NoopSerial and SimulatedSerial are generic and are candidates for mil_common.
     '''
+
     def __init__(self, *args, **kwargs):
         self.buffer = ''
 
@@ -145,7 +146,8 @@ class SimulatedKillBoard(SimulatedSerial):
             self.light = status
 
     def _get_status(self, byte):
-        _res = lambda boolean: constants['RESPONSE_TRUE'] if boolean else constants['RESPONSE_FALSE']
+        def _res(boolean):
+            return constants['RESPONSE_TRUE'] if boolean else constants['RESPONSE_FALSE']
         if byte == constants['OVERALL']['REQUEST']:
             self.buffer = _res(self.killed) + self.buffer
             return

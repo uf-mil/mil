@@ -1,15 +1,13 @@
 #!/usr/bin/env python
-import numpy as np
 
 import rospy
 from mil_tools import numpy_to_point
-from twisted.internet import defer
 
 from navigator_tools.cfg import BoundsConfig
 from dynamic_reconfigure.server import Server
 
 from navigator_msgs.srv import Bounds, BoundsResponse, \
-                               CoordinateConversion, CoordinateConversionRequest
+    CoordinateConversion, CoordinateConversionRequest
 
 
 class BoundsServer(object):
@@ -19,10 +17,10 @@ class BoundsServer(object):
         self.enforce = False
         self.bounds = []
 
-        rospy.set_param("/bounds/enu/", [[0,0,0],[0,0,0],[0,0,0],[0,0,0]])        
+        rospy.set_param("/bounds/enu/", [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]])
         rospy.set_param("/bounds/enforce", self.enforce)
 
-        #self.convert = Converter()
+        # self.convert = Converter()
         Server(BoundsConfig, self.update_config)
         rospy.Service('/get_bounds', Bounds, self.got_request)
 
@@ -30,16 +28,16 @@ class BoundsServer(object):
         if any(c.isalpha() for c in lat_long_string):
             return False
 
-        floats = map(float, lat_long_string.replace('(', '').replace(')', '').split(',')) 
+        floats = map(float, lat_long_string.replace('(', '').replace(')', '').split(','))
 
         if len(floats) != 3:
             return False
-        
+
         return floats
 
     def update_config(self, config, level):
         self.enforce = config['enforce']
-        lla_bounds_str = [config['lla_1'] + ", 0", config['lla_2'] + ", 0", 
+        lla_bounds_str = [config['lla_1'] + ", 0", config['lla_2'] + ", 0",
                           config['lla_3'] + ", 0", config['lla_4'] + ", 0"]
         lla_bounds = map(self.destringify, lla_bounds_str)
         self.lla_bounds = lla_bounds
@@ -47,14 +45,14 @@ class BoundsServer(object):
         # If any returned false, don't update
         if all(lla_bounds):
             try:
-	        self.bounds = [self.convert(CoordinateConversionRequest(frame="lla", point=lla)) for lla in lla_bounds]
-            except:
+                self.bounds = [self.convert(CoordinateConversionRequest(frame="lla", point=lla)) for lla in lla_bounds]
+            except BaseException:
                 print "No service provider found"
                 return config
 
             config['enu_1_lat'] = self.bounds[0].enu[0]
             config['enu_1_long'] = self.bounds[0].enu[1]
-            
+
             config['enu_2_lat'] = self.bounds[1].enu[0]
             config['enu_2_long'] = self.bounds[1].enu[1]
 
@@ -63,10 +61,10 @@ class BoundsServer(object):
 
             config['enu_4_lat'] = self.bounds[3].enu[0]
             config['enu_4_long'] = self.bounds[3].enu[1]
-            
+
             rospy.set_param("/bounds/enu/", map(lambda bound: bound.enu[:2], self.bounds))
         else:
-            rospy.set_param("/bounds/enu/", [[0,0,00],[0,0,0],[0,0,0],[0,0,0]])
+            rospy.set_param("/bounds/enu/", [[0, 0, 00], [0, 0, 0], [0, 0, 0], [0, 0, 0]])
 
         rospy.set_param("/bounds/enforce", self.enforce)
         return config
@@ -83,6 +81,7 @@ class BoundsServer(object):
         resp.bounds = bounds
 
         return resp
+
 
 if __name__ == "__main__":
     rospy.init_node("bounds_server")

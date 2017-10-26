@@ -12,6 +12,7 @@ import numpy.ma as ma
 # Perception
 # Params : direction
 
+
 class FindTheBreakPerception(object):
 
     def __init__(self, nh):

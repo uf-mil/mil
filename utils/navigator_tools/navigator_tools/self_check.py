@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-from twisted.internet import defer, reactor
-import traceback
-import signal
 import txros
+from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage
 
 
 class FancyPrint(object):
@@ -18,10 +17,6 @@ class FancyPrint(object):
     @classmethod
     def error(self, text):
         print self.BAD + text + self.NORMAL
-
-
-from sensor_msgs.msg import Image
-from sensor_msgs.msg import CompressedImage
 
 
 def add_camera_feeds(nh, cam_name, image_type="image_raw"):
@@ -84,7 +79,7 @@ def main():
                 FancyPrint.okay(
                     "[ PASS ] Response found from {}".format(fancy_name))
 
-        except:
+        except BaseException:
             FancyPrint.error("[ FAIL ] No response from {}".format(fancy_name))
 
 

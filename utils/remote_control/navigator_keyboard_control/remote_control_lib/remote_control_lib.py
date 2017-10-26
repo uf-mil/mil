@@ -13,8 +13,8 @@ import actionlib
 from geometry_msgs.msg import WrenchStamped
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from navigator_msgs.msg import ShooterDoAction, ShooterDoActionGoal
-from topic_tools.srv import MuxSelect, MuxSelectRequest
-from navigator_msgs.srv import ShooterManual, ShooterManualRequest
+from topic_tools.srv import MuxSelect
+from navigator_msgs.srv import ShooterManual
 import rospy
 from std_srvs.srv import Trigger, TriggerRequest
 
@@ -79,7 +79,7 @@ class RemoteControl(object):
         rospy.loginfo("Killing")
         self.kill_broadcaster.raise_alarm(
             problem_description="System kill from user remote control",
-            parameters={'location':self.name}
+            parameters={'location': self.name}
         )
 
     @_timeout_check
@@ -103,9 +103,8 @@ class RemoteControl(object):
         else:
             self.kill_broadcaster.raise_alarm(
                 problem_description="System kill from user remote control",
-                parameters={'location':self.name}
+                parameters={'location': self.name}
             )
-
 
     @_timeout_check
     def station_hold(self, *args, **kwargs):
@@ -118,7 +117,7 @@ class RemoteControl(object):
         # Trigger station holding at the current pose
         self.station_hold_broadcaster.raise_alarm(
             problem_description="Request to station hold from remote control",
-            parameters={'location':self.name}
+            parameters={'location': self.name}
         )
 
     @_timeout_check

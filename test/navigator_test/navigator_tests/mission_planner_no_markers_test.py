@@ -1,4 +1,3 @@
-import abc
 from navigator_test_lib import TestUnit, SpoofGenerator
 from navigator_msgs.msg import PerceptionObjectArray, PerceptionObject
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryResponse
@@ -47,20 +46,26 @@ class MissionPlannerTest(TestUnit):
     @util.cancellableInlineCallbacks
     def run_tests(self):
         base_file = '/'.join(__file__.split('/')[0:-1]) + "/mission_planner_no_markers_yamls"
-        yield self._run_mission(base_file + "/mission_fails.yaml", self.pub_fail_mission, self.service, "Testing what happens "
-                                "when a mission fails / safe exit")
-        yield self._run_mission(base_file + "/missing_object.yaml", self.pub_missing_objects, self.service_missing, "Testing what "
-                                "happens when a mission loses an object dependency in the middle of the run. Also, when a "
-                                "mission runs and returns a MissingPerceptionObject")
-        yield self._run_mission(base_file + "/base_mission.yaml", self.pub_base_mission, self.service, "Testing that the "
-                                "base mission stops when a new object is found")
-        yield self._run_mission(base_file + "/normal_behavior_1.yaml", self.pub_normal_1, self.service,
-                                "Testing normal behavior")
-        yield self._run_mission(base_file + "/normal_behavior_2.yaml", self.pub_normal_2, self.service,
-                                "Testing normal behavior")
+        yield self._run_mission(
+            base_file + "/mission_fails.yaml", self.pub_fail_mission, self.service,
+            "Testing what happens when a mission fails / safe exit")
+        yield self._run_mission(
+            base_file + "/missing_object.yaml", self.pub_missing_objects, self.service_missing,
+            "Testing what happens when a mission loses an object dependency in the middle of the run.\
+            Also, when a mission runs and returns a MissingPerceptionObject")
+        yield self._run_mission(
+            base_file + "/base_mission.yaml", self.pub_base_mission, self.service,
+            "Testing that the base mission stops when a new object is found")
+        yield self._run_mission(
+            base_file + "/normal_behavior_1.yaml", self.pub_normal_1, self.service,
+            "Testing normal behavior")
+        yield self._run_mission(
+            base_file + "/normal_behavior_2.yaml", self.pub_normal_2, self.service,
+            "Testing normal behavior")
         yield self._run_mission(base_file + "/timeout.yaml", self.timeout, self.service, "Testing timeouts")
-        yield self._run_mission(base_file + "/object_appears.yaml", self.obj_appear, self.service, "Testing what happens when "
-                                "an object appears in the middle of a run")
+        yield self._run_mission(
+            base_file + "/object_appears.yaml", self.obj_appear, self.service,
+            "Testing what happens when an object appears in the middle of a run")
         yield self.pub_missing_objects
 
     @util.cancellableInlineCallbacks

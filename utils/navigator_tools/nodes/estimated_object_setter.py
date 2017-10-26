@@ -1,14 +1,12 @@
 #!/usr/bin/env python
-import numpy as np
 
-import ast
 import sys
 from argparse import RawTextHelpFormatter, ArgumentParser
 
 import txros
-from twisted.internet import defer
 from coordinate_conversion_server import Converter
 from navigator_msgs.srv import CoordinateConversionRequest, ObjectDBQuery, ObjectDBQueryRequest
+
 
 @txros.util.cancellableInlineCallbacks
 def main(name, lla):
@@ -22,7 +20,7 @@ def main(name, lla):
     name = '_'.join(map(lambda txt: txt.title(), name.split("_")))
 
     point = yield convert.request(CoordinateConversionRequest(frame="lla", point=lla))
-    yield db(ObjectDBQueryRequest(cmd="{}={p[0]}, {p[1]}".format(name, p=point.enu)))    
+    yield db(ObjectDBQueryRequest(cmd="{}={p[0]}, {p[1]}".format(name, p=point.enu)))
 
 
 if __name__ == "__main__":

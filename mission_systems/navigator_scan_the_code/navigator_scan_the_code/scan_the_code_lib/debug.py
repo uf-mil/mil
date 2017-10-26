@@ -45,7 +45,8 @@ class Debug(object):
         """
         Add an image to show to either with a topic or using cv2.imshow.
 
-        @param name = a unique key name for the image, use the same name if you want to switch out this image for another
+        @param name = a unique key name for the image,
+                      use the same name if you want to switch out this image for another
         @param wait = the amount of wait time for the imshow image
         """
         if topic != "image":

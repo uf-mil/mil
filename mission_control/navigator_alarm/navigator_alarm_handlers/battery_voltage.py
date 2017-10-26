@@ -1,5 +1,5 @@
 from ros_alarms import HandlerBase, AlarmBroadcaster
-from std_msgs.msg import Header, Float32
+from std_msgs.msg import Float32
 import rospy
 
 
@@ -23,7 +23,7 @@ class BatteryVoltage(HandlerBase):
                 self.broadcaster.raise_alarm(
                     severity=severity,
                     problem_description='battery critcaly low' if severity == 2 else 'battery low',
-                    parameters={'voltage':voltage}
+                    parameters={'voltage': voltage}
                 )
 
     def raised(self, alarm):

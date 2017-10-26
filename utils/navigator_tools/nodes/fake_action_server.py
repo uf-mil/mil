@@ -9,7 +9,7 @@ import tf.transformations as trns
 
 from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseStamped
-from navigator_path_planner.msg import MoveAction, MoveFeedback, MoveResult
+from navigator_path_planner.msg import MoveAction, MoveResult
 
 from mil_tools import make_header, rosmsg_to_numpy, pose_to_numpy
 from mil_misc_tools.text_effects import fprint as _fprint
@@ -18,18 +18,22 @@ from behaviors import params
 
 fprint = lambda *args, **kwargs: _fprint(title="FAKE_ACTION_SERVER", time="", *args, **kwargs)
 
+
 class FakeActionServer(object):
     def __init__(self):
         self.goal_pose_pub = rospy.Publisher("/lqrrt/goal", PoseStamped, queue_size=3)
 
         # Parameters to simulate lqrrt
         self.blind = False
-        
+
         self.ogrid = None
-        set_ogrid = lambda msg: setattr(self, "ogrid", msg)
+
+        def set_ogrid(msg):
+            return setattr(self, "ogrid", msg)
         rospy.Subscriber("/ogrid_master", OccupancyGrid, set_ogrid)
 
-        self.move_server = actionlib.SimpleActionServer("/move_to", MoveAction, execute_cb=self.move_cb, auto_start=False)
+        self.move_server = actionlib.SimpleActionServer(
+            "/move_to", MoveAction, execute_cb=self.move_cb, auto_start=False)
         self.move_server.start()
         rospy.sleep(.1)
 
@@ -70,12 +74,12 @@ class FakeActionServer(object):
         """
         # If there's no ogrid yet or it's a blind move, anywhere is valid
         if self.ogrid is None or self.blind:
-            return True 
+            return True
 
         # Body to world
         c, s = np.cos(x[2]), np.sin(x[2])
-        R = np.array([[c, -s], 
-        [s,  c]]) 
+        R = np.array([[c, -s],
+                      [s, c]])
 
         # Vehicle points in world frame
         points = x[:2] + R.dot(params.vps).T

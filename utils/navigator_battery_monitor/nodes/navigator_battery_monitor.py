@@ -50,7 +50,8 @@ class BatteryMonitor():
 
     def add_voltage(self, msg):
         '''
-        This is the callback function for feedback from all four motors. It appends the new readings to the end of the list and
+        This is the callback function for feedback from all four motors.
+        It appends the new readings to the end of the list and
         ensures that the list stays under 1000 entries.
         '''
 
@@ -62,14 +63,15 @@ class BatteryMonitor():
 
     def publish_voltage(self, event):
         '''
-        Publishes the average voltage across all four thrusters to the battery_voltage node as a standard Float32 message and runs
-        the voltage_check
+        Publishes the average voltage across all four thrusters to the battery_voltage node
+        as a standard Float32 message and runs the voltage_check
         '''
 
         if (len(self.supply_voltages) > 0):
             self.voltage = sum(self.supply_voltages) / len(self.supply_voltages)
 
         self.pub_voltage.publish(self.voltage)
+
 
 if __name__ == "__main__":
     monitor = BatteryMonitor()

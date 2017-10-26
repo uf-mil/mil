@@ -13,4 +13,3 @@ class NetworkLoss(HandlerBase):
 
     def cleared(self, alarm):
         pass
-

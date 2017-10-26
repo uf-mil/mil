@@ -66,7 +66,7 @@ class Joystick(object):
         # Assigns readable names to the buttons that are used
         start = joy.buttons[7]
         raise_kill = bool(joy.buttons[1])  # B
-        clear_kill = bool(joy.buttons[2]) # X
+        clear_kill = bool(joy.buttons[2])  # X
         station_hold = bool(joy.buttons[0])  # A
         rc_control = bool(joy.buttons[11])  # d-pad left
         emergency_control = bool(joy.buttons[13])  # d-pad up
