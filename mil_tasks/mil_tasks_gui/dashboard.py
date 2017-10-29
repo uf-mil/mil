@@ -80,6 +80,11 @@ class ObserveActionClient(ActionClient):
 
 
 class CenteredCheckBox(QtWidgets.QWidget):
+    '''
+    Wrapper around a checkbox widget that properly displays it in the center
+    of the parent widget, which is surprisingly complicated to do. Useful
+    for putting a checkbox in a table item.
+    '''
     def __init__(self):
         super(CenteredCheckBox, self).__init__()
         checkbox = QtWidgets.QCheckBox()
@@ -89,8 +94,24 @@ class CenteredCheckBox(QtWidgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
+    def checkState(self):
+        return self.checkbox().checkState()
+
+    def setCheckState(self, state):
+        return self.checkbox().setCheckState(state)
+
     def checked(self):
-        return self.layout().itemAt(0).widget().checkState() == QtCore.Qt.Checked
+        ''' return boolean of if box is checked '''
+        return self.checkState() == QtCore.Qt.Checked
+
+    def setChecked(self, checked):
+        ''' set checkbox to boolean checked or not '''
+        state = QtCore.Qt.Checked if checked else QtCore.Qt.Unchecked
+        return self.setCheckState(state)
+
+    def checkbox(self):
+        ''' returns internal checkbox widget for custom usage '''
+        return self.layout().itemAt(0).widget()
 
 
 class Dashboard(Plugin):
@@ -231,6 +252,7 @@ class Dashboard(Plugin):
             selected_item = self.available_missions_list.selectedItems()[0]
             mission = QtWidgets.QLabel(selected_item.text())
             required = CenteredCheckBox()
+            required.setChecked(True)  # Start with default required
             timeout = QtWidgets.QDoubleSpinBox()
             timeout.setValue(0)
             timeout.setMaximum(10000)
@@ -264,12 +286,8 @@ class Dashboard(Plugin):
             required = self.chained_missions_table.cellWidget(i, 1).checked()
             timeout = self.chained_missions_table.cellWidget(i, 2).value()
             parameters = self.chained_missions_table.cellWidget(i, 3).text()
-            try:
-                parameters = json.loads(parameters)
-            except ValueError:
-                pass
             tasks.append({'task': task, 'timeout': timeout, 'required': required, 'parameters': parameters})
-        goal_parameters = json.dumps(tasks)
+        goal_parameters = json.dumps({'tasks' : tasks})
         goal = DoTaskGoal(task='ChainWithTimeout', parameters=goal_parameters)
         self.task_runner_client.send_goal(goal)
         return True
