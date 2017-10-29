@@ -23,6 +23,7 @@ SOUTH = trns.quaternion_matrix(pose_editor.SOUTH)
 shapes = ['CIRCLE', 'TRIANGLE', 'CROSS']
 shuffle(shapes)
 
+
 class CoralSurvey(Navigator):
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
@@ -34,13 +35,14 @@ class CoralSurvey(Navigator):
 
         # Get the closest totem object to the boat
         totems_np = map(lambda obj: mil_tools.rosmsg_to_numpy(obj.position), totem.objects)
-        dist = map(lambda totem_np: np.linalg.norm(totem_np - mil_tools.rosmsg_to_numpy(est_coral_survey.objects[0].position)), totems_np)
+        dist = map(lambda totem_np: np.linalg.norm(
+            totem_np - mil_tools.rosmsg_to_numpy(est_coral_survey.objects[0].position)), totems_np)
         middle_point = totems_np[np.argmin(dist)]
 
         print "Totem sorted:", totems_np
         print "Totem selected: ", totems_np[0]
         quads_to_search = [1, 2, 3, 4]
-        quad = yield self.mission_params["acoustic_pinger_active_index_correct"].get() 
+        quad = yield self.mission_params["acoustic_pinger_active_index_correct"].get()
 
         waypoint_from_center = np.array([10 * np.sqrt(2)])
 
@@ -52,7 +54,7 @@ class CoralSurvey(Navigator):
         # Construct waypoint list along NSEW directions then rotate 45 degrees to get a good spot to go to.
         directions = [EAST, NORTH, WEST, SOUTH]
         waypoints = []
-        #for quad in quads_to_search:
+        # for quad in quads_to_search:
         mid = self.move.set_position(middle_point).set_orientation(directions[quad - 1])
         search_center = mid.yaw_left(45, "deg").forward(waypoint_from_center).set_orientation(NORTH)
         yield search_center.left(6).go()
@@ -63,6 +65,8 @@ class CoralSurvey(Navigator):
         defer.returnValue(None)
 
 # This really shouldn't be here - it should be somewhere behind the scenes
+
+
 class OgridFactory():
     def __init__(self, center, draw_borders=False):
         self.resolution = .3
@@ -88,7 +92,7 @@ class OgridFactory():
         origin_x = self.center[0] - 30
         origin_y = self.center[1] - 30
         self.origin = mil_tools.numpy_quat_pair_to_pose([origin_x, origin_y, 0],
-                                                              [0, 0, 0, 1])
+                                                        [0, 0, 0, 1])
 
         # The grid needs to have it's axes swaped since its row major
         self.grid = np.zeros((self.height / self.resolution, self.width / self.resolution)) - 1

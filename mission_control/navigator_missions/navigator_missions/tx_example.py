@@ -12,6 +12,8 @@ ex: `navigator.nh.sleep(1)`  won't do anything, but...
 
 All functions
 '''
+
+
 @txros.util.cancellableInlineCallbacks
 def main(navigator):
     m = navigator.move.forward(1).right(3).go()

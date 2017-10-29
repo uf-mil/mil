@@ -22,6 +22,7 @@ def _get_color(c):
     if c == 'g':
         return 'GREEN'
 
+
 class ScanTheCode(Navigator):
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
@@ -80,7 +81,6 @@ class ScanTheCode(Navigator):
         yield self.mission_params["scan_the_code_color1"].set(_get_color(c1))
         yield self.mission_params["scan_the_code_color2"].set(_get_color(c2))
         yield self.mission_params["scan_the_code_color3"].set(_get_color(c3))
-
 
     @txros.util.cancellableInlineCallbacks
     def cleanup(self):

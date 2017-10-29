@@ -14,6 +14,7 @@ from navigator import Navigator
 
 ___author___ = "Kevin Allen"
 
+
 class PingerExitMission(Navigator):
     OBSERVE_DISTANCE_METERS = 6
     GATE_CROSS_METERS = 7
@@ -43,7 +44,7 @@ class PingerExitMission(Navigator):
     def set_side(self):
         """Set 2 points to observe the pinger from, in front of gates 1 and 3"""
         self.get_gate_perp()
-        #Make sure they are actually in a line
+        # Make sure they are actually in a line
         if np.isnan(self.g_perp[0]) or np.isnan(self.g_perp[1]):
             raise Exception("Gates are not in a line")
         neg = yield self.mission_params["pinger_negate"].get()
@@ -55,7 +56,7 @@ class PingerExitMission(Navigator):
         self.get_gate_thru_points()
         yield self.move.set_position(self.gate_thru_points[0]).look_at(self.gate_thru_points[1]).go()
         yield self.move.set_position(self.gate_thru_points[1]).go()
-        #for p in self.gate_thru_points:
+        # for p in self.gate_thru_points:
         #    yield self.move.set_position(p).go(initial_plan_time=5)
 
     def get_gate_perp(self):
@@ -63,7 +64,7 @@ class PingerExitMission(Navigator):
         delta_g = self.gate_poses[2] - self.gate_poses[0]
         rot_right = np.array([[0, -1], [1, 0]])
         g_perp = rot_right.dot(delta_g)
-        g_perp = g_perp /  np.linalg.norm(g_perp)
+        g_perp = g_perp / np.linalg.norm(g_perp)
         self.g_perp = g_perp
         self.g_line = delta_g / np.linalg.norm(delta_g)
 

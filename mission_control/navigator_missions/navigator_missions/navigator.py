@@ -94,17 +94,20 @@ class Navigator(BaseTask):
 
         cls._moveto_client = action.ActionClient(cls.nh, 'move_to', MoveAction)
 
-        odom_set = lambda odom: setattr(cls, 'pose', mil_tools.odometry_to_numpy(odom)[0])
+        def odom_set(odom): return setattr(cls, 'pose', mil_tools.odometry_to_numpy(odom)[0])
         cls._odom_sub = cls.nh.subscribe('odom', Odometry, odom_set)
-        enu_odom_set = lambda odom: setattr(cls, 'ecef_pose', mil_tools.odometry_to_numpy(odom)[0])
+
+        def enu_odom_set(odom): return setattr(cls, 'ecef_pose', mil_tools.odometry_to_numpy(odom)[0])
         cls._ecef_odom_sub = cls.nh.subscribe('absodom', Odometry, enu_odom_set)
 
         try:
             cls._database_query = cls.nh.get_service_client('/database/requests', navigator_srvs.ObjectDBQuery)
-            cls._camera_database_query = cls.nh.get_service_client('/camera_database/requests', navigator_srvs.CameraDBQuery)
+            cls._camera_database_query = cls.nh.get_service_client(
+                '/camera_database/requests', navigator_srvs.CameraDBQuery)
             cls._change_wrench = cls.nh.get_service_client('/wrench/select', MuxSelect)
         except AttributeError, err:
-            fprint("Error getting service clients in nav singleton init: {}".format(err), title="NAVIGATOR", msg_color='red')
+            fprint("Error getting service clients in nav singleton init: {}".format(
+                err), title="NAVIGATOR", msg_color='red')
 
         cls.tf_listener = tf.TransformListener(cls.nh)
 

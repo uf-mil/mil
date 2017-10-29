@@ -5,6 +5,7 @@ from twisted.internet import defer
 import numpy as np
 from sensor_msgs.msg import Joy  # We all need a little joy in our lives
 
+
 class Teleop(Navigator):
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):

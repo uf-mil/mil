@@ -7,6 +7,7 @@ from geometry_msgs.msg import PoseArray
 from std_msgs.msg import Header
 from mil_tools import numpy_quat_pair_to_pose
 
+
 @util.cancellableInlineCallbacks
 def main(navigator):
     waypoints = []
@@ -32,7 +33,7 @@ def main(navigator):
             pa = PoseArray(header=Header(frame_id="enu"), poses=poses)
             print "SET"
             yield waypoint_pub.publish(pa)
-        
+
         last_set = b_set
 
         if b_go and len(waypoints) > 1:
@@ -43,4 +44,3 @@ def main(navigator):
         yield waypoint.go()
         print "Arrived!"
         yield navigator.nh.sleep(5)
-        

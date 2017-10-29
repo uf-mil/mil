@@ -4,12 +4,14 @@ import txros
 from twisted.internet import defer
 import numpy as np
 
+
 class Killed(Navigator):
     '''
     Run when Navigator is killed. Exsists mostly to
     cancel the current mission on kill and print
     this to the GUI.
     '''
+
     def run(self, parameters):
         alarm = self.kill_alarm
         if alarm.node_name != '':

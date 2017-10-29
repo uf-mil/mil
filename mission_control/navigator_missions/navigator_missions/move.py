@@ -17,23 +17,23 @@ class Move(Navigator):
     @classmethod
     def init(cls):
         parser = ThrowingArgumentParser(description='Command Line Mission Runner',
-            usage='Pass any pose editor command with an argument. \n\t forward 1 (moves forward 1 meter) \n\t backward 2ft (moves backward 2 feet)')
+                                        usage='Pass any pose editor command with an argument. \n\t forward 1 (moves forward 1 meter) \n\t backward 2ft (moves backward 2 feet)')
         parser.add_argument('command', type=str,
-            help='Pose editor command to run')
+                            help='Pose editor command to run')
         parser.add_argument('argument', type=str, default=0,
-            help='An argument to pass to the command (distance or angle usally). Optionally a unit can be added if a non-standard unit is desired.')
+                            help='An argument to pass to the command (distance or angle usally). Optionally a unit can be added if a non-standard unit is desired.')
         parser.add_argument('-m', '--movetype', type=str, default='drive',
-            help='Move type. See lqrrt documentation for info on how to use this.')
+                            help='Move type. See lqrrt documentation for info on how to use this.')
         parser.add_argument('-f', '--focus', type=str,
-            help='Point to focus on. See lqrrt documentation for info on how to use this. If not specified, default to focusing around clicked point. ex. "[10, 2.3, 1]"')
+                            help='Point to focus on. See lqrrt documentation for info on how to use this. If not specified, default to focusing around clicked point. ex. "[10, 2.3, 1]"')
         parser.add_argument('-s', '--sim', action='store_true',
-            help='This will run navigator in sim mode (ie. not wait for odom or enu bounds). Don\'t do this on the boat.')
+                            help='This will run navigator in sim mode (ie. not wait for odom or enu bounds). Don\'t do this on the boat.')
         parser.add_argument('-p', '--plantime', type=float,
-            help='Time given to the planner for it\'s first plan.')
+                            help='Time given to the planner for it\'s first plan.')
         parser.add_argument('-b', '--blind', action='store_true',
-            help='Move without looking at the ogrid. DANGEROUS.')
+                            help='Move without looking at the ogrid. DANGEROUS.')
         parser.add_argument('-sf', '--speedfactor', type=str, default="[1, 1, 1]",
-            help='Speed to execute the command, don\'t go too much higher than 1 on the real boat. Use like "[1, 1, .2]" to reduce rotation speed to 20% max or just ".5" to reduce x, y, and rotational speed to 50% max.')
+                            help='Speed to execute the command, don\'t go too much higher than 1 on the real boat. Use like "[1, 1, .2]" to reduce rotation speed to 20% max or just ".5" to reduce x, y, and rotational speed to 50% max.')
         cls.parser = parser
 
     @util.cancellableInlineCallbacks
@@ -41,7 +41,7 @@ class Move(Navigator):
         if not self.pose:
             raise Exception('Cant move: No odom')
 
-        action_kwargs = {'move_type': args.movetype}#, 'speed_factor': args.speedfactor}
+        action_kwargs = {'move_type': args.movetype}  # , 'speed_factor': args.speedfactor}
 
         action_kwargs['blind'] = args.blind
         yield self.change_wrench('autonomous')
@@ -83,7 +83,8 @@ class Move(Navigator):
             res = yield self.move.circle_point(target_point, direction).go()
 
         else:
-            shorthand = {"f":"forward", "b":"backward", "l":"left", "r":"right", "yl":"yaw_left", "yr":"yaw_right"}
+            shorthand = {"f": "forward", "b": "backward", "l": "left",
+                         "r": "right", "yl": "yaw_left", "yr": "yaw_right"}
             command = args.command if args.command not in shorthand.keys() else shorthand[args.command]
             movement = getattr(self.move, command)
 
@@ -107,4 +108,3 @@ class Move(Navigator):
         if res.failure_reason is not '':
             raise Exception('Move failed. Reason: {}'.format(res.failure_reason))
         defer.returnValue('Move completed successfully!')
-

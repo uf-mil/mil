@@ -3,6 +3,7 @@ import txros
 import numpy as np
 from navigator import Navigator
 
+
 class Circle(Navigator):
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):

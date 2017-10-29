@@ -3,6 +3,7 @@ from navigator import Navigator
 import txros
 import numpy as np
 
+
 class BackAndForth(Navigator):
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
