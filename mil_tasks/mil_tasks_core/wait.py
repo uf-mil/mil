@@ -1,5 +1,6 @@
 from txros import util
 from twisted.internet import defer
+from exceptions import ParametersException
 
 
 def MakeWait(base):
@@ -13,18 +14,17 @@ def MakeWait(base):
         '''
         DEFAULT_SECONDS = 1.0
 
+        @classmethod
+        def decode_parameters(cls, parameters):
+            if parameters != '':
+                try:
+                    return float(parameters)
+                except ValueError:
+                    raise ParametersException('must be a number')
+            return cls.DEFAULT_SECONDS
+
         @util.cancellableInlineCallbacks
-        def run(self, parameters):
-            # If parameter is just a number, sleep this time in seconds
-            if type(parameters) == int or type(parameters) == float:
-                time = float(parameters)
-            # If parameters is a json dictionary, extract the time
-            elif type(parameters) == dict and 'time' in parameters:
-                time = parameters['time']
-                if type(parameters) != int and type(parameters) != float:
-                    raise Exception('time parameter must by a number')
-            else:
-                time = self.DEFAULT_SECONDS
+        def run(self, time):
             self.send_feedback('waiting for {} seconds'.format(time))
             yield self.nh.sleep(time)
             defer.returnValue('Done waiting.')

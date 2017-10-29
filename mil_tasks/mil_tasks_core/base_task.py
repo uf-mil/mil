@@ -1,4 +1,5 @@
 import json
+from twisted.internet import defer
 
 
 class BaseTask(object):
@@ -77,11 +78,16 @@ class BaseTask(object):
         '''
         self.send_feedback('{}: {}'.format(child.name(), message))
 
+    @classmethod
     def has_task(self, name):
         '''
         Returns true if the task runner has a task with specified name
         '''
         return self.task_runner.has_task(name)
+
+    @classmethod
+    def get_task(self, name):
+        return self.task_runner.get_task(name)
 
     def run_subtask(self, name, parameters=''):
         '''
@@ -97,13 +103,17 @@ class BaseTask(object):
         if not self.has_task(name):
             raise Exception('Cannot run_subtask, \'{}\' unrecognized'.format(name))
         task = self.task_runner.tasks[name](parent=self)
-        return task.run(parameters)
+        return defer.maybeDeferred(task.run, parameters)
 
-    def decode_parameters(self, parameters):
+    @classmethod
+    def decode_parameters(cls, parameters):
         '''
-        Override in individual tasks to change how the parameters string is decoded before
-        being set to the run() function. By default, attempts to decode the string as json
-        and just returns the original string if it fails.
+        Process parameters string from new task goal or subtask. Should return the
+        processes parameters which will be passed to the run function. By default
+        returns the json decoded object in the string or, if this fails, just
+        the original string.
+
+        If this function throws an exception (such as a ParametersException), the task will be aborted.
         '''
         try:
             return json.loads(parameters)
