@@ -9,8 +9,10 @@ from mil_misc_tools import ThrowingArgumentParser, ArgumentParserException
 
 
 class Move(Navigator):
-    def decode_parameters(self, parameters):
-        return parameters  # Dont bother trying to see params as json
+    @classmethod
+    def decode_parameters(cls, parameters):
+        argv = parameters.split()
+        return cls.parser.parse_args(argv)
 
     @classmethod
     def init(cls):
@@ -35,14 +37,7 @@ class Move(Navigator):
         cls.parser = parser
 
     @util.cancellableInlineCallbacks
-    def run(self, parameters):
-        if type(parameters) == unicode:
-            parameters = str(parameters)
-        if type(parameters) != str:
-            defer.returnValue('parameters not string')
-        argv = parameters.split()
-        args = self.parser.parse_args(argv)
-
+    def run(self, args):
         if not self.pose:
             raise Exception('Cant move: No odom')
 
