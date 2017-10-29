@@ -45,8 +45,8 @@ class Kill(HandlerBase):
         ignore = []
 
         # Don't kill on low battery, only on critical
-        #if alarms['battery-voltage'].raised and alarms['battery-voltage'].severity < 2:
-        #    ignore.append('battery-voltage')
+        # if alarms['battery-voltage'].raised and alarms['battery-voltage'].severity < 2:
+        #     ignore.append('battery-voltage')
 
         # Raised if any alarms besides the two above are raised
         return any([alarm.raised for name, alarm in alarms.items()

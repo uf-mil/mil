@@ -1,17 +1,10 @@
 #!/usr/bin/env python
 import unittest
 import rospy
-import threading
-import serial
-import time
-from std_msgs.msg import Header, String
-from mil_tools import thread_lock
+from std_msgs.msg import Header
 from ros_alarms import AlarmBroadcaster, AlarmListener
-from navigator_kill_board import constants
-from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
-from navigator_kill_board import SimulatedKillBoard
-from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
-from ros_alarms.msg import Alarm as AlarmMsg
+from diagnostic_msgs.msg import DiagnosticArray
+from std_srvs.srv import SetBool
 
 
 class killtest(unittest.TestCase):
