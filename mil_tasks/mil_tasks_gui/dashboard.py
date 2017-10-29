@@ -136,13 +136,13 @@ class Dashboard(Plugin):
         self.task_runner_client.register_observer_transition_cb(self.transition_cb)
         self.task_runner_client.register_observer_feedback_cb(self.feedback_cb)
 
-        self.current_mission = None
-        self.current_mission_status = ''
-        self.current_mission_task = ''
-        self.current_mission_result = ''
+        self.current_task = None
+        self.current_task_status = ''
+        self.current_task_task = ''
+        self.current_task_result = ''
 
         self.connect_ui()
-        self.reload_available_missions(None)
+        self.reload_available_tasks(None)
 
         # Deals with problem when they're multiple instances of Dashboard plugin
         if context.serial_number() > 1:
@@ -176,31 +176,31 @@ class Dashboard(Plugin):
         '''
         status = handler.get_goal_status()
         if status == GoalStatus.ACTIVE:
-            if self.current_mission and goal.id != self.current_mission:
+            if self.current_task and goal.id != self.current_task:
                 pass
                 # Another active goal happened, clear Feedback and stuff
             self.result_label.clear()
-            self.current_mission = goal.id
-            self.current_mission_task = handler.comm_state_machine.action_goal.goal.task
-            self.current_mission_status = 'In progress'
-            self.current_mission_status_label.setText(self.current_mission_status)
-            self.current_mission_result = ''
-            self.current_mission_label.setText(self.current_mission_task)
-            self.ui_log('STARTING: new task {}'.format(self.current_mission_task))
-        if goal.id == self.current_mission:
+            self.current_task = goal.id
+            self.current_task_task = handler.comm_state_machine.action_goal.goal.task
+            self.current_task_status = 'In progress'
+            self.current_task_status_label.setText(self.current_task_status)
+            self.current_task_result = ''
+            self.current_task_label.setText(self.current_task_task)
+            self.ui_log('STARTING: new task {}'.format(self.current_task_task))
+        if goal.id == self.current_task:
             terminal_state = TerminalState.to_string(status)
             if terminal_state == 'NO_SUCH_STATE_1':
                 return
             result = handler.get_result()
-            if result and result.result != self.current_mission_result:
+            if result and result.result != self.current_task_result:
                 self.result_label.setText(result.result)
                 self.ui_log('RESULT: {}'.format(result.result))
-            if terminal_state != self.current_mission_status:
-                self.current_mission_status = terminal_state
-                self.current_mission_status_label.setText(self.current_mission_status)
-                self.ui_log('FINISHED: task finished ({})'.format(self.current_mission_status))
+            if terminal_state != self.current_task_status:
+                self.current_task_status = terminal_state
+                self.current_task_status_label.setText(self.current_task_status)
+                self.ui_log('FINISHED: task finished ({})'.format(self.current_task_status))
 
-    def reload_available_missions(self, _):
+    def reload_available_tasks(self, _):
         '''
         Load available tasks from the ROS param set by the task server. Called when the refresh
         button is hit and once on startup. Also clears the chained pane as it may now be invalid.
@@ -208,12 +208,12 @@ class Dashboard(Plugin):
         if not rospy.has_param('/available_tasks'):  # If the param is not there, log this
             self.ui_log('ERROR: /available_tasks param not set. Perhaps task runner is not running?')
             return
-        self.missions = rospy.get_param('/available_tasks')
-        self.available_missions_list.clear()
-        for i in reversed(range(self.chained_missions_table.rowCount())):
-            self.chained_missions_table.removeRow(i)
-        for i, mission in enumerate(self.missions):
-            self.available_missions_list.insertItem(i, mission)
+        self.tasks = rospy.get_param('/available_tasks')
+        self.available_tasks_list.clear()
+        for i in reversed(range(self.chained_tasks_table.rowCount())):
+            self.chained_tasks_table.removeRow(i)
+        for i, task in enumerate(self.tasks):
+            self.available_tasks_list.insertItem(i, task)
         return True
 
     def clear_log(self, event):
@@ -223,34 +223,34 @@ class Dashboard(Plugin):
         self.feedback_list.clear()
         return True
 
-    def chained_missions_drop_cb(self, event):
+    def chained_tasks_drop_cb(self, event):
         '''
-        Called when a mission is dropped from the available_missions_list to the chained_missions_table,
-        or when a mission is moved (reordered) within the chained_missions_table.
+        Called when a task is dropped from the available_tasks_list to the chained_tasks_table,
+        or when a task is moved (reordered) within the chained_tasks_table.
         '''
-        idx = self.chained_missions_table.indexAt(event.pos()).row()
+        idx = self.chained_tasks_table.indexAt(event.pos()).row()
         if idx == -1:  # Handle insertion at end of table
-            idx = self.chained_missions_table.rowCount()
+            idx = self.chained_tasks_table.rowCount()
 
         # If drop is from itself, do a reorder
-        if event.source() == self.chained_missions_table:
+        if event.source() == self.chained_tasks_table:
             # Now swap the two rows
-            selected_index = self.chained_missions_table.selectedIndexes()[0].row()
+            selected_index = self.chained_tasks_table.selectedIndexes()[0].row()
             if idx == selected_index:
                 return
-            self.chained_missions_table.insertRow(idx)
+            self.chained_tasks_table.insertRow(idx)
             if selected_index > idx:
                 selected_index += 1
-            for i in range(self.chained_missions_table.columnCount()):
-                self.chained_missions_table.setCellWidget(
+            for i in range(self.chained_tasks_table.columnCount()):
+                self.chained_tasks_table.setCellWidget(
                     idx, i,
-                    self.chained_missions_table.cellWidget(selected_index, i))
-            self.chained_missions_table.removeRow(selected_index)
+                    self.chained_tasks_table.cellWidget(selected_index, i))
+            self.chained_tasks_table.removeRow(selected_index)
 
         # If drop is from available list, insert it at the dropped row
-        elif event.source() == self.available_missions_list:
-            selected_item = self.available_missions_list.selectedItems()[0]
-            mission = QtWidgets.QLabel(selected_item.text())
+        elif event.source() == self.available_tasks_list:
+            selected_item = self.available_tasks_list.selectedItems()[0]
+            task = QtWidgets.QLabel(selected_item.text())
             required = CenteredCheckBox()
             required.setChecked(True)  # Start with default required
             timeout = QtWidgets.QDoubleSpinBox()
@@ -258,20 +258,20 @@ class Dashboard(Plugin):
             timeout.setMaximum(10000)
             timeout.setSuffix('s')
             parameters = QtWidgets.QLineEdit('')
-            self.chained_missions_table.insertRow(idx)
-            self.chained_missions_table.setCellWidget(idx, 0, mission)
-            self.chained_missions_table.setCellWidget(idx, 1, required)
-            self.chained_missions_table.setCellWidget(idx, 2, timeout)
-            self.chained_missions_table.setCellWidget(idx, 3, parameters)
+            self.chained_tasks_table.insertRow(idx)
+            self.chained_tasks_table.setCellWidget(idx, 0, task)
+            self.chained_tasks_table.setCellWidget(idx, 1, required)
+            self.chained_tasks_table.setCellWidget(idx, 2, timeout)
+            self.chained_tasks_table.setCellWidget(idx, 3, parameters)
 
-    def available_missions_drop_cb(self, event):
+    def available_tasks_drop_cb(self, event):
         '''
         Handles drag and drops from the chained task table to the available tasks pane,
         which should just delete it from the table.
         '''
-        if event.source() == self.chained_missions_table:  # If dragged from table, delete from table
-            selected_index = self.chained_missions_table.selectedIndexes()[0].row()
-            self.chained_missions_table.removeRow(selected_index)
+        if event.source() == self.chained_tasks_table:  # If dragged from table, delete from table
+            selected_index = self.chained_tasks_table.selectedIndexes()[0].row()
+            self.chained_tasks_table.removeRow(selected_index)
 
     def run_chained_cb(self, event):
         '''
@@ -281,13 +281,13 @@ class Dashboard(Plugin):
         TODO: deal with possibility of table being changed in this loop, perhaps by freezing it
         '''
         tasks = []
-        for i in range(self.chained_missions_table.rowCount()):
-            task = self.chained_missions_table.cellWidget(i, 0).text()
-            required = self.chained_missions_table.cellWidget(i, 1).checked()
-            timeout = self.chained_missions_table.cellWidget(i, 2).value()
-            parameters = self.chained_missions_table.cellWidget(i, 3).text()
+        for i in range(self.chained_tasks_table.rowCount()):
+            task = self.chained_tasks_table.cellWidget(i, 0).text()
+            required = self.chained_tasks_table.cellWidget(i, 1).checked()
+            timeout = self.chained_tasks_table.cellWidget(i, 2).value()
+            parameters = self.chained_tasks_table.cellWidget(i, 3).text()
             tasks.append({'task': task, 'timeout': timeout, 'required': required, 'parameters': parameters})
-        goal_parameters = json.dumps({'tasks' : tasks})
+        goal_parameters = json.dumps({'tasks': tasks})
         goal = DoTaskGoal(task='ChainWithTimeout', parameters=goal_parameters)
         self.task_runner_client.send_goal(goal)
         return True
@@ -297,20 +297,20 @@ class Dashboard(Plugin):
         When the run task button is pressed, run the selected task in the available task pane
         with the parameters in the textbox.
         '''
-        selected = self.available_missions_list.selectedItems()
+        selected = self.available_tasks_list.selectedItems()
         if len(selected) == 0:
-            self.ui_log('ERROR: tried to run single mission with none selected')
+            self.ui_log('ERROR: tried to run single task with none selected')
             return False
         task = selected[0].text()
-        if task not in self.missions:
+        if task not in self.tasks:
             print 'Unavailable task selected somehow, ignoring'
             return
-        parameters = self.single_mission_parameters.text()
+        parameters = self.single_task_parameters.text()
         goal = DoTaskGoal(task=task, parameters=parameters)
         self.task_runner_client.send_goal(goal)
         return True
 
-    def cancel_mission_cb(self, event):
+    def cancel_task_cb(self, event):
         '''
         When the cancel button is pressed, send a goal to the task server to cancel the current task.
         '''
@@ -321,26 +321,26 @@ class Dashboard(Plugin):
         '''
         Stores various interactive widgets as member variabes so we can get and set their contents.
         '''
-        self.chained_missions_table = self._widget.findChild(QtWidgets.QFrame, 'chained_missions_table')
-        self.chained_missions_table.setDragDropMode(QtWidgets.QAbstractItemView.DragDrop)
-        self.chained_missions_table.dropEvent = self.chained_missions_drop_cb
-        self.chained_missions_table.setColumnWidth(1, 55)  # Make required header just big enough for check box
-        self.available_missions_list = self._widget.findChild(QtWidgets.QFrame, 'available_missions')
-        self.available_missions_list.setDragEnabled(True)
-        self.available_missions_list.setDragDropMode(QtWidgets.QAbstractItemView.DragDrop)
-        self.available_missions_list.dropEvent = self.available_missions_drop_cb
+        self.chained_tasks_table = self._widget.findChild(QtWidgets.QFrame, 'chained_tasks_table')
+        self.chained_tasks_table.setDragDropMode(QtWidgets.QAbstractItemView.DragDrop)
+        self.chained_tasks_table.dropEvent = self.chained_tasks_drop_cb
+        self.chained_tasks_table.setColumnWidth(1, 55)  # Make required header just big enough for check box
+        self.available_tasks_list = self._widget.findChild(QtWidgets.QFrame, 'available_tasks')
+        self.available_tasks_list.setDragEnabled(True)
+        self.available_tasks_list.setDragDropMode(QtWidgets.QAbstractItemView.DragDrop)
+        self.available_tasks_list.dropEvent = self.available_tasks_drop_cb
         self.run_chained_button = self._widget.findChild(QtWidgets.QPushButton, 'run_chained_button')
         self.run_chained_button.clicked.connect(self.run_chained_cb)
-        self.single_mission_button = self._widget.findChild(QtWidgets.QPushButton, 'single_mission_button')
-        self.single_mission_button.clicked.connect(self.run_single_cb)
-        self.cancel_button = self._widget.findChild(QtWidgets.QPushButton, 'cancel_mission_button')
-        self.cancel_button.clicked.connect(self.cancel_mission_cb)
-        self.single_mission_parameters = self._widget.findChild(QtWidgets.QLineEdit, 'single_mission_parameters')
-        self.current_mission_label = self._widget.findChild(QtWidgets.QLabel, 'current_task_label')
-        self.current_mission_status_label = self._widget.findChild(QtWidgets.QLabel, 'current_status_label')
+        self.single_task_button = self._widget.findChild(QtWidgets.QPushButton, 'single_task_button')
+        self.single_task_button.clicked.connect(self.run_single_cb)
+        self.cancel_button = self._widget.findChild(QtWidgets.QPushButton, 'cancel_task_button')
+        self.cancel_button.clicked.connect(self.cancel_task_cb)
+        self.single_task_parameters = self._widget.findChild(QtWidgets.QLineEdit, 'single_task_parameters')
+        self.current_task_label = self._widget.findChild(QtWidgets.QLabel, 'current_task_label')
+        self.current_task_status_label = self._widget.findChild(QtWidgets.QLabel, 'current_status_label')
         self.feedback_list = self._widget.findChild(QtWidgets.QListWidget, 'log_list')
         self.result_label = self._widget.findChild(QtWidgets.QLabel, 'result_label')
         self.clear_log_button = self._widget.findChild(QtWidgets.QPushButton, 'clear_log_button')
         self.clear_log_button.clicked.connect(self.clear_log)
-        self.refresh_missions_button = self._widget.findChild(QtWidgets.QPushButton, 'refresh_missions_button')
-        self.refresh_missions_button.clicked.connect(self.reload_available_missions)
+        self.refresh_tasks_button = self._widget.findChild(QtWidgets.QPushButton, 'refresh_tasks_button')
+        self.refresh_tasks_button.clicked.connect(self.reload_available_tasks)

@@ -25,12 +25,12 @@ class BaseTask(object):
     @classmethod
     def name(cls):
         '''
-        Override for real tasks to return a string for how the mission
-        with be referenced in the GUI/CLI. For example, a mission implemented
+        Override for real tasks to return a string for how the task
+        with be referenced in the GUI/CLI. For example, a task implemented
         in class MyCoolMission might implement
         @classmethod
         def name(cls):
-            return 'My cool mission'
+            return 'My cool task'
         '''
         return cls.__name__
 
@@ -126,7 +126,7 @@ class BaseTask(object):
         or raises an exception. Called after the run defer is canceled,
         but before any other task is run. It should therefore finish
         very quickly, and only do things like set default parameters for future
-        missions, turn off perception, etc.
+        tasks, turn off perception, etc.
         '''
         pass
 

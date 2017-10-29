@@ -45,7 +45,7 @@ def MakeChainWithTimeout(base):
             parameters = json.loads(parameters)
             if type(parameters) != dict:
                 raise ParametersException('must be a dictionary')
-            if not 'tasks' in parameters:
+            if 'tasks' not in parameters:
                 raise ParametersException('must have "tasks" list')
             if not isinstance(parameters['tasks'], list):
                 raise ParametersException('"tasks" attribute must be a list')
@@ -53,7 +53,7 @@ def MakeChainWithTimeout(base):
                 if 'task' not in task:
                     raise Exception('invalid parameters, missing attribute "task"')
                 if not cls.has_task(task['task']):
-                    raise Exception('task "{}" not available'.format(mission['task']))
+                    raise Exception('task "{}" not available'.format(task['task']))
                 if 'parameters' not in task:
                     task['parameters'] = ''
                 try:

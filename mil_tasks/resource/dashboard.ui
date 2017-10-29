@@ -42,7 +42,7 @@
               </font>
              </property>
              <property name="text">
-              <string>Available Missions</string>
+              <string>Available Tasks</string>
              </property>
             </widget>
            </item>
@@ -60,7 +60,7 @@
             </spacer>
            </item>
            <item>
-            <widget class="QPushButton" name="refresh_missions_button">
+            <widget class="QPushButton" name="refresh_tasks_button">
              <property name="text">
               <string>Refresh</string>
              </property>
@@ -69,7 +69,7 @@
           </layout>
          </item>
          <item>
-          <widget class="QListWidget" name="available_missions">
+          <widget class="QListWidget" name="available_tasks">
            <property name="font">
             <font>
              <family>Monospace</family>
@@ -88,14 +88,14 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="single_mission_parameters"/>
+            <widget class="QLineEdit" name="single_task_parameters"/>
            </item>
           </layout>
          </item>
          <item>
-          <widget class="QPushButton" name="single_mission_button">
+          <widget class="QPushButton" name="single_task_button">
            <property name="text">
-            <string>Run Mission</string>
+            <string>Run Task</string>
            </property>
           </widget>
          </item>
@@ -118,12 +118,12 @@
             </font>
            </property>
            <property name="text">
-            <string>Chained Missions</string>
+            <string>Chain Tasks</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QTableWidget" name="chained_missions_table">
+          <widget class="QTableWidget" name="chained_tasks_table">
            <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
             <bool>false</bool>
            </attribute>
@@ -187,7 +187,7 @@
          <item>
           <widget class="QPushButton" name="run_chained_button">
            <property name="text">
-            <string>Run Chained Missions</string>
+            <string>Run Chained Tasks</string>
            </property>
           </widget>
          </item>
@@ -278,7 +278,7 @@
             </font>
            </property>
            <property name="text">
-            <string>Current Mission Status</string>
+            <string>Status</string>
            </property>
           </widget>
          </item>
@@ -377,9 +377,9 @@
           </layout>
          </item>
          <item>
-          <widget class="QPushButton" name="cancel_mission_button">
+          <widget class="QPushButton" name="cancel_task_button">
            <property name="text">
-            <string>Cancel Mission</string>
+            <string>Cancel Task</string>
            </property>
           </widget>
          </item>
