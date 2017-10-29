@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os
-from python_qt_binding import QtWidgets, loadUi
+from python_qt_binding import QtWidgets, QtCore, loadUi
 from qt_gui.plugin import Plugin
 import rospkg
 import rospy
@@ -77,6 +77,20 @@ class ObserveActionClient(ActionClient):
             transition_cb=lambda msg, _goal=msg.goal_id: self._observer_transition_cb(_goal, msg),
             feedback_cb=lambda handler, feedback, _goal=msg.goal_id: self._observer_feedback_cb(_goal, handler,
                                                                                                 feedback))
+
+
+class CenteredCheckBox(QtWidgets.QWidget):
+    def __init__(self):
+        super(CenteredCheckBox, self).__init__()
+        checkbox = QtWidgets.QCheckBox()
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.addWidget(checkbox)
+        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
+
+    def checked(self):
+        return self.layout().itemAt(0).widget().checkState() == QtCore.Qt.Checked
 
 
 class Dashboard(Plugin):
@@ -216,19 +230,17 @@ class Dashboard(Plugin):
         elif event.source() == self.available_missions_list:
             selected_item = self.available_missions_list.selectedItems()[0]
             mission = QtWidgets.QLabel(selected_item.text())
+            required = CenteredCheckBox()
             timeout = QtWidgets.QDoubleSpinBox()
             timeout.setValue(0)
             timeout.setMaximum(10000)
             timeout.setSuffix('s')
-            # required = QtWidgets.QCheckBox()
-            # required.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
             parameters = QtWidgets.QLineEdit('')
             self.chained_missions_table.insertRow(idx)
             self.chained_missions_table.setCellWidget(idx, 0, mission)
-            self.chained_missions_table.setCellWidget(idx, 1, timeout)
-            # self.chained_missions_table.setCellWidget(idx, 2, required)
-            # self.chained_missions_table.setCellWidget(idx, 3, parameters)
-            self.chained_missions_table.setCellWidget(idx, 2, parameters)
+            self.chained_missions_table.setCellWidget(idx, 1, required)
+            self.chained_missions_table.setCellWidget(idx, 2, timeout)
+            self.chained_missions_table.setCellWidget(idx, 3, parameters)
 
     def available_missions_drop_cb(self, event):
         '''
@@ -249,13 +261,14 @@ class Dashboard(Plugin):
         tasks = []
         for i in range(self.chained_missions_table.rowCount()):
             task = self.chained_missions_table.cellWidget(i, 0).text()
-            timeout = self.chained_missions_table.cellWidget(i, 1).value()
-            parameters = self.chained_missions_table.cellWidget(i, 2).text()
+            required = self.chained_missions_table.cellWidget(i, 1).checked()
+            timeout = self.chained_missions_table.cellWidget(i, 2).value()
+            parameters = self.chained_missions_table.cellWidget(i, 3).text()
             try:
                 parameters = json.loads(parameters)
             except ValueError:
                 pass
-            tasks.append({'task': task, 'timeout': timeout, 'parameters': parameters})
+            tasks.append({'task': task, 'timeout': timeout, 'required': required, 'parameters': parameters})
         goal_parameters = json.dumps(tasks)
         goal = DoTaskGoal(task='ChainWithTimeout', parameters=goal_parameters)
         self.task_runner_client.send_goal(goal)
@@ -293,6 +306,7 @@ class Dashboard(Plugin):
         self.chained_missions_table = self._widget.findChild(QtWidgets.QFrame, 'chained_missions_table')
         self.chained_missions_table.setDragDropMode(QtWidgets.QAbstractItemView.DragDrop)
         self.chained_missions_table.dropEvent = self.chained_missions_drop_cb
+        self.chained_missions_table.setColumnWidth(1, 55)  # Make required header just big enough for check box
         self.available_missions_list = self._widget.findChild(QtWidgets.QFrame, 'available_missions')
         self.available_missions_list.setDragEnabled(True)
         self.available_missions_list.setDragDropMode(QtWidgets.QAbstractItemView.DragDrop)
