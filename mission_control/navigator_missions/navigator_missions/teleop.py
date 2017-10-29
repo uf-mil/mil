@@ -2,7 +2,6 @@
 from navigator import Navigator
 import txros
 from twisted.internet import defer
-import numpy as np
 from sensor_msgs.msg import Joy  # We all need a little joy in our lives
 
 

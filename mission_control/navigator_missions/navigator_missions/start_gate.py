@@ -2,7 +2,6 @@
 from __future__ import division
 from navigator import Navigator
 import txros
-import tf
 import tf.transformations as trns
 import numpy as np
 import mil_tools

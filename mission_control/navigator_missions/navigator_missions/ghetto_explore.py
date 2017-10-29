@@ -22,7 +22,6 @@ def myfunc(navigator, **kwargs):
 
         except:
             nt.fprint("Missing Marker", msg_color="red")
-            pass
 
 
 @txros.util.cancellableInlineCallbacks

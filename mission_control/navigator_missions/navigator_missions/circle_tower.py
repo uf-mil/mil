@@ -2,10 +2,8 @@
 import txros
 from twisted.internet import defer
 from mil_misc_tools.text_effects import fprint
-from navigator_tools import MissingPerceptionObject
 import mil_tools
 from nav_msgs.msg import OccupancyGrid
-from sensor_msgs.msg import PointCloud
 
 import cv2
 import numpy as np

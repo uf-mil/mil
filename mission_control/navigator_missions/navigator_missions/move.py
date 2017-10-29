@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-from txros import util, NodeHandle
+from txros import NodeHandle, util
 from twisted.internet import defer, reactor
 from navigator import Navigator
 import numpy as np
 from mil_tools import numpy_to_point, rosmsg_to_numpy
 from geometry_msgs.msg import PoseStamped, PointStamped
-from mil_misc_tools import ThrowingArgumentParser, ArgumentParserException
+from mil_misc_tools import ArgumentParserException, ThrowingArgumentParser
 
 
 class Move(Navigator):

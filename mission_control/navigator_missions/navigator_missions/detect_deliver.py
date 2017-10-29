@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 from __future__ import division
 import txros
-import std_srvs.srv
 import numpy as np
-import tf
 import tf.transformations as trns
 from navigator_msgs.msg import ShooterDoAction, ShooterDoActionGoal
 from navigator_msgs.srv import CameraToLidarTransform, CameraToLidarTransformRequest
 from geometry_msgs.msg import Point, PoseStamped
 from std_srvs.srv import SetBool, SetBoolRequest
 from twisted.internet import defer
-from image_geometry import PinholeCameraModel
 from visualization_msgs.msg import Marker, MarkerArray
 import mil_tools
 from mil_misc_tools.text_effects import fprint

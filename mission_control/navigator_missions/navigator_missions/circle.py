@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import txros
-import numpy as np
 from navigator import Navigator
 
 

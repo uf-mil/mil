@@ -1,15 +1,12 @@
 #!/usr/bin/env python
 from __future__ import division
 import txros
-import std_srvs.srv
 import numpy as np
 from navigator_msgs.srv import FindPinger, FindPingerRequest, SetFrequency, SetFrequencyRequest
-from geometry_msgs.msg import Point
 from std_srvs.srv import SetBool, SetBoolRequest
 import mil_tools
 from visualization_msgs.msg import Marker, MarkerArray
 from mil_misc_tools.text_effects import fprint
-import rospy
 from navigator import Navigator
 
 ___author___ = "Kevin Allen"

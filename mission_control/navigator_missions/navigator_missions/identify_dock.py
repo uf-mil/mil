@@ -1,17 +1,13 @@
 #!/usr/bin/env python
 from __future__ import division
 import txros
-import std_srvs.srv
 import numpy as np
-import tf
-import tf.transformations as trns
 from geometry_msgs.msg import Point
 from std_srvs.srv import SetBool, SetBoolRequest
 from twisted.internet import defer
 from visualization_msgs.msg import Marker, MarkerArray
 import mil_tools
 from mil_misc_tools.text_effects import fprint
-from navigator_tools import MissingPerceptionObject
 from navigator_msgs.srv import GetDockBays, GetDockBaysRequest
 from navigator_msgs.srv import CameraToLidarTransform, CameraToLidarTransformRequest
 import genpy

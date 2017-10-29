@@ -2,12 +2,10 @@
 from __future__ import division
 
 import txros
-import tf
 import tf.transformations as trns
 import numpy as np
 import mil_tools
 from random import shuffle
-from mil_misc_tools.text_effects import fprint
 from navigator import Navigator
 import pose_editor
 from twisted.internet import defer

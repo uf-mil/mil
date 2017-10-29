@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 """Scan The Code Mission Script."""
 import txros
-import numpy as np
 from navigator_scan_the_code import ScanTheCodeMission
-from geometry_msgs.msg import PoseStamped
-import mil_tools as nt
 from mil_misc_tools.text_effects import fprint
-from navigator_tools import MissingPerceptionObject
 from navigator import Navigator
 
 ___author___ = "Tess Bianchi"

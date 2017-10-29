@@ -1,19 +1,16 @@
 from __future__ import division
 import warnings
 
-import txros
 import numpy as np
 from tf import transformations
-from nav_msgs.msg import Odometry
-from mil_msgs.msg import PoseTwistStamped, PoseTwist, MoveToGoal
+from mil_msgs.msg import MoveToGoal, PoseTwist, PoseTwistStamped
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Point, Vector3, Twist
-from mil_tools import rosmsg_to_numpy, make_header, normalize
+from mil_tools import make_header, normalize, rosmsg_to_numpy
 from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
 from navigator_path_planner.msg import MoveGoal
 
 import mil_tools
 from mil_misc_tools.text_effects import fprint
-from twisted.internet import defer
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
 EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)]

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import numpy as np
 from txros import util
 import itertools
 from sensor_msgs.msg import Joy

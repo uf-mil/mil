@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 from navigator import Navigator
-import txros
-from twisted.internet import defer
-import numpy as np
 
 
 class Killed(Navigator):
