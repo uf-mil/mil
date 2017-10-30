@@ -12,3 +12,8 @@ generate_messages(
     actionlib_msgs
 )
 catkin_package()
+
+if(CATKIN_ENABLE_TESTING)
+    find_package(rostest REQUIRED)
+    add_rostest(test/import_mil_tasks_examples.test)
+endif()
