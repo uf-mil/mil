@@ -12,6 +12,7 @@ from roboteq_msgs.msg import Feedback, Status
 import rospy
 from std_msgs.msg import Float32
 import message_filters
+from ros_alarms import AlarmListener
 
 
 __author__ = "Anthony Olive"
@@ -40,6 +41,9 @@ class BatteryMonitor():
         # Holding 1000 values ensures that changes in the average are gradual rather than sharp
         self.supply_voltages = []
 
+        self.hw_kill_raised = None
+        AlarmListener('hw-kill', self.hw_kill_cb)
+
         # The publisher for the averaged voltage
         self.pub_voltage = rospy.Publisher(
             "/battery_monitor", Float32, queue_size=1)
@@ -53,8 +57,11 @@ class BatteryMonitor():
         status_sub = [message_filters.Subscriber(
             topic + '/status', Status) for topic in motor_topics]
 
-        time_sync = [message_filters.ApproximateTimeSynchronizer([feedback, status], 1, 10).registerCallback(
+        [message_filters.ApproximateTimeSynchronizer([feedback, status], 1, 10).registerCallback(
             self.add_voltage) for feedback, status in zip(feedback_sub, status_sub)]
+
+    def hw_kill_cb(self, msg):
+        self.hw_kill_raised = msg.raised
 
     def add_voltage(self, feedback, status):
         '''
@@ -64,7 +71,7 @@ class BatteryMonitor():
         '''
 
         # Check if 3rd bit is raised
-        if status.fault & 4 == 4:
+        if status.fault & 4 == 4 or self.hw_kill_raised is True:
             return
         self.supply_voltages.append(feedback.supply_voltage)
 
@@ -81,7 +88,6 @@ class BatteryMonitor():
         if (len(self.supply_voltages) > 0):
             self.voltage = sum(self.supply_voltages) / \
                 len(self.supply_voltages)
-
         self.pub_voltage.publish(self.voltage)
 
 
