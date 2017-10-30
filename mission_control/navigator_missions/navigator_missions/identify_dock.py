@@ -5,7 +5,6 @@ import numpy as np
 from geometry_msgs.msg import Point
 from std_srvs.srv import SetBool, SetBoolRequest
 from twisted.internet import defer
-from visualization_msgs.msg import Marker, MarkerArray
 import mil_tools
 from mil_misc_tools.text_effects import fprint
 from navigator_msgs.srv import GetDockBays, GetDockBaysRequest
@@ -13,10 +12,12 @@ from navigator_msgs.srv import CameraToLidarTransform, CameraToLidarTransformReq
 import genpy
 
 
-def print_good(message): return fprint(message, title="IDENTIFY DOCK",  msg_color='green')
+def print_good(message):
+    return fprint(message, title="IDENTIFY DOCK", msg_color='green')
 
 
-def print_bad(message): return fprint(message, title="IDENTIFY DOCK",  msg_color='yellow')
+def print_bad(message):
+    return fprint(message, title="IDENTIFY DOCK", msg_color='yellow')
 
 
 class IdentifyDockMission:
@@ -74,9 +75,11 @@ class IdentifyDockMission:
 
         @txros.util.cancellableInlineCallbacks
         def circle_bay():
-            yield self.navigator.move.look_at(self.dock_pose).set_position(self.dock_pose).backward(self.CIRCLE_RADIUS).look_at(self.dock_pose).go()
+            yield self.navigator.move.look_at(self.dock_pose).set_position(self.dock_pose)\
+                                     .backward(self.CIRCLE_RADIUS).look_at(self.dock_pose).go()
             yield self.navigator.move.circle_point(self.dock_pose, direction='ccw').go()
-            done_circle = True
+            done_circle = True  # noqa flake8 doesn't see that it is defined above
+
         print_good("Circling dock to get bays")
         circle_bay()
         start_time = self.navigator.nh.get_time()
@@ -94,7 +97,8 @@ class IdentifyDockMission:
         raise Exception("Bays not found after circling or timed out")
 
     def correct_shape(self, (desired_shape, desired_color), (test_shape, test_color)):
-        return (desired_color == "ANY" or desired_color == test_color) and (desired_shape == "ANY" or desired_shape == test_shape)
+        return (desired_color == "ANY" or desired_color == test_color) and\
+               (desired_shape == "ANY" or desired_shape == test_shape)
 
     @txros.util.cancellableInlineCallbacks
     def check_bays(self):
@@ -132,7 +136,10 @@ class IdentifyDockMission:
             for shape in shapes.shapes.list:
                 normal_res = yield self.get_normal(shape)
                 if normal_res.success:
-                    enu_cam_tf = yield self.navigator.tf_listener.get_transform('/enu', '/' + shape.header.frame_id, shape.header.stamp)
+                    enu_cam_tf = yield self.navigator.tf_listener.get_transform(
+                        '/enu',
+                        '/' + shape.header.frame_id,
+                        shape.header.stamp)
                     self.update_shape(shape, normal_res, enu_cam_tf)
                     if (self.done_searching()):
                         defer.returnValue(True)
@@ -154,13 +161,17 @@ class IdentifyDockMission:
 
         @txros.util.cancellableInlineCallbacks
         def circle_bay():
-            yield self.navigator.move.set_position(self.dock_pose).backward(self.CIRCLE_RADIUS).look_at(self.dock_pose).go()
+            yield self.navigator.move.set_position(self.dock_pose).backward(self.CIRCLE_RADIUS)\
+                                .look_at(self.dock_pose).go()
             yield self.navigator.move.circle_point(self.dock_pose, direction='ccw').go()
-            done_circle = True
+            done_circle = True  # noqa flake8 cant see that it is defined above
+
         print_good("Circling dock to get shapes identified")
         circle_bay()
         start_time = self.navigator.nh.get_time()
-        while self.navigator.nh.get_time() - start_time < genpy.Duration(self.TIMEOUT_CIRCLE_VISION_ONLY) and not done_circle:
+
+        max_dt = genpy.Duration(self.TIMEOUT_CIRCLE_VISION_ONLY)
+        while self.navigator.nh.get_time() - start_time < max_dt and not done_circle:
             if (yield self.search_shape_vision_only()):
                 return
             yield self.navigator.nh.sleep(0.1)
@@ -203,7 +214,7 @@ class IdentifyDockMission:
                 bay_2_shape = point_normal
             else:
                 incorrect_shapes.append(point_normal)
-        if bay_1_shape == None:
+        if bay_1_shape is None:
             if len(incorrect_shapes) >= 1:
                 print_bad("First bay not found, going in random bay")
                 yield dock_func(incorrect_shapes[0])
@@ -214,7 +225,7 @@ class IdentifyDockMission:
             print_good("Docking in first desired bay")
             yield dock_func(bay_1_shape)
 
-        if bay_2_shape == None:
+        if bay_2_shape is None:
             if len(incorrect_shapes) >= 1:
                 print_bad("Second bay not found, going in random bay")
                 yield dock_func(incorrect_shapes[0])
@@ -311,13 +322,13 @@ class IdentifyDockMission:
 @txros.util.cancellableInlineCallbacks
 def setup_mission(navigator):
     stc_1 = yield navigator.mission_params["scan_the_code_color1"].get(raise_exception=False)
-    if stc_1 == False:
+    if stc_1 is False:
         bay_1_color = "ANY"
     else:
         bay_1_color = stc_1
 
     stc_2 = yield navigator.mission_params["scan_the_code_color2"].get(raise_exception=False)
-    if stc_2 == False:
+    if stc_2 is False:
         bay_2_color = "ANY"
     else:
         bay_2_color = stc_2

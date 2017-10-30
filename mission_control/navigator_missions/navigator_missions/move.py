@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-from txros import NodeHandle, util
-from twisted.internet import defer, reactor
+from txros import util
+from twisted.internet import defer
 from navigator import Navigator
 import numpy as np
 from mil_tools import numpy_to_point, rosmsg_to_numpy
 from geometry_msgs.msg import PoseStamped, PointStamped
-from mil_misc_tools import ArgumentParserException, ThrowingArgumentParser
+from mil_misc_tools import ThrowingArgumentParser
 
 
 class Move(Navigator):
@@ -16,24 +16,32 @@ class Move(Navigator):
 
     @classmethod
     def init(cls):
-        parser = ThrowingArgumentParser(description='Command Line Mission Runner',
-                                        usage='Pass any pose editor command with an argument. \n\t forward 1 (moves forward 1 meter) \n\t backward 2ft (moves backward 2 feet)')
+        parser = ThrowingArgumentParser(
+            description='Command Line Mission Runner',
+            usage='Pass any pose editor command with an argument. \n\t\
+                   forward 1 (moves forward 1 meter) \n\t backward 2ft (moves backward 2 feet)')
         parser.add_argument('command', type=str,
                             help='Pose editor command to run')
-        parser.add_argument('argument', type=str, default=0,
-                            help='An argument to pass to the command (distance or angle usally). Optionally a unit can be added if a non-standard unit is desired.')
+        parser.add_argument(
+            'argument', type=str, default=0,
+            help='An argument to pass to the command (distance or angle usally).\
+                  Optionally a unit can be added if a non-standard unit is desired.')
         parser.add_argument('-m', '--movetype', type=str, default='drive',
                             help='Move type. See lqrrt documentation for info on how to use this.')
         parser.add_argument('-f', '--focus', type=str,
-                            help='Point to focus on. See lqrrt documentation for info on how to use this. If not specified, default to focusing around clicked point. ex. "[10, 2.3, 1]"')
+                            help='Point to focus on. See lqrrt documentation for info on how to use this. \
+                                  If not specified, default to focusing around clicked point. ex. "[10, 2.3, 1]"')
         parser.add_argument('-s', '--sim', action='store_true',
-                            help='This will run navigator in sim mode (ie. not wait for odom or enu bounds). Don\'t do this on the boat.')
+                            help='This will run navigator in sim mode (ie. not wait for odom or enu bounds). \
+                                  Don\'t do this on the boat.')
         parser.add_argument('-p', '--plantime', type=float,
                             help='Time given to the planner for it\'s first plan.')
         parser.add_argument('-b', '--blind', action='store_true',
                             help='Move without looking at the ogrid. DANGEROUS.')
         parser.add_argument('-sf', '--speedfactor', type=str, default="[1, 1, 1]",
-                            help='Speed to execute the command, don\'t go too much higher than 1 on the real boat. Use like "[1, 1, .2]" to reduce rotation speed to 20% max or just ".5" to reduce x, y, and rotational speed to 50% max.')
+                            help='Speed to execute the command, don\'t go too much higher than 1 on the real boat. \
+                                  Use like "[1, 1, .2]" to reduce rotation speed to 20% max or just ".5"\
+                                  to reduce x, y, and rotational speed to 50% max.')
         cls.parser = parser
 
     @util.cancellableInlineCallbacks
@@ -69,16 +77,15 @@ class Move(Navigator):
 
         elif args.command == 'rviz':
             self.send_feedback("Moving to last published rviz position")
-            sub = nh.subscribe("/rviz_goal", PoseStamped)
-            target_pose = yield util.wrap_time_notice(sub.get_next_message(), 2,  "Rviz goal")
+            sub = self.nh.subscribe("/rviz_goal", PoseStamped)
+            target_pose = yield util.wrap_time_notice(sub.get_next_message(), 2, "Rviz goal")
             res = yield self.move.to_pose(target_pose).go(**action_kwargs)
 
         elif args.command == 'circle':
             self.send_feedback("Moving in a circle around last clicked_point")
-            sub = nh.subscribe("/rviz_point", PointStamped)
+            sub = self.nh.subscribe("/rviz_point", PointStamped)
             target_point = yield util.wrap_time_notice(sub.get_next_message(), 2, "Rviz point")
             target_point = rosmsg_to_numpy(target_point.point)
-            circle = self.move.circle_point(target_point, float(args.argument))
             direction = 'cw' if args.argument == '-1' else 'ccw'
             res = yield self.move.circle_point(target_point, direction).go()
 

@@ -28,25 +28,24 @@ class CircleTotem(Navigator):
         color_map = {'BLUE': [0, 0, 1], 'RED': [1, 0, 0], 'YELLOW': [1, 1, 0], 'GREEN': [0, 1, 0]}
         directions = {'RED': 'cw', 'GREEN': 'ccw', 'BLUE': 'cw', 'YELLOW': 'ccw'}
 
-        ogrid = OccupancyGridFactory(navigator)
-
-        explored_ids = []
-        all_found = False
+        ogrid = OccupancyGridFactory(self)
 
         # Get colors of intrest and directions
-        c1 = navigator.mission_params['scan_the_code_color1'].get()
-        c2 = navigator.mission_params['scan_the_code_color2'].get()
-        c3 = navigator.mission_params['scan_the_code_color3'].get()
+        c1 = self.mission_params['scan_the_code_color1'].get()
+        c2 = self.mission_params['scan_the_code_color2'].get()
+        c3 = self.mission_params['scan_the_code_color3'].get()
 
         colors = [c1, c2, c3]
 
-        buoy_field = yield navigator.database_query("BuoyField")
+        buoy_field = yield self.database_query("BuoyField")
         buoy_field_point = mil_tools.rosmsg_to_numpy(buoy_field.objects[0].position)
 
-        def _dist_from_bf(pt): return np.linalg.norm(buoy_field_point - pt)
+        def _dist_from_bf(pt):
+            return np.linalg.norm(buoy_field_point - pt)
 
         # We want to go to an observation point based on solar position
-        center = navigator.move.set_position(buoy_field_point).set_orientation(get_solar_q())
+        # ??? There should be a .go here probably. Idk im just the pep8 guy
+        self.move.set_position(buoy_field_point).set_orientation(get_solar_q())
 
         searched = []
 
@@ -58,16 +57,17 @@ class CircleTotem(Navigator):
             direction = directions[color]
 
             fprint("Going to totem colored {} in direction {}".format(color, direction), title="CIRCLE_TOTEM")
-            target = yield get_colored_buoy(navigator, color_map[color])
-            if target is None or _dist_from_bf(mil_tools.rosmsg_to_numpy(target.position)) > (BF_WIDTH / 2 + BF_EST_COFIDENCE):
+            target = yield self.get_colored_buoy(color_map[color])
+            dist = _dist_from_bf(mil_tools.rosmsg_to_numpy(target.position))
+            if target is None or dist > (BF_WIDTH / 2 + BF_EST_COFIDENCE):
                 # Need to do something
                 fprint("No suitable totems found, going to circle any nearby totems.",
                        msg_color='red', title="CIRCLE_TOTEM")
-                target, searched = yield get_closest_totem(navigator, searched)
+                target, searched = yield self.get_closest_totem(searched)
                 need_recolor = True
 
             target_np = mil_tools.rosmsg_to_numpy(target.position)
-            circler = navigator.move.d_circle_point(point=target_np, radius=TOTEM_SAFE_DIST, direction=direction)
+            circler = self.move.d_circle_point(point=target_np, radius=TOTEM_SAFE_DIST, direction=direction)
 
             # Give the totem a look at
             for p in circler:
@@ -78,8 +78,8 @@ class CircleTotem(Navigator):
             if need_recolor:
                 fprint("Recoloring...")
                 # Check for color?
-                yield navigator.nh.sleep(5)
-                target = yield navigator.database_query(str(target.id), raise_exception=False)
+                yield self.nh.sleep(5)
+                target = yield self.database_query(str(target.id), raise_exception=False)
                 if len(target.objects) == 0:
                     direction = directions[DEFAULT_COLOR]
                 else:
@@ -88,7 +88,7 @@ class CircleTotem(Navigator):
             mult = 1 if direction == 'cw' else -1
             left_offset = mult * CIRCLE_OFFSET
 
-            tangent_circler = navigator.move.d_circle_point(
+            tangent_circler = self.move.d_circle_point(
                 point=target_np, radius=ROT_SAFE_DIST, theta_offset=mult * 1.57, direction=direction)
 
             # Point tangent
@@ -100,31 +100,32 @@ class CircleTotem(Navigator):
             msg, goal = ogrid.circle_around(target_np, direction=direction)
             latched_pub = ogrid.latching_publisher(msg)
 
-            yield navigator.nh.sleep(2)
-            goal = navigator.move.set_position(np.append(goal, 1)).look_at(
-                navigator.pose[0]).left(left_offset).backward(2)
+            yield self.nh.sleep(2)
+            goal = self.move.set_position(np.append(goal, 1)).look_at(
+                self.pose[0]).left(left_offset).backward(2)
             yield goal.go(move_type='drive!', initial_plan_time=10)
 
             latched_pub.cancel()
 
             fprint("Canceling ogrid")
-            yield navigator.nh.sleep(3)
+            yield self.nh.sleep(3)
 
             print "Mission result:", res
 
         defer.returnValue(None)
 
     @txros.util.cancellableInlineCallbacks
-    def get_colored_buoy(navigator, color):
+    def get_colored_buoy(self, color):
         """
         Returns the closest colored buoy with the specified color
         """
-        buoy_field = yield navigator.database_query("BuoyField")
+        buoy_field = yield self.database_query("BuoyField")
         buoy_field_point = mil_tools.rosmsg_to_numpy(buoy_field.objects[0].position)
 
-        def _dist_from_bf(pt): return np.linalg.norm(buoy_field_point - pt)
+        def _dist_from_bf(pt):
+            return np.linalg.norm(buoy_field_point - pt)
 
-        totems = yield navigator.database_query("totem")
+        totems = yield self.database_query("totem")
         correct_colored = [totem for totem in totems.objects if np.all(
             np.round(mil_tools.rosmsg_to_numpy(totem.color, keys=['r', 'g', 'b'])) == color)]
         if len(correct_colored) == 0:
@@ -136,13 +137,13 @@ class CircleTotem(Navigator):
         defer.returnValue(closest)
 
     @txros.util.cancellableInlineCallbacks
-    def get_closest_totem(navigator, explored_ids):
-        pose = yield navigator.tx_pose
-        buoy_field = yield navigator.database_query("BuoyField")
+    def get_closest_totem(self, explored_ids):
+        pose = yield self.tx_pose
+        buoy_field = yield self.database_query("BuoyField")
         buoy_field_np = mil_tools.rosmsg_to_numpy(buoy_field.objects[0].position)
 
         # Find which totems we haven't explored yet
-        totems = yield navigator.database_query("totem", raise_exception=False)
+        totems = yield self.database_query("totem", raise_exception=False)
         if not totems.found:
             # Need to search for more totems
             defer.returnValue([None, explored_ids])
@@ -168,14 +169,16 @@ class CircleTotem(Navigator):
 
         defer.returnValue([target_totem, explored_ids])
 
+    '''
+    # UNUSED in main code. Not sure what it was for???
     @txros.util.cancellableInlineCallbacks
-    def get_closest_object(navigator):
-        pose = yield navigator.tx_pose
-        buoy_field = yield navigator.database_query("BuoyField")
+    def get_closest_object(self):
+        pose = yield self.tx_pose
+        buoy_field = yield self.database_query("BuoyField")
         buoy_field_np = mil_tools.rosmsg_to_numpy(buoy_field.objects[0].position)
 
         # Find which totems we haven't explored yet
-        totems = yield navigator.database_query("all", raise_exception=False)
+        totems = yield self.database_query("all", raise_exception=False)
         if not totems.found:
             # Need to search for more totems
             defer.returnValue([None, explored_ids])
@@ -200,6 +203,7 @@ class CircleTotem(Navigator):
         explored_ids.append(target_totem.id)
 
         defer.returnValue([target_totem, explored_ids])
+     '''
 
 
 def check_color(totem, color_map):
@@ -272,8 +276,6 @@ class OccupancyGridFactory(object):
         np_center = np.array(center)
         np_origin = np.append((np_center - size / 2)[:2], 0)
         origin = mil_tools.numpy_quat_pair_to_pose(np_origin, [0, 0, 0, 1])
-
-        grid = np.zeros((size / self.resolution, size / self.resolution))
 
         ogrid = OccupancyGrid()
         ogrid.header = mil_tools.make_header(frame='enu')

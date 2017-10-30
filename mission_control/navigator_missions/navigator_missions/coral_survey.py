@@ -25,7 +25,7 @@ shuffle(shapes)
 class CoralSurvey(Navigator):
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):
-        #middle_point = np.array([-10, -70, 0])
+        # middle_point = np.array([-10, -70, 0])
         est_coral_survey = yield self.database_query("CoralSurvey")
 
         # Going to get all the objects and using the closest one as the totem
@@ -39,7 +39,6 @@ class CoralSurvey(Navigator):
 
         print "Totem sorted:", totems_np
         print "Totem selected: ", totems_np[0]
-        quads_to_search = [1, 2, 3, 4]
         quad = yield self.mission_params["acoustic_pinger_active_index_correct"].get()
 
         waypoint_from_center = np.array([10 * np.sqrt(2)])
@@ -51,7 +50,6 @@ class CoralSurvey(Navigator):
 
         # Construct waypoint list along NSEW directions then rotate 45 degrees to get a good spot to go to.
         directions = [EAST, NORTH, WEST, SOUTH]
-        waypoints = []
         # for quad in quads_to_search:
         mid = self.move.set_position(middle_point).set_orientation(directions[quad - 1])
         search_center = mid.yaw_left(45, "deg").forward(waypoint_from_center).set_orientation(NORTH)
@@ -98,7 +96,7 @@ class OgridFactory():
         # Transforms points from ENU to ogrid frame coordinates
         self.t = np.array([[1 / self.resolution, 0, -origin_x / self.resolution],
                            [0, 1 / self.resolution, -origin_y / self.resolution],
-                           [0,               0,            1]])
+                           [0, 0, 1]])
 
         self.transform = lambda point: self.t.dot(np.append(point[:2], 1))[:2]
 

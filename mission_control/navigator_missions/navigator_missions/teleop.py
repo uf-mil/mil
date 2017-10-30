@@ -2,7 +2,6 @@
 from navigator import Navigator
 import txros
 from twisted.internet import defer
-from sensor_msgs.msg import Joy  # We all need a little joy in our lives
 
 
 class Teleop(Navigator):

@@ -94,10 +94,12 @@ class Navigator(BaseTask):
 
         cls._moveto_client = action.ActionClient(cls.nh, 'move_to', MoveAction)
 
-        def odom_set(odom): return setattr(cls, 'pose', mil_tools.odometry_to_numpy(odom)[0])
+        def odom_set(odom):
+            return setattr(cls, 'pose', mil_tools.odometry_to_numpy(odom)[0])
         cls._odom_sub = cls.nh.subscribe('odom', Odometry, odom_set)
 
-        def enu_odom_set(odom): return setattr(cls, 'ecef_pose', mil_tools.odometry_to_numpy(odom)[0])
+        def enu_odom_set(odom):
+            return setattr(cls, 'ecef_pose', mil_tools.odometry_to_numpy(odom)[0])
         cls._ecef_odom_sub = cls.nh.subscribe('absodom', Odometry, enu_odom_set)
 
         try:
@@ -264,13 +266,15 @@ class Navigator(BaseTask):
 
     @classmethod
     def kill_alarm_cb(cls, _, alarm):
-        self.killed = alarm.raised
-        self.kill_alarm = alarm
+        cls.killed = alarm.raised
+        cls.kill_alarm = alarm
 
     @classmethod
     @util.cancellableInlineCallbacks
     def _make_alarms(cls):
-        cls.odom_loss_listener = yield TxAlarmListener.init(cls.nh, 'odom-kill', lambda _, alarm: setattr(cls, 'odom_loss', alarm.raised))
+        cls.odom_loss_listener = yield TxAlarmListener.init(
+            cls.nh, 'odom-kill',
+            lambda _, alarm: setattr(cls, 'odom_loss', alarm.raised))
         cls.kill_listener = yield TxAlarmListener.init(cls.nh, 'kill', cls.kill_alarm_cb)
         fprint("Alarm listener created, listening to alarms: ", title="NAVIGATOR")
 
@@ -318,7 +322,7 @@ class MissionParam(object):
     def get(self, raise_exception=True):
         # Returns deferred object, make sure to yield on this (same for below)
         if not (yield self.exists()):
-            if not self.default == None:
+            if self.default is not None:
                 yield self.set(self.default)
                 defer.returnValue(self.default)
             if raise_exception:
@@ -355,7 +359,7 @@ class MissionParam(object):
     @util.cancellableInlineCallbacks
     def reset(self):
         if (yield self.exists()):
-            if not self.default == None:
+            if self.default is not None:
                 yield self.set(self.default)
             else:
                 yield self.nh.delete_param(self.param)
@@ -371,7 +375,7 @@ class Searcher(object):
     def __init__(self, nav, search_pattern=None, looker=None, vision_proxy="test", **kwargs):
         self.nav = nav
         self.looker = looker
-        if looker == None:
+        if looker is None:
             self.looker = self._vision_proxy_look
             self.vision_proxy = vision_proxy
         self.looker_kwargs = kwargs
@@ -425,7 +429,7 @@ class Searcher(object):
         Look around using the search pattern.
         If `loop` is true, then keep iterating over the list until timeout is reached or we find it.
         '''
-        if self.search_pattern == None:
+        if self.search_pattern is None:
             return
 
         def pattern():

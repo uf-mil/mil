@@ -10,5 +10,5 @@ class Circle(Navigator):
         while True:
             p += [0, 1, 0]
 
-            a = self.move.set_position(p).go(move_type='skid', initial_plan_time=0)
+            self.move.set_position(p).go(move_type='skid', initial_plan_time=0)
             yield self.nh.sleep(.1)

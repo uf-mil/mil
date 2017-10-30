@@ -3,9 +3,9 @@ import warnings
 
 import numpy as np
 from tf import transformations
-from mil_msgs.msg import MoveToGoal, PoseTwist, PoseTwistStamped
+from mil_msgs.msg import MoveToGoal, PoseTwist
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Point, Vector3, Twist
-from mil_tools import make_header, normalize, rosmsg_to_numpy
+from mil_tools import make_header, normalize
 from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
 from navigator_path_planner.msg import MoveGoal
 
@@ -116,7 +116,7 @@ class PoseEditor2(object):
 
         >>> res = yield p.spiral_point([10, 0], 'cw', meters_per_rev=2).go()
 
-        Will spiral the enu point [10, 0, 0] in a clockwise direction increase it's current 
+        Will spiral the enu point [10, 0, 0] in a clockwise direction increase it's current
         radius by `meters_per_rev` meters per revolution.
     """
 
@@ -146,7 +146,7 @@ class PoseEditor2(object):
         return np.linalg.norm(self.position - self.nav.pose[0])
 
     def go(self, *args, **kwargs):
-        if self.nav.killed == True or self.nav.odom_loss == True:
+        if self.nav.killed is True or self.nav.odom_loss is True:
             # What do we want to do with missions when the boat is killed
             fprint("Boat is killed, ignoring go command!", title="POSE_EDITOR", msg_color="red")
 
@@ -257,7 +257,8 @@ class PoseEditor2(object):
     def circle_point(self, point, *args, **kwargs):
         return self.spiral_point(point, *args, **kwargs)
 
-    def d_spiral_point(self, point, radius, granularity=8, revolutions=1, direction='ccw', theta_offset=0, meters_per_rev=0):
+    def d_spiral_point(self, point, radius, granularity=8, revolutions=1, direction='ccw',
+                       theta_offset=0, meters_per_rev=0):
         """
         Sprials a point using discrete moves
         This produces a generator
@@ -311,8 +312,8 @@ class PoseEditor2(object):
 
         for key in kwargs.keys():
             if not hasattr(MoveGoal, key):
-                fprint("MoveGoal msg doesn't have a field called '{}' you tried to set via kwargs.".format(key), title="POSE_EDITOR",
-                       msg_color="red")
+                fprint("MoveGoal msg doesn't have a field called '{}' you tried to set via kwargs.".format(key),
+                       title="POSE_EDITOR", msg_color="red")
                 del kwargs[key]
 
         return MoveGoal(

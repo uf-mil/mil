@@ -29,7 +29,7 @@ class Buoy(object):
 
 
 class StartGate(Navigator):
-    def get_path(buoy_l, buoy_r):
+    def get_path(self, buoy_l, buoy_r):
         # Vector between the two buoys
         between_vector = buoy_r.position - buoy_l.position
 
@@ -41,7 +41,7 @@ class StartGate(Navigator):
         return between_vector, direction_vector
 
     @txros.util.cancellableInlineCallbacks
-    def two_buoys(buoys, setup_dist, channel_length=30):
+    def two_buoys(self, buoys, setup_dist, channel_length=30):
         # We only have the front two buoys in view
         pose = yield self.tx_pose
         # Get the ones closest to us and assume those are the front
@@ -68,7 +68,7 @@ class StartGate(Navigator):
         defer.returnValue([ogrid, setup, target])
 
     @txros.util.cancellableInlineCallbacks
-    def four_buoys(buoys, setup_dist):
+    def four_buoys(self, buoys, setup_dist):
         pose = yield self.tx_pose
         # Get the ones closest to us and assume those are the front
         distances = np.array([b.distance(pose[0]) for b in buoys])
@@ -93,10 +93,10 @@ class StartGate(Navigator):
         b_left_buoy, b_right_buoy = back[np.argmax(angle_buoys)], back[np.argmin(angle_buoys)]
 
         # Lets plot a course, yarrr
-        f_between_vector, f_direction_vector = get_path(f_left_buoy, f_right_buoy)
+        f_between_vector, f_direction_vector = self.get_path(f_left_buoy, f_right_buoy)
         f_mid_point = f_left_buoy.position + f_between_vector / 2
 
-        b_between_vector, _ = get_path(b_left_buoy, b_right_buoy)
+        b_between_vector, _ = self.get_path(b_left_buoy, b_right_buoy)
         b_mid_point = b_left_buoy.position + b_between_vector / 2
 
         setup = self.move.set_position(f_mid_point).look_at(b_mid_point).backward(setup_dist)
@@ -138,7 +138,7 @@ class StartGate(Navigator):
         msg = ogrid.get_message()
 
         print "publishing"
-        latched = self.latching_publisher("/mission_ogrid", OccupancyGrid, msg)
+        self.latching_publisher("/mission_ogrid", OccupancyGrid, msg)
 
         print "START_GATE: Moving in 5 seconds!"
         yield target.go(initial_plan_time=5)
@@ -182,7 +182,7 @@ class OgridFactory():
         # Transforms points from ENU to ogrid frame coordinates
         self.t = np.array([[1 / self.resolution, 0, -self.x_lower / self.resolution],
                            [0, 1 / self.resolution, -self.y_lower / self.resolution],
-                           [0,               0,            1]])
+                           [0, 0, 1]])
         self.transform = lambda point: self.t.dot(np.append(point[:2], 1))[:2]
 
     def get_size_and_build_walls(self):

@@ -72,8 +72,9 @@ class PingerMission(Navigator):
             return
 
         pose = self.pose[0][:2]
-        distance_test = np.array([np.linalg.norm(pose - (self.gate_poses[0] + self.OBSERVE_DISTANCE_METERS * self.g_perp)),
-                                  np.linalg.norm(pose - (self.gate_poses[0] - self.OBSERVE_DISTANCE_METERS * self.g_perp))])
+        distance_test = np.array([
+            np.linalg.norm(pose - (self.gate_poses[0] + self.OBSERVE_DISTANCE_METERS * self.g_perp)),
+            np.linalg.norm(pose - (self.gate_poses[0] - self.OBSERVE_DISTANCE_METERS * self.g_perp))])
         if np.argmin(distance_test) == 1:
             self.negate = True
         yield self.mission_params["pinger_negate"].set(self.negate)
@@ -90,11 +91,13 @@ class PingerMission(Navigator):
             self.look_at_points = (np.append(branch_pt0, 0), np.append(branch_pt1, 0))
         else:
             if self.negate:
-                self.observation_points = (np.append((self.gate_poses[0] - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0),
-                                           np.append((self.gate_poses[2] - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0))
+                self.observation_points = (
+                    np.append((self.gate_poses[0] - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0),
+                    np.append((self.gate_poses[2] - self.OBSERVE_DISTANCE_METERS * self.g_perp), 0))
             else:
-                self.observation_points = (np.append((self.gate_poses[0] + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0),
-                                           np.append((self.gate_poses[2] + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0))
+                self.observation_points = (
+                    np.append((self.gate_poses[0] + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0),
+                    np.append((self.gate_poses[2] + self.OBSERVE_DISTANCE_METERS * self.g_perp), 0))
             self.look_at_points = (np.append(self.gate_poses[0], 0), np.append(self.gate_poses[2], 0))
 
     @txros.util.cancellableInlineCallbacks
@@ -129,10 +132,11 @@ class PingerMission(Navigator):
         for p in self.gate_thru_points:
             yield self.move.set_position(p).go(initial_plan_time=5)
 
-    def new_marker(self, ns="/debug", frame="enu", time=None, type=Marker.CUBE, position=(0, 0, 0), orientation=(0, 0, 0, 1), color=(1, 0, 0)):
+    def new_marker(self, ns="/debug", frame="enu", time=None, type=Marker.CUBE,
+                   position=(0, 0, 0), orientation=(0, 0, 0, 1), color=(1, 0, 0)):
         marker = Marker()
         marker.ns = ns
-        if time != None:
+        if time is not None:
             marker.header.stamp = time
         marker.header.frame_id = frame
         marker.type = type
@@ -182,7 +186,9 @@ class PingerMission(Navigator):
                 estimated_circle_buoy - mil_tools.rosmsg_to_numpy(t.position)[:2])))
             self.new_marker(position=mil_tools.rosmsg_to_numpy(
                 sorted_circle[0].position), color=(1, 1, 1), time=cur_time)
-            if np.linalg.norm(mil_tools.rosmsg_to_numpy(sorted_circle[0].position)[:2] - estimated_circle_buoy) < self.MAX_CIRCLE_BUOY_ERROR:
+            circle_error = np.linalg.norm(
+                mil_tools.rosmsg_to_numpy(sorted_circle[0].position)[:2] - estimated_circle_buoy)
+            if circle_error < self.MAX_CIRCLE_BUOY_ERROR:
                 self.circle_totem = mil_tools.rosmsg_to_numpy(sorted_circle[0].position)
                 fprint("PINGER: found buoy to circle at {}".format(self.circle_totem), msg_color='green')
             else:
@@ -260,9 +266,10 @@ class PingerMission(Navigator):
 
     @txros.util.cancellableInlineCallbacks
     def circle_buoy(self):
-        if self.circle_totem != None:
+        if self.circle_totem is not None:
             # Circle around totem
-            yield self.move.look_at(self.circle_totem).set_position(self.circle_totem).backward(8).yaw_left(90, unit='deg').go()
+            yield self.move.look_at(self.circle_totem).set_position(self.circle_totem).backward(8)\
+                           .yaw_left(90, unit='deg').go()
             yield self.move.circle_point(self.circle_totem).go()
 
             (first, last) = reversed(self.gate_thru_points)
@@ -290,8 +297,8 @@ class PingerMission(Navigator):
 
     @txros.util.cancellableInlineCallbacks
     def cleanup(self):
-        yield navigator.mission_params["acoustic_pinger_active_index"].set(1)
-        yield navigator.mission_params["acoustic_pinger_active_index_correct"].set(1)
+        yield self.mission_params["acoustic_pinger_active_index"].set(1)
+        yield self.mission_params["acoustic_pinger_active_index_correct"].set(1)
 
     @txros.util.cancellableInlineCallbacks
     def run(self, parameters):

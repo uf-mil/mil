@@ -2,10 +2,7 @@
 from __future__ import division
 import txros
 import numpy as np
-from navigator_msgs.srv import FindPinger, FindPingerRequest, SetFrequency, SetFrequencyRequest
-from std_srvs.srv import SetBool, SetBoolRequest
 import mil_tools
-from visualization_msgs.msg import Marker, MarkerArray
 from mil_misc_tools.text_effects import fprint
 from navigator import Navigator
 
