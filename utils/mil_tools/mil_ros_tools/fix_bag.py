@@ -87,6 +87,8 @@ class BagFixer():
         return True
 
     def __init__(self, topic_map={}, frame_map={}, start=None, stop=None, keep=[], ignore=[]):
+        if ignore is None:
+            ignore = []
         self.topic_map = self._fix_strings(topic_map)
         self.frame_map = self._fix_strings(frame_map)
         self.start = start
