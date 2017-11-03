@@ -20,4 +20,4 @@
     * [[Programming Spells]]
     * [[Unsupported OSes]]
     * [[Vehicle Backups]]
-* [[Glossary]]
+    * [[Interfacing with LabelMe and ROS Bags]]
