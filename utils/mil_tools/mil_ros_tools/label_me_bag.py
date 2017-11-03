@@ -37,7 +37,8 @@ class BagToLabelMe():
     Can be used to insert images from ROS bags into LabelMe instalation
     or extract LabelMe annotations into a ROS bag
 
-    TODO: improve verbosity, disable print statements with toggle
+    TODO:
+    - add enocoding option somewhere for how bag image will be encoded to a jpg (rgb, mono, etc)
     """
 
     def __init__(self, config, labelme_dir, verbose=False, indir='', outdir=''):
@@ -93,7 +94,7 @@ class BagToLabelMe():
                 verify_attr(segment, 'topics', 'segment')
                 # Ensure topics is still a list
                 if type(segment['topics']) == str:
-                    self.config['bags'][i]['segments'][j]['topics'] = [segment]
+                    segment['topics'] = [segment['topics']]
                 verify_attr(segment, 'name', 'segment')
                 self._print("\t\tFound segment '{}' of topics '{}' from {} to {} every {}",
                             segment['name'], segment['topics'],
@@ -148,6 +149,12 @@ class BagToLabelMe():
             print "{}/{} TOTAL images labeled ({:.1%})".format(total_xml_count, total_img_count,
                                                                total_xml_count / total_img_count)
 
+    def _name_encode(self, string):
+        '''
+        Used to convert topic and
+        '''
+        return string.replace('/', '@')
+
     def _read_bag(self, bagfile, segments):
         """
         Crawls through a single bag specified in the config YAML, placing
@@ -163,8 +170,9 @@ class BagToLabelMe():
             # replaces / with @
             paths = {}
             for t in segment['topics']:
-                path = os.path.join(self.labelme_dir, 'Images', segment['name'].replace(
-                    '/', '@'), t.replace('/', '@'))
+                path = os.path.join(self.labelme_dir, 'Images',
+                                    self._name_encode(segment['name']),
+                                    self._name_encode(t))
                 if not os.path.exists(path):
                     os.makedirs(path)
                 paths[t] = path
@@ -187,11 +195,11 @@ class BagToLabelMe():
                     # named by the frame's timestamp converted to a string:
                     # str(ros.Time(stamp))
                     img = self.bridge.imgmsg_to_cv2(
-                        msg, desired_encoding="passthrough")
+                        msg, desired_encoding='rgb8')
                     filename = os.path.join(
                         paths[topic], str(msg.header.stamp) + '.jpg')
                     cv2.imwrite(filename, img)
-                    next_time = next_time + interval
+                    next_time = time + interval
 
     def _print_bag_report(self, bagconfig):
         """
@@ -212,10 +220,12 @@ class BagToLabelMe():
             xml_count = 0
             img_count = 0
             for t in segment['topics']:
-                xml_path = os.path.join(self.labelme_dir, 'Annotations', segment['name'].replace('/', '@'),
-                                        t.replace('/', '@'))
-                img_path = os.path.join(self.labelme_dir, 'Images', segment['name'].replace('/', '@'),
-                                        t.replace('/', '@'))
+                xml_path = os.path.join(self.labelme_dir, 'Annotations',
+                                        self._name_encode(segment['name']),
+                                        self._name_encode(t))
+                img_path = os.path.join(self.labelme_dir, 'Images',
+                                        self._name_encode(segment['name']),
+                                        self._name_encode(t))
                 if os.path.isdir(xml_path):
                     for xmlfile in os.listdir(xml_path):
                         xml_count += 1
@@ -268,8 +278,9 @@ class BagToLabelMe():
         for t in segment['topics']:
             if t not in labels:
                 labels[t] = {}
-            path = os.path.join(self.labelme_dir, 'Annotations', segment['name'].replace(
-                '/', '@'), t.replace('/', '@'))
+            path = os.path.join(self.labelme_dir, 'Annotations',
+                                self._name_encode(segment['name']),
+                                self._name_encode(t))
             if not os.path.isdir(path):
                 continue
             for xmlfile in os.listdir(path):
@@ -369,16 +380,16 @@ class BagToLabelMe():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Generates rosbags based on LabelMe data and visa/versa')
-    parser.add_argument('--config-file', '-c', dest='config', type=str, required=True,
+    parser.add_argument('config', type=str,
                         help='YAML file specifying what bags to read and extract images from.\
                               See example YAML for details')
     parser.add_argument('--labelme-dir', '-d', dest='dir', type=str, required=True,
                         help='root directory of labelme instalation')
     parser.add_argument('--bag-dir', '-b', dest="bag_dir", type=str, default="",
                         help="directory to resolve relative paths specifed in YAML for input bags")
-    parser.add_argument('--output-dir', '-o', dest="output_dir", type=str, default="",
+    parser.add_argument('--output-dir', '-o', dest="output_dir", type=str, default=".",
                         help="directory to resolve relative paths specified in YAML for output (labeled) bags")
-    parser.add_argument('--inject-annotations', '-i', dest='extract_labels', action='store_true',
+    parser.add_argument('--extract', '-e', dest='extract_labels', action='store_true',
                         help='Instead of putting bag images into LabelMe, read annotations from labelme,\
                               inserting them into a new bag as specified in config')
     parser.add_argument('--generate-report', '-r', dest='do_report', action='store_true',
