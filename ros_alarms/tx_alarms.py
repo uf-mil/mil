@@ -115,6 +115,7 @@ class TxAlarmListener(object):
         resp = yield self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
         defer.returnValue(not resp.alarm.raised)
 
+    @txros.util.cancellableInlineCallbacks
     def get_alarm(self):
         ''' Returns the alarm message
         Also worth noting, the alarm this returns has it's `parameter` field
