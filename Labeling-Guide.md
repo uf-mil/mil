@@ -9,3 +9,4 @@ Example:
 * Label the LED panel itself with a 4 sided polygon and name ```stcin```,
   * In the attributes section, leave one of the following strings ```blue```,```green```,```red```,```yellow```,```off``` based on the color of the LEDs, or off if they are off
 * Only label the side of scan the code closest to the camera, dont try to label the ones on the side
+* Feel free to jump around or skip images. We want the most **diverse** set of labeled data, not a bunch of labels on very similar images
