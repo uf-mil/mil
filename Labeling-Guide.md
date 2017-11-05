@@ -3,8 +3,43 @@ To provide training data to machine learning algorithms, and to verify performan
 
 ## Images
 ### Scan The Code
-Example:
+#### Config
+I used the following config yaml to generate the images:
+```
+# Required bags list
+bags:
+    - file: stc/comp_bgy.bag
+      name: stc/comp_bgy
+      topics: /stereo/right/image_raw
+      freq: 1.0
+    - file: stc/comp_brg2.bag
+      name: stc/comp_brg2
+      topics: /stereo/right/image_raw
+      freq: 1.0
+    - file: stc/comp_brg.bag
+      name: stc/comp_brg
+      topics: /stereo/right/image_raw
+      freq: 1.0
+    - file: stc/comp_rgb.bag
+      name: stc/comp_rgb
+      topics: /stereo/right/image_raw
+      freq: 1.0
+    - file: stc/comp_rgr.bag
+      name: stc/comp_rgr
+      topics: /stereo/right/image_raw
+      freq: 1.0
+    - file: stc/comp_yby.bag
+      name: stc/comp_yby
+      topics: /stereo/right/image_raw
+      freq: 1.0
+    - file: stc/comp_yry.bag
+      name: stc/comp_yry
+      topics: /stereo/right/image_raw
+      freq: 1.0
+```
+#### Example:
 ![scan the code](https://i.imgur.com/QSd5oEY.jpg)
+#### Guide
 * Label the white border outside the LED panel as a 4 sided polygon and name ```stcout```, no attributes
 * Label the LED panel itself with a 4 sided polygon and name ```stcin```,
   * In the attributes section, leave one of the following strings ```blue```,```green```,```red```,```yellow```,```off``` based on the color of the LEDs, or off if they are off
