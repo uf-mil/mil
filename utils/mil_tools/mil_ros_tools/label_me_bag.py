@@ -36,6 +36,10 @@ class BagConfig(object):
     '''
     @classmethod
     def default_name(cls, filename):
+        '''
+        Default name is just filename stripped of any directories
+        or extensions.
+        '''
         return os.path.splitext(os.path.split(filename)[1])
 
     def __init__(self, config):
@@ -113,7 +117,7 @@ class BagToLabelMe(object):
         the bag config name and a topic
         '''
         return os.path.join(self.labelme_dir, 'Images',
-                            self._name_encode(name),
+                            name,
                             self._name_encode(topic))
 
     def _annotations_directory(self, name, topic):
@@ -122,7 +126,7 @@ class BagToLabelMe(object):
         the bag config name and a topic
         '''
         return os.path.join(self.labelme_dir, 'Annotations',
-                            self._name_encode(name),
+                            name,
                             self._name_encode(topic))
 
     def read_bags(self):
@@ -164,7 +168,7 @@ class BagToLabelMe(object):
         next_time = start + interval
         for topic, msg, time in bag.read_messages(topics=config.topics, start_time=start, end_time=stop):
             if time >= next_time:
-                img = self.bridge.imgmsg_to_cv2(msg, desired_encoding='rgb8')
+                img = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
                 filename = os.path.join(paths[topic], str(msg.header.stamp) + '.jpg')
                 cv2.imwrite(filename, img)
                 next_time = time + interval
