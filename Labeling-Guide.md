@@ -6,35 +6,34 @@ To provide training data to machine learning algorithms, and to verify performan
 #### Config
 I used the following config yaml to generate the images:
 ```
-# Required bags list
 bags:
     - file: stc/comp_bgy.bag
       name: stc/comp_bgy
-      topics: /stereo/right/image_raw
+      topics: /stereo/right/image_rect_color
       freq: 1.0
     - file: stc/comp_brg2.bag
       name: stc/comp_brg2
-      topics: /stereo/right/image_raw
+      topics: /stereo/right/image_rect_color
       freq: 1.0
     - file: stc/comp_brg.bag
       name: stc/comp_brg
-      topics: /stereo/right/image_raw
+      topics: /stereo/right/image_rect_color
       freq: 1.0
     - file: stc/comp_rgb.bag
       name: stc/comp_rgb
-      topics: /stereo/right/image_raw
+      topics: /stereo/right/image_rect_color
       freq: 1.0
     - file: stc/comp_rgr.bag
       name: stc/comp_rgr
-      topics: /stereo/right/image_raw
+      topics: /stereo/right/image_rect_color
       freq: 1.0
     - file: stc/comp_yby.bag
       name: stc/comp_yby
-      topics: /stereo/right/image_raw
+      topics: /stereo/right/image_rect_color
       freq: 1.0
     - file: stc/comp_yry.bag
       name: stc/comp_yry
-      topics: /stereo/right/image_raw
+      topics: /stereo/right/image_rect_color
       freq: 1.0
 ```
 #### Example:
