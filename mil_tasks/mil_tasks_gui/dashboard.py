@@ -10,6 +10,7 @@ from actionlib import ActionClient, GoalManager, CommStateMachine, TerminalState
 import json
 import weakref
 import datetime
+import threading
 
 
 class ExtendedGoalManager(GoalManager):
@@ -123,6 +124,9 @@ class Dashboard(Plugin):
     def __init__(self, context):
         super(Dashboard, self).__init__(context)
 
+        # Lock used to ensure ROS callbacks are synced with Qt
+        self.lock = threading.Lock()
+
         # Create the widget and name it
         self._widget = QtWidgets.QWidget()
         self._widget.setObjectName("Dashboard")
@@ -158,10 +162,12 @@ class Dashboard(Plugin):
         ex: ui_log('Hello world')
         12:25       Hello world
         '''
+        self.lock.acquire()
         date_time = datetime.datetime.fromtimestamp(rospy.Time.now().to_time())
         time_str = '{}:{}:{}'.format(date_time.hour, date_time.minute, date_time.second).ljust(12, ' ')
         formatted = time_str + string
-        self.feedback_list.insertItem(0, formatted)
+        self.feedback_list.addItem(formatted)
+        self.lock.release()
 
     def feedback_cb(self, goal, handler, feedback):
         '''
@@ -317,6 +323,11 @@ class Dashboard(Plugin):
         self.task_runner_client.cancel_all_goals()
         return True
 
+    def autoscroll(self, *args):
+        auto = self.feedback_list_scrollbar.value() == self.feedback_list_scrollbar.maximum()
+        if auto:  # Autoscroll to bottom if you were already there
+            self.feedback_list.scrollToBottom()
+
     def connect_ui(self):
         '''
         Stores various interactive widgets as member variabes so we can get and set their contents.
@@ -339,6 +350,9 @@ class Dashboard(Plugin):
         self.current_task_label = self._widget.findChild(QtWidgets.QLabel, 'current_task_label')
         self.current_task_status_label = self._widget.findChild(QtWidgets.QLabel, 'current_status_label')
         self.feedback_list = self._widget.findChild(QtWidgets.QListWidget, 'log_list')
+        self.feedback_list.setAlternatingRowColors(True)  # easier to read
+        self.feedback_list.model().rowsInserted.connect(self.autoscroll)
+        self.feedback_list_scrollbar = self.feedback_list.verticalScrollBar()
         self.result_label = self._widget.findChild(QtWidgets.QLabel, 'result_label')
         self.clear_log_button = self._widget.findChild(QtWidgets.QPushButton, 'clear_log_button')
         self.clear_log_button.clicked.connect(self.clear_log)
