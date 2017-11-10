@@ -94,3 +94,8 @@ catkin_package(
     INCLUDE_DIRS include
     CATKIN_DEPENDS gazebo_ros roscpp rospy std_msgs nav_msgs message_runtime tf gazebo_plugins sensor_msgs
 )
+
+# if(CATKIN_ENABLE_TESTING)
+#     find_package(rostest)
+#     add_subdirectory(test)
+# endif()
