@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 from __future__ import division
 from qt_gui.plugin import Plugin
-
 import sys
 import rospy
-
-from python_qt_binding import QtCore, QtGui
+import os
+import rospkg
+from python_qt_binding import QtCore, QtGui, loadUi
 from python_qt_binding.QtCore import (Qt)
 from python_qt_binding.QtWidgets import QHBoxLayout, QToolTip, QPushButton, QApplication, QWidget, QLabel
 from python_qt_binding.QtGui import QIcon, QPixmap, QFont
@@ -47,10 +47,15 @@ class VoltageWidget(QWidget):
     resized = QtCore.pyqtSignal()
     def __init__(self):
         super(VoltageWidget, self).__init__()
+
+        rp = rospkg.RosPack()
+        ui_file = os.path.join(rp.get_path('voltage_gui'), 'resource', 'voltage_gui.ui')
+        loadUi(ui_file, self)
+
         self.setObjectName('VoltageWidget')
 
-        # Whenever the screen is resized the resizeAll function is called
-        self.resized.connect(self.resizeAll)
+        # Whenever the screen is resized the resizeFont function is called
+        self.resized.connect(self.resizeFont)
 
         self.title = 'Voltage GUI'
         self.left = 10
@@ -64,13 +69,13 @@ class VoltageWidget(QWidget):
         self.boxHeight = 150
         self.fontSize = 40
 
-        self.resizeCounter = 1
-        self.warningCounter = 0
+        self.captionHeight = 121
+        self.captionWidth = 31
 
+        self.warningCounter = 0
         self.paramCounter = 0
 
-        self.initLabel()
-
+        self.initThresh()
 
         # Subscribing to all the data we need
         self.battery_voltage = None
@@ -83,7 +88,6 @@ class VoltageWidget(QWidget):
         self.voltageBL= None
         rospy.Subscriber("/BR_motor/feedback", Feedback, self.update_BR)
         self.voltageBR = None
-
 
     #The functions that the subscribers call in order to get new data
     def updateMain(self, mainData):
@@ -102,15 +106,8 @@ class VoltageWidget(QWidget):
         self.resized.emit()
         return super(VoltageWidget, self).resizeEvent(event)
 
-    #Increase/decrease size of labels and text based on changes in window dimensions
-    def resizeAll(self):
-
-        #On start up, the window is automatically resized twice. to avoid
-        #drastic changes to font and box, we just ignore the first resize
-        if (self.resizeCounter== 1):
-            self.resizeCounter = self.resizeCounter + 1
-            return
-
+    #Increase/decrease size of fonts based on window resize
+    def resizeFont(self):
         #gets new window dimensions, the self is needed because we are referencing
         #our VoltageWidget class
         width= VoltageWidget.frameGeometry(self).width()
@@ -124,77 +121,22 @@ class VoltageWidget(QWidget):
         self.width = width
         self.height = height
 
-        #use ratio to change sizes of labels (The colored boxes)
-        # by the same percent/ratio as the total window changed
-        self.boxWidth = self.boxWidth * widthRatio
-        self.boxHeight = self.boxHeight * heightRatio
-
         #Fonts like 16, 24 are references to height of letters. So I thought it would
         #Make sense to change font size proportionally to changes in window height
         self.fontSize = self.fontSize * heightRatio
         newfont = QtGui.QFont("Times", self.fontSize, QtGui.QFont.Bold)
 
-        #topleft corner for x,y (x, y, width, height)
-        #x and y are sometimes based on boxWidth and boxHeight because as the boxes
-        #grow I dont want them to overlap, so this ensures they stay an even distance
-        #away from each other.
-        self.labelMain.setGeometry(QtCore.QRect((150+2*self.boxWidth), (250), self.boxWidth, self.boxHeight))
+
         self.labelMain.setFont(newfont)
-
-        self.labelFL.setGeometry(QtCore.QRect(10, (10), self.boxWidth, self.boxHeight))
         self.labelFL.setFont(newfont)
-
-        self.labelFR.setGeometry(QtCore.QRect((40+self.boxWidth), (10), self.boxWidth, self.boxHeight))
         self.labelFR.setFont(newfont)
-
-        self.labelBL.setGeometry(QtCore.QRect(10, (130+self.boxHeight), self.boxWidth, self.boxHeight))
         self.labelBL.setFont(newfont)
-
-        self.labelBR.setGeometry(QtCore.QRect((40+self.boxWidth), (130+self.boxHeight), self.boxWidth, self.boxHeight))
         self.labelBR.setFont(newfont)
-
-        #threshFont is just 4*smaller then the other fonts
-        self.labelThresh.setGeometry(QtCore.QRect((150+2*self.boxWidth), (20), self.boxWidth, self.boxHeight*2/3))
-        threshFont = QtGui.QFont("Times", (self.fontSize)/4, QtGui.QFont.Bold)
+        threshFont = QtGui.QFont("Times", (self.fontSize)/3, QtGui.QFont.Bold)
         self.labelThresh.setFont(threshFont)
 
-    # Creates the labels(boxes) and sets there starting location and size
-    def initLabel(self):
-
-        self.labelMain = QLabel(self)
-        self.labelMain.setGeometry(QtCore.QRect((150+2*self.boxWidth), (300), self.boxWidth, self.boxHeight))
-        self.labelMain.setText("Main")
-        self.labelMain.setStyleSheet("QLabel { background-color : green; color : white; }")
-
-        newfont = QtGui.QFont("Times", self.fontSize, QtGui.QFont.Bold)
-        self.labelMain.setFont(newfont)
-
-
-        self.labelFL = QLabel(self)
-        self.labelFL.setGeometry(QtCore.QRect(10, (10), self.boxWidth, self.boxHeight))
-        self.labelFL.setText("FL")
-        self.labelFL.setStyleSheet("QLabel { background-color : green; color : white; }")
-        self.labelFL.setFont(newfont)
-
-        self.labelFR = QLabel(self)
-        self.labelFR.setGeometry(QtCore.QRect((20+self.boxWidth), (10), self.boxWidth, self.boxHeight))
-        self.labelFR.setText("FR")
-        self.labelFR.setStyleSheet("QLabel { background-color : green; color : white; }")
-        self.labelFR.setFont(newfont)
-
-        self.labelBL = QLabel(self)
-        self.labelBL.setGeometry(QtCore.QRect(10, (130+self.boxWidth), self.boxWidth, self.boxHeight))
-        self.labelBL.setText("BL")
-        self.labelBL.setStyleSheet("QLabel { background-color : green; color : white; }")
-        self.labelBL.setFont(newfont)
-
-        self.labelBR = QLabel(self)
-        self.labelBR.setGeometry(QtCore.QRect((20+self.boxWidth), (130+self.boxWidth), self.boxWidth, self.boxHeight))
-        self.labelBR.setText("BR")
-        self.labelBR.setStyleSheet("QLabel { background-color : green; color : white; }")
-        self.labelBR.setFont(newfont)
-
-
+    #Sets the text of the thrshold info box
+    def initThresh(self):
         #Low and Critical decide what colors the boxes take for
         # Good (Green), Warning (Yellow), and Critical (Red)
         #If the parameter server has not set these values then we use the DEFAULT
@@ -215,12 +157,12 @@ class VoltageWidget(QWidget):
             self.gotParams = False
 
         #Thresh is a box in the top right of the GUI that displays Threshold values and box layouts
-        self.labelThresh = QLabel(self)
-        self.labelThresh.setGeometry(QtCore.QRect((150+2*self.boxWidth), (10), self.boxWidth, self.boxHeight))
-        threshText = "Low Threshold: {} \nCritical: {}\n  FL || FR\n  BL || BR  || Avg".format(self.lowThreshold,self.criticalThreshold)
+        #self.labelThresh = QLabel(self)
+        #self.labelThresh.setGeometry(QtCore.QRect((150+2*self.boxWidth), (10), self.boxWidth, self.boxHeight))
+        threshText  = "Low Threshold: {} \nCritical: {}".format(self.lowThreshold,self.criticalThreshold)
         self.labelThresh.setText(threshText)
         self.labelThresh.setStyleSheet("QLabel { background-color : white; color : black; }")
-        threshFont = QtGui.QFont("Times", (self.fontSize)/4, QtGui.QFont.Bold)
+        threshFont = QtGui.QFont("Times", (self.fontSize)/3, QtGui.QFont.Bold)
         self.labelThresh.setFont(threshFont)
 
 
@@ -234,9 +176,9 @@ class VoltageWidget(QWidget):
             self.gotParams = False
 
         if self.gotParams == True:
-            threshText = "Low Threshold: {} \nCritical: {}\n  FL || FR\n  BL || BR  || Avg".format(self.lowThreshold,self.criticalThreshold)
+            threshText = "Low Threshold: {} \nCritical: {}".format(self.lowThreshold,self.criticalThreshold)
         else:
-            threshText = "THRESHOLDS NOT SET\nUSING DEFAULT\nLow Threshold: {} \nCritical: {}\n  FL || FR\n  BL || BR  || Avg".format(self.lowThreshold,self.criticalThreshold)
+            threshText = "THRESHOLDS NOT SET\nUSING DEFAULT\nLow Threshold: {} \nCritical: {}".format(self.lowThreshold,self.criticalThreshold)
         self.labelThresh.setText(threshText)
 
     #sets colors of boxes based on current values of voltages for each box
@@ -275,8 +217,6 @@ class VoltageWidget(QWidget):
             self.labelBR.setStyleSheet("QLabel { background-color : yellow; color : black; }")
         elif self.voltageBR <= self.criticalThreshold:
             self.labelBR.setStyleSheet("QLabel { background-color : red; color : white; }")
-
-
 
     def updateLabel(self):
         #Tries self.gotParams every 5 function calls
