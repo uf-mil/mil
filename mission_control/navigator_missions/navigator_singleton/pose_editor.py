@@ -5,14 +5,14 @@ import txros
 import numpy as np
 from tf import transformations
 from nav_msgs.msg import Odometry
-from uf_common.msg import PoseTwistStamped, PoseTwist, MoveToGoal
+from mil_msgs.msg import PoseTwistStamped, PoseTwist, MoveToGoal
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Point, Vector3, Twist
-from navigator_tools import rosmsg_to_numpy, make_header, normalize
+from mil_tools import rosmsg_to_numpy, make_header, normalize
 from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
-from lqrrt_ros.msg import MoveGoal
+from navigator_path_planner.msg import MoveGoal
 
-import navigator_tools
-from navigator_tools import fprint
+import mil_tools
+from mil_misc_tools.text_effects import fprint
 from twisted.internet import defer
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
@@ -217,7 +217,7 @@ class PoseEditor2(object):
         if isinstance(pose, PoseStamped):
             pose = pose.pose
 
-        position, orientation = navigator_tools.pose_to_numpy(pose)
+        position, orientation = mil_tools.pose_to_numpy(pose)
         return PoseEditor2(self.nav, [position, orientation])
 
     def to_lat_long(self, lat, lon, alt=0):
@@ -305,7 +305,7 @@ class PoseEditor2(object):
     def as_MoveGoal(self, move_type='drive', **kwargs):
         if 'focus' in kwargs:
             if not isinstance(kwargs['focus'], Point):
-                kwargs['focus'] = navigator_tools.numpy_to_point(kwargs['focus'])
+                kwargs['focus'] = mil_tools.numpy_to_point(kwargs['focus'])
         
         if 'speed_factor' in kwargs and isinstance(kwargs['speed_factor'], float):
             # User wants a uniform speed factor

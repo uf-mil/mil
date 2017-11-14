@@ -1,5 +1,0 @@
-<launch>
-  <param name="simulate" value="true" />
-  <node pkg="navigator_alarm" type="alarm_handler.py" name="alarm_handler" />
-  <test test-name="navigator_alarm_integration" pkg="navigator_alarm" type="test_alarm_integration.py" />
-</launch>

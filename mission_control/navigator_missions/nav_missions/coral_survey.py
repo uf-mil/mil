@@ -5,9 +5,9 @@ import txros
 import tf
 import tf.transformations as trns
 import numpy as np
-import navigator_tools
+import mil_tools
 from random import shuffle
-from navigator_tools import fprint
+from mil_misc_tools.text_effects import fprint
 from navigator_singleton import pose_editor
 from twisted.internet import defer
 
@@ -29,8 +29,8 @@ def main(navigator, **kwargs):
     totem = yield navigator.database_query("all")
     
     # Get the closest totem object to the boat
-    totems_np = map(lambda obj: navigator_tools.point_to_numpy(obj.position), totem.objects)
-    dist = map(lambda totem_np: np.linalg.norm(totem_np - navigator_tools.point_to_numpy(est_coral_survey.objects[0].position)), totems_np)
+    totems_np = map(lambda obj: mil_tools.rosmsg_to_numpy(obj.position), totem.objects)
+    dist = map(lambda totem_np: np.linalg.norm(totem_np - mil_tools.rosmsg_to_numpy(est_coral_survey.objects[0].position)), totems_np)
     middle_point = totems_np[np.argmin(dist)]
 
     print "Totem sorted:", totems_np
@@ -87,7 +87,7 @@ class OgridFactory():
     def make_ogrid_transform(self):
         origin_x = self.center[0] - 30
         origin_y = self.center[1] - 30
-        self.origin = navigator_tools.numpy_quat_pair_to_pose([origin_x, origin_y, 0],
+        self.origin = mil_tools.numpy_quat_pair_to_pose([origin_x, origin_y, 0],
                                                               [0, 0, 0, 1])
 
         # The grid needs to have it's axes swaped since its row major
@@ -127,7 +127,7 @@ class OgridFactory():
 
     def get_message(self):
         ogrid = OccupancyGrid()
-        ogrid.header = navigator_tools.make_header(frame="enu")
+        ogrid.header = mil_tools.make_header(frame="enu")
         ogrid.info.resolution = self.resolution
         ogrid.info.height, ogrid.info.width = self.grid.shape
         ogrid.info.origin = self.origin

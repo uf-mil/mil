@@ -41,15 +41,10 @@ Bibliography:
 
 '''
 import rospy
-import roslib
 import numpy as np
-import numpy.linalg
-import math
-import tf
 from geometry_msgs.msg import WrenchStamped
-from std_msgs.msg import Float32MultiArray, Bool
-from roboteq_msgs.msg import *
-from sub8_alarm import AlarmListener
+from roboteq_msgs.msg import Command
+from ros_alarms import AlarmListener
 
 
 class Thruster(object):
@@ -57,6 +52,7 @@ class Thruster(object):
     def __init__(self, cog, angle):
         self.cog = np.array([cog[0], cog[1]])
         self.angle = angle
+
 
 class Mapper(object):
 
@@ -78,23 +74,18 @@ class Mapper(object):
         self.effort_limit = effort_limit
 
         self.kill = False
-        self.docking_alarm = False
 
         self.kill_listener = AlarmListener('kill', self.kill_cb)
-        self.docking_alarm_listener = AlarmListener('docking', self.docking_alarm_cb)
 
         # ROS data
-        self.BL_pub = rospy.Publisher("/BL_motor/cmd" , Command, queue_size=1)
-        self.BR_pub = rospy.Publisher("/BR_motor/cmd" , Command, queue_size=1)
-        self.FL_pub = rospy.Publisher("/FL_motor/cmd" , Command, queue_size=1)
-        self.FR_pub = rospy.Publisher("/FR_motor/cmd" , Command, queue_size=1)
+        self.BL_pub = rospy.Publisher("/BL_motor/cmd", Command, queue_size=1)
+        self.BR_pub = rospy.Publisher("/BR_motor/cmd", Command, queue_size=1)
+        self.FL_pub = rospy.Publisher("/FL_motor/cmd", Command, queue_size=1)
+        self.FR_pub = rospy.Publisher("/FR_motor/cmd", Command, queue_size=1)
         rospy.Subscriber("/wrench/cmd", WrenchStamped, self.wrench_cb)
 
     def kill_cb(self, alarm):
-        self.kill = not alarm.clear
-
-    def docking_alarm_cb(self, alarm):
-        self.docking_alarm = not alarm.clear
+        self.kill = alarm.raised
 
     def wrench_cb(self, msg):
         ''' Grab new wrench
@@ -151,11 +142,6 @@ class Mapper(object):
             self.BR_pub.publish(Command(setpoint=0))
             self.FL_pub.publish(Command(setpoint=0))
             self.FR_pub.publish(Command(setpoint=0))
-        elif self.docking_alarm is True:
-            self.BL_pub.publish(BL_msg)
-            self.BR_pub.publish(BR_msg)
-            self.FL_pub.publish(Command(setpoint=0))
-            self.FR_pub.publish(Command(setpoint=0))
         else:
             self.BL_pub.publish(BL_msg)
             self.BR_pub.publish(BR_msg)
@@ -190,10 +176,10 @@ if __name__ == "__main__":
     # Put the thrusters in a list and give them to the mapper
     thrusters = [BL, BR, FL, FR]
     mapper = Mapper(thrusters, effort_ratio, effort_limit)
-    
+
     # Required in order to get feedback from motors
     rospy.sleep(5)
-    
+
     # Allocate for the given wrench and thruster locations
     while not rospy.is_shutdown():
         # map thruster at 50hz

@@ -1,25 +1,28 @@
 #pragma once
 
-#include <mutex>
+#include <ros/ros.h>
 #include <algorithm>
-#include <vector>
-#include <map>
 #include <cmath>
+#include <map>
+#include <mutex>
+#include <vector>
 #include "gazebo/common/Assert.hh"
-#include "gazebo/common/Events.hh"
 #include "gazebo/common/Event.hh"
+#include "gazebo/common/Events.hh"
 #include "gazebo/common/Plugin.hh"
 #include "gazebo/math/Vector3.hh"
 #include "gazebo/physics/physics.hh"
 #include "roboteq_msgs/Command.h"
-#include <ros/ros.h>
 
-namespace gazebo {
-
-
-struct Thruster {
-  Thruster(){ }
-  Thruster(std::string param_name) {
+namespace gazebo
+{
+struct Thruster
+{
+  Thruster()
+  {
+  }
+  Thruster(std::string param_name)
+  {
     std::vector<double> v_position;
     double v_effort_limit, v_effort_ratio, v_rotation;
 
@@ -44,8 +47,9 @@ struct Thruster {
   double effort_ratio, effort_limit;
 };
 
-class ThrusterPlugin : public ModelPlugin {
- public:
+class ThrusterPlugin : public ModelPlugin
+{
+public:
   ThrusterPlugin();
   virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
   virtual void Init();
@@ -54,7 +58,7 @@ class ThrusterPlugin : public ModelPlugin {
   void FLCallback(const roboteq_msgs::Command::ConstPtr &command);
   void FRCallback(const roboteq_msgs::Command::ConstPtr &command);
 
- protected:
+protected:
   ros::NodeHandle nh;
   ros::Subscriber blSub;
   ros::Subscriber brSub;
@@ -62,7 +66,7 @@ class ThrusterPlugin : public ModelPlugin {
   ros::Subscriber frSub;
   virtual void OnUpdate();
 
- protected:
+protected:
   std::mutex mtx;
   event::ConnectionPtr updateConnection;
   physics::ModelPtr model;
@@ -72,7 +76,7 @@ class ThrusterPlugin : public ModelPlugin {
   physics::LinkPtr targetLink;
   ros::Time lastTime;
 
-  std::vector<double> commands {0, 0, 0, 0};
+  std::vector<double> commands{ 0, 0, 0, 0 };
   std::vector<Thruster> thrusters;  // BL, BR, FL, FR
 };
 }

@@ -7,6 +7,43 @@
   <license>TODO</license>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roslaunch</build_depend>
+  <run_depend>navigator_msg_multiplexer</run_depend>
+  <run_depend>navigator_joystick_control</run_depend>
+  <run_depend>navigator_tools</run_depend>
+  <run_depend>navigator_keyboard_control</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>navigator_controller</run_depend>
+  <run_depend>navigator_thrust_mapper</run_depend>
+  <run_depend>nodelet</run_depend>
+  <run_depend>navigator_lidar_oa</run_depend>
+  <run_depend>roboteq_driver</run_depend>
+  <run_depend>mil_vision</run_depend>
+  <run_depend>navigator_joystick_control</run_depend>
+  <run_depend>navigator_shooter</run_depend>
+  <run_depend>velodyne_driver</run_depend>
+  <run_depend>velodyne_pointcloud</run_depend>
+  <run_depend>navigator_kill_board</run_depend>
+  <run_depend>navigator_tools</run_depend>
+  <run_depend>ros_alarms</run_depend>
+  <run_depend>navigator_lidar_oa</run_depend>
+  <run_depend>navigator_vision</run_depend>
+  <run_depend>lms1xx</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>navigator_controller</run_depend>
+  <run_depend>navigator_thrust_mapper</run_depend>
+  <run_depend>nodelet</run_depend>
+  <run_depend>navigator_keyboard_control</run_depend>
+  <run_depend>dynamic_reconfigure</run_depend>
+  <run_depend>image_proc</run_depend>
+  <run_depend>navigator_sim_model</run_depend>
+  <run_depend>joy</run_depend>
+  <run_depend>rqt_gui</run_depend>
+  <run_depend>navigator_gazebo</run_depend>
+  <run_depend>mil_tools</run_depend>
+  <run_depend>navigator_path_planner</run_depend>
+  <run_depend>navigator_gui</run_depend>
+  <run_depend>diagnostic_aggregator</run_depend>
+  <run_depend>topic_tools</run_depend>
   <export>
   </export>
 </package>

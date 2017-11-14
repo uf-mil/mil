@@ -37,6 +37,8 @@ Thumbs.db
 *.pyo
 *~
 *.swp
+*.swn
+*.swo
 
 # Eclipse and PyDev project files
 .project

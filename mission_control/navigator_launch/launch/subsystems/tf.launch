@@ -16,6 +16,7 @@
     <!-- TODO Hydrophones -->
     <node pkg="tf" type="static_transform_publisher" name="hydrophone_tf" args="-1.2192 .70104 -1.0922 -1.571 0 0 /measurement /hydrophones 10" />
 
+    <!-- Republishes ins-frame odom in base_link frame -->
     <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry">
         <rosparam>
             frame_id: /enu
@@ -24,5 +25,6 @@
         <remap from="orig_odom" to="ins_odom"/>
    </node>
 
+    <!-- Publishes transform from /enu to /base_link based on odometry -->
     <node pkg="nodelet" type="nodelet" args="standalone odometry_utils/odometry_to_tf" name="odometry_to_tf"/>
 </launch>

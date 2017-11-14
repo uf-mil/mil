@@ -1,6 +1,16 @@
 <launch>
-  <node pkg="navigator_alarm" type="keepalive_listener.py" name="network_listener" />
-  <node pkg="navigator_alarm" type="alarm_handler.py" name="alarm_handler" />
-  <node pkg="navigator_alarm" type="odom_kill_listener.py" name="odom_kill" />
-  <node pkg="navigator_alarm" type="station_holder.py" name="station_holder" output="screen" />
+  <node pkg="ros_alarms" type="alarm_server.py" name="alarm_server" output="screen">
+    <param name="handler_module" type="string" value="navigator_alarm_handlers" />
+    <rosparam>
+        battery-voltage:
+            low: 26
+            critical: 20
+    </rosparam>
+  </node>
+  <rosparam ns="meta_alarms">
+    kill: ['odom-kill', 'network-loss', 'hw-kill']
+  </rosparam>
+  <rosparam ns="known_alarms">
+    kill, odom-kill, network-loss, station-hold, battery-voltage, hw-kill, thruster-fault
+  </rosparam>
 </launch>

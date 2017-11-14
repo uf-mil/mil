@@ -3,43 +3,44 @@ from __future__ import division
 
 import rospy
 
-from random import shuffle
 import numpy as np
 import cv2
 
-import navigator_tools
+import mil_tools
 import tf.transformations as trns
-from navigator_tools import fprint as _fprint
+from mil_misc_tools.text_effects import fprint as _fprint
 from navigator_msgs.srv import ObjectDBQuery
 from navigator_msgs.msg import PerceptionObject
 from nav_msgs.msg import OccupancyGrid, Odometry
 from std_srvs.srv import Trigger
 
 
-fprint = lambda *args, **kwargs: _fprint(time='', title='SIM',*args, **kwargs)
+fprint = lambda *args, **kwargs: _fprint(time='', title='SIM', *args, **kwargs)
+
 
 class DoOdom(object):
     """Republish odom  for lqrrt"""
+
     def __init__(self, rand_size):
         self.odom_pub = rospy.Publisher("/odom", Odometry, queue_size=2)
         self.odom = None
         self.carrot_sub = rospy.Subscriber("/lqrrt/ref", Odometry, self.set_odom)
-        
+
         fprint("Shaking hands and taking names.")
         rospy.sleep(1)
 
         # We need to publish an inital odom message for lqrrt
         start_ori = trns.quaternion_from_euler(0, 0, np.random.normal() * 3.14)
         start_pos = np.append(np.random.uniform(rand_size, size=(2)), 1)
-        start_pose = navigator_tools.numpy_quat_pair_to_pose(start_pos, start_ori)
+        start_pose = mil_tools.numpy_quat_pair_to_pose(start_pos, start_ori)
         start_odom = Odometry()
-        start_odom.header = navigator_tools.make_header(frame='enu')
+        start_odom.header = mil_tools.make_header(frame='enu')
         start_odom.child_frame_id = 'base_link'
         start_odom.pose.pose = start_pose
         self.odom_pub.publish(start_odom)
 
     def set_odom(self, msg):
-        self.odom = navigator_tools.pose_to_numpy(msg.pose.pose) 
+        self.odom = mil_tools.pose_to_numpy(msg.pose.pose)
         self.odom_pub.publish(msg)
 
 
@@ -47,19 +48,19 @@ class Sim(object):
     def __init__(self, bf_size=60, min_t_spacing=9, num_of_buoys=20):
         self.ogrid_pub = rospy.Publisher('/ogrid', OccupancyGrid, queue_size=2)
         self.odom = DoOdom(bf_size)
-        
+
         self.bf_size = bf_size
         self.min_t_spacing = min_t_spacing
         self.num_of_buoys = num_of_buoys
-       
+
         # Some ogrid defs
         self.grid = None
         self.resolution = 0.3
-        self.height = bf_size * 3 
+        self.height = bf_size * 3
         self.width = bf_size * 3
-        self.origin = navigator_tools.numpy_quat_pair_to_pose([-bf_size, -bf_size, 0],
-                                                              [0, 0, 0, 1])
-        
+        self.origin = mil_tools.numpy_quat_pair_to_pose([-bf_size, -bf_size, 0],
+                                                        [0, 0, 0, 1])
+
         self.publish_ogrid = lambda *args: self.ogrid_pub.publish(self.get_message())
 
         self.buoy_size = 1  # radius of buoy (m)
@@ -81,8 +82,8 @@ class Sim(object):
         # Transforms points from ENU to ogrid frame coordinates
         self.t = np.array([[1 / self.resolution, 0, -self.origin.position.x / self.resolution],
                            [0, 1 / self.resolution, -self.origin.position.y / self.resolution],
-                           [0,               0,            1]])
-        
+                           [0, 0, 1]])
+
         return lambda point: self.t.dot(np.append(point[:2], 1))[:2]
 
     def reseed(self, req):
@@ -100,22 +101,22 @@ class Sim(object):
         self.buoy_positions = np.array(_buoy_positions)
         print len(self.buoy_positions)
         fprint("Removed {} buoys that were too close to totems".format(len(self.buoy_positions) - len(_buoy_positions)))
-        #assert len(self.buoy_positions) > .5 * self.num_of_buoys, "Not enough buoys remain, try rerunning."
+        # assert len(self.buoy_positions) > .5 * self.num_of_buoys, "Not enough buoys remain, try rerunning."
         if len(self.buoy_positions) < .5 * self.num_of_buoys:
             self.reseed(req)
 
         self.transform = self._make_ogrid_transform()
- 
+
         self.draw_buoys()
         self.draw_totems()
         self.publish_ogrid()
 
-    def position_to_object(self, position, color, id,  name="totem"):
+    def position_to_object(self, position, color, id, name="totem"):
         obj = PerceptionObject()
         obj.id = int(id)
-        obj.header = navigator_tools.make_header(frame="enu")
+        obj.header = mil_tools.make_header(frame="enu")
         obj.name = name
-        obj.position = navigator_tools.numpy_to_point(position)
+        obj.position = mil_tools.numpy_to_point(position)
         obj.color.r = color[0]
         obj.color.g = color[1]
         obj.color.b = color[2]
@@ -131,11 +132,11 @@ class Sim(object):
         elif req.name == "totem":
             objects = [self.position_to_object(p, c, i) for p, c, i in zip(self.totem_positions, self.colors, self.ids)]
         elif req.name == "BuoyField":
-            objects = [self.position_to_object([self.bf_size / 2, self.bf_size / 2, 0 ], [0, 0, 0], 0, "BuoyField")]
+            objects = [self.position_to_object([self.bf_size / 2, self.bf_size / 2, 0], [0, 0, 0], 0, "BuoyField")]
         else:
             return {'found': False}
 
-        return {'objects': objects, 'found':True}
+        return {'objects': objects, 'found': True}
 
     def get_message(self):
         if self.grid is None:
@@ -143,7 +144,7 @@ class Sim(object):
             self.grid = np.zeros((self.height / self.resolution, self.width / self.resolution))
 
         ogrid = OccupancyGrid()
-        ogrid.header = navigator_tools.make_header(frame="enu")
+        ogrid.header = mil_tools.make_header(frame="enu")
         ogrid.info.resolution = self.resolution
         ogrid.info.height, ogrid.info.width = self.grid.shape
         ogrid.info.origin = self.origin

@@ -15,21 +15,24 @@
  *
 */
 
+#include "navigator_gazebo/navigator_buoyancy.hpp"
+#include <sstream>
 #include "gazebo/common/Assert.hh"
 #include "gazebo/common/Events.hh"
-#include "navigator_gazebo/navigator_buoyancy.hpp"
 #include "ros/ros.h"
-#include <sstream>
 
 using namespace gazebo;
 
 GZ_REGISTER_MODEL_PLUGIN(BuoyancyPlugin)
 
 /////////////////////////////////////////////////
-BuoyancyPlugin::BuoyancyPlugin() : fluidDensity(1000.0), dragCoeff(1.0), modelZOffset(0.0) {}
+BuoyancyPlugin::BuoyancyPlugin() : fluidDensity(1000.0), dragCoeff(1.0), modelZOffset(0.0)
+{
+}
 
 /////////////////////////////////////////////////
-void BuoyancyPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
+void BuoyancyPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
+{
   GZ_ASSERT(_model != NULL, "Received NULL model pointer");
   this->model = _model;
   physics::WorldPtr world = _model->GetWorld();
@@ -40,105 +43,122 @@ void BuoyancyPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   GZ_ASSERT(_sdf != NULL, "Received NULL SDF pointer");
   this->sdf = _sdf;
 
-  if (this->sdf->HasElement("fluid_density")) {
+  if (this->sdf->HasElement("fluid_density"))
+  {
     this->fluidDensity = this->sdf->Get<double>("fluid_density");
   }
 
-  if (this->sdf->HasElement("drag_coefficient")) {
+  if (this->sdf->HasElement("drag_coefficient"))
+  {
     this->dragCoeff = this->sdf->Get<double>("drag_coefficient");
   }
 
-  if (this->sdf->HasElement("model_z_offset")){
+  if (this->sdf->HasElement("model_z_offset"))
+  {
     this->modelZOffset = this->sdf->Get<double>("model_z_offset");
   }
 
   // Get "center of volume" and "volume" that were inputted in SDF
   // SDF input is recommended for mesh or polylines collision shapes
-  if (this->sdf->HasElement("link")) {
+  if (this->sdf->HasElement("link"))
+  {
     for (sdf::ElementPtr linkElem = this->sdf->GetElement("link"); linkElem;
-         linkElem = this->sdf->GetNextElement("link")) {
+         linkElem = this->sdf->GetNextElement("link"))
+    {
       int id = -1;
       std::string name = "";
-      if (linkElem->HasAttribute("name")) {
+      if (linkElem->HasAttribute("name"))
+      {
         name = linkElem->Get<std::string>("name");
         physics::LinkPtr link = this->model->GetLink(name);
-        if (!link) {
+        if (!link)
+        {
           gzwarn << "Specified link [" << name << "] not found." << std::endl;
           continue;
         }
         id = link->GetId();
-      } else {
-        gzwarn << "Required attribute name missing from link [" << name << "] in BuoyancyPlugin SDF"
-               << std::endl;
+      }
+      else
+      {
+        gzwarn << "Required attribute name missing from link [" << name << "] in BuoyancyPlugin SDF" << std::endl;
         // Exit if we didn't set ID
         continue;
       }
 
-      if (this->volPropsMap.count(id) != 0) {
+      if (this->volPropsMap.count(id) != 0)
+      {
         gzwarn << "Properties for link [" << name << "] already set, skipping "
                << "second property block" << std::endl;
       }
 
-      if (linkElem->HasElement("center_of_volume")) {
+      if (linkElem->HasElement("center_of_volume"))
+      {
         math::Vector3 cov = linkElem->GetElement("center_of_volume")->Get<math::Vector3>();
         this->volPropsMap[id].cov = cov;
-      } else {
-        gzwarn << "Required element center_of_volume missing from link [" << name
-               << "] in BuoyancyPlugin SDF" << std::endl;
+      }
+      else
+      {
+        gzwarn << "Required element center_of_volume missing from link [" << name << "] in BuoyancyPlugin SDF"
+               << std::endl;
         continue;
       }
 
-      if (linkElem->HasElement("volume")) {
+      if (linkElem->HasElement("volume"))
+      {
         double volume = linkElem->GetElement("volume")->Get<double>();
-        if (volume <= 0) {
+        if (volume <= 0)
+        {
           gzwarn << "Nonpositive volume specified in BuoyancyPlugin!" << std::endl;
           // Remove the element from the map since it's invalid.
           this->volPropsMap.erase(id);
           continue;
         }
         this->volPropsMap[id].volume = volume;
-      } else {
-        gzwarn << "Required element volume missing from element link [" << name
-               << "] in BuoyancyPlugin SDF" << std::endl;
+      }
+      else
+      {
+        gzwarn << "Required element volume missing from element link [" << name << "] in BuoyancyPlugin SDF"
+               << std::endl;
         continue;
       }
     }
   }
 
-/*
-  // For links the user didn't input, precompute the center of volume and
-  // density. This will be accurate for simple shapes.
-  for (auto link : this->model->GetLinks()) {
-    int id = link->GetId();
-    if (this->volPropsMap.find(id) == this->volPropsMap.end()) {
-      double volumeSum = 0;
-      math::Vector3 weightedPosSum = math::Vector3::Zero;
+  /*
+    // For links the user didn't input, precompute the center of volume and
+    // density. This will be accurate for simple shapes.
+    for (auto link : this->model->GetLinks()) {
+      int id = link->GetId();
+      if (this->volPropsMap.find(id) == this->volPropsMap.end()) {
+        double volumeSum = 0;
+        math::Vector3 weightedPosSum = math::Vector3::Zero;
 
-      // The center of volume of the link is a weighted average over the pose
-      // of each collision shape, where the weight is the volume of the shape
-      for (auto collision : link->GetCollisions()) {
-        double volume = collision->GetShape()->ComputeVolume();
-        volumeSum += volume;
-        weightedPosSum += volume * collision->GetWorldPose().pos;
+        // The center of volume of the link is a weighted average over the pose
+        // of each collision shape, where the weight is the volume of the shape
+        for (auto collision : link->GetCollisions()) {
+          double volume = collision->GetShape()->ComputeVolume();
+          volumeSum += volume;
+          weightedPosSum += volume * collision->GetWorldPose().pos;
+        }
+        // Subtract the center of volume into the link frame.
+        this->volPropsMap[id].cov = weightedPosSum / volumeSum - link->GetWorldPose().pos;
+        this->volPropsMap[id].volume = volumeSum;
       }
-      // Subtract the center of volume into the link frame.
-      this->volPropsMap[id].cov = weightedPosSum / volumeSum - link->GetWorldPose().pos;
-      this->volPropsMap[id].volume = volumeSum;
     }
-  }
-*/
-}
-
-
-/////////////////////////////////////////////////
-void BuoyancyPlugin::Init() {
-  this->updateConnection =
-      event::Events::ConnectWorldUpdateBegin(std::bind(&BuoyancyPlugin::OnUpdate, this));
+  */
 }
 
 /////////////////////////////////////////////////
-void BuoyancyPlugin::OnUpdate() {
-  for (auto link : this->model->GetLinks()) {
+void BuoyancyPlugin::Init()
+{
+  this->updateConnection = event::Events::ConnectWorldUpdateBegin(std::bind(&BuoyancyPlugin::OnUpdate, this));
+}
+
+/////////////////////////////////////////////////
+void BuoyancyPlugin::OnUpdate()
+{
+  for (auto link : this->model->GetLinks())
+  {
     VolumeProperties volumeProperties = this->volPropsMap[link->GetId()];
     double volume = volumeProperties.volume;
     GZ_ASSERT(volume > 0, "Nonpositive volume found in volume properties!");
@@ -162,10 +182,10 @@ void BuoyancyPlugin::OnUpdate() {
 
     // link->AddForce(linearResistance, volumeProperties.cov);
     // link->AddTorque(angularResistance, volumeProperties.cov);
-    if (linkFrame.pos.z + this->modelZOffset < 0.0) {
+    if (linkFrame.pos.z + this->modelZOffset < 0.0)
+    {
       link->AddLinkForce(buoyancyLinkFrame, volumeProperties.cov);
       // link->AddForceAtRelativePosition(buoyancyLinkFrame, volumeProperties.cov);
-
     }
   }
 }

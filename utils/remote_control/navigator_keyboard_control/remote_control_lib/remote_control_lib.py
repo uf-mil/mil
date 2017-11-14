@@ -11,10 +11,10 @@ import itertools
 
 import actionlib
 from geometry_msgs.msg import WrenchStamped
-from navigator_alarm import AlarmBroadcaster
-from navigator_alarm import AlarmListener
+from ros_alarms import AlarmBroadcaster, AlarmListener
 from navigator_msgs.msg import ShooterDoAction, ShooterDoActionGoal
-from navigator_msgs.srv import WrenchSelect, ShooterManual, ShooterManualRequest
+from topic_tools.srv import MuxSelect
+from navigator_msgs.srv import ShooterManual
 import rospy
 from std_srvs.srv import Trigger, TriggerRequest
 
@@ -32,21 +32,11 @@ class RemoteControl(object):
         self.name = controller_name
         self.wrench_choices = itertools.cycle(["rc", "emergency", "keyboard", "autonomous"])
 
-        self.alarm_broadcaster = AlarmBroadcaster()
-        self.kill_alarm = self.alarm_broadcaster.add_alarm(
-            name="rc_kill",
-            action_required=True,
-            severity=0
-        )
-        self.station_hold_alarm = self.alarm_broadcaster.add_alarm(
-            name="station_hold",
-            action_required=False,
-            severity=3
-        )
+        self.kill_broadcaster = AlarmBroadcaster('kill')
+        self.station_hold_broadcaster = AlarmBroadcaster('station-hold')
 
-        # rospy.wait_for_service("/change_wrench")
-        self.wrench_changer = rospy.ServiceProxy("/change_wrench", WrenchSelect)
-        self.kill_listener = AlarmListener("rc_kill", self._update_kill_status)
+        self.wrench_changer = rospy.ServiceProxy("/wrench/select", MuxSelect)
+        self.kill_listener = AlarmListener('kill', callback_funct=self._update_kill_status)
 
         if (wrench_pub is None):
             self.wrench_pub = wrench_pub
@@ -79,7 +69,7 @@ class RemoteControl(object):
         Updates the kill status display when there is an update on the kill
         alarm.
         '''
-        self.is_killed = not alarm.clear
+        self.is_killed = alarm.raised
 
     @_timeout_check
     def kill(self, *args, **kwargs):
@@ -87,9 +77,9 @@ class RemoteControl(object):
         Kills the system regardless of what state it is in.
         '''
         rospy.loginfo("Killing")
-        self.wrench_changer("rc")
-        self.kill_alarm.raise_alarm(
-            problem_description="System kill from location: {}".format(self.name)
+        self.kill_broadcaster.raise_alarm(
+            problem_description="System kill from user remote control",
+            parameters={'location': self.name}
         )
 
     @_timeout_check
@@ -98,8 +88,7 @@ class RemoteControl(object):
         Clears the system kill regardless of what state it is in.
         '''
         rospy.loginfo("Reviving")
-        self.wrench_changer("rc")
-        self.kill_alarm.clear_alarm()
+        self.kill_broadcaster.clear_alarm()
 
     @_timeout_check
     def toggle_kill(self, *args, **kwargs):
@@ -110,11 +99,11 @@ class RemoteControl(object):
 
         # Responds to the kill broadcaster and checks the status of the kill alarm
         if self.is_killed:
-            self.kill_alarm.clear_alarm()
+            self.kill_broadcaster.clear_alarm()
         else:
-            self.wrench_changer("rc")
-            self.kill_alarm.raise_alarm(
-                problem_description="System kill from location: {}".format(self.name)
+            self.kill_broadcaster.raise_alarm(
+                problem_description="System kill from user remote control",
+                parameters={'location': self.name}
             )
 
     @_timeout_check
@@ -126,11 +115,10 @@ class RemoteControl(object):
         rospy.loginfo("Station Holding")
 
         # Trigger station holding at the current pose
-        self.station_hold_alarm.raise_alarm(
-            problem_description="Request to station hold from: {}".format(self.name)
+        self.station_hold_broadcaster.raise_alarm(
+            problem_description="Request to station hold from remote control",
+            parameters={'location': self.name}
         )
-        rospy.sleep(0.2)
-        self.station_hold_alarm.clear_alarm()
 
     @_timeout_check
     def select_autonomous_control(self, *args, **kwargs):

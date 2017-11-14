@@ -1,13 +1,16 @@
 #include "navigator_gazebo/navigator_thrusters.hpp"
 #include <gazebo/common/Plugin.hh>
 
-namespace gazebo {
-
+namespace gazebo
+{
 GZ_REGISTER_MODEL_PLUGIN(ThrusterPlugin)
 
-ThrusterPlugin::ThrusterPlugin() {}
+ThrusterPlugin::ThrusterPlugin()
+{
+}
 
-void ThrusterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
+void ThrusterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
+{
   GZ_ASSERT(_model != NULL, "Received NULL model pointer");
 
   this->model = _model;
@@ -41,42 +44,48 @@ void ThrusterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   GZ_ASSERT(this->targetLink, "Could not find specified link");
 }
 
-void ThrusterPlugin::Init() {  
-  this->updateConnection =
-      event::Events::ConnectWorldUpdateBegin(std::bind(&ThrusterPlugin::OnUpdate, this));
+void ThrusterPlugin::Init()
+{
+  this->updateConnection = event::Events::ConnectWorldUpdateBegin(std::bind(&ThrusterPlugin::OnUpdate, this));
 }
 
 // Callbacks for each thrusters' command
-void ThrusterPlugin::BLCallback(const roboteq_msgs::Command::ConstPtr &command) {
+void ThrusterPlugin::BLCallback(const roboteq_msgs::Command::ConstPtr &command)
+{
   mtx.lock();
   this->lastTime = ros::Time::now();
   this->commands[0] = command->setpoint;
   mtx.unlock();
 }
 
-void ThrusterPlugin::BRCallback(const roboteq_msgs::Command::ConstPtr &command) {
+void ThrusterPlugin::BRCallback(const roboteq_msgs::Command::ConstPtr &command)
+{
   mtx.lock();
   this->lastTime = ros::Time::now();
   this->commands[1] = command->setpoint;
   mtx.unlock();
 }
 
-void ThrusterPlugin::FLCallback(const roboteq_msgs::Command::ConstPtr &command) {
+void ThrusterPlugin::FLCallback(const roboteq_msgs::Command::ConstPtr &command)
+{
   mtx.lock();
   this->lastTime = ros::Time::now();
   this->commands[2] = command->setpoint;
   mtx.unlock();
 }
 
-void ThrusterPlugin::FRCallback(const roboteq_msgs::Command::ConstPtr &command) {
+void ThrusterPlugin::FRCallback(const roboteq_msgs::Command::ConstPtr &command)
+{
   mtx.lock();
   this->lastTime = ros::Time::now();
   this->commands[3] = command->setpoint;
   mtx.unlock();
 }
 
-void ThrusterPlugin::OnUpdate() {
-  if ((ros::Time::now() - this->lastTime) > ros::Duration(2.0)) {
+void ThrusterPlugin::OnUpdate()
+{
+  if ((ros::Time::now() - this->lastTime) > ros::Duration(2.0))
+  {
     return;
   }
 
@@ -90,12 +99,14 @@ void ThrusterPlugin::OnUpdate() {
   math::Vector3 net_force(0.0, 0.0, 0.0);
   math::Vector3 net_torque(0.0, 0.0, 0.0);
 
-  for (uint i = 0; i < cmdBuffer.size(); i++) {
+  for (uint i = 0; i < cmdBuffer.size(); i++)
+  {
     // Clamp thrust value, convert to newton, then accumulate for net force
 
     double abs_thrust = std::abs(cmdBuffer[i]);
     double sign = cmdBuffer[i] / abs_thrust;
-    if (abs_thrust > this->thrusters[i].effort_limit){
+    if (abs_thrust > this->thrusters[i].effort_limit)
+    {
       // Out of range
       cmdBuffer[i] = sign * this->thrusters[i].effort_limit;
     }
@@ -106,14 +117,13 @@ void ThrusterPlugin::OnUpdate() {
     net_force += force;
     net_torque += torque;
   }
-  
-/*  ROS_INFO_THROTTLE(1, "things: %f, %f, %f, %f", cmdBuffer[0], cmdBuffer[1], cmdBuffer[2], cmdBuffer[3]);
-  ROS_INFO_THROTTLE(1, "force: %f, %f, %f", force[0], force[1], force[2]);
-  ROS_INFO_THROTTLE(1, "torque: %f, %f, %f", net_torque[0], net_torque[1], net_torque[2]);
-*/
+
+  /*  ROS_INFO_THROTTLE(1, "things: %f, %f, %f, %f", cmdBuffer[0], cmdBuffer[1], cmdBuffer[2], cmdBuffer[3]);
+    ROS_INFO_THROTTLE(1, "force: %f, %f, %f", force[0], force[1], force[2]);
+    ROS_INFO_THROTTLE(1, "torque: %f, %f, %f", net_torque[0], net_torque[1], net_torque[2]);
+  */
 
   this->targetLink->AddRelativeForce(net_force);
   this->targetLink->AddRelativeTorque(net_torque);
-
 }
 }

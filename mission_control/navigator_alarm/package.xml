@@ -2,16 +2,12 @@
 <package format="2">
   <name>navigator_alarm</name>
   <version>1.0.0</version>
-  <description>The navigator_alarm package</description>
-  <maintainer email="jpanikulam@ufl.edu">jacob</maintainer>
-  <maintainer email="d.soto@ufl.edu">david</maintainer>
-
+  <description>Scripts to intergrate ROS Alarms into Navigators kill and diagnostics systems</description>
+  <maintainer email="kma1660@gmail.com">Kevin Allen</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>rostest</build_depend>
+  <depend>ros_alarms</depend>
+  <depend>nav_msgs</depend>
+  <depend>mil_tools</depend>
   <depend>rospy</depend>
-  <depend>roscpp</depend>
-  <depend>roslib</depend>
-  <depend>navigator_msgs</depend>
-
 </package>

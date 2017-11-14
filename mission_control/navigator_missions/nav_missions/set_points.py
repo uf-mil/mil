@@ -5,7 +5,7 @@ import itertools
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import PoseArray
 from std_msgs.msg import Header
-from navigator_tools import numpy_quat_pair_to_pose
+from mil_tools import numpy_quat_pair_to_pose
 
 @util.cancellableInlineCallbacks
 def main(navigator):

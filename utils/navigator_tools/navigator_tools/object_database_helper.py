@@ -1,5 +1,4 @@
 """Use the DBHelper class to interface with the Database without having to deal with ROS things."""
-from navigator_msgs.msg import PerceptionObjectArray
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from nav_msgs.msg import Odometry
 from twisted.internet import defer, threads
@@ -8,7 +7,7 @@ import time
 import sys
 from sets import Set
 from missing_perception_object import MissingPerceptionObject
-import navigator_tools as nt
+import mil_tools as nt
 import numpy as np
 __author__ = "Tess Bianchi"
 
@@ -127,7 +126,8 @@ class DBHelper(object):
         self.found.remove(name)
 
     def ensure_object_permanence(self, object_dep, cb):
-        """Ensure that all the objects in the object_dep list remain in the database. Call the callback if this isn't true."""
+        """Ensure that all the objects in the object_dep list remain in the database.
+           Call the callback if this isn't true."""
         if object_dep is None or cb is None:
             return
         self.ensuring_objects = True
@@ -163,7 +163,7 @@ class DBHelper(object):
         if len(pobjs) == 0:
             raise MissingPerceptionObject("All")
 
-        min_dist = sys.maxint
+        min_dist = sys.maxsize
         min_obj = None
         for o in pobjs:
             dist = yield self._dist(o)
@@ -200,7 +200,7 @@ class DBHelper(object):
             req.name = "all"
             resp = yield self._database(req)
             closest_potential_object = None
-            min_dist = sys.maxint
+            min_dist = sys.maxsize
             actual_objects = []
             for o in resp.objects:
                 distance = yield self._dist(o)
@@ -213,11 +213,11 @@ class DBHelper(object):
             # print closest_potential_object.name
             # sys.exit()
 
-            if len(actual_objects) == 0 and min_dist == sys.maxint:
+            if len(actual_objects) == 0 and min_dist == sys.maxsize:
                 raise MissingPerceptionObject(object_name)
 
             if len(actual_objects) > 1:
-                min_dist = sys.maxint
+                min_dist = sys.maxsize
                 min_obj = None
                 for o in actual_objects:
                     dist = yield self._dist(o)

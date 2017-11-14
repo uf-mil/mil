@@ -26,73 +26,92 @@
 
 namespace gazebo
 {
-  /// \brief A class for storing the volume properties of a link.
-  class VolumeProperties
+/// \brief A class for storing the volume properties of a link.
+class VolumeProperties
+{
+  /// \brief Default constructor.
+public:
+  VolumeProperties() : volume(0)
   {
-    /// \brief Default constructor.
-    public: VolumeProperties() : volume(0) {}
+  }
 
-    /// \brief Center of volume in the link frame.
-    public: math::Vector3 cov;
+  /// \brief Center of volume in the link frame.
+public:
+  math::Vector3 cov;
 
-    /// \brief Volume of this link.
-    public: double volume;
-  };
+  /// \brief Volume of this link.
+public:
+  double volume;
+};
 
-  /// \brief A plugin that simulates buoyancy of an object immersed in fluid.
-  /// All SDF parameters are optional.
-  /// <fluid_density> sets the density of the fluid that surrounds the buoyant
-  /// object.
-  /// <link> elements describe the volume properties of individual links in the
-  /// model. For example:
-  /// <link name="body">
-  ///   <center_of_volume>1 2 3</center_of_volume>
-  ///   <volume>50</volume>
-  /// </link>
-  /// <center_of_volume> A point representing the volumetric center of the
-  /// link in the link frame. This is where the buoyancy force will be applied.
-  /// <volume> The volume of the link in kg/m^3.
-  /// If center of volume and volume are not specified, the plugin will attempt
-  /// to compute these properties from the link collision shapes. This
-  /// computation will not be accurate if the object is not composed of simple
-  /// collision shapes.
-  class BuoyancyPlugin : public ModelPlugin
-  {
-    /// \brief Constructor.
-    public: BuoyancyPlugin();
+/// \brief A plugin that simulates buoyancy of an object immersed in fluid.
+/// All SDF parameters are optional.
+/// <fluid_density> sets the density of the fluid that surrounds the buoyant
+/// object.
+/// <link> elements describe the volume properties of individual links in the
+/// model. For example:
+/// <link name="body">
+///   <center_of_volume>1 2 3</center_of_volume>
+///   <volume>50</volume>
+/// </link>
+/// <center_of_volume> A point representing the volumetric center of the
+/// link in the link frame. This is where the buoyancy force will be applied.
+/// <volume> The volume of the link in kg/m^3.
+/// If center of volume and volume are not specified, the plugin will attempt
+/// to compute these properties from the link collision shapes. This
+/// computation will not be accurate if the object is not composed of simple
+/// collision shapes.
+class BuoyancyPlugin : public ModelPlugin
+{
+  /// \brief Constructor.
+public:
+  BuoyancyPlugin();
 
-    /// \brief Read the model SDF to compute volume and center of volume for
-    /// each link, and store those properties in volPropsMap.
-    public: virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
+  /// \brief Read the model SDF to compute volume and center of volume for
+  /// each link, and store those properties in volPropsMap.
+public:
+  virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
 
-    // Documentation inherited
-    public: virtual void Init();
+  // Documentation inherited
+public:
+  virtual void Init();
 
-    /// \brief Callback for World Update events.
-    protected: virtual void OnUpdate();
+  /// \brief Callback for World Update events.
+protected:
+  virtual void OnUpdate();
 
-    /// \brief Connection to World Update events.
-    protected: event::ConnectionPtr updateConnection;
+  /// \brief Connection to World Update events.
+protected:
+  event::ConnectionPtr updateConnection;
 
-    /// \brief Pointer to model containing the plugin.
-    protected: physics::ModelPtr model;
+  /// \brief Pointer to model containing the plugin.
+protected:
+  physics::ModelPtr model;
 
-    /// \brief Pointer to the physics engine (for accessing gravity).
-    protected: physics::PhysicsEnginePtr physicsEngine;
+  /// \brief Pointer to the physics engine (for accessing gravity).
+protected:
+  physics::PhysicsEnginePtr physicsEngine;
 
-    /// \brief Pointer to the plugin SDF.
-    protected: sdf::ElementPtr sdf;
+  /// \brief Pointer to the plugin SDF.
+protected:
+  sdf::ElementPtr sdf;
 
-    /// \brief The density of the fluid in which the object is submerged in
-    /// kg/m^3. Defaults to 1000, the fluid density of water.
-    protected: double fluidDensity;
-    protected: double dragCoeff;
-    protected: double modelZOffset;
+  /// \brief The density of the fluid in which the object is submerged in
+  /// kg/m^3. Defaults to 1000, the fluid density of water.
+protected:
+  double fluidDensity;
 
-    /// \brief Map of <link ID, point> pairs mapping link IDs to the CoV (center
-    /// of volume) and volume of the link.
-    protected: std::map<int, VolumeProperties> volPropsMap;
-  };
+protected:
+  double dragCoeff;
+
+protected:
+  double modelZOffset;
+
+  /// \brief Map of <link ID, point> pairs mapping link IDs to the CoV (center
+  /// of volume) and volume of the link.
+protected:
+  std::map<int, VolumeProperties> volPropsMap;
+};
 }
 
 #endif

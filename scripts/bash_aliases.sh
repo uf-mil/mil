@@ -18,7 +18,27 @@ alias sshnav="ssh navigator@${HOSTNAMES[1]} -Y"
 alias navm="rosrun navigator_missions run_mission"
 alias navc="rosrun navigator_missions move_command"
 
+# Wrench
+_nwrench_complete()
+{
+	local WRENCH
+  local WRENCHES
+  WRENCHES=( rc autonomous keyboard emergency )
+	for WRENCH in "${WRENCHES[@]}"; do
+		# Skip any entry that does not match the string to complete
+		if [[ -z "$2" || ! -z "$(echo ${WRENCH:0:${#2}} | grep $2)" ]]; then
+				COMPREPLY+=( "$WRENCH" )
+		fi
+	done
+}
+nwrench()
+{
+    rosservice call /wrench/select "topic: '$1'"
+}
+complete -F _nwrench_complete nwrench
+
 # Alarms
-alias naraise="rosrun navigator_alarm raise"
-alias naclear="rosrun navigator_alarm clear"
-alias navst="rosrun navigator_alarm raise station_hold"
+alias nhold="rosrun ros_alarms raise station-hold"
+
+# Visualization
+alias nviz="rviz -d \$CATKIN_DIR/src/NaviGator/navigator.rviz"

@@ -1,4 +1,3 @@
-import abc
 from navigator_test_lib import TestUnit, SpoofGenerator
 from navigator_msgs.msg import PerceptionObjectArray, PerceptionObject
 from navigator_msgs.srv import ObjectDBQuery, ObjectDBQueryResponse
@@ -8,7 +7,7 @@ import yaml
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 from txros import util
-from navigator_tools import fprint
+from mil_misc_tools.text_effects import fprint
 
 
 class MissionPlannerTest(TestUnit):

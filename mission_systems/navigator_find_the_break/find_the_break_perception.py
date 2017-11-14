@@ -1,7 +1,7 @@
 import txros
 from twisted.internet import defer
 from txros import util
-from navigator_tools import fprint, CvDebug
+from mil_misc_tools.text_effects import fprint, CvDebug
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import numpy as np
@@ -11,6 +11,7 @@ import numpy.ma as ma
 
 # Perception
 # Params : direction
+
 
 class FindTheBreakPerception(object):
 
@@ -82,7 +83,7 @@ class FindTheBreakPerception(object):
         hrects = []
         for r in rects:
             # Get the width and height of the box
-            box = cv2.cv.BoxPoints(r)
+            box = cv2.boxPoints(r)
             box = np.int0(box)
             cv2.drawContours(draw, [box], 0, (0, 0, 255), 2)
             p0 = box[0]
@@ -131,7 +132,7 @@ class FindTheBreakPerception(object):
                 continue
 
             # get percentage of pixels in the box
-            box = cv2.cv.BoxPoints(r)
+            box = cv2.boxPoints(r)
             box = np.int0(box)
             mask = np.zeros((nh, nw))
             cv2.drawContours(mask, [box], 0, 255, -1)

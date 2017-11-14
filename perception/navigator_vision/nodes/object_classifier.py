@@ -5,7 +5,7 @@ from twisted.internet import reactor, defer
 from object_classification import LidarToImage
 from navigator_msgs.srv import CameraDBQuery, CameraDBQueryResponse
 from object_classification import Config, depicklify
-from navigator_tools import CvDebug, fprint
+from mil_tools import CvDebug, fprint
 import os.path
 import numpy as np
 import cv2
@@ -68,7 +68,8 @@ def main():
     class_file = class_file + "object_classification/train.p"
 
     cl = depicklify(class_file)
-    oc = yield ObjectClassifier(nh, cl, config).init_()
+    yield ObjectClassifier(nh, cl, config).init_()
+
 
 if __name__ == "__main__":
     reactor.callWhenRunning(main)

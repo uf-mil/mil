@@ -1,5 +1,5 @@
 from txros import util
-from navigator_tools import fprint
+from mil_misc_tools.text_effects import fprint
 from twisted.internet import defer
 from mission import Mission
 

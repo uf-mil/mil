@@ -1,11 +1,11 @@
 <launch>
-    <node pkg="xbox_joy_node" type="joy_node" name="joy_node">
+    <node pkg="joy" type="joy_node" name="joy_node">
         <param name="dev" type="string" value="/dev/input/by-id/usb-045e_0291-joystick"/>
         <param name="deadzone" value="0.12"/>
         <param name="autorepeat_rate" value="5"/>
     </node>
 
-    <node pkg="navigator_alarm" type="keepalive_broadcaster.py" name="keepalive_broadcaster"/>
+    <node name="network_heartbeat" pkg="mil_tools" type="network_broadcaster" output="screen" />
 
     <!-- Load model into rviz -->
     <param name="robot_description" command="cat $(find navigator_gazebo)/models/wamv/wamv.xml"/>

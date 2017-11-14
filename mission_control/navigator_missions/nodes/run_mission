@@ -7,7 +7,7 @@ from txros import util, NodeHandle
 from twisted.internet import defer, reactor
 from navigator_singleton.navigator import Navigator
 
-from navigator_tools import fprint
+from mil_misc_tools.text_effects import fprint
 
 
 @util.cancellableInlineCallbacks

@@ -16,8 +16,9 @@
     </node>
 
     <include file="$(find navigator_launch)/launch/subsystems/alarms.launch"/>
-    <include file="$(find navigator_launch)/launch/subsystems/lqrrt_node.launch"/>
-    <include file="$(find navigator_launch)/launch/gnc.launch"/>
+    <include file="$(find navigator_launch)/launch/gnc.launch">
+      <arg name="gps" value="False" />
+    </include>
     <!--node name="gnc_delayed_start" pkg="navigator_gazebo" type="delayed_start.sh"/-->
 
 
@@ -27,13 +28,8 @@
         <arg name="sandbox" value="$(arg sandbox)"/>
     </include>
 
-    <!-- This all is launched on boot on the boat -->
-    <node name="coordinate_converter" pkg="navigator_tools" type="coordinate_conversion_server.py"/>
-    <node name="rviz_repub" pkg="navigator_tools" type="rviz_waypoint.py"/>
-    <node name="bounds_server" pkg="navigator_tools" type="bounds.py"/>
-    <node name="set_bounds" pkg="dynamic_reconfigure" type="dynparam" args="load /bounds_server $(find navigator_tools)/cfg/sim.yaml -t 10" />
-
-    <node pkg="xbox_joy_node" type="joy_node" name="joy_node">
+    <!-- Connect to joystick if plugged in, otherwise spam annoying red text ;) -->
+    <node pkg="joy" type="joy_node" name="joy_node">
         <param name="dev" type="string" value="/dev/input/by-id/usb-045e_0291-joystick" />
         <param name="deadzone" value="0.12" />
         <param name="autorepeat_rate" value="5"/>
@@ -41,24 +37,6 @@
 
     <group unless="$(arg gazebo)">
         <include file="$(find navigator_launch)/launch/perception.launch"/>
-        <node pkg="navigator_sim_model" type="sim.py" name="navigator_sim_model" output="screen">
-            <rosparam param="initial_position">[10, -5, 0]</rosparam>
-            <param name="boat_mass" value="300" type="double"/>
-            <param name="boat_length" value="4.85" type="double"/>
-            <param name="boat_width" value="1.2" type="double"/>
-            <param name="boat_height" value="0.8" type="double"/>
-            <rosparam param="BL_offset">[-1.9304, 1.016]</rosparam>
-            <rosparam param="BR_offset">[-1.9304, -1.016]</rosparam>
-            <rosparam param="FL_offset">[1.5748, 0.6096]</rosparam>
-            <rosparam param="FR_offset">[1.5748, -0.6096]</rosparam>
-            <rosparam param="effort_ratio">2.7</rosparam>
-            <param name="friction_coefficient_forward" value="200" type="double"/>
-            <param name="friction_coefficient_forward_reduction" value="0.76462" type="double"/>
-            <param name="friction_coefficient_lateral" value="300" type="double"/>
-            <param name="friction_coefficient_lateral_reduction" value="0.0" type="double"/>
-            <param name="friction_coefficient_rotational" value="300" type="double"/>
-            <param name="friction_coefficient_rotational_reduction" value="0.0" type="double"/>
-        </node>
         <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui"/>
     </group>
     <group ns="/camera" if="$(arg cameras)">

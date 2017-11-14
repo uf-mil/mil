@@ -6,7 +6,7 @@
     <param name="get_shapes_topic" value="/vision/get_shapes" />
     <param name="auto_start" value="false" />
   </node>
-  <node pkg="navigator_vision" type="camera_to_lidar" name="camera_lidar_transformer">
+  <node pkg="mil_vision" type="camera_lidar_transformer" name="camera_lidar_transformer">
     <param name="camera_to_lidar_transform_topic" value="/camera_to_lidar/starboard_cam" />
     <param name="camera_info_topic" value="/camera/starboard/camera_info" />
     <param name="auto_start" value="false" />

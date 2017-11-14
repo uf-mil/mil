@@ -22,6 +22,6 @@ class Classify(object):
     def get_color(self, color):
         pass
 
+
 if __name__ == "__main__":
     c = Classify()
-

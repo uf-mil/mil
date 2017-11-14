@@ -1,7 +1,8 @@
 <launch>
   <include file="$(find navigator_launch)/launch/subsystems/shooter.launch" />
-  <include file="$(find navigator_launch)/launch/subsystems/hydrophones.launch" />
   <include file="$(find navigator_launch)/launch/subsystems/motor_controller.launch"/>
-  
-  <node pkg="navigator_kill_board" type="driver_node.py" name="killboard_interface"/>
+  <node pkg="navigator_kill_board" type="kill_board_driver.py" name="kill_board_interface">
+    <param name="port" value="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A104OWRY-if00-port0" />
+    <param name="baud" value="9700" />
+  </node>
 </launch>

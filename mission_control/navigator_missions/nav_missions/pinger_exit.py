@@ -6,9 +6,9 @@ import numpy as np
 from navigator_msgs.srv import FindPinger, FindPingerRequest, SetFrequency, SetFrequencyRequest
 from geometry_msgs.msg import Point
 from std_srvs.srv import SetBool, SetBoolRequest
-import navigator_tools
+import mil_tools
 from visualization_msgs.msg import Marker, MarkerArray
-from navigator_tools import fprint
+from mil_misc_tools.text_effects import fprint
 import rospy
 
 ___author___ = "Kevin Allen"
@@ -29,15 +29,15 @@ class PingerExitMission:
         """Get position of 3 gates from database"""
         gate_1 = yield self.navigator.database_query("Gate_1")
         assert gate_1.found, "Gate 1 Not found"
-        gate_1_pos = navigator_tools.rosmsg_to_numpy(gate_1.objects[0].position)[:2]
+        gate_1_pos = mil_tools.rosmsg_to_numpy(gate_1.objects[0].position)[:2]
 
         gate_2 = yield self.navigator.database_query("Gate_2")
         assert gate_2.found, "Gate 2 Not found"
-        gate_2_pos = navigator_tools.rosmsg_to_numpy(gate_2.objects[0].position)[:2]
+        gate_2_pos = mil_tools.rosmsg_to_numpy(gate_2.objects[0].position)[:2]
 
         gate_3 = yield self.navigator.database_query("Gate_3")
         assert gate_3.found, "Gate 3 Not found"
-        gate_3_pos = navigator_tools.rosmsg_to_numpy(gate_3.objects[0].position)[:2]
+        gate_3_pos = mil_tools.rosmsg_to_numpy(gate_3.objects[0].position)[:2]
 
         self.gate_poses = np.array([gate_1_pos, gate_2_pos, gate_3_pos])
 

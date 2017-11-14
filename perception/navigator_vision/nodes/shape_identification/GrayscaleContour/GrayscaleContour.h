@@ -14,8 +14,9 @@ using namespace cv;
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/image_encodings.h>
 #endif
-class GrayscaleContour : public DockShapeVision {
- private:
+class GrayscaleContour : public DockShapeVision
+{
+private:
   Mat colorFrame, grayscaleFrame, edgesFrame;
   std::vector<std::vector<Point> > contours;
   std::vector<Vec4i> hierarchy;
@@ -37,12 +38,10 @@ class GrayscaleContour : public DockShapeVision {
   bool isCross(std::vector<Point>& points);
   bool isCircle(std::vector<Point>& points);
 
-  void setShapePoints(navigator_msgs::DockShape& dockShape,
-                      std::vector<Point>& points);
+  void setShapePoints(navigator_msgs::DockShape& dockShape, std::vector<Point>& points);
 
   static double findAngle(cv::Point& p1, cv::Point& p2, cv::Point& p3);
-  static void findAngles(std::vector<Point>& points,
-                         std::vector<double>& angles);
+  static void findAngles(std::vector<Point>& points, std::vector<double>& angles);
 #ifdef DO_ROS_DEBUG
   std::unique_ptr<image_transport::ImageTransport> image_transport;
   image_transport::Publisher color_debug_publisher;
@@ -50,7 +49,8 @@ class GrayscaleContour : public DockShapeVision {
 #endif
 
   // Constants to use ros params for
-  struct CannyParams {
+  struct CannyParams
+  {
     int thresh1;
     int thresh2;
   };
@@ -73,7 +73,8 @@ class GrayscaleContour : public DockShapeVision {
   double redHueMax;
   double blueHue;
   double greenHue;
- public:
+
+public:
   GrayscaleContour(ros::NodeHandle& nh);
   void GetShapes(cv::Mat& frame, navigator_msgs::DockShapes& symbols);
   void init();

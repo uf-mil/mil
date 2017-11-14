@@ -15,7 +15,6 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   DIRECTORY msg
   FILES
-  Alarm.msg
   Acceleration.msg
   PoseTwist.msg
   Coordinates.msg
@@ -35,7 +34,6 @@ add_service_files(
   FILES
   ShooterManual.srv
   VisionRequest.srv
-  WrenchSelect.srv
   GetDockShape.srv
   GetDockShapes.srv
   StartGate.srv

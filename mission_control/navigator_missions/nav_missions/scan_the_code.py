@@ -4,8 +4,9 @@ import txros
 import numpy as np
 from navigator_scan_the_code import ScanTheCodeMission
 from geometry_msgs.msg import PoseStamped
-import navigator_tools as nt
-from navigator_tools import fprint, MissingPerceptionObject
+import mil_tools as nt
+from mil_misc_tools.text_effects import fprint
+from navigator_tools import MissingPerceptionObject
 
 ___author___ = "Tess Bianchi"
 

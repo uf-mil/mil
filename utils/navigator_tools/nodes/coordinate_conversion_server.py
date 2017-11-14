@@ -3,12 +3,13 @@ from __future__ import division
 
 import txros
 import numpy as np
-import navigator_tools
+from mil_tools import odometry_to_numpy
 from twisted.internet import defer
 from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef_tf, latlongheight_from_ecef
 
 from nav_msgs.msg import Odometry
 from navigator_msgs.srv import CoordinateConversion, CoordinateConversionResponse
+
 
 class Converter(object):
     @txros.util.cancellableInlineCallbacks
@@ -37,8 +38,8 @@ class Converter(object):
         if last_odom is None or last_absodom is None:
             defer.returnValue(CoordinateConversionResponse())
 
-        self.enu_pos = navigator_tools.odometry_to_numpy(last_odom)[0][0]
-        self.ecef_pos = navigator_tools.odometry_to_numpy(last_absodom)[0][0]
+        self.enu_pos = odometry_to_numpy(last_odom)[0][0]
+        self.ecef_pos = odometry_to_numpy(last_absodom)[0][0]
 
         enu, ecef, lla = getattr(self, srv.frame)()
 
@@ -91,7 +92,8 @@ def main():
     c = Converter()
     yield c.init(nh, advertise_service=True)
 
-    yield defer.Deferred() # never exit
+    yield defer.Deferred()  # never exit
+
 
 if __name__ == "__main__":
     txros.util.launch_main(main)

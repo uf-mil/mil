@@ -15,8 +15,8 @@ import sensor_msgs.point_cloud2 as pc2
 from sensor_msgs.msg import PointCloud2, Image
 import sys
 import numpy as np
-import genpy
-from navigator_tools import fprint, rosmsg_to_numpy
+from mil_misc_tools.text_effects import fprint
+from mil_tools import rosmsg_to_numpy
 
 ___author___ = "Tess Bianchi"
 
@@ -59,9 +59,9 @@ class ScanTheCodePerception(object):
         self.camera_model.fromCameraInfo(info)
 
     def _get_top_left_point(self, points_3d):
-        xmin = sys.maxint
-        zmin = -sys.maxint
-        ymin = sys.maxint
+        xmin = sys.maxsize
+        zmin = -sys.maxsize
+        ymin = sys.maxsize
         for i, point in enumerate(points_3d):
             if point[1] < ymin:
                 xmin = point[0]
@@ -94,7 +94,7 @@ class ScanTheCodePerception(object):
             idx = 1
         if axis == 'z':
             idx = 2
-        min_val, max_val = sys.maxint, -sys.maxint
+        min_val, max_val = sys.maxsize, -sys.maxsize
         points_3d = np.array(points_3d)
         my_points = points_3d[:, idx]
         mean = np.mean(my_points)

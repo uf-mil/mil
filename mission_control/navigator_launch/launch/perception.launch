@@ -4,6 +4,5 @@
   <include file="$(find navigator_launch)/launch/subsystems/perception/dock_shapes_front.launch" />
   <!--node name="start_gate_vision" pkg="navigator_controller" type="start_gate_manual.py" respawn="True"/-->
   <node name="shooter_finder" pkg="navigator_vision" type="shooter_finder.py" />
-  <node name="pinger_finder" pkg="navigator_vision" type="pinger_finder.py" />
   <node name="database_color" pkg="navigator_vision" type="database_color.py" />
 </launch>

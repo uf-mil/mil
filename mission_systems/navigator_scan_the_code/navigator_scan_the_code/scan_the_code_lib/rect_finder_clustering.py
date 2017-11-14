@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import numpy.ma as ma
 import numpy.linalg as npl
-from navigator_tools import fprint
+from mil_misc_tools.text_effects import fprint
 # from skimage importmeasure
 import scipy.ndimage.measurements as mes
 ___author___ = "Tess Bianchi"
@@ -122,7 +122,7 @@ class RectangleFinderClustering(object):
             top = np.count_nonzero(draw_mask)
             valz = np.fliplr(np.transpose(draw_mask.nonzero()))
             rect = cv2.minAreaRect(valz)
-            box = cv2.cv.BoxPoints(rect)
+            box = cv2.boxPoints(rect)
             box = np.int0(box)
             rect_mask = np.zeros((nh, nw))
             cv2.drawContours(rect_mask, [box], 0, 255, -1)
@@ -152,8 +152,8 @@ class RectangleFinderClustering(object):
             if energy < 0:
                 "LOW ENERGY!"
                 continue
-            print num, "area: ", area, "filled:", top, "total:", bottom, 'rat', top / bottom, "l/w", abs(2.5 - l / w), "vcost",
-            vcost, "energy", energy
+            print num, "area: ", area, "filled:", top, "total:", bottom,\
+                'rat', top / bottom, "l/w", abs(2.5 - l / w), "vcost", vcost, "energy", energy
             energys.append(energy)
             correct_masks.append(mask_obj)
 

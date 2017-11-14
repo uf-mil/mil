@@ -4,23 +4,24 @@ from __future__ import division
 import os
 import numpy as np
 import yaml
-
 import genpy
 import rospkg
 from twisted.internet import defer
 from txros import action, util, tf, NodeHandle
 from pose_editor import PoseEditor2
 
-import navigator_tools
-from navigator_alarm import AlarmListenerTx
+import mil_tools
+from ros_alarms import TxAlarmListener
 
-from lqrrt_ros.msg import MoveAction
+from navigator_path_planner.msg import MoveAction
 from nav_msgs.msg import Odometry
 from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import PointCloud
 import navigator_msgs.srv as navigator_srvs
-from navigator_tools import fprint, MissingPerceptionObject
+from topic_tools.srv import MuxSelect, MuxSelectRequest
+from mil_misc_tools.text_effects import fprint
+from navigator_tools import MissingPerceptionObject
 
 
 class MissionResult(object):
@@ -87,15 +88,15 @@ class Navigator(object):
 
         self._moveto_client = action.ActionClient(self.nh, 'move_to', MoveAction)
 
-        odom_set = lambda odom: setattr(self, 'pose', navigator_tools.odometry_to_numpy(odom)[0])
+        odom_set = lambda odom: setattr(self, 'pose', mil_tools.odometry_to_numpy(odom)[0])
         self._odom_sub = self.nh.subscribe('odom', Odometry, odom_set)
-        enu_odom_set = lambda odom: setattr(self, 'ecef_pose', navigator_tools.odometry_to_numpy(odom)[0])
+        enu_odom_set = lambda odom: setattr(self, 'ecef_pose', mil_tools.odometry_to_numpy(odom)[0])
         self._ecef_odom_sub = self.nh.subscribe('absodom', Odometry, enu_odom_set)
 
         try:
             self._database_query = self.nh.get_service_client('/database/requests', navigator_srvs.ObjectDBQuery)
             self._camera_database_query = self.nh.get_service_client('/camera_database/requests', navigator_srvs.CameraDBQuery)
-            self._change_wrench = self.nh.get_service_client('/change_wrench', navigator_srvs.WrenchSelect)
+            self._change_wrench = self.nh.get_service_client('/wrench/select', MuxSelect)
         except AttributeError, err:
             fprint("Error getting service clients in nav singleton init: {}".format(err), title="NAVIGATOR", msg_color='red')
 
@@ -124,13 +125,13 @@ class Navigator(object):
     @util.cancellableInlineCallbacks
     def tx_pose(self):
         last_odom_msg = yield self._odom_sub.get_next_message()
-        defer.returnValue(navigator_tools.odometry_to_numpy(last_odom_msg)[0])
+        defer.returnValue(mil_tools.odometry_to_numpy(last_odom_msg)[0])
 
     @property
     @util.cancellableInlineCallbacks
     def tx_ecef_pose(self):
         last_odom_msg = yield self._ecef_odom_sub.get_next_message()
-        defer.returnValue(navigator_tools.odometry_to_numpy(last_odom_msg)[0])
+        defer.returnValue(mil_tools.odometry_to_numpy(last_odom_msg)[0])
 
     @property
     def move(self):
@@ -149,11 +150,11 @@ class Navigator(object):
             yield _bounds.wait_for_service()
             resp = yield _bounds(navigator_srvs.BoundsRequest())
             if resp.enforce:
-                self.enu_bounds = [navigator_tools.point_to_numpy(bound) for bound in resp.bounds]
+                self.enu_bounds = [mil_tools.rosmsg_to_numpy(bound) for bound in resp.bounds]
 
                 # Just for display
-                pc = PointCloud(header=navigator_tools.make_header(frame='/enu'),
-                                points=np.array([navigator_tools.numpy_to_point(point) for point in self.enu_bounds]))
+                pc = PointCloud(header=mil_tools.make_header(frame='/enu'),
+                                points=np.array([mil_tools.numpy_to_point(point) for point in self.enu_bounds]))
                 yield self._point_cloud_pub.publish(pc)
         else:
             fprint("No bounds param found, defaulting to none.", title="NAVIGATOR")
@@ -189,7 +190,7 @@ class Navigator(object):
         return self.vision_proxies[request_name].get_response(**kwargs)
 
     def change_wrench(self, source):
-        return self._change_wrench(navigator_srvs.WrenchSelectRequest(source))
+        return self._change_wrench(MuxSelectRequest(source))
 
     def search(self, *args, **kwargs):
         return Searcher(self, *args, **kwargs)
@@ -249,19 +250,15 @@ class Navigator(object):
 
     @util.cancellableInlineCallbacks
     def _make_alarms(self):
-        self.alarm_listener = AlarmListenerTx()
-        yield self.alarm_listener.init(self.nh)
-
+        self.odom_loss_listener = yield TxAlarmListener.init(self.nh, 'odom-kill', lambda alarm: setattr(self, 'odom_loss', alarm.raised))
+        self.kill_listener = yield TxAlarmListener.init(self.nh, 'kill',lambda alarm: setattr(self, 'killed', alarm.raised))
         fprint("Alarm listener created, listening to alarms: ", title="NAVIGATOR")
 
-        self.alarm_listener.add_listener("odom_loss", lambda alarm: setattr(self, 'odom_loss', not alarm.clear))
-        self.alarm_listener.add_listener("kill", lambda alarm: setattr(self, 'killed', not alarm.clear))
-
-        yield self.alarm_listener.wait_for_alarm("kill", timeout=.5)
-        yield self.alarm_listener.wait_for_alarm("odom_loss", timeout=.5)
+        self.killed = yield self.kill_listener.is_raised()
+        self.odom_loss = yield self.odom_loss_listener.is_raised()
         fprint("\tkill :", newline=False)
         fprint(self.killed)
-        fprint("\todom_loss :", newline=False)
+        fprint("\todom-kill :", newline=False)
         fprint(self.odom_loss)
 
 

@@ -1,0 +1,31 @@
+<launch>
+  <arg name="draw" default="false"/>
+
+  <node pkg="navigator_path_planner" type="lqrrt_node.py" name="lqrrt_node" output="screen">
+    <!-- Action topic to send commands to -->
+    <param name="move_topic" value="/move_to"/>
+
+    <!-- Topics for odometry and an occupancy grid-->
+    <param name="odom_topic" value="/odom"/>
+    <param name="ogrid_topic" value="/ogrid_master"/>
+
+    <!-- Pose reference topic - this will be the 'carrot' to follow -->
+    <param name="ref_topic" value="/lqrrt/ref"/>
+
+    <!-- Some visualization topics for the path, tree, and other good stuff-->
+    <param name="path_topic" value="/lqrrt/path"/>
+    <param name="tree_topic" value="/lqrrt/tree"/>
+    <param name="goal_topic" value="/lqrrt/goal"/>
+    <param name="focus_topic" value="/lqrrt/focus"/>
+    <param name="effort_topic" value="/lqrrt/effort"/>
+  </node>
+
+  <!-- Putting this here since lqrrt needs a real ogrid in it's life -->
+  <node pkg="navigator_msg_multiplexer" type="ogrid_arbiter.py" name="ogrid_arbiter" />
+
+  <node if="$(arg draw)" pkg="mil_tools" type="ogrid_draw.py" name="ogrid_draw">
+    <param name="grid_topic" value="/draw_ogrid" />
+  </node>
+
+
+</launch>

@@ -12,7 +12,7 @@ from sets import Set
 from navigator_tools import DBHelper, MissingPerceptionObject
 import genpy
 from std_msgs.msg import String
-from navigator_tools import fprint
+from mil_misc_tools.text_effects import fprint
 __author__ = "Tess Bianchi"
 
 

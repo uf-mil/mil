@@ -15,6 +15,7 @@
   <run_depend>navigator_scan_the_code</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>rospy</run_depend>
+  <run_depend>rawgps_common</run_depend>
 
   <export>
   </export>
