@@ -42,3 +42,6 @@ alias nhold="rosrun ros_alarms raise station-hold"
 
 # Visualization
 alias nviz="rviz -d \$CATKIN_DIR/src/NaviGator/navigator.rviz"
+
+# Formatting & development
+alias navfmt="python2.7 -m flake8 --ignore E731 --exclude=./deprecated,./gnc/navigator_path_planner/lqRRT,__init__.py --max-line-length=120 \$CATKIN_DIR/src/NaviGator"
