@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from actionlib import SimpleActionClient, TerminalState
+from actionlib import TerminalState
 from mil_tasks_core import TaskClient
 from ros_alarms import HandlerBase, AlarmBroadcaster
 
