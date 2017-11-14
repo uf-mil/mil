@@ -1,4 +1,4 @@
-[![Build Status](https://semaphoreci.com/api/v1/uf-mil/navigator-2/branches/backup-12-16/shields_badge.svg)](https://semaphoreci.com/uf-mil/navigator-2)
+[![Build Status](https://ci.mil.ufl.edu/jenkins/buildStatus/icon?job=uf-mil/NaviGator/master)](https://ci.mil.ufl.edu/jenkins/job/uf-mil/job/NaviGator/job/master/)
 
 # NaviGator Autonomous Surface Vehicle
 
