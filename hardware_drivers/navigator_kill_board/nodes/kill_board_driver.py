@@ -94,15 +94,18 @@ class KillInterface(object):
                 self.last_request = None
                 return
             if msg == constants['RESPONSE_TRUE']:
+                rospy.logdebug('RESPONSE TRUE for {}'.format(self.last_request))
                 self.board_status[self.last_request] = True
                 self.last_request = None
                 return
         # If an async update was recieved, update internal state
         for kill in self.board_status:
             if msg == constants[kill]['FALSE']:
+                rospy.logdebug('ASYNC FALSE FOR {}'.format(kill))
                 self.board_status[kill] = False
                 return
             if msg == constants[kill]['TRUE']:
+                rospy.logdebug('ASYNC TRUE FOR {}'.format(kill))
                 self.board_status[kill] = True
                 return
         # If a response to another request, like ping or computer kill/clear is recieved
@@ -181,7 +184,7 @@ class KillInterface(object):
         '''
         Raise/Clear hw-kill ROS Alarm is nessesary (any kills on board are engaged)
         '''
-        killed = any([self.board_status[key] for key in self.board_status])
+        killed = self.board_status['OVERALL']
         if (killed and not self._hw_killed) or (killed and self.board_status != self._last_hw_kill_paramaters):
             self._hw_killed = True
             self.hw_kill_broadcaster.raise_alarm(parameters=self.board_status)
