@@ -1,9 +1,9 @@
 <launch>
-    <include file="$(find navigator_launch)/launch/subsystems/hardware_drivers.launch"/>
+    <include file="$(find navigator_launch)/launch/hardware_drivers.launch"/>
     <include file="$(find navigator_launch)/launch/gnc.launch"/>
-    <include file="$(find navigator_launch)/launch/subsystems/sensors.launch"/>
+    <include file="$(find navigator_launch)/launch/sensors.launch"/>
     <include file="$(find navigator_launch)/launch/perception.launch" />
-    <include file="$(find navigator_launch)/launch/subsystems/alarms.launch"/>
+    <include file="$(find navigator_launch)/launch/alarms.launch"/>
     <include file="$(find navigator_launch)/launch/diagnostics.launch" />
     <include file="$(find navigator_launch)/launch/online_bagger.launch" />
 </launch>

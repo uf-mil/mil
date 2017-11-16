@@ -15,7 +15,7 @@
       <rosparam file="$(find navigator_shooter)/launch/config.yaml" />
     </node>
 
-    <include file="$(find navigator_launch)/launch/subsystems/alarms.launch"/>
+    <include file="$(find navigator_launch)/launch/alarms.launch"/>
     <include file="$(find navigator_launch)/launch/gnc.launch">
       <arg name="gps" value="False" />
     </include>

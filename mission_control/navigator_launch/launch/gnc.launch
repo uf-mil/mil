@@ -1,20 +1,6 @@
 <launch>
     <arg name="gps" default="True" />
-
-    <node pkg="navigator_thrust_mapper" type="thrust_mapper.py" name="thrust_mapper">
-    <!-- Parameters used to set the thruster locations and angles relative to the center of gravity of the boat -->
-        <rosparam param="thruster_BL_cog">[-1.9304, 1.016]</rosparam>
-        <rosparam param="thruster_BR_cog">[-1.9304, -1.016]</rosparam>
-        <rosparam param="thruster_FL_cog">[1.5748, 0.6096]</rosparam>
-        <rosparam param="thruster_FR_cog">[1.5748, -0.6096]</rosparam>
-        <rosparam param="thruster_BL_theta">0.785398</rosparam> <!-- +/- 45 degrees -->
-        <rosparam param="thruster_BR_theta">-0.785398</rosparam>
-        <rosparam param="thruster_FL_theta">-0.785398</rosparam>
-        <rosparam param="thruster_FR_theta">0.785398</rosparam>
-        <rosparam param="effort_ratio">1.35</rosparam><!-- map 220 newtons to 300 effort units -->
-        <rosparam param="effort_limit">400</rosparam>
-    </node>
-
+    <include file="$(find navigator_launch)/launch/subsystems/thruster_mapper.launch"/>
     <include file="$(find navigator_launch)/launch/subsystems/tf.launch"/>
 
 
