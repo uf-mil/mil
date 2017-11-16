@@ -39,9 +39,6 @@ class Kill(HandlerBase):
         self._killed = False
 
     def meta_predicate(self, meta_alarm, alarms):
-        if self._killed:  # Stay killed until manually cleared
-            return True
-
         ignore = []
 
         # Don't kill on low battery, only on critical
@@ -49,5 +46,11 @@ class Kill(HandlerBase):
         #     ignore.append('battery-voltage')
 
         # Raised if any alarms besides the two above are raised
-        return any([alarm.raised for name, alarm in alarms.items()
-                    if name not in ignore])
+        raised = [name for name, alarm in alarms.items()
+                    if name not in ignore and alarm.raised]
+        if len(raised):
+           return Alarm('kill', True, node_name=rospy.get_name(),
+                        problem_description='Killed by meta alarm(s) ' + ', '.join(raised),
+                        parameters={'Raised': raised})
+        return self._killed
+
