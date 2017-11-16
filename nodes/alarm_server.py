@@ -106,7 +106,7 @@ class AlarmServer(object):
         if raised_status != meta.raised:
             temp = meta.as_msg()
             temp.raised = bool(raised_status)
-            if temp.raised: # If it is raised, set problem description
+            if temp.raised:  # If it is raised, set problem description
                 temp.problem_description = 'Raised by meta alarm'
             meta.update(temp)
             self._alarm_pub.publish(meta.as_msg())
