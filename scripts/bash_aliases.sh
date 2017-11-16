@@ -22,8 +22,8 @@ alias navc="rosrun navigator_missions move_command"
 _nwrench_complete()
 {
 	local WRENCH
-  local WRENCHES
-  WRENCHES=( rc autonomous keyboard emergency )
+	local WRENCHES
+	WRENCHES=( rc autonomous keyboard emergency )
 	for WRENCH in "${WRENCHES[@]}"; do
 		# Skip any entry that does not match the string to complete
 		if [[ -z "$2" || ! -z "$(echo ${WRENCH:0:${#2}} | grep $2)" ]]; then
