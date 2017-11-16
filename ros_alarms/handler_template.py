@@ -13,7 +13,6 @@ class HandlerBase(object):
     '''
     alarm_name = 'generic-name'
     severity_required = (0, 5)
-    initally_raised = False
 
     def raised(self, alarm):
         rospy.logwarn("No raised function defined for '{}'.".format(alarm.alarm_name))
@@ -24,9 +23,20 @@ class HandlerBase(object):
         return
 
     def meta_predicate(self, meta_alarm, sub_alarms):
-        '''ONLY APPLICABLE FOR META ALARMS
-        Returns `True` or `False` to raise or clear (respectively) this meta alarm given
-            a dictionary of all of it's sub alarms:
-                {sub_alarm_name1: alarm_msg, sub_alarm_name2: alarm_msg, ...}
         '''
-        return any(sub_alarms.values())
+        Called on an update to one of this alarms's meta alarms, if there are any.
+
+        @param meta_alarm: The alarm object of the meta alarm which was just changed, triggering this callback
+        @param alarms: a dictionary with the alarms objects for EVERY meta alarm for this alarm.
+                       ex: {'odom-kill' : Alarm('odom-kill', False), 'network-loss': Alarm('network-loss', True, 'heartbeat stopped'}
+
+        MUST return either a boolean indiciating if this alarm should now be raised,
+             OR an Alarm object which will be the new status of this alarm
+
+        If a boolean is returned, this alarms status will be updated if it differs from the current raised status.
+
+        If an alarm object is returned, this alarm will be updated unconditionaly to the returned object.
+
+        By default, returns True if any meta alarms are raised.
+        '''
+        return any([alarm.raised for name, alarm in alarms.items()])

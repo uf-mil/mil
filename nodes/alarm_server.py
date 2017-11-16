@@ -80,19 +80,34 @@ class AlarmServer(object):
 
     def _handle_meta_alarm(self, meta_alarm, sub_alarms):
         '''
-        Passes the state of all of the child alarms to the specified meta alarm handler predicate
-        function. The alarm will be raised if the predicate returns true or cleared otherwise
+        Calls the meta_predicate callback for an alarm handler when one of its metal alarms has changed.
+        Then, updates the status of the parent alarm, if nessesary.
         '''
         alarms = {name: alarm for name, alarm in self.alarms.items() if name in sub_alarms}
         meta = self.alarms[meta_alarm]
 
-        # Check the predicate, this should return the new `raised` status of the meta alarm
-        raised_status = self.meta_alarms[meta_alarm](meta, alarms)
-        if bool(raised_status) != meta.raised:
+        # Check the predicate, this should return either an alarm object or a boolean for if should be raised
+        alarm = self.meta_alarms[meta_alarm](meta, alarms)
+
+        # If it an alarm instance send it out as is
+        if isinstance(alarm, Alarm):
+            alarm.alarm_name = meta_alarm  # Ensure alarm name is correct
+            meta.update(alarm)
+            self._alarm_pub.publish(alarm.as_msg())
+            return
+
+        # Otherwise it should be a boolean
+        if type(alarm) != bool:
+            rospy.logwarn('Meta alarm callback for {} failed to return an Alarm or boolean'.format(meta_alarm))
+            return
+
+        # If it is a boolean, only update if it changes the raised status
+        raised_status = alarm
+        if raised_status != meta.raised:
             temp = meta.as_msg()
             temp.raised = bool(raised_status)
-            if type(raised_status) == int:  # Allow alarm handlers to return severity from meta alarm predicate
-                temp.severity = raised_status
+            if temp.raised: # If it is raised, set problem description
+                temp.problem_description = 'Raised by meta alarm'
             meta.update(temp)
             self._alarm_pub.publish(meta.as_msg())
 
