@@ -18,7 +18,7 @@ class AlarmMonitor(object):
     COLOR_CLEARED = 2
     COLOR_UNKNOWN = 3
     # String to display on top of panel for usage instructions
-    HELP_STR = 'ROS Alarms CLI: Press SPACE to raise, C to clear'
+    HELP_STR = 'ROS Alarms TUI: Press SPACE to raise, C to clear'
 
     def __init__(self, alarm_name, screen=None):
         self.last_alarm = None
