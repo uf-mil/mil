@@ -36,8 +36,6 @@ catkin_python_setup()
 catkin_package(
   INCLUDE_DIRS
     include
-  LIBRARIES
-    navigator_vision_lib
   CATKIN_DEPENDS
     roscpp
     rospy
@@ -65,14 +63,6 @@ include_directories(
 )
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
-
-
-add_library(
-  navigator_vision_lib
-    src/navigator_vision_lib/visualization.cc
-)
-target_include_directories(navigator_vision_lib PUBLIC include/navigator_vision_lib)
-target_link_libraries(navigator_vision_lib ${catkin_LIBRARIES})
 
 add_executable(underwater_shape_identification_vision
   nodes/underwater_shape_identification_vision.cpp

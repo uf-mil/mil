@@ -49,10 +49,10 @@ class killtest(unittest.TestCase):
                          msg='current state of kill signal is raised')
 
         # call the service of button
-        rospy.wait_for_service('/kill_board_driver/BUTTON_FRONT_PORT')
+        rospy.wait_for_service('/kill_board_interface/BUTTON_FRONT_PORT')
         try:
             bfp = rospy.ServiceProxy(
-                '/kill_board_driver/BUTTON_FRONT_PORT', SetBool)
+                '/kill_board_interface/BUTTON_FRONT_PORT', SetBool)
 
         except rospy.ServiceException as e:
             print "Service call failed: %s" % e
@@ -76,10 +76,10 @@ class killtest(unittest.TestCase):
     def test_AD_button_aft_port(self):
         self.assertEqual(self.AlarmListener.is_cleared(), True,
                          msg='current state of kill signal is raised')
-        rospy.wait_for_service('/kill_board_driver/BUTTON_AFT_PORT')
+        rospy.wait_for_service('/kill_board_interface/BUTTON_AFT_PORT')
         try:
             bap = rospy.ServiceProxy(
-                '/kill_board_driver/BUTTON_AFT_PORT', SetBool)
+                '/kill_board_interface/BUTTON_AFT_PORT', SetBool)
 
         except rospy.ServiceException as e:
             print "Service call failed: %s" % e
@@ -101,10 +101,10 @@ class killtest(unittest.TestCase):
     def test_AE_button_front_starboard(self):
         self.assertEqual(self.AlarmListener.is_cleared(), True,
                          msg='current state of kill signal is raised')
-        rospy.wait_for_service('/kill_board_driver/BUTTON_FRONT_STARBOARD')
+        rospy.wait_for_service('/kill_board_interface/BUTTON_FRONT_STARBOARD')
         try:
             bfs = rospy.ServiceProxy(
-                '/kill_board_driver/BUTTON_FRONT_STARBOARD', SetBool)
+                '/kill_board_interface/BUTTON_FRONT_STARBOARD', SetBool)
 
         except rospy.ServiceException as e:
             print "Service call failed: %s" % e
@@ -126,10 +126,10 @@ class killtest(unittest.TestCase):
     def test_AF_button_aft_starboard(self):
         self.assertEqual(self.AlarmListener.is_cleared(), True,
                          msg='current state of kill signal is raised')
-        rospy.wait_for_service('/kill_board_driver/BUTTON_AFT_STARBOARD')
+        rospy.wait_for_service('/kill_board_interface/BUTTON_AFT_STARBOARD')
         try:
             bas = rospy.ServiceProxy(
-                '/kill_board_driver/BUTTON_AFT_STARBOARD', SetBool)
+                '/kill_board_interface/BUTTON_AFT_STARBOARD', SetBool)
 
         except rospy.ServiceException as e:
             print "Service call failed: %s" % e
