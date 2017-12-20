@@ -12,6 +12,7 @@ source $CATKIN_DIR/src/mil_common/scripts/two_line_bash.sh
 source $CATKIN_DIR/src/mil_common/scripts/ros_connect.sh
 source $CATKIN_DIR/src/mil_common/scripts/wsmux.sh
 source $CATKIN_DIR/src/mil_common/scripts/bag.sh
+source $CATKIN_DIR/src/mil_common/scripts/tasks_autocomplete.sh
 
 # Source submodule aliases if the submodules have been pulled
 if [[ -f $CATKIN_DIR/src/mil_common/ros_alarms/scripts/bash_aliases.sh ]]; then
@@ -43,6 +44,11 @@ alias cm="catkin_make -C \$CATKIN_DIR -j8"
 
 # Simulation
 alias killgazebo="killall -9 gazebo && killall -9 gzserver && killall -9 gzclient"
+
+# Tasks
+alias runtask="rosrun mil_tasks task_client"
+alias canceltask="rosrun mil_tasks task_client -c"
+alias listtasks="rosrun mil_tasks task_client -l"
 
 # Formatting (be sure to update with Jenkinsfile)
 alias mcfmt="python2.7 -m flake8 --ignore E731 --max-line-length=120 --exclude=__init__.py,\$CATKIN_DIR/src/mil_common/drivers/pointgrey_camera_driver,\$CATKIN_DIR/src/mil_common/drivers/velodyne,\$CATKIN_DIR/src/mil_common/drivers/mil_passive_sonar \$CATKIN_DIR/src/mil_common"

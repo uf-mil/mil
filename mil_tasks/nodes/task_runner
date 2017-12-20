@@ -1,0 +1,172 @@
+#!/usr/bin/env python
+from mil_tasks.msg import DoTaskAction, DoTaskResult, DoTaskFeedback
+from mil_tasks_core import BaseTask, ParametersException
+from txros import util, NodeHandle, action
+from twisted.internet import defer, reactor
+import twisted.python
+import inspect
+
+class TaskRunner(object):
+    '''
+    Node which runs the tasks server, recieving goals from a client
+    to run a task, cancel a task, and publish feedback.
+    '''
+    def __init__(self):
+        pass
+
+    @defer.inlineCallbacks
+    def init(self):
+        '''
+        Initialize the action server, import the tasks from the task module, call init, functions
+        and prepare for the first task goal.
+        '''
+        # Create NodeHandle and action server
+        self.nh = yield NodeHandle.from_argv('task_runner')
+        self.server = action.SimpleActionServer(self.nh, '/task', DoTaskAction)
+
+        # Get task_module and base_task from params, if not set just crash
+        task_module_name = yield self.nh.get_param('~tasks_module')
+        base_task_name = yield self.nh.get_param('~base_task')
+        task_module = __import__(task_module_name)
+
+        # Import and init the base task
+        if not hasattr(task_module, base_task_name):
+            raise Exception('Base task not in module')
+        base_task = getattr(task_module, base_task_name)
+        yield base_task._init(self)
+
+        # Import all tasks which extend the base class and initilize them
+        self.tasks = {}
+        for name, cls in inspect.getmembers(task_module):
+            if inspect.isclass(cls) and issubclass(cls, base_task) and name != base_task_name:
+                yield cls.init()
+                self.tasks[cls.name()] = cls
+
+        # Set available tasks param with list of all imported tasks
+        yield self.nh.set_param('/available_tasks', self.tasks.keys())
+
+        # Set current task to None
+        self.task_defer = None
+        self.task = None
+
+        # Register callbacks for new goals and start the action server
+        self.server.register_preempt_callback(self.check_new_task)
+        self.server.register_goal_callback(self.check_new_task)
+        self.server.start()
+
+    def has_task(self, task):
+        '''
+        returns true if a task with the specified name is available
+        '''
+        return task in self.tasks
+
+    def get_task(self, task):
+        return self.tasks[task]
+
+    def send_feedback(self, message):
+        '''
+        Publishes feedback for the current goal
+        '''
+        if self.task is None:
+            print('Tried to send feedback when task is None...')
+            return
+        feedback = DoTaskFeedback()
+        feedback.message = message
+        self.server.publish_feedback(feedback)
+
+    def do_new_task(self):
+        '''
+        Accept a new goal and start running it
+        '''
+        if not self.server.is_new_goal_available():
+            return
+        goal = self.server.accept_new_goal()
+        if not self.has_task(goal.task):
+            print('TASK RUNNER: unrecognized task \'{}\''.format(goal.task))
+            self.server.set_aborted(result=DoTaskResult(False, 'task unknown'))
+            return
+
+        # Attempt to decode parameters, abort if there is an exception
+        try:
+            parameters = self.tasks[goal.task].decode_parameters(goal.parameters)
+        except Exception as e:
+            self.server.set_aborted(result=DoTaskResult(False, str(e)))
+            return
+
+        # Start task, and create callbacks even if it is not a deferred
+        self.task = self.tasks[goal.task]()
+        self.task_defer = defer.maybeDeferred(self.task.run, parameters)
+        self.task_defer.addBoth(self.task_finished_cb)
+
+    @util.cancellableInlineCallbacks
+    def check_new_task(self):
+        '''
+        Called by SimpleActionServer when a new goal is available or cancel request
+        comes in.
+        '''
+        # If cancel request came in, cancel current task
+        if (self.server.is_cancel_requested()):
+            yield self.task_defer.cancel()
+        # If a new task came in, cancel current task
+        elif (self.server.is_preempt_requested()):
+            yield self.task_defer.cancel()
+        # Try to accept a new task
+        self.do_new_task()
+
+    @util.cancellableInlineCallbacks
+    def task_finished_cb(self, final):
+        '''
+        Called when the current task finishes succesfully, is cancled, is preempted by another
+        task, or raises an exception. Publishes the correct result to the action clients.
+        '''
+        result = DoTaskResult()
+        text = ''
+
+        # If task failed / was cancled, abort task
+        if isinstance(final, twisted.python.failure.Failure):
+            result.success = False
+
+            # If task was canceled, just set result to cancelled
+            if final.check(defer.CancelledError):
+                result.result = text = 'task cancelled'
+            else:  # If task raised an exception, print traceback and set result to exception message
+                print ''
+                print self.task.name(), ' failed with the following exception:'
+                print final.getTraceback()
+                result.result = text = final.getErrorMessage()
+                final.printTraceback()
+            self.server.set_aborted(result=result, text=text)  # Set task aborted in either case
+
+            # Call task cleanup function
+            yield self.task.cleanup()
+
+        # If task was successful, set goal to succeeded with specified result
+        else:
+            result.success = True
+            result.result = text = str(final)
+            self.server.set_succeeded(result=result, text=text)
+
+        # Result task variables and see if a new task is available
+        self.task = None
+        self.task_defer = None
+        yield self.check_new_task()
+
+@defer.inlineCallbacks
+def main():
+    '''
+    Start the task server, crashing if the init function fails.
+    '''
+    t = TaskRunner()
+    def err(err):
+        print err.getTraceback()
+        print 'Error initializing task runnner'
+        print err.getErrorMessage()
+        reactor.stop()
+    d = t.init()
+    d.addErrback(err)
+    yield d
+
+if __name__ == '__main__':
+    t = TaskRunner()
+    reactor.callWhenRunning(main)
+    reactor.run()

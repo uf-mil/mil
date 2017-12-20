@@ -1,0 +1,81 @@
+#!/usr/bin/env python
+import rospy
+from actionlib import TerminalState
+import argparse
+from mil_tasks_core import TaskClient
+
+
+class TaskClientCli(object):
+    '''
+    Node to send and monitor a new task, cancel a task, or cancel the current
+    tasks. Verbosely prints current state and fedback to the terminal.
+    '''
+    def __init__(self):
+        self.client = TaskClient()
+        connected = self.client.wait_for_server(rospy.Duration(0.25))
+        if not connected:  # If it didn't connect quickly, print and wait forever
+            print 'Waiting on action server at ', self.client.NS
+            self.client.wait_for_server()
+
+    @classmethod
+    def list(cls):
+        tasks = TaskClient.available_tasks()
+        if not tasks:
+            print '{} param not set. Is task runner running?'.format(cls.LIST_PARAM)
+            return
+        print 'Available Tasks:'
+        for task in tasks:
+            print '- ', task
+
+    def cancel_all(self):
+        self.client.cancel_all_goals()
+
+    def _feedback_cb(self, msg):
+        if self.first_feedback:
+            self.first_feedback = False
+            print 'Feedback:'
+        print '- ', msg.message
+
+    def run_task(self, task, parameters):
+        self.first_feedback = True
+        print 'Starting task ', task
+        self.client.run_task(task, parameters, feedback_cb=self._feedback_cb)
+        self.client.wait_for_result()
+        result = self.client.get_result()
+        if result is None:
+            return
+        state = self.client.get_state()
+        if state != TerminalState.SUCCEEDED:
+            print 'Goal finished with state ', TerminalState.to_string(state)
+        print 'Goal successful' if result.success else 'Goal unsuccessful'
+        if result.result != '':
+            print "Result: '{}'".format(result.result)
+
+def main():
+    argv = rospy.myargv()
+    parser = argparse.ArgumentParser(description='Runs a task on the task_runner server')
+    parser.add_argument('task', help='name of task to run', nargs='?')
+    parser.add_argument('-l', '--list', dest='list', action='store_true',
+                        help='List available tasks instead of running a task')
+    parser.add_argument('-c', '--cancel', dest='cancel', action='store_true',
+                        help='Cancel current task instead of running a task')
+    parser.add_argument('parameters', nargs='*', help='list of parameters to pass to task. Will be concatenated into one stirng')
+    args = parser.parse_args(argv[1:])
+    if not args.list and not args.cancel and not args.task:
+        parser.print_help()
+        return
+
+    rospy.init_node('task_client', anonymous=True)
+    client = TaskClientCli()
+    if args.list:
+        TaskClientCli.list()
+        return
+    if args.cancel:
+        client.cancel_all()
+        print 'All goals canceled'
+        return
+    parameters = ' '.join(args.parameters)
+    client.run_task(args.task, parameters)
+
+if __name__ == '__main__':
+    main()

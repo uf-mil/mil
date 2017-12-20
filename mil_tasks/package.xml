@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <name>mil_tasks</name>
+  <version>0.1.0</version>
+  <description>A system for the highest level decision making in ROS Robots.</description>
+  <maintainer email="kma1660@gmail.com">Kevin Allen</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>actionlib</build_depend>
+  <build_depend>actionlib_msgs</build_depend>
+  <run_depend>actionlib</run_depend>
+  <run_depend>actionlib_msgs</run_depend>
+  <run_depend>python_qt_binding</run_depend>
+  <run_depend>qt_gui.plugin</run_depend>
+  <export>
+    <rqt_gui plugin="${prefix}/plugin.xml"/>
+  </export>
+</package>

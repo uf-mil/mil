@@ -1,0 +1,11 @@
+<library path="src">
+  <class name="Task Runner Dashboard" type="mil_tasks_gui.Dashboard" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      RQT Dashboard to monitor onboard systems and change the control device
+    </description>
+    <qtgui>
+     <label>Task Runner Dashboard</label>
+      <statustip>Test</statustip>
+    </qtgui>
+  </class>
+</library>

@@ -1,0 +1,6 @@
+<launch>
+  <test pkg="mil_tasks" type="test_import_tasks.py" test-name="import_tasks"
+        args="mil_tasks_examples ExampleBaseTask">
+  </test>
+
+</launch>
