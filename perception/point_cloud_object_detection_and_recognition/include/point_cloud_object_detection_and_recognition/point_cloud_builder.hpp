@@ -1,7 +1,7 @@
 #pragma once
 
-#include "pcodar_params.hh"
-#include "pcodar_types.hh"
+#include "pcodar_params.hpp"
+#include "pcodar_types.hpp"
 
 #include <sensor_msgs/PointCloud2.h>
 #include <tf2/LinearMath/Transform.h>

@@ -1,4 +1,4 @@
-#include <point_cloud_object_detection_and_recognition/point_cloud_clusterer.hh>
+#include <point_cloud_object_detection_and_recognition/point_cloud_clusterer.hpp>
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "pcodar_params.hh"
+#include "pcodar_params.hpp"
 
-#include "point_cloud_builder.hh"
+#include "point_cloud_builder.hpp"
 
 #include <mil_msgs/PerceptionObjectArray.h>
 #include <sensor_msgs/PointCloud2.h>

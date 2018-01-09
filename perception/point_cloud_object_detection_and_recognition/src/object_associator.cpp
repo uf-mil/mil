@@ -1,4 +1,4 @@
-#include <point_cloud_object_detection_and_recognition/object_associator.hh>
+#include <point_cloud_object_detection_and_recognition/object_associator.hpp>
 
 #include <mil_msgs/PerceptionObject.h>
 

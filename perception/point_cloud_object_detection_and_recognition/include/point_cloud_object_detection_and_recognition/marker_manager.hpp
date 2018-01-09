@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pcodar_types.hh"
+#include "pcodar_types.hpp"
 
 #include <interactive_markers/interactive_marker_server.h>
 #include <interactive_markers/menu_handler.h>

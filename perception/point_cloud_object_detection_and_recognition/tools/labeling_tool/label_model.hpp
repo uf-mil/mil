@@ -15,7 +15,7 @@
 #include <memory>
 #include <map>
 
-#include <point_cloud_object_detection_and_recognition/pcodar_types.hh>
+#include <point_cloud_object_detection_and_recognition/pcodar_types.hpp>
 
 
 #include <mil_msgs/PerceptionObjectArray.h>

@@ -1,9 +1,9 @@
-#include "label_model.hh"
-#include "main_window.cc"
+#include "label_model.hpp"
+#include "main_window.cpp"
 
-#include <point_cloud_object_detection_and_recognition/pcodar_params.hh>
-#include <point_cloud_object_detection_and_recognition/point_cloud_builder.hh>
-#include <point_cloud_object_detection_and_recognition/point_cloud_clusterer.hh>
+#include <point_cloud_object_detection_and_recognition/pcodar_params.hpp>
+#include <point_cloud_object_detection_and_recognition/point_cloud_builder.hpp>
+#include <point_cloud_object_detection_and_recognition/point_cloud_clusterer.hpp>
 
 #include <eigen_conversions/eigen_msg.h>
 

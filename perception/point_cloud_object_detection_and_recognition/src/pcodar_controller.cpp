@@ -1,4 +1,4 @@
-#include <point_cloud_object_detection_and_recognition/pcodar_controller.hh>
+#include <point_cloud_object_detection_and_recognition/pcodar_controller.hpp>
 
 #include <mil_msgs/PerceptionObject.h>
 #include <mil_msgs/PerceptionObjectArray.h>

@@ -1,4 +1,4 @@
-#include <point_cloud_object_detection_and_recognition/point_cloud_builder.hh>
+#include <point_cloud_object_detection_and_recognition/point_cloud_builder.hpp>
 
 #include <eigen_conversions/eigen_msg.h>
 

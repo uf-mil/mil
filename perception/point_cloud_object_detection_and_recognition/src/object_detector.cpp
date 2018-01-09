@@ -1,5 +1,5 @@
-#include <point_cloud_object_detection_and_recognition/object_detector.hh>
-#include <point_cloud_object_detection_and_recognition/point_cloud_clusterer.hh>
+#include <point_cloud_object_detection_and_recognition/object_detector.hpp>
+#include <point_cloud_object_detection_and_recognition/point_cloud_clusterer.hpp>
 
 namespace pcodar
 {

@@ -1,5 +1,5 @@
-#include "main_window.hh"
-#include <point_cloud_object_detection_and_recognition/pcodar_types.hh>
+#include "main_window.hpp"
+#include <point_cloud_object_detection_and_recognition/pcodar_types.hpp>
 #include "ui_main_window.h"
 
 #include <iostream>

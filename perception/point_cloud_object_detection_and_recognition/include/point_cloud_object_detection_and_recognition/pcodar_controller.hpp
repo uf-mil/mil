@@ -1,9 +1,9 @@
 #pragma once
 
-#include "marker_manager.hh"
-#include "object_detector.hh"
-#include "pcodar_params.hh"
-#include "pcodar_types.hh"
+#include "marker_manager.hpp"
+#include "object_detector.hpp"
+#include "pcodar_params.hpp"
+#include "pcodar_types.hpp"
 
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>

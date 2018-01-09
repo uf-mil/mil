@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pcodar_types.hh"
+#include "pcodar_types.hpp"
 
 #include <mil_msgs/PerceptionObject.h>
 

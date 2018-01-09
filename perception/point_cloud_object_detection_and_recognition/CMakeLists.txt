@@ -31,7 +31,7 @@ find_package(OpenCV 3.0 REQUIRED)
 include_directories(include ${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
 # Get all relevant files
-file(GLOB SOURCES src/*.cc)
+file(GLOB SOURCES src/*.cpp)
 
 # Create Library
 add_library(pcodar ${SOURCES})
@@ -48,7 +48,7 @@ catkin_package(INCLUDE_DIRS include
 catkin_python_setup()
 
 # executable that actually runs everything
-add_executable(pcodar_node nodes/main.cc)
+add_executable(pcodar_node nodes/main.cpp)
 target_link_libraries(pcodar_node pcodar)
 
 
@@ -66,18 +66,18 @@ find_package(Qt5Widgets)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-QT5_WRAP_CPP(tst_hdr_moc tools/labeling_tool/main_window.hh)
+QT5_WRAP_CPP(tst_hdr_moc tools/labeling_tool/main_window.hpp)
 QT5_WRAP_UI(tst_form_hdr tools/labeling_tool/main_window.ui)
 
 add_library(main_window ${tst_hdr_moc} ${tst_form_hdr})
 qt5_use_modules(main_window Widgets)
 
-add_library(label_model tools/labeling_tool/label_model.hh tools/labeling_tool/label_model.cc)
+add_library(label_model tools/labeling_tool/label_model.hpp tools/labeling_tool/label_model.cpp)
 target_link_libraries(label_model pcodar main_window ${catkin_LIBRARIES})
 
 include_directories(${catkin_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS})
 
-add_executable(pcodar_labeling_tool tools/labeling_tool/main.cc)
+add_executable(pcodar_labeling_tool tools/labeling_tool/main.cpp)
 qt5_use_modules(pcodar_labeling_tool Core Gui Widgets)
 
 target_link_libraries(pcodar_labeling_tool pcodar main_window label_model ${catkin_LIBRARIES} ${Qt5Widgets_LIBRARIES})

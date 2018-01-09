@@ -1,4 +1,4 @@
-#include <point_cloud_object_detection_and_recognition/marker_manager.hh>
+#include <point_cloud_object_detection_and_recognition/marker_manager.hpp>
 
 // #include <ros/console.h>
 

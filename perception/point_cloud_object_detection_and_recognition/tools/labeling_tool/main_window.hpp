@@ -3,7 +3,7 @@
 #include <QMainWindow>
 #include <QtWidgets>
 
-#include "label_model.hh"
+#include "label_model.hpp"
 
 #include <memory>
 

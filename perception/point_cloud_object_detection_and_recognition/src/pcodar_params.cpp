@@ -1,4 +1,4 @@
-#include <point_cloud_object_detection_and_recognition/pcodar_params.hh>
+#include <point_cloud_object_detection_and_recognition/pcodar_params.hpp>
 
 namespace pcodar
 {
