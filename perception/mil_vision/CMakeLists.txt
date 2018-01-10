@@ -81,10 +81,10 @@ add_library(mil_vision_lib
   src/mil_vision_lib/cv_utils.cc
   src/mil_vision_lib/image_filtering.cpp
   src/mil_vision_lib/active_contours.cpp
-  src/mil_vision_lib/colorizer/pcd_colorizer.cpp
-  src/mil_vision_lib/colorizer/single_cloud_processor.cpp
-  src/mil_vision_lib/colorizer/camera_observer.cpp
-  src/mil_vision_lib/colorizer/color_observation.cpp
+#  src/mil_vision_lib/colorizer/pcd_colorizer.cpp
+#  src/mil_vision_lib/colorizer/single_cloud_processor.cpp
+#  src/mil_vision_lib/colorizer/camera_observer.cpp
+#  src/mil_vision_lib/colorizer/color_observation.cpp
 )
 target_include_directories(mil_vision_lib PUBLIC include/mil_vision_lib)
 
@@ -101,9 +101,9 @@ add_executable(camera_lidar_transformer src/camera_lidar_transformer.cpp)
 add_dependencies(camera_lidar_transformer ${catkin_EXPORTED_TARGETS})
 
 
-add_executable(pc_colorizer
-  src/pc_colorizer.cpp
-)
-add_dependencies(pc_colorizer
-  ${catkin_EXPORTED_TARGETS}
-)
+# add_executable(pc_colorizer
+#   src/pc_colorizer.cpp
+# )
+# add_dependencies(pc_colorizer
+#   ${catkin_EXPORTED_TARGETS}
+# )
