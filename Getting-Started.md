@@ -31,11 +31,12 @@ We will have semi-regular meetings MAE-C 126 according to the will of Dr. Schwar
 
 
 # Required Background Knowledge
-
 * Python - the main programming language used on the project and the one recommended to new programmers
     * C++ is also an option if you feel more comfortable with it, but the learning curve to use it with ROS is a bit steeper.
-* Linear Algebra at a [Khan Academy](https://www.khanacademy.org/math/linear-algebra) level
-* Calculus - enough to understand the meaning of a derivative
+* Git version control and Github
+    * This allows us to keep track of the history of the software stack
+    * For a beginner's introduction to git, see this [tutorial](http://rogerdudler.github.io/git-guide/)
+    * We use a [forking workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/forking-workflow) to facilitate contributions
 * How to communicate and spell clearly (in English)
 
 
@@ -46,12 +47,10 @@ We will have semi-regular meetings MAE-C 126 according to the will of Dr. Schwar
 * ROS - the Robot Operating System
     * This is what we use for communication between programs running on the robots
     * For more information, we recommend reading through a couple of the [tutorials](http://wiki.ros.org/ROS/Tutorials).
-* Git version control and Github
-    * This allows us to keep track of the history of the software stack
-    * For a beginner's introduction to git, see this [tutorial](http://rogerdudler.github.io/git-guide/)
-    * We use a [forking workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/forking-workflow) to facilitate contributions
 * What a rotation matrix is in 2 and 3 dimensions (And why not to use Euler angles)
     * Bonus points for understanding how a 4x4 matrix can represent both [translation and rotation](https://en.wikipedia.org/wiki/Transformation_matrix#Affine_transformations) in 3D.
+* Linear Algebra at a [Khan Academy](https://www.khanacademy.org/math/linear-algebra) level
+* Calculus - enough to understand the meaning of a derivative
 
 ### If you are working in perception
 
