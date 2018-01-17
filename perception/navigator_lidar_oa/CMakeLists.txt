@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   navigator_msgs
   interactive_markers
   mil_msgs
+  dynamic_reconfigure
 #  message_generation
 )
 

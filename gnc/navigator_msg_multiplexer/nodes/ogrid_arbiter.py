@@ -143,16 +143,17 @@ class OGridServer:
 
         self.ogrid_server = Server(OgridConfig, self.dynamic_cb)
         self.dynam_client = Client("bounds_server", config_callback=self.bounds_cb)
-        self.ogrid_server.update_configuration({'width': 500})
 
-        rospy.Service("/center_ogrid", Trigger, self.center_ogrid)
+        rospy.Service("~center_ogrid", Trigger, self.center_ogrid)
         rospy.Timer(rospy.Duration(1.0 / rate), self.publish)
 
     def center_ogrid(self, srv):
-        fprint("CENTERING OGRID AT POSITION", msg_color='blue')
+        '''
+        When Trigger service is called, set center
+        of ogrid to current odometry position.
+        '''
         if self.odom is None:
-            return
-
+            return {'success': False, 'message': 'odom not recieved'}
         dim = -(self.map_size[0] * self.resolution) / 2
         new_org = self.odom[0] + np.array([dim, dim, 0])
         config = {}
@@ -160,15 +161,19 @@ class OGridServer:
         config['origin_y'] = float(new_org[1])
         config['set_origin'] = True
         self.ogrid_server.update_configuration(config)
+        return {'success': True}
 
     def bounds_cb(self, config):
-        fprint("BOUNDS DYNAMIC CONFIG UPDATE!", msg_color='blue')
-        if hasattr(config, "enu_1_lat"):
-            self.enu_bounds = [[config['enu_1_lat'], config['enu_1_long'], 1],
-                               [config['enu_2_lat'], config['enu_2_long'], 1],
-                               [config['enu_3_lat'], config['enu_3_long'], 1],
-                               [config['enu_4_lat'], config['enu_4_long'], 1],
-                               [config['enu_1_lat'], config['enu_1_long'], 1]]
+        '''
+        Update bounds which may be drawn in ogrid when
+        dynamic reconfigure updates.
+        '''
+        rospy.loginfo('BOUNDS UPDATEDED')
+        self.enu_bounds = [[config['x1'], config['y1'], 1],
+                           [config['x2'], config['y2'], 1],
+                           [config['x3'], config['y3'], 1],
+                           [config['x4'], config['y4'], 1],
+                           [config['x1'], config['y1'], 1]]
         self.enforce_bounds = config['enforce']
 
     def dynamic_cb(self, config, level):
