@@ -176,13 +176,10 @@ if [[ "$DOCKER" != "true" ]]; then
 	fi
 
 	# Warn users about the security risks associated with enabling USB cameras before doing it
-	if [[ ! -f /etc/udev/rules.d/40-pgr.rules && "$INSTALL_FLYCAP" == "true" ]]; then
-		echo "MIL projects use Point Grey machine vision cameras for perception. A user only"
-		echo "needs to enable access to USB cameras if they intend to connect one directly"
-		echo "to their machine, which is unlikely. In order for a user to access a USB"
-		echo "camera, a udev rule needs to be added that gives a group access to the hardware"
-		echo "device on the camera. Long story short, this creates a fairly significant"
-		echo "security hole on the machine that goes beyond the OS to actual device firmware."
+	if [[ ! -f /etc/udev/rules.d/40-pgr.rules ]]; then
+		echo "MIL projects uses USB3 cameras for perception."
+		echo "If you would like to use one of these cameras on your local machine"
+		echo "without using sudo, you need a udev rule added which is pottentialy insecure."
 		echo -n "Do you want to enable access to USB cameras? [y/N] " && read RESPONSE
 		if [[ "$RESPONSE" == "Y" || "$RESPONSE" == "y" ]]; then
 			ENABLE_USB_CAM="true"
@@ -496,6 +493,7 @@ instlog "Installing common ROS dependencies"
 sudo apt-get install -qq ros-$ROS_VERSION-joy
 sudo apt-get install -qq ros-$ROS_VERSION-serial
 sudo apt-get install -qq libpcap-dev  # Needed for velodyne driver building
+sudo apt-get install -qq ros-$ROS_VERSION-usb-cam  # Used for See3Cam used on NaviGator
 
 # Messages
 sudo apt-get install -qq ros-$ROS_VERSION-tf2-sensor-msgs
