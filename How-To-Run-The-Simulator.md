@@ -1,6 +1,6 @@
 Launching the simulator will automatically generate the virtual world and bring the core systems of NaviGator online inside of it. The majority of the sensors (cameras, lidar, etc.) are implemented in simulation, so the platform should behave as it does in the real world for the most part.
-* First ensure that all submodules are up to date by running `git submodule update --init --recursive` in the respective repos.
-* Run `roslaunch navigator_launch simulation.launch`
-* Make sure alarms and lqRRT topics are active, if not: `roslaunch navigator_launch alarms.launch` and `rosrun navigator_path_planner lqrrt_node.py`
-* To move around run `aclear all` and then use the alias `navc` to preform moves such as `navc f 1m`
-* If you are running missions run `aclear all` then run `rosrun navigator_missions <name_of_mission>`
+1. In a terminal, start a roscore if you have not done so already using ```roscore```. You must have a roscore running on your system any time you run a ros program.
+1. In a new terminal, run the simulator using ```roslaunch navigator_launch simulation.launch```
+1. Wait for the simulator to load. This may take a couple of minutes and will slow your computer down. If the Gazebo GUI never runs, you can try running without the GUI ```roslaunch navigator_launch simulation.launch gui:=false```
+1. To make sure everything is working, try executing a move command. First you need to turn off the kill alarm, which is a safety feature. ```aclear kill```
+1. Now you should be able to make NaviGator move. ```navc forward 1``` will send a command to move NaviGator forward by 1 meter. After a couple seconds, you should see NaviGator moving
