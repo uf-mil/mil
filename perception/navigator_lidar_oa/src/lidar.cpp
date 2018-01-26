@@ -8,7 +8,8 @@
 #include <mil_msgs/PoseTwistStamped.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Odometry.h>
-#include <navigator_msgs/Bounds.h>
+#include <dynamic_reconfigure/client.h>
+#include <navigator_tools/BoundsConfig.h>
 #include <navigator_msgs/ObjectDBQuery.h>
 #include <navigator_msgs/PerceptionObject.h>
 #include <navigator_msgs/PerceptionObjectArray.h>
@@ -48,7 +49,7 @@ geometry_msgs::Pose boatPose_enu;
 geometry_msgs::Twist boatTwist_enu;
 mil_msgs::PoseTwistStamped waypoint_enu, carrot_enu;
 ros::Time pubObjectsTimer;
-ros::ServiceClient boundsClient;
+std::unique_ptr<dynamic_reconfigure::Client<navigator_tools::BoundsConfig>> boundsClient;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Interactive marker globals
@@ -184,6 +185,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
   rosGrid.info.origin.position.y = (ogrid.boatRow - ogrid.GRID_SIZE / 2) * VOXEL_SIZE_METERS +
                                    ogrid.ROItoMeters(0);  // ogrid.lidarPos.y + ogrid.ROItoMeters(0);
   rosGrid.info.origin.position.z = ogrid.lidarPos.z - MAXIMUM_Z_BELOW_LIDAR;
+  rosGrid.info.origin.orientation.w = 1.0;
   rosGrid.data = ogrid.ogridMap;
   pubGrid.publish(rosGrid);
 
@@ -738,28 +740,17 @@ void markerCallBack(const visualization_msgs::InteractiveMarkerFeedbackConstPtr 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Entry point to code
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void resetBounds(const ros::TimerEvent &event)
+void BoundsUpdate(const navigator_tools::BoundsConfig& config)
 {
-  navigator_msgs::Bounds::Request boundsReq;
-  navigator_msgs::Bounds::Response boundsRes;
-  boundsReq.to_frame = "enu";
-  if (boundsClient.call(boundsReq, boundsRes) && boundsRes.bounds.size() == 4)
-  {
-    BOUNDARY_CORNER_1(0) = boundsRes.bounds[0].x;
-    BOUNDARY_CORNER_1(1) = boundsRes.bounds[0].y;
-    BOUNDARY_CORNER_2(0) = boundsRes.bounds[1].x;
-    BOUNDARY_CORNER_2(1) = boundsRes.bounds[1].y;
-    BOUNDARY_CORNER_3(0) = boundsRes.bounds[2].x;
-    BOUNDARY_CORNER_3(1) = boundsRes.bounds[2].y;
-    BOUNDARY_CORNER_4(0) = boundsRes.bounds[3].x;
-    BOUNDARY_CORNER_4(1) = boundsRes.bounds[3].y;
-    cout << BOUNDARY_CORNER_1(0) << endl;
-    ROS_INFO_STREAM("LIDAR | Bounds set to rosparam");
-  }
-  else
-  {
-    ROS_INFO_STREAM("LIDAR | Bounds not available from /get_bounds service....");
-  }
+  ROS_INFO("BOUNDS UPDATED");
+  BOUNDARY_CORNER_1(0) = config.x1;
+  BOUNDARY_CORNER_1(1) = config.y1;
+  BOUNDARY_CORNER_2(0) = config.x2;
+  BOUNDARY_CORNER_2(1) = config.y2;
+  BOUNDARY_CORNER_3(0) = config.x3;
+  BOUNDARY_CORNER_3(1) = config.y3;
+  BOUNDARY_CORNER_4(0) = config.x4;
+  BOUNDARY_CORNER_4(1) = config.y4;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -809,8 +800,9 @@ int main(int argc, char *argv[])
   ros::ServiceServer service = nh.advertiseService("/database/requests", objectRequest);
 
   // Check for bounds from parameter server on startup
-  boundsClient = nh.serviceClient<navigator_msgs::Bounds>("/get_bounds");
-  ros::Timer timerCallBack = nh.createTimer(ros::Duration(3.0), resetBounds);
+  ros::NodeHandle bounds_nh("/bounds_server");
+  boundsClient.reset(new dynamic_reconfigure::Client<navigator_tools::BoundsConfig>("/bounds_server", bounds_nh,
+    &BoundsUpdate));
 
   // Interactive Marker Menu Setup
   markerServer = new interactive_markers::InteractiveMarkerServer("/unclassified_markers", "", false);

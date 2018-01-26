@@ -1,86 +1,56 @@
 #!/usr/bin/env python
-
 import rospy
-from mil_tools import numpy_to_point
-
 from navigator_tools.cfg import BoundsConfig
 from dynamic_reconfigure.server import Server
-
-from navigator_msgs.srv import Bounds, BoundsResponse, \
-    CoordinateConversion, CoordinateConversionRequest
+from navigator_msgs.srv import CoordinateConversion, CoordinateConversionRequest
+from mil_tools import wait_for_service
 
 
 class BoundsServer(object):
+    '''
+    Runs the dynamic reconfigure server which implements a global 4 rectangular
+    boundry outside of which NaviGator will not move.
+    '''
     def __init__(self):
         self.convert = rospy.ServiceProxy('/convert', CoordinateConversion)
+        # Ensure conversion is available before accepting changes
+        wait_for_service(self.convert, warn_msg='Waiting for conversion service')
+        self.server = Server(BoundsConfig, self.update_config)
 
-        self.enforce = False
-        self.bounds = []
+    def update_enu(self, config):
+        '''
+        Given a bounds config, update the ENU bounds by
+        converting the LLA bounds to ENU
+        '''
+        for i in (1, 2, 3, 4):
+            res = self.convert(CoordinateConversionRequest(
+                frame="lla",
+                point=(config['lat%d' % i], config['long%d' % i], 0.0)))
+            config['x%d' % i] = res.enu[0]
+            config['y%d' % i] = res.enu[1]
 
-        rospy.set_param("/bounds/enu/", [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]])
-        rospy.set_param("/bounds/enforce", self.enforce)
-
-        # self.convert = Converter()
-        Server(BoundsConfig, self.update_config)
-        rospy.Service('/get_bounds', Bounds, self.got_request)
-
-    def destringify(self, lat_long_string):
-        if any(c.isalpha() for c in lat_long_string):
-            return False
-
-        floats = map(float, lat_long_string.replace('(', '').replace(')', '').split(','))
-
-        if len(floats) != 3:
-            return False
-
-        return floats
+    def update_lla(self, config):
+        '''
+        Given a bounds config, update the LLA bounds by
+        converting the ENU bounds to LLA
+        '''
+        for i in (1, 2, 3, 4):
+            res = self.convert(CoordinateConversionRequest(
+                frame="enu",
+                point=(config['x%d' % i], config['y%d' % i], 0.0)))
+            config['lat%d' % i] = res.lla[0]
+            config['long%d' % i] = res.lla[1]
 
     def update_config(self, config, level):
-        self.enforce = config['enforce']
-        lla_bounds_str = [config['lla_1'] + ", 0", config['lla_2'] + ", 0",
-                          config['lla_3'] + ", 0", config['lla_4'] + ", 0"]
-        lla_bounds = map(self.destringify, lla_bounds_str)
-        self.lla_bounds = lla_bounds
-
-        # If any returned false, don't update
-        if all(lla_bounds):
-            try:
-                self.bounds = [self.convert(CoordinateConversionRequest(frame="lla", point=lla)) for lla in lla_bounds]
-            except BaseException:
-                print "No service provider found"
-                return config
-
-            config['enu_1_lat'] = self.bounds[0].enu[0]
-            config['enu_1_long'] = self.bounds[0].enu[1]
-
-            config['enu_2_lat'] = self.bounds[1].enu[0]
-            config['enu_2_long'] = self.bounds[1].enu[1]
-
-            config['enu_3_lat'] = self.bounds[2].enu[0]
-            config['enu_3_long'] = self.bounds[2].enu[1]
-
-            config['enu_4_lat'] = self.bounds[3].enu[0]
-            config['enu_4_long'] = self.bounds[3].enu[1]
-
-            rospy.set_param("/bounds/enu/", map(lambda bound: bound.enu[:2], self.bounds))
-        else:
-            rospy.set_param("/bounds/enu/", [[0, 0, 00], [0, 0, 0], [0, 0, 0], [0, 0, 0]])
-
-        rospy.set_param("/bounds/enforce", self.enforce)
+        '''
+        Callback when a dynamic_reconfigure request arrives.
+        Convert ENU/LLA as needed.
+        '''
+        if level == -1 or level == 0 or level & 2 == 2:  # If default or LLA changed, convert to ENU
+            self.update_enu(config)
+        elif level & 4 == 4:  # Otherwise if ENU is changed, update LLA
+            self.update_lla(config)
         return config
-
-    def got_request(self, req):
-        to_frame = "enu" if req.to_frame == '' else req.to_frame
-
-        resp = BoundsResponse(enforce=False)
-
-        self.bounds = [self.convert(CoordinateConversionRequest(frame="lla", point=lla)) for lla in self.lla_bounds]
-        bounds = [numpy_to_point(getattr(response, to_frame)) for response in self.bounds]
-
-        resp.enforce = self.enforce
-        resp.bounds = bounds
-
-        return resp
 
 
 if __name__ == "__main__":
