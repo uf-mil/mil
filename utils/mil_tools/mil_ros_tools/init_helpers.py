@@ -52,3 +52,22 @@ def wait_for_subscriber(node_name, topic, timeout=5.0):
         rospy.resolve_name(node_name)
     )
     return success
+
+
+def wait_for_service(service, warn_time=1.0, warn_msg='Waiting for service..', timeout=None):
+    '''
+    A fancy extension of wait for service that will warn with a message if it is taking a while.
+
+    @param warn_time: float in seconds, how long to wait before logging warn_msg
+    @param warn_msg: msg logged with rospy.logwarn if warn_time passes without service connected
+    @param timeout: overall timeout. If None, does nothing. If a float, will raise exception
+                    if many TOTAL seconds has passed without connecting
+    '''
+    try:
+        service.wait_for_service(warn_time)
+    except rospy.ROSException:
+        if timeout is not None:
+            timeout = timeout - warn_time
+        rospy.logwarn(warn_msg)
+        service.wait_for_service(timeout)
+
