@@ -3,4 +3,4 @@ Launching the simulator will automatically generate the virtual world and bring 
 1. In a new terminal, run the simulator using ```roslaunch navigator_launch simulation.launch```
 1. Wait for the simulator to load. This may take a couple of minutes and will slow your computer down. If the Gazebo GUI never runs, you can try running without the GUI ```roslaunch navigator_launch simulation.launch gui:=false```
 1. To make sure everything is working, try executing a move command. First you need to turn off the kill alarm, which is a safety feature. ```aclear kill```
-1. Now you should be able to make NaviGator move. ```navc forward 1``` will send a command to move NaviGator forward by 1 meter. After a couple seconds, you should see NaviGator moving
+1. Now you should be able to make NaviGator move. ```nmove forward 1``` will send a command to move NaviGator forward by 1 meter. After a couple seconds, you should see NaviGator moving
