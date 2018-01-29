@@ -1,19 +1,16 @@
 from __future__ import division
 import warnings
 
-import txros
 import numpy as np
 from tf import transformations
-from nav_msgs.msg import Odometry
-from mil_msgs.msg import PoseTwistStamped, PoseTwist, MoveToGoal
+from mil_msgs.msg import MoveToGoal, PoseTwist
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Point, Vector3, Twist
-from mil_tools import rosmsg_to_numpy, make_header, normalize
+from mil_tools import make_header, normalize
 from rawgps_common.gps import ecef_from_latlongheight, enu_from_ecef
 from navigator_path_planner.msg import MoveGoal
 
 import mil_tools
 from mil_misc_tools.text_effects import fprint
-from twisted.internet import defer
 
 UP = np.array([0.0, 0.0, 1.0], np.float64)
 EAST, NORTH, WEST, SOUTH = [transformations.quaternion_about_axis(np.pi / 2 * i, UP) for i in xrange(4)]
@@ -73,6 +70,7 @@ def look_at_camera(forward, upish=UP):
     # assumes camera right-down-forward coordinate system
     return triad((forward, upish), (UP, [0, -1, 0]))
 
+
 def get_valid_point(nav, point):
     if nav.enu_bounds is None:
         return point
@@ -99,7 +97,7 @@ class PoseEditor2(object):
 
     ex:
         >>> res = yield p.forward(2, 'm').down(1, 'ft').yaw_left(50, 'deg').go()
-        
+
         Will move forward 2 meters, down 1 foot, all while yawing left 50 degrees.
 
     ex:
@@ -112,13 +110,13 @@ class PoseEditor2(object):
     Some special cases (these can't be chained):
         >>> circle = p.circle_point([0, 1, 0])
         >>> res = yield circle.go()
-    
+
         Will circle the enu point [0, 1, 0] counter clockwise holding the current orientation and distance
         from the point.
 
         >>> res = yield p.spiral_point([10, 0], 'cw', meters_per_rev=2).go()
 
-        Will spiral the enu point [10, 0, 0] in a clockwise direction increase it's current 
+        Will spiral the enu point [10, 0, 0] in a clockwise direction increase it's current
         radius by `meters_per_rev` meters per revolution.
     """
 
@@ -148,7 +146,7 @@ class PoseEditor2(object):
         return np.linalg.norm(self.position - self.nav.pose[0])
 
     def go(self, *args, **kwargs):
-        if self.nav.killed == True or self.nav.odom_loss == True:
+        if self.nav.killed is True or self.nav.odom_loss is True:
             # What do we want to do with missions when the boat is killed
             fprint("Boat is killed, ignoring go command!", title="POSE_EDITOR", msg_color="red")
 
@@ -156,10 +154,10 @@ class PoseEditor2(object):
                 failure_reason = 'boat_killed'
 
             return Res()
-        
+
         if len(self.kwargs) > 0:
             kwargs = dict(kwargs.items() + self.kwargs.items())
-        
+
         goal = self.nav._moveto_client.send_goal(self.as_MoveGoal(*args, **kwargs))
         self.result = goal.get_result()
         return self.result
@@ -181,7 +179,7 @@ class PoseEditor2(object):
         return self.rel_position([0, dist * UNITS[unit], 0])
 
     def right(self, dist, unit='m'):
-        return self.rel_position([0, -dist  * UNITS[unit], 0])
+        return self.rel_position([0, -dist * UNITS[unit], 0])
 
     def stop(self):
         return self.forward(0)
@@ -248,7 +246,7 @@ class PoseEditor2(object):
         position = np.array([0, 0, meters_per_rev])
         sign_direction = 1 if direction == 'ccw' else -1  # Follows the right hand rule
         if hasattr(point, 'point'):
-            focus = [point.point.x, point.point.y]        
+            focus = [point.point.x, point.point.y]
         else:
             focus = [point[0], point[1]]
 
@@ -258,8 +256,9 @@ class PoseEditor2(object):
 
     def circle_point(self, point, *args, **kwargs):
         return self.spiral_point(point, *args, **kwargs)
-   
-    def d_spiral_point(self, point, radius, granularity=8, revolutions=1, direction='ccw', theta_offset=0, meters_per_rev=0):
+
+    def d_spiral_point(self, point, radius, granularity=8, revolutions=1, direction='ccw',
+                       theta_offset=0, meters_per_rev=0):
         """
         Sprials a point using discrete moves
         This produces a generator
@@ -283,7 +282,6 @@ class PoseEditor2(object):
 
         yield self.set_position(new).look_at(point).yaw_left(theta_offset)
 
-
     def d_circle_point(self, *args, **kwargs):
         """
         Circles a point whilst looking at it using discrete steps
@@ -306,7 +304,7 @@ class PoseEditor2(object):
         if 'focus' in kwargs:
             if not isinstance(kwargs['focus'], Point):
                 kwargs['focus'] = mil_tools.numpy_to_point(kwargs['focus'])
-        
+
         if 'speed_factor' in kwargs and isinstance(kwargs['speed_factor'], float):
             # User wants a uniform speed factor
             sf = kwargs['speed_factor']
@@ -314,8 +312,8 @@ class PoseEditor2(object):
 
         for key in kwargs.keys():
             if not hasattr(MoveGoal, key):
-                fprint("MoveGoal msg doesn't have a field called '{}' you tried to set via kwargs.".format(key), title="POSE_EDITOR", 
-                       msg_color="red")
+                fprint("MoveGoal msg doesn't have a field called '{}' you tried to set via kwargs.".format(key),
+                       title="POSE_EDITOR", msg_color="red")
                 del kwargs[key]
 
         return MoveGoal(

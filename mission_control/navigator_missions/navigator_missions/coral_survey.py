@@ -2,14 +2,15 @@
 from __future__ import division
 
 import txros
-import tf
 import tf.transformations as trns
 import numpy as np
 import mil_tools
 from random import shuffle
-from mil_misc_tools.text_effects import fprint
-from navigator_singleton import pose_editor
+from navigator import Navigator
+import pose_editor
 from twisted.internet import defer
+from nav_msgs.msg import OccupancyGrid
+import cv2
 
 WEST = trns.quaternion_matrix(pose_editor.WEST)
 EAST = trns.quaternion_matrix(pose_editor.EAST)
@@ -17,51 +18,50 @@ NORTH = trns.quaternion_matrix(pose_editor.NORTH)
 SOUTH = trns.quaternion_matrix(pose_editor.SOUTH)
 
 # What should we pick this time?
-shapes = ['CIRCLE', 'TRIANGLE', 'CROSS'] 
+shapes = ['CIRCLE', 'TRIANGLE', 'CROSS']
 shuffle(shapes)
 
-@txros.util.cancellableInlineCallbacks
-def main(navigator, **kwargs):
-    #middle_point = np.array([-10, -70, 0]) 
-    est_coral_survey = yield navigator.database_query("CoralSurvey")
-    
-    # Going to get all the objects and using the closest one as the totem
-    totem = yield navigator.database_query("all")
-    
-    # Get the closest totem object to the boat
-    totems_np = map(lambda obj: mil_tools.rosmsg_to_numpy(obj.position), totem.objects)
-    dist = map(lambda totem_np: np.linalg.norm(totem_np - mil_tools.rosmsg_to_numpy(est_coral_survey.objects[0].position)), totems_np)
-    middle_point = totems_np[np.argmin(dist)]
 
-    print "Totem sorted:", totems_np
-    print "Totem selected: ", totems_np[0]
-    quads_to_search = [1, 2, 3, 4]
-    quad = yield navigator.mission_params["acoustic_pinger_active_index_correct"].get() 
+class CoralSurvey(Navigator):
+    @txros.util.cancellableInlineCallbacks
+    def run(self, parameters):
+        # middle_point = np.array([-10, -70, 0])
+        est_coral_survey = yield self.database_query("CoralSurvey")
 
-    waypoint_from_center = np.array([10 * np.sqrt(2)])
+        # Going to get all the objects and using the closest one as the totem
+        totem = yield self.database_query("all")
 
-    # Publish ogrid with boundaries to stay inside
-    ogrid = OgridFactory(middle_point, draw_borders=True)
-    msg = ogrid.get_message()
-    latched = navigator.latching_publisher("/mission_ogrid", OccupancyGrid, msg)
+        # Get the closest totem object to the boat
+        totems_np = map(lambda obj: mil_tools.rosmsg_to_numpy(obj.position), totem.objects)
+        dist = map(lambda totem_np: np.linalg.norm(
+            totem_np - mil_tools.rosmsg_to_numpy(est_coral_survey.objects[0].position)), totems_np)
+        middle_point = totems_np[np.argmin(dist)]
 
-    # Construct waypoint list along NSEW directions then rotate 45 degrees to get a good spot to go to.
-    directions = [EAST, NORTH, WEST, SOUTH]
-    waypoints = []
-    #for quad in quads_to_search:
-    mid = navigator.move.set_position(middle_point).set_orientation(directions[quad - 1])
-    search_center = mid.yaw_left(45, "deg").forward(waypoint_from_center).set_orientation(NORTH)
-    yield search_center.left(6).go()
-    yield navigator.move.circle_point(search_center.position, direction='cw').go()
-    
-    yield navigator.mission_params["coral_survey_shape1"].set(shapes[0])
-    latched.cancel()
-    defer.returnValue(None)
+        print "Totem sorted:", totems_np
+        print "Totem selected: ", totems_np[0]
+        quad = yield self.mission_params["acoustic_pinger_active_index_correct"].get()
 
+        waypoint_from_center = np.array([10 * np.sqrt(2)])
+
+        # Publish ogrid with boundaries to stay inside
+        ogrid = OgridFactory(middle_point, draw_borders=True)
+        msg = ogrid.get_message()
+        latched = self.latching_publisher("/mission_ogrid", OccupancyGrid, msg)
+
+        # Construct waypoint list along NSEW directions then rotate 45 degrees to get a good spot to go to.
+        directions = [EAST, NORTH, WEST, SOUTH]
+        # for quad in quads_to_search:
+        mid = self.move.set_position(middle_point).set_orientation(directions[quad - 1])
+        search_center = mid.yaw_left(45, "deg").forward(waypoint_from_center).set_orientation(NORTH)
+        yield search_center.left(6).go()
+        yield self.move.circle_point(search_center.position, direction='cw').go()
+
+        yield self.mission_params["coral_survey_shape1"].set(shapes[0])
+        latched.cancel()
+        defer.returnValue(None)
 
 # This really shouldn't be here - it should be somewhere behind the scenes
-from nav_msgs.msg import OccupancyGrid
-import cv2
+
 
 class OgridFactory():
     def __init__(self, center, draw_borders=False):
@@ -88,7 +88,7 @@ class OgridFactory():
         origin_x = self.center[0] - 30
         origin_y = self.center[1] - 30
         self.origin = mil_tools.numpy_quat_pair_to_pose([origin_x, origin_y, 0],
-                                                              [0, 0, 0, 1])
+                                                        [0, 0, 0, 1])
 
         # The grid needs to have it's axes swaped since its row major
         self.grid = np.zeros((self.height / self.resolution, self.width / self.resolution)) - 1
@@ -96,7 +96,7 @@ class OgridFactory():
         # Transforms points from ENU to ogrid frame coordinates
         self.t = np.array([[1 / self.resolution, 0, -origin_x / self.resolution],
                            [0, 1 / self.resolution, -origin_y / self.resolution],
-                           [0,               0,            1]])
+                           [0, 0, 1]])
 
         self.transform = lambda point: self.t.dot(np.append(point[:2], 1))[:2]
 

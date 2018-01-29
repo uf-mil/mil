@@ -13,7 +13,7 @@ from pose_editor import PoseEditor2
 import mil_tools
 from ros_alarms import TxAlarmListener
 
-from navigator_path_planner.msg import MoveAction
+from navigator_path_planner.msg import MoveAction, MoveGoal
 from nav_msgs.msg import Odometry
 from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped
@@ -22,6 +22,7 @@ import navigator_msgs.srv as navigator_srvs
 from topic_tools.srv import MuxSelect, MuxSelectRequest
 from mil_misc_tools.text_effects import fprint
 from navigator_tools import MissingPerceptionObject
+from mil_tasks_core import BaseTask
 
 
 class MissionResult(object):
@@ -52,7 +53,7 @@ class MissionResult(object):
         return '\n'.join(_pass if self.success else _fail)
 
 
-class Navigator(object):
+class Navigator(BaseTask):
     circle = "CIRCLE"
     cross = "CROSS"
     triangle = "TRIANGLE"
@@ -60,66 +61,74 @@ class Navigator(object):
     green = "GREEN"
     blue = "BLUE"
 
-    def __init__(self, nh):
-        self.nh = nh
+    def __init__(self, **kwargs):
+        super(Navigator, self).__init__(**kwargs)
 
-        self.vision_proxies = {}
-        self._load_vision_services()
+    @classmethod
+    @util.cancellableInlineCallbacks
+    def _init(cls, task_runner):
+        super(Navigator, cls)._init(task_runner)
+        cls.vision_proxies = {}
+        cls._load_vision_services()
 
-        self.mission_params = {}
-        self._load_mission_params()
+        cls.mission_params = {}
+        cls._load_mission_params()
 
         # If you don't want to use txros
-        self.pose = None
-        self.ecef_pose = None
+        cls.pose = None
+        cls.ecef_pose = None
 
-        self.enu_bounds = None
+        cls.enu_bounds = None
 
-        self.killed = '?'
-        self.odom_loss = '?'
+        cls.killed = '?'
+        cls.odom_loss = '?'
 
-    @util.cancellableInlineCallbacks
-    def _init(self, sim):
-        self.sim = sim
+        if (yield cls.nh.has_param('/is_simulation')):
+            cls.sim = yield cls.nh.get_param('/is_simulation')
+        else:
+            cls.sim = False
 
         # Just some pre-created publishers for missions to use for debugging
-        self._point_cloud_pub = self.nh.advertise("navigator_points", PointCloud)
-        self._pose_pub = self.nh.advertise("navigator_pose", PoseStamped)
+        cls._point_cloud_pub = cls.nh.advertise("navigator_points", PointCloud)
+        cls._pose_pub = cls.nh.advertise("navigator_pose", PoseStamped)
 
-        self._moveto_client = action.ActionClient(self.nh, 'move_to', MoveAction)
+        cls._moveto_client = action.ActionClient(cls.nh, 'move_to', MoveAction)
 
-        odom_set = lambda odom: setattr(self, 'pose', mil_tools.odometry_to_numpy(odom)[0])
-        self._odom_sub = self.nh.subscribe('odom', Odometry, odom_set)
-        enu_odom_set = lambda odom: setattr(self, 'ecef_pose', mil_tools.odometry_to_numpy(odom)[0])
-        self._ecef_odom_sub = self.nh.subscribe('absodom', Odometry, enu_odom_set)
+        def odom_set(odom):
+            return setattr(cls, 'pose', mil_tools.odometry_to_numpy(odom)[0])
+        cls._odom_sub = cls.nh.subscribe('odom', Odometry, odom_set)
+
+        def enu_odom_set(odom):
+            return setattr(cls, 'ecef_pose', mil_tools.odometry_to_numpy(odom)[0])
+        cls._ecef_odom_sub = cls.nh.subscribe('absodom', Odometry, enu_odom_set)
 
         try:
-            self._database_query = self.nh.get_service_client('/database/requests', navigator_srvs.ObjectDBQuery)
-            self._camera_database_query = self.nh.get_service_client('/camera_database/requests', navigator_srvs.CameraDBQuery)
-            self._change_wrench = self.nh.get_service_client('/wrench/select', MuxSelect)
+            cls._database_query = cls.nh.get_service_client('/database/requests', navigator_srvs.ObjectDBQuery)
+            cls._camera_database_query = cls.nh.get_service_client(
+                '/camera_database/requests', navigator_srvs.CameraDBQuery)
+            cls._change_wrench = cls.nh.get_service_client('/wrench/select', MuxSelect)
         except AttributeError, err:
-            fprint("Error getting service clients in nav singleton init: {}".format(err), title="NAVIGATOR", msg_color='red')
+            fprint("Error getting service clients in nav singleton init: {}".format(
+                err), title="NAVIGATOR", msg_color='red')
 
-        self.tf_listener = tf.TransformListener(self.nh)
+        cls.tf_listener = tf.TransformListener(cls.nh)
 
-        yield self._make_alarms()
+        yield cls._make_alarms()
 
-        if self.sim:
+        if cls.sim:
             fprint("Sim mode active!", title="NAVIGATOR")
-            yield self.nh.sleep(.5)
+            yield cls.nh.sleep(.5)
         else:
             # We want to make sure odom is working before we continue
             fprint("Action client do you yield?", title="NAVIGATOR")
-            yield util.wrap_time_notice(self._moveto_client.wait_for_server(), 2, "Lqrrt action server")
+            yield util.wrap_time_notice(cls._moveto_client.wait_for_server(), 2, "Lqrrt action server")
             fprint("Yes he yields!", title="NAVIGATOR")
 
             fprint("Waiting for odom...", title="NAVIGATOR")
-            odom = util.wrap_time_notice(self._odom_sub.get_next_message(), 2, "Odom listener")
-            enu_odom = util.wrap_time_notice(self._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener")
-            bounds = util.wrap_time_notice(self._make_bounds(), 2, "Bounds creation")
+            odom = util.wrap_time_notice(cls._odom_sub.get_next_message(), 2, "Odom listener")
+            enu_odom = util.wrap_time_notice(cls._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener")
+            bounds = util.wrap_time_notice(cls._make_bounds(), 2, "Bounds creation")
             yield defer.gatherResults([odom, enu_odom, bounds])  # Wait for all those to finish
-
-        defer.returnValue(self)
 
     @property
     @util.cancellableInlineCallbacks
@@ -137,28 +146,33 @@ class Navigator(object):
     def move(self):
         return PoseEditor2(self, self.pose)
 
+    def hold(self):
+        goal = MoveGoal(move_type='hold')
+        return self._moveto_client.send_goal(goal)
+
     def fetch_result(self, *args, **kwargs):
         # For a unified result class
         return MissionResult(*args, **kwargs)
 
+    @classmethod
     @util.cancellableInlineCallbacks
-    def _make_bounds(self):
+    def _make_bounds(cls):
         fprint("Constructing bounds.", title="NAVIGATOR")
 
-        if (yield self.nh.has_param("/bounds/enforce")):
-            _bounds = self.nh.get_service_client('/get_bounds', navigator_srvs.Bounds)
+        if (yield cls.nh.has_param("/bounds/enforce")):
+            _bounds = cls.nh.get_service_client('/get_bounds', navigator_srvs.Bounds)
             yield _bounds.wait_for_service()
             resp = yield _bounds(navigator_srvs.BoundsRequest())
             if resp.enforce:
-                self.enu_bounds = [mil_tools.rosmsg_to_numpy(bound) for bound in resp.bounds]
+                cls.enu_bounds = [mil_tools.rosmsg_to_numpy(bound) for bound in resp.bounds]
 
                 # Just for display
                 pc = PointCloud(header=mil_tools.make_header(frame='/enu'),
-                                points=np.array([mil_tools.numpy_to_point(point) for point in self.enu_bounds]))
-                yield self._point_cloud_pub.publish(pc)
+                                points=np.array([mil_tools.numpy_to_point(point) for point in cls.enu_bounds]))
+                yield cls._point_cloud_pub.publish(pc)
         else:
             fprint("No bounds param found, defaulting to none.", title="NAVIGATOR")
-            self.enu_bounds = None
+            cls.enu_bounds = None
 
     @util.cancellableInlineCallbacks
     def database_query(self, object_name=None, raise_exception=True, **kwargs):
@@ -215,9 +229,10 @@ class Navigator(object):
             pub.publish(msg)
             yield self.nh.sleep(1.0 / freq)
 
-    def _load_vision_services(self, fname="vision_services.yaml"):
+    @classmethod
+    def _load_vision_services(cls, fname="vision_services.yaml"):
         rospack = rospkg.RosPack()
-        config_file = os.path.join(rospack.get_path('navigator_missions'), 'navigator_singleton', fname)
+        config_file = os.path.join(rospack.get_path('navigator_missions'), 'launch', fname)
         f = yaml.load(open(config_file, 'r'))
 
         for name in f:
@@ -225,16 +240,17 @@ class Navigator(object):
                 s_type = getattr(navigator_srvs, f[name]["type"])
                 s_req = getattr(navigator_srvs, "{}Request".format(f[name]["type"]))
                 s_args = f[name]['args']
-                s_client = self.nh.get_service_client(f[name]["topic"], s_type)
-                s_switch = self.nh.get_service_client(f[name]["topic"] + '/switch', SetBool)
-                self.vision_proxies[name] = VisionProxy(s_client, s_req, s_args, s_switch)
+                s_client = cls.nh.get_service_client(f[name]["topic"], s_type)
+                s_switch = cls.nh.get_service_client(f[name]["topic"] + '/switch', SetBool)
+                cls.vision_proxies[name] = VisionProxy(s_client, s_req, s_args, s_switch)
             except Exception, e:
                 err = "Error loading vision sevices: {}".format(e)
                 fprint("" + err, title="NAVIGATOR", msg_color='red')
 
-    def _load_mission_params(self, fname="mission_params.yaml"):
+    @classmethod
+    def _load_mission_params(cls, fname="mission_params.yaml"):
         rospack = rospkg.RosPack()
-        config_file = os.path.join(rospack.get_path('navigator_missions'), 'navigator_singleton', fname)
+        config_file = os.path.join(rospack.get_path('navigator_missions'), 'launch', fname)
         f = yaml.load(open(config_file, 'r'))
 
         for name in f:
@@ -243,23 +259,32 @@ class Navigator(object):
                 options = f[name]["options"]
                 desc = f[name]["description"]
                 default = f[name].get("default")
-                self.mission_params[name] = MissionParam(self.nh, param, options, desc, default)
+                cls.mission_params[name] = MissionParam(cls.nh, param, options, desc, default)
             except Exception, e:
                 err = "Error loading mission params: {}".format(e)
                 fprint("" + err, title="NAVIGATOR", msg_color='red')
 
+    @classmethod
+    def kill_alarm_cb(cls, _, alarm):
+        cls.killed = alarm.raised
+        cls.kill_alarm = alarm
+
+    @classmethod
     @util.cancellableInlineCallbacks
-    def _make_alarms(self):
-        self.odom_loss_listener = yield TxAlarmListener.init(self.nh, 'odom-kill', lambda alarm: setattr(self, 'odom_loss', alarm.raised))
-        self.kill_listener = yield TxAlarmListener.init(self.nh, 'kill',lambda alarm: setattr(self, 'killed', alarm.raised))
+    def _make_alarms(cls):
+        cls.odom_loss_listener = yield TxAlarmListener.init(
+            cls.nh, 'odom-kill',
+            lambda _, alarm: setattr(cls, 'odom_loss', alarm.raised))
+        cls.kill_listener = yield TxAlarmListener.init(cls.nh, 'kill', cls.kill_alarm_cb)
         fprint("Alarm listener created, listening to alarms: ", title="NAVIGATOR")
 
-        self.killed = yield self.kill_listener.is_raised()
-        self.odom_loss = yield self.odom_loss_listener.is_raised()
+        cls.kill_alarm = yield cls.kill_listener.get_alarm()
+        cls.killed = cls.kill_alarm.raised
+        cls.odom_loss = yield cls.odom_loss_listener.is_raised()
         fprint("\tkill :", newline=False)
-        fprint(self.killed)
+        fprint(cls.killed)
         fprint("\todom-kill :", newline=False)
-        fprint(self.odom_loss)
+        fprint(cls.odom_loss)
 
 
 class VisionProxy(object):
@@ -297,7 +322,7 @@ class MissionParam(object):
     def get(self, raise_exception=True):
         # Returns deferred object, make sure to yield on this (same for below)
         if not (yield self.exists()):
-            if not self.default == None:
+            if self.default is not None:
                 yield self.set(self.default)
                 defer.returnValue(self.default)
             if raise_exception:
@@ -334,7 +359,7 @@ class MissionParam(object):
     @util.cancellableInlineCallbacks
     def reset(self):
         if (yield self.exists()):
-            if not self.default == None:
+            if self.default is not None:
                 yield self.set(self.default)
             else:
                 yield self.nh.delete_param(self.param)
@@ -350,7 +375,7 @@ class Searcher(object):
     def __init__(self, nav, search_pattern=None, looker=None, vision_proxy="test", **kwargs):
         self.nav = nav
         self.looker = looker
-        if looker == None:
+        if looker is None:
             self.looker = self._vision_proxy_look
             self.vision_proxy = vision_proxy
         self.looker_kwargs = kwargs
@@ -404,7 +429,7 @@ class Searcher(object):
         Look around using the search pattern.
         If `loop` is true, then keep iterating over the list until timeout is reached or we find it.
         '''
-        if self.search_pattern == None:
+        if self.search_pattern is None:
             return
 
         def pattern():

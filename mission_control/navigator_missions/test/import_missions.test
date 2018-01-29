@@ -1,3 +1,4 @@
 <launch>
-    <test test-name="import_missions" pkg="navigator_missions" type="test_import_missions.py" />
+    <test test-name="navigator_import_missions" pkg="mil_tasks" type="test_import_tasks.py"
+          args="navigator_missions Navigator"/>
 </launch>
