@@ -49,6 +49,9 @@ def go():
 
             if count % decimation == 0:
                 d = json.loads(line)
+                if not d['running']:
+                   rospy.logwarn_throttle(10, 'GPS not running: {}'.format(d['running_reason']))
+                   continue
 
                 if force_z_to_zero:
                     d['relative_position_enu'][2] = 0
