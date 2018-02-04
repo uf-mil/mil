@@ -1,6 +1,7 @@
 #pragma once
 
 #include "marker_manager.hpp"
+#include "ogrid_manager.hpp"
 #include "object_detector.hpp"
 #include "pcodar_params.hpp"
 #include "pcodar_types.hpp"
@@ -51,6 +52,7 @@ class pcodar_controller
 
     // Visualization
     marker_manager marker_manager_;
+    ogrid_manager ogrid_manager_;
 
     // Model (It eventually will be obejct tracker, but for now just detections)
     object_detector detector_;

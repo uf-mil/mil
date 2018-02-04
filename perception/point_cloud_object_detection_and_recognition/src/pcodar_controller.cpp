@@ -52,17 +52,17 @@ pcodar_controller::pcodar_controller(int argc, char *argv[])
 void pcodar_controller::initialize()
 {
     marker_manager_.initialize(nh_);
+    ogrid_manager_.initialize(nh_);
 
     // Subscribe to odom and the velodyne
     pc_sub = nh_.subscribe("/velodyne_points", 1, &pcodar_controller::velodyne_cb, this);
     odom_sub = nh_.subscribe("/odom", 1, &pcodar_controller::odom_cb, this);
 
     // Publish occupancy grid and visualization markers
-    pub_grid_ = nh_.advertise<nav_msgs::OccupancyGrid>("/pcodar/ogrid", 10);
-    pub_pcl_ = nh_.advertise<point_cloud>("/pcodar/persist_pcl", 1);
+    pub_pcl_ = nh_.advertise<point_cloud>("persist_pcl", 1);
 
     // Publish PerceptionObjects
-    pub_objects_ = nh_.advertise<mil_msgs::PerceptionObjectArray>("/pcodar/objects", 1);
+    pub_objects_ = nh_.advertise<mil_msgs::PerceptionObjectArray>("objects", 1);
 }
 
 void pcodar_controller::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr &pcloud) { latest_point_cloud_ = *pcloud; }
@@ -105,7 +105,7 @@ void pcodar_controller::executive()
     try
     {
         T_enu_velodyne_ros = tfBuffer.lookupTransform(
-            "enu", "velodyne", ros::Time(0));  // change time to pcloud header? pcloud->header.stamp
+            "enu", latest_point_cloud_.header.frame_id, ros::Time(0));  // change time to pcloud header? pcloud->header.stamp
     }
     catch (tf2::TransformException &ex)
     {
@@ -117,8 +117,9 @@ void pcodar_controller::executive()
     tf::transformMsgToEigen(T_enu_velodyne_ros.transform, e_transform);
     detector_.add_point_cloud(latest_point_cloud_, e_transform);
 
-    auto objects = detector_.get_objects();
+    auto objects = detector_.get_objects(pub_pcl_);
     marker_manager_.update_markers(objects.objects);
+    ogrid_manager_.update_ogrid(objects, latest_odom_);
 
     pub_objects_.publish(objects);
 

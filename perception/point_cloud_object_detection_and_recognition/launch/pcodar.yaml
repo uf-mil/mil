@@ -1,7 +1,7 @@
 map_size_meters: 2100.0
 roi_size_meters: 210.0
 voxel_size_meters: 0.30
-min_hits_for_occupancy: 40
+min_hits_for_occupancy: 10
 max_hits_in_cell: 200
 min_object_seperation_distance: 3.0
 ogrid_inflation_cell: 2

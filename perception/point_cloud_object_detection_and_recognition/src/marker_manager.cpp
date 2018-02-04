@@ -12,7 +12,7 @@ namespace pcodar
 
 void marker_manager::initialize(ros::NodeHandle& nh)
 {
-    pub_markers_ = nh.advertise<visualization_msgs::MarkerArray>("/nob/info_markers", 10);
+    pub_markers_ = nh.advertise<visualization_msgs::MarkerArray>("nob/info_markers", 10);
 }
 
 void marker_manager::update_markers(const std::vector<mil_msgs::PerceptionObject>& objects)
@@ -20,8 +20,7 @@ void marker_manager::update_markers(const std::vector<mil_msgs::PerceptionObject
     visualization_msgs::MarkerArray marker_array;
     visualization_msgs::Marker marker_delete;
     marker_delete.action = visualization_msgs::Marker::DELETEALL;
-    marker_array.markers.push_back(marker_delete);
-
+    // marker_array.markers.push_back(marker_delete);
     for (const auto& object : objects)
     {        
         std::string id = std::to_string(object.id);
@@ -33,6 +32,7 @@ void marker_manager::update_markers(const std::vector<mil_msgs::PerceptionObject
         marker.action = visualization_msgs::Marker::ADD;
         marker.pose = object.pose;
         marker.scale = object.scale;
+        std::cout << "Object " << id << " Classification: " << object.classification << " pos x: " << object.pose.position.x << std::endl;
 
         marker.color.a = 0.5;
         marker.color.r = 1.0;
@@ -41,7 +41,7 @@ void marker_manager::update_markers(const std::vector<mil_msgs::PerceptionObject
 
         marker_array.markers.push_back(marker);
     }
-
+    // std::cout << "There are " << marker_array.markers.size() << " markers" << std::endl;
     pub_markers_.publish(marker_array);
 }
 }  // pcodar namespace

@@ -82,6 +82,7 @@ std::vector<mil_msgs::PerceptionObject> get_point_cloud_clusters(const point_clo
         p_obj.pose.orientation.z = quat.z();
         p_obj.pose.orientation.w = quat.w();
 
+        p_obj.id = objects.size() + 1;
         objects.emplace_back(p_obj);
     }
     return objects;

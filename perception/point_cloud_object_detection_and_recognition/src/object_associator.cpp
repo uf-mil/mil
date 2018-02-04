@@ -48,7 +48,6 @@ std::vector<association_unit> associator::associate(const id_object_map& object_
             associated_ids.insert(id);
         }
     }
-
     return association_units;
 }
 }  // namespace pcodar

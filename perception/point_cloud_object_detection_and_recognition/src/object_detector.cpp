@@ -4,10 +4,14 @@
 namespace pcodar
 {
 
-    mil_msgs::PerceptionObjectArray object_detector::get_objects()
+    mil_msgs::PerceptionObjectArray object_detector::get_objects(ros::Publisher &pub_pcl_)
     {
-        const auto accrued_cloud = pc_builder_.get_point_cloud();
+        auto accrued_cloud = pc_builder_.get_point_cloud();
+        // std::cout << accrued_cloud.size() << std::endl;
+        // accrued_cloud.header.frame_id = "velodyne";
+        // pub_pcl_.publish(accrued_cloud);
         const auto objects = get_point_cloud_clusters(accrued_cloud);
+        //std::cout << objects.size() << std::endl;
         mil_msgs::PerceptionObjectArray object_array;
         object_array.objects = objects;
         return object_array;
