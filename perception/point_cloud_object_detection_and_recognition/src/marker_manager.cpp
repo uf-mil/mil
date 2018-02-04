@@ -32,7 +32,7 @@ void marker_manager::update_markers(const std::vector<mil_msgs::PerceptionObject
         marker.action = visualization_msgs::Marker::ADD;
         marker.pose = object.pose;
         marker.scale = object.scale;
-        std::cout << "Object " << id << " Classification: " << object.classification << " pos x: " << object.pose.position.x << std::endl;
+        std::cout << "Object " << id << " Classification: " << object.classification << " pos x: " << object.pose.position.x << " Scale: " << marker.scale.x << " " << marker.scale.y << " " << marker.scale.z << std::endl;
 
         marker.color.a = 0.5;
         marker.color.r = 1.0;

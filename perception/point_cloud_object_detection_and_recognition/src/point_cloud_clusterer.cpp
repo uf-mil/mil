@@ -76,7 +76,7 @@ std::vector<mil_msgs::PerceptionObject> get_point_cloud_clusters(const point_clo
         p_obj.scale.z = max_z - min_z;
 
         auto quat = tf::createQuaternionFromRPY(0.0, 0.0, rect.angle * 3.14159 / 180);
-
+        quat.normalize();
         p_obj.pose.orientation.x = quat.x();
         p_obj.pose.orientation.y = quat.y();
         p_obj.pose.orientation.z = quat.z();

@@ -92,6 +92,7 @@ void point_cloud_builder::add_point_cloud(const sensor_msgs::PointCloud2& pcloud
 
     const auto filtered_buffered_cloud = filter(buffered_cloud, params_, real_time_);
     mega_cloud_ += filtered_buffered_cloud;    
+    real_time_ = true;
     mega_cloud_ = filter(mega_cloud_, params_, real_time_);
 }
 
