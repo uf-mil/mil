@@ -70,4 +70,3 @@ def wait_for_service(service, warn_time=1.0, warn_msg='Waiting for service..', t
             timeout = timeout - warn_time
         rospy.logwarn(warn_msg)
         service.wait_for_service(timeout)
-

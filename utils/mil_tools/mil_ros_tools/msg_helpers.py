@@ -152,10 +152,15 @@ def numpy_quat_pair_to_pose(np_translation, np_quaternion):
     return geometry_msgs.Pose(position=position, orientation=orientation)
 
 
+def numpy_to_points(points):
+    ret = []
+    for point in points:
+        ret.append(numpy_to_point(point))
+    return ret
+
+
 def numpy_to_polygon(polygon):
-    points = []
-    for point in polygon:
-        points.append(numpy_to_point(point))
+    points = numpy_to_points(polygon)
     return geometry_msgs.Polygon(points=points)
 
 
