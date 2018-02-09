@@ -28,4 +28,4 @@ The point grey cameras are run through the pointgrey camera driver.
 ![](https://i.imgur.com/TTM4IXT.png)
 
 ### Starboard one
-fill in info here
+* USB3
