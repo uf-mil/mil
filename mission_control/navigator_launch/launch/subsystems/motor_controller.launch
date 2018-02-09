@@ -16,6 +16,9 @@
       <param name="value" value="115200" />
     </node>
 
+    <!-- Launch battery monitor with motor controllers as it requires them -->
+    <node pkg="navigator_battery_monitor" type="navigator_battery_monitor.py" name="battery_monitor" />
+
 </launch>
 
 
