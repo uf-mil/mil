@@ -27,9 +27,9 @@ class Kill(HandlerBase):
 
     def _kill_task_cb(self, status, result):
         if status == 3:
-            rospy.loginfo('Kill task success!')
+            rospy.loginfo('Killed task success!')
             return
-        rospy.logwarn('Kill task failed ({}): {}'.format(TerminalState.to_string(status), result.result))
+        rospy.logwarn('Killed task failed ({}): {}'.format(TerminalState.to_string(status), result.result))
 
     def raised(self, alarm):
         self._killed = True
@@ -42,7 +42,7 @@ class Kill(HandlerBase):
             goal = BagOnlineGoal(bag_name='kill.bag')
             goal.topics = os.environ['BAG_ALWAYS'] + ' ' + os.environ['bag_kill']
             self.bag_client.send_goal(goal, done_cb=self._online_bagger_cb)
-        self.task_client.run_task('Kill', done_cb=self._kill_task_cb)
+        self.task_client.run_task('Killed', done_cb=self._kill_task_cb)
 
     def cleared(self, alarm):
         self._killed = False

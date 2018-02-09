@@ -127,8 +127,8 @@ class Navigator(BaseTask):
             fprint("Waiting for odom...", title="NAVIGATOR")
             odom = util.wrap_time_notice(cls._odom_sub.get_next_message(), 2, "Odom listener")
             enu_odom = util.wrap_time_notice(cls._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener")
-            bounds = util.wrap_time_notice(cls._make_bounds(), 2, "Bounds creation")
-            yield defer.gatherResults([odom, enu_odom, bounds])  # Wait for all those to finish
+            #bounds = util.wrap_time_notice(cls._make_bounds(), 2, "Bounds creation")
+            yield defer.gatherResults([odom, enu_odom])  # Wait for all those to finish
 
     @property
     @util.cancellableInlineCallbacks
@@ -272,10 +272,10 @@ class Navigator(BaseTask):
     @classmethod
     @util.cancellableInlineCallbacks
     def _make_alarms(cls):
+        cls.kill_listener = yield TxAlarmListener.init(cls.nh, 'kill', cls.kill_alarm_cb)
         cls.odom_loss_listener = yield TxAlarmListener.init(
             cls.nh, 'odom-kill',
             lambda _, alarm: setattr(cls, 'odom_loss', alarm.raised))
-        cls.kill_listener = yield TxAlarmListener.init(cls.nh, 'kill', cls.kill_alarm_cb)
         fprint("Alarm listener created, listening to alarms: ", title="NAVIGATOR")
 
         cls.kill_alarm = yield cls.kill_listener.get_alarm()
