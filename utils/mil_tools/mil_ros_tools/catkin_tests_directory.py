@@ -28,8 +28,9 @@ def get_packages(directory):
 
 
 def run_tests(tests):
-    cmd = ["catkin_make"] + tests
-    return subprocess.call(cmd)
+    cmd = 'catkin_make ' + ' '.join(tests)
+    print cmd
+    return subprocess.call(cmd.split())
 
 
 if __name__ == '__main__':
