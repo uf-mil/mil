@@ -19,3 +19,5 @@ Implementations of the math to do these conversions can be found in the [rawgps_
 
 There is also a node run on NaviGator, [coordinate_conversion_server.py](https://github.com/uf-mil/NaviGator/blob/master/utils/navigator_tools/nodes/coordinate_conversion_server.py), which subscribes to ```/odom``` and ```/absodom``` in order to publish the current longitude latitude and altitude to ```/lla```. The node also provides a service ```/convert``` which will perform a conversion of n points in any of the 3 global frames to another.
 
+For example, the global bounds server uses the ```/convert``` service to allow bounds to be set in LLA coordinates but be correctly represented in the occupancy grid, which is in ```enu``` frame.
+
