@@ -13,7 +13,7 @@ The sylphase board reports position, orientation, and velocity (both linear and 
 * [LLA (Longitude, Latitude, Altitude)](https://en.wikipedia/wiki/Geographic_coordinate_system#Geographic_latitude_and_longitude): is another absolute frame fixed to the earth used more often in navigation, maps, etc. The z component (altitude) points up from sea level so should be around 0 anytime NaviGator is in the water. It is not directly measured by the sylphase board, but can be calculated from a ECEF position.
 
 # Global frame conversions
-Is is possible to calculate conversion from any one of the global frames listed above to the other 2. Because ENU is relative to NaviGator's position when the GPS software is started, a pair of synchronized ENU and ECEF messages is needed to go from ENU to ECEF/LLA or visa/versa. Conversion between the two absolute frames can be done without an initial message pair.
+Is is possible to calculate conversion from any one of the global frames listed above to the other 2. Because ENU is relative to NaviGator's position when the GPS software is started (instead of earth fixed), a pair of synchronized ENU and ECEF messages is needed to go from ENU to ECEF/LLA or visa/versa. Conversion between the two absolute frames can be done without an initial message pair.
 
 Implementations of the math to do these conversions can be found in the [rawgps_common python library in mil_common](https://github.com/uf-mil/mil_common/blob/master/gnc/rawgps_common/src/rawgps_common/gps.py).
 
