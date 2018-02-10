@@ -8,4 +8,4 @@
 * Implementation Details
     * [[Thrust Mapper]]
     * [[Cameras]]
-    * [[Navigation & GPS]]
+    * [[Navigation and GPS]]
