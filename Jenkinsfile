@@ -18,7 +18,8 @@ dockerNode(image: 'uf-mil:navigator') {
 		sh '''
 			source ~/.mil/milrc > /dev/null 2>&1
 			source $CATKIN_DIR/devel/setup.bash > /dev/null 2>&1
-			catkin_make -C $CATKIN_DIR run_tests
+			cd $CATKIN_DIR
+			rosrun mil_tools catkin_tests_directory.py src/NaviGator
 			catkin_test_results $CATKIN_DIR/build/test_results --verbose
 		'''
 	}
