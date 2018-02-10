@@ -7,6 +7,5 @@
     * [[How To Run The Simulator]]
 * Implementation Details
     * [[Thrust Mapper]]
-    * [[State Estimation]]
     * [[Cameras]]
     * [[Navigation/GPS]]
