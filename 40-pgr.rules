@@ -33,3 +33,7 @@ KERNEL=="raw1394", MODE="0664", GROUP="pgrimaging"
 KERNEL=="video1394*", MODE="0664", GROUP="pgrimaging"
 SUBSYSTEM=="firewire", GROUP="pgrimaging"
 SUBSYSTEM=="usb", GROUP="pgrimaging"
+
+# Added to allow access to e-con systems See3Cam_CU20.
+# Technicaly not point grey camera but having it here makes install process easy.
+ATTRS{idVendor}=="2560", ATTRS{idProduct}=="c120", MODE="0664", GROUP="pgrimaging"
