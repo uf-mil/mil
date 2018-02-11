@@ -42,6 +42,12 @@ class KillInterface(object):
         for kill in constants['KILLS']:
             self.board_status[kill] = False
         self.kills = self.board_status.keys()
+	self.sticks = {}
+	for stick in constant['CTRL_STICKS']:
+	    self.sticks[stick] = 0x0000
+	self.buttons = {}
+	for button in constant['CTRL_BUTTONS']:
+	    self.buttons[button] = False
         self.expected_responses = []
         self.network_msg = None
         self.wrench = ''
