@@ -42,12 +42,15 @@ class KillInterface(object):
         for kill in constants['KILLS']:
             self.board_status[kill] = False
         self.kills = self.board_status.keys()
+	self.ctrl_msg_count = 0
 	self.sticks = {}
-	for stick in constant['CTRL_STICKS']:
+	for stick in constant['CTRL_STICKS']:  # These are 3 signed 16-bit values for stick positions
 	    self.sticks[stick] = 0x0000
+	self.sticks_temp = 0x0000
 	self.buttons = {}
-	for button in constant['CTRL_BUTTONS']:
+	for button in constant['CTRL_BUTTONS']:  # These are the button on/off states (16 possible inputs)
 	    self.buttons[button] = False
+	self.buttons_temp = 0x0000
         self.expected_responses = []
         self.network_msg = None
         self.wrench = ''
@@ -93,7 +96,38 @@ class KillInterface(object):
         React to a byte recieved from the board. This could by an async update of a kill status or
         a known response to a recent request
         '''
-        # If a response has been recieved to a requested status (button, remove, etc), update internal state
+	# If the controller message start byte is received, next 8 bytes are the controller data
+	if msg == constants['CONTROLLER']:
+	    self.ctrl_msg_count = 8
+	    return
+	# If receiving the controller message, record the byte as stick/button data
+	if (self.ctrl_msg_count > 0) and (self.ctrl_msg_count <= 8):
+	    if self.ctrl_msg_count > 2:  # The first 6 bytes in the message are stick data bytes
+		if (self.ctrl_msg_count % 2) == 0:  # Even number byte: first byte in data word
+		    self.sticks_temp = (msg << 8)
+		else:  # Odd number byte: combine two bytes into a stick's data word
+		    self.sticks_temp += msg
+		    if (self.ctrl_msg_count > 6):
+			self.sticks['UD'] = self.sticks_temp
+		    elif (self.ctrl_msg_count > 4):
+			self.sticks['LR'] = self.sticks_temp
+		    else:
+			self.sticks['TQ'] = self.sticks_temp
+		    self.sticks_temp = 0x0000
+	    else:  # The last 2 bytes are button data bytes
+		if (self.ctrl_msg_count % 2) == 0:
+		    self.buttons_temp = (msg << 8)
+		else:  # Combine two bytes into the button data word
+		    self.buttons_temp += msg
+		    for button in self.buttons: # Each of the 16 bits represents a button on/off state
+			if (self.buttons_temp & constants['CTRL_BUTTONS_VALUES'][button]) == constants['CTRL_BUTTONS_VALUES'][button]:
+			    self.buttons[button] = True
+			else:
+			    self.buttons[button] = False
+		    self.buttons_temp = 0x0000
+	    self.ctrl_msg_count -= 1
+	    return
+	# If a response has been recieved to a requested status (button, remove, etc), update internal state
         if self.last_request is not None:
             if msg == constants['RESPONSE_FALSE']:
                 self.board_status[self.last_request] = False
