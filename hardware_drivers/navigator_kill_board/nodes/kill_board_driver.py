@@ -9,6 +9,8 @@ from ros_alarms import AlarmBroadcaster, AlarmListener
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from navigator_kill_board import constants
 
+from sensor_msgs.msg import Joy
+
 lock = threading.Lock()
 
 
@@ -42,15 +44,6 @@ class KillInterface(object):
         for kill in constants['KILLS']:
             self.board_status[kill] = False
         self.kills = self.board_status.keys()
-	self.ctrl_msg_count = 0
-	self.sticks = {}
-	for stick in constant['CTRL_STICKS']:  # These are 3 signed 16-bit values for stick positions
-	    self.sticks[stick] = 0x0000
-	self.sticks_temp = 0x0000
-	self.buttons = {}
-	for button in constant['CTRL_BUTTONS']:  # These are the button on/off states (16 possible inputs)
-	    self.buttons[button] = False
-	self.buttons_temp = 0x0000
         self.expected_responses = []
         self.network_msg = None
         self.wrench = ''
@@ -60,6 +53,18 @@ class KillInterface(object):
         self.request_index = -1
 
         self.hw_kill_broadcaster = AlarmBroadcaster('hw-kill')
+
+	self.joy_pub = rospy.Publisher("/joy_emergency", Joy, queue_size=1)
+	self.ctrl_msg_received = False
+	self.ctrl_msg_count = 0
+	self.sticks = {}
+	for stick in constant['CTRL_STICKS']:  # These are 3 signed 16-bit values for stick positions
+	    self.sticks[stick] = 0x0000
+	self.sticks_temp = 0x0000
+	self.buttons = {}
+	for button in constant['CTRL_BUTTONS']:  # These are the button on/off states (16 possible inputs)
+	    self.buttons[button] = False
+	self.buttons_temp = 0x0000
 
         AlarmListener('hw-kill', self.hw_kill_alarm_cb)
         AlarmListener('kill', self.kill_alarm_cb)
@@ -90,6 +95,9 @@ class KillInterface(object):
     def update_ros(self):
         self.update_hw_kill()
         self.publish_diagnostics()
+	if self.ctrl_msg_received == True:
+	    self.publish_joy()
+	    self.ctrl_msg_received = False
 
     def handle_byte(self, msg):
         '''
@@ -125,6 +133,7 @@ class KillInterface(object):
 			else:
 			    self.buttons[button] = False
 		    self.buttons_temp = 0x0000
+		    self.ctrl_msg_received = True # After receiving last byte, trigger joy update
 	    self.ctrl_msg_count -= 1
 	    return
 	# If a response has been recieved to a requested status (button, remove, etc), update internal state
@@ -219,6 +228,30 @@ class KillInterface(object):
                 status.values.append(KeyValue(key, str(value)))
         msg.status.append(status)
         self.diagnostics_pub.publish(msg)
+
+    def publish_joy(self):
+	'''
+	Publishes current stick/button state as a Joy object, to be handled by navigator_emergency.py node
+	'''
+	current_joy = Joy()
+	current_joy.axes.resize(4)
+	current_joy.buttons.resize(13)
+	for stick in self.sticks:
+	    if self.sticks[stick] >= 0x8000:  # Convert 2's complement hex to signed decimal if negative
+		self.sticks[stick] -= 0x10000
+	current_joy.axes[0] = self.sticks['UD']
+	current_joy.axes[1] = self.sticks['LR']
+	current_joy.axes[3] = self.sticks['TQ']
+	current_joy.buttons[7] = self.buttons['START']
+	current_joy.buttons[3] = self.buttons['Y']
+	current_joy.buttons[2] = self.buttons['X']
+	current_joy.buttons[0] = self.buttons['A']
+	current_joy.buttons[1] = self.buttons['B']
+	current_joy.buttons[11] = self.buttons['DL']  # Dpad Left
+	current_joy.buttons[12] = self.buttons['DR']  # Dpad Right
+	current_joy.header.frame_id = "/base_link"
+	current_joy.header.stamp = rospy.Time.now()
+	self.joy_pub.publish(current_joy)
 
     def update_hw_kill(self):
         '''
