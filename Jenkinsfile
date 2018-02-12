@@ -18,7 +18,8 @@ dockerNode(image: 'uf-mil:mil_common') {
 		sh '''
 			source ~/.mil/milrc > /dev/null 2>&1
 			source $CATKIN_DIR/devel/setup.bash > /dev/null 2>&1
-			catkin_make -C $CATKIN_DIR run_tests
+			cd $CATKIN_DIR
+			rosrun mil_tools catkin_tests_directory.py src/mil_common -i ros_alarms velodyne_driver velodyne_pointcloud pointgrey_camera_driver
 			catkin_test_results $CATKIN_DIR/build/test_results --verbose
 		'''
 	}
