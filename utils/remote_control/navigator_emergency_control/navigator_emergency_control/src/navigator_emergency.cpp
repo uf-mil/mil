@@ -272,7 +272,6 @@ void interface::run_()
 {
   double autorepeat_rate_ = 0;
   double coalesce_interval_ = 0.001;
-  double autorepeat_interval = 1 / autorepeat_rate_;
 
   bool tv_set = false;
   bool publication_pending = false;
@@ -347,7 +346,7 @@ void interface::run_()
 
     if (publish_now)
     {
-      joy_pub_.publish(joyXbee);
+      //joy_pub_.publish(joyXbee);
       publish_now = false;
       tv_set = false;
       publication_pending = false;
@@ -364,13 +363,7 @@ void interface::run_()
     // timer for autorepeat.
     if (!tv_set && autorepeat_rate_ > 0)
     {
-      tv_timer = 10;
-      tv_set = true;
-    }
-
-    if (!tv_set)
-    {
-      tv_timer = 80;
+      tv_timer = int(1/autorepeat_rate);
       tv_set = true;
     }
 
