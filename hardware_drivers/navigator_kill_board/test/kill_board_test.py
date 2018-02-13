@@ -3,180 +3,151 @@ import unittest
 import rospy
 from std_msgs.msg import Header
 from ros_alarms import AlarmBroadcaster, AlarmListener
-from diagnostic_msgs.msg import DiagnosticArray
 from std_srvs.srv import SetBool
+from threading import Lock
+from copy import deepcopy, copy
+from mil_tools import thread_lock
+
+
+lock = Lock()
 
 
 class killtest(unittest.TestCase):
 
     def __init__(self, *args):
-        self._current_alarm_state = None
-        rospy.Subscriber("/diagnostics", DiagnosticArray, self.callback)
-        super(killtest, self).__init__(*args)
-        self.AlarmListener = AlarmListener('hw-kill')
+        self.hw_kill_alarm = None
+        self.updated = False
+        self.AlarmListener = AlarmListener('hw-kill', self._hw_kill_cb)
         self.AlarmBroadcaster = AlarmBroadcaster('kill')
+        super(killtest, self).__init__(*args)
+
+    @thread_lock(lock)
+    def reset_update(self):
+        '''
+        Reset update state to False so we can notice changes to hw-kill
+        '''
+        self.updated = False
+
+    @thread_lock(lock)
+    def _hw_kill_cb(self, alarm):
+        '''
+        Called on change in hw-kill alarm.
+        If the raised status changed, set update flag to true so test an notice change
+        '''
+        if self.hw_kill_alarm is None or alarm.raised != self.hw_kill_alarm.raised:
+            self.updated = True
+        self.hw_kill_alarm = alarm
+
+    def wait_for_kill_update(self, timeout=rospy.Duration(0.5)):
+        '''
+        Wait up to timeout time to an hw-kill alarm change. Returns a copy of the new alarm or throws if times out
+        '''
+        timeout = rospy.Time.now() + timeout
+        while rospy.Time.now() < timeout:
+            lock.acquire()
+            updated = copy(self.updated)
+            alarm = deepcopy(self.hw_kill_alarm)
+            lock.release()
+            if updated:
+                return alarm
+            rospy.sleep(0.01)
+        raise Exception('timeout')
+
+    def assert_raised(self, timeout=rospy.Duration(0.5)):
+        '''
+        Waits for update and ensures it is now raised
+        '''
+        alarm = self.wait_for_kill_update(timeout)
+        self.assertEqual(alarm.raised, True)
+
+    def assert_cleared(self, timeout=rospy.Duration(0.5)):
+        '''
+        Wait for update and ensures is now cleared
+        '''
+        alarm = self.wait_for_kill_update(timeout)
+        self.assertEqual(alarm.raised, False)
+
+    def test_1_initial_state(self):  # test the initial state of kill signal
+        '''
+        Tests initial state of system, which should have hw-kill raised beause kill is raised at startup.
+
+        Because hw-kill will be initialized to cleared then later raised when alarm server is fully started,
+        so we need to allow for pottentialy two updates before it is raised.
+        '''
+        alarm = self.wait_for_kill_update(timeout=rospy.Duration(10.0))  # Allow lots of time for initial alarm setup
+        if alarm.raised:
+            self.assertTrue(True)
+            return
+        self.reset_update()
+        self.assert_raised(timeout=rospy.Duration(10.0))
+
+    def test_2_computer_kill(self):
+        '''
+        Test raising/clearing kill alarm (user kill) will cause same change in hw-kill
+        '''
+        self.reset_update()
         self.AlarmBroadcaster.clear_alarm()
+        self.assert_cleared()
 
-    def callback(self, msg):
-        self._current_alarm_state = msg
+        self.reset_update()
+        self.AlarmBroadcaster.raise_alarm()
+        self.assert_raised()
 
-    def test_AA_initial_state(self):  # test the initial state of kill signal
+        self.reset_update()
         self.AlarmBroadcaster.clear_alarm()
-        rospy.sleep(0.1)
-        self.assertEqual(self.AlarmListener.is_cleared(), True,
-                         msg='current state of kill signal is raised')
+        self.assert_cleared()
 
-    def test_AB_computer(self):
-        self.assertEqual(self.AlarmListener.is_cleared(), True,
-                         msg='current state of kill signal is raised')
+    def _test_button(self, button):
+        '''
+        Tests that button kills work through simulated service.
+        '''
+        bfp = rospy.ServiceProxy('/kill_board_interface/BUTTON_{}'.format(button), SetBool)
+        bfp.wait_for_service(timeout=5.0)
 
-        self.AlarmBroadcaster.raise_alarm()  # raise the computer alarm
-        rospy.sleep(0.2)
-        self.assertEqual(
-            self.AlarmListener.is_raised(),
-            True,
-            msg='COMPUTER raise not worked')
-
-        self.AlarmBroadcaster.clear_alarm()  # clear the computer alarm
-        rospy.sleep(0.2)
-        self.assertEqual(
-            self.AlarmListener.is_cleared(),
-            True,
-            msg='COMPUTER shutdown not worked')
-
-    def test_AC_button_front_port(self):
-        self.assertEqual(self.AlarmListener.is_cleared(), True,
-                         msg='current state of kill signal is raised')
-
-        # call the service of button
-        rospy.wait_for_service('/kill_board_interface/BUTTON_FRONT_PORT')
-        try:
-            bfp = rospy.ServiceProxy(
-                '/kill_board_interface/BUTTON_FRONT_PORT', SetBool)
-
-        except rospy.ServiceException as e:
-            print "Service call failed: %s" % e
-
+        self.reset_update()
         bfp(True)  # set the button value to true
-        rospy.sleep(0.2)
-        self.assertEqual(self.AlarmListener.is_raised(), True,
-                         msg='BUTTON_FRONT_PORT raise not worked')
+        self.assert_raised()
 
-        bfp(False)  # shut down the button
-        # when we shut down the button, we also need to clear the computer
-        # alarm
+        self.reset_update()
         self.AlarmBroadcaster.clear_alarm()
-        rospy.sleep(0.2)
-        self.assertEqual(
-            self.AlarmListener.is_cleared(),
-            True,
-            msg='BUTTON_FRONT_PORT shutdown not worked. State = {}'.format(
-                self._current_alarm_state))
+        bfp(False)
+        self.assert_cleared()
 
-    def test_AD_button_aft_port(self):
-        self.assertEqual(self.AlarmListener.is_cleared(), True,
-                         msg='current state of kill signal is raised')
-        rospy.wait_for_service('/kill_board_interface/BUTTON_AFT_PORT')
-        try:
-            bap = rospy.ServiceProxy(
-                '/kill_board_interface/BUTTON_AFT_PORT', SetBool)
+    def test_3_buttons(self):
+        '''
+        Tests each of the four buttons
+        '''
+        for button in ['FRONT_PORT', 'AFT_PORT', 'FRONT_STARBOARD', 'AFT_STARBOARD']:
+            self._test_button('FRONT_PORT')
 
-        except rospy.ServiceException as e:
-            print "Service call failed: %s" % e
-
-        bap(True)
-        rospy.sleep(0.2)
-        self.assertEqual(self.AlarmListener.is_raised(), True,
-                         msg='BUTTTON_AFT_PORT raise not worked')
-
-        bap(False)
-        self.AlarmBroadcaster.clear_alarm()
-        rospy.sleep(0.2)
-        self.assertEqual(
-            self.AlarmListener.is_cleared(),
-            True,
-            msg='BUTTTON_AFT_PORT shutdown not worked. State = {}'.format(
-                self._current_alarm_state))
-
-    def test_AE_button_front_starboard(self):
-        self.assertEqual(self.AlarmListener.is_cleared(), True,
-                         msg='current state of kill signal is raised')
-        rospy.wait_for_service('/kill_board_interface/BUTTON_FRONT_STARBOARD')
-        try:
-            bfs = rospy.ServiceProxy(
-                '/kill_board_interface/BUTTON_FRONT_STARBOARD', SetBool)
-
-        except rospy.ServiceException as e:
-            print "Service call failed: %s" % e
-
-        bfs(True)
-        rospy.sleep(0.2)
-        self.assertEqual(self.AlarmListener.is_raised(), True,
-                         msg='BUTTON_FRONT_STARBOARD raise not worked')
-
-        bfs(False)
-        self.AlarmBroadcaster.clear_alarm()
-        rospy.sleep(0.2)
-        self.assertEqual(
-            self.AlarmListener.is_cleared(),
-            True,
-            msg='BUTTON_FRONT_STARBOARD shutdown not worked. State = {}'.format(
-                self._current_alarm_state))
-
-    def test_AF_button_aft_starboard(self):
-        self.assertEqual(self.AlarmListener.is_cleared(), True,
-                         msg='current state of kill signal is raised')
-        rospy.wait_for_service('/kill_board_interface/BUTTON_AFT_STARBOARD')
-        try:
-            bas = rospy.ServiceProxy(
-                '/kill_board_interface/BUTTON_AFT_STARBOARD', SetBool)
-
-        except rospy.ServiceException as e:
-            print "Service call failed: %s" % e
-
-        bas(True)
-        rospy.sleep(0.2)
-        self.assertEqual(self.AlarmListener.is_raised(), True,
-                         msg='BUTTON_AFT_STARBOARD raise not worked')
-
-        bas(False)
-        self.AlarmBroadcaster.clear_alarm()
-        rospy.sleep(0.2)
-        self.assertEqual(
-            self.AlarmListener.is_cleared(),
-            True,
-            msg='BUTTON_AFT_STARBOARD shutdown not worked. State = {}'.format(
-                self._current_alarm_state))
-
-    def test_AG_remote(self):
-        self.assertEqual(self.AlarmListener.is_cleared(), True,
-                         msg='current state of kill signal is raised')
+    def test_4_remote(self):
+        '''
+        Tests remote kill by publishing hearbeat, stopping and checking alarm is raised, then
+        publishing hearbeat again to ensure alarm gets cleared.
+        '''
         # publishing msg to network
         pub = rospy.Publisher('/network', Header, queue_size=10)
         rate = rospy.Rate(10)
-        t_end = rospy.Time.now() + rospy.Duration(3)
+        t_end = rospy.Time.now() + rospy.Duration(1)
         while rospy.Time.now() < t_end:
-            hello_header = Header()
-            hello_header.stamp = rospy.Time.now()
-            rospy.loginfo(hello_header)
-            pub.publish(hello_header)
+            h = Header()
+            h.stamp = rospy.Time.now()
+            pub.publish(h)
             rate.sleep()
 
-        self.assertEqual(
-            self.AlarmListener.is_cleared(),
-            True,
-            msg='REMOTE shutdown not worked. State = {}'.format(
-                self._current_alarm_state))
+        self.reset_update()
+        rospy.sleep(8.5)  # Wait slighly longer then the timeout on killboard
+        self.assert_raised()
 
-        # stop sending the msg, the remote alarm will raise when stop recieving
-        # the msg for 8 secs
-        rospy.sleep(8.2)
-
-        self.assertEqual(
-            self.AlarmListener.is_raised(),
-            True,
-            msg='REMOTE raised not worked. State = {}'.format(
-                self._current_alarm_state))
+        self.reset_update()
+        t_end = rospy.Time.now() + rospy.Duration(1)
+        while rospy.Time.now() < t_end:
+            h = Header()
+            h.stamp = rospy.Time.now()
+            pub.publish(h)
+            rate.sleep()
+        self.AlarmBroadcaster.clear_alarm()
+        self.assert_cleared()
 
 
 if __name__ == "__main__":
