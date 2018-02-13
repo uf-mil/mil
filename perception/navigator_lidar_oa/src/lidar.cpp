@@ -3,16 +3,16 @@
 // ROS Lidar Node for RobotX
 //
 ////////////////////////////////////////////////////////////
+#include <dynamic_reconfigure/client.h>
 #include <interactive_markers/interactive_marker_server.h>
 #include <interactive_markers/menu_handler.h>
 #include <mil_msgs/PoseTwistStamped.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Odometry.h>
-#include <dynamic_reconfigure/client.h>
-#include <navigator_tools/BoundsConfig.h>
 #include <navigator_msgs/ObjectDBQuery.h>
 #include <navigator_msgs/PerceptionObject.h>
 #include <navigator_msgs/PerceptionObjectArray.h>
+#include <navigator_tools/BoundsConfig.h>
 #include <ros/console.h>
 #include <ros/ros.h>
 #include <sensor_msgs/ChannelFloat32.h>
@@ -154,7 +154,7 @@ void cb_velodyne(const sensor_msgs::PointCloud2ConstPtr &pcloud)
 
   // Detect objects
   std::vector<objectMessage> objects;
-  std::vector<std::vector<int> > cc = ConnectedComponents(ogrid, objects, MIN_OBJECT_SEPERATION_DISTANCE);
+  std::vector<std::vector<int>> cc = ConnectedComponents(ogrid, objects, MIN_OBJECT_SEPERATION_DISTANCE);
 
   // Deflate(erode) ogrid before sending out to ROS
   // ogrid.deflateBinary();
@@ -740,7 +740,7 @@ void markerCallBack(const visualization_msgs::InteractiveMarkerFeedbackConstPtr 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Entry point to code
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void BoundsUpdate(const navigator_tools::BoundsConfig& config)
+void BoundsUpdate(const navigator_tools::BoundsConfig &config)
 {
   ROS_INFO("BOUNDS UPDATED");
   BOUNDARY_CORNER_1(0) = config.x1;
@@ -801,8 +801,8 @@ int main(int argc, char *argv[])
 
   // Check for bounds from parameter server on startup
   ros::NodeHandle bounds_nh("/bounds_server");
-  boundsClient.reset(new dynamic_reconfigure::Client<navigator_tools::BoundsConfig>("/bounds_server", bounds_nh,
-    &BoundsUpdate));
+  boundsClient.reset(
+      new dynamic_reconfigure::Client<navigator_tools::BoundsConfig>("/bounds_server", bounds_nh, &BoundsUpdate));
 
   // Interactive Marker Menu Setup
   markerServer = new interactive_markers::InteractiveMarkerServer("/unclassified_markers", "", false);

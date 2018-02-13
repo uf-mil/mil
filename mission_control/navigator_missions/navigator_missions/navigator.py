@@ -127,7 +127,7 @@ class Navigator(BaseTask):
             fprint("Waiting for odom...", title="NAVIGATOR")
             odom = util.wrap_time_notice(cls._odom_sub.get_next_message(), 2, "Odom listener")
             enu_odom = util.wrap_time_notice(cls._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener")
-            #bounds = util.wrap_time_notice(cls._make_bounds(), 2, "Bounds creation")
+            # bounds = util.wrap_time_notice(cls._make_bounds(), 2, "Bounds creation")
             yield defer.gatherResults([odom, enu_odom])  # Wait for all those to finish
 
     @property
