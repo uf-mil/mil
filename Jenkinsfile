@@ -39,7 +39,7 @@ dockerNode(image: 'uf-mil:navigator') {
 				fi
 			done
 			if (( ${#FILES[@]} > 0 )); then
-				echo "The C++ following files are not formatted correctly: ${FILES[@]}"
+				echo "The following C++ files are not formatted correctly: ${FILES[@]}"
 				exit 1
 			fi
 		'''
