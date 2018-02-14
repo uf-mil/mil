@@ -1,11 +1,12 @@
-# Given the coordinates in one of these frames, return the same coordinate
-#    in all three
+# Used by coordinate conversion server to transform points to 3 different earth/GPS related frames
 
-string        frame               # lla, enu, or ecef
-float64[3]    point
+string LLA=lla    # Longitude, Latitude, Altitude frame
+string ENU=enu    # East, North, Up frame (relative to NaviGator start)
+string ECEF=ecef  # Earth Centered, Earth Fixed frame
+
+string frame      # frame which input points are coming from
+string to_frame   # frame to convert input points to
+geometry_msgs/Point[] points # points to convert
 ---
-float64[3]    enu
-float64[3]    ecef
-float64[3]    lla
-
-float64       distance
+geometry_msgs/Point[] converted  # transformed points in to_frame, len(converted) == len(points) if success, else see message
+string message                   # error message if poitns were not transformed succesfully

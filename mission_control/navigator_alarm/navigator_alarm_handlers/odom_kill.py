@@ -15,7 +15,7 @@ class OdomKill(HandlerBase):
     '''
 
     alarm_name = 'odom-kill'
-    TIMEOUT_SECONDS = 0.1  # Max time delta between Odometry messages before alarm is raised
+    TIMEOUT_SECONDS = 1.0  # Max time delta between Odometry messages before alarm is raised
     MAX_DISTANCE_METERS = 0.5  # Max distance in position between Odometry messages before alarm is raised
 
     def __init__(self):
@@ -37,7 +37,7 @@ class OdomKill(HandlerBase):
         position = rosmsg_to_numpy(odom.pose.pose.position)
         if self.last_position is not None:
             jump = np.linalg.norm(position - self.last_position)
-            if jump > self.MAX_JUMP and not self._killed:
+            if jump > self.MAX_JUMP and not self._raised:
                 self._raised = True  # Avoid raising multiple times
                 rospy.logwarn('ODOM DISCONTINUITY DETECTED')
                 self.ab.raise_alarm(problem_description='ODOM DISCONTINUITY DETECTED. JUMPED {} METERS'.format(jump),

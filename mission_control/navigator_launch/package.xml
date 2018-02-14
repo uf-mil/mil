@@ -44,6 +44,9 @@
   <run_depend>navigator_gui</run_depend>
   <run_depend>diagnostic_aggregator</run_depend>
   <run_depend>topic_tools</run_depend>
+  <run_depend>navigator_battery_monitor</run_depend>
+  <run_depend>usb_cam</run_depend>
+  <run_depend>navigator_missions</run_depend>
   <export>
   </export>
 </package>

@@ -1,6 +1,6 @@
 <launch>
   <arg name="front_left"  default="True" />
-  <arg name="front_right" default="True" />
+  <arg name="front_right" default="False" />
   <!-- Nodelet Manager Process -->
   <group ns="camera/front">
     <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager"

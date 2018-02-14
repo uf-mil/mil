@@ -88,7 +88,7 @@ class BatteryMonitor():
         if (len(self.supply_voltages) > 0):
             self.voltage = sum(self.supply_voltages) / \
                 len(self.supply_voltages)
-        self.pub_voltage.publish(self.voltage)
+            self.pub_voltage.publish(self.voltage)
 
 
 if __name__ == "__main__":
