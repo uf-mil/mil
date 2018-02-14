@@ -5,6 +5,7 @@ import numpy as np
 import rospy
 import matplotlib.pyplot as plt
 import sys
+from sys import argv
 import tf.transformations as trns
 import ast
 import mil_tools
@@ -32,7 +33,7 @@ class Navsim():
 
         rospy.init_node('2Dsim')
         self.des_force = np.array([0, 0, 0])
-
+        self.gui = rospy.get_param("gui")
         self.world_frame_id = "/enu"
         self.body_frame_id = "/base_link"
         self.state = None
@@ -41,7 +42,7 @@ class Navsim():
         self.last_absodom = None
         initial_lla = ast.literal_eval(rospy.get_param("start_pos"))
         # print(intial_lla)
-        self.last_ecef = gps.ecef_from_latlongheight(*np.radians(initial_lla))
+        # self.last_ecef = gps.ecef_from_latlongheight(*np.radians(initial_lla))
         self.last_enu = None
         self.state_sub_max_prd = rospy.Duration(1 / 100)
         self.last_state_sub_time = rospy.Time.now()
@@ -106,15 +107,15 @@ class Navsim():
         if self.last_absodom is not None:
             self.absodompublisher.publish(self.last_absodom)
 
-    def enu_to_ecef(self, enu):
-        if self.last_enu is None:
-            return self.last_ecef
+    # def enu_to_ecef(self, enu):
+    #     if self.last_enu is None:
+    #         return self.last_ecef
 
-        enu_vector = enu - self.last_enu[0]
-        ecef_vector = gps.enu_from_ecef_tf(self.last_ecef).T.dot(enu_vector)
-        ecef = ecef_vector + self.last_ecef
+    #     enu_vector = enu - self.last_enu[0]
+    #     ecef_vector = gps.enu_from_ecef_tf(self.last_ecef).T.dot(enu_vector)
+    #     ecef = ecef_vector + self.last_ecef
 
-        return ecef
+        # return ecef
 
     def pack_odom(self, pose, twist):
         """
@@ -140,7 +141,7 @@ class Navsim():
 
         self.last_state_sub_time = rospy.Time.now()
 
-        self.last_ecef = self.enu_to_ecef(self.pose)
+        # self.last_ecef = self.enu_to_ecef(self.pose)
         self.last_enu = self.pose
         # print(self.last_enu)
         self.last_odom = self.pack_odom(self.pose, self.twist)
@@ -157,17 +158,18 @@ if __name__ == '__main__':
     # Prep
 
     # duration =
-    plt.ion()
-
-    fig1 = plt.figure()
-    fig1.suptitle('State Evolution', fontsize=20)
-    fig1rows = 2
-    fig1cols = 4
 
     navsim = Navsim(pose0=np.array(
-        [0, 0, np.pi / 2]), wind=lambda t: np.array([5, 0, 0]))
-    # dt = 0.05
+        [0, 0, np.pi / 2]))
 
+    if navsim.gui == True:
+        plt.ion()
+
+        fig1 = plt.figure()
+        fig1.suptitle('State Evolution', fontsize=20)
+        fig1rows = 2
+        fig1cols = 4
+    # print(navsim.gui)
     dt = .05
 
     while not rospy.is_shutdown():
@@ -187,64 +189,64 @@ if __name__ == '__main__':
         times = np.asarray(navsim.times)
 
         # Figure for individual results
+        if navsim.gui == True:
+            # Plot x position
+            ax1 = fig1.add_subplot(fig1rows, fig1cols, 1)
+            ax1.set_title('East Position (m)', fontsize=16)
+            ax1.plot(times, poses[:, 0], 'k')
+            ax1.grid(True)
 
-        # Plot x position
-        ax1 = fig1.add_subplot(fig1rows, fig1cols, 1)
-        ax1.set_title('East Position (m)', fontsize=16)
-        ax1.plot(times, poses[:, 0], 'k')
-        ax1.grid(True)
+            # Plot y position
+            ax1 = fig1.add_subplot(fig1rows, fig1cols, 2)
+            ax1.set_title('North Position (m)', fontsize=16)
+            ax1.plot(times, poses[:, 1], 'k')
+            ax1.grid(True)
 
-        # Plot y position
-        ax1 = fig1.add_subplot(fig1rows, fig1cols, 2)
-        ax1.set_title('North Position (m)', fontsize=16)
-        ax1.plot(times, poses[:, 1], 'k')
-        ax1.grid(True)
+            # Plot yaw position
+            ax1 = fig1.add_subplot(fig1rows, fig1cols, 3)
+            ax1.set_title('Heading (deg)', fontsize=16)
+            ax1.plot(times, np.rad2deg(poses[:, 2]), 'k')
+            ax1.grid(True)
 
-        # Plot yaw position
-        ax1 = fig1.add_subplot(fig1rows, fig1cols, 3)
-        ax1.set_title('Heading (deg)', fontsize=16)
-        ax1.plot(times, np.rad2deg(poses[:, 2]), 'k')
-        ax1.grid(True)
+            # Plot control efforts
+            ax1 = fig1.add_subplot(fig1rows, fig1cols, 4)
+            ax1.set_title('Wrench (N, N, N*m)', fontsize=16)
+            ax1.plot(times, wrenches[:, 0], 'b',
+                     times, wrenches[:, 1], 'g',
+                     times, wrenches[:, 2], 'r')
+            ax1.grid(True)
 
-        # Plot control efforts
-        ax1 = fig1.add_subplot(fig1rows, fig1cols, 4)
-        ax1.set_title('Wrench (N, N, N*m)', fontsize=16)
-        ax1.plot(times, wrenches[:, 0], 'b',
-                 times, wrenches[:, 1], 'g',
-                 times, wrenches[:, 2], 'r')
-        ax1.grid(True)
+            # Plot x velocity
+            ax1 = fig1.add_subplot(fig1rows, fig1cols, 5)
+            ax1.set_title('Surge (m/s)', fontsize=16)
+            ax1.plot(times, twists[:, 0], 'k')
+            ax1.set_xlabel('Time (s)')
+            ax1.grid(True)
 
-        # Plot x velocity
-        ax1 = fig1.add_subplot(fig1rows, fig1cols, 5)
-        ax1.set_title('Surge (m/s)', fontsize=16)
-        ax1.plot(times, twists[:, 0], 'k')
-        ax1.set_xlabel('Time (s)')
-        ax1.grid(True)
+            # Plot y velocity
+            ax1 = fig1.add_subplot(fig1rows, fig1cols, 6)
+            ax1.set_title('Sway (m/s)', fontsize=16)
+            ax1.plot(times, twists[:, 1], 'k')
+            ax1.set_xlabel('Time (s)')
+            ax1.grid(True)
 
-        # Plot y velocity
-        ax1 = fig1.add_subplot(fig1rows, fig1cols, 6)
-        ax1.set_title('Sway (m/s)', fontsize=16)
-        ax1.plot(times, twists[:, 1], 'k')
-        ax1.set_xlabel('Time (s)')
-        ax1.grid(True)
+            # Plot yaw velocity
+            ax1 = fig1.add_subplot(fig1rows, fig1cols, 7)
+            ax1.set_title('Yaw (deg/s)', fontsize=16)
+            ax1.plot(times, np.rad2deg(twists[:, 2]), 'k')
+            ax1.set_xlabel('Time (s)')
+            ax1.grid(True)
 
-        # Plot yaw velocity
-        ax1 = fig1.add_subplot(fig1rows, fig1cols, 7)
-        ax1.set_title('Yaw (deg/s)', fontsize=16)
-        ax1.plot(times, np.rad2deg(twists[:, 2]), 'k')
-        ax1.set_xlabel('Time (s)')
-        ax1.grid(True)
+            # Plot parametric
+            ax1 = fig1.add_subplot(fig1rows, fig1cols, 8)
+            ax1.set_title('Position (deg/s)', fontsize=16)
+            ax1.scatter(poses[0, 0], poses[0, 1])
+            ax1.plot(poses[:, 0], poses[:, 1], 'k')
+            ax1.set_xlabel('Eastness (m)')
+            ax1.set_ylabel('Northness (m)')
+            ax1.grid(True)
 
-        # Plot parametric
-        ax1 = fig1.add_subplot(fig1rows, fig1cols, 8)
-        ax1.set_title('Position (deg/s)', fontsize=16)
-        ax1.scatter(poses[0, 0], poses[0, 1])
-        ax1.plot(poses[:, 0], poses[:, 1], 'k')
-        ax1.set_xlabel('Eastness (m)')
-        ax1.set_ylabel('Northness (m)')
-        ax1.grid(True)
-
-        plt.pause(.1)
+            plt.pause(.1)
     # print(wrenches)
 
     rospy.spin()
