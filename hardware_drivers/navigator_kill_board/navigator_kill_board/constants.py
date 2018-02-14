@@ -100,4 +100,5 @@ constants = {
 	'DL': 0x0800, # Dpad Left (11),  or 0b0000100000000000
 	'DR': 0x1000, # Dpad Right (12), or 0b0001000000000000
 	'START': 0x0080, #Start (7),     or 0b0000000010000000
+    }
 }

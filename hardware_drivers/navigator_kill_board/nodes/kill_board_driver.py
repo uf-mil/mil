@@ -58,11 +58,11 @@ class KillInterface(object):
 	self.ctrl_msg_received = False
 	self.ctrl_msg_count = 0
 	self.sticks = {}
-	for stick in constant['CTRL_STICKS']:  # These are 3 signed 16-bit values for stick positions
+	for stick in constants['CTRL_STICKS']:  # These are 3 signed 16-bit values for stick positions
 	    self.sticks[stick] = 0x0000
 	self.sticks_temp = 0x0000
 	self.buttons = {}
-	for button in constant['CTRL_BUTTONS']:  # These are the button on/off states (16 possible inputs)
+	for button in constants['CTRL_BUTTONS']:  # These are the button on/off states (16 possible inputs)
 	    self.buttons[button] = False
 	self.buttons_temp = 0x0000
 
