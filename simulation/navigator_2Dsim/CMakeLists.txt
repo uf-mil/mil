@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(2dsim)
+project(navigator_2Dsim)
 catkin_package()
 
-add_executable(2dsim src/simulation/navigator_2Dsim/2dsim.py)
+# add_executable(sim2d src/simulation/navigator_2Dsim/sim2d.py)
 
 # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -Wall")
 # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")

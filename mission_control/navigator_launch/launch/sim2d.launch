@@ -14,6 +14,7 @@
         </include>
 
 
+
         <!-- Sets up the world and loads models -->
         <include file="$(find navigator_2Dsim)/launch/owl.launch">
             <arg name="gui" value="$(arg gui)"/>
