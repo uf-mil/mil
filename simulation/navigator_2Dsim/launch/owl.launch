@@ -1,11 +1,14 @@
 <launch>
 
 	<arg name="gui" default="False"/>
+	<arg name="wind" default="None"/>
+	<!-- kg, kg, kg*m^2 -->
 	<param name="inertia" value="[2000, 2000, 4000]" />
+	<!-- Drag coeffecients for x, y, z -->
 	<param name="drag" value="[1000, 2000, 2000]" />
 	<param name="start_pos" value="[29.534912, -82.303642, 0]"/>
 	<param name="gui" value="$(arg gui)"/>
-
+	<param name="wind" value="$(arg wind)"/>
 	<!--  <param name="mass" value="544" /> -->
 	
 	<node pkg="navigator_2Dsim" type="sim2d.py" name="sim2d" output="screen" />

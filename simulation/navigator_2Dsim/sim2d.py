@@ -29,32 +29,39 @@ from std_msgs.msg import Int32, String
 
 class Navsim():
 
-    def __init__(self, t=0, pose0=np.array([0, 0, 0]), twist0=np.array([0, 0, 0]), wind=None):
+    def __init__(self, t=0, pose0=np.array([0, 0, 0]), twist0=np.array([0, 0, 0])):
 
         rospy.init_node('2Dsim')
-        self.des_force = np.array([0, 0, 0])
+
+        self.wind = rospy.get_param("wind")
         self.gui = rospy.get_param("gui")
+        initial_lla = ast.literal_eval(rospy.get_param("start_pos"))
+
         self.world_frame_id = "/enu"
         self.body_frame_id = "/base_link"
         self.state = None
         self.get_ref = None
         self.last_odom = None
-        self.last_absodom = None
-        initial_lla = ast.literal_eval(rospy.get_param("start_pos"))
-        # print(intial_lla)
-        # self.last_ecef = gps.ecef_from_latlongheight(*np.radians(initial_lla))
-        self.last_enu = None
-        self.state_sub_max_prd = rospy.Duration(1 / 100)
-        self.last_state_sub_time = rospy.Time.now()
 
-        self.subscriber = rospy.Subscriber(
-            "/wrench/cmd", WrenchStamped, self.wrench_cb)
-        self.odompublisher = rospy.Publisher(
-            "/odom", Odometry, queue_size=1)
         self.poses = []
         self.wrenches = []
         self.times = []
         self.twists = []
+
+        # These variables are not currently being used but may be used with /absodom implementation
+        # self.last_ecef = gps.ecef_from_latlongheight(*np.radians(initial_lla))
+        # self.last_absodom = None
+
+        self.last_enu = None
+        self.state_sub_max_prd = rospy.Duration(1 / 100)
+        self.last_state_sub_time = rospy.Time.now()
+        # Takes in a wrench of forces and simulates their effect on the boat's
+        # position and orientation
+        self.subscriber = rospy.Subscriber(
+            "/wrench/cmd", WrenchStamped, self.wrench_cb)
+        # Publish new boat position
+        self.odompublisher = rospy.Publisher(
+            "/odom", Odometry, queue_size=1)
         # X, Y, and angle in world frame
         self.pose = np.float64(initial_lla)
         # X, Y, and rate of angle change in boat frame (Surge, Sway, yaw rate)
@@ -65,12 +72,13 @@ class Navsim():
         # Boat is longer than shorter, hence .5, 1, 1.
         self.drag = np.array(ast.literal_eval(
             rospy.get_param('drag')), dtype=np.float64)
+        # Desired force to get to a point
+        self.des_force = np.array([0, 0, 0])
+
         # Time in seconds
         self.t = t
         # Wind is a function of time that returns a wrench
-        if wind:
-            self.wind = wind
-        else:
+        if self.wind == "None":
             self.wind = lambda t: np.zeros(3, dtype=np.float64)
 
         rospy.Timer(rospy.Duration(1 / 100), self.publish_odom)
@@ -93,9 +101,6 @@ class Navsim():
         return posedot, twistdot
 
     def wrench_cb(self, msg):
-        ''' Grab new wrench
-                This is the 'b' in Ax = b
-        '''
         self.force = msg.wrench.force
         self.torque = msg.wrench.torque
         # Set desired force and torque as numpy array
@@ -104,18 +109,22 @@ class Navsim():
     def publish_odom(self, *args):
         if self.last_odom is not None:
             self.odompublisher.publish(self.last_odom)
-        if self.last_absodom is not None:
-            self.absodompublisher.publish(self.last_absodom)
+            # Absodom publishing not implemented in this version
+        # if self.last_absodom is not None:
+            # self.absodompublisher.publish(self.last_absodom)
+    '''
+    # This may be used later to implement publishing to /absodom
 
-    # def enu_to_ecef(self, enu):
-    #     if self.last_enu is None:
-    #         return self.last_ecef
+    def enu_to_ecef(self, enu):
+        if self.last_enu is None:
+            return self.last_ecef
 
-    #     enu_vector = enu - self.last_enu[0]
-    #     ecef_vector = gps.enu_from_ecef_tf(self.last_ecef).T.dot(enu_vector)
-    #     ecef = ecef_vector + self.last_ecef
+        enu_vector = enu - self.last_enu[0]
+        ecef_vector = gps.enu_from_ecef_tf(self.last_ecef).T.dot(enu_vector)
+        ecef = ecef_vector + self.last_ecef
 
-        # return ecef
+        return ecef
+    '''
 
     def pack_odom(self, pose, twist):
         """
@@ -157,11 +166,10 @@ if __name__ == '__main__':
     # coordinate conversion server
     # Prep
 
-    # duration =
-
     navsim = Navsim(pose0=np.array(
         [0, 0, np.pi / 2]))
 
+    # Setup the graphing if enabled. Only done once.
     if navsim.gui == True:
         plt.ion()
 
@@ -171,25 +179,29 @@ if __name__ == '__main__':
         fig1cols = 4
     # print(navsim.gui)
     dt = .05
+    rospy.sleep(5)
 
     while not rospy.is_shutdown():
-        navsim.poses.append(navsim.pose)
-        navsim.twists.append(navsim.twist)
-        navsim.times.append(navsim.t)
+
         # Increment sim
-        # wrench = controller.compute_wrench(navsim.pose, navsim.twist, goal_pose,
-        # goal_twist)
         navsim.state_cb()
         navsim.publish_odom()
         navsim.wrenches.append(navsim.des_force)
         navsim.step(dt, navsim.wrenches[-1])
-        poses = np.asarray(navsim.poses)
-        twists = np.asarray(navsim.twists)
-        wrenches = np.asarray(navsim.wrenches)
-        times = np.asarray(navsim.times)
 
         # Figure for individual results
         if navsim.gui == True:
+            # Create the lists needed to continually graph results
+            navsim.poses.append(navsim.pose)
+            navsim.twists.append(navsim.twist)
+            navsim.times.append(navsim.t)
+
+            # Convert them to np.arrays for easy graphing
+            poses = np.asarray(navsim.poses)
+            twists = np.asarray(navsim.twists)
+            wrenches = np.asarray(navsim.wrenches)
+            times = np.asarray(navsim.times)
+
             # Plot x position
             ax1 = fig1.add_subplot(fig1rows, fig1cols, 1)
             ax1.set_title('East Position (m)', fontsize=16)

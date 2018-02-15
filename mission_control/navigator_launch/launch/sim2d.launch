@@ -1,6 +1,7 @@
 <launch>
 
     <arg name="gui" default="False"/>
+    <arg name="wind" default="None"/>
 
     <!-- Launch Fake Shooter Service Provider -->
         <node pkg="navigator_shooter" type="ShooterControl.py" name="shooter_controller">
@@ -18,6 +19,7 @@
         <!-- Sets up the world and loads models -->
         <include file="$(find navigator_2Dsim)/launch/owl.launch">
             <arg name="gui" value="$(arg gui)"/>
+            <arg name="wind" value="$(arg wind)"/>
         </include>
 
         <!-- Connect to joystick if plugged in, otherwise spam annoying red text ;) -->
