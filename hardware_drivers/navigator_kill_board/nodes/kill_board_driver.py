@@ -57,6 +57,7 @@ class KillInterface(object):
 	self.joy_pub = rospy.Publisher("/joy_emergency", Joy, queue_size=1)
 	self.ctrl_msg_received = False
 	self.ctrl_msg_count = 0
+	self.ctrl_msg_timeout = 0
 	self.sticks = {}
 	for stick in constants['CTRL_STICKS']:  # These are 3 signed 16-bit values for stick positions
 	    self.sticks[stick] = 0x0000
@@ -107,9 +108,15 @@ class KillInterface(object):
 	# If the controller message start byte is received, next 8 bytes are the controller data
 	if msg == constants['CONTROLLER']:
 	    self.ctrl_msg_count = 8
+	    self.ctrl_msg_timeout = rospy.Time.now()
 	    return
 	# If receiving the controller message, record the byte as stick/button data
 	if (self.ctrl_msg_count > 0) and (self.ctrl_msg_count <= 8):
+	    # If 1 second has passed since the message began, timeout and report warning
+	    if rospy.Time.now() >= (self.ctrl_msg_timeout + rospy.Time(1)):
+		self.ctrl_msg_received = False
+		self.ctrl_msg_count = 0
+		rospy.logwarn('Timeout receiving controller message. Please disconnect controller.')
 	    if self.ctrl_msg_count > 2:  # The first 6 bytes in the message are stick data bytes
 		if (self.ctrl_msg_count % 2) == 0:  # Even number byte: first byte in data word
 		    self.sticks_temp = (msg << 8)
