@@ -140,7 +140,7 @@ class Navsim():
         # print(msg.pose.pose.position.z)
         quat = trns.quaternion_from_euler(0, 0, pose[2])
         msg.pose.pose.orientation = mil_tools.numpy_to_quaternion(quat)
-        msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.linear.z = twist
+        msg.twist.twist.linear.x, msg.twist.twist.linear.y = twist[0:2]
         msg.twist.twist.angular.z = twist[2]
         return msg
 
