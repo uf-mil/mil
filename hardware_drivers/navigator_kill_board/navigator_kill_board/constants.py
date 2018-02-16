@@ -86,19 +86,19 @@ constants = {
         'GREEN_RESPONSE': '\x52',
     },
     'CONTROLLER': '\xA0',  # Signifies the start of a controller message (joysticks & buttons)
-			   # Immediately followed by 8 bytes: 6 joystick bytes, 2 button bytes
-			   # Joystick message is 3 signed ints from -2048 to 2047
-			   # Button message is 16 bits signifying up to 16 buttons on/off
-    'CTRL_STICKS': ['UD', 'LR', 'TQ'],  #Up/Down, Left/Right, Torque
+                           # Immediately followed by 8 bytes: 6 joystick bytes, 2 button bytes
+                           # Joystick message is 3 signed ints from -2048 to 2047
+                           # Button message is 16 bits signifying up to 16 buttons on/off
+    'CTRL_STICKS': ['UD', 'LR', 'TQ'],  # Up/Down, Left/Right, Torque
     'CTRL_BUTTONS': ['X', 'Y', 'A', 'B', 'DL', 'DR', 'START'],
-    'CTRL_BUTTONS_VALUES': {	# Amount of buttons and labels will be changed in the future
-		  		# This currently mimics xbox controller labels and numbering
-	'X': '\x00\x04', # Button 2    	 
-	'Y': '\x00\x08', # Button 3    	 
-	'A': '\x00\x01', # Button 0  	 
-	'B': '\x00\x02', # Button 1	 
-	'DL': '\x08\x00', # Dpad Left (Button 11)  	 
-	'DR': '\x10\x00', # Dpad Right (Button 12) 
-	'START': '\x00\x80', #Start (Button 7)     	 
+    'CTRL_BUTTONS_VALUES': {  # Amount of buttons and labels will be changed in the future
+                              # This currently mimics xbox controller labels and numbering
+        'X': '\x00\x04',  # Button 2
+        'Y': '\x00\x08',  # Button 3
+        'A': '\x00\x01',  # Button 0
+        'B': '\x00\x02',  # Button 1
+        'DL': '\x08\x00',  # Dpad Left (Button 11)
+        'DR': '\x10\x00',  # Dpad Right (Button 12)
+        'START': '\x00\x80',  #Start (Button 7)
     }
 }

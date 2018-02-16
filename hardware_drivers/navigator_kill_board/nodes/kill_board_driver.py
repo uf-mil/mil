@@ -55,18 +55,18 @@ class KillInterface(object):
 
         self.hw_kill_broadcaster = AlarmBroadcaster('hw-kill')
 
-	self.joy_pub = rospy.Publisher("/joy_emergency", Joy, queue_size=1)
-	self.ctrl_msg_received = False
-	self.ctrl_msg_count = 0
-	self.ctrl_msg_timeout = 0
-	self.sticks = {}
-	for stick in constants['CTRL_STICKS']:  # These are 3 signed 16-bit values for stick positions
-	    self.sticks[stick] = 0x0000
-	self.sticks_temp = 0x0000
-	self.buttons = {}
-	for button in constants['CTRL_BUTTONS']:  # These are the button on/off states (16 possible inputs)
-	    self.buttons[button] = False
-	self.buttons_temp = 0x0000
+        self.joy_pub = rospy.Publisher("/joy_emergency", Joy, queue_size=1)
+        self.ctrl_msg_received = False
+        self.ctrl_msg_count = 0
+        self.ctrl_msg_timeout = 0
+        self.sticks = {}
+        for stick in constants['CTRL_STICKS']:  # These are 3 signed 16-bit values for stick positions
+            self.sticks[stick] = 0x0000
+        self.sticks_temp = 0x0000
+        self.buttons = {}
+        for button in constants['CTRL_BUTTONS']:  # These are the button on/off states (16 possible inputs)
+            self.buttons[button] = False
+        self.buttons_temp = 0x0000
 
         AlarmListener('hw-kill', self.hw_kill_alarm_cb)
         AlarmListener('kill', self.kill_alarm_cb)
@@ -97,51 +97,52 @@ class KillInterface(object):
     def update_ros(self):
         self.update_hw_kill()
         self.publish_diagnostics()
-	if self.ctrl_msg_received == True:
-	    self.publish_joy()
-	    self.ctrl_msg_received = False
+        if self.ctrl_msg_received is True:
+            self.publish_joy()
+            self.ctrl_msg_received = False
 
     def handle_byte(self, msg):
         '''
         React to a byte recieved from the board. This could by an async update of a kill status or
         a known response to a recent request
         '''
-	# If the controller message start byte is received, next 8 bytes are the controller data
-	if msg == constants['CONTROLLER']:
-	    self.ctrl_msg_count = 8
-	    self.ctrl_msg_timeout = rospy.Time.now()
-	    return
-	# If receiving the controller message, record the byte as stick/button data
-	if (self.ctrl_msg_count > 0) and (self.ctrl_msg_count <= 8):
-	    # If 1 second has passed since the message began, timeout and report warning
-	    if (rospy.Time.now() - self.ctrl_msg_timeout) >= rospy.Duration(1):
-		self.ctrl_msg_received = False
-		self.ctrl_msg_count = 0
-		rospy.logwarn('Timeout receiving controller message. Please disconnect controller.')
-	    if self.ctrl_msg_count > 2:  # The first 6 bytes in the message are stick data bytes
-		if (self.ctrl_msg_count % 2) == 0:  # Even number byte: first byte in data word
-		    self.sticks_temp = (int(msg.encode("hex"), 16) << 8)
-		else:  # Odd number byte: combine two bytes into a stick's data word
-		    self.sticks_temp += int(msg.encode("hex"), 16)
-		    if (self.ctrl_msg_count > 6):
-			self.sticks['UD'] = self.sticks_temp
-		    elif (self.ctrl_msg_count > 4):
-			self.sticks['LR'] = self.sticks_temp
-		    else:
-			self.sticks['TQ'] = self.sticks_temp
-		    self.sticks_temp = 0x0000
-	    else:  # The last 2 bytes are button data bytes
-		if (self.ctrl_msg_count % 2) == 0:
-		    self.buttons_temp = (int(msg.encode("hex"), 16) << 8)
-		else:  # Combine two bytes into the button data word
-		    self.buttons_temp += int(msg.encode("hex"), 16)
-		    for button in self.buttons: # Each of the 16 bits represents a button on/off state
-			self.buttons[button] = (self.buttons_temp & int(constants['CTRL_BUTTONS_VALUES'][button].encode("hex"), 16)) == int(constants['CTRL_BUTTONS_VALUES'][button].encode("hex"), 16)
-		    self.buttons_temp = 0x0000
-		    self.ctrl_msg_received = True # After receiving last byte, trigger joy update
-	    self.ctrl_msg_count -= 1
-	    return
-	# If a response has been recieved to a requested status (button, remove, etc), update internal state
+        # If the controller message start byte is received, next 8 bytes are the controller data
+        if msg == constants['CONTROLLER']:
+            self.ctrl_msg_count = 8
+            self.ctrl_msg_timeout = rospy.Time.now()
+            return
+        # If receiving the controller message, record the byte as stick/button data
+        if (self.ctrl_msg_count > 0) and (self.ctrl_msg_count <= 8):
+            # If 1 second has passed since the message began, timeout and report warning
+            if (rospy.Time.now() - self.ctrl_msg_timeout) >= rospy.Duration(1):
+                self.ctrl_msg_received = False
+                self.ctrl_msg_count = 0
+                rospy.logwarn('Timeout receiving controller message. Please disconnect controller.')
+            if self.ctrl_msg_count > 2:  # The first 6 bytes in the message are stick data bytes
+                if (self.ctrl_msg_count % 2) == 0:  # Even number byte: first byte in data word
+                    self.sticks_temp = (int(msg.encode("hex"), 16) << 8)
+                else:  # Odd number byte: combine two bytes into a stick's data word
+                    self.sticks_temp += int(msg.encode("hex"), 16)
+                    if (self.ctrl_msg_count > 6):
+                        self.sticks['UD'] = self.sticks_temp
+                    elif (self.ctrl_msg_count > 4):
+                        self.sticks['LR'] = self.sticks_temp
+                    else:
+                        self.sticks['TQ'] = self.sticks_temp
+                    self.sticks_temp = 0x0000
+            else:  # The last 2 bytes are button data bytes
+                if (self.ctrl_msg_count % 2) == 0:
+                    self.buttons_temp = (int(msg.encode("hex"), 16) << 8)
+                else:  # Combine two bytes into the button data word
+                    self.buttons_temp += int(msg.encode("hex"), 16)
+                    for button in self.buttons:  # Each of the 16 bits represents a button on/off state
+                        button_check = int(constants['CTRL_BUTTONS_VALUES'][button].encode("hex"), 16)
+                        self.buttons[button] = ((self.buttons_temp & button_check) == button_check)
+                    self.buttons_temp = 0x0000
+                    self.ctrl_msg_received = True  # After receiving last byte, trigger joy update
+            self.ctrl_msg_count -= 1
+            return
+        # If a response has been recieved to a requested status (button, remove, etc), update internal state
         if self.last_request is not None:
             if msg == constants['RESPONSE_FALSE']:
                 self.board_status[self.last_request] = False
@@ -235,28 +236,28 @@ class KillInterface(object):
         self.diagnostics_pub.publish(msg)
 
     def publish_joy(self):
-	'''
-	Publishes current stick/button state as a Joy object, to be handled by navigator_emergency.py node
-	'''
-	current_joy = Joy()
-	current_joy.axes.extend([0]*4)
-	current_joy.buttons.extend([0]*16)
-	for stick in self.sticks:
-	    if self.sticks[stick] >= 0x8000:  # Convert 2's complement hex to signed decimal if negative
-		self.sticks[stick] -= 0x10000
-	current_joy.axes[0] = np.float32(self.sticks['UD']) / 2048
-	current_joy.axes[1] = np.float32(self.sticks['LR']) / 2048
-	current_joy.axes[3] = np.float32(self.sticks['TQ']) / 2048
-	current_joy.buttons[7] = np.int32(self.buttons['START'])
-	current_joy.buttons[3] = np.int32(self.buttons['Y'])
-	current_joy.buttons[2] = np.int32(self.buttons['X'])
-	current_joy.buttons[0] = np.int32(self.buttons['A'])
-	current_joy.buttons[1] = np.int32(self.buttons['B'])
-	current_joy.buttons[11] = np.int32(self.buttons['DL'])  # Dpad Left
-	current_joy.buttons[12] = np.int32(self.buttons['DR'])  # Dpad Right
-	current_joy.header.frame_id = "/base_link"
-	current_joy.header.stamp = rospy.Time.now()
-	self.joy_pub.publish(current_joy)
+        '''
+        Publishes current stick/button state as a Joy object, to be handled by navigator_emergency.py node
+        '''
+        current_joy = Joy()
+        current_joy.axes.extend([0] * 4)
+        current_joy.buttons.extend([0] * 16)
+        for stick in self.sticks:
+            if self.sticks[stick] >= 0x8000:  # Convert 2's complement hex to signed decimal if negative
+                self.sticks[stick] -= 0x10000
+        current_joy.axes[0] = np.float32(self.sticks['UD']) / 2048
+        current_joy.axes[1] = np.float32(self.sticks['LR']) / 2048
+        current_joy.axes[3] = np.float32(self.sticks['TQ']) / 2048
+        current_joy.buttons[7] = np.int32(self.buttons['START'])
+        current_joy.buttons[3] = np.int32(self.buttons['Y'])
+        current_joy.buttons[2] = np.int32(self.buttons['X'])
+        current_joy.buttons[0] = np.int32(self.buttons['A'])
+        current_joy.buttons[1] = np.int32(self.buttons['B'])
+        current_joy.buttons[11] = np.int32(self.buttons['DL'])  # Dpad Left
+        current_joy.buttons[12] = np.int32(self.buttons['DR'])  # Dpad Right
+        current_joy.header.frame_id = "/base_link"
+        current_joy.header.stamp = rospy.Time.now()
+        self.joy_pub.publish(current_joy)
 
     def update_hw_kill(self):
         '''
