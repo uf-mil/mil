@@ -9,6 +9,7 @@ from ros_alarms import AlarmBroadcaster, AlarmListener
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from navigator_kill_board import constants
 
+import numpy as np
 from sensor_msgs.msg import Joy
 
 lock = threading.Lock()
@@ -113,15 +114,15 @@ class KillInterface(object):
 	# If receiving the controller message, record the byte as stick/button data
 	if (self.ctrl_msg_count > 0) and (self.ctrl_msg_count <= 8):
 	    # If 1 second has passed since the message began, timeout and report warning
-	    if rospy.Time.now() >= (self.ctrl_msg_timeout + rospy.Time(1)):
+	    if (rospy.Time.now() - self.ctrl_msg_timeout) >= rospy.Duration(1):
 		self.ctrl_msg_received = False
 		self.ctrl_msg_count = 0
 		rospy.logwarn('Timeout receiving controller message. Please disconnect controller.')
 	    if self.ctrl_msg_count > 2:  # The first 6 bytes in the message are stick data bytes
 		if (self.ctrl_msg_count % 2) == 0:  # Even number byte: first byte in data word
-		    self.sticks_temp = (msg << 8)
+		    self.sticks_temp = (int(msg.encode("hex"), 16) << 8)
 		else:  # Odd number byte: combine two bytes into a stick's data word
-		    self.sticks_temp += msg
+		    self.sticks_temp += int(msg.encode("hex"), 16)
 		    if (self.ctrl_msg_count > 6):
 			self.sticks['UD'] = self.sticks_temp
 		    elif (self.ctrl_msg_count > 4):
@@ -131,14 +132,11 @@ class KillInterface(object):
 		    self.sticks_temp = 0x0000
 	    else:  # The last 2 bytes are button data bytes
 		if (self.ctrl_msg_count % 2) == 0:
-		    self.buttons_temp = (msg << 8)
+		    self.buttons_temp = (int(msg.encode("hex"), 16) << 8)
 		else:  # Combine two bytes into the button data word
-		    self.buttons_temp += msg
+		    self.buttons_temp += int(msg.encode("hex"), 16)
 		    for button in self.buttons: # Each of the 16 bits represents a button on/off state
-			if (self.buttons_temp & constants['CTRL_BUTTONS_VALUES'][button]) == constants['CTRL_BUTTONS_VALUES'][button]:
-			    self.buttons[button] = True
-			else:
-			    self.buttons[button] = False
+			self.buttons[button] = (self.buttons_temp & int(constants['CTRL_BUTTONS_VALUES'][button].encode("hex"), 16)) == int(constants['CTRL_BUTTONS_VALUES'][button].encode("hex"), 16)
 		    self.buttons_temp = 0x0000
 		    self.ctrl_msg_received = True # After receiving last byte, trigger joy update
 	    self.ctrl_msg_count -= 1
@@ -241,21 +239,21 @@ class KillInterface(object):
 	Publishes current stick/button state as a Joy object, to be handled by navigator_emergency.py node
 	'''
 	current_joy = Joy()
-	current_joy.axes.resize(4)
-	current_joy.buttons.resize(13)
+	current_joy.axes.extend([0]*4)
+	current_joy.buttons.extend([0]*16)
 	for stick in self.sticks:
 	    if self.sticks[stick] >= 0x8000:  # Convert 2's complement hex to signed decimal if negative
 		self.sticks[stick] -= 0x10000
-	current_joy.axes[0] = self.sticks['UD']
-	current_joy.axes[1] = self.sticks['LR']
-	current_joy.axes[3] = self.sticks['TQ']
-	current_joy.buttons[7] = self.buttons['START']
-	current_joy.buttons[3] = self.buttons['Y']
-	current_joy.buttons[2] = self.buttons['X']
-	current_joy.buttons[0] = self.buttons['A']
-	current_joy.buttons[1] = self.buttons['B']
-	current_joy.buttons[11] = self.buttons['DL']  # Dpad Left
-	current_joy.buttons[12] = self.buttons['DR']  # Dpad Right
+	current_joy.axes[0] = np.float32(self.sticks['UD']) / 2048
+	current_joy.axes[1] = np.float32(self.sticks['LR']) / 2048
+	current_joy.axes[3] = np.float32(self.sticks['TQ']) / 2048
+	current_joy.buttons[7] = np.int32(self.buttons['START'])
+	current_joy.buttons[3] = np.int32(self.buttons['Y'])
+	current_joy.buttons[2] = np.int32(self.buttons['X'])
+	current_joy.buttons[0] = np.int32(self.buttons['A'])
+	current_joy.buttons[1] = np.int32(self.buttons['B'])
+	current_joy.buttons[11] = np.int32(self.buttons['DL'])  # Dpad Left
+	current_joy.buttons[12] = np.int32(self.buttons['DR'])  # Dpad Right
 	current_joy.header.frame_id = "/base_link"
 	current_joy.header.stamp = rospy.Time.now()
 	self.joy_pub.publish(current_joy)

@@ -91,14 +91,14 @@ constants = {
 			   # Button message is 16 bits signifying up to 16 buttons on/off
     'CTRL_STICKS': ['UD', 'LR', 'TQ'],  #Up/Down, Left/Right, Torque
     'CTRL_BUTTONS': ['X', 'Y', 'A', 'B', 'DL', 'DR', 'START'],
-    'CTRL_BUTTONS_VALUES': {  # Amount of buttons and labels will be changed in the future
-		  # Currently mimic xbox controller labels and numbering
-	'X': 0x0004, # Button 2,    	 or 0b0000000000000100
-	'Y': 0x0008, # Button 3,    	 or 0b0000000000001000
-	'A': 0x0001, # Button 0,    	 or 0b0000000000000001
-	'B': 0x0002, # Button 1,    	 or 0b0000000000000010
-	'DL': 0x0800, # Dpad Left (11),  or 0b0000100000000000
-	'DR': 0x1000, # Dpad Right (12), or 0b0001000000000000
-	'START': 0x0080, #Start (7),     or 0b0000000010000000
+    'CTRL_BUTTONS_VALUES': {	# Amount of buttons and labels will be changed in the future
+		  		# This currently mimics xbox controller labels and numbering
+	'X': '\x00\x04', # Button 2    	 
+	'Y': '\x00\x08', # Button 3    	 
+	'A': '\x00\x01', # Button 0  	 
+	'B': '\x00\x02', # Button 1	 
+	'DL': '\x08\x00', # Dpad Left (Button 11)  	 
+	'DR': '\x10\x00', # Dpad Right (Button 12) 
+	'START': '\x00\x80', #Start (Button 7)     	 
     }
 }
