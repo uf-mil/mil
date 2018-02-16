@@ -99,6 +99,6 @@ constants = {
         'B': '\x00\x02',  # Button 1
         'DL': '\x08\x00',  # Dpad Left (Button 11)
         'DR': '\x10\x00',  # Dpad Right (Button 12)
-        'START': '\x00\x80',  #Start (Button 7)
+        'START': '\x00\x80',  # Start (Button 7)
     }
 }
