@@ -11,6 +11,7 @@
   <run_depend>navigator_joystick_control</run_depend>
   <run_depend>navigator_tools</run_depend>
   <run_depend>navigator_keyboard_control</run_depend>
+  <run_depend>navigator_emergency_controller</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>navigator_controller</run_depend>
   <run_depend>navigator_thrust_mapper</run_depend>
