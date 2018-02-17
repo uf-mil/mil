@@ -19,9 +19,9 @@ namespace pcodar
 class marker_manager
 {
    public:
-    void initialize(ros::NodeHandle& nh);
+    void initialize(ros::NodeHandle& nh, id_label_map_ptr id_label_map);
 
-    void update_markers(const id_object_map_ptr objects);
+    void update_markers(const std::vector<mil_msgs::PerceptionObject>& objects);
     
     visualization_msgs::Marker get_marker_object(const mil_msgs::PerceptionObject& object);
     visualization_msgs::Marker get_marker_text(const mil_msgs::PerceptionObject& object);
@@ -30,6 +30,7 @@ class marker_manager
    private:
     ros::Publisher pub_markers_objects_;
     ros::Publisher pub_markers_text_;
+    id_label_map_ptr id_label_map_;
 
     std::unique_ptr<interactive_markers::InteractiveMarkerServer> interactive_marker_server_;
     interactive_markers::MenuHandler menu_handler_;

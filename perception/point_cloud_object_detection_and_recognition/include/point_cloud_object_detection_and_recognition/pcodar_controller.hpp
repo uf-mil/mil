@@ -60,6 +60,8 @@ class pcodar_controller
     object_detector detector_;
 
     id_object_map_ptr id_object_map_;
+    id_label_map_ptr id_label_map_;
+
 
 
 };

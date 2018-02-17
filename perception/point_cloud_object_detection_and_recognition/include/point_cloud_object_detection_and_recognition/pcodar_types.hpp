@@ -27,4 +27,8 @@ using point_cloud_ptr = pcl::PointCloud<pcl::PointXYZ>::Ptr;
 using id_object_map = std::unordered_map<uint, mil_msgs::PerceptionObject>;
 using id_object_map_ptr = std::shared_ptr<id_object_map>;
 
+using id_label_map = std::unordered_map<uint, std::pair<std::string, std::string>>;
+using id_label_map_ptr = std::shared_ptr<id_label_map>;
+
+
 }  // namespace pcodar

@@ -21,12 +21,14 @@ namespace pcodar
 class service_provider
 {
    public:
-    void initialize(ros::NodeHandle& nh);
-    void update_objects_reference(id_object_map_ptr objects);
+    void initialize(ros::NodeHandle& nh, id_label_map_ptr id_label_map);
+    // TODO: Since there are now smart pointers, just move them to initalize instead of reseting theme
+    void update_objects_reference(mil_msgs::PerceptionObjectArrayPtr objects);
 
    private:
     ros::ServiceServer modify_classification_service_;
-    id_object_map_ptr objects_;
+    mil_msgs::PerceptionObjectArrayPtr objects_;
+    id_label_map_ptr id_label_map_;
 
     bool DBQuery_cb(mil_msgs::ObjectDBQuery::Request &req, mil_msgs::ObjectDBQuery::Response &res);
 

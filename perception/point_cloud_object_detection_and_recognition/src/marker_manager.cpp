@@ -10,12 +10,12 @@
 namespace pcodar
 {
 
-void marker_manager::initialize(ros::NodeHandle& nh)
+void marker_manager::initialize(ros::NodeHandle& nh, id_label_map_ptr id_label_map)
 {
     pub_markers_objects_ = nh.advertise<visualization_msgs::MarkerArray>("info_markers/objects", 10);
     pub_markers_text_ = nh.advertise<visualization_msgs::MarkerArray>("info_markers/text", 10);
     interactive_marker_server_ = std::unique_ptr<interactive_markers::InteractiveMarkerServer>(new interactive_markers::InteractiveMarkerServer("info_markers/interactive", "", false));
-
+    id_label_map_ = id_label_map;
 }
     void marker_manager::interative_marker_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
 
@@ -79,7 +79,7 @@ visualization_msgs::InteractiveMarker marker_manager::get_marker_interactive(con
 
 }
 
-void marker_manager::update_markers(const id_object_map_ptr objects)
+void marker_manager::update_markers(const std::vector<mil_msgs::PerceptionObject>& objects)
 {
     visualization_msgs::MarkerArray marker_object_array;
     visualization_msgs::MarkerArray marker_text_array;
@@ -87,11 +87,12 @@ void marker_manager::update_markers(const id_object_map_ptr objects)
     visualization_msgs::Marker marker_delete;
     marker_delete.action = visualization_msgs::Marker::DELETEALL;
     // marker_array.markers.push_back(marker_delete);
-    for (auto it = objects->begin(); it != objects->end(); ++it)
-    {        
-        marker_object_array.markers.push_back(get_marker_object(it->second));
-        marker_text_array.markers.push_back(get_marker_text(it->second));
-        interactive_marker_server_->insert(get_marker_interactive(it->second));
+    for (const auto& object : objects)
+    {
+        auto it = id_label_map_->find(object.id);
+        marker_object_array.markers.push_back(get_marker_object(object));
+        marker_text_array.markers.push_back(get_marker_text(object));
+        interactive_marker_server_->insert(get_marker_interactive(object));
         // menu_handler_.apply(*interactive_marker_server_, object.classification);
     }
     pub_markers_objects_.publish(marker_object_array);
