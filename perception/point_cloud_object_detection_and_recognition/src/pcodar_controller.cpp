@@ -33,19 +33,20 @@
 
 namespace pcodar
 {
-ros::NodeHandle init(int argc, char *argv[], pcodar_params &params)
+
+ros::NodeHandle init(int argc, char *argv[])
 {
     ros::init(argc, argv, "point_cloud_object_detector");
     ros::Time::init();
     auto nh = ros::NodeHandle(ros::this_node::getName());
-    set_params(nh, params);
+    set_params(nh);
 
     // Node handler
     return nh;
 }
 
 pcodar_controller::pcodar_controller(int argc, char *argv[])
-    : nh_(init(argc, argv, params_)), detector_(params_)
+    : nh_(init(argc, argv))
 {
     // id_object_map temp_map;
     id_object_map_ = std::shared_ptr<id_object_map>(new id_object_map);
@@ -72,7 +73,7 @@ void pcodar_controller::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr &pclo
 void pcodar_controller::odom_cb(const nav_msgs::OdometryConstPtr &odom) { latest_odom_ = odom; }
 void pcodar_controller::execute()
 {
-    ros::Rate r(params_.executive_rate);
+    ros::Rate r(params.executive_rate);
     while (ros::ok())
     {
         // Execute all callbacks

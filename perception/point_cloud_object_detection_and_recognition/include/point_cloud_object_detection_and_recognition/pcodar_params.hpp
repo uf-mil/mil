@@ -8,7 +8,7 @@
 namespace pcodar
 {
 
-struct pcodar_params
+extern struct pcodar_params
 {
     // --- Main Params ---
 
@@ -57,7 +57,7 @@ struct pcodar_params
     // Yes these params are not technically mil_common general, however, they can be changed. 
     std::vector<std::string> object_types = {"scan_the_code", "shooter"};
     std::vector<std::string> object_colors = {"blue", "red", "green"};
-};
+} params;
 
-void set_params(ros::NodeHandle& nh, pcodar_params& params);
+void set_params(ros::NodeHandle& nh);
 }

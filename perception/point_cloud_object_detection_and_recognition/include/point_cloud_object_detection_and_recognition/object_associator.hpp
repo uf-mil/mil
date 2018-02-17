@@ -21,14 +21,11 @@ struct association_unit
 class associator
 {
    public:
-    associator(const pcodar_params& params) : params_(params)
+    associator()
     {
     }
     std::vector<association_unit> associate(const id_object_map& object_map,
                                             const std::vector<mil_msgs::PerceptionObject>& objects);
-
-   private:
-    pcodar_params params_;
 };
 
 }  // namespace pcod#pragma once

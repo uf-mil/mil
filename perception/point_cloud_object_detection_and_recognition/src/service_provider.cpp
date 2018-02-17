@@ -7,7 +7,7 @@ namespace pcodar
 
 void service_provider::initialize(ros::NodeHandle& nh, id_label_map_ptr id_label_map)
 {
-    modify_classification_service_ = nh.advertiseService("/database/change_classification", &pcodar::service_provider::DBQuery_cb, this);
+    modify_classification_service_ = nh.advertiseService("/database/requests", &pcodar::service_provider::DBQuery_cb, this);
     id_label_map_ = id_label_map;
 }
 
@@ -46,12 +46,14 @@ bool service_provider::DBQuery_cb(mil_msgs::ObjectDBQuery::Request &req, mil_msg
             }        
         }
     }
-    if (req.name != "")
+    if (std::find(classification_strings.begin(), classification_strings.end(), req.name) != classification_strings.end())
     {
+
         if (req.name == "all")
         {
             res.found = true;
             res.objects = objects_->objects;
+            return true;
         }
 
         for (const auto& object : objects_->objects)

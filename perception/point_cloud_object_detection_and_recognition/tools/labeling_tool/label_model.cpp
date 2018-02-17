@@ -131,7 +131,6 @@ void label_model::populate_map()
         }
     }
 
-    pcodar::pcodar_params params;
 
     //TODO(tbianchi) : Fix this lol
     intrinsics_ << 704, 0, 476, 0, 0, 701, 300, 0, 0, 0, 1, 0;
@@ -149,7 +148,7 @@ void label_model::populate_map()
     rosbag::View view_odom(bag_, rosbag::TopicQuery(odom_topics));
 
     nav_msgs::Odometry::ConstPtr last_odom = view_odom.begin()->instantiate<nav_msgs::Odometry>();
-    pcodar::point_cloud_builder pc_builder(params, false);
+    pcodar::point_cloud_builder pc_builder(false);
 
     ROS_INFO_STREAM("Building mega point cloud");
 

@@ -35,7 +35,6 @@ class pcodar_controller
 
    private:
     ros::NodeHandle nh_;
-    pcodar_params params_;
 
     // Publishers
     ros::Publisher pub_grid_;

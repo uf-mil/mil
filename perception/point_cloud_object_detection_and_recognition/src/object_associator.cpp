@@ -30,7 +30,7 @@ std::vector<association_unit> associator::associate(const id_object_map& object_
             const double diff_z = object.pose.position.z - id_object.second.pose.position.z;
 
             const double norm = sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z);
-            if (norm < min_distance && norm < params_.max_distance_for_association)
+            if (norm < min_distance && norm < params.max_distance_for_association)
             {
                 min_distance = norm;
                 min_id = i;

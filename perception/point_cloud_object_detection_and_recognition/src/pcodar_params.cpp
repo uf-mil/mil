@@ -2,8 +2,8 @@
 
 namespace pcodar
 {
-
-void set_params(ros::NodeHandle& nh, pcodar_params& params)
+pcodar_params params;
+void set_params(ros::NodeHandle& nh)
 {
     nh.getParam("/pcodar/executive_rate", params.executive_rate);
     nh.getParam("/pcodar/ogrid_inflation_cell", params.ogrid_inflation_cell);

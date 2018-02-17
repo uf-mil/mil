@@ -18,7 +18,7 @@ namespace pcodar
 {
 namespace
 {
-point_cloud filter(const point_cloud& in_cloud, const pcodar_params& params, const bool real_time)
+point_cloud filter(const point_cloud& in_cloud, const bool real_time)
 {
 
 
@@ -90,10 +90,10 @@ void point_cloud_builder::add_point_cloud(const sensor_msgs::PointCloud2& pcloud
         return;
     }
 
-    const auto filtered_buffered_cloud = filter(buffered_cloud, params_, real_time_);
+    const auto filtered_buffered_cloud = filter(buffered_cloud,real_time_);
     mega_cloud_ += filtered_buffered_cloud;
     real_time_ = true;
-    mega_cloud_ = filter(mega_cloud_, params_, real_time_);
+    mega_cloud_ = filter(mega_cloud_, real_time_);
 }
 
 point_cloud point_cloud_builder::get_point_cloud()
