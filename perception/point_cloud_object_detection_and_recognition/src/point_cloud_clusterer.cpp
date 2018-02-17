@@ -26,7 +26,7 @@ std::vector<mil_msgs::PerceptionObject> get_point_cloud_clusters(const point_clo
 
     // The radius around each point to check for neighbors in meters.
     ec.setClusterTolerance(2.0);
-    ec.setMinClusterSize(2);
+    ec.setMinClusterSize(1);
     ec.setMaxClusterSize(25000);
     ec.setSearchMethod(tree);
     ec.setInputCloud(pcloud_ptr);

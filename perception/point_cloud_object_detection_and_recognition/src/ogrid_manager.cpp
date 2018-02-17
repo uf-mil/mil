@@ -42,7 +42,7 @@ void ogrid_manager::update_ogrid(const mil_msgs::PerceptionObjectArray &objects,
     for (int i = 0; i < 4; i++)
         vert[i] = vertices[i];
         //cv::line(ogrid_mat_, vertices[i], vertices[(i+1)%4], 255, 2);
-    cv::fillConvexPoly(ogrid_mat_, vert, 4, cv::Scalar(255));
+    cv::fillConvexPoly(ogrid_mat_, vert, 4, cv::Scalar(99));
   }
   
     std::vector<int8_t> data(ogrid_mat_.cols * ogrid_mat_.rows);

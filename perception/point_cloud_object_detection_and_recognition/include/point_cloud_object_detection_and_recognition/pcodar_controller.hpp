@@ -2,6 +2,7 @@
 
 #include "marker_manager.hpp"
 #include "ogrid_manager.hpp"
+#include "service_provider.hpp"
 #include "object_detector.hpp"
 #include "pcodar_params.hpp"
 #include "pcodar_types.hpp"
@@ -53,9 +54,13 @@ class pcodar_controller
     // Visualization
     marker_manager marker_manager_;
     ogrid_manager ogrid_manager_;
+    service_provider service_provider_;
 
     // Model (It eventually will be obejct tracker, but for now just detections)
     object_detector detector_;
+
+    id_object_map_ptr id_object_map_;
+
 
 };
 

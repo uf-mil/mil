@@ -47,12 +47,14 @@ ros::NodeHandle init(int argc, char *argv[], pcodar_params &params)
 pcodar_controller::pcodar_controller(int argc, char *argv[])
     : nh_(init(argc, argv, params_)), detector_(params_)
 {
-    id_object_map temp_map;
+    // id_object_map temp_map;
+    id_object_map_ = std::shared_ptr<id_object_map>(new id_object_map);
 }
 void pcodar_controller::initialize()
 {
     marker_manager_.initialize(nh_);
     ogrid_manager_.initialize(nh_);
+    service_provider_.initialize(nh_);
 
     // Subscribe to odom and the velodyne
     pc_sub = nh_.subscribe("/velodyne_points", 1, &pcodar_controller::velodyne_cb, this);
@@ -118,8 +120,27 @@ void pcodar_controller::executive()
     detector_.add_point_cloud(latest_point_cloud_, e_transform);
 
     auto objects = detector_.get_objects(pub_pcl_);
-    marker_manager_.update_markers(objects.objects);
-    ogrid_manager_.update_ogrid(objects, latest_odom_);
+    marker_manager_.update_markers(id_object_map_);
+    ogrid_manager_.update_ogrid(*objects, latest_odom_);
+    service_provider_.update_objects_reference(id_object_map_);
+
+
+    for (auto &object : objects->objects)
+    {
+            auto it = id_object_map_->find(object.id);
+            if (it == id_object_map_->end())
+            {
+                id_object_map_->insert({object.id, object});
+            }
+            else {
+                auto o_class = it->second.classification;
+                auto o_label_class = it->second.labeled_classification;
+                it->second = object;
+                it->second.classification = o_class;
+                it->second.labeled_classification = o_label_class; 
+            }
+    }
+
 
     pub_objects_.publish(objects);
 

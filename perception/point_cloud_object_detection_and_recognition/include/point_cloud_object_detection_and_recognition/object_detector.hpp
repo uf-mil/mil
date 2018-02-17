@@ -22,7 +22,7 @@ class object_detector
 {
    public:
     object_detector(const pcodar_params& params) : params_(params), pc_builder_(params){};
-    mil_msgs::PerceptionObjectArray get_objects(ros::Publisher &pub_pcl_);
+    mil_msgs::PerceptionObjectArrayPtr get_objects(ros::Publisher &pub_pcl_);
     void add_point_cloud(const sensor_msgs::PointCloud2& pcloud2, const Eigen::Affine3d& e_velodyne_to_enu);
 
 

@@ -35,12 +35,12 @@ point_cloud filter(const point_cloud& in_cloud, const pcodar_params& params, con
     pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sorfilter(true);
     sorfilter.setInputCloud(buffered_cloud_ptr_1);
     sorfilter.setStddevMulThresh(2.0);
-    sorfilter.setMeanK(20);
+    sorfilter.setMeanK(10);
     sorfilter.filter(out_cloud);
 
     const auto buffered_cloud_ptr_2 = out_cloud.makeShared();
 
-    int number_points = 5000;
+    int number_points = 100000;
     if(out_cloud.size() < number_points || !real_time)
     {
         return out_cloud;
@@ -91,7 +91,7 @@ void point_cloud_builder::add_point_cloud(const sensor_msgs::PointCloud2& pcloud
     }
 
     const auto filtered_buffered_cloud = filter(buffered_cloud, params_, real_time_);
-    mega_cloud_ += filtered_buffered_cloud;    
+    mega_cloud_ += filtered_buffered_cloud;
     real_time_ = true;
     mega_cloud_ = filter(mega_cloud_, params_, real_time_);
 }
