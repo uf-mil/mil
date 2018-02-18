@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(navigator_2Dsim)
+project(navigator_2dsim)
 catkin_package()
 
 # add_executable(sim2d src/simulation/navigator_2Dsim/sim2d.py)
