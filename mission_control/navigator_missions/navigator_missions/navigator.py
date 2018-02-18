@@ -83,6 +83,10 @@ class Navigator(BaseTask):
         else:
             cls.sim = False
 
+        # For missions to access clicked points / poses
+        cls.rviz_goal = cls.nh.subscribe("/move_base_simple/goal", PoseStamped)
+        cls.rviz_point = cls.nh.subscribe("/clicked_point", PointStamped)
+
         cls._moveto_client = action.ActionClient(cls.nh, 'move_to', MoveAction)
 
         def odom_set(odom):

@@ -16,9 +16,6 @@ class Move(Navigator):
 
     @classmethod
     def init(cls):
-        cls.rviz_goal = cls.nh.subscribe("/rviz_goal", PoseStamped)
-        cls.rviz_point = cls.nh.subscribe("/rviz_point", PointStamped)
-
         parser = ThrowingArgumentParser(
             description='Command Line Mission Runner',
             usage='Pass any pose editor command with an argument. \n\t\
@@ -83,12 +80,12 @@ class Move(Navigator):
 
             elif command == 'rviz':
                 self.send_feedback("Moving to last published rviz position")
-                target_pose = yield util.wrap_time_notice(self.rviz_goal.get_next_message(), 2, "Rviz goal")
+                target_pose = yield util.wrap_time_notice(self.rviz_goal.get_last_message(), 2, "Rviz goal")
                 res = yield self.move.to_pose(target_pose).go(**action_kwargs)
 
             elif command == 'circle':
                 self.send_feedback("Moving in a circle around last clicked_point")
-                target_point = yield util.wrap_time_notice(self.rviz_point.get_next_message(), 2, "Rviz point")
+                target_point = yield util.wrap_time_notice(self.rviz_point.get_last_message(), 2, "Rviz point")
                 target_point = rosmsg_to_numpy(target_point.point)
                 direction = 'cw' if argument == '-1' else 'ccw'
                 res = yield self.move.circle_point(target_point, direction=direction).go(radius=3)
