@@ -10,6 +10,7 @@ from teleop import Teleop
 from circle import Circle
 from back_and_forth import BackAndForth
 from start_gate import StartGate
+from start_gate_andy import StartGateAndy
 from coral_survey import CoralSurvey
 from pinger import PingerMission
 from pinger_exit import PingerExitMission
