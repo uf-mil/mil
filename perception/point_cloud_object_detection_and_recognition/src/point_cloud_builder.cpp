@@ -26,7 +26,7 @@ point_cloud filter(const point_cloud& in_cloud, const bool real_time)
     const auto buffered_cloud_ptr = in_cloud.makeShared();
     pcl::VoxelGrid<pcl::PointXYZ> vg;
     vg.setInputCloud(buffered_cloud_ptr);
-    vg.setLeafSize(.3, .3, .3);
+    vg.setLeafSize(params.filter_points_leaf_size_x, params.filter_points_leaf_size_y, params.filter_points_leaf_size_z);
     vg.filter(out_cloud);
 
     const auto buffered_cloud_ptr_1 = out_cloud.makeShared();
@@ -34,13 +34,13 @@ point_cloud filter(const point_cloud& in_cloud, const bool real_time)
     // Initializing with true will allow us to extract the removed indices
     pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sorfilter(true);
     sorfilter.setInputCloud(buffered_cloud_ptr_1);
-    sorfilter.setStddevMulThresh(2.0);
-    sorfilter.setMeanK(10);
+    sorfilter.setStddevMulThresh(params.outier_removal_std_dev_thresh);
+    sorfilter.setMeanK(params.outier_removal_mean_k);
     sorfilter.filter(out_cloud);
 
     const auto buffered_cloud_ptr_2 = out_cloud.makeShared();
 
-    int number_points = 100000;
+    int number_points = params.max_number_points;
     if(out_cloud.size() < number_points || !real_time)
     {
         return out_cloud;

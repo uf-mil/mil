@@ -25,9 +25,12 @@ extern struct pcodar_params
     int number_persistant_point_clouds = 10;
 
     // How much to downsample the point cloud
-    float filter_points_leaf_size_x = 0.1f;
-    float filter_points_leaf_size_y = 0.1f;
-    float filter_points_leaf_size_z = 0.01f;
+    float filter_points_leaf_size_x = 0.3f;
+    float filter_points_leaf_size_y = 0.3f;
+    float filter_points_leaf_size_z = 0.3f;
+
+    float outier_removal_std_dev_thresh = 2.0f;
+    float outier_removal_mean_k = 10;
 
     // The max number of points in the point cloud, this is employed when the system needs to be real time. 
     int max_number_points = 5000;

@@ -12,7 +12,12 @@ void set_params(ros::NodeHandle& nh)
     nh.getParam("/pcodar/number_persistant_point_clouds", params.number_persistant_point_clouds);
     nh.getParam("/pcodar/filter_points_leaf_size_x", params.filter_points_leaf_size_x); 
     nh.getParam("/pcodar/filter_points_leaf_size_y", params.filter_points_leaf_size_y);  
-    nh.getParam("/pcodar/filter_points_leaf_size_z", params.filter_points_leaf_size_z);  
+    nh.getParam("/pcodar/filter_points_leaf_size_z", params.filter_points_leaf_size_z); 
+    
+    nh.getParam("/pcodar/outier_removal_std_dev_thresh", params.outier_removal_std_dev_thresh);  
+    nh.getParam("/pcodar/outier_removal_mean_k", params.outier_removal_mean_k);  
+
+
     nh.getParam("/pcodar/cluster_tolerance_m", params.cluster_tolerance_m); 
     nh.getParam("/pcodar/cluster_min_points", params.cluster_min_num_points);
     nh.getParam("/pcodar/cluster_max_points", params.cluster_max_num_points); 

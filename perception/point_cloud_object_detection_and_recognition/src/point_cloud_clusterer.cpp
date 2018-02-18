@@ -25,9 +25,9 @@ std::vector<mil_msgs::PerceptionObject> get_point_cloud_clusters(const point_clo
     pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
 
     // The radius around each point to check for neighbors in meters.
-    ec.setClusterTolerance(2.0);
-    ec.setMinClusterSize(1);
-    ec.setMaxClusterSize(25000);
+    ec.setClusterTolerance(params.cluster_tolerance_m);
+    ec.setMinClusterSize(params.cluster_min_num_points);
+    ec.setMaxClusterSize(params.cluster_max_num_points);
     ec.setSearchMethod(tree);
     ec.setInputCloud(pcloud_ptr);
     ec.extract(cluster_indices);
