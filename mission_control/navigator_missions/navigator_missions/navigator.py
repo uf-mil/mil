@@ -18,6 +18,7 @@ from topic_tools.srv import MuxSelect, MuxSelectRequest
 from mil_misc_tools.text_effects import fprint
 from navigator_tools import MissingPerceptionObject
 from mil_tasks_core import BaseTask
+from geometry_msgs.msg import PointStamped, PoseStamped
 
 
 class MissionResult(object):

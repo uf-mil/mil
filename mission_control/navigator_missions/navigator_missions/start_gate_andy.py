@@ -43,7 +43,7 @@ class StartGateAndy(Navigator):
             return None
 
     @util.cancellableInlineCallbacks
-    def get_gates(self:
+    def get_gates(self):
         totems = []
         for i in range(4):
             valid = False
@@ -55,14 +55,14 @@ class StartGateAndy(Navigator):
                     continue
                 break
             self.send_feedback('Recieved point for totem {}'.format(i + 1))
-            point = rosmsg_to_numpy(point)
+            point = rosmsg_to_numpy(point.point)
             point[2] = 0.0
-            totems.append(point)
+            totems.append(np.array(point))
         # Create list of gates halfway between each pair of totems
         gates = []
         for i in range(3):
             gates.append((totems[i] + totems[i + 1]) / 2.0)
-        defer.reternValue(gates)
+        defer.returnValue(gates)
 
     @util.cancellableInlineCallbacks
     def run(self, args):
@@ -70,24 +70,54 @@ class StartGateAndy(Navigator):
         gates = yield self.get_gates()
 
         # Get heading towards pinger from Andy hydrophone system
-        self.send_feedback('All gates clicked on! Waiting for pinger heading...)
+        self.send_feedback('All gates clicked on! Waiting for pinger heading...')
         heading = yield self.pinger_heading.get_next_message()
         self.send_feedback('Recieved pinger heading')
 
         # Convert heading and hydophones from to enu
-        hydrophones_to_enu = self.tf_listener.get_transform(heading.header.frame_id, 'enu')
-        hydrophones_origin = hydrophones_to_enu.transform._p
+        hydrophones_to_enu = yield self.tf_listener.get_transform('enu', heading.header.frame_id)
+        hydrophones_origin = hydrophones_to_enu._p[0:2]
         heading = rosmsg_to_numpy(heading.vector)
-        heading = heading[0:2] / np.linalg.norm[0:2] # Ignore Z and normalize to unit vector
-        heading_enu = hydrophones.to_enu.transform_vector(heading)
+        heading_enu = hydrophones_to_enu.transform_vector(heading)
+        heading_enu = heading_enu[0:2] / np.linalg.norm(heading_enu[0:2])
 
-        # Form two lines, one intersecting pinger and another going through gates
         pinger_line = self.line(hydrophones_origin, hydrophones_origin + heading_enu)
         gates_line = self.line(gates[0], gates[-1])
 
         # Find intersection of these two lines. This is the approximate position of the pinger
         intersection = self.intersection(pinger_line, gates_line)
-        if pinger is None:
+        if intersection is None:
             raise Exception('No intersection')
         self.send_feedback('Pinger is roughly at {}'.format(intersection))
+
+        distances = []
+        for gate in gates:
+            distances.append(np.linalg.norm(gate[0:2] - intersection))
+        argmin = np.argmin(np.array(distances))
+        self.send_feedback('Pinger is likely at gate {}'.format(argmin + 1))
+
+        gate = gates[argmin][:2]
+
+        between_vector = (gates[0] - gates[-1])[:2]
+        # Rotate that vector to point through the buoys
+        #r = trns.euler_matrix(0, 0, np.radians(90))[:2, :2]
+        c = np.cos(np.radians(90))
+        s = np.sin(np.radians(90))
+        R = np.array([[c, -s],[s, c]])
+        direction_vector = R.dot(between_vector)
+        direction_vector /= np.linalg.norm(direction_vector)
+        position = self.pose[0][:2]
+        if np.linalg.norm(position - (gate + direction_vector)) > np.linalg.norm(position - (gate - direction_vector)):
+            direction_vector = -direction_vector
+
+        before_distance = 3.0
+        after_distance = 5.0
+        before = np.append(gate + direction_vector*before_distance, 0)
+        after = np.append(gate - direction_vector*after_distance, 0)
+
+        self.send_feedback('Moving in front of gate')
+        yield self.move.set_position(before).look_at(after).go()
+        self.send_feedback('Going through')
+        yield self.move.set_position(after).go()
+
         defer.returnValue('My god it actually worked!')
