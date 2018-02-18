@@ -24,11 +24,14 @@ extern int firmware_bin_len;
 using namespace navigator_emergency_control;
 using namespace std;
 
-// Functionality to allow a member function to be used in place of a void (*func_ptr)(int)
-// 		See http://stackoverflow.com/questions/13238050/convert-stdbind-to-function-pointer
+// Functionality to allow a member function to be used in place of a void
+// (*func_ptr)(int)
+// 		See
+// http://stackoverflow.com/questions/13238050/convert-stdbind-to-function-pointer
 // -------------------------------------------------------------------
 
-// This node interprets the controller data received from the Xbee, and publishes it as a joy
+// This node interprets the controller data received from the Xbee, and
+// publishes it as a joy
 // Note: This is Frankenstein'd from Forrest's stm32f3discovery_imu_driver.cpp
 // Sorry for the mess!
 
@@ -68,8 +71,14 @@ private:  // Typedefs
 
 private:  // Vars
   // Note:
-  //			In the case that a class does not have a constructor that is convinent to use
-  //			in the initializer list of this class constructor a pointer was used instead.
+  //			In the case that a class does not have a constructor
+  // that
+  // is
+  // convinent to use
+  //			in the initializer list of this class constructor a
+  // pointer
+  // was
+  // used instead.
 
   // IO
   boost::asio::io_service io_svr_;
@@ -117,7 +126,8 @@ public:  // Functions
 };
 
 interface::interface(int argc, char **argv) : io_svr_(), sp_(io_svr_)
-/*kill_listener_(boost::bind(&interface::onKill_, this), boost::bind(&interface::onUnkill_, this)),
+/*kill_listener_(boost::bind(&interface::onKill_, this),
+boost::bind(&interface::onUnkill_, this)),
 kill_broadcaster_("xbee", "Killed navigator_xbee"),
 killed_(false)*/
 {
@@ -217,7 +227,8 @@ void interface::onShutdown_()
   // Send out a kill msgs
   // kill_broadcaster_.send(true);
 
-  // Stop both subscribers in case somehow a msg comes between setting pwms to zero and the write pwm cmd
+  // Stop both subscribers in case somehow a msg comes between setting pwms to
+  // zero and the write pwm cmd
 
   // Write the zeros
   ros::Time now = ros::Time::now();
@@ -272,7 +283,6 @@ void interface::run_()
 {
   double autorepeat_rate_ = 0;
   double coalesce_interval_ = 0.001;
-  double autorepeat_interval = 1 / autorepeat_rate_;
 
   bool tv_set = false;
   bool publication_pending = false;
@@ -347,7 +357,7 @@ void interface::run_()
 
     if (publish_now)
     {
-      joy_pub_.publish(joyXbee);
+      // joy_pub_.publish(joyXbee);
       publish_now = false;
       tv_set = false;
       publication_pending = false;
@@ -364,13 +374,7 @@ void interface::run_()
     // timer for autorepeat.
     if (!tv_set && autorepeat_rate_ > 0)
     {
-      tv_timer = 10;
-      tv_set = true;
-    }
-
-    if (!tv_set)
-    {
-      tv_timer = 80;
+      tv_timer = int(1 / autorepeat_rate);
       tv_set = true;
     }
 
