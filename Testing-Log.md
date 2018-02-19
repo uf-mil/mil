@@ -1,7 +1,7 @@
 # Testing log
 Below are notes recorded during NaviGator testing days at Lake Wauburg. They are used as a reference for resolving issues and ideas discovered during testing
 
-## Febuary 18, 2018
+## February 18, 2018
 * Had some issues with running both pointgrey cameras at once
 * The smallest sized competition (black) buoys become blind to the velodyne at about 4.8m away (measured in 2D from velodyne to buoy)
 * Seecam uses a lot of bandwith / storage when bagging because 1920x1080@60fps, could probably get away w/ 15fps
