@@ -5,7 +5,6 @@ Below are notes recorded during NaviGator testing days at Lake Wauburg. They are
 * Had some issues with running both pointgrey cameras at once
 * The smallest sized competition (black) buoys become blind to the velodyne at about 4.8m away (measured in 2D from velodyne to buoy)
 * Seecam uses a lot of bandwith / storage when bagging because 1920x1080@60fps, could probably get away w/ 15fps
-* Bounds were not 
 * Need to add a tf for Seecam (can reuse front_right cam for now)
 * Battery monitor inaccurate near startup when it has few measurements (some of which may from killed readings), should wait till buffer is full
 * Could not run pointgrey driver at some point because of git issues (be sure to update submodules)
