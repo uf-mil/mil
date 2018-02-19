@@ -16,7 +16,7 @@ class Navsim():
         # Subscribe to wrench to get current force on body frame
         rospy.Subscriber("/wrench/cmd", WrenchStamped, self.wrench_cb)
 
-        # Create publisher to 
+        # Create publisher to
         self.odom_publisher = rospy.Publisher("/odom", Odometry, queue_size=1)
 
         # Set initial state from constructor
