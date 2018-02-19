@@ -2,9 +2,11 @@
     <include file="$(find navigator_launch)/launch/hardware_drivers.launch"/>
     <include file="$(find navigator_launch)/launch/gnc.launch"/>
     <include file="$(find navigator_launch)/launch/sensors.launch"/>
-    <include file="$(find navigator_launch)/launch/perception.launch" />
     <include file="$(find navigator_launch)/launch/alarms.launch"/>
     <include file="$(find navigator_launch)/launch/diagnostics.launch" />
     <include file="$(find navigator_launch)/launch/online_bagger.launch" />
     <include file="$(find navigator_missions)/launch/task_runner.launch" />
+
+    <!-- Currently Disabled while new perception programs are developed for RobotX 2018 -->
+    <!-- include file="$(find navigator_launch)/launch/perception.launch" /-->
 </launch>
