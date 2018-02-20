@@ -5,7 +5,6 @@ import txros
 import tf.transformations as trns
 import numpy as np
 import mil_tools
-from sensor_msgs.msg import PointCloud
 from twisted.internet import defer
 from nav_msgs.msg import OccupancyGrid
 import cv2
