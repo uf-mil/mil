@@ -4,7 +4,6 @@ from twisted.internet import defer
 from navigator import Navigator
 import numpy as np
 from mil_tools import numpy_to_point, rosmsg_to_numpy
-from geometry_msgs.msg import PoseStamped, PointStamped
 from mil_misc_tools import ThrowingArgumentParser
 
 

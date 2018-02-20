@@ -7,9 +7,9 @@ from mil_tools import rosmsg_to_numpy
 from geometry_msgs.msg import Vector3Stamped
 
 
-class StartGateAndy(Navigator):
+class PingerAndy(Navigator):
     '''
-    Mission to run sonar start gate challenge using Andy's sonar system, which produces a vector pointing towards the 
+    Mission to run sonar start gate challenge using Andy's sonar system, which produces a vector pointing towards the
     '''
     @classmethod
     def init(cls):
@@ -23,7 +23,7 @@ class StartGateAndy(Navigator):
         '''
         A = (p1[1] - p2[1])
         B = (p2[0] - p1[0])
-        C = (p1[0]*p2[1] - p2[0]*p1[1])
+        C = (p1[0] * p2[1] - p2[0] * p1[1])
         return A, B, -C
 
     @staticmethod
@@ -32,13 +32,13 @@ class StartGateAndy(Navigator):
         Return point intersection (if it exsists) of two lines given their equations obtained from the line method
         https://stackoverflow.com/questions/20677795/how-do-i-compute-the-intersection-point-of-two-lines-in-python
         '''
-        D  = L1[0] * L2[1] - L1[1] * L2[0]
+        D = L1[0] * L2[1] - L1[1] * L2[0]
         Dx = L1[2] * L2[1] - L1[1] * L2[2]
         Dy = L1[0] * L2[2] - L1[2] * L2[0]
         if D != 0:
             x = Dx / D
             y = Dy / D
-            return x,y
+            return x, y
         else:
             return None
 
@@ -46,12 +46,12 @@ class StartGateAndy(Navigator):
     def get_gates(self):
         totems = []
         for i in range(4):
-            valid = False
             while True:
                 self.send_feedback('Click on totem {} in rviz'.format(i + 1))
                 point = yield self.rviz_point.get_next_message()
                 if point.header.frame_id != 'enu':
-                    self.send_feedback('Point is not in ENU. Please switch rviz frame to ENU or tell kevin to support other frames.')
+                    self.send_feedback('Point is not in ENU.\
+                         Please switch rviz frame to ENU or tell kevin to support other frames.')
                     continue
                 break
             self.send_feedback('Recieved point for totem {}'.format(i + 1))
@@ -100,10 +100,9 @@ class StartGateAndy(Navigator):
 
         between_vector = (gates[0] - gates[-1])[:2]
         # Rotate that vector to point through the buoys
-        #r = trns.euler_matrix(0, 0, np.radians(90))[:2, :2]
         c = np.cos(np.radians(90))
         s = np.sin(np.radians(90))
-        R = np.array([[c, -s],[s, c]])
+        R = np.array([[c, -s], [s, c]])
         direction_vector = R.dot(between_vector)
         direction_vector /= np.linalg.norm(direction_vector)
         position = self.pose[0][:2]
@@ -112,8 +111,8 @@ class StartGateAndy(Navigator):
 
         before_distance = 3.0
         after_distance = 5.0
-        before = np.append(gate + direction_vector*before_distance, 0)
-        after = np.append(gate - direction_vector*after_distance, 0)
+        before = np.append(gate + direction_vector * before_distance, 0)
+        after = np.append(gate - direction_vector * after_distance, 0)
 
         self.send_feedback('Moving in front of gate')
         yield self.move.set_position(before).look_at(after).go()
