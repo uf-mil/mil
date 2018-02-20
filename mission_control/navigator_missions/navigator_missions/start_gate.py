@@ -122,13 +122,6 @@ class StartGate(Navigator):
         else:
             raise Exception
 
-        # Put the target into the point cloud as well
-        points = []
-        points.append(mil_tools.numpy_to_point(target.position))
-        pc = PointCloud(header=mil_tools.make_header(frame='/enu'),
-                        points=np.array(points))
-
-        yield self._point_cloud_pub.publish(pc)
         print "Waiting 3 seconds to move..."
         yield self.nh.sleep(3)
         yield setup.go(move_type='skid')

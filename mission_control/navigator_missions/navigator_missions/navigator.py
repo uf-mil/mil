@@ -88,10 +88,6 @@ class Navigator(BaseTask):
         else:
             cls.sim = False
 
-        # Just some pre-created publishers for missions to use for debugging
-        cls._point_cloud_pub = cls.nh.advertise("navigator_points", PointCloud)
-        cls._pose_pub = cls.nh.advertise("navigator_pose", PoseStamped)
-
         cls._moveto_client = action.ActionClient(cls.nh, 'move_to', MoveAction)
 
         def odom_set(odom):
@@ -165,11 +161,6 @@ class Navigator(BaseTask):
             resp = yield _bounds(navigator_srvs.BoundsRequest())
             if resp.enforce:
                 cls.enu_bounds = [mil_tools.rosmsg_to_numpy(bound) for bound in resp.bounds]
-
-                # Just for display
-                pc = PointCloud(header=mil_tools.make_header(frame='/enu'),
-                                points=np.array([mil_tools.numpy_to_point(point) for point in cls.enu_bounds]))
-                yield cls._point_cloud_pub.publish(pc)
         else:
             fprint("No bounds param found, defaulting to none.", title="NAVIGATOR")
             cls.enu_bounds = None
