@@ -79,16 +79,20 @@ class Move(Navigator):
                 res = yield eval("self.move.{}.go(move_type='{move_type}')".format(argument, **action_kwargs))
 
             elif command == 'rviz':
-                self.send_feedback("Moving to last published rviz position")
-                target_pose = yield util.wrap_time_notice(self.rviz_goal.get_last_message(), 2, "Rviz goal")
+                self.send_feedback('Select a 2D Nav Goal in RVIZ')
+                target_pose = yield util.wrap_time_notice(self.rviz_goal.get_next_message(), 2, "Rviz goal")
+                self.send_feedback('RVIZ pose recieved!')
                 res = yield self.move.to_pose(target_pose).go(**action_kwargs)
 
             elif command == 'circle':
-                self.send_feedback("Moving in a circle around last clicked_point")
-                target_point = yield util.wrap_time_notice(self.rviz_point.get_last_message(), 2, "Rviz point")
+                self.send_feedback('Select a Publish Point in RVIZ')
+                target_point = yield util.wrap_time_notice(self.rviz_point.get_next_message(), 2, "Rviz point")
+                self.send_feedback('RVIZ point recieved!')
+                target_point = rosmsg_to_numpy(target_point.point)
+                distance = np.linalg.norm(target_point - self.pose[0])
                 target_point = rosmsg_to_numpy(target_point.point)
                 direction = 'cw' if argument == '-1' else 'ccw'
-                res = yield self.move.circle_point(target_point, direction=direction).go(radius=3)
+                res = yield self.move.circle_point(target_point, direction=direction).go(radius=distance)
 
             else:
                 shorthand = {"f": "forward", "b": "backward", "l": "left",
