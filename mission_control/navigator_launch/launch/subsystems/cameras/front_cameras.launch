@@ -16,7 +16,7 @@
           <param name="frame_id" value="front_left_cam"/>
           <param name="video_mode" value="format7_mode4"/>
           <param name="format7_color_coding" value="raw8"/>
-          <param name="frame_rate" value="30" />
+          <param name="frame_rate" value="15" />
 
           <remap from="camera" to="left"/>
           <remap from="image_raw" to="left/image_raw"/>
@@ -31,7 +31,7 @@
           <param name="frame_id" value="front_right_cam"/>
           <param name="video_mode" value="format7_mode4"/>
           <param name="format7_color_coding" value="raw8"/>
-          <param name="frame_rate" value="30" />
+          <param name="frame_rate" value="15" />
 
           <remap from="camera" to="right"/>
           <remap from="image_raw" to="right/image_raw"/>
