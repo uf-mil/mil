@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from __future__ import division
-
 import os
 import numpy as np
 import yaml
@@ -9,15 +8,11 @@ import rospkg
 from twisted.internet import defer
 from txros import action, util, tf, NodeHandle
 from pose_editor import PoseEditor2
-
 import mil_tools
 from ros_alarms import TxAlarmListener
-
 from navigator_path_planner.msg import MoveAction, MoveGoal
 from nav_msgs.msg import Odometry
 from std_srvs.srv import SetBool, SetBoolRequest
-from geometry_msgs.msg import PoseStamped
-from sensor_msgs.msg import PointCloud
 import navigator_msgs.srv as navigator_srvs
 from topic_tools.srv import MuxSelect, MuxSelectRequest
 from mil_misc_tools.text_effects import fprint
@@ -87,10 +82,6 @@ class Navigator(BaseTask):
             cls.sim = yield cls.nh.get_param('/is_simulation')
         else:
             cls.sim = False
-
-        # Just some pre-created publishers for missions to use for debugging
-        cls._point_cloud_pub = cls.nh.advertise("navigator_points", PointCloud)
-        cls._pose_pub = cls.nh.advertise("navigator_pose", PoseStamped)
 
         cls._moveto_client = action.ActionClient(cls.nh, 'move_to', MoveAction)
 
@@ -165,11 +156,6 @@ class Navigator(BaseTask):
             resp = yield _bounds(navigator_srvs.BoundsRequest())
             if resp.enforce:
                 cls.enu_bounds = [mil_tools.rosmsg_to_numpy(bound) for bound in resp.bounds]
-
-                # Just for display
-                pc = PointCloud(header=mil_tools.make_header(frame='/enu'),
-                                points=np.array([mil_tools.numpy_to_point(point) for point in cls.enu_bounds]))
-                yield cls._point_cloud_pub.publish(pc)
         else:
             fprint("No bounds param found, defaulting to none.", title="NAVIGATOR")
             cls.enu_bounds = None
