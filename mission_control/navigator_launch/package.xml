@@ -20,7 +20,6 @@
   <run_depend>roboteq_driver</run_depend>
   <run_depend>mil_vision</run_depend>
   <run_depend>navigator_joystick_control</run_depend>
-  <run_depend>navigator_shooter</run_depend>
   <run_depend>velodyne_driver</run_depend>
   <run_depend>velodyne_pointcloud</run_depend>
   <run_depend>navigator_kill_board</run_depend>

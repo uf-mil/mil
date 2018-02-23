@@ -4,11 +4,6 @@
 
     <param name="/is_simulation" type="bool" value="True" />
 
-    <!-- Launch Fake Shooter Service Provider -->
-    <node pkg="navigator_shooter" type="ShooterControl.py" name="shooter_controller">
-      <rosparam file="$(find navigator_shooter)/launch/config.yaml" />
-    </node>
-
     <!-- Run everything needed to move and run missions -->
     <include file="$(find navigator_missions)/launch/task_runner.launch" />
     <include file="$(find navigator_launch)/launch/alarms.launch"/>
