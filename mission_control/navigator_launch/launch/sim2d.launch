@@ -1,0 +1,16 @@
+<launch>
+    <!-- Run 2D Simulator -->
+    <include file="$(find navigator_2dsim)/launch/owl.launch" />
+
+    <param name="/is_simulation" type="bool" value="True" />
+
+    <!-- Run everything needed to move and run missions -->
+    <include file="$(find navigator_missions)/launch/task_runner.launch" />
+    <include file="$(find navigator_launch)/launch/alarms.launch"/>
+    <include file="$(find navigator_launch)/launch/gnc.launch">
+      <arg name="gps" value="False" />
+    </include>
+
+    <!-- Run Joystick -->
+    <include file="$(find navigator_launch)/launch/subsystems/xbox_controller.launch" />
+</launch>

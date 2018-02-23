@@ -1,0 +1,10 @@
+<launch>
+    <node pkg="navigator_2dsim" type="sim2d.py" name="sim2d" output="screen">
+    <rosparam>
+    mass: 2000 # Mass in KG
+    rotational_inertia: 4000 # Roational inertia about Z. kg*m^2
+    drag: [1000, 2000, 2000] # Drag coefficents X, Y, rotation
+    wind: [0, 0, 0] # Constant wind velocity, m/s
+    </rosparam>
+  </node>
+</launch>

@@ -10,11 +10,6 @@
     <arg name="sandbox" default="true"/>
     <arg name="cameras" default="true" />
 
-    <!-- Launch Fake Shooter Service Provider -->
-    <node pkg="navigator_shooter" type="ShooterControl.py" name="shooter_controller">
-      <rosparam file="$(find navigator_shooter)/launch/config.yaml" />
-    </node>
-
     <include file="$(find navigator_missions)/launch/task_runner.launch" />
     <include file="$(find navigator_launch)/launch/alarms.launch"/>
     <include file="$(find navigator_launch)/launch/gnc.launch">
@@ -29,12 +24,8 @@
         <arg name="sandbox" value="$(arg sandbox)"/>
     </include>
 
-    <!-- Connect to joystick if plugged in, otherwise spam annoying red text ;) -->
-    <node pkg="joy" type="joy_node" name="joy_node">
-        <param name="dev" type="string" value="/dev/input/by-id/usb-045e_0291-joystick" />
-        <param name="deadzone" value="0.12" />
-        <param name="autorepeat_rate" value="5"/>
-    </node>
+    <!-- Run Joystick -->
+    <include file="$(find navigator_launch)/launch/subsystems/xbox_controller.launch" />
 
     <group unless="$(arg gazebo)">
         <include file="$(find navigator_launch)/launch/perception.launch"/>
