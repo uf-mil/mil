@@ -13,6 +13,7 @@ from ros_alarms import TxAlarmListener
 from navigator_path_planner.msg import MoveAction, MoveGoal
 from nav_msgs.msg import Odometry
 from std_srvs.srv import SetBool, SetBoolRequest
+from geometry_msgs.msg import PoseStamped, PointStamped
 import navigator_msgs.srv as navigator_srvs
 from topic_tools.srv import MuxSelect, MuxSelectRequest
 from mil_misc_tools.text_effects import fprint
@@ -82,6 +83,10 @@ class Navigator(BaseTask):
             cls.sim = yield cls.nh.get_param('/is_simulation')
         else:
             cls.sim = False
+
+        # For missions to access clicked points / poses
+        cls.rviz_goal = cls.nh.subscribe("/move_base_simple/goal", PoseStamped)
+        cls.rviz_point = cls.nh.subscribe("/clicked_point", PointStamped)
 
         cls._moveto_client = action.ActionClient(cls.nh, 'move_to', MoveAction)
 

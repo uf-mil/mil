@@ -13,6 +13,7 @@ from start_gate import StartGate
 from coral_survey import CoralSurvey
 from pinger import PingerMission
 from pinger_exit import PingerExitMission
+from pinger_andy import PingerAndy
 from gps_points import GPSWaypoints
 from scan_the_code import ScanTheCode
 from station_hold import StationHold
