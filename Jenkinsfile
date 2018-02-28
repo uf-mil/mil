@@ -23,14 +23,18 @@ dockerNode(image: 'uf-mil:mil_common') {
 		'''
 	}
 	stage("Format") {
-		sh '''
-			echo "Checking Python for Pep8"
-			OUTPUT=$(rosrun mil_tools pythonFinder.py $HOME/mil_ws/src)
-			echo "${OUTPUT}"
-			if [ ! -z "$OUTPUT" ]
-			then
-  				echo "Errors in Python Pep8 formatting"
-  				exit 1
+		sh '''#!/bin/bash -i
+			set -m
+			ls $CATKIN_DIR/src
+			source ~/.mil/milrc > /dev/null 2>&1
+			source $CATKIN_DIR/devel/setup.bash > /dev/null 2>&1
+			env
+			alias
+			OUT=$(mcfmt)
+			if [ $? -ne 0 ]; then
+				echo $OUT
+				echo "The preceding Python following files are not formatted correctly"
+				exit 1
 			fi
 		'''
 		sh '''

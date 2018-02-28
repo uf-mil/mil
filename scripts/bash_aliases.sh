@@ -51,4 +51,4 @@ alias canceltask="rosrun mil_tasks task_client -c"
 alias listtasks="rosrun mil_tasks task_client -l"
 
 # Formatting (be sure to update with Jenkinsfile)
-alias mcfmt="python2.7 -m flake8 --ignore E731 --max-line-length=120 --exclude=__init__.py,\$CATKIN_DIR/src/mil_common/drivers/pointgrey_camera_driver,\$CATKIN_DIR/src/mil_common/drivers/velodyne,\$CATKIN_DIR/src/mil_common/drivers/mil_passive_sonar \$CATKIN_DIR/src/mil_common"
+alias mcfmt="python2.7 -m flake8 --ignore E731 --max-line-length=120 \$(rosrun mil_tools list_python_files \$CATKIN_DIR/src/mil_common __init__.py drivers/pointgrey_camera_driver drivers/velodyne drivers/mil_passive_sonar drivers/roboteq ros_alarms txros deprecated/)"
