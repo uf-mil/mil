@@ -4,8 +4,9 @@ import numpy as np
 import rospy
 import tf.transformations as trns
 from mil_tools import numpy_to_quaternion
-from geometry_msgs.msg import WrenchStamped
 from nav_msgs.msg import Odometry
+from roboteq_msgs.msg import Command
+from navigator_thrust_mapper import ThrusterMap
 
 
 class Navsim():
@@ -13,19 +14,21 @@ class Navsim():
     A simple 2D simulation of the kinematics of NaviGator.
     '''
     def __init__(self, pose0=np.array([0, 0, 0]), twist0=np.array([0, 0, 0])):
-        # Subscribe to wrench to get current force on body frame
-        rospy.Subscriber("/wrench/cmd", WrenchStamped, self.wrench_cb)
-
-        # Create publisher to
+        # Used to publish current state
         self.odom_publisher = rospy.Publisher("/odom", Odometry, queue_size=1)
 
         # Set initial state from constructor
         self.pose = np.float64(pose0)
         self.twist = np.float64(twist0)
         self.wrench = np.float64([0, 0, 0])
+        self.thrusts = np.zeros(4, dtype=np.float64)
 
         # Get other contants from ROS params
         self.get_params()
+
+        # Subscribe to thrusters so we can simulate their forces
+        for i, motor in enumerate(ThrusterMap.THRUSTERS):
+            rospy.Subscriber('/{}_motor/cmd'.format(motor), Command, self.thruster_cb, queue_size=3, callback_args=i)
 
         # Start timer to run simulator
         rospy.Timer(rospy.Duration(self.update_period), self.timer_cb)
@@ -42,6 +45,11 @@ class Navsim():
         self.update_period = rospy.get_param('~update_period', 0.1)
         self.world_frame = rospy.get_param('~world_frame', 'enu')
         self.body_frame = rospy.get_param('~body_frame', 'base_link')
+        self.thrust_map = ThrusterMap.from_ros_params(ns='/thrust_mapper/')
+
+    def thruster_cb(self, msg, index):
+        self.thrusts[index] = msg.setpoint
+        self.wrench = self.thrust_map.thrusts_to_wrench(self.thrusts)
 
     def timer_cb(self, timer_event):
         '''
@@ -69,12 +77,6 @@ class Navsim():
                                          self.twist + R.T.dot(self.wind))
         return posedot, twistdot
 
-    def wrench_cb(self, wrench):
-        '''
-        Sets internal wrench (force applied by thrusters) from ros message
-        '''
-        self.wrench = np.float64([wrench.wrench.force.x, wrench.wrench.force.y, wrench.wrench.torque.z])
-
     def publish_odom(self):
         '''
         Publish to odometry with latest pose and twist
@@ -96,6 +98,7 @@ class Navsim():
         msg.twist.twist.linear.x, msg.twist.twist.linear.y = twist[0:2]
         msg.twist.twist.angular.z = twist[2]
         return msg
+
 
 if __name__ == '__main__':
     rospy.init_node('navigator_sim2D')
