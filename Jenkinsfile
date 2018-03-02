@@ -24,12 +24,8 @@ dockerNode(image: 'uf-mil:mil_common') {
 	}
 	stage("Format") {
 		sh '''#!/bin/bash -i
-			set -m
-			ls $CATKIN_DIR/src
 			source ~/.mil/milrc > /dev/null 2>&1
 			source $CATKIN_DIR/devel/setup.bash > /dev/null 2>&1
-			env
-			alias
 			OUT=$(mcfmt)
 			if [ $? -ne 0 ]; then
 				echo $OUT

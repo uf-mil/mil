@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 from mil_tasks.msg import DoTaskAction, DoTaskResult, DoTaskFeedback
-from mil_tasks_core import BaseTask, ParametersException
 from txros import util, NodeHandle, action
 from twisted.internet import defer, reactor
 import twisted.python
 import inspect
+
 
 class TaskRunner(object):
     '''
@@ -151,12 +151,14 @@ class TaskRunner(object):
         self.task_defer = None
         yield self.check_new_task()
 
+
 @defer.inlineCallbacks
 def main():
     '''
     Start the task server, crashing if the init function fails.
     '''
     t = TaskRunner()
+
     def err(err):
         print err.getTraceback()
         print 'Error initializing task runnner'
