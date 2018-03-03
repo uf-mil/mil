@@ -51,6 +51,7 @@ class TaskClientCli(object):
         if result.result != '':
             print "Result: '{}'".format(result.result)
 
+
 def main():
     argv = rospy.myargv()
     parser = argparse.ArgumentParser(description='Runs a task on the task_runner server')
@@ -59,7 +60,8 @@ def main():
                         help='List available tasks instead of running a task')
     parser.add_argument('-c', '--cancel', dest='cancel', action='store_true',
                         help='Cancel current task instead of running a task')
-    parser.add_argument('parameters', nargs='*', help='list of parameters to pass to task. Will be concatenated into one stirng')
+    parser.add_argument('parameters', nargs='*', help='list of parameters to pass to task.\
+                                                       Will be concatenated into one string')
     args = parser.parse_args(argv[1:])
     if not args.list and not args.cancel and not args.task:
         parser.print_help()
