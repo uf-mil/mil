@@ -56,7 +56,7 @@ constants = {
         'TRUE': '\x18',
         'FALSE': '\x19'
     },
-    'HEARTBEAT_COMPUTER': {  # Will return True if board is not pinged by network often enough
+    'HEARTBEAT_COMPUTER': {  # Will return True if board is not pinged by mobo often enough
         'REQUEST': '\x26',
         'TRUE': '\x1A',
         'FALSE': '\x1B'
