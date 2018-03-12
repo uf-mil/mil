@@ -18,7 +18,7 @@ The computer can also command a kill (for example, if ROS notices a criticaly lo
 by sending the COMPUTER.KILL.REQUEST and undone with COMPUTER.CLEAR.REQUEST
 '''
 constants = {
-    'TIMEOUT_SECONDS': 8.0,  # How often board must be pinged to not set REMOTE to True
+    'TIMEOUT_SECONDS': 8.0,  # How often board must be pinged to not set HEARTBERAT_REMOTE True
                              # Note: not official documented, this is just a guess
     'RESPONSE_FALSE': '\x00',  # True status for synchronous requests of individual addresses
     'RESPONSE_TRUE': '\x01',   # False status for synchronous requests of individual addresses
@@ -29,7 +29,8 @@ constants = {
     },
 
     'KILLS': ['OVERALL', 'BUTTON_FRONT_PORT', 'BUTTON_AFT_PORT', 'BUTTON_FRONT_STARBOARD',\
-              'BUTTON_AFT_STARBOARD', 'REMOTE', 'COMPUTER'],
+              'BUTTON_AFT_STARBOARD', 'HEARTBEAT_COMPUTER', 'BUTTON_REMOTE',\
+              'HEARTBEAT_REMOTE', 'COMPUTER'],
     'OVERALL': {  # Should be True if any of the over are True
         'REQUEST': '\x21',
         'TRUE': '\x10',
@@ -55,10 +56,20 @@ constants = {
         'TRUE': '\x18',
         'FALSE': '\x19'
     },
-    'REMOTE': {  # Will return True if board is not pinged often enough
+    'HEARTBEAT_COMPUTER': {  # Will return True if board is not pinged by network often enough
         'REQUEST': '\x26',
         'TRUE': '\x1A',
         'FALSE': '\x1B'
+    },
+    'BUTTON_REMOTE': {
+        'REQUEST': '\x28',
+        'TRUE': '\x3A',
+        'FALSE': '\x3B'
+    },
+    'HEARTBEAT_REMOTE': {  # Will return True if board is not pinged by controller often enough
+        'REQUEST': '\x29',
+        'TRUE': '\x3C',
+        'FALSE': '\x3D'
     },
     'COMPUTER': {  # Allows board to be killed over serial (like through ROS)
         'KILL': {
