@@ -100,7 +100,9 @@ class SimulatedKillBoard(SimulatedSerial):
             'BUTTON_FRONT_STARBOARD': False,
             'BUTTON_AFT_STARBOARD': False,
             'COMPUTER': False,
-            'REMOTE': False,
+            'HEARTBEAT_COMPUTER': False,
+            'BUTTON_REMOTE': False,
+            'HEARTBEAT_REMOTE': False,
         }
         for key in constants['KILLS']:
             if key.find('BUTTON') == 0:
@@ -121,9 +123,9 @@ class SimulatedKillBoard(SimulatedSerial):
         if self.last_ping is None:
             return
         if (rospy.Time.now() - self.last_ping).to_sec() >= constants['TIMEOUT_SECONDS']:
-            self._set_kill('REMOTE', True)
+            self._set_kill('HEARTBEAT_COMPUTER', True)
         else:
-            self._set_kill('REMOTE', False)
+            self._set_kill('HEARTBEAT_COMPUTER', False)
 
     def _set_kill(self, name, on, update=True):
         if self.memory[name] != on:
