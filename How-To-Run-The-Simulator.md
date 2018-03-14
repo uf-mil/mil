@@ -1,6 +1,26 @@
-Launching the simulator will automatically generate the virtual world and bring the core systems of NaviGator online inside of it. The majority of the sensors (cameras, lidar, etc.) are implemented in simulation, so the platform should behave as it does in the real world for the most part.
-1. In a terminal, start a roscore if you have not done so already using ```roscore```. You must have a roscore running on your system any time you run a ros program.
-1. In a new terminal, run the simulator using ```roslaunch navigator_launch simulation.launch```
-1. Wait for the simulator to load. This may take a couple of minutes and will slow your computer down. If the Gazebo GUI never runs, you can try running without the GUI ```roslaunch navigator_launch simulation.launch gui:=false```
-1. To make sure everything is working, try executing a move command. First you need to turn off the kill alarm, which is a safety feature. ```aclear kill```
-1. Now you should be able to make NaviGator move. ```nmove forward 1``` will send a command to move NaviGator forward by 1 meter. After a couple seconds, you should see NaviGator moving
+> "Every line of untested code is a line of broken code" - Kevin
+
+Simulation is a crucial part of our development process, as it allows us to test code outside of our lake testing days. NaviGator has two simulators which are useful for testing different things:
+
+# Gazebo
+Gazebo is a full 3D simulator which can simulate all of NaviGator's sensors, including the cameras and LIDAR, in a full competition course. Currently, NaviGator's kinemetics are not simulated in gazebo so NaviGator perfectly tracts the current commanded trajectory, ignoring the controller and thruster mapper. Therefore it is quite computationally expensive and will make your computer run very slow or perhaps freeze up all together.  
+
+> **Use Gazebo for testing full missions or perception code**.
+
+## Usage
+To run the gazebo simulator, run the launch file:
+
+```roslaunch navigator_launch simulation.launch```
+
+This will run both the simulator and all the other nodes normally launched on NaviGator, such as the mission server, alarms, path planner, etc. 
+* By default this will open the Gazebo gui which shows this 3D environment. The gui can be disabled to save some resources by adding ```gui:=false``` to the end of the command.
+* If your testing does not require the competition props, you can also run with just NaviGator in the water by adding ```sandbox:=false```
+
+# 2D Simulator
+We also have a more lightweight simulator which only simulates NaviGator's kinematics (no cameras, LiDAR, or competition props). It consumes much less RAM/CPU than Gazebo and provides a more accurate simulation of NaviGator's movements. 
+> **Use the 2D simulator to test changes which do not require perception**.
+
+## Usage
+You can run the 2D simulator along with all other core nodes usually run on NaviGator by running the launch file:
+
+```roslaunch navigator_launch sim2d.launch```
