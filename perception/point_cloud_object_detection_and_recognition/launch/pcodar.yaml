@@ -26,5 +26,7 @@ cluster_tolerance_m: 4.4
 cluster_min_num_points: 2
 cluster_max_num_points: 25000
 
+max_distance_for_association: 20
+
 object_types: ["SHOOTER", "SCAN_THE_CODE"]
 object_colors: ["RED", "GREEN"]

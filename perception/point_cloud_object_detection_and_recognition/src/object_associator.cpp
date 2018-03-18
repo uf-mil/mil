@@ -33,7 +33,8 @@ std::vector<association_unit> associator::associate(const id_object_map& object_
             if (norm < min_distance && norm < params.max_distance_for_association)
             {
                 min_distance = norm;
-                min_id = i;
+                // min_id = i;
+                min_id = id_object.first;
             }
         }
 
@@ -45,6 +46,7 @@ std::vector<association_unit> associator::associate(const id_object_map& object_
         {
             uint id = static_cast<uint>(min_id);
             association_units.push_back({.index = i, .object_id = id});
+            std::cout << "Association: " << i << " " << id << std::endl;
             associated_ids.insert(id);
         }
     }

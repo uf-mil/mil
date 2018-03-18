@@ -10,11 +10,32 @@ void ogrid_manager::initialize(ros::NodeHandle& nh) {
   ogrid_.info.width = 10000*0.3;
   ogrid_.info.height = 10000*0.3;
 }
-void ogrid_manager::update_ogrid(const mil_msgs::PerceptionObjectArray &objects, nav_msgs::OdometryConstPtr odom)
+void ogrid_manager::draw_boundary() {
+  std::vector<cv::Point>bounds(pcodar::boundary.size());
+  for(int i = 0; i < bounds.size(); ++i) {
+    bounds[i].x = boundary[i](0)/0.3 + 10000*0.3/2;
+    bounds[i].y = boundary[i](1)/0.3 + 10000*0.3/2;
+  }
+
+
+  for(int i = 0; i < bounds.size(); ++i) {
+    // std::cout << bounds[i] << std::endl;
+    cv::circle(ogrid_mat_, bounds[i], 15, cv::Scalar(99), -1);
+  }
+  const cv::Point *pts = (const cv::Point*) cv::Mat(bounds).data;
+  int npts = cv::Mat(bounds).rows;
+
+  // std::cout <<  "Number of polygon vertices: " <<  npts <<  std::endl;
+   // draw the polygon 
+  cv::polylines(ogrid_mat_, &pts, &npts, 1, true, cv::Scalar(99), 5);
+
+  // Eigen::Vector2d(-210, -175), Eigen::Vector2d(-210, 15), Eigen::Vector2d(-50, 15), Eigen::Vector2d(-50, -175)
+}
+void ogrid_manager::update_ogrid(const id_object_map_ptr objects, nav_msgs::OdometryConstPtr odom)
 {
-  if (objects.objects.empty()) return;
+  if (objects->empty()) return;
   ogrid_mat_ = cv::Scalar(0);
-  for (const auto& object : objects.objects)
+  for (const auto& object : *objects)
   {
 //std::cout << "Pose: " << object.pose.position.x << " " << object.pose.position.y << " " << object.pose.position.z << std::endl;
 
@@ -22,28 +43,30 @@ void ogrid_manager::update_ogrid(const mil_msgs::PerceptionObjectArray &objects,
   // auto y = object.pose.position.y + 201/2 - odom->pose.pose.position.y;
   // auto z = object.pose.position.z + 201/2 - odom->pose.pose.position.z;
   
-  auto x = object.pose.position.x/0.3 + 10000*0.3/2;
-  auto y = object.pose.position.y/0.3 + 10000*0.3/2;
-  auto z = object.pose.position.z/0.3 + 10000*0.3/2;
+  auto x = object.second.pose.position.x/0.3 + 10000*0.3/2;
+  auto y = object.second.pose.position.y/0.3 + 10000*0.3/2;
+  auto z = object.second.pose.position.z/0.3 + 10000*0.3/2;
   //std::cout << object.pose.orientation.x << " " << object.pose.orientation.y << " " << object.pose.orientation.z << " " << object.pose.orientation.w << std::endl;
   //std::cout << x << " " << y << " " << z << std::endl;
     //double angle = 2 * acos(object.pose.orientation.w);
-    auto q = object.pose.orientation;
-    double siny = 2.0 * (q.w * q.z);
-    double cosy = 1.0 - 2.0 * (q.z*q.z);
-    double angle = atan2(siny, cosy);
-    //std::cout << "ANGLE: " << angle << std::endl;
-    // cv::circle(ogrid_mat_, cv::Point(x, y), 10, 255, -1);
-    cv::RotatedRect rRect(cv::Point(x,y), cv::Size(object.scale.x/0.3, object.scale.y/0.3), angle * 180 / 3.1415);
-    //cv::rectangle(ogrid_mat_, cv::Point(x, y), cv::Point(x + object.scale.x*0.3, y + object.scale.y*0.3), 255);
-    cv::Point2f vertices[4];
-    rRect.points(vertices);
-    cv::Point vert[4];
-    for (int i = 0; i < 4; i++)
-        vert[i] = vertices[i];
-        //cv::line(ogrid_mat_, vertices[i], vertices[(i+1)%4], 255, 2);
-    cv::fillConvexPoly(ogrid_mat_, vert, 4, cv::Scalar(99));
+  // std::cout << object.second.points.size() << std::endl;
+  for(const auto &point : object.second.points) {
+
+    cv::circle(ogrid_mat_, cv::Point(point.x/0.3 + 10000*0.3/2, point.y/0.3 + 10000*0.3/2), 7, cv::Scalar(99), -1);
   }
+    // auto q = object.second.pose.orientation;
+    // double siny = 2.0 * (q.w * q.z);
+    // double cosy = 1.0 - 2.0 * (q.z*q.z);
+    // double angle = atan2(siny, cosy);
+    // cv::RotatedRect rRect(cv::Point(x,y), cv::Size(object.second.scale.x/0.3, object.second.scale.y/0.3), angle * 180 / 3.1415);
+    // cv::Point2f vertices[4];
+    // rRect.points(vertices);
+    // cv::Point vert[4];
+    // for (int i = 0; i < 4; i++)
+    //     vert[i] = vertices[i];
+    // cv::fillConvexPoly(ogrid_mat_, vert, 4, cv::Scalar(99));
+  }
+  draw_boundary();
   
     std::vector<int8_t> data(ogrid_mat_.cols * ogrid_mat_.rows);
       auto out_it = data.begin();

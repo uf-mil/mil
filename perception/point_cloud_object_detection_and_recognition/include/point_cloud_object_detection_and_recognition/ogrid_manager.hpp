@@ -21,7 +21,8 @@ namespace pcodar
   {
     public:
       void initialize(ros::NodeHandle& nh);
-      void update_ogrid(const mil_msgs::PerceptionObjectArray &objects, nav_msgs::OdometryConstPtr odom);
+      void update_ogrid(const id_object_map_ptr objects, nav_msgs::OdometryConstPtr odom);
+      void draw_boundary();
     private:
       ros::Publisher pub_ogrid_;
       cv::Mat ogrid_mat_;

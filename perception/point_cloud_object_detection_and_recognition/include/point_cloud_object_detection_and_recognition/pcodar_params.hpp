@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include <Eigen/Geometry>
+
 namespace pcodar
 {
 
@@ -62,5 +64,6 @@ extern struct pcodar_params
     std::vector<std::string> object_colors = {"blue", "red", "green"};
 } params;
 
+extern std::vector<Eigen::Vector2d> boundary;
 void set_params(ros::NodeHandle& nh);
 }

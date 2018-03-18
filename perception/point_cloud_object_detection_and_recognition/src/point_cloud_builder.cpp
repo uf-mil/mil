@@ -18,7 +18,7 @@ namespace pcodar
 {
 namespace
 {
-point_cloud filter(const point_cloud& in_cloud, const bool real_time)
+point_cloud filter(const point_cloud& in_cloud, const Eigen::Affine3d& e_velodyne_to_X, const bool real_time)
 {
 
 
@@ -37,6 +37,59 @@ point_cloud filter(const point_cloud& in_cloud, const bool real_time)
     sorfilter.setStddevMulThresh(params.outier_removal_std_dev_thresh);
     sorfilter.setMeanK(params.outier_removal_mean_k);
     sorfilter.filter(out_cloud);
+
+        auto b1 = boundary[0];
+    auto ab = b1 - boundary[1];
+    Eigen::Vector2d ac = b1 - boundary[2];
+    // Why .1 for the dot product result?
+    if (ab.dot(ac) > .1)
+    {
+      ac = b1 - boundary[3];
+    }
+
+    pcl::PointIndices::Ptr inliers(new pcl::PointIndices());
+    pcl::ExtractIndices<pcl::PointXYZ> extract;
+    for (int i = 0; i < out_cloud.size(); i++)
+    {
+      pcl::PointXYZ pt(out_cloud.points[i].x, out_cloud.points[i].y, out_cloud.points[i].z);
+      // float zAvg = 0.5f;
+      // if (abs(pt.z - zAvg) < 5) // e.g. remove all pts below zAvg
+        Eigen::Vector2d am = b1 - Eigen::Vector2d(pt.x, pt.y);
+
+    if (!(0 <= ab.dot(am) && ab.dot(am) <= ab.dot(ab) && 0 <= am.dot(ac) && am.dot(ac) <= ac.dot(ac)))
+
+      {
+        inliers->indices.push_back(i);
+      }
+        if (abs(pt.x - e_velodyne_to_X.translation().x()) < 2 && abs(pt.y - e_velodyne_to_X.translation().y()) < 2)
+        {
+            inliers->indices.push_back(i);
+        }
+    }
+    extract.setInputCloud(out_cloud.makeShared());
+    extract.setIndices(inliers);
+    extract.setNegative(true);
+    extract.filter(out_cloud);
+
+    // // Ignore Points Near Boat
+    // for (point_cloud::iterator it = temp_cloud.begin(); it != temp_cloud.end(); ++it)
+    // {
+    //     if (abs(it->x - e_velodyne_to_X.translation().x()) < 2.5 && abs(it->y - e_velodyne_to_X.translation().y()) < 2.5)
+    //     {
+    //         temp_cloud.erase(it);
+    //         --it;
+    //     }
+    //     Eigen::Vector2d am = b1 - Eigen::Vector2d(it->x, it->y);
+
+    //     if (!(0 <= ab.dot(am) && ab.dot(am) <= ab.dot(ab) && 0 <= am.dot(ac) && am.dot(ac) <= ac.dot(ac)))
+    //     {
+    //         // auto old = it;
+    //         // temp_cloud.erase(it);
+    //         // it = old;
+    //     }
+    // }
+
+
 
     const auto buffered_cloud_ptr_2 = out_cloud.makeShared();
 
@@ -67,6 +120,7 @@ point_cloud transform_point_cloud(const sensor_msgs::PointCloud2& pcloud2, const
     // Transform points into ENU frame
     point_cloud temp_cloud;
     pcl::transformPointCloud(pcloud, temp_cloud, e_velodyne_to_X);
+
     return temp_cloud;
 }
 
@@ -75,6 +129,7 @@ void point_cloud_builder::add_point_cloud(const sensor_msgs::PointCloud2& pcloud
 {
    
     auto transformed_cloud = transform_point_cloud(pcloud2, e_velodyne_to_enu).makeShared();
+
     point_cloud buffered_cloud;
     if (prev_clouds_.full())
     {
@@ -90,10 +145,10 @@ void point_cloud_builder::add_point_cloud(const sensor_msgs::PointCloud2& pcloud
         return;
     }
 
-    const auto filtered_buffered_cloud = filter(buffered_cloud,real_time_);
+    const auto filtered_buffered_cloud = filter(buffered_cloud, e_velodyne_to_enu, real_time_);
     mega_cloud_ += filtered_buffered_cloud;
     real_time_ = true;
-    mega_cloud_ = filter(mega_cloud_, real_time_);
+    mega_cloud_ = filter(mega_cloud_, e_velodyne_to_enu, real_time_);
 }
 
 point_cloud point_cloud_builder::get_point_cloud()

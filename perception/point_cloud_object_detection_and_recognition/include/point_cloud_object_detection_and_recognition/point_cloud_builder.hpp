@@ -8,6 +8,8 @@
 
 #include <boost/circular_buffer.hpp>
 
+#include <pcl/filters/extract_indices.h>
+
 namespace pcodar
 {
 point_cloud transform_point_cloud(const sensor_msgs::PointCloud2& pcloud2, const Eigen::Affine3d& e_velodyne_to_X);

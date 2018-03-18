@@ -6,6 +6,7 @@
 #include "object_detector.hpp"
 #include "pcodar_params.hpp"
 #include "pcodar_types.hpp"
+#include "object_associator.hpp"
 
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
@@ -61,7 +62,9 @@ class pcodar_controller
     id_object_map_ptr id_object_map_;
     id_label_map_ptr id_label_map_;
 
+    mil_msgs::PerceptionObjectArray old_objects_;
 
+    associator ass;
 
 };
 

@@ -79,7 +79,7 @@ visualization_msgs::InteractiveMarker marker_manager::get_marker_interactive(con
 
 }
 
-void marker_manager::update_markers(const std::vector<mil_msgs::PerceptionObject>& objects)
+void marker_manager::update_markers(const id_object_map_ptr objects)
 {
     visualization_msgs::MarkerArray marker_object_array;
     visualization_msgs::MarkerArray marker_text_array;
@@ -87,12 +87,12 @@ void marker_manager::update_markers(const std::vector<mil_msgs::PerceptionObject
     visualization_msgs::Marker marker_delete;
     marker_delete.action = visualization_msgs::Marker::DELETEALL;
     // marker_array.markers.push_back(marker_delete);
-    for (const auto& object : objects)
+    for (const auto& object : *objects)
     {
-        auto it = id_label_map_->find(object.id);
-        marker_object_array.markers.push_back(get_marker_object(object));
-        marker_text_array.markers.push_back(get_marker_text(object));
-        interactive_marker_server_->insert(get_marker_interactive(object));
+        auto it = id_label_map_->find(object.second.id);
+        marker_object_array.markers.push_back(get_marker_object(object.second));
+        marker_text_array.markers.push_back(get_marker_text(object.second));
+        interactive_marker_server_->insert(get_marker_interactive(object.second));
         // menu_handler_.apply(*interactive_marker_server_, object.classification);
     }
     pub_markers_objects_.publish(marker_object_array);

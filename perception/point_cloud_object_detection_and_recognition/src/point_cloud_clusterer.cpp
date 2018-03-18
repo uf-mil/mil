@@ -65,7 +65,6 @@ std::vector<mil_msgs::PerceptionObject> get_point_cloud_clusters(const point_clo
             p_obj.points.emplace_back(g_point);
         }
         cv::RotatedRect rect = cv::minAreaRect(cv_points);
-
         p_obj.header.frame_id = "enu";
         p_obj.header.stamp = ros::Time();
         p_obj.pose.position.x = rect.center.x;

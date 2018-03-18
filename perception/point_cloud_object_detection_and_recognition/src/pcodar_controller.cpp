@@ -121,23 +121,41 @@ void pcodar_controller::executive()
     tf::transformMsgToEigen(T_enu_velodyne_ros.transform, e_transform);
     detector_.add_point_cloud(latest_point_cloud_, e_transform);
 
-    auto objects = detector_.get_objects(pub_pcl_);
-    for (auto &object : objects->objects)
-    {
-            auto it = id_label_map_->find(object.id);
-            if (it != id_label_map_->end())
-            {
-                object.classification = it->second.first;
-                object.labeled_classification = it->second.second;
-            }
+    auto objects = detector_.get_objects(pub_pcl_); //mil_msgs::PerceptionObjectArrayPtr
+    // std::cout << objects->objects.size() << std::endl;
+    //uint, mil_msgs::PerceptionObject
+    if(id_object_map_->empty()) {
+        for(auto &object : objects->objects) {
+            id_object_map_->insert({object.id, object});
+        }
     }
-    marker_manager_.update_markers(objects->objects);
-    ogrid_manager_.update_ogrid(*objects, latest_odom_);
+
+    std::vector<association_unit> association_unit = ass.associate(*id_object_map_, objects->objects); 
+
+        try {
+    for (const auto &a : association_unit) {
+    //         // std::cout << a.first <<endl;
+        auto w = id_object_map_->find(a.object_id);
+        auto z = objects->objects.at(a.index);
+
+        if (w == id_object_map_->end())
+        {
+
+            std::cout <<a.index << " " << a.object_id << " does not exist" << id_object_map_->size() << std::endl;
+            id_object_map_->insert({a.index, objects->objects.at(a.index)}); //TODO
+            continue;
+        }
+            z.id = w->first;
+            w->second = objects->objects.at(a.index);
+    }
+        }
+        catch(...) {
+            std::cout << "oi check yo self" << std::endl;
+        }     
+
+    marker_manager_.update_markers(id_object_map_);
+    ogrid_manager_.update_ogrid(id_object_map_, latest_odom_);
     service_provider_.update_objects_reference(objects);
-
-
-
-
 
     pub_objects_.publish(objects);
 

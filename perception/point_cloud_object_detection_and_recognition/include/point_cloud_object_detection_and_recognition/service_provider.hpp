@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pcodar_types.hpp"
+#include "pcodar_params.hpp"
 
 #include <interactive_markers/interactive_marker_server.h>
 #include <interactive_markers/menu_handler.h>
@@ -14,6 +15,9 @@
 #include <memory>
 
 #include <mil_msgs/ObjectDBQuery.h>
+
+#include <dynamic_reconfigure/client.h>
+#include <navigator_tools/BoundsConfig.h>
 
 
 namespace pcodar
@@ -31,6 +35,10 @@ class service_provider
     id_label_map_ptr id_label_map_;
 
     bool DBQuery_cb(mil_msgs::ObjectDBQuery::Request &req, mil_msgs::ObjectDBQuery::Response &res);
+
+	bool bounds_update_cb(const navigator_tools::BoundsConfig &config);
+
+    std::unique_ptr<dynamic_reconfigure::Client<navigator_tools::BoundsConfig>> bounds_client_;
 
 };
 }

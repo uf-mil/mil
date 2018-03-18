@@ -9,12 +9,27 @@ void service_provider::initialize(ros::NodeHandle& nh, id_label_map_ptr id_label
 {
     modify_classification_service_ = nh.advertiseService("/database/requests", &pcodar::service_provider::DBQuery_cb, this);
     id_label_map_ = id_label_map;
+  // ros::NodeHandle bounds_nh("/bounds_server");
+    // bounds_client_.reset(new dynamic_reconfigure::Client<navigator_tools::BoundsConfig>("/bounds_server", bounds_nh, &pcodar::service_provider::bounds_update_cb));
 }
 
  void service_provider::update_objects_reference(mil_msgs::PerceptionObjectArrayPtr objects)
 { 
     objects_ = objects;
 }
+
+bool service_provider::bounds_update_cb(const navigator_tools::BoundsConfig &config)
+{
+  boundary[0](0) = config.x1;
+  boundary[0](1) = config.y1;
+  boundary[1](0) = config.x2;
+  boundary[1](1) = config.y2;
+  boundary[2](0) = config.x3;
+  boundary[2](1) = config.y3;
+  boundary[3](0) = config.x4;
+  boundary[3](1) = config.y4;
+}
+
 
 bool service_provider::DBQuery_cb(mil_msgs::ObjectDBQuery::Request &req, mil_msgs::ObjectDBQuery::Response &res)
 {

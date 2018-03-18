@@ -3,6 +3,8 @@
 namespace pcodar
 {
 pcodar_params params;
+// std::vector<Eigen::Vector2d> boundary = {Eigen::Vector2d(-10, -10), Eigen::Vector2d(-10, 10), Eigen::Vector2d(100, -100), Eigen::Vector2d(100, 100)};
+std::vector<Eigen::Vector2d> boundary = {Eigen::Vector2d(-210, -175), Eigen::Vector2d(-210, 15), Eigen::Vector2d(-50, 15), Eigen::Vector2d(-50, -175)};
 void set_params(ros::NodeHandle& nh)
 {
     nh.getParam("/pcodar/executive_rate", params.executive_rate);
