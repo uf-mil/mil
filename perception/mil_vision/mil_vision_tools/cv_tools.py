@@ -145,3 +145,28 @@ def contour_centroid(contour, M=None):
     M = cv2.moments(contour) if M is None else M
     return np.array((int(M['m10'] / M['m00']),
                      int(M['m01'] / M['m00'])))
+
+def contour_mask(contour, img_shape=None, mask=None):
+    '''
+    Returns an image with the mask of a filled in contour given a image shape
+
+    Either img_shape or mask MUST not be None.
+    If img_shape is set, create a new mask image with that size.
+    If mask is set, zero it out then draw mask.
+    '''
+    if mask is None:
+        mask = np.empty((img_shape[0], img_shape[1], 1), dtype=np.uint8)
+    mask.fill(0)
+    cv2.drawContours(mask, [contour], 0, 255, -1)
+    return mask
+
+def putText_ul(img, text, org, fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale=1, color=255, thickness=2, lineType=8, bottomLeftOrigin=False):
+    '''
+    Puts text on image like cv2.putText but shifts it such that the origin in the upper left corner of where the text is placed, instead of
+    the bottom left as cv2 does by default.
+    '''
+    (text_width, text_height), _ = cv2.getTextSize(text, fontFace, fontScale, thickness)
+    x, y = org
+    y += text_height
+    cv2.putText(img, text, (x, y), fontFace, fontScale, color, thickness, lineType, bottomLeftOrigin)
+    return
