@@ -67,10 +67,13 @@ if __name__ == '__main__':
     reader = LabelBoxParser(args.labels, image_dir=args.dir)
 
     import cv2
+    from mil_vision_tools import contour_centroid
     def cb(label, img):
         for key in label['Label']:
             for polygon in label['Label'][key]:
                 points = LabelBoxParser.label_to_contour(polygon, img.shape[0])
+                centroid = contour_centroid(points)
+                cv2.circle(img, (centroid[0], centroid[1]), 3, (255, 255, 255))
                 cv2.drawContours(img, [points], -1, (255, 255, 255), 3)
         cv2.imshow('test', img)
         cv2.waitKey(0)

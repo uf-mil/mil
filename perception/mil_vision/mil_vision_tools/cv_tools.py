@@ -140,3 +140,8 @@ def auto_canny(image, sigma=0.33):
     lower = int(max(0, (1.0 - sigma) * m))
     upper = int(min(255, (1.0 + sigma) * m))
     return cv2.Canny(image, lower, upper)
+
+def contour_centroid(contour, M=None):
+    M = cv2.moments(contour) if M is None else M
+    return np.array((int(M['m10'] / M['m00']),
+                     int(M['m01'] / M['m00'])))
