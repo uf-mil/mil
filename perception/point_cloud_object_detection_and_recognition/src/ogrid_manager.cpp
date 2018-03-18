@@ -3,7 +3,7 @@
 namespace pcodar
 {
 void ogrid_manager::initialize(ros::NodeHandle& nh) {
-  pub_ogrid_ = nh.advertise<nav_msgs::OccupancyGrid>("ogrid", 5);
+  pub_ogrid_ = nh.advertise<nav_msgs::OccupancyGrid>("/ogrid", 5);
   ogrid_mat_ = cv::Mat(10000*0.3, 10000*0.3, CV_8UC1, cv::Scalar(0));
   ogrid_.info.resolution = .3;
   ogrid_.header.frame_id = "enu";
@@ -52,7 +52,7 @@ void ogrid_manager::update_ogrid(const id_object_map_ptr objects, nav_msgs::Odom
   // std::cout << object.second.points.size() << std::endl;
   for(const auto &point : object.second.points) {
 
-    cv::circle(ogrid_mat_, cv::Point(point.x/0.3 + 10000*0.3/2, point.y/0.3 + 10000*0.3/2), 7, cv::Scalar(99), -1);
+    cv::circle(ogrid_mat_, cv::Point(point.x/0.3 + 10000*0.3/2, point.y/0.3 + 10000*0.3/2), params.ogrid_inflation_cell, cv::Scalar(99), -1);
   }
     // auto q = object.second.pose.orientation;
     // double siny = 2.0 * (q.w * q.z);

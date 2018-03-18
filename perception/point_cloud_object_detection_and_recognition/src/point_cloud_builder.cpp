@@ -61,7 +61,7 @@ point_cloud filter(const point_cloud& in_cloud, const Eigen::Affine3d& e_velodyn
       {
         inliers->indices.push_back(i);
       }
-        if (abs(pt.x - e_velodyne_to_X.translation().x()) < 2 && abs(pt.y - e_velodyne_to_X.translation().y()) < 2)
+        if (abs(pt.x - e_velodyne_to_X.translation().x()) < 5 && abs(pt.y - e_velodyne_to_X.translation().y()) < 5)
         {
             inliers->indices.push_back(i);
         }

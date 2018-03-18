@@ -39,15 +39,18 @@ bool service_provider::DBQuery_cb(mil_msgs::ObjectDBQuery::Request &req, mil_msg
         
         int id = -1;
         try {
+            std::cout << "RCV cmd: " << req.cmd << std::endl;
             id = std::stoi(req.cmd.substr(0, pos));
+            std::cout << "Got id " << id << std::endl;
         }
         catch(...)
         {
+            std::cout << "Could not find id " << id << std::endl;
             res.found = false;
             return false;
         }
         std::string cmd = req.cmd.substr(pos+1);
-
+        std::cout << "cmd: " << cmd << std::endl;
         for (auto &object : objects_->objects)
         {
             if (object.id == id)
