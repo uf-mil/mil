@@ -2,6 +2,7 @@
 import json
 import os
 import cv2
+import numpy as np
 
 class LabelBoxParser(object):
     '''
@@ -21,9 +22,23 @@ class LabelBoxParser(object):
         self.image_dir = image_dir
 
     @staticmethod
-    def label_point_to_numpy(points):
-        # TODO: return numpy points from label object
-        pass
+    def label_to_contour(points, height):
+        '''
+        Return cv2 style contour from a label. Requires img height so the y values can be correct
+        @param points: list of points from a label in format [{'x': 542.4, 'y': 5454}, {'x': 232.12, 'y': 652}, ...]
+        @param height: height of the image the contour comes from. Use img.shape[0]
+        ex:
+        def cb(label, img):
+            for key in label['Label']: # For each class
+                for polygon in label['Label'][key]: # For each segmentation with that class
+                    points = LabelBoxParser.label_to_contour(polygon, img.shape[0])
+                    cv2.drawContours(img, [points], -1, (255, 255, 255), 3)
+        '''
+        nppts = np.zeros((len(points), 2))
+        for i, pt in enumerate(points):
+            nppts[i, 0] = pt['x']
+            nppts[i, 1] = height - pt['y']
+        return np.array(nppts, dtype=int)
 
     def get_labeled_images(self, cb):
         '''
@@ -53,9 +68,11 @@ if __name__ == '__main__':
 
     import cv2
     def cb(label, img):
-        cv2.imshow('test' , img)
-        print label
+        for key in label['Label']:
+            for polygon in label['Label'][key]:
+                points = LabelBoxParser.label_to_contour(polygon, img.shape[0])
+                cv2.drawContours(img, [points], -1, (255, 255, 255), 3)
+        cv2.imshow('test', img)
         cv2.waitKey(0)
-
     reader.get_labeled_images(cb)
 
