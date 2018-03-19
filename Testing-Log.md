@@ -2,15 +2,15 @@
 Below are notes recorded during NaviGator testing days at Lake Wauburg. They are used as a reference for resolving issues and ideas discovered during testing
 
 ## March 18, 2018
-* GPS programs were crashing - switched output file to /dev/nell, fixed problem
+* GPS programs were crashing - switched output file to /dev/null, fixed problem
 * Can't write bags to external bag drive - bag drive mounted as read-only - source of GPS errors
-* Unplugged from one switch to another, fixed read-only problem
-* Switched drew bag nell
-* Bug in circle option for move command, typo was source of issue
-* Every time controller reconnects, it kills
-* Need notification of obstructing humans
+* Unplugged from one USB port to another, fixed read-only problem. Try to replicate in lab...
+* Velodyne could not connect again,  moved to different port on switch and it worked
+* Bug in circle option for move command, fix and on lakeday branch
+* Every time xbox controller reconnects, it kills
+* Kayakers should notify mission control if they're swimming in the water, as it is hard to see them
 * Blind move did not work
-* Need option for rrt
+* Need option for not using rrt, just continuous path
 
 ## February 18, 2018
 * Had some issues with running both pointgrey cameras at once
