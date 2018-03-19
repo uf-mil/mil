@@ -1,6 +1,17 @@
 # Testing log
 Below are notes recorded during NaviGator testing days at Lake Wauburg. They are used as a reference for resolving issues and ideas discovered during testing
 
+## March 18, 2018
+* GPS programs were crashing - switched output file to /dev/nell, fixed problem
+* Can't write bags to external bag drive - bag drive mounted as read-only - source of GPS errors
+* Unplugged from one switch to another, fixed read-only problem
+* Switched drew bag nell
+* Bug in circle option for move command, typo was source of issue
+* Every time controller reconnects, it kills
+* Need notification of obstructing humans
+* Blind move did not work
+* Need option for rrt
+
 ## February 18, 2018
 * Had some issues with running both pointgrey cameras at once
 * The smallest sized competition (black) buoys become blind to the velodyne at about 4.8m away (measured in 2D from velodyne to buoy)
