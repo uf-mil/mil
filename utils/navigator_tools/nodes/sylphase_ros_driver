@@ -5,12 +5,11 @@ import traceback
 import socket
 import json
 import numpy
-
 import rospy
-
-from std_msgs.msg import Header, Float64
+from std_msgs.msg import Header
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Pose, PoseWithCovariance, Twist, TwistWithCovariance, Point, Vector3, Quaternion, TransformStamped, Transform, Vector3Stamped
+from geometry_msgs.msg import Pose, PoseWithCovariance, Twist, TwistWithCovariance, Point, Vector3, \
+    Quaternion, Vector3Stamped
 
 
 rospy.init_node('sdgps_solution_ros_bridge')
@@ -24,6 +23,7 @@ force_z_to_zero = rospy.get_param('~force_z_to_zero', False)
 odom_pub = rospy.Publisher('odom', Odometry, queue_size=100)
 absodom_pub = rospy.Publisher('absodom', Odometry, queue_size=100)
 acceleration_pub = rospy.Publisher('acceleration', Vector3Stamped, queue_size=100)
+
 
 def go():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -50,8 +50,8 @@ def go():
             if count % decimation == 0:
                 d = json.loads(line)
                 if not d['running']:
-                   rospy.logwarn_throttle(10, 'GPS not running: {}'.format(d['running_reason']))
-                   continue
+                    rospy.logwarn_throttle(10, 'GPS not running: {}'.format(d['running_reason']))
+                    continue
 
                 if force_z_to_zero:
                     d['relative_position_enu'][2] = 0

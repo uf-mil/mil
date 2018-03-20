@@ -15,18 +15,21 @@ dockerNode(image: 'uf-mil:navigator') {
 		'''
 	}
 	stage("Test") {
-		sh '''
+		sh '''#!/bin/bash -i
 			source ~/.mil/milrc > /dev/null 2>&1
 			source $CATKIN_DIR/devel/setup.bash > /dev/null 2>&1
-			cd $CATKIN_DIR
-			rosrun mil_tools catkin_tests_directory.py src/NaviGator
+			$(navtest)
 			catkin_test_results $CATKIN_DIR/build/test_results --verbose
 		'''
 	}
 	stage("Format") {
-		sh '''
-			if [[ ! -z "$(python2.7 -m flake8 --ignore E731 --exclude=./deprecated,./gnc/navigator_path_planner/lqRRT,__init__.py --max-line-length=120 .)" ]]; then
-				echo "The preceding Python files are not formatted correctly"
+		sh '''#!/bin/bash -i
+			source ~/.mil/milrc > /dev/null 2>&1
+			source $CATKIN_DIR/devel/setup.bash > /dev/null 2>&1
+			OUT=$(navfmt)
+			if [ $? -ne 0 ]; then
+				echo $OUT
+				echo "The preceding Python following files are not formatted correctly"
 				exit 1
 			fi
 		'''
