@@ -37,7 +37,7 @@ private:
     }
     catch (tf::TransformException ex)
     {
-      ROS_ERROR("%s", ex.what());
+      ROS_ERROR_THROTTLE(10.0, "%s", ex.what());
       return;
     }
 
@@ -48,7 +48,7 @@ private:
     }
     catch (tf::TransformException ex)
     {
-      ROS_ERROR("%s", ex.what());
+      ROS_ERROR_THROTTLE(10.0, "%s", ex.what());
       return;
     }
 
