@@ -1,22 +1,22 @@
-# Defines one labeling project
-bags: # List of bags to pull images from. All images go into same output dir
-    - file: stc.bag                       # bag file name. Will be resolved relative to bag dir set in yaml of cli argument
-      topic: /camera/seecam/image_raw     # Topic in bag to extract images from
-      encoding: rect_color                # How to process image if needed, can be mono, rect, color, or rect_color
-      freq: 0.5                           # Number of images to extract per second of bag time
-    - file: stc_closer.bag
-      topic: /camera/seecam/image_raw
-      encoding: rect_color
-      freq: 0.5
-    - file: scanthecode.bag
-      topic: /camera/seecam/image_raw
-      encoding: rect_color
-      freq: 0.05
-    - file: stc2.bag
-      topic: /camera/seecam/image_raw
-      encoding: rect_color
-      freq: 0.5
-
-
-
-
+# Configuration for a labeling project, see extract_bag_images
+datasets:
+    - name: navigator_stc_seecam              # name of this dataset, also directory where images from this dataset will go
+      sources:                                # List of source bag files to get images for this dataset
+        - file: stc.bag                       # filename of bag, resolved relative to source_dir argument of extact_bag_images
+          topic: /camera/seecam/image_raw     # Topic in bag to extract images from.
+          encoding: rect_color                # How to process image if needed, can be mono, rect, color, or rect_color, optional
+          freq: 0.5                           # Number of images to extract per second of bag time, optional
+          start: 5.0                          # Time from start of bag, in seconds, to start extracting images from, optional
+          end: 20.0                           # Time from start of bag, in seconds, to stop extracting images, optional
+        - file: stc_closer.bag
+          topic: /camera/seecam/image_raw
+          encoding: rect_color
+          freq: 0.5
+        - file: scanthecode.bag
+          topic: /camera/seecam/image_raw
+          encoding: rect_color
+          freq: 0.05
+        - file: stc2.bag
+          topic: /camera/seecam/image_raw
+          encoding: rect_color
+          freq: 0.5
