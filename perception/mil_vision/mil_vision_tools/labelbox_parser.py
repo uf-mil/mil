@@ -4,6 +4,7 @@ import os
 import cv2
 import numpy as np
 
+
 class LabelBoxParser(object):
     '''
     Class to read an exported labelbox annotation file (must be JSON formatted)
@@ -15,7 +16,8 @@ class LabelBoxParser(object):
         @param labelfile: name of json file containing labelbox annotations
         @param image_dir: directory where all images will be found (should be same place you uploaded them from).
                           It is expected that the images in this directory have the same name as when they
-                          were uploaded to labelbox.
+                          were uploaded to labelbox. Will look in all top level subdirectories also,
+                          to support additional datasets for the same project.
         '''
         f = open(labelfile)
         self.labels = json.load(f)
@@ -47,27 +49,40 @@ class LabelBoxParser(object):
 
         cb should be in form:
             def cb(label, img):
-                # Do feature extraction, etc
         '''
         for label in self.labels:
-            imgname = os.path.join(self.image_dir, label['External ID'])
+            f = label['External ID']
+            imgname = os.path.join(self.image_dir, f)
+            if not os.path.isfile(imgname):
+                found = False
+                for subdir in next(os.walk(self.image_dir))[1]:
+                    imgname = os.path.join(self.image_dir, subdir, f)
+                    if os.path.isfile(imgname):
+                        found = True
+                        break
+                if not found:
+                    raise Exception('Could not find image {} in image dir'.format(label['External ID']))
             img = cv2.imread(imgname)
             cb(label, img)
 
 
 if __name__ == '__main__':
+    '''
+    Just an example usage of the class which will draw the labels onto the image and display
+    this in a window
+    '''
     import argparse
     parser = argparse.ArgumentParser(description='Example of labelbox reader class. Displays images with label')
     parser.add_argument('labels', type=str,
-                         help='JSON file with labels exported from labelbox.io')
+                        help='JSON file with labels exported from labelbox.io')
     parser.add_argument('dir', type=str, default='.', nargs='?',
                         help='directory to find images which were uploaded to labelbox for this dataset')
     args = parser.parse_args()
 
     reader = LabelBoxParser(args.labels, image_dir=args.dir)
 
-    import cv2
-    from mil_vision_tools import contour_centroid, contour_mask, putText_ul
+    from mil_vision_tools import contour_centroid, putText_ul
+
     def cb(label, img):
         for key in label['Label']:
             for polygon in label['Label'][key]:
@@ -79,5 +94,5 @@ if __name__ == '__main__':
 
         cv2.imshow('test', img)
         cv2.waitKey(0)
-    reader.get_labeled_images(cb)
 
+    reader.get_labeled_images(cb)

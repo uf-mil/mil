@@ -141,10 +141,17 @@ def auto_canny(image, sigma=0.33):
     upper = int(min(255, (1.0 + sigma) * m))
     return cv2.Canny(image, lower, upper)
 
+
 def contour_centroid(contour, M=None):
+    '''
+    Returns the centroid of the contour.
+    If you have already calcualted the moments for this contour, pass it in as
+    the second paramter so it not recalculated.
+    source: https://docs.opencv.org/3.1.0/dd/d49/tutorial_py_contour_features.html
+    '''
     M = cv2.moments(contour) if M is None else M
-    return np.array((int(M['m10'] / M['m00']),
-                     int(M['m01'] / M['m00'])))
+    return (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
+
 
 def contour_mask(contour, img_shape=None, mask=None):
     '''
@@ -160,10 +167,12 @@ def contour_mask(contour, img_shape=None, mask=None):
     cv2.drawContours(mask, [contour], 0, 255, -1)
     return mask
 
-def putText_ul(img, text, org, fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale=1, color=255, thickness=2, lineType=8, bottomLeftOrigin=False):
+
+def putText_ul(img, text, org, fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale=1, color=255,
+               thickness=2, lineType=8, bottomLeftOrigin=False):
     '''
-    Puts text on image like cv2.putText but shifts it such that the origin in the upper left corner of where the text is placed, instead of
-    the bottom left as cv2 does by default.
+    Puts text on image like cv2.putText but shifts it such that the origin is the upper left corner of
+    where the text is placed, instead of the bottom left as cv2 does by default.
     '''
     (text_width, text_height), _ = cv2.getTextSize(text, fontFace, fontScale, thickness)
     x, y = org

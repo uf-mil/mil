@@ -15,17 +15,12 @@ Each project contains n datasets. Each dataset has a list of bags (sources) to g
 from __future__ import division
 import argparse
 import yaml
-import xml.etree.ElementTree
 import os
 import rospy
 import rosbag
 import cv2
-from sensor_msgs.msg import CameraInfo
 from image_geometry import PinholeCameraModel
-from cv_bridge import CvBridge
-from geometry_msgs.msg import Point
-from mil_msgs.msg import LabeledObjects, LabeledObject
-from mil_vision_tools.image_proc import Processor, ImageSet
+from mil_vision_tools.image_proc import ImageProc, ImageSet
 from cv_bridge.boost.cv_bridge_boost import cvtColor2
 
 
@@ -38,6 +33,7 @@ class BagImageExtractorSource(object):
     RECT = 'rect'
     RECT_COLOR = 'rect_color'
     RAW = 'raw'
+
     def __init__(self, filename, topic, start=None, stop=None, freq=None, encoding=None):
         '''
         @param filename: name of bag file. Can be an absolute path, or will be resolved relative
@@ -69,16 +65,16 @@ class BagImageExtractorSource(object):
         '''
         Returns the flag to pass to mil image proc based on encoding string
         '''
-        if encoding == None or encoding == cls.RAW:
-            return Processor.RAW
+        if encoding is None or encoding == cls.RAW:
+            return ImageProc.RAW
         elif encoding == cls.MONO:
-            return Processor.MONO
+            return ImageProc.MONO
         elif encoding == cls.RECT:
-            return Processor.RECT
+            return ImageProc.RECT
         elif encoding == cls.COLOR:
-            return Processor.COLOR
+            return ImageProc.COLOR
         elif encoding == cls.RECT_COLOR:
-            return Processor.RECT_COLOR
+            return ImageProc.RECT_COLOR
         else:
             raise Exception('invalid encoding {}'.format(encoding))
 
@@ -123,20 +119,20 @@ class BagImageExtractorSource(object):
         converted to a string. Uses mil image proc to rectify / convert color as
         configured (see __init__)
         '''
-        Processor.process(msg, self.camera_model, self.image_set, self.encoding)
+        ImageProc.process(msg, self.camera_model, self.image_set, self.encoding)
         if self.encoding == 0:
             img = self.image_set.raw
-        elif self.encoding == Processor.MONO:
+        elif self.encoding == ImageProc.MONO:
             img = self.image_set.mono
-        elif self.encoding == Processor.RECT:
+        elif self.encoding == ImageProc.RECT:
             img = self.image_set.rect
-        elif self.encoding == Processor.COLOR:
+        elif self.encoding == ImageProc.COLOR:
             img = self.image_set.color
-        elif self.encoding == Processor.RECT_COLOR:
+        elif self.encoding == ImageProc.RECT_COLOR:
             img = self.image_set.rect_color
 
         # If color, convert to bgr
-        if self.encoding == Processor.COLOR or self.encoding == Processor.RECT_COLOR:
+        if self.encoding == ImageProc.COLOR or self.encoding == ImageProc.RECT_COLOR:
             img = cvtColor2(img, self.image_set.color_encoding, 'bgr8')
         filename = os.path.join(image_dir, str(msg.header.stamp) + '.png')
         cv2.imwrite(filename, img)
@@ -268,7 +264,8 @@ class BagImageExtractorProject(object):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Generates rosbags based on LabelMe data and visa/versa')
+        description='Extracts images from ROS bags into image files according to a configuration.\n\
+                     Designed to be used to create labelbox.io projects for segmentation/classification.')
     parser.add_argument('config', type=str,
                         help='YAML file specifying what bags to read and extract images from.\
                               See example YAML for details')
