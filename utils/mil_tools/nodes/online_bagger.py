@@ -41,6 +41,10 @@ class OnlineBagger(object):
         self.iteration_count = 0  # number of iterations
         self.streaming = True
         self.get_params()
+        if len(self.subscriber_list) == 0:
+            rospy.logwarn('No topics selected to subscribe to. Closing.')
+            rospy.signal_shutdown('No topics to subscribe to')
+            return
         self.make_dicts()
 
         self._action_server = SimpleActionServer(OnlineBagger.BAG_TOPIC, BagOnlineAction,
@@ -185,7 +189,6 @@ class OnlineBagger(object):
 
         Return number of topics that failed subscription
         """
-
         if self.successful_subscription_count == len(self.subscriber_list):
             if self.resubscriber is not None:
                 self.resubscriber.shutdown()
