@@ -1,10 +1,10 @@
 <launch>
   <arg name="simulation" default="False" />
-  <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/subsystems/motor_controller.launch"/>
-  <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/subsystems/gps.launch" />
-  <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/subsystems/cameras.launch"/>
-  <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/subsystems/velodyne.launch"/>
-  <include file="$(find navigator_launch)/launch/subsystems/kill_board.launch"/>
+  <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/hardware/motor_controller.launch"/>
+  <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/hardware/gps.launch" />
+  <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/hardware/cameras.launch"/>
+  <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/hardware/velodyne.launch"/>
+  <include file="$(find navigator_launch)/launch/hardware/kill_board.launch"/>
   <!-- Disabled because sick is not on NaviGator -->
-  <!-- include unless="$(arg simulation)" file="$(find navigator_launch)/launch/subsystems/sick_lidar.launch"/-->
+  <!-- include unless="$(arg simulation)" file="$(find navigator_launch/launch/hardware/sick_lidar.launch"/-->
 </launch>

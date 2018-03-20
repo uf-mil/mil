@@ -1,7 +1,7 @@
 <launch>
     <arg name="gps" default="True" />
-    <include file="$(find navigator_launch)/launch/subsystems/thruster_mapper.launch"/>
-    <include file="$(find navigator_launch)/launch/subsystems/tf.launch"/>
+    <include file="$(find navigator_launch)/launch/gnc/thruster_mapper.launch"/>
+    <include file="$(find navigator_launch)/launch/gnc/tf.launch"/>
 
 
     <node name="wrench_arbiter" ns="/wrench" pkg="topic_tools" type="mux"
@@ -25,10 +25,10 @@
 
     <node pkg="navigator_tools" type="boat_info.py" name="boat_info_markers" />
 
-    <include file="$(find navigator_launch)/launch/subsystems/object_classification.launch" />
+    <include file="$(find navigator_launch)/launch/gnc/object_classification.launch" />
 
     <!-- Run Path Planner -->
-    <include file="$(find navigator_launch)/launch/subsystems/path_planner.launch" />
+    <include file="$(find navigator_launch)/launch/gnc/path_planner.launch" />
 
     <!-- Core utilities: bounds, coordinate conversion -->
     <node name="coordinate_converter" pkg="navigator_tools" type="coordinate_conversion_server.py"/>
