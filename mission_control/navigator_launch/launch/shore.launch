@@ -4,9 +4,6 @@
 
     <node name="network_heartbeat" pkg="mil_tools" type="network_broadcaster" output="screen" />
 
-    <!-- Load model into rviz -->
-    <param name="robot_description" command="cat $(find navigator_gazebo)/models/wamv/wamv.xml"/>
-
     <!-- Host Monitoring -->
     <node name="host_monitor" pkg="navigator_gui" type="host_monitor.py"/>
 </launch>

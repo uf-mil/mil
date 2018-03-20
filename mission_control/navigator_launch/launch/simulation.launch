@@ -5,33 +5,21 @@
 
 <launch>
     <param name="/is_simulation" type="bool" value="True" />
-    <arg name="gazebo" default="true"/>
     <arg name="gui" default="true"/>
     <arg name="sandbox" default="true"/>
-    <arg name="cameras" default="true" />
 
-    <include file="$(find navigator_missions)/launch/task_runner.launch" />
-    <include file="$(find navigator_launch)/launch/alarms.launch"/>
-    <include file="$(find navigator_launch)/launch/gnc.launch">
-      <arg name="gps" value="False" />
+    <!-- Run core navigator code, minus hardware -->
+    <include file="$(find navigator_launch)/launch/master.launch">
+      <arg name="simulation" value="true" />
     </include>
-    <!--node name="gnc_delayed_start" pkg="navigator_gazebo" type="delayed_start.sh"/-->
-
 
     <!-- Sets up the world and loads models -->
-    <include file="$(find navigator_gazebo)/launch/goose.launch" if="$(arg gazebo)">
+    <include file="$(find navigator_gazebo)/launch/goose.launch">
         <arg name="gui" value="$(arg gui)"/>
         <arg name="sandbox" value="$(arg sandbox)"/>
     </include>
 
-    <!-- Run Joystick -->
-    <include file="$(find navigator_launch)/launch/subsystems/xbox_controller.launch" />
-
-    <group unless="$(arg gazebo)">
-        <include file="$(find navigator_launch)/launch/perception.launch"/>
-        <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui"/>
-    </group>
-    <group ns="/camera" if="$(arg cameras)">
+    <group ns="/camera">
       <group ns="front">
         <node pkg="image_proc" type="image_proc" name="front_left_image_proc" ns="left" />
         <node pkg="image_proc" type="image_proc" name="front_right_image_proc" ns="right" />
