@@ -1,9 +1,0 @@
-<launch>
-    <include file="$(find navigator_launch)/launch/subsystems/cameras/front_cameras.launch">
-        <arg name="front_left"  value="True" />
-        <arg name="front_right" value="False" />
-    </include>
-    <include file="$(find navigator_launch)/launch/subsystems/cameras/seecam.launch" />
-    <include file="$(find navigator_launch)/launch/subsystems/cameras/starboard.launch"/>
-    <!-- <include file="$(find navigator_launch)/launch/subsystems/cameras/downward.launch"/> -->
-</launch>

@@ -1,6 +1,6 @@
 <launch>
   <node pkg="navigator_vision" type="shape_identification" name="shape_identification_front">
-    <rosparam file="$(find navigator_launch)/launch/subsystems/perception/shape_finder_front.yaml" />
+    <rosparam file="$(find navigator_launch)/config/shape_finder_front.yaml" />
     <param name="symbol_camera" value="/camera/front/right/image_rect_color"/>
     <param name="image_transport" value="raw" />
     <param name="get_shapes_topic" value="/vision/get_shapes_front" />

@@ -1,4 +1,0 @@
-<launch>
-  <include file="$(find navigator_launch)/launch/subsystems/motor_controller.launch"/>
-  <include file="$(find navigator_launch)/launch/subsystems/kill_board.launch"/>
-</launch>
