@@ -86,3 +86,4 @@ images/buoy_images
 ```
 
 # Uploading to LabelBox
+For each dataset you created in the config file above, make a dataset on labelbox.io. To do this log in and go to ```https://app.labelbox.io/data/new```. Click select file and upload all the images for this dataset. You may now add this dataset to your labeling project
