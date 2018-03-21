@@ -5,11 +5,9 @@
 Say you have a set of 3 bag files from a test day containing images of buoys. You would like to have a human segment the buoys in a random selection of these images so that you can train a neural network to recognize buoys.
 
 ## Creating a extract_bag_images config file
-To extract images from the bag files you selected, first copy them to somewhere on your local computer. It is best to preserve the filenames/directories as they are stored on the MIL fileserver so that someone else can get the same images later. In this case, we'll assume you copied them to ```/home/user/bags```, with the 3 files you are extracting images from in ```/home/user/bags/2018-02-16/buoys1.bag```, ```/home/user/bags/2018-02-16/buoys2.bag```, and ```/home/user/bags/2018-02-16/buoys3.bag```, just like they were found on the fileserver.
+To extract images from the bag files you selected, first copy them to somewhere on your local computer. It is best to preserve the filenames/directories as they are stored on the MIL fileserver so that someone else can get the same images later. In this case, we'll assume you copied them to ```/home/user/bags```, with the 3 files you are extracting images from in in a subdirectory following the MIL fileserver convention for the date is was recorded```2018-02-03```.
 
-You also need to know what topic the image messages or on, and what encoding you would like them saved in. You can use ```rosbag info <bag name>``` to see what topics are in a bag and select the one you wish. For this example assume the buoy images are found in ```/camera/front/left/image_raw```. This topic contains raw, bayered images. For labeling, you will likely want color, rectified images. In the following steps you'll see how to specify that you want images extracted in this format instead of raw.
-
-Now you use the program ```rosrun mil_tools extract_bag_images``` to place the images from these files into a dataset for labeling. This program requires a yaml file specifying which bags to pull images from. Save this file to something you'll remember, like ```buoy_segmentation.yaml```
+Now you use the ```extract_bag_images``` to place the images from these files into a dataset for labeling. This program requires a yaml file specifying which bags to pull images from. Save this file to something you'll remember, like ```buoy_segmentation.yaml```.
 
 ```
 datasets:
@@ -31,6 +29,7 @@ Some things to notice about this config:
 * The ```encoding``` flag can be mono, rect, color, or rect_color for grayscale, rectified grayscale, color (debayered) and rectified color images respectively. If it is not set, the images will be saved in whatever format they are in the bag file. Usually, you will want ```rect_color```
 * For ```buoy2.bag```, I specified ```start: 5.0``` and ```stop: 15```. This means the first image extract from the bag will be from 5 seconds into the bag and the last image will be from 15 seconds into the bag. You may use this if, for example, only a certain section of the bag contains the data you are interested in.
 * For the ```file``` attributes, I specified the file relative to my bags directory. When we later run the ```extract_bag_images``` script, I will specify where to find these bags. Doing it this way is helpful for other people who may use your config but store their bags in a different directory locally.
+* The ```topic``` specifies which topic in the bag to pull the raw image from. You can use ```rosbag info``` to see what camera topics are in a bag.
 
 ## Running the extract_bag_images script
 Now that you have your bags collected and your config made, it is time to extract images! Let's say I want to store the extract images in ```/home/user/images/buoy_images```. Simply run:
@@ -61,7 +60,7 @@ images/buoy_images
 ```
 
 ## Adding more data later on
-Let's say you've followed the steps in this guide and have uploaded, labeled, and exported the buoy images. But what if you have another test day and record more data? As of writing this, LabelBox does not allow you to delete / add images to a dataset once it has been uploaded. However, you can simply add another dataset to an existing project. If your new data is in ```/home/user/bags/2018-03-14/```, simply amend you config file and run extract_bag_images again.
+What if you have another test day and record more data that you would also like to label? As of writing this, LabelBox does not allow you to delete / add images to a dataset once it has been uploaded. However, you can simply add another dataset to an existing project. If your new data is in ```/home/user/bags/2018-03-14/```, simply amend you config file and run extract_bag_images again.
 
 ```
 datasets:
