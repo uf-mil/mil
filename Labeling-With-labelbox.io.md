@@ -9,7 +9,7 @@ To extract images from the bag files you selected, first copy them to somewhere 
 
 Now you use the ```extract_bag_images``` to place the images from these files into a dataset for labeling. This program requires a yaml file specifying which bags to pull images from. Save this file to something you'll remember, like ```buoy_segmentation.yaml```.
 
-```
+```yaml
 datasets:
     - name: navigator_buoys1
       sources:
@@ -50,7 +50,7 @@ images/buoy_images
 ## Adding more data later on
 What if you have another test day and record more data that you would also like to label? As of writing this, LabelBox does not allow you to delete / add images to a dataset once it has been uploaded. However, you can simply add another dataset to an existing project. If your new data is in ```/home/user/bags/2018-03-14/```, simply amend you config file and run extract_bag_images again.
 
-```
+```yaml
 datasets:
     - name: navigator_buoys1
       sources:
@@ -87,3 +87,56 @@ images/buoy_images
 
 # Uploading to LabelBox
 For each dataset you created in the config file above, make a dataset on labelbox.io. To do this log in and go to ```https://app.labelbox.io/data/new```. Click select file and upload all the images for this dataset. You may now add this dataset to your labeling project
+
+# Exporting label data
+Once you have labeled the images for a project, you can export them:
+
+1. Go to page for your project https://app.labelbox.io/projects and click on your project
+1. Click on the export tab
+1. Ensure the "Label Format" box is set to "XY" and the export type is "json". It must be in this format to use the tools mentioned below.
+1. Click export
+
+# Visualizing labeled data
+MIL has a utility class ```mil_vision.LabelBoxParser``` which is useful for parsing exported labels from LabelBox paired with the images you extracted from bags ealier. If this file is run as an executable, it will run an example program that simply displays the labels. The command is:
+
+```rosrun mil_vision labelbox_parser.py <exported json file> <directory with datasets from bags>```
+
+This will display an OpenCV window with the image and the label drawn on. Click any key to continue to the next image.
+
+# Using labeled data in a program
+Let's say you want to read the segmented labels for the buoys and store the mean RGB color of each labeled buoy to a CSV file.
+Here's an example program which does this:
+
+```python
+#!/usr/bin/env python
+from mil_vision import LabelBoxParser
+from mil_vision import contour_mask
+import cv2
+import pandas
+
+class BuoyColorExtractor(object):
+    def __init__(self, labelfile, imagedir):
+        self.parser = LabelBoxParser(labelfile, imagedir)
+        self.features = []
+
+    def cb(self, label, img):
+        if 'buoy' not in label:
+            print 'no buoy label found'
+            return
+        for polygon in label['buoy']:
+            points = LabelBoxParser.label_to_contour(polygon, img.shape[0])
+            mask = contour_mask(points, img.shape)
+            mean = cv2.mean(img, mask)
+            self.features.append(mean)
+
+    def extract_features(self, filename='mean.csv'):
+        self.parser.get_labeled_images(self.cb)
+        data = np.array(self.features)
+        df = pandas.DataFrame(data=data, columns=['B', 'G', 'R'])
+        df.to_csv(filename)
+
+
+if __name__ == '__main__':
+    extractor = BuoyColorExtractor('labels.json', '/home/user/images/buoy_images')
+    extactor.extract_features('mean.csv')
+```
