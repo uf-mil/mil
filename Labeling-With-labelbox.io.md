@@ -120,19 +120,23 @@ class BuoyColorExtractor(object):
         self.features = []
 
     def cb(self, label, img):
-        if 'buoy' not in label:
+        '''
+        Called for each labeled image. Label contains all segmentations in the image.
+        img is a 3 channel uin8 numpy array with the image data.
+        '''
+        if 'buoy' not in label:  # Ignore labels which don't have a buoy
             print 'no buoy label found'
             return
-        for polygon in label['buoy']:
-            points = LabelBoxParser.label_to_contour(polygon, img.shape[0])
-            mask = contour_mask(points, img.shape)
-            mean = cv2.mean(img, mask)
-            self.features.append(mean)
+        for polygon in label['buoy']:  # Store the mean BGR color for each buoy labeled in this image
+            points = LabelBoxParser.label_to_contour(polygon, img.shape[0])  # convert label polygon dictionary to numpy array
+            mask = contour_mask(points, img.shape)  # Get a mask for the inside of the contour
+            mean = cv2.mean(img, mask)  # Get the mean color (3 channel) in this region of the image
+            self.features.append(mean)  # Add this mean to the list of other means
 
     def extract_features(self, filename='mean.csv'):
-        self.parser.get_labeled_images(self.cb)
+        self.parser.get_labeled_images(self.cb)  # Call self.cb for each labeled image
         data = np.array(self.features)
-        df = pandas.DataFrame(data=data, columns=['B', 'G', 'R'])
+        df = pandas.DataFrame(data=data, columns=['B', 'G', 'R'])  # Pandas is used just to write to csv file
         df.to_csv(filename)
 
 
