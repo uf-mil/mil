@@ -89,7 +89,6 @@ class Move(Navigator):
                 self.send_feedback('RVIZ point recieved!')
                 target_point = rosmsg_to_numpy(target_point.point)
                 distance = np.linalg.norm(target_point - self.pose[0])
-                target_point = rosmsg_to_numpy(target_point.point)
                 direction = 'cw' if argument == '-1' else 'ccw'
                 res = yield self.move.circle_point(target_point, direction=direction).go(radius=distance)
 
