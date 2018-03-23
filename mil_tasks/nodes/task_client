@@ -68,27 +68,31 @@ class TaskClientCli(object):
 def main():
     argv = rospy.myargv()
     parser = argparse.ArgumentParser(description='Runs a task on the task_runner server')
-    parser.add_argument('task', help='name of task to run', nargs='?')
-    parser.add_argument('-l', '--list', dest='list', action='store_true',
-                        help='List available tasks instead of running a task')
-    parser.add_argument('-c', '--cancel', dest='cancel', action='store_true',
-                        help='Cancel current task instead of running a task')
-    parser.add_argument('parameters', nargs='*', help='list of parameters to pass to task.\
+    subparser = parser.add_subparsers()
+
+    list_parser = subparser.add_parser('list', help='List available tasks')
+    list_parser.set_defaults(cmd='list')
+
+    cancel_parser = subparser.add_parser('cancel', help='Cancel current task')
+    cancel_parser.set_defaults(cmd='cancel')
+
+    run_parser = subparser.add_parser('run', help='Start a new task')
+    run_parser.set_defaults(cmd='run')
+    run_parser.add_argument('task', help='name of task to run')
+    run_parser.add_argument('parameters', nargs=argparse.REMAINDER, help='list of parameters to pass to task.\
                                                        Will be concatenated into one string')
     args = parser.parse_args(argv[1:])
-    if not args.list and not args.cancel and not args.task:
-        parser.print_help()
-        return
 
-    rospy.init_node('task_client', anonymous=True)
-    client = TaskClientCli()
-    if args.list:
+    if args.cmd == 'list':
         TaskClientCli.list()
         return
-    if args.cancel:
+    rospy.init_node('task_client', anonymous=True)
+    client = TaskClientCli()
+    if args.cmd == 'cancel':
         client.cancel_all()
         print 'All goals canceled'
         return
+    assert args.cmd == 'run'
     parameters = ' '.join(args.parameters)
     client.run_task(args.task, parameters)
 

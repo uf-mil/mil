@@ -20,20 +20,14 @@ MIL Tasks provides a command line interface to trigger a new task, list availabl
 
 ### Running a new task
 To run the Wait task (which simply sleeps for a specified time) with parameters "5" (to run for 5 seconds)
-```rosrun mil_tasks task_client Wait 5```
-or with the included aliases
 ```runtask Wait 5```
 
 ### Listing available tasks
 To see what tasks are available, run
-```rosrun mil_tasks task_client -l```
-or
 ```listtasks```
 
 ### Canceling the current task
 To stop execution of the current task prematurely, run
-```rosrun mil_tasks task_client -c```
-or
 ```canceltask```
 
 ## Integrating with a new Robot

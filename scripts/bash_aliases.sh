@@ -46,9 +46,9 @@ alias cm="catkin_make -C \$CATKIN_DIR -j8"
 alias killgazebo="killall -9 gazebo && killall -9 gzserver && killall -9 gzclient"
 
 # Tasks
-alias runtask="rosrun mil_tasks task_client"
-alias canceltask="rosrun mil_tasks task_client -c"
-alias listtasks="rosrun mil_tasks task_client -l"
+alias runtask="rosrun mil_tasks task_client run"
+alias canceltask="rosrun mil_tasks task_client cancel"
+alias listtasks="rosrun mil_tasks task_client list"
 
 # Development
 alias mcfmt="python2.7 -m flake8 --ignore E731 --max-line-length=120 \$(rosrun mil_tools list_python_files \$CATKIN_DIR/src/mil_common __init__.py drivers/pointgrey_camera_driver drivers/velodyne drivers/mil_passive_sonar drivers/roboteq ros_alarms txros deprecated/)"
