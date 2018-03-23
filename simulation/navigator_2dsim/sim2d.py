@@ -74,7 +74,7 @@ class Navsim():
     def state_deriv(self, wrench, R):
         posedot = R.dot(self.twist)
         twistdot = (1 / self.inertia) * (wrench - self.drag *
-                                         self.twist + R.T.dot(self.wind))
+                                         np.sign(self.twist) * self.twist * self.twist + R.T.dot(self.wind))
         return posedot, twistdot
 
     def publish_odom(self):
@@ -92,7 +92,7 @@ class Navsim():
         msg.header.stamp = rospy.Time.now()
         msg.header.frame_id = self.world_frame
         msg.child_frame_id = self.body_frame
-        msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z = pose
+        msg.pose.pose.position.x, msg.pose.pose.position.y = pose[0], pose[1]
         quat = trns.quaternion_from_euler(0, 0, pose[2])
         msg.pose.pose.orientation = numpy_to_quaternion(quat)
         msg.twist.twist.linear.x, msg.twist.twist.linear.y = twist[0:2]
