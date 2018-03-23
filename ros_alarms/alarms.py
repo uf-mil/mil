@@ -292,7 +292,7 @@ class AlarmListener(object):
         alarm = self.get_alarm()
         if call_when_raised:
             self._raised_cbs.append((severity_required, funct))
-            if alarm.raised and self._severity_cb_check(severity_required):
+            if alarm is not None and alarm.raised and self._severity_cb_check(severity_required):
                 # Try to run the callback, absorbing any errors
                 try:
                     alarm.parameters = parse_json_str(alarm.parameters)
@@ -302,7 +302,7 @@ class AlarmListener(object):
 
         if call_when_cleared:
             self._cleared_cbs.append(((0, 5), funct))  # Clear callbacks always run
-            if not alarm.raised:
+            if alarm is not None and not alarm.raised:
                 # Try to run the callback, absorbing any errors
                 try:
                     alarm.parameters = parse_json_str(alarm.parameters)
