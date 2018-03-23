@@ -16,6 +16,8 @@ class TaskClientCli(object):
         if not connected:  # If it didn't connect quickly, print and wait forever
             print 'Waiting on action server at ', self.client.NS
             self.client.wait_for_server()
+        self.running = False  # Tracks if we are currently waiting for a task to finish
+        rospy.on_shutdown(self.on_shutdown)
 
     @classmethod
     def list(cls):
@@ -36,12 +38,23 @@ class TaskClientCli(object):
             print 'Feedback:'
         print '- ', msg.message
 
+    def on_shutdown(self):
+        '''
+        If shutdown (rosnode kill, Control+C, etc),
+        cancel the current goal if we sent one.
+        '''
+        if self.running:
+            print 'Cancelling goal'
+            self.cancel_all()
+
     def run_task(self, task, parameters):
         self.first_feedback = True
         print 'Starting task ', task
+        self.running = True
         self.client.run_task(task, parameters, feedback_cb=self._feedback_cb)
         self.client.wait_for_result()
         result = self.client.get_result()
+        self.running = False
         if result is None:
             return
         state = self.client.get_state()
