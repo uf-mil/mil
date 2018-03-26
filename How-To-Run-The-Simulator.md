@@ -27,3 +27,5 @@ You can run the 2D simulator along with all other core nodes usually run on Navi
 
 # Next Steps
 Now that you have a simulator running, you can start playing around with things. A good first task is [getting NaviGator to move](Executing-simple-moves). This will verify that the simulator is working and should spark some curiosity about how this all works! 
+
+You can also see what's going on graphically by using one of the [[Visualization]] tools.
