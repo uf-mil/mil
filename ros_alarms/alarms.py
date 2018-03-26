@@ -41,6 +41,27 @@ def _make_callback_error_string(alarm_name, backtrace=''):
     return err_msg.format(alarm_name, backtrace)
 
 
+def wait_for_service(service, warn_time=1.0, warn_msg='Waiting for service..', timeout=None):
+    '''
+    A fancy extension of wait for service that will warn with a message if it is taking a while.
+
+    @param warn_time: float in seconds, how long to wait before logging warn_msg
+    @param warn_msg: msg logged with rospy.logwarn if warn_time passes without service connected
+    @param timeout: overall timeout. If None, does nothing. If a float, will raise exception
+                    if many TOTAL seconds has passed without connecting
+
+    Copied from https://github.com/uf-mil/mil_common/blob/master/utils/mil_tools/mil_ros_tools/init_helpers.py
+    to avoid dependency
+    '''
+    try:
+        service.wait_for_service(warn_time)
+    except rospy.ROSException:
+        if timeout is not None:
+            timeout = timeout - warn_time
+        rospy.logwarn(warn_msg)
+        service.wait_for_service(timeout)
+
+
 class Alarm(object):
 
     @classmethod
@@ -175,12 +196,18 @@ class AlarmBroadcaster(object):
         self._node_name = rospy.get_name() if node_name is None else node_name
 
         self._alarm_set = rospy.ServiceProxy("/alarm/set", AlarmSet)
-        try:
-            rospy.wait_for_service("/alarm/set", timeout=1)
-        except rospy.exceptions.ROSException:
-            rospy.logerr("No alarm sever found! Alarm behaviours will be unpredictable.")
 
-        rospy.logdebug("Created alarm broadcaster for alarm {}".format(name))
+    def wait_for_server(self, timeout=None):
+        ''' Wait for node to connect to alarm server.
+        Waits timeout seconds (or forever if timeout is None) to connect then
+        fetches the current alarm and calls callbacks as needed.
+        Note: User should always call wait_for_server before calling other methods
+        '''
+        if timeout is not None and timeout < 1.5:
+            self._alarm_set.wait_for_service(timeout=timeout)
+        else:
+            wait_for_service(self._alarm_set, warn_time=1.0, warn_msg='Waiting for alarm server..', timeout=timeout)
+        rospy.logdebug('alarm server connected')
 
     def _generate_request(self, raised, node_name=None, problem_description="",
                           parameters={}, severity=0):
@@ -201,11 +228,13 @@ class AlarmBroadcaster(object):
         @param problem_description String with a description of the problem (defaults to empty string)
         @param parameters JSON dumpable dictionary with optional parameters that describe the alarm
         @parma severity Integer in [0, 5] that indicates the severity of the alarm. (5 is most severe)
+        @return boolean, True if alarm successfully raised
         '''
         try:
-            return self._alarm_set(self._generate_request(True, **kwargs))
+            return self._alarm_set(self._generate_request(True, **kwargs)).succeed
         except rospy.service.ServiceException:
             rospy.logerr("No alarm sever found! Can't raise alarm.")
+            return False
 
     def clear_alarm(self, **kwargs):
         ''' Clears this alarm
@@ -213,11 +242,13 @@ class AlarmBroadcaster(object):
         @param problem_description String with a description of the problem (defaults to empty string)
         @param parameters JSON dumpable dictionary with optional parameters that describe the alarm
         @parma severity Integer in [0, 5] that indicates the severity of the alarm. (5 is most severe)
+        @return boolean, True if alarm successfully cleared
         '''
         try:
-            return self._alarm_set(self._generate_request(False, **kwargs))
+            return self._alarm_set(self._generate_request(False, **kwargs)).succeed
         except rospy.service.ServiceException:
             rospy.logerr("No alarm sever found! Can't clear alarm.")
+            return False
 
 
 class AlarmListener(object):
@@ -229,10 +260,6 @@ class AlarmListener(object):
         _check_for_alarm(self._alarm_name, nowarn)
 
         self._alarm_get = rospy.ServiceProxy("/alarm/get", AlarmGet)
-        try:
-            rospy.wait_for_service("/alarm/get", timeout=1)
-        except rospy.exceptions.ROSException:
-            rospy.logerr("No alarm sever found! Alarm behaviours will be unpredictable.")
 
         # Data used to trigger callbacks
         self._raised_cbs = []  # [(severity_for_cb1, cb1), (severity_for_cb2, cb2), ...]
@@ -242,33 +269,44 @@ class AlarmListener(object):
         if callback_funct is not None:
             self.add_callback(callback_funct, **kwargs)
 
-    def is_raised(self):
+    def wait_for_server(self, timeout=None):
+        ''' Wait for node to connect to alarm server.
+        Waits timeout seconds (or forever if timeout is None) to connect then
+        fetches the current alarm and calls callbacks as needed.
+        Note: User should always call wait_for_server before calling other methods
+        '''
+        if timeout is not None and timeout < 1.5:
+            self._alarm_get.wait_for_service(timeout=timeout)
+        else:
+            wait_for_service(self._alarm_get, warn_time=1.0, warn_msg='Waiting for alarm server..', timeout=timeout)
+        rospy.logdebug('alarm server connected')
+        self.get_alarm()  # Now that we have service, update callbacks
+
+    def is_raised(self, fetch=True):
         ''' Returns whether this alarm is raised or not '''
-        try:
-            resp = self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
-            return resp.alarm.raised
-        except rospy.service.ServiceException:
-            rospy.logerr("No alarm sever found!")
+        alarm = self.get_alarm(fetch=fetch)
+        if alarm is None:
             return False
+        return alarm.raised
 
-    def is_cleared(self):
+    def is_cleared(self, fetch=True):
         ''' Returns whether this alarm is cleared or not '''
-        return not self.is_raised()
+        return not self.is_raised(fetch=fetch)
 
-    def get_alarm(self):
+    def get_alarm(self, fetch=True):
         ''' Returns the alarm message
         Also worth noting, the alarm this returns has it's `parameter` field
             converted to a dictionary
         '''
+        if not fetch:
+            return self._last_alarm
         try:
             resp = self._alarm_get(AlarmGetRequest(alarm_name=self._alarm_name))
         except rospy.service.ServiceException:
             rospy.logerr("No alarm sever found!")
-            return None
-
-        resp.alarm.parameters = parse_json_str(resp.alarm.parameters)
-        self._last_alarm = resp.alarm
-        return resp.alarm
+            return self._last_alarm
+        self._alarm_update(resp.alarm)
+        return self._last_alarm
 
     def _severity_cb_check(self, severity):
         # In case _last alarm hasnt been declared yet
@@ -289,7 +327,7 @@ class AlarmListener(object):
         Each callback can have a severity level associated with it such that different callbacks can
             be triggered for different levels of severity.
         '''
-        alarm = self.get_alarm()
+        alarm = self._last_alarm
         if call_when_raised:
             self._raised_cbs.append((severity_required, funct))
             if alarm is not None and alarm.raised and self._severity_cb_check(severity_required):
@@ -318,9 +356,8 @@ class AlarmListener(object):
     def _alarm_update(self, alarm):
         if alarm.alarm_name != self._alarm_name:
             return
-
+        alarm.parameters = parse_json_str(alarm.parameters)
         self._last_alarm = alarm
-        # Run the callbacks if severity conditions are met
         cb_list = self._raised_cbs if alarm.raised else self._cleared_cbs
         for severity, cb in cb_list:
             # If the cb severity is not valid for this alarm's severity, skip it
@@ -329,10 +366,9 @@ class AlarmListener(object):
 
             # Try to run the callback, absorbing any errors
             try:
-                alarm.parameters = parse_json_str(alarm.parameters)
                 cb(alarm)
             except Exception:
-                rospy.logwarn(_make_callback_error_string(self._alarm_name, traceback.format_exc()))
+                rospy.logerr(_make_callback_error_string(self._alarm_name, traceback.format_exc()))
 
 
 class HeartbeatMonitor(AlarmBroadcaster):

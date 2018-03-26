@@ -15,6 +15,7 @@ def print_alarm(alarm):
 
 rospy.init_node("alarm_report", anonymous=True)
 al = AlarmListener(args.alarm_name)
+al.wait_for_server()
 alarm = al.get_alarm()
 print_alarm(alarm)
 rospy.sleep(.1)

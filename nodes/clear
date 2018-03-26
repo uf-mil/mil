@@ -25,6 +25,7 @@ if args.alarm_name == "all":
 else:
     ab = AlarmBroadcaster(args.alarm_name)
 
+ab.wait_for_server()
 ab.clear_alarm(parameters=params)
 rospy.loginfo("Alarm cleared!")
 
