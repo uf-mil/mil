@@ -54,6 +54,7 @@ class KillInterface(object):
         self.request_index = -1
 
         self.hw_kill_broadcaster = AlarmBroadcaster('hw-kill')
+        self.hw_kill_broadcaster.wait_for_server()
 
         self.joy_pub = rospy.Publisher("/joy_emergency", Joy, queue_size=1)
         self.ctrl_msg_received = False
@@ -68,8 +69,10 @@ class KillInterface(object):
             self.buttons[button] = False
         self.buttons_temp = 0x0000
 
-        AlarmListener('hw-kill', self.hw_kill_alarm_cb)
-        AlarmListener('kill', self.kill_alarm_cb)
+        self._hw_kill_listener = AlarmListener('hw-kill', self.hw_kill_alarm_cb)
+        self._kill_listener = AlarmListener('kill', self.kill_alarm_cb)
+        self._hw_kill_listener.wait_for_server()
+        self._kill_listener.wait_for_server()
         rospy.Subscriber("/wrench/selected", String, self.wrench_cb)
         rospy.Subscriber("/network", Header, self.network_cb)  # Passes along network hearbeat to kill board
 
