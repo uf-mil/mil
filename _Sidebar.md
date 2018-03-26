@@ -6,6 +6,7 @@
 * Operating Instructions
     * [[How To Run The Simulator]]
     * [[Executing Simple Moves]]
+    * [[Visualization]]
 * Implementation Details
     * [[Thrust Mapper]]
     * [[Cameras]]
