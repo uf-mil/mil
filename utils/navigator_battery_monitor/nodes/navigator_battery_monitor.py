@@ -42,7 +42,8 @@ class BatteryMonitor():
         self.supply_voltages = []
 
         self.hw_kill_raised = None
-        AlarmListener('hw-kill', self.hw_kill_cb)
+        self._hw_kill_listener = AlarmListener('hw-kill', self.hw_kill_cb)
+        self._hw_kill_listener.wait_for_server()
 
         # The publisher for the averaged voltage
         self.pub_voltage = rospy.Publisher(
