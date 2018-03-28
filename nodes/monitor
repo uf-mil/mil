@@ -27,6 +27,8 @@ class AlarmMonitor(object):
         self.listener = AlarmListener(alarm_name)
         self.listener.add_callback(self._alarm_cb)
         self.broadcaster = AlarmBroadcaster(alarm_name)
+        self.listener.wait_for_server()
+        self.broadcaster.wait_for_server()
 
     def attach_screen(self, screen):
         '''

@@ -29,6 +29,7 @@ for name, value in split:
 low, high = 0, 5
 severity = low if args.severity < low else high if args.severity > high else args.severity
 
+ab.wait_for_server()
 ab.raise_alarm(parameters=params, severity=severity, problem_description=args.description)
 rospy.loginfo("Alarm raised!")
 
