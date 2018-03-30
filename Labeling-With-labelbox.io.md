@@ -105,8 +105,9 @@ MIL has a utility class ```mil_vision.LabelBoxParser``` which is useful for pars
 This will display an OpenCV window with the image and the label drawn on. Click any key to continue to the next image.
 
 # Using labeled data in a program
-Let's say you want to read the segmented labels for the buoys and store the mean RGB color of each labeled buoy to a CSV file.
-Here's an example program which does this:
+Let's say you want to read the segmented labels for the buoys and store the mean RGB color of each labeled buoy to a CSV file. Below is an example program which does this, dumping the mean RGB for the segmented buoy into a CSV file for latter use in, for example, training a classifier. The following assumptions are made:
+* You have exported labels from the labelbox.io project to labels.json
+* The directory containing the images for all the datasets labeled is in /home/user/images/buoy_images
 
 ```python
 #!/usr/bin/env python
