@@ -115,6 +115,6 @@ class Move(Navigator):
                 msg = "Moving {} ".format(command) if trans_move else "Yawing {} ".format(command[4:])
                 self.send_feedback(msg + "{}{}".format(amount, unit))
                 res = yield movement(float(amount), unit).go(**action_kwargs)
-                if res.failure_reason is not '':
-                    raise Exception('Move failed. Reason: {}'.format(res.failure_reason))
+            if res.failure_reason is not '':
+                raise Exception('Move failed. Reason: {}'.format(res.failure_reason))
         defer.returnValue('Move completed successfully!')
