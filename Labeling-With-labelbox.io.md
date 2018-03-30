@@ -30,6 +30,7 @@ Some things to notice about this config:
 * For ```buoy2.bag```, I specified ```start: 5.0``` and ```stop: 15```. This means the first image extract from the bag will be from 5 seconds into the bag and the last image will be from 15 seconds into the bag. You may use this if, for example, only a certain section of the bag contains the data you are interested in.
 * For the ```file``` attributes, I specified the file relative to my bags directory. When we later run the ```extract_bag_images``` script, I will specify where to find these bags. Doing it this way is helpful for other people who may use your config but store their bags in a different directory locally.
 * The ```topic``` specifies which topic in the bag to pull the raw image from. You can use ```rosbag info``` to see what camera topics are in a bag.
+* Images are only fetched from one camera topic for this dataset. **Please use another dataset for additional cameras.** Some algorithms may work best when only trained on the same sensor it will actually be run against.
 
 ## Running the extract_bag_images script
 Now that you have your bags collected and your config made, it is time to extract images! Let's say I want to store the extract images in ```/home/user/images/buoy_images```. Simply run:
