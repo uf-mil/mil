@@ -19,4 +19,5 @@ from scan_the_code import ScanTheCode
 from station_hold import StationHold
 from killed import Killed
 from move import Move
+from constant_velocity import ConstantVelocity
 import pose_editor

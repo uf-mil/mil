@@ -255,7 +255,7 @@ Visualization Manager:
         Value: true
       Enabled: true
       Keep: 1
-      Name: Lqrrt_poseref
+      Name: Trajectory
       Position Tolerance: 0.00100000005
       Shape:
         Alpha: 1
@@ -267,7 +267,7 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.0500000007
         Value: Arrow
-      Topic: /lqrrt/ref
+      Topic: /trajectory/cmd
       Unreliable: false
       Value: true
     - Alpha: 1

@@ -8,6 +8,11 @@
           args="cmd cmd autonomous rc emergency keyboard" >
         <remap from="mux" to="/wrench" />
     </node>
+    <node name="trajectory_arbiter" ns="/trajectory" pkg="topic_tools" type="mux"
+          args="cmd lqrrt constant" >
+        <remap from="mux" to="/trajectory" />
+    </node>
+
 
     <node name="mrac" pkg="navigator_controller" type="mrac_controller.py" output="screen" />
 

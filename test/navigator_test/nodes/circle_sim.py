@@ -24,7 +24,7 @@ class DoOdom(object):
     def __init__(self, rand_size):
         self.odom_pub = rospy.Publisher("/odom", Odometry, queue_size=2)
         self.odom = None
-        self.carrot_sub = rospy.Subscriber("/lqrrt/ref", Odometry, self.set_odom)
+        self.carrot_sub = rospy.Subscriber("/trajectory/cmd", Odometry, self.set_odom)
 
         fprint("Shaking hands and taking names.")
         rospy.sleep(1)

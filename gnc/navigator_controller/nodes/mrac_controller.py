@@ -109,7 +109,7 @@ class MRAC_Controller:
 
         # Subscribers
         if self.use_lqrrt:
-            rospy.Subscriber("/lqrrt/ref", Odometry, self.set_traj_from_odom_msg)
+            rospy.Subscriber("/trajectory/cmd", Odometry, self.set_traj_from_odom_msg)
         else:
             rospy.Subscriber("/trajectory", PoseTwistStamped, self.set_traj)
 

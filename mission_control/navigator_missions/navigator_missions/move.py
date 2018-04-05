@@ -45,6 +45,9 @@ class Move(Navigator):
         arguments = commands[1::2]
         commands = commands[0::2]
 
+        self.send_feedback('Switching trajectory to lqrrt')
+        self.change_trajectory('lqrrt')
+
         self.send_feedback('Switching wrench to autonomous')
         yield self.change_wrench('autonomous')
 
