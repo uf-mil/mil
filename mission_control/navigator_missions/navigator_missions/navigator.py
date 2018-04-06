@@ -103,6 +103,7 @@ class Navigator(BaseTask):
             cls._camera_database_query = cls.nh.get_service_client(
                 '/camera_database/requests', navigator_srvs.CameraDBQuery)
             cls._change_wrench = cls.nh.get_service_client('/wrench/select', MuxSelect)
+            cls._change_trajectory = cls.nh.get_service_client('/trajectory/select', MuxSelect)
         except AttributeError, err:
             fprint("Error getting service clients in nav singleton init: {}".format(
                 err), title="NAVIGATOR", msg_color='red')
@@ -194,8 +195,13 @@ class Navigator(BaseTask):
         fprint("DEPRECATED: Please use new dictionary based system.")
         return self.vision_proxies[request_name].get_response(**kwargs)
 
-    def change_wrench(self, source):
-        return self._change_wrench(MuxSelectRequest(source))
+    @classmethod
+    def change_wrench(cls, source):
+        return cls._change_wrench(MuxSelectRequest(source))
+
+    @classmethod
+    def change_trajectory(cls, source):
+        return cls._change_trajectory(MuxSelectRequest(source))
 
     def search(self, *args, **kwargs):
         return Searcher(self, *args, **kwargs)
