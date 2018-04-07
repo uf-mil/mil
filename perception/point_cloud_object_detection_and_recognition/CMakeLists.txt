@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   eigen_conversions
   pcl_ros
   cv_bridge
+  dynamic_reconfigure
+  navigator_tools
 )
 
 ###################################################

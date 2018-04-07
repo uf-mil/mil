@@ -17,6 +17,8 @@ filter_points_leaf_size_z: 0.2
 outier_removal_std_dev_thresh: 2.0
 outier_removal_mean_k: 10
 
+remove_points_near_lidar_distance: 5
+
 icp_max_corespondence_distance: 0.1
 icp_max_iterations: 40
 icp_transformation_epsilon: 1E-8

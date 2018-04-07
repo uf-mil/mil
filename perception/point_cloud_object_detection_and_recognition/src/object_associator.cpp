@@ -46,7 +46,7 @@ std::vector<association_unit> associator::associate(const id_object_map& object_
         {
             uint id = static_cast<uint>(min_id);
             association_units.push_back({.index = i, .object_id = id});
-            std::cout << "Association: " << i << " " << id << std::endl;
+            // std::cout << "Association: " << i << " " << id << std::endl;
             associated_ids.insert(id);
         }
     }

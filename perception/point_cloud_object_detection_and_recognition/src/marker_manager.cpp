@@ -89,7 +89,7 @@ void marker_manager::update_markers(const id_object_map_ptr objects)
     // marker_array.markers.push_back(marker_delete);
     for (const auto& object : *objects)
     {
-        auto it = id_label_map_->find(object.second.id);
+        // auto it = id_label_map_->find(object.second.id);
         marker_object_array.markers.push_back(get_marker_object(object.second));
         marker_text_array.markers.push_back(get_marker_text(object.second));
         interactive_marker_server_->insert(get_marker_interactive(object.second));

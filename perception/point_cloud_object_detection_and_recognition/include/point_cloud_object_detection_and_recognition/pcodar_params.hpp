@@ -37,6 +37,8 @@ extern struct pcodar_params
     // The max number of points in the point cloud, this is employed when the system needs to be real time. 
     int max_number_points = 5000;
 
+    // Distance away from lidar to ignore
+    float remove_points_near_lidar_distance = 5;
 
     // --- Point cloud clustering parameters ---
     
