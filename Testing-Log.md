@@ -1,6 +1,17 @@
 # Testing log
 Below are notes recorded during NaviGator testing days at Lake Wauburg. They are used as a reference for resolving issues and ideas discovered during testing
 
+## April 9, 2018
+* Testing new cheap lenses on Seecam: images were pink/purple. Theory is that this is due to the sensor and lens not having an IR filter.
+* Programmers liked the field of view of the 6mm lens, but it may have been a little too narrow. Focal length 4-5.5 should be good. Be sure to buy with IR-filtered lens
+* Physical boat-mounted kill buttons spuriously reported being pressed again (more likely with movement), had to disabled again in firmware
+* PCODAR should decay objects over time. Every time we update the points associated with an object, we should remove older points. If we "should" be able to see can object and have not updated it in a while, it should be removed.
+* PCI USB extension devices did not show up, plugged directly in (no L extension) and it worked
+* Kill/Wrench lights still off, should make work again
+* Circled totems using pcodar (user called service to label color)
+* PCODAR should allow an "attributes" string for things like color, user can set w/ service
+* Ran start gate with Andy's sonar: 
+
 ## March 18, 2018
 * GPS programs were crashing - switched output file to /dev/null, fixed problem
 * Can't write bags to external bag drive - bag drive mounted as read-only - source of GPS errors
