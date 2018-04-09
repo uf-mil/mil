@@ -480,6 +480,7 @@ sudo apt-get install -qq python-flake8
 
 # Networking
 sudo apt-get install -qq python-twisted
+sudo apt-get install -qq cifs-utils  # To mount MIL fileserver
 
 # Machine Learning
 sudo apt-get install -qq python-sklearn
