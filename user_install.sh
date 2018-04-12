@@ -195,18 +195,18 @@ if [[ "$INSTALL_NAV" == "true" ]]; then
 	REQUIRED_OS_ID="Ubuntu"
 	REQUIRED_OS_CODENAME="trusty"
 	REQUIRED_OS_RELEASE="14.04"
-	ROS_VERSION="indigo"
+	ROS_DISTRO="indigo"
 
 elif [[ "$(lsb_release -si)" == "Debian" ]]; then
 	REQUIRED_OS_ID="Debian"
 	REQUIRED_OS_CODENAME="jessie"
 	REQUIRED_OS_RELEASE="8.7"
-	ROS_VERSION="kinetic"
+	ROS_DISTRO="kinetic"
 else
 	REQUIRED_OS_ID="Ubuntu"
 	REQUIRED_OS_CODENAME="xenial"
 	REQUIRED_OS_RELEASE="16.04"
-	ROS_VERSION="kinetic"
+	ROS_DISTRO="kinetic"
 fi
 
 # Ensure that the correct OS is installed
@@ -272,7 +272,7 @@ fi
 #=================================#
 
 # Source ROS configurations for bash
-source /opt/ros/$ROS_VERSION/setup.bash
+source /opt/ros/$ROS_DISTRO/setup.bash
 
 # Set up catkin workspace directory
 if [[ ! -f $CATKIN_DIR/src/CMakeLists.txt ]]; then
@@ -409,7 +409,7 @@ fi
 # Source ROS configurations for bash
 echo "" >> $MILRC_FILE
 echo "# Sets up the shell environment for ROS" >> $MILRC_FILE
-echo "source /opt/ros/$ROS_VERSION/setup.bash" >> $MILRC_FILE
+echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> $MILRC_FILE
 
 # Source the workspace's configurations for bash
 echo "" >> $MILRC_FILE

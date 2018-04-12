@@ -261,12 +261,12 @@ if [[ "$(lsb_release -si)" == "Debian" ]]; then
 	REQUIRED_OS_ID="Debian"
 	REQUIRED_OS_CODENAME="jessie"
 	REQUIRED_OS_RELEASE="8.7"
-	ROS_VERSION="kinetic"
+	ROS_DISTRO="kinetic"
 else
 	REQUIRED_OS_ID="Ubuntu"
 	REQUIRED_OS_CODENAME="xenial"
 	REQUIRED_OS_RELEASE="16.04"
-	ROS_VERSION="kinetic"
+	ROS_DISTRO="kinetic"
 fi
 
 # Ensure that the correct OS is installed
@@ -360,9 +360,9 @@ if [[ "$INSTALL_CUDA" == "true" && "$REQUIRED_OS_ID" == "Ubuntu" ]]; then
 fi
 
 # Install ROS and a few ROS dependencies
-instlog "Installing ROS $(tr '[:lower:]' '[:upper:]' <<< ${ROS_VERSION:0:1})${ROS_VERSION:1}"
+instlog "Installing ROS $(tr '[:lower:]' '[:upper:]' <<< ${ROS_DISTRO:0:1})${ROS_DISTRO:1}"
 sudo apt-get update -qq
-sudo apt-get install -qq ros-$ROS_VERSION-desktop-full
+sudo apt-get install -qq ros-$ROS_DISTRO-desktop-full
 
 # Get information about ROS versions
 instlog "Initializing ROS"
@@ -372,7 +372,7 @@ fi
 rosdep update
 
 # Source ROS configurations for bash
-source /opt/ros/$ROS_VERSION/setup.bash
+source /opt/ros/$ROS_DISTRO/setup.bash
 
 
 #=================================#
@@ -480,6 +480,7 @@ sudo apt-get install -qq python-flake8
 
 # Networking
 sudo apt-get install -qq python-twisted
+sudo apt-get install -qq cifs-utils  # To mount MIL fileserver
 
 # Machine Learning
 sudo apt-get install -qq python-sklearn
@@ -490,13 +491,13 @@ sudo apt-get install -qq mayavi2
 instlog "Installing common ROS dependencies"
 
 # Hardware drivers
-sudo apt-get install -qq ros-$ROS_VERSION-joy
-sudo apt-get install -qq ros-$ROS_VERSION-serial
+sudo apt-get install -qq ros-$ROS_DISTRO-joy
+sudo apt-get install -qq ros-$ROS_DISTRO-serial
 sudo apt-get install -qq libpcap-dev  # Needed for velodyne driver building
-sudo apt-get install -qq ros-$ROS_VERSION-usb-cam  # Used for See3Cam used on NaviGator
+sudo apt-get install -qq ros-$ROS_DISTRO-usb-cam  # Used for See3Cam used on NaviGator
 
 # Messages
-sudo apt-get install -qq ros-$ROS_VERSION-tf2-sensor-msgs
+sudo apt-get install -qq ros-$ROS_DISTRO-tf2-sensor-msgs
 
 instlog "Installing common dependencies from Python PIP"
 
@@ -577,16 +578,16 @@ if [[ "$INSTALL_SUB" == "true" ]]; then
 	instlog "Installing SubjuGator ROS dependencies"
 
 	# Controller
-	sudo apt-get install -qq ros-$ROS_VERSION-control-toolbox
-	sudo apt-get install -qq ros-$ROS_VERSION-controller-manager
-	sudo apt-get install -qq ros-$ROS_VERSION-transmission-interface
-	sudo apt-get install -qq ros-$ROS_VERSION-joint-limits-interface
+	sudo apt-get install -qq ros-$ROS_DISTRO-control-toolbox
+	sudo apt-get install -qq ros-$ROS_DISTRO-controller-manager
+	sudo apt-get install -qq ros-$ROS_DISTRO-transmission-interface
+	sudo apt-get install -qq ros-$ROS_DISTRO-joint-limits-interface
 
 	# Trajectory Generation
-	sudo apt-get install -qq ros-$ROS_VERSION-ompl
+	sudo apt-get install -qq ros-$ROS_DISTRO-ompl
 
 	# 3D Mouse
-	sudo apt-get install -qq ros-$ROS_VERSION-spacenav-node
+	sudo apt-get install -qq ros-$ROS_DISTRO-spacenav-node
 fi
 
 
@@ -608,7 +609,7 @@ if [[ "$INSTALL_NAV" == "true" ]]; then
 	# sudo apt-get install -qq gcc-arm-none-eabi
 
 	# Hardware drivers
-	sudo apt-get install -qq ros-$ROS_VERSION-camera1394
+	sudo apt-get install -qq ros-$ROS_DISTRO-camera1394
 
 	# Visualization
 	sudo apt-get install -qq qt5-default
@@ -616,14 +617,14 @@ if [[ "$INSTALL_NAV" == "true" ]]; then
 	instlog "Installing NaviGator ROS dependencies"
 
 	# Serial communications
-	sudo apt-get install -qq ros-$ROS_VERSION-rosserial
-	sudo apt-get install -qq ros-$ROS_VERSION-rosserial-arduino
+	sudo apt-get install -qq ros-$ROS_DISTRO-rosserial
+	sudo apt-get install -qq ros-$ROS_DISTRO-rosserial-arduino
 
 	# Sick lidar driver
-	sudo apt-get install -qq ros-$ROS_VERSION-lms1xx
+	sudo apt-get install -qq ros-$ROS_DISTRO-lms1xx
 
 	# Trajectory Generation
-	sudo apt-get install -qq ros-$ROS_VERSION-ompl
+	sudo apt-get install -qq ros-$ROS_DISTRO-ompl
 
 	# FFTW library needed to build Sylphase GPS/INS software
 	sudo apt-get install -qq libfftw3-dev
@@ -663,7 +664,7 @@ fi
 # Source ROS configurations for bash
 echo "" >> $MILRC_FILE
 echo "# Sets up the shell environment for ROS" >> $MILRC_FILE
-echo "source /opt/ros/$ROS_VERSION/setup.bash" >> $MILRC_FILE
+echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> $MILRC_FILE
 
 # Source the workspace's configurations for bash on client machines
 if [[ "$DOCKER" != "true" ]]; then
