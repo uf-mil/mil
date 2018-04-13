@@ -113,6 +113,11 @@ class TaskRunner(object):
         # Try to accept a new task
         self.do_new_task()
 
+    def cleanup_fail(self, final, taskname):
+        print ''
+        print 'Clean up for {} failed!'.format(taskname)
+        print final.getTraceback()
+
     @util.cancellableInlineCallbacks
     def task_finished_cb(self, final):
         '''
@@ -137,8 +142,10 @@ class TaskRunner(object):
                 final.printTraceback()
             self.server.set_aborted(result=result, text=text)  # Set task aborted in either case
 
-            # Call task cleanup function
-            yield self.task.cleanup()
+            # Call task cleanup functio
+            cleanup = defer.maybeDeferred(self.task.cleanup)
+            cleanup.addErrback(self.cleanup_fail, self.task.name())
+            yield cleanup
 
         # If task was successful, set goal to succeeded with specified result
         else:
