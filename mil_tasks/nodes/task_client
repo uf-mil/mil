@@ -3,6 +3,7 @@ import rospy
 from actionlib import TerminalState
 import argparse
 from mil_tasks_core import TaskClient
+import json
 
 
 class TaskClientCli(object):
@@ -63,6 +64,15 @@ class TaskClientCli(object):
         print 'Goal successful' if result.success else 'Goal unsuccessful'
         if result.result != '':
             print "Result: '{}'".format(result.result)
+        if len(result.parameters) > 0:
+            try:
+                x = json.loads(result.parameters)
+                if not isinstance(x, dict):
+                    raise ValueError('not dict')
+                for key, value in x.iteritems():
+                    print '{}: {}'.format(key, value)
+            except ValueError:
+                print 'could not decode result parameters'
 
 
 def main():
