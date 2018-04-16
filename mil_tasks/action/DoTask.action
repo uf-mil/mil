@@ -5,6 +5,7 @@ string parameters
 
 bool success
 string result
+string parameters
 
 ---
 

@@ -1,0 +1,6 @@
+<launch>
+    <node pkg="mil_tasks" type="task_runner" name="task_runner">
+        <param name="tasks_module" value="mil_tasks_examples" />
+        <param name="base_task" value="ExampleBaseTask" />
+    </node>
+</launch>

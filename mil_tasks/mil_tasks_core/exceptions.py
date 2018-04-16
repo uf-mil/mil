@@ -1,3 +1,10 @@
+class TaskException(Exception):
+    def __init__(self, message, parameters={}):
+        self.message = message
+        self.parameters = parameters
+        super(Exception, self).__init__(message)
+
+
 class TimeoutException(Exception):
     '''
     Represents an exception from a task or subtask not finishing within

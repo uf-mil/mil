@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 from mil_tasks.msg import DoTaskAction, DoTaskResult, DoTaskFeedback
+from mil_tasks_core import TaskException, TaskResult
 from txros import util, NodeHandle, action
 from twisted.internet import defer, reactor
 import twisted.python
 import inspect
+import json
 
 
 class TaskRunner(object):
@@ -125,7 +127,6 @@ class TaskRunner(object):
         task, or raises an exception. Publishes the correct result to the action clients.
         '''
         result = DoTaskResult()
-        text = ''
 
         # If task failed / was cancled, abort task
         if isinstance(final, twisted.python.failure.Failure):
@@ -133,25 +134,30 @@ class TaskRunner(object):
 
             # If task was canceled, just set result to cancelled
             if final.check(defer.CancelledError):
-                result.result = text = 'task cancelled'
-            else:  # If task raised an exception, print traceback and set result to exception message
-                print ''
-                print self.task.name(), ' failed with the following exception:'
-                print final.getTraceback()
-                result.result = text = final.getErrorMessage()
-                final.printTraceback()
-            self.server.set_aborted(result=result, text=text)  # Set task aborted in either case
-
+                result.result = 'task cancelled'
+            elif final.check(TaskException):  # If a task exception, return error message and params
+                exception = final.value
+                result.result = exception.message
+                result.parameters = json.dumps(exception.parameters)
+            else:  # If task raised another kind of exception (like key error), return message and traceback
+                result.result = final.getErrorMessage()
+                result.parameters = json.dumps({'traceback': final.getTraceback()})
             # Call task cleanup functio
             cleanup = defer.maybeDeferred(self.task.cleanup)
             cleanup.addErrback(self.cleanup_fail, self.task.name())
             yield cleanup
+            self.server.set_aborted(result=result, text=result.result)  # Set task aborted in either case
 
         # If task was successful, set goal to succeeded with specified result
         else:
             result.success = True
-            result.result = text = str(final)
-            self.server.set_succeeded(result=result, text=text)
+            if isinstance(final, TaskResult):
+                result.result = final.message
+                result.parameters = json.dumps(final.parameters)
+            else:
+                result.result = str(final)
+            result.success = True
+            self.server.set_succeeded(result=result, text=result.result)
 
         # Result task variables and see if a new task is available
         self.task = None
