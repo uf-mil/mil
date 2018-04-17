@@ -27,5 +27,5 @@ export bag_hydrophones="/hydrophones/debug /hydrophones/ping /hydrophones/pose /
 export bag_object_detection="/database/objects"
 export bag_controller="/wrench/cmd /wrench/selected"
 export bag_guidance="/ogrid_master /trajectory/selected /trajectory/cmd /lqrrt/path /lqrrt/tree /lqrrt/goal /lqrrt/focus /lqrrt/effort /lqrrt/sampspace /lqrrt/effort /move_to/feedback /move_to/goal /move_to/result"
-export bag_gnc="$bag_guidance $bag_controller"
+export bag_gnc="$bag_guidance $bag_controller $bag_motors"
 export bag_kill="$bag_front_cam $bag_velodyne $bag_gnc $bag_starboard_cam $bag_motors"
