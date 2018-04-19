@@ -332,7 +332,7 @@ class OnlineBagger(object):
             result.success = False
             self._action_server.set_aborted(result)
             return
-
+        bag = None
         try:
             self.streaming = False
             result.filename = self.get_bag_name(req.bag_name)
@@ -387,7 +387,8 @@ class OnlineBagger(object):
             result.status = 'Exception while writing bag: ' + str(e)
             self._action_server.set_aborted(result)
             self.streaming = True
-            bag.close()
+            if bag is not None:
+                bag.close()
             return
         rospy.loginfo('Bag written to {}'.format(result.filename))
         result.success = True
