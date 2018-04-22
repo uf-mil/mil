@@ -15,6 +15,7 @@ from nav_msgs.msg import Odometry
 from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped, PointStamped
 import navigator_msgs.srv as navigator_srvs
+from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from topic_tools.srv import MuxSelect, MuxSelectRequest
 from mil_misc_tools.text_effects import fprint
 from navigator_tools import MissingPerceptionObject
@@ -105,7 +106,7 @@ class Navigator(BaseTask):
 
         try:
             cls._actuator_client = cls.nh.get_service_client('/actuator_driver/actuate', SetValve)
-            cls._database_query = cls.nh.get_service_client('/database/requests', navigator_srvs.ObjectDBQuery)
+            cls._database_query = cls.nh.get_service_client('/database/requests', ObjectDBQuery)
             cls._camera_database_query = cls.nh.get_service_client(
                 '/camera_database/requests', navigator_srvs.CameraDBQuery)
             cls._change_wrench = cls.nh.get_service_client('/wrench/select', MuxSelect)
@@ -230,14 +231,14 @@ class Navigator(BaseTask):
     def database_query(self, object_name=None, raise_exception=True, **kwargs):
         if object_name is not None:
             kwargs['name'] = object_name
-            res = yield self._database_query(navigator_srvs.ObjectDBQueryRequest(**kwargs))
+            res = yield self._database_query(ObjectDBQueryRequest(**kwargs))
 
             if not res.found and raise_exception:
                 raise MissingPerceptionObject(kwargs['name'])
 
             defer.returnValue(res)
 
-        res = yield self._database_query(navigator_srvs.ObjectDBQueryRequest(**kwargs))
+        res = yield self._database_query(ObjectDBQueryRequest(**kwargs))
         defer.returnValue(res)
 
     @util.cancellableInlineCallbacks
