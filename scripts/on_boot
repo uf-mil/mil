@@ -2,11 +2,9 @@
 # This script is run by the navigator user when the main NaviGator computer starts.
 USER="navigator"
 SDGPS_DIR="/home/$USER/sdgps/sdgps_current"
-cd $SDGPS_DIR
 SDGPS="$SDGPS_DIR/build/main"
-CMD1="sudo $SDGPS sylphase-usbgpsimu2 --antenna-position "[0.37465,-0.136525,0.587502]" --output-samples ! listen-cooked-tcp 1236 ! tracker ! listen-observables-tcp 1235"
-CMD2="$SDGPS connect-observables-tcp 127.0.0.1 1235 ! write-observables-file /home/navigator/bags/sdgps/kf2_`date +%s`.obs ! kf2 --decimation 10 ! listen-solution-tcp 1234"
-CMD3="$SDGPS connect-cooked-tcp 127.0.0.1 1236 ! cooked-to-raw ! write-raw-file /home/navigator/bags/sdgps/last.raw"
+ANTENNA_POSITION="[0.37465,-0.136525,0.587502]"
+CMD="(cd $SDGPS_DIR;sudo $SDGPS sylphase-usbgpsimu2 --antenna-position '$ANTENNA_POSITION' ! tracker ! kf2 --decimation 10 ! listen-solution-tcp 1234)"
 ROSCORE="roscore"
 SESSION="sdgps"
 TMUX="tmux"
@@ -17,11 +15,6 @@ fi
 $TMUX new-session -d -s ${SESSION} -n "roscore"
 $TMUX send-keys -t $SESSION "$ROSCORE" C-m
 $TMUX new-window -t $SESSION -n "sdgps"
-$TMUX send-keys -t $SESSION "$CMD1" C-m
-$TMUX split-window -h -t $SESSION
-$TMUX send-keys -t $SESSION "$CMD2" C-m
-$TMUX select-pane -L -t $SESSION
-$TMUX split-window -v -t $SESSION
-$TMUX send-keys -t $SESSION "$CMD3" C-m
+$TMUX send-keys -t $SESSION "$CMD" C-m
 
 
