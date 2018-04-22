@@ -148,22 +148,27 @@ class KillInterface(object):
         # If a response has been recieved to a requested status (button, remove, etc), update internal state
         if self.last_request is not None:
             if msg == constants['RESPONSE_FALSE']:
+                if self.board_status[self.last_request] is True:
+                    rospy.logdebug('SYNC FALSE for {}'.format(self.last_request))
                 self.board_status[self.last_request] = False
                 self.last_request = None
                 return
             if msg == constants['RESPONSE_TRUE']:
-                rospy.logdebug('RESPONSE TRUE for {}'.format(self.last_request))
+                if self.board_status[self.last_request] is False:
+                    rospy.logdebug('SYNC TRUE for {}'.format(self.last_request))
                 self.board_status[self.last_request] = True
                 self.last_request = None
                 return
         # If an async update was recieved, update internal state
         for kill in self.board_status:
             if msg == constants[kill]['FALSE']:
-                rospy.logdebug('ASYNC FALSE FOR {}'.format(kill))
+                if self.board_status[kill] is True:
+                    rospy.logdebug('ASYNC FALSE for {}'.format(self.last_request))
                 self.board_status[kill] = False
                 return
             if msg == constants[kill]['TRUE']:
-                rospy.logdebug('ASYNC TRUE FOR {}'.format(kill))
+                if self.board_status[kill] is False:
+                    rospy.logdebug('ASYNC TRUE FOR {}'.format(kill))
                 self.board_status[kill] = True
                 return
         # If a response to another request, like ping or computer kill/clear is recieved
