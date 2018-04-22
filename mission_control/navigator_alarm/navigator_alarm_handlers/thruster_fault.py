@@ -12,10 +12,6 @@ class ThrusterFault(HandlerBase):
         # Thruster topics to listen to
         motor_topics = ['/FL_motor', '/FR_motor', '/BL_motor', '/BR_motor']
 
-        # Subscribe to the status message for all thruster topics
-        [rospy.Subscriber(
-            topic + '/status', Status, self._check_faults, topic) for topic in motor_topics]
-
         # Dictionary for the faults as defined in roboteq_msgs/Status
         self.fault_codes = {1: 'OVERHEAT', 2: 'OVERVOLTAGE', 4: 'UNDERVOLTAGE', 8: 'SHORT_CIRCUIT',
                             16: 'EMERGENCY_STOP', 32: 'SEPEX_EXCITATION_FAULT', 64: 'MOSFET_FAILURE',
@@ -23,6 +19,9 @@ class ThrusterFault(HandlerBase):
 
         self._raised = False
         self._raised_alarms = {}
+
+        # Subscribe to the status message for all thruster topics
+        [rospy.Subscriber(topic + '/status', Status, self._check_faults, topic) for topic in motor_topics]
 
     # Return a list that decodes the binary to strings
     def _get_fault_codes(self, fault_id):
