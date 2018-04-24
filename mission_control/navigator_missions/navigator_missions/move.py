@@ -2,6 +2,7 @@
 from txros import util
 from twisted.internet import defer
 from navigator import Navigator
+from navigator_path_planner.msg import MoveGoal
 import numpy as np
 from mil_tools import numpy_to_point, rosmsg_to_numpy
 from mil_misc_tools import ThrowingArgumentParser
@@ -112,7 +113,7 @@ class Move(Navigator):
                 # Get the kwargs to pass to the action server
                 station_hold = amount == '0'
                 if station_hold:
-                    action_kwargs['move_type'] = 'hold'
+                    action_kwargs['move_type'] = MoveGoal.HOLD
 
                 msg = "Moving {} ".format(command) if trans_move else "Yawing {} ".format(command[4:])
                 self.send_feedback(msg + "{}{}".format(amount, unit))

@@ -252,7 +252,7 @@ class PoseEditor2(object):
 
         focus.append(sign_direction * revolutions)
 
-        return PoseEditor2(self.nav, [position, [0, 0, 0, 1]], focus=np.array(focus), move_type='spiral')
+        return PoseEditor2(self.nav, [position, [0, 0, 0, 1]], focus=np.array(focus), move_type=MoveGoal.SPIRAL)
 
     def circle_point(self, point, *args, **kwargs):
         return self.spiral_point(point, *args, **kwargs)
@@ -300,7 +300,7 @@ class PoseEditor2(object):
             **kwargs
         )
 
-    def as_MoveGoal(self, move_type='drive', **kwargs):
+    def as_MoveGoal(self, move_type=MoveGoal.DRIVE, **kwargs):
         if 'focus' in kwargs:
             if not isinstance(kwargs['focus'], Point):
                 kwargs['focus'] = mil_tools.numpy_to_point(kwargs['focus'])

@@ -23,7 +23,7 @@ from geometry_msgs.msg import Point32, PointStamped, Pose, PoseArray, \
     PoseStamped, WrenchStamped, PolygonStamped
 
 from navigator_path_planner import params, car, boat, escape
-from navigator_path_planner.msg import MoveAction, MoveFeedback, MoveResult
+from navigator_path_planner.msg import MoveAction, MoveFeedback, MoveResult, MoveGoal
 
 # Check scipy version for assume_sorted argument in interp1d
 import scipy.interpolate
@@ -163,7 +163,8 @@ class LQRRT_Node(object):
         self.set_goal(self.unpack_pose(msg.goal))
 
         # Check given move_type
-        if msg.move_type in ['hold', 'drive', 'drive!', 'skid', 'spiral', 'bypass']:
+        if msg.move_type in [MoveGoal.HOLD, MoveGoal.DRIVE, MoveGoal.DRIVE_SMOOTH,
+                             MoveGoal.SKID, MoveGoal.SPIRAL, MoveGoal.BYPASS]:
             if msg.blind:
                 self.blind = True
                 print("Preparing: blind {}".format(msg.move_type))
@@ -177,7 +178,7 @@ class LQRRT_Node(object):
             return False
 
         # Station keeping move
-        if self.move_type == 'hold':
+        if self.move_type == MoveGoal.HOLD:
             self.set_goal(self.state)
             self.last_update_time = self.rostime()
             remain = np.copy(self.goal)
@@ -188,7 +189,7 @@ class LQRRT_Node(object):
             return True
 
         # Bypass move
-        if self.move_type == 'bypass':
+        if self.move_type == MoveGoal.BYPASS:
             if self.is_feasible(self.goal, np.zeros(3)) or self.blind:
                 self.last_update_time = self.rostime()
                 remain = np.copy(self.goal)
@@ -211,7 +212,7 @@ class LQRRT_Node(object):
             return False
 
         # Check given focus
-        if self.move_type == 'skid':
+        if self.move_type == MoveGoal.SKID:
             if msg.focus.z == 0:
                 boat.focus = None
                 self.focus_pub.publish(self.pack_pointstamped([1E6, 1E6, 1E6], rospy.Time.now()))
@@ -223,7 +224,7 @@ class LQRRT_Node(object):
                 self.set_goal(focus_goal)
                 self.focus_pub.publish(self.pack_pointstamped(boat.focus, rospy.Time.now()))
                 print("Focused on: {}".format(boat.focus[:2]))
-        elif self.move_type == 'spiral':
+        elif self.move_type == MoveGoal.SPIRAL:
             boat.focus = np.array([msg.focus.x, msg.focus.y, msg.focus.z])
             self.focus_pub.publish(self.pack_pointstamped(boat.focus, rospy.Time.now()))
             if boat.focus[2] >= 0:
@@ -265,7 +266,7 @@ class LQRRT_Node(object):
             behavior.D_neg = params.D_neg / self.speed_factor
 
         # Spiraling
-        if self.move_type == 'spiral':
+        if self.move_type == MoveGoal.SPIRAL:
             if np.isclose(npl.norm(boat.focus[:2] - self.state[:2]), 0):
                 print("\nCan't perform a spiral of zero initial radius! Sorry.")
                 print("\nTerminated.\n")
@@ -294,7 +295,7 @@ class LQRRT_Node(object):
                 return False
 
         # Standard driving
-        elif self.move_type in ['drive', 'drive!']:
+        elif self.move_type in [MoveGoal.DRIVE, MoveGoal.DRIVE_SMOOTH]:
 
             # Find the heading that points to the goal
             p_err = self.goal[:2] - self.state[:2]
@@ -302,7 +303,7 @@ class LQRRT_Node(object):
 
             # If we aren't within a cone of that heading and the goal is far away, construct rotation
             if abs(self.angle_diff(h_goal, self.state[2])) > params.pointshoot_tol and npl.norm(
-                    p_err) > params.free_radius and self.move_type != 'drive!':
+                    p_err) > params.free_radius and self.move_type != MoveGoal.DRIVE_SMOOTH:
                 x_seq_rot, T_rot, rot_success, u_seq_rot = self.rotation_move(self.state, h_goal, params.pointshoot_tol)
                 print("\nRotating towards goal (duration: {})".format(np.round(T_rot, 2)))
                 if not rot_success:
@@ -324,11 +325,11 @@ class LQRRT_Node(object):
             else:
                 self.next_runtime = params.basic_duration
                 self.next_seed = np.copy(self.state)
-                if self.move_type == 'drive!':
-                    self.move_type = 'drive'
+                if self.move_type == MoveGoal.DRIVE_SMOOTH:
+                    self.move_type = MoveGoal.DRIVE
 
         # Translate or look-at move
-        elif self.move_type == 'skid':
+        elif self.move_type == MoveGoal.SKID:
             self.next_runtime = params.basic_duration
             self.next_seed = np.copy(self.state)
 
@@ -360,7 +361,7 @@ class LQRRT_Node(object):
             #     print("Move duration: {}".format(np.round(self.next_runtime, 1)))
 
             # Check if action goal is complete
-            if self.move_type == 'spiral':
+            if self.move_type == MoveGoal.SPIRAL:
                 self.publish_path()
                 if self.time_till_issue is not None:
                     self.unreachable = True
@@ -517,7 +518,7 @@ class LQRRT_Node(object):
         dist = npl.norm(self.goal[:2] - self.next_seed[:2])
 
         # Are we driving?
-        if self.move_type == 'drive':
+        if self.move_type == MoveGoal.DRIVE:
             # All clear?
             if dist < params.free_radius:
                 return boat
@@ -525,7 +526,7 @@ class LQRRT_Node(object):
                 return car
 
         # Are we skidding?
-        if self.move_type == 'skid':
+        if self.move_type == MoveGoal.SKID:
             return boat
 
         # (debug)
@@ -768,7 +769,7 @@ class LQRRT_Node(object):
         iters_passed = int((self.rostime() - last_update_time) / self.dt)
 
         # Make sure that the goal pose is still feasible
-        if not self.is_feasible(self.goal, np.zeros(3)) and self.move_type != 'spiral':
+        if not self.is_feasible(self.goal, np.zeros(3)) and self.move_type != MoveGoal.SPIRAL:
             print("\nThe given goal is occupied!\nGoing nearby instead.")
             self.time_till_issue = np.inf
             self.failure_reason = 'occupied'
@@ -794,7 +795,7 @@ class LQRRT_Node(object):
                 self.unreachable = True
                 self.failure_reason = 'unreachable'
                 return
-            if boat.focus is not None and self.move_type == 'skid':
+            if boat.focus is not None and self.move_type == MoveGoal.SKID:
                 focus_vec = boat.focus[:2] - self.goal[:2]
                 focus_goal = np.copy(self.goal)
                 focus_goal[2] = np.arctan2(focus_vec[1], focus_vec[0])
@@ -848,7 +849,7 @@ class LQRRT_Node(object):
                     checks.append(self.is_feasible(x, np.zeros(3)))
                 if np.all(checks):
                     self.time_till_issue = np.inf
-                    self.move_type = 'drive'
+                    self.move_type = MoveGoal.DRIVE
                     for behavior in self.behaviors_list:
                         behavior.planner.kill_update()
                     self.stuck = False
@@ -882,7 +883,7 @@ class LQRRT_Node(object):
         last_update_time = self.last_update_time
         if next_runtime is not None and last_update_time is not None:
             time_till_next_branch = next_runtime - (self.rostime() - last_update_time)
-            if self.move_type == 'spiral':
+            if self.move_type == MoveGoal.SPIRAL:
                 self.move_server.publish_feedback(MoveFeedback('boat',
                                                                0,
                                                                self.tracking,
