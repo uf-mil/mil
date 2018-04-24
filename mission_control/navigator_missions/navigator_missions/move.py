@@ -92,7 +92,7 @@ class Move(Navigator):
                 self.send_feedback('RVIZ point recieved!')
                 target_point = rosmsg_to_numpy(target_point.point)
                 direction = 'cw' if argument == '-1' else 'ccw'
-                res = yield self.move.circle_point(target_point, direction=direction).go()
+                res = yield self.move.circle_point(target_point, direction=direction).go(**action_kwargs)
 
             else:
                 shorthand = {"f": "forward", "b": "backward", "l": "left",
