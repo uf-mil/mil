@@ -124,7 +124,7 @@ class Joystick(object):
         x = joy.axes[1] * self.force_scale
         y = joy.axes[0] * self.force_scale
         rotation = joy.axes[3] * self.torque_scale
-        self.remote.publish_wrench(x, y, rotation, joy.header.stamp)
+        self.remote.publish_wrench(x, y, rotation, rospy.Time.now())
 
 
 if __name__ == "__main__":
