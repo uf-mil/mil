@@ -1,10 +1,16 @@
 # Goal
 
+# Move types (actual functionality may vary in edge cases like short moves):
+#  drive:  rotate towards goal first then move to it, fast for long distance moves (default in move command)
+#  drive!: rotate towards goal WHILE moving to it
+#  skid:   try to maintain orientation while moving to goal, good for strafes / moving while looking at something
+#  spiral: special type for smooth circle and spiral moves
+#  bypass: immeditely pass goal to controller, no trajectory or obstacle avoidance
 string move_type  # 'hold', 'drive', 'drive!', 'skid', 'spiral', 'bypass'
 geometry_msgs/Pose goal
 geometry_msgs/Point focus
 float64 initial_plan_time
-bool blind
+bool blind  # If True, ignore ogrid when planning move (no obstacle avoidance). Only use when safe!
 float64[] speed_factor
 
 ---
