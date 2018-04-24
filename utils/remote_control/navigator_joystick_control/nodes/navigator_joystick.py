@@ -65,6 +65,7 @@ class Joystick(object):
 
         # Assigns readable names to the buttons that are used
         start = joy.buttons[7]
+        back = joy.buttons[6]
         raise_kill = bool(joy.buttons[1])  # B
         clear_kill = bool(joy.buttons[2])  # X
         station_hold = bool(joy.buttons[0])  # A
@@ -73,9 +74,14 @@ class Joystick(object):
         keyboard_control = bool(joy.buttons[14])  # d-pad down
         auto_control = bool(joy.buttons[12])  # d-pad right
 
-        # Reset controller state if only start is pressed down about 3 seconds
+        if back and not self.last_back:
+            rospy.loginfo('Back pressed. Going inactive')
+            self.reset()
+            return
+
+        # Reset controller state if only start is pressed down about 1 second
         self.start_count += start
-        if self.start_count > 10:
+        if self.start_count > 5:
             rospy.loginfo("Resetting controller state")
             self.reset()
             self.active = True
@@ -105,6 +111,7 @@ class Joystick(object):
         if auto_control and not self.last_auto_control:
             self.remote.select_autonomous_control()
 
+        self.last_back = back
         self.last_raise_kill = raise_kill
         self.last_clear_kill = clear_kill
         self.last_station_hold_state = station_hold
