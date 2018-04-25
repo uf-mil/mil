@@ -179,3 +179,50 @@ def putText_ul(img, text, org, fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScal
     y += text_height
     cv2.putText(img, text, (x, y), fontFace, fontScale, color, thickness, lineType, bottomLeftOrigin)
     return
+
+
+def points_in_image(camera, points):
+    '''
+    Returns Mx2 np array of image points from projecting
+    given 3D points. Only points within image resolution are included in output.
+    points, ignoring any outside the resolution of the camera
+    @param camera_mode: PinholeCameraModel instance of camera
+    @param points: Nx3 np array of 3 points in camera frame
+    @return Mx2 np array of projected image points which are within camera resolution.
+    '''
+    N = points.shape[0]
+    img_points = np.empty((N, 2))
+    resolution = camera.fullResolution()
+    used = 0
+    for i in range(N):
+        img_pt = camera.project3dToPixel(points[i, :])
+        if img_pt[0] < 0 or img_pt[0] > resolution[0] or img_pt[1] < 0 or img_pt[1] > resolution[1]:
+            continue
+        img_points[used, :] = img_pt
+        used += 1
+    img_points = img_points[0:used, :]
+    return img_points
+
+
+def roi_enclosing_points(camera, points, border=(0, 0)):
+    '''
+    Gets region of interest in image which encloses the projected 3D points.
+    Output is given in slice format, so user can easily slice image.
+    ex:
+       roi = roi_enclosing_points(camera_model, object_points)
+       img_object = img[roi]
+       cv2.imshow('Object', img_object)
+    @param camera_model: PinholeCameraModel instance
+    @param points: Nx3 np array of 3 points in camera frame
+    @param border: tuple (xborder, yborder),
+           extra pixels to add around region of interest
+    @return region of interest tuple that can be used to slice image
+            in format (slice(ymin, ymax), slice(xmin, xmax))
+    '''
+    img_points = points_in_image(camera, points)
+    resolution = camera.fullResolution()
+    xmin = np.clip(np.min(img_points[:, 0]) - border[0], 0, resolution[0])
+    xmax = np.clip(np.max(img_points[:, 0]) + border[0], 0, resolution[0])
+    ymin = np.clip(np.min(img_points[:, 1]) - border[1], 0, resolution[1])
+    ymax = np.clip(np.max(img_points[:, 1]) + border[1], 0, resolution[1])
+    return (slice(ymin, ymax), slice(xmin, xmax))
