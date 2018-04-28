@@ -32,6 +32,12 @@ ros_env() {
 alias ws="cd \$CATKIN_DIR"
 alias mc="cd \$CATKIN_DIR/src/mil_common"
 
+# ROS helpers
+imageproc() # Example usage: imageproc /camera/seecam
+{
+    ROS_NAMESPACE="$1" rosrun image_proc image_proc
+}
+
 # Bash sourcing
 alias srcbrc="source ~/.bashrc"
 
