@@ -5,8 +5,18 @@ import cv2
 import numpy as np
 from sklearn.naive_bayes import GaussianNB
 import pandas
+import argparse
 
 __author__ = 'Kevin Allen'
+
+
+def _get_param(one, two):
+        '''
+        Helpers function to get whichever param is not None, used
+        to have class defaults which can be overridden in function calls
+        '''
+        assert one is not None or two is not None, 'both params are None'
+        return two if one is None else one
 
 
 class ContourClassifier(object):
@@ -18,12 +28,16 @@ class ContourClassifier(object):
     '''
     __metaclass__ = ABCMeta  # Treat
 
-    def __init__(self, classes):
+    def __init__(self, classes,
+                 training_file=None, labelfile=None, image_dir=None):
         '''
         Constructs a ContourClassifier.
         @param classes: a list of class names (as strings), ex: ['red', 'white', 'blue']
         '''
         self.classes = classes
+        self.training_file = training_file
+        self.labelfile = labelfile
+        self.image_dir = image_dir
 
     @classmethod
     @abstractproperty
@@ -99,43 +113,49 @@ class ContourClassifier(object):
         features = self.get_features(img, mask)
         return self.classify_features(features)
 
-    def read_from_csv(self, filename):
+    def read_from_csv(self, training_file=None):
         '''
         Read in the features and labeled classes from filename, assuming it was saved
         in the format obtained from save_csv.
         '''
-        df = pandas.DataFrame.from_csv(filename)
+        training_file = _get_param(training_file, self.training_file)
+        df = pandas.DataFrame.from_csv(training_file)
         classes = df.values[:, 0]
         features = df.values[:, 1:]
         return features, classes
 
-    def train_from_csv(self, filename):
+    def train_from_csv(self, training_file=None):
         '''
         Train the classifier given the labeled feature found in filename
         which should be in the format obtained from save_csv
         '''
-        features, classes = self.read_from_csv(filename)
+        training_file = _get_param(training_file, self.training_file)
+        features, classes = self.read_from_csv(training_file)
         self.train(features, classes)
 
-    def save_csv(self, features, classes, filename='training.csv'):
+    def save_csv(self, features, classes, training_file=None):
         '''
         Save the features and labeled classes to a csv file
         to be used in later training.
         '''
+        training_file = _get_param(training_file, self.training_file)
         features = np.array(features)
         classes = np.array(classes)
         classes = classes.reshape((classes.shape[0], 1))
         data = np.hstack((classes, features))
         df = pandas.DataFrame(data=data, columns=['Class'] + self.FEATURES)
-        df.to_csv(filename)
+        df.to_csv(training_file)
 
-    def extract_labels(self, labelfile, image_dir):
+    def extract_labels(self, labelfile=None, image_dir=None):
         '''
         Extract features and labeled classes from a project labeled on labelbox.io
         @param labelfile: the json file containing the labels for the project
         @param image_dir: directory where source images for the project can be found
         @return features, classes; np arrays that can be used in self.train or self.save_csv
         '''
+        labelfile = _get_param(labelfile, self.labelfile)
+        image_dir = _get_param(image_dir, self.image_dir)
+        print labelfile, image_dir
         labler = LabelBoxParser(labelfile, image_dir)
         label_features = []
         label_classes = []
@@ -151,7 +171,34 @@ class ContourClassifier(object):
                         label_classes.append(self.classes.index(l))
 
         labler.get_labeled_images(labeled_img_cb)
+        if len(label_features) == 0:
+            raise Exception('No labels found. Please check parameters')
         return np.array(label_features), np.array(label_classes)
+
+    def main(self, params, description="Interface with a contour classifier class"):
+        '''
+        Can be used to run a classifier as an executable for common tasks like extracting labels
+        '''
+        parser = argparse.ArgumentParser(description=description)
+        parser.add_argument('--training-file', '-t', type=str, default=None,
+                            help='CSV file to save/load training features and label to.')
+        subparser = parser.add_subparsers()
+        extract = subparser.add_parser('extract', help='Extract labels')
+        extract.set_defaults(cmd='extract')
+        extract.add_argument('--label-file', '-l', type=str, default=None,
+                             help='Path of json file containing labelbox labels')
+        extract.add_argument('--image-dir', '-d', type=str, default=None,
+                             help='Path to directory containing images for datasets labeled by label file')
+        score = subparser.add_parser('score', help='Print a accuracy score based on saved training file')
+        score.set_defaults(cmd='score')
+        args = parser.parse_args(params)
+        if args.cmd == 'extract':
+            features, classes = self.extract_labels(labelfile=args.label_file, image_dir=args.image_dir)
+            self.save_csv(features, classes, training_file=args.training_file)
+        if args.cmd == 'score':
+            features, classes = self.read_from_csv(training_file=args.training_file)
+            self.train(features, classes)
+            print 'Score: {}%'.format(self.score(features, classes) * 100)
 
 
 class GaussianColorClassifier(ContourClassifier):
@@ -164,8 +211,8 @@ class GaussianColorClassifier(ContourClassifier):
     '''
     FEATURES = ['B', 'G', 'R', 'H', 'S', 'V', 'L', 'A', 'B']
 
-    def __init__(self, classes):
-        super(GaussianColorClassifier, self).__init__(classes)
+    def __init__(self, classes, **kwargs):
+        super(GaussianColorClassifier, self).__init__(classes, **kwargs)
         self.classifier = GaussianNB()
 
     def get_features(self, img, mask):
