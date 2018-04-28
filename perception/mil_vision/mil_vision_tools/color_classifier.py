@@ -105,14 +105,18 @@ class ContourClassifier(object):
         Maps a single string or list of strings representing a class in the set of those passed to the contructor
         to the corresponding integer index representing this class, used in most functions for training / classification
         '''
-        map(self.classes.index, strings)
+        if isinstance(strings, list):
+            return map(self.classes.index, strings)
+        return self.classes.index(strings)
 
     def class_to_string(self, classes):
         '''
         Maps a single integer or list of integers representing a class index to the corresponding
         class string in the set of those passed to the constructor.
         '''
-        map(self.classes.__getitem__, classes)
+        if isinstance(classes, list):
+            return map(self.classes.__getitem__, classes)
+        return self.classes[classes]
 
     def classify(self, img, mask):
         '''
@@ -121,7 +125,7 @@ class ContourClassifier(object):
         @param mask: binary mask image representing the contour
         @return: the class index this is most probable given the features in that contour
         '''
-        features = self.get_features(img, mask)
+        features = self.get_features(img, mask).reshape(1, -1)
         return self.classify_features(features)
 
     def probabilities(self, img, mask):
@@ -129,7 +133,7 @@ class ContourClassifier(object):
         Return a vector of probabilities of the features gotten from the contour with
         given mask coresponding to the class list
         '''
-        features = self.get_features(img, mask)
+        features = self.get_features(img, mask).reshape(1, -1)
         return self.feature_probabilities(features)
 
     def read_from_csv(self, training_file=None):
