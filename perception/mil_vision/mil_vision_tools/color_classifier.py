@@ -64,6 +64,17 @@ class ContourClassifier(object):
         '''
         pass
 
+    def feature_probabilities(self, features):
+        '''
+        Allows child classes to give probabilties for each possible class given
+        a features vector, instead of just one classification. By default,
+        gives 1.0 to classified class and 0.0 to others
+        '''
+        probabilities = [0.0] * len(self.classes)
+        classification = self.classify_features(features)
+        probabilities[classification] = 1.0
+        return probabilities
+
     @abstractmethod
     def train(self, features, classes):
         '''
@@ -113,10 +124,17 @@ class ContourClassifier(object):
         features = self.get_features(img, mask)
         return self.classify_features(features)
 
+    def probabilities(self, img, mask):
+        '''
+        Return a vector of probabilities of the features gotten from the contour with
+        given mask coresponding to the class list
+        '''
+        features = self.get_features(img, mask)
+        return self.feature_probabilities(features)
+
     def read_from_csv(self, training_file=None):
         '''
-        Read in the features and labeled classes from filename, assuming it was saved
-        in the format obtained from save_csv.
+        Return features and classes from specified training file
         '''
         training_file = _get_param(training_file, self.training_file)
         df = pandas.DataFrame.from_csv(training_file)
@@ -225,6 +243,9 @@ class GaussianColorClassifier(ContourClassifier):
 
     def classify_features(self, features):
         return self.classifier.predict(features)
+
+    def feature_probabilities(self, features):
+        return self.classifier.predict_proba(features)
 
     def train(self, features, classes):
         self.classifier.fit(features, classes)
