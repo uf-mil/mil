@@ -1,6 +1,6 @@
-Welcome to the SubjuGator Wiki! This repository hosts all of the code that is specific to the SubjuGator platform. For general information about MIL and our projects, see the [mil_common wiki](https://github.com/uf-mil/mil_common/wiki). Be sure to check out the [preliminary rules](https://drive.google.com/file/d/0B6R3K-IZtXFXLVhlQnF4ZzdLQlU/view) for more information about the competition.
+Welcome to the SubjuGator Wiki! This repository hosts all of the code that is specific to the SubjuGator platform. For general information about MIL and our projects, see the [mil_common wiki](https://github.com/uf-mil/mil_common/wiki). Be sure to check out the [rules](http://www.robonation.org/competition/robosub) for more information about the competition.
 
-If you have any questions, don't hesitate to email David Soto.
+If you have any questions, don't hesitate to email Daniel Volya.
 
 
 # What is SubjuGator?
@@ -35,4 +35,4 @@ SubjuGator is a fully Autonomous Underwater Vehicle (AUV) built by undergraduate
 
 # Getting Involved
 
-Interested in working on SubjuGator? Schedule a one-on-one meeting with David (David Soto), or just come by the lab and talk to people. Find his contact information floating around in the repository.
+Interested in working on SubjuGator? Schedule a one-on-one meeting with Daniel Volya, or just come by the lab and talk to people. Find his contact information floating around in the repository.
