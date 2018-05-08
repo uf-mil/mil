@@ -218,11 +218,27 @@ def roi_enclosing_points(camera, points, border=(0, 0)):
            extra pixels to add around region of interest
     @return region of interest tuple that can be used to slice image
             in format (slice(ymin, ymax), slice(xmin, xmax))
+            or None if none of the points can be seen in the image
     '''
     img_points = points_in_image(camera, points)
+    if not len(img_points):
+        return None
     resolution = camera.fullResolution()
-    xmin = np.clip(np.min(img_points[:, 0]) - border[0], 0, resolution[0])
-    xmax = np.clip(np.max(img_points[:, 0]) + border[0], 0, resolution[0])
-    ymin = np.clip(np.min(img_points[:, 1]) - border[1], 0, resolution[1])
-    ymax = np.clip(np.max(img_points[:, 1]) + border[1], 0, resolution[1])
+    xmin = int(np.clip(np.round(np.min(img_points[:, 0]) - border[0]), 0, resolution[0]))
+    xmax = int(np.clip(np.round(np.max(img_points[:, 0]) + border[0]), 0, resolution[0]))
+    ymin = int(np.clip(np.round(np.min(img_points[:, 1]) - border[1]), 0, resolution[1]))
+    ymax = int(np.clip(np.round(np.max(img_points[:, 1]) + border[1]), 0, resolution[1]))
     return (slice(ymin, ymax), slice(xmin, xmax))
+
+
+def rect_from_roi(roi):
+    '''
+    Return rectangle style tuple from a roi slice tuple, like the one from roi_enclosing_points
+    @param roi: region of interest slice tuple in form (slice(ymin, ymax), slice(xmin, xmax))
+    @return: rectangle tuple
+    ex:
+        roi = roi_enclosing_points(camera_model, object_points)
+        rectangle = tuple_from_slice(roi)
+        cv2.rectangle(img, rectangle[0], rectangle[1], (0, 255, 0), 3)
+    '''
+    return ((roi[1].start, roi[0].start), (roi[1].stop, roi[0].stop))

@@ -11,6 +11,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, CameraInfo
 from mil_ros_tools import wait_for_param
 import message_filters
+from image_geometry import PinholeCameraModel
 
 
 def get_parameter_range(parameter_root):
@@ -107,6 +108,12 @@ class Image_Subscriber(object):
 
         rospy.logerr("Camera info not found.")
         raise Exception("Camera info not found.")
+
+    def wait_for_camera_model(self, **kwargs):
+        info_msg = self.wait_for_camera_info(**kwargs)
+        model = PinholeCameraModel()
+        model.fromCameraInfo(info_msg)
+        return model
 
     def info_cb(self, msg):
         """The path trick here is a hack"""
