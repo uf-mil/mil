@@ -142,8 +142,10 @@ class DockerController(object):
                 self.container.stop()
                 return
             elif select == 2:
-                self.brand_new_docker_image()
+                self.container.commit(repository='mil_image', tag='latest')
             elif select == 3:
+                self.brand_new_docker_image()
+            elif select == 4:
                 return
 
     def draw_images_menu(self):
@@ -152,7 +154,8 @@ class DockerController(object):
         return self.docker_client.images.list()[selection]
 
     def draw_options_menu(self):
-        l = ['Open Terminal', 'Stop', 'Update Image']
+        l = ['Open Terminal -- opens a terminal window attached to container', 'Stop -- stops the container', 'Save Image -- commits container to image',
+             'Build Image -- runs docker build']
         selection = SelectionMenu.get_selection(l)
         return selection
 
