@@ -34,7 +34,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     python-rosdep \
     python-rosinstall \
     python-vcstools \
-    wget \
+    openssh-client \
     && rm -rf /var/lib/apt/lists/*
 
 # setup environment
@@ -54,6 +54,8 @@ USER mil
 WORKDIR /home/mil
 SHELL ["/bin/bash", "-c"]
 
+RUN mkdir .ssh
+
 # bootstrap rosdep
 RUN sudo rosdep init \
     && rosdep update
@@ -65,5 +67,7 @@ RUN  sudo apt-get -y clean \
 	&& sudo rm -rf /var/lib/apt/lists/* \
     && sudo rm -f /var/cache/apt/*.bin
 
+# Will be replaced, if selected, by ros_docker_controller script
+# COPY ssh_github_key
 
 CMD ["bash"]

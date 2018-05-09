@@ -2,6 +2,7 @@
 
 import sys
 import os
+import shutil
 import docker
 import curses
 from cursesmenu import *
@@ -61,6 +62,31 @@ class DockerController(object):
     def brand_new_docker_image(self):
         self.stdscr.clear()
 
+        # Check if user has an ssh directory
+        ssh_dir = os.path.expanduser("~/.ssh")
+        if os.path.isdir(ssh_dir):
+            # Store all files in a list
+            ssh_key_files = [f for f in os.listdir(ssh_dir) if os.path.isfile(os.path.join(ssh_dir, f))]
+            # Ask for a selection from user
+            selection = SelectionMenu.get_selection(ssh_key_files, title = 'Select a ssh key (i.e. for github)?', subtitle = 'This will copy the selected ssh key to docker image')
+            # Check if user did not select exit
+            if (selection < len(ssh_key_files)):
+                # Copy the ssh key to relative path for docker
+                shutil.copy(ssh_dir + '/' + ssh_key_files[selection], '.')
+                # Replace the template placeholder with correct key and location
+                with open('./Dockerfile', 'r') as input_file, open('./.Dockerfile_tmp', 'w') as output_file:
+                    for line in input_file:
+                        if line.strip() == '# COPY ssh_github_key':
+                            output_file.write('COPY ' + ssh_key_files[selection] + ' /home/mil/.ssh/' + ssh_key_files[selection] + '\n')
+                        else:
+                            output_file.write(line)
+
+                    # Store the old Dockerfile
+                    shutil.copy('./Dockerfile', './.Dockerfile_old')
+                    # Replace the orignal Dockerfile with filled-template file
+                    os.rename('./.Dockerfile_tmp', './Dockerfile')
+
+        self.stdscr.clear()
         height, width = self.stdscr.getmaxyx()
         text = "Building image..."[:width-1]
         text1 = "To view build process:"[:width-1]
@@ -79,6 +105,13 @@ class DockerController(object):
 
         # Assume dockerfile is in the same relative directory
         self.docker_client.images.build(path='./', tag='mil_image:latest')
+
+        # If user made a selection for ssh key
+        if os.path.isfile('./.Dockerfile_old') and selection < len(ssh_key_files):
+            # Return back to the original Dockerfile
+            os.rename('./.Dockerfile_old', './Dockerfile')
+            # Delete the copy of ssh key
+            os.remove(ssh_key_files[selection])
 
     def open_ros_container(self, img):
         # Shouldn't happen, but if container was already set, ignore reset
@@ -150,12 +183,12 @@ class DockerController(object):
 
     def draw_images_menu(self):
         l = [img.tags for img in self.docker_client.images.list()]
-        selection = SelectionMenu.get_selection(l)
+        selection = SelectionMenu.get_selection(l, title = 'Select an image to initialize container', subtitle = 'It is recommended to Save Image after running install script')
         return self.docker_client.images.list()[selection]
 
     def draw_options_menu(self):
         l = ['Open Terminal -- opens a terminal window attached to container', 'Stop -- stops the container', 'Save Image -- commits container to image',
-             'Build Image -- runs docker build']
+             'Build Image -- runs docker build (caution)']
         selection = SelectionMenu.get_selection(l)
         return selection
 
