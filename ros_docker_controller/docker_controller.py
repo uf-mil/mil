@@ -62,6 +62,8 @@ class DockerController(object):
 
     # Builds the docker image, and shows some info for user
     def brand_new_docker_image(self):
+        if os.path.isfile('./.Dockerfile_old'):
+            assert False, 'Previous build abruptly closed. "git log" and remove bad files, or git reset'
         self.stdscr.clear()
 
         # Check if user has an ssh directory
