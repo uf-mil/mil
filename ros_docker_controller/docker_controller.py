@@ -1,12 +1,10 @@
 #!/usr/bin/python
 
-import sys
 import os
 import shutil
 import docker
 import curses
-from cursesmenu import *
-from cursesmenu.items import *
+from cursesmenu import SelectionMenu
 import distutils.spawn
 import subprocess
 
@@ -14,7 +12,6 @@ __author__ = 'Daniel Volya (RustyBamboo)'
 
 
 class DockerController(object):
-
     def __init__(self, stdscr):
         self.stdscr = stdscr
 
@@ -29,7 +26,9 @@ class DockerController(object):
         # Attempt to load container, if can't then later ask user to select image
         self.container = None
         # If container is currently running
-        if "RustyROS" in [x.name for x in self.docker_client.containers.list()]:
+        if "RustyROS" in [
+                x.name for x in self.docker_client.containers.list()
+        ]:
             self.container = self.docker_client.containers.get('RustyROS')
         # Check if container is stopped, but still exists
         else:
@@ -46,7 +45,7 @@ class DockerController(object):
         # attempt to find what kind of terminal emulator is being used
         self.terminal = None
         self.find_avaliable_terminal()
-        assert not self.terminal is None, 'No terminal found'
+        assert self.terminal is not None, 'No terminal found'
 
         # run curses stuff
         self.draw()
@@ -57,7 +56,7 @@ class DockerController(object):
         terminals = ["gnome-terminal", "xterm", "konsole"]
         for t in terminals:
             x = distutils.spawn.find_executable(t)
-            if not x is None:
+            if x is not None:
                 self.terminal = t
 
     # Builds the docker image, and shows some info for user
@@ -70,18 +69,28 @@ class DockerController(object):
         ssh_dir = os.path.expanduser("~/.ssh")
         if os.path.isdir(ssh_dir):
             # Store all files in a list
-            ssh_key_files = [f for f in os.listdir(ssh_dir) if os.path.isfile(os.path.join(ssh_dir, f))]
+            ssh_key_files = [
+                f for f in os.listdir(ssh_dir)
+                if os.path.isfile(os.path.join(ssh_dir, f))
+            ]
             # Ask for a selection from user
-            selection = SelectionMenu.get_selection(ssh_key_files, title = 'Select a ssh key (i.e. for github)?', subtitle = 'This will copy the selected ssh key to docker image')
+            selection = SelectionMenu.get_selection(
+                ssh_key_files,
+                title='Select a ssh key (i.e. for github)?',
+                subtitle='This will copy the selected ssh key to docker image')
             # Check if user did not select exit
             if (selection < len(ssh_key_files)):
                 # Copy the ssh key to relative path for docker
                 shutil.copy(ssh_dir + '/' + ssh_key_files[selection], '.')
                 # Replace the template placeholder with correct key and location
-                with open('./Dockerfile', 'r') as input_file, open('./.Dockerfile_tmp', 'w') as output_file:
+                with open('./Dockerfile', 'r') as input_file, open(
+                        './.Dockerfile_tmp', 'w') as output_file:
                     for line in input_file:
                         if line.strip() == '# COPY ssh_github_key':
-                            output_file.write('COPY ' + ssh_key_files[selection] + ' /home/mil/.ssh/' + ssh_key_files[selection] + '\n')
+                            output_file.write(
+                                'COPY ' + ssh_key_files[selection] +
+                                ' /home/mil/.ssh/' + ssh_key_files[selection] +
+                                '\n')
                         else:
                             output_file.write(line)
 
@@ -92,26 +101,27 @@ class DockerController(object):
 
         self.stdscr.clear()
         height, width = self.stdscr.getmaxyx()
-        text = "Building image..."[:width-1]
-        text1 = "To view build process:"[:width-1]
-        text2 = "docker ps"[:width-1]
-        text3 = "docker attach NAME"[:width-1]
+        text = "Building image..." [:width - 1]
+        text1 = "To view build process:" [:width - 1]
+        text2 = "docker ps" [:width - 1]
+        text3 = "docker attach NAME" [:width - 1]
 
         # Find center of window
         x = int((width // 2) - (len(text) // 2) - len(text) % 2)
         y = int((height // 2) - 2)
 
         self.stdscr.addstr(y, x, text)
-        self.stdscr.addstr(y+1, x, text1)
-        self.stdscr.addstr(y+2, x, text2)
-        self.stdscr.addstr(y+3, x, text3)
+        self.stdscr.addstr(y + 1, x, text1)
+        self.stdscr.addstr(y + 2, x, text2)
+        self.stdscr.addstr(y + 3, x, text3)
         self.stdscr.refresh()
 
         # Assume dockerfile is in the same relative directory
         self.docker_client.images.build(path='./', tag='mil_image:latest')
 
         # If user made a selection for ssh key
-        if os.path.isfile('./.Dockerfile_old') and selection < len(ssh_key_files):
+        if os.path.isfile(
+                './.Dockerfile_old') and selection < len(ssh_key_files):
             # Return back to the original Dockerfile
             os.rename('./.Dockerfile_old', './Dockerfile')
             # Delete the copy of ssh key
@@ -119,18 +129,21 @@ class DockerController(object):
 
     def open_ros_container(self, img):
         # Shouldn't happen, but if container was already set, ignore reset
-        if not self.container is None:
+        if self.container is not None:
             return
 
         # Similar to running 'docker run -it IMG'
         self.container = self.docker_client.containers.run(
-            img, detach=True, tty=True, stdin_open=True, name="RustyROS", hostname=os.uname()[1]+"-ros")
+            img,
+            detach=True,
+            tty=True,
+            stdin_open=True,
+            name="RustyROS",
+            hostname=os.uname()[1] + "-ros")
 
     # Main draw application for curses
     def draw(self):
         k = 0
-        cursor_x = 0
-        cursor_y = 0
 
         # Clear and refresh the screen for a blank canvas
         self.stdscr.clear()
@@ -186,14 +199,22 @@ class DockerController(object):
                 return
 
     def draw_images_menu(self):
-        l = [img.tags for img in self.docker_client.images.list()]
-        selection = SelectionMenu.get_selection(l, title = 'Select an image to initialize container', subtitle = 'It is recommended to Save Image after running install script')
+        menu_option = [img.tags for img in self.docker_client.images.list()]
+        selection = SelectionMenu.get_selection(
+            menu_option,
+            title='Select an image to initialize container',
+            subtitle='It is recommended to Save Image after running' +
+            'install script')
         return self.docker_client.images.list()[selection]
 
     def draw_options_menu(self):
-        l = ['Open Terminal -- opens a terminal window attached to container', 'Stop -- stops the container', 'Save Image -- commits container to image',
-             'Build Image -- runs docker build (caution)']
-        selection = SelectionMenu.get_selection(l)
+        menu_option = [
+            'Open Terminal -- opens a terminal window attached to container',
+            'Stop -- stops the container',
+            'Save Image -- commits container to image',
+            'Build Image -- runs docker build (caution)'
+        ]
+        selection = SelectionMenu.get_selection(menu_option)
         return selection
 
     def draw_quit_bar(self):
@@ -201,8 +222,8 @@ class DockerController(object):
         statusbarstr = "Press 'q' to exit "
         # Render status bar
         self.stdscr.attron(curses.color_pair(3))
-        self.stdscr.addstr(height-1, 0, statusbarstr)
-        self.stdscr.addstr(height-1, len(statusbarstr),
+        self.stdscr.addstr(height - 1, 0, statusbarstr)
+        self.stdscr.addstr(height - 1, len(statusbarstr),
                            " " * (width - len(statusbarstr) - 1))
         self.stdscr.attroff(curses.color_pair(3))
 
@@ -212,16 +233,16 @@ class DockerController(object):
         height, width = self.stdscr.getmaxyx()
 
         # Declaration of strings
-        title = "ROS Docker Controller"[:width-1]
-        subtitle = "Daniel Volya (RustyBamboo)"[:width-1]
+        title = "ROS Docker Controller" [:width - 1]
+        subtitle = "Daniel Volya (RustyBamboo)" [:width - 1]
         keystr = "Press any key to continue or b to build fresh MIL image"
 
         # Centering calculations
         start_x_title = int((width // 2) - (len(title) // 2) - len(title) % 2)
-        start_x_subtitle = int(
-            (width // 2) - (len(subtitle) // 2) - len(subtitle) % 2)
-        start_x_keystr = int(
-            (width // 2) - (len(keystr) // 2) - len(keystr) % 2)
+        start_x_subtitle = int((width // 2) -
+                               (len(subtitle) // 2) - len(subtitle) % 2)
+        start_x_keystr = int((width // 2) -
+                             (len(keystr) // 2) - len(keystr) % 2)
         start_y = int((height // 2) - 2)
 
         # Turning on attributes for title
