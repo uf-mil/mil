@@ -18,9 +18,11 @@ class DockerController(object):
     def __init__(self, stdscr):
         self.stdscr = stdscr
 
+        self.docker_client = docker.from_env()
+
         # Check if docker server is running
         try:
-            self.docker_client = docker.from_env()
+            self.docker_client.info()
         except Exception:
             assert False, 'Is Docker server running?'
 
