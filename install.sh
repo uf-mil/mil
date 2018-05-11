@@ -484,6 +484,7 @@ sudo apt-get install -qq cifs-utils  # To mount MIL fileserver
 
 # Machine Learning
 sudo apt-get install -qq python-sklearn
+sudo apt-get install -qq python-pandas
 
 # Visualization
 sudo apt-get install -qq mayavi2
