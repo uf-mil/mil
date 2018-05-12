@@ -6,6 +6,7 @@ ENV TERM xterm-256color
 
 # Install the basics
 RUN apt-get update \
+    && apt-get -y install apt-utils \
 	&& apt-get -y dist-upgrade \
 	&& apt-get -y install sudo \
 	&& apt-get -y install curl \
@@ -35,6 +36,8 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     python-rosinstall \
     python-vcstools \
     openssh-client \
+    dnsutils \
+    iproute \
     && rm -rf /var/lib/apt/lists/*
 
 # setup environment
@@ -42,8 +45,8 @@ ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
 ENV ROS_DISTRO kinetic
-RUN apt-get update && apt-get install -y \
-    ros-kinetic-ros-core=1.3.2-0* \
+RUN apt-get update --fix-missing && apt-get install -y \
+    ros-kinetic-ros-core \
     && rm -rf /var/lib/apt/lists/*
 
 ENV USERNAME mil

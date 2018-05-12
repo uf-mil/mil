@@ -156,6 +156,7 @@ class DockerController(object):
             environment=[
                 'XAUTHORITY={}'.format(xauth), 'DISPLAY={}'.format(display)
             ] if display is not None else None,
+            network_mode="host",
             ports={'11311': 11311})
         self.container.start()
 
