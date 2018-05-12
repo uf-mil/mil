@@ -46,12 +46,13 @@ RUN apt-get update && apt-get install -y \
     ros-kinetic-ros-core=1.3.2-0* \
     && rm -rf /var/lib/apt/lists/*
 
+ENV USERNAME mil
 # Add and do user stuff
 RUN useradd --create-home --shell /bin/bash --groups sudo --password ion mil \
     	&& echo "mil ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-USER mil
-WORKDIR /home/mil
+USER $USERNAME
+WORKDIR /home/$USERNAME
 SHELL ["/bin/bash", "-c"]
 
 RUN mkdir .ssh

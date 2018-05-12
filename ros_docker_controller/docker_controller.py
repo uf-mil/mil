@@ -132,14 +132,32 @@ class DockerController(object):
         if self.container is not None:
             return
 
+        # Give container permission to use Xserver
+        display = os.environ.get('DISPLAY')
+        if display is not None:
+            xsock = '/tmp/.X11-unix'
+            xauth = '/tmp/.docker.xauth'
+            os.system('touch {}'.format(xauth))
+            os.system(
+                "xauth nlist {} | sed -e 's/^..../ffff/' | xauth -f {} nmerge -".
+                format(display, xauth))
+
         # Similar to running 'docker run -it IMG'
-        self.container = self.docker_client.containers.run(
+        self.container = self.docker_client.containers.create(
             img,
             detach=True,
             tty=True,
             stdin_open=True,
             name="RustyROS",
-            hostname=os.uname()[1] + "-ros")
+            hostname=os.uname()[1] + "-ros",
+            volumes=[
+                "{}:{}".format(xsock, xsock), "{}:{}".format(xauth, xauth)
+            ] if display is not None else None,
+            environment=[
+                'XAUTHORITY={}'.format(xauth), 'DISPLAY={}'.format(display)
+            ] if display is not None else None)
+
+        self.container.start()
 
     # Main draw application for curses
     def draw(self):
@@ -203,7 +221,7 @@ class DockerController(object):
         selection = SelectionMenu.get_selection(
             menu_option,
             title='Select an image to initialize container',
-            subtitle='It is recommended to Save Image after running' +
+            subtitle='It is recommended to Save Image after running ' +
             'install script')
         return self.docker_client.images.list()[selection]
 
