@@ -155,8 +155,8 @@ class DockerController(object):
             ] if display is not None else None,
             environment=[
                 'XAUTHORITY={}'.format(xauth), 'DISPLAY={}'.format(display)
-            ] if display is not None else None)
-
+            ] if display is not None else None,
+            ports={'11311': 11311})
         self.container.start()
 
     # Main draw application for curses
