@@ -471,6 +471,9 @@ sudo apt-get install -qq tmux
 sudo apt-get install -qq htop
 sudo apt-get install -qq sshfs
 
+# Required for build mil_common pointgrey driver
+sudo apt-get install -qq libraw1394-11
+
 # Debugging utility
 sudo apt-get install -qq gdb
 
@@ -508,6 +511,9 @@ sudo pip install -q -U crc16
 # Visualization
 sudo pip install -q -U tqdm
 
+# Easily create curses menus
+sudo pip install -q -U curses-menu
+
 # Decrypt and extract the BlueView SDK for the Teledyne imaging sonar
 if [[ "$INSTALL_BVTSDK" == "true" ]]; then
 	instlog "Decrypting and installing the BlueView SDK"
@@ -535,7 +541,6 @@ if [[ "$INSTALL_FLYCAP" == "true" ]]; then
 	fi
 
 	# Install the (unlisted...) dependencies needed for the Flycapture SDK
-	sudo apt-get install -qq libraw1394-11
 	sudo apt-get install -qq libusb-1.0-0
 	sudo apt-get install -qq libgtk2.0-0
 	sudo apt-get install -qq libgtkmm-2.4-1v5
