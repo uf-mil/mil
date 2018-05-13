@@ -44,8 +44,14 @@ class DockerController(object):
 
         # attempt to find what kind of terminal emulator is being used
         self.terminal = None
-        self.find_avaliable_terminal()
-        assert self.terminal is not None, 'No terminal found'
+        aval_term = self.find_avaliable_terminal()
+        assert aval_term is not None, 'No terminal found'
+        # Ask for a selection from user
+        selection = SelectionMenu.get_selection(
+            aval_term, title='Select a terminal')
+        if selection > len(aval_term):
+            return
+        self.terminal = aval_term[selection]
 
         # run curses stuff
         self.draw()
@@ -54,10 +60,12 @@ class DockerController(object):
     def find_avaliable_terminal(self):
         # possible terminal emulators, with last having largest priorty
         terminals = ["gnome-terminal", "xterm", "konsole"]
+        aval_term = []
         for t in terminals:
             x = distutils.spawn.find_executable(t)
             if x is not None:
-                self.terminal = t
+                aval_term.append(t)
+        return aval_term
 
     # Builds the docker image, and shows some info for user
     def brand_new_docker_image(self):
