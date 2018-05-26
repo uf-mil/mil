@@ -1,4 +1,4 @@
-Welcome to the SubjuGator Wiki! This repository hosts all of the code that is specific to the SubjuGator platform. For general information about MIL and our projects, see the [mil_common wiki](https://github.com/uf-mil/mil_common/wiki). Be sure to check out the [rules](http://www.robonation.org/competition/robosub) for more information about the competition.
+Welcome to the SubjuGator Wiki! This repository hosts all of the code that is specific to the SubjuGator platform. For general information about MIL and our projects, see the [mil_common wiki](https://github.com/uf-mil/mil_common/wiki). Be sure to check out the [rules](http://www.robonation.org/competition/robosub) for more information about the competition. For a more up-to-date progress report, visit our [blog](https://ci.mil.ufl.edu/blog/).
 
 If you have any questions, don't hesitate to email Daniel Volya.
 
