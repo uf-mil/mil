@@ -1,0 +1,16 @@
+#!/bin/bash
+
+ping_checker() {
+	HOST="$1"
+	HOST_PING="$(ping -c 2 $HOST 2>&1 | grep '% packet' | awk -F'[%]' '{print $1}' | awk -F'[ ]' '{print $NF}')"
+	if [ ! -z "$HOST_PING" ]; then
+		if [ $HOST_PING -lt 25 ]; then
+			echo "$HOST......OKAY"
+		else
+			echo "$HOST......NOT OKAY"
+		fi
+	fi
+}
+ping_checker mil-sub-sub8.ad.mil.ufl.edu
+ping_checker mil-com-teledyne-p900.ad.mil.ufl.edu
+btrfs filesystem usage
