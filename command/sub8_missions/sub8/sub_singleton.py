@@ -14,6 +14,8 @@ from sub8_msgs.srv import SetValve, SetValveRequest
 from std_srvs.srv import SetBool, SetBoolRequest
 from nav_msgs.msg import Odometry
 from tf.transformations import quaternion_multiply, quaternion_from_euler
+from sensor_msgs.msg import PointCloud2
+import sensor_msgs.point_cloud2 as pc2
 
 import numpy as np
 from twisted.internet import defer
@@ -397,6 +399,44 @@ class PoseSequenceCommander(object):
                     self.sub.pose.orientation,
                     (orientations[i][0], orientations[i][1], orientations[i][2], orientations[i][3]))).go(speed)
 
+
+class SonarPointcloud(object):
+    def __init__(self, sub, pattern):
+        self.sub = sub
+        self.pointcloud = None
+        self.pattern = pattern
+
+    @util.cancellableInlineCallbacks
+    def start(self, speed=0.2):
+        self._plane_subscriber = yield self.sub.nh.subscribe('/ogrid_pointcloud/point_cloud/plane', PointCloud2)
+        yield self._run_move_pattern(speed)
+
+        pc_gen = np.asarray(list(pc2.read_points(self.pointcloud, skip_nans=True, field_names=('x','y','z'))))
+        defer.returnValue(pc_gen)
+
+    @util.cancellableInlineCallbacks
+    def _cat_newcloud(self):
+        data = yield self._plane_subscriber.get_next_message()
+        if self.pointcloud is None:
+            self.pointcloud = data
+        else:
+            gen = list(pc2.read_points(data, skip_nans=True, field_names=('x','y','z')))
+            print(np.array(gen).shape)
+            pc_gen = list(pc2.read_points(self.pointcloud, skip_nans=True, field_names=('x','y','z')))
+            concat = np.asarray(gen + pc_gen, np.float32)
+            self.pointcloud = mil_ros_tools.numpy_to_pointcloud2(concat)
+        yield
+
+    @util.cancellableInlineCallbacks
+    def _run_move_pattern(self, speed):
+        for pose in self.pattern:
+            if type(pose) == list or type(pose) == np.ndarray:
+                yield self.sub.move.relative(np.array(pose)).go(speed=speed)
+            else:
+                yield pose.go()
+            yield self._cat_newcloud()
+
+            yield self.sub.nh.sleep(2)
 
 _subs = {}
 
