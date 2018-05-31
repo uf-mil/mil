@@ -26,7 +26,7 @@ CENTER_X_THRESH = 30
 CENTER_Y_THRESH = 30
 
 
-class image_converter:
+class torp_vision:
     def __init__(self):
         self.image_pub = rospy.Publisher(
             "torp_vision/debug", Image, queue_size=1)
@@ -44,16 +44,16 @@ class image_converter:
         if peri < SIZE:
             return target
         approx = cv2.approxPolyDP(c, 0.04 * peri, True)
-        if len(approx) == 5:
+        if len(approx) == 5 or len(approx) == 4:
             # compute the bounding box of the contour and use the
             # bounding box to compute the aspect ratio
-            (x, y, w, h) = cv2.boundingRect(approx)
-            ar = w / float(h)
+            # (x, y, w, h) = cv2.boundingRect(approx)
+            # ar = w / float(h)
             target = "verified shooty hole"
 
         elif len(approx) == 3:
-            (x, y, w, h) = cv2.boundingRect(approx)
-            ar = w / float(h)
+            # (x, y, w, h) = cv2.boundingRect(approx)
+            # ar = w / float(h)
             target = "partial shooty hole"
         return target
 
@@ -171,8 +171,8 @@ class image_converter:
 
 
 def main(args):
-    rospy.init_node('segmenter', anonymous=True)
-    ic = image_converter()
+    rospy.init_node('torp_vision', anonymous=True)
+    torp_vision()
 
     try:
         rospy.spin()

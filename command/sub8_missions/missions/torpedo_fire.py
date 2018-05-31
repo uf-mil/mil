@@ -88,11 +88,10 @@ def run(sub):
 
     rospy.init_node('torpedo_mission', anonymous=True)
 
-    point_sub = rospy.Subscriber(
+    rospy.Subscriber(
         "torp_vision/points", Point, update_point_callback, callback_args=sub)
 
-    current_depth = rospy.Subscriber("/dvl/range", RangeStamped,
-                                     depth_callback)
+    rospy.Subscriber("/dvl/range", RangeStamped, depth_callback)
 
     try:
         rospy.spin()
