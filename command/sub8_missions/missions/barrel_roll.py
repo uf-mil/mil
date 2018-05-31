@@ -9,11 +9,11 @@ def run(sub):
 
     center = sub.move.forward(0).zero_roll_and_pitch()
     print "Centering"
-    yield center.go(speed = SPEED_LIMIT)
+    yield center.go(speed=SPEED_LIMIT)
 
     barrel = sub.move.roll_right_deg(180)
     print "Rolling! Upside down"
-    yield barrel.go(speed = SPEED_LIMIT)
+    yield barrel.go(speed=SPEED_LIMIT)
     print "Rolling! Going back"
-    yield barrel.go(speed = SPEED_LIMIT)
+    yield barrel.go(speed=SPEED_LIMIT)
     print "Done!"
