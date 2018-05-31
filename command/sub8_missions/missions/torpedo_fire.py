@@ -91,7 +91,7 @@ def run(sub):
     point_sub = rospy.Subscriber(
         "torp_vision/points", Point, update_point_callback, callback_args=sub)
 
-    current_depth = rospy.Subscriber("mil_msgs/RangeStamped", RangeStamped,
+    current_depth = rospy.Subscriber("/dvl/range", RangeStamped,
                                      depth_callback)
 
     try:
