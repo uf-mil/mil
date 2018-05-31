@@ -93,7 +93,7 @@ def run(sub):
     rospy.Subscriber(
         "torp_vision/points", Point, update_point_callback, callback_args=sub)
 
-    rospy.Subscriber("/dvl/range", RangeStamped, depth_callback)
+    rospy.Subscriber("/dvl/ranges", RangeStamped, depth_callback)
 
     try:
         rospy.spin()
