@@ -35,12 +35,17 @@ class VisionProxy(object):
             /vision/buoy_finder/2D      # Returns the pixel coordinates for the buoy (type = VisionRequest2D)
             /vision/buoy_finder/pose    # Returns a 3d pose of the buoy (type = VisionRequest)
     '''
+
     def __init__(self, service_root, nh):
         assert 'vision' in service_root, "expected 'vision' in the name of service_root"
-        self._get_2d_service = nh.get_service_client(service_root + "/2D", VisionRequest2D)
-        self._get_pose_service = nh.get_service_client(service_root + "/pose", VisionRequest)
-        self._enable_service = nh.get_service_client(service_root + "/enable", SetBool)
-        self._set_geometry_service = nh.get_service_client(service_root + "/set_geometry", SetGeometry)
+        self._get_2d_service = nh.get_service_client(service_root + "/2D",
+                                                     VisionRequest2D)
+        self._get_pose_service = nh.get_service_client(service_root + "/pose",
+                                                       VisionRequest)
+        self._enable_service = nh.get_service_client(service_root + "/enable",
+                                                     SetBool)
+        self._set_geometry_service = nh.get_service_client(
+            service_root + "/set_geometry", SetGeometry)
 
     def start(self):
         '''Allow user to start the vision processing backend
@@ -65,8 +70,9 @@ class VisionProxy(object):
             we don't know the depth of the thing we're targeting
         '''
         try:
-            pose = self._get_2d_service(VisionRequest2DRequest(target_name=target))
-        except(serviceclient.ServiceError):
+            pose = self._get_2d_service(
+                VisionRequest2DRequest(target_name=target))
+        except (serviceclient.ServiceError):
             return None
         return pose
 
@@ -77,8 +83,9 @@ class VisionProxy(object):
             - Use the time information in the header
         '''
         try:
-            pose = self._get_pose_service(VisionRequestRequest(target_name=target))
-        except(serviceclient.ServiceError):
+            pose = self._get_pose_service(
+                VisionRequestRequest(target_name=target))
+        except (serviceclient.ServiceError):
             return None
         except Exception, e:
             print type(e)
@@ -87,7 +94,7 @@ class VisionProxy(object):
     def set_geometry(self, polygon):
         try:
             res = self._set_geometry_service(SetGeometryRequest(model=polygon))
-        except(serviceclient.ServiceError):
+        except (serviceclient.ServiceError):
             return None
         return res
 
@@ -107,9 +114,11 @@ class _VisionProxies(object):
         >>> pose_2d = yield sub.vision_proxies.buoy_finder.get_2D('red')
 
     '''
+
     def __init__(self, nh, file_name):
         rospack = rospkg.RosPack()
-        config_file = os.path.join(rospack.get_path('sub8_missions'), 'sub8', file_name)
+        config_file = os.path.join(
+            rospack.get_path('sub8_missions'), 'sub8', file_name)
         f = yaml.load(open(config_file, 'r'))
 
         self.proxies = {}
@@ -129,7 +138,11 @@ class _PoseProxy(object):
     # Normal moves get routed here
     def __getattr__(self, name):
         def sub_attr_proxy(*args, **kwargs):
-            return _PoseProxy(self._sub, getattr(self._pose, name)(*args, **kwargs), print_only=self.print_only)
+            return _PoseProxy(
+                self._sub,
+                getattr(self._pose, name)(*args, **kwargs),
+                print_only=self.print_only)
+
         return sub_attr_proxy
 
     # Some special moves
@@ -155,13 +168,13 @@ class _PoseProxy(object):
 
         self.check_goal()
 
-        goal = self._sub._moveto_action_client.send_goal(self._pose.as_MoveToGoal(*args, **kwargs))
+        goal = self._sub._moveto_action_client.send_goal(
+            self._pose.as_MoveToGoal(*args, **kwargs))
         return goal.get_result()
 
     def go_trajectory(self, *args, **kwargs):
         traj = self._sub._trajectory_pub.publish(
-            self._pose.as_PoseTwistStamped(*args, **kwargs)
-        )
+            self._pose.as_PoseTwistStamped(*args, **kwargs))
         return traj
 
 
@@ -173,9 +186,12 @@ class _ActuatorProxy(object):
     yield self.sub.gripper_open()
     yield self.sub.set('torpedo1', True)
     '''
+
     def __init__(self, nh, namespace='actuator_driver'):
-        self._actuator_service = nh.get_service_client(namespace + '/actuate', SetValve)
-        self._raw_service = nh.get_service_client(namespace + '/actuate_raw', SetValve)
+        self._actuator_service = nh.get_service_client(namespace + '/actuate',
+                                                       SetValve)
+        self._raw_service = nh.get_service_client(namespace + '/actuate_raw',
+                                                  SetValve)
 
     def open(self, name):
         return self.set(name, False)
@@ -184,7 +200,8 @@ class _ActuatorProxy(object):
         return self.set(name, True)
 
     def set(self, name, opened):
-        return self._actuator_service(SetValveRequest(actuator=name, opened=opened))
+        return self._actuator_service(
+            SetValveRequest(actuator=name, opened=opened))
 
     def set_raw(self, name, opened):
         return self._raw_service(SetValveRequest(actuator=name, opened=opened))
@@ -212,11 +229,15 @@ class _Sub(object):
 
     @util.cancellableInlineCallbacks
     def _init(self):
-        self._moveto_action_client = yield action.ActionClient(self.nh, 'moveto', MoveToAction)
+        self._moveto_action_client = yield action.ActionClient(
+            self.nh, 'moveto', MoveToAction)
         self._odom_sub = yield self.nh.subscribe('odom', Odometry)
-        self._trajectory_sub = yield self.nh.subscribe('trajectory', PoseTwistStamped)
-        self._trajectory_pub = yield self.nh.advertise('trajectory', PoseTwistStamped)
-        self._dvl_range_sub = yield self.nh.subscribe('dvl/range', RangeStamped)
+        self._trajectory_sub = yield self.nh.subscribe('trajectory',
+                                                       PoseTwistStamped)
+        self._trajectory_pub = yield self.nh.advertise('trajectory',
+                                                       PoseTwistStamped)
+        self._dvl_range_sub = yield self.nh.subscribe('dvl/range',
+                                                      RangeStamped)
         self._tf_listener = yield tf.TransformListener(self.nh)
 
         self.vision_proxies = _VisionProxies(self.nh, 'vision_proxies.yaml')
@@ -260,10 +281,7 @@ class _Sub(object):
     def get_in_frame(self, pose_stamped, frame='/map'):
         '''TODO'''
         transform = yield self._tf_listener.get_transform(
-            frame,
-            pose_stamped.header.frame_id,
-            pose_stamped.header.stamp
-        )
+            frame, pose_stamped.header.frame_id, pose_stamped.header.stamp)
         tft = tf.Transform.from_Pose_message(pose_stamped.pose)
         full_transform = transform * tft
         position = np.array(full_transform._p)
@@ -297,7 +315,8 @@ class Searcher(object):
     def start_search(self, timeout=60, loop=True, spotings_req=2, speed=.1):
         print "SERACHER - Starting."
         looker = self._run_look(spotings_req).addErrback(self.catch_error)
-        searcher = self._run_search_pattern(loop, speed).addErrback(self.catch_error)
+        searcher = self._run_search_pattern(loop, speed).addErrback(
+            self.catch_error)
 
         start_pose = self.sub.move.forward(0)
         start_time = self.sub.nh.get_time()
@@ -338,7 +357,8 @@ class Searcher(object):
         else:
             for pose in self.search_pattern:
                 if type(pose) == list or type(pose) == np.ndarray:
-                    yield self.sub.move.relative(np.array(pose)).go(speed=speed)
+                    yield self.sub.move.relative(
+                        np.array(pose)).go(speed=speed)
                 else:
                     yield pose.go()
 
@@ -355,7 +375,8 @@ class Searcher(object):
         while True:
             resp = yield self.vision_proxy()
             if resp.found:
-                print "SEARCHER - Object found! {}/{}".format(spotings + 1, spotings_req)
+                print "SEARCHER - Object found! {}/{}".format(
+                    spotings + 1, spotings_req)
                 spotings += 1
                 if spotings >= spotings_req:
                     self.object_found = True
@@ -378,12 +399,14 @@ class PoseSequenceCommander(object):
         pose command.
         '''
         for i in xrange(len(positions)):
-            yield self.sub.move.look_at_without_pitching(np.array(positions[i][0:3])).go(speed)
+            yield self.sub.move.look_at_without_pitching(
+                np.array(positions[i][0:3])).go(speed)
             yield self.sub.move.relative(np.array(positions[i][0:3])).go(speed)
             yield self.sub.move.set_orientation(
-                quaternion_multiply(
-                    self.sub.pose.orientation,
-                    quaternion_from_euler(orientations[i][0], orientations[i][1], orientations[i][2]))).go(speed)
+                quaternion_multiply(self.sub.pose.orientation,
+                                    quaternion_from_euler(
+                                        orientations[i][0], orientations[i][1],
+                                        orientations[i][2]))).go(speed)
 
     @util.cancellableInlineCallbacks
     def go_to_sequence_quaternions(self, positions, orientations, speed=0.2):
@@ -392,12 +415,14 @@ class PoseSequenceCommander(object):
         pose command.
         '''
         for i in xrange(len(positions)):
-            yield self.sub.move.look_at_without_pitching(np.array(positions[i][0:3])).go(speed)
+            yield self.sub.move.look_at_without_pitching(
+                np.array(positions[i][0:3])).go(speed)
             yield self.sub.move.relative(np.array(positions[i][0:3])).go(speed)
             yield self.sub.move.set_orientation(
                 quaternion_multiply(
                     self.sub.pose.orientation,
-                    (orientations[i][0], orientations[i][1], orientations[i][2], orientations[i][3]))).go(speed)
+                    (orientations[i][0], orientations[i][1],
+                     orientations[i][2], orientations[i][3]))).go(speed)
 
 
 class SonarPointcloud(object):
@@ -408,10 +433,16 @@ class SonarPointcloud(object):
 
     @util.cancellableInlineCallbacks
     def start(self, speed=0.2):
-        self._plane_subscriber = yield self.sub.nh.subscribe('/ogrid_pointcloud/point_cloud/plane', PointCloud2)
+        self._plane_subscriber = yield self.sub.nh.subscribe(
+            '/ogrid_pointcloud/point_cloud/plane', PointCloud2)
         yield self._run_move_pattern(speed)
 
-        pc_gen = np.asarray(list(pc2.read_points(self.pointcloud, skip_nans=True, field_names=('x','y','z'))))
+        pc_gen = np.asarray(
+            list(
+                pc2.read_points(
+                    self.pointcloud,
+                    skip_nans=True,
+                    field_names=('x', 'y', 'z'))))
         defer.returnValue(pc_gen)
 
     @util.cancellableInlineCallbacks
@@ -420,9 +451,15 @@ class SonarPointcloud(object):
         if self.pointcloud is None:
             self.pointcloud = data
         else:
-            gen = list(pc2.read_points(data, skip_nans=True, field_names=('x','y','z')))
+            gen = list(
+                pc2.read_points(
+                    data, skip_nans=True, field_names=('x', 'y', 'z')))
             print(np.array(gen).shape)
-            pc_gen = list(pc2.read_points(self.pointcloud, skip_nans=True, field_names=('x','y','z')))
+            pc_gen = list(
+                pc2.read_points(
+                    self.pointcloud,
+                    skip_nans=True,
+                    field_names=('x', 'y', 'z')))
             concat = np.asarray(gen + pc_gen, np.float32)
             self.pointcloud = mil_ros_tools.numpy_to_pointcloud2(concat)
         yield
@@ -438,13 +475,15 @@ class SonarPointcloud(object):
 
             yield self.sub.nh.sleep(2)
 
+
 _subs = {}
 
 
 @util.cancellableInlineCallbacks
 def get_sub(node_handle, need_trajectory=True):
     if node_handle not in _subs:
-        _subs[node_handle] = None  # placeholder to prevent this from happening reentrantly
+        _subs[
+            node_handle] = None  # placeholder to prevent this from happening reentrantly
         _subs[node_handle] = yield _Sub(node_handle)._init()
         # XXX remove on nodehandle shutdown
     defer.returnValue(_subs[node_handle])
