@@ -1,7 +1,6 @@
 from txros import util
 import rospy
 from geometry_msgs.msg import Point
-from mil_ros_tools import rosmsg_to_numpy
 from mil_msgs.msg import RangeStamped
 
 # Current depth constant
@@ -10,6 +9,8 @@ CURRENT_DEPTH = 0
 
 @util.cancellableInlineCallbacks
 def check_depth():
+    global CURRENT_DEPTH
+
     if (CURRENT_DEPTH - .15 < 1):
         return False
     else:
@@ -73,6 +74,7 @@ def update_point_callback(msg, sub):
 
 @util.cancellableInlineCallbacks
 def depth_callback(msg):
+    global CURRENT_DEPTH
     CURRENT_DEPTH = msg.range
 
 
@@ -109,7 +111,7 @@ def run(sub):
     m.z = 4 --> Both are off, too high, too far right.
     m.z = 6 --> Both are off, too high, too far left.
     m.z = -4 --> Both are off, too low, too far left.
-    m.z = -6 --> Both are off, too low, too far right. 
+    m.z = -6 --> Both are off, too low, too far right.
 
     ### Y ### Range of Values(-1, 1)
     m.z = -1 --> Only Y is off, too far right.

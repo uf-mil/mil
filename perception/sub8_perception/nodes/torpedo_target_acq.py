@@ -1,19 +1,16 @@
 from __future__ import print_function
 
-import roslib
-# roslib.load_manifest('my_package')
 import sys
 import rospy
 import imutils
 import cv2
-from std_msgs.msg import String
 import numpy as np
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Point
 from cv_bridge import CvBridge, CvBridgeError
 '''
 BGR Color space constants for thresholding. We are looking for red so
-the third value should have the largest range. 
+the third value should have the largest range.
 '''
 LOWER = [0, 0, 50]
 UPPER = [40, 150, 250]
@@ -27,6 +24,7 @@ CENTER_Y_THRESH = 30
 
 
 class torp_vision:
+
     def __init__(self):
         self.image_pub = rospy.Publisher(
             "torp_vision/debug", Image, queue_size=1)
@@ -155,7 +153,7 @@ class torp_vision:
         m.z = 4 --> Both are off, too high, too far right.
         m.z = 6 --> Both are off, too high, too far left.
         m.z = -4 --> Both are off, too low, too far left.
-        m.z = -6 --> Both are off, too low, too far right. 
+        m.z = -6 --> Both are off, too low, too far right.
 
         ### X ### Range of Values(-1, 1)
         m.z = -1 --> Only Y is off, too far right.
