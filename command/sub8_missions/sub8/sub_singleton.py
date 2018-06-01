@@ -426,7 +426,12 @@ class PoseSequenceCommander(object):
 
 
 class SonarPointcloud(object):
-    def __init__(self, sub, pattern):
+    def __init__(self, sub, pattern=None):
+        if pattern is None:
+            pattern = [sub.move.zero_roll_and_pitch()
+                       ] + [sub.move.pitch_down_deg(5)] * 5 + [
+                           sub.move.zero_roll_and_pitch()
+                       ]
         self.sub = sub
         self.pointcloud = None
         self.pattern = pattern
@@ -454,13 +459,13 @@ class SonarPointcloud(object):
             gen = list(
                 pc2.read_points(
                     data, skip_nans=True, field_names=('x', 'y', 'z')))
-            print(np.array(gen).shape)
             pc_gen = list(
                 pc2.read_points(
                     self.pointcloud,
                     skip_nans=True,
                     field_names=('x', 'y', 'z')))
             concat = np.asarray(gen + pc_gen, np.float32)
+            print 'SONAR_POINTCLOUD - current size: {}'.format(concat.shape)
             self.pointcloud = mil_ros_tools.numpy_to_pointcloud2(concat)
         yield
 
