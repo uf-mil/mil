@@ -9,6 +9,8 @@ ping_checker() {
 		else
 			echo "$HOST......NOT OKAY"
 		fi
+	else 
+		echo "$HOST......NOT FOUND"
 	fi
 }
 ping_checker mil-sub-sub8.ad.mil.ufl.edu
