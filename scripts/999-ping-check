@@ -1,18 +1,21 @@
 #!/bin/bash
 
 ping_checker() {
+	GREEN='\033[32m'
+	RED='\033[31m'
+	NC='\033[0m'
 	HOST="$1"
 	HOST_PING="$(ping -c 2 $HOST 2>&1 | grep '% packet' | awk -F'[%]' '{print $1}' | awk -F'[ ]' '{print $NF}')"
 	if [ ! -z "$HOST_PING" ]; then
 		if [ $HOST_PING -lt 25 ]; then
-			echo "$HOST......OKAY"
+			echo -e "$HOST......${GREEN}OKAY${NC} "
 		else
-			echo "$HOST......NOT OKAY"
+			echo -e "$HOST......${RED}NOT OKAY${NC}"
 		fi
 	else 
-		echo "$HOST......NOT FOUND"
+		echo -e "$HOST...... ${RED} NOT FOUND${NC}"
 	fi
 }
-ping_checker mil-sub-sub8.ad.mil.ufl.edu
+ping_checker mil-sub-gumstix.ad.mil.ufl.edu
 ping_checker mil-com-teledyne-p900.ad.mil.ufl.edu
-btrfs filesystem usage
+btrfs filesystem usage /
