@@ -1,8 +1,8 @@
 <launch>
-  <group ns="camera/seecam" >
+  <group ns="camera/front/left" >
   <node pkg="usb_cam" type="usb_cam_node" name="seecam_driver" >
     <param name="video_device" value="/dev/v4l/by-id/usb-e-con_Systems_See3CAM_CU20_220B5905-video-index0" />
-    <param name="camera_frame_id" value="seecam" />
+    <param name="camera_frame_id" value="front_left_camera" />
     <param name="camera_info_url" value="file://$(find sub8_launch)/launch/subsystems/cameras/calibration/seecam_220B5905.yaml" />
     <param name="pixel_format" value="uyvy" />
     <param name="image_width"  value="1920" />
