@@ -12,15 +12,15 @@ from cv_bridge import CvBridge, CvBridgeError
 BGR Color space constants for thresholding. We are looking for red so
 the third value should have the largest range.
 '''
-LOWER = [0, 0, 50]
-UPPER = [40, 150, 250]
+LOWER = [0, 0, 0]
+UPPER = [100, 100, 250]
 
 # Length threshold for contours. Contours smaller than this size are ignored.
 SIZE = 100
 
 # How many pixels off from center are acceptable
-CENTER_X_THRESH = 30
-CENTER_Y_THRESH = 30
+CENTER_X_THRESH = 15
+CENTER_Y_THRESH = 15
 
 
 class torp_vision:
@@ -33,7 +33,7 @@ class torp_vision:
         self.mem = np.zeros((2, 10))
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber(
-            "/camera/front/left/image_rect_color", Image, self.callback)
+            "/camera/front/left/image_color", Image, self.callback)
 
     def detect(self, c):
         # initialize the shape name and approximate the contour
@@ -42,7 +42,7 @@ class torp_vision:
         if peri < SIZE:
             return target
         approx = cv2.approxPolyDP(c, 0.04 * peri, True)
-        if len(approx) == 5 or len(approx) == 4:
+        if len(approx) == 5 or len(approx) == 4 or len(approx) == 6:
             # compute the bounding box of the contour and use the
             # bounding box to compute the aspect ratio
             # (x, y, w, h) = cv2.boundingRect(approx)
@@ -62,6 +62,8 @@ class torp_vision:
             print(e)
 
         height, width, channels = cv_image.shape
+        # print(height)
+        # print(width)
         # CLAHE (Contrast Limited Adaptive Histogram Equalization)
         clahe = cv2.createCLAHE(clipLimit=1., tileGridSize=(4, 4))
 
@@ -103,6 +105,8 @@ class torp_vision:
             # compute the center of the contour, then detect the name of the
             # shape using only the contour
             M = cv2.moments(c)
+            if M["m00"] == 0:
+                M["m00"] = .000001
             cX = int((M["m10"] / M["m00"]) * ratio)
             cY = int((M["m01"] / M["m00"]) * ratio)
             shape = self.detect(c)
@@ -113,7 +117,7 @@ class torp_vision:
             c = c.astype("float")
             c *= ratio
             c = c.astype("int")
-            if shape == "verified shooty hole" or shape == "partial shooty hole":
+            if shape == "verified shooty hole" or shape == "partial shooty hole" or shape == "unidentified":
                 cv2.drawContours(output, [c], -1, (0, 255, 0), 2)
 
                 cv2.putText(output, shape, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX,
@@ -127,18 +131,20 @@ class torp_vision:
         m = Point()
         m.x = max_x
         m.y = max_y
-        temp1 = (height / 2) - max_y
-        temp2 = (width / 2) - max_x
+        temp1 = max_y - (height / 2)
+        temp2 = max_x - (width / 2)
+        # print("temp 1: ", temp1)
+        # print("temp 2: ", temp2)
         '''
         This is a crime against ROS Messages but if it works...... it works. I apologize in advance.
         '''
         m.z = 0
-        if (abs(temp2) > (CENTER_X_THRESH + (width / 2))):
+        if (abs(temp2) > (CENTER_X_THRESH)):
             if (temp1 < 0):
                 m.z -= 5
             else:
                 m.z += 5
-        if (abs(temp1) > (CENTER_Y_THRESH + (height / 2))):
+        if (abs(temp1) > (CENTER_Y_THRESH)):
             if (temp2 < 0):
                 m.z -= 1
             else:
