@@ -13,11 +13,11 @@
     </rosparam>
     <remap from="odom" to="imu_odom"/>
   </node>
-  <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry"><rosparam>
+  <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry" respawn="true"><rosparam>
     frame_id: /map
     child_frame_id: /base_link
   </rosparam>
     <remap from="orig_odom" to="imu_odom"/>
   </node>
-  <node pkg="nodelet" type="nodelet" args="standalone odometry_utils/odometry_to_tf" name="odometry_to_tf"/>
+  <node pkg="nodelet" type="nodelet" args="standalone odometry_utils/odometry_to_tf" name="odometry_to_tf" respawn="true"/>
 </launch>
