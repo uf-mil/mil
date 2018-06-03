@@ -7,7 +7,7 @@
 
 
 # Define topics that should be in every bag
-export BAG_ALWAYS="/odom /absodom /clock /tf /tf_static"
+export BAG_ALWAYS="/odom /absodom /clock /tf /tf_static /dvl/range"
 
 # Define the directory that the bags will be stored in
 export BAG_DIR=~/bags
