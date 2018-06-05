@@ -1,6 +1,7 @@
 // TODO: Segmentation, Classification, Bounds, Ogrid filtering
 
 #include "Classification.hpp"
+#include "OGridGen.hpp"  // for params extern struct
 Classification::Classification(ros::NodeHandle *nh)
 {
   nh_ = nh;
@@ -13,12 +14,31 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr Classification::filtered(pcl::PointCloud<pc
     return cloud_filtered;
   pcl::StatisticalOutlierRemoval<pcl::PointXYZI> sor;
   sor.setInputCloud(pointCloud);
-  sor.setMeanK(75);
-  sor.setStddevMulThresh(.75);
+  sor.setMeanK(params.statistical_mean_k);
+  sor.setStddevMulThresh(params.statistical_stddev_mul_thresh);
   sor.filter(*cloud_filtered);
   return cloud_filtered;
 }
 
+std::vector<pcl::PointIndices> Classification::clustering(pcl::PointCloud<pcl::PointXYZI>::ConstPtr pointCloud)
+{
+  if (pointCloud->size() < 1)
+    return std::vector<pcl::PointIndices>();
+  pcl::search::KdTree<pcl::PointXYZI>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZI>);
+  tree->setInputCloud(pointCloud);
+
+  std::vector<pcl::PointIndices> cluster_indices;
+  pcl::EuclideanClusterExtraction<pcl::PointXYZI> ec;
+
+  ec.setClusterTolerance(params.cluster_tolerance_m);
+  ec.setMinClusterSize(params.cluster_min_num_points);
+  ec.setMaxClusterSize(params.cluster_max_num_points);
+  ec.setSearchMethod(tree);
+  ec.setInputCloud(pointCloud);
+  ec.extract(cluster_indices);
+
+  return cluster_indices;
+}
 // Get first incidient point in a ray. If no such point exist, return the starting point of the ray
 cv::Point2d Classification::get_first_hit(cv::Mat &mat_ogrid, cv::Point2d start, float theta, int max_dis = 100)
 {

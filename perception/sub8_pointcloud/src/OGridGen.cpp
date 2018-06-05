@@ -2,6 +2,8 @@
 
 // TODO: Add service call to clear ogrid
 
+ogrid_param params;
+
 OGridGen::OGridGen()
   : nh_(ros::this_node::getName()), kill_listener_(nh_, "kill"), was_killed_(true), classification_(&nh_)
 {
@@ -10,6 +12,7 @@ OGridGen::OGridGen()
   pub_point_cloud_filtered_ = nh_.advertise<pcl::PointCloud<pcl::PointXYZI>>("point_cloud/filtered", 1);
   pub_point_cloud_raw_ = nh_.advertise<pcl::PointCloud<pcl::PointXYZI>>("point_cloud/raw", 1);
   pub_point_cloud_plane_ = nh_.advertise<pcl::PointCloud<pcl::PointXYZI>>("point_cloud/plane", 1);
+  pub_markers_ = nh_.advertise<visualization_msgs::MarkerArray>("markers", 1);
   clear_ogrid_service_ = nh_.advertiseService("clear_ogrid", &OGridGen::clear_ogrid_callback, this);
 
   // Resolution is meters/pixel
@@ -17,6 +20,11 @@ OGridGen::OGridGen()
   nh_.param<float>("ogrid_size", ogrid_size_, 91.44);
   // Ignore points that are below the potential pool
   nh_.param<int>("min_intensity", min_intensity_, 2000);
+  nh_.param<float>("statistical_mean_k", params.statistical_mean_k, 75);
+  nh_.param<float>("statistical_stddev_mul_thresh", params.statistical_stddev_mul_thresh, .75);
+  nh_.param<float>("cluster_tolerance_m", params.cluster_tolerance_m, 5);
+  nh_.param<float>("cluster_min_num_points", params.cluster_min_num_points, 5);
+  nh_.param<float>("cluster_max_num_points", params.cluster_max_num_points, 100);
   dvl_range_ = 0;
 
   // Buffer that will only hold a certain amount of points
@@ -90,6 +98,43 @@ void OGridGen::publish_big_pointcloud(const ros::TimerEvent &)
 
   // Publish the filtered cloud
   pcl::PointCloud<pcl::PointXYZI>::Ptr pointCloud_filtered = classification_.filtered(pointCloud);
+
+  int id = 0;
+  visualization_msgs::MarkerArray markers;
+  std::vector<pcl::PointIndices> cluster_indices = classification_.clustering(pointCloud_filtered);
+  for (auto it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
+  {
+    pcl::CentroidPoint<pcl::PointXYZI> centroid;
+    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_cluster(new pcl::PointCloud<pcl::PointXYZI>);
+    for (std::vector<int>::const_iterator pit = it->indices.begin(); pit != it->indices.end(); ++pit)
+    {
+      cloud_cluster->push_back(pointCloud_filtered->points[*pit]);
+      centroid.add(pointCloud_filtered->points[*pit]);
+    }
+    cloud_cluster->width = static_cast<uint32_t>(cloud_cluster->points.size());
+    cloud_cluster->height = 1;
+    cloud_cluster->is_dense = true;
+    pcl::PointXYZI minPt, maxPt;
+    pcl::getMinMax3D(*cloud_cluster, minPt, maxPt);
+
+    pcl::PointXYZI c;
+    centroid.get(c);
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "map";
+    marker.id = id++;
+    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.pose.position.x = c.x;
+    marker.pose.position.y = c.y;
+    marker.pose.position.z = c.z;
+    marker.scale.x = maxPt.x - minPt.x;
+    marker.scale.y = maxPt.y - minPt.y;
+    marker.scale.z = maxPt.z - minPt.z;
+    marker.color.a = 1.0;
+    marker.color.b = 1.0;
+    markers.markers.push_back(marker);
+  }
+
+  pub_markers_.publish(markers);
   pub_point_cloud_filtered_.publish(pointCloud_filtered);
 }
 
