@@ -18,4 +18,4 @@ ping_checker() {
 }
 ping_checker mil-sub-gumstix.ad.mil.ufl.edu
 ping_checker mil-com-teledyne-p900.ad.mil.ufl.edu
-btrfs filesystem usage /
+btrfs fi show
