@@ -2,10 +2,12 @@
 #include <pcl/features/normal_3d.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/kdtree/kdtree.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_plane.h>
+#include <pcl/segmentation/extract_clusters.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <ros/ros.h>
@@ -43,6 +45,9 @@ public:
 
   // Usage: statistical filterting to get rid of outliers and noise
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered(pcl::PointCloud<pcl::PointXYZI>::ConstPtr pointCloud);
+
+  // Usage: obtain a clustering from pointcloud
+  std::vector<pcl::PointIndices> clustering(pcl::PointCloud<pcl::PointXYZI>::ConstPtr pointCloud);
 
   /* Usage: Find all the first occupied points in an expanding circle, then color the ogrid
      param mat_ogrid: what ogrid will be used for processing and drawn on

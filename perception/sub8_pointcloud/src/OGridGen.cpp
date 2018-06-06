@@ -13,7 +13,9 @@ OGridGen::OGridGen()
   pub_point_cloud_raw_ = nh_.advertise<pcl::PointCloud<pcl::PointXYZI>>("point_cloud/raw", 1);
   pub_point_cloud_plane_ = nh_.advertise<pcl::PointCloud<pcl::PointXYZI>>("point_cloud/plane", 1);
   pub_markers_ = nh_.advertise<visualization_msgs::MarkerArray>("markers", 1);
+  pub_objects_ = nh_.advertise<mil_msgs::PerceptionObjectArray>("objects", 1);
   clear_ogrid_service_ = nh_.advertiseService("clear_ogrid", &OGridGen::clear_ogrid_callback, this);
+  clear_pcl_service_ = nh_.advertiseService("clear_pcl", &OGridGen::clear_pcl_callback, this);
 
   // Resolution is meters/pixel
   nh_.param<float>("resolution", resolution_, 0.2f);
@@ -97,45 +99,11 @@ void OGridGen::publish_big_pointcloud(const ros::TimerEvent &)
   pub_point_cloud_raw_.publish(pointCloud);
 
   // Publish the filtered cloud
-  pcl::PointCloud<pcl::PointXYZI>::Ptr pointCloud_filtered = classification_.filtered(pointCloud);
+  pointCloud_filtered_ = classification_.filtered(pointCloud);
+  pub_point_cloud_filtered_.publish(pointCloud_filtered_);
 
-  int id = 0;
-  visualization_msgs::MarkerArray markers;
-  std::vector<pcl::PointIndices> cluster_indices = classification_.clustering(pointCloud_filtered);
-  for (auto it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
-  {
-    pcl::CentroidPoint<pcl::PointXYZI> centroid;
-    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_cluster(new pcl::PointCloud<pcl::PointXYZI>);
-    for (std::vector<int>::const_iterator pit = it->indices.begin(); pit != it->indices.end(); ++pit)
-    {
-      cloud_cluster->push_back(pointCloud_filtered->points[*pit]);
-      centroid.add(pointCloud_filtered->points[*pit]);
-    }
-    cloud_cluster->width = static_cast<uint32_t>(cloud_cluster->points.size());
-    cloud_cluster->height = 1;
-    cloud_cluster->is_dense = true;
-    pcl::PointXYZI minPt, maxPt;
-    pcl::getMinMax3D(*cloud_cluster, minPt, maxPt);
-
-    pcl::PointXYZI c;
-    centroid.get(c);
-    visualization_msgs::Marker marker;
-    marker.header.frame_id = "map";
-    marker.id = id++;
-    marker.type = visualization_msgs::Marker::SPHERE;
-    marker.pose.position.x = c.x;
-    marker.pose.position.y = c.y;
-    marker.pose.position.z = c.z;
-    marker.scale.x = maxPt.x - minPt.x;
-    marker.scale.y = maxPt.y - minPt.y;
-    marker.scale.z = maxPt.z - minPt.z;
-    marker.color.a = 1.0;
-    marker.color.b = 1.0;
-    markers.markers.push_back(marker);
-  }
-
-  pub_markers_.publish(markers);
-  pub_point_cloud_filtered_.publish(pointCloud_filtered);
+  auto objects = cluster();
+  pub_objects_.publish(objects);
 }
 
 /*
@@ -262,9 +230,85 @@ void OGridGen::process_persistant_ogrid(pcl::PointCloud<pcl::PointXYZI>::Ptr poi
   }
 }
 
+mil_msgs::PerceptionObjectArray OGridGen::cluster()
+{
+  int id = 0;
+  visualization_msgs::MarkerArray markers;
+  mil_msgs::PerceptionObjectArray objects;
+  // Cluster points into objects
+  std::vector<pcl::PointIndices> cluster_indices = classification_.clustering(pointCloud_filtered_);
+
+  // Iterate objects
+  for (auto it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
+  {
+    mil_msgs::PerceptionObject object;
+    pcl::CentroidPoint<pcl::PointXYZI> centroid;
+    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_cluster(new pcl::PointCloud<pcl::PointXYZI>);
+    for (std::vector<int>::const_iterator pit = it->indices.begin(); pit != it->indices.end(); ++pit)
+    {
+      auto p = pointCloud_filtered_->points[*pit];
+      cloud_cluster->push_back(p);
+      centroid.add(pointCloud_filtered_->points[*pit]);
+
+      // Add point to object's array
+      geometry_msgs::Point32 geo_p;
+      geo_p.x = p.x;
+      geo_p.y = p.y;
+      geo_p.z = p.z;
+      object.points.emplace_back(geo_p);
+    }
+    cloud_cluster->width = static_cast<uint32_t>(cloud_cluster->points.size());
+    cloud_cluster->height = 1;
+    cloud_cluster->is_dense = true;
+    pcl::PointXYZI minPt, maxPt;
+    pcl::getMinMax3D(*cloud_cluster, minPt, maxPt);
+
+    pcl::PointXYZI c;
+    centroid.get(c);
+
+    // Init object header
+    object.header.stamp = ros::Time::now();
+    object.header.frame_id = "map";
+    object.classification = "object";
+    object.labeled_classification = "unknown";
+    object.pose.position.x = c.x;
+    object.pose.position.y = c.y;
+    object.pose.position.z = c.z;
+    object.pose.orientation.w = 1;
+    object.scale.x = maxPt.x - minPt.x;
+    object.scale.y = maxPt.y - minPt.y;
+    object.scale.z = maxPt.z - minPt.z;
+    objects.objects.push_back(object);
+
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "map";
+    marker.id = id++;
+    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.pose.position.x = c.x;
+    marker.pose.position.y = c.y;
+    marker.pose.position.z = c.z;
+    marker.scale.x = maxPt.x - minPt.x;
+    marker.scale.y = maxPt.y - minPt.y;
+    marker.scale.z = maxPt.z - minPt.z;
+    marker.color.a = 1.0;
+    marker.color.b = 1.0;
+    markers.markers.push_back(marker);
+  }
+
+  pub_markers_.publish(markers);
+  return objects;
+}
+
 bool OGridGen::clear_ogrid_callback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
 {
   persistant_ogrid_ = 0.5;
+  res.success = true;
+  return true;
+}
+
+bool OGridGen::clear_pcl_callback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+{
+  point_cloud_buffer_.clear();
   res.success = true;
   return true;
 }
