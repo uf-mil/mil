@@ -431,6 +431,8 @@ class SonarObjects(object):
         """
         SonarObjects: a helper to search and find objects
 
+        Everything must be in map frame
+
         Parameters:
         sub: the sub object
         pattern: an array of pose goals (i.e: [sub.move.forward(1)])
@@ -516,7 +518,7 @@ class SonarObjects(object):
         count = -1
         while count < object_count:
             for pose in self.pattern:
-                yield pose.go(speed=speed)
+                yield pose.go(speed=speed, blind=True)
                 res = yield self._objects_service(ObjectDBQueryRequest())
                 g_obj = self._get_objects_within_cone(
                     res.objects, start_point, ray, angle_tol, distance_tol)
@@ -525,6 +527,7 @@ class SonarObjects(object):
                 count = len(g_obj)
                 print 'SONAR OBJECTS: found {} that satisfy cone'.format(count)
                 if count >= object_count:
+                    g_obj = self._sort_by_angle(g_obj, ray, start_point)
                     res.objects = g_obj
                     defer.returnValue(res)
         defer.returnValue(None)
@@ -538,6 +541,7 @@ class SonarObjects(object):
             pos = mil_ros_tools.rosmsg_to_numpy(o.pose.position)
             print 'pos {}'.format(pos)
             dist = np.dot(pos - start_point, ray)
+            print 'dist {}'.format(dist)
             if dist > distance_tol or dist < 0:
                 continue
             vec_for_pos = pos - start_point
@@ -548,6 +552,23 @@ class SonarObjects(object):
                 continue
             out.append(o)
         return out
+
+    def _sort_by_angle(self, objects, ray, start_point):
+        """
+        _sort_by_angle: returns object list sorted by angle
+
+        Parameters:
+        objects:
+        ray: directional unit vector
+        start_point: base point for vector in map
+        """
+        positions = [
+            mil_ros_tools.rosmsg_to_numpy(o.pose.position) for o in objects
+        ]
+        dots = [(p / np.linalg.norm(p) - start_point).dot(ray)
+                for p in positions]
+        idx = np.argsort(dots)
+        return np.array(objects)[idx]
 
     @util.cancellableInlineCallbacks
     def _run_pattern(self, speed):

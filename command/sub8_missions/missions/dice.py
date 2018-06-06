@@ -2,7 +2,7 @@ from txros import util
 import numpy as np
 from sensor_msgs.msg import CameraInfo
 from image_geometry import PinholeCameraModel
-from sub8 import SonarPointcloud
+from sub8 import SonarObjects
 from geometry_msgs.msg import Point
 import mil_ros_tools
 import tf
@@ -16,7 +16,6 @@ pub_cam_ray = None
 
 @util.cancellableInlineCallbacks
 def run(sub):
-
     print('Enabling cam_ray publisher')
     global pub_cam_ray
     pub_cam_ray = yield sub.nh.advertise('/pointcloud_test/cam_ray', Marker)
@@ -30,11 +29,6 @@ def run(sub):
     cam_info = yield cam_info_sub.get_next_message()
     model = PinholeCameraModel()
     model.fromCameraInfo(cam_info)
-
-    print('Scanning with blueview')
-    spc = SonarPointcloud(sub, [sub.move.zero_roll_and_pitch()])
-    x = yield spc.start()
-    print(x.shape)
 
     dice_sub = yield sub.nh.subscribe('/dice/points', Point)
 
@@ -52,7 +46,27 @@ def run(sub):
 
     dice, xy = found.popitem()
     print('dice {}'.format(dice))
-    where = yield find_point(sub, model, xy, x)
+    ray, base = yield get_transform(sub, model, xy)
+
+    so = SonarObjects(sub, [
+        start.left(0.5),
+        start.right(1),
+        start.left(0.5),
+        start.pitch_down_deg(15), start
+    ])
+    objs = yield so.start_until_found_in_cone(
+        base,
+        clear=False,
+        object_count=1,
+        ray=ray,
+        angle_tol=20,
+        distance_tol=13)
+    if objs is None:
+        print("No objects")
+        defer.returnValue(False)
+
+    where = mil_ros_tools.rosmsg_to_numpy(objs.objects[0].pose.position)
+
     if where is None:
         print("Did not find anything")
         defer.returnValue(False)
@@ -70,13 +84,14 @@ def run(sub):
 
 
 @util.cancellableInlineCallbacks
-def find_point(sub, model, point, x):
+def get_transform(sub, model, point):
     print('Projecting to 3d ray')
     ray = model.projectPixelTo3dRay(point)
     print('Transform')
-    transform = yield sub._tf_listener.get_transform('/map', 'front_stereo')
+    transform = yield sub._tf_listener.get_transform('/map', 'front_left_cam')
     cam_r = tf.transformations.quaternion_matrix(transform._q)[:3, :3]
     ray = cam_r.dot(ray)
+    ray = ray/np.linalg.norm(ray)
     marker = Marker(
         ns='pointcloud',
         action=visualization_msgs.Marker.ADD,
@@ -94,27 +109,4 @@ def find_point(sub, model, point, x):
     global pub_cam_ray
     pub_cam_ray.publish(marker)
     print('ray: {}, origin: {}'.format(ray, transform._p))
-    defer.returnValue(find_closest_object_given_ray(x, ray, transform._p))
-
-
-def find_closest_object_given_ray(points,
-                                  ray,
-                                  ray_base,
-                                  tol_min=1,
-                                  tol_max=5,
-                                  angle_deg_tol=30):
-    ray_norm = np.linalg.norm(ray)
-    angle_rad_tol = angle_deg_tol * np.pi / 180
-    all_dots = np.apply_along_axis(lambda v: np.arccos(ray.dot(v - ray_base)/(ray_norm*np.linalg.norm(v - ray_base))), 1, points)
-    index_sort_angle = np.argsort(all_dots)
-    min_dist = tol_max
-    ret_p = None
-    for idx in index_sort_angle:
-        p = points[idx]
-        if all_dots[idx] > angle_rad_tol:
-            continue
-        distance = np.linalg.norm(np.cross(ray, p - ray_base))
-        if distance < tol_max and distance > tol_min and distance < min_dist:
-            min_dist = distance
-            ret_p = p
-    return ret_p
+    defer.returnValue((ray, transform._p))
