@@ -10,8 +10,9 @@ from sub8 import pose_editor
 import mil_ros_tools
 from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D
 from mil_msgs.srv import SetGeometry, SetGeometryRequest
+from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from sub8_msgs.srv import SetValve, SetValveRequest
-from std_srvs.srv import SetBool, SetBoolRequest
+from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
 from nav_msgs.msg import Odometry
 from tf.transformations import quaternion_multiply, quaternion_from_euler
 from sensor_msgs.msg import PointCloud2
@@ -423,6 +424,97 @@ class PoseSequenceCommander(object):
                     self.sub.pose.orientation,
                     (orientations[i][0], orientations[i][1],
                      orientations[i][2], orientations[i][3]))).go(speed)
+
+
+class SonarObjects(object):
+    def __init__(self, sub, pattern):
+        self.sub = sub
+        self.pattern = pattern
+        self._clear_pcl = self.sub.nh.get_service_client(
+            '/ogrid_pointcloud/clear_pcl', Trigger)
+
+        self._objects_service = self.sub.nh.get_service_client(
+            '/ogrid_pointcloud/get_objects', ObjectDBQuery)
+
+    @util.cancellableInlineCallbacks
+    def start(self, speed=0.5, clear=False):
+        if clear:
+            print 'SONAR_OBJECTS: clearing pointcloud'
+            yield self._clear_pcl(TriggerRequest())
+
+        print 'SONAR_OBJECTS: running pattern'
+        yield self._run_pattern(speed)
+
+        print 'SONAR_OBJECTS: requesting objects'
+        res = yield self._objects_service(ObjectDBQueryRequest())
+        defer.returnValue(res)
+
+    @util.cancellableInlineCallbacks
+    def start_until_found_x(self, speed=0.5, clear=False, object_count=0):
+        if clear:
+            print 'SONAR_OBJECTS: clearing pointcloud'
+            yield self._clear_pcl(TriggerRequest())
+        count = -1
+        while count < object_count:
+            for pose in self.pattern:
+                yield pose.go(speed=speed)
+                res = yield self._objects_service(ObjectDBQueryRequest())
+                count = len(res.objects)
+                if count >= object_count:
+                    defer.returnValue(res)
+        defer.returnValue(None)
+
+    @util.cancellableInlineCallbacks
+    def start_until_found_in_cone(self,
+                                  start_point,
+                                  speed=0.5,
+                                  clear=False,
+                                  object_count=0,
+                                  ray=np.array([0, 1, 0]),
+                                  angle_tol=30,
+                                  distance_tol=12):
+        if clear:
+            print 'SONAR_OBJECTS: clearing pointcloud'
+            yield self._clear_pcl(TriggerRequest())
+        count = -1
+        while count < object_count:
+            for pose in self.pattern:
+                yield pose.go(speed=speed)
+                res = yield self._objects_service(ObjectDBQueryRequest())
+                g_obj = self._get_objects_within_cone(
+                    res.objects, start_point, ray, angle_tol, distance_tol)
+                if g_obj is None:
+                    continue
+                count = len(g_obj)
+                print 'SONAR OBJECTS: found {} that satisfy cone'.format(count)
+                if count >= object_count:
+                    res.objects = g_obj
+                    defer.returnValue(res)
+        defer.returnValue(None)
+
+    def _get_objects_within_cone(self, objects, start_point, ray, angle_tol,
+                                 distance_tol):
+        ray = ray / np.linalg.norm(ray)
+        out = []
+        for o in objects:
+            print '=' * 50
+            pos = mil_ros_tools.rosmsg_to_numpy(o.pose.position)
+            print 'pos {}'.format(pos)
+            dist = np.dot(pos - start_point, ray)
+            if dist > distance_tol or dist < 0:
+                continue
+            vec_for_pos = pos - start_point
+            vec_for_pos = vec_for_pos / np.linalg.norm(vec_for_pos)
+            angle = np.arccos(vec_for_pos.dot(ray)) * 180 / np.pi
+            if angle > angle_tol:
+                continue
+            out.append(o)
+        return out
+
+    @util.cancellableInlineCallbacks
+    def _run_pattern(self, speed):
+        for pose in self.pattern:
+            yield pose.go(speed=speed)
 
 
 class SonarPointcloud(object):
