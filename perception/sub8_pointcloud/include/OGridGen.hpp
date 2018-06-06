@@ -30,6 +30,7 @@
 
 #include <Classification.hpp>
 
+#include <mil_msgs/ObjectDBQuery.h>
 #include <mil_msgs/PerceptionObject.h>
 #include <mil_msgs/PerceptionObjectArray.h>
 #include <mil_msgs/RangeStamped.h>
@@ -61,6 +62,8 @@ public:
 
   bool clear_pcl_callback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
 
+  bool get_objects_callback(mil_msgs::ObjectDBQuery::Request &req, mil_msgs::ObjectDBQuery::Response &res);
+
   // Publish mat_ogrid
   void publish_ogrid();
   // Project point_cloud and make a persistant ogrid
@@ -68,7 +71,7 @@ public:
   // Convert persistant ogrid to a mat_ogrid
   void populate_mat_ogrid();
 
-  mil_msgs::PerceptionObjectArray cluster();
+  mil_msgs::PerceptionObjectArray cluster(pcl::PointCloud<pcl::PointXYZI>::Ptr pc);
 
 private:
   ros::NodeHandle nh_;
@@ -93,6 +96,7 @@ private:
 
   ros::ServiceServer clear_pcl_service_;
   ros::ServiceServer clear_ogrid_service_;
+  ros::ServiceServer get_objects_service_;
   ros::Timer timer_;
 
   // A CV_32F Mat to store probability of occupied/unoccupied spaces
@@ -110,7 +114,7 @@ private:
 
   // Storage container for the pointcloud
   boost::circular_buffer<pcl::PointXYZI> point_cloud_buffer_;
-  pcl::PointCloud<pcl::PointXYZI>::Ptr pointCloud_filtered_;
+  pcl::PointCloud<pcl::PointXYZI>::Ptr pointCloud_;
 
   std::vector<cv::Point> bounds_;
 

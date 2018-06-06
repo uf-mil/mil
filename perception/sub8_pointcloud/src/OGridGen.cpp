@@ -5,7 +5,11 @@
 ogrid_param params;
 
 OGridGen::OGridGen()
-  : nh_(ros::this_node::getName()), kill_listener_(nh_, "kill"), was_killed_(true), classification_(&nh_)
+  : nh_(ros::this_node::getName())
+  , kill_listener_(nh_, "kill")
+  , was_killed_(true)
+  , classification_(&nh_)
+  , pointCloud_(new pcl::PointCloud<pcl::PointXYZI>())
 {
   // The publishers
   pub_grid_ = nh_.advertise<nav_msgs::OccupancyGrid>("ogrid", 10, true);
@@ -16,6 +20,7 @@ OGridGen::OGridGen()
   pub_objects_ = nh_.advertise<mil_msgs::PerceptionObjectArray>("objects", 1);
   clear_ogrid_service_ = nh_.advertiseService("clear_ogrid", &OGridGen::clear_ogrid_callback, this);
   clear_pcl_service_ = nh_.advertiseService("clear_pcl", &OGridGen::clear_pcl_callback, this);
+  get_objects_service_ = nh_.advertiseService("get_objects", &OGridGen::get_objects_callback, this);
 
   // Resolution is meters/pixel
   nh_.param<float>("resolution", resolution_, 0.2f);
@@ -86,24 +91,22 @@ void OGridGen::publish_big_pointcloud(const ros::TimerEvent &)
   }
 
   // Populate a PCL pointcloud using the point_cloud_buffer_
-  pcl::PointCloud<pcl::PointXYZI>::Ptr pointCloud(new pcl::PointCloud<pcl::PointXYZI>());
-  pointCloud->reserve(point_cloud_buffer_.capacity());
+  pointCloud_->clear();
+  pointCloud_->reserve(point_cloud_buffer_.capacity());
   for (auto &p : point_cloud_buffer_)
   {
-    pointCloud->push_back(p);
+    pointCloud_->push_back(p);
   }
 
   // Publish the raw point cloud
-  pointCloud->header.frame_id = "map";
-  pcl_conversions::toPCL(ros::Time::now(), pointCloud->header.stamp);
-  pub_point_cloud_raw_.publish(pointCloud);
+  pointCloud_->header.frame_id = "map";
+  pcl_conversions::toPCL(ros::Time::now(), pointCloud_->header.stamp);
+  pub_point_cloud_raw_.publish(pointCloud_);
 
-  // Publish the filtered cloud
-  pointCloud_filtered_ = classification_.filtered(pointCloud);
-  pub_point_cloud_filtered_.publish(pointCloud_filtered_);
-
-  auto objects = cluster();
-  pub_objects_.publish(objects);
+  // For debugging a snapshot of current point cloud and filter it and show objects
+  pcl::PointCloud<pcl::PointXYZI>::Ptr pointCloud_filtered = classification_.filtered(pointCloud_);
+  pub_point_cloud_filtered_.publish(pointCloud_filtered);
+  cluster(pointCloud_filtered);
 }
 
 /*
@@ -230,13 +233,13 @@ void OGridGen::process_persistant_ogrid(pcl::PointCloud<pcl::PointXYZI>::Ptr poi
   }
 }
 
-mil_msgs::PerceptionObjectArray OGridGen::cluster()
+mil_msgs::PerceptionObjectArray OGridGen::cluster(pcl::PointCloud<pcl::PointXYZI>::Ptr pc)
 {
   int id = 0;
   visualization_msgs::MarkerArray markers;
   mil_msgs::PerceptionObjectArray objects;
   // Cluster points into objects
-  std::vector<pcl::PointIndices> cluster_indices = classification_.clustering(pointCloud_filtered_);
+  std::vector<pcl::PointIndices> cluster_indices = classification_.clustering(pc);
 
   // Iterate objects
   for (auto it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
@@ -246,9 +249,9 @@ mil_msgs::PerceptionObjectArray OGridGen::cluster()
     pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_cluster(new pcl::PointCloud<pcl::PointXYZI>);
     for (std::vector<int>::const_iterator pit = it->indices.begin(); pit != it->indices.end(); ++pit)
     {
-      auto p = pointCloud_filtered_->points[*pit];
+      auto p = pc->points[*pit];
       cloud_cluster->push_back(p);
-      centroid.add(pointCloud_filtered_->points[*pit]);
+      centroid.add(pc->points[*pit]);
 
       // Add point to object's array
       geometry_msgs::Point32 geo_p;
@@ -310,6 +313,20 @@ bool OGridGen::clear_pcl_callback(std_srvs::Trigger::Request &req, std_srvs::Tri
 {
   point_cloud_buffer_.clear();
   res.success = true;
+  return true;
+}
+
+bool OGridGen::get_objects_callback(mil_msgs::ObjectDBQuery::Request &req, mil_msgs::ObjectDBQuery::Response &res)
+{
+  pcl::PointCloud<pcl::PointXYZI>::Ptr pointCloud_filtered = classification_.filtered(pointCloud_);
+  if (pointCloud_filtered->size() < 1)
+  {
+    res.found = false;
+    return false;
+  }
+  mil_msgs::PerceptionObjectArray objects = cluster(pointCloud_filtered);
+  res.found = true;
+  res.objects = objects.objects;
   return true;
 }
 
