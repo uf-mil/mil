@@ -428,6 +428,13 @@ class PoseSequenceCommander(object):
 
 class SonarObjects(object):
     def __init__(self, sub, pattern):
+        """
+        SonarObjects: a helper to search and find objects
+
+        Parameters:
+        sub: the sub object
+        pattern: an array of pose goals (i.e: [sub.move.forward(1)])
+        """
         self.sub = sub
         self.pattern = pattern
         self._clear_pcl = self.sub.nh.get_service_client(
@@ -438,6 +445,13 @@ class SonarObjects(object):
 
     @util.cancellableInlineCallbacks
     def start(self, speed=0.5, clear=False):
+        """
+        Do a search and return all objects
+
+        Parameters:
+        speed: how fast sub should move
+        clear: clear pointcloud
+        """
         if clear:
             print 'SONAR_OBJECTS: clearing pointcloud'
             yield self._clear_pcl(TriggerRequest())
@@ -451,6 +465,14 @@ class SonarObjects(object):
 
     @util.cancellableInlineCallbacks
     def start_until_found_x(self, speed=0.5, clear=False, object_count=0):
+        """
+        Search until a number of objects are found
+
+        Parameters:
+        speed: how fast sub should move
+        clear: clear pointcloud
+        object_count: how many objects we want
+        """
         if clear:
             print 'SONAR_OBJECTS: clearing pointcloud'
             yield self._clear_pcl(TriggerRequest())
@@ -473,6 +495,21 @@ class SonarObjects(object):
                                   ray=np.array([0, 1, 0]),
                                   angle_tol=30,
                                   distance_tol=12):
+        """
+        Search until objects are found within a cone-shaped range
+
+        Parameters:
+        start_point: numpy array for the starting point of the direction vector
+        speed: how fast the sub should move
+        clear: should the pointcloud be clear beforehand
+        object_count: how many objects we are looking for
+        ray: the direction vector
+        angle_tol: how far off the direction vector should be allowed
+        distance_tol: how far away are we willing to accept
+
+        Returns:
+        ObjectDBQuery: with objects field filled by good objects
+        """
         if clear:
             print 'SONAR_OBJECTS: clearing pointcloud'
             yield self._clear_pcl(TriggerRequest())
@@ -506,6 +543,7 @@ class SonarObjects(object):
             vec_for_pos = pos - start_point
             vec_for_pos = vec_for_pos / np.linalg.norm(vec_for_pos)
             angle = np.arccos(vec_for_pos.dot(ray)) * 180 / np.pi
+            print 'angle {}'.format(angle)
             if angle > angle_tol:
                 continue
             out.append(o)
