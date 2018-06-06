@@ -26,11 +26,14 @@ add_message_files(FILES
   VelocityMeasurement.msg
   LabeledObject.msg
   LabeledObjects.msg
+  PerceptionObject.msg
+  PerceptionObjectArray.msg
 )
 
 add_service_files(FILES
   CameraToLidarTransform.srv
   SetGeometry.srv
+  ObjectDBQuery.srv
 )
 
 generate_messages(
