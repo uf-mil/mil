@@ -1,0 +1,5 @@
+string name         #Request a particular object - names listed in PerceptionObject.msg (shooter,dock,scan_the_code,totem,start_gate,buoy,unknown,all)
+string cmd         #Change information in the database - ID=YYY where ID is the id number and YYY is a value to change: either the object name or rgb
+---
+bool found         #Did we actually find the requested object?
+mil_msgs/PerceptionObject[] objects    #Collection of all objects found
