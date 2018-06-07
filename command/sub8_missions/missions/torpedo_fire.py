@@ -115,11 +115,11 @@ def update_point_callback(msg, sub):
         # return True
 
 
-# @util.cancellableInlineCallbacks
-def depth_callback(msg):
+@util.cancellableInlineCallbacks
+def depth_callback(sub):
     global CURRENT_DEPTH
-    # print("test")
-    CURRENT_DEPTH = yield msg.range
+    msg = yield sub._dvl_range_sub.get_next_message()
+    CURRENT_DEPTH = defer.returnValue(msg.range)
 
 
 @util.cancellableInlineCallbacks
@@ -136,7 +136,7 @@ def run(sub):
     # rospy.init_node('torpedo_mission', anonymous=True)
     # Subscriber for Depth.
 
-    range_sub = sub.nh.subscribe("/dvl/range", RangeStamped)
+    # range_sub = sub.nh.subscribe("/dvl/range", RangeStamped)
 
     # Subscriber for my interesting logic system/perception.
 
@@ -144,10 +144,8 @@ def run(sub):
         "/torp_vision/points", Point)
 
     while TARGET_LOCK == False:
-        print "Attempting to get Range"
-        range_msg = range_sub.get_next_message()
         print "depth_callback"
-        depth_callback(range_msg)
+        depth_callback(sub)
         print "Attempting to get Points"
         point_msg = yield points_sub.get_next_message()
         print "update_point_callback"

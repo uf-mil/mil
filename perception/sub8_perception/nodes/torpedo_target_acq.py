@@ -12,7 +12,7 @@ from cv_bridge import CvBridge, CvBridgeError
 BGR Color space constants for thresholding. We are looking for red so
 the third value should have the largest range.
 '''
-LOWER = [0, 0, 0]
+LOWER = [0, 0, 80]
 UPPER = [100, 100, 250]
 
 # Length threshold for contours. Contours smaller than this size are ignored.

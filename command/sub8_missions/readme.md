@@ -59,20 +59,20 @@ In that file, write a run, like this (Be sure to use @util.cancellableInlineCall
 
     from txros import util
     @util.cancellableInlineCallbacks
-    def run(sub_singleton):
-        yield sub_singleton.move.right(5).go()
+    def run(sub):
+        yield sub.move.right(5).go()
         print "Done"
 ```
 
-`sub_singleton.move` creates a `PoseEditor`, one of Forrest's ideas. The pose editor can be "edited", i.e. `move.right(5)` to move the sub right 5 meters, or `move.depth(3)`, to set z to -3. `move.go()` returns a twisted object called a **Deferred**. When you *yield* a `Deferred`, the script will stop executing until that deferred completes. So in the above example, "Done" will not be printed until the sub has moved right 5 meters. If you *don't*, yield, the rest of your script will continue to execute asynchronously. Let's look at another example, with no yield.
+`sub.move` creates a `PoseEditor`, one of Forrest's ideas. The pose editor can be "edited", i.e. `move.right(5)` to move the sub right 5 meters, or `move.depth(3)`, to set z to -3. `move.go()` returns a twisted object called a **Deferred**. When you *yield* a `Deferred`, the script will stop executing until that deferred completes. So in the above example, "Done" will not be printed until the sub has moved right 5 meters. If you *don't*, yield, the rest of your script will continue to execute asynchronously. Let's look at another example, with no yield.
 
 ```python
     # move_right_asynchronous.py
 
     from txros import util
     @util.cancellableInlineCallbacks
-    def run(sub_singleton):
-        sub_singleton.move.right(5).go()
+    def run(sub):
+        sub.move.right(5).go()
         print "Done"
 ```
 
@@ -80,19 +80,20 @@ Here, "Done" will print immediately after the mission starts running (Not waitin
 
 We haven't fully decided how vision data, etc will be shared with the mission manager, but at its core, it will be exposed as a `Deferred` inside of `sub8/tx_sub.py`. Here's how that might look.
 
+
 ```python
     # bump_buoy.py
 
     from txros import util
     @util.cancellableInlineCallbacks
-    def run(sub_singleton):
+    def run(sub):
         # buoy_search is a Deferred
-        buoy_search = sub_singleton.look_for_buoy('red')
+        buoy_search = look_for_buoy('red')
         print "We're looking for a buoy, executing a scan pattern"
 
-        yield sub_singleton.move.right(5).go()
+        yield sub.move.right(5).go()
         # Wait until we finish moving right (We yielded the Deferred)
-        yield sub_singleton.move.down(1).go()
+        yield sub.move.down(1).go()
         # Wait until we finish moving down (We yielded the Deferred)
 
         # Now we'll wait until buoy_search poops out a result
