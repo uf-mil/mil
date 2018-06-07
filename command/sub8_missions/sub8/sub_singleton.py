@@ -456,7 +456,7 @@ class SonarObjects(object):
         """
         if clear:
             print 'SONAR_OBJECTS: clearing pointcloud'
-            yield self._clear_pcl(TriggerRequest())
+            self._clear_pcl(TriggerRequest())
 
         print 'SONAR_OBJECTS: running pattern'
         yield self._run_pattern(speed)
@@ -477,7 +477,7 @@ class SonarObjects(object):
         """
         if clear:
             print 'SONAR_OBJECTS: clearing pointcloud'
-            yield self._clear_pcl(TriggerRequest())
+            self._clear_pcl(TriggerRequest())
         count = -1
         while count < object_count:
             for pose in self.pattern:
@@ -514,7 +514,7 @@ class SonarObjects(object):
         """
         if clear:
             print 'SONAR_OBJECTS: clearing pointcloud'
-            yield self._clear_pcl(TriggerRequest())
+            self._clear_pcl(TriggerRequest())
         count = -1
         while count < object_count:
             for pose in self.pattern:
@@ -581,8 +581,7 @@ class SonarPointcloud(object):
         if pattern is None:
             pattern = [sub.move.zero_roll_and_pitch()
                        ] + [sub.move.pitch_down_deg(5)] * 5 + [
-                           sub.move.zero_roll_and_pitch()
-                       ]
+                           sub.move.zero_roll_and_pitch()]
         self.sub = sub
         self.pointcloud = None
         self.pattern = pattern
