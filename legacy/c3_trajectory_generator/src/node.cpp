@@ -114,6 +114,7 @@ struct Node
   double linear_tolerance, angular_tolerance;
 
   WaypointValidity waypoint_validity_;
+  bool waypoint_check_;
 
   bool set_disabled(SetDisabledRequest &request, SetDisabledResponse &response)
   {
@@ -148,6 +149,8 @@ struct Node
     limits.arevoffset_b = mil_tools::getParam<Eigen::Vector3d>(private_nh, "arevoffset_b");
     limits.umax_b = mil_tools::getParam<subjugator::Vector6d>(private_nh, "umax_b");
     traj_dt = mil_tools::getParam<ros::Duration>(private_nh, "traj_dt", ros::Duration(0.0001));
+
+    waypoint_check_ = mil_tools::getParam<bool>(private_nh, "waypoint_check");
 
     odom_sub = nh.subscribe<Odometry>("odom", 1, boost::bind(&Node::odom_callback, this, _1));
 
@@ -234,7 +237,7 @@ struct Node
           Pose_from_Waypoint(current_waypoint), current_waypoint.do_waypoint_validation);
       actionresult.error = WAYPOINT_ERROR_TO_STRING.at(checkWPResult.second);
       actionresult.success = checkWPResult.first;
-      if (checkWPResult.first == false)  // got a point that we should not move to
+      if (checkWPResult.first == false && waypoint_check_)  // got a point that we should not move to
       {
         waypoint_validity_.pub_size_ogrid(Pose_from_Waypoint(current_waypoint), (int)OGRID_COLOR::RED);
         if (checkWPResult.second ==
@@ -297,7 +300,7 @@ struct Node
     std::pair<bool, WAYPOINT_ERROR_TYPE> checkWPResult =
         waypoint_validity_.is_waypoint_valid(Pose_from_Waypoint(p), c3trajectory->do_waypoint_validation);
 
-    if (checkWPResult.first == false && checkWPResult.second == WAYPOINT_ERROR_TYPE::OCCUPIED)
+    if (checkWPResult.first == false && checkWPResult.second == WAYPOINT_ERROR_TYPE::OCCUPIED && waypoint_check_)
     {  // New trajectory will hit an occupied goal, so reject
       ROS_ERROR("can't move there! - bad trajectory");
       current_waypoint = old_trajectory;
