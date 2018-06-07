@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import sys
 import rospy
-import imutils
 import cv2
 import numpy as np
 from sensor_msgs.msg import Image
@@ -12,7 +11,7 @@ from cv_bridge import CvBridge, CvBridgeError
 BGR Color space constants for thresholding. We are looking for red so
 the third value should have the largest range.
 '''
-LOWER = [0, 0, 80]
+LOWER = [0, 0, 90]
 UPPER = [100, 100, 250]
 
 # Length threshold for contours. Contours smaller than this size are ignored.
@@ -42,7 +41,7 @@ class torp_vision:
         if peri < SIZE:
             return target
         approx = cv2.approxPolyDP(c, 0.04 * peri, True)
-        if len(approx) == 5 or len(approx) == 4 or len(approx) == 6:
+        if len(approx) == 5 or len(approx) == 4:
             # compute the bounding box of the contour and use the
             # bounding box to compute the aspect ratio
             # (x, y, w, h) = cv2.boundingRect(approx)
@@ -86,7 +85,7 @@ class torp_vision:
         output = cv2.bitwise_and(cv_image, cv_image, mask=mask)
 
         # Resize to emphasize shapes
-        resized = imutils.resize(output, width=300)
+        resized = cv2.resize(output, (300, 225))
         ratio = output.shape[0] / float(resized.shape[0])
         gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
         # Blur image so our contours can better find the full shape.
