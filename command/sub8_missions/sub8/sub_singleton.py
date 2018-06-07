@@ -10,8 +10,9 @@ from sub8 import pose_editor
 import mil_ros_tools
 from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D
 from mil_msgs.srv import SetGeometry, SetGeometryRequest
+from mil_msgs.srv import ObjectDBQuery, ObjectDBQueryRequest
 from sub8_msgs.srv import SetValve, SetValveRequest
-from std_srvs.srv import SetBool, SetBoolRequest
+from std_srvs.srv import SetBool, SetBoolRequest, Trigger, TriggerRequest
 from nav_msgs.msg import Odometry
 from tf.transformations import quaternion_multiply, quaternion_from_euler
 from sensor_msgs.msg import PointCloud2
@@ -425,8 +426,162 @@ class PoseSequenceCommander(object):
                      orientations[i][2], orientations[i][3]))).go(speed)
 
 
-class SonarPointcloud(object):
+class SonarObjects(object):
     def __init__(self, sub, pattern):
+        """
+        SonarObjects: a helper to search and find objects
+
+        Everything must be in map frame
+
+        Parameters:
+        sub: the sub object
+        pattern: an array of pose goals (i.e: [sub.move.forward(1)])
+        """
+        self.sub = sub
+        self.pattern = pattern
+        self._clear_pcl = self.sub.nh.get_service_client(
+            '/ogrid_pointcloud/clear_pcl', Trigger)
+
+        self._objects_service = self.sub.nh.get_service_client(
+            '/ogrid_pointcloud/get_objects', ObjectDBQuery)
+
+    @util.cancellableInlineCallbacks
+    def start(self, speed=0.5, clear=False):
+        """
+        Do a search and return all objects
+
+        Parameters:
+        speed: how fast sub should move
+        clear: clear pointcloud
+        """
+        if clear:
+            print 'SONAR_OBJECTS: clearing pointcloud'
+            self._clear_pcl(TriggerRequest())
+
+        print 'SONAR_OBJECTS: running pattern'
+        yield self._run_pattern(speed)
+
+        print 'SONAR_OBJECTS: requesting objects'
+        res = yield self._objects_service(ObjectDBQueryRequest())
+        defer.returnValue(res)
+
+    @util.cancellableInlineCallbacks
+    def start_until_found_x(self, speed=0.5, clear=False, object_count=0):
+        """
+        Search until a number of objects are found
+
+        Parameters:
+        speed: how fast sub should move
+        clear: clear pointcloud
+        object_count: how many objects we want
+        """
+        if clear:
+            print 'SONAR_OBJECTS: clearing pointcloud'
+            self._clear_pcl(TriggerRequest())
+        count = -1
+        while count < object_count:
+            for pose in self.pattern:
+                yield pose.go(speed=speed)
+                res = yield self._objects_service(ObjectDBQueryRequest())
+                count = len(res.objects)
+                if count >= object_count:
+                    defer.returnValue(res)
+        defer.returnValue(None)
+
+    @util.cancellableInlineCallbacks
+    def start_until_found_in_cone(self,
+                                  start_point,
+                                  speed=0.5,
+                                  clear=False,
+                                  object_count=0,
+                                  ray=np.array([0, 1, 0]),
+                                  angle_tol=30,
+                                  distance_tol=12):
+        """
+        Search until objects are found within a cone-shaped range
+
+        Parameters:
+        start_point: numpy array for the starting point of the direction vector
+        speed: how fast the sub should move
+        clear: should the pointcloud be clear beforehand
+        object_count: how many objects we are looking for
+        ray: the direction vector
+        angle_tol: how far off the direction vector should be allowed
+        distance_tol: how far away are we willing to accept
+
+        Returns:
+        ObjectDBQuery: with objects field filled by good objects
+        """
+        if clear:
+            print 'SONAR_OBJECTS: clearing pointcloud'
+            self._clear_pcl(TriggerRequest())
+        count = -1
+        while count < object_count:
+            for pose in self.pattern:
+                yield pose.go(speed=speed, blind=True)
+                res = yield self._objects_service(ObjectDBQueryRequest())
+                g_obj = self._get_objects_within_cone(
+                    res.objects, start_point, ray, angle_tol, distance_tol)
+                if g_obj is None:
+                    continue
+                count = len(g_obj)
+                print 'SONAR OBJECTS: found {} that satisfy cone'.format(count)
+                if count >= object_count:
+                    g_obj = self._sort_by_angle(g_obj, ray, start_point)
+                    res.objects = g_obj
+                    defer.returnValue(res)
+        defer.returnValue(None)
+
+    def _get_objects_within_cone(self, objects, start_point, ray, angle_tol,
+                                 distance_tol):
+        ray = ray / np.linalg.norm(ray)
+        out = []
+        for o in objects:
+            print '=' * 50
+            pos = mil_ros_tools.rosmsg_to_numpy(o.pose.position)
+            print 'pos {}'.format(pos)
+            dist = np.dot(pos - start_point, ray)
+            print 'dist {}'.format(dist)
+            if dist > distance_tol or dist < 0:
+                continue
+            vec_for_pos = pos - start_point
+            vec_for_pos = vec_for_pos / np.linalg.norm(vec_for_pos)
+            angle = np.arccos(vec_for_pos.dot(ray)) * 180 / np.pi
+            print 'angle {}'.format(angle)
+            if angle > angle_tol:
+                continue
+            out.append(o)
+        return out
+
+    def _sort_by_angle(self, objects, ray, start_point):
+        """
+        _sort_by_angle: returns object list sorted by angle
+
+        Parameters:
+        objects:
+        ray: directional unit vector
+        start_point: base point for vector in map
+        """
+        positions = [
+            mil_ros_tools.rosmsg_to_numpy(o.pose.position) for o in objects
+        ]
+        dots = [(p / np.linalg.norm(p) - start_point).dot(ray)
+                for p in positions]
+        idx = np.argsort(dots)
+        return np.array(objects)[idx]
+
+    @util.cancellableInlineCallbacks
+    def _run_pattern(self, speed):
+        for pose in self.pattern:
+            yield pose.go(speed=speed)
+
+
+class SonarPointcloud(object):
+    def __init__(self, sub, pattern=None):
+        if pattern is None:
+            pattern = [sub.move.zero_roll_and_pitch()
+                       ] + [sub.move.pitch_down_deg(5)] * 5 + [
+                           sub.move.zero_roll_and_pitch()]
         self.sub = sub
         self.pointcloud = None
         self.pattern = pattern
@@ -454,13 +609,13 @@ class SonarPointcloud(object):
             gen = list(
                 pc2.read_points(
                     data, skip_nans=True, field_names=('x', 'y', 'z')))
-            print(np.array(gen).shape)
             pc_gen = list(
                 pc2.read_points(
                     self.pointcloud,
                     skip_nans=True,
                     field_names=('x', 'y', 'z')))
             concat = np.asarray(gen + pc_gen, np.float32)
+            print 'SONAR_POINTCLOUD - current size: {}'.format(concat.shape)
             self.pointcloud = mil_ros_tools.numpy_to_pointcloud2(concat)
         yield
 

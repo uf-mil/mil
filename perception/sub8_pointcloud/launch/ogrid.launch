@@ -3,13 +3,22 @@
         <rosparam>
             # meters per "pixel"
             resolution: 0.2
-            
-            # width and height of ogrid in meters 
+
+            # width and height of ogrid in meters
             ogrid_size: 150
 
             # How many points should be allowed
-            buffer_size: 7000
+            buffer_size: 50000
             min_intensity: 0
+
+            # Statistical Outlier remove
+            statistical_mean_k: 200
+            statistical_stddev_mul_thresh: 0.0001
+
+            # Euclidian Clustering
+            cluster_tolerance_m: 0.3
+            cluster_min_num_points: 10
+            cluster_max_num_points: 1000
         </rosparam>
     </node>
 </launch>
