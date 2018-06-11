@@ -8,21 +8,19 @@ Publishes Image and Points
 from __future__ import print_function
 import sys
 import rospy
-import math
 import cv2
 import numpy as np
 from sensor_msgs.msg import Image  # To publish Image
 from geometry_msgs.msg import Point  # To publish Points
 from std_msgs.msg import String  # To publish debug statements
 from cv_bridge import CvBridge, CvBridgeError
-import pandas as pd
 from scipy.spatial import distance
 
-## Display Window size for Debug
+# Display Window size for Debug
 WINDOW_SIZE_H = 1000
 WINDOW_SIZE_W = 1000
 
-## Parameters for dice detections
+# Parameters for dice detections
 DIST_THRESHOLD = 100
 SEARCH_RANGE_FOR_PIPS = 2
 SENTINEL_INFINITE = 10000
@@ -60,7 +58,7 @@ class DiceDetect(object):
         # Change thresholds
         params.minThreshold = 0
         params.maxThreshold = 255
-        ## The idea is that, we want to check all thresholds to take care of varied lighting conditions
+        # The idea is that, we want to check all thresholds to take care of varied lighting conditions
 
         # Filter by Area.
         params.filterByArea = True
@@ -101,11 +99,11 @@ class DiceDetect(object):
             im_c, keypoints, np.array([]), (0, 0, 255),
             cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
-        ## Debug to print all blobs detected
+        # Debug to print all blobs detected
         key_len = len(keypoints)
-        #print(keypoints)
+        # print(keypoints)
 
-        ## Neighborhood search algorithm
+        # Neighborhood search algorithm
         '''
         Looks at every point in the keypoints array and finds the nearest point to it
         Within a Threshold, set by Global Var 'DIST_THRESHOLD' . Then looks for other points
@@ -133,9 +131,9 @@ class DiceDetect(object):
                 count = 1
 
             if count > 4:
-                ## Debug Statement
-                ## Prints all points which correspond to dice of value 4 or more
-                print(str(i) + " th detection is " + str(count))  ## Debug
+                # Debug Statement
+                # Prints all points which correspond to dice of value 4 or more
+                print(str(i) + " th detection is " + str(count))  # Debug
                 d[str(count)] = [keypoints[i].pt[0], keypoints[i].pt[1]]
 
                 font_face = cv2.FONT_HERSHEY_SIMPLEX
@@ -145,13 +143,13 @@ class DiceDetect(object):
                             (int(keypoints[i].pt[0]), int(keypoints[i].pt[1])),
                             font_face, 1, (255, 255, 255), 1, cv2.LINE_AA)
 
-        ## im_with_keypoints now displays image, keypoints and x, y values displayed as text
+        # im_with_keypoints now displays image, keypoints and x, y values displayed as text
 
         return d, im_with_keypoints, im_c
 
     def callback(self, subscriberd_data):
 
-        ## calling CvBridge to transfer between ROS Image and OpenCv Image
+        # calling CvBridge to transfer between ROS Image and OpenCv Image
         try:
             cv_image = self.bridge.imgmsg_to_cv2(subscriberd_data, "bgr8")
         except CvBridgeError as e:
@@ -162,8 +160,8 @@ class DiceDetect(object):
         rospy.sleep(1.)  # 1 frame per
         print("Dice Detection Running ")
 
-        ## output_dict is a dictionary of points as values and the count as key
-        ## output_image is an OpenCv image
+        # output_dict is a dictionary of points as values and the count as key
+        # output_image is an OpenCv image
         output_dict, output_image, input_image = self.detect(cv_image)
 
         for key, value in output_dict.iteritems():
