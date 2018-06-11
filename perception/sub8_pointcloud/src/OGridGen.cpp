@@ -21,7 +21,8 @@ OGridGen::OGridGen()
   clear_ogrid_service_ = nh_.advertiseService("clear_ogrid", &OGridGen::clear_ogrid_callback, this);
   clear_pcl_service_ = nh_.advertiseService("clear_pcl", &OGridGen::clear_pcl_callback, this);
   get_objects_service_ = nh_.advertiseService("get_objects", &OGridGen::get_objects_callback, this);
-
+  // Do ogrid?
+  nh_.param<bool>("ogrid", params.ogrid, false);
   // Resolution is meters/pixel
   nh_.param<float>("resolution", resolution_, 0.2f);
   nh_.param<float>("ogrid_size", ogrid_size_, 91.44);
@@ -32,6 +33,9 @@ OGridGen::OGridGen()
   nh_.param<float>("cluster_tolerance_m", params.cluster_tolerance_m, 5);
   nh_.param<float>("cluster_min_num_points", params.cluster_min_num_points, 5);
   nh_.param<float>("cluster_max_num_points", params.cluster_max_num_points, 100);
+  nh_.param<float>("nearby_threshold", params.nearby_threshold, 1);
+  nh_.param<float>("depth", params.depth, 10);
+  nh_.param<bool>("debug", params.debug, false);
   dvl_range_ = 0;
 
   // Buffer that will only hold a certain amount of points
@@ -46,7 +50,7 @@ OGridGen::OGridGen()
   timer_ =
       nh_.createTimer(ros::Duration(0.3), std::bind(&OGridGen::publish_big_pointcloud, this, std::placeholders::_1));
   sub_to_imaging_sonar_ = nh_.subscribe("/blueview_driver/ranges", 1, &OGridGen::callback, this);
-  sub_to_dvl_ = nh_.subscribe("/dvl/ranges", 1, &OGridGen::dvl_callback, this);
+  sub_to_dvl_ = nh_.subscribe("/dvl/range", 1, &OGridGen::dvl_callback, this);
 
   mat_ogrid_ = cv::Mat::zeros(int(ogrid_size_ / resolution_), int(ogrid_size_ / resolution_), CV_8U);
   persistant_ogrid_ = cv::Mat(int(ogrid_size_) / resolution_, int(ogrid_size_ / resolution_), CV_32FC1);
@@ -103,10 +107,13 @@ void OGridGen::publish_big_pointcloud(const ros::TimerEvent &)
   pcl_conversions::toPCL(ros::Time::now(), pointCloud_->header.stamp);
   pub_point_cloud_raw_.publish(pointCloud_);
 
-  // For debugging a snapshot of current point cloud and filter it and show objects
-  pcl::PointCloud<pcl::PointXYZI>::Ptr pointCloud_filtered = classification_.filtered(pointCloud_);
-  pub_point_cloud_filtered_.publish(pointCloud_filtered);
-  cluster(pointCloud_filtered);
+  if (params.debug)
+  {
+    // For debugging a snapshot of current point cloud and filter it and show objects
+    pcl::PointCloud<pcl::PointXYZI>::Ptr pointCloud_filtered = classification_.filtered(pointCloud_);
+    pub_point_cloud_filtered_.publish(pointCloud_filtered);
+    cluster(pointCloud_filtered);
+  }
 }
 
 /*
@@ -140,6 +147,8 @@ void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
       // Get x and y of a ping. RIGHT TRIANGLES
       double x_d = ping_msg->ranges.at(i) * cos(ping_msg->bearings.at(i));
       double y_d = ping_msg->ranges.at(i) * sin(ping_msg->bearings.at(i));
+      if (std::hypot(x_d, y_d) < params.nearby_threshold)
+        continue;
 
       // Rotate point using TF
       tf::Vector3 vec = tf::Vector3(x_d, y_d, 0);
@@ -150,7 +159,11 @@ void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
       point.x = newVec.x() + transform_.getOrigin().x();
       point.y = newVec.y() + transform_.getOrigin().y();
       point.z = newVec.z() + transform_.getOrigin().z();
+      // Ignore points if they are below the ground. This will depend on the current return from the depth.
       if (point.z + dvl_range_ > 0)
+        continue;
+      // Ignore points if they are below some depth in map frame
+      else if (point.z < -params.depth)
         continue;
       point.intensity = ping_msg->intensities.at(i);
       point_cloud_buffer_.push_back(point);
@@ -161,9 +174,12 @@ void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
   pcl_conversions::toPCL(ros::Time::now(), point_cloud_plane->header.stamp);
   pub_point_cloud_plane_.publish(point_cloud_plane);
 
-  process_persistant_ogrid(point_cloud_plane);
-  populate_mat_ogrid();
-  publish_ogrid();
+  if (params.ogrid)
+  {
+    process_persistant_ogrid(point_cloud_plane);
+    populate_mat_ogrid();
+    publish_ogrid();
+  }
 }
 void OGridGen::populate_mat_ogrid()
 {
