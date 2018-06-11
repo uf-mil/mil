@@ -9,6 +9,7 @@ import visualization_msgs.msg as visualization_msgs
 from geometry_msgs.msg import Point, Vector3
 from visualization_msgs.msg import Marker
 from mil_misc_tools import text_effects
+from std_srvs.srv import SetBool, SetBoolRequest
 
 fprint = text_effects.FprintFactory(title="DICE", msg_color="cyan").fprint
 
@@ -36,6 +37,9 @@ def run(sub):
     model = PinholeCameraModel()
     model.fromCameraInfo(cam_info)
 
+    enable_service = sub.nh.get_service_client("/dice/enable", SetBool)
+    yield enable_service(SetBoolRequest(data=True))
+
     dice_sub = yield sub.nh.subscribe('/dice/points', Point)
 
     found = {}
@@ -44,6 +48,8 @@ def run(sub):
         dice_xy = yield dice_sub.get_next_message()
         found[dice_xy.z] = mil_ros_tools.rosmsg_to_numpy(dice_xy)[:2]
         fprint(found)
+
+    yield enable_service(SetBoolRequest(data=False))
 
     start = sub.move.zero_roll_and_pitch()
     yield start.go()

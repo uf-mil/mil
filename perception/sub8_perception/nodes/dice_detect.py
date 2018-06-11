@@ -15,6 +15,7 @@ from geometry_msgs.msg import Point  # To publish Points
 from std_msgs.msg import String  # To publish debug statements
 from cv_bridge import CvBridge, CvBridgeError
 from scipy.spatial import distance
+from std_srvs.srv import SetBool, SetBoolResponse
 
 # Display Window size for Debug
 WINDOW_SIZE_H = 1000
@@ -46,6 +47,15 @@ class DiceDetect(object):
         self.image_subscriber = rospy.Subscriber(
             "/camera/front/left/image_rect_color", Image, self.callback)
         self.bridge = CvBridge()
+        self.enabled = False
+        rospy.Service('~enable', SetBool, self.toggle)
+
+    def toggle(self, srv):
+        if srv.data:
+            self.enabled = True
+        else:
+            self.enabled = False
+        return SetBoolResponse(success=True)
 
     def detect(self, dice_img):
 
@@ -95,9 +105,8 @@ class DiceDetect(object):
 
         # For Visualization purposes
         # Draw detected blobs as red circles
-        im_with_keypoints = cv2.drawKeypoints(
-            im_c, keypoints, np.array([]), (0, 0, 255),
-            cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        im_with_keypoints = cv2.drawKeypoints(im_c, keypoints, np.array(
+            []), (0, 0, 255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
         # Debug to print all blobs detected
         key_len = len(keypoints)
@@ -138,8 +147,8 @@ class DiceDetect(object):
 
                 font_face = cv2.FONT_HERSHEY_SIMPLEX
                 cv2.putText(im_with_keypoints,
-                            (str(int(keypoints[i].pt[0])) + ', ' + str(
-                                int(keypoints[i].pt[1]))),
+                            (str(int(keypoints[i].pt[0])) + ', ' +
+                             str(int(keypoints[i].pt[1]))),
                             (int(keypoints[i].pt[0]), int(keypoints[i].pt[1])),
                             font_face, 1, (255, 255, 255), 1, cv2.LINE_AA)
 
@@ -148,6 +157,8 @@ class DiceDetect(object):
         return d, im_with_keypoints, im_c
 
     def callback(self, subscriberd_data):
+        if not self.enabled:
+            return
 
         # calling CvBridge to transfer between ROS Image and OpenCv Image
         try:
@@ -184,7 +195,7 @@ class DiceDetect(object):
 
 
 def main(args):
-    rospy.init_node('dice', anonymous=True)
+    rospy.init_node('dice', anonymous=False)
     DiceDetect()
 
     try:
