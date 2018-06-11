@@ -1,6 +1,9 @@
 <launch>
     <node pkg="sub8_pointcloud" type="ogrid_generator" name="ogrid_pointcloud" >
         <rosparam>
+            # whether to publish ogrid
+            ogrid: false
+
             # meters per "pixel"
             resolution: 0.2
 
@@ -12,13 +15,22 @@
             min_intensity: 0
 
             # Statistical Outlier remove
-            statistical_mean_k: 200
-            statistical_stddev_mul_thresh: 0.0001
+            statistical_mean_k: 90
+            statistical_stddev_mul_thresh: 0.001
 
             # Euclidian Clustering
-            cluster_tolerance_m: 0.3
-            cluster_min_num_points: 10
-            cluster_max_num_points: 1000
+            cluster_tolerance_m: 0.5
+            cluster_min_num_points: 50
+            cluster_max_num_points: 500
+
+            # Remove points below distance threshold in xy
+            nearby_threshold: 1.5
+
+            # Remove points below depth in map frame
+            depth: 3
+
+            # Debug
+            debug: true
         </rosparam>
     </node>
 </launch>

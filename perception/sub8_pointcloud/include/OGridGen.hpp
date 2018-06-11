@@ -39,6 +39,7 @@
 
 extern struct ogrid_param
 {
+  bool ogrid;
   // Statistical Outlier Removal
   float statistical_mean_k;
   float statistical_stddev_mul_thresh;
@@ -46,6 +47,12 @@ extern struct ogrid_param
   float cluster_tolerance_m;
   float cluster_min_num_points;
   float cluster_max_num_points;
+  // Remmove points below threshold
+  float nearby_threshold;
+  // Remove points below depth in map frame
+  float depth;
+  // Debugging
+  bool debug;
 } params;
 
 class OGridGen

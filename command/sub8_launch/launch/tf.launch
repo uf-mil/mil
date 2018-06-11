@@ -29,9 +29,9 @@
 
     <node pkg="sub8_launch" type="tf_republisher.py" name="tf_replublisher" />
 
-    <!-- Accounts for change of axis for blueview SDK output and 5deg pitch down of sensor -->
+    <!-- Accounts for change of axis for blueview SDK output x is forward, y is right, z is down-->
     <node pkg="tf" type="static_transform_publisher" name="blueview_broadcaster"
-      args="0.333 0 0.381  -0.999 0 0.044 0 base_link blueview 100">
+      args="0.333 0 0.381  -1 0 0 0 base_link blueview 100">
     </node>
 
     <!-- TODO: make sure this TF is correct -->
