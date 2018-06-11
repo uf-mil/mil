@@ -2,68 +2,93 @@
 from __future__ import division
 
 import txros
-import txros.tf as tf
 from twisted.internet import defer
 
 from mil_misc_tools import text_effects
 
-from sub8 import Searcher
+from sub8 import SonarObjects
 from mil_ros_tools import rosmsg_to_numpy
+from scipy.spatial import distance
 
 import numpy as np
 
 fprint = text_effects.FprintFactory(
     title="START_GATE", msg_color="cyan").fprint
 
-# Distance before and after the gate in meters
-FACTOR_DISTANCE_BEFORE = 1.5
-FACTOR_DISTANCE_AFTER = 1.5
-
 SPEED = 0.3
 
 
 @txros.util.cancellableInlineCallbacks
 def run(sub):
-    yield sub.vision_proxies.start_gate.start()
-
-    # Add search pattern if needed...
-    search_pattern = []
-    search = Searcher(
-        sub,
-        sub.vision_proxies.start_gate.get_pose,
-        search_pattern)
-
-    resp = None
-    fprint('Searching...')
-    resp = yield search.start_search(loop=False, timeout=100, spotings_req=1)
-
-    if resp is None or not resp.found:
-        fprint("No gate found...", msg_color="red")
-        defer.returnValue(None)
-
-    position = rosmsg_to_numpy(resp.pose.pose.position)
-    orientation = rosmsg_to_numpy(resp.pose.pose.orientation)
-
-    fprint('Gate\'s position in map is: {}'.format(position))
-    fprint('Gate\'s orientation in map is: {}'.format(orientation))
-
-    # Get the normal vector, which is assumed to be the [1,0,0] unit vector
-    normal = tf.transformations.quaternion_matrix(
-        orientation).dot(np.array([1, 0, 0, 0]))[0:3]
-    fprint('Computed normal vector: {}'.format(normal))
-
-    # Computer points before and after the gate for the sub to go to
-    point_before = position + FACTOR_DISTANCE_BEFORE * normal
-    point_after = position - FACTOR_DISTANCE_AFTER * normal
-
-    # go in front of gate
-    fprint('Moving infront of gate {}'.format(point_before))
-    yield sub.move.set_position(point_before).look_at(point_after).zero_roll_and_pitch().go(speed=SPEED)
-
-    # go through the gate
-    fprint('YOLO! Going through gate {}'.format(point_after))
-    yield sub.move.set_position(point_after).zero_roll_and_pitch().go(speed=SPEED)
-
-    yield sub.vision_proxies.start_gate.stop()
-
+    fprint('Begin search for gates')
+    rotate_start = sub.move.zero_roll_and_pitch()
+    for i in range(4):
+        fprint('Searching {} degrees'.format(90 * i))
+        yield rotate_start.yaw_right_deg(90 * i).go(speed=SPEED)
+        start = sub.move.zero_roll_and_pitch()
+        so = SonarObjects(sub, [start.pitch_down_deg(10), start])
+        # so = SonarObjects(sub, [start])
+        transform = yield sub._tf_listener.get_transform('/map', '/base_link')
+        ray = transform._q_mat.dot(np.array([1, 0, 0]))
+        res = yield so.start_search_in_cone(
+            transform._p,
+            ray,
+            angle_tol=60,
+            distance_tol=11,
+            speed=0.2,
+            clear=True)
+        fprint('Found {} objects'.format(len(res.objects)))
+        if len(res.objects) < 2:
+            fprint('No objects')
+            del so
+            continue
+        gate_points = find_gate(res.objects, ray)
+        if gate_points is None:
+            fprint('No valid gates')
+            del so
+            continue
+        break
+    if gate_points is None:
+        fprint('Returning')
+        yield rotate_start.go()
+        defer.returnValue(False)
+    mid_point = gate_points[0] + gate_points[1]
+    mid_point = mid_point / 2
+    fprint('Midpoint: {}'.format(mid_point))
+    yield sub.move.look_at(mid_point).go(speed=SPEED)
+    fprint('Moving!', msg_color='yellow')
+    yield sub.move.set_position(mid_point).go(speed=SPEED)
     defer.returnValue(True)
+
+
+def find_gate(objects,
+              ray,
+              max_distance_away=4.5,
+              perp_threshold=0.5,
+              depth_threshold=1):
+    for o in objects:
+        p = rosmsg_to_numpy(o.pose.position)
+        for o2 in objects:
+            if o2 is o:
+                continue
+            p2 = rosmsg_to_numpy(o2.pose.position)
+            print('Distance {}'.format(distance.euclidean(p, p2)))
+            if distance.euclidean(p, p2) > max_distance_away:
+                print('far away')
+                continue
+            line = p - p2
+            perp = line.dot(ray)
+            perp = perp / np.linalg.norm(perp)
+            print('Dot {}'.format(perp))
+            if not (-perp_threshold <= perp <= perp_threshold):
+                print('perp threshold')
+                continue
+            print('Dist {}'.format(line))
+            if abs(line[2] > depth_threshold):
+                print('not same height')
+                continue
+            if abs(line[0]) < 1 and abs(line[1]) < 1:
+                print('on top of each other')
+                continue
+            return (p, p2)
+    return None

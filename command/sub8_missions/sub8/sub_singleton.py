@@ -427,7 +427,7 @@ class PoseSequenceCommander(object):
 
 
 class SonarObjects(object):
-    def __init__(self, sub, pattern):
+    def __init__(self, sub, pattern=None):
         """
         SonarObjects: a helper to search and find objects
 
@@ -438,6 +438,8 @@ class SonarObjects(object):
         pattern: an array of pose goals (i.e: [sub.move.forward(1)])
         """
         self.sub = sub
+        if pattern is None:
+            self.pattern = [sub.move.forward(0)]
         self.pattern = pattern
         self._clear_pcl = self.sub.nh.get_service_client(
             '/ogrid_pointcloud/clear_pcl', Trigger)
@@ -445,8 +447,11 @@ class SonarObjects(object):
         self._objects_service = self.sub.nh.get_service_client(
             '/ogrid_pointcloud/get_objects', ObjectDBQuery)
 
+    def __del__(self):
+        print('cleared SonarObject -- thanks TX')
+
     @util.cancellableInlineCallbacks
-    def start(self, speed=0.5, clear=False):
+    def start_search(self, speed=0.5, clear=False):
         """
         Do a search and return all objects
 
@@ -463,6 +468,21 @@ class SonarObjects(object):
 
         print 'SONAR_OBJECTS: requesting objects'
         res = yield self._objects_service(ObjectDBQueryRequest())
+        defer.returnValue(res)
+
+    @util.cancellableInlineCallbacks
+    def start_search_in_cone(self, start_point, ray, angle_tol=30, distance_tol=10, speed=0.5, clear=False):
+        if clear:
+            print 'SONAR_OBJECTS: clearing pointcloud'
+            self._clear_pcl(TriggerRequest())
+
+        for pose in self.pattern:
+            yield pose.go(speed=speed, blind=True)
+        res = yield self._objects_service(ObjectDBQueryRequest())
+        g_obj = self._get_objects_within_cone(
+            res.objects, start_point, ray, angle_tol, distance_tol)
+        g_obj = self._sort_by_angle(g_obj, ray, start_point)
+        res.objects = g_obj
         defer.returnValue(res)
 
     @util.cancellableInlineCallbacks
