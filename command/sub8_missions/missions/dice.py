@@ -43,55 +43,64 @@ def run(sub):
     dice_sub = yield sub.nh.subscribe('/dice/points', Point)
 
     found = {}
-    while len(found) != 1:
+    while len(found) != 2:
         fprint('Getting dice xy')
         dice_xy = yield dice_sub.get_next_message()
         found[dice_xy.z] = mil_ros_tools.rosmsg_to_numpy(dice_xy)[:2]
         fprint(found)
+        if len(found) > 1:
+            tmp = found.values()[0] - found.values()[1]
+            # Make sure the two points are at least 100 pixels off
+            diff = np.hypot(tmp[0], tmp[1])
+            fprint('Distance between buoys {}'.format(diff))
+            if diff < 40:
+                found = {}
 
     yield enable_service(SetBoolRequest(data=False))
 
     start = sub.move.zero_roll_and_pitch()
     yield start.go()
 
-    # Get one of the dice
-    dice, xy = found.popitem()
-    fprint('dice {}'.format(dice))
-    ray, base = yield get_transform(sub, model, xy)
+    for i in range(2):
+        fprint('Hitting dice {}'.format(i))
+        # Get one of the dice
+        dice, xy = found.popitem()
+        fprint('dice {}'.format(dice))
+        ray, base = yield get_transform(sub, model, xy)
 
-    so = SonarObjects(sub, [
-        start.left(0.5),
-        start.right(1),
-        start.left(0.5),
-        start.pitch_down_deg(15), start
-    ])
-    objs = yield so.start_until_found_in_cone(
-        base,
-        clear=False,
-        object_count=1,
-        ray=ray,
-        angle_tol=20,
-        distance_tol=13)
-    if objs is None:
-        fprint("No objects")
-        defer.returnValue(False)
+        so = SonarObjects(sub, [
+            start.left(0.5),
+            start.right(1),
+            start.left(0.5),
+            start.pitch_down_deg(10), start
+        ])
+        objs = yield so.start_until_found_in_cone(
+            base,
+            clear=False,
+            object_count=1,
+            ray=ray,
+            angle_tol=20,
+            distance_tol=13)
+        if objs is None:
+            fprint("No objects")
+            defer.returnValue(False)
 
-    where = mil_ros_tools.rosmsg_to_numpy(objs.objects[0].pose.position)
+        where = mil_ros_tools.rosmsg_to_numpy(objs.objects[0].pose.position)
 
-    if where is None:
-        fprint("Did not find anything")
-        defer.returnValue(False)
+        if where is None:
+            fprint("Did not find anything")
+            defer.returnValue(False)
 
-    fprint(where)
-    fprint('Moving!', msg_color='yellow')
-    fprint('Current position: {}'.format(sub.pose.position))
-    fprint('zrp')
-    yield sub.move.zero_roll_and_pitch().go(blind=True)
-    fprint('hitting', msg_color='yellow')
-    yield sub.move.look_at(where).go(blind=True, speed=SPEED)
-    yield sub.move.set_position(where).go(blind=True, speed=SPEED)
-    fprint('going back', msg_color='yellow')
-    yield start.go(blind=True, speed=SPEED)
+        fprint(where)
+        fprint('Moving!', msg_color='yellow')
+        fprint('Current position: {}'.format(sub.pose.position))
+        fprint('zrp')
+        yield sub.move.zero_roll_and_pitch().go(blind=True)
+        fprint('hitting', msg_color='yellow')
+        yield sub.move.look_at(where).go(blind=True, speed=SPEED)
+        yield sub.move.set_position(where).go(blind=True, speed=SPEED)
+        fprint('going back', msg_color='yellow')
+        yield start.go(blind=True, speed=SPEED)
 
 
 @util.cancellableInlineCallbacks
