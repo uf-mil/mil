@@ -26,7 +26,7 @@ def run(sub):
         fprint('Searching {} degrees'.format(90 * i))
         yield rotate_start.yaw_right_deg(90 * i).go(speed=SPEED)
         start = sub.move.zero_roll_and_pitch()
-        so = SonarObjects(sub, [start.pitch_down_deg(10), start])
+        so = SonarObjects(sub, [start.pitch_down_deg(7), start] * 10)
         # so = SonarObjects(sub, [start])
         transform = yield sub._tf_listener.get_transform('/map', '/base_link')
         ray = transform._q_mat.dot(np.array([1, 0, 0]))
@@ -35,7 +35,7 @@ def run(sub):
             ray,
             angle_tol=60,
             distance_tol=11,
-            speed=0.2,
+            speed=0.1,
             clear=True)
         fprint('Found {} objects'.format(len(res.objects)))
         if len(res.objects) < 2:
@@ -54,6 +54,7 @@ def run(sub):
         defer.returnValue(False)
     mid_point = gate_points[0] + gate_points[1]
     mid_point = mid_point / 2
+    mid_point[2] = mid_point[2] - 0.5
     fprint('Midpoint: {}'.format(mid_point))
     yield sub.move.look_at(mid_point).go(speed=SPEED)
     fprint('Moving!', msg_color='yellow')
@@ -82,7 +83,7 @@ def find_gate(objects,
             print('Dot {}'.format(perp))
             if not (-perp_threshold <= perp <= perp_threshold):
                 print('perp threshold')
-                continue
+                # continue
             print('Dist {}'.format(line))
             if abs(line[2] > depth_threshold):
                 print('not same height')
