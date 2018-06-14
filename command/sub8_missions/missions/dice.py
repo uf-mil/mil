@@ -2,7 +2,6 @@ from txros import util
 import numpy as np
 from sensor_msgs.msg import CameraInfo
 from image_geometry import PinholeCameraModel
-from sub8 import SonarObjects
 import mil_ros_tools
 from twisted.internet import defer
 import visualization_msgs.msg as visualization_msgs
@@ -43,11 +42,14 @@ def run(sub):
     dice_sub = yield sub.nh.subscribe('/dice/points', Point)
 
     found = {}
+    history_tf = {}
     while len(found) != 2:
         fprint('Getting dice xy')
         dice_xy = yield dice_sub.get_next_message()
         found[dice_xy.z] = mil_ros_tools.rosmsg_to_numpy(dice_xy)[:2]
         fprint(found)
+        out = yield get_transform(sub, model, found[dice_xy.z])
+        history_tf[dice_xy.z] = out
         if len(found) > 1:
             tmp = found.values()[0] - found.values()[1]
             # Make sure the two points are at least 100 pixels off
@@ -66,30 +68,9 @@ def run(sub):
         # Get one of the dice
         dice, xy = found.popitem()
         fprint('dice {}'.format(dice))
-        ray, base = yield get_transform(sub, model, xy)
+        ray, base = history_tf[dice]
 
-        so = SonarObjects(sub, [
-            start.left(0.5),
-            start.right(1),
-            start.left(0.5),
-            start.pitch_down_deg(10), start
-        ])
-        objs = yield so.start_until_found_in_cone(
-            base,
-            clear=False,
-            object_count=1,
-            ray=ray,
-            angle_tol=20,
-            distance_tol=13)
-        if objs is None:
-            fprint("No objects")
-            defer.returnValue(False)
-
-        where = mil_ros_tools.rosmsg_to_numpy(objs.objects[0].pose.position)
-
-        if where is None:
-            fprint("Did not find anything")
-            defer.returnValue(False)
+        where = base + 4 * ray
 
         fprint(where)
         fprint('Moving!', msg_color='yellow')
