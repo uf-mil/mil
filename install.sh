@@ -514,6 +514,9 @@ sudo pip install -q -U tqdm
 # Easily create curses menus
 sudo pip install -q -U curses-menu
 
+# Tensorflow
+sudo pip install -q -U tensorflow==1.8.0
+
 # Decrypt and extract the BlueView SDK for the Teledyne imaging sonar
 if [[ "$INSTALL_BVTSDK" == "true" ]]; then
 	instlog "Decrypting and installing the BlueView SDK"
