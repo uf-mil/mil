@@ -9,24 +9,19 @@ SubjuGator is a fully Autonomous Underwater Vehicle (AUV) built by undergraduate
 
 
 # Software Team
+* Daniel Volya
 
-* David Soto
+* Nicholas Suhlman
 
-* Tess Bianchi
+* Pablo Vela
 
-* Matthew Langford
+* Mukhil Azhagan
 
-* Jason Nezvadovitz
-
-* Anthony Olive
+* Sudarshan Agrawal
 
 * Kevin Allen
 
-* Daniel Volya
-
-* Israelle Widjaja
-
-* Aaron Iglésias
+* David Soto
 
 * **RIP** Little Man and Darla 
 
