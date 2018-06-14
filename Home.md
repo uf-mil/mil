@@ -21,8 +21,6 @@ SubjuGator is a fully Autonomous Underwater Vehicle (AUV) built by undergraduate
 
 * Kevin Allen
 
-* David Soto
-
 * **RIP** Little Man and Darla 
 
     ![Darla (left) & Little Man (right)](http://s31.postimg.org/s370klg23/IMG_20160423_014247.jpg)
