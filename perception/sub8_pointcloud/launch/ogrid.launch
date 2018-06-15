@@ -16,11 +16,11 @@
 
             # Statistical Outlier remove
             statistical_mean_k: 90
-            statistical_stddev_mul_thresh: 0.001
+            statistical_stddev_mul_thresh: 1
 
             # Euclidian Clustering
             cluster_tolerance_m: 0.5
-            cluster_min_num_points: 50
+            cluster_min_num_points: 20
             cluster_max_num_points: 500
 
             # Remove points below distance threshold in xy
