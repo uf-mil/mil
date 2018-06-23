@@ -1,0 +1,9 @@
+camera_topic          : /camera/front/right/image_rect_color #Image topic to use to find buoys
+min_observations      : 8 # Observations needed to attempt a least squares position estimate
+min_contour_area      : 0.001 # Minimum of image area contour must be to not be rejected
+max_velocity          : 1  # Highest velocity sub can be moving as in m/s before observations are ignored
+min_trans             : 0.05 # Smallest movement of sub in meters between observations to count towards observation count
+timeout_seconds       : 2.5 # Time in which min_observations must be seen to be considered found
+lower_color_threshold : [0, 0, 60]
+upper_color_threshold : [60, 60, 250]
+debug                 : True
