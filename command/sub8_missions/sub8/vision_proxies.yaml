@@ -6,5 +6,7 @@ orange_rectangle:
     root: "/vision/orange_rectangle"
 buoy:
     root: "/vision/buoys"
+arm_torpedos:
+    root: "/vision/arm_torpedos"
 start_gate:
     root: "/vision/start_gate"
