@@ -7,7 +7,6 @@ MISSION = 'Torpedo Challenge'
 
 
 class Target(object):
-
     def __init__(self):
         self.position = None
         self.destroyed = False
@@ -24,7 +23,7 @@ class FireTorpedos(object):
     Mission to solve the torpedo RoboSub challenge.
 
     This code was based off of the Buoy mission code written by Kevin Allen.
-    Its goal is to search for a target on the torpedo board and fire at it. 
+    Its goal is to search for a target on the torpedo board and fire at it.
     '''
     TIMEOUT_SECONDS = 30
     Z_PATTERN_RADIUS = 0.3
@@ -40,8 +39,12 @@ class FireTorpedos(object):
             title=MISSION, msg_color="green").fprint
         # B = bottom; T = Top; L = left; R = right; C = center; O = unblocked;
         # X = blocked;
-        self.targets = {'TCX': Target(), 'TRX': Target(),
-                        'TLX': Target(), 'BCO': Target()}
+        self.targets = {
+            'TCX': Target(),
+            'TRX': Target(),
+            'TLX': Target(),
+            'BCO': Target()
+        }
         self.pattern_done = False
         self.done = False
         self.generate_pattern()
@@ -49,10 +52,7 @@ class FireTorpedos(object):
     def generate_pattern(self):
         z = self.Z_PATTERN_RADIUS
         y = self.Y_PATTERN_RADIUS
-        self.moves = [[0, 0, z],
-                      [0, y, 0],
-                      [0, 0, -2 * z],
-                      [0, -2 * y, 0]]
+        self.moves = [[0, 0, z], [0, y, 0], [0, 0, -2 * z], [0, -2 * y, 0]]
         self.move_index = 0
 
     @util.cancellableInlineCallbacks
@@ -61,13 +61,15 @@ class FireTorpedos(object):
             info = 'CURRENT TARGETS: '
 
             target = 'BCO'
-            '''         
-            In the event we want to attempt other targets beyond bare minimum
-            for target in self.targets. Eventually we will want to take the best target,
-            which is the TCX target. Priority targetting will come once we confirm we
-            can actually unblock currently blocked targets.
             '''
-            res = yield self.sub.vision_proxies.arm_torpedos.get_pose(target='board')
+            In the event we want to attempt other targets beyond bare minimum
+            for target in self.targets. Eventually we will want to take the
+            best target, which is the TCX target. Priority targetting will
+            come once we confirm we can actually unblock currently blocked
+            targets.
+            '''
+            res = yield self.sub.vision_proxies.arm_torpedos.get_pose(
+                target='board')
             if res.found:
                 self.targets[target].update_position(
                     rosmsg_to_numpy(res.pose.pose.position))
@@ -78,7 +80,6 @@ class FireTorpedos(object):
 
     @util.cancellableInlineCallbacks
     def pattern(self):
-
         def err():
             self.print_info('Search pattern canceled')
 
@@ -97,10 +98,13 @@ class FireTorpedos(object):
         yield self.sub.move.go(blind=self.BLIND)  # Station hold
         target_position = self.targets[target].position
         yield self.sub.move.depth(-target_position[2]).go(blind=self.BLIND)
-        yield self.sub.move.look_at_without_pitching(target_position).go(blind=self.BLIND)
-        yield self.sub.move.set_position(target_position).backward(1).go(blind=self.BLIND)
+        yield self.sub.move.look_at_without_pitching(target_position).go(
+            blind=self.BLIND)
+        yield self.sub.move.set_position(target_position).backward(1).go(
+            blind=self.BLIND)
         self.print_good(
-            "{} locked. Firing torpedos. Hit confirmed, good job Commander.".format(target))
+            "{} locked. Firing torpedos. Hit confirmed, good job Commander.".
+            format(target))
         self.done = True
 
     def get_target(self):
@@ -108,15 +112,15 @@ class FireTorpedos(object):
         '''
         Returns the target we are going to focus on. Loop through priorities.
         Highest priority is the TCX target, followed by the TRX and TLX.
-        Lowest priority is the BCO target. Targets are ordered in the list already,
-        so this will take the first target it can actually find. Currently this
-        will always by the BCO target. This is because we don't differentiate
-        between targets currently as we cannot unblock the blocked ones.
-        This means there is only one target for us to lock onto. 
+        Lowest priority is the BCO target. Targets are ordered in the list
+        already, so this will take the first target it can actually find.
+        Currently this will always by the BCO target. This is because we don't
+        differentiate between targets currently as we cannot unblock the
+        blocked ones. This means there is only one target for us to lock onto.
         '''
         if self.targets[target].destroyed:
-            # continue
-            temp = target
+            pass
+            # temp = target
         elif self.targets[target].position is not None:
             return target
         elif self.pattern_done and self.targets[target].position is not None:

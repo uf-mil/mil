@@ -6,17 +6,15 @@ import tf
 import mil_ros_tools
 import cv2
 import numpy as np
-from sensor_msgs.msg import Image
 from std_msgs.msg import Header
 from collections import deque
 from cv_bridge import CvBridgeError
 from sub8_vision_tools import MultiObservation
 from image_geometry import PinholeCameraModel
 from std_srvs.srv import SetBool, SetBoolResponse
-from geometry_msgs.msg import Pose2D, PoseStamped, Pose, Point
-from sub8_msgs.srv import VisionRequest2DResponse, VisionRequest2D, VisionRequest, VisionRequestResponse
-from mil_ros_tools import Image_Subscriber, Image_Publisher, rosmsg_to_numpy
-
+from geometry_msgs.msg import PoseStamped, Pose, Point
+from sub8_msgs.srv import VisionRequest, VisionRequestResponse
+from mil_ros_tools import Image_Subscriber, Image_Publisher
 '''
 Perception component of the Torpedo Board Challenge. Utilizes code from
 the pyimagesearch blog post on color thresholding and shape detection
@@ -25,10 +23,9 @@ as well as code from the buoy_finder mission of previous years.
 
 
 class torp_vision:
-
     def __init__(self):
 
-        ### Pull constants from config file ###
+        # Pull constants from config file
         self.lower = rospy.get_param('~lower_color_threshold', [0, 0, 60])
         self.upper = rospy.get_param('~higher_color_threshold', [60, 60, 250])
         self.min_contour_area = rospy.get_param('~min_contour_area', .001)
@@ -36,10 +33,10 @@ class torp_vision:
         self.max_velocity = rospy.get_param('~max_velocity', 1)
         self.timeout = rospy.Duration(rospy.get_param('~timeout_seconds'))
         self.min_observations = rospy.get_param('~min_observations', 8)
-        self.camera = rospy.get_param(
-            '~camera_tropic', '/camera/front/right/image_rect_color')
+        self.camera = rospy.get_param('~camera_tropic',
+                                      '/camera/front/right/image_rect_color')
 
-        ### Instantiate remaining variables and objects ###
+        # Instantiate remaining variables and objects
         self._observations = deque()
         self._pose_pairs = deque()
         self._times = deque()
@@ -51,12 +48,10 @@ class torp_vision:
         self.visual_id = 0
         self.enabled = False
 
-        ### Image Subscriber and Camera Information ###
+        # Image Subscriber and Camera Information
 
-        self.image_sub = Image_Subscriber(
-            self.camera, self.image_cb)
+        self.image_sub = Image_Subscriber(self.camera, self.image_cb)
         self.camera_info = self.image_sub.wait_for_camera_info()
-
         '''
         These variables store the camera information required to perform
         the transformations on the coordinates to move from the subs
@@ -72,16 +67,15 @@ class torp_vision:
         self.camera_model.fromCameraInfo(self.camera_info)
         self.frame_id = self.camera_model.tfFrame()
 
-        ### Ros Services so mission can be toggled and info requested ###
+        # Ros Services so mission can be toggled and info requested
         rospy.Service('~enable', SetBool, self.toggle_search)
         self.multi_obs = MultiObservation(self.camera_model)
         rospy.Service('~pose', VisionRequest, self.request_board3d)
-        self.image_pub = Image_Publisher(
-            "torp_vision/debug")
+        self.image_pub = Image_Publisher("torp_vision/debug")
         self.point_pub = rospy.Publisher(
             "torp_vision/points", Point, queue_size=1)
 
-        ### Debug ###
+        # Debug
         self.debug = rospy.get_param('~debug', True)
 
     def image_cb(self, image):
@@ -94,7 +88,8 @@ class torp_vision:
 
         self.last_image = image
 
-        if self.last_image_time is not None and self.image_sub.last_image_time < self.last_image_time:
+        if self.last_image_time is not None and \
+                self.image_sub.last_image_time < self.last_image_time:
             # Clear tf buffer if time went backwards (nice for playing bags in
             # loop)
             self.tf_listener.clear()
@@ -119,9 +114,9 @@ class torp_vision:
 
     def request_board3d(self, srv):
         '''
-        Callback for 3D vision request. Uses recent observations of target board
-        specified in target_name to attempt a least-squares position estimate.
-        Ignoring orientation of board.
+        Callback for 3D vision request. Uses recent observations of target
+        board  specified in target_name to attempt a least-squares position
+        estimate. Ignoring orientation of board.
         '''
         if not self.enabled:
             return VisionRequestResponse(found=False)
@@ -131,15 +126,11 @@ class torp_vision:
         return VisionRequestResponse(
             pose=PoseStamped(
                 header=Header(stamp=self.last_image_time, frame_id='/map'),
-                pose=Pose(
-                    position=Point(*self.est)
-                )
-            ),
-            found=True
-        )
+                pose=Pose(position=Point(*self.est))),
+            found=True)
 
     def clear_old_observations(self):
-        ### Observations older than two seconds are discarded. ###
+        # Observations older than two seconds are discarded.
         time = rospy.Time.now()
         i = 0
         while i < len(self._times):
@@ -155,7 +146,8 @@ class torp_vision:
 
     def add_observation(self, obs, pose_pair, time):
         self.clear_old_observations()
-        if self.size() == 0 or np.linalg.norm(self._pose_pairs[-1][0] - pose_pair[0]) > self.min_trans:
+        if self.size() == 0 or np.linalg.norm(
+                self._pose_pairs[-1][0] - pose_pair[0]) > self.min_trans:
             self._observations.append(obs)
             self._pose_pairs.append(pose_pair)
             self._times.append(time)
@@ -184,7 +176,8 @@ class torp_vision:
     def CLAHE(self, cv_image):
         '''
         CLAHE (Contrast Limited Adaptive Histogram Equalization)
-        This increases the contrast between color channels and allows us to better differentiate colors under certain lighting conditions. 
+        This increases the contrast between color channels and allows us to
+        better differentiate colors under certain lighting conditions.
         '''
         clahe = cv2.createCLAHE(clipLimit=1., tileGridSize=(4, 4))
 
@@ -237,8 +230,7 @@ class torp_vision:
                                 cv2.CHAIN_APPROX_SIMPLE)
 
         cnts = cnts[1]
-
-        '''     
+        '''
         We use OpenCV to compute our contours and then begin processing them
         to ensure we are identifying a proper target.
         '''
@@ -265,12 +257,15 @@ class torp_vision:
             c = c.astype("float")
             c *= ratio
             c = c.astype("int")
-            if shape == "Target Aquisition Successful" or shape == "Partial Target Acquisition" or shape == "unidentified":
+            if shape == "Target Aquisition Successful" or \
+               shape == "Partial Target Acquisition" or \
+               shape == "unidentified":
                 if self.debug:
                     try:
                         cv2.drawContours(cv_image, [c], -1, (0, 255, 0), 2)
-                        cv2.putText(cv_image, shape, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX,
-                                    0.5, (255, 255, 255), 2)
+                        cv2.putText(cv_image, shape, (cX, cY),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5,
+                                    (255, 255, 255), 2)
                         self.image_pub.publish(cv_image)
                     except CvBridgeError as e:
                         print(e)
@@ -281,20 +276,27 @@ class torp_vision:
                     max_x = cX
                     max_y = cY
                     m_shape = shape
-
         '''
-        This is Kevin's Code, adapted for this project. We are trying to find the 3D coordinates of the 
-        torpedo board/target to give us a better idea of where we are trying to go and perform more accurate movements
-        to align with the target. The first thing we need to do is convert from camera coordinates in pixels to 3D coordinates.
-        Every time we succesfully get a target aquisition we add it to the counter. Once we observe it enough times
-        we can be confident we are looking at the correct target. We then perform an least squares intersection from multiple angles
+        This is Kevin's Code, adapted for this project. We are trying to find
+        the 3D coordinates of the torpedo board/target to give us a better idea
+        of where we are trying to go and perform more accurate movements
+        to align with the target. The first thing we need to do is convert from
+        camera coordinates in pixels to 3D coordinates.
+        Every time we succesfully get a target aquisition we add it to the
+        counter. Once we observe it enough times
+        we can be confident we are looking at the correct target. We then
+        perform an least squares intersection from multiple angles
         to derive the approximate 3D coordinates.
         '''
 
-        if m_shape == "Target Aquisition Successful" or m_shape == "Partial Target Acquisition" or m_shape == "unidentified":
+        if m_shape == "Target Aquisition Successful" or \
+                m_shape == "Partial Target Acquisition" or \
+                m_shape == "unidentified":
             try:
-                self.tf_listener.waitForTransform(
-                    '/map', self.camera_model.tfFrame(), self.last_image_time, rospy.Duration(0.2))
+                self.tf_listener.waitForTransform('/map',
+                                                  self.camera_model.tfFrame(),
+                                                  self.last_image_time,
+                                                  rospy.Duration(0.2))
             except tf.Exception as e:
                 rospy.logwarn(
                     "Could not transform camera to map: {}".format(e))
