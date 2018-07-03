@@ -4,6 +4,8 @@
     <static>false</static>
     <link name="dice5">
 
+    <gravity>0</gravity>
+
     <!-- Change this to reflect real values -->
 
     <inertial>
