@@ -36,22 +36,22 @@
 
   <!-- Attempting to spawn the bin and lid -->
   <node
-    name ="bin_assembly" pkg="gazebo_ros" type="spawn_model"
-    args="-file $(find sub8_gazebo)/models/bin/bin_assembly.sdf -sdf
-    -x -22.0 -y 14.0 -z -4.52 -Z -1.57 -model bin_assembly"
+    name ="roulette" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find sub8_gazebo)/models/roulette_wheel_2018/roulette.sdf -sdf
+    -x -22.0 -y 14.0 -z -4.52 -Z -1.57 -model roulette"
     output="screen" />
 
-    <node
+<!--     <node
       name ="bin_assembly2" pkg="gazebo_ros" type="spawn_model"
       args="-file $(find sub8_gazebo)/models/bin/bin_assembly2.sdf -sdf
       -x -22.0 -y 15.25 -z -4.52 -Z -1.57 -model bin_assembly2"
-      output="screen" />
+      output="screen" /> -->
 
-    <node
+<!--     <node
       name ="lid" pkg="gazebo_ros" type="spawn_model"
       args="-file $(find sub8_gazebo)/models/bin/lid.sdf -sdf
       -x -22.3 -y 14.16 -z -4.47 -Z -1.57 -model lid"
-      output="screen" />
+      output="screen" /> -->
 
   <!-- Attempting to spawn the start gate -->
   <node
@@ -111,30 +111,53 @@
       -x 13.0 -y 24.0 -z -1.0 -model sub8"
     output="screen" />
 
-
-  <!-- Buoys -->
+  <!--Dice-->
   <node
-    name="red" pkg="gazebo_ros" type="spawn_model"
-    args="-file $(find sub8_gazebo)/models/buoys/red.sdf -sdf
-      -x 20.1 -y 20.0 -z -1.0 -X 0 -Y 0 -Z 0 -model red"
+    name="dice1" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find sub8_gazebo)/models/dice_2018/dice1.sdf -sdf
+      -x 19.6 -y 20.6 -z -5.7 -X 0 -Y 0 -Z 0 -model dice1"
     output="screen" />
 
   <node
-    name="green" pkg="gazebo_ros" type="spawn_model"
-    args="-file $(find sub8_gazebo)/models/buoys/green.sdf -sdf
-      -x 20.0 -y 21.2 -z -1.0 -X 0 -Y 0 -Z 0 -model green"
+    name="dice2" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find sub8_gazebo)/models/dice_2018/dice2.sdf -sdf
+      -x 20.8 -y 20.2 -z -5.6 -X 0 -Y 0 -Z 0 -model dice2"
     output="screen" />
 
   <node
-    name="yellow" pkg="gazebo_ros" type="spawn_model"
-    args="-file $(find sub8_gazebo)/models/buoys/yellow.sdf -sdf
-      -x 20.03 -y 18.8 -z -1.0 -X 0 -Y 0 -Z 0 -model yellow"
+    name="dice5" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find sub8_gazebo)/models/dice_2018/dice5.sdf -sdf
+      -x 20.0 -y 19.6 -z -2.7 -X 0 -Y 0 -Z 0 -model dice5"
     output="screen" />
 
   <node
-    name="orange_rectangle" pkg="gazebo_ros" type="spawn_model"
-    args="-file $(find sub8_gazebo)/models/markers/channel_marker.sdf -sdf
-      -x 12.0 -y 24.0 -z -4.0 -X 0 -Y -0.5 -Z 0 -model channel_marker_1"
+    name="dice6" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find sub8_gazebo)/models/dice_2018/dice6.sdf -sdf
+      -x 20.4 -y 19.4 -z -5.0 -X 0 -Y 0 -Z 0 -model dice6"
+    output="screen" />
+  <!-- Buoys 
+    <node
+      name="red" pkg="gazebo_ros" type="spawn_model"
+      args="-file $(find sub8_gazebo)/models/buoys/red.sdf -sdf
+        -x 20.1 -y 20.0 -z -1.0 -X 0 -Y 0 -Z 0 -model red"
+      output="screen" />
+
+    <node
+      name="green" pkg="gazebo_ros" type="spawn_model"
+      args="-file $(find sub8_gazebo)/models/buoys/green.sdf -sdf
+        -x 20.0 -y 21.2 -z -1.0 -X 0 -Y 0 -Z 0 -model green"
+      output="screen" />
+
+    <node
+      name="yellow" pkg="gazebo_ros" type="spawn_model"
+      args="-file $(find sub8_gazebo)/models/buoys/yellow.sdf -sdf
+        -x 20.03 -y 18.8 -z -1.0 -X 0 -Y 0 -Z 0 -model yellow"
+      output="screen" />
+  -->
+  <node
+    name="pathmarkers2018" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find sub8_gazebo)/models/markers/pathmarkers2018.sdf -sdf
+      -x 12.0 -y 24.0 -z -4.9 -X 0 -Y 0 -Z 0 -model pathmarkers2018"
     output="screen" />
 
   <node
@@ -146,8 +169,9 @@
   <node pkg="sub8_gazebo" type="gazebo_controller.py" name="gazebo_interface" />
   <node pkg="sub8_gazebo" type="pinger_tf_pub.py" name="pinger_sim_tf_pub" />
   <!--node pkg="sub8_gazebo" type="actuator_sim.py" name="actuator_sim" /> -->
-  <node pkg="sub8_gazebo" type="buoys.py" name="buoy_contact_reporter" />
+  <!-- <node pkg="sub8_gazebo" type="buoys.py" name="buoy_contact_reporter" /> -->
   <node pkg="sub8_gazebo" type="turbulator.py" name="turbulator" output="screen" if="$(arg turbulence)" />
+  
 
   <include file="$(find sub8_alarm)/launch/alarms.launch" />
 
