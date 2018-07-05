@@ -2,6 +2,6 @@ bin: -24 14 -3.5
 buoy: 19 20 -1
 octagon: 20 -20 -1
 navgate: 26 -13 -1.5
-startgate: 16 13 -1.5
+startgate: 15 13 -1.5
 torpedoboard: 21 11 -2.75
 #Numbers represent X Y Z coordinates from Origin (center of transdeck) in Gazebo. 

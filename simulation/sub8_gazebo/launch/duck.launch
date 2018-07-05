@@ -60,6 +60,12 @@
       -x 15 -y 10 -z -2 -Z -1.57 -model start_gate"
       output="screen" />
 
+   <node
+      name ="qual_pole" pkg="gazebo_ros" type="spawn_model"
+      args="-file $(find sub8_gazebo)/models/start_gate/qual_pole.sdf -sdf
+      -x 15 -y 0 -z -4 -model qual_pole"
+      output="screen" />
+
     <!-- Attempting to spawn the nav gate -->
     <node
         name ="nav_gate" pkg="gazebo_ros" type="spawn_model"
