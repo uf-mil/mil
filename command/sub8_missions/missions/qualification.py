@@ -13,9 +13,10 @@ from scipy.spatial import distance
 import numpy as np
 
 fprint = text_effects.FprintFactory(
-    title="START_GATE", msg_color="cyan").fprint
+    title="QUALIFICATION", msg_color="cyan").fprint
 
 SPEED = 0.3
+SPEED_CAREFUL = 0.2
 # How many meters to pass the gate by
 DIST_AFTER_GATE = 2
 
@@ -77,7 +78,7 @@ def run(sub):
     if objects is None or len(objects) < 1:
         fprint('Searching for qualifiction pole')
         start = sub.move.zero_roll_and_pitch()
-        so = SonarObjects(sub, [start.pitch_down_deg(7), start] * 2)
+        so = SonarObjects(sub, [start.pitch_down_deg(7), start] * 10)
         so_objects = yield so.start_search_in_cone(
             sub.pose.position,
             normal,
@@ -100,18 +101,18 @@ def run(sub):
     move1 = pole
     move1 = move1 - normal_pole * 2
     fprint(move1)
-    yield sub.move.set_position(move1).go()
-    yield sub.move.left(1.7).go()
-    yield sub.move.forward(3).go()
-    yield sub.move.right(3.4).go()
-    yield sub.move.backward(3).go()
-    yield sub.move.left(1.7).go()
-    yield sub.move.backward(0.5).go()
-    yield sub.move.look_at(mid_point).go()
+    yield sub.move.set_position(move1).go(speed=SPEED_CAREFUL)
+    yield sub.move.left(1.7).go(speed=SPEED_CAREFUL)
+    yield sub.move.forward(3).go(speed=SPEED_CAREFUL)
+    yield sub.move.right(3.4).go(speed=SPEED_CAREFUL)
+    yield sub.move.backward(3).go(speed=SPEED_CAREFUL)
+    yield sub.move.left(1.7).go(speed=SPEED_CAREFUL)
+    yield sub.move.backward(0.5).go(speed=SPEED_CAREFUL)
+    yield sub.move.look_at(mid_point).go(speed=SPEED_CAREFUL)
 
     yield sub.move.set_position(mid_point + DIST_AFTER_GATE * normal).go(
         speed=SPEED)
-    yield sub.move.set_position(mid_point).go()
+    yield sub.move.set_position(mid_point).go(speed=SPEED_CAREFUL)
     yield sub.move.set_position(mid_point - DIST_AFTER_GATE * normal).go(
         speed=SPEED)
 
