@@ -552,7 +552,8 @@ class SonarObjects(object):
                     defer.returnValue(res)
         defer.returnValue(None)
 
-    def _get_objects_within_cone(self, objects, start_point, ray, angle_tol,
+    @staticmethod
+    def _get_objects_within_cone(objects, start_point, ray, angle_tol,
                                  distance_tol):
         ray = ray / np.linalg.norm(ray)
         out = []
@@ -573,7 +574,8 @@ class SonarObjects(object):
             out.append(o)
         return out
 
-    def _sort_by_angle(self, objects, ray, start_point):
+    @staticmethod
+    def _sort_by_angle(objects, ray, start_point):
         """
         _sort_by_angle: returns object list sorted by angle
 
