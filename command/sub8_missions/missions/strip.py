@@ -1,10 +1,9 @@
 from txros import util
 from mil_misc_tools import text_effects
 
-SPEED_LIMIT = 5  # m/s
+SPEED_LIMIT = 0.1  # m/s
 
-fprint = text_effects.FprintFactory(
-    title="STRIPPER", msg_color="cyan").fprint
+fprint = text_effects.FprintFactory(title="STRIPPER", msg_color="cyan").fprint
 
 
 @util.cancellableInlineCallbacks
@@ -30,11 +29,11 @@ def run(sub):
     yield pitch(sub)
     fprint('Going around pole')
     yield sub.move.forward(8).go(speed=SPEED_LIMIT)
-    yield sub.move.left(1.7).go(speed=SPEED_LIMIT)
-    yield sub.move.forward(3).go(speed=SPEED_LIMIT)
-    yield sub.move.right(3.4).go(speed=SPEED_LIMIT)
-    yield sub.move.backward(3).go(speed=SPEED_LIMIT)
-    yield sub.move.left(1.7).go(speed=SPEED_LIMIT)
+    yield sub.move.left(1).go(speed=SPEED_LIMIT)
+    yield sub.move.forward(1.2).go(speed=SPEED_LIMIT)
+    yield sub.move.right(2).go(speed=SPEED_LIMIT)
+    yield sub.move.backward(1.2).go(speed=SPEED_LIMIT)
+    yield sub.move.left(1).go(speed=SPEED_LIMIT)
 
     fprint('Turning back to gate')
     yield sub.move.backward(1).go(speed=SPEED_LIMIT)
