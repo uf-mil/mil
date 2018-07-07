@@ -57,7 +57,7 @@ def compute_freq(samples, sample_rate, freq_range, plot=False):
     samples_window = samples * numpy.hamming(samples.shape[1])
 
     # Compute fft, find peaks in desired range
-    fft_length = 2048
+    fft_length = samples.shape[1]
     samples_fft = numpy.absolute(numpy.fft.fft(samples_window, fft_length, axis=1))[:, :fft_length/2]
     bin_range = freq_to_bin(freq_range, sample_rate, fft_length)
     peaks = bin_range[0] + numpy.argmax(samples_fft[:, bin_range[0]:bin_range[1]], axis=1)
