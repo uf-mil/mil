@@ -41,7 +41,8 @@ def run(sub):
             angle_tol=60,
             distance_tol=11,
             speed=0.1,
-            clear=True)
+            clear=True,
+            c_func=find_gate)
         fprint('Found {} objects'.format(len(res.objects)))
         # Didn't find enough objects
         if len(res.objects) < 2:
@@ -99,23 +100,25 @@ def find_gate(objects,
             if o2 is o:
                 continue
             p2 = rosmsg_to_numpy(o2.pose.position)
-            print('Distance {}'.format(distance.euclidean(p, p2)))
             if distance.euclidean(p, p2) > max_distance_away:
-                print('far away')
+                fprint('Object Far Away. Distance {}'.format(
+                    distance.euclidean(p, p2)))
                 continue
             line = p - p2
             perp = line.dot(ray)
             perp = perp / np.linalg.norm(perp)
-            print('Dot {}'.format(perp))
             if not (-perp_threshold <= perp <= perp_threshold):
-                print('perp threshold')
+                fprint('Not perpendicular. Dot {}'.format(perp))
+                pass
                 # continue
             print('Dist {}'.format(line))
             if abs(line[2] > depth_threshold):
-                print('not same height')
+                print('Not similar height. Height: {}. Thresh: '.format(
+                    line[2], depth_threshold))
                 continue
             if abs(line[0]) < 1 and abs(line[1]) < 1:
-                print('on top of each other')
+                fprint('Objects on top of one another. x {}, y {}'.format(
+                    line[0], line[1]))
                 continue
             return (p, p2)
     return None

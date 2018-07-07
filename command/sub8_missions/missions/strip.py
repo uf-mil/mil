@@ -16,6 +16,7 @@ def pitch(sub):
 
 @util.cancellableInlineCallbacks
 def run(sub):
+    yield sub.move.downward(0.7).go()
     fprint('Starting...')
     start = sub.move.forward(0).zero_roll_and_pitch()
     fprint('Searching... pitching...')

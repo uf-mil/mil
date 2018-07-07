@@ -23,6 +23,7 @@ DIST_AFTER_GATE = 2
 
 @txros.util.cancellableInlineCallbacks
 def run(sub):
+    yield sub.move.downward(1).go()
     fprint('Begin search for gates')
     # Search 4 quadrants deperated by 90 degrees for the gate
     start = sub.move.zero_roll_and_pitch()
@@ -38,7 +39,8 @@ def run(sub):
         angle_tol=60,
         distance_tol=11,
         speed=0.1,
-        clear=True)
+        clear=True,
+        c_func=find_gate)
     del so
     fprint('Found {} objects'.format(len(res.objects)))
     # Didn't find enough objects
@@ -78,7 +80,7 @@ def run(sub):
     if objects is None or len(objects) < 1:
         fprint('Searching for qualifiction pole')
         start = sub.move.zero_roll_and_pitch()
-        so = SonarObjects(sub, [start.pitch_down_deg(7), start] * 10)
+        so = SonarObjects(sub, [start.pitch_down_deg(7), start] * 4)
         so_objects = yield so.start_search_in_cone(
             sub.pose.position,
             normal,
@@ -103,12 +105,14 @@ def run(sub):
     fprint(move1)
     yield sub.move.set_position(move1).go(speed=SPEED_CAREFUL)
     yield sub.move.left(1.7).go(speed=SPEED_CAREFUL)
-    yield sub.move.forward(3).go(speed=SPEED_CAREFUL)
+    yield sub.move.forward(1.7).go(speed=SPEED_CAREFUL)
     yield sub.move.right(3.4).go(speed=SPEED_CAREFUL)
-    yield sub.move.backward(3).go(speed=SPEED_CAREFUL)
+    yield sub.move.backward(1.7).go(speed=SPEED_CAREFUL)
     yield sub.move.left(1.7).go(speed=SPEED_CAREFUL)
     yield sub.move.backward(0.5).go(speed=SPEED_CAREFUL)
     yield sub.move.look_at(mid_point).go(speed=SPEED_CAREFUL)
+
+    fprint('Going to front of gate')
 
     yield sub.move.set_position(mid_point + DIST_AFTER_GATE * normal).go(
         speed=SPEED)
@@ -137,23 +141,25 @@ def find_gate(objects,
             if o2 is o:
                 continue
             p2 = rosmsg_to_numpy(o2.pose.position)
-            print('Distance {}'.format(distance.euclidean(p, p2)))
             if distance.euclidean(p, p2) > max_distance_away:
-                print('far away')
+                fprint('Object Far Away. Distance {}'.format(
+                    distance.euclidean(p, p2)))
                 continue
             line = p - p2
             perp = line.dot(ray)
             perp = perp / np.linalg.norm(perp)
-            print('Dot {}'.format(perp))
             if not (-perp_threshold <= perp <= perp_threshold):
-                print('perp threshold')
+                fprint('Not perpendicular. Dot {}'.format(perp))
+                pass
                 # continue
             print('Dist {}'.format(line))
             if abs(line[2] > depth_threshold):
-                print('not same height')
+                print('Not similar height. Height: {}. Thresh: '.format(
+                    line[2], depth_threshold))
                 continue
             if abs(line[0]) < 1 and abs(line[1]) < 1:
-                print('on top of each other')
+                fprint('Objects on top of one another. x {}, y {}'.format(
+                    line[0], line[1]))
                 continue
             return (p, p2)
     return None
