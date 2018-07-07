@@ -629,8 +629,7 @@ class SonarPointcloud(object):
         if pattern is None:
             pattern = [sub.move.zero_roll_and_pitch()
                        ] + [sub.move.pitch_down_deg(5)] * 5 + [
-                           sub.move.zero_roll_and_pitch()
-                       ]
+                           sub.move.zero_roll_and_pitch()]
         self.sub = sub
         self.pointcloud = None
         self.pattern = pattern
