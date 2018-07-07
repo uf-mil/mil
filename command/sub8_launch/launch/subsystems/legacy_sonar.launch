@@ -1,6 +1,5 @@
 <launch>
   <rosparam file="$(find sub8_launch)/config/legacy_sonar.yaml" command="load" />
-  <node pkg="paulboard_driver" type="paulboard_driver" name="paulboard_driver" output="screen" />
   <node pkg="tf" type="static_transform_publisher" name="hyd_broadcaster"
     args="-0.0875 0.0 -0.265 1.571 0 0 base_link hydrophones 100" />
   <node pkg="hydrophones" type="hydrophones" name="hydrophones" output="screen" />
