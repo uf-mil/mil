@@ -2,13 +2,26 @@ import txros
 from twisted.internet import defer
 from ros_alarms import TxAlarmListener, TxAlarmBroadcaster
 from mil_misc_tools import text_effects
+import genpy
 
 # Import missions here
-import start_gate_simple
+import start_gate
 
 
 fprint = text_effects.FprintFactory(title="AUTO_MISSION").fprint
 WAIT_SECONDS = 5.0
+
+
+@txros.util.cancellableInlineCallbacks
+def run_mission(sub, mission, timeout):
+    # timeout in seconds
+    start_time = yield sub.nh.get_time()
+    mission = mission.run(sub)
+    while sub.nh.get_time() - start_time < genpy.Duration(timeout):
+        yield sub.nh.sleep(0.5)
+    fprint('MISSION TIMEOUT', msg_color='red')
+    mission.cancel()
+    defer.returnValue(True)
 
 
 @txros.util.cancellableInlineCallbacks
@@ -17,7 +30,7 @@ def do_mission(sub):
 
     # Chain 1 missions
     try:
-        yield start_gate_simple.run(sub)
+        yield run_mission(sub, start_gate, 300)
     except Exception as e:
         fprint("Error in Chain 1 missions!", msg_color="red")
         print e
