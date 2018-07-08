@@ -464,6 +464,8 @@ fi
 # Scientific and technical computing
 sudo apt-get install -qq python-scipy
 
+sudo apt-get install -qq python-usb
+
 # System tools
 sudo apt-get install -qq vim
 sudo apt-get install -qq ipython
