@@ -1,7 +1,8 @@
 <launch>
+  <node pkg="sub8_launch" type="passive_sonar_conn" name="passive_sonar_conn" />
   <rosparam file="$(find sub8_launch)/config/legacy_sonar.yaml" command="load" />
   <node pkg="tf" type="static_transform_publisher" name="hyd_broadcaster"
     args="-0.0875 0.0 -0.265 1.571 0 0 base_link hydrophones 100" />
   <node pkg="hydrophones" type="hydrophones" name="hydrophones" output="screen" />
-  <node pkg="hydrophones" type="ping_plotter" name="ping_plotter"/>
+  <!-- <node pkg="hydrophones" type="ping_plotter" name="ping_plotter"/> -->
 </launch>
