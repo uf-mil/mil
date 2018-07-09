@@ -1,9 +1,10 @@
 <launch>
   <group ns="camera/down" >
-  <node pkg="usb_cam" type="usb_cam_node" name="seecam_driver" >
+  <!-- Respawn camera every some seconds if dead -->
+  <node pkg="usb_cam" type="usb_cam_node" name="seecam_driver" respawn="true" respawn_delay="1">
     <param name="video_device" value="/dev/v4l/by-id/usb-e-con_Systems_See3CAM_CU20_440B0000-video-index0" />
     <param name="camera_frame_id" value="down_camera" />
-    <param name="camera_info_url" value="file://$(find sub8_launch)/launch/subsystems/cameras/calibration/seecam_220B5905.yaml" />
+    <param name="camera_info_url" value="file://$(find sub8_launch)/launch/subsystems/cameras/calibration/down_left_cam.yaml" />
     <param name="pixel_format" value="uyvy" />
     <param name="image_width"  value="1920" />
     <param name="image_height" value="1080" />
