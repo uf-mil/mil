@@ -599,6 +599,10 @@ if [[ "$INSTALL_SUB" == "true" ]]; then
 
 	# 3D Mouse
 	sudo apt-get install -qq ros-$ROS_DISTRO-spacenav-node
+
+    # udev rule for sylphase passive sonar
+    echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="601f", MODE="0666"' | sudo tee /etc/udev/rules.d/sylphase-passive-sonar.rules > /dev/null
+    sudo udevadm trigger
 fi
 
 
