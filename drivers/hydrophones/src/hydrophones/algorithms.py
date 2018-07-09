@@ -58,8 +58,8 @@ def compute_freq(samples, sample_rate, freq_range, plot=False):
 
     # Compute fft, find peaks in desired range
     fft_length = samples.shape[1]
-    samples_fft = numpy.absolute(numpy.fft.fft(samples_window, fft_length, axis=1))[:, :fft_length/2]
-    bin_range = freq_to_bin(freq_range, sample_rate, fft_length)
+    samples_fft = numpy.absolute(numpy.fft.fft(samples_window, fft_length, axis=1))[:, :int(fft_length/2)]
+    bin_range = freq_to_bin(freq_range, sample_rate, fft_length).astype(int)
     peaks = bin_range[0] + numpy.argmax(samples_fft[:, bin_range[0]:bin_range[1]], axis=1)
     
     # Sort peaks, take mean of the middle
@@ -68,7 +68,7 @@ def compute_freq(samples, sample_rate, freq_range, plot=False):
 
     freq = bin_to_freq(peak, sample_rate, fft_length)
 
-    amplitude = math.sqrt(numpy.mean(samples_fft[:, round(peak)]))
+    amplitude = math.sqrt(numpy.mean(samples_fft[:, int(round(peak))]))
     return freq, amplitude, samples_fft
 
 def bin_to_freq(bin, sample_rate, fft_length):
@@ -80,11 +80,11 @@ def freq_to_bin(freq, sample_rate, fft_length):
 def preprocess(samples, sample_rate, desired_sample_rate):
     """Upsamples data to have approx. desired_sample_rate."""
     # Trim to first ms of data and bandpass
-    samples = bandpass(samples[:, :.001*sample_rate], sample_rate)
+    samples = bandpass(samples[:, :int(.001*sample_rate)], sample_rate)
     samples = normalize(samples)
 
     # Upsample each channel
-    upfact = round(desired_sample_rate/sample_rate)
+    upfact = int(round(desired_sample_rate/sample_rate))
     upsamples = numpy.empty((samples.shape[0], samples.shape[1]*upfact))
     for i in xrange(samples.shape[0]):
         upsamples[i, :] = util.resample(samples[i, :], upfact, 1)
@@ -143,7 +143,7 @@ def match_template(channel, start, stop, template):
     mad = mean_absolute_difference(channel, start, stop, template)
     min_pt = find_zero(mad)
 
-    return start + min_pt, mad[round(min_pt)]
+    return start + min_pt, mad[int(round(min_pt))]
 
 def mean_absolute_difference(channel, start, stop, template):
     """

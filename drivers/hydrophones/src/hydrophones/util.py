@@ -18,7 +18,7 @@ def resample(x, p, q):
     Lhalf = (L-1)/2
     Lx = len(x)
 
-    nz = math.floor(q-(Lhalf % q))
+    nz = int(math.floor(q-(Lhalf % q)))
     z = numpy.zeros(nz)
     Lhalf += nz
 
@@ -29,8 +29,8 @@ def resample(x, p, q):
     h = numpy.hstack([h, numpy.zeros(nz1)]);
     y = upfirdn(x,h,p,q)
     Ly = math.ceil(Lx*p/q)
-    y = y[delay:]
-    y = y[:Ly]
+    y = y[int(delay):]
+    y = y[:int(Ly)]
     return y
 
 def upfirdn(x, h, p, q):
