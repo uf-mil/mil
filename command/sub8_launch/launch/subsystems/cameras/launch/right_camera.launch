@@ -5,7 +5,7 @@
 
     <!-- RIGHT CAMERA -->
     <node pkg="nodelet" type="nodelet" name="right_camera_nodelet"
-        args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
+        args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" respawn="true" respawn_delay="1">
       <param name="frame_id" value="front_right_cam" />
       <param name="serial" value="15356356" />
       <param name="guid" value="00b09d0100ea51c4"/>
