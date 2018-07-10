@@ -41,6 +41,14 @@ add_message_files(
   Debug.msg
   Ping.msg
 )
+
+add_service_files(
+  DIRECTORY srv
+  FILES
+  FindPinger.srv
+  SetFrequency.srv
+)
+
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
     DEPENDENCIES std_msgs geometry_msgs
