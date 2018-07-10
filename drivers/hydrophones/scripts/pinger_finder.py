@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import rospy
+import rospkg
 import numpy as np
-from sklearn.preprocessing import normalize
+from numpy import linalg as npl
 import tf
 from hydrophones.srv import FindPinger, SetFrequency, SetFrequencyResponse
 from hydrophones.msg import ProcessedPing
@@ -9,61 +10,6 @@ from geometry_msgs.msg import Point, PoseStamped, Pose
 from visualization_msgs.msg import Marker
 from std_srvs.srv import SetBool, SetBoolResponse
 import mil_tools
-
-def LS_Intersection3d(start, end):
-    '''
-    Find the intersection of lines in the least-squares sense.
-    start - Nx3 numpy array of start points
-    end - Nx3 numpy array of end points
-    '''
-    assert len(start) == len(end)
-    assert len(start) > 1
-    dir_vecs = end - start
-    normalize(dir_vecs, copy=False) # sklearn
-    nx = dir_vecs[:, 0]
-    ny = dir_vecs[:, 1]
-    nz = dir_vecs[:, 2]
-    XX = nx * nx - 1
-    YY = ny * ny - 1
-    ZZ = nz * nz - 1
-    XY = nx * ny - 1
-    XZ = nx * nz - 1
-    YZ = ny * nz - 1
-    AX = start[:, 0]
-    AY = start[:, 1]
-    AZ = start[:, 2]
-    S = np.array([[np.sum(XX), np.sum(XY), np.sum(XZ)],
-                  [np.sum(XY), np.sum(YY), np.sum(YZ)],
-                  [np.sum(XZ), np.sum(YZ), np.sum(ZZ)]])
-    CX = np.sum(AX * XX + AY * XY + AZ * XZ)
-    CY = np.sum(AX * XY + AY * YY + AZ * YZ)
-    CZ = np.sum(AX * XZ + AY * YZ + AZ * ZZ)
-    C = np.stack((CX, CY, CZ))
-    return np.linalg.lstsq(S, C)[0]
-
-def LS_intersection2d(start, end):
-    """
-    Find the intersection of lines in the least-squares sense.
-    start - Nx3 numpy array of start points
-    end - Nx3 numpy array of end points
-    https://en.wikipedia.org/wiki/Line-line_intersection#In_two_dimensions_2
-    """
-    assert len(start) == len(end)
-    assert len(start) > 1
-    dir_vecs = end - start
-    normalize(dir_vecs, copy=False)
-    Rl_90 = np.array([[0, -1], [1, 0]])  # rotates right 90deg
-    perp_unit_vecs = Rl_90.dot(dir_vecs.T).T
-    A_sum = np.zeros((2, 2))
-    Ap_sum = np.zeros((2, 1))
-
-    for x, y in zip(start, perp_unit_vecs):
-        A = y.reshape(2, 1).dot(y.reshape(1, 2))
-        Ap = A.dot(x.reshape(2, 1))
-        A_sum += A
-        Ap_sum += Ap
-
-    return np.linalg.lstsq(A, Ap_sum)[0]
 
 class PingerFinder(object):
     """
@@ -87,11 +33,12 @@ class PingerFinder(object):
     def __init__(self):
         self.map_frame = "/map"
         self.hydrophone_frame = "/hydrophones"
+        self.tf_listener = tf.TransformListener()
         self.target_freq = 35E3
+        self.freq_tol = 1E3
         self.min_amp = 200  # if too many outliers, increase this
         self.max_observations = 200
-	self.heading_start = np.empty((0, 3), float)
-	self.heading_end = np.empty((0, 3), float)
+        self.line_array =np.empty((0, 4), float)
         self.observation_amplitudes = np.empty((0, 0), float)
         self.pinger_position = Point(0, 0, 0)
         self.heading_pseudorange = 10
@@ -104,51 +51,72 @@ class PingerFinder(object):
         self.activate_listening = rospy.Service('hydrophones/set_listen', SetBool, self.set_listen)
         self.set_freq_srv = rospy.Service('hydrophones/set_freq', SetFrequency, self.set_freq)
 
-    def getHydrophonePose(self, time):
-        '''
-        Gets the map frame pose of the hydrophone frame.
-        Returns a 3-vector and a rotation matrix.
-        '''
-        self.tf_listener = tf.TransformListener()
-        try:
-            self.tf_listener.waitForTransform(
-                self.map_frame, self.hydrophone_frame, time, rospy.Duration(0.25))
-            trans, rot = self.tf_listener.lookupTransform(
-                self.map_frame, self.hydrophone_frame, ping.header.stamp)
-            rot = tf.transformations.quaternion_matrix(rot)
-            return trans, rot
-        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
-            print e
-            return
-
     def ping_cb(self, ping):
         print "PINGERFINDER: freq={p.freq:.0f}  amp={p.amplitude:.0f}".format(p=ping)
-        if abs(ping.amplitude) > self.min_amp and self.listen:
-            p0, R = self.getHydrophonePose(ping.header.stamp)
-            R = tf.transformations.quaternion_matrix(R)
-            map_offset = R.dot(mil_tools.point_to_numpy(ping.position))
-            p1 = p0 + map_offset
-            self.visualize_arrow(p0, p1)
-
-            self.heading_start = np.append(self.heading_start, p0, axis=0)
-            self.heading_end = np.append(self.heading_end, p0, axis=0)
+        if abs(ping.freq - self.target_freq) < self.freq_tol and ping.amplitude > self.min_amp and self.listen:
+            trans, rot = None, None
+            try:
+                self.tf_listener.waitForTransform(self.map_frame, self.hydrophone_frame, ping.header.stamp, rospy.Duration(0.25))
+                trans, rot = self.tf_listener.lookupTransform(self.map_frame, self.hydrophone_frame, ping.header.stamp)
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
+                print e
+                return
+            p0 = np.array([trans[0], trans[1]])
+            R = tf.transformations.quaternion_matrix(rot)[:3, :3]
+            delta = R.dot(mil_tools.rosmsg_to_numpy(ping.position))[:2]
+            p1 = p0 + self.heading_pseudorange * delta / npl.norm(delta)
+            line_coeffs = np.array([[p0[0], p0[1], p1[0], p1[1]]]) # p0 and p1 define a line
+            self.visualize_arrow(Point(p0[0], p0[1], 0), Point(p1[0], p1[1], 0))
+            self.line_array = np.append(self.line_array, line_coeffs, 0)
             self.observation_amplitudes = np.append(self.observation_amplitudes, ping.amplitude)
             if len(self.line_array) >= self.max_observations:  # delete softest samples if we have over max_observations
                 softest_idx = np.argmin(self.observation_amplitudes)
                 self.line_array = np.delete(self.line_array, softest_idx, axis=0)  
                 self.observation_amplitudes = np.delete(self.observation_amplitudes, softest_idx)
-            print "PINGERFINDER: Observation collected. Total: {}".format(len(self.heading_start))
+            print "PINGERFINDER: Observation collected. Total: {}".format(self.line_array.shape[0])
+
+    def LS_intersection(self):
+        """
+        self.line_array represents a system of 2d line equations. Each row represents a different
+        observation of a line in map frame on which the pinger lies. Row structure: [x1, y1, x2, y2]
+        Calculates the point in the plane with the least cummulative distance to every line
+        in self.line_array. For more information, see:
+        https://en.wikipedia.org/wiki/Line-line_intersection#In_two_dimensions_2
+        """
+
+        def line_segment_norm(line_end_pts):
+            assert len(line_end_pts) == 4
+            return npl.norm(line_end_pts[2:] - line_end_pts[:2])
+
+        begin_pts = self.line_array[:, :2]
+        diffs = self.line_array[:, 2:4] - begin_pts
+        norms = np.apply_along_axis(line_segment_norm, 1, self.line_array).reshape(diffs.shape[0], 1)
+        rot_left_90 = np.array([[0, -1], [1, 0]])
+        perp_unit_vecs = np.apply_along_axis(lambda unit_diffs: rot_left_90.dot(unit_diffs), 1, diffs / norms)
+        A_sum = np.zeros((2, 2))
+        Ap_sum = np.zeros((2, 1))
+
+        for x, y in zip(begin_pts, perp_unit_vecs):
+            begin = x.reshape(2, 1)
+            perp_vec = y.reshape(2, 1)
+            A = perp_vec.dot(perp_vec.T)
+            Ap = A.dot(begin)
+            A_sum += A
+            Ap_sum += Ap
+
+        res = npl.inv(A_sum).dot(Ap_sum)
+        self.pinger_position = Point(res[0], res[1], 0)
+        return self.pinger_position
 
     def find_pinger(self, srv_request):
-        if len(self.heading_start) < 2:
+        if self.line_array.shape[0] < 2:
             print "PINGER_FINDER: Can't locate pinger. Less than two valid observations have been recorded."
             return {}
-        pinger_position = numpy_to_point(LS_intersection3d(self.start, self.end))
-        res =  {'pinger_position' : pinger_position, 'num_samples' : len(self.heading_start)}
+        res =  {'pinger_position' : self.LS_intersection(), 'num_samples' : self.line_array.shape[0]}
         self.visualize_pinger()
         return res
 
-    def visualize_pinger_estimate(self):
+    def visualize_pinger(self):
         marker = Marker()
         marker.ns = "pinger{}".format(self.target_freq)
         marker.header.stamp = rospy.Time(0)
@@ -166,11 +134,7 @@ class PingerFinder(object):
             print "PINGERFINDER: position: ({p.x[0]:.2f}, {p.y[0]:.2f})".format(p=self.pinger_position)
                  
 
-    def visualize_arrow(self, tail, head, size=None):
-        if size is not None:
-          head = tail + (head - tail) / np.linalg.norm(head-tail) * size
-        head = Point(head[0], head[1], head[2])
-        tail = Point(tail[0], tail[1], tail[2])
+    def visualize_arrow(self, tail, head):
         marker = Marker()
         marker.ns = "pinger{}/heading".format(self.target_freq)
         marker.header.stamp = rospy.Time(0)
@@ -192,13 +156,12 @@ class PingerFinder(object):
         
     def set_listen(self, listen_status):
         self.listen = listen_status.data
-        print "PINGERFINDER: setting listening to " + ("on" if self.listen else "off")
+        print "PINGERFINDER: setting listening to on" if self.listen else "PINGERFINDER: setting listening to off"
         return {'success': True, 'message': ""}
 
     def set_freq(self, msg):
         self.target_freq = msg.frequency
-        self.heading_start = np.empty((0, 2), float)
-        self.heading_end = np.empty((0, 2), float)
+        self.line_array = np.empty((0, 4), float)
         self.sample_amplitudes = np.empty((0, 0), float)
         self.pinger_position = Point(0, 0, 0)
         return SetFrequencyResponse()
