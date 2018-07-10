@@ -79,8 +79,7 @@ def freq_to_bin(freq, sample_rate, fft_length):
 
 def preprocess(samples, sample_rate, desired_sample_rate):
     """Upsamples data to have approx. desired_sample_rate."""
-    # Trim to first ms of data and bandpass
-    samples = bandpass(samples[:, :int(.001*sample_rate)], sample_rate)
+    samples = bandpass(samples, sample_rate)
     samples = normalize(samples)
 
     # Upsample each channel
