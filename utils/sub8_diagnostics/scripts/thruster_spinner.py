@@ -112,10 +112,10 @@ def check_for_thrusters():
     sel = int(raw_input())
 
     start_id = 0
-    end_id = 10
+    end_id = 127
     fprint('Checking for thrusters with id\'s in [{}, {}]'.format(start_id, end_id))
 
-    found_motor_ids, avg_turnaround_time = declared_ports[sel].get_motor_ids_on_port(start_id, end_id)
+    found_motor_ids, avg_turnaround_time = declared_ports[sel].get_node_ids_on_port(start_id, end_id)
     fprint('Responding motor ids:\t\t\t{}'.format(te.Printer().set_cyan.bold(found_motor_ids)))
     fprint('Average packet turnaround time:\t{} seconds'.format(te.Printer().set_cyan.bold(avg_turnaround_time)))
 
