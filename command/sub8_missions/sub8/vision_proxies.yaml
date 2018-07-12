@@ -8,5 +8,7 @@ buoy:
     root: "/vision/buoys"
 arm_torpedos:
     root: "/vision/arm_torpedos"
+the_path:
+    root: "/vision/the_path"
 start_gate:
     root: "/vision/start_gate"

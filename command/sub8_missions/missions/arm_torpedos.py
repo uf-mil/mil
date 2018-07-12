@@ -7,6 +7,7 @@ MISSION = 'Torpedo Challenge'
 
 
 class Target(object):
+
     def __init__(self):
         self.position = None
         self.destroyed = False
@@ -152,6 +153,7 @@ class FireTorpedos(object):
             yield self.sub.nh.sleep(0.1)
         search.cancel()
         pattern.cancel()
+        self.sub.vision_proxies.arm_torpedos.stop()
         self.print_good('Done!')
 
 
