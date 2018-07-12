@@ -5,7 +5,7 @@ from mil_misc_tools import text_effects
 import genpy
 
 # Import missions here
-import start_gate
+import strip
 
 
 fprint = text_effects.FprintFactory(title="AUTO_MISSION").fprint
@@ -30,7 +30,7 @@ def do_mission(sub):
 
     # Chain 1 missions
     try:
-        yield run_mission(sub, start_gate, 300)
+        yield run_mission(sub, strip, 330)
     except Exception as e:
         fprint("Error in Chain 1 missions!", msg_color="red")
         print e

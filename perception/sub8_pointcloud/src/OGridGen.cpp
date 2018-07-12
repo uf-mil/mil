@@ -159,11 +159,8 @@ void OGridGen::callback(const mil_blueview_driver::BlueViewPingPtr &ping_msg)
       point.x = newVec.x() + transform_.getOrigin().x();
       point.y = newVec.y() + transform_.getOrigin().y();
       point.z = newVec.z() + transform_.getOrigin().z();
-      // Ignore points if they are below the ground. This will depend on the current return from the depth.
-      if (point.z + dvl_range_ > 0)
-        continue;
       // Ignore points if they are below some depth in map frame
-      else if (point.z < -params.depth)
+      if (point.z < -params.depth)
         continue;
       point.intensity = ping_msg->intensities.at(i);
       point_cloud_buffer_.push_back(point);
