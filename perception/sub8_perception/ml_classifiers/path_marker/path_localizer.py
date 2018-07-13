@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import os
 import cv2
+import sys
 import rospy
 import rospkg
 import datetime
@@ -53,7 +54,7 @@ class classifier(object):
         # Current time
         self.start_time = datetime.datetime.now()
         # Midpoint of the overall image, in pixels
-        self.midpoint = [im_width / 2, im_height / 2]
+        self.midpoint = [self.im_width / 2, self.im_height / 2]
         # Whether or not we have centered on an object.
         self.centered = False
         # Whether or not we are enabled

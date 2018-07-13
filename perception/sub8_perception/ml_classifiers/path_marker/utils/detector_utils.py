@@ -10,15 +10,16 @@ from datetime import datetime
 from utils import label_map_util
 from collections import defaultdict
 
-#rospack = rospkg.RosPack()
-#TRAINED_MODEL_DIR = rospack.get_path('sub8_perception') + '/ml_classifiers/path_marker/'
-TRAINED_MODEL_DIR = '/home/pablo/0Dev/ros_inference/frozen_graphs'
+rospack = rospkg.RosPack()
+TRAINED_MODEL_DIR = rospack.get_path(
+    'sub8_perception') + '/ml_classifiers/path_marker'
+# TRAINED_MODEL_DIR = '/home/pablo/0Dev/ros_inference/frozen_graphs'
 # Path to frozen detection graph. This is the actual model+weights that is
 # used for the object detection.
 PATH_TO_CKPT = TRAINED_MODEL_DIR + \
-    '/148_dice_faster_rcnn_v2/frozen_inference_graph.pb'
+    '/Path_Inference/faster_rcnn_inception_v2_path/frozen_inference_graph.pb'
 # List of the strings that is used to add correct label for each box.
-PATH_TO_LABELS = TRAINED_MODEL_DIR + '/dice_labelmap.pbtxt'
+PATH_TO_LABELS = TRAINED_MODEL_DIR + '/Path_Inference/path_label_map.pbtxt'
 
 NUM_CLASSES = 4
 
