@@ -40,8 +40,8 @@ class PathFollower(object):
         self.pattern_done = False
         self.done = False
         self.generate_pattern()
-        self.get_path_marker = self.sub.nh.subscribe(
-            '/vision/path_roi', RegionOfInterest)
+        # self.get_path_marker = self.sub.nh.subscribe(
+        # '/vision/path_roi', RegionOfInterest)
         self.get_direction = self.sub.nh.subscribe(
             '/vision/path_direction', String)
         self.get_orange = self.sub.nh.subscribe('/vision/path_orange', String)
@@ -74,14 +74,14 @@ class PathFollower(object):
 
         while True:
             yield self.sub.nh.sleep(self.SLEEP_TIME)
-            path_marker = yield self.get_path_marker.get_last_message()
+            # path_marker = yield self.get_path_marker.get_last_message()
             get_dir = yield self.get_direction.get_last_message()
             orange_pixel = yield self.get_orange.get_last_message()
-            self.print_info(('Orange Pixel Direction, ', orange_pixel))
-            self.print_info(('Direction, ', get_dir))
-            self.print_info(('Path Marker, ', path_marker))
+            # self.print_info(('Orange Pixel Direction, ', orange_pixel))
+            # self.print_info(('Direction, ', get_dir))
+            # self.print_info(('Path Marker, ', path_marker))
             if orange_pixel is not None:
-                if path_marker is not None and orange_pixel.data == 'center':
+                if get_dir is not None and orange_pixel.data == 'center':
                     self.print_good('Marker Acquired.')
                     self.t = 'Acquired'
                     self.reset = True

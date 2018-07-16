@@ -98,8 +98,8 @@ class classifier(object):
             'path_direction', String, queue_size=1)
         self.orange_detection = rospy.Publisher(
             'path_orange', String, queue_size=1)
-        self.path_roi_pub = rospy.Publisher(
-            'path_roi', RegionOfInterest, queue_size=1)
+        # self.path_roi_pub = rospy.Publisher(
+        # 'path_roi', RegionOfInterest, queue_size=1)
 
     def toggle_search(self, srv):
         '''
