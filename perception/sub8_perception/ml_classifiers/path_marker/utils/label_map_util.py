@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """Label map utility functions."""
 
 import logging
@@ -22,10 +21,10 @@ from google.protobuf import text_format
 import rospkg
 import sys
 rospack = rospkg.RosPack()
-sys.path.append(rospack.get_path('sub8_perception') +
-                '/ml_classifiers/path_marker/protos')
+sys.path.append(
+    rospack.get_path('sub8_perception') + '/ml_classifiers/path_marker/protos')
 
-from protos import string_int_label_map_pb2
+from protos import string_int_label_map_pb2  # noqa
 
 
 def _validate_label_map(label_map):
@@ -107,8 +106,10 @@ def convert_label_map_to_categories(label_map,
         label_id_offset = 1
         for class_id in range(max_num_classes):
             categories.append({
-                'id': class_id + label_id_offset,
-                'name': 'category_{}'.format(class_id + label_id_offset)
+                'id':
+                class_id + label_id_offset,
+                'name':
+                'category_{}'.format(class_id + label_id_offset)
             })
         return categories
     for item in label_map.item:

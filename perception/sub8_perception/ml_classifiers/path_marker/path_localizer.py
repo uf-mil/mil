@@ -1,30 +1,26 @@
 #!/usr/bin/python
-import os
 import cv2
 import sys
 import rospy
 import rospkg
 import datetime
-import tensorflow as tf
 import numpy as np
 
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
-from sensor_msgs.msg import RegionOfInterest
 from std_msgs.msg import String
 from std_srvs.srv import SetBool, SetBoolResponse
 
 rospack = rospkg.RosPack()
 
 # To correctly import utils
-sys.path.append(rospack.get_path('sub8_perception') +
-                '/ml_classifiers/path_marker/utils')
+sys.path.append(
+    rospack.get_path('sub8_perception') + '/ml_classifiers/path_marker/utils')
 
-from utils import detector_utils
+from utils import detector_utils  # noqa
 
 
 class classifier(object):
-
     def __init__(self):
         '''
         Parameters
@@ -35,8 +31,7 @@ class classifier(object):
         self.centering_thresh = rospy.get_param('~centering_thresh', 50)
         # Color thresholds to find orange, BGR
         self.lower = rospy.get_param('~lower_color_threshold', [0, 30, 100])
-        self.upper = rospy.get_param(
-            '~upper_color_threshold', [100, 255, 255])
+        self.upper = rospy.get_param('~upper_color_threshold', [100, 255, 255])
         # Camera topic we are pulling images from for processing
         self.camera_topic = rospy.get_param(
             '~camera_topic', '/camera/down/left/image_rect_color')
@@ -59,7 +54,6 @@ class classifier(object):
         self.centered = False
         # Whether or not we are enabled
         self.enabled = False
-
         '''
         Misc Utils, Image Subscriber, and Service Call.
         '''
@@ -73,22 +67,24 @@ class classifier(object):
         rospy.Service('~enable', SetBool, self.toggle_search)
 
         # Subscribes to our image topic, allowing us to process the images
-        self.sub1 = rospy.Subscriber(self.camera_topic,
-                                     Image, self.img_callback, queue_size=1)
-
+        self.sub1 = rospy.Subscriber(
+            self.camera_topic, Image, self.img_callback, queue_size=1)
         '''
         Publishers:
-        debug_image_pub: publishes the images showing what tensorflow has identified as path markers
+        debug_image_pub: publishes the images showing what tensorflow has
+        identified as path markers
 
-        orange_image_pub: publishes our masked image, showing what we see to be orange.
+        orange_image_pub: publishes our masked image, showing what we see to
+        be orange.
 
         direction_pub: publishes the proposed direction of the path marker.
-        If our mission script reads this and confirms it is a marker,it turns following this direction.
-        Either 'left', 'right', or 'none.'
+        If our mission script reads this and confirms it is a marker,it turns
+        following this direction. Either 'left', 'right', or 'none.'
 
-        orange_detection: ensures we are centering on an orange group of pixels.
+        orange_detection: ensures we are centering on an orange group of pixels
 
-        path_roi: publishes the region of interest and its coordinates. This is used for debugging purposes.
+        path_roi: publishes the region of interest and its coordinates.
+        This is used for debugging purposes.
         '''
         self.debug_image_pub = rospy.Publisher(
             'path_debug', Image, queue_size=1)
@@ -122,7 +118,8 @@ class classifier(object):
         This is a serious problem considering how long it takes to
         process a single image.
         '''
-        if abs(msg.header.stamp.secs - int(rospy.get_time())) > self.time_thresh:
+        if abs(msg.header.stamp.secs - int(rospy.get_time())
+               ) > self.time_thresh:
             return True
         else:
             return False
@@ -147,14 +144,15 @@ class classifier(object):
 
         # Draw Bounding box
         labelled_image, bbox = detector_utils.draw_box_on_image(
-            self.num_objects_detect, self.score_thresh, scores, boxes, classes, self.im_width, self.im_height, cv_image)
+            self.num_objects_detect, self.score_thresh, scores, boxes, classes,
+            self.im_width, self.im_height, cv_image)
 
         # Find midpoint of the region of interest
         bbox_midpoint = [((bbox[0][1] + bbox[1][1]) / 2),
                          ((bbox[0][0] + bbox[1][0]) / 2)]
         # print(cv_image[int(bbox[0][0]):int(bbox[1][0]),
         # int(bbox[0][1]):int(bbox[1][1])])
-        '''     
+        '''
         Confirm region of interest has orange where the bbox[0] contains the
         topleft coord and bbox[1] contains bottom right
         '''
@@ -163,12 +161,13 @@ class classifier(object):
         upper = np.array(self.upper, dtype="uint8")
         # Run through the mask function, returns all black image if no orange
         check = self.mask_image(cv_image[int(bbox[0][1]):int(bbox[1][1]),
-                                         int(bbox[0][0]):int(bbox[1][0])], lower, upper)
-
+                                         int(bbox[0][0]):int(bbox[1][0])],
+                                lower, upper)
         '''
         Find if we are centered on the region of interest, if not display its
         position relative to the center of the camera. Perform the check to see
-        if we are looking at an image with orange in it. If not we are done here.
+        if we are looking at an image with orange in it. If not we are done
+        here.
         '''
         check = cv2.cvtColor(check, cv2.COLOR_BGR2GRAY)
         if cv2.countNonZero(check) == 0:
@@ -177,18 +176,17 @@ class classifier(object):
         else:
             # Where [0] is X coord and [1] is Y coord.
             self.find_direction(bbox_midpoint[1], bbox_midpoint[0])
-
         '''
-        Once we center on the region of interest, assuming we are still locked on,
-        calculate the curve of the marker. 
+        Once we center on the region of interest, assuming we are still
+        locked on, calculate the curve of the marker.
         '''
         if self.centered:
             self.find_curve(check)
 
         # Calculate FPS
         self.num_frames += 1
-        elapsed_time = (datetime.datetime.now() -
-                        self.start_time).total_seconds()
+        elapsed_time = (
+            datetime.datetime.now() - self.start_time).total_seconds()
         fps = self.num_frames / elapsed_time
 
         # Display FPS on frame
@@ -216,7 +214,7 @@ class classifier(object):
         # Blur image so our contours can better find the full shape.
         # blurred = cv2.GaussianBlur(gray, (2, 2), 0)
 
-        if(self.debug):
+        if (self.debug):
             try:
                 # print(output)
                 self.orange_image_pub.publish(
@@ -227,8 +225,9 @@ class classifier(object):
 
     def find_direction(self, xmid, ymid):
         '''
-        Take in region of interest or orange pixel width and height alongside midpoint
-        to decide which direction sub should move in to get better lock on the target
+        Take in region of interest or orange pixel width and height alongside
+        midpoint to decide which direction sub should move in to get better
+        lock on the target
         If we are already relatively centered, we tell it to stop moving.
         Recall that the top right corner of the image is (0,0)
         '''
@@ -239,7 +238,7 @@ class classifier(object):
         if (width_diff > thresh):
             # If x_coord middle is large, it is further right
             if xmid > self.midpoint[0]:
-                if(height_diff > thresh):
+                if (height_diff > thresh):
                     # if y_coord is large it is further down
                     if ymid > self.midpoint[1]:
                         self.centered = False
@@ -251,7 +250,7 @@ class classifier(object):
                     self.centered = False
                     status = 'right'
             else:
-                if(height_diff > thresh):
+                if (height_diff > thresh):
                     if ymid > self.midpoint[1]:
                         self.centered = False
                         status = 'bot_left'
@@ -261,7 +260,7 @@ class classifier(object):
                 else:
                     self.centered = False
                     status = 'left'
-        elif(height_diff > thresh):
+        elif (height_diff > thresh):
             if ymid > self.midpoint[1]:
                 self.centered = False
                 status = 'bot'
@@ -279,8 +278,9 @@ class classifier(object):
     def find_curve(self, blurred):
         '''
         Starts the process of finding the curve of the marker.
-        Performs a variety of checks including masking the image and finding contours.
-        Pass in the region of interest if availble, otherwise pass in full image.
+        Performs a variety of checks including masking the image and finding
+        contours. Pass in the region of interest if availble, otherwise pass
+        in full image.
         '''
 
         # Compute contours
@@ -293,22 +293,10 @@ class classifier(object):
         to ensure we are identifying a proper target.
         '''
 
-        shape = ''
         peri_max = 0
-        max_x = 0
-        max_y = 0
-        m_shape = ''
         maxc = [0, 0]
         # print('All Contours: ', cnts)
         for c in cnts:
-            # compute the center of the contour, then detect the name of the
-            # shape using only the contour
-            M = cv2.moments(c)
-            if M["m00"] == 0:
-                M["m00"] = .000001
-            cX = int((M["m10"] / M["m00"]))
-            cY = int((M["m01"] / M["m00"]))
-
             c = c.astype("float")
             c = c.astype("int")
 
@@ -321,12 +309,13 @@ class classifier(object):
 
     def find_extremes(self, c):
         '''
-        This is how we find the direction the marker curves. 
-        Passing in the contour, we check all pairs of it, which are pixel coodinates of the contour.
+        This is how we find the direction the marker curves.
+        Passing in the contour, we check all pairs of it, which are pixel
+        coodinates of the contour.
         Once we center on the marker, we look to the midpoint of the ROI.
-        We then look at the far left and far right of the image. 
-        If the furthest left pixel is higher than the furthest right, we turn right.
-        Otherwise we turn left.
+        We then look at the far left and far right of the image.
+        If the furthest left pixel is higher than the furthest right,
+        we turn right. Otherwise we turn left.
         '''
         max_x = 0
         min_x = 100000
@@ -350,6 +339,7 @@ class classifier(object):
         else:
             direction = 'left'
         self.direction_pub.publish(data=direction)
+
 
 if __name__ == '__main__':
     rospy.init_node('path_localizer', anonymous=False)

@@ -1,14 +1,10 @@
 # Utilities for object detector.
-import os
-import sys
-import cv2
 import rospkg
 import numpy as np
 import tensorflow as tf
-from datetime import datetime
+import cv2
 
 from utils import label_map_util
-from collections import defaultdict
 
 rospack = rospkg.RosPack()
 TRAINED_MODEL_DIR = rospack.get_path(
@@ -47,14 +43,16 @@ def load_inference_graph():
 
 
 # Drawing bounding boxes and distances onto image
-def draw_box_on_image(num_objects_detect, score_thresh, scores, boxes, classes, im_width, im_height, image_np):
+def draw_box_on_image(num_objects_detect, score_thresh, scores, boxes, classes,
+                      im_width, im_height, image_np):
     '''asdfa'''
     bbox = []
     for i in range(num_objects_detect):
         if (scores[i] > score_thresh):
 
-            (left, right, top, bottom) = (boxes[i][1] * im_width, boxes[i][3] * im_width,
-                                          boxes[i][0] * im_height, boxes[i][2] * im_height)
+            (left, right, top,
+             bottom) = (boxes[i][1] * im_width, boxes[i][3] * im_width,
+                        boxes[i][0] * im_height, boxes[i][2] * im_height)
             # top left corner of bbox
             p1 = (int(left), int(top))
             # bottom right corner of bbox
@@ -62,17 +60,19 @@ def draw_box_on_image(num_objects_detect, score_thresh, scores, boxes, classes, 
             bbox = [p1, p2]
             cv2.rectangle(image_np, p1, p2, (0, 255, 0), 3, 1)
 
-            cv2.putText(image_np, 'confidence: ' + str("{0:.2f}".format(scores[i])),
-                        (int(left), int(top) - 20),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            cv2.putText(image_np,
+                        'confidence: ' + str("{0:.2f}".format(scores[i])),
+                        (int(left), int(top) - 20), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5, (0, 255, 0), 2)
     return image_np, bbox
+
 
 # Show fps value on image.
 
 
 def draw_text_on_image(fps, image_np):
-    cv2.putText(image_np, fps, (20, 50),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.75, (77, 255, 9), 2)
+    cv2.putText(image_np, fps, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.75,
+                (77, 255, 9), 2)
 
 
 def detect_objects(image_np, detection_graph, sess):
@@ -89,23 +89,19 @@ def detect_objects(image_np, detection_graph, sess):
     image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
     # Each box represents a part of the image where a particular object was
     # detected.
-    detection_boxes = detection_graph.get_tensor_by_name(
-        'detection_boxes:0')
+    detection_boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
     # Each score represent how level of confidence for each of the objects.
     # Score is shown on the result image, together with the class label.
-    detection_scores = detection_graph.get_tensor_by_name(
-        'detection_scores:0')
+    detection_scores = detection_graph.get_tensor_by_name('detection_scores:0')
     detection_classes = detection_graph.get_tensor_by_name(
         'detection_classes:0')
-    num_detections = detection_graph.get_tensor_by_name(
-        'num_detections:0')
+    num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 
     # Expand dimensions since the model expects images to have shape: [1,
     # None, None, 3]
     image_np_expanded = np.expand_dims(image_np, axis=0)
 
     (boxes, scores, classes, num) = sess.run(
-        [detection_boxes, detection_scores,
-            detection_classes, num_detections],
+        [detection_boxes, detection_scores, detection_classes, num_detections],
         feed_dict={image_tensor: image_np_expanded})
     return np.squeeze(boxes), np.squeeze(scores), np.squeeze(classes)

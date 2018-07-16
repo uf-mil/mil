@@ -1,7 +1,7 @@
 <launch>
-  <arg name="the_path" default="True" />
+  <arg name="the_path" default="False" />
   <arg name="buoy" default="False" />
-  <arg name="torp" default="True" />
+  <arg name="torp" default="False" />
 
   <!-- roslaunch sub8_launch perception.launch color_calibration:=gazebo_color_calibration.yaml -->
   <arg name="color_calibration" default="default_color_calibration.yaml" />

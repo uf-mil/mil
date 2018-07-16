@@ -1,17 +1,9 @@
 from __future__ import division
-import tf
 import rospy
 import numpy as np
-from twisted.internet import defer
 from txros import util
-from sensor_msgs.msg import RegionOfInterest
-from sensor_msgs.msg import CameraInfo
-from image_geometry import PinholeCameraModel
-from mil_misc_tools import text_effects
-from geometry_msgs.msg import Vector3, Point
 from mil_misc_tools import FprintFactory
 from std_msgs.msg import String
-from visualization_msgs.msg import *
 
 MISSION = 'Path Marker Challenge'
 
@@ -42,8 +34,8 @@ class PathFollower(object):
         self.generate_pattern()
         # self.get_path_marker = self.sub.nh.subscribe(
         # '/vision/path_roi', RegionOfInterest)
-        self.get_direction = self.sub.nh.subscribe(
-            '/vision/path_direction', String)
+        self.get_direction = self.sub.nh.subscribe('/vision/path_direction',
+                                                   String)
         self.get_orange = self.sub.nh.subscribe('/vision/path_orange', String)
         self.t = None
         self.reset = True
@@ -52,13 +44,13 @@ class PathFollower(object):
     def generate_pattern(self):
         '''
         Generates a box search pattern. Logically if we move backward,
-        if we are aligned, we should see it right away. If not the pattern continues.
-        First we move left, then down, then right twice, then up, then back to start.
-        If we still haven't seen it, we scale up the grid, all in meters.
+        if we are aligned, we should see it right away. If not the pattern
+        continues. First we move left, then down, then right twice, then up,
+        then back to start. If we still haven't seen it, we scale up the grid,
+        all in meters.
         '''
         x = self.X_PATTERN_RADIUS
         y = self.Y_PATTERN_RADIUS
-        z = self.STARTING_DEPTH
         s = self.SCALE
         self.moves = [[0, s * y, 0], [s * x, 0, 0], [0, s * -2 * y, 0],
                       [-2 * x * s, 0, 0], [0, s * y, 0], [s * x, 0, 0]]
@@ -182,7 +174,7 @@ class PathFollower(object):
         while not self.done:
             if self.pattern_done is True:
                 pattern.cancel()
-            elif self.pattern_done is True and self.reset == False:
+            elif self.pattern_done is True and self.reset is False:
                 self.SCALE += 1
                 self.generate_pattern()
                 pattern = self.pattern()
