@@ -1,0 +1,11 @@
+lower_color_threshold : [100, 30, 0]
+upper_color_threshold : [255, 165, 20]
+time_thresh           : 1
+centering_thresh      : 50
+camera_topic          : '/camera/down/left/image_rect_color'
+num_frames            : 0
+objects_detected      : 2
+score_thresh          : 0.1
+debug                 : True
+im_width              : 720
+im_height             : 480

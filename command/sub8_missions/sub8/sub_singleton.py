@@ -131,6 +131,7 @@ class _VisionProxies(object):
 
 
 class _PoseProxy(object):
+
     def __init__(self, sub, pose, print_only=False):
         self._sub = sub
         self._pose = pose
@@ -224,6 +225,7 @@ class _ActuatorProxy(object):
 
 
 class _Sub(object):
+
     def __init__(self, node_handle):
         self.nh = node_handle
         self.test_mode = False
@@ -292,6 +294,7 @@ class _Sub(object):
 
 
 class Searcher(object):
+
     def __init__(self, sub, vision_proxy, search_pattern):
         '''
         Give a sub_singleton, the a function to call for the object you're looking for, and a list poses to execute in
@@ -314,7 +317,7 @@ class Searcher(object):
 
     @util.cancellableInlineCallbacks
     def start_search(self, timeout=60, loop=True, spotings_req=2, speed=.1):
-        print "SERACHER - Starting."
+        print "SEARCHER - Starting."
         looker = self._run_look(spotings_req).addErrback(self.catch_error)
         searcher = self._run_search_pattern(loop, speed).addErrback(
             self.catch_error)
@@ -372,7 +375,7 @@ class Searcher(object):
         Only return true when we spotted the objects `spotings_req` many times (for false positives).
         '''
         spotings = 0
-        print "SERACHER - Looking for object."
+        print "SEARCHER - Looking for object."
         while True:
             resp = yield self.vision_proxy()
             if resp.found:
@@ -390,6 +393,7 @@ class Searcher(object):
 
 
 class PoseSequenceCommander(object):
+
     def __init__(self, sub):
         self.sub = sub
 
@@ -427,6 +431,7 @@ class PoseSequenceCommander(object):
 
 
 class SonarObjects(object):
+
     def __init__(self, sub, pattern=None):
         """
         SonarObjects: a helper to search and find objects
@@ -625,6 +630,7 @@ class SonarObjects(object):
 
 
 class SonarPointcloud(object):
+
     def __init__(self, sub, pattern=None):
         if pattern is None:
             pattern = [sub.move.zero_roll_and_pitch()

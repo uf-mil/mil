@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import sys
-import rospy
 import tf
 import mil_ros_tools
 import cv2
 import numpy as np
+import rospy
 from std_msgs.msg import Header
 from collections import deque
 from cv_bridge import CvBridgeError
@@ -23,6 +23,7 @@ as well as code from the buoy_finder mission of previous years.
 
 
 class torp_vision:
+
     def __init__(self):
 
         # Pull constants from config file
