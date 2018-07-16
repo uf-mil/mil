@@ -49,7 +49,7 @@ def load_inference_graph():
 # Drawing bounding boxes and distances onto image
 def draw_box_on_image(num_objects_detect, score_thresh, scores, boxes, classes, im_width, im_height, image_np):
     '''asdfa'''
-
+    bbox = []
     for i in range(num_objects_detect):
         if (scores[i] > score_thresh):
 

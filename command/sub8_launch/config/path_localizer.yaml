@@ -1,5 +1,5 @@
-lower_color_threshold : [0, 50, 100]
-upper_color_threshold : [100, 255, 255]
+lower_color_threshold : [100, 30, 0]
+upper_color_threshold : [255, 165, 20]
 time_thresh           : 1
 centering_thresh      : 50
 camera_topic          : '/camera/down/left/image_rect_color'

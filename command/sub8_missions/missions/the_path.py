@@ -29,6 +29,7 @@ class PathFollower(object):
     MOVE_STEP = rospy.get_param('~self.move_step', .2)
     BLIND = rospy.get_param('~blind', True)
     SCALE = rospy.get_param('~init_scale', 1)
+    SLEEP_TIME = rospy.get_param('~sleep_time', 1)
 
     def __init__(self, sub):
         self.sub = sub
@@ -45,7 +46,7 @@ class PathFollower(object):
             '/vision/path_direction', String)
         self.get_orange = self.sub.nh.subscribe('/vision/path_orange', String)
         self.t = None
-        self.reset = False
+        self.reset = True
         self.starting_pos = sub.tx_pose()
 
     def generate_pattern(self):
@@ -72,13 +73,13 @@ class PathFollower(object):
         self.print_info('Starting Search Pattern')
 
         while True:
-            yield self.sub.nh.sleep(10)
-            path_marker = yield self.get_path_marker.get_next_message()
-            get_dir = yield self.get_direction.get_next_message()
-            orange_pixel = yield self.get_orange.get_next_message()
-            # self.print_info(('Orange Pixel Direction, ', orange_pixel))
-            # self.print_info(('Direction, ', get_dir))
-            # self.print_info(('Path Marker, ', path_marker))
+            yield self.sub.nh.sleep(self.SLEEP_TIME)
+            path_marker = yield self.get_path_marker.get_last_message()
+            get_dir = yield self.get_direction.get_last_message()
+            orange_pixel = yield self.get_orange.get_last_message()
+            self.print_info(('Orange Pixel Direction, ', orange_pixel))
+            self.print_info(('Direction, ', get_dir))
+            self.print_info(('Path Marker, ', path_marker))
             if orange_pixel is not None:
                 if path_marker is not None and orange_pixel.data == 'center':
                     self.print_good('Marker Acquired.')
@@ -156,7 +157,7 @@ class PathFollower(object):
         for i, move in enumerate(self.moves[self.move_index:]):
             if self.pattern_done:
                 break
-            yield self.sub.nh.sleep(10)
+            yield self.sub.nh.sleep(self.SLEEP_TIME)
             info = 'Performing move ', move
             self.print_info(info)
             move = self.sub.move.relative(np.array(move)).go(blind=self.BLIND)
@@ -164,6 +165,7 @@ class PathFollower(object):
             yield move
             self.move_index = i + 1
         self.print_bad('Pattern finished.')
+        self.reset = not self.reset
         self.pattern_done = True
 
     @util.cancellableInlineCallbacks

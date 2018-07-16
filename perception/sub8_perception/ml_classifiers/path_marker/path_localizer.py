@@ -34,7 +34,7 @@ class classifier(object):
         # Centering Threshold in pixels
         self.centering_thresh = rospy.get_param('~centering_thresh', 50)
         # Color thresholds to find orange, BGR
-        self.lower = rospy.get_param('~lower_color_threshold', [0, 50, 100])
+        self.lower = rospy.get_param('~lower_color_threshold', [0, 30, 100])
         self.upper = rospy.get_param(
             '~upper_color_threshold', [100, 255, 255])
         # Camera topic we are pulling images from for processing
@@ -150,9 +150,10 @@ class classifier(object):
             self.num_objects_detect, self.score_thresh, scores, boxes, classes, self.im_width, self.im_height, cv_image)
 
         # Find midpoint of the region of interest
-        bbox_midpoint = [((bbox[0][0] + bbox[1][0]) / 2),
-                         ((bbox[0][1] + bbox[1][1]) / 2)]
-
+        bbox_midpoint = [((bbox[0][1] + bbox[1][1]) / 2),
+                         ((bbox[0][0] + bbox[1][0]) / 2)]
+        # print(cv_image[int(bbox[0][0]):int(bbox[1][0]),
+        # int(bbox[0][1]):int(bbox[1][1])])
         '''     
         Confirm region of interest has orange where the bbox[0] contains the
         topleft coord and bbox[1] contains bottom right
@@ -161,26 +162,28 @@ class classifier(object):
         lower = np.array(self.lower, dtype="uint8")
         upper = np.array(self.upper, dtype="uint8")
         # Run through the mask function, returns all black image if no orange
-        check = self.mask_image(self, cv_image[int(bbox[1][1] * im_height):int(bbox[0][1] * im_height),
-                                               int(bbox[0][0] * im_width):int(bbox[1][0] * im_width)], lower, upper)
+        check = self.mask_image(cv_image[int(bbox[0][1]):int(bbox[1][1]),
+                                         int(bbox[0][0]):int(bbox[1][0])], lower, upper)
 
         '''
         Find if we are centered on the region of interest, if not display its
         position relative to the center of the camera. Perform the check to see
         if we are looking at an image with orange in it. If not we are done here.
         '''
+        check = cv2.cvtColor(check, cv2.COLOR_BGR2GRAY)
         if cv2.countNonZero(check) == 0:
+            print('Check Failed.')
             return None
         else:
             # Where [0] is X coord and [1] is Y coord.
-            self.find_direction(self, bbox_midpoint[0], bbox_midpoint[1])
+            self.find_direction(bbox_midpoint[1], bbox_midpoint[0])
 
         '''
         Once we center on the region of interest, assuming we are still locked on,
         calculate the curve of the marker. 
         '''
         if self.centered:
-            self.find_curve(self, check)
+            self.find_curve(check)
 
         # Calculate FPS
         self.num_frames += 1
@@ -195,7 +198,8 @@ class classifier(object):
         # Publish image
         try:
             cv_image = cv2.cvtColor(cv_image, cv2.COLOR_RGB2BGR)
-            self.publisher.publish(self.bridge.cv2_to_imgmsg(cv_image, 'bgr8'))
+            self.debug_image_pub.publish(
+                self.bridge.cv2_to_imgmsg(cv_image, 'bgr8'))
         except CvBridgeError as e:
             print(e)
 
@@ -207,16 +211,19 @@ class classifier(object):
         # Remove anything not within the bounds of our mask
         output = cv2.bitwise_and(cv_image, cv_image, mask=mask)
 
-        # Resize to emphasize shapes
-        gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
+        # gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
 
         # Blur image so our contours can better find the full shape.
-        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        # blurred = cv2.GaussianBlur(gray, (2, 2), 0)
 
-        if(self.orange_debug):
-            self.orange_image_pub.publish(
-                self.bridge.cv2_to_imgmsg(output, 'bgr8'))
-        return blurred
+        if(self.debug):
+            try:
+                # print(output)
+                self.orange_image_pub.publish(
+                    self.bridge.cv2_to_imgmsg(output, 'bgr8'))
+            except CvBridgeError as e:
+                print(e)
+        return output
 
     def find_direction(self, xmid, ymid):
         '''
@@ -231,40 +238,42 @@ class classifier(object):
         height_diff = abs(self.midpoint[1] - ymid)
         if (width_diff > thresh):
             # If x_coord middle is large, it is further right
-            if xmid > midpoint[0]:
+            if xmid > self.midpoint[0]:
                 if(height_diff > thresh):
                     # if y_coord is large it is further down
-                    if ymid > midpoint[1]:
+                    if ymid > self.midpoint[1]:
                         self.centered = False
                         status = 'bot_right'
-                    elif ymid < midpoint[1]:
+                    elif ymid < self.midpoint[1]:
                         self.centered = False
                         status = 'top_right'
-                    else:
-                        self.centered = False
-                        status = 'right'
+                else:
+                    self.centered = False
+                    status = 'right'
             else:
                 if(height_diff > thresh):
-                    if ymid > midpoint[1]:
+                    if ymid > self.midpoint[1]:
                         self.centered = False
                         status = 'bot_left'
-                    elif ymid < midpoint[1]:
+                    elif ymid < self.midpoint[1]:
                         self.centered = False
                         status = 'top_left'
-                    else:
-                        self.centered = False
-                        status = 'left'
+                else:
+                    self.centered = False
+                    status = 'left'
         elif(height_diff > thresh):
-            if ymid > midpoint[1]:
+            if ymid > self.midpoint[1]:
                 self.centered = False
                 status = 'bot'
-            elif ymid < midpoint[1]:
+            elif ymid < self.midpoint[1]:
                 self.centered = False
                 status = 'top'
         # If we find that we are within an acceptable distance of the center...
-        elif height_diff < thresh and width_diff < thresh:
+        elif (height_diff < thresh) and (width_diff < thresh):
             self.centered = True
             status = 'center'
+        # print('h: ', height_diff)
+        # print('w: ', width_diff)
         self.orange_detection.publish(data=status)
 
     def find_curve(self, blurred):
