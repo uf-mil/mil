@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import rospy
+import math
 import mil_ros_tools
 import numpy as np
 from tf import transformations
@@ -53,9 +54,9 @@ class GazeboInterface(object):
     def send_wrench(self, wrench):
         self.wrench_srv(
             body_name=self.target,
-            reference_frame=self.target,
+            reference_frame='world',
             wrench=wrench,
-            duration=rospy.Duration(0.001)
+            duration=rospy.Duration(0.005)
         )
 
     def reset(self, srv):
@@ -90,7 +91,7 @@ class GazeboInterface(object):
                 bearings=[(msg.angle_min + i * msg.angle_increment)
                           for i in xrange(len(msg.ranges))],
                 ranges=msg.ranges,
-                intensities=[np.uint16(x) for x in msg.ranges]
+                intensities=[np.uint16(x) if not math.isinf(x) else 0 for x in msg.ranges]
             )
         )
 
