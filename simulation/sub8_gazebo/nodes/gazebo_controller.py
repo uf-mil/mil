@@ -56,7 +56,7 @@ class GazeboInterface(object):
             body_name=self.target,
             reference_frame='world',
             wrench=wrench,
-            duration=rospy.Duration(0.005)
+            duration=rospy.Duration(0.01)
         )
 
     def reset(self, srv):

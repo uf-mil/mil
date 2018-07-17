@@ -38,7 +38,7 @@ LiftDragPlugin::LiftDragPlugin() : cla(1.0), cda(0.01), cma(0.01), rho(1.2041)
   this->alpha0 = 0.0;
 
   // 90 deg stall
-  this->alphaStall = 0.5*M_PI;
+  this->alphaStall = 0.5 * M_PI;
   this->claStall = 0.0;
 
   /// \TODO: what's flat plate drag?
@@ -115,8 +115,7 @@ void LiftDragPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 /////////////////////////////////////////////////
 void LiftDragPlugin::Init()
 {
-  this->updateConnection = event::Events::ConnectWorldUpdateBegin(
-          boost::bind(&LiftDragPlugin::OnUpdate, this));
+  this->updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&LiftDragPlugin::OnUpdate, this));
 }
 
 /////////////////////////////////////////////////
@@ -152,8 +151,7 @@ void LiftDragPlugin::OnUpdate()
 
   // truncate sweep to within +/-90 deg
   while (fabs(this->sweep) > 0.5 * M_PI)
-    this->sweep = this->sweep > 0 ? this->sweep - M_PI
-                                  : this->sweep + M_PI;
+    this->sweep = this->sweep > 0 ? this->sweep - M_PI : this->sweep + M_PI;
 
   // angle of attack is the angle between
   // vel projected into lift-drag plane
@@ -177,17 +175,15 @@ void LiftDragPlugin::OnUpdate()
   // get direction of moment
   math::Vector3 momentDirection = ldNormal;
 
-  double cosAlpha = math::clamp(
-    forwardI.Dot(velInLDPlane) /
-    (forwardI.GetLength() * velInLDPlane.GetLength()), -1.0, 1.0);
+  double cosAlpha =
+      math::clamp(forwardI.Dot(velInLDPlane) / (forwardI.GetLength() * velInLDPlane.GetLength()), -1.0, 1.0);
   // gzerr << "ca " << forwardI.Dot(velInLDPlane) /
   //   (forwardI.GetLength() * velInLDPlane.GetLength()) << "\n";
 
   // get sign of alpha
   // take upwards component of velocity in lift-drag plane.
   // if sign == upward, then alpha is negative
-  double alphaSign = -upwardI.Dot(velInLDPlane)/
-    (upwardI.GetLength() + velInLDPlane.GetLength());
+  double alphaSign = -upwardI.Dot(velInLDPlane) / (upwardI.GetLength() + velInLDPlane.GetLength());
 
   // double sinAlpha = sqrt(1.0 - cosAlpha * cosAlpha);
   if (alphaSign > 0.0)
@@ -197,8 +193,7 @@ void LiftDragPlugin::OnUpdate()
 
   // normalize to within +/-90 deg
   while (fabs(this->alpha) > 0.5 * M_PI)
-    this->alpha = this->alpha > 0 ? this->alpha - M_PI
-                                  : this->alpha + M_PI;
+    this->alpha = this->alpha > 0 ? this->alpha - M_PI : this->alpha + M_PI;
 
   // compute dynamic pressure
   double speedInLDPlane = velInLDPlane.GetLength();
@@ -208,17 +203,13 @@ void LiftDragPlugin::OnUpdate()
   double cl;
   if (this->alpha > this->alphaStall)
   {
-    cl = (this->cla * this->alphaStall +
-          this->claStall * (this->alpha - this->alphaStall))
-         * cosSweepAngle2;
+    cl = (this->cla * this->alphaStall + this->claStall * (this->alpha - this->alphaStall)) * cosSweepAngle2;
     // make sure cl is still great than 0
     cl = std::max(0.0, cl);
   }
   else if (this->alpha < -this->alphaStall)
   {
-    cl = (-this->cla * this->alphaStall +
-          this->claStall * (this->alpha + this->alphaStall))
-         * cosSweepAngle2;
+    cl = (-this->cla * this->alphaStall + this->claStall * (this->alpha + this->alphaStall)) * cosSweepAngle2;
     // make sure cl is still less than 0
     cl = std::min(0.0, cl);
   }
@@ -232,15 +223,11 @@ void LiftDragPlugin::OnUpdate()
   double cd;
   if (this->alpha > this->alphaStall)
   {
-    cd = (this->cda * this->alphaStall +
-          this->cdaStall * (this->alpha - this->alphaStall))
-         * cosSweepAngle2;
+    cd = (this->cda * this->alphaStall + this->cdaStall * (this->alpha - this->alphaStall)) * cosSweepAngle2;
   }
   else if (this->alpha < -this->alphaStall)
   {
-    cd = (-this->cda * this->alphaStall +
-          this->cdaStall * (this->alpha + this->alphaStall))
-         * cosSweepAngle2;
+    cd = (-this->cda * this->alphaStall + this->cdaStall * (this->alpha + this->alphaStall)) * cosSweepAngle2;
   }
   else
     cd = (this->cda * this->alpha) * cosSweepAngle2;
@@ -255,17 +242,13 @@ void LiftDragPlugin::OnUpdate()
   double cm;
   if (this->alpha > this->alphaStall)
   {
-    cm = (this->cma * this->alphaStall +
-          this->cmaStall * (this->alpha - this->alphaStall))
-         * cosSweepAngle2;
+    cm = (this->cma * this->alphaStall + this->cmaStall * (this->alpha - this->alphaStall)) * cosSweepAngle2;
     // make sure cm is still great than 0
     cm = std::max(0.0, cm);
   }
   else if (this->alpha < -this->alphaStall)
   {
-    cm = (-this->cma * this->alphaStall +
-          this->cmaStall * (this->alpha + this->alphaStall))
-         * cosSweepAngle2;
+    cm = (-this->cma * this->alphaStall + this->cmaStall * (this->alpha + this->alphaStall)) * cosSweepAngle2;
     // make sure cm is still less than 0
     cm = std::min(0.0, cm);
   }
@@ -279,8 +262,7 @@ void LiftDragPlugin::OnUpdate()
   math::Vector3 moment = cm * q * this->area * momentDirection;
 
   // moment arm from cg to cp in inertial plane
-  math::Vector3 momentArm = pose.rot.RotateVector(
-    this->cp - this->link->GetInertial()->GetCoG());
+  math::Vector3 momentArm = pose.rot.RotateVector(this->cp - this->link->GetInertial()->GetCoG());
   // gzerr << this->cp << " : " << this->link->GetInertial()->GetCoG() << "\n";
 
   // force and torque about cg in inertial frame
@@ -299,12 +281,9 @@ void LiftDragPlugin::OnUpdate()
   if (0)
   {
     gzerr << "=============================\n";
-    gzerr << "Link: [" << this->link->GetName()
-          << "] pose: [" << pose
-          << "] dynamic pressure: [" << q << "]\n";
+    gzerr << "Link: [" << this->link->GetName() << "] pose: [" << pose << "] dynamic pressure: [" << q << "]\n";
     gzerr << "spd: [" << vel.GetLength() << "] vel: [" << vel << "]\n";
-    gzerr << "spd sweep: [" << velInLDPlane.GetLength()
-          << "] vel in LD: [" << velInLDPlane << "]\n";
+    gzerr << "spd sweep: [" << velInLDPlane.GetLength() << "] vel in LD: [" << velInLDPlane << "]\n";
     gzerr << "forward (inertial): " << forwardI << "\n";
     gzerr << "upward (inertial): " << upwardI << "\n";
     gzerr << "lift dir (inertial): " << liftDirection << "\n";
@@ -312,8 +291,7 @@ void LiftDragPlugin::OnUpdate()
     gzerr << "sweep: " << this->sweep << "\n";
     gzerr << "alpha: " << this->alpha << "\n";
     gzerr << "lift: " << lift << "\n";
-    gzerr << "drag: " << drag << " cd: "
-    << cd << " cda: " << this->cda << "\n";
+    gzerr << "drag: " << drag << " cd: " << cd << " cda: " << this->cda << "\n";
     gzerr << "moment: " << moment << "\n";
     gzerr << "cp momentArm: " << momentArm << "\n";
     gzerr << "force: " << force << "\n";

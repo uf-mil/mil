@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <sdf version="1.5">
   <model name="sub8">
-    <link name="base_link">
+    <link name="base_link" gravity="0 0 9.8">
       <velocity_decay>
         <linear>0.005</linear>
         <angular>0.01</angular>
@@ -18,7 +18,7 @@
         </inertia>
       </inertial>
 
-      <gravity>9.8</gravity>
+      <gravity>1</gravity>
       <collision name="box_collision">
         <pose>0 0 0 0 0 1.5707</pose>
         <geometry>
@@ -203,20 +203,20 @@
         </plugin>
       </sensor>
     </link>
-    <!-- Comment out to enable physics simulated controls 
+    <!-- Comment out to enable physics simulated controls -->
     <plugin name="sub8_state_set" filename="libsub8_state_set.so">
       <staticOffset>0 0 0</staticOffset>
       <referenceTopic>/c3_trajectory_generator/trajectory_v</referenceTopic>
       <alwaysOn>true</alwaysOn>
     </plugin>
-  -->
+  
 
     <!-- Uncomment to enable physics simulated controls -->
     <plugin name="sub8_buoyancy" filename="libsub8_buoyancy.so">
       <!-- density of the fluid surrounding the object in kilograms/cubic meters -->
       <fluid_density>999.1026</fluid_density>
 
-      <drag_coefficient>1</drag_coefficient>
+      <drag_coefficient>0.5</drag_coefficient>
       <link name="base_link">
         <center_of_volume>0.02 0.05 0.0508</center_of_volume>
         <volume>0.037</volume>
