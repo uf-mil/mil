@@ -56,7 +56,7 @@ class GazeboInterface(object):
             body_name=self.target,
             reference_frame='world',
             wrench=wrench,
-            duration=rospy.Duration(0.01)
+            duration=rospy.Duration(0.001)
         )
 
     def reset(self, srv):
@@ -91,7 +91,8 @@ class GazeboInterface(object):
                 bearings=[(msg.angle_min + i * msg.angle_increment)
                           for i in xrange(len(msg.ranges))],
                 ranges=msg.ranges,
-                intensities=[np.uint16(x) if not math.isinf(x) else 0 for x in msg.ranges]
+                intensities=[np.uint16(x) if not math.isinf(
+                    x) else 0 for x in msg.ranges]
             )
         )
 

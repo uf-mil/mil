@@ -26,105 +26,134 @@
 
 namespace gazebo
 {
-  /// \brief A plugin that simulates lift and drag.
-  class LiftDragPlugin : public ModelPlugin
-  {
-    /// \brief Constructor.
-    public: LiftDragPlugin();
 
-    // Documentation Inherited.
-    public: virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
+/// \brief A plugin that simulates lift and drag.
+class LiftDragPlugin : public ModelPlugin
+{
+  /// \brief Constructor.
+public:
+  LiftDragPlugin();
 
-    // Documentation Inherited.
-    public: virtual void Init();
+  // Documentation Inherited.
+public:
+  virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
 
-    /// \brief Callback for World Update events.
-    protected: virtual void OnUpdate();
+  // Documentation Inherited.
+public:
+  virtual void Init();
 
-    /// \brief Connection to World Update events.
-    protected: event::ConnectionPtr updateConnection;
+  /// \brief Callback for World Update events.
+protected:
+  virtual void OnUpdate();
 
-    /// \brief Pointer to world.
-    protected: physics::WorldPtr world;
+  /// \brief Connection to World Update events.
+protected:
+  event::ConnectionPtr updateConnection;
 
-    /// \brief Pointer to physics engine.
-    protected: physics::PhysicsEnginePtr physics;
+  /// \brief Pointer to world.
+protected:
+  physics::WorldPtr world;
 
-    /// \brief Pointer to model containing plugin.
-    protected: physics::ModelPtr model;
+  /// \brief Pointer to physics engine.
+protected:
+  physics::PhysicsEnginePtr physics;
 
-    /// \brief Name of model containing plugin.
-    protected: std::string modelName;
+  /// \brief Pointer to model containing plugin.
+protected:
+  physics::ModelPtr model;
 
-    /// \brief Coefficient of Lift / alpha slope.
-    /// Lift = C_L * q * S
-    /// where q (dynamic pressure) = 0.5 * rho * v^2
-    protected: double cla;
+  /// \brief Name of model containing plugin.
+protected:
+  std::string modelName;
 
-    /// \brief Coefficient of Drag / alpha slope.
-    /// Drag = C_D * q * S
-    /// where q (dynamic pressure) = 0.5 * rho * v^2
-    protected: double cda;
+  /// \brief Coefficient of Lift / alpha slope.
+  /// Lift = C_L * q * S
+  /// where q (dynamic pressure) = 0.5 * rho * v^2
+protected:
+  double cla;
 
-    /// \brief Coefficient of Moment / alpha slope.
-    /// Moment = C_M * q * S
-    /// where q (dynamic pressure) = 0.5 * rho * v^2
-    protected: double cma;
+  /// \brief Coefficient of Drag / alpha slope.
+  /// Drag = C_D * q * S
+  /// where q (dynamic pressure) = 0.5 * rho * v^2
+protected:
+  double cda;
 
-    /// \brief angle of attach when airfoil stalls
-    protected: double alphaStall;
+  /// \brief Coefficient of Moment / alpha slope.
+  /// Moment = C_M * q * S
+  /// where q (dynamic pressure) = 0.5 * rho * v^2
+protected:
+  double cma;
 
-    /// \brief Cl-alpha rate after stall
-    protected: double claStall;
+  /// \brief angle of attach when airfoil stalls
+protected:
+  double alphaStall;
 
-    /// \brief Cd-alpha rate after stall
-    protected: double cdaStall;
+  /// \brief Cl-alpha rate after stall
+protected:
+  double claStall;
 
-    /// \brief Cm-alpha rate after stall
-    protected: double cmaStall;
+  /// \brief Cd-alpha rate after stall
+protected:
+  double cdaStall;
 
-    /// \brief: \TODO: make a stall velocity curve
-    protected: double velocityStall;
+  /// \brief Cm-alpha rate after stall
+protected:
+  double cmaStall;
 
-    /// \brief air density
-    /// at 25 deg C it's about 1.1839 kg/m^3
-    /// At 20 °C and 101.325 kPa, dry air has a density of 1.2041 kg/m3.
-    protected: double rho;
+  /// \brief: \TODO: make a stall velocity curve
+protected:
+  double velocityStall;
 
-    /// \brief effective planeform surface area
-    protected: double area;
+  /// \brief air density
+  /// at 25 deg C it's about 1.1839 kg/m^3
+  /// At 20 °C and 101.325 kPa, dry air has a density of 1.2041 kg/m3.
+protected:
+  double rho;
 
-    /// \brief angle of sweep
-    protected: double sweep;
+  /// \brief effective planeform surface area
+protected:
+  double area;
 
-    /// \brief initial angle of attack
-    protected: double alpha0;
+  /// \brief angle of sweep
+protected:
+  double sweep;
 
-    /// \brief angle of attack
-    protected: double alpha;
+  /// \brief initial angle of attack
+protected:
+  double alpha0;
 
-    /// \brief center of pressure in link local coordinates
-    protected: math::Vector3 cp;
+  /// \brief angle of attack
+protected:
+  double alpha;
 
-    /// \brief forward flight direction in link local coordinates
-    protected: math::Vector3 forward;
+  /// \brief center of pressure in link local coordinates
+protected:
+  math::Vector3 cp;
 
-    /// \brief A vector in the lift/drag plane, anything orthogonal to it
-    /// is considered wing sweep.
-    protected: math::Vector3 upward;
+  /// \brief forward flight direction in link local coordinates
+protected:
+  math::Vector3 forward;
 
-    /// \brief Smooth velocity
-    protected: math::Vector3 velSmooth;
+  /// \brief A vector in the lift/drag plane, anything orthogonal to it
+  /// is considered wing sweep.
+protected:
+  math::Vector3 upward;
 
-    /// \brief Names of allowed target links, specified in sdf parameters.
-    protected: std::string linkName;
+  /// \brief Smooth velocity
+protected:
+  math::Vector3 velSmooth;
 
-    /// \brief Pointer to link currently targeted by mud joint.
-    protected: physics::LinkPtr link;
+  /// \brief Names of allowed target links, specified in sdf parameters.
+protected:
+  std::string linkName;
 
-    /// \brief SDF for this plugin;
-    protected: sdf::ElementPtr sdf;
-  };
->>>>>>> SIM: Re-implement Physics based controllers, Add new Lift/Drag package
+  /// \brief Pointer to link currently targeted by mud joint.
+protected:
+  physics::LinkPtr link;
+
+  /// \brief SDF for this plugin;
+protected:
+  sdf::ElementPtr sdf;
+};
 }
 #endif
