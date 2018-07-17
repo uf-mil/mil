@@ -4,9 +4,10 @@ import mil_ros_tools
 import numpy as np
 from tf import transformations
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import PoseWithCovariance, TwistWithCovariance, Pose, Point, Quaternion
+from geometry_msgs.msg import PoseWithCovariance, TwistWithCovariance, Pose, Point, Quaternion, WrenchStamped
 from sensor_msgs.msg import Range
 from sensor_msgs.msg import LaserScan
+from gazebo_msgs.srv import ApplyBodyWrench
 from gazebo_msgs.msg import LinkStates, ModelState
 from sub8_gazebo.srv import ResetGazebo, ResetGazeboResponse
 from mil_msgs.msg import RangeStamped
@@ -17,25 +18,34 @@ class GazeboInterface(object):
 
     def __init__(self, target='sub8::base_link'):
         self.target = target
-        # rospy.wait_for_service('/gazebo/apply_body_wrench')
-        # self.wrench_srv = rospy.ServiceProxy('/gazebo/apply_body_wrench', ApplyBodyWrench)
+        rospy.wait_for_service('/gazebo/apply_body_wrench')
+        self.wrench_srv = rospy.ServiceProxy(
+            '/gazebo/apply_body_wrench', ApplyBodyWrench)
         # For now, let's skip the wrench
-        # self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.wrench_cb)
+        self.wrench_sub = rospy.Subscriber(
+            'wrench', WrenchStamped, self.wrench_cb)
 
         self.last_odom = None
         self.position_offset = None
-        self.state_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self.state_cb)
-        self.state_set_pub = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
+        self.state_sub = rospy.Subscriber(
+            '/gazebo/link_states', LinkStates, self.state_cb)
+        self.state_set_pub = rospy.Publisher(
+            '/gazebo/set_model_state', ModelState, queue_size=1)
 
-        self.raw_dvl_sub = rospy.Subscriber('dvl/range_raw', Range, self.publish_height)
+        self.raw_dvl_sub = rospy.Subscriber(
+            'dvl/range_raw', Range, self.publish_height)
         self.dvl_pub = rospy.Publisher('dvl/range', RangeStamped, queue_size=1)
 
-        self.raw_blueview_sub = rospy.Subscriber('/blueview_driver/gazebo', LaserScan, self.publish_blueview_ping)
-        self.blueview_ranges_pub = rospy.Publisher('/blueview_driver/ranges', BlueViewPing, queue_size=1)
+        self.raw_blueview_sub = rospy.Subscriber(
+            '/blueview_driver/gazebo', LaserScan, self.publish_blueview_ping)
+        self.blueview_ranges_pub = rospy.Publisher(
+            '/blueview_driver/ranges', BlueViewPing, queue_size=1)
 
-        self.reset_srv = rospy.Service('gazebo/reset_gazebo', ResetGazebo, self.reset)
+        self.reset_srv = rospy.Service(
+            'gazebo/reset_gazebo', ResetGazebo, self.reset)
         self.state_pub = rospy.Publisher('model_odom', Odometry, queue_size=1)
-        self.world_state_pub = rospy.Publisher('world_odom', Odometry, queue_size=1)
+        self.world_state_pub = rospy.Publisher(
+            'world_odom', Odometry, queue_size=1)
 
         self.odom_freq = 0.03
         rospy.Timer(rospy.Duration(self.odom_freq), self.publish_odom)
@@ -54,7 +64,8 @@ class GazeboInterface(object):
             model_name=model,
             pose=Pose(
                 position=Point(*self.position_offset),
-                orientation=Quaternion(*transformations.quaternion_from_euler(0, 0, 0))
+                orientation=Quaternion(
+                    *transformations.quaternion_from_euler(0, 0, 0))
             )
         ))
         return ResetGazeboResponse()
@@ -76,7 +87,8 @@ class GazeboInterface(object):
         self.blueview_ranges_pub.publish(
             BlueViewPing(
                 header=msg.header,
-                bearings=[(msg.angle_min + i * msg.angle_increment) for i in xrange(len(msg.ranges))],
+                bearings=[(msg.angle_min + i * msg.angle_increment)
+                          for i in xrange(len(msg.ranges))],
                 ranges=msg.ranges,
                 intensities=[np.uint16(x) for x in msg.ranges]
             )
@@ -94,8 +106,10 @@ class GazeboInterface(object):
             twist = msg.twist[target_index]
 
             # Add position offset to make the start position (0, 0, -depth)
-            position_np, orientation_np = mil_ros_tools.pose_to_numpy(msg.pose[target_index])
-            pose = mil_ros_tools.numpy_quat_pair_to_pose(position_np - self.position_offset, orientation_np)
+            position_np, orientation_np = mil_ros_tools.pose_to_numpy(msg.pose[
+                                                                      target_index])
+            pose = mil_ros_tools.numpy_quat_pair_to_pose(
+                position_np - self.position_offset, orientation_np)
 
             self.state_pub.publish(
                 header=header,

@@ -19,7 +19,7 @@
         </inertia>
       </inertial>
       -->
-      <gravity>0</gravity>
+      <gravity>1</gravity>
       <collision name="box_collision">
         <pose>0 0 0 0 0 1.5707</pose>
         <geometry>
@@ -204,23 +204,24 @@
         </plugin>
       </sensor>
     </link>
-    <!-- Comment out to enable physics simulated controls -->
+    <!-- Comment out to enable physics simulated controls 
     <plugin name="sub8_state_set" filename="libsub8_state_set.so">
       <staticOffset>0 0 0</staticOffset>
       <referenceTopic>/c3_trajectory_generator/trajectory_v</referenceTopic>
       <alwaysOn>true</alwaysOn>
     </plugin>
+  -->
 
-    <!-- Uncomment to enable physics simulated controls
+    <!-- Uncomment to enable physics simulated controls -->
     <plugin name="sub8_buoyancy" filename="libsub8_buoyancy.so">
-      <fluid_density>1000</fluid_density>
+      <fluid_density>10</fluid_density>
       <drag_coefficient>1</drag_coefficient>
       <link name="base_link">
         <center_of_volume>0 0 0</center_of_volume>
         <volume>0.037</volume>
       </link>
     </plugin>
-  -->
+
     <plugin name="sub8_thrusters" filename="libsub8_thrusters.so">
       <layout_param>thruster_layout</layout_param>
       <min_abs_thrust>2.2</min_abs_thrust>
