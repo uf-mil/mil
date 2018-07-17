@@ -38,6 +38,17 @@ target_link_libraries(
 )
 
 add_library(
+    sub8_liftdrag
+        src/sub8_liftdrag.cc
+)
+set_target_properties(sub8_liftdrag PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
+target_link_libraries(
+    sub8_liftdrag
+        ${catkin_LIBRARIES}
+        ${GAZEBO_LIBRARIES}
+)
+
+add_library(
     sub8_thrusters
         src/sub8_thrusters.cc
         src/sub8_thruster_config.cpp
@@ -93,7 +104,7 @@ target_link_libraries(
 
 catkin_package(
     INCLUDE_DIRS include
-    LIBRARIES sub8_buoyancy sub8_thrusters sub8_state_set
+    LIBRARIES sub8_buoyancy sub8_thrusters sub8_state_set sub8_liftdrag
     CATKIN_DEPENDS gazebo_ros roscpp rospy std_msgs message_runtime
     DEPENDS
 )
