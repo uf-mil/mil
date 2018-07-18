@@ -204,12 +204,12 @@
       </sensor>
     </link>
     <!-- Comment out to enable physics simulated controls -->
-    <plugin name="sub8_state_set" filename="libsub8_state_set.so">
+<!--     <plugin name="sub8_state_set" filename="libsub8_state_set.so">
       <staticOffset>0 0 0</staticOffset>
       <referenceTopic>/c3_trajectory_generator/trajectory_v</referenceTopic>
       <alwaysOn>true</alwaysOn>
     </plugin>
-  
+   -->
 
     <!-- Uncomment to enable physics simulated controls -->
     <plugin name="sub8_buoyancy" filename="libsub8_buoyancy.so">
