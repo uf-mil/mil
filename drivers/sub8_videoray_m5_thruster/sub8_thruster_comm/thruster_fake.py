@@ -61,6 +61,10 @@ class FakeThrusterPort(object):
         ]
         response_dict = {key: self.status_dict[thruster_name].get(key, 0) for key in response_keys}
         return response_dict
+        
+    def get_declared_thruster_names(self):
+        ''' Gets the names of all the ports that were declared on this port '''
+        return self.thruster_info.keys()
 
     def command_thruster(self, thruster_name, normalized_thrust):
         '''
