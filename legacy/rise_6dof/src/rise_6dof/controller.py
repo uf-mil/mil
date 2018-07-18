@@ -5,6 +5,8 @@ import numpy
 from tf import transformations
 from sub8.pose_editor import quat_to_rotvec
 
+numpy.set_printoptions(suppress=True, linewidth=130)
+
 
 class Controller(object):
     '''
@@ -24,6 +26,7 @@ class Controller(object):
         self._rise_term_int_prev = numpy.zeros(6)
 
     def update(self, dt, desired, current):
+        print('='*130)
         (p, o), (p_dot, o_dot) = current
         (desired_p, desired_o), (desired_p_dot, desired_o_dot), (desired_p_dotdot, desired_o_dotdot) = desired
         world_from_body = transformations.quaternion_matrix(o)[:3, :3]
@@ -41,6 +44,9 @@ class Controller(object):
             world_from_body.dot(desired_p_dotdot),
             world_from_body.dot(desired_o_dotdot),
         ])
+
+        print('{:20s} {:30}'.format('Desired Velocity:', desired_x_dot))
+
 
         error_position_world = numpy.concatenate([
             desired_p - p,
@@ -60,10 +66,12 @@ class Controller(object):
 
         error_velocity_world = (desired_x_dot + body_gain(
             numpy.diag(self.config['k'])).dot(error_position_world)) - x_dot
+        print('{:20s} {:30}'.format('Error velocity:', error_velocity_world))
         if self.config['two_d_mode']:
             error_velocity_world = error_velocity_world * [1, 1, 0, 0, 0, 1]
 
         pd_output = body_gain(numpy.diag(self.config['ks'])).dot(error_velocity_world)
+        print('{:20s} {:30}'.format('pd_output:', pd_output))
 
         output = pd_output
         if self.config['use_rise']:
@@ -83,4 +91,6 @@ class Controller(object):
 
         # Permitting lambda assignment b/c legacy
         wrench_from_vec = lambda output: (world_from_body.T.dot(output[0:3]), world_from_body.T.dot(output[3:6]))  # noqa
+        print('{:6} {}'.format('PD:', wrench_from_vec(pd_output)))
+        print('{:6} {}'.format('PID(R):', wrench_from_vec(output)))
         return wrench_from_vec(pd_output), wrench_from_vec(output)
