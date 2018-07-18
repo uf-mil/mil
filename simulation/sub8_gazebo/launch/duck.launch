@@ -177,14 +177,12 @@
   <!--node pkg="sub8_gazebo" type="actuator_sim.py" name="actuator_sim" /> -->
   <!-- <node pkg="sub8_gazebo" type="buoys.py" name="buoy_contact_reporter" /> -->
   <node pkg="sub8_gazebo" type="turbulator.py" name="turbulator" output="screen" if="$(arg turbulence)" />
-  
 
   <include file="$(find sub8_alarm)/launch/alarms.launch" />
 
   <include file="$(find sub8_launch)/launch/subsystems/rise.launch" />
   <group if="$(arg thrusters)">
-    <include file="$(find sub8_thruster_mapper)/launch/thruster_mapper.launch" />
-    <include file="$(find sub8_videoray_m5_thruster)/launch/thruster_driver.launch"/>
+    <include file="$(find sub8_launch)/launch/subsystems/thrusters.launch" />
   </group>
 
   <include file="$(find sub8_launch)/launch/tf.launch" />
