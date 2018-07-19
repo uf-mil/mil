@@ -26,7 +26,6 @@
 
 namespace gazebo
 {
-
 /// \brief A plugin that simulates lift and drag.
 class LiftDragPlugin : public ModelPlugin
 {
