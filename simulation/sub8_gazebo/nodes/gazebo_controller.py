@@ -19,12 +19,14 @@ class GazeboInterface(object):
 
     def __init__(self, target='sub8::base_link'):
         self.target = target
-        rospy.wait_for_service('/gazebo/apply_body_wrench')
-        self.wrench_srv = rospy.ServiceProxy(
-            '/gazebo/apply_body_wrench', ApplyBodyWrench)
-        # For now, let's skip the wrench
-        self.wrench_sub = rospy.Subscriber(
-            'wrench', WrenchStamped, self.wrench_cb)
+        self.physics = rospy.get_param('~physics_flag', False)
+        if self.physics:
+            rospy.wait_for_service('/gazebo/apply_body_wrench')
+            self.wrench_srv = rospy.ServiceProxy(
+                '/gazebo/apply_body_wrench', ApplyBodyWrench)
+            # For now, let's skip the wrench
+            self.wrench_sub = rospy.Subscriber(
+                'wrench', WrenchStamped, self.wrench_cb)
 
         self.last_odom = None
         self.position_offset = None
