@@ -14,7 +14,8 @@ class FakeThrusterPort(object):
         self.online_thruster_names = []
         self.missing_thrusters = []
         for thruster_name in port_info['thruster_names']:
-            self.load_thruster_config(thruster_name, thruster_definitions[thruster_name])
+            self.load_thruster_config(
+                thruster_name, thruster_definitions[thruster_name])
 
     def load_thruster_config(self, thruster_name, thruster_info):
         self.thruster_dict[thruster_name] = thruster_info['node_id']
@@ -59,16 +60,23 @@ class FakeThrusterPort(object):
             'status_rx_count',
             'command_latency_avg'
         ]
-        response_dict = {key: self.status_dict[thruster_name].get(key, 0) for key in response_keys}
+        response_dict = {key: self.status_dict[
+            thruster_name].get(key, 0) for key in response_keys}
         return response_dict
+
+    def get_declared_thruster_names(self):
+        ''' Gets the names of all the ports that were declared on this port '''
+        return self.thruster_info.keys()
 
     def command_thruster(self, thruster_name, normalized_thrust):
         '''
         Fake thruster command
         normalized_thrust should be between 0 and 1
         '''
-        assert thruster_name in self.thruster_dict.keys(), "{} must be associated with this port".format(thruster_name)
-        rospy.loginfo('Commanding {}: {}'.format(thruster_name, normalized_thrust))
+        assert thruster_name in self.thruster_dict.keys(
+        ), "{} must be associated with this port".format(thruster_name)
+        rospy.loginfo('Commanding {}: {}'.format(
+            thruster_name, normalized_thrust))
         thruster_status = self.read_status(thruster_name)
         return thruster_status
 
@@ -82,7 +90,8 @@ if __name__ == '__main__':
     import rosparam
     import numpy.random as npr  # haha
     sub8_thruster_mapper = rospkg.RosPack().get_path('sub8_thruster_mapper')
-    thruster_layout = rosparam.load_file(sub8_thruster_mapper + '/config/thruster_layout.yaml')[0][0]
+    thruster_layout = rosparam.load_file(
+        sub8_thruster_mapper + '/config/thruster_layout.yaml')[0][0]
     print thruster_layout
 
     port_info = npr.choice(thruster_layout['thruster_ports'])

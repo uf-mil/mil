@@ -5,6 +5,10 @@
   <arg name="cameras" default="true" />
   <arg name="turbulence" default="false" />
   <arg name="thrusters" default="false" />
+  <arg name="physics" default="false" />
+
+  <!-- Enable Physics if desired in Gazebo Controller -->
+  <param name="physics_flag" value="$(arg physics)" />
 
   <!-- Load model for rviz to use -->
   <param name="robot_description" command="cat $(find sub8_missions)/tools/sub8/sub8.xml" />
@@ -105,11 +109,21 @@
         output="screen" />
 
   <!-- Start the sub model with cameras if desired -->
-  <node if="$(arg cameras)"
-    name="spawn_sub" pkg="gazebo_ros" type="spawn_model"
-    args="-file $(find sub8_gazebo)/models/sub8/sub8.sdf -sdf
-      -x 13.0 -y 24.0 -z -1.0 -model sub8"
-    output="screen" />
+  <group if="$(arg physics)">
+    <node if="$(arg cameras)"
+      name="spawn_sub" pkg="gazebo_ros" type="spawn_model"
+      args="-file $(find sub8_gazebo)/models/sub8/sub8_physics.sdf -sdf
+        -x 13.0 -y 24.0 -z -1.0 -model sub8"
+      output="screen" />
+  </group>
+
+  <group unless="$(arg physics)">
+    <node if="$(arg cameras)"
+      name="spawn_sub" pkg="gazebo_ros" type="spawn_model"
+      args="-file $(find sub8_gazebo)/models/sub8/sub8.sdf -sdf
+        -x 13.0 -y 24.0 -z -1.0 -model sub8"
+      output="screen" />
+  </group>
 
   <node unless="$(arg cameras)"
     name="spawn_sub" pkg="gazebo_ros" type="spawn_model"

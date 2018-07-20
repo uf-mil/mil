@@ -106,6 +106,8 @@ class FireTorpedos(object):
         self.print_good(
             "{} locked. Firing torpedos. Hit confirmed, good job Commander.".
             format(target))
+        yield self.sub.set('torpedo1', True)
+        yield self.sub.set('torpedo2', True)
         self.done = True
 
     def get_target(self):
