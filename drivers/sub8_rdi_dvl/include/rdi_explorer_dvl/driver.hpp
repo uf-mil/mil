@@ -157,6 +157,8 @@ public:
 
     if (ensemble.size() < 6)
       return;
+
+    std::vector<double> correlations(4, nan(""));
     for (int dt = 0; dt < ensemble[5]; dt++)
     {
       int offset = getu16le(ensemble.data() + 6 + 2 * dt);
@@ -166,7 +168,6 @@ public:
       // Bottom Track, Bottom Track Range
       uint16_t section_id = getu16le(ensemble.data() + offset);
 
-      std::vector<double> correlations(4, nan(""));
       if (section_id == 0x5803)  // Bottom Track High Resolution Velocity
       {
         if (ensemble.size() - offset < 2 + 4 * 4)
