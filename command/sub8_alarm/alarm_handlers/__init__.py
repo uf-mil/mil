@@ -4,3 +4,4 @@ from thruster_out import ThrusterOut
 from bus_voltage import BusVoltage
 from odom_kill import OdomKill
 from kill import Kill
+from pause_kill import PauseKill
