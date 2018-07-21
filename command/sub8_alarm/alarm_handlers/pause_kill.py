@@ -39,6 +39,9 @@ class PauseKill(HandlerBase):
         if not self._killed and not int(res):
             self._killed = True
             self.ab.raise_alarm(problem_description='KILL PULLED', severity=5)
+        elif self._killed and int(res):
+            self._killed = False
+            self.ab.clear_alarm()
 
     def raised(self, alarm):
         self._killed = True
