@@ -52,6 +52,10 @@ class Kill(HandlerBase):
         if self._killed:
             return True
 
+        if sub_alarms["pause-kill"].raised and sub_alarms["pause-kill"].severity == 5:
+            return True
+        ignore.append("pause-kill")
+
         # Battery too low
         if sub_alarms["bus-voltage"].raised and sub_alarms["bus-voltage"].severity == 5:
             return True
