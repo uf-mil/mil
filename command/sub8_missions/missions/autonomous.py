@@ -15,12 +15,12 @@ WAIT_SECONDS = 5.0
 @txros.util.cancellableInlineCallbacks
 def run_mission(sub, mission, timeout):
     # timeout in seconds
+    m = mission.run(sub).addErrback(lambda x: None)
     start_time = yield sub.nh.get_time()
-    mission = mission.run(sub)
     while sub.nh.get_time() - start_time < genpy.Duration(timeout):
         yield sub.nh.sleep(0.5)
     fprint('MISSION TIMEOUT', msg_color='red')
-    mission.cancel()
+    m.cancel()
     defer.returnValue(True)
 
 
@@ -30,7 +30,7 @@ def do_mission(sub):
 
     # Chain 1 missions
     try:
-        yield run_mission(sub, strip, 330)
+        yield run_mission(sub, strip, 300)
     except Exception as e:
         fprint("Error in Chain 1 missions!", msg_color="red")
         print e

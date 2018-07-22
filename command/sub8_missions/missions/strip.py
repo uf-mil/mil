@@ -41,8 +41,8 @@ def run(sub):
     yield sub.nh.sleep(3)
 
     fprint('Going around pole')
-    offset_left = 1.7
-    offset_forward = 1.7
+    offset_left = 1
+    offset_forward = 1.5
 
     pole_l = pole.left(offset_left)
     yield pole_l.go(speed=SPEED_LIMIT)
