@@ -19,7 +19,7 @@ class GazeboInterface(object):
 
     def __init__(self, target='sub8::base_link'):
         self.target = target
-        self.physics = rospy.get_param('~physics_flag', False)
+        self.physics = rospy.get_param('/physics_flag', False)
         if self.physics:
             rospy.wait_for_service('/gazebo/apply_body_wrench')
             self.wrench_srv = rospy.ServiceProxy(
