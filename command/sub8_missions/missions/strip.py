@@ -17,10 +17,15 @@ def pitch(sub):
 @util.cancellableInlineCallbacks
 def run(sub):
     fprint('Starting...')
+    sub_start_position, sub_start_orientation = yield sub.tx_pose()
+    fprint(sub_start_orientation)
     yield sub.nh.sleep(5)
-    yield sub.move.forward(0).zero_roll_and_pitch().go()
-    yield sub.move.down(1).go(speed=0.1)
+
+    sub_start = sub.move.forward(0).zero_roll_and_pitch()
+    yield sub_start.down(1).set_orientation(sub_start_orientation).go(
+        speed=0.1)
     yield sub.nh.sleep(3)
+
     start = sub.move.forward(0).zero_roll_and_pitch()
     # fprint('Searching... pitching...')
     # yield pitch(sub)
@@ -31,22 +36,35 @@ def run(sub):
     # fprint('Searching... pitching')
     # yield pitch(sub)
     fprint('Going right in front of pole')
-    yield sub.move.forward(8.7).go(speed=SPEED_LIMIT)
+    pole = gate.forward(8.7)
+    yield pole.go(speed=SPEED_LIMIT)
     yield sub.nh.sleep(3)
+
     fprint('Going around pole')
-    yield sub.move.left(1.3).go(speed=SPEED_LIMIT)
+    offset_left = 1.7
+    offset_forward = 1.7
+
+    pole_l = pole.left(offset_left)
+    yield pole_l.go(speed=SPEED_LIMIT)
     yield sub.nh.sleep(3)
-    yield sub.move.forward(2).go(speed=SPEED_LIMIT)
+
+    pole_f = pole_l.forward(offset_forward)
+    yield pole_f.go(speed=SPEED_LIMIT)
     yield sub.nh.sleep(3)
-    yield sub.move.right(2.6).go(speed=SPEED_LIMIT)
+
+    pole_r = pole_f.right(offset_left * 2)
+    yield pole_r.go(speed=SPEED_LIMIT)
     yield sub.nh.sleep(3)
-    yield sub.move.backward(2).go(speed=SPEED_LIMIT)
+
+    pole_b = pole_r.backward(offset_forward * 2)
+    yield pole_b.go(speed=SPEED_LIMIT)
     yield sub.nh.sleep(3)
-    yield sub.move.left(1.3).go(speed=SPEED_LIMIT)
+
+    yield pole.go(speed=SPEED_LIMIT)
     yield sub.nh.sleep(5)
 
     fprint('Turning back to gate')
-    yield sub.move.backward(1).go(speed=SPEED_LIMIT)
+    yield pole.backward(1).go(speed=SPEED_LIMIT)
     yield sub.nh.sleep(5)
     fprint('Look at gate')
     yield sub.move.look_at(gate._pose.position).go(speed=SPEED_LIMIT)

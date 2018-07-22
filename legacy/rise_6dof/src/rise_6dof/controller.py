@@ -28,7 +28,8 @@ class Controller(object):
         self._rise_term_int_prev = numpy.zeros(6)
 
     def update(self, dt, desired, current):
-        print('=' * 130)
+        if DEBUG:
+            print('=' * 130)
         (p, o), (p_dot, o_dot) = current
         (desired_p, desired_o), (desired_p_dot,
                                  desired_o_dot), (desired_p_dotdot,
