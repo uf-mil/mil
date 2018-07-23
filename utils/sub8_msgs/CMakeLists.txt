@@ -44,6 +44,7 @@ add_service_files(
   TBDetectionSwitch.srv
   OcrRequest.srv
   Bounds.srv
+  GuessRequest.srv
 )
 
 # add_action_files(

@@ -1,0 +1,3 @@
+string item
+---
+geometry_msgs/PoseStamped location
