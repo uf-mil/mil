@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 
-import os
-import numpy
 import threading
-import matplotlib
 import matplotlib.pyplot as plt
 
 import roslib
-roslib.load_manifest('hydrophones')
 import rospy
 
-from hydrophones import algorithms, util
+from hydrophones import util
 from hydrophones.msg import Ping
+
+roslib.load_manifest('hydrophones')
+
 
 class Node(object):
     def __init__(self):
@@ -20,7 +19,8 @@ class Node(object):
         self.fig.show()
         self.cond = threading.Condition()
         self.samples = None
-        self.sub = rospy.Subscriber('hydrophones/ping', Ping, self.ping_callback)
+        self.sub = rospy.Subscriber('hydrophones/ping', Ping,
+                                    self.ping_callback)
 
     def ping_callback(self, ping):
         with self.cond:
@@ -39,6 +39,6 @@ class Node(object):
                     self.fig.show()
                     self.samples = None
 
+
 rospy.init_node('ping_plotter')
 Node().run()
-

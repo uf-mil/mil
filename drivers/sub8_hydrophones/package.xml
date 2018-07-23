@@ -1,12 +1,10 @@
 <package>
-  <name>hydrophones</name>
+  <name>sub8_hydrophones</name>
   <version>1.0.0</version>
-  <description>hydrophones</description>
-  <maintainer email="matthewbot@gmail.com">Matthew Thompson</maintainer>
+  <description>shydrophones</description>
+  <maintainer email="dvolya@ufl.edu">Daniel Volya</maintainer>
 
   <license>BSD</license>
-
-  <url type="website">http://ros.org/wiki/hydrophones</url>
   <!-- <url type="bugtracker"></url> -->
 
   <author>Matthew Thompson</author>

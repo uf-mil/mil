@@ -3,7 +3,7 @@
 import rospy
 from hydrophones.msg import ProcessedPing
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.mplot3d import Axes3D  # noqa
 import numpy as np
 
 vectors_3d = None
