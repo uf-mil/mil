@@ -30,7 +30,7 @@ def do_mission(sub):
 
     # Chain 1 missions
     try:
-        yield run_mission(sub, strip, 300)
+        yield run_mission(sub, strip, 400)
     except Exception as e:
         fprint("Error in Chain 1 missions!", msg_color="red")
         print e

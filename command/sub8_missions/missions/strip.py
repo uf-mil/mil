@@ -19,30 +19,30 @@ def run(sub):
     fprint('Starting...')
     sub_start_position, sub_start_orientation = yield sub.tx_pose()
     fprint(sub_start_orientation)
-    yield sub.nh.sleep(5)
+    yield sub.nh.sleep(2)
 
     sub_start = sub.move.forward(0).zero_roll_and_pitch()
-    yield sub_start.down(1).set_orientation(sub_start_orientation).go(
+    yield sub_start.down(0.3).set_orientation(sub_start_orientation).go(
         speed=0.1)
     yield sub.nh.sleep(3)
 
-    start = sub.move.forward(0).zero_roll_and_pitch()
+    start = sub_start.forward(0).zero_roll_and_pitch()
     # fprint('Searching... pitching...')
     # yield pitch(sub)
     fprint('Moving to gate')
-    gate = start.forward(3)
+    gate = start.forward(3).down(0.3)
     yield gate.go(speed=SPEED_LIMIT)
-    yield sub.nh.sleep(3)
+    yield sub.nh.sleep(5)
     # fprint('Searching... pitching')
     # yield pitch(sub)
     fprint('Going right in front of pole')
-    pole = gate.forward(8.7)
+    pole = gate.forward(8.7).down(0.5)
     yield pole.go(speed=SPEED_LIMIT)
-    yield sub.nh.sleep(3)
+    yield sub.nh.sleep(5)
 
     fprint('Going around pole')
-    offset_left = 1
-    offset_forward = 1.5
+    offset_left = 1.5
+    offset_forward = 1.8
 
     pole_l = pole.left(offset_left)
     yield pole_l.go(speed=SPEED_LIMIT)
@@ -52,11 +52,11 @@ def run(sub):
     yield pole_f.go(speed=SPEED_LIMIT)
     yield sub.nh.sleep(3)
 
-    pole_r = pole_f.right(offset_left * 2)
+    pole_r = pole_f.right(offset_left * 2 - offset_left / 2)
     yield pole_r.go(speed=SPEED_LIMIT)
     yield sub.nh.sleep(3)
 
-    pole_b = pole_r.backward(offset_forward * 2)
+    pole_b = pole_r.backward(offset_forward * 2 - offset_forward / 2)
     yield pole_b.go(speed=SPEED_LIMIT)
     yield sub.nh.sleep(3)
 
@@ -70,7 +70,7 @@ def run(sub):
     yield sub.move.look_at(gate._pose.position).go(speed=SPEED_LIMIT)
     yield sub.nh.sleep(5)
     fprint('Going to gate')
-    yield gate.yaw_left_deg(180).go(speed=SPEED_LIMIT)
+    yield gate.yaw_left_deg(180).down(0.1).go(speed=SPEED_LIMIT)
     yield sub.nh.sleep(5)
     fprint('Go past through gate')
     yield start.yaw_left_deg(180).go(speed=SPEED_LIMIT)

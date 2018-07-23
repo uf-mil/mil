@@ -33,8 +33,8 @@ class classifier(object):
         self.lower = rospy.get_param('~lower_color_threshold', [0, 30, 100])
         self.upper = rospy.get_param('~upper_color_threshold', [100, 255, 255])
         # Camera topic we are pulling images from for processing
-        self.camera_topic = rospy.get_param(
-            '~camera_topic', '/camera/down/left/image_rect_color')
+        self.camera_topic = rospy.get_param('~camera_topic',
+                                            '/camera/down/image_rect_color')
         # Number of frames
         self.num_frames = rospy.get_param('~num_frames', 0)
         # Number of objects we detect
@@ -118,8 +118,8 @@ class classifier(object):
         This is a serious problem considering how long it takes to
         process a single image.
         '''
-        if abs(msg.header.stamp.secs - int(rospy.get_time())
-               ) > self.time_thresh:
+        if abs(msg.header.stamp.secs -
+               int(rospy.get_time())) > self.time_thresh:
             return True
         else:
             return False
@@ -135,7 +135,6 @@ class classifier(object):
             cv_image = self.bridge.imgmsg_to_cv2(data, 'bgr8')
         except CvBridgeError as e:
             print(e)
-
         cv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
 
         # Run image through tensorflow graph
@@ -146,6 +145,24 @@ class classifier(object):
         labelled_image, bbox = detector_utils.draw_box_on_image(
             self.num_objects_detect, self.score_thresh, scores, boxes, classes,
             self.im_width, self.im_height, cv_image)
+
+        # Calculate FPS
+        self.num_frames += 1
+        elapsed_time = (
+            datetime.datetime.now() - self.start_time).total_seconds()
+        fps = self.num_frames / elapsed_time
+
+        # Display FPS on frame
+        detector_utils.draw_text_on_image(
+            "FPS : " + str("{0:.2f}".format(fps)), cv_image)
+
+        # Publish image
+        try:
+            cv_image = cv2.cvtColor(cv_image, cv2.COLOR_RGB2BGR)
+            self.debug_image_pub.publish(
+                self.bridge.cv2_to_imgmsg(cv_image, 'bgr8'))
+        except CvBridgeError as e:
+            print(e)
 
         # Find midpoint of the region of interest
         bbox_midpoint = [((bbox[0][1] + bbox[1][1]) / 2),
@@ -160,9 +177,9 @@ class classifier(object):
         lower = np.array(self.lower, dtype="uint8")
         upper = np.array(self.upper, dtype="uint8")
         # Run through the mask function, returns all black image if no orange
-        check = self.mask_image(cv_image[int(bbox[0][1]):int(bbox[1][1]),
-                                         int(bbox[0][0]):int(bbox[1][0])],
-                                lower, upper)
+        check = self.mask_image(
+            cv_image[int(bbox[0][1]):int(bbox[1][1]),
+                     int(bbox[0][0]):int(bbox[1][0])], lower, upper)
         '''
         Find if we are centered on the region of interest, if not display its
         position relative to the center of the camera. Perform the check to see
@@ -182,24 +199,6 @@ class classifier(object):
         '''
         if self.centered:
             self.find_curve(check)
-
-        # Calculate FPS
-        self.num_frames += 1
-        elapsed_time = (
-            datetime.datetime.now() - self.start_time).total_seconds()
-        fps = self.num_frames / elapsed_time
-
-        # Display FPS on frame
-        detector_utils.draw_text_on_image(
-            "FPS : " + str("{0:.2f}".format(fps)), cv_image)
-
-        # Publish image
-        try:
-            cv_image = cv2.cvtColor(cv_image, cv2.COLOR_RGB2BGR)
-            self.debug_image_pub.publish(
-                self.bridge.cv2_to_imgmsg(cv_image, 'bgr8'))
-        except CvBridgeError as e:
-            print(e)
 
     def mask_image(self, cv_image, lower, upper):
         '''

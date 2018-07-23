@@ -13,15 +13,16 @@ class PathFollower(object):
     Mission code to align to path markers and go on the Path.
     '''
 
-    X_PATTERN_RADIUS = rospy.get_param('~pattern_x', .5)
-    Y_PATTERN_RADIUS = rospy.get_param('pattern_y', .5)
+    X_PATTERN_RADIUS = rospy.get_param('~pattern_x', 1.5)
+    Y_PATTERN_RADIUS = rospy.get_param('~pattern_y', 1.5)
     PURSUIT_RANGE = rospy.get_param('~pursuit_range', 1)
     STARTING_DEPTH = rospy.get_param('~start_depth', -1)
-    START_GATE_POS = rospy.get_param('~start_gate', [0, 0, 1])
+    START_GATE_POS = rospy.get_param('~start_gate', [0, 0, 0])
     MOVE_STEP = rospy.get_param('~self.move_step', .2)
     BLIND = rospy.get_param('~blind', True)
     SCALE = rospy.get_param('~init_scale', 1)
     SLEEP_TIME = rospy.get_param('~sleep_time', 1)
+    SPEED = rospy.get_param('~sped', 0.1)
 
     def __init__(self, sub):
         self.sub = sub
@@ -82,61 +83,75 @@ class PathFollower(object):
                         self.print_good('Marker Found, Looking Left')
                         # yield self.sub.move.look_at_without_pitching(-1 *
                         # self.START_GATE_POS).go(blind=self.BLIND)
-                        yield self.sub.move.yaw_left(45).go(blind=self.BLIND)
+                        yield self.sub.move.yaw_left(45).go(
+                            blind=self.BLIND, speed=self.SPEED)
                         self.done = True
                         break
                     elif get_dir.data == 'right':
                         self.print_good('Marker Found, Looking Right')
                         # yield self.sub.move.look_at_without_pitching(-1 *
                         # self.START_GATE_POS).go(blind=self.BLIND)
-                        yield self.sub.move.yaw_right(45).go(blind=self.BLIND)
+                        yield self.sub.move.yaw_right(45).go(
+                            blind=self.BLIND, speed=self.SPEED)
                         self.done = True
                         break
                 elif orange_pixel.data == 'top':
                     self.pattern_done = True
                     # move left     f/b  l/r u/d
                     move = np.array([0, self.MOVE_STEP, 0])
-                    yield self.sub.move.relative(move).go(blind=self.BLIND)
+                    yield self.sub.move.relative(move).go(
+                        blind=self.BLIND, speed=self.SPEED)
                 elif orange_pixel.data == 'top_left':
                     self.pattern_done = True
                     # move back left
                     move = np.array([-self.MOVE_STEP, self.MOVE_STEP, 0])
-                    yield self.sub.move.relative(move).go(blind=self.BLIND)
-                    yield self.sub.move.relative(move).go(blind=self.BLIND)
+                    yield self.sub.move.relative(move).go(
+                        blind=self.BLIND, speed=self.SPEED)
+                    yield self.sub.move.relative(move).go(
+                        blind=self.BLIND, speed=self.SPEED)
                 elif orange_pixel.data == 'top_right':
                     # move forward left
                     self.pattern_done = True
                     move = np.array([self.MOVE_STEP, self.MOVE_STEP, 0])
-                    yield self.sub.move.relative(move).go(blind=self.BLIND)
-                    yield self.sub.move.relative(move).go(blind=self.BLIND)
+                    yield self.sub.move.relative(move).go(
+                        blind=self.BLIND, speed=self.SPEED)
+                    yield self.sub.move.relative(move).go(
+                        blind=self.BLIND, speed=self.SPEED)
                 elif orange_pixel.data == 'bot':
                     # move right
                     self.pattern_done = True
                     move = np.array([0, -self.MOVE_STEP, 0])
-                    yield self.sub.move.relative(move).go(blind=self.BLIND)
+                    yield self.sub.move.relative(move).go(
+                        blind=self.BLIND, speed=self.SPEED)
                 elif orange_pixel.data == 'bot_left':
                     # move backward left
                     self.pattern_done = True
                     move = np.array([-self.MOVE_STEP, -self.MOVE_STEP, 0])
-                    yield self.sub.move.relative(move).go(blind=self.BLIND)
-                    yield self.sub.move.relative(move).go(blind=self.BLIND)
+                    yield self.sub.move.relative(move).go(
+                        blind=self.BLIND, speed=self.SPEED)
+                    yield self.sub.move.relative(move).go(
+                        blind=self.BLIND, speed=self.SPEED)
                 elif orange_pixel.data == 'bot_right':
                     # move forward right
                     # print('moving forward, right')
                     self.pattern_done = True
                     move = np.array([self.MOVE_STEP, -self.MOVE_STEP, 0])
-                    yield self.sub.move.relative(move).go(blind=self.BLIND)
-                    yield self.sub.move.relative(move).go(blind=self.BLIND)
+                    yield self.sub.move.relative(move).go(
+                        blind=self.BLIND, speed=self.SPEED)
+                    yield self.sub.move.relative(move).go(
+                        blind=self.BLIND, speed=self.SPEED)
                 elif orange_pixel.data == 'left':
                     # move backward
                     self.pattern.cancel()
                     move = np.array([-self.MOVE_STEP, 0, 0])
-                    yield self.sub.move.relative(move).go(blind=self.BLIND)
+                    yield self.sub.move.relative(move).go(
+                        blind=self.BLIND, speed=self.SPEED)
                 elif orange_pixel.data == 'right':
                     # move forward
                     self.pattern_done = True
                     move = np.array([self.MOVE_STEP, 0, 0])
-                    yield self.sub.move.relative(move).go(blind=self.BLIND)
+                    yield self.sub.move.relative(move).go(
+                        blind=self.BLIND, speed=self.SPEED)
                 else:
                     self.pattern_done = False
 
@@ -152,7 +167,8 @@ class PathFollower(object):
             yield self.sub.nh.sleep(self.SLEEP_TIME)
             info = 'Performing move ', move
             self.print_info(info)
-            move = self.sub.move.relative(np.array(move)).go(blind=self.BLIND)
+            move = self.sub.move.relative(np.array(move)).go(
+                blind=self.BLIND, speed=self.SPEED)
             move.addErrback(err)
             yield move
             self.move_index = i + 1
