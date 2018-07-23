@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="sub8_launch" type="passive_sonar_conn" name="passive_sonar_conn" />
+  <rosparam file="$(find sub8_launch)/config/passive_sonar.yaml" command="load" />
+  <node pkg="sub8_hydrophones" type="hydrophones.py" name="sub8_hydrophones" output="screen" />
+</launch>

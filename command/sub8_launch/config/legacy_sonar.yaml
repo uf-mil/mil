@@ -1,8 +1,0 @@
-paulboard_driver/port          :  /dev/ttyUSB0
-paulboard_driver/sample_rate   :  300000
-paulboard_driver/frame         :  /hydrophones
-paulboard_driver/permute       :  "1 2 3 4"
-
-hydrophones/dist_h             :  2.286000e-02
-hydrophones/dist_h4            :  2.286000e-02
-hydrophones/v_sound            :  1482

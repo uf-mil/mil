@@ -18,6 +18,10 @@ def run_mission(sub, mission, timeout):
     m = mission.run(sub).addErrback(lambda x: None)
     start_time = yield sub.nh.get_time()
     while sub.nh.get_time() - start_time < genpy.Duration(timeout):
+        # oof what a hack
+        if len(m.callbacks) == 0:
+            m.cancel()
+            defer.returnValue(True)
         yield sub.nh.sleep(0.5)
     fprint('MISSION TIMEOUT', msg_color='red')
     m.cancel()
