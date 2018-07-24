@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import rospy
-from sub8_msgs.srv import GuessRequest
+from sub8_msgs.srv import GuessRequest, GuessRequestResponse
 from geometry_msgs.msg import PoseStamped
 
 
@@ -17,9 +17,12 @@ class Guess:
     def request_location(self, srv):
         req_item = srv.item
         if (req_item in self.items):
-            return self.locations[self.items.index(req_item)]
+            return GuessRequestResponse(location=self.locations[self.items.index(req_item)], found=True)
+        else:
+            return GuessRequestResponse(found=False)
 
     def add_guess_to_list(self, msg):
+        print('Added Item')
         self.locations.append(msg)
 
 
