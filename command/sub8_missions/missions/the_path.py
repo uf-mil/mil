@@ -14,14 +14,14 @@ class PathFollower(object):
     '''
 
     X_PATTERN_RADIUS = rospy.get_param('~pattern_x', 1.5)
-    Y_PATTERN_RADIUS = rospy.get_param('~pattern_y', 1.5)
+    Y_PATTERN_RADIUS = rospy.get_param('~pattern_y', 1)
     PURSUIT_RANGE = rospy.get_param('~pursuit_range', 1)
     STARTING_DEPTH = rospy.get_param('~start_depth', -1)
     START_GATE_POS = rospy.get_param('~start_gate', [0, 0, 0])
     MOVE_STEP = rospy.get_param('~self.move_step', .2)
     BLIND = rospy.get_param('~blind', True)
     SCALE = rospy.get_param('~init_scale', 1)
-    SLEEP_TIME = rospy.get_param('~sleep_time', 1)
+    SLEEP_TIME = rospy.get_param('~sleep_time', 3)
     SPEED = rospy.get_param('~sped', 0.1)
 
     def __init__(self, sub):

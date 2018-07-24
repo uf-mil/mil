@@ -53,7 +53,7 @@ class FireTorpedos(object):
     def generate_pattern(self):
         z = self.Z_PATTERN_RADIUS
         y = self.Y_PATTERN_RADIUS
-        self.moves = [[0, 0, z], [0, y, 0], [0, 0, -2 * z], [0, -2 * y, 0]]
+        self.moves = [[0, 0, -z], [0, y, 0], [0, 0, -2 * z], [0, -2 * y, 0]]
         self.move_index = 0
 
     @util.cancellableInlineCallbacks
@@ -86,7 +86,7 @@ class FireTorpedos(object):
 
         self.pattern_done = False
         for i, move in enumerate(self.moves[self.move_index:]):
-            move = self.sub.move.relative(np.array(move)).go(blind=self.BLIND)
+            move = self.sub.move.relative(np.array(move)).go(blind=self.BLIND, speed=0.1)
             move.addErrback(err)
             yield move
             self.move_index = i + 1
@@ -96,13 +96,13 @@ class FireTorpedos(object):
     @util.cancellableInlineCallbacks
     def fire(self, target):
         self.print_info("FIRING {}".format(target))
-        yield self.sub.move.go(blind=self.BLIND)  # Station hold
+        yield self.sub.move.go(blind=self.BLIND, speed=0.1)  # Station hold
         target_position = self.targets[target].position
-        yield self.sub.move.depth(-target_position[2]).go(blind=self.BLIND)
+        yield self.sub.move.depth(-target_position[2]).go(blind=self.BLIND, speed=.1)
         yield self.sub.move.look_at_without_pitching(target_position).go(
-            blind=self.BLIND)
+            blind=self.BLIND, speed=.1)
         yield self.sub.move.set_position(target_position).backward(1).go(
-            blind=self.BLIND)
+            blind=self.BLIND, speed=.1)
         self.print_good(
             "{} locked. Firing torpedos. Hit confirmed, good job Commander.".
             format(target))
