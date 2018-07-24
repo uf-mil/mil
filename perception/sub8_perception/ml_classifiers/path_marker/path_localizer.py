@@ -60,9 +60,6 @@ class classifier(object):
         # CV bridge for converting from rosmessage to cv_image
         self.bridge = CvBridge()
 
-        # Inference graph and session for tensorflow
-        self.inference_graph, self.sess = detector_utils.load_inference_graph()
-
         # Service Call = the on/off switch for this perception file.
         rospy.Service('~enable', SetBool, self.toggle_search)
 
@@ -103,11 +100,15 @@ class classifier(object):
         looking at frames for buoys.
         '''
         if srv.data:
+            # Inference graph and session for tensorflow
+            self.inference_graph, self.sess = detector_utils.load_inference_graph()
+
             rospy.loginfo("PATH LOCALIZER: enabled")
             self.enabled = True
 
         else:
             rospy.loginfo("PATH LOCALIZER: disabled")
+            self.sess.close()
             self.enabled = False
 
         return SetBoolResponse(success=True)

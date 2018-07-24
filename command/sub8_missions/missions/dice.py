@@ -14,7 +14,7 @@ fprint = text_effects.FprintFactory(title="DICE", msg_color="cyan").fprint
 
 pub_cam_ray = None
 
-SPEED = 0.3
+SPEED = 0.1
 
 
 @util.cancellableInlineCallbacks
@@ -70,18 +70,22 @@ def run(sub):
         fprint('dice {}'.format(dice))
         ray, base = history_tf[dice]
 
-        where = base + 4 * ray
+        where = base + 3 * ray
 
         fprint(where)
         fprint('Moving!', msg_color='yellow')
         fprint('Current position: {}'.format(sub.pose.position))
         fprint('zrp')
         yield sub.move.zero_roll_and_pitch().go(blind=True)
+        yield sub.nh.sleep(4)
         fprint('hitting', msg_color='yellow')
         yield sub.move.look_at(where).go(blind=True, speed=SPEED)
+        yield sub.nh.sleep(4)
         yield sub.move.set_position(where).go(blind=True, speed=SPEED)
+        yield sub.nh.sleep(4)
         fprint('going back', msg_color='yellow')
         yield start.go(blind=True, speed=SPEED)
+        yield sub.nh.sleep(4)
 
 
 @util.cancellableInlineCallbacks
