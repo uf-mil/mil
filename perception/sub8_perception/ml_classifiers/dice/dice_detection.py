@@ -9,7 +9,7 @@ import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 
-from std_srvs.srv import SetBool
+from std_srvs.srv import SetBool, SetBoolResponse
 from geometry_msgs.msg import Point
 
 rospack = rospkg.RosPack()
@@ -52,6 +52,7 @@ class classifier(object):
         else:
             self.sess.close()
             self.enabled = False
+        return SetBoolResponse(success=True)
 
     def img_callback(self, data):
         if not self.enabled:
@@ -69,7 +70,7 @@ class classifier(object):
             cv_image, self.inference_graph, self.sess)
 
         # Draw Bounding box
-        label, bbox = detector_utils.draw_box_on_image(
+        detector_utils.draw_box_on_image(
             self.num_objects_detect, self.score_thresh, scores, boxes, classes,
             self.im_width, self.im_height, cv_image)
 
