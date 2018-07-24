@@ -5,7 +5,7 @@ from mil_misc_tools import text_effects
 import genpy
 
 # Import missions here
-import strip
+import pinger
 
 
 fprint = text_effects.FprintFactory(title="AUTO_MISSION").fprint
@@ -21,7 +21,7 @@ def run_mission(sub, mission, timeout):
         # oof what a hack
         if len(m.callbacks) == 0:
             m.cancel()
-            defer.returnValue(True)
+            defer.returnValue(False)
         yield sub.nh.sleep(0.5)
     fprint('MISSION TIMEOUT', msg_color='red')
     m.cancel()
@@ -34,7 +34,11 @@ def do_mission(sub):
 
     # Chain 1 missions
     try:
-        yield run_mission(sub, strip, 400)
+        out = yield run_mission(sub, pinger, 400)
+        if not out:  # if we timeout
+            pass
+        else:
+            pass
     except Exception as e:
         fprint("Error in Chain 1 missions!", msg_color="red")
         print e
