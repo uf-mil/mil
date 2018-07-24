@@ -5,6 +5,7 @@ from mil_misc_tools import text_effects
 from hydrophones.msg import ProcessedPing
 from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 from twisted.internet import defer
+import random
 
 fprint = text_effects.FprintFactory(title="PINGER", msg_color="cyan").fprint
 
@@ -53,6 +54,15 @@ def run(sub):
         # Transform frames
         p_position = mil_ros_tools.rosmsg_to_numpy(p_message.position)
         vec = p_position / np.linalg.norm(p_position)
+        if np.isnan(vec).any():
+            fprint('Ignored! nan', msg_color='red')
+            if use_prediction:
+                pinger_guess = yield transform_to_baselink(
+                    sub, pinger_1_req, pinger_2_req)
+                where_to = random.choice(pinger_guess)
+                where_to = where_to / np.linalg.norm(where_to)
+                yield fancy_move(sub, where_to)
+            continue
         transform = yield sub._tf_listener.get_transform(
             '/base_link', '/hydrophones')
         vec = transform._q_mat.dot(vec)
@@ -71,12 +81,17 @@ def run(sub):
             # Check if the pinger aligns with guess
             check, vec = check_with_guess(vec, pinger_guess)
 
-        yield sub.move.relative(vec).depth(0.5).zero_roll_and_pitch().go(
-            speed=SPEED)
-        yield sub.nh.sleep(3)
+        yield fancy_move(sub, vec)
 
     fprint('Arrived to hydrophones! Going down!')
     yield sub.move.to_height(PINGER_HEIGHT).zero_roll_and_pitch().go(speed=0.1)
+
+
+@util.cancellableInlineCallbacks
+def fancy_move(sub, vec):
+    yield sub.move.relative(vec).depth(0.5).zero_roll_and_pitch().go(
+        speed=SPEED)
+    yield sub.nh.sleep(3)
 
 
 def check_with_guess(vec, pinger_guess):
