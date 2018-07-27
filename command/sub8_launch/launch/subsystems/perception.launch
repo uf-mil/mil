@@ -1,7 +1,6 @@
 <launch>
-  <arg name="the_path" default="False" />
-  <arg name="buoy" default="False" />
-  <arg name="torp" default="False" />
+  <arg name="tensorflow" default="True" />
+  <arg name="torp" default="True" />
 
   <!-- roslaunch sub8_launch perception.launch color_calibration:=gazebo_color_calibration.yaml -->
   <arg name="color_calibration" default="default_color_calibration.yaml" />
@@ -10,13 +9,10 @@
   <rosparam file="$(find sub8_launch)/config/$(arg color_calibration)" />
 
   <group ns="vision">
-    <node if="$(arg buoy)" pkg="sub8_perception" type="buoy_finder.py" name="buoys" output="screen">
-      <rosparam file="$(find sub8_launch)/config/buoy_finder.yaml" command="load"/>
-    </node>
     <node if="$(arg torp)" pkg="sub8_perception" type="torpedo_target_acq.py" name="arm_torpedos" output="screen">
       <rosparam file="$(find sub8_launch)/config/torpedo_target_acq.yaml" command="load"/>
     </node>
-    <node if="$(arg the_path)" pkg="sub8_perception" type="path_localizer.py" name="the_path" output="screen">
+    <node if="$(arg tensorflow)" pkg="sub8_perception" type="object_detection.py" name="object_detection" output="screen">
       <rosparam file="$(find sub8_launch)/config/path_localizer.yaml" command="load" />
     </node>
   </group>
