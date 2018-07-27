@@ -9,7 +9,6 @@ import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
-from std_srvs.srv import SetBool, SetBoolResponse
 
 rospack = rospkg.RosPack()
 
@@ -33,8 +32,8 @@ class classifier(object):
         self.lower = rospy.get_param('~lower_color_threshold', [0, 30, 100])
         self.upper = rospy.get_param('~upper_color_threshold', [100, 255, 255])
         # Camera topic we are pulling images from for processing
-        self.camera_topic = rospy.get_param('~camera_topic',
-                                            '/camera/down/image_rect_color')
+        self.camera_topic = rospy.get_param(
+            '~camera_topic', '/camera/front/left/image_rect_color')
         # Number of frames
         self.num_frames = rospy.get_param('~num_frames', 0)
         # Number of objects we detect
@@ -52,16 +51,13 @@ class classifier(object):
         self.midpoint = [self.im_width / 2, self.im_height / 2]
         # Whether or not we have centered on an object.
         self.centered = False
-        # Whether or not we are enabled
-        self.enabled = False
         '''
         Misc Utils, Image Subscriber, and Service Call.
         '''
         # CV bridge for converting from rosmessage to cv_image
         self.bridge = CvBridge()
 
-        # Service Call = the on/off switch for this perception file.
-        rospy.Service('~enable', SetBool, self.toggle_search)
+        self.inference_graph, self.sess = detector_utils.load_inference_graph()
 
         # Subscribes to our image topic, allowing us to process the images
         self.sub1 = rospy.Subscriber(
@@ -94,41 +90,19 @@ class classifier(object):
         # self.path_roi_pub = rospy.Publisher(
         # 'path_roi', RegionOfInterest, queue_size=1)
 
-    def toggle_search(self, srv):
-        '''
-        Callback for standard ~enable service. If true, start
-        looking at frames for buoys.
-        '''
-        if srv.data:
-            # Inference graph and session for tensorflow
-            self.inference_graph, self.sess = detector_utils.load_inference_graph()
-
-            rospy.loginfo("PATH LOCALIZER: enabled")
-            self.enabled = True
-
-        else:
-            rospy.loginfo("PATH LOCALIZER: disabled")
-            self.sess.close()
-            self.enabled = False
-
-        return SetBoolResponse(success=True)
-
     def check_timestamp(self, msg):
         '''
         Check to see how old the image we are recieving is.
         This is a serious problem considering how long it takes to
         process a single image.
         '''
-        if abs(msg.header.stamp.secs -
-               int(rospy.get_time())) > self.time_thresh:
+        if abs(msg.header.stamp.secs - int(rospy.get_time())
+               ) > self.time_thresh:
             return True
         else:
             return False
 
     def img_callback(self, data):
-        if not self.enabled:
-            # print(self.enabled)
-            return None
         if self.check_timestamp(data):
             return None
         try:
@@ -178,9 +152,9 @@ class classifier(object):
         lower = np.array(self.lower, dtype="uint8")
         upper = np.array(self.upper, dtype="uint8")
         # Run through the mask function, returns all black image if no orange
-        check = self.mask_image(
-            cv_image[int(bbox[0][1]):int(bbox[1][1]),
-                     int(bbox[0][0]):int(bbox[1][0])], lower, upper)
+        check = self.mask_image(cv_image[int(bbox[0][1]):int(bbox[1][1]),
+                                         int(bbox[0][0]):int(bbox[1][0])],
+                                lower, upper)
         '''
         Find if we are centered on the region of interest, if not display its
         position relative to the center of the camera. Perform the check to see
