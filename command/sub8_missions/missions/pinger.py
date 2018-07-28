@@ -2,7 +2,7 @@ from txros import util
 import numpy as np
 import mil_ros_tools
 from mil_misc_tools import text_effects
-from hydrophones.msg import ProcessedPing
+from sub8_hydrophones.msg import ProcessedPing
 from sub8_msgs.srv import GuessRequest, GuessRequestRequest
 from twisted.internet import defer
 import random

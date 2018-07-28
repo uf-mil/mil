@@ -9,7 +9,6 @@ import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 
-from std_srvs.srv import SetBool, SetBoolResponse
 from geometry_msgs.msg import Point
 
 rospack = rospkg.RosPack()
@@ -28,14 +27,12 @@ class classifier(object):
         self.subscriber = rospy.Subscriber(
             '/camera/front/left/image_rect_color', Image, self.img_callback)
         self.publisher = rospy.Publisher(
-            '/vision/dice/debug_rcnn', Image, queue_size=1)
+            '/dice/debug_rcnn', Image, queue_size=1)
 
         self.dice_publisher = rospy.Publisher(
-            'dice/points', Point, queue_size=1)
+            '/dice/points', Point, queue_size=1)
 
-        rospy.Service('~enable', SetBool, self.toggle_search)
-        self.enabled = False
-
+        self.inference_graph, self.sess = detector_utils.load_inference_graph()
         # Parameters
         self.num_frames = 0
         self.num_objects_detect = 4
@@ -44,19 +41,7 @@ class classifier(object):
         self.im_height = 1080
         self.start_time = datetime.datetime.now()
 
-    def toggle_search(self, srv):
-        if srv.data:
-            self.inference_graph, self.sess = detector_utils.load_inference_graph(
-            )
-            self.enabled = True
-        else:
-            self.sess.close()
-            self.enabled = False
-        return SetBoolResponse(success=True)
-
     def img_callback(self, data):
-        if not self.enabled:
-            return
         try:
             print('Working')
             cv_image = self.bridge.imgmsg_to_cv2(data, 'bgr8')
