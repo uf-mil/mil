@@ -31,3 +31,4 @@ export bag_navigation="/wrench /wrench_actual /wrench_error /c3_trajectory_gener
 export bag_thrusters="/thrusters/thrust /thrusters/status/FLV /thrusters/status/FLH /thrusters/status/FRV /thrusters/status/FRH /thrusters/status/BLV /thrusters/status/BLH /thrusters/status/BRV /thrusters/status/BRH"
 export bag_gnc="$bag_controller $bag_navigation $bag_thrusters"
 export bag_kill="$bag_gnc $bag_front_left_cam $bag_blueview"
+export bag_hydrophones="/hydrophones/debug /hydrophones/ping /hydrophones/pose /hydrophones/processed"
