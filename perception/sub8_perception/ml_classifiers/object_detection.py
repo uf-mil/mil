@@ -4,7 +4,6 @@ from std_srvs.srv import SetBool, SetBoolResponse
 import subprocess
 import os
 import signal
-
 '''
 This is the main script for running Tensorflow inference. It a hacky
 solution to the problem that tensorflow leaves loaded graphs inside the GPU,
@@ -29,7 +28,8 @@ class launcher(object):
                     /{param name}/enable
         '''
         self.name = name
-        rospy.Service('/{}/enable'.format(name), SetBool, self.enable_callback)
+        rospy.Service('/vision/{}/enable'.format(name), SetBool,
+                      self.enable_callback)
 
     def enable_callback(self, srv):
         global alive_processes

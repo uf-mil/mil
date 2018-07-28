@@ -27,10 +27,10 @@ class classifier(object):
         self.subscriber = rospy.Subscriber(
             '/camera/front/left/image_rect_color', Image, self.img_callback)
         self.publisher = rospy.Publisher(
-            '/vision/dice/debug_rcnn', Image, queue_size=1)
+            '/dice/debug_rcnn', Image, queue_size=1)
 
         self.dice_publisher = rospy.Publisher(
-            'dice/points', Point, queue_size=1)
+            '/dice/points', Point, queue_size=1)
 
         self.inference_graph, self.sess = detector_utils.load_inference_graph()
         # Parameters
