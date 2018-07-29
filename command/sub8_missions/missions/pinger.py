@@ -93,6 +93,15 @@ def run(sub):
 
         # Check if we are on top of pinger
         if abs(vec[0]) < POSITION_TOL and abs(vec[1] < POSITION_TOL):
+            sub_position, _ = yield sub.tx_pose()
+            dists = [
+                np.linalg.norm(sub_position - mil_ros_tools.rosmsg_to_numpy(
+                    x.location.pose.position))
+                for x in (pinger_1_req, pinger_2_req)
+            ]
+            pinger_id = np.argmin(dists)
+            yield sub.nh.set_param("pinger_where", int(pinger_id))
+
             break
 
         vec[2] = 0
@@ -135,8 +144,7 @@ def fancy_move(sub, vec):
 
 @util.cancellableInlineCallbacks
 def go_to_random_guess(sub, pinger_1_req, pinger_2_req):
-    pinger_guess = yield transform_to_baselink(
-        sub, pinger_1_req, pinger_2_req)
+    pinger_guess = yield transform_to_baselink(sub, pinger_1_req, pinger_2_req)
     where_to = random.choice(pinger_guess)
     where_to = where_to / np.linalg.norm(where_to)
     fprint('Going to random guess {}'.format(where_to), msg_color='yellow')

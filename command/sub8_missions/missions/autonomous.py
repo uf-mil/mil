@@ -21,11 +21,11 @@ def run_mission(sub, mission, timeout):
         # oof what a hack
         if len(m.callbacks) == 0:
             m.cancel()
-            defer.returnValue(False)
+            defer.returnValue(True)
         yield sub.nh.sleep(0.5)
     fprint('MISSION TIMEOUT', msg_color='red')
     m.cancel()
-    defer.returnValue(True)
+    defer.returnValue(False)
 
 
 @txros.util.cancellableInlineCallbacks
@@ -34,11 +34,20 @@ def do_mission(sub):
 
     # Chain 1 missions
     try:
-        out = yield run_mission(sub, pinger, 400)
-        if not out:  # if we timeout
+        completed = yield run_mission(sub, pinger, 400)
+        if not completed:  # if we timeout
             pass
         else:
-            pass
+            if (yield sub.nh.has_param('pinger_where')):
+                if (yield sub.nh.get_param('pinger_where')) == 0:
+                    fprint('Running roulette')
+                    # do roulette
+                    pass
+                if (yield sub.nh.get_param('pinger_where')) == 1:
+                    fprint('Running cash in')
+                    # do cash in challenge
+                    pass
+
     except Exception as e:
         fprint("Error in Chain 1 missions!", msg_color="red")
         print e
