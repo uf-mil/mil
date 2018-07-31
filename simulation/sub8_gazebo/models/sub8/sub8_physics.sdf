@@ -209,7 +209,7 @@
       <referenceTopic>/c3_trajectory_generator/trajectory_v</referenceTopic>
       <alwaysOn>true</alwaysOn>
     </plugin>
-   -->
+  -->
 
     <!-- Uncomment to enable physics simulated controls -->
     <plugin name="sub8_buoyancy" filename="libsub8_buoyancy.so">

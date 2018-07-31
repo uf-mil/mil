@@ -8,13 +8,17 @@ import numpy as np
 import rospy
 from std_msgs.msg import Header
 from collections import deque
+from sensor_msgs.msg import Image
 from cv_bridge import CvBridgeError
 from sub8_vision_tools import MultiObservation
 from image_geometry import PinholeCameraModel
 from std_srvs.srv import SetBool, SetBoolResponse
 from geometry_msgs.msg import PoseStamped, Pose, Point
 from sub8_msgs.srv import VisionRequest, VisionRequestResponse
+
 from mil_ros_tools import Image_Subscriber, Image_Publisher
+from cv_bridge import CvBridge, CvBridgeError
+
 '''
 Perception component of the Torpedo Board Challenge. Utilizes code from
 the pyimagesearch blog post on color thresholding and shape detection
@@ -27,15 +31,16 @@ class torp_vision:
     def __init__(self):
 
         # Pull constants from config file
-        self.lower = rospy.get_param('~lower_color_threshold', [0, 0, 60])
-        self.upper = rospy.get_param('~higher_color_threshold', [60, 60, 250])
+        self.lower = rospy.get_param('~lower_color_threshold', [0, 0, 80])
+        self.upper = rospy.get_param('~higher_color_threshold', [200, 200, 250])
         self.min_contour_area = rospy.get_param('~min_contour_area', .001)
+        self.max_contour_area = rospy.get_param('~max_contour_area', 400)
         self.min_trans = rospy.get_param('~min_trans', .05)
         self.max_velocity = rospy.get_param('~max_velocity', 1)
-        self.timeout = rospy.Duration(rospy.get_param('~timeout_seconds'))
+        self.timeout = rospy.Duration(rospy.get_param('~timeout_seconds'), 250000)
         self.min_observations = rospy.get_param('~min_observations', 8)
-        self.camera = rospy.get_param('~camera_tropic',
-                                      '/camera/front/right/image_rect_color')
+        self.camera = rospy.get_param('~camera_topic',
+                                      '/camera/front/left/image_rect_color')
 
         # Instantiate remaining variables and objects
         self._observations = deque()
@@ -48,6 +53,8 @@ class torp_vision:
         self.est = None
         self.visual_id = 0
         self.enabled = False
+        self.bridge = CvBridge()
+
 
         # Image Subscriber and Camera Information
 
@@ -75,6 +82,8 @@ class torp_vision:
         self.image_pub = Image_Publisher("torp_vision/debug")
         self.point_pub = rospy.Publisher(
             "torp_vision/points", Point, queue_size=1)
+        self.mask_image_pub = rospy.Publisher(
+            'torp_vison/mask', Image, queue_size=1)
 
         # Debug
         self.debug = rospy.get_param('~debug', True)
@@ -141,12 +150,14 @@ class torp_vision:
                 self._pose_pairs.popleft()
             else:
                 i += 1
+        # print('Clearing')
 
     def size(self):
         return len(self._observations)
 
     def add_observation(self, obs, pose_pair, time):
         self.clear_old_observations()
+        # print('Adding...')
         if self.size() == 0 or np.linalg.norm(
                 self._pose_pairs[-1][0] - pose_pair[0]) > self.min_trans:
             self._observations.append(obs)
@@ -162,7 +173,7 @@ class torp_vision:
         target = "unidentified"
         peri = cv2.arcLength(c, True)
 
-        if peri < self.min_contour_area:
+        if peri < self.min_contour_area or peri > self.max_contour_area:
             return target
         approx = cv2.approxPolyDP(c, 0.04 * peri, True)
 
@@ -199,21 +210,26 @@ class torp_vision:
         output = cv2.bitwise_and(cv_image, cv_image, mask=mask)
 
         # Resize to emphasize shapes
-        resized = cv2.resize(output, (300, 225))
-        ratio = output.shape[0] / float(resized.shape[0])
-        gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
+        # gray = cv2.cvtColor(output, cv2.COLOR_BGR2GRAY)
 
         # Blur image so our contours can better find the full shape.
-        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        # blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        if (self.debug):
+            try:
+                # print(output)
+                self.mask_image_pub.publish(
+                    self.bridge.cv2_to_imgmsg(np.array(output), 'bgr8'))
+            except CvBridgeError as e:
+                print(e)
 
-        return blurred, ratio
+        return output
 
     def acquire_targets(self, cv_image):
         # Take in the data and get its dimensions.
         height, width, channels = cv_image.shape
 
         # Run CLAHE.
-        cv_image = self.CLAHE(cv_image)
+        # cv_image = self.CLAHE(cv_image)
 
         # Now we generate a color mask to isolate only red in the image. This
         # is achieved through the thresholds which can be changed in the above
@@ -224,8 +240,8 @@ class torp_vision:
         upper = np.array(self.upper, dtype="uint8")
 
         # Generate a mask based on the constants.
-        blurred, ratio = self.mask_image(cv_image, lower, upper)
-
+        blurred = self.mask_image(cv_image, lower, upper)
+        blurred = cv2.cvtColor(blurred, cv2.COLOR_BGR2GRAY)
         # Compute contours
         cnts = cv2.findContours(blurred.copy(), cv2.RETR_EXTERNAL,
                                 cv2.CHAIN_APPROX_SIMPLE)
@@ -241,26 +257,23 @@ class torp_vision:
         max_x = 0
         max_y = 0
         m_shape = ''
-
         for c in cnts:
             # compute the center of the contour, then detect the name of the
             # shape using only the contour
             M = cv2.moments(c)
             if M["m00"] == 0:
                 M["m00"] = .000001
-            cX = int((M["m10"] / M["m00"]) * ratio)
-            cY = int((M["m01"] / M["m00"]) * ratio)
+            cX = int((M["m10"] / M["m00"]) )
+            cY = int((M["m01"] / M["m00"]) )
             shape = self.detect(c)
 
             # multiply the contour (x, y)-coordinates by the resize ratio,
             # then draw the contours and the name of the shape on the image
 
             c = c.astype("float")
-            c *= ratio
+            # c *= ratio
             c = c.astype("int")
-            if shape == "Target Aquisition Successful" or \
-               shape == "Partial Target Acquisition" or \
-               shape == "unidentified":
+            if shape == "Target Aquisition Successful":
                 if self.debug:
                     try:
                         cv2.drawContours(cv_image, [c], -1, (0, 255, 0), 2)
@@ -290,9 +303,7 @@ class torp_vision:
         to derive the approximate 3D coordinates.
         '''
 
-        if m_shape == "Target Aquisition Successful" or \
-                m_shape == "Partial Target Acquisition" or \
-                m_shape == "unidentified":
+        if m_shape == "Target Aquisition Successful":
             try:
                 self.tf_listener.waitForTransform('/map',
                                                   self.camera_model.tfFrame(),

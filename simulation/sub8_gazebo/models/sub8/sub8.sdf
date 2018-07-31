@@ -17,6 +17,7 @@
           <izz>1.262</izz>
         </inertia>
       </inertial>
+
       <gravity>0</gravity>
       <collision name="box_collision">
         <pose>0 0 0 0 0 1.5707</pose>
@@ -213,6 +214,7 @@
     <!-- Uncomment to enable physics simulated controls -->
     <!-- <plugin name="sub8_buoyancy" filename="libsub8_buoyancy.so"> -->
       <!-- density of the fluid surrounding the object in kilograms/cubic meters -->
+
       <!-- <fluid_density>999.1026</fluid_density> -->
 
       <!-- <drag_coefficient>0.5</drag_coefficient> -->

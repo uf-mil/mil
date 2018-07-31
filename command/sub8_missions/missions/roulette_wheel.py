@@ -8,7 +8,7 @@ from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3
 from mil_misc_tools import FprintFactory
 
-MISSION = 'Torpedo Challenge'
+MISSION = 'Roulette Challenge'
 
 
 class Target(object):
@@ -24,7 +24,7 @@ class Target(object):
         self.position = pos
 
 
-class FireTorpedos(object):
+class DropTheBall(object):
     '''
     Mission to solve the torpedo RoboSub challenge.
 
@@ -32,10 +32,8 @@ class FireTorpedos(object):
     Its goal is to search for a target on the torpedo board and fire at it.
     '''
     TIMEOUT_SECONDS = 30
-    Z_PATTERN_RADIUS = 0.5
+    X_PATTERN_RADIUS = 1.0
     Y_PATTERN_RADIUS = 1.0
-    X_OFFSET = .2
-    Z_OFFSET = .2
     BACKUP_METERS = 3.0
     BLIND = True
 
@@ -50,10 +48,7 @@ class FireTorpedos(object):
         # B = bottom; T = Top; L = left; R = right; C = center; O = unblocked;
         # X = blocked;
         self.targets = {
-            'TCX': Target(),
-            'TRX': Target(),
-            'TLX': Target(),
-            'BCO': Target()
+            'Wheel': Target()
         }
         self.pattern_done = False
         self.done = False
@@ -61,20 +56,21 @@ class FireTorpedos(object):
         self.generate_pattern()
 
     def generate_pattern(self):
-        z = self.Z_PATTERN_RADIUS
+        z = self.X_PATTERN_RADIUS
         y = self.Y_PATTERN_RADIUS
-        self.moves = [[0, 0, -z], [0, y, 0], [0, 0, -2 * z], [0, -2 * y, 0]]
+        self.moves = [[0, s * y, 0], [s * x, 0, 0], [0, s * -2 * y, 0],
+                      [-2 * x * s, 0, 0], [0, s * y, 0], [s * x, 0, 0]]
         self.move_index = 0
 
     @util.cancellableInlineCallbacks
     def search(self):
         global markers
         markers = MarkerArray()
-        pub_markers = yield self.sub.nh.advertise('/torpedo/rays', MarkerArray)
+        pub_markers = yield self.sub.nh.advertise('/roulette_wheel/rays', MarkerArray)
         while True:
             info = 'CURRENT TARGETS: '
 
-            target = 'BCO'
+            target = 'Wheel'
             pub_markers.publish(markers)
             '''
             In the event we want to attempt other targets beyond bare minimum
@@ -84,13 +80,13 @@ class FireTorpedos(object):
             targets.
             '''
             res = yield self.sub.vision_proxies.arm_torpedos.get_pose(
-                target='board')
+                target='roulette_wheel')
             if res.found:
                 self.ltime = res.pose.header.stamp
                 self.targets[target].update_position(
                     rosmsg_to_numpy(res.pose.pose.position))
                 marker = Marker(
-                    ns='torp_board',
+                    ns='roulette_wheel',
                     action=visualization_msgs.Marker.ADD,
                     type=Marker.ARROW,
                     scale=Vector3(0.2, 0.5, 0),
@@ -108,9 +104,11 @@ class FireTorpedos(object):
             self.print_info(info)
 
     @util.cancellableInlineCallbacks
-    def pattern(self):
-        self.print_info('Descending to Depth...')
+    def pattern(self):        
+    	
+    	self.print_info('Descending to Depth...')
         yield self.sub.move.depth(1.5).go(blind=self.BLIND, speed=0.1)
+
         def err():
             self.print_info('Search pattern canceled')
 
@@ -125,7 +123,7 @@ class FireTorpedos(object):
 
     @util.cancellableInlineCallbacks
     def fire(self, target):
-        self.print_info("FIRING {}".format(target))
+        self.print_info("DROPPING {}".format(target))
         target_pose = self.targets[target].position
         yield self.sub.move.go(blind=self.BLIND, speed=0.1)  # Station hold
         transform = yield self.sub._tf_listener.get_transform('/map', '/base_link')
@@ -133,29 +131,28 @@ class FireTorpedos(object):
                 target_pose - transform._p)
 
         sub_pos = yield self.sub.tx_pose()
-        print('Current Sub Position: ', sub_pos)
+        # print('Current Sub Position: ', sub_pos)
 
         # sub_pos = transform._q_mat.dot(
                 # (sub_pos[0]) - transform._p)
         # target_position = target_position - sub_pos[0]
         # yield self.sub.move.look_at_without_pitching(target_position).go(
             # blind=self.BLIND, speed=.1)
-        print('Map Position: ', target_position)
+        # print('Map Position: ', target_position)
         yield self.sub.move.relative(np.array([0, target_position[1], 0])).go(blind=True, speed=.1)
-        yield self.sub.move.relative(np.array([target_position[0] + self.X_OFFSET, 0, target_position[2] + self.Z_OFFSET])).go(
+        yield self.sub.move.relative(np.array([target_position[0], 0, 0])).go(
             blind=self.BLIND, speed=.1)
 
         self.print_good(
-            "{} locked. Firing torpedos. Hit confirmed, good job Commander.".
+            "{} locked. Dropping the ball... Ball dropped. We tried.".
             format(target))
         sub_pos = yield self.sub.tx_pose()
         print('Current Sub Position: ', sub_pos)
-        yield self.sub.actuators.shoot_torpedo1()
-        yield self.sub.actuators.shoot_torpedo2()
+        yield self.sub.actuators.drop_marker()
         self.done = True
 
     def get_target(self):
-        target = 'BCO'
+        target = 'Wheel'
         '''
         Returns the target we are going to focus on. Loop through priorities.
         Highest priority is the TCX target, followed by the TRX and TLX.
@@ -181,7 +178,7 @@ class FireTorpedos(object):
         # starts for timeout
 
         self.print_info("Enabling Perception")
-        self.sub.vision_proxies.arm_torpedos.start()
+        self.sub.vision_proxies.roulette_wheel.start()
 
         pattern = self.pattern()
         self.do_search = True
@@ -199,13 +196,13 @@ class FireTorpedos(object):
             yield self.sub.nh.sleep(0.1)
         search.cancel()
         pattern.cancel()
-        self.sub.vision_proxies.arm_torpedos.stop()
+        self.sub.vision_proxies.roulette_wheel.stop()
         self.print_good('Done!')
 
 
 @util.cancellableInlineCallbacks
 def run(sub):
     # print('running')
-    rospy.init_node('arm_torpedos', anonymous=False)
-    mission = FireTorpedos(sub)
+    rospy.init_node('roulette_wheel', anonymous=False)
+    mission = DropTheBall(sub)
     yield mission.run()
