@@ -28,9 +28,12 @@ def run(sub):
     gate_2 = mil_ros_tools.rosmsg_to_numpy(gate_2_req.location.pose.position)
 
     mid = (gate_1 + gate_2) / 2
+    fprint('Found mid {}'.found(mid))
 
-    yield sub.down(DOWN).set_orientation(sub_start_orientation).go(speed=DOWN_SPEED)
+    fprint('Looking at gate')
+    yield sub.down(DOWN).set_orientation(sub_start_orientation).go(
+        speed=DOWN_SPEED)
     yield sub.look_at_without_pitching(mid).go(speed=DOWN_SPEED)
 
+    fprint('Going!')
     yield sub.set_position(mid).depth(DOWN).go(speed=SPEED)
-

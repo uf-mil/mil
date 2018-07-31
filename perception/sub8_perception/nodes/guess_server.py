@@ -10,7 +10,9 @@ from visualization_msgs.msg import Marker, InteractiveMarkerControl
 class Guess:
     def __init__(self):
         rospy.sleep(1.0)
-        self.items = ['pinger1', 'pinger2', 'dice', 'start_gate1', 'start_gate2']
+        self.items = [
+            'pinger1', 'pinger2', 'dice', 'start_gate1', 'start_gate2'
+        ]
         self.guess_service = rospy.Service('guess_location', GuessRequest,
                                            self.request_location)
         self.markers_subscribers = []
@@ -39,7 +41,7 @@ class Guess:
         spacer = 0
         for i in self.items:
             self.markers.append(InteractiveMarker())
-            self.markers[spacer].header.frame_id = "base_link"
+            self.markers[spacer].header.frame_id = "map"
             self.markers[spacer].name = i
             self.markers[spacer].description = i
             self.markers[spacer].controls.append(box_control)
