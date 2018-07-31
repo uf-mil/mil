@@ -32,12 +32,14 @@ class torp_vision:
 
         # Pull constants from config file
         self.lower = rospy.get_param('~lower_color_threshold', [0, 0, 80])
-        self.upper = rospy.get_param('~higher_color_threshold', [200, 200, 250])
+        self.upper = rospy.get_param(
+            '~higher_color_threshold', [200, 200, 250])
         self.min_contour_area = rospy.get_param('~min_contour_area', .001)
         self.max_contour_area = rospy.get_param('~max_contour_area', 400)
         self.min_trans = rospy.get_param('~min_trans', .05)
         self.max_velocity = rospy.get_param('~max_velocity', 1)
-        self.timeout = rospy.Duration(rospy.get_param('~timeout_seconds'), 250000)
+        self.timeout = rospy.Duration(
+            rospy.get_param('~timeout_seconds'), 250000)
         self.min_observations = rospy.get_param('~min_observations', 8)
         self.camera = rospy.get_param('~camera_topic',
                                       '/camera/front/left/image_rect_color')
@@ -54,7 +56,6 @@ class torp_vision:
         self.visual_id = 0
         self.enabled = False
         self.bridge = CvBridge()
-
 
         # Image Subscriber and Camera Information
 
@@ -191,7 +192,7 @@ class torp_vision:
         This increases the contrast between color channels and allows us to
         better differentiate colors under certain lighting conditions.
         '''
-        clahe = cv2.createCLAHE(clipLimit=1., tileGridSize=(4, 4))
+        clahe = cv2.createCLAHE(clipLimit=5., tileGridSize=(4, 4))
 
         # convert from BGR to LAB color space
         lab = cv2.cvtColor(cv_image, cv2.COLOR_BGR2LAB)
@@ -229,7 +230,7 @@ class torp_vision:
         height, width, channels = cv_image.shape
 
         # Run CLAHE.
-        # cv_image = self.CLAHE(cv_image)
+        cv_image = self.CLAHE(cv_image)
 
         # Now we generate a color mask to isolate only red in the image. This
         # is achieved through the thresholds which can be changed in the above
@@ -263,8 +264,8 @@ class torp_vision:
             M = cv2.moments(c)
             if M["m00"] == 0:
                 M["m00"] = .000001
-            cX = int((M["m10"] / M["m00"]) )
-            cY = int((M["m01"] / M["m00"]) )
+            cX = int((M["m10"] / M["m00"]))
+            cY = int((M["m01"] / M["m00"]))
             shape = self.detect(c)
 
             # multiply the contour (x, y)-coordinates by the resize ratio,
