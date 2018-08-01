@@ -17,6 +17,10 @@
   <include file="$(find sub8_launch)/launch/subsystems/rise.launch"/>
   <include file="$(find sub8_launch)/launch/subsystems/online_bagger.launch"/>
   <include file="$(find sub8_alarm)/launch/alarms.launch" />
+  <include file="$(find sub8_alarm)/launch/blueview.launch" />
+
+  <!-- Run guess server -->
+  <node pkg="sub8_perception" type="guess_server.py" command="load">
 
   <!-- 
   <include file="$(find sub8_launch)/launch/subsystems/legacy_sonar.launch"/>
