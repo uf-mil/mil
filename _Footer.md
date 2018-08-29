@@ -1,3 +1,1 @@
 Please cite this page if you use it. If you spot a typo, fix it!
-
-where it says yo, you meant to say to
