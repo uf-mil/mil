@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<robot name="navigator" xmlns:xacro="http://ros.org/wiki/xacro">
+  <!-- Defines the base vehicle -->
+  <xacro:include filename="$(find wamv_description)/urdf/wamv_base.urdf.xacro" />
+
+  <!-- Fixed frames for sensors -->
+  <xacro:include filename="$(find navigator_gazebo)/urdf/fixed_link.xacro" />
+  <xacro:include filename="$(find navigator_gazebo)/urdf/sylphase.xacro" />
+  <xacro:fixed_link name="measurement"
+                    xyz="1.2319 0 1.2" rpy="0 0 0" />
+
+  <xacro:sylphase name="ins"
+                  xyz="0.579628 0.136525 1.392278" rpy="0 0 0" />
+  <xacro:fixed_link name="velodyne" parent="measurement"
+                    xyz="-0.277622 0 0.648208" rpy="0 0 0" />
+  <xacro:fixed_link name="sick" parent="measurement"
+                    xyz="0.5334 -0.0254 -0.6858" rpy="0 0 0" />
+  <xacro:fixed_link name="hydrophones" parent="measurement"
+                    xyz="-1.2192 .70104 -1.0922" rpy="-1.571 0 0" />
+  <xacro:fixed_link name="pinger_direction" parent="velodyne"
+                    xyz="0.8382 0 -2.0828" rpy="0 0 0" />
+
+  <!-- Camera frames with gazebo simulation plugins -->
+  <xacro:include filename="$(find navigator_gazebo)/urdf/camera.xacro" />
+  <xacro:navigator_camera name="front_left_cam" camera_name="left" parent="velodyne"
+                          namespace="/camera/front/"
+                          xyz="0.294 0.1 -0.45"
+                          rpy="0 0.258 0" />
+  <xacro:navigator_camera name="front_right_cam" camera_name="right" parent="velodyne"
+                           namespace="/camera/front/"
+                          xyz="0.294 -0.099 -0.45"
+                          rpy="0 0.258 0" />
+  <xacro:navigator_camera name="starboard_cam" camera_name="starboard" parent="measurement"
+                          namespace="/camera/"
+                          xyz="-0.285 -0.495 0.129"
+                          rpy="0 0 -1.570796" />
+
+  <!-- Add 4 thrusters -->
+  <xacro:include filename="$(find navigator_gazebo)/urdf/thruster.xacro" />
+  <xacro:navigator_thruster name="BL" x="-1.9304" y="1.016"   yaw="0.785398" />
+  <xacro:navigator_thruster name="BR" x="-1.9304" y="-1.016"  yaw="-0.785398" />
+  <xacro:navigator_thruster name="FL" x="1.5748"  y="0.6096"  yaw="-0.785398" />
+  <xacro:navigator_thruster name="FR" x="1.5748"  y="-0.6096" yaw="0.785398" />
+
+  <!-- Plugin to imitate roboteq motor driver for thrusters -->
+  <gazebo>
+    <plugin name="thrust_plugin" filename="libnavigator_thrusters.so">
+      <thruster>BL</thruster>
+      <thruster>BR</thruster>
+      <thruster>FL</thruster>
+      <thruster>FR</thruster>
+    </plugin>
+  </gazebo>
+
+  <xacro:include filename="$(find wamv_gazebo)/urdf/macros.xacro" />
+  <!-- Attach hydrodynamics plugin -->
+  <xacro:usv_dynamics_gazebo name="wamv_dynamics_plugin"/>
+  <!-- Attach wind plugin -->
+  <xacro:usv_wind_gazebo name="wamv_wind_plugin"/>
+</robot>

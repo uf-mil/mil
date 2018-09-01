@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <!-- Macro for inserting an engine with its propeller. -->
+  <xacro:macro  name="navigator_camera"
+                params="name camera_name namespace:='/camera'
+                        parent='base_link' xyz:='0 0 0' rpy:='0 0 0'
+                        width:=960 height:=600 fov:=1.047 fps:=30
+                        k1:=0 k2:=0 t1:=0 t2:=0 k3:=0">
+    <link name="${name}" />
+    <joint name="${name}_to_${parent}" type="fixed">
+      <parent link="${parent}" />
+      <child link="${name}" />
+      <origin xyz="${xyz}" rpy="${rpy}" />
+    </joint>
+    <link name="${name}_optical" />
+    <joint name="${name}_to_${name}_optical" type="fixed">
+      <parent link="${name}" />
+      <child link="${name}_optical" />
+      <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+    </joint>
+    <gazebo reference="${name}">
+      <sensor name="${name}_sensor" type="camera">
+        <update_rate>${fps}</update_rate>
+        <camera name="${name}_camera">
+          <pose>0 0 0 0 0 0</pose>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>960</width>
+            <height>600</height>
+          </image>
+          <distortion>
+            <k1>${k1}</k1>
+            <k2>${k2}</k2>
+            <k3>${k3}</k3>
+            <p1>${t1}</p1>
+            <p2>${t2}</p2>
+          </distortion>
+        </camera>
+        <plugin name="${name}_controller" filename="libgazebo_ros_camera.so">
+          <robotNamespace>${namespace}</robotNamespace>
+          <cameraName>${camera_name}</cameraName>
+          <alwaysOn>true</alwaysOn>
+          <updateRate>0</updateRate>
+          <imageTopicName>image_raw</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>${name}_optical</frameName>
+          <distortionK1>${k1}</distortionK1>
+          <distortionK2>${k2}</distortionK2>
+          <distortionK3>${k3}</distortionK3>
+          <distortionT1>${t1}</distortionT1>
+          <distortionT2>${t2}</distortionT2>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+</robot>
