@@ -11,9 +11,8 @@
       <arg name="simulation" value="true" />
     </include>
 
-    <!-- Sets up the world and loads models
+    <!-- Sets up the world and loads models -->
     <include file="$(find navigator_gazebo)/launch/goose.launch">
         <arg name="gui" value="$(arg gui)"/>
     </include>
-    -->
 </launch>

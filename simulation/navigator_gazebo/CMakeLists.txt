@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(navigator_gazebo)
 
-# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -Wall")
-# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
 find_package(catkin
     REQUIRED COMPONENTS
     std_msgs
@@ -27,81 +24,39 @@ include_directories(
 )
 
 add_library(
-    navigator_state_set
-        src/navigator_state_set.cpp
-)
-
-set_target_properties(navigator_state_set PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
-
-
-target_link_libraries(
-    navigator_state_set
-        ${catkin_LIBRARIES}
-        ${GAZEBO_LIBRARIES}
-)
-
-
-
-add_library(
-    navigator_buoyancy
-        src/navigator_buoyancy.cpp
-)
-
-set_target_properties(navigator_buoyancy PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
-
-
-target_link_libraries(
-    navigator_buoyancy
-        ${catkin_LIBRARIES}
-        ${GAZEBO_LIBRARIES}
-)
-
-add_library(
     navigator_thrusters
         src/navigator_thrusters.cpp
 )
-
 set_target_properties(navigator_thrusters PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
-
-
-target_link_libraries(
-    navigator_thrusters
-        ${catkin_LIBRARIES}
-        ${GAZEBO_LIBRARIES}
+target_link_libraries(navigator_thrusters
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+add_dependencies(navigator_thrusters
+  ${catkin_EXPORTED_TARGETS}
 )
 
-add_library(
-    sylphase_gazebo
-        src/sylphase_gazebo.cpp
+add_library(sylphase_gazebo
+  src/sylphase_gazebo.cpp
 )
-
 set_target_properties(sylphase_gazebo PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
-target_link_libraries(
-    sylphase_gazebo
-        ${catkin_LIBRARIES}
-        ${GAZEBO_LIBRARIES}
+target_link_libraries(sylphase_gazebo
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+add_dependencies(sylphase_gazebo
+    ${catkin_EXPORTED_TARGETS}
 )
 
 add_library(gazebo_ros_velodyne_laser src/GazeboRosVelodyneLaser.cpp)
-
 set_target_properties(gazebo_ros_velodyne_laser PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
-
 target_link_libraries(gazebo_ros_velodyne_laser
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
   RayPlugin
 )
 
-add_library(animated_box SHARED src/animated_box.cc)
-target_link_libraries(animated_box ${GAZEBO_LIBRARIES})
 
-set_target_properties(animated_box PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
-
-add_dependencies(navigator_thrusters
-    navigator_msgs_generate_messages_cpp
-    navigator_msgs_generate_messages_py
-    ${catkin_EXPORTED_TARGETS}
-)
 
 catkin_package(
     INCLUDE_DIRS include
