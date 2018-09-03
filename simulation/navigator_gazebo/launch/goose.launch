@@ -14,6 +14,5 @@
   </include>
 
   <!-- Spawn model in Gazebo -->
-  <node name="spawn_model" pkg="gazebo_ros" type="spawn_model"
-        args="-urdf -param robot_description -model navigator -w dock2016"/>
+  <include file="$(find navigator_gazebo)/launch/spawn_navigator.launch" />
 </launch>
