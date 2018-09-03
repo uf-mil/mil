@@ -1,5 +1,10 @@
 <launch>
-    <include file="$(find navigator_launch)/launch/hardware/cameras/front_cameras.launch" />
-    <include file="$(find navigator_launch)/launch/hardware/cameras/starboard.launch"/>
+    <arg name="simulation" default="false" />
+    <include file="$(find navigator_launch)/launch/hardware/cameras/front_cameras.launch">
+      <arg name="simulation" value="$(arg simulation)" />
+    </include>
+    <include file="$(find navigator_launch)/launch/hardware/cameras/starboard.launch">
+      <arg name="simulation" value="$(arg simulation)" />
+    </include>
     <!-- <include file="$(find navigator_launch)/launch/hardware/cameras/downward.launch"/> -->
 </launch>

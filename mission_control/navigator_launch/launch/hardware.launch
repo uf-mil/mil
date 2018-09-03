@@ -2,7 +2,9 @@
   <arg name="simulation" default="False" />
   <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/hardware/motor_controller.launch"/>
   <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/hardware/gps.launch" />
-  <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/hardware/cameras.launch"/>
+  <include file="$(find navigator_launch)/launch/hardware/cameras.launch">
+    <arg name="simulation" value="$(arg simulation)"/>
+  </include>
   <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/hardware/velodyne.launch"/>
   <include file="$(find navigator_launch)/launch/hardware/kill_board.launch"/>
   <!-- Disabled because sick is not on NaviGator -->

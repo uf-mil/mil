@@ -1,35 +1,19 @@
+<?xml version="1.0"?>
 <!--
-    This file launches both the simulator as well as the gnc.launch file
-    It should contain everything needed to simulate moving the boat
+    Launches the gazebo simulator and all the same master.launch used on the real platform.
 -->
-
 <launch>
     <param name="/is_simulation" type="bool" value="True" />
     <arg name="gui" default="true"/>
-    <arg name="sandbox" default="true"/>
 
     <!-- Run core navigator code, minus hardware -->
     <include file="$(find navigator_launch)/launch/master.launch">
       <arg name="simulation" value="true" />
     </include>
 
-    <!-- Sets up the world and loads models -->
+    <!-- Sets up the world and loads models
     <include file="$(find navigator_gazebo)/launch/goose.launch">
         <arg name="gui" value="$(arg gui)"/>
-        <arg name="sandbox" value="$(arg sandbox)"/>
     </include>
-
-    <group ns="/camera">
-      <group ns="front">
-        <node pkg="image_proc" type="image_proc" name="front_left_image_proc" ns="left" />
-        <node pkg="image_proc" type="image_proc" name="front_right_image_proc" ns="right" />
-      </group>
-      <group ns="down">
-        <node pkg="image_proc" type="image_proc" name="down_image_proc"/>
-      </group>
-      <group ns="starboard">
-        <node pkg="image_proc" type="image_proc" name="starboard_image_proc"/>
-      </group>
-    </group>
-
+    -->
 </launch>

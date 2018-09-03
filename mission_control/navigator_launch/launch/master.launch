@@ -2,7 +2,7 @@
     <arg name="simulation" default="False" />
 
     <!-- Load model into rviz -->
-    <param name="robot_description" command="cat $(find navigator_gazebo)/models/wamv/wamv.xml"/>
+    <include file="$(find navigator_launch)/launch/upload_urdf.launch" />
 
     <!-- All nodes that run on NaviGator -->
     <include file="$(find navigator_launch)/launch/gnc.launch"/>

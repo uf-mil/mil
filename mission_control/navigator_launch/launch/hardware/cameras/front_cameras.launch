@@ -2,7 +2,12 @@
 <launch>
   <arg name="front_left"  default="True" />
   <arg name="front_right" default="True" />
-  <include if="$(arg front_left)" file="$(find navigator_launch)/launch/hardware/cameras/front_left.launch" />
-  <include if="$(arg front_right)" file="$(find navigator_launch)/launch/hardware/cameras/front_right.launch" />
+  <arg name="simulation" default="False" />
+  <include if="$(arg front_left)" file="$(find navigator_launch)/launch/hardware/cameras/front_left.launch">
+    <arg name="simulation" value="$(arg simulation)" />
+  </include>
+  <include if="$(arg front_right)" file="$(find navigator_launch)/launch/hardware/cameras/front_right.launch">
+    <arg name="simulation" value="$(arg simulation)" />
+  </include>
 </launch>
 

@@ -1,10 +1,11 @@
 <?xml version="1.0"?>
 <launch>
   <!-- Nodelet Manager Process -->
+  <arg name="simulation" default="False" />
   <group ns="camera/front/left">
     <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager"
           args="manager" />
-    <node pkg="nodelet" type="nodelet" name="front_left_camera_nodelet"
+    <node pkg="nodelet" type="nodelet" name="front_left_camera_nodelet" unless="$(arg simulation)"
           args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager">
           <param name="serial" value="15223364" />
           <param name="camera_info_url" value="file://$(find navigator_launch)/config/camera_calibration/00b09d0100e84a44.yaml"/>

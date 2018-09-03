@@ -1,10 +1,12 @@
+<?xml version="1.0"?>
 <launch>
-<group ns="camera/starboard">
+  <arg name="simulation" default="False" />
+  <group ns="camera/starboard">
     <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager"
           args="manager" />
 
     <!-- STARBOARD CAMERA-->
-    <node pkg="nodelet" type="nodelet" name="starboard_camera_nodelet"
+    <node pkg="nodelet" type="nodelet" name="starboard_camera_nodelet" unless="$(arg simulation)"
           args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager">
           <param name="serial" value="16363452" />
           <param name="camera_info_url" value="file://$(find navigator_launch)/config/camera_calibration/00b09d0100f9afbc.yaml"/>
@@ -30,6 +32,5 @@
         <remap from="image_mono" to="image_color" />
         <remap from="image_rect" to="image_rect_color" />
     </node>
-
   </group>
 </launch>
