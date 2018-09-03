@@ -195,10 +195,10 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
         # Get all the required TF links
         try:
             # Working copy of the current frame obtained at the same time as the tf link
-            tf_listener.waitForTransform("enu", "front_left_cam", rospy.Time(), rospy.Duration(4.0))
+            tf_listener.waitForTransform("enu", "front_left_cam_optical", rospy.Time(), rospy.Duration(4.0))
             left_image, right_image = left.frame, right.frame
-            cam_tf = tf_listener.lookupTransform("front_left_cam", "front_right_cam", left.sub.last_image_time)
-            cam_p, cam_q = tf_listener.lookupTransform("enu", "front_left_cam", left.sub.last_image_time)
+            cam_tf = tf_listener.lookupTransform("front_left_cam_optical", "front_right_cam_optical", left.sub.last_image_time)
+            cam_p, cam_q = tf_listener.lookupTransform("enu", "front_left_cam_optical", left.sub.last_image_time)
             cam_p = np.array([cam_p])
             cam_r = tf.transformations.quaternion_matrix(cam_q)[:3, :3]
             break
@@ -227,10 +227,10 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
     # Just for visualization
     for i in range(5):
         # Publish it 5 times so we can see it in rviz
-        mil_tools.draw_ray_3d(red_left_pt, left_cam, [1, 0, 0, 1], m_id=0, frame="front_left_cam")
-        mil_tools.draw_ray_3d(red_right_pt, right_cam, [1, 0, 0, 1], m_id=1, frame="front_right_cam")
-        mil_tools.draw_ray_3d(green_left_pt, left_cam, [0, 1, 0, 1], m_id=2, frame="front_left_cam")
-        mil_tools.draw_ray_3d(green_right_pt, right_cam, [0, 1, 0, 1], m_id=3, frame="front_right_cam")
+        mil_tools.draw_ray_3d(red_left_pt, left_cam, [1, 0, 0, 1], m_id=0, frame="front_left_cam_optical")
+        mil_tools.draw_ray_3d(red_right_pt, right_cam, [1, 0, 0, 1], m_id=1, frame="front_right_cam_optical")
+        mil_tools.draw_ray_3d(green_left_pt, left_cam, [0, 1, 0, 1], m_id=2, frame="front_left_cam_optical")
+        mil_tools.draw_ray_3d(green_right_pt, right_cam, [0, 1, 0, 1], m_id=3, frame="front_right_cam_optical")
 
         red_point = PointStamped()
         red_point.header = mil_tools.make_header(frame="enu")

@@ -1,25 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <node pkg="tf" type="static_transform_publisher" name="measure_point_tf" args="1.2319 0 1.2  0 0 0 1  /base_link /measurement 10" /> <!-- Very front center of top part -->
-    <node pkg="tf" type="static_transform_publisher" name="ins_tf" args="-0.652272 0.136525 0.192278  0 0 0 1  /measurement /ins 10" />
-
-    <!-- LIDAR -->
-    <node pkg="tf" type="static_transform_publisher" name="lidar_tf" args="-0.277622 0 0.648208 0 0 0 1  /measurement /velodyne 10" />
-    <node pkg="tf" type="static_transform_publisher" name="sick_tf" args="0.5334 -0.0254 -0.6858  0 0 0 1  /measurement /sick 10" />
-
-    <!-- Cameras -->
-    <node pkg="tf" type="static_transform_publisher" name="front_left_cam_tf" args="0.294 0.1 -0.45  -0.5665 0.55359 -0.42663 0.43658  /velodyne /front_left_cam 100" />
-    <node pkg="tf" type="static_transform_publisher" name="front_right_cam_tf" args="0.294 -0.099 -0.45  -0.56527 0.55938 -0.42644 0.43093  /velodyne /front_right_cam 100" />
-    <node pkg="tf" type="static_transform_publisher" name="starboard_cam_tf" args="-0.285 -0.495 0.129  -0.01555 -0.70694 0.70694 0.01555  /measurement /starboard_cam 100" />
-    <!-- Seecam tf is assumed to be same as front_right_cam as it is in the same mount. It should be updated -->
-    <node pkg="tf" type="static_transform_publisher" name="seecam_tf" args="0.294 -0.099 -0.45  -0.56527 0.55938 -0.42644 0.43093  /velodyne /seecam 100" />
-
-    <!-- Shooter -->
-    <node pkg="tf" type="static_transform_publisher" name="shooter_tf" args="-0.6096 -0.635 0.2032  -1.571 -0.349066 0 /measurement /shooter 100" />
-
-    <!-- TODO Hydrophones -->
-    <node pkg="tf" type="static_transform_publisher" name="hydrophone_tf" args="-1.2192 .70104 -1.0922 -1.571 0 0 /measurement /hydrophones 10" />
-    <!-- Very rough estimate of A hydrohpone in Andy's setup which defines origin of frame for pinger headings -->
-    <node pkg="tf" type="static_transform_publisher" name="andy_hydrophone_tf" args="0.8382 0 -2.0828 0 0 0 1 /velodyne /pinger_direction 10" />
+    <node pkg="robot_state_publisher" name="robot_state_publisher" type="robot_state_publisher">
+      <param name="use_tf_static" value="false" />
+    </node>
 
     <!-- Republishes ins-frame odom in base_link frame -->
     <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry">
