@@ -66,7 +66,6 @@ ignition::math::Matrix4d SylphaseGazebo::SphericalCoordinatesTransform(
 
   ignition::math::Matrix3d m;
   m.Axes(x, y, z);
-  std::cout << "MATRIX: " << m << std::endl;
   ignition::math::Quaterniond quat(m);
 
   return ignition::math::Matrix4d(ignition::math::Pose3d(origin, quat));
@@ -128,7 +127,7 @@ void SylphaseGazebo::OnUpdate(const gazebo::common::UpdateInfo& info)
   odom.header.stamp.sec = info.simTime.sec;
   odom.header.stamp.nsec = info.simTime.nsec;
   odom.child_frame_id = "ins";
-  odom.pose.pose = Convert(pose);
+  odom.pose.pose = Convert(enu);
   odom.twist.twist.linear = Convert2(vel_linear);
   odom.twist.twist.angular = Convert2(vel_angular);
 
