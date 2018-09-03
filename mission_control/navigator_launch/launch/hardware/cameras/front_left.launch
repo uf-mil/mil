@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Nodelet Manager Process -->
+  <group ns="camera/front/left">
+    <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager"
+          args="manager" />
+    <node pkg="nodelet" type="nodelet" name="front_left_camera_nodelet"
+          args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager">
+          <param name="serial" value="15223364" />
+          <param name="camera_info_url" value="file://$(find navigator_launch)/config/camera_calibration/00b09d0100e84a44.yaml"/>
+          <param name="frame_id" value="front_left_cam_optical"/>
+          <param name="video_mode" value="format7_mode4"/>
+          <param name="format7_color_coding" value="raw8"/>
+          <param name="frame_rate" value="15" />
+          <remap from="camera" to="left"/>
+    </node>
+
+    <!-- Bayer color decoding -->
+    <node pkg="nodelet" type="nodelet" name="left_image_proc_debayer"
+        args="load image_proc/debayer camera_nodelet_manager">
+    </node>
+
+    <!-- mono rectification -->
+    <node pkg="nodelet" type="nodelet" name="left_image_proc_rect"
+          args="load image_proc/rectify camera_nodelet_manager">
+    </node>
+
+    <!-- color rectification -->
+    <node pkg="nodelet" type="nodelet" name="left_image_proc_rect_color"
+          args="load image_proc/rectify camera_nodelet_manager">
+    </node>
+  </group>
+</launch>
+

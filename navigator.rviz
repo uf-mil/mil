@@ -380,11 +380,11 @@ Visualization Manager:
       Value: false
     - Class: rviz/Image
       Enabled: false
-      Image Topic: /camera/seecam/image_rect_color
+      Image Topic: /camera/front/right/image_rect_color
       Max Value: 1
       Median window: 5
       Min Value: 0
-      Name: Seecam
+      Name: Front Right Camera
       Normalize Range: true
       Queue Size: 2
       Transport Hint: compressed
