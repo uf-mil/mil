@@ -22,16 +22,16 @@
 
   <!-- Camera frames with gazebo simulation plugins -->
   <xacro:include filename="$(find navigator_gazebo)/urdf/camera.xacro" />
-  <xacro:navigator_camera name="front_left_cam" camera_name="left" parent="velodyne"
-                          namespace="/camera/front/"
+  <xacro:navigator_camera name="front_left_cam" parent="velodyne"
+                          namespace="/camera/front/left"
                           xyz="0.294 0.1 -0.45"
                           rpy="0 0.258 0" />
-  <xacro:navigator_camera name="front_right_cam" camera_name="right" parent="velodyne"
-                           namespace="/camera/front/"
+  <xacro:navigator_camera name="front_right_cam" parent="velodyne"
+                           namespace="/camera/front/right"
                           xyz="0.294 -0.099 -0.45"
                           rpy="0 0.258 0" />
-  <xacro:navigator_camera name="starboard_cam" camera_name="starboard" parent="measurement"
-                          namespace="/camera/"
+  <xacro:navigator_camera name="starboard_cam" parent="measurement"
+                          namespace="/camera/starboard"
                           xyz="-0.285 -0.495 0.129"
                           rpy="0 0 -1.570796" />
 

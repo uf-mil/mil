@@ -28,7 +28,9 @@
 
     <!-- color rectification -->
     <node pkg="nodelet" type="nodelet" name="left_image_proc_rect_color"
-          args="load image_proc/rectify camera_nodelet_manager">
+      args="load image_proc/rectify camera_nodelet_manager">
+      <remap from="image_mono" to="image_color" />
+      <remap from="image_rect" to="image_rect_color" />
     </node>
   </group>
 </launch>

@@ -2,7 +2,7 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <!-- Macro for inserting an engine with its propeller. -->
   <xacro:macro  name="navigator_camera"
-                params="name camera_name namespace:='/camera'
+                params="name namespace:='/camera'
                         parent='base_link' xyz:='0 0 0' rpy:='0 0 0'
                         width:=960 height:=600 fov:=1.047 fps:=30
                         k1:=0 k2:=0 t1:=0 t2:=0 k3:=0">
@@ -23,7 +23,7 @@
         <update_rate>${fps}</update_rate>
         <camera name="${name}_camera">
           <pose>0 0 0 0 0 0</pose>
-          <horizontal_fov>1.047</horizontal_fov>
+          <horizontal_fov>${fov}</horizontal_fov>
           <image>
             <width>960</width>
             <height>600</height>
@@ -37,12 +37,11 @@
           </distortion>
         </camera>
         <plugin name="${name}_controller" filename="libgazebo_ros_camera.so">
-          <robotNamespace>${namespace}</robotNamespace>
-          <cameraName>${camera_name}</cameraName>
-          <alwaysOn>true</alwaysOn>
+          <robotNamespace>/</robotNamespace>
+          <cameraName>${namespace}</cameraName>
           <updateRate>0</updateRate>
-          <imageTopicName>image_raw</imageTopicName>
-          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <imageTopicName>${namespace}/image_raw</imageTopicName>
+          <cameraInfoTopicName>${namespace}/camera_info</cameraInfoTopicName>
           <frameName>${name}_optical</frameName>
           <distortionK1>${k1}</distortionK1>
           <distortionK2>${k2}</distortionK2>
