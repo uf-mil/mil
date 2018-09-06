@@ -45,3 +45,12 @@ alias nviz="rviz -d \$CATKIN_DIR/src/NaviGator/navigator.rviz"
 # Development
 alias navfmt="python2.7 -m flake8 --ignore E731 --max-line-length=120 \$(rosrun mil_tools list_python_files \$CATKIN_DIR/src/NaviGator __init__.py deprecated/ gnc/navigator_path_planner/lqRRT .cfg)"
 alias navtest="(cd \$CATKIN_DIR; rosrun mil_tools catkin_tests_directory.py src/NaviGator)"
+
+# Work around for bagging to SSD and copying to HDD when possible
+# Sync bags from the SSD to the HDD
+alias syncbags="rsync -hru --progress $HOME/bags-fast/ $HOME/bags/"
+# Bag to the SSD (so buffer doesn't overflow)
+alias bagfast="BAG_DIR=$HOME/bags-fast bag"
+# Clear the bag fast dir on the SSD (run after it is synced)
+alias purgebagfast="rm -r $HOME/bags-fast/*"
+complete -F _bagging_complete bagfast
