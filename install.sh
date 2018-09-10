@@ -509,6 +509,9 @@ sudo apt-get install -qq ros-$ROS_DISTRO-usb-cam  # Used for See3Cam used on Nav
 # Messages
 sudo apt-get install -qq ros-$ROS_DISTRO-tf2-sensor-msgs
 
+# Other ROS dependencies
+sudo apt-get install -qq ros-$ROS_DISTRO-urdfdom-py
+
 instlog "Installing common dependencies from Python PIP"
 
 # Communication tool for the hydrophone board
