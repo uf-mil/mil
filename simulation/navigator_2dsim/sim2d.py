@@ -26,8 +26,14 @@ class Navsim():
         # Get other contants from ROS params
         self.get_params()
 
+        # Get URDF description from thrusters
+        urdf = rospy.get_param('robot_description', default=None)
+        if urdf is None or len(urdf) == 0:
+            raise Exception('robot description not set or empty')
+        self.thrust_map = ThrusterMap.from_urdf(urdf)
+
         # Subscribe to thrusters so we can simulate their forces
-        for i, motor in enumerate(ThrusterMap.THRUSTERS):
+        for i, motor in enumerate(self.thrust_map.names):
             rospy.Subscriber('/{}_motor/cmd'.format(motor), Command, self.thruster_cb, queue_size=3, callback_args=i)
 
         # Start timer to run simulator
@@ -45,7 +51,6 @@ class Navsim():
         self.update_period = rospy.get_param('~update_period', 0.1)
         self.world_frame = rospy.get_param('~world_frame', 'enu')
         self.body_frame = rospy.get_param('~body_frame', 'base_link')
-        self.thrust_map = ThrusterMap.from_ros_params(ns='/thrust_mapper/')
 
     def thruster_cb(self, msg, index):
         self.thrusts[index] = msg.setpoint
