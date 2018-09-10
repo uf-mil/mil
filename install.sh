@@ -234,6 +234,7 @@ sudo apt-get install -qq curl
 sudo apt-get install -qq wget
 sudo apt-get install -qq git
 sudo apt-get install -qq python-pip
+sudo apt-get install -qq ruby
 
 instlog "Starting the pre-flight system check to ensure installation was done properly"
 
