@@ -1,24 +1,4 @@
+<?xml version="1.0"?>
 <launch>    
-    <node pkg="navigator_thrust_mapper" type="thrust_mapper.py" name="thrust_mapper">
-        <!-- Parameters used to set the thruster locations and angles relative to the center of gravity of the boat -->
-        <rosparam>
-            # Positions of each thruster in frame of navigator center of mass (which is approximated as the base_link frame)
-            # position: [x, y] offset from center of mass in meters
-            # angle: angle thruster faces in radians, with 0 being directly forward
-            BL:
-              position: [-1.9304, 1.016]
-              angle: 0.785398
-            BR:
-              position: [-1.9304, -1.016]
-              angle: -0.785398
-            FL:
-              position: [1.5748, 0.6096]
-              angle: -0.785398
-            FR:
-              position: [1.5748, -0.6096]
-              angle: 0.785398
-            effort_ratio: 1.35  # Ratio of effort / force, so effort = effort_ratio * force
-            effort_limit: 400   # Maximum effort of a thruster in either direction, effort units
-        </rosparam>
-    </node>
+    <node pkg="navigator_thrust_mapper" type="thrust_mapper.py" name="thrust_mapper" />
 </launch>
