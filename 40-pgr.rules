@@ -1,7 +1,6 @@
-# This set of udev rules enables USB connected Point Grey machine vision
-# cameras for the pgrimaging group. This can leave a system vulnerable to
-# attacks that go beyond the OS to hardware device firmware, so only use it
-# if you understand what you are doing!
+# This set of udev rules enables access to USB devices used on MIL
+# robots without using root. This includes point grey cameras,
+# seecam, and Sylphase devices. It is named 40-pgr for legacy reasons.
 
 ATTRS{idVendor}=="1e10", ATTRS{idProduct}=="2000", MODE="0664", GROUP="pgrimaging"
 ATTRS{idVendor}=="1e10", ATTRS{idProduct}=="2001", MODE="0664", GROUP="pgrimaging"
@@ -34,6 +33,8 @@ KERNEL=="video1394*", MODE="0664", GROUP="pgrimaging"
 SUBSYSTEM=="firewire", GROUP="pgrimaging"
 SUBSYSTEM=="usb", GROUP="pgrimaging"
 
-# Added to allow access to e-con systems See3Cam_CU20.
-# Technicaly not point grey camera but having it here makes install process easy.
+# See3Cam_CU20.
 ATTRS{idVendor}=="2560", ATTRS{idProduct}=="c120", MODE="0664", GROUP="pgrimaging"
+
+# Sylphase sonar
+SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="601f", MODE="0666"
