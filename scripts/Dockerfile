@@ -15,8 +15,12 @@ ENV INSTALL_FLYCAP true
 # Allow the user to pass in the SDK password with '--build-arg SDK_PASSWORD="password"'
 ARG SDK_PASSWORD
 
+# Clean cache
+RUN DEBIAN_FRONTEND=noninteractive rm -rf /var/lib/apt/lists/* \
+        && DEBIAN_FRONTEND=noninteractive apt-get clean
+
 # Update the image and install tools needed to create the image
-RUN DEBIAN_FRONTEND=noninteractive apt-get update \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing\
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y install sudo \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y install curl \
