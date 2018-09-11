@@ -1,6 +1,19 @@
 # Testing log
 Below are notes recorded during NaviGator testing days at Lake Wauburg. They are used as a reference for resolving issues and ideas discovered during testing
 
+## September 9, 2018
+* Yellow/Green LEDs are both on when wrench is emergency... should be yellow
+* Issues with DNS using network box, now resolved
+* Passive sonar board (sylphase) did not appear in operating system. After routing cable outside of the computer box, it appeared. Likely a shielding issue on the cable
+* Controls issues, forward wrenches pulled right, may be caused by new thruster mounts at different pose. Need to measure approximate transform
+* Button_remote stays on even when it is unpressed on rf board
+* Headers on rf controller bread board was loose causing issues
+* The mil_tasks server required SIGKILL to close, need to investigate why
+* PCODAR ogrid was misalligned, [ticketed](https://github.com/uf-mil/mil_common/issues/128)
+* circle_totem_simple mission does not switch to autonomous before running
+* Need to update gazebo version on NaviGator (and install new dependencies)
+* On passive sonar, one channel is weaker than others. May be soldering or the hydrophone itself. Need to identify cause
+
 ## April 9, 2018
 * Testing new cheap lenses on Seecam: images were pink/purple. Theory is that this is due to the sensor and lens not having an IR filter.
 * Programmers liked the field of view of the 6mm lens, but it may have been a little too narrow. Focal length 4-5.5 should be good. Be sure to buy with IR-filtered lens
