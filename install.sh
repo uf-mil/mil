@@ -234,6 +234,7 @@ sudo apt-get install -qq curl
 sudo apt-get install -qq wget
 sudo apt-get install -qq git
 sudo apt-get install -qq python-pip
+sudo apt-get install -qq ruby
 
 instlog "Starting the pre-flight system check to ensure installation was done properly"
 
@@ -508,6 +509,9 @@ sudo apt-get install -qq ros-$ROS_DISTRO-usb-cam  # Used for See3Cam used on Nav
 
 # Messages
 sudo apt-get install -qq ros-$ROS_DISTRO-tf2-sensor-msgs
+
+# Other ROS dependencies
+sudo apt-get install -qq ros-$ROS_DISTRO-urdfdom-py
 
 instlog "Installing common dependencies from Python PIP"
 
