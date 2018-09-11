@@ -197,7 +197,9 @@ def do_buoys(srv, left, right, red_seg, green_seg, tf_listener):
             # Working copy of the current frame obtained at the same time as the tf link
             tf_listener.waitForTransform("enu", "front_left_cam_optical", rospy.Time(), rospy.Duration(4.0))
             left_image, right_image = left.frame, right.frame
-            cam_tf = tf_listener.lookupTransform("front_left_cam_optical", "front_right_cam_optical", left.sub.last_image_time)
+            cam_tf = tf_listener.lookupTransform("front_left_cam_optical",
+                                                 "front_right_cam_optical",
+                                                 left.sub.last_image_time)
             cam_p, cam_q = tf_listener.lookupTransform("enu", "front_left_cam_optical", left.sub.last_image_time)
             cam_p = np.array([cam_p])
             cam_r = tf.transformations.quaternion_matrix(cam_q)[:3, :3]
