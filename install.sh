@@ -235,6 +235,7 @@ sudo apt-get install -qq wget
 sudo apt-get install -qq git
 sudo apt-get install -qq python-pip
 sudo apt-get install -qq ruby
+sudo apt-get install -qq graphviz
 
 instlog "Starting the pre-flight system check to ensure installation was done properly"
 
