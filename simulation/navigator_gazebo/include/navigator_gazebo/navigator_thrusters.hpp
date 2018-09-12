@@ -13,70 +13,40 @@
 #include "gazebo/math/Vector3.hh"
 #include "gazebo/physics/physics.hh"
 #include "roboteq_msgs/Command.h"
+#include "sensor_msgs/JointState.h"
 
-namespace gazebo
+namespace navigator_gazebo
 {
-struct Thruster
+class Thruster
 {
-  Thruster()
-  {
-  }
-  Thruster(std::string param_name)
-  {
-    std::vector<double> v_position;
-    double v_effort_limit, v_effort_ratio, v_rotation;
+public:
+  Thruster(std::string _name, gazebo::physics::LinkPtr _link, gazebo::physics::JointPtr _joint);
+  void Update(double& position, double& velocity, double& effort);
 
-    ros::param::get("/thrust_mapper/thruster_" + param_name + "_cog", v_position);
-    ros::param::get("/thrust_mapper/thruster_" + param_name + "_theta", v_rotation);
-    ros::param::get("/thrust_mapper/effort_ratio", v_effort_ratio);
-    ros::param::get("/thrust_mapper/effort_limit", v_effort_limit);
+private:
+  void CommandCallback(const roboteq_msgs::Command& _cmd);
 
-    position = math::Vector3(v_position[0], v_position[1], 0);
-
-    // Direction is give as rotation about the z axis.
-    // This assumes that it's ONLY a 2d rotation about the z-axis.
-    direction = math::Vector3(cos(v_rotation), sin(v_rotation), 0);
-
-    ROS_INFO("%s position: %f, %f, %f", param_name.c_str(), position[0], position[1], position[2]);
-    ROS_INFO("%s direction: %f, %f, %f", param_name.c_str(), direction[0], direction[1], direction[2]);
-
-    effort_ratio = v_effort_ratio;
-    effort_limit = v_effort_limit;
-  }
-  math::Vector3 position, direction;
-  double effort_ratio, effort_limit;
+  gazebo::physics::LinkPtr link_;
+  gazebo::physics::JointPtr joint_;
+  ros::NodeHandle nh_;
+  ros::Subscriber command_sub_;
+  std::mutex mutex_;
+  double command_;
+  ros::Time last_command_time_;
 };
 
-class ThrusterPlugin : public ModelPlugin
+class ThrusterPlugin : public gazebo::ModelPlugin
 {
 public:
   ThrusterPlugin();
-  virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
-  virtual void Init();
-  void BLCallback(const roboteq_msgs::Command::ConstPtr &command);
-  void BRCallback(const roboteq_msgs::Command::ConstPtr &command);
-  void FLCallback(const roboteq_msgs::Command::ConstPtr &command);
-  void FRCallback(const roboteq_msgs::Command::ConstPtr &command);
+  void Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf) override;
+  void OnUpdate(const gazebo::common::UpdateInfo&);
 
-protected:
-  ros::NodeHandle nh;
-  ros::Subscriber blSub;
-  ros::Subscriber brSub;
-  ros::Subscriber flSub;
-  ros::Subscriber frSub;
-  virtual void OnUpdate();
-
-protected:
-  std::mutex mtx;
-  event::ConnectionPtr updateConnection;
-  physics::ModelPtr model;
-  physics::PhysicsEnginePtr physicsEngine;
-  sdf::ElementPtr sdf;
-  std::string layoutParam;
-  physics::LinkPtr targetLink;
-  ros::Time lastTime;
-
-  std::vector<double> commands{ 0, 0, 0, 0 };
-  std::vector<Thruster> thrusters;  // BL, BR, FL, FR
+private:
+  ros::NodeHandle nh_;
+  std::vector<std::unique_ptr<Thruster> > thrusters_;
+  ros::Publisher joint_state_pub_;
+  sensor_msgs::JointState joint_state_msg_;
+  gazebo::event::ConnectionPtr update_connection_;
 };
 }

@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="wam-v-two-engines">
+  <!-- Macro for inserting an engine with its propeller. -->
+  <xacro:macro  name="navigator_thruster" params="name x y yaw">
+    <!-- Location of propeller from origin of engine -->
+    <xacro:property name="prop_x_offset" value="-0.278156" />
+
+    <!-- Transform engine position so macro position is position of propeller -->
+    <xacro:property name="s_yaw" value="${sin(yaw)}" />
+    <xacro:property name="c_yaw" value="${cos(yaw)}" />
+    <xacro:property name="x_engine" value="${x + c_yaw*(-prop_x_offset) - s_yaw*(0)} " />
+    <xacro:property name="y_engine" value="${y + s_yaw*(-prop_x_offset) + c_yaw*(0)} " />
+
+    <link name="${name}_engine_link">
+      <visual>
+        <geometry>
+          <mesh filename="package://wamv_description/mesh/engine.dae"/>
+        </geometry>
+      </visual>
+      <collision name="${name}_engine_vertical_axis_collision">
+        <origin xyz="-0.16 0 -0.24" rpy="0 0 0" />
+        <geometry>
+          <box size="0.2 0.15 0.83" />
+        </geometry>
+      </collision>
+      <collision name="${name}_engine_rear_end_collision">
+        <origin xyz="-0.34 0 0.12" rpy="0 0 0" />
+        <geometry>
+          <box size="0.12 0.15 0.12" />
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="15"/>
+        <inertia ixx="0.889245" ixy="0.0" ixz="0.0" iyy="0.911125" iyz="0.0" izz="0.078125"/>
+      </inertial>
+    </link>
+
+    <link name="${name}_propeller_link">
+      <visual>
+        <geometry>
+          <mesh filename="package://wamv_description/mesh/propeller.dae"/>
+        </geometry>
+      </visual>
+      <collision name="${name}_propeller_collision">
+        <origin xyz="-0.08 0 0" rpy="0 1.57 0" />
+        <geometry>
+          <cylinder length="0.18" radius="0.24" />
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.5"/>
+        <inertia ixx="0.008545" ixy="0.0" ixz="0.0" iyy="0.008545" iyz="0.0" izz="0.0144"/>
+      </inertial>
+    </link>
+
+
+    <joint name="${name}_chasis_engine_joint" type="fixed">
+      <origin xyz="${x_engine} ${y_engine} 0.318237" rpy="0.0 0.0 ${yaw}"/>
+      <parent link="base_link"/>
+      <child link="${name}_engine_link"/>
+    </joint>
+
+    <joint name="${name}_engine_propeller_joint" type="continuous">
+      <axis rpy="0 0 0" xyz="1 0 0"/>
+      <parent link="${name}_engine_link"/>
+      <child link="${name}_propeller_link"/>
+      <origin rpy="0 0 0" xyz="${prop_x_offset} 0 -0.509371"/>
+      <limit effort="400" velocity="100" />
+      <dynamics friction="100" damping="0.3" />
+    </joint>
+  </xacro:macro>
+</robot>

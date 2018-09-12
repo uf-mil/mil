@@ -18,6 +18,7 @@
   <depend>nav_msgs</depend>
   <depend>roboteq_msgs</depend>
   <depend>nodelet</depend>
+  <depend>xacro</depend>
   <exec_depend>rawgps_common</exec_depend>
   <build_export_depend>message_runtime</build_export_depend>
   <exec_depend>message_runtime</exec_depend>

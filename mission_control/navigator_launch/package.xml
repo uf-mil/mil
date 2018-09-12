@@ -48,6 +48,7 @@
   <run_depend>usb_cam</run_depend>
   <run_depend>navigator_missions</run_depend>
   <run_depend>navigator_2dsim</run_depend>
+  <run_depend>robot_state_publisher</run_depend>
   <export>
   </export>
 </package>

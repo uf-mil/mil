@@ -1,3 +1,6 @@
 [submodule "gnc/lqRRT"]
 	path = gnc/navigator_path_planner/lqRRT
 	url = https://github.com/uf-mil/lqRRT
+[submodule "simulation/vmrc"]
+	path = simulation/vmrc
+	url = https://github.com/uf-mil/vmrc

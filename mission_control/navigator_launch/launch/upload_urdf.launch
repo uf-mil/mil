@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<!-- Sets robot_description paramater to Navigator's URDF -->
+<launch>
+    <param name="robot_description" textfile="$(find navigator_gazebo)/urdf/navigator.urdf"/>
+</launch>
