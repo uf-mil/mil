@@ -66,7 +66,7 @@ class ThrusterMap(object):
         '''
         urdf = URDF.from_xml_string(urdf_string)
         buff = tf2_ros.Buffer()
-        listener = tf2_ros.TransformListener(buff)
+        listener = tf2_ros.TransformListener(buff)  # noqa
         names = []
         joints = []
         positions = []
