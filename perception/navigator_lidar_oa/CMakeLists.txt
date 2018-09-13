@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf2
   navigator_msgs
+  navigator_tools
   interactive_markers
   mil_msgs
   dynamic_reconfigure
