@@ -34,14 +34,14 @@ extern struct pcodar_params
     float outier_removal_std_dev_thresh = 2.0f;
     float outier_removal_mean_k = 10;
 
-    // The max number of points in the point cloud, this is employed when the system needs to be real time. 
+    // The max number of points in the point cloud, this is employed when the system needs to be real time.
     int max_number_points = 5000;
 
     // Distance away from lidar to ignore
     float remove_points_near_lidar_distance = 5;
 
     // --- Point cloud clustering parameters ---
-    
+
     // Minimum number of meters between two clusters for them to be seperated. (e.g. if two clusters are > than this
     // distance, it will become two objects. If they are < this distance they will become mergered into one object)
     double cluster_tolerance_m = 4.4;
@@ -61,11 +61,13 @@ extern struct pcodar_params
     // How much to inflate the ogrid around each object
     int ogrid_inflation_cell = 2;
 
-    // Yes these params are not technically mil_common general, however, they can be changed. 
+    // Yes these params are not technically mil_common general, however, they can be changed.
     std::vector<std::string> object_types = {"scan_the_code", "shooter"};
     std::vector<std::string> object_colors = {"blue", "red", "green"};
 } params;
 
-extern std::vector<Eigen::Vector2d> boundary;
+typedef std::array<Eigen::Vector3d, 4> boundary_t;
+extern boundary_t boundary;
+
 void set_params(ros::NodeHandle& nh);
 }

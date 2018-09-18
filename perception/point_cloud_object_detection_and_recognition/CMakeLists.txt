@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   cv_bridge
   dynamic_reconfigure
-  navigator_tools
+  mil_bounds
 )
 
 ###################################################

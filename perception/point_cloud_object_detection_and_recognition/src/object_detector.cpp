@@ -7,12 +7,16 @@ namespace pcodar
     mil_msgs::PerceptionObjectArrayPtr object_detector::get_objects(ros::Publisher &pub_pcl_)
     {
         auto accrued_cloud = pc_builder_.get_point_cloud();
+
+        mil_msgs::PerceptionObjectArrayPtr object_array(new mil_msgs::PerceptionObjectArray);
+
+        // If buffer not full, ignore
+        if (accrued_cloud.empty()) return object_array;
+
         // std::cout << accrued_cloud.size() << std::endl;
         accrued_cloud.header.frame_id = "enu";
         pub_pcl_.publish(accrued_cloud);
         const auto objects = get_point_cloud_clusters(accrued_cloud);
-        //std::cout << objects.size() << std::endl;
-        mil_msgs::PerceptionObjectArrayPtr object_array(new mil_msgs::PerceptionObjectArray);
         object_array->objects = objects;
         return object_array;
 

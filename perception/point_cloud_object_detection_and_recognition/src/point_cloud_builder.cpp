@@ -18,7 +18,8 @@ namespace {
 point_cloud filter(const point_cloud& in_cloud,
                    const Eigen::Affine3d& e_velodyne_to_X,
                    const bool real_time) {
-  point_cloud out_cloud;
+  point_cloud out_cloud = in_cloud;
+/*
   const auto buffered_cloud_ptr = in_cloud.makeShared();
   pcl::VoxelGrid<pcl::PointXYZ> vg;
   vg.setInputCloud(buffered_cloud_ptr);
@@ -26,6 +27,7 @@ point_cloud filter(const point_cloud& in_cloud,
                  params.filter_points_leaf_size_y,
                  params.filter_points_leaf_size_z);
   vg.filter(out_cloud);
+*/
 
   const auto buffered_cloud_ptr_1 = out_cloud.makeShared();
 
@@ -37,11 +39,11 @@ point_cloud filter(const point_cloud& in_cloud,
   sorfilter.filter(out_cloud);
 
   // Store temp variables for discovering if point inside boundary
-  auto b1 = boundary[0];
-  auto ab = b1 - boundary[1];
-  Eigen::Vector2d ac = b1 - boundary[2];
+  auto b1 = boundary[0].head<2>();
+  auto ab = b1 - boundary[1].head<2>();
+  Eigen::Vector2d ac = b1 - boundary[2].head<2>();
   if (ab.dot(ac) > .1) {
-    ac = b1 - boundary[3];
+    ac = b1 - boundary[3].head<2>();
   }
 
   // Begin point removal procedure
@@ -77,10 +79,12 @@ point_cloud filter(const point_cloud& in_cloud,
     return out_cloud;
   }
 
+/*
   pcl::RandomSample<pcl::PointXYZ> sample(true);
   sample.setInputCloud(buffered_cloud_ptr_2);
   sample.setSample(number_points);
   sample.filter(out_cloud);
+*/
 
   return out_cloud;
 }
@@ -107,22 +111,23 @@ void point_cloud_builder::add_point_cloud(
   auto transformed_cloud =
       transform_point_cloud(pcloud2, e_velodyne_to_enu).makeShared();
 
-  point_cloud buffered_cloud;
-  if (prev_clouds_.full()) {
-    for (const auto& cloud : prev_clouds_) {
-      buffered_cloud += *cloud;
-    }
-    prev_clouds_.clear();
-  } else {
-    prev_clouds_.push_back(transformed_cloud);
+  // Add new cloud to buffer
+  prev_clouds_.push_back(transformed_cloud);
+
+  // Don't contruct mega cloud until buffer of recent clouds is full
+  if(!prev_clouds_.full())
     return;
+
+  point_cloud buffered_cloud;
+  for (const auto& cloud : prev_clouds_) {
+      buffered_cloud += *cloud;
   }
+
 
   const auto filtered_buffered_cloud =
       filter(buffered_cloud, e_velodyne_to_enu, real_time_);
-  mega_cloud_ += filtered_buffered_cloud;
+  mega_cloud_ = filtered_buffered_cloud;
   real_time_ = true;
-  mega_cloud_ = filter(mega_cloud_, e_velodyne_to_enu, real_time_);
 }
 
 point_cloud point_cloud_builder::get_point_cloud() {
