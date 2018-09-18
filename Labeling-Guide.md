@@ -1,3 +1,6 @@
+# NOTICE: legacy / out of date
+> MIL now uses labelbox.io. See [this guide](https://github.com/uf-mil/mil_common/wiki/Labeling-With-labelbox.io)
+
 # Labeling Guide
 To provide training data to machine learning algorithms, and to verify performance of our perception, is is important to have explicitly "labeled" images and lidar data, with tags indicating what is in the image/pointcloud and where. For this to be useful, we must all use the same conventions for what these tags are.
 
