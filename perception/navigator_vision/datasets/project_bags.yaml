@@ -1,0 +1,215 @@
+datasets:
+  -
+    name: navigator_pointgrey_wauburg_2016_11_12
+    sources:
+      -
+        file: 2016-11-12/2016-11-12-12-56-46.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 36
+      -
+        file: 2016-11-12/2016-11-12-15-13-20.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 11
+      -
+        file: 2016-11-12/2016-11-12-15-14-07.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 76
+      -
+        file: 2016-11-12/2016-11-12-16-07-59.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 29
+        stop: 77
+      -
+        file: 2016-11-12/2016-11-12-16-12-17.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 15
+        stop: 63
+      -
+        file: 2016-11-12/buoys_2016-11-12-10-42-28.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 222
+      -
+        file: 2016-11-12/chained1_2016-11-12-13-08-10.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 343
+      -
+        file: 2016-11-12/chained1_2016-11-12-13-08-10.bag
+        topic: /stereo/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 343
+      -
+        file: 2016-11-12/detect1_2016-11-12-11-44-02.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 90
+      -
+        file: 2016-11-12/detect2_2016-11-12-11-57-27.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 20
+      -
+        file: 2016-11-12/detect3_2016-11-12-12-02-33.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 3
+        stop: 71
+      -
+        file: 2016-11-12/detect4_2016-11-12-14-53-37.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 131
+      -
+        file: 2016-11-12/detect5_2016-11-12-14-55-52.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 64
+      -
+        file: 2016-11-12/detect6_2016-11-12-15-01-06.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 60
+      -
+        file: 2016-11-12/Detect7_2016-11-12-15-04-59.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 40
+      -
+        file: 2016-11-12/detect9.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 6
+        stop: 53
+      -
+        file: 2016-11-12/dock_2016-11-12-14-15-09.bag
+        topic: /stereo/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 32
+        stop: 47
+      -
+        file: 2016-11-12/Dock2_2016-11-12-14-16-13.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 4
+        stop: 58
+      -
+        file: 2016-11-12/Dock2_2016-11-12-14-16-13.bag
+        topic: /stereo/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 4
+        stop: 58
+      -
+        file: 2016-11-12/Dock3_2016-11-12-14-17-17.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 33
+      -
+        file: 2016-11-12/dock4_2016-11-12-14-17-54.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 33
+      -
+        file: 2016-11-12/dock_circle_2016-11-12-14-40-10.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 55
+      -
+        file: 2016-11-12/docked_2016-11-12-14-29-10.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 9
+      -
+        file: 2016-11-12/docking_2016-11-12-14-18-58.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 76
+      -
+        file: 2016-11-12/docking2_2016-11-12-14-33-13.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 79
+      -
+        file: 2016-11-12/docking3_2016-11-12-14-37-50.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 67
+      -
+        file: 2016-11-12/LookAtObjects_Ira_2016-11-12-11-14-45.bag
+        topic: /stereo/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 10
+        stop: 176
+      -
+        file: 2016-11-12/misclass_2016-11-12-15-30-34.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 10
+        stop: 30
+      -
+        file: 2016-11-12/misclassified_shooter2_2016-11-12-14-13-35.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 18
+        stop: 35
+      -
+        file: 2016-11-12/misssc_2016-11-12-14-12-23.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 9
+
