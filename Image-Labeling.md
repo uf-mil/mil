@@ -21,27 +21,34 @@ The remainder of this page guides the user through contributing to the labeling 
 
 1. From the project page, click the blue "start labeling" button.  You will be presented with an image from previously recorded data
 1. See if any of the challenges listed on the left side bar of in the image. If they are, click on this challenge and draw a rectangle as closely around the object as possible. **Be sure to see the additional Labeling Rules below** for certain objects to ignore.
-1. If no objects in the image comply with the rules, click the "None" object on the sidebar and click anywhere in the image than proceed
+1. If no objects in the image comply with the rules, click the "None" object on the sidebar and click anywhere in the image then proceed
 1. Click submit or press e to submit the label and go to the next image
-1. Repeat until you all images are labeled or you suffer a schizophrenic break from extreme boredom of this repetitive task. 
+1. Repeat until all images are labeled or you suffer a schizophrenic break from extreme boredom of this repetitive task. 
 
 ### Labeling Rules
 Be sure to comply with the following rules for labeling so we do not end up with useless data (then we get to do it all over again!):
 
-* If an object is far away (see examples), do NOT label it
-* If an object is at extreme angles to the camera, do NOT label it.
-* If the lighting makes the color of an object ambiguous for the objects that have labled colors (totems, circle, triangle, cruciform, stc panel), do NOT label it.
+* If an object is far away (20+ meters, see examples), do NOT label it
+* If an object is at extreme angles (60+ degrees, see examples) to the camera, do NOT label it.
+* If the lighting makes the color of an object ambiguous for the objects that have labeled colors (totems, circle, triangle, cruciform, stc panel), do NOT label it.
 * Do not label the 2016 docking challenge.
 * If the same object from the same scene appears many times without changes to lighting, position, etc, you may skip some of these.
 * Only label the large spherical buoys, the smaller ones are not in the real competition (see examples)
 
 
 ### Examples
-* Triangle is ignored because its color is ambiguous (is it green or blue?)
-![](https://i.imgur.com/Qp1sMeU.png)
-* Image contains only the small buoys (which should not be labeled), so leave as None
 
-
+####  Triangle is ignored because its color is ambiguous (is it green or blue?)
 ![](https://i.imgur.com/Qp1sMeU.png)
-![](https://i.imgur.com/Qp1sMeU.png)
-
+####  Image contains only the small buoys (which should not be labeled), so leave as None
+![](https://i.imgur.com/RQZtcem.png)
+####  Both the scan the code platform and the LED panel are independently labeled (with the correct color for the current state of the panel)
+![](https://i.imgur.com/0OTQChv.png)
+####  The red triangle is ignored because it is at too extreme an angle
+![](https://i.imgur.com/7o0eSdZ.png)
+#### Everything in the image is too far away, so None label is used
+![](https://i.imgur.com/6ZMiNSM.jpg)
+### The large target is partially obfuscated (covered), so not labeled
+![](https://i.imgur.com/OtRvlfl.png)
+### The white totem is too far away, so ignored (None label is used)
+![](https://i.imgur.com/OyoIp0e.jpg)
