@@ -52,3 +52,11 @@ Be sure to comply with the following rules for labeling so we do not end up with
 ![](https://i.imgur.com/OtRvlfl.png)
 ### The white totem is too far away, so ignored (None label is used)
 ![](https://i.imgur.com/OyoIp0e.jpg)
+### Correctly labeled totem, note how support structure is included too
+![](https://i.imgur.com/A31qQsK.png)
+### Example of the correct black buoys to label (notice smaller one nearby is ignored)
+![](https://i.imgur.com/uvw4WQh.png)
+### Green totem is labeled, others are too far away
+![](https://i.imgur.com/8Jlvgbb.png)
+### Both sides are detect deliver are OKAY (at a good angle to label)
+![](https://i.imgur.com/fXxGSJ6.png)
