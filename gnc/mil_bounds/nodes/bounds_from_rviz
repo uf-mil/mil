@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+import rospy
+from geometry_msgs.msg import PointStamped
+from mil_bounds import BoundsClient
+from mil_tools import rosmsg_to_numpy
+import tf2_ros
+import tf2_geometry_msgs  # noqa
+
+
+class BoundsFromRVIZ(BoundsClient):
+    def __init__(self, frame):
+        super(BoundsFromRVIZ, self).__init__()
+        self.tf_buffer = tf2_ros.Buffer()
+        self.listener = tf2_ros.TransformListener(self.tf_buffer)
+        self.frame = frame
+        self.points = []
+        self.sub = rospy.Subscriber("clicked_point", PointStamped, self._cb, queue_size=4)
+
+    def _cb(self, msg):
+        if self.frame is not None and msg.header.frame_id != self.frame:
+            try:
+                msg = self.tf_buffer.transform(msg, self.frame, timeout=rospy.Duration(1, 0))
+            except tf2_ros.TransformException as err:
+                rospy.logerr("Transform error: {}".format(err))
+                return
+        rospy.loginfo("Recievied point {} of 4".format(len(self.points) + 1))
+        self.points.append(rosmsg_to_numpy(msg.point))
+        if len(self.points) == 4:
+            self.sub.unregister()
+
+    def set_from_rviz(self):
+        r = rospy.Rate(2)
+        while len(self.points) != 4 and not rospy.is_shutdown():
+            r.sleep()
+        if rospy.is_shutdown():
+            return
+        self.set_bounds(self.points, frame=self.frame)
+        rospy.loginfo("done")
+
+
+if __name__ == "__main__":
+    rospy.init_node("bounds_from_rviz", anonymous=True)
+    frame = rospy.get_param("~frame", "ECEF")
+    b = BoundsFromRVIZ(frame)
+    b.set_from_rviz()
