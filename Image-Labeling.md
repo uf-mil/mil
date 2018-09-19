@@ -32,6 +32,7 @@ Be sure to comply with the following rules for labeling so we do not end up with
 * If an object is at extreme angles (60+ degrees, see examples) to the camera, do NOT label it.
 * If the lighting makes the color of an object ambiguous for the objects that have labeled colors (totems, circle, triangle, cruciform, stc panel), do NOT label it.
 * Do not label the 2016 docking challenge.
+* Ignore the black trash back psuedo-buoys.
 * If the same object from the same scene appears many times without changes to lighting, position, etc, you may skip some of these.
 * Only label the large spherical buoys, the smaller ones are not in the real competition (see examples)
 
