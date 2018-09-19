@@ -9,7 +9,7 @@ SONAR_DIR="/home/$USER/sonar/software"
 # Command to connect to sylphase GPS/INS
 SDGPS="$SDGPS_DIR/build/main"
 ANTENNA_POSITION="[0.37465,-0.136525,0.587502]"
-GPS_CMD="(cd $SDGPS_DIR;sudo $SDGPS sylphase-usbgpsimu2 --antenna-position '$ANTENNA_POSITION' ! tracker ! kf2 --decimation 10 ! listen-solution-tcp 1234)"
+GPS_CMD="(cd $SDGPS_DIR;sudo $SDGPS sylphase-usbgpsimu2 --antenna-position '$ANTENNA_POSITION' --use-imu1 ! tracker ! kf2 --decimation 10 ! listen-solution-tcp 1234)"
 
 # Command to connect to sylphase passive sonar
 SONAR_CMD="$SONAR_DIR/softare/publish 7384"
