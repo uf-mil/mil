@@ -214,7 +214,7 @@ datasets:
         stop: 9
 
   -
-      name: navigator_wahlberg_pg_2018-02-04
+      name: navigator_wauburg_pointgrey_2018-02-04
       sources:
           # Start of 2018-02-04 Folder
         - 
@@ -346,7 +346,7 @@ datasets:
           # End of 2018-02-04 Folder
           # End of point gray bags
     - 
-      name: navigator_seecam_pg-2018-09-09
+      name: navigator_seecam_wauburg-2018-09-09
       sources:
           # Start of 2018-09-09 Folder
         - 
@@ -387,7 +387,7 @@ datasets:
         # End of 2018-09-09 Folder  
         # Start of 2018-02-04 Folder
     - 
-      name: navigator_seecam_pg-2018-02-04
+      name: navigator_seecam_wauburg-2018-02-04
       sources:
         - 
           file: 2018-02-04/yellow_totem_cloudy.bag    
@@ -532,7 +532,7 @@ datasets:
           # End of 2018-02-04 Folder
           # Start of 2018-02-18 Folder
     - 
-      name: navigator_seecam_pg-2018-02-18
+      name: navigator_seecam_wauburg-2018-02-18
       sources:
         - 
           file: 2018-02-18/yellow_totem_bright_sun.bag  
@@ -656,7 +656,7 @@ datasets:
           # End of 2018-02-18 Folder
           # Start of 2018-03-18 Folder
     - 
-      name: navigator_seecam_pg-2018-03-18
+      name: navigator_seecam_wauburg-2018-03-18
       sources:
         - 
           file: 2018-03-18/whitetotem.bag    
@@ -703,7 +703,7 @@ datasets:
          # End of 2018-03-18 Folder
          # Start of 2018-08-26 Folder
     - 
-      name: navigator_seecam_pg-2018-08-26
+      name: navigator_seecam_wauburg-2018-08-26
       sources:
         - 
           file: 2018-08-26/yellowtotemcircle.bag   
@@ -771,7 +771,7 @@ datasets:
          # End of 2018-08-26 Folder
          # Start of 2018-04-08 Folder
     - 
-      name: navigator_seecam_pg-2018-04-08
+      name: navigator_seecam_wauburg-2018-04-08
       sources:
         - 
           file: 2018-04-08/black_buoy.bag
