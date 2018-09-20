@@ -21,6 +21,7 @@ import rosbag
 import cv2
 from image_geometry import PinholeCameraModel
 from mil_vision_tools.image_proc import ImageProc, ImageSet
+from mil_tools import slugify
 from cv_bridge.boost.cv_bridge_boost import cvtColor2
 
 
@@ -106,14 +107,14 @@ class BagImageExtractorSource(object):
         try:
             _, msg, _ = bag.read_messages(topics=camera_info_topic).next()
         except StopIteration:
-            raise Exception('no camera info messages found in {}'.format(camera_info_topic))
+            raise Exception('no camera info messages found on topic {} in {}'.format(camera_info_topic, bag))
         if msg._type != 'sensor_msgs/CameraInfo':
-            raise Exception('msg on topic {} are not camera info'.format(camera_info_topic))
+            raise Exception('msg on topic {} are not camera info in bag {}'.format(camera_info_topic, bag))
         model = PinholeCameraModel()
         model.fromCameraInfo(msg)
         return model
 
-    def _save_img(self, msg, time, image_dir):
+    def _save_img(self, msg, time, image_dir, prefix=''):
         '''
         Save the image msg to the image directory, named with the time object
         converted to a string. Uses mil image proc to rectify / convert color as
@@ -134,14 +135,16 @@ class BagImageExtractorSource(object):
         # If color, convert to bgr
         if self.encoding == ImageProc.COLOR or self.encoding == ImageProc.RECT_COLOR:
             img = cvtColor2(img, self.image_set.color_encoding, 'bgr8')
-        filename = os.path.join(image_dir, str(msg.header.stamp) + '.png')
+        filename = os.path.join(image_dir, prefix + str(msg.header.stamp) + '.png')
         cv2.imwrite(filename, img)
 
-    def extract_images(self, source_dir='.', image_dir='.'):
+    def extract_images(self, source_dir='.', image_dir='.', verbose=False):
         '''
         Extract the images using the configuration from __init__, resolving the bag file
         relative to source_dir and placing extracted images into image_dir.
         '''
+        if verbose:
+            print '\tExtracting images from topic {} in {}'.format(self.topic, self.filename)
         filename = os.path.join(source_dir, self.filename)
         b = rosbag.Bag(filename)
         if self.encoding != 0:
@@ -153,10 +156,11 @@ class BagImageExtractorSource(object):
         stop = first_time + rospy.Duration(self.stop) if self.stop else None
         interval = rospy.Duration(1.0 / self.freq) if self.freq else rospy.Duration(0)
         next_time = start
+        prefix = slugify(unicode(self.filename)) + '_' + slugify(unicode(self.topic))
         for _, msg, time in b.read_messages(topics=self.topic, start_time=start, end_time=stop):
             if time >= next_time:
                 next_time = time + interval
-                self._save_img(msg, time, image_dir)
+                self._save_img(msg, time, image_dir, prefix=prefix)
 
 
 class BagImageExtractorDatasets(object):
@@ -200,7 +204,7 @@ class BagImageExtractorDatasets(object):
             sources.append(BagImageExtractorSource.from_dict(source))
         return cls(d['name'], sources)
 
-    def extract_images(self, source_dir='.', image_dir='.'):
+    def extract_images(self, source_dir='.', image_dir='.', verbose=False):
         '''
         Extract images from each source bag in this dataset into a single
         directory.
@@ -211,13 +215,15 @@ class BagImageExtractorDatasets(object):
                           was created with name='scanthecode_day1', images will go into
                           /home/user/images/scanthecode_day1
         '''
+        if verbose:
+            print "Producing dataset '{}'".format(self.name)
         image_dir = os.path.join(image_dir, self.name)
         if not os.path.isdir(image_dir):
             if os.path.exists(image_dir):
                 raise Exception('{} exsists but is not a diretory'.format(image_dir))
             os.makedirs(image_dir)
         for source in self.sources:
-            source.extract_images(source_dir=source_dir, image_dir=image_dir)
+            source.extract_images(source_dir=source_dir, image_dir=image_dir, verbose=verbose)
 
 
 class BagImageExtractorProject(object):
@@ -256,11 +262,9 @@ class BagImageExtractorProject(object):
         return cls(datasets, source_dir=d.get('source_dir'),
                    image_dir=d.get('image_dir'))
 
-    def extract_images(self):
-        '''
-        '''
+    def extract_images(self, verbose=False):
         for dataset in self.datasets:
-            dataset.extract_images(source_dir=self.source_dir, image_dir=self.image_dir)
+            dataset.extract_images(source_dir=self.source_dir, image_dir=self.image_dir, verbose=verbose)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -275,6 +279,7 @@ if __name__ == "__main__":
     parser.add_argument('--image-dir', '-o', dest="image_dir", type=str, default=None,
                         help="directory to resolve relative paths specified in YAML for output (labeled) bags. \n\
                               Defaults to current directory.")
+    parser.add_argument('--verbose', '-v', action='store_true', help='Print status info along the way')
     args = parser.parse_args()
 
     # Load config from yaml file specified
@@ -291,4 +296,4 @@ if __name__ == "__main__":
 
     # Contruct a project from the config and extract images
     project = BagImageExtractorProject.from_dict(config)
-    project.extract_images()
+    project.extract_images(verbose=args.verbose)
