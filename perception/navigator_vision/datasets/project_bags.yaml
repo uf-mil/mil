@@ -213,3 +213,571 @@ datasets:
         start: 0
         stop: 9
 
+  -
+      name: navigator_wahlberg_pg_2018-02-04
+      sources:
+          # Start of 2018-02-04 Folder
+        - 
+          file: 2018-02-04/white_totem_cloudy.bag      
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 9.0    
+        - 
+          file: 2018-02-04/whitetotem.bag    
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 34.0  
+        - 
+          file: 2018-02-04/thebigbadblackbuoys.bag 
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 109.0    
+        - 
+          file: 2018-02-04/test.bag    
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 6.0              
+        - 
+          file: 2018-02-04/stc_closer.bag     
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 24.0    
+        - 
+          file: 2018-02-04/scanthecode.bag    
+          topic: /camera/front/left/image_raw   
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 178.0    
+        - 
+          file: 2018-02-04/redtriangle.bag    
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 65.0  
+        - 
+          file: 2018-02-04/red_totem_cloudy.bag   
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 8.0    
+        - 
+          file: 2018-02-04/redtotem.bag    
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 30.0              
+        - 
+          file: 2018-02-04/green_totem_cloudy.bag     
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 16.0    
+        - 
+          file: 2018-02-04/greentotem.bag  
+          topic: /camera/front/left/image_raw   
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 32.0    
+        - 
+          file: 2018-02-04/blue_triangle.bag   
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 11.0  
+        - 
+          file: 2018-02-04/blue_totem_cloudy.bag
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 11.0    
+        - 
+          file: 2018-02-04/bluetotem.bag   
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 31.0              
+        - 
+          file: 2018-02-04/blackbuoyfarawayredo.bag    
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 45.0    
+        - 
+          file: 2018-02-04/blackbuoyfaraway.bag   
+          topic: /camera/front/left/image_raw   
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 12.0    
+        - 
+          file: 2018-02-04/blackbuoy2.bag  
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 60.0  
+        - 
+          file: 2018-02-04/blackbuoy.bag
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 36.0  
+          # End of 2018-02-04 Folder
+          # End of point gray bags
+    - 
+      name: navigator_seecam_pg-2018-09-09
+      sources:
+          # Start of 2018-09-09 Folder
+        - 
+          file: 2018-09-09/whole_course_bag.bag      
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 120.0    
+        - 
+          file: 2018-09-09/buoy_nogrid.bag       
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 14.0              
+        - 
+          file: 2018-09-09/buoy_in_pcodar_ogrid2.bag       
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 38.0    
+        - 
+          file: 2018-09-09/buoy_in_pcodar_ogrid.bag      
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 26.0    
+        - 
+          file: 2018-09-09/pinger_at_0deg.bag      
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 20.0  
+        # End of 2018-09-09 Folder  
+        # Start of 2018-02-04 Folder
+    - 
+      name: navigator_seecam_pg-2018-02-04
+      sources:
+        - 
+          file: 2018-02-04/yellow_totem_cloudy.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 15.0    
+        - 
+          file: 2018-02-04/yellowtotem.bag     
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 34.0              
+        - 
+          file: 2018-02-04/white_totem_cloudy.bag      
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 9.0    
+        - 
+          file: 2018-02-04/whitetotem.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 34.0  
+        - 
+          file: 2018-02-04/thebigbadblackbuoys.bag 
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 109.0    
+        - 
+          file: 2018-02-04/test.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 6.0              
+        - 
+          file: 2018-02-04/stc_closer.bag     
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 24.0    
+        - 
+          file: 2018-02-04/scanthecode.bag    
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 178.0    
+        - 
+          file: 2018-02-04/redtriangle.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 65.0  
+        - 
+          file: 2018-02-04/red_totem_cloudy.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 8.0    
+        - 
+          file: 2018-02-04/redtotem.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 30.0              
+        - 
+          file: 2018-02-04/green_totem_cloudy.bag     
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 16.0    
+        - 
+          file: 2018-02-04/greentotem.bag  
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 32.0    
+        - 
+          file: 2018-02-04/blue_triangle.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 11.0  
+        - 
+          file: 2018-02-04/blue_totem_cloudy.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 11.0    
+        - 
+          file: 2018-02-04/bluetotem.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 31.0              
+        - 
+          file: 2018-02-04/blackbuoyfarawayredo.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 45.0    
+        - 
+          file: 2018-02-04/blackbuoyfaraway.bag   
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 12.0    
+        - 
+          file: 2018-02-04/blackbuoy2.bag  
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 60.0  
+        - 
+          file: 2018-02-04/blackbuoy.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 36.0  
+          # End of 2018-02-04 Folder
+          # Start of 2018-02-18 Folder
+    - 
+      name: navigator_seecam_pg-2018-02-18
+      sources:
+        - 
+          file: 2018-02-18/yellow_totem_bright_sun.bag  
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 8.0    
+        - 
+          file: 2018-02-18/yellow_totem_bright.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 3.0              
+        - 
+          file: 2018-02-18/white_totem_bright.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 8.0    
+        - 
+          file: 2018-02-18/stc2.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 14.0  
+        - 
+          file: 2018-02-18/stc.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 35.0    
+        - 
+          file: 2018-02-18/red_triangle.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 7.0              
+        - 
+          file: 2018-02-18/red_totem_bright_2.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 4.0    
+        - 
+          file: 2018-02-18/red_totem_bright.bag   
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 9.0    
+        - 
+          file: 2018-02-18/ralpha.jpg.bag  
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 4.0  
+        - 
+          file: 2018-02-18/green_cross.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 7.0    
+        - 
+          file: 2018-02-18/green_circle.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 8.0              
+        - 
+          file: 2018-02-18/fake_black_buoy.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 5.0    
+        - 
+          file: 2018-02-18/blue_triangle.bag  
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 8.0    
+        - 
+          file: 2018-02-18/blue_totem_bright_2.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 5.0  
+        - 
+          file: 2018-02-18/blue_totem_bright.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 7.0    
+        - 
+          file: 2018-02-18/black_buoy_bright_run.bag  
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 2.0              
+        - 
+          file: 2018-02-18/black_buoy_bright.bag 
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 2.0    
+          # End of 2018-02-18 Folder
+          # Start of 2018-03-18 Folder
+    - 
+      name: navigator_seecam_pg-2018-03-18
+      sources:
+        - 
+          file: 2018-03-18/whitetotem.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 23.0    
+        - 
+          file: 2018-03-18/redtotem.bag
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 2.0    
+        - 
+          file: 2018-03-18/greentotem.bag 
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 24.0  
+        - 
+          file: 2018-03-18/course2.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 270.0    
+        - 
+          file: 2018-03-18/course.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 262.0              
+        - 
+          file: 2018-03-18/blackbuoy.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 15.0   
+         # End of 2018-03-18 Folder
+         # Start of 2018-08-26 Folder
+    - 
+      name: navigator_seecam_pg-2018-08-26
+      sources:
+        - 
+          file: 2018-08-26/yellowtotemcircle.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 85.0    
+        - 
+          file: 2018-08-26/whitetotemcircle.bag
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 116.0    
+        - 
+          file: 2018-08-26/redtotemcircle.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 93.0  
+        - 
+          file: 2018-08-26/madetheshot.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 33.0    
+        - 
+          file: 2018-08-26/greentotemcircle.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 70.0              
+        - 
+          file: 2018-08-26/greencruciformtarget.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 11.0   
+        - 
+          file: 2018-08-26/greencircletarget.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 12.0    
+        - 
+          file: 2018-08-26/bluetriangletarget.bag
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 22.0    
+        - 
+          file: 2018-08-26/bluetotemcircle.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 118.0  
+         # End of 2018-08-26 Folder
+         # Start of 2018-04-08 Folder
+    - 
+      name: navigator_seecam_pg-2018-04-08
+      sources:
+        - 
+          file: 2018-04-08/black_buoy.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 8.0  
+         # End of 2018-08-26 Folder
