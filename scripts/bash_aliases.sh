@@ -14,6 +14,33 @@ alias nav="cd $CATKIN_DIR/src/NaviGator"
 alias rnav="ros_connect -n ${HOSTNAMES[1]}"
 alias sshnav="ssh navigator@${HOSTNAMES[1]} -Y"
 
+nthrust()
+{
+  local topic
+  local publishers
+  topic="/$1_motor/cmd"
+  publishers=$(rostopic info "$topic" | grep Publishers)
+  if [ "$publishers" != "Publishers: None" ]; then
+     echo "Somone is already publishing to $topic. Perhaps you need to kill thrust mapper?"
+     return 1
+  fi
+  rostopic pub "$topic" "roboteq_msgs/Command" "setpoint: $2" -r100
+}
+_nthrust_complete()
+{
+    local THRUSTER
+    local THRUSTERS
+    THRUSTERS=(FL FR BL BR)
+    for THRUSTER in "${THRUSTERS[@]}"; do
+            # Skip any entry that does not match the string to complete
+            if [[ -z "$2" || ! -z "$(echo ${THRUSTER:0:${#2}} | grep $2)" ]]; then
+                            COMPREPLY+=( "$THRUSTER" )
+            fi
+    done
+}
+complete -F _nthrust_complete nthrust
+
+
 # Tasks
 alias nmove="runtask Move"
 
