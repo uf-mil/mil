@@ -6,7 +6,9 @@
     <include file="$(find navigator_launch)/launch/upload_urdf.launch" />
 
     <!-- All nodes that run on NaviGator -->
-    <include file="$(find navigator_launch)/launch/gnc.launch"/>
+    <include file="$(find navigator_launch)/launch/gnc.launch">
+       <arg name="simulation" value="$(arg simulation)" />
+    </include>
     <include file="$(find navigator_launch)/launch/alarms.launch"/>
     <include file="$(find navigator_launch)/launch/diagnostics.launch" />
     <include if="$(arg online-bagger)" file="$(find navigator_launch)/launch/online_bagger.launch" />

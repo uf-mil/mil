@@ -17,4 +17,9 @@
     <include file="$(find navigator_gazebo)/launch/goose.launch">
         <arg name="gui" value="$(arg gui)"/>
     </include>
+
+    <rosparam param="/gazebo/name_map">
+      'base_gate::red_buoy::link': red_totem
+      # TODO: add more
+    </rosparam>
 </launch>

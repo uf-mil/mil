@@ -1,0 +1,5 @@
+<launch>
+    <node name="bounds_server" pkg="mil_bounds" type="bounds_server" />
+    <node name="set_bounds" pkg="dynamic_reconfigure" type="dynparam"
+          args="load bounds_server $(find navigator_launch)/config/bounds_wauburg.yaml" />
+</launch>
