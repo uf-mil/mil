@@ -19,21 +19,21 @@
         <remap from="orig_odom" to="ins_odom"/>
     </node>
 
-    <!-- Republishes ins-frame absodom in base_link frame -->
+    <!-- Republishes ins-frame absodom in enu frame -->
     <node pkg="nodelet" type="nodelet" name="transform_odometry_absodom" args="standalone odometry_utils/transform_odometry">
         <rosparam>
             frame_id: /ecef
-            child_frame_id: /base_link
+            child_frame_id: /enu
         </rosparam>
         <remap from="orig_odom" to="absodom"/>
-        <remap from="odom" to="absodom_base_link"/>
+        <remap from="odom" to="enu_odom"/>
     </node>
 
     <!-- Publishes transform from /enu to /base_link based on odometry -->
     <node pkg="nodelet" type="nodelet" args="standalone odometry_utils/odometry_to_tf" name="odometry_to_tf"/>
 
-    <!-- Publishes transform from /ecef to /ins based on odometry -->
+    <!-- Publishes transform from /ecef to /emu based on odometry -->
     <node pkg="nodelet" type="nodelet" args="standalone odometry_utils/odometry_to_tf" name="absodom_to_tf">
-      <remap from="odom" to="absodom_base_link" />
+      <remap from="odom" to="enu_odom" />
     </node>
 </launch>
