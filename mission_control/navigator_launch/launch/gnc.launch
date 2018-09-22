@@ -30,7 +30,7 @@
 
     <node pkg="navigator_tools" type="boat_info.py" name="boat_info_markers" />
 
-    <include file="$(find navigator_launch)/launch/gnc/object_classification.launch" />
+    <include file="$(find navigator_launch)/launch/perception/pcodar.launch" />
 
     <!-- Run Path Planner -->
     <include file="$(find navigator_launch)/launch/gnc/path_planner.launch" />
