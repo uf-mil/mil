@@ -35,7 +35,7 @@ class BoundsServer(object):
         marker = Marker()
         marker.header.frame_id = config.frame
         marker.type = Marker.LINE_STRIP
-        marker.scale.x = 0.1
+        marker.scale.x = 0.5
         marker.color.r = 1
         marker.color.a = 1
         for i in range(1, 5):
