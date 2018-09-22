@@ -78,7 +78,6 @@ class Navigator(BaseTask):
         cls.pose = None
         cls.ecef_pose = None
 
-        cls.enu_bounds = None
 
         cls.killed = '?'
         cls.odom_loss = '?'
@@ -131,7 +130,6 @@ class Navigator(BaseTask):
             fprint("Waiting for odom...", title="NAVIGATOR")
             odom = util.wrap_time_notice(cls._odom_sub.get_next_message(), 2, "Odom listener")
             enu_odom = util.wrap_time_notice(cls._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener")
-            # bounds = util.wrap_time_notice(cls._make_bounds(), 2, "Bounds creation")
             yield defer.gatherResults([odom, enu_odom])  # Wait for all those to finish
 
     @property
@@ -157,21 +155,6 @@ class Navigator(BaseTask):
     def fetch_result(self, *args, **kwargs):
         # For a unified result class
         return MissionResult(*args, **kwargs)
-
-    @classmethod
-    @util.cancellableInlineCallbacks
-    def _make_bounds(cls):
-        fprint("Constructing bounds.", title="NAVIGATOR")
-
-        if (yield cls.nh.has_param("/bounds/enforce")):
-            _bounds = cls.nh.get_service_client('/get_bounds', navigator_srvs.Bounds)
-            yield _bounds.wait_for_service()
-            resp = yield _bounds(navigator_srvs.BoundsRequest())
-            if resp.enforce:
-                cls.enu_bounds = [mil_tools.rosmsg_to_numpy(bound) for bound in resp.bounds]
-        else:
-            fprint("No bounds param found, defaulting to none.", title="NAVIGATOR")
-            cls.enu_bounds = None
 
     @util.cancellableInlineCallbacks
     def deploy_thruster(self, name):

@@ -37,6 +37,6 @@
 
     <!-- Core utilities: bounds, coordinate conversion -->
     <node name="coordinate_converter" pkg="navigator_tools" type="coordinate_conversion_server.py"/>
-    <node name="bounds_server" pkg="navigator_tools" type="bounds.py"/>
+    <node name="bounds_server" pkg="mil_bounds" type="bounds_server" />
     <node name="set_bounds" pkg="dynamic_reconfigure" type="dynparam" args="load /bounds_server $(find navigator_tools)/cfg/wauberg.yaml" />
 </launch>
