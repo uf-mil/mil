@@ -16,7 +16,7 @@
   <xacro:fixed_link name="sick" parent="measurement"
                     xyz="0.5334 -0.0254 -0.6858" rpy="0 0 0" />
   <xacro:fixed_link name="hydrophones" parent="measurement"
-                    xyz="-1.2192 .70104 -1.0922" rpy="-1.571 0 0" />
+                    xyz="-1.1303 -.635 -1.524" rpy="0 0 0" />
   <xacro:fixed_link name="pinger_direction" parent="velodyne"
                     xyz="0.8382 0 -2.0828" rpy="0 0 0" />
 
