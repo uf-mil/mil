@@ -39,6 +39,7 @@ pcodar_controller::pcodar_controller(ros::NodeHandle _nh)
     : nh_(_nh),
       bounds_client_("/bounds_server", std::bind(&pcodar_controller::bounds_update_cb, this, std::placeholders::_1)),
       tf_listener(tf_buffer_, nh_) {
+  highest_id_ = 0;
   ros::NodeHandle private_nh("~");
   set_params(private_nh);
   id_object_map_ = std::shared_ptr<id_object_map>(new id_object_map);
@@ -123,23 +124,20 @@ void pcodar_controller::executive() {
       detector_.get_objects(pub_pcl_);
   if (id_object_map_->empty()) {
     for (auto &object : objects->objects) {
-      id_object_map_->insert({object.id, object});
+      id_object_map_->insert({highest_id_++, object});
     }
-  }
+  } else {
 
-  std::vector<association_unit> association_unit =
-      ass.associate(*id_object_map_, objects->objects);
+    std::vector<association_unit> association_unit =
+        ass.associate(*id_object_map_, objects->objects);
 
-  try {
     for (const auto &a : association_unit) {
       //         // std::cout << a.first <<endl;
       auto w = id_object_map_->find(a.object_id);
       auto z = objects->objects.at(a.index);
 
       if (w == id_object_map_->end()) {
-        // std::cout <<a.index << " " << a.object_id << " does not exist" <<
-        // id_object_map_->size() << std::endl;
-        id_object_map_->insert({a.index, z});  // TODO
+        auto res = id_object_map_->insert({highest_id_++, z});
         continue;
       }
       z.id = w->first;
@@ -149,8 +147,6 @@ void pcodar_controller::executive() {
       w->second.classification = cl;
       w->second.labeled_classification = cll;
     }
-  } catch (...) {
-    std::cout << "oi check yo self" << std::endl;
   }
 
   marker_manager_.update_markers(id_object_map_);

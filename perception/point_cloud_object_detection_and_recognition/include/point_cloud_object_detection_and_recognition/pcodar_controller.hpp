@@ -75,6 +75,7 @@ private:
 
   id_object_map_ptr id_object_map_;
   id_label_map_ptr id_label_map_;
+  uint32_t highest_id_;
 
   mil_msgs::PerceptionObjectArray old_objects_;
 
