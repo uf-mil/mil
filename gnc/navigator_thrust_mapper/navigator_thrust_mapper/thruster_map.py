@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 import numpy as np
 import rospy
+from urdf_parser_py.urdf import URDF
+import tf2_ros
+from tf.transformations import euler_from_quaternion
+from mil_tools import rosmsg_to_numpy
 
 
 class ThrusterMap(object):
@@ -8,9 +12,8 @@ class ThrusterMap(object):
     Helper class to map between global body forces / torques and thruster outputs, which are in a
     arbitrary effort unit. See thruster_mapper_node.py for usage example.
     '''
-    THRUSTERS = ['BL', 'BR', 'FL', 'FR']  # Order of thrusters expected in function calls
 
-    def __init__(self, positions, angles, effort_ratio, effort_limit, com=np.zeros(2)):
+    def __init__(self, names, positions, angles, effort_ratio, effort_limit, com=np.zeros(2), joints=None):
         '''
         Creates a ThurserMapper instance
         param positions: list of X Y positions for each thuster [(x, y), (x,y), ...],
@@ -32,6 +35,8 @@ class ThrusterMap(object):
           - dynamic reconfigure ???
           - implement a more interesting solver, which attempts to minimize energy output like SubjuGator
         '''
+        self.names = names
+        self.joints = joints
         self.effort_ratio = effort_ratio
         self.effort_limit = effort_limit
 
@@ -54,19 +59,53 @@ class ThrusterMap(object):
         self.thruster_matrix_inv = np.linalg.pinv(self.thruster_matrix)  # Magical numpy psuedoinverse
 
     @classmethod
-    def from_ros_params(cls, ns='~'):
+    def from_urdf(cls, urdf_string, transmission_suffix='_thruster_transmission'):
         '''
-        Construct a mapper object from ros params, see navigator_launch/thruster_mapper.launch to see format
+        Load from an URDF string. Expects each thruster to be connected a transmission ending in the specified suffix.
+        A transform between the propeller joint and base_link must be available
         '''
+        urdf = URDF.from_xml_string(urdf_string)
+        buff = tf2_ros.Buffer()
+        listener = tf2_ros.TransformListener(buff)  # noqa
+        names = []
+        joints = []
         positions = []
         angles = []
-        for thruster in cls.THRUSTERS:
-            positions.append(rospy.get_param(ns + '{}/position'.format(thruster)))
-            angles.append(rospy.get_param(ns + '{}/angle'.format(thruster)))
-        effort_ratio = rospy.get_param(ns + 'effort_ratio')
-        effort_limit = rospy.get_param(ns + 'effort_limit')
-        com = np.float64(rospy.get_param(ns + 'com', default=[0.0, 0.0]))
-        return cls(positions, angles, effort_ratio, effort_limit, com=com)
+        limit = -1
+        ratio = -1
+        for transmission in urdf.transmissions:
+            find = transmission.name.find(transmission_suffix)
+            if find != -1 and find + len(transmission_suffix) == len(transmission.name):
+                if len(transmission.joints) != 1:
+                    raise Exception('Transmission {} does not have 1 joint'.format(transmission.name))
+                if len(transmission.actuators) != 1:
+                    raise Exception('Transmission {} does not have 1 actuator'.format(transmission.name))
+                t_ratio = transmission.actuators[0].mechanicalReduction
+                if ratio != -1 and ratio != t_ratio:
+                    raise Exception('Transmission {} has a different reduction ratio (not supported)'.format(t_ratio))
+                ratio = t_ratio
+                joint = None
+                for t_joint in urdf.joints:
+                    if t_joint.name == transmission.joints[0].name:
+                        joint = t_joint
+                if joint is None:
+                    rospy.logerr('Transmission joint {} not found'.format(transmission.joints[0].name))
+                try:
+                    trans = buff.lookup_transform('base_link', joint.child, rospy.Time(), rospy.Duration(10))
+                except tf2_ros.TransformException as e:
+                    raise Exception(e)
+                translation = rosmsg_to_numpy(trans.transform.translation)
+                rot = rosmsg_to_numpy(trans.transform.rotation)
+                yaw = euler_from_quaternion(rot)[2]
+                names.append(transmission.name[0:find])
+                positions.append(translation[0:2])
+                angles.append(yaw)
+                joints.append(joint.name)
+                if limit != -1 and joint.limit.effort != limit:
+                    raise Exception('Thruster {} had a different limit, cannot proceed'.format(joint.name))
+                limit = joint.limit.effort
+
+        return cls(names, positions, angles, ratio, limit, joints=joints)
 
     def thrusts_to_wrench(self, thrusts):
         '''
