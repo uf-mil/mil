@@ -11,10 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/bvtsdk/")
-message(WARNING "bvtsdk not found. Please untar libbvtsdk.tar.gz and place in mil_blueview_driver to use driver")
-else()
-
 find_package(OpenCV REQUIRED)
 
 add_message_files(
@@ -26,6 +22,19 @@ generate_messages(
   DEPENDENCIES
     std_msgs
 )
+
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/bvtsdk/")
+message(WARNING "bvtsdk not found. Please untar libbvtsdk.tar.gz and place in mil_blueview_driver to use driver")
+
+catkin_package(
+  INCLUDE_DIRS
+    include
+  CATKIN_DEPENDS
+    image_transport
+    cv_bridge
+    message_runtime
+)
+else()
 
 catkin_package(
   INCLUDE_DIRS
