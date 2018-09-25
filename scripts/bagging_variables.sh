@@ -16,7 +16,6 @@ export BAG_DIR=~/bags
 # Topic variables that can be used from the bag command
 export bag_front_left_cam="/camera/front/left/camera_info /camera/front/left/image_raw"
 export bag_front_right_cam="/camera/front/right/camera_info /camera/front/right/image_raw"
-export bag_seecam="/camera/seecam/camera_info /camera/seecam/image_raw"
 export bag_front_cam="$bag_front_left_cam $bag_front_right_cam"
 export bag_starboard_cam="/camera/starboard/image_raw /camera/starboard/camera_info"
 export bag_down_cam="/camera/down/camera_info /camera/down/image_raw"
