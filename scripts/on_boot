@@ -12,7 +12,8 @@ ANTENNA_POSITION="[0.37465,-0.136525,0.587502]"
 GPS_CMD="(cd $SDGPS_DIR;sudo $SDGPS sylphase-usbgpsimu2 --antenna-position '$ANTENNA_POSITION' --use-imu1 ! tracker ! kf2 --decimation 10 ! listen-solution-tcp 1234)"
 
 # Command to connect to sylphase passive sonar
-SONAR_CMD="$SONAR_DIR/softare/publish 7384"
+SONAR_CMD="$SONAR_DIR/publish 7384"
+SONAR_CMD2="$SONAR_DIR/ros_bridge 127.0.0.1 7384"
 ROSCORE="roscore"
 
 # Name of tmux session
@@ -40,3 +41,5 @@ $TMUX send-keys -t $SESSION:1 "$GPS_CMD" C-m
 # Start passive sonar driver in third window
 $TMUX new-window -t $SESSION:2 -n "sonar"
 $TMUX send-keys -t $SESSION:2 "$SONAR_CMD" C-m
+$TMUX split-window -t $SESSION:2
+$TMUX send-keys -t $SESSION:2 "$SONAR_CMD2" C-m
