@@ -21,4 +21,6 @@ from killed import Killed
 from move import Move
 from constant_velocity import ConstantVelocity
 from example_mission import ExampleMission
+from deploy_thrusters import DeployThrusters
+from retract_thrusters import RetractThrusters
 import pose_editor
