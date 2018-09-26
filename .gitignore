@@ -80,3 +80,11 @@ pedometry.txt
 
 # Ignore proprietary blueview sdk
 drivers/mil_blueview_driver/bvtsdk
+
+# Ignore Tensorflow models and any Images or Annotations left over.
+docker_tf/transfer_learning/labelbox_dataset_processing/models/
+docker_tf/transfer_learning/labelbox_dataset_processing/Images/
+docker_tf/transfer_learning/labelbox_dataset_processing/Annotations/
+docker_tf/transfer_learning/labelbox_dataset_processing/test/
+docker_tf/transfer_learning/labelbox_dataset_processing/train/
+
