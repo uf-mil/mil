@@ -19,6 +19,8 @@ class Actuator(object):
 
     @classmethod
     def from_dict(cls, config):
+        if type(config) == int:
+            return cls.from_int(config)
         type_str = config['type']
         pulse_time = config['pulse_time'] if 'pulse_time' in config else None
         open_id = config['ports']['open_port']['id']
@@ -28,6 +30,10 @@ class Actuator(object):
             close_default = config['ports']['close_port']['default']
             return cls(type_str, open_id, open_default, close_id, close_default, pulse_time)
         return cls(type_str, open_id, open_default, -1, 0, pulse_time)
+
+    @classmethod
+    def from_int(cls, valve_id):
+        return cls('set', valve_id, 0, -1, 0, 0.)
 
 
 class PnuematicActuatorNode():
