@@ -8,13 +8,17 @@
 5. Edit shell script to launch a new python script that edits generate_tfrecord (or loads a config that tfrecord interprets) to allow for easy class adaptation.
 6. Merge csv_to_tfrecord.sh and process_images.sh
 7. Configurable image download
+8. In cvt_pascal.py make the json file name an input from the shell script or enforce a standard name. Temp standard: data.json.
+9. Add docker build to the install script. Until then docker build must be done manually. 
+10. Give Docker Image a better name.
 
 ## A Brief Tour of Tensorflow Object Detection
-Make your way into the "NaviGator/perception/training" directory. Inside of this you should see a dockerfile and a shell file (train.sh). Run train.sh using the following command:
+Make your way into the "mil_common/docker_tf" directory. We will need to build the docker image if this was updated recently. Inside of this you should see a dockerfile and a shell file (pipeline.sh). Run pipeline.sh using the following commands:
 
 ```bash
-$ chmod +x run.sh
-$ ./run.sh
+$ docker build -t grymestone:tensorpipeline01 .
+$ chmod +x pipeline.sh
+$ ./pipeline.sh
 ```
 
 This will start a Docker container that downloads a series of scripts from the MIL, as well as downloading the needed dependencies and tensorflow object detection repository. This container will drop you into "home/tensorflow/models/research/object_detection" directory. There are a few important scripts here, so let's take some time to go through them.
