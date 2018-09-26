@@ -7,6 +7,7 @@
   </include>
   <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/hardware/velodyne.launch"/>
   <include file="$(find navigator_launch)/launch/hardware/kill_board.launch"/>
+  <include file="$(find navigator_launch)/launch/hardware/pneumatic_actuators.launch" />
   <!-- Disabled because sick is not on NaviGator -->
   <!-- include unless="$(arg simulation)" file="$(find navigator_launch/launch/hardware/sick_lidar.launch"/-->
 </launch>
