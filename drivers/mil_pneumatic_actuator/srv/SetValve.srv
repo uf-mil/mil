@@ -1,0 +1,8 @@
+# Service call to open, close, or pulse a pneumatic solenoid connected to the valve box
+
+string actuator     # Name of actuator. MUST be defined in the acutators ROS param
+
+bool opened
+---
+bool success        # False if there were any problems with the request.
+string message      # Description of error if success is false

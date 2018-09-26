@@ -1,0 +1,126 @@
+#!/usr/bin/env python
+import rospy
+from serial import SerialException
+from mil_pneumatic_actuator import PnuematicActuatorDriver, PnuematicActuatorDriverError
+from mil_pneumatic_actuator.srv import SetValve
+import threading
+
+lock = threading.Lock()
+
+
+class Actuator(object):
+    def __init__(self, type_str, open_id, open_default, close_id, close_default, pulse_time):
+        self.pulse_time = pulse_time
+        self.type = type_str
+        self.open_id = open_id
+        self.open_default = open_default
+        self.close_id = close_id
+        self.close_default = close_default
+
+    @classmethod
+    def from_dict(cls, config):
+        type_str = config['type']
+        pulse_time = config['pulse_time'] if 'pulse_time' in config else None
+        open_id = config['ports']['open_port']['id']
+        open_default = config['ports']['open_port']['default']
+        if 'close_port' in config['ports']:
+            close_id = config['ports']['close_port']['id']
+            close_default = config['ports']['close_port']['default']
+            return cls(type_str, open_id, open_default, close_id, close_default, pulse_time)
+        return cls(type_str, open_id, open_default, -1, 0, pulse_time)
+
+
+class PnuematicActuatorNode():
+    '''
+    Allows high level ros code to interface with Daniel's pneumatics board.
+
+    TODO: Add a function to try and reconnect to the serial port if we lose connection.
+    '''
+    def __init__(self):
+        baud_rate = rospy.get_param('~baud_rate', 9600)
+        port = rospy.get_param('~port')
+        simulation = rospy.get_param('/is_simulation', False)
+        self.driver = PnuematicActuatorDriver(port, baud=baud_rate, simulated=simulation)
+        actuators = rospy.get_param('~actuators')
+        self.actuators = {}
+        for a in actuators:
+            self.actuators[a] = Actuator.from_dict(actuators[a])
+
+        self.reset()
+
+        rospy.Service('~actuate', SetValve, self.got_service_request)
+        rospy.Service('~actuate_raw', SetValve, self.set_raw_valve)
+
+        self.timer = rospy.Timer(rospy.Duration(5), self.ping)
+
+    def reset(self):
+        for actuator in self.actuators.values():
+            self.set_port(actuator.open_id, actuator.open_default)
+            self.set_port(actuator.close_id, actuator.close_default)
+        rospy.loginfo('Valves set to default state')
+
+    def set_raw_valve(self, srv):
+        '''
+        Set the valves manually so you don't have to have them defined in the YAML.
+
+        Service parameters:
+            actuator: PORT_ID
+            opened: OPENED
+        '''
+        rospy.loginfo('Setting valve {} to {}'.format(srv.actuator, 'open' if srv.opened else 'closed'))
+        self.set_port(int(srv.actuator), srv.opened)
+        return {'success': True}
+
+    def set_port(self, port, state):
+        if port == -1:
+            return False
+        try:
+            self.driver.set_port(port, state)
+        except (PnuematicActuatorDriverError, SerialException) as e:
+            rospy.logerr('Error interfacing with actuator board: {}'.format(e))
+            return False
+        return True
+
+    def ping(self, *args):
+        try:
+            self.driver.ping()
+        except (PnuematicActuatorDriverError, SerialException) as e:
+            rospy.logerr('Could not ping actuator board: {}'.format(e))
+            return e
+        return None
+
+    def got_service_request(self, srv):
+        '''
+        Find out what actuator needs to be changed and how to change it with the valves.yaml file.
+        '''
+        if srv.actuator not in self.actuators:
+            return {'success': False, 'message': 'actuator not registered'}
+        actuator = self.actuators[srv.actuator]
+
+        if actuator.type == 'pulse':
+            rospy.loginfo('Pulsing {} for {}s'.format(srv.actuator, actuator.pulse_time))
+            self.set_port(actuator.open_id, not actuator.open_default)
+            self.set_port(actuator.close_id, not actuator.close_default)
+
+            def close(*args):
+                self.set_port(actuator.open_id, actuator.open_default)
+                self.set_port(actuator.close_id, actuator.close_default)
+
+            rospy.Timer(rospy.Duration(actuator.pulse_time), close, oneshot=True)
+
+        elif actuator.type == 'set':
+            if srv.opened:
+                rospy.loginfo('Opening {}'.format(srv.actuator))
+                self.set_port(actuator.open_id, True)
+                self.set_port(actuator.close_id, False)
+            else:
+                rospy.loginfo('Closing {}'.format(srv.actuator))
+                self.set_port(actuator.open_id, False)
+                self.set_port(actuator.close_id, True)
+        return {'success': True}
+
+
+if __name__ == "__main__":
+    rospy.init_node("actuator_driver")
+    PnuematicActuatorNode()
+    rospy.spin()
