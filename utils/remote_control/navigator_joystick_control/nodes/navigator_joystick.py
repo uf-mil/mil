@@ -35,6 +35,8 @@ class Joystick(object):
         self.last_emergency_control = False
         self.last_keyboard_control = False
         self.last_auto_control = False
+        self.thruster_deploy_count = 0
+        self.thruster_retract_count = 0
 
         self.start_count = 0
         self.last_joy = None
@@ -73,6 +75,9 @@ class Joystick(object):
         emergency_control = bool(joy.buttons[13])  # d-pad up
         keyboard_control = bool(joy.buttons[14])  # d-pad down
         auto_control = bool(joy.buttons[12])  # d-pad right
+        thruster_retract = bool(joy.buttons[4]) # LB
+        thruster_deploy = bool(joy.buttons[5]) # RB
+
 
         if back and not self.last_back:
             rospy.loginfo('Back pressed. Going inactive')
@@ -85,6 +90,22 @@ class Joystick(object):
             rospy.loginfo("Resetting controller state")
             self.reset()
             self.active = True
+
+        if thruster_retract:
+            self.thruster_retract_count += 1
+        else:
+            self.thruster_retract_count = 0
+        if thruster_deploy:
+            self.thruster_deploy_count += 1
+        else:
+            self.thruster_deploy_count = 0
+
+        if self.thruster_retract_count > 10:
+            self.remote.retract_thrusters()
+            self.thruster_retract_count = 0
+        elif self.thruster_deploy_count > 10:
+            self.remote.deploy_thrusters()
+            self.thruster_deploy_count = 0
 
         if not self.active:
             self.remote.clear_wrench()

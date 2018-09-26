@@ -17,6 +17,7 @@ from topic_tools.srv import MuxSelect
 from navigator_msgs.srv import ShooterManual
 import rospy
 from std_srvs.srv import Trigger, TriggerRequest
+from mil_tasks_core import TaskClient
 
 
 __author__ = "Anthony Olive"
@@ -36,6 +37,7 @@ class RemoteControl(object):
         self.station_hold_broadcaster = AlarmBroadcaster('station-hold')
 
         self.wrench_changer = rospy.ServiceProxy("/wrench/select", MuxSelect)
+        self.task_client = TaskClient()
         self.kill_listener = AlarmListener('kill', callback_funct=self._update_kill_status)
 
         if (wrench_pub is None):
@@ -119,6 +121,22 @@ class RemoteControl(object):
             problem_description="Request to station hold from remote control",
             parameters={'location': self.name}
         )
+
+    @_timeout_check
+    def deploy_thrusters(self, *args, **kwargs):
+        def cb(terminal_state, result):
+            # TODO(ironmig): check that it was actually succesful
+            rospy.loginfo('Thrusters deployed!')
+
+        self.task_client.run_task('DeployThrusters', done_cb=cb)
+
+    @_timeout_check
+    def retract_thrusters(self, *args, **kwargs):
+        def cb(terminal_state, result):
+            # TODO(ironmig): check that it was actually succesful
+            rospy.loginfo('Thrusters Retracted!')
+
+        self.task_client.run_task('RetractThrusters', done_cb=cb)
 
     @_timeout_check
     def select_autonomous_control(self, *args, **kwargs):
