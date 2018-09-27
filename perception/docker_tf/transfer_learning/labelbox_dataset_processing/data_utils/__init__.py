@@ -1,6 +1,6 @@
 import os
-sys.path.append('..')
 import sys
+sys.path.append('..')
 import glob
 import xml.etree.ElementTree as ET
 import pandas as pd

@@ -6,22 +6,27 @@ from data_utils import xml_to_csv, json_to_pascal, split_data
 
 
 def main():
-    while(data != 1 or data != 2):
+    done = False
+    while(not done):
         print("1. JSON file in XY format")
-        print("2. PASCALVOC XML and PNG pairs")
-        data = input("Enter the number for type of data input.")
-
+        print("2. PASCALVOC XML and PNG pairs \n")
+        data = input("Enter the number for type of data input. \n")
+        if data == 1 or data == 2:
+            done = True
     '''
     TODO: This will eventually load a config for one of the three projects
     from their respective repos and offer a choice of pre-made labelmaps to
     train off of.
     '''
-    while(labelmap != 1 or labelmap != 2 or labelmap != 3):
+    done = False
+    while(not done):
         print("1. NaviGator")
         print("2. SubjuGator [Easy Processing Not Implemented]")
-        print("3. PropaGator [Easy Processing Not Implemented]")
+        print("3. PropaGator [Easy Processing Not Implemented] \n")
         labelmap = input(
-            "Enter the number for the project you wish to train")
+            "Enter the number for the project you wish to train \n")
+        if labelmap == 1 or labelmap == 2 or labelmap == 3:
+            done = True
 
     '''
     At this point we load the config file from the respective repo and loop through the options and make the user enter which one they want to use.
