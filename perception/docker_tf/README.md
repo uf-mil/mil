@@ -11,8 +11,94 @@
 8. In cvt_pascal.py make the json file name an input from the shell script or enforce a standard name. Temp standard: data.json.
 9. Add docker build to the install script. Until then docker build must be done manually. 
 10. Give Docker Image a better name.
+11. Convert all scripts into a library.
+12. Add a menu for interaction.
+13. Incoporate new method of accessing data.
+14. Add all scripts into one. 
+15. Have datasets stored on internal server so it can be downloaded. 
+16. Use premade labelmap.pbtxt files that only need to changed once a year.
 
-## A Brief Tour of Tensorflow Object Detection
+## Quick Start: The Important Bits
+
+This is a quick start to getting this running and skips some lengthy explination. In the future you will not need to edit the generate_tfrecord.py script, and will only need to add the labelmap.pbtxt and data. 
+
+### Data
+
+Depending on the approach you opted for, you either downloaded a json in the XY format from labelbox, or you downloaded the VOC format. If you downloaded the VOC format, you will need to separate the XML and PNG files into Annotation and Images folders respectively (this will be done automagically in the future). If you downloaded a json, put it into the json_files folder! This should be called data.json. If there is currently a json in there, rename it to correctly match the dataset it reflects or delete it. It has likely been stored somewhere else already.
+
+### process_images.sh
+
+Gathers all the processing scripts and runs them procedurally for you (aside from editing the labelmap.pbtxt and generate_tfrecord.py files, see below before running this)! Handles all the grunt work of passing the paths for our images and labels and outputs two nice files for you! If you enable the cleanup option it will then delete the created directories and images, though this isn't strictly necessary on a docker container. These tfrecords you will need later and are moved for you into the data folder. 
+
+### train.sh
+
+Run this after all the above steps have been completed (or you just ran the process_images.sh) and you are good to go!
+
+### generate_tfrecord.py
+
+Takes the CSV files and image/label directories and generates the two tfrecords we need for the trainer. Currently you have to manually edit this file to add the classes you need. In the future this should change to be automated based on the labelmap.pbtxt file you also have to manually edit. This does make a good place to change what specific segments of your dataset you want to train on however. For example if my labelled data had 25 different classes labelled, but I only cared about one, I could only process the labels that have te correct name. An example of editing this file is as follows. Please note that the strings used must **EXACTLY** match the labels used in labelbox.
+
+If I wanted to go from training a network to find roulette_wheels and instead find the entire NaviGator course, I would have to change the way the tfrecord interprets the labels. The example change would be the following:
+
+#### Initial
+```python
+def class_text_to_int(row_label):
+    if row_label == 'Wheel':
+        return 1
+    else:
+        None
+```
+#### Modified
+
+```python
+def class_text_to_int(row_label):
+    if row_label == 'Red Totem':
+        return 1
+    elif row_label == 'Blue Totem':
+        return 2
+    elif row_label == 'Green Totem':
+        return 3
+    elif row_label == 'Yellow Totem':
+        return 4
+    elif row_label == 'Black Totem':
+        return 5
+    elif row_label == 'Black Buoy':
+        return 6
+    else:
+        None
+```
+
+### labelmap.pbtxt
+
+Currently you have to manually edit this file as well, which is unfortunate. Ideally only one of these files should be manually edited. This contains all the labels and matching ID's you will be using for your identification. An example of this file is the following:
+
+#### Equivalent labelmap for the first block from generate_tfrecord.py
+```
+item {
+  id: 1
+  name: 'Wheel'
+}
+```
+
+#### Equivalent labelmap for the second block from generate_tfrecord.py
+```
+item {
+  id: 1
+  name: 'Red Totem'
+  id: 2
+  name: 'Blue Totem'
+  id: 3
+  name: 'Green Totem'
+  id: 4
+  name: 'Yellow Totem'
+  id: 5
+  name: 'Black Totem'
+  id: 6
+  name: 'Black Buoy'
+}
+```
+
+## Smart Start: A "Brief" Tour of MIL's Tensorflow Object Detection Pipeline
 Make your way into the "mil_common/docker_tf" directory. We will need to build the docker image if this was updated recently. Inside of this you should see a dockerfile and a shell file (pipeline.sh). Run pipeline.sh using the following commands:
 
 ```bash
@@ -88,7 +174,7 @@ def class_text_to_int(row_label):
 
 ### labelmap.pbtxt
 
-Currently you have to manually edit this file as well, which is unfortunate. Ideally only one of these files should be manually edited. This contains all the labels and matching ID's you will be using for your identification. An example of this file is the following:
+Currently you have to manually edit this file as well, which is unfortunate. Ideally only one of these files should be manually edited. This contains all the labels and matching ID's you will be using for your identification. This is found in the data directory, which is likely one directory above the one you are currently in (you should see a data folder, a labelbox_data_processing folder, and a train.sh script. You'll also need to make a models folder if one is not present there and place a model in it that you want to retrain). An example of this file is the following:
 
 #### Equivalent labelmap for the first block from generate_tfrecord.py
 ```
@@ -116,6 +202,10 @@ item {
 }
 ```
 
+### Data! 
+
+Depending on the approach you opted for, you either downloaded a json in the XY format from labelbox, or you downloaded the VOC format. If you downloaded the VOC format, you will need to separate the XML and PNG files into Annotation and Images folders respectively (this will be done automagically in the future). If you downloaded a json, put it into the json_files folder! This should be called data.json. If there is currently a json in there, rename it to correctly match the dataset it reflects or delete it. It has likely been stored somewhere else already.
+
 ### process_images.sh
 
 Gathers all these scripts and runs them procedurally for you (aside from editing the labelmap.pbtxt and generate_tfrecord.py files)! Handles all the grunt work of passing the paths for our images and labels and outputs two nice files for you! If you enable the cleanup option it will then delete the created directories and images, though this isn't strictly necessary on a docker container. These tfrecords you will need later. 
@@ -126,20 +216,24 @@ The only other directory we care about here is the transfer_learning dir, so go 
 
 ### pipeline.config
 
-This file tells model_main.py where to look for the data, how many steps to train, which equations to use when training, how many objects you are trying to classify and so on. This essentially unifies all of our options into one easy to use config file! (Easy is maybe not the right word). 
+This file tells model_main.py where to look for the data, how many steps to train, which equations to use when training, how many objects you are trying to classify and so on. This essentially unifies all of our options into one easy to use config file! (Easy is maybe not the right word). Since this is always being updated by Tensorflow, it will likely remain a manually edited file for the forseeable future, rather than one stored on the MIL fileservers or github. 
 
-All we really care about are a few lines here. You'll want to look at the following variables and change them to match your specific file: 
+All we really care about are a few lines here anyway. You'll want to look at the following variables and change them to match your specific file: 
 
 1. num_classes
-	- This should be the number of different objects you are trying to detect. If I only want to train my network to detect roulette wheels for example, this would be num_classes: 1. If I wanted to detect the entire NaviGator obstacle course, this would be num_classes: 25. 
+	- This should be the number of different objects you are trying to detect. If I only want to train my network to detect roulette wheels for example, this would be num_classes: 1. If I wanted to detect the entire NaviGator obstacle course, this would be num_classes: 25. This needs to be edited everytime you changed datasets. 
 2. fine_tune_checkpoint
 	- Here we define where the checkpoint is located to start training. This checkpoint is generated from the export_inference_graph we defined earlier and essentially tells the trainer where to start the transfer learning process. Tensorflow doesn't call it "transfer learning", instead they call it "fine tuning". 
 3. label_map_path (found twice for the training and validation sets)
-	- The label_map_path should be the same for both instances of this variable in the config and should point to the labelmap.pbtxt found in the data folder. Remember that these are absolute paths from the home directory so your path should look something similar to this ""/tensorflow/models/research/object_detection/transfer_learning/data/labelmap.pbtxt"
+	- The label_map_path should be the same for both instances of this variable in the config and should point to the labelmap.pbtxt found in the data folder. Remember that these are absolute paths from the home directory so your path should look something similar to this ""/tensorflow/models/research/object_detection/transfer_learning/data/labelmap.pbtxt" Generally this won't need to be changed.
 4. input_reader (occurs twice, once in train_input_reader, again in eval_input_reader)
-	- This should be the absolute path to the tfrecord files you have in the data directory. The input_reader for the train_input_reader block should point to the train.record file and the eval_input_reader should point to the test.record file. 
+	- This should be the absolute path to the tfrecord files you have in the data directory. The input_reader for the train_input_reader block should point to the train.record file and the eval_input_reader should point to the test.record file. Generally you won't have to edit this. 
 
 And thats about it! You should be able to run the train.sh script now and begin training your network. If everything was setup correctly you should be good to go. If, however, you do end up with errors, here are some common fixes.
+
+### train.sh
+
+Run this after all the above steps have been completed and you are good to go!
 
 ## Common Errors
 

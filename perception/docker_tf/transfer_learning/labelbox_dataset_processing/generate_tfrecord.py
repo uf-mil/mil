@@ -26,62 +26,33 @@ flags.DEFINE_string('csv_input', '', 'Path to the CSV input')
 flags.DEFINE_string('image_dir', '', 'Path to the image directory')
 flags.DEFINE_string('output_path', '', 'Path to output TFRecord')
 FLAGS = flags.FLAGS
-
+dictionary = {}
 
 # TO-DO replace this with label map
+
+
+def create_dict():
+    with open('../data/labelmap.pbtxt') as f:
+        txt = f.read()
+    labels = []
+    ids = []
+    txt = txt[2, :]
+    print(txt)
+    full_split = [s.strip().split(': ') for s in txt.splitlines()]
+    print(full_split)
+    for i in full_split:
+        if i[1] == "name":
+            labels.append(i[2])
+        elif i[1] == "id":
+            ids.append(i[2])
+        else:
+            print(
+                "Error, incorrect key located in labelmap. Should be only id or name. Instead found: ", i[1])
+    dictionary = dict(zip(labels, ids))
+
+
 def class_text_to_int(row_label):
-    if row_label == 'None':
-        return 1
-    elif row_label == 'target_large':
-        return 2
-    elif row_label == 'target_small':
-        return 3
-    elif row_label == 'triangle_red':
-        return 4
-    elif row_label == 'totem_blue':
-        return 5
-    elif row_label == 'cruciform_green':
-        return 6
-    elif row_label == 'buoy_black':
-        return 7
-    elif row_label == 'totem_red':
-        return 8
-    elif row_label == 'totem_yellow':
-        return 9
-    elif row_label == 'circle_green':
-        return 10
-    elif row_label == 'totem_green':
-        return 11
-    elif row_label == 'totem_white':
-        return 12
-    elif row_label == 'triangle_blue':
-        return 13
-    elif row_label == 'stc_platform':
-        return 14
-    elif row_label == 'stc_panel_off':
-        return 15
-    elif row_label == 'totem_black':
-        return 16
-    elif row_label == 'stc_panel_yellow':
-        return 17
-    elif row_label == 'stc_panel_green':
-        return 18
-    elif row_label == 'stc_panel_blue':
-        return 19
-    elif row_label == 'stc_panel_red':
-        return 20
-    elif row_label == 'triangle_green':
-        return 21
-    elif row_label == 'circle_blue':
-        return 22
-    elif row_label == 'circle_red':
-        return 23
-    elif row_label == 'cruciform_blue':
-        return 24
-    elif row_label == 'dock_2018_platform':
-        return 25
-    else:
-        None
+    return dictionary.get(row_label, "Key not found, skipping.")
 
 
 def split(df, group):
@@ -132,6 +103,7 @@ def create_tf_example(group, path):
 
 
 def main(_):
+    create_dict()
     writer = tf.python_io.TFRecordWriter(FLAGS.output_path)
     path = os.path.join(os.getcwd(), FLAGS.image_dir)
     examples = pd.read_csv(FLAGS.csv_input)

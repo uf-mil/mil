@@ -24,6 +24,6 @@ images_output_dir = './Images'
 # NOTE: make sure to specify the correct label_format based on the export
 #  format chosen on Labelbox; 'WKT' or 'XY'.
 lb2pa.from_json(labeled_data=labeled_data, annotations_output_dir=ann_output_dir,
-                    images_output_dir=images_output_dir, label_format='XY')
+                images_output_dir=images_output_dir, label_format='XY')
 
 print('Done getting xml files')

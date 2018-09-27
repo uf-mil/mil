@@ -11,7 +11,7 @@ def xml_to_csv(path):
         root = tree.getroot()
         for member in root.findall('object'):
             if(member[4].tag == 'polygon'):
-                if(len(member[4])==8):
+                if(len(member[4]) == 8):
 
                     x1 = int(member[4][0].text)
                     y1 = int(member[4][1].text)
@@ -29,7 +29,7 @@ def xml_to_csv(path):
 
                     file_name = (root.find('filename').text)
                     if os.path.splitext(file_name)[1] == '.jpeg':
-                        file_name = os.path.splitext(file_name)[0]+'.png'
+                        file_name = os.path.splitext(file_name)[0] + '.png'
 
                     value = (file_name,
                              int(root.find('size')[0].text),
@@ -53,7 +53,7 @@ def xml_to_csv(path):
 
                     file_name = (root.find('filename').text)
                     if os.path.splitext(file_name)[1] == '.jpeg':
-                        file_name = os.path.splitext(file_name)[0]+'.png'
+                        file_name = os.path.splitext(file_name)[0] + '.png'
 
                     value = (file_name,
                              int(root.find('size')[0].text),
@@ -70,7 +70,7 @@ def xml_to_csv(path):
             else:
                 file_name = (root.find('filename').text)
                 if os.path.splitext(file_name)[1] == '.jpeg':
-                    file_name = os.path.splitext(file_name)[0]+'.png'
+                    file_name = os.path.splitext(file_name)[0] + '.png'
 
                 value = (file_name,
                          int(root.find('size')[0].text),
@@ -82,13 +82,14 @@ def xml_to_csv(path):
                          int(member[4][3].text)
                          )
                 xml_list.append(value)
-    column_name = ['filename', 'width', 'height', 'class', 'xmin', 'ymin', 'xmax', 'ymax']
+    column_name = ['filename', 'width', 'height',
+                   'class', 'xmin', 'ymin', 'xmax', 'ymax']
     xml_df = pd.DataFrame(xml_list, columns=column_name)
     return xml_df
 
 
 def main():
-    for folder in ['train','test']:
+    for folder in ['train', 'test']:
         #image_path = os.path.join(os.getcwd(), ('images/' + folder))
         xml_df = xml_to_csv(folder)
         xml_df.to_csv((folder + '_labels.csv'), index=None)
