@@ -1,49 +1,38 @@
 #include <point_cloud_object_detection_and_recognition/pcodar_controller.hpp>
-
-#include <mil_msgs/PerceptionObject.h>
-#include <mil_msgs/PerceptionObjectArray.h>
-#include <nav_msgs/OccupancyGrid.h>
 #include <pcl_ros/transforms.h>
-
-#include <pcl/features/normal_3d.h>
-#include <pcl/kdtree/kdtree.h>
 #include <pcl/point_cloud.h>
-#include <pcl/registration/icp.h>
-#include <pcl/segmentation/extract_clusters.h>
-
-#include <pcl/filters/statistical_outlier_removal.h>
-#include <pcl/filters/voxel_grid.h>
-#include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
-
 #include <pcl_ros/point_cloud.h>
-
-#include <tf2/convert.h>
-#include <tf2_msgs/TFMessage.h>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_eigen/tf2_eigen.h>
-
-#include <eigen_conversions/eigen_msg.h>
-
-#include <ros/callback_queue.h>
-#include <ros/console.h>
-
-#include <chrono>
 #include <functional>
-#include <opencv2/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 
 namespace pcodar {
 
 pcodar_controller::pcodar_controller(ros::NodeHandle _nh)
     : nh_(_nh),
       bounds_client_("/bounds_server", std::bind(&pcodar_controller::bounds_update_cb, this, std::placeholders::_1)),
-      tf_listener(tf_buffer_, nh_) {
-  highest_id_ = 0;
-  ros::NodeHandle private_nh("~");
-  set_params(private_nh);
-  id_object_map_ = std::shared_ptr<id_object_map>(new id_object_map);
-  id_label_map_= std::shared_ptr<id_label_map>(new id_label_map);
+      tf_listener(tf_buffer_, nh_),
+      global_frame_("enu"),
+      config_server_() {
+  config_server_.setCallback(std::bind(&pcodar_controller::ConfigCallback, this, std::placeholders::_1, std::placeholders::_2));
+  id_label_map_= std::make_shared<id_label_map>();
+
+  // TODO: pull from params
+  point_cloud robot_footprint;
+  robot_footprint.push_back(point_t(2.4384, 1.2192, 0.));
+  robot_footprint.push_back(point_t(2.4384, -1.2192, 0.));
+  robot_footprint.push_back(point_t(-2.4384, -1.2192, 0.));
+  robot_footprint.push_back(point_t(-2.4384, 1.2192, 0.));
+  // Give the filter the footprint of the robot to remove from pointcloud
+  input_cloud_filter_.set_robot_footprint(robot_footprint);
+}
+
+void pcodar_controller::ConfigCallback(Config const& config, uint32_t level)
+{
+  if (!level || level & 1) persistent_cloud_builder_.update_config(config);
+  if (!level || level & 2) persistent_cloud_filter_.update_config(config);
+  if (!level || level & 4) detector_.update_config(config);
+  if (!level || level & 8) ass.update_config(config);
+  if (!level || level & 16) ogrid_manager_.update_config(config);
 }
 
 void pcodar_controller::initialize() {
@@ -53,10 +42,9 @@ void pcodar_controller::initialize() {
   modify_classification_service_ = nh_.advertiseService(
       "/database/requests", &pcodar_controller::DBQuery_cb, this);
 
-  // Subscribe to odom and the velodyne
+  // Subscribe pointcloud
   pc_sub = nh_.subscribe("/velodyne_points", 1, &pcodar_controller::velodyne_cb,
                          this);
-  odom_sub = nh_.subscribe("/odom", 1, &pcodar_controller::odom_cb, this);
 
   // Publish occupancy grid and visualization markers
   pub_pcl_ = nh_.advertise<point_cloud>("persist_pcl", 1);
@@ -67,132 +55,87 @@ void pcodar_controller::initialize() {
 
 void pcodar_controller::velodyne_cb(
     const sensor_msgs::PointCloud2ConstPtr &pcloud) {
-  latest_point_cloud_ = *pcloud;
+  point_cloud_ptr pc = boost::make_shared<point_cloud>();
+  // Transform new pointcloud to ENU
+  if (!transform_point_cloud(*pcloud, *pc)) return;
+
+  // Get current pose of robot to filter neaby points
+  Eigen::Affine3d robot_transform;
+  if(!transform_to_global("base_link", pcloud->header.stamp, robot_transform)) return;
+  input_cloud_filter_.set_robot_pose(robot_transform);
+
+  // Filter out bounds / robot
+  point_cloud_ptr filtered_pc = boost::make_shared<point_cloud>();
+  input_cloud_filter_.filter(pc, *filtered_pc);
+
+  // Add pointcloud to persistent cloud
+  persistent_cloud_builder_.add_point_cloud(filtered_pc);
+
+  // Get persistent cloud and publish for debug
+  auto accrued = persistent_cloud_builder_.get_point_cloud();
+  if ((*accrued).empty()) return;
+
+  // Filter out outliers
+  point_cloud_ptr filtered_accrued = boost::make_shared<point_cloud>();
+  persistent_cloud_filter_.filter(accrued, *filtered_accrued);
+
+  // Publish accrued cloud
+  (*filtered_accrued).header.frame_id = "enu";
+  pub_pcl_.publish(filtered_accrued);
+
+  // Get object clusters from persistent pointcloud
+  clusters_t clusters = detector_.get_clusters(filtered_accrued);
+
+  // Associate current clusters with old ones
+  ass.associate(objects_, *filtered_accrued, clusters);
+
+  ogrid_manager_.update_ogrid(objects_);
+
+  auto objects_msg = objects_.to_msg();
+  marker_manager_.update_markers(objects_msg);
+  pub_objects_.publish(objects_msg);
 }
 
-void pcodar_controller::odom_cb(const nav_msgs::OdometryConstPtr &odom) {
-  latest_odom_ = odom;
-}
-
-void pcodar_controller::execute() {
-  ros::Rate r(params.executive_rate);
-  while (ros::ok()) {
-    // Execute all callbacks
-    ros::spinOnce();
-
-    // Do work
-    executive();
-
-    // Wait
-    r.sleep();
-  }
-}
-
-void pcodar_controller::executive() {
-  // Checking to see if a point cloud has been set yet. This is done by checking
-  // the height. This is due to the
-  // following:
-  // The point cloud can be store in two ways
-  // - In image form (think depth map) which means the width and height will
-  // match the size of the image
-  // - In unordered form, which means height will be 1 and width will be the
-  // number of points (This is what is
-  // used
-  // for lidar point clouds)
-  // In both of these the height is 1 or greater. So this is what is checked
-  // here.
-  if (latest_point_cloud_.height < 1) {
-    return;
-  }
-
-  geometry_msgs::TransformStamped T_enu_velodyne_ros;
-  try {
-    T_enu_velodyne_ros = tf_buffer_.lookupTransform(
-        "enu", latest_point_cloud_.header.frame_id,
-        latest_point_cloud_.header.stamp,
-        ros::Duration(1, 0));  // change time to pcloud header? pcloud->header.stamp
-  } catch (tf2::TransformException &ex) {
-    ROS_ERROR("%s", ex.what());
-    return;
-  }
-
-  Eigen::Affine3d e_transform;
-  tf::transformMsgToEigen(T_enu_velodyne_ros.transform, e_transform);
-  detector_.add_point_cloud(latest_point_cloud_, e_transform);
-
-  auto objects =
-      detector_.get_objects(pub_pcl_);
-  if (id_object_map_->empty()) {
-    for (auto &object : objects->objects) {
-      id_object_map_->insert({highest_id_++, object});
-    }
-  } else {
-
-    std::vector<association_unit> association_unit =
-        ass.associate(*id_object_map_, objects->objects);
-
-    for (const auto &a : association_unit) {
-      //         // std::cout << a.first <<endl;
-      auto w = id_object_map_->find(a.object_id);
-      auto z = objects->objects.at(a.index);
-
-      if (w == id_object_map_->end()) {
-        auto res = id_object_map_->insert({highest_id_++, z});
-        continue;
-      }
-      z.id = w->first;
-      auto cl = w->second.classification;
-      auto cll = w->second.labeled_classification;
-      w->second = z;
-      w->second.classification = cl;
-      w->second.labeled_classification = cll;
-    }
-  }
-
-  marker_manager_.update_markers(id_object_map_);
-  ogrid_manager_.update_ogrid(id_object_map_, latest_odom_);
-
-  pub_objects_.publish(objects);
-}
-
-bool pcodar_controller::bounds_update_cb(const mil_bounds::BoundsConfig &config) {
-  ROS_INFO("Updating bounds...");
-
+bool pcodar_controller::transform_to_global(std::string const& frame, ros::Time const& time, Eigen::Affine3d& out)
+{
   geometry_msgs::TransformStamped transform;
   try {
     transform = tf_buffer_.lookupTransform(
-        "enu", config.frame,
-        ros::Time::now(),
+        "enu", frame,
+       time,
         ros::Duration(1, 0));  // change time to pcloud header? pcloud->header.stamp
   } catch (tf2::TransformException &ex) {
     ROS_ERROR("%s", ex.what());
     return false;
   }
+  out = tf2::transformToEigen(transform);
+  return true;
+}
 
-  boundary_t untransformed_boundary;
+bool pcodar_controller::bounds_update_cb(const mil_bounds::BoundsConfig &config)
+{
+  ROS_INFO("Updating bounds...");
 
-  untransformed_boundary[0](0) = config.x1;
-  untransformed_boundary[0](1) = config.y1;
-  untransformed_boundary[0](2) = config.z1;
-  untransformed_boundary[1](0) = config.x2;
-  untransformed_boundary[1](1) = config.y2;
-  untransformed_boundary[1](2) = config.z2;
-  untransformed_boundary[2](0) = config.x3;
-  untransformed_boundary[2](1) = config.y3;
-  untransformed_boundary[2](2) = config.z3;
-  untransformed_boundary[3](0) = config.x4;
-  untransformed_boundary[3](1) = config.y4;
-  untransformed_boundary[3](2) = config.z4;
+  Eigen::Affine3d transform;
+  if (!transform_to_global(config.frame, ros::Time::now(), transform)) return false;
 
-  tf2::doTransform(untransformed_boundary[0], boundary[0], transform);
-  tf2::doTransform(untransformed_boundary[1], boundary[1], transform);
-  tf2::doTransform(untransformed_boundary[2], boundary[2], transform);
-  tf2::doTransform(untransformed_boundary[3], boundary[3], transform);
+  point_cloud_ptr bounds(boost::make_shared<point_cloud>());
+  bounds->push_back(point_t(config.x1, config.y1, config.z1));
+  bounds->push_back(point_t(config.x2, config.y2, config.z2));
+  bounds->push_back(point_t(config.x3, config.y3, config.z3));
+  bounds->push_back(point_t(config.x4, config.y4, config.z4));
+
+  pcl::transformPointCloud(*bounds, *bounds, transform);
+  input_cloud_filter_.set_bounds(bounds);
+
   ROS_INFO("bounds updateded");
+  return true;
 }
 
 bool pcodar_controller::DBQuery_cb(mil_msgs::ObjectDBQuery::Request &req,
-                                  mil_msgs::ObjectDBQuery::Response &res) {
+                                  mil_msgs::ObjectDBQuery::Response &res)
+{
+/*
   if (req.cmd != "") {
     int pos = req.cmd.find_first_of("=");
 
@@ -237,6 +180,23 @@ bool pcodar_controller::DBQuery_cb(mil_msgs::ObjectDBQuery::Request &req,
       }
     }
   // }
+  return true;
+*/
+}
+
+bool pcodar_controller::transform_point_cloud(const sensor_msgs::PointCloud2& pc_msg, point_cloud& out)
+{
+  Eigen::Affine3d transform;
+  if (!transform_to_global(pc_msg.header.frame_id, pc_msg.header.stamp, transform)) return false;
+
+  // Transform from PCL2
+  pcl::PCLPointCloud2 pcl_pc2;
+  pcl_conversions::toPCL(pc_msg, pcl_pc2);
+  point_cloud pcloud;
+  pcl::fromPCLPointCloud2(pcl_pc2, pcloud);
+
+  out.clear();
+  pcl::transformPointCloud(pcloud, out, transform);
   return true;
 }
 

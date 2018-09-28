@@ -1,7 +1,7 @@
 #pragma once
 
-#include "pcodar_params.hpp"
 #include "pcodar_types.hpp"
+#include "object_map.hpp"
 
 #include <mil_msgs/PerceptionObject.h>
 
@@ -10,22 +10,16 @@
 namespace pcodar
 {
 
-extern uint NO_ASSOCIATION_FOUND;
-
-struct association_unit
-{
-    uint index;
-    uint object_id;
-};
-
 class associator
 {
-   public:
+public:
     associator()
     {
     }
-    std::vector<association_unit> associate(const id_object_map& object_map,
-                                            const std::vector<mil_msgs::PerceptionObject>& objects);
+    void update_config(Config const& config);
+    void associate(ObjectMap& prev_objects, point_cloud const& pc, clusters_t clusters);
+private:
+    double max_distance_;
 };
 
-}  // namespace pcod#pragma once
+}  // namespace pcodar

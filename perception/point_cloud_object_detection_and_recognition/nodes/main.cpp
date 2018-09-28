@@ -4,9 +4,8 @@ int main(int argc, char* argv[])
 {
     ros::init(argc, argv, "point_cloud_object_detector");
     ros::NodeHandle nh(ros::this_node::getName());
-
     pcodar::pcodar_controller c(nh);
     c.initialize();
-    c.execute();
+    ros::spin();
     return 0;
 }

@@ -1,29 +1,31 @@
 #include <point_cloud_object_detection_and_recognition/object_detector.hpp>
-#include <point_cloud_object_detection_and_recognition/point_cloud_clusterer.hpp>
+#include <tf/transform_datatypes.h>
 
 namespace pcodar
 {
 
-    mil_msgs::PerceptionObjectArrayPtr object_detector::get_objects(ros::Publisher &pub_pcl_)
-    {
-        auto accrued_cloud = pc_builder_.get_point_cloud();
+clusters_t object_detector::get_clusters(point_cloud_const_ptr pc)
+{
 
-        mil_msgs::PerceptionObjectArrayPtr object_array(new mil_msgs::PerceptionObjectArray);
+  // Creating the KdTree object for the search method of the extraction
+  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
+  tree->setInputCloud(pc);
 
-        // If buffer not full, ignore
-        if (accrued_cloud.empty()) return object_array;
+  clusters_t cluster_indices;
 
-        // std::cout << accrued_cloud.size() << std::endl;
-        accrued_cloud.header.frame_id = "enu";
-        pub_pcl_.publish(accrued_cloud);
-        const auto objects = get_point_cloud_clusters(accrued_cloud);
-        object_array->objects = objects;
-        return object_array;
+  cluster_extractor_.setSearchMethod(tree);
+  cluster_extractor_.setInputCloud(pc);
+  cluster_extractor_.extract(cluster_indices);
 
-    }
-    void object_detector::add_point_cloud(const sensor_msgs::PointCloud2& pcloud2, const Eigen::Affine3d& e_velodyne_to_enu)
-    {
-        pc_builder_.add_point_cloud(pcloud2, e_velodyne_to_enu);
-    }
+  return cluster_indices;
+}
+
+void object_detector::update_config(Config const& config)
+{
+  ROS_INFO("Cluster tolerance=%f min=%d max=%d", config.cluster_tolerance_m, config.cluster_min_points, config.cluster_max_points);
+  cluster_extractor_.setClusterTolerance(config.cluster_tolerance_m);
+  cluster_extractor_.setMinClusterSize(config.cluster_min_points);
+  cluster_extractor_.setMaxClusterSize(config.cluster_max_points);
+}
 
 } // namespace pcodar
