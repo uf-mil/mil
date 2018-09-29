@@ -781,3 +781,166 @@ datasets:
           start: 0.0
           stop: 8.0  
          # End of 2018-08-26 Folder
+
+    -
+      name: navigator_pointgrey_hawaii_2016_12_13
+      sources:
+        -
+          file: 2016-12-13/shooter_circle.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: 0.2
+        -
+          file: 2016-12-13/stclate.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 80
+          freq: 0.15
+        -
+          file: 2016-12-13/daniel.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: 0.15
+          start: 22
+        -
+          file: 2016-12-13/buoyfield_2016-12-13-11-50-48.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: 0.15
+          stop: 35
+        -
+          file: 2016-12-13/buoyfield2_2016-12-13-11-52-28.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: 0.15
+        -
+          file: 2016-12-13/camfudge_2016-12-13-11-42-34.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 10
+          stop: 50
+          freq: 0.15
+        -
+          file: 2016-12-13/dd2_2016-12-13-14-35-12.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          start: 78
+          stop: 90
+          freq: 0.2
+        -
+          file: 2016-12-13/dd3_2016-12-13-14-56-16.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          start: 20
+          stop:  130
+          freq: 0.15
+        -
+          file: 2016-12-13/irashit_2016-12-13-11-24-23.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 20
+          freq: 0.15
+        -
+          file: 2016-12-13/matt2.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 25
+          freq: 0.15
+        -
+          file: 2016-12-13/matt3.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 20
+          freq: 0.15
+        -
+          file: 2016-12-13/shooter_circle.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          start: 40
+          freq: 0.15
+        -
+          file: 2016-12-13/stctraining2_2016-12-13-11-40-13.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 35
+          freq: 0.5
+        -
+          file: 2016-12-13/totems.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 34
+          stop: 54
+          freq: 0.25
+        -
+          file: 2016-12-13/2016-12-13-09-41-33.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 31
+          freq: 0.2
+        -
+          file: 2016-12-13/2016-12-13-09-42-32.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: 0.2
+        -
+          file: 2016-12-13/2016-12-13-09-47-01.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: 0.15
+        -
+          file: 2016-12-13/2016-12-13-09-48-03.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 8
+          stop: 42
+          freq: 0.15
+        -
+          file: 2016-12-13/2016-12-13-09-50-46.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 23
+          stop: 65
+          freq: 0.15
+        -
+          file: 2016-12-13/2016-12-13-09-53-28.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 35
+          freq: 0.7
+        -
+          file: 2016-12-13/2016-12-13-09-54-10.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 7
+          freq: 0.7
+        -
+          file: 2016-12-13/2016-12-13-11-29-05.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          start: 27
+          freq: 0.1
+        -
+          file: 2016-12-13/2016-12-13-11-34-52.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          start: 23
+          stop: 70
+          freq: 0.15
+        -
+          file: 2016-12-13/2016-12-13-14-08-21.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 40
+          freq: 0.2
+        -
+          file: 2016-12-13/2016-12-13-14-23-05.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 40
+          freq: 0.2
+        -
+          file: 2016-12-13/2016-12-13-14-23-05.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 22
+          freq: 0.2
