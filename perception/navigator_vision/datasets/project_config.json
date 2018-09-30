@@ -36,9 +36,9 @@
       "color": "#33B679"
     },
     {
+      "color": "#D50000",
       "tool": "rectangle",
-      "name": "cruciform_blue",
-      "color": "#D50000"
+      "name": "cruciform_red"
     },
     {
       "tool": "rectangle",
