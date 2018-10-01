@@ -3,6 +3,7 @@ import rospy
 from serial import SerialException
 from mil_pneumatic_actuator import PnuematicActuatorDriver, PnuematicActuatorDriverError
 from mil_pneumatic_actuator.srv import SetValve
+from std_srvs.srv import Trigger
 import threading
 
 lock = threading.Lock()
@@ -55,15 +56,16 @@ class PnuematicActuatorNode():
         self.reset()
 
         rospy.Service('~actuate', SetValve, self.got_service_request)
-        rospy.Service('~actuate_raw', SetValve, self.set_raw_valve)
+        rospy.Service('~reset', Trigger, self.reset)
 
         self.timer = rospy.Timer(rospy.Duration(5), self.ping)
 
-    def reset(self):
+    def reset(self, *args):
         for actuator in self.actuators.values():
             self.set_port(actuator.open_id, actuator.open_default)
             self.set_port(actuator.close_id, actuator.close_default)
         rospy.loginfo('Valves set to default state')
+        return {'success': True}
 
     def set_raw_valve(self, srv):
         '''
@@ -99,6 +101,11 @@ class PnuematicActuatorNode():
         '''
         Find out what actuator needs to be changed and how to change it with the valves.yaml file.
         '''
+        try:
+            actuator_raw = int(srv.actuator)
+            return self.set_raw_valve(srv)
+        except ValueError:
+            pass
         if srv.actuator not in self.actuators:
             return {'success': False, 'message': 'actuator not registered'}
         actuator = self.actuators[srv.actuator]
