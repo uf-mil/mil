@@ -19,6 +19,20 @@ if [[ -f $CATKIN_DIR/src/mil_common/ros_alarms/scripts/bash_aliases.sh ]]; then
 	source $CATKIN_DIR/src/mil_common/ros_alarms/scripts/bash_aliases.sh
 fi
 
+# Autocompletion
+# Helper for autocompleting given a list of choices for the first argument
+_list_complete()
+{
+    local THING
+    THINGS=($1)
+    for THING in "${THINGS[@]}"; do
+            # Skip any entry that does not match the string to complete
+            if [[ -z "$2" || ! -z "$(echo ${THING:0:${#2}} | grep $2)" ]]; then
+                            COMPREPLY+=( "$THING" )
+            fi
+    done
+}
+
 
 # Debugging for ROS networking
 ros_env() {
