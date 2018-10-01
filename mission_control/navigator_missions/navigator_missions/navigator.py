@@ -58,7 +58,16 @@ class Navigator(BaseTask):
     red = "RED"
     green = "GREEN"
     blue = "BLUE"
-    DEPLOY_WAIT_TIME = 10.0
+
+    # Time to wait for lock to engage when deploying thruster
+    DEPLOY_LOCK_TIME = 0.5
+    # Time to wait for thruster to lower when deploying thruster
+    DEPLOY_WAIT_TIME = 3.0
+    # Time to enable retract piston before unlocking when deploying a thruster
+    DEPLOY_LOOSEN_TIME = 0.25
+    # Time to wait for lock to engage when retracting thruster
+    RETRACT_LOCK_TIME = 0.5
+    # Time to wait thruster to lift before engaging lock
     RETRACT_WAIT_TIME = 10.0
 
     def __init__(self, **kwargs):
@@ -175,31 +184,58 @@ class Navigator(BaseTask):
 
     @util.cancellableInlineCallbacks
     def deploy_thruster(self, name):
+        '''
+        Execute sequence to deploy one thruster
+        '''
         extend = name + '_extend'
         retract = name + '_retract'
         unlock = name + '_unlock'
+        # Pull thruster up a bit to remove pressure from lock
         yield self.set_valve(retract, True)
-        yield self.set_valve(unlock, True)
+        yield self.nh.sleep(self.DEPLOY_LOOSEN_TIME)
+        # Stop pulling thruster up and unlock
         yield self.set_valve(retract, False)
+        yield self.set_valve(unlock, True)
+        # Beging extending piston to push thruster down
         yield self.set_valve(extend, True)
         yield self.nh.sleep(self.DEPLOY_WAIT_TIME)
+        # Lock and stop extending after waiting a time for lock to engage
         yield self.set_valve(unlock, False)
+        yield self.nh.sleep(self.DEPLOY_LOCK_TIME)
         yield self.set_valve(extend, False)
 
     @util.cancellableInlineCallbacks
     def retract_thruster(self, name):
+        '''
+        Execute sequence to retract one thruster
+        '''
         retract = name + '_retract'
         unlock = name + '_unlock'
+        # Unlock and begin pulling thruster up
         yield self.set_valve(unlock, True)
         yield self.set_valve(retract, True)
+        # Wait time for piston to fully retract
         yield self.nh.sleep(self.RETRACT_WAIT_TIME)
+        # Lock thruster in place
         yield self.set_valve(unlock, False)
+        # Wait some time for lock to engage
+        yield self.nh.sleep(self.RETRACT_LOCK_TIME)
+        # Stop pulling up
         yield self.set_valve(retract, False)
 
     def deploy_thrusters(self):
+        '''
+        Deploy all 4 thrusters simultaneously.
+        TODO: perform in sequence after testing has been done to see if this is needed
+        '''
         return defer.DeferredList([self.deploy_thruster(name) for name in ['FL', 'FR', 'BL', 'BR']])
 
     def retract_thrusters(self):
+        '''
+        Retract all 4 thrusters simultaneously.
+        TODO: perform in sequence after testing has been done to see if this is needed
+        '''
+
         return defer.DeferredList([self.retract_thruster(name) for name in ['FL', 'FR', 'BL', 'BR']])
 
     def set_valve(self, name, state):

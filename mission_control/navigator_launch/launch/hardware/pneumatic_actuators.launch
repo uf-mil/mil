@@ -1,21 +1,24 @@
 <launch>
     <node pkg="mil_pneumatic_actuator" type="pneumatic_actuator_node" name="actuator_driver" output="screen">
-        <!-- TODO: fix port name once it is actually setup -->
-        <param name="port" value="/dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_5_to_8_DMBP58-if00-port0"/>
-        <!-- TODO: fix ports once actually setup -->
+        <param name="port" value="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AI02L380-if00-port0"/>
         <rosparam param="actuators">
-          FL_unlock: 1
-          FL_extend: 2
-          FL_retract: 3
-          FR_unlock: 4
-          FR_extend: 5
-          FR_retract: 6
-          BL_unlock: 7
-          BL_extend: 8
-          BL_retract: 9
-          BR_unlock: 10
-          BR_extend: 11
+          # ONLY BL has been verfied on navigator, others are not currently connected
+          BL_unlock: 1
+          BL_extend: 3
+          BL_retract: 4
+
+          # TODO: fix once it is all plugged in
+          FL_unlock: 5
+          FL_extend: 6
+          FL_retract: 7
+          FR_unlock: 8
+          FR_extend: 9
+          FR_retract: 10
+          BR_unlock: 11
+          BR_extend: 12
           BR_retract: 12
+
+          # TODO: valves for ball launcher
         </rosparam>
     </node>
 </launch>
