@@ -10,6 +10,10 @@ lock = threading.Lock()
 
 
 class Actuator(object):
+    '''
+    Encapsulates the configuration for an actuator, which can contain up to 2 valves
+    and can be of 'set' or 'pulse type.
+    '''
     def __init__(self, type_str, open_id, open_default, close_id, close_default, pulse_time):
         self.pulse_time = pulse_time
         self.type = type_str
@@ -42,25 +46,34 @@ class PnuematicActuatorNode():
     Allows high level ros code to interface with Daniel's pneumatics board.
 
     TODO: Add a function to try and reconnect to the serial port if we lose connection.
+    TODO: publish info to /diagnostics
     '''
     def __init__(self):
+        # Connect to board of serial or simulated serial
         baud_rate = rospy.get_param('~baud_rate', 9600)
         port = rospy.get_param('~port')
         simulation = rospy.get_param('/is_simulation', False)
         self.driver = PnuematicActuatorDriver(port, baud=baud_rate, simulated=simulation)
+
+        # Parse actuator config from parameters. see example.launch for format
         actuators = rospy.get_param('~actuators')
         self.actuators = {}
         for a in actuators:
             self.actuators[a] = Actuator.from_dict(actuators[a])
 
+        # Reset all actuators to default
         self.reset()
 
         rospy.Service('~actuate', SetValve, self.got_service_request)
         rospy.Service('~reset', Trigger, self.reset)
 
+        # Setup timer to ping every 5 second
         self.timer = rospy.Timer(rospy.Duration(5), self.ping)
 
     def reset(self, *args):
+        '''
+        Reset all valves to default state
+        '''
         for actuator in self.actuators.values():
             self.set_port(actuator.open_id, actuator.open_default)
             self.set_port(actuator.close_id, actuator.close_default)
@@ -69,17 +82,16 @@ class PnuematicActuatorNode():
 
     def set_raw_valve(self, srv):
         '''
-        Set the valves manually so you don't have to have them defined in the YAML.
-
-        Service parameters:
-            actuator: PORT_ID
-            opened: OPENED
+        Set a valve open/close by raw id
         '''
         rospy.loginfo('Setting valve {} to {}'.format(srv.actuator, 'open' if srv.opened else 'closed'))
         self.set_port(int(srv.actuator), srv.opened)
         return {'success': True}
 
     def set_port(self, port, state):
+        '''
+        Open/Close a valve (by raw id), absorbing errors into logging
+        '''
         if port == -1:
             return False
         try:
@@ -90,6 +102,9 @@ class PnuematicActuatorNode():
         return True
 
     def ping(self, *args):
+        '''
+        Do ping request/response, print error if failed
+        '''
         try:
             self.driver.ping()
         except (PnuematicActuatorDriverError, SerialException) as e:
@@ -99,17 +114,21 @@ class PnuematicActuatorNode():
 
     def got_service_request(self, srv):
         '''
-        Find out what actuator needs to be changed and how to change it with the valves.yaml file.
+        Close/Open/Pulse the requested actuator when a service request is recieved
         '''
+        # See if requested actuator is just the raw ID
         try:
-            actuator_raw = int(srv.actuator)
+            int(srv.actuator)
             return self.set_raw_valve(srv)
         except ValueError:
             pass
+
+        # Otherwise, make sure actuator was described in parameters
         if srv.actuator not in self.actuators:
             return {'success': False, 'message': 'actuator not registered'}
         actuator = self.actuators[srv.actuator]
 
+        # If actuator is pulse type, open it and setup timer to close after pulse time
         if actuator.type == 'pulse':
             rospy.loginfo('Pulsing {} for {}s'.format(srv.actuator, actuator.pulse_time))
             self.set_port(actuator.open_id, not actuator.open_default)
@@ -121,6 +140,7 @@ class PnuematicActuatorNode():
 
             rospy.Timer(rospy.Duration(actuator.pulse_time), close, oneshot=True)
 
+        # If actuator is set type, open/close as requested
         elif actuator.type == 'set':
             if srv.opened:
                 rospy.loginfo('Opening {}'.format(srv.actuator))
