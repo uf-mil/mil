@@ -13,7 +13,7 @@
 # limitations under the License.
 # #==========================================================================
 
-FROM tensorflow/tensorflow:1.8.0-devel-gpu
+FROM tensorflow/tensorflow:latest-devel-gpu
 
 # Get the tensorflow models research directory, and move it into tensorflow
 # source folder to match recommendation of installation
@@ -92,8 +92,9 @@ RUN cd /tmp && \
     rm tflite.zip
 
 # Configure the build to use the things we just downloaded
-RUN cd /tensorflow && \
-    printf '\n\nn\ny\nn\nn\nn\ny\nn\nn\nn\nn\nn\nn\n\ny\n%s\n\n\n' ${ANDROID_HOME}|./configure
+# RUN cd /tensorflow && \
+#     printf '\n\nn\ny\nn\nn\nn\ny\nn\nn\nn\nn\nn\nn\n\ny\n%s\n\n\n' ${ANDROID_HOME}|./configure
+RUN cd /tensorflow && ./configure
 
 RUN pip install shapely requests
 
