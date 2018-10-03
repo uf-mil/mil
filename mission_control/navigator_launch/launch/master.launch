@@ -1,5 +1,6 @@
 <launch>
     <arg name="simulation" default="False" />
+    <arg name="online-bagger" default="True" />
 
     <!-- Load model into rviz -->
     <include file="$(find navigator_launch)/launch/upload_urdf.launch" />
@@ -8,7 +9,7 @@
     <include file="$(find navigator_launch)/launch/gnc.launch"/>
     <include file="$(find navigator_launch)/launch/alarms.launch"/>
     <include file="$(find navigator_launch)/launch/diagnostics.launch" />
-    <include file="$(find navigator_launch)/launch/online_bagger.launch" />
+    <include if="$(arg online-bagger)" file="$(find navigator_launch)/launch/online_bagger.launch" />
     <include file="$(find navigator_missions)/launch/task_runner.launch" />
     <include file="$(find navigator_launch)/launch/hardware.launch">
        <arg name="simulation" value="$(arg simulation)" />

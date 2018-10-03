@@ -63,9 +63,18 @@ catkin_package(
     CATKIN_DEPENDS gazebo_ros roscpp rospy std_msgs nav_msgs message_runtime tf gazebo_plugins sensor_msgs
 )
 
+# Generate NaviGator's URDF
 xacro_add_files(
   urdf/navigator.urdf.xacro
   INORDER INSTALL DESTINATION urdf
+  TARGET xacro_urdf
+)
+
+# Generate world files from xacro and install
+xacro_add_files(
+  worlds/course.world.xacro
+  INORDER INSTALL DESTINATION worlds
+  TARGET xacro_worlds
 )
 
 # if(CATKIN_ENABLE_TESTING)

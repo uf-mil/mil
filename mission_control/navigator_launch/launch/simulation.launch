@@ -5,10 +5,12 @@
 <launch>
     <param name="/is_simulation" type="bool" value="True" />
     <arg name="gui" default="true"/>
+    <arg name="online-bagger" default="False" />
 
     <!-- Run core navigator code, minus hardware -->
     <include file="$(find navigator_launch)/launch/master.launch">
       <arg name="simulation" value="true" />
+      <arg name="online-bagger" value="$(arg online-bagger)" />
     </include>
 
     <!-- Sets up the world and loads models -->
