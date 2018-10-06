@@ -14,10 +14,10 @@ cluster_max_points: 1000
 associator_max_distance: 2
 
 # Ogrid
-ogrid_height_meters: 1000
-ogrid_width_meters: 1000
+ogrid_height_meters: 300
+ogrid_width_meters: 300
 ogrid_resolution_meters_per_cell: 0.3
-ogrid_inflation_meters: 2
+ogrid_inflation_meters: 0.5
 
 object_types: ["SHOOTER", "SCAN_THE_CODE"]
 object_colors: ["RED", "GREEN"]

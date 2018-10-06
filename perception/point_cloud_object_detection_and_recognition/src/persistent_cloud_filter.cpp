@@ -17,8 +17,8 @@ void PersistentCloudFilter::filter(point_cloud_const_ptr in, point_cloud& pc)
 void PersistentCloudFilter::update_config(Config const& config)
 {
   ROS_INFO("OUTLIER STDDEV=%f MEAN=%f", config.persistant_cloud_filter_stddev, config.persistant_cloud_filter_mean_k);
-  outlier_filter_.setStddevMulThresh(config.persistant_cloud_filter_mean_k);
-  outlier_filter_.setMeanK(config.persistant_cloud_filter_stddev);
+  outlier_filter_.setStddevMulThresh(config.persistant_cloud_filter_stddev);
+  outlier_filter_.setMeanK(config.persistant_cloud_filter_mean_k);
 }
 
 } // namespace pcodar

@@ -36,8 +36,9 @@ void ogrid_manager::draw_boundary() {
 
 cv::Point ogrid_manager::point_in_ogrid(point_t point)
 {
-  return cv::Point(point.x / resolution_meters_per_cell_ + ogrid_.info.width/2,
-                   point.y / resolution_meters_per_cell_ + + ogrid_.info.height/2);
+  double x = (point.x - ogrid_.info.origin.position.x) / resolution_meters_per_cell_;
+  double y = (point.y - ogrid_.info.origin.position.y) / resolution_meters_per_cell_;
+  return cv::Point(x, y);
 }
 
 void ogrid_manager::update_ogrid(ObjectMap const& objects)
@@ -71,11 +72,12 @@ void ogrid_manager::update_config(Config const& config)
   resolution_meters_per_cell_ = config.ogrid_resolution_meters_per_cell;
   inflation_cells_ = config.ogrid_inflation_meters / resolution_meters_per_cell_;
 
+  ogrid_.header.frame_id = "enu";
   ogrid_.info.resolution = resolution_meters_per_cell_;
-  ogrid_.info.width = resolution_meters_per_cell_ * width_meters_;
-  ogrid_.info.height = resolution_meters_per_cell_ * height_meters_;
-  ogrid_.info.origin.position.x = -10000*0.09/2;
-  ogrid_.info.origin.position.y = -10000*0.09/2;
+  ogrid_.info.width = width_meters_ / resolution_meters_per_cell_;
+  ogrid_.info.height = height_meters_ / resolution_meters_per_cell_;
+  ogrid_.info.origin.position.x = -1. * width_meters_ / 2.; //-1. * width_meters_ * resolution_meters_per_cell_ / 2.;
+  ogrid_.info.origin.position.y = -1. * height_meters_ / 2.; // -1. * height_meters_ * resolution_meters_per_cell_ / 2.;
   ogrid_.info.origin.orientation.w = 1;
   ogrid_.data.resize(ogrid_.info.width * ogrid_.info.height);
   ogrid_mat_ = cv::Mat(cv::Size(ogrid_.info.width, ogrid_.info.height), CV_8UC1, ogrid_.data.data());
