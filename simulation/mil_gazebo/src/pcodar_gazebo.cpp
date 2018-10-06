@@ -30,7 +30,7 @@ void PCODARGazebo::AddDatabaseObject(mil_msgs::ObjectDBQuery::Request &req, mil_
 {
   ROS_WARN("OBJECT %s", _model->GetName().c_str());
   auto it = name_map_.find(_model->GetName());
-  if (it != name_map_.end())
+  if (it != name_map_.end() && (*it).second == req.name)
   {
     res.found = true;
     // TODO: only add if matches query string
@@ -59,6 +59,7 @@ void PCODARGazebo::AddDatabaseLink(mil_msgs::ObjectDBQuery::Request &req, mil_ms
 
   auto it = name_map_.find(_link->GetName());
   if (it == name_map_.end()) return;
+  if ((*it).second != req.name) return;
   res.found = true;
   // TODO: only add if matches query string
   mil_msgs::PerceptionObject object;
