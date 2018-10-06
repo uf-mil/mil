@@ -41,6 +41,7 @@
       <pose>-50 -90 0 0 0 0</pose>
     </include>
 
+    <!-- Run simulated PCODAR -->
     <plugin name="pcodar_gazebo" filename="libpcodar_gazebo.so" />
   </world>
 </sdf>

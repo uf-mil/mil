@@ -18,8 +18,19 @@
         <arg name="gui" value="$(arg gui)"/>
     </include>
 
+    <!-- Map from gazebo modes to database objects for ground truth simulated PCODAR -->
     <rosparam param="/gazebo/name_map">
+      'gate_start_red::link': red_totem
+      'gate_start_green::link' : green_totem
+      'gate_end_red::link': red_totem
+      'gate_end_green::link' : green_totem
       'base_gate::red_buoy::link': red_totem
-      # TODO: add more
+      'base_gate::white_buoy_left::link': white_totem
+      'base_gate::white_buoy_right::link': white_totem
+      'base_gate::green_buoy::link': green_totem
+      'circle_buoy::surmark46104::link': black_totem
+      'light_buoy::base_link': stc_platform
+      'robotx_light_buoy': stc_platform
+      'robotx_dock_2018': dock
     </rosparam>
 </launch>
