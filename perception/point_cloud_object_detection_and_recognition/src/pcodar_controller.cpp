@@ -135,53 +135,7 @@ bool pcodar_controller::bounds_update_cb(const mil_bounds::BoundsConfig &config)
 bool pcodar_controller::DBQuery_cb(mil_msgs::ObjectDBQuery::Request &req,
                                   mil_msgs::ObjectDBQuery::Response &res)
 {
-/*
-  if (req.cmd != "") {
-    int pos = req.cmd.find_first_of("=");
-
-    int id = -1;
-    try {
-      id = std::stoi(req.cmd.substr(0, pos));
-    } catch (...) {
-      std::cout << "Could not find id " << id << std::endl;
-      res.found = false;
-      return false;
-    }
-    std::string cmd = req.cmd.substr(pos + 1);
-    auto it = id_object_map_->find(id);
-    if (it == id_object_map_->end()) {
-      std::cout << "Could not find id " << id << std::endl;
-      return false;
-    } else {
-      std::cout << "set " << id << " to " << cmd << std::endl;
-      it->second.labeled_classification = cmd;
-    }
-  }
-  std::vector<mil_msgs::PerceptionObject> objects(id_object_map_->size());
-  int i = 0;
-  for (auto &o : *id_object_map_) {
-    objects[i] = o.second;
-    i++;
-  }
-  if (req.name == "all") {
-    res.found = true;
-    res.objects = objects;
-    return true;
-  }
-
-  // if (std::find(classification_strings.begin(), classification_strings.end(),
-                // req.name) != classification_strings.end()) {
-  if (req.name != "")
-    for (const auto &object : objects) {
-      if (object.classification == req.name ||
-          object.labeled_classification == req.name) {
-        res.found = true;
-        res.objects.push_back(object);
-      }
-    }
-  // }
-  return true;
-*/
+  return objects_.DatabaseQuery(req, res);
 }
 
 bool pcodar_controller::transform_point_cloud(const sensor_msgs::PointCloud2& pc_msg, point_cloud& out)
