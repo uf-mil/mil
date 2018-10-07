@@ -7,7 +7,7 @@
 
     <!-- Topics for odometry and an occupancy grid-->
     <param name="odom_topic" value="/odom"/>
-    <param name="ogrid_topic" value="/ogrid_master"/>
+    <param name="ogrid_topic" value="/ogrid"/>
 
     <!-- Pose reference topic - this will be the 'carrot' to follow -->
     <param name="ref_topic" value="/trajectory/lqrrt"/>
@@ -20,8 +20,10 @@
     <param name="effort_topic" value="/lqrrt/effort"/>
   </node>
 
-  <!-- Putting this here since lqrrt needs a real ogrid in it's life -->
+  <!-- Ogrid arbiter disabled because not currently compatible with bounds server.
+       It is not clear that this is will be needed to solve RobotX challenges.
   <node pkg="navigator_msg_multiplexer" type="ogrid_arbiter.py" name="ogrid_arbiter" />
+  -->
 
   <node if="$(arg draw)" pkg="mil_tools" type="ogrid_draw.py" name="ogrid_draw">
     <param name="grid_topic" value="/draw_ogrid" />
