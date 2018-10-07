@@ -1,8 +1,8 @@
 # Point cloud builder
-accumulator_number_persistant_clouds: 20
+accumulator_number_persistant_clouds: 10
 
 # Filter
-persistant_cloud_filter_mean_k: 15
+persistant_cloud_filter_mean_k: 20
 persistant_cloud_filter_stddev: 0.05
 
 # Clusterer
