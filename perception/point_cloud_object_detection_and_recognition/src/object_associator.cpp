@@ -45,7 +45,6 @@ void associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
 
 void associator::update_config(Config const& config)
 {
-  ROS_INFO("Associator max distance %f", config.associator_max_distance);
   max_distance_ = config.associator_max_distance;
 }
 

@@ -65,8 +65,6 @@ void ogrid_manager::update_ogrid(ObjectMap const& objects)
 
 void ogrid_manager::update_config(Config const& config)
 {
-  ROS_INFO("WIDTH=%f HEIGHT=%f resolution=%f, inflation=%f", config.ogrid_width_meters, config.ogrid_height_meters, config.ogrid_resolution_meters_per_cell, config.ogrid_inflation_meters);
-
   width_meters_ = config.ogrid_width_meters;
   height_meters_ = config.ogrid_height_meters;
   resolution_meters_per_cell_ = config.ogrid_resolution_meters_per_cell;

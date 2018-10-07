@@ -26,7 +26,6 @@ void point_cloud_builder::add_point_cloud(const point_cloud_ptr& pc)
 
 void point_cloud_builder::update_config(Config const& config)
 {
-  ROS_INFO("accumulator_number_persistant_clouds %d", config.accumulator_number_persistant_clouds);
   prev_clouds_.set_capacity(config.accumulator_number_persistant_clouds);
 }
 

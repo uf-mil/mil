@@ -22,7 +22,6 @@ clusters_t object_detector::get_clusters(point_cloud_const_ptr pc)
 
 void object_detector::update_config(Config const& config)
 {
-  ROS_INFO("Cluster tolerance=%f min=%d max=%d", config.cluster_tolerance_m, config.cluster_min_points, config.cluster_max_points);
   cluster_extractor_.setClusterTolerance(config.cluster_tolerance_m);
   cluster_extractor_.setMinClusterSize(config.cluster_min_points);
   cluster_extractor_.setMaxClusterSize(config.cluster_max_points);
