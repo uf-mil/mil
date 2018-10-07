@@ -2,7 +2,7 @@ import os
 import glob
 import pandas as pd
 import xml.etree.ElementTree as ET
-from data_utils import xml_to_csv, json_to_pascal, split_data
+from __init__ import xml_to_csv, json_to_pascal, split_data
 
 
 def main():

@@ -1,26 +1,16 @@
 # Transfer Learning Object Detection - A Short Tutorial
 
 # @TODO
-1. Rename the my_scripts folder to be transfer_learning
-2. Add labelbox_dataset_processing folder.
-3. Move generate_tfrecord & csv_to_tfrecord.sh into labelbox_dataset_processing folder
-4. Edit generate_tfrecord to generate labelmap.pbtxt
-5. Edit shell script to launch a new python script that edits generate_tfrecord (or loads a config that tfrecord interprets) to allow for easy class adaptation.
-6. Merge csv_to_tfrecord.sh and process_images.sh
-7. Configurable image download
-8. In cvt_pascal.py make the json file name an input from the shell script or enforce a standard name. Temp standard: data.json.
-9. Add docker build to the install script. Until then docker build must be done manually. 
-10. Give Docker Image a better name.
-11. Convert all scripts into a library.
-12. Add a menu for interaction.
-13. Incoporate new method of accessing data.
-14. Add all scripts into one. 
-15. Have datasets stored on internal server so it can be downloaded. 
-16. Use premade labelmap.pbtxt files that only need to changed once a year.
+1. Make the process.py script the only thing run using rosrun, eliminate the generate_tfrecords.py file or incorporate it's calling into the process.py. 
+2. Remove menu and change it to command line arguments.
+3. Configurable image download
+4. Add docker build to the install script. Until then docker build must be done manually. 
+5. Have datasets stored on internal server so it can be downloaded. 
+6. Use premade labelmap.pbtxt files that only need to changed once a year.
 
 ## Quick Start: The Important Bits
 
-This is a quick start to getting this running and skips some lengthy explination. In the future you will not need to edit the generate_tfrecord.py script, and will only need to add the labelmap.pbtxt and data. 
+This is a quick start to getting this running and skips some lengthy explination. In the future you will not need to edit the generate_tfrecord.py script, and will only need to add the labelmap.pbtxt and data. Note that the model directory that you download from the model zoo needs to be cleaned. Only the three model model.cpkt files and the pipeline.config should be present in the directory. Any further files (such as a graph.pbtxt or a checkpoint file) will break the trainer! 
 
 ### Data
 

@@ -32,27 +32,41 @@ dictionary = {}
 
 
 def create_dict():
+    global dictionary
     with open('../data/labelmap.pbtxt') as f:
         txt = f.read()
     labels = []
     ids = []
-    txt = txt[2, :]
-    print(txt)
+    # print(txt)
+    # txt = txt[2, :]
     full_split = [s.strip().split(': ') for s in txt.splitlines()]
-    print(full_split)
+    # print(full_split)
+    full_split = full_split[1:]
+    # try:
     for i in full_split:
-        if i[1] == "name":
-            labels.append(i[2])
-        elif i[1] == "id":
-            ids.append(i[2])
+        if len(i) < 2:
+            continue
+        if isinstance(i[1], str):
+            if i[1].isdigit():
+                print(i[1])
+                ids.append(int(i[1]))
+            else:
+                print(i[1].strip("'"))
+                labels.append(i[1].strip("'"))
         else:
             print(
                 "Error, incorrect key located in labelmap. Should be only id or name. Instead found: ", i[1])
+    # except:
+        # print("It errored! Whomp whomp. ", i)
     dictionary = dict(zip(labels, ids))
+    # print(dictionary)
 
 
 def class_text_to_int(row_label):
-    return dictionary.get(row_label, "Key not found, skipping.")
+    print(dictionary)
+    print(row_label)
+    print(dictionary.get('totem_white'))
+    return dictionary.get(row_label)
 
 
 def split(df, group):
@@ -84,7 +98,6 @@ def create_tf_example(group, path):
         ymaxs.append(row['ymax'] / height)
         classes_text.append(row['class'].encode('utf8'))
         classes.append(class_text_to_int(row['class']))
-
     tf_example = tf.train.Example(features=tf.train.Features(feature={
         'image/height': dataset_util.int64_feature(height),
         'image/width': dataset_util.int64_feature(width),

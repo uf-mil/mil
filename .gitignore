@@ -83,8 +83,8 @@ drivers/mil_blueview_driver/bvtsdk
 
 # Ignore Tensorflow models and any Images or Annotations left over.
 perception/docker_tf/transfer_learning/models/
-perception/docker_tf/transfer_learning/labelbox_dataset_processing/Images/
-perception/docker_tf/transfer_learning/labelbox_dataset_processing/Annotations/
-perception/docker_tf/transfer_learning/labelbox_dataset_processing/test/
-perception/docker_tf/transfer_learning/labelbox_dataset_processing/train/
-
+perception/docker_tf/transfer_learning/labelbox_data_processing/Images/
+perception/docker_tf/transfer_learning/labelbox_data_processing/Annotations/
+perception/docker_tf/transfer_learning/labelbox_data_processing/test/
+perception/docker_tf/transfer_learning/labelbox_data_processing/train/
+perception/docker_tf/transfer_learning/data/
