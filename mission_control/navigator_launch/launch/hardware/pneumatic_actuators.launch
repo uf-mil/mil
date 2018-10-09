@@ -5,20 +5,37 @@
           # ONLY BL has been verfied on navigator, others are not currently connected
           BL_unlock: 1
           BL_extend: 3
-          BL_retract: 4
+          BL_retract: 2
 
           # TODO: fix once it is all plugged in
-          FL_unlock: 5
-          FL_extend: 6
-          FL_retract: 7
-          FR_unlock: 8
-          FR_extend: 9
-          FR_retract: 10
-          BR_unlock: 11
-          BR_extend: 12
-          BR_retract: 12
+          #FL_unlock: 5
+          #FL_extend: 6
+          #FL_retract: 7
+          #FR_unlock: 8
+          #FR_extend: 9
+          #FR_retract: 10
+          #BR_unlock: 11
+          #BR_extend: 12
+          #BR_retract: 12
 
           # TODO: valves for ball launcher
+          LAUNCHER_RELOAD:
+            type: set
+            ports:
+              open_port:
+                id: 4
+                default: False
+              close_port:
+                id: 5
+                default: False
+
+          LAUNCHER_FIRE:
+            type: pulse
+            pulse_time: 0.5
+            ports:
+              open_port:
+                id: 7
+                default: False
         </rosparam>
     </node>
 </launch>
