@@ -51,6 +51,7 @@
   <run_depend>robot_state_publisher</run_depend>
   <run_depend>joint_state_publisher</run_depend>
   <run_depend>mil_passive_sonar</run_depend>
+  <run_depend>mil_pneumatic_actuator</run_depend>
   <export>
   </export>
 </package>
