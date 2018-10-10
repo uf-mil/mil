@@ -9,10 +9,9 @@
 
 namespace pcodar
 {
-void marker_manager::initialize(ros::NodeHandle& nh, id_label_map_ptr id_label_map)
+void marker_manager::initialize(ros::NodeHandle& nh)
 {
-  ros::NodeHandle private_nh("~");
-  markers_pub_ = private_nh.advertise<visualization_msgs::MarkerArray>("objects_visualization", 10);
+  markers_pub_ = nh.advertise<visualization_msgs::MarkerArray>("objects_visualization", 10);
   interactive_marker_server_ = std::unique_ptr<interactive_markers::InteractiveMarkerServer>(
       new interactive_markers::InteractiveMarkerServer("interactive", "", false));
 }

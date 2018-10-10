@@ -20,12 +20,14 @@ void Object::update_points(point_cloud const& pc)
 
 void Object::update_msg()
 {
+  msg_.classification = "UNKNOWN";
+  msg_.header.frame_id = "enu";
+  msg_.header.stamp = ros::Time();
+
+  if (points_.empty()) return;
   std::vector<cv::Point2f> cv_points;
   double min_z = std::numeric_limits<double>::max();
   double max_z = -std::numeric_limits<double>::max();
-
-  msg_.classification = "UNKNOWN";
-
   for (point_t const& point : points_)
   {
     cv_points.emplace_back(point.x, point.y);
@@ -49,8 +51,6 @@ void Object::update_msg()
   center_.x = rect.center.x;
   center_.y = rect.center.y;
   center_.z = (max_z + min_z) / 2.0;
-  msg_.header.frame_id = "enu";
-  msg_.header.stamp = ros::Time();
   msg_.pose.position.x = rect.center.x;
   msg_.pose.position.y = rect.center.y;
   msg_.pose.position.z = center_.z;

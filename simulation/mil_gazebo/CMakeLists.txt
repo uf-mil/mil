@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   gazebo_dev
   gazebo_ros
   mil_msgs
+  point_cloud_object_detection_and_recognition
 )
 
 catkin_package(INCLUDE_DIRS include)

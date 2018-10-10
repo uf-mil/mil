@@ -2,7 +2,7 @@
 accumulator_number_persistant_clouds: 10
 
 # Filter
-persistant_cloud_filter_mean_k: 20
+persistant_cloud_filter_mean_k: 10
 persistant_cloud_filter_stddev: 0.05
 
 # Clusterer

@@ -8,64 +8,81 @@ namespace mil_gazebo
 void PCODARGazebo::Load(gazebo::physics::WorldPtr _world, sdf::ElementPtr _sdf)
 {
   world_ = _world;
-  nh_ = ros::NodeHandle("pcodar");
+  nh_ = ros::NodeHandle("/pcodar");
   nh_.getParam("/gazebo/name_map", name_map_);
+  pcodar_.reset(new pcodar::pcodar_controller_base(nh_));
+  pcodar_->initialize();
   for (auto it : name_map_)
   {
     ROS_WARN("MAPPING %s to %s", it.first.c_str(), it.second.c_str());
   }
-  server_ = nh_.advertiseService(std::string("/database/requests"), &PCODARGazebo::DatabaseQuery, this);
+  UpdateObjects();
+  timer_ = nh_.createTimer(ros::Duration(5.0), std::bind(&PCODARGazebo::TimerCb, this, std::placeholders::_1));
 }
 
-bool PCODARGazebo::DatabaseQuery(mil_msgs::ObjectDBQuery::Request &req, mil_msgs::ObjectDBQuery::Response& res)
+void PCODARGazebo::TimerCb(const ros::TimerEvent&)
+{
+  pcodar_->UpdateObjects();
+}
+
+void PCODARGazebo::UpdateObjects()
 {
   for (auto model: world_->GetModels())
   {
-    AddDatabaseObject(req, res, model);
+    UpdateObject(model);
   }
-  return true;
 }
 
-void PCODARGazebo::AddDatabaseObject(mil_msgs::ObjectDBQuery::Request &req, mil_msgs::ObjectDBQuery::Response& res, gazebo::physics::ModelPtr _model)
+void PCODARGazebo::UpdateObject(gazebo::physics::ModelPtr _model)
 {
   ROS_WARN("OBJECT %s", _model->GetName().c_str());
   auto it = name_map_.find(_model->GetName());
-  if (it != name_map_.end() && (*it).second == req.name)
+  if (it != name_map_.end())
   {
-    res.found = true;
-    // TODO: only add if matches query string
-    mil_msgs::PerceptionObject object;
-    object.classification = (*it).second;
-    GazeboPoseToRosMsg(_model->GetWorldPose(), object.pose);
-    res.objects.push_back(object);
+    int id = _model->GetId();
+    pcodar::Object object = pcodar::Object(pcodar::point_cloud());
+    object.msg_.classification = (*it).second;
+    GazeboPoseToRosMsg(_model->GetWorldPose(), object.msg_.pose);
+    GazeboVectorToRosMsg(_model->GetBoundingBox().GetSize(), object.msg_.scale);
+
+    auto existing_object = pcodar_->objects_.objects_.find(id);
+    if (existing_object == pcodar_->objects_.objects_.end())
+      pcodar_->objects_.objects_.insert({id, object});
+    else
+      (*existing_object).second = object;
   }
 
   // Recurse into nested models
   for (auto model: _model->NestedModels())
   {
-    AddDatabaseObject(req, res, model);
+    UpdateObject(model);
   }
 
   // Recurse into links
   for (auto link: _model->GetLinks())
   {
-    AddDatabaseLink(req, res, link);
+    UpdateLink(link);
   }
 }
 
-void PCODARGazebo::AddDatabaseLink(mil_msgs::ObjectDBQuery::Request &req, mil_msgs::ObjectDBQuery::Response& res, gazebo::physics::LinkPtr _link)
+void PCODARGazebo::UpdateLink(gazebo::physics::LinkPtr _link)
 {
   ROS_WARN("LINK %s", _link->GetName().c_str());
 
   auto it = name_map_.find(_link->GetName());
   if (it == name_map_.end()) return;
-  if ((*it).second != req.name) return;
-  res.found = true;
-  // TODO: only add if matches query string
-  mil_msgs::PerceptionObject object;
-  object.classification = (*it).second;
-  GazeboPoseToRosMsg(_link->GetWorldPose(), object.pose);
-  res.objects.push_back(object);
+
+  int id = _link->GetId();
+  pcodar::Object object = pcodar::Object(pcodar::point_cloud());
+  object.msg_.classification = (*it).second;
+  GazeboPoseToRosMsg(_link->GetWorldPose(), object.msg_.pose);
+  GazeboVectorToRosMsg(_link->GetBoundingBox().GetSize(), object.msg_.scale);
+
+  auto existing_object = pcodar_->objects_.objects_.find(id);
+  if (existing_object == pcodar_->objects_.objects_.end())
+    pcodar_->objects_.objects_.insert({id, object});
+  else
+    (*existing_object).second = object;
 }
 
 void PCODARGazebo::GazeboPoseToRosMsg(gazebo::math::Pose const& in, geometry_msgs::Pose& out)
@@ -78,6 +95,13 @@ void PCODARGazebo::GazeboPoseToRosMsg(gazebo::math::Pose const& in, geometry_msg
   out.orientation.y = in.rot.y;
   out.orientation.z = in.rot.z;
   out.orientation.w = in.rot.w;
+}
+
+void PCODARGazebo::GazeboVectorToRosMsg(gazebo::math::Vector3 const& in, geometry_msgs::Vector3& out)
+{
+  out.x = in.x;
+  out.y = in.y;
+  out.z = in.z;
 }
 
 GZ_REGISTER_WORLD_PLUGIN(PCODARGazebo)

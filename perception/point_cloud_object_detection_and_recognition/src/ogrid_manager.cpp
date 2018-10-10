@@ -1,4 +1,6 @@
 #include <point_cloud_object_detection_and_recognition/ogrid_manager.hpp>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/utils.h>
 
 namespace pcodar
 {
@@ -35,6 +37,11 @@ void ogrid_manager::draw_boundary()
   */
 }
 
+void ogrid_manager::set_bounds(point_cloud_ptr pc)
+{
+  bounds_ = pc;
+}
+
 cv::Point ogrid_manager::point_in_ogrid(point_t point)
 {
   double x = (point.x - ogrid_.info.origin.position.x) / resolution_meters_per_cell_;
@@ -53,10 +60,34 @@ void ogrid_manager::update_ogrid(ObjectMap const& objects)
   for (auto const& pair : objects.objects_)
   {
     Object const& object = pair.second;
-    for (const auto& point : object.points_)
-    {
-      cv::Point center(point_in_ogrid(point));
-      cv::circle(ogrid_mat_, center, inflation_cells_, cv::Scalar(99), -1);
+
+    // In simulation, use bounding box
+    if (object.points_.empty()) {
+      tf2::Quaternion quat(object.msg_.pose.orientation.x,
+        object.msg_.pose.orientation.y,
+        object.msg_.pose.orientation.z,
+        object.msg_.pose.orientation.w);
+      double pitch, roll, yaw;
+      tf2::getEulerYPR(quat, yaw, pitch, roll);
+      cv::RotatedRect rect(cv::Point2f(object.msg_.pose.position.x, object.msg_.pose.position.y),
+                           cv::Size2f(object.msg_.scale.x, object.msg_.scale.y),
+                           yaw);
+      cv::Point2f vertices[4];
+      cv::Point vertices_fixed[4];
+      rect.points(vertices);
+      for (size_t i = 0; i < 4; ++i)
+        vertices_fixed[i] = point_in_ogrid(point_t(vertices[i].x, vertices[i].y, 0));
+      cv::fillConvexPoly(ogrid_mat_,
+                         vertices_fixed, 4, cv::Scalar(99));
+    }
+
+    // Otherwise draw individual points
+    else {
+      for (const auto& point : object.points_)
+      {
+        cv::Point center(point_in_ogrid(point));
+        cv::circle(ogrid_mat_, center, inflation_cells_, cv::Scalar(99), -1);
+      }
     }
   }
 

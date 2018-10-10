@@ -20,7 +20,7 @@ namespace pcodar
 class marker_manager
 {
 public:
-  void initialize(ros::NodeHandle& nh, id_label_map_ptr id_label_map);
+  void initialize(ros::NodeHandle& nh);
 
   void update_markers(mil_msgs::PerceptionObjectArray const& objects);
 

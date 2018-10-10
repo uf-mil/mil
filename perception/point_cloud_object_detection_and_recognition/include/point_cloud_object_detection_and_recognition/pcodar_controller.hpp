@@ -27,25 +27,23 @@
 
 namespace pcodar
 {
-class pcodar_controller
+
+class pcodar_controller_base
 {
 public:
-  pcodar_controller(ros::NodeHandle nh);
+  pcodar_controller_base(ros::NodeHandle nh);
 
-  void velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud);
+  virtual void initialize();
+  void UpdateObjects();
 
-  void odom_cb(const nav_msgs::OdometryConstPtr& odom);
-
-  void initialize();
-
-private:
-  bool bounds_update_cb(const mil_bounds::BoundsConfig& config);
+protected:
   bool DBQuery_cb(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::ObjectDBQuery::Response& res);
-  bool transform_point_cloud(const sensor_msgs::PointCloud2& pcloud2, point_cloud& out);
   bool transform_to_global(std::string const& frame, ros::Time const& time, Eigen::Affine3d& out);
-  void ConfigCallback(Config const& config, uint32_t level);
+  bool transform_point_cloud(const sensor_msgs::PointCloud2& pcloud2, point_cloud& out);
+  virtual bool bounds_update_cb(const mil_bounds::BoundsConfig& config);
+  virtual void ConfigCallback(Config const& config, uint32_t level);
 
-private:
+protected:
   ros::NodeHandle nh_;
   dynamic_reconfigure::Client<mil_bounds::BoundsConfig> bounds_client_;
   dynamic_reconfigure::Server<Config> config_server_;
@@ -59,30 +57,41 @@ private:
 
   // Publishers
   ros::Publisher pub_objects_;
-  ros::Publisher pub_pcl_;
 
-  // Subscriber
-  ros::Subscriber pc_sub;
-
-  // Place to hold the latest message
-  sensor_msgs::PointCloud2 latest_point_cloud_;
+  point_cloud_ptr bounds_;
 
   // Visualization
   marker_manager marker_manager_;
   ogrid_manager ogrid_manager_;
+
+public:
+  ObjectMap objects_;
+};
+
+class pcodar_controller : public pcodar_controller_base
+{
+public:
+  pcodar_controller(ros::NodeHandle nh);
+
+  void velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud);
+
+  void initialize() override;
+
+private:
+  bool bounds_update_cb(const mil_bounds::BoundsConfig& config) override;
+  void ConfigCallback(Config const& config, uint32_t level) override;
+
+private:
+  ros::Publisher pub_pcl_;
+
+  // Subscriber
+  ros::Subscriber pc_sub;
 
   // Model (It eventually will be obeject tracker, but for now just detections)
   InputCloudFilter input_cloud_filter_;
   PersistentCloudFilter persistent_cloud_filter_;
   point_cloud_builder persistent_cloud_builder_;
   object_detector detector_;
-
-  ObjectMap objects_;
-  id_label_map_ptr id_label_map_;
-  uint32_t highest_id_;
-
-  mil_msgs::PerceptionObjectArray old_objects_;
-
   associator ass;
 };
 
