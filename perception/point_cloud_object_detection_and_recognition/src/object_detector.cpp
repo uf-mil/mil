@@ -1,12 +1,10 @@
-#include <point_cloud_object_detection_and_recognition/object_detector.hpp>
 #include <tf/transform_datatypes.h>
+#include <point_cloud_object_detection_and_recognition/object_detector.hpp>
 
 namespace pcodar
 {
-
 clusters_t object_detector::get_clusters(point_cloud_const_ptr pc)
 {
-
   // Creating the KdTree object for the search method of the extraction
   pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
   tree->setInputCloud(pc);
@@ -27,4 +25,4 @@ void object_detector::update_config(Config const& config)
   cluster_extractor_.setMaxClusterSize(config.cluster_max_points);
 }
 
-} // namespace pcodar
+}  // namespace pcodar

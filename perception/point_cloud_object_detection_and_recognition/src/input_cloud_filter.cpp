@@ -2,7 +2,6 @@
 
 namespace pcodar
 {
-
 InputCloudFilter::InputCloudFilter()
 {
   bounds_filter_.setDim(2);
@@ -29,7 +28,7 @@ void InputCloudFilter::set_bounds(point_cloud_ptr bounds)
   indicies.vertices.reserve(bounds->size());
   for (size_t i = 0; i < bounds->size(); ++i)
     indicies.vertices.push_back(i);
-  std::vector<pcl::Vertices> hull = {indicies};
+  std::vector<pcl::Vertices> hull = { indicies };
 
   bounds_filter_.setHullCloud(bounds);
   bounds_filter_.setHullIndices(hull);
@@ -46,7 +45,7 @@ void InputCloudFilter::set_robot_footprint(point_cloud const& robot)
   indicies.vertices.reserve(pc->size());
   for (size_t i = 0; i < pc->size(); ++i)
     indicies.vertices.push_back(i);
-  std::vector<pcl::Vertices> hull = {indicies};
+  std::vector<pcl::Vertices> hull = { indicies };
 
   robot_filter_.setHullCloud(pc);
   robot_filter_.setHullIndices(hull);
@@ -55,10 +54,11 @@ void InputCloudFilter::set_robot_footprint(point_cloud const& robot)
 void InputCloudFilter::set_robot_pose(Eigen::Affine3d const& transform)
 {
   auto pc = robot_filter_.getHullCloud();
-  if (!pc) {
+  if (!pc)
+  {
     ROS_WARN("set_robot_pose called before set_robot_footprint");
   }
   pcl::transformPointCloud(robot_footprint_, *pc, transform);
 }
 
-} // namespace pcodar
+}  // namespace pcodar

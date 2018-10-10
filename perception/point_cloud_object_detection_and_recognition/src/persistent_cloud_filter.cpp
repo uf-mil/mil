@@ -2,9 +2,7 @@
 
 namespace pcodar
 {
-
-PersistentCloudFilter::PersistentCloudFilter():
-  outlier_filter_(false)
+PersistentCloudFilter::PersistentCloudFilter() : outlier_filter_(false)
 {
 }
 
@@ -20,4 +18,4 @@ void PersistentCloudFilter::update_config(Config const& config)
   outlier_filter_.setMeanK(config.persistant_cloud_filter_mean_k);
 }
 
-} // namespace pcodar
+}  // namespace pcodar

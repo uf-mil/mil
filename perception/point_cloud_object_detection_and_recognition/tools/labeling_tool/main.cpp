@@ -1,8 +1,8 @@
 #include <point_cloud_object_detection_and_recognition/marker_manager.hpp>
+#include <point_cloud_object_detection_and_recognition/pcodar_controller.hpp>
 #include <point_cloud_object_detection_and_recognition/pcodar_params.hpp>
 #include <point_cloud_object_detection_and_recognition/point_cloud_builder.hpp>
 #include <point_cloud_object_detection_and_recognition/point_cloud_clusterer.hpp>
-#include <point_cloud_object_detection_and_recognition/pcodar_controller.hpp>
 
 #include <eigen_conversions/eigen_msg.h>
 
@@ -53,50 +53,50 @@ Buttons I want:
 
 int main(int argc, char *argv[])
 {
-    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug))
+  if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug))
+  {
+    ros::console::notifyLoggerLevelsChanged();
+  }
+
+  id_to_labeled_object object_map;
+  auto object_map_ptr = std::make_shared<id_to_labeled_object>(object_map);
+
+  // TODO(tbianchi) argument checking
+  label_model l_model(argc, argv, object_map_ptr);
+  l_model.populate_map();
+
+  QApplication a(argc, argv);
+  main_window w;
+  w.set_object_map(object_map_ptr);
+  w.populate_list();
+
+  w.setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, w.size(), a.desktop()->availableGeometry()));
+  w.show();
+
+  const auto update = [&w, &l_model, &a]() {
+
+    if (w.restart())
     {
-        ros::console::notifyLoggerLevelsChanged();
+      l_model.restart();
+    }
+    if (w.generate_bag())
+    {
+      l_model.generate_bag();
+    }
+    if (l_model.has_next_image())
+    {
+      cv::Mat cv_image = l_model.get_next_image();
+      cvtColor(cv_image, cv_image, CV_BGR2RGB);
+      QImage q_image(cv_image.data, cv_image.cols, cv_image.rows, cv_image.step, QImage::Format_RGB888);
+      w.update_image(q_image);
+      a.processEvents();
     }
 
-    id_to_labeled_object object_map;
-    auto object_map_ptr = std::make_shared<id_to_labeled_object>(object_map);
+  };
 
-    // TODO(tbianchi) argument checking
-    label_model l_model(argc, argv, object_map_ptr);
-    l_model.populate_map();
+  QTimer *timer = new QTimer(&w);
+  w.connect(timer, &QTimer::timeout, update);
+  timer->start(33.0);
 
-    QApplication a(argc, argv);
-    main_window w;
-    w.set_object_map(object_map_ptr);
-    w.populate_list();
-
-    w.setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, w.size(), a.desktop()->availableGeometry()));
-    w.show();
-
-    const auto update = [&w, &l_model, &a]() {
-
-        if (w.restart())
-        {
-            l_model.restart();
-        }
-        if (w.generate_bag())
-        {
-            l_model.generate_bag();
-        }
-        if (l_model.has_next_image())
-        {
-            cv::Mat cv_image = l_model.get_next_image();
-            cvtColor(cv_image, cv_image, CV_BGR2RGB);
-            QImage q_image(cv_image.data, cv_image.cols, cv_image.rows, cv_image.step, QImage::Format_RGB888);
-            w.update_image(q_image);
-            a.processEvents();
-        }
-
-    };
-
-    QTimer *timer = new QTimer(&w);
-    w.connect(timer, &QTimer::timeout, update);
-    timer->start(33.0);
-
-    return a.exec();
+  return a.exec();
 }

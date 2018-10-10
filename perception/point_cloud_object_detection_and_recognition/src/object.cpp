@@ -3,13 +3,10 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-
 #include <tf2/LinearMath/Quaternion.h>
-
 
 namespace pcodar
 {
-
 Object::Object(point_cloud const& _pc)
 {
   update_points(_pc);
@@ -29,24 +26,24 @@ void Object::update_msg()
 
   msg_.classification = "UNKNOWN";
 
-  for (point_t const& point: points_)
+  for (point_t const& point : points_)
   {
-      cv_points.emplace_back(point.x, point.y);
-      if (point.z > max_z)
-      {
-          max_z = point.z;
-      }
+    cv_points.emplace_back(point.x, point.y);
+    if (point.z > max_z)
+    {
+      max_z = point.z;
+    }
 
-      if (point.z < min_z)
-      {
-          min_z = point.z;
-      }
-      geometry_msgs::Point32 g_point;
-      g_point.x = point.x;
-      g_point.y = point.y;
-      g_point.z = point.z;
+    if (point.z < min_z)
+    {
+      min_z = point.z;
+    }
+    geometry_msgs::Point32 g_point;
+    g_point.x = point.x;
+    g_point.y = point.y;
+    g_point.z = point.z;
 
-      msg_.points.emplace_back(g_point);
+    msg_.points.emplace_back(g_point);
   }
   cv::RotatedRect rect = cv::minAreaRect(cv_points);
   center_.x = rect.center.x;
@@ -70,5 +67,4 @@ void Object::update_msg()
   msg_.pose.orientation.w = quat.w();
 }
 
-
-} // namespace pcodar
+}  // namespace pcodar

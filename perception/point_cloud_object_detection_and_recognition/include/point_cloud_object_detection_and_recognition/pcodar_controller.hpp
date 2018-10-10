@@ -1,25 +1,25 @@
 #pragma once
 
-#include "marker_manager.hpp"
-#include "ogrid_manager.hpp"
-#include "object_detector.hpp"
-#include "pcodar_types.hpp"
 #include "input_cloud_filter.hpp"
-#include "persistent_cloud_filter.hpp"
+#include "marker_manager.hpp"
 #include "object_associator.hpp"
-#include "point_cloud_builder.hpp"
+#include "object_detector.hpp"
 #include "object_map.hpp"
+#include "ogrid_manager.hpp"
+#include "pcodar_types.hpp"
+#include "persistent_cloud_filter.hpp"
+#include "point_cloud_builder.hpp"
 
+#include <dynamic_reconfigure/client.h>
+#include <mil_bounds/BoundsConfig.h>
+#include <mil_msgs/ObjectDBQuery.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <mil_bounds/BoundsConfig.h>
-#include <mil_msgs/ObjectDBQuery.h>
-#include <dynamic_reconfigure/client.h>
 #include <tf2/convert.h>
+#include <tf2_eigen/tf2_eigen.h>
 #include <tf2_msgs/TFMessage.h>
 #include <tf2_ros/transform_listener.h>
-#include <tf2_eigen/tf2_eigen.h>
 
 #include <dynamic_reconfigure/server.h>
 
@@ -27,7 +27,6 @@
 
 namespace pcodar
 {
-
 class pcodar_controller
 {
 public:
@@ -35,16 +34,17 @@ public:
 
   void velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud);
 
-  void odom_cb(const nav_msgs::OdometryConstPtr &odom);
+  void odom_cb(const nav_msgs::OdometryConstPtr& odom);
 
   void initialize();
+
 private:
-  bool bounds_update_cb(const mil_bounds::BoundsConfig &config);
-  bool DBQuery_cb(mil_msgs::ObjectDBQuery::Request &req,
-                  mil_msgs::ObjectDBQuery::Response &res);
+  bool bounds_update_cb(const mil_bounds::BoundsConfig& config);
+  bool DBQuery_cb(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::ObjectDBQuery::Response& res);
   bool transform_point_cloud(const sensor_msgs::PointCloud2& pcloud2, point_cloud& out);
   bool transform_to_global(std::string const& frame, ros::Time const& time, Eigen::Affine3d& out);
   void ConfigCallback(Config const& config, uint32_t level);
+
 private:
   ros::NodeHandle nh_;
   dynamic_reconfigure::Client<mil_bounds::BoundsConfig> bounds_client_;
@@ -84,7 +84,6 @@ private:
   mil_msgs::PerceptionObjectArray old_objects_;
 
   associator ass;
-
 };
 
 }  // namespace pcodar

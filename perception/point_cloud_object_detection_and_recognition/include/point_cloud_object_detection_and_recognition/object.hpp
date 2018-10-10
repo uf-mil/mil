@@ -12,8 +12,9 @@ public:
   mil_msgs::PerceptionObject msg_;
   point_cloud points_;
   point_t center_;
+
 private:
   void update_msg();
 };
 
-} // namespace pcodar
+}  // namespace pcodar
