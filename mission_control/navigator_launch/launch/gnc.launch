@@ -31,14 +31,16 @@
 
     <node pkg="navigator_tools" type="boat_info.py" name="boat_info_markers" />
 
-<!--
-    <include if="$(arg simulation)" file="$(find navigator_launch)/launch/perception/pcodar.launch" />
--->
+    <include file="$(find navigator_launch)/launch/perception/pcodar.launch">
+      <arg name="simulation" value="$(arg simulation)" />
+    </include>
 
     <!-- Run Path Planner -->
     <include file="$(find navigator_launch)/launch/gnc/path_planner.launch" />
 
     <!-- Core utilities: bounds, coordinate conversion -->
     <node name="coordinate_converter" pkg="navigator_tools" type="coordinate_conversion_server.py"/>
-    <include file="$(find navigator_launch)/launch/gnc/bounds.launch" />
+    <include file="$(find navigator_launch)/launch/gnc/bounds.launch">
+      <arg name="simulation" value="$(arg simulation)" />
+    </include>
 </launch>
