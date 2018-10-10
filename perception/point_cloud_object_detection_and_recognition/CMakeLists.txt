@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   dynamic_reconfigure
   mil_bounds
+  roslaunch
 )
 
 ###################################################
