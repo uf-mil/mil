@@ -7,16 +7,22 @@ import math
 import sys
 import matplotlib.pyplot as plt
 
+DEBUG = 0
 
 def run(samples, sample_rate, v_sound, dist_h, dist_h4):
     # Perform algorithm
+    if DEBUG: plt.cla()
+    if DEBUG: plt.subplot(2, 2, 1)
+    if DEBUG: map(plt.plot, samples)
     samples = zero_mean(samples)
     freq, amplitude, samples_fft = compute_freq(
         samples, sample_rate, numpy.array([5e3, 40e3]), plot=True)
     fft_sharpness = amplitude**2 / numpy.sum(samples_fft)
+    if DEBUG: plt.subplot(2, 2, 2)
+    if DEBUG: map(plt.plot, samples_fft)
     upsamples, upsample_rate = preprocess(samples, sample_rate, 3e6)
     deltas, delta_errors, template_pos, template_width = \
-        compute_deltas(upsamples, upsample_rate, freq, 8)
+        compute_deltas(upsamples, upsample_rate, max(dist_h, dist_h4) / v_sound, 20e-2 / v_sound)
     delta_errors = delta_errors / amplitude
     if len(deltas) == 3:
         pos = compute_pos_4hyd(deltas, upsample_rate, v_sound, dist_h, dist_h4)
@@ -114,40 +120,46 @@ def bandpass(samples, sample_rate):
 
 def compute_deltas(samples,
                    sample_rate,
-                   ping_freq,
-                   template_periods,
+                   max_delay,
+                   template_duration,
                    plot=False):
     """
     Computes N-1 position deltas for N channels, by making a template
     for the first channel and matching to all subsequent channels.
     """
-    period = int(round(sample_rate / ping_freq))
-    template_width = period * template_periods + 1
-    template, template_pos = make_template(samples[0, :], .2, template_width)
+    template_width = int(round(template_duration * sample_rate))
+    template, template_pos = make_template(samples[0, :], template_width)
+    if DEBUG: plt.subplot(2, 2, 3)
+    if DEBUG: plt.plot(template)
     if template_pos is None:
         return numpy.empty(0), numpy.empty(0), None, template_width
-    start = template_pos - period // 2
-    stop = template_pos + period // 2
+    start = template_pos - int(round(max_delay * sample_rate * 1.25))
+    stop = template_pos + int(round(max_delay * sample_rate * 1.25))
 
     deltas = numpy.empty(samples.shape[0] - 1)
     errors = numpy.empty(samples.shape[0] - 1)
-    for i in xrange(deltas.shape[0]):
-        pos, error = match_template(samples[i + 1, :], start, stop, template)
-        deltas[i] = pos - template_pos
-        errors[i] = error
+    if DEBUG: plt.subplot(2, 2, 4)
+    for i in xrange(1 + deltas.shape[0]):
+        res = match_template(samples[i, :], start, stop, template)
+        if res is None:
+            return numpy.empty(0), numpy.empty(0), None, template_width
+        pos, error = res
+        if i >= 1:
+            i -= 1
+            deltas[i] = pos - template_pos
+            errors[i] = error
+    if DEBUG: plt.show()
 
     return deltas, errors, template_pos, template_width
 
 
-def make_template(channel, thresh, width):
+def make_template(channel, width):
     """
-    Returns a template of the specified width, centered at the first
-    point of the channel to exceed thresh.
+    Returns a template of the specified width, with its 25% position being at
+    where the lower-level driver triggered.
     """
-    for pos in xrange(0, channel.shape[0] - width):
-        if abs(channel[pos + width // 4]) >= thresh:
-            return channel[pos:pos + width], pos
-    return None, None
+    pos = int(round(channel.shape[0] * .35/(.35+.25) - width*.25))
+    return channel[pos:pos + width], pos
 
 
 def match_template(channel, start, stop, template):
@@ -155,45 +167,46 @@ def match_template(channel, start, stop, template):
     Matches template to channel, returning the point where the start
     of the template should be placed.
     """
+    assert start >= 0
     start = max(start, 0)
+    assert stop <= channel.shape[0] - template.shape[0]
     stop = min(stop, channel.shape[0] - template.shape[0])
-    mad = mean_absolute_difference(channel, start, stop, template)
-    min_pt = find_zero(mad)
+    err = calculate_error(channel, start, stop, template)
+    if DEBUG: plt.plot(err)
+    min_pt = find_minimum(err)
+    if min_pt is None: return None
 
-    return start + min_pt, mad[int(round(min_pt))]
+    return start + min_pt, err[int(round(min_pt))]
 
 
-def mean_absolute_difference(channel, start, stop, template):
+def calculate_error(channel, start, stop, template):
     """
     Slides the template along channel from start to stop, giving the
-    mean absolute difference of the template and channel at each
+    error of the template and channel at each
     location.
     """
     width = template.shape[0]
-    mad = numpy.zeros(stop - start)
+    res = numpy.zeros(stop - start)
     for i in xrange(start, stop):
-        mad[i - start] = numpy.mean(numpy.abs(channel[i:i + width] - template))
-    return mad
+        # used to use mean absolute difference; now using (negative) pearson
+        # correlation coefficient to be invariant to scale/shift
+        #res[i - start] = numpy.mean(numpy.abs(channel[i:i + width] - template))
+        res[i - start] = -numpy.corrcoef(channel[i:i + width], template)[0, 1]
+    return res
 
 
-def find_zero(data):
+def find_minimum(data):
     """
-    Finds the sub-sample position of the first zero in a continuous signal,
-    by first finding the lowest absolute value, then taking the gradient
-    and performing a linear interpolation near the lowest absolute value.
+    Finds the sub-sample position of the minimum in a continuous signal,
+    by first finding the lowest absolute value, then doing quadratic interpolation.
     """
-    approx = numpy.argmin(numpy.abs(data))
-    d_data = numpy.gradient(data)
-
-    for pos in xrange(
-            max(approx - 3, 0), min(approx + 3, d_data.shape[0] - 1)):
-        if numpy.sign(d_data[pos]) != numpy.sign(d_data[pos + 1]):
-            y2 = d_data[pos + 1]
-            y1 = d_data[pos]
-            x2 = pos + 1
-            x1 = pos
-            return -(x2 - x1) / (y2 - y1) * y1 + x1
-    return approx
+    pos = numpy.argmin(data)
+    if pos == 0 or pos == len(data) - 1:
+        print 'warning: pos on border; search region not large enough?'
+        return None
+    yl, yc, yr = data[pos-1], data[pos], data[pos+1]
+    pos += (yr-yl)/(4*yc-2*yl-2*yr)
+    return pos
 
 
 def compute_pos_4hyd(deltas, sample_rate, v_sound, dist_h, dist_h4):
