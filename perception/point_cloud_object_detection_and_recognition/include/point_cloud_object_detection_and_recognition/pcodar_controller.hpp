@@ -38,7 +38,8 @@ public:
 
 protected:
   bool DBQuery_cb(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::ObjectDBQuery::Response& res);
-  bool transform_to_global(std::string const& frame, ros::Time const& time, Eigen::Affine3d& out);
+  bool transform_to_global(std::string const& frame, ros::Time const& time, Eigen::Affine3d& out,
+                           ros::Duration timeout=ros::Duration(1, 0));
   bool transform_point_cloud(const sensor_msgs::PointCloud2& pcloud2, point_cloud& out);
   virtual bool bounds_update_cb(const mil_bounds::BoundsConfig& config);
   virtual void ConfigCallback(Config const& config, uint32_t level);

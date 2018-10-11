@@ -125,13 +125,12 @@ void pcodar_controller::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pclo
   UpdateObjects();
 }
 
-bool pcodar_controller_base::transform_to_global(std::string const& frame, ros::Time const& time, Eigen::Affine3d& out)
+bool pcodar_controller_base::transform_to_global(std::string const& frame, ros::Time const& time, Eigen::Affine3d& out, ros::Duration timeout)
 {
   geometry_msgs::TransformStamped transform;
   try
   {
-    transform = tf_buffer_.lookupTransform("enu", frame, time,
-                                           ros::Duration(1, 0));
+    transform = tf_buffer_.lookupTransform("enu", frame, time, timeout);
   }
   catch (tf2::TransformException& ex)
   {
@@ -146,7 +145,7 @@ bool pcodar_controller_base::bounds_update_cb(const mil_bounds::BoundsConfig& co
 {
 
   Eigen::Affine3d transform;
-  if (!transform_to_global(config.frame, ros::Time::now(), transform))
+  if (!transform_to_global(config.frame, ros::Time::now(), transform, ros::Duration(10)))
     return false;
 
   bounds_ = boost::make_shared<point_cloud>();
@@ -163,7 +162,7 @@ bool pcodar_controller_base::bounds_update_cb(const mil_bounds::BoundsConfig& co
 
 bool pcodar_controller::bounds_update_cb(const mil_bounds::BoundsConfig& config)
 {
-  pcodar_controller_base::bounds_update_cb(config);
+  if (!pcodar_controller_base::bounds_update_cb(config)) return false;
   input_cloud_filter_.set_bounds(bounds_);
   return true;
 }
