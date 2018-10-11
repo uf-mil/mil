@@ -2,14 +2,15 @@
 
 import numpy
 import math
+import sys
 
+import rosbag
 import rospy
 
 from sub8_hydrophones import algorithms, util
 from sub8_hydrophones.msg import Ping, ProcessedPing, Debug
 from std_msgs.msg import Header
 from geometry_msgs.msg import Point, PoseStamped, Pose
-
 
 def process_ping(ping):
     ping.header.frame_id = 'hydrophones'
@@ -31,6 +32,9 @@ def process_ping(ping):
 
     valid = len(r['pos']) > 0 and len(r['errors']) == 0
     if valid:
+        pos2 = r['pos']/numpy.linalg.norm(r['pos'])
+        print 'result angle:', numpy.rad2deg(numpy.arctan2(pos2[1], pos2[0])) % 360
+        
         pub.publish(
             header=Header(
                 stamp=ping.header.stamp, frame_id=ping.header.frame_id),
@@ -49,7 +53,6 @@ def process_ping(ping):
         heading=heading,
         declination=declination)
 
-
 rospy.init_node('hydrophones')
 dist_h = rospy.get_param('~dist_h')
 dist_h4 = rospy.get_param('~dist_h4')
@@ -58,5 +61,11 @@ template_periods = rospy.get_param('~template_periods', 3)
 pub = rospy.Publisher('hydrophones/processed', ProcessedPing, queue_size=10)
 pub_pose = rospy.Publisher('hydrophones/pose', PoseStamped, queue_size=10)
 pub_debug = rospy.Publisher('hydrophones/debug', Debug, queue_size=10)
-sub = rospy.Subscriber('hydrophones/ping', Ping, process_ping)
-rospy.spin()
+
+if rospy.myargv()[1:]:
+    bag = rosbag.Bag(rospy.myargv()[1])
+    for msg in bag.read_messages(['/hydrophones/ping']):
+        process_ping(msg.message)
+else:
+    sub = rospy.Subscriber('hydrophones/ping', Ping)
+    rospy.spin()
