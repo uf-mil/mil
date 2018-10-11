@@ -6,10 +6,10 @@ import numpy
 import roslib
 import rospy
 
-from hydrophones.msg import Ping
-from hydrophones import util
+from sub8_hydrophones.msg import Ping
+from sub8_hydrophones import util
 
-roslib.load_manifest('hydrophones')
+roslib.load_manifest('sub8_hydrophones')
 
 
 rospy.init_node('ping_logger')
