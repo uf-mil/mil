@@ -87,4 +87,5 @@ perception/docker_tf/transfer_learning/labelbox_data_processing/Images/
 perception/docker_tf/transfer_learning/labelbox_data_processing/Annotations/
 perception/docker_tf/transfer_learning/labelbox_data_processing/test/
 perception/docker_tf/transfer_learning/labelbox_data_processing/train/
-perception/docker_tf/transfer_learning/data/
+perception/docker_tf/transfer_learning/data/test.record
+perception/docker_tf/transfer_learning/data/train.record

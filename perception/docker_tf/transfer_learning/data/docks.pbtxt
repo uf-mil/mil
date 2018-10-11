@@ -1,0 +1,22 @@
+item {
+    id: 1
+    name: 'target_large'
+    id: 2
+    name: 'target_small'
+    id: 3
+    name: 'cruciform_green'
+    id: 4
+    name: 'circle_green'
+    id: 5
+    name: 'triangle_blue'
+    id: 6
+    name: 'triangle_green'
+    id: 7
+    name: 'circle_blue'
+    id: 8
+    name: 'circle_red'
+    id: 9
+    name: 'cruciform_blue'
+    id: 10
+    name: 'dock_2018_platform'
+}

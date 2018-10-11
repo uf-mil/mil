@@ -9,6 +9,7 @@ import labelbox2pascal as lb2pa
 from PIL import Image
 from sklearn.model_selection import train_test_split
 
+dictionary = {}
 
 def split_data(image_dir='Images', ann_dir='Annotations'):
     imgs_jpg = glob.glob(image_dir + '/*.jpeg')
@@ -76,15 +77,47 @@ def json_to_pascal(labelled_data='json_files/data.json'):
     print('Done getting xml files')
 
 
-def xml_to_csv(path):
+def xml_to_csv(path, labelmap):
+    number_of_images = 0
+    global dictionary
+    with open(('../data/' + labelmap)) as f:
+        txt = f.read()
+    labels = []
+    ids = []
+    # print(txt)
+    # txt = txt[2, :]
+    full_split = [s.strip().split(': ') for s in txt.splitlines()]
+    # print(full_split)
+    full_split = full_split[1:]
+    # try:
+    for i in full_split:
+        if len(i) < 2:
+            continue
+        if isinstance(i[1], str):
+            if i[1].isdigit():
+                # print(i[1])
+                ids.append(int(i[1]))
+            else:
+                # print(i[1].strip("'"))
+                labels.append(i[1].strip("'"))
+        else:
+            print(
+                "Error, incorrect key located in labelmap. Should be only id or name. Instead found: ", i[1])
+    # except:
+        # print("It errored! Whomp whomp. ", i)
+    dictionary = dict(zip(labels, ids))
+    # print(dictionary)
     xml_list = []
     for xml_file in glob.glob(path + '/*.xml'):
         tree = ET.parse(xml_file)
         root = tree.getroot()
         for member in root.findall('object'):
+            if(dictionary.get(member[0].text) is None):
+                continue
+            number_of_images = number_of_images+1
             if(member[4].tag == 'polygon'):
                 if(len(member[4]) == 8):
-
+                    print("Polygon Found.")
                     x1 = int(member[4][0].text)
                     y1 = int(member[4][1].text)
                     x2 = int(member[4][2].text)
@@ -108,11 +141,12 @@ def xml_to_csv(path):
                              int(root.find('size')[1].text),
                              member[0].text,
                              min_x,
-                             min_y,
+                             int(root.find('size')[1].text)-min_y,
                              max_x,
-                             max_y
+                             int(root.find('size')[1].text)-max_y
                              )
                 else:
+                    print("Hit else: ", member[4].tag)
                     x1 = int(member[4][0].text)
                     y1 = int(member[4][1].text)
                     x2 = int(member[4][2].text)
@@ -132,29 +166,58 @@ def xml_to_csv(path):
                              int(root.find('size')[1].text),
                              member[0].text,
                              min_x,
-                             min_y,
+                             int(root.find('size')[1].text)-min_y,
                              max_x,
-                             max_y
+                             int(root.find('size')[1].text)-max_y
                              )
-
+                print("VALUE: ", value)
                 xml_list.append(value)
 
             else:
                 file_name = (root.find('filename').text)
                 if os.path.splitext(file_name)[1] == '.jpeg':
                     file_name = os.path.splitext(file_name)[0] + '.png'
+                height = int(root.find('size')[1].text)
+                width = int(root.find('size')[0].text)
+
+                x1 = int(member[4][0].text)
+                y1 = int(member[4][1].text)
+                x2 = int(member[4][2].text)
+                y2 = int(member[4][3].text)
+
+                if x1 >= width or x1 <= 0:
+                    print("Size Check Failed with ", x1)
+                    continue
+                elif y1 >= height or y1 <= 0:
+                    print("Size Check Failed with ", y1)
+                    continue
+                elif x2 >= width:
+                    print("Size Check Failed with ", x2)
+                    continue
+                elif y2 >= height:
+                    print("Size Check Failed with ", y2)
+                    continue
+                else:
+                    print("Size Check Cleared.")
+
+
+                max_x = max(x1, x2)
+                max_y = max(height - y1, height - y2)
+                min_x = min(x1, x2)
+                min_y = min(height - y1, height - y2)
 
                 value = (file_name,
                          int(root.find('size')[0].text),
                          int(root.find('size')[1].text),
                          member[0].text,
-                         int(member[4][0].text),
-                         int(member[4][1].text),
-                         int(member[4][2].text),
-                         int(member[4][3].text)
+                         min_x,
+                         min_y,
+                         max_x,
+                         max_y
                          )
+                print(value)
                 xml_list.append(value)
     column_name = ['filename', 'width', 'height',
                    'class', 'xmin', 'ymin', 'xmax', 'ymax']
     xml_df = pd.DataFrame(xml_list, columns=column_name)
-    return xml_df
+    return xml_df, number_of_images

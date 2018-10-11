@@ -1,0 +1,14 @@
+item {
+    id: 1
+    name: 'stc_panel_yellow'
+    id: 2
+    name: 'stc_panel_green'
+    id: 3
+    name: 'stc_panel_blue'
+    id: 4
+    name: 'stc_panel_red'
+    id: 5
+    name: 'stc_platform'
+    id: 6
+    name: 'stc_panel_off'
+}

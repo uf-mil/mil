@@ -25,6 +25,7 @@ flags = tf.app.flags
 flags.DEFINE_string('csv_input', '', 'Path to the CSV input')
 flags.DEFINE_string('image_dir', '', 'Path to the image directory')
 flags.DEFINE_string('output_path', '', 'Path to output TFRecord')
+flags.DEFINE_string('labelmap_path', '', 'Path to labelmap.pbtxt')
 FLAGS = flags.FLAGS
 dictionary = {}
 
@@ -33,7 +34,7 @@ dictionary = {}
 
 def create_dict():
     global dictionary
-    with open('../data/labelmap.pbtxt') as f:
+    with open(('../data/' + FLAGS.labelmap_path)) as f:
         txt = f.read()
     labels = []
     ids = []
@@ -48,10 +49,10 @@ def create_dict():
             continue
         if isinstance(i[1], str):
             if i[1].isdigit():
-                print(i[1])
+                # print(i[1])
                 ids.append(int(i[1]))
             else:
-                print(i[1].strip("'"))
+                # print(i[1].strip("'"))
                 labels.append(i[1].strip("'"))
         else:
             print(
@@ -63,9 +64,9 @@ def create_dict():
 
 
 def class_text_to_int(row_label):
-    print(dictionary)
-    print(row_label)
-    print(dictionary.get('totem_white'))
+    # print(dictionary)
+    # print(row_label)
+    # print(dictionary.get(row_label))
     return dictionary.get(row_label)
 
 
@@ -97,7 +98,12 @@ def create_tf_example(group, path):
         ymins.append(row['ymin'] / height)
         ymaxs.append(row['ymax'] / height)
         classes_text.append(row['class'].encode('utf8'))
-        classes.append(class_text_to_int(row['class']))
+        new_class = class_text_to_int(row['class'])
+        # print("width: ", width)
+        # print("height: ", height)
+        if new_class is None:
+            continue
+        classes.append(new_class)
     tf_example = tf.train.Example(features=tf.train.Features(feature={
         'image/height': dataset_util.int64_feature(height),
         'image/width': dataset_util.int64_feature(width),

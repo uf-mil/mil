@@ -1,0 +1,17 @@
+item {
+    id: 1
+    name: 'totem_blue'
+    id: 2
+    name: 'buoy_black'
+    id: 3
+    name: 'totem_red'
+    id: 4
+    name: 'totem_yellow'
+    id: 5
+    name: 'totem_green'
+    id: 6
+    name: 'totem_white'
+    id: 7
+    name: 'totem_black'
+
+}

@@ -104,9 +104,9 @@ This will start a Docker container that downloads a series of scripts from the M
 This script generates an inference graph, something needed for training a network. The script uses the tensor graph of the model to generate a inference graph, checkpoint models, and a frozen graph. This is essentially the tool that allows us to freeze certain points of the graph and target the last few layers for our training. This is run to create our files from a model that are then put into that model's directory before training. A typical example of running this script in the command line is below:
 
 ```bash
-$ python export_inference_graph.py --input_type image_tensor --pipeline_config_path transfer_learning/models/faster_rcnn_network_XXX/pipeline.config --trained_checkpoint_prefix training/model.ckpt-XXXX --output_directory inference_graph/
+$ python export_inference_graph.py --input_type image_tensor --pipeline_config_path transfer_learning/models/faster_rcnn_resnet101_coco_2018_01_28/pipeline.config --trained_checkpoint_prefix transfer_learning/models/faster_rcnn_resnet101_coco_2018_01_28/model.ckpt-25165 --output_directory inference_graph/
 ```
-Move these files into your model's directory (the same directory you found your pipeline.config file in) and you are good to go. 
+Change the last four-five numbers of the model.ckpt to match whatever checkpoint you wish to freeze the graph at. Move these files into your model's directory (the same directory you found your pipeline.config file in) and you are good to go. 
 
 ### model_main.py
 
@@ -230,5 +230,11 @@ Run this after all the above steps have been completed and you are good to go!
 ### Any kind of array mismatch, label mismatch, and so on
 
 These are commonly caused by you leaving a trained model or checkpoints from a previous attempt in the directory. The trainer is finding these checkpoints and attempting to start the network on those. If the architecture has changed (say I was training a network to identify one object (class) and now I want to train a network that identifies 15 objects (classes) then the architectures would be a mismatch and this would error out). We avoid this issue in the starting phases of the training by using the inference graph. Generally speaking you just want to start with a fresh network everytime you do this, so either clone the model again or delete the existing checkpoints. 
+
+You may get an error when changing the batch size of your pipeline.config. This is likely caused by the type of resizer you have at the top of the config file. If you have a keep_aspect_ratio_resizer, you need to change it to a fixed_shape_resizer and the change the max_size and min_size variables to width and height respectively. If you have a fixed_shape_resizer, then the issue lies somewhere else. 
+
+You may occasionally run out of memory training a model. This means you either need to reduce the batch size or the image size. 
+
+If you get a infinite number or nan tensor at any point in the training it means one of two things. One: Your model's batch size is too small or the learning rate is too high and the training algorithm exploded. Two: You have a broken label somewhere and you need to fix it! If option one is your problem then look to your pipeline.config and make the necessary edits. If that fails then it would seem your problem lies in the labels. This is a much more annoying problem to fix and means that our labelbox_data_processing pipeline has a leak. Find this leak and purge it in the name of the Omnissiah and the Machine Spirits shall be please with you!
 
 

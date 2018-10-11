@@ -31,6 +31,7 @@ def main():
     '''
     At this point we load the config file from the respective repo and loop through the options and make the user enter which one they want to use.
     '''
+    labelmap_name = raw_input("Please enter the full name of the labelmap file you wish to use. Example: totems&buoys.pbtxt \n")
 
     if data == 1:
         json_name = raw_input(
@@ -47,11 +48,13 @@ def main():
         split_data(image_dir, ann_dir)
 
     for folder in ['train', 'test']:
+        labelmap_name = "totems&buoys.pbtxt"
         #image_path = os.path.join(os.getcwd(), ('images/' + folder))
-        xml_df = xml_to_csv(folder)
+        xml_df, num_of_images = xml_to_csv(folder, labelmap_name)
         xml_df.to_csv((folder + '_labels.csv'), index=None)
         #xml_df.to_csv(('images/' + folder + '_labels.csv'), index=None)
         print('Successfully converted xml to csv.')
+        print(" Number of Images in: ", folder, num_of_images)
 
 if __name__ == '__main__':
     main()

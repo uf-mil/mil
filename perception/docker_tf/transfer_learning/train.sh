@@ -1,5 +1,5 @@
-PIPELINE_CONFIG_PATH=~/../tensorflow/models/research/object_detection/transfer_learning/models/faster_rcnn_inception_resnet_v2_atrous_coco_2018_01_28/pipeline.config
-MODEL_DIR=~/../tensorflow/models/research/object_detection/transfer_learning/models/faster_rcnn_inception_resnet_v2_atrous_coco_2018_01_28/
+PIPELINE_CONFIG_PATH=~/../tensorflow/models/research/object_detection/transfer_learning/models/faster_rcnn_resnet101_coco_2018_01_28/pipeline.config
+MODEL_DIR=~/../tensorflow/models/research/object_detection/transfer_learning/models/faster_rcnn_resnet101_coco_2018_01_28/
 NUM_TRAIN_STEPS=50000
 NUM_EVAL_STEPS=99
 python ../model_main.py \
