@@ -67,5 +67,5 @@ if rospy.myargv()[1:]:
     for msg in bag.read_messages(['/hydrophones/ping']):
         process_ping(msg.message)
 else:
-    sub = rospy.Subscriber('hydrophones/ping', Ping)
+    sub = rospy.Subscriber('hydrophones/ping', Ping, process_ping)
     rospy.spin()
