@@ -63,17 +63,16 @@ bool ObjectMap::DatabaseQuery(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::O
   }
 
   // Handle request particular
+  res.found = false;
   for (auto const& pair : objects_)
   {
     if (pair.second.msg_.classification == req.name || pair.second.msg_.labeled_classification == req.name)
     {
       res.found = true;
       res.objects.push_back(pair.second.msg_);
-      return true;
     }
   }
 
-  res.found = false;
   return true;
 }
 
