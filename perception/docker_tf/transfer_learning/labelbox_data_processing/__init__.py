@@ -11,11 +11,13 @@ from sklearn.model_selection import train_test_split
 
 dictionary = {}
 
-def split_data(image_dir='Images', ann_dir='Annotations'):
+
+def split_data(image_dir='Images', ann_dir='Annotations', size=[256, 150]):
     imgs_jpg = glob.glob(image_dir + '/*.jpeg')
     for img_dir in imgs_jpg:
         print(img_dir[:-5])
         im = Image.open(img_dir)
+        im = im.thumbnail(size, Image.ANTIALIAS)
         im.save(img_dir[:-5] + ".png")
         os.remove(img_dir)
 
@@ -49,12 +51,12 @@ def split_data(image_dir='Images', ann_dir='Annotations'):
         os.rename(image, 'test/' + os.path.basename(image))
 
 
-def json_to_pascal(labelled_data='json_files/data.json'):
+def json_to_pascal(labelled_data='json_files/project_labels.json'):
     print("Downloading images and xml files, please wait...")
 
     # set labeled_data to the file path of the Labelbox JSON export
-    if labelled_data != 'json_files/data.json':
-        labelled_data = 'json_files/' + labelled_data
+    if labelled_data != 'json_files/project_labels.json':
+        labelled_data = labelled_data
 
     # set ann_output_dir to the file path of the directory to write Pascal VOC
     # annotation files. The directory must exist.
@@ -77,10 +79,11 @@ def json_to_pascal(labelled_data='json_files/data.json'):
     print('Done getting xml files')
 
 
-def xml_to_csv(path, labelmap):
+def xml_to_csv(path, labelmap, size=[256, 150]):
+    # Size is width by height
     number_of_images = 0
     global dictionary
-    with open(('../data/' + labelmap)) as f:
+    with open(labelmap) as f:
         txt = f.read()
     labels = []
     ids = []
@@ -114,9 +117,13 @@ def xml_to_csv(path, labelmap):
         for member in root.findall('object'):
             if(dictionary.get(member[0].text) is None):
                 continue
-            number_of_images = number_of_images+1
+            number_of_images = number_of_images + 1
             if(member[4].tag == 'polygon'):
                 if(len(member[4]) == 8):
+                    height = int(root.find('size')[1].text)
+                    width = int(root.find('size')[0].text)
+                    war = width / size[0]
+                    har = height / size[1]
                     print("Polygon Found.")
                     x1 = int(member[4][0].text)
                     y1 = int(member[4][1].text)
@@ -127,10 +134,25 @@ def xml_to_csv(path, labelmap):
                     x4 = int(member[4][6].text)
                     y4 = int(member[4][7].text)
 
-                    max_x = max(x1, x2, x3, x4)
-                    max_y = max(y1, y2, y3, y4)
-                    min_x = min(x1, x2, x3, x4)
-                    min_y = min(y1, y2, y3, y4)
+                    max_x = int(max(x1, x2, x3, x4) * war)
+                    max_y = int(max(y1, y2, y3, y4) * har)
+                    min_x = int(min(x1, x2, x3, x4) * war)
+                    min_y = int(min(y1, y2, y3, y4) * har)
+
+                    if max_x >= width or max_x <= 0:
+                        print("Size Check Failed with ", max_x)
+                        continue
+                    elif max_y >= height or max_y <= 0:
+                        print("Size Check Failed with ", max_y)
+                        continue
+                    elif min_x >= width:
+                        print("Size Check Failed with ", min_x)
+                        continue
+                    elif min_y >= height:
+                        print("Size Check Failed with ", min_y)
+                        continue
+                    else:
+                        print("Size Check Cleared.")
 
                     file_name = (root.find('filename').text)
                     if os.path.splitext(file_name)[1] == '.jpeg':
@@ -141,9 +163,9 @@ def xml_to_csv(path, labelmap):
                              int(root.find('size')[1].text),
                              member[0].text,
                              min_x,
-                             int(root.find('size')[1].text)-min_y,
+                             int(root.find('size')[1].text) - min_y,
                              max_x,
-                             int(root.find('size')[1].text)-max_y
+                             int(root.find('size')[1].text) - max_y
                              )
                 else:
                     print("Hit else: ", member[4].tag)
@@ -152,10 +174,30 @@ def xml_to_csv(path, labelmap):
                     x2 = int(member[4][2].text)
                     y2 = int(member[4][3].text)
 
-                    max_x = max(x1, x2)
-                    max_y = max(y1, y2)
-                    min_x = min(x1, x2)
-                    min_y = min(y1, y2)
+                    height = int(root.find('size')[1].text)
+                    width = int(root.find('size')[0].text)
+                    war = width / size[0]
+                    har = height / size[1]
+
+                    max_x = int(max(x1, x2) * war)
+                    max_y = int(max(y1, y2) * har)
+                    min_x = int(min(x1, x2) * war)
+                    min_y = int(min(y1, y2) * har)
+
+                    if max_x >= width or max_x <= 0:
+                        print("Size Check Failed with ", max_x)
+                        continue
+                    elif max_y >= height or max_y <= 0:
+                        print("Size Check Failed with ", max_y)
+                        continue
+                    elif min_x >= width:
+                        print("Size Check Failed with ", min_x)
+                        continue
+                    elif min_y >= height:
+                        print("Size Check Failed with ", min_y)
+                        continue
+                    else:
+                        print("Size Check Cleared.")
 
                     file_name = (root.find('filename').text)
                     if os.path.splitext(file_name)[1] == '.jpeg':
@@ -166,9 +208,9 @@ def xml_to_csv(path, labelmap):
                              int(root.find('size')[1].text),
                              member[0].text,
                              min_x,
-                             int(root.find('size')[1].text)-min_y,
+                             int(root.find('size')[1].text) - min_y,
                              max_x,
-                             int(root.find('size')[1].text)-max_y
+                             int(root.find('size')[1].text) - max_y
                              )
                 print("VALUE: ", value)
                 xml_list.append(value)
@@ -199,12 +241,14 @@ def xml_to_csv(path, labelmap):
                     continue
                 else:
                     print("Size Check Cleared.")
+                # Height and Width Aspect Ratios
+                war = width / size[0]
+                har = height / size[1]
 
-
-                max_x = max(x1, x2)
-                max_y = max(height - y1, height - y2)
-                min_x = min(x1, x2)
-                min_y = min(height - y1, height - y2)
+                max_x = int(max(x1, x2) * war)
+                max_y = int(max(height - y1, height - y2) * har)
+                min_x = int(min(x1, x2) * war)
+                min_y = int(min(height - y1, height - y2) * har)
 
                 value = (file_name,
                          int(root.find('size')[0].text),
