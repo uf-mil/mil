@@ -22,12 +22,12 @@ from object_detection.utils import dataset_util
 from collections import namedtuple, OrderedDict
 
 flags = tf.app.flags
-flags.DEFINE_string('csv_input', '', 'Path to the CSV input')
-flags.DEFINE_string('image_dir', '', 'Path to the image directory')
-flags.DEFINE_string('output_path', '', 'Path to output TFRecord')
-flags.DEFINE_string('labelmap_path', '', 'Path to labelmap.pbtxt')
+# flags.DEFINE_string('csv_input', '', 'Path to the CSV input')
+# flags.DEFINE_string('image_dir', '', 'Path to the image directory')
+# flags.DEFINE_string('output_path', '', 'Path to output TFRecord')
+# flags.DEFINE_string('labelmap_path', '', 'Path to labelmap.pbtxt')
 FLAGS = flags.FLAGS
-dictionary = {}
+# dictionary = {}
 
 # TO-DO replace this with label map
 
@@ -120,21 +120,3 @@ def create_tf_example(group, path):
     }))
     return tf_example
 
-
-def main(_):
-    create_dict()
-    writer = tf.python_io.TFRecordWriter(FLAGS.output_path)
-    path = os.path.join(os.getcwd(), FLAGS.image_dir)
-    examples = pd.read_csv(FLAGS.csv_input)
-    grouped = split(examples, 'filename')
-    for group in grouped:
-        tf_example = create_tf_example(group, path)
-        writer.write(tf_example.SerializeToString())
-
-    writer.close()
-    output_path = os.path.join(os.getcwd(), FLAGS.output_path)
-    print('Successfully created the TFRecords: {}'.format(output_path))
-
-
-if __name__ == '__main__':
-    tf.app.run()

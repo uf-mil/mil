@@ -21,6 +21,7 @@ Depending on the approach you opted for, you either downloaded a json in the XY 
 Gathers all the processing scripts and runs them procedurally for you (aside from editing the labelmap.pbtxt and generate_tfrecord.py files, see below before running this)! Handles all the grunt work of passing the paths for our images and labels and outputs two nice files for you! If you enable the cleanup option it will then delete the created directories and images, though this isn't strictly necessary on a docker container. These tfrecords you will need later and are moved for you into the data folder. 
 
 ### train.sh
+$ python process.py --json_name='json_files/project_labels.json' --labelmap_path='../data/totems&buoys.pbtxt' --cleanup=False
 
 Run this after all the above steps have been completed (or you just ran the process_images.sh) and you are good to go!
 

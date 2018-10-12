@@ -13,13 +13,16 @@ dictionary = {}
 
 
 def split_data(image_dir='Images', ann_dir='Annotations', size=[256, 150]):
-    imgs_jpg = glob.glob(image_dir + '/*.jpeg')
+    imgs_jpg = glob.glob(image_dir + '/*.png')
     for img_dir in imgs_jpg:
-        print(img_dir[:-5])
+        # print("test!")
+        # print(img_dir)
         im = Image.open(img_dir)
-        im = im.thumbnail(size, Image.ANTIALIAS)
-        im.save(img_dir[:-5] + ".png")
-        os.remove(img_dir)
+        im.thumbnail(size, Image.ANTIALIAS)
+        # print(im.size)
+        im.save(img_dir, "PNG")
+        # os.remove(img_dir)
+
 
     X = sorted(glob.glob(image_dir + '/*'))
     Y = sorted(glob.glob(ann_dir + '/*'))
@@ -122,8 +125,8 @@ def xml_to_csv(path, labelmap, size=[256, 150]):
                 if(len(member[4]) == 8):
                     height = int(root.find('size')[1].text)
                     width = int(root.find('size')[0].text)
-                    war = width / size[0]
-                    har = height / size[1]
+                    war = float(size[0]) / float(width) 
+                    har = float(size[1]) / float(height)
                     print("Polygon Found.")
                     x1 = int(member[4][0].text)
                     y1 = int(member[4][1].text)
@@ -157,10 +160,13 @@ def xml_to_csv(path, labelmap, size=[256, 150]):
                     file_name = (root.find('filename').text)
                     if os.path.splitext(file_name)[1] == '.jpeg':
                         file_name = os.path.splitext(file_name)[0] + '.png'
-
+                    im = Image.open(path+'/'+file_name)
+                    size[0], size[1] = im.size
+                    width = size[0]
+                    height = size[1]
                     value = (file_name,
-                             int(root.find('size')[0].text),
-                             int(root.find('size')[1].text),
+                             width,
+                             height,
                              member[0].text,
                              min_x,
                              int(root.find('size')[1].text) - min_y,
@@ -176,8 +182,8 @@ def xml_to_csv(path, labelmap, size=[256, 150]):
 
                     height = int(root.find('size')[1].text)
                     width = int(root.find('size')[0].text)
-                    war = width / size[0]
-                    har = height / size[1]
+                    war = float(size[0]) / float(width) 
+                    har = float(size[1]) / float(height)
 
                     max_x = int(max(x1, x2) * war)
                     max_y = int(max(y1, y2) * har)
@@ -200,12 +206,15 @@ def xml_to_csv(path, labelmap, size=[256, 150]):
                         print("Size Check Cleared.")
 
                     file_name = (root.find('filename').text)
+                    im = Image.open(path+'/'+file_name)
+                    size[0], size[1] = im.size
                     if os.path.splitext(file_name)[1] == '.jpeg':
                         file_name = os.path.splitext(file_name)[0] + '.png'
-
+                    width = size[0]
+                    height = size[1]
                     value = (file_name,
-                             int(root.find('size')[0].text),
-                             int(root.find('size')[1].text),
+                             width,
+                             height,
                              member[0].text,
                              min_x,
                              int(root.find('size')[1].text) - min_y,
@@ -217,6 +226,9 @@ def xml_to_csv(path, labelmap, size=[256, 150]):
 
             else:
                 file_name = (root.find('filename').text)
+                im = Image.open(path+'/'+file_name)
+                size[0], size[1] = im.size
+                print('SIZE: ' + str(size[0]) + ' ' + str(size[1]))
                 if os.path.splitext(file_name)[1] == '.jpeg':
                     file_name = os.path.splitext(file_name)[0] + '.png'
                 height = int(root.find('size')[1].text)
@@ -242,17 +254,21 @@ def xml_to_csv(path, labelmap, size=[256, 150]):
                 else:
                     print("Size Check Cleared.")
                 # Height and Width Aspect Ratios
-                war = width / size[0]
-                har = height / size[1]
+                war = float(size[0]) / float(width) 
+                har = float(size[1]) / float(height)
+                # print('WAR: ', war)
+                # print('HAR: ', har)
 
                 max_x = int(max(x1, x2) * war)
                 max_y = int(max(height - y1, height - y2) * har)
                 min_x = int(min(x1, x2) * war)
                 min_y = int(min(height - y1, height - y2) * har)
 
+                width = size[0]
+                height = size[1]
                 value = (file_name,
-                         int(root.find('size')[0].text),
-                         int(root.find('size')[1].text),
+                         width,
+                         height,
                          member[0].text,
                          min_x,
                          min_y,
