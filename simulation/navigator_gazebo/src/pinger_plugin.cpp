@@ -17,7 +17,8 @@ void PingerPlugin::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf)
 bool PingerPlugin::ServiceCallback(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res)
 {
   std::string new_gate = NewRandomGate();
-  if (new_gate.empty()) {
+  if (new_gate.empty())
+  {
     res.success = false;
     res.message = "could not set gate, see ros error";
     return true;
@@ -32,7 +33,8 @@ std::string PingerPlugin::NewRandomGate()
   gazebo::math::Vector3 gates[3];
 
   gazebo::physics::ModelPtr entrance_gate = model_->GetWorld()->GetModel("robotx_2018_entrance_gate");
-  if (!entrance_gate) {
+  if (!entrance_gate)
+  {
     ROS_ERROR_NAMED("pinger_plugin", "Entrance gate model not found.");
     return "";
   }
@@ -43,14 +45,17 @@ std::string PingerPlugin::NewRandomGate()
   markers[2] = entrance_gate->GetLink("base_gate::white_buoy_right::link");
   markers[3] = entrance_gate->GetLink("base_gate::green_buoy::link");
 
-  for (size_t i = 0; i < 4; ++i) {
-    if (markers[i]) continue;
+  for (size_t i = 0; i < 4; ++i)
+  {
+    if (markers[i])
+      continue;
     ROS_ERROR_NAMED("pinger_plugin", "Marker %lu not found", i);
     return "";
   }
 
-  for (size_t i = 0; i < 3; ++i) {
-    gates[i] = (markers[i]->GetWorldPose().pos + markers[i+1]->GetWorldPose().pos) / 2.0;
+  for (size_t i = 0; i < 3; ++i)
+  {
+    gates[i] = (markers[i]->GetWorldPose().pos + markers[i + 1]->GetWorldPose().pos) / 2.0;
     gates[i].z = -5.0;
   }
 
@@ -62,6 +67,4 @@ std::string PingerPlugin::NewRandomGate()
   return std::to_string(random_selection + 1);
 }
 
-
-} // namespace navigator_gazebo
-
+}  // namespace navigator_gazebo

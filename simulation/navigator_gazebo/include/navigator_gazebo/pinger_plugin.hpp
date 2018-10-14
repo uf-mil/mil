@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ros/ros.h>
+#include <std_srvs/Trigger.h>
 #include <algorithm>
 #include <cmath>
 #include <map>
@@ -12,15 +13,14 @@
 #include "gazebo/common/Plugin.hh"
 #include "gazebo/math/Vector3.hh"
 #include "gazebo/physics/physics.hh"
-#include <std_srvs/Trigger.h>
 
 namespace navigator_gazebo
 {
-
 class PingerPlugin : public gazebo::ModelPlugin
 {
 public:
   void Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf) override;
+
 private:
   bool ServiceCallback(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res);
   std::string NewRandomGate();
@@ -28,5 +28,4 @@ private:
   ros::ServiceServer service_;
   gazebo::physics::ModelPtr model_;
 };
-
 }
