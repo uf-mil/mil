@@ -7,7 +7,6 @@ Panels:
         - /Global Options1
         - /Status1
         - /AerialMapDisplay1
-        - /AerialMapDisplay1/Status1
       Splitter Ratio: 0.5
     Tree Height: 581
   - Class: rviz/Selection
@@ -42,7 +41,7 @@ Visualization Manager:
       Name: AerialMapDisplay
       Object URI: https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZGVwdXR5OTgiLCJhIjoiY2ptdjB2ZGU3MDA0cTNwbXd2MHczbDk0NiJ9.g42BxGR2oL7Xz2SOWJA5-g
       Robot frame: map
-      Topic: /satellite
+      Topic: /satellite/navsatfix
       Value: true
       Zoom: 18
   Enabled: true
@@ -70,7 +69,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 274.688049
+      Distance: 478.777771
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -85,10 +84,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.12479639
+      Pitch: 1.56979632
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.35360003
+      Yaw: 4.65859365
     Saved: ~
 Window Geometry:
   Displays:
