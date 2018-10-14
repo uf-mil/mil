@@ -3,10 +3,8 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import os
-import glob
 import pandas as pd
 import shutil
-import xml.etree.ElementTree as ET
 from __init__ import xml_to_csv, json_to_pascal, split_data
 import tensorflow as tf
 import generate_tfrecord as gtfr
@@ -28,7 +26,7 @@ FLAGS = flags.FLAGS
 def main(_):
     if FLAGS.labelbox_format is 'json':
         json_name = FLAGS.json_name
-        # json_to_pascal(json_name)
+        json_to_pascal(json_name)
         split_data(resize=FLAGS.resize)
 
     elif FLAGS.labelbox_format is 'PASCAL':
@@ -38,11 +36,11 @@ def main(_):
 
     for folder in ['train', 'test']:
         labelmap_name = FLAGS.labelmap_path
-        #image_path = os.path.join(os.getcwd(), ('images/' + folder))
+        # image_path = os.path.join(os.getcwd(), ('images/' + folder))
         xml_df, num_of_images = xml_to_csv(
             folder, labelmap_name, resize=FLAGS.resize)
         xml_df.to_csv((folder + '_labels.csv'), index=None)
-        #xml_df.to_csv(('images/' + folder + '_labels.csv'), index=None)
+        # xml_df.to_csv(('images/' + folder + '_labels.csv'), index=None)
         print('Successfully converted xml to csv.')
         print(" Number of Images in: ", folder, num_of_images)
         # Run Generate_tfrecords

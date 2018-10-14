@@ -13,11 +13,9 @@ from __future__ import absolute_import
 
 import os
 import io
-import sys
-import pandas as pd
 import tensorflow as tf
 from PIL import Image
-from collections import namedtuple, OrderedDict
+from collections import namedtuple
 
 flags = tf.app.flags
 # flags.DEFINE_string('csv_input', '', 'Path to the CSV input')
@@ -119,7 +117,9 @@ def create_tf_example(group, path):
     return tf_example
 
 '''
-Utility Functions for processing datasets into tf_records. These were copied from utils/dataset_util.py provided in the Tensorflow Object Detection Repo to cut down on file usages.
+Utility Functions for processing datasets into tf_records.
+These were copied from utils/dataset_util.py provided in
+the Tensorflow Object Detection Repo to cut down on file usages.
 '''
 
 
