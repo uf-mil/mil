@@ -16,9 +16,7 @@ import io
 import sys
 import pandas as pd
 import tensorflow as tf
-
 from PIL import Image
-from object_detection.utils import dataset_util
 from collections import namedtuple, OrderedDict
 
 flags = tf.app.flags
@@ -105,18 +103,89 @@ def create_tf_example(group, path):
             continue
         classes.append(new_class)
     tf_example = tf.train.Example(features=tf.train.Features(feature={
-        'image/height': dataset_util.int64_feature(height),
-        'image/width': dataset_util.int64_feature(width),
-        'image/filename': dataset_util.bytes_feature(filename),
-        'image/source_id': dataset_util.bytes_feature(filename),
-        'image/encoded': dataset_util.bytes_feature(encoded_jpg),
-        'image/format': dataset_util.bytes_feature(image_format),
-        'image/object/bbox/xmin': dataset_util.float_list_feature(xmins),
-        'image/object/bbox/xmax': dataset_util.float_list_feature(xmaxs),
-        'image/object/bbox/ymin': dataset_util.float_list_feature(ymins),
-        'image/object/bbox/ymax': dataset_util.float_list_feature(ymaxs),
-        'image/object/class/text': dataset_util.bytes_list_feature(classes_text),
-        'image/object/class/label': dataset_util.int64_list_feature(classes),
+        'image/height': int64_feature(height),
+        'image/width': int64_feature(width),
+        'image/filename': bytes_feature(filename),
+        'image/source_id': bytes_feature(filename),
+        'image/encoded': bytes_feature(encoded_jpg),
+        'image/format': bytes_feature(image_format),
+        'image/object/bbox/xmin': float_list_feature(xmins),
+        'image/object/bbox/xmax': float_list_feature(xmaxs),
+        'image/object/bbox/ymin': float_list_feature(ymins),
+        'image/object/bbox/ymax': float_list_feature(ymaxs),
+        'image/object/class/text': bytes_list_feature(classes_text),
+        'image/object/class/label': int64_list_feature(classes),
     }))
     return tf_example
 
+'''
+Utility Functions for processing datasets into tf_records. These were copied from utils/dataset_util.py provided in the Tensorflow Object Detection Repo to cut down on file usages.
+'''
+
+
+def int64_feature(value):
+    return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
+
+
+def int64_list_feature(value):
+    return tf.train.Feature(int64_list=tf.train.Int64List(value=value))
+
+
+def bytes_feature(value):
+    return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
+
+
+def bytes_list_feature(value):
+    return tf.train.Feature(bytes_list=tf.train.BytesList(value=value))
+
+
+def float_list_feature(value):
+    return tf.train.Feature(float_list=tf.train.FloatList(value=value))
+
+
+def read_examples_list(path):
+    """Read list of training or validation examples.
+
+    The file is assumed to contain a single example per line where the first
+    token in the line is an identifier that allows us to find the image and
+    annotation xml for that example.
+
+    For example, the line:
+    xyz 3
+    would allow us to find files xyz.jpg and xyz.xml (the 3 would be ignored).
+
+    Args:
+      path: absolute path to examples list file.
+
+    Returns:
+      list of example identifiers (strings).
+    """
+    with tf.gfile.GFile(path) as fid:
+        lines = fid.readlines()
+    return [line.strip().split(' ')[0] for line in lines]
+
+
+def recursive_parse_xml_to_dict(xml):
+    """Recursively parses XML contents to python dict.
+
+    We assume that `object` tags are the only ones that can appear
+    multiple times at the same level of a tree.
+
+    Args:
+      xml: xml tree obtained by parsing XML file contents using lxml.etree
+
+    Returns:
+      Python dictionary holding XML contents.
+    """
+    if not xml:
+        return {xml.tag: xml.text}
+    result = {}
+    for child in xml:
+        child_result = recursive_parse_xml_to_dict(child)
+        if child.tag != 'object':
+            result[child.tag] = child_result[child.tag]
+        else:
+            if child.tag not in result:
+                result[child.tag] = []
+            result[child.tag].append(child_result[child.tag])
+    return {xml.tag: result}

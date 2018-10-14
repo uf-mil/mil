@@ -1,12 +1,11 @@
 # Transfer Learning Object Detection - A Short Tutorial
 
 # @TODO
-1. Make the process.py script the only thing run using rosrun, eliminate the generate_tfrecords.py file or incorporate it's calling into the process.py. 
-2. Remove menu and change it to command line arguments.
-3. Configurable image download
-4. Add docker build to the install script. Until then docker build must be done manually. 
-5. Have datasets stored on internal server so it can be downloaded. 
-6. Use premade labelmap.pbtxt files that only need to changed once a year.
+1. Configurable image download
+2. Add docker build to the install script. Until then docker build must be done manually. 
+3. Have datasets stored on internal server so it can be downloaded. 
+4. Configurable resize (Low importance due to no significant performance gain)
+5. Configurable CSV input (Currently it still assumes you are handing it a json or PASCAL so it will error out if those are not provided.)
 
 ## Quick Start: The Important Bits
 
@@ -16,12 +15,36 @@ This is a quick start to getting this running and skips some lengthy explination
 
 Depending on the approach you opted for, you either downloaded a json in the XY format from labelbox, or you downloaded the VOC format. If you downloaded the VOC format, you will need to separate the XML and PNG files into Annotation and Images folders respectively (this will be done automagically in the future). If you downloaded a json, put it into the json_files folder! This should be called data.json. If there is currently a json in there, rename it to correctly match the dataset it reflects or delete it. It has likely been stored somewhere else already.
 
-### process_images.sh
+### process.py
+```bash
+$ python process.py --json_name='json_files/project_labels.json' --labelmap_path='../data/totems&buoys.pbtxt' --cleanup=False
 
-Gathers all the processing scripts and runs them procedurally for you (aside from editing the labelmap.pbtxt and generate_tfrecord.py files, see below before running this)! Handles all the grunt work of passing the paths for our images and labels and outputs two nice files for you! If you enable the cleanup option it will then delete the created directories and images, though this isn't strictly necessary on a docker container. These tfrecords you will need later and are moved for you into the data folder. 
+```
+Handles all the data processing from labelbox. Example usage is above. There are many options when running this script, allowing for more dynamic processing depending on your needs. 
+
+```python
+flags.DEFINE_boolean('resize', False, 'Resize images? Boolean.')
+flags.DEFINE_string('labelbox_format', 'json',
+                    'Only supports json XY or PASCAL inputs')
+flags.DEFINE_string('json_name', '', 'Path to json file')
+flags.DEFINE_string('csv_input', 'default', 'Path to the CSV input')
+flags.DEFINE_string('ann_dir', '', 'Path to XML directory')
+flags.DEFINE_string('image_dir', 'default', 'Path to the image directory')
+flags.DEFINE_string('output_path', 'default', 'Path to output TFRecord')
+flags.DEFINE_string('labelmap_path', '', 'Path to labelmap.pbtxt')
+flags.DEFINE_boolean('cleanup', True, 'Delete all files? Boolean.')
+```
+Resize: Allows you to resize images to a default of 256x150. This has proven superfluous as TF automatically resizes images for you and no performance gain was noted. Left as an option just in case.
+labelbox_format: If you download PASCAL inputs from labelbox you need to give the ann_dir and image_dir in commandline. Otherwise it defaults too and looks for a json file. 
+json_name: If using a json file put the path to the file here. 
+csv_input: Csv files are auto-generated if you use json or PASCAL inputs, however if you have your own csv files and just want to run the generate_tfrecords, you can do so by providing the csv_input. 
+ann_dir & image_dir: Needed if using the PASCAL inputs. Otherwise these are auto generated.
+output_path: Path for outputting tf_records. There is a default since it assumes it is generating two tf_record files however if you wish you can force a direct output. 
+labelmap_path: Path to the labelmap. This is always requried and sends the information mapping for ID to label. 
+cleanup: Whether or not you wish to delete all downloaded images and annotations and other generated files. Defaults to true.  
+
 
 ### train.sh
-$ python process.py --json_name='json_files/project_labels.json' --labelmap_path='../data/totems&buoys.pbtxt' --cleanup=False
 
 Run this after all the above steps have been completed (or you just ran the process_images.sh) and you are good to go!
 

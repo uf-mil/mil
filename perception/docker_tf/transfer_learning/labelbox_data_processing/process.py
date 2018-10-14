@@ -12,6 +12,7 @@ import tensorflow as tf
 import generate_tfrecord as gtfr
 
 flags = tf.app.flags
+flags.DEFINE_boolean('resize', False, 'Resize images? Boolean.')
 flags.DEFINE_string('labelbox_format', 'json',
                     'Only supports json XY or PASCAL inputs')
 flags.DEFINE_string('json_name', '', 'Path to json file')
@@ -20,25 +21,26 @@ flags.DEFINE_string('ann_dir', '', 'Path to XML directory')
 flags.DEFINE_string('image_dir', 'default', 'Path to the image directory')
 flags.DEFINE_string('output_path', 'default', 'Path to output TFRecord')
 flags.DEFINE_string('labelmap_path', '', 'Path to labelmap.pbtxt')
-flags.DEFINE_boolean('cleanup', True, 'Delete all files?')
+flags.DEFINE_boolean('cleanup', True, 'Delete all files? Boolean.')
 FLAGS = flags.FLAGS
 
 
 def main(_):
     if FLAGS.labelbox_format is 'json':
         json_name = FLAGS.json_name
-        json_to_pascal(json_name)
-        split_data()
+        # json_to_pascal(json_name)
+        split_data(resize=FLAGS.resize)
 
     elif FLAGS.labelbox_format is 'PASCAL':
         image_dir = FLAGS.image_dir
         ann_dir = FLAGS.ann_dir
-        split_data(image_dir, ann_dir)
+        split_data(image_dir, ann_dir, resize=FLAGS.resize)
 
     for folder in ['train', 'test']:
         labelmap_name = FLAGS.labelmap_path
         #image_path = os.path.join(os.getcwd(), ('images/' + folder))
-        xml_df, num_of_images = xml_to_csv(folder, labelmap_name)
+        xml_df, num_of_images = xml_to_csv(
+            folder, labelmap_name, resize=FLAGS.resize)
         xml_df.to_csv((folder + '_labels.csv'), index=None)
         #xml_df.to_csv(('images/' + folder + '_labels.csv'), index=None)
         print('Successfully converted xml to csv.')
@@ -46,7 +48,8 @@ def main(_):
         # Run Generate_tfrecords
         gtfr.create_dict()
         if FLAGS.output_path is 'default':
-            writer = tf.python_io.TFRecordWriter('../data/'+(folder+'.record'))
+            writer = tf.python_io.TFRecordWriter(
+                '../data/' + (folder + '.record'))
         else:
             writer = tf.python_io.TFRecordWriter(FLAGS.output_path)
         if FLAGS.image_dir is 'default':
