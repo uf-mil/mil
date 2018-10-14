@@ -24,6 +24,11 @@
       <pose>80 -8.75 0 0 0 0</pose>
     </include>
 
+    <include>
+      <uri>model://robotx_pinger</uri>
+      <pose>55 -50 0 0 0 -1.3</pose>
+    </include>
+
     <!-- The 2018 dock with the two placards -->
     <include>
       <uri>model://dock_2018</uri>

@@ -36,6 +36,19 @@ add_dependencies(navigator_thrusters
   ${catkin_EXPORTED_TARGETS}
 )
 
+add_library(
+    pinger_plugin
+        src/pinger_plugin.cpp
+)
+set_target_properties(pinger_plugin PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
+target_link_libraries(pinger_plugin
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+add_dependencies(pinger_plugin
+  ${catkin_EXPORTED_TARGETS}
+)
+
 add_library(sylphase_gazebo
   src/sylphase_gazebo.cpp
 )
