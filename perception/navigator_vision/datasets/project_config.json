@@ -129,6 +129,16 @@
       "tool": "rectangle",
       "name": "totem_yellow",
       "color": "#F6BF26"
+    },
+    {
+      "tool": "rectangle",
+      "name": "can_buoy_red",
+      "color": "#D50000"
+    },
+    {
+      "tool": "rectangle",
+      "name": "can_buoy_green",
+      "color": "#33B679"
     }
   ],
   "classifications": []
