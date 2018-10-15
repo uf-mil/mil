@@ -6,7 +6,7 @@ _Accurate as of 10/15/2018_
 * Mobo/Case: [Shuttle SZ170R8 V2](http://global.shuttle.com/news/productsDetail?productId=2013)
 * 500 Watt powersupply
 * CPU: [Intel I7-6700](https://ark.intel.com/products/88196/Intel-Core-i7-6700-Processor-8M-Cache-up-to-4-00-GHz-)
-* 16GB RAM
+* 16GB DDR4 RAM, 2x 8GB sticks Crucial CT8G4DFS8213.C8FBR1
 * Nvida Geforce 970
 * 512 GB SSD (Samsung 650)
 
