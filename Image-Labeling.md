@@ -59,5 +59,9 @@ Be sure to comply with the following rules for labeling so we do not end up with
 ![](https://i.imgur.com/uvw4WQh.png)
 ### Green totem is labeled, others are too far away
 ![](https://i.imgur.com/8Jlvgbb.png)
+### These are can_buoy_green, **NOT totem_green**
+![](https://i.imgur.com/zufBTTM.png)
+### These are can_buoy_red, **NOT totem_red**
+![](https://i.imgur.com/MN5jB7H.png)
 ### Both sides are detect deliver are OKAY (at a good angle to label)
 ![](https://i.imgur.com/fXxGSJ6.png)
