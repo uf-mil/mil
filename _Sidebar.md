@@ -7,6 +7,7 @@
     * [[How To Run The Simulator]]
     * [[Executing Simple Moves]]
     * [[Visualization]]
+* [[Image Labeling]]
 * Implementation Details
     * [[Thrust Mapper]]
     * [[Cameras]]
