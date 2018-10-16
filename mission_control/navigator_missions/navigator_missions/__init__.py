@@ -20,4 +20,5 @@ from station_hold import StationHold
 from killed import Killed
 from move import Move
 from constant_velocity import ConstantVelocity
+from example_mission import ExampleMission
 import pose_editor
