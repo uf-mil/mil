@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 import rosbag
-from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':

@@ -1,16 +1,14 @@
-#include <mil_gazebo/pcodar_gazebo.hpp>
 #include <mil_msgs/PerceptionObject.h>
+#include <mil_gazebo/pcodar_gazebo.hpp>
 
 namespace mil_gazebo
 {
-
-
 void PCODARGazebo::Load(gazebo::physics::WorldPtr _world, sdf::ElementPtr _sdf)
 {
   world_ = _world;
   nh_ = ros::NodeHandle("/pcodar");
   nh_.getParam("/gazebo/name_map", name_map_);
-  pcodar_.reset(new pcodar::pcodar_controller_base(nh_));
+  pcodar_.reset(new pcodar::NodeBase(nh_));
   pcodar_->initialize();
   for (auto it : name_map_)
   {
@@ -27,7 +25,7 @@ void PCODARGazebo::TimerCb(const ros::TimerEvent&)
 
 void PCODARGazebo::UpdateObjects()
 {
-  for (auto model: world_->GetModels())
+  for (auto model : world_->GetModels())
   {
     UpdateObject(model);
   }
@@ -47,19 +45,19 @@ void PCODARGazebo::UpdateObject(gazebo::physics::ModelPtr _model)
 
     auto existing_object = pcodar_->objects_.objects_.find(id);
     if (existing_object == pcodar_->objects_.objects_.end())
-      pcodar_->objects_.objects_.insert({id, object});
+      pcodar_->objects_.objects_.insert({ id, object });
     else
       (*existing_object).second = object;
   }
 
   // Recurse into nested models
-  for (auto model: _model->NestedModels())
+  for (auto model : _model->NestedModels())
   {
     UpdateObject(model);
   }
 
   // Recurse into links
-  for (auto link: _model->GetLinks())
+  for (auto link : _model->GetLinks())
   {
     UpdateLink(link);
   }
@@ -70,7 +68,8 @@ void PCODARGazebo::UpdateLink(gazebo::physics::LinkPtr _link)
   ROS_WARN("LINK %s", _link->GetName().c_str());
 
   auto it = name_map_.find(_link->GetName());
-  if (it == name_map_.end()) return;
+  if (it == name_map_.end())
+    return;
 
   int id = _link->GetId();
   pcodar::Object object = pcodar::Object(pcodar::point_cloud());
@@ -80,7 +79,7 @@ void PCODARGazebo::UpdateLink(gazebo::physics::LinkPtr _link)
 
   auto existing_object = pcodar_->objects_.objects_.find(id);
   if (existing_object == pcodar_->objects_.objects_.end())
-    pcodar_->objects_.objects_.insert({id, object});
+    pcodar_->objects_.objects_.insert({ id, object });
   else
     (*existing_object).second = object;
 }
@@ -105,7 +104,4 @@ void PCODARGazebo::GazeboVectorToRosMsg(gazebo::math::Vector3 const& in, geometr
 }
 
 GZ_REGISTER_WORLD_PLUGIN(PCODARGazebo)
-
 }
-
-

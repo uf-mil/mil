@@ -5,7 +5,7 @@
 
 namespace pcodar
 {
-void associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clusters_t clusters)
+void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clusters_t clusters)
 {
   if (prev_objects.objects_.empty())
   {
@@ -47,7 +47,7 @@ void associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
   }
 }
 
-void associator::update_config(Config const& config)
+void Associator::update_config(Config const& config)
 {
   max_distance_ = config.associator_max_distance;
 }

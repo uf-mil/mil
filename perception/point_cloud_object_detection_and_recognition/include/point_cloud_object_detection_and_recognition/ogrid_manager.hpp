@@ -17,15 +17,16 @@
 
 namespace pcodar
 {
-class ogrid_manager
+class OgridManager
 {
 public:
-  ogrid_manager();
+  OgridManager();
   void initialize(ros::NodeHandle& nh);
   void update_ogrid(ObjectMap const& objects);
   void draw_boundary();
   void update_config(Config const& config);
   void set_bounds(point_cloud_ptr pc);
+
 private:
   cv::Point point_in_ogrid(point_t point);
   double resolution_meters_per_cell_;

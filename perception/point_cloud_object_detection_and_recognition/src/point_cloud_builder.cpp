@@ -2,11 +2,11 @@
 
 namespace pcodar
 {
-point_cloud_builder::point_cloud_builder() : mega_cloud_(boost::make_shared<point_cloud>())
+PointCloudCircularBuffer::PointCloudCircularBuffer() : mega_cloud_(boost::make_shared<point_cloud>())
 {
 }
 
-void point_cloud_builder::add_point_cloud(const point_cloud_ptr& pc)
+void PointCloudCircularBuffer::add_point_cloud(const point_cloud_ptr& pc)
 {
   // Add new cloud to buffer
   prev_clouds_.push_back(pc);
@@ -23,12 +23,12 @@ void point_cloud_builder::add_point_cloud(const point_cloud_ptr& pc)
   }
 }
 
-void point_cloud_builder::update_config(Config const& config)
+void PointCloudCircularBuffer::update_config(Config const& config)
 {
   prev_clouds_.set_capacity(config.accumulator_number_persistant_clouds);
 }
 
-point_cloud_ptr point_cloud_builder::get_point_cloud()
+point_cloud_ptr PointCloudCircularBuffer::get_point_cloud()
 {
   return mega_cloud_;
 }

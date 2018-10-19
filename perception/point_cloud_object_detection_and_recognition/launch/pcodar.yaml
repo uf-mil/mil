@@ -1,23 +1,16 @@
-# Point cloud builder
-accumulator_number_persistant_clouds: 10
+#Point cloud builder
+accumulator_number_persistant_clouds : 10
 
-# Filter
-persistant_cloud_filter_mean_k: 10
-persistant_cloud_filter_stddev: 0.05
+#Filter
+    persistant_cloud_filter_mean_k : 10 persistant_cloud_filter_stddev : 0.05
 
-# Clusterer
-cluster_tolerance_m: 4.4
-cluster_min_points: 2
-cluster_max_points: 1000
+#Clusterer
+    cluster_tolerance_m : 4.4 cluster_min_points : 2 cluster_max_points : 1000
 
-# Associator
-associator_max_distance: 2
+#Associator
+    associator_max_distance : 2
 
-# Ogrid
-ogrid_height_meters: 300
-ogrid_width_meters: 300
-ogrid_resolution_meters_per_cell: 0.3
-ogrid_inflation_meters: 0.5
+#Ogrid
+    ogrid_height_meters : 300 ogrid_width_meters : 300 ogrid_resolution_meters_per_cell : 0.3 ogrid_inflation_meters : 0.5
 
-object_types: ["SHOOTER", "SCAN_THE_CODE"]
-object_colors: ["RED", "GREEN"]
+    object_types : [ "SHOOTER", "SCAN_THE_CODE" ] object_colors : [ "RED", "GREEN" ]

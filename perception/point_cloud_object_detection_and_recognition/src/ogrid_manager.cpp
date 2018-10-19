@@ -1,24 +1,19 @@
-#include <point_cloud_object_detection_and_recognition/ogrid_manager.hpp>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/utils.h>
+#include <point_cloud_object_detection_and_recognition/ogrid_manager.hpp>
 
 namespace pcodar
 {
-ogrid_manager::ogrid_manager() /*
-  height_meters_(params.ogrid_height_meters),
-  width_meters_(params.ogrid_width_meters),
-  resolution_meters_per_cell_(params.ogrid_resolution_meters_per_cell),
-  ogrid_inflation_cells_(1.0) //resolution_meters_per_cell_ / params.ogrid_inflation_meters)
-*/
+OgridManager::OgridManager()
 {
 }
 
-void ogrid_manager::initialize(ros::NodeHandle& nh)
+void OgridManager::initialize(ros::NodeHandle& nh)
 {
   pub_ogrid_ = nh.advertise<nav_msgs::OccupancyGrid>("/ogrid", 5);
 }
 
-void ogrid_manager::draw_boundary()
+void OgridManager::draw_boundary()
 {
   /*
     std::vector<cv::Point>bounds(pcodar::boundary.size());
@@ -37,19 +32,19 @@ void ogrid_manager::draw_boundary()
   */
 }
 
-void ogrid_manager::set_bounds(point_cloud_ptr pc)
+void OgridManager::set_bounds(point_cloud_ptr pc)
 {
   bounds_ = pc;
 }
 
-cv::Point ogrid_manager::point_in_ogrid(point_t point)
+cv::Point OgridManager::point_in_ogrid(point_t point)
 {
   double x = (point.x - ogrid_.info.origin.position.x) / resolution_meters_per_cell_;
   double y = (point.y - ogrid_.info.origin.position.y) / resolution_meters_per_cell_;
   return cv::Point(x, y);
 }
 
-void ogrid_manager::update_ogrid(ObjectMap const& objects)
+void OgridManager::update_ogrid(ObjectMap const& objects)
 {
   // Clear ogrid
   ogrid_mat_ = cv::Scalar(0);
@@ -62,27 +57,25 @@ void ogrid_manager::update_ogrid(ObjectMap const& objects)
     Object const& object = pair.second;
 
     // In simulation, use bounding box
-    if (object.points_.empty()) {
-      tf2::Quaternion quat(object.msg_.pose.orientation.x,
-        object.msg_.pose.orientation.y,
-        object.msg_.pose.orientation.z,
-        object.msg_.pose.orientation.w);
+    if (object.points_.empty())
+    {
+      tf2::Quaternion quat(object.msg_.pose.orientation.x, object.msg_.pose.orientation.y,
+                           object.msg_.pose.orientation.z, object.msg_.pose.orientation.w);
       double pitch, roll, yaw;
       tf2::getEulerYPR(quat, yaw, pitch, roll);
       cv::RotatedRect rect(cv::Point2f(object.msg_.pose.position.x, object.msg_.pose.position.y),
-                           cv::Size2f(object.msg_.scale.x, object.msg_.scale.y),
-                           yaw);
+                           cv::Size2f(object.msg_.scale.x, object.msg_.scale.y), yaw);
       cv::Point2f vertices[4];
       cv::Point vertices_fixed[4];
       rect.points(vertices);
       for (size_t i = 0; i < 4; ++i)
         vertices_fixed[i] = point_in_ogrid(point_t(vertices[i].x, vertices[i].y, 0));
-      cv::fillConvexPoly(ogrid_mat_,
-                         vertices_fixed, 4, cv::Scalar(99));
+      cv::fillConvexPoly(ogrid_mat_, vertices_fixed, 4, cv::Scalar(99));
     }
 
     // Otherwise draw individual points
-    else {
+    else
+    {
       for (const auto& point : object.points_)
       {
         cv::Point center(point_in_ogrid(point));
@@ -96,7 +89,7 @@ void ogrid_manager::update_ogrid(ObjectMap const& objects)
   pub_ogrid_.publish(ogrid_);
 }
 
-void ogrid_manager::update_config(Config const& config)
+void OgridManager::update_config(Config const& config)
 {
   width_meters_ = config.ogrid_width_meters;
   height_meters_ = config.ogrid_height_meters;

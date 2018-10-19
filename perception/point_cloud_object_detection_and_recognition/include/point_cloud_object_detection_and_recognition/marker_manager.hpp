@@ -17,25 +17,23 @@
 
 namespace pcodar
 {
-class marker_manager
+/**
+ * Publishes markers visualizing the objects in the database.
+ * @todo: Add interactive markers to set labels from RVIZ
+ */
+class MarkerManager
 {
 public:
+  /// Initialize the marker manager with a nodehandle in the namespace of where the markers will be published
   void initialize(ros::NodeHandle& nh);
-
+  /// Update the markers based on the latest published objects message
   void update_markers(mil_msgs::PerceptionObjectArray const& objects);
-
-  visualization_msgs::InteractiveMarker get_marker_interactive(const mil_msgs::PerceptionObject& object);
 
 private:
   static void get_object_marker(mil_msgs::PerceptionObject const& object, visualization_msgs::Marker& marker);
   static void get_text_marker(mil_msgs::PerceptionObject const& object, visualization_msgs::Marker& marker);
 
-  void interative_marker_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr& feedback);
-
   ros::Publisher markers_pub_;
-  std::unique_ptr<interactive_markers::InteractiveMarkerServer> interactive_marker_server_;
-  interactive_markers::MenuHandler menu_handler_;
-  interactive_markers::MenuHandler::EntryHandle menu_entry_;
 };
 
 }  // namespace pcodar

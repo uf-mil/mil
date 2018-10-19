@@ -27,19 +27,28 @@
 
 namespace pcodar
 {
-
-class pcodar_controller_base
+/**
+ * Base class for a class implementing the object detection needed for the PCODAR node.
+ * This can be fufilled by processesing LIDAR pointclouds (like in @pcodar::Node) or using
+ * simulated ground truth (like in pcodar_gazebo).
+ */
+class NodeBase
 {
 public:
-  pcodar_controller_base(ros::NodeHandle nh);
-
+  /// Create a NodeBase in the namespace of nh
+  NodeBase(ros::NodeHandle nh);
+  /// Initialize ROS communication
   virtual void initialize();
+  /// Update markers, ogrid, and publish the internal object map to ROS interfaces. Call after updating objects.
   void UpdateObjects();
 
 protected:
+  /// Process a database query ROS service
   bool DBQuery_cb(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::ObjectDBQuery::Response& res);
+  /// Transform
   bool transform_to_global(std::string const& frame, ros::Time const& time, Eigen::Affine3d& out,
-                           ros::Duration timeout=ros::Duration(1, 0));
+                           ros::Duration timeout = ros::Duration(1, 0));
+  /// Transform a pointcloud ROS message into a PCL pointcloud in the global frame
   bool transform_point_cloud(const sensor_msgs::PointCloud2& pcloud2, point_cloud& out);
   virtual bool bounds_update_cb(const mil_bounds::BoundsConfig& config);
   virtual void ConfigCallback(Config const& config, uint32_t level);
@@ -62,17 +71,17 @@ protected:
   point_cloud_ptr bounds_;
 
   // Visualization
-  marker_manager marker_manager_;
-  ogrid_manager ogrid_manager_;
+  MarkerManager marker_manager_;
+  OgridManager ogrid_manager_;
 
 public:
   ObjectMap objects_;
 };
 
-class pcodar_controller : public pcodar_controller_base
+class Node : public NodeBase
 {
 public:
-  pcodar_controller(ros::NodeHandle nh);
+  Node(ros::NodeHandle nh);
 
   void velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud);
 
@@ -91,9 +100,9 @@ private:
   // Model (It eventually will be obeject tracker, but for now just detections)
   InputCloudFilter input_cloud_filter_;
   PersistentCloudFilter persistent_cloud_filter_;
-  point_cloud_builder persistent_cloud_builder_;
-  object_detector detector_;
-  associator ass;
+  PointCloudCircularBuffer persistent_cloud_builder_;
+  ObjectDetector detector_;
+  Associator ass;
 };
 
 }  // namespace pcodar

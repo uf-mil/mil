@@ -24,7 +24,8 @@ void Object::update_msg()
   msg_.header.frame_id = "enu";
   msg_.header.stamp = ros::Time();
 
-  if (points_.empty()) return;
+  if (points_.empty())
+    return;
   std::vector<cv::Point2f> cv_points;
   double min_z = std::numeric_limits<double>::max();
   double max_z = -std::numeric_limits<double>::max();

@@ -3,7 +3,7 @@
 
 namespace pcodar
 {
-clusters_t object_detector::get_clusters(point_cloud_const_ptr pc)
+clusters_t ObjectDetector::get_clusters(point_cloud_const_ptr pc)
 {
   // Creating the KdTree object for the search method of the extraction
   pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
@@ -18,7 +18,7 @@ clusters_t object_detector::get_clusters(point_cloud_const_ptr pc)
   return cluster_indices;
 }
 
-void object_detector::update_config(Config const& config)
+void ObjectDetector::update_config(Config const& config)
 {
   cluster_extractor_.setClusterTolerance(config.cluster_tolerance_m);
   cluster_extractor_.setMinClusterSize(config.cluster_min_points);
