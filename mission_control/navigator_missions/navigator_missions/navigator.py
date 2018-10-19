@@ -200,6 +200,20 @@ class Navigator(BaseTask):
         return cls._change_wrench(MuxSelectRequest(source))
 
     @classmethod
+    def disable_thrusters(cls):
+        '''
+        Disable thrusters by setting the wrench source to none
+        '''
+        return cls.change_wrench("__none")
+
+    @classmethod
+    def enable_autonomous(cls):
+        '''
+        Enable autonmous wrench, useful to call after disable_thrusters to regain control
+        '''
+        return cls.change_wrench("autonomous")
+
+    @classmethod
     def change_trajectory(cls, source):
         return cls._change_trajectory(MuxSelectRequest(source))
 
