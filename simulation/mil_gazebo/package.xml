@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mil_gazebo</name>
+  <version>0.0.0</version>
+  <description>Shared MIL tools for use in the gazebo simulator</description>
+  <maintainer email="kallen@todo.todo">kallen</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>gazebo_dev</build_depend>
+  <build_depend>gazebo_ros</build_depend>
+  <build_depend>mil_msgs</build_depend>
+  <build_depend>point_cloud_object_detection_and_recognition</build_depend>
+  <build_export_depend>gazebo_dev</build_export_depend>
+  <build_export_depend>gazebo_ros</build_export_depend>
+  <build_export_depend>mil_msgs</build_export_depend>
+  <exec_depend>gazebo_dev</exec_depend>
+  <exec_depend>gazebo_ros</exec_depend>
+  <exec_depend>mil_msgs</exec_depend>
+  <exec_depend>point_cloud_object_detection_and_recognition</exec_depend>
+</package>
