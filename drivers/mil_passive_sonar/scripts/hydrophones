@@ -1,16 +1,14 @@
 #!/usr/bin/env python
-
 import numpy
 import math
 import sys
-
 import rosbag
 import rospy
-
+from mil_tools import numpy_to_vector3
 from mil_passive_sonar import algorithms, util
 from mil_passive_sonar.msg import Ping, ProcessedPing, Debug
 from std_msgs.msg import Header
-from geometry_msgs.msg import Point, PoseStamped, Pose
+from geometry_msgs.msg import Point, Vector3Stamped
 
 def process_ping(ping):
     ping.header.frame_id = 'hydrophones'
@@ -30,23 +28,23 @@ def process_ping(ping):
     if len(r['errors']) > 0:
         rospy.logwarn('Errors processing ping: ' + ", ".join(r['errors']))
 
+
     valid = len(r['pos']) > 0 and len(r['errors']) == 0
     if valid:
         pos2 = r['pos']/numpy.linalg.norm(r['pos'])
         print 'result angle:', numpy.rad2deg(numpy.arctan2(pos2[1], pos2[0])) % 360
-        
+
         pub.publish(
-            header=Header(
-                stamp=ping.header.stamp, frame_id=ping.header.frame_id),
+            header=ping.header,
             position=Point(*r['pos'].tolist()),
             freq=r['freq'],
             amplitude=r['amplitude'],
             valid=valid)
-    pub_pose.publish(
-        header=Header(stamp=ping.header.stamp, frame_id=ping.header.frame_id),
-        pose=Pose(position=Point(*r['pos'].tolist())))
+    pub_direction.publish(
+        header=ping.header,
+        vector=numpy_to_vector3(r['pos']))
     pub_debug.publish(
-        header=Header(stamp=ping.header.stamp, frame_id=ping.header.frame_id),
+        header=ping.header,
         deltas=r['deltas'].tolist(),
         delta_errors=r['delta_errors'].tolist(),
         fft_sharpness=r['fft_sharpness'],
@@ -59,7 +57,7 @@ dist_h4 = rospy.get_param('~dist_h4')
 v_sound = rospy.get_param('~v_sound')
 template_periods = rospy.get_param('~template_periods', 3)
 pub = rospy.Publisher('hydrophones/processed', ProcessedPing, queue_size=10)
-pub_pose = rospy.Publisher('hydrophones/pose', PoseStamped, queue_size=10)
+pub_direction = rospy.Publisher('hydrophones/direction', Vector3Stamped, queue_size=10)
 pub_debug = rospy.Publisher('hydrophones/debug', Debug, queue_size=10)
 
 if rospy.myargv()[1:]:
