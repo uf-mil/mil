@@ -47,7 +47,7 @@ class MultilaterationNode(object):
         try:
             transformed_vec = self.tfBuffer.transform(p_message,
                     self.global_fame, rospy.Duration(2))
-            transformed_origin = self.tfBuffer.lookup_transform('enu',
+            transformed_origin = self.tfBuffer.lookup_transform(self.global_fame,
                     p_message.header.frame_id, p_message.header.stamp,
                     rospy.Duration(2))
             vec = rosmsg_to_numpy(transformed_vec.vector)
