@@ -1,8 +1,0 @@
-<launch>
-
-    <!-- Send the static demo messages -->
-    <node pkg="rostopic" type="rostopic" name="fake_point_stamped" args="pub /lla geometry_msgs/PointStamped --latch --file=$(find point_stamped_and_odom_to_navsatfix)/launch/demo.ps" output="screen"/>
-    <node pkg="rostopic" type="rostopic" name="fake_odom" args="pub /odom nav_msgs/Odometry --latch --file=$(find point_stamped_and_odom_to_navsatfix)/launch/demo.odom" output="screen"/>
-
-
-</launch>

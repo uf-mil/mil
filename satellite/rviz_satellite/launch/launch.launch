@@ -1,3 +1,0 @@
-<launch>
-    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find rviz_satellite)/launch/demo.rviz"/>
-</launch>

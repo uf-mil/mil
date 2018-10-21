@@ -1,2 +1,0 @@
-if the bag doesn't have /lla or /odom, run this to convert the stuff
-  rosrun navigator_tools coordinate_conversion_server.py
