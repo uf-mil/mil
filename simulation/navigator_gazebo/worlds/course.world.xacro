@@ -2,6 +2,15 @@
 <!-- World containing sandisland model and some course challenges -->
 <sdf version="1.6" xmlns:xacro="http://ros.org/wiki/xacro">
   <world name="robotx_example_course">
+    <!-- Physics configured for 100 iterations / simulated second, 1/10 default for faster speed -->
+    <physics type="ode">
+      <!-- Iterations per real world second, target rtf / max_step_time -->
+      <!-- rtf / step -->
+      <real_time_update_rate>100</real_time_update_rate>
+      <!-- Time to step simulation forward each iteration -->
+      <max_step_size>0.01</max_step_size>
+    </physics>
+
     <xacro:include filename="$(find robotx_gazebo)/worlds/sandisland.xacro" />
     <xacro:sandisland />
 
