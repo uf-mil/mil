@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     visualization_msgs::Marker marker;
 
     //set the header. Current frame_id = "/my_frame". Idk what this does.
-    marker.header.frame_id = "/my_frame";
+    marker.header.frame_id = "/gps";
     marker.header.stamp = ros::Time::now();
 
     //set the namespace to "navigator_marker"
