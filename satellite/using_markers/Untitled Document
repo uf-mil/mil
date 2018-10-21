@@ -1,0 +1,12 @@
+Plannn
+
+How to execute:
+1. Make sure roscore is running '''roscore'''
+2. Launch the package '''roslaunch using_markers navigator_marker'''
+3. Launch rviz '''rviz -d navigatorgps.rviz'''
+
+
+Next goals:
+ * map the marker to a gps location
+ * get maps
+ * 
