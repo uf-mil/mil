@@ -18,7 +18,7 @@ void callback();
 const std::string gps_topic = "/satellite/navsatfix";
 const std::string lla_topic = "/lla";
 const std::string odometry_topic = "/odom";
-const std::string frame_id = "/map";
+const std::string frame_id = "map";
 
 const geometry_msgs::PointStamped* lla;
 const nav_msgs::Odometry* odom;

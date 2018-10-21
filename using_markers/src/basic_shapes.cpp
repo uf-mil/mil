@@ -15,7 +15,7 @@ int main( int argc, char** argv )
   {
     visualization_msgs::Marker marker;
     // Set the frame ID and timestamp.  See the TF tutorials for information on these.
-    marker.header.frame_id = "/map";
+    marker.header.frame_id = "/my_frame";
     marker.header.stamp = ros::Time::now();
 
     // Set the namespace and id for this marker.  This serves to create a unique ID
@@ -39,8 +39,8 @@ int main( int argc, char** argv )
     marker.pose.orientation.w = 1.0;
 
     // Set the scale of the marker -- 1x1x1 here means 1m on a side
-    marker.scale.x = 10.0;
-    marker.scale.y = 5.0;
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
     marker.scale.z = 1.0;
 
     // Set the color -- be sure to set alpha to something non-zero!
