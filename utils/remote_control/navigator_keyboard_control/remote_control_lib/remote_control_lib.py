@@ -18,6 +18,7 @@ from navigator_msgs.srv import ShooterManual
 import rospy
 from std_srvs.srv import Trigger, TriggerRequest
 from mil_tasks_core import TaskClient
+from actionlib import TerminalState
 
 
 __author__ = "Anthony Olive"
@@ -125,16 +126,22 @@ class RemoteControl(object):
     @_timeout_check
     def deploy_thrusters(self, *args, **kwargs):
         def cb(terminal_state, result):
-            # TODO(ironmig): check that it was actually succesful
-            rospy.loginfo('Thrusters deployed!')
+            if terminal_state == 3:
+                rospy.loginfo('Thrusters Deployed!')
+            else:
+                rospy.logwarn('Error deploying thrusters: {}, status: {}'.format(
+                    TerminalState.to_string(terminal_state), result.status))
 
         self.task_client.run_task('DeployThrusters', done_cb=cb)
 
     @_timeout_check
     def retract_thrusters(self, *args, **kwargs):
         def cb(terminal_state, result):
-            # TODO(ironmig): check that it was actually succesful
-            rospy.loginfo('Thrusters Retracted!')
+            if terminal_state == 3:
+                rospy.loginfo('Thrusters Retracted!')
+            else:
+                rospy.logwarn('Error rectracting thrusters: {}, status: {}'.format(
+                    TerminalState.to_string(terminal_state), result.status))
 
         self.task_client.run_task('RetractThrusters', done_cb=cb)
 
