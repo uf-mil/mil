@@ -59,21 +59,6 @@ class Navigator(BaseTask):
     green = "GREEN"
     blue = "BLUE"
 
-    # Time to wait for lock to engage when deploying thruster
-    DEPLOY_LOCK_TIME = 0.5
-    # Time to wait for thruster to lower when deploying thruster
-    DEPLOY_WAIT_TIME = 3.0
-    # Time to enable retract piston before unlocking when deploying a thruster
-    DEPLOY_LOOSEN_TIME = 1.0
-    # Time to wait for lock to engage when retracting thruster
-    RETRACT_LOCK_TIME = 0.5
-    # Time to wait thruster to lift before engaging lock
-    RETRACT_WAIT_TIME = 3.0
-    # Time to extend reload piston when reloading launcher
-    LAUNCHER_RELOAD_EXTEND_TIME = 5.0
-    # Time to retract reload piston when reloading launcher
-    LAUNCHER_RELOAD_RETRACT_TIME = 5.0
-
     def __init__(self, **kwargs):
         super(Navigator, self).__init__(**kwargs)
 
@@ -83,6 +68,8 @@ class Navigator(BaseTask):
         super(Navigator, cls)._init(task_runner)
         cls.vision_proxies = {}
         cls._load_vision_services()
+
+        cls._actuator_timing = yield cls.nh.get_param("~actuator_timing")
 
         cls.mission_params = {}
         cls._load_mission_params()
@@ -196,16 +183,16 @@ class Navigator(BaseTask):
         unlock = name + '_unlock'
         # Pull thruster up a bit to remove pressure from lock
         yield self.set_valve(retract, True)
-        yield self.nh.sleep(self.DEPLOY_LOOSEN_TIME)
+        yield self.nh.sleep(self._actuator_timing['deploy_loosen_time'])
         # Stop pulling thruster up and unlock
         yield self.set_valve(retract, False)
         yield self.set_valve(unlock, True)
         # Beging extending piston to push thruster down
         yield self.set_valve(extend, True)
-        yield self.nh.sleep(self.DEPLOY_WAIT_TIME)
+        yield self.nh.sleep(self._actuator_timing['deploy_wait_time'])
         # Lock and stop extending after waiting a time for lock to engage
         yield self.set_valve(unlock, False)
-        yield self.nh.sleep(self.DEPLOY_LOCK_TIME)
+        yield self.nh.sleep(self._actuator_timing['deploy_lock_time'])
         yield self.set_valve(extend, False)
 
     @util.cancellableInlineCallbacks
@@ -219,11 +206,11 @@ class Navigator(BaseTask):
         yield self.set_valve(unlock, True)
         yield self.set_valve(retract, True)
         # Wait time for piston to fully retract
-        yield self.nh.sleep(self.RETRACT_WAIT_TIME)
+        yield self.nh.sleep(self._actuator_timing['retract_wait_time'])
         # Lock thruster in place
         yield self.set_valve(unlock, False)
         # Wait some time for lock to engage
-        yield self.nh.sleep(self.RETRACT_LOCK_TIME)
+        yield self.nh.sleep(self._actuator_timing['retract_lock_time'])
         # Stop pulling up
         yield self.set_valve(retract, False)
 
@@ -244,10 +231,10 @@ class Navigator(BaseTask):
 
     @util.cancellableInlineCallbacks
     def reload_launcher(self):
-        yield self.set_valve('LAUNCH_RELOAD', True)
-        yield self.nh.sleep(self.LAUNCHER_RELOAD_EXTEND_TIME)
-        yield self.set_valve('LAUNCH_RELOAD', False)
-        yield self.nh.sleep(self.LAUNCHER_RELOAD_RETRACT_TIME)
+        yield self.set_valve('LAUNCHER_RELOAD', True)
+        yield self.nh.sleep(self._actuator_timing['launcher_reload_extend_time'])
+        yield self.set_valve('LAUNCHER_RELOAD', False)
+        yield self.nh.sleep(self._actuator_timing['launcher_reload_retract_time'])
 
     def fire_launcher(self):
         return self.set_valve('LAUNCHER_FIRE', True)
