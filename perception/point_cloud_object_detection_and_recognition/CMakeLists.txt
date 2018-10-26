@@ -21,8 +21,6 @@ find_package(catkin REQUIRED COMPONENTS
 # 				     BASE CODE 					  #
 ###################################################
 
-catkin_python_setup()
-
 generate_dynamic_reconfigure_options(
   cfg/PCODAR.cfg
 )
@@ -66,27 +64,3 @@ target_link_libraries(pcodar_node pcodar)
 ###################################################
 
 roslaunch_add_file_check(launch/pcodar.launch)
-
-###################################################
-# 						TOOLS 					  #
-###################################################
-
-#find_package(Qt5Widgets)
-#set(CMAKE_AUTOMOC ON)
-#set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-#QT5_WRAP_CPP(tst_hdr_moc tools/labeling_tool/main_window.hpp)
-#QT5_WRAP_UI(tst_form_hdr tools/labeling_tool/main_window.ui)
-
-#add_library(main_window ${tst_hdr_moc} ${tst_form_hdr})
-#qt5_use_modules(main_window Widgets)
-
-#add_library(label_model tools/labeling_tool/label_model.hpp tools/labeling_tool/label_model.cpp)
-#target_link_libraries(label_model pcodar main_window ${catkin_LIBRARIES})
-
-#include_directories(${catkin_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS})
-
-#add_executable(pcodar_labeling_tool tools/labeling_tool/main.cpp)
-#qt5_use_modules(pcodar_labeling_tool Core Gui Widgets)
-
-#target_link_libraries(pcodar_labeling_tool pcodar main_window label_model ${catkin_LIBRARIES} ${Qt5Widgets_LIBRARIES})
