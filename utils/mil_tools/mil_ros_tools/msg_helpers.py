@@ -3,6 +3,7 @@ from tf import transformations
 import geometry_msgs.msg as geometry_msgs
 import std_msgs.msg as std_msgs
 import nav_msgs.msg as nav_msgs
+from mil_msgs.msg import Point2D
 import rospy
 
 
@@ -111,6 +112,11 @@ def numpy_to_point(vector):
         np_vector = np.append(np_vector, 0)  # Assume user is give 2d point
 
     return geometry_msgs.Point(*np_vector)
+
+
+def numpy_to_point2d(vector):
+    np_vector = np.array(vector)
+    return Point2D(*np_vector)
 
 
 def numpy_to_quaternion(np_quaternion):
