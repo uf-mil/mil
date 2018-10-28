@@ -76,12 +76,13 @@ class Image_Subscriber(object):
 
         self.encoding = encoding
         self.camera_info = None
+        self.last_image_header = None
         self.last_image_time = None
         self.last_image = None
         self.im_sub = rospy.Subscriber(
             topic, Image, self.convert, queue_size=queue_size)
 
-        root_topic, image_subtopic = path.split(topic)
+        root_topic, image_subtopic = path.split(rospy.remap_name(topic))
         self.info_sub = rospy.Subscriber(
             root_topic + '/camera_info', CameraInfo, self.info_cb, queue_size=queue_size)
 
@@ -121,6 +122,7 @@ class Image_Subscriber(object):
         self.camera_info = msg
 
     def convert(self, data):
+        self.last_image_header = data.header
         self.last_image_time = data.header.stamp
         try:
             image = self.bridge.imgmsg_to_cv2(
