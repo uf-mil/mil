@@ -34,5 +34,11 @@
       <uri>model://dock_2018</uri>
       <pose>120 -2.75 0 0 0 0</pose>
     </include>
+
+    <!-- Obstacle course challenge -->
+    <include>
+      <uri>model://robotx_2018_qualifying_avoid_obstacles</uri>
+      <pose>-50 -90 0 0 0 0</pose>
+    </include>
   </world>
 </sdf>
