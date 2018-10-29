@@ -1,8 +1,8 @@
 <launch>
-  <!-- start dock symbols vision services -->
-  <include file="$(find navigator_launch)/launch/perception/dock_shapes.launch" />
-  <include file="$(find navigator_launch)/launch/perception/dock_shapes_front.launch" />
-  <!--node name="start_gate_vision" pkg="navigator_controller" type="start_gate_manual.py" respawn="True"/-->
-  <node name="shooter_finder" pkg="navigator_vision" type="shooter_finder.py" />
-  <node name="database_color" pkg="navigator_vision" type="database_color.py" />
+  <arg name="simulation" default="False" />
+
+  <!-- Pinger processing nodes -->
+  <include file="$(find navigator_launch)/launch/perception/passive_sonar.launch">
+    <arg name="simulation" value="$(arg simulation)" />
+  </include>
 </launch>
