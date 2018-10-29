@@ -28,6 +28,9 @@ add_message_files(FILES
   LabeledObjects.msg
   PerceptionObject.msg
   PerceptionObjectArray.msg
+  Point2D.msg
+  ObjectInImage.msg
+  ObjectsInImage.msg
 )
 
 add_service_files(FILES
