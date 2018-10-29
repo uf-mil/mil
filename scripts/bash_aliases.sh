@@ -28,15 +28,7 @@ nthrust()
 }
 _nthrust_complete()
 {
-    local THRUSTER
-    local THRUSTERS
-    THRUSTERS=(FL FR BL BR)
-    for THRUSTER in "${THRUSTERS[@]}"; do
-            # Skip any entry that does not match the string to complete
-            if [[ -z "$2" || ! -z "$(echo ${THRUSTER:0:${#2}} | grep $2)" ]]; then
-                            COMPREPLY+=( "$THRUSTER" )
-            fi
-    done
+		_list_complete "FL FR BL BR"
 }
 complete -F _nthrust_complete nthrust
 
@@ -47,21 +39,41 @@ alias nmove="runtask Move"
 # Wrench
 _nwrench_complete()
 {
-	local WRENCH
-	local WRENCHES
-	WRENCHES=( rc autonomous keyboard emergency )
-	for WRENCH in "${WRENCHES[@]}"; do
-		# Skip any entry that does not match the string to complete
-		if [[ -z "$2" || ! -z "$(echo ${WRENCH:0:${#2}} | grep $2)" ]]; then
-				COMPREPLY+=( "$WRENCH" )
-		fi
-	done
+  _list_complete "rc autonomous keyboard emergency"
 }
 nwrench()
 {
     rosservice call /wrench/select "topic: '$1'"
 }
 complete -F _nwrench_complete nwrench
+
+# Pneumatics
+_nvalve_complete()
+{
+	# Python oneliners are POWERFULL
+  # Get a list of all the actuator names and ids for autocompletion
+  ACTUATORS=$(python -c "import rospy; rospy.init_node('test', anonymous=True); param = rospy.get_param('/actuator_driver/actuators'); print ' '.join([key for key in param]) + ' ' + ' '.join([str(param[key]) for key in param if type(param[key]) == int])")
+
+  _list_complete "$ACTUATORS"
+}
+nvalveopen()
+{
+  rosservice call /actuator_driver/actuate "'$1'" true
+}
+complete -F _nvalve_complete nvalveopen
+
+nvalveclose()
+{
+  rosservice call /actuator_driver/actuate "'$1'" false
+
+}
+complete -F _nvalve_complete nvalveclose
+
+nvalvereset()
+{
+  rosservice call /actuator_driver/reset
+}
+
 
 # Alarms
 alias nhold="rosrun ros_alarms raise station-hold"
