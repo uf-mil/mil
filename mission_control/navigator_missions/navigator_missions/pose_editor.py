@@ -70,6 +70,7 @@ def look_at_camera(forward, upish=UP):
     # assumes camera right-down-forward coordinate system
     return triad((forward, upish), (UP, [0, -1, 0]))
 
+
 class PoseEditor2(object):
     """
     Used to chain movements together

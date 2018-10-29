@@ -79,7 +79,6 @@ class Navigator(BaseTask):
         cls.pose = None
         cls.ecef_pose = None
 
-
         cls.killed = '?'
         cls.odom_loss = '?'
 
