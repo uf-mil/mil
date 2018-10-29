@@ -126,7 +126,7 @@ void SylphaseGazebo::OnUpdate(const gazebo::common::UpdateInfo& info)
   odom.header.frame_id = "enu";
   odom.header.stamp.sec = info.simTime.sec;
   odom.header.stamp.nsec = info.simTime.nsec;
-  odom.child_frame_id = "ins";
+  odom.child_frame_id = child_frame_;
   odom.pose.pose = Convert(enu);
   odom.twist.twist.linear = Convert2(vel_linear);
   odom.twist.twist.angular = Convert2(vel_angular);
@@ -135,6 +135,7 @@ void SylphaseGazebo::OnUpdate(const gazebo::common::UpdateInfo& info)
   absodom.pose.pose = Convert(ecef);
   absodom.twist.twist = odom.twist.twist;
   absodom.header.frame_id = "ecef";
+  absodom.child_frame_id = child_frame_;
   absodom.header.stamp = odom.header.stamp;
 
   geometry_msgs::Vector3Stamped accel;

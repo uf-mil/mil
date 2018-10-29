@@ -8,12 +8,7 @@ find_package(catkin
     nav_msgs
     geometry_msgs
     tf
-    dynamic_reconfigure
 )
 catkin_python_setup()
-
-generate_dynamic_reconfigure_options(
-  cfg/BoundsConfig.cfg
-)
 
 catkin_package()

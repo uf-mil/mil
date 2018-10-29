@@ -17,4 +17,20 @@
     <include file="$(find navigator_gazebo)/launch/goose.launch">
         <arg name="gui" value="$(arg gui)"/>
     </include>
+
+    <!-- Map from gazebo modes to database objects for ground truth simulated PCODAR -->
+    <rosparam param="/gazebo/name_map">
+      'gate_start_red::link': totem_red
+      'gate_start_green::link' : totem_green
+      'gate_end_red::link': totem_red
+      'gate_end_green::link' : totem_green
+      'base_gate::red_buoy::link': totem_red
+      'base_gate::white_buoy_left::link': totem_white
+      'base_gate::white_buoy_right::link': totem_white
+      'base_gate::green_buoy::link': totem_green
+      'circle_buoy::surmark46104::link': totem_black
+      'light_buoy::base_link': stc_platform
+      'robotx_light_buoy': stc_platform
+      'robotx_dock_2018': dock
+    </rosparam>
 </launch>

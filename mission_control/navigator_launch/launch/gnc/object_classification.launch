@@ -1,5 +1,0 @@
-<launch>
-    <node name="lidar_ogrid_database" pkg="navigator_lidar_oa" type="lidar">
-        <rosparam file="$(find navigator_launch)/config/object_classification.yaml" />
-    </node>
-</launch>

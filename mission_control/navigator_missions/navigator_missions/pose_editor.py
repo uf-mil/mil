@@ -71,26 +71,6 @@ def look_at_camera(forward, upish=UP):
     return triad((forward, upish), (UP, [0, -1, 0]))
 
 
-def get_valid_point(nav, point):
-    if nav.enu_bounds is None:
-        return point
-
-    # Magic that finds if a point is in a polygon
-    ab = np.subtract(nav.enu_bounds[0], nav.enu_bounds[1])[:2]
-    ac = np.subtract(nav.enu_bounds[0], nav.enu_bounds[2])[:2]
-    am = np.subtract(nav.enu_bounds[0], point)[:2]
-    if np.dot(ab, ac) > .1:
-        ac = np.subtract(nav.enu_bounds[0], nav.enu_bounds[3])[:2]
-
-    if 0 <= np.dot(ab, am) <= np.dot(ab, ab) and 0 <= np.dot(am, ac) <= np.dot(ac, ac):
-        # The point was okay - in bounds
-        return point
-    else:
-        print "INVAILD TARGET POINT DETECTED"
-        # TODO: Make boat go to edge
-        return nav.pose[0]
-
-
 class PoseEditor2(object):
     """
     Used to chain movements together
