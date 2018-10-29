@@ -11,7 +11,7 @@
       <max_step_size>0.01</max_step_size>
     </physics>
 
-    <xacro:include filename="$(find robotx_gazebo)/worlds/sandisland.xacro" />
+    <xacro:include filename="$(find vmrc_gazebo)/worlds/sandisland.xacro" />
     <xacro:sandisland />
 
     <include>
@@ -33,6 +33,12 @@
     <include>
       <uri>model://dock_2018</uri>
       <pose>120 -2.75 0 0 0 0</pose>
+    </include>
+
+    <!-- Obstacle course challenge -->
+    <include>
+      <uri>model://robotx_2018_qualifying_avoid_obstacles</uri>
+      <pose>-50 -90 0 0 0 0</pose>
     </include>
   </world>
 </sdf>
