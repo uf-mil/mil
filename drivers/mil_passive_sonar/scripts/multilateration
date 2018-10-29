@@ -13,7 +13,7 @@ from tf2_geometry_msgs import Vector3Stamped, PointStamped
 from std_msgs.msg import Header
 from geometry_msgs.msg import PointStamped, Vector3
 from mil_passive_sonar.srv import FindPinger, FindPingerResponse
-from std_srvs.srv import SetBool, SetBoolResponse
+from std_srvs.srv import SetBool, SetBoolResponse, Trigger, TriggerResponse
 
 
 class MultilaterationNode(object):
@@ -24,30 +24,39 @@ class MultilaterationNode(object):
     def __init__(self):
         self.tfBuffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tfBuffer)
-        buffer_len = rospy.get_param('~buffer_size', default=10)
+        buffer_len = rospy.get_param('~buffer_size', default=30)
+        self.distance_filter_dist = rospy.get_param('~distance_filter', default=5)
+        self.buffer_min = 10
         self.vec_samples = deque(maxlen=buffer_len)
         self.enabled = False
-        self.global_fame = 'enu'
+        self.last_pos = None
+        self.global_frame = 'enu'
         self.heading_sub = rospy.Subscriber('/hydrophones/direction',
                 Vector3Stamped, self.heading_cb, queue_size=10)
         self.position_pub = rospy.Publisher('/hydrophones/position',
                 PointStamped, queue_size=1)
         self.enable_srv = rospy.Service('~enable', SetBool,
                 self.enable_cb)
+        self.reset_srv = rospy.Service('~reset', Trigger,
+                                       self.reset_cb)
 
     def enable_cb(self, req):
-        if req.data is not self.enabled:
-            self.vec_samples.clear()
+        #if req.data is not self.enabled:
+        #    self.vec_samples.clear()
         self.enabled = req.data
         return SetBoolResponse(success=True)
+
+    def reset_cb(self, req):
+        self.vec_samples.clear()
+        return {'success': True}
 
     def heading_cb(self, p_message):
         if not self.enabled:
             return
         try:
             transformed_vec = self.tfBuffer.transform(p_message,
-                    self.global_fame, rospy.Duration(2))
-            transformed_origin = self.tfBuffer.lookup_transform(self.global_fame,
+                    self.global_frame, rospy.Duration(2))
+            transformed_origin = self.tfBuffer.lookup_transform(self.global_frame,
                     p_message.header.frame_id, p_message.header.stamp,
                     rospy.Duration(2))
             vec = rosmsg_to_numpy(transformed_vec.vector)
@@ -57,50 +66,61 @@ class MultilaterationNode(object):
         except tf2_ros.TransformException, e:
             rospy.logwarn('TF Exception: {}'.format(e))
             return
+        if self.last_pos is not None and np.linalg.norm(self.last_pos - origin) < 0.2:
+            rospy.loginfo("Observation too close to previous, ignoring")
+            return
+        self.last_pos = origin
         self.vec_samples.append((origin, origin + vec))
-        if len(self.vec_samples) == self.vec_samples.maxlen:
+        if len(self.vec_samples) >= self.buffer_min:
             self.publish_position()
 
     def publish_position(self):
-        line_array = np.array([(p[0][0], p[0][1], p[1][0], p[1][1]) for p in self.vec_samples])
+        #line_array = np.array([(p[0][0], p[0][1], p[1][0], p[1][1]) for p in self.vec_samples])
+        line_array = np.array([(np.array(p[0][0:2]), np.array(p[1][0:2])) for p in self.vec_samples])
         where = self.ls_line_intersection2d(line_array)
         ps = PointStamped()
+        ps.header.frame_id = self.global_frame
         ps.header.stamp = rospy.Time.now()
         ps.point = numpy_to_point(where)
         self.position_pub.publish(ps)
 
-    def ls_line_intersection2d(self, line_array):
-        """
-        Find the intersection of lines in the least-squares sense.
-        start - Nx3 numpy array of start points
-        end - Nx3 numpy array of end points
-        https://en.wikipedia.org/wiki/Line-line_intersection#In_two_dimensions_2
-        """
-        def line_segment_norm(line_end_pts):
-            assert len(line_end_pts) == 4
-            return np.linalg.norm(line_end_pts[2:] - line_end_pts[:2])
+    def ls_line_intersection2d(self, lines_array):
+        xvals = np.array([])
+        yvals = np.array([])
 
-        begin_pts = line_array[:, :2]
-        diffs = line_array[:, 2:4] - begin_pts
-        norms = np.apply_along_axis(line_segment_norm, 1, line_array).reshape(diffs.shape[0], 1)
-        rot_left_90 = np.array([[0, -1], [1, 0]])
-        perp_unit_vecs = np.apply_along_axis(lambda unit_diffs: rot_left_90.dot(unit_diffs), 1, diffs / norms)
-        A_sum = np.zeros((2, 2))
-        Ap_sum = np.zeros((2, 1))
+        for line1 in lines_array:
+            for line2 in lines_array:
+                if np.array_equal(line1, line2):
+                    continue
 
-        for x, y in zip(begin_pts, perp_unit_vecs):
-            begin = x.reshape(2, 1)
-            perp_vec = y.reshape(2, 1)
-            A = perp_vec.dot(perp_vec.T)
-            Ap = A.dot(begin)
-            A_sum += A
-            Ap_sum += Ap
+                boat_pos1 = line1[0]
+                boat_pos2 = line2[0]
 
-        return np.linalg.inv(A_sum).dot(Ap_sum)
+                #print(boat_pos1)
+
+                # https://stackoverflow.com/a/47823499
+                t, s = np.linalg.solve(np.array([line1[1]-line1[0], line2[0]-line2[1]]).T, line2[0]-line1[0])
+                intersection = (1-t)*line1[0] + t*line1[1]
+
+                distance1 = np.linalg.norm(intersection - boat_pos1)
+                distance2 = np.linalg.norm(intersection - boat_pos2)
+
+                #print(str(distance1) + ', ' + str(distance2))
+
+                if distance1 < self.distance_filter_dist or distance2 < self.distance_filter_dist:
+                    #print('throw out')
+                    continue # Throw out intersections that are too close to the boat
+
+                #print('using ' + str(intersection[0]))
+                xvals = np.append(xvals, intersection[0])
+                yvals = np.append(yvals, intersection[1])
+
+        #print(xvals)
+        average_intersection = np.array([np.mean(xvals), np.mean(yvals)])
+        return average_intersection
 
 
 if __name__ == '__main__':
     rospy.init_node('multilateration')
     MultilaterationNode()
     rospy.spin()
-
