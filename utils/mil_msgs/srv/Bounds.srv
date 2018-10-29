@@ -1,0 +1,7 @@
+string to_frame               # The frame you want the bounds in
+                              # If not specified, it will default to 'enu'
+---
+std_msgs/Header header        # Standard header, all points are in this frame
+bool enforce                  # If false, don't listen to what the bounds say
+
+geometry_msgs/Point[] bounds  # List of points that define the boundaries
