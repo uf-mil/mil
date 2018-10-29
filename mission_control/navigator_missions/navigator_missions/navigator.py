@@ -19,6 +19,7 @@ from topic_tools.srv import MuxSelect, MuxSelectRequest
 from mil_misc_tools.text_effects import fprint
 from navigator_tools import MissingPerceptionObject
 from mil_tasks_core import BaseTask
+from mil_passive_sonar import TxHydrophonesClient
 
 
 class MissionResult(object):
@@ -97,6 +98,8 @@ class Navigator(BaseTask):
         def enu_odom_set(odom):
             return setattr(cls, 'ecef_pose', mil_tools.odometry_to_numpy(odom)[0])
         cls._ecef_odom_sub = cls.nh.subscribe('absodom', Odometry, enu_odom_set)
+
+        cls.hydrophones = TxHydrophonesClient(cls.nh)
 
         try:
             cls._database_query = cls.nh.get_service_client('/database/requests', navigator_srvs.ObjectDBQuery)

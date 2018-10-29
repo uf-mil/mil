@@ -50,6 +50,7 @@
   <run_depend>navigator_2dsim</run_depend>
   <run_depend>robot_state_publisher</run_depend>
   <run_depend>joint_state_publisher</run_depend>
+  <run_depend>mil_passive_sonar</run_depend>
   <export>
   </export>
 </package>
