@@ -32,5 +32,29 @@
       'light_buoy::base_link': stc_platform
       'robotx_light_buoy': stc_platform
       'robotx_dock_2018': dock
+      'ul_marker::link' : totem_white
+      'ur_marker::link' : totem_white
+      'bl_marker::link' : totem_white
+      'br_marker::link' : totem_white
+      'buoys::polyform_a3_0::base_link' : buoy
+      'buoys::polyform_a3_1::base_link' : buoy
+      'buoys::polyform_a3_2::base_link' : buoy
+      'buoys::polyform_a3_3::base_link' : buoy
+      'buoys::polyform_a3_4::base_link' : buoy
+      'buoys::polyform_a3_5::base_link' : buoy
+      'buoys::polyform_a5_0::base_link' : buoy
+      'buoys::polyform_a5_1::base_link' : buoy
+      'buoys::polyform_a5_2::base_link' : buoy
+      'buoys::polyform_a5_3::base_link' : buoy
+      'buoys::polyform_a5_4::base_link' : buoy
+      'buoys::polyform_a5_5::base_link' : buoy
+      'buoys::polyform_a5_6::base_link' : buoy
+      'buoys::polyform_a7_0::base_link' : buoy
+      'buoys::polyform_a7_1::base_link' : buoy
+      'buoys::polyform_a7_2::base_link' : buoy
+      'buoys::polyform_a7_3::base_link' : buoy
+      'buoys::polyform_a7_4::base_link' : buoy
+      'buoys::polyform_a7_5::base_link' : buoy
+      'buoys::polyform_a7_6::base_link' : buoy
     </rosparam>
 </launch>
