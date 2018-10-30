@@ -170,11 +170,15 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
   (*filtered_accrued).header.frame_id = "enu";
   pub_pcl_.publish(filtered_accrued);
 
-  // Get object clusters from persistent pointcloud
-  clusters_t clusters = detector_.get_clusters(filtered_accrued);
+  // Skip object detection if all points where filtered out
+  if (!(*filtered_accrued).empty())
+  {
+    // Get object clusters from persistent pointcloud
+    clusters_t clusters = detector_.get_clusters(filtered_accrued);
 
-  // Associate current clusters with old ones
-  ass.associate(objects_, *filtered_accrued, clusters);
+    // Associate current clusters with old ones
+    ass.associate(objects_, *filtered_accrued, clusters);
+  } else ROS_WARN_ONCE("Filtered pointcloud had no points. Consider changing filter parameters.");
 
   UpdateObjects();
 }
