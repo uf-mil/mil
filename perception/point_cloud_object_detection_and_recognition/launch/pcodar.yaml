@@ -1,9 +1,9 @@
 # Point cloud builder
-accumulator_number_persistant_clouds : 10
+accumulator_number_persistant_clouds : 15
 
 # Filter
-persistant_cloud_filter_min_neighbors : 10
-persistant_cloud_filter_radius : 0.1
+persistant_cloud_filter_min_neighbors : 20
+persistant_cloud_filter_radius : 0.25
 
 # Clusterer
 cluster_tolerance_m : 4.4
