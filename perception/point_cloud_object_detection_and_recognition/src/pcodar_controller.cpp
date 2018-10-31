@@ -178,7 +178,9 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
 
     // Associate current clusters with old ones
     ass.associate(objects_, *filtered_accrued, clusters);
-  } else ROS_WARN_ONCE("Filtered pointcloud had no points. Consider changing filter parameters.");
+  }
+  else
+    ROS_WARN_ONCE("Filtered pointcloud had no points. Consider changing filter parameters.");
 
   UpdateObjects();
 }
