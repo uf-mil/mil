@@ -3,6 +3,7 @@ import rospy
 from mil_ros_tools import Image_Subscriber, numpy_to_point2d
 from mil_msgs.msg import ObjectInImage, ObjectsInImage
 from std_srvs.srv import SetBool
+from image_geometry import PinholeCameraModel
 import numpy as np
 import abc
 
@@ -69,6 +70,7 @@ class VisionNode(object):
     def __init__(self):
         self._objects_pub = rospy.Publisher("~identified_objects", ObjectsInImage, queue_size=3)
         self._camera_info = None
+        self.camera_model = None
         self._enabled = False
         self._image_sub = Image_Subscriber("image", callback=self._img_cb)
         if rospy.get_param("~autostart", default=False):
@@ -87,6 +89,8 @@ class VisionNode(object):
     def _enable(self):
         if self._camera_info is None:
             self._camera_info = self._image_sub.wait_for_camera_info()
+            self.camera_model = PinholeCameraModel()
+            self.camera_model.fromCameraInfo(self._camera_info)
         self._enabled = True
         rospy.loginfo("Enabled.")
 
