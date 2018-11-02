@@ -11,7 +11,9 @@ from sklearn.model_selection import train_test_split
 
 dictionary = {}
 
-
+'''
+Split data function seperates images and annotations into testing and training sets. Takes in the absolute paths to the directories or defaults to generated directories from process_data.py. Supports resizing images, but given that this has shown no performance increase, it is currently defaulting to false.
+'''
 def split_data(image_dir='Images', ann_dir='Annotations', resize=False, size=[256, 150]):
     if resize:
         imgs_jpg = glob.glob(image_dir + '/*.png')
@@ -54,6 +56,9 @@ def split_data(image_dir='Images', ann_dir='Annotations', resize=False, size=[25
         os.rename(image, 'test/' + os.path.basename(image))
 
 
+'''
+Hooks into the Labelbox2Pascal directory and the scripts therein. Processes our json file into the PASCAL VOC format which results in an Image directory and a Annotation directory.
+'''
 def json_to_pascal(labelled_data='json_files/project_labels.json'):
     print("Downloading images and xml files, please wait...")
 
@@ -81,7 +86,8 @@ def json_to_pascal(labelled_data='json_files/project_labels.json'):
 
     print('Done getting xml files')
 
-
+'''
+Translates the XML files generated from the PASCAL VOC format into correctly formatted CSV files that Tensorflow will read and convert into a TF record. Takesin the absolute path to the test and train directories, as well as the labelmap that will be used to generate the CSV. It is at this point that the majority of the bounds checking is done. Will throw out bad data or data that is out of bounds. It also ensures that the only images being added to the test and training set are the images that have the correct labels from the labelmap.'''
 def xml_to_csv(path, labelmap, resize=False, size=[256, 150]):
     # Size is width by height
     number_of_images = 0

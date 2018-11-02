@@ -2,6 +2,10 @@ import cv2
 import sys
 import pandas as pd
 
+'''
+This script allows us to visualize the results of the data processing and to ensure that all labels are correct placed.
+'''
+
 test_df = pd.read_csv('test_labels.csv')
 train_df = pd.read_csv('train_labels.csv')
 

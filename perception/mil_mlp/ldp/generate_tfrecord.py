@@ -1,5 +1,5 @@
 """
-Usage:
+Usage
   # From tensorflow/models/
   # Create train data:
   python generate_tfrecord.py --csv_input=train/train_labels.csv --image_dir=train --output_path=train.record
@@ -18,28 +18,17 @@ from PIL import Image
 from collections import namedtuple
 
 flags = tf.app.flags
-# flags.DEFINE_string('csv_input', '', 'Path to the CSV input')
-# flags.DEFINE_string('image_dir', '', 'Path to the image directory')
-# flags.DEFINE_string('output_path', '', 'Path to output TFRecord')
-# flags.DEFINE_string('labelmap_path', '', 'Path to labelmap.pbtxt')
 FLAGS = flags.FLAGS
-# dictionary = {}
-
-# TO-DO replace this with label map
 
 
 def create_dict():
     global dictionary
-    with open(('../data/' + FLAGS.labelmap_path)) as f:
+    with open((FLAGS.labelmap_path)) as f:
         txt = f.read()
     labels = []
     ids = []
-    # print(txt)
-    # txt = txt[2, :]
     full_split = [s.strip().split(': ') for s in txt.splitlines()]
-    # print(full_split)
     full_split = full_split[1:]
-    # try:
     for i in full_split:
         if len(i) < 2:
             continue
@@ -53,16 +42,10 @@ def create_dict():
         else:
             print(
                 "Error, incorrect key located in labelmap. Should be only id or name. Instead found: ", i[1])
-    # except:
-        # print("It errored! Whomp whomp. ", i)
     dictionary = dict(zip(labels, ids))
-    # print(dictionary)
 
 
 def class_text_to_int(row_label):
-    # print(dictionary)
-    # print(row_label)
-    # print(dictionary.get(row_label))
     return dictionary.get(row_label)
 
 
@@ -95,8 +78,6 @@ def create_tf_example(group, path):
         ymaxs.append(row['ymax'] / height)
         classes_text.append(row['class'].encode('utf8'))
         new_class = class_text_to_int(row['class'])
-        # print("width: ", width)
-        # print("height: ", height)
         if new_class is None:
             continue
         classes.append(new_class)

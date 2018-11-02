@@ -82,10 +82,10 @@ pedometry.txt
 drivers/mil_blueview_driver/bvtsdk
 
 # Ignore Tensorflow models and any Images or Annotations left over.
-perception/docker_tf/transfer_learning/models/
-perception/docker_tf/transfer_learning/labelbox_data_processing/Images/
-perception/docker_tf/transfer_learning/labelbox_data_processing/Annotations/
-perception/docker_tf/transfer_learning/labelbox_data_processing/test/
-perception/docker_tf/transfer_learning/labelbox_data_processing/train/
-perception/docker_tf/transfer_learning/data/test.record
-perception/docker_tf/transfer_learning/data/train.record
+perception/mil_mlp/docker_tf/transfer_learning/models/
+perception/mil_mlp/ldp/Images/
+perception/mil_mlp/ldp/Annotations/
+perception/mil_mlp/ldp/test/
+perception/mil_mlp/ldp/train/
+perception/mil_mlp/docker_tf/transfer_learning/data/
+perception/mil_mlp/docker_tf/transfer_learning/data/

@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
@@ -13,20 +14,21 @@ flags = tf.app.flags
 flags.DEFINE_boolean('resize', False, 'Resize images? Boolean.')
 flags.DEFINE_string('labelbox_format', 'json',
                     'Only supports json XY or PASCAL inputs')
-flags.DEFINE_string('json_name', '', 'Path to json file')
+flags.DEFINE_string('json_path', '', 'Path to json file')
 flags.DEFINE_string('csv_input', 'default', 'Path to the CSV input')
 flags.DEFINE_string('ann_dir', '', 'Path to XML directory')
 flags.DEFINE_string('image_dir', 'default', 'Path to the image directory')
 flags.DEFINE_string('output_path', 'default', 'Path to output TFRecord')
 flags.DEFINE_string('labelmap_path', '', 'Path to labelmap.pbtxt')
-flags.DEFINE_boolean('cleanup', True, 'Delete all files? Boolean.')
+flags.DEFINE_boolean('cleanup', False, 'Delete all files? Boolean.')
+flags.DEFINE_boolean('check_tfrecords', False, 'If true, print tfrecords.')
 FLAGS = flags.FLAGS
 
 
 def main(_):
     if FLAGS.labelbox_format is 'json':
-        json_name = FLAGS.json_name
-        json_to_pascal(json_name)
+        json_path = FLAGS.json_path
+        json_to_pascal(json_path)
         split_data(resize=FLAGS.resize)
 
     elif FLAGS.labelbox_format is 'PASCAL':
@@ -47,7 +49,7 @@ def main(_):
         gtfr.create_dict()
         if FLAGS.output_path is 'default':
             writer = tf.python_io.TFRecordWriter(
-                '../data/' + (folder + '.record'))
+                '../docker_tf/transfer_learning/data/' + (folder + '.record'))
         else:
             writer = tf.python_io.TFRecordWriter(FLAGS.output_path)
         if FLAGS.image_dir is 'default':
@@ -67,13 +69,30 @@ def main(_):
         output_path = os.path.join(os.getcwd(), FLAGS.output_path)
         print('Successfully created the TFRecords: {}'.format(output_path))
 
+        if FLAGS.check_tfrecords:
+            print('Checking Validity of TFRecords. Expect image encoding alongside label data.')
+            if FLAGS.output_path is 'default':
+                for example in tf.python_io.tf_record_iterator('../docker_tf/transfer_learning/data/'+(folder+'.record')):
+                    result = tf.train.Example.FromString(example)
+                    print(result)
+            else:
+               for example in tf.python_io.tf_record_iterator(FLAGS.output_path):
+                   result = tf.train.Example.FromString(example)
+                   print(result)
     # Clean up
     if FLAGS.cleanup:
         try:
-            os.remove('test_labels.csv')
-            os.remove('train_labels.csv')
-            shutil.rmtree('Images/')
-            shutil.rmtree('Annotations/')
+            if FLAGS.csv_input is 'default':
+                os.remove('test_labels.csv')
+                os.remove('train_labels.csv')
+            else:
+                os.remove(FLAGS.csv_input)
+            if FLAGS.image_dir is not 'default' or FLAGS.ann_dir is not 'default':
+                shutil.rmtree(FLAGS.image_dir)
+                shutil.rmtree(FLAGS.ann_dir)
+            else:
+                shutil.rmtree('Images/')
+                shutil.rmtree('Annotations/')
             shutil.rmtree('test/')
             shutil.rmtree('train/')
         except Exception as e:
