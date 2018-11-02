@@ -28,6 +28,8 @@ void Associator::associate(ObjectMap& prev_objects, point_cloud const& pc, clust
       int index = 0;
       float distance = 0.;
       search.approxNearestSearch((*pair).second.center_, index, distance);
+      // Search returns squared distance, so sqrt it here
+      distance = sqrt(distance);
       if (distance < min && distance < max_distance_)
       {
         min = distance;

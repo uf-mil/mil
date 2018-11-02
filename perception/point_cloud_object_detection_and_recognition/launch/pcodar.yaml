@@ -1,17 +1,17 @@
 # Point cloud builder
-accumulator_number_persistant_clouds : 10
+accumulator_number_persistant_clouds : 15
 
 # Filter
-persistant_cloud_filter_mean_k : 10
-persistant_cloud_filter_stddev : 0.05
+persistant_cloud_filter_min_neighbors : 20
+persistant_cloud_filter_radius : 0.25
 
 # Clusterer
 cluster_tolerance_m : 4.4
-cluster_min_points : 2
+cluster_min_points : 20
 cluster_max_points : 1000
 
 # Associator
-associator_max_distance : 2
+associator_max_distance : 5
 
 # Ogrid
 ogrid_height_meters : 300

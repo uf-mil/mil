@@ -1,6 +1,6 @@
 #pragma once
 
-#include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/filters/radius_outlier_removal.h>
 #include <pcl/point_types.h>
 
 #include "pcodar_types.hpp"
@@ -15,7 +15,7 @@ public:
   void update_config(Config const& config);
 
 private:
-  pcl::StatisticalOutlierRemoval<pcl::PointXYZ> outlier_filter_;
+  pcl::RadiusOutlierRemoval<point_t> outlier_filter_;
 };
 
 }  // namespace pcodar
