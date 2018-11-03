@@ -71,5 +71,5 @@ alias canceltask="rosrun mil_tasks task_client cancel"
 alias listtasks="rosrun mil_tasks task_client list"
 
 # Development
-alias mcfmt="python2.7 -m flake8 --ignore E731 --max-line-length=120 \$(rosrun mil_tools list_python_files \$CATKIN_DIR/src/mil_common __init__.py drivers/pointgrey_camera_driver drivers/velodyne drivers/mil_passive_sonar drivers/roboteq ros_alarms txros deprecated/)"
+alias mcfmt="python2.7 -m flake8 --ignore E731 --max-line-length=120 \$(rosrun mil_tools list_python_files \$CATKIN_DIR/src/mil_common __init__.py drivers/pointgrey_camera_driver drivers/velodyne drivers/mil_passive_sonar drivers/roboteq ros_alarms txros drivers/LMS1xx deprecated/)"
 alias mctest="(cd \$CATKIN_DIR; rosrun mil_tools catkin_tests_directory.py src/mil_common -i ros_alarms velodyne_driver velodyne_pointcloud pointgrey_camera_driver)"
