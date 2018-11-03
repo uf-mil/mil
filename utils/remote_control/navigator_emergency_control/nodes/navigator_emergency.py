@@ -79,9 +79,9 @@ class Joystick(object):
         thruster_deploy = bool(joy.buttons[5])
 
         if go_inactive and not self.last_go_inactive:
-            rospy.loginfo('Back pressed. Going inactive')
+            rospy.loginfo('Go inactive pressed. Going inactive')
             self.reset()
-        return
+            return
 
         # Reset controller state if only start is pressed down about 1 seconds
         self.start_count += start
@@ -89,6 +89,9 @@ class Joystick(object):
             rospy.loginfo("Resetting controller state")
             self.reset()
             self.active = True
+
+        if not self.active:
+            return
 
         if thruster_retract:
             self.thruster_retract_count += 1
@@ -106,8 +109,6 @@ class Joystick(object):
             self.remote.deploy_thrusters()
             self.thruster_deploy_count = 0
 
-        if not self.active:
-            return
 
         if raise_kill and not self.last_raise_kill:
             self.remote.kill()
