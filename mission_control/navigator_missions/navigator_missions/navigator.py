@@ -70,6 +70,7 @@ class Navigator(BaseTask):
         cls.vision_proxies = {}
         cls._load_vision_services()
 
+        cls.launcher_state = "inactive"
         cls._actuator_timing = yield cls.nh.get_param("~actuator_timing")
 
         cls.mission_params = {}
@@ -214,13 +215,23 @@ class Navigator(BaseTask):
 
     @util.cancellableInlineCallbacks
     def reload_launcher(self):
+        if self.launcher_state != "inactive":
+            raise Exception("Launcher is {}".format(self.launcher_state))
+        self.launcher_state = "reloading"
         yield self.set_valve('LAUNCHER_RELOAD', True)
         yield self.nh.sleep(self._actuator_timing['launcher_reload_extend_time'])
         yield self.set_valve('LAUNCHER_RELOAD', False)
         yield self.nh.sleep(self._actuator_timing['launcher_reload_retract_time'])
+        self.launcher_state = "inactive"
 
+    @util.cancellableInlineCallbacks
     def fire_launcher(self):
-        return self.set_valve('LAUNCHER_FIRE', True)
+        if self.launcher_state != "inactive":
+            raise Exception("Launcher is {}".format(self.launcher_state))
+        self.launcher_state = "firing"
+        yield self.set_valve('LAUNCHER_FIRE', True)
+        yield self.nh.sleep(0.5)
+        self.launcher_state = "inactive"
 
     def set_valve(self, name, state):
         req = SetValveRequest(actuator=name, opened=state)
