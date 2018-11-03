@@ -253,8 +253,8 @@ class KillInterface(object):
         for stick in self.sticks:
             if self.sticks[stick] >= 0x8000:  # Convert 2's complement hex to signed decimal if negative
                 self.sticks[stick] -= 0x10000
-        current_joy.axes[0] = np.float32(self.sticks['UD']) / 2048
-        current_joy.axes[1] = np.float32(self.sticks['LR']) / 2048
+        current_joy.axes[0] = np.float32(self.sticks['LR']) / 2048
+        current_joy.axes[1] = np.float32(self.sticks['UD']) / 2048
         current_joy.axes[3] = np.float32(self.sticks['TQ']) / 2048
         current_joy.buttons[7] = np.int32(self.buttons['START'])
         current_joy.buttons[3] = np.int32(self.buttons['Y'])
