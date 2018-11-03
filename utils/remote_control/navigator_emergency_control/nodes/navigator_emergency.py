@@ -32,17 +32,17 @@ class Joystick(object):
         Used to reset the state of the controller. Sometimes when it
         disconnects then comes back online, the settings are all out of whack.
         '''
-        self.last_kill = False
+        self.last_raise_kill = False
+        self.last_clear_kill = False
         self.last_station_hold_state = False
-        self.last_auto_control = False
         self.last_emergency_control = False
-        self.last_shooter_cancel = False
-        self.last_change_mode = False
+        self.last_go_inactive = False
+        self.thruster_deploy_count = 0
+        self.thruster_retract_count = 0
 
         self.start_count = 0
         self.last_joy = None
         self.active = False
-
         self.remote.clear_wrench()
 
     def check_for_timeout(self, joy):
@@ -70,48 +70,62 @@ class Joystick(object):
 
         # Assigns readable names to the buttons that are used
         start = joy.buttons[7]
-        kill = bool(joy.buttons[2])
+        go_inactive = joy.buttons[6]
+        raise_kill = bool(joy.buttons[1])
+        clear_kill = bool(joy.buttons[2])
         station_hold = bool(joy.buttons[0])
-        emergency_control = bool(joy.buttons[11])
-        auto_control = bool(joy.buttons[12])
-        shooter_cancel = bool(joy.buttons[1])
-        change_mode = bool(joy.buttons[3])
+        emergency_control = bool(joy.buttons[13])
+        thruster_retract = bool(joy.buttons[4])
+        thruster_deploy = bool(joy.buttons[5])
 
-        # Reset controller state if only start is pressed down about 3 seconds
+        if go_inactive and not self.last_go_inactive:
+            rospy.loginfo('Go inactive pressed. Going inactive')
+            self.reset()
+            return
+
+        # Reset controller state if only start is pressed down about 1 seconds
         self.start_count += start
-        if self.start_count > 10:
+        if self.start_count > 5:
             rospy.loginfo("Resetting controller state")
             self.reset()
             self.active = True
-            self.remote.clear_kill()
 
         if not self.active:
             return
 
-        if kill and not self.last_kill:
-            self.remote.toggle_kill()
+        if thruster_retract:
+            self.thruster_retract_count += 1
+        else:
+            self.thruster_retract_count = 0
+        if thruster_deploy:
+            self.thruster_deploy_count += 1
+        else:
+            self.thruster_deploy_count = 0
+
+        if self.thruster_retract_count > 10:
+            self.remote.retract_thrusters()
+            self.thruster_retract_count = 0
+        elif self.thruster_deploy_count > 10:
+            self.remote.deploy_thrusters()
+            self.thruster_deploy_count = 0
+
+        if raise_kill and not self.last_raise_kill:
+            self.remote.kill()
+
+        if clear_kill and not self.last_clear_kill:
+            self.remote.clear_kill()
 
         if station_hold and not self.last_station_hold_state:
             self.remote.station_hold()
 
-        if auto_control and not self.last_auto_control:
-            self.remote.select_autonomous_control()
-
         if emergency_control and not self.last_emergency_control:
             self.remote.select_emergency_control()
 
-        if shooter_cancel and not self.last_shooter_cancel:
-            self.remote.shooter_cancel()
-
-        if change_mode and not self.last_change_mode:
-            self.remote.select_next_control()
-
-        self.last_kill = kill
+        self.last_raise_go_inactive = go_inactive
+        self.last_raise_kill = raise_kill
+        self.last_clear_kill = clear_kill
         self.last_station_hold_state = station_hold
-        self.last_auto_control = auto_control
         self.last_emergency_control = emergency_control
-        self.last_shooter_cancel = shooter_cancel
-        self.last_change_mode = change_mode
 
         # Scale joystick input to force and publish a wrench
         x = joy.axes[1] * self.force_scale

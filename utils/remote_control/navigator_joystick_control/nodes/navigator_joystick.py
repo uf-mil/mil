@@ -91,6 +91,10 @@ class Joystick(object):
             self.reset()
             self.active = True
 
+        if not self.active:
+            self.remote.clear_wrench()
+            return
+
         if thruster_retract:
             self.thruster_retract_count += 1
         else:
@@ -106,10 +110,6 @@ class Joystick(object):
         elif self.thruster_deploy_count > 10:
             self.remote.deploy_thrusters()
             self.thruster_deploy_count = 0
-
-        if not self.active:
-            self.remote.clear_wrench()
-            return
 
         if raise_kill and not self.last_raise_kill:
             self.remote.kill()

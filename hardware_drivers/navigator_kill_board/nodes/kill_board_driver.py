@@ -253,16 +253,17 @@ class KillInterface(object):
         for stick in self.sticks:
             if self.sticks[stick] >= 0x8000:  # Convert 2's complement hex to signed decimal if negative
                 self.sticks[stick] -= 0x10000
-        current_joy.axes[0] = np.float32(self.sticks['UD']) / 2048
-        current_joy.axes[1] = np.float32(self.sticks['LR']) / 2048
+        current_joy.axes[0] = np.float32(self.sticks['LR']) / 2048
+        current_joy.axes[1] = np.float32(self.sticks['UD']) / 2048
         current_joy.axes[3] = np.float32(self.sticks['TQ']) / 2048
+        current_joy.buttons[0] = np.int32(self.buttons['STATION_HOLD'])
+        current_joy.buttons[1] = np.int32(self.buttons['RAISE_KILL'])
+        current_joy.buttons[2] = np.int32(self.buttons['CLEAR_KILL'])
+        current_joy.buttons[4] = np.int32(self.buttons['THRUSTER_RETRACT'])
+        current_joy.buttons[5] = np.int32(self.buttons['THRUSTER_DEPLOY'])
+        current_joy.buttons[6] = np.int32(self.buttons['GO_INACTIVE'])
         current_joy.buttons[7] = np.int32(self.buttons['START'])
-        current_joy.buttons[3] = np.int32(self.buttons['Y'])
-        current_joy.buttons[2] = np.int32(self.buttons['X'])
-        current_joy.buttons[0] = np.int32(self.buttons['A'])
-        current_joy.buttons[1] = np.int32(self.buttons['B'])
-        current_joy.buttons[11] = np.int32(self.buttons['DL'])  # Dpad Left
-        current_joy.buttons[12] = np.int32(self.buttons['DR'])  # Dpad Right
+        current_joy.buttons[13] = np.int32(self.buttons['EMERGENCY_CONTROL'])
         current_joy.header.frame_id = "/base_link"
         current_joy.header.stamp = rospy.Time.now()
         self.joy_pub.publish(current_joy)
