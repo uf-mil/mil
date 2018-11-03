@@ -15,3 +15,6 @@
 	path = drivers/roboteq
 	url = https://github.com/uf-mil/roboteq
 	branch = master
+[submodule "drivers/LMS1xx"]
+	path = drivers/LMS1xx
+	url = https://github.com/uf-mil/LMS1xx.git
