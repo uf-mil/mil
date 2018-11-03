@@ -109,7 +109,6 @@ class Joystick(object):
             self.remote.deploy_thrusters()
             self.thruster_deploy_count = 0
 
-
         if raise_kill and not self.last_raise_kill:
             self.remote.kill()
 
