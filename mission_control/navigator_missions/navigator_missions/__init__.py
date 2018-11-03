@@ -33,4 +33,5 @@ from ring_recovery import RingRecovery
 from obstacle_avoid import ObstacleAvoid
 from stc_jaxon import ScanTheCodeJaxon
 from explore_towers import ExploreTowers
+from track_target import TrackTarget
 import pose_editor
