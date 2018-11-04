@@ -1,0 +1,4 @@
+<launch>
+    <!-- Send a static GPS fix to every new subscriber. Edit latitude and longitude in launch/demo.gps to use your own position. -->
+    <node pkg="rostopic" type="rostopic" name="fake_gps_fix" args="pub /satellite/navsatfix sensor_msgs/NavSatFix --latch --file=$(find rviz_satellite)/launch/demo.gps" output="screen"/>
+</launch>
