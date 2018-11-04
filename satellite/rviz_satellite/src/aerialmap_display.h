@@ -17,6 +17,7 @@
 #include <ros/time.h>
 #include <rviz/display.h>
 #include <sensor_msgs/NavSatFix.h>
+#include <nav_msgs/Odometry.h>
 
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreMaterial.h>
@@ -88,13 +89,14 @@ protected:
   virtual void unsubscribe();
 
   void navFixCallback(const sensor_msgs::NavSatFixConstPtr &msg);
+  void odomCallback(const nav_msgs::Odometry &msg);
 
   void loadImagery();
 
   void assembleScene();
 
   void clear();
-  
+
   void clearGeometry();
 
   void transformAerialMap();
@@ -111,6 +113,7 @@ protected:
   std::vector<MapObject> objects_;
 
   ros::Subscriber coord_sub_;
+  ros::Subscriber odom_sub_;
 
   //  properties
   RosTopicProperty *topic_property_;
@@ -123,6 +126,7 @@ protected:
   FloatProperty *alpha_property_;
   Property *draw_under_property_;
   EnumProperty * frame_convention_property_;
+  RosTopicProperty *topic_property_2;
 
   float alpha_;
   bool draw_under_;
@@ -135,6 +139,8 @@ protected:
   bool received_msg_;
   sensor_msgs::NavSatFix ref_fix_;
   std::shared_ptr<TileLoader> loader_;
+
+  const nav_msgs::Odometry* odom;
 };
 
 } // namespace rviz

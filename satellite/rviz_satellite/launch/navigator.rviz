@@ -8,25 +8,12 @@ Panels:
         - /AerialMapDisplay1
         - /AerialMapDisplay1/Status1
         - /Odometry1
+        - /Odometry1/Status1
         - /Odometry1/Shape1
-        - /TF1
         - /TF1/Frames1
-        - /Velodyne1
-        - /WrenchStamped1
-        - /PingerDirection1
         - /RobotModel1
         - /RobotModel1/Status1
-        - /Lqrrt_lookat1
-        - /Lqrrt_impact1
-        - /Lqrrt_tree1
-        - /Trajectory1
         - /Trajectory1/Shape1
-        - /Lqrrt_path1
-        - /Lqrrt_goal1
-        - /MasterOgrid1
-        - /LIDAR OA Markers1
-        - /Objects1
-        - /BoatInfo1
       Splitter Ratio: 0.465115994
     Tree Height: 713
   - Class: rviz/Selection
@@ -47,7 +34,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: Velodyne
 Visualization Manager:
   Class: ""
   Displays:
@@ -61,7 +48,7 @@ Visualization Manager:
       Name: AerialMapDisplay
       Object URI: https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZGVwdXR5OTgiLCJhIjoiY2ptdjB2ZGU3MDA0cTNwbXd2MHczbDk0NiJ9.g42BxGR2oL7Xz2SOWJA5-g
       Robot frame: enu
-      Topic: /satellite/navsatfix
+      Topic: /odom
       Value: true
       Zoom: 20
     - Alpha: 0.5
@@ -192,9 +179,9 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 63
+      Max Intensity: 66
       Min Color: 0; 0; 0
-      Min Intensity: 0
+      Min Intensity: 1
       Name: Velodyne
       Position Transformer: XYZ
       Queue Size: 2
@@ -507,7 +494,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: -1.64999962
+      Angle: -1.46999991
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
@@ -517,7 +504,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 8.96734619
+      Scale: 5.10948277
       Target Frame: base_link
       Value: TopDownOrtho (rviz)
       X: 2.59638691
@@ -545,5 +532,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 967
-  X: 47
-  Y: 24
+  X: 57
+  Y: 34

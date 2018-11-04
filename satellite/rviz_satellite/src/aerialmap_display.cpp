@@ -46,6 +46,8 @@ static constexpr int kMaxBlocks = 8;
 // Max zoom level to support.
 static constexpr int kMaxZoom = 22;
 
+void odomCallback(const nav_msgs::Odometry &msg);
+
 // TODO(gareth): If higher zooms are ever supported, change calculations from
 // int to long wherever applicable.
 static_assert((1 << kMaxZoom) < std::numeric_limits<unsigned int>::max(), "");
@@ -84,6 +86,10 @@ AerialMapDisplay::AerialMapDisplay()
       "Topic", "", QString::fromStdString(
                        ros::message_traits::datatype<sensor_msgs::NavSatFix>()),
       "nav_msgs::Odometry topic to subscribe to.", this, SLOT(updateTopic()));
+  topic_property_2 = new RosTopicProperty(
+    "Topic", "", QString::fromStdString(
+      ros::message_traits::datatype<nav_msgs::Odometry>()),
+      "nav_msgs::Odometry(2) topic to subscribe to.", this, SLOT(updateTopic()));
 
   frame_property_ = new TfFrameProperty("Robot frame", "world",
                                         "TF frame for the moving robot.", this,
@@ -122,6 +128,8 @@ AerialMapDisplay::AerialMapDisplay()
   object_uri_property_->setShouldBeSaved(true);
   object_uri_ = object_uri_property_->getStdString();
 
+
+
   const QString zoom_desc = QString::fromStdString(
       "Zoom level (0 - " + std::to_string(kMaxZoom) + ")");
   zoom_property_ =
@@ -152,6 +160,18 @@ AerialMapDisplay::AerialMapDisplay()
 
   //  updating one triggers reload
   updateBlocks();
+
+  //  subscribes to the /odom topic to collect info on robot location.
+  /*
+  ros::NodeHandle n;
+  ros::Subscriber odom_sub = n.subscribe("/odom", 1, odomCallback);
+  */
+}
+
+//  Navigator offsetting
+
+void AerialMapDisplay::odomCallback(const nav_msgs::Odometry &msg){
+  odom = &msg;
 }
 
 AerialMapDisplay::~AerialMapDisplay() {
@@ -182,6 +202,18 @@ void AerialMapDisplay::subscribe() {
           update_nh_.subscribe(topic_property_->getTopicStd(), 1,
                                &AerialMapDisplay::navFixCallback, this);
 
+      setStatus(StatusProperty::Ok, "Topic", "OK");
+    }
+    catch (ros::Exception &e) {
+      setStatus(StatusProperty::Error, "Topic",
+                QString("Error subscribing: ") + e.what());
+    }
+  }
+
+  if (!topic_property_2->getTopic().isEmpty()){
+    try {
+      ROS_INFO("Subscribing to %s", topic_property_2->getTopicStd().c_str());
+      odom_sub_ = update_nh_.subscribe(topic_property_2->getTopicStd(), 1, &AerialMapDisplay::odomCallback, this);
       setStatus(StatusProperty::Ok, "Topic", "OK");
     }
     catch (ros::Exception &e) {
@@ -249,7 +281,6 @@ void AerialMapDisplay::updateTopic() {
   clear();
   subscribe();
 }
-
 void AerialMapDisplay::clear() {
   setStatus(StatusProperty::Warn, "Message", "No map received");
   clearGeometry();
@@ -282,13 +313,13 @@ void AerialMapDisplay::update(float, float) {
   //  draw
   context_->queueRender();
 }
-
+int timeout = 0;
 void
 AerialMapDisplay::navFixCallback(const sensor_msgs::NavSatFixConstPtr &msg) {
   // If the new (lat,lon) falls into a different tile then we have some
   // reloading to do.
   if (!received_msg_ ||
-      (loader_ && !loader_->insideCentreTile(msg->latitude, msg->longitude) &&
+      (loader_ && timeout++ % 100 == 0 &&
        dynamic_reload_property_->getValue().toBool())) {
     ref_fix_ = *msg;
     ROS_INFO("Reference point set to: %.12f, %.12f", ref_fix_.latitude,
@@ -305,7 +336,7 @@ AerialMapDisplay::navFixCallback(const sensor_msgs::NavSatFixConstPtr &msg) {
 void AerialMapDisplay::loadImagery() {
   //  cancel current imagery, if any
   loader_.reset();
-  
+
   if (!received_msg_) {
     //  no message received from publisher
     return;
@@ -340,14 +371,14 @@ void AerialMapDisplay::assembleScene() {
     return; //  nothing to update
   }
   dirty_ = false;
-  
+
   if (!loader_) {
     return; //  no tiles loaded, don't do anything
   }
-  
+
   //  get rid of old geometry, we will re-build this
   clearGeometry();
-  
+
   //  iterate over all tiles and create an object for each of them
   for (const TileLoader::MapTile &tile : loader_->tiles()) {
     // NOTE(gareth): We invert the y-axis so that positive y corresponds
@@ -357,11 +388,13 @@ void AerialMapDisplay::assembleScene() {
     const double tile_w = w * loader_->resolution();
     const double tile_h = h * loader_->resolution();
 
-    // Shift back such that (0, 0) corresponds to the exact latitude and
+    // Shift back such that (odom_x, odom_y) corresponds to the exact latitude and
     // longitude the tile loader requested.
     // This is the local origin, in the frame of the map node.
-    const double origin_x = -loader_->originOffsetX() * tile_w;
-    const double origin_y = -(1 - loader_->originOffsetY()) * tile_h;
+    double odom_x = odom != nullptr ? odom->pose.pose.position.x : 0.0;
+    double odom_y = odom != nullptr ? odom->pose.pose.position.y : 0.0;
+    const double origin_x = -loader_->originOffsetX() * tile_w + odom_x;
+    const double origin_y = -(1 - loader_->originOffsetY()) * tile_h + odom_y;
 
     // determine location of this tile, flipping y in the process
     const double x = (tile.x() - loader_->centerTileX()) * tile_w + origin_x;
@@ -507,7 +540,7 @@ void AerialMapDisplay::transformAerialMap() {
   pose.position.x = 0;
   pose.position.y = 0;
   pose.position.z = 0;
-  
+
   const std::string frame = frame_property_->getFrameStd();
   Ogre::Vector3 position{0, 0, 0};
   Ogre::Quaternion orientation{1, 0, 0, 0};
@@ -540,7 +573,7 @@ void AerialMapDisplay::transformAerialMap() {
   // force aerial imagery on ground
   position.z = 0;
   scene_node_->setPosition(position);
-  
+
   const int convention = frame_convention_property_->getOptionInt();
   if (convention == FRAME_CONVENTION_XYZ_ENU) {
     // ENU corresponds to our default drawing method
