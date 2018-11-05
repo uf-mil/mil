@@ -72,13 +72,14 @@ def main(_):
         if FLAGS.check_tfrecords:
             print('Checking Validity of TFRecords. Expect image encoding alongside label data.')
             if FLAGS.output_path is 'default':
-                for example in tf.python_io.tf_record_iterator('../docker_tf/transfer_learning/data/'+(folder+'.record')):
+                for example in tf.python_io.tf_record_iterator(
+                        '../docker_tf/transfer_learning/data/' + (folder + '.record')):
                     result = tf.train.Example.FromString(example)
                     print(result)
             else:
-               for example in tf.python_io.tf_record_iterator(FLAGS.output_path):
-                   result = tf.train.Example.FromString(example)
-                   print(result)
+                for example in tf.python_io.tf_record_iterator(FLAGS.output_path):
+                    result = tf.train.Example.FromString(example)
+                    print(result)
     # Clean up
     if FLAGS.cleanup:
         try:
@@ -100,4 +101,3 @@ def main(_):
                 "Cleanup failed, either a directory or file was missing. Could indicate failed download.", e)
 if __name__ == '__main__':
     tf.app.run()
-    # main()

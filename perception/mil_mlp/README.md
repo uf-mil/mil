@@ -1,20 +1,25 @@
-# Transfer Learning Object Detection - A Short Tutorial
+# The MIL Machine Learning Pipeline (MIL_MLP) - Transfer Learning for Object Detection
 
 # @TODO
 1. Configurable image download
-2. Add docker build to the install script. Until then docker build must be done manually.
+2. [BLOCKED BY TENSORFLOW/CUDA COMPATABILITY] Add docker build to the install script. Until then docker build must be done manually.
 3. Have datasets stored on internal server so it can be downloaded.
 4. Configurable resize (Low importance due to no significant performance gain)
 5. Configurable CSV input (Currently it still assumes you are handing it a json or PASCAL so it will error out if
 those are not provided.)
 6. Add python dependencies to the install script.
 
+## What does this do?
+This package is designed to fully automate the process of training neural networks for object detection. One of the major challenges that comes with training networks is ensuring data integrity. This pipeline was developed for use with Tensorflow and the Labelbox labelling tool. The pipeline takes in a JSON or PASCAL VOC dataset from labelbox and processes it into a TFRecord ready for Tensorflow, eliminating superfluous or bad labels and ensuring the integrity of the dataset.
+
 ## Quick Start Guide
 
 1. Process the Data:
 
+NOTE: USE PATHS FROM THE DIRECTORY YOU ARE IN, OR USE ABSOLUTE PATHS.
+
 ```bash
-rosrun mil_mlp process_data.py --json_path='json_files/JSON_NAME.json --labelmap_path='../docker_tf/transfer_learning/data/LABELMAPNAME.pbtxt
+rosrun mil_mlp labelbox_to_tfrecord.py --json_path='json_files/JSON_NAME.json --labelmap_path='../docker_tf/transfer_learning/data/LABELMAPNAME.pbtxt
 ```
 2. Run the docker image
 ```bash
@@ -37,7 +42,7 @@ This package is broken up into two distinct parts: Data Processing, and Network 
 
 This pipeline is built upon Docker Images for easy deployment and updating. Currently, we build and update off of 3 distinct Docker Images. The first image is the CUDA 10.0 docker image distributed by NVIDIA. This simply installs CUDA drivers into the image and allows us to communicate with the card. The second image we  run is a custom tensorflow 9.0 image, compiled using the dockerfiles made availble to us from Tensorflow. We had to configure the compilation to target CUDA 10.0 instead of CUDA 9.0, which is the default. CUDA 10.0 is not officially supported by TF as of yet, however it is the only version of CUDA our graphics card supports. The final image is the docker image that loads our custom scripts and the Models directory of Tensorflow. Eventually, these will all be merged into a single docker image, however this allows us to update CUDA, Tensorflow, and our scripts separately, without having to recompile everything each time.
 
-### II. The Data: ldp
+### II. The Data: LabelBox Data Processing (ldp)
 The entire purpose of this pipeline is to make a streamlined data processing pipeline. Tensorflow has done a great job of ensuring it will work so long as you give it good data. That is our point of failure and thus the first thing you should do if your network fails to train is to check the data.
 To that end we compiled, and when necessary created, scripts to handle the process of data verification and processing.
 This process starts with labelling images on the service Labelbox, which as it currently stands is the standard for image labeling.
@@ -49,17 +54,17 @@ Once the data is labelled you can then download this image set in a variety of f
 Of these two, it has been most extensively tested with JSON files and thus we recommend downloading the dataset in this format.
 JSON files for MIL projects are found in their respective repositories (i.e. the NaviGator and SubjuGator repositories).
 
-#### A. process.py
+#### A. labelbox_to_tfrecord.py
 
 process.py is the main script through which data is processed. This initiates the process of converting a JSON or PASCAL VOC format into the tf_records needed for a specific project.
 It takes in a variety of commandline arguments and are as follows:
 
 ```bash
-python process.py --resize=False --labelbox_format=json --json_name='json_files/project_labels.json' --csv_input=default --ann_dir=default --image_dir=default --output_path=default --labelmap_path='../data/totems&buoys.pbtxt' --cleanup=False
+python labelbox_to_tfrecord.py --resize=False --labelbox_format=json --json_name='json_files/project_labels.json' --csv_input=default --ann_dir=default --image_dir=default --output_path=default --labelmap_path='../data/totems&buoys.pbtxt' --cleanup=False
 ```
 Now most of these arguments have default settings, so you really only need to pass in the ones that specifically apply to you. Examples would be the json_path or image_dir and ann_dir which must have inputs depending on what labelbox_format you passed in. If I only wanted to process a json image I would only need the following:
 ```bash
-python process.py --json_name='json_files/project_labels.json' --labelmap_path='../data/totems&buoys.pbtxt'
+python labelbox_to_tfrecord.py --json_name='json_files/project_labels.json' --labelmap_path='../data/totems&buoys.pbtxt'
 ```
 
 Below is the actual code block that handles these inputs and may provide a clearer idea of which values have defaults and which ones are needed.
@@ -78,6 +83,8 @@ flags.DEFINE_boolean('cleanup', True, 'Delete all files? Boolean.')
 ```
 
 Note that this repo does not make the models or data directory in docker_tf/transfer_learning. Both of those must be present for this to work by default. Teh data directory holds the TFRecords. The models directory holds a pretrained model from the tensorflow model zoo you chose to download. The only files that should be in there are the three model.ckpt files and the pipeline.config. All other files should be deleted.
+
+Further, the dataset is automatically trimmed of any labels that are not present inside the pbtxt. If, for example, I have an image that has labels for buoys and totems, but my labelmap only has the labels for colored shapes inside, the image will be tossed out of the dataset and not processed.
 
 #### B. ldp_utils.py
 
@@ -154,6 +161,7 @@ When running the process_data script for the first time, if you encounter an skl
 ```python
 pip2 install scikit-learn==0.18
 ```
+For formatting your pbtxt, look around online at COCO dataset labelmaps or any other from the official repo. You could also look into the NaviGator repo in perception/navigator_vision/datasets and check out our labelmaps there for reference. Note we don't use name and display name which you might find some data sets doing. We only use name.
 
 If you ran out of memory while training, you should reduce batch size or image size in the config file.
 
