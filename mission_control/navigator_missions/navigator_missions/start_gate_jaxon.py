@@ -238,7 +238,7 @@ class StartGateJaxon(Navigator):
                 rospos = yield self.hydrophones.get_position()
                 pinger_pos = rosmsg_to_numpy(rospos.point)[0:2]
             else:
-                gate_vector = np.array(gate_results[2])
+                gate_vector = np.array([gate_results[2][0], gate_results[2][3]])
                 bucket0 = 0
                 bucket1 = 0
                 bucket2 = 0
@@ -248,6 +248,20 @@ class StartGateJaxon(Navigator):
                     gateDist0 = np.norm(intersection - np.array(gate_results[0][0]))
                     gateDist1 = np.norm(intersection - np.array(gate_results[0][1]))
                     gateDist2 = np.norm(intersection - np.array(gate_results[0][2]))
+                    if gateDist1 > 16:
+                        continue
+
+                    vec_corner1 = gate_vector[0] - pinger_vector[0]
+                    vec_corner1 = vec_corner1 / np.linalg.norm(vec_corner1)
+                    vec_corner4 = gate_vector[1] - pinger_vector[0]
+                    vec_corner4 = vec_corner4 / np.linalg.norm(vec_corner4)
+                    vec_intersect = intersection - pinger_vector[0]
+                    vec_intersect = vec_intersect / np.linalg.norm(vec_intersect)
+
+                    ang_c1_c4 = np.arccos(np.clip(np.dot(vec_corner1, vec_corner4), -1.0, 1.0))
+                    ang_c1_i4 = np.arccos(np.clip(np.dot(vec_corner1, vec_corner4), -1.0, 1.0))
+
+
                     if gateDist0 < gateDist1 and gateDist0 < gateDist2:
                         bucket0 = bucket0 + 1
                     elif gateDist1 < gateDist2:
@@ -348,7 +362,7 @@ class StartGateJaxon(Navigator):
                 rospy.logwarn('TF Exception: {}'.format(e))
                 return
 
-            self.intersect_vectors = np.append(self.intersect_vectors, vec[0:2])
+            self.intersect_vectors = np.append(self.intersect_vectors, np.array([origin[0:2], vec[0:2]])
 
 
 
