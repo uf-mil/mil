@@ -260,6 +260,10 @@ class StartGateJaxon(Navigator):
 
                     ang_c1_c4 = np.arccos(np.clip(np.dot(vec_corner1, vec_corner4), -1.0, 1.0))
                     ang_c1_i4 = np.arccos(np.clip(np.dot(vec_corner1, vec_corner4), -1.0, 1.0))
+                    if ang_c1_c4 >= 0 and (ang_c1_i4 < 0 or ang_c1_i4 > ang_c1_c4):
+                        continue
+                    if ang_c1_c4 <  0 and (ang_c1_i4 > 0 or ang_c1_i4 < ang_c1_c4):
+                        continue
 
 
                     if gateDist0 < gateDist1 and gateDist0 < gateDist2:
