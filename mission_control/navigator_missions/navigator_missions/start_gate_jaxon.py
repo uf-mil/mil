@@ -41,12 +41,12 @@ class StartGateJaxon(Navigator):
                             help='\'--intersecting true\' for vector-intercept-gates method.')
         cls.parser = parser
 
+        cls.uses_intersecting = False
+
     @util.cancellableInlineCallbacks
     def run(self, args):
-        params = args.params
-        print(params)
-
-        self.uses_intersecting = False
+        self.uses_intersecting = args.intersecting
+        print('using start gate intersections method: ' + str(self.uses_intersecting))
 
         print ('enter')
         gate_results = yield self.find_gates()
