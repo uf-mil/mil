@@ -1,6 +1,7 @@
 <launch>
   <arg name="simulation" default="False" />
   <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/hardware/motor_controller.launch"/>
+  <include file="$(find navigator_launch)/launch/hardware/grinch_motor.launch" />
   <include unless="$(arg simulation)" file="$(find navigator_launch)/launch/hardware/gps.launch" />
   <include file="$(find navigator_launch)/launch/hardware/cameras.launch">
     <arg name="simulation" value="$(arg simulation)"/>
