@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
-from mil_vision_tools import VisionNode, create_object_msg, ImageMux, auto_canny, RectFinder
-from mil_vision_tools import CentroidObjectsTracker, quaternion_from_rvec
+from mil_vision_tools import VisionNode, create_object_msg, ImageMux, auto_canny, RectFinder, putText_ul
+from mil_vision_tools import CentroidObjectsTracker, quaternion_from_rvec, contour_centroid
 from mil_tools import Image_Publisher, numpy_quat_pair_to_pose
 from geometry_msgs.msg import PoseStamped
 import numpy as np
@@ -14,108 +14,78 @@ class DetectDeliverTargetDetector(VisionNode):
     BORDER_THICKNESS_METERS = 0.0508
 
     def __init__(self):
+        self.min_area = rospy.get_param('~min_area', default=1000)
+        self.max_contour_score = rospy.get_param('~max_contour_score', default=0.03)
         self.pose_pub = rospy.Publisher("~pose", PoseStamped, queue_size=3)
         self.tracker = CentroidObjectsTracker(max_distance=20.0)
         self.large_target_model = RectFinder(length=0.500126 + self.BORDER_THICKNESS_METERS,
                                              width=0.500126 + self.BORDER_THICKNESS_METERS)
         self.small_target_model = RectFinder(length=0.249936 + self.BORDER_THICKNESS_METERS,
                                              width=0.249936 + self.BORDER_THICKNESS_METERS)
-        self.image_mux = ImageMux(shape=(2, 2), labels=['Thresh', 'Edges', '', 'Found'])
+        self.image_mux = ImageMux(shape=(2, 2), labels=['Blur', 'Threshold', 'Edges', 'Found'])
         self.debug_pub = Image_Publisher("~debug")
         self.first_object_id = -1
         super(DetectDeliverTargetDetector, self).__init__()
 
     def find_objects(self, img):
+        # Clear old objects from being tracked
         self.tracker.clear_expired(now=self._image_sub.last_image_time)
 
-        # convert input image (img) to gray scale
-        cv_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # Convert image to grayscale for thresholding
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        # blur resulting image
-        # numerical values were chosen arbitrarily after trial and error on sample bag video files
-        cv_image = cv2.GaussianBlur(cv_image, (29, 29), 0)
+        # Blur image for easier edge detection
+        blur = cv2.GaussianBlur(gray, (11, 11), 0)
+        self.image_mux[0] = blur
 
-        # apply threshold on resulting image
-        # numerical values were chosen arbitrarily after tiral and error on sample bag video files
-        thresh = cv2.adaptiveThreshold(cv_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 13, 2)
+        # Threshold image to keep only black regions, like the target border
+        _, thresh = cv2.threshold(blur, 50, 255, cv2.THRESH_BINARY_INV)
+        self.image_mux[1] = thresh
 
-        self.image_mux[0] = thresh
+        # Find edges in thresholded image using Canny
+        edges = auto_canny(thresh, sigma=0.66)
 
-        # apply Laplace filter on resulting image
-        edges = auto_canny(thresh)
+        # Find contours in edge mask
+        _, cnts, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        self.image_mux[1] = edges
+        # Draw contours for debugging
+        contours_img = np.zeros(edges.shape, dtype=edges.dtype)
+        cv2.drawContours(contours_img, cnts, -1, 255, 3)
 
-        # dilate resulting image (i.e. thicken the lines)
-        # numerical values were chosen arbitrarily after tiral and error on sample bag video files
-        kernel = np.ones((2, 2), np.uint8)
-        dilated = cv2.dilate(edges, kernel, iterations=3)
-
-        self.image_mux[2] = dilated
-
-        # create a list of contours stored in variable "cnts"
-        _, cnts, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-        """
-        the following for loop cycles through all the contours in "cnts" and finds:
-            * centroid (cX, cY)
-            * area delimited by the contour (area/area_str)
-            * length of the contour (perimeter)
-            * number of sides (sides/sides_str)
-        If the contour has 4 straigh-edge sides and exeeds the area exceeds a certain threshold (AREA_THRESHOLD)
-        the program prints the following data near the centroid of shape in the video:
-            * area (area_str)
-            * shape (shape)
-            * number of sides of the shape (sides_str)
-        """
+        self.image_mux[2] = contours_img
 
         found = []
+        # Loop through the contours, filtering out those unlikely to be targets
         for num, c in enumerate(cnts):
-            M = cv2.moments(c)
-
-            # Calculate the centroid
-            if M["m00"] != 0:
-                cX = int(M["m10"] / M["m00"])
-                cY = int(M["m01"] / M["m00"])
-            else:
-                cX, cY = 0, 0
-
-            """If the area is greater than some threshold (AREA_THRESHOLD) then calculate the following:
-                * length of the contour of the shape (perimeter)
-                * number of sides of the shape (sides/sides_str)
-                * area of the shape (area_str)
-            """
+            # Remove very small contours (likely to just be noise)
             area = cv2.contourArea(c)
-            if area > 5000:
-                score = self.large_target_model.verify_contour(c)
-                if score > 0.1:
-                    continue
-                corners = self.large_target_model.get_corners(c)
-                print self.tracker.add_observation(self._image_sub.last_image_time, np.array([cX, cY]), data=corners)
-                perimeter = cv2.arcLength(c, True)
-                sides = cv2.approxPolyDP(c, .04 * perimeter, True)
-                sides_str = str(len(sides))
-                area_str = str(cv2.contourArea(c))
+            if area < self.min_area:
+                continue
 
-                """ If the number of sides of the shape is 4 then display the following:
-                    * area of the shape (area_str)
-                    * name of the shape (shape)
-                    * number of sides
-                    * the contour of the shape
-                """
-                if len(sides) == 4:
-                    shape = "rect/sqr"
-                    cv2.putText(img, area_str, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 2)
-                    cv2.putText(img, shape, (cX, cY - 30), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 2)
-                    cv2.putText(img, sides_str, (cX, cY - 60), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 2)
-                    cv2.drawContours(img, cnts, num - 1, (0, 255, 0), 2)
+            # Score the contour based on Hough shape invariants compared
+            # to the known shape of the target, smaller is better
+            score = self.large_target_model.verify_contour(c)
+            if score > self.max_contour_score:
+                continue
 
-                    # TODO: only add targets that persist over time
-                    # TODO: add as "target_large" or "target_small" depending on which one it is
-                    # TODO: base confidence on something, rather than always 1.0
-                    found.append(create_object_msg("target_large", contour=cnts[num - 1], confidence=1.0))
+            # Attempt to reduce the contour to a 4 sided polygon representing the corners
+            corners = self.large_target_model.get_corners(c, epsilon_range=(0.01, 0.04))
+            if corners is None:
+                continue
 
+            # Track this contour with the previous contours
+            centroid = contour_centroid(c)
+            obj = self.tracker.add_observation(self._image_sub.last_image_time, np.array(centroid), data=corners)
+
+            # Draw this contour for debugging
+            putText_ul(img, str(obj.id), centroid, color=(0, 0, 255), fontScale=2)
+            cv2.drawContours(img, [corners], -1, (0, 255, 0), 3)
+
+            found.append(create_object_msg("target_large", contour=cnts[num - 1], confidence=1.0))
+
+        # Get objects which have persisted over many frames
         persistent = self.tracker.get_persistent_objects(min_observations=8, min_age=rospy.Duration(1.5))
+
         if len(persistent) > 0:
             if self.first_object_id == -1:
                 self.first_object_id = persistent[0].id
@@ -123,11 +93,13 @@ class DetectDeliverTargetDetector(VisionNode):
             for obj in persistent:
                 if obj.id != self.first_object_id:
                     continue
+
                 ps = PoseStamped()
                 ps.header = self._image_sub.last_image_header
-                tvec, rvec = self.large_target_model.get_pose_3D(obj.data, cam=self.camera_model, rectified=True)
-
-                rvec[1] = 0.
+                # Get 3D pose of target use PnP
+                tvec, rvec = self.small_target_model.get_pose_3D(obj.data, cam=self.camera_model, rectified=True)
+                # Throw out up/down and convert to quaternion
+                # rvec[1] = 0.
                 rvec[2] = 0.
                 rvec = rvec / np.linalg.norm(rvec)
                 ps.pose = numpy_quat_pair_to_pose(tvec, quaternion_from_rvec(rvec))
