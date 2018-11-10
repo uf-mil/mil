@@ -53,6 +53,7 @@
   <run_depend>mil_passive_sonar</run_depend>
   <run_depend>mil_pneumatic_actuator</run_depend>
   <run_depend>mil_bounds</run_depend>
+  <run_depend>sabertooth2x12</run_depend>
   <run_depend>point_cloud_object_detection_and_recognition</run_depend>
   <export>
   </export>
