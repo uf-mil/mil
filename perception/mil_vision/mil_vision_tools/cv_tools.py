@@ -2,6 +2,7 @@
 import cv2
 import rospy
 import numpy as np
+import tf.transformations as trns
 
 __author__ = "Kevin Allen"
 
@@ -242,3 +243,12 @@ def rect_from_roi(roi):
         cv2.rectangle(img, rectangle[0], rectangle[1], (0, 255, 0), 3)
     '''
     return ((roi[1].start, roi[0].start), (roi[1].stop, roi[0].stop))
+
+
+def quaternion_from_rvec(rvec):
+    '''
+    Converts a rotation vector (like from cv2.SolvePnP) into a quaternion
+    '''
+    mat = np.eye(4)
+    mat[:3, :3] = cv2.Rodrigues(rvec)[0]
+    return trns.quaternion_from_matrix(mat)
