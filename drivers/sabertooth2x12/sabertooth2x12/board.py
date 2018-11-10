@@ -5,7 +5,7 @@ from simulated import SimulatedSabertooth2x12
 
 
 class Sabertooth2x12:
-    def __init__(self, filename, address=128, baudrate=19200, sim=False):
+    def __init__(self, filename, address=128, baudrate=9600, sim=False):
         self.address = address
         self.motor_1_speed = 0.0
         self.motor_2_speed = 0.0
