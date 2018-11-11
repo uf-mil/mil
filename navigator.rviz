@@ -105,6 +105,8 @@ Visualization Manager:
           Value: true
         base_link:
           Value: true
+        ecef:
+          Value: true
         enu:
           Value: true
         front_left_cam:
@@ -123,6 +125,8 @@ Visualization Manager:
           Value: true
         pinger_direction:
           Value: true
+        shooter:
+          Value: true
         sick:
           Value: true
         starboard_cam:
@@ -137,39 +141,42 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        enu:
-          base_link:
-            BL_engine_link:
-              BL_propeller_link:
-                {}
-            BR_engine_link:
-              BR_propeller_link:
-                {}
-            FL_engine_link:
-              FL_propeller_link:
-                {}
-            FR_engine_link:
-              FR_propeller_link:
-                {}
-            hydrophones:
-              {}
-            ins:
-              {}
-            measurement:
-              sick:
-                {}
-              starboard_cam:
-                starboard_cam_optical:
+        ecef:
+          enu:
+            base_link:
+              BL_engine_link:
+                BL_propeller_link:
                   {}
-              velodyne:
-                front_left_cam:
-                  front_left_cam_optical:
-                    {}
-                front_right_cam:
-                  front_right_cam_optical:
-                    {}
-                pinger_direction:
+              BR_engine_link:
+                BR_propeller_link:
                   {}
+              FL_engine_link:
+                FL_propeller_link:
+                  {}
+              FR_engine_link:
+                FR_propeller_link:
+                  {}
+              hydrophones:
+                {}
+              ins:
+                {}
+              measurement:
+                sick:
+                  {}
+                starboard_cam:
+                  shooter:
+                    {}
+                  starboard_cam_optical:
+                    {}
+                velodyne:
+                  front_left_cam:
+                    front_left_cam_optical:
+                      {}
+                  front_right_cam:
+                    front_right_cam_optical:
+                      {}
+                  pinger_direction:
+                    {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -215,21 +222,6 @@ Visualization Manager:
       Torque Color: 204; 204; 51
       Unreliable: false
       Value: true
-    - Alpha: 1
-      Axes Length: 1
-      Axes Radius: 0.100000001
-      Class: rviz/Pose
-      Color: 255; 11; 255
-      Enabled: false
-      Head Length: 0.300000012
-      Head Radius: 0.100000001
-      Name: PingerDirection
-      Shaft Length: 1
-      Shaft Radius: 0.0500000007
-      Shape: Arrow
-      Topic: /hydrophones/pose
-      Unreliable: false
-      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
@@ -314,6 +306,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
         pinger_direction:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        shooter:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -501,7 +497,7 @@ Visualization Manager:
       Marker Topic: /bounds_server/visualization
       Name: Bounds
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -621,4 +617,4 @@ Window Geometry:
     collapsed: true
   Width: 1647
   X: 136
-  Y: 0
+  Y: 27
