@@ -277,10 +277,14 @@ class Navigator(BaseTask):
         if self.launcher_state != "inactive":
             raise Exception("Launcher is {}".format(self.launcher_state))
         self.launcher_state = "reloading"
-        yield self.set_valve('LAUNCHER_RELOAD', True)
+        yield self.set_valve('LAUNCHER_RELOAD_EXTEND', True)
+        yield self.set_valve('LAUNCHER_RELOAD_RETRACT', False)
         yield self.nh.sleep(self._actuator_timing['launcher_reload_extend_time'])
-        yield self.set_valve('LAUNCHER_RELOAD', False)
+        yield self.set_valve('LAUNCHER_RELOAD_EXTEND', False)
+        yield self.set_valve('LAUNCHER_RELOAD_RETRACT', True)
         yield self.nh.sleep(self._actuator_timing['launcher_reload_retract_time'])
+        yield self.set_valve('LAUNCHER_RELOAD_EXTEND', False)
+        yield self.set_valve('LAUNCHER_RELOAD_RETRACT', False)
         self.launcher_state = "inactive"
 
     @util.cancellableInlineCallbacks
