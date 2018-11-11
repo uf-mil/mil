@@ -43,9 +43,12 @@ void MILModelHeading::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sd
 
 void MILModelHeading::TimerCb(const ros::TimerEvent&)
 {
-  auto origin_pose = (origin_->GetWorldPose() + offset_).pos;
+  auto world_pose = origin_->GetWorldPose();
+  auto origin_pose = world_pose * offset_;
+  auto origin_pos = origin_pose.pos;
   auto model_pose = model_->GetWorldPose().pos;
-  auto difference = model_pose - origin_pose;
+  auto difference = model_pose - origin_pos;
+  difference = origin_pose.rot.GetInverse() * difference;
   difference = difference.Normalize();
   geometry_msgs::Vector3Stamped vec;
   GazeboVectorToRosMsg(difference, vec.vector);
