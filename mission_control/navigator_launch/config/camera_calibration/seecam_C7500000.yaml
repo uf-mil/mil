@@ -1,0 +1,20 @@
+image_width: 1920
+image_height: 1080
+camera_name: starboard_cam
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [938.545844, 0.000000, 929.281179, 0.000000, 937.751470, 513.787071, 0.000000, 0.000000, 1.000000]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.236460, 0.046510, -0.003601, -0.002831, 0.000000]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [671.115173, 0.000000, 902.897297, 0.000000, 0.000000, 853.825378, 503.375465, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]
