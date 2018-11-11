@@ -28,9 +28,9 @@ int main( int argc, char** argv )
     marker.pose.position.y = 0;
     marker.pose.position.z = 0;
 
-    marker.scale.x = 1.0;
-    marker.scale.y = 1.0;
-    marker.scale.z = 1.0;
+    marker.scale.x = 50.0;
+    marker.scale.y = 50.0;
+    marker.scale.z = 50.0;
     //TODO customize the color
     marker.color.r = 0.0f;
     marker.color.g = 0.0f;
@@ -46,7 +46,7 @@ int main( int argc, char** argv )
     while (marker_pub.getNumSubscribers() < 1)
     {
       if (!ros::ok()) return 0;
-      ROS_WARN_ONCE("Please create a subscriber to " + pub_topic);
+      //ROS_WARN_ONCE("Please create a subscriber to " + pub_topic);
       sleep(1);
     }
     //publish

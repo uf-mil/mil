@@ -107,4 +107,5 @@ install(TARGETS ${PROJECT_NAME}
 
 install(FILES plugin_description.xml DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
-
+add_executable(origin_marker src/navigator_marker.cpp)
+target_link_libraries(origin_marker ${catkin_LIBRARIES})

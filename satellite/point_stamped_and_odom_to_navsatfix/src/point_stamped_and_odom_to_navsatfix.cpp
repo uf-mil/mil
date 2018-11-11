@@ -62,8 +62,10 @@ sensor_msgs::NavSatFix* createNavSatFix(){
   navsatfix->header.stamp = ros::Time::now();
   navsatfix->header.frame_id = frame_id;
   //gather from the vector3 message (where x is longitude, y is latitude, z is altitude)
-  navsatfix->longitude = lla->point.y;
-  navsatfix->latitude = lla->point.x;
+
+  //offset using odometer to request the ORIGIN from the Map API
+  navsatfix->latitude = lla->point.x /*- (odom->pose.pose.position.y / 111111.1)*/;
+  navsatfix->longitude = lla->point.y /*- (odom->pose.pose.position.x / 111111.1 / std::cos(navsatfix->latitude))*/;
   navsatfix->altitude = /*lla->point.z*/-39.0;
   /*
   double quaternion[4] = {
