@@ -55,6 +55,7 @@
       <topic>/hydrophones/direction</topic>
       <model>robotx_pinger</model>
       <offset>0.102 -.635 -0.324 0 0 0</offset>
+      <frame>hydrophones</frame>
     </plugin>
   </gazebo>
   <xacro:fixed_link name="hydrophones" parent="base_link"
