@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+from mil_ros_tools import thread_lock
+from sabertooth2x12 import Sabertooth2x12
+import rospy
+from std_msgs.msg import Float64
+from threading import Lock
+
+lock = Lock()
+
+
+class Sabertooth2x12ROSNode(object):
+    def __init__(self):
+        port = rospy.get_param('~port', default='/dev/tty0')
+        self.timeout = rospy.Duration(rospy.get_param('~timeout', default=0.5))
+        self.last_motor1_time = None
+        self.last_motor2_time = None
+
+        use_sim = rospy.get_param('/is_simulation', False)
+        if use_sim:
+            rospy.loginfo("Running in simulation mode")
+            self.board = Sabertooth2x12(port, sim=True)
+        else:
+            self.board = Sabertooth2x12(port)
+
+        self.timer = rospy.Timer(self.timeout / 2.0, self.timer_cb)
+        self.motor1_sub = rospy.Subscriber('motor1/cmd', Float64, self.motor1_cb, queue_size=1)
+        self.motor2_sub = rospy.Subscriber('motor2/cmd', Float64, self.motor2_cb, queue_size=1)
+
+    @thread_lock(lock)
+    def motor1_cb(self, cmd):
+        self.last_motor1_time = rospy.Time.now()
+        self.board.set_motor1(cmd.data)
+
+    @thread_lock(lock)
+    def motor2_cb(self, cmd):
+        self.last_motor2_time = rospy.Time.now()
+        self.board.set_motor2(cmd.data)
+
+    @thread_lock(lock)
+    def timer_cb(self, event):
+        now = rospy.Time.now()
+        if self.last_motor1_time is None or now - self.last_motor1_time > self.timeout:
+            self.board.set_motor1(0)
+        if self.last_motor2_time is None or now - self.last_motor2_time > self.timeout:
+            self.board.set_motor2(0)
+
+
+if __name__ == '__main__':
+    rospy.init_node('sabertooth2x12')
+    node = Sabertooth2x12ROSNode()
+    rospy.spin()
