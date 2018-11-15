@@ -22,4 +22,9 @@
     <include file="$(find navigator_launch)/launch/perception.launch">
       <arg name="simulation" value="$(arg simulation)" />
     </include>
+
+    <!-- POI (point of interest) server -->
+    <include file="$(find navigator_launch)/launch/poi.launch">
+      <arg name="simulation" value="$(arg simulation)" />
+    </include>
 </launch>
