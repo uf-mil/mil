@@ -18,6 +18,7 @@
 #include <rviz/display.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <nav_msgs/Odometry.h>
+#include <geometry_msgs/PointStamped.h>
 
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreMaterial.h>
@@ -90,6 +91,7 @@ protected:
 
   void navFixCallback(const sensor_msgs::NavSatFixConstPtr &msg);
   void odomCallback(const nav_msgs::Odometry &msg);
+  void llaCallback(const geometry_msgs::PointStamped &msg);
 
   void loadImagery();
 

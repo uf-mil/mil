@@ -6,13 +6,10 @@ Panels:
       Expanded:
         - /Global Options1
         - /AerialMapDisplay1
-        - /AerialMapDisplay1/Status1
         - /Odometry1
-        - /Odometry1/Status1
         - /Odometry1/Shape1
         - /TF1/Frames1
         - /RobotModel1
-        - /RobotModel1/Status1
         - /Trajectory1/Shape1
         - /Origin1
         - /Origin2
@@ -47,8 +44,8 @@ Visualization Manager:
       Dynamically reload: true
       Enabled: true
       Frame Convention: XYZ -> ENU
+      LLA (PointStamped) Topic: /lla
       Name: AerialMapDisplay
-      NavSatFix Topic: /satellite/navsatfix
       Object URI: https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZGVwdXR5OTgiLCJhIjoiY2ptdjB2ZGU3MDA0cTNwbXd2MHczbDk0NiJ9.g42BxGR2oL7Xz2SOWJA5-g
       Odometry Topic: /odom
       Robot frame: enu
@@ -107,66 +104,19 @@ Visualization Manager:
       Unreliable: false
       Value: true
     - Class: rviz/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        base_link:
-          Value: true
-        enu:
-          Value: true
-        front_left_cam:
-          Value: true
-        front_right_cam:
-          Value: true
-        hydrophones:
-          Value: true
-        ins:
-          Value: true
-        measurement:
-          Value: true
-        pinger_direction:
-          Value: true
-        seecam:
-          Value: true
-        shooter:
-          Value: true
-        sick:
-          Value: true
-        starboard_cam:
-          Value: true
-        velodyne:
-          Value: true
       Marker Scale: 20
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        enu:
-          base_link:
-            measurement:
-              hydrophones:
-                {}
-              ins:
-                {}
-              shooter:
-                {}
-              sick:
-                {}
-              starboard_cam:
-                {}
-              velodyne:
-                front_left_cam:
-                  {}
-                front_right_cam:
-                  {}
-                pinger_direction:
-                  {}
-                seecam:
-                  {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -182,7 +132,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 100
+      Max Intensity: 63
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: Velodyne
@@ -512,7 +462,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: -0.125000134
+      Angle: -0.0400001146
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
@@ -522,7 +472,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 5.48448277
+      Scale: 3.26136351
       Target Frame: base_link
       Value: TopDownOrtho (rviz)
       X: 2.59638691

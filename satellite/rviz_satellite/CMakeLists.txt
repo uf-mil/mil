@@ -37,7 +37,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
-catkin_package(CATKIN_DEPENDS nav_msgs sensor_msgs)
+catkin_package(CATKIN_DEPENDS nav_msgs sensor_msgs geometry_msgs)
 
 set(${PROJECT_NAME}_SOURCES
   src/aerialmap_display.cpp
@@ -106,6 +106,3 @@ install(TARGETS ${PROJECT_NAME}
 )
 
 install(FILES plugin_description.xml DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-
-add_executable(origin_marker src/navigator_marker.cpp)
-target_link_libraries(origin_marker ${catkin_LIBRARIES})

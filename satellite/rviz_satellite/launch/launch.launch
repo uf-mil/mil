@@ -1,10 +1,7 @@
 <launch>
-
-    <!-- Start point_stamped_and_odom_to_navsatfix-->
-    <node pkg="point_stamped_and_odom_to_navsatfix"
-
     <!-- Start rviz -->
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(find rviz_satellite)/launch/navigator.rviz"/>
 
-
+    <!--Launch conversion to LLA (required by rviz_satellite)-->
+    <node pkg="navigator_tools" name="lla_conversion" type="coordinate_conversion_server.py"/>
 </launch>

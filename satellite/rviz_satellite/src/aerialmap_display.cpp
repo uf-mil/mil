@@ -83,9 +83,9 @@ AerialMapDisplay::AerialMapDisplay()
   map_id_ = map_ids++; //  global counter of map ids
 
   topic_property_ = new RosTopicProperty(
-      "NavSatFix Topic", "", QString::fromStdString(
-                       ros::message_traits::datatype<sensor_msgs::NavSatFix>()),
-      "nav_msgs::NavSatFix topic to subscribe to.", this, SLOT(updateTopic()));
+      "LLA (PointStamped) Topic", "", QString::fromStdString(
+                       ros::message_traits::datatype<geometry_msgs::PointStamped>()),
+      "LLA topic to subscribe to.", this, SLOT(updateTopic()));
   topic_property_2 = new RosTopicProperty(
     "Odometry Topic", "", QString::fromStdString(
       ros::message_traits::datatype<nav_msgs::Odometry>()),
@@ -200,7 +200,7 @@ void AerialMapDisplay::subscribe() {
       ROS_INFO("Subscribing to %s", topic_property_->getTopicStd().c_str());
       coord_sub_ =
           update_nh_.subscribe(topic_property_->getTopicStd(), 1,
-                               &AerialMapDisplay::navFixCallback, this);
+                               &AerialMapDisplay::llaCallback, this);
 
       setStatus(StatusProperty::Ok, "Topic", "OK");
     }
@@ -315,9 +315,13 @@ void AerialMapDisplay::update(float, float) {
   context_->queueRender();
 }
 void
-AerialMapDisplay::navFixCallback(const sensor_msgs::NavSatFixConstPtr &msg) {
+AerialMapDisplay::llaCallback(const geometry_msgs::PointStamped &lla) {
   // If the new (lat,lon) falls into a different tile then we have some
   // reloading to do.
+  sensor_msgs::NavSatFix* msg = new sensor_msgs::NavSatFix();
+  msg->latitude = lla.point.x;
+  msg->longitude = lla.point.y;
+  msg->altitude = lla.point.z;
   if (!received_msg_ ||
       (loader_ && !loader_->insideCentreTile(msg->latitude, msg->longitude) &&
        dynamic_reload_property_->getValue().toBool())) {
@@ -391,8 +395,6 @@ void AerialMapDisplay::assembleScene() {
     // Shift back such that (0, 0) corresponds to the exact latitude and
     // longitude the tile loader requested.
     // This is the local origin, in the frame of the map node.
-    double odom_x = odom != nullptr ? odom->pose.pose.position.x : 0.0;
-    double odom_y = odom != nullptr ? odom->pose.pose.position.y : 0.0;
     const double origin_x = -loader_->originOffsetX() * tile_w /*+ odom_x*/;
     const double origin_y = -(1 - loader_->originOffsetY()) * tile_h /*+ odom_y*/;
 
@@ -532,7 +534,8 @@ void AerialMapDisplay::errorOcurred(QString description) {
 void AerialMapDisplay::transformAerialMap() {
   // pass in identity to get pose of robot wrt to the fixed frame
   // the map will be shifted so as to compensate for the center tile shifting
-  geometry_msgs::Pose pose = odom->pose.pose;
+  geometry_msgs::Pose pose;
+  if (odom != nullptr) pose = odom->pose.pose;
 
   const std::string frame = frame_property_->getFrameStd();
   Ogre::Vector3 position{0, 0, 0};
