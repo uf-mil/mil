@@ -6,13 +6,9 @@ Panels:
       Expanded:
         - /Global Options1
         - /AerialMapDisplay1
-        - /Odometry1
         - /Odometry1/Shape1
         - /TF1/Frames1
-        - /RobotModel1
         - /Trajectory1/Shape1
-        - /Origin1
-        - /Origin2
       Splitter Ratio: 0.465115994
     Tree Height: 526
   - Class: rviz/Selection
@@ -104,19 +100,66 @@ Visualization Manager:
       Unreliable: false
       Value: true
     - Class: rviz/TF
-      Enabled: false
+      Enabled: true
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        base_link:
+          Value: true
+        enu:
+          Value: true
+        front_left_cam:
+          Value: true
+        front_right_cam:
+          Value: true
+        hydrophones:
+          Value: true
+        ins:
+          Value: true
+        measurement:
+          Value: true
+        pinger_direction:
+          Value: true
+        seecam:
+          Value: true
+        shooter:
+          Value: true
+        sick:
+          Value: true
+        starboard_cam:
+          Value: true
+        velodyne:
+          Value: true
       Marker Scale: 20
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        {}
+        enu:
+          base_link:
+            measurement:
+              hydrophones:
+                {}
+              ins:
+                {}
+              shooter:
+                {}
+              sick:
+                {}
+              starboard_cam:
+                {}
+              velodyne:
+                front_left_cam:
+                  {}
+                front_right_cam:
+                  {}
+                pinger_direction:
+                  {}
+                seecam:
+                  {}
       Update Interval: 0
-      Value: false
+      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -423,21 +466,6 @@ Visualization Manager:
       Transport Hint: compressed
       Unreliable: false
       Value: true
-    - Class: rviz/Marker
-      Enabled: false
-      Marker Topic: /satellite/navigator_marker
-      Name: Origin
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/Axes
-      Enabled: true
-      Length: 5
-      Name: Origin
-      Radius: 1
-      Reference Frame: <Fixed Frame>
-      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -472,7 +500,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 3.26136351
+      Scale: 3.90423107
       Target Frame: base_link
       Value: TopDownOrtho (rviz)
       X: 2.59638691

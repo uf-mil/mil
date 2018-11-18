@@ -8,6 +8,12 @@
  *	Created on: 07/09/2014
  */
 
+ /*
+  * NOTICE: I have changed these files from the source code.
+  * Integrated into Navigator by Aeyzechiah Vasquez.
+  * 11/18/2018
+  */
+
 #include <QtGlobal>
 #include <QImage>
 

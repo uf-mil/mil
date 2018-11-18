@@ -2,9 +2,10 @@
 <package>
   <name>rviz_satellite</name>
   <version>0.0.2</version>
-  <description>Display satellite map tiles in RViz</description>
+  <description>Display satellite map tiles in RViz. Original source code written by Cross. Ported for use on Navigator by Vasquez</description>
   <author>Gareth Cross</author>
-  <maintainer email="gcross.code@icloud.com">gcross</maintainer>
+  <author>Aeyzechiah Vasquez</author>
+  <maintainer email="azvasquez99@gmail.com">az</maintainer>
   <license>Apache 2</license>
 
   <buildtool_depend>catkin</buildtool_depend>

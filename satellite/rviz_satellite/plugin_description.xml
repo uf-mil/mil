@@ -3,7 +3,7 @@
          type="rviz::AerialMapDisplay"
          base_class_type="rviz::Display">
     <description>
-      Display of satellite image map. Subscribes to /lla (Point stamped) and /odom (Odometry).
+      Display of satellite image map. Subscribes to /lla and /odom.
     </description>
   </class>
 </library>
