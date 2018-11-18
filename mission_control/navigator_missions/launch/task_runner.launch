@@ -15,9 +15,9 @@
           # Time to wait thruster to lift before engaging lock
           retract_wait_time: 3.0
           # Time to extend reload piston when reloading launcher
-          launcher_reload_extend_time: 5.0
+          launcher_reload_extend_time: 2.5
           # Time to retract reload piston when reloading launcher
-          launcher_reload_retract_time: 5.0
+          launcher_reload_retract_time: 3.5
         </rosparam>
     </node>
 </launch>
