@@ -20,6 +20,7 @@
 
     <!-- Map from gazebo modes to database objects for ground truth simulated PCODAR -->
     <rosparam param="/gazebo/name_map">
+      'ring_recovery_reference_buoy' : totem_violet
       'gate_start_red::link': totem_red
       'gate_start_green::link' : totem_green
       'gate_end_red::link': totem_red

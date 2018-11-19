@@ -41,6 +41,12 @@
       <pose>-50 -90 0 0 0 0</pose>
     </include>
 
+    <!-- Ring recovery challenge -->
+    <include>
+      <uri>model://ring_recovery_reference_buoy</uri>
+      <pose>65 20 0 0 0 0 </pose>
+    </include>
+
     <!-- Run simulated PCODAR -->
     <plugin name="pcodar_gazebo" filename="libpcodar_gazebo.so" />
   </world>
