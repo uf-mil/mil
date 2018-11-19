@@ -55,6 +55,7 @@
   <run_depend>mil_bounds</run_depend>
   <run_depend>sabertooth2x12</run_depend>
   <run_depend>point_cloud_object_detection_and_recognition</run_depend>
+  <run_depend>navigator_robotx_comms</run_depend>
   <export>
   </export>
 </package>

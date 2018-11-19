@@ -16,6 +16,7 @@
     <include file="$(find navigator_launch)/launch/hardware.launch">
        <arg name="simulation" value="$(arg simulation)" />
     </include>
+    <include file="$(find navigator_launch)/launch/robotx_comms.launch"/>
 
     <!-- Run computer vision / sonar perception nodes -->
     <include file="$(find navigator_launch)/launch/perception.launch">

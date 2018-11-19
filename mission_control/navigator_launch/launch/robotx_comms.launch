@@ -1,0 +1,15 @@
+<launch>
+
+    <!-- start robotx_comms node -->
+    <node name="navigator_robotx_comms" pkg="navigator_robotx_comms" type="robotx_comms_client.py" >
+	
+	    <!-- set params -->
+        <param name="~td_ip" value="127.0.0.1" />
+        <param name="~td_port" value="1337" />
+        <param name="~team_id" value="GATOR" />
+        <!-- sets data to protocol sample data - KEEP FALSE-->
+        <param name="~use_test_data" value="false" />
+
+    </node>
+
+</launch>
