@@ -73,6 +73,7 @@ alias listtasks="rosrun mil_tasks task_client list"
 # POI
 poisave()
 {
+  rosservice call /poi_server/save_to_param
   rosparam dump $1 /poi_server
 }
 poiadd()

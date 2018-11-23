@@ -6,6 +6,7 @@ from mil_tools import thread_lock
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
 from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, InteractiveMarkerFeedback, Marker
 from geometry_msgs.msg import Pose, PointStamped
+from std_srvs.srv import Trigger
 from msg import POI, POIArray
 from srv import AddPOI, DeletePOI, MovePOI
 from threading import Lock
@@ -60,6 +61,7 @@ class POIServer(object):
         self.add_poi_server = rospy.Service('~add', AddPOI, self.add_poi_cb)
         self.delete_poi_server = rospy.Service('~delete', DeletePOI, self.delete_poi_cb)
         self.move_poi_service = rospy.Service('~move', MovePOI, self.move_poi_cb)
+        self.save_to_param = rospy.Service("~save_to_param", Trigger, self.save_to_param_cb)
 
     def transform_position(self, ps):
         '''
@@ -94,6 +96,15 @@ class POIServer(object):
 
         # Update position of marker
         self.update_position(feedback.marker_name, feedback.pose.position)
+
+    @thread_lock(lock)
+    def save_to_param_cb(self, req):
+        rospy.set_param('~global_frame', self.global_frame)
+        d = {}
+        for poi in self.pois.pois:
+            d[poi.name] = [float(poi.position.x), float(poi.position.y), float(poi.position.z)]
+        rospy.set_param('~initial_pois', d)
+        return {'success': True}
 
     def add_poi_cb(self, req):
         '''
