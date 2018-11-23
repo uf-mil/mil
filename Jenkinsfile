@@ -36,7 +36,7 @@ dockerNode(image: 'uf-mil:navigator') {
 		sh '''
 			source /opt/ros/kinetic/setup.bash > /dev/null 2>&1
 			wget -O ~/.clang-format https://raw.githubusercontent.com/uf-mil/installer/master/.clang-format
-			for FILE in $(find -path ./deprecated -prune -o -path ./simulation/vmrc -prune -o -regex ".*/.*\\.\\(c\\|cc\\|cpp\\|h\\|hpp\\)$"); do
+			for FILE in $(find -path ./deprecated -prune -o -path ./satellite -prune -o -path ./simulation/vmrc -prune -o -regex ".*/.*\\.\\(c\\|cc\\|cpp\\|h\\|hpp\\)$"); do
 				if [ ! -z "$(clang-format-3.8 -style=file -output-replacements-xml $FILE | grep '<replacement ')" ]; then
 					FILES+=( "$FILE" )
 				fi
