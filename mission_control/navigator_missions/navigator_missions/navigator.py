@@ -22,6 +22,7 @@ from navigator_tools import MissingPerceptionObject
 from mil_tasks_core import BaseTask
 from mil_passive_sonar import TxHydrophonesClient
 from mil_pneumatic_actuator.srv import SetValve, SetValveRequest
+from mil_poi import TxPOIClient
 
 
 class MissionResult(object):
@@ -103,6 +104,8 @@ class Navigator(BaseTask):
         cls._ecef_odom_sub = cls.nh.subscribe('absodom', Odometry, enu_odom_set)
 
         cls.hydrophones = TxHydrophonesClient(cls.nh)
+
+        cls.poi = TxPOIClient(cls.nh)
 
         try:
             cls._actuator_client = cls.nh.get_service_client('/actuator_driver/actuate', SetValve)
