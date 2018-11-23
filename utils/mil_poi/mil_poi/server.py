@@ -66,6 +66,9 @@ class POIServer(object):
         Attempty to transform a PointStamped message into the global frame, returning
         the position of the transformed point or None if transform failed.
         '''
+        # If no frame, assume user wanted it in the global frame
+        if ps.header.frame_id == "":
+            return ps.point
         try:
             ps_tf = self.tf_buffer.transform(ps, self.global_frame, timeout=rospy.Duration(5))
             return ps_tf.point
