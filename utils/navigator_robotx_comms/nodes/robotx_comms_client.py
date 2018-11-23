@@ -91,13 +91,13 @@ class RobotXStartServices:
     def update_system_mode(self):
         if self.kill is True:
             self.system_mode = 3
-        elif self.wrench is "autonomous" or self.wrench is "/wrench/autonomous":
+        elif self.wrench == "autonomous" or self.wrench == "/wrench/autonomous":
             self.system_mode = 2
         else:
             self.system_mode = 1
 
     def wrench_callback(self, wrench):
-        self.wrench = wrench
+        self.wrench = wrench.data
 
     def kill_callback(self, alarm):
         self.kill = alarm.raised
