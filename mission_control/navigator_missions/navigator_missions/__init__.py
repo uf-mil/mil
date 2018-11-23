@@ -9,7 +9,7 @@ from detect_deliver import DetectDeliver
 from teleop import Teleop
 from circle import Circle
 from back_and_forth import BackAndForth
-from start_gate import StartGate
+from demonstrate_navigation import DemonstrateNavigation
 from coral_survey import CoralSurvey
 from pinger import PingerMission
 from pinger_exit import PingerExitMission
