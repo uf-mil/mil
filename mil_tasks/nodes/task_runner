@@ -85,14 +85,14 @@ class TaskRunner(object):
         goal = self.server.accept_new_goal()
         if not self.has_task(goal.task):
             print('TASK RUNNER: unrecognized task \'{}\''.format(goal.task))
-            self.server.set_aborted(result=DoTaskResult(False, 'task unknown'))
+            self.server.set_aborted(result=DoTaskResult(success=False, result='task unknown'))
             return
 
         # Attempt to decode parameters, abort if there is an exception
         try:
             parameters = self.tasks[goal.task].decode_parameters(goal.parameters)
         except Exception as e:
-            self.server.set_aborted(result=DoTaskResult(False, str(e)))
+            self.server.set_aborted(result=DoTaskResult(success=False, result=str(e)))
             return
 
         # Start task, and create callbacks even if it is not a deferred
@@ -107,10 +107,10 @@ class TaskRunner(object):
         comes in.
         '''
         # If cancel request came in, cancel current task
-        if (self.server.is_cancel_requested()):
+        if self.task_defer is not None and self.server.is_cancel_requested():
             yield self.task_defer.cancel()
         # If a new task came in, cancel current task
-        elif (self.server.is_preempt_requested()):
+        elif self.task_defer is not None and self.server.is_preempt_requested():
             yield self.task_defer.cancel()
         # Try to accept a new task
         self.do_new_task()
