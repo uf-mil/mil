@@ -47,6 +47,12 @@
       <pose>65 20 0 0 0 0 </pose>
     </include>
 
+    <!-- Find totems challenge -->
+    <include>
+      <uri>model://find_totems_challenge</uri>
+      <pose>35 50 0 0 0 0 </pose>
+    </include>
+
     <!-- Run simulated PCODAR -->
     <plugin name="pcodar_gazebo" filename="libpcodar_gazebo.so" />
   </world>
