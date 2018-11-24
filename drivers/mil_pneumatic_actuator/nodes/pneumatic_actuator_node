@@ -50,10 +50,15 @@ class PnuematicActuatorNode():
     '''
     def __init__(self):
         # Connect to board of serial or simulated serial
-        baud_rate = rospy.get_param('~baud_rate', 9600)
-        port = rospy.get_param('~port')
-        simulation = rospy.get_param('/is_simulation', False)
-        self.driver = PnuematicActuatorDriver(port, baud=baud_rate, simulated=simulation)
+        self.baud_rate = rospy.get_param('~baud_rate', 9600)
+        self.port = rospy.get_param('~port')
+        self.is_simulation = rospy.get_param('/is_simulation', False)
+
+        self.connected = False
+        while not self.connected:
+            self.reconnect_and_ping()
+            if not self.connected:
+                rospy.sleep(1)
 
         # Parse actuator config from parameters. see example.launch for format
         actuators = rospy.get_param('~actuators')
@@ -68,7 +73,7 @@ class PnuematicActuatorNode():
         rospy.Service('~reset', Trigger, self.reset)
 
         # Setup timer to ping every 5 second
-        self.timer = rospy.Timer(rospy.Duration(5), self.ping)
+        self.timer = rospy.Timer(rospy.Duration(3.0), self.reconnect_and_ping)
 
     def reset(self, *args):
         '''
@@ -101,21 +106,39 @@ class PnuematicActuatorNode():
             return False
         return True
 
-    def ping(self, *args):
+    def reconnect_and_ping(self, *args):
         '''
-        Do ping request/response, print error if failed
+        Try to ping board, reconnecting if needed
         '''
+        # If board is disconnected, try to connect / reconnect
+        if not self.connected:
+            try:
+                self.driver = PnuematicActuatorDriver(self.port, baud=self.baud_rate, simulated=self.is_simulation)
+            except SerialException as e:
+                rospy.logwarn(e)
+                return
+
+        # Try to ping
         try:
             self.driver.ping()
         except (PnuematicActuatorDriverError, SerialException) as e:
-            rospy.logerr('Could not ping actuator board: {}'.format(e))
-            return e
-        return None
+            rospy.logwarn('Could not ping actuator board: {}'.format(e))
+            if self.connected:
+                rospy.logerr('Board not responding to pings. Disconnected.')
+                self.connected = False
+                return
+
+        # If made it this far, you are not connected
+        if not self.connected:
+            rospy.loginfo('Board connected!')
+            self.connected = True
 
     def got_service_request(self, srv):
         '''
         Close/Open/Pulse the requested actuator when a service request is recieved
         '''
+        if not self.connected:
+            return {'success': False, 'message': 'board not connected'}
         # See if requested actuator is just the raw ID
         try:
             int(srv.actuator)

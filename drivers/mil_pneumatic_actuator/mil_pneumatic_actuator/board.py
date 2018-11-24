@@ -25,6 +25,12 @@ class PnuematicActuatorDriverResponseError(PnuematicActuatorDriverError):
         super(PnuematicActuatorDriverResponseError, self).__init__(message)
 
 
+class PnuematicActuatorTimeoutError(PnuematicActuatorDriverError):
+    def __init__(self):
+        message = 'Serial timout'
+        super(PnuematicActuatorTimeoutError, self).__init__(message)
+
+
 class PnuematicActuatorDriver(object):
 
     '''
@@ -63,7 +69,7 @@ class PnuematicActuatorDriver(object):
         if simulated:
             self.ser = SimulatedPnuematicActuatorBoard()
         else:
-            self.ser = serial.Serial(port=port, baudrate=baud, timeout=None)
+            self.ser = serial.Serial(port=port, baudrate=baud, timeout=2.)
         self.ser.flushInput()
 
     @classmethod
@@ -73,6 +79,8 @@ class PnuematicActuatorDriver(object):
 
     def _get_response(self):
         data = self.ser.read(2)
+        if len(data) != 2:
+            raise PnuematicActuatorTimeoutError()
         response = Constants.deserialize_packet(data)
         data = response[0]
         chksum = response[1]
