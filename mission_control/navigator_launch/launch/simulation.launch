@@ -20,6 +20,10 @@
 
     <!-- Map from gazebo modes to database objects for ground truth simulated PCODAR -->
     <rosparam param="/gazebo/name_map">
+      'green_totem::surmark46104::link': totem_green
+      'red_totem::surmark46104::link': totem_red
+      'blue_totem::surmark46104::link': totem_blue
+      'yellow_totem::surmark46104::link': totem_yellow
       'ring_recovery_reference_buoy' : totem_violet
       'gate_start_red::link': totem_red
       'gate_start_green::link' : totem_green
