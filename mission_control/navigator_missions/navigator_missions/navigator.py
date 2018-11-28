@@ -313,7 +313,7 @@ class Navigator(BaseTask):
         '''
         Enable autonmous wrench, useful to call after disable_thrusters to regain control
         '''
-        return cls.change_wrench("autonomous")
+        return cls.change_wrench("/wrench/autonomous")
 
     @classmethod
     def change_trajectory(cls, source):
