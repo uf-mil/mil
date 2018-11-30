@@ -5,7 +5,8 @@ import numpy as np
 from mil_tools import rosmsg_to_numpy
 from twisted.internet import defer
 import math
-from mil_misc_tools import ThrowingArgumentParser, ArgumentTypeError
+from mil_misc_tools import ThrowingArgumentParser
+from argparse import ArgumentTypeError
 import tf2_ros
 import rospy
 
