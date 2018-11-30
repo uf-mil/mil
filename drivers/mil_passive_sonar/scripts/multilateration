@@ -32,7 +32,7 @@ class MultilaterationNode(object):
         self.vec_samples = deque(maxlen=buffer_len)
         self.enabled = False
         self.last_pos = None
-        self.global_frame = 'enu'
+        self.global_frame = rospy.get_param('~global_frame', default='enu')
         self.heading_sub = rospy.Subscriber('/hydrophones/direction',
                 Vector3Stamped, self.heading_cb, queue_size=10)
         self.position_pub = rospy.Publisher('/hydrophones/position',
@@ -90,6 +90,7 @@ class MultilaterationNode(object):
 
         # If no point could be determined, don't publish
         if where is None:
+            rospy.logwarn_throttle(10.0, 'Could not determine point; likely because too many lobs were filtered out due to intersections close to their origins')
             return
 
         # Publish point
@@ -104,6 +105,8 @@ class MultilaterationNode(object):
         Find the intersection of lines in the least-squares sense.
         Filter lobs such that no lob can have more than a number of intersections with other lines within a radius of the boat
         """
+
+        # Filter out lobs that intersect with many other lobs close to their origin
 
         line_array = np.array([[0, 0, 0, 0]])
         line_intersecting_array = np.array([])
@@ -130,7 +133,7 @@ class MultilaterationNode(object):
                 if distance1 < self.filter_dist or distance2 < self.filter_dist:
                     line_intersections += 1
 
-            if line_intersections < self.filter_dist:
+            if line_intersections < self.filter_count:
                 line_array = np.vstack([line_array, np.array([line1[0][0], line1[0][1], line1[1][0], line1[1][1]])])
 
 
