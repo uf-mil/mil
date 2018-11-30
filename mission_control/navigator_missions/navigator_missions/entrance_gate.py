@@ -1,18 +1,13 @@
 #!/usr/bin/env python
 from txros import util
 from navigator_missions.navigator import Navigator
-from geometry_msgs.msg import Vector3Stamped
-from geometry_msgs.msg import PointStamped
 import numpy as np
 from mil_tools import rosmsg_to_numpy
 from twisted.internet import defer
 import math
-from ros_alarms import TxAlarmBroadcaster
-from mil_misc_tools import ThrowingArgumentParser
+from mil_misc_tools import ThrowingArgumentParser, ArgumentTypeError
 import tf2_ros
 import rospy
-from std_srvs.srv import Trigger, TriggerRequest
-
 
 
 class EntranceGate(Navigator):
@@ -32,7 +27,7 @@ class EntranceGate(Navigator):
             elif v.lower() in ('no', 'false', 'f', 'n', '0'):
                 return False
             else:
-                raise argparse.ArgumentTypeError('Boolean value expected.')
+                raise ArgumentTypeError('Boolean value expected.')
 
         class Range(object):
             '''
@@ -45,16 +40,27 @@ class EntranceGate(Navigator):
             def __eq__(self, other):
                 return self.start <= other <= self.end
 
-        parser = ThrowingArgumentParser(description='Start Gate Mission', usage='Default parameters: \'runtask EntranceGate --passscan false --multilateration false --scandist 10 --speed 0.75 --kill true --scantime 10 --traversaldist 7\'')
-        parser.add_argument('-p', '--passscan', type=str2bool, default=False, help='true results in a scan by traversing the gates (pass scan mode), false results in a scan by listening at two points (two points scan mode)')
-        parser.add_argument('-m', '--multilateration', type=str2bool, default=False, help='true enables multilateration-based scanning, false uses intersecting lines')
-        parser.add_argument('-c', '--scandist', type=int, default=10, help='distance from the gates in meters to scan from')
-        parser.add_argument('-s', '--speed', type=float, default=0.75, choices=[Range(0.0, 1.0)], help='speed to move when scanning in pass pass mode')
-        parser.add_argument('-k', '--kill', type=str2bool, default=True, help='true to kill thrusters during scan in two points scan mode')
-        parser.add_argument('-t', '--scantime', type=int, default=10, help='number of seconds to scan at each point for in two points scan mode')
-        parser.add_argument('-d', '--traversaldist', type=int, default=7, help='distance from each side of the gates to navigate to when crossing')
+        parser = ThrowingArgumentParser(description='Start Gate Mission',
+                                        usage='''Default parameters: \'runtask EntranceGate --passscan false
+                                         --multilateration false --scandist 10 --speed 0.75 --kill true
+                                         --scantime 10 --traversaldist 7\'''')
+        parser.add_argument('-p', '--passscan', type=str2bool, default=False,
+                            help='''true results in a scan by traversing the gates (pass scan mode),
+                            false results in a scan by listening at two points (two points scan mode)''')
+        parser.add_argument('-m', '--multilateration', type=str2bool, default=False,
+                            help='true enables multilateration-based scanning, false uses intersecting lines')
+        parser.add_argument('-c', '--scandist', type=int, default=10,
+                            help='distance from the gates in meters to scan from')
+        parser.add_argument('-s', '--speed', type=float, default=0.75, choices=[Range(0.0, 1.0)],
+                            help='speed to move when scanning in pass pass mode')
+        parser.add_argument('-k', '--kill', type=str2bool, default=True,
+                            help='true to kill thrusters during scan in two points scan mode')
+        parser.add_argument('-t', '--scantime', type=int, default=10,
+                            help='number of seconds to scan at each point for in two points scan mode')
+        parser.add_argument('-d', '--traversaldist', type=int, default=7,
+                            help='distance from each side of the gates to navigate to when crossing')
         cls.parser = parser
-    
+
     @util.cancellableInlineCallbacks
     def run(self, args):
         # Parse Arguments
@@ -94,7 +100,6 @@ class EntranceGate(Navigator):
         should_kill = args.kill
         listen_time = args.scantime
 
-
         # Calculate scan points
         scan_points_0 = yield self.get_perpendicular_points(self.gate_totems[1], scan_dist)
         scan_points_1 = yield self.get_perpendicular_points(self.gate_totems[2], scan_dist)
@@ -103,7 +108,6 @@ class EntranceGate(Navigator):
         scan_point_1 = scan_points_1[0]
         scan_lookat_1 = scan_points_1[1]
 
-
         if uses_multilateration:
             # Reset Scan
             yield self.hydrophones.disable()
@@ -111,7 +115,6 @@ class EntranceGate(Navigator):
         else:
             # Reset pings
             self.intersect_vectors = []
-
 
         # Execute Scan 1
 
@@ -143,7 +146,6 @@ class EntranceGate(Navigator):
         if should_kill:
             self.enable_autonomous()
 
-
         # Execute Scan 2
 
         self.send_feedback('Navigating to scan start point 2')
@@ -152,7 +154,7 @@ class EntranceGate(Navigator):
         # If kill is enabled, kill the thrusters
         if should_kill:
             self.disable_thrusters()
-        
+
         if uses_multilateration:
             # Turn on multilateration
             self.hydrophones.enable()
@@ -174,7 +176,6 @@ class EntranceGate(Navigator):
         if should_kill:
             self.enable_autonomous()
 
-
         # Calculate results
         if uses_multilateration:
             multilateration_results = yield self.get_multilateration_closest()
@@ -189,14 +190,12 @@ class EntranceGate(Navigator):
 
             self.send_feedback('Intersecting Method has confidence of ' + str(intersect_confidence))
 
-
     @util.cancellableInlineCallbacks
     def run_pass_scan(self, args):
         # Parse Parameters
         uses_multilateration = args.multilateration
         scan_dist = args.scandist
         speed = args.speed
-
 
         # Calculate scan points
         scan_points_0 = yield self.get_perpendicular_points(self.gate_centers[0], scan_dist)
@@ -207,7 +206,6 @@ class EntranceGate(Navigator):
         scan_point_1 = scan_points_1[0]
         scan_lookat_1 = scan_points_2[0]
 
-
         if uses_multilateration:
             # Reset Scan
             yield self.hydrophones.disable()
@@ -215,7 +213,6 @@ class EntranceGate(Navigator):
         else:
             # Reset pings
             self.intersect_vectors = []
-
 
         # Execute Scan
 
@@ -253,7 +250,6 @@ class EntranceGate(Navigator):
 
             self.send_feedback('Intersecting Method has confidence of ' + str(intersect_confidence))
 
-
     '''
 
         Intersecting
@@ -266,16 +262,18 @@ class EntranceGate(Navigator):
         gateDist = [0, 0, 0]
         for pinger_vector in self.intersect_vectors:
             # Calculate intersection between the gate and the pinger vector
-            t, s = np.linalg.solve(np.array([gate_vector[1]-gate_vector[0], pinger_vector[0]-pinger_vector[1]]).T, pinger_vector[0]-gate_vector[0])
-            intersection = (1-t)*gate_vector[0] + t*gate_vector[1]
+            t, s = np.linalg.solve(np.array([gate_vector[1] - gate_vector[0], pinger_vector[0] - pinger_vector[1]]).T,
+                                   pinger_vector[0] - gate_vector[0])
+            intersection = (1 - t) * gate_vector[0] + t * gate_vector[1]
 
             # Calculate the distances from each gate center to the intersection
             gateDist[0] = np.linalg.norm(intersection - np.array(self.gate_centers[0]))
             gateDist[1] = np.linalg.norm(intersection - np.array(self.gate_centers[1]))
             gateDist[2] = np.linalg.norm(intersection - np.array(self.gate_centers[2]))
 
-            # If the intersection is more than 15 meters from the center of the gates it is outside the gates, so we ignore
+            # If the intersection is more than 15 meters from the center of the gates it is outside the gates
             if gateDist[1] > 16:
+                # Ignore it
                 continue
 
             # Calculate vectors to the edges of the gates and the intersect
@@ -293,7 +291,7 @@ class EntranceGate(Navigator):
             # If the angles are out of range, throw out this intersection
             if ang_c1_c4 >= 0 and (ang_c1_i4 < 0 or ang_c1_i4 > ang_c1_c4):
                 continue
-            if ang_c1_c4 <  0 and (ang_c1_i4 > 0 or ang_c1_i4 < ang_c1_c4):
+            if ang_c1_c4 < 0 and (ang_c1_i4 > 0 or ang_c1_i4 < ang_c1_c4):
                 continue
 
             # Determine which gate the intersection is in
@@ -306,7 +304,6 @@ class EntranceGate(Navigator):
         # Calculate the confidence
         confidence = bucket[pinger_gate] / (bucket[0] + bucket[1] + bucket[2])
         return (pinger_gate, confidence)
-
 
     @util.cancellableInlineCallbacks
     def ping_recv(self, p_message):
@@ -322,7 +319,6 @@ class EntranceGate(Navigator):
             self.intersect_vectors.append((hydrophones_origin[0:2], hydrophones_origin[0:2] + heading_enu[0:2]))
         except tf2_ros.TransformException, e:
             rospy.logwarn('TF Exception: {}'.format(e))
-
 
     '''
 
@@ -348,7 +344,6 @@ class EntranceGate(Navigator):
         confidence = (5 - distances[pinger_gate]) / 5.0
         defer.returnValue((pinger_gate, confidence))
 
-    
     '''
 
         Math Utilities
@@ -379,14 +374,11 @@ class EntranceGate(Navigator):
         r = math.sqrt(pvec[0] ** 2 + pvec[1] ** 2)
         return [pvec[0] / r, pvec[1] / r, 0]
 
-
-
     '''
 
         Perception Utilities
 
     '''
-
 
     @util.cancellableInlineCallbacks
     def find_nearest_objects(self, name, number):
@@ -394,7 +386,8 @@ class EntranceGate(Navigator):
         boat_enu = boat_enu[0]
         objects = yield self.database_query(name)
         assert objects.found, name + " not found"
-        assert len(objects.objects) >= number, "Not enough " + name + " found. Need " + str(number) + " found " + str(len(objects.objects))
+        assert len(objects.objects) >= number, \
+            "Not enough " + name + " found. Need " + str(number) + " found " + str(len(objects.objects))
 
         totems_dists = []
 
@@ -433,8 +426,6 @@ class EntranceGate(Navigator):
         gates_line = self.line(gate_centers[0], gate_centers[2])
         defer.returnValue((gate_centers, gates_line, gate_totems))
 
-
-
     '''
 
         Navigation Utilities
@@ -451,9 +442,9 @@ class EntranceGate(Navigator):
 
         # Find the two points on either side of the line
         perpendicular_points = [(center_point[0] + perpendicular_vector[0] * offset_distance,
-                            center_point[1] + perpendicular_vector[1] * offset_distance),
-                           (center_point[0] + perpendicular_vector[0] * -offset_distance,
-                            center_point[1] + perpendicular_vector[1] * -offset_distance)]
+                                 center_point[1] + perpendicular_vector[1] * offset_distance),
+                                (center_point[0] + perpendicular_vector[0] * -offset_distance,
+                                 center_point[1] + perpendicular_vector[1] * -offset_distance)]
 
         # Sort them such that the point on the same side of the boat is first
         if (perpendicular_points[0][0] - boat_pose[0]) ** 2 + (perpendicular_points[0][1] - boat_pose[1]) ** 2 > \
