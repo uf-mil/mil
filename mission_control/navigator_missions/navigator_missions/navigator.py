@@ -238,6 +238,34 @@ class Navigator(BaseTask):
         return self._actuator_client(req)
 
     @util.cancellableInlineCallbacks
+    def get_sorted_objects(self, name, n=-1, throw=True, **kwargs):
+        '''
+        Get the closest N objects with a particular name from the PCODAR database
+        @param name: the name of the object
+        @param n: the number of objects to get, if -1, get all of them
+        @param throw: If true, raise exception if not enough objects present
+        @param **kwargs: other kwargs to give to database_query
+        @return tuple([sorted_object_messages, [object_positions]) of sorted object messages
+                and their positions as a Nx3 numpy array.
+        '''
+        objects = (yield self.database_query(object_name=name, **kwargs)).objects
+        if n != -1 and len(objects) < n:
+            if throw:
+                raise Exception('Could not get {} {} objects'.format(n, name))
+            else:
+                defer.returnValue(None)
+        positions = np.empty((len(objects), 3))
+        for i, obj in enumerate(objects):
+            positions[i, :] = mil_tools.rosmsg_to_numpy(obj.pose.position)
+        nav_pose = (yield self.tx_pose)[0]
+        distances = np.linalg.norm(positions - nav_pose, axis=1)
+        distances_argsort = np.argsort(distances)
+        if n != -1:
+            distances_argsort = distances_argsort[:n]
+        objects_sorted = [objects[i] for i in distances_argsort]
+        defer.returnValue((objects_sorted, positions[distances_argsort, :]))
+
+    @util.cancellableInlineCallbacks
     def database_query(self, object_name=None, raise_exception=True, **kwargs):
         if object_name is not None:
             kwargs['name'] = object_name
