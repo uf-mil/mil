@@ -1,0 +1,9 @@
+global_frame: enu
+initial_pois:
+  circle_totems: [26.09821319580078, 59.91523361206055, 0.0]
+  dock: [108.05, -1.07, 0.0]
+  entrance_gate: [51.28, -48.69, 0.0]
+  obstacle_course: [-32.803, -83.41, 0.0]
+  ring_challenge: [61.271873474121094, 15.894840240478516, 0.0]
+  start_gate: [12.75, 0.433, 0.0]
+  stc: [49.49, -82.65, 0.0]
