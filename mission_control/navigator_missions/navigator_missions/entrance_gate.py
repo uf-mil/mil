@@ -319,7 +319,7 @@ class EntranceGate(Navigator):
             # Track the ping
             self.intersect_vectors.append((hydrophones_origin[0:2], hydrophones_origin[0:2] + heading_enu[0:2]))
         except tf2_ros.TransformException, e:
-            rospy.logwarn('TF Exception: {}'.format(e))
+            self.send_feedback('TF Exception: {}'.format(e))
 
     '''
 
