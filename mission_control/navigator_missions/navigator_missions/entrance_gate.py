@@ -8,7 +8,6 @@ import math
 from mil_misc_tools import ThrowingArgumentParser
 from argparse import ArgumentTypeError
 import tf2_ros
-import rospy
 
 
 class EntranceGate(Navigator):
@@ -19,17 +18,6 @@ class EntranceGate(Navigator):
 
     @classmethod
     def init(cls):
-        def str2bool(v):
-            '''
-                https://stackoverflow.com/a/43357954
-            '''
-            if v.lower() in ('yes', 'true', 't', 'y', '1'):
-                return True
-            elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-                return False
-            else:
-                raise ArgumentTypeError('Boolean value expected.')
-
         class Range(object):
             '''
                 https://stackoverflow.com/a/12117089
@@ -42,20 +30,19 @@ class EntranceGate(Navigator):
                 return self.start <= other <= self.end
 
         parser = ThrowingArgumentParser(description='Start Gate Mission',
-                                        usage='''Default parameters: \'runtask EntranceGate --passscan false
-                                         --multilateration false --scandist 10 --speed 0.75 --kill true
-                                         --scantime 10 --traversaldist 7\'''')
-        parser.add_argument('-p', '--passscan', type=str2bool, default=False,
-                            help='''true results in a scan by traversing the gates (pass scan mode),
-                            false results in a scan by listening at two points (two points scan mode)''')
-        parser.add_argument('-m', '--multilateration', type=str2bool, default=False,
-                            help='true enables multilateration-based scanning, false uses intersecting lines')
+                                        usage='''Default parameters: \'runtask EntranceGate
+                                         --scandist 10 --speed 0.75 --scantime 10 --traversaldist 7\'''')
+        parser.add_argument('-p', '--passscan', action='store_true',
+                            help='''setting results in a scan by traversing the gates (pass scan mode),
+                            not setting results in a scan by listening at two points (two points scan mode)''')
+        parser.add_argument('-m', '--multilateration', action='store_true',
+                            help='setting enables multilateration-based scanning, otherwise uses intersecting lines')
         parser.add_argument('-c', '--scandist', type=int, default=10,
                             help='distance from the gates in meters to scan from')
         parser.add_argument('-s', '--speed', type=float, default=0.75, choices=[Range(0.0, 1.0)],
                             help='speed to move when scanning in pass pass mode')
-        parser.add_argument('-k', '--kill', type=str2bool, default=True,
-                            help='true to kill thrusters during scan in two points scan mode')
+        parser.add_argument('-k', '--nokill', action='store_false',
+                            help='set to not kill thrusters during scan in two points scan mode')
         parser.add_argument('-t', '--scantime', type=int, default=10,
                             help='number of seconds to scan at each point for in two points scan mode')
         parser.add_argument('-d', '--traversaldist', type=int, default=7,
@@ -98,7 +85,7 @@ class EntranceGate(Navigator):
         # Parse Parameters
         uses_multilateration = args.multilateration
         scan_dist = args.scandist
-        should_kill = args.kill
+        should_kill = args.nokill
         listen_time = args.scantime
 
         # Calculate scan points
