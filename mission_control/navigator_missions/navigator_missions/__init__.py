@@ -26,6 +26,5 @@ from retract_thrusters import RetractThrusters
 from fire_launcher import FireLauncher
 from reload_launcher import ReloadLauncher
 from go_to_poi import GoToPOI
-from start_gate_jaxon import StartGateJaxon
 from entrance_gate import EntranceGate
 import pose_editor

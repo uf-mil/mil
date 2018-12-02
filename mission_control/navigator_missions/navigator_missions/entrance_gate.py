@@ -382,35 +382,15 @@ class EntranceGate(Navigator):
     '''
 
     @util.cancellableInlineCallbacks
-    def find_nearest_objects(self, name, number):
-        boat_enu = yield self.tx_pose
-        boat_enu = boat_enu[0]
-        objects = yield self.database_query(name)
-        assert objects.found, name + " not found"
-        assert len(objects.objects) >= number, \
-            "Not enough " + name + " found. Need " + str(number) + " found " + str(len(objects.objects))
-
-        totems_dists = []
-
-        for obj in objects.objects:
-            obj_pos = rosmsg_to_numpy(obj.pose.position)[:2]
-            obj_dst = (boat_enu[0] - obj_pos[0]) ** 2 + (boat_enu[1] - obj_pos[1]) ** 2
-            totems_dists.append((obj_pos, obj_dst))
-
-        totems_dists = sorted(totems_dists, key=lambda td: td[1])
-        nearest_objects = list(map(lambda td: td[0], totems_dists))[:number]
-        defer.returnValue(nearest_objects)
-
-    @util.cancellableInlineCallbacks
     def find_gates(self):
         # Find each of the needed totems
-        t1 = yield self.find_nearest_objects("totem_red", 1)
-        t1 = t1[0]
-        white_totems = yield self.find_nearest_objects("totem_white", 2)
-        t2 = white_totems[0]
-        t3 = white_totems[1]
-        t4 = yield self.find_nearest_objects("totem_green", 1)
-        t4 = t4[0]
+        t1 = yield self.get_sorted_objects("totem_red", n=1)
+        t1 = t1[1][0][:2]
+        white_totems = yield self.get_sorted_objects("totem_white", n=2)
+        t2 = white_totems[1][0][:2]
+        t3 = white_totems[1][1][:2]
+        t4 = yield self.get_sorted_objects("totem_green", n=1)
+        t4 = t4[1][0][:2]
 
         # Make sure the two white totems get ordered properly
         if (t2[0] - t1[0]) ** 2 + (t2[1] - t1[1]) ** 2 < (t3[0] - t1[0]) ** 2 + (t3[1] - t1[1]) ** 2:
