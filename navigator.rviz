@@ -476,13 +476,14 @@ Visualization Manager:
       Show Visual Aids: false
       Update Topic: /points_of_interest/update
       Value: true
-    - Class: rviz/MarkerArray
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
       Enabled: true
-      Marker Topic: /pcodar/objects_visualization
-      Name: PCODAR Objects
-      Namespaces:
-        "": true
-      Queue Size: 100
+      Name: PCODAR Objects (interactive)
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /pcodar_objects/update
       Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
