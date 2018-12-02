@@ -76,9 +76,9 @@ void PCODARGazebo::UpdateEntity(gazebo::physics::EntityPtr _entity)
   GazeboVectorToRosMsg(box.GetSize(), object.msg_.scale);
 
   // Add or update object
-  auto existing_object = pcodar_->objects_.objects_.find(id);
-  if (existing_object == pcodar_->objects_.objects_.end())
-    pcodar_->objects_.objects_.insert({ id, object });
+  auto existing_object = pcodar_->objects_->objects_.find(id);
+  if (existing_object == pcodar_->objects_->objects_.end())
+    pcodar_->objects_->objects_.insert({ id, object });
   else
     (*existing_object).second = object;
 }

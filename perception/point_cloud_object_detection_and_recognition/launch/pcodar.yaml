@@ -18,3 +18,5 @@ ogrid_height_meters : 300
 ogrid_width_meters : 300
 ogrid_resolution_meters_per_cell : 0.3
 ogrid_inflation_meters : 0.5
+
+classifications: ["a", "b", "c"]
