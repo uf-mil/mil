@@ -14,7 +14,7 @@ void PCODARGazebo::Load(gazebo::physics::WorldPtr _world, sdf::ElementPtr _sdf)
   {
     ROS_WARN("MAPPING %s to %s", it.first.c_str(), it.second.c_str());
   }
-  UpdateObjects();
+  UpdateEntities();
   timer_ = nh_.createTimer(ros::Duration(5.0), std::bind(&PCODARGazebo::TimerCb, this, std::placeholders::_1));
 }
 
@@ -23,60 +23,59 @@ void PCODARGazebo::TimerCb(const ros::TimerEvent&)
   pcodar_->UpdateObjects();
 }
 
-void PCODARGazebo::UpdateObjects()
+void PCODARGazebo::UpdateEntities()
 {
   for (auto model : world_->GetModels())
   {
-    UpdateObject(model);
+    UpdateModel(model);
   }
 }
 
-void PCODARGazebo::UpdateObject(gazebo::physics::ModelPtr _model)
+void PCODARGazebo::UpdateModel(gazebo::physics::ModelPtr _model)
 {
-  ROS_WARN("OBJECT %s", _model->GetName().c_str());
-  auto it = name_map_.find(_model->GetName());
-  if (it != name_map_.end())
-  {
-    int id = _model->GetId();
-    pcodar::Object object = pcodar::Object(pcodar::point_cloud());
-    object.msg_.classification = (*it).second;
-    GazeboPoseToRosMsg(_model->GetWorldPose(), object.msg_.pose);
-    GazeboVectorToRosMsg(_model->GetBoundingBox().GetSize(), object.msg_.scale);
-
-    auto existing_object = pcodar_->objects_.objects_.find(id);
-    if (existing_object == pcodar_->objects_.objects_.end())
-      pcodar_->objects_.objects_.insert({ id, object });
-    else
-      (*existing_object).second = object;
-  }
+  UpdateEntity(_model);
 
   // Recurse into nested models
   for (auto model : _model->NestedModels())
   {
-    UpdateObject(model);
+    UpdateModel(model);
   }
 
   // Recurse into links
   for (auto link : _model->GetLinks())
   {
-    UpdateLink(link);
+    UpdateEntity(link);
   }
 }
 
-void PCODARGazebo::UpdateLink(gazebo::physics::LinkPtr _link)
+void PCODARGazebo::UpdateEntity(gazebo::physics::EntityPtr _entity)
 {
-  ROS_WARN("LINK %s", _link->GetName().c_str());
+  ROS_WARN("Entity %s", _entity->GetName().c_str());
 
-  auto it = name_map_.find(_link->GetName());
+  // Find this entity in the name map
+  auto it = name_map_.find(_entity->GetName());
+
+  // Ignore if not in the map
   if (it == name_map_.end())
     return;
 
-  int id = _link->GetId();
+  int id = _entity->GetId();
+
+  // Create an object message for this entity
   pcodar::Object object = pcodar::Object(pcodar::point_cloud());
   object.msg_.classification = (*it).second;
-  GazeboPoseToRosMsg(_link->GetWorldPose(), object.msg_.pose);
-  GazeboVectorToRosMsg(_link->GetBoundingBox().GetSize(), object.msg_.scale);
 
+  // Get pose and bounding box for object
+  gazebo::math::Pose pose = _entity->GetWorldPose();
+  gazebo::math::Box box = _entity->GetBoundingBox();
+  // Move pcdoar pose origin to center of bounding box
+  pose.pos = box.GetCenter();
+
+  // Convert pose and box to ROS messages
+  GazeboPoseToRosMsg(pose, object.msg_.pose);
+  GazeboVectorToRosMsg(box.GetSize(), object.msg_.scale);
+
+  // Add or update object
   auto existing_object = pcodar_->objects_.objects_.find(id);
   if (existing_object == pcodar_->objects_.objects_.end())
     pcodar_->objects_.objects_.insert({ id, object });
