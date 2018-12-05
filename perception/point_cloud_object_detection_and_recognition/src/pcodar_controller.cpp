@@ -13,6 +13,7 @@ NodeBase::NodeBase(ros::NodeHandle _nh)
   , tf_listener(tf_buffer_, nh_)
   , global_frame_("enu")
   , config_server_(_nh)
+  , objects_(std::make_shared<ObjectMap>())
 {
   config_server_.setCallback(std::bind(&NodeBase::ConfigCallback, this, std::placeholders::_1, std::placeholders::_2));
 }
@@ -25,15 +26,15 @@ void NodeBase::ConfigCallback(Config const& config, uint32_t level)
 
 void NodeBase::UpdateObjects()
 {
-  ogrid_manager_.update_ogrid(objects_);
-  auto objects_msg = objects_.to_msg();
-  marker_manager_.update_markers(objects_msg);
+  ogrid_manager_.update_ogrid(*objects_);
+  auto objects_msg = objects_->to_msg();
+  marker_manager_.update_markers();
   pub_objects_.publish(objects_msg);
 }
 
 void NodeBase::initialize()
 {
-  marker_manager_.initialize(nh_);
+  marker_manager_.initialize(nh_, objects_);
   ogrid_manager_.initialize(nh_);
 
   modify_classification_service_ = nh_.advertiseService("/database/requests", &NodeBase::DBQuery_cb, this);
@@ -79,7 +80,7 @@ bool NodeBase::bounds_update_cb(const mil_bounds::BoundsConfig& config)
 
 bool NodeBase::DBQuery_cb(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::ObjectDBQuery::Response& res)
 {
-  return objects_.DatabaseQuery(req, res);
+  return objects_->DatabaseQuery(req, res);
 }
 
 bool NodeBase::transform_point_cloud(const sensor_msgs::PointCloud2& pc_msg, point_cloud& out)
@@ -177,7 +178,7 @@ void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)
     clusters_t clusters = detector_.get_clusters(filtered_accrued);
 
     // Associate current clusters with old ones
-    ass.associate(objects_, *filtered_accrued, clusters);
+    ass.associate(*objects_, *filtered_accrued, clusters);
   }
   else
     ROS_WARN_ONCE("Filtered pointcloud had no points. Consider changing filter parameters.");

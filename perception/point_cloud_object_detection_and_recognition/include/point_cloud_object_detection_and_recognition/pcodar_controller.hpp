@@ -53,6 +53,9 @@ protected:
   virtual bool bounds_update_cb(const mil_bounds::BoundsConfig& config);
   virtual void ConfigCallback(Config const& config, uint32_t level);
 
+public:
+  std::shared_ptr<ObjectMap> objects_;
+
 protected:
   ros::NodeHandle nh_;
   dynamic_reconfigure::Client<mil_bounds::BoundsConfig> bounds_client_;
@@ -73,9 +76,6 @@ protected:
   // Visualization
   MarkerManager marker_manager_;
   OgridManager ogrid_manager_;
-
-public:
-  ObjectMap objects_;
 };
 
 class Node : public NodeBase
