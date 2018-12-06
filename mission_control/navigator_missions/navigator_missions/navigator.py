@@ -12,6 +12,7 @@ import mil_tools
 from ros_alarms import TxAlarmListener
 from navigator_path_planner.msg import MoveAction, MoveGoal
 from nav_msgs.msg import Odometry
+from std_msgs.msg import Float64
 from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped, PointStamped
 import navigator_msgs.srv as navigator_srvs
@@ -106,6 +107,7 @@ class Navigator(BaseTask):
         cls.hydrophones = TxHydrophonesClient(cls.nh)
 
         cls.poi = TxPOIClient(cls.nh)
+        cls._grind_motor_pub = cls.nh.advertise("/grinch_controller/motor1/cmd", Float64)
 
         try:
             cls._actuator_client = cls.nh.get_service_client('/actuator_driver/actuate', SetValve)
@@ -159,6 +161,41 @@ class Navigator(BaseTask):
     def fetch_result(self, *args, **kwargs):
         # For a unified result class
         return MissionResult(*args, **kwargs)
+
+    @util.cancellableInlineCallbacks
+    def spin_grinch(self, speed=-1.0, interval=0.1):
+        '''
+        Spin the grinch mechnaism. To avoid watchdog timeout, this is sent
+        in a loop at the specified interface. So to stop spinning,
+        cancel the defer
+
+        Example:
+        # start spinning
+        d = self.spin_grinch()
+        # do some stuf....
+        ...
+        # Stop spinning
+        d.cancel()
+        '''
+        while True:
+            self._grind_motor_pub.publish(Float64(speed))
+            yield self.nh.sleep(interval)
+
+    @util.cancellableInlineCallbacks
+    def deploy_grinch(self):
+        '''
+        Deploy the grinch mechanism
+        TODO: replace with actual motor commands once the design is finalized
+        '''
+        yield self.nh.sleep(3.0)
+
+    @util.cancellableInlineCallbacks
+    def retract_grinch(self):
+        '''
+        Retract the grinch mechanism
+        TODO: replace with actual motor commands once the design is finalized
+        '''
+        yield self.nh.sleep(3.0)
 
     @util.cancellableInlineCallbacks
     def deploy_thruster(self, name):

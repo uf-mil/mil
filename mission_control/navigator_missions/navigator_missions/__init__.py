@@ -27,4 +27,5 @@ from fire_launcher import FireLauncher
 from reload_launcher import ReloadLauncher
 from go_to_poi import GoToPOI
 from entrance_gate import EntranceGate
+from ring_recovery import RingRecovery
 import pose_editor
