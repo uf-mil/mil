@@ -7,7 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   INCLUDE_DIRS
-    labelbox_data_processing
+    ldp
     docker_tf
   CATKIN_DEPENDS
     rospy
@@ -17,8 +17,3 @@ catkin_package(
 
 catkin_python_setup()
 
-include_directories(
-  docker_tf
-  labelbox_data_processing
-  ${catkin_INCLUDE_DIRS}
-)
