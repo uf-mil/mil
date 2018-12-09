@@ -4,6 +4,7 @@ from navigator_missions.navigator import Navigator
 from detect_deliver_find import DetectDeliverFind
 from track_target import TrackTarget
 
+
 class DetectDeliver(Navigator):
 
     @classmethod

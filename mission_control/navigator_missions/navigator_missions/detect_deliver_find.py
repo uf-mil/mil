@@ -37,7 +37,7 @@ class DetectDeliverFind(Navigator):
                             help='distance to scan the images from')
         cls.parser = parser
 
-        cls.junk_1 = 0 # TODO REMOVE THIS --------------------------
+        cls.junk_1 = 0  # TODO REMOVE THIS --------------------------
 
     @util.cancellableInlineCallbacks
     def run(self, args):
@@ -110,7 +110,6 @@ class DetectDeliverFind(Navigator):
         yield self.move.set_position(pt).look_at(lpt).go()
 
         self.send_feedback('Done! In position to line up for shot.')
-
 
     @util.cancellableInlineCallbacks
     def find_dock(self, override_scale):
