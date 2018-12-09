@@ -3,8 +3,8 @@
   <name>navigator_judgespanel</name>
   <version>0.0.0</version>
   <description>NaviGator Judge's Panel</description>
-  <maintainer email="darkknight@todo.todo">darkknight</maintainer>
-  <license>TODO</license>
+  <maintainer email="b.ermakovspektor@ufl.edu">Boris Spektor</maintainer>
+  <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>sensor_msgs</build_depend>

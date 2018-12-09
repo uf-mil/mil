@@ -27,6 +27,7 @@ add_message_files(
   Host.msg
   Hosts.msg
   ColoramaDebug.msg
+  ScanTheCode.msg
 )
 
 add_service_files(
@@ -52,7 +53,6 @@ add_service_files(
   MessageDetectDeliver.srv
   MessageExtranceExitGate.srv
   MessageIdentifySymbolsDock.srv
-  MessageScanCode.srv
 )
 
 add_action_files(

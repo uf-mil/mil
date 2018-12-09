@@ -12,8 +12,8 @@ import threading
 import rospy
 import rostest
 from mil_tools import thread_lock
-from navigator_msgs.srv import MessageExtranceExitGate, MessageScanCode, \
-    MessageIdentifySymbolsDock, MessageDetectDeliver
+from navigator_msgs.msg import ScanTheCode
+from navigator_msgs.srv import MessageExtranceExitGate, MessageIdentifySymbolsDock, MessageDetectDeliver
 
 from navigator_robotx_comms.navigator_robotx_comms import BitwiseXORChecksum, RobotXDetectDeliverMessage, \
     RobotXHeartbeatMessage, RobotXEntranceExitGateMessage, RobotXScanCodeMessage, RobotXIdentifySymbolsDockMessage
@@ -32,6 +32,7 @@ class TestRobotXComms(unittest.TestCase):
         self.number_of_iterations = rospy.get_param("~number_of_iterations")
         self.use_test_data = rospy.get_param("~use_test_data")
         self.server = RobotXServer(self.td_ip, self.td_port)
+        self.scan_code_pub = rospy.Publisher('/scan_the_code', ScanTheCode, queue_size=10)
         super(TestRobotXComms, self).__init__(*args)
 
     def test_heartbeat_message(self):
@@ -140,17 +141,17 @@ class TestRobotXComms(unittest.TestCase):
         times_ran = 0
         self.server.connect()
         # data to test message with
-        light_pattern = "RBG"
+        color_pattern = "RBG"
 
-        rospy.wait_for_service("scan_code_message")
-        send_robot_x_scan_code_message = rospy.ServiceProxy("scan_code_message", MessageScanCode)
+        scan_code_msg = ScanTheCode()
+        scan_code_msg.color_pattern = color_pattern
 
         robot_x_scan_code_message = RobotXScanCodeMessage()
 
         try:
             while not rospy.is_shutdown() and times_ran < self.number_of_iterations:
+                self.scan_code_pub.publish(scan_code_msg)
                 rx_data = None
-                send_robot_x_scan_code_message(light_pattern)
                 while rx_data is None:
                     rx_data = self.server.receive_message()
                 split_rx_data = rx_data.splitlines(True)
@@ -172,15 +173,15 @@ class TestRobotXComms(unittest.TestCase):
                             self.assertEquals(data_list[3], list_test_data[3], "team id incorrect")
                             self.assertEquals(checksum_list[1], checksum_list_test_data[1],
                                               "scan code message checksum incorrect")
-                            msg_light_pattern = data_list[4].split("*")[0]
+                            msg_color_pattern = data_list[4].split("*")[0]
                             light_pattern = list_test_data[4].split("*")[0]
-                            self.assertEquals(msg_light_pattern, light_pattern, "light pattern incorrect")
+                            self.assertEquals(msg_color_pattern, light_pattern, "light pattern incorrect")
                         else:
                             self.assertEquals(data_list[3], self.team_id, "team id incorrect")
                             self.assertEquals(checksum_list[1], final_checksum_string,
                                               "scan code message checksum incorrect")
-                            msg_light_pattern = data_list[4].split("*")[0]
-                            self.assertEquals(msg_light_pattern, light_pattern, "light pattern incorrect")
+                            msg_color_pattern = data_list[4].split("*")[0]
+                            self.assertEquals(msg_color_pattern, color_pattern, "color pattern incorrect")
                         times_ran += 1
 
         finally:

@@ -15,8 +15,8 @@ from geometry_msgs.msg import PointStamped
 from mil_tools import thread_lock
 from nav_msgs.msg import Odometry
 from std_msgs.msg import String
-from navigator_msgs.srv import MessageExtranceExitGate, MessageScanCode, \
-    MessageIdentifySymbolsDock, MessageDetectDeliver
+from navigator_msgs.msg import ScanTheCode
+from navigator_msgs.srv import MessageExtranceExitGate, MessageIdentifySymbolsDock, MessageDetectDeliver
 
 from navigator_robotx_comms.navigator_robotx_comms import RobotXDetectDeliverMessage, RobotXHeartbeatMessage, \
     RobotXEntranceExitGateMessage, RobotXScanCodeMessage, RobotXIdentifySymbolsDockMessage
@@ -66,6 +66,7 @@ class RobotXStartServices:
         rospy.Subscriber("lla", PointStamped, self.gps_coord_callback)
         rospy.Subscriber("odom", Odometry, self.gps_odom_callback)
         rospy.Subscriber("/wrench/selected", String, self.wrench_callback)
+        rospy.Subscriber("/scan_the_code", ScanTheCode, self.scan_the_code_callback)
 
         # track kill state for inferring system mode
         self.kill_listener = AlarmListener('kill', self.kill_callback)
@@ -75,9 +76,6 @@ class RobotXStartServices:
         self.service_entrance_exit_gate_message = rospy.Service("entrance_exit_gate_message",
                                                                 MessageExtranceExitGate,
                                                                 self.handle_entrance_exit_gate_message)
-        self.service_scan_code_message = rospy.Service("scan_code_message",
-                                                       MessageScanCode,
-                                                       self.handle_scan_code_message)
         self.service_identify_symbols_dock_message = rospy.Service("identify_symbols_dock_message",
                                                                    MessageIdentifySymbolsDock,
                                                                    self.handle_identify_symbols_dock_message)
@@ -91,13 +89,13 @@ class RobotXStartServices:
     def update_system_mode(self):
         if self.kill is True:
             self.system_mode = 3
-        elif self.wrench is "autonomous" or self.wrench is "/wrench/autonomous":
+        elif self.wrench == "autonomous" or self.wrench == "/wrench/autonomous":
             self.system_mode = 2
         else:
             self.system_mode = 1
 
     def wrench_callback(self, wrench):
-        self.wrench = wrench
+        self.wrench = wrench.data
 
     def kill_callback(self, alarm):
         self.kill = alarm.raised
@@ -113,6 +111,9 @@ class RobotXStartServices:
 
     def system_mode_callback(self, system_mode):
         self.system_mode = system_mode
+
+    def scan_the_code_callback(self, scan_the_code):
+        self.handle_scan_code_message(scan_the_code.color_pattern)
 
     def handle_heartbeat_message(self, data):
         self.update_system_mode()
@@ -135,7 +136,7 @@ class RobotXStartServices:
         self.robotx_client.send_message(message.message)
         return message
 
-    def handle_scan_code_message(self, data):
+    def handle_scan_code_message(self, color_pattern):
         if self.time_last_scan_code is not None:
             seconds_elapsed = rospy.get_time() - self.time_last_scan_code
             if seconds_elapsed < 1:
@@ -143,9 +144,8 @@ class RobotXStartServices:
         self.time_last_scan_code = rospy.get_time()
         hst_date_time = self.get_hst_date_time()
         message = self.robotx_scan_code_message.to_string(self.delim, self.team_id, hst_date_time,
-                                                          data, self.use_test_data)
-        self.robotx_client.send_message(message.message)
-        return message
+                                                          color_pattern, self.use_test_data)
+        self.robotx_client.send_message(message)
 
     def handle_identify_symbols_dock_message(self, data):
         if self.time_last_identify_symbols is not None:
