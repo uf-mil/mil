@@ -47,3 +47,4 @@ target_link_libraries (JudgesPanelLib Qt5::Widgets)
 
 add_executable(judges_panel ${JudgesPanelBin_src})
 target_link_libraries (judges_panel JudgesPanelLib ${catkin_LIBRARIES})
+add_dependencies(JudgesPanelLib ${catkin_EXPORTED_TARGETS})

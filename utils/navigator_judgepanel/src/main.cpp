@@ -19,7 +19,6 @@ int main(int argc, char *argv[])
     ros::Duration(0.1).sleep();
   }
   ROS_INFO_STREAM("JUDGEPANEL | ROS Master: " << ros::master::getHost());
-
   QApplication a(argc, argv);
   UI form;
   form.show();
