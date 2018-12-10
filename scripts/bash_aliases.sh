@@ -51,6 +51,10 @@ imageproc() # Example usage: imageproc /camera/seecam
 {
     ROS_NAMESPACE="$1" rosrun image_proc image_proc
 }
+calibratecamera()
+{
+  rosrun camera_calibration cameracalibrator.py --no-service-check --pattern=chessboard --square=0.063 --size=8x6 --disable_calib_cb_fast_check camera:=$1 image:=$1/image_raw
+}
 
 # Bash sourcing
 alias srcbrc="source ~/.bashrc"
