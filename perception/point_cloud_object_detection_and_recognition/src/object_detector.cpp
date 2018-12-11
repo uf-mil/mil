@@ -22,7 +22,6 @@ void ObjectDetector::update_config(Config const& config)
 {
   cluster_extractor_.setClusterTolerance(config.cluster_tolerance_m);
   cluster_extractor_.setMinClusterSize(config.cluster_min_points);
-  cluster_extractor_.setMaxClusterSize(config.cluster_max_points);
 }
 
 }  // namespace pcodar
