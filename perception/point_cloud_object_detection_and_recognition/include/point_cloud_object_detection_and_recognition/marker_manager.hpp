@@ -25,10 +25,12 @@ namespace pcodar
 class MarkerManager
 {
 public:
-  /// Initialize the marker manager with a nodehandle in the namespace of where the markers will be published
+  /// Initialize the marker manager with a nodehandle in the namespace of where the markers will be publishedj
   void initialize(ros::NodeHandle& nh, std::shared_ptr<ObjectMap> objects_);
   /// Update the interactive markers
   void update_markers();
+  /// Reset
+  void reset();
 
 private:
   /// Update/Create the interactive marker for one object
