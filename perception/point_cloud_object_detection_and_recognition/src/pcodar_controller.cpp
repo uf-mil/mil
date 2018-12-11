@@ -38,6 +38,7 @@ void NodeBase::initialize()
   ogrid_manager_.initialize(nh_);
 
   modify_classification_service_ = nh_.advertiseService("/database/requests", &NodeBase::DBQuery_cb, this);
+  reset_service_ = nh_.advertiseService("reset", &NodeBase::Reset, this);
 
   // Publish PerceptionObjects
   pub_objects_ = nh_.advertise<mil_msgs::PerceptionObjectArray>("objects", 1);
@@ -81,6 +82,13 @@ bool NodeBase::bounds_update_cb(const mil_bounds::BoundsConfig& config)
 bool NodeBase::DBQuery_cb(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::ObjectDBQuery::Response& res)
 {
   return objects_->DatabaseQuery(req, res);
+}
+
+bool NodeBase::Reset(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res)
+{
+  marker_manager_.reset();
+  objects_->objects_.clear();
+  return true;
 }
 
 bool NodeBase::transform_point_cloud(const sensor_msgs::PointCloud2& pc_msg, point_cloud& out)
@@ -136,6 +144,15 @@ void Node::initialize()
 
   // Publish occupancy grid and visualization markers
   pub_pcl_ = nh_.advertise<point_cloud>("persist_pcl", 1);
+}
+
+bool Node::Reset(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res)
+{
+  if (!NodeBase::Reset(req, res))
+    return false;
+  persistent_cloud_builder_.clear();
+  res.success = true;
+  return true;
 }
 
 void Node::velodyne_cb(const sensor_msgs::PointCloud2ConstPtr& pcloud)

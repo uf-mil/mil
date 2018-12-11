@@ -24,7 +24,8 @@ public:
   void add_point_cloud(const point_cloud_ptr& pc);
   /// Update the number of pointclouds from the dynamic reconfigure object
   void update_config(Config const& config);
-
+  /// Clear buffer
+  void clear();
 private:
   /// Accumulated pointcloud kept up to date with each call to add_point_cloud
   point_cloud_ptr mega_cloud_;

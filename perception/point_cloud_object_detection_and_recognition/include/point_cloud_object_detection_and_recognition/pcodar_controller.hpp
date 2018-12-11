@@ -20,6 +20,7 @@
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_msgs/TFMessage.h>
 #include <tf2_ros/transform_listener.h>
+#include <std_srvs/Trigger.h>
 
 #include <dynamic_reconfigure/server.h>
 
@@ -45,6 +46,8 @@ public:
 protected:
   /// Process a database query ROS service
   bool DBQuery_cb(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::ObjectDBQuery::Response& res);
+  /// Reset PCODAR
+  virtual bool Reset(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res);
   /// Transform
   bool transform_to_global(std::string const& frame, ros::Time const& time, Eigen::Affine3d& out,
                            ros::Duration timeout = ros::Duration(1, 0));
@@ -62,6 +65,7 @@ protected:
   dynamic_reconfigure::Server<Config> config_server_;
 
   ros::ServiceServer modify_classification_service_;
+  ros::ServiceServer reset_service_;
 
   std::string global_frame_;
 
@@ -90,7 +94,8 @@ public:
 private:
   bool bounds_update_cb(const mil_bounds::BoundsConfig& config) override;
   void ConfigCallback(Config const& config, uint32_t level) override;
-
+  /// Reset PCODAR
+  bool Reset(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) override;
 private:
   ros::Publisher pub_pcl_;
 

@@ -16,6 +16,11 @@ void MarkerManager::initialize(ros::NodeHandle& nh, std::shared_ptr<ObjectMap> _
   interactive_marker_server_.reset(new interactive_markers::InteractiveMarkerServer("pcodar_objects", "", false));
 }
 
+void MarkerManager::reset()
+{
+  interactive_marker_server_->clear();
+}
+
 void MarkerManager::feedbackCb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr& feedback)
 {
   // Ignore feedback that isn't a new menu option selected

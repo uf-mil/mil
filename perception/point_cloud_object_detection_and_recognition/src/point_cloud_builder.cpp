@@ -23,6 +23,12 @@ void PointCloudCircularBuffer::add_point_cloud(const point_cloud_ptr& pc)
   }
 }
 
+void PointCloudCircularBuffer::clear()
+{
+  mega_cloud_->clear();
+  prev_clouds_.clear();
+}
+
 void PointCloudCircularBuffer::update_config(Config const& config)
 {
   prev_clouds_.set_capacity(config.accumulator_number_persistant_clouds);
