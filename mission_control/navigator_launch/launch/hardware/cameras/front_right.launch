@@ -4,7 +4,7 @@
   <group ns="camera/front/right" >
     <node pkg="usb_cam" type="usb_cam_node" name="seecam_driver" unless="$(arg simulation)" >
       <param name="video_device" value="/dev/v4l/by-id/usb-e-con_Systems_See3CAM_CU20_4C0B0000-video-index0" />
-      <param name="camera_frame_id" value="front_right_cam" />
+      <param name="camera_frame_id" value="front_right_cam_optical" />
       <param name="camera_info_url" value="file://$(find navigator_launch)/config/camera_calibration/seecam_4C0B0000.yaml" />
       <param name="pixel_format" value="uyvy" />
       <param name="image_width"  value="1920" />
