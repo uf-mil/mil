@@ -12,7 +12,7 @@
           <param name="frame_id" value="front_left_cam_optical"/>
           <param name="video_mode" value="format7_mode4"/>
           <param name="format7_color_coding" value="raw8"/>
-          <param name="frame_rate" value="15" />
+          <param name="frame_rate" value="7" />
           <remap from="camera" to="left"/>
     </node>
 
