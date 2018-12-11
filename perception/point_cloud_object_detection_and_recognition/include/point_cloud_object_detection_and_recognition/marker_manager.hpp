@@ -31,6 +31,7 @@ public:
   void update_markers();
   /// Reset
   void reset();
+
 private:
   /// Update/Create the interactive marker for one object
   void update_interactive_marker(mil_msgs::PerceptionObject const& object);

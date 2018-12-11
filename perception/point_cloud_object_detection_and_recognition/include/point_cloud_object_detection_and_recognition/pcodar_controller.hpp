@@ -16,11 +16,11 @@
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <std_srvs/Trigger.h>
 #include <tf2/convert.h>
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_msgs/TFMessage.h>
 #include <tf2_ros/transform_listener.h>
-#include <std_srvs/Trigger.h>
 
 #include <dynamic_reconfigure/server.h>
 
@@ -96,6 +96,7 @@ private:
   void ConfigCallback(Config const& config, uint32_t level) override;
   /// Reset PCODAR
   bool Reset(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) override;
+
 private:
   ros::Publisher pub_pcl_;
 
