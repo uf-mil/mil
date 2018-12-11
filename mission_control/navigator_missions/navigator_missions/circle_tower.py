@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 from txros.util import cancellableInlineCallbacks
 from twisted.internet import defer
-from mil_tools import rosmsg_to_numpy
-import numpy as np
 from navigator import Navigator
 
 
@@ -20,15 +18,18 @@ class CircleTower(Navigator):
 
     @cancellableInlineCallbacks
     def run(self, parameters):
+        # Default to R G B pattern
         if len(parameters) != 3:
             colors = ["RED", "GREEN", "BLUE"]
             self.send_feedback("No colors Specified, defaulting to {}".format(" ".join(colors)))
         else:
+            # Make sure they are valid colors
             for color in parameters:
                 if color not in self.DIRECTIONS:
                     raise Exception("Color {} is not known.".format(color))
             colors = parameters
 
+        # Get each totem's position
         targets = []
         for color in colors:
             res = yield self.get_sorted_objects("totem_" + color.lower(), n=1, throw=False)
@@ -37,13 +38,16 @@ class CircleTower(Navigator):
                 continue
             position = res[1][0]
             self.send_feedback("Totem {} found!".format(color))
-            targets.append((rosmsg_to_numpy(totem.pose.position), color))
+            targets.append((position, color))
             yield self.nh.sleep(0.1)
 
+        # If none found, mission is failed
         if len(targets) == 0:
-            return False
+            defer.returnValue(False)
 
         yield self.nh.sleep(0.1)
+
+        # Circle each totem
         for target in targets:
             color = target[1]
             position = target[0]
@@ -56,7 +60,7 @@ class CircleTower(Navigator):
             move = self.move.look_at(position).set_position(position).backward(self.CIRCLE_DISTANCE)
 
             # Rotate for faster rotate
-            if  direction == 'cw':
+            if direction == 'cw':
                 move = move.yaw_left(1.57)
             else:
                 move = move.yaw_right(1.57)
@@ -64,7 +68,7 @@ class CircleTower(Navigator):
 
             self.send_feedback('Circling!')
             yield self.nh.sleep(0.1)
-            res = yield self.move.circle_point(position, direction=direction, revolutions=1.5).go()
+            res = yield self.move.circle_point(position, direction=direction, revolutions=1.3).go()
             self.send_feedback('Done circling')
             yield self.nh.sleep(0.1)
-        defer.returnValue('Success')
+        defer.returnValue(True)
