@@ -2,15 +2,12 @@
 from txros import util
 from navigator_missions.navigator import Navigator
 import numpy as np
-from mil_tools import rosmsg_to_numpy
 from twisted.internet import defer
 import math
 from mil_misc_tools import ThrowingArgumentParser
-import tf2_ros
 
 
 class ObstacleAvoid(Navigator):
-    OBSTACLE_AVOID_POI = 'obstacle_course'
     DIFF_TOLERANCE = 10.0
 
     @classmethod
@@ -34,19 +31,32 @@ class ObstacleAvoid(Navigator):
         # Parse Arguments
         num_passes = args.numpasses
         out_offset = args.outoffset
-        
+
+        # Determine the area of the gate
         yield self.find_area()
 
+        if self.square is None:
+            self.send_feedback("Didn't find a square; cancelling.")
+            return
 
+        self.send_feedback('Found square; calculating traversal points')
+
+        # Calculate the midpoints of each side of the line
         midpoints_close = self.get_midpoints(self.square[0], self.square[1], num_passes)
         midpoints_far = self.get_midpoints(self.square[3], self.square[2], num_passes)
 
+        # Calculate the points to traverse the gate at
         traverse_points = []
 
+        # Iterate through passes
         for i in range(0, num_passes):
-            ppoints_close = yield self.get_perpendicular_points(self.square[0], self.square[1], midpoints_close[i], out_offset)
-            ppoints_far = yield self.get_perpendicular_points(self.square[3], self.square[2], midpoints_far[i], out_offset)
+            # Calculate the points at offset away from the square edges
+            ppoints_close = yield self.get_perpendicular_points(self.square[0], self.square[1],
+                                                                midpoints_close[i], out_offset)
+            ppoints_far = yield self.get_perpendicular_points(self.square[3], self.square[2],
+                                                              midpoints_far[i], out_offset)
 
+            # If its on the first side go to the close side then the far side, otherwise vise versa
             if i % 2 == 0:
                 traverse_points.append(ppoints_close[0])
                 traverse_points.append(ppoints_far[1])
@@ -54,26 +64,26 @@ class ObstacleAvoid(Navigator):
                 traverse_points.append(ppoints_far[1])
                 traverse_points.append(ppoints_close[0])
 
-        print('\ntraverse points:')
-        print(traverse_points)
-
+        # Traverse each point, looking at the next
         for i in range(0, len(traverse_points)):
             if i + 1 != len(traverse_points):
                 yield self.move.set_position(traverse_points[i]).look_at(traverse_points[i + 1]).go()
             else:
                 yield self.move.set_position(traverse_points[i]).go()
 
-        
         self.send_feedback('Done with obstacle avoid!')
 
     @util.cancellableInlineCallbacks
     def find_area(self):
-        self.send_feedback('Waiting for ' + self.OBSTACLE_AVOID_POI)
-        position = yield self.poi.get(self.OBSTACLE_AVOID_POI)
-        #self.send_feedback('Moving to {} at {}'.format(poi, position[0:2]))
-        
         self.square = None
 
+        '''
+            Find all totems, search all permutations of 4 white totems, starting with the closest ones.
+            Of course skip duplicates.
+            Skip if the difference between the shortest and longest edge is greater than a threshold.
+            Skip if the difference between the shortest and longest diagonal is greater than a threshold.
+            First time these filters pass it should be the closest square.
+        '''
         white_totems = yield self.get_sorted_objects("totem_white")
         white_totems = white_totems[1]
         for totem1 in white_totems:
@@ -84,7 +94,9 @@ class ObstacleAvoid(Navigator):
                     if np.array_equal(totem1, totem3) or np.array_equal(totem2, totem3):
                         continue
                     for totem4 in white_totems:
-                        if np.array_equal(totem1, totem4) or np.array_equal(totem2, totem4) or np.array_equal(totem3, totem4):
+                        if (np.array_equal(totem1, totem4) or
+                                np.array_equal(totem2, totem4) or
+                                np.array_equal(totem3, totem4)):
                             continue
 
                         edge12 = np.linalg.norm(totem2 - totem1)
@@ -102,47 +114,40 @@ class ObstacleAvoid(Navigator):
                         maxdif = diffs[np.argmax(diffs)]
 
                         if maxdif > self.DIFF_TOLERANCE:
-                            print('failed with {}'.format(maxdif))
+                            print('Failed edge with {}'.format(maxdif))
                             continue
 
                         if abs(diagonals[0] - diagonals[1]) > self.DIFF_TOLERANCE:
-                            print('failed with {}'.format(maxdif))
+                            print('Failed diagonal with {}'.format(maxdif))
                             continue
 
-                        print('passed with {}'.format(maxdif))
+                        print('Passed square with edgedif {}'.format(maxdif))
                         self.square = (totem1, totem2, totem3, totem4)
                         break
 
-                    if self.square != None:
+                    if self.square is not None:
                         break
-                if self.square != None:
+                if self.square is not None:
                     break
-            if self.square != None:
+            if self.square is not None:
                 break
-
-        if self.square == None:
-            self.send_feedback('No square found! Cancelling')
-            defer.returnValue(None)
-
-        self.send_feedback('Found square, good to go')
-        print(self.square)
-        
-        defer.returnValue(None)
 
     @staticmethod
     def get_midpoints(linep1, linep2, num):
+        # construct vector
         vec = linep2 - linep1
         vec /= (num + 1)
 
         points = []
 
+        # Start at first point
         pt = linep1
         for i in range(0, num):
+            # Increment by vector and add point
             pt = pt + vec
             points.append(pt)
 
         return points
-
 
     @staticmethod
     def line(p1, p2):
@@ -154,7 +159,6 @@ class ObstacleAvoid(Navigator):
         B = (p2[0] - p1[0])
         C = (p1[0] * p2[1] - p2[0] * p1[1])
         return A, B, -C
-
 
     @staticmethod
     def perpendicular(L):
