@@ -126,7 +126,7 @@ class PnuematicActuatorNode():
             if self.connected:
                 rospy.logerr('Board not responding to pings. Disconnected.')
                 self.connected = False
-                return
+            return
 
         # If made it this far, you are not connected
         if not self.connected:
