@@ -8,7 +8,6 @@ persistant_cloud_filter_radius : 0.25
 # Clusterer
 cluster_tolerance_m : 4.4
 cluster_min_points : 20
-cluster_max_points : 1000
 
 # Associator
 associator_max_distance : 5
