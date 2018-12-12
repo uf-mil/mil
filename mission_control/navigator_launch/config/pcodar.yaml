@@ -19,4 +19,4 @@ ogrid_width_meters : 500
 ogrid_resolution_meters_per_cell : 0.3
 ogrid_inflation_meters : 0.8
 
-classifications: ["buoy", "dock", "stc_platform", "totem_red", "totem_green", "totem_blue", "totem_yellow", "totem_black", "totem_white"]
+classifications: ["buoy", "dock", "stc_platform", "totem_red", "totem_green", "totem_blue", "totem_yellow", "totem_black", "totem_white", "totem_gator"]

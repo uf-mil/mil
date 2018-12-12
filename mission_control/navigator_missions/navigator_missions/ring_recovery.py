@@ -14,7 +14,7 @@ class RingRecovery(Navigator):
 
     @txros.util.cancellableInlineCallbacks
     def get_marker_totem(self):
-        _, totem = yield self.get_sorted_objects("totem_violet", n=1)
+        _, totem = yield self.get_sorted_objects("totem_gator", n=1)
         defer.returnValue(totem.reshape(3))
 
     @txros.util.cancellableInlineCallbacks
