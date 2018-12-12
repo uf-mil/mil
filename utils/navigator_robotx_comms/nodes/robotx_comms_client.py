@@ -20,7 +20,6 @@ from navigator_msgs.srv import MessageExtranceExitGate, MessageIdentifySymbolsDo
 
 from navigator_robotx_comms.navigator_robotx_comms import RobotXDetectDeliverMessage, RobotXHeartbeatMessage, \
     RobotXEntranceExitGateMessage, RobotXScanCodeMessage, RobotXIdentifySymbolsDockMessage
-
 lock = threading.Lock()
 
 rospy.init_node("robotx_comms_client")
@@ -185,14 +184,21 @@ class RobotXClient:
     """
 
     def __init__(self, tcp_ip, tcp_port):
-        self.tcp_ip = tcp_ip
+        while True:
+            try:
+                self.tcp_ip = socket.gethostbyname(tcp_ip)
+                break
+            except socket.gaierror as e:
+                rospy.logwarn("Failed to resolved {}: {}".format(tcp_ip, e))
+                rospy.sleep(1.0)
+                continue
         self.tcp_port = tcp_port
         self.connected = False
         self.socket_connection = None
 
     def connect(self):
         if not self.connected:
-            rospy.loginfo("Attempting Connection to TD Server")
+            rospy.loginfo("Attempting Connection to TD Server at {}:{}".format(self.tcp_ip, self.tcp_port))
         while not self.connected and not rospy.is_shutdown():
             # recreate socket
             self.socket_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
