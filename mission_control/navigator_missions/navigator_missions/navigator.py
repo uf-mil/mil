@@ -107,7 +107,11 @@ class Navigator(BaseTask):
         cls.hydrophones = TxHydrophonesClient(cls.nh)
 
         cls.poi = TxPOIClient(cls.nh)
-        cls._grind_motor_pub = cls.nh.advertise("/grinch_controller/motor1/cmd", Float64)
+
+        cls._grinch_lower_time = yield cls.nh.get_param("~grinch_lower_time")
+        cls._grinch_raise_time = yield cls.nh.get_param("~grinch_raise_time")
+        cls._winch_motor_pub = cls.nh.advertise("/grinch_controller/motor1/cmd", Float64)
+        cls._grind_motor_pub = cls.nh.advertise("/grinch_controller/motor2/cmd", Float64)
 
         try:
             cls._actuator_client = cls.nh.get_service_client('/actuator_driver/actuate', SetValve)
@@ -182,20 +186,35 @@ class Navigator(BaseTask):
             yield self.nh.sleep(interval)
 
     @util.cancellableInlineCallbacks
+    def spin_winch(self, speed=-1.0, interval=0.1):
+        '''
+        Spin the grinch raise/lower mechanism. To avoid watchdog timeout, this is sent
+        in a loop at the specified interface. So to stop spinning,
+        cancel the defer
+        '''
+        while True:
+            self._winch_motor_pub.publish(Float64(speed))
+            yield self.nh.sleep(interval)
+
+    @util.cancellableInlineCallbacks
     def deploy_grinch(self):
         '''
         Deploy the grinch mechanism
-        TODO: replace with actual motor commands once the design is finalized
         '''
-        yield self.nh.sleep(3.0)
+        winch_defer = self.spin_winch(speed=1.0)
+        yield self.nh.sleep(self._grinch_lower_time)
+        self._winch_motor_pub.publish(Float64(0.))
+        winch_defer.cancel()
 
     @util.cancellableInlineCallbacks
     def retract_grinch(self):
         '''
         Retract the grinch mechanism
-        TODO: replace with actual motor commands once the design is finalized
         '''
-        yield self.nh.sleep(3.0)
+        winch_defer = self.spin_winch(speed=-1.0)
+        yield self.nh.sleep(self._grinch_raise_time)
+        self._winch_motor_pub.publish(Float64(0.))
+        winch_defer.cancel()
 
     @util.cancellableInlineCallbacks
     def deploy_thruster(self, name):

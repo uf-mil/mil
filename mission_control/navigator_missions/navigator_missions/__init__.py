@@ -24,6 +24,8 @@ from constant_velocity import ConstantVelocity
 from example_mission import ExampleMission
 from deploy_thrusters import DeployThrusters
 from retract_thrusters import RetractThrusters
+from grinch_deploy import GrinchDeploy
+from grinch_retract import GrinchRetract
 from fire_launcher import FireLauncher
 from reload_launcher import ReloadLauncher
 from go_to_poi import GoToPOI
