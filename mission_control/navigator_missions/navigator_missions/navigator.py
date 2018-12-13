@@ -167,7 +167,7 @@ class Navigator(BaseTask):
         return MissionResult(*args, **kwargs)
 
     @util.cancellableInlineCallbacks
-    def spin_grinch(self, speed=-1.0, interval=0.1):
+    def spin_grinch(self, speed=1.0, interval=0.1):
         '''
         Spin the grinch mechnaism. To avoid watchdog timeout, this is sent
         in a loop at the specified interface. So to stop spinning,
