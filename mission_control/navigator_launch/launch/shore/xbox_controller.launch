@@ -1,7 +1,9 @@
 <launch>
+  <arg name="wireless" default="False" />
   <!-- Connect to MIL's Xbox Game controller to publish /joy messages -->
   <node pkg="joy" type="joy_node" name="joy_node">
-      <param name="dev" type="string" value="/dev/input/by-id/usb-045e_0291-joystick" />
+      <param unless="$(arg wireless)" name="dev" type="string" value="/dev/input/by-id/usb-BDA_Xbox_360_Pro_Ex_0000322E-joystick" />
+      <param if="$(arg wireless)" name="dev" type="string" value="/dev/input/by-id/usb-045e_0291-joystick" />
       <param name="deadzone" value="0.12" />
       <param name="autorepeat_rate" value="5"/>
   </node>
