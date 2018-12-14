@@ -25,8 +25,12 @@ class DetectDeliverFind(Navigator):
         parser = ThrowingArgumentParser(description='Detect Deliver Find',
                                         usage='''Default parameters: \'runtask DetectDeliverFind
                                          \'''')
-        parser.add_argument('-a', '--scanall', action='store_true',
-                            help='setting scans all four sides of the dock, not just the short sides')
+        #parser.add_argument('-a', '--scanall', action='store_true',
+        #                    help='setting scans all four sides of the dock, not just the short sides')
+        parser.add_argument('-l', '--longscan', action='store_true',
+                            help='set to scan the long side')
+        parser.add_argument('-s', '--shortscan', action='store_true',
+                            help = 'set to scan the short side')
         parser.add_argument('-o', '--overridescale', action='store_true',
                             help='''setting causes manual dock size to replace scale, where scale is only
                                     used to determine which side is longer''')
@@ -35,6 +39,10 @@ class DetectDeliverFind(Navigator):
                                     PCODAR gather enough information to produce scale and an accurate orientation''')
         parser.add_argument('-d', '--scandist', type=int, default=5,
                             help='distance to scan the images from')
+        parser.add_argument('-i', '--lookin', action='store_true',
+                            help='look into the dock at the end instead of being side ways')
+        parser.add_argument('-e', '--enddist', type=int, default=1,
+                            help='the distance to go to as the end point')
         cls.parser = parser
 
         cls.junk_1 = 0  # TODO REMOVE THIS --------------------------
@@ -42,10 +50,14 @@ class DetectDeliverFind(Navigator):
     @util.cancellableInlineCallbacks
     def run(self, args):
         # Parse Arguments
-        scan_all = args.scanall
+        #scan_all = args.scanall
+        long_scan = args.longscan
+        short_scan = args.shortscan
         override_scale = args.overridescale
         pre_circle = args.circle
         scan_dist = args.scandist
+        look_in = args.lookin
+        end_dist = args.enddist
 
         # Find the dock
         yield self.find_dock(override_scale)
@@ -72,10 +84,12 @@ class DetectDeliverFind(Navigator):
         self.build_scan_positions(scan_dist, boat_pose)
 
         # If we don't want to scan all, remove scans on long side
-        if not scan_all:
-            # TODO: Does this always work?
-            # Remove 0 and 2; these are the long side ones.
+        if short_scan and not long_scan:
+            # Remove 1 and 3; these are the long side ones.
             self.scans = [self.scans[1], self.scans[3]]
+        elif long_scan and not short_scan:
+            # Remove 0 and 2; these are the short side ones.
+            self.scans = [self.scans[0], self.scans[2]]
 
         # Determine the closest scan point
         scanbtdists = np.array([sc[4] for sc in self.scans])
@@ -100,11 +114,14 @@ class DetectDeliverFind(Navigator):
 
         # Calculate closer location
         angle = correct_scan[3]
-        dist = 1
+        dist = end_dist
         pt = np.array([math.cos(angle) * (dist + self.dock_scale[0] / 2) + self.dock_position[0],
                        math.sin(angle) * (dist + self.dock_scale[1] / 2) + self.dock_position[1],
                        self.dock_position[2]])
-        lpt = pt + np.array([math.sin(angle), -math.cos(angle), 0])
+        if look_in:
+            lpt = self.dock_position
+        else:
+            lpt = pt + np.array([math.sin(angle), -math.cos(angle), 0])
 
         # Go to closer location
         yield self.move.set_position(pt).look_at(lpt).go()
