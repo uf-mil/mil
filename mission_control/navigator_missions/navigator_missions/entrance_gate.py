@@ -36,7 +36,7 @@ class EntranceGate(Navigator):
                             not setting results in a scan by listening at two points (two points scan mode)''')
         parser.add_argument('-m', '--multilateration', action='store_true',
                             help='setting enables multilateration-based scanning, otherwise uses intersecting lines')
-        parser.add_argument('-c', '--scandist', type=int, default=10,
+        parser.add_argument('-c', '--scandist', type=int, default=5,
                             help='distance from the gates in meters to scan from')
         parser.add_argument('-s', '--speed', type=float, default=0.75, choices=[Range(0.0, 1.0)],
                             help='speed to move when scanning in pass pass mode')
