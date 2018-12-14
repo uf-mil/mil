@@ -94,9 +94,10 @@ class EntranceGate(Navigator):
         else:
             self.net_entrance_results = self.pinger_gate + 1
 
-
         # Calculate traversal points
-        traversal_points = yield self.get_perpendicular_points(self.gate_centers[self.pinger_gate], traversal_distance, boat_pose = self.initial_boat_pose)
+        traversal_points = yield self.get_perpendicular_points(self.gate_centers[self.pinger_gate],
+                                                               traversal_distance,
+                                                               boat_pose=self.initial_boat_pose)
 
         # Go through the gate
         self.send_feedback('Navigating through gate')
