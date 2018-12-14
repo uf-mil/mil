@@ -23,6 +23,8 @@ class ObstacleAvoid(Navigator):
                             help='number of passes through the obstacle course to make')
         parser.add_argument('-d', '--outoffset', type=int, default=10,
                             help='distance from the course in meters to traverse to')
+        parser.add_argument('-i', '--usepoi', action='store_true',
+                            help='set to use pois for square corners')
 
         cls.parser = parser
 
@@ -33,7 +35,7 @@ class ObstacleAvoid(Navigator):
         out_offset = args.outoffset
 
         # Determine the area of the gate
-        yield self.find_area()
+        yield self.find_area(args.usepoi)
 
         if self.square is None:
             self.send_feedback("Didn't find a square; cancelling.")
@@ -74,63 +76,70 @@ class ObstacleAvoid(Navigator):
         self.send_feedback('Done with obstacle avoid!')
 
     @util.cancellableInlineCallbacks
-    def find_area(self):
+    def find_area(self, usepoi):
         self.square = None
 
-        '''
-            Find all totems, search all permutations of 4 white totems, starting with the closest ones.
-            Of course skip duplicates.
-            Skip if the difference between the shortest and longest edge is greater than a threshold.
-            Skip if the difference between the shortest and longest diagonal is greater than a threshold.
-            First time these filters pass it should be the closest square.
-        '''
-        white_totems = yield self.get_sorted_objects("totem_white")
-        white_totems = white_totems[1]
-        for totem1 in white_totems:
-            for totem2 in white_totems:
-                if np.array_equal(totem1, totem2):
-                    continue
-                for totem3 in white_totems:
-                    if np.array_equal(totem1, totem3) or np.array_equal(totem2, totem3):
+        if usepoi:
+            t1 = yield self.poi.get('ocp1')
+            t2 = yield self.poi.get('ocp2')
+            t3 = yield self.poi.get('ocp3')
+            t4 = yield self.poi.get('ocp4')
+            self.square = np.array([t1, t2, t3, t4])
+        else:
+            '''
+                Find all totems, search all permutations of 4 white totems, starting with the closest ones.
+                Of course skip duplicates.
+                Skip if the difference between the shortest and longest edge is greater than a threshold.
+                Skip if the difference between the shortest and longest diagonal is greater than a threshold.
+                First time these filters pass it should be the closest square.
+            '''
+            white_totems = yield self.get_sorted_objects("totem_white")
+            white_totems = white_totems[1]
+            for totem1 in white_totems:
+                for totem2 in white_totems:
+                    if np.array_equal(totem1, totem2):
                         continue
-                    for totem4 in white_totems:
-                        if (np.array_equal(totem1, totem4) or
-                                np.array_equal(totem2, totem4) or
-                                np.array_equal(totem3, totem4)):
+                    for totem3 in white_totems:
+                        if np.array_equal(totem1, totem3) or np.array_equal(totem2, totem3):
                             continue
+                        for totem4 in white_totems:
+                            if (np.array_equal(totem1, totem4) or
+                                    np.array_equal(totem2, totem4) or
+                                    np.array_equal(totem3, totem4)):
+                                continue
 
-                        edge12 = np.linalg.norm(totem2 - totem1)
-                        edge23 = np.linalg.norm(totem3 - totem2)
-                        edge34 = np.linalg.norm(totem4 - totem3)
-                        edge41 = np.linalg.norm(totem1 - totem4)
-                        edge13 = np.linalg.norm(totem3 - totem1)
-                        edge24 = np.linalg.norm(totem4 - totem2)
-                        edges = np.array([edge12, edge23, edge34, edge41])
-                        diagonals = np.array([edge13, edge24])
+                            edge12 = np.linalg.norm(totem2 - totem1)
+                            edge23 = np.linalg.norm(totem3 - totem2)
+                            edge34 = np.linalg.norm(totem4 - totem3)
+                            edge41 = np.linalg.norm(totem1 - totem4)
+                            edge13 = np.linalg.norm(totem3 - totem1)
+                            edge24 = np.linalg.norm(totem4 - totem2)
+                            edges = np.array([edge12, edge23, edge34, edge41])
+                            diagonals = np.array([edge13, edge24])
 
-                        avg = np.average(edges)
+                            avg = np.average(edges)
 
-                        diffs = np.absolute(edges - np.array([avg, avg, avg, avg]))
-                        maxdif = diffs[np.argmax(diffs)]
+                            diffs = np.absolute(edges - np.array([avg, avg, avg, avg]))
+                            maxdif = diffs[np.argmax(diffs)]
 
-                        if maxdif > self.DIFF_TOLERANCE:
-                            print('Failed edge with {}'.format(maxdif))
-                            continue
+                            if maxdif > self.DIFF_TOLERANCE:
+                                print('Failed edge with {}'.format(maxdif))
+                                continue
 
-                        if abs(diagonals[0] - diagonals[1]) > self.DIFF_TOLERANCE:
-                            print('Failed diagonal with {}'.format(maxdif))
-                            continue
+                            if abs(diagonals[0] - diagonals[1]) > self.DIFF_TOLERANCE:
+                                print('Failed diagonal with {}'.format(maxdif))
+                                continue
 
-                        print('Passed square with edgedif {}'.format(maxdif))
-                        self.square = (totem1, totem2, totem3, totem4)
-                        break
+                            print('Passed square with edgedif {}'.format(maxdif))
+                            self.square = (totem1, totem2, totem3, totem4)
+                            break
 
+                        if self.square is not None:
+                            break
                     if self.square is not None:
                         break
                 if self.square is not None:
                     break
-            if self.square is not None:
-                break
 
     @staticmethod
     def get_midpoints(linep1, linep2, num):
