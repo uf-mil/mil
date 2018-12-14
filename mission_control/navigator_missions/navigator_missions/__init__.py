@@ -32,4 +32,5 @@ from go_to_poi import GoToPOI
 from entrance_gate import EntranceGate
 from ring_recovery import RingRecovery
 from obstacle_avoid import ObstacleAvoid
+from stc_jaxon import ScanTheCodeJaxon
 import pose_editor
