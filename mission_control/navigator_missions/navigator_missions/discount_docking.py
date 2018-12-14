@@ -7,6 +7,7 @@ from twisted.internet import defer
 import math
 from mil_misc_tools import ThrowingArgumentParser
 import tf.transformations as tform
+from detect_deliver_find import DetectDeliverFind
 
 
 class DiscountDocking(Navigator):
