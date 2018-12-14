@@ -35,4 +35,6 @@ from explore_towers import ExploreTowers
 from track_target import TrackTarget
 from detect_deliver_find import DetectDeliverFind
 from detect_deliver import DetectDeliver
+from discount_docking import DiscountDocking
+from docking import Docking
 import pose_editor
