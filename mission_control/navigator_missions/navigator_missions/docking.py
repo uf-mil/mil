@@ -41,7 +41,6 @@ class Docking(Navigator):
         dock = yield self.get_sorted_objects(name='dock', n=1)
         dock = self.dock[0][0]
         dock_position = rosmsg_to_numpy(self.dock.pose.position)
-        #dock_position = np.array([58, -382, 0])
 
         center_frame = yield self.get_center_frame()
         pose_offset = yield self.get_target_pt(center_frame)
@@ -51,8 +50,6 @@ class Docking(Navigator):
         timeout = None
         dock_timing = False
         while True:
-            
-
             if not dock_timing and pose_offset[0] < 2 and pose_offset[1] < 2:
                 dock_timing = True
                 timeout = time.time() + wait_time
@@ -60,7 +57,7 @@ class Docking(Navigator):
             if dock_timing and time.time() > timeout:
                 break
 
-        #yield self.move.backward(10).go()
+        yield self.move.backward(10).go()
 
 
         self.send_feedback('Done with docking!')
