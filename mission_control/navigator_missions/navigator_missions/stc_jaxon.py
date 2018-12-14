@@ -1,12 +1,6 @@
 #!/usr/bin/env python
 from txros import util
 from navigator_missions.navigator import Navigator
-import numpy as np
-from mil_tools import rosmsg_to_numpy
-from twisted.internet import defer
-import math
-from mil_misc_tools import ThrowingArgumentParser
-import tf.transformations as tform
 from navigator_msgs.msg import ScanTheCode
 
 
@@ -30,9 +24,7 @@ class ScanTheCodeJaxon(Navigator):
         # Get scan the code stuff
         stc_result = yield self.stcsub.get_next_message()
         stc_result = stc_result.color_pattern
-        #stc_result = 'B'
         self.net_stc_result = stc_result
-
 
         if stc_result == 'R':
             yield self.move.look_at(self.stc).go()
