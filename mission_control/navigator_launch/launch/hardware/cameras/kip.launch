@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="simulation" default="False" />
+  <group ns="camera/grinch" >
+    <node pkg="usb_cam" type="usb_cam_node" name="grinch_driver" unless="$(arg simulation)" >
+      <param name="video_device" value="/dev/v4l/by-id/usb-046d_0825_9CB3C490-video-index0" />
+      <param name="camera_frame_id" value="grinch_cam_optical" />
+      <param name="camera_info_url" value="file://$(find navigator_launch)/config/camera_calibration/seecam_4C0B0000.yaml" />
+      <param name="framerate" value="7" />
+      <remap from="grinch_driver/image_raw" to="image_raw" />
+      <remap from="grinch_driver/camera_info" to="camera_info" />
+    </node>
+  </group>
+</launch>
