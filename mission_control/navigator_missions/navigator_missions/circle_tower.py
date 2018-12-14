@@ -19,7 +19,7 @@ class CircleTower(Navigator):
     @cancellableInlineCallbacks
     def run(self, parameters):
         # Default to R G B pattern
-        if len(parameters) != 3:
+        if len(parameters) == 0:
             colors = ["RED", "GREEN", "BLUE"]
             self.send_feedback("No colors Specified, defaulting to {}".format(" ".join(colors)))
         else:
