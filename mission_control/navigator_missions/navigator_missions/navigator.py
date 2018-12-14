@@ -61,6 +61,8 @@ class Navigator(BaseTask):
     red = "RED"
     green = "GREEN"
     blue = "BLUE"
+    net_stc_results = None
+    net_entrance_results = None
 
     def __init__(self, **kwargs):
         super(Navigator, self).__init__(**kwargs)

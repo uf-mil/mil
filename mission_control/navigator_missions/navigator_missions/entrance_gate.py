@@ -7,6 +7,7 @@ from twisted.internet import defer
 import math
 from mil_misc_tools import ThrowingArgumentParser
 import tf2_ros
+from navigator_msgs.srv import MessageExtranceExitGateRequest, MessageExtranceExitGate
 
 
 class EntranceGate(Navigator):
@@ -44,15 +45,22 @@ class EntranceGate(Navigator):
                             help='set to not kill thrusters during scan in two points scan mode')
         parser.add_argument('-t', '--scantime', type=int, default=10,
                             help='number of seconds to scan at each point for in two points scan mode')
-        parser.add_argument('-d', '--traversaldist', type=int, default=7,
+        parser.add_argument('-d', '--traversaldist', type=int, default=8,
                             help='distance from each side of the gates to navigate to when crossing')
+        parser.add_argument('-e', '--exit', action='store_true',
+                            help='set to configure that this is the exit pass')
         cls.parser = parser
+
+        cls.net_service_call = cls.nh.get_service_client('/entrance_exit_gate_message', MessageExtranceExitGate)
 
     @util.cancellableInlineCallbacks
     def run(self, args):
         # Parse Arguments
         pass_scan = args.passscan
         traversal_distance = args.traversaldist
+
+        self.initial_boat_pose = yield self.tx_pose
+        self.initial_boat_pose = self.initial_boat_pose[0]
 
         # Find the gates
         self.gate_results = yield self.find_gates()
@@ -69,9 +77,27 @@ class EntranceGate(Navigator):
             yield self.run_dual_scan(args)
 
         self.send_feedback('Gate identified as ' + str(self.pinger_gate + 1))
+        if args.exit:
+            msg = MessageExtranceExitGateRequest()
+            if self.net_entrance_results is not None:
+                msg.entrance_gate = self.net_entrance_results
+            else:
+                msg.entrance_gate = 2
+            msg.exit_gate = self.pinger_gate + 1
+            if self.net_stc_results is not None:
+                msg.light_buoy_active = True
+                msg.light_pattern = self.net_stc_results
+            else:
+                msg.light_buoy_active = False
+                msg.light_pattern = 'RRR'
+            self.net_service_call(msg)
+        else:
+            self.net_entrance_results = self.pinger_gate + 1
 
         # Calculate traversal points
-        traversal_points = yield self.get_perpendicular_points(self.gate_centers[self.pinger_gate], traversal_distance)
+        traversal_points = yield self.get_perpendicular_points(self.gate_centers[self.pinger_gate],
+                                                               traversal_distance,
+                                                               boat_pose=self.initial_boat_pose)
 
         # Go through the gate
         self.send_feedback('Navigating through gate')
@@ -400,12 +426,13 @@ class EntranceGate(Navigator):
     '''
 
     @util.cancellableInlineCallbacks
-    def get_perpendicular_points(self, center_point, offset_distance):
+    def get_perpendicular_points(self, center_point, offset_distance, boat_pose=None):
         # Find the perpendicular line
         perpendicular_vector = self.perpendicular(self.gates_line)
 
-        boat_pose = yield self.tx_pose
-        boat_pose = boat_pose[0]
+        if boat_pose is None:
+            boat_pose = yield self.tx_pose
+            boat_pose = boat_pose[0]
 
         # Find the two points on either side of the line
         perpendicular_points = [(center_point[0] + perpendicular_vector[0] * offset_distance,
