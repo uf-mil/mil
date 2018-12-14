@@ -26,13 +26,13 @@ class ScanTheCodeJaxon(Navigator):
         stc_result = stc_result.color_pattern
         self.net_stc_result = stc_result
 
-        if stc_result == 'R':
+        if stc_result[0] == 'R':
             yield self.move.look_at(self.stc).go()
             yield self.move.left(10).forward(15).go()
-        elif stc_result == 'G':
+        elif stc_result[0] == 'G':
             yield self.move.look_at(self.stc).go()
             yield self.move.right(10).forward(15).go()
-        elif stc_result == 'B':
+        elif stc_result[0] == 'B':
             yield self.move.circle_point(self.stc, direction='cw', revolutions=1.25).go()
             yield self.move.forward(10).go()
 
