@@ -9,7 +9,7 @@ class CircleTower(Navigator):
     Simple mission to circle totems once they have been labeled, does not
     have searching funcitonality found
     '''
-    CIRCLE_DISTANCE = 4.0  # Distance around totem to circle
+    CIRCLE_DISTANCE = 5.0  # Distance around totem to circle
     DIRECTIONS = {'RED': 'cw', 'GREEN': 'ccw', 'BLUE': 'cw', 'YELLOW': 'ccw', 'WHITE': 'ccw'}
 
     @classmethod
@@ -21,13 +21,26 @@ class CircleTower(Navigator):
         # Default to R G B pattern
         if len(parameters) == 0:
             colors = ["RED", "GREEN", "BLUE"]
-            self.send_feedback("No colors Specified, defaulting to {}".format(" ".join(colors)))
+            if self.net_stc_results is not None:
+                for i in range(0, 3):
+                    val = self.net_stc_results[i]
+                    if val == 'R':
+                        colors[i] = "RED"
+                    elif val == 'G':
+                        colors[i] = "GREEN"
+                    elif val == 'B':
+                        colors[i] = "BLUE"
+                self.send_feedback("Colors specified, running {}".format(" ".join(colors)))
+            else:
+                self.send_feedback("No colors Specified, defaulting to {}".format(" ".join(colors)))
         else:
             # Make sure they are valid colors
             for color in parameters:
                 if color not in self.DIRECTIONS:
                     raise Exception("Color {} is not known.".format(color))
             colors = parameters
+
+        colors = self.net_stc_result
 
         # Get each totem's position
         targets = []
