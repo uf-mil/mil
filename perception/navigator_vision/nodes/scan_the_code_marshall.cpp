@@ -321,38 +321,32 @@ private:
     
 
 
-    pcl::PointXYZ botRPt =input->points[0];//most Y and least z
-    pcl::PointXYZ topRPt = input->points[0];//most y and most z
-    pcl::PointXYZ botLPt =input->points[0];//most Y and least z
-    pcl::PointXYZ topLPt = input->points[0];//most y and most z
+    pcl::PointXYZ bot =input->points[0];//least z
+    pcl::PointXYZ top = input->points[0];//most z
+    pcl::PointXYZ left =input->points[0];//most Y
+    pcl::PointXYZ right = input->points[0];//least y
     for (size_t i=0; i<input->size();++i)
     {
       if ((input->points[i].y<(leastYPt.y+.1))&&(input->points[i].y>(leastYPt.y-.1)))
       {
         
-        if (input->points[i].z>topRPt.z)
-          topRPt = input->points[i];
-        
-        if (input->points[i].z<botRPt.z)
-          botRPt = input->points[i];
+        if (input->points[i].z>top.z)
+          top = input->points[i];        
+        if (input->points[i].z<bot.z)
+          bot = input->points[i];
+
+        if (input->points[i].y>left.y)
+          left = input->points[i];
+        if (input->points[i].y<right.y)
+          right = input->points[i];
       }
-      if ((input->points[i].y<(mostYPt.y+.1))&&(input->points[i].y>(mostYPt.y-.1)))
-      {
-        
-        if (input->points[i].z>topLPt.z)
-          topLPt = input->points[i];
-        
-        if (input->points[i].z<botRPt.z)
-          botLPt = input->points[i];
-      }
-      
     }
-    outlinePts->points.push_back(botLPt);
-    outlinePts->points.push_back(botRPt);
-    outlinePts->points.push_back(topLPt);
-    outlinePts->points.push_back(topRPt);
+    outlinePts->points.push_back(bot);
+    outlinePts->points.push_back(top);
+    outlinePts->points.push_back(left);
+    outlinePts->points.push_back(right);
     return outlinePts;
-    /*
+    /***stuff for considering coner case***
     //y delta between the left most(mostY) and middle point(leastX)
     float distL = sqrt(pow(mostYPt.x-leastXPt.x,2)+pow(mostYPt.y-leastXPt.y,2)+pow(mostYPt.z-leastXPt.z,2));
     //y delta between the right most(leastY) and middle point(leastX)
