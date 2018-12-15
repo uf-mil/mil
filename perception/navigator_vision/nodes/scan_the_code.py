@@ -72,7 +72,17 @@ class ScanTheCodePerception(object):
 
         transformed_cloud = do_transform_cloud(self.last_panel_points_msg, transform)
         points = np.array(list(sensor_msgs.point_cloud2.read_points(transformed_cloud, skip_nans=True)))
-        rect = rect_from_roi(roi_enclosing_points(self.camera_model, points))
+        if len(points) < 4:
+            rospy.logwarn('less than 4 points')
+            return None
+        if self.camera_model is None:
+            rospy.logwarn('no camera model')
+            return None
+        roi = roi_enclosing_points(self.camera_model, points)
+        if roi is None:
+            rospy.logwarn('No points project into camera.')
+            return None
+        rect = rect_from_roi(roi)
         ul, br = rect
         xmin, ymin = ul
         xmax, ymax = br
@@ -92,11 +102,13 @@ class ScanTheCodePerception(object):
     def img_cb(self, img):
         if not self.enabled:
             return
+        if self.camera_model is None:
+            return
         bbox = self.get_panel_bbox()
         if bbox is not None:
             bbox = np.array(bbox, dtype=int)
             debug = contour_mask(bbox, img_shape=img.shape)
-            prediction = self.classifier.classify(img, debug)
+            prediction = self.classifier.classify(img, debug)[0]
             label = self.classifier.CLASSES[prediction]
             symbol = label[10]
             if len(self.classification_list) == 0 or self.classification_list[-1] != symbol:
