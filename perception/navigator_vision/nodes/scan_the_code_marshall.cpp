@@ -308,16 +308,7 @@ private:
   pcl::PointCloud<pcl::PointXYZ>::Ptr getOutlinePts(pcl::PointCloud<pcl::PointXYZ>::Ptr input)
   {
     pcl::PointCloud<pcl::PointXYZ>::Ptr outlinePts(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::PointXYZ mostYPt =input->points[0];//most left pt
-    pcl::PointXYZ leastYPt = input->points[0];//most right pt
     
-    for (size_t j =0; j<input->size(); ++j)
-    {
-      if (input->points[j].y>mostYPt.y)
-        mostYPt = input->points[j];
-      if (input->points[j].y<leastYPt.y)
-        leastYPt = input->points[j];
-    }
     
 
 
@@ -326,10 +317,7 @@ private:
     pcl::PointXYZ left =input->points[0];//most Y
     pcl::PointXYZ right = input->points[0];//least y
     for (size_t i=0; i<input->size();++i)
-    {
-      if ((input->points[i].y<(leastYPt.y+.1))&&(input->points[i].y>(leastYPt.y-.1)))
-      {
-        
+    {  
         if (input->points[i].z>top.z)
           top = input->points[i];        
         if (input->points[i].z<bot.z)
@@ -339,7 +327,7 @@ private:
           left = input->points[i];
         if (input->points[i].y<right.y)
           right = input->points[i];
-      }
+      
     }
     outlinePts->points.push_back(bot);
     outlinePts->points.push_back(top);
