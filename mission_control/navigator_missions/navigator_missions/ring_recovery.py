@@ -9,7 +9,7 @@ class RingRecovery(Navigator):
     Completes Ring Recovery challenge by circling the marker totem
     while spinning the grinch
     '''
-    RADIUS = 3.0
+    RADIUS = 2.5
     DEPLOY_DISTANCE = 10.0
 
     @txros.util.cancellableInlineCallbacks
@@ -32,6 +32,9 @@ class RingRecovery(Navigator):
         # Deploy the grinch mechanism into the water
         self.send_feedback('Deploying grinch')
         yield self.deploy_grinch()
+
+        # Move back to let mechanism drop
+        yield self.move.backward(5.).go()
 
         # Move in closer to begin circle
         self.send_feedback('Updating position of marker totem')
