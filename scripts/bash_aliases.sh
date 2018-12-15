@@ -41,6 +41,13 @@ ros_env() {
 	echo "ROS_MASTER_URI=$ROS_MASTER_URI"
 }
 
+# PCODAR
+pcodardelete()
+{
+rosservice call /database/requests "name: '$1'
+cmd: 'delete'"
+}
+
 
 # Directory navigation
 alias ws="cd \$CATKIN_DIR"

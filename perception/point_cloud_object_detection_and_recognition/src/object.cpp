@@ -10,6 +10,7 @@ namespace pcodar
 Object::Object(point_cloud const& _pc)
 {
   update_points(_pc);
+  msg_.labeled_classification = "UNKNOWN";
 }
 
 void Object::update_points(point_cloud const& pc)
