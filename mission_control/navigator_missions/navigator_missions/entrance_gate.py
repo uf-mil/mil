@@ -32,14 +32,14 @@ class EntranceGate(Navigator):
         parser = ThrowingArgumentParser(description='Start Gate Mission',
                                         usage='''Default parameters: \'runtask EntranceGate
                                          --scandist 10 --speed 0.75 --scantime 10 --traversaldist 7\'''')
-        parser.add_argument('-p', '--passscan', action='store_true',
-                            help='''setting results in a scan by traversing the gates (pass scan mode),
-                            not setting results in a scan by listening at two points (two points scan mode)''')
+        parser.add_argument('-r', '--drift', action='store_true',
+                            help='''setting results in a scan by listening at two points (two points scan mode,
+                            not setting results in a scan by traversing the gates (pass scan mode)''')
         parser.add_argument('-m', '--multilateration', action='store_true',
                             help='setting enables multilateration-based scanning, otherwise uses intersecting lines')
-        parser.add_argument('-c', '--scandist', type=int, default=5,
+        parser.add_argument('-c', '--scandist', type=int, default=6,
                             help='distance from the gates in meters to scan from')
-        parser.add_argument('-s', '--speed', type=float, default=0.75, choices=[Range(0.0, 1.0)],
+        parser.add_argument('-s', '--speed', type=float, default=0.5, choices=[Range(0.0, 1.0)],
                             help='speed to move when scanning in pass pass mode')
         parser.add_argument('-k', '--nokill', action='store_false',
                             help='set to not kill thrusters during scan in two points scan mode')
@@ -56,7 +56,7 @@ class EntranceGate(Navigator):
     @util.cancellableInlineCallbacks
     def run(self, args):
         # Parse Arguments
-        pass_scan = args.passscan
+        pass_scan = not args.drift
         traversal_distance = args.traversaldist
 
         self.initial_boat_pose = yield self.tx_pose
