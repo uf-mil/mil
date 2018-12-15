@@ -12,6 +12,7 @@ from sensor_msgs.msg import CameraInfo
 
 class BBOXPCODAR(object):
     def __init__(self):
+        self.max_distance = 20.
         self.camera_model = None
         self.confidence_thresh = 0.
         self.camera_info_sub = rospy.Subscriber('/camera/front/right/camera_info', CameraInfo, self.camera_info_cb, queue_size=1)
@@ -59,17 +60,15 @@ class BBOXPCODAR(object):
 
             object_pose_camera = rosmsg_to_numpy(ps_camera.point)
 
+            if np.linalg.norm(object_pose_camera) > self.max_distance
+                continue
+
             object_pixel = self.camera_model.project3dToPixel(object_pose_camera)
 
             rospy.loginfo('Object {} at pixel {}'.format(idn, object_pixel))
 
             for obj in msg.objects:
                 points = rosmsg_to_numpy(obj.points)
-
-                # KEep
-                #points = points * 4
-                #old = points.copy()
-                #points[:, 0], points[:, 1] = old[:, 1], old[:, 0]
 
                 if self.point_in_bbox(object_pixel, points):
                     rospy.loginfo('{} found for {}'.format(obj.name, idn))
