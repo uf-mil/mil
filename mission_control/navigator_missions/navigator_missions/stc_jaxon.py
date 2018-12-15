@@ -5,10 +5,12 @@ from navigator_msgs.msg import ScanTheCode
 
 
 class ScanTheCodeJaxon(Navigator):
+    TIMEOUT_SECONDS = 30.
+
     @classmethod
     def init(cls):
         cls.stcsub = cls.nh.subscribe("/scan_the_code", ScanTheCode)
-        pass
+        cls.stcpub = cls.nh.advertise("/scan_the_code", ScanTheCode)
 
     @util.cancellableInlineCallbacks
     def run(self, args):
@@ -21,10 +23,17 @@ class ScanTheCodeJaxon(Navigator):
 
         yield self.move.set_position(self.stc).backward(5).yaw_left(1.57).go()
 
+        print 'SELECTING'
+
         # Get scan the code stuff
-        stc_result = yield self.stcsub.get_next_message()
-        stc_result = stc_result.color_pattern
-        self.net_stc_result = stc_result
+        try:
+            result = yield util.wrap_timeout(self.stcsub.get_next_message(), self.TIMEOUT_SECONDS, "test")
+            stc_result = result.color_pattern
+        except util.TimeoutError:
+            stc_result = "RGB"
+            self.stcpub.publish(ScanTheCode(color_pattern=stc_result))
+
+        self.net_stc_results = stc_result
 
         if stc_result[0] == 'R':
             yield self.move.look_at(self.stc).go()
@@ -33,6 +42,7 @@ class ScanTheCodeJaxon(Navigator):
             yield self.move.look_at(self.stc).go()
             yield self.move.right(10).forward(15).go()
         elif stc_result[0] == 'B':
+            yield self.move.left(5).go()
             yield self.move.circle_point(self.stc, direction='cw', revolutions=1.25).go()
             yield self.move.forward(10).go()
 
