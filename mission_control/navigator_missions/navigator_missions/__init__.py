@@ -16,7 +16,6 @@ from pinger import PingerMission
 from pinger_exit import PingerExitMission
 from pinger_andy import PingerAndy
 from gps_points import GPSWaypoints
-from scan_the_code import ScanTheCode
 from station_hold import StationHold
 from killed import Killed
 from move import Move
