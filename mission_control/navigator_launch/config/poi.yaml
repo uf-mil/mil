@@ -7,3 +7,7 @@ initial_pois:
   ring_challenge:  [0, 0, 0]
   dock:            [0, 0, 0]
   stc:             [0, 0, 0]
+  ocp1:            [0, 0 ,0]
+  ocp2:            [0, 0, 0]
+  ocp3:            [0, 0, 0]
+  ocp4:            [0, 0, 0]
