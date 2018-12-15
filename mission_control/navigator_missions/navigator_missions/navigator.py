@@ -12,7 +12,6 @@ import mil_tools
 from ros_alarms import TxAlarmListener
 from navigator_path_planner.msg import MoveAction, MoveGoal
 from nav_msgs.msg import Odometry
-from std_msgs.msg import Float64
 from std_srvs.srv import SetBool, SetBoolRequest
 from geometry_msgs.msg import PoseStamped, PointStamped
 import navigator_msgs.srv as navigator_srvs
@@ -24,6 +23,8 @@ from mil_tasks_core import BaseTask
 from mil_passive_sonar import TxHydrophonesClient
 from mil_pneumatic_actuator.srv import SetValve, SetValveRequest
 from mil_poi import TxPOIClient
+from roboteq_msgs.msg import Command
+from std_msgs.msg import Bool
 
 
 class MissionResult(object):
@@ -63,6 +64,7 @@ class Navigator(BaseTask):
     blue = "BLUE"
     net_stc_results = None
     net_entrance_results = None
+    max_grinch_effort = 500
 
     def __init__(self, **kwargs):
         super(Navigator, self).__init__(**kwargs)
@@ -112,8 +114,10 @@ class Navigator(BaseTask):
 
         cls._grinch_lower_time = yield cls.nh.get_param("~grinch_lower_time")
         cls._grinch_raise_time = yield cls.nh.get_param("~grinch_raise_time")
-        cls._winch_motor_pub = cls.nh.advertise("/grinch_controller/motor1/cmd", Float64)
-        cls._grind_motor_pub = cls.nh.advertise("/grinch_controller/motor2/cmd", Float64)
+        cls.grinch_limit_switch_pressed = False
+        cls._grinch_limit_switch_sub = yield cls.nh.subscribe('/limit_switch', Bool, cls._grinch_limit_switch_cb)
+        cls._winch_motor_pub = cls.nh.advertise("/grinch_winch/cmd", Command)
+        cls._grind_motor_pub = cls.nh.advertise("/grinch_spin/cmd", Command)
 
         try:
             cls._actuator_client = cls.nh.get_service_client('/actuator_driver/actuate', SetValve)
@@ -143,6 +147,10 @@ class Navigator(BaseTask):
             odom = util.wrap_time_notice(cls._odom_sub.get_next_message(), 2, "Odom listener")
             enu_odom = util.wrap_time_notice(cls._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener")
             yield defer.gatherResults([odom, enu_odom])  # Wait for all those to finish
+
+    @classmethod
+    def _grinch_limit_switch_cb(cls, data):
+        cls.grinch_limit_switch_pressed = data.data
 
     @property
     @util.cancellableInlineCallbacks
@@ -184,7 +192,7 @@ class Navigator(BaseTask):
         d.cancel()
         '''
         while True:
-            self._grind_motor_pub.publish(Float64(speed))
+            self._grind_motor_pub.publish(Command(setpoint=speed * self.max_grinch_effort))
             yield self.nh.sleep(interval)
 
     @util.cancellableInlineCallbacks
@@ -195,7 +203,7 @@ class Navigator(BaseTask):
         cancel the defer
         '''
         while True:
-            self._winch_motor_pub.publish(Float64(speed))
+            self._winch_motor_pub.publish(Command(setpoint=speed * self.max_grinch_effort))
             yield self.nh.sleep(interval)
 
     @util.cancellableInlineCallbacks
@@ -205,7 +213,7 @@ class Navigator(BaseTask):
         '''
         winch_defer = self.spin_winch(speed=1.0)
         yield self.nh.sleep(self._grinch_lower_time)
-        self._winch_motor_pub.publish(Float64(0.))
+        self._winch_motor_pub.publish(Command(setpoint=0))
         winch_defer.cancel()
 
     @util.cancellableInlineCallbacks
@@ -213,10 +221,20 @@ class Navigator(BaseTask):
         '''
         Retract the grinch mechanism
         '''
+        now = yield self.nh.get_time()
+        end = now + genpy.Duration(self._grinch_raise_time)
         winch_defer = self.spin_winch(speed=-1.0)
-        yield self.nh.sleep(self._grinch_raise_time)
-        self._winch_motor_pub.publish(Float64(0.))
+        while True:
+            now = yield self.nh.get_time()
+            if self.grinch_limit_switch_pressed:
+                print 'limit switch pressed, stopping'
+                break
+            elif now >= end:
+                print 'retract timed out'
+                break
+            yield self.nh.sleep(0.1)
         winch_defer.cancel()
+        self._winch_motor_pub.publish(Command(setpoint=0))
 
     @util.cancellableInlineCallbacks
     def deploy_thruster(self, name):
