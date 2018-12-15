@@ -5,7 +5,6 @@ ChainWithTimeout = mil_tasks_core.MakeChainWithTimeout(Navigator)
 Wait = mil_tasks_core.MakeWait(Navigator)
 del mil_tasks_core
 
-from detect_deliver import DetectDeliver
 from teleop import Teleop
 from circle import Circle
 from circle_tower import CircleTower
@@ -33,4 +32,10 @@ from ring_recovery import RingRecovery
 from obstacle_avoid import ObstacleAvoid
 from stc_jaxon import ScanTheCodeJaxon
 from explore_towers import ExploreTowers
+from track_target import TrackTarget
+from detect_deliver_find import DetectDeliverFind
+from detect_deliver import DetectDeliver
+from discount_docking import DiscountDocking
+from docking import Docking
+from shoot_balls import ShootBalls
 import pose_editor
