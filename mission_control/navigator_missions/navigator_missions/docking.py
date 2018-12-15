@@ -26,7 +26,7 @@ class Docking(Navigator):
         parser = ThrowingArgumentParser(description='Dock',
                                         usage='''Default parameters: \'runtask Docking
                                          \'''')
-        parser.add_argument('-t', '--time', type=int, default=15)
+        parser.add_argument('-t', '--time', type=int, default=-1)
         cls.parser = parser
 
         cls.bboxsub = cls.nh.subscribe("/bbox_pub", ObjectsInImage)
@@ -44,18 +44,13 @@ class Docking(Navigator):
 
         center_frame = yield self.get_center_frame()
         pose_offset = yield self.get_target_pt(center_frame)
+        symbol = pose_offset[1].
         print pose_offset
-        yield self.move.set_position(pose_offset).look_at(dock_position).go()
+        yield self.move.set_position(pose_offset).look_at(dock_position).go(blind=True)
 
         timeout = None
         dock_timing = False
-        while True:
-            if not dock_timing and pose_offset[0] < 2 and pose_offset[1] < 2:
-                dock_timing = True
-                timeout = time.time() + wait_time
-
-            if dock_timing and time.time() > timeout:
-                break
+        yield self.nh.sleep(wait_time)
 
         yield self.move.backward(10).go()
 
@@ -73,7 +68,7 @@ class Docking(Navigator):
         c2 = np.array([c2[1], c2[0], 0])
         c1 *= 4
         c2 *= 4
-        tmp = (((c1 + c2) / 2.0), msgf)
+        tmp = (((c1 + c2) / 2.0), msgf, msg.find)
         #print tmp
         defer.returnValue(tmp)
 
