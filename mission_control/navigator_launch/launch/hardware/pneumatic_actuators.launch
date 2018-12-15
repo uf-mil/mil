@@ -4,7 +4,13 @@
         <rosparam param="actuators">
           LAUNCHER_RELOAD_EXTEND: 2
           LAUNCHER_RELOAD_RETRACT: 1
-          LAUNCHER_FIRE: 12
+          LAUNCHER_FIRE:
+                type: pulse
+                pulse_time: 0.5
+                ports:
+                    open_port:
+                        id: 12
+                        default: False
         </rosparam>
     </node>
 </launch>
