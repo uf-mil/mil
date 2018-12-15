@@ -4,13 +4,9 @@ from navigator_missions.navigator import Navigator
 import numpy as np
 from mil_tools import rosmsg_to_numpy
 from twisted.internet import defer
-import math
 from mil_misc_tools import ThrowingArgumentParser
-import tf.transformations as tform
-import time
 from mil_msgs.srv import CameraToLidarTransform, CameraToLidarTransformRequest
 from mil_msgs.msg import ObjectsInImage
-import txros
 from geometry_msgs.msg import Point
 
 
@@ -42,7 +38,7 @@ class Docking(Navigator):
         largest_size = 0
         boat_pos = (yield self.tx_pose)[0]
         # Get 10 closest unclassified objects
-        unclass = yield self.get_sorted_objects(name='UNCLASSIFIED', n=10)
+        unclass = yield self.get_sorted_objects(name='UNKNOWN', n=10, throw=False)
         for obj in unclass[0]:
             point = rosmsg_to_numpy(obj.pose.position)
             scale = rosmsg_to_numpy(obj.scale)
@@ -75,14 +71,12 @@ class Docking(Navigator):
         self.send_feedback('Identified target')
 
         # Identify the time to wait in the dock
-        print target_pt
-
         if wait_time == -1:
             if 'triangle' in symbol:
                 wait_time = 7
             elif 'circle' in symbol:
                 wait_time = 17
-            else: # Cruciform
+            else:  # Cruciform
                 wait_time = 27
 
         # Go to pose
@@ -100,14 +94,13 @@ class Docking(Navigator):
         yield self.move.backward(5).go(blind=True)
         yield self.move.backward(5).go(blind=True)
 
-
         self.send_feedback('Done with docking!')
 
     @util.cancellableInlineCallbacks
     def get_center_frame(self):
         msgf = yield self.bboxsub.get_next_message()
         msg = msgf.objects[0]
-        #print msg
+        # print msg
         c1 = rosmsg_to_numpy(msg.points[0])
         c2 = rosmsg_to_numpy(msg.points[1])
         tmp = (((c1 + c2) / 2.0), msgf, msg.name)
@@ -121,13 +114,7 @@ class Docking(Navigator):
         msg.point = Point(x=center_frame[0][0], y=center_frame[0][1], z=0.0)
         msg.tolerance = 500
 
-        #print 'msg'
-        #print msg
-        #print '----'
-
         pose_offset = yield self.camera_lidar_tf(msg)
-
-        #print pose_offset
 
         cam_to_enu = yield self.tf_listener.get_transform('enu', center_frame[1].header.frame_id)
         normal = rosmsg_to_numpy(pose_offset.normal)
@@ -138,24 +125,16 @@ class Docking(Navigator):
         found_pt = cam_to_enu.transform_point(found_pt)
         found_pt[2] = 0
 
-        print('foundpt {}'.format(found_pt))
-        print('normal  {}'.format(normal))
-
         # Extend out by normal multiplier
         normal *= 3
         found_pt_1 = found_pt + normal
         found_pt_2 = found_pt + -1 * normal
 
-        print('foundpt1 {}'.format(found_pt_1))
-        print('foundpt2 {}'.format(found_pt_2))
-
         # Which is closer
         boat_pos = (yield self.tx_pose)[0]
         if np.linalg.norm(found_pt_1 - boat_pos) > np.linalg.norm(found_pt_2 - boat_pos):
             found_pt = found_pt_2
-            print('selected 2')
         else:
             found_pt = found_pt_1
-            print('selected 1')
 
         defer.returnValue(found_pt)
