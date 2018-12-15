@@ -318,7 +318,9 @@ class Navigator(BaseTask):
             if throw:
                 raise Exception('Could not get {} {} objects'.format(n, name))
             else:
-                defer.returnValue(None)
+                n = len(objects)
+        if n == 0:
+            defer.returnValue(None)
         positions = np.empty((len(objects), 3))
         for i, obj in enumerate(objects):
             positions[i, :] = mil_tools.rosmsg_to_numpy(obj.pose.position)
