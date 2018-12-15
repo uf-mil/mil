@@ -1,5 +1,16 @@
 <launch>
-  <node pkg="sabertooth2x12" type="sabertooth2x12ros" name="grinch_motor" ns="grinch_controller">
-    <param name="port" value="/dev/serial/by-id/usb-FTDI_Roboteq_MDC1460_port-bow-if00-port0" />
-  </node>
+<!--
+    <node pkg="roboteq_driver" type="driver_node" name="grinch_winch">
+      <param name="port" value="/dev/serial/by-id/1"/>
+      <param name="value" value="115200" />
+    </node>
+-->
+    <node pkg="roboteq_driver" type="driver_node" name="grinch_spin">
+      <param name="port" value="/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if01-port0"/>
+      <param name="value" value="115200" />
+    </node>
+
 </launch>
+
+
+
