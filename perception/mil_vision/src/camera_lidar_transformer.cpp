@@ -1,12 +1,13 @@
 #include "camera_lidar_transformer.hpp"
 
-ros::Duration CameraLidarTransformer::MAX_TIME_ERR = ros::Duration(0, 6E7);
+//ros::Duration CameraLidarTransformer::MAX_TIME_ERR = ros::Duration(0, 6E7);
+ros::Duration CameraLidarTransformer::MAX_TIME_ERR = ros::Duration(5);
 CameraLidarTransformer::CameraLidarTransformer()
   : nh(ros::this_node::getName())
   , tfBuffer()
   , tfListener(tfBuffer, nh)
   , lidarSub(nh, "/velodyne_points", 10)
-  , lidarCache(lidarSub, 10)
+  , lidarCache(lidarSub, 100)
   , camera_info_received(false)
 #ifdef DO_ROS_DEBUG
   , image_transport(nh)
