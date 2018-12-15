@@ -28,6 +28,33 @@ bool ObjectMap::DatabaseQuery(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::O
   // Handle self classification command
   if (req.cmd != "")
   {
+    if (req.cmd == "delete")
+    {
+      int id = -1;
+      try
+      {
+        id = std::stoi(req.name);
+      }
+      catch (std::invalid_argument const& err)
+      {
+        res.found = false;
+        return true;
+      }
+
+      for (auto pair = objects_.begin(); pair != objects_.end(); ++pair)
+      {
+        if ((*pair).first == id)
+        {
+          objects_.erase(pair);
+          res.found = true;
+          return true;
+        }
+      }
+
+      res.found = false;
+      return true;
+    }
+
     int pos = req.cmd.find_first_of("=");
 
     int id = -1;
@@ -66,7 +93,7 @@ bool ObjectMap::DatabaseQuery(mil_msgs::ObjectDBQuery::Request& req, mil_msgs::O
   res.found = false;
   for (auto const& pair : objects_)
   {
-    if (pair.second.msg_.classification == req.name || pair.second.msg_.labeled_classification == req.name)
+    if (pair.second.msg_.labeled_classification == req.name)
     {
       res.found = true;
       res.objects.push_back(pair.second.msg_);
