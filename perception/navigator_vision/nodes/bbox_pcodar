@@ -77,7 +77,7 @@ class BBOXPCODAR(object):
                     rospy.loginfo('{} found for {}'.format(obj.name, idn))
                     req = ObjectDBQueryRequest()
                     req.cmd = '{}={}'.format(idn, obj.name)
-                    res = self.pcodar_client(req)
+                    self.pcodar_client(req)
 
 
 if __name__ == '__main__':

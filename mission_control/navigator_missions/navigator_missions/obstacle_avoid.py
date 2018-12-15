@@ -72,7 +72,8 @@ class ObstacleAvoid(Navigator):
         # Traverse each point, looking at the next
         for i in range(0, len(traverse_points)):
             if i + 1 != len(traverse_points):
-                yield self.move.set_position(traverse_points[i]).look_at(traverse_points[i + 1]).go(speed_factor=speed_factor)
+                yield self.move.set_position(traverse_points[i])\
+                    .look_at(traverse_points[i + 1]).go(speed_factor=speed_factor)
             else:
                 yield self.move.set_position(traverse_points[i]).go(speed_factor=speed_factor)
 
