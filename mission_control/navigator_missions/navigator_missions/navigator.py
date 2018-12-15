@@ -65,6 +65,7 @@ class Navigator(BaseTask):
     net_stc_results = None
     net_entrance_results = None
     max_grinch_effort = 500
+    docking_scan = 'NA'
 
     def __init__(self, **kwargs):
         super(Navigator, self).__init__(**kwargs)

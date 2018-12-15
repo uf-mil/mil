@@ -7,13 +7,14 @@ from twisted.internet import defer
 import math
 from mil_misc_tools import ThrowingArgumentParser
 import tf.transformations as tform
+from mil_msgs.msg import ObjectsInImage
 
 
 class DetectDeliverFind(Navigator):
     DOCK_SIZE_LONG = 16.0
     DOCK_SIZE_SHORT = 8.0
 
-    CIRCLE_DISTANCE = 5.0 + math.sqrt((DOCK_SIZE_SHORT / 2)**2 + (DOCK_SIZE_LONG / 2)**2)
+    CIRCLE_DISTANCE = 8.0 + math.sqrt((DOCK_SIZE_SHORT / 2)**2 + (DOCK_SIZE_LONG / 2)**2)
 
     @classmethod
     def decode_parameters(cls, parameters):
@@ -25,8 +26,6 @@ class DetectDeliverFind(Navigator):
         parser = ThrowingArgumentParser(description='Detect Deliver Find',
                                         usage='''Default parameters: \'runtask DetectDeliverFind
                                          \'''')
-        #parser.add_argument('-a', '--scanall', action='store_true',
-        #                    help='setting scans all four sides of the dock, not just the short sides')
         parser.add_argument('-l', '--longscan', action='store_true',
                             help='set to scan the long side')
         parser.add_argument('-s', '--shortscan', action='store_true',
@@ -37,22 +36,21 @@ class DetectDeliverFind(Navigator):
         parser.add_argument('-c', '--circle', action='store_true',
                             help='''setting causes navigator to circle the dock once first in order to help
                                     PCODAR gather enough information to produce scale and an accurate orientation''')
-        parser.add_argument('-d', '--scandist', type=int, default=5,
+        parser.add_argument('-d', '--scandist', type=int, default=6,
                             help='distance to scan the images from')
         parser.add_argument('-i', '--lookin', action='store_true',
                             help='look into the dock at the end instead of being side ways')
-        parser.add_argument('-e', '--enddist', type=int, default=1,
+        parser.add_argument('-e', '--enddist', type=int, default=5,
                             help='the distance to go to as the end point')
         cls.parser = parser
 
-        cls.junk_1 = 0  # TODO REMOVE THIS --------------------------
+        cls.bboxsub = cls.nh.subscribe("/bbox_pub", ObjectsInImage)
 
     @util.cancellableInlineCallbacks
     def run(self, args):
         # Parse Arguments
-        #scan_all = args.scanall
-        long_scan = args.longscan
-        short_scan = args.shortscan
+        self.long_scan = args.longscan
+        self.short_scan = args.shortscan
         override_scale = args.overridescale
         pre_circle = args.circle
         scan_dist = args.scandist
@@ -70,7 +68,7 @@ class DetectDeliverFind(Navigator):
         if pre_circle:
             start_vect = (boat_pose - self.dock_position) / np.linalg.norm(boat_pose - self.dock_position)
             start_pt = self.dock_position + start_vect * self.CIRCLE_DISTANCE
-            yield self.move.set_position(start_pt).look_at(self.dock_position).go()
+            yield self.move.set_position(start_pt).look_at(self.dock_position).yaw_right(1.57).go()
             yield self.move.circle_point(self.dock_position).go()
 
         # Find the dock
@@ -84,10 +82,10 @@ class DetectDeliverFind(Navigator):
         self.build_scan_positions(scan_dist, boat_pose)
 
         # If we don't want to scan all, remove scans on long side
-        if short_scan and not long_scan:
+        if self.short_scan and not self.long_scan:
             # Remove 1 and 3; these are the long side ones.
             self.scans = [self.scans[1], self.scans[3]]
-        elif long_scan and not short_scan:
+        elif self.long_scan and not self.short_scan:
             # Remove 0 and 2; these are the short side ones.
             self.scans = [self.scans[0], self.scans[2]]
 
@@ -99,7 +97,8 @@ class DetectDeliverFind(Navigator):
         correct = False
         correct_scan_idx = -1
         for i in range(closest_scan, len(self.scans)) + range(0, closest_scan):
-            yield self.move.set_position(self.scans[i][0]).look_at(self.scans[i][1]).go()
+            #yield self.move.set_position(self.scans[i][0]).look_at(self.scans[i][1]).go()
+            yield self.move.set_position(self.scans[i][0]).look_at(self.dock_position).go()
             correct = yield self.scan_image()
             if correct:
                 correct_scan_idx = i
@@ -124,7 +123,7 @@ class DetectDeliverFind(Navigator):
             lpt = pt + np.array([math.sin(angle), -math.cos(angle), 0])
 
         # Go to closer location
-        yield self.move.set_position(pt).look_at(lpt).go()
+        yield self.move.set_position(pt).look_at(lpt).go(blind=True)
 
         self.send_feedback('Done! In position to line up for shot.')
 
@@ -174,14 +173,15 @@ class DetectDeliverFind(Navigator):
 
     @util.cancellableInlineCallbacks
     def scan_image(self):
-        # TODO SCAN IMAGE ---------------------------
-        self.junk_1 += 1
-        if self.junk_1 > 4:
-            self.junk_1 = 0
+        msgf = yield self.bboxsub.get_next_message()
+        for msg in msgf.objects:
+            if not (('circle' in msg.name) or ('triangle' in msg.name) or ('cruciform' in msg.name)):
+                continue
 
-        if self.junk_1 == 2:
-            val = yield True
-            defer.returnValue(val)
-        else:
-            val = yield False
-            defer.returnValue(val)
+            if self.long_scan:
+                self.docking_scan = msg.name
+                defer.returnValue(True)
+            elif self.short_scan:
+                if self.docking_scan is msg.name:
+                    defer.returnValue(True)
+        defer.returnValue(False)
