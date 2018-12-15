@@ -65,7 +65,6 @@ class Navigator(BaseTask):
     net_stc_results = None
     net_entrance_results = None
     max_grinch_effort = 500
-    docking_scan = 'NA'
 
     def __init__(self, **kwargs):
         super(Navigator, self).__init__(**kwargs)
@@ -152,6 +151,8 @@ class Navigator(BaseTask):
             odom = util.wrap_time_notice(cls._odom_sub.get_next_message(), 2, "Odom listener")
             enu_odom = util.wrap_time_notice(cls._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener")
             yield defer.gatherResults([odom, enu_odom])  # Wait for all those to finish
+
+        self.docking_scan = 'NA'
 
     @classmethod
     def _grinch_limit_switch_cb(cls, data):
