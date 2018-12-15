@@ -25,6 +25,8 @@ class ObstacleAvoid(Navigator):
                             help='distance from the course in meters to traverse to')
         parser.add_argument('-i', '--usepoi', action='store_true',
                             help='set to use pois for square corners')
+        parser.add_argument('-s', '--speed', type=float, default=0.75,
+                            help='set speed_factor of boat')
 
         cls.parser = parser
 
@@ -33,6 +35,7 @@ class ObstacleAvoid(Navigator):
         # Parse Arguments
         num_passes = args.numpasses
         out_offset = args.outoffset
+        speed_factor = args.speed
 
         # Determine the area of the gate
         yield self.find_area(args.usepoi)
@@ -69,9 +72,9 @@ class ObstacleAvoid(Navigator):
         # Traverse each point, looking at the next
         for i in range(0, len(traverse_points)):
             if i + 1 != len(traverse_points):
-                yield self.move.set_position(traverse_points[i]).look_at(traverse_points[i + 1]).go()
+                yield self.move.set_position(traverse_points[i]).look_at(traverse_points[i + 1]).go(speed_factor=speed_factor)
             else:
-                yield self.move.set_position(traverse_points[i]).go()
+                yield self.move.set_position(traverse_points[i]).go(speed_factor=speed_factor)
 
         self.send_feedback('Done with obstacle avoid!')
 
