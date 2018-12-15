@@ -152,7 +152,7 @@ class Navigator(BaseTask):
             enu_odom = util.wrap_time_notice(cls._ecef_odom_sub.get_next_message(), 2, "ENU Odom listener")
             yield defer.gatherResults([odom, enu_odom])  # Wait for all those to finish
 
-        self.docking_scan = 'NA'
+        cls.docking_scan = 'NA'
 
     @classmethod
     def _grinch_limit_switch_cb(cls, data):
