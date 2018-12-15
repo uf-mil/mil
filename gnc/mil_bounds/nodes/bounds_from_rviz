@@ -8,15 +8,18 @@ import tf2_geometry_msgs  # noqa
 
 
 class BoundsFromRVIZ(BoundsClient):
-    def __init__(self, frame):
+    def __init__(self, frame, ignore_stamp):
         super(BoundsFromRVIZ, self).__init__()
         self.tf_buffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tf_buffer)
         self.frame = frame
+        self.ignore_stamp = ignore_stamp
         self.points = []
         self.sub = rospy.Subscriber("clicked_point", PointStamped, self._cb, queue_size=4)
 
     def _cb(self, msg):
+        if self.ignore_stamp:
+            msg.header.stamp = rospy.Time.now()
         if self.frame is not None and msg.header.frame_id != self.frame:
             try:
                 msg = self.tf_buffer.transform(msg, self.frame, timeout=rospy.Duration(10, 0))
@@ -41,5 +44,6 @@ class BoundsFromRVIZ(BoundsClient):
 if __name__ == "__main__":
     rospy.init_node("bounds_from_rviz", anonymous=True)
     frame = rospy.get_param("~frame", "ECEF")
-    b = BoundsFromRVIZ(frame)
+    ignore_stamp = rospy.get_param("~ignore_stamp", False)
+    b = BoundsFromRVIZ(frame, ignore_stamp)
     b.set_from_rviz()
