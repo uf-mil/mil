@@ -132,6 +132,10 @@ class Navigator(BaseTask):
 
         cls.tf_listener = tf.TransformListener(cls.nh)
 
+        # Vision
+        cls.obstacle_course_vision_enable = cls.nh.get_service_client('/vision/obsc/enable', SetBool)
+        cls.docks_vision_enable = cls.nh.get_service_client('/vision/docks/enable', SetBool)
+
         yield cls._make_alarms()
 
         if cls.sim:
@@ -175,6 +179,21 @@ class Navigator(BaseTask):
     def fetch_result(self, *args, **kwargs):
         # For a unified result class
         return MissionResult(*args, **kwargs)
+
+    @util.cancellableInlineCallbacks
+    def set_vision_dock(self):
+        yield self.obstacle_course_vision_enable(SetBoolRequest(data=False))
+        yield self.docks_vision_enable(SetBoolRequest(data=True))
+
+    @util.cancellableInlineCallbacks
+    def set_vision_obstacle_course(self):
+        yield self.docks_vision_enable(SetBoolRequest(data=False))
+        yield self.obstacle_course_vision_enable(SetBoolRequest(data=True))
+
+    @util.cancellableInlineCallbacks
+    def set_vision_off(self):
+        yield self.obstacle_course_vision_enable(SetBoolRequest(data=False))
+        yield self.docks_vision_enable(SetBoolRequest(data=False))
 
     @util.cancellableInlineCallbacks
     def spin_grinch(self, speed=1.0, interval=0.1):
