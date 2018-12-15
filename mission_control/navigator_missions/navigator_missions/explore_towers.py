@@ -17,7 +17,7 @@ class ExploreTowers(Navigator):
     def init(cls):
         parser = ThrowingArgumentParser(description='Explore a bit mission',
                                         usage='Default parameters: \'runtask ExploreJaxon\'')
-        parser.add_argument('-c', '--count', type=int, default=3,
+        parser.add_argument('-c', '--count', type=int, default=5,
                             help='number of unclassified objects to attempt')
         parser.add_argument('-d', '--dist', type=float, default=30.,
                             help='distance to limit checks to')
@@ -38,7 +38,7 @@ class ExploreTowers(Navigator):
         yield self.set_vision_obstacle_course()
 
         for unclass_obj in closest_unclassified:
-            if np.linalg.norm(unclass_obj - nitial_boat_pose) > args.dist:
+            if np.linalg.norm(unclass_obj - initial_boat_pose) > args.dist:
                 self.send_feedback('Object is too far away, skpping.')
                 continue
             self.send_feedback('Exploring object')
