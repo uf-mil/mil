@@ -6,6 +6,7 @@ project(navigator_vision)
 # if needed for specific nodes (cough..cough... PCL)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -g -pedantic -Wall -std=c++11 ")
 
+find_package(Eigen)
 find_package(catkin
   REQUIRED COMPONENTS
     roscpp
@@ -60,6 +61,7 @@ include_directories(
     ${PCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIR}
     ${catkin_INCLUDE_DIRS}
+    ${Eigen_INCLUDE_DIRS}
 )
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
@@ -87,6 +89,17 @@ add_dependencies(shape_identification
   ${catkin_EXPORTED_TARGETS}
 )
 target_link_libraries(shape_identification
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+)
+
+add_executable(scan_the_code_marshall
+  nodes/scan_the_code_marshall.cpp
+)
+add_dependencies(scan_the_code_marshall
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(scan_the_code_marshall
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
 )
