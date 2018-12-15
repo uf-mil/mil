@@ -3,7 +3,6 @@ from txros import util
 from navigator_missions.navigator import Navigator
 import numpy as np
 from twisted.internet import defer
-import math
 from mil_misc_tools import ThrowingArgumentParser
 
 
