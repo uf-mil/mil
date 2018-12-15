@@ -57,6 +57,9 @@ class DetectDeliverFind(Navigator):
         look_in = args.lookin
         end_dist = args.enddist
 
+        # Turn on ML classifier for docks
+        yield self.set_vision_dock()
+
         # Find the dock
         yield self.find_dock(override_scale)
 
