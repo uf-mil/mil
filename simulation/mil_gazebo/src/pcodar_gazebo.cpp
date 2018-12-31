@@ -12,7 +12,7 @@ void PCODARGazebo::Load(gazebo::physics::WorldPtr _world, sdf::ElementPtr _sdf)
   pcodar_->initialize();
   for (auto it : name_map_)
   {
-    ROS_WARN("MAPPING %s to %s", it.first.c_str(), it.second.c_str());
+    ROS_DEBUG("MAPPING %s to %s", it.first.c_str(), it.second.c_str());
   }
   UpdateEntities();
   timer_ = nh_.createTimer(ros::Duration(5.0), std::bind(&PCODARGazebo::TimerCb, this, std::placeholders::_1));
@@ -50,7 +50,7 @@ void PCODARGazebo::UpdateModel(gazebo::physics::ModelPtr _model)
 
 void PCODARGazebo::UpdateEntity(gazebo::physics::EntityPtr _entity)
 {
-  ROS_WARN("Entity %s", _entity->GetName().c_str());
+  ROS_DEBUG("Entity %s", _entity->GetName().c_str());
 
   // Find this entity in the name map
   auto it = name_map_.find(_entity->GetName());
@@ -63,7 +63,7 @@ void PCODARGazebo::UpdateEntity(gazebo::physics::EntityPtr _entity)
 
   // Create an object message for this entity
   pcodar::Object object = pcodar::Object(pcodar::point_cloud());
-  object.msg_.classification = (*it).second;
+  object.msg_.labeled_classification = (*it).second;
 
   // Get pose and bounding box for object
   gazebo::math::Pose pose = _entity->GetWorldPose();
