@@ -12,7 +12,7 @@ source $CATKIN_DIR/src/mil_common/scripts/two_line_bash.sh
 source $CATKIN_DIR/src/mil_common/scripts/ros_connect.sh
 source $CATKIN_DIR/src/mil_common/scripts/wsmux.sh
 source $CATKIN_DIR/src/mil_common/scripts/bag.sh
-source $CATKIN_DIR/src/mil_common/scripts/tasks_autocomplete.sh
+source $CATKIN_DIR/src/mil_common/scripts/missions_autocomplete.sh
 
 # Source submodule aliases if the submodules have been pulled
 if [[ -f $CATKIN_DIR/src/mil_common/ros_alarms/scripts/bash_aliases.sh ]]; then
@@ -77,9 +77,9 @@ alias cm="catkin_make -C \$CATKIN_DIR -j8"
 alias killgazebo="killall -9 gazebo && killall -9 gzserver && killall -9 gzclient"
 
 # Tasks
-alias runtask="rosrun mil_tasks task_client run"
-alias canceltask="rosrun mil_tasks task_client cancel"
-alias listtasks="rosrun mil_tasks task_client list"
+alias runmission="rosrun mil_missions mission_client run"
+alias cancelmission="rosrun mil_missions mission_client cancel"
+alias listmissions="rosrun mil_missions mission_client list"
 
 # POI
 poisave()

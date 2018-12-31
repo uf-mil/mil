@@ -1,4 +1,4 @@
-from exceptions import TimeoutException, SubtaskException, ParametersException
+from exceptions import TimeoutException, SubmissionException, ParametersException
 from twisted.internet import defer
 from twisted.python import failure
 from txros import util
@@ -7,87 +7,87 @@ import json
 
 def MakeChainWithTimeout(base):
     '''
-    Generate a ChainWithTimeout task with the BaseTask specified.
-    Used by individual robotics platforms to reuse this example task.
+    Generate a ChainWithTimeout mission with the BaseMission specified.
+    Used by individual robotics platforms to reuse this example mission.
     '''
     class ChainWithTimeout(base):
         '''
-        Example of a task which runs an arbitrary number of other tasks in a linear order. This
-        is the task used by the rqt plugin under the "Chained Missions" section.
+        Example of a mission which runs an arbitrary number of other missions in a linear order. This
+        is the mission used by the rqt plugin under the "Chained Missions" section.
         '''
         @util.cancellableInlineCallbacks
-        def run_subtask_with_timeout(self, task, timeout, parameters):
+        def run_submission_with_timeout(self, mission, timeout, parameters):
             '''
-            Runs a child task, throwing an exception if more time than specified in timeout
-            passes before the task finishes executing.
+            Runs a child mission, throwing an exception if more time than specified in timeout
+            passes before the mission finishes executing.
             '''
-            subtask = self.run_subtask(task, parameters)
+            submission = self.run_submission(mission, parameters)
             if timeout == 0:  # Timeout of zero means no timeout
-                result = yield subtask
+                result = yield submission
                 defer.returnValue(result)
             timeout_df = self.nh.sleep(timeout)
-            result, index = yield defer.DeferredList([subtask, timeout_df], fireOnOneCallback=True,
+            result, index = yield defer.DeferredList([submission, timeout_df], fireOnOneCallback=True,
                                                      fireOnOneErrback=True)
             if index == 0:
                 yield timeout_df.cancel()
                 defer.returnValue(result)
             if index == 1:
-                yield subtask.cancel()
+                yield submission.cancel()
                 raise TimeoutException(timeout)
 
         @classmethod
         def decode_parameters(cls, parameters):
             '''
-            Goes through list of tasks to chain and fills in missing
+            Goes through list of missions to chain and fills in missing
             attributes like timeout with defaults. If something is invalid,
             raise an exception.
             '''
             parameters = json.loads(parameters)
             if type(parameters) != dict:
                 raise ParametersException('must be a dictionary')
-            if 'tasks' not in parameters:
-                raise ParametersException('must have "tasks" list')
-            if not isinstance(parameters['tasks'], list):
-                raise ParametersException('"tasks" attribute must be a list')
-            for task in parameters['tasks']:
-                if 'task' not in task:
-                    raise Exception('invalid parameters, missing attribute "task"')
-                if not cls.has_task(task['task']):
-                    raise Exception('task "{}" not available'.format(task['task']))
-                if 'parameters' not in task:
-                    task['parameters'] = ''
+            if 'missions' not in parameters:
+                raise ParametersException('must have "missions" list')
+            if not isinstance(parameters['missions'], list):
+                raise ParametersException('"missions" attribute must be a list')
+            for mission in parameters['missions']:
+                if 'mission' not in mission:
+                    raise Exception('invalid parameters, missing attribute "mission"')
+                if not cls.has_mission(mission['mission']):
+                    raise Exception('mission "{}" not available'.format(mission['mission']))
+                if 'parameters' not in mission:
+                    mission['parameters'] = ''
                 try:
-                    task['parameters'] = cls.get_task(task['task']).decode_parameters(task['parameters'])
+                    mission['parameters'] = cls.get_mission(mission['mission']).decode_parameters(mission['parameters'])
                 except Exception as e:
-                    raise ParametersException('Invalid parameters for {}: {}'.format(task['task'], str(e)))
-                if 'timeout' not in task:
-                    task['timeout'] = 0
-                if 'required' not in task:
-                    task['required'] = True
+                    raise ParametersException('Invalid parameters for {}: {}'.format(mission['mission'], str(e)))
+                if 'timeout' not in mission:
+                    mission['timeout'] = 0
+                if 'required' not in mission:
+                    mission['required'] = True
             return parameters
 
         @util.cancellableInlineCallbacks
         def run(self, parameters):
             '''
-            Runs a list of child tasks specified in the parameters with optional timeouts.
+            Runs a list of child missions specified in the parameters with optional timeouts.
             '''
-            for task in parameters['tasks']:  # Run each child task linearly
+            for mission in parameters['missions']:  # Run each child mission linearly
                 def cb(final):
                     '''
-                    Called when a subtask finishes. If it succeeded, print the result in feedback.
+                    Called when a submission finishes. If it succeeded, print the result in feedback.
                     If it failed or timedout, print the failure and stop the whole chain if that
-                    task is required.
+                    mission is required.
                     '''
                     if isinstance(final, failure.Failure):
-                        self.send_feedback('{} FAILED: {}'.format(task['task'], final.getErrorMessage()))
-                        if task['required']:  # Fail whole chain if a required task times out or fails
-                            raise SubtaskException(task['task'], final.getErrorMessage())
+                        self.send_feedback('{} FAILED: {}'.format(mission['mission'], final.getErrorMessage()))
+                        if mission['required']:  # Fail whole chain if a required mission times out or fails
+                            raise SubmissionException(mission['mission'], final.getErrorMessage())
                     else:
-                        self.send_feedback('{} SUCCEEDED: {}'.format(task['task'], final))
+                        self.send_feedback('{} SUCCEEDED: {}'.format(mission['mission'], final))
                         print 'NO FAIL BRO'
-                df = self.run_subtask_with_timeout(task['task'], task['timeout'], task['parameters'])
+                df = self.run_submission_with_timeout(mission['mission'], mission['timeout'], mission['parameters'])
                 df.addBoth(cb)
                 yield df
             self.send_feedback('Done with all')
-            defer.returnValue('All tasks complete or skipped.')
+            defer.returnValue('All missions complete or skipped.')
     return ChainWithTimeout

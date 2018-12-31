@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from mil_tasks.msg import DoTaskAction, DoTaskResult, DoTaskFeedback
-from mil_tasks_core import TaskException, TaskResult
+from mil_missions.msg import DoMissionAction, DoMissionResult, DoMissionFeedback
+from mil_missions_core import MissionException, MissionResult
 from txros import util, NodeHandle, action
 from twisted.internet import defer, reactor
 import twisted.python
@@ -8,10 +8,10 @@ import inspect
 import json
 
 
-class TaskRunner(object):
+class MissionRunner(object):
     '''
-    Node which runs the tasks server, recieving goals from a client
-    to run a task, cancel a task, and publish feedback.
+    Node which runs the missions server, recieving goals from a client
+    to run a mission, cancel a mission, and publish feedback.
     '''
     def __init__(self):
         pass
@@ -19,139 +19,139 @@ class TaskRunner(object):
     @defer.inlineCallbacks
     def init(self):
         '''
-        Initialize the action server, import the tasks from the task module, call init, functions
-        and prepare for the first task goal.
+        Initialize the action server, import the missions from the mission module, call init, functions
+        and prepare for the first mission goal.
         '''
         # Create NodeHandle and action server
-        self.nh = yield NodeHandle.from_argv('task_runner')
-        self.server = action.SimpleActionServer(self.nh, '/task', DoTaskAction)
+        self.nh = yield NodeHandle.from_argv('mission_runner')
+        self.server = action.SimpleActionServer(self.nh, '/mission', DoMissionAction)
 
-        # Get task_module and base_task from params, if not set just crash
-        task_module_name = yield self.nh.get_param('~tasks_module')
-        base_task_name = yield self.nh.get_param('~base_task')
-        task_module = __import__(task_module_name)
+        # Get mission_module and base_mission from params, if not set just crash
+        mission_module_name = yield self.nh.get_param('~missions_module')
+        base_mission_name = yield self.nh.get_param('~base_mission')
+        mission_module = __import__(mission_module_name)
 
-        # Import and init the base task
-        if not hasattr(task_module, base_task_name):
-            raise Exception('Base task not in module')
-        base_task = getattr(task_module, base_task_name)
-        yield base_task._init(self)
+        # Import and init the base mission
+        if not hasattr(mission_module, base_mission_name):
+            raise Exception('Base mission not in module')
+        base_mission = getattr(mission_module, base_mission_name)
+        yield base_mission._init(self)
 
-        # Import all tasks which extend the base class and initilize them
-        self.tasks = {}
-        for name, cls in inspect.getmembers(task_module):
-            if inspect.isclass(cls) and issubclass(cls, base_task) and name != base_task_name:
+        # Import all missions which extend the base class and initilize them
+        self.missions = {}
+        for name, cls in inspect.getmembers(mission_module):
+            if inspect.isclass(cls) and issubclass(cls, base_mission) and name != base_mission_name:
                 yield cls.init()
-                self.tasks[cls.name()] = cls
+                self.missions[cls.name()] = cls
 
-        # Set available tasks param with list of all imported tasks
-        yield self.nh.set_param('/available_tasks', self.tasks.keys())
+        # Set available missions param with list of all imported missions
+        yield self.nh.set_param('/available_missions', self.missions.keys())
 
-        # Set current task to None
-        self.task_defer = None
-        self.task = None
+        # Set current mission to None
+        self.mission_defer = None
+        self.mission = None
 
         # Register callbacks for new goals and start the action server
-        self.server.register_preempt_callback(self.check_new_task)
-        self.server.register_goal_callback(self.check_new_task)
+        self.server.register_preempt_callback(self.check_new_mission)
+        self.server.register_goal_callback(self.check_new_mission)
         self.server.start()
 
-    def has_task(self, task):
+    def has_mission(self, mission):
         '''
-        returns true if a task with the specified name is available
+        returns true if a mission with the specified name is available
         '''
-        return task in self.tasks
+        return mission in self.missions
 
-    def get_task(self, task):
-        return self.tasks[task]
+    def get_mission(self, mission):
+        return self.missions[mission]
 
     def send_feedback(self, message):
         '''
         Publishes feedback for the current goal
         '''
-        if self.task is None:
-            print('Tried to send feedback when task is None...')
+        if self.mission is None:
+            print('Tried to send feedback when mission is None...')
             return
-        feedback = DoTaskFeedback()
+        feedback = DoMissionFeedback()
         feedback.message = message
         self.server.publish_feedback(feedback)
 
-    def do_new_task(self):
+    def do_new_mission(self):
         '''
         Accept a new goal and start running it
         '''
         if not self.server.is_new_goal_available():
             return
         goal = self.server.accept_new_goal()
-        if not self.has_task(goal.task):
-            print('TASK RUNNER: unrecognized task \'{}\''.format(goal.task))
-            self.server.set_aborted(result=DoTaskResult(success=False, result='task unknown'))
+        if not self.has_mission(goal.mission):
+            print('TASK RUNNER: unrecognized mission \'{}\''.format(goal.mission))
+            self.server.set_aborted(result=DoMissionResult(success=False, result='mission unknown'))
             return
 
         # Attempt to decode parameters, abort if there is an exception
         try:
-            parameters = self.tasks[goal.task].decode_parameters(goal.parameters)
+            parameters = self.missions[goal.mission].decode_parameters(goal.parameters)
         except Exception as e:
-            self.server.set_aborted(result=DoTaskResult(success=False, result=str(e)))
+            self.server.set_aborted(result=DoMissionResult(success=False, result=str(e)))
             return
 
-        # Start task, and create callbacks even if it is not a deferred
-        self.task = self.tasks[goal.task]()
-        self.task_defer = defer.maybeDeferred(self.task.run, parameters)
-        self.task_defer.addBoth(self.task_finished_cb)
+        # Start mission, and create callbacks even if it is not a deferred
+        self.mission = self.missions[goal.mission]()
+        self.mission_defer = defer.maybeDeferred(self.mission.run, parameters)
+        self.mission_defer.addBoth(self.mission_finished_cb)
 
     @util.cancellableInlineCallbacks
-    def check_new_task(self):
+    def check_new_mission(self):
         '''
         Called by SimpleActionServer when a new goal is available or cancel request
         comes in.
         '''
-        # If cancel request came in, cancel current task
-        if self.task_defer is not None and self.server.is_cancel_requested():
-            yield self.task_defer.cancel()
-        # If a new task came in, cancel current task
-        elif self.task_defer is not None and self.server.is_preempt_requested():
-            yield self.task_defer.cancel()
-        # Try to accept a new task
-        self.do_new_task()
+        # If cancel request came in, cancel current mission
+        if self.mission_defer is not None and self.server.is_cancel_requested():
+            yield self.mission_defer.cancel()
+        # If a new mission came in, cancel current mission
+        elif self.mission_defer is not None and self.server.is_preempt_requested():
+            yield self.mission_defer.cancel()
+        # Try to accept a new mission
+        self.do_new_mission()
 
-    def cleanup_fail(self, final, taskname):
+    def cleanup_fail(self, final, missionname):
         print ''
-        print 'Clean up for {} failed!'.format(taskname)
+        print 'Clean up for {} failed!'.format(missionname)
         print final.getTraceback()
 
     @util.cancellableInlineCallbacks
-    def task_finished_cb(self, final):
+    def mission_finished_cb(self, final):
         '''
-        Called when the current task finishes succesfully, is cancled, is preempted by another
-        task, or raises an exception. Publishes the correct result to the action clients.
+        Called when the current mission finishes succesfully, is cancled, is preempted by another
+        mission, or raises an exception. Publishes the correct result to the action clients.
         '''
-        result = DoTaskResult()
+        result = DoMissionResult()
 
-        # If task failed / was cancled, abort task
+        # If mission failed / was cancled, abort mission
         if isinstance(final, twisted.python.failure.Failure):
             result.success = False
 
-            # If task was canceled, just set result to cancelled
+            # If mission was canceled, just set result to cancelled
             if final.check(defer.CancelledError):
-                result.result = 'task cancelled'
-            elif final.check(TaskException):  # If a task exception, return error message and params
+                result.result = 'mission cancelled'
+            elif final.check(MissionException):  # If a mission exception, return error message and params
                 exception = final.value
                 result.result = exception.message
                 result.parameters = json.dumps(exception.parameters)
-            else:  # If task raised another kind of exception (like key error), return message and traceback
+            else:  # If mission raised another kind of exception (like key error), return message and traceback
                 result.result = final.getErrorMessage()
                 result.parameters = json.dumps({'traceback': final.getTraceback()})
-            # Call task cleanup functio
-            cleanup = defer.maybeDeferred(self.task.cleanup)
-            cleanup.addErrback(self.cleanup_fail, self.task.name())
+            # Call mission cleanup functio
+            cleanup = defer.maybeDeferred(self.mission.cleanup)
+            cleanup.addErrback(self.cleanup_fail, self.mission.name())
             yield cleanup
-            self.server.set_aborted(result=result, text=result.result)  # Set task aborted in either case
+            self.server.set_aborted(result=result, text=result.result)  # Set mission aborted in either case
 
-        # If task was successful, set goal to succeeded with specified result
+        # If mission was successful, set goal to succeeded with specified result
         else:
             result.success = True
-            if isinstance(final, TaskResult):
+            if isinstance(final, MissionResult):
                 result.result = final.message
                 result.parameters = json.dumps(final.parameters)
             else:
@@ -159,22 +159,22 @@ class TaskRunner(object):
             result.success = True
             self.server.set_succeeded(result=result, text=result.result)
 
-        # Result task variables and see if a new task is available
-        self.task = None
-        self.task_defer = None
-        yield self.check_new_task()
+        # Result mission variables and see if a new mission is available
+        self.mission = None
+        self.mission_defer = None
+        yield self.check_new_mission()
 
 
 @defer.inlineCallbacks
 def main():
     '''
-    Start the task server, crashing if the init function fails.
+    Start the mission server, crashing if the init function fails.
     '''
-    t = TaskRunner()
+    t = MissionRunner()
 
     def err(err):
         print err.getTraceback()
-        print 'Error initializing task runnner'
+        print 'Error initializing mission runnner'
         print err.getErrorMessage()
         reactor.stop()
     d = t.init()
@@ -182,6 +182,6 @@ def main():
     yield d
 
 if __name__ == '__main__':
-    t = TaskRunner()
+    t = MissionRunner()
     reactor.callWhenRunning(main)
     reactor.run()

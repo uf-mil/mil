@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>mil_tasks</name>
+  <name>mil_missions</name>
   <version>0.1.0</version>
   <description>A system for the highest level decision making in ROS Robots.</description>
   <maintainer email="kma1660@gmail.com">Kevin Allen</maintainer>

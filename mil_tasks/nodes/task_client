@@ -2,33 +2,33 @@
 import rospy
 from actionlib import TerminalState
 import argparse
-from mil_tasks_core import TaskClient
+from mil_missions_core import MissionClient
 import json
 
 
-class TaskClientCli(object):
+class MissionClientCli(object):
     '''
-    Node to send and monitor a new task, cancel a task, or cancel the current
-    tasks. Verbosely prints current state and fedback to the terminal.
+    Node to send and monitor a new mission, cancel a mission, or cancel the current
+    missions. Verbosely prints current state and fedback to the terminal.
     '''
     def __init__(self):
-        self.client = TaskClient()
+        self.client = MissionClient()
         connected = self.client.wait_for_server(rospy.Duration(0.25))
         if not connected:  # If it didn't connect quickly, print and wait forever
             print 'Waiting on action server at ', self.client.NS
             self.client.wait_for_server()
-        self.running = False  # Tracks if we are currently waiting for a task to finish
+        self.running = False  # Tracks if we are currently waiting for a mission to finish
         rospy.on_shutdown(self.on_shutdown)
 
     @classmethod
     def list(cls):
-        tasks = TaskClient.available_tasks()
-        if not tasks:
-            print '{} param not set. Is task runner running?'.format(cls.LIST_PARAM)
+        missions = MissionClient.available_missions()
+        if not missions:
+            print '{} param not set. Is mission runner running?'.format(cls.LIST_PARAM)
             return
-        print 'Available Tasks:'
-        for task in tasks:
-            print '- ', task
+        print 'Available Missions:'
+        for mission in missions:
+            print '- ', mission
 
     def cancel_all(self):
         self.client.cancel_all_goals()
@@ -48,11 +48,11 @@ class TaskClientCli(object):
             print 'Cancelling goal'
             self.cancel_all()
 
-    def run_task(self, task, parameters):
+    def run_mission(self, mission, parameters):
         self.first_feedback = True
-        print 'Starting task ', task
+        print 'Starting mission ', mission
         self.running = True
-        self.client.run_task(task, parameters, feedback_cb=self._feedback_cb)
+        self.client.run_mission(mission, parameters, feedback_cb=self._feedback_cb)
         self.client.wait_for_result()
         result = self.client.get_result()
         self.running = False
@@ -77,34 +77,34 @@ class TaskClientCli(object):
 
 def main():
     argv = rospy.myargv()
-    parser = argparse.ArgumentParser(description='Runs a task on the task_runner server')
+    parser = argparse.ArgumentParser(description='Runs a mission on the mission_runner server')
     subparser = parser.add_subparsers()
 
-    list_parser = subparser.add_parser('list', help='List available tasks')
+    list_parser = subparser.add_parser('list', help='List available missions')
     list_parser.set_defaults(cmd='list')
 
-    cancel_parser = subparser.add_parser('cancel', help='Cancel current task')
+    cancel_parser = subparser.add_parser('cancel', help='Cancel current mission')
     cancel_parser.set_defaults(cmd='cancel')
 
-    run_parser = subparser.add_parser('run', help='Start a new task')
+    run_parser = subparser.add_parser('run', help='Start a new mission')
     run_parser.set_defaults(cmd='run')
-    run_parser.add_argument('task', help='name of task to run')
-    run_parser.add_argument('parameters', nargs=argparse.REMAINDER, help='list of parameters to pass to task.\
+    run_parser.add_argument('mission', help='name of mission to run')
+    run_parser.add_argument('parameters', nargs=argparse.REMAINDER, help='list of parameters to pass to mission.\
                                                        Will be concatenated into one string')
     args = parser.parse_args(argv[1:])
 
     if args.cmd == 'list':
-        TaskClientCli.list()
+        MissionClientCli.list()
         return
-    rospy.init_node('task_client', anonymous=True)
-    client = TaskClientCli()
+    rospy.init_node('mission_client', anonymous=True)
+    client = MissionClientCli()
     if args.cmd == 'cancel':
         client.cancel_all()
         print 'All goals canceled'
         return
     assert args.cmd == 'run'
     parameters = ' '.join(args.parameters)
-    client.run_task(args.task, parameters)
+    client.run_mission(args.mission, parameters)
 
 if __name__ == '__main__':
     main()

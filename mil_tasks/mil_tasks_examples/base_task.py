@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-from mil_tasks_core import BaseTask
+from mil_missions_core import BaseMission
 
 
-class ExampleBaseTask(BaseTask):
+class ExampleBaseMission(BaseMission):
     @classmethod
-    def _init(cls, task_runner):
-        super(ExampleBaseTask, cls)._init(task_runner)
+    def _init(cls, mission_runner):
+        super(ExampleBaseMission, cls)._init(mission_runner)
         # Establish robot specific subscribers, tools, etc here
-        print 'ExampleBaseTask initialized!'
+        print 'ExampleBaseMission initialized!'

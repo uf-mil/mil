@@ -1,7 +1,7 @@
-from base_task import ExampleBaseTask
+from base_mission import ExampleBaseMission
 from print_and_wait import PrintAndWait
 from publish_things import PublishThings
-from super_task import SuperTask
-import mil_tasks_core
-ChainWithTimeout = mil_tasks_core.MakeChainWithTimeout(ExampleBaseTask)
-Wait = mil_tasks_core.MakeWait(ExampleBaseTask)
+from super_mission import SuperMission
+import mil_missions_core
+ChainWithTimeout = mil_missions_core.MakeChainWithTimeout(ExampleBaseMission)
+Wait = mil_missions_core.MakeWait(ExampleBaseMission)

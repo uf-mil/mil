@@ -1,4 +1,4 @@
-class TaskException(Exception):
+class MissionException(Exception):
     def __init__(self, message, parameters={}):
         self.message = message
         self.parameters = parameters
@@ -7,12 +7,12 @@ class TaskException(Exception):
 
 class TimeoutException(Exception):
     '''
-    Represents an exception from a task or subtask not finishing within
+    Represents an exception from a mission or submission not finishing within
     the requested time.
     '''
     def __init__(self, timeout):
         '''
-        @param timeout: time in seconds task/subtask should have finished in
+        @param timeout: time in seconds mission/submission should have finished in
         '''
         self.timeout = timeout
 
@@ -28,19 +28,19 @@ class ParametersException(Exception):
         return 'invalid parameters: {}'.format(self.msg)
 
 
-class SubtaskException(Exception):
+class SubmissionException(Exception):
     '''
-    Represents an exception encountered while running a subtask.
-    Keeps the name of the subtask which failed, so the user knowns where
+    Represents an exception encountered while running a submission.
+    Keeps the name of the submission which failed, so the user knowns where
     the failure occurred.
     '''
-    def __init__(self, task, exception):
+    def __init__(self, mission, exception):
         '''
-        @param task: string name of the task
-        @param exception: original exception raised by the subtask
+        @param mission: string name of the mission
+        @param exception: original exception raised by the submission
         '''
-        self.task = task
+        self.mission = mission
         self.exception = exception
 
     def __str__(self):
-        return 'In subtask {}: {}'.format(self.task, self.exception)
+        return 'In submission {}: {}'.format(self.mission, self.exception)

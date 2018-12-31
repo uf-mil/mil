@@ -5,8 +5,8 @@ from exceptions import ParametersException
 
 def MakeWait(base):
     '''
-    Create a Wait task with the specified base task. Used by
-    robotics platforms to reuse this task with a different base task.
+    Create a Wait mission with the specified base mission. Used by
+    robotics platforms to reuse this mission with a different base mission.
     '''
     class Wait(base):
         '''

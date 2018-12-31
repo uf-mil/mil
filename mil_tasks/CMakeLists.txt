@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mil_tasks)
+project(mil_missions)
 find_package(catkin REQUIRED genmsg actionlib_msgs actionlib)
 catkin_python_setup()
 add_action_files(
   FILES
-    DoTask.action
+    DoMission.action
 )
 generate_messages(
   DEPENDENCIES
@@ -15,5 +15,5 @@ catkin_package()
 
 if(CATKIN_ENABLE_TESTING)
     find_package(rostest REQUIRED)
-    add_rostest(test/import_mil_tasks_examples.test)
+    add_rostest(test/import_mil_missions_examples.test)
 endif()

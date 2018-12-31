@@ -1,6 +1,6 @@
-from base_task import BaseTask
+from base_mission import BaseMission
 from chain_with_timeout import MakeChainWithTimeout
 from wait import MakeWait
-from task_client import TaskClient
-from exceptions import TimeoutException, SubtaskException, ParametersException, TaskException
-from task_result import TaskResult
+from mission_client import MissionClient
+from exceptions import TimeoutException, SubmissionException, ParametersException, MissionException
+from mission_result import MissionResult

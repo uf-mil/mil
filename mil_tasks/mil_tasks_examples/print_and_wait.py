@@ -1,9 +1,9 @@
 from twisted.internet import defer
 from txros import util
-from base_task import ExampleBaseTask
+from base_mission import ExampleBaseMission
 
 
-class PrintAndWait(ExampleBaseTask):
+class PrintAndWait(ExampleBaseMission):
     @classmethod
     def init(cls):
         print('PrintAndWait init')

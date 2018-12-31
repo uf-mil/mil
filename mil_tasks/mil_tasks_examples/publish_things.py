@@ -1,11 +1,11 @@
 from twisted.internet import defer
 from txros import util
-from base_task import ExampleBaseTask
+from base_mission import ExampleBaseMission
 from std_msgs.msg import String
 import genpy
 
 
-class PublishThings(ExampleBaseTask):
+class PublishThings(ExampleBaseMission):
     publish_time = 5.0
     publish_frequency = 10
 
