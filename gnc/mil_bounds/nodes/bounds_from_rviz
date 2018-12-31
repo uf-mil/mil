@@ -19,7 +19,7 @@ class BoundsFromRVIZ(BoundsClient):
 
     def _cb(self, msg):
         if self.ignore_stamp:
-            msg.header.stamp = rospy.Time.now()
+            msg.header.stamp = rospy.Time()
         if self.frame is not None and msg.header.frame_id != self.frame:
             try:
                 msg = self.tf_buffer.transform(msg, self.frame, timeout=rospy.Duration(10, 0))
