@@ -1,6 +1,6 @@
 #include "camera_lidar_transformer.hpp"
 
-//ros::Duration CameraLidarTransformer::MAX_TIME_ERR = ros::Duration(0, 6E7);
+// ros::Duration CameraLidarTransformer::MAX_TIME_ERR = ros::Duration(0, 6E7);
 ros::Duration CameraLidarTransformer::MAX_TIME_ERR = ros::Duration(5);
 CameraLidarTransformer::CameraLidarTransformer()
   : nh(ros::this_node::getName())
