@@ -1,5 +1,5 @@
 <launch>
-    <node pkg="mil_missions" type="mission_runner" name="mission_runner">
+    <node pkg="mil_missions" type="mission_server" name="mission_runner">
         <param name="missions_module" value="mil_missions_examples" />
         <param name="base_mission" value="ExampleBaseMission" />
     </node>
