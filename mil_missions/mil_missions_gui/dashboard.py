@@ -279,13 +279,7 @@ class Dashboard(Plugin):
             selected_index = self.chained_missions_table.selectedIndexes()[0].row()
             self.chained_missions_table.removeRow(selected_index)
 
-    def run_chained_cb(self, event):
-        '''
-        When the run chained button is pressed, parse the table contents as the parameters
-        to the ChainedWithTimeouts mission and send this goal to the missions server.
-
-        TODO: deal with possibility of table being changed in this loop, perhaps by freezing it
-        '''
+    def get_chained_missions(self):
         missions = []
         for i in range(self.chained_missions_table.rowCount()):
             mission = self.chained_missions_table.cellWidget(i, 0).text()
@@ -293,6 +287,38 @@ class Dashboard(Plugin):
             timeout = self.chained_missions_table.cellWidget(i, 2).value()
             parameters = self.chained_missions_table.cellWidget(i, 3).text()
             missions.append({'mission': mission, 'timeout': timeout, 'required': required, 'parameters': parameters})
+        return missions
+
+    def load_chained_missions(self, list_of_missions):
+        for i in reversed(range(self.chained_missions_table.rowCount())):
+            self.chained_missions_table.removeRow(i)
+        for idx, m in enumerate(list_of_missions):
+            mission = m['mission']
+            timeout = m['timeout']
+            required = m['required']
+            parameters = m['parameters']
+            mission = QtWidgets.QLabel(m['mission'])
+            required = CenteredCheckBox()
+            required.setChecked(m['required'])  # Start with default required
+            timeout = QtWidgets.QDoubleSpinBox()
+            timeout.setValue(m['timeout'])
+            timeout.setMaximum(10000)
+            timeout.setSuffix('s')
+            parameters = QtWidgets.QLineEdit(m['parameters'])
+            self.chained_missions_table.insertRow(idx)
+            self.chained_missions_table.setCellWidget(idx, 0, mission)
+            self.chained_missions_table.setCellWidget(idx, 1, required)
+            self.chained_missions_table.setCellWidget(idx, 2, timeout)
+            self.chained_missions_table.setCellWidget(idx, 3, parameters)
+
+    def run_chained_cb(self, event):
+        '''
+        When the run chained button is pressed, parse the table contents as the parameters
+        to the ChainedWithTimeouts mission and send this goal to the missions server.
+
+        TODO: deal with possibility of table being changed in this loop, perhaps by freezing it
+        '''
+        missions = self.get_chained_missions()
         goal_parameters = json.dumps({'missions': missions})
         goal = DoMissionGoal(mission='ChainWithTimeout', parameters=goal_parameters)
         self.mission_runner_client.send_goal(goal)
@@ -328,10 +354,39 @@ class Dashboard(Plugin):
         if auto:  # Autoscroll to bottom if you were already there
             self.feedback_list.scrollToBottom()
 
+    def load_file(self, event):
+        name = QtWidgets.QFileDialog.getOpenFileName(self._widget, 'Open File')[0]
+        try:
+            f = open(name, 'r')
+        except IOError as e:
+            rospy.logwarn('Error loading configuration from file: {}'.format(e))
+            return
+        with f:
+            missions = json.load(f)
+            self.load_chained_missions(missions)
+
+    def save_file(self, event):
+        name = QtWidgets.QFileDialog.getSaveFileName(self._widget, 'Save File')[0]
+        try:
+            f = open(name, 'w')
+        except IOError as e:
+            rospy.logwarn('Error saving configuration to file: {}'.format(e))
+            return
+        with f:
+            missions = self.get_chained_missions()
+            json.dump(missions, f)
+
     def connect_ui(self):
         '''
         Stores various interactive widgets as member variabes so we can get and set their contents.
         '''
+        self.save_button = self._widget.findChild(QtWidgets.QToolButton, 'save_button')
+        self.load_button = self._widget.findChild(QtWidgets.QToolButton, 'load_button')
+        self.save_button.setIcon(self._widget.style().standardIcon(QtWidgets.QStyle.SP_DialogSaveButton))
+        self.load_button.setIcon(self._widget.style().standardIcon(QtWidgets.QStyle.SP_DialogOpenButton))
+        self.save_button.clicked.connect(self.save_file)
+        self.load_button.clicked.connect(self.load_file)
+
         self.chained_missions_table = self._widget.findChild(QtWidgets.QFrame, 'chained_missions_table')
         self.chained_missions_table.setDragDropMode(QtWidgets.QAbstractItemView.DragDrop)
         self.chained_missions_table.dropEvent = self.chained_missions_drop_cb
