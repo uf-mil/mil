@@ -215,6 +215,7 @@ class Dashboard(Plugin):
             self.ui_log('ERROR: /available_missions param not set. Perhaps mission runner is not running?')
             return
         self.missions = rospy.get_param('/available_missions')
+        self.missions = sorted(self.missions)  # Ensure missions appear in lexographic order
         self.available_missions_list.clear()
         for i in reversed(range(self.chained_missions_table.rowCount())):
             self.chained_missions_table.removeRow(i)
