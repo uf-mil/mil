@@ -6,7 +6,7 @@ from txros import action, util, tf, serviceclient
 import rospkg
 
 from mil_msgs.msg import MoveToAction, PoseTwistStamped, RangeStamped
-from sub8 import pose_editor
+import pose_editor
 import mil_ros_tools
 from sub8_msgs.srv import VisionRequest, VisionRequestRequest, VisionRequest2DRequest, VisionRequest2D
 from mil_msgs.srv import SetGeometry, SetGeometryRequest
@@ -17,6 +17,7 @@ from nav_msgs.msg import Odometry
 from tf.transformations import quaternion_multiply, quaternion_from_euler
 from sensor_msgs.msg import PointCloud2
 import sensor_msgs.point_cloud2 as pc2
+from mil_missions_core import BaseMission
 
 import numpy as np
 from twisted.internet import defer
@@ -119,7 +120,7 @@ class _VisionProxies(object):
     def __init__(self, nh, file_name):
         rospack = rospkg.RosPack()
         config_file = os.path.join(
-            rospack.get_path('sub8_missions'), 'sub8', file_name)
+            rospack.get_path('sub8_missions'), 'sub8_missions', file_name)
         f = yaml.load(open(config_file, 'r'))
 
         self.proxies = {}
@@ -224,32 +225,28 @@ class _ActuatorProxy(object):
         return self.set('dropper', True)
 
 
-class _Sub(object):
+class SubjuGator(BaseMission):
+    def __init__(self, **kwargs):
+        super(SubjuGator, self).__init__(**kwargs)
 
-    def __init__(self, node_handle):
-        self.nh = node_handle
-        self.test_mode = False
-
+    @classmethod
     @util.cancellableInlineCallbacks
-    def _init(self):
-        self._moveto_action_client = yield action.ActionClient(
-            self.nh, 'moveto', MoveToAction)
-        self._odom_sub = yield self.nh.subscribe('odom', Odometry)
-        self._trajectory_sub = yield self.nh.subscribe('trajectory',
+    def _init(cls, mission_server):
+        super(SubjuGator, cls)._init(mission_server)
+        cls._moveto_action_client = yield action.ActionClient(
+            cls.nh, 'moveto', MoveToAction)
+        cls._odom_sub = yield cls.nh.subscribe('odom', Odometry)
+        cls._trajectory_sub = yield cls.nh.subscribe('trajectory',
                                                        PoseTwistStamped)
-        self._trajectory_pub = yield self.nh.advertise('trajectory',
+        cls._trajectory_pub = yield cls.nh.advertise('trajectory',
                                                        PoseTwistStamped)
-        self._dvl_range_sub = yield self.nh.subscribe('dvl/range',
+        cls._dvl_range_sub = yield cls.nh.subscribe('dvl/range',
                                                       RangeStamped)
-        self._tf_listener = yield tf.TransformListener(self.nh)
+        cls._tf_listener = yield tf.TransformListener(cls.nh)
 
-        self.vision_proxies = _VisionProxies(self.nh, 'vision_proxies.yaml')
-        self.actuators = _ActuatorProxy(self.nh)
-
-        defer.returnValue(self)
-
-    def set_test_mode(self):
-        self.test_mode = True
+        cls.vision_proxies = _VisionProxies(cls.nh, 'vision_proxies.yaml')
+        cls.actuators = _ActuatorProxy(cls.nh)
+        cls.test_mode = False
 
     @property
     def pose(self):
@@ -683,16 +680,3 @@ class SonarPointcloud(object):
             yield self._cat_newcloud()
 
             yield self.sub.nh.sleep(2)
-
-
-_subs = {}
-
-
-@util.cancellableInlineCallbacks
-def get_sub(node_handle, need_trajectory=True):
-    if node_handle not in _subs:
-        _subs[
-            node_handle] = None  # placeholder to prevent this from happening reentrantly
-        _subs[node_handle] = yield _Sub(node_handle)._init()
-        # XXX remove on nodehandle shutdown
-    defer.returnValue(_subs[node_handle])
