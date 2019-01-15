@@ -5,8 +5,6 @@ import rospy
 import rospkg
 import datetime
 import numpy as np
-import os
-import multiprocessing
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
