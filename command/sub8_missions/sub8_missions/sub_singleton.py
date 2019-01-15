@@ -237,11 +237,11 @@ class SubjuGator(BaseMission):
             cls.nh, 'moveto', MoveToAction)
         cls._odom_sub = yield cls.nh.subscribe('odom', Odometry)
         cls._trajectory_sub = yield cls.nh.subscribe('trajectory',
-                                                       PoseTwistStamped)
+                                                     PoseTwistStamped)
         cls._trajectory_pub = yield cls.nh.advertise('trajectory',
-                                                       PoseTwistStamped)
+                                                     PoseTwistStamped)
         cls._dvl_range_sub = yield cls.nh.subscribe('dvl/range',
-                                                      RangeStamped)
+                                                    RangeStamped)
         cls._tf_listener = yield tf.TransformListener(cls.nh)
 
         cls.vision_proxies = _VisionProxies(cls.nh, 'vision_proxies.yaml')

@@ -4,6 +4,7 @@ from txros import util
 SIDE_LENGTH = 1  # meters
 SPEED_LIMIT = .2  # m/s
 
+
 class Square(SubjuGator):
     @util.cancellableInlineCallbacks
     def run(self):
