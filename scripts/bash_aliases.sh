@@ -24,8 +24,10 @@ alias subfps="rostopic hz $bag_front_cams $bag_down_cam"
 # Visualization
 alias subrviz="rviz -d \$CATKIN_DIR/src/SubjuGator/sub.rviz"
 
-# Formatting (update with Jenkinsfile)
-alias subfmt="python2.7 -m flake8 --ignore E731 --max-line-length=120 --exclude=__init__.py \$CATKIN_DIR/src/SubjuGator"
+# Development
+alias subfmt="python2.7 -m flake8 --ignore E731 --max-line-length=120 \$(rosrun mil_tools list_python_files \$CATKIN_DIR/src/SubjuGator __init__.py deprecated/)"
+alias subtest="(cd \$CATKIN_DIR; rosrun mil_tools catkin_tests_directory.py src/SubjuGator)"
+
 
 # Set robot model param, for using rviz when playing bags
 alias submodel="rosparam set /robot_description -t \$CATKIN_DIR/src/SubjuGator/command/sub8_missions/tools/sub8/sub8.xml"
