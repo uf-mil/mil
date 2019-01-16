@@ -16,6 +16,7 @@
   <depend>gazebo_ros</depend>
   <depend>geometry_msgs</depend>
   <depend>message_generation</depend>
+  <depend>xacro</depend>
   <build_export_depend>message_runtime</build_export_depend>
   <exec_depend>message_runtime</exec_depend>
 

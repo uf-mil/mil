@@ -12,6 +12,7 @@ find_package(catkin
     gazebo_ros
     roscpp
     message_generation
+    xacro
 )
 
 catkin_python_setup()
@@ -107,4 +108,11 @@ catkin_package(
     LIBRARIES sub8_buoyancy sub8_thrusters sub8_state_set sub8_liftdrag
     CATKIN_DEPENDS gazebo_ros roscpp rospy std_msgs message_runtime
     DEPENDS
+)
+
+# Generate Sub8's URDF
+xacro_add_files(
+  urdf/sub8.urdf.xacro
+  INORDER INSTALL DESTINATION urdf
+  TARGET xacro_urdf
 )

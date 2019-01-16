@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<robot name="sub8" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(find mil_gazebo)/xacro/fixed_link.xacro" />
+  <xacro:include filename="$(find mil_gazebo)/xacro/camera.xacro" />
+
+  <link name="base_link">
+    <visual name="visual">
+      <geometry>
+        <mesh filename="package://sub8_missions/tools/sub8/sub_redux.dae"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <xacro:mil_fixed_link name="front_stereo" parent="base_link"
+                        xyz="0.2559 0 0.1707" rpy="0 0 0" />
+  <xacro:mil_camera name="front_left_cam" parent="front_stereo"
+                    namespace="/camera/front/left"
+                    xyz="0 0.0445 0"
+                    rpy="0 0 0" />
+  <xacro:mil_camera name="front_right_cam" parent="front_stereo"
+                    namespace="/camera/front/right"
+                    xyz="0 -0.0445 0"
+                    rpy="0 0 0" />
+  <xacro:mil_camera name="down_left_cam" parent="base_link"
+                    namespace="/camera/down"
+                    xyz="0.054 0.105 -0.256"
+                    rpy="0 1.57 1.57" />
+  <xacro:mil_fixed_link name="dvl" parent="base_link"
+                        xyz="0.0908 0 -0.2459" rpy="0 0 0.785" />
+  <xacro:mil_fixed_link name="depth" parent="base_link"
+                        xyz="-0.235 0 -0.170" rpy="0 0 0" />
+  <xacro:mil_fixed_link name="imu" parent="base_link"
+                        xyz="0.21236 0.00254 -0.10233" rpy="0 -1.571 0" />
+  <xacro:mil_fixed_link name="blueview" parent="base_link"
+                        xyz="0.333 0 0.381" rpy="3.142 0 0" />
+  <xacro:mil_fixed_link name="hydrophones" parent="base_link"
+                        xyz="-0.0908 0 -0.2459" rpy="0 0 1.571" />
+</robot>
