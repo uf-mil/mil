@@ -97,7 +97,8 @@ def test():
     error = calculate_error(compensated)
 
     assert numpy.allclose(scale2, scale), "Magnetic Hardsoft Compenstion self-test failed"
-    assert numpy.allclose(shift2, shift), "Magnetic Hardsoft Compenstion self-test failed, shifts: {}".format((shift2, shift))
+    assert numpy.allclose(shift2, shift), \
+        "Magnetic Hardsoft Compenstion self-test failed, shifts: {}".format((shift2, shift))
     assert error < 1e-5, "Magnetic Hardsoft Compenstion self-test failed, error: {}".format(error)
 
 

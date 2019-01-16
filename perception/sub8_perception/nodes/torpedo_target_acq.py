@@ -15,9 +15,8 @@ from image_geometry import PinholeCameraModel
 from std_srvs.srv import SetBool, SetBoolResponse
 from geometry_msgs.msg import PoseStamped, Pose, Point
 from sub8_msgs.srv import VisionRequest, VisionRequestResponse
-
 from mil_ros_tools import Image_Subscriber, Image_Publisher
-from cv_bridge import CvBridge, CvBridgeError
+from cv_bridge import CvBridge
 
 '''
 Perception component of the Torpedo Board Challenge. Utilizes code from

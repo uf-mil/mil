@@ -46,20 +46,24 @@ class Node(object):
         self.kill_listener = AlarmListener("kill")
 
         self.reconfigure(controllerConfig.defaults, 0)
-        self.server = DynamicReconfigureServer(controllerConfig, self.reconfigure)
+        self.server = DynamicReconfigureServer(
+            controllerConfig, self.reconfigure)
 
         self.controller = controller.Controller(self.processed_config)
 
         self.desired = None
-        rospy.Subscriber('/desired', PoseTwistStamped, lambda desired: setattr(self, 'desired', desired))
+        rospy.Subscriber('/desired', PoseTwistStamped,
+                         lambda desired: setattr(self, 'desired', desired))
 
         self.current = None
-        rospy.Subscriber('/current', Odometry, lambda current: setattr(self, 'current', current))
+        rospy.Subscriber('/current', Odometry,
+                         lambda current: setattr(self, 'current', current))
         # rospy.Subscriber('/odom', Odometry, lambda current: setattr(self, 'current', current))
 
         self.constant_wrench = None
         self.constant_wrench_time = None
-        rospy.Service('send_constant_wrench', SendConstantWrench, self.send_constant_wrench)
+        rospy.Service('send_constant_wrench', SendConstantWrench,
+                      self.send_constant_wrench)
 
         pub = rospy.Publisher('/output', WrenchStamped, queue_size=2)
         pd_pub = rospy.Publisher('/pd_output', WrenchStamped, queue_size=2)
@@ -75,13 +79,15 @@ class Node(object):
 
             if self.kill_listener.is_raised():
                 self.kill()
-                # Published zeroed wrench when killed so thruster feedback is still produced
+                # Published zeroed wrench when killed so thruster feedback is
+                # still produced
                 pub.publish(WrenchStamped(
                     header=Header(
-                      stamp=rospy.Time.now(),
-                      frame_id='/base_link'
+                        stamp=rospy.Time.now(),
+                        frame_id='/base_link'
                     ),
-                    wrench=Wrench(force=Vector3(0, 0, 0), torque=Vector3(0, 0, 0))
+                    wrench=Wrench(force=Vector3(0, 0, 0),
+                                  torque=Vector3(0, 0, 0))
                 ))
                 continue
 
@@ -109,10 +115,12 @@ class Node(object):
                 pd_wrench, wrench = self.controller.update(
                     dt,
                     (
-                        pose_to_numpy(self.desired.posetwist.pose), twist_to_numpy(self.desired.posetwist.twist),
+                        pose_to_numpy(self.desired.posetwist.pose), twist_to_numpy(
+                            self.desired.posetwist.twist),
                         twist_to_numpy(self.desired.posetwist.acceleration)
                     ),
-                    (pose_to_numpy(self.current.pose.pose), twist_to_numpy(self.current.twist.twist)),
+                    (pose_to_numpy(self.current.pose.pose),
+                     twist_to_numpy(self.current.twist.twist)),
                 )
 
                 pd_pub.publish(WrenchStamped(
@@ -120,9 +128,11 @@ class Node(object):
                         stamp=rospy.Time.now(),
                         frame_id='/base_link',
                     ),
-                    wrench=Wrench(force=Vector3(*pd_wrench[0]), torque=Vector3(*pd_wrench[1])),
+                    wrench=Wrench(force=Vector3(
+                        *pd_wrench[0]), torque=Vector3(*pd_wrench[1])),
                 ))
-                wrench = Wrench(force=Vector3(*wrench[0]), torque=Vector3(*wrench[1]))
+                wrench = Wrench(force=Vector3(
+                    *wrench[0]), torque=Vector3(*wrench[1]))
             else:
                 wrench = self.constant_wrench.wrench
 
