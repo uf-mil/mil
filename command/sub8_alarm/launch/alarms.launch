@@ -12,7 +12,7 @@
     <!-- List known alarms here -->
     <rosparam ns="known_alarms">
         kill, thruster-out, bus-voltage, height-over-bottom, network-loss, mission-kill, odom-kill,
-        actuator-board-disconnect, actuator-board-packet-error
+        actuator-board-disconnect, actuator-board-packet-error, pause-kill
     </rosparam>
 
     <!-- Alarm specific params -->

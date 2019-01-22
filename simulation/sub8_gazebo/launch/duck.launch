@@ -10,9 +10,6 @@
   <!-- Enable Physics if desired in Gazebo Controller -->
   <param name="physics_flag" value="$(arg physics)" />
 
-  <!-- Load model for rviz to use -->
-  <param name="robot_description" command="cat $(find sub8_missions)/tools/sub8/sub8.xml" />
-
   <!-- start gazebo server-->
   <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false"
     args="$(find sub8_gazebo)/worlds/a_whole_new.world" />
@@ -191,34 +188,4 @@
   <!--node pkg="sub8_gazebo" type="actuator_sim.py" name="actuator_sim" /> -->
   <!-- <node pkg="sub8_gazebo" type="buoys.py" name="buoy_contact_reporter" /> -->
   <node pkg="sub8_gazebo" type="turbulator.py" name="turbulator" output="screen" if="$(arg turbulence)" />
-
-  <include file="$(find sub8_alarm)/launch/alarms.launch" />
-
-  <include file="$(find sub8_launch)/launch/subsystems/rise.launch" />
-  <group if="$(arg thrusters)">
-    <include file="$(find sub8_launch)/launch/subsystems/thrusters.launch" />
-  </group>
-
-  <include file="$(find sub8_launch)/launch/tf.launch" />
-  <node pkg="nodelet" type="nodelet" args="standalone odometry_utils/odometry_to_tf" name="odometry_to_tf"/>
-  <node pkg="nodelet" type="nodelet" name="transform_odometry" args="standalone odometry_utils/transform_odometry">
-    <rosparam>
-      frame_id: /map
-      child_frame_id: /base_link
-    </rosparam>
-    <remap from="orig_odom" to="model_odom"/>
-  </node>
-
-  <group ns="/camera" if="$(arg cameras)">
-    <group ns="front">
-      <node pkg="image_proc" type="image_proc" name="front_left_image_proc" ns="left" />
-      <node pkg="image_proc" type="image_proc" name="front_right_image_proc" ns="right" />
-    </group>
-    <group ns="down">
-      <node pkg="image_proc" type="image_proc" name="down_left_image_proc" ns="left" />
-    </group>
-  </group>
-
-  <!-- Load model into rviz -->
-  <param name="robot_description" command="cat $(find sub8_missions)/tools/sub8/sub8.xml" />
 </launch>
