@@ -3,7 +3,7 @@ from __future__ import division
 import numpy
 
 from tf import transformations
-from sub8.pose_editor import quat_to_rotvec
+from mil_ros_tools.geometry_helpers import quat_to_rotvec
 
 numpy.set_printoptions(suppress=True, linewidth=130)
 
