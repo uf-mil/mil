@@ -12,7 +12,13 @@ class ThrusterOut(HandlerBase):
                                    node_name='alarm_server',
                                    parameters={'offline_thruster_names': []})
 
-        self.update_layout = rospy.ServiceProxy('update_thruster_layout', UpdateThrusterLayout)
+        self._update_layout_proxy = rospy.ServiceProxy('update_thruster_layout', UpdateThrusterLayout)
+
+    def update_layout(self, *args, **kwargs):
+        try:
+            self._update_layout_proxy(*args, **kwargs)
+        except rospy.ServiceException as e:
+            rospy.logwarn('Error updating thruster layout: {}'.format(e))
 
     def raised(self, alarm):
         self.update_layout(alarm.parameters['offline_thruster_names'])
