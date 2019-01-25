@@ -1,4 +1,0 @@
-string actuator     # Name of actuator. MUST be defined in valves.yaml first.
-bool opened         # True to open that valve, False to close.
----
-bool success        # False if there were any problems with the request.
