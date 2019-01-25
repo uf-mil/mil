@@ -29,7 +29,8 @@ class Sub(object):
         # Store mass in (KG) from ROS params
         self.mass = rospy.get_param('~mass', 56.)
         # Store drag coefficents from ROS param
-        self.drag_coeffs = np.array(rospy.get_param('~drag_coefficients', [50., 50., 50., 50., 50., 50.]))
+        self.drag_coeffs = np.array(rospy.get_param('~drag_coefficients', [50., 50., 50., 50., 50., 50.]),
+                                    dtype=float)
 
         x_len = 1.83
         y_len = 0.91

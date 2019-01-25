@@ -9,7 +9,7 @@
       # TODO: verify these
       # Sub ways 56 kilograms
       mass: 56
-      drag_coefficients: [50, 50, 50, 50, 50, 50]
+      drag_coefficients: [50, 50, 50, 5, 5, 5]
     </rosparam>
   </node>
 </launch>
