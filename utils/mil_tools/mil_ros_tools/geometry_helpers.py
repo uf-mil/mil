@@ -141,6 +141,7 @@ def quat_to_rotvec(q):
     q = trans.unit_vector(q)
     angle = np.arccos(q[3]) * 2
     norm = np.linalg.norm(q)
+    axis = q[0:3] / norm
     return axis * angle
 
 
