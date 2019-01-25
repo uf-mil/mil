@@ -129,6 +129,21 @@ def quat_to_euler(q):
     return final
 
 
+def quat_to_rotvec(q):
+    '''
+    Convert a quaternion to a rotation vector
+    '''
+    # For unit quaternion, return 0 0 0
+    if np.all(np.isclose(q[0:3], 0)):
+        return np.array([0., 0., 0.])
+    if q[3] < 0:
+        q = -q
+    q = trans.unit_vector(q)
+    angle = np.arccos(q[3]) * 2
+    norm = np.linalg.norm(q)
+    return axis * angle
+
+
 def euler_to_quat(rotvec):
     ''' convert a euler rotation vector into a ROS quaternion '''
 
