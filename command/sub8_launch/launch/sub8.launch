@@ -19,4 +19,5 @@
   <include file="$(find sub8_launch)/launch/subsystems/rise.launch"/>
   <include file="$(find sub8_launch)/launch/subsystems/online_bagger.launch"/>
   <include file="$(find sub8_alarm)/launch/alarms.launch" />
+  <include file="$(find sub8_launch)/launch/mission_server.launch" />
 </launch>
