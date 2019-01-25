@@ -1,0 +1,167 @@
+#!/usr/bin/env python
+import rospy
+import numpy as np
+from nav_msgs.msg import Odometry
+from geometry_msgs.msg import WrenchStamped
+from mil_ros_tools.msg_helpers import numpy_to_quaternion, numpy_to_point, numpy_to_twist, wrench_to_numpy
+from mil_ros_tools.geometry_helpers import quaternion_matrix
+import tf.transformations as trans
+
+
+def rectangular_prism_inertia(mass, x, y, z):
+    ret = np.empty((3, 3), dtype=float)
+    ret[0, 0] = (1 / 12.) * mass * (y * y + z * z)
+    ret[1, 1] = (1 / 12.) * mass * (x * x + z * z)
+    ret[2, 2] = (1 / 12.) * mass * (y * y + x * x)
+    return ret
+
+
+class Sub(object):
+    '''
+    A dynamics simulator for SubjuGator, modeling buoyancy, gravity, drag, and the user
+    inputed wrench to produce Odometry
+    '''
+    WATER_DENSITY = 997.
+    AIR_DENSITY = 1.225
+    G = 9.81
+
+    def __init__(self):
+        # Store mass in (KG) from ROS params
+        self.mass = rospy.get_param('~mass', 56.)
+        # Store drag coefficents from ROS param
+        self.drag_coeffs = np.array(rospy.get_param('~drag_coefficients', [50., 50., 50., 50., 50., 50.]))
+
+        x_len = 1.83
+        y_len = 0.91
+        z_len = 0.91
+        self.z_len = z_len
+
+        # Estimate volume such that Sub will be slightly positively buoyant
+        self.volume = (self.mass / self.WATER_DENSITY) * 1.01
+
+        # Form interia matrix for kinematic calculations
+        self.inertia = np.zeros((6, 6), dtype=float)
+        # Upper left 3x3 is the mass along diagonal
+        self.inertia[0:3, 0:3] = self.mass * np.eye(3)
+        # Lower right 3x3 (rotational inertia) is estimated with a rectangular prism
+        self.inertia[3:6, 3:6] = rectangular_prism_inertia(self.mass, x_len, y_len, z_len)
+        # Cache inverse of inertia for kinemetic calculations
+        self.inertia_inv = np.linalg.inv(self.inertia)
+
+        # Initialize pose, twist, and wrench
+        self.pose = np.zeros(7)
+        # Make initial orientation valid (quaternion 0 0 0 1)
+        self.pose[6] = 1.
+        self.twist = np.zeros(6)
+        self.wrench = np.zeros(6)
+
+        # Setup ROS pub/subs for odom an wrench
+        self.odom_pub = rospy.Publisher('odom', Odometry, queue_size=3)
+        self.wrench_sub = rospy.Subscriber('wrench', WrenchStamped, self.wrench_cb, queue_size=3)
+
+        # Setup timer to update model at 100hz
+        self.last_time = rospy.Time.now()
+        update_rate_hz = rospy.get_param('update_rate_hz', 50)
+        self.timer = rospy.Timer(rospy.Duration(1. / update_rate_hz), self.timer_cb)
+
+    def wrench_cb(self, msg):
+        '''
+        Set the wrench from the message
+        '''
+        wrench = np.empty(6, dtype=float)
+        wrench[0:3], wrench[3:] = wrench_to_numpy(msg.wrench)
+        self.set_wrench(wrench)
+
+    def set_wrench(self, wrench):
+        '''
+        Set the currently applied wrench from the thrusters from the 6x1 array (X, Y, Z, rot_x, rot_y, rot_z)
+        '''
+        self.wrench = wrench
+
+    def timer_cb(self, event):
+        '''
+        When timer triggers, update model with time delta
+        '''
+        now = rospy.Time.now()
+        dt = (now - self.last_time).to_sec()
+        self.update(dt)
+        self.last_time = now
+
+    def update(self, dt):
+        '''
+        Update the simulation forward by the specified time delta.
+        A new odometry will be published after the model is updated.
+        '''
+        # Calcuate rotation from body to global and global to body for later calculations
+        R = quaternion_matrix(self.pose[3:])
+        R_inv = np.linalg.inv(R)
+
+        # Calculate effect of gravity
+        gravity = - self.G * self.mass
+        # Estimate proportion of Sub's volume which is above the water (for buoyancy calculation)
+        height_above_water = min(self.z_len, max(0., 0.5 * self.z_len + self.pose[2]))
+        if height_above_water == 0.:
+            proportion_above_water = 0.
+        else:
+            proportion_above_water = height_above_water / self.z_len
+        # Calculate the portion of buoyancy force above the water
+        # https://en.wikipedia.org/wiki/Archimedes%27_principle
+        buoyancy_above_water = (self.AIR_DENSITY * self.G * self.volume) * proportion_above_water
+        # Calculate the portion of the buoyancy force below the water
+        buoyancy_below_water = (self.WATER_DENSITY * self.G * self.volume) * (1. - proportion_above_water)
+
+        # Combine buoyancy and gravity into a single force vector
+        grav_buoyancy = np.zeros(6)
+        grav_buoyancy[2] = buoyancy_above_water + buoyancy_below_water + gravity
+        # Rotate it into the body frame to be used in total force calculation
+        grav_buoyancy[:3] = R_inv.dot(grav_buoyancy[:3])
+
+        # Calculate effect of drag by multiplying the current twist by the coefficients
+        drag = -(self.drag_coeffs * self.twist)
+
+        # Calculate the total forced in the body frame by summing the forces
+        total_wrench = self.wrench + drag + grav_buoyancy
+
+        # Perform Newton-Euler equation to determine acceleration
+        # https://en.wikipedia.org/wiki/Newton%E2%80%93Euler_equations#Center_of_mass_frame
+        extra_term = np.zeros(6)
+        extra_term[3:6] = np.cross(self.twist[3:6], self.inertia[3:6, 3:6].dot(self.twist[3:6]))
+        accel = self.inertia_inv.dot(total_wrench - extra_term)
+
+        # Increment velocity by current acceleration by the time delta
+        self.twist += accel * dt
+
+        # Rotate twist to global frame so pose can be computed
+        twist_linear_world = R.dot(self.twist[0:3])
+        twist_angular_world = R.dot(self.twist[3:])
+
+        # Update orientation if it has changed enough for the math to be stable
+        norm = np.linalg.norm(twist_angular_world)
+        if not np.isclose(norm, 0.):
+            quat_diff = trans.quaternion_about_axis(norm * dt, twist_angular_world / norm)
+            self.pose[3:] = trans.quaternion_multiply(self.pose[3:], quat_diff)
+
+        # Update position
+        self.pose[0:3] += twist_linear_world * dt
+
+        # Publish odometry after this update
+        self.publish_odom()
+
+    def publish_odom(self):
+        '''
+        Publish the current pose/twist to ROS as odometry
+        '''
+        odom = Odometry()
+        odom.pose.pose.position = numpy_to_point(self.pose[0:3])
+        odom.pose.pose.orientation = numpy_to_quaternion(self.pose[3:])
+        odom.twist.twist = numpy_to_twist(self.twist[0:3], self.twist[3:])
+        odom.header.stamp = rospy.Time.now()
+        odom.header.frame_id = '/map'
+        odom.child_frame_id = 'base_link'
+        self.odom_pub.publish(odom)
+
+
+if __name__ == '__main__':
+    rospy.init_node('subsim')
+    s = Sub()
+    rospy.spin()

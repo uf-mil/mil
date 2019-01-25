@@ -46,7 +46,7 @@ class GazeboInterface(object):
 
         self.reset_srv = rospy.Service(
             'gazebo/reset_gazebo', ResetGazebo, self.reset)
-        self.state_pub = rospy.Publisher('model_odom', Odometry, queue_size=1)
+        self.state_pub = rospy.Publisher('odom', Odometry, queue_size=1)
         self.world_state_pub = rospy.Publisher(
             'world_odom', Odometry, queue_size=1)
 

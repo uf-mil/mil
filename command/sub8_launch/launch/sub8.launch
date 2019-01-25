@@ -1,30 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <launch>
+  <!-- Defines what environment the system is running on, can be 'real', 'gazebo' or 'dynsim' -->
+  <arg name="environment" default="real" />
   <rosparam param="/autonomous">False</rosparam>
-  <rosparam param="mission_speed_limit">0.5</rosparam>
 
   <include file="$(find sub8_launch)/launch/tf.launch" />
 
-  <include file="$(find sub8_launch)/launch/subsystems/nav_box.launch" >
+  <include if="$(eval environment == 'real')" file="$(find sub8_launch)/launch/subsystems/nav_box.launch" >
     <arg name="imu" value="true" />
     <arg name="dvl" value="true" />
     <arg name="depth" value="true" />
   </include>
 
-  <!--include file="$(find sub8_launch)/launch/subsystems/perception.launch"/-->
-  <include file="$(find sub8_launch)/launch/subsystems/cameras.launch"/>
-  <include file="$(find sub8_launch)/launch/subsystems/odometry.launch"/>
-  <include file="$(find sub8_launch)/launch/subsystems/thrusters.launch"/>
+  <include if="$(eval environment == 'real')" file="$(find sub8_launch)/launch/subsystems/cameras.launch"/>
+  <include if="$(eval environment == 'real')" file="$(find sub8_launch)/launch/subsystems/odometry.launch"/>
+  <include if="$(eval environment == 'real')" file="$(find sub8_launch)/launch/subsystems/thrusters.launch"/>
+  <include file="$(find sub8_launch)/launch/subsystems/thruster_mapper.launch"/>
   <include file="$(find sub8_launch)/launch/subsystems/rise.launch"/>
   <include file="$(find sub8_launch)/launch/subsystems/online_bagger.launch"/>
   <include file="$(find sub8_alarm)/launch/alarms.launch" />
-  <include file="$(find sub8_alarm)/launch/blueview.launch" />
-
-  <!-- Run guess server -->
-  <node pkg="sub8_perception" type="guess_server.py" command="load">
-
-  <!-- 
-  <include file="$(find sub8_launch)/launch/subsystems/legacy_sonar.launch"/>
-  <include file="$(find sub8_launch)/launch/subsystems/sonar.launch"/> 
-  -->
-
 </launch>
