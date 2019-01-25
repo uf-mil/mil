@@ -5,6 +5,24 @@
   <description>The sub8_launch package</description>
   <maintainer email="jpanikulam@ufl.edu">Jacob Panikulam</maintainer>
   <license>MIT</license>
+  <build_depend>roslaunch</build_depend>
+  <run_depend>roslaunch</run_depend>
+  <run_depend>robot_state_publisher</run_depend>
+  <run_depend>nodelet</run_depend>
+  <run_depend>c3_trajectory_generator</run_depend>
+  <run_depend>rise_6dof</run_depend>
+  <run_depend>sub8_thruster_mapper</run_depend>
+  <run_depend>mil_missions</run_depend>
+  <run_depend>mil_tools</run_depend>
+  <run_depend>sub8_alarm</run_depend>
+  <run_depend>sub8_simulation</run_depend>
+  <run_depend>sub8_missions</run_depend>
+  <run_depend>sub8_gazebo</run_depend>
+  <run_depend>spacenav_node</run_depend>
+  <run_depend>sub8_videoray_m5_thruster</run_depend>
+  <run_depend>sub8_diagnostics</run_depend>
+  <run_depend>image_proc</run_depend>
+  <run_depend>usb_cam</run_depend>
   <buildtool_depend>catkin</buildtool_depend>
   <export>
   </export>
