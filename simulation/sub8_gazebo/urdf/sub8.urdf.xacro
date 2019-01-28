@@ -4,6 +4,12 @@
   <xacro:include filename="$(find mil_gazebo)/xacro/camera.xacro" />
 
   <link name="base_link">
+    <inertial>
+      <!-- Mass from official weigh-in at RobotSub 2018 -->
+      <mass value="47.6" />
+      <!-- Imported from old SDF model of Sub, unclear how these values were determined -->
+      <inertia ixx="1.18" ixy="-0.003" ixz="0.04" iyy="1.431" iyz="-0.034" izz="1.262"/>
+    </inertial>
     <visual name="visual">
       <geometry>
         <mesh filename="package://sub8_missions/tools/sub8/sub_redux.dae"/>
