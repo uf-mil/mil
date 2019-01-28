@@ -28,7 +28,9 @@ class PauseKill(HandlerBase):
             '''
             file_open = open(self.gpio_file, 'r')
         except IOError as e:
-            rospy.logwarn_throttle(60, 'Error connecting to kill plug ({}). Is Kill Plug GPIO enabled via sysfs?'.format(e))
+            rospy.logwarn_throttle(
+                60,
+                'Error connecting to kill plug ({}). Is Kill Plug GPIO enabled via sysfs?'.format(e))
             return
         res = file_open.read(1)
         file_open.close()
