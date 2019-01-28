@@ -6,6 +6,7 @@ from geometry_msgs.msg import WrenchStamped
 from mil_ros_tools.msg_helpers import numpy_to_quaternion, numpy_to_point, numpy_to_twist, wrench_to_numpy
 from mil_ros_tools.geometry_helpers import quaternion_matrix
 import tf.transformations as trans
+from urdf_parser_py.urdf import URDF
 
 
 def rectangular_prism_inertia(mass, x, y, z):
@@ -26,29 +27,32 @@ class Sub(object):
     G = 9.81
 
     def __init__(self):
-        # Store mass in (KG) from ROS params
-        self.mass = rospy.get_param('~mass', 56.)
-        # Store drag coefficents from ROS param
-        self.drag_coeffs = np.array(rospy.get_param('~drag_coefficients', [50., 50., 50., 50., 50., 50.]),
-                                    dtype=float)
+        # Parse URDF of Sub for inertial information, etc
+        urdf_string = rospy.get_param('/robot_description')
+        urdf = URDF.from_xml_string(urdf_string)
 
-        x_len = 1.83
-        y_len = 0.91
-        z_len = 0.91
-        self.z_len = z_len
-
-        # Estimate volume such that Sub will be slightly positively buoyant
-        self.volume = (self.mass / self.WATER_DENSITY) * 1.01
-
+        # Get root link of model
+        root = urdf.link_map[urdf.get_root()]
+        # Store mass from root link
+        self.mass = root.inertial.mass
         # Form interia matrix for kinematic calculations
         self.inertia = np.zeros((6, 6), dtype=float)
         # Upper left 3x3 is the mass along diagonal
         self.inertia[0:3, 0:3] = self.mass * np.eye(3)
-        # Lower right 3x3 (rotational inertia) is estimated with a rectangular prism
-        self.inertia[3:6, 3:6] = rectangular_prism_inertia(self.mass, x_len, y_len, z_len)
+        # Lower right 3x3 (rotational inertia) is taken from URDF
+        self.inertia[3:6, 3:6] = np.array(root.inertial.inertia.to_matrix())
         # Cache inverse of inertia for kinemetic calculations
         self.inertia_inv = np.linalg.inv(self.inertia)
 
+        # Store drag coefficents from ROS param
+        self.drag_coeffs = np.array(rospy.get_param('~drag_coefficients', [50., 50., 50., 50., 50., 50.]),
+                                    dtype=float)
+
+        # Hardcoded height of the sub used for buoyancy
+        self.z_len = 0.59
+
+        # Estimate volume such that Sub will be slightly positively buoyant
+        self.volume = (self.mass / self.WATER_DENSITY) * 1.01
         # Initialize pose, twist, and wrench
         self.pose = np.zeros(7)
         # Make initial orientation valid (quaternion 0 0 0 1)

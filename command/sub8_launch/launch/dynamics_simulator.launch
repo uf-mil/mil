@@ -4,11 +4,8 @@
     <arg name="environment" value="dynsim" />
   </include>
 
-  <node pkg="sub8_simulation" type="dynamics_simulator" name="dynamics_simulator">  
+  <node pkg="sub8_simulation" type="dynamics_simulator" name="dynamics_simulator">
     <rosparam>
-      # TODO: verify these
-      # Sub ways 56 kilograms
-      mass: 56
       drag_coefficients: [50, 50, 50, 5, 5, 5]
     </rosparam>
   </node>
