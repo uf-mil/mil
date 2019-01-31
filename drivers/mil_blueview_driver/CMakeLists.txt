@@ -24,6 +24,7 @@ generate_messages(
 )
 
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/bvtsdk/")
+catkin_package()
 message(WARNING "bvtsdk not found. Please untar libbvtsdk.tar.gz and place in mil_blueview_driver to use driver")
 
 catkin_package(
