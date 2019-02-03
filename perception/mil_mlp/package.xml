@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mil_mlp</name>
+  <version>0.0.1</version>
+  <description>The mil_mlp package contains the Machine Learning Pipeline for the MIL. Inside is a data processing package and a docker image. The docker image is used for training new networks.</description>
+
+  <maintainer email="grymestone@ufl.edu">grymestone</maintainer>
+
+
+  <license>MIT</license>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <exec_depend>rospy</exec_depend>
+
+</package>
