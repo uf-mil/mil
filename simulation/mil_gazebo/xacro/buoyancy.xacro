@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro  name="mil_buoyancy"
+                params='volume'>
+    <plugin name="BuoyancyPlugin" filename="libmil_buoyancy_gazebo.so">
+      <fluid_density>1000</fluid_density>
+      <fluid_level>0.0</fluid_level>
+      <volume>${volume}</volume>
+    </plugin>
+  </xacro:macro>
+</robot>

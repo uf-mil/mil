@@ -28,6 +28,18 @@ target_link_libraries(mil_model_heading
 )
 add_dependencies(mil_model_heading ${catkin_EXPORTED_TARGETS})
 
+# Add buoyancy plugin
+add_library(
+    mil_buoyancy_gazebo
+        src/mil_buoyancy_gazebo.cpp
+)
+target_link_libraries(mil_buoyancy_gazebo
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+add_dependencies(mil_buoyancy_gazebo ${catkin_EXPORTED_TARGETS})
+
+
 # Add pcodar_gazebo library
 add_library(
     pcodar_gazebo
