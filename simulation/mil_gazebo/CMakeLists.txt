@@ -50,6 +50,17 @@ target_link_libraries(mil_dvl_gazebo
 )
 add_dependencies(mil_dvl_gazebo ${catkin_EXPORTED_TARGETS})
 
+# Add Magnetometer plugin
+add_library(
+    mil_magnetometer_gazebo
+        src/mil_magnetometer_gazebo.cpp
+)
+target_link_libraries(mil_magnetometer_gazebo
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+add_dependencies(mil_magnetometer_gazebo ${catkin_EXPORTED_TARGETS})
+
 
 # Add pcodar_gazebo library
 add_library(
