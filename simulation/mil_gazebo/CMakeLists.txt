@@ -61,6 +61,17 @@ target_link_libraries(mil_magnetometer_gazebo
 )
 add_dependencies(mil_magnetometer_gazebo ${catkin_EXPORTED_TARGETS})
 
+# Add Depth plugin
+add_library(
+    mil_depth_gazebo
+        src/mil_depth_gazebo.cpp
+)
+target_link_libraries(mil_depth_gazebo
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+add_dependencies(mil_depth_gazebo ${catkin_EXPORTED_TARGETS})
+
 
 # Add pcodar_gazebo library
 add_library(
