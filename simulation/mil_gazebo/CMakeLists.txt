@@ -39,6 +39,17 @@ target_link_libraries(mil_buoyancy_gazebo
 )
 add_dependencies(mil_buoyancy_gazebo ${catkin_EXPORTED_TARGETS})
 
+# Add DVL plugin
+add_library(
+    mil_dvl_gazebo
+        src/mil_dvl_gazebo.cpp
+)
+target_link_libraries(mil_dvl_gazebo
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+add_dependencies(mil_dvl_gazebo ${catkin_EXPORTED_TARGETS})
+
 
 # Add pcodar_gazebo library
 add_library(
