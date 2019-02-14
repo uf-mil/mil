@@ -72,6 +72,17 @@ target_link_libraries(mil_depth_gazebo
 )
 add_dependencies(mil_depth_gazebo ${catkin_EXPORTED_TARGETS})
 
+# Add Drag plugin
+add_library(
+    mil_drag_gazebo
+        src/mil_drag_gazebo.cpp
+)
+target_link_libraries(mil_drag_gazebo
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+add_dependencies(mil_drag_gazebo ${catkin_EXPORTED_TARGETS})
+
 
 # Add pcodar_gazebo library
 add_library(
