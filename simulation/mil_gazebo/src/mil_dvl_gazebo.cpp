@@ -67,7 +67,7 @@ void MilDVLGazebo::OnUpdate()
     vel_msg.header.stamp.sec = sensor_->LastUpdateTime().sec;
     vel_msg.header.stamp.nsec = sensor_->LastUpdateTime().nsec;
 
-    ignition::math::Vector3d vel = pose_.Rot() * parent_->GetRelativeLinearVel().Ign();
+    ignition::math::Vector3d vel = pose_.Rot().Inverse().RotateVector(parent_->GetRelativeLinearVel().Ign());
 
     double tilt = 30 * ignition::math::Angle::Pi.Radian() / 180;
     double x = sin(tilt);
