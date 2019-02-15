@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="mil_depth" params="name:=depth xyz:='0 0 0' rpy='0 0 0' rate:=100">
+  <xacro:macro name="mil_depth" params="name:=depth xyz:='0 0 0' rpy='0 0 0' rate:=20">
     <link name="${name}" />
     <joint name="${name}_joint" type="fixed">
       <origin xyz="${xyz}" rpy="${rpy}"/>
@@ -11,6 +11,7 @@
       <plugin filename="libmil_depth_gazebo.so" name="${name}_plugin">
         <frame_id>${name}</frame_id>
         <offset>${xyz} ${rpy}</offset>
+        <update_rate>${rate}</update_rate>
       </plugin>
     </gazebo>
   </xacro:macro>

@@ -30,7 +30,6 @@ private:
 
   gazebo::common::Time last_pub_time_;
 
-  // TODO: make update period configurable
   double update_period_ = 1. / 10.;
   ros::NodeHandle nh_;
   ros::Publisher depth_pub_;
