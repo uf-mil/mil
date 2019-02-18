@@ -1,4 +1,5 @@
 #include <mil_gazebo/mil_dvl_gazebo.hpp>
+#include <mil_gazebo/mil_gazebo_utils.hpp>
 
 namespace mil_gazebo
 {
@@ -54,8 +55,7 @@ void MilDVLGazebo::OnUpdate()
     double range = sensor_->Range(0);
     mil_msgs::RangeStamped range_msg;
     range_msg.header.frame_id = frame_name_;
-    range_msg.header.stamp.sec = sensor_->LastMeasurementTime().sec;
-    range_msg.header.stamp.nsec = sensor_->LastMeasurementTime().nsec;
+    Convert(sensor_->LastMeasurementTime(), range_msg.header.stamp);
     range_msg.range = range;
     range_pub_.publish(range_msg);
   }
@@ -64,8 +64,7 @@ void MilDVLGazebo::OnUpdate()
   {
     mil_msgs::VelocityMeasurements vel_msg;
     vel_msg.header.frame_id = frame_name_;
-    vel_msg.header.stamp.sec = sensor_->LastMeasurementTime().sec;
-    vel_msg.header.stamp.nsec = sensor_->LastMeasurementTime().nsec;
+    Convert(sensor_->LastMeasurementTime(), vel_msg.header.stamp);
 
     ignition::math::Vector3d vel = pose_.Rot().Inverse().RotateVector(parent_->GetRelativeLinearVel().Ign());
 
@@ -81,9 +80,7 @@ void MilDVLGazebo::OnUpdate()
     for (auto dir : directions)
     {
       mil_msgs::VelocityMeasurement measurement;
-      measurement.direction.x = dir.X();
-      measurement.direction.y = dir.Y();
-      measurement.direction.z = dir.Z();
+      Convert(dir, measurement.direction);
       measurement.velocity = vel.Dot(dir);
       measurement.correlation = ignition::math::NAN_D;
       vel_msg.velocity_measurements.push_back(measurement);

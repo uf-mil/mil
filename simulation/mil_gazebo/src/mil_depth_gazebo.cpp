@@ -1,4 +1,5 @@
 #include <mil_gazebo/mil_depth_gazebo.hpp>
+#include <mil_gazebo/mil_gazebo_utils.hpp>
 
 namespace mil_gazebo
 {
@@ -65,8 +66,7 @@ void MilDepthGazebo::OnUpdate(const gazebo::common::UpdateInfo& info)
 
   mil_msgs::DepthStamped msg;
   msg.header.frame_id = frame_name_;
-  msg.header.stamp.sec = time.sec;
-  msg.header.stamp.nsec = time.nsec;
+  Convert(time, msg.header.stamp);
   msg.depth = depth;
   depth_pub_.publish(msg);
 }

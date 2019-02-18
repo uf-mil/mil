@@ -58,8 +58,9 @@ add_library(
 target_link_libraries(mil_dvl_gazebo
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
+  mil_gazebo_utils
 )
-add_dependencies(mil_dvl_gazebo ${catkin_EXPORTED_TARGETS})
+add_dependencies(mil_dvl_gazebo mil_gazebo_utils ${catkin_EXPORTED_TARGETS})
 
 # Add Magnetometer plugin
 add_library(
@@ -69,8 +70,9 @@ add_library(
 target_link_libraries(mil_magnetometer_gazebo
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
+  mil_gazebo_utils
 )
-add_dependencies(mil_magnetometer_gazebo ${catkin_EXPORTED_TARGETS})
+add_dependencies(mil_magnetometer_gazebo mil_gazebo_utils ${catkin_EXPORTED_TARGETS})
 
 # Add Depth plugin
 add_library(
@@ -80,8 +82,9 @@ add_library(
 target_link_libraries(mil_depth_gazebo
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
+  mil_gazebo_utils
 )
-add_dependencies(mil_depth_gazebo ${catkin_EXPORTED_TARGETS})
+add_dependencies(mil_depth_gazebo mil_gazebo_utils ${catkin_EXPORTED_TARGETS})
 
 # Add IMU Plugin
 add_library(

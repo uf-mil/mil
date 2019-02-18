@@ -4,7 +4,7 @@
 namespace mil_gazebo
 {
 
-void Convert(ignition::math::Vector3d const&& _in, geometry_msgs::Vector3& _out)
+void Convert(ignition::math::Vector3d const& _in, geometry_msgs::Vector3& _out)
 {
   _out.x = _in.X();
   _out.y = _in.Y();
@@ -12,7 +12,7 @@ void Convert(ignition::math::Vector3d const&& _in, geometry_msgs::Vector3& _out)
 }
 
 
-void Convert(gazebo::common::Time const&& _in, ros::Time& _out)
+void Convert(gazebo::common::Time const& _in, ros::Time& _out)
 {
   _out.sec = _in.sec;
   _out.nsec = _in.nsec;

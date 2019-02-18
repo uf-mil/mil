@@ -1,4 +1,5 @@
 #include <mil_gazebo/mil_magnetometer_gazebo.hpp>
+#include <mil_gazebo/mil_gazebo_utils.hpp>
 
 namespace mil_gazebo
 {
@@ -39,14 +40,10 @@ void MilMagnetometerGazebo::OnUpdate()
 {
   if (mag_pub_.getNumSubscribers())
   {
-    auto field = sensor_->MagneticField();
     sensor_msgs::MagneticField msg;
-    msg.magnetic_field.x =  field.X();
-    msg.magnetic_field.y =  field.Y();
-    msg.magnetic_field.z =  field.Z();
+    Convert(sensor_->MagneticField(), msg.magnetic_field);
     msg.header.frame_id = frame_name_;
-    msg.header.stamp.sec = sensor_->LastMeasurementTime().sec;
-    msg.header.stamp.nsec = sensor_->LastMeasurementTime().nsec;
+    Convert(sensor_->LastMeasurementTime(), msg.header.stamp);
     mag_pub_.publish(msg);
   }
 }
