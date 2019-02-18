@@ -17,6 +17,17 @@ include_directories(
     include
 )
 
+# Shared Utilities
+add_library(
+    mil_gazebo_utils
+        src/mil_gazebo_utils.cpp
+)
+target_link_libraries(mil_gazebo_utils
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+add_dependencies(mil_gazebo_utils ${catkin_EXPORTED_TARGETS})
+
 
 add_library(
     mil_model_heading
@@ -71,6 +82,18 @@ target_link_libraries(mil_depth_gazebo
   ${GAZEBO_LIBRARIES}
 )
 add_dependencies(mil_depth_gazebo ${catkin_EXPORTED_TARGETS})
+
+# Add IMU Plugin
+add_library(
+    mil_imu_gazebo
+        src/mil_imu_gazebo.cpp
+)
+target_link_libraries(mil_imu_gazebo
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+  mil_gazebo_utils
+)
+add_dependencies(mil_imu_gazebo mil_gazebo_utils ${catkin_EXPORTED_TARGETS})
 
 # Add Drag plugin
 add_library(

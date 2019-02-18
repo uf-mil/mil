@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="mil_imu" params="name:=imu parent:='base_link' topic:='/imu/data' xyz:='0 0 0' rpy='0 0 0' rate:=100">
+  <xacro:macro name="mil_imu" params="name:=imu parent:='base_link' topic:='/imu/data' xyz:='0 0 0' rpy='0 0 0' rate:=100
+                                      ax:=0 ay:=0 az:=0 lx:=0 ly:=0 lz:=0">
     <link name="${name}" />
     <joint name="${name}_joint" type="fixed">
       <origin xyz="${xyz}" rpy="${rpy}"/>
@@ -8,13 +9,23 @@
       <child link="${name}"/>
     </joint>
     <gazebo reference="${name}">
-      <sensor name="imu_sensor" type="imu">
+      <sensor name="${name}_imu_sensor" type="imu">
         <always_on>true</always_on>
         <update_rate>${rate}</update_rate>
-        <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
-          <topicName>${topic}</topicName>
-          <frameName>${name}</frameName>
-          <updateRateHZ>${rate}</updateRateHZ>
+        <imu>
+          <linear_acceleration>
+            <x><noise type="gaussian"><stddev>${lx}</stddev></noise></x>
+            <y><noise type="gaussian"><stddev>${ly}</stddev></noise></y>
+            <z><noise type="gaussian"><stddev>${lz}</stddev></noise></z>
+          </linear_acceleration>
+          <angular_velocity>
+            <x><noise type="gaussian"><stddev>${ax}</stddev></noise></x>
+            <y><noise type="gaussian"><stddev>${ay}</stddev></noise></y>
+            <z><noise type="gaussian"><stddev>${az}</stddev></noise></z>
+          </angular_velocity>
+        </imu>
+        <plugin filename="libmil_imu_gazebo.so" name="${name}_imu_plugin">
+          <frame_id>${name}</frame_id>
         </plugin>
       </sensor>
     </gazebo>
