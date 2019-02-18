@@ -39,7 +39,7 @@ void MilDepthGazebo::Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr _sd
     update_period_ = 1.0 / _sdf->GetElement("update_rate")->Get<double>();
   }
 
-  depth_pub_ = nh_.advertise<mil_msgs::DepthStamped>("/depth", 1);
+  depth_pub_ = nh_.advertise<mil_msgs::DepthStamped>("/depth", 20);
 
   update_connection_ = gazebo::event::Events::ConnectWorldUpdateBegin(std::bind(&MilDepthGazebo::OnUpdate, this, std::placeholders::_1));
 }

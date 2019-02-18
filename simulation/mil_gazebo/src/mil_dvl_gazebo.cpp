@@ -41,8 +41,8 @@ void MilDVLGazebo::Load(gazebo::sensors::SensorPtr _parent, sdf::ElementPtr _sdf
   else
     frame_name_ = sensor_->ParentName();
 
-  vel_pub_ = nh_.advertise<mil_msgs::VelocityMeasurements>("/dvl", 1);
-  range_pub_ = nh_.advertise<mil_msgs::RangeStamped>("/dvl/range", 1);
+  vel_pub_ = nh_.advertise<mil_msgs::VelocityMeasurements>("/dvl", 20);
+  range_pub_ = nh_.advertise<mil_msgs::RangeStamped>("/dvl/range", 20);
 
   update_connection_ = sensor_->ConnectUpdated(boost::bind(&MilDVLGazebo::OnUpdate, this));
 }
@@ -54,8 +54,8 @@ void MilDVLGazebo::OnUpdate()
     double range = sensor_->Range(0);
     mil_msgs::RangeStamped range_msg;
     range_msg.header.frame_id = frame_name_;
-    range_msg.header.stamp.sec = sensor_->LastUpdateTime().sec;
-    range_msg.header.stamp.nsec = sensor_->LastUpdateTime().nsec;
+    range_msg.header.stamp.sec = sensor_->LastMeasurementTime().sec;
+    range_msg.header.stamp.nsec = sensor_->LastMeasurementTime().nsec;
     range_msg.range = range;
     range_pub_.publish(range_msg);
   }
@@ -64,8 +64,8 @@ void MilDVLGazebo::OnUpdate()
   {
     mil_msgs::VelocityMeasurements vel_msg;
     vel_msg.header.frame_id = frame_name_;
-    vel_msg.header.stamp.sec = sensor_->LastUpdateTime().sec;
-    vel_msg.header.stamp.nsec = sensor_->LastUpdateTime().nsec;
+    vel_msg.header.stamp.sec = sensor_->LastMeasurementTime().sec;
+    vel_msg.header.stamp.nsec = sensor_->LastMeasurementTime().nsec;
 
     ignition::math::Vector3d vel = pose_.Rot().Inverse().RotateVector(parent_->GetRelativeLinearVel().Ign());
 

@@ -2,6 +2,7 @@
 
 namespace mil_gazebo
 {
+
 // Register this plugin
 GZ_REGISTER_SENSOR_PLUGIN(MilMagnetometerGazebo)
 
@@ -29,7 +30,7 @@ void MilMagnetometerGazebo::Load(gazebo::sensors::SensorPtr _parent, sdf::Elemen
   else
     frame_name_ = sensor_->ParentName();
 
-  mag_pub_ = nh_.advertise<sensor_msgs::MagneticField>("/imu/mag", 1);
+  mag_pub_ = nh_.advertise<sensor_msgs::MagneticField>("/imu/mag", 20);
 
   update_connection_ = sensor_->ConnectUpdated(boost::bind(&MilMagnetometerGazebo::OnUpdate, this));
 }
@@ -44,8 +45,8 @@ void MilMagnetometerGazebo::OnUpdate()
     msg.magnetic_field.y =  field.Y();
     msg.magnetic_field.z =  field.Z();
     msg.header.frame_id = frame_name_;
-    msg.header.stamp.sec = sensor_->LastUpdateTime().sec;
-    msg.header.stamp.nsec = sensor_->LastUpdateTime().nsec;
+    msg.header.stamp.sec = sensor_->LastMeasurementTime().sec;
+    msg.header.stamp.nsec = sensor_->LastMeasurementTime().nsec;
     mag_pub_.publish(msg);
   }
 }
