@@ -50,7 +50,7 @@ private:
   std::string frame_name_;
 
 private:
-  gazebo::physics::EntityPtr parent_;
+  gazebo::physics::LinkPtr parent_;
 
   // Pointer to the update event connection
 private:

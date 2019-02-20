@@ -23,7 +23,7 @@ void MilDVLGazebo::Load(gazebo::sensors::SensorPtr _parent, sdf::ElementPtr _sdf
     return;
   }
 
-  parent_ = gazebo::physics::get_world(sensor_->WorldName())->GetEntity(sensor_->ParentName());
+  parent_ = boost::dynamic_pointer_cast<gazebo::physics::Link>(gazebo::physics::get_world(sensor_->WorldName())->GetEntity(sensor_->ParentName()));
   if (!parent_)
   {
     ROS_ERROR_NAMED("MILDVLGazebo", "Parent is null");
@@ -66,7 +66,11 @@ void MilDVLGazebo::OnUpdate()
     vel_msg.header.frame_id = frame_name_;
     Convert(sensor_->LastMeasurementTime(), vel_msg.header.stamp);
 
-    ignition::math::Vector3d vel = pose_.Rot().Inverse().RotateVector(parent_->GetRelativeLinearVel().Ign());
+    auto vel_world = parent_->GetWorldLinearVel(pose_.Pos()).Ign();
+    auto world_from_parent = parent_->GetWorldPose().Ign().Rot();
+    auto vel_parent = world_from_parent.Inverse().RotateVector(vel_world);
+    auto parent_from_local = pose_.Rot();
+    auto vel_local = parent_from_local.Inverse().RotateVector(vel_parent);
 
     double tilt = 30 * ignition::math::Angle::Pi.Radian() / 180;
     double x = sin(tilt);
@@ -81,7 +85,7 @@ void MilDVLGazebo::OnUpdate()
     {
       mil_msgs::VelocityMeasurement measurement;
       Convert(dir, measurement.direction);
-      measurement.velocity = vel.Dot(dir);
+      measurement.velocity = vel_local.Dot(dir);
       measurement.correlation = ignition::math::NAN_D;
       vel_msg.velocity_measurements.push_back(measurement);
     }
