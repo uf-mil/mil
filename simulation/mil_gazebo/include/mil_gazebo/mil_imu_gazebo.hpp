@@ -8,7 +8,6 @@
 
 namespace mil_gazebo
 {
-
 class MilImuGazebo : public gazebo::SensorPlugin
 {
 public:
@@ -25,7 +24,6 @@ private:
   std::string frame_name_;
   gazebo::event::ConnectionPtr connection_;
 };
-
 }
 
-#endif //MIL_IMU_GAZEBO_H
+#endif  // MIL_IMU_GAZEBO_H

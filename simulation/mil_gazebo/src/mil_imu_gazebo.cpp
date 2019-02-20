@@ -1,20 +1,17 @@
-#include <mil_gazebo/mil_imu_gazebo.hpp>
 #include <mil_gazebo/mil_gazebo_utils.hpp>
+#include <mil_gazebo/mil_imu_gazebo.hpp>
 
 namespace mil_gazebo
 {
-
 GZ_REGISTER_SENSOR_PLUGIN(MilImuGazebo)
 
-MilImuGazebo::MilImuGazebo(): SensorPlugin()
+MilImuGazebo::MilImuGazebo() : SensorPlugin()
 {
 }
-
 
 MilImuGazebo::~MilImuGazebo()
 {
 }
-
 
 void MilImuGazebo::Load(gazebo::sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
 {
@@ -25,20 +22,27 @@ void MilImuGazebo::Load(gazebo::sensors::SensorPtr _parent, sdf::ElementPtr _sdf
     return;
   }
 
-  if(_sdf->HasElement("frame_id"))
+  if (_sdf->HasElement("frame_id"))
     frame_name_ = _sdf->GetElement("frame_id")->Get<std::string>();
-  else frame_name_ = sensor_->ParentName();
+  else
+    frame_name_ = sensor_->ParentName();
 
   imu_pub_ = nh_.advertise<sensor_msgs::Imu>("/imu/data_raw", 20);
 
   // Initialize message with correct covariances and header frame
   msg_.header.frame_id = frame_name_;
-  msg_.angular_velocity_covariance[0] = NoiseCovariance(*sensor_->Noise(gazebo::sensors::SensorNoiseType::IMU_ANGVEL_X_NOISE_RADIANS_PER_S));
-  msg_.angular_velocity_covariance[4] = NoiseCovariance(*sensor_->Noise(gazebo::sensors::SensorNoiseType::IMU_ANGVEL_Y_NOISE_RADIANS_PER_S));
-  msg_.angular_velocity_covariance[8] = NoiseCovariance(*sensor_->Noise(gazebo::sensors::SensorNoiseType::IMU_ANGVEL_Z_NOISE_RADIANS_PER_S));
-  msg_.linear_acceleration_covariance[0] = NoiseCovariance(*sensor_->Noise(gazebo::sensors::SensorNoiseType::IMU_LINACC_X_NOISE_METERS_PER_S_SQR));
-  msg_.linear_acceleration_covariance[4] = NoiseCovariance(*sensor_->Noise(gazebo::sensors::SensorNoiseType::IMU_LINACC_Y_NOISE_METERS_PER_S_SQR));
-  msg_.linear_acceleration_covariance[8] = NoiseCovariance(*sensor_->Noise(gazebo::sensors::SensorNoiseType::IMU_LINACC_Z_NOISE_METERS_PER_S_SQR));
+  msg_.angular_velocity_covariance[0] =
+      NoiseCovariance(*sensor_->Noise(gazebo::sensors::SensorNoiseType::IMU_ANGVEL_X_NOISE_RADIANS_PER_S));
+  msg_.angular_velocity_covariance[4] =
+      NoiseCovariance(*sensor_->Noise(gazebo::sensors::SensorNoiseType::IMU_ANGVEL_Y_NOISE_RADIANS_PER_S));
+  msg_.angular_velocity_covariance[8] =
+      NoiseCovariance(*sensor_->Noise(gazebo::sensors::SensorNoiseType::IMU_ANGVEL_Z_NOISE_RADIANS_PER_S));
+  msg_.linear_acceleration_covariance[0] =
+      NoiseCovariance(*sensor_->Noise(gazebo::sensors::SensorNoiseType::IMU_LINACC_X_NOISE_METERS_PER_S_SQR));
+  msg_.linear_acceleration_covariance[4] =
+      NoiseCovariance(*sensor_->Noise(gazebo::sensors::SensorNoiseType::IMU_LINACC_Y_NOISE_METERS_PER_S_SQR));
+  msg_.linear_acceleration_covariance[8] =
+      NoiseCovariance(*sensor_->Noise(gazebo::sensors::SensorNoiseType::IMU_LINACC_Z_NOISE_METERS_PER_S_SQR));
 
   connection_ = sensor_->ConnectUpdated(boost::bind(&MilImuGazebo::OnUpdate, this));
 }
@@ -55,4 +59,4 @@ void MilImuGazebo::OnUpdate()
   imu_pub_.publish(msg_);
 }
 
-} // namespace mil_gazebo
+}  // namespace mil_gazebo

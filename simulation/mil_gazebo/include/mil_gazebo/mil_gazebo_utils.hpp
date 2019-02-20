@@ -6,13 +6,11 @@
 
 namespace mil_gazebo
 {
-
 void Convert(ignition::math::Vector3d const& _in, geometry_msgs::Vector3& _out);
 
 void Convert(gazebo::common::Time const& _in, ros::Time& _out);
 
 double NoiseCovariance(gazebo::sensors::Noise const& _noise);
-
 }
 
-#endif // MIL_GAZEBO_UTILS_H
+#endif  // MIL_GAZEBO_UTILS_H

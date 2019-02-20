@@ -41,7 +41,8 @@ void MilDragGazebo::Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr _sdf
   }
   angular_coeffs_ = _sdf->GetElement("angular_coeffs")->Get<gazebo::math::Vector3>();
 
-  update_connection_ = gazebo::event::Events::ConnectWorldUpdateBegin(std::bind(&MilDragGazebo::OnUpdate, this, std::placeholders::_1));
+  update_connection_ =
+      gazebo::event::Events::ConnectWorldUpdateBegin(std::bind(&MilDragGazebo::OnUpdate, this, std::placeholders::_1));
 }
 
 void MilDragGazebo::OnUpdate(const gazebo::common::UpdateInfo& info)
@@ -52,15 +53,14 @@ void MilDragGazebo::OnUpdate(const gazebo::common::UpdateInfo& info)
   gazebo::math::Vector3 force = -linear_coeffs_ * linear_vel;
   gazebo::math::Vector3 torque = -angular_coeffs_ * angular_vel;
 
-/*
-  gzerr << "Vel " << linear_vel
-        << "Ang " << angular_vel
-        << "Force " << force
-        << "Torque " << torque;
-*/
+  /*
+    gzerr << "Vel " << linear_vel
+          << "Ang " << angular_vel
+          << "Force " << force
+          << "Torque " << torque;
+  */
 
   link_->AddRelativeForce(force);
   link_->AddRelativeTorque(torque);
 }
-
 }

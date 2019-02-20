@@ -42,18 +42,21 @@ void MilDepthGazebo::Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr _sd
 
   depth_pub_ = nh_.advertise<mil_msgs::DepthStamped>("/depth", 20);
 
-  update_connection_ = gazebo::event::Events::ConnectWorldUpdateBegin(std::bind(&MilDepthGazebo::OnUpdate, this, std::placeholders::_1));
+  update_connection_ =
+      gazebo::event::Events::ConnectWorldUpdateBegin(std::bind(&MilDepthGazebo::OnUpdate, this, std::placeholders::_1));
 }
 
 void MilDepthGazebo::OnUpdate(const gazebo::common::UpdateInfo& info)
 {
   auto time = info.simTime;
-  if (info.simTime < last_pub_time_) {
+  if (info.simTime < last_pub_time_)
+  {
     last_pub_time_ = info.simTime;
     return;
   }
 
-  if ( (time - last_pub_time_) < update_period_) {
+  if ((time - last_pub_time_) < update_period_)
+  {
     return;
   }
 
@@ -62,7 +65,8 @@ void MilDepthGazebo::OnUpdate(const gazebo::common::UpdateInfo& info)
   // TODO: limit publish frequency
   auto pose = model_->GetWorldPose() + offset_;
   double depth = -pose.pos.z;
-  if (depth < 0.) depth = 0.;
+  if (depth < 0.)
+    depth = 0.;
 
   mil_msgs::DepthStamped msg;
   msg.header.frame_id = frame_name_;
@@ -70,5 +74,4 @@ void MilDepthGazebo::OnUpdate(const gazebo::common::UpdateInfo& info)
   msg.depth = depth;
   depth_pub_.publish(msg);
 }
-
 }

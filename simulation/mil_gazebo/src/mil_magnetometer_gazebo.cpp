@@ -1,9 +1,8 @@
-#include <mil_gazebo/mil_magnetometer_gazebo.hpp>
 #include <mil_gazebo/mil_gazebo_utils.hpp>
+#include <mil_gazebo/mil_magnetometer_gazebo.hpp>
 
 namespace mil_gazebo
 {
-
 // Register this plugin
 GZ_REGISTER_SENSOR_PLUGIN(MilMagnetometerGazebo)
 

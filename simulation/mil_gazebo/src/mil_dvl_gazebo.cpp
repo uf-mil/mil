@@ -23,7 +23,8 @@ void MilDVLGazebo::Load(gazebo::sensors::SensorPtr _parent, sdf::ElementPtr _sdf
     return;
   }
 
-  parent_ = boost::dynamic_pointer_cast<gazebo::physics::Link>(gazebo::physics::get_world(sensor_->WorldName())->GetEntity(sensor_->ParentName()));
+  parent_ = boost::dynamic_pointer_cast<gazebo::physics::Link>(
+      gazebo::physics::get_world(sensor_->WorldName())->GetEntity(sensor_->ParentName()));
   if (!parent_)
   {
     ROS_ERROR_NAMED("MILDVLGazebo", "Parent is null");

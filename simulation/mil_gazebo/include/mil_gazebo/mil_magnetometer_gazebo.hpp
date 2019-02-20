@@ -2,8 +2,8 @@
 #ifndef MIL_MAGNETOMETER_GAZEBO_HPP
 #define MIL_MAGNETOMETER_GAZEBO_HPP
 
-#include <sensor_msgs/MagneticField.h>
 #include <ros/ros.h>
+#include <sensor_msgs/MagneticField.h>
 #include <gazebo/common/common.hh>
 #include <gazebo/sensors/sensors.hh>
 
