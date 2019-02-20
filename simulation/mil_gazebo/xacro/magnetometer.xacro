@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="mil_magnetometer" params="name:=magnetometer parent:='base_link' topic:='/imu/data' xyz:='0 0 0' rpy='0 0 0' rate:=100">
+    <link name="${name}" />
+    <joint name="${name}_joint" type="fixed">
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+      <parent link="${parent}"/>
+      <child link="${name}"/>
+    </joint>
+    <gazebo reference="${name}">
+      <sensor name="${name}_sensor" type="magnetometer">
+        <always_on>true</always_on>
+        <update_rate>${rate}</update_rate>
+        <plugin filename="libmil_magnetometer_gazebo.so" name="${name}_plugin">
+          <frame_id>${name}</frame_id>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+</robot>
