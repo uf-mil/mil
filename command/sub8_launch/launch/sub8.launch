@@ -2,6 +2,7 @@
 <launch>
   <!-- Defines what environment the system is running on, can be 'real', 'gazebo' or 'dynsim' -->
   <arg name="environment" default="real" />
+  <param name="/environment" value="$(arg environment" />
   <rosparam param="/autonomous">False</rosparam>
 
   <include file="$(find sub8_launch)/launch/tf.launch" />
@@ -12,12 +13,16 @@
     <arg name="depth" value="true" />
   </include>
 
-  <include if="$(eval environment == 'real')" file="$(find sub8_launch)/launch/subsystems/cameras.launch"/>
-  <include if="$(eval environment == 'real')" file="$(find sub8_launch)/launch/subsystems/odometry.launch"/>
+  <include if="$(eval environment != 'dynsim')" file="$(find sub8_launch)/launch/subsystems/cameras.launch">
+    <arg name="environment" value="$(arg environment)" />
+  </include>
+  <include if="$(eval environment != 'dynsim')" file="$(find sub8_launch)/launch/subsystems/odometry.launch"/>
   <include if="$(eval environment == 'real')" file="$(find sub8_launch)/launch/subsystems/thrusters.launch"/>
   <include file="$(find sub8_launch)/launch/subsystems/thruster_mapper.launch"/>
-  <include file="$(find sub8_launch)/launch/subsystems/rise.launch"/>
-  <include file="$(find sub8_launch)/launch/subsystems/online_bagger.launch"/>
+  <include file="$(find sub8_launch)/launch/subsystems/rise.launch">
+    <arg name="environment" value="$(arg environment)" />
+  </include>
+  <include if="$(eval environment == 'real')" file="$(find sub8_launch)/launch/subsystems/online_bagger.launch"/>
   <include file="$(find sub8_alarm)/launch/alarms.launch" />
   <include file="$(find sub8_launch)/launch/mission_server.launch" />
 </launch>

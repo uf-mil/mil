@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
+  <arg name="gui" default="false" />
+
   <include file="$(find sub8_launch)/launch/sub8.launch">
     <arg name="environment" value="gazebo" />
   </include>
 
-  <include file="$(find sub8_gazebo)/launch/duck.launch" />
+  <include file="$(find sub8_gazebo)/launch/duck.launch">
+    <arg name="gui" value="$(arg gui)" />
+  </include>
 </launch>
