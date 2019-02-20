@@ -1,44 +1,63 @@
-<?xml version="1.0"?>
-<robot name="sub8" xmlns:xacro="http://ros.org/wiki/xacro">
+<?xml version="1.0" encoding="UTF-8"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="sub8">
+  <!-- Include macros -->
   <xacro:include filename="$(find mil_gazebo)/xacro/fixed_link.xacro" />
   <xacro:include filename="$(find mil_gazebo)/xacro/camera.xacro" />
+  <xacro:include filename="$(find mil_gazebo)/xacro/buoyancy.xacro" />
+  <xacro:include filename="$(find mil_gazebo)/xacro/dvl.xacro" />
+  <xacro:include filename="$(find mil_gazebo)/xacro/imu_magnetometer.xacro" />
+  <xacro:include filename="$(find mil_gazebo)/xacro/depth.xacro" />
+  <xacro:include filename="$(find mil_gazebo)/xacro/drag.xacro" />
 
+
+  <!-- Base link of sub -->
   <link name="base_link">
     <inertial>
       <!-- Mass from official weigh-in at RobotSub 2018 -->
       <mass value="47.6" />
       <!-- Imported from old SDF model of Sub, unclear how these values were determined -->
-      <inertia ixx="1.18" ixy="-0.003" ixz="0.04" iyy="1.431" iyz="-0.034" izz="1.262"/>
+      <inertia ixx="1.18" ixy="-0.003" ixz="0.04" iyy="1.431" iyz="-0.034" izz="1.262" />
     </inertial>
     <visual name="visual">
       <geometry>
-        <mesh filename="package://sub8_missions/tools/sub8/sub_redux.dae"/>
+        <mesh filename="package://sub8_missions/tools/sub8/sub_redux.dae" />
       </geometry>
     </visual>
+    <collision name="collision">
+      <geometry>
+        <mesh filename="package://sub8_missions/tools/sub8/sub_redux.dae" />
+      </geometry>
+    </collision>
   </link>
 
-  <xacro:mil_fixed_link name="front_stereo" parent="base_link"
-                        xyz="0.2559 0 0.1707" rpy="0 0 0" />
-  <xacro:mil_camera name="front_left_cam" parent="front_stereo"
-                    namespace="/camera/front/left"
-                    xyz="0 0.0445 0"
-                    rpy="0 0 0" />
-  <xacro:mil_camera name="front_right_cam" parent="front_stereo"
-                    namespace="/camera/front/right"
-                    xyz="0 -0.0445 0"
-                    rpy="0 0 0" />
-  <xacro:mil_camera name="down_left_cam" parent="base_link"
-                    namespace="/camera/down"
-                    xyz="0.054 0.105 -0.256"
-                    rpy="0 1.57 1.57" />
-  <xacro:mil_fixed_link name="dvl" parent="base_link"
-                        xyz="0.0908 0 -0.2459" rpy="0 0 0.785" />
-  <xacro:mil_fixed_link name="depth" parent="base_link"
-                        xyz="-0.235 0 -0.170" rpy="0 0 0" />
-  <xacro:mil_fixed_link name="imu" parent="base_link"
-                        xyz="0.21236 0.00254 -0.10233" rpy="0 -1.571 0" />
-  <xacro:mil_fixed_link name="blueview" parent="base_link"
-                        xyz="0.333 0 0.381" rpy="3.142 0 0" />
-  <xacro:mil_fixed_link name="hydrophones" parent="base_link"
-                        xyz="-0.0908 0 -0.2459" rpy="0 0 1.571" />
+  <!-- Sensors -->
+  <xacro:mil_fixed_link name="front_stereo" parent="base_link" xyz="0.2559 0 0.1707" rpy="0 0 0" />
+  <xacro:mil_camera name="front_left_cam" parent="front_stereo" namespace="/camera/front/left" xyz="0 0.0445 0" rpy="0 0 0" />
+  <xacro:mil_camera name="front_right_cam" parent="front_stereo" namespace="/camera/front/right" xyz="0 -0.0445 0" rpy="0 0 0" />
+  <xacro:mil_camera name="down_left_cam" parent="base_link" namespace="/camera/down" xyz="0.054 0.105 -0.256" rpy="0 1.57 1.57" />
+  <xacro:mil_imu_magnetometer name="imu" parent="base_link" imu_topic='/imu/data_raw' xyz="0.21236 0.00254 -0.10233" rpy="0 -1.571 0" rate="210"
+                              ax="0.015707963" ay="0.015707963" az="0.015707963"
+                              lx="0.08825985" ly="0.08825985" lz="0.08825985" />
+
+  <!-- TODO: switch back to correct transform once CAD mesh is fixed so beam doesnt collide with self
+             should be xyz="0.0908 0 -1.0" rpy="0 0 0.785" -->
+  <xacro:mil_depth name="depth" xyz="-0.235 0 -0.170" rpy="0 0 0" rate="20" />
+
+  <!-- Other fixed frames -->
+  <xacro:mil_fixed_link name="blueview" parent="base_link" xyz="0.333 0 0.381" rpy="3.142 0 0" />
+  <xacro:mil_fixed_link name="hydrophones" parent="base_link" xyz="-0.0908 0 -0.2459" rpy="0 0 1.571" />
+
+  <!-- Dynamics simulation -->
+  <xacro:mil_drag linear_coeffs='50 50 50' angular_coeffs='10 10 10' />
+  <gazebo>
+    <plugin name="sub8_thrusters" filename="libsub8_thrusters.so">
+      <layout_param>thruster_layout</layout_param>
+      <min_abs_thrust>2.2</min_abs_thrust>
+      <link>base_link</link>
+    </plugin>
+    <xacro:mil_buoyancy volume="0.04822" />
+  </gazebo>
+
+  <!-- TODO: add blueview simulator using ray sensor -->
 </robot>
+
