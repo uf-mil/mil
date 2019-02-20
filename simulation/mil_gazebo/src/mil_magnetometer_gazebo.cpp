@@ -43,7 +43,7 @@ void MilMagnetometerGazebo::OnUpdate()
     sensor_msgs::MagneticField msg;
     Convert(sensor_->MagneticField(), msg.magnetic_field);
     msg.header.frame_id = frame_name_;
-    Convert(sensor_->LastMeasurementTime(), msg.header.stamp);
+    Convert(sensor_->LastUpdateTime(), msg.header.stamp);
     mag_pub_.publish(msg);
   }
 }
