@@ -103,7 +103,6 @@ void ThrusterPlugin::OnUpdate()
     const std::string name = thrustCmd.name;
     const double thrust = thrustCmd.thrust;
 
-
     if (std::abs(thrust) < this->minAbsThrust)
     {
       // Apply no force
@@ -112,9 +111,7 @@ void ThrusterPlugin::OnUpdate()
 
     // Clip thrust within range
     double clipped_thrust = std::max(thrusterMap[name].min, std::min(thrusterMap[name].max, thrust));
-    math::Vector3 force =
-        thrusterMap[name].direction * clipped_thrust;
-
+    math::Vector3 force = thrusterMap[name].direction * clipped_thrust;
 
     targetLink->AddLinkForce(force, thrusterMap[name].position);
   }
