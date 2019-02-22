@@ -1,10 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <launch>
-  <arg name="dvl" default="false" />
-  <arg name="imu" default="false" />
-  <arg name="depth" default="false" />
+  <arg name="environment" default="real" />
+  <arg name="dvl" default="True" />
+  <arg name="imu" default="True" />
+  <arg name="depth" default="True" />
 
   <!-- DVL -->
-  <group if="$(arg dvl)">
+  <group if="$(eval dvl and environment == 'real')">
     <node pkg="sub8_launch" type="dvl_conn" name="dvl_conn" respawn="true"/>
     <node pkg="nodelet" type="nodelet" name="dvl_driver" args="standalone rdi_explorer_dvl/nodelet">
       <param name="port" type="string" value="/tmp/dvl"/>
@@ -14,7 +16,7 @@
   </group>
 
   <!-- Depth Sensor -->
-  <group if="$(arg depth)" >
+  <group if="$(eval depth and environment == 'real')">
     <node pkg="sub8_launch" type="depth_conn" name="depth_conn" respawn="true"/>
     <node pkg="nodelet" type="nodelet" name="depth_driver" args="standalone depth_driver/nodelet">
       <param name="port" type="string" value="/tmp/depth"/>
@@ -24,16 +26,18 @@
 
   <!-- IMU -->
   <group if="$(arg imu)" >
-    <node pkg="sub8_launch" type="imu_conn" name="imu_conn" respawn="true"/>
-    <node pkg="nodelet" type="nodelet" name="imu_driver" args="standalone adis16400_imu/nodelet">
+    <node if="$(eval environment == 'real')" pkg="sub8_launch" type="imu_conn" name="imu_conn" respawn="true"/>
+    <node if="$(eval environment == 'real')" pkg="nodelet" type="nodelet" name="imu_driver" 
+          args="standalone adis16400_imu/nodelet">
       <param name="port" type="string" value="/tmp/imu"/>
       <param name="frame_id" type="string" value="/imu"/>
     </node>
 
-    <node pkg="nodelet" type="nodelet" name="magnetic_dynamic_compensation" args="standalone magnetic_dynamic_compensation/nodelet">
+    <node if="$(eval environment == 'real')" 
+          pkg="nodelet" type="nodelet" name="magnetic_dynamic_compensation" args="standalone magnetic_dynamic_compensation/nodelet">
       <remap from="/imu/mag" to="/imu/mag_lessraw"/>
     </node>
-    <node pkg="nodelet" type="nodelet" name="magnetic_hardsoft_compensation" args="standalone magnetic_hardsoft_compensation/nodelet">
+    <node if="$(eval environment == 'real')" pkg="nodelet" type="nodelet" name="magnetic_hardsoft_compensation" args="standalone magnetic_hardsoft_compensation/nodelet">
       <remap from="/imu/mag_raw" to="/imu/mag_lessraw"/>
       <param name="frame_id" type="string" value="/imu"/>
       <rosparam>
@@ -45,6 +49,8 @@
       </rosparam>
     </node>
 
+    <node pkg="mil_tools" type="mag_to_marker" name="magnetometer_vis"
+          args="/imu/mag /imu/marker -l3" />
   </group>
 
 </launch>

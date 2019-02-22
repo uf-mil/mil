@@ -98,9 +98,6 @@ void ThrusterPlugin::OnUpdate()
 
   GZ_ASSERT(this->targetLink, "Could not find specified link");
 
-  math::Vector3 net_force(0.0, 0.0, 0.0);
-  math::Vector3 net_torque(0.0, 0.0, 0.0);
-
   for (auto thrustCmd : cmdBuffer)
   {
     const std::string name = thrustCmd.name;
@@ -112,23 +109,11 @@ void ThrusterPlugin::OnUpdate()
       continue;
     }
 
-    // clamp idea from: https://www.c-plusplus.net/forum/323030-full
-    // email me (jake) if you ever find this line
-    math::Vector3 force =
-        thrusterMap[name].direction * std::max(thrusterMap[name].min, std::min(thrusterMap[name].max, thrust));
-    math::Vector3 torque = thrusterMap[name].position.Cross(force);
-    net_force += force;
-    net_torque += torque;
+    // Clip thrust within range
+    double clipped_thrust = std::max(thrusterMap[name].min, std::min(thrusterMap[name].max, thrust));
+    math::Vector3 force = thrusterMap[name].direction * clipped_thrust;
 
-    // math::Vector3 force;
-    // force = thrusterMap[name].direction * thrust;
-  }
-  // this->targetLink->AddForceAtRelativePosition(force, thrusterMap[name].position);
-  math::Pose subFrame = this->targetLink->GetWorldPose();
-  if (subFrame.pos.z < 0.0)
-  {
-    this->targetLink->AddRelativeForce(net_force);
-    this->targetLink->AddRelativeTorque(net_torque);
+    targetLink->AddLinkForce(force, thrusterMap[name].position);
   }
 }
 

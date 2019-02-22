@@ -11,6 +11,19 @@
       <max_step_size>0.01</max_step_size>
     </physics>
 
+    <!-- Estimated latitude/longitude of gainesville -->
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>29.6474</latitude_deg>
+      <longitude_deg>277.65027</longitude_deg>
+      <elevation>0.4</elevation>
+      <!-- For legacy gazebo reasons, need to rotate -->
+      <heading_deg>180</heading_deg>
+    </spherical_coordinates>
+
+    <magnetic_field>8.883535E-06 2.214733E-05 -3.157464E-05</magnetic_field>
+
     <light name="illum" type="directional">
       <pose>-4 18 9 0 -.75 0</pose>
       <diffuse>0.1 0.4 1 1</diffuse>
@@ -64,28 +77,6 @@
       <cast_shadows>0</cast_shadows>
       <direction>0 0 -1</direction>
     </light>
-    <!-- Never delete this, uncomment to bring back the ghost cessna
-    <model name="physics_engine">
-      <static>false</static>
-      <link name="physics_engine">
-        <pose>0 10 1 0 0 0</pose>
-        <visual name="visual_cessna">
-          <geometry>
-            <mesh>
-              <uri>model://cessna/meshes/body.dae</uri>
-            </mesh>
-          </geometry>
-        </visual>
-        <collision name="collision_cessna">
-          <geometry>
-            <mesh>
-              <uri>model://cessna/meshes/body.dae</uri>
-            </mesh>
-          </geometry>
-        </collision>
-      </link>
-    </model>
-    -->
     <model name="water">
       <static>true</static>
       <pose>0 0 0 0 3.1415 0</pose>
@@ -121,6 +112,12 @@
               <scale>0.5 0.5 0.5</scale>
             </mesh>
           </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/White</name>
+            </script>
+          </material>
         </visual>
         <collision name="collision">
           <geometry>
@@ -133,22 +130,12 @@
       </link>
     </model>
 
-    <model name="sky_box">
-      <pose>0 0 0  0 0 0</pose>
-      <static>true</static>
-      <link name="sky">
-        <visual name="visual">
-          <geometry>
-              <mesh>
-                <uri>file://sky_box/sky.dae</uri>
-              </mesh>
-          </geometry>
-          <material>
-            <emissive>1 1 1 1</emissive>
-          </material>
-
-        </visual>
-      </link>
-    </model>
+    <scene>
+      <sky>
+        <clouds>
+          <speed>12</speed>
+        </clouds>
+      </sky>
+    </scene>
   </world>
 </sdf>

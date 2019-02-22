@@ -7,6 +7,10 @@ class PauseKill(HandlerBase):
     alarm_name = "pause-kill"
 
     def __init__(self):
+        # Don't try to connect to hardware if in sim
+        # TODO: do simulated version of hardware
+        self._irl = rospy.get_param('/environment', 'real') == 'real'
+
         gpio = rospy.get_param("/pause-kill/gpio", 507)
 
         # Use sysfs to monitor gpio
@@ -19,6 +23,10 @@ class PauseKill(HandlerBase):
         rospy.Timer(rospy.Duration(0.01), self._check)
 
     def _check(self, *args):
+        # Don't try to connect to device if in sim
+        if not self._irl:
+            return
+
         try:
             '''
                 The following must be completed to enable GPIO sysfs

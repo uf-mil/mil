@@ -1,5 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <launch>
-  <include file="$(find sub8_launch)/launch/subsystems/cameras/launch/right_camera.launch" />
-  <include file="$(find sub8_launch)/launch/subsystems/cameras/launch/left_camera.launch" />
-  <include file="$(find sub8_launch)/launch/subsystems/cameras/launch/down_camera.launch" />
+  <arg name="environment" default="real" />
+  <include file="$(find sub8_launch)/launch/subsystems/cameras/launch/right_camera.launch">
+    <arg name="environment" value="$(arg environment)" />
+  </include>
+  <include file="$(find sub8_launch)/launch/subsystems/cameras/launch/left_camera.launch">
+    <arg name="environment" value="$(arg environment)" />
+  </include>
+  <include file="$(find sub8_launch)/launch/subsystems/cameras/launch/down_camera.launch">
+    <arg name="environment" value="$(arg environment)" />
+  </include>
 </launch>

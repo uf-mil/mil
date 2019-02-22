@@ -50,8 +50,8 @@ void load_thrusters(XmlRpcValue& thrusters_xmlrpc, map<string, ThrusterDef>& thr
 
   for (auto& thruster : thrusters_xmlrpc)  // Iterater through thruster definitions (XmlRpcValues)
   {
-    bool is_valid = thruster.second.hasMember("motor_id") && thruster.second.hasMember("position") &&
-                    thruster.second.hasMember("direction") && thruster.second.hasMember("bounds");
+    bool is_valid = thruster.second.hasMember("node_id") && thruster.second.hasMember("position") &&
+                    thruster.second.hasMember("direction") && thruster.second.hasMember("thrust_bounds");
     if (!is_valid)
     {
       auto err_str = "Object %s is not a valid thruster definition. It needs fields"
@@ -64,15 +64,15 @@ void load_thrusters(XmlRpcValue& thrusters_xmlrpc, map<string, ThrusterDef>& thr
     try
     {
       auto props = thruster.second;
-      t.motor_id = props["motor_id"];
+      t.motor_id = props["node_id"];
       t.position[0] = props["position"][0];
       t.position[1] = props["position"][1];
       t.position[2] = props["position"][2];
       t.direction[0] = props["direction"][0];
       t.direction[1] = props["direction"][1];
       t.direction[2] = props["direction"][2];
-      t.bounds[0] = props["bounds"][0];
-      t.bounds[1] = props["bounds"][1];
+      t.bounds[0] = props["thrust_bounds"][0];
+      t.bounds[1] = props["thrust_bounds"][1];
 
       thruster_map[thruster.first] = ThrusterDef(t);
     }
