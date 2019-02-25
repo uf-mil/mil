@@ -1,6 +1,6 @@
+#include <ros/ros.h>
 #include <mil_gazebo/mil_drag_gazebo.hpp>
 #include <mil_gazebo/mil_gazebo_utils.hpp>
-#include <ros/ros.h>
 
 namespace mil_gazebo
 {
@@ -31,13 +31,14 @@ void MilDragGazebo::Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr _sdf
     return;
   }
 
-
-  if (!GetFromSDFOrRosParam(_sdf, "linear_coeffs", linear_coeffs_)) {
+  if (!GetFromSDFOrRosParam(_sdf, "linear_coeffs", linear_coeffs_))
+  {
     ROS_ERROR("linear_coeffs_bad");
     return;
   }
 
-  if (!GetFromSDFOrRosParam(_sdf, "angular_coeffs", angular_coeffs_)) {
+  if (!GetFromSDFOrRosParam(_sdf, "angular_coeffs", angular_coeffs_))
+  {
     ROS_ERROR("angular_coeffs_bad");
     return;
   }

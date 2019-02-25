@@ -1,8 +1,8 @@
-#include <mil_gazebo/mil_buoyancy_gazebo.hpp>
-#include <mil_gazebo/mil_gazebo_utils.hpp>
 #include <functional>
 #include <gazebo/common/Assert.hh>
 #include <gazebo/common/Events.hh>
+#include <mil_gazebo/mil_buoyancy_gazebo.hpp>
+#include <mil_gazebo/mil_gazebo_utils.hpp>
 #include <string>
 
 #include <ros/ros.h>
@@ -27,7 +27,8 @@ void MILBuoyancyGazebo::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   mil_gazebo::GetFromSDFOrRosParam(_sdf, "fluid_density", fluidDensity);
   mil_gazebo::GetFromSDFOrRosParam(_sdf, "fluid_level", fluidLevel);
-  if (!mil_gazebo::GetFromSDFOrRosParam(_sdf, "volume", baseLinkVolume)) {
+  if (!mil_gazebo::GetFromSDFOrRosParam(_sdf, "volume", baseLinkVolume))
+  {
     ROS_ERROR("volume param not set");
   }
 }
