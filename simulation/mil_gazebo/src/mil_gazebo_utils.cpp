@@ -1,5 +1,6 @@
 #include <gazebo/sensors/sensors.hh>
 #include <mil_gazebo/mil_gazebo_utils.hpp>
+#include <ros/ros.h>
 
 namespace mil_gazebo
 {
@@ -26,4 +27,42 @@ double NoiseCovariance(gazebo::sensors::Noise const& _noise)
   else
     return 0.;
 }
+
+int TagInSDFOrRosParam(sdf::ElementPtr _sdf, std::string const& tag)
+{
+  if(_sdf->HasElement(tag)) return 0;
+  else if (_sdf->HasElement(tag + "_param")) {
+    std::string param_name = _sdf->GetElement(tag + "_param")->Get<std::string>();
+    if (ros::param::has(param_name)) return 1;
+    else return -1;
+  }
+  else return -1;
+}
+
+bool GetFromSDFOrRosParam(sdf::ElementPtr _sdf, std::string const& tag, double& val)
+{
+  int mode = TagInSDFOrRosParam(_sdf, tag);
+
+  if (mode == 0) {
+    val = _sdf->GetElement(tag)->Get<double>();
+  } else if (mode == 1) {
+    std::string param_name = _sdf->GetElement(tag + "_param")->Get<std::string>();
+    return ros::param::get(param_name, val);
+  } else return false;
+}
+
+bool GetFromSDFOrRosParam(sdf::ElementPtr _sdf, std::string const& tag, gazebo::math::Vector3& val)
+{
+  int mode = TagInSDFOrRosParam(_sdf, tag);
+  if (mode == 0) {
+    val = _sdf->GetElement(tag)->Get<gazebo::math::Vector3>();
+  } else if (mode == 1) {
+    std::string param_name = _sdf->GetElement(tag + "_param")->Get<std::string>();
+    std::vector<double> tmp;
+    if(!ros::param::get(param_name, tmp) || tmp.size() != 3) return false;
+    val = gazebo::math::Vector3(tmp[0], tmp[1], tmp[2]);
+    return true;
+  } else return false;
+}
+
 }
