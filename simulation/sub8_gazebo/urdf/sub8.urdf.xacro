@@ -40,7 +40,8 @@
                               lx="0.08825985" ly="0.08825985" lz="0.08825985" />
 
   <!-- TODO: switch back to correct transform once CAD mesh is fixed so beam doesnt collide with self
-             should be xyz="0.0908 0 -1.0" rpy="0 0 0.785" -->
+             should be xyz="0.0908 0 0.2459" rpy="0 0 0.785" -->
+  <xacro:mil_dvl name="dvl" xyz="0.0908 0 -1.0" rpy="0 0 0.785" rate="6.5" />
   <xacro:mil_depth name="depth" xyz="-0.235 0 -0.170" rpy="0 0 0" rate="20" />
 
   <!-- Other fixed frames -->
@@ -48,14 +49,14 @@
   <xacro:mil_fixed_link name="hydrophones" parent="base_link" xyz="-0.0908 0 -0.2459" rpy="0 0 1.571" />
 
   <!-- Dynamics simulation -->
-  <xacro:mil_drag linear_coeffs='50 50 50' angular_coeffs='10 10 10' />
+  <xacro:mil_drag use_param='True' />
   <gazebo>
     <plugin name="sub8_thrusters" filename="libsub8_thrusters.so">
       <layout_param>thruster_layout</layout_param>
       <min_abs_thrust>2.2</min_abs_thrust>
       <link>base_link</link>
     </plugin>
-    <xacro:mil_buoyancy volume="0.04822" />
+    <xacro:mil_buoyancy use_param='True' />
   </gazebo>
 
   <!-- TODO: add blueview simulator using ray sensor -->
