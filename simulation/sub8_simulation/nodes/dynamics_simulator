@@ -6,15 +6,7 @@ from geometry_msgs.msg import WrenchStamped
 from mil_ros_tools.msg_helpers import numpy_to_quaternion, numpy_to_point, numpy_to_twist, wrench_to_numpy
 from mil_ros_tools.geometry_helpers import quaternion_matrix
 import tf.transformations as trans
-from urdf_parser_py.urdf import URDF
-
-
-def rectangular_prism_inertia(mass, x, y, z):
-    ret = np.empty((3, 3), dtype=float)
-    ret[0, 0] = (1 / 12.) * mass * (y * y + z * z)
-    ret[1, 1] = (1 / 12.) * mass * (x * x + z * z)
-    ret[2, 2] = (1 / 12.) * mass * (y * y + x * x)
-    return ret
+from sub8_system_id import SubjuGatorDynamics
 
 
 class Sub(object):
@@ -22,38 +14,13 @@ class Sub(object):
     A dynamics simulator for SubjuGator, modeling buoyancy, gravity, drag, and the user
     inputed wrench to produce Odometry
     '''
-    WATER_DENSITY = 997.
-    AIR_DENSITY = 1.225
-    G = 9.81
 
     def __init__(self):
-        # Parse URDF of Sub for inertial information, etc
-        urdf_string = rospy.get_param('/robot_description')
-        urdf = URDF.from_xml_string(urdf_string)
-
-        # Get root link of model
-        root = urdf.link_map[urdf.get_root()]
-        # Store mass from root link
-        self.mass = root.inertial.mass
-        # Form interia matrix for kinematic calculations
-        self.inertia = np.zeros((6, 6), dtype=float)
-        # Upper left 3x3 is the mass along diagonal
-        self.inertia[0:3, 0:3] = self.mass * np.eye(3)
-        # Lower right 3x3 (rotational inertia) is taken from URDF
-        self.inertia[3:6, 3:6] = np.array(root.inertial.inertia.to_matrix())
-        # Cache inverse of inertia for kinemetic calculations
-        self.inertia_inv = np.linalg.inv(self.inertia)
-
-        # Store drag coefficents from ROS param
-        self.drag_coeffs = np.array(rospy.get_param('~drag_coefficients', [50., 50., 50., 50., 50., 50.]),
-                                    dtype=float)
+        # Internal dynamics model of the sub from the system_id package
+        self.dynamics = SubjuGatorDynamics.from_ros_params()
 
         # Hardcoded height of the sub used for buoyancy
         self.z_len = 0.59
-
-        # Estimate volume such that Sub will be slightly positively buoyant
-        self.volume = (self.mass / self.WATER_DENSITY) * 1.01
-        # Initialize pose, twist, and wrench
         self.pose = np.zeros(7)
         # Make initial orientation valid (quaternion 0 0 0 1)
         self.pose[6] = 1.
@@ -98,47 +65,17 @@ class Sub(object):
         A new odometry will be published after the model is updated.
         '''
         # Calcuate rotation from body to global and global to body for later calculations
-        R = quaternion_matrix(self.pose[3:])
-        R_inv = np.linalg.inv(R)
+        body_to_world = quaternion_matrix(self.pose[3:])
+        world_to_body = np.linalg.inv(body_to_world)
 
-        # Calculate effect of gravity
-        gravity = - self.G * self.mass
-        # Estimate proportion of Sub's volume which is above the water (for buoyancy calculation)
-        height_above_water = min(self.z_len, max(0., 0.5 * self.z_len + self.pose[2]))
-        if height_above_water == 0.:
-            proportion_above_water = 0.
-        else:
-            proportion_above_water = height_above_water / self.z_len
-        # Calculate the portion of buoyancy force above the water
-        # https://en.wikipedia.org/wiki/Archimedes%27_principle
-        buoyancy_above_water = (self.AIR_DENSITY * self.G * self.volume) * proportion_above_water
-        # Calculate the portion of the buoyancy force below the water
-        buoyancy_below_water = (self.WATER_DENSITY * self.G * self.volume) * (1. - proportion_above_water)
-
-        # Combine buoyancy and gravity into a single force vector
-        grav_buoyancy = np.zeros(6)
-        grav_buoyancy[2] = buoyancy_above_water + buoyancy_below_water + gravity
-        # Rotate it into the body frame to be used in total force calculation
-        grav_buoyancy[:3] = R_inv.dot(grav_buoyancy[:3])
-
-        # Calculate effect of drag by multiplying the current twist by the coefficients
-        drag = -(self.drag_coeffs * self.twist)
-
-        # Calculate the total forced in the body frame by summing the forces
-        total_wrench = self.wrench + drag + grav_buoyancy
-
-        # Perform Newton-Euler equation to determine acceleration
-        # https://en.wikipedia.org/wiki/Newton%E2%80%93Euler_equations#Center_of_mass_frame
-        extra_term = np.zeros(6)
-        extra_term[3:6] = np.cross(self.twist[3:6], self.inertia[3:6, 3:6].dot(self.twist[3:6]))
-        accel = self.inertia_inv.dot(total_wrench - extra_term)
+        accel = self.dynamics.inverse_dynamics(self.pose[2], self.twist, world_to_body, wrench=self.wrench)
 
         # Increment velocity by current acceleration by the time delta
         self.twist += accel * dt
 
         # Rotate twist to global frame so pose can be computed
-        twist_linear_world = R.dot(self.twist[0:3])
-        twist_angular_world = R.dot(self.twist[3:])
+        twist_linear_world = body_to_world.dot(self.twist[0:3])
+        twist_angular_world = body_to_world.dot(self.twist[3:])
 
         # Update orientation if it has changed enough for the math to be stable
         norm = np.linalg.norm(twist_angular_world)
