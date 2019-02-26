@@ -1,4 +1,6 @@
+#include <ros/ros.h>
 #include <mil_gazebo/mil_drag_gazebo.hpp>
+#include <mil_gazebo/mil_gazebo_utils.hpp>
 
 namespace mil_gazebo
 {
@@ -29,17 +31,17 @@ void MilDragGazebo::Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr _sdf
     return;
   }
 
-  if (!_sdf->HasElement("linear_coeffs"))
+  if (!GetFromSDFOrRosParam(_sdf, "linear_coeffs", linear_coeffs_))
   {
-    gzerr << "missing linear coeffs param";
+    ROS_ERROR("linear_coeffs_bad");
+    return;
   }
-  linear_coeffs_ = _sdf->GetElement("linear_coeffs")->Get<gazebo::math::Vector3>();
 
-  if (!_sdf->HasElement("angular_coeffs"))
+  if (!GetFromSDFOrRosParam(_sdf, "angular_coeffs", angular_coeffs_))
   {
-    gzerr << "missing linear coeffs param";
+    ROS_ERROR("angular_coeffs_bad");
+    return;
   }
-  angular_coeffs_ = _sdf->GetElement("angular_coeffs")->Get<gazebo::math::Vector3>();
 
   update_connection_ =
       gazebo::event::Events::ConnectWorldUpdateBegin(std::bind(&MilDragGazebo::OnUpdate, this, std::placeholders::_1));

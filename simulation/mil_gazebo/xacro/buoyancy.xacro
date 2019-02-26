@@ -1,11 +1,17 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:macro  name="mil_buoyancy"
-                params='volume'>
+                params='use_param:=False volume:=0.05 fluid_density:=1000 '>
     <plugin name="BuoyancyPlugin" filename="libmil_buoyancy_gazebo.so">
-      <fluid_density>1000</fluid_density>
+        <xacro:if value="${use_param}">
+          <volume_param>/robot_parameters/volume</volume_param>
+          <fluid_density_param>/robot_parameters/fluid_density</fluid_density_param>
+        </xacro:if>
+        <xacro:unless value="${use_param}">
+            <volume>${volume}</volume>
+            <fluid_density>1000</fluid_density>
+        </xacro:unless>
       <fluid_level>0.0</fluid_level>
-      <volume>${volume}</volume>
     </plugin>
   </xacro:macro>
 </robot>
