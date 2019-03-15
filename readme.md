@@ -14,6 +14,30 @@ The install script is intended to handle *every single thing* that needs to be i
 
 The script will create all of the files and directories it needs within the selected catkin workspace. If the script has previously been run, it will not run initial set up tasks that have already been performed unless they need to be updated. This means that the script will respect workspaces with git repositories already present in them.
 
+## Containerized Environment
+
+If you would like to setup the environment in a container then you have a few options such as Docker, LXC, or systemd-nspawn. The following will provide steps to using [systemd-nspawn](https://wiki.archlinux.org/index.php/systemd-nspawn#Create_a_Debian_or_Ubuntu_environment) ("chroot on steroids").
+
+Assumptions:
+* Host is a Linux machine
+* Using systemd (as systemd-nspawn is part of the package)
+
+Steps:
+* Install `debootstrap` (i.e. `sudo apt install debootstrap` or `sudo pacman -S debootstrap`)
+* `cd /var/lib/machines && sudo debootstrap --include=systemd-container --components=main,universe xenial MILContainer http://archive.ubuntu.com/ubuntu/`
+* Run container: `sudo systemd-nspawn -D MILContainer`
+* Set root password `passwd` and logout `logout`
+* Allow local apps to access X `sudo xhost +local:` (may need to install xhost package)
+* Run complete container (with binded X11 file): `sudo systemd-nspawn -M xenial -b -D MILContainer --bind-ro=/tmp/.X11-unix` and login
+* Add nameserver (persistent after reload) `echo 'echo "nameserver 8.8.8.8" > /etc/resolv.conf' >> /etc/rc.local'`
+* Add new user `adduser USERNAME` and give sudo `usermod -aG sudo USERNAME`
+* `su USERNAME` and set correct `DISPLAY` variable `export DISPLAY=:0.0` and `echo "export DISPLAY=:0.0" >> .bashrc`
+* May need to modify `/etc/hosts` to include your hostname
+* Run install script from `Setting Up the Development Environment`
+* Each time you want to open up the container run: `sudo systemd-nspawn -M xenial -b -D MILContainer --bind-ro=/tmp/.X11-unix`
+* Happy coding!
+
+
 # Setting Up a User Workspace
 On vehicles and workstations, the installation process will have already been completed and the user may not necessarily have root access. In these cases, the user install script should be used to perform all of the setup steps to create a catkin workspace without requiring root access.
 
