@@ -3,6 +3,7 @@ project(sub8_thruster_mapper)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
+  rostest
 )
 catkin_package()
 include_directories(
