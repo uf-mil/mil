@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <param name="/is_simulation" value="True" />
+
+  <node pkg="mil_usb_to_can" type="driver.py" name="usb_to_can_driver">
+    <rosparam>
+    device_handles: 
+      "0": mil_usb_to_can.ExampleCANDeviceHandle
+    simulated_devices:
+      "0": mil_usb_to_can.ExampleSimulatedCANDevice
+    </rosparam>
+  </node>
+</launch>
