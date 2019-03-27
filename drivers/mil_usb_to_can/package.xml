@@ -2,9 +2,9 @@
 <package format="2">
   <name>mil_usb_to_can</name>
   <version>0.0.0</version>
-  <description>The mil_usb_to_can package</description>
+  <description>Driver for interfacing with the CAN2USB board</description>
   <maintainer email="kallen@todo.todo">kallen</maintainer>
-  <license>TODO</license>
+  <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>serial</exec_depend>
