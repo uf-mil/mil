@@ -82,8 +82,6 @@ class SubjuGatorDynamics(object):
         else:
             proportion_above_water = height_above_water / self.height
 
-        #proportion_above_water = 0.
-
         # Calculate the portion of buoyancy force above the water
         # https://en.wikipedia.org/wiki/Archimedes%27_principle
         buoyancy_above_water = (self.air_density * self.G * self.volume) * proportion_above_water
