@@ -68,6 +68,7 @@ class Sub(object):
         body_to_world = quaternion_matrix(self.pose[3:])
         world_to_body = np.linalg.inv(body_to_world)
 
+        # Perform inverse dynamics to get current acceleration in body frame
         accel = self.dynamics.inverse_dynamics(self.pose[2], self.twist, world_to_body, wrench=self.wrench)
 
         # Increment velocity by current acceleration by the time delta

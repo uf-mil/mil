@@ -24,8 +24,7 @@ class SubjuGatorDynamics(object):
         self.mass = mass
         self.volume = volume
         self.drag_coeffs = drag_coeffs
-        self.water_density = 997.
-        self.G = 9.81
+        self.G = G
         self.height = height
         self.water_density = water_density
         self.air_density = air_density
@@ -83,6 +82,8 @@ class SubjuGatorDynamics(object):
         else:
             proportion_above_water = height_above_water / self.height
 
+        #proportion_above_water = 0.
+
         # Calculate the portion of buoyancy force above the water
         # https://en.wikipedia.org/wiki/Archimedes%27_principle
         buoyancy_above_water = (self.air_density * self.G * self.volume) * proportion_above_water
@@ -115,9 +116,8 @@ class SubjuGatorDynamics(object):
         @param wrench: 6x1 force + torque additional applied to body from motors, etc
         @return 6x1 linear + angular acceleration in body frame, m/s^2 or rad/s^2
         '''
-        wrench += self.drag(twist)
-        wrench += self.gravity_and_buoyancy(z, world_to_body)
-        return self.inverse_dynamics_from_total_wrench(twist, wrench)
+        total_wrench = wrench + self.drag(twist) + self.gravity_and_buoyancy(z, world_to_body)
+        return self.inverse_dynamics_from_total_wrench(twist, total_wrench)
 
     def inverse_dynamics_from_total_wrench(self, twist, total_wrench):
         '''
