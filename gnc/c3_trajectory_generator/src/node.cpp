@@ -134,7 +134,7 @@ struct Node
     , waypoint_validity_(nh)
   {
     // Make sure alarm integration is ok
-    kill_listener.waitForConnection(ros::Duration(2));
+    kill_listener.waitForUpdate(ros::Duration(10));
     if (kill_listener.getNumConnections() < 1)
       throw std::runtime_error("The kill listener isn't connected to the alarm server");
     kill_listener.start();  // Fuck.
