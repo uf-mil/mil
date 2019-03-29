@@ -2,4 +2,14 @@
 <!-- Sets robot_description paramater to Navigator's URDF -->
 <launch>
   <param name="robot_description" textfile="$(find sub8_gazebo)/urdf/sub8.urdf"/>
+  <rosparam param="robot_parameters">
+    volume: 0.04822
+    drag:
+      linear_coeffs: [50, 50, 50]
+      angular_coeffs: [10, 10, 10]
+    height: 0.59
+    fluid_density: 997.0
+    air_density: 1.225
+    G: 9.81
+  </rosparam>
 </launch>
