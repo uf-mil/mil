@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from mil_misc_tools.serial_tools import SimulatedSerial
-from utils import Packet, CommandPacket
+from utils import ReceivePacket, CommandPacket
 
 
 class SimulatedCANDevice(object):
@@ -64,7 +64,7 @@ class SimulatedUSBtoCAN(SimulatedSerial):
         # Call appropriate handle for simulated device
         if p.is_receive:
             payload = self.devices[filter_id].handle_request(p.length)
-            self.buffer += Packet(payload).to_bytes()
+            self.buffer += ReceivePacket.create_receive_packet(payload).to_bytes()
         else:
             self.devices[filter_id].handle_send(p.data)
         return len(data)

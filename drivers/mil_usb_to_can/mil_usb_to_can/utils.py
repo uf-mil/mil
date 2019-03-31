@@ -26,13 +26,7 @@ class Packet(object):
         return struct.pack('B{}sB'.format(len(self.payload)), self.SOF, self.payload, self.EOF)
 
     @classmethod
-    def from_bytes(cls, data):
-        '''
-        Parses a packet from a bytes string into a Packet instance
-        @param data: bytes/string containing exactly one packet
-        @return a Packet instance of succesfully parsed or None if failed
-        TODO: raise exceptions on invalid SOF/EOF
-        '''
+    def unpack_payload(cls, data):
         payload_len = len(data) - 2
         if payload_len < 1:
             return None
@@ -40,6 +34,19 @@ class Packet(object):
         if sof != cls.SOF:
             return None
         if eof != cls.EOF:
+            return None
+        return payload
+
+    @classmethod
+    def from_bytes(cls, data):
+        '''
+        Parses a packet from a bytes string into a Packet instance
+        @param data: bytes/string containing exactly one packet
+        @return a Packet instance of succesfully parsed or None if failed
+        TODO: raise exceptions on invalid SOF/EOF
+        '''
+        payload = cls.unpack_payload(data)
+        if payload is None:
             return None
         return cls(payload)
 
@@ -59,6 +66,43 @@ class Packet(object):
         if len(data) != packet_length:
             return None
         return cls.from_bytes(data)
+
+
+class ReceivePacket(Packet):
+    @property
+    def data(self):
+        return self.payload[:-1]
+
+    @classmethod
+    def create_receive_packet(cls, data):
+        '''
+        Creates a command packet to request data from a CAN device
+        @param filter_id: the CAN device ID to request data from
+        @param receive_length: the number of bytes to request
+        '''
+        checksum = cls.SOF + cls.EOF
+        for byte in data:
+            checksum += ord(byte)
+        checksum %= 16
+        data = data + chr(checksum)
+        return cls(data)
+
+    @classmethod
+    def from_bytes(cls, data):
+        expected_checksum = 0
+        for byte in data[:-2]:
+            expected_checksum += ord(byte)
+        expected_checksum += ord(data[-1])
+        expected_checksum %= 16
+        real_checksum = ord(data[-2])
+        if real_checksum != expected_checksum:
+            raise Exception('invalid checksum')
+        payload = cls.unpack_payload(data)
+        return cls(payload)
+
+    @classmethod
+    def read_packet(cls, ser, data_length):
+        return super(ReceivePacket, cls).read_packet(ser, data_length + 1)
 
 
 class CommandPacket(Packet):
@@ -133,6 +177,39 @@ class CommandPacket(Packet):
         '''
         length_byte = receive_length | 128
         return cls.create_command_packet(length_byte, filter_id)
+
+    @staticmethod
+    def calculate_checksum(data):
+        checksum = 0
+        for byte in data:
+            checksum += ord(byte)
+        return checksum % 16
+
+    @classmethod
+    def from_bytes(cls, data):
+        checksum_expected = 0
+        checksum_expected += ord(data[0])
+        checksum_expected += ord(data[1]) & 135
+        for byte in data[2:]:
+            checksum_expected += ord(byte)
+        checksum_expected %= 16
+        checksum_real = (ord(data[1]) & 120) >> 3
+        if checksum_expected != checksum_real:
+            raise Exception('bla')
+        payload = cls.unpack_payload(data)
+        if payload is None:
+            return None
+        return cls(payload)
+
+    def to_bytes(self):
+        data = super(CommandPacket, self).to_bytes()
+        checksum = 0
+        for byte in data:
+            checksum += ord(byte)
+        checksum %= 16
+        header_byte = (checksum << 3) | ord(data[1])
+        data = data[:1] + chr(header_byte) + data[2:]
+        return data
 
     def __str__(self):
         if self.is_receive:

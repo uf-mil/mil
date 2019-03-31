@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import serial
-from utils import Packet, CommandPacket
+from utils import ReceivePacket, CommandPacket
 from simulation import SimulatedUSBtoCAN
 from threading import Lock
 
@@ -34,8 +34,8 @@ class USBtoCANBoard(object):
         req = CommandPacket.create_receive_packet(device_id, length)
         with self.lock:
             self.ser.write(req.to_bytes())
-            res = Packet.read_packet(self.ser, length)
-            return res.payload
+            res = ReceivePacket.read_packet(self.ser, length)
+            return res.data
 
     def send_data(self, device_id, data):
         '''

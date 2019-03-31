@@ -44,7 +44,7 @@ class ExampleCANDeviceHandle(CANDeviceHandle):
 
     def timer_cb(self, *args):
         # Example string to test with
-        test = 'HELLOWORLD'
+        test = 'HELLO'
         # Send example string to device
         self.send_data(test)
         # Request data from device
