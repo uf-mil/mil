@@ -21,7 +21,7 @@ class USBtoCANBoard(object):
         if simulated:
             self.ser = SimulatedUSBtoCAN(**kwargs)
         else:
-            self.ser = serial.Serial(port=port, baudrate=baud, timeout=1., **kwargs)
+            self.ser = serial.Serial(port=port, baudrate=baud, timeout=5., **kwargs)
 
     def request_data(self, device_id, length):
         '''

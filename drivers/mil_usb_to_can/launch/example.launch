@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-  <arg name="simulated" default="True" />
+  <arg name="simulated" default="False" />
   <param name="/is_simulation" value="$(arg simulated)" />
 
   <node pkg="mil_usb_to_can" type="driver.py" name="usb_to_can_driver">
     <rosparam>
-    port: /dev/serial/by-id/usb-MIL_Data_Merge_Board_Ports_5_to_8_DMBP58-if00-port0
-    baudrate: 9600
-    device_handles: 
-      "0": mil_usb_to_can.ExampleCANDeviceHandle
+    port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A900KV22-if00-port0
+    baudrate: 115200
+    device_handles:
+      "9": mil_usb_to_can.ExampleCANDeviceHandle
     simulated_devices:
       "0": mil_usb_to_can.ExampleSimulatedCANDevice
     </rosparam>
