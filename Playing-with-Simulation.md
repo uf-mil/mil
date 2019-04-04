@@ -1,7 +1,7 @@
 ## Run The Simulator
 In a new terminal, run the dynamics simulator with the command:
 
-```roslaunch sub8_launch dynamics_simulator.launch```
+```roslaunch sub8_launch gazebo.launch```
 
 ## Open RVIZ
 Open up RVIZ configured to display SubjuGator's topics. In a new terminal, run:
