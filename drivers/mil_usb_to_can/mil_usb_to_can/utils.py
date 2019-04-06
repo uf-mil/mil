@@ -129,8 +129,7 @@ class CommandPacket(Packet):
         '''
         @return: the number of bytes of data sent or requested
         '''
-        if self.is_receive:
-            return self.length_byte & 127
+        return (self.length_byte & 7) + 1
 
     @property
     def filter_id(self):
@@ -165,17 +164,17 @@ class CommandPacket(Packet):
         @param filter_id: the CAN device ID to send data to
         @param data: the data payload as string/bytes
         '''
-        length_byte = len(data)
+        length_byte = len(data) - 1
         return cls.create_command_packet(length_byte, filter_id, data)
 
     @classmethod
-    def create_receive_packet(cls, filter_id, receive_length):
+    def create_request_packet(cls, filter_id, receive_length):
         '''
         Creates a command packet to request data from a CAN device
         @param filter_id: the CAN device ID to request data from
         @param receive_length: the number of bytes to request
         '''
-        length_byte = receive_length | 128
+        length_byte = (receive_length - 1) | 128
         return cls.create_command_packet(length_byte, filter_id)
 
     @staticmethod

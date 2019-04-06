@@ -31,8 +31,9 @@ class USBtoCANBoard(object):
         @param length: the number of bytes to request
         @return: the data retrieved from the device, which should be of the specified length
         '''
-        req = CommandPacket.create_receive_packet(device_id, length)
+        req = CommandPacket.create_request_packet(device_id, length)
         with self.lock:
+            # print 'Requesting {} bytes from device {}: {}'.format(length, device_id, hexify(req.to_bytes()))
             self.ser.write(req.to_bytes())
             res = ReceivePacket.read_packet(self.ser, length)
             return res.data
@@ -46,4 +47,5 @@ class USBtoCANBoard(object):
         '''
         p = CommandPacket.create_send_packet(device_id, data)
         with self.lock:
+            # print "Sending '{}' to device {}: {}".format(data, device_id, hexify(p.to_bytes()))
             self.ser.write(p.to_bytes())
