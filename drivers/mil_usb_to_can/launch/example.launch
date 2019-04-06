@@ -10,7 +10,7 @@
     device_handles:
       "9": mil_usb_to_can.ExampleCANDeviceHandle
     simulated_devices:
-      "0": mil_usb_to_can.ExampleSimulatedCANDevice
+      "9": mil_usb_to_can.ExampleSimulatedCANDevice
     </rosparam>
   </node>
 </launch>
