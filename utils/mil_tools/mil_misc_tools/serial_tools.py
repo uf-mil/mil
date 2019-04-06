@@ -2,6 +2,14 @@
 import serial
 
 
+def hexify(buff):
+    '''
+    Print a string displaying the bytes in hex format
+    example: hexify(my_packet) -> c0:14:09:48:45:4c:4c:4f:c1
+    '''
+    return ':'.join(b.encode('hex') for b in buff)
+
+
 class NoopSerial(serial.Serial):
     '''
     Inherits from serial.Serial, doing nothing for each function.
