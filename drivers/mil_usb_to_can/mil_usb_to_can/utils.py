@@ -158,14 +158,13 @@ class CommandPacket(Packet):
         return cls(payload)
 
     @classmethod
-    def create_send_packet(cls, filter_id, data):
+    def create_send_packet(cls, data):
         '''
-        Creates a command packet to send data to a CAN device from the motherboard
-        @param filter_id: the CAN device ID to send data to
+        Creates a command packet to send data to the CAN bus from the motherboard
         @param data: the data payload as string/bytes
         '''
         length_byte = len(data) - 1
-        return cls.create_command_packet(length_byte, filter_id, data)
+        return cls.create_command_packet(length_byte, 0, data)
 
     @classmethod
     def create_request_packet(cls, filter_id, receive_length):

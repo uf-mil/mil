@@ -8,22 +8,32 @@ class SimulatedCANDevice(object):
     Simulates a CAN device, with functions to be overrided
     to handle data requests and sends from motherboard
     '''
-    def handle_request(self, length):
+    def __init__(self, sim_board, can_id):
         '''
-        Called when the motherboard requests data from this device
-        @param length: number of bytes to return
-        @return: should return a bytes/string object with the specificed length
+        Constructs the simulated device, storing the simulated CAN2USB board it is attached to
+        and its CAN device id.
+        Child classes must call this method when their __init__ is called (see ExampleSimulatedCANDevice below)
         '''
-        # For this default device, simply echo a bunch of zeros
-        return '\x00' * length
+        self._sim_board = sim_board
+        self._can_id = can_id
 
-    def handle_send(self, data):
+    def send_data(self, data):
         '''
-        Called when the motherboard sends data to this device
+        Send data onto the bus, delivering it to other simulated
+        devices and to the driver node
+        '''
+        self._sim_board.send_to_bus(self._can_id, data)
+
+    def on_data(self, data):
+        '''
+        Called when the motherboard or another simulated device
+        sends data onto the bus.
+        Intended to be overriden by child classes (see ExampleSimulatedCANDevice below)
         @param data: the data payload as a string/bytes object
+        NOTE: as the CAN bus is shared, you should inspect the data
+              to make sure it was intended for this device before processing it
         '''
-        # Simply print the received payload
-        print 'Got send ', data
+        pass
 
 
 class ExampleSimulatedCANDevice(SimulatedCANDevice):
@@ -32,15 +42,13 @@ class ExampleSimulatedCANDevice(SimulatedCANDevice):
     On sends, stores the transmited data in a buffer.
     When data is requested, it echos this data back.
     '''
-    def __init__(self):
-        self.echo_buffer = ''
+    def __init__(self, *args, **kwargs):
+        # Call parent classes contructor
+        super(ExampleSimulatedCANDevice, self).__init__(*args, **kwargs)
 
-    def handle_send(self, data):
-        self.echo_buffer += data
-
-    def handle_request(self, length):
-        ret, self.echo_buffer = self.echo_buffer[0:length], self.echo_buffer[length:]
-        return ret
+    def on_data(self, data):
+        # Echo data received back onto the bus
+        self.send_data(data)
 
 
 class SimulatedUSBtoCAN(SimulatedSerial):
@@ -50,21 +58,34 @@ class SimulatedUSBtoCAN(SimulatedSerial):
     @param devices: dictionary {device_id: SimulatedCANDevice} mapping CAN IDs
                     to SimulatedCANDevice instances that will be used for that ID
     '''
-    def __init__(self, devices={0: SimulatedCANDevice()}, *args, **kwargs):
-        self.devices = devices
+    def __init__(self, devices={0: SimulatedCANDevice}, can_id=0, *args, **kwargs):
+        self._my_id = can_id
+        self._bus = {}
+        self._devices = {}
+        for can_id, device in devices.iteritems():
+            self._devices[can_id] = device(self, can_id)
         super(SimulatedUSBtoCAN, self).__init__()
+
+    def send_to_bus(self, can_id, data):
+        if can_id != self._my_id:
+            self._bus[can_id] = data
+        for device_can_id, device in self._devices.iteritems():
+            if device_can_id != can_id:
+                device.on_data(data)
 
     def write(self, data):
         # Parse incomming data as a command packet from motherboard
         p = CommandPacket.from_bytes(data)
-        filter_id = p.filter_id
-        # If no simulated device for this id, raise exception
-        if filter_id not in self.devices:
-            raise Exception('simulated version of {} not connected'.format(filter_id))
         # Call appropriate handle for simulated device
         if p.is_receive:
-            payload = self.devices[filter_id].handle_request(p.length)
-            self.buffer += ReceivePacket.create_receive_packet(payload).to_bytes()
+            # If data from this device is on the simulated bus, pass it to the motherboard
+            if p.filter_id in self._bus:
+                self.buffer += ReceivePacket.create_receive_packet(self._bus[p.filter_id]).to_bytes()
+            # Otherwise, simulate a serial timeout
+            else:
+                # Todo: raise actual serial timeout
+                raise Exception('serial timeout')
         else:
-            self.devices[filter_id].handle_send(p.data)
+            # If a send, send this data to other devices on simulated CAN network
+            self.send_to_bus(self._my_id, p.data)
         return len(data)

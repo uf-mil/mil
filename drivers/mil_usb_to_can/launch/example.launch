@@ -7,6 +7,7 @@
     <rosparam>
     port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A900KV22-if00-port0
     baudrate: 115200
+    can_id: 0
     device_handles:
       "9": mil_usb_to_can.ExampleCANDeviceHandle
     simulated_devices:

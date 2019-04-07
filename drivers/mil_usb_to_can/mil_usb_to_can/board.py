@@ -45,7 +45,7 @@ class USBtoCANBoard(object):
         @param device_id: CAN device ID to send data to
         @param data: bytes/string object of the data to send to the device
         '''
-        p = CommandPacket.create_send_packet(device_id, data)
+        p = CommandPacket.create_send_packet(data)
         with self.lock:
             # print "Sending '{}' to device {}: {}".format(data, device_id, hexify(p.to_bytes()))
             self.ser.write(p.to_bytes())
