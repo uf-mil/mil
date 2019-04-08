@@ -1,5 +1,7 @@
 #!/usr/bin/python
 import rospy
+import struct
+from rospy_tutorials.srv import AddTwoInts
 
 
 class CANDeviceHandle(object):
@@ -29,16 +31,16 @@ class CANDeviceHandle(object):
         Sends data to the device
         @param data: the data payload to send to the device (string/bytes object)
         '''
-        return self._driver.send_data(self._device_id, data)
+        return self._driver.send_data(data)
 
 
-class ExampleCANDeviceHandle(CANDeviceHandle):
+class ExampleEchoDeviceHandle(CANDeviceHandle):
     '''
     An example implementation of a CANDeviceHandle which will handle
     a device that echos back any data sent to it.
     '''
     def __init__(self, *args, **kwargs):
-        super(ExampleCANDeviceHandle, self).__init__(*args, **kwargs)
+        super(ExampleEchoDeviceHandle, self).__init__(*args, **kwargs)
         # Setup a timer to check valid functionality every second
         self.timer = rospy.Timer(rospy.Duration(1.0), self.timer_cb)
 
@@ -52,3 +54,23 @@ class ExampleCANDeviceHandle(CANDeviceHandle):
         # Ensure device correctly echoed exact same data back
         assert res == test
         rospy.loginfo('Succesfully echoed {}'.format(test))
+
+
+class ExampleAdderDeviceHandle(CANDeviceHandle):
+    '''
+    An example implementation of a CANDeviceHandle which will handle
+    a device that echos back any data sent to it.
+    '''
+    def __init__(self, *args, **kwargs):
+        super(ExampleAdderDeviceHandle, self).__init__(*args, **kwargs)
+        self._srv = rospy.Service('add_two_ints', AddTwoInts, self.on_service_req)
+
+    def on_service_req(self, req):
+        can_req = struct.pack('Bhh', 37, req.a, req.b)
+        self.send_data(can_req)
+        res_format = 'Bi'
+        can_res = self.request_data(struct.calcsize(res_format))
+        flag, my_sum = struct.unpack(res_format, can_res)
+        if flag != 37:
+            return -1
+        return my_sum

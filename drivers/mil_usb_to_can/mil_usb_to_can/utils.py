@@ -2,6 +2,56 @@
 import struct
 
 
+class USB2CANException(Exception):
+    '''
+    Base class for exception in USB2CAN board functionality
+    '''
+    pass
+
+
+class ChecksumException(USB2CANException):
+    '''
+    Exception thrown when the checksum between motherboard and CAN2USb board is invalid
+    '''
+    def __init__(self, calculated, expected):
+        super(ChecksumException, self).__init__(
+            'Checksum was calculated as {} but reported as {}'.format(calculated, expected))
+
+
+class PayloadTooLargeException(USB2CANException):
+    '''
+    Exception thrown when payload of data sent/received from CAN2USB is too large
+    '''
+    def __init__(self, length):
+        super(PayloadTooLargeException, self).__init__(
+            'Payload is {} bytes, which is greater than the maximum of 8'.format(length))
+
+
+class InvalidFlagException(USB2CANException):
+    '''
+    Exception thrown when a constant flag in the CAN2USB protocol is invalid
+    '''
+    def __init__(self, description, expected, was):
+        super(InvalidFlagException, self).__init__(
+            '{} flag should be {} but was {}'.format(description, expected, was))
+
+
+class InvalidStartFlagException(InvalidFlagException):
+    '''
+    Exception thrown when the SOF flag is invalid
+    '''
+    def __init__(self, was):
+        super(InvalidStartFlagException, self).__init__('SOF', Packet.SOF, was)
+
+
+class InvalidEndFlagException(InvalidFlagException):
+    '''
+    Exception thrown when the EOF flag is invalid
+    '''
+    def __init__(self, was):
+        super(InvalidEndFlagException, self).__init__('EOF', Packet.EOF, was)
+
+
 class Packet(object):
     '''
     Represents a packet to or from the CAN to USB board
@@ -32,9 +82,9 @@ class Packet(object):
             return None
         sof, payload, eof = struct.unpack('B{}sB'.format(payload_len), data)
         if sof != cls.SOF:
-            return None
+            raise InvalidStartFlagException(sof)
         if eof != cls.EOF:
-            return None
+            raise InvalidEndFlagException(eof)
         return payload
 
     @classmethod
@@ -80,6 +130,8 @@ class ReceivePacket(Packet):
         @param filter_id: the CAN device ID to request data from
         @param receive_length: the number of bytes to request
         '''
+        if len(data) > 8:
+            raise PayloadTooLargeException(len(data))
         checksum = cls.SOF + cls.EOF
         for byte in data:
             checksum += ord(byte)
@@ -96,7 +148,7 @@ class ReceivePacket(Packet):
         expected_checksum %= 16
         real_checksum = ord(data[-2])
         if real_checksum != expected_checksum:
-            raise Exception('invalid checksum')
+            raise ChecksumException(expected_checksum, real_checksum)
         payload = cls.unpack_payload(data)
         return cls(payload)
 
@@ -154,6 +206,8 @@ class CommandPacket(Packet):
         @param filter_id: the second header byte
         @param data: option data payload when this is a send command
         '''
+        if len(data) > 8:
+            raise PayloadTooLargeException(len(data))
         payload = struct.pack('BB{}s'.format(len(data)), length_byte, filter_id, data)
         return cls(payload)
 
@@ -193,7 +247,7 @@ class CommandPacket(Packet):
         checksum_expected %= 16
         checksum_real = (ord(data[1]) & 120) >> 3
         if checksum_expected != checksum_real:
-            raise Exception('bla')
+            raise ChecksumException(checksum_expected, checksum_real)
         payload = cls.unpack_payload(data)
         if payload is None:
             return None

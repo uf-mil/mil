@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from mil_misc_tools.serial_tools import SimulatedSerial
 from utils import ReceivePacket, CommandPacket
+import struct
 
 
 class SimulatedCANDevice(object):
@@ -36,7 +37,7 @@ class SimulatedCANDevice(object):
         pass
 
 
-class ExampleSimulatedCANDevice(SimulatedCANDevice):
+class ExampleSimulatedEchoDevice(SimulatedCANDevice):
     '''
     Example implementation of a SimulatedCANDevice.
     On sends, stores the transmited data in a buffer.
@@ -44,31 +45,58 @@ class ExampleSimulatedCANDevice(SimulatedCANDevice):
     '''
     def __init__(self, *args, **kwargs):
         # Call parent classes contructor
-        super(ExampleSimulatedCANDevice, self).__init__(*args, **kwargs)
+        super(ExampleSimulatedEchoDevice, self).__init__(*args, **kwargs)
 
     def on_data(self, data):
         # Echo data received back onto the bus
         self.send_data(data)
 
 
+class ExampleSimulatedAdderDevice(SimulatedCANDevice):
+    '''
+    Example implementation of a SimulatedCANDevice.
+    On sends, stores the transmited data in a buffer.
+    When data is requested, it echos this data back.
+    '''
+    def __init__(self, *args, **kwargs):
+        # Call parent classes contructor
+        super(ExampleSimulatedAdderDevice, self).__init__(*args, **kwargs)
+
+    def on_data(self, data):
+        if ord(data[0]) != 37:
+            return
+        _, a, b = struct.unpack('Bhh', data)
+        c = a + b
+        res = struct.pack('Bi', 37, c)
+        self.send_data(res)
+
+
 class SimulatedUSBtoCAN(SimulatedSerial):
     '''
     Simulates the USB to CAN board. Is supplied with a dictionary of simualted
     CAN devices to simulate the behavior of the whole CAN network.
-    @param devices: dictionary {device_id: SimulatedCANDevice} mapping CAN IDs
-                    to SimulatedCANDevice instances that will be used for that ID
     '''
-    def __init__(self, devices={0: SimulatedCANDevice}, can_id=0, *args, **kwargs):
+    def __init__(self, devices={0: SimulatedCANDevice}, can_id=-1, *args, **kwargs):
+        '''
+        @param devices: dictionary {device_id: SimulatedCANDevice} mapping CAN IDs
+                        to SimulatedCANDevice classes that will be used for that ID
+        @param can_id: ID of the CAN2USB device
+        '''
         self._my_id = can_id
         self._bus = {}
-        self._devices = {}
-        for can_id, device in devices.iteritems():
-            self._devices[can_id] = device(self, can_id)
+        self._devices = dict((can_id, device(self, can_id)) for can_id, device in devices.iteritems())
         super(SimulatedUSBtoCAN, self).__init__()
 
     def send_to_bus(self, can_id, data):
+        '''
+        Sends data onto the simulated bus from a simulated device
+        @param can_id: ID of sender
+        @param data: data paylod
+        '''
+        # If not from the motherboard, store this for future requests from motherboard
         if can_id != self._my_id:
             self._bus[can_id] = data
+        # Send data to all simulated devices besides the sender
         for device_can_id, device in self._devices.iteritems():
             if device_can_id != can_id:
                 device.on_data(data)

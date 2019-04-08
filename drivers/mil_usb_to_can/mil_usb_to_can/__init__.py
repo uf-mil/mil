@@ -1,5 +1,5 @@
 #!/usr/bin/python
 from utils import CommandPacket, ReceivePacket
-from simulation import SimulatedCANDevice, SimulatedCANDevice, ExampleSimulatedCANDevice
-from device import CANDeviceHandle, ExampleCANDeviceHandle
+from simulation import SimulatedCANDevice, SimulatedCANDevice, ExampleSimulatedEchoDevice, ExampleSimulatedAdderDevice
+from device import CANDeviceHandle, ExampleEchoDeviceHandle, ExampleAdderDeviceHandle
 from board import USBtoCANBoard
