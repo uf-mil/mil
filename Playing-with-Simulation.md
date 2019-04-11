@@ -1,5 +1,5 @@
 ## Run The Simulator
-In a new terminal, run the dynamics simulator with the command:
+In a new terminal, run the Gazebo-based simulator with the command:
 
 ```roslaunch sub8_launch gazebo.launch```
 
