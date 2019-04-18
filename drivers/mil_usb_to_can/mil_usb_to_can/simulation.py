@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from serial import SerialTimeoutException
 from mil_misc_tools.serial_tools import SimulatedSerial
 from utils import ReceivePacket, CommandPacket
 import struct
@@ -107,12 +108,13 @@ class SimulatedUSBtoCAN(SimulatedSerial):
         # Call appropriate handle for simulated device
         if p.is_receive:
             # If data from this device is on the simulated bus, pass it to the motherboard
-            if p.filter_id in self._bus:
+            if p.filter_id in self._bus and p.length == len(self._bus[p.filter_id]):
                 self.buffer += ReceivePacket.create_receive_packet(self._bus[p.filter_id]).to_bytes()
+                del self._bus[p.filter_id]
             # Otherwise, simulate a serial timeout
             else:
                 # Todo: raise actual serial timeout
-                raise Exception('serial timeout')
+                raise SerialTimeoutException()
         else:
             # If a send, send this data to other devices on simulated CAN network
             self.send_to_bus(self._my_id, p.data)
