@@ -21,7 +21,9 @@ class USBtoCANBoard(object):
         if simulated:
             self.ser = SimulatedUSBtoCAN(**kwargs)
         else:
-            self.ser = serial.Serial(port=port, baudrate=baud, timeout=5., **kwargs)
+            self.ser = serial.Serial(port=port, baudrate=baud, timeout=0.1, **kwargs)
+        self.ser.flushOutput()
+        self.ser.flushInput()
 
     def request_data(self, device_id, length):
         '''
@@ -33,7 +35,6 @@ class USBtoCANBoard(object):
         '''
         req = CommandPacket.create_request_packet(device_id, length)
         with self.lock:
-            # print 'Requesting {} bytes from device {}: {}'.format(length, device_id, hexify(req.to_bytes()))
             self.ser.write(req.to_bytes())
             res = ReceivePacket.read_packet(self.ser, length)
             return res.data
@@ -47,5 +48,4 @@ class USBtoCANBoard(object):
         '''
         p = CommandPacket.create_send_packet(data)
         with self.lock:
-            # print "Sending '{}' to device {}: {}".format(data, device_id, hexify(p.to_bytes()))
             self.ser.write(p.to_bytes())
