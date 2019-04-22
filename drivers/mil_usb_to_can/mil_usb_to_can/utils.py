@@ -112,7 +112,16 @@ class Packet(object):
         @return a Packet object of the read packet or None if it failed
         '''
         packet_length = payload_length + 2
-        data = ser.read(packet_length)
+        # Read until SOF is encourntered incase buffer contains the end of a previous packet
+        sof = None
+        for _ in xrange(10):
+            sof = ser.read(1)
+            if ord(sof) == cls.SOF:
+                break
+        if ord(sof) != cls.SOF:
+            raise InvalidStartFlagException(ord(sof))
+        data = ser.read(packet_length - 1)
+        data = sof + data
         if len(data) != packet_length:
             return None
         return cls.from_bytes(data)
