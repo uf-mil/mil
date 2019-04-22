@@ -104,48 +104,60 @@ class Packet(object):
         return 'Packet(payload={})'.format(self.payload)
 
     @classmethod
-    def read_packet(cls, ser, payload_length):
+    def read_packet(cls, ser):
         '''
         Read a packet with a known size from a serial device
         @param ser: a instance of serial.Serial (or simulated version) to read from
         @param payload_length: the length of the payload of this packet you are expecting, in bytes
         @return a Packet object of the read packet or None if it failed
         '''
-        packet_length = payload_length + 2
         # Read until SOF is encourntered incase buffer contains the end of a previous packet
         sof = None
         for _ in xrange(10):
             sof = ser.read(1)
+            if sof is None:
+                return None
             if ord(sof) == cls.SOF:
                 break
         if ord(sof) != cls.SOF:
             raise InvalidStartFlagException(ord(sof))
-        data = ser.read(packet_length - 1)
-        data = sof + data
-        if len(data) != packet_length:
-            return None
+        data = sof
+        eof = None
+        for _ in xrange(10):
+            eof = ser.read(1)
+            if eof is None:
+                return None
+            data += eof
+            if ord(eof) == cls.EOF:
+                break
+        if ord(eof) != cls.EOF:
+            raise InvalidEndFlagException(ord(eof))
         return cls.from_bytes(data)
 
 
 class ReceivePacket(Packet):
     @property
+    def device(self):
+        return struct.unpack('B', self.payload[0])[0]
+
+    @property
     def data(self):
-        return self.payload[:-1]
+        return self.payload[1:-1]
 
     @classmethod
-    def create_receive_packet(cls, data):
+    def create_receive_packet(cls, device_id, payload):
         '''
         Creates a command packet to request data from a CAN device
         @param filter_id: the CAN device ID to request data from
         @param receive_length: the number of bytes to request
         '''
-        if len(data) > 8:
-            raise PayloadTooLargeException(len(data))
-        checksum = cls.SOF + cls.EOF
-        for byte in data:
+        if len(payload) > 8:
+            raise PayloadTooLargeException(len(payload))
+        checksum = device_id + cls.SOF + cls.EOF
+        for byte in payload:
             checksum += ord(byte)
         checksum %= 16
-        data = data + chr(checksum)
+        data = struct.pack('B{}sB'.format(len(payload)), device_id, payload, checksum)
         return cls(data)
 
     @classmethod
@@ -160,10 +172,6 @@ class ReceivePacket(Packet):
             raise ChecksumException(expected_checksum, real_checksum)
         payload = cls.unpack_payload(data)
         return cls(payload)
-
-    @classmethod
-    def read_packet(cls, ser, data_length):
-        return super(ReceivePacket, cls).read_packet(ser, data_length + 1)
 
 
 class CommandPacket(Packet):

@@ -23,8 +23,19 @@ class USBtoCANDriver(object):
             self.board = USBtoCANBoard(port=port, baud=baud, simulated=simulation)
 
         # Add device handles from the modules specified in ROS params
-        self.handles = [cls(self.board, device_id) for device_id, cls in
-                        self.parse_module_dictionary(rospy.get_param('~device_handles'))]
+        self.handles = dict((device_id, cls(self.board, device_id)) for device_id, cls in
+                            self.parse_module_dictionary(rospy.get_param('~device_handles')))
+
+        self.timer = rospy.Timer(rospy.Duration(1. / 20.), self.process_in_buffer)
+
+    def process_in_buffer(self, *args):
+        packet = self.board.read_packet()
+        while packet is not None:
+            if packet.device in self.handles:
+                self.handles[packet.device].on_data(packet.data)
+            else:
+                print 'Message received for device {}, but no handle registered'.format(packet.device)
+            packet = self.board.read_packet()
 
     @staticmethod
     def parse_module_dictionary(d):

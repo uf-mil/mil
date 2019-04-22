@@ -1,6 +1,9 @@
 #!/usr/bin/python
 import rospy
 import struct
+import random
+import string
+from application_packet import ApplicationPacket
 from rospy_tutorials.srv import AddTwoInts
 
 
@@ -18,13 +21,11 @@ class CANDeviceHandle(object):
         self._driver = driver
         self._device_id = device_id
 
-    def request_data(self, length):
+    def on_data(self, data):
         '''
-        Requests data from the device
-        @param length: number of bytes to request
-        @return: the response bytes from the device
+        Called when data is received from the device this handle is registered for
         '''
-        return self._driver.request_data(self._device_id, length)
+        pass
 
     def send_data(self, data):
         '''
@@ -41,19 +42,27 @@ class ExampleEchoDeviceHandle(CANDeviceHandle):
     '''
     def __init__(self, *args, **kwargs):
         super(ExampleEchoDeviceHandle, self).__init__(*args, **kwargs)
-        # Setup a timer to check valid functionality every second
-        self.timer = rospy.Timer(rospy.Duration(1.0), self.timer_cb)
+        self.last_sent = None
+        self.send_new_string()
 
-    def timer_cb(self, *args):
+    def on_data(self, data):
+        if self.last_sent is None:
+            print 'Received {} but have not yet sent anthing'.format(data)
+        elif data != self.last_sent[0]:
+            print 'ERROR! Reveived {} but last sent {}'.format(data, self.last_sent)
+        else:
+            print 'SUCCESSFULLY echoed {} in {}seconds'.format(
+                self.last_sent[0],
+                (rospy.Time.now() - self.last_sent[1]).to_sec())
+            rospy.sleep(0.1)
+            self.send_new_string()
+
+    def send_new_string(self):
         # Example string to test with
-        test = 'HELLO'
-        # Send example string to device
+        test = ''.join([random.choice(string.ascii_letters) for i in range(4)])
+        self.last_sent = (test, rospy.Time.now())
+        print 'SENDING {}'.format(test)
         self.send_data(test)
-        # Request data from device
-        res = self.request_data(len(test))
-        # Ensure device correctly echoed exact same data back
-        assert res == test
-        rospy.loginfo('Succesfully echoed {}'.format(test))
 
 
 class ExampleAdderDeviceHandle(CANDeviceHandle):
@@ -63,14 +72,22 @@ class ExampleAdderDeviceHandle(CANDeviceHandle):
     '''
     def __init__(self, *args, **kwargs):
         super(ExampleAdderDeviceHandle, self).__init__(*args, **kwargs)
+        self.correct_response = 37
+        self.response_received = None
         self._srv = rospy.Service('add_two_ints', AddTwoInts, self.on_service_req)
 
     def on_service_req(self, req):
-        can_req = struct.pack('Bhh', 37, req.a, req.b)
-        self.send_data(can_req)
-        res_format = 'Bi'
-        can_res = self.request_data(struct.calcsize(res_format))
-        flag, my_sum = struct.unpack(res_format, can_res)
-        if flag != 37:
-            return -1
+        payload = struct.pack('hh', req.a, req.b)
+        self.correct_response = req.a + req.b
+        self.response_received = None
+        self.send_data(ApplicationPacket(37, payload).to_bytes())
+        start = rospy.Time.now()
+        while self.response_received is None:
+            if rospy.Time.now() - start > rospy.Duration(1):
+                return -1
+        res = ApplicationPacket.from_bytes(self.response_received, expected_identifier=37)
+        my_sum = struct.unpack('i', res.payload)
         return my_sum
+
+    def on_data(self, data):
+        self.response_received = data

@@ -1,7 +1,7 @@
 #!/usr/bin/python
-from serial import SerialTimeoutException
 from mil_misc_tools.serial_tools import SimulatedSerial
 from utils import ReceivePacket, CommandPacket
+from application_packet import ApplicationPacket
 import struct
 
 
@@ -64,12 +64,11 @@ class ExampleSimulatedAdderDevice(SimulatedCANDevice):
         super(ExampleSimulatedAdderDevice, self).__init__(*args, **kwargs)
 
     def on_data(self, data):
-        if ord(data[0]) != 37:
-            return
-        _, a, b = struct.unpack('Bhh', data)
+        packet = ApplicationPacket.from_bytes(data, expected_identifier=37)
+        a, b = struct.unpack('hh', packet.payload)
         c = a + b
-        res = struct.pack('Bi', 37, c)
-        self.send_data(res)
+        res = struct.pack('i', c)
+        self.send_data(ApplicationPacket(37, res).to_bytes())
 
 
 class SimulatedUSBtoCAN(SimulatedSerial):
@@ -84,7 +83,6 @@ class SimulatedUSBtoCAN(SimulatedSerial):
         @param can_id: ID of the CAN2USB device
         '''
         self._my_id = can_id
-        self._bus = {}
         self._devices = dict((can_id, device(self, can_id)) for can_id, device in devices.iteritems())
         super(SimulatedUSBtoCAN, self).__init__()
 
@@ -96,7 +94,7 @@ class SimulatedUSBtoCAN(SimulatedSerial):
         '''
         # If not from the motherboard, store this for future requests from motherboard
         if can_id != self._my_id:
-            self._bus[can_id] = data
+            self.buffer += ReceivePacket.create_receive_packet(can_id, data).to_bytes()
         # Send data to all simulated devices besides the sender
         for device_can_id, device in self._devices.iteritems():
             if device_can_id != can_id:
@@ -105,17 +103,5 @@ class SimulatedUSBtoCAN(SimulatedSerial):
     def write(self, data):
         # Parse incomming data as a command packet from motherboard
         p = CommandPacket.from_bytes(data)
-        # Call appropriate handle for simulated device
-        if p.is_receive:
-            # If data from this device is on the simulated bus, pass it to the motherboard
-            if p.filter_id in self._bus and p.length == len(self._bus[p.filter_id]):
-                self.buffer += ReceivePacket.create_receive_packet(self._bus[p.filter_id]).to_bytes()
-                del self._bus[p.filter_id]
-            # Otherwise, simulate a serial timeout
-            else:
-                # Todo: raise actual serial timeout
-                raise SerialTimeoutException()
-        else:
-            # If a send, send this data to other devices on simulated CAN network
-            self.send_to_bus(self._my_id, p.data)
+        self.send_to_bus(self._my_id, p.data)
         return len(data)

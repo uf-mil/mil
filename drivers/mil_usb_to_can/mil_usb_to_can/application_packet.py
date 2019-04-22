@@ -8,7 +8,7 @@ class ApplicationPacketWrongIdentifierException(Exception):
     '''
     def __init__(self, was, should_be):
         super(ApplicationPacketWrongIdentifierException, self).__init__(
-            "Expected identified '{}', go '{}'".format(should_be, was))
+            "Expected identified '{}', got '{}'".format(should_be, was))
 
 
 class ApplicationPacket(object):
@@ -22,9 +22,12 @@ class ApplicationPacket(object):
         return struct.pack('B{}s'.format(len(self.payload)), self.identifier, self.payload)
 
     @classmethod
-    def from_bytes(cls, data):
+    def from_bytes(cls, data, expected_identifier=None):
         payload_len = len(data) - 1
-        return cls(*struct.unpack('B{}s'.format(payload_len), data))
+        packet = cls(*struct.unpack('B{}s'.format(payload_len), data))
+        if expected_identifier is not None and expected_identifier != packet.identifier:
+            raise ApplicationPacketWrongIdentifierException(packet.identifier, expected_identifier)
+        return packet
 
     def __str__(self):
         return 'MilApplicationPacket(identifer={}, payload={})'.format(self.identifier, self.payload)

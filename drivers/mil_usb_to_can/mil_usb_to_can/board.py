@@ -25,19 +25,15 @@ class USBtoCANBoard(object):
         self.ser.flushOutput()
         self.ser.flushInput()
 
-    def request_data(self, device_id, length):
+    def read_packet(self):
         '''
-        Request bytes from a CAN device
-        Note: write/read operation is mutex locked
-        @param device_id: CAN device ID to request data from
-        @param length: the number of bytes to request
-        @return: the data retrieved from the device, which should be of the specified length
+        Read a packet from the board, if available. Returns a ReceivePacket instance if one
+        was succefully read, or None if the in buffer is empty.
         '''
-        req = CommandPacket.create_request_packet(device_id, length)
         with self.lock:
-            self.ser.write(req.to_bytes())
-            res = ReceivePacket.read_packet(self.ser, length)
-            return res.data
+            if self.ser.in_waiting == 0:
+                return None
+            return ReceivePacket.read_packet(self.ser)
 
     def send_data(self, data):
         '''

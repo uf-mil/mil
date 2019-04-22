@@ -4,6 +4,7 @@
   <param name="/is_simulation" value="$(arg simulated)" />
 
   <node pkg="mil_usb_to_can" type="driver.py" name="usb_to_can_driver">
+    <rosparam command="delete" />
     <rosparam>
     # Path of serial device
     port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A900KV22-if00-port0
