@@ -15,11 +15,11 @@
     # List of python device handle classes
     device_handles:
       # Device 9 will be handled with ExampleCANDeviceHandle
-      "9": mil_usb_to_can.ExampleEchoDeviceHandle
+      "3": mil_usb_to_can.ExampleEchoDeviceHandle
     # List of simulated devices to use when /is_simulation is True
     simulated_devices:
       # Device 9 will be simulated with ExampleSimulatedCANDevice
-      "9": mil_usb_to_can.ExampleSimulatedEchoDevice
+      "3": mil_usb_to_can.ExampleSimulatedEchoDevice
     </rosparam>
   </node>
 </launch>
