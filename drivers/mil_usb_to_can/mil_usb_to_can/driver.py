@@ -1,6 +1,8 @@
 #!/usr/bin/python
 import rospy
 from board import USBtoCANBoard
+from utils import USB2CANException
+from serial import SerialException
 import importlib
 
 
@@ -29,14 +31,30 @@ class USBtoCANDriver(object):
 
         self.timer = rospy.Timer(rospy.Duration(1. / 20.), self.process_in_buffer)
 
-    def process_in_buffer(self, *args):
-        packet = self.board.read_packet()
-        while packet is not None:
-            if packet.device in self.handles:
-                self.handles[packet.device].on_data(packet.data)
-            else:
-                rospy.logwarn('Message received for device {}, but no handle registered'.format(packet.device))
+    def read_packet(self):
+        '''
+        Attempt to read a packet from the board. Returns True if a message
+        was succesfully parsed
+        '''
+        try:
             packet = self.board.read_packet()
+        except (SerialException, USB2CANException) as e:
+            rospy.logerr('Error reading packet: {}'.format(e))
+            return False
+        if packet is None:
+            return False
+        if packet.device in self.handles:
+            self.handles[packet.device].on_data(packet.data)
+        else:
+            rospy.logwarn('Message received for device {}, but no handle registered'.format(packet.device))
+        return True
+
+    def process_in_buffer(self, *args):
+        '''
+        Read all available messages in the board's in buffer
+        '''
+        while self.read_packet():
+            pass
 
     @staticmethod
     def parse_module_dictionary(d):
