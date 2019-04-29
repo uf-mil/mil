@@ -142,7 +142,11 @@ class ReceivePacket(Packet):
 
     @property
     def data(self):
-        return self.payload[1:-1]
+        return self.payload[2:-1]
+
+    @property
+    def length(self):
+        return struct.unpack('B', self.payload[1])[0]
 
     @classmethod
     def create_receive_packet(cls, device_id, payload):
@@ -153,11 +157,11 @@ class ReceivePacket(Packet):
         '''
         if len(payload) > 8:
             raise PayloadTooLargeException(len(payload))
-        checksum = device_id + cls.SOF + cls.EOF
+        checksum = device_id + len(payload) + cls.SOF + cls.EOF
         for byte in payload:
             checksum += ord(byte)
         checksum %= 16
-        data = struct.pack('B{}sB'.format(len(payload)), device_id, payload, checksum)
+        data = struct.pack('BB{}sB'.format(len(payload)), device_id, len(payload), payload, checksum)
         return cls(data)
 
     @classmethod
