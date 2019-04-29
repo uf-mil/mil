@@ -17,6 +17,7 @@ class USBtoCANDriver(object):
         simulation = rospy.get_param('/is_simulation', True)
         # If simulation mode, load simualted devices
         if simulation:
+            rospy.logwarn('In simulation!!!!')
             devices = dict(list(self.parse_module_dictionary(rospy.get_param('~simulated_devices'))))
             self.board = USBtoCANBoard(port=port, baud=baud, simulated=simulation, devices=devices, can_id=can_id)
         else:
@@ -34,7 +35,7 @@ class USBtoCANDriver(object):
             if packet.device in self.handles:
                 self.handles[packet.device].on_data(packet.data)
             else:
-                print 'Message received for device {}, but no handle registered'.format(packet.device)
+                rospy.logwarn('Message received for device {}, but no handle registered'.format(packet.device))
             packet = self.board.read_packet()
 
     @staticmethod
