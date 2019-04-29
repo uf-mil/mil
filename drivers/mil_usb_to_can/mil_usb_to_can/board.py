@@ -35,13 +35,14 @@ class USBtoCANBoard(object):
                 return None
             return ReceivePacket.read_packet(self.ser)
 
-    def send_data(self, data):
+    def send_data(self, data, can_id=0):
         '''
         Sends data to a CAN device
         Note: write operation is mutex locked
         @param device_id: CAN device ID to send data to
         @param data: bytes/string object of the data to send to the device
         '''
-        p = CommandPacket.create_send_packet(data)
+        p = CommandPacket.create_send_packet(data, can_id=can_id)
         with self.lock:
-            self.ser.write(p.to_bytes())
+            p_bytes = p.to_bytes()
+            self.ser.write(p_bytes)

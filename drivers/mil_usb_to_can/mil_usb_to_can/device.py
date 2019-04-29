@@ -27,12 +27,12 @@ class CANDeviceHandle(object):
         '''
         pass
 
-    def send_data(self, data):
+    def send_data(self, data, can_id=0):
         '''
         Sends data to the device
         @param data: the data payload to send to the device (string/bytes object)
         '''
-        return self._driver.send_data(data)
+        return self._driver.send_data(data, can_id=can_id)
 
 
 class ExampleEchoDeviceHandle(CANDeviceHandle):
@@ -54,7 +54,7 @@ class ExampleEchoDeviceHandle(CANDeviceHandle):
             print 'SUCCESSFULLY echoed {} in {}seconds'.format(
                 self.last_sent[0],
                 (rospy.Time.now() - self.last_sent[1]).to_sec())
-            rospy.sleep(0.1)
+            rospy.sleep(0.15)
             self.send_new_string()
 
     def send_new_string(self):

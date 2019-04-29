@@ -174,6 +174,10 @@ class ReceivePacket(Packet):
         return cls(payload)
 
 
+def can_id(task_group, ecu_number):
+    return (task_group & 240) + (ecu_number & 15)
+
+
 class CommandPacket(Packet):
     '''
     Represents a packet to the CAN board from the motherboard.
@@ -229,13 +233,13 @@ class CommandPacket(Packet):
         return cls(payload)
 
     @classmethod
-    def create_send_packet(cls, data):
+    def create_send_packet(cls, data, can_id=0):
         '''
         Creates a command packet to send data to the CAN bus from the motherboard
         @param data: the data payload as string/bytes
         '''
         length_byte = len(data) - 1
-        return cls.create_command_packet(length_byte, 0, data)
+        return cls.create_command_packet(length_byte, can_id, data)
 
     @classmethod
     def create_request_packet(cls, filter_id, receive_length):

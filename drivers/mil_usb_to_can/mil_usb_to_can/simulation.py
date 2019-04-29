@@ -26,7 +26,7 @@ class SimulatedCANDevice(object):
         '''
         self._sim_board.send_to_bus(self._can_id, data)
 
-    def on_data(self, data):
+    def on_data(self, data, can_id):
         '''
         Called when the motherboard or another simulated device
         sends data onto the bus.
