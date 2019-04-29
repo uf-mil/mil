@@ -51,6 +51,20 @@ class KillMessage(ApplicationPacket):
         return 'KillMessage(command={}, hard={}, asserted={})'.format(self.is_command, self.is_hard, self.is_asserted)
 
 
+class HeartbeatMessage(ApplicationPacket):
+    '''
+    TODO
+    '''
+    IDENTIFIER = ord('H')
+
+    @classmethod
+    def create(cls):
+        return cls(cls.IDENTIFIER, struct.pack('BB', ord('M'), 0))
+
+    def __str__(self):
+        return 'HeartbeatMessage()'
+
+
 class GoMessage(ApplicationPacket):
     '''
     TODO

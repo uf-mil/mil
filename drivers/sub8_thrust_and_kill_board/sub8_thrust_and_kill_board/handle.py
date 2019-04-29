@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import rospy
 from mil_usb_to_can import CANDeviceHandle
-from packets import ThrustPacket, GoMessage, KillMessage
+from packets import ThrustPacket, GoMessage, KillMessage, HeartbeatMessage
 from std_msgs.msg import Float64
 from ros_alarms import AlarmBroadcaster, AlarmListener
 
@@ -18,9 +18,12 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         self.kill_listener = AlarmListener('kill', callback_funct=self.on_soft_kill)
         self._hard_kill_broadcaster = AlarmBroadcaster('hw-hard-kill')
         self._soft_kill_broadcaster = AlarmBroadcaster('kill')
-
+        self._hearbeat_timer = rospy.Timer(rospy.Duration(0.7), self.send_heartbeat)
         self._subs = [rospy.Subscriber(thruster, Float64, self.on_command, queue_size=10, callback_args=thruster)
                       for thruster in ThrustPacket.ID_MAPPING]
+
+    def send_heartbeat(self, timer):
+        self.send_data(HeartbeatMessage.create().to_bytes())
 
     def on_soft_kill(self, alarm):
         if self._last_kill is not alarm.raised:
@@ -51,5 +54,6 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         elif GoMessage.IDENTIFIER == ord(data[0]):
             msg = GoMessage.from_bytes(data)
         else:
-            rospy.logwarn('UNEXPECTED MESSAGE with identifier {}'.format(data[0]))
+            rospy.logwarn('UNEXPECTED MESSAGE with identifier {}'.format(ord(data[0])))
+            return
         rospy.loginfo(str(msg))

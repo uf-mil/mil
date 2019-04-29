@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from mil_usb_to_can import SimulatedCANDevice
-from packets import ThrustPacket, GoMessage, KillMessage
+from packets import ThrustPacket, GoMessage, KillMessage, HeartbeatMessage
 import rospy
 from std_srvs.srv import SetBool
 
@@ -51,5 +51,8 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
                 assert False
         elif ThrustPacket.IDENTIFIER == ord(data[0]):
             packet = ThrustPacket.from_bytes(data)
+        elif HeartbeatMessage.IDENTIFIER == ord(data[0]):
+            packet = HeartbeatMessage.from_bytes(data)
+            # TODO: indicate when hearbeat is too stale
         else:
             assert False
