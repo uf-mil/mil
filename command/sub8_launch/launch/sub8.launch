@@ -2,7 +2,8 @@
 <launch>
   <!-- Defines what environment the system is running on, can be 'real', 'gazebo' or 'dynsim' -->
   <arg name="environment" default="real" />
-  <param name="/environment" value="$(arg environment" />
+  <param name="/environment" value="$(arg environment)" />
+  <param name="/is_simulation" value="$(eval environment != 'real')" />
   <rosparam param="/autonomous">False</rosparam>
 
   <include file="$(find sub8_launch)/launch/tf.launch" />
@@ -13,6 +14,8 @@
     <arg name="depth" value="true" />
     <arg name="environment" value="$(arg environment)" />
   </include>
+
+  <include file="$(find sub8_launch)/launch/can.launch" />
 
   <include if="$(eval environment != 'dynsim')" file="$(find sub8_launch)/launch/subsystems/cameras.launch">
     <arg name="environment" value="$(arg environment)" />
