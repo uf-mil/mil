@@ -48,7 +48,7 @@ class ExampleSimulatedEchoDevice(SimulatedCANDevice):
         # Call parent classes contructor
         super(ExampleSimulatedEchoDevice, self).__init__(*args, **kwargs)
 
-    def on_data(self, data):
+    def on_data(self, data, can_id):
         # Echo data received back onto the bus
         self.send_data(data)
 
@@ -63,7 +63,7 @@ class ExampleSimulatedAdderDevice(SimulatedCANDevice):
         # Call parent classes contructor
         super(ExampleSimulatedAdderDevice, self).__init__(*args, **kwargs)
 
-    def on_data(self, data):
+    def on_data(self, data, can_id):
         packet = ApplicationPacket.from_bytes(data, expected_identifier=37)
         a, b = struct.unpack('hh', packet.payload)
         c = a + b
@@ -86,22 +86,22 @@ class SimulatedUSBtoCAN(SimulatedSerial):
         self._devices = dict((can_id, device(self, can_id)) for can_id, device in devices.iteritems())
         super(SimulatedUSBtoCAN, self).__init__()
 
-    def send_to_bus(self, can_id, data):
+    def send_to_bus(self, can_id, data, from_mobo=False):
         '''
         Sends data onto the simulated bus from a simulated device
         @param can_id: ID of sender
         @param data: data paylod
         '''
         # If not from the motherboard, store this for future requests from motherboard
-        if can_id != self._my_id:
+        if not from_mobo:
             self.buffer += ReceivePacket.create_receive_packet(can_id, data).to_bytes()
         # Send data to all simulated devices besides the sender
         for device_can_id, device in self._devices.iteritems():
             if device_can_id != can_id:
-                device.on_data(data)
+                device.on_data(data, can_id)
 
     def write(self, data):
         # Parse incomming data as a command packet from motherboard
         p = CommandPacket.from_bytes(data)
-        self.send_to_bus(self._my_id, p.data)
+        self.send_to_bus(p.filter_id, p.data, from_mobo=True)
         return len(data)
