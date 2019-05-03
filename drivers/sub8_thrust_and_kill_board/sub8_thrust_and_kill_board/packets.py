@@ -2,6 +2,12 @@ import struct
 from mil_usb_to_can import ApplicationPacket
 
 
+# CAN channel to send thrust messages to
+THRUST_SEND_ID = 0x21
+# CAN channel ot send kill messages to
+KILL_SEND_ID = 0x11
+
+
 class KillMessage(ApplicationPacket):
     '''
     TODO
@@ -12,7 +18,7 @@ class KillMessage(ApplicationPacket):
     HARD = 0x48
     SOFT = 0x53
     ASSERTED = 0x41
-    UNASSERTED = 0x56
+    UNASSERTED = 0x55
     PADDING = 0x00
 
     @classmethod

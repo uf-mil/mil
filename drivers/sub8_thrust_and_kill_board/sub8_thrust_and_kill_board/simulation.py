@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from mil_usb_to_can import SimulatedCANDevice
-from packets import ThrustPacket, GoMessage, KillMessage, HeartbeatMessage
+from packets import ThrustPacket, GoMessage, KillMessage, HeartbeatMessage, THRUST_SEND_ID, KILL_SEND_ID
 import rospy
 from std_srvs.srv import SetBool
 
@@ -39,7 +39,9 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
         self.send_data(soft_msg.to_bytes())
         self.send_data(go_msg.to_bytes())
 
-    def on_data(self, data):
+    def on_data(self, data, can_id):
+        if can_id != THRUST_SEND_ID and can_id != KILL_SEND_ID:
+            return
         if KillMessage.IDENTIFIER == ord(data[0]):
             packet = KillMessage.from_bytes(data)
             assert packet.is_command
