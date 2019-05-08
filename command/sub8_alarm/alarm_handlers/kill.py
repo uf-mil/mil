@@ -2,7 +2,9 @@ import rospy
 from ros_alarms import HandlerBase, Alarm
 from actionlib import SimpleActionClient, TerminalState
 from mil_msgs.msg import BagOnlineAction, BagOnlineGoal
+from std_srvs.srv import SetBool
 import os
+from threading import Lock
 
 
 class Kill(HandlerBase):
@@ -14,19 +16,36 @@ class Kill(HandlerBase):
         self.initial_alarm = Alarm(self.alarm_name, True,
                                    node_name='alarm_server',
                                    problem_description='Initial kill')
-
         self._killed = False
         self._last_mission_killed = False
+        self.lock = Lock()
         self.bag_client = SimpleActionClient('/online_bagger/bag', BagOnlineAction)
+        self.set_mobo_kill = rospy.ServiceProxy('/set_mobo_kill', SetBool)
         self.first = True
 
     def raised(self, alarm):
+        # Send kill command to kill board when alarm is raised
+        self.set_mobo_kill(True)
         self._killed = True
         self.bagger_dump()
         self.first = False
 
     def cleared(self, alarm):
-        self._killed = False
+        # Lock in mutex to ensure only one callback runs at once
+        with self.lock:
+            # If a node / user attempted to clear kill but hw-kill is still raised
+            if self.get_alarm('hw-kill').raised:
+                # Send board mobo unkill command and wait for board to respond
+                self.set_mobo_kill(False)
+                expiration = rospy.Time.now() + rospy.Duration(1.0)
+                while self._alarm_server.alarms['hw-kill'].raised and rospy.Time.now() < expiration:
+                    rospy.sleep(0.01)
+                # If hw-kill is still raised after timeout, the kill plug is likely pulled, so alarm should NOT clear
+                if self._alarm_server.alarms['hw-kill'].raised:
+                    # Re-assert mobo kill since reviving failed
+                    self.set_mobo_kill(True)
+                    return False
+            self._killed = False
 
     def _bag_done_cb(self, status, result):
         if status == 3:

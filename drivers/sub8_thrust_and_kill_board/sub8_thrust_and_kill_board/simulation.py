@@ -9,10 +9,15 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
     '''
     TODO
     '''
+    HEARTBEAT_TIMEOUT_SECONDS = rospy.Duration(1.0)
+
     def __init__(self, *args, **kwargs):
-        self.hard_killed = False
-        self.soft_killed = False
+        self.hard_kill_plug_pulled = False
+        self.hard_kill_mobo = False
+        self.soft_kill_plug_pulled = False
+        self.soft_kill_mobo = False
         self.go_button = False
+        self._last_heartbeat = None
         super(ThrusterAndKillBoardSimulation, self).__init__(*args, **kwargs)
         self._update_timer = rospy.Timer(rospy.Duration(1), self.send_updates)
         self._soft_kill = rospy.Service('/simulate_soft_kill', SetBool, self.set_soft_kill)
@@ -24,14 +29,23 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
         return {'success': True}
 
     def set_soft_kill(self, req):
-        self.soft_killed = req.data
+        self.soft_kill_plug_pulled = req.data
         return {'success': True}
 
     def set_hard_kill(self, req):
-        self.hard_killed = req.data
+        self.hard_kill_plug_pulled = req.data
         return {'success': True}
 
-    def send_updates(self, timer):
+    @property
+    def hard_killed(self):
+        return self.hard_kill_mobo or self.hard_kill_plug_pulled
+
+    @property
+    def soft_killed(self):
+        return self.soft_kill_plug_pulled or self.soft_kill_mobo or self._last_heartbeat is None or \
+            (rospy.Time.now() - self._last_heartbeat) > self.HEARTBEAT_TIMEOUT_SECONDS
+
+    def send_updates(self, *args):
         hard_msg = KillMessage.create_kill_message(command=False, hard=True, asserted=self.hard_killed)
         soft_msg = KillMessage.create_kill_message(command=False, hard=False, asserted=self.soft_killed)
         go_msg = GoMessage.create_go_message(asserted=self.go_button)
@@ -46,15 +60,16 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
             packet = KillMessage.from_bytes(data)
             assert packet.is_command
             if packet.is_hard:
-                self.hard_killed = packet.is_asserted
+                self.hard_kill_mobo = packet.is_asserted
             elif packet.is_soft:
-                self.soft_killed = packet.is_asserted
+                self.soft_kill_mobo = packet.is_asserted
             else:
                 assert False
+            self.send_updates()
         elif ThrustPacket.IDENTIFIER == ord(data[0]):
             packet = ThrustPacket.from_bytes(data)
         elif HeartbeatMessage.IDENTIFIER == ord(data[0]):
             packet = HeartbeatMessage.from_bytes(data)
-            # TODO: indicate when hearbeat is too stale
+            self._last_heartbeat = rospy.Time.now()
         else:
             assert False
