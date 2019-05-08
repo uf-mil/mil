@@ -16,7 +16,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         self.kill_listener = AlarmListener('kill', callback_funct=self.on_soft_kill)
         self._hard_kill_broadcaster = AlarmBroadcaster('hw-hard-kill')
         self._soft_kill_broadcaster = AlarmBroadcaster('kill')
-        self._hearbeat_timer = rospy.Timer(rospy.Duration(0.7), self.send_heartbeat)
+        self._hearbeat_timer = rospy.Timer(rospy.Duration(0.5), self.send_heartbeat)
         self._subs = [rospy.Subscriber(thruster, Float64, self.on_command, queue_size=10, callback_args=thruster)
                       for thruster in ThrustPacket.ID_MAPPING]
 
