@@ -3,6 +3,7 @@ import serial
 from utils import ReceivePacket, CommandPacket
 from simulation import SimulatedUSBtoCAN
 from threading import Lock
+# from mil_tools import hexify
 
 
 class USBtoCANBoard(object):
@@ -45,4 +46,5 @@ class USBtoCANBoard(object):
         p = CommandPacket.create_send_packet(data, can_id=can_id)
         with self.lock:
             p_bytes = p.to_bytes()
+            # print 'SENDING ', hexify(p_bytes)
             self.ser.write(p_bytes)

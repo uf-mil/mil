@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import struct
+# from mil_tools import hexify
 
 
 class USB2CANException(Exception):
@@ -93,7 +94,6 @@ class Packet(object):
         Parses a packet from a bytes string into a Packet instance
         @param data: bytes/string containing exactly one packet
         @return a Packet instance of succesfully parsed or None if failed
-        TODO: raise exceptions on invalid SOF/EOF
         '''
         payload = cls.unpack_payload(data)
         if payload is None:
@@ -132,6 +132,7 @@ class Packet(object):
                 break
         if ord(eof) != cls.EOF:
             raise InvalidEndFlagException(ord(eof))
+        # print hexify(data)
         return cls.from_bytes(data)
 
 
