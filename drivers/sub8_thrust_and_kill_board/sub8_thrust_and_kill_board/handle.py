@@ -19,8 +19,12 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         self._last_soft_kill = None
         # Tracks last hard kill status received from board
         self._last_hard_kill = None
+        # Tracks last go status broadcasted
+        self._last_go = None
         # Used to raise/clear hw-kill when board updates
         self._kill_broadcaster = AlarmBroadcaster('hw-kill')
+        # Alarm broadaster for GO command
+        self._go_alarm_broadcaster = AlarmBroadcaster('go')
         # Listens to hw-kill updates to ensure another nodes doesn't manipulate it
         self._hw_kill_listener = AlarmListener('hw-kill', callback_funct=self.on_hw_kill)
         # Provide service for alarm handler to set/clear the motherboard kill
@@ -99,6 +103,13 @@ class ThrusterAndKillBoard(CANDeviceHandle):
             self.update_hw_kill()
         elif GoMessage.IDENTIFIER == ord(data[0]):
             msg = GoMessage.from_bytes(data)
+            asserted = msg.asserted
+            if self._last_go is None or asserted != self._last_go:
+                if asserted:
+                    self._go_alarm_broadcaster.raise_alarm(problem_description="Go plug pulled!")
+                else:
+                    self._go_alarm_broadcaster.clear_alarm(problem_description="Go plug returned")
+                self._last_go = asserted
         else:
             rospy.logwarn('UNEXPECTED MESSAGE with identifier {}'.format(ord(data[0])))
             return
