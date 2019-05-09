@@ -115,7 +115,7 @@ class Packet(object):
         sof = None
         for _ in xrange(10):
             sof = ser.read(1)
-            if sof is None:
+            if sof is None or len(sof) == 0:
                 return None
             if ord(sof) == cls.SOF:
                 break
@@ -125,7 +125,7 @@ class Packet(object):
         eof = None
         for _ in xrange(10):
             eof = ser.read(1)
-            if eof is None:
+            if eof is None or len(eof) == 0:
                 return None
             data += eof
             if ord(eof) == cls.EOF:
