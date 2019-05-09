@@ -7,7 +7,8 @@ from std_srvs.srv import SetBool
 
 class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
     '''
-    TODO
+    Serial simulator for the thruster and kill board,
+    providing services to simulate physical plug connections/disconnections
     '''
     HEARTBEAT_TIMEOUT_SECONDS = rospy.Duration(1.0)
 

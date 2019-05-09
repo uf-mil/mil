@@ -10,7 +10,8 @@ KILL_SEND_ID = 0x11
 
 class KillMessage(ApplicationPacket):
     '''
-    TODO
+    Represents a packet sent to kill/thrust board which contains
+    a command or response related to kill status
     '''
     IDENTIFIER = ord('K')
     COMMAND = 0x43
@@ -59,7 +60,7 @@ class KillMessage(ApplicationPacket):
 
 class HeartbeatMessage(ApplicationPacket):
     '''
-    TODO
+    Represents the special hearbeat packet send to kill/thrust board
     '''
     IDENTIFIER = ord('H')
 
@@ -73,7 +74,8 @@ class HeartbeatMessage(ApplicationPacket):
 
 class GoMessage(ApplicationPacket):
     '''
-    TODO
+    Represents the Go message received from the kill/thrust board indiciating
+    the status of the go plug.
     '''
     IDENTIFIER = ord('G')
     ASSERTED = 0x41
@@ -96,7 +98,8 @@ class GoMessage(ApplicationPacket):
 
 class ThrustPacket(ApplicationPacket):
     '''
-    TODO
+    Represents a command send to the thrust/kill board to set
+    the PWM of a thruster
     '''
     IDENTIFIER = ord('T')
     ID_MAPPING = {
