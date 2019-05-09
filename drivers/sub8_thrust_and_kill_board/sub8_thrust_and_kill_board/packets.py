@@ -107,7 +107,7 @@ class ThrustPacket(ApplicationPacket):
         'FRH': 1,
         'FLV': 2,
         'FRV': 3,
-        'BHL': 4,
+        'BLH': 4,
         'BRH': 5,
         'BLV': 6,
         'BRV': 7,

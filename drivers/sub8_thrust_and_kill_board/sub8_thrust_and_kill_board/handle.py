@@ -2,9 +2,9 @@
 import rospy
 from mil_usb_to_can import CANDeviceHandle
 from packets import ThrustPacket, GoMessage, KillMessage, HeartbeatMessage, THRUST_SEND_ID, KILL_SEND_ID
-from std_msgs.msg import Float64
 from std_srvs.srv import SetBool
 from ros_alarms import AlarmBroadcaster, AlarmListener
+from sub8_msgs.msg import Thrust
 
 
 class ThrusterAndKillBoard(CANDeviceHandle):
@@ -31,9 +31,8 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         self._unkill_service = rospy.Service('/set_mobo_kill', SetBool, self.set_mobo_kill)
         # Sends hearbeat to board
         self._hearbeat_timer = rospy.Timer(rospy.Duration(0.5), self.send_heartbeat)
-        # Create a subscribe for each thruster
-        self._subs = [rospy.Subscriber(thruster, Float64, self.on_command, queue_size=10, callback_args=thruster)
-                      for thruster in ThrustPacket.ID_MAPPING]
+        # Create a subscribe for thruster commands
+        self._sub = rospy.Subscriber('/thrusters/thrust', Thrust, self.on_command, queue_size=10)
 
     def set_mobo_kill(self, req):
         '''
@@ -56,13 +55,14 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         '''
         self._last_hw_kill = alarm
 
-    def on_command(self, msg, thruster):
+    def on_command(self, msg):
         '''
         When a thrust command message is received from the Subscriber, send the appropriate packet
         to the board
         '''
-        packet = ThrustPacket.create_thrust_packet(ThrustPacket.ID_MAPPING[thruster], msg.data)
-        self.send_data(packet.to_bytes(), can_id=THRUST_SEND_ID)
+        for cmd in msg.thruster_commands:
+            packet = ThrustPacket.create_thrust_packet(ThrustPacket.ID_MAPPING[cmd.name], cmd.thrust)
+            self.send_data(packet.to_bytes(), can_id=THRUST_SEND_ID)
 
     def update_hw_kill(self):
         '''
