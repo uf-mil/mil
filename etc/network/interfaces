@@ -7,28 +7,19 @@
 auto lo
 iface lo inet loopback
 
+# USB to ethernet
 allow-hotplug enx000acd337bbf
 iface enx000acd337bbf inet manual
 
+# USB to ethernet
 allow-hotplug enx000acd337bbe
 iface enx000acd337bbe inet manual
 
+# Motherbuild built-in ethernet
 allow-hotplug eno2
 iface eno2 inet manual
 
-
-
-
-#allow-hotplug enp0s0
-#iface enp0s0 inet static
-#	address 192.168.37.60
-#	netmask 255.255.255.0
-#	gateway 192.168.37.1
-#	dns-nameservers 192.168.37.1 192.168.37.31 192.168.37.32
-#	dns-search ad.mil.ufl.edu
-
-
-
+# Virtual bridge of the above 3 ethernet connections
 auto br0
 iface br0 inet static
 	bridge_ports enx000acd337bbf enx000acd337bbe eno2
