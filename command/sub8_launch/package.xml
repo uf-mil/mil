@@ -23,6 +23,7 @@
   <run_depend>sub8_diagnostics</run_depend>
   <run_depend>image_proc</run_depend>
   <run_depend>usb_cam</run_depend>
+  <run_depend>mil_usb_to_can</run_depend>
   <buildtool_depend>catkin</buildtool_depend>
   <export>
   </export>
