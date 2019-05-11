@@ -30,7 +30,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         # Provide service for alarm handler to set/clear the motherboard kill
         self._unkill_service = rospy.Service('/set_mobo_kill', SetBool, self.set_mobo_kill)
         # Sends hearbeat to board
-        self._hearbeat_timer = rospy.Timer(rospy.Duration(0.5), self.send_heartbeat)
+        self._hearbeat_timer = rospy.Timer(rospy.Duration(0.4), self.send_heartbeat)
         # Create a subscribe for thruster commands
         self._sub = rospy.Subscriber('/thrusters/thrust', Thrust, self.on_command, queue_size=10)
 
@@ -68,7 +68,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         '''
         If needed, update the hw-kill alarm so it reflects the latest status from the board
         '''
-        if self._last_soft_kill is None or self._last_hard_kill is None:
+        if self._last_soft_kill is None and self._last_hard_kill is None:
             return
 
         # Set serverity / problem message appropriately

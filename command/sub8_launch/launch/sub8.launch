@@ -15,13 +15,14 @@
     <arg name="environment" value="$(arg environment)" />
   </include>
 
-  <include file="$(find sub8_launch)/launch/can.launch" />
+  <include file="$(find sub8_launch)/launch/can.launch">
+    <arg name="simulated" value="$(eval environment != 'real')"/>
+  </include>
 
   <include if="$(eval environment != 'dynsim')" file="$(find sub8_launch)/launch/subsystems/cameras.launch">
     <arg name="environment" value="$(arg environment)" />
   </include>
   <include if="$(eval environment != 'dynsim')" file="$(find sub8_launch)/launch/subsystems/odometry.launch"/>
-  <include if="$(eval environment == 'real')" file="$(find sub8_launch)/launch/subsystems/thrusters.launch"/>
   <include file="$(find sub8_launch)/launch/subsystems/thruster_mapper.launch"/>
   <include file="$(find sub8_launch)/launch/subsystems/rise.launch">
     <arg name="environment" value="$(arg environment)" />
