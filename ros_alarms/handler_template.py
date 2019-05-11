@@ -1,6 +1,3 @@
-import rospy
-
-
 class HandlerBase(object):
 
     '''
@@ -13,13 +10,61 @@ class HandlerBase(object):
     '''
     alarm_name = 'generic-name'
     severity_required = (0, 5)
+    alarm_server = None
+
+    @classmethod
+    def _init(cls, alarm_server):
+        '''
+        Called by the alarm server to give each handler a reference to the alarm server,
+        so it can efficiently get and set alarms
+        '''
+        cls._alarm_server = alarm_server
+
+    @property
+    def current_alarm(self):
+        '''
+        Returns the status of the alarm this handler is registered for
+        '''
+        return self.get_alarm(self.alarm_name)
+
+    def get_alarm(self, name):
+        '''
+        Gets the current status of an alarm
+        @return The request alarm object, or None if it has not been set
+        '''
+        return self._alarm_server.alarms.get(name)
+
+    def on_set(self, new_alarm):
+        '''
+        Called whenever a service request is made to the alarm server to the
+        alarm this handler is registered for. Can be used to trigger actions
+        before other nodes are notified of the change or to reject the change.
+        By default, defers to the raised and cleared functions below.
+        @param new_alarm: Alarm message that is requested to change to
+        @return Either None, in which case the change is accepted or False,
+                in which case the alarm remains the same and the service request fails.
+        '''
+        currently_raised = self.current_alarm.raised
+        if not currently_raised and new_alarm.raised:
+            return self.raised(new_alarm)
+        elif currently_raised and not new_alarm.raised:
+            return self.cleared(new_alarm)
+        return
 
     def raised(self, alarm):
-        rospy.logwarn("No raised function defined for '{}'.".format(alarm.alarm_name))
+        '''
+        Unless on_set is overriden, called whenever a node requests this alarm be raised.
+        If it returns False, this request is denied. Otherwise, the alarm is raised
+        @param alarm: the new alarm a node had requested to replace the current with
+        '''
         return
 
     def cleared(self, alarm):
-        rospy.logwarn("No cleared function defined for '{}'.".format(alarm.alarm_name))
+        '''
+        Unless on_set is overriden, called whenever a node requests this alarm be cleared.
+        If it returns False, this request is denied. Otherwise, the alarm is raised
+        @param alarm: the new alarm a node had requested to replace the current with
+        '''
         return
 
     def meta_predicate(self, meta_alarm, alarms):

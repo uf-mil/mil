@@ -14,47 +14,32 @@ class AlarmServer(object):
     def __init__(self):
         # Maps alarm name to Alarm objects
         self.alarms = {}
+        # Handler classes for overwriting default alarm functionality
+        self.handlers = {}
         # Maps meta alarm names to predicate Handler functions
         self.meta_alarms = {}
-
-        # Outside interface to the alarm system. Usually you don't want to
-        # interface with these directly.
-        self._alarm_pub = rospy.Publisher("/alarm/updates", AlarmMsg, latch=True, queue_size=100)
-        rospy.Service("/alarm/set", AlarmSet, self.set_alarm)
-        rospy.Service("/alarm/get", AlarmGet, self.get_alarm)
 
         msg = "Expecting at most the following alarms: {}"
         rospy.loginfo(msg.format(rospy.get_param("/known_alarms", [])))
 
+        self._alarm_pub = rospy.Publisher("/alarm/updates", AlarmMsg, latch=True, queue_size=100)
+
         self._create_meta_alarms()
         self._create_alarm_handlers()
 
-    def set_alarm(self, srv):
+        # Outside interface to the alarm system. Usually you don't want to
+        # interface with these directly.
+        rospy.Service("/alarm/set", AlarmSet, self._on_set_alarm)
+        rospy.Service("/alarm/get", AlarmGet, self._on_get_alarm)
+
+    def set_alarm(self, alarm):
         ''' Sets or updates the alarm
         Updating the alarm triggers all of the alarms callbacks
         '''
-        alarm = srv.alarm
-
-        # If the alarm name is `all`, clear all alarms
-        if alarm.alarm_name == "all":
-            rospy.loginfo("Clearing all alarms.")
-            for alarm in self.alarms.values():
-                # Don't want to clear meta alarms until the end
-                if alarm in self.meta_alarms:
-                    continue
-                cleared_alarm = alarm.as_msg()
-                cleared_alarm.raised = False
-                self._alarm_pub.publish(alarm.as_msg())
-                alarm.update(cleared_alarm)
-
-            for _alarm in self.meta_alarms.keys():
-                alarm = self.alarms[_alarm]
-                cleared_alarm = alarm.as_msg()
-                cleared_alarm.raised = False
-                self._alarm_pub.publish(alarm.as_msg())
-                alarm.update(cleared_alarm)
-
-            return True
+        if alarm.alarm_name in self.handlers:
+            res = self.handlers[alarm.alarm_name].on_set(alarm)
+            if res is False:
+                return False
 
         if alarm.alarm_name in self.alarms:
             self.alarms[alarm.alarm_name].update(alarm)
@@ -64,7 +49,11 @@ class AlarmServer(object):
         self._alarm_pub.publish(alarm)
         return True
 
-    def get_alarm(self, srv):
+    def _on_set_alarm(self, srv):
+        self.set_alarm(srv.alarm)
+        return True
+
+    def _on_get_alarm(self, srv):
         ''' Either returns the alarm request if it exists or a blank alarm '''
         rospy.logdebug("Got request for alarm: {}".format(srv.alarm_name))
         return self.alarms.get(srv.alarm_name, Alarm.blank(srv.alarm_name)).as_srv_resp()
@@ -87,29 +76,25 @@ class AlarmServer(object):
         meta = self.alarms[meta_alarm]
 
         # Check the predicate, this should return either an alarm object or a boolean for if should be raised
-        alarm = self.meta_alarms[meta_alarm](meta, alarms)
+        res = self.meta_alarms[meta_alarm](meta, alarms)
 
         # If it an alarm instance send it out as is
-        if isinstance(alarm, Alarm):
+        if isinstance(res, Alarm):
+            alarm = res
             alarm.alarm_name = meta_alarm  # Ensure alarm name is correct
-            meta.update(alarm)
-            self._alarm_pub.publish(alarm.as_msg())
-            return
-
-        # Otherwise it should be a boolean
-        if type(alarm) != bool:
+        elif type(res) == bool:
+            # If it is a boolean, only update if it changes the raised status
+            raised_status = res
+            if raised_status == meta.raised:
+                return
+            alarm = meta.as_msg()
+            alarm.raised = bool(raised_status)
+            if alarm.raised:  # If it is raised, set problem description
+                alarm.problem_description = 'Raised by meta alarm'
+        else:
             rospy.logwarn('Meta alarm callback for {} failed to return an Alarm or boolean'.format(meta_alarm))
             return
-
-        # If it is a boolean, only update if it changes the raised status
-        raised_status = alarm
-        if raised_status != meta.raised:
-            temp = meta.as_msg()
-            temp.raised = bool(raised_status)
-            if temp.raised:  # If it is raised, set problem description
-                temp.problem_description = 'Raised by meta alarm'
-            meta.update(temp)
-            self._alarm_pub.publish(meta.as_msg())
+        self.set_alarm(alarm)
 
     def _create_alarm_handlers(self):
         '''
@@ -125,6 +110,9 @@ class AlarmServer(object):
         if handler_module is None:
             return
 
+        # Give handlers access to alarm server
+        HandlerBase._init(self)
+
         # Import the module where the handlers are stored
         alarm_handlers = __import__(handler_module, fromlist=[""])
         for handler in [cls for name, cls in inspect.getmembers(alarm_handlers)
@@ -135,11 +123,13 @@ class AlarmServer(object):
             h = handler()
 
             alarm_name = handler.alarm_name
-            severity = handler.severity_required
 
             # Set initial state if necessary (could have already been added while creating metas)
             if hasattr(h, 'initial_alarm'):
-                self.alarms[alarm_name] = h.initial_alarm  # Update even if already added to server
+                if alarm_name in self.alarms:
+                    self.alarms[alarm_name].update(h.initial_alarm)
+                else:
+                    self.alarms[alarm_name] = h.initial_alarm  # Update even if already added to server
             elif alarm_name not in self.alarms:  # Add default initial if not there already
                 self.alarms[alarm_name] = self.make_tagged_alarm(alarm_name)
             else:
@@ -149,9 +139,7 @@ class AlarmServer(object):
             if alarm_name in self.meta_alarms:
                 self.meta_alarms[alarm_name] = h.meta_predicate
 
-            # Register the raised or cleared functions
-            self.alarms[alarm_name].add_callback(h.raised, call_when_cleared=False, severity_required=severity)
-            self.alarms[alarm_name].add_callback(h.cleared, call_when_raised=False, severity_required=severity)
+            self.handlers[alarm_name] = h
 
             rospy.loginfo("Loaded handler: {}".format(h.alarm_name))
 
@@ -188,7 +176,6 @@ class AlarmServer(object):
             for alarm in alarms:
                 if alarm not in self.alarms:
                     self.alarms[alarm] = self.make_tagged_alarm(alarm)
-
                 self.alarms[alarm].add_callback(cb)
 
 
