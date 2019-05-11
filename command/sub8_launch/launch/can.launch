@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-  <arg name="simulated" default="True" />
-  <param name="/is_simulation" value="$(arg simulated)" />
-
+  <!-- To run in simulated mode, set /is_simulation param True -->
   <node pkg="mil_usb_to_can" type="driver.py" name="usb_to_can_driver">
     <rosparam command="delete" />
     <rosparam>

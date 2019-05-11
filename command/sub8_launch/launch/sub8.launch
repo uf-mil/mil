@@ -15,9 +15,7 @@
     <arg name="environment" value="$(arg environment)" />
   </include>
 
-  <include file="$(find sub8_launch)/launch/can.launch">
-    <arg name="simulated" value="$(eval environment != 'real')"/>
-  </include>
+  <include file="$(find sub8_launch)/launch/can.launch" />
 
   <include if="$(eval environment != 'dynsim')" file="$(find sub8_launch)/launch/subsystems/cameras.launch">
     <arg name="environment" value="$(arg environment)" />
