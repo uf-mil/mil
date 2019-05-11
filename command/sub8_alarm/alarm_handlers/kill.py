@@ -20,8 +20,15 @@ class Kill(HandlerBase):
         self._last_mission_killed = False
         self.lock = Lock()
         self.bag_client = SimpleActionClient('/online_bagger/bag', BagOnlineAction)
-        self.set_mobo_kill = rospy.ServiceProxy('/set_mobo_kill', SetBool)
+        self._set_mobo_kill = rospy.ServiceProxy('/set_mobo_kill', SetBool)
         self.first = True
+
+    def set_mobo_kill(self, *args, **kwargs):
+        try:
+            return self._set_mobo_kill(*args, **kwargs)
+        except rospy.ServiceException as e:
+            rospy.logwarn('Error sending motherboard kill: {}'.format(e))
+            return None
 
     def raised(self, alarm):
         # Send kill command to kill board when alarm is raised
@@ -70,10 +77,6 @@ class Kill(HandlerBase):
         # Stay killed until user clears
         if self._killed:
             return True
-
-        if sub_alarms["pause-kill"].raised and sub_alarms["pause-kill"].severity == 5:
-            return True
-        ignore.append("pause-kill")
 
         # Battery too low
         if sub_alarms["bus-voltage"].raised and sub_alarms["bus-voltage"].severity == 5:
