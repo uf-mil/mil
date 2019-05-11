@@ -10,42 +10,5 @@
 # bits.
 #
 # By default this script does nothing.
-
-check_host() {
-	HOST="$1"
-
-	# Attempts to ping the host to make sure it is reachable
-	HOST_PING="$(ping -c 2 $HOST 2>&1 | grep '% packet' | awk -F'[%]' '{print $1}' | awk -F'[ ]' '{print $NF}')"
-	if [ ! -z "$HOST_PING" ]; then
-
-		# Uses packet loss percentage to determine if the connection is strong
-		if [ $HOST_PING -lt 25 ]; then
-
-			# Will return true if ping was successful and packet loss was below 25%
-			echo "true"
-		fi
-	fi
-}
-
-# Spool up a roscore as the default sub user in a screen session
-# sudo -u sub8 -i screen -dmS roscore bash -i -c roscore
-
-# Backup the bags to the MIL fileserver if it is available
-sleep 10
-USER=sub8
-CATKIN_DIR=/home/$USER/mil_ws
-BAG_BACKUP_SCRIPT=$CATKIN_DIR/src/mil_common/scripts/bag_backup.sh
-LOCAL_BAGS_DIR=/media/drew_bagnell
-REMOTE_BAGS_DIR=/media/mil/subjugator/bags
-sudo -u $USER -i screen -dmS bag-backup bash -i -c \
-"$BAG_BACKUP_SCRIPT $LOCAL_BAGS_DIR $REMOTE_BAGS_DIR"
-
-# Kill Plug GPIO support
-echo "507" > /sys/class/gpio/export
-echo "in" > /sys/class/gpio/gpio507/direction
-chmod 777 /sys/class/gpio/gpio507/value
-
-# Ethernet Negotiation allow auto negogation
-#sudo ethtool -s eno3 autoneg on
-
+sudo -u sub8 -i /home/sub8/mil_ws/src/SubjuGator/scripts/on_boot
 exit 0
