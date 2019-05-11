@@ -13,7 +13,4 @@
   <run_depend>rospy</run_depend>
   <build_depend>mil_tools</build_depend>
   <run_depend>mil_tools</run_depend>
-  <build_depend>sub8_videoray_m5_thruster</build_depend>
-  <run_depend>sub8_videoray_m5_thruster</run_depend>
-
 </package>

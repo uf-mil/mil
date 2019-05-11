@@ -19,10 +19,11 @@
   <run_depend>sub8_missions</run_depend>
   <run_depend>sub8_gazebo</run_depend>
   <run_depend>spacenav_node</run_depend>
-  <run_depend>sub8_videoray_m5_thruster</run_depend>
+  <run_depend>sub8_thrust_and_kill_board</run_depend>
   <run_depend>sub8_diagnostics</run_depend>
   <run_depend>image_proc</run_depend>
   <run_depend>usb_cam</run_depend>
+  <run_depend>mil_usb_to_can</run_depend>
   <buildtool_depend>catkin</buildtool_depend>
   <export>
   </export>
