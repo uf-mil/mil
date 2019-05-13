@@ -16,10 +16,10 @@ class USBtoCANDriver(object):
         port = rospy.get_param('~port', '/dev/tty0')
         baud = rospy.get_param('~baudrate', 115200)
         can_id = rospy.get_param('~can_id', 0)
-        simulation = rospy.get_param('/is_simulation', True)
+        simulation = rospy.get_param('/is_simulation', False)
         # If simulation mode, load simualted devices
         if simulation:
-            rospy.logwarn('In simulation!!!!')
+            rospy.logwarn('CAN2USB driver in simulation! Will not talk to real hardware.')
             devices = dict(list(self.parse_module_dictionary(rospy.get_param('~simulated_devices'))))
             self.board = USBtoCANBoard(port=port, baud=baud, simulated=simulation, devices=devices, can_id=can_id)
         else:
