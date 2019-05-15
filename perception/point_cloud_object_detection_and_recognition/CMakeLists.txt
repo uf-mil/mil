@@ -47,7 +47,7 @@ add_library(pcodar ${SOURCES})
 target_link_libraries(pcodar ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES})
 
 # Weird catkin stuff, We will never know what it does.
-add_dependencies(pcodar ${catkin_EXPORTED_TARGETS})
+add_dependencies(pcodar ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
 catkin_package(INCLUDE_DIRS include
