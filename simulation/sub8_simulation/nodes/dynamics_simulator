@@ -25,6 +25,7 @@ class Sub(object):
         # Make initial orientation valid (quaternion 0 0 0 1)
         self.pose[6] = 1.
         self.twist = np.zeros(6)
+        self.last_wrench_time = None
         self.wrench = np.zeros(6)
 
         # Setup ROS pub/subs for odom an wrench
@@ -42,6 +43,7 @@ class Sub(object):
         '''
         wrench = np.empty(6, dtype=float)
         wrench[0:3], wrench[3:] = wrench_to_numpy(msg.wrench)
+        self.last_wrench_time = rospy.Time.now()
         self.set_wrench(wrench)
 
     def set_wrench(self, wrench):
@@ -64,6 +66,9 @@ class Sub(object):
         Update the simulation forward by the specified time delta.
         A new odometry will be published after the model is updated.
         '''
+        if self.last_wrench_time is None or rospy.Time.now() - self.last_wrench_time > rospy.Duration(1):
+            self.set_wrench(np.array([0., 0., 0., 0., 0., 0.]))
+
         # Calcuate rotation from body to global and global to body for later calculations
         body_to_world = quaternion_matrix(self.pose[3:])
         world_to_body = np.linalg.inv(body_to_world)
