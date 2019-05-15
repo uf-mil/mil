@@ -26,7 +26,7 @@ class USBtoCANDriver(object):
             self.board = USBtoCANBoard(port=port, baud=baud, simulated=simulation)
 
         # Add device handles from the modules specified in ROS params
-        self.handles = dict((device_id, cls(self.board, device_id)) for device_id, cls in
+        self.handles = dict((device_id, cls(self, device_id)) for device_id, cls in
                             self.parse_module_dictionary(rospy.get_param('~device_handles')))
 
         self.timer = rospy.Timer(rospy.Duration(1. / 20.), self.process_in_buffer)
@@ -55,6 +55,14 @@ class USBtoCANDriver(object):
         '''
         while self.read_packet():
             pass
+
+    def send_data(self, *args, **kwargs):
+        try:
+            self.board.send_data(*args, **kwargs)
+            return None
+        except (SerialException, USB2CANException) as e:
+            rospy.logerr('Error writing packet: {}'.format(e))
+            return e
 
     @staticmethod
     def parse_module_dictionary(d):
