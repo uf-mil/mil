@@ -2,6 +2,7 @@
 <launch>
   <!-- Defines what environment the system is running on, can be 'real', 'gazebo' or 'dynsim' -->
   <arg name="environment" default="real" />
+  <arg name="use_adaptive_controller" default="True" />
   <param name="/environment" value="$(arg environment)" />
   <param name="/is_simulation" value="$(eval environment != 'real')" />
   <rosparam param="/autonomous">False</rosparam>
@@ -22,9 +23,11 @@
   </include>
   <include if="$(eval environment != 'dynsim')" file="$(find sub8_launch)/launch/subsystems/odometry.launch"/>
   <include file="$(find sub8_launch)/launch/subsystems/thruster_mapper.launch"/>
-  <include file="$(find sub8_launch)/launch/subsystems/rise.launch">
-    <arg name="environment" value="$(arg environment)" />
-  </include>
+
+  <include if="$(arg use_adaptive_controller)" file="$(find sub8_launch)/launch/subsystems/adaptive_controller.launch"/>
+  <include unless="$(arg use_adaptive_controller)" file="$(find sub8_launch)/launch/subsystems/rise.launch"/>
+
+  <include file="$(find sub8_launch)/launch/subsystems/path_planner.launch" />
   <include if="$(eval environment == 'real')" file="$(find sub8_launch)/launch/subsystems/online_bagger.launch"/>
   <include file="$(find sub8_alarm)/launch/alarms.launch" />
   <include file="$(find sub8_launch)/launch/mission_server.launch" />

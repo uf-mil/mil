@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<launch>
-  <node pkg="sub8_controller" type="adaptive_controller" name="adaptive_controller">
-    <rosparam param="" file="$(find sub8_controller)/config/adaptive_controller.yaml" />
-  </node>
-</launch>
