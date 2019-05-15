@@ -44,10 +44,9 @@ class HandlerBase(object):
         @return Either None, in which case the change is accepted or False,
                 in which case the alarm remains the same and the service request fails.
         '''
-        currently_raised = self.current_alarm.raised
-        if not currently_raised and new_alarm.raised:
+        if new_alarm.raised:
             return self.raised(new_alarm)
-        elif currently_raised and not new_alarm.raised:
+        else:
             return self.cleared(new_alarm)
         return
 
