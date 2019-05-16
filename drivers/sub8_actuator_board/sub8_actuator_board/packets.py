@@ -3,7 +3,7 @@ from mil_usb_to_can import ApplicationPacket
 
 
 # CAN ID for the channel from MOBO to actuator board
-SEND_ID = 0x53
+SEND_ID = 0x51
 
 
 class CommandMessage(ApplicationPacket):
@@ -11,6 +11,7 @@ class CommandMessage(ApplicationPacket):
     Represents a packet sent from the motherboard to the actuator board
     '''
     IDENTIFIER = ord('A')
+    NUM_VALVES = 12
 
     @property
     def address(self):
@@ -42,6 +43,8 @@ class CommandMessage(ApplicationPacket):
         @param write: If true, set valve open or close. If False, request the status of the specified valve
         @param on: If true, command valve to open. If write if False, this has no effect
         '''
+        if address < 0 or address >= cls.NUM_VALVES:
+            raise InvalidAddressException(address)
         write_byte = 1 if write else 0
         on_byte = 1 if on else 0
         payload = struct.pack('BBB', address, write_byte, on_byte)
@@ -49,6 +52,13 @@ class CommandMessage(ApplicationPacket):
 
     def __str__(self):
         return 'CommandMessage(address={}, write={}, on={})'.format(self.address, self.write, self.on)
+
+
+class InvalidAddressException(RuntimeError):
+    def __init__(self, address):
+        super(InvalidAddressException, self).__init__(
+            'Attempted to command valve {}, but valid addresses are only [0,{}]'.format(
+                address, CommandMessage.NUM_VALVES - 1))
 
 
 class FeedbackMessage(ApplicationPacket):
