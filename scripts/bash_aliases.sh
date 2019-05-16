@@ -14,6 +14,16 @@ alias sub="cd \$CATKIN_DIR/src/SubjuGator"
 alias rsub="ros_connect -n ${HOSTNAMES[0]}"
 alias sshsub="ssh sub8@${HOSTNAMES[0]} -Y"
 
+# Actuators
+subvalveopen()
+{
+ rosservice call /set_valve "{actuator: $1, opened: true}"
+}
+subvalveclose()
+{
+ rosservice call /set_valve "{actuator: $1, opened: false}"
+}
+
 # Missions
 alias submove="runmission Move"
 
