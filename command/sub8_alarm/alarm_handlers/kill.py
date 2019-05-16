@@ -10,14 +10,14 @@ from threading import Condition
 class Kill(HandlerBase):
     alarm_name = 'kill'
     initally_raised = True
-    HARDWARE_KILL_GRACE_PERIOD_SECONDS = 5.0
+    HARDWARE_KILL_GRACE_PERIOD_SECONDS = 6.0
 
     def __init__(self):
         # Alarm server wil set this as the intial state of kill alarm (starts killed)
         self.initial_alarm = Alarm(self.alarm_name, True,
                                    node_name='alarm_server',
                                    problem_description='Initial kill')
-        self._killed = False
+        self._killed = True
         self._last_mission_killed = False
         self.condition = Condition()
         self.bag_client = SimpleActionClient('/online_bagger/bag', BagOnlineAction)
@@ -35,9 +35,11 @@ class Kill(HandlerBase):
         with self.condition:
             # Send kill command to kill board when alarm is raised
             self.set_mobo_kill(True)
-            self._killed = True
-            self.bagger_dump()
+            if not self._killed:
+                self._killed = True
+                self.bagger_dump()
             self.first = False
+            self.condition.notify()
 
     def cleared(self, alarm):
         with self.condition:
