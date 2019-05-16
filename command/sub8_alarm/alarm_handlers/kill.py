@@ -4,12 +4,13 @@ from actionlib import SimpleActionClient, TerminalState
 from mil_msgs.msg import BagOnlineAction, BagOnlineGoal
 from std_srvs.srv import SetBool
 import os
-from threading import Lock
+from threading import Condition
 
 
 class Kill(HandlerBase):
     alarm_name = 'kill'
     initally_raised = True
+    HARDWARE_KILL_GRACE_PERIOD_SECONDS = 5.0
 
     def __init__(self):
         # Alarm server wil set this as the intial state of kill alarm (starts killed)
@@ -18,7 +19,7 @@ class Kill(HandlerBase):
                                    problem_description='Initial kill')
         self._killed = False
         self._last_mission_killed = False
-        self.lock = Lock()
+        self.condition = Condition()
         self.bag_client = SimpleActionClient('/online_bagger/bag', BagOnlineAction)
         self._set_mobo_kill = rospy.ServiceProxy('/set_mobo_kill', SetBool)
         self.first = True
@@ -31,28 +32,23 @@ class Kill(HandlerBase):
             return None
 
     def raised(self, alarm):
-        # Send kill command to kill board when alarm is raised
-        self.set_mobo_kill(True)
-        self._killed = True
-        self.bagger_dump()
-        self.first = False
+        with self.condition:
+            # Send kill command to kill board when alarm is raised
+            self.set_mobo_kill(True)
+            self._killed = True
+            self.bagger_dump()
+            self.first = False
 
     def cleared(self, alarm):
-        # Lock in mutex to ensure only one callback runs at once
-        with self.lock:
-            # If a node / user attempted to clear kill but hw-kill is still raised
+        with self.condition:
+            self.set_mobo_kill(False)
             if self.get_alarm('hw-kill').raised:
-                # Send board mobo unkill command and wait for board to respond
-                self.set_mobo_kill(False)
-                expiration = rospy.Time.now() + rospy.Duration(1.0)
-                while self._alarm_server.alarms['hw-kill'].raised and rospy.Time.now() < expiration:
-                    rospy.sleep(0.01)
-                # If hw-kill is still raised after timeout, the kill plug is likely pulled, so alarm should NOT clear
-                if self._alarm_server.alarms['hw-kill'].raised:
-                    # Re-assert mobo kill since reviving failed
+                self.condition.wait(self.HARDWARE_KILL_GRACE_PERIOD_SECONDS)
+                if self.get_alarm('hw-kill').raised:
+                    rospy.logwarn('Attempted to clear kill but hw-kill is still raised')
                     self.set_mobo_kill(True)
                     return False
-            self._killed = False
+                self._killed = False
 
     def _bag_done_cb(self, status, result):
         if status == 3:
@@ -73,6 +69,10 @@ class Kill(HandlerBase):
 
     def meta_predicate(self, meta_alarm, sub_alarms):
         ignore = []
+
+        with self.condition:
+            if not sub_alarms['hw-kill'].raised:
+                self.condition.notify()
 
         # Stay killed until user clears
         if self._killed:
