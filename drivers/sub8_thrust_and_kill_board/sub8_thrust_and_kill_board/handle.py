@@ -12,10 +12,12 @@ class ThrusterAndKillBoard(CANDeviceHandle):
     '''
     Device handle for the thrust and kill board.
     '''
+
     def __init__(self, *args, **kwargs):
         super(ThrusterAndKillBoard, self).__init__(*args, **kwargs)
         # Initialize thruster mapping from params
-        self.thrusters = make_thruster_dictionary(rospy.get_param('/thruster_layout/thrusters'))
+        self.thrusters = make_thruster_dictionary(
+            rospy.get_param('/thruster_layout/thrusters'))
         # Tracks last hw-kill alarm update
         self._last_hw_kill = None
         # Tracks last soft kill status received from board
@@ -29,13 +31,17 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         # Alarm broadaster for GO command
         self._go_alarm_broadcaster = AlarmBroadcaster('go')
         # Listens to hw-kill updates to ensure another nodes doesn't manipulate it
-        self._hw_kill_listener = AlarmListener('hw-kill', callback_funct=self.on_hw_kill)
+        self._hw_kill_listener = AlarmListener(
+            'hw-kill', callback_funct=self.on_hw_kill)
         # Provide service for alarm handler to set/clear the motherboard kill
-        self._unkill_service = rospy.Service('/set_mobo_kill', SetBool, self.set_mobo_kill)
+        self._unkill_service = rospy.Service(
+            '/set_mobo_kill', SetBool, self.set_mobo_kill)
         # Sends hearbeat to board
-        self._hearbeat_timer = rospy.Timer(rospy.Duration(0.4), self.send_heartbeat)
+        self._hearbeat_timer = rospy.Timer(
+            rospy.Duration(0.4), self.send_heartbeat)
         # Create a subscribe for thruster commands
-        self._sub = rospy.Subscriber('/thrusters/thrust', Thrust, self.on_command, queue_size=10)
+        self._sub = rospy.Subscriber(
+            '/thrusters/thrust', Thrust, self.on_command, queue_size=10)
 
     def set_mobo_kill(self, req):
         '''
@@ -50,7 +56,8 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         '''
         Send the special heartbeat packet when the timer triggers
         '''
-        self.send_data(HeartbeatMessage.create().to_bytes(), can_id=KILL_SEND_ID)
+        self.send_data(HeartbeatMessage.create().to_bytes(),
+                       can_id=KILL_SEND_ID)
 
     def on_hw_kill(self, alarm):
         '''
@@ -66,15 +73,18 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         for cmd in msg.thruster_commands:
             # If we don't have a mapping for this thruster, ignore it
             if cmd.name not in self.thrusters:
-                rospy.logwarn('Command received for {}, but this is not a thruster.'.format(cmd.name))
+                rospy.logwarn(
+                    'Command received for {}, but this is not a thruster.'.format(cmd.name))
                 continue
             # Map commanded thrust (in newetons) to effort value (-1 to 1)
             effort = self.thrusters[cmd.name].effort_from_thrust(cmd.thrust)
             # Send packet to command specified thruster the specified force
-            packet = ThrustPacket.create_thrust_packet(ThrustPacket.ID_MAPPING[cmd.name], effort)
+            packet = ThrustPacket.create_thrust_packet(
+                ThrustPacket.ID_MAPPING[cmd.name], effort)
+            print(packet)
             self.send_data(packet.to_bytes(), can_id=THRUST_SEND_ID)
 
-    def update_hw_kill(self):
+    def update_hw_kill(self, reason):
         '''
         If needed, update the hw-kill alarm so it reflects the latest status from the board
         '''
@@ -91,36 +101,70 @@ class ThrusterAndKillBoard(CANDeviceHandle):
             severity = 1
             message = "Soft kill"
         raised = severity != 0
+        message = message + ": " + reason
 
         # If the current status differs from the alarm, update the alarm
         if self._last_hw_kill is None or self._last_hw_kill.raised != raised or \
            self._last_hw_kill.problem_description != message or self._last_hw_kill.severity != severity:
             if raised:
-                self._kill_broadcaster.raise_alarm(severity=severity, problem_description=message)
+                self._kill_broadcaster.raise_alarm(
+                    severity=severity, problem_description=message)
             else:
-                self._kill_broadcaster.clear_alarm(severity=severity, problem_description=message)
+                self._kill_broadcaster.clear_alarm(
+                    severity=severity, problem_description=message)
 
     def on_data(self, data):
-        if KillMessage.IDENTIFIER == ord(data[0]):
-            msg = KillMessage.from_bytes(data)
-            if not msg.is_response:
-                rospy.logwarn('Recieved kill message from board but was not response')
-                return
-            if msg.is_soft:
-                self._last_soft_kill = msg.is_asserted
-            elif msg.is_hard:
-                self._last_hard_kill = msg.is_asserted
-            self.update_hw_kill()
-        elif GoMessage.IDENTIFIER == ord(data[0]):
-            msg = GoMessage.from_bytes(data)
-            asserted = msg.asserted
-            if self._last_go is None or asserted != self._last_go:
-                if asserted:
-                    self._go_alarm_broadcaster.raise_alarm(problem_description="Go plug pulled!")
-                else:
-                    self._go_alarm_broadcaster.clear_alarm(problem_description="Go plug returned")
-                self._last_go = asserted
+        '''
+        Parse the two bytes and raise kills according to the specs:
+
+        First Byte => Kill trigger statuses (Asserted = 1, Unasserted = 0):
+            Bit 7: Hard kill status, changed by On/Off Hall effect switch. If this becomes 1, begin shutdown procedure
+            Bit 6: Overall soft kill status, 1 if any of the following flag bits are 1. This becomes 0 if all kills are cleared and the thrusters are done re-initializing
+            Bit 5: Hall effect soft kill flag
+            Bit 4: Mobo command soft kill flag
+            Bit 3: Heartbeat lost flag (times out after 1 s)
+            Bit 2-0: Reserved
+        Second Byte => Input statuses ("Pressed" = 1, "Unpressed" = 0) and thruster initializing status:
+            Bit 7: On (1) / Off (0) Hall effect switch status. If this becomes 0, the hard kill in the previous byte becomes 1.
+            Bit 6: Soft kill Hall effect switch status. If this is "pressed" = 1, bit 5 of previous byte is unkilled = 0. "Removing" the magnet will "unpress" the switch
+            Bit 5: Go Hall effect switch status. "Pressed" = 1, removing the magnet will "unpress" the switch
+            Bit 4: Thruster initializing status: This becomes 1 when the board is unkilling, and starts powering thrusters. After the "grace period" it becomes 0 and the overall soft kill status becomes 0. This flag also becomes 0 if killed in the middle of initializing thrusters.
+            Bit 3-0: Reserved
+        '''
+        #print(ord(data[0]), ord(data[1]))
+        # Hard Kill - bit 7
+        if (ord(data[0]) & 0x8):
+            self._last_hard_kill = True
         else:
-            rospy.logwarn('UNEXPECTED MESSAGE with identifier {}'.format(ord(data[0])))
-            return
-        rospy.loginfo(str(msg))
+            self._last_hard_kill = False
+        # Soft Kill - bit 6
+        if (ord(data[0]) & 0x40):
+            self._last_soft_kill = True
+        else:
+            self._last_soft_kill = False
+
+        reason = ""
+        # hall effect - bit 5
+        if (ord(data[0]) & 0x20):
+            reason = 'hall effect'
+        # mobo soft kill - bit 4
+        if (ord(data[0]) & 0x10):
+            reason = 'mobo soft kill'
+        # heartbeat loss - bit 3
+        if (ord(data[0]) & 0x08):
+            reason = 'Heart beat lost'
+        self.update_hw_kill(reason)
+
+        # Switch - bit 5
+        if (ord(data[1]) & 0x20):
+            asserted = True
+        else:
+            asserted = False
+        if self._last_go is None or asserted != self._last_go:
+            if asserted:
+                self._go_alarm_broadcaster.raise_alarm(
+                    problem_description="Go plug pulled!")
+            else:
+                self._go_alarm_broadcaster.clear_alarm(
+                    problem_description="Go plug returned")
+            self._last_go = asserted
