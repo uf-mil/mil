@@ -2,7 +2,7 @@
 import rospy
 from srv import SetValve
 from mil_usb_to_can import CANDeviceHandle
-from packets import CommandMessage, FeedbackMessage, SEND_ID
+from packets import CommandMessage, InvalidAddressException, FeedbackMessage, SEND_ID
 
 
 class ActuatorBoard(CANDeviceHandle):
@@ -18,8 +18,12 @@ class ActuatorBoard(CANDeviceHandle):
         Called on service request to set valve
         '''
         # Send board command to open or close specified valve
-        message = CommandMessage.create_command_message(address=req.actuator, write=True, on=req.opened)
+        try:
+            message = CommandMessage.create_command_message(address=req.actuator, write=True, on=req.opened)
+        except InvalidAddressException as e:
+            return {'success': False, 'message': str(e)}
         self.send_data(message.to_bytes(), can_id=SEND_ID)
+        rospy.loginfo('Set valve {} {}'.format(req.actuator, "opened" if req.opened else "closed"))
         # Wait some time for board to process command
         rospy.sleep(0.01)
         # Request the status of the valve just commanded to ensure it worked
