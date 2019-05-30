@@ -55,7 +55,7 @@ thrusters:
   FRV: {
     node_id:  0,
     position:  [0.1583, -0.169, 0.0142],
-    direction: [0.0, 0.0, 1.0],
+    direction: [0.0, 0.0, -1.0],
     thrust_bounds:    [-81.85, 99.7],
     calib:  {
         forward:  [5.24818e-10, -1.52077e-07, 1.63132e-05, -0.000803, 0.026558, 0.023288],
@@ -65,7 +65,7 @@ thrusters:
   BLH: {
     node_id:  4,
     position:  [-0.2678, 0.2795, 0.0],
-    direction: [-0.866, -0.5, 0.0],
+    direction: [0.866, 0.5, 0.0],
     thrust_bounds:    [-81.85, 99.7],
     calib:  {
         forward:  [5.24818e-10, -1.52077e-07, 1.63132e-05, -0.000803, 0.026558, 0.023288],
@@ -85,7 +85,7 @@ thrusters:
   BRH: {
     node_id:  6,
     position:  [-0.2678, -0.2795, 0.0],
-    direction: [-0.866, 0.5, 0.0],
+    direction: [0.866, -0.5, 0.0],
     thrust_bounds:    [-81.85, 99.7],
     calib:  {
         forward:  [5.24818e-10, -1.52077e-07, 1.63132e-05, -0.000803, 0.026558, 0.023288],
