@@ -22,6 +22,7 @@ class Kill(HandlerBase):
         self.condition = Condition()
         self.bag_client = SimpleActionClient('/online_bagger/bag', BagOnlineAction)
         self._set_mobo_kill = rospy.ServiceProxy('/set_mobo_kill', SetBool)
+        self.set_mobo_kill(True) # Tell HW that we started off as killed
         self.first = True
 
     def set_mobo_kill(self, *args, **kwargs):
