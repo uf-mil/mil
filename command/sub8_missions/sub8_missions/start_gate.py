@@ -6,20 +6,22 @@ from twisted.internet import defer
 
 from mil_misc_tools import text_effects
 
-from sub_singleton import SubjuGator, SonarObjects
+from .sub_singleton import SubjuGator, SonarObjects
 from mil_ros_tools import rosmsg_to_numpy
 from scipy.spatial import distance
 
 import numpy as np
 
 fprint = text_effects.FprintFactory(
-        title="START_GATE", msg_color="cyan").fprint
+    title="START_GATE", msg_color="cyan").fprint
 
 SPEED = 0.3
 # How many meters to pass the gate by
 DIST_AFTER_GATE = 3
 
+
 class StartGate(SubjuGator):
+
     @txros.util.cancellableInlineCallbacks
     def run(self, args):
         fprint('Waiting for odom')
@@ -81,8 +83,7 @@ class StartGate(SubjuGator):
         yield self.move.set_position(mid_point + DIST_AFTER_GATE * normal).go(
             speed=SPEED)
         defer.returnValue(True)
-    
-    
+
     def find_gate(self, objects,
                   ray,
                   max_distance_away=4.5,
@@ -90,7 +91,7 @@ class StartGate(SubjuGator):
                   depth_threshold=1):
         '''
         find_gate: search for two objects that satisfy critria
-    
+
         Parameters:
         ray: direction we expect gate to be near
         max_distance_away: max distance the two objects can be away from each other

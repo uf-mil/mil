@@ -1,4 +1,4 @@
-from sub_singleton import SubjuGator
+from .sub_singleton import SubjuGator
 from txros import util
 
 SIDE_LENGTH = 1  # meters
@@ -6,6 +6,7 @@ SPEED_LIMIT = .2  # m/s
 
 
 class Square(SubjuGator):
+
     @util.cancellableInlineCallbacks
     def run(self, args):
         center = self.move.forward(0).zero_roll_and_pitch()
