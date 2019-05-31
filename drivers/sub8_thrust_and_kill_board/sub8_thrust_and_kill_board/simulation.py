@@ -50,9 +50,9 @@ class ThrusterAndKillBoardSimulation(SimulatedCANDevice):
         hard_msg = KillMessage.create_kill_message(command=False, hard=True, asserted=self.hard_killed)
         soft_msg = KillMessage.create_kill_message(command=False, hard=False, asserted=self.soft_killed)
         go_msg = GoMessage.create_go_message(asserted=self.go_button)
-        self.send_data(hard_msg.to_bytes())
-        self.send_data(soft_msg.to_bytes())
-        self.send_data(go_msg.to_bytes())
+        #self.send_data(hard_msg.to_bytes())
+        #self.send_data(soft_msg.to_bytes())
+        #self.send_data(go_msg.to_bytes())
 
     def on_data(self, data, can_id):
         if can_id != THRUST_SEND_ID and can_id != KILL_SEND_ID:

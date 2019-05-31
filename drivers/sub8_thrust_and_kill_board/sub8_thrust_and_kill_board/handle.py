@@ -81,7 +81,6 @@ class ThrusterAndKillBoard(CANDeviceHandle):
             # Send packet to command specified thruster the specified force
             packet = ThrustPacket.create_thrust_packet(
                 ThrustPacket.ID_MAPPING[cmd.name], effort)
-            print(packet)
             self.send_data(packet.to_bytes(), can_id=THRUST_SEND_ID)
 
     def update_hw_kill(self, reason):

@@ -35,4 +35,4 @@ class Thruster(object):
     def effort_from_thrust(self, thrust):
         unclipped = self.effort_from_thrust_unclipped(thrust)
         # Theoritically can limit to .66 under 16V assumptions or .5 under 12V assumptions... So do both (.5 + 66)/2
-        return clip(unclipped, -.58., .58)
+        return clip(unclipped, -.58, .58)
