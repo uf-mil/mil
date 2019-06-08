@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <node pkg="c3_trajectory_generator" type="c3_trajectory_generator" name="c3_trajectory_generator" output="screen">
+    <rosparam>
+        <!-- Degraded trajectory -->
+        fixed_frame: /map
+        body_frame: /base_link
+        vmin_b: [-0.7,  -0.35,  -0.5,   -0.75, -0.5, -300]
+        vmax_b: [ 0.7,  0.35,   0.5,    0.75,  0.5,  300]
+        amin_b: [-0.35,  -0.15, -0.25,   -1.5,  -0.2, -300]
+        amax_b: [ 0.35,  0.15,  0.25,  1.5,   0.2,  300]
+        arevoffset_b: [0.0, 0, 0]
+        umax_b: [ 1,  1,  1,   1,1,10]
+        waypoint_check: false
+      </rosparam>
+    </node>
+</launch>
