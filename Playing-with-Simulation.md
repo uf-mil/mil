@@ -11,7 +11,7 @@ Open up RVIZ configured to display SubjuGator's topics. In a new terminal, run:
 ## Clear the initial kill
 By default, the Sub will be dead in the water as a safety feature. You must manually revive the Sub. In a new terminal, run:
 
-```aclear kill```
+```aclear hw-kill && aclear kill```
 
 ## Give a new waypoint
 Play around with some discrete waypoints to make sure the simulation is working:
