@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from sub_singleton import SubjuGator
+from .sub_singleton import SubjuGator
 from txros import util
 from geometry_msgs.msg import Pose, Point, Quaternion, Twist
 from gazebo_msgs.msg import ModelState
@@ -10,11 +10,14 @@ import os
 from mil_misc_tools import ThrowingArgumentParser
 
 UNITS = {'m': 1, 'ft': 0.3048, 'yard': 0.9144, 'rad': 1, 'deg': 0.0174533}
-SHORTHAND = {"f": "forward", "b": "backward", "l": "left", "r": "right", "yl": "yaw_left", "yr": "yaw_right",
+SHORTHAND = {
+    "f": "strafe_forward", "b": "strafe_backward", "l": "strafe_left", "r": "strafe_right", "rf":
+    "forward", "rb": "backward", "rl": "left", "rr": "right", "yl": "yaw_left", "yr": "yaw_right", "pu": "pitch_up", "pd": "pitch_down",
              "d": "down", "u": "up"}
 
 
 class Move(SubjuGator):
+
     @classmethod
     def decode_parameters(cls, parameters):
         argv = parameters.split()
@@ -22,7 +25,8 @@ class Move(SubjuGator):
 
     @classmethod
     def init(cls):
-        parser = ThrowingArgumentParser(description='Command Line Mission Runner',
+        parser = ThrowingArgumentParser(
+            description='Command Line Mission Runner',
                                         usage='Pass any pose editor commands with an arguments. \n\t\
                                                forward 1 (moves forward 1 meter) \n\t\
                                                backward 2ft (moves backward 2 feet)\
@@ -126,8 +130,12 @@ class Move(SubjuGator):
                         # As an additional note, given the way we do trajectory in the sim, we must kill sub to prevent
                         # the trajectory from overriding our teleport and
                         # bringing it back to its expected position.
-                        ab = TxAlarmBroadcaster(self.nh, 'kill', node_name='kill')
-                        yield ab.raise_alarm(problem_description='TELEPORTING: KILLING SUB',
+                        ab = TxAlarmBroadcaster(
+                            self.nh,
+                            'kill',
+                            node_name='kill')
+                        yield ab.raise_alarm(
+                            problem_description='TELEPORTING: KILLING SUB',
                                              severity=5)
                         yield self.nh.sleep(1)
                         yield state_set_pub.publish(modelstate)
