@@ -171,6 +171,12 @@ class PoseEditor(object):
         rel_pos_3d = np.append(rel_pos_2d, 0.0)
         return self.set_position(self.position + self._rot.dot(rel_pos_3d))
 
+    def relative_depth(self, rel_pos):
+        old_z = self.position[2]
+        pose = self.relative(rel_pos)
+        pose.position[2] = old_z
+        return pose
+
     def forward(self, distance):
         return self.relative([+distance, 0, 0])
 
@@ -182,6 +188,18 @@ class PoseEditor(object):
 
     def right(self, distance):
         return self.relative([0, -distance, 0])
+
+    def strafe_forward(self, distance):
+        return self.relative_depth([+distance, 0, 0])
+
+    def strafe_backward(self, distance):
+        return self.relative_depth([-distance, 0, 0])
+
+    def strafe_left(self, distance):
+        return self.relative_depth([0, +distance, 0])
+
+    def strafe_right(self, distance):
+        return self.relative_depth([0, -distance, 0])
 
     def body_up(self, distance):
         return self.relative([0, 0, +distance])
