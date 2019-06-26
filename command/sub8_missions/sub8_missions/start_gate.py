@@ -75,7 +75,10 @@ class StartGate(SubjuGator):
         # 12 + 8 = 20 inch offset from middle to enter small portion
 
         distance_btwn_gate = distance.euclidean(gate_points[0], gate_points[1])
-        fprint('Distance between poles: {} m = {} inch'.format(distance_btwn_gate, distance_btwn_gate * 39.3701))
+        fprint(
+            'Distance between poles: {} m = {} inch'.format(
+                distance_btwn_gate,
+                distance_btwn_gate * 39.3701))
 
         # Find midpoint between the two poles/objects
         mid_point = gate_points[0] + gate_points[1]

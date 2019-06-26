@@ -13,14 +13,15 @@ from .sub_singleton import SubjuGator
 
 fprint = text_effects.FprintFactory(title="PINGER", msg_color="cyan").fprint
 
-SPEED = 0.1
+SPEED = 0.75
 FREQUENCY = 37000
 FREQUENCY_TOL = 3000
 
-PINGER_HEIGHT = 1.5  # how high to go above pinger after found
-MOVE_AT_DEPTH = 1.5  # how low to swim and move
+PINGER_HEIGHT = 0.75  # how high to go above pinger after found
+MOVE_AT_DEPTH = 0.5  # how low to swim and move
 
 POSITION_TOL = 0.05  # how close to pinger before quiting
+
 
 class Pinger(SubjuGator):
 
@@ -29,36 +30,41 @@ class Pinger(SubjuGator):
         global markers
         markers = MarkerArray()
         pub_markers = yield self.nh.advertise('/pinger/rays', MarkerArray)
-    
+
         fprint('Getting Guess Locations')
-    
+
         use_prediction = True
         try:
             pinger_txros = yield self.nh.get_service_client('/guess_location',
-                                                       GuessRequest)
+                                                            GuessRequest)
             pinger_1_req = yield pinger_txros(GuessRequestRequest(item='pinger1'))
             pinger_2_req = yield pinger_txros(GuessRequestRequest(item='pinger2'))
             if pinger_1_req.found is False or pinger_2_req.found is False:
                 use_prediction = False
-                fprint('Forgot to add pinger to guess server?', msg_color='yellow')
+                fprint(
+                    'Forgot to add pinger to guess server?',
+                    msg_color='yellow')
             else:
                 fprint('Found two pinger guesses', msg_color='green')
-                pinger_guess = yield self.transform_to_baselink(self, pinger_1_req,
+                pinger_guess = yield self.transform_to_baselink(
+                    self, pinger_1_req,
                                                        pinger_2_req)
                 fprint(pinger_guess)
         except Exception as e:
-            fprint('Failed to /guess_location. Procceding without guess', msg_color='yellow')
+            fprint(
+                'Failed to /guess_location. Procceding without guess',
+                msg_color='yellow')
             use_prediction = False
-    
-            
+
         hydro_processed = yield self.nh.subscribe('/hydrophones/processed',
-                                                 ProcessedPing)
-    
+                                                  ProcessedPing)
+
         while True:
             fprint('=' * 50)
             pub_markers.publish(markers)
             p_message = yield hydro_processed.get_next_message()
-    
+            fprint(p_message)
+
             # Ignore freuqnecy
             if not abs(p_message.freq - FREQUENCY) < FREQUENCY_TOL:
                 fprint(
@@ -67,7 +73,7 @@ class Pinger(SubjuGator):
                 if use_prediction:
                     yield go_to_random_guess(self, pinger_1_req, pinger_2_req)
                 continue
-    
+
             # Ignore magnitude from processed ping
             p_position = mil_ros_tools.rosmsg_to_numpy(p_message.position)
             vec = p_position / np.linalg.norm(p_position)
@@ -76,12 +82,12 @@ class Pinger(SubjuGator):
                 if use_prediction:
                     yield go_to_random_guess(self, pinger_1_req, pinger_2_req)
                 continue
-    
+
             # Tranform hydrophones vector to relative coordinate
             transform = yield self._tf_listener.get_transform(
                 '/base_link', '/hydrophones')
             vec = transform._q_mat.dot(vec)
-    
+
             fprint('Transformed vec: {}'.format(vec))
             marker = Marker(
                 ns='pinger',
@@ -96,7 +102,7 @@ class Pinger(SubjuGator):
             marker.color.g = 0
             marker.color.a = 1
             markers.markers.append(marker)
-    
+
             # Check if we are on top of pinger
             if abs(vec[0]) < POSITION_TOL and abs(vec[1] < POSITION_TOL):
                 sub_position, _ = yield self.tx_pose()
@@ -107,24 +113,24 @@ class Pinger(SubjuGator):
                 ]
                 pinger_id = np.argmin(dists)
                 yield self.nh.set_param("pinger_where", int(pinger_id))
-    
+
                 break
-    
+
             vec[2] = 0
             if use_prediction:
-                pinger_guess = yield self.transform_to_baselink(self, pinger_1_req,
+                pinger_guess = yield self.transform_to_baselink(
+                    self, pinger_1_req,
                                                            pinger_2_req)
                 fprint('Transformed guess: {}'.format(pinger_guess))
                 # Check if the pinger aligns with guess
                 check, vec = self.check_with_guess(vec, pinger_guess)
-    
+
             fprint('move to {}'.format(vec))
             yield self.fancy_move(self, vec)
-    
+
         fprint('Arrived to hydrophones! Going down!')
         yield self.move.to_height(PINGER_HEIGHT).zero_roll_and_pitch().go(speed=0.1)
-    
-    
+
     @util.cancellableInlineCallbacks
     def fancy_move(self, sub, vec):
         global markers
@@ -142,12 +148,11 @@ class Pinger(SubjuGator):
         marker.color.b = 1
         marker.color.a = 1
         markers.markers.append(marker)
-    
+
         yield sub.move.relative(vec).depth(MOVE_AT_DEPTH).zero_roll_and_pitch().go(
             speed=SPEED)
         yield sub.nh.sleep(3)
-    
-    
+
     @util.cancellableInlineCallbacks
     def go_to_random_guess(self, sub, pinger_1_req, pinger_2_req):
         pinger_guess = yield transform_to_baselink(sub, pinger_1_req, pinger_2_req)
@@ -155,12 +160,12 @@ class Pinger(SubjuGator):
         where_to = where_to / np.linalg.norm(where_to)
         fprint('Going to random guess {}'.format(where_to), msg_color='yellow')
         yield fancy_move(sub, where_to)
-    
-    
+
     def check_with_guess(self, vec, pinger_guess):
         for guess in pinger_guess:
             guess[2] = 0
-        dots = [vec.dot(guess / np.linalg.norm(guess)) for guess in pinger_guess]
+        dots = [vec.dot(guess / np.linalg.norm(guess))
+                for guess in pinger_guess]
         fprint('Dots {}'.format(dots))
         if dots[0] < 0.6 and dots[1] < 0.6:
             # Get the guess that is close to pnger vec
@@ -172,8 +177,7 @@ class Pinger(SubjuGator):
                 msg_color='yellow')
             return (False, go_to_guess)
         return (True, vec)
-    
-    
+
     @util.cancellableInlineCallbacks
     def transform_to_baselink(self, sub, pinger_1_req, pinger_2_req):
         transform = yield sub._tf_listener.get_transform('/base_link', '/map')
