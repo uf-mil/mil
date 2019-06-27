@@ -39,9 +39,7 @@
                               ax="0.015707963" ay="0.015707963" az="0.015707963"
                               lx="0.08825985" ly="0.08825985" lz="0.08825985" />
 
-  <!-- TODO: switch back to correct transform once CAD mesh is fixed so beam doesnt collide with self
-             should be xyz="0.0908 0 0.2459" rpy="0 0 0.785" -->
-  <xacro:mil_dvl name="dvl" xyz="0.0908 0 -1.0" rpy="0 0 0.785" rate="6.5" />
+  <xacro:mil_dvl name="dvl" xyz="0.0908 0 -0.2459" rpy="0 0 0.785" gazebo_offset="0 0 -1" rate="6.5" />
   <xacro:mil_depth name="depth" xyz="-0.235 0 -0.170" rpy="0 0 0" rate="20" />
 
   <!-- Other fixed frames -->
