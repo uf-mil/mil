@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="mil_dvl" params="name:=dvl parent:='base_link' xyz:='0 0 0' rpy='0 0 0' rate:=1">
+  <xacro:macro name="mil_dvl" params="name:=dvl parent:='base_link' xyz:='0 0 0' rpy='0 0 0' gazebo_offset=:='0 0 0' rate:=1">
     <link name="${name}" />
     <joint name="${name}_joint" type="fixed">
       <origin xyz="${xyz}" rpy="${rpy}"/>
@@ -27,6 +27,7 @@
         </ray>
         <plugin name="${name}_plugin" filename="libmil_dvl_gazebo.so">
           <frame_id>${name}</frame_id>
+          <offset>${gazebo_offset}</offset>
         </plugin>
       </sensor>
     </gazebo>
