@@ -9,9 +9,5 @@
     args="$(find sub8_gazebo)/worlds/a_whole_new.world --verbose" />
   <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" if="$(arg gui)" />
 
-  <node
-    name="spawn_sub" pkg="gazebo_ros" type="spawn_model"
-    args="-urdf -param robot_description
-      -x 0. -y 0. -z 0. -model sub8"
-    output="screen" />
+  <include file="$(find sub8_gazebo)/launch/spawn.launch" />
 </launch>
