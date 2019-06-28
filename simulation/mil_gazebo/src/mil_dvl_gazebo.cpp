@@ -31,9 +31,14 @@ void MilDVLGazebo::Load(gazebo::sensors::SensorPtr _parent, sdf::ElementPtr _sdf
     return;
   }
 
+  if (_sdf->HasElement("offset"))
+      offset_ = _sdf->GetElement("offset")->Get<ignition::math::Vector3d>();
+  else
+      offset_ = ignition::math::Vector3d::Zero;
+
   pose_ = sensor_->Pose();
   auto new_pose = ignition::math::Pose3d(
-      pose_.Pos(), pose_.Rot() * ignition::math::Quaterniond(0., ignition::math::Angle::HalfPi.Radian(), 0.));
+      pose_.Pos() + offset_, pose_.Rot() * ignition::math::Quaterniond(0., ignition::math::Angle::HalfPi.Radian(), 0.));
   sensor_->SetPose(new_pose);
 
   if (_sdf->HasElement("frame_id"))
@@ -51,9 +56,10 @@ void MilDVLGazebo::Load(gazebo::sensors::SensorPtr _parent, sdf::ElementPtr _sdf
 
 void MilDVLGazebo::OnUpdate()
 {
+
   if (range_pub_.getNumSubscribers())
   {
-    double range = sensor_->Range(0);
+    double range = sensor_->Range(0) - offset_.Z();
     mil_msgs::RangeStamped range_msg;
     range_msg.header.frame_id = frame_name_;
     Convert(sensor_->LastMeasurementTime(), range_msg.header.stamp);

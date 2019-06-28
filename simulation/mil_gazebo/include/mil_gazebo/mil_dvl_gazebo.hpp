@@ -47,6 +47,9 @@ private:
   ignition::math::Pose3d pose_;
 
 private:
+  ignition::math::Vector3d offset_;
+
+private:
   std::string frame_name_;
 
 private:
