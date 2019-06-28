@@ -42,7 +42,7 @@ class Autonomous(SubjuGator):
             yield self.run_mission(StartGate(), 400)
 
             # Go to pinger and do corresponding mission
-            completed = yield self.run_mission(Pinger, 400)
+            completed = yield self.run_mission(Pinger(), 400)
             if not completed:  # if we timeout
                 pass
             else:

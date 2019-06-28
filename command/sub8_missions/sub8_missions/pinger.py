@@ -20,7 +20,7 @@ FREQUENCY_TOL = 3000
 PINGER_HEIGHT = 0.75  # how high to go above pinger after found
 MOVE_AT_DEPTH = 0.5  # how low to swim and move
 
-POSITION_TOL = 0.5  # how close to pinger before quiting
+POSITION_TOL = 0.075  # how close to pinger before quiting
 Z_POSITION_TOL = -0.53
 
 
