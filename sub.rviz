@@ -320,6 +320,14 @@ Visualization Manager:
       Show Visual Aids: false
       Update Topic: /guess_markers/update
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /hydrophones/direction_marker
+      Name: Pinger Heading
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 100; 100; 100
