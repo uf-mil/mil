@@ -7,7 +7,7 @@
 namespace mil_gazebo
 {
 /// Gazebo plugin to publish a heading from one object to another
-class MILModelHeading : public gazebo::ModelPlugin
+class MilPassiveSonarGazebo : public gazebo::ModelPlugin
 {
 public:
   /// Load plugin
@@ -22,6 +22,8 @@ private:
   ros::NodeHandle nh_;
   /// Publish to publish vector
   ros::Publisher vector_pub_;
+  /// Publish processed ping
+  ros::Publisher processed_ping_pub_;
   /// Frame of point to publish from
   std::string frame_;
   /// Offset from model to where origin is
@@ -32,5 +34,10 @@ private:
   gazebo::physics::ModelPtr model_;
   /// Timer to update ogrid, markers
   ros::Timer timer_;
+  // Frequency
+  double freq_ = 37000;
+  // Amplitude
+  // This default value is entirely guessed at
+  double amplitude_ = 1000;
 };
 }

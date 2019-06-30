@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="mil_passive_sonar" params="name:=hydrophones model:=pinger xyz:='0 0 0' rpy:='0 0 0' freq:=37000 amplitude:=1">
+    <gazebo>
+      <plugin name="${name}_plugin" filename="libmil_passive_sonar_gazebo.so">
+        <offset>${xyz} ${rpy}</offset>
+        <model>${model}</model>
+        <freq>${freq}</freq>
+        <amplitude>${amplitude}</amplitude>
+      </plugin>
+    </gazebo>
+    <link name="${name}" />
+    <joint name="${name}_joint" type="fixed">
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+      <parent link="base_link"/>
+      <child link="${name}"/>
+    </joint>
+  </xacro:macro>
+</robot>
