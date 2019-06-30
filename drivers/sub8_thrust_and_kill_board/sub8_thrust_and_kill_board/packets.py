@@ -1,5 +1,6 @@
 import struct
 from mil_usb_to_can import ApplicationPacket
+from collections import namedtuple
 
 
 # CAN channel to send thrust messages to
@@ -57,6 +58,34 @@ class KillMessage(ApplicationPacket):
     def __str__(self):
         return 'KillMessage(command={}, hard={}, asserted={})'.format(self.is_command, self.is_hard, self.is_asserted)
 
+KillStatus = namedtuple('KillStatus', ['heartbeat_lost', 'mobo_soft_kill',
+                                       'switch_soft_kill', 'soft_killed',
+                                       'hard_killed', 'thrusters_initializing',
+                                       'go_switch', 'soft_kill_switch',
+                                       'hard_kill_switch'])
+class StatusMessage(KillStatus):
+    BIT_MASK = KillStatus(1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7,
+                              1 << 11, 1 << 12, 1 << 13, 1 << 14)
+    STRUCT_FORMAT = '=h'
+
+    def __init__(self, *args):
+        super(StatusMessage, self).__init__(*args)
+
+    @classmethod
+    def from_bytes(cls, data):
+        unpacked = struct.unpack(cls.STRUCT_FORMAT, data)[0]
+        args = []
+        for field in KillStatus._fields:
+                args.append(bool(unpacked & getattr(cls.BIT_MASK,field)))
+        return cls(*args)
+
+    def to_bytes(self):
+        out = 0
+        for field in KillStatus._fields:
+            if getattr(self, field):
+                out = out | getattr(self.BIT_MASK, field)
+        return struct.pack(self.STRUCT_FORMAT, out)
+
 
 class HeartbeatMessage(ApplicationPacket):
     '''
@@ -70,31 +99,6 @@ class HeartbeatMessage(ApplicationPacket):
 
     def __str__(self):
         return 'HeartbeatMessage()'
-
-
-class GoMessage(ApplicationPacket):
-    '''
-    Represents the Go message received from the kill/thrust board indiciating
-    the status of the go plug.
-    '''
-    IDENTIFIER = ord('G')
-    ASSERTED = 0x41
-    UNASSERTED = 0x55
-    PADDING = 0x00
-
-    @classmethod
-    def create_go_message(cls, asserted=False):
-        asserted_byte = cls.ASSERTED if asserted else cls.UNASSERTED
-        payload = struct.pack('BB', asserted_byte, cls.PADDING)
-        return cls(cls.IDENTIFIER, payload)
-
-    @property
-    def asserted(self):
-        return ord(self.payload[0]) == self.ASSERTED
-
-    def __str__(self):
-        return 'GoMessage(asserted={})'.format(self.asserted)
-
 
 class ThrustPacket(ApplicationPacket):
     '''
