@@ -12,9 +12,9 @@ void MilPassiveSonarGazebo::Load(gazebo::physics::ModelPtr _model, sdf::ElementP
   if (_sdf->HasElement("frame"))
     frame_ = _sdf->GetElement("frame")->Get<std::string>();
 
-  offset_ = gazebo::math::Pose();
+  parent_from_sensor_ = gazebo::math::Pose();
   if (_sdf->HasElement("offset"))
-    offset_ = _sdf->GetElement("offset")->Get<gazebo::math::Pose>();
+    parent_from_sensor_ = _sdf->GetElement("offset")->Get<gazebo::math::Pose>();
 
   if(_sdf->HasElement("freq"))
     freq_ = _sdf->GetElement("freq")->Get<double>();
@@ -49,17 +49,17 @@ void MilPassiveSonarGazebo::Load(gazebo::physics::ModelPtr _model, sdf::ElementP
 void MilPassiveSonarGazebo::TimerCb(const ros::TimerEvent&)
 {
   // Calculate direction to model
-  auto world_pose = origin_->GetWorldPose();
-  auto origin_pose = world_pose * offset_;
-  auto origin_pos = origin_pose.pos;
-  auto model_pose = model_->GetWorldPose().pos;
-  auto difference = model_pose - origin_pos;
-  difference = origin_pose.rot.GetInverse() * difference;
-  difference = difference.Normalize();
+  auto world_from_parent = origin_->GetWorldPose();
+  auto sensor_position_world = world_from_parent.pos + world_from_parent.rot * parent_from_sensor_.pos;
+  auto model_position_world = model_->GetWorldPose().pos;
+  auto heading_world = model_position_world - sensor_position_world;
+  auto sensor_from_world = parent_from_sensor_.rot.GetInverse() * world_from_parent.rot.GetInverse();
+  auto heading_sensor = sensor_from_world * heading_world;
+  heading_sensor = heading_sensor.Normalize();
 
   // Send direction msg
   geometry_msgs::Vector3Stamped vec;
-  GazeboVectorToRosMsg(difference, vec.vector);
+  GazeboVectorToRosMsg(heading_sensor, vec.vector);
   vec.header.frame_id = frame_;
   vec.header.stamp = ros::Time::now();
   vector_pub_.publish(vec);

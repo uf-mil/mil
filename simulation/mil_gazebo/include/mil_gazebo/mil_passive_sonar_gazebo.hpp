@@ -27,7 +27,7 @@ private:
   /// Frame of point to publish from
   std::string frame_;
   /// Offset from model to where origin is
-  gazebo::math::Pose offset_;
+  gazebo::math::Pose parent_from_sensor_;
   /// Pointer to the gazebo world were these models are
   gazebo::physics::ModelPtr origin_;
   /// Pointer to model to get heading to

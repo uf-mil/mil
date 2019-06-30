@@ -4,6 +4,7 @@
     <gazebo>
       <plugin name="${name}_plugin" filename="libmil_passive_sonar_gazebo.so">
         <offset>${xyz} ${rpy}</offset>
+        <frame>${name}</frame>
         <model>${model}</model>
         <freq>${freq}</freq>
         <amplitude>${amplitude}</amplitude>
