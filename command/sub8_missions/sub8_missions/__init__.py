@@ -6,3 +6,6 @@ from start_gate_guess import StartGateGuess
 from pinger import Pinger
 from surface import Surface
 from autonomous import Autonomous
+from ball_drop_test import BallDropTest
+from torpedos_test import TorpedosTest
+from gripper_test import GripperTest
