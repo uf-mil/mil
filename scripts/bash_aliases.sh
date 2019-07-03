@@ -23,6 +23,12 @@ subvalveclose()
 {
  rosservice call /set_valve "{actuator: $1, opened: false}"
 }
+subvalveopenclose()
+{
+ rosservice call /set_valve "{actuator: $1, opened: true}"
+ sleep $2
+ rosservice call /set_valve "{actuator: $1, opened: false}"
+}
 
 # Missions
 alias submove="runmission Move"
