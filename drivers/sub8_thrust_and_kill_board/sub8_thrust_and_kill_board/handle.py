@@ -132,7 +132,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
         '''
         #print(ord(data[0]), ord(data[1]))
         # Hard Kill - bit 7
-        if (ord(data[0]) & 0x8):
+        if (ord(data[0]) & 0x80):
             self._last_hard_kill = True
         else:
             self._last_hard_kill = False
