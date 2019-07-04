@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   gazebo_ros
   mil_msgs
   point_cloud_object_detection_and_recognition
+  mil_passive_sonar
 )
 
 catkin_package(INCLUDE_DIRS include)
@@ -30,14 +31,14 @@ add_dependencies(mil_gazebo_utils ${catkin_EXPORTED_TARGETS})
 
 
 add_library(
-    mil_model_heading
-        src/mil_model_heading.cpp
+    mil_passive_sonar_gazebo
+        src/mil_passive_sonar_gazebo.cpp
 )
-target_link_libraries(mil_model_heading
+target_link_libraries(mil_passive_sonar_gazebo
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
 )
-add_dependencies(mil_model_heading ${catkin_EXPORTED_TARGETS})
+add_dependencies(mil_passive_sonar_gazebo ${catkin_EXPORTED_TARGETS})
 
 # Add buoyancy plugin
 add_library(
