@@ -20,6 +20,8 @@ from sensor_msgs.msg import PointCloud2
 import sensor_msgs.point_cloud2 as pc2
 from mil_missions_core import BaseMission
 
+from mil_passive_sonar.msg import ProcessedPing
+
 import numpy as np
 from twisted.internet import defer
 import os
@@ -260,6 +262,7 @@ class SubjuGator(BaseMission):
         cls.vision_proxies = _VisionProxies(cls.nh, 'vision_proxies.yaml')
         cls.actuators = _ActuatorProxy(cls.nh)
         cls.test_mode = False
+        cls.pinger_sub = yield cls.nh.subscribe('/hydrophones/processed', ProcessedPing)
 
     @property
     def pose(self):

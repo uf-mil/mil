@@ -15,9 +15,14 @@ import numpy as np
 fprint = text_effects.FprintFactory(
     title="START_GATE", msg_color="cyan").fprint
 
-SPEED = 0.3
+SPEED = 0.6
+
+CAREFUL_SPEED = 0.3
+
 # How many meters to pass the gate by
-DIST_AFTER_GATE = 3
+DIST_AFTER_GATE = 1
+
+RIGHT_OR_LEFT = 1
 
 
 class StartGate(SubjuGator):
@@ -32,10 +37,10 @@ class StartGate(SubjuGator):
         for i in range(4):
             # Search 4 quadrants seperated by 90 degrees for the gate
             fprint('Searching {} degrees'.format(90 * i))
-            yield rotate_start.yaw_right_deg(90 * i).go(speed=SPEED)
+            yield rotate_start.yaw_right_deg(90 * i).go(speed=CAREFUL_SPEED)
             start = self.move.zero_roll_and_pitch()
             # Pitch up and down to populate pointcloud
-            so = SonarObjects(self, [start.pitch_down_deg(7), start] * 10)
+            so = SonarObjects(self, [start.pitch_down_deg(7), start] * 5)
             transform = yield self._tf_listener.get_transform('/map', '/base_link')
             # [1, 0, 0] is front vector for self
             ray = transform._q_mat.dot(np.array([1, 0, 0]))
@@ -84,11 +89,11 @@ class StartGate(SubjuGator):
         mid_point = gate_points[0] + gate_points[1]
         mid_point = mid_point / 2
         # Offset z so we don't hit the bar
-        mid_point[2] = mid_point[2] - 0.5
+        mid_point[2] = mid_point[2] - 0.75
         fprint('Midpoint: {}'.format(mid_point))
 
         fprint('Looking at gate', msg_color='yellow')
-        yield self.move.look_at(mid_point).go(speed=SPEED)
+        yield self.move.look_at(mid_point).go(speed=CAREFUL_SPEED)
 
         normal = mid_point - self.pose.position
         normal[2] = 0
@@ -105,7 +110,6 @@ class StartGate(SubjuGator):
         offset_dir = right_gate - left_gate
         offset_dir = offset_dir / np.linalg.norm(offset_dir)
 
-        RIGHT_OR_LEFT = -1
         offset_dir = offset_dir * 0.508 * RIGHT_OR_LEFT
         goal_point = mid_point + offset_dir
 
@@ -114,14 +118,11 @@ class StartGate(SubjuGator):
         fprint('Moving in front of goalpoint!', msg_color='yellow')
         yield self.move.set_position(goal_point - 2 * normal).look_at(goal_point).go(speed=SPEED)
 
-        q = self.pose.orientation
-
         fprint('Style on dem haters!', msg_color='yellow')
-        yield self.move.set_position(goal_point).yaw_right_deg(179).go(speed=SPEED)
+        yield self.move.set_position(goal_point).yaw_right_deg(179).go(speed=CAREFUL_SPEED)
 
         fprint('Moving past the gate', msg_color='yellow')
-        yield self.move.set_position(goal_point + DIST_AFTER_GATE * normal).yaw_right_deg(179).set_orientation(q).zero_roll_and_pitch().go(
-            speed=SPEED)
+        yield self.move.set_position(goal_point + DIST_AFTER_GATE * normal).yaw_right_deg(179).zero_roll_and_pitch().go(speed=CAREFUL_SPEED)
         defer.returnValue(True)
 
     def find_gate(self, objects,

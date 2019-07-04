@@ -6,7 +6,7 @@ from twisted.internet import defer
 
 class Surface(SubjuGator):
     @util.cancellableInlineCallbacks
-    def run(self):
+    def run(self, args):
         self.send_feedback('Surfacing')
-        yield self.move.depth(0.6).go()
+        yield self.move.depth(0.2).go()
         defer.returnValue('Success!')

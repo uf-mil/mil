@@ -20,7 +20,8 @@ FREQUENCY_TOL = 3000
 PINGER_HEIGHT = 0.75  # how high to go above pinger after found
 MOVE_AT_DEPTH = 0.5  # how low to swim and move
 
-POSITION_TOL = 0.05  # how close to pinger before quiting
+POSITION_TOL = 0.075  # how close to pinger before quiting
+Z_POSITION_TOL = -0.53
 
 
 class Pinger(SubjuGator):
@@ -37,8 +38,8 @@ class Pinger(SubjuGator):
         try:
             pinger_txros = yield self.nh.get_service_client('/guess_location',
                                                             GuessRequest)
-            pinger_1_req = yield pinger_txros(GuessRequestRequest(item='pinger1'))
-            pinger_2_req = yield pinger_txros(GuessRequestRequest(item='pinger2'))
+            pinger_1_req = yield pinger_txros(GuessRequestRequest(item='pinger_surface'))
+            pinger_2_req = yield pinger_txros(GuessRequestRequest(item='pinger_shooter'))
             if pinger_1_req.found is False or pinger_2_req.found is False:
                 use_prediction = False
                 fprint(
@@ -55,14 +56,15 @@ class Pinger(SubjuGator):
                 'Failed to /guess_location. Procceding without guess',
                 msg_color='yellow')
             use_prediction = False
-
-        hydro_processed = yield self.nh.subscribe('/hydrophones/processed',
-                                                  ProcessedPing)
+            fprint(e)
 
         while True:
             fprint('=' * 50)
+
+            fprint("waiting for message")
+            p_message = yield self.pinger_sub.get_next_message()
+
             pub_markers.publish(markers)
-            p_message = yield hydro_processed.get_next_message()
             fprint(p_message)
 
             # Ignore freuqnecy
@@ -71,7 +73,8 @@ class Pinger(SubjuGator):
                     "Ignored! Recieved Frequency {}".format(p_message.freq),
                     msg_color='red')
                 if use_prediction:
-                    yield go_to_random_guess(self, pinger_1_req, pinger_2_req)
+                    fprint("Moving to random guess")
+                    yield self.go_to_random_guess(self, pinger_1_req, pinger_2_req)
                 continue
 
             # Ignore magnitude from processed ping
@@ -80,7 +83,7 @@ class Pinger(SubjuGator):
             if np.isnan(vec).any():
                 fprint('Ignored! nan', msg_color='red')
                 if use_prediction:
-                    yield go_to_random_guess(self, pinger_1_req, pinger_2_req)
+                    yield self.go_to_random_guess(self, pinger_1_req, pinger_2_req)
                 continue
 
             # Tranform hydrophones vector to relative coordinate
@@ -104,7 +107,11 @@ class Pinger(SubjuGator):
             markers.markers.append(marker)
 
             # Check if we are on top of pinger
-            if abs(vec[0]) < POSITION_TOL and abs(vec[1] < POSITION_TOL):
+            if abs(vec[0]) < POSITION_TOL and abs(vec[1]) < POSITION_TOL and vec[2] < Z_POSITION_TOL:
+                if not use_prediction:
+                    fprint("Arrived to pinger!")
+                    break
+
                 sub_position, _ = yield self.tx_pose()
                 dists = [
                     np.linalg.norm(sub_position - mil_ros_tools.rosmsg_to_numpy(
@@ -112,6 +119,8 @@ class Pinger(SubjuGator):
                     for x in (pinger_1_req, pinger_2_req)
                 ]
                 pinger_id = np.argmin(dists)
+                # pinger_id 0 = pinger_surface
+                # pinger_id 1 = pinger_shooter
                 yield self.nh.set_param("pinger_where", int(pinger_id))
 
                 break
@@ -151,15 +160,14 @@ class Pinger(SubjuGator):
 
         yield sub.move.relative(vec).depth(MOVE_AT_DEPTH).zero_roll_and_pitch().go(
             speed=SPEED)
-        yield sub.nh.sleep(3)
 
     @util.cancellableInlineCallbacks
     def go_to_random_guess(self, sub, pinger_1_req, pinger_2_req):
-        pinger_guess = yield transform_to_baselink(sub, pinger_1_req, pinger_2_req)
+        pinger_guess = yield self.transform_to_baselink(sub, pinger_1_req, pinger_2_req)
         where_to = random.choice(pinger_guess)
         where_to = where_to / np.linalg.norm(where_to)
         fprint('Going to random guess {}'.format(where_to), msg_color='yellow')
-        yield fancy_move(sub, where_to)
+        yield self.fancy_move(sub, where_to)
 
     def check_with_guess(self, vec, pinger_guess):
         for guess in pinger_guess:
@@ -181,10 +189,11 @@ class Pinger(SubjuGator):
     @util.cancellableInlineCallbacks
     def transform_to_baselink(self, sub, pinger_1_req, pinger_2_req):
         transform = yield sub._tf_listener.get_transform('/base_link', '/map')
+        position = yield sub.pose.position
         pinger_guess = [
             transform._q_mat.dot(
                 mil_ros_tools.rosmsg_to_numpy(x.location.pose.position) -
-                transform._p) for x in (pinger_1_req, pinger_2_req)
+                position) for x in (pinger_1_req, pinger_2_req)
         ]
         for idx, guess in enumerate(pinger_guess):
             marker = Marker(

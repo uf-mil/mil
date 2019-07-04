@@ -4,6 +4,6 @@
   <node pkg="robot_state_publisher" name="robot_state_publisher" type="robot_state_publisher">
     <param name="use_tf_static" value="false" />
   </node>
-  <node pkg="sub8_launch" type="tf_republisher.py" name="tf_replublisher" />
+  <node pkg="sub8_launch" type="tf_republisher.py" name="tf_republisher" />
   <node pkg="nodelet" type="nodelet" args="standalone odometry_utils/odometry_to_tf" name="odometry_to_tf"/>
 </launch>
