@@ -9,7 +9,6 @@ from threading import Condition
 
 class Kill(HandlerBase):
     alarm_name = 'kill'
-    initally_raised = True
     HARDWARE_KILL_GRACE_PERIOD_SECONDS = 6.0
 
     def __init__(self):
@@ -18,12 +17,16 @@ class Kill(HandlerBase):
                                    node_name='alarm_server',
                                    problem_description='Initial kill')
         self._killed = True
+        self.first = True
         self._last_mission_killed = False
         self.condition = Condition()
         self.bag_client = SimpleActionClient('/online_bagger/bag', BagOnlineAction)
         self._set_mobo_kill = rospy.ServiceProxy('/set_mobo_kill', SetBool)
+        try:
+            self._set_mobo_kill.wait_for_service(3.)
+        except rospy.ROSException as e:
+            rospy.logerr('Could not contact kill board! Kills will only be software')
         self.set_mobo_kill(True) # Tell HW that we started off as killed
-        self.first = True
 
     def set_mobo_kill(self, *args, **kwargs):
         try:

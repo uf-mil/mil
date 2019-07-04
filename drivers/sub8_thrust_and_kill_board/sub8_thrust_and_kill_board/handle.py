@@ -1,8 +1,8 @@
 #!/usr/bin/python
 import rospy
 from mil_usb_to_can import CANDeviceHandle
-from thruster import make_thruster_dictionary
-from packets import ThrustPacket, GoMessage, KillMessage, HeartbeatMessage, THRUST_SEND_ID, KILL_SEND_ID
+from .thruster import make_thruster_dictionary
+from .packets import ThrustPacket, KillMessage, HeartbeatMessage, StatusMessage, THRUST_SEND_ID, KILL_SEND_ID
 from std_srvs.srv import SetBool
 from ros_alarms import AlarmBroadcaster, AlarmListener
 from sub8_msgs.msg import Thrust
@@ -20,10 +20,6 @@ class ThrusterAndKillBoard(CANDeviceHandle):
             rospy.get_param('/thruster_layout/thrusters'))
         # Tracks last hw-kill alarm update
         self._last_hw_kill = None
-        # Tracks last soft kill status received from board
-        self._last_soft_kill = None
-        # Tracks last hard kill status received from board
-        self._last_hard_kill = None
         # Tracks last go status broadcasted
         self._last_go = None
         # Used to raise/clear hw-kill when board updates
@@ -83,24 +79,27 @@ class ThrusterAndKillBoard(CANDeviceHandle):
                 ThrustPacket.ID_MAPPING[cmd.name], effort)
             self.send_data(packet.to_bytes(), can_id=THRUST_SEND_ID)
 
-    def update_hw_kill(self, reason):
+    def update_hw_kill(self, status):
         '''
         If needed, update the hw-kill alarm so it reflects the latest status from the board
         '''
-        if self._last_soft_kill is None and self._last_hard_kill is None:
-            return
-
         # Set serverity / problem message appropriately
         severity = 0
         message = ""
-        if self._last_hard_kill is True:
+        if status.hard_killed:
             severity = 2
             message = "Hard kill"
-        elif self._last_soft_kill is True:
+        elif status.soft_killed is True:
             severity = 1
-            message = "Soft kill"
+            reasons = []
+            if status.switch_soft_kill:
+                reasons.append('switch')
+            if status.mobo_soft_kill:
+                reasons.append('mobo')
+            if status.heartbeat_lost:
+                reasons.append('hearbeat')
+            message = 'Soft kill from: ' + ','.join(reasons)
         raised = severity != 0
-        message = message + ": " + reason
 
         # If the current status differs from the alarm, update the alarm
         if self._last_hw_kill is None or self._last_hw_kill.raised != raised or \
@@ -110,7 +109,7 @@ class ThrusterAndKillBoard(CANDeviceHandle):
                     severity=severity, problem_description=message)
             else:
                 self._kill_broadcaster.clear_alarm(
-                    severity=severity, problem_description=message)
+                    severity=severity)
 
     def on_data(self, data):
         '''
@@ -130,40 +129,15 @@ class ThrusterAndKillBoard(CANDeviceHandle):
             Bit 4: Thruster initializing status: This becomes 1 when the board is unkilling, and starts powering thrusters. After the "grace period" it becomes 0 and the overall soft kill status becomes 0. This flag also becomes 0 if killed in the middle of initializing thrusters.
             Bit 3-0: Reserved
         '''
-        #print(ord(data[0]), ord(data[1]))
-        # Hard Kill - bit 7
-        if (ord(data[0]) & 0x80):
-            self._last_hard_kill = True
-        else:
-            self._last_hard_kill = False
-        # Soft Kill - bit 6
-        if (ord(data[0]) & 0x40):
-            self._last_soft_kill = True
-        else:
-            self._last_soft_kill = False
+        status = StatusMessage.from_bytes(data)
+        self.update_hw_kill(status)
 
-        reason = ""
-        # hall effect - bit 5
-        if (ord(data[0]) & 0x20):
-            reason = 'hall effect'
-        # mobo soft kill - bit 4
-        if (ord(data[0]) & 0x10):
-            reason = 'mobo soft kill'
-        # heartbeat loss - bit 3
-        if (ord(data[0]) & 0x08):
-            reason = 'Heart beat lost'
-        self.update_hw_kill(reason)
-
-        # Switch - bit 5
-        if (ord(data[1]) & 0x20):
-            asserted = True
-        else:
-            asserted = False
-        if self._last_go is None or asserted != self._last_go:
-            if asserted:
+        go = status.go_switch
+        if self._last_go is None or go != self._last_go:
+            if go:
                 self._go_alarm_broadcaster.raise_alarm(
                     problem_description="Go plug pulled!")
             else:
                 self._go_alarm_broadcaster.clear_alarm(
                     problem_description="Go plug returned")
-            self._last_go = asserted
+            self._last_go = go
