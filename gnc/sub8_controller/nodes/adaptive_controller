@@ -9,6 +9,7 @@ from mil_tools import quaternion_matrix, quat_to_rotvec
 from mil_msgs.msg import PoseTwistStamped
 from geometry_msgs.msg import WrenchStamped
 from dynamic_reconfigure.server import Server as DynamicReconfigureServer
+from ros_alarms import AlarmListener
 from threading import Lock
 
 
@@ -46,6 +47,7 @@ class Sub8AdapativeController(object):
         self.twist_body = None
         self.debug = rospy.get_param('~debug', False)
 
+        self.kill_listener = AlarmListener('kill')
         self.wrench_pub = rospy.Publisher('/wrench', WrenchStamped, queue_size=3)
         if self.debug:
             self.adaptation_wrench_pub = rospy.Publisher('~adaptation', WrenchStamped, queue_size=1)
@@ -82,8 +84,13 @@ class Sub8AdapativeController(object):
         return config
 
     def update(self):
-        # If odometry or trajectory not received, exit
-        if self.desired_position is None or self.position is None:
+        now = rospy.Time.now()
+        kill_alarm = self.kill_listener.get_alarm(fetch=False)
+
+        # Send a zeroed wrench if killed, missing odometry, or missing goal
+        if self.desired_position is None or self.position is None or kill_alarm is None or kill_alarm.raised:
+            zero_wrench = np.zeros(6, dtype=float)
+            self.wrench_pub.publish(self.make_wrench_msg(zero_wrench, frame_id=self.body_frame, stamp=now))
             return
 
         # Calculate error in position, orientation, and twist
@@ -119,7 +126,6 @@ class Sub8AdapativeController(object):
         wrench_body = self.world_to_body.dot(wrench_world)
 
         # Publish wrench
-        now = rospy.Time.now()
         self.wrench_pub.publish(self.make_wrench_msg(wrench_body, frame_id=self.body_frame, stamp=now))
 
         # Update regressors
