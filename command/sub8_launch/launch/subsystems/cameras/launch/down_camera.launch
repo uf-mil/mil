@@ -10,7 +10,7 @@
     <param name="pixel_format" value="uyvy" />
     <param name="image_width"  value="1920" />
     <param name="image_height" value="1080" />
-    <param name="framerate" value="5" />
+    <param name="framerate" value="15" />
     <remap from="seecam_driver/image_raw" to="image_raw" />
     <remap from="seecam_driver/camera_info" to="camera_info" />
   </node>
