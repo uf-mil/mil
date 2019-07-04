@@ -8,7 +8,7 @@
   <xacro:include filename="$(find mil_gazebo)/xacro/imu_magnetometer.xacro" />
   <xacro:include filename="$(find mil_gazebo)/xacro/depth.xacro" />
   <xacro:include filename="$(find mil_gazebo)/xacro/drag.xacro" />
-
+  <xacro:include filename="$(find mil_gazebo)/xacro/passive_sonar.xacro" />
 
   <!-- Base link of sub -->
   <link name="base_link">
@@ -39,14 +39,13 @@
                               ax="0.015707963" ay="0.015707963" az="0.015707963"
                               lx="0.08825985" ly="0.08825985" lz="0.08825985" />
 
-  <!-- TODO: switch back to correct transform once CAD mesh is fixed so beam doesnt collide with self
-             should be xyz="0.0908 0 0.2459" rpy="0 0 0.785" -->
-  <xacro:mil_dvl name="dvl" xyz="0.0908 0 -1.0" rpy="0 0 0.785" rate="6.5" />
+  <xacro:mil_dvl name="dvl" xyz="0.0908 0 -0.2459" rpy="0 0 0.785" gazebo_offset="0 0 -1" rate="6.5" />
   <xacro:mil_depth name="depth" xyz="-0.235 0 -0.170" rpy="0 0 0" rate="20" />
+  <xacro:mil_passive_sonar name="hydrophones" xyz="-0.0908 0 -0.2459" rpy="0 0 1.571"
+                           model="transdec_pinger" freq="37000" amplitude="1000"/>
 
   <!-- Other fixed frames -->
   <xacro:mil_fixed_link name="blueview" parent="base_link" xyz="0.333 0 0.381" rpy="3.142 0 0" />
-  <xacro:mil_fixed_link name="hydrophones" parent="base_link" xyz="-0.0908 0 -0.2459" rpy="0 0 1.571" />
 
   <!-- Dynamics simulation -->
   <xacro:mil_drag use_param='True' />

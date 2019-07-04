@@ -7,3 +7,6 @@ from .pinger import Pinger
 from .surface import Surface
 from .vampire_slayer import VampireSlayer
 from .autonomous import Autonomous
+from ball_drop_test import BallDropTest
+from torpedos_test import TorpedosTest
+from gripper_test import GripperTest
