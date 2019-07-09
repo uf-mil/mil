@@ -1,0 +1,116 @@
+#!/usr/bin/env python
+import rospy
+from mil_vision_tools import VisionNode, create_object_msg, ImageMux, auto_canny, RectFinder, putText_ul
+from mil_vision_tools import CentroidObjectsTracker, quaternion_from_rvec, contour_centroid
+from mil_tools import Image_Publisher, numpy_quat_pair_to_pose
+from geometry_msgs.msg import PoseStamped
+import numpy as np
+import cv2
+
+__author__ = "Kevin Allen"
+
+
+class DetectDeliverTargetDetector(VisionNode):
+    BORDER_THICKNESS_METERS = 0.0508
+
+    def __init__(self):
+        self.min_area = rospy.get_param('~min_area', default=1000)
+        self.max_contour_score = rospy.get_param('~max_contour_score', default=0.03)
+        self.pose_pub = rospy.Publisher("~pose", PoseStamped, queue_size=3)
+        self.tracker = CentroidObjectsTracker(max_distance=20.0)
+        self.large_target_model = RectFinder(length=0.500126 + self.BORDER_THICKNESS_METERS,
+                                             width=0.500126 + self.BORDER_THICKNESS_METERS)
+        self.small_target_model = RectFinder(length=0.249936 + self.BORDER_THICKNESS_METERS,
+                                             width=0.249936 + self.BORDER_THICKNESS_METERS)
+        self.image_mux = ImageMux(shape=(2, 2), labels=['Blur', 'Threshold', 'Edges', 'Found'])
+        self.debug_pub = Image_Publisher("~debug")
+        self.first_object_id = -1
+        super(DetectDeliverTargetDetector, self).__init__()
+
+    def find_objects(self, img):
+        # Clear old objects from being tracked
+        self.tracker.clear_expired(now=self._image_sub.last_image_time)
+
+        # Convert image to grayscale for thresholding
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # Blur image for easier edge detection
+        blur = cv2.GaussianBlur(gray, (11, 11), 0)
+        self.image_mux[0] = blur
+
+        # Threshold image to keep only black regions, like the target border
+        _, thresh = cv2.threshold(blur, 50, 255, cv2.THRESH_BINARY_INV)
+        self.image_mux[1] = thresh
+
+        # Find edges in thresholded image using Canny
+        edges = auto_canny(thresh, sigma=0.66)
+
+        # Find contours in edge mask
+        _, cnts, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # Draw contours for debugging
+        contours_img = np.zeros(edges.shape, dtype=edges.dtype)
+        cv2.drawContours(contours_img, cnts, -1, 255, 3)
+
+        self.image_mux[2] = contours_img
+
+        found = []
+        # Loop through the contours, filtering out those unlikely to be targets
+        for num, c in enumerate(cnts):
+            # Remove very small contours (likely to just be noise)
+            area = cv2.contourArea(c)
+            if area < self.min_area:
+                continue
+
+            # Score the contour based on Hough shape invariants compared
+            # to the known shape of the target, smaller is better
+            score = self.large_target_model.verify_contour(c)
+            if score > self.max_contour_score:
+                continue
+
+            # Attempt to reduce the contour to a 4 sided polygon representing the corners
+            corners = self.large_target_model.get_corners(c, epsilon_range=(0.01, 0.04))
+            if corners is None:
+                continue
+
+            # Track this contour with the previous contours
+            centroid = contour_centroid(c)
+            obj = self.tracker.add_observation(self._image_sub.last_image_time, np.array(centroid), data=corners)
+
+            # Draw this contour for debugging
+            putText_ul(img, str(obj.id), centroid, color=(0, 0, 255), fontScale=2)
+            cv2.drawContours(img, [corners], -1, (0, 255, 0), 3)
+
+            found.append(create_object_msg("target_large", contour=cnts[num - 1], confidence=1.0))
+
+        # Get objects which have persisted over many frames
+        persistent = self.tracker.get_persistent_objects(min_observations=8, min_age=rospy.Duration(1.5))
+
+        if len(persistent) > 0:
+            if self.first_object_id == -1:
+                self.first_object_id = persistent[0].id
+                print 'FIRST DETECTED IS ', self.first_object_id
+            for obj in persistent:
+                if obj.id != self.first_object_id:
+                    continue
+
+                ps = PoseStamped()
+                ps.header = self._image_sub.last_image_header
+                # Get 3D pose of target use PnP
+                tvec, rvec = self.small_target_model.get_pose_3D(obj.data, cam=self.camera_model, rectified=True)
+                # Throw out up/down and convert to quaternion
+                # rvec[1] = 0.
+                rvec[2] = 0.
+                rvec = rvec / np.linalg.norm(rvec)
+                ps.pose = numpy_quat_pair_to_pose(tvec, quaternion_from_rvec(rvec))
+                self.pose_pub.publish(ps)
+
+        self.image_mux[3] = img
+        self.debug_pub.publish(self.image_mux())
+        return found
+
+
+if __name__ == "__main__":
+    rospy.init_node("detect_deliver_target_detector")
+    node = DetectDeliverTargetDetector()
+    rospy.spin()

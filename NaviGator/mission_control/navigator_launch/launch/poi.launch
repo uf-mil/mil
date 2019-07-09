@@ -1,0 +1,7 @@
+<launch>
+  <arg name="simulation" default="False" />
+  <node pkg="mil_poi" type="poi_server" name="poi_server">
+    <rosparam unless="$(arg simulation)" command="load" file="$(find navigator_launch)/config/poi.yaml" />
+    <rosparam if="$(arg simulation)" command="load" file="$(find navigator_launch)/config/poi_sim.yaml" />
+  </node>
+</launch>

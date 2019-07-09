@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <name>navigator_battery_monitor</name>
+  <version>1.0.0</version>
+  <description>The navigator_battery_monitor package</description>
+
+  <author email="anthony@iris-systems.net">Anthony Olive</author>
+  <maintainer email="anthony@iris-systems.net">Anthony Olive</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>roboteq_msgs</run_depend>
+</package>

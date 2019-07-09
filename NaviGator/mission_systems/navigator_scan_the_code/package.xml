@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package>
+  <name>navigator_scan_the_code</name>
+  <version>0.0.0</version>
+  <description>The navigator_scan_the_code package</description>
+  <maintainer email="tessbianchi@ufl.edu">Tess Bianchi</maintainer>
+  <license>MIT</license>
+  <author email="tessbianchi@ufl.edu">Tess Bianchi</author> 
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>navigator_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>navigator_msgs</run_depend>
+</package>

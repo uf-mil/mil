@@ -1,0 +1,12 @@
+<launch>
+  <!-- Start up alarm server -->
+  <include file="$(find navigator_launch)/launch/alarms.launch" />
+
+  <!-- Set Param -->
+  <param name="/is_simulation" type="bool" value="true" />
+
+  <!-- Start kill_board_dirver -->
+  <include file="$(find navigator_launch)/launch/hardware/kill_board.launch" />
+
+  <test test-name="kill_board_test" pkg="navigator_kill_board" type="kill_board_test.py" />
+</launch>

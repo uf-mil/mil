@@ -1,0 +1,13 @@
+global_frame: enu
+initial_pois:
+  start_gate:      [0, 0, 0]
+  entrance_gate:   [0, 0, 0]
+  obstacle_course: [0, 0, 0]
+  circle_totems:   [0, 0, 0]
+  ring_challenge:  [0, 0, 0]
+  dock:            [0, 0, 0]
+  stc:             [0, 0, 0]
+  ocp1:            [0, 0 ,0]
+  ocp2:            [0, 0, 0]
+  ocp3:            [0, 0, 0]
+  ocp4:            [0, 0, 0]

@@ -1,0 +1,21 @@
+<launch>
+    <node pkg="navigator_2dsim" type="sim2d.py" name="sim2d" output="screen">
+    <!---
+    Drag coefficents determined by applying a fixed wrench of 500 newtons or 500 newton meters until
+    a max velocity was reached at Lake Wauberg. These were the results:
+
+    direction  | velocity (m/s)  | wrench (N or N*M)
+    _______________________________
+    x          | 1.4600396       | 500
+    y          | 0.636595        | 500
+    z-rotation | 0.24204         | 500
+    Each drag coefficient is approximated as wrench / velocity^2
+    -->
+    <rosparam>
+    mass: 272.15542 # Kg, estimated as 400lb for WAM-V + 200lb for payload (thrusters, electronics, batteries, capybaras)
+    rotational_inertia: 4000 # Roational inertia about Z. kg*m^2. Totally arbitrary for now and should be changed.
+    drag: [234.552860675, 1233.796568101, 8534.84652202] # Drag coefficents X, Y, rotation, N / M/s or N*m / m/s
+    wind: [0, 0, 0] # Constant wind velocity, m/s about linear X, Y and rotation about Z in world frame
+    </rosparam>
+  </node>
+</launch>

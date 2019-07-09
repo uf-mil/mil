@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<!--
+    Launches the gazebo simulator and all the same master.launch used on the real platform.
+-->
+<launch>
+    <param name="/is_simulation" type="bool" value="True" />
+    <arg name="gui" default="true"/>
+    <arg name="online-bagger" default="False" />
+
+    <!-- Run core navigator code, minus hardware -->
+    <include file="$(find navigator_launch)/launch/master.launch">
+      <arg name="simulation" value="true" />
+      <arg name="online-bagger" value="$(arg online-bagger)" />
+    </include>
+
+    <!-- Sets up the world and loads models -->
+    <include file="$(find navigator_gazebo)/launch/goose.launch">
+        <arg name="gui" value="$(arg gui)"/>
+    </include>
+
+    <!-- Map from gazebo modes to database objects for ground truth simulated PCODAR -->
+    <rosparam param="/gazebo/name_map">
+      'green_totem::surmark46104::link': totem_green
+      'red_totem::surmark46104::link': totem_red
+      'blue_totem::surmark46104::link': totem_blue
+      'yellow_totem::surmark46104::link': totem_yellow
+      'ring_recovery_reference_buoy' : totem_violet
+      'gate_start_red::link': totem_red
+      'gate_start_green::link' : totem_green
+      'gate_end_red::link': totem_red
+      'gate_end_green::link' : totem_green
+      'base_gate::red_buoy::link': totem_red
+      'base_gate::white_buoy_left::link': totem_white
+      'base_gate::white_buoy_right::link': totem_white
+      'base_gate::green_buoy::link': totem_green
+      'circle_buoy::surmark46104::link': totem_black
+      'light_buoy::base_link': stc_platform
+      'robotx_light_buoy': stc_platform
+      'robotx_dock_2018': dock
+      'ul_marker::link' : totem_white
+      'ur_marker::link' : totem_white
+      'bl_marker::link' : totem_white
+      'br_marker::link' : totem_white
+      'buoys::polyform_a3_0::base_link' : buoy
+      'buoys::polyform_a3_1::base_link' : buoy
+      'buoys::polyform_a3_2::base_link' : buoy
+      'buoys::polyform_a3_3::base_link' : buoy
+      'buoys::polyform_a3_4::base_link' : buoy
+      'buoys::polyform_a3_5::base_link' : buoy
+      'buoys::polyform_a5_0::base_link' : buoy
+      'buoys::polyform_a5_1::base_link' : buoy
+      'buoys::polyform_a5_2::base_link' : buoy
+      'buoys::polyform_a5_3::base_link' : buoy
+      'buoys::polyform_a5_4::base_link' : buoy
+      'buoys::polyform_a5_5::base_link' : buoy
+      'buoys::polyform_a5_6::base_link' : buoy
+      'buoys::polyform_a7_0::base_link' : buoy
+      'buoys::polyform_a7_1::base_link' : buoy
+      'buoys::polyform_a7_2::base_link' : buoy
+      'buoys::polyform_a7_3::base_link' : buoy
+      'buoys::polyform_a7_4::base_link' : buoy
+      'buoys::polyform_a7_5::base_link' : buoy
+      'buoys::polyform_a7_6::base_link' : buoy
+    </rosparam>
+</launch>

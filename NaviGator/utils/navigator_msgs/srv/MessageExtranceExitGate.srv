@@ -1,0 +1,6 @@
+int8 entrance_gate  # gate 1, 2, 3
+int8 exit_gate  # gate 1, 2, 3
+bool light_buoy_active  # true if active, false if inactive
+string light_pattern  # R=red, B=blue, G=green, empty if not active
+---
+string message

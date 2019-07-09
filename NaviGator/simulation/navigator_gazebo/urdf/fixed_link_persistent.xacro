@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro  name="fixed_link_persistent"
+                params="name parent='base_link'
+                        xyz:='0 0 0' rpy:='0 0 0'">
+    <gazebo>
+      <link name="${name}" />
+      <joint name="${name}_to_${parent}" type="fixed">
+        <parent>${parent}</parent>
+        <child>${child}</child>
+        <pose>${xyz} ${rpy}</pose>
+      </joint>
+    </gazebo>
+    <link name="${name}" />
+    <joint name="${name}_to_${parent}" type="fixed">
+      <parent link="${parent}" />
+      <child link="${name}" />
+      <origin xyz="${xyz}" rpy="${rpy}" />
+    </joint>
+  </xacro:macro>
+</robot>

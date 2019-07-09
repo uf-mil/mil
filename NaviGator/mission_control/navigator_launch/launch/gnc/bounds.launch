@@ -1,0 +1,9 @@
+<launch>
+    <arg name="course" default="course_a" />
+    <arg name="simulation" default="False" />
+    <node name="bounds_server" pkg="mil_bounds" type="bounds_server" />
+    <node unless="$(arg simulation)" name="set_bounds" pkg="dynamic_reconfigure" type="dynparam"
+          args="load bounds_server $(find navigator_launch)/config/bounds_$(arg course).yaml" />
+    <node if="$(arg simulation)" name="set_bounds" pkg="dynamic_reconfigure" type="dynparam"
+          args="load bounds_server $(find navigator_launch)/config/bounds_gazebo.yaml" />
+</launch>

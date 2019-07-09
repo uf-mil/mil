@@ -1,0 +1,1424 @@
+datasets:
+  -
+    name: navigator_pointgrey_wauburg_2016_11_12
+    sources:
+      -
+        file: 2016-11-12/2016-11-12-12-56-46.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 36
+      -
+        file: 2016-11-12/2016-11-12-15-13-20.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 11
+      -
+        file: 2016-11-12/2016-11-12-15-14-07.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 76
+      -
+        file: 2016-11-12/2016-11-12-16-07-59.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 29
+        stop: 77
+      -
+        file: 2016-11-12/2016-11-12-16-12-17.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 15
+        stop: 63
+      -
+        file: 2016-11-12/buoys_2016-11-12-10-42-28.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 222
+      -
+        file: 2016-11-12/chained1_2016-11-12-13-08-10.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 343
+      -
+        file: 2016-11-12/chained1_2016-11-12-13-08-10.bag
+        topic: /stereo/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 343
+      -
+        file: 2016-11-12/detect1_2016-11-12-11-44-02.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 90
+      -
+        file: 2016-11-12/detect2_2016-11-12-11-57-27.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 20
+      -
+        file: 2016-11-12/detect3_2016-11-12-12-02-33.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 3
+        stop: 71
+      -
+        file: 2016-11-12/detect4_2016-11-12-14-53-37.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 131
+      -
+        file: 2016-11-12/detect5_2016-11-12-14-55-52.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 64
+      -
+        file: 2016-11-12/detect6_2016-11-12-15-01-06.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 60
+      -
+        file: 2016-11-12/Detect7_2016-11-12-15-04-59.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 40
+      -
+        file: 2016-11-12/detect9.bag
+        topic: /right/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 6
+        stop: 53
+      -
+        file: 2016-11-12/dock_2016-11-12-14-15-09.bag
+        topic: /stereo/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 32
+        stop: 47
+      -
+        file: 2016-11-12/Dock2_2016-11-12-14-16-13.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 4
+        stop: 58
+      -
+        file: 2016-11-12/Dock2_2016-11-12-14-16-13.bag
+        topic: /stereo/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 4
+        stop: 58
+      -
+        file: 2016-11-12/Dock3_2016-11-12-14-17-17.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 33
+      -
+        file: 2016-11-12/dock4_2016-11-12-14-17-54.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 33
+      -
+        file: 2016-11-12/dock_circle_2016-11-12-14-40-10.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 55
+      -
+        file: 2016-11-12/docked_2016-11-12-14-29-10.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 9
+      -
+        file: 2016-11-12/docking_2016-11-12-14-18-58.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 76
+      -
+        file: 2016-11-12/docking2_2016-11-12-14-33-13.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 79
+      -
+        file: 2016-11-12/docking3_2016-11-12-14-37-50.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 67
+      -
+        file: 2016-11-12/LookAtObjects_Ira_2016-11-12-11-14-45.bag
+        topic: /stereo/right/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 10
+        stop: 176
+      -
+        file: 2016-11-12/misclass_2016-11-12-15-30-34.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 10
+        stop: 30
+      -
+        file: 2016-11-12/misclassified_shooter2_2016-11-12-14-13-35.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 18
+        stop: 35
+      -
+        file: 2016-11-12/misssc_2016-11-12-14-12-23.bag
+        topic: /stereo/left/image_raw
+        encoding: rect_color
+        freq: 0.25
+        start: 0
+        stop: 9
+
+  -
+      name: navigator_wauburg_pointgrey_2018-02-04
+      sources:
+          # Start of 2018-02-04 Folder
+        - 
+          file: 2018-02-04/white_totem_cloudy.bag      
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 9.0    
+        - 
+          file: 2018-02-04/whitetotem.bag    
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 34.0  
+        - 
+          file: 2018-02-04/thebigbadblackbuoys.bag 
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 109.0    
+        - 
+          file: 2018-02-04/test.bag    
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 6.0              
+        - 
+          file: 2018-02-04/stc_closer.bag     
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 24.0    
+        - 
+          file: 2018-02-04/scanthecode.bag    
+          topic: /camera/front/left/image_raw   
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 178.0    
+        - 
+          file: 2018-02-04/redtriangle.bag    
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 65.0  
+        - 
+          file: 2018-02-04/red_totem_cloudy.bag   
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 8.0    
+        - 
+          file: 2018-02-04/redtotem.bag    
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 30.0              
+        - 
+          file: 2018-02-04/green_totem_cloudy.bag     
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 16.0    
+        - 
+          file: 2018-02-04/greentotem.bag  
+          topic: /camera/front/left/image_raw   
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 32.0    
+        - 
+          file: 2018-02-04/blue_triangle.bag   
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 11.0  
+        - 
+          file: 2018-02-04/blue_totem_cloudy.bag
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 11.0    
+        - 
+          file: 2018-02-04/bluetotem.bag   
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 31.0              
+        - 
+          file: 2018-02-04/blackbuoyfarawayredo.bag    
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 45.0    
+        - 
+          file: 2018-02-04/blackbuoyfaraway.bag   
+          topic: /camera/front/left/image_raw   
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 12.0    
+        - 
+          file: 2018-02-04/blackbuoy2.bag  
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 60.0  
+        - 
+          file: 2018-02-04/blackbuoy.bag
+          topic: /camera/front/left/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 36.0  
+          # End of 2018-02-04 Folder
+          # End of point gray bags
+    - 
+      name: navigator_seecam_wauburg-2018-09-09
+      sources:
+          # Start of 2018-09-09 Folder
+        - 
+          file: 2018-09-09/whole_course_bag.bag      
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 120.0    
+        - 
+          file: 2018-09-09/buoy_nogrid.bag       
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 14.0              
+        - 
+          file: 2018-09-09/buoy_in_pcodar_ogrid2.bag       
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 38.0    
+        - 
+          file: 2018-09-09/buoy_in_pcodar_ogrid.bag      
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 26.0    
+        - 
+          file: 2018-09-09/pinger_at_0deg.bag      
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 20.0  
+        # End of 2018-09-09 Folder  
+        # Start of 2018-02-04 Folder
+    - 
+      name: navigator_seecam_wauburg-2018-02-04
+      sources:
+        - 
+          file: 2018-02-04/yellow_totem_cloudy.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 15.0    
+        - 
+          file: 2018-02-04/yellowtotem.bag     
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 34.0              
+        - 
+          file: 2018-02-04/white_totem_cloudy.bag      
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 9.0    
+        - 
+          file: 2018-02-04/whitetotem.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 34.0  
+        - 
+          file: 2018-02-04/thebigbadblackbuoys.bag 
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 109.0    
+        - 
+          file: 2018-02-04/test.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 6.0              
+        - 
+          file: 2018-02-04/stc_closer.bag     
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 24.0    
+        - 
+          file: 2018-02-04/scanthecode.bag    
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 178.0    
+        - 
+          file: 2018-02-04/redtriangle.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 65.0  
+        - 
+          file: 2018-02-04/red_totem_cloudy.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 8.0    
+        - 
+          file: 2018-02-04/redtotem.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 30.0              
+        - 
+          file: 2018-02-04/green_totem_cloudy.bag     
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 16.0    
+        - 
+          file: 2018-02-04/greentotem.bag  
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 32.0    
+        - 
+          file: 2018-02-04/blue_triangle.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 11.0  
+        - 
+          file: 2018-02-04/blue_totem_cloudy.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 11.0    
+        - 
+          file: 2018-02-04/bluetotem.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 31.0              
+        - 
+          file: 2018-02-04/blackbuoyfarawayredo.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 45.0    
+        - 
+          file: 2018-02-04/blackbuoyfaraway.bag   
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 12.0    
+        - 
+          file: 2018-02-04/blackbuoy2.bag  
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 60.0  
+        - 
+          file: 2018-02-04/blackbuoy.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 36.0  
+          # End of 2018-02-04 Folder
+          # Start of 2018-02-18 Folder
+    - 
+      name: navigator_seecam_wauburg-2018-02-18
+      sources:
+        - 
+          file: 2018-02-18/yellow_totem_bright_sun.bag  
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 8.0    
+        - 
+          file: 2018-02-18/yellow_totem_bright.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 3.0              
+        - 
+          file: 2018-02-18/white_totem_bright.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 8.0    
+        - 
+          file: 2018-02-18/stc2.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 14.0  
+        - 
+          file: 2018-02-18/stc.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 35.0    
+        - 
+          file: 2018-02-18/red_triangle.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 7.0              
+        - 
+          file: 2018-02-18/red_totem_bright_2.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 4.0    
+        - 
+          file: 2018-02-18/red_totem_bright.bag   
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 9.0    
+        - 
+          file: 2018-02-18/ralpha.jpg.bag  
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 4.0  
+        - 
+          file: 2018-02-18/green_cross.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 7.0    
+        - 
+          file: 2018-02-18/green_circle.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 8.0              
+        - 
+          file: 2018-02-18/fake_black_buoy.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 5.0    
+        - 
+          file: 2018-02-18/blue_triangle.bag  
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 8.0    
+        - 
+          file: 2018-02-18/blue_totem_bright_2.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 5.0  
+        - 
+          file: 2018-02-18/blue_totem_bright.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 7.0    
+        - 
+          file: 2018-02-18/black_buoy_bright_run.bag  
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 2.0              
+        - 
+          file: 2018-02-18/black_buoy_bright.bag 
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 2.0    
+          # End of 2018-02-18 Folder
+          # Start of 2018-03-18 Folder
+    - 
+      name: navigator_seecam_wauburg-2018-03-18
+      sources:
+        - 
+          file: 2018-03-18/whitetotem.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 23.0    
+        - 
+          file: 2018-03-18/redtotem.bag
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 2.0    
+        - 
+          file: 2018-03-18/greentotem.bag 
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 24.0  
+        - 
+          file: 2018-03-18/course2.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 270.0    
+        - 
+          file: 2018-03-18/course.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 262.0              
+        - 
+          file: 2018-03-18/blackbuoy.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 15.0   
+         # End of 2018-03-18 Folder
+         # Start of 2018-08-26 Folder
+    - 
+      name: navigator_seecam_wauburg-2018-08-26
+      sources:
+        - 
+          file: 2018-08-26/yellowtotemcircle.bag   
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 85.0    
+        - 
+          file: 2018-08-26/whitetotemcircle.bag
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 116.0    
+        - 
+          file: 2018-08-26/redtotemcircle.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 93.0  
+        - 
+          file: 2018-08-26/madetheshot.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 33.0    
+        - 
+          file: 2018-08-26/greentotemcircle.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 70.0              
+        - 
+          file: 2018-08-26/greencruciformtarget.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 11.0   
+        - 
+          file: 2018-08-26/greencircletarget.bag    
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 12.0    
+        - 
+          file: 2018-08-26/bluetriangletarget.bag
+          topic: /camera/seecam/image_raw    
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 22.0    
+        - 
+          file: 2018-08-26/bluetotemcircle.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 118.0  
+         # End of 2018-08-26 Folder
+         # Start of 2018-04-08 Folder
+    - 
+      name: navigator_seecam_wauburg-2018-04-08
+      sources:
+        - 
+          file: 2018-04-08/black_buoy.bag
+          topic: /camera/seecam/image_raw     
+          encoding: rect_color              
+          freq: 0.15           
+          start: 0.0
+          stop: 8.0  
+         # End of 2018-08-26 Folder
+
+    -
+      name: navigator_pointgrey_hawaii_2016_12_13
+      sources:
+        -
+          file: 2016-12-13/shooter_circle.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: 0.2
+        -
+          file: 2016-12-13/stclate.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 80
+          freq: 0.15
+        -
+          file: 2016-12-13/daniel.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: 0.15
+          start: 22
+        -
+          file: 2016-12-13/buoyfield_2016-12-13-11-50-48.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: 0.15
+          stop: 35
+        -
+          file: 2016-12-13/buoyfield2_2016-12-13-11-52-28.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: 0.15
+        -
+          file: 2016-12-13/camfudge_2016-12-13-11-42-34.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 10
+          stop: 50
+          freq: 0.15
+        -
+          file: 2016-12-13/dd2_2016-12-13-14-35-12.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          start: 78
+          stop: 90
+          freq: 0.2
+        -
+          file: 2016-12-13/dd3_2016-12-13-14-56-16.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          start: 20
+          stop:  130
+          freq: 0.15
+        -
+          file: 2016-12-13/irashit_2016-12-13-11-24-23.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 20
+          freq: 0.15
+        -
+          file: 2016-12-13/matt2.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 25
+          freq: 0.15
+        -
+          file: 2016-12-13/matt3.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 20
+          freq: 0.15
+        -
+          file: 2016-12-13/shooter_circle.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          start: 40
+          freq: 0.15
+        -
+          file: 2016-12-13/stctraining2_2016-12-13-11-40-13.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 35
+          freq: 0.5
+        -
+          file: 2016-12-13/totems.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 34
+          stop: 54
+          freq: 0.25
+        -
+          file: 2016-12-13/2016-12-13-09-41-33.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 31
+          freq: 0.2
+        -
+          file: 2016-12-13/2016-12-13-09-42-32.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: 0.2
+        -
+          file: 2016-12-13/2016-12-13-09-47-01.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: 0.15
+        -
+          file: 2016-12-13/2016-12-13-09-48-03.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 8
+          stop: 42
+          freq: 0.15
+        -
+          file: 2016-12-13/2016-12-13-09-50-46.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 23
+          stop: 65
+          freq: 0.15
+        -
+          file: 2016-12-13/2016-12-13-09-53-28.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 35
+          freq: 0.7
+        -
+          file: 2016-12-13/2016-12-13-09-54-10.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 7
+          freq: 0.7
+        -
+          file: 2016-12-13/2016-12-13-11-29-05.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          start: 27
+          freq: 0.1
+        -
+          file: 2016-12-13/2016-12-13-11-34-52.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          start: 23
+          stop: 70
+          freq: 0.15
+        -
+          file: 2016-12-13/2016-12-13-14-08-21.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 40
+          freq: 0.2
+        -
+          file: 2016-12-13/2016-12-13-14-23-05.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 40
+          freq: 0.2
+        -
+          file: 2016-12-13/2016-12-13-14-23-05.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 22
+          freq: 0.2
+  -
+      name: navigator_pointgrey_hawaii_2016_12_13
+      sources:
+      -
+          file: 2016-12-13/shooter_circle.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: 0.25
+      -
+          file: 2016-12-13/stclate.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 80
+          freq: 0.25
+      -
+          file: 2016-12-13/daniel.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: 0.25
+          start: 22
+      -
+          file: 2016-12-13/buoyfield_2016-12-13-11-50-48.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: 0.25
+          stop: 35
+      -
+          file: 2016-12-13/buoyfield2_2016-12-13-11-52-28.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: 0.25
+      -
+          file: 2016-12-13/camfudge_2016-12-13-11-42-34.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 10
+          stop: 50
+          freq: 0.25
+      -
+          file: 2016-12-13/dd2_2016-12-13-14-35-12.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          start: 78
+          stop: 90
+          freq: 0.2
+      -
+          file: 2016-12-13/dd3_2016-12-13-14-56-16.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          start: 20
+          stop:  130
+          freq: 0.25
+      -
+          file: 2016-12-13/irashit_2016-12-13-11-24-23.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 20
+          freq: 0.25
+      -
+          file: 2016-12-13/matt2.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 25
+          freq: 0.25
+      -
+          file: 2016-12-13/matt3.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 20
+          freq: 0.25
+      -
+          file: 2016-12-13/shooter_circle.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          start: 40
+          freq: 0.25
+      -
+          file: 2016-12-13/stctraining2_2016-12-13-11-40-13.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 35
+          freq: 0.5
+      -
+          file: 2016-12-13/totems.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 34
+          stop: 54
+          freq: 0.25
+      -
+          file: 2016-12-13/2016-12-13-09-41-33.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 31
+          freq: 0.2
+      -
+          file: 2016-12-13/2016-12-13-09-42-32.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: 0.2
+      -
+          file: 2016-12-13/2016-12-13-09-47-01.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: 0.25
+      -
+          file: 2016-12-13/2016-12-13-09-48-03.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 8
+          stop: 42
+          freq: 0.25
+      -
+          file: 2016-12-13/2016-12-13-09-50-46.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 23
+          stop: 65
+          freq: 0.25
+      -
+          file: 2016-12-13/2016-12-13-09-53-28.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          start: 35
+          freq: 0.7
+      -
+          file: 2016-12-13/2016-12-13-09-54-10.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 7
+          freq: 0.7
+      -
+          file: 2016-12-13/2016-12-13-11-29-05.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          start: 27
+          freq: 0.2
+      -
+          file: 2016-12-13/2016-12-13-11-34-52.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          start: 23
+          stop: 70
+          freq: 0.25
+      -
+          file: 2016-12-13/2016-12-13-14-08-21.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 40
+          freq: 0.2
+      -
+          file: 2016-12-13/2016-12-13-14-23-05.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 40
+          freq: 0.2
+      -
+          file: 2016-12-13/2016-12-13-14-23-05.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          stop: 22
+          freq: 0.2
+  -
+      name: navigator_pointgrey_hawaii_2016_12_14
+      sources:
+      -
+          file: 2016-12-14/buoyfield1_2016-12-14-14-54-30.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: 0.2
+          start: 0.0
+          stop: 114.0
+          # End of 2018-08-26 Folder
+
+      -
+          file: 2016-12-14/buoyfield2_2016-12-14-14-56-59.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: 0.25
+          start: 0.0
+          stop: 80.0
+      -
+          file: 2016-12-14/red_2016-12-14-15-39-50.bag
+          topic: /stereo/right/image_rect_color
+          encoding: rect_color
+          freq: 0.2
+          start: 0
+          stop: 12.8
+      -
+          file: 2016-12-14/stc_1_2016-12-14-14-26-16.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: 0.25
+          start: 0
+          stop: 136
+  -
+      name: navigator_pointgrey_hawaii_2016_12_15
+      sources:
+      -
+          file: 2016-12-15/dd2_2016-12-15-14-39-53.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 15
+          end: 20
+
+      -
+          file: 2016-12-15/dd1_2016-12-15-14-32-41.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .25
+          start: 0
+          stop: 52
+      -
+          file: 2016-12-15/dd3_2016-12-15-14-42-49.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 15
+          stop: 57
+      -
+          file: 2016-12-15/dd4_2016-12-15-14-44-35.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 23
+          stop: 52
+      -
+          file: 2016-12-15/dd5_2016-12-15-14-48-02.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 5
+          stop: 54
+      -
+          file: 2016-12-15/dd6_2016-12-15-14-51-12.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 25
+          stop: 67
+      -
+          file: 2016-12-15/detectplatform_2016-12-15-13-31-08.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 0
+          stop: 19
+      -
+          file: 2016-12-15/dockpassby_2016-12-15-13-33-53.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 0
+          stop: 38
+      -
+          file: 2016-12-15/scanthecode_2016-12-15-14-01-37.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 0
+          stop: 95
+      -
+          file: 2016-12-15/scanthecode2_2016-12-15-14-04-22.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 0
+          stop: 78
+  -
+    name: navigator_pointgrey_hawaii_2016_12_16
+    sources:
+      -
+          file: 2016-12-16/2016-12-16-09-43-50.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 11
+          stop: 38
+      -
+          file: 2016-12-16/2016-12-16-09-44-52.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 31
+          stop: 39
+      -
+          file: 2016-12-16/2016-12-16-09-46-38.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 35
+          stop: 45
+      -
+          file: 2016-12-16/2016-12-16-09-48-05.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 20
+          stop: 59
+      -
+          file: 2016-12-16/2016-12-16-09-54-54.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 13
+          stop: 70
+      -
+          file: 2016-12-16/2016-12-16-12-58-46.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 0
+          stop: 66
+      -
+          file: 2016-12-16/2016-12-16-16-31-40.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 0
+          stop: 77
+      -
+          file: 2016-12-16/buoyfield_tilted_2016-12-16-13-32-02.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 0
+          stop: 54
+      -
+          file: 2016-12-16/dd_2016-12-16-15-31-05.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 0
+          stop: 49
+      -
+          file: 2016-12-16/dd2_2016-12-16-15-33-08.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 11
+          stop: 65
+      -
+          file: 2016-12-16/dd_semifinal_2016-12-16-16-12-38.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 33
+          stop: 94
+      -
+          file: 2016-12-16/gates-not-identified_2016-12-16-14-06-21.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 0
+          stop: 20
+      -
+          file: 2016-12-16/sctanthecode_2016-12-16-12-15-27.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 0
+          stop: 325
+  -
+   name: navigator_pointgrey_hawaii_2016_12_17
+   sources:
+      -
+          file: 2016-12-17/dd_2016-12-17-13-48-38.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 24
+          stop: 34
+      -
+          file: 2016-12-17/dd_2016-12-17-13-48-38.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 30
+          stop: 70
+      -
+          file: 2016-12-17/dd_2016-12-17-13-48-38.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 100
+          stop: 120
+      -
+          file: 2016-12-17/dd_2016-12-17-13-48-38.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 150
+          stop: 170
+      -
+          file: 2016-12-17/dd_2016-12-17-13-48-38.bag
+          topic: /right/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 190
+          stop: 270
+      -
+          file: 2016-12-17/dock_2016-12-17-13-30-55.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 0
+          stop: 15
+      -
+          file: 2016-12-17/dock_2016-12-17-13-46-08.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 5
+          stop: 70
+      -
+          file: 2016-12-17/dockrun_2016-12-17-10-27-24.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .25
+          start: 20
+          stop: 170
+      -
+          file: 2016-12-17/scan_the_code2_2016-12-17-13-26-44.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 6
+          stop: 53
+      -
+          file: 2016-12-17/scan_the_code2_2016-12-17-13-26-44.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 69
+          stop: 89
+      -
+          file: 2016-12-17/scan_the_code2_2016-12-17-13-26-44.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 69
+          stop: 85
+      -
+          file: 2016-12-17/scan_the_code2_2016-12-17-13-26-44.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 115
+          stop: 135
+      -
+          file: 2016-12-17/scan_the_code2_2016-12-17-13-26-44.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 155
+          stop: 180
+      -
+          file: 2016-12-17/scan_the_code_run1_red_green_blue.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 45
+          stop: 120
+      -
+          file: 2016-12-17/scan_the_code_run1_red_green_blue.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 132
+          stop: 172
+      -
+          file: 2016-12-17/stc_2016-12-17-13-45-04.bag
+          topic: /stereo/right/image_raw
+          encoding: rect_color
+          freq: .2
+          start: 0
+          stop: 24
